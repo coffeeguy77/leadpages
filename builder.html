@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Site Builder</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#fff; --ink:#171a20; --muted:#6b7280; --line:#e6e8ec;
+  --accent:#4f46e5; --accent-soft:#eef0ff; --ok:#15803d;
+  --broker:#1b3a34; --trade:#1f7bb8;
+  --shadow:0 1px 2px rgba(20,26,36,.05),0 6px 24px rgba(20,26,36,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2{margin:0;font-weight:600;letter-spacing:-.01em}
+button{font-family:inherit;cursor:pointer}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:12px 18px;font-weight:600;font-size:15px}
+.btn:hover{filter:brightness(1.06)}
+.btn:disabled{opacity:.6;cursor:default}
+.btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+
+#login{min-height:100vh;display:grid;place-items:center}
+.login-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:34px;width:340px;box-shadow:var(--shadow);text-align:center}
+.logo{width:46px;height:46px;border-radius:12px;background:var(--accent);margin:0 auto 16px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:20px}
+.login-card h1{font-size:20px}.login-card p{color:var(--muted);font-size:14px;margin:6px 0 22px}
+input,select{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;font-family:inherit;color:var(--ink);background:#fff}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.login-card input{margin-bottom:14px}.login-card .btn{width:100%}
+.err{color:#b91c1c;font-size:13.5px;min-height:18px;margin-bottom:8px}
+
+#app{display:none;max-width:640px;margin:0 auto;padding:40px 20px 80px}
+.head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.head .logo{margin:0;width:34px;height:34px;border-radius:9px;font-size:16px}
+.title-row{display:flex;align-items:center;gap:12px}
+#app h1{font-size:22px}
+.sub{color:var(--muted);margin:4px 0 26px;font-size:14.5px}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px;box-shadow:var(--shadow)}
+.field{margin-bottom:16px}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.hint{color:var(--muted);font-weight:400;font-size:12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.row{grid-template-columns:1fr}}
+
+.seg{display:flex;gap:8px}
+.seg button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:12px;font-weight:600;font-size:14.5px;color:var(--muted)}
+.seg button.on[data-v=broker]{border-color:var(--broker);background:#e4ece6;color:var(--broker)}
+.seg button.on[data-v=trade]{border-color:var(--trade);background:#e1effa;color:var(--trade)}
+.only-broker,.only-trade{display:none}
+.v-broker .only-broker{display:block}
+.v-trade .only-trade{display:block}
+
+.actions{display:flex;gap:10px;align-items:center;margin-top:8px}
+.formErr{color:#b91c1c;font-size:13.5px;min-height:18px}
+
+.success{display:none}
+.success.show{display:block}
+.success .panel{text-align:center}
+.tick{width:52px;height:52px;border-radius:50%;background:#e8f6ee;color:var(--ok);display:grid;place-items:center;margin:0 auto 14px;font-size:26px}
+.success h2{font-size:22px}
+.success .url{display:inline-block;margin:16px 0 6px;font-weight:600;color:var(--accent);text-decoration:none;font-size:16px}
+.success .note{color:var(--muted);font-size:13.5px;margin-top:4px}
+.success .actions{justify-content:center;margin-top:22px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-card">
+    <div class="logo">B</div>
+    <h1>Site Builder</h1>
+    <p>Enter the admin password to continue.</p>
+    <div class="err" id="loginErr"></div>
+    <input id="pw" type="password" placeholder="Admin password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn" onclick="doLogin()">Sign in</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="head">
+    <div class="title-row"><span class="logo">B</span><div><h1>New site</h1></div></div>
+    <button class="btn btn-ghost" onclick="logout()">Sign out</button>
+  </div>
+  <p class="sub">Fill in a business, hit create, and it's live at its own URL with its dashboard already tracking.</p>
+
+  <!-- FORM -->
+  <div id="form" class="panel v-broker">
+    <div class="field">
+      <label>Business type</label>
+      <div class="seg" id="seg">
+        <button type="button" data-v="broker" class="on" onclick="setVertical('broker')">Mortgage broker</button>
+        <button type="button" data-v="trade" onclick="setVertical('trade')">Trade / plumber</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Business name</label>
+      <input id="businessName" type="text" placeholder="e.g. Bob's Plumbing" oninput="suggestSlug()">
+    </div>
+
+    <div class="field">
+      <label>URL slug <span class="hint">— lives at /s/<span id="slugPreview">slug</span></span></label>
+      <input id="slug" type="text" placeholder="bobs-plumbing" oninput="document.getElementById('slugPreview').textContent=this.value||'slug'">
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Phone <span class="hint">(display format)</span></label>
+        <input id="phoneText" type="text" placeholder="(02) 9999 0000">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="jobs@business.com.au">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Service area / region</label>
+      <input id="region" type="text" placeholder="e.g. Canberra & the ACT">
+    </div>
+
+    <!-- broker only -->
+    <div class="row only-broker">
+      <div class="field">
+        <label>Variable rate % <span class="hint">p.a.</span></label>
+        <input id="variableRate" type="number" step="0.01" placeholder="6.04">
+      </div>
+      <div class="field">
+        <label>Comparison rate % <span class="hint">p.a.</span></label>
+        <input id="comparisonRate" type="number" step="0.01" placeholder="6.18">
+      </div>
+    </div>
+
+    <!-- trade only -->
+    <div class="field only-trade">
+      <label>Licence <span class="hint">(shown in footer)</span></label>
+      <input id="licence" type="text" placeholder="ACT Plumbing Licence 0000000">
+    </div>
+
+    <div class="formErr" id="formErr"></div>
+    <div class="actions">
+      <button class="btn" id="createBtn" onclick="createSite()">Create site</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success" id="success">
+    <div class="panel">
+      <div class="tick">✓</div>
+      <h2>Site created &amp; live</h2>
+      <a class="url" id="liveLink" href="#" target="_blank">/s/slug</a>
+      <p class="note">It's already tracking visits, calls and leads — pick it in the dashboard to see them.</p>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="resetForm()">Create another</button>
+        <a class="btn" id="viewLink" href="#" target="_blank">Open the page</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let PW = "";
+let vertical = "broker";
+const $ = id => document.getElementById(id);
+
+function doLogin(){
+  const pw = $('pw').value;
+  if(!pw) return;
+  PW = pw;
+  $('login').style.display = 'none';
+  $('app').style.display = 'block';
+}
+function logout(){ PW=""; $('app').style.display='none'; $('login').style.display='grid'; $('pw').value=""; }
+
+function setVertical(v){
+  vertical = v;
+  document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.v===v));
+  $('form').className = 'panel v-' + v;
+}
+
+function suggestSlug(){
+  const s = $('businessName').value.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  $('slug').value = s;
+  $('slugPreview').textContent = s || 'slug';
+}
+
+async function createSite(){
+  const body = {
+    password: PW,
+    vertical,
+    businessName: $('businessName').value.trim(),
+    slug: $('slug').value.trim(),
+    phoneText: $('phoneText').value.trim(),
+    email: $('email').value.trim(),
+    region: $('region').value.trim(),
+    variableRate: $('variableRate').value,
+    comparisonRate: $('comparisonRate').value,
+    licence: $('licence').value.trim()
+  };
+  if(!body.businessName){ $('formErr').textContent = "Add a business name."; return; }
+
+  $('createBtn').disabled = true;
+  $('createBtn').textContent = "Creating…";
+  $('formErr').textContent = "";
+  try {
+    const res = await fetch('/api/create-site', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok){ $('formErr').textContent = data.error || "Could not create the site."; return; }
+    $('liveLink').href = data.url; $('liveLink').textContent = data.url;
+    $('viewLink').href = data.url;
+    $('form').style.display = 'none';
+    $('success').classList.add('show');
+  } catch(e){
+    $('formErr').textContent = "Network error — try again.";
+  } finally {
+    $('createBtn').disabled = false;
+    $('createBtn').textContent = "Create site";
+  }
+}
+
+function resetForm(){
+  ['businessName','slug','phoneText','email','region','variableRate','comparisonRate','licence'].forEach(id => $(id).value = '');
+  $('slugPreview').textContent = 'slug';
+  $('formErr').textContent = '';
+  $('success').classList.remove('show');
+  $('form').style.display = 'block';
+  setVertical('broker');
+}
+</script>
+</body>
+</html>
