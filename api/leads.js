@@ -1,6 +1,6 @@
-// api/leads.js — receives a lead from any landing page and writes it to Supabase.
-// Runs server-side only. Uses the service_role key (bypasses RLS), so it must
-// never be exposed to the browser — keep SUPABASE_SERVICE_ROLE_KEY in Vercel env vars.
+// api/leads.js — receives a lead from any landing page or the brokerAPP and writes
+// it to Supabase. Server-side only; uses the service_role key (bypasses RLS), so it
+// must never be exposed to the browser — keep SUPABASE_SERVICE_ROLE_KEY in Vercel env.
 
 const { createClient } = require('@supabase/supabase-js');
 
@@ -17,9 +17,10 @@ module.exports = async (req, res) => {
   try {
     const { site, kind, name, email, phone, details } = req.body || {};
 
-    // Minimum we need to act on a lead.
-    if (!site || !kind || !phone) {
-      return res.status(400).json({ error: 'Missing site, kind or phone' });
+    // Need the site, the vertical, and at least one way to contact the lead.
+    // (The brokerAPP "email me results" capture has email but no phone.)
+    if (!site || !kind || (!phone && !email)) {
+      return res.status(400).json({ error: 'Missing site, kind, or a contact (phone or email)' });
     }
 
     const { error } = await supabase.from('leads').insert({
@@ -27,8 +28,8 @@ module.exports = async (req, res) => {
       kind,                       // 'broker' | 'trade'
       name:  name  || null,
       email: email || null,
-      phone,
-      details: details || {}      // jsonb — the per-vertical fields
+      phone: phone || null,
+      details: details || {}      // jsonb — per-source fields (source, message, calc, etc.)
     });
 
     if (error) {
