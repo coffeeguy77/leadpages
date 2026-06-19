@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ============================================================
+     SEO  (per-tenant: title / description / canonical are tokens)
+     ============================================================ -->
+<title>Mortgage Broker Canberra | Linray Finance — Home Loans &amp; Refinancing</title>
+<meta name="description" content="Canberra mortgage broker comparing 30+ lenders to find your sharpest home loan rate. Free borrowing assessment, no fee to you. Buying, refinancing or investing in the ACT.">
+<link rel="canonical" href="https://linrayfinance.com.au/">
+<meta name="robots" content="index,follow">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Linray Finance — Canberra Mortgage Broker">
+<meta property="og:description" content="Compare 30+ lenders and see your real repayments in seconds. Free borrowing assessment for ACT buyers, refinancers and investors.">
+<meta property="og:url" content="https://linrayfinance.com.au/">
+<meta property="og:locale" content="en_AU">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- ============================================================
+     Structured data — LocalBusiness + FAQ (helps the local pack)
+     ============================================================ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FinancialService",
+  "name": "Linray Finance",
+  "image": "https://linrayfinance.com.au/og.jpg",
+  "url": "https://linrayfinance.com.au/",
+  "telephone": "+61261000000",
+  "priceRange": "Free to you — lender paid",
+  "areaServed": "Canberra & the ACT",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Canberra",
+    "addressRegion": "ACT",
+    "addressCountry": "AU"
+  },
+  "geo": { "@type": "GeoCoordinates", "latitude": -35.2809, "longitude": 149.1300 },
+  "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "reviewCount": "87" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Does it cost me anything to use a broker?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. In almost all cases the lender pays the broker, so our service is free to you. We tell you up front if a product ever charges a fee." } },
+    { "@type": "Question", "name": "How many lenders do you compare?",
+      "acceptedAnswer": { "@type": "Answer", "text": "We compare home loans from more than 30 banks and lenders across Australia and match the structure to your situation, not just the lowest headline rate." } },
+    { "@type": "Question", "name": "Can you help if I'm self-employed?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Self-employed and PAYG borrowers both welcome — we know which lenders take a sensible view of business income and how to present it." } }
+  ]
+}
+</script>
+
+<style>
+/* ============================================================
+   DESIGN TOKENS — "eucalypt & brass" broker theme
+   These map directly to the platform's theme system.
+   ============================================================ */
+:root{
+  --ink:#14201d;          /* near-black, green-tinted text */
+  --forest:#1b3a34;       /* primary — deep eucalypt */
+  --forest-700:#16302b;
+  --sage:#6b8f7b;         /* mid green */
+  --sage-soft:#e4ece6;    /* tint surface */
+  --paper:#f6f4ef;        /* cool paper background */
+  --card:#ffffff;
+  --brass:#c9a227;        /* accent — numbers / highlights */
+  --brass-deep:#9c7d14;   /* accent for text on light */
+  --line:rgba(20,32,29,.12);
+  --line-strong:rgba(20,32,29,.22);
+  --ok:#2f7d5b;
+  --shadow:0 1px 2px rgba(20,32,29,.06),0 8px 30px rgba(20,32,29,.08);
+  --radius:14px;
+  --maxw:1140px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Inter",system-ui,-apple-system,sans-serif;
+  font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:"Fraunces",Georgia,serif;font-weight:600;line-height:1.08;margin:0;letter-spacing:-.01em}
+p{margin:0}
+a{color:inherit}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.eyebrow{font-family:"Inter";font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass-deep)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:.5em;border:0;cursor:pointer;
+  font-family:"Inter";font-weight:600;font-size:16px;border-radius:999px;
+  padding:14px 26px;text-decoration:none;transition:transform .15s ease,box-shadow .15s ease,background .15s}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--forest);color:#fff}
+.btn-primary:hover{background:var(--forest-700);box-shadow:var(--shadow)}
+.btn-ghost{background:transparent;color:var(--forest);border:1.5px solid var(--line-strong)}
+.btn-ghost:hover{border-color:var(--forest)}
+.btn-brass{background:var(--brass);color:var(--ink)}
+.btn-brass:hover{filter:brightness(1.04);box-shadow:var(--shadow)}
+
+/* ---------- header ---------- */
+header.site{position:sticky;top:0;z-index:50;background:rgba(246,244,239,.86);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:68px}
+.brand{display:flex;align-items:center;gap:11px;font-family:"Fraunces";font-weight:600;font-size:21px;letter-spacing:-.02em;text-decoration:none}
+.brand .mark{width:34px;height:34px;border-radius:9px;background:var(--forest);position:relative;flex:none}
+.brand .mark::after{content:"";position:absolute;inset:9px 8px;border:2px solid var(--brass);border-bottom:0;border-radius:3px 3px 0 0}
+.nav-actions{display:flex;align-items:center;gap:18px}
+.phone-link{font-weight:600;text-decoration:none;white-space:nowrap}
+.phone-link span{color:var(--sage);font-weight:500}
+@media(max-width:760px){.phone-link{display:none}}
+
+/* ---------- hero ---------- */
+.hero{padding:62px 0 30px}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:54px;align-items:center}
+.hero h1{font-size:clamp(38px,5vw,62px)}
+.hero h1 em{font-style:italic;color:var(--brass-deep)}
+.hero-sub{margin-top:22px;font-size:19px;color:#3a4a45;max-width:34ch}
+.hero-cta{margin-top:30px;display:flex;gap:14px;flex-wrap:wrap}
+.trust-row{margin-top:30px;display:flex;gap:22px;flex-wrap:wrap;align-items:center;font-size:14px;color:#46544f}
+.trust-row b{font-family:"Fraunces";font-size:22px;color:var(--forest);font-weight:600}
+.stars{color:var(--brass);letter-spacing:2px}
+@media(max-width:880px){
+  .hero-grid{grid-template-columns:1fr;gap:34px}
+  .hero{padding:34px 0 8px}
+}
+
+/* ---------- calculator (the signature element) ---------- */
+.calc{background:var(--forest);color:#eef3f0;border-radius:20px;padding:26px 26px 30px;
+  box-shadow:0 18px 50px rgba(20,32,29,.22);position:relative;overflow:hidden}
+.calc::before{content:"";position:absolute;top:-40px;right:-40px;width:180px;height:180px;
+  border:1px solid rgba(201,162,39,.25);border-radius:50%}
+.calc h3{color:#fff;font-size:15px;font-family:"Inter";font-weight:600;letter-spacing:.04em;text-transform:uppercase;opacity:.85}
+.readout{margin:6px 0 20px}
+.readout .label{font-size:13px;opacity:.75;letter-spacing:.03em}
+.readout .amount{font-family:"Fraunces";font-weight:600;font-size:clamp(42px,7vw,58px);color:var(--brass);
+  line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.readout .freq{font-size:15px;opacity:.8;margin-left:4px;font-family:"Inter"}
+.field{margin-bottom:16px}
+.field-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.field label{font-size:13.5px;opacity:.85}
+.field .val{font-family:"Inter";font-weight:600;font-variant-numeric:tabular-nums;font-size:15px;color:#fff}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:3px;
+  background:rgba(255,255,255,.18);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+  background:var(--brass);cursor:pointer;border:3px solid var(--forest);box-shadow:0 0 0 1px var(--brass)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--brass);
+  cursor:pointer;border:3px solid var(--forest)}
+.freq-toggle{display:flex;gap:6px;background:rgba(255,255,255,.1);border-radius:10px;padding:4px;margin-top:4px}
+.freq-toggle button{flex:1;border:0;background:transparent;color:#dfe8e3;font-family:"Inter";font-weight:600;
+  font-size:13.5px;padding:8px;border-radius:7px;cursor:pointer;transition:.15s}
+.freq-toggle button.on{background:var(--brass);color:var(--ink)}
+.calc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:20px;
+  padding-top:18px;border-top:1px solid rgba(255,255,255,.14)}
+.calc-stats .s .k{font-size:11.5px;opacity:.7;letter-spacing:.04em;text-transform:uppercase}
+.calc-stats .s .v{font-family:"Inter";font-weight:600;font-size:17px;margin-top:3px;font-variant-numeric:tabular-nums}
+.lvr-note{font-size:12.5px;margin-top:14px;opacity:.85;display:flex;gap:7px;align-items:flex-start}
+.lvr-note .dot{width:8px;height:8px;border-radius:50%;background:var(--brass);margin-top:6px;flex:none}
+.calc-foot{margin-top:18px}
+.calc-foot .btn{width:100%;justify-content:center}
+.rate-tag{font-size:12px;opacity:.7;text-align:center;margin-top:11px}
+
+/* ---------- generic section ---------- */
+.section{padding:70px 0}
+.section-head{max-width:60ch}
+.section-head h2{font-size:clamp(28px,3.4vw,42px);margin-top:12px}
+.section-head p{margin-top:14px;color:#46544f;font-size:18px}
+
+/* value cards */
+.values{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:42px}
+.vcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px 22px}
+.vcard .ic{width:42px;height:42px;border-radius:11px;background:var(--sage-soft);display:grid;place-items:center;margin-bottom:16px;color:var(--forest)}
+.vcard h3{font-size:19px;font-family:"Fraunces"}
+.vcard p{margin-top:9px;font-size:15px;color:#4a584f}
+@media(max-width:900px){.values{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.values{grid-template-columns:1fr}}
+
+/* steps — genuine sequence, numbering earns its place */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:42px;counter-reset:step}
+.step{position:relative;padding-top:18px;border-top:2px solid var(--forest)}
+.step::before{counter-increment:step;content:"0" counter(step);font-family:"Fraunces";font-weight:600;
+  font-size:15px;color:var(--brass-deep);position:absolute;top:-12px;background:var(--paper);padding-right:10px}
+.step h3{font-size:21px;margin-top:6px}
+.step p{margin-top:8px;color:#4a584f;font-size:15.5px}
+@media(max-width:760px){.steps{grid-template-columns:1fr;gap:26px}}
+
+/* lenders strip */
+.lenders{background:var(--forest);color:#e9f0ec}
+.lenders .wrap{padding:46px 24px;text-align:center}
+.lenders h2{color:#fff;font-size:clamp(24px,3vw,34px)}
+.lender-logos{display:flex;flex-wrap:wrap;gap:14px 30px;justify-content:center;margin-top:26px;
+  font-family:"Fraunces";font-weight:600;font-size:20px;opacity:.78}
+
+/* testimonial */
+.quote-wrap{display:grid;grid-template-columns:1fr 1fr;gap:46px;align-items:center}
+.bigquote{font-family:"Fraunces";font-weight:500;font-size:clamp(24px,3vw,33px);line-height:1.25;letter-spacing:-.01em}
+.bigquote .stars{display:block;font-size:18px;margin-bottom:18px}
+.byline{margin-top:22px;font-size:15px;color:#4a584f}
+.byline b{color:var(--ink)}
+@media(max-width:760px){.quote-wrap{grid-template-columns:1fr;gap:24px}}
+
+/* lead form */
+.lead{background:var(--sage-soft)}
+.lead-grid{display:grid;grid-template-columns:1fr 1.05fr;gap:50px;align-items:start}
+.lead-grid h2{font-size:clamp(28px,3.4vw,40px)}
+.lead-points{margin-top:24px;display:grid;gap:14px}
+.lead-points li{list-style:none;display:flex;gap:12px;align-items:flex-start;font-size:16px;color:#3c4a44}
+.lead-points .tick{width:22px;height:22px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;flex:none;font-size:12px;margin-top:2px}
+.form-card{background:var(--card);border-radius:18px;padding:30px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ff{margin-bottom:14px}
+.ff label{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px}
+.ff input,.ff select{width:100%;padding:13px 14px;border:1.5px solid var(--line-strong);border-radius:10px;
+  font-family:"Inter";font-size:15.5px;background:#fff;color:var(--ink)}
+.ff input:focus,.ff select:focus{outline:none;border-color:var(--forest);box-shadow:0 0 0 3px rgba(27,58,52,.12)}
+.form-card .btn{width:100%;justify-content:center;margin-top:6px}
+.form-fine{font-size:12.5px;color:#6a766f;margin-top:14px;text-align:center}
+.form-success{display:none;text-align:center;padding:30px 10px}
+.form-success.show{display:block}
+.form-success .big{font-family:"Fraunces";font-size:26px;color:var(--forest)}
+@media(max-width:860px){.lead-grid{grid-template-columns:1fr;gap:30px}.form-row{grid-template-columns:1fr}}
+
+/* faq */
+.faq{max-width:780px;margin:42px auto 0}
+.faq details{border-bottom:1px solid var(--line);padding:18px 0}
+.faq summary{cursor:pointer;font-family:"Fraunces";font-weight:600;font-size:20px;list-style:none;
+  display:flex;justify-content:space-between;gap:20px;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--brass-deep);font-family:"Inter";font-size:24px;transition:.2s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{margin-top:12px;color:#4a584f;font-size:16px}
+
+/* footer */
+footer.site{background:var(--ink);color:#b9c4bf;font-size:14.5px;padding:54px 0 30px}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:34px}
+footer .brand{color:#fff}
+footer h4{color:#fff;font-family:"Inter";font-size:14px;letter-spacing:.05em;text-transform:uppercase;margin:0 0 14px}
+footer a{display:block;text-decoration:none;margin-bottom:9px;color:#b9c4bf}
+footer a:hover{color:#fff}
+.foot-legal{margin-top:38px;padding-top:22px;border-top:1px solid rgba(255,255,255,.12);font-size:12.5px;color:#8b9893;line-height:1.7}
+@media(max-width:760px){.foot-grid{grid-template-columns:1fr;gap:26px}}
+
+/* a11y / motion */
+:focus-visible{outline:3px solid var(--brass);outline-offset:2px;border-radius:4px}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SITE_CONFIG — the only block that changes per tenant.
+     In the platform this is the row from `sites` + rates override.
+     ============================================================ -->
+<script>
+const SITE_CONFIG = {
+  business: "Linray Finance",
+  phone:    "+61261000000",
+  phoneText:"(02) 6100 0000",
+  email:    "hello@linrayfinance.com.au",
+  suburb:   "Canberra",
+  region:   "ACT",
+  /* RATES: defaults pulled from the global rates file; broker can override.
+     `rateSource` shows the platform whether to track-global or use-override. */
+  rates: {
+    rateSource:   "override",   // "global" | "override"
+    variableRate: 6.04,         // % p.a. — used by the calculator
+    comparisonRate: 6.18,       // % p.a.
+    updatedAt:    "Jun 2026"
+  }
+};
+</script>
+
+<header class="site">
+  <div class="wrap bar">
+    <a class="brand" href="#top"><span class="mark"></span>Linray Finance</a>
+    <div class="nav-actions">
+      <a class="phone-link" id="navPhone" href="#"><span>Talk to a broker</span><br>(02) 6100 0000</a>
+      <a class="btn btn-primary" href="#assessment">Free assessment</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO with the live calculator as the thesis -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">Canberra mortgage broker</span>
+        <h1>See your real repayment <em>before</em> you talk to a bank.</h1>
+        <p class="hero-sub">We compare more than 30 lenders to find the loan that actually fits you — then do the paperwork. No fee to you.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#assessment">Get my free assessment</a>
+          <a class="btn btn-ghost" id="heroCall" href="#">Call (02) 6100 0000</a>
+        </div>
+        <div class="trust-row">
+          <div><span class="stars">★★★★★</span> <b>4.9</b> from 87 reviews</div>
+          <div><b>30+</b> lenders compared</div>
+          <div><b>$0</b> cost to you</div>
+        </div>
+      </div>
+
+      <!-- ===== Calculator instrument ===== -->
+      <div class="calc" id="calc" aria-label="Home loan repayment calculator">
+        <h3>Repayment calculator</h3>
+        <div class="readout">
+          <div class="label">Estimated repayment</div>
+          <div><span class="amount" id="rOut">$0</span><span class="freq" id="rFreq">/ month</span></div>
+        </div>
+
+        <div class="field">
+          <div class="field-top"><label for="price">Property price</label><span class="val" id="priceV">$750,000</span></div>
+          <input type="range" id="price" min="200000" max="2500000" step="10000" value="750000">
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="deposit">Deposit</label><span class="val" id="depositV">$150,000</span></div>
+          <input type="range" id="deposit" min="0" max="800000" step="5000" value="150000">
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="rate">Interest rate</label><span class="val" id="rateV">6.04% p.a.</span></div>
+          <input type="range" id="rate" min="3" max="9" step="0.01" value="6.04">
+        </div>
+        <div class="field">
+          <div class="field-top"><label for="term">Loan term</label><span class="val" id="termV">30 years</span></div>
+          <input type="range" id="term" min="10" max="30" step="1" value="30">
+        </div>
+
+        <div class="freq-toggle" role="group" aria-label="Repayment frequency">
+          <button type="button" data-f="weekly">Weekly</button>
+          <button type="button" data-f="fortnightly">Fortnightly</button>
+          <button type="button" data-f="monthly" class="on">Monthly</button>
+        </div>
+
+        <div class="calc-stats">
+          <div class="s"><div class="k">Loan amount</div><div class="v" id="loanV">$600,000</div></div>
+          <div class="s"><div class="k">LVR</div><div class="v" id="lvrV">80%</div></div>
+          <div class="s"><div class="k">Total interest</div><div class="v" id="intV">$0</div></div>
+        </div>
+
+        <div class="lvr-note" id="lmiNote" style="display:none">
+          <span class="dot"></span><span>Your deposit is under 20%, so Lenders Mortgage Insurance may apply. We'll show you how to structure around it.</span>
+        </div>
+
+        <div class="calc-foot">
+          <a class="btn btn-brass" href="#assessment">Get this rate checked free →</a>
+        </div>
+        <div class="rate-tag" id="rateTag">Based on a 6.04% p.a. variable · comparison 6.18% p.a.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALUE -->
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Why a broker</span>
+        <h2>The bank shows you one rate. We show you the market.</h2>
+        <p>A loan officer can only sell you their own product. We sit on your side of the table and shop the whole panel.</p>
+      </div>
+      <div class="values">
+        <div class="vcard"><div class="ic">◷</div><h3>Faster yes</h3><p>We match you to lenders likely to approve your situation, so you skip the knock-backs that dent your credit file.</p></div>
+        <div class="vcard"><div class="ic">⚖</div><h3>Whole-of-market</h3><p>Big four, mutuals, and specialist lenders — over 30 in total, compared on rate, fees and how they assess you.</p></div>
+        <div class="vcard"><div class="ic">$</div><h3>No fee to you</h3><p>The lender pays us when your loan settles. Our advice costs you nothing, and we say so up front if anything ever does.</p></div>
+        <div class="vcard"><div class="ic">⌂</div><h3>Local to the ACT</h3><p>We know Canberra's market, the government employee lending quirks, and the suburbs lenders treat cautiously.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEPS -->
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head"><span class="eyebrow">How it works</span><h2>Three steps, mostly done by us.</h2></div>
+      <div class="steps">
+        <div class="step"><h3>Tell us your situation</h3><p>A 15-minute chat — income, deposit, what you're buying. Use the assessment form and we'll call you back.</p></div>
+        <div class="step"><h3>We compare &amp; recommend</h3><p>We bring you the loans that fit, explain the trade-offs in plain English, and you pick the one you're happy with.</p></div>
+        <div class="step"><h3>We handle settlement</h3><p>Application, lender chasing, paperwork — we run it through to settlement and stay on for future rate reviews.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LENDERS -->
+  <section class="lenders">
+    <div class="wrap">
+      <h2>Compared across the lenders that matter</h2>
+      <div class="lender-logos">
+        <span>CommBank</span><span>NAB</span><span>Westpac</span><span>ANZ</span><span>Macquarie</span><span>ING</span><span>Bankwest</span><span>Suncorp</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIAL -->
+  <section class="section">
+    <div class="wrap quote-wrap">
+      <div>
+        <span class="eyebrow">A recent settlement</span>
+        <h2 style="margin-top:12px">Real people, real keys.</h2>
+        <p class="byline" style="margin-top:14px">We refinanced 41 Canberra households last year. Most started exactly where you are now — unsure whether their current rate was still fair.</p>
+      </div>
+      <div>
+        <blockquote class="bigquote">
+          <span class="stars">★★★★★</span>
+          "Did the whole refinance for us while we were juggling two kids and full-time jobs. Saved us $340 a month and we barely lifted a finger."
+        </blockquote>
+        <p class="byline"><b>Priya &amp; Tom</b> — refinanced, Gungahlin</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEAD FORM -->
+  <section class="section lead" id="assessment">
+    <div class="wrap lead-grid">
+      <div>
+        <span class="eyebrow">Free borrowing assessment</span>
+        <h2>Find out what you can borrow — and at what rate.</h2>
+        <ul class="lead-points">
+          <li><span class="tick">✓</span><span>A clear borrowing figure and the sharpest rate we can find for your situation.</span></li>
+          <li><span class="tick">✓</span><span>No obligation, no credit check at this stage, no cost.</span></li>
+          <li><span class="tick">✓</span><span>A real broker calls you back — usually the same business day.</span></li>
+        </ul>
+      </div>
+
+      <div class="form-card">
+        <div id="leadForm">
+          <div class="form-row">
+            <div class="ff"><label for="fname">First name</label><input id="fname" type="text" autocomplete="given-name" required></div>
+            <div class="ff"><label for="lname">Last name</label><input id="lname" type="text" autocomplete="family-name" required></div>
+          </div>
+          <div class="form-row">
+            <div class="ff"><label for="email">Email</label><input id="email" type="email" autocomplete="email" required></div>
+            <div class="ff"><label for="phone">Phone</label><input id="phone" type="tel" autocomplete="tel" required></div>
+          </div>
+          <div class="ff">
+            <label for="goal">What are you looking to do?</label>
+            <select id="goal">
+              <option>Buy my first home</option>
+              <option>Buy my next home</option>
+              <option>Refinance an existing loan</option>
+              <option>Buy an investment property</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" type="button" onclick="submitLead()">Request my free assessment</button>
+          <p class="form-fine">By submitting you agree to be contacted about your enquiry. Your details are never sold.</p>
+        </div>
+        <div class="form-success" id="leadSuccess">
+          <div class="big">Thanks — you're booked in. ✓</div>
+          <p style="margin-top:10px;color:#4a584f">A Linray broker will call you on the number you gave us, usually within a few hours during business days.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head" style="margin:0 auto;text-align:center"><span class="eyebrow">Questions</span><h2>The things people ask first.</h2></div>
+      <div class="faq">
+        <details open><summary>Does it cost me anything?</summary><p>No. In almost every case the lender pays the broker when your loan settles, so our service is free to you. If a product ever carries a fee, we tell you before you commit to anything.</p></details>
+        <details><summary>How many lenders do you actually compare?</summary><p>More than 30 — the big four, plus mutuals and specialist lenders. We match the structure to your situation rather than chasing the lowest headline rate, which often hides fees.</p></details>
+        <details><summary>I'm self-employed. Can you still help?</summary><p>Yes. We know which lenders take a sensible view of business and self-employed income, and how to present your numbers so you're assessed fairly.</p></details>
+        <details><summary>Is my current rate still any good?</summary><p>Probably worth a look. Lenders keep their best rates for new customers, so existing borrowers quietly drift onto higher ones. A free review tells you in minutes whether you're overpaying.</p></details>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="#top"><span class="mark"></span>Linray Finance</a>
+        <p style="margin-top:14px;max-width:34ch">Canberra mortgage broking. We compare the market, structure the loan, and stay on for the life of it.</p>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <a id="footPhone" href="#">(02) 6100 0000</a>
+        <a href="mailto:hello@linrayfinance.com.au">hello@linrayfinance.com.au</a>
+        <a href="#">Canberra, ACT</a>
+      </div>
+      <div>
+        <h4>Services</h4>
+        <a href="#assessment">First home loans</a>
+        <a href="#assessment">Refinancing</a>
+        <a href="#assessment">Investment loans</a>
+        <a href="#calc">Repayment calculator</a>
+      </div>
+    </div>
+    <p class="foot-legal">
+      Calculator results are estimates only and assume principal &amp; interest repayments at the rate shown; they are not a quote or an offer of credit. Your borrowing power and rate depend on a full assessment of your circumstances. Linray Finance — Australian Credit Licence 000000 (placeholder). Lending criteria, fees, terms and conditions apply. © 2026 Linray Finance.
+    </p>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   ANALYTICS HOOKS — drop-in for the platform events table.
+   trackEvent() currently logs + pushes to dataLayer; later it
+   POSTs to /api/events keyed to site_id + page_id.
+   ============================================================ */
+window.dataLayer = window.dataLayer || [];
+function trackEvent(name, props = {}) {
+  const payload = { event: name, site: SITE_CONFIG.business, ts: Date.now(), ...props };
+  window.dataLayer.push(payload);
+  console.log("[track]", payload);
+  fetch('/api/events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ site: SITE_CONFIG.business, event: name, props: { ...props, ts: Date.now() } }),
+    keepalive: true            // lets call_click fire even as the tel: link navigates away
+  }).catch(() => {});          // analytics must never block the user
+}
+
+/* ---- click-to-call: wire every tel link + log the click ---- */
+(function wirePhones(){
+  const tel = "tel:" + SITE_CONFIG.phone;
+  ["navPhone","heroCall","footPhone"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.href = tel;
+    el.addEventListener("click", ()=>trackEvent("call_click",{location:id}));
+  });
+})();
+
+/* ---- lead submit stub ---- */
+async function submitLead(){
+  const data = {
+    firstName: fname.value.trim(), lastName: lname.value.trim(),
+    email: email.value.trim(), phone: phone.value.trim(), goal: goal.value
+  };
+  if(!data.firstName || !data.email || !data.phone){
+    alert("Please add your name, email and phone so a broker can call you back.");
+    return;
+  }
+  trackEvent("lead_submit", { goal: data.goal });
+  try {
+    const res = await fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        site: SITE_CONFIG.business,
+        kind: "broker",
+        name: (data.firstName + " " + data.lastName).trim(),
+        email: data.email,
+        phone: data.phone,
+        details: { goal: data.goal, firstName: data.firstName, lastName: data.lastName }
+      })
+    });
+    if(!res.ok) console.error("Lead save failed:", res.status, await res.text());
+  } catch(e){ console.error("Lead save error:", e); }
+  // We always thank the customer so a backend hiccup never bounces a real lead.
+  // Watch the network tab / console while testing to confirm the insert succeeds.
+  document.getElementById("leadForm").style.display = "none";
+  document.getElementById("leadSuccess").classList.add("show");
+}
+
+/* ============================================================
+   CALCULATOR
+   ============================================================ */
+const fmt  = n => "$" + Math.round(n).toLocaleString("en-AU");
+const fmtK = n => "$" + Math.round(n).toLocaleString("en-AU");
+let freq = "monthly";
+
+const els = {
+  price:price, deposit:deposit, rate:rate, term:term,
+  priceV:priceV, depositV:depositV, rateV:rateV, termV:termV,
+  rOut:rOut, rFreq:rFreq, loanV:loanV, lvrV:lvrV, intV:intV, lmiNote:lmiNote, rateTag:rateTag
+};
+
+/* seed rate from SITE_CONFIG (the broker override / global rate) */
+els.rate.value = SITE_CONFIG.rates.variableRate;
+els.rateTag.textContent = `Based on a ${SITE_CONFIG.rates.variableRate}% p.a. variable · comparison ${SITE_CONFIG.rates.comparisonRate}% p.a.`;
+
+function calc(){
+  let price = +els.price.value;
+  let deposit = Math.min(+els.deposit.value, price); // deposit can't exceed price
+  const loan = Math.max(price - deposit, 0);
+  const annual = +els.rate.value;
+  const years = +els.term.value;
+  const r = annual/100/12;
+  const n = years*12;
+
+  const monthly = r === 0 ? loan/n : loan * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1);
+  const totalInterest = monthly*n - loan;
+
+  const perFreq = freq==="weekly" ? monthly*12/52 : freq==="fortnightly" ? monthly*12/26 : monthly;
+  const freqLabel = freq==="weekly" ? "/ week" : freq==="fortnightly" ? "/ fortnight" : "/ month";
+
+  const lvr = price>0 ? (loan/price*100) : 0;
+
+  els.priceV.textContent   = fmt(price);
+  els.depositV.textContent = fmt(deposit);
+  els.rateV.textContent    = annual.toFixed(2) + "% p.a.";
+  els.termV.textContent    = years + " years";
+  els.rOut.textContent     = loan===0 ? "$0" : fmt(perFreq);
+  els.rFreq.textContent    = freqLabel;
+  els.loanV.textContent    = fmtK(loan);
+  els.lvrV.textContent     = Math.round(lvr) + "%";
+  els.intV.textContent     = loan===0 ? "$0" : fmtK(totalInterest);
+  els.lmiNote.style.display = (lvr>80 && loan>0) ? "flex" : "none";
+}
+
+["price","deposit","rate","term"].forEach(id=>els[id].addEventListener("input",calc));
+document.querySelectorAll(".freq-toggle button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll(".freq-toggle button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); freq = b.dataset.f; calc();
+    trackEvent("calc_freq", { freq });
+  });
+});
+calc();
+trackEvent("page_view", { page: "broker_landing" });
+</script>
+</body>
+</html>

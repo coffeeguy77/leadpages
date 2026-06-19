@@ -1,0 +1,9 @@
+{
+  "name": "leadpages",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SEO landing pages with Supabase-backed leads + analytics",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}
