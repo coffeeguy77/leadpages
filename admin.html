@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Leads Dashboard</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --ink:#171a20; --muted:#6b7280; --line:#e6e8ec;
+  --accent:#4f46e5; --accent-soft:#eef0ff;
+  --broker:#1b3a34; --trade:#1f7bb8; --ok:#15803d;
+  --shadow:0 1px 2px rgba(20,26,36,.05),0 6px 24px rgba(20,26,36,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
+button{font-family:inherit;cursor:pointer}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:11px 18px;font-weight:600;font-size:14.5px}
+.btn:hover{filter:brightness(1.06)}
+.btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+
+/* login */
+#login{min-height:100vh;display:grid;place-items:center}
+.login-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:34px;width:340px;box-shadow:var(--shadow);text-align:center}
+.login-card .logo{width:46px;height:46px;border-radius:12px;background:var(--accent);margin:0 auto 16px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:20px}
+.login-card h1{font-size:20px}
+.login-card p{color:var(--muted);font-size:14px;margin:6px 0 22px}
+.login-card input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;margin-bottom:14px}
+.login-card input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.login-card .btn{width:100%}
+.err{color:#b91c1c;font-size:13.5px;min-height:18px;margin-bottom:8px}
+
+/* app */
+#app{display:none}
+header.top{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.top-row{display:flex;align-items:center;justify-content:space-between;height:62px;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:17px}
+.brand .logo{width:30px;height:30px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px}
+.controls{display:flex;align-items:center;gap:10px}
+select{font-family:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
+select:focus{outline:none;border-color:var(--accent)}
+
+main{padding:26px 0 60px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px 18px 16px;box-shadow:var(--shadow)}
+.stat .k{font-size:12.5px;color:var(--muted);font-weight:500;letter-spacing:.02em}
+.stat .v{font-size:30px;font-weight:700;margin-top:6px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat.lead .v{color:var(--accent)}
+@media(max-width:720px){.stats{grid-template-columns:1fr 1fr}}
+
+.grid{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:start}
+@media(max-width:840px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);overflow:hidden}
+.panel h2{font-size:15px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.panel .empty{padding:28px 18px;color:var(--muted);font-size:14px;text-align:center}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;padding:10px 18px;background:#fafbfc;border-bottom:1px solid var(--line)}
+td{padding:12px 18px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;text-transform:capitalize}
+.pill.broker{background:#e4ece6;color:var(--broker)}
+.pill.trade{background:#e1effa;color:var(--trade)}
+.lead-name{font-weight:600}
+.lead-phone a{color:var(--accent);text-decoration:none;font-variant-numeric:tabular-nums}
+.lead-detail{color:var(--muted);font-size:13px}
+.when{color:var(--muted);font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+.ev{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 18px;border-bottom:1px solid var(--line);font-size:13.5px}
+.ev:last-child{border-bottom:0}
+.ev .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.ev .lbl{display:flex;align-items:center;gap:9px}
+.ev-page_view .dot{background:#9ca3af}
+.ev-call_click .dot{background:#f59e0b}
+.ev-lead_submit .dot{background:var(--accent)}
+.ev-calc_freq .dot{background:#10b981}
+.muted{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-card">
+    <div class="logo">L</div>
+    <h1>Leads Dashboard</h1>
+    <p>Enter the admin password to continue.</p>
+    <div class="err" id="loginErr"></div>
+    <input id="pw" type="password" placeholder="Admin password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn" onclick="doLogin()">Sign in</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="top">
+    <div class="wrap top-row">
+      <div class="brand"><span class="logo">L</span> Leads Dashboard</div>
+      <div class="controls">
+        <select id="siteSel" onchange="load(this.value)"></select>
+        <button class="btn btn-ghost" onclick="logout()">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="stats">
+      <div class="stat lead"><div class="k">Leads</div><div class="v" id="sLeads">0</div></div>
+      <div class="stat"><div class="k">Page views</div><div class="v" id="sViews">0</div></div>
+      <div class="stat"><div class="k">Call clicks</div><div class="v" id="sCalls">0</div></div>
+      <div class="stat"><div class="k">Form submits</div><div class="v" id="sSubmits">0</div></div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <h2>Leads</h2>
+        <div id="leadsBody"></div>
+      </div>
+      <div class="panel">
+        <h2>Recent activity</h2>
+        <div id="eventsBody"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+let PW = "";
+
+const $ = id => document.getElementById(id);
+const fmtWhen = iso => {
+  const d = new Date(iso);
+  return d.toLocaleString('en-AU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+};
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function detailSummary(kind, details){
+  if(!details) return '';
+  if(kind === 'broker') return esc(details.goal || '');
+  if(kind === 'trade'){
+    const bits = [details.job, details.suburb].filter(Boolean).map(esc);
+    return bits.join(' · ') + (details.detail ? `<div class="muted">${esc(details.detail)}</div>` : '');
+  }
+  return esc(Object.values(details).filter(v => typeof v === 'string').slice(0,2).join(' · '));
+}
+
+async function doLogin(){
+  const pw = $('pw').value;
+  if(!pw){ return; }
+  PW = pw;
+  $('loginErr').textContent = "";
+  const ok = await load('all', true);
+  if(ok){
+    $('login').style.display = 'none';
+    $('app').style.display = 'block';
+  }
+}
+
+function logout(){
+  PW = "";
+  $('app').style.display = 'none';
+  $('login').style.display = 'grid';
+  $('pw').value = "";
+}
+
+async function load(site, isLogin){
+  try {
+    const res = await fetch('/api/admin-data', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ password: PW, site })
+    });
+    if(res.status === 401){ if(isLogin) $('loginErr').textContent = "Wrong password."; return false; }
+    if(!res.ok){
+      const e = await res.json().catch(()=>({}));
+      if(isLogin) $('loginErr').textContent = e.error || "Something went wrong.";
+      else alert(e.error || "Could not load data.");
+      return false;
+    }
+    render(await res.json());
+    return true;
+  } catch(e){
+    if(isLogin) $('loginErr').textContent = "Network error.";
+    return false;
+  }
+}
+
+let sitesLoaded = false;
+function render(d){
+  // site picker (once)
+  if(!sitesLoaded){
+    const sel = $('siteSel');
+    sel.innerHTML = '<option value="all">All sites</option>' +
+      d.sites.map(s => `<option value="${esc(s.business_name)}">${esc(s.business_name)}</option>`).join('');
+    sel.value = d.selected;
+    sitesLoaded = true;
+  }
+
+  $('sLeads').textContent   = d.stats.leads;
+  $('sViews').textContent   = d.stats.page_view;
+  $('sCalls').textContent   = d.stats.call_click;
+  $('sSubmits').textContent = d.stats.lead_submit;
+
+  // leads
+  const lb = $('leadsBody');
+  if(!d.leads.length){
+    lb.innerHTML = '<div class="empty">No leads yet for this view.</div>';
+  } else {
+    lb.innerHTML = `<table><thead><tr><th>When</th><th>Name</th><th>Phone</th><th>Type</th><th>Enquiry</th></tr></thead><tbody>` +
+      d.leads.map(l => `<tr>
+        <td class="when">${fmtWhen(l.created_at)}</td>
+        <td class="lead-name">${esc(l.name)}</td>
+        <td class="lead-phone"><a href="tel:${esc(l.phone)}">${esc(l.phone)}</a></td>
+        <td><span class="pill ${esc(l.kind)}">${esc(l.kind)}</span></td>
+        <td class="lead-detail">${detailSummary(l.kind, l.details)}</td>
+      </tr>`).join('') + `</tbody></table>`;
+  }
+
+  // events
+  const eb = $('eventsBody');
+  if(!d.recentEvents.length){
+    eb.innerHTML = '<div class="empty">No activity yet.</div>';
+  } else {
+    const label = { page_view:'Page view', call_click:'Call click', lead_submit:'Form submit', calc_freq:'Calculator used' };
+    eb.innerHTML = d.recentEvents.map(ev => `<div class="ev ev-${esc(ev.event)}">
+      <span class="lbl"><span class="dot"></span>${label[ev.event] || esc(ev.event)}</span>
+      <span class="when">${fmtWhen(ev.created_at)}</span>
+    </div>`).join('');
+  }
+}
+</script>
+</body>
+</html>
