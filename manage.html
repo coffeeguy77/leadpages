@@ -1026,7 +1026,10 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   function previewTarget(){ return currentSiteSlug || 'demo'; }
   function previewApply(a){
     var fr=lpFrame(); if(!fr||!lpPrevReady) return;
-    try{ var w=fr.contentWindow; if(w&&w.__applyAppearance) w.__applyAppearance(a||curAppr()); }catch(e){}
+    try{ var w=fr.contentWindow; if(!w) return;
+      if(currentSiteTemplate==='trade'){ if(w.__applyTradeConfig) w.__applyTradeConfig(data); }
+      else if(w.__applyAppearance){ w.__applyAppearance(a||curAppr()); }
+    }catch(e){}
   }
   function previewLoad(){
     var fr=lpFrame(); if(!fr) return;
@@ -1338,6 +1341,16 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     if(!allSites.length){ toast('No site is assigned to this account yet.'); return; }
     loadSite(allSites[0]);
   }
+  const DEFAULT_TRADE_SVCS=[
+    {on:true,icon:'\uD83D\uDEBF',title:'Blocked Drains',body:'High-pressure water jetting and electric eel to clear blockages fast \u2014 kitchen, bathroom, sewer and stormwater.'},
+    {on:true,icon:'\uD83D\uDCA7',title:'Burst & Leaking Pipes',body:'Burst mains, slab leaks and dripping joints found and repaired before they wreck your floors and walls.'},
+    {on:true,icon:'\uD83D\uDD25',title:'Hot Water Systems',body:'No hot water? Repairs and same-day replacement on gas, electric and heat-pump systems.'},
+    {on:true,icon:'\uD83D\uDCF9',title:'CCTV Drain Camera',body:'We send a camera down the line to find the real problem \u2014 tree roots, cracks, collapses \u2014 and show you the footage.'},
+    {on:true,icon:'\uD83D\uDD0E',title:'Leak Detection',body:'Hidden leak driving up your water bill? We pinpoint it without tearing the place apart.'},
+    {on:true,icon:'\uD83D\uDEE0\uFE0F',title:'General Plumbing',body:"Taps, toilets, gas fitting, renovations and the jobs you've been putting off. Done right, first time."}
+  ];
+  const DEFAULT_TRADE_THEME={ pipe:'#1f7bb8', hivis:'#ff6a1f', steel:'#1a2230', safety:'#ffc400' };
+  const TRADE_COLOURS=[['pipe','Brand','buttons, links, accents'],['hivis','Call-to-action','the orange call buttons'],['steel','Header & dark bands','top bar, hero, footer'],['safety','Highlight','badges & small accents']];
   function loadSite(site){
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app';
     currentBusinessName=site.business_name||'';
@@ -1378,13 +1391,24 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     } else if(t==='broker-leads'){
       typeBits=fld('Suburb','d-suburb','')+'<h3 style="margin:18px 0 8px;font-size:14px;">Rates shown on the page</h3><div class="row3">'+fld('Variable rate %','d-var','')+fld('Comparison rate %','d-comp','')+fld('Updated label','d-rupd','e.g. Jun 2026')+'</div>';
     }
-    box.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Site details</h2><p class="lede">These feed your client\u2019s '+(t==='trade'?'trade':'broker')+' landing page. Publish to push them live.</p>'
+    var detailsHtml='<div class="card" style="margin-bottom:22px;"><h2>Site details</h2><p class="lede">These feed your client\u2019s '+(t==='trade'?'trade':'broker')+' landing page. Publish to push them live.</p>'
       +fld('Business name','d-biz','')
       +'<div class="row">'+fld('Phone (shown to visitors)','d-phoneText','(02) 1234 5678')+fld('Phone (for the call button)','d-phone','+61...')+'</div>'
       +'<div class="row">'+fld('Email','d-email','')+fld('Region','d-region','')+'</div>'
       +typeBits+'</div>';
+    var extra='';
+    if(t==='trade'){
+      extra+='<div class="card" style="margin-bottom:22px;"><h2>Logo</h2><p class="lede">Show a clean text logo or upload an image \u2014 both replace the default initial badge.</p>'
+        +'<div class="row"><div class="f"><label>Logo style</label><select id="lg-mode" class="tin"><option value="mark">Initial badge + name</option><option value="text">Text only</option><option value="image">Image</option></select></div>'
+        +fld('Logo text','lg-text','defaults to business name')+'</div>'
+        +'<div id="lg-imgwrap" class="f" style="display:none;"><label>Logo image (max ~300 KB)</label><input type="file" id="lg-file" accept="image/*"><div id="lg-imgprev" style="margin-top:8px;"></div></div></div>';
+      var rowsC=TRADE_COLOURS.map(function(k){ return '<div class="f"><label>'+k[1]+' <span class="hint">'+k[2]+'</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="col-'+k[0]+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="colt-'+k[0]+'" class="tin" style="flex:1;"></div></div>'; }).join('');
+      extra+='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Colours</h2><button class="btn ghost" id="col-reset" type="button">Reset to default</button></div><p class="lede">Match the client\u2019s brand \u2014 changes preview live on the right.</p><div class="appr-grid">'+rowsC+'</div></div>';
+      extra+='<div class="card" style="margin-bottom:22px;"><h2>Services</h2><p class="lede">Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 change its icon, heading and text to whatever they offer.</p><div id="svc-list"></div></div>';
+    }
+    box.innerHTML=detailsHtml+extra;
     function setv(id,v){ var el=$(id); if(el) el.value=(v==null?'':v); }
-    function on(id,fn){ var el=$(id); if(el) el.addEventListener('input',function(){ fn(el.value); persist(); }); }
+    function on(id,fn){ var el=$(id); if(el) el.addEventListener('input',function(){ fn(el.value); persist(); previewApply(); }); }
     setv('d-biz',currentBusinessName); setv('d-phoneText',c.phoneText); setv('d-phone',c.phone); setv('d-email',c.email); setv('d-region',c.region);
     on('d-biz',function(v){ currentBusinessName=v; }); on('d-phoneText',function(v){ c.phoneText=v; }); on('d-phone',function(v){ c.phone=v; }); on('d-email',function(v){ c.email=v; }); on('d-region',function(v){ c.region=v; });
     if(t==='trade'){ setv('d-trade',c.trade); setv('d-licence',c.licence); on('d-trade',function(v){ c.trade=v; }); on('d-licence',function(v){ c.licence=v; }); }
@@ -1394,6 +1418,45 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       on('d-comp',function(v){ c.rates=c.rates||{}; c.rates.comparisonRate=(v===''?undefined:(parseFloat(v)||v)); });
       on('d-rupd',function(v){ c.rates=c.rates||{}; c.rates.updatedAt=v; });
     }
+    if(t==='trade'){ wireTradeBranding(c); wireTradeColours(c); wireTradeServices(c); }
+  }
+  function wireTradeBranding(c){
+    var L=c.logo||(c.logo={mode:'mark',text:'',imageUrl:''}); if(!L.mode) L.mode='mark';
+    $('lg-mode').value=L.mode; $('lg-text').value=L.text||'';
+    function renderPrev(){ var p=$('lg-imgprev'); if(!p) return; p.innerHTML=L.imageUrl?'<img src="'+L.imageUrl+'" style="max-height:46px;border:1px solid var(--line);border-radius:8px;padding:5px;background:#1a2230;vertical-align:middle;"> <button class="btn ghost" id="lg-clear" type="button">Remove</button>':'<span class="hint">No image uploaded.</span>'; var cl=$('lg-clear'); if(cl) cl.addEventListener('click',function(){ L.imageUrl=''; persist(); renderPrev(); previewApply(); }); }
+    function refresh(){ $('lg-imgwrap').style.display=($('lg-mode').value==='image')?'':'none'; renderPrev(); }
+    $('lg-mode').addEventListener('change',function(){ L.mode=this.value; persist(); refresh(); previewApply(); });
+    $('lg-text').addEventListener('input',function(){ L.text=this.value; persist(); previewApply(); });
+    var f=$('lg-file'); if(f) f.addEventListener('change',function(e){ var file=e.target.files[0]; if(!file) return; if(file.size>300000){ toast('Image too large (max ~300 KB)'); e.target.value=''; return; } var rd=new FileReader(); rd.onload=function(){ L.imageUrl=rd.result; persist(); renderPrev(); previewApply(); }; rd.readAsDataURL(file); });
+    refresh();
+  }
+  function wireTradeColours(c){
+    var th=c.theme||(c.theme={});
+    TRADE_COLOURS.forEach(function(k){
+      var key=k[0], def=DEFAULT_TRADE_THEME[key], val=th[key]||def, cp=$('col-'+key), tx=$('colt-'+key);
+      if(cp) cp.value=val; if(tx) tx.value=val;
+      function set(v){ v=v||def; th[key]=v; if(cp)cp.value=v; if(tx)tx.value=v; persist(); previewApply(); }
+      if(cp) cp.addEventListener('input',function(){ set(cp.value); });
+      if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(/^#?[0-9a-fA-F]{6}$/.test(v)){ if(v.charAt(0)!=='#')v='#'+v; set(v); } });
+    });
+    var rb=$('col-reset'); if(rb) rb.addEventListener('click',function(){ c.theme=Object.assign({},DEFAULT_TRADE_THEME); persist(); renderDetails(); previewApply(); toast('Colours reset'); });
+  }
+  function wireTradeServices(c){
+    var box=$('svc-list'); if(!box) return;
+    if(!Array.isArray(c.services)||!c.services.length){ c.services=JSON.parse(JSON.stringify(DEFAULT_TRADE_SVCS)); }
+    box.innerHTML=c.services.map(function(s,i){
+      return '<div class="svc-row" data-row="'+i+'" style="border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;'+(s.on===false?'opacity:.5;':'')+'">'
+        +'<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">'
+        +'<label style="display:flex;gap:7px;align-items:center;font-weight:600;font-size:13px;white-space:nowrap;"><input type="checkbox" class="svc-on" data-i="'+i+'"'+(s.on===false?'':' checked')+'> Shown</label>'
+        +'<input type="text" class="svc-ic tin" data-i="'+i+'" style="width:60px;text-align:center;font-size:18px;" placeholder="icon">'
+        +'<input type="text" class="svc-t tin" data-i="'+i+'" style="flex:1;" placeholder="Heading">'
+        +'</div>'
+        +'<textarea class="svc-b" data-i="'+i+'" rows="2" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;" placeholder="Description"></textarea>'
+        +'</div>';
+    }).join('');
+    c.services.forEach(function(s,i){ var ic=box.querySelector('.svc-ic[data-i="'+i+'"]'); if(ic) ic.value=s.icon||''; var tt=box.querySelector('.svc-t[data-i="'+i+'"]'); if(tt) tt.value=s.title||''; var bb=box.querySelector('.svc-b[data-i="'+i+'"]'); if(bb) bb.value=s.body||''; });
+    box.addEventListener('input',function(e){ var el=e.target, i=+el.getAttribute('data-i'); if(isNaN(i)) return; var s=c.services[i]; if(!s) return; if(el.classList.contains('svc-ic')) s.icon=el.value; else if(el.classList.contains('svc-t')) s.title=el.value; else if(el.classList.contains('svc-b')) s.body=el.value; persist(); previewApply(); });
+    box.addEventListener('change',function(e){ var el=e.target; if(!el.classList.contains('svc-on')) return; var i=+el.getAttribute('data-i'); var s=c.services[i]; if(s){ s.on=el.checked; var row=box.querySelector('.svc-row[data-row="'+i+'"]'); if(row) row.style.opacity=el.checked?'':'.5'; persist(); previewApply(); } });
   }
   function siteConfigForSave(){
     const c=liveConfig();   // strips demo users
