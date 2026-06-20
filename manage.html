@@ -252,21 +252,23 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
 .login-loading{padding:20px 4px;text-align:center;color:#5b6470;font-size:14px;}
 .lp-prev-toggle{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:60;background:var(--brand,#1f7a63);color:#fff;border:none;border-radius:9px 0 0 9px;padding:14px 11px;font:600 13px/1 system-ui,-apple-system,sans-serif;cursor:pointer;writing-mode:vertical-rl;letter-spacing:.03em;box-shadow:-3px 0 12px rgba(0,0,0,.16);}
 .lp-prev-toggle:hover{filter:brightness(1.07);}
-.lp-prev{position:fixed;top:0;right:0;height:100vh;width:460px;max-width:94vw;z-index:61;background:#0e1726;color:#fff;display:flex;flex-direction:column;box-shadow:-8px 0 28px rgba(0,0,0,.3);}
-.lp-prev-head{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#0b1220;border-bottom:1px solid rgba(255,255,255,.08);flex:none;}
+.lp-prev{position:fixed;z-index:61;background:#0e1726;color:#fff;display:flex;flex-direction:column;box-shadow:-8px 0 28px rgba(0,0,0,.3);}
+body.lp-dock-side .lp-prev{top:0;right:0;height:100vh;width:480px;}
+body.lp-dock-side.lp-prev-open .wrap{margin-right:480px;transition:margin-right .18s ease;}
+body.lp-dock-bottom .lp-prev{left:0;right:0;bottom:0;width:100%;height:60vh;box-shadow:0 -8px 26px rgba(0,0,0,.32);}
+body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
+.lp-prev-head{display:flex;align-items:center;gap:9px;padding:11px 14px;background:#0b1220;border-bottom:1px solid rgba(255,255,255,.08);flex:none;}
 .lp-prev-head strong{font:600 14px/1 system-ui,-apple-system,sans-serif;}
 .lp-prev-sub{font:500 11.5px/1.3 system-ui,-apple-system,sans-serif;color:#8aa0c0;}
+.lp-dev{display:flex;gap:2px;background:rgba(255,255,255,.08);border-radius:8px;padding:2px;margin-left:4px;}
+.lp-dev button{appearance:none;background:transparent;border:0;color:#9fb2cc;font:600 11.5px/1 system-ui,-apple-system,sans-serif;padding:6px 9px;border-radius:6px;cursor:pointer;}
+.lp-dev button[aria-pressed="true"]{background:#fff;color:#0e1726;}
 .lp-prev-actions{margin-left:auto;display:flex;gap:5px;}
 .lp-prev-actions button{appearance:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:14px;line-height:1;}
 .lp-prev-actions button:hover{background:rgba(255,255,255,.18);}
-.lp-prev-body{flex:1;min-height:0;background:#eef1f5;}
-.lp-prev-body iframe{display:block;width:100%;height:100%;border:0;background:#fff;}
-@media(min-width:1001px){ body.lp-prev-open .wrap{ margin-right:476px; transition:margin-right .18s ease; } }
-@media(max-width:1000px){
-  .lp-prev{top:auto;bottom:0;height:62vh;width:100vw;max-width:100vw;box-shadow:0 -8px 24px rgba(0,0,0,.3);}
-  .lp-prev-toggle{top:auto;bottom:14px;right:14px;writing-mode:horizontal-tb;border-radius:9px;padding:11px 15px;}
-  body.lp-prev-open .wrap{ margin-bottom:62vh; }
-}
+.lp-prev-body{flex:1;min-height:0;background:#e9edf2;overflow:hidden;position:relative;}
+.lp-prev-body iframe{display:block;border:0;background:#fff;}
+@media(max-width:560px){ .lp-dev{display:none;} }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
@@ -565,7 +567,7 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
 <div class="toast" id="toast"></div>
 <button type="button" id="lp-prev-toggle" class="lp-prev-toggle" hidden>◧&nbsp;Live preview</button>
 <aside id="lp-prev" class="lp-prev" hidden aria-label="Live preview">
-  <div class="lp-prev-head"><strong>Live preview</strong><span class="lp-prev-sub" id="lp-prev-sub">your unsaved look</span><span class="lp-prev-actions"><button type="button" id="lp-prev-reload" title="Reload preview">↻</button><button type="button" id="lp-prev-close" title="Close">✕</button></span></div>
+  <div class="lp-prev-head"><strong>Live preview</strong><span class="lp-prev-sub" id="lp-prev-sub">unsaved look</span><span class="lp-dev"><button type="button" data-dev="desktop" aria-pressed="true">Desktop</button><button type="button" data-dev="mobile" aria-pressed="false">Mobile</button></span><span class="lp-prev-actions"><button type="button" id="lp-prev-reload" title="Reload preview">↻</button><button type="button" id="lp-prev-close" title="Close">✕</button></span></div>
   <div class="lp-prev-body"><iframe id="lp-prev-frame" title="Live calculator preview"></iframe></div>
 </aside>
 
@@ -1016,28 +1018,54 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
     previewApply(a);
   }
   function curAppr(){ return Object.assign({},DEFAULT_APPEARANCE,data.appearance||{}); }
-  /* ---- live preview: the real calculator in a side panel, driven directly (same-origin) ---- */
-  let lpPrevReady=false, lpPrevSlug=null;
+  /* ---- live preview: the real calculator, driven live (same-origin) ---- */
+  let lpPrevReady=false, lpPrevSlug=null, lpMode='desktop', lpRsz=null;
   function lpFrame(){ return document.getElementById('lp-prev-frame'); }
+  function previewTarget(){ return (currentSiteTemplate==='broker-app' && currentSiteSlug) ? currentSiteSlug : 'demo'; }
   function previewApply(a){
     var fr=lpFrame(); if(!fr||!lpPrevReady) return;
     try{ var w=fr.contentWindow; if(w&&w.__applyAppearance) w.__applyAppearance(a||curAppr()); }catch(e){}
   }
   function previewLoad(){
     var fr=lpFrame(); if(!fr) return;
-    lpPrevReady=false; lpPrevSlug=(currentSiteSlug||'demo');
-    fr.onload=function(){ lpPrevReady=true; previewApply(curAppr()); };
+    lpPrevReady=false; lpPrevSlug=previewTarget();
+    fr.onload=function(){ lpPrevReady=true; previewLayout(); previewApply(curAppr()); };
     fr.src='/s/'+lpPrevSlug+'?preview='+Date.now();
+  }
+  function previewLayout(){
+    if(!document.body.classList.contains('lp-prev-open')) return;
+    var side = window.innerWidth >= (1080 + 480 + 30);
+    document.body.classList.toggle('lp-dock-side', side);
+    document.body.classList.toggle('lp-dock-bottom', !side);
+    var body=document.querySelector('.lp-prev-body'), fr=lpFrame();
+    if(!body||!fr) return;
+    var availW=body.clientWidth, availH=body.clientHeight;
+    if(availW<40) return;
+    var logicalW=(lpMode==='mobile')?390:1200;
+    var scale=Math.min(1, availW/logicalW);
+    var logicalH=Math.max(Math.round(availH/scale), 240);
+    var offX=Math.max(0,(availW - logicalW*scale)/2);
+    fr.style.width=logicalW+'px'; fr.style.height=logicalH+'px';
+    fr.style.transformOrigin='top left'; fr.style.transform='scale('+scale+')'; fr.style.marginLeft=offX+'px';
+  }
+  function previewSetMode(m){
+    lpMode=m;
+    document.querySelectorAll('.lp-dev button').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-dev')===m?'true':'false'); });
+    previewLayout();
   }
   function previewOpen(){
     document.body.classList.add('lp-prev-open');
+    var side = window.innerWidth >= (1080+480+30);
+    document.body.classList.toggle('lp-dock-side', side);
+    document.body.classList.toggle('lp-dock-bottom', !side);
     var p=document.getElementById('lp-prev'); if(p) p.hidden=false;
     var t=document.getElementById('lp-prev-toggle'); if(t) t.hidden=true;
+    previewLayout();
     var fr=lpFrame();
-    if(fr&&(!fr.src||lpPrevSlug!==(currentSiteSlug||'demo'))) previewLoad(); else previewApply(curAppr());
+    if(fr&&(!fr.src||lpPrevSlug!==previewTarget())) previewLoad(); else previewApply(curAppr());
   }
   function previewClose(){
-    document.body.classList.remove('lp-prev-open');
+    document.body.classList.remove('lp-prev-open','lp-dock-side','lp-dock-bottom');
     var p=document.getElementById('lp-prev'); if(p) p.hidden=true;
     var t=document.getElementById('lp-prev-toggle'); if(t&&authed) t.hidden=false;
   }
@@ -1045,6 +1073,10 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
     var t=document.getElementById('lp-prev-toggle'); if(t) t.addEventListener('click',previewOpen);
     var c=document.getElementById('lp-prev-close'); if(c) c.addEventListener('click',previewClose);
     var r=document.getElementById('lp-prev-reload'); if(r) r.addEventListener('click',previewLoad);
+    document.querySelectorAll('.lp-dev button').forEach(function(b){ b.addEventListener('click',function(){ previewSetMode(b.getAttribute('data-dev')); }); });
+    lpMode=(window.innerWidth>=900)?'desktop':'mobile';
+    previewSetMode(lpMode);
+    window.addEventListener('resize', function(){ if(lpRsz) clearTimeout(lpRsz); lpRsz=setTimeout(previewLayout,120); });
   }
   function apprChange(key,val){ if(!data.appearance) data.appearance=Object.assign({},DEFAULT_APPEARANCE); data.appearance[key]=val; persist(); applyApprAdmin(curAppr()); markPresetActive(); }
   function applyPreset(p){ data.appearance=Object.assign({},p); persist(); renderAppearance(); toast('“'+p.name+'” theme applied'); }
@@ -1245,7 +1277,7 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
   let authed=false, currentRole='super';
   /* ===== leadpages: live Supabase auth + DB-backed config ===== */
   const sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
-  let currentSiteId=null, currentSiteSlug=null, allSites=[];
+  let currentSiteId=null, currentSiteSlug=null, currentSiteTemplate=null, allSites=[];
 
   async function lpLogin(){
     const email=$('li-user').value.trim(), pass=$('li-pass').value;
@@ -1282,14 +1314,14 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
     var __pt=document.getElementById('lp-prev-toggle'); if(__pt) __pt.hidden=false;
   }
   async function loadSitesFromDB(){
-    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,config').order('created_at',{ascending:true});
+    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,config,template').order('created_at',{ascending:true});
     if(error){ toast('Could not load site: '+error.message); return; }
     allSites = rows||[];
     if(!allSites.length){ toast('No site is assigned to this account yet.'); return; }
     loadSite(allSites[0]);
   }
   function loadSite(site){
-    currentSiteId=site.id; currentSiteSlug=site.slug;
+    currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app';
     const cfg=site.config||{};
     data=Object.assign(JSON.parse(JSON.stringify(DEFAULT_RATES)), cfg);
     seedConfig();
@@ -1297,6 +1329,7 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
     current=Object.keys(data.states)[0];
     init();
     ensureSiteBar();
+    if(document.body.classList.contains('lp-prev-open')) previewLoad();
   }
   function siteConfigForSave(){
     const c=liveConfig();   // strips demo users
