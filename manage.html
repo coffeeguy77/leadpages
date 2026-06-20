@@ -254,7 +254,6 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
 .lp-prev-toggle:hover{filter:brightness(1.07);}
 .lp-prev{position:fixed;z-index:61;background:#0e1726;color:#fff;display:flex;flex-direction:column;box-shadow:-8px 0 28px rgba(0,0,0,.3);}
 body.lp-dock-side .lp-prev{top:0;right:0;height:100vh;width:var(--lp-pw,640px);}
-body.lp-dock-side.lp-prev-open{padding-right:var(--lp-pw,640px);transition:padding-right .16s ease;}
 body.lp-dock-bottom .lp-prev{left:0;right:0;bottom:0;width:100%;height:60vh;box-shadow:0 -8px 26px rgba(0,0,0,.32);}
 body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 .lp-prev-head{display:flex;align-items:center;gap:9px;padding:11px 14px;background:#0b1220;border-bottom:1px solid rgba(255,255,255,.08);flex:none;}
@@ -1019,7 +1018,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   }
   function curAppr(){ return Object.assign({},DEFAULT_APPEARANCE,data.appearance||{}); }
   /* ---- live preview: the real calculator, driven live (same-origin) ---- */
-  let lpPrevReady=false, lpPrevSlug=null, lpMode='desktop', lpRsz=null;
+  let lpPrevReady=false, lpPrevSlug=null, lpMode='desktop', lpRsz=null, lpPw=640;
   function lpFrame(){ return document.getElementById('lp-prev-frame'); }
   function previewTarget(){ return (currentSiteTemplate==='broker-app' && currentSiteSlug) ? currentSiteSlug : 'demo'; }
   function previewApply(a){
@@ -1036,22 +1035,34 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var V=window.innerWidth, side=V>=1680;
     document.body.classList.toggle('lp-dock-side', side);
     document.body.classList.toggle('lp-dock-bottom', !side);
-    if(side){ var P=Math.round(Math.min(Math.max(V*0.45,600),1100)); document.body.style.setProperty('--lp-pw', P+'px'); }
+    if(side){ lpPw=Math.round(Math.min(Math.max(V*0.40,560),860)); document.body.style.setProperty('--lp-pw', lpPw+'px'); }
     return side;
   }
   function previewLayout(){
     if(!document.body.classList.contains('lp-prev-open')) return;
-    previewDock();
+    var side=previewDock();
+    var wrap=document.querySelector('.wrap');
+    if(wrap){
+      if(side){
+        var V=window.innerWidth, lr=V-lpPw, ww=Math.min(1080, Math.max(360, lr-40)), mx=Math.max(0,(lr-ww)/2);
+        wrap.style.maxWidth=ww+'px'; wrap.style.marginLeft=mx+'px'; wrap.style.marginRight=(lpPw+mx)+'px';
+      } else { wrap.style.maxWidth=''; wrap.style.marginLeft=''; wrap.style.marginRight=''; }
+    }
     var body=document.querySelector('.lp-prev-body'), fr=lpFrame();
     if(!body||!fr) return;
     var availW=body.clientWidth, availH=body.clientHeight;
     if(availW<40) return;
-    var logicalW=(lpMode==='mobile')?390:1200;
-    var scale=Math.min(1, availW/logicalW);
-    var logicalH=Math.max(Math.round(availH/scale), 240);
-    var offX=Math.max(0,(availW - logicalW*scale)/2);
-    fr.style.width=logicalW+'px'; fr.style.height=logicalH+'px';
-    fr.style.transformOrigin='top left'; fr.style.transform='scale('+scale+')'; fr.style.marginLeft=offX+'px';
+    fr.style.transform='none'; fr.style.transformOrigin='top left'; fr.style.height=availH+'px';
+    if(lpMode==='mobile'){
+      var mw=Math.min(412, availW-20);
+      fr.style.width=mw+'px'; fr.style.marginLeft=Math.max(0,(availW-mw)/2)+'px';
+    } else {
+      // desktop: cap to the command-centre width (the .wrap max-width) and centre it,
+      // so the preview lines up edge-to-edge with the editor above. In the side dock the
+      // panel is narrower than the cap, so this simply fills the panel.
+      var capW=Math.min(availW, 1080);
+      fr.style.width=capW+'px'; fr.style.marginLeft=Math.max(0,(availW-capW)/2)+'px';
+    }
   }
   function previewSetMode(m){
     lpMode=m;
@@ -1069,6 +1080,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   }
   function previewClose(){
     document.body.classList.remove('lp-prev-open','lp-dock-side','lp-dock-bottom');
+    var wrap=document.querySelector('.wrap'); if(wrap){ wrap.style.maxWidth=''; wrap.style.marginLeft=''; wrap.style.marginRight=''; }
     var p=document.getElementById('lp-prev'); if(p) p.hidden=true;
     var t=document.getElementById('lp-prev-toggle'); if(t&&authed) t.hidden=false;
   }
