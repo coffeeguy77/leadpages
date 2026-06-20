@@ -257,6 +257,35 @@ body.lp-prev-open .lp-prev{display:flex;}
 body.lp-dock-side .lp-prev{top:0;right:0;height:100vh;width:var(--lp-pw,640px);}
 body.lp-dock-bottom .lp-prev{left:0;right:0;bottom:0;width:100%;height:60vh;box-shadow:0 -8px 26px rgba(0,0,0,.32);}
 body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
+#lp-analytics{margin:2px 0 20px;}
+.ana-row{display:flex;flex-wrap:wrap;gap:9px;align-items:stretch;}
+.ana-pill{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:#fff;border:1px solid var(--line,#e3e3e0);border-radius:12px;padding:9px 15px;cursor:pointer;min-width:104px;transition:border-color .12s,box-shadow .12s,transform .04s;font:inherit;text-align:left;}
+.ana-pill:hover{border-color:#c6c6c1;}
+.ana-pill:active{transform:translateY(1px);}
+.ana-pill.on{border-color:var(--brand,#1f7a63);box-shadow:0 0 0 2px rgba(31,122,99,.13);}
+.ana-pill .ana-v{font:700 22px/1.05 var(--font-display,Georgia),serif;color:#1c1c1a;}
+.ana-pill .ana-l{font-size:12px;color:#6c6c68;white-space:nowrap;}
+.ana-pill.gbtn{background:var(--brand,#1f7a63);border-color:var(--brand,#1f7a63);margin-left:6px;}
+.ana-pill.gbtn .ana-v,.ana-pill.gbtn .ana-l{color:#fff;}
+.ana-pill.gbtn.on{box-shadow:0 0 0 2px rgba(31,122,99,.30);}
+.ana-period{display:flex;gap:2px;background:#ecebe5;border-radius:9px;padding:2px;margin-left:auto;align-self:center;height:34px;}
+.ana-period button{border:none;background:none;padding:0 12px;border-radius:7px;font:600 12.5px/1 inherit;color:#5e5e58;cursor:pointer;}
+.ana-period button.on{background:#fff;color:#1c1c1a;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+.ana-detail{margin-top:12px;background:#fff;border:1px solid var(--line,#e3e3e0);border-radius:14px;padding:16px 18px;animation:anaIn .14s ease;}
+@keyframes anaIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
+.ana-detail h3{margin:0 0 2px;font:600 16px/1.2 var(--font-display,Georgia),serif;}
+.ana-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+.ana-table th,.ana-table td{text-align:right;padding:8px 10px;border-bottom:1px solid #efeee9;white-space:nowrap;}
+.ana-table th:first-child,.ana-table td:first-child{text-align:left;}
+.ana-table th{cursor:pointer;color:#6c6c68;font-weight:600;user-select:none;}
+.ana-table th:hover{color:#1c1c1a;}
+.ana-table tbody tr:hover td{background:#faf9f4;}
+.ana-table tr.busy td{background:#f5f7f3;}
+.ana-table tr.busy td:first-child{font-weight:600;}
+.cs-ov{position:fixed;inset:0;background:rgba(18,22,28,.52);z-index:80;display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;overflow:auto;}
+.cs-modal{background:#fff;border-radius:16px;padding:24px 26px;width:100%;max-width:560px;box-shadow:0 24px 60px rgba(0,0,0,.32);}
+.cs-modal .f{margin-bottom:12px;}
+.cs-modal h2{font:600 22px/1.2 var(--font-display,Georgia),serif;}
 .lp-prev-head{display:flex;align-items:center;gap:9px;padding:11px 14px;background:#0b1220;border-bottom:1px solid rgba(255,255,255,.08);flex:none;}
 .lp-prev-head strong{font:600 14px/1 system-ui,-apple-system,sans-serif;}
 .lp-prev-sub{font:500 11.5px/1.3 system-ui,-apple-system,sans-serif;color:#8aa0c0;}
@@ -1403,6 +1432,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     applyTemplateChrome();
     applyRoleGating();
     ensureSiteBar();
+    try{ renderSiteAnalytics(); }catch(e){}
     if(document.body.classList.contains('lp-prev-open')) previewLoad();
   }
   function applyTemplateChrome(){
@@ -1513,6 +1543,95 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     data.trade=p.tradeType;
     persist(); landingSub='details'; renderDetails(); previewApply(); toast('Loaded '+p.label+' starter content');
   }
+
+  /* ===================== Create site ===================== */
+  function packToConfig(key,biz){ var p=TRADE_PACKS[key]; biz=(biz||'').trim()||'us'; function sub(o){ if(typeof o==='string')return o.replace(/\{\{\s*businessName\s*\}\}/g,biz); if(Array.isArray(o))return o.map(sub); if(o&&typeof o==='object'){var n={};for(var k in o)n[k]=sub(o[k]);return n;} return o; } if(!p)return {sections:{},trade:'Plumber'}; return { theme:sub(JSON.parse(JSON.stringify(p.theme))), services:sub(JSON.parse(JSON.stringify(p.services))), sections:sub(JSON.parse(JSON.stringify(p.sections))), trade:p.tradeType }; }
+  function openCreateSite(){ if($('cs-ov'))return; var packs=Object.keys(TRADE_PACKS).map(function(k){return '<option value="'+k+'">'+TRADE_PACKS[k].label+'</option>';}).join('');
+    var ov=document.createElement('div'); ov.className='cs-ov'; ov.id='cs-ov';
+    ov.innerHTML='<div class="cs-modal"><h2 style="margin:0 0 4px;">Create a new site</h2><p class="lede" style="margin:0 0 16px;">Spin up a new client landing page \u2014 you can edit everything afterwards.</p>'
+      +'<div class="f"><label>Business name</label><input id="cs-biz" type="text" placeholder="e.g. Sparky Bros Electrical"></div>'
+      +'<div class="row"><div class="f"><label>Web address</label><input id="cs-slug" type="text" placeholder="sparky-bros"></div><div class="f"><label>Type</label><select id="cs-tpl" class="tin"><option value="trade">Trade landing page</option><option value="broker-leads">Broker landing page</option><option value="broker-app">Broker calculator app</option></select></div></div>'
+      +'<div class="f" id="cs-packwrap"><label>Trade starter content</label><select id="cs-pack" class="tin"><option value="plumber">Plumber</option>'+packs+'</select></div>'
+      +'<div class="row"><div class="f"><label>Phone (shown)</label><input id="cs-phoneText" type="text" placeholder="(02) 1234 5678"></div><div class="f"><label>Phone (call button)</label><input id="cs-phone" type="text" placeholder="+61..."></div></div>'
+      +'<div class="row"><div class="f"><label>Email</label><input id="cs-email" type="text"></div><div class="f"><label>Region</label><input id="cs-region" type="text" placeholder="Canberra & the ACT"></div></div>'
+      +'<div id="cs-err" style="color:#b42318;font-size:13px;min-height:18px;margin-top:2px;"></div>'
+      +'<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:6px;"><button class="btn ghost" id="cs-cancel" type="button">Cancel</button><button class="btn" id="cs-create" type="button">Create site</button></div></div>';
+    document.body.appendChild(ov);
+    var biz=$('cs-biz'), slug=$('cs-slug');
+    biz.addEventListener('input',function(){ if(!slug.__t) slug.value=biz.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); });
+    slug.addEventListener('input',function(){ slug.__t=true; });
+    $('cs-tpl').addEventListener('change',function(){ $('cs-packwrap').style.display=(this.value==='trade')?'':'none'; });
+    $('cs-cancel').addEventListener('click',function(){ ov.remove(); });
+    ov.addEventListener('click',function(e){ if(e.target===ov) ov.remove(); });
+    $('cs-create').addEventListener('click',createSiteSubmit);
+    biz.focus();
+  }
+  async function createSiteSubmit(){ var err=$('cs-err'); err.textContent='';
+    var biz=$('cs-biz').value.trim(), slug=($('cs-slug').value.trim()||'').toLowerCase().replace(/[^a-z0-9-]/g,''), tpl=$('cs-tpl').value;
+    if(!biz){ err.textContent='Enter a business name.'; return; }
+    if(!slug){ err.textContent='Enter a web address.'; return; }
+    var cfg={ phone:$('cs-phone').value.trim(), phoneText:$('cs-phoneText').value.trim(), email:$('cs-email').value.trim(), region:$('cs-region').value.trim() };
+    if(tpl==='trade'){ var pc=packToConfig($('cs-pack').value, biz); if(pc.theme)cfg.theme=pc.theme; if(pc.services)cfg.services=pc.services; cfg.sections=pc.sections; cfg.trade=pc.trade; }
+    var vertical=(tpl==='broker-app'||tpl==='broker-leads')?'broker':'trade';
+    var btn=$('cs-create'); btn.disabled=true; btn.textContent='Creating\u2026';
+    var res=await sb.from('sites').insert({ slug:slug, business_name:biz, template:tpl, config:cfg, status:'live', vertical:vertical }).select().single();
+    btn.disabled=false; btn.textContent='Create site';
+    if(res.error){ err.textContent='Could not create: '+res.error.message; return; }
+    allSites.push(res.data); var ov=$('cs-ov'); if(ov)ov.remove(); ensureSiteBar(); loadSite(res.data); toast('Site \u201c'+biz+'\u201d created');
+  }
+  /* ===================== Site analytics ===================== */
+  var ANA={ period:30, active:null, sort:'visitors', data:[], leads:[], globalData:null };
+  function anaEsc(x){ return String(x==null?'':x).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+  var ANA_METRICS=[ {k:'page_view',label:'Visitors',ic:'\U0001F441',color:'#2563eb'}, {k:'call_click',label:'Calls',ic:'\U0001F4DE',color:'#16a34a'}, {k:'lead_submit',label:'Forms',ic:'\u2709',color:'#d97706'}, {k:'conv',label:'Conversion',ic:'\U0001F4C8',color:'#7c3aed'} ];
+  function anaSince(){ return ANA.period? new Date(Date.now()-ANA.period*864e5).toISOString() : '1970-01-01T00:00:00Z'; }
+  function anaAgo(iso){ if(!iso)return ''; var s=Math.floor((Date.now()-new Date(iso).getTime())/1000); if(s<60)return 'just now'; var m=Math.floor(s/60); if(m<60)return m+'m ago'; var h=Math.floor(m/60); if(h<24)return h+'h ago'; var d=Math.floor(h/24); if(d<30)return d+'d ago'; return new Date(iso).toLocaleDateString(); }
+  function anaCounts(rows){ var c={page_view:0,call_click:0,lead_submit:0}; (rows||[]).forEach(function(e){ if(c[e.event]!=null)c[e.event]++; }); return c; }
+  function anaDaily(rows,type,days){ var m={},now=Date.now(); for(var i=days-1;i>=0;i--){ m[new Date(now-i*864e5).toISOString().slice(0,10)]=0; } (rows||[]).forEach(function(e){ if(e.event!==type)return; var k=(e.created_at||'').slice(0,10); if(k in m)m[k]++; }); return Object.keys(m).map(function(k){return {d:k,n:m[k]};}); }
+  function anaBars(series,color){ var max=1; series.forEach(function(s){ if(s.n>max)max=s.n; }); return '<div style="display:flex;align-items:flex-end;gap:2px;height:50px;margin-top:8px;">'+series.map(function(s){ var h=Math.max(2,Math.round(s.n/max*50)); return '<div title="'+s.d+': '+s.n+'" style="flex:1;min-width:3px;height:'+h+'px;background:'+(color||'#1f7a63')+';border-radius:2px 2px 0 0;opacity:'+(s.n?1:.22)+';"></div>'; }).join('')+'</div>'; }
+  function anaFunnel(label,n,pct){ return '<div style="flex:1;min-width:130px;background:#f7f6f1;border-radius:11px;padding:13px 15px;"><div style="font:700 26px/1 var(--font-display,Georgia),serif;">'+n+'</div><div style="font-size:12.5px;color:#6c6c68;margin-top:3px;">'+label+'</div><div style="font-size:12px;color:var(--brand,#1f7a63);font-weight:700;margin-top:5px;">'+pct+'%</div></div>'; }
+  async function anaFetchSite(){ if(!currentSiteId){ ANA.data=[]; ANA.leads=[]; return; } var since=anaSince();
+    try{ var ev=await sb.from('events').select('event,created_at,props').eq('site_id',currentSiteId).gte('created_at',since).limit(10000); ANA.data=ev.data||[]; }catch(e){ ANA.data=[]; }
+    try{ var ld=await sb.from('leads').select('name,kind,created_at').eq('site_id',currentSiteId).gte('created_at',since).order('created_at',{ascending:false}).limit(50); ANA.leads=ld.data||[]; }catch(e){ ANA.leads=[]; }
+  }
+  async function anaFetchGlobal(){ var since=anaSince(); try{ var ev=await sb.from('events').select('event,site_id,created_at').gte('created_at',since).limit(20000); ANA.globalData=ev.data||[]; }catch(e){ ANA.globalData=[]; } }
+  function anaGlobalRows(){ var by={}; (allSites||[]).forEach(function(x){ by[x.id]={name:x.business_name||x.slug,slug:x.slug,visitors:0,calls:0,forms:0,last:null}; });
+    (ANA.globalData||[]).forEach(function(e){ var r=by[e.site_id]; if(!r)return; if(e.event==='page_view')r.visitors++; else if(e.event==='call_click')r.calls++; else if(e.event==='lead_submit')r.forms++; if(!r.last||e.created_at>r.last)r.last=e.created_at; });
+    var rows=Object.keys(by).map(function(k){return by[k];}); rows.forEach(function(r){ r.conv=r.visitors?(r.forms/r.visitors*100):0; });
+    rows.sort(function(a,b){ if(ANA.sort==='name')return (a.name||'').localeCompare(b.name||''); return (b[ANA.sort]||0)-(a[ANA.sort]||0); }); return rows;
+  }
+  function anaDetailHTML(k){ var days=ANA.period&&ANA.period<=30?ANA.period:30;
+    if(k==='conv'){ var c=anaCounts(ANA.data); function p(n,d){return d?(Math.round(n/d*1000)/10):0;} return '<h3>How visitors convert</h3><div style="font-size:12.5px;color:#6c6c68;margin-bottom:10px;">Of everyone who landed on the page</div><div style="display:flex;gap:14px;flex-wrap:wrap;">'+anaFunnel('Visited',c.page_view,100)+anaFunnel('Clicked to call',c.call_click,p(c.call_click,c.page_view))+anaFunnel('Sent the form',c.lead_submit,p(c.lead_submit,c.page_view))+'</div>'; }
+    var m=null; ANA_METRICS.forEach(function(x){ if(x.k===k)m=x; }); if(!m)return '';
+    var html='<h3>'+m.label+'</h3><div style="font-size:12.5px;color:#6c6c68;">Per day, last '+days+' days</div>'+anaBars(anaDaily(ANA.data,k,days),m.color);
+    if(k==='call_click'){ var locs={}; (ANA.data||[]).forEach(function(e){ if(e.event==='call_click'){ var L=(e.props&&e.props.location)||'other'; locs[L]=(locs[L]||0)+1; } }); var nm={heroCall:'Hero button',headCall:'Header button',navPhone:'Phone number',formCall:'Form link',emergCall:'Emergency bar',footPhone:'Footer'}; var ks=Object.keys(locs).sort(function(a,b){return locs[b]-locs[a];}); if(ks.length) html+='<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">'+ks.map(function(L){return '<span style="background:#f2f1ec;border-radius:8px;padding:5px 10px;font-size:12.5px;">'+(nm[L]||L)+': <b>'+locs[L]+'</b></span>';}).join('')+'</div>'; }
+    if(k==='lead_submit'){ var rows=(ANA.leads||[]).slice(0,6); html+='<div style="margin-top:12px;">'+(rows.length?rows.map(function(l){return '<div style="display:flex;justify-content:space-between;border-top:1px solid #f0efe9;padding:7px 0;font-size:13px;"><span>'+anaEsc(l.name||'(no name)')+'</span><span style="color:#999;">'+anaAgo(l.created_at)+'</span></div>';}).join(''):'<div style="color:#999;font-size:13px;">No form submissions in this period.</div>')+'</div>'; }
+    return html;
+  }
+  function anaGlobalHTML(){ if(!ANA.globalData)return '<div style="color:#999;font-size:13px;">Loading\u2026</div>'; var rows=anaGlobalRows();
+    var cols=[['name','Site'],['visitors','Visitors'],['calls','Calls'],['forms','Forms'],['conv','Conv'],['last','Last active']];
+    var thead='<tr>'+cols.map(function(c){return '<th data-act="s" data-s="'+c[0]+'">'+c[1]+(ANA.sort===c[0]?' \u25BE':'')+'</th>';}).join('')+'</tr>';
+    var body=rows.map(function(r,i){ var busy=(i===0&&ANA.sort!=='name'&&r[ANA.sort]); return '<tr class="'+(busy?'busy':'')+'"><td>'+anaEsc(r.name)+'</td><td>'+r.visitors+'</td><td>'+r.calls+'</td><td>'+r.forms+'</td><td>'+(r.conv?r.conv.toFixed(1)+'%':'\u2014')+'</td><td>'+(r.last?anaAgo(r.last):'\u2014')+'</td></tr>'; }).join('');
+    var tot=rows.reduce(function(a,r){a.v+=r.visitors;a.c+=r.calls;a.f+=r.forms;return a;},{v:0,c:0,f:0});
+    return '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:12px;flex-wrap:wrap;"><h3>All sites overview</h3><span style="font-size:12.5px;color:#999;">'+rows.length+' sites \u00b7 '+tot.v+' visits \u00b7 '+tot.c+' calls \u00b7 '+tot.f+' forms</span></div><div style="overflow:auto;"><table class="ana-table"><thead>'+thead+'</thead><tbody>'+body+'</tbody></table></div>';
+  }
+  function anaRender(){ var el=document.getElementById('lp-analytics'); if(!el)return; if(!currentSiteId){ el.innerHTML=''; return; }
+    var c=anaCounts(ANA.data), conv=c.page_view?Math.round(c.lead_submit/c.page_view*1000)/10:0;
+    var vals={page_view:c.page_view,call_click:c.call_click,lead_submit:c.lead_submit,conv:conv+'%'};
+    var pills=ANA_METRICS.map(function(m){ return '<button type="button" class="ana-pill'+(ANA.active===m.k?' on':'')+'" data-act="m" data-m="'+m.k+'"><span class="ana-v">'+vals[m.k]+'</span><span class="ana-l">'+m.ic+' '+m.label+'</span></button>'; }).join('');
+    var gbtn=(currentRole==='super')?'<button type="button" class="ana-pill gbtn'+(ANA.active==='global'?' on':'')+'" data-act="g"><span class="ana-v">'+(allSites?allSites.length:0)+'</span><span class="ana-l">\u25A6 All sites</span></button>':'';
+    var period='<div class="ana-period">'+[[7,'7d'],[30,'30d'],[0,'All']].map(function(p){return '<button type="button" data-act="p" data-p="'+p[0]+'" class="'+(ANA.period===p[0]?'on':'')+'">'+p[1]+'</button>';}).join('')+'</div>';
+    var detail = ANA.active==='global'?anaGlobalHTML() : (ANA.active?anaDetailHTML(ANA.active):'');
+    el.innerHTML='<div class="ana-row">'+pills+gbtn+period+'</div>'+(detail?'<div class="ana-detail">'+detail+'</div>':'');
+  }
+  function anaClick(e){ var t=e.target.closest('[data-act]'); e.stopPropagation(); if(!t)return; var act=t.getAttribute('data-act');
+    if(act==='m'){ var m=t.getAttribute('data-m'); ANA.active=(ANA.active===m)?null:m; anaRender(); }
+    else if(act==='g'){ if(ANA.active==='global'){ ANA.active=null; anaRender(); } else { ANA.active='global'; if(!ANA.globalData){ anaRender(); anaFetchGlobal().then(anaRender); } else anaRender(); } }
+    else if(act==='p'){ ANA.period=+t.getAttribute('data-p'); anaRefresh(); }
+    else if(act==='s'){ ANA.sort=t.getAttribute('data-s'); anaRender(); }
+  }
+  async function anaRefresh(){ anaRender(); await anaFetchSite(); if(ANA.active==='global'){ await anaFetchGlobal(); } anaRender(); }
+  function anaInit(){ var el=document.getElementById('lp-analytics'); if(el)return el; var nav=document.querySelector('.adminnav'); if(!nav||!nav.parentNode)return null; el=document.createElement('div'); el.id='lp-analytics'; nav.parentNode.insertBefore(el,nav); el.addEventListener('click',anaClick); document.addEventListener('click',function(ev){ if(ANA.active && !el.contains(ev.target)){ ANA.active=null; anaRender(); } }); return el; }
+  async function renderSiteAnalytics(){ if(!anaInit())return; ANA.active=null; ANA.globalData=null; anaRender(); await anaFetchSite(); anaRender(); }
   function renderLandingSub(c){
     var body=$('lsub-body'); if(!body) return; var sub=landingSub;
     if(sub==='details'){
@@ -1637,6 +1756,11 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       const so=document.createElement('button'); so.className='btn ghost'; so.id='btn-signout';
       so.textContent='Sign out'; so.addEventListener('click',signOutLP);
       bar.appendChild(so);
+    }
+    if(currentRole==='super' && !$('btn-newsite')){
+      const nb=document.createElement('button'); nb.className='btn ghost'; nb.id='btn-newsite';
+      nb.textContent='+ New site'; nb.addEventListener('click',openCreateSite);
+      var sob=$('btn-signout'); if(sob) bar.insertBefore(nb,sob); else bar.appendChild(nb);
     }
     if(!$('site-label')){
       const w=document.createElement('div'); w.id='site-label';
