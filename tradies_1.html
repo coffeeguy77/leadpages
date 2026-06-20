@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tradie Sites by Web Culture — websites that make the phone ring</title>
+<meta name="description" content="Done-for-you lead websites for Canberra tradies. Pick your trade, we brand it, you're live in 24 hours — with call tracking and a dashboard that shows exactly which jobs came from your site.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#15191e; --ink2:#1d232b; --ink3:#262e38;
+  --hivis:#ff6a1a; --hivis-d:#e85a0e; --hazard:#ffd21e;
+  --concrete:#ecedf0; --paper:#fff; --steel:#5b6571; --steel-l:#8a929c;
+  --line:#e3e5e9; --dline:rgba(255,255,255,.10); --hi:#f4f6f8;
+  --disp:'Archivo',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif; --mono:'Space Mono',ui-monospace,monospace;
+  --rad:16px; --wrap:1180px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{max-width:100%}
+h1,h2,h3{font-family:var(--disp);font-weight:900;line-height:1.02;letter-spacing:-.02em}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 22px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--hivis);font-weight:700}
+.eyebrow.dim{color:var(--steel-l)}
+.btn{display:inline-flex;align-items:center;gap:9px;font-family:var(--disp);font-weight:800;font-size:16px;padding:15px 26px;border-radius:12px;border:0;cursor:pointer;transition:transform .08s,box-shadow .15s,background .15s;letter-spacing:-.01em;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-hivis{background:var(--hivis);color:#fff;box-shadow:0 6px 0 var(--hivis-d)}
+.btn-hivis:hover{background:#ff7a30;box-shadow:0 4px 0 var(--hivis-d);transform:translateY(2px)}
+.btn-ink{background:var(--ink);color:#fff}
+.btn-ink:hover{background:#000}
+.btn-ghost{background:transparent;border:1.5px solid var(--dline);color:var(--hi)}
+.btn-ghost:hover{border-color:var(--hivis);color:#fff}
+.btn-light{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn-light:hover{border-color:var(--ink)}
+.sec{padding:88px 0}
+.center{text-align:center}
+.lede{font-size:19px;color:var(--steel);max-width:620px;line-height:1.6}
+.center .lede{margin-left:auto;margin-right:auto}
+
+/* hazard tape divider */
+.hazard{height:14px;background:repeating-linear-gradient(-45deg,var(--hazard) 0 22px,var(--ink) 22px 44px)}
+
+/* ---- nav ---- */
+header.nav{position:sticky;top:0;z-index:60;background:rgba(21,25,30,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--dline)}
+.nav-in{display:flex;align-items:center;gap:26px;height:66px}
+.logo{display:flex;align-items:center;gap:11px;color:#fff;font-family:var(--disp);font-weight:900;font-size:19px;letter-spacing:-.02em}
+.logo .mk{width:34px;height:34px;border-radius:9px;background:var(--hivis);display:grid;place-items:center;color:#fff;font-size:18px;box-shadow:0 0 0 3px rgba(255,106,26,.22)}
+.logo small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--steel-l);font-weight:400;text-transform:uppercase;margin-top:1px}
+.nav-links{display:flex;gap:24px;margin-left:8px}
+.nav-links a{color:#cfd4da;font-size:14.5px;font-weight:500;transition:color .12s}
+.nav-links a:hover{color:#fff}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.nav-login{color:#cfd4da;font-size:14.5px;font-weight:600}
+.nav-login:hover{color:#fff}
+.cartbtn{position:relative;background:var(--ink3);border:1px solid var(--dline);color:#fff;width:44px;height:44px;border-radius:11px;display:grid;place-items:center;cursor:pointer;font-size:19px}
+.cartbtn:hover{border-color:var(--hivis)}
+.cart-count{position:absolute;top:-6px;right:-6px;background:var(--hivis);color:#fff;font-family:var(--mono);font-size:11px;font-weight:700;min-width:20px;height:20px;border-radius:10px;display:grid;place-items:center;padding:0 5px;border:2px solid var(--ink)}
+.cart-count[hidden]{display:none}
+.navtoggle{display:none}
+
+/* ---- hero ---- */
+.hero{background:radial-gradient(120% 90% at 80% 0%,#222a33 0%,var(--ink) 55%);color:var(--hi);padding:72px 0 96px;position:relative;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:54px;align-items:center}
+.hero h1{font-size:clamp(40px,5.6vw,68px);color:#fff;margin:18px 0 0}
+.hero h1 .hl{color:var(--hivis)}
+.hero p.sub{font-size:20px;color:#bcc3cb;margin:22px 0 30px;max-width:540px;line-height:1.55}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap}
+.trust{display:flex;flex-wrap:wrap;gap:18px;margin-top:30px}
+.trust span{font-size:14px;color:#aeb6bf;display:flex;align-items:center;gap:7px;font-weight:500}
+.trust b{color:var(--hazard);font-family:var(--mono);font-weight:700}
+
+/* hero phone mock */
+.mock{position:relative;justify-self:center}
+.phone{width:300px;background:#0c0f13;border-radius:34px;padding:11px;box-shadow:0 40px 80px -20px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06);transform:rotate(-3deg)}
+.screen{border-radius:25px;overflow:hidden;background:#fff}
+.scr-emerg{background:var(--hivis);color:#fff;font-size:9px;font-weight:700;text-align:center;padding:6px 4px;font-family:var(--mono)}
+.scr-head{background:#0f172a;display:flex;align-items:center;justify-content:space-between;padding:10px 12px}
+.scr-head .b{color:#fff;font-family:var(--disp);font-weight:900;font-size:13px;display:flex;align-items:center;gap:6px}
+.scr-head .b i{width:18px;height:18px;border-radius:5px;background:var(--hivis);display:inline-grid;place-items:center;font-style:normal;font-size:11px}
+.scr-call{background:var(--hivis);color:#fff;font-size:9px;font-weight:800;padding:5px 9px;border-radius:6px;font-family:var(--disp)}
+.scr-body{padding:16px 14px 20px;background:linear-gradient(180deg,#0f172a,#172033)}
+.scr-eye{font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;color:var(--hazard);text-transform:uppercase}
+.scr-h{font-family:var(--disp);font-weight:900;font-size:23px;line-height:1.02;color:#fff;margin:7px 0 0;letter-spacing:-.02em}
+.scr-h em{color:var(--hivis);font-style:normal}
+.scr-btn{margin-top:14px;background:var(--hivis);color:#fff;font-family:var(--disp);font-weight:800;font-size:11px;text-align:center;padding:9px;border-radius:7px}
+.scr-badges{display:flex;gap:5px;margin-top:12px;flex-wrap:wrap}
+.scr-badges span{font-size:7px;background:rgba(255,255,255,.08);color:#cbd5e1;padding:3px 6px;border-radius:5px}
+/* floating chips */
+.chip{position:absolute;background:#fff;border-radius:13px;padding:11px 14px;box-shadow:0 18px 40px -10px rgba(0,0,0,.4);display:flex;align-items:center;gap:11px;animation:float 4s ease-in-out infinite}
+.chip .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex:none}
+.chip .t{font-family:var(--mono);font-size:10px;color:var(--steel);text-transform:uppercase;letter-spacing:.05em}
+.chip .n{font-family:var(--disp);font-weight:900;font-size:18px;color:var(--ink);line-height:1}
+.chip-call{top:18px;left:-36px;animation-delay:.2s}
+.chip-call .ic{background:#dcfce7;color:#16a34a}
+.chip-an{bottom:30px;right:-44px;animation-delay:1.1s}
+.chip-an .ic{background:#ffe9d6;color:var(--hivis)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+
+/* ---- section headers ---- */
+.shead{max-width:640px;margin-bottom:46px}
+.center.shead{margin-left:auto;margin-right:auto}
+.shead h2{font-size:clamp(30px,3.8vw,44px);margin:12px 0 14px}
+.shead h2 .hl{color:var(--hivis)}
+
+/* ---- theme gallery ---- */
+.themes{background:var(--concrete)}
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.theme-tools{display:flex;flex-direction:column;gap:14px;align-items:center;margin-bottom:14px}
+.tsearch{width:100%;max-width:440px;border:1.5px solid var(--line);border-radius:12px;padding:13px 16px;font:inherit;font-size:15px;background:#fff}
+.tsearch:focus{outline:0;border-color:var(--hivis);box-shadow:0 0 0 3px rgba(255,106,26,.12)}
+.tchips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tchip{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:8px 15px;font-size:13.5px;font-weight:600;color:#3a4049;cursor:pointer;transition:.12s;font-family:inherit}
+.tchip:hover{border-color:var(--ink)}
+.tchip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tcount{text-align:center;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-bottom:22px}
+.tempty{grid-column:1/-1;text-align:center;color:var(--steel);padding:46px 20px;font-size:15px}
+.tempty a{color:var(--hivis);font-weight:700}
+.tcard{background:var(--paper);border-radius:var(--rad);border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column;transition:transform .14s,box-shadow .14s}
+.tcard:hover{transform:translateY(-4px);box-shadow:0 22px 44px -18px rgba(20,24,30,.28)}
+.tprev{padding:18px 18px 0;background:var(--tk);position:relative}
+.mini{border-radius:11px 11px 0 0;overflow:hidden;box-shadow:0 -2px 0 rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.08);border-bottom:0}
+.mini-bar{background:rgba(0,0,0,.35);display:flex;gap:5px;padding:7px 10px}
+.mini-bar i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);display:block}
+.mini-emerg{background:var(--ta);color:#fff;font-family:var(--mono);font-size:8px;font-weight:700;text-align:center;padding:5px}
+.mini-body{padding:15px 15px 18px;background:var(--tk)}
+.mini-eye{font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--ta2);text-transform:uppercase}
+.mini-h{font-family:var(--disp);font-weight:900;font-size:21px;line-height:1.02;color:#fff;margin:6px 0 0;letter-spacing:-.02em}
+.mini-h em{color:var(--ta);font-style:normal}
+.mini-row{display:flex;gap:7px;margin-top:13px;align-items:center}
+.mini-cta{background:var(--ta);color:#fff;font-family:var(--disp);font-weight:800;font-size:9px;padding:7px 11px;border-radius:6px}
+.mini-cta.ghost{background:rgba(255,255,255,.1);color:#fff}
+.tinfo{padding:18px 20px 22px;display:flex;flex-direction:column;flex:1}
+.tinfo h3{font-size:22px;display:flex;align-items:center;gap:9px}
+.tinfo h3 .dot{width:12px;height:12px;border-radius:3px;background:var(--ta)}
+.tinfo p{color:var(--steel);font-size:14.5px;margin:5px 0 16px;flex:1}
+.tinfo-act{display:flex;gap:10px}
+.tinfo-act .btn{flex:1;justify-content:center;font-size:14px;padding:12px 14px}
+.t-live{font-size:13px;color:var(--steel);font-weight:600;display:inline-flex;align-items:center;gap:5px}
+.t-live:hover{color:var(--hivis)}
+.more-trades{margin-top:34px;text-align:center}
+.more-trades .chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px}
+.more-trades .chips span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:13.5px;font-weight:600;color:#3a4049}
+
+/* ---- features (phone ring) ---- */
+.feat{background:var(--ink);color:var(--hi)}
+.feat .shead h2{color:#fff}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:8px}
+.fcard{background:var(--ink2);border:1px solid var(--dline);border-radius:var(--rad);padding:26px 24px}
+.fcard .fic{width:50px;height:50px;border-radius:12px;background:rgba(255,106,26,.15);color:var(--hivis);display:grid;place-items:center;font-size:23px;margin-bottom:16px}
+.fcard h3{color:#fff;font-size:20px;margin-bottom:8px}
+.fcard p{color:#aeb6bf;font-size:14.5px}
+
+/* ---- analytics ---- */
+.analytics{background:var(--concrete)}
+.an-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:50px;align-items:center}
+.an-panel{background:var(--ink);border-radius:20px;padding:24px;box-shadow:0 30px 60px -24px rgba(20,24,30,.5)}
+.an-panel .ttl{font-family:var(--mono);font-size:11px;color:var(--steel-l);text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px;display:flex;justify-content:space-between}
+.an-pills{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.an-pill{background:var(--ink2);border:1px solid var(--dline);border-radius:12px;padding:13px 12px}
+.an-pill .n{font-family:var(--disp);font-weight:900;font-size:26px;color:#fff;line-height:1}
+.an-pill .l{font-size:11.5px;color:#9aa3ad;margin-top:5px}
+.an-pill.hl{border-color:var(--hivis)}
+.an-pill.hl .n{color:var(--hivis)}
+.an-bars{display:flex;align-items:flex-end;gap:5px;height:74px;margin-top:18px;padding:14px;background:var(--ink2);border-radius:12px;border:1px solid var(--dline)}
+.an-bars i{flex:1;background:var(--hivis);border-radius:3px 3px 0 0;display:block;opacity:.9}
+.an-list li{display:flex;align-items:center;gap:12px;margin-bottom:14px;font-size:15px;color:#3a4049}
+.an-list li b{display:block;color:var(--ink);font-family:var(--disp);font-weight:800;font-size:16px;margin-bottom:1px}
+.an-list .ic{width:30px;height:30px;border-radius:8px;background:var(--hivis);color:#fff;display:grid;place-items:center;flex:none;font-size:15px;margin-top:2px}
+
+/* ---- steps ---- */
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:10px;counter-reset:s}
+.step{position:relative;padding-top:18px}
+.step .num{font-family:var(--disp);font-weight:900;font-size:15px;color:var(--hivis);background:#fff;border:2px solid var(--hivis);width:42px;height:42px;border-radius:50%;display:grid;place-items:center;margin-bottom:16px}
+.step h3{font-size:21px;margin-bottom:8px}
+.step p{color:var(--steel);font-size:15px}
+
+/* ---- pricing ---- */
+.pricing{background:var(--ink);color:var(--hi)}
+.pricing .shead h2{color:#fff}
+.pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;max-width:820px;margin:0 auto}
+.pcard{background:var(--ink2);border:1px solid var(--dline);border-radius:18px;padding:30px 28px;display:flex;flex-direction:column;position:relative}
+.pcard.feat-plan{border-color:var(--hivis);box-shadow:0 0 0 1px var(--hivis)}
+.pbadge{position:absolute;top:-12px;left:28px;background:var(--hivis);color:#fff;font-family:var(--mono);font-size:11px;font-weight:700;padding:5px 12px;border-radius:7px;text-transform:uppercase;letter-spacing:.06em}
+.pcard h3{color:#fff;font-size:23px}
+.pcard .price{display:flex;align-items:baseline;gap:6px;margin:14px 0 4px}
+.pcard .price .amt{font-family:var(--disp);font-weight:900;font-size:46px;color:#fff;letter-spacing:-.03em}
+.pcard .price .per{color:#9aa3ad;font-size:15px}
+.pcard .setup{font-size:13.5px;color:var(--hazard);font-family:var(--mono);margin-bottom:20px}
+.pcard ul{list-style:none;margin:0 0 24px;flex:1}
+.pcard li{display:flex;gap:10px;align-items:flex-start;color:#c4cbd2;font-size:14.5px;padding:7px 0;border-top:1px solid var(--dline)}
+.pcard li:first-child{border-top:0}
+.pcard li .ck{color:#22c55e;flex:none;font-weight:800}
+.pnote{text-align:center;color:#9aa3ad;font-size:14px;margin-top:24px}
+
+/* ---- comparison ---- */
+.compare{background:var(--paper)}
+.ctable{display:grid;grid-template-columns:1.4fr 1fr 1fr;border:1px solid var(--line);border-radius:var(--rad);overflow:hidden;max-width:900px;margin:0 auto;font-size:14.5px}
+.ctable>div{padding:15px 18px;border-bottom:1px solid var(--line)}
+.ctable .ch{font-family:var(--disp);font-weight:800;background:var(--concrete)}
+.ctable .ch.us{background:var(--ink);color:#fff}
+.ctable .ch.us .eyebrow{color:var(--hivis)}
+.ctable .rl{font-weight:600;color:#3a4049}
+.ctable .cv{text-align:center;color:var(--steel)}
+.ctable .cv.us{background:#fff7f2;color:var(--ink);font-weight:600}
+.ctable .cv .no{color:#c0392b}.ctable .cv .yes{color:#16a34a;font-weight:800}
+.ctable>div:nth-last-child(-n+3){border-bottom:0}
+
+/* ---- testimonials ---- */
+.testi{background:var(--concrete)}
+.qgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:var(--rad);padding:26px 24px}
+.qcard .stars{color:var(--hivis);font-size:15px;letter-spacing:2px;margin-bottom:12px}
+.qcard p{font-size:15px;color:#33393f;line-height:1.6}
+.qcard .who{display:flex;align-items:center;gap:12px;margin-top:18px}
+.qcard .av{width:42px;height:42px;border-radius:50%;background:var(--ink);color:#fff;font-family:var(--disp);font-weight:800;display:grid;place-items:center;font-size:16px}
+.qcard .who b{display:block;font-size:14.5px}
+.qcard .who span{font-size:13px;color:var(--steel)}
+
+/* ---- faq ---- */
+.faq{background:var(--paper)}
+.faq-list{max-width:760px;margin:0 auto}
+.fitem{border-bottom:1px solid var(--line)}
+.fq{width:100%;text-align:left;background:none;border:0;padding:22px 4px;font-family:var(--disp);font-weight:700;font-size:18px;color:var(--ink);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.fq .pl{color:var(--hivis);font-size:24px;flex:none;transition:transform .2s}
+.fitem.open .fq .pl{transform:rotate(45deg)}
+.fa{max-height:0;overflow:hidden;transition:max-height .25s ease}
+.fa p{padding:0 4px 22px;color:var(--steel);font-size:15.5px;max-width:680px}
+
+/* ---- final + login ---- */
+.final{background:var(--hivis);color:#fff;text-align:center}
+.final h2{font-size:clamp(32px,4.5vw,52px);color:#fff;max-width:760px;margin:0 auto 16px}
+.final p{font-size:19px;color:#fff;opacity:.92;max-width:560px;margin:0 auto 30px}
+.final .btn-ink{box-shadow:0 6px 0 #0a0d10}
+.login-band{background:var(--ink2);color:var(--hi);text-align:center;padding:54px 0}
+.login-band h3{color:#fff;font-size:26px;margin-bottom:8px}
+.login-band p{color:#9aa3ad;margin-bottom:22px}
+
+/* ---- footer ---- */
+footer{background:var(--ink);color:#9aa3ad;padding:54px 0 30px;font-size:14px}
+.foot-top{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;padding-bottom:30px;border-bottom:1px solid var(--dline)}
+.foot-links{display:flex;gap:54px;flex-wrap:wrap}
+.foot-links h4{color:#fff;font-family:var(--disp);font-size:14px;margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em}
+.foot-links a{display:block;color:#9aa3ad;padding:4px 0}
+.foot-links a:hover{color:#fff}
+.foot-bot{padding-top:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:#6b727b}
+
+/* ---- cart drawer ---- */
+.scrim{position:fixed;inset:0;background:rgba(12,15,19,.55);opacity:0;visibility:hidden;transition:.2s;z-index:90}
+.scrim.on{opacity:1;visibility:visible}
+.drawer{position:fixed;top:0;right:0;height:100%;width:420px;max-width:92vw;background:#fff;z-index:95;transform:translateX(100%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.3)}
+.drawer.on{transform:none}
+.drawer-h{padding:22px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.drawer-h h3{font-size:21px}
+.x{background:none;border:0;font-size:24px;cursor:pointer;color:var(--steel);line-height:1}
+.drawer-body{flex:1;overflow:auto;padding:8px 24px}
+.empty{text-align:center;color:var(--steel);padding:60px 20px}
+.empty .big{font-size:42px;margin-bottom:12px}
+.citem{border:1px solid var(--line);border-radius:14px;padding:16px;margin:16px 0}
+.citem-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.citem-h b{font-family:var(--disp);font-size:17px}
+.citem-h .rm{background:none;border:0;color:var(--steel);cursor:pointer;font-size:13px;text-decoration:underline}
+.citem .trade{font-size:13px;color:var(--steel);margin-top:2px}
+.plan-pick{display:flex;gap:8px;margin-top:14px}
+.plan-opt{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;text-align:center;transition:.12s}
+.plan-opt.sel{border-color:var(--hivis);background:#fff7f2}
+.plan-opt b{display:block;font-family:var(--disp);font-size:14px}
+.plan-opt span{font-size:12px;color:var(--steel)}
+.drawer-foot{border-top:1px solid var(--line);padding:20px 24px}
+.totals{display:flex;justify-content:space-between;margin-bottom:6px;font-size:14.5px;color:var(--steel)}
+.totals.big{font-family:var(--disp);font-weight:800;font-size:19px;color:var(--ink);margin:10px 0 16px}
+.drawer-foot .btn{width:100%;justify-content:center}
+
+/* ---- checkout / success modal ---- */
+.modal-scrim{position:fixed;inset:0;background:rgba(12,15,19,.6);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow:auto}
+.modal-scrim.on{display:flex}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:540px;padding:30px 32px;box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.modal h3{font-size:26px;margin-bottom:4px}
+.modal .sub{color:var(--steel);margin-bottom:22px;font-size:15px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:#3a4049}
+.field input,.field textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:12px 13px;font:inherit;font-size:15px;background:#fbfbfa}
+.field input:focus,.field textarea:focus{outline:0;border-color:var(--hivis);background:#fff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal .err{color:#c0392b;font-size:13.5px;min-height:18px;margin:2px 0 6px}
+.modal-act{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+.ordersum{background:var(--concrete);border-radius:12px;padding:14px 16px;margin-bottom:18px;font-size:14px}
+.ordersum .li{display:flex;justify-content:space-between;padding:3px 0}
+.ordersum .li.tot{font-family:var(--disp);font-weight:800;color:var(--ink);border-top:1px solid var(--line);margin-top:6px;padding-top:9px}
+.success{text-align:center;padding:14px 0}
+.success .tick{width:74px;height:74px;border-radius:50%;background:#dcfce7;color:#16a34a;display:grid;place-items:center;font-size:38px;margin:0 auto 18px}
+.success h3{font-size:28px;margin-bottom:10px}
+.success p{color:var(--steel);max-width:380px;margin:0 auto 8px}
+
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:13px 22px;border-radius:12px;font-weight:600;font-size:14.5px;opacity:0;pointer-events:none;transition:.25s;z-index:120;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+@media(max-width:920px){
+  .hero-grid,.an-grid{grid-template-columns:1fr;gap:40px}
+  .mock{order:-1}
+  .fgrid,.steps-grid,.qgrid{grid-template-columns:1fr}
+  .pgrid{grid-template-columns:1fr}
+  .tgrid{grid-template-columns:repeat(2,1fr)}
+  .ctable{grid-template-columns:1.3fr .8fr .8fr;font-size:13px}
+  .nav-links,.nav-login{display:none}
+  .sec{padding:64px 0}
+}
+@media(max-width:560px){
+  .row2{grid-template-columns:1fr}
+  .tgrid{grid-template-columns:1fr}
+  .hero p.sub{font-size:18px}
+  .phone{width:260px}
+  .chip-call{left:-14px}.chip-an{right:-10px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav">
+  <div class="wrap nav-in">
+    <a href="/" class="logo"><span class="mk">▰</span><span>Tradie Sites<small>by Web Culture</small></span></a>
+    <nav class="nav-links">
+      <a href="#themes">Themes</a>
+      <a href="#features">Features</a>
+      <a href="#analytics">Dashboard</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="/brokers.html" style="color:#7fd9b6">For brokers →</a>
+    </nav>
+    <div class="nav-right">
+      <a href="/manage.html" class="nav-login">Client login</a>
+      <a href="#themes" class="btn btn-hivis" style="padding:11px 18px;font-size:14px">Choose your theme</a>
+      <button class="cartbtn" onclick="openCart()" aria-label="Cart">🛒<span class="cart-count" id="cartCount" hidden>0</span></button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Done-for-you · Canberra tradies</span>
+      <h1>Get a website that makes the <span class="hl">phone ring.</span></h1>
+      <p class="sub">Pick your trade, we brand it, you're live in 24 hours. Built-in call tracking and a dashboard that shows exactly which jobs came from your site — not guesswork.</p>
+      <div class="hero-cta">
+        <a href="#themes" class="btn btn-hivis">Choose your theme →</a>
+        <a href="/s/duncans" target="_blank" class="btn btn-ghost">See a live page</a>
+      </div>
+      <div class="trust">
+        <span>✓ Live in <b>24 hours</b></span>
+        <span>✓ <b>You own</b> it</span>
+        <span>✓ <b>No</b> lock-in</span>
+        <span>✓ Edit it <b>yourself</b></span>
+      </div>
+    </div>
+    <div class="mock">
+      <div class="phone">
+        <div class="screen">
+          <div class="scr-emerg">⚠ 24/7 EMERGENCY — BURST PIPE? CALL NOW</div>
+          <div class="scr-head"><span class="b"><i>C</i>CARA</span><span class="scr-call">CALL NOW</span></div>
+          <div class="scr-body">
+            <div class="scr-eye">Licensed Canberra plumber · Same-day</div>
+            <div class="scr-h">BLOCKED DRAIN? <em>WE'LL CLEAR IT TODAY.</em></div>
+            <div class="scr-btn">📞 CALL 0412 708 337</div>
+            <div class="scr-badges"><span>✓ Licensed</span><span>★ 4.9 rated</span><span>$ Fixed price</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="chip chip-call"><span class="ic">📞</span><span><span class="t">Call from site</span><span class="n">+1 just now</span></span></div>
+      <div class="chip chip-an"><span class="ic">📈</span><span><span class="t">This week</span><span class="n">23 leads</span></span></div>
+    </div>
+  </div>
+</section>
+<div class="hazard"></div>
+
+<!-- THEME GALLERY -->
+<section class="sec themes" id="themes">
+  <div class="wrap">
+    <div class="shead center">
+      <span class="eyebrow">Step 1 — Pick your trade · 50 themes</span>
+      <h2>A site built for <span class="hl">your trade</span>, not a generic template.</h2>
+      <p class="lede">Every theme is tuned to how your customers actually search and call — emergency bars, big tap-to-call buttons, the services you do, and a fast quote form. Choose one to get started.</p>
+    </div>
+    <div class="theme-tools">
+      <input class="tsearch" type="text" placeholder="Search 50 trades… e.g. roofer, fencing, solar" oninput="searchThemes(this.value)" aria-label="Search trades">
+      <div class="tchips" id="themeChips"></div>
+    </div>
+    <div class="tcount" id="themeCount"></div>
+    <div class="tgrid" id="themeGrid"></div>
+    <div class="more-trades">
+      <p style="margin-top:16px;color:var(--steel);font-size:14.5px">Don't see yours? <a href="#themes" onclick="chooseTheme('plumber');return false;" style="color:var(--hivis);font-weight:700">Start an order</a> and tell us your trade — we'll build it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="sec feat" id="features">
+  <div class="wrap">
+    <div class="shead">
+      <span class="eyebrow">Built to convert</span>
+      <h2>Every page is engineered to get the <span class="hl">call</span>.</h2>
+      <p class="lede" style="color:#aeb6bf">Looks aren't the point — jobs are. These are the things that actually turn a visitor into a booked job.</p>
+    </div>
+    <div class="fgrid">
+      <div class="fcard"><div class="fic">📞</div><h3>Tap-to-call everywhere</h3><p>Sticky call buttons, an emergency bar and a header number — so a customer on their phone reaches you in one tap, not three scrolls.</p></div>
+      <div class="fcard"><div class="fic">⚡</div><h3>Fast quote form</h3><p>A short, trade-specific form that lands the lead in your inbox in seconds, with the job type and suburb already filled in.</p></div>
+      <div class="fcard"><div class="fic">🎯</div><h3>Every click tracked</h3><p>We log which button got tapped — hero, emergency bar, footer — so you can see what's pulling the calls and double down on it.</p></div>
+      <div class="fcard"><div class="fic">📍</div><h3>Local SEO ready</h3><p>Your suburbs, your trade, your region — structured so Google knows exactly who you serve and where.</p></div>
+      <div class="fcard"><div class="fic">✏️</div><h3>You can edit it</h3><p>Change your phone, services, prices or photos yourself in a simple dashboard. No developer, no waiting, no invoice.</p></div>
+      <div class="fcard"><div class="fic">⚙️</div><h3>Set up for you</h3><p>We do the build, the copy and the colours. You just give us your details and approve it. Live in a day.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ANALYTICS -->
+<section class="sec analytics" id="analytics">
+  <div class="wrap an-grid">
+    <div class="an-panel" aria-hidden="true">
+      <div class="ttl"><span>Your dashboard · Cara Plumbing</span><span>Last 30 days</span></div>
+      <div class="an-pills">
+        <div class="an-pill"><div class="n">1,240</div><div class="l">👁 Visitors</div></div>
+        <div class="an-pill hl"><div class="n">86</div><div class="l">📞 Calls</div></div>
+        <div class="an-pill"><div class="n">31</div><div class="l">✉ Forms</div></div>
+        <div class="an-pill"><div class="n">9.4%</div><div class="l">📈 Conversion</div></div>
+      </div>
+      <div class="an-bars"><i style="height:40%"></i><i style="height:62%"></i><i style="height:48%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:92%"></i><i style="height:70%"></i><i style="height:60%"></i><i style="height:85%"></i><i style="height:50%"></i><i style="height:74%"></i><i style="height:96%"></i></div>
+    </div>
+    <div>
+      <div class="shead" style="margin-bottom:26px">
+        <span class="eyebrow">Step 3 — See what's working</span>
+        <h2>Know exactly which jobs came from your <span class="hl">site.</span></h2>
+        <p class="lede">No more "I think the website's working." Your dashboard shows real numbers, updated live — and it's the same screen you edit your page in.</p>
+      </div>
+      <ul class="an-list" style="list-style:none">
+        <li><span class="ic">📞</span><span><b>Calls, counted</b>Every tap of a call button, by which button it was.</span></li>
+        <li><span class="ic">✉</span><span><b>Leads, captured</b>Form enquiries with name, number and the job they need.</span></li>
+        <li><span class="ic">📈</span><span><b>Conversion, tracked</b>What share of visitors actually contact you — and the trend.</span></li>
+      </ul>
+      <a href="/manage.html" class="btn btn-light" style="margin-top:8px">See the dashboard →</a>
+    </div>
+  </div>
+</section>
+
+<!-- STEPS -->
+<section class="sec" style="background:var(--paper)">
+  <div class="wrap">
+    <div class="shead center"><span class="eyebrow">Dead simple</span><h2>Live in three steps.</h2></div>
+    <div class="steps-grid">
+      <div class="step"><div class="num">1</div><h3>Pick your theme</h3><p>Choose the look built for your trade and add it to your cart. Two minutes.</p></div>
+      <div class="step"><div class="num">2</div><h3>We brand it</h3><p>Send your business name, number and services. We build it and send it for your approval — usually same day.</p></div>
+      <div class="step"><div class="num">3</div><h3>Go live & get calls</h3><p>Your site goes live, the phone starts ringing, and you watch it all in your dashboard.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="sec pricing" id="pricing">
+  <div class="wrap">
+    <div class="shead center"><span class="eyebrow">Simple pricing</span><h2>One price. No surprises.</h2><p class="lede" style="color:#aeb6bf">A one-off build fee to get you live, then a low monthly that covers hosting, the dashboard and call tracking. Cancel anytime — you keep the page.</p></div>
+    <div class="pgrid">
+      <div class="pcard">
+        <h3>Starter</h3>
+        <div class="price"><span class="amt">$39</span><span class="per">/month</span></div>
+        <div class="setup">+ $295 one-off setup</div>
+        <ul>
+          <li><span class="ck">✓</span> Your trade landing page, built &amp; branded</li>
+          <li><span class="ck">✓</span> Tap-to-call &amp; fast quote form</li>
+          <li><span class="ck">✓</span> Live dashboard — visitors, calls, forms</li>
+          <li><span class="ck">✓</span> Edit it yourself, anytime</li>
+          <li><span class="ck">✓</span> Hosting &amp; SSL included</li>
+        </ul>
+        <button class="btn btn-light" onclick="chooseTheme('plumber','starter')">Get started</button>
+      </div>
+      <div class="pcard feat-plan">
+        <span class="pbadge">Most popular</span>
+        <h3>Pro</h3>
+        <div class="price"><span class="amt">$69</span><span class="per">/month</span></div>
+        <div class="setup">+ $495 one-off setup</div>
+        <ul>
+          <li><span class="ck">✓</span> Everything in Starter</li>
+          <li><span class="ck">✓</span> Your own domain (yourbusiness.com.au)</li>
+          <li><span class="ck">✓</span> Instant SMS &amp; email lead alerts</li>
+          <li><span class="ck">✓</span> Priority edits &amp; new pages</li>
+          <li><span class="ck">✓</span> Monthly performance check-in</li>
+        </ul>
+        <button class="btn btn-hivis" onclick="chooseTheme('plumber','pro')">Get started</button>
+      </div>
+    </div>
+    <p class="pnote">Prices in AUD. No lock-in contract — cancel anytime and keep your page.</p>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section class="sec compare">
+  <div class="wrap">
+    <div class="shead center"><span class="eyebrow">The honest comparison</span><h2>Beats DIY and beats a $3k agency.</h2></div>
+    <div class="ctable">
+      <div class="ch">&nbsp;</div>
+      <div class="ch">DIY builder</div>
+      <div class="ch us"><span class="eyebrow">Tradie Sites</span></div>
+      <div class="rl">Live this week</div><div class="cv"><span class="no">Weeks of fiddling</span></div><div class="cv us"><span class="yes">24 hours</span></div>
+      <div class="rl">Built for your trade</div><div class="cv"><span class="no">Generic template</span></div><div class="cv us"><span class="yes">Yes</span></div>
+      <div class="rl">Call &amp; lead tracking</div><div class="cv"><span class="no">No</span></div><div class="cv us"><span class="yes">Built in</span></div>
+      <div class="rl">Edit it yourself</div><div class="cv">Sort of</div><div class="cv us"><span class="yes">Simple dashboard</span></div>
+      <div class="rl">Upfront cost</div><div class="cv">$0 + your time</div><div class="cv us"><span class="yes">From $295</span></div>
+      <div class="rl">Lock-in contract</div><div class="cv">—</div><div class="cv us"><span class="yes">Never</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="sec testi" id="reviews">
+  <div class="wrap">
+    <div class="shead center"><span class="eyebrow">From the tools</span><h2>Tradies who stopped chasing work.</h2></div>
+    <div class="qgrid">
+      <div class="qcard"><div class="stars">★★★★★</div><p>"Had the site up the next day. Within a week I was getting calls straight off it. Best money I've spent on the business."</p><div class="who"><span class="av">JM</span><span><b>Jordan M.</b><span>Plumber · Gungahlin</span></span></div></div>
+      <div class="qcard"><div class="stars">★★★★★</div><p>"I can actually see how many people called from the site. No other web mob ever showed me that. Dead easy to change my prices too."</p><div class="who"><span class="av">SK</span><span><b>Sam K.</b><span>Electrician · Belconnen</span></span></div></div>
+      <div class="qcard"><div class="stars">★★★★★</div><p>"Looks miles better than my old site and it didn't cost me three grand. The emergency bar alone has paid for itself."</p><div class="who"><span class="av">DR</span><span><b>Dane R.</b><span>Air-con · Woden</span></span></div></div>
+    </div>
+    <p class="center" style="margin-top:22px;color:var(--steel);font-size:13px">Sample reviews shown — replace with your own real client reviews before going live.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="sec faq" id="faq">
+  <div class="wrap">
+    <div class="shead center"><span class="eyebrow">Good to know</span><h2>Questions, answered.</h2></div>
+    <div class="faq-list" id="faqList"></div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="sec final">
+  <div class="wrap">
+    <h2>Ready to get the phone ringing?</h2>
+    <p>Pick your trade, we'll have you live in 24 hours. No lock-in, you own the page.</p>
+    <a href="#themes" class="btn btn-ink">Choose your theme →</a>
+  </div>
+</section>
+
+<!-- CLIENT LOGIN -->
+<section class="login-band" id="login">
+  <div class="wrap">
+    <span class="eyebrow dim">Already a client?</span>
+    <h3>Sign in to your dashboard</h3>
+    <p>Edit your page, check your calls and leads, and manage your account.</p>
+    <a href="/manage.html" class="btn btn-hivis">Client login →</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div style="max-width:300px">
+        <a href="#top" class="logo" style="margin-bottom:14px"><span class="mk">▰</span><span>Tradie Sites<small>by Web Culture</small></span></a>
+        <p style="color:#9aa3ad;font-size:14px">Done-for-you lead websites for Australian tradies. Built in Canberra. You own everything.</p>
+      </div>
+      <div class="foot-links">
+        <div><h4>Product</h4><a href="#themes">Themes</a><a href="#features">Features</a><a href="#analytics">Dashboard</a><a href="#pricing">Pricing</a></div>
+        <div><h4>Company</h4><a href="#faq">FAQ</a><a href="https://webculture.au" target="_blank">Web Culture</a><a href="#reviews">Reviews</a></div>
+        <div><h4>Clients</h4><a href="/manage.html">Sign in</a><a href="#themes">Start an order</a></div>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2026 Tradie Sites · Web Culture · Canberra, ACT</span>
+      <span>Made for tradies who'd rather be on the tools.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- CART -->
+<div class="scrim" id="scrim" onclick="closeCart()"></div>
+<aside class="drawer" id="drawer" aria-label="Cart">
+  <div class="drawer-h"><h3>Your order</h3><button class="x" onclick="closeCart()" aria-label="Close">×</button></div>
+  <div class="drawer-body" id="cartBody"></div>
+  <div class="drawer-foot" id="cartFoot" hidden>
+    <div class="totals"><span>Setup (one-off)</span><span id="tSetup">$0</span></div>
+    <div class="totals big"><span>Then monthly</span><span id="tMonthly">$0/mo</span></div>
+    <button class="btn btn-hivis" onclick="openCheckout()">Checkout →</button>
+  </div>
+</aside>
+
+<!-- CHECKOUT / SUCCESS MODAL -->
+<div class="modal-scrim" id="coScrim">
+  <div class="modal" id="coModal"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== config (edit me) ===== */
+var PLANS = {
+  starter:{ name:'Starter', setup:295, monthly:39 },
+  pro:    { name:'Pro',     setup:495, monthly:69 }
+};
+/* Optional Stripe Payment Links — paste your links to take payment automatically.
+   Leave blank to capture the order and invoice manually. */
+var STRIPE_LINKS = { starter:'', pro:'' };
+
+var THEMES = [
+  { id:"plumber", name:"Plumber", cat:"Emergency", tag:"Blocked drains, burst pipes, hot water & leaks.", ink:"#0f172a", accent:"#f97316", accent2:"#fbbf24", emerg:"24/7 EMERGENCY — BURST PIPE?", eye:"Licensed plumber · Same-day", h:"BLOCKED DRAIN?", hl:"WE'LL CLEAR IT TODAY.", live:"/s/duncans" },
+  { id:"electrician", name:"Electrician", cat:"Emergency", tag:"Switchboards, faults, lighting & EV chargers.", ink:"#0f172a", accent:"#2563eb", accent2:"#38bdf8", emerg:"24/7 EMERGENCY — NO POWER?", eye:"Licensed electrician · Same-day", h:"POWER OUT?", hl:"WE'LL GET YOU BACK ON.", live:"" },
+  { id:"gas-fitter", name:"Gas Fitter", cat:"Emergency", tag:"Gas lines, heaters, cooktops & leak repairs.", ink:"#1a1206", accent:"#f59e0b", accent2:"#fcd34d", emerg:"SMELL GAS? CALL NOW — 24/7", eye:"Licensed gas fitter · Same-day", h:"GAS LEAK?", hl:"WE'RE ON IT — FAST.", live:"" },
+  { id:"locksmith", name:"Locksmith", cat:"Emergency", tag:"Lockouts, rekeys, deadlocks & car keys.", ink:"#1a0f12", accent:"#dc2626", accent2:"#fca5a5", emerg:"LOCKED OUT? 24/7 CALLOUT", eye:"Mobile locksmith · 30-min response", h:"LOCKED OUT?", hl:"BACK IN, IN MINUTES.", live:"" },
+  { id:"hot-water", name:"Hot Water", cat:"Emergency", tag:"Repairs, replacements, gas, electric & heat pump.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"NO HOT WATER? SAME-DAY FIX", eye:"Hot water specialist · Same-day", h:"COLD SHOWER?", hl:"HOT WATER, TODAY.", live:"" },
+  { id:"blocked-drains", name:"Blocked Drains", cat:"Emergency", tag:"CCTV, jet blasting, tree roots & clearing.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"BLOCKED? 24/7 DRAIN CLEARING", eye:"Drain specialist · Same-day", h:"DRAIN BLOCKED?", hl:"CLEARED FAST.", live:"" },
+  { id:"pest-control", name:"Pest Control", cat:"Emergency", tag:"Termites, ants, cockroaches, spiders & rodents.", ink:"#1a0f12", accent:"#dc2626", accent2:"#fca5a5", emerg:"PESTS? SAME-DAY TREATMENT", eye:"Licensed pest control · Safe & fast", h:"GOT PESTS?", hl:"GONE FOR GOOD.", live:"" },
+  { id:"aircon", name:"Air Conditioning", cat:"Home services", tag:"Split systems, ducted, install, service & repair.", ink:"#0b1722", accent:"#0284c7", accent2:"#7dd3fc", emerg:"TOO HOT? TOO COLD? SORTED", eye:"Licensed air-con · Same-day", h:"TOO HOT? TOO COLD?", hl:"SORTED TODAY.", live:"" },
+  { id:"builder", name:"Builder", cat:"Building & reno", tag:"New builds, extensions & full renovations.", ink:"#15191e", accent:"#ff6a1a", accent2:"#ffd21e", emerg:"FREE QUOTES · FIXED PRICING", eye:"Licensed builder · Canberra", h:"BUILDING OR RENOVATING?", hl:"DONE PROPERLY.", live:"" },
+  { id:"carpenter", name:"Carpenter", cat:"Building & reno", tag:"Decks, doors, built-ins & renovations.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE QUOTES · QUALITY FINISH", eye:"Licensed carpenter · Free quotes", h:"BUILT RIGHT.", hl:"FINISHED PROPERLY.", live:"" },
+  { id:"bricklayer", name:"Bricklayer", cat:"Building & reno", tag:"Brick & block walls, fences & repairs.", ink:"#1c1310", accent:"#c0392b", accent2:"#f87171", emerg:"FREE QUOTES · 7 DAYS", eye:"Bricklayer · Free quotes", h:"NEED BRICKWORK?", hl:"LAID TO LAST.", live:"" },
+  { id:"plasterer", name:"Plasterer", cat:"Building & reno", tag:"Gyprock, cornices, patching & skim coats.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · CLEAN WORK", eye:"Plasterer · Free quotes", h:"CRACKS OR HOLES?", hl:"SMOOTH, FLAWLESS WALLS.", live:"" },
+  { id:"tiler", name:"Tiler", cat:"Building & reno", tag:"Bathrooms, floors, splashbacks & waterproofing.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"FREE QUOTES · NEAT LINES", eye:"Tiler · Free quotes", h:"NEW TILES?", hl:"LAID PERFECTLY.", live:"" },
+  { id:"concreter", name:"Concreter", cat:"Building & reno", tag:"Driveways, slabs, paths & exposed aggregate.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · FIXED PRICE", eye:"Concreter · Free quotes", h:"NEED CONCRETING?", hl:"POURED TO LAST.", live:"" },
+  { id:"renderer", name:"Rendering", cat:"Building & reno", tag:"Acrylic & cement render, texture & repairs.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · 7 DAYS", eye:"Renderer · Free quotes", h:"TIRED WALLS?", hl:"RENDERED LIKE NEW.", live:"" },
+  { id:"waterproofing", name:"Waterproofing", cat:"Building & reno", tag:"Bathrooms, balconies, decks & leak repairs.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"FREE QUOTES · GUARANTEED", eye:"Waterproofer · Licensed", h:"LEAKS & DAMP?", hl:"SEALED FOR GOOD.", live:"" },
+  { id:"kitchen-reno", name:"Kitchen Renovations", cat:"Building & reno", tag:"Full kitchen design, supply & install.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE DESIGN CONSULT", eye:"Kitchen specialist · Free quotes", h:"DREAM KITCHEN?", hl:"WE'LL BUILD IT.", live:"" },
+  { id:"bathroom-reno", name:"Bathroom Renovations", cat:"Building & reno", tag:"Full bathroom renos, end to end.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"FREE QUOTES · FIXED PRICE", eye:"Bathroom specialist · Free quotes", h:"NEW BATHROOM?", hl:"DONE END TO END.", live:"" },
+  { id:"cabinet-maker", name:"Cabinet Maker", cat:"Building & reno", tag:"Custom cabinetry, wardrobes & joinery.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE QUOTES · CUSTOM MADE", eye:"Cabinet maker · Custom joinery", h:"CUSTOM STORAGE?", hl:"MADE TO MEASURE.", live:"" },
+  { id:"flooring", name:"Flooring", cat:"Building & reno", tag:"Timber, laminate, vinyl & floor sanding.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE QUOTES · 7 DAYS", eye:"Flooring specialist · Free quotes", h:"NEW FLOORS?", hl:"LAID TO PERFECTION.", live:"" },
+  { id:"painter", name:"Painter", cat:"Building & reno", tag:"Interior, exterior, roofs & feature walls.", ink:"#15191e", accent:"#ff6a1a", accent2:"#ffd21e", emerg:"FREE QUOTES · TIDY WORK", eye:"Painter · Free quotes", h:"FRESH COAT?", hl:"SHARP, CLEAN FINISH.", live:"" },
+  { id:"stonemason", name:"Stonemason", cat:"Building & reno", tag:"Stone walls, benchtops, paving & restoration.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · 7 DAYS", eye:"Stonemason · Free quotes", h:"STONEWORK?", hl:"BUILT TO LAST.", live:"" },
+  { id:"welding", name:"Welding & Steel", cat:"Building & reno", tag:"Fabrication, gates, balustrades & repairs.", ink:"#1a1206", accent:"#f59e0b", accent2:"#fcd34d", emerg:"FREE QUOTES · MOBILE WELDING", eye:"Welder · Mobile & workshop", h:"NEED STEEL?", hl:"FABRICATED & FITTED.", live:"" },
+  { id:"roofer", name:"Roofer", cat:"Roofing", tag:"Leaks, re-roofs, tiles, metal & repairs.", ink:"#1c1310", accent:"#c0392b", accent2:"#f87171", emerg:"ROOF LEAKING? 24/7 REPAIRS", eye:"Roofer · Free quotes", h:"ROOF LEAKING?", hl:"FIXED BEFORE THE STORM.", live:"" },
+  { id:"roof-restoration", name:"Roof Restoration", cat:"Roofing", tag:"Cleaning, repointing, painting & sealing.", ink:"#1c1310", accent:"#c0392b", accent2:"#f87171", emerg:"FREE ROOF INSPECTION", eye:"Roof restoration · Free quotes", h:"TIRED ROOF?", hl:"RESTORED LIKE NEW.", live:"" },
+  { id:"guttering", name:"Guttering", cat:"Roofing", tag:"New gutters, downpipes, fascia & leaf guard.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · 7 DAYS", eye:"Guttering · Free quotes", h:"OVERFLOWING GUTTERS?", hl:"REPLACED & SORTED.", live:"" },
+  { id:"landscaper", name:"Landscaper", cat:"Outdoor", tag:"Gardens, paving, turf, retaining & design.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"FREE QUOTES · FULL DESIGN", eye:"Landscaper · Free quotes", h:"DREAM BACKYARD?", hl:"WE'LL BUILD IT.", live:"" },
+  { id:"fencing", name:"Fencing", cat:"Outdoor", tag:"Colorbond, timber, gates & pool fencing.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"FREE QUOTES · 7 DAYS", eye:"Fencing · Free quotes", h:"NEW FENCE?", hl:"STRAIGHT, STRONG, DONE.", live:"" },
+  { id:"decking", name:"Decking", cat:"Outdoor", tag:"Timber & composite decks, pergolas & stairs.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE QUOTES · QUALITY BUILD", eye:"Decking · Free quotes", h:"WANT A DECK?", hl:"BUILT FOR SUMMERS.", live:"" },
+  { id:"pergolas", name:"Pergolas & Patios", cat:"Outdoor", tag:"Patios, verandahs, carports & outdoor rooms.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE QUOTES · FIXED PRICE", eye:"Patio builder · Free quotes", h:"MORE OUTDOOR LIVING?", hl:"COVERED & DONE.", live:"" },
+  { id:"paving", name:"Paving", cat:"Outdoor", tag:"Driveways, paths, pool surrounds & courtyards.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"FREE QUOTES · 7 DAYS", eye:"Paver · Free quotes", h:"NEED PAVING?", hl:"LAID LEVEL & NEAT.", live:"" },
+  { id:"retaining-walls", name:"Retaining Walls", cat:"Outdoor", tag:"Sleeper, block & rock retaining walls.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"FREE QUOTES · ENGINEERED", eye:"Retaining walls · Free quotes", h:"SLOPING BLOCK?", hl:"HELD BACK FOR GOOD.", live:"" },
+  { id:"lawn-mowing", name:"Lawn Mowing", cat:"Outdoor", tag:"Mowing, edging, hedging & garden tidy-ups.", ink:"#16210c", accent:"#65980f", accent2:"#a3e635", emerg:"REGULAR & ONE-OFF · 7 DAYS", eye:"Lawn & garden care", h:"OVERGROWN YARD?", hl:"MOWED & TIDIED TODAY.", live:"" },
+  { id:"arborist", name:"Tree Lopping", cat:"Outdoor", tag:"Tree removal, pruning, stump grinding & chipping.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"STORM DAMAGE? 24/7 CALLOUT", eye:"Arborist · Insured & qualified", h:"DANGEROUS TREE?", hl:"DOWN SAFELY, TODAY.", live:"" },
+  { id:"turf", name:"Turf Laying", cat:"Outdoor", tag:"Lawn prep, turf supply & instant lawn.", ink:"#16210c", accent:"#65980f", accent2:"#a3e635", emerg:"FREE QUOTES · 7 DAYS", eye:"Turf specialist · Free quotes", h:"WANT INSTANT LAWN?", hl:"ROLLED OUT GREEN.", live:"" },
+  { id:"irrigation", name:"Irrigation", cat:"Outdoor", tag:"Sprinklers, drip systems & smart watering.", ink:"#16210c", accent:"#65980f", accent2:"#a3e635", emerg:"FREE QUOTES · WATER-WISE", eye:"Irrigation · Free quotes", h:"DRY GARDEN?", hl:"WATERED AUTOMATICALLY.", live:"" },
+  { id:"carports-sheds", name:"Carports & Sheds", cat:"Outdoor", tag:"Carports, sheds, garages & farm sheds.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · SUPPLY & BUILD", eye:"Shed builder · Free quotes", h:"NEED MORE SPACE?", hl:"BUILT & STANDING.", live:"" },
+  { id:"excavation", name:"Excavation", cat:"Outdoor", tag:"Earthworks, site cuts, trenching & bobcat hire.", ink:"#1a1206", accent:"#f59e0b", accent2:"#fcd34d", emerg:"FREE QUOTES · ANY SITE", eye:"Earthmoving · Insured", h:"SITE PREP?", hl:"DUG & LEVELLED.", live:"" },
+  { id:"handyman", name:"Handyman", cat:"Home services", tag:"Repairs, assembly, mounting & odd jobs.", ink:"#15191e", accent:"#ff6a1a", accent2:"#ffd21e", emerg:"NO JOB TOO SMALL · 7 DAYS", eye:"Handyman · Free quotes", h:"TO-DO LIST?", hl:"TICKED OFF TODAY.", live:"" },
+  { id:"house-cleaning", name:"House Cleaning", cat:"Home services", tag:"Regular, deep, end-of-lease & spring cleans.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"BOND-BACK GUARANTEE", eye:"Cleaning · Insured & vetted", h:"PLACE NEED A CLEAN?", hl:"SPOTLESS, GUARANTEED.", live:"" },
+  { id:"pressure-washing", name:"Pressure Washing", cat:"Home services", tag:"Driveways, paths, decks, roofs & house wash.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"FREE QUOTES · 7 DAYS", eye:"Pressure washing · Free quotes", h:"GRIMY SURFACES?", hl:"BLASTED BACK TO NEW.", live:"" },
+  { id:"gutter-cleaning", name:"Gutter Cleaning", cat:"Home services", tag:"Gutter clearing, leaf guard & roof debris.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"BEAT THE STORM SEASON", eye:"Gutter cleaning · Insured", h:"GUTTERS FULL?", hl:"CLEARED & FLOWING.", live:"" },
+  { id:"window-cleaning", name:"Window Cleaning", cat:"Home services", tag:"Windows, tracks, screens & solar panels.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"STREAK-FREE · 7 DAYS", eye:"Window cleaning · Insured", h:"GRUBBY WINDOWS?", hl:"CRYSTAL CLEAR.", live:"" },
+  { id:"pool-building", name:"Pool Building", cat:"Home services", tag:"Concrete & fibreglass pools, design to build.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"FREE DESIGN CONSULT", eye:"Pool builder · Licensed", h:"WANT A POOL?", hl:"BUILT FOR SUMMER.", live:"" },
+  { id:"pool-maintenance", name:"Pool Maintenance", cat:"Home services", tag:"Cleaning, servicing, chemicals & repairs.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"REGULAR SERVICE · 7 DAYS", eye:"Pool care · Free quotes", h:"GREEN POOL?", hl:"CRYSTAL CLEAR AGAIN.", live:"" },
+  { id:"blinds-awnings", name:"Blinds & Awnings", cat:"Home services", tag:"Blinds, shutters, awnings & outdoor screens.", ink:"#15191e", accent:"#ff6a1a", accent2:"#ffd21e", emerg:"FREE MEASURE & QUOTE", eye:"Blinds & awnings · Free quotes", h:"BARE WINDOWS?", hl:"DRESSED & SHADED.", live:"" },
+  { id:"garage-doors", name:"Garage Doors", cat:"Home services", tag:"Install, motors, springs & repairs.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"STUCK DOOR? SAME-DAY FIX", eye:"Garage doors · Free quotes", h:"DOOR STUCK?", hl:"ROLLING AGAIN TODAY.", live:"" },
+  { id:"glazier", name:"Glazier", cat:"Home services", tag:"Glass repairs, splashbacks, mirrors & shower screens.", ink:"#0b1722", accent:"#0284c7", accent2:"#7dd3fc", emerg:"BROKEN GLASS? 24/7 BOARD-UP", eye:"Glazier · Same-day", h:"BROKEN GLASS?", hl:"REPLACED FAST.", live:"" },
+  { id:"security", name:"Security & CCTV", cat:"Home services", tag:"CCTV, alarms, intercoms & smart locks.", ink:"#1a1430", accent:"#7c3aed", accent2:"#c4b5fd", emerg:"FREE SECURITY ASSESSMENT", eye:"Security · Licensed installer", h:"WANT PEACE OF MIND?", hl:"WATCHED & PROTECTED.", live:"" },
+  { id:"solar", name:"Solar Installer", cat:"Home services", tag:"Panels, batteries, inverters & monitoring.", ink:"#1c1606", accent:"#d4a017", accent2:"#fde047", emerg:"FREE SOLAR QUOTE & SAVINGS", eye:"Solar · CEC accredited", h:"BIG POWER BILLS?", hl:"SLASH THEM WITH SOLAR.", live:"" },
+  { id:"leak-detection", name:"Leak Detection", cat:"Emergency", tag:"Non-invasive leak location for pipes, slabs & roofs.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"HIDDEN LEAK? SAME-DAY DETECTION", eye:"Leak detection · Non-invasive", h:"WATER BILL SPIKED?", hl:"WE'LL FIND THE LEAK.", live:"" },
+  { id:"storm-damage", name:"Storm Damage Repair", cat:"Emergency", tag:"Emergency make-safe, tarping & full storm repairs.", ink:"#1c1310", accent:"#c0392b", accent2:"#f87171", emerg:"STORM HIT? 24/7 EMERGENCY REPAIRS", eye:"Storm repairs · 24/7 response", h:"STORM DAMAGE?", hl:"SECURED & REPAIRED FAST.", live:"" },
+  { id:"water-damage", name:"Water Damage Restoration", cat:"Emergency", tag:"Water extraction, structural drying & restoration.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"FLOODED? 24/7 EXTRACTION", eye:"Water damage · 24/7 callout", h:"FLOOD OR LEAK?", hl:"DRIED & RESTORED.", live:"" },
+  { id:"mould-removal", name:"Mould Removal", cat:"Emergency", tag:"Inspection, safe removal & moisture treatment.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"MOULD? FAST SAFE REMOVAL", eye:"Mould remediation · Insured", h:"BLACK MOULD?", hl:"GONE & KEPT AWAY.", live:"" },
+  { id:"fire-restoration", name:"Fire & Smoke Restoration", cat:"Emergency", tag:"Smoke, soot & fire damage clean-up and restoration.", ink:"#1a1206", accent:"#f59e0b", accent2:"#fcd34d", emerg:"FIRE DAMAGE? 24/7 RESPONSE", eye:"Fire restoration · Insured", h:"AFTER THE FIRE?", hl:"REBUILT & RESTORED.", live:"" },
+  { id:"asbestos-removal", name:"Asbestos Removal", cat:"Emergency", tag:"Testing, licensed removal & safe disposal.", ink:"#1a0f12", accent:"#dc2626", accent2:"#fca5a5", emerg:"ASBESTOS? LICENSED REMOVAL", eye:"Asbestos removal · Licensed", h:"ASBESTOS RISK?", hl:"REMOVED SAFELY & LEGALLY.", live:"" },
+  { id:"demolition", name:"Demolition", cat:"Building & reno", tag:"House, structure & strip-out demolition, site cleared.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · ANY SITE", eye:"Demolition · Insured", h:"TEARING IT DOWN?", hl:"DEMOLISHED & CLEARED.", live:"" },
+  { id:"underpinning", name:"Underpinning & Restumping", cat:"Building & reno", tag:"Restumping, underpinning & foundation repair.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE INSPECTION & QUOTE", eye:"Underpinning · Engineered", h:"CRACKING WALLS?", hl:"STABILISED FOR GOOD.", live:"" },
+  { id:"scaffolding", name:"Scaffolding", cat:"Building & reno", tag:"Supply, erect & dismantle, residential & commercial.", ink:"#1a1206", accent:"#f59e0b", accent2:"#fcd34d", emerg:"FREE QUOTES · HIRE & ERECT", eye:"Scaffolding · Certified", h:"NEED ACCESS?", hl:"UP SAFE, SIGNED OFF.", live:"" },
+  { id:"insulation", name:"Insulation", cat:"Building & reno", tag:"Ceiling, wall & underfloor insulation, batts & blow-in.", ink:"#15191e", accent:"#ff6a1a", accent2:"#ffd21e", emerg:"FREE QUOTES · LOWER BILLS", eye:"Insulation · Free quotes", h:"HOT IN SUMMER?", hl:"INSULATED & COMFY.", live:"" },
+  { id:"cladding", name:"Cladding", cat:"Building & reno", tag:"External cladding, weatherboard & feature facades.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · 7 DAYS", eye:"Cladding · Free quotes", h:"TIRED FACADE?", hl:"CLAD LIKE NEW.", live:"" },
+  { id:"shopfitting", name:"Shopfitting", cat:"Building & reno", tag:"Retail, cafe & office fitouts, design to handover.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE QUOTES · FITOUTS", eye:"Shopfitter · Commercial", h:"FITTING OUT?", hl:"BUILT TO OPEN.", live:"" },
+  { id:"staircases", name:"Staircases", cat:"Building & reno", tag:"Timber & steel stairs, balustrades & handrails.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE QUOTES · CUSTOM BUILT", eye:"Staircase builder · Custom", h:"NEW STAIRCASE?", hl:"BUILT TO IMPRESS.", live:"" },
+  { id:"wardrobes", name:"Built-in Wardrobes", cat:"Building & reno", tag:"Built-in & walk-in robes, custom shelving & doors.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE MEASURE & QUOTE", eye:"Wardrobes · Custom made", h:"MORE STORAGE?", hl:"FITTED TO THE INCH.", live:"" },
+  { id:"skylights", name:"Skylights", cat:"Building & reno", tag:"Skylights, roof windows & solar tube install.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"FREE QUOTES · 7 DAYS", eye:"Skylights · Free quotes", h:"DARK ROOMS?", hl:"FLOODED WITH LIGHT.", live:"" },
+  { id:"splashbacks", name:"Splashbacks", cat:"Building & reno", tag:"Glass & acrylic splashbacks, measured & installed.", ink:"#0b1722", accent:"#0284c7", accent2:"#7dd3fc", emerg:"FREE MEASURE & QUOTE", eye:"Glass splashbacks · Custom", h:"DULL KITCHEN?", hl:"GLASS THAT GLOWS.", live:"" },
+  { id:"epoxy-flooring", name:"Epoxy Flooring", cat:"Building & reno", tag:"Garage, warehouse & patio epoxy floor coatings.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · GARAGE & MORE", eye:"Epoxy flooring · Free quotes", h:"DULL CONCRETE?", hl:"SEALED & SHINING.", live:"" },
+  { id:"polished-concrete", name:"Polished Concrete", cat:"Building & reno", tag:"Grind & polish, honed & decorative concrete floors.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · 7 DAYS", eye:"Polished concrete · Free quotes", h:"WANT POLISHED FLOORS?", hl:"GROUND TO A SHINE.", live:"" },
+  { id:"resurfacing", name:"Bath & Benchtop Resurfacing", cat:"Building & reno", tag:"Bath, basin, tile & benchtop resurfacing.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"FREE QUOTES · 1-DAY JOBS", eye:"Resurfacing · Free quotes", h:"STAINED BATH?", hl:"RESURFACED LIKE NEW.", live:"" },
+  { id:"soundproofing", name:"Soundproofing & Acoustic", cat:"Building & reno", tag:"Acoustic insulation, panels & soundproof walls.", ink:"#1a1430", accent:"#7c3aed", accent2:"#c4b5fd", emerg:"FREE QUOTES · QUIETER ROOMS", eye:"Acoustic · Free quotes", h:"NOISY NEIGHBOURS?", hl:"SEALED IN SILENCE.", live:"" },
+  { id:"steel-fixing", name:"Steel Fixing & Reinforcing", cat:"Building & reno", tag:"Reinforcement steel fixing, mesh & bar for slabs.", ink:"#1a1206", accent:"#f59e0b", accent2:"#fcd34d", emerg:"FREE QUOTES · ANY POUR", eye:"Steel fixer · Certified", h:"POURING A SLAB?", hl:"REO TIED RIGHT.", live:"" },
+  { id:"ceilings", name:"Suspended Ceilings", cat:"Building & reno", tag:"Suspended grid ceilings, bulkheads & partitions.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · COMMERCIAL", eye:"Ceilings · Free quotes", h:"COMMERCIAL CEILINGS?", hl:"GRID UP & FLUSH.", live:"" },
+  { id:"roof-plumbing", name:"Roof Plumbing", cat:"Roofing", tag:"Flashings, box gutters, downpipes & rainheads.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"ROOF LEAK? SAME-DAY REPAIRS", eye:"Roof plumber · Licensed", h:"ROOF LEAKING?", hl:"FLASHED & SEALED.", live:"" },
+  { id:"metal-roofing", name:"Metal Re-roofing", cat:"Roofing", tag:"Colorbond re-roofs, new metal roofing & repairs.", ink:"#1c1310", accent:"#c0392b", accent2:"#f87171", emerg:"FREE QUOTES · COLORBOND", eye:"Metal roofing · Free quotes", h:"OLD TILE ROOF?", hl:"RE-ROOFED IN STEEL.", live:"" },
+  { id:"asbestos-roof", name:"Asbestos Roof Removal", cat:"Roofing", tag:"Licensed asbestos roof removal & metal replacement.", ink:"#1a0f12", accent:"#dc2626", accent2:"#fca5a5", emerg:"ASBESTOS ROOF? LICENSED REMOVAL", eye:"Asbestos roofing · Licensed", h:"FIBRO ROOF?", hl:"REMOVED & REPLACED SAFELY.", live:"" },
+  { id:"roof-ventilation", name:"Whirlybird & Roof Ventilation", cat:"Roofing", tag:"Whirlybirds, solar vents & powered roof ventilation.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · COOLER ROOFS", eye:"Roof ventilation · Free quotes", h:"HOT ROOF SPACE?", hl:"VENTED & COOLED.", live:"" },
+  { id:"gardener", name:"Garden Maintenance", cat:"Outdoor", tag:"Weeding, pruning, mulching & full garden care.", ink:"#16210c", accent:"#65980f", accent2:"#a3e635", emerg:"REGULAR & ONE-OFF · 7 DAYS", eye:"Gardener · Insured", h:"GARDEN OUT OF HAND?", hl:"TIDIED & THRIVING.", live:"" },
+  { id:"hedge-trimming", name:"Hedge Trimming", cat:"Outdoor", tag:"Hedge shaping, trimming, topping & green waste removal.", ink:"#16210c", accent:"#65980f", accent2:"#a3e635", emerg:"FREE QUOTES · 7 DAYS", eye:"Hedging · Insured", h:"SHAGGY HEDGES?", hl:"SHARP & SQUARED OFF.", live:"" },
+  { id:"stump-grinding", name:"Stump Grinding", cat:"Outdoor", tag:"Stump grinding & removal, roots ground out & cleared.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"FREE QUOTES · ANY STUMP", eye:"Stump grinding · Insured", h:"UGLY STUMP?", hl:"GROUND BELOW GRADE.", live:"" },
+  { id:"synthetic-turf", name:"Synthetic Turf", cat:"Outdoor", tag:"Artificial grass supply & install, lawns & putting greens.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"FREE QUOTES · 7 DAYS", eye:"Synthetic turf · Free quotes", h:"PATCHY LAWN?", hl:"GREEN ALL YEAR.", live:"" },
+  { id:"asphalt", name:"Asphalt & Bitumen", cat:"Outdoor", tag:"Asphalt driveways, car parks, repairs & line marking.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · DRIVES & CARPARKS", eye:"Asphalt · Free quotes", h:"ROUGH DRIVEWAY?", hl:"SMOOTH BLACK FINISH.", live:"" },
+  { id:"kerbing", name:"Garden Edging & Kerbing", cat:"Outdoor", tag:"Continuous concrete edging, kerbing & garden borders.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"FREE QUOTES · 7 DAYS", eye:"Concrete kerbing · Free quotes", h:"MESSY GARDEN EDGES?", hl:"CRISP CONTINUOUS KERBS.", live:"" },
+  { id:"glass-pool-fencing", name:"Glass Pool Fencing", cat:"Outdoor", tag:"Frameless glass pool fencing & balustrades, certified.", ink:"#0b1722", accent:"#0284c7", accent2:"#7dd3fc", emerg:"FREE MEASURE & QUOTE", eye:"Glass fencing · Compliant", h:"POOL FENCE DUE?", hl:"FRAMELESS & COMPLIANT.", live:"" },
+  { id:"shade-sails", name:"Shade Sails", cat:"Outdoor", tag:"Custom shade sails, structures & waterproof covers.", ink:"#0b1722", accent:"#0284c7", accent2:"#7dd3fc", emerg:"FREE MEASURE & QUOTE", eye:"Shade sails · Custom made", h:"TOO MUCH SUN?", hl:"SHADED IN STYLE.", live:"" },
+  { id:"automatic-gates", name:"Automatic Gates", cat:"Outdoor", tag:"Automatic swing & sliding gates, motors & intercoms.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · MOTORISE IT", eye:"Auto gates · Free quotes", h:"WANT A SMART GATE?", hl:"SWINGS OPEN ON CUE.", live:"" },
+  { id:"balustrading", name:"Balustrading", cat:"Outdoor", tag:"Glass, wire, steel & timber balustrades & handrails.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · GLASS & STEEL", eye:"Balustrading · Free quotes", h:"STAIRS OR DECK?", hl:"RAILED SAFE & SHARP.", live:"" },
+  { id:"outdoor-kitchens", name:"Outdoor Kitchens", cat:"Outdoor", tag:"Built-in BBQs, alfresco kitchens & entertaining areas.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE DESIGN CONSULT", eye:"Outdoor kitchens · Custom", h:"BACKYARD BBQ DREAMS?", hl:"BUILT FOR SUMMER.", live:"" },
+  { id:"water-features", name:"Water Features", cat:"Outdoor", tag:"Ponds, fountains, cascades & feature water walls.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"FREE QUOTES · 7 DAYS", eye:"Water features · Free quotes", h:"WANT A WATER FEATURE?", hl:"BUILT TO FLOW.", live:"" },
+  { id:"carpet-cleaning", name:"Carpet Cleaning", cat:"Home services", tag:"Steam cleaning, stain removal & end-of-lease carpets.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"SAME-DAY · BOND-BACK CLEANS", eye:"Carpet cleaning · Insured", h:"GRUBBY CARPETS?", hl:"STEAMED FRESH AGAIN.", live:"" },
+  { id:"tile-grout-cleaning", name:"Tile & Grout Cleaning", cat:"Home services", tag:"Deep tile & grout cleaning, sealing & colour sealing.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"FREE QUOTES · 7 DAYS", eye:"Tile & grout · Insured", h:"GRIMY GROUT?", hl:"SCRUBBED & SEALED.", live:"" },
+  { id:"end-of-lease-cleaning", name:"End of Lease Cleaning", cat:"Home services", tag:"Full vacate cleans with a bond-back guarantee.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"BOND-BACK GUARANTEE", eye:"End of lease · Insured", h:"MOVING OUT?", hl:"BOND-BACK SPOTLESS.", live:"" },
+  { id:"oven-cleaning", name:"Oven Cleaning", cat:"Home services", tag:"Ovens, cooktops, rangehoods & BBQs detailed clean.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"FREE QUOTES · 7 DAYS", eye:"Oven cleaning · Insured", h:"BAKED-ON GRIME?", hl:"LIKE NEW INSIDE.", live:"" },
+  { id:"rubbish-removal", name:"Rubbish Removal", cat:"Home services", tag:"House, green & estate clearouts, we load & haul away.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"SAME-DAY · WE LOAD IT", eye:"Rubbish removal · Insured", h:"JUNK PILING UP?", hl:"GONE TODAY.", live:"" },
+  { id:"skip-bin-hire", name:"Skip Bin Hire", cat:"Home services", tag:"Skip & walk-in bins, all sizes, dropped & collected.", ink:"#1a1206", accent:"#f59e0b", accent2:"#fcd34d", emerg:"SAME-DAY DROP-OFF · 7 DAYS", eye:"Skip bins · Flexible hire", h:"BIG CLEAN-UP?", hl:"BIN AT YOUR DOOR.", live:"" },
+  { id:"removalists", name:"Removalists", cat:"Home services", tag:"Local & interstate moves, packing & furniture removal.", ink:"#15191e", accent:"#ff6a1a", accent2:"#ffd21e", emerg:"FREE QUOTES · 7 DAYS", eye:"Removalists · Insured", h:"MOVING HOUSE?", hl:"PACKED & SHIFTED CAREFULLY.", live:"" },
+  { id:"ev-charger", name:"EV Charger Installation", cat:"Home services", tag:"Home & business EV charger supply & install, all brands.", ink:"#0f172a", accent:"#2563eb", accent2:"#38bdf8", emerg:"FREE QUOTES · CHARGE AT HOME", eye:"EV chargers · Licensed", h:"GOT AN EV?", hl:"CHARGED OVERNIGHT.", live:"" },
+  { id:"solar-battery", name:"Solar Battery Storage", cat:"Home services", tag:"Battery storage, backup power & solar upgrades.", ink:"#1c1606", accent:"#d4a017", accent2:"#fde047", emerg:"FREE QUOTE & SAVINGS", eye:"Battery storage · CEC accredited", h:"WASTING SOLAR?", hl:"STORED FOR NIGHT.", live:"" },
+  { id:"antenna", name:"Antenna Installation", cat:"Home services", tag:"TV antennas, points, boosters & reception fixes.", ink:"#0f172a", accent:"#2563eb", accent2:"#38bdf8", emerg:"SAME-DAY · 7 DAYS", eye:"Antennas · Licensed", h:"BAD RECEPTION?", hl:"CRYSTAL-CLEAR TV.", live:"" },
+  { id:"data-cabling", name:"Data & Network Cabling", cat:"Home services", tag:"Data points, network & phone cabling, racks & patching.", ink:"#0f172a", accent:"#2563eb", accent2:"#38bdf8", emerg:"FREE QUOTES · 7 DAYS", eye:"Data cabling · Licensed", h:"DODGY WIFI?", hl:"WIRED ROCK-SOLID.", live:"" },
+  { id:"appliance-repair", name:"Appliance Repair", cat:"Home services", tag:"Washers, dryers, dishwashers, fridges & ovens repaired.", ink:"#15191e", accent:"#ff6a1a", accent2:"#ffd21e", emerg:"SAME-DAY · MOST BRANDS", eye:"Appliance repair · Insured", h:"APPLIANCE DEAD?", hl:"FIXED, NOT BINNED.", live:"" }
+];
+
+var FAQS = [
+  ['How fast can I be live?',"Most sites go live within 24 hours of you sending your details and approving the look. No weeks of back-and-forth."],
+  ['Do I own the site?',"Yes. The page is yours — your content, your brand. There's no lock-in, and if you ever leave you keep it."],
+  ['Can I edit it myself?',"Absolutely. You get a simple dashboard to change your phone number, services, prices, suburbs and photos anytime — no developer needed."],
+  ['What\u2019s the call &amp; lead tracking?',"Every call-button tap and every form enquiry is recorded and shown in your dashboard, so you can see exactly how many jobs your site is bringing in."],
+  ['Can I use my own domain?',"Yes — on the Pro plan we connect your own domain (like yourbusiness.com.au). On Starter you get a fast leadpages.webculture.au address."],
+  ['Is there a lock-in contract?',"No. It\u2019s month-to-month. Cancel whenever you like and keep your page."],
+  ['My trade isn\u2019t listed — can you still help?',"Yes. Start an order and tell us your trade in the notes. We build packs for landscapers, painters, roofers, tilers, concreters and more."]
+];
+
+/* ===== render gallery ===== */
+var THEME_CATS = ['All','Emergency','Building & reno','Roofing','Outdoor','Home services'];
+var themeFilter = { cat:'All', q:'' };
+function miniHTML(t){
+  return '<div class="mini" style="--tk:'+t.ink+';--ta:'+t.accent+';--ta2:'+t.accent2+'">'
+    +'<div class="mini-bar"><i></i><i></i><i></i></div>'
+    +'<div class="mini-emerg">\u26a0 '+t.emerg+'</div>'
+    +'<div class="mini-body"><div class="mini-eye">'+t.eye+'</div>'
+    +'<div class="mini-h">'+t.h+' <em>'+t.hl+'</em></div>'
+    +'<div class="mini-row"><span class="mini-cta">\ud83d\udcde CALL NOW</span><span class="mini-cta ghost">GET A QUOTE</span></div></div></div>';
+}
+function renderThemeTools(){
+  document.getElementById('themeChips').innerHTML = THEME_CATS.map(function(c){
+    return '<button class="tchip'+(themeFilter.cat===c?' on':'')+'" type="button" onclick="setThemeCat(\''+c+'\')">'+c+'</button>';
+  }).join('');
+}
+function setThemeCat(c){ themeFilter.cat=c; renderThemeTools(); renderThemes(); }
+function searchThemes(v){ themeFilter.q=(v||'').toLowerCase().trim(); renderThemes(); }
+function renderThemes(){
+  var q=themeFilter.q, cat=themeFilter.cat;
+  var list=THEMES.filter(function(t){
+    var okCat = cat==='All' || t.cat===cat;
+    var okQ = !q || (t.name+' '+t.tag+' '+t.cat).toLowerCase().indexOf(q)>-1;
+    return okCat && okQ;
+  });
+  var cnt=document.getElementById('themeCount');
+  if(cnt) cnt.textContent = list.length+' '+(list.length===1?'trade':'trades')+((cat==='All'&&!q)?' \u00b7 choose yours':'');
+  var grid=document.getElementById('themeGrid');
+  if(!list.length){ grid.innerHTML='<div class="tempty">No trades match that. <a href="#themes" onclick="chooseTheme(\'plumber\');return false;">Start an order</a> and tell us your trade \u2014 we\'ll build it.</div>'; return; }
+  grid.innerHTML = list.map(function(t){
+    var live = t.live ? '<a href="'+t.live+'" target="_blank" class="t-live">See it live \u2197</a>' : '<span class="t-live" style="opacity:.5">Demo on request</span>';
+    return '<div class="tcard"><div class="tprev" style="--tk:'+t.ink+'">'+miniHTML(t)+'</div>'
+      +'<div class="tinfo"><h3><span class="dot" style="--ta:'+t.accent+'"></span>'+t.name+'</h3>'
+      +'<p>'+t.tag+'</p>'
+      +'<div class="tinfo-act"><button class="btn btn-ink" onclick="chooseTheme(\''+t.id+'\')">Choose this theme</button></div>'
+      +'<div style="margin-top:12px">'+live+'</div></div></div>';
+  }).join('');
+}
+function renderFaq(){
+  document.getElementById('faqList').innerHTML = FAQS.map(function(f,i){
+    return '<div class="fitem"><button class="fq" onclick="toggleFaq('+i+')">'+f[0]+'<span class="pl">+</span></button><div class="fa" id="fa'+i+'"><p>'+f[1]+'</p></div></div>';
+  }).join('');
+}
+function toggleFaq(i){
+  var it=document.querySelectorAll('.fitem')[i], fa=document.getElementById('fa'+i);
+  var open=it.classList.toggle('open');
+  fa.style.maxHeight = open ? (fa.scrollHeight+'px') : '0';
+}
+
+/* ===== cart ===== */
+var CART = []; // {theme, plan}
+function themeById(id){ return THEMES.find(function(t){return t.id===id;}); }
+function chooseTheme(id, plan){
+  var t=themeById(id)||THEMES[0];
+  var existing=CART.find(function(c){return c.theme===id;});
+  if(!existing){ CART=[{ theme:id, plan:plan||'starter' }]; } // single-site cart keeps it simple
+  else if(plan){ existing.plan=plan; }
+  track('add_to_cart',{theme:id,plan:plan||'starter'});
+  renderCart(); openCart();
+}
+function setPlan(plan){ if(CART[0]){ CART[0].plan=plan; renderCart(); } }
+function removeItem(){ CART=[]; renderCart(); }
+function cartTotals(){
+  var s=0,m=0; CART.forEach(function(c){ var p=PLANS[c.plan]; s+=p.setup; m+=p.monthly; }); return {setup:s,monthly:m};
+}
+function renderCart(){
+  var body=document.getElementById('cartBody'), foot=document.getElementById('cartFoot'), cnt=document.getElementById('cartCount');
+  if(!CART.length){
+    body.innerHTML='<div class="empty"><div class="big">🛒</div><b>Your order is empty</b><p style="margin-top:6px">Pick a theme to get started.</p></div>';
+    foot.hidden=true; cnt.hidden=true; return;
+  }
+  cnt.hidden=false; cnt.textContent=CART.length;
+  body.innerHTML = CART.map(function(c){
+    var t=themeById(c.theme);
+    var opts=Object.keys(PLANS).map(function(k){ var p=PLANS[k];
+      return '<div class="plan-opt'+(c.plan===k?' sel':'')+'" onclick="setPlan(\''+k+'\')"><b>'+p.name+'</b><span>$'+p.setup+' + $'+p.monthly+'/mo</span></div>';
+    }).join('');
+    return '<div class="citem"><div class="citem-h"><div><b>'+t.name+' site</b><div class="trade">'+t.tag+'</div></div><button class="rm" onclick="removeItem()">Remove</button></div><div class="plan-pick">'+opts+'</div></div>';
+  }).join('');
+  var tot=cartTotals();
+  document.getElementById('tSetup').textContent='$'+tot.setup;
+  document.getElementById('tMonthly').textContent='$'+tot.monthly+'/mo';
+  foot.hidden=false;
+}
+function openCart(){ document.getElementById('drawer').classList.add('on'); document.getElementById('scrim').classList.add('on'); }
+function closeCart(){ document.getElementById('drawer').classList.remove('on'); document.getElementById('scrim').classList.remove('on'); }
+
+/* ===== checkout ===== */
+function openCheckout(){
+  if(!CART.length) return;
+  var c=CART[0], t=themeById(c.theme), p=PLANS[c.plan];
+  var m=document.getElementById('coModal');
+  m.innerHTML='<h3>Almost there</h3><p class="sub">Send your details and we\u2019ll build your '+t.name.toLowerCase()+' site — live within 24 hours.</p>'
+    +'<div class="ordersum"><div class="li"><span>'+t.name+' site · '+p.name+' plan</span><span></span></div>'
+    +'<div class="li"><span>Setup (one-off)</span><span>$'+p.setup+'</span></div>'
+    +'<div class="li tot"><span>Then monthly</span><span>$'+p.monthly+'/mo</span></div></div>'
+    +'<div class="field"><label>Business name</label><input id="co-biz" placeholder="e.g. Cara Plumbing"></div>'
+    +'<div class="row2"><div class="field"><label>Your trade</label><input id="co-trade" value="'+t.name+'"></div>'
+    +'<div class="field"><label>Preferred web address</label><input id="co-slug" placeholder="cara-plumbing"></div></div>'
+    +'<div class="row2"><div class="field"><label>Your name</label><input id="co-name" placeholder="First name"></div>'
+    +'<div class="field"><label>Phone</label><input id="co-phone" placeholder="0412 ..."></div></div>'
+    +'<div class="field"><label>Email</label><input id="co-email" type="email" placeholder="you@email.com"></div>'
+    +'<div class="field"><label>Anything we should know? (optional)</label><textarea id="co-notes" rows="2" placeholder="Suburbs you serve, licence number, special offers..."></textarea></div>'
+    +'<div class="err" id="co-err"></div>'
+    +'<div class="modal-act"><button class="btn btn-light" onclick="closeCheckout()">Back</button><button class="btn btn-hivis" id="co-submit" onclick="submitOrder()">Place order →</button></div>';
+  document.getElementById('coScrim').classList.add('on');
+  closeCart();
+  setTimeout(function(){ var b=document.getElementById('co-biz'); if(b) b.focus(); },80);
+}
+function closeCheckout(){ document.getElementById('coScrim').classList.remove('on'); }
+
+async function submitOrder(){
+  var err=document.getElementById('co-err'); err.textContent='';
+  var biz=val('co-biz'), name=val('co-name'), email=val('co-email'), phone=val('co-phone');
+  if(!biz){ err.textContent='Please add your business name.'; return; }
+  if(!phone && !email){ err.textContent='Add a phone or email so we can reach you.'; return; }
+  var c=CART[0], t=themeById(c.theme), p=PLANS[c.plan];
+  var details={ theme:t.id, themeName:t.name, plan:p.name, setup:p.setup, monthly:p.monthly,
+    trade:val('co-trade'), slug:val('co-slug'), suburb:'', notes:val('co-notes'), source:'storefront' };
+  var btn=document.getElementById('co-submit'); btn.disabled=true; btn.textContent='Placing order…';
+  var ok=false;
+  try{
+    var r=await fetch('/api/leads',{ method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ site:'Storefront order — '+biz, kind:'order', name:name, email:email, phone:phone, details:details }) });
+    ok = r.ok;
+  }catch(e){ ok=false; }
+  btn.disabled=false; btn.textContent='Place order →';
+  if(!ok){ err.textContent='Something went wrong sending that. Call us on the number below or try again.'; return; }
+  track('order',{theme:t.id,plan:c.plan,setup:p.setup,monthly:p.monthly});
+  // payment hand-off (optional)
+  var pay=STRIPE_LINKS[c.plan];
+  showSuccess(t,p,pay);
+}
+function showSuccess(t,p,pay){
+  var m=document.getElementById('coModal');
+  m.innerHTML='<div class="success"><div class="tick">✓</div><h3>You\u2019re booked in!</h3>'
+    +'<p>We\u2019ve got your '+t.name.toLowerCase()+' site order. We\u2019ll be in touch within a few hours and have you live within 24 hours.</p>'
+    +(pay?'<p style="margin-top:14px">Want to lock in your build slot now?</p><a href="'+pay+'" class="btn btn-hivis" style="margin-top:10px">Pay setup ($'+p.setup+') →</a>'
+         :'<p style="margin-top:10px;color:#16a34a;font-weight:600">We\u2019ll send your invoice and login by email.</p>')
+    +'<div style="margin-top:22px"><button class="btn btn-light" onclick="closeCheckout()">Done</button></div></div>';
+  CART=[]; renderCart();
+}
+
+/* ===== helpers ===== */
+function val(id){ var e=document.getElementById(id); return e?e.value.trim():''; }
+function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('on');},2600); }
+function track(event,props){ try{ fetch('/api/events',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ site:'Storefront', event:event, props:props||{} }) }); }catch(e){} }
+
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ closeCart(); closeCheckout(); } });
+document.getElementById('coScrim').addEventListener('click',function(e){ if(e.target===this) closeCheckout(); });
+
+renderThemeTools(); renderThemes(); renderFaq(); renderCart();
+track('page_view',{page:'home'});
+</script>
+</body>
+</html>
