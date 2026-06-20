@@ -1355,7 +1355,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     hero:{eyebrow:'Licensed Canberra plumber · Same-day', title:'Blocked drain?', titleHl:"We'll clear it today.", sub:"Fast, fixed-price plumbing across the ACT — blocked drains, burst pipes, hot water and leaks. You'll know the price before we start."},
     services:{eyebrow:'What we fix', heading:'One call sorts the lot.', intro:'From a slow kitchen sink to a flooded laundry at 2am — we handle the everyday and the emergencies.'},
     why:{eyebrow:'Why us', heading:'No call-out games. No surprise bills.'},
-    area:{eyebrow:'Where we work', heading:'Across Canberra & the ACT'},
+    area:{eyebrow:'Where we work', heading:'Across Canberra & the ACT', intro:"If you're in the ACT, we cover you. Same-day where we can, every day of the week."},
     reviews:{eyebrow:'From the neighbours', heading:'212 five-star reviews and counting.'},
     faq:{eyebrow:'Good to know', heading:'Quick answers.'},
     quote:{eyebrow:'Fast quote', heading:"Tell us the problem. We'll call you straight back."}
@@ -1370,6 +1370,13 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   ];
   const TRADE_SUBTABS=[['details','Details'],['hero','Hero'],['services','Services'],['why','Why us'],['area','Where'],['reviews','Reviews'],['faq','FAQ'],['branding','Branding']];
   let landingSub='details';
+  const DEFAULT_TRADE_LISTS={'hero.badges':[{"icon": "✓", "text": "Licensed & insured"}, {"icon": "★", "text": "4.9 from 212 reviews"}, {"icon": "$", "text": "Upfront fixed pricing"}, {"icon": "⚡", "text": "Same-day service"}],'why.items':[{"n": "01", "title": "Upfront pricing", "body": "A fixed price agreed before we start. The number we quote is the number you pay."}, {"n": "24/7", "title": "Real emergencies", "body": "Burst pipe at midnight? We answer the phone and get someone moving, day or night."}, {"n": "★", "title": "Properly licensed", "body": "Fully licensed ACT plumbers, fully insured. Licence details on every invoice."}, {"n": "⌂", "title": "Local & trusted", "body": "Canberra-based, Canberra-owned. We know the suburbs, the soil and the old pipework."}],'reviews.items':[{"who": "Marcus T. — Belconnen", "text": "\"Blocked sewer on a Sunday, total panic. {{businessName}} had someone out within the hour and jetted it clear. Fixed price, no fuss.\""}, {"who": "Jenny K. — Woden", "text": "\"Hot water died the morning we had guests. New system in and running by lunch. Couldn't fault them.\""}, {"who": "Dave R. — Gungahlin", "text": "\"Used the drain camera to show me the tree root problem instead of just guessing. Honest and proper work.\""}],'faq.items':[{"q": "Can you really come same-day?", "a": "For blocked drains, burst pipes and no-hot-water jobs we aim to be on site the same day, and we run a 24/7 line for emergencies across the ACT."}, {"q": "Are you licensed and insured?", "a": "Yes — fully licensed ACT plumbers and fully insured. Our licence number is on every invoice and we're happy to show it before any work begins."}],'area.suburbs':["Gungahlin", "Belconnen", "Woden", "Tuggeranong", "Civic", "Dickson", "Queanbeyan", "Molonglo", "Weston Creek", "Kingston"]};
+  const LIST_SCHEMAS={
+    badges:{secId:'hero',key:'badges',addLabel:'Add badge',item:[{k:'icon',label:'Icon',w:'72px',ph:'✓'},{k:'text',label:'Text'}],defaultItem:{icon:'✓',text:'New badge'}},
+    why:{secId:'why',key:'items',addLabel:'Add reason',item:[{k:'n',label:'Badge',w:'88px',ph:'01'},{k:'title',label:'Heading'},{k:'body',label:'Text',type:'ta'}],defaultItem:{n:'+',title:'New reason',body:''}},
+    reviews:{secId:'reviews',key:'items',addLabel:'Add review',item:[{k:'who',label:'Name & suburb'},{k:'text',label:'Quote',type:'ta'}],defaultItem:{who:'',text:''}},
+    faq:{secId:'faq',key:'items',addLabel:'Add question',item:[{k:'q',label:'Question'},{k:'a',label:'Answer',type:'ta'}],defaultItem:{q:'',a:''}}
+  };
   function loadSite(site){
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app';
     currentBusinessName=site.business_name||'';
@@ -1459,6 +1466,32 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     box.innerHTML=TRADE_PRESETS.map(function(p,i){ var sw=['steel','pipe','hivis','safety'].map(function(k){return '<span style="width:13px;height:13px;border-radius:3px;background:'+p.theme[k]+';display:inline-block;"></span>';}).join(''); return '<button type="button" class="btn ghost tp-btn" data-i="'+i+'" style="display:flex;align-items:center;gap:8px;padding:7px 11px;"><span style="display:flex;gap:3px;">'+sw+'</span><span style="font-size:13px;">'+p.name+'</span></button>'; }).join('');
     box.addEventListener('click',function(e){ var b=e.target.closest('.tp-btn'); if(!b) return; var p=TRADE_PRESETS[+b.getAttribute('data-i')]; c.theme=Object.assign({},p.theme); persist(); renderDetails(); previewApply(); toast('\u201c'+p.name+'\u201d applied'); });
   }
+  function getList(c,sk){ var sc=LIST_SCHEMAS[sk]; var o=c.sections&&c.sections[sc.secId]; var cur=o&&o[sc.key]; if(Array.isArray(cur)) return cur.map(function(it){return Object.assign({},it);}); var def=DEFAULT_TRADE_LISTS[sc.secId+'.'+sc.key]||[]; return def.map(function(it){ var n={}; for(var k in it){ n[k]=(typeof it[k]==='string')?it[k].replace(/\{\{\s*businessName\s*\}\}/g,currentBusinessName||'us'):it[k]; } return n; }); }
+  function setList(c,sk,arr){ var sc=LIST_SCHEMAS[sk]; if(!c.sections) c.sections={}; if(!c.sections[sc.secId]) c.sections[sc.secId]={}; c.sections[sc.secId][sc.key]=arr; persist(); previewApply(); }
+  function listCard(sk,title,lede){ return '<div class="card" style="margin-bottom:22px;"><h2>'+title+'</h2><p class="lede">'+lede+'</p><div id="le-'+sk+'"></div></div>'; }
+  function listEditor(host,c,sk){
+    if(!host) return; var sc=LIST_SCHEMAS[sk]; var items=getList(c,sk);
+    function render(){
+      host.innerHTML=items.map(function(it,i){
+        var inner=sc.item.map(function(f){
+          if(f.type==='ta') return '<div class="f" style="margin:0;flex:1 1 100%;"><label>'+f.label+'</label><textarea data-k="'+f.k+'" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;"></textarea></div>';
+          return '<div class="f" style="margin:0;'+(f.w?'flex:0 0 '+f.w+';':'flex:1;')+'"><label>'+f.label+'</label><input type="text" data-k="'+f.k+'" placeholder="'+(f.ph||'')+'"></div>';
+        }).join('');
+        return '<div class="le-row" data-idx="'+i+'" style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:#fff;"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;"><label style="display:flex;gap:7px;align-items:center;font-weight:600;font-size:13px;"><input type="checkbox" class="le-on"> Shown</label><button type="button" class="btn ghost le-del" style="padding:4px 9px;font-size:13px;">Remove</button></div><div style="display:flex;flex-wrap:wrap;gap:10px;">'+inner+'</div></div>';
+      }).join('')+'<button type="button" class="btn ghost le-add" style="margin-top:2px;">+ '+sc.addLabel+'</button>';
+      host.querySelectorAll('.le-row').forEach(function(row,i){ var it=items[i]||{}; row.querySelector('.le-on').checked=(it.on!==false); row.querySelectorAll('[data-k]').forEach(function(el){ var v=it[el.getAttribute('data-k')]; el.value=(v!=null?v:''); }); });
+    }
+    function collect(){ var arr=[]; host.querySelectorAll('.le-row').forEach(function(row){ var it={on:row.querySelector('.le-on').checked}; row.querySelectorAll('[data-k]').forEach(function(el){ it[el.getAttribute('data-k')]=el.value; }); arr.push(it); }); items=arr; setList(c,sk,arr); }
+    render();
+    host.addEventListener('input',function(e){ if(e.target.matches('input[type=text],textarea')) collect(); });
+    host.addEventListener('change',function(e){ if(e.target.classList.contains('le-on')) collect(); });
+    host.addEventListener('click',function(e){ if(e.target.classList.contains('le-del')){ var i=+e.target.closest('.le-row').getAttribute('data-idx'); items.splice(i,1); setList(c,sk,items); render(); } else if(e.target.classList.contains('le-add')){ items=items.concat([Object.assign({on:true},sc.defaultItem)]); setList(c,sk,items); render(); } });
+  }
+  function wireSuburbs(c){
+    var ta=$('le-suburbs'); if(!ta) return; var o=c.sections&&c.sections.area; var cur=o&&o.suburbs;
+    ta.value=(Array.isArray(cur)?cur:(DEFAULT_TRADE_LISTS['area.suburbs']||[])).join('\n');
+    ta.addEventListener('input',function(){ var list=ta.value.split(/[\n,]+/).map(function(x){return x.trim();}).filter(Boolean); if(!c.sections) c.sections={}; if(!c.sections.area) c.sections.area={}; c.sections.area.suburbs=list; persist(); previewApply(); });
+  }
   function renderLandingSub(c){
     var body=$('lsub-body'); if(!body) return; var sub=landingSub;
     if(sub==='details'){
@@ -1469,20 +1502,21 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         +'<div class="row">'+lpFld('Trade type','d-trade','e.g. Plumber')+lpFld('Licence','d-licence','')+'</div></div>';
       wireDetailFields(c,'trade');
     } else if(sub==='hero'){
-      body.innerHTML=secCard(c,'hero','Hero',false,[['eyebrow','Eyebrow (label above headline)'],['title','Headline'],['titleHl','Headline highlight (coloured words)'],['sub','Sub-text','ta']]);
-      wireHero(c);
+      body.innerHTML=secCard(c,'hero','Hero',false,[['eyebrow','Eyebrow (label above headline)'],['title','Headline'],['titleHl','Headline highlight (coloured words)'],['sub','Sub-text','ta']])
+        +listCard('badges','Trust badges','The small badges under the hero buttons. Edit, hide or remove each.');
+      wireHero(c); listEditor($('le-badges'),c,'badges');
     } else if(sub==='services'){
       body.innerHTML=secCard(c,'services','Services section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro text','ta']])
         +'<div class="card" style="margin-bottom:22px;"><h2>Service cards</h2><p class="lede">Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 change its icon, heading and text.</p><div id="svc-list"></div></div>';
       wireSec(c,'services',true,[['eyebrow'],['heading'],['intro']]); wireTradeServices(c);
     } else if(sub==='why'){
-      body.innerHTML=secCard(c,'why','Why us section',true,[['eyebrow','Eyebrow'],['heading','Heading']]); wireSec(c,'why',true,[['eyebrow'],['heading']]);
+      body.innerHTML=secCard(c,'why','Why us section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+listCard('why','Reasons','The numbered points. Edit, hide or remove each.'); wireSec(c,'why',true,[['eyebrow'],['heading']]); listEditor($('le-why'),c,'why');
     } else if(sub==='area'){
-      body.innerHTML=secCard(c,'area','Service area section',true,[['eyebrow','Eyebrow'],['heading','Heading']]); wireSec(c,'area',true,[['eyebrow'],['heading']]);
+      body.innerHTML=secCard(c,'area','Service area section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro line','ta']])+'<div class="card" style="margin-bottom:22px;"><h2>Suburbs</h2><p class="lede">One per line (or comma-separated) — shown as tags.</p><textarea id="le-suburbs" rows="6" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;"></textarea></div>'; wireSec(c,'area',true,[['eyebrow'],['heading'],['intro']]); wireSuburbs(c);
     } else if(sub==='reviews'){
-      body.innerHTML=secCard(c,'reviews','Reviews section',true,[['eyebrow','Eyebrow'],['heading','Heading']]); wireSec(c,'reviews',true,[['eyebrow'],['heading']]);
+      body.innerHTML=secCard(c,'reviews','Reviews section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+listCard('reviews','Reviews','Customer quotes (stars stay at five). Edit, hide or remove each.'); wireSec(c,'reviews',true,[['eyebrow'],['heading']]); listEditor($('le-reviews'),c,'reviews');
     } else if(sub==='faq'){
-      body.innerHTML=secCard(c,'faq','FAQ section',true,[['eyebrow','Eyebrow'],['heading','Heading']]); wireSec(c,'faq',true,[['eyebrow'],['heading']]);
+      body.innerHTML=secCard(c,'faq','FAQ section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+listCard('faq','Questions','Common questions and answers. Edit, hide or remove each.'); wireSec(c,'faq',true,[['eyebrow'],['heading']]); listEditor($('le-faq'),c,'faq');
     } else if(sub==='branding'){
       var rowsC=TRADE_COLOURS.map(function(k){ return '<div class="f"><label>'+k[1]+' <span class="hint">'+k[2]+'</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="col-'+k[0]+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="colt-'+k[0]+'" class="tin" style="flex:1;"></div></div>'; }).join('');
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Logo</h2><p class="lede">Show a clean text logo or upload an image \u2014 both replace the default initial badge.</p>'
