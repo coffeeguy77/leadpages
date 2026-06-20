@@ -239,6 +239,16 @@ textarea.tin{resize:vertical;}
 body.role-leads .adminnav{display:none;}
 body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .layout{display:none;}
 .tin,.tin.mono,.clr-hex,.apsel{background:#fff;color:#1b2430;}
+.dt-add{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px;}
+.dt-add .tin{flex:1;min-width:160px;}
+.dt-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);}
+.dt-row:last-child{border-bottom:none;}
+.dt-dots{display:inline-flex;gap:3px;flex:none;}
+.dt-dots i{width:14px;height:14px;border-radius:4px;display:inline-block;border:1px solid rgba(0,0,0,.1);}
+.dt-name{font-weight:600;flex:1;min-width:0;color:#1b2430;}
+.dt-label{font-weight:400;color:#6b7280;font-size:12.5px;}
+.dt-toggle{display:flex;align-items:center;gap:6px;font-size:13px;color:#444;white-space:nowrap;cursor:pointer;}
+.dt-toggle input{flex:none;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
@@ -272,6 +282,7 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
     <button class="anav-btn" id="nav-contact" aria-selected="false">Contact</button>
     <button class="anav-btn" id="nav-logo" aria-selected="false">Logo</button>
     <button class="anav-btn" id="nav-users" aria-selected="false">Users</button>
+    <button class="anav-btn" id="nav-demothemes" aria-selected="false">Demo themes</button>
   </div>
 
   <div id="av-rates">
@@ -507,6 +518,22 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
         <select id="us-role" class="apsel"><option value="super">Super admin</option><option value="broker">Broker</option><option value="leads">Leads only</option></select>
         <button class="btn" id="us-add">Add user</button>
       </div>
+    </div>
+  </div>
+
+  <div id="av-demothemes" hidden>
+    <div class="card">
+      <h2>Demo themes</h2>
+      <p class="lede">Looks a prospect can try on your demo site (<strong>/s/demo</strong>). Design a look in the <strong>Appearance</strong> tab, then save it here with the client's name and choose whether it shows. Visitors apply them live on the demo &mdash; nothing is saved to their browser or yours.</p>
+      <div class="apgroup-h">Add the current look</div>
+      <div class="dt-add">
+        <input type="text" id="dt-name" class="tin" placeholder="Client name, e.g. ACME Brokers">
+        <input type="text" id="dt-label" class="tin" placeholder="Optional note (e.g. pitch 12 Jun)">
+        <button class="btn" id="dt-save">Save current look as a demo theme</button>
+      </div>
+      <p class="hint" style="margin-top:2px;">Switch to <strong>Appearance</strong>, build the look, then come back here and save &mdash; it captures whatever is set there now.</p>
+      <div class="apgroup-h">On the demo</div>
+      <div id="dt-list"></div>
     </div>
   </div>
 </div>
@@ -1275,8 +1302,51 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
       }
     }
   }
+  /* ---- demo themes (super-admin: manage looks shown on /s/demo) ---- */
+  async function renderDemoThemes(){
+    var box=$('dt-list'); if(!box) return;
+    box.innerHTML='<p class="hint" style="margin:0;">Loading\u2026</p>';
+    var rows=[];
+    try{ var r=await sb.from('demo_themes').select('*').order('sort',{ascending:true}).order('created_at',{ascending:true}); if(r.error) throw r.error; rows=r.data||[]; }
+    catch(e){ box.innerHTML='<p class="hint" style="margin:0;color:#b4543c;">Could not load demo themes: '+(e.message||e)+'</p>'; return; }
+    if(!rows.length){ box.innerHTML='<p class="hint" style="margin:0;">No demo themes yet. Design a look in Appearance, then add it above.</p>'; return; }
+    box.innerHTML='';
+    rows.forEach(function(t){
+      var sw=t.appearance||{};
+      var row=document.createElement('div'); row.className='dt-row';
+      row.innerHTML='<span class="dt-dots"><i style="background:'+(sw.bg||'#eee')+'"></i><i style="background:'+(sw.brand||'#999')+'"></i><i style="background:'+(sw.panelBg||'#333')+'"></i><i style="background:'+(sw.accent||'#c90')+'"></i></span>'
+        +'<span class="dt-name">'+esc(t.name)+(t.label?' <span class="dt-label">'+esc(t.label)+'</span>':'')+'</span>'
+        +'<label class="dt-toggle"><input type="checkbox" '+(t.enabled?'checked':'')+'> Shown on demo</label>'
+        +'<button class="btn ghost dt-load" type="button">Load</button>'
+        +'<button class="btn ghost dt-del" type="button">Remove</button>';
+      row.querySelector('.dt-toggle input').addEventListener('change',function(){ toggleDemoTheme(t.id,this.checked); });
+      row.querySelector('.dt-load').addEventListener('click',function(){ data.appearance=Object.assign({},t.appearance||{}); persist(); showView('appearance'); renderAppearance(); toast('Loaded into Appearance \u2014 tweak, then re-save'); });
+      row.querySelector('.dt-del').addEventListener('click',function(){ removeDemoTheme(t.id,t.name); });
+      box.appendChild(row);
+    });
+  }
+  async function saveCurrentAsDemoTheme(){
+    var name=($('dt-name').value||'').trim(); if(!name){ toast('Give the theme a name first'); return; }
+    var label=($('dt-label').value||'').trim();
+    var btn=$('dt-save'); if(btn){ btn.disabled=true; btn.textContent='Saving\u2026'; }
+    var r=await sb.from('demo_themes').insert({ name:name, label:label||null, appearance:curAppr(), enabled:true });
+    if(btn){ btn.disabled=false; btn.textContent='Save current look as a demo theme'; }
+    if(r.error){ toast('Save failed: '+r.error.message); return; }
+    $('dt-name').value=''; $('dt-label').value=''; toast('Added \u201c'+name+'\u201d to the demo'); renderDemoThemes();
+  }
+  async function toggleDemoTheme(id,enabled){
+    var r=await sb.from('demo_themes').update({ enabled:enabled, updated_at:new Date().toISOString() }).eq('id',id);
+    if(r.error){ toast('Update failed: '+r.error.message); renderDemoThemes(); return; }
+    toast(enabled?'Shown on demo':'Hidden from demo');
+  }
+  async function removeDemoTheme(id,name){
+    if(!confirm('Remove \u201c'+name+'\u201d from the demo?')) return;
+    var r=await sb.from('demo_themes').delete().eq('id',id);
+    if(r.error){ toast('Delete failed: '+r.error.message); return; }
+    toast('Removed \u201c'+name+'\u201d'); renderDemoThemes();
+  }
   /* ===== end leadpages integration ===== */
-  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users'], broker:['appearance','contact','logo','landing'], leads:['rates'] };
+  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes'], broker:['appearance','contact','logo','landing'], leads:['rates'] };
   function buildLogin(){
     if($('login-mask')) return;
     const m=document.createElement('div'); m.id='login-mask'; m.className='login-mask';
@@ -1317,7 +1387,7 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
   function gate(){ if(!authed){ const av=document.getElementById('admin-view'); if(av && av.hidden) return; showLogin(); } }
 
   /* ---------- nav switcher (six tabs) ---------- */
-  const NAV=[['rates','av-rates',null],['landing','av-landing',renderLanding],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers]];
+  const NAV=[['rates','av-rates',null],['landing','av-landing',renderLanding],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',renderDemoThemes]];
   let activeView='rates';
   function showView(which){
     activeView=which;
@@ -1325,6 +1395,7 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
   }
   NAV.forEach(function(it){ const b=$('nav-'+it[0]); if(b) b.addEventListener('click',function(){ showView(it[0]); }); });
   window.__adminGate=gate;
+  var __dtsave=document.getElementById('dt-save'); if(__dtsave) __dtsave.addEventListener('click',saveCurrentAsDemoTheme);
   buildLogin(); bootAuth();
   renderAppearance();
 
