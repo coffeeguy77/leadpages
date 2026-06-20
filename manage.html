@@ -295,6 +295,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   </div>
 
   <div class="adminnav" role="tablist">
+    <button class="anav-btn" id="nav-details" aria-selected="false" style="display:none">Details</button>
     <button class="anav-btn" id="nav-rates" aria-selected="true" style="display:none">Rates &amp; leads</button>
     <button class="anav-btn" id="nav-landing" aria-selected="false">Landing pages</button>
     <button class="anav-btn" id="nav-appearance" aria-selected="false">Appearance</button>
@@ -303,6 +304,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     <button class="anav-btn" id="nav-users" aria-selected="false" style="display:none">Users</button>
     <button class="anav-btn" id="nav-demothemes" aria-selected="false" style="display:none">Demo themes</button>
   </div>
+
+  <div id="av-details" hidden></div>
 
   <div id="av-rates">
   <div class="card" style="margin-bottom:22px;">
@@ -1020,7 +1023,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   /* ---- live preview: the real calculator, driven live (same-origin) ---- */
   let lpPrevReady=false, lpPrevSlug=null, lpMode='desktop', lpRsz=null, lpPw=640;
   function lpFrame(){ return document.getElementById('lp-prev-frame'); }
-  function previewTarget(){ return (currentSiteTemplate==='broker-app' && currentSiteSlug) ? currentSiteSlug : 'demo'; }
+  function previewTarget(){ return currentSiteSlug || 'demo'; }
   function previewApply(a){
     var fr=lpFrame(); if(!fr||!lpPrevReady) return;
     try{ var w=fr.contentWindow; if(w&&w.__applyAppearance) w.__applyAppearance(a||curAppr()); }catch(e){}
@@ -1292,7 +1295,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   let authed=false, currentRole='super';
   /* ===== leadpages: live Supabase auth + DB-backed config ===== */
   const sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
-  let currentSiteId=null, currentSiteSlug=null, currentSiteTemplate=null, allSites=[];
+  let currentSiteId=null, currentSiteSlug=null, currentSiteTemplate=null, currentBusinessName='', allSites=[];
 
   async function lpLogin(){
     const email=$('li-user').value.trim(), pass=$('li-pass').value;
@@ -1337,14 +1340,60 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   }
   function loadSite(site){
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app';
-    const cfg=site.config||{};
-    data=Object.assign(JSON.parse(JSON.stringify(DEFAULT_RATES)), cfg);
-    seedConfig();
-    if(!data.states || !Object.keys(data.states).length){ data.states=JSON.parse(JSON.stringify(DEFAULT_RATES.states)); }
-    current=Object.keys(data.states)[0];
-    init();
+    currentBusinessName=site.business_name||'';
+    if(currentSiteTemplate==='broker-app'){
+      const cfg=site.config||{};
+      data=Object.assign(JSON.parse(JSON.stringify(DEFAULT_RATES)), cfg);
+      seedConfig();
+      if(!data.states || !Object.keys(data.states).length){ data.states=JSON.parse(JSON.stringify(DEFAULT_RATES.states)); }
+      current=Object.keys(data.states)[0];
+      init();
+    } else {
+      // landing / trade: edit the raw site config (no calculator defaults)
+      data=JSON.parse(JSON.stringify(site.config||{}));
+    }
+    applyTemplateChrome();
+    applyRoleGating();
     ensureSiteBar();
     if(document.body.classList.contains('lp-prev-open')) previewLoad();
+  }
+  function applyTemplateChrome(){
+    var isApp=(currentSiteTemplate==='broker-app');
+    ['btn-import','btn-snippet','btn-copy','btn-download'].forEach(function(id){ var b=$(id); if(b) b.style.display=isApp?'':'none'; });
+    var ge=$('g-effective'), gu=$('g-updated');
+    if(ge&&ge.closest('.f')) ge.closest('.f').style.display=isApp?'':'none';
+    if(gu&&gu.closest('.f')) gu.closest('.f').style.display=isApp?'':'none';
+    var sub=document.querySelector('.wrap > .sub');
+    if(sub) sub.textContent= isApp
+      ? 'Update the figures the calculator uses \u2014 brackets, fees, grants, surcharges and first-home thresholds \u2014 then publish. No code required. Use the live preview on the right to sanity-check a change before you export.'
+      : 'Edit this client\u2019s site details \u2014 business name, contact and the figures their page shows \u2014 then publish. The live preview shows their real page (it refreshes when you publish).';
+  }
+  function renderDetails(){
+    var box=$('av-details'); if(!box) return;
+    var t=currentSiteTemplate, c=data||{};
+    function fld(label,id,ph){ return '<div class="f"><label>'+label+'</label><input type="text" id="'+id+'"'+(ph?' placeholder="'+ph+'"':'')+'></div>'; }
+    var typeBits='';
+    if(t==='trade'){
+      typeBits='<div class="row">'+fld('Trade type','d-trade','e.g. Plumber')+fld('Licence','d-licence','')+'</div>';
+    } else if(t==='broker-leads'){
+      typeBits=fld('Suburb','d-suburb','')+'<h3 style="margin:18px 0 8px;font-size:14px;">Rates shown on the page</h3><div class="row3">'+fld('Variable rate %','d-var','')+fld('Comparison rate %','d-comp','')+fld('Updated label','d-rupd','e.g. Jun 2026')+'</div>';
+    }
+    box.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Site details</h2><p class="lede">These feed your client\u2019s '+(t==='trade'?'trade':'broker')+' landing page. Publish to push them live.</p>'
+      +fld('Business name','d-biz','')
+      +'<div class="row">'+fld('Phone (shown to visitors)','d-phoneText','(02) 1234 5678')+fld('Phone (for the call button)','d-phone','+61...')+'</div>'
+      +'<div class="row">'+fld('Email','d-email','')+fld('Region','d-region','')+'</div>'
+      +typeBits+'</div>';
+    function setv(id,v){ var el=$(id); if(el) el.value=(v==null?'':v); }
+    function on(id,fn){ var el=$(id); if(el) el.addEventListener('input',function(){ fn(el.value); persist(); }); }
+    setv('d-biz',currentBusinessName); setv('d-phoneText',c.phoneText); setv('d-phone',c.phone); setv('d-email',c.email); setv('d-region',c.region);
+    on('d-biz',function(v){ currentBusinessName=v; }); on('d-phoneText',function(v){ c.phoneText=v; }); on('d-phone',function(v){ c.phone=v; }); on('d-email',function(v){ c.email=v; }); on('d-region',function(v){ c.region=v; });
+    if(t==='trade'){ setv('d-trade',c.trade); setv('d-licence',c.licence); on('d-trade',function(v){ c.trade=v; }); on('d-licence',function(v){ c.licence=v; }); }
+    if(t==='broker-leads'){ var r=c.rates||{}; setv('d-suburb',c.suburb); setv('d-var',r.variableRate); setv('d-comp',r.comparisonRate); setv('d-rupd',r.updatedAt);
+      on('d-suburb',function(v){ c.suburb=v; });
+      on('d-var',function(v){ c.rates=c.rates||{}; c.rates.variableRate=(v===''?undefined:(parseFloat(v)||v)); });
+      on('d-comp',function(v){ c.rates=c.rates||{}; c.rates.comparisonRate=(v===''?undefined:(parseFloat(v)||v)); });
+      on('d-rupd',function(v){ c.rates=c.rates||{}; c.rates.updatedAt=v; });
+    }
   }
   function siteConfigForSave(){
     const c=liveConfig();   // strips demo users
@@ -1355,10 +1404,19 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   async function publishToDB(){
     if(!currentSiteId){ toast('No site loaded to publish.'); return; }
     const btn=$('btn-publish'); if(btn){ btn.disabled=true; btn.textContent='Publishing\u2026'; }
-    const { error } = await sb.from('sites').update({ config:siteConfigForSave(), updated_at:new Date().toISOString() }).eq('id', currentSiteId);
+    var payload;
+    if(currentSiteTemplate==='broker-app'){
+      payload={ config:siteConfigForSave(), updated_at:new Date().toISOString() };
+    } else {
+      var lc=JSON.parse(JSON.stringify(data||{})); delete lc.savedThemes;
+      payload={ config:lc, business_name:(currentBusinessName||'').trim(), updated_at:new Date().toISOString() };
+    }
+    const { error } = await sb.from('sites').update(payload).eq('id', currentSiteId);
     if(btn){ btn.disabled=false; btn.textContent='Publish to live site'; }
     if(error){ toast('Publish failed: '+error.message); return; }
     try{ persist(); }catch(e){}
+    var sref=allSites.find(function(x){return x.id===currentSiteId;}); if(sref){ if(payload.business_name) sref.business_name=payload.business_name; sref.config=payload.config; }
+    if(currentSiteTemplate!=='broker-app' && document.body.classList.contains('lp-prev-open')) previewLoad();
     toast('Published \u2014 live on your site');
   }
   async function signOutLP(){ try{ await sb.auth.signOut(); }catch(e){} location.reload(); }
@@ -1440,7 +1498,9 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     toast('Removed \u201c'+name+'\u201d'); renderDemoThemes();
   }
   /* ===== end leadpages integration ===== */
-  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes'], broker:['appearance','contact','logo','landing'], leads:['rates'] };
+  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details'], broker:['appearance','contact','logo','landing','details'], leads:['rates'] };
+  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes'], 'broker-leads':['details'], 'trade':['details'] };
+  function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
     if($('login-mask')) return;
     const m=document.createElement('div'); m.id='login-mask'; m.className='login-mask';
@@ -1474,7 +1534,9 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     authed=true; currentRole=role; const m=$('login-mask'); if(m) m.style.display='none'; applyRoleGating();
   }
   function applyRoleGating(){
-    const allow=ALLOWED[currentRole]||ALLOWED.super;
+    const roleAllow=ALLOWED[currentRole]||ALLOWED.super;
+    const tnav=tplNav();
+    const allow=roleAllow.filter(function(k){ return tnav.indexOf(k)>=0; });
     NAV.forEach(function(it){ const b=$('nav-'+it[0]); if(b) b.style.display = allow.indexOf(it[0])>=0 ? '' : 'none'; });
     const leads=(currentRole==='leads');
     document.body.classList.toggle('role-leads', leads);
@@ -1484,7 +1546,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   function gate(){ if(!authed){ const av=document.getElementById('admin-view'); if(av && av.hidden) return; showLogin(); } }
 
   /* ---------- nav switcher (six tabs) ---------- */
-  const NAV=[['rates','av-rates',null],['landing','av-landing',renderLanding],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',renderDemoThemes]];
+  const NAV=[['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderLanding],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',renderDemoThemes]];
   let activeView='rates';
   function showView(which){
     activeView=which;
