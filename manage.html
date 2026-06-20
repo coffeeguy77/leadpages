@@ -1351,6 +1351,25 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   ];
   const DEFAULT_TRADE_THEME={ pipe:'#1f7bb8', hivis:'#ff6a1f', steel:'#1a2230', safety:'#ffc400' };
   const TRADE_COLOURS=[['pipe','Brand','buttons, links, accents'],['hivis','Call-to-action','the orange call buttons'],['steel','Header & dark bands','top bar, hero, footer'],['safety','Highlight','badges & small accents']];
+  const DEFAULT_TRADE_SECTIONS={
+    hero:{eyebrow:'Licensed Canberra plumber · Same-day', title:'Blocked drain?', titleHl:"We'll clear it today.", sub:"Fast, fixed-price plumbing across the ACT — blocked drains, burst pipes, hot water and leaks. You'll know the price before we start."},
+    services:{eyebrow:'What we fix', heading:'One call sorts the lot.', intro:'From a slow kitchen sink to a flooded laundry at 2am — we handle the everyday and the emergencies.'},
+    why:{eyebrow:'Why us', heading:'No call-out games. No surprise bills.'},
+    area:{eyebrow:'Where we work', heading:'Across Canberra & the ACT'},
+    reviews:{eyebrow:'From the neighbours', heading:'212 five-star reviews and counting.'},
+    faq:{eyebrow:'Good to know', heading:'Quick answers.'},
+    quote:{eyebrow:'Fast quote', heading:"Tell us the problem. We'll call you straight back."}
+  };
+  const TRADE_PRESETS=[
+    {name:'Charcoal & Hi-Vis', theme:{pipe:'#1f7bb8',hivis:'#ff6a1f',steel:'#1a2230',safety:'#ffc400'}},
+    {name:'Electric Blue', theme:{pipe:'#2563eb',hivis:'#f59e0b',steel:'#0f172a',safety:'#38bdf8'}},
+    {name:'Steel & Red', theme:{pipe:'#475569',hivis:'#dc2626',steel:'#1e293b',safety:'#f87171'}},
+    {name:'Forest & Amber', theme:{pipe:'#15803d',hivis:'#ea580c',steel:'#14241c',safety:'#facc15'}},
+    {name:'Slate & Lime', theme:{pipe:'#0ea5e9',hivis:'#65a30d',steel:'#121826',safety:'#a3e635'}},
+    {name:'Plum & Gold', theme:{pipe:'#7c3aed',hivis:'#d97706',steel:'#2b1b3d',safety:'#fbbf24'}}
+  ];
+  const TRADE_SUBTABS=[['details','Details'],['hero','Hero'],['services','Services'],['why','Why us'],['area','Where'],['reviews','Reviews'],['faq','FAQ'],['branding','Branding']];
+  let landingSub='details';
   function loadSite(site){
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app';
     currentBusinessName=site.business_name||'';
@@ -1381,32 +1400,24 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       ? 'Update the figures the calculator uses \u2014 brackets, fees, grants, surcharges and first-home thresholds \u2014 then publish. No code required. Use the live preview on the right to sanity-check a change before you export.'
       : 'Edit this client\u2019s site details \u2014 business name, contact and the figures their page shows \u2014 then publish. The live preview shows their real page (it refreshes when you publish).';
   }
+  function lpFld(label,id,ph){ return '<div class="f"><label>'+label+'</label><input type="text" id="'+id+'"'+(ph?' placeholder="'+ph+'"':'')+'></div>'; }
   function renderDetails(){
     var box=$('av-details'); if(!box) return;
     var t=currentSiteTemplate, c=data||{};
-    function fld(label,id,ph){ return '<div class="f"><label>'+label+'</label><input type="text" id="'+id+'"'+(ph?' placeholder="'+ph+'"':'')+'></div>'; }
-    var typeBits='';
-    if(t==='trade'){
-      typeBits='<div class="row">'+fld('Trade type','d-trade','e.g. Plumber')+fld('Licence','d-licence','')+'</div>';
-    } else if(t==='broker-leads'){
-      typeBits=fld('Suburb','d-suburb','')+'<h3 style="margin:18px 0 8px;font-size:14px;">Rates shown on the page</h3><div class="row3">'+fld('Variable rate %','d-var','')+fld('Comparison rate %','d-comp','')+fld('Updated label','d-rupd','e.g. Jun 2026')+'</div>';
+    if(t!=='trade'){
+      var typeBits=(t==='broker-leads')?(lpFld('Suburb','d-suburb','')+'<h3 style="margin:18px 0 8px;font-size:14px;">Rates shown on the page</h3><div class="row3">'+lpFld('Variable rate %','d-var','')+lpFld('Comparison rate %','d-comp','')+lpFld('Updated label','d-rupd','e.g. Jun 2026')+'</div>'):'';
+      box.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Site details</h2><p class="lede">These feed your client\u2019s landing page. Publish to push them live.</p>'
+        +lpFld('Business name','d-biz','')
+        +'<div class="row">'+lpFld('Phone (shown to visitors)','d-phoneText','(02) 1234 5678')+lpFld('Phone (for the call button)','d-phone','+61...')+'</div>'
+        +'<div class="row">'+lpFld('Email','d-email','')+lpFld('Region','d-region','')+'</div>'+typeBits+'</div>';
+      wireDetailFields(c,t); return;
     }
-    var detailsHtml='<div class="card" style="margin-bottom:22px;"><h2>Site details</h2><p class="lede">These feed your client\u2019s '+(t==='trade'?'trade':'broker')+' landing page. Publish to push them live.</p>'
-      +fld('Business name','d-biz','')
-      +'<div class="row">'+fld('Phone (shown to visitors)','d-phoneText','(02) 1234 5678')+fld('Phone (for the call button)','d-phone','+61...')+'</div>'
-      +'<div class="row">'+fld('Email','d-email','')+fld('Region','d-region','')+'</div>'
-      +typeBits+'</div>';
-    var extra='';
-    if(t==='trade'){
-      extra+='<div class="card" style="margin-bottom:22px;"><h2>Logo</h2><p class="lede">Show a clean text logo or upload an image \u2014 both replace the default initial badge.</p>'
-        +'<div class="row"><div class="f"><label>Logo style</label><select id="lg-mode" class="tin"><option value="mark">Initial badge + name</option><option value="text">Text only</option><option value="image">Image</option></select></div>'
-        +fld('Logo text','lg-text','defaults to business name')+'</div>'
-        +'<div id="lg-imgwrap" class="f" style="display:none;"><label>Logo image (max ~300 KB)</label><input type="file" id="lg-file" accept="image/*"><div id="lg-imgprev" style="margin-top:8px;"></div></div></div>';
-      var rowsC=TRADE_COLOURS.map(function(k){ return '<div class="f"><label>'+k[1]+' <span class="hint">'+k[2]+'</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="col-'+k[0]+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="colt-'+k[0]+'" class="tin" style="flex:1;"></div></div>'; }).join('');
-      extra+='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Colours</h2><button class="btn ghost" id="col-reset" type="button">Reset to default</button></div><p class="lede">Match the client\u2019s brand \u2014 changes preview live on the right.</p><div class="appr-grid">'+rowsC+'</div></div>';
-      extra+='<div class="card" style="margin-bottom:22px;"><h2>Services</h2><p class="lede">Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 change its icon, heading and text to whatever they offer.</p><div id="svc-list"></div></div>';
-    }
-    box.innerHTML=detailsHtml+extra;
+    if(!TRADE_SUBTABS.some(function(x){return x[0]===landingSub;})) landingSub='details';
+    box.innerHTML='<div class="adminnav" role="tablist" style="margin:0 0 18px;">'+TRADE_SUBTABS.map(function(x){ return '<button type="button" class="anav-btn lsub" data-sub="'+x[0]+'" aria-selected="'+(x[0]===landingSub)+'">'+x[1]+'</button>'; }).join('')+'</div><div id="lsub-body"></div>';
+    box.querySelectorAll('.lsub').forEach(function(b){ b.addEventListener('click',function(){ landingSub=b.getAttribute('data-sub'); renderDetails(); }); });
+    renderLandingSub(c);
+  }
+  function wireDetailFields(c,t){
     function setv(id,v){ var el=$(id); if(el) el.value=(v==null?'':v); }
     function on(id,fn){ var el=$(id); if(el) el.addEventListener('input',function(){ fn(el.value); persist(); previewApply(); }); }
     setv('d-biz',currentBusinessName); setv('d-phoneText',c.phoneText); setv('d-phone',c.phone); setv('d-email',c.email); setv('d-region',c.region);
@@ -1418,7 +1429,69 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       on('d-comp',function(v){ c.rates=c.rates||{}; c.rates.comparisonRate=(v===''?undefined:(parseFloat(v)||v)); });
       on('d-rupd',function(v){ c.rates=c.rates||{}; c.rates.updatedAt=v; });
     }
-    if(t==='trade'){ wireTradeBranding(c); wireTradeColours(c); wireTradeServices(c); }
+  }
+  function secCard(c,id,title,toggle,fields){
+    var s=(c.sections&&c.sections[id])||{}, def=DEFAULT_TRADE_SECTIONS[id]||{};
+    var h='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">'+title+'</h2>';
+    if(toggle) h+='<label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="sec-on-'+id+'"'+(s.on!==false?' checked':'')+'> Show on page</label>';
+    h+='</div>';
+    fields.forEach(function(f){ var key=f[0],label=f[1],ta=f[2]==='ta'; var ph=String(def[key]||'').replace(/"/g,'&quot;');
+      if(ta) h+='<div class="f"><label>'+label+'</label><textarea id="sec-'+id+'-'+key+'" rows="2" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;" placeholder="'+ph+'"></textarea></div>';
+      else h+='<div class="f"><label>'+label+'</label><input type="text" id="sec-'+id+'-'+key+'" placeholder="'+ph+'"></div>';
+    });
+    return h+'</div>';
+  }
+  function wireSec(c,id,toggle,fields){
+    function ensure(){ if(!c.sections) c.sections={}; if(!c.sections[id]) c.sections[id]={}; return c.sections[id]; }
+    if(toggle){ var onb=$('sec-on-'+id); if(onb) onb.addEventListener('change',function(){ ensure().on=onb.checked; persist(); previewApply(); }); }
+    fields.forEach(function(f){ var key=f[0], el=$('sec-'+id+'-'+key); if(!el) return; var cur=(c.sections&&c.sections[id]&&c.sections[id][key]); el.value=(cur==null?'':cur);
+      el.addEventListener('input',function(){ var o=ensure(); if(el.value==='') delete o[key]; else o[key]=el.value; persist(); previewApply(); });
+    });
+  }
+  function wireHero(c){
+    var def=DEFAULT_TRADE_SECTIONS.hero, ks=['eyebrow','title','titleHl','sub'], cur=(c.sections&&c.sections.hero)||{};
+    ks.forEach(function(k){ var el=$('sec-hero-'+k); if(el) el.value=(cur[k]!=null?cur[k]:(def[k]||'')); });
+    function writeAll(){ if(!c.sections) c.sections={}; var o=c.sections.hero||(c.sections.hero={}); ks.forEach(function(k){ var el=$('sec-hero-'+k); if(el) o[k]=el.value; }); persist(); previewApply(); }
+    ks.forEach(function(k){ var el=$('sec-hero-'+k); if(el) el.addEventListener('input',writeAll); });
+  }
+  function renderTradePresets(c){
+    var box=$('trade-presets'); if(!box) return;
+    box.innerHTML=TRADE_PRESETS.map(function(p,i){ var sw=['steel','pipe','hivis','safety'].map(function(k){return '<span style="width:13px;height:13px;border-radius:3px;background:'+p.theme[k]+';display:inline-block;"></span>';}).join(''); return '<button type="button" class="btn ghost tp-btn" data-i="'+i+'" style="display:flex;align-items:center;gap:8px;padding:7px 11px;"><span style="display:flex;gap:3px;">'+sw+'</span><span style="font-size:13px;">'+p.name+'</span></button>'; }).join('');
+    box.addEventListener('click',function(e){ var b=e.target.closest('.tp-btn'); if(!b) return; var p=TRADE_PRESETS[+b.getAttribute('data-i')]; c.theme=Object.assign({},p.theme); persist(); renderDetails(); previewApply(); toast('\u201c'+p.name+'\u201d applied'); });
+  }
+  function renderLandingSub(c){
+    var body=$('lsub-body'); if(!body) return; var sub=landingSub;
+    if(sub==='details'){
+      body.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Site details</h2><p class="lede">Business identity and contact \u2014 used across the page and the call buttons.</p>'
+        +lpFld('Business name','d-biz','')
+        +'<div class="row">'+lpFld('Phone (shown to visitors)','d-phoneText','(02) 1234 5678')+lpFld('Phone (for the call button)','d-phone','+61...')+'</div>'
+        +'<div class="row">'+lpFld('Email','d-email','')+lpFld('Region','d-region','')+'</div>'
+        +'<div class="row">'+lpFld('Trade type','d-trade','e.g. Plumber')+lpFld('Licence','d-licence','')+'</div></div>';
+      wireDetailFields(c,'trade');
+    } else if(sub==='hero'){
+      body.innerHTML=secCard(c,'hero','Hero',false,[['eyebrow','Eyebrow (label above headline)'],['title','Headline'],['titleHl','Headline highlight (coloured words)'],['sub','Sub-text','ta']]);
+      wireHero(c);
+    } else if(sub==='services'){
+      body.innerHTML=secCard(c,'services','Services section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro text','ta']])
+        +'<div class="card" style="margin-bottom:22px;"><h2>Service cards</h2><p class="lede">Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 change its icon, heading and text.</p><div id="svc-list"></div></div>';
+      wireSec(c,'services',true,[['eyebrow'],['heading'],['intro']]); wireTradeServices(c);
+    } else if(sub==='why'){
+      body.innerHTML=secCard(c,'why','Why us section',true,[['eyebrow','Eyebrow'],['heading','Heading']]); wireSec(c,'why',true,[['eyebrow'],['heading']]);
+    } else if(sub==='area'){
+      body.innerHTML=secCard(c,'area','Service area section',true,[['eyebrow','Eyebrow'],['heading','Heading']]); wireSec(c,'area',true,[['eyebrow'],['heading']]);
+    } else if(sub==='reviews'){
+      body.innerHTML=secCard(c,'reviews','Reviews section',true,[['eyebrow','Eyebrow'],['heading','Heading']]); wireSec(c,'reviews',true,[['eyebrow'],['heading']]);
+    } else if(sub==='faq'){
+      body.innerHTML=secCard(c,'faq','FAQ section',true,[['eyebrow','Eyebrow'],['heading','Heading']]); wireSec(c,'faq',true,[['eyebrow'],['heading']]);
+    } else if(sub==='branding'){
+      var rowsC=TRADE_COLOURS.map(function(k){ return '<div class="f"><label>'+k[1]+' <span class="hint">'+k[2]+'</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="col-'+k[0]+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="colt-'+k[0]+'" class="tin" style="flex:1;"></div></div>'; }).join('');
+      body.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Logo</h2><p class="lede">Show a clean text logo or upload an image \u2014 both replace the default initial badge.</p>'
+        +'<div class="row"><div class="f"><label>Logo style</label><select id="lg-mode" class="tin"><option value="mark">Initial badge + name</option><option value="text">Text only</option><option value="image">Image</option></select></div>'
+        +lpFld('Logo text','lg-text','defaults to business name')+'</div>'
+        +'<div id="lg-imgwrap" class="f" style="display:none;"><label>Logo image (max ~300 KB)</label><input type="file" id="lg-file" accept="image/*"><div id="lg-imgprev" style="margin-top:8px;"></div></div></div>'
+        +'<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Colours</h2><button class="btn ghost" id="col-reset" type="button">Reset to default</button></div><p class="lede">Pick a tradie preset, then fine-tune \u2014 changes preview live on the right.</p><div id="trade-presets" style="display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 16px;"></div><div class="appr-grid">'+rowsC+'</div></div>';
+      wireTradeBranding(c); wireTradeColours(c); renderTradePresets(c);
+    }
   }
   function wireTradeBranding(c){
     var L=c.logo||(c.logo={mode:'mark',text:'',imageUrl:''}); if(!L.mode) L.mode='mark';
