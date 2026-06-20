@@ -249,6 +249,7 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
 .dt-label{font-weight:400;color:#6b7280;font-size:12.5px;}
 .dt-toggle{display:flex;align-items:center;gap:6px;font-size:13px;color:#444;white-space:nowrap;cursor:pointer;}
 .dt-toggle input{flex:none;}
+.login-loading{padding:20px 4px;text-align:center;color:#5b6470;font-size:14px;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
@@ -276,13 +277,13 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
   </div>
 
   <div class="adminnav" role="tablist">
-    <button class="anav-btn" id="nav-rates" aria-selected="true">Rates &amp; leads</button>
+    <button class="anav-btn" id="nav-rates" aria-selected="true" style="display:none">Rates &amp; leads</button>
     <button class="anav-btn" id="nav-landing" aria-selected="false">Landing pages</button>
     <button class="anav-btn" id="nav-appearance" aria-selected="false">Appearance</button>
     <button class="anav-btn" id="nav-contact" aria-selected="false">Contact</button>
     <button class="anav-btn" id="nav-logo" aria-selected="false">Logo</button>
-    <button class="anav-btn" id="nav-users" aria-selected="false">Users</button>
-    <button class="anav-btn" id="nav-demothemes" aria-selected="false">Demo themes</button>
+    <button class="anav-btn" id="nav-users" aria-selected="false" style="display:none">Users</button>
+    <button class="anav-btn" id="nav-demothemes" aria-selected="false" style="display:none">Demo themes</button>
   </div>
 
   <div id="av-rates">
@@ -1221,11 +1222,17 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
     const m=$('login-mask'); if(m) m.style.display='none';
     await afterLogin();
   }
+  function loginBooting(on){ var f=$('li-form'), l=$('li-loading'), sub=$('li-sub'); if(f) f.hidden=on; if(l) l.hidden=!on; if(sub) sub.textContent=on?'One moment\u2026':'Sign in to manage this site.'; }
   async function bootAuth(){
-    showLogin();
-    try{ const { data:{ session } } = await sb.auth.getSession();
-      if(session){ const m=$('login-mask'); if(m) m.style.display='none'; await afterLogin(); }
+    buildLogin();
+    const mask=$('login-mask'); if(mask) mask.style.display='flex';
+    loginBooting(true);
+    try{
+      const { data:{ session } } = await sb.auth.getSession();
+      if(session){ try{ await afterLogin(); }catch(e){} if(mask) mask.style.display='none'; loginBooting(false); return; }
     }catch(e){}
+    loginBooting(false);
+    showLogin();
   }
   async function afterLogin(){
     authed=true;
@@ -1350,13 +1357,16 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
   function buildLogin(){
     if($('login-mask')) return;
     const m=document.createElement('div'); m.id='login-mask'; m.className='login-mask';
-    m.innerHTML='<div class="login-card"><h2>App Command Centre</h2><p class="sub">Sign in to manage this site.</p>'
+    m.innerHTML='<div class="login-card"><h2>App Command Centre</h2><p class="sub" id="li-sub">Sign in to manage this site.</p>'
+      +'<div class="login-loading" id="li-loading" hidden>Signing you in\u2026</div>'
+      +'<div id="li-form">'
       +'<label>Email</label><input type="email" id="li-user" class="tin" placeholder="you@example.com" autocomplete="username">'
       +'<label>Password</label><input type="password" id="li-pass" class="tin" placeholder="Your password" autocomplete="current-password">'
       +'<div class="login-err" id="li-err"></div>'
       +'<button class="btn" id="li-go" style="width:100%;margin-top:6px">Sign in</button>'
       +'<div class="login-foot"><button class="lk" id="li-forgot">Forgot password?</button></div>'
-      +'<div class="login-note">Sign in with the email and password for this site’s account.</div></div>';
+      +'<div class="login-note">Sign in with the email and password for this site’s account.</div>'
+      +'</div></div>';
     (document.getElementById('admin-view')||document.body).appendChild(m);
     $('li-go').addEventListener('click',lpLogin);
     $('li-pass').addEventListener('keydown',function(e){ if(e.key==='Enter') lpLogin(); });
