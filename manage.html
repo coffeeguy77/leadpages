@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rates Admin · Home Loan Calculators</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f4ef; --surface:#fff; --surface-2:#fbfaf7; --ink:#1b2430; --ink-soft:#5c6675;
+  --ink-faint:#929aa6; --line:#e7e2d8; --line-strong:#d8d2c5; --brand:#1f7a63; --brand-deep:#155c4a;
+  --brand-tint:#eaf3ef; --amber:#b9852b; --radius:14px; --radius-sm:10px;
+  --shadow:0 1px 2px rgba(27,36,48,.04),0 8px 28px rgba(27,36,48,.06);
+  --font-display:'Fraunces',Georgia,serif; --font-ui:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:1080px;margin:0 auto;padding:26px 20px 70px;}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);margin:0 0 6px;}
+h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px);margin:0;letter-spacing:-.01em;}
+.sub{color:var(--ink-soft);margin:8px 0 0;max-width:62ch;}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:22px 0;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+.bar .grow{flex:1 1 auto;}
+.btn{appearance:none;border:1px solid var(--brand);background:var(--brand);color:#fff;font-family:var(--font-ui);font-weight:600;font-size:13.5px;padding:9px 15px;border-radius:var(--radius-sm);cursor:pointer;transition:.15s;}
+.btn:hover{background:var(--brand-deep);border-color:var(--brand-deep);}
+.btn.ghost{background:#fff;color:var(--brand-deep);}
+.btn.ghost:hover{background:var(--brand-tint);}
+.btn:focus-visible{outline:2px solid var(--brand-deep);outline-offset:2px;}
+.layout{display:grid;grid-template-columns:1fr;gap:22px;}
+@media(min-width:960px){.layout{grid-template-columns:1.15fr .85fr;align-items:start;}}
+.li-right{display:flex;align-items:center;gap:10px;flex:none;}
+.li-view{appearance:none;border:1px solid var(--brand);background:var(--brand-tint);color:var(--brand-deep);font-size:11.5px;font-weight:600;border-radius:999px;padding:3px 12px;cursor:pointer;}
+.li-view:hover{background:var(--brand);color:#fff;}
+.li-scen{color:var(--ink-faint);}
+.lead-detail{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line-strong);}
+.ld-meta{font-size:11.5px;color:var(--ink-faint);margin-bottom:4px;line-height:1.5;}
+.ld-sec{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--brand-deep);font-weight:700;margin:10px 0 2px;}
+.ld-row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px solid var(--line);font-size:13px;}
+.ld-row:last-child{border-bottom:none;}
+.ld-row .lv{font-weight:600;font-variant-numeric:tabular-nums;text-align:right;min-width:0;}
+.calc-toggles{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px 18px;}
+.calc-toggles label{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:500;cursor:pointer;}
+.calc-toggles input{width:16px;height:16px;}
+.lead-item{padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--surface-2);}
+.li-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13.5px;font-weight:500;}
+.li-when{color:var(--ink-faint);font-size:12px;font-weight:400;}
+.li-sub{color:var(--ink-soft);font-size:12.5px;margin-top:3px;}
+.li-mask{font-size:11px;color:var(--ink-faint);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:1px 8px;}
+@media(max-width:560px){.wrap{padding:18px 14px 60px;}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
+.card h2{font-family:var(--font-display);font-weight:500;font-size:19px;margin:0 0 4px;}
+.card .lede{color:var(--ink-soft);font-size:13px;margin:0 0 16px;}
+.statebar{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;}
+.statebtn{appearance:none;background:none;border:none;cursor:pointer;font-family:var(--font-ui);font-size:13.5px;font-weight:500;color:var(--ink-soft);padding:10px 12px;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.statebtn[aria-selected="true"]{color:var(--brand-deep);border-bottom-color:var(--brand);}
+.statebtn .badge{font-size:10px;font-weight:700;padding:1px 5px;border-radius:5px;margin-left:5px;vertical-align:middle;}
+.badge.ok{background:var(--brand-tint);color:var(--brand-deep);}
+.badge.warn{background:#f6efe0;color:var(--amber);}
+.group{border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;background:var(--surface-2);}
+.group > h3{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 12px;}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:680px){.row3{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.row,.row3{grid-template-columns:1fr;}}
+.f{margin-bottom:0;}
+.f label{display:block;font-size:12px;font-weight:500;color:var(--ink-soft);margin-bottom:5px;}
+.f input[type=text],.f input[type=number]{width:100%;font-family:var(--font-ui);font-size:14px;color:var(--ink);padding:9px 10px;border:1px solid var(--line-strong);border-radius:8px;background:#fff;font-variant-numeric:tabular-nums;}
+.f input:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:var(--brand);}
+.f.pfx{position:relative;}
+.f.pfx span.s{position:absolute;left:10px;top:31px;color:var(--ink-faint);}
+.f.pfx input{padding-left:22px;}
+.f.sfx span.s{position:absolute;right:10px;top:31px;color:var(--ink-faint);}
+.chk{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;}
+.chk input{width:17px;height:17px;accent-color:var(--brand);}
+.brkg{display:flex;flex-direction:column;gap:12px;margin-top:8px;}
+.brkg-head{display:none;}
+.brkg-row{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:flex-end;padding:11px 12px 13px;border:1px solid #d7e7e0;border-left:3px solid var(--brand);border-radius:10px;background:var(--brand-tint);}
+.bcell{flex:1 1 130px;min-width:0;display:flex;flex-direction:column;gap:3px;}
+.bcell .bl{font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);font-weight:700;}
+.brkg .pfx{position:relative;}
+.brkg .pfx span.ps{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--ink-faint);font-size:13px;pointer-events:none;}
+.brkg .pfx input{padding-left:18px;}
+.brkg input{width:100%;min-width:0;box-sizing:border-box;font-size:13px;padding:7px 8px;border:1px solid var(--line-strong);border-radius:7px;font-variant-numeric:tabular-nums;background:#fff;color:var(--ink);}
+.brkg input:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:var(--brand);}
+.brkg .del{flex:0 0 auto;align-self:flex-end;margin-bottom:2px;appearance:none;border:none;background:none;color:var(--ink-faint);cursor:pointer;font-size:18px;line-height:1;padding:4px 6px;border-radius:6px;}
+.brkg .del:hover{background:#f4e6e2;color:#b4543c;}
+.addrow{margin-top:8px;font-size:12.5px;font-weight:600;color:var(--brand-deep);background:none;border:1px dashed var(--line-strong);border-radius:7px;padding:7px 10px;cursor:pointer;width:100%;}
+.addrow:hover{background:var(--brand-tint);border-color:var(--brand);}
+
+/* preview */
+.preview{position:static;}
+.preview .res{background:linear-gradient(170deg,#1d3a33,#163029);color:#eef5f2;border:none;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);}
+.preview .res h3{font-family:var(--font-display);font-weight:500;font-size:16px;margin:0 0 12px;color:#fff;}
+.pcontrols{display:grid;gap:10px;margin-bottom:14px;}
+.pcontrols .f label{color:var(--ink-soft);}
+.seg{display:inline-flex;background:#fff;border:1px solid var(--line-strong);border-radius:8px;padding:2px;gap:2px;flex-wrap:wrap;}
+.seg button{appearance:none;border:none;background:none;cursor:pointer;font-size:12.5px;font-weight:500;color:var(--ink-soft);padding:6px 10px;border-radius:6px;}
+.seg button[aria-pressed=true]{background:var(--brand-tint);color:var(--brand-deep);}
+.line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.09);font-size:13.5px;gap:12px;}
+.line:last-child{border-bottom:none;}
+.line .v{font-variant-numeric:tabular-nums;font-weight:600;}
+.line.total{border-top:1px solid rgba(255,255,255,.18);margin-top:4px;padding-top:11px;font-size:15px;}
+.line.total .v{font-family:var(--font-display);font-size:19px;}
+.pos{color:#7fd9b6;} .amb{color:#f0c97a;}
+.modal{position:fixed;inset:0;background:rgba(20,28,36,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;}
+.modal.show{display:flex;}
+.modal .box{background:#fff;border-radius:var(--radius);max-width:680px;width:100%;max-height:84vh;overflow:auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal h3{font-family:var(--font-display);font-weight:500;margin:0 0 10px;}
+.modal textarea{width:100%;min-height:260px;font-family:ui-monospace,Menlo,monospace;font-size:12px;border:1px solid var(--line-strong);border-radius:8px;padding:12px;background:var(--surface-2);}
+.modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}
+.hint{font-size:12px;color:var(--ink-faint);margin-top:10px;line-height:1.5;}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60;}
+.toast.show{opacity:1;}
+.savednote{font-size:12px;color:var(--brand-deep);font-weight:600;}
+.adminnav{display:flex;gap:6px;margin:0 0 22px;border-bottom:1px solid var(--line);}
+.anav-btn{appearance:none;background:none;border:none;cursor:pointer;font-family:var(--font-ui);font-size:14.5px;font-weight:600;color:var(--ink-soft);padding:10px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.anav-btn[aria-selected="true"]{color:var(--brand-deep);border-bottom-color:var(--brand);}
+.appr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px 20px;margin-top:6px;}
+@media(max-width:620px){.appr-grid{grid-template-columns:1fr;}}
+.aphint{font-weight:400;color:var(--ink-faint);font-size:12px;}
+.clr{display:flex;gap:8px;align-items:center;}
+.clr input[type=color]{width:46px;height:38px;padding:0;border:1px solid var(--line-strong);border-radius:8px;background:#fff;cursor:pointer;}
+.clr-hex{flex:1;min-width:0;font-family:var(--font-ui);font-size:13.5px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:8px;text-transform:uppercase;}
+.apsel{width:100%;font-family:var(--font-ui);font-size:13.5px;padding:9px 10px;border:1px solid var(--line-strong);border-radius:8px;background:#fff;}
+.appr-demo{margin-top:22px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:20px 22px;background:var(--bg);}
+.ad-eyebrow{font-family:var(--font-ui);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);}
+.ad-h{font-family:var(--font-display);font-size:26px;color:var(--ink);margin:6px 0 4px;}
+.ad-p{font-family:var(--font-ui);font-size:14px;color:var(--ink-soft);margin:0 0 14px;line-height:1.5;}
+.ad-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.ad-btn{font-family:var(--font-ui);font-weight:600;font-size:13.5px;color:#fff;background:var(--brand);border:none;border-radius:8px;padding:9px 16px;cursor:default;}
+.ad-pill{font-family:var(--font-ui);font-size:13px;font-weight:600;color:#fff;background:var(--brand);border-radius:999px;padding:5px 13px;}
+.ad-fig{font-family:var(--font-display);font-size:22px;color:var(--amber);font-weight:600;}
+.apgroup-h{font-family:var(--font-ui);font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin:24px 0 12px;}
+.apgroup-h:first-of-type{margin-top:6px;}
+.ap-presets{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+@media(max-width:620px){.ap-presets{grid-template-columns:repeat(2,1fr);}}
+.preset-sw{appearance:none;cursor:pointer;text-align:left;border:1px solid var(--line-strong);border-radius:var(--radius-sm);padding:10px 12px;background:#fff;display:flex;flex-direction:column;gap:8px;transition:border-color .15s,box-shadow .15s;}
+.preset-sw:hover{border-color:var(--brand);box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.preset-sw[aria-pressed="true"]{border-color:var(--brand);box-shadow:0 0 0 2px var(--brand-tint);}
+.ps-dots{display:flex;gap:5px;}
+.ps-dots i{width:18px;height:18px;border-radius:5px;display:inline-block;border:1px solid rgba(0,0,0,.08);}
+.ps-name{font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--ink);}
+.ad-panel{margin-top:16px;border-radius:12px;padding:16px 18px;background:linear-gradient(170deg,var(--panel-bg),var(--panel-bg2));color:var(--panel-ink);}
+.adp-label{font-family:var(--font-ui);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--panel-soft);}
+.adp-fig{font-family:var(--font-display);font-size:28px;line-height:1.1;margin:2px 0 10px;}
+.adp-line{display:flex;justify-content:space-between;font-family:var(--font-ui);font-size:13px;color:var(--panel-soft);border-top:1px solid var(--panel-line);padding-top:9px;}
+.adp-amber{color:var(--panel-accent);font-weight:600;}
+.adp-graph{height:4px;border-radius:3px;margin-top:12px;background:linear-gradient(90deg,var(--graph-line),transparent);}
+/* shared admin form controls */
+.tin{width:100%;font-family:var(--font-ui);font-size:14px;padding:9px 11px;border:1px solid var(--line-strong);border-radius:8px;background:#fff;color:#1b2430;box-sizing:border-box;}
+.tin.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.55;}
+textarea.tin{resize:vertical;}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.ck{display:flex;align-items:center;gap:8px;font-family:var(--font-ui);font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;margin:6px 0;}
+.aphr{border:none;border-top:1px solid var(--line);margin:18px 0;}
+.btn.sm{padding:7px 12px;font-size:12.5px;}
+.btn.danger{color:#b4453a;border-color:#e6c4c0;}
+.btn.danger:hover{background:#fbecea;}
+.seg2{display:inline-flex;border:1px solid var(--line-strong);border-radius:9px;overflow:hidden;margin:4px 0 12px;}
+.seg2 .segb{appearance:none;cursor:pointer;border:none;background:#fff;color:var(--ink-soft);font:600 13px var(--font-ui);padding:8px 16px;}
+.seg2 .segb[aria-pressed="true"]{background:var(--brand);color:#fff;}
+/* landing pages */
+.lp-list{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
+.lp-item{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;background:#fff;}
+.lp-item .lp-meta{min-width:0;}
+.lp-item .lp-t{font-weight:600;color:var(--ink);font-size:14px;}
+.lp-item .lp-s{font-size:12.5px;color:var(--ink-faint);font-family:ui-monospace,monospace;}
+.lp-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;}
+.lp-badge.pub{background:#e3f3ec;color:#1f7a63;}
+.lp-badge.draft{background:#f0ece4;color:#8a7d63;}
+.lp-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:640px){.lp-row{grid-template-columns:1fr;}}
+.lp-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.tip-toggle{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft);font-weight:600;cursor:pointer;}
+.seo-tip{display:none;font-weight:400;font-size:12px;color:var(--ink-faint);line-height:1.4;margin-top:3px;}
+.show-tips .seo-tip{display:block;}
+.slug-in{display:flex;align-items:center;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;}
+.slug-in span{padding:0 4px 0 11px;color:var(--ink-faint);font-family:ui-monospace,monospace;}
+.slug-in .tin{border:none;border-radius:0;}
+.charcount{font-size:11.5px;color:var(--ink-faint);margin-top:4px;}
+.ai-box{border:1px solid var(--brand-tint);background:var(--brand-tint);border-radius:var(--radius-sm);padding:14px;}
+.ai-presets{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;}
+.ai-chip{appearance:none;cursor:pointer;border:1px solid var(--brand);background:#fff;color:var(--brand-deep);font:600 12px var(--font-ui);padding:6px 11px;border-radius:999px;}
+.ai-chip:hover{background:var(--brand);color:#fff;}
+.ai-row{display:flex;align-items:center;gap:12px;margin-top:8px;}
+.lp-approve{border:1px solid var(--amber);background:var(--amber-tint);border-radius:var(--radius-sm);padding:14px;margin:14px 0;}
+.lp-ap-h{font-weight:700;color:#7a5a1e;font-size:13px;margin-bottom:8px;}
+.lp-ap-preview{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-height:240px;overflow:auto;font-size:13.5px;line-height:1.55;}
+.lp-ap-actions{display:flex;gap:10px;margin-top:10px;}
+.lp-ed-foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+/* contact / brokers */
+.bro{border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;background:#fff;}
+.bro-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.bro-head .bro-t{font-weight:700;color:var(--ink);}
+.bro-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:640px){.bro-grid{grid-template-columns:1fr;}}
+.bro-grid .full{grid-column:1/-1;}
+.bro-grid label{font-size:12px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:4px;}
+.bro-photo{display:flex;align-items:center;gap:12px;}
+.bro-photo .pv{width:52px;height:52px;border-radius:50%;background:var(--brand-tint);object-fit:cover;flex:none;border:1px solid var(--line);}
+/* users */
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:4px 0 8px;}
+@media(max-width:640px){.roles{grid-template-columns:1fr;}}
+.role{border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 14px;background:var(--bg);}
+.role-n{font-weight:700;color:var(--brand-deep);font-size:13.5px;margin-bottom:4px;}
+.role p{font-size:12.5px;color:var(--ink-soft);margin:0;line-height:1.45;}
+.us-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 14px;background:#fff;margin-bottom:8px;}
+.us-row .us-meta{min-width:0;}
+.us-row .us-n{font-weight:600;color:var(--ink);font-size:14px;}
+.us-row .us-e{font-size:12.5px;color:var(--ink-faint);}
+.us-tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--brand-tint);color:var(--brand-deep);text-transform:uppercase;letter-spacing:.04em;}
+.us-tag.locked{background:#f0ece4;color:#8a7d63;}
+.us-add{display:grid;grid-template-columns:1fr 1fr auto auto auto;gap:10px;align-items:center;}
+@media(max-width:760px){.us-add{grid-template-columns:1fr 1fr;}}
+/* custom theme save */
+.ap-saverow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;}
+.ap-saverow .tin{flex:1;min-width:180px;}
+.preset-sw .ps-del{position:absolute;top:6px;right:8px;border:none;background:none;color:var(--ink-faint);cursor:pointer;font-size:15px;line-height:1;}
+.preset-sw{position:relative;}
+/* login gate */
+.login-mask{position:fixed;inset:0;z-index:10000;background:rgba(16,33,28,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.3);width:100%;max-width:380px;padding:30px 28px;font-family:var(--font-ui);}
+.login-card h2{margin:0 0 4px;font-family:var(--font-display);font-size:24px;color:var(--ink);}
+.login-card p.sub{margin:0 0 18px;color:var(--ink-soft);font-size:13.5px;}
+.login-card label{font-size:12.5px;font-weight:600;color:var(--ink-soft);display:block;margin:12px 0 5px;}
+.login-err{color:#b4453a;font-size:13px;min-height:18px;margin-top:10px;}
+.login-foot{display:flex;align-items:center;justify-content:space-between;margin-top:18px;gap:12px;}
+.login-foot .lk{background:none;border:none;color:var(--brand-deep);cursor:pointer;font-size:12.5px;text-decoration:underline;font-family:var(--font-ui);}
+.login-note{margin-top:16px;font-size:12px;color:var(--ink-faint);background:var(--bg);border-radius:8px;padding:10px 12px;line-height:1.45;}
+.lg-prev{margin-top:10px;}.lg-prev img{max-height:54px;max-width:200px;}
+.lg-upload{display:flex;align-items:center;gap:10px;margin-top:8px;}
+.lg-preview{border:1px solid var(--line);border-radius:var(--radius-sm);padding:22px;background:var(--bg);}
+.lg-preview .lpv-eye{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);}
+.lg-preview .lpv-h{font-family:var(--font-display);font-size:28px;color:var(--ink);margin:6px 0 0;}
+.lg-preview .lpv-img{max-height:46px;margin-bottom:6px;}
+.lg-preview .lpv-sub{font-size:14px;color:var(--ink-soft);margin-top:8px;max-width:60ch;line-height:1.5;}
+body.role-leads .adminnav{display:none;}
+body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .layout{display:none;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Control panel</p>
+  <h1>App Command Centre</h1>
+  <p class="sub">Update the figures the calculator uses — brackets, fees, grants, surcharges and first-home thresholds — then publish. No code required. Use the live preview on the right to sanity-check a change before you export.</p>
+
+  <div class="bar">
+    <div class="f" style="margin:0;">
+      <label>Effective label (shown to users)</label>
+      <input type="text" id="g-effective" style="width:130px;">
+    </div>
+    <div class="f" style="margin:0;">
+      <label>Last updated</label>
+      <input type="text" id="g-updated" style="width:130px;">
+    </div>
+    <div class="grow"></div>
+    <button class="btn ghost" id="btn-import">Import…</button>
+    <button class="btn ghost" id="btn-snippet">Get embed snippet</button>
+    <button class="btn ghost" id="btn-copy">Copy JSON</button>
+    <button class="btn" id="btn-download">Download site config (config.json)</button>
+  </div>
+
+  <div class="adminnav" role="tablist">
+    <button class="anav-btn" id="nav-rates" aria-selected="true">Rates &amp; leads</button>
+    <button class="anav-btn" id="nav-landing" aria-selected="false">Landing pages</button>
+    <button class="anav-btn" id="nav-appearance" aria-selected="false">Appearance</button>
+    <button class="anav-btn" id="nav-contact" aria-selected="false">Contact</button>
+    <button class="anav-btn" id="nav-logo" aria-selected="false">Logo</button>
+    <button class="anav-btn" id="nav-users" aria-selected="false">Users</button>
+  </div>
+
+  <div id="av-rates">
+  <div class="card" style="margin-bottom:22px;">
+    <h2>Calculators shown on the site</h2>
+    <p class="lede">Tick the calculators you want visible on the public page. Unticked ones are hidden from the tabs entirely.</p>
+    <div class="calc-toggles" id="calc-toggles"></div>
+  </div>
+
+  <div class="card leads-card" style="margin-bottom:22px;">
+    <h2>Captured leads <span style="font-weight:400;color:var(--ink-faint);font-size:14px;">(demo · masked)</span></h2>
+    <p class="lede">Visitors who emailed themselves results land here. In this demo, names and emails are masked for privacy — the live version stores full contact details and the complete scenario for your follow-up.</p>
+    <div id="leads-list"></div>
+    <button class="btn ghost" id="btn-clear-leads" style="margin-top:12px;">Clear demo leads</button>
+  </div>
+
+  <div class="layout">
+    <div class="card">
+      <h2>Edit rates</h2>
+      <p class="lede">Pick a state, change the numbers. Rates are entered as percentages; thresholds and fees as dollars.</p>
+      <div class="statebar" id="statebar" role="tablist"></div>
+      <div id="editor"></div>
+    </div>
+
+    <div class="preview">
+      <div class="card" id="editor-extra-card">
+        <h2>Fees, grants &amp; thresholds</h2>
+        <p class="lede">Settings for the selected state — these feed the same preview and calculations as the schedule.</p>
+        <div id="editor-extra"></div>
+      </div>
+      <div class="card">
+        <h2>Live preview</h2>
+        <p class="lede" id="prev-state-label">Test a scenario against your current figures.</p>
+        <div class="pcontrols">
+          <div class="f pfx"><label>Property value</label><span class="s">$</span><input type="number" id="p-price" value="750000" step="5000"></div>
+          <div class="row">
+            <div class="f"><label>Purpose</label>
+              <div class="seg" id="p-purpose"><button data-v="owner" aria-pressed="true">Owner</button><button data-v="investor" aria-pressed="false">Investor</button></div>
+            </div>
+            <div class="f"><label>Type</label>
+              <div class="seg" id="p-type"><button data-v="established" aria-pressed="true">Estab.</button><button data-v="new" aria-pressed="false">New</button><button data-v="vacant" aria-pressed="false">Land</button></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="f"><label>First home buyer</label>
+              <div class="seg" id="p-fhb"><button data-v="no" aria-pressed="true">No</button><button data-v="yes" aria-pressed="false">Yes</button></div>
+            </div>
+            <div class="f"><label>Foreign buyer</label>
+              <div class="seg" id="p-foreign"><button data-v="no" aria-pressed="true">No</button><button data-v="yes" aria-pressed="false">Yes</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="res">
+          <h3 id="prev-title">Government charges</h3>
+          <div class="line"><span>Base stamp duty</span><span class="v" id="pr-base">$0</span></div>
+          <div class="line"><span>Concession</span><span class="v pos" id="pr-conc">$0</span></div>
+          <div class="line"><span>Foreign surcharge</span><span class="v amb" id="pr-surch">$0</span></div>
+          <div class="line"><span>Stamp duty payable</span><span class="v amb" id="pr-pay">$0</span></div>
+          <div class="line"><span>Mortgage registration</span><span class="v" id="pr-mr">$0</span></div>
+          <div class="line"><span>Transfer fee</span><span class="v" id="pr-tf">$0</span></div>
+          <div class="line"><span>Government grant</span><span class="v pos" id="pr-grant">$0</span></div>
+          <div class="line total"><span>Total government charges</span><span class="v" id="pr-total">$0</span></div>
+        </div>
+        <p class="hint" id="pr-note"></p>
+      </div>
+    </div>
+  </div>
+  </div><!-- /av-rates -->
+
+  <div id="av-appearance" hidden>
+    <div class="card">
+      <h2>Appearance</h2>
+      <p class="lede">Match the calculator to the broker's website — pick a starter theme, then fine-tune any colour or font. Changes apply live, save automatically, and travel with your exported settings (<code>appearance</code> in rates.json).</p>
+
+      <div class="apgroup-h">Starter themes</div>
+      <div class="ap-presets" id="ap-presets"></div>
+
+      <div class="apgroup-h">Page</div>
+      <div class="appr-grid">
+        <div class="f"><label>Background</label><div class="clr"><input type="color" id="ap-bg"><input type="text" class="clr-hex" id="ap-bg-hex" spellcheck="false"></div></div>
+        <div class="f"><label>Text colour <span class="aphint">headings &amp; body</span></label><div class="clr"><input type="color" id="ap-ink"><input type="text" class="clr-hex" id="ap-ink-hex" spellcheck="false"></div></div>
+        <div class="f"><label>Card surface <span class="aphint">input panels</span></label><div class="clr"><input type="color" id="ap-surface"><input type="text" class="clr-hex" id="ap-surface-hex" spellcheck="false"></div></div>
+      </div>
+
+      <div class="apgroup-h">Brand &amp; buttons</div>
+      <div class="appr-grid">
+        <div class="f"><label>Brand <span class="aphint">buttons, active tabs</span></label><div class="clr"><input type="color" id="ap-brand"><input type="text" class="clr-hex" id="ap-brand-hex" spellcheck="false"></div></div>
+        <div class="f"><label>Deep brand <span class="aphint">hover &amp; emphasis</span></label><div class="clr"><input type="color" id="ap-brandDeep"><input type="text" class="clr-hex" id="ap-brandDeep-hex" spellcheck="false"></div></div>
+        <div class="f"><label>Accent <span class="aphint">badges &amp; highlights</span></label><div class="clr"><input type="color" id="ap-accent"><input type="text" class="clr-hex" id="ap-accent-hex" spellcheck="false"></div></div>
+      </div>
+
+      <div class="apgroup-h">Result panel &amp; graph</div>
+      <div class="appr-grid">
+        <div class="f"><label>Panel background</label><div class="clr"><input type="color" id="ap-panelBg"><input type="text" class="clr-hex" id="ap-panelBg-hex" spellcheck="false"></div></div>
+        <div class="f"><label>Panel text</label><div class="clr"><input type="color" id="ap-panelInk"><input type="text" class="clr-hex" id="ap-panelInk-hex" spellcheck="false"></div></div>
+        <div class="f"><label>Panel accent <span class="aphint">interest figures</span></label><div class="clr"><input type="color" id="ap-panelAccent"><input type="text" class="clr-hex" id="ap-panelAccent-hex" spellcheck="false"></div></div>
+        <div class="f"><label>Graph line</label><div class="clr"><input type="color" id="ap-graphLine"><input type="text" class="clr-hex" id="ap-graphLine-hex" spellcheck="false"></div></div>
+      </div>
+
+      <div class="apgroup-h">Fonts</div>
+      <div class="appr-grid">
+        <div class="f"><label>Heading font</label><select id="ap-fontDisplay" class="apsel"></select></div>
+        <div class="f"><label>Body font</label><select id="ap-fontUi" class="apsel"></select></div>
+      </div>
+
+      <div class="appr-demo" id="appr-demo">
+        <div class="ad-eyebrow">Live theme preview</div>
+        <div class="ad-h">Home loan calculators</div>
+        <p class="ad-p">Heading, body, buttons and the result panel below all follow your theme.</p>
+        <div class="ad-row"><button class="ad-btn">Primary button</button><span class="ad-pill">Active tab</span></div>
+        <div class="ad-panel">
+          <div class="adp-label">Monthly repayment</div>
+          <div class="adp-fig">$3,938</div>
+          <div class="adp-line"><span>Total interest</span><span class="adp-amber">$768,028</span></div>
+          <div class="adp-graph"></div>
+        </div>
+      </div>
+      <div class="apgroup-h">Saved custom themes</div>
+      <p class="hint" style="margin:-6px 0 10px;">Tweaked the colours into something you love? Save it as a named theme so it isn't lost when you try another. Saved themes appear as swatches you can click any time.</p>
+      <div class="ap-presets" id="ap-saved"></div>
+      <div class="ap-saverow">
+        <input type="text" id="ap-savename" class="tin" placeholder="Name this theme (e.g. ACME Brand)">
+        <button class="btn" id="ap-save">Save current</button>
+      </div>
+      <div class="ap-saverow">
+        <button class="btn ghost sm" id="ap-download">Download theme file</button>
+        <label class="btn ghost sm" for="ap-upload">Upload theme file</label>
+        <input type="file" id="ap-upload" accept="application/json,.json" hidden>
+        <span class="hint">A theme file includes a logo URL — we can build a paid custom theme you simply load on.</span>
+      </div>
+
+      <button class="btn ghost" id="ap-reset" style="margin-top:16px;">Reset to default theme</button>
+    </div>
+  </div>
+
+  <!-- ===================== LANDING PAGES ===================== -->
+  <div id="av-landing" hidden>
+    <div class="card">
+      <div class="card-head"><h2>Landing pages</h2><button class="btn" id="lp-new">+ New page</button></div>
+      <p class="lede">Build SEO-optimised pages that automatically use your theme colours and fonts, then add them to the site's top menu or footer. Each page gets its own clean URL slug.</p>
+      <div id="lp-list" class="lp-list"></div>
+    </div>
+
+    <div class="card" id="lp-editor" hidden>
+      <div class="card-head"><h2 id="lp-ed-title">Edit page</h2>
+        <div class="lp-tools">
+          <button class="btn ghost sm" id="lp-undo" title="Undo">&#8630; Undo</button>
+          <button class="btn ghost sm" id="lp-redo" title="Redo">&#8631; Redo</button>
+          <label class="tip-toggle"><input type="checkbox" id="lp-tips" checked> Show SEO tips</label>
+        </div>
+      </div>
+
+      <div class="lp-row">
+        <div class="f"><label>Page title <span class="seo-tip">The clickable headline in Google results &amp; the browser tab. ~50–60 characters, lead with the keyword.</span></label><input type="text" id="lp-title" class="tin" placeholder="Home Loans in Canberra | Linray Finance"></div>
+        <div class="f"><label>URL slug <span class="seo-tip">The page's web address. Short, hyphenated, keyword-rich, no spaces — e.g. /home-loans-canberra.</span></label><div class="slug-in"><span>/</span><input type="text" id="lp-slug" class="tin" placeholder="home-loans-canberra"></div></div>
+      </div>
+      <div class="f"><label>Meta description <span class="seo-tip">The grey summary under your title in Google. ~150 characters, include the keyword and a reason to click.</span></label><textarea id="lp-meta" class="tin" rows="2" placeholder="Compare home loan repayments and borrowing power with a local Canberra broker..."></textarea><div class="charcount" id="lp-meta-count"></div></div>
+      <div class="f"><label>H1 heading <span class="seo-tip">The single biggest on-page heading. One per page, should contain your main keyword.</span></label><input type="text" id="lp-h1" class="tin" placeholder="Home loans, made simple in Canberra"></div>
+
+      <div class="apgroup-h">Write with AI</div>
+      <div class="ai-box">
+        <div class="ai-presets" id="lp-ai-presets"></div>
+        <textarea id="lp-ai-prompt" class="tin" rows="2" placeholder="Ask AI to write or improve this page — or pick a local-SEO preset above."></textarea>
+        <div class="ai-row"><button class="btn" id="lp-ai-go">Generate draft</button><span class="hint" id="lp-ai-note"></span></div>
+      </div>
+
+      <div class="apgroup-h">Page content</div>
+      <div class="f"><textarea id="lp-body" class="tin mono" rows="12" placeholder="Write your page content here. Simple Markdown supported: ## Subheading, **bold**, - bullet."></textarea></div>
+
+      <div class="lp-approve" id="lp-approve" hidden>
+        <div class="lp-ap-h">AI draft ready — review before it replaces your content</div>
+        <div class="lp-ap-preview" id="lp-ap-preview"></div>
+        <div class="lp-ap-actions"><button class="btn" id="lp-ap-accept">Use this draft</button><button class="btn ghost" id="lp-ap-discard">Discard</button></div>
+      </div>
+
+      <div class="lp-row">
+        <div class="f"><label>Add to <span class="seo-tip">Where the page link appears on your site.</span></label><select id="lp-menu" class="apsel"><option value="top">Top menu</option><option value="footer">Footer menu</option><option value="none">Don't link (direct URL only)</option></select></div>
+        <div class="f"><label>Status</label><select id="lp-status" class="apsel"><option value="draft">Draft (hidden)</option><option value="published">Published (live)</option></select></div>
+      </div>
+      <div class="lp-ed-foot"><button class="btn" id="lp-save">Save page</button><button class="btn ghost" id="lp-close">Close</button><button class="btn ghost danger" id="lp-del">Delete page</button></div>
+    </div>
+  </div>
+
+  <!-- ===================== CONTACT / BROKERS ===================== -->
+  <div id="av-contact" hidden>
+    <div class="card">
+      <h2>Contact &amp; brokers</h2>
+      <p class="lede">Add the broker(s) behind this site. One broker shows a single bio with an enquiry form; multiple brokers show a team page where visitors choose who to talk to. Every enquiry is captured into Leads (name, phone &amp; email required).</p>
+      <label class="ck"><input type="checkbox" id="ct-show"> Show the Contact tab on the site</label>
+      <div class="f" style="margin-top:12px;"><label>Contact page intro</label><input type="text" id="ct-intro" class="tin"></div>
+      <div class="apgroup-h">Brokers</div>
+      <div id="ct-list"></div>
+      <button class="btn ghost" id="ct-add" style="margin-top:14px;">+ Add broker</button>
+    </div>
+  </div>
+
+  <!-- ===================== LOGO / HEADER ===================== -->
+  <div id="av-logo" hidden>
+    <div class="card">
+      <h2>Logo &amp; header</h2>
+      <p class="lede">Control the masthead on your calculator page. Turn any element off if you're embedding inside a site that already has its own branding and you want it stripped back.</p>
+      <label class="ck"><input type="checkbox" id="lg-show"> Show the logo</label>
+      <div class="seg2" id="lg-mode"><button class="segb" data-m="text">Text logo</button><button class="segb" data-m="img">Image logo</button></div>
+      <div id="lg-text-wrap" class="f"><label>Logo text</label><input type="text" id="lg-text" class="tin" placeholder="Linray Finance"></div>
+      <div id="lg-img-wrap" class="f" hidden><label>Logo image</label><input type="text" id="lg-img" class="tin" placeholder="https://.../logo.png"><div class="lg-upload"><label class="btn ghost sm" for="lg-file">Upload image</label><input type="file" id="lg-file" accept="image/*" hidden><span class="hint">PNG/SVG/JPG — stored with your settings.</span></div><div id="lg-img-prev" class="lg-prev"></div></div>
+      <hr class="aphr">
+      <label class="ck"><input type="checkbox" id="lg-show-tag"> Show tagline (eyebrow)</label>
+      <div class="f"><input type="text" id="lg-tag" class="tin" placeholder="Plan with confidence"></div>
+      <label class="ck"><input type="checkbox" id="lg-show-sub"> Show intro paragraph</label>
+      <div class="f"><textarea id="lg-sub" class="tin" rows="3" placeholder="Run the numbers on repayments..."></textarea></div>
+      <div class="apgroup-h">Header preview</div>
+      <div class="lg-preview" id="lg-preview"></div>
+    </div>
+  </div>
+
+  <!-- ===================== USERS ===================== -->
+  <div id="av-users" hidden>
+    <div class="card">
+      <h2>Users &amp; access</h2>
+      <p class="lede">Add the people who can sign in, and choose what each can see. In this demo, accounts are stored locally so you can try the access levels — real sign-in security arrives with the hosted backend.</p>
+      <div class="roles">
+        <div class="role"><div class="role-n">Super admin</div><p>Full access — rates, leads, appearance, landing pages, contact, logo and users.</p></div>
+        <div class="role"><div class="role-n">Broker</div><p>Edit their own details &amp; broker page, edit rates, and see leads. No access to users.</p></div>
+        <div class="role"><div class="role-n">Leads only</div><p>Sees the leads panel and nothing else — ideal for a front-desk or assistant.</p></div>
+      </div>
+      <div class="apgroup-h">People</div>
+      <div id="us-list"></div>
+      <div class="apgroup-h">Add a user</div>
+      <div class="us-add">
+        <input type="text" id="us-name" class="tin" placeholder="Name">
+        <input type="email" id="us-email" class="tin" placeholder="email@company.com">
+        <input type="text" id="us-pass" class="tin" placeholder="Password">
+        <select id="us-role" class="apsel"><option value="super">Super admin</option><option value="broker">Broker</option><option value="leads">Leads only</option></select>
+        <button class="btn" id="us-add">Add user</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <h3 id="modal-title">Paste rates JSON</h3>
+    <textarea id="modal-text" spellcheck="false"></textarea>
+    <p class="hint" id="modal-hint"></p>
+    <div class="actions">
+      <button class="btn ghost" id="modal-cancel">Close</button>
+      <button class="btn" id="modal-action">Load</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+(function(){
+  const $ = id => document.getElementById(id);
+  const fmt = n => '$'+Math.round(n).toLocaleString('en-AU');
+  const capOf = x => (x===null||x===undefined)?Infinity:x;
+
+  /* ---------- default data (mirror of rates.json) ---------- */
+  const DEFAULT_RATES = {
+    effective:'2025\u201326', updated:'2026-06-17',
+    states:{
+      ACT:{name:'Australian Capital Territory',validated:true,model:'act',
+        flatAbove:{threshold:1455000,rate:0.0454},
+        owner:[{s:0,b:0,r:0.0028},{s:260000,b:728,r:0.022},{s:300000,b:1608,r:0.034},{s:500000,b:8408,r:0.0432},{s:750000,b:19208,r:0.059},{s:1000000,b:33958,r:0.064}],
+        general:[{s:0,b:0,r:0.012},{s:200000,b:2400,r:0.022},{s:300000,b:4600,r:0.034},{s:500000,b:11400,r:0.0432},{s:750000,b:22200,r:0.059},{s:1000000,b:36950,r:0.064}],
+        fhb:{model:'act_hbcs',noDutyUpTo:1020000,partialCap:35238},
+        foreign:0,fhog:{amount:0,cap:0},fees:{mortgageReg:178,transfer:479}},
+      NSW:{name:'New South Wales',validated:true,model:'brackets',min:20,
+        brackets:[{s:0,b:0,r:0.0125},{s:17000,b:212,r:0.015},{s:37000,b:512,r:0.0175},{s:99000,b:1597,r:0.035},{s:372000,b:11152,r:0.045},{s:1240000,b:50212,r:0.055}],
+        premium:{threshold:3721000,base:186667,rate:0.07},
+        fhb:{model:'nsw',homeExempt:800000,homeConcessionTo:1000000,landExempt:350000,landConcessionTo:450000},
+        foreign:0.09,fhog:{amount:10000,cap:600000},fees:{mortgageReg:175.70,transfer:175.70}},
+      VIC:{name:'Victoria',validated:true,model:'vic',
+        brackets:[{s:0,b:0,r:0.014},{s:25000,b:350,r:0.024},{s:130000,b:2870,r:0.06}],
+        flatBand:{from:960000,to:2000000,rate:0.055},top:{threshold:2000000,base:110000,rate:0.065},
+        fhb:{model:'vic',exemptUpTo:600000,concessionTo:750000},
+        foreign:0.08,fhog:{amount:10000,cap:750000},
+        fees:{mortgageReg:125.70,transfer:{type:'vic',base:102,per1000:2.34,cap:3613}}},
+      QLD:{name:'Queensland',validated:true,model:'brackets',
+        brackets:[{s:0,b:0,r:0},{s:5000,b:0,r:0.015},{s:75000,b:1050,r:0.035},{s:540000,b:17325,r:0.045},{s:1000000,b:38025,r:0.0575}],
+        fhb:{model:'qld',newFullExempt:true,establishedFull:700000,establishedTo:800000},
+        foreign:0.08,fhog:{amount:30000,cap:null},
+        fees:{mortgageReg:238.14,transfer:{type:'qld',base:238.14,per:44.71,step:10000,from:180000}}},
+      WA:{name:'Western Australia',validated:true,model:'brackets',
+        brackets:[{s:0,b:0,r:0.019},{s:120000,b:2280,r:0.0285},{s:150000,b:3135,r:0.038},{s:360000,b:11115,r:0.0475},{s:725000,b:28452.5,r:0.0515}],
+        fhb:{model:'wa',exemptUpTo:430000,concessionTo:530000},
+        foreign:0.07,fhog:{amount:10000,cap:750000},fees:{mortgageReg:216.60,transfer:{type:'wa',base:246.60,per:20,step:100000}}},
+      SA:{name:'South Australia',validated:true,model:'brackets',
+        brackets:[{s:0,b:0,r:0.01},{s:12000,b:120,r:0.02},{s:30000,b:480,r:0.03},{s:50000,b:1080,r:0.035},{s:100000,b:2830,r:0.04},{s:200000,b:6830,r:0.0425},{s:250000,b:8955,r:0.0475},{s:300000,b:11330,r:0.05},{s:500000,b:21330,r:0.055}],
+        fhb:{model:'sa',newFullExempt:true},
+        foreign:0.07,fhog:{amount:15000,cap:null},fees:{mortgageReg:198,transfer:{type:'sa',per:102,step:10000}}},
+      TAS:{name:'Tasmania',validated:true,model:'brackets',
+        brackets:[{s:0,b:50,r:0},{s:3000,b:50,r:0.0175},{s:25000,b:435,r:0.0225},{s:75000,b:1560,r:0.035},{s:200000,b:5935,r:0.04},{s:375000,b:12935,r:0.0425},{s:725000,b:27810,r:0.045}],
+        fhb:{model:'tas',establishedExemptUpTo:750000},
+        foreign:0.08,fhog:{amount:10000,cap:null},fees:{mortgageReg:163.30,transfer:250.21}},
+      NT:{name:'Northern Territory',validated:true,model:'nt',
+        curve:{capValue:525000,k:0.06571441,lin:15},
+        tiers:[{to:3000000,rate:0.0495},{to:5000000,rate:0.0575},{to:null,rate:0.0595}],
+        fhb:{model:'nt'},foreign:0,fhog:{amount:10000,cap:null},fees:{mortgageReg:176,transfer:176}}
+    }
+  };
+
+  let data = JSON.parse(JSON.stringify(DEFAULT_RATES));
+  // load any locally-saved edits
+  try{ const s=localStorage.getItem('linray_rates'); if(s){ const p=JSON.parse(s); if(p&&p.states) data=p; } }catch(e){}
+
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);}); }
+  function seedConfig(){
+    if(!data.logo) data.logo={ text:'Linray Finance', tagline:'Plan with confidence', subtext:'Run the numbers on repayments, borrowing power and upfront costs before you talk to a broker. Estimates update as you go.', imageUrl:'', showLogo:true, showTagline:true, showSubtext:true };
+    if(!data.contact) data.contact={ show:true, intro:'Speak with one of our brokers — we\u2019ll get back to you quickly.', brokers:[
+      { id:uid(), name:'Rob Sample', title:'Principal Mortgage Broker', phone:'02 6100 0000', email:'rob@linrayfinance.com.au', address:'Level 1, 10 Example St, Canberra ACT 2600', bio:'With over 15 years helping Canberra families into the right loan, Rob takes the stress out of finance — from first home buyers to seasoned investors.', special:'First-home-buyer specialist · Investment lending · Refinancing', photo:'' }
+    ] };
+    if(!data.users) data.users=[]; // demo cosmetic accounts (the demo/demo account is enforced separately)
+    if(!data.savedThemes) data.savedThemes=[];
+    if(!data.pages) data.pages=[
+      { id:'home-canberra', title:'Home Loans in Canberra', slug:'home-loans-canberra', meta:'Compare home loan repayments and borrowing power with a local Canberra broker. Free, no-obligation appointments.', h1:'Home loans, made simple in Canberra', body:'Looking for a home loan in Canberra? We help local buyers compare repayments, work out borrowing power and understand upfront costs \u2014 then match them with a loan that fits.\n\n## Why work with a local broker\n- We know the Canberra market and the lenders that suit it\n- Free, no-obligation appointments that fit around you\n- One point of contact from application to settlement\n\n## Start with the numbers\nUse the calculators on this site to estimate your repayments and borrowing power, then book a chat to turn those numbers into a plan.', menu:'footer', status:'published' }
+    ];
+  }
+  seedConfig();
+
+  let current = 'ACT';
+
+  /* ---------- engine (for preview) ---------- */
+  function bracket(tbl,price){let d=0;for(let i=tbl.length-1;i>=0;i--){if(price>tbl[i].s){d=tbl[i].b+(price-tbl[i].s)*tbl[i].r;break;}}return d;}
+  function dutyFor(cfg,price,purpose){
+    if(cfg.model==='act'){if(price>cfg.flatAbove.threshold)return price*cfg.flatAbove.rate;return bracket(purpose==='owner'?cfg.owner:cfg.general,price);}
+    if(cfg.model==='vic'){if(price<cfg.flatBand.from)return bracket(cfg.brackets,price);if(price<=cfg.flatBand.to)return price*cfg.flatBand.rate;return cfg.top.base+(price-cfg.top.threshold)*cfg.top.rate;}
+    if(cfg.model==='nt'){if(price<=cfg.curve.capValue){const V=price/1000;return cfg.curve.k*V*V+cfg.curve.lin*V;}for(const t of cfg.tiers){if(price<=capOf(t.to))return price*t.rate;}return price*cfg.tiers[cfg.tiers.length-1].rate;}
+    if(cfg.premium&&price>cfg.premium.threshold)return cfg.premium.base+(price-cfg.premium.threshold)*cfg.premium.rate;
+    let d=bracket(cfg.brackets,price);if(cfg.min&&price>0)d=Math.max(cfg.min,d);return d;
+  }
+  function concessionFor(cfg,price,type,base){
+    const f=cfg.fhb||{};
+    switch(f.model){
+      case 'act_hbcs': return price<=f.noDutyUpTo?{amount:base,note:'ACT HBCS: no duty up to '+fmt(f.noDutyUpTo)+' (income-tested).'}:{amount:Math.min(f.partialCap,base),note:'ACT HBCS partial concession, capped at '+fmt(f.partialCap)+'.'};
+      case 'nsw':
+        if(type==='vacant'){if(price<=f.landExempt)return{amount:base,note:'No duty on vacant land up to '+fmt(f.landExempt)+'.'};if(price<=f.landConcessionTo)return{amount:base*(f.landConcessionTo-price)/(f.landConcessionTo-f.landExempt),note:'Vacant-land concession.'};return{amount:0,note:null};}
+        if(price<=f.homeExempt)return{amount:base,note:'No duty up to '+fmt(f.homeExempt)+'.'};
+        if(price<=f.homeConcessionTo)return{amount:base*(f.homeConcessionTo-price)/(f.homeConcessionTo-f.homeExempt),note:'Concession to '+fmt(f.homeConcessionTo)+'.'};
+        return{amount:0,note:null};
+      case 'vic':
+        if(price<=f.exemptUpTo)return{amount:base,note:'No duty up to '+fmt(f.exemptUpTo)+'.'};
+        if(price<=f.concessionTo)return{amount:base*(f.concessionTo-price)/(f.concessionTo-f.exemptUpTo),note:'Concession to '+fmt(f.concessionTo)+'.'};
+        return{amount:0,note:null};
+      case 'qld':
+        if(type==='new'&&f.newFullExempt)return{amount:base,note:'No duty on new homes.'};
+        if(price<=f.establishedFull)return{amount:base,note:'Full concession to '+fmt(f.establishedFull)+'.'};
+        if(price<=f.establishedTo)return{amount:base*(f.establishedTo-price)/(f.establishedTo-f.establishedFull),note:'Phasing out to '+fmt(f.establishedTo)+'.'};
+        return{amount:0,note:null};
+      case 'wa':
+        if(price<=f.exemptUpTo)return{amount:base,note:'No duty up to '+fmt(f.exemptUpTo)+'.'};
+        if(price<=f.concessionTo)return{amount:base*(f.concessionTo-price)/(f.concessionTo-f.exemptUpTo),note:'Concession to '+fmt(f.concessionTo)+'.'};
+        return{amount:0,note:null};
+      case 'sa': return (type==='new'&&f.newFullExempt)?{amount:base,note:'No duty on new homes.'}:{amount:0,note:'No concession on established homes.'};
+      case 'tas': return price<=f.establishedExemptUpTo?{amount:base,note:'No duty to '+fmt(f.establishedExemptUpTo)+'.'}:{amount:0,note:null};
+      default: return {amount:0,note:null};
+    }
+  }
+  function feesFor(cfg,price){
+    const mr=typeof cfg.fees.mortgageReg==='number'?cfg.fees.mortgageReg:0; const t=cfg.fees.transfer; let tf;
+    if(typeof t==='number')tf=t;
+    else if(t&&t.type==='vic')tf=Math.min(t.cap,t.base+Math.floor(price/1000)*t.per1000);
+    else if(t&&t.type==='qld')tf=t.base+Math.ceil(Math.max(0,price-t.from)/t.step)*t.per;
+    else if(t&&t.type==='sa'){if(price<=5000)tf=198;else if(price<=20000)tf=221;else if(price<=40000)tf=243;else if(price<=50000)tf=342;else tf=444+(Math.ceil(price/(t.step||10000))-6)*(t.per||102);}
+    else if(t&&t.type==='wa'){if(price<=85000)tf=216.60;else if(price<=120000)tf=226.60;else tf=(t.base||246.60)+Math.max(0,Math.ceil(price/(t.step||100000))-2)*(t.per||20);}
+    else tf=0;
+    return {mr,tf};
+  }
+
+  /* ---------- path helpers ---------- */
+  function getByPath(p){return p.split('.').reduce((o,k)=>o==null?o:o[k], data);}
+  function setByPath(p,v){const ks=p.split('.');let o=data;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks[ks.length-1]]=v;}
+
+  /* ---------- field builders ---------- */
+  function moneyField(path,label,allowNull){
+    const v=getByPath(path);
+    const disp = (v===null||v===undefined)?'':v;
+    return `<div class="f pfx"><label>${label}</label><span class="s">$</span>
+      <input type="number" step="any" data-path="${path}" data-kind="money${allowNull?'-null':''}" value="${disp}" ${allowNull?'placeholder="none"':''}></div>`;
+  }
+  function pctField(path,label){
+    const v=getByPath(path);
+    return `<div class="f sfx"><label>${label}</label><span class="s">%</span>
+      <input type="number" step="any" data-path="${path}" data-kind="pct" value="${round4(v*100)}"></div>`;
+  }
+  function numField(path,label){
+    return `<div class="f"><label>${label}</label><input type="number" step="any" data-path="${path}" data-kind="num" value="${getByPath(path)}"></div>`;
+  }
+  function textField(path,label){
+    return `<div class="f"><label>${label}</label><input type="text" data-path="${path}" data-kind="text" value="${getByPath(path)||''}"></div>`;
+  }
+  function round4(n){return Math.round(n*10000)/10000;}
+
+  // bracket editor for arrays of {s,b,r}
+  function bracketTable(path,title){
+    const rows=getByPath(path);
+    let html=`<div class="group"><h3>${title}</h3><div class="brkg brkg-3">`;
+    rows.forEach((row,i)=>{
+      html+=`<div class="brkg-row">
+        <div class="bcell"><span class="bl">From $</span><div class="pfx"><span class="ps">$</span><input type="number" step="any" data-path="${path}.${i}.s" data-kind="money" value="${row.s}"></div></div>
+        <div class="bcell"><span class="bl">Base duty $</span><div class="pfx"><span class="ps">$</span><input type="number" step="any" data-path="${path}.${i}.b" data-kind="money" value="${row.b}"></div></div>
+        <div class="bcell"><span class="bl">Rate %</span><div><input type="number" step="any" data-path="${path}.${i}.r" data-kind="pct" value="${round4(row.r*100)}"></div></div>
+        <button class="del" data-del="${path}" data-i="${i}" title="Remove row">×</button>
+      </div>`;
+    });
+    html+=`</div><button class="addrow" data-add="${path}">+ Add bracket</button></div>`;
+    return html;
+  }
+  // tier editor for NT {to,rate}
+  function tierTable(path,title){
+    const rows=getByPath(path);
+    let html=`<div class="group"><h3>${title}</h3><div class="brkg brkg-2">`;
+    rows.forEach((row,i)=>{
+      html+=`<div class="brkg-row">
+        <div class="bcell"><span class="bl">Up to $ (blank = ∞)</span><div class="pfx"><span class="ps">$</span><input type="number" step="any" data-path="${path}.${i}.to" data-kind="money-null" value="${row.to===null?'':row.to}" placeholder="∞"></div></div>
+        <div class="bcell"><span class="bl">Rate %</span><div><input type="number" step="any" data-path="${path}.${i}.rate" data-kind="pct" value="${round4(row.rate*100)}"></div></div>
+        <button class="del" data-del="${path}" data-i="${i}" title="Remove row">×</button>
+      </div>`;
+    });
+    html+=`</div><button class="addrow" data-add="${path}" data-tier="1">+ Add tier</button></div>`;
+    return html;
+  }
+
+  /* ---------- render one state ---------- */
+  function renderEditor(){
+    const k=current, c=data.states[k], P='states.'+k;
+    let h='';      // left column: general + the tall duty tables
+    let x='';      // right column: compact settings sections (above live preview)
+    // header
+    h+=`<div class="group"><h3>General</h3><div class="row">
+      ${textField(P+'.name','Display name')}
+      <div class="f"><label>Validation status</label><div class="chk" style="padding-top:6px;"><input type="checkbox" data-path="${P}.validated" data-kind="bool" ${c.validated?'checked':''}><span>Marked as official (vs “verify”)</span></div></div>
+    </div></div>`;
+
+    // duty
+    if(c.model==='brackets'){
+      h+=bracketTable(P+'.brackets','Transfer duty brackets');
+      if(c.premium) x+=`<div class="group"><h3>Premium tier</h3><div class="row3">${moneyField(P+'.premium.threshold','Above $')}${moneyField(P+'.premium.base','Base duty $')}${pctField(P+'.premium.rate','Rate')}</div></div>`;
+      if(c.min!==undefined) x+=`<div class="group"><h3>Minimum duty</h3><div class="row">${moneyField(P+'.min','Minimum $')}</div></div>`;
+    } else if(c.model==='act'){
+      h+=bracketTable(P+'.owner','Owner-occupier schedule');
+      h+=bracketTable(P+'.general','Investor / general schedule');
+      x+=`<div class="group"><h3>Flat rate above threshold</h3><div class="row">${moneyField(P+'.flatAbove.threshold','Above $')}${pctField(P+'.flatAbove.rate','Flat rate on whole value')}</div></div>`;
+    } else if(c.model==='vic'){
+      h+=bracketTable(P+'.brackets','Duty brackets (below flat band)');
+      x+=`<div class="group"><h3>Flat band</h3><div class="row3">${moneyField(P+'.flatBand.from','From $')}${moneyField(P+'.flatBand.to','To $')}${pctField(P+'.flatBand.rate','Rate on whole value')}</div></div>`;
+      x+=`<div class="group"><h3>Top tier</h3><div class="row3">${moneyField(P+'.top.threshold','Above $')}${moneyField(P+'.top.base','Base duty $')}${pctField(P+'.top.rate','Rate')}</div></div>`;
+    } else if(c.model==='nt'){
+      x+=`<div class="group"><h3>Duty curve (to cap value)</h3><div class="row3">${moneyField(P+'.curve.capValue','Curve applies up to $')}${numField(P+'.curve.k','k (×V²)')}${numField(P+'.curve.lin','linear (×V)')}</div><p class="hint">NT uses a formula below the cap: duty = k·V² + lin·V, where V = value ÷ 1000.</p></div>`;
+      h+=tierTable(P+'.tiers','Flat tiers above cap');
+    }
+
+    // fees
+    const t=c.fees.transfer;
+    let feesH=`<div class="row">${moneyField(P+'.fees.mortgageReg','Mortgage registration $')}`;
+    if(typeof t==='number') feesH+=moneyField(P+'.fees.transfer','Transfer fee $');
+    else feesH+=`<div class="f"><label>Transfer fee</label><input type="text" value="${t.type.toUpperCase()} formula (below)" disabled></div>`;
+    feesH+=`</div>`;
+    if(t&&t.type==='vic') feesH+=`<div class="row3" style="margin-top:12px;">${moneyField(P+'.fees.transfer.base','Base $')}${numField(P+'.fees.transfer.per1000','$ per $1,000')}${moneyField(P+'.fees.transfer.cap','Cap $')}</div>`;
+    if(t&&t.type==='qld') feesH+=`<div class="row3" style="margin-top:12px;">${moneyField(P+'.fees.transfer.base','Base $')}${moneyField(P+'.fees.transfer.per','$ per step')}${moneyField(P+'.fees.transfer.step','Step $')}</div><div class="row" style="margin-top:12px;">${moneyField(P+'.fees.transfer.from','Stepping starts above $')}</div>`;
+    if(t&&t.type==='sa') feesH+=`<div class="row" style="margin-top:12px;">${moneyField(P+'.fees.transfer.per','$ per band')}${moneyField(P+'.fees.transfer.step','Band size $')}</div>`;
+    if(t&&t.type==='wa') feesH+=`<div class="row3" style="margin-top:12px;">${moneyField(P+'.fees.transfer.base','Base $ (above $120k)')}${moneyField(P+'.fees.transfer.per','$ per band')}${moneyField(P+'.fees.transfer.step','Band size $')}</div>`;
+    x+=`<div class="group"><h3>Government fees</h3>${feesH}</div>`;
+
+    // surcharge + grant
+    x+=`<div class="group"><h3>Surcharge &amp; grant</h3><div class="row3">
+      ${pctField(P+'.foreign','Foreign buyer surcharge')}
+      ${moneyField(P+'.fhog.amount','First home owner grant $')}
+      ${moneyField(P+'.fhog.cap','Grant value cap $',true)}
+    </div><p class="hint">Grant applies to first home buyers of new homes at or under the cap. Leave cap blank for no limit.</p></div>`;
+
+    // FHB thresholds
+    const f=c.fhb||{}; let fhbH='';
+    if(f.model==='act_hbcs') fhbH=`<div class="row">${moneyField(P+'.fhb.noDutyUpTo','No duty up to $')}${moneyField(P+'.fhb.partialCap','Partial concession cap $')}</div>`;
+    else if(f.model==='nsw') fhbH=`<div class="row">${moneyField(P+'.fhb.homeExempt','Home exempt up to $')}${moneyField(P+'.fhb.homeConcessionTo','Home concession to $')}</div><div class="row" style="margin-top:12px;">${moneyField(P+'.fhb.landExempt','Vacant land exempt to $')}${moneyField(P+'.fhb.landConcessionTo','Land concession to $')}</div>`;
+    else if(f.model==='vic'||f.model==='wa') fhbH=`<div class="row">${moneyField(P+'.fhb.exemptUpTo','Exempt up to $')}${moneyField(P+'.fhb.concessionTo','Concession to $')}</div>`;
+    else if(f.model==='qld') fhbH=`<div class="f" style="margin-bottom:12px;"><div class="chk"><input type="checkbox" data-path="${P}.fhb.newFullExempt" data-kind="bool" ${f.newFullExempt?'checked':''}><span>New homes fully exempt</span></div></div><div class="row">${moneyField(P+'.fhb.establishedFull','Established full to $')}${moneyField(P+'.fhb.establishedTo','Established phase-out to $')}</div>`;
+    else if(f.model==='sa') fhbH=`<div class="chk"><input type="checkbox" data-path="${P}.fhb.newFullExempt" data-kind="bool" ${f.newFullExempt?'checked':''}><span>New homes fully exempt (no value cap)</span></div>`;
+    else if(f.model==='tas') fhbH=`<div class="row">${moneyField(P+'.fhb.establishedExemptUpTo','Established homes exempt to $')}</div>`;
+    else fhbH=`<p class="hint">First-home support for this state is grant-based; no duty concession thresholds.</p>`;
+    x+=`<div class="group"><h3>First home buyer concession</h3>${fhbH}</div>`;
+
+    $('editor').innerHTML=h;
+    const ex=$('editor-extra'); if(ex) ex.innerHTML=x;
+    bindInputs();
+    preview();
+  }
+
+  function bindInputs(){
+    ['editor','editor-extra'].forEach(function(cid){
+      const cont=$(cid); if(!cont) return;
+      cont.querySelectorAll('input[data-path]').forEach(inp=>{
+        inp.addEventListener('input',()=>{
+          const path=inp.dataset.path, kind=inp.dataset.kind;
+          let val;
+          if(kind==='bool') val=inp.checked;
+          else if(kind==='text') val=inp.value;
+          else if(kind==='pct') val=(parseFloat(inp.value)||0)/100;
+          else if(kind==='money-null') val=(inp.value.trim()==='')?null:(parseFloat(inp.value)||0);
+          else val=parseFloat(inp.value)||0;
+          setByPath(path,val);
+          persist(); preview();
+        });
+      });
+      cont.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',()=>{
+        const arr=getByPath(b.dataset.add);
+        if(b.dataset.tier) arr.push({to:null,rate:0});
+        else { const last=arr[arr.length-1]||{s:0,b:0,r:0}; arr.push({s:(last.s||0)+100000,b:0,r:last.r||0}); }
+        persist(); renderEditor();
+      }));
+      cont.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+        const arr=getByPath(b.dataset.del); arr.splice(+b.dataset.i,1); persist(); renderEditor();
+      }));
+    });
+  }
+
+  /* ---------- preview ---------- */
+  let pv={purpose:'owner',type:'established',fhb:'no',foreign:'no'};
+  function bindSeg(id,key){ $(id).querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{
+    $(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));
+    btn.setAttribute('aria-pressed','true'); pv[key]=btn.dataset.v; preview();
+  }));}
+  bindSeg('p-purpose','purpose');bindSeg('p-type','type');bindSeg('p-fhb','fhb');bindSeg('p-foreign','foreign');
+  $('p-price').addEventListener('input',preview);
+
+  function preview(){
+    const c=data.states[current]; const price=+$('p-price').value||0;
+    const isFHB = pv.fhb==='yes' && pv.purpose==='owner';
+    const base=dutyFor(c,price,pv.purpose);
+    let conc={amount:0,note:null}; if(isFHB) conc=concessionFor(c,price,pv.type,base);
+    conc.amount=Math.min(conc.amount,base);
+    const surcharge = (pv.foreign==='yes') ? price*(c.foreign||0) : 0;
+    const payable=Math.max(0,base-conc.amount)+surcharge;
+    const {mr,tf}=feesFor(c,price);
+    let grant=0; if(pv.fhb==='yes'&&pv.type==='new'&&c.fhog.amount>0&&price<=capOf(c.fhog.cap)) grant=c.fhog.amount;
+    const total=Math.max(0,payable+mr+tf-grant);
+    $('prev-state-label').textContent='Testing: '+c.name;
+    $('pr-base').textContent=fmt(base);
+    $('pr-conc').textContent=conc.amount>0?'− '+fmt(conc.amount):'$0';
+    $('pr-surch').textContent=surcharge>0?'+ '+fmt(surcharge):'$0';
+    $('pr-pay').textContent=fmt(payable);
+    $('pr-mr').textContent=fmt(mr);
+    $('pr-tf').textContent=fmt(tf);
+    $('pr-grant').textContent=grant>0?'− '+fmt(grant):'$0';
+    $('pr-total').textContent=fmt(total);
+    $('pr-note').textContent = isFHB&&conc.note?conc.note:'';
+  }
+
+  /* ---------- state tabs ---------- */
+  function renderStatebar(){
+    const bar=$('statebar'); bar.innerHTML='';
+    Object.keys(data.states).forEach(k=>{
+      const c=data.states[k];
+      const btn=document.createElement('button');
+      btn.className='statebtn'; btn.setAttribute('role','tab');
+      btn.setAttribute('aria-selected', k===current?'true':'false');
+      btn.innerHTML=k+`<span class="badge ${c.validated?'ok':'warn'}">${c.validated?'official':'verify'}</span>`;
+      btn.addEventListener('click',()=>{current=k;renderStatebar();renderEditor();});
+      bar.appendChild(btn);
+    });
+  }
+
+  /* ---------- persistence + export ---------- */
+  function persist(){ try{ localStorage.setItem('linray_rates', JSON.stringify(data)); }catch(e){} }
+  function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
+  function jsonOut(){ return JSON.stringify(data,null,2); }
+  // What goes onto the public site: everything EXCEPT the demo sign-in accounts
+  // (those are cosmetic and hold demo passwords — they never belong in a public file).
+  function liveConfig(){ const c=JSON.parse(JSON.stringify(data)); delete c.users; return c; }
+  function liveOut(){ return JSON.stringify(liveConfig(),null,2); }
+
+  $('g-effective').addEventListener('input',e=>{data.effective=e.target.value;persist();preview();});
+  $('g-updated').addEventListener('input',e=>{data.updated=e.target.value;persist();});
+
+  $('btn-download').addEventListener('click',()=>{
+    const blob=new Blob([liveOut()],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='config.json'; a.click();
+    URL.revokeObjectURL(a.href); toast('config.json downloaded');
+  });
+  $('btn-copy').addEventListener('click',async()=>{ try{await navigator.clipboard.writeText(liveOut());toast('Config copied');}catch(e){openModal('Copy config',liveOut(),null);} });
+  $('btn-snippet').addEventListener('click',()=>{
+    const snip='<script>\nwindow.LINRAY_CONFIG = '+JSON.stringify(liveConfig())+';\n<\/script>';
+    openModal('Embed snippet', snip, null, 'Paste this into your page <em>before</em> the calculator\u2019s own script tag. No file hosting needed \u2014 the calculator will use this configuration directly.');
+  });
+  $('btn-import').addEventListener('click',()=>openModal('Paste site config','',loadFromText,'Paste a config.json you exported earlier, then press Load.'));
+
+  const modal=$('modal');
+  function openModal(title,text,onAction,hint){
+    $('modal-title').textContent=title; $('modal-text').value=text;
+    $('modal-hint').innerHTML=hint||''; $('modal-action').style.display=onAction?'':'none';
+    $('modal-action').onclick=onAction?()=>onAction($('modal-text').value):null;
+    modal.classList.add('show');
+  }
+  $('modal-cancel').addEventListener('click',()=>modal.classList.remove('show'));
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('show');});
+  function loadFromText(txt){
+    try{ const p=JSON.parse(txt); if(typeof p!=='object'||p===null) throw new Error('not an object');
+      data=Object.assign(JSON.parse(JSON.stringify(DEFAULT_RATES)), p); seedConfig();
+      current=Object.keys(data.states)[0]; persist(); init(); modal.classList.remove('show'); toast('Config loaded'); }
+    catch(e){ $('modal-hint').innerHTML='<span style="color:#b4543c">Could not parse that JSON: '+e.message+'</span>'; }
+  }
+
+  function leadDetailHtml(l){
+    const esc=function(s){return String(s==null?'':s).replace(/[&<>]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]);});};
+    function sec(label,list){
+      if(!list||!list.length) return '';
+      var rows=list.map(function(r){return '<div class="ld-row"><span>'+esc(r.k)+'</span><span class="lv">'+esc(r.v)+'</span></div>';}).join('');
+      return '<div class="ld-sec">'+esc(label)+'</div>'+rows;
+    }
+    var dt=new Date(l.t||Date.now());
+    return '<div class="ld-meta">Submitted '+dt.toLocaleString()+'. In the live version this shows the full name &amp; email and links to the saved results file.</div>'
+      +sec('Their details',l.inputs)+sec('Results',l.outputs);
+  }
+  var __leads=[];
+  function renderLeads(){
+    const box=$('leads-list'); if(!box) return;
+    try{ __leads=JSON.parse(localStorage.getItem('linray_demo_leads')||'[]'); }catch(e){ __leads=[]; }
+    if(!__leads.length){ box.innerHTML='<p class="hint" style="margin:0;">No leads captured yet. On the calculator, use “Email me these results” to see a lead appear here.</p>'; return; }
+    box.innerHTML=__leads.map(function(l,i){
+      var dt=new Date(l.t||Date.now());
+      var when=dt.toLocaleDateString([], {day:'numeric',month:'short'})+' '+dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      var scen=(l.inputs||[]).slice(0,3).map(function(r){return r.v;}).filter(Boolean).join(' · ');
+      return '<div class="lead-item"><div class="li-top"><span>'+(l.name||'Anon')+' · '+(l.email||'')+' <span class="li-mask">masked</span></span>'
+        +'<span class="li-right"><span class="li-when">'+when+'</span><button class="li-view" data-i="'+i+'">View</button></span></div>'
+        +'<div class="li-sub">'+(l.calc||'Calculation')+(l.headline?' — <b>'+l.headline+'</b>':'')+(scen?' · <span class="li-scen">'+scen+'</span>':'')+'</div>'
+        +'<div class="lead-detail" id="ld-'+i+'" hidden></div></div>';
+    }).join('');
+    box.querySelectorAll('.li-view').forEach(function(b){
+      b.addEventListener('click',function(){
+        var d=$('ld-'+b.dataset.i); if(!d) return;
+        if(d.hasAttribute('hidden')){ d.innerHTML=leadDetailHtml(__leads[+b.dataset.i]); d.removeAttribute('hidden'); b.textContent='Hide'; }
+        else { d.setAttribute('hidden',''); b.textContent='View'; }
+      });
+    });
+  }
+  function renderCalcToggles(){
+    if(!data.calculators) data.calculators={};
+    const box=$('calc-toggles'); if(!box) return; box.innerHTML='';
+    [['repay','Repayments'],['borrow','Borrowing power'],['costs','Stamp duty & costs'],['extra','Extra repayments'],['offset','Offset savings'],['deposit','Deposit goal'],['compare','Loan comparison'],['features','App features (sales page)']].forEach(function(it){
+      const k=it[0], on=data.calculators[k]!==false;
+      const lab=document.createElement('label');
+      const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=on;
+      cb.addEventListener('change',function(){ data.calculators[k]=cb.checked; persist(); if(window.__applyCalcs) window.__applyCalcs(data.calculators); });
+      lab.appendChild(cb); lab.appendChild(document.createTextNode(' '+it[1]));
+      box.appendChild(lab);
+    });
+  }
+  /* ---------- appearance ---------- */
+  const DEFAULT_APPEARANCE={brand:'#1f7a63',brandDeep:'#155c4a',accent:'#b9852b',bg:'#f6f4ef',surface:'#ffffff',ink:'#1b2430',panelBg:'#1d3a33',panelInk:'#eef5f2',panelAccent:'#f0c97a',graphLine:'#7fd9b6',fontDisplay:'Fraunces',fontUi:'Inter'};
+  const APPR_PRESETS=[
+    {name:'Eucalyptus',brand:'#1f7a63',brandDeep:'#155c4a',accent:'#b9852b',bg:'#f6f4ef',surface:'#ffffff',ink:'#1b2430',panelBg:'#1d3a33',panelInk:'#eef5f2',panelAccent:'#f0c97a',graphLine:'#7fd9b6',fontDisplay:'Fraunces',fontUi:'Inter'},
+    {name:'Midnight & Gold',brand:'#c9a14a',brandDeep:'#a8842f',accent:'#c9a14a',bg:'#0f1722',surface:'#16212e',ink:'#e7edf3',panelBg:'#16212e',panelInk:'#e8eef4',panelAccent:'#d9b65f',graphLine:'#c9a14a',fontDisplay:'Playfair Display',fontUi:'Inter'},
+    {name:'Ocean',brand:'#1f6f8b',brandDeep:'#155a73',accent:'#e08a3c',bg:'#f3f6f8',surface:'#ffffff',ink:'#16242c',panelBg:'#123c4a',panelInk:'#eaf3f6',panelAccent:'#f0b878',graphLine:'#5fc4d6',fontDisplay:'Lora',fontUi:'Work Sans'},
+    {name:'Plum',brand:'#7a4a8c',brandDeep:'#5f3a6e',accent:'#d98a3c',bg:'#f7f4f8',surface:'#ffffff',ink:'#241b2a',panelBg:'#3a2742',panelInk:'#f3eef6',panelAccent:'#e6b06a',graphLine:'#c89fd6',fontDisplay:'DM Serif Display',fontUi:'DM Sans'},
+    {name:'Charcoal & Coral',brand:'#e2603f',brandDeep:'#c44e30',accent:'#e2603f',bg:'#f5f3f1',surface:'#ffffff',ink:'#222020',panelBg:'#262422',panelInk:'#f3efec',panelAccent:'#f0a07f',graphLine:'#e2845f',fontDisplay:'Poppins',fontUi:'Poppins'},
+    {name:'Slate Blue',brand:'#3a5a8c',brandDeep:'#2c4670',accent:'#3a8c6a',bg:'#f4f6f9',surface:'#ffffff',ink:'#1a2333',panelBg:'#23304a',panelInk:'#eef2f8',panelAccent:'#6fcaa0',graphLine:'#7fa8d9',fontDisplay:'Inter',fontUi:'Inter'}
+  ];
+  const APPR_FONTS={
+    'Fraunces':{css:"'Fraunces',Georgia,serif",g:'Fraunces:opsz,wght@9..144,300..600'},
+    'Playfair Display':{css:"'Playfair Display',Georgia,serif",g:'Playfair+Display:wght@400..700'},
+    'Lora':{css:"'Lora',Georgia,serif",g:'Lora:wght@400..600'},
+    'DM Serif Display':{css:"'DM Serif Display',Georgia,serif",g:'DM+Serif+Display'},
+    'Poppins':{css:"'Poppins',system-ui,sans-serif",g:'Poppins:wght@400;500;600;700'},
+    'Inter':{css:"'Inter',system-ui,sans-serif",g:'Inter:wght@400;500;600;700'},
+    'Work Sans':{css:"'Work Sans',system-ui,sans-serif",g:'Work+Sans:wght@400;500;600'},
+    'DM Sans':{css:"'DM Sans',system-ui,sans-serif",g:'DM+Sans:wght@400;500;600'},
+    'System':{css:"system-ui,-apple-system,sans-serif",g:null}
+  };
+  const APPR_COLORS=[['brand','ap-brand'],['brandDeep','ap-brandDeep'],['accent','ap-accent'],['bg','ap-bg'],['surface','ap-surface'],['ink','ap-ink'],['panelBg','ap-panelBg'],['panelInk','ap-panelInk'],['panelAccent','ap-panelAccent'],['graphLine','ap-graphLine']];
+  const apprLoaded={};
+  function apprLoadFont(n){ const f=APPR_FONTS[n]; if(!f||!f.g||apprLoaded[n])return; apprLoaded[n]=1; const l=document.createElement('link'); l.rel='stylesheet'; l.href='https://fonts.googleapis.com/css2?family='+f.g+'&display=swap'; document.head.appendChild(l); }
+  function apprRgb(h){ h=(h||'').replace('#',''); if(h.length===3)h=h.split('').map(c=>c+c).join(''); return [parseInt(h.slice(0,2),16)||0,parseInt(h.slice(2,4),16)||0,parseInt(h.slice(4,6),16)||0]; }
+  function apprHx(a){ return '#'+a.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join(''); }
+  function apprTint(h,t){ return apprHx(apprRgb(h).map(v=>v+(255-v)*t)); }
+  function apprShade(h,t){ return apprHx(apprRgb(h).map(v=>v*(1-t))); }
+  function apprMix(a,b,t){ const x=apprRgb(a),y=apprRgb(b); return apprHx(x.map((v,i)=>v+(y[i]-v)*t)); }
+  function apprRgba(h,al){ const c=apprRgb(h); return 'rgba('+c[0]+','+c[1]+','+c[2]+','+al+')'; }
+  function applyApprAdmin(a){
+    const root=document.documentElement, S=(k,v)=>root.style.setProperty(k,v);
+    if(a.brand){ S('--brand',a.brand); S('--brand-tint',apprTint(a.brand,.88)); S('--brand-deep',a.brandDeep||apprShade(a.brand,.24)); }
+    if(a.brandDeep) S('--brand-deep',a.brandDeep);
+    if(a.accent){ S('--amber',a.accent); S('--amber-tint',apprTint(a.accent,.86)); }
+    if(a.bg) S('--bg',a.bg);
+    if(a.surface){ S('--surface',a.surface); S('--surface-2',apprMix(a.surface,a.bg||'#f6f4ef',.45)); }
+    if(a.ink){ S('--ink',a.ink); S('--ink-soft',apprMix(a.ink,a.bg||'#fff',.42)); S('--ink-faint',apprMix(a.ink,a.bg||'#fff',.6)); }
+    if(a.line){ S('--line',a.line); S('--line-strong',apprShade(a.line,.06)); }
+    if(a.panelBg){ S('--panel-bg',a.panelBg); S('--panel-bg2',apprShade(a.panelBg,.18)); }
+    if(a.panelInk){ S('--panel-ink',a.panelInk); S('--panel-soft',apprMix(a.panelInk,a.panelBg||'#1d3a33',.42)); S('--panel-line',apprRgba(a.panelInk,.13)); }
+    if(a.panelAccent) S('--panel-accent',a.panelAccent);
+    if(a.graphLine) S('--graph-line',a.graphLine);
+    if(a.fontDisplay&&APPR_FONTS[a.fontDisplay]){ apprLoadFont(a.fontDisplay); S('--font-display',APPR_FONTS[a.fontDisplay].css); }
+    if(a.fontUi&&APPR_FONTS[a.fontUi]){ apprLoadFont(a.fontUi); S('--font-ui',APPR_FONTS[a.fontUi].css); }
+    if(window.__applyAppearance) window.__applyAppearance(a);
+  }
+  function curAppr(){ return Object.assign({},DEFAULT_APPEARANCE,data.appearance||{}); }
+  function apprChange(key,val){ if(!data.appearance) data.appearance=Object.assign({},DEFAULT_APPEARANCE); data.appearance[key]=val; persist(); applyApprAdmin(curAppr()); markPresetActive(); }
+  function applyPreset(p){ data.appearance=Object.assign({},p); persist(); renderAppearance(); toast('“'+p.name+'” theme applied'); }
+  function markPresetActive(){
+    const a=curAppr();
+    document.querySelectorAll('#ap-presets .preset-sw').forEach(function(b){
+      const p=APPR_PRESETS[+b.dataset.i];
+      const same=p && ['brand','bg','panelBg','accent','ink'].every(k=>(a[k]||'').toLowerCase()===(p[k]||'').toLowerCase());
+      b.setAttribute('aria-pressed', same?'true':'false');
+    });
+  }
+  let apprWired=false;
+  function renderAppearance(){
+    const a=curAppr();
+    const ph=$('ap-presets');
+    if(ph && !ph.children.length){
+      APPR_PRESETS.forEach(function(p,i){
+        const b=document.createElement('button'); b.type='button'; b.className='preset-sw'; b.dataset.i=i;
+        b.innerHTML='<span class="ps-dots"><i style="background:'+p.bg+'"></i><i style="background:'+p.brand+'"></i><i style="background:'+p.panelBg+'"></i><i style="background:'+p.accent+'"></i></span><span class="ps-name">'+p.name+'</span>';
+        b.addEventListener('click',function(){ applyPreset(p); });
+        ph.appendChild(b);
+      });
+    }
+    ['ap-fontDisplay','ap-fontUi'].forEach(function(id){ const s=$(id); if(s && !s.options.length){ Object.keys(APPR_FONTS).forEach(function(n){ const o=document.createElement('option'); o.value=n; o.textContent=n; s.appendChild(o); }); } });
+    APPR_COLORS.forEach(function(p){ const c=$(p[1]), hexEl=$(p[1]+'-hex'); if(c) c.value=a[p[0]]; if(hexEl) hexEl.value=(a[p[0]]||'').toUpperCase(); });
+    if($('ap-fontDisplay')) $('ap-fontDisplay').value=a.fontDisplay;
+    if($('ap-fontUi')) $('ap-fontUi').value=a.fontUi;
+    applyApprAdmin(a); markPresetActive();
+    if(apprWired) return; apprWired=true;
+    APPR_COLORS.forEach(function(p){
+      const c=$(p[1]), hexEl=$(p[1]+'-hex');
+      if(c) c.addEventListener('input',function(){ if(hexEl)hexEl.value=c.value.toUpperCase(); apprChange(p[0],c.value); });
+      if(hexEl) hexEl.addEventListener('input',function(){ let v=hexEl.value.trim(); if(/^#?[0-9a-fA-F]{6}$/.test(v)){ if(v[0]!=='#')v='#'+v; if(c)c.value=v; apprChange(p[0],v); } });
+    });
+    if($('ap-fontDisplay')) $('ap-fontDisplay').addEventListener('change',function(){ apprChange('fontDisplay',this.value); });
+    if($('ap-fontUi')) $('ap-fontUi').addEventListener('change',function(){ apprChange('fontUi',this.value); });
+    if($('ap-reset')) $('ap-reset').addEventListener('click',function(){ data.appearance=Object.assign({},DEFAULT_APPEARANCE); persist(); renderAppearance(); toast('Theme reset'); });
+  }
+  /* ====================== LOGO & HEADER ====================== */
+  let lgWired=false;
+  function renderLogo(){
+    const L=data.logo;
+    $('lg-show').checked=L.showLogo!==false;
+    $('lg-show-tag').checked=L.showTagline!==false;
+    $('lg-show-sub').checked=L.showSubtext!==false;
+    $('lg-text').value=L.text||''; $('lg-tag').value=L.tagline||''; $('lg-sub').value=L.subtext||''; $('lg-img').value=L.imageUrl||'';
+    const mode=L.imageUrl?'img':'text';
+    $('lg-mode').querySelectorAll('.segb').forEach(b=>b.setAttribute('aria-pressed', b.dataset.m===mode?'true':'false'));
+    $('lg-text-wrap').hidden=mode!=='text'; $('lg-img-wrap').hidden=mode!=='img';
+    lgPreview();
+    if(lgWired) return; lgWired=true;
+    function save(){ L.text=$('lg-text').value; L.tagline=$('lg-tag').value; L.subtext=$('lg-sub').value; L.imageUrl=$('lg-img').value; L.showLogo=$('lg-show').checked; L.showTagline=$('lg-show-tag').checked; L.showSubtext=$('lg-show-sub').checked; persist(); lgPreview(); pushPreview(); }
+    ['lg-text','lg-tag','lg-sub','lg-img'].forEach(id=>$(id).addEventListener('input',save));
+    ['lg-show','lg-show-tag','lg-show-sub'].forEach(id=>$(id).addEventListener('change',save));
+    $('lg-mode').querySelectorAll('.segb').forEach(b=>b.addEventListener('click',function(){ $('lg-mode').querySelectorAll('.segb').forEach(x=>x.setAttribute('aria-pressed','false')); b.setAttribute('aria-pressed','true'); const m=b.dataset.m; $('lg-text-wrap').hidden=m!=='text'; $('lg-img-wrap').hidden=m!=='img'; if(m==='text'){L.imageUrl='';$('lg-img').value='';} save(); }));
+    $('lg-file').addEventListener('change',function(e){ const f=e.target.files[0]; if(!f) return; if(f.size>500000){ toast('Image too large (max ~500 KB)'); return; } const r=new FileReader(); r.onload=function(){ $('lg-img').value=r.result; save(); }; r.readAsDataURL(f); });
+  }
+  function lgPreview(){
+    const L=data.logo, p=$('lg-preview'); let h='';
+    if(L.showLogo!==false){ h+= L.imageUrl ? '<img class="lpv-img" src="'+esc(L.imageUrl)+'" alt="logo">' : '<div class="lpv-h">'+esc(L.text||'Your business')+'</div>'; }
+    if(L.showTagline!==false && L.tagline) h='<div class="lpv-eye">'+esc(L.tagline)+'</div>'+h;
+    if(L.showSubtext!==false && L.subtext) h+='<div class="lpv-sub">'+esc(L.subtext)+'</div>';
+    p.innerHTML=h||'<span class="hint">Everything is switched off — the header will be blank.</span>';
+  }
+  function pushPreview(){ if(window.__refreshRates) {} }
+
+  /* ====================== CONTACT / BROKERS ====================== */
+  let ctWired=false;
+  function renderContact(){
+    $('ct-show').checked=data.contact.show!==false;
+    $('ct-intro').value=data.contact.intro||'';
+    const list=$('ct-list'); list.innerHTML=data.contact.brokers.map(broCard).join('') || '<p class="hint">No brokers yet — add one below.</p>';
+    if(ctWired) return; ctWired=true;
+    $('ct-show').addEventListener('change',function(){ data.contact.show=this.checked; persist(); });
+    $('ct-intro').addEventListener('input',function(){ data.contact.intro=this.value; persist(); });
+    $('ct-add').addEventListener('click',function(){ data.contact.brokers.push({id:uid(),name:'New broker',title:'Mortgage Broker',phone:'',email:'',address:'',bio:'',special:'',photo:''}); persist(); renderContact(); });
+    list.addEventListener('input',function(e){ const el=e.target, id=el.getAttribute('data-bro'), fld=el.getAttribute('data-f'); if(!id||!fld) return; const b=data.contact.brokers.find(x=>x.id===id); if(b){ b[fld]=el.value; persist(); } });
+    list.addEventListener('click',function(e){ const rm=e.target.closest('[data-rm]'); if(rm){ const id=rm.getAttribute('data-rm'); data.contact.brokers=data.contact.brokers.filter(x=>x.id!==id); persist(); renderContact(); } });
+    list.addEventListener('change',function(e){ const ph=e.target.closest('[data-photo]'); if(ph){ const id=ph.getAttribute('data-photo'); const f=ph.files[0]; if(!f) return; if(f.size>500000){toast('Image too large (max ~500 KB)');return;} const r=new FileReader(); r.onload=function(){ const b=data.contact.brokers.find(x=>x.id===id); if(b){b.photo=r.result; persist(); renderContact();} }; r.readAsDataURL(f); } });
+  }
+  function broCard(b){
+    return '<div class="bro"><div class="bro-head"><span class="bro-t">'+esc(b.name||'Broker')+'</span><button class="btn ghost sm danger" data-rm="'+b.id+'">Remove</button></div>'
+      +'<div class="bro-photo"><img class="pv" src="'+(b.photo?esc(b.photo):'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'52\' height=\'52\'></svg>')+'" alt=""><label class="btn ghost sm" style="cursor:pointer">Photo<input type="file" accept="image/*" data-photo="'+b.id+'" hidden></label></div>'
+      +'<div class="bro-grid" style="margin-top:12px">'
+      +fld(b,'name','Name','full')+fld(b,'title','Title / role','full')
+      +fld(b,'phone','Phone')+fld(b,'email','Email')
+      +fld(b,'address','Office address','full')
+      +'<div class="full"><label>Bio</label><textarea class="tin" rows="3" data-bro="'+b.id+'" data-f="bio">'+esc(b.bio||'')+'</textarea></div>'
+      +'<div class="full"><label>Specialties / special info</label><input type="text" class="tin" data-bro="'+b.id+'" data-f="special" value="'+esc(b.special||'')+'"></div>'
+      +'</div></div>';
+  }
+  function fld(b,f,label,cls){ return '<div class="'+(cls||'')+'"><label>'+label+'</label><input type="text" class="tin" data-bro="'+b.id+'" data-f="'+f+'" value="'+esc(b[f]||'')+'"></div>'; }
+
+  /* ====================== USERS ====================== */
+  let usWired=false;
+  const ROLE_LABEL={super:'Super admin',broker:'Broker',leads:'Leads only'};
+  function renderUsers(){
+    const list=$('us-list');
+    let h='<div class="us-row"><span class="us-meta"><span class="us-n">Demo account</span><span class="us-e">demo · password: demo</span></span><span class="us-tag locked">Super · locked</span></div>';
+    h+=data.users.map(function(u){ return '<div class="us-row"><span class="us-meta"><span class="us-n">'+esc(u.name||'User')+'</span><span class="us-e">'+esc(u.email||'')+'</span></span><span style="display:flex;gap:8px;align-items:center"><span class="us-tag">'+ROLE_LABEL[u.role]+'</span><button class="btn ghost sm danger" data-rmu="'+u.id+'">Remove</button></span></div>'; }).join('');
+    list.innerHTML=h;
+    if(usWired) return; usWired=true;
+    $('us-add').addEventListener('click',function(){
+      const n=$('us-name').value.trim(), e=$('us-email').value.trim(), p=$('us-pass').value, r=$('us-role').value;
+      if(!n||!e||!p){ toast('Name, email and password are all required'); return; }
+      data.users.push({id:uid(),name:n,email:e,password:p,role:r}); persist();
+      $('us-name').value='';$('us-email').value='';$('us-pass').value='';
+      renderUsers(); toast('User added');
+    });
+    list.addEventListener('click',function(e){ const rm=e.target.closest('[data-rmu]'); if(rm){ data.users=data.users.filter(x=>x.id!==rm.getAttribute('data-rmu')); persist(); renderUsers(); } });
+  }
+
+  /* ====================== CUSTOM THEMES ====================== */
+  let stWired=false;
+  function renderSavedThemes(){
+    const wrap=$('ap-saved'); if(!wrap) return;
+    if(!data.savedThemes.length){ wrap.innerHTML='<p class="hint" style="grid-column:1/-1;margin:0">No saved themes yet. Style the colours above, then save the look here.</p>'; }
+    else wrap.innerHTML=data.savedThemes.map(function(t,i){
+      const p=t.palette||t;
+      return '<button type="button" class="preset-sw" data-st="'+i+'"><button class="ps-del" data-stdel="'+i+'" title="Delete">\u00d7</button><span class="ps-dots"><i style="background:'+p.bg+'"></i><i style="background:'+p.brand+'"></i><i style="background:'+p.panelBg+'"></i><i style="background:'+p.accent+'"></i></span><span class="ps-name">'+esc(t.name)+'</span></button>';
+    }).join('');
+    if(stWired) return; stWired=true;
+    wrap.addEventListener('click',function(e){
+      const del=e.target.closest('[data-stdel]'); if(del){ e.stopPropagation(); data.savedThemes.splice(+del.getAttribute('data-stdel'),1); persist(); renderSavedThemes(); return; }
+      const sw=e.target.closest('[data-st]'); if(sw){ const t=data.savedThemes[+sw.getAttribute('data-st')]; if(t){ data.appearance=Object.assign({},t.palette||t); persist(); renderAppearance(); toast('\u201c'+t.name+'\u201d applied'); } }
+    });
+    $('ap-save').addEventListener('click',function(){
+      const nm=$('ap-savename').value.trim(); if(!nm){ toast('Give the theme a name first'); return; }
+      data.savedThemes.push({name:nm, palette:curAppr()}); persist(); $('ap-savename').value=''; renderSavedThemes(); toast('Theme saved');
+    });
+    $('ap-download').addEventListener('click',function(){
+      const t={name:($('ap-savename').value.trim()||'Custom theme'), palette:curAppr(), logoUrl:(data.logo&&data.logo.imageUrl)||''};
+      const blob=new Blob([JSON.stringify(t,null,2)],{type:'application/json'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(t.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase())+'-theme.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    });
+    $('ap-upload').addEventListener('change',function(e){
+      const f=e.target.files[0]; if(!f) return; const r=new FileReader();
+      r.onload=function(){ try{ const t=JSON.parse(r.result); const pal=t.palette||t; if(!pal.brand) throw 0; data.appearance=Object.assign({},DEFAULT_APPEARANCE,pal); if(t.logoUrl){ data.logo.imageUrl=t.logoUrl; } persist(); renderAppearance(); if(t.name){ data.savedThemes.push({name:t.name,palette:pal}); persist(); renderSavedThemes(); } toast('Theme loaded'); }catch(err){ toast('That file isn\u2019t a valid theme'); } e.target.value=''; };
+      r.readAsText(f);
+    });
+  }
+
+  /* ====================== LANDING PAGES ====================== */
+  const AI_PRESETS=[
+    ['Local home loans page','Write an SEO landing page targeting people searching for a home loan broker in our local area. Emphasise local knowledge, free appointments, and using the repayment & borrowing-power calculators.'],
+    ['First home buyers','Write an SEO landing page for first home buyers, covering deposit goals, stamp duty concessions and grants, and how our calculators and broker help them get started.'],
+    ['Refinancing','Write an SEO landing page about refinancing to a better rate, with the loan comparison and extra-repayments calculators as the hook, and a call to book a review.'],
+    ['Investment loans','Write an SEO landing page for property investors about structuring investment lending, borrowing power and offset, ending with a contact call to action.']
+  ];
+  let lpCur=null, lpHist=[], lpHi=-1, lpWired=false;
+  function renderLanding(){
+    const list=$('lp-list');
+    list.innerHTML = data.pages.length ? data.pages.map(function(p){
+      return '<div class="lp-item"><span class="lp-meta"><span class="lp-t">'+esc(p.title||'Untitled')+'</span> <span class="lp-s">/'+esc(p.slug||'')+'</span></span><span style="display:flex;gap:10px;align-items:center"><span class="lp-badge '+(p.status==='published'?'pub':'draft')+'">'+(p.status==='published'?'Live':'Draft')+'</span><button class="btn ghost sm" data-edit="'+p.id+'">Edit</button></span></div>';
+    }).join('') : '<p class="hint">No pages yet. Create one to build an SEO-optimised page that matches your theme.</p>';
+    const ap=$('lp-ai-presets'); if(ap && !ap.children.length){ AI_PRESETS.forEach(function(pr,i){ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=pr[0]; b.addEventListener('click',function(){ $('lp-ai-prompt').value=pr[1]; }); ap.appendChild(b); }); }
+    if(lpWired) return; lpWired=true;
+    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft'}; data.pages.push(p); persist(); renderLanding(); lpOpen(p.id); });
+    list.addEventListener('click',function(e){ const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit')); });
+    $('lp-tips').addEventListener('change',function(){ $('lp-editor').classList.toggle('show-tips', this.checked); });
+    $('lp-slug').addEventListener('input',function(){ this.value=this.value.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,''); lpField('slug',this.value); });
+    ['lp-title','lp-meta','lp-h1'].forEach(function(id){ $(id).addEventListener('input',function(){ lpField(id.slice(3), this.value); if(id==='lp-meta') $('lp-meta-count').textContent=this.value.length+' characters'+(this.value.length>165?' — a touch long':''); }); });
+    $('lp-body').addEventListener('input',function(){ lpField('body',this.value); lpPush(this.value); });
+    $('lp-menu').addEventListener('change',function(){ lpField('menu',this.value); });
+    $('lp-status').addEventListener('change',function(){ lpField('status',this.value); });
+    $('lp-save').addEventListener('click',function(){ persist(); toast('Page saved'); renderLanding(); });
+    $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; });
+    $('lp-del').addEventListener('click',function(){ if(!lpCur) return; data.pages=data.pages.filter(x=>x.id!==lpCur.id); persist(); $('lp-editor').hidden=true; lpCur=null; renderLanding(); toast('Page deleted'); });
+    $('lp-undo').addEventListener('click',function(){ if(lpHi>0){ lpHi--; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
+    $('lp-redo').addEventListener('click',function(){ if(lpHi<lpHist.length-1){ lpHi++; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
+    $('lp-ai-go').addEventListener('click',aiGenerate);
+    $('lp-ap-accept').addEventListener('click',function(){ const d=$('lp-approve').getAttribute('data-draft')||''; $('lp-body').value=d; lpField('body',d); lpPush(d); $('lp-approve').hidden=true; toast('Draft applied'); });
+    $('lp-ap-discard').addEventListener('click',function(){ $('lp-approve').hidden=true; });
+  }
+  function lpField(f,v){ if(lpCur){ lpCur[f]=v; persist(); } }
+  function lpPush(v){ lpHist=lpHist.slice(0,lpHi+1); lpHist.push(v); if(lpHist.length>50)lpHist.shift(); lpHi=lpHist.length-1; }
+  function lpOpen(id){
+    lpCur=data.pages.find(x=>x.id===id); if(!lpCur) return;
+    $('lp-editor').hidden=false;
+    $('lp-ed-title').textContent=lpCur.title?('Edit: '+lpCur.title):'New page';
+    $('lp-title').value=lpCur.title||''; $('lp-slug').value=lpCur.slug||''; $('lp-meta').value=lpCur.meta||''; $('lp-h1').value=lpCur.h1||''; $('lp-body').value=lpCur.body||'';
+    $('lp-menu').value=lpCur.menu||'top'; $('lp-status').value=lpCur.status||'draft';
+    $('lp-meta-count').textContent=(lpCur.meta||'').length+' characters';
+    $('lp-editor').classList.toggle('show-tips', $('lp-tips').checked);
+    $('lp-approve').hidden=true;
+    lpHist=[lpCur.body||'']; lpHi=0;
+    try{$('lp-editor').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
+  }
+  function mdToHtml(t){
+    return esc(t).replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h2>$1</h2>')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/^- (.*)$/gm,'<li>$1</li>').replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
+      .replace(/\n{2,}/g,'</p><p>').replace(/^(?!<[hul])(.+)$/gm,'$1');
+  }
+  async function aiGenerate(){
+    const note=$('lp-ai-note'); const prompt=$('lp-ai-prompt').value.trim() || AI_PRESETS[0][1];
+    note.textContent='Writing\u2026';
+    const instructions="You are an expert SEO copywriter for an Australian mortgage broker's website. Using Australian English and simple Markdown (## subheadings, **bold**, - bullets), write a conversion-focused landing page of about 250-400 words. Start with a compelling headline line. Include local relevance, clear benefits, and a call to action to use the loan calculators or contact the broker. Do NOT invent specific interest rates, lender names, or credentials. Respond with ONLY the page content.\n\nBrief: ";
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:instructions+prompt}]})});
+      const d=await res.json();
+      const txt=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+      if(!txt) throw new Error('empty');
+      $('lp-approve').setAttribute('data-draft',txt);
+      $('lp-ap-preview').innerHTML='<p>'+mdToHtml(txt)+'</p>';
+      $('lp-approve').hidden=false; note.textContent='';
+      try{$('lp-approve').scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){}
+    }catch(err){ note.textContent='AI writing runs in the live demo preview here; in production it connects to your own API key behind a small endpoint.'; }
+  }
+
+  /* ====================== LOGIN GATE ====================== */
+  let authed=false, currentRole='super';
+  /* ===== leadpages: live Supabase auth + DB-backed config ===== */
+  const sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  let currentSiteId=null, currentSiteSlug=null, allSites=[];
+
+  async function lpLogin(){
+    const email=$('li-user').value.trim(), pass=$('li-pass').value;
+    if(!email||!pass){ $('li-err').style.color=''; $('li-err').textContent='Enter your email and password.'; return; }
+    $('li-err').style.color=''; $('li-err').textContent='Signing in\u2026';
+    const { error } = await sb.auth.signInWithPassword({ email, password:pass });
+    if(error){ $('li-err').textContent=(error.message||'Sign-in failed.'); return; }
+    const m=$('login-mask'); if(m) m.style.display='none';
+    await afterLogin();
+  }
+  async function bootAuth(){
+    showLogin();
+    try{ const { data:{ session } } = await sb.auth.getSession();
+      if(session){ const m=$('login-mask'); if(m) m.style.display='none'; await afterLogin(); }
+    }catch(e){}
+  }
+  async function afterLogin(){
+    authed=true;
+    let role='broker';
+    try{ const { data:{ user } } = await sb.auth.getUser();
+      const { data:prof } = await sb.from('profiles').select('is_super_admin').eq('id',user.id).maybeSingle();
+      if(prof && prof.is_super_admin) role='super';
+    }catch(e){}
+    currentRole=role;
+    await loadSitesFromDB();
+    applyRoleGating();
+    ensureSiteBar();
+  }
+  async function loadSitesFromDB(){
+    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,config').order('created_at',{ascending:true});
+    if(error){ toast('Could not load site: '+error.message); return; }
+    allSites = rows||[];
+    if(!allSites.length){ toast('No site is assigned to this account yet.'); return; }
+    loadSite(allSites[0]);
+  }
+  function loadSite(site){
+    currentSiteId=site.id; currentSiteSlug=site.slug;
+    const cfg=site.config||{};
+    data=Object.assign(JSON.parse(JSON.stringify(DEFAULT_RATES)), cfg);
+    seedConfig();
+    if(!data.states || !Object.keys(data.states).length){ data.states=JSON.parse(JSON.stringify(DEFAULT_RATES.states)); }
+    current=Object.keys(data.states)[0];
+    init();
+    ensureSiteBar();
+  }
+  function siteConfigForSave(){
+    const c=liveConfig();   // strips demo users
+    delete c.states;        // sites inherit master rates unless explicitly overriding
+    delete c.savedThemes;   // editor-only UI state
+    return c;
+  }
+  async function publishToDB(){
+    if(!currentSiteId){ toast('No site loaded to publish.'); return; }
+    const btn=$('btn-publish'); if(btn){ btn.disabled=true; btn.textContent='Publishing\u2026'; }
+    const { error } = await sb.from('sites').update({ config:siteConfigForSave(), updated_at:new Date().toISOString() }).eq('id', currentSiteId);
+    if(btn){ btn.disabled=false; btn.textContent='Publish to live site'; }
+    if(error){ toast('Publish failed: '+error.message); return; }
+    try{ persist(); }catch(e){}
+    toast('Published \u2014 live on your site');
+  }
+  async function signOutLP(){ try{ await sb.auth.signOut(); }catch(e){} location.reload(); }
+  function ensureSiteBar(){
+    const dl=$('btn-download'); if(!dl) return; const bar=dl.parentNode;
+    if(!$('btn-publish')){
+      const pb=document.createElement('button'); pb.className='btn'; pb.id='btn-publish';
+      pb.textContent='Publish to live site'; pb.addEventListener('click',publishToDB);
+      bar.insertBefore(pb, dl);
+    }
+    if(!$('btn-signout')){
+      const so=document.createElement('button'); so.className='btn ghost'; so.id='btn-signout';
+      so.textContent='Sign out'; so.addEventListener('click',signOutLP);
+      bar.appendChild(so);
+    }
+    if(!$('site-label')){
+      const w=document.createElement('div'); w.id='site-label';
+      w.style.cssText='display:flex;align-items:center;gap:6px;margin-right:auto;font-size:13px;color:#555;';
+      bar.insertBefore(w, bar.firstChild);
+    }
+    const lbl=$('site-label'); if(lbl){
+      if(allSites.length>1){
+        lbl.innerHTML='<span>Editing site:</span>';
+        const sel=document.createElement('select'); sel.className='tin'; sel.style.cssText='width:auto;padding:4px 8px;';
+        allSites.forEach(function(x){ const o=document.createElement('option'); o.value=x.id; o.textContent=x.business_name+' ('+x.slug+')'; if(x.id===currentSiteId)o.selected=true; sel.appendChild(o); });
+        sel.addEventListener('change',function(){ const x=allSites.find(function(y){return y.id===sel.value;}); if(x) loadSite(x); });
+        lbl.appendChild(sel);
+      } else if(currentSiteSlug){
+        const nm=(allSites[0]?allSites[0].business_name:currentSiteSlug);
+        lbl.innerHTML='<span>Editing: <strong>'+nm+'</strong> \u00b7 /s/'+currentSiteSlug+'</span>';
+      }
+    }
+  }
+  /* ===== end leadpages integration ===== */
+  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users'], broker:['appearance','contact','logo','landing'], leads:['rates'] };
+  function buildLogin(){
+    if($('login-mask')) return;
+    const m=document.createElement('div'); m.id='login-mask'; m.className='login-mask';
+    m.innerHTML='<div class="login-card"><h2>App Command Centre</h2><p class="sub">Sign in to manage this site.</p>'
+      +'<label>Email</label><input type="email" id="li-user" class="tin" placeholder="you@example.com" autocomplete="username">'
+      +'<label>Password</label><input type="password" id="li-pass" class="tin" placeholder="Your password" autocomplete="current-password">'
+      +'<div class="login-err" id="li-err"></div>'
+      +'<button class="btn" id="li-go" style="width:100%;margin-top:6px">Sign in</button>'
+      +'<div class="login-foot"><button class="lk" id="li-forgot">Forgot password?</button></div>'
+      +'<div class="login-note">Sign in with the email and password for this site’s account.</div></div>';
+    (document.getElementById('admin-view')||document.body).appendChild(m);
+    $('li-go').addEventListener('click',lpLogin);
+    $('li-pass').addEventListener('keydown',function(e){ if(e.key==='Enter') lpLogin(); });
+    $('li-forgot').addEventListener('click',function(){
+      const v=$('li-user').value.trim();
+      $('li-err').style.color='var(--brand-deep)';
+      try{ if(v) sb.auth.resetPasswordForEmail(v); }catch(e){}
+      $('li-err').textContent = v ? ('If an account matches, a reset link has been sent to '+v+'.') : 'Enter your email above first.';
+    });
+  }
+  function showLogin(){ buildLogin(); const m=$('login-mask'); if(!m) return; $('li-user').value=''; $('li-pass').value=''; $('li-err').textContent=''; $('li-err').style.color=''; m.style.display='flex'; setTimeout(()=>{var u=$('li-user'); if(u) u.focus();},30); }
+  function doLogin(){
+    const u=$('li-user').value.trim(), p=$('li-pass').value;
+    let role=null;
+    if(u.toLowerCase()==='demo' && p==='demo') role='super';
+    else { const m=data.users.find(x=>(x.email.toLowerCase()===u.toLowerCase()||(x.name||'').toLowerCase()===u.toLowerCase()) && x.password===p); if(m) role=m.role; }
+    if(!role){ $('li-err').style.color=''; $('li-err').textContent='That username or password doesn\u2019t match. (Demo: demo / demo)'; return; }
+    authed=true; currentRole=role; const m=$('login-mask'); if(m) m.style.display='none'; applyRoleGating();
+  }
+  function applyRoleGating(){
+    const allow=ALLOWED[currentRole]||ALLOWED.super;
+    NAV.forEach(function(it){ const b=$('nav-'+it[0]); if(b) b.style.display = allow.indexOf(it[0])>=0 ? '' : 'none'; });
+    const leads=(currentRole==='leads');
+    document.body.classList.toggle('role-leads', leads);
+    const av=$('av-rates'); if(av){ Array.prototype.forEach.call(av.children,function(c){ if(c.classList.contains('leads-card')) return; c.style.display = leads ? 'none' : ''; }); }
+    if(allow.indexOf(activeView)<0) showView(allow[0]);
+  }
+  function gate(){ if(!authed){ const av=document.getElementById('admin-view'); if(av && av.hidden) return; showLogin(); } }
+
+  /* ---------- nav switcher (six tabs) ---------- */
+  const NAV=[['rates','av-rates',null],['landing','av-landing',renderLanding],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers]];
+  let activeView='rates';
+  function showView(which){
+    activeView=which;
+    NAV.forEach(function(it){ const v=$(it[1]), b=$('nav-'+it[0]); const on=(it[0]===which); if(v) v.hidden=!on; if(b) b.setAttribute('aria-selected', on?'true':'false'); if(on && it[2]) it[2](); });
+  }
+  NAV.forEach(function(it){ const b=$('nav-'+it[0]); if(b) b.addEventListener('click',function(){ showView(it[0]); }); });
+  window.__adminGate=gate;
+  buildLogin(); bootAuth();
+  renderAppearance();
+
+  function init(){
+    $('g-effective').value=data.effective; $('g-updated').value=data.updated;
+    renderCalcToggles(); renderLeads(); renderStatebar(); renderEditor();
+    var cl=$('btn-clear-leads'); if(cl && !cl.__wired){ cl.__wired=1; cl.addEventListener('click',function(){ try{localStorage.removeItem('linray_demo_leads');}catch(e){} renderLeads(); toast('Demo leads cleared'); }); }
+  }
+  init();
+})();
+</script>
+</body>
+</html>
