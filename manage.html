@@ -1579,6 +1579,23 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     if(res.error){ err.textContent='Could not create: '+res.error.message; return; }
     allSites.push(res.data); var ov=$('cs-ov'); if(ov)ov.remove(); ensureSiteBar(); loadSite(res.data); toast('Site \u201c'+biz+'\u201d created');
   }
+  async function deleteSiteFlow(){
+    if(!currentSiteId){ toast('No site loaded.'); return; }
+    var nm=(currentBusinessName||currentSiteSlug||'this site').trim();
+    var typed=window.prompt('Delete “'+nm+'” permanently?\n\nThis removes the site record (its past analytics are kept). This cannot be undone.\n\nType the business name to confirm:');
+    if(typed===null) return;
+    if(typed.trim().toLowerCase()!==nm.toLowerCase()){ toast('Name didn’t match — nothing was deleted.'); return; }
+    var btn=$('btn-delsite'); if(btn){ btn.disabled=true; btn.textContent='Deleting…'; }
+    var res=await sb.from('sites').delete().eq('id',currentSiteId).select();
+    if(btn){ btn.disabled=false; btn.textContent='Delete site'; }
+    if(res.error){ toast('Delete failed: '+res.error.message); return; }
+    if(!res.data || !res.data.length){ toast('Nothing was deleted — your database still needs the delete permission policy (see chat).'); return; }
+    var delId=currentSiteId;
+    allSites=allSites.filter(function(s){ return s.id!==delId; });
+    toast('Site “'+nm+'” deleted');
+    if(allSites.length){ loadSite(allSites[0]); }
+    else { currentSiteId=null; var lb=$('site-label'); if(lb) lb.innerHTML='<span>No sites left.</span>'; }
+  }
   /* ===================== Site analytics ===================== */
   var ANA={ period:30, active:null, sort:'visitors', data:[], leads:[], globalData:null };
   function anaEsc(x){ return String(x==null?'':x).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
@@ -1761,6 +1778,12 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       const nb=document.createElement('button'); nb.className='btn ghost'; nb.id='btn-newsite';
       nb.textContent='+ New site'; nb.addEventListener('click',openCreateSite);
       var sob=$('btn-signout'); if(sob) bar.insertBefore(nb,sob); else bar.appendChild(nb);
+    }
+    if(currentRole==='super' && !$('btn-delsite')){
+      const db=document.createElement('button'); db.className='btn ghost'; db.id='btn-delsite';
+      db.textContent='Delete site'; db.style.cssText='color:#b42318;border-color:#f0c8c2;';
+      db.addEventListener('click',deleteSiteFlow);
+      var sob2=$('btn-signout'); if(sob2) bar.insertBefore(db,sob2); else bar.appendChild(db);
     }
     if(!$('site-label')){
       const w=document.createElement('div'); w.id='site-label';
