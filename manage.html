@@ -1617,7 +1617,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   function anaRender(){ var el=document.getElementById('lp-analytics'); if(!el)return; if(!currentSiteId){ el.innerHTML=''; return; }
     var c=anaCounts(ANA.data), conv=c.page_view?Math.round(c.lead_submit/c.page_view*1000)/10:0;
     var vals={page_view:c.page_view,call_click:c.call_click,lead_submit:c.lead_submit,conv:conv+'%'};
-    var pills=ANA_METRICS.map(function(m){ return '<button type="button" class="ana-pill'+(ANA.active===m.k?' on':'')+'" data-act="m" data-m="'+m.k+'"><span class="ana-v">'+vals[m.k]+'</span><span class="ana-l">'+m.ic+' '+m.label+'</span></button>'; }).join('');
+    var pills=ANA_METRICS.map(function(m){ return '<button type="button" class="ana-pill'+(ANA.active===m.k?' on':'')+'" data-act="m" data-m="'+m.k+'"><span class="ana-v">'+vals[m.k]+'</span><span class="ana-l">'+m.label+'</span></button>'; }).join('');
     var gbtn=(currentRole==='super')?'<button type="button" class="ana-pill gbtn'+(ANA.active==='global'?' on':'')+'" data-act="g"><span class="ana-v">'+(allSites?allSites.length:0)+'</span><span class="ana-l">\u25A6 All sites</span></button>':'';
     var period='<div class="ana-period">'+[[7,'7d'],[30,'30d'],[0,'All']].map(function(p){return '<button type="button" data-act="p" data-p="'+p[0]+'" class="'+(ANA.period===p[0]?'on':'')+'">'+p[1]+'</button>';}).join('')+'</div>';
     var detail = ANA.active==='global'?anaGlobalHTML() : (ANA.active?anaDetailHTML(ANA.active):'');
