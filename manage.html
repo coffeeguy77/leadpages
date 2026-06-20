@@ -252,7 +252,8 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
 .login-loading{padding:20px 4px;text-align:center;color:#5b6470;font-size:14px;}
 .lp-prev-toggle{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:60;background:var(--brand,#1f7a63);color:#fff;border:none;border-radius:9px 0 0 9px;padding:14px 11px;font:600 13px/1 system-ui,-apple-system,sans-serif;cursor:pointer;writing-mode:vertical-rl;letter-spacing:.03em;box-shadow:-3px 0 12px rgba(0,0,0,.16);}
 .lp-prev-toggle:hover{filter:brightness(1.07);}
-.lp-prev{position:fixed;z-index:61;background:#0e1726;color:#fff;display:flex;flex-direction:column;box-shadow:-8px 0 28px rgba(0,0,0,.3);}
+.lp-prev{position:fixed;z-index:61;background:#0e1726;color:#fff;display:none;flex-direction:column;box-shadow:-8px 0 28px rgba(0,0,0,.3);}
+body.lp-prev-open .lp-prev{display:flex;}
 body.lp-dock-side .lp-prev{top:0;right:0;height:100vh;width:var(--lp-pw,640px);}
 body.lp-dock-bottom .lp-prev{left:0;right:0;bottom:0;width:100%;height:60vh;box-shadow:0 -8px 26px rgba(0,0,0,.32);}
 body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
@@ -1352,13 +1353,14 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   const DEFAULT_TRADE_THEME={ pipe:'#1f7bb8', hivis:'#ff6a1f', steel:'#1a2230', safety:'#ffc400' };
   const TRADE_COLOURS=[['pipe','Brand','buttons, links, accents'],['hivis','Call-to-action','the orange call buttons'],['steel','Header & dark bands','top bar, hero, footer'],['safety','Highlight','badges & small accents']];
   const DEFAULT_TRADE_SECTIONS={
+    header:{cta:'Speak to a plumber', button:'Call now'},
     hero:{eyebrow:'Licensed Canberra plumber · Same-day', title:'Blocked drain?', titleHl:"We'll clear it today.", sub:"Fast, fixed-price plumbing across the ACT — blocked drains, burst pipes, hot water and leaks. You'll know the price before we start."},
     services:{eyebrow:'What we fix', heading:'One call sorts the lot.', intro:'From a slow kitchen sink to a flooded laundry at 2am — we handle the everyday and the emergencies.'},
     why:{eyebrow:'Why {{businessName}}', heading:'No call-out games. No surprise bills.'},
     area:{eyebrow:'Where we work', heading:'Across Canberra & the ACT', intro:"If you're in the ACT, we cover you. Same-day where we can, every day of the week."},
     reviews:{eyebrow:'From the neighbours', heading:'212 five-star reviews and counting.'},
     faq:{eyebrow:'Good to know', heading:'Quick answers.'},
-    quote:{eyebrow:'Fast quote', heading:"Tell us the problem. We'll call you straight back.", sub:'Two minutes now saves you a flooded weekend. Send the details and a plumber calls you — usually within the hour during the day.', button:'Send & get my call back'},
+    quote:{eyebrow:'Fast quote', heading:"Tell us the problem. We'll call you straight back.", sub:'Two minutes now saves you a flooded weekend. Send the details and a plumber calls you — usually within the hour during the day.', button:'Send & get my call back', formTitle:'Get my quote', lblName:'Name', lblPhone:'Phone', lblJob:"What's the problem?", lblSuburb:'Suburb', lblDetail:'Anything else? (optional)', successTitle:'Got it — sit tight. ✓'},
     emerg:{text:'⚠ 24/7 Emergency Plumber — Burst pipe or flooding?'},
     footer:{blurb:'Fast, fixed-price plumbing across Canberra and the ACT. Blocked drains, burst pipes, hot water and emergencies — done properly, first time.', legal:'{{businessName}} — ACT Plumbing Licence 0000000 (placeholder). ABN 00 000 000 000. Fully insured. Servicing Canberra & the ACT, 7 days. © 2026 {{businessName}}.'}
   };
@@ -1372,14 +1374,15 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   ];
   const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['services','Services'],['why','Why us'],['area','Where'],['reviews','Reviews'],['quote','Quote'],['faq','FAQ'],['footer','Footer'],['branding','Branding']];
   let landingSub='details';
-  const DEFAULT_TRADE_LISTS={'hero.badges':[{"icon": "✓", "text": "Licensed & insured"}, {"icon": "★", "text": "4.9 from 212 reviews"}, {"icon": "$", "text": "Upfront fixed pricing"}, {"icon": "⚡", "text": "Same-day service"}],'why.items':[{"n": "01", "title": "Upfront pricing", "body": "A fixed price agreed before we start. The number we quote is the number you pay."}, {"n": "24/7", "title": "Real emergencies", "body": "Burst pipe at midnight? We answer the phone and get someone moving, day or night."}, {"n": "★", "title": "Properly licensed", "body": "Fully licensed ACT plumbers, fully insured. Licence details on every invoice."}, {"n": "⌂", "title": "Local & trusted", "body": "Canberra-based, Canberra-owned. We know the suburbs, the soil and the old pipework."}],'reviews.items':[{"who": "Marcus T. — Belconnen", "text": "\"Blocked sewer on a Sunday, total panic. {{businessName}} had someone out within the hour and jetted it clear. Fixed price, no fuss.\""}, {"who": "Jenny K. — Woden", "text": "\"Hot water died the morning we had guests. New system in and running by lunch. Couldn't fault them.\""}, {"who": "Dave R. — Gungahlin", "text": "\"Used the drain camera to show me the tree root problem instead of just guessing. Honest and proper work.\""}],'faq.items':[{"q": "Can you really come same-day?", "a": "For blocked drains, burst pipes and no-hot-water jobs we aim to be on site the same day, and we run a 24/7 line for emergencies across the ACT."}, {"q": "Are you licensed and insured?", "a": "Yes — fully licensed ACT plumbers and fully insured. Our licence number is on every invoice and we're happy to show it before any work begins."}],'area.suburbs':["Gungahlin", "Belconnen", "Woden", "Tuggeranong", "Civic", "Dickson", "Queanbeyan", "Molonglo", "Weston Creek", "Kingston"],'quote.points':[{"text": "Upfront fixed price, no call-out surprises"}, {"text": "Same-day where we can get to you"}, {"text": "Licensed, insured, local"}],'footer.services':[{"label": "Blocked drains", "href": "#quote"}, {"label": "Burst pipes", "href": "#quote"}, {"label": "Hot water", "href": "#quote"}, {"label": "Leak detection", "href": "#quote"}]};
+  const DEFAULT_TRADE_LISTS={'hero.badges':[{"icon": "✓", "text": "Licensed & insured"}, {"icon": "★", "text": "4.9 from 212 reviews"}, {"icon": "$", "text": "Upfront fixed pricing"}, {"icon": "⚡", "text": "Same-day service"}],'why.items':[{"n": "01", "title": "Upfront pricing", "body": "A fixed price agreed before we start. The number we quote is the number you pay."}, {"n": "24/7", "title": "Real emergencies", "body": "Burst pipe at midnight? We answer the phone and get someone moving, day or night."}, {"n": "★", "title": "Properly licensed", "body": "Fully licensed ACT plumbers, fully insured. Licence details on every invoice."}, {"n": "⌂", "title": "Local & trusted", "body": "Canberra-based, Canberra-owned. We know the suburbs, the soil and the old pipework."}],'reviews.items':[{"who": "Marcus T. — Belconnen", "text": "\"Blocked sewer on a Sunday, total panic. {{businessName}} had someone out within the hour and jetted it clear. Fixed price, no fuss.\""}, {"who": "Jenny K. — Woden", "text": "\"Hot water died the morning we had guests. New system in and running by lunch. Couldn't fault them.\""}, {"who": "Dave R. — Gungahlin", "text": "\"Used the drain camera to show me the tree root problem instead of just guessing. Honest and proper work.\""}],'faq.items':[{"q": "Can you really come same-day?", "a": "For blocked drains, burst pipes and no-hot-water jobs we aim to be on site the same day, and we run a 24/7 line for emergencies across the ACT."}, {"q": "Are you licensed and insured?", "a": "Yes — fully licensed ACT plumbers and fully insured. Our licence number is on every invoice and we're happy to show it before any work begins."}],'area.suburbs':["Gungahlin", "Belconnen", "Woden", "Tuggeranong", "Civic", "Dickson", "Queanbeyan", "Molonglo", "Weston Creek", "Kingston"],'quote.points':[{"text": "Upfront fixed price, no call-out surprises"}, {"text": "Same-day where we can get to you"}, {"text": "Licensed, insured, local"}],'footer.services':[{"label": "Blocked drains", "href": "#quote"}, {"label": "Burst pipes", "href": "#quote"}, {"label": "Hot water", "href": "#quote"}, {"label": "Leak detection", "href": "#quote"}],'quote.jobOptions':[{"text": "Blocked drain"}, {"text": "Burst or leaking pipe"}, {"text": "No hot water"}, {"text": "Hidden leak / high water bill"}, {"text": "General plumbing / other"}]};
   const LIST_SCHEMAS={
     badges:{secId:'hero',key:'badges',addLabel:'Add badge',item:[{k:'icon',label:'Icon',w:'72px',ph:'✓'},{k:'text',label:'Text'}],defaultItem:{icon:'✓',text:'New badge'}},
     why:{secId:'why',key:'items',addLabel:'Add reason',item:[{k:'n',label:'Badge',w:'88px',ph:'01'},{k:'title',label:'Heading'},{k:'body',label:'Text',type:'ta'}],defaultItem:{n:'+',title:'New reason',body:''}},
     reviews:{secId:'reviews',key:'items',addLabel:'Add review',item:[{k:'who',label:'Name & suburb'},{k:'text',label:'Quote',type:'ta'}],defaultItem:{who:'',text:''}},
     faq:{secId:'faq',key:'items',addLabel:'Add question',item:[{k:'q',label:'Question'},{k:'a',label:'Answer',type:'ta'}],defaultItem:{q:'',a:''}},
     quotePoints:{secId:'quote',key:'points',addLabel:'Add point',item:[{k:'text',label:'Point'}],defaultItem:{text:''}},
-    footerServices:{secId:'footer',key:'services',addLabel:'Add link',item:[{k:'label',label:'Label'},{k:'href',label:'Link',w:'170px',ph:'#quote'}],defaultItem:{label:'',href:'#quote'}}
+    footerServices:{secId:'footer',key:'services',addLabel:'Add link',item:[{k:'label',label:'Label'},{k:'href',label:'Link',w:'170px',ph:'#quote'}],defaultItem:{label:'',href:'#quote'}},
+    jobOptions:{secId:'quote',key:'jobOptions',addLabel:'Add option',item:[{k:'text',label:'Option'}],defaultItem:{text:''}}
   };
   function loadSite(site){
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app';
@@ -1403,6 +1406,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   }
   function applyTemplateChrome(){
     var isApp=(currentSiteTemplate==='broker-app');
+    var ond=$('nav-details'); if(ond&&ond.parentNode) ond.parentNode.style.display=(currentSiteTemplate==='trade')?'none':'';
     ['btn-import','btn-snippet','btn-copy','btn-download'].forEach(function(id){ var b=$(id); if(b) b.style.display=isApp?'':'none'; });
     var ge=$('g-effective'), gu=$('g-updated');
     if(ge&&ge.closest('.f')) ge.closest('.f').style.display=isApp?'':'none';
@@ -1504,8 +1508,9 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         +lpFld('Business name','d-biz','')
         +'<div class="row">'+lpFld('Phone (shown to visitors)','d-phoneText','(02) 1234 5678')+lpFld('Phone (for the call button)','d-phone','+61...')+'</div>'
         +'<div class="row">'+lpFld('Email','d-email','')+lpFld('Region','d-region','')+'</div>'
-        +'<div class="row">'+lpFld('Trade type','d-trade','e.g. Plumber')+lpFld('Licence','d-licence','')+'</div></div>';
-      wireDetailFields(c,'trade');
+        +'<div class="row">'+lpFld('Trade type','d-trade','e.g. Plumber')+lpFld('Licence','d-licence','')+'</div></div>'
+        +secCard(c,'header','Header call-to-action',false,[['cta','Label above the phone'],['button','Call button text']]);
+      wireDetailFields(c,'trade'); wireSec(c,'header',false,[['cta'],['button']]);
     } else if(sub==='hero'){
       body.innerHTML=secCard(c,'hero','Hero',false,[['eyebrow','Eyebrow (label above headline)'],['title','Headline'],['titleHl','Headline highlight (coloured words)'],['sub','Sub-text','ta']])
         +listCard('badges','Trust badges','The small badges under the hero buttons. Edit, hide or remove each.');
@@ -1525,7 +1530,12 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     } else if(sub==='emerg'){
       body.innerHTML=secCard(c,'emerg','Top emergency bar',true,[['text','Message (the call link stays on automatically)','ta']]); wireSec(c,'emerg',true,[['text']]);
     } else if(sub==='quote'){
-      body.innerHTML=secCard(c,'quote','Quote form section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['sub','Sub-text','ta'],['button','Button text']])+listCard('quotePoints','Trust points','The ticked points beside the form. Edit, hide or remove each.'); wireSec(c,'quote',true,[['eyebrow'],['heading'],['sub'],['button']]); listEditor($('le-quotePoints'),c,'quotePoints');
+      body.innerHTML=secCard(c,'quote','Quote form section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['sub','Sub-text','ta'],['button','Button text'],['formTitle','Form heading']])
+        +listCard('quotePoints','Trust points','The ticked points beside the form. Edit, hide or remove each.')
+        +secCard(c,'quote','Form field labels',false,[['lblName','Name field'],['lblPhone','Phone field'],['lblJob','Problem field'],['lblSuburb','Suburb field'],['lblDetail','Details field'],['successTitle','Success message heading']])
+        +listCard('jobOptions','Problem options','The dropdown choices under \u201cWhat\u2019s the problem?\u201d. Edit, hide or remove each.');
+      wireSec(c,'quote',true,[['eyebrow'],['heading'],['sub'],['button'],['formTitle']]); listEditor($('le-quotePoints'),c,'quotePoints');
+      wireSec(c,'quote',false,[['lblName'],['lblPhone'],['lblJob'],['lblSuburb'],['lblDetail'],['successTitle']]); listEditor($('le-jobOptions'),c,'jobOptions');
     } else if(sub==='footer'){
       body.innerHTML=secCard(c,'footer','Footer',true,[['blurb','About blurb','ta'],['legal','Legal line (licence, ABN, copyright)','ta']])+listCard('footerServices','Service links','The links in the footer\u2019s Services column. Edit, hide or remove each.'); wireSec(c,'footer',true,[['blurb'],['legal']]); listEditor($('le-footerServices'),c,'footerServices');
     } else if(sub==='branding'){
