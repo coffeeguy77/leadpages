@@ -401,13 +401,8 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
           <div class="adp-graph"></div>
         </div>
       </div>
-      <div class="apgroup-h">Saved custom themes</div>
-      <p class="hint" style="margin:-6px 0 10px;">Tweaked the colours into something you love? Save it as a named theme so it isn't lost when you try another. Saved themes appear as swatches you can click any time.</p>
-      <div class="ap-presets" id="ap-saved"></div>
-      <div class="ap-saverow">
-        <input type="text" id="ap-savename" class="tin" placeholder="Name this theme (e.g. ACME Brand)">
-        <button class="btn" id="ap-save">Save current</button>
-      </div>
+      <div class="apgroup-h">Save this look</div>
+      <p class="hint" style="margin:-6px 0 12px;">Tune the colours above, then <strong>Publish to live site</strong> to save them to this site. To save a reusable, named look for the demo site (<strong>/s/demo</strong>), sign in as the platform admin and use the <strong>Demo themes</strong> tab — those are the ones visitors can switch between.</p>
       <div class="ap-saverow">
         <button class="btn ghost sm" id="ap-download">Download theme file</button>
         <label class="btn ghost sm" for="ap-upload">Upload theme file</label>
@@ -1112,29 +1107,15 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
   /* ====================== CUSTOM THEMES ====================== */
   let stWired=false;
   function renderSavedThemes(){
-    const wrap=$('ap-saved'); if(!wrap) return;
-    if(!data.savedThemes.length){ wrap.innerHTML='<p class="hint" style="grid-column:1/-1;margin:0">No saved themes yet. Style the colours above, then save the look here.</p>'; }
-    else wrap.innerHTML=data.savedThemes.map(function(t,i){
-      const p=t.palette||t;
-      return '<button type="button" class="preset-sw" data-st="'+i+'"><button class="ps-del" data-stdel="'+i+'" title="Delete">\u00d7</button><span class="ps-dots"><i style="background:'+p.bg+'"></i><i style="background:'+p.brand+'"></i><i style="background:'+p.panelBg+'"></i><i style="background:'+p.accent+'"></i></span><span class="ps-name">'+esc(t.name)+'</span></button>';
-    }).join('');
     if(stWired) return; stWired=true;
-    wrap.addEventListener('click',function(e){
-      const del=e.target.closest('[data-stdel]'); if(del){ e.stopPropagation(); data.savedThemes.splice(+del.getAttribute('data-stdel'),1); persist(); renderSavedThemes(); return; }
-      const sw=e.target.closest('[data-st]'); if(sw){ const t=data.savedThemes[+sw.getAttribute('data-st')]; if(t){ data.appearance=Object.assign({},t.palette||t); persist(); renderAppearance(); toast('\u201c'+t.name+'\u201d applied'); } }
+    var dl=$('ap-download'); if(dl) dl.addEventListener('click',function(){
+      var t={name:'Custom theme', palette:curAppr(), logoUrl:(data.logo&&data.logo.imageUrl)||''};
+      var blob=new Blob([JSON.stringify(t,null,2)],{type:'application/json'});
+      var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='custom-theme.json'; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
     });
-    $('ap-save').addEventListener('click',function(){
-      const nm=$('ap-savename').value.trim(); if(!nm){ toast('Give the theme a name first'); return; }
-      data.savedThemes.push({name:nm, palette:curAppr()}); persist(); $('ap-savename').value=''; renderSavedThemes(); toast('Theme saved');
-    });
-    $('ap-download').addEventListener('click',function(){
-      const t={name:($('ap-savename').value.trim()||'Custom theme'), palette:curAppr(), logoUrl:(data.logo&&data.logo.imageUrl)||''};
-      const blob=new Blob([JSON.stringify(t,null,2)],{type:'application/json'});
-      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(t.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase())+'-theme.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-    });
-    $('ap-upload').addEventListener('change',function(e){
-      const f=e.target.files[0]; if(!f) return; const r=new FileReader();
-      r.onload=function(){ try{ const t=JSON.parse(r.result); const pal=t.palette||t; if(!pal.brand) throw 0; data.appearance=Object.assign({},DEFAULT_APPEARANCE,pal); if(t.logoUrl){ data.logo.imageUrl=t.logoUrl; } persist(); renderAppearance(); if(t.name){ data.savedThemes.push({name:t.name,palette:pal}); persist(); renderSavedThemes(); } toast('Theme loaded'); }catch(err){ toast('That file isn\u2019t a valid theme'); } e.target.value=''; };
+    var up=$('ap-upload'); if(up) up.addEventListener('change',function(e){
+      var f=e.target.files[0]; if(!f) return; var r=new FileReader();
+      r.onload=function(){ try{ var t=JSON.parse(r.result); var pal=t.palette||t; if(!pal.brand) throw 0; data.appearance=Object.assign({},DEFAULT_APPEARANCE,pal); if(t.logoUrl){ data.logo.imageUrl=t.logoUrl; } persist(); renderAppearance(); toast('Theme loaded'); }catch(err){ toast('That file is not a valid theme'); } e.target.value=''; };
       r.readAsText(f);
     });
   }
@@ -1336,10 +1317,14 @@ body.role-leads #av-rates > .card:not(.leads-card),body.role-leads #av-rates > .
     var name=($('dt-name').value||'').trim(); if(!name){ toast('Give the theme a name first'); return; }
     var label=($('dt-label').value||'').trim();
     var btn=$('dt-save'); if(btn){ btn.disabled=true; btn.textContent='Saving\u2026'; }
-    var r=await sb.from('demo_themes').insert({ name:name, label:label||null, appearance:curAppr(), enabled:true });
+    var ex=await sb.from('demo_themes').select('id').eq('name',name).limit(1);
+    var existing=(ex.data&&ex.data[0])||null;
+    var r;
+    if(existing){ r=await sb.from('demo_themes').update({ label:label||null, appearance:curAppr(), updated_at:new Date().toISOString() }).eq('id',existing.id); }
+    else { r=await sb.from('demo_themes').insert({ name:name, label:label||null, appearance:curAppr(), enabled:true }); }
     if(btn){ btn.disabled=false; btn.textContent='Save current look as a demo theme'; }
     if(r.error){ toast('Save failed: '+r.error.message); return; }
-    $('dt-name').value=''; $('dt-label').value=''; toast('Added \u201c'+name+'\u201d to the demo'); renderDemoThemes();
+    $('dt-name').value=''; $('dt-label').value=''; toast(existing?('Updated \u201c'+name+'\u201d'):('Added \u201c'+name+'\u201d to the demo')); renderDemoThemes();
   }
   async function toggleDemoTheme(id,enabled){
     var r=await sb.from('demo_themes').update({ enabled:enabled, updated_at:new Date().toISOString() }).eq('id',id);
