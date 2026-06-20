@@ -108,7 +108,17 @@ header.nav{position:sticky;top:0;z-index:60;background:rgba(21,25,30,.86);backdr
 
 /* ---- theme gallery ---- */
 .themes{background:var(--concrete)}
-.tgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.theme-tools{display:flex;flex-direction:column;gap:14px;align-items:center;margin-bottom:14px}
+.tsearch{width:100%;max-width:440px;border:1.5px solid var(--line);border-radius:12px;padding:13px 16px;font:inherit;font-size:15px;background:#fff}
+.tsearch:focus{outline:0;border-color:var(--hivis);box-shadow:0 0 0 3px rgba(255,106,26,.12)}
+.tchips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tchip{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:8px 15px;font-size:13.5px;font-weight:600;color:#3a4049;cursor:pointer;transition:.12s;font-family:inherit}
+.tchip:hover{border-color:var(--ink)}
+.tchip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tcount{text-align:center;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-bottom:22px}
+.tempty{grid-column:1/-1;text-align:center;color:var(--steel);padding:46px 20px;font-size:15px}
+.tempty a{color:var(--hivis);font-weight:700}
 .tcard{background:var(--paper);border-radius:var(--rad);border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column;transition:transform .14s,box-shadow .14s}
 .tcard:hover{transform:translateY(-4px);box-shadow:0 22px 44px -18px rgba(20,24,30,.28)}
 .tprev{padding:18px 18px 0;background:var(--tk);position:relative}
@@ -293,13 +303,15 @@ footer{background:var(--ink);color:#9aa3ad;padding:54px 0 30px;font-size:14px}
   .hero-grid,.an-grid{grid-template-columns:1fr;gap:40px}
   .mock{order:-1}
   .fgrid,.steps-grid,.qgrid{grid-template-columns:1fr}
-  .tgrid,.pgrid{grid-template-columns:1fr}
+  .pgrid{grid-template-columns:1fr}
+  .tgrid{grid-template-columns:repeat(2,1fr)}
   .ctable{grid-template-columns:1.3fr .8fr .8fr;font-size:13px}
   .nav-links,.nav-login{display:none}
   .sec{padding:64px 0}
 }
 @media(max-width:560px){
   .row2{grid-template-columns:1fr}
+  .tgrid{grid-template-columns:1fr}
   .hero p.sub{font-size:18px}
   .phone{width:260px}
   .chip-call{left:-14px}.chip-an{right:-10px}
@@ -371,16 +383,17 @@ footer{background:var(--ink);color:#9aa3ad;padding:54px 0 30px;font-size:14px}
 <section class="sec themes" id="themes">
   <div class="wrap">
     <div class="shead center">
-      <span class="eyebrow">Step 1 — Pick your trade</span>
+      <span class="eyebrow">Step 1 — Pick your trade · 50 themes</span>
       <h2>A site built for <span class="hl">your trade</span>, not a generic template.</h2>
       <p class="lede">Every theme is tuned to how your customers actually search and call — emergency bars, big tap-to-call buttons, the services you do, and a fast quote form. Choose one to get started.</p>
     </div>
+    <div class="theme-tools">
+      <input class="tsearch" type="text" placeholder="Search 50 trades… e.g. roofer, fencing, solar" oninput="searchThemes(this.value)" aria-label="Search trades">
+      <div class="tchips" id="themeChips"></div>
+    </div>
+    <div class="tcount" id="themeCount"></div>
     <div class="tgrid" id="themeGrid"></div>
     <div class="more-trades">
-      <span class="eyebrow dim">More trades available</span>
-      <div class="chips">
-        <span>Landscaper</span><span>Painter</span><span>Roofer</span><span>Plasterer</span><span>Tiler</span><span>Concreter</span><span>Handyman</span><span>Fencing</span><span>Pest control</span><span>Locksmith</span>
-      </div>
       <p style="margin-top:16px;color:var(--steel);font-size:14.5px">Don't see yours? <a href="#themes" onclick="chooseTheme('plumber');return false;" style="color:var(--hivis);font-weight:700">Start an order</a> and tell us your trade — we'll build it.</p>
     </div>
   </div>
@@ -592,10 +605,56 @@ var PLANS = {
 var STRIPE_LINKS = { starter:'', pro:'' };
 
 var THEMES = [
-  { id:'plumber',     name:'Plumber',          tag:'Blocked drains, burst pipes, hot water & leaks.', ink:'#0f172a', accent:'#f97316', accent2:'#fbbf24', emerg:'24/7 EMERGENCY — BURST PIPE?', eye:'Licensed plumber · Same-day', h:'BLOCKED DRAIN?', hl:"WE'LL CLEAR IT TODAY.", live:'/s/duncans' },
-  { id:'electrician', name:'Electrician',       tag:'Switchboards, faults, lighting & EV chargers.',  ink:'#0f172a', accent:'#2563eb', accent2:'#38bdf8', emerg:'24/7 EMERGENCY — NO POWER?',   eye:'Licensed electrician · Same-day', h:'POWER OUT?', hl:"WE'LL GET YOU BACK ON.", live:'' },
-  { id:'carpenter',   name:'Carpenter',         tag:'Decks, doors, built-ins & renovations.',         ink:'#14241c', accent:'#15803d', accent2:'#facc15', emerg:'STORM DAMAGE? WE CAN HELP TODAY', eye:'Licensed carpenter · Free quotes', h:'BUILT RIGHT.', hl:'FINISHED PROPERLY.', live:'' },
-  { id:'aircon',      name:'Air Conditioning',  tag:'Split systems, ducted, repairs & service.',       ink:'#0b1f2a', accent:'#0ea5e9', accent2:'#38bdf8', emerg:'NO HEATING IN A COLD SNAP?',  eye:'Licensed air-con · Same-day', h:'TOO HOT? TOO COLD?', hl:'SORTED TODAY.', live:'' }
+  { id:"plumber", name:"Plumber", cat:"Emergency", tag:"Blocked drains, burst pipes, hot water & leaks.", ink:"#0f172a", accent:"#f97316", accent2:"#fbbf24", emerg:"24/7 EMERGENCY — BURST PIPE?", eye:"Licensed plumber · Same-day", h:"BLOCKED DRAIN?", hl:"WE'LL CLEAR IT TODAY.", live:"/s/duncans" },
+  { id:"electrician", name:"Electrician", cat:"Emergency", tag:"Switchboards, faults, lighting & EV chargers.", ink:"#0f172a", accent:"#2563eb", accent2:"#38bdf8", emerg:"24/7 EMERGENCY — NO POWER?", eye:"Licensed electrician · Same-day", h:"POWER OUT?", hl:"WE'LL GET YOU BACK ON.", live:"" },
+  { id:"gas-fitter", name:"Gas Fitter", cat:"Emergency", tag:"Gas lines, heaters, cooktops & leak repairs.", ink:"#1a1206", accent:"#f59e0b", accent2:"#fcd34d", emerg:"SMELL GAS? CALL NOW — 24/7", eye:"Licensed gas fitter · Same-day", h:"GAS LEAK?", hl:"WE'RE ON IT — FAST.", live:"" },
+  { id:"locksmith", name:"Locksmith", cat:"Emergency", tag:"Lockouts, rekeys, deadlocks & car keys.", ink:"#1a0f12", accent:"#dc2626", accent2:"#fca5a5", emerg:"LOCKED OUT? 24/7 CALLOUT", eye:"Mobile locksmith · 30-min response", h:"LOCKED OUT?", hl:"BACK IN, IN MINUTES.", live:"" },
+  { id:"hot-water", name:"Hot Water", cat:"Emergency", tag:"Repairs, replacements, gas, electric & heat pump.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"NO HOT WATER? SAME-DAY FIX", eye:"Hot water specialist · Same-day", h:"COLD SHOWER?", hl:"HOT WATER, TODAY.", live:"" },
+  { id:"blocked-drains", name:"Blocked Drains", cat:"Emergency", tag:"CCTV, jet blasting, tree roots & clearing.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"BLOCKED? 24/7 DRAIN CLEARING", eye:"Drain specialist · Same-day", h:"DRAIN BLOCKED?", hl:"CLEARED FAST.", live:"" },
+  { id:"pest-control", name:"Pest Control", cat:"Emergency", tag:"Termites, ants, cockroaches, spiders & rodents.", ink:"#1a0f12", accent:"#dc2626", accent2:"#fca5a5", emerg:"PESTS? SAME-DAY TREATMENT", eye:"Licensed pest control · Safe & fast", h:"GOT PESTS?", hl:"GONE FOR GOOD.", live:"" },
+  { id:"aircon", name:"Air Conditioning", cat:"Home services", tag:"Split systems, ducted, install, service & repair.", ink:"#0b1722", accent:"#0284c7", accent2:"#7dd3fc", emerg:"TOO HOT? TOO COLD? SORTED", eye:"Licensed air-con · Same-day", h:"TOO HOT? TOO COLD?", hl:"SORTED TODAY.", live:"" },
+  { id:"builder", name:"Builder", cat:"Building & reno", tag:"New builds, extensions & full renovations.", ink:"#15191e", accent:"#ff6a1a", accent2:"#ffd21e", emerg:"FREE QUOTES · FIXED PRICING", eye:"Licensed builder · Canberra", h:"BUILDING OR RENOVATING?", hl:"DONE PROPERLY.", live:"" },
+  { id:"carpenter", name:"Carpenter", cat:"Building & reno", tag:"Decks, doors, built-ins & renovations.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE QUOTES · QUALITY FINISH", eye:"Licensed carpenter · Free quotes", h:"BUILT RIGHT.", hl:"FINISHED PROPERLY.", live:"" },
+  { id:"bricklayer", name:"Bricklayer", cat:"Building & reno", tag:"Brick & block walls, fences & repairs.", ink:"#1c1310", accent:"#c0392b", accent2:"#f87171", emerg:"FREE QUOTES · 7 DAYS", eye:"Bricklayer · Free quotes", h:"NEED BRICKWORK?", hl:"LAID TO LAST.", live:"" },
+  { id:"plasterer", name:"Plasterer", cat:"Building & reno", tag:"Gyprock, cornices, patching & skim coats.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · CLEAN WORK", eye:"Plasterer · Free quotes", h:"CRACKS OR HOLES?", hl:"SMOOTH, FLAWLESS WALLS.", live:"" },
+  { id:"tiler", name:"Tiler", cat:"Building & reno", tag:"Bathrooms, floors, splashbacks & waterproofing.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"FREE QUOTES · NEAT LINES", eye:"Tiler · Free quotes", h:"NEW TILES?", hl:"LAID PERFECTLY.", live:"" },
+  { id:"concreter", name:"Concreter", cat:"Building & reno", tag:"Driveways, slabs, paths & exposed aggregate.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · FIXED PRICE", eye:"Concreter · Free quotes", h:"NEED CONCRETING?", hl:"POURED TO LAST.", live:"" },
+  { id:"renderer", name:"Rendering", cat:"Building & reno", tag:"Acrylic & cement render, texture & repairs.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · 7 DAYS", eye:"Renderer · Free quotes", h:"TIRED WALLS?", hl:"RENDERED LIKE NEW.", live:"" },
+  { id:"waterproofing", name:"Waterproofing", cat:"Building & reno", tag:"Bathrooms, balconies, decks & leak repairs.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"FREE QUOTES · GUARANTEED", eye:"Waterproofer · Licensed", h:"LEAKS & DAMP?", hl:"SEALED FOR GOOD.", live:"" },
+  { id:"kitchen-reno", name:"Kitchen Renovations", cat:"Building & reno", tag:"Full kitchen design, supply & install.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE DESIGN CONSULT", eye:"Kitchen specialist · Free quotes", h:"DREAM KITCHEN?", hl:"WE'LL BUILD IT.", live:"" },
+  { id:"bathroom-reno", name:"Bathroom Renovations", cat:"Building & reno", tag:"Full bathroom renos, end to end.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"FREE QUOTES · FIXED PRICE", eye:"Bathroom specialist · Free quotes", h:"NEW BATHROOM?", hl:"DONE END TO END.", live:"" },
+  { id:"cabinet-maker", name:"Cabinet Maker", cat:"Building & reno", tag:"Custom cabinetry, wardrobes & joinery.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE QUOTES · CUSTOM MADE", eye:"Cabinet maker · Custom joinery", h:"CUSTOM STORAGE?", hl:"MADE TO MEASURE.", live:"" },
+  { id:"flooring", name:"Flooring", cat:"Building & reno", tag:"Timber, laminate, vinyl & floor sanding.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE QUOTES · 7 DAYS", eye:"Flooring specialist · Free quotes", h:"NEW FLOORS?", hl:"LAID TO PERFECTION.", live:"" },
+  { id:"painter", name:"Painter", cat:"Building & reno", tag:"Interior, exterior, roofs & feature walls.", ink:"#15191e", accent:"#ff6a1a", accent2:"#ffd21e", emerg:"FREE QUOTES · TIDY WORK", eye:"Painter · Free quotes", h:"FRESH COAT?", hl:"SHARP, CLEAN FINISH.", live:"" },
+  { id:"stonemason", name:"Stonemason", cat:"Building & reno", tag:"Stone walls, benchtops, paving & restoration.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · 7 DAYS", eye:"Stonemason · Free quotes", h:"STONEWORK?", hl:"BUILT TO LAST.", live:"" },
+  { id:"welding", name:"Welding & Steel", cat:"Building & reno", tag:"Fabrication, gates, balustrades & repairs.", ink:"#1a1206", accent:"#f59e0b", accent2:"#fcd34d", emerg:"FREE QUOTES · MOBILE WELDING", eye:"Welder · Mobile & workshop", h:"NEED STEEL?", hl:"FABRICATED & FITTED.", live:"" },
+  { id:"roofer", name:"Roofer", cat:"Roofing", tag:"Leaks, re-roofs, tiles, metal & repairs.", ink:"#1c1310", accent:"#c0392b", accent2:"#f87171", emerg:"ROOF LEAKING? 24/7 REPAIRS", eye:"Roofer · Free quotes", h:"ROOF LEAKING?", hl:"FIXED BEFORE THE STORM.", live:"" },
+  { id:"roof-restoration", name:"Roof Restoration", cat:"Roofing", tag:"Cleaning, repointing, painting & sealing.", ink:"#1c1310", accent:"#c0392b", accent2:"#f87171", emerg:"FREE ROOF INSPECTION", eye:"Roof restoration · Free quotes", h:"TIRED ROOF?", hl:"RESTORED LIKE NEW.", live:"" },
+  { id:"guttering", name:"Guttering", cat:"Roofing", tag:"New gutters, downpipes, fascia & leaf guard.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · 7 DAYS", eye:"Guttering · Free quotes", h:"OVERFLOWING GUTTERS?", hl:"REPLACED & SORTED.", live:"" },
+  { id:"landscaper", name:"Landscaper", cat:"Outdoor", tag:"Gardens, paving, turf, retaining & design.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"FREE QUOTES · FULL DESIGN", eye:"Landscaper · Free quotes", h:"DREAM BACKYARD?", hl:"WE'LL BUILD IT.", live:"" },
+  { id:"fencing", name:"Fencing", cat:"Outdoor", tag:"Colorbond, timber, gates & pool fencing.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"FREE QUOTES · 7 DAYS", eye:"Fencing · Free quotes", h:"NEW FENCE?", hl:"STRAIGHT, STRONG, DONE.", live:"" },
+  { id:"decking", name:"Decking", cat:"Outdoor", tag:"Timber & composite decks, pergolas & stairs.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE QUOTES · QUALITY BUILD", eye:"Decking · Free quotes", h:"WANT A DECK?", hl:"BUILT FOR SUMMERS.", live:"" },
+  { id:"pergolas", name:"Pergolas & Patios", cat:"Outdoor", tag:"Patios, verandahs, carports & outdoor rooms.", ink:"#1b160f", accent:"#c07219", accent2:"#f59e0b", emerg:"FREE QUOTES · FIXED PRICE", eye:"Patio builder · Free quotes", h:"MORE OUTDOOR LIVING?", hl:"COVERED & DONE.", live:"" },
+  { id:"paving", name:"Paving", cat:"Outdoor", tag:"Driveways, paths, pool surrounds & courtyards.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"FREE QUOTES · 7 DAYS", eye:"Paver · Free quotes", h:"NEED PAVING?", hl:"LAID LEVEL & NEAT.", live:"" },
+  { id:"retaining-walls", name:"Retaining Walls", cat:"Outdoor", tag:"Sleeper, block & rock retaining walls.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"FREE QUOTES · ENGINEERED", eye:"Retaining walls · Free quotes", h:"SLOPING BLOCK?", hl:"HELD BACK FOR GOOD.", live:"" },
+  { id:"lawn-mowing", name:"Lawn Mowing", cat:"Outdoor", tag:"Mowing, edging, hedging & garden tidy-ups.", ink:"#16210c", accent:"#65980f", accent2:"#a3e635", emerg:"REGULAR & ONE-OFF · 7 DAYS", eye:"Lawn & garden care", h:"OVERGROWN YARD?", hl:"MOWED & TIDIED TODAY.", live:"" },
+  { id:"arborist", name:"Tree Lopping", cat:"Outdoor", tag:"Tree removal, pruning, stump grinding & chipping.", ink:"#14241c", accent:"#16a34a", accent2:"#facc15", emerg:"STORM DAMAGE? 24/7 CALLOUT", eye:"Arborist · Insured & qualified", h:"DANGEROUS TREE?", hl:"DOWN SAFELY, TODAY.", live:"" },
+  { id:"turf", name:"Turf Laying", cat:"Outdoor", tag:"Lawn prep, turf supply & instant lawn.", ink:"#16210c", accent:"#65980f", accent2:"#a3e635", emerg:"FREE QUOTES · 7 DAYS", eye:"Turf specialist · Free quotes", h:"WANT INSTANT LAWN?", hl:"ROLLED OUT GREEN.", live:"" },
+  { id:"irrigation", name:"Irrigation", cat:"Outdoor", tag:"Sprinklers, drip systems & smart watering.", ink:"#16210c", accent:"#65980f", accent2:"#a3e635", emerg:"FREE QUOTES · WATER-WISE", eye:"Irrigation · Free quotes", h:"DRY GARDEN?", hl:"WATERED AUTOMATICALLY.", live:"" },
+  { id:"carports-sheds", name:"Carports & Sheds", cat:"Outdoor", tag:"Carports, sheds, garages & farm sheds.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"FREE QUOTES · SUPPLY & BUILD", eye:"Shed builder · Free quotes", h:"NEED MORE SPACE?", hl:"BUILT & STANDING.", live:"" },
+  { id:"excavation", name:"Excavation", cat:"Outdoor", tag:"Earthworks, site cuts, trenching & bobcat hire.", ink:"#1a1206", accent:"#f59e0b", accent2:"#fcd34d", emerg:"FREE QUOTES · ANY SITE", eye:"Earthmoving · Insured", h:"SITE PREP?", hl:"DUG & LEVELLED.", live:"" },
+  { id:"handyman", name:"Handyman", cat:"Home services", tag:"Repairs, assembly, mounting & odd jobs.", ink:"#15191e", accent:"#ff6a1a", accent2:"#ffd21e", emerg:"NO JOB TOO SMALL · 7 DAYS", eye:"Handyman · Free quotes", h:"TO-DO LIST?", hl:"TICKED OFF TODAY.", live:"" },
+  { id:"house-cleaning", name:"House Cleaning", cat:"Home services", tag:"Regular, deep, end-of-lease & spring cleans.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"BOND-BACK GUARANTEE", eye:"Cleaning · Insured & vetted", h:"PLACE NEED A CLEAN?", hl:"SPOTLESS, GUARANTEED.", live:"" },
+  { id:"pressure-washing", name:"Pressure Washing", cat:"Home services", tag:"Driveways, paths, decks, roofs & house wash.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"FREE QUOTES · 7 DAYS", eye:"Pressure washing · Free quotes", h:"GRIMY SURFACES?", hl:"BLASTED BACK TO NEW.", live:"" },
+  { id:"gutter-cleaning", name:"Gutter Cleaning", cat:"Home services", tag:"Gutter clearing, leaf guard & roof debris.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"BEAT THE STORM SEASON", eye:"Gutter cleaning · Insured", h:"GUTTERS FULL?", hl:"CLEARED & FLOWING.", live:"" },
+  { id:"window-cleaning", name:"Window Cleaning", cat:"Home services", tag:"Windows, tracks, screens & solar panels.", ink:"#0c1f1d", accent:"#0d9488", accent2:"#5eead4", emerg:"STREAK-FREE · 7 DAYS", eye:"Window cleaning · Insured", h:"GRUBBY WINDOWS?", hl:"CRYSTAL CLEAR.", live:"" },
+  { id:"pool-building", name:"Pool Building", cat:"Home services", tag:"Concrete & fibreglass pools, design to build.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"FREE DESIGN CONSULT", eye:"Pool builder · Licensed", h:"WANT A POOL?", hl:"BUILT FOR SUMMER.", live:"" },
+  { id:"pool-maintenance", name:"Pool Maintenance", cat:"Home services", tag:"Cleaning, servicing, chemicals & repairs.", ink:"#0b1f2a", accent:"#0ea5e9", accent2:"#38bdf8", emerg:"REGULAR SERVICE · 7 DAYS", eye:"Pool care · Free quotes", h:"GREEN POOL?", hl:"CRYSTAL CLEAR AGAIN.", live:"" },
+  { id:"blinds-awnings", name:"Blinds & Awnings", cat:"Home services", tag:"Blinds, shutters, awnings & outdoor screens.", ink:"#15191e", accent:"#ff6a1a", accent2:"#ffd21e", emerg:"FREE MEASURE & QUOTE", eye:"Blinds & awnings · Free quotes", h:"BARE WINDOWS?", hl:"DRESSED & SHADED.", live:"" },
+  { id:"garage-doors", name:"Garage Doors", cat:"Home services", tag:"Install, motors, springs & repairs.", ink:"#161b22", accent:"#64798f", accent2:"#b9c6d3", emerg:"STUCK DOOR? SAME-DAY FIX", eye:"Garage doors · Free quotes", h:"DOOR STUCK?", hl:"ROLLING AGAIN TODAY.", live:"" },
+  { id:"glazier", name:"Glazier", cat:"Home services", tag:"Glass repairs, splashbacks, mirrors & shower screens.", ink:"#0b1722", accent:"#0284c7", accent2:"#7dd3fc", emerg:"BROKEN GLASS? 24/7 BOARD-UP", eye:"Glazier · Same-day", h:"BROKEN GLASS?", hl:"REPLACED FAST.", live:"" },
+  { id:"security", name:"Security & CCTV", cat:"Home services", tag:"CCTV, alarms, intercoms & smart locks.", ink:"#1a1430", accent:"#7c3aed", accent2:"#c4b5fd", emerg:"FREE SECURITY ASSESSMENT", eye:"Security · Licensed installer", h:"WANT PEACE OF MIND?", hl:"WATCHED & PROTECTED.", live:"" },
+  { id:"solar", name:"Solar Installer", cat:"Home services", tag:"Panels, batteries, inverters & monitoring.", ink:"#1c1606", accent:"#d4a017", accent2:"#fde047", emerg:"FREE SOLAR QUOTE & SAVINGS", eye:"Solar · CEC accredited", h:"BIG POWER BILLS?", hl:"SLASH THEM WITH SOLAR.", live:"" }
 ];
 
 var FAQS = [
@@ -609,6 +668,8 @@ var FAQS = [
 ];
 
 /* ===== render gallery ===== */
+var THEME_CATS = ['All','Emergency','Building & reno','Roofing','Outdoor','Home services'];
+var themeFilter = { cat:'All', q:'' };
 function miniHTML(t){
   return '<div class="mini" style="--tk:'+t.ink+';--ta:'+t.accent+';--ta2:'+t.accent2+'">'
     +'<div class="mini-bar"><i></i><i></i><i></i></div>'
@@ -617,9 +678,26 @@ function miniHTML(t){
     +'<div class="mini-h">'+t.h+' <em>'+t.hl+'</em></div>'
     +'<div class="mini-row"><span class="mini-cta">\ud83d\udcde CALL NOW</span><span class="mini-cta ghost">GET A QUOTE</span></div></div></div>';
 }
+function renderThemeTools(){
+  document.getElementById('themeChips').innerHTML = THEME_CATS.map(function(c){
+    return '<button class="tchip'+(themeFilter.cat===c?' on':'')+'" type="button" onclick="setThemeCat(\''+c+'\')">'+c+'</button>';
+  }).join('');
+}
+function setThemeCat(c){ themeFilter.cat=c; renderThemeTools(); renderThemes(); }
+function searchThemes(v){ themeFilter.q=(v||'').toLowerCase().trim(); renderThemes(); }
 function renderThemes(){
-  document.getElementById('themeGrid').innerHTML = THEMES.map(function(t){
-    var live = t.live ? '<a href="'+t.live+'" target="_blank" class="t-live">See it live ↗</a>' : '<span class="t-live" style="opacity:.5">Demo on request</span>';
+  var q=themeFilter.q, cat=themeFilter.cat;
+  var list=THEMES.filter(function(t){
+    var okCat = cat==='All' || t.cat===cat;
+    var okQ = !q || (t.name+' '+t.tag+' '+t.cat).toLowerCase().indexOf(q)>-1;
+    return okCat && okQ;
+  });
+  var cnt=document.getElementById('themeCount');
+  if(cnt) cnt.textContent = list.length+' '+(list.length===1?'trade':'trades')+((cat==='All'&&!q)?' \u00b7 choose yours':'');
+  var grid=document.getElementById('themeGrid');
+  if(!list.length){ grid.innerHTML='<div class="tempty">No trades match that. <a href="#themes" onclick="chooseTheme(\'plumber\');return false;">Start an order</a> and tell us your trade \u2014 we\'ll build it.</div>'; return; }
+  grid.innerHTML = list.map(function(t){
+    var live = t.live ? '<a href="'+t.live+'" target="_blank" class="t-live">See it live \u2197</a>' : '<span class="t-live" style="opacity:.5">Demo on request</span>';
     return '<div class="tcard"><div class="tprev" style="--tk:'+t.ink+'">'+miniHTML(t)+'</div>'
       +'<div class="tinfo"><h3><span class="dot" style="--ta:'+t.accent+'"></span>'+t.name+'</h3>'
       +'<p>'+t.tag+'</p>'
@@ -740,7 +818,7 @@ function track(event,props){ try{ fetch('/api/events',{ method:'POST', headers:{
 document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ closeCart(); closeCheckout(); } });
 document.getElementById('coScrim').addEventListener('click',function(e){ if(e.target===this) closeCheckout(); });
 
-renderThemes(); renderFaq(); renderCart();
+renderThemeTools(); renderThemes(); renderFaq(); renderCart();
 track('page_view',{page:'home'});
 </script>
 </body>
