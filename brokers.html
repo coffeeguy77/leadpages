@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Broker Sites by Web Culture — a calculator suite that fills your pipeline</title>
+<meta name="description" content="A full home-loan calculator suite on your own branded site. Every repayment, borrowing power and stamp-duty figure your visitor checks becomes a lead. For Australian mortgage brokers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1b2430; --ink2:#222c3a; --ink3:#2c3848;
+  --euc:#1f7a63; --euc-d:#185f4d; --mint:#7fd9b6;
+  --brass:#b8924f; --brass-l:#cda86a;
+  --paper:#f6f4ef; --cream:#fbfaf6; --card:#fff; --line:#e7e2d8;
+  --steel:#5d6b73; --steel-l:#8b97a0; --hi:#f4f1ea;
+  --disp:'Fraunces',Georgia,serif; --body:'Inter',system-ui,sans-serif; --mono:'Space Mono',ui-monospace,monospace;
+  --rad:16px; --wrap:1180px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);color:var(--ink);background:var(--card);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-family:var(--disp);font-weight:600;line-height:1.05;letter-spacing:-.01em}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 22px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--euc);font-weight:700}
+.eyebrow.dim{color:var(--steel-l)}
+.eyebrow.brass{color:var(--brass)}
+.btn{display:inline-flex;align-items:center;gap:9px;font-family:var(--body);font-weight:700;font-size:16px;padding:14px 26px;border-radius:11px;border:0;cursor:pointer;transition:transform .08s,box-shadow .15s,background .15s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-euc{background:var(--euc);color:#fff;box-shadow:0 5px 0 var(--euc-d)}
+.btn-euc:hover{background:#23866d;box-shadow:0 3px 0 var(--euc-d);transform:translateY(2px)}
+.btn-ink{background:var(--ink);color:#fff}.btn-ink:hover{background:#0f1620}
+.btn-mint{background:var(--mint);color:#0e231c}.btn-mint:hover{background:#93e3c5}
+.btn-ghost{background:transparent;border:1.5px solid rgba(255,255,255,.2);color:var(--hi)}
+.btn-ghost:hover{border-color:var(--mint);color:#fff}
+.btn-light{background:#fff;color:var(--ink);border:1.5px solid var(--line)}.btn-light:hover{border-color:var(--ink)}
+.sec{padding:90px 0}
+.center{text-align:center}
+.lede{font-size:19px;color:var(--steel);max-width:640px;line-height:1.6}
+.center .lede{margin-left:auto;margin-right:auto}
+
+/* brass rule divider */
+.brass-rule{display:flex;align-items:center;justify-content:center;gap:16px;padding:0;background:var(--ink)}
+.brass-rule .ln{height:1px;width:120px;background:linear-gradient(90deg,transparent,var(--brass))}
+.brass-rule .ln.r{background:linear-gradient(90deg,var(--brass),transparent)}
+.brass-rule .dia{width:8px;height:8px;background:var(--brass);transform:rotate(45deg)}
+
+/* nav */
+header.nav{position:sticky;top:0;z-index:60;background:rgba(27,36,48,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-in{display:flex;align-items:center;gap:26px;height:66px}
+.logo{display:flex;align-items:center;gap:11px;color:#fff;font-family:var(--disp);font-weight:600;font-size:20px}
+.logo .mk{width:34px;height:34px;border-radius:9px;background:var(--euc);display:grid;place-items:center;color:#fff;font-size:17px;box-shadow:0 0 0 3px rgba(31,122,99,.22)}
+.logo small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--steel-l);font-weight:400;text-transform:uppercase;margin-top:1px}
+.nav-links{display:flex;gap:23px;margin-left:8px}
+.nav-links a{color:#c4cdd4;font-size:14.5px;font-weight:500;transition:color .12s}
+.nav-links a:hover{color:#fff}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.nav-login{color:#c4cdd4;font-size:14.5px;font-weight:600}.nav-login:hover{color:#fff}
+.cartbtn{position:relative;background:var(--ink3);border:1px solid rgba(255,255,255,.1);color:#fff;width:44px;height:44px;border-radius:11px;display:grid;place-items:center;cursor:pointer;font-size:18px}
+.cartbtn:hover{border-color:var(--mint)}
+.cart-count{position:absolute;top:-6px;right:-6px;background:var(--euc);color:#fff;font-family:var(--mono);font-size:11px;font-weight:700;min-width:20px;height:20px;border-radius:10px;display:grid;place-items:center;padding:0 5px;border:2px solid var(--ink)}
+.cart-count[hidden]{display:none}
+
+/* hero */
+.hero{background:radial-gradient(120% 90% at 82% 0%,#2a3647 0%,var(--ink) 58%);color:var(--hi);padding:74px 0 96px}
+.hero-grid{display:grid;grid-template-columns:1.06fr .94fr;gap:54px;align-items:center}
+.hero h1{font-size:clamp(40px,5.4vw,66px);color:#fff;margin:18px 0 0;font-weight:600;letter-spacing:-.02em}
+.hero h1 .hl{color:var(--mint);font-style:italic;font-weight:500}
+.hero p.sub{font-size:20px;color:#c2cad2;margin:22px 0 30px;max-width:540px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap}
+.trust{display:flex;flex-wrap:wrap;gap:18px;margin-top:30px}
+.trust span{font-size:14px;color:#aab4bd;display:flex;align-items:center;gap:7px;font-weight:500}
+.trust b{color:var(--brass-l);font-family:var(--mono);font-weight:700}
+
+/* hero calc mock */
+.mock{justify-self:center;position:relative}
+.appwin{width:330px;background:#0e1620;border-radius:18px;padding:10px;box-shadow:0 40px 80px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);transform:rotate(1.5deg)}
+.appwin .bar{display:flex;gap:5px;padding:6px 8px 10px}
+.appwin .bar i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.25)}
+.appscr{background:var(--cream);border-radius:11px;overflow:hidden}
+.app-tabs{display:flex;gap:4px;padding:10px 12px 0;background:#fff;overflow:hidden}
+.app-tabs span{font-size:8.5px;font-weight:700;color:var(--steel);padding:6px 8px;border-radius:6px 6px 0 0;white-space:nowrap}
+.app-tabs span.on{background:var(--euc);color:#fff}
+.app-body{padding:16px 16px 18px;background:#fff}
+.app-eye{font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--euc);text-transform:uppercase}
+.app-q{font-family:var(--disp);font-weight:600;font-size:17px;color:var(--ink);margin:5px 0 12px}
+.app-res{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:13px 14px;text-align:center}
+.app-res .lbl{font-size:9px;color:var(--steel);text-transform:uppercase;letter-spacing:.08em}
+.app-res .big{font-family:var(--disp);font-weight:700;font-size:30px;color:var(--euc);margin-top:3px}
+.app-seg{display:flex;gap:4px;margin-top:11px}
+.app-seg span{flex:1;text-align:center;font-size:8px;font-weight:700;color:var(--steel);background:var(--paper);border:1px solid var(--line);padding:6px 0;border-radius:6px}
+.app-seg span.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.app-email{margin-top:11px;background:var(--brass);color:#fff;text-align:center;font-size:9px;font-weight:700;padding:8px;border-radius:7px}
+.chip{position:absolute;background:#fff;border-radius:13px;padding:11px 14px;box-shadow:0 18px 40px -10px rgba(0,0,0,.35);display:flex;align-items:center;gap:11px;animation:float 4s ease-in-out infinite}
+.chip .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:17px;flex:none}
+.chip .t{font-family:var(--mono);font-size:10px;color:var(--steel);text-transform:uppercase}
+.chip .n{font-family:var(--disp);font-weight:700;font-size:17px;color:var(--ink);line-height:1}
+.chip-lead{top:14px;left:-40px;animation-delay:.2s}.chip-lead .ic{background:#dcfce7;color:#16a34a}
+.chip-pipe{bottom:26px;right:-46px;animation-delay:1.1s}.chip-pipe .ic{background:#f3e8d2;color:var(--brass)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+
+.shead{max-width:660px;margin-bottom:46px}
+.center.shead{margin-left:auto;margin-right:auto}
+.shead h2{font-size:clamp(30px,3.8vw,46px);margin:12px 0 14px;font-weight:600}
+.shead h2 .hl{color:var(--euc);font-style:italic}
+
+/* calculator suite */
+.suite{background:var(--paper)}
+.cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.ccard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;transition:transform .14s,box-shadow .14s}
+.ccard:hover{transform:translateY(-4px);box-shadow:0 20px 40px -18px rgba(27,36,48,.22)}
+.ccard .ci{width:42px;height:42px;border-radius:11px;background:rgba(31,122,99,.1);color:var(--euc);display:grid;place-items:center;font-size:20px;margin-bottom:13px}
+.ccard h3{font-size:18px;font-weight:600;margin-bottom:3px}
+.ccard .cres{font-family:var(--mono);font-weight:700;font-size:19px;color:var(--brass);margin:8px 0 4px}
+.ccard p{font-size:13px;color:var(--steel);line-height:1.45}
+.suite-foot{text-align:center;margin-top:34px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* features */
+.feat{background:var(--ink);color:var(--hi)}
+.feat .shead h2{color:#fff}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fcard{background:var(--ink2);border:1px solid rgba(255,255,255,.08);border-radius:var(--rad);padding:26px 24px}
+.fcard .fic{width:50px;height:50px;border-radius:12px;background:rgba(127,217,182,.14);color:var(--mint);display:grid;place-items:center;font-size:22px;margin-bottom:16px}
+.fcard h3{color:#fff;font-size:20px;font-weight:600;margin-bottom:8px}
+.fcard p{color:#aab4bd;font-size:14.5px}
+
+/* dashboard */
+.analytics{background:var(--cream)}
+.an-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:50px;align-items:center}
+.an-panel{background:var(--ink);border-radius:20px;padding:24px;box-shadow:0 30px 60px -24px rgba(27,36,48,.5)}
+.an-panel .ttl{font-family:var(--mono);font-size:11px;color:var(--steel-l);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;display:flex;justify-content:space-between}
+.an-pills{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.an-pill{background:var(--ink2);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 13px}
+.an-pill .n{font-family:var(--disp);font-weight:700;font-size:28px;color:#fff;line-height:1}
+.an-pill .l{font-size:12px;color:#9aa6ae;margin-top:5px}
+.an-pill.hl{border-color:var(--mint)}.an-pill.hl .n{color:var(--mint)}
+.an-bars{display:flex;align-items:flex-end;gap:5px;height:64px;margin-top:14px;padding:13px;background:var(--ink2);border-radius:12px;border:1px solid rgba(255,255,255,.08)}
+.an-bars i{flex:1;background:var(--euc);border-radius:3px 3px 0 0;opacity:.92}
+.an-list{list-style:none}
+.an-list li{display:flex;gap:12px;margin-bottom:14px;font-size:15px;color:#3a4651}
+.an-list li b{display:block;color:var(--ink);font-family:var(--disp);font-weight:600;font-size:16px}
+.an-list .ic{width:30px;height:30px;border-radius:8px;background:var(--euc);color:#fff;display:grid;place-items:center;flex:none;font-size:14px;margin-top:2px}
+
+/* steps */
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.step .num{font-family:var(--disp);font-weight:700;font-size:16px;color:#fff;background:var(--euc);width:42px;height:42px;border-radius:50%;display:grid;place-items:center;margin-bottom:16px}
+.step h3{font-size:21px;font-weight:600;margin-bottom:8px}
+.step p{color:var(--steel);font-size:15px}
+
+/* pricing */
+.pricing{background:var(--ink);color:var(--hi)}
+.pricing .shead h2{color:#fff}
+.pgrid{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;max-width:880px;margin:0 auto;align-items:start}
+.pcard{background:var(--ink2);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:32px 30px;display:flex;flex-direction:column;position:relative}
+.pcard.hero-plan{border-color:var(--mint);box-shadow:0 0 0 1px var(--mint),0 24px 60px -24px rgba(127,217,182,.3);background:linear-gradient(180deg,#26333f,#1f2a36)}
+.pbadge{position:absolute;top:-13px;left:30px;background:var(--mint);color:#0e231c;font-family:var(--mono);font-size:11px;font-weight:700;padding:5px 13px;border-radius:7px;text-transform:uppercase;letter-spacing:.05em}
+.pcard .ptag{font-family:var(--mono);font-size:11px;color:var(--brass-l);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.pcard h3{color:#fff;font-size:26px;font-weight:600}
+.pcard .price{display:flex;align-items:baseline;gap:6px;margin:16px 0 2px}
+.pcard .price .amt{font-family:var(--disp);font-weight:700;font-size:48px;color:#fff;letter-spacing:-.02em}
+.pcard .price .per{color:#9aa6ae;font-size:15px}
+.pcard .setup{font-size:13.5px;color:var(--brass-l);font-family:var(--mono);margin-bottom:22px}
+.pcard ul{list-style:none;flex:1;margin-bottom:24px}
+.pcard li{display:flex;gap:10px;align-items:flex-start;color:#c8d0d7;font-size:14.5px;padding:8px 0;border-top:1px solid rgba(255,255,255,.08)}
+.pcard li:first-child{border-top:0}
+.pcard li .ck{color:var(--mint);flex:none;font-weight:800}
+.pcard li.muted{color:#7c8893}.pcard li.muted .ck{color:#7c8893}
+.pnote{text-align:center;color:#9aa6ae;font-size:14px;margin-top:24px}
+
+/* compare */
+.compare{background:#fff}
+.ctable{display:grid;grid-template-columns:1.5fr 1fr 1fr;border:1px solid var(--line);border-radius:var(--rad);overflow:hidden;max-width:860px;margin:0 auto;font-size:14.5px}
+.ctable>div{padding:15px 18px;border-bottom:1px solid var(--line)}
+.ctable .ch{font-family:var(--disp);font-weight:600;font-size:16px;background:var(--paper)}
+.ctable .ch.us{background:var(--euc);color:#fff}
+.ctable .rl{font-weight:600;color:#3a4651}
+.ctable .cv{text-align:center;color:var(--steel)}
+.ctable .cv.us{background:#f1f8f4;color:var(--ink);font-weight:600}
+.ctable .cv .yes{color:var(--euc);font-weight:800}.ctable .cv .no{color:#b06a4a}
+.ctable>div:nth-last-child(-n+3){border-bottom:0}
+
+/* testimonials */
+.testi{background:var(--paper)}
+.qgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:var(--rad);padding:26px 24px}
+.qcard .stars{color:var(--brass);font-size:15px;letter-spacing:2px;margin-bottom:12px}
+.qcard p{font-size:15px;color:#33414a;line-height:1.6;font-family:var(--disp);font-weight:500}
+.qcard .who{display:flex;align-items:center;gap:12px;margin-top:18px}
+.qcard .av{width:42px;height:42px;border-radius:50%;background:var(--euc);color:#fff;font-family:var(--disp);font-weight:600;display:grid;place-items:center;font-size:16px}
+.qcard .who b{display:block;font-size:14.5px}.qcard .who span{font-size:13px;color:var(--steel)}
+
+/* faq */
+.faq{background:#fff}
+.faq-list{max-width:760px;margin:0 auto}
+.fitem{border-bottom:1px solid var(--line)}
+.fq{width:100%;text-align:left;background:none;border:0;padding:22px 4px;font-family:var(--disp);font-weight:600;font-size:18px;color:var(--ink);cursor:pointer;display:flex;justify-content:space-between;gap:16px}
+.fq .pl{color:var(--euc);font-size:24px;flex:none;transition:transform .2s}
+.fitem.open .fq .pl{transform:rotate(45deg)}
+.fa{max-height:0;overflow:hidden;transition:max-height .25s ease}
+.fa p{padding:0 4px 22px;color:var(--steel);font-size:15.5px;max-width:680px}
+
+/* final + login */
+.final{background:var(--euc);color:#fff;text-align:center}
+.final h2{font-size:clamp(32px,4.5vw,52px);color:#fff;max-width:760px;margin:0 auto 16px;font-weight:600}
+.final p{font-size:19px;color:#eafdf5;max-width:560px;margin:0 auto 30px}
+.final .btn-ink{box-shadow:0 5px 0 #0c1118}
+.login-band{background:var(--ink2);color:var(--hi);text-align:center;padding:54px 0}
+.login-band h3{color:#fff;font-size:27px;font-weight:600;margin-bottom:8px}
+.login-band p{color:#9aa6ae;margin-bottom:22px}
+
+footer{background:var(--ink);color:#9aa6ae;padding:54px 0 30px;font-size:14px}
+.foot-top{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;padding-bottom:30px;border-bottom:1px solid rgba(255,255,255,.08)}
+.foot-links{display:flex;gap:54px;flex-wrap:wrap}
+.foot-links h4{color:#fff;font-family:var(--disp);font-size:15px;font-weight:600;margin-bottom:12px}
+.foot-links a{display:block;color:#9aa6ae;padding:4px 0}.foot-links a:hover{color:#fff}
+.foot-bot{padding-top:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:#6b7780}
+
+/* cart + modal (shared) */
+.scrim{position:fixed;inset:0;background:rgba(15,20,28,.55);opacity:0;visibility:hidden;transition:.2s;z-index:90}
+.scrim.on{opacity:1;visibility:visible}
+.drawer{position:fixed;top:0;right:0;height:100%;width:420px;max-width:92vw;background:#fff;z-index:95;transform:translateX(100%);transition:transform .26s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.3)}
+.drawer.on{transform:none}
+.drawer-h{padding:22px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.drawer-h h3{font-size:22px;font-weight:600}
+.x{background:none;border:0;font-size:24px;cursor:pointer;color:var(--steel)}
+.drawer-body{flex:1;overflow:auto;padding:8px 24px}
+.empty{text-align:center;color:var(--steel);padding:60px 20px}.empty .big{font-size:42px;margin-bottom:12px}
+.citem{border:1px solid var(--line);border-radius:14px;padding:16px;margin:16px 0}
+.citem-h{display:flex;justify-content:space-between;gap:10px}
+.citem-h b{font-family:var(--disp);font-size:18px;font-weight:600}
+.citem-h .rm{background:none;border:0;color:var(--steel);cursor:pointer;font-size:13px;text-decoration:underline}
+.citem .desc{font-size:13px;color:var(--steel);margin-top:3px}
+.plan-pick{display:flex;gap:8px;margin-top:14px}
+.plan-opt{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:11px;cursor:pointer;text-align:center;transition:.12s}
+.plan-opt.sel{border-color:var(--euc);background:#f1f8f4}
+.plan-opt b{display:block;font-family:var(--disp);font-size:14px;font-weight:600}
+.plan-opt span{font-size:11.5px;color:var(--steel)}
+.drawer-foot{border-top:1px solid var(--line);padding:20px 24px}
+.totals{display:flex;justify-content:space-between;margin-bottom:6px;font-size:14.5px;color:var(--steel)}
+.totals.big{font-family:var(--disp);font-weight:600;font-size:19px;color:var(--ink);margin:10px 0 16px}
+.drawer-foot .btn{width:100%;justify-content:center}
+.modal-scrim{position:fixed;inset:0;background:rgba(15,20,28,.6);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow:auto}
+.modal-scrim.on{display:flex}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:540px;padding:30px 32px;box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.modal h3{font-size:27px;font-weight:600;margin-bottom:4px}
+.modal .sub{color:var(--steel);margin-bottom:22px;font-size:15px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:#3a4651}
+.field input,.field textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:12px 13px;font:inherit;font-size:15px;background:var(--cream)}
+.field input:focus,.field textarea:focus{outline:0;border-color:var(--euc);background:#fff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal .err{color:#b06a4a;font-size:13.5px;min-height:18px;margin:2px 0 6px}
+.modal-act{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+.ordersum{background:var(--paper);border-radius:12px;padding:14px 16px;margin-bottom:18px;font-size:14px}
+.ordersum .li{display:flex;justify-content:space-between;padding:3px 0}
+.ordersum .li.tot{font-family:var(--disp);font-weight:600;color:var(--ink);border-top:1px solid var(--line);margin-top:6px;padding-top:9px}
+.success{text-align:center;padding:14px 0}
+.success .tick{width:74px;height:74px;border-radius:50%;background:#dcfce7;color:#16a34a;display:grid;place-items:center;font-size:38px;margin:0 auto 18px}
+.success h3{font-size:28px;font-weight:600;margin-bottom:10px}
+.success p{color:var(--steel);max-width:390px;margin:0 auto 8px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:13px 22px;border-radius:12px;font-weight:600;font-size:14.5px;opacity:0;pointer-events:none;transition:.25s;z-index:120}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+@media(max-width:920px){
+  .hero-grid,.an-grid{grid-template-columns:1fr;gap:40px}
+  .mock{order:-1}
+  .cgrid{grid-template-columns:repeat(2,1fr)}
+  .fgrid,.steps-grid,.qgrid,.pgrid{grid-template-columns:1fr}
+  .ctable{grid-template-columns:1.4fr .8fr .8fr;font-size:13px}
+  .nav-links,.nav-login{display:none}
+  .sec{padding:64px 0}
+}
+@media(max-width:560px){.row2{grid-template-columns:1fr}.appwin{width:280px}.cgrid{grid-template-columns:1fr}.chip-lead{left:-14px}.chip-pipe{right:-8px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a href="/" class="logo"><span class="mk">◈</span><span>Broker Sites<small>by Web Culture</small></span></a>
+    <nav class="nav-links">
+      <a href="#suite">Calculators</a>
+      <a href="#features">Features</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="/tradies.html" style="color:var(--brass-l)">For tradies →</a>
+    </nav>
+    <div class="nav-right">
+      <a href="/manage.html" class="nav-login">Client login</a>
+      <a href="#pricing" class="btn btn-euc" style="padding:10px 18px;font-size:14px">Get your site</a>
+      <button class="cartbtn" onclick="openCart()" aria-label="Cart">🛒<span class="cart-count" id="cartCount" hidden>0</span></button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow brass">For Australian mortgage brokers</span>
+      <h1>Turn calculators into <span class="hl">clients.</span></h1>
+      <p class="sub">A full home-loan calculator suite on your own branded site. Every repayment, borrowing-power or stamp-duty figure a visitor works out can be emailed to them — and lands with you as a qualified lead.</p>
+      <div class="hero-cta">
+        <a href="#pricing" class="btn btn-euc">Build my broker site →</a>
+        <a href="/s/brokerapp" target="_blank" class="btn btn-ghost">See the live site</a>
+      </div>
+      <div class="trust">
+        <span>✓ <b>7</b> calculators</span>
+        <span>✓ Every result a <b>lead</b></span>
+        <span>✓ <b>Your</b> rates &amp; brand</span>
+        <span>✓ <b>You own</b> it</span>
+      </div>
+    </div>
+    <div class="mock">
+      <div class="appwin">
+        <div class="bar"><i></i><i></i><i></i></div>
+        <div class="appscr">
+          <div class="app-tabs"><span class="on">Repayments</span><span>Borrowing</span><span>Stamp duty</span><span>Offset</span></div>
+          <div class="app-body">
+            <div class="app-eye">Linray Finance · Home loan</div>
+            <div class="app-q">Your estimated repayment</div>
+            <div class="app-res"><div class="lbl">Monthly repayment</div><div class="big">$2,847</div></div>
+            <div class="app-seg"><span class="on">Monthly</span><span>Fortnightly</span><span>Weekly</span></div>
+            <div class="app-email">✉ Email me these results</div>
+          </div>
+        </div>
+      </div>
+      <div class="chip chip-lead"><span class="ic">✉</span><span><span class="t">New lead</span><span class="n">Results emailed</span></span></div>
+      <div class="chip chip-pipe"><span class="ic">📈</span><span><span class="t">This month</span><span class="n">38 enquiries</span></span></div>
+    </div>
+  </div>
+</section>
+<div class="brass-rule" style="padding:22px 0"><span class="ln"></span><span class="dia"></span><span class="ln r"></span></div>
+
+<!-- CALCULATOR SUITE -->
+<section class="sec suite" id="suite">
+  <div class="wrap">
+    <div class="shead center">
+      <span class="eyebrow">The full website — what's inside</span>
+      <h2>Seven calculators your clients <span class="hl">actually use.</span></h2>
+      <p class="lede">The full broker site comes with the complete suite — each one branded to you, each one a chance to capture a lead the moment someone runs the numbers.</p>
+    </div>
+    <div class="cgrid" id="suiteGrid"></div>
+    <div class="suite-foot">
+      <a href="/s/brokerapp" target="_blank" class="btn btn-light">See the full site live ↗</a>
+      <a href="#pricing" class="btn btn-euc">Get the full site →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="sec feat" id="features">
+  <div class="wrap">
+    <div class="shead">
+      <span class="eyebrow" style="color:var(--mint)">More than a calculator</span>
+      <h2>Every calculation is a <span style="color:var(--mint);font-style:italic">lead opportunity.</span></h2>
+      <p class="lede" style="color:#aab4bd">It's a mini-site you control — built to capture, not just inform.</p>
+    </div>
+    <div class="fgrid">
+      <div class="fcard"><div class="fic">✉</div><h3>Email-me-results capture</h3><p>When a visitor emails their numbers to themselves, you get their details and the exact scenario they're weighing up. Warm leads, not anonymous traffic.</p></div>
+      <div class="fcard"><div class="fic">🎛️</div><h3>Your rates, your brand</h3><p>Set your own variable and comparison rates, add your logo, headshot and colours. Every figure on the site reflects what you can actually offer.</p></div>
+      <div class="fcard"><div class="fic">🌐</div><h3>A real mini-site</h3><p>Not a widget — a branded site with your story, social proof, an enquiry form and a contact section. Your whole pitch in one place.</p></div>
+      <div class="fcard"><div class="fic">📊</div><h3>Lead dashboard</h3><p>See visitors, enquiries and which calculators get used most — so you know what's driving conversations.</p></div>
+      <div class="fcard"><div class="fic">✏️</div><h3>Edit it yourself</h3><p>Update your rates, bio, suburbs and offers in a simple dashboard, anytime. No developer, no wait.</p></div>
+      <div class="fcard"><div class="fic">⚙️</div><h3>Set up for you</h3><p>We build it, brand it and load your rates. You approve it and go live — usually within a couple of days.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<section class="sec analytics" id="dashboard">
+  <div class="wrap an-grid">
+    <div class="an-panel" aria-hidden="true">
+      <div class="ttl"><span>Your dashboard · Linray Finance</span><span>Last 30 days</span></div>
+      <div class="an-pills">
+        <div class="an-pill"><div class="n">2,180</div><div class="l">👁 Visitors</div></div>
+        <div class="an-pill hl"><div class="n">64</div><div class="l">✉ Enquiries</div></div>
+        <div class="an-pill"><div class="n">148</div><div class="l">🧮 Results emailed</div></div>
+        <div class="an-pill"><div class="n">2.9%</div><div class="l">📈 Conversion</div></div>
+      </div>
+      <div class="an-bars"><i style="height:42%"></i><i style="height:60%"></i><i style="height:50%"></i><i style="height:78%"></i><i style="height:58%"></i><i style="height:90%"></i><i style="height:68%"></i><i style="height:62%"></i><i style="height:84%"></i><i style="height:52%"></i><i style="height:76%"></i><i style="height:94%"></i></div>
+    </div>
+    <div>
+      <div class="shead" style="margin-bottom:26px">
+        <span class="eyebrow">See what's working</span>
+        <h2>Know which scenarios become <span class="hl">conversations.</span></h2>
+        <p class="lede">Your dashboard is the same screen you edit your rates in. Watch enquiries land, see which calculators pull people in, and follow up while it's hot.</p>
+      </div>
+      <ul class="an-list">
+        <li><span class="ic">✉</span><span><b>Enquiries, captured</b>Name, contact and the loan scenario they emailed themselves.</span></li>
+        <li><span class="ic">🧮</span><span><b>Calculator usage</b>Which tools your visitors reach for most.</span></li>
+        <li><span class="ic">📈</span><span><b>Conversion, tracked</b>What share of visitors become enquiries — and the trend.</span></li>
+      </ul>
+      <a href="/manage.html" class="btn btn-light">See the dashboard →</a>
+    </div>
+  </div>
+</section>
+
+<!-- STEPS -->
+<section class="sec" style="background:#fff">
+  <div class="wrap">
+    <div class="shead center"><span class="eyebrow">Mostly done by us</span><h2>Live on your site in three steps.</h2></div>
+    <div class="steps-grid">
+      <div class="step"><div class="num">1</div><h3>Pick your plan</h3><p>Choose the full calculator website or the focused landing page and add it to your cart.</p></div>
+      <div class="step"><div class="num">2</div><h3>We brand it</h3><p>Send your logo, headshot, rates and a few details. We build it and send it for your approval.</p></div>
+      <div class="step"><div class="num">3</div><h3>Go live &amp; collect leads</h3><p>Your site goes live, visitors run their numbers, and enquiries land in your dashboard.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="sec pricing" id="pricing">
+  <div class="wrap">
+    <div class="shead center"><span class="eyebrow" style="color:var(--mint)">Choose your site</span><h2>Two ways to go live.</h2><p class="lede" style="color:#aab4bd">A one-off build fee, then a low monthly for hosting, your dashboard and lead capture. No lock-in — cancel anytime and keep your site.</p></div>
+    <div class="pgrid">
+      <div class="pcard hero-plan">
+        <span class="pbadge">★ Recommended</span>
+        <div class="ptag">The full website</div>
+        <h3>Calculator website</h3>
+        <div class="price"><span class="amt">$69</span><span class="per">/month</span></div>
+        <div class="setup">+ $990 one-off setup</div>
+        <ul>
+          <li><span class="ck">✓</span> <b>All 7 calculators</b>, branded to you</li>
+          <li><span class="ck">✓</span> Email-results lead capture on every tool</li>
+          <li><span class="ck">✓</span> Full branded mini-site (story, reviews, contact)</li>
+          <li><span class="ck">✓</span> Your own domain (yourname.com.au)</li>
+          <li><span class="ck">✓</span> Your rates, logo, headshot &amp; colours</li>
+          <li><span class="ck">✓</span> Lead dashboard &amp; self-editing</li>
+          <li><span class="ck">✓</span> Priority edits &amp; new sections</li>
+        </ul>
+        <button class="btn btn-mint" onclick="chooseProduct('full')">Get the full site →</button>
+      </div>
+      <div class="pcard">
+        <div class="ptag">The lead landing page</div>
+        <h3>Landing page</h3>
+        <div class="price"><span class="amt">$39</span><span class="per">/month</span></div>
+        <div class="setup">+ $499 one-off setup</div>
+        <ul>
+          <li><span class="ck">✓</span> One high-converting lead page</li>
+          <li><span class="ck">✓</span> Live repayments + rate comparison</li>
+          <li><span class="ck">✓</span> Borrowing-assessment enquiry form</li>
+          <li><span class="ck">✓</span> Your rates &amp; brand</li>
+          <li><span class="ck">✓</span> Lead dashboard &amp; self-editing</li>
+          <li class="muted"><span class="ck">—</span> Full 7-calculator suite</li>
+          <li class="muted"><span class="ck">—</span> Multi-section mini-site</li>
+        </ul>
+        <button class="btn btn-light" onclick="chooseProduct('landing')">Choose landing page</button>
+      </div>
+    </div>
+    <p class="pnote">Prices in AUD. Most brokers start with the full site — it works harder, every day, on every visitor.</p>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section class="sec compare">
+  <div class="wrap">
+    <div class="shead center"><span class="eyebrow">Which should you pick?</span><h2>Landing page vs full website.</h2></div>
+    <div class="ctable">
+      <div class="ch">&nbsp;</div>
+      <div class="ch">Landing page</div>
+      <div class="ch us">Full website</div>
+      <div class="rl">Calculators</div><div class="cv">Repayments + rates</div><div class="cv us"><span class="yes">All 7</span></div>
+      <div class="rl">Lead capture points</div><div class="cv">1 enquiry form</div><div class="cv us"><span class="yes">Every calculator</span></div>
+      <div class="rl">Branded mini-site</div><div class="cv"><span class="no">Single page</span></div><div class="cv us"><span class="yes">Full site</span></div>
+      <div class="rl">Your own domain</div><div class="cv"><span class="no">—</span></div><div class="cv us"><span class="yes">Included</span></div>
+      <div class="rl">Best for</div><div class="cv">Ad campaigns</div><div class="cv us"><span class="yes">Your everyday site</span></div>
+      <div class="rl">From</div><div class="cv">$499 + $39/mo</div><div class="cv us"><span class="yes">$990 + $69/mo</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="sec testi" id="reviews">
+  <div class="wrap">
+    <div class="shead center"><span class="eyebrow">From brokers</span><h2>Sites that start conversations.</h2></div>
+    <div class="qgrid">
+      <div class="qcard"><div class="stars">★★★★★</div><p>"Clients turn up to the first call already knowing their numbers. The calculators do half my qualifying for me."</p><div class="who"><span class="av">PT</span><span><b>Priya T.</b><span>Broker · Canberra</span></span></div></div>
+      <div class="qcard"><div class="stars">★★★★★</div><p>"The email-results feature is gold — I get the lead and the exact scenario they're thinking about. Way warmer than a contact form."</p><div class="who"><span class="av">MC</span><span><b>Marcus C.</b><span>Broker · Sydney</span></span></div></div>
+      <div class="qcard"><div class="stars">★★★★★</div><p>"Looks like a site a big brokerage would have, and I can change my rates myself in seconds. Worth every cent."</p><div class="who"><span class="av">JL</span><span><b>Jess L.</b><span>Broker · Melbourne</span></span></div></div>
+    </div>
+    <p class="center" style="margin-top:22px;color:var(--steel);font-size:13px">Sample reviews shown — replace with your own real client reviews before going live.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="sec faq" id="faq">
+  <div class="wrap">
+    <div class="shead center"><span class="eyebrow">Good to know</span><h2>Questions, answered.</h2></div>
+    <div class="faq-list" id="faqList"></div>
+  </div>
+</section>
+
+<section class="sec final">
+  <div class="wrap">
+    <h2>Put a calculator suite to work for you.</h2>
+    <p>Pick your plan and we'll have your branded broker site live in days. No lock-in, you own it.</p>
+    <a href="#pricing" class="btn btn-ink">Build my broker site →</a>
+  </div>
+</section>
+
+<section class="login-band" id="login">
+  <div class="wrap">
+    <span class="eyebrow dim">Already a client?</span>
+    <h3>Sign in to your dashboard</h3>
+    <p>Update your rates, edit your site and check your leads.</p>
+    <a href="/manage.html" class="btn btn-euc">Client login →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div style="max-width:300px">
+        <a href="/" class="logo" style="margin-bottom:14px"><span class="mk">◈</span><span>Broker Sites<small>by Web Culture</small></span></a>
+        <p style="color:#9aa6ae;font-size:14px">Calculator-led websites for Australian mortgage brokers. Built in Canberra. You own everything.</p>
+      </div>
+      <div class="foot-links">
+        <div><h4>Product</h4><a href="#suite">Calculators</a><a href="#features">Features</a><a href="#dashboard">Dashboard</a><a href="#pricing">Pricing</a></div>
+        <div><h4>Company</h4><a href="#faq">FAQ</a><a href="https://webculture.au" target="_blank">Web Culture</a><a href="/tradies.html">For tradies</a></div>
+        <div><h4>Clients</h4><a href="/manage.html">Sign in</a><a href="#pricing">Start an order</a></div>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2026 Broker Sites · Web Culture · Canberra, ACT</span>
+      <span>Rates and figures are indicative — set your own in the dashboard.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- CART -->
+<div class="scrim" id="scrim" onclick="closeCart()"></div>
+<aside class="drawer" id="drawer" aria-label="Cart">
+  <div class="drawer-h"><h3>Your order</h3><button class="x" onclick="closeCart()" aria-label="Close">×</button></div>
+  <div class="drawer-body" id="cartBody"></div>
+  <div class="drawer-foot" id="cartFoot" hidden>
+    <div class="totals"><span>Setup (one-off)</span><span id="tSetup">$0</span></div>
+    <div class="totals big"><span>Then monthly</span><span id="tMonthly">$0/mo</span></div>
+    <button class="btn btn-euc" onclick="openCheckout()">Checkout →</button>
+  </div>
+</aside>
+
+<div class="modal-scrim" id="coScrim"><div class="modal" id="coModal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== config (edit me) ===== */
+var PRODUCTS = {
+  full:    { name:'Calculator website', short:'Full broker site · all 7 calculators', setup:990, monthly:69 },
+  landing: { name:'Landing page',       short:'Focused lead landing page',            setup:499, monthly:39 }
+};
+var STRIPE_LINKS = { full:'', landing:'' }; // paste Stripe Payment Links to take payment automatically
+
+var CALCS = [
+  ['🧮','Repayments','$2,847/mo','Monthly, fortnightly or weekly — P&I or interest-only.'],
+  ['🏦','Borrowing power','$780,000','How much a buyer could borrow on their income.'],
+  ['🧾','Stamp duty & costs','$21,330','Government charges and upfront costs by state.'],
+  ['⏱️','Extra repayments','Save $48k','What paying a little extra each month saves.'],
+  ['💰','Offset savings','Save $61k','How an offset balance cuts interest and time.'],
+  ['🎯','Deposit goal','3y 2m','How long to save the deposit they need.'],
+  ['⚖️','Loan comparison','A vs B','Two loans side by side — true cost incl. fees.']
+];
+var FAQS = [
+  ['Do the leads come to me?',"Yes. When someone emails their results or fills the enquiry form, their details and the exact scenario land in your dashboard. They're yours."],
+  ['Can I set my own rates?',"Absolutely. You control the variable and comparison rates shown across every calculator, and can update them anytime in your dashboard."],
+  ['Which plan should I pick?',"Most brokers go with the full calculator website — it captures leads on every tool and works as your everyday site. The landing page is great as a focused page for ad campaigns."],
+  ['Can I use my own domain?',"Yes — the full website includes connecting your own domain (like yourname.com.au). The landing page runs on a fast leadpages.webculture.au address."],
+  ['Can I edit it myself?',"Yes. Rates, bio, suburbs, offers and contact details are all editable in a simple dashboard — no developer needed."],
+  ['Is there a lock-in contract?',"No. It's month-to-month — cancel anytime and keep your site."],
+  ['Is this compliant for brokers?',"The figures are indicative estimates with the usual disclaimers, and you control the rates and wording. It's a marketing and lead-capture site — your credit advice and disclosures stay with you."]
+];
+
+/* ===== render ===== */
+function renderSuite(){
+  document.getElementById('suiteGrid').innerHTML = CALCS.map(function(c){
+    return '<div class="ccard"><div class="ci">'+c[0]+'</div><h3>'+c[1]+'</h3><div class="cres">'+c[2]+'</div><p>'+c[3]+'</p></div>';
+  }).join('');
+}
+function renderFaq(){
+  document.getElementById('faqList').innerHTML = FAQS.map(function(f,i){
+    return '<div class="fitem"><button class="fq" onclick="toggleFaq('+i+')">'+f[0]+'<span class="pl">+</span></button><div class="fa" id="fa'+i+'"><p>'+f[1]+'</p></div></div>';
+  }).join('');
+}
+function toggleFaq(i){ var it=document.querySelectorAll('.fitem')[i], fa=document.getElementById('fa'+i); var o=it.classList.toggle('open'); fa.style.maxHeight=o?(fa.scrollHeight+'px'):'0'; }
+
+/* ===== cart ===== */
+var CART=[]; // {product}
+function chooseProduct(id){ CART=[{product:id}]; track('add_to_cart',{product:id}); renderCart(); openCart(); }
+function removeItem(){ CART=[]; renderCart(); }
+function cartTotals(){ var s=0,m=0; CART.forEach(function(c){ var p=PRODUCTS[c.product]; s+=p.setup; m+=p.monthly; }); return {setup:s,monthly:m}; }
+function renderCart(){
+  var body=document.getElementById('cartBody'),foot=document.getElementById('cartFoot'),cnt=document.getElementById('cartCount');
+  if(!CART.length){ body.innerHTML='<div class="empty"><div class="big">🛒</div><b>Your order is empty</b><p style="margin-top:6px">Pick a plan to get started.</p></div>'; foot.hidden=true; cnt.hidden=true; return; }
+  cnt.hidden=false; cnt.textContent=CART.length;
+  body.innerHTML = CART.map(function(c){
+    var opts=Object.keys(PRODUCTS).map(function(k){ var p=PRODUCTS[k];
+      return '<div class="plan-opt'+(c.product===k?' sel':'')+'" onclick="CART[0].product=\''+k+'\';renderCart()"><b>'+p.name+'</b><span>$'+p.setup+' + $'+p.monthly+'/mo</span></div>'; }).join('');
+    var p=PRODUCTS[c.product];
+    return '<div class="citem"><div class="citem-h"><div><b>'+p.name+'</b><div class="desc">'+p.short+'</div></div><button class="rm" onclick="removeItem()">Remove</button></div><div class="plan-pick">'+opts+'</div></div>';
+  }).join('');
+  var t=cartTotals(); document.getElementById('tSetup').textContent='$'+t.setup; document.getElementById('tMonthly').textContent='$'+t.monthly+'/mo'; foot.hidden=false;
+}
+function openCart(){ document.getElementById('drawer').classList.add('on'); document.getElementById('scrim').classList.add('on'); }
+function closeCart(){ document.getElementById('drawer').classList.remove('on'); document.getElementById('scrim').classList.remove('on'); }
+
+/* ===== checkout ===== */
+function openCheckout(){
+  if(!CART.length) return;
+  var c=CART[0], p=PRODUCTS[c.product];
+  document.getElementById('coModal').innerHTML='<h3>Almost there</h3><p class="sub">Send your details and we\u2019ll build your broker site — live within a couple of days.</p>'
+    +'<div class="ordersum"><div class="li"><span>'+p.name+'</span><span></span></div><div class="li"><span>Setup (one-off)</span><span>$'+p.setup+'</span></div><div class="li tot"><span>Then monthly</span><span>$'+p.monthly+'/mo</span></div></div>'
+    +'<div class="field"><label>Business / broker name</label><input id="co-biz" placeholder="e.g. Linray Finance"></div>'
+    +'<div class="row2"><div class="field"><label>Your name</label><input id="co-name" placeholder="First name"></div><div class="field"><label>Preferred web address</label><input id="co-slug" placeholder="linray-finance"></div></div>'
+    +'<div class="row2"><div class="field"><label>Phone</label><input id="co-phone" placeholder="0412 ..."></div><div class="field"><label>Email</label><input id="co-email" type="email" placeholder="you@email.com"></div></div>'
+    +'<div class="field"><label>Anything we should know? (optional)</label><textarea id="co-notes" rows="2" placeholder="Your aggregator, current rates, areas you serve, ACL/credit rep number..."></textarea></div>'
+    +'<div class="err" id="co-err"></div>'
+    +'<div class="modal-act"><button class="btn btn-light" onclick="closeCheckout()">Back</button><button class="btn btn-euc" id="co-submit" onclick="submitOrder()">Place order →</button></div>';
+  document.getElementById('coScrim').classList.add('on'); closeCart();
+  setTimeout(function(){ var b=document.getElementById('co-biz'); if(b) b.focus(); },80);
+}
+function closeCheckout(){ document.getElementById('coScrim').classList.remove('on'); }
+async function submitOrder(){
+  var err=document.getElementById('co-err'); err.textContent='';
+  var biz=val('co-biz'),name=val('co-name'),email=val('co-email'),phone=val('co-phone');
+  if(!biz){ err.textContent='Please add your business or broker name.'; return; }
+  if(!phone && !email){ err.textContent='Add a phone or email so we can reach you.'; return; }
+  var c=CART[0], p=PRODUCTS[c.product];
+  var details={ product:c.product, productName:p.name, setup:p.setup, monthly:p.monthly, slug:val('co-slug'), notes:val('co-notes'), vertical:'broker', source:'storefront-broker' };
+  var btn=document.getElementById('co-submit'); btn.disabled=true; btn.textContent='Placing order…';
+  var ok=false;
+  try{ var r=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ site:'Broker order — '+biz, kind:'order', name:name, email:email, phone:phone, details:details })}); ok=r.ok; }catch(e){ ok=false; }
+  btn.disabled=false; btn.textContent='Place order →';
+  if(!ok){ err.textContent='Something went wrong sending that. Call us or try again.'; return; }
+  track('order',{product:c.product,setup:p.setup,monthly:p.monthly});
+  showSuccess(p, STRIPE_LINKS[c.product]);
+}
+function showSuccess(p,pay){
+  document.getElementById('coModal').innerHTML='<div class="success"><div class="tick">✓</div><h3>You\u2019re booked in!</h3>'
+    +'<p>We\u2019ve got your order for the '+p.name.toLowerCase()+'. We\u2019ll be in touch shortly and have your branded site live within a couple of days.</p>'
+    +(pay?'<p style="margin-top:14px">Lock in your build slot now?</p><a href="'+pay+'" class="btn btn-euc" style="margin-top:10px">Pay setup ($'+p.setup+') →</a>':'<p style="margin-top:10px;color:#16a34a;font-weight:600">We\u2019ll send your invoice and login by email.</p>')
+    +'<div style="margin-top:22px"><button class="btn btn-light" onclick="closeCheckout()">Done</button></div></div>';
+  CART=[]; renderCart();
+}
+
+/* helpers */
+function val(id){ var e=document.getElementById(id); return e?e.value.trim():''; }
+function track(event,props){ try{ fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ site:'Broker storefront', event:event, props:props||{} })}); }catch(e){} }
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ closeCart(); closeCheckout(); } });
+document.getElementById('coScrim').addEventListener('click',function(e){ if(e.target===this) closeCheckout(); });
+
+renderSuite(); renderFaq(); renderCart(); track('page_view',{page:'broker-home'});
+</script>
+</body>
+</html>
