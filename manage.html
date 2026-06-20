@@ -1354,11 +1354,13 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   const DEFAULT_TRADE_SECTIONS={
     hero:{eyebrow:'Licensed Canberra plumber · Same-day', title:'Blocked drain?', titleHl:"We'll clear it today.", sub:"Fast, fixed-price plumbing across the ACT — blocked drains, burst pipes, hot water and leaks. You'll know the price before we start."},
     services:{eyebrow:'What we fix', heading:'One call sorts the lot.', intro:'From a slow kitchen sink to a flooded laundry at 2am — we handle the everyday and the emergencies.'},
-    why:{eyebrow:'Why us', heading:'No call-out games. No surprise bills.'},
+    why:{eyebrow:'Why {{businessName}}', heading:'No call-out games. No surprise bills.'},
     area:{eyebrow:'Where we work', heading:'Across Canberra & the ACT', intro:"If you're in the ACT, we cover you. Same-day where we can, every day of the week."},
     reviews:{eyebrow:'From the neighbours', heading:'212 five-star reviews and counting.'},
     faq:{eyebrow:'Good to know', heading:'Quick answers.'},
-    quote:{eyebrow:'Fast quote', heading:"Tell us the problem. We'll call you straight back."}
+    quote:{eyebrow:'Fast quote', heading:"Tell us the problem. We'll call you straight back.", sub:'Two minutes now saves you a flooded weekend. Send the details and a plumber calls you — usually within the hour during the day.', button:'Send & get my call back'},
+    emerg:{text:'⚠ 24/7 Emergency Plumber — Burst pipe or flooding?'},
+    footer:{blurb:'Fast, fixed-price plumbing across Canberra and the ACT. Blocked drains, burst pipes, hot water and emergencies — done properly, first time.', legal:'{{businessName}} — ACT Plumbing Licence 0000000 (placeholder). ABN 00 000 000 000. Fully insured. Servicing Canberra & the ACT, 7 days. © 2026 {{businessName}}.'}
   };
   const TRADE_PRESETS=[
     {name:'Charcoal & Hi-Vis', theme:{pipe:'#1f7bb8',hivis:'#ff6a1f',steel:'#1a2230',safety:'#ffc400'}},
@@ -1368,18 +1370,21 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     {name:'Slate & Lime', theme:{pipe:'#0ea5e9',hivis:'#65a30d',steel:'#121826',safety:'#a3e635'}},
     {name:'Plum & Gold', theme:{pipe:'#7c3aed',hivis:'#d97706',steel:'#2b1b3d',safety:'#fbbf24'}}
   ];
-  const TRADE_SUBTABS=[['details','Details'],['hero','Hero'],['services','Services'],['why','Why us'],['area','Where'],['reviews','Reviews'],['faq','FAQ'],['branding','Branding']];
+  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['services','Services'],['why','Why us'],['area','Where'],['reviews','Reviews'],['quote','Quote'],['faq','FAQ'],['footer','Footer'],['branding','Branding']];
   let landingSub='details';
-  const DEFAULT_TRADE_LISTS={'hero.badges':[{"icon": "✓", "text": "Licensed & insured"}, {"icon": "★", "text": "4.9 from 212 reviews"}, {"icon": "$", "text": "Upfront fixed pricing"}, {"icon": "⚡", "text": "Same-day service"}],'why.items':[{"n": "01", "title": "Upfront pricing", "body": "A fixed price agreed before we start. The number we quote is the number you pay."}, {"n": "24/7", "title": "Real emergencies", "body": "Burst pipe at midnight? We answer the phone and get someone moving, day or night."}, {"n": "★", "title": "Properly licensed", "body": "Fully licensed ACT plumbers, fully insured. Licence details on every invoice."}, {"n": "⌂", "title": "Local & trusted", "body": "Canberra-based, Canberra-owned. We know the suburbs, the soil and the old pipework."}],'reviews.items':[{"who": "Marcus T. — Belconnen", "text": "\"Blocked sewer on a Sunday, total panic. {{businessName}} had someone out within the hour and jetted it clear. Fixed price, no fuss.\""}, {"who": "Jenny K. — Woden", "text": "\"Hot water died the morning we had guests. New system in and running by lunch. Couldn't fault them.\""}, {"who": "Dave R. — Gungahlin", "text": "\"Used the drain camera to show me the tree root problem instead of just guessing. Honest and proper work.\""}],'faq.items':[{"q": "Can you really come same-day?", "a": "For blocked drains, burst pipes and no-hot-water jobs we aim to be on site the same day, and we run a 24/7 line for emergencies across the ACT."}, {"q": "Are you licensed and insured?", "a": "Yes — fully licensed ACT plumbers and fully insured. Our licence number is on every invoice and we're happy to show it before any work begins."}],'area.suburbs':["Gungahlin", "Belconnen", "Woden", "Tuggeranong", "Civic", "Dickson", "Queanbeyan", "Molonglo", "Weston Creek", "Kingston"]};
+  const DEFAULT_TRADE_LISTS={'hero.badges':[{"icon": "✓", "text": "Licensed & insured"}, {"icon": "★", "text": "4.9 from 212 reviews"}, {"icon": "$", "text": "Upfront fixed pricing"}, {"icon": "⚡", "text": "Same-day service"}],'why.items':[{"n": "01", "title": "Upfront pricing", "body": "A fixed price agreed before we start. The number we quote is the number you pay."}, {"n": "24/7", "title": "Real emergencies", "body": "Burst pipe at midnight? We answer the phone and get someone moving, day or night."}, {"n": "★", "title": "Properly licensed", "body": "Fully licensed ACT plumbers, fully insured. Licence details on every invoice."}, {"n": "⌂", "title": "Local & trusted", "body": "Canberra-based, Canberra-owned. We know the suburbs, the soil and the old pipework."}],'reviews.items':[{"who": "Marcus T. — Belconnen", "text": "\"Blocked sewer on a Sunday, total panic. {{businessName}} had someone out within the hour and jetted it clear. Fixed price, no fuss.\""}, {"who": "Jenny K. — Woden", "text": "\"Hot water died the morning we had guests. New system in and running by lunch. Couldn't fault them.\""}, {"who": "Dave R. — Gungahlin", "text": "\"Used the drain camera to show me the tree root problem instead of just guessing. Honest and proper work.\""}],'faq.items':[{"q": "Can you really come same-day?", "a": "For blocked drains, burst pipes and no-hot-water jobs we aim to be on site the same day, and we run a 24/7 line for emergencies across the ACT."}, {"q": "Are you licensed and insured?", "a": "Yes — fully licensed ACT plumbers and fully insured. Our licence number is on every invoice and we're happy to show it before any work begins."}],'area.suburbs':["Gungahlin", "Belconnen", "Woden", "Tuggeranong", "Civic", "Dickson", "Queanbeyan", "Molonglo", "Weston Creek", "Kingston"],'quote.points':[{"text": "Upfront fixed price, no call-out surprises"}, {"text": "Same-day where we can get to you"}, {"text": "Licensed, insured, local"}],'footer.services':[{"label": "Blocked drains", "href": "#quote"}, {"label": "Burst pipes", "href": "#quote"}, {"label": "Hot water", "href": "#quote"}, {"label": "Leak detection", "href": "#quote"}]};
   const LIST_SCHEMAS={
     badges:{secId:'hero',key:'badges',addLabel:'Add badge',item:[{k:'icon',label:'Icon',w:'72px',ph:'✓'},{k:'text',label:'Text'}],defaultItem:{icon:'✓',text:'New badge'}},
     why:{secId:'why',key:'items',addLabel:'Add reason',item:[{k:'n',label:'Badge',w:'88px',ph:'01'},{k:'title',label:'Heading'},{k:'body',label:'Text',type:'ta'}],defaultItem:{n:'+',title:'New reason',body:''}},
     reviews:{secId:'reviews',key:'items',addLabel:'Add review',item:[{k:'who',label:'Name & suburb'},{k:'text',label:'Quote',type:'ta'}],defaultItem:{who:'',text:''}},
-    faq:{secId:'faq',key:'items',addLabel:'Add question',item:[{k:'q',label:'Question'},{k:'a',label:'Answer',type:'ta'}],defaultItem:{q:'',a:''}}
+    faq:{secId:'faq',key:'items',addLabel:'Add question',item:[{k:'q',label:'Question'},{k:'a',label:'Answer',type:'ta'}],defaultItem:{q:'',a:''}},
+    quotePoints:{secId:'quote',key:'points',addLabel:'Add point',item:[{k:'text',label:'Point'}],defaultItem:{text:''}},
+    footerServices:{secId:'footer',key:'services',addLabel:'Add link',item:[{k:'label',label:'Label'},{k:'href',label:'Link',w:'170px',ph:'#quote'}],defaultItem:{label:'',href:'#quote'}}
   };
   function loadSite(site){
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app';
     currentBusinessName=site.business_name||'';
+    landingSub='details';
     if(currentSiteTemplate==='broker-app'){
       const cfg=site.config||{};
       data=Object.assign(JSON.parse(JSON.stringify(DEFAULT_RATES)), cfg);
@@ -1442,7 +1447,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var h='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">'+title+'</h2>';
     if(toggle) h+='<label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="sec-on-'+id+'"'+(s.on!==false?' checked':'')+'> Show on page</label>';
     h+='</div>';
-    fields.forEach(function(f){ var key=f[0],label=f[1],ta=f[2]==='ta'; var ph=String(def[key]||'').replace(/"/g,'&quot;');
+    fields.forEach(function(f){ var key=f[0],label=f[1],ta=f[2]==='ta'; var ph=String(def[key]||'').replace(/\{\{\s*businessName\s*\}\}/g,currentBusinessName||'').replace(/"/g,'&quot;');
       if(ta) h+='<div class="f"><label>'+label+'</label><textarea id="sec-'+id+'-'+key+'" rows="2" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;" placeholder="'+ph+'"></textarea></div>';
       else h+='<div class="f"><label>'+label+'</label><input type="text" id="sec-'+id+'-'+key+'" placeholder="'+ph+'"></div>';
     });
@@ -1517,6 +1522,12 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       body.innerHTML=secCard(c,'reviews','Reviews section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+listCard('reviews','Reviews','Customer quotes (stars stay at five). Edit, hide or remove each.'); wireSec(c,'reviews',true,[['eyebrow'],['heading']]); listEditor($('le-reviews'),c,'reviews');
     } else if(sub==='faq'){
       body.innerHTML=secCard(c,'faq','FAQ section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+listCard('faq','Questions','Common questions and answers. Edit, hide or remove each.'); wireSec(c,'faq',true,[['eyebrow'],['heading']]); listEditor($('le-faq'),c,'faq');
+    } else if(sub==='emerg'){
+      body.innerHTML=secCard(c,'emerg','Top emergency bar',true,[['text','Message (the call link stays on automatically)','ta']]); wireSec(c,'emerg',true,[['text']]);
+    } else if(sub==='quote'){
+      body.innerHTML=secCard(c,'quote','Quote form section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['sub','Sub-text','ta'],['button','Button text']])+listCard('quotePoints','Trust points','The ticked points beside the form. Edit, hide or remove each.'); wireSec(c,'quote',true,[['eyebrow'],['heading'],['sub'],['button']]); listEditor($('le-quotePoints'),c,'quotePoints');
+    } else if(sub==='footer'){
+      body.innerHTML=secCard(c,'footer','Footer',true,[['blurb','About blurb','ta'],['legal','Legal line (licence, ABN, copyright)','ta']])+listCard('footerServices','Service links','The links in the footer\u2019s Services column. Edit, hide or remove each.'); wireSec(c,'footer',true,[['blurb'],['legal']]); listEditor($('le-footerServices'),c,'footerServices');
     } else if(sub==='branding'){
       var rowsC=TRADE_COLOURS.map(function(k){ return '<div class="f"><label>'+k[1]+' <span class="hint">'+k[2]+'</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="col-'+k[0]+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="colt-'+k[0]+'" class="tin" style="flex:1;"></div></div>'; }).join('');
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Logo</h2><p class="lede">Show a clean text logo or upload an image \u2014 both replace the default initial badge.</p>'
@@ -1711,7 +1722,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     const leads=(currentRole==='leads');
     document.body.classList.toggle('role-leads', leads);
     const av=$('av-rates'); if(av){ Array.prototype.forEach.call(av.children,function(c){ if(c.classList.contains('leads-card')) return; c.style.display = leads ? 'none' : ''; }); }
-    if(allow.indexOf(activeView)<0) showView(allow[0]);
+    if(allow.indexOf(activeView)<0) activeView=allow[0];
+    showView(activeView);
   }
   function gate(){ if(!authed){ const av=document.getElementById('admin-view'); if(av && av.hidden) return; showLogin(); } }
 
