@@ -1985,23 +1985,37 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     } else if(sub==='promotions'){
       if(!c.sections) c.sections={}; if(!c.sections.promotions) c.sections.promotions={};
       body.innerHTML=secCard(c,'promotions','Promotions Engine',true,[])
-        +'<div class="card" style="margin-bottom:22px;"><h2>Promotions</h2><p class="lede">Create urgency and offers. Each promotion shows a live weekly booking countdown or a fixed deadline, placed below the hero or inline. Call / Quote buttons reuse your existing actions \u2014 no new forms. Add, edit, reorder or remove.</p><div id="pr-list"></div><div style="margin-top:14px;"><button type="button" id="pr-add" style="appearance:none;border:1px dashed var(--line);background:#fff;border-radius:9px;padding:10px 15px;font:inherit;font-weight:600;cursor:pointer;">+ Add promotion</button></div></div>';
+        +'<div class="card" style="margin-bottom:22px;"><h2>Promotions</h2><p class="lede">Create urgency and offers. Pick a type (countdowns, limited spots, seasonal, suburb, finance, social proof, mystery and more), a placement (below hero, inline, floating bar, sticky strip or popup) and a style. Call / Quote buttons reuse your existing actions \u2014 no new forms. Add, edit, reorder or remove.</p><div id="pr-list"></div><div style="margin-top:14px;"><button type="button" id="pr-add" style="appearance:none;border:1px dashed var(--line);background:#fff;border-radius:9px;padding:10px 15px;font:inherit;font-weight:600;cursor:pointer;">+ Add promotion</button></div></div>';
       wireSec(c,'promotions',true,[]);
       var _PRH=$('pr-list');
       var _PRis='width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;';
       var _PRdays=[['1','Monday'],['2','Tuesday'],['3','Wednesday'],['4','Thursday'],['5','Friday'],['6','Saturday'],['0','Sunday']];
       function _prItems(){ if(!c.sections.promotions) c.sections.promotions={}; if(!Array.isArray(c.sections.promotions.items)) c.sections.promotions.items=[]; return c.sections.promotions.items; }
+      function _prTxF(i,k,lab,v){ return '<div class="f"><label>'+lab+'</label><input type="text" id="pr-'+i+'-'+k+'" value="'+esc(v!=null?v:'')+'" style="'+_PRis+'"></div>'; }
+      function _prNumF(i,k,lab,v){ return '<div class="f"><label>'+lab+'</label><input type="number" id="pr-'+i+'-'+k+'" value="'+(v!=null?v:'')+'" style="'+_PRis+'"></div>'; }
+      function _prDateF(i,k,lab,v){ return '<div class="f"><label>'+lab+'</label><input type="date" id="pr-'+i+'-'+k+'" value="'+esc(v||'')+'" style="'+_PRis+'"></div>'; }
+      function _prTaF(i,k,lab,v){ return '<div class="f"><label>'+lab+'</label><textarea id="pr-'+i+'-'+k+'" rows="2" style="'+_PRis+'">'+esc(v||'')+'</textarea></div>'; }
+      function _prTypeFields(p,i){
+        var t=p.type||'weekly';
+        if(t==='deadline') return '<div class="f"><label>Deadline (date &amp; time)</label><input type="datetime-local" id="pr-'+i+'-expiry" value="'+esc(p.expiry||'')+'" style="'+_PRis+'"></div>';
+        if(t==='weekly') return '<div class="row">'+lpSel('Book before \u2014 day','pr-'+i+'-day',_PRdays,String(p.weeklyDay!=null?p.weeklyDay:4))+'<div class="f"><label>Cut-off time</label><input type="time" id="pr-'+i+'-cut" value="'+esc(p.weeklyCutoff||'16:00')+'" style="'+_PRis+'"></div></div>';
+        if(t==='spots') return '<div class="row">'+_prNumF(i,'spotsTotal','Total spots',p.spotsTotal)+_prNumF(i,'spotsRemaining','Spots remaining',p.spotsRemaining)+'</div>';
+        if(t==='seasonal') return '<div class="row">'+_prDateF(i,'startDate','Start date',p.startDate)+_prDateF(i,'endDate','End date',p.endDate)+'</div>';
+        if(t==='suburb') return _prTaF(i,'suburbs','Suburbs (comma separated)',p.suburbs);
+        if(t==='finance') return '<div class="row">'+_prTxF(i,'amount','Amount (e.g. $28)',p.amount)+_prTxF(i,'disclaimer','Disclaimer',p.disclaimer)+'</div>';
+        if(t==='firstTime') return _prTxF(i,'discountText','Discount text (e.g. 10% off first job)',p.discountText);
+        if(t==='socialProof') return _prTxF(i,'number','Number (e.g. 17)',p.number);
+        if(t==='mystery') return _prTaF(i,'revealText','Hidden offer (revealed on click)',p.revealText);
+        return '<p class="lede" style="margin:0;opacity:.7;">No extra fields \u2014 uses the title, description and button below.</p>';
+      }
       function _prCardEd(p,i){
         var t=p.type||'weekly';
-        var tf=(t==='deadline')
-          ? '<div class="f"><label>Deadline (date &amp; time)</label><input type="datetime-local" id="pr-'+i+'-expiry" value="'+esc(p.expiry||'')+'" style="'+_PRis+'"></div>'
-          : '<div class="row">'+lpSel('Book before \u2014 day','pr-'+i+'-day',_PRdays,String(p.weeklyDay!=null?p.weeklyDay:4))+'<div class="f"><label>Cut-off time</label><input type="time" id="pr-'+i+'-cut" value="'+esc(p.weeklyCutoff||'16:00')+'" style="'+_PRis+'"></div></div>';
         return '<div class="card" style="border:1px solid var(--line);margin-bottom:14px;padding:16px;background:var(--surface-2,#fbfaf7);">'
           +'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;"><label style="display:flex;gap:8px;align-items:center;font-weight:700;"><input type="checkbox" id="pr-'+i+'-on"'+(p.on!==false?' checked':'')+'> Promotion '+(i+1)+'</label><span style="display:flex;gap:12px;"><button type="button" data-pr-up="'+i+'" style="appearance:none;border:none;background:none;cursor:pointer;font:inherit;font-weight:700;color:var(--ink-soft);">\u2191</button><button type="button" data-pr-dn="'+i+'" style="appearance:none;border:none;background:none;cursor:pointer;font:inherit;font-weight:700;color:var(--ink-soft);">\u2193</button><button type="button" data-pr-rm="'+i+'" style="appearance:none;border:none;background:none;cursor:pointer;font:inherit;font-weight:700;color:#c0392b;">Remove</button></span></div>'
-          +'<div class="row3">'+lpSel('Type','pr-'+i+'-type',[['weekly','Weekly booking window'],['deadline','Deadline offer']],t)+lpSel('Placement','pr-'+i+'-place',[['belowHero','Below hero'],['inline','Inline section'],['floatingBar','Floating bar (top)'],['stickyStrip','Sticky strip (bottom)'],['popup','Popup']],p.placement||'belowHero')+lpSel('Style','pr-'+i+'-style',[['banner','Banner'],['card','Card']],p.style||'banner')+'</div>'
+          +'<div class="row3">'+lpSel('Type','pr-'+i+'-type',[['weekly','Weekly booking window'],['deadline','Deadline offer'],['spots','Limited spots'],['seasonal','Seasonal promotion'],['suburb','Suburb promotion'],['finance','Finance promotion'],['firstTime','First-time customer'],['priority','Emergency priority'],['socialProof','Social proof'],['mystery','Mystery offer']],t)+lpSel('Placement','pr-'+i+'-place',[['belowHero','Below hero'],['inline','Inline section'],['floatingBar','Floating bar (top)'],['stickyStrip','Sticky strip (bottom)'],['popup','Popup']],p.placement||'belowHero')+lpSel('Style','pr-'+i+'-style',[['banner','Banner'],['card','Card']],p.style||'banner')+'</div>'
           +lpFld('Title','pr-'+i+'-title','')
           +'<div class="f"><label>Description</label><textarea id="pr-'+i+'-desc" rows="2" style="'+_PRis+'">'+esc(p.description||'')+'</textarea></div>'
-          +tf
+          +_prTypeFields(p,i)
           +'<div class="row3">'+lpFld('Button text','pr-'+i+'-ctatext','Book now')+lpSel('Button action','pr-'+i+'-ctaaction',[['quote','Quote form'],['call','Call'],['scroll','Scroll to form'],['none','No button']],(p.cta&&p.cta.action)||'quote')+'<div></div></div>'
           +'</div>';
       }
@@ -2017,9 +2031,10 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
           var sy=E('style'); if(sy){ sy.addEventListener('change',function(){ p.style=sy.value; persist(); previewApply(); }); }
           var c9=E('ctaaction'); if(c9){ c9.addEventListener('change',function(){ if(!p.cta)p.cta={}; p.cta.action=c9.value; persist(); previewApply(); }); }
           var ob=E('on'); if(ob){ ob.addEventListener('change',function(){ p.on=ob.checked; persist(); previewApply(); }); }
-          var ex=E('expiry'); if(ex){ ex.addEventListener('input',function(){ p.expiry=ex.value; persist(); previewApply(); }); }
           var dy=E('day'); if(dy){ dy.addEventListener('change',function(){ p.weeklyDay=parseInt(dy.value,10); persist(); previewApply(); }); }
-          var cu=E('cut'); if(cu){ cu.addEventListener('input',function(){ p.weeklyCutoff=cu.value; persist(); previewApply(); }); }
+          ['amount','disclaimer','discountText','suburbs','revealText','number','cut'].forEach(function(k){ var el=E(k); if(el) el.addEventListener('input',function(){ if(el.value===''){ delete p[(k==='cut')?'weeklyCutoff':k]; } else { p[(k==='cut')?'weeklyCutoff':k]=el.value; } persist(); previewApply(); }); });
+          ['spotsTotal','spotsRemaining'].forEach(function(k){ var el=E(k); if(el) el.addEventListener('input',function(){ var v=parseInt(el.value,10); p[k]=isNaN(v)?null:v; persist(); previewApply(); }); });
+          ['expiry','startDate','endDate'].forEach(function(k){ var el=E(k); if(el) el.addEventListener('change',function(){ if(el.value==='')delete p[k]; else p[k]=el.value; persist(); previewApply(); }); });
         });
         _PRH.querySelectorAll('[data-pr-up]').forEach(function(b){ b.addEventListener('click',function(){ var i=parseInt(b.getAttribute('data-pr-up'),10); var a=_prItems(); if(i>0){ var x=a[i-1];a[i-1]=a[i];a[i]=x; persist(); previewApply(); _prDraw(); } }); });
         _PRH.querySelectorAll('[data-pr-dn]').forEach(function(b){ b.addEventListener('click',function(){ var i=parseInt(b.getAttribute('data-pr-dn'),10); var a=_prItems(); if(i<a.length-1){ var x=a[i+1];a[i+1]=a[i];a[i]=x; persist(); previewApply(); _prDraw(); } }); });
