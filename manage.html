@@ -1505,7 +1505,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 };
   function getTradeColourPreset(name){ return TRADE_COLOUR_PRESETS[name] || TRADE_COLOUR_PRESETS['Plumber']; }
   function themeFromPreset(tradeKey){ var p=getTradeColourPreset(tradeKey); return { pipe:p.brand, hivis:p.cta, steel:p.dark, safety:p.highlight, accent:p.accent, lightBg:p.lightBg, presetName:p.presetName, presetKey:tradeKey }; }
-  const LAYOUTS = { classic: { id: "classic", name: "Classic Conversion", description: "Current tradie landing page.", sections: ["emerg","hero","services","why","area","reviews","quote","faq","footer"], features: [] } };
+  const LAYOUTS = { classic: { id: "classic", name: "Classic Conversion", description: "Current tradie landing page.", sections: ["emerg","hero","services","why","area","reviews","quote","faq","footer"], features: [] }, "quote-first": { id: "quote-first", name: "Quote First", description: "Hero and quote form appear together above the fold for paid traffic.", sections: ["emerg","hero","quote","services","why","reviews","area","faq","footer"], features: ["heroQuote"] } };
   function getLayout(layoutId){ return (layoutId && LAYOUTS[layoutId]) ? LAYOUTS[layoutId] : LAYOUTS.classic; }
   function wireLayout(c){ var el=$('layout-pick'); if(!el) return; el.value=getLayout(c.layout).id; el.onchange=function(){ c.layout=getLayout(el.value).id; persist(); previewApply(); }; }
   function presetKeyForSite(c){ var t=(c&&c.trade)||'Plumber'; if(TRADE_COLOUR_PRESETS[t]) return t; for(var k in TRADE_PACKS){ if(TRADE_PACKS[k].tradeType===t && TRADE_COLOUR_PRESETS[TRADE_PACKS[k].label]) return TRADE_PACKS[k].label; } return 'Plumber'; }
