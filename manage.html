@@ -1401,6 +1401,110 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     {name:'Slate & Lime', theme:{pipe:'#0ea5e9',hivis:'#65a30d',steel:'#121826',safety:'#a3e635'}},
     {name:'Plum & Gold', theme:{pipe:'#7c3aed',hivis:'#d97706',steel:'#2b1b3d',safety:'#fbbf24'}}
   ];
+  const TRADE_COLOUR_PRESETS = {
+  "Plumber": { presetName: "Pipe Blue & Hi-Vis", brand: "#0EA5E9", cta: "#FF5A1F", dark: "#101828", accent: "#38BDF8", highlight: "#A3E635", lightBg: "#EEF7FF" },
+  "Electrician": { presetName: "Electric Blue & Yellow", brand: "#2563EB", cta: "#FACC15", dark: "#0F172A", accent: "#60A5FA", highlight: "#FDE047", lightBg: "#EFF6FF" },
+  "Gas Fitter": { presetName: "Flame Amber", brand: "#F97316", cta: "#DC2626", dark: "#1C1917", accent: "#FDBA74", highlight: "#FACC15", lightBg: "#FFF7ED" },
+  "Locksmith": { presetName: "Secure Gold", brand: "#D97706", cta: "#F59E0B", dark: "#111827", accent: "#FBBF24", highlight: "#FEF08A", lightBg: "#FFFBEB" },
+  "Hot Water": { presetName: "Hot Copper", brand: "#EA580C", cta: "#DC2626", dark: "#1E293B", accent: "#FB923C", highlight: "#FDE68A", lightBg: "#FFF7ED" },
+  "Blocked Drains": { presetName: "Emergency Orange", brand: "#F97316", cta: "#22C55E", dark: "#111827", accent: "#FB923C", highlight: "#A3E635", lightBg: "#FFF7ED" },
+  "Pest Control": { presetName: "Pest Green", brand: "#65A30D", cta: "#F97316", dark: "#10210F", accent: "#84CC16", highlight: "#D9F99D", lightBg: "#F7FEE7" },
+  "Air Conditioning": { presetName: "Cool Blue", brand: "#0284C7", cta: "#06B6D4", dark: "#0F172A", accent: "#38BDF8", highlight: "#BAE6FD", lightBg: "#F0F9FF" },
+  "Builder": { presetName: "Concrete & Orange", brand: "#475569", cta: "#F97316", dark: "#1E293B", accent: "#94A3B8", highlight: "#FDBA74", lightBg: "#F8FAFC" },
+  "Carpenter": { presetName: "Timber Brown", brand: "#92400E", cta: "#F97316", dark: "#1C1917", accent: "#B45309", highlight: "#FBBF24", lightBg: "#FEF3C7" },
+  "Bricklayer": { presetName: "Brick Red", brand: "#B91C1C", cta: "#F97316", dark: "#1F1515", accent: "#EF4444", highlight: "#FDBA74", lightBg: "#FEF2F2" },
+  "Plasterer": { presetName: "Clean White & Slate", brand: "#64748B", cta: "#0EA5E9", dark: "#111827", accent: "#CBD5E1", highlight: "#38BDF8", lightBg: "#F8FAFC" },
+  "Tiler": { presetName: "Tile Blue", brand: "#0369A1", cta: "#F97316", dark: "#0F172A", accent: "#38BDF8", highlight: "#FBBF24", lightBg: "#F0F9FF" },
+  "Concreter": { presetName: "Concrete Grey", brand: "#52525B", cta: "#F97316", dark: "#18181B", accent: "#A1A1AA", highlight: "#FBBF24", lightBg: "#F4F4F5" },
+  "Rendering": { presetName: "Render Sand", brand: "#A16207", cta: "#EA580C", dark: "#1C1917", accent: "#CA8A04", highlight: "#FDE68A", lightBg: "#FEFCE8" },
+  "Waterproofing": { presetName: "Seal Blue", brand: "#0284C7", cta: "#22C55E", dark: "#0F172A", accent: "#38BDF8", highlight: "#A7F3D0", lightBg: "#ECFEFF" },
+  "Kitchen Renovations": { presetName: "Premium Charcoal", brand: "#334155", cta: "#F97316", dark: "#111827", accent: "#94A3B8", highlight: "#FBBF24", lightBg: "#F8FAFC" },
+  "Bathroom Renovations": { presetName: "Bathroom Aqua", brand: "#0891B2", cta: "#F97316", dark: "#0F172A", accent: "#67E8F9", highlight: "#BAE6FD", lightBg: "#ECFEFF" },
+  "Cabinet Maker": { presetName: "Craft Timber", brand: "#78350F", cta: "#D97706", dark: "#1C1917", accent: "#B45309", highlight: "#FDE68A", lightBg: "#FFFBEB" },
+  "Flooring": { presetName: "Floor Oak", brand: "#854D0E", cta: "#EA580C", dark: "#1C1917", accent: "#CA8A04", highlight: "#FACC15", lightBg: "#FEF3C7" },
+  "Painter": { presetName: "Colour Pop", brand: "#7C3AED", cta: "#F97316", dark: "#111827", accent: "#A78BFA", highlight: "#FDE047", lightBg: "#F5F3FF" },
+  "Stonemason": { presetName: "Stone Slate", brand: "#475569", cta: "#B45309", dark: "#0F172A", accent: "#94A3B8", highlight: "#D6D3D1", lightBg: "#F8FAFC" },
+  "Welding & Steel": { presetName: "Steel & Red", brand: "#334155", cta: "#DC2626", dark: "#0F172A", accent: "#94A3B8", highlight: "#F97316", lightBg: "#F1F5F9" },
+  "Roofer": { presetName: "Roof Red", brand: "#B91C1C", cta: "#F97316", dark: "#1F1515", accent: "#EF4444", highlight: "#FBBF24", lightBg: "#FEF2F2" },
+  "Roof Restoration": { presetName: "Roof Restore", brand: "#991B1B", cta: "#EA580C", dark: "#111827", accent: "#DC2626", highlight: "#FDBA74", lightBg: "#FEF2F2" },
+  "Guttering": { presetName: "Gutter Steel", brand: "#475569", cta: "#0EA5E9", dark: "#111827", accent: "#94A3B8", highlight: "#38BDF8", lightBg: "#F1F5F9" },
+  "Landscaper": { presetName: "Garden Green", brand: "#65A30D", cta: "#F97316", dark: "#10210F", accent: "#84CC16", highlight: "#A3E635", lightBg: "#F7FEE7" },
+  "Fencing": { presetName: "Fence Timber", brand: "#92400E", cta: "#65A30D", dark: "#1C1917", accent: "#B45309", highlight: "#A3E635", lightBg: "#FEF3C7" },
+  "Decking": { presetName: "Deck Timber", brand: "#854D0E", cta: "#F97316", dark: "#1C1917", accent: "#B45309", highlight: "#FBBF24", lightBg: "#FEF3C7" },
+  "Pergolas & Patios": { presetName: "Outdoor Amber", brand: "#A16207", cta: "#65A30D", dark: "#1C1917", accent: "#CA8A04", highlight: "#A3E635", lightBg: "#FEFCE8" },
+  "Paving": { presetName: "Paver Stone", brand: "#57534E", cta: "#F97316", dark: "#1C1917", accent: "#A8A29E", highlight: "#FBBF24", lightBg: "#F5F5F4" },
+  "Retaining Walls": { presetName: "Retaining Earth", brand: "#78350F", cta: "#65A30D", dark: "#1C1917", accent: "#92400E", highlight: "#A3E635", lightBg: "#FEF3C7" },
+  "Lawn Mowing": { presetName: "Lawn Green", brand: "#65A30D", cta: "#F97316", dark: "#10210F", accent: "#84CC16", highlight: "#A3E635", lightBg: "#F7FEE7" },
+  "Tree Lopping": { presetName: "Tree Green", brand: "#166534", cta: "#F97316", dark: "#052E16", accent: "#22C55E", highlight: "#A3E635", lightBg: "#F0FDF4" },
+  "Turf Laying": { presetName: "Fresh Turf", brand: "#16A34A", cta: "#F97316", dark: "#052E16", accent: "#22C55E", highlight: "#BBF7D0", lightBg: "#F0FDF4" },
+  "Irrigation": { presetName: "Watered Green", brand: "#0284C7", cta: "#65A30D", dark: "#0F172A", accent: "#38BDF8", highlight: "#A3E635", lightBg: "#ECFEFF" },
+  "Carports & Sheds": { presetName: "Shed Steel", brand: "#475569", cta: "#F97316", dark: "#111827", accent: "#94A3B8", highlight: "#FBBF24", lightBg: "#F1F5F9" },
+  "Excavation": { presetName: "Dig Site Yellow", brand: "#F59E0B", cta: "#EA580C", dark: "#1C1917", accent: "#FBBF24", highlight: "#FDE047", lightBg: "#FFFBEB" },
+  "Handyman": { presetName: "Handy Orange", brand: "#EA580C", cta: "#0EA5E9", dark: "#111827", accent: "#FB923C", highlight: "#FBBF24", lightBg: "#FFF7ED" },
+  "House Cleaning": { presetName: "Clean Aqua", brand: "#0891B2", cta: "#14B8A6", dark: "#0F172A", accent: "#67E8F9", highlight: "#CCFBF1", lightBg: "#ECFEFF" },
+  "Pressure Washing": { presetName: "Pressure Blue", brand: "#0284C7", cta: "#22C55E", dark: "#0F172A", accent: "#38BDF8", highlight: "#A7F3D0", lightBg: "#F0F9FF" },
+  "Gutter Cleaning": { presetName: "Gutter Clean", brand: "#475569", cta: "#22C55E", dark: "#111827", accent: "#94A3B8", highlight: "#A3E635", lightBg: "#F1F5F9" },
+  "Window Cleaning": { presetName: "Glass Blue", brand: "#0EA5E9", cta: "#14B8A6", dark: "#0F172A", accent: "#7DD3FC", highlight: "#CCFBF1", lightBg: "#F0F9FF" },
+  "Pool Building": { presetName: "Pool Blue", brand: "#0284C7", cta: "#F97316", dark: "#0F172A", accent: "#38BDF8", highlight: "#BAE6FD", lightBg: "#ECFEFF" },
+  "Pool Maintenance": { presetName: "Pool Aqua", brand: "#0891B2", cta: "#22C55E", dark: "#0F172A", accent: "#67E8F9", highlight: "#A7F3D0", lightBg: "#ECFEFF" },
+  "Blinds & Awnings": { presetName: "Shade Blue", brand: "#2563EB", cta: "#F97316", dark: "#111827", accent: "#60A5FA", highlight: "#FDBA74", lightBg: "#EFF6FF" },
+  "Garage Doors": { presetName: "Garage Steel", brand: "#334155", cta: "#F97316", dark: "#111827", accent: "#94A3B8", highlight: "#FBBF24", lightBg: "#F1F5F9" },
+  "Glazier": { presetName: "Glass Cyan", brand: "#0891B2", cta: "#0EA5E9", dark: "#0F172A", accent: "#67E8F9", highlight: "#BAE6FD", lightBg: "#ECFEFF" },
+  "Security & CCTV": { presetName: "Security Red", brand: "#DC2626", cta: "#F97316", dark: "#111827", accent: "#EF4444", highlight: "#FBBF24", lightBg: "#FEF2F2" },
+  "Solar Installer": { presetName: "Solar Yellow", brand: "#FACC15", cta: "#F97316", dark: "#111827", accent: "#FDE047", highlight: "#FEF08A", lightBg: "#FEFCE8" },
+  "Leak Detection": { presetName: "Leak Blue", brand: "#0284C7", cta: "#F97316", dark: "#0F172A", accent: "#38BDF8", highlight: "#BAE6FD", lightBg: "#F0F9FF" },
+  "Storm Damage Repair": { presetName: "Storm Navy", brand: "#1D4ED8", cta: "#F97316", dark: "#0F172A", accent: "#60A5FA", highlight: "#FBBF24", lightBg: "#EFF6FF" },
+  "Water Damage Restoration": { presetName: "Water Restore", brand: "#0284C7", cta: "#22C55E", dark: "#0F172A", accent: "#38BDF8", highlight: "#A7F3D0", lightBg: "#ECFEFF" },
+  "Mould Removal": { presetName: "Mould Green", brand: "#16A34A", cta: "#F97316", dark: "#052E16", accent: "#22C55E", highlight: "#BBF7D0", lightBg: "#F0FDF4" },
+  "Fire & Smoke Restoration": { presetName: "Fire Restore", brand: "#DC2626", cta: "#F97316", dark: "#1C1917", accent: "#EF4444", highlight: "#FBBF24", lightBg: "#FFF7ED" },
+  "Asbestos Removal": { presetName: "Hazard Red", brand: "#B91C1C", cta: "#FACC15", dark: "#111827", accent: "#EF4444", highlight: "#FDE047", lightBg: "#FEF2F2" },
+  "Demolition": { presetName: "Demo Yellow", brand: "#F59E0B", cta: "#DC2626", dark: "#111827", accent: "#FBBF24", highlight: "#FDE047", lightBg: "#FFFBEB" },
+  "Underpinning & Restumping": { presetName: "Foundation Brown", brand: "#78350F", cta: "#F97316", dark: "#1C1917", accent: "#92400E", highlight: "#FBBF24", lightBg: "#FEF3C7" },
+  "Scaffolding": { presetName: "Scaffold Orange", brand: "#EA580C", cta: "#FACC15", dark: "#111827", accent: "#FB923C", highlight: "#FDE047", lightBg: "#FFF7ED" },
+  "Insulation": { presetName: "Thermal Yellow", brand: "#CA8A04", cta: "#F97316", dark: "#1C1917", accent: "#FACC15", highlight: "#FEF08A", lightBg: "#FEFCE8" },
+  "Cladding": { presetName: "Cladding Slate", brand: "#334155", cta: "#F97316", dark: "#111827", accent: "#64748B", highlight: "#FBBF24", lightBg: "#F1F5F9" },
+  "Shopfitting": { presetName: "Retail Black & Gold", brand: "#D97706", cta: "#F97316", dark: "#111827", accent: "#FBBF24", highlight: "#FDE68A", lightBg: "#FFFBEB" },
+  "Staircases": { presetName: "Stair Timber", brand: "#854D0E", cta: "#F97316", dark: "#1C1917", accent: "#B45309", highlight: "#FBBF24", lightBg: "#FEF3C7" },
+  "Built-in Wardrobes": { presetName: "Wardrobe Neutral", brand: "#57534E", cta: "#D97706", dark: "#1C1917", accent: "#A8A29E", highlight: "#FDE68A", lightBg: "#F5F5F4" },
+  "Skylights": { presetName: "Sky Light", brand: "#0EA5E9", cta: "#FACC15", dark: "#0F172A", accent: "#7DD3FC", highlight: "#FEF08A", lightBg: "#F0F9FF" },
+  "Splashbacks": { presetName: "Splash Aqua", brand: "#0891B2", cta: "#F97316", dark: "#0F172A", accent: "#67E8F9", highlight: "#FDBA74", lightBg: "#ECFEFF" },
+  "Epoxy Flooring": { presetName: "Epoxy Purple", brand: "#7C3AED", cta: "#0EA5E9", dark: "#111827", accent: "#A78BFA", highlight: "#67E8F9", lightBg: "#F5F3FF" },
+  "Polished Concrete": { presetName: "Polished Grey", brand: "#52525B", cta: "#F97316", dark: "#18181B", accent: "#A1A1AA", highlight: "#FBBF24", lightBg: "#F4F4F5" },
+  "Bath & Benchtop Resurfacing": { presetName: "Surface Aqua", brand: "#0891B2", cta: "#F97316", dark: "#0F172A", accent: "#67E8F9", highlight: "#BAE6FD", lightBg: "#ECFEFF" },
+  "Soundproofing & Acoustic": { presetName: "Acoustic Purple", brand: "#6D28D9", cta: "#F97316", dark: "#111827", accent: "#A78BFA", highlight: "#FDE047", lightBg: "#F5F3FF" },
+  "Steel Fixing & Reinforcing": { presetName: "Rebar Steel", brand: "#334155", cta: "#DC2626", dark: "#0F172A", accent: "#94A3B8", highlight: "#F97316", lightBg: "#F1F5F9" },
+  "Suspended Ceilings": { presetName: "Ceiling Neutral", brand: "#64748B", cta: "#0EA5E9", dark: "#111827", accent: "#CBD5E1", highlight: "#38BDF8", lightBg: "#F8FAFC" },
+  "Roof Plumbing": { presetName: "Roof Plumbing Blue", brand: "#0284C7", cta: "#F97316", dark: "#0F172A", accent: "#38BDF8", highlight: "#FBBF24", lightBg: "#F0F9FF" },
+  "Metal Re-roofing": { presetName: "Metal Roof", brand: "#475569", cta: "#F97316", dark: "#111827", accent: "#94A3B8", highlight: "#FBBF24", lightBg: "#F1F5F9" },
+  "Asbestos Roof Removal": { presetName: "Asbestos Roof Hazard", brand: "#B91C1C", cta: "#FACC15", dark: "#111827", accent: "#EF4444", highlight: "#FDE047", lightBg: "#FEF2F2" },
+  "Whirlybird & Roof Ventilation": { presetName: "Roof Vent Blue", brand: "#0284C7", cta: "#65A30D", dark: "#0F172A", accent: "#38BDF8", highlight: "#A3E635", lightBg: "#F0F9FF" },
+  "Garden Maintenance": { presetName: "Garden Care Green", brand: "#65A30D", cta: "#F97316", dark: "#10210F", accent: "#84CC16", highlight: "#A3E635", lightBg: "#F7FEE7" },
+  "Hedge Trimming": { presetName: "Hedge Green", brand: "#166534", cta: "#F97316", dark: "#052E16", accent: "#22C55E", highlight: "#A3E635", lightBg: "#F0FDF4" },
+  "Stump Grinding": { presetName: "Stump Brown", brand: "#78350F", cta: "#F97316", dark: "#1C1917", accent: "#92400E", highlight: "#A3E635", lightBg: "#FEF3C7" },
+  "Synthetic Turf": { presetName: "Synthetic Green", brand: "#16A34A", cta: "#F97316", dark: "#052E16", accent: "#22C55E", highlight: "#BBF7D0", lightBg: "#F0FDF4" },
+  "Asphalt & Bitumen": { presetName: "Asphalt Black", brand: "#111827", cta: "#F97316", dark: "#030712", accent: "#6B7280", highlight: "#FBBF24", lightBg: "#F3F4F6" },
+  "Garden Edging & Kerbing": { presetName: "Kerb Green", brand: "#65A30D", cta: "#F97316", dark: "#10210F", accent: "#84CC16", highlight: "#FBBF24", lightBg: "#F7FEE7" },
+  "Glass Pool Fencing": { presetName: "Pool Glass", brand: "#0891B2", cta: "#F97316", dark: "#0F172A", accent: "#67E8F9", highlight: "#BAE6FD", lightBg: "#ECFEFF" },
+  "Shade Sails": { presetName: "Shade Sail Blue", brand: "#2563EB", cta: "#F97316", dark: "#111827", accent: "#60A5FA", highlight: "#FDBA74", lightBg: "#EFF6FF" },
+  "Automatic Gates": { presetName: "Gate Steel", brand: "#334155", cta: "#F97316", dark: "#111827", accent: "#94A3B8", highlight: "#FBBF24", lightBg: "#F1F5F9" },
+  "Balustrading": { presetName: "Balustrade Steel", brand: "#475569", cta: "#0EA5E9", dark: "#111827", accent: "#94A3B8", highlight: "#38BDF8", lightBg: "#F1F5F9" },
+  "Outdoor Kitchens": { presetName: "Outdoor Charcoal", brand: "#334155", cta: "#F97316", dark: "#111827", accent: "#94A3B8", highlight: "#FBBF24", lightBg: "#F8FAFC" },
+  "Water Features": { presetName: "Water Feature Aqua", brand: "#0891B2", cta: "#65A30D", dark: "#0F172A", accent: "#67E8F9", highlight: "#A3E635", lightBg: "#ECFEFF" },
+  "Carpet Cleaning": { presetName: "Carpet Clean Blue", brand: "#0284C7", cta: "#22C55E", dark: "#0F172A", accent: "#38BDF8", highlight: "#A7F3D0", lightBg: "#F0F9FF" },
+  "Tile & Grout Cleaning": { presetName: "Grout Clean", brand: "#0891B2", cta: "#F97316", dark: "#0F172A", accent: "#67E8F9", highlight: "#BAE6FD", lightBg: "#ECFEFF" },
+  "End of Lease Cleaning": { presetName: "Lease Clean", brand: "#0EA5E9", cta: "#22C55E", dark: "#0F172A", accent: "#7DD3FC", highlight: "#A7F3D0", lightBg: "#F0F9FF" },
+  "Oven Cleaning": { presetName: "Oven Orange", brand: "#EA580C", cta: "#22C55E", dark: "#1C1917", accent: "#FB923C", highlight: "#FBBF24", lightBg: "#FFF7ED" },
+  "Rubbish Removal": { presetName: "Rubbish Green", brand: "#16A34A", cta: "#F97316", dark: "#052E16", accent: "#22C55E", highlight: "#A3E635", lightBg: "#F0FDF4" },
+  "Skip Bin Hire": { presetName: "Skip Yellow", brand: "#F59E0B", cta: "#111827", dark: "#111827", accent: "#FBBF24", highlight: "#FDE047", lightBg: "#FFFBEB" },
+  "Removalists": { presetName: "Moving Blue", brand: "#2563EB", cta: "#F97316", dark: "#111827", accent: "#60A5FA", highlight: "#FBBF24", lightBg: "#EFF6FF" },
+  "EV Charger Installation": { presetName: "EV Green", brand: "#22C55E", cta: "#2563EB", dark: "#052E16", accent: "#86EFAC", highlight: "#60A5FA", lightBg: "#F0FDF4" },
+  "Solar Battery Storage": { presetName: "Solar Battery", brand: "#FACC15", cta: "#22C55E", dark: "#111827", accent: "#FDE047", highlight: "#86EFAC", lightBg: "#FEFCE8" },
+  "Antenna Installation": { presetName: "Signal Blue", brand: "#2563EB", cta: "#F97316", dark: "#0F172A", accent: "#60A5FA", highlight: "#FBBF24", lightBg: "#EFF6FF" },
+  "Data & Network Cabling": { presetName: "Network Blue", brand: "#2563EB", cta: "#22C55E", dark: "#0F172A", accent: "#60A5FA", highlight: "#86EFAC", lightBg: "#EFF6FF" },
+  "Appliance Repair": { presetName: "Appliance Red", brand: "#DC2626", cta: "#F97316", dark: "#111827", accent: "#EF4444", highlight: "#FBBF24", lightBg: "#FEF2F2" }
+};
+  function getTradeColourPreset(name){ return TRADE_COLOUR_PRESETS[name] || TRADE_COLOUR_PRESETS['Plumber']; }
+  function presetKeyForSite(c){ var t=(c&&c.trade)||'Plumber'; if(TRADE_COLOUR_PRESETS[t]) return t; for(var k in TRADE_PACKS){ if(TRADE_PACKS[k].tradeType===t && TRADE_COLOUR_PRESETS[TRADE_PACKS[k].label]) return TRADE_PACKS[k].label; } return 'Plumber'; }
   const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['services','Services'],['why','Why us'],['area','Where'],['reviews','Reviews'],['quote','Quote'],['faq','FAQ'],['footer','Footer'],['branding','Branding']];
   let landingSub='details';
   const DEFAULT_TRADE_LISTS={'hero.badges':[{"icon": "✓", "text": "Licensed & insured"}, {"icon": "★", "text": "4.9 from 212 reviews"}, {"icon": "$", "text": "Upfront fixed pricing"}, {"icon": "⚡", "text": "Same-day service"}],'why.items':[{"n": "01", "title": "Upfront pricing", "body": "A fixed price agreed before we start. The number we quote is the number you pay."}, {"n": "24/7", "title": "Real emergencies", "body": "Burst pipe at midnight? We answer the phone and get someone moving, day or night."}, {"n": "★", "title": "Properly licensed", "body": "Fully licensed ACT plumbers, fully insured. Licence details on every invoice."}, {"n": "⌂", "title": "Local & trusted", "body": "Canberra-based, Canberra-owned. We know the suburbs, the soil and the old pipework."}],'reviews.items':[{"who": "Marcus T. — Belconnen", "text": "\"Blocked sewer on a Sunday, total panic. {{businessName}} had someone out within the hour and jetted it clear. Fixed price, no fuss.\""}, {"who": "Jenny K. — Woden", "text": "\"Hot water died the morning we had guests. New system in and running by lunch. Couldn't fault them.\""}, {"who": "Dave R. — Gungahlin", "text": "\"Used the drain camera to show me the tree root problem instead of just guessing. Honest and proper work.\""}],'faq.items':[{"q": "Can you really come same-day?", "a": "For blocked drains, burst pipes and no-hot-water jobs we aim to be on site the same day, and we run a 24/7 line for emergencies across the ACT."}, {"q": "Are you licensed and insured?", "a": "Yes — fully licensed ACT plumbers and fully insured. Our licence number is on every invoice and we're happy to show it before any work begins."}],'area.suburbs':["Gungahlin", "Belconnen", "Woden", "Tuggeranong", "Civic", "Dickson", "Queanbeyan", "Molonglo", "Weston Creek", "Kingston"],'quote.points':[{"text": "Upfront fixed price, no call-out surprises"}, {"text": "Same-day where we can get to you"}, {"text": "Licensed, insured, local"}],'footer.services':[{"label": "Blocked drains", "href": "#quote"}, {"label": "Burst pipes", "href": "#quote"}, {"label": "Hot water", "href": "#quote"}, {"label": "Leak detection", "href": "#quote"}],'quote.jobOptions':[{"text": "Blocked drain"}, {"text": "Burst or leaking pipe"}, {"text": "No hot water"}, {"text": "Hidden leak / high water bill"}, {"text": "General plumbing / other"}]};
@@ -1506,6 +1610,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     box.innerHTML=TRADE_PRESETS.map(function(p,i){ var sw=['steel','pipe','hivis','safety'].map(function(k){return '<span style="width:13px;height:13px;border-radius:3px;background:'+p.theme[k]+';display:inline-block;"></span>';}).join(''); return '<button type="button" class="btn ghost tp-btn" data-i="'+i+'" style="display:flex;align-items:center;gap:8px;padding:7px 11px;"><span style="display:flex;gap:3px;">'+sw+'</span><span style="font-size:13px;">'+p.name+'</span></button>'; }).join('');
     box.addEventListener('click',function(e){ var b=e.target.closest('.tp-btn'); if(!b) return; var p=TRADE_PRESETS[+b.getAttribute('data-i')]; c.theme=Object.assign({},p.theme); persist(); renderDetails(); previewApply(); toast('\u201c'+p.name+'\u201d applied'); });
   }
+  function applyColourPreset(c,name){ var p=getTradeColourPreset(name); c.theme=Object.assign({}, c.theme||{}, {pipe:p.brand,hivis:p.cta,steel:p.dark,safety:p.highlight,accent:p.accent,lightBg:p.lightBg,presetName:p.presetName}); persist(); renderDetails(); previewApply(); toast('\u201c'+p.presetName+'\u201d applied'); }
+  function renderColourLibrary(c){ var box=$('trade-colour-library'); if(!box) return; var ks=Object.keys(TRADE_COLOUR_PRESETS); var sw=function(p){ return ['dark','brand','accent','cta','highlight','lightBg'].map(function(k){ return '<span style="width:14px;height:14px;border-radius:3px;background:'+p[k]+';box-shadow:inset 0 0 0 1px rgba(0,0,0,.16);display:inline-block;"></span>'; }).join(''); }; box.innerHTML=ks.map(function(name){ var p=TRADE_COLOUR_PRESETS[name]; return '<button type="button" class="lib-btn" data-trade="'+name+'" data-find="'+(name+' '+p.presetName).toLowerCase()+'" style="text-align:left;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 9px;cursor:pointer;display:flex;flex-direction:column;gap:6px;"><span style="display:flex;gap:3px;">'+sw(p)+'</span><span style="font-size:12px;font-weight:700;line-height:1.15;">'+p.presetName+'</span><span style="font-size:10.5px;color:#64748b;line-height:1.1;">'+name+'</span></button>'; }).join(''); box.onclick=function(e){ var b=e.target.closest('.lib-btn'); if(!b) return; applyColourPreset(c,b.getAttribute('data-trade')); }; var fil=$('lib-filter'); if(fil){ fil.oninput=function(){ var q=fil.value.trim().toLowerCase(); Array.prototype.forEach.call(box.children,function(btn){ var f=btn.getAttribute('data-find')||''; btn.style.display=(!q||f.indexOf(q)>=0)?'':'none'; }); }; } var rb=$('reset-trade-colours'); if(rb){ rb.onclick=function(){ applyColourPreset(c, presetKeyForSite(c)); }; } }
   function getList(c,sk){ var sc=LIST_SCHEMAS[sk]; var o=c.sections&&c.sections[sc.secId]; var cur=o&&o[sc.key]; if(Array.isArray(cur)) return cur.map(function(it){return Object.assign({},it);}); var def=DEFAULT_TRADE_LISTS[sc.secId+'.'+sc.key]||[]; return def.map(function(it){ var n={}; for(var k in it){ n[k]=(typeof it[k]==='string')?it[k].replace(/\{\{\s*businessName\s*\}\}/g,currentBusinessName||'us'):it[k]; } return n; }); }
   function setList(c,sk,arr){ var sc=LIST_SCHEMAS[sk]; if(!c.sections) c.sections={}; if(!c.sections[sc.secId]) c.sections[sc.secId]={}; c.sections[sc.secId][sc.key]=arr; persist(); previewApply(); }
   function listCard(sk,title,lede){ return '<div class="card" style="margin-bottom:22px;"><h2>'+title+'</h2><p class="lede">'+lede+'</p><div id="le-'+sk+'"></div></div>'; }
@@ -1695,8 +1801,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         +'<div class="row"><div class="f"><label>Logo style</label><select id="lg-mode" class="tin"><option value="mark">Initial badge + name</option><option value="text">Text only</option><option value="image">Image</option></select></div>'
         +lpFld('Logo text','lg-text','defaults to business name')+'</div>'
         +'<div id="lg-imgwrap" class="f" style="display:none;"><label>Logo image (max ~300 KB)</label><input type="file" id="lg-file" accept="image/*"><div id="lg-imgprev" style="margin-top:8px;"></div></div></div>'
-        +'<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Colours</h2><button class="btn ghost" id="col-reset" type="button">Reset to default</button></div><p class="lede">Pick a tradie preset, then fine-tune \u2014 changes preview live on the right.</p><div id="trade-presets" style="display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 16px;"></div><div class="appr-grid">'+rowsC+'</div></div>';
-      wireTradeBranding(c); wireTradeColours(c); renderTradePresets(c);
+        +'<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Colours</h2><button class="btn ghost" id="col-reset" type="button">Reset to default</button></div><p class="lede">Pick a tradie preset, then fine-tune \u2014 changes preview live on the right.</p><div id="trade-presets" style="display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 16px;"></div><div class="appr-grid">'+rowsC+'</div>'+'<div style="margin-top:20px;border-top:1px solid var(--line);padding-top:16px;"><h3 style="margin:0 0 4px;font-size:15px;">Theme library</h3><p class="hint" style="margin:0 0 10px;">100 ready-made trade palettes \u2014 click one to apply to this site, or <button type="button" class="btn ghost" id="reset-trade-colours" style="padding:3px 9px;">Reset to recommended trade colours</button></p><input type="text" id="lib-filter" class="tin" placeholder="Filter palettes\u2026" style="width:100%;margin-bottom:10px;box-sizing:border-box;"><div id="trade-colour-library" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:8px;max-height:300px;overflow:auto;padding:2px;"></div></div>'+'</div>';
+      wireTradeBranding(c); wireTradeColours(c); renderTradePresets(c); renderColourLibrary(c);
     }
   }
   function wireTradeBranding(c){
