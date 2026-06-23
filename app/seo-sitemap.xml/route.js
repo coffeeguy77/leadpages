@@ -1,80 +1,32 @@
-// app/[site]/[suburb]/route.js
-// Server-rendered, localized landing page per suburb, e.g. /joes-plumbing/belconnen
-//
-// Builds on the Local SEO token layer: resolves {trade}/{suburb}/{business}/... server-side,
-// gives each suburb a unique AI intro, sets a localized <title>/description/canonical, and
-// 404s for any suburb NOT in the site's Service Areas (so this can't become a doorway-page
-// generator for places the tradie doesn't actually serve).
+// app/seo-sitemap.xml/route.js
+// Lists every tenant x service-area suburb page so Google can discover them.
+// Submit https://YOUR-DOMAIN/seo-sitemap.xml in Search Console, and add it to robots.txt.
 
-import { getSiteConfig } from '../../../lib/seo/store.js';
-import { findSuburb, buildTokens, mergeStr, deepMergeConfig, slugify } from '../../../lib/seo/tokens.js';
-import { getOrCreateIntro } from '../../../lib/seo/suburbIntro.js';
-import { loadTemplate, applyTenantTokens, applySeoHead, applyHero, injectBootstrap } from '../../../lib/seo/template.js';
+import { listSites } from '../../lib/seo/store.js';
+import { serviceAreas, slugify } from '../../lib/seo/tokens.js';
 
-export const dynamic = 'force-dynamic'; // we cache at the CDN via Cache-Control below
+export const dynamic = 'force-dynamic';
 
-function notFound() {
-  return new Response('Not found', { status: 404, headers: { 'content-type': 'text/plain' } });
-}
+export async function GET(request) {
+  const origin = new URL(request.url).origin;
+  let sites = [];
+  try { sites = await listSites(); } catch (e) { return new Response('error', { status: 500 }); }
 
-export async function GET(request, ctx) {
-  const params = await ctx.params;
-  const site = params.site;
-  const suburbSlug = params.suburb;
+  const urls = [];
+  for (const s of sites) {
+    if (!s.slug) continue;
+    for (const a of serviceAreas(s.config)) {
+      urls.push(origin + '/' + s.slug + '/' + slugify(a));
+    }
+  }
 
-  const config = await getSiteConfig(site);
-  if (!config) return notFound();
+  const body =
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    urls.map((u) => '  <url><loc>' + u.replace(/&/g, '&amp;') + '</loc><changefreq>weekly</changefreq></url>').join('\n') +
+    '\n</urlset>';
 
-  // Only generate pages for REAL service areas.
-  const suburb = findSuburb(config, suburbSlug);
-  if (!suburb) return notFound();
-
-  const url = new URL(request.url);
-  const host = url.host;
-  const origin = url.origin;
-
-  const tok = buildTokens(config, suburb);
-  const intro = await getOrCreateIntro(site, suburb, tok);
-  const se = (config.sections && config.sections.seoTokens) || {};
-
-  const title =
-    (mergeStr(se.titleTemplate || '{trade} in {suburb} | {business}', tok)
-      .replace(/\s*\|\s*$/, '')
-      .replace(/^\s*\|\s*/, '')
-      .replace(/\s{2,}/g, ' ')
-      .trim()) || (suburb + (tok.business ? ' | ' + tok.business : ''));
-
-  const description = (se.metaTemplate
-    ? mergeStr(se.metaTemplate, tok)
-    : (tok.trade ? tok.trade + ' ' : '') +
-      'servicing ' + suburb + (tok.region ? ', ' + tok.region : '') + '. ' +
-      (tok.business || '') + ' \u2014 licensed, fast, upfront pricing.' +
-      (tok.phone ? ' Call ' + tok.phone + '.' : '')
-  ).replace(/\s{2,}/g, ' ').trim();
-
-  const canonical = origin + '/' + site + '/' + slugify(suburb);
-
-  // Merged config for hydration; the unique intro becomes the hero subheading.
-  const merged = deepMergeConfig(config, tok);
-  merged.sections = merged.sections || {};
-  merged.sections.hero = merged.sections.hero || {};
-  merged.sections.hero.sub = intro;
-
-  let html = await loadTemplate();
-  html = applyTenantTokens(html, tok, host);
-  html = applySeoHead(html, { title, description, canonical, robots: 'index,follow' });
-  html = applyHero(html, {
-    title: merged.sections.hero.title || '',
-    titleHl: merged.sections.hero.titleHl || '',
-    intro,
-  });
-  html = injectBootstrap(html, merged);
-
-  return new Response(html, {
-    status: 200,
-    headers: {
-      'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'public, s-maxage=86400, stale-while-revalidate=43200',
-    },
+  return new Response(body, {
+    headers: { 'content-type': 'application/xml', 'cache-control': 'public, s-maxage=86400' },
   });
 }
