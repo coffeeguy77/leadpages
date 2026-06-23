@@ -1,5 +1,12 @@
 {
   "rewrites": [
-    { "source": "/s/:slug", "destination": "/api/render?slug=:slug" }
+    { "source": "/s/:slug", "destination": "/api/render?slug=:slug" },
+    {
+      "source": "/",
+      "has": [
+        { "type": "host", "value": "^(?!leadpages\\.webculture\\.au$)(?!www\\.leadpages\\.webculture\\.au$).+$" }
+      ],
+      "destination": "/api/render"
+    }
   ]
 }
