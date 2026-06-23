@@ -26,7 +26,8 @@ const supabase = createClient(
 );
 
 // The marketing/admin host. "/" on this host is the homepage, never a tenant page.
-const PRIMARY_HOST = (process.env.PRIMARY_HOST || 'leadpages.webculture.au').toLowerCase();
+const PRIMARY_HOSTS = (process.env.PRIMARY_HOSTS || 'leadpages.webculture.au,leadpages.com.au')
+  .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
 
 // token templates (server-side identity injection)
 const TOKEN_TEMPLATES = { 'broker-leads': brokerTpl.html, 'trade': tradeTpl.html };
@@ -70,7 +71,7 @@ module.exports = async (req, res) => {
 
     // A "/" hit on the primary host (or with no host) is the marketing homepage,
     // not a tenant page. Bounce to the static index so we never shadow it.
-    if (!slug && (!host || host === PRIMARY_HOST)) {
+    if (!slug && (!host || PRIMARY_HOSTS.includes(host))) {
       res.statusCode = 302;
       res.setHeader('location', '/index.html');
       return res.end();
