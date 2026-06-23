@@ -473,7 +473,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         </div>
       </div>
       <div class="apgroup-h">Save this look</div>
-      <p class="hint" style="margin:-6px 0 12px;">Tune the colours above, then <strong>Publish to live site</strong> to save them to this site. To save a reusable, named look for the demo site (<strong>/s/demo</strong>), sign in as the platform admin and use the <strong>Demo themes</strong> tab — those are the ones visitors can switch between.</p>
+      <p class="hint" style="margin:-6px 0 12px;">Tune the colours above, then <strong>Publish to live site</strong> to save them to this site. To save a reusable, named look for the demo site (<strong>/demo</strong>), sign in as the platform admin and use the <strong>Demo themes</strong> tab — those are the ones visitors can switch between.</p>
       <div class="ap-saverow">
         <button class="btn ghost sm" id="ap-download">Download theme file</button>
         <label class="btn ghost sm" for="ap-upload">Upload theme file</label>
@@ -591,7 +591,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   <div id="av-demothemes" hidden>
     <div class="card">
       <h2>Demo themes</h2>
-      <p class="lede">Looks a prospect can try on your demo site (<strong>/s/demo</strong>). Design a look in the <strong>Appearance</strong> tab, then save it here with the client's name and choose whether it shows. Visitors apply them live on the demo &mdash; nothing is saved to their browser or yours.</p>
+      <p class="lede">Looks a prospect can try on your demo site (<strong>/demo</strong>). Design a look in the <strong>Appearance</strong> tab, then save it here with the client's name and choose whether it shows. Visitors apply them live on the demo &mdash; nothing is saved to their browser or yours.</p>
       <div class="apgroup-h">Add the current look</div>
       <div class="dt-add">
         <input type="text" id="dt-name" class="tin" placeholder="Client name, e.g. ACME Brokers">
@@ -1085,7 +1085,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var fr=lpFrame(); if(!fr) return;
     lpPrevReady=false; lpPrevSlug=previewTarget();
     fr.onload=function(){ lpPrevReady=true; previewLayout(); previewApply(curAppr()); };
-    fr.src='/s/'+lpPrevSlug+'?preview='+Date.now();
+    fr.src='/'+lpPrevSlug+'?preview='+Date.now();
   }
   function previewDock(){
     var V=window.innerWidth, side=V>=1680;
@@ -2362,11 +2362,11 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         lbl.appendChild(sel);
       } else if(currentSiteSlug){
         const nm=(allSites[0]?allSites[0].business_name:currentSiteSlug);
-        lbl.innerHTML='<span>Editing: <strong>'+nm+'</strong> \u00b7 /s/'+currentSiteSlug+'</span>';
+        lbl.innerHTML='<span>Editing: <strong>'+nm+'</strong> \u00b7 /'+currentSiteSlug+'</span>';
       }
     }
   }
-  /* ---- demo themes (super-admin: manage looks shown on /s/demo) ---- */
+  /* ---- demo themes (super-admin: manage looks shown on /demo) ---- */
   async function renderDemoThemes(){
     var box=$('dt-list'); if(!box) return;
     box.innerHTML='<p class="hint" style="margin:0;">Loading\u2026</p>';
