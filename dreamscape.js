@@ -34,21 +34,25 @@ const STRATEGIES = {
   'basic-id':     () => ({ 'authorization': 'Basic ' + b64(RESELLER_ID + ':' + RAW_KEY) }),
   'basic-secret': () => ({ 'authorization': 'Basic ' + b64(RAW_KEY + ':' + RAW_SECRET) }),
   'basic-key':    () => ({ 'authorization': 'Basic ' + b64(RAW_KEY + ':') }),
-  'raw':          () => ({ 'authorization': RAW_KEY })
+  'raw':          () => ({ 'authorization': RAW_KEY }),
+  'id-key':       () => ({ 'reseller-id': RESELLER_ID, 'api-key': RAW_KEY }),
+  'apikey':       () => ({ 'apikey': RAW_KEY })
 };
-const PROBE_ORDER = ['bearer', 'x-api-key', 'api-key', 'basic-id', 'basic-secret', 'raw', 'basic-key'];
+const PROBE_ORDER = ['bearer', 'x-api-key', 'api-key', 'apikey', 'id-key', 'basic-id', 'basic-secret', 'raw', 'basic-key'];
 const EXPLICIT = { bearer: 'bearer', basic: 'basic-secret', apikey: 'x-api-key' };
 
 let _resolved = null; // cached working strategy for this warm instance
 
-function headersFor(strat) {
+function headersFor(strat, hasBody) {
+  const h = { 'accept': 'application/json' };
+  if (hasBody) h['content-type'] = 'application/json';
   const fn = STRATEGIES[strat];
-  return Object.assign({ 'content-type': 'application/json', 'accept': 'application/json' }, fn ? fn() : {});
+  return fn ? Object.assign(h, fn()) : h;
 }
 
 async function probe(strat) {
   try {
-    const r = await fetch(BASE + '/reseller', { method: 'GET', headers: headersFor(strat) });
+    const r = await fetch(BASE + '/reseller', { method: 'GET', headers: headersFor(strat, false) });
     return r.status;
   } catch (e) { return 0; }
 }
@@ -82,7 +86,7 @@ async function call(method, path, { query, body, timeoutMs = 15000 } = {}) {
   let res, text;
   try {
     res = await fetch(url.toString(), {
-      method, headers: headersFor(strat),
+      method, headers: headersFor(strat, !!body),
       body: body ? JSON.stringify(body) : undefined, signal: ctrl.signal
     });
     text = await res.text();
