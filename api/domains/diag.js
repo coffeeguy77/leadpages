@@ -21,6 +21,7 @@ module.exports = async (req, res) => {
   res.setHeader('cache-control', 'no-store');
   return res.status(200).json({
     config: { base: ds.BASE, scheme: ds.SCHEME, minReserve: ds.MIN_RESERVE, lowWarning: ds.LOW_WARNING },
+    env: ds.envStatus(),
     authProbe,                                   // status per strategy
     workingAuthStrategy: working,                // set DREAMSCAPE_API_AUTH_SCHEME to the matching value
     reseller, balance, currencies,
