@@ -1,13 +1,19 @@
 // api/render.js — serves a tenant page from the database.
-// Rewrite (vercel.json) maps /s/:slug → /api/render?slug=:slug.
+// Rewrite (vercel.json) maps:
+//   • /s/:slug  → /api/render?slug=:slug              (your leadpages address)
+//   • /         → /api/render   (on a CUSTOM domain)  (the client's own domain)
+//
+// Resolution:
+//   • If a ?slug is present, look the site up by slug (unchanged behaviour).
+//   • Otherwise this is a custom-domain hit at "/"; look the site up by its
+//     `custom_domain` (the request Host header, lower-cased, www. stripped).
+//   • The primary marketing host never serves a tenant page from "/", so it's
+//     bounced to the static homepage — the homepage is never touched by this fn.
 //
 // Routing is by the site's `template`:
-//   • 'broker-app'   → the full calculator mini-site. Renders home-loan-calculators
-//                      with window.BROKERAPP_CONFIG injected from the site's config.
+//   • 'broker-app'   → the full calculator mini-site.
 //   • 'trade'        → the trade landing page (token template).
 //   • 'broker-leads' → the broker landing page (token template).  [default for broker]
-// Falls back to a sensible default from `vertical` when `template` is null, so existing
-// rows keep working without a backfill.
 
 const { createClient } = require('@supabase/supabase-js');
 const brokerTpl   = require('../broker.template.json');     // broker-leads
@@ -18,6 +24,9 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+// The marketing/admin host. "/" on this host is the homepage, never a tenant page.
+const PRIMARY_HOST = (process.env.PRIMARY_HOST || 'leadpages.webculture.au').toLowerCase();
 
 // token templates (server-side identity injection)
 const TOKEN_TEMPLATES = { 'broker-leads': brokerTpl.html, 'trade': tradeTpl.html };
@@ -55,30 +64,39 @@ function notFound(res) {
 
 module.exports = async (req, res) => {
   try {
+    const rawHost = (req.headers.host || '').toLowerCase();
+    const host = rawHost.replace(/^www\./, '');
     const slug = (req.query && req.query.slug) || '';
-    if (!slug) return notFound(res);
 
-    const { data: site, error } = await supabase
-      .from('sites').select('*').eq('slug', slug).single();
+    // A "/" hit on the primary host (or with no host) is the marketing homepage,
+    // not a tenant page. Bounce to the static index so we never shadow it.
+    if (!slug && (!host || host === PRIMARY_HOST)) {
+      res.statusCode = 302;
+      res.setHeader('location', '/index.html');
+      return res.end();
+    }
+
+    // Resolve the tenant: by slug (leadpages address) or by custom domain (host).
+    let site = null, error = null;
+    if (slug) {
+      ({ data: site, error } = await supabase
+        .from('sites').select('*').eq('slug', slug).single());
+    } else {
+      ({ data: site, error } = await supabase
+        .from('sites').select('*').eq('custom_domain', host).maybeSingle());
+    }
 
     if (error || !site || site.status !== 'live') return notFound(res);
 
     const template = templateFor(site);
-    const host = req.headers.host || '';
 
     // ---- broker-app: full calculator mini-site, config-driven ----
     if (template === 'broker-app') {
-      // The page renders entirely from window.BROKERAPP_CONFIG (calculators, logo,
-      // brokers, pages, theme, and optional rate overrides). Identity is folded in
-      // so the calculators' enquiry posts land under this business in the dashboard.
       const cfg = Object.assign({}, site.config || {});
       cfg.business = cfg.business || site.business_name;
       cfg.slug     = site.slug;
       cfg.siteId   = site.id;
 
-      // Demo site: a public sandbox where prospects try named client themes.
-      // Nothing is written back — the picker applies looks client-side only,
-      // so simultaneous visitors never collide.
       let demoBar = '';
       if (site.slug === 'demo' || cfg.demo) {
         let themes = [];
