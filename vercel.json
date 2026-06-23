@@ -2,14 +2,9 @@
   "rewrites": [
     { "source": "/manage", "destination": "/manage.html" },
     { "source": "/tradies", "destination": "/tradies.html" },
+    { "source": "/", "has": [{ "type": "host", "value": "^(www\\.)?leadpages\\.(webculture\\.au|com\\.au)$" }], "destination": "/home.html" },
+    { "source": "/", "destination": "/api/render" },
     { "source": "/s/:slug", "destination": "/api/render?slug=:slug" },
-    { "source": "/:slug", "destination": "/api/render?slug=:slug" },
-    {
-      "source": "/",
-      "has": [
-        { "type": "host", "value": "^(?!(www\\.)?leadpages\\.webculture\\.au$)(?!(www\\.)?leadpages\\.com\\.au$).+$" }
-      ],
-      "destination": "/api/render"
-    }
+    { "source": "/:slug", "destination": "/api/render?slug=:slug" }
   ]
 }
