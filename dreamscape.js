@@ -70,7 +70,7 @@ async function diagnoseAuth() {
 
 async function resolveStrategy() {
   if (_resolved) return _resolved;
-  if (SCHEME !== 'auto') { _resolved = EXPLICIT[SCHEME] || 'bearer'; return _resolved; }
+  if (SCHEME !== 'auto') { _resolved = STRATEGIES[SCHEME] ? SCHEME : (EXPLICIT[SCHEME] || 'bearer'); return _resolved; }
   for (const s of PROBE_ORDER) {
     const st = await probe(s);
     if (st >= 200 && st < 300) { _resolved = s; return s; }
