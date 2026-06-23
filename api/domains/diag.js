@@ -28,12 +28,21 @@ module.exports = async (req, res) => {
   const post = await ds.call('POST', '/domains/availability', { body: { domain: testDomain } });
   availabilityProbes['POST {domain}'] = { status: post.status, ok: post.ok, data: post.data };
 
+  // raw bytes, exactly as Dreamscape sends them (to compare against the swagger tester)
+  const rawProbes = {
+    reseller:        await ds.rawGet('/reseller'),
+    balance:         await ds.rawGet('/finances/balance'),
+    availability:    await ds.rawGet('/domains/availability', { domain: testDomain }),
+    tlds:            await ds.rawGet('/domains/tlds')
+  };
+
   res.setHeader('cache-control', 'no-store');
   return res.status(200).json({
     config: { base: ds.BASE, scheme: ds.SCHEME },
     env: ds.envStatus(),
     workingAuthStrategy: working,
     reseller, balance, currencies,
-    availabilityProbes
+    availabilityProbes,
+    rawProbes
   });
 };
