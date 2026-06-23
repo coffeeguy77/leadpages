@@ -132,11 +132,21 @@ function evaluateBalance(balanceNum, estimatedCost = 0) {
   return { decision: 'ok', balance: bal, after, reserve: MIN_RESERVE };
 }
 const priceFor = tld => PRICE_TABLE[tld] != null ? PRICE_TABLE[tld] : 24.95;
+async function rawGet(path, query) {
+  const strat = await resolveStrategy();
+  const url = new URL(BASE + path);
+  if (query) for (const [k, v] of Object.entries(query)) if (v != null && v !== '') url.searchParams.append(k, v);
+  let r, text;
+  try { r = await fetch(url.toString(), { method: 'GET', headers: headersFor(strat, false) }); text = await r.text(); }
+  catch (e) { return { error: String(e && e.message || e) }; }
+  return { status: r.status, strategy: strat, contentType: r.headers.get('content-type'),
+           contentLength: r.headers.get('content-length'), bodyLen: text.length, body: text.slice(0, 4000) };
+}
 const envStatus = () => ({ hasKey: !!RAW_KEY, keyLen: RAW_KEY.length, hasResellerId: !!RESELLER_ID, resellerId: RESELLER_ID || null, hasSecret: !!RAW_SECRET, scheme: SCHEME });
 
 module.exports = {
   PRIORITY_TLDS, PRICE_TABLE, PRIVACY_PRICE, MIN_RESERVE, LOW_WARNING, SCHEME, BASE,
-  call, priceFor, evaluateBalance, diagnoseAuth, resolveStrategy, envStatus,
+  call, priceFor, evaluateBalance, diagnoseAuth, resolveStrategy, envStatus, rawGet,
   ping, getReseller, getBalance, getCurrencies, listTlds, checkAvailability, listDomainPrivacyProducts,
   createCustomer, getCustomer, createRegistrant, updateRegistrant, registerDomain, getDomain, renewDomain,
   addDnsRecord, listDnsRecords, updateDnsRecord, deleteDnsRecord, registerDomainPrivacy
