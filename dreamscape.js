@@ -36,9 +36,13 @@ const STRATEGIES = {
   'basic-key':    () => ({ 'authorization': 'Basic ' + b64(RAW_KEY + ':') }),
   'raw':          () => ({ 'authorization': RAW_KEY }),
   'id-key':       () => ({ 'reseller-id': RESELLER_ID, 'api-key': RAW_KEY }),
-  'apikey':       () => ({ 'apikey': RAW_KEY })
+  'apikey':       () => ({ 'apikey': RAW_KEY }),
+  'id-key-us':    () => ({ 'reseller_id': RESELLER_ID, 'api_key': RAW_KEY }),
+  'x-id-key':     () => ({ 'x-reseller-id': RESELLER_ID, 'x-api-key': RAW_KEY }),
+  'auth-colon':   () => ({ 'authorization': RESELLER_ID + ':' + RAW_KEY }),
+  'bearer-colon': () => ({ 'authorization': 'Bearer ' + RESELLER_ID + ':' + RAW_KEY })
 };
-const PROBE_ORDER = ['bearer', 'x-api-key', 'api-key', 'apikey', 'id-key', 'basic-id', 'basic-secret', 'raw', 'basic-key'];
+const PROBE_ORDER = ['id-key', 'x-id-key', 'id-key-us', 'auth-colon', 'bearer-colon', 'basic-id', 'bearer', 'x-api-key', 'api-key', 'apikey', 'basic-secret', 'raw', 'basic-key'];
 const EXPLICIT = { bearer: 'bearer', basic: 'basic-secret', apikey: 'x-api-key' };
 
 let _resolved = null; // cached working strategy for this warm instance
@@ -128,10 +132,11 @@ function evaluateBalance(balanceNum, estimatedCost = 0) {
   return { decision: 'ok', balance: bal, after, reserve: MIN_RESERVE };
 }
 const priceFor = tld => PRICE_TABLE[tld] != null ? PRICE_TABLE[tld] : 24.95;
+const envStatus = () => ({ hasKey: !!RAW_KEY, keyLen: RAW_KEY.length, hasResellerId: !!RESELLER_ID, resellerId: RESELLER_ID || null, hasSecret: !!RAW_SECRET, scheme: SCHEME });
 
 module.exports = {
   PRIORITY_TLDS, PRICE_TABLE, PRIVACY_PRICE, MIN_RESERVE, LOW_WARNING, SCHEME, BASE,
-  call, priceFor, evaluateBalance, diagnoseAuth, resolveStrategy,
+  call, priceFor, evaluateBalance, diagnoseAuth, resolveStrategy, envStatus,
   ping, getReseller, getBalance, getCurrencies, listTlds, checkAvailability, listDomainPrivacyProducts,
   createCustomer, getCustomer, createRegistrant, updateRegistrant, registerDomain, getDomain, renewDomain,
   addDnsRecord, listDnsRecords, updateDnsRecord, deleteDnsRecord, registerDomainPrivacy
