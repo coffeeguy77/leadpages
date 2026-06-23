@@ -1,17 +1,15 @@
 // dreamscape.js — server-side client for the Dreamscape Reseller REST API.
-// Runs ONLY inside Vercel serverless functions. The API key lives in an env var
-// and is NEVER sent to the browser.
+// Runs ONLY inside Vercel functions. The API key lives in an env var, never in the browser.
 //
-// Dreamscape uses a SINGLE API key (no secret). The exact auth HEADER style can
-// vary, so set DREAMSCAPE_API_AUTH_SCHEME=auto (default) and the client probes
-// GET /reseller with each known style once, caches the one that works, and uses it.
-// Once /api/domains/diag tells you the winner, set the scheme explicitly to skip probing.
+// Auth = REQUEST SIGNING (per the official docs):
+//   request_id = md5(unique)              -> header  Api-Request-Id
+//   signature  = md5(request_id + apiKey) -> header  Api-Signature
+// A fresh request_id + signature is generated for every request.
+
+const crypto = require('crypto');
 
 const BASE = (process.env.DREAMSCAPE_API_BASE_URL || 'https://reseller-api.ds.network').replace(/\/+$/, '');
-const SCHEME = (process.env.DREAMSCAPE_API_AUTH_SCHEME || 'auto').toLowerCase();
-
-const RAW_KEY    = process.env.DREAMSCAPE_API_TOKEN || process.env.DREAMSCAPE_API_KEY || '';
-const RAW_SECRET = process.env.DREAMSCAPE_API_SECRET || '';
+const RAW_KEY = (process.env.DREAMSCAPE_API_TOKEN || process.env.DREAMSCAPE_API_KEY || '').trim();
 const RESELLER_ID = process.env.DREAMSCAPE_RESELLER_ID || '';
 
 const MIN_RESERVE = Number(process.env.DREAMSCAPE_MINIMUM_RESERVE_BALANCE || 150);
@@ -24,81 +22,41 @@ const PRICE_TABLE = {
 };
 const PRIVACY_PRICE = 9.95;
 
-const b64 = s => Buffer.from(s).toString('base64');
+const md5 = s => crypto.createHash('md5').update(String(s)).digest('hex');
 
-// Each strategy returns the auth headers to add for the single API key.
-const STRATEGIES = {
-  'bearer':       () => ({ 'authorization': 'Bearer ' + RAW_KEY }),
-  'x-api-key':    () => Object.assign({ 'x-api-key': RAW_KEY }, RAW_SECRET ? { 'x-api-secret': RAW_SECRET } : {}),
-  'api-key':      () => ({ 'api-key': RAW_KEY }),
-  'basic-id':     () => ({ 'authorization': 'Basic ' + b64(RESELLER_ID + ':' + RAW_KEY) }),
-  'basic-secret': () => ({ 'authorization': 'Basic ' + b64(RAW_KEY + ':' + RAW_SECRET) }),
-  'basic-key':    () => ({ 'authorization': 'Basic ' + b64(RAW_KEY + ':') }),
-  'raw':          () => ({ 'authorization': RAW_KEY }),
-  'id-key':       () => ({ 'reseller-id': RESELLER_ID, 'api-key': RAW_KEY }),
-  'apikey':       () => ({ 'apikey': RAW_KEY }),
-  'id-key-us':    () => ({ 'reseller_id': RESELLER_ID, 'api_key': RAW_KEY }),
-  'x-id-key':     () => ({ 'x-reseller-id': RESELLER_ID, 'x-api-key': RAW_KEY }),
-  'auth-colon':   () => ({ 'authorization': RESELLER_ID + ':' + RAW_KEY }),
-  'bearer-colon': () => ({ 'authorization': 'Bearer ' + RESELLER_ID + ':' + RAW_KEY })
-};
-const PROBE_ORDER = ['id-key', 'x-id-key', 'id-key-us', 'auth-colon', 'bearer-colon', 'basic-id', 'bearer', 'x-api-key', 'api-key', 'apikey', 'basic-secret', 'raw', 'basic-key'];
-const EXPLICIT = { bearer: 'bearer', basic: 'basic-secret', apikey: 'x-api-key' };
-
-let _resolved = null; // cached working strategy for this warm instance
-
-function headersFor(strat, hasBody) {
-  const h = { 'accept': 'application/json' };
+function signedHeaders(hasBody) {
+  const requestId = md5(Date.now() + '-' + crypto.randomBytes(12).toString('hex'));
+  const signature = md5(requestId + RAW_KEY);
+  const h = { 'accept': 'application/json', 'api-request-id': requestId, 'api-signature': signature };
   if (hasBody) h['content-type'] = 'application/json';
-  const fn = STRATEGIES[strat];
-  return fn ? Object.assign(h, fn()) : h;
+  return h;
 }
 
-async function probe(strat) {
-  try {
-    const r = await fetch(BASE + '/reseller', { method: 'GET', headers: headersFor(strat, false) });
-    return r.status;
-  } catch (e) { return 0; }
-}
-
-// Probe every strategy (used by diag to report which work).
-async function diagnoseAuth() {
-  const out = {};
-  for (const s of PROBE_ORDER) out[s] = await probe(s);
-  return out;
-}
-
-async function resolveStrategy() {
-  if (_resolved) return _resolved;
-  if (SCHEME !== 'auto') { _resolved = STRATEGIES[SCHEME] ? SCHEME : (EXPLICIT[SCHEME] || 'bearer'); return _resolved; }
-  for (const s of PROBE_ORDER) {
-    const st = await probe(s);
-    if (st >= 200 && st < 300) { _resolved = s; return s; }
+// Build a query string. Array values repeat the key (e.g. domain_names[]=a&domain_names[]=b),
+// keeping the [] bracket key literal as Dreamscape's examples show.
+function buildQuery(query) {
+  const parts = [];
+  for (const [k, v] of Object.entries(query || {})) {
+    if (Array.isArray(v)) { for (const item of v) if (item != null && item !== '') parts.push(k + '=' + encodeURIComponent(item)); }
+    else if (v != null && v !== '') parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(v));
   }
-  _resolved = 'bearer';
-  return _resolved;
+  return parts.length ? '?' + parts.join('&') : '';
 }
 
 async function call(method, path, { query, body, timeoutMs = 15000 } = {}) {
-  const strat = await resolveStrategy();
-  const url = new URL(BASE + path);
-  if (query) for (const [k, v] of Object.entries(query)) {
-    if (v !== undefined && v !== null && v !== '') url.searchParams.append(k, v);
-  }
+  const url = BASE + path + buildQuery(query);
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
   let res, text;
   try {
-    res = await fetch(url.toString(), {
-      method, headers: headersFor(strat, !!body),
-      body: body ? JSON.stringify(body) : undefined, signal: ctrl.signal
-    });
+    res = await fetch(url, { method, headers: signedHeaders(!!body), body: body ? JSON.stringify(body) : undefined, signal: ctrl.signal });
     text = await res.text();
   } catch (e) { clearTimeout(t); return { ok: false, status: 0, error: String(e && e.message || e), data: null }; }
   clearTimeout(t);
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch (e) { data = { _raw: text }; }
-  return { ok: res.ok, status: res.status, data, error: res.ok ? null : (data && (data.message || data.error)) || ('HTTP ' + res.status), _auth: strat };
+  const error = res.ok ? null : (data && (data.error_message || data.message)) || ('HTTP ' + res.status);
+  return { ok: res.ok, status: res.status, data, error };
 }
 
 // ---- read-only ----
@@ -107,9 +65,10 @@ const getReseller = () => call('GET', '/reseller');
 const getBalance  = () => call('GET', '/finances/balance');
 const getCurrencies = () => call('GET', '/finances/currencies');
 const listTlds    = () => call('GET', '/domains/tlds');
-const checkAvailability = (domain) => call('GET', '/domains/availability', { query: { domain } });
+const checkAvailability = (domains) =>
+  call('GET', '/domains/availability', { query: { 'domain_names[]': Array.isArray(domains) ? domains : [domains] } });
 const listDomainPrivacyProducts = () => call('GET', '/products/domain-privacies');
-// ---- write (Phase 2 only) ----
+// ---- write (Phase 2) ----
 const createCustomer    = (b) => call('POST',  '/customers', { body: b });
 const getCustomer       = (id) => call('GET',  `/customers/${id}`);
 const createRegistrant  = (b) => call('POST',  '/domains/registrants', { body: b });
@@ -119,9 +78,14 @@ const getDomain         = (id) => call('GET',  `/domains/${id}`);
 const renewDomain       = (id, b) => call('POST', `/domains/${id}/renewal`, { body: b });
 const addDnsRecord      = (id, b) => call('POST', `/domains/${id}/dns`, { body: b });
 const listDnsRecords    = (id) => call('GET',  `/domains/${id}/dns`);
-const updateDnsRecord   = (id, rid, b) => call('PATCH', `/domains/${id}/dns/${rid}`, { body: b });
-const deleteDnsRecord   = (id, rid) => call('DELETE', `/domains/${id}/dns/${rid}`);
 const registerDomainPrivacy = (b) => call('POST', '/products/domain-privacies', { body: b });
+
+// pull the balance number out of { status, data:{ balance, currency } }
+function readBalance(resp) {
+  const d = resp && resp.data && resp.data.data;
+  if (d && d.balance != null) return { balance: Number(d.balance), currency: d.currency || 'AUD' };
+  return null;
+}
 
 function evaluateBalance(balanceNum, estimatedCost = 0) {
   const bal = Number(balanceNum);
@@ -132,22 +96,16 @@ function evaluateBalance(balanceNum, estimatedCost = 0) {
   return { decision: 'ok', balance: bal, after, reserve: MIN_RESERVE };
 }
 const priceFor = tld => PRICE_TABLE[tld] != null ? PRICE_TABLE[tld] : 24.95;
-async function rawGet(path, query) {
-  const strat = await resolveStrategy();
-  const url = new URL(BASE + path);
-  if (query) for (const [k, v] of Object.entries(query)) if (v != null && v !== '') url.searchParams.append(k, v);
-  let r, text;
-  try { r = await fetch(url.toString(), { method: 'GET', headers: headersFor(strat, false) }); text = await r.text(); }
-  catch (e) { return { error: String(e && e.message || e) }; }
-  return { status: r.status, strategy: strat, contentType: r.headers.get('content-type'),
-           contentLength: r.headers.get('content-length'), bodyLen: text.length, body: text.slice(0, 4000) };
-}
-const envStatus = () => ({ hasKey: !!RAW_KEY, keyLen: RAW_KEY.length, hasResellerId: !!RESELLER_ID, resellerId: RESELLER_ID || null, hasSecret: !!RAW_SECRET, scheme: SCHEME });
+const envStatus = () => ({
+  hasKey: !!RAW_KEY, keyLen: RAW_KEY.length,
+  keyLooksValid: /^[a-z0-9]{32}$/.test(RAW_KEY),   // docs: 32 lowercase alphanumeric
+  hasResellerId: !!RESELLER_ID, auth: 'signed (Api-Request-Id + Api-Signature)'
+});
 
 module.exports = {
-  PRIORITY_TLDS, PRICE_TABLE, PRIVACY_PRICE, MIN_RESERVE, LOW_WARNING, SCHEME, BASE,
-  call, priceFor, evaluateBalance, diagnoseAuth, resolveStrategy, envStatus, rawGet,
+  PRIORITY_TLDS, PRICE_TABLE, PRIVACY_PRICE, MIN_RESERVE, LOW_WARNING, BASE,
+  call, priceFor, evaluateBalance, envStatus, readBalance,
   ping, getReseller, getBalance, getCurrencies, listTlds, checkAvailability, listDomainPrivacyProducts,
   createCustomer, getCustomer, createRegistrant, updateRegistrant, registerDomain, getDomain, renewDomain,
-  addDnsRecord, listDnsRecords, updateDnsRecord, deleteDnsRecord, registerDomainPrivacy
+  addDnsRecord, listDnsRecords, registerDomainPrivacy
 };
