@@ -57,6 +57,8 @@ function auEligibility(reg) {
   if (reg.business_number) out.push({ name: 'registrant_id', value: reg.business_number });
   out.push({ name: 'registrant_id_type', value: (reg.business_number_type || 'ABN') });
   out.push({ name: 'eligibility_type', value: reg.eligibility_type || 'Company' });
+  out.push({ name: 'business_type', value: reg.business_type || 'Company' });
+  out.push({ name: 'business_number_type', value: (reg.business_number_type || 'ABN') });
   return out;
 }
 
