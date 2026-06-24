@@ -64,6 +64,26 @@ function auEligibility(reg) {
   return out;
 }
 
+// Self-heal: if a customer create fails because one already exists (e.g.
+// "Username is not unique"), find the existing customer and reuse it rather
+// than stranding the paid order. Read-only lookups, tries a few query shapes
+// since the reseller list endpoint's filter param isn't documented.
+async function findExistingCustomer(payload) {
+  const wantUser = payload.username;
+  const wantEmail = String(payload.email || '').toLowerCase();
+  const queries = [{ username: payload.username }, { email: payload.email }, { keyword: payload.email }, { search: payload.email }, {}];
+  for (const q of queries) {
+    let r;
+    try { r = await ds.listCustomers(q); } catch (e) { continue; }
+    const body = r && r.data;
+    const arr = body && (Array.isArray(body.data) ? body.data : (Array.isArray(body) ? body : null));
+    if (!arr || !arr.length) continue;
+    const hit = arr.find(c => c && (c.username === wantUser || String(c.email || '').toLowerCase() === wantEmail));
+    if (hit && hit.id) return String(hit.id);
+  }
+  return null;
+}
+
 async function ensureCustomer(userId, reg, email) {
   const existing = await sb.from('domain_customers').select('*').eq('user_id', userId).maybeSingle();
   if (existing.data && existing.data.dreamscape_customer_id) return existing.data.dreamscape_customer_id;
@@ -80,8 +100,16 @@ async function ensureCustomer(userId, reg, email) {
   }
   const r = await ds.createCustomer(payload);
   await logEvent(null, userId, 'customer.create', r.error || 'ok', r.ok ? 'ok' : 'error', { status: r.status, response: r.data });
-  const id = r.data && r.data.data && r.data.data.id;
-  if (!r.ok || !id) throw new Error('customer_create_failed: ' + (r.error || r.status));
+  let id = r.data && r.data.data && r.data.data.id;
+  if (!r.ok || !id) {
+    const found = await findExistingCustomer(payload);
+    if (found) {
+      await logEvent(null, userId, 'customer.reuse', 'recovered existing customer ' + found, 'ok', { username: payload.username, after: r.error || r.status });
+      id = found;
+    } else {
+      throw new Error('customer_create_failed: ' + (r.error || r.status));
+    }
+  }
   await sb.from('domain_customers').upsert({ user_id: userId, dreamscape_customer_id: String(id), email: payload.email, first_name: reg.first_name, last_name: reg.last_name, business_name: reg.business_name || null, phone: payload.phone }, { onConflict: 'user_id' });
   return String(id);
 }
