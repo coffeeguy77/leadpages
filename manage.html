@@ -1364,11 +1364,13 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     buildLogin();
     const mask=$('login-mask'); if(mask) mask.style.display='flex';
     loginBooting(true);
+    var __thFailed=false;
     try{
       var __sp=new URLSearchParams(location.search); var __th=__sp.get('token_hash');
       if(__th){ var __ty=__sp.get('type')||'email';
         try{ var __vr=await sb.auth.verifyOtp({ token_hash:__th, type:__ty }); history.replaceState(null,'','/manage');
-          if(!(__vr&&__vr.error)){ try{ await afterLogin(); }catch(e){} if(mask) mask.style.display='none'; loginBooting(false); return; } }catch(e){}
+          if(!(__vr&&__vr.error)){ try{ await afterLogin(); }catch(e){} if(mask) mask.style.display='none'; loginBooting(false); return; }
+          else { __thFailed=true; } }catch(e){ __thFailed=true; }
       }
     }catch(e){}
     try{
@@ -1377,6 +1379,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     }catch(e){}
     loginBooting(false);
     showLogin();
+    if(__thFailed){ var le=$('li-err'); if(le){ le.style.color=''; le.textContent='That sign-in link had already been used or expired. Paste the code from the same email above, or tap \u201cResend code\u201d.'; } }
   }
   async function afterLogin(){
     authed=true;
@@ -2498,26 +2501,26 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       +'<div class="login-loading" id="li-loading" hidden>Signing you in\u2026</div>'
       +'<div id="li-form">'
       +'<label>Email</label><input type="email" id="li-user" class="tin" placeholder="you@example.com" autocomplete="username">'
-      +'<label>Password</label><input type="password" id="li-pass" class="tin" placeholder="Your password" autocomplete="current-password">'
-      +'<div class="login-err" id="li-err"></div>'
-      +'<button class="btn" id="li-go" style="width:100%;margin-top:6px">Sign in</button>'
       +'<button class="btn ghost" id="li-magic" style="width:100%;margin-top:6px">Email me a sign-in code</button>'
-      +'<div id="li-codewrap" style="display:none;margin-top:8px">'
-      +'<label>Sign-in code</label><input type="text" id="li-code" class="tin" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code">'
+      +'<label style="margin-top:12px;display:block">Code from your email</label><input type="text" id="li-code" class="tin" inputmode="numeric" autocomplete="one-time-code" placeholder="Paste the code from your email">'
       +'<button class="btn" id="li-verify" style="width:100%;margin-top:6px">Verify code &amp; sign in</button>'
-      +'</div>'
+      +'<div class="login-err" id="li-err"></div>'
+      +'<div style="text-align:center;color:#9aa3af;font-size:12px;margin:14px 0 6px">— or use a password —</div>'
+      +'<label>Password</label><input type="password" id="li-pass" class="tin" placeholder="Your password" autocomplete="current-password">'
+      +'<button class="btn" id="li-go" style="width:100%;margin-top:6px">Sign in with password</button>'
       +'<div class="login-foot"><button class="lk" id="li-forgot">Forgot password?</button></div>'
-      +'<div class="login-note">Sign in with the email and password for this site’s account.</div>'
+      +'<div class="login-note">Tip: tap \u201cEmail me a sign-in code\u201d, then either click the link in that email or paste the code above.</div>'
       +'</div></div>';
     (document.getElementById('admin-view')||document.body).appendChild(m);
     $('li-go').addEventListener('click',lpLogin);
     var __mg=$('li-magic'); if(__mg) __mg.addEventListener('click',lpMagic);
     async function lpMagic(){ var email=$('li-user').value.trim(); if(!email){ $('li-err').style.color=''; $('li-err').textContent='Enter your email first.'; return; }
+      try{ localStorage.setItem('lp_login_email', email); }catch(e){}
       $('li-err').style.color=''; $('li-err').textContent='Sending your code\u2026';
       var r=await sb.auth.signInWithOtp({ email:email, options:{ shouldCreateUser:false } });
       if(r.error){ $('li-err').textContent=(r.error.message||'Could not send code.'); return; }
-      $('li-codewrap').style.display='block'; $('li-magic').textContent='Resend code';
-      $('li-err').style.color='#0a7d33'; $('li-err').textContent='Check your email \u2014 enter the 6-digit code below.';
+      $('li-magic').textContent='Resend code';
+      $('li-err').style.color='#0a7d33'; $('li-err').textContent='Check your email \u2014 click the link in it, or paste the code above.';
       var c=$('li-code'); if(c) c.focus(); }
     async function lpVerify(){ var email=$('li-user').value.trim(); var token=($('li-code').value||'').trim().replace(/\s+/g,'');
       if(!email){ $('li-err').style.color=''; $('li-err').textContent='Enter your email first.'; return; }
@@ -2529,6 +2532,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       try{ await afterLogin(); }catch(e){} }
     var __vf=$('li-verify'); if(__vf) __vf.addEventListener('click',lpVerify);
     var __cd=$('li-code'); if(__cd) __cd.addEventListener('keydown',function(e){ if(e.key==='Enter') lpVerify(); });
+    try{ var __le=localStorage.getItem('lp_login_email'); if(__le && $('li-user') && !$('li-user').value) $('li-user').value=__le; }catch(e){}
     $('li-pass').addEventListener('keydown',function(e){ if(e.key==='Enter') lpLogin(); });
     $('li-forgot').addEventListener('click',function(){
       const v=$('li-user').value.trim();
