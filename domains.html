@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Find your domain · LeadPages</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
 <style>
   :root{
     --ink:#0f172a; --soft:#64748b; --line:#e6e8ee; --bg:#f7f8fb; --card:#fff;
@@ -13,15 +15,18 @@
   *{box-sizing:border-box}
   body{margin:0;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
   .wrap{max-width:920px;margin:0 auto;padding:0 20px}
-  header.hero{background:linear-gradient(180deg,#0b1220,#142033);color:#fff;padding:56px 0 64px}
-  header.hero h1{font-size:clamp(28px,4vw,40px);margin:0 0 8px;letter-spacing:-.02em}
+  .topbar{display:flex;align-items:center;justify-content:flex-end;gap:10px;font-size:13px;color:#aab4c5;padding:10px 0}
+  .topbar .who{color:#dfe6f0}
+  .topbar button{border:1px solid rgba(255,255,255,.25);background:transparent;color:#dfe6f0;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px}
+  header.hero{background:linear-gradient(180deg,#0b1220,#142033);color:#fff;padding:8px 0 64px}
+  header.hero h1{font-size:clamp(28px,4vw,40px);margin:18px 0 8px;letter-spacing:-.02em}
   header.hero p{margin:0 0 28px;color:#aab4c5;font-size:18px}
   .search{display:flex;gap:10px;background:#fff;border-radius:14px;padding:8px;box-shadow:var(--shadow)}
   .search input{flex:1;border:0;outline:0;font-size:17px;padding:12px 14px;color:var(--ink);background:transparent;min-width:0}
   .search button{border:0;border-radius:9px;background:var(--accent);color:#fff;font-weight:700;font-size:16px;padding:0 22px;cursor:pointer;white-space:nowrap}
   .search button:disabled{opacity:.6;cursor:default}
   .hint{color:#8b97a8;font-size:13px;margin-top:10px}
-  main{padding:28px 0 80px}
+  main{padding:28px 0 120px}
   .status{color:var(--soft);padding:20px 4px}
   .grid{display:flex;flex-direction:column;gap:10px}
   .sec-label{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--soft);margin:22px 4px 6px}
@@ -52,12 +57,36 @@
   .cart .foot{padding:14px 16px;border-top:1px solid var(--line)}
   .cart .total{display:flex;justify-content:space-between;font-weight:700;margin-bottom:10px}
   .cart .checkout{width:100%;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;font-size:15px;padding:12px;cursor:pointer}
+  .cart .checkout:disabled{opacity:.6;cursor:default}
   .note{font-size:12px;color:var(--soft);text-align:center;margin-top:8px}
+  /* modal */
+  .ov{position:fixed;inset:0;background:rgba(8,15,30,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
+  .ov.show{display:flex}
+  .modal{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+  .modal h2{margin:0;padding:18px 20px;font-size:18px;border-bottom:1px solid var(--line)}
+  .mbody{padding:18px 20px}
+  .mbody p.lead{margin:0 0 14px;color:var(--soft);font-size:14px}
+  .f{margin-bottom:12px}
+  .f label{display:block;font-size:12px;font-weight:600;color:var(--soft);margin-bottom:4px}
+  .f input,.f select{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:15px;color:var(--ink)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .seg{display:flex;gap:8px;margin-bottom:12px}
+  .seg button{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px;cursor:pointer;font-weight:600;color:var(--soft)}
+  .seg button.on{border-color:var(--brand);background:#e9f5f3;color:var(--brand-ink)}
+  .mfoot{padding:16px 20px;border-top:1px solid var(--line);display:flex;gap:10px}
+  .mfoot button{flex:1;border-radius:10px;padding:12px;font-weight:700;font-size:15px;cursor:pointer;border:1px solid var(--line);background:#fff}
+  .mfoot .go{border:0;background:var(--accent);color:#fff}
+  .mfoot .go:disabled{opacity:.6;cursor:default}
+  .merr{color:var(--bad);font-size:13px;margin-top:6px;min-height:16px}
+  .prog{display:flex;align-items:center;gap:10px;padding:10px 0;font-size:15px}
+  .dot{width:10px;height:10px;border-radius:50%;background:#cbd2da}
+  .dot.ok{background:var(--ok)} .dot.work{background:var(--accent)} .dot.bad{background:var(--bad)}
 </style>
 </head>
 <body>
 <header class="hero">
   <div class="wrap">
+    <div class="topbar"><span class="who" id="who"></span><button id="authBtn" style="display:none">Sign in</button></div>
     <h1>Find your perfect business domain</h1>
     <p>Search, secure and connect a domain to your page — without leaving LeadPages.</p>
     <div class="search">
@@ -84,22 +113,114 @@
   </div>
   <div class="foot">
     <div class="total"><span>Total / year</span><span id="total">$0.00</span></div>
-    <button class="checkout" id="checkout">Continue</button>
-    <div class="note" id="note">Registration &amp; auto-connect are arriving in the next update.</div>
+    <button class="checkout" id="checkout">Continue to secure checkout</button>
+    <div class="note" id="note">Secure payment by Stripe · domain registered &amp; connected automatically.</div>
   </div>
 </aside>
+
+<!-- Auth modal -->
+<div class="ov" id="authOv">
+  <div class="modal">
+    <h2>Sign in to continue</h2>
+    <div class="mbody">
+      <p class="lead">Enter the email for your LeadPages account. We'll send you a one-time sign-in link.</p>
+      <div class="f"><label>Email</label><input id="authEmail" type="email" placeholder="you@business.com.au" autocomplete="email"></div>
+      <div class="merr" id="authErr"></div>
+    </div>
+    <div class="mfoot"><button id="authCancel">Cancel</button><button class="go" id="authSend">Email me a link</button></div>
+  </div>
+</div>
+
+<!-- Registrant modal -->
+<div class="ov" id="regOv">
+  <div class="modal">
+    <h2>Who is this domain registered to?</h2>
+    <div class="mbody">
+      <p class="lead">These are the legal owner details for the domain. For any <strong>.au</strong> domain an ABN or ACN is required.</p>
+      <div class="seg" id="acctSeg">
+        <button data-acct="business" class="on">Business (ABN/ACN)</button>
+        <button data-acct="individual">Individual</button>
+      </div>
+      <div id="bizFields">
+        <div class="f"><label>Business / entity name</label><input id="r_business_name" type="text"></div>
+        <div class="row2">
+          <div class="f"><label>ID type</label><select id="r_business_number_type"><option>ABN</option><option>ACN</option></select></div>
+          <div class="f"><label>ABN / ACN</label><input id="r_business_number" type="text" inputmode="numeric"></div>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>First name</label><input id="r_first_name" type="text" autocomplete="given-name"></div>
+        <div class="f"><label>Last name</label><input id="r_last_name" type="text" autocomplete="family-name"></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Email</label><input id="r_email" type="email" autocomplete="email"></div>
+        <div class="f"><label>Phone</label><input id="r_phone" type="tel" placeholder="0412 345 678" autocomplete="tel"></div>
+      </div>
+      <div class="f"><label>Street address</label><input id="r_address" type="text" autocomplete="address-line1"></div>
+      <div class="row2">
+        <div class="f"><label>Suburb / city</label><input id="r_city" type="text" autocomplete="address-level2"></div>
+        <div class="f"><label>State</label><select id="r_state"><option>ACT</option><option>NSW</option><option>VIC</option><option>QLD</option><option>SA</option><option>WA</option><option>TAS</option><option>NT</option></select></div>
+      </div>
+      <div class="row2">
+        <div class="f"><label>Postcode</label><input id="r_post_code" type="text" inputmode="numeric" autocomplete="postal-code"></div>
+        <div class="f"><label>Country</label><input id="r_country" type="text" value="AU" readonly></div>
+      </div>
+      <div class="merr" id="regErr"></div>
+    </div>
+    <div class="mfoot"><button id="regCancel">Back</button><button class="go" id="regGo">Continue to payment</button></div>
+  </div>
+</div>
+
+<!-- Registration progress modal (after payment) -->
+<div class="ov" id="progOv">
+  <div class="modal">
+    <h2 id="progTitle">Registering your domain…</h2>
+    <div class="mbody">
+      <p class="lead" id="progLead">Payment received. We're registering and securing your domain now — this takes a few moments.</p>
+      <div id="progList"></div>
+      <div class="merr" id="progErr"></div>
+    </div>
+    <div class="mfoot"><button id="progClose" style="display:none">Close</button><button class="go" id="progManage" style="display:none">Go to my dashboard</button></div>
+  </div>
+</div>
 
 <script>
 "use strict";
 var $ = function(id){ return document.getElementById(id); };
+var SB = window.supabase.createClient(window.__LP.url, window.__LP.anon);
 var cart = {}; // domain -> {price}
 var PRIVACY_PRICE = 9.95;
+var SESSION = null;
 
 function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function money(n){ return '$' + Number(n).toFixed(2); }
-
 function dnHtml(d){ var i=d.indexOf('.'); return esc(d.slice(0,i))+'<span class="tld">'+esc(d.slice(i))+'</span>'; }
 
+/* ---------------- auth ---------------- */
+async function refreshSession(){
+  var r = await SB.auth.getSession();
+  SESSION = r.data ? r.data.session : null;
+  var who = $('who'), btn = $('authBtn');
+  if(SESSION && SESSION.user){ who.textContent = 'Signed in as ' + (SESSION.user.email||''); btn.textContent='Sign out'; btn.style.display=''; }
+  else { who.textContent=''; btn.textContent='Sign in'; btn.style.display=''; }
+}
+$('authBtn').onclick = async function(){
+  if(SESSION && SESSION.user){ await SB.auth.signOut(); await refreshSession(); }
+  else { openAuth(); }
+};
+function openAuth(){ $('authErr').textContent=''; if(SESSION&&SESSION.user)$('authEmail').value=SESSION.user.email||''; $('authOv').classList.add('show'); $('authEmail').focus(); }
+$('authCancel').onclick = function(){ $('authOv').classList.remove('show'); };
+$('authSend').onclick = async function(){
+  var email = $('authEmail').value.trim();
+  if(!email){ $('authErr').textContent='Please enter your email.'; return; }
+  $('authSend').disabled=true; $('authErr').textContent='';
+  var r = await SB.auth.signInWithOtp({ email: email, options:{ emailRedirectTo: location.origin + '/domains' } });
+  $('authSend').disabled=false;
+  if(r.error){ $('authErr').textContent = r.error.message || 'Could not send the link.'; return; }
+  $('authErr').style.color='var(--ok)'; $('authErr').textContent='Check your inbox — open the link on this device to continue.';
+};
+
+/* ---------------- search + cart (unchanged behaviour) ---------------- */
 function cardHtml(r){
   var availChip = r.available===true ? '<span class="chip ok">Available</span>'
     : r.available===false ? '<span class="chip bad">Taken</span>'
@@ -115,7 +236,6 @@ function cardHtml(r){
     + '<div class="price">'+money(r.price)+'<small>/yr</small></div>'
     + btn + '</div>';
 }
-
 function render(data){
   var ex = $('exact'), al = $('alts');
   var exact = data.results.filter(function(r){ return r.kind==='exact' || r.kind==='exact-tld'; });
@@ -124,17 +244,15 @@ function render(data){
   al.innerHTML = alts.length ? '<div class="sec-label">Smart alternatives</div><div class="grid">'+alts.map(cardHtml).join('')+'</div>' : '';
   bindAdds();
 }
-
 function bindAdds(){
   document.querySelectorAll('.add[data-d]').forEach(function(b){
     b.onclick = function(){
       var d=b.getAttribute('data-d'), p=parseFloat(b.getAttribute('data-p'));
       if(cart[d]){ delete cart[d]; } else { cart[d]={price:p}; }
-      drawCart(); render(LAST);  // re-render to update button states
+      drawCart(); render(LAST);
     };
   });
 }
-
 function drawCart(){
   var keys=Object.keys(cart);
   $('cart').className = 'cart' + (keys.length?' show':'');
@@ -149,11 +267,64 @@ function drawCart(){
 }
 $('privacy').onchange = drawCart;
 
-$('checkout').onclick = function(){
-  // Phase-2 boundary: real registration/payment is the next build. Don't fake it.
-  $('note').textContent = 'Thanks! Secure checkout + automatic registration and connection are the next update. Your selection: ' + Object.keys(cart).join(', ');
+/* ---------------- checkout ---------------- */
+$('checkout').onclick = async function(){
+  if(!Object.keys(cart).length) return;
+  await refreshSession();
+  if(!(SESSION && SESSION.user)){ openAuth(); return; }
+  openReg();
 };
 
+/* registrant form */
+var ACCT='business';
+function applyAcct(){ document.querySelectorAll('#acctSeg button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-acct')===ACCT); }); $('bizFields').style.display = ACCT==='business' ? '' : 'none'; }
+document.querySelectorAll('#acctSeg button').forEach(function(b){ b.onclick=function(){ ACCT=b.getAttribute('data-acct'); applyAcct(); }; });
+function loadReg(){
+  try{ var s=JSON.parse(localStorage.getItem('lp_registrant')||'{}');
+    ['business_name','business_number','first_name','last_name','email','phone','address','city','post_code'].forEach(function(k){ if(s[k]&&$('r_'+k)) $('r_'+k).value=s[k]; });
+    if(s.business_number_type) $('r_business_number_type').value=s.business_number_type;
+    if(s.state) $('r_state').value=s.state;
+    if(s.account_type){ ACCT=s.account_type; }
+  }catch(e){}
+  if(!$('r_email').value && SESSION && SESSION.user) $('r_email').value=SESSION.user.email||'';
+  applyAcct();
+}
+function openReg(){ $('regErr').textContent=''; loadReg(); $('regOv').classList.add('show'); }
+$('regCancel').onclick=function(){ $('regOv').classList.remove('show'); };
+function gatherReg(){
+  var r={ account_type:ACCT, country:'AU', country_code:61,
+    first_name:$('r_first_name').value.trim(), last_name:$('r_last_name').value.trim(),
+    email:$('r_email').value.trim(), phone:$('r_phone').value.trim(),
+    address:$('r_address').value.trim(), city:$('r_city').value.trim(),
+    state:$('r_state').value, post_code:$('r_post_code').value.trim() };
+  if(ACCT==='business'){ r.business_name=$('r_business_name').value.trim(); r.business_number_type=$('r_business_number_type').value; r.business_number=$('r_business_number').value.trim(); }
+  return r;
+}
+$('regGo').onclick = async function(){
+  var reg=gatherReg();
+  var need=['first_name','last_name','email','phone','address','city','state','post_code'];
+  for(var i=0;i<need.length;i++){ if(!reg[need[i]]){ $('regErr').textContent='Please complete all fields.'; return; } }
+  if(ACCT==='business' && !reg.business_number){ $('regErr').textContent='An ABN/ACN is required for business (and all .au) registrations.'; return; }
+  var hasAu = Object.keys(cart).some(function(d){ return /\.au$/i.test(d); });
+  if(hasAu && ACCT!=='business'){ $('regErr').textContent='.au domains must be registered to a business with an ABN/ACN. Switch to Business above.'; return; }
+  try{ localStorage.setItem('lp_registrant', JSON.stringify(reg)); }catch(e){}
+
+  $('regGo').disabled=true; $('regErr').style.color='var(--bad)'; $('regErr').textContent='';
+  await refreshSession();
+  var token = SESSION && SESSION.access_token;
+  if(!token){ $('regGo').disabled=false; $('regOv').classList.remove('show'); openAuth(); return; }
+
+  var payload = { domains: Object.keys(cart).map(function(d){ return { domain:d }; }), privacy: $('privacy').checked, registrant: reg };
+  try{
+    var resp = await fetch('/api/domains/checkout', { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+token }, body: JSON.stringify(payload) });
+    var j = await resp.json();
+    $('regGo').disabled=false;
+    if(!resp.ok || !j.url){ $('regErr').textContent = (j && j.error) || 'Could not start checkout.'; return; }
+    window.location.href = j.url; // Stripe Checkout
+  }catch(e){ $('regGo').disabled=false; $('regErr').textContent='Network error — please try again.'; }
+};
+
+/* ---------------- search ---------------- */
 var LAST=null, searching=false;
 function search(){
   var q=$('q').value.trim();
@@ -172,6 +343,45 @@ function search(){
 }
 $('go').onclick=search;
 $('q').addEventListener('keydown',function(e){ if(e.key==='Enter') search(); });
+
+/* ---------------- post-payment progress ---------------- */
+function showProgress(list, state){
+  $('progList').innerHTML = list.map(function(o){
+    var cls = o.status==='completed'?'ok':(o.status==='failed_requires_review'||o.status==='requires_admin_balance'?'bad':'work');
+    var label = o.status==='completed'?'Registered':(o.status==='failed_requires_review'?'Needs review':(o.status==='requires_admin_balance'?'Pending':'Registering…'));
+    return '<div class="prog"><span class="dot '+cls+'"></span><span>'+dnHtml(o.domain)+'</span><span class="spacer"></span><span style="color:var(--soft);font-size:13px">'+label+'</span></div>';
+  }).join('');
+  if(state==='done'){ $('progTitle').textContent='Your domain is registered 🎉'; $('progLead').textContent='All done. You can connect it to your page from your dashboard.'; $('progManage').style.display=''; $('progClose').style.display=''; }
+  else if(state==='review'){ $('progTitle').textContent='Almost there'; $('progLead').textContent='Payment received. One or more domains need a quick manual check — we\u2019ve been notified and will finish it shortly. No action needed from you.'; $('progClose').style.display=''; }
+}
+async function pollGroup(group){
+  $('progOv').classList.add('show');
+  await refreshSession();
+  var token = SESSION && SESSION.access_token;
+  if(!token){ $('progErr').textContent='Sign in to see your registration status.'; openAuth(); return; }
+  var tries=0;
+  async function tick(){
+    tries++;
+    try{
+      var r = await fetch('/api/domains/order?group='+encodeURIComponent(group), { headers:{ 'Authorization':'Bearer '+token } });
+      var j = await r.json();
+      if(r.ok && j.orders){ showProgress(j.orders, j.done?'done':(j.review&&!j.working?'review':'')); if(j.done||(j.review&&!j.working)) return; }
+    }catch(e){}
+    if(tries<40) setTimeout(tick, 3000);
+    else { $('progErr').textContent='Still working — you can safely close this; your dashboard will show the domain once it\u2019s done.'; $('progClose').style.display=''; }
+  }
+  tick();
+}
+$('progClose').onclick=function(){ $('progOv').classList.remove('show'); history.replaceState(null,'','/domains'); };
+$('progManage').onclick=function(){ window.location.href='/manage'; };
+
+/* ---------------- boot ---------------- */
+(async function(){
+  await refreshSession();
+  var p = new URLSearchParams(location.search);
+  if(p.get('status')==='success' && p.get('group')){ cart={}; drawCart(); pollGroup(p.get('group')); }
+  else if(p.get('status')==='cancelled'){ $('note').textContent='Checkout cancelled — your cart is still here whenever you\u2019re ready.'; }
+})();
 </script>
 </body>
 </html>

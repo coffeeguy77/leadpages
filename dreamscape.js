@@ -16,9 +16,11 @@ const MIN_RESERVE = Number(process.env.DREAMSCAPE_MINIMUM_RESERVE_BALANCE || 150
 const LOW_WARNING = Number(process.env.DREAMSCAPE_LOW_BALANCE_WARNING || 250);
 
 const PRIORITY_TLDS = ['com.au', 'au', 'com', 'net.au', 'net', 'co'];
+// Retail (SELL) prices in AUD/yr — kept safely above live Dreamscape COST:
+//   .au/.com.au/.net.au cost ~12.09 · .com 21.39 · .net 25.59 · .org 21.50
 const PRICE_TABLE = {
-  'com.au': 19.95, 'au': 14.95, 'com': 21.95, 'net.au': 19.95,
-  'net': 24.95, 'co': 34.95, 'org': 24.95, 'org.au': 19.95, 'io': 69.95
+  'com.au': 24.95, 'au': 24.95, 'net.au': 24.95, 'org.au': 24.95,
+  'com': 34.95, 'net': 39.95, 'org': 34.95, 'co': 49.95, 'io': 89.95
 };
 const PRIVACY_PRICE = 9.95;
 
@@ -75,6 +77,7 @@ const createRegistrant  = (b) => call('POST',  '/domains/registrants', { body: b
 const updateRegistrant  = (id, b) => call('PATCH', `/domains/registrants/${id}`, { body: b });
 const registerDomain    = (b) => call('POST',  '/domains', { body: b });
 const getDomain         = (id) => call('GET',  `/domains/${id}`);
+const listDomains       = (query) => call('GET', '/domains', { query });
 const renewDomain       = (id, b) => call('POST', `/domains/${id}/renewal`, { body: b });
 const addDnsRecord      = (id, b) => call('POST', `/domains/${id}/dns`, { body: b });
 const listDnsRecords    = (id) => call('GET',  `/domains/${id}/dns`);
@@ -95,7 +98,7 @@ function evaluateBalance(balanceNum, estimatedCost = 0) {
   if (bal < LOW_WARNING)   return { decision: 'warn', balance: bal, after, reserve: MIN_RESERVE, warning: LOW_WARNING };
   return { decision: 'ok', balance: bal, after, reserve: MIN_RESERVE };
 }
-const priceFor = tld => PRICE_TABLE[tld] != null ? PRICE_TABLE[tld] : 24.95;
+const priceFor = tld => PRICE_TABLE[tld] != null ? PRICE_TABLE[tld] : 49.95;
 const envStatus = () => ({
   hasKey: !!RAW_KEY, keyLen: RAW_KEY.length,
   keyLooksValid: /^[a-z0-9]{32}$/.test(RAW_KEY),   // docs: 32 lowercase alphanumeric
@@ -107,5 +110,5 @@ module.exports = {
   call, priceFor, evaluateBalance, envStatus, readBalance,
   ping, getReseller, getBalance, getCurrencies, listTlds, checkAvailability, listDomainPrivacyProducts,
   createCustomer, getCustomer, createRegistrant, updateRegistrant, registerDomain, getDomain, renewDomain,
-  addDnsRecord, listDnsRecords, registerDomainPrivacy
+  addDnsRecord, listDnsRecords, registerDomainPrivacy, listDomains
 };
