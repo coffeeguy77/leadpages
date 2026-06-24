@@ -1365,6 +1365,13 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     const mask=$('login-mask'); if(mask) mask.style.display='flex';
     loginBooting(true);
     try{
+      var __sp=new URLSearchParams(location.search); var __th=__sp.get('token_hash');
+      if(__th){ var __ty=__sp.get('type')||'email';
+        try{ var __vr=await sb.auth.verifyOtp({ token_hash:__th, type:__ty }); history.replaceState(null,'','/manage');
+          if(!(__vr&&__vr.error)){ try{ await afterLogin(); }catch(e){} if(mask) mask.style.display='none'; loginBooting(false); return; } }catch(e){}
+      }
+    }catch(e){}
+    try{
       const { data:{ session } } = await sb.auth.getSession();
       if(session){ try{ await afterLogin(); }catch(e){} if(mask) mask.style.display='none'; loginBooting(false); return; }
     }catch(e){}

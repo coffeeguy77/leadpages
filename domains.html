@@ -391,8 +391,10 @@ $('progManage').onclick=function(){ window.location.href='/manage'; };
 
 /* ---------------- boot ---------------- */
 (async function(){
-  await refreshSession();
   var p = new URLSearchParams(location.search);
+  var th = p.get('token_hash');
+  if(th){ try{ await SB.auth.verifyOtp({ token_hash: th, type: p.get('type')||'email' }); }catch(e){} history.replaceState(null,'','/domains'); }
+  await refreshSession();
   if(p.get('status')==='success' && p.get('group')){ cart={}; drawCart(); pollGroup(p.get('group')); }
   else if(p.get('status')==='cancelled'){ $('note').textContent='Checkout cancelled — your cart is still here whenever you\u2019re ready.'; }
 })();
