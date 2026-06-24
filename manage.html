@@ -1975,6 +1975,210 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     render(''); paintPicked();
   };
 
+  // ===== Two-pane trade picker + super trade builder (additive; does not touch __initTradePicker) =====
+  (function(){ if(document.getElementById('tp2-style'))return; var st=document.createElement('style'); st.id='tp2-style';
+    st.textContent=[
+     '.tp2-wrap{display:flex;border:1px solid #e3e6ea;border-radius:10px;overflow:hidden;background:#fff;margin-top:8px;height:340px}',
+     '.tp2-cats{width:40%;min-width:150px;max-width:250px;border-right:1px solid #eef0f2;overflow:auto;background:#f8fafc;-webkit-overflow-scrolling:touch}',
+     '.tp2-cat{padding:11px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f2f4;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#374151;line-height:1.25}',
+     '.tp2-cat:hover{background:#eef4ff}',
+     '.tp2-cat.on{background:#fff;color:#1d4ed8;font-weight:600;box-shadow:inset 3px 0 0 #1d4ed8}',
+     '.tp2-count{font-size:11px;color:#9aa2ac;font-weight:500;flex:none}',
+     '.tp2-list{flex:1;overflow:auto;-webkit-overflow-scrolling:touch}',
+     '.tp2-trow{padding:10px 14px;font-size:14px;cursor:pointer;border-bottom:1px solid #f4f6f8;display:flex;align-items:center;line-height:1.25}',
+     '.tp2-trow:hover{background:#f3f6ff}',
+     '.tp2-trow.on{background:#eef4ff;color:#1d4ed8;font-weight:600}',
+     '.tp2-trow.on:after{content:"\\2713";margin-left:auto;color:#1d4ed8;font-weight:700}',
+     '.tp2-empty{padding:18px 14px;color:#7a8290;font-size:13px}',
+     '@media(max-width:560px){.tp2-wrap{height:auto;flex-direction:column}.tp2-cats{width:auto;max-width:none;max-height:150px;border-right:0;border-bottom:1px solid #eef0f2}.tp2-list{max-height:240px}}',
+     '.tb-box{margin-top:16px;border:1px solid #e3e6ea;border-radius:10px;background:#fbfcfe}',
+     '.tb-box>summary{cursor:pointer;padding:12px 14px;font-weight:600;font-size:14px;color:#0b1f3a;list-style:none}',
+     '.tb-box>summary::-webkit-details-marker{display:none}',
+     '.tb-box>summary:before{content:"\\002b";display:inline-block;width:16px;color:#1d4ed8;font-weight:700}',
+     '.tb-box[open]>summary:before{content:"\\2212"}',
+     '.tb-inner{padding:0 14px 14px}',
+     '.tb-row{display:flex;gap:10px;flex-wrap:wrap}.tb-row>*{flex:1;min-width:160px}',
+     '.tb-ta{width:100%;box-sizing:border-box;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.45;border:1px solid #d7dbe0;border-radius:8px;padding:10px;background:#fff;resize:vertical}',
+     '.tb-hint{font-size:12px;color:#667;line-height:1.5;margin:8px 0}',
+     '.tb-status{font-size:13px;margin-top:8px;min-height:18px;line-height:1.5}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+  
+  window.__guessCat=function(name){
+    var n=(' '+String(name||'').toLowerCase()+' ');
+    var rules=[
+      ['Hire & Events',['hire','event','party','wedding','marquee','jumping castle','amusement','arcade','catering','coffee cart','coffee van','bar hire','photo booth','furniture hire','staging']],
+      ['Cleaning',['clean','pressure wash','carpet','window clean','gutter clean','oven clean','tile clean']],
+      ['Waste, Removals & Demolition',['rubbish','waste','removal','skip','demolition','junk','clearance','strip out','strip-out']],
+      ['Pest, Restoration & Hazard',['pest','termite','mould','asbestos','restoration','flood','fire damage','hazard','vermin']],
+      ['Pools',['pool','spa']],
+      ['Roofing & Exteriors',['roof','gutter','cladding','skylight','ventilation']],
+      ['Doors, Windows & Locks',['door','window','lock','glaz','blind','awning','shutter','gate']],
+      ['Landscaping & Outdoor',['landscap','garden','lawn','turf','tree','arborist','paving','deck','pergola','fenc','retaining','irrigation','mulch','synthetic','hedge','kerb']],
+      ['Electrical, Solar & Data',['electric','solar','battery','ev charg','data','cabling','antenna','cctv','security','alarm']],
+      ['Heating, Cooling & Insulation',['aircon','air con','air-con','heating','cooling','hvac','insulation','duct']],
+      ['Plumbing & Drains',['plumb','drain','gas','hot water','leak','waterproof','tap','toilet','sewer']],
+      ['Renovations & Interiors',['reno','renovation','bathroom','kitchen','til','paint','plaster','render','floor','cabinet','wardrobe','splashback','ceiling','staircase']],
+      ['Building & Structural',['build','brick','carpen','concret','excavat','steel','weld','scaffold','underpin','stonemason','asphalt','structural']],
+      ['Other & Specialist',['handyman','appliance','repair','specialist']]
+    ];
+    for(var i=0;i<rules.length;i++){ var kws=rules[i][1]; for(var j=0;j<kws.length;j++){ if(n.indexOf(kws[j])>-1) return rules[i][0]; } }
+    return 'Other & Specialist';
+  };
+  
+  window.__initTradePicker2=function(o){
+    window.__tp2opts=o;
+    var L=window.__tradeLabel,T=window.__tradeType,CATS=window.__TRADE_CATS;
+    var catsEl=document.getElementById(o.cats), listEl=document.getElementById(o.list),
+        packEl=document.getElementById(o.hidden), searchEl=document.getElementById(o.search), pickedEl=document.getElementById(o.picked);
+    if(!catsEl||!listEl||!packEl) return;
+    if(o.defaultSlug && !packEl.value) packEl.value=o.defaultSlug;
+    var active=0;
+    (function(){ var s=packEl.value; for(var i=0;i<CATS.length;i++){ if(CATS[i][1].indexOf(s)>-1){ active=i; break; } } })();
+    function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function hay(s){ return (L(s)+' '+T(s)+' '+s).toLowerCase(); }
+    function matchSlugs(ci,q){ var out=[],slugs=CATS[ci][1]; for(var j=0;j<slugs.length;j++){ var s=slugs[j]; if(!q||hay(s).indexOf(q)>-1) out.push(s); } out.sort(function(a,b){var la=L(a).toLowerCase(),lb=L(b).toLowerCase();return la<lb?-1:(la>lb?1:0);}); return out; }
+    function curQ(){ return searchEl?searchEl.value.trim().toLowerCase():''; }
+    function paintPicked(){ if(pickedEl){ var s=packEl.value; pickedEl.innerHTML='<span class="cs-picked-lbl">'+esc(L(s))+'</span><span class="cs-picked-cat">'+esc(window.__tradeCat(s))+'</span>'; } }
+    function setPick(s){ packEl.value=s; paintPicked(); var r=listEl.querySelectorAll('.tp2-trow'); for(var i=0;i<r.length;i++){ r[i].classList.toggle('on', r[i].getAttribute('data-pack')===s); } }
+    function renderList(q){
+      var slugs=matchSlugs(active,q),html='';
+      for(var j=0;j<slugs.length;j++){ var s=slugs[j]; html+='<div class="tp2-trow'+(packEl.value===s?' on':'')+'" data-pack="'+s+'">'+esc(L(s))+'</div>'; }
+      if(!html) html='<div class="tp2-empty">No trades here match. Try another category or search term.</div>';
+      listEl.innerHTML=html;
+      var rows=listEl.querySelectorAll('.tp2-trow');
+      for(var k=0;k<rows.length;k++){ rows[k].addEventListener('click',function(){ setPick(this.getAttribute('data-pack')); }); }
+    }
+    function renderCats(q){
+      var html='';
+      for(var i=0;i<CATS.length;i++){ var c=matchSlugs(i,q).length; if(q && c===0) continue; html+='<div class="tp2-cat'+(i===active?' on':'')+'" data-ci="'+i+'"><span>'+esc(CATS[i][0])+'</span><span class="tp2-count">'+c+'</span></div>'; }
+      catsEl.innerHTML=html;
+      var rows=catsEl.querySelectorAll('.tp2-cat');
+      for(var k=0;k<rows.length;k++){ rows[k].addEventListener('click',function(){ active=parseInt(this.getAttribute('data-ci'),10); renderCats(curQ()); renderList(curQ()); }); }
+    }
+    function ensureActiveHasMatches(q){ if(matchSlugs(active,q).length>0) return; for(var i=0;i<CATS.length;i++){ if(matchSlugs(i,q).length>0){ active=i; return; } } }
+    function renderAll(){ var q=curQ(); ensureActiveHasMatches(q); renderCats(q); renderList(q); }
+    if(searchEl) searchEl.addEventListener('input', renderAll);
+    renderAll(); paintPicked();
+  };
+  
+  window.__tradeStarterCard=function(isSuper){
+    var builder = isSuper ? `
+      <details class="tb-box">
+        <summary>Create a new trade (super)</summary>
+        <div class="tb-inner">
+          <p class="tb-hint">Type what the page is for (e.g. <em>coffee cart hire</em>). I'll suggest a category and build the exact, ready-to-run prompt for you. Copy it into a new Claude chat, paste the JSON it returns back here, and the new trade drops straight into the picker above.</p>
+          <div class="tb-row">
+            <div class="f"><label>Trade / page name</label><input id="tb-name" class="tin" type="text" placeholder="e.g. coffee cart hire"></div>
+            <div class="f"><label>Category</label><select id="tb-cat" class="tin"></select></div>
+          </div>
+          <div class="f" id="tb-newcatwrap" style="display:none;"><label>New category name</label><input id="tb-newcat" class="tin" type="text" placeholder="e.g. Mobile & Hospitality"></div>
+          <div style="margin-top:4px;"><button type="button" class="btn" id="tb-gen">Generate prompt</button></div>
+          <div id="tb-genwrap" style="display:none;margin-top:12px;">
+            <label>1 &middot; Copy this prompt into a new Claude chat</label>
+            <textarea id="tb-prompt" class="tb-ta" rows="8" readonly></textarea>
+            <div style="margin-top:6px;"><button type="button" class="btn ghost" id="tb-copy">Copy prompt</button></div>
+            <label style="display:block;margin-top:12px;">2 &middot; Paste the JSON Claude gives you back</label>
+            <textarea id="tb-json" class="tb-ta" rows="6" placeholder="Paste the JSON object here…"></textarea>
+            <div style="margin-top:6px;"><button type="button" class="btn" id="tb-add">Add to my trades</button></div>
+            <div class="tb-status" id="tb-status"></div>
+          </div>
+        </div>
+      </details>` : '';
+    return `<div class="card" style="margin-bottom:22px;"><h2>Trade starter content</h2>
+      <p class="lede">Load a complete set of starter copy, services and colours for a trade, then fine-tune everything in the tabs above. This replaces the current page content — your business name and contact details stay.</p>
+      <div class="f"><label>Trade</label>
+        <input id="tp-search" class="tin" type="text" autocomplete="off" placeholder="Search 100+ trades… (try &ldquo;fence&rdquo;, &ldquo;drain&rdquo;, &ldquo;hire&rdquo;)">
+        <input type="hidden" id="trade-pack" value="plumber">
+        <div id="tp-picked" class="cs-picked"></div>
+        <div class="tp2-wrap"><div id="tp-cats" class="tp2-cats"></div><div id="tp-packlist" class="tp2-list"></div></div>
+      </div>
+      <div class="f"><button type="button" class="btn" id="trade-pack-load" style="width:100%;margin-top:10px;">Load starter content</button></div>
+      ${builder}
+    </div>`;
+  };
+  
+  window.__registerTradePack=function(slug,cat,pack){
+    TRADE_PACKS[slug]=pack;
+    var C=window.__TRADE_CATS,found=false,i,idx;
+    for(i=0;i<C.length;i++){ idx=C[i][1].indexOf(slug); if(idx>-1) C[i][1].splice(idx,1); }
+    for(i=0;i<C.length;i++){ if(C[i][0]===cat){ C[i][1].push(slug); found=true; break; } }
+    if(!found) C.push([cat,[slug]]);
+  };
+  
+  window.__buildTradePrompt=function(name,category){
+    var slug=String(name||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    return `You are generating a "trade starter content pack" for LeadPages, a Canberra / ACT (Australia) tradie landing-page builder. Produce ONE complete pack for the trade: "${name}".
+  
+  Return ONLY a single valid JSON object — no markdown, no commentary, no code fences — with EXACTLY this shape and these counts:
+  
+  {
+    "slug": "${slug}",
+    "category": "${category}",
+    "pack": {
+      "label": "Short trade name, Title Case, 1-3 words",
+      "tradeType": "What to call the worker, e.g. \\"Drain Specialist\\"",
+      "theme": { "pipe": "#hex primary", "hivis": "#hex accent", "steel": "#hex near-black", "safety": "#hex light tint" },
+      "services": [ EXACTLY 6 of { "on": true, "icon": "<single emoji>", "title": "2-4 words", "body": "one short sentence" } ],
+      "sections": {
+        "header": { "cta": "Speak to a <trade>", "button": "Call now" },
+        "emerg": { "text": "one short urgency or availability line; may begin with \\"⚠ \\"" },
+        "hero": { "eyebrow": "short label · qualifier", "title": "2-3 word hook", "titleHl": "2-4 word highlighted finish", "sub": "1-2 sentences, mention the ACT", "badges": [ EXACTLY 4 of { "icon": "one of ✓ ★ $ ⚡", "text": "2-3 words" } ] },
+        "services": { "eyebrow": "What we do", "heading": "punchy 3-5 words", "intro": "one sentence" },
+        "why": { "eyebrow": "Why {{businessName}}", "heading": "3-5 words", "items": [ EXACTLY 4 of { "n": "one of 01 24/7 ★ ⌂", "title": "2-3 words", "body": "one sentence" } ] },
+        "area": { "eyebrow": "Where we work", "heading": "Across Canberra & the ACT", "intro": "one sentence", "suburbs": ["Gungahlin","Belconnen","Woden","Tuggeranong","Civic","Dickson","Queanbeyan","Molonglo","Weston Creek","Kingston"] },
+        "reviews": { "eyebrow": "From the neighbours", "heading": "3-5 words", "items": [ EXACTLY 3 of { "who": "First L. — Suburb", "text": "\\"a quote that uses {{businessName}} once\\"" } ] },
+        "quote": { "eyebrow": "Fast quote", "sub": "one sentence", "button": "Send & get my call back", "formTitle": "Get my quote", "lblName": "Name", "lblPhone": "Phone", "lblSuburb": "Suburb", "lblDetail": "Anything else? (optional)", "successTitle": "Got it — sit tight. ✓", "heading": "one sentence", "lblJob": "a question label", "points": [ EXACTLY 3 of { "text": "short" } ], "jobOptions": [ EXACTLY 5 of { "text": "short option" } ] },
+        "faq": { "eyebrow": "Good to know", "heading": "Quick answers.", "items": [ EXACTLY 2 of { "q": "a question?", "a": "1-2 sentence answer" } ] },
+        "footer": { "blurb": "one sentence summary", "legal": "{{businessName}} — <relevant ACT licence line> (placeholder). ABN 00 000 000 000. Fully insured. Servicing Canberra & the ACT. © 2026 {{businessName}}.", "services": [ EXACTLY 4 of { "label": "short", "href": "#quote" } ] }
+      }
+    }
+  }
+  
+  Rules:
+  - Australian English; confident, plain, local-tradie tone (not corporate).
+  - Use the literal token {{businessName}} wherever the business name belongs (why.eyebrow, one or two reviews, footer.blurb and footer.legal). Do NOT invent a business name.
+  - "steel" must be near-black; pick colours that suit the trade.
+  - Hit the counts exactly: 6 services, 4 badges, 4 why items, 3 reviews, 3 points, 5 jobOptions, 2 faq, 4 footer services, 10 suburbs (keep the suburbs as listed).
+  - Output the JSON object only.`;
+  };
+  
+  window.__wireTradeBuilder=function(applyFn){
+    var nameEl=document.getElementById('tb-name'), catEl=document.getElementById('tb-cat'),
+        newWrap=document.getElementById('tb-newcatwrap'), newEl=document.getElementById('tb-newcat'),
+        genBtn=document.getElementById('tb-gen'), genWrap=document.getElementById('tb-genwrap'),
+        promptEl=document.getElementById('tb-prompt'), copyBtn=document.getElementById('tb-copy'),
+        jsonEl=document.getElementById('tb-json'), addBtn=document.getElementById('tb-add'),
+        statusEl=document.getElementById('tb-status');
+    if(!nameEl||!catEl) return;
+    var CATS=window.__TRADE_CATS, opts='';
+    for(var i=0;i<CATS.length;i++){ var nm=CATS[i][0]; opts+='<option value="'+nm.replace(/"/g,'&quot;')+'">'+nm+'</option>'; }
+    opts+='<option value="__new">+ New category…</option>';
+    catEl.innerHTML=opts;
+    function syncNew(){ newWrap.style.display=(catEl.value==='__new')?'':'none'; }
+    catEl.addEventListener('change',syncNew);
+    nameEl.addEventListener('input',function(){ var g=window.__guessCat(nameEl.value); if(catEl.value!=='__new'){ for(var k=0;k<catEl.options.length;k++){ if(catEl.options[k].value===g){ catEl.selectedIndex=k; break; } } } });
+    function chosenCat(){ return catEl.value==='__new' ? (newEl.value.trim()||'Other & Specialist') : catEl.value; }
+    genBtn.addEventListener('click',function(){
+      var name=nameEl.value.trim(); if(!name){ statusEl.style.color='#b42318'; statusEl.textContent='Type a trade name first.'; return; }
+      promptEl.value=window.__buildTradePrompt(name, chosenCat());
+      genWrap.style.display=''; statusEl.textContent='';
+    });
+    if(copyBtn) copyBtn.addEventListener('click',function(){ promptEl.select(); try{ navigator.clipboard.writeText(promptEl.value); }catch(e){ try{document.execCommand('copy');}catch(e2){} } copyBtn.textContent='Copied ✓'; setTimeout(function(){copyBtn.textContent='Copy prompt';},1500); });
+    if(addBtn) addBtn.addEventListener('click',function(){
+      var raw=(jsonEl.value||'').trim(); if(!raw){ statusEl.style.color='#b42318'; statusEl.textContent='Paste the JSON first.'; return; }
+      raw=raw.replace(/^```(json)?/i,'').replace(/```$/,'').trim();
+      var obj; try{ obj=JSON.parse(raw); }catch(e){ statusEl.style.color='#b42318'; statusEl.textContent="That isn't valid JSON — check you copied the whole object."; return; }
+      var pack=obj.pack||obj, cat=(obj.category||chosenCat()).toString();
+      var slug=(obj.slug||pack.label||'').toString().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+      if(!slug || !pack || !pack.label || !pack.tradeType || !pack.services || !pack.sections){ statusEl.style.color='#b42318'; statusEl.textContent='JSON is missing required fields (slug, pack.label, tradeType, services, sections).'; return; }
+      try{ window.__registerTradePack(slug,cat,pack); }catch(e){ statusEl.style.color='#b42318'; statusEl.textContent='Could not register: '+e.message; return; }
+      statusEl.style.color='#0a7d33'; statusEl.innerHTML='Added <b>'+pack.label+'</b> under <b>'+cat+'</b> and selected it. Click <b>Load starter content</b> to apply. Saved for this session — tell me to bake it in permanently.';
+      if(window.__tp2opts){ var hp=document.getElementById(window.__tp2opts.hidden); if(hp) hp.value=slug; window.__initTradePicker2(window.__tp2opts); }
+    });
+  };
+
   function openCreateSite(){ if($('cs-ov'))return;
     var ov=document.createElement('div'); ov.className='cs-ov'; ov.id='cs-ov';
     ov.innerHTML='<div class="cs-modal"><h2 style="margin:0 0 4px;">Create a new site</h2><p class="lede" style="margin:0 0 16px;">Spin up a new client landing page \u2014 you can edit everything afterwards.</p>'
@@ -2094,15 +2298,16 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         +'<div class="row">'+lpFld('Email','d-email','')+lpFld('Region','d-region','')+'</div>'
         +'<div class="row">'+lpFld('Trade type','d-trade','e.g. Plumber')+lpFld('Licence','d-licence','')+'</div>'+'<div style="margin-top:6px;"><button class="btn" id="d-save">Save details</button><span id="d-saved" style="margin-left:10px;font-size:13px;color:#0a7d33;"></span></div>'+'</div>'
         +secCard(c,'header','Header call-to-action',false,[['cta','Label above the phone'],['button','Call button text']])
-        +'<div class="card" style="margin-bottom:22px;"><h2>Trade starter content</h2><p class="lede">Load a complete set of starter copy, services and colours for a trade, then fine-tune everything in the tabs above. This replaces the current page content \u2014 your business name and contact details stay.</p><div class="f"><label>Trade</label><input id="tp-search" class="tin" type="text" autocomplete="off" placeholder="Search 100+ trades\u2026 (try \u201cfence\u201d, \u201cdrain\u201d, \u201chire\u201d)"><input type="hidden" id="trade-pack" value="plumber"><div id="tp-picked" class="cs-picked"></div><div id="tp-packlist" class="cs-packlist"></div></div><div class="f"><button type="button" class="btn" id="trade-pack-load" style="width:100%;margin-top:10px;">Load starter content</button></div></div>';
+        + window.__tradeStarterCard(currentRole==='super');
       wireDetailFields(c,'trade'); wireSec(c,'header',false,[['cta'],['button']]);
       (function(){ var ct=(c.trade||'').toLowerCase().trim(); var slug='plumber';
         if(ct){ if(ct==='plumber'){ slug='plumber'; } else if(TRADE_PACKS[ct]){ slug=ct; }
           else { for(var kk in TRADE_PACKS){ var lb=window.__tradeLabel(kk).toLowerCase(); if(lb===ct || lb.indexOf(ct)===0 || (TRADE_PACKS[kk].tradeType||'').toLowerCase()===ct){ slug=kk; break; } } } }
         var hp=$('trade-pack'); if(hp) hp.value=slug;
-        if(window.__initTradePicker) window.__initTradePicker({search:'tp-search',hidden:'trade-pack',picked:'tp-picked',list:'tp-packlist',defaultSlug:slug});
+        if(window.__initTradePicker2) window.__initTradePicker2({search:'tp-search',hidden:'trade-pack',picked:'tp-picked',cats:'tp-cats',list:'tp-packlist',defaultSlug:slug});
       })();
       var tpBtn=$('trade-pack-load'); if(tpBtn) tpBtn.addEventListener('click',function(){ var k=$('trade-pack').value; var nm=window.__tradeLabel(k); if(window.confirm('Load the '+nm+' starter content?\n\nThis replaces the current page copy, services and colours. Your business name and contact details stay. You can fine-tune everything afterwards.')) applyTradePack(k); });
+      if(window.__wireTradeBuilder) window.__wireTradeBuilder(applyTradePack);
     } else if(sub==='hero'){
       body.innerHTML=secCard(c,'hero','Hero',false,[['eyebrow','Eyebrow (label above headline)'],['title','Headline'],['titleHl','Headline highlight (coloured words)'],['sub','Sub-text','ta']])
         +listCard('badges','Trust badges','The small badges under the hero buttons. Edit, hide or remove each.');
