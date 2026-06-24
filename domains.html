@@ -123,11 +123,12 @@
   <div class="modal">
     <h2>Sign in to continue</h2>
     <div class="mbody">
-      <p class="lead">Enter the email for your LeadPages account. We'll send you a one-time sign-in link.</p>
+      <p class="lead">Enter the email for your LeadPages account. We'll email you a 6-digit sign-in code.</p>
       <div class="f"><label>Email</label><input id="authEmail" type="email" placeholder="you@business.com.au" autocomplete="email"></div>
+      <div class="f" id="authCodeWrap" style="display:none"><label>Sign-in code</label><input id="authCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code"></div>
       <div class="merr" id="authErr"></div>
     </div>
-    <div class="mfoot"><button id="authCancel">Cancel</button><button class="go" id="authSend">Email me a link</button></div>
+    <div class="mfoot"><button id="authCancel">Cancel</button><button class="go" id="authSend">Email me a code</button><button class="go" id="authVerify" style="display:none">Verify &amp; sign in</button></div>
   </div>
 </div>
 
@@ -212,12 +213,25 @@ function openAuth(){ $('authErr').textContent=''; if(SESSION&&SESSION.user)$('au
 $('authCancel').onclick = function(){ $('authOv').classList.remove('show'); };
 $('authSend').onclick = async function(){
   var email = $('authEmail').value.trim();
-  if(!email){ $('authErr').textContent='Please enter your email.'; return; }
-  $('authSend').disabled=true; $('authErr').textContent='';
-  var r = await SB.auth.signInWithOtp({ email: email, options:{ emailRedirectTo: location.origin + '/domains' } });
+  if(!email){ $('authErr').style.color='var(--bad)'; $('authErr').textContent='Please enter your email.'; return; }
+  $('authSend').disabled=true; $('authErr').style.color='var(--bad)'; $('authErr').textContent='';
+  var r = await SB.auth.signInWithOtp({ email: email, options:{ shouldCreateUser:false } });
   $('authSend').disabled=false;
-  if(r.error){ $('authErr').textContent = r.error.message || 'Could not send the link.'; return; }
-  $('authErr').style.color='var(--ok)'; $('authErr').textContent='Check your inbox — open the link on this device to continue.';
+  if(r.error){ $('authErr').textContent = r.error.message || 'Could not send the code.'; return; }
+  $('authCodeWrap').style.display=''; $('authVerify').style.display=''; $('authSend').textContent='Resend code';
+  $('authErr').style.color='var(--ok)'; $('authErr').textContent='Check your inbox and enter the 6-digit code.';
+  $('authCode').focus();
+};
+$('authVerify').onclick = async function(){
+  var email = $('authEmail').value.trim();
+  var token = ($('authCode').value||'').trim().replace(/\s+/g,'');
+  if(!token){ $('authErr').style.color='var(--bad)'; $('authErr').textContent='Enter the code from your email.'; return; }
+  $('authVerify').disabled=true; $('authErr').style.color='var(--bad)'; $('authErr').textContent='';
+  var r = await SB.auth.verifyOtp({ email: email, token: token, type:'email' });
+  $('authVerify').disabled=false;
+  if(r.error){ $('authErr').textContent = r.error.message || 'That code didn\u2019t work — check it or resend.'; return; }
+  $('authOv').classList.remove('show');
+  await refreshSession();
 };
 
 /* ---------------- search + cart (unchanged behaviour) ---------------- */

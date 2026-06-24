@@ -1906,12 +1906,75 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 
   /* ===================== Create site ===================== */
   function packToConfig(key,biz){ var p=TRADE_PACKS[key]; biz=(biz||'').trim()||'us'; function sub(o){ if(typeof o==='string')return o.replace(/\{\{\s*businessName\s*\}\}/g,biz); if(Array.isArray(o))return o.map(sub); if(o&&typeof o==='object'){var n={};for(var k in o)n[k]=sub(o[k]);return n;} return o; } if(!p)return {sections:{},trade:'Plumber',theme:themeFromPreset('Plumber'),layout:'classic'}; return { theme:themeFromPreset(p.label), services:sub(JSON.parse(JSON.stringify(p.services))), sections:sub(JSON.parse(JSON.stringify(p.sections))), trade:p.tradeType, layout:'classic' }; }
-  function openCreateSite(){ if($('cs-ov'))return; var packs=Object.keys(TRADE_PACKS).map(function(k){return '<option value="'+k+'">'+TRADE_PACKS[k].label+'</option>';}).join('');
+  // ===== Categorised + searchable trade picker (shared by New Site + editor) =====
+  (function(){ if(document.getElementById('cs-pack-style'))return; var st=document.createElement('style'); st.id='cs-pack-style';
+    st.textContent='.cs-packlist{max-height:230px;overflow:auto;border:1px solid #e3e6ea;border-radius:10px;margin-top:8px;background:#fff}'
+      +'.cs-cgroup{border-bottom:1px solid #f0f2f4}.cs-cgroup:last-child{border-bottom:0}'
+      +'.cs-chead{position:sticky;top:0;background:#f6f8fa;color:#5b6470;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:7px 12px;border-bottom:1px solid #eef0f2;z-index:1}'
+      +'.cs-trow{padding:9px 12px;font-size:14px;cursor:pointer;display:flex;align-items:center;line-height:1.2}'
+      +'.cs-trow:hover{background:#f3f6ff}'
+      +'.cs-trow.on{background:#eef4ff;color:#1d4ed8;font-weight:600}'
+      +'.cs-trow.on:after{content:"\\2713";margin-left:auto;color:#1d4ed8;font-weight:700}'
+      +'.cs-picked{margin-top:8px;display:flex;align-items:center;gap:6px;font-size:13px;color:#0b1f3a;flex-wrap:wrap}'
+      +'.cs-picked-lbl{font-weight:700}.cs-picked-cat{color:#7a8290}.cs-picked-cat:before{content:"in ";color:#9aa2ac;font-weight:400}'
+      +'.cs-empty{padding:16px 12px;color:#7a8290;font-size:13px}';
+    document.head.appendChild(st);
+  })();
+  window.__TRADE_CATS=[
+    ['Plumbing & Drains',['plumber','gas-fitter','hot-water','blocked-drains','leak-detection','roof-plumbing','waterproofing']],
+    ['Electrical, Solar & Data',['electrician','solar','solar-battery','ev-charger','data-cabling','security','antenna']],
+    ['Heating, Cooling & Insulation',['aircon','insulation']],
+    ['Building & Structural',['builder','bricklayer','carpenter','concreter','excavation','steel-fixing','welding','scaffolding','underpinning','stonemason','asphalt','polished-concrete']],
+    ['Renovations & Interiors',['bathroom-reno','kitchen-reno','tiler','painter','plasterer','renderer','flooring','epoxy-flooring','splashbacks','cabinet-maker','wardrobes','staircases','ceilings','soundproofing','shopfitting','resurfacing','balustrading']],
+    ['Roofing & Exteriors',['roofer','roof-restoration','metal-roofing','guttering','roof-ventilation','skylights','cladding']],
+    ['Doors, Windows & Locks',['garage-doors','automatic-gates','glazier','locksmith','blinds-awnings']],
+    ['Landscaping & Outdoor',['landscaper','gardener','lawn-mowing','hedge-trimming','arborist','stump-grinding','irrigation','turf','synthetic-turf','paving','decking','pergolas','fencing','retaining-walls','kerbing','water-features','outdoor-kitchens','shade-sails','carports-sheds']],
+    ['Pools',['pool-building','pool-maintenance','glass-pool-fencing']],
+    ['Cleaning',['house-cleaning','carpet-cleaning','window-cleaning','end-of-lease-cleaning','oven-cleaning','tile-grout-cleaning','pressure-washing','gutter-cleaning']],
+    ['Pest, Restoration & Hazard',['pest-control','mould-removal','water-damage','fire-restoration','storm-damage','asbestos-removal','asbestos-roof']],
+    ['Waste, Removals & Demolition',['rubbish-removal','skip-bin-hire','removalists','demolition']],
+    ['Hire & Events',['party-hire','equipment-hire','arcade-amusements']],
+    ['Other & Specialist',['handyman','appliance-repair','pool-table-restoration']]
+  ];
+  window.__tradeLabel=function(s){ return s==='plumber'?'Plumber':(TRADE_PACKS[s]?TRADE_PACKS[s].label:s); };
+  window.__tradeType=function(s){ return s==='plumber'?'Plumber':((TRADE_PACKS[s]&&TRADE_PACKS[s].tradeType)?TRADE_PACKS[s].tradeType:''); };
+  window.__tradeCat=function(s){ var C=window.__TRADE_CATS; for(var i=0;i<C.length;i++){ if(C[i][1].indexOf(s)>-1) return C[i][0]; } return ''; };
+  window.__initTradePicker=function(o){
+    var L=window.__tradeLabel,T=window.__tradeType,CATS=window.__TRADE_CATS;
+    var listEl=document.getElementById(o.list),searchEl=document.getElementById(o.search),packEl=document.getElementById(o.hidden),pickedEl=document.getElementById(o.picked);
+    if(!listEl||!packEl) return;
+    if(o.defaultSlug && !packEl.value) packEl.value=o.defaultSlug;
+    function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function paintPicked(){ if(pickedEl){ var s=packEl.value; pickedEl.innerHTML='<span class="cs-picked-lbl">'+esc(L(s))+'</span><span class="cs-picked-cat">'+esc(window.__tradeCat(s))+'</span>'; } }
+    function setPick(s){ packEl.value=s; paintPicked(); var r=listEl.querySelectorAll('.cs-trow'); for(var i=0;i<r.length;i++){ r[i].classList.toggle('on', r[i].getAttribute('data-pack')===s); } }
+    function render(q){
+      q=(q||'').trim().toLowerCase(); var html='',shown=0;
+      for(var i=0;i<CATS.length;i++){
+        var name=CATS[i][0], slugs=CATS[i][1].slice();
+        slugs.sort(function(a,b){ var la=L(a).toLowerCase(),lb=L(b).toLowerCase(); return la<lb?-1:(la>lb?1:0); });
+        var rows='';
+        for(var j=0;j<slugs.length;j++){ var s=slugs[j]; var hay=(L(s)+' '+T(s)+' '+s).toLowerCase(); if(q && hay.indexOf(q)<0) continue; rows+='<div class="cs-trow'+(packEl.value===s?' on':'')+'" data-pack="'+s+'">'+esc(L(s))+'</div>'; shown++; }
+        if(rows) html+='<div class="cs-cgroup"><div class="cs-chead">'+esc(name)+'</div>'+rows+'</div>';
+      }
+      if(!shown) html='<div class="cs-empty">No trades match that. Try a simpler word like \u201croof\u201d or \u201cclean\u201d.</div>';
+      listEl.innerHTML=html;
+      var rws=listEl.querySelectorAll('.cs-trow');
+      for(var k=0;k<rws.length;k++){ rws[k].addEventListener('click',function(){ setPick(this.getAttribute('data-pack')); }); }
+    }
+    if(searchEl) searchEl.addEventListener('input',function(){ render(this.value); });
+    render(''); paintPicked();
+  };
+
+  function openCreateSite(){ if($('cs-ov'))return;
     var ov=document.createElement('div'); ov.className='cs-ov'; ov.id='cs-ov';
     ov.innerHTML='<div class="cs-modal"><h2 style="margin:0 0 4px;">Create a new site</h2><p class="lede" style="margin:0 0 16px;">Spin up a new client landing page \u2014 you can edit everything afterwards.</p>'
       +'<div class="f"><label>Business name</label><input id="cs-biz" type="text" placeholder="e.g. Sparky Bros Electrical"></div>'
       +'<div class="row"><div class="f"><label>Web address</label><input id="cs-slug" type="text" placeholder="sparky-bros"></div><div class="f"><label>Type</label><select id="cs-tpl" class="tin"><option value="trade">Trade landing page</option><option value="broker-leads">Broker landing page</option><option value="broker-app">Broker calculator app</option></select></div></div>'
-      +'<div class="f" id="cs-packwrap"><label>Trade starter content</label><select id="cs-pack" class="tin"><option value="plumber">Plumber</option>'+packs+'</select></div>'
+      +'<div class="f" id="cs-packwrap"><label>Trade starter content</label>'
+        +'<input id="cs-search" class="tin" type="text" autocomplete="off" placeholder="Search 100+ trades\\u2026 (try \\u201cfence\\u201d, \\u201cdrain\\u201d, \\u201chire\\u201d)">'
+        +'<input type="hidden" id="cs-pack" value="plumber">'
+        +'<div id="cs-picked" class="cs-picked"></div>'
+        +'<div id="cs-packlist" class="cs-packlist"></div></div>'
       +'<div class="row"><div class="f"><label>Phone (shown)</label><input id="cs-phoneText" type="text" placeholder="(02) 1234 5678"></div><div class="f"><label>Phone (call button)</label><input id="cs-phone" type="text" placeholder="+61..."></div></div>'
       +'<div class="row"><div class="f"><label>Email</label><input id="cs-email" type="text"></div><div class="f"><label>Region</label><input id="cs-region" type="text" placeholder="Canberra & the ACT"></div></div>'
       +'<div id="cs-err" style="color:#b42318;font-size:13px;min-height:18px;margin-top:2px;"></div>'
@@ -1924,6 +1987,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     $('cs-cancel').addEventListener('click',function(){ ov.remove(); });
     ov.addEventListener('click',function(e){ if(e.target===ov) ov.remove(); });
     $('cs-create').addEventListener('click',createSiteSubmit);
+    window.__initTradePicker({search:'cs-search',hidden:'cs-pack',picked:'cs-picked',list:'cs-packlist',defaultSlug:'plumber'});
     biz.focus();
   }
   async function createSiteSubmit(){ var err=$('cs-err'); err.textContent='';
@@ -2020,10 +2084,15 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         +'<div class="row">'+lpFld('Email','d-email','')+lpFld('Region','d-region','')+'</div>'
         +'<div class="row">'+lpFld('Trade type','d-trade','e.g. Plumber')+lpFld('Licence','d-licence','')+'</div>'+'<div style="margin-top:6px;"><button class="btn" id="d-save">Save details</button><span id="d-saved" style="margin-left:10px;font-size:13px;color:#0a7d33;"></span></div>'+'</div>'
         +secCard(c,'header','Header call-to-action',false,[['cta','Label above the phone'],['button','Call button text']])
-        +'<div class="card" style="margin-bottom:22px;"><h2>Trade starter content</h2><p class="lede">Load a complete set of starter copy, services and colours for a trade, then fine-tune everything in the tabs above. This replaces the current page content \u2014 your business name and contact details stay.</p><div class="row"><div class="f"><label>Trade</label><select id="trade-pack" class="tin"><option value="plumber">Plumber (default)</option>'+Object.keys(TRADE_PACKS).map(function(k){return '<option value="'+k+'">'+TRADE_PACKS[k].label+'</option>';}).join('')+'</select></div><div class="f" style="display:flex;align-items:flex-end;"><button type="button" class="btn" id="trade-pack-load" style="width:100%;">Load starter content</button></div></div></div>';
+        +'<div class="card" style="margin-bottom:22px;"><h2>Trade starter content</h2><p class="lede">Load a complete set of starter copy, services and colours for a trade, then fine-tune everything in the tabs above. This replaces the current page content \u2014 your business name and contact details stay.</p><div class="f"><label>Trade</label><input id="tp-search" class="tin" type="text" autocomplete="off" placeholder="Search 100+ trades\u2026 (try \u201cfence\u201d, \u201cdrain\u201d, \u201chire\u201d)"><input type="hidden" id="trade-pack" value="plumber"><div id="tp-picked" class="cs-picked"></div><div id="tp-packlist" class="cs-packlist"></div></div><div class="f"><button type="button" class="btn" id="trade-pack-load" style="width:100%;margin-top:10px;">Load starter content</button></div></div>';
       wireDetailFields(c,'trade'); wireSec(c,'header',false,[['cta'],['button']]);
-      var tpSel=$('trade-pack'); if(tpSel){ var ct=(c.trade||'').toLowerCase().trim(); for(var ti=0;ti<tpSel.options.length;ti++){ var to=tpSel.options[ti]; if(ct && (to.value===ct || to.textContent.toLowerCase().indexOf(ct)===0)){ tpSel.selectedIndex=ti; break; } } }
-      var tpBtn=$('trade-pack-load'); if(tpBtn) tpBtn.addEventListener('click',function(){ var sel=$('trade-pack'); var k=sel.value, nm=sel.selectedOptions[0].textContent; if(window.confirm('Load the '+nm+' starter content?\n\nThis replaces the current page copy, services and colours. Your business name and contact details stay. You can fine-tune everything afterwards.')) applyTradePack(k); });
+      (function(){ var ct=(c.trade||'').toLowerCase().trim(); var slug='plumber';
+        if(ct){ if(ct==='plumber'){ slug='plumber'; } else if(TRADE_PACKS[ct]){ slug=ct; }
+          else { for(var kk in TRADE_PACKS){ var lb=window.__tradeLabel(kk).toLowerCase(); if(lb===ct || lb.indexOf(ct)===0 || (TRADE_PACKS[kk].tradeType||'').toLowerCase()===ct){ slug=kk; break; } } } }
+        var hp=$('trade-pack'); if(hp) hp.value=slug;
+        if(window.__initTradePicker) window.__initTradePicker({search:'tp-search',hidden:'trade-pack',picked:'tp-picked',list:'tp-packlist',defaultSlug:slug});
+      })();
+      var tpBtn=$('trade-pack-load'); if(tpBtn) tpBtn.addEventListener('click',function(){ var k=$('trade-pack').value; var nm=window.__tradeLabel(k); if(window.confirm('Load the '+nm+' starter content?\n\nThis replaces the current page copy, services and colours. Your business name and contact details stay. You can fine-tune everything afterwards.')) applyTradePack(k); });
     } else if(sub==='hero'){
       body.innerHTML=secCard(c,'hero','Hero',false,[['eyebrow','Eyebrow (label above headline)'],['title','Headline'],['titleHl','Headline highlight (coloured words)'],['sub','Sub-text','ta']])
         +listCard('badges','Trust badges','The small badges under the hero buttons. Edit, hide or remove each.');
@@ -2425,7 +2494,11 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       +'<label>Password</label><input type="password" id="li-pass" class="tin" placeholder="Your password" autocomplete="current-password">'
       +'<div class="login-err" id="li-err"></div>'
       +'<button class="btn" id="li-go" style="width:100%;margin-top:6px">Sign in</button>'
-      +'<button class="btn ghost" id="li-magic" style="width:100%;margin-top:6px">Email me a sign-in link</button>'
+      +'<button class="btn ghost" id="li-magic" style="width:100%;margin-top:6px">Email me a sign-in code</button>'
+      +'<div id="li-codewrap" style="display:none;margin-top:8px">'
+      +'<label>Sign-in code</label><input type="text" id="li-code" class="tin" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code">'
+      +'<button class="btn" id="li-verify" style="width:100%;margin-top:6px">Verify code &amp; sign in</button>'
+      +'</div>'
       +'<div class="login-foot"><button class="lk" id="li-forgot">Forgot password?</button></div>'
       +'<div class="login-note">Sign in with the email and password for this site’s account.</div>'
       +'</div></div>';
@@ -2433,10 +2506,22 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     $('li-go').addEventListener('click',lpLogin);
     var __mg=$('li-magic'); if(__mg) __mg.addEventListener('click',lpMagic);
     async function lpMagic(){ var email=$('li-user').value.trim(); if(!email){ $('li-err').style.color=''; $('li-err').textContent='Enter your email first.'; return; }
-      $('li-err').style.color=''; $('li-err').textContent='Sending a sign-in link\u2026';
-      var r=await sb.auth.signInWithOtp({ email:email, options:{ emailRedirectTo: location.origin + '/manage' } });
-      if(r.error){ $('li-err').textContent=(r.error.message||'Could not send link.'); return; }
-      $('li-err').style.color='#0a7d33'; $('li-err').textContent='Check your email \u2014 we sent you a sign-in link.'; }
+      $('li-err').style.color=''; $('li-err').textContent='Sending your code\u2026';
+      var r=await sb.auth.signInWithOtp({ email:email, options:{ shouldCreateUser:false } });
+      if(r.error){ $('li-err').textContent=(r.error.message||'Could not send code.'); return; }
+      $('li-codewrap').style.display='block'; $('li-magic').textContent='Resend code';
+      $('li-err').style.color='#0a7d33'; $('li-err').textContent='Check your email \u2014 enter the 6-digit code below.';
+      var c=$('li-code'); if(c) c.focus(); }
+    async function lpVerify(){ var email=$('li-user').value.trim(); var token=($('li-code').value||'').trim().replace(/\s+/g,'');
+      if(!email){ $('li-err').style.color=''; $('li-err').textContent='Enter your email first.'; return; }
+      if(!token){ $('li-err').style.color=''; $('li-err').textContent='Enter the code from your email.'; return; }
+      $('li-err').style.color=''; $('li-err').textContent='Signing in\u2026';
+      var r=await sb.auth.verifyOtp({ email:email, token:token, type:'email' });
+      if(r.error){ $('li-err').textContent=(r.error.message||'That code didn\u2019t work \u2014 check it or tap Resend.'); return; }
+      var m=$('login-mask'); if(m) m.style.display='none';
+      try{ await afterLogin(); }catch(e){} }
+    var __vf=$('li-verify'); if(__vf) __vf.addEventListener('click',lpVerify);
+    var __cd=$('li-code'); if(__cd) __cd.addEventListener('keydown',function(e){ if(e.key==='Enter') lpVerify(); });
     $('li-pass').addEventListener('keydown',function(e){ if(e.key==='Enter') lpLogin(); });
     $('li-forgot').addEventListener('click',function(){
       const v=$('li-user').value.trim();
