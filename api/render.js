@@ -127,7 +127,20 @@ module.exports = async (req, res) => {
       { business: site.business_name, slug: site.slug, siteId: site.id },
       site.config || {}
     );
-    if (template === 'trade' && !cfg.trade) cfg.trade = 'Plumber';
+    if (template === 'trade' && !cfg.trade) cfg.trade = '';
+
+    // ---- SEO title/description (per-tenant, graceful, never plumber-specific) ----
+    // Driven by business name + the site's own trade/service type, with optional
+    // cfg.seoTitle / cfg.seoDescription overrides. Works for trades, services and
+    // business types alike (cafe, accommodation, etc.).
+    const _biz   = (cfg.business || site.business_name || '').trim();
+    const _trade = (cfg.trade || '').trim();
+    const pageTitle = (cfg.seoTitle || '').trim()
+      || (_trade ? `${_biz} — ${_trade} in Canberra & the ACT`
+                 : `${_biz} — Canberra & the ACT`);
+    const pageDesc = (cfg.seoDescription || '').trim()
+      || (_trade ? `${_biz} — licensed, local ${_trade.toLowerCase()} across Canberra and the ACT. Fast, free quotes. Get in touch today.`
+                 : `${_biz} — trusted local service across Canberra and the ACT. Fast, free quotes. Get in touch today.`);
 
     let html = tpl.replaceAll('__SITE_CONFIG__', safeJson(cfg));
     const tokens = {
@@ -136,7 +149,10 @@ module.exports = async (req, res) => {
       '{{email}}':        esc(cfg.email),
       '{{phone}}':        esc(cfg.phone),
       '{{domain}}':       esc(host),
-      '{{initial}}':      esc((site.business_name || 'B').trim().charAt(0).toUpperCase())
+      '{{initial}}':      esc((site.business_name || 'B').trim().charAt(0).toUpperCase()),
+      '{{trade}}':        esc(_trade),
+      '{{pageTitle}}':    esc(pageTitle),
+      '{{pageDesc}}':     esc(pageDesc)
     };
     for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
 
