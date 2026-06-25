@@ -84,11 +84,32 @@ const patchDomain       = (id, b) => call('PATCH', `/domains/${id}`, { body: b }
 const deleteDomain      = (id) => call('DELETE', `/domains/${id}`);
 const registerDomainPrivacy = (b) => call('POST', '/products/domain-privacies', { body: b });
 
-// ---- DNS Hosting product (paid add-on) ----
-// NOTE: DNS records are NOT under /domains/{id}/dns (that path does not exist).
-// You first register a DNS Hosting product for the domain, then manage records
-// under /products/dns-hostings/{product_id}/dns. Record types include A, AAAA,
-// CNAME, TXT, MX, CAA, SRV, WEBFWD (URL forwarding) and MAILFWD (email forwarding).
+// ---- Domain-level DNS (the basic DNS that comes with the domain) ----
+// Records live at /domains/{domain_id}/dns and support A, AAAA, TXT, CNAME, MX,
+// CAA, SRV, WEBFWD (URL forwarding) and MAILFWD (email forwarding to an external
+// address). This is the primary DNS surface for a registered domain on Dreamscape
+// nameservers. (Premium "DNS Hosting" below is a paid upsell with the same record API.)
+const listDomainDns      = (id, type) => call('GET', `/domains/${id}/dns`, { query: type ? { type } : undefined });
+const getDomainDns       = (id, rid) => call('GET', `/domains/${id}/dns/${rid}`);
+const addDomainDns       = (id, b) => call('POST', `/domains/${id}/dns`, { body: b });
+const updateDomainDns    = (id, rid, b) => call('PATCH', `/domains/${id}/dns/${rid}`, { body: b });
+const deleteDomainDns    = (id, rid) => call('DELETE', `/domains/${id}/dns/${rid}`);
+
+// ---- Domain hosts / glue records (only needed for custom child nameservers) ----
+const listHosts          = (id) => call('GET', `/domains/${id}/hosts`);
+const addHost            = (id, b) => call('POST', `/domains/${id}/hosts`, { body: b });
+const getHost            = (id, host) => call('GET', `/domains/${id}/hosts/${encodeURIComponent(host)}`);
+const updateHost         = (id, host, b) => call('PATCH', `/domains/${id}/hosts/${encodeURIComponent(host)}`, { body: b });
+const deleteHost         = (id, host) => call('DELETE', `/domains/${id}/hosts/${encodeURIComponent(host)}`);
+
+// ---- Product catalogue: types, plans, plan features (for discovering plan_ids + cost) ----
+// /products/plans returns periods[].price.{wholesale (reseller COST), register, renew}.
+const listProductTypes   = (query) => call('GET', '/products/types', { query });
+const listPlans          = (query) => call('GET', '/products/plans', { query }); // filter by type_id
+const getPlan            = (id) => call('GET', `/products/plans/${id}`);
+const getPlanFeatures    = (id, types) => call('GET', `/products/plans/${id}/features`, { query: types ? { 'types[]': types } : undefined });
+
+// ---- DNS Hosting product (paid "Premium DNS" upsell; same record API as domain DNS) ----
 const registerDnsHosting = (b) => call('POST', '/products/dns-hostings', { body: b });           // {customer_id,domain_name,plan_id,period}
 const listDnsHostings    = (query) => call('GET', '/products/dns-hostings', { query });           // filter by domain_name / customer_id
 const getDnsHosting      = (pid) => call('GET', `/products/dns-hostings/${pid}`);
@@ -145,7 +166,12 @@ module.exports = {
   ping, getReseller, getBalance, getCurrencies, listTlds, checkAvailability, listDomainPrivacyProducts,
   createCustomer, getCustomer, listCustomers, createRegistrant, updateRegistrant,
   registerDomain, getDomain, listDomains, renewDomain, patchDomain, deleteDomain, registerDomainPrivacy,
-  // DNS Hosting + records
+  // Domain-level DNS (basic) + hosts
+  listDomainDns, getDomainDns, addDomainDns, updateDomainDns, deleteDomainDns,
+  listHosts, addHost, getHost, updateHost, deleteHost,
+  // Product catalogue
+  listProductTypes, listPlans, getPlan, getPlanFeatures,
+  // DNS Hosting (Premium DNS) + records
   registerDnsHosting, listDnsHostings, getDnsHosting, getDnsConfig, renewDnsHosting, deleteDnsHosting,
   listDnsRecords, getDnsRecord, addDnsRecord, updateDnsRecord, deleteDnsRecord,
   // Email Hosting
