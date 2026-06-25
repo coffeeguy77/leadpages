@@ -74,7 +74,7 @@ const ping        = () => call('GET', '/ping');
 const getReseller = () => call('GET', '/reseller');
 const getBalance  = () => call('GET', '/finances/balance');
 const getCurrencies = () => call('GET', '/finances/currencies');
-const listTlds    = () => call('GET', '/domains/tlds');
+const listTlds    = (query) => call('GET', '/domains/tlds', { query });
 const checkAvailability = (domains) =>
   call('GET', '/domains/availability', { query: { 'domain_names[]': Array.isArray(domains) ? domains : [domains] } });
 const listDomainPrivacyProducts = () => call('GET', '/products/domain-privacies');

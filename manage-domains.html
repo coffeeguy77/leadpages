@@ -129,7 +129,7 @@ input:focus,select:focus{outline:2px solid var(--brand);outline-offset:0;border-
 <script>
 var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
 var $ = function(id){ return document.getElementById(id); };
-var SESSION = null, DOMAINS = [], OPEN = null, PRICING = [];
+var SESSION = null, DOMAINS = [], OPEN = null, PRICING = [], IS_SUPER = false;
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 function money(n){ var v=Number(n); return isFinite(v)?'$'+v.toFixed(2):'—'; }
@@ -140,6 +140,9 @@ async function api(path, opts){
   var j=null; try{ j=await r.json(); }catch(e){}
   return { ok:r.ok, status:r.status, data:j };
 }
+// identifier for DNS calls — super uses the Dreamscape id, clients use our uuid
+function dnsQuery(d){ return d.manage==='dreamscape' ? ('dreamscape_id='+encodeURIComponent(d.dreamscape_id)+'&domain_name='+encodeURIComponent(d.domain_name)) : ('domain_id='+encodeURIComponent(d.id)); }
+function dnsBody(d){ return d.manage==='dreamscape' ? {dreamscape_id:d.dreamscape_id, domain_name:d.domain_name} : {domain_id:d.id}; }
 
 /* ---------- auth ---------- */
 function showAuth(){ $('authOv').classList.add('show'); $('authEmail').focus(); }
@@ -167,13 +170,17 @@ $('refreshBtn').onclick = function(){ loadDomains(); };
 
 /* ---------- domains ---------- */
 async function loadDomains(){
-  $('domainsList').innerHTML='<div class="empty"><span class="spin"></span> Loading your domains…</div>';
-  var r = await sb.from('domains').select('id,domain_name,status,dreamscape_domain_id,site_id,created_at').order('created_at',{ascending:true});
-  DOMAINS = (r.data||[]);
+  $('domainsList').innerHTML='<div class="empty"><span class="spin"></span> Loading domains…</div>';
+  var r = await api('/api/domains/list');
+  if(!r.ok){ $('domainsList').innerHTML='<div class="msg err">'+esc((r.data&&r.data.error)||'Could not load domains.')+'</div>'; return; }
+  IS_SUPER = !!(r.data && r.data.super);
+  DOMAINS = (r.data && r.data.domains) || [];
+  if(IS_SUPER){ $('domainsCard').querySelector('.lede').textContent='Admin view — every domain in your Dreamscape account. Click a domain to manage its DNS and email forwarding.'; }
   renderDomains();
 }
 function statusChip(d){
-  if(!d.dreamscape_domain_id) return '<span class="chip ext">External</span>';
+  if(d.manage==='dreamscape'){ return '<span class="chip ok">'+(String(d.status_id)==='2'?'Registered':('Status '+esc(d.status_id)))+'</span>'; }
+  if(!d.dreamscape_id) return '<span class="chip ext">External</span>';
   var s=String(d.status||'').toLowerCase();
   if(s.indexOf('regist')>=0||s.indexOf('active')>=0||s==='ok') return '<span class="chip ok">Registered</span>';
   return '<span class="chip">'+esc(d.status||'Pending')+'</span>';
@@ -182,13 +189,14 @@ function renderDomains(){
   if(!DOMAINS.length){ $('domainsList').innerHTML='<div class="empty">No domains yet. Use “Register a domain” to get your first one.</div>'; return; }
   var html='';
   DOMAINS.forEach(function(d,i){
+    var meta = d.manage==='dreamscape' ? ('Dreamscape #'+esc(d.dreamscape_id)+(d.expiry_date?(' · expires '+esc(String(d.expiry_date).slice(0,10))):'')) : (d.dreamscape_id?('Dreamscape #'+esc(d.dreamscape_id)):'Not registered through us');
     html+='<div class="row">'
       +'<div class="globe">◍</div>'
-      +'<div style="flex:1"><div class="dname">'+esc(d.domain_name)+'</div><div class="dmeta">'+(d.dreamscape_domain_id?('Dreamscape #'+esc(d.dreamscape_domain_id)):'Not registered through us')+'</div></div>'
+      +'<div style="flex:1"><div class="dname">'+esc(d.domain_name)+'</div><div class="dmeta">'+meta+'</div></div>'
       +statusChip(d)
-      +(d.dreamscape_domain_id?('<button class="btn ghost sm" data-open="'+i+'">'+(OPEN===i?'Close':'Manage DNS')+'</button>'):'<span class="dmeta" style="margin-left:8px">Point its nameservers here to manage</span>')
+      +(d.dreamscape_id?('<button class="btn ghost sm" data-open="'+i+'">'+(OPEN===i?'Close':'Manage DNS')+'</button>'):'<span class="dmeta" style="margin-left:8px">Point its nameservers here to manage</span>')
       +'</div>';
-    if(OPEN===i && d.dreamscape_domain_id){ html+='<div id="dnsHost-'+i+'"><div class="detail"><span class="spin"></span> Loading DNS…</div></div>'; }
+    if(OPEN===i && d.dreamscape_id){ html+='<div id="dnsHost-'+i+'"><div class="detail"><span class="spin"></span> Loading DNS…</div></div>'; }
   });
   $('domainsList').innerHTML=html;
   Array.prototype.forEach.call(document.querySelectorAll('[data-open]'),function(b){
@@ -213,7 +221,7 @@ function nameOf(rec,dom){
 }
 async function loadDns(i){
   var d=DOMAINS[i]; var host=$('dnsHost-'+i); if(!host) return;
-  var r=await api('/api/domains/dns?domain_id='+encodeURIComponent(d.id));
+  var r=await api('/api/domains/dns?'+dnsQuery(d));
   if(!r.ok){ host.innerHTML='<div class="detail"><div class="msg err">'+esc((r.data&&r.data.error)||'Could not load DNS.')+'</div></div>'; return; }
   var recs=(r.data&&r.data.records)||[];
   var rows = recs.map(function(rec){
@@ -276,14 +284,14 @@ function dnsMsg(i,cls,txt){ var m=$('dnsMsg-'+i); if(m){ m.className='msg '+cls;
 async function addRec(i,rec,quiet){
   var d=DOMAINS[i];
   dnsMsg(i,'','Saving…');
-  var r=await api('/api/domains/dns',{method:'POST',body:JSON.stringify({domain_id:d.id,record:rec})});
+  var r=await api('/api/domains/dns',{method:'POST',body:JSON.stringify(Object.assign(dnsBody(d),{record:rec}))});
   if(!r.ok){ dnsMsg(i,'err',(r.data&&r.data.error)||'Could not add the record.'); return; }
   if(!quiet){ dnsMsg(i,'ok','Record added.'); loadDns(i); }
 }
 async function delRec(i,rid){
   if(!confirm('Delete this DNS record?')) return;
   var d=DOMAINS[i];
-  var r=await api('/api/domains/dns',{method:'DELETE',body:JSON.stringify({domain_id:d.id,record_id:rid})});
+  var r=await api('/api/domains/dns',{method:'DELETE',body:JSON.stringify(Object.assign(dnsBody(d),{record_id:rid}))});
   if(!r.ok){ dnsMsg(i,'err',(r.data&&r.data.error)||'Could not delete.'); return; }
   loadDns(i);
 }
