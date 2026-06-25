@@ -28,7 +28,7 @@ function buildCandidates({ label, tld, hadTld }, extras) {
   return out.slice(0, 14);
 }
 
-// map one entry of Dreamscape's availability data[] to {domain, available}
+// map one entry of Dreamscape's availability data[] to {domain, available, register, renew}
 function readEntry(e) {
   if (!e || typeof e !== 'object') return null;
   const domain = (e.domain_name || e.domain || e.name || '').toLowerCase();
@@ -37,7 +37,10 @@ function readEntry(e) {
   else if (typeof e.is_available === 'boolean') available = e.is_available;
   else if (typeof e.availability === 'boolean') available = e.availability;
   else { const s = String(e.status || e.availability || '').toLowerCase(); if (s.includes('avail')) available = true; else if (s.includes('taken') || s.includes('registered') || s.includes('unavail')) available = false; }
-  return { domain, available };
+  const toNum = v => { const n = Number(v); return isFinite(n) && n > 0 ? n : null; };
+  const reg = toNum(e.register_price != null ? e.register_price : (e.price && e.price.register));
+  const ren = toNum(e.renew_price != null ? e.renew_price : (e.price && e.price.renew));
+  return { domain, available, register: reg, renew: ren };
 }
 
 module.exports = async (req, res) => {
@@ -56,13 +59,22 @@ module.exports = async (req, res) => {
     const r = await ds.checkAvailability(candidates.map(c => c.domain));
     const list = r.ok && r.data && Array.isArray(r.data.data) ? r.data.data : [];
     const byDomain = {};
-    for (const e of list) { const m = readEntry(e); if (m && m.domain) byDomain[m.domain] = m.available; }
+    for (const e of list) { const m = readEntry(e); if (m && m.domain) byDomain[m.domain] = m; }
 
-    const results = candidates.map(c => ({
-      domain: c.domain, label: c.label, tld: c.tld, kind: c.kind, badge: c.badge,
-      available: (c.domain in byDomain) ? byDomain[c.domain] : null,
-      price: ds.priceFor(c.tld), privacyPrice: ds.PRIVACY_PRICE
-    }));
+    const results = candidates.map(c => {
+      const m = byDomain[c.domain] || null;
+      const dsReg = m && m.register != null ? m.register : null;
+      const price = ds.resolveSell(c.tld, dsReg);
+      return {
+        domain: c.domain, label: c.label, tld: c.tld, kind: c.kind, badge: c.badge,
+        available: m ? m.available : ((c.domain in byDomain) ? byDomain[c.domain] : null),
+        price,
+        renew: (m && m.renew != null) ? m.renew : null,
+        priceSource: (ds.DOMAIN_PRICE_SOURCE !== 'table' && dsReg != null) ? 'dreamscape' : 'table',
+        dsRegisterPrice: dsReg,            // raw Dreamscape number, for your verification
+        privacyPrice: ds.PRIVACY_PRICE
+      };
+    });
     const order = { exact: 0, 'exact-tld': 1, alt: 2 };
     results.sort((a, b) => (order[a.kind] - order[b.kind]) || ds.PRIORITY_TLDS.indexOf(a.tld) - ds.PRIORITY_TLDS.indexOf(b.tld));
 

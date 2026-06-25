@@ -26,11 +26,15 @@ const MARKUP = Number(process.env.DREAMSCAPE_ADDON_MARKUP || 2.2);
 const PREFERRED_PERIOD = Number(process.env.DREAMSCAPE_ADDON_PERIOD || 12);
 
 function num(n) { const v = Number(n); return isFinite(v) ? v : null; }
-function sellFrom(cost, envKey) {
+// Sell price for an add-on: a flat env override wins; otherwise your Dreamscape
+// retail (the plan's register price); otherwise markup over wholesale cost.
+function sellFrom(cost, register, envKey) {
   const override = Number(process.env[envKey]);
   if (isFinite(override) && override > 0) return override;
+  const reg = Number(register);
+  if (isFinite(reg) && reg > 0) return reg;          // your configured Dreamscape retail
   if (!isFinite(cost)) return null;
-  return Math.ceil(cost * MARKUP) - 0.05; // e.g. cost 9.50 → 20.95
+  return Math.ceil(cost * MARKUP) - 0.05;            // fallback only
 }
 function pickPeriod(periods) {
   if (!Array.isArray(periods) || !periods.length) return null;
@@ -60,8 +64,9 @@ module.exports = async (req, res) => {
       const tiers = plans.map(p => {
         const per = pickPeriod(p.periods);
         const cost = per ? num(per.price && per.price.wholesale) : null;
-        return { plan_id: p.id, name: p.name, period: per ? per.period : PREFERRED_PERIOD, cost, sell: sellFrom(cost, addon.sellEnv) };
-      }).filter(t => t.cost != null && t.sell != null);
+        const register = per ? num(per.price && per.price.register) : null;
+        return { plan_id: p.id, name: p.name, period: per ? per.period : PREFERRED_PERIOD, cost, register, sell: sellFrom(cost, register, addon.sellEnv) };
+      }).filter(t => t.sell != null);
       if (!tiers.length) continue;
       tiers.sort((a, b) => a.cost - b.cost);
       addons.push({ key: addon.key, label: addon.label, type_id: type.id, default_plan_id: tiers[0].plan_id, tiers });

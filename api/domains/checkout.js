@@ -75,9 +75,10 @@ module.exports = async (req, res) => {
       const info = byName[name];
       if (!info || info.is_available !== true) return res.status(409).json({ error: name + ' is no longer available. Please remove it and search again.' });
       const tld = tldOf(name);
-      const sell = ds.priceFor(tld);                 // our retail price (authoritative)
-      resellerCost += Number(info.register_price || 0) + (privacy ? PRIVACY_RESELLER_COST : 0);
-      items.push({ domain: name, tld, sell, register_price: Number(info.register_price || 0) });
+      const dsReg = Number(info.register_price || 0);
+      const sell = ds.resolveSell(tld, dsReg);       // same resolver availability.js shows (your Dreamscape price by default)
+      resellerCost += dsReg + (privacy ? PRIVACY_RESELLER_COST : 0);
+      items.push({ domain: name, tld, sell, register_price: dsReg });
     }
 
     // ---- balance guard: never take money we can't fulfil from reseller balance ----
