@@ -1847,7 +1847,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   function secCard(c,id,title,toggle,fields){
     var s=(c.sections&&c.sections[id])||{}, def=DEFAULT_TRADE_SECTIONS[id]||{};
     var h='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">'+title+'</h2>';
-    if(toggle) h+='<label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="sec-on-'+id+'"'+(s.on!==false?' checked':'')+'> Show on page</label>';
+    if(toggle){ var _offDef=(id==='emergencyAvailability'||id==='estimateBuilder'); var _on=_offDef?(s.on===true):(s.on!==false); h+='<label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="sec-on-'+id+'"'+(_on?' checked':'')+'> Show on page</label>'; }
     h+='</div>';
     fields.forEach(function(f){ var key=f[0],label=f[1],ta=f[2]==='ta'; var ph=String(def[key]||'').replace(/\{\{\s*businessName\s*\}\}/g,currentBusinessName||'').replace(/"/g,'&quot;');
       if(ta) h+='<div class="f"><label>'+label+'</label><textarea id="sec-'+id+'-'+key+'" rows="2" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;" placeholder="'+ph+'"></textarea></div>';
@@ -2364,7 +2364,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var ov=document.createElement('div'); ov.className='cs-ov'; ov.id='cs-ov';
     ov.innerHTML='<div class="cs-modal"><h2 style="margin:0 0 4px;">Create a new site</h2><p class="lede" style="margin:0 0 16px;">Spin up a new client landing page \u2014 you can edit everything afterwards.</p>'
       +'<div class="f"><label>Business name</label><input id="cs-biz" type="text" placeholder="e.g. Sparky Bros Electrical"></div>'
-      +'<div class="row"><div class="f"><label>Web address</label><input id="cs-slug" type="text" placeholder="sparky-bros"></div><div class="f"><label>Type</label><select id="cs-tpl" class="tin"><option value="trade">Trade landing page</option><option value="broker-leads">Broker landing page</option><option value="broker-app">Broker calculator app</option></select></div></div>'
+      +'<div class="row"><div class="f"><label>Web address</label><input id="cs-slug" type="text" placeholder="sparky-bros"><div id="cs-slug-stat" style="font-size:12.5px;min-height:16px;margin-top:4px;"></div></div><div class="f"><label>Type</label><select id="cs-tpl" class="tin"><option value="trade">Trade landing page</option><option value="broker-leads">Broker landing page</option><option value="broker-app">Broker calculator app</option></select></div></div>'
       +'<div class="f" id="cs-packwrap"><label>Trade starter content</label>'
         +'<input id="cs-search" class="tin" type="text" autocomplete="off" placeholder="Search 100+ trades\\u2026 (try \\u201cfence\\u201d, \\u201cdrain\\u201d, \\u201chire\\u201d)">'
         +'<input type="hidden" id="cs-pack" value="plumber">'
@@ -2378,6 +2378,9 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var biz=$('cs-biz'), slug=$('cs-slug');
     biz.addEventListener('input',function(){ if(!slug.__t) slug.value=biz.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); });
     slug.addEventListener('input',function(){ slug.__t=true; });
+    var _slugDeb; function _slugTrig(){ if(_slugDeb) clearTimeout(_slugDeb); _slugDeb=setTimeout(csCheckSlug,350); }
+    slug.addEventListener('input',_slugTrig);
+    biz.addEventListener('input',_slugTrig);
     $('cs-tpl').addEventListener('change',function(){ $('cs-packwrap').style.display=(this.value==='trade')?'':'none'; });
     $('cs-cancel').addEventListener('click',function(){ ov.remove(); });
     ov.addEventListener('click',function(e){ if(e.target===ov) ov.remove(); });
@@ -2385,10 +2388,26 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     window.__initTradePicker({search:'cs-search',hidden:'cs-pack',picked:'cs-picked',list:'cs-packlist',defaultSlug:'plumber'});
     biz.focus();
   }
+  function csCleanSlug(v){ return (v||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,''); }
+  async function csSuggest(base){ for(var i=2;i<=20;i++){ var cand=base+'-'+i; var r=await sb.from('sites').select('slug').eq('slug',cand).maybeSingle(); if(!r.error&&!r.data) return cand; } return ''; }
+  async function csCheckSlug(){ var el=$('cs-slug'), stat=$('cs-slug-stat'); if(!el||!stat) return;
+    var v=csCleanSlug(el.value);
+    if(!v){ stat.innerHTML=''; return; }
+    stat.innerHTML='<span style="color:#8a8a83;">Checking\u2026</span>';
+    var r=await sb.from('sites').select('slug').eq('slug',v).maybeSingle();
+    if(csCleanSlug(($('cs-slug')||{}).value)!==v) return; // input changed while awaiting
+    if(r.error){ stat.innerHTML='<span style="color:#8a8a83;">Couldn\u2019t check right now \u2014 you can still try.</span>'; return; }
+    if(!r.data){ stat.innerHTML='<span style="color:#1f7a4d;font-weight:600;">\u2713 /'+v+' is available</span>'; return; }
+    var sug=await csSuggest(v);
+    stat.innerHTML='<span style="color:#b42318;font-weight:600;">\u2717 /'+v+' is taken.</span>'+(sug?(' <button type="button" id="cs-slug-use" style="border:1px solid var(--line);background:#fff;border-radius:7px;padding:2px 9px;font-size:12px;cursor:pointer;">Use /'+sug+'</button>'):'');
+    var ub=$('cs-slug-use'); if(ub) ub.onclick=function(){ $('cs-slug').value=sug; $('cs-slug').__t=true; csCheckSlug(); };
+  }
   async function createSiteSubmit(){ var err=$('cs-err'); err.textContent='';
     var biz=$('cs-biz').value.trim(), slug=($('cs-slug').value.trim()||'').toLowerCase().replace(/[^a-z0-9-]/g,''), tpl=$('cs-tpl').value;
     if(!biz){ err.textContent='Enter a business name.'; return; }
     if(!slug){ err.textContent='Enter a web address.'; return; }
+    var taken=await sb.from('sites').select('slug').eq('slug',slug).maybeSingle();
+    if(!taken.error && taken.data){ err.textContent='That web address (/'+slug+') is already in use \u2014 pick another.'; csCheckSlug(); return; }
     var cfg={ phone:$('cs-phone').value.trim(), phoneText:$('cs-phoneText').value.trim(), email:$('cs-email').value.trim(), region:$('cs-region').value.trim() };
     if(tpl==='trade'){ var pc=packToConfig($('cs-pack').value, biz); if(pc.theme)cfg.theme=pc.theme; if(pc.services)cfg.services=pc.services; cfg.sections=pc.sections; cfg.trade=pc.trade; }
     var vertical=(tpl==='broker-app'||tpl==='broker-leads')?'broker':'trade';
