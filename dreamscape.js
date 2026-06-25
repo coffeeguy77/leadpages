@@ -16,11 +16,19 @@ const MIN_RESERVE = Number(process.env.DREAMSCAPE_MINIMUM_RESERVE_BALANCE || 150
 const LOW_WARNING = Number(process.env.DREAMSCAPE_LOW_BALANCE_WARNING || 250);
 
 const PRIORITY_TLDS = ['com.au', 'au', 'com', 'net.au', 'net', 'co'];
-// Retail (SELL) prices in AUD/yr — kept safely above live Dreamscape COST:
-//   .au/.com.au/.net.au cost ~12.09 · .com 21.39 · .net 25.59 · .org 21.50
+// Retail (SELL) prices in AUD/yr. These mirror YOUR Dreamscape reseller retail
+// pricing (Finances → Pricing → Domains) — the availability API only returns your
+// wholesale COST, so retail has to live here (or in the editable pricing table).
+// Confirmed from your console: all .au = $70 (cost ~$12.09); .sydney/.melbourne
+// = $385; .nz = $35.09; most .nz = $31.99; .kiwi = $42.89.
 const PRICE_TABLE = {
-  'com.au': 24.95, 'au': 24.95, 'net.au': 24.95, 'org.au': 24.95,
-  'com': 34.95, 'net': 39.95, 'org': 34.95, 'co': 49.95, 'io': 89.95
+  'com.au': 70, 'au': 70, 'net.au': 70, 'org.au': 70, 'id.au': 70, 'asn.au': 70,
+  'sydney': 385, 'melbourne': 385,
+  'nz': 35.09, 'co.nz': 31.99, 'net.nz': 31.99, 'org.nz': 31.99, 'ac.nz': 31.99,
+  'gen.nz': 31.99, 'geek.nz': 31.99, 'maori.nz': 31.99, 'school.nz': 31.99,
+  'kiwi': 42.89, 'kiwi.nz': 31.99,
+  // Not on the AU/NZ pricing screen you sent — sensible retail, confirm/adjust:
+  'com': 34.95, 'net': 39.95, 'org': 34.95, 'co': 49.95, 'io': 89.95, 'app': 34.95
 };
 const PRIVACY_PRICE = 9.95;
 
@@ -157,21 +165,22 @@ const priceFor = tld => PRICE_TABLE[tld] != null ? PRICE_TABLE[tld] : 49.95;
 
 // Resolve the retail price to CHARGE/SHOW for a domain. One source of truth used
 // by both availability.js (display) and checkout.js (charge), so they never drift.
-//   DOMAIN_PRICE_SOURCE = 'dreamscape' (default) -> use the register_price your
-//                          Dreamscape account returns (your configured retail)
-//                       = 'table'                 -> use the local PRICE_TABLE
-//                       = 'markup'                -> register_price * DOMAIN_PRICE_MARKUP
+//   DOMAIN_PRICE_SOURCE = 'table' (default)  -> use the PRICE_TABLE retail above
+//                                                (your Dreamscape console retail)
+//                       = 'dreamscape'        -> use the API register_price as-is
+//                                                (only if that ever returns RETAIL,
+//                                                 not wholesale — it currently does NOT)
+//                       = 'markup'            -> register_price * DOMAIN_PRICE_MARKUP
 //   DOMAIN_PRICE_MARKUP = multiplier for 'markup' mode (default 2)
-// In every mode, if no usable number is available we fall back to PRICE_TABLE so a
-// price is never shown as $0.
-const DOMAIN_PRICE_SOURCE = String(process.env.DOMAIN_PRICE_SOURCE || 'dreamscape').toLowerCase();
+// In every mode we fall back to PRICE_TABLE so a price is never shown as $0.
+const DOMAIN_PRICE_SOURCE = String(process.env.DOMAIN_PRICE_SOURCE || 'table').toLowerCase();
 const DOMAIN_PRICE_MARKUP = Number(process.env.DOMAIN_PRICE_MARKUP || 2);
 function resolveSell(tld, dsPrice) {
   const p = Number(dsPrice);
   const have = isFinite(p) && p > 0;
-  if (DOMAIN_PRICE_SOURCE === 'table') return priceFor(tld);
+  if (DOMAIN_PRICE_SOURCE === 'dreamscape') return have ? p : priceFor(tld);
   if (DOMAIN_PRICE_SOURCE === 'markup') return have ? (Math.ceil(p * DOMAIN_PRICE_MARKUP) - 0.05) : priceFor(tld);
-  return have ? p : priceFor(tld); // 'dreamscape' (default)
+  return priceFor(tld); // 'table' (default)
 }
 const envStatus = () => ({
   hasKey: !!RAW_KEY, keyLen: RAW_KEY.length,
