@@ -321,6 +321,74 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style id="lp-crm-style">
+/* My Domains tile (sits above the stats pills) */
+#lp-domains{margin:2px 0 10px;}
+.lpd-bar{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.lpd-title{font:600 13px/1 system-ui,-apple-system,sans-serif;color:#4a4a45;letter-spacing:.01em;}
+.lpd-count{display:inline-block;background:#ecebe5;border-radius:999px;padding:1px 7px;font-size:11.5px;color:#6c6c68;margin-left:3px;}
+.lpd-hint{font-size:12px;color:#9a9a93;}
+.lpd-live{margin-left:auto;font:600 12.5px/1 system-ui,-apple-system,sans-serif;color:var(--brand,#1f7a63);text-decoration:none;border:1px solid var(--line,#e3e3e0);border-radius:8px;padding:6px 11px;background:#fff;}
+.lpd-live:hover{border-color:var(--brand,#1f7a63);}
+.lpd-chips{display:flex;flex-wrap:wrap;gap:7px;}
+.lpd-chip{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line,#e3e3e0);border-radius:10px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer;color:#2a2a27;transition:border-color .12s,box-shadow .12s;}
+.lpd-chip:hover{border-color:#c6c6c1;}
+.lpd-chip.on{border-color:var(--brand,#1f7a63);box-shadow:0 0 0 2px rgba(31,122,99,.13);}
+.lpd-dot{width:8px;height:8px;border-radius:50%;background:#bdbdb6;flex:none;}
+.lpd-dot.s-active,.lpd-dot.s-live,.lpd-dot.s-ok{background:#16a34a;}
+.lpd-dot.s-pending,.lpd-dot.s-processing{background:#d97706;}
+.lpd-dot.s-error,.lpd-dot.s-failed,.lpd-dot.s-expired{background:#dc2626;}
+.lpd-name{font-weight:500;}
+.lpd-tag{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:#8a8a82;background:#f1f0ea;border-radius:5px;padding:1px 5px;}
+.lpd-detail{margin-top:9px;background:#fff;border:1px solid var(--line,#e3e3e0);border-radius:12px;padding:12px 15px;max-width:480px;}
+.lpd-drow{display:flex;justify-content:space-between;gap:14px;padding:5px 0;border-bottom:1px solid #f3f2ec;font-size:13px;}
+.lpd-drow:last-child{border-bottom:none;}
+.lpd-drow span{color:#8a8a82;}
+.lpd-open,.lpd-live{white-space:nowrap;}
+.lpd-open{font:600 12.5px/1 system-ui;color:var(--brand,#1f7a63);text-decoration:none;}
+
+/* Captured leads CRM (sits below the stats pills) */
+#lp-leads{margin:4px 0 20px;}
+.ll-card{background:#fff;border:1px solid var(--line,#e3e3e0);border-radius:14px;padding:16px 18px;}
+.ll-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.ll-head h2{margin:0;font:600 17px/1.2 var(--font-display,Georgia),serif;}
+.ll-actions{margin-left:auto;display:flex;gap:6px;}
+.ll-btn{appearance:none;background:#f4f3ee;border:1px solid var(--line,#e3e3e0);border-radius:8px;padding:6px 11px;font:600 12.5px/1 system-ui;color:#55554f;cursor:pointer;}
+.ll-btn:hover{background:#ecebe4;}
+.ll-empty{margin:6px 0;color:#8a8a82;font-size:13.5px;line-height:1.5;}
+.ll-list{display:flex;flex-direction:column;gap:8px;}
+.ll-item{border:1px solid #ecebe4;border-radius:11px;padding:11px 13px;transition:border-color .12s;}
+.ll-item.open{border-color:#d6d5cd;background:#fcfcfa;}
+.ll-top{display:flex;align-items:center;gap:10px;}
+.ll-id{font-size:14px;color:#23231f;min-width:0;}
+.ll-contact{color:#7a7a72;font-weight:400;font-size:13px;}
+.ll-right{margin-left:auto;display:flex;align-items:center;gap:9px;white-space:nowrap;}
+.ll-when{font-size:12px;color:#9a9a93;}
+.ll-view{appearance:none;background:none;border:1px solid var(--line,#e3e3e0);border-radius:7px;padding:5px 10px;font:600 12px/1 system-ui;color:#4a4a45;cursor:pointer;}
+.ll-view:hover{border-color:var(--brand,#1f7a63);color:var(--brand,#1f7a63);}
+.ll-sub{margin-top:5px;font-size:13px;color:#6a6a63;}
+.ll-chip{font:600 11px/1 system-ui;text-transform:uppercase;letter-spacing:.03em;padding:3px 8px;border-radius:999px;background:#eef0ee;color:#5a6b5a;}
+.ll-chip.st-new{background:#e6f0fb;color:#1d5fa8;}
+.ll-chip.st-contacted{background:#fef0dd;color:#9a6212;}
+.ll-chip.st-won{background:#e3f5e8;color:#1c7d3c;}
+.ll-chip.st-lost{background:#f3eded;color:#8a8a82;}
+.ll-detail{margin-top:11px;border-top:1px solid #efeee7;padding-top:11px;}
+.ll-tbl{width:100%;border-collapse:collapse;font-size:13.5px;}
+.ll-tbl td{padding:5px 8px;border-bottom:1px solid #f3f2ec;vertical-align:top;}
+.ll-tbl td:first-child{color:#8a8a82;white-space:nowrap;width:90px;}
+.ll-actbar{margin-top:10px;display:flex;gap:8px;}
+.ll-act{font:600 12.5px/1 system-ui;text-decoration:none;color:#fff;background:var(--brand,#1f7a63);border-radius:8px;padding:8px 14px;}
+.ll-act:nth-child(2){background:#37474f;}
+.ll-statusbar{margin-top:11px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.ll-setlabel{font-size:12px;color:#8a8a82;margin-right:3px;}
+.ll-st{appearance:none;background:#fff;border:1px solid var(--line,#e3e3e0);border-radius:7px;padding:5px 10px;font:600 12px/1 system-ui;color:#55554f;cursor:pointer;}
+.ll-st.on{background:var(--brand,#1f7a63);border-color:var(--brand,#1f7a63);color:#fff;}
+.ll-timeline{display:flex;flex-direction:column;gap:1px;}
+.ll-tl{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid #f3f2ec;font-size:13px;}
+.ll-tlic{width:22px;text-align:center;}
+.ll-tltx{color:#3a3a35;}
+.ll-tlwhen{margin-left:auto;color:#9a9a93;font-size:12px;}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -2270,6 +2338,226 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var tot=rows.reduce(function(a,r){a.v+=r.visitors;a.c+=r.calls;a.f+=r.forms;return a;},{v:0,c:0,f:0});
     return '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:12px;flex-wrap:wrap;"><h3>All sites overview</h3><span style="font-size:12.5px;color:#999;">'+rows.length+' sites \u00b7 '+tot.v+' visits \u00b7 '+tot.c+' calls \u00b7 '+tot.f+' forms</span></div><div style="overflow:auto;"><table class="ana-table"><thead>'+thead+'</thead><tbody>'+body+'</tbody></table></div>';
   }
+/* ============================ leadpages: client CRM + My Domains + live link ===
+   Always-visible panels injected into the stats area (above/below the analytics
+   pills), so they appear for every site type — including trade sites, where the
+   old "Rates & leads" tab (and its demo leads card) is hidden.
+   Relies on IIFE-scope: sb, currentSiteId, currentSiteSlug, currentCustomDomain,
+   currentBusinessName, allSites, currentRole, esc, toast. ============================ */
+
+  // Live public URL for the current site (routing is /<slug>, custom domain wins).
+  function lpLiveUrl(){
+    var dom=(currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'');
+    if(dom) return 'https://'+dom+'/';
+    var slug=(currentSiteSlug||'').trim();
+    return slug ? ('https://leadpages.com.au/'+slug) : '';
+  }
+
+  function lpWhen(ts){
+    if(!ts) return '';
+    var d=new Date(ts); if(isNaN(d)) return '';
+    var now=new Date(), sameY=d.getFullYear()===now.getFullYear();
+    var date=d.toLocaleDateString([], sameY?{day:'numeric',month:'short'}:{day:'numeric',month:'short',year:'numeric'});
+    var time=d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    return date+' · '+time;
+  }
+  function lpAgo(ts){
+    if(!ts) return '';
+    var s=Math.max(0,(Date.now()-new Date(ts).getTime())/1000);
+    if(s<60) return 'just now';
+    if(s<3600) return Math.floor(s/60)+'m ago';
+    if(s<86400) return Math.floor(s/3600)+'h ago';
+    if(s<604800) return Math.floor(s/86400)+'d ago';
+    return lpWhen(ts);
+  }
+
+  // ---- create the two always-visible containers around #lp-analytics ----
+  function lpExtrasInit(){
+    var ana=document.getElementById('lp-analytics'); if(!ana||!ana.parentNode) return false;
+    if(!document.getElementById('lp-domains')){
+      var dm=document.createElement('div'); dm.id='lp-domains';
+      ana.parentNode.insertBefore(dm, ana);                 // above the stats pills
+      dm.addEventListener('click', lpDomClick);
+    }
+    if(!document.getElementById('lp-leads')){
+      var ld=document.createElement('div'); ld.id='lp-leads';
+      ana.parentNode.insertBefore(ld, ana.nextSibling);     // below the stats pills
+      ld.addEventListener('click', lpLeadsClick);
+    }
+    return true;
+  }
+
+  /* ============================ MY DOMAINS ============================ */
+  var LPDOM={ rows:null, open:null, loading:false };
+  async function renderMyDomains(){
+    var el=document.getElementById('lp-domains'); if(!el) return;
+    if(LPDOM.rows===null && !LPDOM.loading){
+      LPDOM.loading=true;
+      el.innerHTML='<div class="lpd-bar"><span class="lpd-title">My domains</span><span class="lpd-hint">loading…</span></div>';
+      try{ var r=await sb.from('v_my_domains').select('*').order('created_at',{ascending:true}); LPDOM.rows=r.data||[]; }
+      catch(e){ LPDOM.rows=[]; }
+      LPDOM.loading=false;
+    }
+    var rows=LPDOM.rows||[];
+    if(!rows.length){ el.innerHTML=''; return; }   // nothing to show: stay out of the way
+    var live=lpLiveUrl();
+    var chips=rows.map(function(d,i){
+      var st=(d.status||'unknown').toLowerCase();
+      return '<button type="button" class="lpd-chip'+(LPDOM.open===i?' on':'')+'" data-lpd="'+i+'">'
+        +'<span class="lpd-dot s-'+esc(st)+'"></span>'
+        +'<span class="lpd-name">'+esc(d.domain_name||'(domain)')+'</span>'
+        +(d.managed_external?'<span class="lpd-tag">external</span>':'')
+        +'</button>';
+    }).join('');
+    var head='<div class="lpd-bar"><span class="lpd-title">My domains <span class="lpd-count">'+rows.length+'</span></span>'
+      +(live?'<a class="lpd-live" href="'+esc(live)+'" target="_blank" rel="noopener">View live site ↗</a>':'')
+      +'</div>';
+    var detail='';
+    if(LPDOM.open!=null && rows[LPDOM.open]){
+      var d=rows[LPDOM.open];
+      var url=d.domain_name?('https://'+String(d.domain_name).replace(/^https?:\/\//,'')):'';
+      detail='<div class="lpd-detail">'
+        +'<div class="lpd-drow"><span>Domain</span><b>'+esc(d.domain_name||'—')+'</b></div>'
+        +'<div class="lpd-drow"><span>Status</span><b>'+esc(d.status||'unknown')+'</b></div>'
+        +'<div class="lpd-drow"><span>Points at</span><b>'+(d.site_slug?('/'+esc(d.site_slug)):'<i style="color:#9a9a93">not linked to a site</i>')+'</b></div>'
+        +'<div class="lpd-drow"><span>Added</span><b>'+esc(lpWhen(d.created_at)||'—')+'</b></div>'
+        +(url?'<div style="margin-top:8px;"><a class="lpd-open" href="'+esc(url)+'" target="_blank" rel="noopener">Open '+esc(d.domain_name)+' ↗</a></div>':'')
+        +'</div>';
+    }
+    el.innerHTML=head+'<div class="lpd-chips">'+chips+'</div>'+detail;
+  }
+  function lpDomClick(e){
+    var b=e.target.closest('[data-lpd]'); if(!b) return;
+    var i=+b.getAttribute('data-lpd');
+    LPDOM.open=(LPDOM.open===i)?null:i;
+    renderMyDomains();
+  }
+
+  /* ============================ CAPTURED LEADS (CRM) ============================ */
+  var LPLEADS={ siteId:null, rows:[], open:null, loading:false, timeline:false };
+  var LEAD_STATUS=[['new','New'],['contacted','Contacted'],['won','Won'],['lost','Lost']];
+
+  async function renderLeadsCRM(){
+    var el=document.getElementById('lp-leads'); if(!el) return;
+    // hide the legacy demo "Captured leads" card so there's only one source of truth
+    var legacy=document.querySelector('.leads-card'); if(legacy) legacy.style.display='none';
+    if(!currentSiteId){ el.innerHTML=''; return; }
+
+    if(LPLEADS.siteId!==currentSiteId){
+      LPLEADS.siteId=currentSiteId; LPLEADS.rows=[]; LPLEADS.open=null; LPLEADS.loading=true;
+      el.innerHTML=lpLeadsShell('<p class="ll-empty">Loading leads…</p>');
+      try{
+        var r=await sb.from('leads')
+          .select('id,name,email,phone,kind,details,message,status,created_at')
+          .eq('site_id',currentSiteId)
+          .order('created_at',{ascending:false}).limit(200);
+        LPLEADS.rows=r.data||[];
+      }catch(e){ LPLEADS.rows=[]; }
+      LPLEADS.loading=false;
+    }
+    lpLeadsPaint();
+  }
+
+  function lpLeadsShell(inner){
+    return '<div class="ll-card"><div class="ll-head">'
+      +'<h2>Captured leads</h2>'
+      +'<div class="ll-actions"><button type="button" class="ll-btn" data-ll="refresh">Refresh</button>'
+      +'<button type="button" class="ll-btn" data-ll="timeline">Activity</button></div>'
+      +'</div><div class="ll-body">'+inner+'</div></div>';
+  }
+
+  function lpLeadsPaint(){
+    var el=document.getElementById('lp-leads'); if(!el) return;
+    var rows=LPLEADS.rows||[];
+    var inner;
+    if(LPLEADS.timeline){
+      inner=lpTimelineHTML();
+    } else if(!rows.length){
+      inner='<p class="ll-empty">No enquiries yet. When someone submits the quote form on this site, they’ll appear here — and you’ll get an email.</p>';
+    } else {
+      inner='<div class="ll-list">'+rows.map(lpLeadRow).join('')+'</div>';
+    }
+    el.innerHTML=lpLeadsShell(inner);
+  }
+
+  function lpStatusChip(s){
+    s=(s||'new').toLowerCase();
+    return '<span class="ll-chip st-'+esc(s)+'">'+esc((LEAD_STATUS.find(function(x){return x[0]===s;})||['',s])[1]||s)+'</span>';
+  }
+
+  function lpLeadRow(l){
+    var open=(LPLEADS.open===l.id);
+    var det=l.details||{};
+    var contact=[l.phone,l.email].filter(Boolean).join(' · ');
+    var sub=l.message || [det.job,det.suburb].filter(Boolean).join(' · ') || (l.kind||'');
+    var body='';
+    if(open){
+      var lines=[];
+      if(det.job)    lines.push(['Job',det.job]);
+      if(det.suburb) lines.push(['Suburb',det.suburb]);
+      if(det.detail) lines.push(['Details',det.detail]);
+      Object.keys(det).forEach(function(k){ if(['job','suburb','detail'].indexOf(k)>=0)return; if(det[k]==null||det[k]==='')return; lines.push([k,det[k]]); });
+      var actions='';
+      if(l.phone) actions+='<a class="ll-act" href="tel:'+esc(l.phone)+'">Call</a>';
+      if(l.email) actions+='<a class="ll-act" href="mailto:'+esc(l.email)+'">Email</a>';
+      var status='<span class="ll-setlabel">Status</span>'+LEAD_STATUS.map(function(s){
+        return '<button type="button" class="ll-st'+(((l.status||'new')===s[0])?' on':'')+'" data-ll="status" data-id="'+esc(l.id)+'" data-v="'+s[0]+'">'+s[1]+'</button>';
+      }).join('');
+      body='<div class="ll-detail">'
+        +(lines.length?'<table class="ll-tbl">'+lines.map(function(x){return '<tr><td>'+esc(x[0])+'</td><td>'+esc(x[1])+'</td></tr>';}).join('')+'</table>':'<p class="ll-empty" style="margin:0 0 8px;">No extra details were provided.</p>')
+        +'<div class="ll-actbar">'+actions+'</div>'
+        +'<div class="ll-statusbar">'+status+'</div>'
+        +'</div>';
+    }
+    return '<div class="ll-item'+(open?' open':'')+'">'
+      +'<div class="ll-top">'
+        +'<span class="ll-id"><b>'+esc(l.name||'(no name)')+'</b>'+(contact?' <span class="ll-contact">'+esc(contact)+'</span>':'')+'</span>'
+        +'<span class="ll-right">'+lpStatusChip(l.status)+'<span class="ll-when">'+esc(lpAgo(l.created_at))+'</span>'
+        +'<button type="button" class="ll-view" data-ll="view" data-id="'+esc(l.id)+'">'+(open?'Hide':'View message')+'</button></span>'
+      +'</div>'
+      +(sub?'<div class="ll-sub">'+esc(sub)+'</div>':'')
+      +body
+      +'</div>';
+  }
+
+  function lpTimelineHTML(){
+    // Build a simple activity feed from the analytics events already loaded for
+    // this site (ANA.data), newest first: page views, call clicks, form submits.
+    var ev=(typeof ANA!=='undefined' && ANA.data)?ANA.data.slice():[];
+    ev.sort(function(a,b){ return (b.created_at||'').localeCompare(a.created_at||''); });
+    var label={page_view:'Visited the page',call_click:'Clicked to call',lead_submit:'Submitted the quote form'};
+    var icon={page_view:'👁',call_click:'📞',lead_submit:'✉'};
+    var items=ev.slice(0,30).map(function(e){
+      return '<div class="ll-tl"><span class="ll-tlic">'+(icon[e.event]||'•')+'</span>'
+        +'<span class="ll-tltx">'+esc(label[e.event]||e.event)+'</span>'
+        +'<span class="ll-tlwhen">'+esc(lpAgo(e.created_at))+'</span></div>';
+    }).join('');
+    return items
+      ? '<div class="ll-timeline">'+items+'</div>'
+      : '<p class="ll-empty">No activity recorded for this site yet in the selected period.</p>';
+  }
+
+  async function lpLeadsClick(e){
+    var b=e.target.closest('[data-ll]'); if(!b) return;
+    var act=b.getAttribute('data-ll');
+    if(act==='refresh'){ LPLEADS.siteId=null; renderLeadsCRM(); return; }
+    if(act==='timeline'){ LPLEADS.timeline=!LPLEADS.timeline; lpLeadsPaint(); return; }
+    if(act==='view'){
+      var id=b.getAttribute('data-id');
+      LPLEADS.open=(LPLEADS.open===id)?null:id;
+      lpLeadsPaint(); return;
+    }
+    if(act==='status'){
+      var sid=b.getAttribute('data-id'), v=b.getAttribute('data-v');
+      var row=(LPLEADS.rows||[]).find(function(x){return String(x.id)===String(sid);});
+      if(row){ var prev=row.status; row.status=v; lpLeadsPaint();
+        try{ var r=await sb.from('leads').update({status:v}).eq('id',sid); if(r.error){ row.status=prev; lpLeadsPaint(); if(typeof toast==='function') toast('Could not update status'); } }
+        catch(err){ row.status=prev; lpLeadsPaint(); }
+      }
+      return;
+    }
+  }
+
   function anaRender(){ var el=document.getElementById('lp-analytics'); if(!el)return; if(!currentSiteId){ el.innerHTML=''; return; }
     var c=anaCounts(ANA.data), conv=c.page_view?Math.round(c.lead_submit/c.page_view*1000)/10:0;
     var vals={page_view:c.page_view,call_click:c.call_click,lead_submit:c.lead_submit,conv:conv+'%'};
@@ -2287,7 +2575,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   }
   async function anaRefresh(){ anaRender(); await anaFetchSite(); if(ANA.active==='global'){ await anaFetchGlobal(); } anaRender(); }
   function anaInit(){ var el=document.getElementById('lp-analytics'); if(el)return el; var nav=document.querySelector('.adminnav'); if(!nav||!nav.parentNode)return null; el=document.createElement('div'); el.id='lp-analytics'; nav.parentNode.insertBefore(el,nav); el.addEventListener('click',anaClick); document.addEventListener('click',function(ev){ if(ANA.active && !el.contains(ev.target)){ ANA.active=null; anaRender(); } }); return el; }
-  async function renderSiteAnalytics(){ if(!anaInit())return; ANA.active=null; ANA.globalData=null; anaRender(); await anaFetchSite(); anaRender(); }
+  async function renderSiteAnalytics(){ if(!anaInit())return; ANA.active=null; ANA.globalData=null; anaRender(); lpExtrasInit(); LPDOM.open=null; renderMyDomains(); renderLeadsCRM(); await anaFetchSite(); anaRender(); if(LPLEADS.timeline) lpLeadsPaint(); }
   function renderLandingSub(c){
     var body=$('lsub-body'); if(!body) return; var sub=landingSub;
     if(sub==='details'){
@@ -2613,6 +2901,12 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       const pb=document.createElement('button'); pb.className='btn'; pb.id='btn-publish';
       pb.textContent='Publish to live site'; pb.addEventListener('click',publishToDB);
       bar.insertBefore(pb, dl);
+    }
+    if(!$('btn-viewlive')){
+      const vb=document.createElement('button'); vb.className='btn ghost'; vb.id='btn-viewlive';
+      vb.textContent='View live site \u2197';
+      vb.addEventListener('click',function(){ var u=lpLiveUrl(); if(u) window.open(u,'_blank','noopener'); else if(typeof toast==='function') toast('This site has no slug yet.'); });
+      bar.insertBefore(vb, dl);
     }
     if(!$('btn-signout')){
       const so=document.createElement('button'); so.className='btn ghost'; so.id='btn-signout';
