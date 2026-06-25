@@ -65,6 +65,20 @@ input:focus,select:focus{outline:2px solid var(--brand);outline-offset:0;border-
 .modal h2{font-family:var(--font-display);font-weight:500;margin:0 0 4px;font-size:22px;}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--brand-tint);border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;}
 @keyframes sp{to{transform:rotate(360deg)}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.stat{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 13px;}
+.stat .n{font-family:var(--font-display);font-size:22px;font-weight:500;line-height:1.1;}
+.stat .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-weight:700;margin-top:3px;}
+.dash2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.subh{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--brand-deep);font-weight:700;margin-bottom:9px;}
+.chart{display:flex;align-items:flex-end;gap:8px;height:120px;margin-bottom:22px;}
+.chart .bar{flex:1;background:var(--brand-tint);border:1px solid var(--brand);border-bottom:0;border-radius:6px 6px 0 0;position:relative;min-height:3px;}
+.chart .bar small{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:10px;color:var(--ink-faint);}
+.chart .bar b{position:absolute;top:-15px;left:0;right:0;text-align:center;font-size:9.5px;color:var(--brand-deep);font-weight:600;}
+.searchbar{display:flex;gap:8px;margin-bottom:6px;}
+.res{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);}
+.res:last-child{border-bottom:0;}
+.res .price{font-weight:700;margin-left:auto;white-space:nowrap;}
 .nsbox{margin-bottom:14px;padding:11px 13px;background:#fff;border:1px solid var(--line);border-radius:8px;}
 .nsrow{display:flex;gap:8px;align-items:center;}
 .nsval{font-size:12.5px;margin-top:5px;}
@@ -86,6 +100,31 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--su
     <button class="btn ghost sm" id="refreshBtn">Refresh</button>
     <a class="btn ghost sm" href="/manage">Back to dashboard</a>
     <button class="btn ghost sm" id="signoutBtn">Sign out</button>
+  </div>
+
+  <div class="card hide" id="dashCard">
+    <h2>Overview <span class="chip ok">Admin</span></h2>
+    <p class="lede">Your reseller account at a glance — balance, sales and recent invoices.</p>
+    <div class="stats" id="statRow"></div>
+    <div class="dash2">
+      <div><div class="subh">Sales — last 6 months</div><div id="salesChart" class="chart"></div></div>
+      <div><div class="subh">Latest invoices</div><div id="invList"><div class="empty">Loading…</div></div></div>
+    </div>
+    <div class="subh" style="margin-top:18px;display:flex;justify-content:space-between;align-items:center">
+      <span>Client accounts <span id="cliCount"></span></span>
+      <button class="btn ghost sm" id="cliToggle">View accounts</button>
+    </div>
+    <div id="cliList" class="hide"></div>
+  </div>
+
+  <div class="card" id="searchCard">
+    <h2>Register a domain</h2>
+    <p class="lede">Search and buy — without leaving this page.</p>
+    <div class="searchbar">
+      <input id="dq" placeholder="yourbusiness  or  yourbusiness.com.au" style="flex:1">
+      <button class="btn" id="dsearch">Search</button>
+    </div>
+    <div id="searchResults"></div>
   </div>
 
   <div class="card" id="domainsCard">
@@ -127,6 +166,41 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--su
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn" id="authSend">Send code</button>
       <button class="btn ghost hide" id="authVerify">Verify &amp; sign in</button>
+    </div>
+  </div>
+</div>
+
+<!-- registrant overlay (inline register) -->
+<div class="overlay" id="regOv">
+  <div class="modal" style="max-width:520px">
+    <h2>Who is this domain for?</h2>
+    <p class="sub" style="margin:4px 0 12px" id="regFor"></p>
+    <div style="display:flex;gap:6px;margin-bottom:10px" id="acctSeg">
+      <button class="btn ghost sm" data-acct="business">Business</button>
+      <button class="btn ghost sm" data-acct="individual">Individual</button>
+    </div>
+    <div id="bizFields" style="display:flex;gap:8px;flex-wrap:wrap">
+      <label class="f">Business name<input id="r_business_name" style="width:230px"></label>
+      <label class="f">ID type<select id="r_business_number_type"><option>ABN</option><option>ACN</option></select></label>
+      <label class="f">ABN / ACN<input id="r_business_number" style="width:150px"></label>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <label class="f">First name<input id="r_first_name" style="width:150px"></label>
+      <label class="f">Last name<input id="r_last_name" style="width:150px"></label>
+      <label class="f">Email<input id="r_email" style="width:210px"></label>
+      <label class="f">Phone<input id="r_phone" style="width:150px"></label>
+      <label class="f">Address<input id="r_address" style="width:230px"></label>
+      <label class="f">City<input id="r_city" style="width:130px"></label>
+      <label class="f">State<input id="r_state" placeholder="ACT" style="width:80px"></label>
+      <label class="f">Postcode<input id="r_post_code" style="width:90px"></label>
+    </div>
+    <label style="display:flex;gap:7px;align-items:center;margin-top:12px;font-size:13px">
+      <input type="checkbox" id="r_privacy"> Add ID privacy protection (+ privacy fee)
+    </label>
+    <div class="msg" id="regErr"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn" id="regGo">Continue to secure checkout</button>
+      <button class="btn ghost" id="regCancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -390,6 +464,117 @@ async function loadBalance(){
   }
 }
 
+/* ---------- super dashboard: invoices, sales, clients ---------- */
+async function loadDashboard(){
+  var r=await api('/api/domains/invoices');
+  if(r.status===403||r.status===401){ $('dashCard').classList.add('hide'); return; }
+  $('dashCard').classList.remove('hide');
+  if(!r.ok){ $('statRow').innerHTML='<div class="msg err">'+esc((r.data&&r.data.error)||'Could not load overview.')+'</div>'; return; }
+  var st=r.data.stats||{}, invs=r.data.invoices||[];
+  // stat cards (credit comes from the balance chip fetch)
+  var credit=$('balChip').textContent.replace('Credit: ','')||'—';
+  $('statRow').innerHTML=
+     stat(credit||'—','Account credit')
+    +stat(DOMAINS.length,'Domains')
+    +stat(money(st.totalPaid)+' '+(st.currency||''),'Paid sales')
+    +stat(st.count||0,'Invoices');
+  renderChart(st.by_month||[]);
+  $('invList').innerHTML = invs.length ? invs.slice(0,8).map(function(inv){
+    return '<div class="res"><div><div class="dname">#'+esc(inv.id)+(inv.is_paid?'':' <span class="chip ext">unpaid</span>')+'</div>'
+      +'<div class="dmeta">'+esc(String(inv.order_date||'').slice(0,10))+'</div></div>'
+      +'<div class="price">'+money(inv.total_amount)+'</div></div>';
+  }).join('') : '<div class="empty">No invoices yet.</div>';
+  loadClients();
+}
+function stat(n,l){ return '<div class="stat"><div class="n">'+esc(n)+'</div><div class="l">'+esc(l)+'</div></div>'; }
+function renderChart(months){
+  var max=Math.max.apply(null,months.map(function(m){return m.total;}).concat([1]));
+  $('salesChart').innerHTML=months.map(function(m){
+    var h=Math.max(3,Math.round((m.total/max)*100));
+    var lbl=m.month.slice(5)+'/'+m.month.slice(2,4);
+    return '<div class="bar" style="height:'+h+'px" title="'+esc(m.month)+': '+money(m.total)+'">'
+      +(m.total>0?'<b>'+money(m.total).replace('.00','')+'</b>':'')+'<small>'+esc(lbl)+'</small></div>';
+  }).join('');
+}
+async function loadClients(){
+  var r=await api('/api/domains/customers');
+  if(!r.ok){ return; }
+  var cs=r.data.customers||[];
+  $('cliCount').textContent='('+cs.length+')';
+  $('cliList').innerHTML = cs.length ? cs.map(function(c){
+    return '<div class="res"><div style="flex:1"><div class="dname">'+esc(c.name)+(c.company?(' <span class="dmeta">· '+esc(c.company)+'</span>'):'')+'</div>'
+      +'<div class="dmeta">'+esc(c.email||'')+(c.phone?(' · '+esc(c.phone)):'')+'</div></div>'
+      +'<span class="dmeta">#'+esc(c.id)+'</span></div>';
+  }).join('') : '<div class="empty">No client accounts found.</div>';
+}
+$('cliToggle').onclick=function(){ var l=$('cliList'); l.classList.toggle('hide'); $('cliToggle').textContent=l.classList.contains('hide')?'View accounts':'Hide'; };
+
+/* ---------- inline domain search + register ---------- */
+$('dsearch').onclick=doSearch;
+$('dq').addEventListener('keydown',function(e){ if(e.key==='Enter') doSearch(); });
+async function doSearch(){
+  var q=$('dq').value.trim(); if(q.length<2){ return; }
+  $('searchResults').innerHTML='<div class="empty"><span class="spin"></span> Searching…</div>';
+  var r=await fetch('/api/domains/availability?q='+encodeURIComponent(q));
+  var j=null; try{ j=await r.json(); }catch(e){}
+  if(!r.ok||!j){ $('searchResults').innerHTML='<div class="msg err">'+esc((j&&j.error)||'Search failed.')+'</div>'; return; }
+  var res=(j.results||[]);
+  if(!res.length){ $('searchResults').innerHTML='<div class="empty">No suggestions — try another name.</div>'; return; }
+  $('searchResults').innerHTML=res.map(function(x){
+    var avail=x.available===true, taken=x.available===false;
+    var right = avail
+      ? '<span class="price">'+money(x.price)+'/yr</span><button class="btn sm" data-reg="'+esc(x.domain)+'" data-price="'+esc(x.price)+'">Register</button>'
+      : (taken?'<span class="dmeta">taken</span>':'<span class="dmeta">—</span>');
+    return '<div class="res"><div style="flex:1"><div class="dname">'+esc(x.domain)+'</div>'
+      +(x.badge?'<div class="dmeta">'+esc(x.badge)+'</div>':'')+'</div>'+right+'</div>';
+  }).join('');
+  $('searchResults').querySelectorAll('[data-reg]').forEach(function(b){
+    b.onclick=function(){ openReg(b.getAttribute('data-reg'), Number(b.getAttribute('data-price'))); };
+  });
+}
+
+/* registrant modal */
+var ACCT='business', PENDING_DOMAIN=null;
+function applyAcct(){ document.querySelectorAll('#acctSeg button').forEach(function(b){ b.classList.toggle('btn',true); if(b.getAttribute('data-acct')===ACCT){ b.classList.remove('ghost'); } else { b.classList.add('ghost'); } }); $('bizFields').style.display=ACCT==='business'?'flex':'none'; }
+document.querySelectorAll('#acctSeg button').forEach(function(b){ b.onclick=function(){ ACCT=b.getAttribute('data-acct'); applyAcct(); }; });
+function loadReg(){
+  try{ var s=JSON.parse(localStorage.getItem('lp_registrant')||'{}');
+    ['business_name','business_number','first_name','last_name','email','phone','address','city','post_code','state'].forEach(function(k){ if(s[k]&&$('r_'+k)) $('r_'+k).value=s[k]; });
+    if(s.business_number_type) $('r_business_number_type').value=s.business_number_type;
+    if(s.account_type) ACCT=s.account_type;
+  }catch(e){}
+  if(!$('r_email').value && SESSION) $('r_email').value=SESSION.email||'';
+  applyAcct();
+}
+function openReg(domain,price){
+  PENDING_DOMAIN=domain; $('regErr').textContent='';
+  $('regFor').textContent=domain+'  ·  '+money(price)+'/yr';
+  loadReg(); $('regOv').classList.add('show');
+}
+$('regCancel').onclick=function(){ $('regOv').classList.remove('show'); };
+function gatherReg(){
+  var r={ account_type:ACCT, country:'AU', country_code:61,
+    first_name:$('r_first_name').value.trim(), last_name:$('r_last_name').value.trim(),
+    email:$('r_email').value.trim(), phone:$('r_phone').value.trim(),
+    address:$('r_address').value.trim(), city:$('r_city').value.trim(),
+    state:$('r_state').value.trim(), post_code:$('r_post_code').value.trim() };
+  if(ACCT==='business'){ r.business_name=$('r_business_name').value.trim(); r.business_number_type=$('r_business_number_type').value; r.business_number=$('r_business_number').value.trim(); }
+  return r;
+}
+$('regGo').onclick=async function(){
+  var reg=gatherReg();
+  var need=['first_name','last_name','email','phone','address','city','state','post_code'];
+  for(var i=0;i<need.length;i++){ if(!reg[need[i]]){ $('regErr').className='msg err'; $('regErr').textContent='Please complete all fields.'; return; } }
+  if(/\.au$/i.test(PENDING_DOMAIN) && (ACCT!=='business' || !reg.business_number)){ $('regErr').className='msg err'; $('regErr').textContent='.au domains need a business with an ABN/ACN.'; return; }
+  try{ localStorage.setItem('lp_registrant', JSON.stringify(reg)); }catch(e){}
+  $('regGo').disabled=true; $('regErr').className='msg'; $('regErr').textContent='Starting secure checkout…';
+  var payload={ domains:[{domain:PENDING_DOMAIN}], privacy:$('r_privacy').checked, registrant:reg };
+  var r=await api('/api/domains/checkout',{method:'POST',body:JSON.stringify(payload)});
+  $('regGo').disabled=false;
+  if(!r.ok||!r.data||!r.data.url){ $('regErr').className='msg err'; $('regErr').textContent=(r.data&&r.data.error)||'Could not start checkout.'; return; }
+  window.location.href=r.data.url; // Stripe Checkout
+};
+
 /* ---------- boot ---------- */
 async function boot(){
   var s=(await sb.auth.getSession()).data.session;
@@ -398,6 +583,7 @@ async function boot(){
   $('who').innerHTML=esc(SESSION.email)+'<small>Signed in</small>';
   await loadDomains();
   await loadBalance();
+  await loadDashboard();
   await loadPricing();
 }
 boot();

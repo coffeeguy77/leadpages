@@ -73,6 +73,7 @@ async function call(method, path, { query, body, timeoutMs = 15000 } = {}) {
 const ping        = () => call('GET', '/ping');
 const getReseller = () => call('GET', '/reseller');
 const getBalance  = () => call('GET', '/finances/balance');
+const getInvoices = (query) => call('GET', '/finances/invoices', { query });
 const getCurrencies = () => call('GET', '/finances/currencies');
 const listTlds    = (query) => call('GET', '/domains/tlds', { query });
 const checkAvailability = (domains) =>
@@ -191,7 +192,7 @@ const envStatus = () => ({
 module.exports = {
   PRIORITY_TLDS, PRICE_TABLE, PRIVACY_PRICE, MIN_RESERVE, LOW_WARNING, BASE,
   call, priceFor, resolveSell, DOMAIN_PRICE_SOURCE, evaluateBalance, envStatus, readBalance,
-  ping, getReseller, getBalance, getCurrencies, listTlds, checkAvailability, listDomainPrivacyProducts,
+  ping, getReseller, getBalance, getInvoices, getCurrencies, listTlds, checkAvailability, listDomainPrivacyProducts,
   createCustomer, getCustomer, listCustomers, createRegistrant, updateRegistrant,
   registerDomain, getDomain, listDomains, renewDomain, patchDomain, deleteDomain, registerDomainPrivacy,
   // Domain-level DNS (basic) + hosts
