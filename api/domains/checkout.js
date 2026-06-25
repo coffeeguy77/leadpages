@@ -11,6 +11,7 @@
 //      DREAMSCAPE_API_BASE_URL (set to the sandbox while testing).
 
 const ds = require('../../dreamscape');
+const { loadRetailMap } = require('../../pricing-store');
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 
@@ -71,12 +72,13 @@ module.exports = async (req, res) => {
 
     const items = [];
     let resellerCost = 0;
+    const retailMap = await loadRetailMap(sb);   // same overrides availability shows
     for (const name of names) {
       const info = byName[name];
       if (!info || info.is_available !== true) return res.status(409).json({ error: name + ' is no longer available. Please remove it and search again.' });
       const tld = tldOf(name);
       const dsReg = Number(info.register_price || 0);
-      const sell = ds.resolveSell(tld, dsReg);       // same resolver availability.js shows (your Dreamscape price by default)
+      const sell = (retailMap[tld] != null) ? retailMap[tld] : ds.resolveSell(tld, dsReg);
       resellerCost += dsReg + (privacy ? PRIVACY_RESELLER_COST : 0);
       items.push({ domain: name, tld, sell, register_price: dsReg });
     }

@@ -1,5 +1,8 @@
 // api/domains/availability.js — server-side domain search via Dreamscape (signed).
 const ds = require('../../dreamscape');
+const { loadRetailMap } = require('../../pricing-store');
+const { createClient } = require('@supabase/supabase-js');
+const sbAvail = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 if (process.env.DOMAIN_FEATURE_ENABLED === 'false') {
   module.exports = (req, res) => res.status(404).json({ error: 'Domain feature disabled' });
@@ -61,17 +64,20 @@ module.exports = async (req, res) => {
     const byDomain = {};
     for (const e of list) { const m = readEntry(e); if (m && m.domain) byDomain[m.domain] = m; }
 
+    // retail overrides set in the Pricing admin (fall back to PRICE_TABLE inside resolveSell)
+    const retailMap = await loadRetailMap(sbAvail);
+
     const results = candidates.map(c => {
       const m = byDomain[c.domain] || null;
       const dsReg = m && m.register != null ? m.register : null;
-      const price = ds.resolveSell(c.tld, dsReg);
+      const price = (retailMap[c.tld] != null) ? retailMap[c.tld] : ds.resolveSell(c.tld, dsReg);
       return {
         domain: c.domain, label: c.label, tld: c.tld, kind: c.kind, badge: c.badge,
         available: m ? m.available : ((c.domain in byDomain) ? byDomain[c.domain] : null),
         price,
         renew: (m && m.renew != null) ? m.renew : null,
-        priceSource: (ds.DOMAIN_PRICE_SOURCE !== 'table' && dsReg != null) ? 'dreamscape' : 'table',
-        dsRegisterPrice: dsReg,            // raw Dreamscape number, for your verification
+        priceSource: (retailMap[c.tld] != null) ? 'admin' : ((ds.DOMAIN_PRICE_SOURCE !== 'table' && dsReg != null) ? 'dreamscape' : 'table'),
+        dsRegisterPrice: dsReg,            // raw Dreamscape wholesale, for your verification
         privacyPrice: ds.PRIVACY_PRICE
       };
     });
