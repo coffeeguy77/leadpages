@@ -335,7 +335,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 .lpd-chip:hover{border-color:#c6c6c1;}
 .lpd-chip.on{border-color:var(--brand,#1f7a63);box-shadow:0 0 0 2px rgba(31,122,99,.13);}
 .lpd-dot{width:8px;height:8px;border-radius:50%;background:#bdbdb6;flex:none;}
-.lpd-dot.s-active,.lpd-dot.s-live,.lpd-dot.s-ok{background:#16a34a;}
+.lpd-dot.s-active,.lpd-dot.s-live,.lpd-dot.s-ok,.lpd-dot.s-connected{background:#16a34a;}
 .lpd-dot.s-pending,.lpd-dot.s-processing{background:#d97706;}
 .lpd-dot.s-error,.lpd-dot.s-failed,.lpd-dot.s-expired{background:#dc2626;}
 .lpd-name{font-weight:500;}
@@ -2416,15 +2416,29 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   }
 
   /* ============================ MY DOMAINS ============================ */
-  var LPDOM={ rows:null, open:null, loading:false };
+  var LPDOM={ siteId:null, rows:[], open:null, loading:false };
   async function renderMyDomains(){
     var el=document.getElementById('lp-domains'); if(!el) return;
-    if(LPDOM.rows===null && !LPDOM.loading){
-      LPDOM.loading=true;
+    if(!currentSiteId){ el.innerHTML=''; return; }
+    // Scope strictly to the site being edited — refetch whenever the site changes,
+    // so one client's domains never bleed onto another site.
+    if(LPDOM.siteId!==currentSiteId){
+      LPDOM.siteId=currentSiteId; LPDOM.open=null; LPDOM.rows=[]; LPDOM.loading=true;
       el.innerHTML='<div class="lpd-bar"><span class="lpd-title">My domains</span><span class="lpd-hint">loading…</span></div>';
-      try{ var r=await sb.from('v_my_domains').select('*').order('created_at',{ascending:true}); LPDOM.rows=r.data||[]; }
-      catch(e){ LPDOM.rows=[]; }
-      LPDOM.loading=false;
+      var rows=[];
+      try{
+        var r=await sb.from('domains')
+          .select('id,domain_name,status,managed_external,site_id,created_at')
+          .eq('site_id',currentSiteId).order('created_at',{ascending:true});
+        rows=r.data||[];
+      }catch(e){ rows=[]; }
+      // Surface the site's own custom domain (e.g. a domain the client already owns)
+      // even if it isn't a registered domains-table row yet.
+      var cd=(currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'');
+      if(cd && !rows.some(function(x){ return String(x.domain_name||'').toLowerCase().replace(/^www\./,'')===cd; })){
+        rows.unshift({ id:'custom', domain_name:cd, status:'connected', managed_external:false, site_id:currentSiteId, created_at:null, _custom:true });
+      }
+      LPDOM.rows=rows; LPDOM.loading=false;
     }
     var rows=LPDOM.rows||[];
     if(!rows.length){ el.innerHTML=''; return; }   // nothing to show: stay out of the way
@@ -2438,6 +2452,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         +'</button>';
     }).join('');
     var head='<div class="lpd-bar"><span class="lpd-title">My domains <span class="lpd-count">'+rows.length+'</span></span>'
+      +'<a class="lpd-live" href="/manage-domains.html" target="_blank" rel="noopener">Manage DNS &amp; email ↗</a>'
       +(live?'<a class="lpd-live" href="'+esc(live)+'" target="_blank" rel="noopener">View live site ↗</a>':'')
       +'</div>';
     var detail='';
@@ -2446,9 +2461,10 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       var url=d.domain_name?('https://'+String(d.domain_name).replace(/^https?:\/\//,'')):'';
       detail='<div class="lpd-detail">'
         +'<div class="lpd-drow"><span>Domain</span><b>'+esc(d.domain_name||'—')+'</b></div>'
-        +'<div class="lpd-drow"><span>Status</span><b>'+esc(d.status||'unknown')+'</b></div>'
-        +'<div class="lpd-drow"><span>Points at</span><b>'+(d.site_slug?('/'+esc(d.site_slug)):'<i style="color:#9a9a93">not linked to a site</i>')+'</b></div>'
-        +'<div class="lpd-drow"><span>Added</span><b>'+esc(lpWhen(d.created_at)||'—')+'</b></div>'
+        +'<div class="lpd-drow"><span>Status</span><b>'+esc(d._custom?'Custom domain on this site':(d.status||'unknown'))+'</b></div>'
+        +'<div class="lpd-drow"><span>Points at</span><b>'+(currentSiteSlug?('/'+esc(currentSiteSlug)):'<i style="color:#9a9a93">this site</i>')+'</b></div>'
+        +(d._custom?'':'<div class="lpd-drow"><span>Added</span><b>'+esc(lpWhen(d.created_at)||'—')+'</b></div>')
+        +(d._custom?'<div class="lpd-drow"><span>Source</span><b>Set in Site details \u2192 Custom domain</b></div>':'')
         +(url?'<div style="margin-top:8px;"><a class="lpd-open" href="'+esc(url)+'" target="_blank" rel="noopener">Open '+esc(d.domain_name)+' ↗</a></div>':'')
         +'</div>';
     }
@@ -2935,6 +2951,12 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       vb.textContent='View live site \u2197';
       vb.addEventListener('click',function(){ var u=lpLiveUrl(); if(u) window.open(u,'_blank','noopener'); else if(typeof toast==='function') toast('This site has no slug yet.'); });
       bar.insertBefore(vb, dl);
+    }
+    if(!$('btn-domains')){
+      const dbn=document.createElement('button'); dbn.className='btn ghost'; dbn.id='btn-domains';
+      dbn.textContent='Domains & DNS';
+      dbn.addEventListener('click',function(){ window.open('/manage-domains.html','_blank','noopener'); });
+      bar.insertBefore(dbn, dl);
     }
     if(!$('btn-signout')){
       const so=document.createElement('button'); so.className='btn ghost'; so.id='btn-signout';
