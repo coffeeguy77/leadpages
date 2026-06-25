@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domain Manager — LeadPages</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{
+  --bg:#f6f4ef; --surface:#fff; --surface-2:#fbfaf7; --ink:#1b2430; --ink-soft:#5c6675;
+  --ink-faint:#929aa6; --line:#e7e2d8; --line-strong:#d8d2c5; --brand:#1f7a63; --brand-deep:#155c4a;
+  --brand-tint:#eaf3ef; --amber:#b9852b; --bad:#b4453a; --ok:#1f7a63; --radius:14px; --radius-sm:10px;
+  --shadow:0 1px 2px rgba(20,30,40,.04),0 6px 20px rgba(20,30,40,.05);
+  --font-display:'Fraunces',Georgia,serif; --font-ui:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:980px;margin:0 auto;padding:28px 20px 80px;}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);margin:0 0 6px;}
+h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,34px);margin:0;letter-spacing:-.01em;}
+.sub{color:var(--ink-soft);margin:8px 0 0;max-width:62ch;}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:22px 0;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+.bar .who{font-weight:600;color:var(--ink);} .bar .who small{display:block;font-weight:400;color:var(--ink-faint);font-size:11.5px;}
+.spacer{flex:1}
+.btn{appearance:none;border:1px solid var(--brand);background:var(--brand);color:#fff;font-family:var(--font-ui);font-weight:600;font-size:13.5px;padding:9px 15px;border-radius:var(--radius-sm);cursor:pointer;transition:.15s;text-decoration:none;display:inline-block;}
+.btn:hover{background:var(--brand-deep);border-color:var(--brand-deep);}
+.btn.ghost{background:#fff;color:var(--brand-deep);} .btn.ghost:hover{background:var(--brand-tint);}
+.btn.sm{padding:5px 11px;font-size:12px;}
+.btn.danger{border-color:var(--bad);color:var(--bad);background:#fff;} .btn.danger:hover{background:#fbeae8;}
+.btn[disabled]{opacity:.5;cursor:not-allowed;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px;}
+.card h2{font-family:var(--font-display);font-weight:500;font-size:19px;margin:0 0 4px;}
+.card .lede{color:var(--ink-soft);font-size:13px;margin:0 0 16px;}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);}
+.row:last-child{border-bottom:0;}
+.globe{width:30px;height:30px;border-radius:8px;background:var(--brand-tint);display:flex;align-items:center;justify-content:center;color:var(--brand-deep);flex:0 0 auto;}
+.dname{font-weight:600;} .dmeta{color:var(--ink-faint);font-size:12px;}
+.chip{font-size:11px;font-weight:600;border-radius:999px;padding:2px 10px;border:1px solid var(--line-strong);color:var(--ink-soft);background:var(--surface-2);}
+.chip.ok{color:#1f7a63;border-color:#bfe3d6;background:#eef7f3;}
+.chip.ext{color:var(--amber);border-color:#ecdcc0;background:#fbf4e8;}
+.detail{margin-top:4px;padding:16px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);}
+.qa{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+table.dns{width:100%;border-collapse:collapse;font-size:13px;}
+table.dns th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-weight:700;padding:6px 8px;border-bottom:1px solid var(--line-strong);}
+table.dns td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle;}
+table.dns td.val{font-family:ui-monospace,Menlo,monospace;font-size:12px;word-break:break-all;}
+.ttype{font-weight:700;font-size:11px;color:var(--brand-deep);background:var(--brand-tint);border-radius:6px;padding:2px 7px;}
+.form-grid{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line-strong);}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--ink-soft);font-weight:600;}
+input,select{font-family:var(--font-ui);font-size:13px;padding:7px 9px;border:1px solid var(--line-strong);border-radius:8px;background:#fff;color:var(--ink);}
+input:focus,select:focus{outline:2px solid var(--brand);outline-offset:0;border-color:var(--brand);}
+.note{font-size:12px;color:var(--ink-faint);margin-top:8px;}
+.msg{font-size:12.5px;margin-top:8px;} .msg.err{color:var(--bad);} .msg.ok{color:var(--ok);}
+.pricing th{text-align:right;} .pricing th:first-child{text-align:left;}
+.pricing td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;}
+.pricing td:first-child{text-align:left;font-weight:600;}
+.pricing input{width:92px;text-align:right;}
+.pricing .profit.pos{color:var(--ok);font-weight:600;} .pricing .profit.neg{color:var(--bad);font-weight:600;}
+.empty{color:var(--ink-faint);font-size:13px;padding:18px 0;text-align:center;}
+.overlay{position:fixed;inset:0;background:rgba(27,36,48,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;}
+.overlay.show{display:flex;}
+.modal{background:#fff;border-radius:var(--radius);max-width:420px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal h2{font-family:var(--font-display);font-weight:500;margin:0 0 4px;font-size:22px;}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--brand-tint);border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;}
+@keyframes sp{to{transform:rotate(360deg)}}
+.hide{display:none!important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Domain Manager</p>
+  <h1>Domains</h1>
+  <p class="sub">Manage your domains, point them at your site, set up email forwarding, and edit DNS — all in one place.</p>
+
+  <div class="bar">
+    <div class="who" id="who">Loading…</div>
+    <div class="spacer"></div>
+    <a class="btn" href="/domains" id="buyBtn">Register a domain ↗</a>
+    <button class="btn ghost sm" id="refreshBtn">Refresh</button>
+    <a class="btn ghost sm" href="/manage">Back to dashboard</a>
+    <button class="btn ghost sm" id="signoutBtn">Sign out</button>
+  </div>
+
+  <div class="card" id="domainsCard">
+    <h2>My domains</h2>
+    <p class="lede">Click a domain to manage its DNS records and email forwarding.</p>
+    <div id="domainsList"><div class="empty"><span class="spin"></span> Loading your domains…</div></div>
+  </div>
+
+  <div class="card hide" id="pricingCard">
+    <h2>Pricing <span class="chip ok">Admin</span></h2>
+    <p class="lede">Retail prices your customers pay. Wholesale is your live Dreamscape cost; profit updates as you type.</p>
+    <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-bottom:12px;">
+      <label class="f">Bulk: cost + %
+        <input type="number" id="bulkPct" placeholder="e.g. 300" style="width:120px;">
+      </label>
+      <button class="btn ghost sm" id="bulkApply">Apply to all</button>
+      <div class="spacer"></div>
+      <button class="btn" id="savePricing">Save prices</button>
+    </div>
+    <div id="pricingBody"><div class="empty"><span class="spin"></span> Loading pricing…</div></div>
+    <div class="msg" id="pricingMsg"></div>
+  </div>
+</div>
+
+<!-- sign-in overlay -->
+<div class="overlay" id="authOv">
+  <div class="modal">
+    <h2>Sign in</h2>
+    <p class="sub" style="margin:4px 0 14px">Enter your email and we'll send you a 6-digit code.</p>
+    <label class="f" style="font-size:12px">Email
+      <input type="email" id="authEmail" placeholder="you@business.com.au" style="width:100%">
+    </label>
+    <div id="codeWrap" class="hide" style="margin-top:10px">
+      <label class="f" style="font-size:12px">6-digit code
+        <input type="text" id="authCode" inputmode="numeric" placeholder="123456" style="width:100%">
+      </label>
+    </div>
+    <div class="msg" id="authMsg"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn" id="authSend">Send code</button>
+      <button class="btn ghost hide" id="authVerify">Verify &amp; sign in</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+var $ = function(id){ return document.getElementById(id); };
+var SESSION = null, DOMAINS = [], OPEN = null, PRICING = [];
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function money(n){ var v=Number(n); return isFinite(v)?'$'+v.toFixed(2):'—'; }
+async function authHeader(){ var s=(await sb.auth.getSession()).data.session; return s?{'Authorization':'Bearer '+s.access_token}:{}; }
+async function api(path, opts){
+  opts = opts||{}; var h = Object.assign({'Content-Type':'application/json'}, await authHeader(), opts.headers||{});
+  var r = await fetch(path, Object.assign({}, opts, {headers:h}));
+  var j=null; try{ j=await r.json(); }catch(e){}
+  return { ok:r.ok, status:r.status, data:j };
+}
+
+/* ---------- auth ---------- */
+function showAuth(){ $('authOv').classList.add('show'); $('authEmail').focus(); }
+function hideAuth(){ $('authOv').classList.remove('show'); }
+$('authSend').onclick = async function(){
+  var email=$('authEmail').value.trim(); if(!email){ $('authMsg').className='msg err'; $('authMsg').textContent='Enter your email.'; return; }
+  $('authSend').disabled=true; $('authMsg').className='msg'; $('authMsg').textContent='Sending…';
+  var r = await sb.auth.signInWithOtp({ email:email });
+  $('authSend').disabled=false;
+  if(r.error){ $('authMsg').className='msg err'; $('authMsg').textContent=r.error.message||'Could not send the code.'; return; }
+  $('codeWrap').classList.remove('hide'); $('authVerify').classList.remove('hide'); $('authSend').textContent='Resend code';
+  $('authMsg').className='msg ok'; $('authMsg').textContent='Check your inbox and enter the code.'; $('authCode').focus();
+};
+$('authVerify').onclick = async function(){
+  var email=$('authEmail').value.trim(), token=($('authCode').value||'').replace(/\s/g,'');
+  if(!token){ $('authMsg').className='msg err'; $('authMsg').textContent='Enter the code.'; return; }
+  $('authVerify').disabled=true; $('authMsg').className='msg'; $('authMsg').textContent='Verifying…';
+  var r = await sb.auth.verifyOtp({ email:email, token:token, type:'email' });
+  $('authVerify').disabled=false;
+  if(r.error){ $('authMsg').className='msg err'; $('authMsg').textContent=r.error.message||'That code did not work.'; return; }
+  hideAuth(); boot();
+};
+$('signoutBtn').onclick = async function(){ await sb.auth.signOut(); location.reload(); };
+$('refreshBtn').onclick = function(){ loadDomains(); };
+
+/* ---------- domains ---------- */
+async function loadDomains(){
+  $('domainsList').innerHTML='<div class="empty"><span class="spin"></span> Loading your domains…</div>';
+  var r = await sb.from('domains').select('id,domain_name,status,dreamscape_domain_id,site_id,created_at').order('created_at',{ascending:true});
+  DOMAINS = (r.data||[]);
+  renderDomains();
+}
+function statusChip(d){
+  if(!d.dreamscape_domain_id) return '<span class="chip ext">External</span>';
+  var s=String(d.status||'').toLowerCase();
+  if(s.indexOf('regist')>=0||s.indexOf('active')>=0||s==='ok') return '<span class="chip ok">Registered</span>';
+  return '<span class="chip">'+esc(d.status||'Pending')+'</span>';
+}
+function renderDomains(){
+  if(!DOMAINS.length){ $('domainsList').innerHTML='<div class="empty">No domains yet. Use “Register a domain” to get your first one.</div>'; return; }
+  var html='';
+  DOMAINS.forEach(function(d,i){
+    html+='<div class="row">'
+      +'<div class="globe">◍</div>'
+      +'<div style="flex:1"><div class="dname">'+esc(d.domain_name)+'</div><div class="dmeta">'+(d.dreamscape_domain_id?('Dreamscape #'+esc(d.dreamscape_domain_id)):'Not registered through us')+'</div></div>'
+      +statusChip(d)
+      +(d.dreamscape_domain_id?('<button class="btn ghost sm" data-open="'+i+'">'+(OPEN===i?'Close':'Manage DNS')+'</button>'):'<span class="dmeta" style="margin-left:8px">Point its nameservers here to manage</span>')
+      +'</div>';
+    if(OPEN===i && d.dreamscape_domain_id){ html+='<div id="dnsHost-'+i+'"><div class="detail"><span class="spin"></span> Loading DNS…</div></div>'; }
+  });
+  $('domainsList').innerHTML=html;
+  Array.prototype.forEach.call(document.querySelectorAll('[data-open]'),function(b){
+    b.onclick=function(){ var i=Number(b.getAttribute('data-open')); OPEN=(OPEN===i?null:i); renderDomains(); if(OPEN===i) loadDns(i); };
+  });
+}
+
+/* ---------- DNS editor ---------- */
+function valueOf(rec){
+  var t=rec.type;
+  if(t==='MX') return esc(rec.content)+'  <span class="dmeta">priority '+esc(rec.priority)+'</span>';
+  if(t==='WEBFWD') return '→ '+esc(rec.forward_to)+(rec.cloak?'  <span class="dmeta">(cloaked)</span>':'');
+  if(t==='MAILFWD') return '→ '+esc(rec.forward_to);
+  if(t==='SRV') return esc(rec.target)+':'+esc(rec.port)+'  <span class="dmeta">w'+esc(rec.weight)+' p'+esc(rec.priority)+'</span>';
+  if(t==='CAA') return esc(rec.tag)+' '+esc(rec.value)+'  <span class="dmeta">flag '+esc(rec.flag)+'</span>';
+  return esc(rec.content);
+}
+function nameOf(rec,dom){
+  if(rec.type==='MAILFWD') return esc(rec.email)+'@'+esc(dom);
+  if(rec.type==='CAA') return esc(dom);
+  var s=rec.subdomain; return (!s||s==='@')?esc(dom):esc(s)+'.'+esc(dom);
+}
+async function loadDns(i){
+  var d=DOMAINS[i]; var host=$('dnsHost-'+i); if(!host) return;
+  var r=await api('/api/domains/dns?domain_id='+encodeURIComponent(d.id));
+  if(!r.ok){ host.innerHTML='<div class="detail"><div class="msg err">'+esc((r.data&&r.data.error)||'Could not load DNS.')+'</div></div>'; return; }
+  var recs=(r.data&&r.data.records)||[];
+  var rows = recs.map(function(rec){
+    return '<tr><td><span class="ttype">'+esc(rec.type)+'</span></td><td>'+nameOf(rec,d.domain_name)+'</td><td class="val">'+valueOf(rec)+'</td>'
+      +'<td style="text-align:right"><button class="btn danger sm" data-del="'+esc(rec.id)+'">Delete</button></td></tr>';
+  }).join('');
+  host.innerHTML='<div class="detail">'
+    +'<div class="qa">'
+      +'<button class="btn ghost sm" data-qa="mail">✉ Forward an email</button>'
+      +'<button class="btn ghost sm" data-qa="web">↗ Forward a web address</button>'
+      +'<button class="btn ghost sm" data-qa="site">◍ Point at my site</button>'
+    +'</div>'
+    +'<table class="dns"><thead><tr><th>Type</th><th>Name</th><th>Value</th><th></th></tr></thead>'
+    +'<tbody>'+(rows||'<tr><td colspan="4" class="empty">No records yet.</td></tr>')+'</tbody></table>'
+    +'<div id="addForm-'+i+'"></div>'
+    +'<div class="msg" id="dnsMsg-'+i+'"></div>'
+    +'</div>';
+  host.querySelectorAll('[data-del]').forEach(function(b){ b.onclick=function(){ delRec(i,b.getAttribute('data-del')); }; });
+  host.querySelectorAll('[data-qa]').forEach(function(b){ b.onclick=function(){ renderAddForm(i,b.getAttribute('data-qa')); }; });
+  renderAddForm(i,'generic');
+}
+function renderAddForm(i,mode){
+  var d=DOMAINS[i]; var box=$('addForm-'+i); if(!box) return;
+  var dom=d.domain_name;
+  if(mode==='mail'){
+    box.innerHTML='<div class="form-grid"><label class="f">Address<input id="mfUser" placeholder="info" style="width:120px"></label>'
+      +'<span style="padding-bottom:9px">@'+esc(dom)+' →</span>'
+      +'<label class="f">Forward to<input id="mfTo" placeholder="you@gmail.com" style="width:200px"></label>'
+      +'<button class="btn sm" id="mfAdd">Add forward</button></div>'
+      +'<div class="note">Mail sent to that address is forwarded to your inbox. No mailbox required.</div>';
+    $('mfAdd').onclick=function(){ addRec(i,{type:'MAILFWD',email:$('mfUser').value.trim(),forward_to:$('mfTo').value.trim()}); };
+  } else if(mode==='web'){
+    box.innerHTML='<div class="form-grid"><label class="f">From (blank = root)<input id="wfSub" placeholder="@ or www" style="width:120px"></label>'
+      +'<label class="f">Redirect to<input id="wfTo" placeholder="https://example.com" style="width:240px"></label>'
+      +'<button class="btn sm" id="wfAdd">Add redirect</button></div>';
+    $('wfAdd').onclick=function(){ addRec(i,{type:'WEBFWD',subdomain:$('wfSub').value.trim()||'@',forward_to:$('wfTo').value.trim(),cloak:false}); };
+  } else if(mode==='site'){
+    box.innerHTML='<div class="note">This adds the records to point <b>'+esc(dom)+'</b> at your LeadPages site (Vercel): an A record on the root and a CNAME on www.</div>'
+      +'<div class="form-grid"><button class="btn sm" id="siteAdd">Add site records</button></div>';
+    $('siteAdd').onclick=async function(){
+      await addRec(i,{type:'A',subdomain:'@',content:'76.76.21.21'},true);
+      await addRec(i,{type:'CNAME',subdomain:'www',content:'cname.vercel-dns.com'});
+    };
+  } else {
+    box.innerHTML='<div class="form-grid">'
+      +'<label class="f">Type<select id="rType"><option>A</option><option>AAAA</option><option>CNAME</option><option>TXT</option><option>MX</option></select></label>'
+      +'<label class="f">Name<input id="rSub" placeholder="@ or www" style="width:110px"></label>'
+      +'<label class="f">Value<input id="rContent" placeholder="IP / target / text" style="width:220px"></label>'
+      +'<label class="f" id="prioWrap" style="display:none">Priority<input id="rPrio" value="10" style="width:70px"></label>'
+      +'<button class="btn sm" id="rAdd">Add record</button></div>';
+    $('rType').onchange=function(){ $('prioWrap').style.display=($('rType').value==='MX')?'flex':'none'; };
+    $('rAdd').onclick=function(){
+      var t=$('rType').value, rec={type:t,subdomain:$('rSub').value.trim()||'@',content:$('rContent').value.trim()};
+      if(t==='MX') rec.priority=Number($('rPrio').value||10);
+      addRec(i,rec);
+    };
+  }
+}
+function dnsMsg(i,cls,txt){ var m=$('dnsMsg-'+i); if(m){ m.className='msg '+cls; m.textContent=txt; } }
+async function addRec(i,rec,quiet){
+  var d=DOMAINS[i];
+  dnsMsg(i,'','Saving…');
+  var r=await api('/api/domains/dns',{method:'POST',body:JSON.stringify({domain_id:d.id,record:rec})});
+  if(!r.ok){ dnsMsg(i,'err',(r.data&&r.data.error)||'Could not add the record.'); return; }
+  if(!quiet){ dnsMsg(i,'ok','Record added.'); loadDns(i); }
+}
+async function delRec(i,rid){
+  if(!confirm('Delete this DNS record?')) return;
+  var d=DOMAINS[i];
+  var r=await api('/api/domains/dns',{method:'DELETE',body:JSON.stringify({domain_id:d.id,record_id:rid})});
+  if(!r.ok){ dnsMsg(i,'err',(r.data&&r.data.error)||'Could not delete.'); return; }
+  loadDns(i);
+}
+
+/* ---------- pricing admin (super only) ---------- */
+async function loadPricing(){
+  var r=await api('/api/domains/pricing');
+  if(r.status===403||r.status===401){ $('pricingCard').classList.add('hide'); return; } // not a super admin
+  $('pricingCard').classList.remove('hide');
+  if(!r.ok){ $('pricingBody').innerHTML='<div class="msg err">'+esc((r.data&&r.data.error)||'Could not load pricing.')+'</div>'; return; }
+  PRICING=(r.data&&r.data.rows)||[];
+  renderPricing();
+}
+function renderPricing(){
+  var html='<table class="dns pricing"><thead><tr><th>Extension</th><th>Wholesale</th><th>Retail (you set)</th><th>Profit</th></tr></thead><tbody>';
+  PRICING.forEach(function(row,i){
+    html+='<tr><td>.'+esc(row.tld)+'</td>'
+      +'<td>'+(row.wholesale!=null?money(row.wholesale):'—')+'</td>'
+      +'<td>$<input type="number" step="0.01" data-pr="'+i+'" value="'+(row.retail!=null?row.retail:'')+'"></td>'
+      +'<td class="profit" id="profit-'+i+'"></td></tr>';
+  });
+  html+='</tbody></table>';
+  $('pricingBody').innerHTML=html;
+  PRICING.forEach(function(_,i){ recalcProfit(i); });
+  document.querySelectorAll('[data-pr]').forEach(function(inp){
+    inp.oninput=function(){ var i=Number(inp.getAttribute('data-pr')); PRICING[i].retail=Number(inp.value); recalcProfit(i); };
+  });
+}
+function recalcProfit(i){
+  var row=PRICING[i], cell=$('profit-'+i); if(!cell) return;
+  if(row.wholesale==null||row.retail==null||!isFinite(row.retail)){ cell.textContent='—'; cell.className='profit'; return; }
+  var p=Math.round((row.retail-row.wholesale)*100)/100;
+  cell.textContent=money(p); cell.className='profit '+(p>=0?'pos':'neg');
+}
+$('bulkApply').onclick=function(){
+  var pct=Number($('bulkPct').value); if(!isFinite(pct)){ $('pricingMsg').className='msg err'; $('pricingMsg').textContent='Enter a percentage.'; return; }
+  PRICING.forEach(function(row,i){ if(row.wholesale!=null){ row.retail=Math.round(row.wholesale*(1+pct/100)*100)/100; } });
+  renderPricing(); $('pricingMsg').className='msg ok'; $('pricingMsg').textContent='Applied cost + '+pct+'% to all rows. Review, then Save.';
+};
+$('savePricing').onclick=async function(){
+  $('savePricing').disabled=true; $('pricingMsg').className='msg'; $('pricingMsg').textContent='Saving…';
+  var updates=PRICING.filter(function(r){ return r.retail!=null && isFinite(r.retail); }).map(function(r){ return {tld:r.tld,retail:r.retail}; });
+  var r=await api('/api/domains/pricing',{method:'POST',body:JSON.stringify({updates:updates})});
+  $('savePricing').disabled=false;
+  if(!r.ok){ $('pricingMsg').className='msg err'; $('pricingMsg').textContent=(r.data&&r.data.error)||'Could not save.'; return; }
+  $('pricingMsg').className='msg ok'; $('pricingMsg').textContent='Saved '+(r.data.updated||updates.length)+' prices. These now apply on the storefront and at checkout.';
+};
+
+/* ---------- boot ---------- */
+async function boot(){
+  var s=(await sb.auth.getSession()).data.session;
+  if(!s){ $('who').textContent='Not signed in'; showAuth(); return; }
+  SESSION=s.user;
+  $('who').innerHTML=esc(SESSION.email)+'<small>Signed in</small>';
+  await loadDomains();
+  await loadPricing();
+}
+boot();
+</script>
+</body>
+</html>
