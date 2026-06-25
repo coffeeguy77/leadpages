@@ -2134,11 +2134,11 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   window.__tradeStarterCard=function(isSuper){
     var builder = isSuper ? `
       <details class="tb-box">
-        <summary>Create a new trade (super)</summary>
+        <summary>Create a new service / business type (super)</summary>
         <div class="tb-inner">
-          <p class="tb-hint">Type what the page is for (e.g. <em>coffee cart hire</em>). I'll suggest a category and build the exact, ready-to-run prompt for you. Copy it into a new Claude chat, paste the JSON it returns back here, and the new trade drops straight into the picker above.</p>
+          <p class="tb-hint">Type what the page is for (e.g. <em>coffee cart hire</em>). I'll suggest a category and build the exact, ready-to-run prompt for you. Copy it into a new Claude chat, paste the JSON it returns back here, and the new service drops straight into the picker above.</p>
           <div class="tb-row">
-            <div class="f"><label>Trade / page name</label><input id="tb-name" class="tin" type="text" placeholder="e.g. coffee cart hire"></div>
+            <div class="f"><label>Service / business name</label><input id="tb-name" class="tin" type="text" placeholder="e.g. coffee cart hire, café, Airbnb host"></div>
             <div class="f"><label>Category</label><select id="tb-cat" class="tin"></select></div>
           </div>
           <div class="f" id="tb-newcatwrap" style="display:none;"><label>New category name</label><input id="tb-newcat" class="tin" type="text" placeholder="e.g. Mobile & Hospitality"></div>
@@ -2149,15 +2149,15 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
             <div style="margin-top:6px;"><button type="button" class="btn ghost" id="tb-copy">Copy prompt</button></div>
             <label style="display:block;margin-top:12px;">2 &middot; Paste the JSON Claude gives you back</label>
             <textarea id="tb-json" class="tb-ta" rows="6" placeholder="Paste the JSON object here…"></textarea>
-            <div style="margin-top:6px;"><button type="button" class="btn" id="tb-add">Add to my trades</button></div>
+            <div style="margin-top:6px;"><button type="button" class="btn" id="tb-add">Add to my services</button></div>
             <div class="tb-status" id="tb-status"></div>
           </div>
         </div>
       </details>` : '';
-    return `<div class="card" style="margin-bottom:22px;"><h2>Trade starter content</h2>
-      <p class="lede">Load a complete set of starter copy, services and colours for a trade, then fine-tune everything in the tabs above. This replaces the current page content — your business name and contact details stay.</p>
-      <div class="f"><label>Trade</label>
-        <input id="tp-search" class="tin" type="text" autocomplete="off" placeholder="Search 100+ trades… (try &ldquo;fence&rdquo;, &ldquo;drain&rdquo;, &ldquo;hire&rdquo;)">
+    return `<div class="card" style="margin-bottom:22px;"><h2>Service starter content</h2>
+      <p class="lede">Load a complete set of starter copy, services and colours for a service or business type, then fine-tune everything in the tabs above. This replaces the current page content — your business name and contact details stay.</p>
+      <div class="f"><label>Service / business type</label>
+        <input id="tp-search" class="tin" type="text" autocomplete="off" placeholder="Search 100+ services… (try &ldquo;fence&rdquo;, &ldquo;drain&rdquo;, &ldquo;hire&rdquo;, &ldquo;café&rdquo;)">
         <input type="hidden" id="trade-pack" value="plumber">
         <div id="tp-picked" class="cs-picked"></div>
         <div class="tp2-wrap"><div id="tp-cats" class="tp2-cats"></div><div id="tp-packlist" class="tp2-list"></div></div>
@@ -2174,7 +2174,31 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     for(i=0;i<C.length;i++){ if(C[i][0]===cat){ C[i][1].push(slug); found=true; break; } }
     if(!found) C.push([cat,[slug]]);
   };
-  
+
+  /* ---- persist custom service / business-type packs to Supabase (shared catalogue) ---- */
+  window.__lpSPLoaded=false;
+  function lpLoadServicePacks(cb){
+    if(window.__lpSPLoaded){ if(cb)cb(); return; }
+    var done=function(){ window.__lpSPLoaded=true; if(cb)cb(); };
+    try{
+      sb.from('service_packs').select('slug,category,label,pack').then(function(r){
+        try{ ((r&&r.data)||[]).forEach(function(row){
+          if(row&&row.slug&&row.pack){ var p=row.pack; if(p&&!p.label&&row.label)p.label=row.label;
+            window.__registerTradePack(row.slug,row.category||window.__guessCat(row.label||row.slug),p); }
+        }); }catch(e){}
+        done();
+      },function(){ done(); });
+    }catch(e){ done(); }
+  }
+  function lpSaveServicePack(slug,cat,pack){
+    return new Promise(function(resolve){
+      try{
+        sb.from('service_packs').upsert({slug:slug,category:cat,label:pack.label||slug,pack:pack},{onConflict:'slug'})
+          .then(function(r){ resolve(!(r&&r.error)); },function(){ resolve(false); });
+      }catch(e){ resolve(false); }
+    });
+  }
+
   window.__buildTradePrompt=function(name,category){
     var slug=String(name||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
     return `You are generating a "trade starter content pack" for LeadPages, a Canberra / ACT (Australia) tradie landing-page builder. Produce ONE complete pack for the trade: "${name}".
@@ -2242,8 +2266,12 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       var slug=(obj.slug||pack.label||'').toString().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
       if(!slug || !pack || !pack.label || !pack.tradeType || !pack.services || !pack.sections){ statusEl.style.color='#b42318'; statusEl.textContent='JSON is missing required fields (slug, pack.label, tradeType, services, sections).'; return; }
       try{ window.__registerTradePack(slug,cat,pack); }catch(e){ statusEl.style.color='#b42318'; statusEl.textContent='Could not register: '+e.message; return; }
-      statusEl.style.color='#0a7d33'; statusEl.innerHTML='Added <b>'+pack.label+'</b> under <b>'+cat+'</b> and selected it. Click <b>Load starter content</b> to apply. Saved for this session — tell me to bake it in permanently.';
+      statusEl.style.color='#0a7d33'; statusEl.innerHTML='Added <b>'+esc(pack.label)+'</b> under <b>'+esc(cat)+'</b>. Saving…';
       if(window.__tp2opts){ var hp=document.getElementById(window.__tp2opts.hidden); if(hp) hp.value=slug; window.__initTradePicker2(window.__tp2opts); }
+      lpSaveServicePack(slug,cat,pack).then(function(ok){
+        if(ok){ statusEl.style.color='#0a7d33'; statusEl.innerHTML='Saved <b>'+esc(pack.label)+'</b> under <b>'+esc(cat)+'</b> — it’ll be here next time too. Click <b>Load starter content</b> to apply.'; }
+        else { statusEl.style.color='#b4543c'; statusEl.innerHTML='Added <b>'+esc(pack.label)+'</b> for this session, but saving for next time failed — check you’re signed in as admin and try again.'; }
+      });
     });
   };
 
@@ -2584,7 +2612,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         +(currentRole==='super'?(lpFld('Custom domain (optional)','d-domain','e.g. yourbusiness.com.au')+lpFld('Client login email — lets this customer log in & edit only this site','d-owner','customer@business.com.au')+'<details style="margin:-4px 0 14px;font-size:12px;color:#667;"><summary style="cursor:pointer;">How custom domains and client logins work</summary><div style="margin-top:6px;line-height:1.5;">Leave the custom domain blank to use the leadpages address. To use their own domain: add it in Vercel → Domains, point the DNS to Vercel, then type it here and Save. The client login email lets that customer sign in and edit only this site.</div></details>'):'')
         +'<div class="row">'+lpFld('Phone (shown to visitors)','d-phoneText','(02) 1234 5678')+lpFld('Phone (for the call button)','d-phone','+61...')+'</div>'
         +'<div class="row">'+lpFld('Email','d-email','')+lpFld('Region','d-region','')+'</div>'
-        +'<div class="row">'+lpFld('Trade type','d-trade','e.g. Plumber')+lpFld('Licence','d-licence','')+'</div>'+'<div style="margin-top:6px;"><button class="btn" id="d-save">Save details</button><span id="d-saved" style="margin-left:10px;font-size:13px;color:#0a7d33;"></span></div>'+'</div>'
+        +'<div class="row">'+lpFld('Service / business type','d-trade','e.g. Plumber, Café, Airbnb host')+lpFld('Licence','d-licence','')+'</div>'+'<div style="margin-top:6px;"><button class="btn" id="d-save">Save details</button><span id="d-saved" style="margin-left:10px;font-size:13px;color:#0a7d33;"></span></div>'+'</div>'
         +secCard(c,'header','Header call-to-action',false,[['cta','Label above the phone'],['button','Call button text']])
         + window.__tradeStarterCard(currentRole==='super');
       wireDetailFields(c,'trade'); wireSec(c,'header',false,[['cta'],['button']]);
@@ -2592,7 +2620,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         if(ct){ if(ct==='plumber'){ slug='plumber'; } else if(TRADE_PACKS[ct]){ slug=ct; }
           else { for(var kk in TRADE_PACKS){ var lb=window.__tradeLabel(kk).toLowerCase(); if(lb===ct || lb.indexOf(ct)===0 || (TRADE_PACKS[kk].tradeType||'').toLowerCase()===ct){ slug=kk; break; } } } }
         var hp=$('trade-pack'); if(hp) hp.value=slug;
-        if(window.__initTradePicker2) window.__initTradePicker2({search:'tp-search',hidden:'trade-pack',picked:'tp-picked',cats:'tp-cats',list:'tp-packlist',defaultSlug:slug});
+        lpLoadServicePacks(function(){ if(window.__initTradePicker2) window.__initTradePicker2({search:'tp-search',hidden:'trade-pack',picked:'tp-picked',cats:'tp-cats',list:'tp-packlist',defaultSlug:slug}); });
       })();
       var tpBtn=$('trade-pack-load'); if(tpBtn) tpBtn.addEventListener('click',function(){ var k=$('trade-pack').value; var nm=window.__tradeLabel(k); if(window.confirm('Load the '+nm+' starter content?\n\nThis replaces the current page copy, services and colours. Your business name and contact details stay. You can fine-tune everything afterwards.')) applyTradePack(k); });
       if(window.__wireTradeBuilder) window.__wireTradeBuilder(applyTradePack);
