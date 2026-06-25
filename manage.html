@@ -388,9 +388,36 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 .ll-tlic{width:22px;text-align:center;}
 .ll-tltx{color:#3a3a35;}
 .ll-tlwhen{margin-left:auto;color:#9a9a93;font-size:12px;}
+/* account landing + top sign-out */
+#lp-signout-top{position:fixed;top:14px;right:18px;z-index:9500;font:600 12.5px var(--font-ui);color:var(--brand-deep);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;text-decoration:none;}
+#lp-signout-top:hover{background:var(--brand-tint);}
+#lp-landing{position:fixed;inset:0;background:var(--bg);z-index:9000;overflow:auto;padding:46px 20px;display:none;}
+#lp-landing.show{display:block;}
+.lpl-wrap{max-width:720px;margin:0 auto;}
+.lpl-seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:16px 0 14px;}
+.lpl-seg button{appearance:none;border:0;background:#fff;padding:8px 18px;font:600 13px var(--font-ui);color:var(--ink-soft);cursor:pointer;}
+.lpl-seg button.on{background:var(--brand);color:#fff;}
+.lpl-search{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:14px;font-size:14px;font-family:var(--font-ui);}
+.lpl-item{display:flex;align-items:center;gap:12px;padding:11px 14px;background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;box-shadow:var(--shadow);}
+.lpl-star{cursor:pointer;font-size:18px;line-height:1;background:none;border:0;color:#d3cbb0;padding:0;}
+.lpl-star.on{color:#e3a72b;}
+.lpl-name{font-weight:600;} .lpl-slug{color:var(--ink-faint);font-size:12px;}
+.lpl-edit{margin-left:auto;}
+.bar-fav{cursor:pointer;background:none;border:1px solid var(--line);border-radius:8px;color:#d3cbb0;font-size:15px;padding:6px 10px;}
+.bar-fav.on{color:#e3a72b;border-color:#ecdcc0;}
 </style>
 </head>
 <body>
+<a id="lp-signout-top" href="#">Sign out</a>
+<div id="lp-landing"><div class="lpl-wrap">
+  <p class="eyebrow">Control panel</p>
+  <h1 style="margin:0 0 4px">Select an account</h1>
+  <p class="sub" style="margin:0 0 4px">Choose a site to edit — nothing is editable until you pick one, so you can't change the wrong page by accident.</p>
+  <div class="lpl-seg" id="lpl-seg"><button data-grp="customer" class="on">Customer sites</button><button data-grp="demo">Demo sites</button></div>
+  <input class="lpl-search" id="lpl-search" placeholder="Search by name or address…">
+  <div id="lpl-list"></div>
+  <div style="margin-top:14px"><button class="btn ghost" id="lpl-new">+ New site</button></div>
+</div></div>
 <div class="wrap">
   <p class="eyebrow">Control panel</p>
   <h1>App Command Centre</h1>
@@ -1461,13 +1488,71 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     applyRoleGating();
     ensureSiteBar();
     var __pt=document.getElementById('lp-prev-toggle'); if(__pt) __pt.hidden=false;
+    var __so=document.getElementById('lp-signout-top'); if(__so) __so.onclick=function(e){ e.preventDefault(); signOutLP(); };
   }
   async function loadSitesFromDB(){
-    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,custom_domain,owner_email,config,template').order('created_at',{ascending:true});
+    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,custom_domain,owner_email,config,template,is_demo,is_favorite').order('created_at',{ascending:true});
     if(error){ toast('Could not load site: '+error.message); return; }
     allSites = rows||[];
     if(!allSites.length){ toast('No site is assigned to this account yet.'); return; }
-    loadSite(allSites[0]);
+    // Land on the account picker first (so the wrong page is never edited by accident).
+    // A client with a single site goes straight in.
+    if(currentRole==='super' || allSites.length>1){ showLanding(); }
+    else { loadSite(allSites[0]); }
+  }
+  /* ---------- account landing (pick a site before editing) ---------- */
+  var LPL={ grp:'customer', q:'', wired:false };
+  function showLanding(){
+    var el=document.getElementById('lp-landing'); if(!el) return;
+    if(!LPL.wired){
+      LPL.wired=true;
+      document.querySelectorAll('#lpl-seg button').forEach(function(b){ b.onclick=function(){ LPL.grp=b.getAttribute('data-grp'); document.querySelectorAll('#lpl-seg button').forEach(function(x){ x.classList.toggle('on',x===b); }); renderLanding(); }; });
+      var ls=document.getElementById('lpl-search'); if(ls) ls.oninput=function(){ LPL.q=ls.value; renderLanding(); };
+      var ln=document.getElementById('lpl-new'); if(ln) ln.onclick=function(){ hideLanding(); openCreateSite(); };
+    }
+    renderLanding(); el.classList.add('show');
+  }
+  function hideLanding(){ var el=document.getElementById('lp-landing'); if(el) el.classList.remove('show'); }
+  function lplGroup(s){ return s.is_demo ? 'demo' : 'customer'; }
+  function renderLanding(){
+    var list=document.getElementById('lpl-list'); if(!list) return;
+    var q=(LPL.q||'').toLowerCase();
+    var items=(allSites||[]).filter(function(s){ return lplGroup(s)===LPL.grp; })
+      .filter(function(s){ return !q || (s.business_name||'').toLowerCase().indexOf(q)>=0 || (s.slug||'').toLowerCase().indexOf(q)>=0; })
+      .sort(function(a,b){
+        var fa=a.is_favorite?0:1, fb=b.is_favorite?0:1; if(fa!==fb) return fa-fb;
+        return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase());
+      });
+    if(!items.length){ list.innerHTML='<p class="hint" style="color:#888;">No '+(LPL.grp==='demo'?'demo':'customer')+' sites'+(q?' match your search':' yet')+'.</p>'; return; }
+    list.innerHTML='';
+    items.forEach(function(s){
+      var row=document.createElement('div'); row.className='lpl-item';
+      row.innerHTML='<button class="lpl-star'+(s.is_favorite?' on':'')+'" title="Favourite" data-fav="'+s.id+'">'+(s.is_favorite?'\u2605':'\u2606')+'</button>'
+        +'<div><div class="lpl-name">'+esc(s.business_name||s.slug)+'</div><div class="lpl-slug">/'+esc(s.slug||'')+(s.is_demo?' \u00b7 demo':'')+'</div></div>'
+        +'<div class="lpl-edit"><button class="btn" data-edit="'+s.id+'">Edit</button></div>';
+      list.appendChild(row);
+    });
+    list.querySelectorAll('[data-edit]').forEach(function(b){ b.onclick=function(){ var s=allSites.find(function(x){return x.id===b.getAttribute('data-edit');}); if(s){ hideLanding(); loadSite(s); } }; });
+    list.querySelectorAll('[data-fav]').forEach(function(b){ b.onclick=function(){ lplToggleFav(b.getAttribute('data-fav')); }; });
+  }
+  async function lplToggleFav(id){
+    var s=allSites.find(function(x){return x.id===id;}); if(!s) return;
+    s.is_favorite=!s.is_favorite; renderLanding(); updateSiteControls();
+    try{ await sb.from('sites').update({is_favorite:s.is_favorite}).eq('id',id); }catch(e){}
+  }
+  async function lplToggleDemo(id){
+    var s=allSites.find(function(x){return x.id===id;}); if(!s) return;
+    s.is_demo=!s.is_demo; updateSiteControls();
+    try{ await sb.from('sites').update({is_demo:s.is_demo}).eq('id',id); }catch(e){ toast('Could not update demo flag'); }
+    toast(s.is_demo?'Marked as a demo site':'Marked as a customer site');
+  }
+  // refresh the per-site star / demo / delete-lock controls in the bar
+  function updateSiteControls(){
+    var s=(allSites||[]).find(function(x){return x.id===currentSiteId;});
+    var fav=document.getElementById('btn-fav'); if(fav&&s){ fav.classList.toggle('on',!!s.is_favorite); fav.textContent=s.is_favorite?'\u2605':'\u2606'; }
+    var demo=document.getElementById('btn-demo'); if(demo&&s){ demo.textContent=s.is_demo?'Demo: on':'Demo: off'; demo.classList.toggle('on',!!s.is_demo); }
+    var del=document.getElementById('btn-delsite'); var lock=document.getElementById('btn-dellock');
+    if(del&&lock){ del.disabled=true; lock.textContent='\uD83D\uDD12'; lock.title='Unlock to allow delete'; }
   }
   const DEFAULT_TRADE_SVCS=[
     {on:true,icon:'\uD83D\uDEBF',title:'Blocked Drains',body:'High-pressure water jetting and electric eel to clear blockages fast \u2014 kitchen, bathroom, sewer and stormwater.'},
@@ -2328,8 +2413,9 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var delId=currentSiteId;
     allSites=allSites.filter(function(s){ return s.id!==delId; });
     toast('Site “'+nm+'” deleted');
-    if(allSites.length){ loadSite(allSites[0]); }
-    else { currentSiteId=null; var lb=$('site-label'); if(lb) lb.innerHTML='<span>No sites left.</span>'; }
+    currentSiteId=null;
+    if(allSites.length){ showLanding(); }
+    else { var lb=$('site-label'); if(lb) lb.innerHTML='<span>No sites left.</span>'; }
   }
   /* ===================== Site analytics ===================== */
   var ANA={ period:30, active:null, sort:'visitors', data:[], leads:[], globalData:null };
@@ -2954,25 +3040,47 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     }
     if(!$('btn-domains')){
       const dbn=document.createElement('button'); dbn.className='btn ghost'; dbn.id='btn-domains';
-      dbn.textContent='Domains & DNS';
+      dbn.textContent='Domains';
       dbn.addEventListener('click',function(){ window.open('/manage-domains.html','_blank','noopener'); });
       bar.insertBefore(dbn, dl);
     }
-    if(!$('btn-signout')){
-      const so=document.createElement('button'); so.className='btn ghost'; so.id='btn-signout';
-      so.textContent='Sign out'; so.addEventListener('click',signOutLP);
-      bar.appendChild(so);
+    if(currentRole==='super' && !$('btn-switch')){
+      const sw=document.createElement('button'); sw.className='btn ghost'; sw.id='btn-switch';
+      sw.textContent='Switch account'; sw.addEventListener('click',function(){ showLanding(); });
+      bar.appendChild(sw);
+    }
+    if(currentRole==='super' && !$('btn-fav')){
+      const fv=document.createElement('button'); fv.className='bar-fav'; fv.id='btn-fav'; fv.title='Favourite this site';
+      fv.textContent='\u2606'; fv.addEventListener('click',function(){ if(currentSiteId) lplToggleFav(currentSiteId); });
+      bar.appendChild(fv);
+    }
+    if(currentRole==='super' && !$('btn-demo')){
+      const dm=document.createElement('button'); dm.className='btn ghost'; dm.id='btn-demo';
+      dm.textContent='Demo: off'; dm.title='Flag this as a demo site (a live front-end example)';
+      dm.addEventListener('click',function(){ if(currentSiteId) lplToggleDemo(currentSiteId); });
+      bar.appendChild(dm);
     }
     if(currentRole==='super' && !$('btn-newsite')){
       const nb=document.createElement('button'); nb.className='btn ghost'; nb.id='btn-newsite';
       nb.textContent='+ New site'; nb.addEventListener('click',openCreateSite);
-      var sob=$('btn-signout'); if(sob) bar.insertBefore(nb,sob); else bar.appendChild(nb);
+      bar.appendChild(nb);
+    }
+    if(currentRole==='super' && !$('btn-dellock')){
+      const lk=document.createElement('button'); lk.className='btn ghost'; lk.id='btn-dellock';
+      lk.textContent='\uD83D\uDD12'; lk.title='Unlock to allow delete';
+      lk.addEventListener('click',function(){
+        var del=$('btn-delsite'); if(!del) return;
+        var wasLocked=del.disabled; del.disabled=!wasLocked;
+        lk.textContent=wasLocked?'\uD83D\uDD13':'\uD83D\uDD12';
+        lk.title=wasLocked?'Delete unlocked — Delete site is now clickable':'Unlock to allow delete';
+      });
+      bar.appendChild(lk);
     }
     if(currentRole==='super' && !$('btn-delsite')){
       const db=document.createElement('button'); db.className='btn ghost'; db.id='btn-delsite';
-      db.textContent='Delete site'; db.style.cssText='color:#b42318;border-color:#f0c8c2;';
+      db.textContent='Delete site'; db.disabled=true; db.style.cssText='color:#b42318;border-color:#f0c8c2;';
       db.addEventListener('click',deleteSiteFlow);
-      var sob2=$('btn-signout'); if(sob2) bar.insertBefore(db,sob2); else bar.appendChild(db);
+      bar.appendChild(db);
     }
     if(!$('site-label')){
       const w=document.createElement('div'); w.id='site-label';
@@ -2983,7 +3091,15 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       if(allSites.length>1){
         lbl.innerHTML='<span>Editing site:</span>';
         const sel=document.createElement('select'); sel.className='tin'; sel.style.cssText='width:auto;padding:4px 8px;';
-        allSites.forEach(function(x){ const o=document.createElement('option'); o.value=x.id; o.textContent=x.business_name+' ('+x.slug+')'; if(x.id===currentSiteId)o.selected=true; sel.appendChild(o); });
+        var mkOpts=function(grp,label){
+          var arr=allSites.filter(function(x){ return (x.is_demo?'demo':'customer')===grp; })
+            .sort(function(a,b){ return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); });
+          if(!arr.length) return;
+          var og=document.createElement('optgroup'); og.label=label;
+          arr.forEach(function(x){ var o=document.createElement('option'); o.value=x.id; o.textContent=(x.is_favorite?'\u2605 ':'')+x.business_name+' ('+x.slug+')'; if(x.id===currentSiteId)o.selected=true; og.appendChild(o); });
+          sel.appendChild(og);
+        };
+        mkOpts('customer','Customer sites'); mkOpts('demo','Demo sites');
         sel.addEventListener('change',function(){ const x=allSites.find(function(y){return y.id===sel.value;}); if(x) loadSite(x); });
         lbl.appendChild(sel);
       } else if(currentSiteSlug){
@@ -2991,6 +3107,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         lbl.innerHTML='<span>Editing: <strong>'+nm+'</strong> \u00b7 /'+currentSiteSlug+'</span>';
       }
     }
+    if(currentRole==='super') updateSiteControls();
   }
   /* ---- demo themes (super-admin: manage looks shown on /demo) ---- */
   async function renderDemoThemes(){
