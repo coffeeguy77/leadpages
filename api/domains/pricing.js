@@ -8,11 +8,24 @@
 // the domain_pricing table and is what the storefront + portal charge.
 
 const ds = require('../../dreamscape');
-const { loadRetailMap, retailFor } = require('../../pricing-store');
 const { createClient } = require('@supabase/supabase-js');
 
 const DOMAINS_ENABLED = String(process.env.DOMAINS_FEATURE_ENABLED || 'true') !== 'false';
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+// Retail overrides from the domain_pricing table (inlined so there's no extra
+// root file to deploy). Never throws.
+async function loadRetailMap(s) {
+  try {
+    const r = await s.from('domain_pricing').select('tld, retail');
+    const m = {};
+    for (const row of (r.data || [])) {
+      if (row && row.tld != null) { const v = Number(row.retail); if (isFinite(v) && v > 0) m[String(row.tld).toLowerCase()] = v; }
+    }
+    return m;
+  } catch (e) { return {}; }
+}
+function retailFor(map, tld) { const t = String(tld || '').toLowerCase(); return (map && map[t] != null) ? map[t] : ds.priceFor(t); }
 
 // The TLDs you sell (drives which rows the admin shows).
 const SELLABLE_TLDS = [
@@ -35,8 +48,7 @@ function num(v) { const n = Number(v); return isFinite(n) ? n : null; }
 async function loadWholesale() {
   const map = {};
   try {
-    const r = await ds.listTlds({ 'tlds[]': SELLABLE_TLDS, limit: 100 });
-    const rows = (r.ok && r.data && Array.isArray(r.data.data)) ? r.data.data : [];
+    const r = await ds.listTlds({ 'tlds[]': SELLABLE_TLDS, limit: 100 });    const rows = (r.ok && r.data && Array.isArray(r.data.data)) ? r.data.data : [];
     for (const row of rows) {
       const t = String(row.tld || '').toLowerCase();
       const w = num(row.price && (row.price.register != null ? row.price.register : row.price.wholesale));

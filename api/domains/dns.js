@@ -87,19 +87,32 @@ module.exports = async (req, res) => {
     body = body || {};
 
     const method = req.method;
-    const ourId = method === 'GET' ? req.query.domain_id : body.domain_id;
-    if (!ourId) return res.status(400).json({ error: 'domain_id is required.' });
 
-    const own = await ownedDomain(ourId, user);
-    if (own.error === 'not_found')        return res.status(404).json({ error: 'Domain not found.' });
-    if (own.error === 'forbidden')        return res.status(403).json({ error: "That domain isn't on your account." });
-    if (own.error === 'no_dreamscape_id') return res.status(409).json({ error: "This domain isn't fully registered yet — try again shortly." });
-    const dsId = own.dsId;
+    // Two ways to identify the domain:
+    //  - dreamscape_id (+ optional domain_name): super-only, manages ANY domain in
+    //    the reseller account (used by the admin domain list).
+    //  - domain_id (our Supabase uuid): the owner (or super) manages their own.
+    const dreamId = method === 'GET' ? req.query.dreamscape_id : body.dreamscape_id;
+    let dsId, domainName;
+    if (dreamId) {
+      if (!(await isSuper(user.id))) return res.status(403).json({ error: 'Only administrators can manage by Dreamscape ID.' });
+      dsId = dreamId;
+      domainName = (method === 'GET' ? req.query.domain_name : body.domain_name) || '';
+    } else {
+      const ourId = method === 'GET' ? req.query.domain_id : body.domain_id;
+      if (!ourId) return res.status(400).json({ error: 'domain_id is required.' });
+      const own = await ownedDomain(ourId, user);
+      if (own.error === 'not_found')        return res.status(404).json({ error: 'Domain not found.' });
+      if (own.error === 'forbidden')        return res.status(403).json({ error: "That domain isn't on your account." });
+      if (own.error === 'no_dreamscape_id') return res.status(409).json({ error: "This domain isn't fully registered yet — try again shortly." });
+      dsId = own.dsId;
+      domainName = own.row.domain_name;
+    }
 
     if (method === 'GET') {
       const r = await ds.listDomainDns(dsId, req.query.type);
       if (!r.ok) return res.status(502).json({ error: r.error || 'Could not load DNS records.' });
-      return res.status(200).json({ ok: true, domain: own.row.domain_name, records: recordsOf(r) });
+      return res.status(200).json({ ok: true, domain: domainName, records: recordsOf(r) });
     }
 
     if (method === 'POST') {

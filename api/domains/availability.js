@@ -1,8 +1,12 @@
 // api/domains/availability.js — server-side domain search via Dreamscape (signed).
 const ds = require('../../dreamscape');
-const { loadRetailMap } = require('../../pricing-store');
 const { createClient } = require('@supabase/supabase-js');
 const sbAvail = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+async function loadRetailMap(s){
+  try{ const r=await s.from('domain_pricing').select('tld, retail'); const m={};
+    for(const row of (r.data||[])) if(row&&row.tld!=null){ const v=Number(row.retail); if(isFinite(v)&&v>0) m[String(row.tld).toLowerCase()]=v; }
+    return m; }catch(e){ return {}; }
+}
 
 if (process.env.DOMAIN_FEATURE_ENABLED === 'false') {
   module.exports = (req, res) => res.status(404).json({ error: 'Domain feature disabled' });
