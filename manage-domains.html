@@ -79,6 +79,16 @@ input:focus,select:focus{outline:2px solid var(--brand);outline-offset:0;border-
 .res{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);}
 .res:last-child{border-bottom:0;}
 .res .price{font-weight:700;margin-left:auto;white-space:nowrap;}
+.tabs{display:flex;gap:2px;margin:18px 0 16px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+.tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;padding:9px 15px;font:600 13.5px/1 var(--font-ui);color:var(--ink-soft);cursor:pointer;margin-bottom:-1px;}
+.tab.on{color:var(--brand-deep);border-bottom-color:var(--brand);}
+.tab:hover{color:var(--ink);}
+.panel.hide{display:none;}
+.inv{cursor:pointer;}
+.inv:hover{background:var(--surface-2);}
+.inv-detail{padding:6px 0 10px;border-bottom:1px solid var(--line);}
+.inv-line{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;padding:3px 0;color:var(--ink-soft);}
+.inv-line .d{flex:1;}
 .nsbox{margin-bottom:14px;padding:11px 13px;background:#fff;border:1px solid var(--line);border-radius:8px;}
 .nsrow{display:flex;gap:8px;align-items:center;}
 .nsval{font-size:12.5px;margin-top:5px;}
@@ -94,58 +104,73 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--su
 
   <div class="bar">
     <div class="who" id="who">Loading…</div>
-    <span class="chip ok hide" id="balChip"></span>
     <div class="spacer"></div>
-    <a class="btn" href="/domains" id="buyBtn">Register a domain ↗</a>
-    <button class="btn ghost sm" id="refreshBtn">Refresh</button>
-    <a class="btn ghost sm" href="/manage">Back to dashboard</a>
-    <button class="btn ghost sm" id="signoutBtn">Sign out</button>
+    <a class="btn" href="/manage">Back to dashboard</a>
   </div>
 
   <div class="card hide" id="dashCard">
     <h2>Overview <span class="chip ok">Admin</span></h2>
-    <p class="lede">Your reseller account at a glance — balance, sales and recent invoices.</p>
+    <p class="lede">Your reseller account at a glance — credit and sales.</p>
     <div class="stats" id="statRow"></div>
-    <div class="dash2">
-      <div><div class="subh">Sales — last 6 months</div><div id="salesChart" class="chart"></div></div>
-      <div><div class="subh">Latest invoices</div><div id="invList"><div class="empty">Loading…</div></div></div>
-    </div>
-    <div class="subh" style="margin-top:18px;display:flex;justify-content:space-between;align-items:center">
-      <span>Client accounts <span id="cliCount"></span></span>
-      <button class="btn ghost sm" id="cliToggle">View accounts</button>
-    </div>
-    <div id="cliList" class="hide"></div>
+    <div class="subh">Sales — last 6 months</div>
+    <div id="salesChart" class="chart"></div>
   </div>
 
-  <div class="card" id="searchCard">
-    <h2>Register a domain</h2>
-    <p class="lede">Search and buy — without leaving this page.</p>
-    <div class="searchbar">
-      <input id="dq" placeholder="yourbusiness  or  yourbusiness.com.au" style="flex:1">
-      <button class="btn" id="dsearch">Search</button>
-    </div>
-    <div id="searchResults"></div>
+  <div class="tabs hide" id="tabs">
+    <button class="tab on" data-tab="domains">My Domains</button>
+    <button class="tab" data-tab="clients" id="tabClients">Client Accounts</button>
+    <button class="tab" data-tab="invoices" id="tabInvoices">Invoices</button>
+    <button class="tab" data-tab="pricing">Pricing</button>
   </div>
 
-  <div class="card" id="domainsCard">
-    <h2>My domains</h2>
-    <p class="lede">Click a domain to manage its DNS records and email forwarding.</p>
-    <div id="domainsList"><div class="empty"><span class="spin"></span> Loading your domains…</div></div>
+  <div class="panel" id="panel-domains">
+    <div class="card" id="searchCard">
+      <h2>Register a domain</h2>
+      <p class="lede">Search and buy — without leaving this page.</p>
+      <div class="searchbar">
+        <input id="dq" placeholder="yourbusiness  or  yourbusiness.com.au" style="flex:1">
+        <button class="btn" id="dsearch">Search</button>
+      </div>
+      <div id="searchResults"></div>
+    </div>
+    <div class="card" id="domainsCard">
+      <h2>My domains</h2>
+      <p class="lede">Click a domain to manage its DNS records and email forwarding.</p>
+      <div id="domainsList"><div class="empty"><span class="spin"></span> Loading your domains…</div></div>
+    </div>
   </div>
 
-  <div class="card hide" id="pricingCard">
-    <h2>Pricing <span class="chip ok">Admin</span></h2>
-    <p class="lede">Retail prices your customers pay. Wholesale is your live Dreamscape cost; profit updates as you type.</p>
-    <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-bottom:12px;">
-      <label class="f">Bulk: cost + %
-        <input type="number" id="bulkPct" placeholder="e.g. 300" style="width:120px;">
-      </label>
-      <button class="btn ghost sm" id="bulkApply">Apply to all</button>
-      <div class="spacer"></div>
-      <button class="btn" id="savePricing">Save prices</button>
+  <div class="panel hide" id="panel-clients">
+    <div class="card">
+      <h2>Client accounts</h2>
+      <p class="lede">Every customer in your Dreamscape reseller account.</p>
+      <div id="cliList"><div class="empty">Loading…</div></div>
     </div>
-    <div id="pricingBody"><div class="empty"><span class="spin"></span> Loading pricing…</div></div>
-    <div class="msg" id="pricingMsg"></div>
+  </div>
+
+  <div class="panel hide" id="panel-invoices">
+    <div class="card">
+      <h2>Invoices</h2>
+      <p class="lede">Click an invoice to see exactly what was purchased.</p>
+      <div id="invList"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+
+  <div class="panel hide" id="panel-pricing">
+    <div class="card" id="pricingCard">
+      <h2>Pricing <span class="chip ok">Admin</span></h2>
+      <p class="lede">Retail prices your customers pay. Wholesale is your live Dreamscape cost; profit updates as you type.</p>
+      <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-bottom:12px;">
+        <label class="f">Bulk: cost + %
+          <input type="number" id="bulkPct" placeholder="e.g. 300" style="width:120px;">
+        </label>
+        <button class="btn ghost sm" id="bulkApply">Apply to all</button>
+        <div class="spacer"></div>
+        <button class="btn" id="savePricing">Save prices</button>
+      </div>
+      <div id="pricingBody"><div class="empty"><span class="spin"></span> Loading pricing…</div></div>
+      <div class="msg" id="pricingMsg"></div>
+    </div>
   </div>
 </div>
 
@@ -244,8 +269,17 @@ $('authVerify').onclick = async function(){
   if(r.error){ $('authMsg').className='msg err'; $('authMsg').textContent=r.error.message||'That code did not work.'; return; }
   hideAuth(); boot();
 };
-$('signoutBtn').onclick = async function(){ await sb.auth.signOut(); location.reload(); };
-$('refreshBtn').onclick = function(){ loadDomains(); };
+/* ---------- tabs ---------- */
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('on', t.getAttribute('data-tab')===name); });
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.toggle('hide', p.id!=='panel-'+name); });
+}
+document.querySelectorAll('.tab').forEach(function(t){ t.onclick=function(){ showTab(t.getAttribute('data-tab')); }; });
+function applyRole(){
+  if(IS_SUPER){ $('dashCard').classList.remove('hide'); $('tabs').classList.remove('hide'); }
+  else { $('dashCard').classList.add('hide'); $('tabs').classList.add('hide');
+    document.querySelectorAll('.panel').forEach(function(p){ p.classList.toggle('hide', p.id!=='panel-domains'); }); }
+}
 
 /* ---------- domains ---------- */
 async function loadDomains(){
@@ -255,6 +289,7 @@ async function loadDomains(){
   IS_SUPER = !!(r.data && r.data.super);
   DOMAINS = (r.data && r.data.domains) || [];
   if(IS_SUPER){ $('domainsCard').querySelector('.lede').textContent='Admin view — every domain in your Dreamscape account. Click a domain to manage its DNS and email forwarding.'; }
+  applyRole();
   renderDomains();
 }
 function statusChip(d){
@@ -414,8 +449,7 @@ async function delRec(i,rid){
 /* ---------- pricing admin (super only) ---------- */
 async function loadPricing(){
   var r=await api('/api/domains/pricing');
-  if(r.status===403||r.status===401){ $('pricingCard').classList.add('hide'); return; } // not a super admin
-  $('pricingCard').classList.remove('hide');
+  if(r.status===403||r.status===401){ var pt=document.querySelector('[data-tab="pricing"]'); if(pt) pt.style.display='none'; return; }
   if(!r.ok){ $('pricingBody').innerHTML='<div class="msg err">'+esc((r.data&&r.data.error)||'Could not load pricing.')+'</div>'; return; }
   PRICING=(r.data&&r.data.rows)||[];
   renderPricing();
@@ -455,35 +489,28 @@ $('savePricing').onclick=async function(){
   $('pricingMsg').className='msg ok'; $('pricingMsg').textContent='Saved '+(r.data.updated||updates.length)+' prices. These now apply on the storefront and at checkout.';
 };
 
+var CREDIT=null;
 async function loadBalance(){
   var r=await api('/api/domains/account');
-  if(r.ok && r.data && r.data.balance!=null){
-    var c=$('balChip'); c.classList.remove('hide');
-    c.textContent='Credit: '+money(r.data.balance)+' '+(r.data.currency||'');
-    if(r.data.decision==='warn'||r.data.decision==='block') c.className='chip ext';
-  }
+  if(r.ok && r.data && r.data.balance!=null){ CREDIT=money(r.data.balance)+' '+(r.data.currency||''); }
 }
 
-/* ---------- super dashboard: invoices, sales, clients ---------- */
+/* ---------- super dashboard ---------- */
+var INVOICES=[], INVOPEN=null;
 async function loadDashboard(){
   var r=await api('/api/domains/invoices');
-  if(r.status===403||r.status===401){ $('dashCard').classList.add('hide'); return; }
-  $('dashCard').classList.remove('hide');
+  if(r.status===403||r.status===401){ return; }
   if(!r.ok){ $('statRow').innerHTML='<div class="msg err">'+esc((r.data&&r.data.error)||'Could not load overview.')+'</div>'; return; }
-  var st=r.data.stats||{}, invs=r.data.invoices||[];
-  // stat cards (credit comes from the balance chip fetch)
-  var credit=$('balChip').textContent.replace('Credit: ','')||'—';
+  var st=r.data.stats||{};
+  INVOICES=r.data.invoices||[];
   $('statRow').innerHTML=
-     stat(credit||'—','Account credit')
+     stat(CREDIT||'—','Account credit')
     +stat(DOMAINS.length,'Domains')
     +stat(money(st.totalPaid)+' '+(st.currency||''),'Paid sales')
     +stat(st.count||0,'Invoices');
   renderChart(st.by_month||[]);
-  $('invList').innerHTML = invs.length ? invs.slice(0,8).map(function(inv){
-    return '<div class="res"><div><div class="dname">#'+esc(inv.id)+(inv.is_paid?'':' <span class="chip ext">unpaid</span>')+'</div>'
-      +'<div class="dmeta">'+esc(String(inv.order_date||'').slice(0,10))+'</div></div>'
-      +'<div class="price">'+money(inv.total_amount)+'</div></div>';
-  }).join('') : '<div class="empty">No invoices yet.</div>';
+  if($('tabInvoices')) $('tabInvoices').textContent='Invoices ('+(st.count||INVOICES.length)+')';
+  renderInvoices();
   loadClients();
 }
 function stat(n,l){ return '<div class="stat"><div class="n">'+esc(n)+'</div><div class="l">'+esc(l)+'</div></div>'; }
@@ -496,18 +523,41 @@ function renderChart(months){
       +(m.total>0?'<b>'+money(m.total).replace('.00','')+'</b>':'')+'<small>'+esc(lbl)+'</small></div>';
   }).join('');
 }
+function renderInvoices(){
+  var box=$('invList'); if(!box) return;
+  if(!INVOICES.length){ box.innerHTML='<div class="empty">No invoices yet.</div>'; return; }
+  box.innerHTML=INVOICES.map(function(inv,i){
+    var head='<div class="res inv" data-inv="'+i+'"><div style="flex:1"><div class="dname">'+(INVOPEN===i?'▾ ':'▸ ')+'#'+esc(inv.id)+(inv.is_paid?'':' <span class="chip ext">unpaid</span>')+'</div>'
+      +'<div class="dmeta">'+esc(String(inv.order_date||'').slice(0,10))+'</div></div>'
+      +'<div class="price">'+money(inv.total_amount)+' '+esc(inv.currency||'')+'</div></div>';
+    var det='';
+    if(INVOPEN===i){
+      var lines=(inv.orders||[]).map(function(o){
+        var name=o.product_name||o.description||o.type||'Item';
+        var sub=(o.description&&o.product_name&&o.description!==o.product_name)?(' <span class="dmeta">· '+esc(o.description)+'</span>'):'';
+        var per=o.period?(' <span class="dmeta">· '+esc(o.period)+' mo</span>'):'';
+        return '<div class="inv-line"><div class="d">'+esc(name)+sub+per+'</div><div>'+money(o.price)+'</div></div>';
+      }).join('') || '<div class="inv-line"><div class="d dmeta">No line items returned.</div></div>';
+      var extra='';
+      if(inv.discount!=null && Number(inv.discount)>0) extra+='<div class="inv-line"><div class="d dmeta">Discount</div><div>-'+money(inv.discount)+'</div></div>';
+      if(inv.tax!=null && Number(inv.tax)>0) extra+='<div class="inv-line"><div class="d dmeta">Tax</div><div>'+money(inv.tax)+'</div></div>';
+      det='<div class="inv-detail">'+lines+extra+'</div>';
+    }
+    return head+det;
+  }).join('');
+  box.querySelectorAll('[data-inv]').forEach(function(b){ b.onclick=function(){ var i=Number(b.getAttribute('data-inv')); INVOPEN=(INVOPEN===i?null:i); renderInvoices(); }; });
+}
 async function loadClients(){
   var r=await api('/api/domains/customers');
-  if(!r.ok){ return; }
+  if(!r.ok){ $('cliList').innerHTML='<div class="msg err">'+esc((r.data&&r.data.error)||'Could not load client accounts.')+'</div>'; return; }
   var cs=r.data.customers||[];
-  $('cliCount').textContent='('+cs.length+')';
+  if($('tabClients')) $('tabClients').textContent='Client Accounts ('+cs.length+')';
   $('cliList').innerHTML = cs.length ? cs.map(function(c){
     return '<div class="res"><div style="flex:1"><div class="dname">'+esc(c.name)+(c.company?(' <span class="dmeta">· '+esc(c.company)+'</span>'):'')+'</div>'
       +'<div class="dmeta">'+esc(c.email||'')+(c.phone?(' · '+esc(c.phone)):'')+'</div></div>'
       +'<span class="dmeta">#'+esc(c.id)+'</span></div>';
   }).join('') : '<div class="empty">No client accounts found.</div>';
 }
-$('cliToggle').onclick=function(){ var l=$('cliList'); l.classList.toggle('hide'); $('cliToggle').textContent=l.classList.contains('hide')?'View accounts':'Hide'; };
 
 /* ---------- inline domain search + register ---------- */
 $('dsearch').onclick=doSearch;
