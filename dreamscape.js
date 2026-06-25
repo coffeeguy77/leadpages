@@ -80,9 +80,42 @@ const registerDomain    = (b) => call('POST',  '/domains', { body: b });
 const getDomain         = (id) => call('GET',  `/domains/${id}`);
 const listDomains       = (query) => call('GET', '/domains', { query });
 const renewDomain       = (id, b) => call('POST', `/domains/${id}/renewal`, { body: b });
-const addDnsRecord      = (id, b) => call('POST', `/domains/${id}/dns`, { body: b });
-const listDnsRecords    = (id) => call('GET',  `/domains/${id}/dns`);
+const patchDomain       = (id, b) => call('PATCH', `/domains/${id}`, { body: b }); // name_servers, is_locked, privacy, contacts
+const deleteDomain      = (id) => call('DELETE', `/domains/${id}`);
 const registerDomainPrivacy = (b) => call('POST', '/products/domain-privacies', { body: b });
+
+// ---- DNS Hosting product (paid add-on) ----
+// NOTE: DNS records are NOT under /domains/{id}/dns (that path does not exist).
+// You first register a DNS Hosting product for the domain, then manage records
+// under /products/dns-hostings/{product_id}/dns. Record types include A, AAAA,
+// CNAME, TXT, MX, CAA, SRV, WEBFWD (URL forwarding) and MAILFWD (email forwarding).
+const registerDnsHosting = (b) => call('POST', '/products/dns-hostings', { body: b });           // {customer_id,domain_name,plan_id,period}
+const listDnsHostings    = (query) => call('GET', '/products/dns-hostings', { query });           // filter by domain_name / customer_id
+const getDnsHosting      = (pid) => call('GET', `/products/dns-hostings/${pid}`);
+const getDnsConfig       = (pid) => call('GET', `/products/dns-hostings/${pid}/configuration`);    // available_record_types, name_servers, mx_priorities...
+const renewDnsHosting    = (pid, b) => call('POST', `/products/dns-hostings/${pid}/renewal`, { body: b });
+const deleteDnsHosting   = (pid) => call('DELETE', `/products/dns-hostings/${pid}`);
+const listDnsRecords     = (pid, type) => call('GET', `/products/dns-hostings/${pid}/dns`, { query: type ? { type } : undefined });
+const getDnsRecord       = (pid, rid) => call('GET', `/products/dns-hostings/${pid}/dns/${rid}`);
+const addDnsRecord       = (pid, b) => call('POST', `/products/dns-hostings/${pid}/dns`, { body: b });
+const updateDnsRecord    = (pid, rid, b) => call('PATCH', `/products/dns-hostings/${pid}/dns/${rid}`, { body: b });
+const deleteDnsRecord    = (pid, rid) => call('DELETE', `/products/dns-hostings/${pid}/dns/${rid}`);
+
+// ---- Email Hosting product (real mailboxes; managed via login-link panel) ----
+const registerEmailHosting = (b) => call('POST', '/products/email-hostings', { body: b });        // {customer_id,domain_name,plan_id,period}
+const listEmailHostings    = (query) => call('GET', '/products/email-hostings', { query });
+const getEmailHosting      = (pid) => call('GET', `/products/email-hostings/${pid}`);
+const emailHostingLogin    = (pid, b) => call('POST', `/products/email-hostings/${pid}/login-link`, { body: b || {} });
+const renewEmailHosting    = (pid, b) => call('POST', `/products/email-hostings/${pid}/renewal`, { body: b });
+const deleteEmailHosting   = (pid) => call('DELETE', `/products/email-hostings/${pid}`);
+
+// ---- Email Exchange product (hosted Exchange-style mailboxes) ----
+const registerEmailExchange = (b) => call('POST', '/products/email-exchanges', { body: b });
+const listEmailExchanges    = (query) => call('GET', '/products/email-exchanges', { query });
+const getEmailExchange      = (pid) => call('GET', `/products/email-exchanges/${pid}`);
+const emailExchangeLogin    = (pid, b) => call('POST', `/products/email-exchanges/${pid}/login-link`, { body: b || {} });
+const renewEmailExchange    = (pid, b) => call('POST', `/products/email-exchanges/${pid}/renewal`, { body: b });
+const deleteEmailExchange   = (pid) => call('DELETE', `/products/email-exchanges/${pid}`);
 
 // pull the balance number out of { status, data:{ balance, currency } }
 function readBalance(resp) {
@@ -110,6 +143,13 @@ module.exports = {
   PRIORITY_TLDS, PRICE_TABLE, PRIVACY_PRICE, MIN_RESERVE, LOW_WARNING, BASE,
   call, priceFor, evaluateBalance, envStatus, readBalance,
   ping, getReseller, getBalance, getCurrencies, listTlds, checkAvailability, listDomainPrivacyProducts,
-  createCustomer, getCustomer, listCustomers, createRegistrant, updateRegistrant, registerDomain, getDomain, renewDomain,
-  addDnsRecord, listDnsRecords, registerDomainPrivacy, listDomains
+  createCustomer, getCustomer, listCustomers, createRegistrant, updateRegistrant,
+  registerDomain, getDomain, listDomains, renewDomain, patchDomain, deleteDomain, registerDomainPrivacy,
+  // DNS Hosting + records
+  registerDnsHosting, listDnsHostings, getDnsHosting, getDnsConfig, renewDnsHosting, deleteDnsHosting,
+  listDnsRecords, getDnsRecord, addDnsRecord, updateDnsRecord, deleteDnsRecord,
+  // Email Hosting
+  registerEmailHosting, listEmailHostings, getEmailHosting, emailHostingLogin, renewEmailHosting, deleteEmailHosting,
+  // Email Exchange
+  registerEmailExchange, listEmailExchanges, getEmailExchange, emailExchangeLogin, renewEmailExchange, deleteEmailExchange
 };
