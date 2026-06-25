@@ -154,6 +154,25 @@ function evaluateBalance(balanceNum, estimatedCost = 0) {
   return { decision: 'ok', balance: bal, after, reserve: MIN_RESERVE };
 }
 const priceFor = tld => PRICE_TABLE[tld] != null ? PRICE_TABLE[tld] : 49.95;
+
+// Resolve the retail price to CHARGE/SHOW for a domain. One source of truth used
+// by both availability.js (display) and checkout.js (charge), so they never drift.
+//   DOMAIN_PRICE_SOURCE = 'dreamscape' (default) -> use the register_price your
+//                          Dreamscape account returns (your configured retail)
+//                       = 'table'                 -> use the local PRICE_TABLE
+//                       = 'markup'                -> register_price * DOMAIN_PRICE_MARKUP
+//   DOMAIN_PRICE_MARKUP = multiplier for 'markup' mode (default 2)
+// In every mode, if no usable number is available we fall back to PRICE_TABLE so a
+// price is never shown as $0.
+const DOMAIN_PRICE_SOURCE = String(process.env.DOMAIN_PRICE_SOURCE || 'dreamscape').toLowerCase();
+const DOMAIN_PRICE_MARKUP = Number(process.env.DOMAIN_PRICE_MARKUP || 2);
+function resolveSell(tld, dsPrice) {
+  const p = Number(dsPrice);
+  const have = isFinite(p) && p > 0;
+  if (DOMAIN_PRICE_SOURCE === 'table') return priceFor(tld);
+  if (DOMAIN_PRICE_SOURCE === 'markup') return have ? (Math.ceil(p * DOMAIN_PRICE_MARKUP) - 0.05) : priceFor(tld);
+  return have ? p : priceFor(tld); // 'dreamscape' (default)
+}
 const envStatus = () => ({
   hasKey: !!RAW_KEY, keyLen: RAW_KEY.length,
   keyLooksValid: /^[a-z0-9]{32}$/.test(RAW_KEY),   // docs: 32 lowercase alphanumeric
@@ -162,7 +181,7 @@ const envStatus = () => ({
 
 module.exports = {
   PRIORITY_TLDS, PRICE_TABLE, PRIVACY_PRICE, MIN_RESERVE, LOW_WARNING, BASE,
-  call, priceFor, evaluateBalance, envStatus, readBalance,
+  call, priceFor, resolveSell, DOMAIN_PRICE_SOURCE, evaluateBalance, envStatus, readBalance,
   ping, getReseller, getBalance, getCurrencies, listTlds, checkAvailability, listDomainPrivacyProducts,
   createCustomer, getCustomer, listCustomers, createRegistrant, updateRegistrant,
   registerDomain, getDomain, listDomains, renewDomain, patchDomain, deleteDomain, registerDomainPrivacy,
