@@ -65,6 +65,10 @@ input:focus,select:focus{outline:2px solid var(--brand);outline-offset:0;border-
 .modal h2{font-family:var(--font-display);font-weight:500;margin:0 0 4px;font-size:22px;}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--brand-tint);border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;}
 @keyframes sp{to{transform:rotate(360deg)}}
+.nsbox{margin-bottom:14px;padding:11px 13px;background:#fff;border:1px solid var(--line);border-radius:8px;}
+.nsrow{display:flex;gap:8px;align-items:center;}
+.nsval{font-size:12.5px;margin-top:5px;}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--surface-2);padding:1px 6px;border-radius:4px;border:1px solid var(--line);}
 .hide{display:none!important;}
 </style>
 </head>
@@ -76,6 +80,7 @@ input:focus,select:focus{outline:2px solid var(--brand);outline-offset:0;border-
 
   <div class="bar">
     <div class="who" id="who">Loading…</div>
+    <span class="chip ok hide" id="balChip"></span>
     <div class="spacer"></div>
     <a class="btn" href="/domains" id="buyBtn">Register a domain ↗</a>
     <button class="btn ghost sm" id="refreshBtn">Refresh</button>
@@ -229,6 +234,7 @@ async function loadDns(i){
       +'<td style="text-align:right"><button class="btn danger sm" data-del="'+esc(rec.id)+'">Delete</button></td></tr>';
   }).join('');
   host.innerHTML='<div class="detail">'
+    +'<div id="nsHost-'+i+'"></div>'
     +'<div class="qa">'
       +'<button class="btn ghost sm" data-qa="mail">✉ Forward an email</button>'
       +'<button class="btn ghost sm" data-qa="web">↗ Forward a web address</button>'
@@ -242,6 +248,41 @@ async function loadDns(i){
   host.querySelectorAll('[data-del]').forEach(function(b){ b.onclick=function(){ delRec(i,b.getAttribute('data-del')); }; });
   host.querySelectorAll('[data-qa]').forEach(function(b){ b.onclick=function(){ renderAddForm(i,b.getAttribute('data-qa')); }; });
   renderAddForm(i,'generic');
+  loadNs(i);
+}
+async function loadNs(i){
+  var d=DOMAINS[i]; var box=$('nsHost-'+i); if(!box) return;
+  var r=await api('/api/domains/detail?'+dnsQuery(d));
+  if(!r.ok){ box.innerHTML='<div class="msg err" style="margin-bottom:10px">'+esc((r.data&&r.data.error)||'Could not load nameservers.')+'</div>'; return; }
+  var ns=(r.data.name_servers||[]), onDs=!!r.data.on_dreamscape_dns;
+  var nsList = ns.length? ns.map(function(h){return '<code>'+esc(h)+'</code>';}).join(' &middot; ') : '<i style="color:var(--ink-faint)">none set</i>';
+  box.innerHTML='<div class="nsbox">'
+    +'<div class="nsrow"><b>Nameservers</b> '+(onDs?'<span class="chip ok">DNS active here</span>':'<span class="chip ext">Pointed elsewhere</span>')+'</div>'
+    +'<div class="nsval">'+nsList+(r.data.expiry_date?(' <span class="dmeta">&middot; expires '+esc(String(r.data.expiry_date).slice(0,10))+'</span>'):'')+'</div>'
+    +(onDs
+       ? '<div class="note">These nameservers are Dreamscape\u2019s, so the records below are live \u2014 A/CNAME, MX, and the email/web forwarders all take effect.</div>'
+       : '<div class="note">\u26a0 This domain points at other nameservers, so the records below are <b>not</b> in effect. Set Dreamscape nameservers here, or manage DNS where the domain currently points.</div>')
+    +'<div class="form-grid"><button class="btn ghost sm" data-nsedit="'+i+'">Edit nameservers</button></div>'
+    +'<div id="nsEdit-'+i+'"></div></div>';
+  var eb=box.querySelector('[data-nsedit]'); if(eb) eb.onclick=function(){ renderNsEdit(i,ns); };
+}
+function renderNsEdit(i,ns){
+  var box=$('nsEdit-'+i); if(!box) return;
+  var vals=(ns.length?ns:['','']).concat(['','','']).slice(0,4);
+  box.innerHTML='<div class="form-grid" style="margin-top:8px">'
+    +vals.map(function(v,k){ return '<label class="f">NS'+(k+1)+'<input id="ns-'+i+'-'+k+'" value="'+esc(v)+'" placeholder="ns'+(k+1)+'.example.com" style="width:200px"></label>'; }).join('')
+    +'<button class="btn sm" data-nssave="'+i+'">Save nameservers</button></div>'
+    +'<div class="note">Changing nameservers moves DNS control to wherever they point and can take a while to propagate.</div>';
+  var sb2=box.querySelector('[data-nssave]'); if(sb2) sb2.onclick=function(){ saveNs(i); };
+}
+async function saveNs(i){
+  var d=DOMAINS[i], arr=[];
+  for(var k=0;k<4;k++){ var el=$('ns-'+i+'-'+k); if(el && el.value.trim()) arr.push(el.value.trim()); }
+  if(arr.length<2){ dnsMsg(i,'err','Enter at least two nameservers.'); return; }
+  dnsMsg(i,'','Updating nameservers\u2026');
+  var r=await api('/api/domains/detail',{method:'PATCH',body:JSON.stringify(Object.assign(dnsBody(d),{name_servers:arr}))});
+  if(!r.ok){ dnsMsg(i,'err',(r.data&&r.data.error)||'Could not update nameservers.'); return; }
+  dnsMsg(i,'ok','Nameservers updated.'); loadNs(i);
 }
 function renderAddForm(i,mode){
   var d=DOMAINS[i]; var box=$('addForm-'+i); if(!box) return;
@@ -340,6 +381,15 @@ $('savePricing').onclick=async function(){
   $('pricingMsg').className='msg ok'; $('pricingMsg').textContent='Saved '+(r.data.updated||updates.length)+' prices. These now apply on the storefront and at checkout.';
 };
 
+async function loadBalance(){
+  var r=await api('/api/domains/account');
+  if(r.ok && r.data && r.data.balance!=null){
+    var c=$('balChip'); c.classList.remove('hide');
+    c.textContent='Credit: '+money(r.data.balance)+' '+(r.data.currency||'');
+    if(r.data.decision==='warn'||r.data.decision==='block') c.className='chip ext';
+  }
+}
+
 /* ---------- boot ---------- */
 async function boot(){
   var s=(await sb.auth.getSession()).data.session;
@@ -347,6 +397,7 @@ async function boot(){
   SESSION=s.user;
   $('who').innerHTML=esc(SESSION.email)+'<small>Signed in</small>';
   await loadDomains();
+  await loadBalance();
   await loadPricing();
 }
 boot();
