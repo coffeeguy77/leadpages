@@ -2683,12 +2683,31 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     document.body.appendChild(p);
     document.getElementById('bl-close').addEventListener('click',closeBillingPage);
     p.addEventListener('click',function(e){ if(e.target===p) closeBillingPage(); });
+    var admin=(currentRole==='super');
+    if(admin && (typeof currentSiteId!=='undefined') && currentSiteId){
+      _billFetch('/api/billing/owner?siteId='+encodeURIComponent(currentSiteId)).then(function(r){return r.json();}).then(function(o){
+        BILL.owner=o||{};
+        if(o && o.error){ _billLoadAll(); return; }
+        if(!o || !o.owner_email){ _billOwnerGate('none'); return; }
+        if(!o.linked){ _billOwnerGate('link'); return; }
+        _billLoadAll();
+      }).catch(function(){ _billLoadAll(); });
+    } else { BILL.owner=null; _billLoadAll(); }
+  }
+  function _billLoadAll(){
     var sid=(typeof currentSiteId!=='undefined'&&currentSiteId)?('?siteId='+encodeURIComponent(currentSiteId)):'';
     Promise.all([
       _billFetch('/api/billing/status'+sid).then(function(r){return r.json();}).catch(function(){return null;}),
       _billFetch('/api/billing/plans').then(function(r){return r.json();}).catch(function(){return {plans:[]};}),
       _billFetch('/api/billing/contra'+sid).then(function(r){return r.json();}).catch(function(){return null;})
     ]).then(function(res){ BILL.status=res[0]; BILL.plans=(res[1]&&res[1].plans)||[]; BILL.contra=res[2]; _billRender(); });
+  }
+  function _billOwnerGate(kind){
+    var body=document.getElementById('bl-body'); if(!body) return; var o=BILL.owner||{};
+    if(kind==='none'){ body.innerHTML='<div style="padding:8px 2px;"><p style="margin:0 0 10px;line-height:1.5;">This site has no client attached yet. Open <strong>Settings</strong> on this site, set the <strong>Client login email</strong>, Save, then reopen Billing.</p><p class="hint" style="margin:0;">That email is how the customer is billed and how their contra account is tracked.</p></div>'; return; }
+    body.innerHTML='<div style="padding:8px 2px;"><p style="margin:0 0 6px;line-height:1.5;">Client for this site: <strong>'+_bEsc(o.owner_email)+'</strong></p><p class="hint" style="margin:0 0 14px;">This client isn\u2019t set up for billing yet. Linking creates their login (so they can sign in to view their account) and connects every site under this email to one combined bill.</p><button type="button" class="btn" id="bl-link">Link client &amp; enable billing</button> <span id="bl-link-msg" style="font-size:12.5px;margin-left:6px;"></span></div>';
+    var b=document.getElementById('bl-link'),m=document.getElementById('bl-link-msg');
+    b.addEventListener('click',function(){ b.disabled=true; m.textContent='Linking\u2026'; m.style.color='#667'; _billFetch('/api/billing/owner',{method:'POST',body:JSON.stringify({siteId:currentSiteId})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.linked){ m.textContent=j.created?'Login created \u2014 loading\u2026':'Linked \u2014 loading\u2026'; m.style.color='#0a7d33'; BILL.owner=j; openBillingPage(); } else { b.disabled=false; m.textContent=(j&&j.error)||'Failed'; m.style.color='#b42318'; } }).catch(function(){ b.disabled=false; m.textContent='Failed'; m.style.color='#b42318'; }); });
   }
   function _billPill(st){ var map={active:['Active','#0a7d33','#e7f6ec'],past_due:['Payment due','#b4690e','#fdf1e3'],suspended:['Suspended','#b42318','#fdecea'],flagged_deletion:['Flagged for deletion','#b42318','#fdecea'],none:['No plan','#667','#eef0f2'],canceled:['Cancelled','#667','#eef0f2']}; var m=map[st]||map.none; return '<span class="pill" style="color:'+m[1]+';background:'+m[2]+';">'+m[0]+'</span>'; }
   function _billRender(){
@@ -2704,7 +2723,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         +(admin?('<button type="button" class="btn ghost bl-protect">'+(st.delete_protected?'Unprotect':'Protect')+'</button><button type="button" class="btn ghost bl-extend">Extend 90d</button>'+((st.billing_status==='suspended'||st.billing_status==='flagged_deletion')?'<button type="button" class="btn ghost bl-unsuspend">Unsuspend</button>':'')):'')
         +'</div><div class="bl-msg" style="font-size:12.5px;margin-top:6px;"></div></div>';
     }).join('');
-    body.innerHTML=banner+(rows||'<div class="hint">No sites on this account.</div>')+'<div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;">'+(s.hasBillingAccount?'<button type="button" class="btn" id="bl-portal">Pay / manage billing</button>':'')+'</div>'+_contraHTML(admin);
+    var clientHead=(BILL.owner&&BILL.owner.owner_email)?('<div style="margin:0 0 10px;font-size:14px;color:#445;">Client: <strong>'+_bEsc(BILL.owner.owner_email)+'</strong></div>'):'';
+    body.innerHTML=clientHead+banner+(rows||'<div class="hint">No sites on this account.</div>')+'<div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;">'+(s.hasBillingAccount?'<button type="button" class="btn" id="bl-portal">Pay / manage billing</button>':'')+'</div>'+_contraHTML(admin);
     var portal=document.getElementById('bl-portal'); if(portal) portal.addEventListener('click',function(){ portal.disabled=true; _billFetch('/api/billing/portal',{method:'POST',body:JSON.stringify({returnUrl:location.origin})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.url) location.href=j.url; else { portal.disabled=false; toast((j&&j.error)||'Could not open portal'); } }).catch(function(){ portal.disabled=false; }); });
     body.querySelectorAll('.bl-site').forEach(function(row){
       var id=row.getAttribute('data-id'); var msg=row.querySelector('.bl-msg');
