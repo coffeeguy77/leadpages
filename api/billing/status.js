@@ -1,6 +1,7 @@
 // api/billing/status.js — billing summary for the /manage dashboard.
 //   GET            -> the caller's own account (sites, fees, combined total, status)
 //   GET ?ownerId=  -> a specific client's account (admins only)
+//   GET ?siteId=   -> the owner of that site's account (admins only; clients always get their own)
 
 const { sb, getUser, isAdminEmail, json } = require('./_stripe');
 
@@ -9,11 +10,18 @@ module.exports = async (req, res) => {
   if (!user) return json(res, 401, { error: 'unauthorized' });
 
   let ownerId = user.id;
-  try {
-    const u = new URL(req.url, 'http://x');
-    const q = u.searchParams.get('ownerId');
-    if (q && isAdminEmail(user.email)) ownerId = q;
-  } catch (e) {}
+  if (isAdminEmail(user.email)) {
+    try {
+      const u = new URL(req.url, 'http://x');
+      const q = u.searchParams.get('ownerId');
+      const sid = u.searchParams.get('siteId');
+      if (q) ownerId = q;
+      else if (sid) {
+        const { data: st } = await sb.from('sites').select('owner_user_id').eq('id', sid).maybeSingle();
+        if (st && st.owner_user_id) ownerId = st.owner_user_id;
+      }
+    } catch (e) {}
+  }
 
   try {
     const { data: bc } = await sb.from('billing_customers').select('status,stripe_customer_id,stripe_subscription_id').eq('owner_user_id', ownerId).maybeSingle();
