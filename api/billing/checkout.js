@@ -40,7 +40,9 @@ module.exports = async (req, res) => {
     await sb.from('sites').update({ plan_key: planKey, monthly_amount: 0, billing_status: 'active', setup_paid: true, suspended_at: null, delete_flagged_at: null }).eq('id', site.id);
     return json(res, 200, { mode: 'free' });
   }
-  if (!plan.stripe_price_id) return json(res, 400, { error: 'this plan is missing its Stripe price' });
+  // Use a real Stripe price only if one was actually configured; otherwise we build the
+  // price inline from the dollar amount, so no Stripe price objects are required.
+  const validPrice = (x) => typeof x === 'string' && /^price_/.test(x);
 
   try {
     let bc = null;
@@ -61,8 +63,16 @@ module.exports = async (req, res) => {
     if (subId) { try { liveSub = await stripe('subscriptions/' + subId, 'GET'); } catch (e) { liveSub = null; } }
 
     if (liveSub && ['active', 'trialing', 'past_due'].includes(liveSub.status)) {
+      let priceId = plan.stripe_price_id;
+      if (!validPrice(priceId)) {
+        const np = await stripe('prices', 'POST', {
+          unit_amount: plan.monthly_amount, currency: plan.currency || 'aud',
+          recurring: { interval: 'month' }, product_data: { name: plan.name || ('Hosting \u2014 ' + plan.key) },
+        });
+        priceId = np.id;
+      }
       const item = await stripe('subscription_items', 'POST', {
-        subscription: subId, price: plan.stripe_price_id, quantity: 1,
+        subscription: subId, price: priceId, quantity: 1,
         proration_behavior: 'create_prorations', metadata: { site_id: site.id },
       });
       if (plan.setup_amount && plan.setup_amount > 0) {
@@ -82,7 +92,6 @@ module.exports = async (req, res) => {
     const params = {
       mode: 'subscription',
       customer: customerId,
-      'line_items[0][price]': plan.stripe_price_id,
       'line_items[0][quantity]': 1,
       allow_promotion_codes: true,
       success_url: base + '/manage?billing=success',
@@ -94,7 +103,15 @@ module.exports = async (req, res) => {
       'metadata[owner_user_id]': ownerId || '',
       'metadata[plan_key]': planKey,
     };
-    if (plan.stripe_setup_price_id) {
+    if (validPrice(plan.stripe_price_id)) {
+      params['line_items[0][price]'] = plan.stripe_price_id;
+    } else {
+      params['line_items[0][price_data][currency]'] = plan.currency || 'aud';
+      params['line_items[0][price_data][product_data][name]'] = plan.name || ('Hosting \u2014 ' + plan.key);
+      params['line_items[0][price_data][unit_amount]'] = plan.monthly_amount;
+      params['line_items[0][price_data][recurring][interval]'] = 'month';
+    }
+    if (validPrice(plan.stripe_setup_price_id)) {
       params['line_items[1][price]'] = plan.stripe_setup_price_id;
       params['line_items[1][quantity]'] = 1;
     } else if (plan.setup_amount > 0) {
