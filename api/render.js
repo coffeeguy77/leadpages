@@ -63,6 +63,24 @@ function notFound(res) {
     '<body style="font-family:system-ui;text-align:center;padding:80px;color:#444">Page not found.</body>');
 }
 
+function suspendedPage(res, site) {
+  const name = (site && site.business_name) ? String(site.business_name).replace(/[<>&]/g, '') : 'This website';
+  res.status(503);
+  res.setHeader('content-type', 'text/html; charset=utf-8');
+  res.setHeader('cache-control', 'no-store');
+  res.setHeader('retry-after', '86400');
+  return res.send('<!doctype html><html lang="en"><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">' +
+    '<title>' + name + ' — temporarily unavailable</title>' +
+    '<body style="margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0f1620;color:#e7edf5;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px;">' +
+    '<div style="max-width:520px;text-align:center;">' +
+    '<div style="font-size:46px;margin-bottom:14px;">&#9888;&#65039;</div>' +
+    '<h1 style="font-size:24px;margin:0 0 10px;">This website is temporarily unavailable</h1>' +
+    '<p style="font-size:16px;line-height:1.55;color:#a9b6c6;margin:0 0 6px;">' + name + ' is paused while a billing matter is resolved.</p>' +
+    '<p style="font-size:14px;color:#7d8a9a;margin:0;">If this is your site, please settle the outstanding hosting payment to restore it.</p>' +
+    '</div></body></html>');
+}
+
 module.exports = async (req, res) => {
   try {
     const rawHost = (req.headers.host || '').toLowerCase();
@@ -88,6 +106,7 @@ module.exports = async (req, res) => {
     }
 
     if (error || !site || site.status !== 'live') return notFound(res);
+    if (site.billing_status === 'suspended' || site.billing_status === 'flagged_deletion') return suspendedPage(res, site);
 
     const template = templateFor(site);
 
