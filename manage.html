@@ -2141,7 +2141,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var sr=await fetch('/api/cloudinary/sign',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({publicId:pid})});
     if(!sr.ok) throw new Error('Could not authorise upload'); var s=await sr.json();
     var fd=new FormData(); fd.append('file',file,(file&&file.name)||'upload.jpg'); fd.append('api_key',s.apiKey); fd.append('timestamp',s.timestamp); fd.append('public_id',s.publicId); fd.append('overwrite',s.overwrite); fd.append('invalidate',s.invalidate); fd.append('signature',s.signature);
-    var ur; try{ ur=await fetch('https://api.cloudinary.com/v1_1/'+(s.cloudName||CW_CLOUD)+'/image/upload',{method:'POST',body:fd}); }catch(_ne){ throw new Error('Network error reaching Cloudinary \u2014 the image may be too large or the connection dropped. Try a smaller image.'); }
+    var _cloud=(s.cloudName&&/^[a-zA-Z0-9_\-]+$/.test(s.cloudName))?s.cloudName:CW_CLOUD;
+    var ur; try{ ur=await fetch('https://api.cloudinary.com/v1_1/'+_cloud+'/image/upload',{method:'POST',body:fd}); }catch(_ne){ throw new Error('Network error reaching Cloudinary \u2014 the image may be too large or the connection dropped. Try a smaller image.'); }
     var uj=await ur.json(); if(!ur.ok||!uj.secure_url) throw new Error((uj.error&&uj.error.message)||'Upload failed');
     return { url:uj.secure_url, publicId:uj.public_id };
   }
@@ -3156,7 +3157,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       var L0=c.logo||{}; var curScale=(L0.heightPx?(L0.heightPx/40):(L0.scale||1));
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Logo</h2><p class="lede">Show a clean text logo or upload an image \u2014 both replace the default initial badge.</p>'
         +'<div class="row"><div class="f"><label>Logo style</label><select id="lg-mode" class="tin"><option value="mark">Initial badge + name</option><option value="text">Text only</option><option value="image">Image</option></select></div>'+lpFld('Logo text','lg-text','defaults to business name')+'</div>'
-        +'<div id="lg-imgwrap" class="f" style="display:none;"><label>Logo image (max ~300 KB)</label><input type="file" id="lg-file" accept="image/*"><div id="lg-imgprev" style="margin-top:8px;"></div></div></div>'
+        +'<div id="lg-imgwrap" class="f" style="display:none;"><label>Logo image</label><input type="file" id="lg-file" accept="image/*"><div class="hint" style="margin-top:4px;">PNG, JPG or SVG \u2014 large images are optimised automatically on upload.</div><div id="lg-imgprev" style="margin-top:8px;"></div></div></div>'
         +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Size &amp; position</h2><p class="lede" style="margin:0 0 12px;">Scale the logo and choose where it sits in the header.</p>'
           +'<div class="f"><label>Quick size</label><div style="display:flex;flex-wrap:wrap;gap:8px;" id="lg-presets">'+[['1','1\u00d7'],['1.5','1.5\u00d7'],['2','2\u00d7'],['2.5','2.5\u00d7'],['3','3\u00d7']].map(function(p){ return '<button type="button" class="btn ghost lg-preset" data-scale="'+p[0]+'" style="padding:6px 14px;">'+p[1]+'</button>'; }).join('')+'</div></div>'
           +'<div class="row"><div class="f"><label>Scale <span class="hint" id="lg-scale-val">'+(Math.round(curScale*100)/100)+'\u00d7</span></label><input type="range" id="lg-scale" min="1" max="3" step="0.05" value="'+curScale+'" style="width:100%;"></div>'
@@ -3208,7 +3209,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     function refresh(){ $('lg-imgwrap').style.display=($('lg-mode').value==='image')?'':'none'; renderPrev(); }
     $('lg-mode').addEventListener('change',function(){ L.mode=this.value; persist(); refresh(); previewApply(); });
     $('lg-text').addEventListener('input',function(){ L.text=this.value; persist(); previewApply(); });
-    var f=$('lg-file'); if(f) f.addEventListener('change',function(e){ var file=e.target.files[0]; if(!file) return; if(file.size>300000){ toast('Image too large (max ~300 KB)'); e.target.value=''; return; } var rd=new FileReader(); rd.onload=function(){ L.imageUrl=rd.result; persist(); renderPrev(); previewApply(); }; rd.readAsDataURL(file); });
+    var f=$('lg-file'); if(f) f.addEventListener('change',function(e){ var file=e.target.files[0]; if(!file) return; if(file.size>8000000){ toast('Image too large (max ~8 MB)'); e.target.value=''; return; } var prev=L._pid||''; toast('Uploading logo\u2026'); cwUpload(file,['logo']).then(function(r){ L.imageUrl=r.url; L._pid=r.publicId; persist(); renderPrev(); previewApply(); if(prev&&prev!==r.publicId) cwDelete(prev); toast('Logo uploaded'); }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); }); e.target.value=''; });
     refresh();
   }
   function wireTradeColours(c){
