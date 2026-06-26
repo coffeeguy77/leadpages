@@ -66,7 +66,12 @@ module.exports = async (req, res) => {
       const lines = (v.lines && v.lines.data) || [];
       let desc = (lines[0] && (lines[0].description || (lines[0].price && lines[0].price.nickname))) || v.description || 'Subscription';
       if (lines.length > 1) desc += ' (+' + (lines.length - 1) + ' more)';
-      return { date: v.created, amount: v.total, currency: v.currency, status: v.status, paid: !!v.paid, description: desc, url: v.hosted_invoice_url || null, pdf: v.invoice_pdf || null, number: v.number || null };
+      return {
+        date: v.created, amount: v.total, currency: v.currency, status: v.status, paid: !!v.paid,
+        description: desc, url: v.hosted_invoice_url || null, pdf: v.invoice_pdf || null, number: v.number || null,
+        subtotal: v.subtotal, tax: v.tax || 0, total: v.total,
+        lines: lines.map((l) => ({ description: l.description || (l.price && l.price.nickname) || 'Item', amount: l.amount, currency: l.currency || v.currency })),
+      };
     });
   } catch (e) { out.error = String(e.message || e); }
 
