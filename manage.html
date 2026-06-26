@@ -2699,8 +2699,9 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     Promise.all([
       _billFetch('/api/billing/status'+sid).then(function(r){return r.json();}).catch(function(){return null;}),
       _billFetch('/api/billing/plans').then(function(r){return r.json();}).catch(function(){return {plans:[]};}),
-      _billFetch('/api/billing/contra'+sid).then(function(r){return r.json();}).catch(function(){return null;})
-    ]).then(function(res){ BILL.status=res[0]; BILL.plans=(res[1]&&res[1].plans)||[]; BILL.contra=res[2]; _billRender(); });
+      _billFetch('/api/billing/contra'+sid).then(function(r){return r.json();}).catch(function(){return null;}),
+      _billFetch('/api/billing/account'+sid).then(function(r){return r.json();}).catch(function(){return null;})
+    ]).then(function(res){ BILL.status=res[0]; BILL.plans=(res[1]&&res[1].plans)||[]; BILL.contra=res[2]; BILL.account=res[3]; _billRender(); });
   }
   function _billOwnerGate(kind){
     var body=document.getElementById('bl-body'); if(!body) return; var o=BILL.owner||{};
@@ -2724,7 +2725,9 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         +'</div><div class="bl-msg" style="font-size:12.5px;margin-top:6px;"></div></div>';
     }).join('');
     var clientHead=(BILL.owner&&BILL.owner.owner_email)?('<div style="margin:0 0 10px;font-size:14px;color:#445;">Client: <strong>'+_bEsc(BILL.owner.owner_email)+'</strong></div>'):'';
-    body.innerHTML=clientHead+banner+(rows||'<div class="hint">No sites on this account.</div>')+'<div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;">'+(s.hasBillingAccount?'<button type="button" class="btn" id="bl-portal">Pay / manage billing</button>':'')+'</div>'+_contraHTML(admin);
+    var stripeBlock=_billStripeHTML();
+    var manageBtn=(BILL.account&&BILL.account.hasStripe)?'<button type="button" class="btn ghost" id="bl-portal">Update card in Stripe</button>':(s.hasBillingAccount?'<button type="button" class="btn" id="bl-portal">Pay / manage billing</button>':'');
+    body.innerHTML=clientHead+banner+stripeBlock+(rows||'<div class="hint">No sites on this account.</div>')+'<div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;">'+manageBtn+'</div>'+_contraHTML(admin);
     var portal=document.getElementById('bl-portal'); if(portal) portal.addEventListener('click',function(){ portal.disabled=true; _billFetch('/api/billing/portal',{method:'POST',body:JSON.stringify({returnUrl:location.origin})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.url) location.href=j.url; else { portal.disabled=false; toast((j&&j.error)||'Could not open portal'); } }).catch(function(){ portal.disabled=false; }); });
     body.querySelectorAll('.bl-site').forEach(function(row){
       var id=row.getAttribute('data-id'); var msg=row.querySelector('.bl-msg');
@@ -2736,6 +2739,23 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       var ub=row.querySelector('.bl-unsuspend'); if(ub) ub.addEventListener('click',function(){ if(!window.confirm('Manually reactivate this site without payment?')) return; _billFetch('/api/billing/admin',{method:'POST',body:JSON.stringify({action:'unsuspend',siteId:id})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.ok){ say('Reactivated'); openBillingPage(); } else say((j&&j.error)||'Failed',true); }); });
     });
     _contraWire(admin);
+  }
+  function _billStripeHTML(){
+    var a=BILL.account; if(!a||!a.hasStripe) return '';
+    var cur=a.currency||'aud';
+    function lbl(t){ return '<div style="font-size:11px;letter-spacing:.06em;color:#889;font-weight:700;margin-bottom:6px;">'+t+'</div>'; }
+    function rule(){ return '<div style="border-top:1px solid var(--line);margin:12px 0;"></div>'; }
+    var items=(a.items||[]).map(function(it){ return '<div style="display:flex;justify-content:space-between;font-size:14px;"><span>'+_bEsc(it.name)+(it.quantity>1?(' \u00d7'+it.quantity):'')+'</span><strong>'+_bMoney(it.amount*(it.quantity||1),cur)+' / '+_bEsc(it.interval)+'</strong></div>'; }).join('');
+    var statusPill=a.status?_billPill((a.status==='active'||a.status==='trialing')?'active':(a.status==='past_due'?'past_due':((a.status==='canceled'||a.status==='unpaid')?'canceled':'active'))):'';
+    var total=a.total_monthly?('<div style="margin-top:8px;font-size:20px;font-weight:700;">'+_bMoney(a.total_monthly,cur)+' <span style="font-size:13px;font-weight:400;color:#667;">per month</span> '+statusPill+'</div>'):'';
+    var next=a.current_period_end?('<div style="font-size:13px;color:#445;margin-top:4px;">Next billing date: '+_dt(new Date(a.current_period_end*1000).toISOString())+(a.cancel_at_period_end?' \u2014 cancels at period end':'')+'</div>'):'';
+    var pm=a.payment_method;
+    var pmHTML=pm?('<div style="display:flex;align-items:center;gap:8px;font-size:14px;"><span style="display:inline-block;padding:2px 7px;border-radius:5px;background:#1a1f71;color:#fff;font-size:11px;font-weight:700;letter-spacing:.04em;">'+_bEsc(String(pm.brand||'card').toUpperCase())+'</span>\u2022\u2022\u2022\u2022 '+_bEsc(pm.last4)+' <span class="hint" style="margin:0;">Expires '+_bEsc(pm.exp_month)+'/'+_bEsc(pm.exp_year)+'</span></div>'):'<div class="hint" style="margin:0;">No card on file</div>';
+    var cust=a.customer||{};
+    var custHTML='<div style="font-size:14px;">'+_bEsc(cust.name||'\u2014')+(cust.email?('<div style="color:#667;">'+_bEsc(cust.email)+'</div>'):'')+'</div>';
+    var invRows=(a.invoices||[]).map(function(v){ var st=v.paid?'Paid':(v.status||''); var col=v.paid?'#0a7d33':'#b4690e'; var bg=v.paid?'#e7f6ec':'#fdf1e3'; var links=(v.url?'<a href="'+_bEsc(v.url)+'" target="_blank" rel="noopener" style="color:#2563eb;text-decoration:none;">View</a>':'')+(v.pdf?((v.url?' \u00b7 ':'')+'<a href="'+_bEsc(v.pdf)+'" target="_blank" rel="noopener" style="color:#2563eb;text-decoration:none;">PDF</a>'):''); return '<tr style="border-top:1px solid var(--line);"><td style="padding:7px 8px;white-space:nowrap;">'+_dt(new Date(v.date*1000).toISOString())+'</td><td style="padding:7px 8px;white-space:nowrap;">'+_bMoney(v.amount,v.currency||cur)+'</td><td style="padding:7px 8px;"><span class="pill" style="color:'+col+';background:'+bg+';text-transform:capitalize;">'+_bEsc(st)+'</span></td><td style="padding:7px 8px;">'+_bEsc(v.description||'')+'</td><td style="padding:7px 8px;text-align:right;white-space:nowrap;">'+links+'</td></tr>'; }).join('');
+    var invHTML=invRows?(rule()+lbl('INVOICE HISTORY')+'<div style="overflow:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;"><tbody>'+invRows+'</tbody></table></div>'):'';
+    return '<div class="bl-site">'+lbl('CURRENT SUBSCRIPTION')+(items||'<div class="hint" style="margin:0;">No active subscription.</div>')+total+next+rule()+lbl('PAYMENT METHOD')+pmHTML+rule()+lbl('BILLING INFORMATION')+custHTML+invHTML+'</div>';
   }
   function _dt(iso){ if(!iso) return ''; var d=new Date(iso); if(isNaN(d.getTime())) return ''; return d.toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'}); }
   function _contraHTML(admin){
