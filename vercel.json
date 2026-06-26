@@ -1,4 +1,7 @@
 {
+  "crons": [
+    { "path": "/api/billing/cron", "schedule": "0 3 * * *" }
+  ],
   "rewrites": [
     { "source": "/manage", "destination": "/manage.html" },
     { "source": "/tradies", "destination": "/tradies.html" },
