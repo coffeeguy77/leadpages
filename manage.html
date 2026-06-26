@@ -2584,6 +2584,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var danger=(currentRole==='super')?('<div class="card danger" style="margin-bottom:0;"><h2 style="margin:0 0 4px;color:#b42318;">Danger zone</h2><p class="lede" style="margin:0 0 12px;">Unlock, then tap Delete twice to confirm. This permanently removes the site and can\u2019t be undone.</p><div style="display:flex;gap:10px;align-items:center;"><button type="button" id="btn-dellock" class="sp-lock" title="Unlock to allow delete">\uD83D\uDD12</button><button type="button" id="btn-delsite" class="sp-del" disabled>Delete site</button></div></div>'):'';
     p.innerHTML='<div class="sp-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h1 style="margin:0;font:700 26px/1.1 var(--font-display,Georgia),serif;">Settings</h1><button type="button" id="set-close" class="btn ghost">Close</button></div>'
       +detailFields
+      +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button></div>':'')
       +window.__tradeStarterCard(currentRole==='super')
       +danger
       +'</div>';
@@ -2595,6 +2596,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     // wire site detail fields + demo
     wireDetailFields(c0(),'trade');
     var dmo=$('set-demo'); if(dmo) dmo.addEventListener('change',function(){ if(currentSiteId) lplToggleDemo(currentSiteId); });
+    var opb=$('open-plans'); if(opb) opb.addEventListener('click',openPlansPage);
     // wire service starter content
     (function(){ var c=c0(); var ct=(c.trade||'').toLowerCase().trim(); var slug='plumber';
       if(ct){ if(ct==='plumber'){ slug='plumber'; } else if(TRADE_PACKS[ct]){ slug=ct; } else { for(var kk in TRADE_PACKS){ var lb=window.__tradeLabel(kk).toLowerCase(); if(lb===ct||lb.indexOf(ct)===0||(TRADE_PACKS[kk].tradeType||'').toLowerCase()===ct){ slug=kk; break; } } } }
@@ -2611,6 +2613,60 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     }
   }
   function c0(){ return data||{}; }
+  /* ===================== Plan builder (admin) ===================== */
+  var BP={ plans:[] };
+  function _bpFetch(opts){ return cwToken().then(function(token){ return fetch('/api/billing/plans', Object.assign({headers:Object.assign({'content-type':'application/json'}, token?{Authorization:'Bearer '+token}:{})}, opts||{})); }); }
+  function _d(c){ return ((c||0)/100).toFixed(2); }
+  function _c(d){ return Math.round((parseFloat(d)||0)*100); }
+  function closePlansPage(){ var p=document.getElementById('plans-page'); if(p) p.remove(); }
+  function openPlansPage(){
+    closePlansPage();
+    if(!document.getElementById('plans-page-css')){ var s=document.createElement('style'); s.id='plans-page-css'; s.textContent='#plans-page{position:fixed;inset:0;z-index:9999;background:rgba(16,22,32,.55);overflow:auto;padding:32px 16px;}#plans-page .pp-card{max-width:900px;margin:0 auto;background:var(--bg,#faf9f6);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:24px;}#plans-page .bp-plan{border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;background:#fff;}#plans-page .bp-tier{display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap;}'; document.head.appendChild(s); }
+    var p=document.createElement('div'); p.id='plans-page';
+    p.innerHTML='<div class="pp-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;"><h1 style="margin:0;font:700 24px/1.1 var(--font-display,Georgia),serif;">Hosting plans</h1><div><button type="button" class="btn ghost" id="bp-add">+ Add plan</button> <button type="button" class="btn ghost" id="bp-close">Close</button></div></div><p class="lede" style="margin:0 0 14px;">Build the plans customers can be placed on \u2014 free, or any mix of one-off setup and monthly fee, including volume (per-site) pricing. Amounts are in dollars. For paid plans, create the matching Price in Stripe and paste its ID.</p><div id="bp-list"><div class="hint">Loading\u2026</div></div></div>';
+    document.body.appendChild(p);
+    document.getElementById('bp-close').addEventListener('click',closePlansPage);
+    p.addEventListener('click',function(e){ if(e.target===p) closePlansPage(); });
+    document.getElementById('bp-add').addEventListener('click',function(){ _bpCollect(); BP.plans.push({key:'',name:'',is_free:false,monthly_amount:0,setup_amount:0,currency:'aud',stripe_price_id:'',stripe_setup_price_id:'',volume_tiers:null,features:'',active:true,sort:(BP.plans.length+1),_new:true}); _bpRender(); });
+    _bpFetch({method:'GET'}).then(function(r){return r.json();}).then(function(j){ BP.plans=(j&&j.plans)||[]; _bpRender(); }).catch(function(){ var l=document.getElementById('bp-list'); if(l) l.innerHTML='<div class="hint">Couldn\u2019t load plans \u2014 is the billing API deployed?</div>'; });
+  }
+  function _bpRender(){
+    var l=document.getElementById('bp-list'); if(!l) return;
+    if(!BP.plans.length){ l.innerHTML='<div class="hint">No plans yet \u2014 add one.</div>'; return; }
+    l.innerHTML=BP.plans.map(function(p,i){
+      var free=!!p.is_free; var vol=Array.isArray(p.volume_tiers)&&p.volume_tiers.length;
+      var paid='<div class="row"><div class="f"><label>Monthly fee ($)</label><input type="number" step="0.01" min="0" data-k="monthly" value="'+_d(p.monthly_amount)+'"></div><div class="f"><label>Setup fee ($)</label><input type="number" step="0.01" min="0" data-k="setup" value="'+_d(p.setup_amount)+'"></div><div class="f"><label>Currency</label><input type="text" data-k="currency" value="'+(p.currency||'aud')+'" style="width:80px;"></div></div>'
+        +'<div class="row"><div class="f"><label>Stripe monthly price ID</label><input type="text" data-k="price" value="'+(p.stripe_price_id||'')+'" placeholder="price_\u2026"></div><div class="f"><label>Stripe setup price ID (optional)</label><input type="text" data-k="setupprice" value="'+(p.stripe_setup_price_id||'')+'" placeholder="price_\u2026"></div></div>'
+        +'<div class="f"><label style="display:flex;gap:7px;align-items:center;"><input type="checkbox" data-k="vol"'+(vol?' checked':'')+'> Volume pricing (per-site price by site count)</label></div>'
+        +(vol?('<div class="bp-tiers" style="margin:0 0 8px;">'+p.volume_tiers.map(function(t,ti){ return '<div class="bp-tier" data-ti="'+ti+'"><span style="font-size:13px;">From</span><input type="number" min="1" data-tk="min" value="'+(t.min||1)+'" style="width:64px;"><span style="font-size:13px;">site(s): $</span><input type="number" step="0.01" min="0" data-tk="amount" value="'+_d(t.amount)+'" style="width:90px;"><span style="font-size:13px;">/site</span><button type="button" class="btn ghost bp-tier-del" data-ti="'+ti+'" style="padding:3px 8px;">\u2715</button></div>'; }).join('')+'<button type="button" class="btn ghost bp-tier-add" style="padding:3px 9px;">+ Add tier</button></div>'):'');
+      return '<div class="bp-plan" data-i="'+i+'"><div class="row"><div class="f"><label>Plan key</label><input type="text" data-k="key" value="'+(p.key||'')+'" placeholder="basic"'+((p._new&&!p.key)?'':' readonly')+' style="'+((p._new&&!p.key)?'':'background:#f3f3ef;')+'"></div><div class="f"><label>Name</label><input type="text" data-k="name" value="'+(p.name||'')+'" placeholder="Basic"></div><div class="f"><label>Sort</label><input type="number" data-k="sort" value="'+(p.sort||0)+'" style="width:70px;"></div></div>'
+        +'<div class="f"><label style="display:flex;gap:7px;align-items:center;"><input type="checkbox" data-k="free"'+(free?' checked':'')+'> Free plan (no Stripe, never billed or suspended)</label></div>'
+        +(free?'':paid)
+        +'<div class="f"><label>Features (one per line, shown to customers)</label><textarea data-k="features" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;">'+(p.features||'')+'</textarea></div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px;"><label style="display:flex;gap:7px;align-items:center;font-size:13px;"><input type="checkbox" data-k="active"'+(p.active!==false?' checked':'')+'> Active</label><div><button type="button" class="btn bp-save" data-i="'+i+'">Save</button> '+((p.key&&p.key!=='free')?'<button type="button" class="btn ghost bp-del" data-i="'+i+'" style="color:#b42318;">Delete</button>':'')+' <span class="bp-msg" style="font-size:12.5px;margin-left:6px;"></span></div></div></div>';
+    }).join('');
+    l.querySelectorAll('input[data-k="free"],input[data-k="vol"]').forEach(function(cb){ cb.addEventListener('change',function(){ _bpCollect(); _bpRender(); }); });
+    l.querySelectorAll('.bp-tier-add').forEach(function(b){ b.addEventListener('click',function(){ _bpCollect(); var i=+b.closest('.bp-plan').getAttribute('data-i'); if(!Array.isArray(BP.plans[i].volume_tiers)) BP.plans[i].volume_tiers=[]; BP.plans[i].volume_tiers.push({min:1,amount:0}); _bpRender(); }); });
+    l.querySelectorAll('.bp-tier-del').forEach(function(b){ b.addEventListener('click',function(){ _bpCollect(); var i=+b.closest('.bp-plan').getAttribute('data-i'); BP.plans[i].volume_tiers.splice(+b.getAttribute('data-ti'),1); _bpRender(); }); });
+    l.querySelectorAll('.bp-save').forEach(function(b){ b.addEventListener('click',function(){ _bpSave(+b.getAttribute('data-i'), b); }); });
+    l.querySelectorAll('.bp-del').forEach(function(b){ b.addEventListener('click',function(){ _bpDelete(+b.getAttribute('data-i'), b); }); });
+  }
+  function _bpCollect(){
+    var l=document.getElementById('bp-list'); if(!l) return;
+    l.querySelectorAll('.bp-plan').forEach(function(card){
+      var i=+card.getAttribute('data-i'); var p=BP.plans[i]; if(!p) return;
+      function val(k){ var el=card.querySelector('[data-k="'+k+'"]'); return el?el.value:''; }
+      function chk(k){ var el=card.querySelector('[data-k="'+k+'"]'); return el?el.checked:false; }
+      p.key=val('key').toLowerCase().replace(/[^a-z0-9_\-]/g,''); p.name=val('name'); p.sort=parseInt(val('sort'),10)||0; p.is_free=chk('free'); p.active=chk('active'); p.features=val('features');
+      if(!p.is_free){ p.monthly_amount=_c(val('monthly')); p.setup_amount=_c(val('setup')); p.currency=(val('currency')||'aud'); p.stripe_price_id=val('price'); p.stripe_setup_price_id=val('setupprice');
+        if(chk('vol')){ var tiers=[]; card.querySelectorAll('.bp-tier').forEach(function(tr){ tiers.push({min:parseInt(tr.querySelector('[data-tk="min"]').value,10)||1, amount:_c(tr.querySelector('[data-tk="amount"]').value)}); }); p.volume_tiers=tiers; }
+        else { p.volume_tiers=null; }
+      } else { p.monthly_amount=0; p.setup_amount=0; p.volume_tiers=null; }
+    });
+  }
+  function _bpMsg(btn,txt,err){ var c=btn&&btn.closest('.bp-plan'); var m=c&&c.querySelector('.bp-msg'); if(m){ m.textContent=txt; m.style.color=err?'#b42318':'#0a7d33'; } }
+  function _bpSave(i,btn){ _bpCollect(); var p=BP.plans[i]; if(!p) return; if(!p.key){ _bpMsg(btn,'Add a plan key',true); return; } btn.disabled=true; _bpMsg(btn,'Saving\u2026'); _bpFetch({method:'POST',body:JSON.stringify({action:'save',plan:p})}).then(function(r){return r.json();}).then(function(j){ btn.disabled=false; if(j&&j.ok){ p._new=false; _bpMsg(btn,'Saved'); } else { _bpMsg(btn,(j&&j.error)||'Failed',true); } }).catch(function(){ btn.disabled=false; _bpMsg(btn,'Failed',true); }); }
+  function _bpDelete(i,btn){ var p=BP.plans[i]; if(!p||!p.key){ BP.plans.splice(i,1); _bpRender(); return; } if(!window.confirm('Delete the \u201c'+(p.name||p.key)+'\u201d plan? Existing Stripe subscriptions are not affected.')) return; btn.disabled=true; _bpFetch({method:'POST',body:JSON.stringify({action:'delete',key:p.key})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.ok){ BP.plans.splice(i,1); _bpRender(); } else { btn.disabled=false; _bpMsg(btn,(j&&j.error)||'Failed',true); } }).catch(function(){ btn.disabled=false; }); }
   /* ===================== Site analytics ===================== */
   var ANA={ period:30, active:null, sort:'visitors', data:[], leads:[], leadsCount:0, globalData:null };
   function anaEsc(x){ return String(x==null?'':x).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
