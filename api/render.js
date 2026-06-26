@@ -63,21 +63,30 @@ function notFound(res) {
     '<body style="font-family:system-ui;text-align:center;padding:80px;color:#444">Page not found.</body>');
 }
 
-function suspendedPage(res, site) {
-  const name = (site && site.business_name) ? String(site.business_name).replace(/[<>&]/g, '') : 'This website';
+function suspendedPage(res, site, tpl) {
+  const biz = (site && site.business_name) ? String(site.business_name) : 'This website';
+  const esc = (s) => String(s == null ? '' : s).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+  const tok = (s) => esc(String(s == null ? '' : s)).replace(/\{\{\s*businessName\s*\}\}/g, esc(biz));
+  const t = tpl && typeof tpl === 'object' ? tpl : {};
+  const bg = /^#[0-9a-fA-F]{3,8}$/.test(t.bg || '') ? t.bg : '#0f1620';
+  const fg = /^#[0-9a-fA-F]{3,8}$/.test(t.fg || '') ? t.fg : '#e7edf5';
+  const accent = /^#[0-9a-fA-F]{3,8}$/.test(t.accent || '') ? t.accent : '#ff6a1f';
+  const heading = tok(t.heading || 'This website is temporarily unavailable');
+  const message = tok(t.message || (esc(biz) + ' is paused while a billing matter is being resolved.'));
+  const note = tok(t.note || 'If this is your website, please settle the outstanding hosting payment to restore it.');
   res.status(503);
   res.setHeader('content-type', 'text/html; charset=utf-8');
   res.setHeader('cache-control', 'no-store');
   res.setHeader('retry-after', '86400');
   return res.send('<!doctype html><html lang="en"><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">' +
-    '<title>' + name + ' — temporarily unavailable</title>' +
-    '<body style="margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0f1620;color:#e7edf5;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px;">' +
-    '<div style="max-width:520px;text-align:center;">' +
-    '<div style="font-size:46px;margin-bottom:14px;">&#9888;&#65039;</div>' +
-    '<h1 style="font-size:24px;margin:0 0 10px;">This website is temporarily unavailable</h1>' +
-    '<p style="font-size:16px;line-height:1.55;color:#a9b6c6;margin:0 0 6px;">' + name + ' is paused while a billing matter is resolved.</p>' +
-    '<p style="font-size:14px;color:#7d8a9a;margin:0;">If this is your site, please settle the outstanding hosting payment to restore it.</p>' +
+    '<title>' + esc(biz) + ' — unavailable</title>' +
+    '<body style="margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:' + bg + ';color:' + fg + ';display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px;">' +
+    '<div style="max-width:540px;text-align:center;">' +
+    '<div style="font-size:46px;margin-bottom:14px;color:' + accent + ';">&#9888;&#65039;</div>' +
+    '<h1 style="font-size:25px;margin:0 0 12px;line-height:1.2;">' + heading + '</h1>' +
+    '<p style="font-size:16px;line-height:1.55;opacity:.92;margin:0 0 8px;">' + message + '</p>' +
+    '<p style="font-size:14px;opacity:.7;margin:0;">' + note + '</p>' +
     '</div></body></html>');
 }
 
@@ -106,7 +115,12 @@ module.exports = async (req, res) => {
     }
 
     if (error || !site || site.status !== 'live') return notFound(res);
-    if (site.billing_status === 'suspended' || site.billing_status === 'flagged_deletion') return suspendedPage(res, site);
+    if (site.billing_status === 'suspended' || site.billing_status === 'flagged_deletion') {
+      const key = site.is_system ? 'suspended_system' : (site.is_demo ? 'suspended_demo' : 'suspended_client');
+      let tpl = null;
+      try { const r = await supabase.from('system_pages').select('content').eq('key', key).maybeSingle(); tpl = r.data && r.data.content; } catch (e) { tpl = null; }
+      return suspendedPage(res, site, tpl);
+    }
 
     const template = templateFor(site);
 
