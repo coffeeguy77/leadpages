@@ -2683,10 +2683,12 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     document.body.appendChild(p);
     document.getElementById('bl-close').addEventListener('click',closeBillingPage);
     p.addEventListener('click',function(e){ if(e.target===p) closeBillingPage(); });
+    var sid=(typeof currentSiteId!=='undefined'&&currentSiteId)?('?siteId='+encodeURIComponent(currentSiteId)):'';
     Promise.all([
-      _billFetch('/api/billing/status').then(function(r){return r.json();}).catch(function(){return null;}),
-      _billFetch('/api/billing/plans').then(function(r){return r.json();}).catch(function(){return {plans:[]};})
-    ]).then(function(res){ BILL.status=res[0]; BILL.plans=(res[1]&&res[1].plans)||[]; _billRender(); });
+      _billFetch('/api/billing/status'+sid).then(function(r){return r.json();}).catch(function(){return null;}),
+      _billFetch('/api/billing/plans').then(function(r){return r.json();}).catch(function(){return {plans:[]};}),
+      _billFetch('/api/billing/contra'+sid).then(function(r){return r.json();}).catch(function(){return null;})
+    ]).then(function(res){ BILL.status=res[0]; BILL.plans=(res[1]&&res[1].plans)||[]; BILL.contra=res[2]; _billRender(); });
   }
   function _billPill(st){ var map={active:['Active','#0a7d33','#e7f6ec'],past_due:['Payment due','#b4690e','#fdf1e3'],suspended:['Suspended','#b42318','#fdecea'],flagged_deletion:['Flagged for deletion','#b42318','#fdecea'],none:['No plan','#667','#eef0f2'],canceled:['Cancelled','#667','#eef0f2']}; var m=map[st]||map.none; return '<span class="pill" style="color:'+m[1]+';background:'+m[2]+';">'+m[0]+'</span>'; }
   function _billRender(){
@@ -2702,7 +2704,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         +(admin?('<button type="button" class="btn ghost bl-protect">'+(st.delete_protected?'Unprotect':'Protect')+'</button><button type="button" class="btn ghost bl-extend">Extend 90d</button>'+((st.billing_status==='suspended'||st.billing_status==='flagged_deletion')?'<button type="button" class="btn ghost bl-unsuspend">Unsuspend</button>':'')):'')
         +'</div><div class="bl-msg" style="font-size:12.5px;margin-top:6px;"></div></div>';
     }).join('');
-    body.innerHTML=banner+(rows||'<div class="hint">No sites on this account.</div>')+'<div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;">'+(s.hasBillingAccount?'<button type="button" class="btn" id="bl-portal">Pay / manage billing</button>':'')+'</div>';
+    body.innerHTML=banner+(rows||'<div class="hint">No sites on this account.</div>')+'<div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;">'+(s.hasBillingAccount?'<button type="button" class="btn" id="bl-portal">Pay / manage billing</button>':'')+'</div>'+_contraHTML(admin);
     var portal=document.getElementById('bl-portal'); if(portal) portal.addEventListener('click',function(){ portal.disabled=true; _billFetch('/api/billing/portal',{method:'POST',body:JSON.stringify({returnUrl:location.origin})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.url) location.href=j.url; else { portal.disabled=false; toast((j&&j.error)||'Could not open portal'); } }).catch(function(){ portal.disabled=false; }); });
     body.querySelectorAll('.bl-site').forEach(function(row){
       var id=row.getAttribute('data-id'); var msg=row.querySelector('.bl-msg');
@@ -2713,6 +2715,58 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       var eb=row.querySelector('.bl-extend'); if(eb) eb.addEventListener('click',function(){ _billFetch('/api/billing/admin',{method:'POST',body:JSON.stringify({action:'extend',siteId:id,days:90})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.ok) say('Auto-delete extended 90 days'); else say((j&&j.error)||'Failed',true); }); });
       var ub=row.querySelector('.bl-unsuspend'); if(ub) ub.addEventListener('click',function(){ if(!window.confirm('Manually reactivate this site without payment?')) return; _billFetch('/api/billing/admin',{method:'POST',body:JSON.stringify({action:'unsuspend',siteId:id})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.ok){ say('Reactivated'); openBillingPage(); } else say((j&&j.error)||'Failed',true); }); });
     });
+    _contraWire(admin);
+  }
+  function _dt(iso){ if(!iso) return ''; var d=new Date(iso); if(isNaN(d.getTime())) return ''; return d.toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'}); }
+  function _contraHTML(admin){
+    var c=BILL.contra;
+    if(!c||c.error){ if(!admin) return ''; c={account:null,entries:[],totals:{credit:0,debit:0},balance:0,currency:'aud'}; }
+    var acc=c.account||{};
+    if(!admin){ var hasContent=(c.entries&&c.entries.length)||acc.description||acc.arrangement; if(acc.enabled===false||!hasContent) return ''; }
+    var cur=c.currency||'aud'; var bal=c.balance||0;
+    var balHTML=bal<0?('<span style="color:#b42318;">Owes you '+_bMoney(-bal,cur)+'</span>'):(bal>0?('<span style="color:#0a7d33;">In credit '+_bMoney(bal,cur)+'</span>'):'<span style="color:#667;">Settled</span>');
+    var rowsH=(c.entries||[]).map(function(e){ var col=e.direction==='credit'?'#0a7d33':'#b42318'; var amt=(e.direction==='credit'?'+':'\u2212')+_bMoney(e.amount_cents,cur); return '<tr style="border-top:1px solid var(--line);"><td style="padding:6px 8px;white-space:nowrap;">'+_dt(e.created_at)+'</td><td style="padding:6px 8px;color:'+col+';text-transform:capitalize;">'+_bEsc(e.direction)+'</td><td style="padding:6px 8px;text-align:right;white-space:nowrap;color:'+col+';font-variant-numeric:tabular-nums;">'+amt+'</td><td style="padding:6px 8px;">'+_bEsc(e.kind||'')+'</td><td style="padding:6px 8px;">'+_bEsc(e.description||'')+'</td><td style="padding:6px 8px;">'+_bEsc(e.ref||'')+'</td>'+(admin?'<td style="padding:6px 8px;text-align:right;"><button type="button" class="ct-del" data-id="'+_bEsc(e.id)+'" title="Delete" style="border:0;background:none;color:#b42318;cursor:pointer;font-size:14px;">\u2715</button></td>':'')+'</tr>'; }).join('');
+    var colspan=admin?7:6;
+    var table='<div style="overflow:auto;margin-top:10px;"><table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="text-align:left;color:#667;font-size:12px;"><th style="padding:0 8px 4px;">Date</th><th style="padding:0 8px 4px;">Type</th><th style="padding:0 8px 4px;text-align:right;">Amount</th><th style="padding:0 8px 4px;">Kind</th><th style="padding:0 8px 4px;">Description</th><th style="padding:0 8px 4px;">Ref</th>'+(admin?'<th></th>':'')+'</tr></thead><tbody>'+(rowsH||'<tr><td colspan="'+colspan+'" style="padding:10px 8px;color:#889;">No contra entries yet.</td></tr>')+'</tbody></table></div>';
+    var totals='<div style="margin-top:8px;font-size:12.5px;color:#667;">Credits '+_bMoney(c.totals.credit,cur)+' \u00b7 Debits '+_bMoney(c.totals.debit,cur)+'</div>';
+    var head='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"><strong>Contra account</strong><div style="font-weight:700;font-size:15px;">'+balHTML+'</div></div>';
+    var body2='';
+    if(admin){
+      body2='<div style="margin-top:14px;border-top:1px dashed var(--line);padding-top:12px;">'
+        +'<div style="font-weight:600;margin-bottom:8px;font-size:13.5px;">Add entry</div>'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">'
+        +'<label style="font-size:12px;color:#667;">Type<br><select id="ct-dir" style="padding:7px 9px;border:1px solid var(--line);border-radius:8px;"><option value="credit">Credit (their favour)</option><option value="debit">Debit (they used)</option></select></label>'
+        +'<label style="font-size:12px;color:#667;">Amount ($)<br><input id="ct-amt" type="number" step="0.01" min="0" style="width:110px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;"></label>'
+        +'<label style="font-size:12px;color:#667;">Kind<br><input id="ct-kind" type="text" placeholder="hosting / service / grant" style="width:150px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;"></label>'
+        +'<label style="font-size:12px;color:#667;flex:1;min-width:160px;">Description<br><input id="ct-desc" type="text" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;"></label>'
+        +'<label style="font-size:12px;color:#667;">Ref / invoice #<br><input id="ct-ref" type="text" style="width:130px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;"></label>'
+        +'<button type="button" class="btn" id="ct-add">Add</button></div>'
+        +'<div id="ct-msg" style="font-size:12.5px;margin-top:6px;"></div></div>'
+        +'<div style="margin-top:14px;border-top:1px dashed var(--line);padding-top:12px;">'
+        +'<div style="font-weight:600;margin-bottom:8px;font-size:13.5px;">Arrangement</div>'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px;">'
+        +'<label style="font-size:12px;color:#667;">Mode<br><select id="ct-mode" style="padding:7px 9px;border:1px solid var(--line);border-radius:8px;"><option value="mutual">Mutual (who owes who)</option><option value="prepaid">Prepaid \u2192 Stripe when used up</option></select></label>'
+        +'<label style="font-size:12px;color:#667;display:flex;gap:6px;align-items:center;height:38px;"><input id="ct-enabled" type="checkbox"> Visible to client</label></div>'
+        +'<label style="font-size:12px;color:#667;">Description (short label)<br><input id="ct-acc-desc" type="text" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;" value="'+_bEsc(acc.description||'')+'"></label>'
+        +'<label style="font-size:12px;color:#667;display:block;margin-top:8px;">Arrangement (agreement terms \u2014 both sides can read)<br><textarea id="ct-acc-arr" rows="3" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;">'+_bEsc(acc.arrangement||'')+'</textarea></label>'
+        +'<div style="margin-top:8px;"><button type="button" class="btn ghost" id="ct-save-acc">Save arrangement</button> <span id="ct-acc-msg" style="font-size:12.5px;margin-left:6px;"></span></div></div>';
+    } else if(acc.description||acc.arrangement){
+      body2='<div style="margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;font-size:13px;">'+(acc.description?'<div style="font-weight:600;">'+_bEsc(acc.description)+'</div>':'')+(acc.arrangement?'<div style="color:#555;margin-top:4px;white-space:pre-wrap;">'+_bEsc(acc.arrangement)+'</div>':'')+'</div>';
+    }
+    return '<div class="bl-site" id="ct-section" style="margin-top:14px;">'+head+table+totals+body2+'</div>';
+  }
+  function _contraWire(admin){
+    var sec=document.getElementById('ct-section'); if(!sec||!admin) return;
+    var acc=((BILL.contra||{}).account)||{};
+    var sidBody=(typeof currentSiteId!=='undefined'&&currentSiteId)?currentSiteId:null;
+    function post(payload,then){ _billFetch('/api/billing/contra',{method:'POST',body:JSON.stringify(Object.assign({siteId:sidBody},payload))}).then(function(r){return r.json();}).then(then).catch(function(){ then({error:'Failed'}); }); }
+    var dir=sec.querySelector('#ct-dir'),amt=sec.querySelector('#ct-amt'),kind=sec.querySelector('#ct-kind'),desc=sec.querySelector('#ct-desc'),ref=sec.querySelector('#ct-ref'),msg=sec.querySelector('#ct-msg'),addb=sec.querySelector('#ct-add');
+    if(addb) addb.addEventListener('click',function(){ var v=parseFloat(amt.value); if(!(v>0)){ msg.textContent='Enter an amount'; msg.style.color='#b42318'; return; } addb.disabled=true; msg.textContent='Saving\u2026'; msg.style.color='#667'; post({action:'entry',direction:dir.value,amount_cents:Math.round(v*100),kind:kind.value,description:desc.value,ref:ref.value},function(j){ addb.disabled=false; if(j&&!j.error){ BILL.contra=j; _billRender(); } else { msg.textContent=(j&&j.error)||'Failed'; msg.style.color='#b42318'; } }); });
+    sec.querySelectorAll('.ct-del').forEach(function(b){ b.addEventListener('click',function(){ if(!window.confirm('Delete this entry?')) return; post({action:'delete-entry',id:b.getAttribute('data-id')},function(j){ if(j&&j.ok){ openBillingPage(); } else { toast((j&&j.error)||'Failed'); } }); }); });
+    var mode=sec.querySelector('#ct-mode'); if(mode) mode.value=acc.mode||'mutual';
+    var en=sec.querySelector('#ct-enabled'); if(en) en.checked=acc.enabled!==false;
+    var saveb=sec.querySelector('#ct-save-acc'),amsg=sec.querySelector('#ct-acc-msg');
+    if(saveb) saveb.addEventListener('click',function(){ saveb.disabled=true; amsg.textContent='Saving\u2026'; amsg.style.color='#667'; post({action:'account',mode:mode.value,enabled:en.checked,description:sec.querySelector('#ct-acc-desc').value,arrangement:sec.querySelector('#ct-acc-arr').value},function(j){ saveb.disabled=false; if(j&&!j.error){ amsg.textContent='Saved'; amsg.style.color='#0a7d33'; BILL.contra=j; } else { amsg.textContent=(j&&j.error)||'Failed'; amsg.style.color='#b42318'; } }); });
   }
   function lpBillingGate(){ if(currentRole==='super') return; _billFetch('/api/billing/status').then(function(r){return r.json();}).then(function(s){ var ov=document.getElementById('bill-lock'); if(s&&s.locked){ if(!ov){ ov=document.createElement('div'); ov.id='bill-lock'; ov.style.cssText='position:fixed;inset:0;z-index:10000;background:rgba(16,22,32,.93);color:#fff;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;'; ov.innerHTML='<div style="max-width:460px;"><div style="font-size:42px;">\uD83D\uDD12</div><h2 style="margin:10px 0;">Account locked</h2><p style="opacity:.85;line-height:1.5;">Your account is locked due to an overdue hosting payment. Settle the balance to restore access and bring your live sites back online.</p><button type="button" class="btn" id="bill-lock-pay" style="margin-top:8px;">Pay / manage billing</button></div>'; document.body.appendChild(ov); document.getElementById('bill-lock-pay').addEventListener('click',function(){ _billFetch('/api/billing/portal',{method:'POST',body:JSON.stringify({returnUrl:location.origin})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.url) location.href=j.url; }); }); } } else if(ov){ ov.remove(); } }).catch(function(){}); }
 
