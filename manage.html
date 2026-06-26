@@ -2130,7 +2130,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     /* ===== Cloudinary uploads: customer asset namespace + lifecycle ===== */
   var CW_CLOUD='dzx6x1hou';
   function cwToken(){ try{ return sb.auth.getSession().then(function(r){ return (r&&r.data&&r.data.session&&r.data.session.access_token)||null; }); }catch(e){ return Promise.resolve(null); } }
-  function cwSiteSeg(){ return String(currentSiteSlug||'unsited').toLowerCase().replace(/[^a-z0-9\-]/g,'')||'unsited'; }
+  function cwSiteSeg(){ return String(currentSiteId||currentSiteSlug||'unsited').toLowerCase().replace(/[^a-z0-9\-]/g,'')||'unsited'; }
+  function cwSiteSegSlug(){ return String(currentSiteSlug||'').toLowerCase().replace(/[^a-z0-9\-]/g,''); }
   function cwSeg(s){ return String(s||'x').toLowerCase().replace(/[^a-z0-9_\-]/g,'')||'x'; }
   function cwRand(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
   function cwPrepImage(file,maxDim,quality){ maxDim=maxDim||2200; quality=quality||0.85; return new Promise(function(resolve){ try{ if(!file||!/^image\//.test(file.type)||/svg|gif/i.test(file.type)){ return resolve(file); } var url=URL.createObjectURL(file); var img=new Image(); img.onload=function(){ try{ var w=img.naturalWidth,hh=img.naturalHeight; if(!w||!hh){ URL.revokeObjectURL(url); return resolve(file); } var scale=Math.min(1,maxDim/Math.max(w,hh)); if(scale>=1 && file.size<=2600000){ URL.revokeObjectURL(url); return resolve(file); } var cw=Math.max(1,Math.round(w*scale)),ch=Math.max(1,Math.round(hh*scale)); var cv=document.createElement('canvas'); cv.width=cw; cv.height=ch; cv.getContext('2d').drawImage(img,0,0,cw,ch); URL.revokeObjectURL(url); var mime=(file.type==='image/png')?'image/png':'image/jpeg'; cv.toBlob(function(b){ resolve(b||file); }, mime, quality); }catch(_e){ try{URL.revokeObjectURL(url);}catch(_x){} resolve(file); } }; img.onerror=function(){ try{URL.revokeObjectURL(url);}catch(_x){} resolve(file); }; img.src=url; }catch(_e){ resolve(file); } }); }
@@ -2554,6 +2555,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var nm=(currentBusinessName||currentSiteSlug||'this site').trim();
     var btn=$('btn-delsite'); if(btn){ btn.disabled=true; btn.textContent='Deleting…'; }
     try{ await cwDeletePrefix('leadpages/'+cwSiteSeg()+'/'); }catch(_e){}
+    try{ var _sl=cwSiteSegSlug(); if(_sl && _sl!==cwSiteSeg()) await cwDeletePrefix('leadpages/'+_sl+'/'); }catch(_e){}
     var res=await sb.from('sites').delete().eq('id',currentSiteId).select();
     if(btn){ btn.disabled=false; btn.textContent='Delete site'; }
     if(res.error){ toast('Delete failed: '+res.error.message); return; }
