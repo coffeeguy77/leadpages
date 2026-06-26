@@ -89,7 +89,8 @@ module.exports = async (req, res) => {
     await supabase.from('events').insert({
       site_id,
       event,
-      props
+      props,
+      created_at: new Date().toISOString()
     });
 
     res.statusCode = 204;
