@@ -4,6 +4,7 @@
 // "Authorization: Bearer <CRON_SECRET>" when that env var is set).
 
 const { sb, json } = require('./_stripe');
+const { accrueOwner } = require('./_accrual');
 
 const DAYS = 90;
 
@@ -18,6 +19,17 @@ module.exports = async (req, res) => {
 
   const cutoff = new Date(Date.now() - DAYS * 864e5).toISOString();
   try {
+    // 1) Monthly contra accrual — climbs each accruing client's balance once per month.
+    const accrual = [];
+    try {
+      const { data: accts } = await sb.from('contra_accounts').select('owner_user_id').eq('enabled', true).eq('accrue_monthly', true);
+      for (const a of (accts || [])) {
+        const r = await accrueOwner(sb, a.owner_user_id);
+        if (r && (r.accrued || r.skipped === 'over-limit')) accrual.push(r);
+      }
+    } catch (e) { accrual.push({ error: String(e.message || e) }); }
+
+    // 2) Flag long-suspended sites for review/deletion.
     const { data: due } = await sb.from('sites')
       .select('id,business_name,suspended_at,delete_protected,delete_extend_until')
       .eq('billing_status', 'suspended')
@@ -32,7 +44,7 @@ module.exports = async (req, res) => {
         .eq('id', s.id);
       if (!error) flagged++;
     }
-    return json(res, 200, { ok: true, checked: (due || []).length, flagged, skipped });
+    return json(res, 200, { ok: true, accrued: accrual, checked: (due || []).length, flagged, skipped });
   } catch (e) {
     return json(res, 500, { error: String(e.message || e) });
   }

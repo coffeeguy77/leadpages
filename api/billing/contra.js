@@ -13,6 +13,7 @@
 // Both client and admin can READ; only admins can WRITE. Off-Stripe manual ledger.
 
 const { sb, getUser, isAdminEmail, json } = require('./_stripe');
+const { accrueOwner } = require('./_accrual');
 
 async function resolveOwner(user, admin, siteId, ownerId) {
   if (admin) {
@@ -27,19 +28,24 @@ async function resolveOwner(user, admin, siteId, ownerId) {
 
 async function loadAccount(ownerId) {
   const { data: account } = await sb.from('contra_accounts')
-    .select('owner_user_id,enabled,mode,description,arrangement,currency,updated_at')
+    .select('owner_user_id,enabled,mode,description,arrangement,currency,limit_cents,accrue_monthly,over_limit,last_accrual_month,updated_at')
     .eq('owner_user_id', ownerId).maybeSingle();
   const { data: entries } = await sb.from('contra_ledger')
     .select('id,direction,amount_cents,kind,description,ref,created_at,created_by')
     .eq('owner_user_id', ownerId).order('created_at', { ascending: false });
   let credit = 0, debit = 0;
   (entries || []).forEach((e) => { if (e.direction === 'credit') credit += (e.amount_cents || 0); else debit += (e.amount_cents || 0); });
+  const owed = debit - credit;                    // positive = client owes you
+  const limit = account && account.limit_cents != null ? account.limit_cents : null;
   return {
     owner: ownerId,
     account: account || null,
     entries: entries || [],
     totals: { credit, debit },
-    balance: credit - debit,
+    balance: credit - debit,                       // negative = owes you (kept for back-compat)
+    owed,
+    limit_cents: limit,
+    headroom: limit == null ? null : Math.max(0, limit - owed),
     currency: (account && account.currency) || 'aud',
   };
 }
@@ -97,17 +103,30 @@ module.exports = async (req, res) => {
       }
 
       if (action === 'account') {
+        let limitCents = null;
+        if (body.limit_cents !== '' && body.limit_cents != null && !isNaN(Number(body.limit_cents))) {
+          limitCents = Math.max(0, Math.round(Number(body.limit_cents)));
+        }
         const row = {
           owner_user_id: owner,
           enabled: body.enabled !== false,
           mode: body.mode === 'prepaid' ? 'prepaid' : 'mutual',
           description: (body.description || '').slice(0, 400) || null,
           arrangement: (body.arrangement || '').slice(0, 4000) || null,
+          limit_cents: limitCents,
+          accrue_monthly: !!body.accrue_monthly,
           updated_at: new Date().toISOString(),
         };
         const { error } = await sb.from('contra_accounts').upsert(row, { onConflict: 'owner_user_id' });
         if (error) return json(res, 500, { error: error.message });
         return json(res, 200, await loadAccount(owner));
+      }
+
+      if (action === 'accrue') {
+        const r = await accrueOwner(sb, owner, { force: !!body.force });
+        const out = await loadAccount(owner);
+        out.accrualResult = r;
+        return json(res, 200, out);
       }
 
       return json(res, 400, { error: 'unknown action' });
