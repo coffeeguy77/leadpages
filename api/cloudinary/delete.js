@@ -16,14 +16,40 @@ async function verifyAuth(req) {
   }
 }
 
-function cloud() { return process.env.CLOUDINARY_CLOUD_NAME || 'dzx6x1hou'; }
+// Resolve key / secret / cloud from CLOUDINARY_URL or the separate vars, tolerant of a
+// connection string pasted into the wrong variable (mirrors api/cloudinary/sign.js).
+function resolveCreds() {
+  let key = (process.env.CLOUDINARY_API_KEY || '').trim();
+  let secret = (process.env.CLOUDINARY_API_SECRET || '').trim();
+  let cloud = (process.env.CLOUDINARY_CLOUD_NAME || '').trim();
+  const haystack = [
+    process.env.CLOUDINARY_URL || '',
+    process.env.CLOUDINARY_CLOUD_NAME || '',
+    process.env.CLOUDINARY_API_KEY || '',
+  ].join(' ');
+  const m = haystack.match(/cloudinary:\/\/([^:\s]+):([^@\s]+)@([^/\s]+)/i);
+  if (m) {
+    const uKey = decodeURIComponent(m[1]);
+    const uSecret = decodeURIComponent(m[2]);
+    if (!key && !/[<>]/.test(uKey)) key = uKey;
+    if (!secret && !/[<>]/.test(uSecret)) secret = uSecret;
+    cloud = m[3];
+  }
+  if (cloud.indexOf('@') >= 0) cloud = cloud.split('@').pop();
+  cloud = cloud.replace(/[^a-zA-Z0-9_\-]/g, '') || 'dzx6x1hou';
+  return { key, secret, cloud };
+}
+
+function cloud() { return resolveCreds().cloud; }
 function basic() {
-  return 'Basic ' + Buffer.from(process.env.CLOUDINARY_API_KEY + ':' + process.env.CLOUDINARY_API_SECRET).toString('base64');
+  const c = resolveCreds();
+  return 'Basic ' + Buffer.from(c.key + ':' + c.secret).toString('base64');
 }
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   if (!(await verifyAuth(req))) return res.status(401).json({ error: 'unauthorized' });
+  { const _c = resolveCreds(); if (!_c.key || !_c.secret) return res.status(500).json({ error: 'Cloudinary credentials are not configured.' }); }
 
   const body = req.body || {};
   const base = 'https://api.cloudinary.com/v1_1/' + cloud() + '/resources/image/upload';
