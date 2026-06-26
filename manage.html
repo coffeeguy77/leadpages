@@ -2141,10 +2141,10 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var pid='leadpages/'+cwSiteSeg()+'/'+parts.map(cwSeg).join('/')+'/'+cwRand();
     var sr=await fetch('/api/cloudinary/sign',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({publicId:pid})});
     if(!sr.ok) throw new Error('Could not authorise upload'); var s=await sr.json();
-    var fd=new FormData(); fd.append('file',file,(file&&file.name)||'upload.jpg'); fd.append('api_key',s.apiKey); fd.append('timestamp',s.timestamp); fd.append('public_id',s.publicId); fd.append('overwrite',s.overwrite); fd.append('invalidate',s.invalidate); fd.append('signature',s.signature);
+    var fd=new FormData(); fd.append('file',file,(file&&file.name)||'upload.jpg'); fd.append('api_key',s.apiKey); fd.append('timestamp',s.timestamp); fd.append('public_id',s.publicId); fd.append('signature',s.signature);
     var _cloud=(s.cloudName&&/^[a-zA-Z0-9_\-]+$/.test(s.cloudName))?s.cloudName:CW_CLOUD;
     var ur; try{ ur=await fetch('https://api.cloudinary.com/v1_1/'+_cloud+'/image/upload',{method:'POST',body:fd}); }catch(_ne){ throw new Error('Network error reaching Cloudinary \u2014 the image may be too large or the connection dropped. Try a smaller image.'); }
-    var uj=await ur.json(); if(!ur.ok||!uj.secure_url) throw new Error((uj.error&&uj.error.message)||'Upload failed');
+    var uj=await ur.json().catch(function(){return {};}); if(!ur.ok||!uj.secure_url) throw new Error((uj.error&&uj.error.message)||('Cloudinary rejected the upload ('+ur.status+')'));
     return { url:uj.secure_url, publicId:uj.public_id };
   }
   async function cwDelete(publicId){ if(!publicId) return; try{ var t=await cwToken(); await fetch('/api/cloudinary/delete',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify({publicId:publicId})}); }catch(e){} }
@@ -2693,7 +2693,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var body=document.getElementById('bl-body'); if(!body) return;
     var s=BILL.status; if(!s||s.error){ body.innerHTML='<div class="hint">Couldn\u2019t load billing \u2014 is the billing API deployed and the schema run?</div>'; return; }
     var admin=(currentRole==='super');
-    var planOpts='<option value="">\u2014 choose a plan \u2014</option>'+BILL.plans.filter(function(pl){return pl.active!==false;}).map(function(pl){ return '<option value="'+_bEsc(pl.key)+'">'+_bEsc(pl.name)+(pl.is_free?' (free)':(' \u2014 '+_bMoney(pl.monthly_amount,pl.currency)+'/mo'))+'</option>'; }).join('');
+    var planOpts='<option value="">\u2014 choose a plan \u2014</option>'+BILL.plans.filter(function(pl){return pl.active!==false && (admin || !pl.is_free);}).map(function(pl){ return '<option value="'+_bEsc(pl.key)+'">'+_bEsc(pl.name)+(pl.is_free?' (free)':(' \u2014 '+_bMoney(pl.monthly_amount,pl.currency)+'/mo'))+'</option>'; }).join('');
     var banner='<div style="margin:0 0 12px;padding:12px 14px;border-radius:12px;background:#fff;border:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;"><div>Account: '+_billPill(s.accountStatus)+'</div><div style="font-size:15px;">Monthly total: <strong>'+_bMoney(s.total,s.currency)+'</strong></div></div>';
     if(s.locked) banner+='<div style="margin:0 0 12px;padding:12px 14px;border-radius:12px;background:#fdecea;border:1px solid #f3c0ba;color:#8a231b;font-size:13.5px;">One or more sites are suspended for non-payment \u2014 settle the balance to restore them.</div>';
     var rows=(s.sites||[]).map(function(st,i){
