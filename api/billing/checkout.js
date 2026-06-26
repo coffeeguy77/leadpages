@@ -34,8 +34,9 @@ module.exports = async (req, res) => {
   const { data: plan } = await sb.from('billing_plans').select('*').eq('key', planKey).eq('active', true).maybeSingle();
   if (!plan) return json(res, 400, { error: 'plan not found' });
 
-  // Free plan: no Stripe, never billed or auto-suspended — just activate the site.
+  // Free plan: no Stripe, never billed or auto-suspended — admin-assigned only (friends & family).
   if (plan.is_free) {
+    if (!admin) return json(res, 403, { error: 'the Free plan is assigned by the team' });
     await sb.from('sites').update({ plan_key: planKey, monthly_amount: 0, billing_status: 'active', setup_paid: true, suspended_at: null, delete_flagged_at: null }).eq('id', site.id);
     return json(res, 200, { mode: 'free' });
   }
