@@ -115,10 +115,14 @@ module.exports = async (req, res) => {
       params['line_items[1][price]'] = plan.stripe_setup_price_id;
       params['line_items[1][quantity]'] = 1;
     } else if (plan.setup_amount > 0) {
-      params['subscription_data[add_invoice_items][0][price_data][currency]'] = plan.currency || 'aud';
-      params['subscription_data[add_invoice_items][0][price_data][product_data][name]'] = 'Setup fee';
-      params['subscription_data[add_invoice_items][0][price_data][unit_amount]'] = plan.setup_amount;
-      params['subscription_data[add_invoice_items][0][quantity]'] = 1;
+      // One-time setup fee as its own line item (no recurring) — charged on the first
+      // invoice. Checkout Sessions don't accept subscription_data[add_invoice_items].
+      const sp = await stripe('prices', 'POST', {
+        unit_amount: plan.setup_amount, currency: plan.currency || 'aud',
+        product_data: { name: (plan.name || plan.key) + ' setup fee' },
+      });
+      params['line_items[1][price]'] = sp.id;
+      params['line_items[1][quantity]'] = 1;
     }
 
     const sess = await stripe('checkout/sessions', 'POST', params);
