@@ -1562,8 +1562,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     {on:true,icon:'\uD83D\uDD0E',title:'Leak Detection',body:'Hidden leak driving up your water bill? We pinpoint it without tearing the place apart.'},
     {on:true,icon:'\uD83D\uDEE0\uFE0F',title:'General Plumbing',body:"Taps, toilets, gas fitting, renovations and the jobs you've been putting off. Done right, first time."}
   ];
-  const DEFAULT_TRADE_THEME={ pipe:'#1f7bb8', hivis:'#ff6a1f', steel:'#1a2230', safety:'#ffc400' };
-  const TRADE_COLOURS=[['pipe','Brand','buttons, links, accents'],['hivis','Call-to-action','the orange call buttons'],['steel','Header & dark bands','top bar, hero, footer'],['safety','Highlight','badges & small accents']];
+  const DEFAULT_TRADE_THEME={ pipe:'#1f7bb8', hivis:'#ff6a1f', steel:'#1a2230', safety:'#ffc400', lightBg:'#eef2f6' };
+  const TRADE_COLOURS=[['pipe','Brand','buttons, links, accents'],['hivis','Call-to-action','the orange call buttons'],['steel','Header & dark bands','top bar, hero, footer'],['safety','Highlight','badges & small accents'],['lightBg','Page background','behind the content sections']];
   const DEFAULT_TRADE_SECTIONS={
     textBox:{on:false,eyebrow:'About us',heading:'Built for {{businessName}}',intro:'A short introduction that sets the scene for what follows.',content:'Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.',image:'',imageSide:'right',textAlign:'left'},
     seoTokens:{trade:'',city:'Canberra',region:'ACT',suburb:'Canberra',enableUrlSuburb:false,updateTitle:false,titleTemplate:'{trade} in {suburb} | {business}'},
@@ -1898,7 +1898,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var _pcIds=_byLabel(subs.map(function(x){return x[0];}).filter(function(id){ return OPTIONAL_COMPONENTS.indexOf(id)<0; }));
     var _pcChips=_pcIds.map(function(id){ return (PAGE_CONTENT_EDITONLY.indexOf(id)>=0)?_editOnlyChip(id):_secChip(id); }).join('');
     var _compChips=_byLabel(OPTIONAL_COMPONENTS.slice()).map(_secChip).join('');
-    var _layKeys=Object.keys(LAYOUTS).sort(function(a,b){ var la=LAYOUTS[a].name.toLowerCase(), lb=LAYOUTS[b].name.toLowerCase(); return la<lb?-1:(la>lb?1:0); });
+    var _layKeys=Object.keys(LAYOUTS).filter(function(k){ return k!=='classic'; }).sort(function(a,b){ var la=LAYOUTS[a].name.toLowerCase(), lb=LAYOUTS[b].name.toLowerCase(); return la<lb?-1:(la>lb?1:0); });
     var _layChips=_layKeys.map(function(k){ var on=_presetOn(c,k); var canEdit=(k==='quote-first')||(k==='classic')||(_presetFeatures(k).length>0);
       return '<span style="display:inline-flex;align-items:stretch;border:1px solid '+(on?'var(--brand,#1f7a63)':'var(--line)')+';border-radius:8px;overflow:hidden;">'
         +'<button type="button" class="lay-toggle" data-lay="'+k+'" style="border:0;background:'+(on?'var(--brand,#1f7a63)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+';padding:6px 13px;font:600 12.5px var(--font-ui);cursor:pointer;">'+(on?'\u2713 ':'')+esc(LAYOUTS[k].name)+'</button>'
@@ -2618,12 +2618,25 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   function anaDaily(rows,type,days){ var m={},now=Date.now(); for(var i=days-1;i>=0;i--){ m[new Date(now-i*864e5).toISOString().slice(0,10)]=0; } (rows||[]).forEach(function(e){ if(e.event!==type)return; var k=(e.created_at||'').slice(0,10); if(k in m)m[k]++; }); return Object.keys(m).map(function(k){return {d:k,n:m[k]};}); }
   function anaBars(series,color){ var max=1; series.forEach(function(s){ if(s.n>max)max=s.n; }); return '<div style="display:flex;align-items:flex-end;gap:2px;height:50px;margin-top:8px;">'+series.map(function(s){ var h=Math.max(2,Math.round(s.n/max*50)); return '<div title="'+s.d+': '+s.n+'" style="flex:1;min-width:3px;height:'+h+'px;background:'+(color||'#1f7a63')+';border-radius:2px 2px 0 0;opacity:'+(s.n?1:.22)+';"></div>'; }).join('')+'</div>'; }
   function anaFunnel(label,n,pct){ return '<div style="flex:1;min-width:130px;background:#f7f6f1;border-radius:11px;padding:13px 15px;"><div style="font:700 26px/1 var(--font-display,Georgia),serif;">'+n+'</div><div style="font-size:12.5px;color:#6c6c68;margin-top:3px;">'+label+'</div><div style="font-size:12px;color:var(--brand,#1f7a63);font-weight:700;margin-top:5px;">'+pct+'%</div></div>'; }
-  async function anaFetchSite(){ if(!currentSiteId){ ANA.data=[]; ANA.leads=[]; ANA.leadsCount=0; return; } var since=anaSince();
+  async function anaStats(params){
+    try{
+      var token=await cwToken();
+      var qs=Object.keys(params).filter(function(k){return params[k]!=null;}).map(function(k){return k+'='+encodeURIComponent(params[k]);}).join('&');
+      var r=await fetch('/api/stats'+(qs?('?'+qs):''),{headers:token?{Authorization:'Bearer '+token}:{}});
+      if(!r.ok) return null;
+      return await r.json();
+    }catch(e){ return null; }
+  }
+  async function anaFetchSite(){ if(!currentSiteId){ ANA.data=[]; ANA.leads=[]; ANA.leadsCount=0; return; }
+    var j=await anaStats({siteId:currentSiteId,days:(ANA.period||0)});
+    if(j){ ANA.data=j.events||[]; ANA.leads=(j.leads||[]).slice(0,50); ANA.leadsCount=(j.leadsCount!=null?j.leadsCount:(j.leads||[]).length); return; }
+    /* fallback: direct read (only works if RLS permits the signed-in user) */
+    var since=anaSince();
     try{ var ev=await sb.from('events').select('event,created_at,props').eq('site_id',currentSiteId).gte('created_at',since).limit(10000); ANA.data=ev.data||[]; }catch(e){ ANA.data=[]; }
     try{ var ld=await sb.from('leads').select('name,kind,created_at').eq('site_id',currentSiteId).gte('created_at',since).order('created_at',{ascending:false}).limit(50); ANA.leads=ld.data||[]; }catch(e){ ANA.leads=[]; }
     try{ var lc=await sb.from('leads').select('id',{count:'exact',head:true}).eq('site_id',currentSiteId).gte('created_at',since); ANA.leadsCount=(lc.count!=null?lc.count:(ANA.leads||[]).length); }catch(e){ ANA.leadsCount=(ANA.leads||[]).length; }
   }
-  async function anaFetchGlobal(){ var since=anaSince(); try{ var ev=await sb.from('events').select('event,site_id,created_at').gte('created_at',since).limit(20000); ANA.globalData=ev.data||[]; }catch(e){ ANA.globalData=[]; } }
+  async function anaFetchGlobal(){ var j=await anaStats({days:(ANA.period||0)}); if(j){ ANA.globalData=j.events||[]; return; } var since=anaSince(); try{ var ev=await sb.from('events').select('event,site_id,created_at').gte('created_at',since).limit(20000); ANA.globalData=ev.data||[]; }catch(e){ ANA.globalData=[]; } }
   function anaGlobalRows(){ var by={}; (allSites||[]).forEach(function(x){ by[x.id]={name:x.business_name||x.slug,slug:x.slug,visitors:0,calls:0,forms:0,last:null}; });
     (ANA.globalData||[]).forEach(function(e){ var r=by[e.site_id]; if(!r)return; if(e.event==='page_view')r.visitors++; else if(e.event==='call_click')r.calls++; else if(e.event==='lead_submit')r.forms++; if(!r.last||e.created_at>r.last)r.last=e.created_at; });
     var rows=Object.keys(by).map(function(k){return by[k];}); rows.forEach(function(r){ r.conv=r.visitors?(r.forms/r.visitors*100):0; });
