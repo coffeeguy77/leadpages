@@ -2584,7 +2584,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var danger=(currentRole==='super')?('<div class="card danger" style="margin-bottom:0;"><h2 style="margin:0 0 4px;color:#b42318;">Danger zone</h2><p class="lede" style="margin:0 0 12px;">Unlock, then tap Delete twice to confirm. This permanently removes the site and can\u2019t be undone.</p><div style="display:flex;gap:10px;align-items:center;"><button type="button" id="btn-dellock" class="sp-lock" title="Unlock to allow delete">\uD83D\uDD12</button><button type="button" id="btn-delsite" class="sp-del" disabled>Delete site</button></div></div>'):'';
     p.innerHTML='<div class="sp-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h1 style="margin:0;font:700 26px/1.1 var(--font-display,Georgia),serif;">Settings</h1><button type="button" id="set-close" class="btn ghost">Close</button></div>'
       +detailFields
-      +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button></div>':'')
+      +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced. The suspended page is what the public sees when a site is paused for non-payment.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button> <button type="button" class="btn ghost" id="open-susp">Edit suspended page</button></div>':'')
       +window.__tradeStarterCard(currentRole==='super')
       +danger
       +'</div>';
@@ -2597,6 +2597,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     wireDetailFields(c0(),'trade');
     var dmo=$('set-demo'); if(dmo) dmo.addEventListener('change',function(){ if(currentSiteId) lplToggleDemo(currentSiteId); });
     var opb=$('open-plans'); if(opb) opb.addEventListener('click',openPlansPage);
+    var osp=$('open-susp'); if(osp) osp.addEventListener('click',openSuspendedEditor);
     // wire service starter content
     (function(){ var c=c0(); var ct=(c.trade||'').toLowerCase().trim(); var slug='plumber';
       if(ct){ if(ct==='plumber'){ slug='plumber'; } else if(TRADE_PACKS[ct]){ slug=ct; } else { for(var kk in TRADE_PACKS){ var lb=window.__tradeLabel(kk).toLowerCase(); if(lb===ct||lb.indexOf(ct)===0||(TRADE_PACKS[kk].tradeType||'').toLowerCase()===ct){ slug=kk; break; } } } }
@@ -2667,6 +2668,80 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   function _bpMsg(btn,txt,err){ var c=btn&&btn.closest('.bp-plan'); var m=c&&c.querySelector('.bp-msg'); if(m){ m.textContent=txt; m.style.color=err?'#b42318':'#0a7d33'; } }
   function _bpSave(i,btn){ _bpCollect(); var p=BP.plans[i]; if(!p) return; if(!p.key){ _bpMsg(btn,'Add a plan key',true); return; } btn.disabled=true; _bpMsg(btn,'Saving\u2026'); _bpFetch({method:'POST',body:JSON.stringify({action:'save',plan:p})}).then(function(r){return r.json();}).then(function(j){ btn.disabled=false; if(j&&j.ok){ p._new=false; _bpMsg(btn,'Saved'); } else { _bpMsg(btn,(j&&j.error)||'Failed',true); } }).catch(function(){ btn.disabled=false; _bpMsg(btn,'Failed',true); }); }
   function _bpDelete(i,btn){ var p=BP.plans[i]; if(!p||!p.key){ BP.plans.splice(i,1); _bpRender(); return; } if(!window.confirm('Delete the \u201c'+(p.name||p.key)+'\u201d plan? Existing Stripe subscriptions are not affected.')) return; btn.disabled=true; _bpFetch({method:'POST',body:JSON.stringify({action:'delete',key:p.key})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.ok){ BP.plans.splice(i,1); _bpRender(); } else { btn.disabled=false; _bpMsg(btn,(j&&j.error)||'Failed',true); } }).catch(function(){ btn.disabled=false; }); }
+
+  /* ===================== Billing panel + suspended page editor ===================== */
+  function _billFetch(path,opts){ return cwToken().then(function(token){ return fetch(path, Object.assign({headers:Object.assign({'content-type':'application/json'}, token?{Authorization:'Bearer '+token}:{})}, opts||{})); }); }
+  function _bMoney(c,cur){ return '$'+(((c||0)/100).toFixed(2))+(cur&&cur!=='aud'?(' '+String(cur).toUpperCase()):''); }
+  function _bEsc(x){ return String(x==null?'':x).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+  var BILL={ status:null, plans:[] };
+  function closeBillingPage(){ var p=document.getElementById('billing-page'); if(p) p.remove(); }
+  function _billCss(){ if(document.getElementById('billing-page-css'))return; var s=document.createElement('style'); s.id='billing-page-css'; s.textContent='#billing-page,#susp-editor{position:fixed;inset:0;z-index:9999;background:rgba(16,22,32,.55);overflow:auto;padding:32px 16px;}#billing-page .bl-card,#susp-editor .se-card{max-width:860px;margin:0 auto;background:var(--bg,#faf9f6);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:24px;}#billing-page .bl-site,#susp-editor .se-variant{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:#fff;}#billing-page .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;}'; document.head.appendChild(s); }
+  function openBillingPage(){
+    closeBillingPage(); _billCss();
+    var p=document.createElement('div'); p.id='billing-page';
+    p.innerHTML='<div class="bl-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><h1 style="margin:0;font:700 24px/1.1 var(--font-display,Georgia),serif;">Billing</h1><button type="button" class="btn ghost" id="bl-close">Close</button></div><div id="bl-body"><div class="hint">Loading\u2026</div></div></div>';
+    document.body.appendChild(p);
+    document.getElementById('bl-close').addEventListener('click',closeBillingPage);
+    p.addEventListener('click',function(e){ if(e.target===p) closeBillingPage(); });
+    Promise.all([
+      _billFetch('/api/billing/status').then(function(r){return r.json();}).catch(function(){return null;}),
+      _billFetch('/api/billing/plans').then(function(r){return r.json();}).catch(function(){return {plans:[]};})
+    ]).then(function(res){ BILL.status=res[0]; BILL.plans=(res[1]&&res[1].plans)||[]; _billRender(); });
+  }
+  function _billPill(st){ var map={active:['Active','#0a7d33','#e7f6ec'],past_due:['Payment due','#b4690e','#fdf1e3'],suspended:['Suspended','#b42318','#fdecea'],flagged_deletion:['Flagged for deletion','#b42318','#fdecea'],none:['No plan','#667','#eef0f2'],canceled:['Cancelled','#667','#eef0f2']}; var m=map[st]||map.none; return '<span class="pill" style="color:'+m[1]+';background:'+m[2]+';">'+m[0]+'</span>'; }
+  function _billRender(){
+    var body=document.getElementById('bl-body'); if(!body) return;
+    var s=BILL.status; if(!s||s.error){ body.innerHTML='<div class="hint">Couldn\u2019t load billing \u2014 is the billing API deployed and the schema run?</div>'; return; }
+    var admin=(currentRole==='super');
+    var planOpts='<option value="">\u2014 choose a plan \u2014</option>'+BILL.plans.filter(function(pl){return pl.active!==false;}).map(function(pl){ return '<option value="'+_bEsc(pl.key)+'">'+_bEsc(pl.name)+(pl.is_free?' (free)':(' \u2014 '+_bMoney(pl.monthly_amount,pl.currency)+'/mo'))+'</option>'; }).join('');
+    var banner='<div style="margin:0 0 12px;padding:12px 14px;border-radius:12px;background:#fff;border:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;"><div>Account: '+_billPill(s.accountStatus)+'</div><div style="font-size:15px;">Monthly total: <strong>'+_bMoney(s.total,s.currency)+'</strong></div></div>';
+    if(s.locked) banner+='<div style="margin:0 0 12px;padding:12px 14px;border-radius:12px;background:#fdecea;border:1px solid #f3c0ba;color:#8a231b;font-size:13.5px;">One or more sites are suspended for non-payment \u2014 settle the balance to restore them.</div>';
+    var rows=(s.sites||[]).map(function(st,i){
+      return '<div class="bl-site" data-id="'+_bEsc(st.id)+'" data-i="'+i+'"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;"><div><strong>'+_bEsc(st.business_name||st.slug)+'</strong> '+_billPill(st.billing_status)+(st.delete_protected?' <span class="pill" style="color:#0a7d33;background:#e7f6ec;">Protected</span>':'')+'</div><div style="font-size:14px;">'+(st.plan_key?(_bEsc(st.plan_key)+' \u2014 '+_bMoney(st.monthly_amount,s.currency)+'/mo'):'<span class="hint" style="margin:0;">no plan</span>')+'</div></div>'
+        +'<div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;"><select class="bl-plan" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;">'+planOpts+'</select><button type="button" class="btn bl-apply">Apply plan</button>'
+        +(admin?('<button type="button" class="btn ghost bl-protect">'+(st.delete_protected?'Unprotect':'Protect')+'</button><button type="button" class="btn ghost bl-extend">Extend 90d</button>'+((st.billing_status==='suspended'||st.billing_status==='flagged_deletion')?'<button type="button" class="btn ghost bl-unsuspend">Unsuspend</button>':'')):'')
+        +'</div><div class="bl-msg" style="font-size:12.5px;margin-top:6px;"></div></div>';
+    }).join('');
+    body.innerHTML=banner+(rows||'<div class="hint">No sites on this account.</div>')+'<div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;">'+(s.hasBillingAccount?'<button type="button" class="btn" id="bl-portal">Pay / manage billing</button>':'')+'</div>';
+    var portal=document.getElementById('bl-portal'); if(portal) portal.addEventListener('click',function(){ portal.disabled=true; _billFetch('/api/billing/portal',{method:'POST',body:JSON.stringify({returnUrl:location.origin})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.url) location.href=j.url; else { portal.disabled=false; toast((j&&j.error)||'Could not open portal'); } }).catch(function(){ portal.disabled=false; }); });
+    body.querySelectorAll('.bl-site').forEach(function(row){
+      var id=row.getAttribute('data-id'); var msg=row.querySelector('.bl-msg');
+      function say(t,err){ msg.textContent=t; msg.style.color=err?'#b42318':'#0a7d33'; }
+      var sel=row.querySelector('.bl-plan'); if(sel){ sel.value=((BILL.status.sites[+row.getAttribute('data-i')]||{}).plan_key)||''; }
+      row.querySelector('.bl-apply').addEventListener('click',function(){ var k=sel.value; if(!k){ say('Pick a plan first',true); return; } say('Working\u2026'); _billFetch('/api/billing/checkout',{method:'POST',body:JSON.stringify({siteId:id,planKey:k,returnUrl:location.origin})}).then(function(r){return r.json();}).then(function(j){ if(!j){ say('Failed',true); return; } if(j.mode==='free'){ say('Free plan applied'); openBillingPage(); } else if(j.mode==='added'){ say('Added to the existing subscription'); openBillingPage(); } else if(j.mode==='checkout'&&j.url){ if(admin){ say('Link ready'); window.prompt('Send this payment link to the customer:', j.url); } else { location.href=j.url; } } else { say(j.error||'Failed',true); } }).catch(function(){ say('Failed',true); }); });
+      var pb=row.querySelector('.bl-protect'); if(pb) pb.addEventListener('click',function(){ var on=(pb.textContent==='Protect'); _billFetch('/api/billing/admin',{method:'POST',body:JSON.stringify({action:'protect',siteId:id,on:on})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.ok){ pb.textContent=on?'Unprotect':'Protect'; say(on?'Protected from deletion':'Protection removed'); } else say((j&&j.error)||'Failed',true); }); });
+      var eb=row.querySelector('.bl-extend'); if(eb) eb.addEventListener('click',function(){ _billFetch('/api/billing/admin',{method:'POST',body:JSON.stringify({action:'extend',siteId:id,days:90})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.ok) say('Auto-delete extended 90 days'); else say((j&&j.error)||'Failed',true); }); });
+      var ub=row.querySelector('.bl-unsuspend'); if(ub) ub.addEventListener('click',function(){ if(!window.confirm('Manually reactivate this site without payment?')) return; _billFetch('/api/billing/admin',{method:'POST',body:JSON.stringify({action:'unsuspend',siteId:id})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.ok){ say('Reactivated'); openBillingPage(); } else say((j&&j.error)||'Failed',true); }); });
+    });
+  }
+  function lpBillingGate(){ if(currentRole==='super') return; _billFetch('/api/billing/status').then(function(r){return r.json();}).then(function(s){ var ov=document.getElementById('bill-lock'); if(s&&s.locked){ if(!ov){ ov=document.createElement('div'); ov.id='bill-lock'; ov.style.cssText='position:fixed;inset:0;z-index:10000;background:rgba(16,22,32,.93);color:#fff;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;'; ov.innerHTML='<div style="max-width:460px;"><div style="font-size:42px;">\uD83D\uDD12</div><h2 style="margin:10px 0;">Account locked</h2><p style="opacity:.85;line-height:1.5;">Your account is locked due to an overdue hosting payment. Settle the balance to restore access and bring your live sites back online.</p><button type="button" class="btn" id="bill-lock-pay" style="margin-top:8px;">Pay / manage billing</button></div>'; document.body.appendChild(ov); document.getElementById('bill-lock-pay').addEventListener('click',function(){ _billFetch('/api/billing/portal',{method:'POST',body:JSON.stringify({returnUrl:location.origin})}).then(function(r){return r.json();}).then(function(j){ if(j&&j.url) location.href=j.url; }); }); } } else if(ov){ ov.remove(); } }).catch(function(){}); }
+
+  /* suspended-page editor (super) */
+  var SUSP={};
+  function closeSuspEditor(){ var p=document.getElementById('susp-editor'); if(p) p.remove(); }
+  function _suspPreview(v){ var c={}; v.querySelectorAll('[data-sk]').forEach(function(el){ c[el.getAttribute('data-sk')]=el.value; }); var bg=/^#[0-9a-fA-F]{3,8}$/.test(c.bg||'')?c.bg:'#0f1620',fg=/^#[0-9a-fA-F]{3,8}$/.test(c.fg||'')?c.fg:'#e7edf5',ac=/^#[0-9a-fA-F]{3,8}$/.test(c.accent||'')?c.accent:'#ff6a1f'; var msg=String(c.message||'').replace(/\{\{\s*businessName\s*\}\}/g,'Your Business'); var prev=v.querySelector('.se-prev'); if(prev) prev.innerHTML='<div style="background:'+_bEsc(bg)+';color:'+_bEsc(fg)+';padding:34px 18px;text-align:center;font-family:system-ui;"><div style="font-size:30px;color:'+_bEsc(ac)+';">\u26A0\uFE0F</div><div style="font-size:18px;font-weight:700;margin:8px 0;">'+_bEsc(c.heading||'')+'</div><div style="font-size:13.5px;opacity:.92;">'+_bEsc(msg)+'</div><div style="font-size:12px;opacity:.7;margin-top:6px;">'+_bEsc(c.note||'')+'</div></div>'; }
+  function _suspCard(k,label,c){
+    function col(field,lab,def){ var val=/^#[0-9a-fA-F]{6}$/.test(c[field]||'')?c[field]:def; return '<div class="f"><label>'+lab+'</label><div style="display:flex;gap:6px;align-items:center;"><input type="color" data-skc="'+field+'" value="'+val+'" style="width:44px;height:36px;padding:2px;border:1px solid var(--line);border-radius:8px;"><input type="text" data-sk="'+field+'" value="'+_bEsc(val)+'" style="width:96px;"></div></div>'; }
+    return '<div class="se-variant" data-k="'+k+'"><h3 style="margin:0 0 8px;">'+label+'</h3>'
+      +'<div class="f"><label>Heading</label><input type="text" data-sk="heading" value="'+_bEsc(c.heading||'')+'"></div>'
+      +'<div class="f"><label>Message (use {{businessName}} for the client\u2019s name)</label><textarea data-sk="message" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;">'+_bEsc(c.message||'')+'</textarea></div>'
+      +'<div class="f"><label>Note</label><textarea data-sk="note" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;">'+_bEsc(c.note||'')+'</textarea></div>'
+      +'<div class="row">'+col('bg','Background','#0f1620')+col('fg','Text','#e7edf5')+col('accent','Accent','#ff6a1f')+'</div>'
+      +'<div class="se-prev" style="margin-top:10px;border-radius:12px;overflow:hidden;border:1px solid var(--line);"></div>'
+      +'<div style="margin-top:8px;"><button type="button" class="btn se-save">Save</button> <span class="se-msg" style="font-size:12.5px;margin-left:6px;"></span></div></div>';
+  }
+  function openSuspendedEditor(){
+    closeSuspEditor(); _billCss();
+    var variants=[['suspended_client','Client sites'],['suspended_demo','Demo sites'],['suspended_system','System sites']];
+    var p=document.createElement('div'); p.id='susp-editor';
+    p.innerHTML='<div class="se-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><h1 style="margin:0;font:700 24px/1.1 var(--font-display,Georgia),serif;">Suspended page</h1><button type="button" class="btn ghost" id="se-close">Close</button></div><p class="lede" style="margin:0 0 14px;">This is what the public sees on a suspended site \u2014 a visible nudge that the bill is unpaid. Each account type can have its own wording.</p><div id="se-body"><div class="hint">Loading\u2026</div></div></div>';
+    document.body.appendChild(p);
+    document.getElementById('se-close').addEventListener('click',closeSuspEditor);
+    p.addEventListener('click',function(e){ if(e.target===p) closeSuspEditor(); });
+    _billFetch('/api/billing/system-pages').then(function(r){return r.json();}).then(function(j){ SUSP={}; ((j&&j.pages)||[]).forEach(function(pg){ SUSP[pg.key]=pg.content||{}; }); var body=document.getElementById('se-body'); body.innerHTML=variants.map(function(v){ return _suspCard(v[0],v[1],SUSP[v[0]]||{}); }).join('');
+      body.querySelectorAll('.se-variant').forEach(function(v){ _suspPreview(v); v.addEventListener('input',function(e){ if(e.target.hasAttribute('data-skc')){ var f=e.target.getAttribute('data-skc'); var tx=v.querySelector('[data-sk="'+f+'"]'); if(tx) tx.value=e.target.value; } _suspPreview(v); }); v.querySelector('.se-save').addEventListener('click',function(){ var btn=this,m=v.querySelector('.se-msg'); var c={}; v.querySelectorAll('[data-sk]').forEach(function(el){ c[el.getAttribute('data-sk')]=el.value; }); btn.disabled=true; m.textContent='Saving\u2026'; _billFetch('/api/billing/system-pages',{method:'POST',body:JSON.stringify({key:v.getAttribute('data-k'),content:c})}).then(function(r){return r.json();}).then(function(j2){ btn.disabled=false; m.textContent=(j2&&j2.ok)?'Saved':((j2&&j2.error)||'Failed'); m.style.color=(j2&&j2.ok)?'#0a7d33':'#b42318'; }).catch(function(){ btn.disabled=false; m.textContent='Failed'; m.style.color='#b42318'; }); }); });
+    }).catch(function(){ var body=document.getElementById('se-body'); if(body) body.innerHTML='<div class="hint">Couldn\u2019t load \u2014 is the billing API deployed?</div>'; });
+  }
   /* ===================== Site analytics ===================== */
   var ANA={ period:30, active:null, sort:'visitors', data:[], leads:[], leadsCount:0, globalData:null };
   function anaEsc(x){ return String(x==null?'':x).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
@@ -2969,7 +3044,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   }
   async function anaRefresh(){ anaRender(); await anaFetchSite(); if(ANA.active==='global'){ await anaFetchGlobal(); } anaRender(); }
   function anaInit(){ var el=document.getElementById('lp-analytics'); if(el)return el; var nav=document.querySelector('.adminnav'); if(!nav||!nav.parentNode)return null; el=document.createElement('div'); el.id='lp-analytics'; nav.parentNode.insertBefore(el,nav); el.addEventListener('click',anaClick); document.addEventListener('click',function(ev){ if(ANA.active && !el.contains(ev.target)){ ANA.active=null; anaRender(); } }); return el; }
-  async function renderSiteAnalytics(){ if(!anaInit())return; ANA.active=null; ANA.globalData=null; anaRender(); lpExtrasInit(); LPDOM.open=null; renderMyDomains(); renderLeadsCRM(); await anaFetchSite(); anaRender(); if(LPLEADS.timeline) lpLeadsPaint(); }
+  async function renderSiteAnalytics(){ if(!anaInit())return; try{ lpBillingGate(); }catch(_e){} ANA.active=null; ANA.globalData=null; anaRender(); lpExtrasInit(); LPDOM.open=null; renderMyDomains(); renderLeadsCRM(); await anaFetchSite(); anaRender(); if(LPLEADS.timeline) lpLeadsPaint(); }
   function renderLandingSub(c){
     var body=$('lsub-body'); if(!body) return; var sub=landingSub;
     if(sub==='details'){
@@ -3356,6 +3431,11 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       const nb=document.createElement('button'); nb.className='btn ghost'; nb.id='btn-newsite';
       nb.textContent='+ New site'; nb.addEventListener('click',openCreateSite);
       bar.appendChild(nb);
+    }
+    if(!$('btn-billing')){
+      const bb=document.createElement('button'); bb.className='btn ghost'; bb.id='btn-billing'; bb.title='Billing'; bb.textContent='Billing';
+      bb.addEventListener('click',function(e){ e.stopPropagation(); openBillingPage(); });
+      var pubBtnB=$('btn-publish'); if(pubBtnB) bar.insertBefore(bb, pubBtnB); else bar.insertBefore(bb, dl);
     }
     if(currentRole==='super' && !$('btn-settings')){
       const cg=document.createElement('button'); cg.className='btn ghost'; cg.id='btn-settings'; cg.title='Settings';
