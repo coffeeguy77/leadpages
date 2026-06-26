@@ -19,21 +19,17 @@ async function verifyAuth(req) {
 // Resolve key / secret / cloud from CLOUDINARY_URL or the separate vars, tolerant of a
 // connection string pasted into the wrong variable (mirrors api/cloudinary/sign.js).
 function resolveCreds() {
+  const url = (process.env.CLOUDINARY_URL || '').trim();
+  const m = url.match(/cloudinary:\/\/([^:\s]+):([^@\s]+)@([^/\s]+)/i);
+  if (m && !/[<>]/.test(m[1]) && !/[<>]/.test(m[2])) {
+    return { key: decodeURIComponent(m[1]), secret: decodeURIComponent(m[2]), cloud: m[3].replace(/[^a-zA-Z0-9_\-]/g, '') || 'dzx6x1hou' };
+  }
   let key = (process.env.CLOUDINARY_API_KEY || '').trim();
   let secret = (process.env.CLOUDINARY_API_SECRET || '').trim();
   let cloud = (process.env.CLOUDINARY_CLOUD_NAME || '').trim();
-  const haystack = [
-    process.env.CLOUDINARY_URL || '',
-    process.env.CLOUDINARY_CLOUD_NAME || '',
-    process.env.CLOUDINARY_API_KEY || '',
-  ].join(' ');
-  const m = haystack.match(/cloudinary:\/\/([^:\s]+):([^@\s]+)@([^/\s]+)/i);
-  if (m) {
-    const uKey = decodeURIComponent(m[1]);
-    const uSecret = decodeURIComponent(m[2]);
-    if (!key && !/[<>]/.test(uKey)) key = uKey;
-    if (!secret && !/[<>]/.test(uSecret)) secret = uSecret;
-    cloud = m[3];
+  if (/cloudinary:\/\//.test(cloud)) {
+    const mm = cloud.match(/cloudinary:\/\/([^:\s]+):([^@\s]+)@([^/\s]+)/i);
+    if (mm) { if (!key && !/[<>]/.test(mm[1])) key = decodeURIComponent(mm[1]); if (!secret && !/[<>]/.test(mm[2])) secret = decodeURIComponent(mm[2]); cloud = mm[3]; }
   }
   if (cloud.indexOf('@') >= 0) cloud = cloud.split('@').pop();
   cloud = cloud.replace(/[^a-zA-Z0-9_\-]/g, '') || 'dzx6x1hou';
