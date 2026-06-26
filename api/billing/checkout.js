@@ -32,7 +32,14 @@ module.exports = async (req, res) => {
   if (!ownerId && !ownerEmail) return json(res, 400, { error: 'site has no owner — assign a client login first' });
 
   const { data: plan } = await sb.from('billing_plans').select('*').eq('key', planKey).eq('active', true).maybeSingle();
-  if (!plan || !plan.stripe_price_id) return json(res, 400, { error: 'plan not found or missing its Stripe price' });
+  if (!plan) return json(res, 400, { error: 'plan not found' });
+
+  // Free plan: no Stripe, never billed or auto-suspended — just activate the site.
+  if (plan.is_free) {
+    await sb.from('sites').update({ plan_key: planKey, monthly_amount: 0, billing_status: 'active', setup_paid: true, suspended_at: null, delete_flagged_at: null }).eq('id', site.id);
+    return json(res, 200, { mode: 'free' });
+  }
+  if (!plan.stripe_price_id) return json(res, 400, { error: 'this plan is missing its Stripe price' });
 
   try {
     let bc = null;

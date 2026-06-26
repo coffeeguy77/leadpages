@@ -19,18 +19,20 @@ module.exports = async (req, res) => {
   const cutoff = new Date(Date.now() - DAYS * 864e5).toISOString();
   try {
     const { data: due } = await sb.from('sites')
-      .select('id,business_name,suspended_at')
+      .select('id,business_name,suspended_at,delete_protected,delete_extend_until')
       .eq('billing_status', 'suspended')
       .lt('suspended_at', cutoff);
 
-    let flagged = 0;
+    let flagged = 0, skipped = 0;
     for (const s of (due || [])) {
+      if (s.delete_protected) { skipped++; continue; }                                   // account protection
+      if (s.delete_extend_until && new Date(s.delete_extend_until).getTime() > Date.now()) { skipped++; continue; } // extended
       const { error } = await sb.from('sites')
         .update({ billing_status: 'flagged_deletion', delete_flagged_at: new Date().toISOString() })
         .eq('id', s.id);
       if (!error) flagged++;
     }
-    return json(res, 200, { ok: true, checked: (due || []).length, flagged });
+    return json(res, 200, { ok: true, checked: (due || []).length, flagged, skipped });
   } catch (e) {
     return json(res, 500, { error: String(e.message || e) });
   }
