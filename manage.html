@@ -1766,7 +1766,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     draw(false);
     if(!host.__ordBound){ host.__ordBound=true;
       host.addEventListener('click',function(e){ var u=e.target.closest&&e.target.closest('.ord-up'); var d=e.target.closest&&e.target.closest('.ord-down'); if(u){ move(u.getAttribute('data-id'),-1); } else if(d){ move(d.getAttribute('data-id'),1); } });
-      host.addEventListener('dragstart',function(e){ var r=e.target.closest&&e.target.closest('.ord-row'); if(!r) return; dragId=r.getAttribute('data-id'); try{e.dataTransfer.effectAllowed='move';}catch(_e){} setTimeout(function(){ r.classList.add('dragging'); },0); });
+      host.addEventListener('dragstart',function(e){ var r=e.target.closest&&e.target.closest('.ord-row'); if(!r) return; dragId=r.getAttribute('data-id'); try{e.dataTransfer.effectAllowed='move';}catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} } setTimeout(function(){ r.classList.add('dragging'); },0); });
       host.addEventListener('dragend',function(){ dragId=null; clearDrop(); host.querySelectorAll('.dragging').forEach(function(r){r.classList.remove('dragging');}); });
       host.addEventListener('dragover',function(e){ e.preventDefault(); var r=e.target.closest&&e.target.closest('.ord-row'); if(!r||r.getAttribute('data-id')===dragId){ clearDrop(); return; } var rc=r.getBoundingClientRect(); var after=(e.clientY-rc.top)>rc.height/2; clearDrop(); r.classList.add(after?'drop-after':'drop-before'); });
       host.addEventListener('drop',function(e){ e.preventDefault(); var r=e.target.closest&&e.target.closest('.ord-row'); if(!r||dragId==null){ clearDrop(); return; } var tid=r.getAttribute('data-id'); if(tid===dragId){ clearDrop(); return; } var rc=r.getBoundingClientRect(); var after=(e.clientY-rc.top)>rc.height/2; var prev=rects(); var ord=_orderList(c); var from=ord.indexOf(dragId); ord.splice(from,1); var to=ord.indexOf(tid); if(after) to+=1; ord.splice(to,0,dragId); c.sectionOrder=ord; clearDrop(); persist(); previewApply(); draw(false); flip(prev); });
@@ -2047,7 +2047,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   function cwPrepImage(file,maxDim,quality){ maxDim=maxDim||2200; quality=quality||0.85; return new Promise(function(resolve){ try{ if(!file||!/^image\//.test(file.type)||/svg|gif/i.test(file.type)){ return resolve(file); } var url=URL.createObjectURL(file); var img=new Image(); img.onload=function(){ try{ var w=img.naturalWidth,hh=img.naturalHeight; if(!w||!hh){ URL.revokeObjectURL(url); return resolve(file); } var scale=Math.min(1,maxDim/Math.max(w,hh)); if(scale>=1 && file.size<=2600000){ URL.revokeObjectURL(url); return resolve(file); } var cw=Math.max(1,Math.round(w*scale)),ch=Math.max(1,Math.round(hh*scale)); var cv=document.createElement('canvas'); cv.width=cw; cv.height=ch; cv.getContext('2d').drawImage(img,0,0,cw,ch); URL.revokeObjectURL(url); var mime=(file.type==='image/png')?'image/png':'image/jpeg'; cv.toBlob(function(b){ resolve(b||file); }, mime, quality); }catch(_e){ try{URL.revokeObjectURL(url);}catch(_x){} resolve(file); } }; img.onerror=function(){ try{URL.revokeObjectURL(url);}catch(_x){} resolve(file); }; img.src=url; }catch(_e){ resolve(file); } }); }
   async function cwUpload(file,parts){
     var token=await cwToken(); if(!token) throw new Error('Please sign in again');
-    try{ file=await cwPrepImage(file); }catch(_e){}
+    try{ file=await cwPrepImage(file); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
     var pid='leadpages/'+cwSiteSeg()+'/'+parts.map(cwSeg).join('/')+'/'+cwRand();
     var sr=await fetch('/api/cloudinary/sign',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({publicId:pid})});
     if(!sr.ok) throw new Error('Could not authorise upload'); var s=await sr.json();
@@ -2466,8 +2466,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     if(!currentSiteId){ toast('No site loaded.'); return; }
     var nm=(currentBusinessName||currentSiteSlug||'this site').trim();
     var btn=$('btn-delsite'); if(btn){ btn.disabled=true; btn.textContent='Deleting…'; }
-    try{ await cwDeletePrefix('leadpages/'+cwSiteSeg()+'/'); }catch(_e){}
-    try{ var _sl=cwSiteSegSlug(); if(_sl && _sl!==cwSiteSeg()) await cwDeletePrefix('leadpages/'+_sl+'/'); }catch(_e){}
+    try{ await cwDeletePrefix('leadpages/'+cwSiteSeg()+'/'); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
+    try{ var _sl=cwSiteSegSlug(); if(_sl && _sl!==cwSiteSeg()) await cwDeletePrefix('leadpages/'+_sl+'/'); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
     var res=await sb.from('sites').delete().eq('id',currentSiteId).select();
     if(btn){ btn.disabled=false; btn.textContent='Delete site'; }
     if(res.error){ toast('Delete failed: '+res.error.message); return; }
@@ -3078,7 +3078,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   }
   async function anaRefresh(){ anaRender(); await anaFetchSite(); if(ANA.active==='global'){ await anaFetchGlobal(); } anaRender(); }
   function anaInit(){ var el=document.getElementById('lp-analytics'); if(el)return el; var nav=document.querySelector('.adminnav'); if(!nav||!nav.parentNode)return null; el=document.createElement('div'); el.id='lp-analytics'; nav.parentNode.insertBefore(el,nav); el.addEventListener('click',anaClick); document.addEventListener('click',function(ev){ if(ANA.active && !el.contains(ev.target)){ ANA.active=null; anaRender(); } }); return el; }
-  async function renderSiteAnalytics(){ if(!anaInit())return; try{ lpBillingGate(); }catch(_e){} ANA.active=null; ANA.globalData=null; anaRender(); lpExtrasInit(); LPDOM.open=null; renderMyDomains(); renderLeadsCRM(); await anaFetchSite(); anaRender(); if(LPLEADS.timeline) lpLeadsPaint(); }
+  async function renderSiteAnalytics(){ if(!anaInit())return; try{ lpBillingGate(); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} } ANA.active=null; ANA.globalData=null; anaRender(); lpExtrasInit(); LPDOM.open=null; renderMyDomains(); renderLeadsCRM(); await anaFetchSite(); anaRender(); if(LPLEADS.timeline) lpLeadsPaint(); }
   function renderLandingSub(c){
     var body=$('lsub-body'); if(!body) return; var sub=landingSub;
     if(sub==='details'){
@@ -3241,7 +3241,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     } else if(sub==='crew'){
       body.innerHTML=secCard(c,'crew','Team Members section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])+listCard('crew','Team members','Name, title, an experience / specialty line, and an optional photo URL (blank shows an initial avatar). Shows on every layout. Edit, hide, reorder or add.'); wireSec(c,'crew',true,[['eyebrow'],['heading'],['intro']]); listEditor($('le-crew'),c,'crew');
     } else if(sub==='mobileBar'){
-      try{ console.log('%c[LeadPages] Mobile editor build JUN27-E loaded','color:#0a7d4d;font-weight:700'); }catch(_x){}
+      try{ console.log('%c[LeadPages] Mobile editor build JUN27-F loaded','color:#0a7d4d;font-weight:700'); }catch(_x){}
       var _m=(c.sections&&c.sections.mobileBar)||{}; var _b=_m.buttons||{};
       function _bg(n){return _b[n]||{};}
       var _call=_bg('call'),_dir=_bg('directions'),_msg=_bg('message'),_mail=_bg('mail'),_cust=_bg('custom');
@@ -3252,7 +3252,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       var _mm=((c.sections&&c.sections.mobileBar&&c.sections.mobileBar.menu))||{};
       function _mimg(id,val){ return '<div style="display:flex;gap:6px;align-items:center;"><input type="text" id="'+id+'" value="'+esc(val||'')+'" placeholder="https://… image URL" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-up" style="padding:7px 11px;white-space:nowrap;">Upload</button></div>'; }
       body.innerHTML=
-        '<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Mobile action bar <span style="font-size:10px;font-weight:700;letter-spacing:.04em;color:#0a7d4d;background:#e7f5ee;padding:2px 7px;border-radius:999px;vertical-align:middle;">BUILD JUN27-E</span></h2><p class="lede" style="margin:0 0 12px;">A sticky bar across the bottom of the screen on phones. Add quick-action buttons below, a navigation menu, or both — each is independent. Turn the whole bar on or off with the Mobile switch in Page Content. Every tap is tracked in your stats.</p>'
+        '<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Mobile action bar <span style="font-size:10px;font-weight:700;letter-spacing:.04em;color:#0a7d4d;background:#e7f5ee;padding:2px 7px;border-radius:999px;vertical-align:middle;">BUILD JUN27-F</span></h2><p class="lede" style="margin:0 0 12px;">A sticky bar across the bottom of the screen on phones. Add quick-action buttons below, a navigation menu, or both — each is independent. Turn the whole bar on or off with the Mobile switch in Page Content. Every tap is tracked in your stats.</p>'
           +'<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">'+lpSel('Labels','mb-labelmode',[['under','Icon + label (stacked)'],['beside','Icon + label (side by side)'],['icon','Icon only']],_m.labelMode||'under')
           +'<div class="f" style="margin:0;"><label>Bar background</label><div style="display:flex;gap:6px;align-items:center;"><input type="color" id="mb-bg-c" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;"><input type="text" id="mb-bg" value="'+esc(_m.bg||'')+'" placeholder="Default (hi-vis)" style="width:130px;"></div></div></div></div>'
           +_btnCard('mb-call-on','Call button','mb-call-icon',_call.icon||'phone','mb-call-label',_call.label,'Call',
@@ -3287,18 +3287,18 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       try{ listEditor($('le-mobileExtras'),c,'mobileExtras'); }catch(_e1){ try{console.error('extras list:',_e1);}catch(_x){} }
       try{ (function(){
         function MM(){ if(!c.sections)c.sections={}; if(!c.sections.mobileBar)c.sections.mobileBar={}; if(!c.sections.mobileBar.menu)c.sections.mobileBar.menu={}; return c.sections.mobileBar.menu; }
-        var _mc=$('mm-on'); if(_mc){ _mc.checked=(_mm.on===true); _mc.addEventListener('change',function(){ MM().on=_mc.checked; persist(); previewApply(); }); }
+        try{ var _mc=$('mm-on'); if(_mc){ _mc.checked=(_mm.on===true); _mc.addEventListener('change',function(){ MM().on=_mc.checked; persist(); previewApply(); }); } }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
         function _msel(id,setf,after){ var el=$(id); if(el) el.addEventListener('change',function(){ setf(el.value); if(after)after(el.value); persist(); previewApply(); }); }
-        _msel('mm-style',function(v){ MM().style=v; },function(v){ var r=$('mm-side-row'); if(r) r.style.display=(v==='mega')?'none':''; });
-        _msel('mm-side',function(v){ MM().side=v; });
-        _msel('mm-trigger',function(v){ MM().trigger=v; },function(v){ var r=$('mm-trigimg-row'); if(r) r.style.display=(v==='image')?'':'none'; });
-        txt('mm-triglabel',function(v){ MM().triggerLabel=v; });
-        (function(){ var el=$('mm-trigicon'); if(el) el.addEventListener('input',function(){ MM().triggerIcon=el.value.trim(); persist(); previewApply(); }); })();
-        _msel('mm-bgtype',function(v){ MM().bgType=v; },function(v){ var c1=$('mm-bgcol-row'),i1=$('mm-bgimg-row'); if(c1) c1.style.display=(v==='image'||v==='transparent')?'none':''; if(i1) i1.style.display=(v==='image')?'':'none'; });
-        (function(){ var t=$('mm-bgcol'),cp=$('mm-bgcol-c'); if(cp&&_mm.bgColour&&/^#/.test(_mm.bgColour)) cp.value=_mm.bgColour; if(t) t.addEventListener('input',function(){ MM().bgColour=t.value.trim(); persist(); previewApply(); }); if(cp) cp.addEventListener('input',function(){ if(t){ t.value=cp.value; MM().bgColour=cp.value; persist(); previewApply(); } }); })();
+        try{ _msel('mm-style',function(v){ MM().style=v; },function(v){ var r=$('mm-side-row'); if(r) r.style.display=(v==='mega')?'none':''; }); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
+        try{ _msel('mm-side',function(v){ MM().side=v; }); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
+        try{ _msel('mm-trigger',function(v){ MM().trigger=v; },function(v){ var r=$('mm-trigimg-row'); if(r) r.style.display=(v==='image')?'':'none'; }); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
+        try{ txt('mm-triglabel',function(v){ MM().triggerLabel=v; }); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
+        try{ (function(){ var el=$('mm-trigicon'); if(el) el.addEventListener('input',function(){ MM().triggerIcon=el.value.trim(); persist(); previewApply(); }); })(); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
+        try{ _msel('mm-bgtype',function(v){ MM().bgType=v; },function(v){ var c1=$('mm-bgcol-row'),i1=$('mm-bgimg-row'); if(c1) c1.style.display=(v==='image'||v==='transparent')?'none':''; if(i1) i1.style.display=(v==='image')?'':'none'; }); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
+        try{ (function(){ var t=$('mm-bgcol'),cp=$('mm-bgcol-c'); if(cp&&_mm.bgColour&&/^#/.test(_mm.bgColour)) cp.value=_mm.bgColour; if(t) t.addEventListener('input',function(){ MM().bgColour=t.value.trim(); persist(); previewApply(); }); if(cp) cp.addEventListener('input',function(){ if(t){ t.value=cp.value; MM().bgColour=cp.value; persist(); previewApply(); } }); })(); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
         function _mImgUp(id,seturl,getpid,setpid,parts){ var up=$(id+'-up'),tx=$(id); if(up) up.addEventListener('click',function(){ var prev=getpid()||''; cwPick(function(file){ cwBusy(up,true); cwUpload(file,parts).then(function(r){ if(tx)tx.value=r.url; seturl(r.url); setpid(r.publicId); persist(); previewApply(); if(prev&&prev!==r.publicId) cwDelete(prev); }).catch(function(e){ toast('Upload failed: '+((e&&e.message)||e)); }).then(function(){ cwBusy(up,false); }); }); }); if(tx) tx.addEventListener('input',function(){ seturl(tx.value.trim()); persist(); previewApply(); }); }
-        _mImgUp('mm-trigimg',function(u){ MM().triggerImage=u; },function(){ return MM().triggerImage_pid; },function(p){ MM().triggerImage_pid=p; },['mobileBar','menuTrigger']);
-        _mImgUp('mm-bgimg',function(u){ MM().bgImage=u; },function(){ return MM().bgImage_pid; },function(p){ MM().bgImage_pid=p; },['mobileBar','menuBg']);
+        try{ _mImgUp('mm-trigimg',function(u){ MM().triggerImage=u; },function(){ return MM().triggerImage_pid; },function(p){ MM().triggerImage_pid=p; },['mobileBar','menuTrigger']); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
+        try{ _mImgUp('mm-bgimg',function(u){ MM().bgImage=u; },function(){ return MM().bgImage_pid; },function(p){ MM().bgImage_pid=p; },['mobileBar','menuBg']); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
         try{ listEditor($('le-mobileMenuItems'),c,'mobileMenuItems'); }catch(_e2){ try{console.error('menu items list:',_e2);}catch(_x){} }
       })(); }catch(_mwErr){ try{console.error('mobile menu wiring:',_mwErr);}catch(_x){} }
 
