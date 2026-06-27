@@ -67,6 +67,9 @@ async function resolveSite({ siteId, slug, site }) {
 // the site config, then owner_email on the row.
 function contactEmailFor(siteRow) {
   const cfg = (siteRow && siteRow.config) || {};
+  const q = (cfg.sections && cfg.sections.quote) || {};
+  // A custom destination set in the quote section overrides the on-file address.
+  if (q.notifyMode === 'custom' && clean(q.notifyEmail)) return clean(q.notifyEmail);
   return clean(cfg.email) || clean(siteRow && siteRow.owner_email) || '';
 }
 
