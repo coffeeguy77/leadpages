@@ -1875,7 +1875,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   }
   function applyTemplateChrome(){
     var isApp=(currentSiteTemplate==='broker-app');
-    var ond=$('nav-details'); if(ond&&ond.parentNode) ond.parentNode.style.display=(currentSiteTemplate==='trade')?'none':'';
+    var ond=$('nav-details'); if(ond&&ond.parentNode) ond.parentNode.style.display=((currentSiteTemplate==='trade')&&tplNav().length<=1)?'none':''; if(ond&&currentSiteTemplate==='trade') ond.textContent='Page editor';
     ['btn-import','btn-snippet','btn-copy','btn-download'].forEach(function(id){ var b=$(id); if(b) b.style.display=isApp?'':'none'; });
     var ge=$('g-effective'), gu=$('g-updated');
     if(ge&&ge.closest('.f')) ge.closest('.f').style.display=isApp?'':'none';
@@ -3703,7 +3703,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     const leads=(currentRole==='leads');
     document.body.classList.toggle('role-leads', leads);
     const av=$('av-rates'); if(av){ Array.prototype.forEach.call(av.children,function(c){ if(c.classList.contains('leads-card')) return; c.style.display = leads ? 'none' : ''; }); }
-    if(allow.indexOf(activeView)<0) activeView=allow[0];
+    if(allow.indexOf(activeView)<0) activeView=(allow.indexOf(tnav[0])>=0?tnav[0]:allow[0]);
     showView(activeView);
   }
   function gate(){ if(!authed){ const av=document.getElementById('admin-view'); if(av && av.hidden) return; showLogin(); } }
