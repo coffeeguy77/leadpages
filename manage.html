@@ -3241,6 +3241,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     } else if(sub==='crew'){
       body.innerHTML=secCard(c,'crew','Team Members section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])+listCard('crew','Team members','Name, title, an experience / specialty line, and an optional photo URL (blank shows an initial avatar). Shows on every layout. Edit, hide, reorder or add.'); wireSec(c,'crew',true,[['eyebrow'],['heading'],['intro']]); listEditor($('le-crew'),c,'crew');
     } else if(sub==='mobileBar'){
+      try{ console.log('%c[LeadPages] Mobile editor build JUN27-E loaded','color:#0a7d4d;font-weight:700'); }catch(_x){}
       var _m=(c.sections&&c.sections.mobileBar)||{}; var _b=_m.buttons||{};
       function _bg(n){return _b[n]||{};}
       var _call=_bg('call'),_dir=_bg('directions'),_msg=_bg('message'),_mail=_bg('mail'),_cust=_bg('custom');
@@ -3251,7 +3252,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       var _mm=((c.sections&&c.sections.mobileBar&&c.sections.mobileBar.menu))||{};
       function _mimg(id,val){ return '<div style="display:flex;gap:6px;align-items:center;"><input type="text" id="'+id+'" value="'+esc(val||'')+'" placeholder="https://… image URL" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-up" style="padding:7px 11px;white-space:nowrap;">Upload</button></div>'; }
       body.innerHTML=
-        '<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Mobile action bar</h2><p class="lede" style="margin:0 0 12px;">A sticky bar across the bottom of the screen on phones. Add quick-action buttons below, a navigation menu, or both — each is independent. Turn the whole bar on or off with the Mobile switch in Page Content. Every tap is tracked in your stats.</p>'
+        '<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Mobile action bar <span style="font-size:10px;font-weight:700;letter-spacing:.04em;color:#0a7d4d;background:#e7f5ee;padding:2px 7px;border-radius:999px;vertical-align:middle;">BUILD JUN27-E</span></h2><p class="lede" style="margin:0 0 12px;">A sticky bar across the bottom of the screen on phones. Add quick-action buttons below, a navigation menu, or both — each is independent. Turn the whole bar on or off with the Mobile switch in Page Content. Every tap is tracked in your stats.</p>'
           +'<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">'+lpSel('Labels','mb-labelmode',[['under','Icon + label (stacked)'],['beside','Icon + label (side by side)'],['icon','Icon only']],_m.labelMode||'under')
           +'<div class="f" style="margin:0;"><label>Bar background</label><div style="display:flex;gap:6px;align-items:center;"><input type="color" id="mb-bg-c" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;"><input type="text" id="mb-bg" value="'+esc(_m.bg||'')+'" placeholder="Default (hi-vis)" style="width:130px;"></div></div></div></div>'
           +_btnCard('mb-call-on','Call button','mb-call-icon',_call.icon||'phone','mb-call-label',_call.label,'Call',
