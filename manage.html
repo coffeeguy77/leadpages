@@ -1376,21 +1376,29 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   }
 
   /* ====================== LANDING PAGES ====================== */
-  const AI_PRESETS=[
+  const AI_PRESETS_BROKER=[
     ['Local home loans page','Write an SEO landing page targeting people searching for a home loan broker in our local area. Emphasise local knowledge, free appointments, and using the repayment & borrowing-power calculators.'],
     ['First home buyers','Write an SEO landing page for first home buyers, covering deposit goals, stamp duty concessions and grants, and how our calculators and broker help them get started.'],
     ['Refinancing','Write an SEO landing page about refinancing to a better rate, with the loan comparison and extra-repayments calculators as the hook, and a call to book a review.'],
     ['Investment loans','Write an SEO landing page for property investors about structuring investment lending, borrowing power and offset, ending with a contact call to action.']
   ];
+  const AI_PRESETS_TRADE=[
+    ['Local service page','Write an SEO landing page targeting people searching for our trade in our local area. Emphasise local knowledge, fast response, being fully licensed and insured, and a clear call to get a free quote.'],
+    ['Emergency / same-day','Write an SEO landing page for urgent same-day callouts: availability, fast response times, what to do in an emergency, and a prominent call-now action.'],
+    ['A specific service','Write an SEO landing page about one specific service we offer \u2014 explain the process, what is included, typical timeframes, and end with a free-quote call to action.'],
+    ['Suburb page','Write an SEO landing page targeting a specific suburb we service, with genuine local relevance and a call to get a free quote.']
+  ];
+  function aiPresets(){ return (currentSiteTemplate==='trade')?AI_PRESETS_TRADE:AI_PRESETS_BROKER; }
   let lpCur=null, lpHist=[], lpHi=-1, lpWired=false;
-  function renderLanding(){
+  function renderSeoPages(){
+    if(!data.pages) data.pages=[];
     const list=$('lp-list');
     list.innerHTML = data.pages.length ? data.pages.map(function(p){
       return '<div class="lp-item"><span class="lp-meta"><span class="lp-t">'+esc(p.title||'Untitled')+'</span> <span class="lp-s">/'+esc(p.slug||'')+'</span></span><span style="display:flex;gap:10px;align-items:center"><span class="lp-badge '+(p.status==='published'?'pub':'draft')+'">'+(p.status==='published'?'Live':'Draft')+'</span><button class="btn ghost sm" data-edit="'+p.id+'">Edit</button></span></div>';
     }).join('') : '<p class="hint">No pages yet. Create one to build an SEO-optimised page that matches your theme.</p>';
-    const ap=$('lp-ai-presets'); if(ap && !ap.children.length){ AI_PRESETS.forEach(function(pr,i){ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=pr[0]; b.addEventListener('click',function(){ $('lp-ai-prompt').value=pr[1]; }); ap.appendChild(b); }); }
+    const ap=$('lp-ai-presets'); if(ap && !ap.children.length){ aiPresets().forEach(function(pr,i){ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=pr[0]; b.addEventListener('click',function(){ $('lp-ai-prompt').value=pr[1]; }); ap.appendChild(b); }); }
     if(lpWired) return; lpWired=true;
-    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft'}; data.pages.push(p); persist(); renderLanding(); lpOpen(p.id); });
+    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft'}; data.pages.push(p); persist(); renderSeoPages(); lpOpen(p.id); });
     list.addEventListener('click',function(e){ const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit')); });
     $('lp-tips').addEventListener('change',function(){ $('lp-editor').classList.toggle('show-tips', this.checked); });
     $('lp-slug').addEventListener('input',function(){ this.value=this.value.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,''); lpField('slug',this.value); });
@@ -1398,9 +1406,9 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     $('lp-body').addEventListener('input',function(){ lpField('body',this.value); lpPush(this.value); });
     $('lp-menu').addEventListener('change',function(){ lpField('menu',this.value); });
     $('lp-status').addEventListener('change',function(){ lpField('status',this.value); });
-    $('lp-save').addEventListener('click',function(){ persist(); toast('Page saved'); renderLanding(); });
+    $('lp-save').addEventListener('click',function(){ persist(); toast('Page saved'); renderSeoPages(); });
     $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; });
-    $('lp-del').addEventListener('click',function(){ if(!lpCur) return; data.pages=data.pages.filter(x=>x.id!==lpCur.id); persist(); $('lp-editor').hidden=true; lpCur=null; renderLanding(); toast('Page deleted'); });
+    $('lp-del').addEventListener('click',function(){ if(!lpCur) return; data.pages=data.pages.filter(x=>x.id!==lpCur.id); persist(); $('lp-editor').hidden=true; lpCur=null; renderSeoPages(); toast('Page deleted'); });
     $('lp-undo').addEventListener('click',function(){ if(lpHi>0){ lpHi--; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
     $('lp-redo').addEventListener('click',function(){ if(lpHi<lpHist.length-1){ lpHi++; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
     $('lp-ai-go').addEventListener('click',aiGenerate);
@@ -1428,9 +1436,11 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       .replace(/\n{2,}/g,'</p><p>').replace(/^(?!<[hul])(.+)$/gm,'$1');
   }
   async function aiGenerate(){
-    const note=$('lp-ai-note'); const prompt=$('lp-ai-prompt').value.trim() || AI_PRESETS[0][1];
+    const note=$('lp-ai-note'); const prompt=$('lp-ai-prompt').value.trim() || aiPresets()[0][1];
     note.textContent='Writing\u2026';
-    const instructions="You are an expert SEO copywriter for an Australian mortgage broker's website. Using Australian English and simple Markdown (## subheadings, **bold**, - bullets), write a conversion-focused landing page of about 250-400 words. Start with a compelling headline line. Include local relevance, clear benefits, and a call to action to use the loan calculators or contact the broker. Do NOT invent specific interest rates, lender names, or credentials. Respond with ONLY the page content.\n\nBrief: ";
+    const instructions=(currentSiteTemplate==='trade')
+      ? "You are an expert SEO copywriter for an Australian trade and home-services business website. Using Australian English and simple Markdown (## subheadings, **bold**, - bullets), write a conversion-focused landing page of about 250-400 words. Start with a compelling headline line. Include local relevance and clear benefits (licensed, insured, fast, local), and end with a clear call to action to call or request a free quote. Do NOT invent specific prices, licence numbers, or credentials. Respond with ONLY the page content.\n\nBrief: "
+      : "You are an expert SEO copywriter for an Australian mortgage broker's website. Using Australian English and simple Markdown (## subheadings, **bold**, - bullets), write a conversion-focused landing page of about 250-400 words. Start with a compelling headline line. Include local relevance, clear benefits, and a call to action to use the loan calculators or contact the broker. Do NOT invent specific interest rates, lender names, or credentials. Respond with ONLY the page content.\n\nBrief: ";
     try{
       const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:instructions+prompt}]})});
       const d=await res.json();
@@ -3627,7 +3637,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   }
   /* ===== end leadpages integration ===== */
   const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details'], broker:['appearance','contact','logo','landing','details'], leads:['rates'] };
-  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes'], 'broker-leads':['details'], 'trade':['details'] };
+  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes'], 'broker-leads':['details'], 'trade':['details','landing'] };
   function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
     if($('login-mask')) return;
@@ -3699,7 +3709,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   function gate(){ if(!authed){ const av=document.getElementById('admin-view'); if(av && av.hidden) return; showLogin(); } }
 
   /* ---------- nav switcher (six tabs) ---------- */
-  const NAV=[['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderLanding],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',renderDemoThemes]];
+  const NAV=[['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',renderDemoThemes]];
   let activeView='rates';
   function showView(which){
     activeView=which;
