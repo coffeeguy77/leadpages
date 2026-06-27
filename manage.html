@@ -318,6 +318,9 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 .icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:8px;padding:16px;overflow:auto}
 .icbtn{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s,box-shadow .12s,border-color .12s}
 .icbtn:hover{transform:translateY(-1px);border-color:var(--brand);box-shadow:0 5px 14px rgba(0,0,0,.1)}
+.lp-ic{display:inline-block;vertical-align:middle}
+.icbtn .lp-ic{width:26px;height:26px;stroke:#26313f}
+.icon-pick .lp-ic{width:22px;height:22px;stroke:#26313f}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
@@ -406,6 +409,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 .bar-fav{cursor:pointer;background:none;border:1px solid var(--line);border-radius:8px;color:#d3cbb0;font-size:15px;padding:6px 10px;}
 .bar-fav.on{color:#e3a72b;border-color:#ecdcc0;}
 </style>
+<script src="/icons.js"></script>
 </head>
 <body>
 <a id="lp-signout-top" href="#">Sign out</a>
@@ -1789,7 +1793,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   ],'serviceProcess.steps':[{"on": true, "title": "Call Us", "text": "Tell us what’s going on. We’ll book a time that suits you."}, {"on": true, "title": "We Inspect", "text": "We assess the job on site and explain your options."}, {"on": true, "title": "Fixed Price Quote", "text": "A clear, upfront price before any work starts."}, {"on": true, "title": "Work Completed", "text": "Tidy, professional work done right the first time."}, {"on": true, "title": "Satisfaction Guaranteed", "text": "We’re not happy until you are."}],'trustBar.badges':[{"on": true, "label": "Licensed"}, {"on": true, "label": "Insured"}, {"on": true, "label": "Fixed Pricing"}, {"on": true, "label": "Work Guaranteed"}, {"on": true, "label": "5 Star Rated"}, {"on": true, "label": "Local Business"}, {"on": false, "label": "24/7 Emergency"}, {"on": false, "label": "Family Owned"}],'projectFeed.items':[{"on": true, "title": "Merbau Deck", "location": "Gungahlin, ACT", "service": "Deck building", "date": "2 days ago", "caption": "Installed a new Merbau deck in Gungahlin — ready for summer.", "image": "", "permalink": ""}, {"on": true, "title": "Composite Deck", "location": "Belconnen, ACT", "service": "Deck building", "date": "4 days ago", "caption": "Low-maintenance composite deck, built to last.", "image": "", "permalink": ""}, {"on": true, "title": "Pergola Build", "location": "Canberra, ACT", "service": "Pergola", "date": "1 week ago", "caption": "Custom pergola built to match the home.", "image": "", "permalink": ""}],'activityTimeline.events':[{"on": true, "time": "7:40am", "task": "Hot water system replacement", "location": "Woden, ACT", "status": "completed"}, {"on": true, "time": "9:15am", "task": "Blocked drain cleared", "location": "Mitchell, ACT", "status": "completed"}, {"on": true, "time": "11:30am", "task": "Burst pipe repair", "location": "Belconnen, ACT", "status": "active"}, {"on": true, "time": "1:00pm", "task": "Roof leak inspection", "location": "Gungahlin, ACT", "status": "booked"}],'customerReactions.items':[{"on": true, "style": "google", "name": "Sarah M.", "message": "Turned up on time, fixed the problem fast and left everything spotless. Couldn’t ask for more.", "time": "2 days ago", "rating": "5", "image": ""}, {"on": true, "style": "sms", "name": "Dave", "message": "Mate that’s sorted now, water pressure’s perfect. Thanks heaps — will be calling you again!", "time": "9:42 am", "rating": "", "image": ""}, {"on": true, "style": "facebook", "name": "Megan T.", "message": "Highly recommend these guys to anyone in Canberra. Honest pricing and quality work.", "time": "1 week ago", "rating": "", "image": ""}, {"on": true, "style": "google", "name": "James K.", "message": "Quick response on an emergency call-out late at night. Absolute lifesavers.", "time": "3 weeks ago", "rating": "5", "image": ""}],'videoReels.reels':[{"on":true,"title":"Inside a full bathroom reno","tag":"Reel","thumbnail":"","videoUrl":""},{"on":true,"title":"How we clear a blocked drain","tag":"Reel","thumbnail":"","videoUrl":""},{"on":true,"title":"Hot water swap in under an hour","tag":"Reel","thumbnail":"","videoUrl":""}],'jobsFeed.items':[{"on":true,"title":"Blocked Drain","location":"Mitchell, ACT","time":"4 hours ago","result":"Cleared and camera-checked the line.","image":""},{"on":true,"title":"Hot Water System","location":"Woden, ACT","time":"Yesterday","result":"Old unit out, new one installed.","image":""},{"on":true,"title":"Roof Leak Repair","location":"Queanbeyan","time":"2 days ago","result":"Tracked the leak and sealed it for good.","image":""}],'beforeAfterFeed.items':[{"on":true,"title":"Driveway pressure clean","location":"Belconnen, ACT","time":"Last week","caption":"Years of grime gone in an afternoon.","beforeImage":"","afterImage":""},{"on":true,"title":"Bathroom renovation","location":"Kingston, ACT","time":"2 weeks ago","caption":"Full strip-out to a clean, modern finish.","beforeImage":"","afterImage":""},{"on":true,"title":"Blocked gutter cleared","location":"Gungahlin, ACT","time":"3 weeks ago","caption":"From overflowing to free-flowing.","beforeImage":"","afterImage":""}],'crew.members':[{"on": true, "name": "Steve", "role": "Owner", "detail": "17 years experience", "photo": ""}, {"on": true, "name": "Tom", "role": "Senior Technician", "detail": "Blocked drain specialist", "photo": ""}, {"on": true, "name": "Matt", "role": "Technician", "detail": "Hot water expert", "photo": ""}],'splitHero.feed':[{"on":true,"text":"Drain cleared in Belconnen","time":"2 hours ago"},{"on":true,"text":"Burst pipe repaired in Gungahlin","time":"Yesterday"},{"on":true,"text":"New hot water system installed","time":"3 days ago"},{"on":true,"text":"Emergency callout in Woden","time":"Last week"}],'activityCounter.stats':[{"on":true,"value":"7","label":"Jobs completed today"},{"on":true,"value":"24","label":"Calls answered this week"},{"on":true,"value":"387","label":"Happy customers this year"},{"on":true,"value":"4.9\u2605","label":"Google Rating"}],'proofStream.items':[{"on":true,"type":"job","title":"Blocked drain cleared","location":"Belconnen, ACT","time":"2 hours ago","text":"Cleared a full blockage and camera-checked the line before leaving.","ctaText":"Book the same fix","ctaAction":"quote"},{"on":true,"type":"review","rating":"\u2605\u2605\u2605\u2605\u2605","text":"Fast, fair and tidy \u2014 sorted our burst pipe the same day we called.","who":"Sarah \u2014 Gungahlin","time":"Yesterday","ctaText":"Call the team","ctaAction":"call"},{"on":true,"type":"video","title":"Watch us clear a tree-root blockage","time":"2 days ago","ctaText":"Get a quote","ctaAction":"quote"},{"on":true,"type":"beforeafter","title":"Hot water system replaced","location":"Woden, ACT","time":"3 days ago","ctaText":"Get yours sorted","ctaAction":"quote"},{"on":true,"type":"job","title":"Roof leak found and sealed","location":"Queanbeyan","time":"Last week","text":"Tracked down the leak and sealed it \u2014 no more drips.","ctaText":"Call now","ctaAction":"call"},{"on":true,"type":"review","rating":"\u2605\u2605\u2605\u2605\u2605","text":"On time, upfront price, great work. Would use again.","who":"Mark \u2014 Belconnen","time":"Last week","ctaText":"Get a quote","ctaAction":"quote"}],'specialOffer.points':[{"on":true,"text":"No callout fee"},{"on":true,"text":"Fixed pricing"},{"on":true,"text":"Same day response"}],'featuredProjects.projects':[{"on":true,"image":"","title":"Coastal-style backyard","tag":"Landscaping","location":"O\u2019Connor, ACT","description":"Full transformation \u2014 new turf, hardwood deck, retaining walls and garden lighting."},{"on":true,"image":"","title":"Spotted gum deck & pergola","tag":"Decking","location":"Ainslie, ACT","description":"Hardwood deck with integrated pergola, bench seating and recessed step lighting."},{"on":true,"image":"","title":"Ensuite renovation","tag":"Bathroom","location":"Kingston, ACT","description":"Floor-to-ceiling tiling, frameless shower screen and a floating timber vanity."}],'reviewHighlights.items':[{"on":true,"stars":"\u2605\u2605\u2605\u2605\u2605","text":"Called at 8am. Drain fixed by 10am. Couldn\u2019t fault them.","who":"Sarah \u2014 Canberra"},{"on":true,"stars":"\u2605\u2605\u2605\u2605\u2605","text":"Upfront price, turned up on time, cleaned up after. Rare these days.","who":"Mark \u2014 Belconnen"},{"on":true,"stars":"\u2605\u2605\u2605\u2605\u2605","text":"Quoted three places \u2014 these guys were the clearest and fairest by far.","who":"Priya \u2014 Gungahlin"}],'serviceAreas.areas':[{"on":true,"name":"Belconnen"},{"on":true,"name":"Gungahlin"},{"on":true,"name":"Woden"},{"on":true,"name":"Tuggeranong"},{"on":true,"name":"Queanbeyan"},{"on":true,"name":"Molonglo"}],'projectStats.stats':[{"on":true,"value":"17","label":"Years Operating"},{"on":true,"value":"1,842","label":"Projects Completed"},{"on":true,"value":"24","label":"Team Members"},{"on":true,"value":"4.9","label":"Google Rating"},{"on":true,"value":"100%","label":"Licensed & Insured"},{"on":true,"value":"ISO 9001","label":"Certified & Accredited"}],'responseCards.cards':[{"on":true,"icon":"\u23f1","title":"24/7 Emergency","text":"Call any hour, day or night \u2014 someone answers."},{"on":true,"icon":"\u26a1","title":"Same Day Service","text":"Most jobs sorted the same day you call."},{"on":true,"icon":"$","title":"Upfront Pricing","text":"A fixed price agreed before any work starts."},{"on":true,"icon":"\u2713","title":"Fully Licensed","text":"Licensed and insured \u2014 details on every invoice."},{"on":true,"icon":"\u2794","title":"Rapid Response","text":"We dispatch fast and head straight to you."},{"on":true,"icon":"\u260e","title":"No Call Centre","text":"Talk to a local tradie, never a script."}],'beforeAfter.items':[{"on":true,"beforeImage":"","afterImage":"","title":"Front yard transformation","caption":"From tired and patchy to clean, functional and ready to enjoy."},{"on":true,"beforeImage":"","afterImage":"","title":"Problem fixed properly","caption":"Clear proof of the issue, the work completed, and the finished result."}],'hero.badges':[{"icon": "✓", "text": "Licensed & insured"}, {"icon": "★", "text": "4.9 from 212 reviews"}, {"icon": "$", "text": "Upfront fixed pricing"}, {"icon": "⚡", "text": "Same-day service"}],'why.items':[{"n": "01", "title": "Upfront pricing", "body": "A fixed price agreed before we start. The number we quote is the number you pay."}, {"n": "24/7", "title": "Real emergencies", "body": "Burst pipe at midnight? We answer the phone and get someone moving, day or night."}, {"n": "★", "title": "Properly licensed", "body": "Fully licensed ACT plumbers, fully insured. Licence details on every invoice."}, {"n": "⌂", "title": "Local & trusted", "body": "Canberra-based, Canberra-owned. We know the suburbs, the soil and the old pipework."}],'reviews.items':[{"who": "Marcus T. — Belconnen", "text": "\"Blocked sewer on a Sunday, total panic. {{businessName}} had someone out within the hour and jetted it clear. Fixed price, no fuss.\""}, {"who": "Jenny K. — Woden", "text": "\"Hot water died the morning we had guests. New system in and running by lunch. Couldn't fault them.\""}, {"who": "Dave R. — Gungahlin", "text": "\"Used the drain camera to show me the tree root problem instead of just guessing. Honest and proper work.\""}],'faq.items':[{"q": "Can you really come same-day?", "a": "For blocked drains, burst pipes and no-hot-water jobs we aim to be on site the same day, and we run a 24/7 line for emergencies across the ACT."}, {"q": "Are you licensed and insured?", "a": "Yes — fully licensed ACT plumbers and fully insured. Our licence number is on every invoice and we're happy to show it before any work begins."}],'area.suburbs':["Gungahlin", "Belconnen", "Woden", "Tuggeranong", "Civic", "Dickson", "Queanbeyan", "Molonglo", "Weston Creek", "Kingston"],'quote.points':[{"text": "Upfront fixed price, no call-out surprises"}, {"text": "Same-day where we can get to you"}, {"text": "Licensed, insured, local"}],'footer.services':[{"label": "Blocked drains", "href": "#quote"}, {"label": "Burst pipes", "href": "#quote"}, {"label": "Hot water", "href": "#quote"}, {"label": "Leak detection", "href": "#quote"}],'quote.jobOptions':[{"text": "Blocked drain"}, {"text": "Burst or leaking pipe"}, {"text": "No hot water"}, {"text": "Hidden leak / high water bill"}, {"text": "General plumbing / other"}]};
   const LIST_SCHEMAS={
     badges:{secId:'hero',key:'badges',addLabel:'Add badge',item:[{k:'icon',label:'Icon',type:'icon',ph:'✓'},{k:'text',label:'Text'}],defaultItem:{icon:'✓',text:'New badge'}},
-    why:{secId:'why',key:'items',addLabel:'Add reason',item:[{k:'n',label:'Badge',w:'88px',ph:'01'},{k:'title',label:'Heading'},{k:'body',label:'Text',type:'ta'}],defaultItem:{n:'+',title:'New reason',body:''}},
+    why:{secId:'why',key:'items',addLabel:'Add reason',item:[{k:'icon',label:'Icon',type:'icon'},{k:'n',label:'Number (if no icon)',w:'120px',ph:'01'},{k:'title',label:'Heading'},{k:'body',label:'Text',type:'ta'}],defaultItem:{icon:'',n:'+',title:'New reason',body:''}},
     reviews:{secId:'reviews',key:'items',addLabel:'Add review',item:[{k:'who',label:'Name & suburb'},{k:'text',label:'Quote',type:'ta'},{k:'source',label:'Source',type:'select',opts:[['','—'],['google','Google'],['facebook','Facebook'],['hipages','hipages'],['productreview','ProductReview'],['word','Word of mouth']],w:'1 1 150px'}],defaultItem:{who:'',text:'',source:''}},
     faq:{secId:'faq',key:'items',addLabel:'Add question',item:[{k:'q',label:'Question'},{k:'a',label:'Answer',type:'ta'}],defaultItem:{q:'',a:''}},
     quotePoints:{secId:'quote',key:'points',addLabel:'Add point',item:[{k:'text',label:'Point'}],defaultItem:{text:''}},
@@ -2003,107 +2007,10 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   function getList(c,sk){ var sc=LIST_SCHEMAS[sk]; var o=c.sections&&c.sections[sc.secId]; var cur=o&&o[sc.key]; if(Array.isArray(cur)) return cur.map(function(it){return Object.assign({},it);}); var def=DEFAULT_TRADE_LISTS[sc.secId+'.'+sc.key]||[]; return def.map(function(it){ var n={}; for(var k in it){ n[k]=(typeof it[k]==='string')?it[k].replace(/\{\{\s*businessName\s*\}\}/g,currentBusinessName||'us'):it[k]; } return n; }); }
   function setList(c,sk,arr){ var sc=LIST_SCHEMAS[sk]; if(!c.sections) c.sections={}; if(!c.sections[sc.secId]) c.sections[sc.secId]={}; c.sections[sc.secId][sc.key]=arr; persist(); previewApply(); }
   function listCard(sk,title,lede){ return '<div class="card" style="margin-bottom:22px;"><h2>'+title+'</h2><p class="lede">'+lede+'</p><div id="le-'+sk+'"></div></div>'; }
-  function iconBtnInner(v){ return (v&&String(v).trim())? esc(v) : '<span style="opacity:.35;">\uFF0B</span>'; }
-  var TRADE_ICONS=[
-{c:"📞",l:"Phone / Call",k:"phone call ring contact now reach",cat:"Trust & CTA"},
-{c:"☎️",l:"Telephone",k:"telephone phone call landline",cat:"Trust & CTA"},
-{c:"📱",l:"Mobile",k:"mobile phone cell text sms",cat:"Trust & CTA"},
-{c:"⏰",l:"24/7 Clock",k:"time hours 24 7 available anytime open",cat:"Trust & CTA"},
-{c:"⏱️",l:"Fast / Stopwatch",k:"fast quick speed rapid stopwatch timer",cat:"Trust & CTA"},
-{c:"✅",l:"Tick / Done",k:"tick check done yes guarantee complete",cat:"Trust & CTA"},
-{c:"✔️",l:"Check",k:"check tick yes correct approved",cat:"Trust & CTA"},
-{c:"⭐",l:"Star / Rating",k:"star rating review five stars best",cat:"Trust & CTA"},
-{c:"🌟",l:"Glowing star",k:"star quality premium shine top",cat:"Trust & CTA"},
-{c:"🛡️",l:"Licensed / Shield",k:"licensed insured shield protect safe guarantee",cat:"Trust & CTA"},
-{c:"💲",l:"Price / Upfront",k:"price cost dollar upfront fixed money fee",cat:"Trust & CTA"},
-{c:"💰",l:"Money / Quote",k:"money quote cost cheap value savings",cat:"Trust & CTA"},
-{c:"🏷️",l:"Price tag",k:"price tag deal cost quote label",cat:"Trust & CTA"},
-{c:"👍",l:"Thumbs up",k:"thumbs up satisfaction happy guarantee like",cat:"Trust & CTA"},
-{c:"🏆",l:"Award / Best",k:"award best trophy quality winner top",cat:"Trust & CTA"},
-{c:"🥇",l:"Number one",k:"medal first best number one rated",cat:"Trust & CTA"},
-{c:"🚐",l:"Van / Mobile",k:"van mobile vehicle dispatch rapid fleet",cat:"Trust & CTA"},
-{c:"🚚",l:"Truck",k:"truck delivery vehicle mobile dispatch",cat:"Trust & CTA"},
-{c:"📍",l:"Local / Location",k:"local location area suburb map near pin",cat:"Trust & CTA"},
-{c:"🗺️",l:"Service area",k:"map area coverage suburbs region local",cat:"Trust & CTA"},
-{c:"📅",l:"Booking / Same day",k:"calendar booking schedule same day appointment",cat:"Trust & CTA"},
-{c:"🎧",l:"Support",k:"support headset help no call centre service",cat:"Trust & CTA"},
-{c:"🤝",l:"Trusted",k:"trust handshake reliable deal honest",cat:"Trust & CTA"},
-{c:"❤️",l:"Care",k:"care trusted local community love",cat:"Trust & CTA"},
-{c:"⚠️",l:"Emergency",k:"emergency urgent warning alert hazard danger",cat:"Trust & CTA"},
-{c:"🔔",l:"Alert",k:"alert notify bell ring reminder",cat:"Trust & CTA"},
-{c:"💬",l:"Free quote / Chat",k:"chat quote message enquire ask contact",cat:"Trust & CTA"},
-{c:"📋",l:"Get a quote",k:"quote clipboard form estimate checklist",cat:"Trust & CTA"},
-{c:"💧",l:"Water drop",k:"water drop leak drip plumbing moisture",cat:"Plumbing"},
-{c:"🚰",l:"Tap water",k:"tap water faucet sink potable plumbing",cat:"Plumbing"},
-{c:"🚿",l:"Shower",k:"shower bathroom water plumbing",cat:"Plumbing"},
-{c:"🛁",l:"Bath",k:"bath bathroom tub plumbing renovation",cat:"Plumbing"},
-{c:"🚽",l:"Toilet",k:"toilet bathroom blocked plumbing cistern",cat:"Plumbing"},
-{c:"🪠",l:"Plunger / Drain",k:"plunger drain blocked clog sewer plumbing",cat:"Plumbing"},
-{c:"🔥",l:"Hot water / Gas",k:"hot water gas heater fire flame burner",cat:"Plumbing"},
-{c:"🧯",l:"Burst / Leak control",k:"burst leak emergency shutoff control",cat:"Plumbing"},
-{c:"⚡",l:"Power / Electric",k:"power electric energy fast lightning bolt",cat:"Electrical"},
-{c:"🔌",l:"Plug / Power point",k:"plug power point socket outlet electric",cat:"Electrical"},
-{c:"💡",l:"Lightbulb",k:"light bulb lighting electric globe install",cat:"Electrical"},
-{c:"🔋",l:"Battery",k:"battery power charge backup solar",cat:"Electrical"},
-{c:"🪫",l:"Low battery",k:"battery low flat power fault",cat:"Electrical"},
-{c:"🛗",l:"Switchboard / Wiring",k:"switchboard wiring fuse circuit electric",cat:"Electrical"},
-{c:"❄️",l:"Cooling / Air con",k:"cooling air con ac cold snowflake refrigeration",cat:"Heating & Cooling"},
-{c:"🌡️",l:"Thermostat",k:"temperature thermostat heating cooling climate",cat:"Heating & Cooling"},
-{c:"💨",l:"Air / Fan",k:"air fan airflow ventilation breeze cooling",cat:"Heating & Cooling"},
-{c:"🌬️",l:"Ventilation",k:"wind ventilation airflow extraction fan",cat:"Heating & Cooling"},
-{c:"☀️",l:"Heating / Warmth",k:"heat warm sun heating climate",cat:"Heating & Cooling"},
-{c:"🔨",l:"Hammer",k:"hammer build carpenter handyman nail repair",cat:"Building & Tools"},
-{c:"🔧",l:"Wrench / Spanner",k:"wrench spanner fix repair tighten plumber mechanic",cat:"Building & Tools"},
-{c:"🪛",l:"Screwdriver",k:"screwdriver screw fix tool repair",cat:"Building & Tools"},
-{c:"🪚",l:"Saw",k:"saw cut timber carpentry wood",cat:"Building & Tools"},
-{c:"🧰",l:"Toolbox",k:"toolbox tools kit handyman trade",cat:"Building & Tools"},
-{c:"🛠️",l:"Tools",k:"tools repair build maintenance handyman",cat:"Building & Tools"},
-{c:"⚙️",l:"Gear / Mechanical",k:"gear cog mechanical service machine settings",cat:"Building & Tools"},
-{c:"📏",l:"Measure",k:"measure ruler level straight reno tape",cat:"Building & Tools"},
-{c:"📐",l:"Set square",k:"square measure angle level reno carpentry",cat:"Building & Tools"},
-{c:"🧱",l:"Brick / Wall",k:"brick wall bricklayer block render masonry",cat:"Building & Tools"},
-{c:"🪜",l:"Ladder",k:"ladder height roof gutter access reach",cat:"Building & Tools"},
-{c:"🚧",l:"Construction",k:"construction site work barrier roadworks",cat:"Building & Tools"},
-{c:"🏗️",l:"Build / Crane",k:"build crane construction structure renovation",cat:"Building & Tools"},
-{c:"🔩",l:"Bolt / Fittings",k:"bolt nut screw fixing hardware fittings",cat:"Building & Tools"},
-{c:"🖌️",l:"Paint brush",k:"paint brush painter decorator coat",cat:"Painting"},
-{c:"🎨",l:"Paint / Colour",k:"paint colour palette decorating finish",cat:"Painting"},
-{c:"🪣",l:"Bucket",k:"bucket paint water wash supplies",cat:"Painting"},
-{c:"🌳",l:"Tree",k:"tree garden landscape outdoor lopping arborist",cat:"Outdoor & Landscaping"},
-{c:"🌲",l:"Evergreen",k:"tree pine evergreen garden landscape",cat:"Outdoor & Landscaping"},
-{c:"🍃",l:"Leaf",k:"leaf garden green eco clean foliage",cat:"Outdoor & Landscaping"},
-{c:"🌿",l:"Plant / Garden",k:"plant garden green landscape foliage",cat:"Outdoor & Landscaping"},
-{c:"🪴",l:"Potted plant",k:"plant pot garden nursery landscaping",cat:"Outdoor & Landscaping"},
-{c:"🌱",l:"Lawn / Seedling",k:"lawn grass turf seed garden new growth",cat:"Outdoor & Landscaping"},
-{c:"✂️",l:"Trim / Prune",k:"trim prune hedge cut scissors garden",cat:"Outdoor & Landscaping"},
-{c:"🚜",l:"Machinery",k:"machinery excavator earthworks bobcat landscape",cat:"Outdoor & Landscaping"},
-{c:"🪵",l:"Timber / Decking",k:"timber wood decking log fence outdoor",cat:"Outdoor & Landscaping"},
-{c:"🧱",l:"Paving / Retaining",k:"paving retaining wall brick landscape hardscape",cat:"Outdoor & Landscaping"},
-{c:"🧹",l:"Broom / Sweep",k:"broom sweep clean tidy floor",cat:"Cleaning & Pest"},
-{c:"🧽",l:"Sponge / Clean",k:"sponge clean wash scrub wipe",cat:"Cleaning & Pest"},
-{c:"🧼",l:"Soap",k:"soap clean wash hygiene suds",cat:"Cleaning & Pest"},
-{c:"✨",l:"Sparkle / Fresh",k:"sparkle clean shine fresh spotless",cat:"Cleaning & Pest"},
-{c:"🦟",l:"Pest / Mosquito",k:"pest insect mosquito control spray bug",cat:"Cleaning & Pest"},
-{c:"🐜",l:"Ant / Pest",k:"ant pest insect control infestation bug",cat:"Cleaning & Pest"},
-{c:"🕷️",l:"Spider",k:"spider pest web insect control",cat:"Cleaning & Pest"},
-{c:"🐀",l:"Rodent",k:"rat mouse rodent pest control vermin",cat:"Cleaning & Pest"},
-{c:"🔒",l:"Lock / Secure",k:"lock secure security padlock locked locksmith",cat:"Locksmith & Security"},
-{c:"🔓",l:"Unlock",k:"unlock open access locksmith",cat:"Locksmith & Security"},
-{c:"🔑",l:"Key",k:"key locksmith unlock access cut",cat:"Locksmith & Security"},
-{c:"🗝️",l:"Old key",k:"key locksmith antique access lock",cat:"Locksmith & Security"},
-{c:"🚪",l:"Door",k:"door entry lock frame access install",cat:"Locksmith & Security"},
-{c:"📷",l:"CCTV / Camera",k:"camera cctv security surveillance install",cat:"Locksmith & Security"},
-{c:"🚨",l:"Alarm / Security",k:"alarm security siren emergency monitor",cat:"Locksmith & Security"},
-{c:"🏠",l:"House",k:"house home property residential roof",cat:"General"},
-{c:"🏡",l:"Home",k:"home house property garden residential",cat:"General"},
-{c:"🏢",l:"Commercial",k:"building commercial office strata property",cat:"General"},
-{c:"👷",l:"Tradie / Worker",k:"tradie worker builder hard hat trade crew",cat:"General"},
-{c:"🧑‍🔧",l:"Technician",k:"technician mechanic plumber engineer trade",cat:"General"},
-{c:"📝",l:"Form / Booking",k:"form quote write booking note request",cat:"General"},
-{c:"➡️",l:"Arrow",k:"arrow next go forward direction",cat:"General"},
-{c:"♻️",l:"Eco / Recycle",k:"eco recycle green sustainable environment",cat:"General"}
-];
-  var ICON_CATS=['Trust & CTA','Plumbing','Electrical','Heating & Cooling','Building & Tools','Painting','Outdoor & Landscaping','Cleaning & Pest','Locksmith & Security','General'];
+  function iconBtnInner(v){ if(v&&String(v).trim()){ var n=String(v).trim(); if(/^[a-z0-9-]+$/.test(n)&&window.LP_ICONS&&window.LP_ICONS[n]) return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+window.LP_ICONS[n]+'</svg>'; return esc(n); } return '<span style="opacity:.35;">\uFF0B</span>'; }
+  var LP_CATS=(window.LP_ICON_CATS||[]);
+  var ICON_CATS=LP_CATS.map(function(p){return p[0];});
+  var TRADE_ICONS=[]; (function(){ LP_CATS.forEach(function(p){ var cat=p[0]; (p[1]||[]).forEach(function(name){ TRADE_ICONS.push({c:name,l:name.replace(/-/g,' ').replace(/(^|\s)\S/g,function(m){return m.toUpperCase();}),k:name.replace(/-/g,' '),cat:cat}); }); }); })();
   var __iconCb=null,__iconCat='',__iconModal=null;
   function ensureIconModal(){ if(__iconModal) return __iconModal;
     var ov=document.createElement('div'); ov.id='icon-modal'; ov.className='icon-ov'; ov.style.display='none';
@@ -2121,7 +2028,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   function renderIconGrid(){ var ov=__iconModal; if(!ov) return; var q=(ov.querySelector('#icon-search').value||'').trim().toLowerCase();
     var list=TRADE_ICONS.filter(function(ic){ if(__iconCat&&ic.cat!==__iconCat) return false; if(!q) return true; return (ic.l+' '+ic.k+' '+ic.cat).toLowerCase().indexOf(q)>=0; });
     var g=ov.querySelector('#icon-grid');
-    g.innerHTML = list.length ? list.map(function(ic){ return '<button type="button" class="icbtn" data-ch="'+esc(ic.c)+'" title="'+esc(ic.l)+'">'+ic.c+'</button>'; }).join('') : '<div style="grid-column:1/-1;padding:26px;text-align:center;color:#8a93a0;">No icons match that search.</div>'; }
+    var CAP=420; var shown=list.slice(0,CAP); var more=list.length-shown.length;
+    g.innerHTML = list.length ? (shown.map(function(ic){ return '<button type="button" class="icbtn" data-ch="'+esc(ic.c)+'" title="'+esc(ic.l)+'">'+iconBtnInner(ic.c)+'</button>'; }).join('')+(more>0?'<div style="grid-column:1/-1;padding:14px;text-align:center;color:#8a93a0;font-size:13px;">+'+more+' more \u2014 pick a category or search to narrow.</div>':'')) : '<div style="grid-column:1/-1;padding:26px;text-align:center;color:#8a93a0;">No icons match that search.</div>'; }
   function hideIconModal(){ if(__iconModal){ __iconModal.style.display='none'; __iconCb=null; } }
   function openIconPicker(cb){ ensureIconModal(); __iconCb=cb; __iconModal.style.display='flex'; var s=__iconModal.querySelector('#icon-search'); s.value=''; renderIconGrid(); setTimeout(function(){ try{ s.focus(); }catch(e){} },30); }
   document.addEventListener('click',function(e){ var b=e.target.closest && e.target.closest('.icon-pick'); if(!b) return; e.preventDefault(); var ctl=b.closest('.iconctl'); var inp=ctl&&ctl.querySelector('.icon-input'); if(!inp) return; openIconPicker(function(ch){ inp.value=ch; inp.dispatchEvent(new Event('input',{bubbles:true})); b.innerHTML=iconBtnInner(ch); }); });
@@ -3246,7 +3154,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         +'<div class="card" style="margin-bottom:22px;"><h2>Service cards</h2><p class="lede">Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 change its icon, heading and text.</p><div id="svc-list"></div></div>';
       wireSec(c,'services',true,[['eyebrow'],['heading'],['intro']]); wireTradeServices(c);
     } else if(sub==='why'){
-      body.innerHTML=secCard(c,'why','Why us section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+listCard('why','Reasons','The numbered points. Edit, hide or remove each.'); wireSec(c,'why',true,[['eyebrow'],['heading']]); listEditor($('le-why'),c,'why');
+      body.innerHTML=secCard(c,'why','Why us section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+listCard('why','Reasons','Each reason can show an outline icon (pick from the library) or a number badge if no icon is set, plus a heading and text. Edit, hide, reorder or add.'); wireSec(c,'why',true,[['eyebrow'],['heading']]); listEditor($('le-why'),c,'why');
     } else if(sub==='area'){
       body.innerHTML=secCard(c,'area','Service area section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro line','ta'],['ctaTitle','Call-out heading (blank = auto per trade)'],['ctaSub','Call-out subtext (blank = auto)','ta']])+'<div class="card" style="margin-bottom:22px;"><h2>Suburbs</h2><p class="lede">One per line (or comma-separated) — shown as tags.</p><textarea id="le-suburbs" rows="6" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;"></textarea></div>'; wireSec(c,'area',true,[['eyebrow'],['heading'],['intro']]); wireSuburbs(c);
     } else if(sub==='reviews'){
