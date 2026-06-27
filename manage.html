@@ -3254,7 +3254,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
           +'<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">'+lpSel('Labels','mb-labelmode',[['under','Icon + label (stacked)'],['beside','Icon + label (side by side)'],['icon','Icon only']],_m.labelMode||'under')
           +'<div class="f" style="margin:0;"><label>Bar background</label><div style="display:flex;gap:6px;align-items:center;"><input type="color" id="mb-bg-c" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;"><input type="text" id="mb-bg" value="'+esc(_m.bg||'')+'" placeholder="Default (hi-vis)" style="width:130px;"></div></div></div></div>'
           +_btnCard('mb-call-on','Call button','mb-call-icon',_call.icon||'phone','mb-call-label',_call.label,'Call',
-              '<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:10px;">'+lpSel('Rings','mb-call-source',[['site','Phone in site settings'],['custom','A custom number']],_call.source||'site')+'<div class="f" id="mb-call-num-row" style="margin:0;'+((_call.source==='custom')?'':'display:none')+'"><label>Custom number</label><input type="text" id="mb-call-number" value="'+esc(_call.number||'')+'" placeholder="04xx xxx xxx" style="width:160px;"></div></div>')
+              '<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:10px;">'+lpSel('Rings','mb-call-source',[['site','Phone in site settings'],['custom','A custom number']],_call.source||'site')+'<div class="f" id="mb-call-num-row" style="margin:0;'+((_call.source==='custom')?'':'display:none')+'"><label>Custom number</label><input type="text" id="mb-call-number" value="'+esc(_call.number||'')+'" placeholder="04xx xxx xxx" style="width:160px;"></div></div>'+'<p id="mb-call-warn" class="lede" style="margin:8px 0 0;color:#b45309;display:none;">⚠ No phone is saved in <b>Settings</b> yet — so this Call button stays hidden on the live bar. Add a phone (Settings → Phone), or switch <b>Rings</b> to “A custom number”.</p>')
           +_btnCard('mb-dir-on','Directions button','mb-dir-icon',_dir.icon||'navigation','mb-dir-label',_dir.label,'Directions',
               '<div class="f" style="margin:10px 0 0;"><label>Address / destination</label><input type="text" id="mb-dir-address" value="'+esc(_dir.address||'')+'" placeholder="123 Example St, Canberra ACT" style="width:100%;"></div>')
           +_btnCard('mb-msg-on','Message button','mb-msg-icon',_msg.icon||'message-circle','mb-msg-label',_msg.label,'Text',
@@ -3275,13 +3275,15 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       function _ckw(id,init,setf){ var el=$(id); if(!el)return; el.checked=!!init; el.addEventListener('change',function(){ setf(el.checked); persist(); previewApply(); }); }
       function _selw(id,setf){ var el=$(id); if(el) el.addEventListener('change',function(){ setf(el.value); persist(); previewApply(); }); }
       function _iconw(id,setf){ var el=$(id); if(el) el.addEventListener('input',function(){ setf(el.value.trim()); persist(); previewApply(); }); }
+      function _mbCallWarn(){ var w=$('mb-call-warn'); if(!w) return; var se=$('mb-call-source'); var src2=se?se.value:(_call.source||'site'); var oe=$('mb-call-on'); var on=oe?oe.checked:(_call.on!==false); var hasPhone=!!(c&&String(c.phone||'').trim()); w.style.display=(on&&src2!=='custom'&&!hasPhone)?'':'none'; }
       try{
       _ckw('mb-on', _m.barOn!==false, function(v){ MBg().barOn=v; });
       _selw('mb-labelmode', function(v){ MBg().labelMode=v; });
       (function(){ var t=$('mb-bg'), cp=$('mb-bg-c'); if(cp&&_m.bg&&/^#/.test(_m.bg)) cp.value=_m.bg; if(t) t.addEventListener('input',function(){ MBg().bg=t.value.trim(); persist(); previewApply(); }); if(cp) cp.addEventListener('input',function(){ if(t){ t.value=cp.value; MBg().bg=cp.value; persist(); previewApply(); } }); })();
-      _ckw('mb-call-on', _call.on!==false, function(v){ MBb('call').on=v; });
+      _ckw('mb-call-on', _call.on!==false, function(v){ MBb('call').on=v; _mbCallWarn(); });
       _iconw('mb-call-icon', function(v){ MBb('call').icon=v; }); txt('mb-call-label',function(v){ MBb('call').label=v; });
-      _selw('mb-call-source', function(v){ MBb('call').source=v; var r=$('mb-call-num-row'); if(r) r.style.display=(v==='custom')?'':'none'; }); txt('mb-call-number',function(v){ MBb('call').number=v; });
+      _selw('mb-call-source', function(v){ MBb('call').source=v; var r=$('mb-call-num-row'); if(r) r.style.display=(v==='custom')?'':'none'; _mbCallWarn(); }); txt('mb-call-number',function(v){ MBb('call').number=v; });
+      _mbCallWarn();
       _ckw('mb-dir-on', !!_dir.on, function(v){ MBb('directions').on=v; });
       _iconw('mb-dir-icon', function(v){ MBb('directions').icon=v; }); txt('mb-dir-label',function(v){ MBb('directions').label=v; }); txt('mb-dir-address',function(v){ MBb('directions').address=v; });
       _ckw('mb-msg-on', !!_msg.on, function(v){ MBb('message').on=v; });
