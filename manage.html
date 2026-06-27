@@ -3250,8 +3250,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       var _mm=((c.sections&&c.sections.mobileBar&&c.sections.mobileBar.menu))||{};
       function _mimg(id,val){ return '<div style="display:flex;gap:6px;align-items:center;"><input type="text" id="'+id+'" value="'+esc(val||'')+'" placeholder="https://… image URL" style="flex:1;min-width:0;"><button type="button" class="btn ghost" id="'+id+'-up" style="padding:7px 11px;white-space:nowrap;">Upload</button></div>'; }
       body.innerHTML=
-        '<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Mobile action bar</h2><p class="lede" style="margin:0 0 12px;">A sticky bar across the bottom of the screen on phones. Switch it on, pick which buttons show and style the band. Every tap is tracked in your stats. When it\u2019s off, your standard Call bar still shows.</p>'
-          +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="mb-on"> Show the mobile action bar</label>'
+        '<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Mobile action bar</h2><p class="lede" style="margin:0 0 12px;">A sticky bar across the bottom of the screen on phones. Add quick-action buttons below, a navigation menu, or both — each is independent. Turn the whole bar on or off with the Mobile switch in Page Content. Every tap is tracked in your stats.</p>'
+          +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="mb-on"> Show the quick-action buttons (Call, Directions, etc.)</label>'
           +'<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">'+lpSel('Labels','mb-labelmode',[['under','Icon + label (stacked)'],['beside','Icon + label (side by side)'],['icon','Icon only']],_m.labelMode||'under')
           +'<div class="f" style="margin:0;"><label>Bar background</label><div style="display:flex;gap:6px;align-items:center;"><input type="color" id="mb-bg-c" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;"><input type="text" id="mb-bg" value="'+esc(_m.bg||'')+'" placeholder="Default (hi-vis)" style="width:130px;"></div></div></div></div>'
           +_btnCard('mb-call-on','Call button','mb-call-icon',_call.icon||'phone','mb-call-label',_call.label,'Call',
@@ -3276,7 +3276,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       function _ckw(id,init,setf){ var el=$(id); if(!el)return; el.checked=!!init; el.addEventListener('change',function(){ setf(el.checked); persist(); previewApply(); }); }
       function _selw(id,setf){ var el=$(id); if(el) el.addEventListener('change',function(){ setf(el.value); persist(); previewApply(); }); }
       function _iconw(id,setf){ var el=$(id); if(el) el.addEventListener('input',function(){ setf(el.value.trim()); persist(); previewApply(); }); }
-      _ckw('mb-on', _m.on===true, function(v){ MBg().on=v; });
+      _ckw('mb-on', _m.barOn!==false, function(v){ MBg().barOn=v; });
       _selw('mb-labelmode', function(v){ MBg().labelMode=v; });
       (function(){ var t=$('mb-bg'), cp=$('mb-bg-c'); if(cp&&_m.bg&&/^#/.test(_m.bg)) cp.value=_m.bg; if(t) t.addEventListener('input',function(){ MBg().bg=t.value.trim(); persist(); previewApply(); }); if(cp) cp.addEventListener('input',function(){ if(t){ t.value=cp.value; MBg().bg=cp.value; persist(); previewApply(); } }); })();
       _ckw('mb-call-on', _call.on!==false, function(v){ MBb('call').on=v; });
