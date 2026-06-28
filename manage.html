@@ -1831,7 +1831,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     why:{secId:'why',key:'items',addLabel:'Add reason',item:[{k:'icon',label:'Icon',type:'icon'},{k:'n',label:'Number (if no icon)',w:'120px',ph:'01'},{k:'title',label:'Heading'},{k:'body',label:'Text',type:'ta'}],defaultItem:{icon:'',n:'+',title:'New reason',body:''}},
     reviews:{secId:'reviews',key:'items',addLabel:'Add review',item:[{k:'who',label:'Name & suburb'},{k:'text',label:'Quote',type:'ta'},{k:'source',label:'Source',type:'select',opts:[['','—'],['google','Google'],['facebook','Facebook'],['hipages','hipages'],['productreview','ProductReview'],['word','Word of mouth']],w:'1 1 150px'}],defaultItem:{who:'',text:'',source:''}},
     faq:{secId:'faq',key:'items',addLabel:'Add question',item:[{k:'q',label:'Question'},{k:'a',label:'Answer',type:'ta'}],defaultItem:{q:'',a:''}},
-    quotePoints:{secId:'quote',key:'points',addLabel:'Add point',item:[{k:'text',label:'Point'}],defaultItem:{text:''}},
+    quotePoints:{secId:'quote',key:'points',addLabel:'Add point',item:[{k:'icon',label:'Icon',type:'icon',ph:'✓'},{k:'text',label:'Point'}],defaultItem:{text:''}},
     footerServices:{secId:'footer',key:'services',addLabel:'Add link',item:[{k:'label',label:'Label'},{k:'href',label:'Link',w:'170px',ph:'#quote'}],defaultItem:{label:'',href:'#quote'}},
     jobOptions:{secId:'quote',key:'jobOptions',addLabel:'Add option',item:[{k:'text',label:'Option'}],defaultItem:{text:''}},
     beforeAfterItems:{secId:'beforeAfter',key:'items',addLabel:'Add before / after',item:[{k:'title',label:'Title'},{k:'caption',label:'Caption',type:'ta'},{k:'beforeImage',type:'image',label:'Before image URL',ph:'https://\u2026 (optional)'},{k:'afterImage',type:'image',label:'After image URL',ph:'https://\u2026 (optional)'}],defaultItem:{title:'New result',caption:'',beforeImage:'',afterImage:''}},
@@ -2018,6 +2018,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     h+=col('qf-btnbg','btnBg','Button Background Colour','Set the main colour of the submit button.');
     h+=col('qf-btntx','btnText','Button Text Colour','Choose the text colour used on the button.');
     h+=col('qf-btnhv','btnHover','Button Hover Colour','Choose the colour shown when someone hovers over the button.');
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:230px;display:flex;align-items:flex-end;"><label style="display:flex;gap:8px;align-items:center;font-weight:500;margin:0 0 9px;cursor:pointer;"><input type="checkbox" id="qf-hoveroff"'+(Q.btnHoverOff===true?' checked':'')+'> Turn off hover (button colour stays the same)</label></div>';
     h+=col('qf-acc','accent','Accent Colour','Use this for small highlights, icons, focus states or selected items.');
     h+=col('qf-err','error','Error Colour','Choose the colour used for required-field warnings or errors.');
     h+=col('qf-suc','success','Success Colour','Choose the colour used after a form is successfully submitted.');
@@ -2029,7 +2030,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 function wireQuoteStyle(c){
     function Q(){ if(!c.sections)c.sections={}; if(!c.sections.quote)c.sections.quote={}; return c.sections.quote; }
     function colWire(id,key){ var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def'); if(clr) clr.addEventListener('input',function(){ Q()[key]=clr.value; if(tx)tx.value=clr.value; persist(); previewApply(); }); if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ Q()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ Q()[key]=v; if(clr)clr.value=v; } } persist(); previewApply(); }); if(df) df.addEventListener('click',function(){ Q()[key]=''; if(tx)tx.value=''; persist(); previewApply(); }); }
-    colWire('qf-bg','bg'); colWire('qf-ibg','inputBg'); colWire('qf-ibd','inputBorder'); colWire('qf-lbl','label'); colWire('qf-txt','text'); colWire('qf-btnbg','btnBg'); colWire('qf-btntx','btnText'); colWire('qf-btnhv','btnHover'); colWire('qf-acc','accent'); colWire('qf-err','error'); colWire('qf-suc','success');
+    colWire('qf-bg','bg'); colWire('qf-ibg','inputBg'); colWire('qf-ibd','inputBorder'); colWire('qf-lbl','label'); colWire('qf-txt','text'); colWire('qf-btnbg','btnBg'); colWire('qf-btntx','btnText'); colWire('qf-btnhv','btnHover'); colWire('qf-acc','accent'); colWire('qf-err','error'); colWire('qf-suc','success'); var _ho=$('qf-hoveroff'); if(_ho) _ho.addEventListener('change',function(){ Q().btnHoverOff=_ho.checked; persist(); previewApply(); });
   }
   
 function heroCtaCard(c){
