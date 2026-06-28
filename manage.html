@@ -624,6 +624,16 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         <div class="lp-ap-actions"><button class="btn" id="lp-ap-accept">Use this draft</button><button class="btn ghost" id="lp-ap-discard">Discard</button></div>
       </div>
 
+      <div class="apgroup-h">Page image</div>
+      <div class="f"><label>Image <span class="seo-tip">A photo or graphic for this page. Upload a file or paste a URL.</span></label><input type="text" id="lp-img" class="tin" placeholder="https://… or upload"><div class="lg-upload"><label class="btn ghost sm" for="lp-img-file">Upload image</label><input type="file" id="lp-img-file" accept="image/*" hidden><button class="btn ghost sm" type="button" id="lp-img-clear">Remove</button></div><div id="lp-img-prev" class="lp-img-prev"></div></div>
+      <div class="lp-row">
+        <div class="f"><label>Placement</label><select id="lp-img-mode" class="apsel"><option value="center">Centered — above text</option><option value="left">Left — above text</option><option value="right">Right — above text</option><option value="wrap-left">Wrap — image left, text flows right</option><option value="wrap-right">Wrap — image right, text flows left</option></select></div>
+        <div class="f"><label>Padding around image (px)</label><input type="number" id="lp-img-pad" class="tin" min="0" max="96" step="2" placeholder="16"></div>
+      </div>
+
+      <div class="apgroup-h">Call-to-action buttons</div>
+      <div class="f" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center"><label class="ck"><input type="checkbox" id="lp-cta-call"> Show the “Call” button</label><label class="ck"><input type="checkbox" id="lp-cta-quote"> Show the “Get a free quote” button</label></div>
+
       <div class="lp-row">
         <div class="f"><label>Add to <span class="seo-tip">Where the page link appears on your site.</span></label><select id="lp-menu" class="apsel"><option value="top">Top menu</option><option value="footer">Footer menu</option><option value="none">Don't link (direct URL only)</option></select></div>
         <div class="f"><label>Status</label><select id="lp-status" class="apsel"><option value="draft">Draft (hidden)</option><option value="published">Published (live)</option></select></div>
@@ -1408,6 +1418,13 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     $('lp-body').addEventListener('input',function(){ lpField('body',this.value); lpPush(this.value); });
     $('lp-menu').addEventListener('change',function(){ lpField('menu',this.value); });
     $('lp-status').addEventListener('change',function(){ lpField('status',this.value); });
+    $('lp-img').addEventListener('input',function(){ lpField('img',this.value.trim()); lpImgPrev(); });
+    $('lp-img-file').addEventListener('change',function(e){ var f=e.target.files[0]; if(!f) return; if(f.size>8000000){ toast('Image too large (max ~8 MB)'); e.target.value=''; return; } if(!lpCur){ e.target.value=''; return; } var prev=lpCur.img_pid||''; toast('Uploading image\u2026'); cwUpload(f,['page',lpCur.id||'x']).then(function(r){ lpCur.img=r.url; lpCur.img_pid=r.publicId; $('lp-img').value=r.url; persist(); lpSaveDB(); lpImgPrev(); if(prev&&prev!==r.publicId) cwDelete(prev); toast('Image uploaded'); }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); }); e.target.value=''; });
+    $('lp-img-clear').addEventListener('click',function(){ if(!lpCur) return; if(lpCur.img_pid){ cwDelete(lpCur.img_pid); lpCur.img_pid=''; } lpCur.img=''; $('lp-img').value=''; persist(); lpSaveDB(); lpImgPrev(); });
+    $('lp-img-mode').addEventListener('change',function(){ lpField('imgMode',this.value); });
+    $('lp-img-pad').addEventListener('input',function(){ var n=parseInt(this.value,10); lpField('imgPad', isNaN(n)?16:Math.max(0,Math.min(96,n))); });
+    $('lp-cta-call').addEventListener('change',function(){ lpField('showCall',this.checked); });
+    $('lp-cta-quote').addEventListener('change',function(){ lpField('showQuote',this.checked); });
     $('lp-save').addEventListener('click',function(){ persist(); lpSaveDB(); toast('Page saved'); renderSeoPages(); });
     $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; });
     $('lp-del').addEventListener('click',function(){ if(!lpCur) return; data.pages=data.pages.filter(x=>x.id!==lpCur.id); persist(); lpSaveDB(); $('lp-editor').hidden=true; lpCur=null; renderSeoPages(); toast('Page deleted'); });
@@ -1418,6 +1435,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     $('lp-ap-discard').addEventListener('click',function(){ $('lp-approve').hidden=true; });
   }
   function lpField(f,v){ if(lpCur){ lpCur[f]=v; persist(); lpAutosave(); } }
+  function lpImgPrev(){ var el=document.getElementById('lp-img-prev'); if(!el) return; var u=(lpCur&&lpCur.img)||''; el.innerHTML=u?('<img src="'+esc(u)+'" alt="" style="max-height:120px;max-width:100%;border-radius:8px;margin-top:8px;display:block">'):''; }
   function lpPush(v){ lpHist=lpHist.slice(0,lpHi+1); lpHist.push(v); if(lpHist.length>50)lpHist.shift(); lpHi=lpHist.length-1; }
   function lpOpen(id){
     lpCur=data.pages.find(x=>x.id===id); if(!lpCur) return;
@@ -1425,6 +1443,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     $('lp-ed-title').textContent=lpCur.title?('Edit: '+lpCur.title):'New page';
     $('lp-title').value=lpCur.title||''; $('lp-slug').value=lpCur.slug||''; $('lp-meta').value=lpCur.meta||''; $('lp-h1').value=lpCur.h1||''; $('lp-body').value=lpCur.body||'';
     $('lp-menu').value=lpCur.menu||'top'; $('lp-status').value=lpCur.status||'draft';
+    $('lp-img').value=lpCur.img||''; $('lp-img-mode').value=lpCur.imgMode||'center'; $('lp-img-pad').value=(lpCur.imgPad!=null?lpCur.imgPad:16); $('lp-cta-call').checked=(lpCur.showCall!==false); $('lp-cta-quote').checked=(lpCur.showQuote!==false); lpImgPrev();
     $('lp-meta-count').textContent=(lpCur.meta||'').length+' characters';
     $('lp-editor').classList.toggle('show-tips', $('lp-tips').checked);
     $('lp-approve').hidden=true;
