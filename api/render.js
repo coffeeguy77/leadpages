@@ -95,6 +95,8 @@ module.exports = async (req, res) => {
     const rawHost = (req.headers.host || '').toLowerCase();
     const host = rawHost.replace(/^www\./, '');
     const slug = (req.query && req.query.slug) || '';
+    let page = (req.query && req.query.page) || '';
+    const isCustom = !!host && !PRIMARY_HOSTS.includes(host);
 
     // A "/" hit on the primary host (or with no host) is the marketing homepage,
     // not a tenant page. Bounce to the static index so we never shadow it.
@@ -104,9 +106,15 @@ module.exports = async (req, res) => {
       return res.end();
     }
 
-    // Resolve the tenant: by slug (leadpages address) or by custom domain (host).
+    // Resolve the tenant:
+    //   - custom domain -> by Host header; any /:slug segment is a PAGE path.
+    //   - primary host  -> by slug (the leadpages address); ?page is the optional sub-page.
     let site = null, error = null;
-    if (slug) {
+    if (isCustom) {
+      ({ data: site, error } = await supabase
+        .from('sites').select('*').eq('custom_domain', host).maybeSingle());
+      if (slug && !page) page = slug;
+    } else if (slug) {
       ({ data: site, error } = await supabase
         .from('sites').select('*').eq('slug', slug).single());
     } else {
@@ -162,18 +170,33 @@ module.exports = async (req, res) => {
     );
     if (template === 'trade' && !cfg.trade) cfg.trade = '';
 
+    // Sub-page routing: /:site/:page (or /:page on a custom domain) must resolve to a
+    // PUBLISHED landing page in the config; otherwise it's a hard 404 (no soft-404s).
+    let _pageRow = null;
+    if (page) {
+      const _pages = Array.isArray(cfg.pages) ? cfg.pages : [];
+      _pageRow = _pages.find(p => p && p.slug === page && p.status === 'published') || null;
+      if (!_pageRow) return notFound(res);
+    }
+
     // ---- SEO title/description (per-tenant, graceful, never plumber-specific) ----
     // Driven by business name + the site's own trade/service type, with optional
     // cfg.seoTitle / cfg.seoDescription overrides. Works for trades, services and
     // business types alike (cafe, accommodation, etc.).
     const _biz   = (cfg.business || site.business_name || '').trim();
     const _trade = (cfg.trade || '').trim();
-    const pageTitle = (cfg.seoTitle || '').trim()
+    let pageTitle = (cfg.seoTitle || '').trim()
       || (_trade ? `${_biz} — ${_trade} in Canberra & the ACT`
                  : `${_biz} — Canberra & the ACT`);
-    const pageDesc = (cfg.seoDescription || '').trim()
+    let pageDesc = (cfg.seoDescription || '').trim()
       || (_trade ? `${_biz} — licensed, local ${_trade.toLowerCase()} across Canberra and the ACT. Fast, free quotes. Get in touch today.`
                  : `${_biz} — trusted local service across Canberra and the ACT. Fast, free quotes. Get in touch today.`);
+
+    // A landing page supplies its own SEO title/description.
+    if (_pageRow) {
+      if (_pageRow.title) pageTitle = `${_pageRow.title}${_biz ? ' \u2014 ' + _biz : ''}`;
+      if (_pageRow.meta)  pageDesc  = _pageRow.meta;
+    }
 
     let html = tpl.replaceAll('__SITE_CONFIG__', safeJson(cfg));
     const tokens = {
