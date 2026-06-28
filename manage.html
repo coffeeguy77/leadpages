@@ -1037,6 +1037,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 
   /* ---------- persistence + export ---------- */
   function persist(){ try{ localStorage.setItem('linray_rates', JSON.stringify(data)); }catch(e){} }
+  async function lpSaveDB(){ if(!currentSiteId) return; try{ var sref=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null; var cfg; if(sref&&sref.config&&typeof sref.config==='object'){ cfg=JSON.parse(JSON.stringify(sref.config)); } else { cfg=JSON.parse(JSON.stringify(data||{})); delete cfg.savedThemes; delete cfg.users; } cfg.pages=JSON.parse(JSON.stringify((data&&data.pages)||[])); await sb.from('sites').update({ config:cfg, updated_at:new Date().toISOString() }).eq('id', currentSiteId); if(sref) sref.config=cfg; }catch(e){} }
+  var _lpAS=null; function lpAutosave(){ if(_lpAS) clearTimeout(_lpAS); _lpAS=setTimeout(function(){ lpSaveDB(); },1000); }
   function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
   function jsonOut(){ return JSON.stringify(data,null,2); }
   // What goes onto the public site: everything EXCEPT the demo sign-in accounts
@@ -1398,7 +1400,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     }).join('') : '<p class="hint">No pages yet. Create one to build an SEO-optimised page that matches your theme.</p>';
     const ap=$('lp-ai-presets'); if(ap && !ap.children.length){ aiPresets().forEach(function(pr,i){ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=pr[0]; b.addEventListener('click',function(){ $('lp-ai-prompt').value=pr[1]; }); ap.appendChild(b); }); }
     if(lpWired) return; lpWired=true;
-    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft'}; data.pages.push(p); persist(); renderSeoPages(); lpOpen(p.id); });
+    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft'}; data.pages.push(p); persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
     list.addEventListener('click',function(e){ const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit')); });
     $('lp-tips').addEventListener('change',function(){ $('lp-editor').classList.toggle('show-tips', this.checked); });
     $('lp-slug').addEventListener('input',function(){ this.value=this.value.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,''); lpField('slug',this.value); });
@@ -1406,16 +1408,16 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     $('lp-body').addEventListener('input',function(){ lpField('body',this.value); lpPush(this.value); });
     $('lp-menu').addEventListener('change',function(){ lpField('menu',this.value); });
     $('lp-status').addEventListener('change',function(){ lpField('status',this.value); });
-    $('lp-save').addEventListener('click',function(){ persist(); toast('Page saved'); renderSeoPages(); });
+    $('lp-save').addEventListener('click',function(){ persist(); lpSaveDB(); toast('Page saved'); renderSeoPages(); });
     $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; });
-    $('lp-del').addEventListener('click',function(){ if(!lpCur) return; data.pages=data.pages.filter(x=>x.id!==lpCur.id); persist(); $('lp-editor').hidden=true; lpCur=null; renderSeoPages(); toast('Page deleted'); });
+    $('lp-del').addEventListener('click',function(){ if(!lpCur) return; data.pages=data.pages.filter(x=>x.id!==lpCur.id); persist(); lpSaveDB(); $('lp-editor').hidden=true; lpCur=null; renderSeoPages(); toast('Page deleted'); });
     $('lp-undo').addEventListener('click',function(){ if(lpHi>0){ lpHi--; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
     $('lp-redo').addEventListener('click',function(){ if(lpHi<lpHist.length-1){ lpHi++; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
     $('lp-ai-go').addEventListener('click',aiGenerate);
     $('lp-ap-accept').addEventListener('click',function(){ const d=$('lp-approve').getAttribute('data-draft')||''; $('lp-body').value=d; lpField('body',d); lpPush(d); $('lp-approve').hidden=true; toast('Draft applied'); });
     $('lp-ap-discard').addEventListener('click',function(){ $('lp-approve').hidden=true; });
   }
-  function lpField(f,v){ if(lpCur){ lpCur[f]=v; persist(); } }
+  function lpField(f,v){ if(lpCur){ lpCur[f]=v; persist(); lpAutosave(); } }
   function lpPush(v){ lpHist=lpHist.slice(0,lpHi+1); lpHist.push(v); if(lpHist.length>50)lpHist.shift(); lpHi=lpHist.length-1; }
   function lpOpen(id){
     lpCur=data.pages.find(x=>x.id===id); if(!lpCur) return;
