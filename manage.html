@@ -3591,6 +3591,12 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       vb.addEventListener('click',function(){ var u=lpLiveUrl(); if(u) window.open(u,'_blank','noopener'); else if(typeof toast==='function') toast('This site has no slug yet.'); });
       bar.insertBefore(vb, dl);
     }
+    if(!$('btn-viewfresh')){
+      const fb=document.createElement('button'); fb.className='btn ghost'; fb.id='btn-viewfresh';
+      fb.textContent='View fresh \u21BB'; fb.title='Opens your live site with the cache bypassed so you see your latest changes straight away.';
+      fb.addEventListener('click',function(){ var u=lpLiveUrl(); if(!u){ if(typeof toast==='function') toast('This site has no slug yet.'); return; } u+=(u.indexOf('?')<0?'?':'&')+'_cb='+Date.now(); window.open(u,'_blank','noopener'); });
+      bar.insertBefore(fb, dl);
+    }
     if(!$('btn-domains')){
       const dbn=document.createElement('button'); dbn.className='btn ghost'; dbn.id='btn-domains';
       dbn.textContent='Domains';
