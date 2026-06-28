@@ -9,6 +9,7 @@
     { "source": "/", "has": [{ "type": "host", "value": "^(www\\.)?leadpages\\.(webculture\\.au|com\\.au)$" }], "destination": "/home.html" },
     { "source": "/", "destination": "/api/render" },
     { "source": "/s/:slug", "destination": "/api/render?slug=:slug" },
+    { "source": "/:slug/:page", "destination": "/api/render?slug=:slug&page=:page" },
     { "source": "/:slug", "destination": "/api/render?slug=:slug" }
   ]
 }
