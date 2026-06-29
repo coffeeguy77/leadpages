@@ -140,6 +140,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         <button data-p="clients">📇 My Clients</button>
         <button data-p="add">➕ Add Customer</button>
         <button data-p="demos">🎨 Demos &amp; themes</button>
+        <button data-p="mypage">🌐 My page</button>
         <button data-p="commissions">💰 Commissions</button>
         <button data-p="training">🎓 Training Centre</button>
         <button data-p="resources">📝 Sales Resources</button>
@@ -237,6 +238,47 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         <div id="mockups-list"></div>
         <h3 style="font-family:var(--font-display);font-size:17px;margin:24px 0 10px">Saved themes</h3>
         <div id="themes-list"></div>
+      </section>
+
+      <!-- My page -->
+      <section class="panel" data-panel="mypage">
+        <h2>My page</h2>
+        <p class="sub">Your own branded homepage at your subdomain — your logo, your pitch, and the demos you choose to show.</p>
+        <div class="card" style="padding:24px;max-width:680px">
+          <div class="field">
+            <label for="sc-slug">Your address</label>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <input id="sc-slug" type="text" placeholder="your-name" style="max-width:220px">
+              <span class="muted">.leadpages.com.au</span>
+              <button class="btn" id="sc-check" style="padding:8px 14px;font-size:14px">Check</button>
+              <span id="sc-slug-msg" style="font-size:13px;font-weight:600"></span>
+            </div>
+          </div>
+          <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin-bottom:14px"><input type="checkbox" id="sc-enabled" style="width:auto"> Make my page live</label>
+          <div class="row2">
+            <div class="field"><label for="sc-headline">Headline</label><input id="sc-headline" type="text" placeholder="e.g. Canberra websites that get you booked"></div>
+            <div class="field"><label for="sc-accent">Accent colour</label><input id="sc-accent" type="text" placeholder="#ff6a1a"></div>
+          </div>
+          <div class="field"><label for="sc-intro">Intro text</label><textarea id="sc-intro" rows="3" placeholder="A short pitch prospects see at the top of your page."></textarea></div>
+          <div class="field">
+            <label>Logo</label>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <img id="sc-logo-prev" alt="" style="max-height:46px;max-width:160px;display:none;border:1px solid var(--line);border-radius:8px;padding:4px;background:#fff">
+              <input id="sc-logo-file" type="file" accept="image/*" style="display:none">
+              <button class="btn" id="sc-logo-btn" style="padding:8px 14px;font-size:14px">Upload logo</button>
+              <button class="btn" id="sc-logo-clear" style="padding:8px 14px;font-size:14px;display:none">Remove</button>
+              <span id="sc-logo-msg" class="muted" style="font-size:13px"></span>
+            </div>
+          </div>
+          <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin:6px 0 10px"><input type="checkbox" id="sc-protect" style="width:auto"> Password-protect my page</label>
+          <div class="field" id="sc-pw-row" style="display:none"><label for="sc-password">Page password</label><input id="sc-password" type="text" placeholder="Share this with people you send the link to"></div>
+          <div class="save-row">
+            <button class="btn btn-brand" id="sc-save">Save my page</button>
+            <span class="saved" id="sc-saved">Saved ✓</span>
+            <span class="notice bad hidden" id="sc-err" style="margin:0;padding:8px 12px"></span>
+          </div>
+          <p class="muted" style="margin-top:16px;font-size:13.5px">Your page: <a id="sc-link" href="#" target="_blank" rel="noopener">—</a> · Choose which demos appear from the <strong>Demos &amp; themes</strong> tab ("Show on showcase").</p>
+        </div>
       </section>
 
       <!-- Commissions -->
@@ -393,7 +435,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     badge.className='statusbadge s-'+(p.status||'pending');
     fillProfile(state.profile);
     show('view-dash');
-    wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes();
+    wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage();
   }
 
   async function loadPartner(session){
@@ -565,6 +607,34 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       btn.disabled=false; btn.textContent=was;
       if(r.error||!r.data||!r.data.length){ alert('Could not update: '+((r.error&&r.error.message)||'no permission')); return; }
       c.status=ns; renderClients(); renderOverview();
+    });
+    document.getElementById('sc-slug').addEventListener('input',updateScLink);
+    document.getElementById('sc-protect').addEventListener('change',function(){ document.getElementById('sc-pw-row').style.display=this.checked?'':'none'; });
+    document.getElementById('sc-check').addEventListener('click', async function(){
+      var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var msg=document.getElementById('sc-slug-msg');
+      if(!slug){ msg.textContent=''; return; }
+      msg.style.color='var(--ink-soft)'; msg.textContent='Checking\u2026';
+      try{ var r=await fetch('/api/partner/showcase-check?slug='+encodeURIComponent(slug),{headers:await authHeader()}); var j=await r.json();
+        if(j.available){ msg.style.color='var(--ok)'; msg.textContent='Available \u2713'; } else { msg.style.color='var(--bad)'; msg.textContent=j.reason||'Not available'; }
+      }catch(_e){ msg.style.color='var(--bad)'; msg.textContent='Could not check'; }
+    });
+    document.getElementById('sc-logo-btn').addEventListener('click',function(){ document.getElementById('sc-logo-file').click(); });
+    document.getElementById('sc-logo-clear').addEventListener('click',function(){ scLogo=''; var pv=document.getElementById('sc-logo-prev'); pv.style.display='none'; pv.removeAttribute('src'); this.style.display='none'; });
+    document.getElementById('sc-logo-file').addEventListener('change', async function(){
+      var f=this.files&&this.files[0]; if(!f) return; var m=document.getElementById('sc-logo-msg'); m.textContent='Uploading\u2026';
+      try{ var url=await scUploadLogo(f); scLogo=url; var pv=document.getElementById('sc-logo-prev'); pv.src=url; pv.style.display=''; document.getElementById('sc-logo-clear').style.display=''; m.textContent=''; }
+      catch(err){ m.textContent=err.message||'Upload failed'; }
+      this.value='';
+    });
+    document.getElementById('sc-save').addEventListener('click', async function(){
+      var err=document.getElementById('sc-err'); err.classList.add('hidden');
+      var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var btn=this; btn.disabled=true;
+      var patch={ showcase_slug:slug||null, showcase_enabled:document.getElementById('sc-enabled').checked, showcase_protected:document.getElementById('sc-protect').checked, showcase_password:(document.getElementById('sc-password').value||'').trim()||null, showcase_headline:(document.getElementById('sc-headline').value||'').trim()||null, showcase_config:{ logo:scLogo||null, intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:(document.getElementById('sc-accent').value||'').trim()||null }, updated_at:new Date().toISOString() };
+      var r=await sb.from('partner_profiles').update(patch).eq('partner_id',state.partner.id).select('*'); btn.disabled=false;
+      if(r.error){ err.textContent=(/duplicate|unique/i.test(r.error.message)?'That address is already taken \u2014 pick another.':('Could not save: '+r.error.message)); err.classList.remove('hidden'); return; }
+      if(!r.data||!r.data.length){ err.textContent='Could not save (no permission).'; err.classList.remove('hidden'); return; }
+      state.profile=r.data[0];
+      var sv=document.getElementById('sc-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1700); updateScLink();
     });
     document.getElementById('ov-add').addEventListener('click',function(){ gotoPanel('add'); });
     document.getElementById('clients-add').addEventListener('click',function(){ gotoPanel('add'); });
@@ -740,6 +810,31 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
   async function loadThemes(){
     var r=await sb.from('partner_themes').select('id,name,created_at,source_site_id').order('created_at',{ascending:false});
     themes=(r.data||[]); renderThemes(); fillThemeSelects(); renderMockups();
+  }
+
+  // ---------- Phase 6: My page (showcase editor) ----------
+  var scLogo='';
+  function scBase(){ return 'leadpages.com.au'; }
+  function updateScLink(){
+    var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var a=document.getElementById('sc-link');
+    if(slug){ a.href='https://'+slug+'.'+scBase(); a.textContent=slug+'.'+scBase(); } else { a.href='#'; a.textContent='\u2014'; }
+  }
+  function loadMyPage(){
+    var pf=state.profile||{}; var cfg=pf.showcase_config||{}; var g=function(id){return document.getElementById(id);};
+    g('sc-slug').value=pf.showcase_slug||''; g('sc-enabled').checked=!!pf.showcase_enabled;
+    g('sc-headline').value=pf.showcase_headline||''; g('sc-accent').value=cfg.accent||''; g('sc-intro').value=cfg.intro||'';
+    g('sc-protect').checked=!!pf.showcase_protected; g('sc-password').value=pf.showcase_password||''; g('sc-pw-row').style.display=pf.showcase_protected?'':'none';
+    scLogo=cfg.logo||''; if(scLogo){ g('sc-logo-prev').src=scLogo; g('sc-logo-prev').style.display=''; g('sc-logo-clear').style.display=''; }
+    updateScLink();
+  }
+  async function scUploadLogo(file){
+    var sess=(await sb.auth.getSession()).data.session; var token=sess&&sess.access_token;
+    var folder='leadpages/partners/'+state.partner.id+'/logo'; var pid=folder+'/'+Math.random().toString(36).slice(2,10);
+    var sr=await fetch('/api/cloudinary/sign',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({publicId:pid,assetFolder:folder})});
+    var sg=await sr.json(); if(!sr.ok||!sg.signature) throw new Error(sg.error||'Could not sign upload');
+    var fd=new FormData(); fd.append('file',file); fd.append('api_key',sg.apiKey); fd.append('timestamp',sg.timestamp); fd.append('public_id',sg.publicId); if(sg.assetFolder)fd.append('asset_folder',sg.assetFolder); if(sg.overwrite)fd.append('overwrite',sg.overwrite); fd.append('signature',sg.signature);
+    var ur=await fetch('https://api.cloudinary.com/v1_1/'+(sg.cloudName||'dzx6x1hou')+'/image/upload',{method:'POST',body:fd});
+    var uj=await ur.json(); if(!ur.ok||!uj.secure_url) throw new Error('Upload failed'); return uj.secure_url;
   }
 
   async function boot(){
