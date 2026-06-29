@@ -2186,10 +2186,11 @@ function heroCtaCard(c){
   async function cwUpload(file,parts){
     var token=await cwToken(); if(!token) throw new Error('Please sign in again');
     try{ file=await cwPrepImage(file); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
-    var pid='leadpages/'+cwSiteSeg()+'/'+parts.map(cwSeg).join('/')+'/'+cwRand();
-    var sr=await fetch('/api/cloudinary/sign',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({publicId:pid})});
+    var _folder='leadpages/'+cwSiteSeg()+'/'+parts.map(cwSeg).join('/');
+    var pid=_folder+'/'+cwRand();
+    var sr=await fetch('/api/cloudinary/sign',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({publicId:pid,assetFolder:_folder})});
     if(!sr.ok) throw new Error('Could not authorise upload'); var s=await sr.json();
-    var fd=new FormData(); fd.append('file',file,(file&&file.name)||'upload.jpg'); fd.append('api_key',s.apiKey); fd.append('timestamp',s.timestamp); fd.append('public_id',s.publicId); fd.append('signature',s.signature);
+    var fd=new FormData(); fd.append('file',file,(file&&file.name)||'upload.jpg'); fd.append('api_key',s.apiKey); fd.append('timestamp',s.timestamp); fd.append('public_id',s.publicId); if(s.assetFolder) fd.append('asset_folder',s.assetFolder); if(s.overwrite) fd.append('overwrite',s.overwrite); fd.append('signature',s.signature);
     var _cloud=(s.cloudName&&/^[a-zA-Z0-9_\-]+$/.test(s.cloudName))?s.cloudName:CW_CLOUD;
     var ur; try{ ur=await fetch('https://api.cloudinary.com/v1_1/'+_cloud+'/image/upload',{method:'POST',body:fd}); }catch(_ne){ throw new Error('Network error reaching Cloudinary \u2014 the image may be too large or the connection dropped. Try a smaller image.'); }
     var uj=await ur.json().catch(function(){return {};}); if(!ur.ok||!uj.secure_url) throw new Error((uj.error&&uj.error.message)||('Cloudinary rejected the upload ('+ur.status+')'));
