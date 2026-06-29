@@ -95,7 +95,8 @@ module.exports = async (req,res) => {
     business_name: businessName,
     template: 'trade',
     vertical: 'trade',
-    status: 'live',
+    status: 'draft', // hidden until the partner publishes; previewable in the builder
+
     config,
     owner_email: customerEmail,
     referring_partner_id: partner.id,
