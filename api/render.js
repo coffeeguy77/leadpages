@@ -139,9 +139,13 @@ function scPasswordHtml(slug, partner, tried) {
 function scCard(demo, base) {
   const cfg = demo.config || {};
   const trade = esc((cfg.trade || '').toString());
+  const logoUrl = (cfg.logo && cfg.logo.imageUrl) ? esc(cfg.logo.imageUrl) : '';
   const url = 'https://' + base + '/' + encodeURIComponent(demo.slug) + '?preview=1';
+  const chip = logoUrl
+    ? '<span class="sc-card-logo"><img src="' + logoUrl + '" alt="" loading="lazy"></span>'
+    : '<span class="sc-card-logo mono">' + esc((demo.business_name || '?').trim().slice(0, 1).toUpperCase()) + '</span>';
   return '<a class="sc-card" href="' + url + '" target="_blank" rel="noopener">' +
-    '<div class="sc-card-top">' + (trade ? '<span class="sc-trade">' + trade + '</span>' : '') + '</div>' +
+    '<div class="sc-card-top">' + chip + (trade ? '<span class="sc-trade">' + trade + '</span>' : '') + '</div>' +
     '<div class="sc-card-body"><div class="sc-name">' + esc(demo.business_name || demo.slug) + '</div>' +
     '<div class="sc-view">View demo &rarr;</div></div></a>';
 }
@@ -220,7 +224,7 @@ function showcaseHtml(prof, partner, demos, base) {
     '.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;margin-top:22px}' +
     '.sc-card{display:block;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .1s,box-shadow .15s;background:var(--paper)}' +
     '.sc-card:hover{transform:translateY(-3px);box-shadow:0 16px 36px -18px rgba(0,0,0,.3)}' +
-    '.sc-card-top{height:96px;background:linear-gradient(135deg,var(--accent),#15191e);display:flex;align-items:flex-end;padding:12px}' +
+    '.sc-card-top{position:relative;height:104px;background:linear-gradient(135deg,var(--accent),#15191e);display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding:12px}.sc-card-logo{width:48px;height:48px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 8px 18px -8px rgba(0,0,0,.55);flex:0 0 auto}.sc-card-logo img{max-width:84%;max-height:84%;object-fit:contain}.sc-card-logo.mono{font-family:Archivo;font-weight:900;color:var(--accent);font-size:21px}' +
     '.sc-trade{font-family:Inter;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.25);padding:4px 9px;border-radius:7px}' +
     '.sc-card-body{padding:15px 16px}.sc-name{font-family:Archivo;font-weight:800;font-size:17px}.sc-view{color:var(--accent);font-weight:700;font-size:14px;margin-top:7px}' +
     '.sc-empty{color:var(--steel)}' +
@@ -238,6 +242,52 @@ function showcaseHtml(prof, partner, demos, base) {
     '<footer class="sc-foot"><div class="wrap">' + name + ' \u00b7 Powered by LeadPages</div></footer></body></html>';
 }
 
+function buildTradeHtml(site, host) {
+  const template = templateFor(site);
+  const tpl = TOKEN_TEMPLATES[template] || TOKEN_TEMPLATES['broker-leads'];
+  const cfg = Object.assign({ business: site.business_name, slug: site.slug, siteId: site.id }, site.config || {});
+  if (template === 'trade' && !cfg.trade) cfg.trade = '';
+  const _biz = (cfg.business || site.business_name || '').trim();
+  const _trade = (cfg.trade || '').trim();
+  const pageTitle = (cfg.seoTitle || '').trim() || (_trade ? (_biz + ' \u2014 ' + _trade + ' in Canberra & the ACT') : (_biz + ' \u2014 Canberra & the ACT'));
+  const pageDesc = (cfg.seoDescription || '').trim() || (_biz + ' \u2014 professional websites for local trades across Canberra and the ACT.');
+  let html = tpl.replaceAll('__SITE_CONFIG__', safeJson(cfg));
+  const tokens = {
+    '{{businessName}}': esc(site.business_name), '{{phoneText}}': esc(cfg.phoneText), '{{email}}': esc(cfg.email),
+    '{{phone}}': esc(cfg.phone), '{{domain}}': esc(host), '{{initial}}': esc((site.business_name || 'B').trim().charAt(0).toUpperCase()),
+    '{{trade}}': esc(_trade), '{{pageTitle}}': esc(pageTitle), '{{pageDesc}}': esc(pageDesc)
+  };
+  for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
+  return html;
+}
+
+function partnerDemosBlock(demos, base, accent) {
+  if (!demos || !demos.length) return '';
+  const ac = /^#[0-9a-fA-F]{3,8}$/.test(accent || '') ? accent : '#ff6a1a';
+  const cards = demos.map(function (d) {
+    const cfg = d.config || {}; const trade = esc((cfg.trade || '').toString());
+    const logoUrl = (cfg.logo && cfg.logo.imageUrl) ? esc(cfg.logo.imageUrl) : '';
+    const url = 'https://' + base + '/' + encodeURIComponent(d.slug) + '?preview=1';
+    const chip = logoUrl
+      ? '<span class="lpw-logo"><img src="' + logoUrl + '" alt="" loading="lazy"></span>'
+      : '<span class="lpw-logo lpw-mono">' + esc((d.business_name || '?').trim().slice(0, 1).toUpperCase()) + '</span>';
+    return '<a class="lpw-card" href="' + url + '" target="_blank" rel="noopener"><div class="lpw-top">' + chip + (trade ? '<span class="lpw-trade">' + trade + '</span>' : '') + '</div><div class="lpw-body"><div class="lpw-name">' + esc(d.business_name || d.slug) + '</div><div class="lpw-view">View demo &rarr;</div></div></a>';
+  }).join('');
+  return '<style>'
+    + '.lpw-wrap{--lpw-ac:' + ac + ';font-family:Inter,system-ui,sans-serif;background:#fff;color:#15191e;padding:60px 22px;border-top:1px solid #e6e8ec}'
+    + '.lpw-in{max-width:1080px;margin:0 auto}.lpw-h{font-family:Archivo,Arial,sans-serif;font-weight:900;letter-spacing:-.02em;font-size:clamp(23px,3.3vw,30px);margin:0}'
+    + '.lpw-sub{color:#5b6571;margin:8px 0 24px}.lpw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}'
+    + '.lpw-card{display:block;border:1px solid #e6e8ec;border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .1s,box-shadow .15s;background:#fff}'
+    + '.lpw-card:hover{transform:translateY(-3px);box-shadow:0 16px 36px -18px rgba(0,0,0,.3)}'
+    + '.lpw-top{position:relative;height:104px;background:linear-gradient(135deg,var(--lpw-ac),#15191e);display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding:12px}'
+    + '.lpw-logo{width:48px;height:48px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 8px 18px -8px rgba(0,0,0,.55);flex:0 0 auto}'
+    + '.lpw-logo img{max-width:84%;max-height:84%;object-fit:contain}.lpw-mono{font-family:Archivo,Arial;font-weight:900;color:var(--lpw-ac);font-size:21px}'
+    + '.lpw-trade{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.25);padding:4px 9px;border-radius:7px}'
+    + '.lpw-body{padding:15px 16px}.lpw-name{font-family:Archivo,Arial;font-weight:800;font-size:17px}.lpw-view{color:var(--lpw-ac);font-weight:700;font-size:14px;margin-top:7px}'
+    + '</style>'
+    + '<section class="lpw-wrap" id="recent-work"><div class="lpw-in"><h2 class="lpw-h">Recent work</h2><p class="lpw-sub">A few sites we\u2019ve designed for local trades \u2014 tap any one to see it live.</p><div class="lpw-grid">' + cards + '</div></div></section>';
+}
+
 async function renderShowcase(req, res, slug, base) {
   try {
     const prof = (await supabase.from('partner_profiles')
@@ -247,6 +297,7 @@ async function renderShowcase(req, res, slug, base) {
     const partner = (await supabase.from('partners').select('display_name,status').eq('id', prof.partner_id).maybeSingle()).data;
     if (!partner || partner.status === 'suspended' || partner.status === 'terminated') return notFound(res);
 
+    // Password gate (covers both the builder homepage and the generated fallback).
     if (prof.showcase_protected && prof.showcase_password) {
       const token = crypto.createHash('sha1').update(String(prof.showcase_password) + ':' + slug).digest('hex');
       const cookies = parseCookies(req.headers.cookie);
@@ -262,12 +313,26 @@ async function renderShowcase(req, res, slug, base) {
       }
     }
 
+    // Demos the partner has switched on for their page.
     const demos = (await supabase.from('sites')
       .select('slug,business_name,config')
       .eq('show_on_showcase', true)
       .or('servicing_partner_id.eq.' + prof.partner_id + ',referring_partner_id.eq.' + prof.partner_id)
       .limit(48)).data || [];
 
+    // Builder-editable homepage (a trade site flagged is_partner_home).
+    const home = (await supabase.from('sites')
+      .select('*').eq('servicing_partner_id', prof.partner_id).eq('is_partner_home', true).maybeSingle()).data;
+    const isPreview = !!(req.query && req.query.preview);
+    if (home && (home.status === 'live' || isPreview)) {
+      let html = buildTradeHtml(home, req.headers.host || '');
+      const accent = (prof.showcase_config && prof.showcase_config.accent) || '#ff6a1a';
+      const strip = partnerDemosBlock(demos, base, accent);
+      if (strip) { const i = html.lastIndexOf('</body>'); html = i >= 0 ? (html.slice(0, i) + strip + html.slice(i)) : (html + strip); }
+      return sendHtml(res, html, home.status === 'live');
+    }
+
+    // Fallback: the generated showcase page (until the home site is designed + published).
     res.setHeader('content-type', 'text/html; charset=utf-8');
     res.setHeader('cache-control', 'public, s-maxage=30, stale-while-revalidate=120');
     return res.status(200).send(showcaseHtml(prof, partner, demos, base));
