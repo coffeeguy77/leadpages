@@ -16,6 +16,7 @@
 //   • 'broker-leads' → the broker landing page (token template).  [default for broker]
 
 const { createClient } = require('@supabase/supabase-js');
+const crypto = require('crypto');
 const brokerTpl   = require('../broker.template.json');     // broker-leads
 const tradeTpl    = require('../trade.template.json');      // trade
 const brokerApp   = require('../brokerapp.template.json');  // broker-app (calculator suite)
@@ -103,6 +104,130 @@ function suspendedPage(res, site, tpl) {
     '</div></body></html>');
 }
 
+// ---- Partner showcase (a per-partner homepage on <slug>.leadpages.com.au) -----
+const SHOWCASE_SUFFIXES = (process.env.SHOWCASE_BASES || 'leadpages.com.au,leadpages.webculture.au')
+  .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+
+function showcaseSlugFromHost(host) {
+  for (const base of SHOWCASE_SUFFIXES) {
+    if (host.endsWith('.' + base)) {
+      const label = host.slice(0, host.length - ('.' + base).length);
+      if (label && label !== 'www' && label.indexOf('.') < 0) return { slug: label, base };
+    }
+  }
+  return null;
+}
+function parseCookies(h) {
+  const out = {};
+  String(h || '').split(';').forEach(p => { const i = p.indexOf('='); if (i > 0) out[p.slice(0, i).trim()] = decodeURIComponent(p.slice(i + 1).trim()); });
+  return out;
+}
+function scPasswordHtml(slug, partner, tried) {
+  const who = esc(partner.display_name || 'This partner');
+  return '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">' +
+    '<title>' + who + ' — protected</title>' +
+    '<body style="margin:0;font-family:Inter,system-ui,sans-serif;background:#15191e;color:#fff;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px">' +
+    '<form method="get" action="/" style="max-width:380px;width:100%;text-align:center">' +
+    '<div style="font-size:34px;margin-bottom:10px">&#128274;</div>' +
+    '<h1 style="font-family:Archivo,sans-serif;font-size:24px;margin:0 0 6px">Protected portfolio</h1>' +
+    '<p style="opacity:.75;margin:0 0 18px">Enter the password ' + who + ' shared with you.</p>' +
+    (tried ? '<p style="color:#ff8a65;margin:0 0 12px;font-size:14px">That password didn\u2019t match. Try again.</p>' : '') +
+    '<input name="pw" type="password" autofocus placeholder="Password" style="width:100%;padding:13px 15px;border-radius:11px;border:0;font-size:16px;margin-bottom:12px">' +
+    '<button type="submit" style="width:100%;padding:13px;border-radius:11px;border:0;background:#ff6a1a;color:#fff;font-weight:700;font-size:16px;cursor:pointer">View portfolio</button>' +
+    '</form></body></html>';
+}
+function scCard(demo, base) {
+  const cfg = demo.config || {};
+  const trade = esc((cfg.trade || '').toString());
+  const url = 'https://' + base + '/' + encodeURIComponent(demo.slug) + '?preview=1';
+  return '<a class="sc-card" href="' + url + '" target="_blank" rel="noopener">' +
+    '<div class="sc-card-top">' + (trade ? '<span class="sc-trade">' + trade + '</span>' : '') + '</div>' +
+    '<div class="sc-card-body"><div class="sc-name">' + esc(demo.business_name || demo.slug) + '</div>' +
+    '<div class="sc-view">View demo &rarr;</div></div></a>';
+}
+function showcaseHtml(prof, partner, demos, base) {
+  const cfg = prof.showcase_config || {};
+  const accent = /^#[0-9a-fA-F]{3,8}$/.test(cfg.accent || '') ? cfg.accent : '#ff6a1a';
+  const name = esc(partner.display_name || 'Local Web Partner');
+  const headline = esc(prof.showcase_headline || (partner.display_name ? (partner.display_name + ' — websites that make the phone ring') : 'Websites that make the phone ring'));
+  const intro = esc(cfg.intro || 'Professional, mobile-friendly websites for local businesses — built fast, with lead forms and local support. Take a look at some recent designs below.');
+  const logo = cfg.logo ? ('<img src="' + esc(cfg.logo) + '" alt="' + name + '" class="sc-logo">') : ('<span class="sc-logo-text">' + name + '</span>');
+  const email = prof.support_email ? esc(prof.support_email) : '';
+  const phone = prof.support_phone ? esc(prof.support_phone) : '';
+  const contact = (email || phone)
+    ? '<div class="sc-contact">' + (email ? '<a class="sc-btn" href="mailto:' + email + '">Email ' + name + '</a>' : '') + (phone ? '<a class="sc-btn ghost" href="tel:' + phone.replace(/[^+0-9]/g, '') + '">' + phone + '</a>' : '') + '</div>'
+    : '';
+  const grid = demos.length
+    ? '<div class="sc-grid">' + demos.map(d => scCard(d, base)).join('') + '</div>'
+    : '<p class="sc-empty">New designs coming soon.</p>';
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<title>' + name + ' — Local business websites</title>' +
+    '<meta name="description" content="' + intro + '">' +
+    '<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">' +
+    '<style>' +
+    ':root{--accent:' + accent + ';--ink:#15191e;--steel:#5b6571;--line:#e3e5e9;--paper:#fff;--hi:#f4f6f8}' +
+    '*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.55}' +
+    'h1,h2,h3{font-family:Archivo,sans-serif;font-weight:900;letter-spacing:-.02em;margin:0}a{color:inherit}' +
+    '.wrap{max-width:1080px;margin:0 auto;padding:0 22px}' +
+    '.sc-head{background:radial-gradient(120% 120% at 80% -10%,#1e242c,#15191e);color:#fff;padding:30px 0 64px}' +
+    '.sc-nav{display:flex;align-items:center;justify-content:space-between;height:64px}' +
+    '.sc-logo{max-height:42px;max-width:200px;display:block}.sc-logo-text{font-family:Archivo;font-weight:900;font-size:22px}' +
+    '.sc-hero{max-width:760px;margin-top:26px}.sc-hero h1{font-size:clamp(30px,5vw,50px);line-height:1.04}' +
+    '.sc-hero p{color:#c4ccd4;font-size:18px;margin:16px 0 0;max-width:60ch}' +
+    '.sc-contact{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap}' +
+    '.sc-btn{display:inline-flex;align-items:center;font-family:Archivo;font-weight:800;font-size:15px;padding:13px 22px;border-radius:12px;background:var(--accent);color:#fff;text-decoration:none}' +
+    '.sc-btn.ghost{background:transparent;border:1.5px solid rgba(255,255,255,.25);color:#fff}' +
+    '.sc-body{padding:54px 0 70px}.sc-body h2{font-size:26px;margin-bottom:6px}.sc-sub{color:var(--steel);margin:0 0 26px}' +
+    '.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}' +
+    '.sc-card{display:block;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .1s,box-shadow .15s;background:var(--paper)}' +
+    '.sc-card:hover{transform:translateY(-3px);box-shadow:0 16px 36px -18px rgba(0,0,0,.3)}' +
+    '.sc-card-top{height:96px;background:linear-gradient(135deg,var(--accent),#15191e);display:flex;align-items:flex-end;padding:12px}' +
+    '.sc-trade{font-family:Inter;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.25);padding:4px 9px;border-radius:7px}' +
+    '.sc-card-body{padding:15px 16px}.sc-name{font-family:Archivo;font-weight:800;font-size:17px}.sc-view{color:var(--accent);font-weight:700;font-size:14px;margin-top:7px}' +
+    '.sc-empty{color:var(--steel)}' +
+    '.sc-foot{border-top:1px solid var(--line);padding:24px 0;color:var(--steel);font-size:13px;text-align:center}' +
+    '</style></head><body>' +
+    '<header class="sc-head"><div class="wrap"><div class="sc-nav">' + logo + '</div>' +
+    '<div class="sc-hero"><h1>' + headline + '</h1><p>' + intro + '</p>' + contact + '</div></div></header>' +
+    '<main class="sc-body"><div class="wrap"><h2>Recent designs</h2><p class="sc-sub">Tap any design to see it live.</p>' + grid + '</div></main>' +
+    '<footer class="sc-foot"><div class="wrap">Powered by LeadPages</div></footer></body></html>';
+}
+async function renderShowcase(req, res, slug, base) {
+  try {
+    const prof = (await supabase.from('partner_profiles')
+      .select('partner_id,showcase_slug,showcase_enabled,showcase_protected,showcase_password,showcase_headline,showcase_config,support_email,support_phone')
+      .ilike('showcase_slug', slug).maybeSingle()).data;
+    if (!prof || !prof.showcase_enabled) return notFound(res);
+    const partner = (await supabase.from('partners').select('display_name,status').eq('id', prof.partner_id).maybeSingle()).data;
+    if (!partner || partner.status === 'suspended' || partner.status === 'terminated') return notFound(res);
+
+    if (prof.showcase_protected && prof.showcase_password) {
+      const token = crypto.createHash('sha1').update(String(prof.showcase_password) + ':' + slug).digest('hex');
+      const cookies = parseCookies(req.headers.cookie);
+      if (cookies['lp_sc_' + slug] !== token) {
+        const pw = (req.query && req.query.pw) || '';
+        if (pw && pw === prof.showcase_password) {
+          res.setHeader('Set-Cookie', 'lp_sc_' + slug + '=' + token + '; Path=/; Max-Age=2592000; HttpOnly; SameSite=Lax');
+          res.statusCode = 302; res.setHeader('location', '/'); return res.end();
+        }
+        res.status(200).setHeader('content-type', 'text/html; charset=utf-8');
+        res.setHeader('cache-control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex');
+        return res.send(scPasswordHtml(slug, partner, !!pw));
+      }
+    }
+
+    const demos = (await supabase.from('sites')
+      .select('slug,business_name,config')
+      .eq('show_on_showcase', true)
+      .or('servicing_partner_id.eq.' + prof.partner_id + ',referring_partner_id.eq.' + prof.partner_id)
+      .limit(48)).data || [];
+
+    res.setHeader('content-type', 'text/html; charset=utf-8');
+    res.setHeader('cache-control', 'public, s-maxage=30, stale-while-revalidate=120');
+    return res.status(200).send(showcaseHtml(prof, partner, demos, base));
+  } catch (e) { console.error('showcase error:', e); return notFound(res); }
+}
+
 module.exports = async (req, res) => {
   try {
     const rawHost = (req.headers.host || '').toLowerCase();
@@ -110,6 +235,10 @@ module.exports = async (req, res) => {
     const slug = (req.query && req.query.slug) || '';
     let page = (req.query && req.query.page) || '';
     const isCustom = !!host && !PRIMARY_HOSTS.includes(host);
+
+    // Partner showcase: <slug>.leadpages.com.au serves the partner's homepage.
+    const _sc = showcaseSlugFromHost(host);
+    if (_sc) return renderShowcase(req, res, _sc.slug, _sc.base);
 
     // A "/" hit on the primary host (or with no host) is the marketing homepage,
     // not a tenant page. Bounce to the static index so we never shadow it.
