@@ -97,7 +97,11 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     <p>Enter your email and we'll send you a secure sign-in link.</p>
     <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
     <button class="btn btn-brand" id="send-link" style="width:100%">Send sign-in link</button>
-    <div class="notice info hidden" id="login-sent">Check your inbox — we've sent a sign-in link to your email.</div>
+    <div class="notice info hidden" id="login-sent">Check your email — we sent a sign-in link and a 6-digit code. Click the link, or paste the code below.</div>
+    <div id="code-row" class="hidden" style="margin-top:14px">
+      <div class="field"><label for="login-code">6-digit code from your email</label><input id="login-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"></div>
+      <button class="btn btn-brand" id="verify-code" style="width:100%">Verify &amp; sign in</button>
+    </div>
     <div class="notice bad hidden" id="login-err"></div>
     <p class="muted" style="margin-top:18px">Not a partner yet? <a href="/partners">Apply to join the program</a>.</p>
   </div>
@@ -304,9 +308,22 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     var r=await sb.auth.signInWithOtp({ email:email, options:{ emailRedirectTo: location.origin+'/partner' } });
     els['send-link'].disabled=false; els['send-link'].textContent='Send sign-in link';
     if(r.error){ els['login-err'].textContent=r.error.message||'Could not send the link.'; els['login-err'].classList.remove('hidden'); }
-    else { els['login-sent'].classList.remove('hidden'); }
+    else { els['login-sent'].classList.remove('hidden'); document.getElementById('code-row').classList.remove('hidden'); }
   });
   els['email'].addEventListener('keydown',function(e){ if(e.key==='Enter') els['send-link'].click(); });
+  document.getElementById('verify-code').addEventListener('click', async function(){
+    var email=(els['email'].value||'').trim();
+    var token=(document.getElementById('login-code').value||'').trim().replace(/\s+/g,'');
+    els['login-err'].classList.add('hidden');
+    if(!token){ els['login-err'].textContent='Enter the code from your email.'; els['login-err'].classList.remove('hidden'); return; }
+    this.disabled=true; this.textContent='Verifying\u2026';
+    var r=await sb.auth.verifyOtp({ email:email, token:token, type:'email' });
+    this.disabled=false; this.textContent='Verify & sign in';
+    if(r.error){ els['login-err'].textContent=r.error.message||'That code did not work. Check it and try again.'; els['login-err'].classList.remove('hidden'); return; }
+    var session=(await sb.auth.getSession()).data.session;
+    if(session) loadPartner(session);
+  });
+  document.getElementById('login-code').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('verify-code').click(); });
   document.getElementById('none-signout').addEventListener('click',signOut);
   document.getElementById('pending-signout').addEventListener('click',signOut);
   document.getElementById('signout').addEventListener('click',signOut);

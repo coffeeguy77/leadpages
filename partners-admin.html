@@ -91,7 +91,11 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   <p>Enter your admin email for a secure sign-in link.</p>
   <div style="margin-bottom:14px"><label for="email">Email</label><input id="email" type="email" autocomplete="email"></div>
   <button class="btn btn-brand" id="send-link" style="width:100%">Send sign-in link</button>
-  <div class="notice info hidden" id="login-sent">Check your inbox for the sign-in link.</div>
+  <div class="notice info hidden" id="login-sent">Check your email — we sent a sign-in link and a 6-digit code. Click the link, or paste the code below.</div>
+  <div id="code-row" class="hidden" style="margin-top:14px">
+    <div style="margin-bottom:10px"><label for="login-code">6-digit code from your email</label><input id="login-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"></div>
+    <button class="btn btn-brand" id="verify-code" style="width:100%">Verify &amp; sign in</button>
+  </div>
   <div class="notice bad hidden" id="login-err"></div>
 </div></div>
 
@@ -204,9 +208,21 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     var r=await sb.auth.signInWithOtp({ email:email, options:{ emailRedirectTo: location.origin+'/partners-admin' } });
     this.disabled=false; this.textContent='Send sign-in link';
     if(r.error){ $('login-err').textContent=r.error.message; $('login-err').classList.remove('hidden'); }
-    else $('login-sent').classList.remove('hidden');
+    else { $('login-sent').classList.remove('hidden'); $('code-row').classList.remove('hidden'); }
   });
   $('email').addEventListener('keydown',function(e){ if(e.key==='Enter') $('send-link').click(); });
+  $('verify-code').addEventListener('click', async function(){
+    var email=($('email').value||'').trim();
+    var token=($('login-code').value||'').trim().replace(/\s+/g,'');
+    $('login-err').classList.add('hidden');
+    if(!token){ $('login-err').textContent='Enter the code from your email.'; $('login-err').classList.remove('hidden'); return; }
+    this.disabled=true; this.textContent='Verifying\u2026';
+    var r=await sb.auth.verifyOtp({ email:email, token:token, type:'email' });
+    this.disabled=false; this.textContent='Verify & sign in';
+    if(r.error){ $('login-err').textContent=r.error.message||'That code did not work.'; $('login-err').classList.remove('hidden'); return; }
+    boot();
+  });
+  $('login-code').addEventListener('keydown',function(e){ if(e.key==='Enter') $('verify-code').click(); });
   $('signout').addEventListener('click',function(e){ e.preventDefault(); signOut(); });
   $('denied-signout').addEventListener('click',signOut);
 
