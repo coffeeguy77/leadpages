@@ -148,37 +148,71 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       <!-- Overview -->
       <section class="panel on" data-panel="overview">
         <h2>Overview</h2>
-        <p class="sub">A snapshot of your clients and commissions. Figures fill in as you add clients.</p>
+        <p class="sub">A snapshot of your clients and commissions. Revenue figures arrive with commissions (Phase 3).</p>
         <div class="kpis">
-          <div class="card kpi"><div class="lab">Total clients</div><div class="val">0</div></div>
-          <div class="card kpi"><div class="lab">Active websites</div><div class="val">0</div></div>
-          <div class="card kpi"><div class="lab">Pending builds</div><div class="val">0</div></div>
+          <div class="card kpi"><div class="lab">Total clients</div><div class="val" id="kpi-clients">0</div></div>
+          <div class="card kpi"><div class="lab">Active websites</div><div class="val" id="kpi-active">0</div></div>
+          <div class="card kpi"><div class="lab">Pending builds</div><div class="val" id="kpi-pending">0</div></div>
           <div class="card kpi"><div class="lab">Recurring you generated</div><div class="val">$0<span style="font-size:14px;color:var(--ink-faint)">/mo</span></div></div>
           <div class="card kpi"><div class="lab">Est. next payout</div><div class="val">$0</div></div>
           <div class="card kpi"><div class="lab">Pending commissions</div><div class="val">$0</div></div>
           <div class="card kpi"><div class="lab">Paid commissions</div><div class="val">$0</div></div>
           <div class="card kpi"><div class="lab">Open support items</div><div class="val">0</div></div>
         </div>
-        <div class="card empty">
+        <div class="card empty" id="ov-empty">
           <div class="e-ico">🚀</div>
-          <strong>Your dashboard is ready</strong>
-          <p class="muted" style="margin:6px auto 0;max-width:46ch">Once you add your first client and generate their website, your clients, revenue and commissions will appear here.</p>
-          <div class="phase-tag">Client tools arrive in Phase 2</div>
+          <strong>Add your first client</strong>
+          <p class="muted" style="margin:6px auto 0;max-width:46ch">Bring on a local business and generate their website in seconds. Your clients and recurring income then build from here.</p>
+          <button class="btn btn-brand" id="ov-add" style="margin-top:14px">Add a customer</button>
         </div>
       </section>
 
       <!-- Clients -->
       <section class="panel" data-panel="clients">
-        <h2>My Clients</h2>
-        <p class="sub">The businesses you've brought on and the websites you manage for them.</p>
-        <div class="card empty"><div class="e-ico">📇</div><strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Your client list — plan, status, monthly fee and commission status — will appear here.</p><div class="phase-tag">Phase 2</div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+          <div><h2>My Clients</h2><p class="sub" style="margin-bottom:0">The businesses you've brought on and the websites you build for them.</p></div>
+          <button class="btn btn-brand" id="clients-add">+ Add customer</button>
+        </div>
+        <div id="clients-list" style="margin-top:18px"><div class="card empty"><p class="muted">Loading your clients…</p></div></div>
       </section>
 
       <!-- Add Customer -->
       <section class="panel" data-panel="add">
         <h2>Add Customer</h2>
-        <p class="sub">Bring on a new client and generate their website in seconds.</p>
-        <div class="card empty"><div class="e-ico">➕</div><strong>Adding clients is coming next</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">You'll enter the business details, pick a package and plan, and launch straight into the LeadPages site builder — with the client linked to you for commission.</p><div class="phase-tag">Phase 2</div></div>
+        <p class="sub">Enter the business details and create their website. The client is linked to you for commission, and you finish the build in the editor.</p>
+        <div class="card" style="padding:24px;max-width:680px" id="add-card">
+          <div class="row2">
+            <div class="field"><label for="a-biz">Business name *</label><input id="a-biz" type="text" placeholder="e.g. Hilltop Plumbing"></div>
+            <div class="field"><label for="a-industry">Industry / trade</label><input id="a-industry" type="text" list="trade-list" placeholder="e.g. Plumber"><datalist id="trade-list"><option>Plumber</option><option>Electrician</option><option>Carpenter</option><option>Painter</option><option>Landscaper</option><option>Cleaner</option><option>Builder</option><option>Roofer</option><option>Tiler</option><option>Cafe</option></datalist></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="a-contact">Contact name</label><input id="a-contact" type="text"></div>
+            <div class="field"><label for="a-email">Customer login email</label><input id="a-email" type="email" placeholder="they sign in to view their site"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="a-phone">Phone</label><input id="a-phone" type="tel"></div>
+            <div class="field"><label for="a-loc">Location / suburb</label><input id="a-loc" type="text"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="a-plan">Monthly subscription plan</label><select id="a-plan"><option value="">Choose later</option></select></div>
+            <div class="field"><label for="a-price">Build / setup price</label><input id="a-price" type="text" placeholder="e.g. $990"></div>
+          </div>
+          <div class="field"><label for="a-notes">Notes (optional)</label><textarea id="a-notes" rows="2" placeholder="Anything useful about this client or the job."></textarea></div>
+          <div class="save-row">
+            <button class="btn btn-brand" id="a-submit">Create client &amp; website</button>
+            <span class="notice bad hidden" id="a-err" style="margin:0;padding:8px 12px"></span>
+          </div>
+        </div>
+        <div class="card hidden" id="add-done" style="padding:26px;max-width:680px;text-align:center">
+          <div class="e-ico" style="width:46px;height:46px;border-radius:12px;background:var(--brand-tint);display:grid;place-items:center;margin:0 auto 12px;font-size:22px">✓</div>
+          <strong id="add-done-name" style="font-size:18px"></strong>
+          <p class="muted" style="margin:6px auto 14px;max-width:46ch">Client created and linked to you. Open the editor to brand and launch their website.</p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <a class="btn btn-brand" id="add-build" href="/manage" target="_blank" rel="noopener">Open the builder</a>
+            <a class="btn" id="add-view" href="#" target="_blank" rel="noopener">View site</a>
+            <button class="btn" id="add-another">Add another</button>
+          </div>
+        </div>
       </section>
 
       <!-- Commissions -->
@@ -315,6 +349,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     badge.className='statusbadge s-'+(p.status||'pending');
     fillProfile(state.profile);
     show('view-dash');
+    wireAdd(); loadPlans(); loadClients();
   }
 
   async function loadPartner(session){
@@ -337,6 +372,90 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     else if(st==='under_review'){ msg.textContent='Your partner account is under review. We\u2019ll be in touch shortly.'; }
     else { msg.textContent='Your partner account is being set up. We\u2019ll email you as soon as it\u2019s active.'; }
     show('view-pending');
+  }
+
+  // ---------- Phase 2: clients + add customer ----------
+  function esc(x){ return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function money(c){ if(c==null) return '\u2014'; return '$'+(Math.round(c)/100).toLocaleString(); }
+  var clients=[], addWired=false;
+
+  function gotoPanel(name){
+    document.querySelectorAll('#nav button[data-p]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-p')===name); });
+    document.querySelectorAll('.panel').forEach(function(s){ s.classList.toggle('on', s.getAttribute('data-panel')===name); });
+  }
+  function renderOverview(){
+    var total=clients.length, active=clients.filter(function(c){return c.status==='live';}).length;
+    document.getElementById('kpi-clients').textContent=total;
+    document.getElementById('kpi-active').textContent=active;
+    document.getElementById('kpi-pending').textContent=total-active;
+    var ov=document.getElementById('ov-empty'); if(ov) ov.style.display=total?'none':'';
+  }
+  function clientCard(c){
+    var plan=c.plan_key?(' \u00b7 '+esc(c.plan_key)):'';
+    var fee=(c.monthly_amount!=null)?(' \u00b7 '+money(c.monthly_amount)+'/mo'):'';
+    var cls=c.status==='live'?'s-active':'s-pending';
+    return '<div class="card" style="padding:16px 18px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
+      +'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(c.business_name||c.slug)+'</div>'
+      +'<div class="muted" style="font-size:13px;margin-top:2px">'+esc(c.slug)+plan+fee+'</div></div>'
+      +'<span class="statusbadge '+cls+'">'+esc(c.status||'')+'</span></div>'
+      +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'
+      +'<a class="btn" href="/manage" target="_blank" rel="noopener" style="padding:7px 12px;font-size:13px;background:var(--brand);border-color:var(--brand);color:#fff">Open builder</a>'
+      +'<a class="btn" href="/s/'+encodeURIComponent(c.slug)+'" target="_blank" rel="noopener" style="padding:7px 12px;font-size:13px">View site</a>'
+      +'</div></div>';
+  }
+  function renderClients(){
+    var box=document.getElementById('clients-list'); if(!box) return;
+    box.innerHTML = clients.length ? clients.map(clientCard).join('')
+      : '<div class="card empty"><div class="e-ico">\U0001F4C7</div><strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Add your first customer to create their website and start earning.</p></div>';
+  }
+  async function loadClients(){
+    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,created_at').order('created_at',{ascending:false});
+    clients=(r.data||[]); renderClients(); renderOverview();
+  }
+  async function loadPlans(){
+    var sel=document.getElementById('a-plan'); if(!sel || sel.dataset.loaded) return;
+    var r=await sb.from('billing_plans').select('key,name,monthly_amount,active,sort').eq('active',true).order('sort',{ascending:true});
+    if(r.data){ r.data.forEach(function(pl){ var o=document.createElement('option'); o.value=pl.key; o.textContent=pl.name+' \u2014 '+money(pl.monthly_amount)+'/mo'; sel.appendChild(o); }); sel.dataset.loaded='1'; }
+  }
+  function wireAdd(){
+    if(addWired) return; addWired=true;
+    document.getElementById('ov-add').addEventListener('click',function(){ gotoPanel('add'); });
+    document.getElementById('clients-add').addEventListener('click',function(){ gotoPanel('add'); });
+    document.getElementById('add-another').addEventListener('click',function(){
+      document.getElementById('add-card').classList.remove('hidden');
+      document.getElementById('add-done').classList.add('hidden');
+      ['a-biz','a-industry','a-contact','a-email','a-phone','a-loc','a-price','a-notes'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+      var ps=document.getElementById('a-plan'); if(ps) ps.value='';
+    });
+    document.getElementById('a-submit').addEventListener('click', async function(){
+      var err=document.getElementById('a-err'); err.classList.add('hidden');
+      var biz=(document.getElementById('a-biz').value||'').trim();
+      if(!biz){ err.textContent='Business name is required.'; err.classList.remove('hidden'); return; }
+      var btn=this; btn.disabled=true; btn.textContent='Creating\u2026';
+      var payload={
+        businessName:biz,
+        industry:(document.getElementById('a-industry').value||'').trim(),
+        contactName:(document.getElementById('a-contact').value||'').trim(),
+        customerEmail:(document.getElementById('a-email').value||'').trim(),
+        phone:(document.getElementById('a-phone').value||'').trim(),
+        location:(document.getElementById('a-loc').value||'').trim(),
+        planKey:(document.getElementById('a-plan').value||''),
+        buildPrice:(document.getElementById('a-price').value||'').trim(),
+        notes:(document.getElementById('a-notes').value||'').trim()
+      };
+      var res;
+      try{
+        var r=await fetch('/api/partner/add-customer',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)});
+        res=await r.json();
+      }catch(_e){ res={ok:false,error:'Network error. Please try again.'}; }
+      btn.disabled=false; btn.textContent='Create client & website';
+      if(!res||!res.ok){ err.textContent=(res&&res.error)||'Could not create the client. Please try again.'; err.classList.remove('hidden'); return; }
+      clients.unshift(res.site); renderClients(); renderOverview();
+      document.getElementById('add-done-name').textContent=res.site.business_name+' is ready';
+      document.getElementById('add-view').href='/s/'+encodeURIComponent(res.site.slug);
+      document.getElementById('add-card').classList.add('hidden');
+      document.getElementById('add-done').classList.remove('hidden');
+    });
   }
 
   async function boot(){
