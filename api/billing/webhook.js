@@ -46,7 +46,7 @@ const BUILD_RATE = Number(process.env.PARTNER_BUILD_RATE || 0.50);
 const RECUR_RATE = Number(process.env.PARTNER_RECUR_RATE || 0.20);
 
 async function siteForInvoice(inv) {
-  const cols = 'id, referring_partner_id, plan_key';
+  const cols = 'id, referring_partner_id, commission_partner_id, recurring_commission_active, plan_key';
   const lines = (inv.lines && inv.lines.data) || [];
   // a) explicit per-line site_id metadata (set on added-mode setup items / subs)
   for (const l of lines) { if (l.metadata && l.metadata.site_id) {
@@ -94,12 +94,14 @@ async function createCommission(o) {
   } catch (e) { /* unique index race — already recorded */ }
 }
 
+async function partnerIsActive(pid) {
+  if (!pid) return false;
+  const r = await sb.from('partners').select('status').eq('id', pid).maybeSingle();
+  return !!(r.data && r.data.status === 'active');
+}
 async function accrueCommissions(inv) {
   const site = await siteForInvoice(inv);
-  if (!site || !site.referring_partner_id) return;
-  const pr = await sb.from('partners').select('status').eq('id', site.referring_partner_id).maybeSingle();
-  if (!pr.data) return;
-  const active = pr.data.status === 'active';
+  if (!site) return;
   const toISO = u => (u ? new Date(u * 1000).toISOString() : null);
   let recurGross = 0, recurPS = null, recurPE = null, buildGross = 0;
   for (const l of ((inv.lines && inv.lines.data) || [])) {
@@ -108,8 +110,16 @@ async function accrueCommissions(inv) {
     if (recurring) { recurGross += amt; if (l.period) { if (recurPS == null) recurPS = l.period.start; recurPE = l.period.end || recurPE; } }
     else buildGross += amt;
   }
-  if (recurGross > 0) await createCommission({ partnerId: site.referring_partner_id, siteId: site.id, type: 'recurring', rate: RECUR_RATE, gross: recurGross, periodStart: toISO(recurPS), periodEnd: toISO(recurPE), invoiceId: inv.id, partnerActive: active });
-  if (buildGross > 0) await createCommission({ partnerId: site.referring_partner_id, siteId: site.id, type: 'build', rate: BUILD_RATE, gross: buildGross, periodStart: toISO(inv.created), invoiceId: inv.id, partnerActive: active });
+  // BUILD (50%) follows lead ATTRIBUTION — always the partner who generated the client.
+  if (buildGross > 0 && site.referring_partner_id) {
+    await createCommission({ partnerId: site.referring_partner_id, siteId: site.id, type: 'build', rate: BUILD_RATE, gross: buildGross, periodStart: toISO(inv.created), invoiceId: inv.id, partnerActive: await partnerIsActive(site.referring_partner_id) });
+  }
+  // RECURRING (20%) follows commission ELIGIBILITY — the current earner, and only
+  // while recurring is switched on for this client (transfers can redirect or stop it).
+  const recurPartner = site.commission_partner_id || site.referring_partner_id;
+  if (recurGross > 0 && recurPartner && site.recurring_commission_active !== false) {
+    await createCommission({ partnerId: recurPartner, siteId: site.id, type: 'recurring', rate: RECUR_RATE, gross: recurGross, periodStart: toISO(recurPS), periodEnd: toISO(recurPE), invoiceId: inv.id, partnerActive: await partnerIsActive(recurPartner) });
+  }
 }
 
 module.exports = async (req, res) => {
