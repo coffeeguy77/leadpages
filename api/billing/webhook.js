@@ -38,6 +38,80 @@ async function setSitesStatusForOwner(ownerId, status) {
   await sb.from('billing_customers').update({ status, updated_at: new Date().toISOString() }).eq('owner_user_id', ownerId);
 }
 
+// ---- Partner commissions (Phase 3) -----------------------------------------
+// Build = 50% of the one-off setup fee; Recurring = 20% of each paid monthly
+// subscription charge. Driven by actual PAID invoices, attributed to the site's
+// referring partner. Idempotent (unique indexes on the table back this up).
+const BUILD_RATE = Number(process.env.PARTNER_BUILD_RATE || 0.50);
+const RECUR_RATE = Number(process.env.PARTNER_RECUR_RATE || 0.20);
+
+async function siteForInvoice(inv) {
+  const cols = 'id, referring_partner_id, plan_key';
+  const lines = (inv.lines && inv.lines.data) || [];
+  // a) explicit per-line site_id metadata (set on added-mode setup items / subs)
+  for (const l of lines) { if (l.metadata && l.metadata.site_id) {
+    const r = await sb.from('sites').select(cols).eq('id', l.metadata.site_id).maybeSingle();
+    if (r.data) return r.data;
+  }}
+  // b) subscription metadata
+  const subId = inv.subscription || lines.map(l => l.subscription).find(Boolean);
+  if (subId) {
+    try { const sub = await stripe('subscriptions/' + subId, 'GET');
+      const sid = sub && sub.metadata && sub.metadata.site_id;
+      if (sid) { const r = await sb.from('sites').select(cols).eq('id', sid).maybeSingle(); if (r.data) return r.data; }
+    } catch (e) {}
+  }
+  // c) by subscription item -> sites.stripe_item_id
+  const itemId = lines.map(l => l.subscription_item).find(Boolean);
+  if (itemId) { const r = await sb.from('sites').select(cols).eq('stripe_item_id', itemId).maybeSingle(); if (r.data) return r.data; }
+  // d) owner's single billed site
+  const ownerId = await ownerForCustomer(inv.customer);
+  if (ownerId) { const r = await sb.from('sites').select(cols).eq('owner_user_id', ownerId).not('plan_key', 'is', null);
+    if (r.data && r.data.length === 1) return r.data[0]; }
+  return null;
+}
+
+async function createCommission(o) {
+  const commission = Math.round(o.gross * o.rate);
+  if (commission <= 0) return;
+  // dedupe (the unique indexes are the hard backstop)
+  if (o.type === 'build') {
+    const ex = await sb.from('partner_commissions').select('id').eq('site_id', o.siteId).eq('type', 'build').maybeSingle();
+    if (ex.data) return;
+  } else {
+    const ex = await sb.from('partner_commissions').select('id').eq('stripe_invoice_id', o.invoiceId).eq('site_id', o.siteId).eq('type', 'recurring').maybeSingle();
+    if (ex.data) return;
+  }
+  const exp = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+  try {
+    await sb.from('partner_commissions').insert({
+      partner_id: o.partnerId, site_id: o.siteId, type: o.type, rate: o.rate,
+      gross_amount: o.gross, commission_amount: commission,
+      status: o.partnerActive ? 'pending' : 'held',
+      period_start: o.periodStart || null, period_end: o.periodEnd || null,
+      stripe_invoice_id: o.invoiceId || null, expected_payment_date: exp,
+    });
+  } catch (e) { /* unique index race — already recorded */ }
+}
+
+async function accrueCommissions(inv) {
+  const site = await siteForInvoice(inv);
+  if (!site || !site.referring_partner_id) return;
+  const pr = await sb.from('partners').select('status').eq('id', site.referring_partner_id).maybeSingle();
+  if (!pr.data) return;
+  const active = pr.data.status === 'active';
+  const toISO = u => (u ? new Date(u * 1000).toISOString() : null);
+  let recurGross = 0, recurPS = null, recurPE = null, buildGross = 0;
+  for (const l of ((inv.lines && inv.lines.data) || [])) {
+    const amt = Number(l.amount || 0); if (amt <= 0) continue;
+    const recurring = !!(l.price && l.price.recurring) || l.type === 'subscription';
+    if (recurring) { recurGross += amt; if (l.period) { if (recurPS == null) recurPS = l.period.start; recurPE = l.period.end || recurPE; } }
+    else buildGross += amt;
+  }
+  if (recurGross > 0) await createCommission({ partnerId: site.referring_partner_id, siteId: site.id, type: 'recurring', rate: RECUR_RATE, gross: recurGross, periodStart: toISO(recurPS), periodEnd: toISO(recurPE), invoiceId: inv.id, partnerActive: active });
+  if (buildGross > 0) await createCommission({ partnerId: site.referring_partner_id, siteId: site.id, type: 'build', rate: BUILD_RATE, gross: buildGross, periodStart: toISO(inv.created), invoiceId: inv.id, partnerActive: active });
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return json(res, 405, { error: 'POST only' });
   const secret = process.env.STRIPE_BILLING_WEBHOOK_SECRET || process.env.STRIPE_WEBHOOK_SECRET;
@@ -75,6 +149,7 @@ module.exports = async (req, res) => {
       case 'invoice.payment_succeeded': {
         const ownerId = await ownerForCustomer(obj.customer);
         await setSitesStatusForOwner(ownerId, 'active'); // Stripe emails the receipt automatically
+        try { await accrueCommissions(obj); } catch (e) { console.error('commission accrue error:', e && e.message); }
         break;
       }
 
