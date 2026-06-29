@@ -38,6 +38,19 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g,
 // safe JSON for embedding inside a <script> tag (prevents </script> breakout)
 const safeJson = obj => JSON.stringify(obj || {}).replace(/</g, '\\u003c');
 
+// Send rendered HTML. Live sites are cached/CDN-friendly as before; non-live
+// (draft) previews are never cached and never indexed.
+function sendHtml(res, html, isLive) {
+  res.setHeader('content-type', 'text/html; charset=utf-8');
+  if (isLive) {
+    res.setHeader('cache-control', 'public, s-maxage=30, stale-while-revalidate=300');
+  } else {
+    res.setHeader('cache-control', 'no-store');
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  }
+  return res.status(200).send(html);
+}
+
 // Demo bar markup (only injected on the demo site). One button per enabled theme,
 // labelled with the client's name; the calculator wires them up client-side.
 function demoBarHtml(themes) {
@@ -122,8 +135,14 @@ module.exports = async (req, res) => {
         .from('sites').select('*').eq('custom_domain', host).maybeSingle());
     }
 
-    if (error || !site || site.status !== 'live') return notFound(res);
-    if (site.billing_status === 'suspended' || site.billing_status === 'flagged_deletion') {
+    if (error || !site) return notFound(res);
+    const isPreview = !!(req.query && req.query.preview);
+    const isLive = site.status === 'live';
+    // Non-live sites (e.g. partner drafts) are hidden from the public: a clean URL
+    // 404s. The builder can still preview them via ?preview=, and those responses
+    // are never cached or indexed (see sendHtml).
+    if (!isLive && !isPreview) return notFound(res);
+    if (isLive && (site.billing_status === 'suspended' || site.billing_status === 'flagged_deletion')) {
       const key = site.is_system ? 'suspended_system' : (site.is_demo ? 'suspended_demo' : 'suspended_client');
       let tpl = null;
       try { const r = await supabase.from('system_pages').select('content').eq('key', key).maybeSingle(); tpl = r.data && r.data.content; } catch (e) { tpl = null; }
@@ -156,9 +175,7 @@ module.exports = async (req, res) => {
 
       let html = brokerApp.html.replaceAll('__BROKERAPP_CONFIG__', safeJson(cfg));
       html = html.replaceAll('<!--DEMO_BAR-->', demoBar);
-      res.setHeader('content-type', 'text/html; charset=utf-8');
-      res.setHeader('cache-control', 'public, s-maxage=30, stale-while-revalidate=300');
-      return res.status(200).send(html);
+      return sendHtml(res, html, isLive);
     }
 
     // ---- token templates: broker-leads / trade ----
@@ -212,9 +229,7 @@ module.exports = async (req, res) => {
     };
     for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
 
-    res.setHeader('content-type', 'text/html; charset=utf-8');
-    res.setHeader('cache-control', 'public, s-maxage=30, stale-while-revalidate=300');
-    return res.status(200).send(html);
+    return sendHtml(res, html, isLive);
   } catch (e) {
     console.error('render error:', e);
     return res.status(500).send('Server error');
