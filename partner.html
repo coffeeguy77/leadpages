@@ -206,10 +206,10 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         <div class="card hidden" id="add-done" style="padding:26px;max-width:680px;text-align:center">
           <div class="e-ico" style="width:46px;height:46px;border-radius:12px;background:var(--brand-tint);display:grid;place-items:center;margin:0 auto 12px;font-size:22px">✓</div>
           <strong id="add-done-name" style="font-size:18px"></strong>
-          <p class="muted" style="margin:6px auto 14px;max-width:46ch">Client created and linked to you. Open the editor to brand and launch their website.</p>
+          <p class="muted" style="margin:6px auto 14px;max-width:46ch">Created as a <strong>draft</strong> and linked to you. Build it in the editor, then publish from My Clients when it's ready.</p>
           <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
             <a class="btn btn-brand" id="add-build" href="/manage" target="_blank" rel="noopener">Open the builder</a>
-            <a class="btn" id="add-view" href="#" target="_blank" rel="noopener">View site</a>
+            <a class="btn" id="add-view" href="#" target="_blank" rel="noopener">Preview</a>
             <button class="btn" id="add-another">Add another</button>
           </div>
         </div>
@@ -393,15 +393,23 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
   function clientCard(c){
     var plan=c.plan_key?(' \u00b7 '+esc(c.plan_key)):'';
     var fee=(c.monthly_amount!=null)?(' \u00b7 '+money(c.monthly_amount)+'/mo'):'';
-    var cls=c.status==='live'?'s-active':'s-pending';
+    var live=c.status==='live';
+    var badge=live?'<span class="statusbadge s-active">Live</span>':'<span class="statusbadge s-pending">Draft</span>';
+    var bs='padding:7px 12px;font-size:13px';
+    var brand=';background:var(--brand);border-color:var(--brand);color:#fff';
+    var acts='<a class="btn" href="/manage" target="_blank" rel="noopener" style="'+bs+brand+'">Open builder</a>';
+    if(live){
+      acts+='<a class="btn" href="/s/'+encodeURIComponent(c.slug)+'" target="_blank" rel="noopener" style="'+bs+'">View site</a>';
+      acts+='<button class="btn" data-unpub="'+esc(c.id)+'" style="'+bs+'">Unpublish</button>';
+    } else {
+      acts+='<button class="btn" data-pub="'+esc(c.id)+'" style="'+bs+brand+'">Publish</button>';
+      acts+='<a class="btn" href="/'+encodeURIComponent(c.slug)+'?preview=1" target="_blank" rel="noopener" style="'+bs+'">Preview</a>';
+    }
     return '<div class="card" style="padding:16px 18px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
       +'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(c.business_name||c.slug)+'</div>'
       +'<div class="muted" style="font-size:13px;margin-top:2px">'+esc(c.slug)+plan+fee+'</div></div>'
-      +'<span class="statusbadge '+cls+'">'+esc(c.status||'')+'</span></div>'
-      +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'
-      +'<a class="btn" href="/manage" target="_blank" rel="noopener" style="padding:7px 12px;font-size:13px;background:var(--brand);border-color:var(--brand);color:#fff">Open builder</a>'
-      +'<a class="btn" href="/s/'+encodeURIComponent(c.slug)+'" target="_blank" rel="noopener" style="padding:7px 12px;font-size:13px">View site</a>'
-      +'</div></div>';
+      +badge+'</div>'
+      +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+acts+'</div></div>';
   }
   function renderClients(){
     var box=document.getElementById('clients-list'); if(!box) return;
@@ -419,6 +427,18 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
   }
   function wireAdd(){
     if(addWired) return; addWired=true;
+    document.getElementById('clients-list').addEventListener('click', async function(e){
+      var pub=e.target.closest('[data-pub]'), un=e.target.closest('[data-unpub]');
+      if(!pub && !un) return;
+      var btn=pub||un; var id=btn.getAttribute(pub?'data-pub':'data-unpub');
+      var c=clients.find(function(x){return x.id===id;}); if(!c) return;
+      btn.disabled=true; var was=btn.textContent; btn.textContent=pub?'Publishing\u2026':'Updating\u2026';
+      var ns=pub?'live':'draft';
+      var r=await sb.from('sites').update({status:ns,updated_at:new Date().toISOString()}).eq('id',id).select('id,status');
+      btn.disabled=false; btn.textContent=was;
+      if(r.error||!r.data||!r.data.length){ alert('Could not update: '+((r.error&&r.error.message)||'no permission')); return; }
+      c.status=ns; renderClients(); renderOverview();
+    });
     document.getElementById('ov-add').addEventListener('click',function(){ gotoPanel('add'); });
     document.getElementById('clients-add').addEventListener('click',function(){ gotoPanel('add'); });
     document.getElementById('add-another').addEventListener('click',function(){
@@ -452,7 +472,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       if(!res||!res.ok){ err.textContent=(res&&res.error)||'Could not create the client. Please try again.'; err.classList.remove('hidden'); return; }
       clients.unshift(res.site); renderClients(); renderOverview();
       document.getElementById('add-done-name').textContent=res.site.business_name+' is ready';
-      document.getElementById('add-view').href='/s/'+encodeURIComponent(res.site.slug);
+      document.getElementById('add-view').href='/'+encodeURIComponent(res.site.slug)+'?preview=1';
       document.getElementById('add-card').classList.add('hidden');
       document.getElementById('add-done').classList.remove('hidden');
     });
