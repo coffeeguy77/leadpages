@@ -71,6 +71,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
 .s-new{background:var(--brand-tint);color:var(--brand-deep)}.s-reviewing{background:#eef0f3;color:#566}
 .s-approved,.s-active{background:#e6f5ec;color:#1c7a44}.s-rejected,.s-suspended,.s-terminated{background:#fbeae7;color:var(--bad)}
 .s-waitlisted,.s-pending,.s-under_review{background:#fdf4e3;color:var(--amber)}
+.s-paid{background:#e6f5ec;color:#1c7a44}.s-held{background:#fdf4e3;color:var(--amber)}.s-cancelled{background:#fbeae7;color:var(--bad)}
 .saved{color:var(--ok);font-weight:600;font-size:13px;opacity:0;transition:.2s}.saved.show{opacity:1}
 .empty{padding:40px;text-align:center;color:var(--ink-soft)}
 .linkpill{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;background:#eef0f3;color:#566}
@@ -105,6 +106,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   <div class="tabs">
     <button data-t="apps" class="on">Applications <span class="count" id="apps-count"></span></button>
     <button data-t="partners">Partners <span class="count" id="partners-count"></span></button>
+    <button data-t="commissions">Commissions <span class="count" id="comm-count"></span></button>
   </div>
 
   <!-- Applications -->
@@ -124,6 +126,19 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   <section class="section" data-sec="partners">
     <div id="partners-list"></div>
   </section>
+
+  <!-- Commissions -->
+  <section class="section" data-sec="commissions">
+    <div class="filters" id="comm-filters">
+      <span class="chip on" data-f="all">All</span>
+      <span class="chip" data-f="pending">Pending</span>
+      <span class="chip" data-f="approved">Approved</span>
+      <span class="chip" data-f="paid">Paid</span>
+      <span class="chip" data-f="held">Held</span>
+      <span class="chip" data-f="cancelled">Cancelled</span>
+    </div>
+    <div id="comm-admin-list"></div>
+  </section>
 </div></div>
 
 <script>
@@ -132,6 +147,11 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   var APP_STATUSES=['new','reviewing','approved','rejected','waitlisted'];
   var PARTNER_STATUSES=['pending','active','under_review','suspended','terminated'];
   var appFilter='all', apps=[], partners=[];
+  var COMM_STATUSES=['pending','approved','paid','held','cancelled'];
+  var commFilter='all', commissions=[], siteMap={};
+  function money(c){ if(c==null) return '$0'; return '$'+(Math.round(c)/100).toLocaleString(); }
+  function partnerName(pid){ var p=partners.find(function(x){return x.id===pid;}); return p?(p.display_name||p.email||'Partner'):'Partner'; }
+  function siteName(sid){ var n=siteMap[sid]; return n||'Client'; }
 
   function $(id){ return document.getElementById(id); }
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -165,6 +185,11 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     var c=e.target.closest('.chip'); if(!c) return;
     document.querySelectorAll('#app-filters .chip').forEach(function(x){ x.classList.toggle('on',x===c); });
     appFilter=c.getAttribute('data-f'); renderApps();
+  });
+  document.getElementById('comm-filters').addEventListener('click',function(e){
+    var c=e.target.closest('.chip'); if(!c) return;
+    document.querySelectorAll('#comm-filters .chip').forEach(function(x){ x.classList.toggle('on',x===c); });
+    commFilter=c.getAttribute('data-f'); renderComms();
   });
 
   // ---- Applications ----
@@ -276,12 +301,58 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     renderPartners();
   });
 
+  // ---- Commissions ----
+  function commCard(c){
+    var typeLabel=c.type==='build'?'Build 50%':'Recurring 20%';
+    var dollars=(Math.round(c.commission_amount)/100);
+    var period=(c.period_start?(' \u00b7 '+fmtDate(c.period_start)):'')+(c.period_end?(' \u2013 '+fmtDate(c.period_end)):'');
+    var dates=(c.paid_date?('Paid '+c.paid_date):(c.expected_payment_date?('Due '+c.expected_payment_date):''));
+    return '<div class="card item" data-id="'+c.id+'">'
+      + '<div class="head"><div><div class="nm">'+esc(partnerName(c.partner_id))+'</div>'
+      + '<div class="meta">'+esc(siteName(c.site_id))+' \u00b7 '+typeLabel+' \u00b7 on '+money(c.gross_amount)+period+(dates?(' \u00b7 '+esc(dates)):'')+'</div></div>'
+      + '<span class="statusbadge s-'+esc(c.status)+'">'+esc(c.status)+'</span></div>'
+      + '<div class="ctrls">'
+        + '<div><label>Commission ($)</label><input type="number" step="0.01" min="0" data-amt value="'+dollars+'" style="max-width:120px"></div>'
+        + '<div><label>Status</label>'+statusSelect(c.status,COMM_STATUSES,'data-status')+'</div>'
+        + '<div class="grow"><label>Notes</label><input type="text" data-notes value="'+esc(c.notes||'')+'"></div>'
+        + '<button class="btn btn-sm btn-brand" data-save>Save</button>'
+        + '<span class="saved" data-saved>Saved \u2713</span>'
+      + '</div></div>';
+  }
+  function renderComms(){
+    var list=commFilter==='all'?commissions:commissions.filter(function(c){ return c.status===commFilter; });
+    document.getElementById('comm-count').textContent=commissions.length?('\u00b7 '+commissions.length):'';
+    document.getElementById('comm-admin-list').innerHTML = list.length ? list.map(commCard).join('')
+      : '<div class="card empty">No commissions'+(commFilter!=='all'?(' with status \u201c'+commFilter+'\u201d'):'')+' yet. They appear automatically when a client\u2019s payment is processed.</div>';
+  }
+  document.getElementById('comm-admin-list').addEventListener('click', async function(e){
+    if(!e.target.closest('[data-save]')) return;
+    var card=e.target.closest('.item'); var id=card.getAttribute('data-id');
+    var c=commissions.find(function(x){return x.id===id;}); if(!c) return;
+    var btn=e.target.closest('[data-save]'); btn.disabled=true;
+    var status=card.querySelector('[data-status]').value;
+    var amt=Math.round(parseFloat(card.querySelector('[data-amt]').value||'0')*100);
+    if(!isFinite(amt)||amt<0) amt=c.commission_amount;
+    var patch={ status:status, commission_amount:amt, notes:(card.querySelector('[data-notes]').value||'').trim()||null, updated_at:new Date().toISOString() };
+    patch.paid_date = (status==='paid') ? (c.paid_date || new Date().toISOString().slice(0,10)) : null;
+    var r=await sb.from('partner_commissions').update(patch).eq('id',id).select('*');
+    btn.disabled=false;
+    if(r.error||!r.data||!r.data.length){ alert('Could not save: '+((r.error&&r.error.message)||'no permission')); return; }
+    Object.assign(c,r.data[0]);
+    var saved=card.querySelector('[data-saved]'); saved.classList.add('show'); setTimeout(function(){ saved.classList.remove('show'); },1600);
+    renderComms();
+  });
+
   // ---- load ----
   async function loadAll(){
     var a=await sb.from('partner_applications').select('*').order('created_at',{ascending:false});
     apps=(a.data||[]); renderApps();
     var p=await sb.from('partners').select('*').order('created_at',{ascending:false});
     partners=(p.data||[]); renderPartners();
+    var sm=await sb.from('sites').select('id,business_name,slug');
+    siteMap={}; (sm.data||[]).forEach(function(x){ siteMap[x.id]=x.business_name||x.slug; });
+    var cm=await sb.from('partner_commissions').select('*').order('created_at',{ascending:false});
+    commissions=(cm.data||[]); renderComms();
   }
 
   async function boot(){

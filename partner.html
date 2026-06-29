@@ -153,10 +153,10 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
           <div class="card kpi"><div class="lab">Total clients</div><div class="val" id="kpi-clients">0</div></div>
           <div class="card kpi"><div class="lab">Active websites</div><div class="val" id="kpi-active">0</div></div>
           <div class="card kpi"><div class="lab">Pending builds</div><div class="val" id="kpi-pending">0</div></div>
-          <div class="card kpi"><div class="lab">Recurring you generated</div><div class="val">$0<span style="font-size:14px;color:var(--ink-faint)">/mo</span></div></div>
-          <div class="card kpi"><div class="lab">Est. next payout</div><div class="val">$0</div></div>
-          <div class="card kpi"><div class="lab">Pending commissions</div><div class="val">$0</div></div>
-          <div class="card kpi"><div class="lab">Paid commissions</div><div class="val">$0</div></div>
+          <div class="card kpi"><div class="lab">Recurring you generated</div><div class="val" id="kpi-recurring">$0<span style="font-size:14px;color:var(--ink-faint)">/mo</span></div></div>
+          <div class="card kpi"><div class="lab">Est. next payout</div><div class="val" id="kpi-payout">$0</div></div>
+          <div class="card kpi"><div class="lab">Pending commissions</div><div class="val" id="kpi-pendingcomm">$0</div></div>
+          <div class="card kpi"><div class="lab">Paid commissions</div><div class="val" id="kpi-paidcomm">$0</div></div>
           <div class="card kpi"><div class="lab">Open support items</div><div class="val">0</div></div>
         </div>
         <div class="card empty" id="ov-empty">
@@ -218,8 +218,13 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       <!-- Commissions -->
       <section class="panel" data-panel="commissions">
         <h2>Commissions</h2>
-        <p class="sub">Your upfront and recurring commission, by client and period.</p>
-        <div class="card empty"><div class="e-ico">💰</div><strong>No commissions yet</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">Earn 50% of each build/setup fee and 20% of monthly subscription revenue for clients you generate. Paid on a 30-day cycle, subject to approval and account standing.</p><div class="phase-tag">Phase 3</div></div>
+        <p class="sub">50% of each build fee and 20% of monthly subscription revenue for clients you generate. Paid on a 30-day cycle, subject to approval and account standing.</p>
+        <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+          <div class="card kpi"><div class="lab">Pending</div><div class="val" id="cm-pending">$0</div></div>
+          <div class="card kpi"><div class="lab">Approved (next payout)</div><div class="val" id="cm-approved">$0</div></div>
+          <div class="card kpi"><div class="lab">Paid to date</div><div class="val" id="cm-paid">$0</div></div>
+        </div>
+        <div id="comm-list" style="margin-top:6px"></div>
       </section>
 
       <!-- Training -->
@@ -349,7 +354,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     badge.className='statusbadge s-'+(p.status||'pending');
     fillProfile(state.profile);
     show('view-dash');
-    wireAdd(); loadPlans(); loadClients();
+    wireAdd(); loadPlans(); loadClients(); loadCommissions();
   }
 
   async function loadPartner(session){
@@ -389,6 +394,8 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     document.getElementById('kpi-active').textContent=active;
     document.getElementById('kpi-pending').textContent=total-active;
     var ov=document.getElementById('ov-empty'); if(ov) ov.style.display=total?'none':'';
+    var rr=0; clients.forEach(function(c){ if(c.status==='live'&&c.monthly_amount!=null) rr+=Math.round(c.monthly_amount*0.20); });
+    var kr=document.getElementById('kpi-recurring'); if(kr) kr.innerHTML=money(rr)+'<span style="font-size:14px;color:var(--ink-faint)">/mo</span>';
   }
   function clientCard(c){
     var plan=c.plan_key?(' \u00b7 '+esc(c.plan_key)):'';
@@ -476,6 +483,36 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       document.getElementById('add-card').classList.add('hidden');
       document.getElementById('add-done').classList.remove('hidden');
     });
+  }
+
+  // ---------- Phase 3: commissions ----------
+  var commissions=[];
+  var COMM_STYLE={ pending:'background:#fdf4e3;color:#b9852b', approved:'background:#eaf3ef;color:#155c4a', paid:'background:#e6f5ec;color:#1c7a44', held:'background:#fdf4e3;color:#b9852b', cancelled:'background:#fbeae7;color:#b4453a' };
+  function commBadge(st){ return '<span class="statusbadge" style="'+(COMM_STYLE[st]||'background:#eef0f3;color:#566')+'">'+esc(st||'')+'</span>'; }
+  function clientName(siteId){ var c=clients.find(function(x){return x.id===siteId;}); return c?(c.business_name||c.slug):'Client'; }
+  function commRow(c){
+    var label=c.type==='build'?'Build (50%)':'Recurring (20%)';
+    var when=c.paid_date?('Paid '+c.paid_date):(c.expected_payment_date?('Due '+c.expected_payment_date):'');
+    return '<div class="card" style="padding:13px 16px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
+      +'<div><div style="font-weight:700;font-size:15px">'+esc(clientName(c.site_id))+'</div>'
+      +'<div class="muted" style="font-size:12.5px;margin-top:2px">'+label+' \u00b7 on '+money(c.gross_amount)+(when?(' \u00b7 '+esc(when)):'')+'</div></div>'
+      +'<div style="text-align:right"><div style="font-family:var(--font-display);font-weight:700;font-size:18px">'+money(c.commission_amount)+'</div>'+commBadge(c.status)+'</div>'
+      +'</div></div>';
+  }
+  function renderCommissions(){
+    var box=document.getElementById('comm-list'); if(!box) return;
+    box.innerHTML = commissions.length ? commissions.map(commRow).join('')
+      : '<div class="card empty"><div class="e-ico">\U0001F4B0</div><strong>No commissions yet</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">Your build and recurring commissions appear here automatically once a client\u2019s payment is processed.</p></div>';
+  }
+  async function loadCommissions(){
+    var r=await sb.from('partner_commissions').select('id,type,rate,gross_amount,commission_amount,status,period_start,period_end,site_id,expected_payment_date,paid_date,created_at').order('created_at',{ascending:false});
+    commissions=(r.data||[]);
+    var pend=0,appr=0,paid=0;
+    commissions.forEach(function(c){ if(c.status==='pending'||c.status==='held')pend+=c.commission_amount; else if(c.status==='approved')appr+=c.commission_amount; else if(c.status==='paid')paid+=c.commission_amount; });
+    var set=function(id,v){ var e=document.getElementById(id); if(e) e.textContent=money(v); };
+    set('cm-pending',pend); set('cm-approved',appr); set('cm-paid',paid);
+    set('kpi-pendingcomm',pend); set('kpi-payout',appr); set('kpi-paidcomm',paid);
+    renderCommissions();
   }
 
   async function boot(){
