@@ -109,6 +109,8 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     <button data-t="commissions">Commissions <span class="count" id="comm-count"></span></button>
     <button data-t="training">Training <span class="count" id="tm-count"></span></button>
     <button data-t="resources">Resources <span class="count" id="res-count"></span></button>
+    <button data-t="clients">Clients <span class="count" id="cl-count"></span></button>
+    <button data-t="audit">Audit</button>
   </div>
 
   <!-- Applications -->
@@ -154,6 +156,20 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><p class="muted" style="margin:0">Create and publish sales resources. Partners can copy text and download files.</p><button class="btn btn-brand" id="res-add">+ Add resource</button></div>
     <div id="resources-admin-list"></div>
   </section>
+
+  <!-- Clients & transfers -->
+  <section class="section" data-sec="clients">
+    <p class="muted" style="margin:0 0 14px">Every client that has a partner. Reassign servicing to another partner or to LeadPages direct — lead attribution and commission eligibility are controlled separately.</p>
+    <div id="clients-admin-list"></div>
+  </section>
+
+  <!-- Audit -->
+  <section class="section" data-sec="audit">
+    <h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 10px">Transfers</h3>
+    <div id="transfer-log"></div>
+    <h3 style="font-family:var(--font-display);font-size:17px;margin:22px 0 10px">Activity log</h3>
+    <div id="audit-log"></div>
+  </section>
 </div></div>
 
 <script>
@@ -167,6 +183,8 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   var TM_TYPES=['article','video','checklist','download'];
   var RES_TYPES=['script','email','sms','call','proposal','form','questionnaire','pitch','pricing','social','checklist','other'];
   var modules=[], resources=[];
+  var clientsAdmin=[], transfers=[], auditLogs=[], me=null;
+  function plabel(id){ return id ? partnerName(id) : 'LeadPages direct'; }
   function money(c){ if(c==null) return '$0'; return '$'+(Math.round(c)/100).toLocaleString(); }
   function partnerName(pid){ var p=partners.find(function(x){return x.id===pid;}); return p?(p.display_name||p.email||'Partner'):'Partner'; }
   function siteName(sid){ var n=siteMap[sid]; return n||'Client'; }
@@ -315,6 +333,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     btn.disabled=false;
     if(r.error||!r.data||!r.data.length){ alert('Could not save: '+((r.error&&r.error.message)||'no permission')); return; }
     Object.assign(p,r.data[0]);
+    try{ sb.from('partner_audit_logs').insert({ actor_id:me&&me.id, actor_email:me&&me.email, action:'partner_status', partner_id:id, detail:{status:patch.status} }); }catch(_e){}
     var saved=card.querySelector('[data-saved]'); saved.classList.add('show'); setTimeout(function(){ saved.classList.remove('show'); },1600);
     renderPartners();
   });
@@ -371,7 +390,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     siteMap={}; (sm.data||[]).forEach(function(x){ siteMap[x.id]=x.business_name||x.slug; });
     var cm=await sb.from('partner_commissions').select('*').order('created_at',{ascending:false});
     commissions=(cm.data||[]); renderComms();
-    loadModules(); loadResources();
+    loadModules(); loadResources(); loadAdminClients(); loadAudit();
   }
 
   // ---- Training + Resources admin ----
@@ -460,6 +479,101 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   wireCrud('training-admin-list','partner_training_modules',function(){return modules;},renderModules);
   wireCrud('resources-admin-list','partner_resources',function(){return resources;},renderResources);
 
+  // ---- Clients & transfers ----
+  function activePartnerOptions(sel){
+    return '<option value="__lp__">LeadPages direct</option>' + partners.filter(function(p){return p.status==='active';}).map(function(p){ return '<option value="'+p.id+'"'+(p.id===sel?' selected':'')+'>'+esc(p.display_name||p.email||'Partner')+'</option>'; }).join('');
+  }
+  function clientAdminCard(c){
+    var today=new Date().toISOString().slice(0,10);
+    var recTxt = c.recurring_commission_active===false ? 'off' : 'on';
+    return '<div class="card item" data-id="'+c.id+'"><div class="head"><div><div class="nm">'+esc(c.business_name||c.slug)+'</div>'
+      + '<div class="meta">'+esc(c.slug)+' \u00b7 '+esc(c.status||'')+(c.plan_key?(' \u00b7 '+esc(c.plan_key)):'')+'</div></div>'
+      + '<span class="statusbadge s-'+(c.status==='live'?'active':'pending')+'">'+(c.status==='live'?'Live':'Draft')+'</span></div>'
+      + '<div class="kv" style="margin-top:10px">'
+        + '<div class="k">Referred by</div><div class="v">'+esc(plabel(c.referring_partner_id))+'</div>'
+        + '<div class="k">Serviced by</div><div class="v">'+esc(plabel(c.servicing_partner_id))+' <span class="muted">('+esc(c.servicing_status||'\u2014')+')</span></div>'
+        + '<div class="k">Recurring earner</div><div class="v">'+esc(plabel(c.commission_partner_id))+' <span class="muted">(recurring '+recTxt+')</span></div>'
+      + '</div>'
+      + '<div class="ctrls"><button class="btn btn-sm" data-xfer>Transfer / reassign</button></div>'
+      + '<div class="xfer hidden" style="margin-top:6px;padding-top:14px;border-top:1px solid var(--line)">'
+        + '<div class="ctrls" style="border:0;padding:0">'
+          + '<div class="grow"><label>New servicing partner</label><select data-x="to">'+activePartnerOptions(c.servicing_partner_id)+'</select></div>'
+          + '<div><label>Effective date</label><input type="date" data-x="eff" value="'+today+'"></div>'
+        + '</div>'
+        + '<div class="ctrls" style="border:0;padding-top:6px"><div class="grow"><label>Reason</label><input type="text" data-x="reason" placeholder="e.g. partner inactive, client request"></div></div>'
+        + '<div class="ctrls" style="border:0;padding-top:6px;align-items:center">'
+          + '<label style="display:inline-flex;gap:6px;align-items:center;font-weight:600;color:var(--ink-soft)"><input type="checkbox" data-x="keep" checked style="width:auto"> Keep original lead attribution</label>'
+          + '<label style="display:inline-flex;gap:6px;align-items:center;font-weight:600;color:var(--ink-soft)"><input type="checkbox" data-x="cont" checked style="width:auto"> Continue recurring commission</label>'
+          + '<div><label>Recurring earner</label><select data-x="earner"><option value="original">Original partner</option><option value="new">New servicing partner</option><option value="none">Nobody</option></select></div>'
+        + '</div>'
+        + '<div class="ctrls" style="border:0;padding-top:6px"><div class="grow"><label>Notes</label><input type="text" data-x="notes"></div>'
+          + '<button class="btn btn-sm btn-brand" data-apply>Apply transfer</button><button class="btn btn-sm" data-cancelx>Cancel</button></div>'
+      + '</div></div>';
+  }
+  function renderClientsAdmin(){
+    document.getElementById('cl-count').textContent=clientsAdmin.length?('\u00b7 '+clientsAdmin.length):'';
+    document.getElementById('clients-admin-list').innerHTML = clientsAdmin.length ? clientsAdmin.map(clientAdminCard).join('')
+      : '<div class="card empty">No clients have a partner yet. Clients added by partners appear here.</div>';
+  }
+  async function loadAdminClients(){
+    var r=await sb.from('sites').select('id,business_name,slug,status,plan_key,monthly_amount,referring_partner_id,servicing_partner_id,commission_partner_id,recurring_commission_active,servicing_status')
+      .or('referring_partner_id.not.is.null,servicing_partner_id.not.is.null,commission_partner_id.not.is.null').order('business_name',{ascending:true});
+    clientsAdmin=(r.data||[]); renderClientsAdmin();
+  }
+  document.getElementById('clients-admin-list').addEventListener('click', async function(e){
+    var card=e.target.closest('.item'); if(!card) return; var id=card.getAttribute('data-id');
+    var c=clientsAdmin.find(function(x){return x.id===id;}); if(!c) return;
+    if(e.target.closest('[data-xfer]')){ card.querySelector('.xfer').classList.toggle('hidden'); return; }
+    if(e.target.closest('[data-cancelx]')){ card.querySelector('.xfer').classList.add('hidden'); return; }
+    if(e.target.closest('[data-apply]')){
+      var btn=e.target.closest('[data-apply]'); btn.disabled=true;
+      var get=function(k){ var el=card.querySelector('[data-x="'+k+'"]'); return el?el.value:''; };
+      var getc=function(k){ var el=card.querySelector('[data-x="'+k+'"]'); return el?el.checked:false; };
+      var toSel=get('to'); var toId=(toSel==='__lp__')?null:toSel;
+      var fromId=c.servicing_partner_id||null;
+      var keep=getc('keep'), cont=getc('cont'), earner=get('earner');
+      var origCommission=c.commission_partner_id||c.referring_partner_id||null;
+      var patch={ servicing_partner_id:toId, servicing_status: toId?'partner_serviced':'leadpages_direct', updated_at:new Date().toISOString() };
+      if(!keep) patch.referring_partner_id=toId;             // reassign attribution to the new partner (or null)
+      if(!cont){ patch.recurring_commission_active=false; }
+      else {
+        patch.recurring_commission_active=true;
+        if(earner==='new' && toId) patch.commission_partner_id=toId;
+        else if(earner==='none' || (earner==='new' && !toId)) patch.recurring_commission_active=false;
+        else patch.commission_partner_id=origCommission;
+      }
+      var r1=await sb.from('sites').update(patch).eq('id',id).select('*');
+      if(r1.error||!r1.data||!r1.data.length){ btn.disabled=false; alert('Could not transfer: '+((r1.error&&r1.error.message)||'no permission')); return; }
+      await sb.from('client_transfer_events').insert({ site_id:id, from_partner_id:fromId, to_partner_id:toId, reason:(get('reason')||'').trim()||null, effective_date:get('eff')||null, keep_commission_trail:keep, continue_recurring:cont, recurring_earner:earner, notes:(get('notes')||'').trim()||null, created_by:me&&me.id, created_by_email:me&&me.email });
+      await sb.from('partner_audit_logs').insert({ actor_id:me&&me.id, actor_email:me&&me.email, action:'transfer', partner_id:toId, site_id:id, detail:{from:fromId,to:toId,keep_attribution:keep,continue_recurring:cont,earner:earner} });
+      btn.disabled=false;
+      Object.assign(c,r1.data[0]); renderClientsAdmin(); loadAudit();
+    }
+  });
+
+  // ---- Audit ----
+  function transferRow(t){
+    return '<div class="card" style="padding:13px 16px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">'
+      + '<div><div style="font-weight:700">'+esc(plabel(t.from_partner_id))+' \u2192 '+esc(plabel(t.to_partner_id))+'</div>'
+      + '<div class="muted" style="font-size:12.5px;margin-top:2px">'+esc(siteName(t.site_id))+(t.reason?(' \u00b7 '+esc(t.reason)):'')+' \u00b7 '+fmtDate(t.created_at)+'</div></div>'
+      + '<div class="muted" style="font-size:12px;text-align:right">attribution '+(t.keep_commission_trail?'kept':'moved')+'<br>recurring '+(t.continue_recurring?('on \u2192 '+esc(t.recurring_earner||'')):'off')+'</div>'
+      + '</div></div>';
+  }
+  function auditRow(a){
+    return '<div class="card" style="padding:11px 15px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">'
+      + '<div style="font-size:13.5px"><strong>'+esc(a.action||'')+'</strong> \u00b7 '+esc(a.actor_email||'system')+'</div>'
+      + '<div class="muted" style="font-size:12px">'+fmtDate(a.created_at)+'</div></div>'
+      + (a.detail?('<div class="muted" style="font-size:12px;margin-top:4px;white-space:pre-wrap">'+esc(JSON.stringify(a.detail))+'</div>'):'')+'</div>';
+  }
+  async function loadAudit(){
+    var t=await sb.from('client_transfer_events').select('*').order('created_at',{ascending:false}).limit(100);
+    transfers=(t.data||[]);
+    document.getElementById('transfer-log').innerHTML = transfers.length ? transfers.map(transferRow).join('') : '<div class="card empty">No transfers yet.</div>';
+    var a=await sb.from('partner_audit_logs').select('*').order('created_at',{ascending:false}).limit(100);
+    auditLogs=(a.data||[]);
+    document.getElementById('audit-log').innerHTML = auditLogs.length ? auditLogs.map(auditRow).join('') : '<div class="card empty">No activity recorded yet.</div>';
+  }
+
   async function boot(){
     var session=(await sb.auth.getSession()).data.session;
     if(!session){ show('view-login'); return; }
@@ -468,6 +582,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     var prof=await sb.from('profiles').select('is_super_admin').eq('id',session.user.id).maybeSingle();
     if(!(prof.data && prof.data.is_super_admin)){ show('view-denied'); return; }
     show('view-admin');
+    me=session.user;
     loadAll();
   }
   sb.auth.onAuthStateChange(function(_e,sess){ if(sess && $('view-login') && !$('view-login').classList.contains('hidden')) boot(); });

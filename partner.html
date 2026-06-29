@@ -403,21 +403,29 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     var plan=c.plan_key?(' \u00b7 '+esc(c.plan_key)):'';
     var fee=(c.monthly_amount!=null)?(' \u00b7 '+money(c.monthly_amount)+'/mo'):'';
     var live=c.status==='live';
+    var mine=!!(state.partner && c.servicing_partner_id===state.partner.id);
     var badge=live?'<span class="statusbadge s-active">Live</span>':'<span class="statusbadge s-pending">Draft</span>';
+    if(!mine) badge+=' <span class="statusbadge" style="background:#eef0f3;color:#566">Serviced elsewhere</span>';
     var bs='padding:7px 12px;font-size:13px';
     var brand=';background:var(--brand);border-color:var(--brand);color:#fff';
-    var acts='<a class="btn" href="/manage" target="_blank" rel="noopener" style="'+bs+brand+'">Open builder</a>';
-    if(live){
-      acts+='<a class="btn" href="/s/'+encodeURIComponent(c.slug)+'" target="_blank" rel="noopener" style="'+bs+'">View site</a>';
-      acts+='<button class="btn" data-unpub="'+esc(c.id)+'" style="'+bs+'">Unpublish</button>';
+    var acts='';
+    if(mine){
+      acts+='<a class="btn" href="/manage" target="_blank" rel="noopener" style="'+bs+brand+'">Open builder</a>';
+      if(live){
+        acts+='<a class="btn" href="/s/'+encodeURIComponent(c.slug)+'" target="_blank" rel="noopener" style="'+bs+'">View site</a>';
+        acts+='<button class="btn" data-unpub="'+esc(c.id)+'" style="'+bs+'">Unpublish</button>';
+      } else {
+        acts+='<button class="btn" data-pub="'+esc(c.id)+'" style="'+bs+brand+'">Publish</button>';
+        acts+='<a class="btn" href="/'+encodeURIComponent(c.slug)+'?preview=1" target="_blank" rel="noopener" style="'+bs+'">Preview</a>';
+      }
     } else {
-      acts+='<button class="btn" data-pub="'+esc(c.id)+'" style="'+bs+brand+'">Publish</button>';
-      acts+='<a class="btn" href="/'+encodeURIComponent(c.slug)+'?preview=1" target="_blank" rel="noopener" style="'+bs+'">Preview</a>';
+      if(live) acts+='<a class="btn" href="/s/'+encodeURIComponent(c.slug)+'" target="_blank" rel="noopener" style="'+bs+'">View site</a>';
+      else acts+='<span class="muted" style="font-size:13px;align-self:center">Managed by LeadPages</span>';
     }
     return '<div class="card" style="padding:16px 18px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
       +'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(c.business_name||c.slug)+'</div>'
       +'<div class="muted" style="font-size:13px;margin-top:2px">'+esc(c.slug)+plan+fee+'</div></div>'
-      +badge+'</div>'
+      +'<div>'+badge+'</div></div>'
       +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+acts+'</div></div>';
   }
   function renderClients(){
@@ -426,7 +434,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       : '<div class="card empty"><div class="e-ico">\U0001F4C7</div><strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Add your first customer to create their website and start earning.</p></div>';
   }
   async function loadClients(){
-    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,created_at').order('created_at',{ascending:false});
+    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,created_at').order('created_at',{ascending:false});
     clients=(r.data||[]); renderClients(); renderOverview();
   }
   async function loadPlans(){
