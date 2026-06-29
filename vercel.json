@@ -1,15 +1,56 @@
 {
   "crons": [
-    { "path": "/api/billing/cron", "schedule": "0 3 * * *" }
+    {
+      "path": "/api/billing/cron",
+      "schedule": "0 3 * * *"
+    }
   ],
   "rewrites": [
-    { "source": "/manage", "destination": "/manage.html" },
-    { "source": "/tradies", "destination": "/tradies.html" },
-    { "source": "/domains", "destination": "/domains.html" },
-    { "source": "/", "has": [{ "type": "host", "value": "^(www\\.)?leadpages\\.(webculture\\.au|com\\.au)$" }], "destination": "/home.html" },
-    { "source": "/", "destination": "/api/render" },
-    { "source": "/s/:slug", "destination": "/api/render?slug=:slug" },
-    { "source": "/:slug/:page", "destination": "/api/render?slug=:slug&page=:page" },
-    { "source": "/:slug", "destination": "/api/render?slug=:slug" }
+    {
+      "source": "/manage",
+      "destination": "/manage.html"
+    },
+    {
+      "source": "/tradies",
+      "destination": "/tradies.html"
+    },
+    {
+      "source": "/domains",
+      "destination": "/domains.html"
+    },
+    {
+      "source": "/partners",
+      "destination": "/partners.html"
+    },
+    {
+      "source": "/partner",
+      "destination": "/partners.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "^(www\\.)?leadpages\\.(webculture\\.au|com\\.au)$"
+        }
+      ],
+      "destination": "/home.html"
+    },
+    {
+      "source": "/",
+      "destination": "/api/render"
+    },
+    {
+      "source": "/s/:slug",
+      "destination": "/api/render?slug=:slug"
+    },
+    {
+      "source": "/:slug/:page",
+      "destination": "/api/render?slug=:slug&page=:page"
+    },
+    {
+      "source": "/:slug",
+      "destination": "/api/render?slug=:slug"
+    }
   ]
 }
