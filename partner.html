@@ -139,6 +139,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         <button data-p="overview" class="on">📊 Overview</button>
         <button data-p="clients">📇 My Clients</button>
         <button data-p="add">➕ Add Customer</button>
+        <button data-p="demos">🎨 Demos &amp; themes</button>
         <button data-p="commissions">💰 Commissions</button>
         <button data-p="training">🎓 Training Centre</button>
         <button data-p="resources">📝 Sales Resources</button>
@@ -201,6 +202,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
             <div class="field"><label for="a-plan">Monthly subscription plan</label><select id="a-plan"><option value="">Choose later</option></select></div>
             <div class="field"><label for="a-price">Build / setup price</label><input id="a-price" type="text" placeholder="e.g. $990"></div>
           </div>
+          <div class="field"><label for="a-theme">Start from a saved theme (optional)</label><select id="a-theme"><option value="">Blank trade site</option></select></div>
           <div class="field"><label for="a-notes">Notes (optional)</label><textarea id="a-notes" rows="2" placeholder="Anything useful about this client or the job."></textarea></div>
           <div class="save-row">
             <button class="btn btn-brand" id="a-submit">Create client &amp; website</button>
@@ -217,6 +219,24 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
             <button class="btn" id="add-another">Add another</button>
           </div>
         </div>
+      </section>
+
+      <!-- Demos & themes -->
+      <section class="panel" data-panel="demos">
+        <h2>Demos &amp; themes</h2>
+        <p class="sub">Mock up tradie sites for prospects — no client, no billing. Save a design as a theme to reuse, or turn a demo into a client when you land them.</p>
+        <div class="card" style="padding:20px;max-width:680px">
+          <div class="row2">
+            <div class="field"><label for="m-biz">Demo name (e.g. the prospect's business)</label><input id="m-biz" type="text"></div>
+            <div class="field"><label for="m-industry">Industry / trade</label><input id="m-industry" type="text" list="trade-list"></div>
+          </div>
+          <div class="field"><label for="m-theme">Start from a saved theme (optional)</label><select id="m-theme"><option value="">Blank trade site</option></select></div>
+          <div class="save-row"><button class="btn btn-brand" id="m-create">Create demo</button><span class="notice bad hidden" id="m-err" style="margin:0;padding:8px 12px"></span></div>
+        </div>
+        <h3 style="font-family:var(--font-display);font-size:17px;margin:24px 0 10px">Your demos</h3>
+        <div id="mockups-list"></div>
+        <h3 style="font-family:var(--font-display);font-size:17px;margin:24px 0 10px">Saved themes</h3>
+        <div id="themes-list"></div>
       </section>
 
       <!-- Commissions -->
@@ -373,7 +393,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     badge.className='statusbadge s-'+(p.status||'pending');
     fillProfile(state.profile);
     show('view-dash');
-    wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources();
+    wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes();
   }
 
   async function loadPartner(session){
@@ -451,8 +471,11 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       : '<div class="card empty"><div class="e-ico">\U0001F4C7</div><strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Add your first customer to create their website and start earning.</p></div>';
   }
   async function loadClients(){
-    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,created_at').order('created_at',{ascending:false});
-    clients=(r.data||[]); renderClients(); renderOverview();
+    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,show_on_showcase,created_at').order('created_at',{ascending:false});
+    var all=(r.data||[]);
+    clients=all.filter(function(x){return !x.is_mockup;});
+    mockups=all.filter(function(x){return x.is_mockup;});
+    renderClients(); renderOverview(); renderMockups();
   }
   async function loadPlans(){
     var sel=document.getElementById('a-plan'); if(!sel || sel.dataset.loaded) return;
@@ -461,6 +484,64 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
   }
   function wireAdd(){
     if(addWired) return; addWired=true;
+    document.getElementById('m-create').addEventListener('click', async function(){
+      var err=document.getElementById('m-err'); err.classList.add('hidden');
+      var btn=this; btn.disabled=true; btn.textContent='Creating\u2026';
+      var payload={ businessName:(document.getElementById('m-biz').value||'').trim()||'Untitled demo', industry:(document.getElementById('m-industry').value||'').trim(), themeId:(document.getElementById('m-theme').value||'') };
+      var res;
+      try{ var r=await fetch('/api/partner/add-mockup',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
+      btn.disabled=false; btn.textContent='Create demo';
+      if(!res||!res.ok){ err.textContent=(res&&res.error)||'Could not create the demo.'; err.classList.remove('hidden'); return; }
+      mockups.unshift(res.site); renderMockups();
+      document.getElementById('m-biz').value=''; document.getElementById('m-industry').value=''; document.getElementById('m-theme').value='';
+      window.open('/manage','_blank','noopener');
+    });
+    document.getElementById('mockups-list').addEventListener('click', async function(e){
+      var card=e.target.closest('[data-id]'); if(!card) return; var id=card.getAttribute('data-id');
+      var m=mockups.find(function(x){return x.id===id;}); if(!m) return;
+      if(e.target.closest('[data-savetheme]')){
+        var name=prompt('Name this theme:', (m.business_name||'Demo')+' theme'); if(!name) return;
+        var sc=await sb.from('sites').select('config').eq('id',id).maybeSingle();
+        var r=await sb.from('partner_themes').insert({partner_id:state.partner.id, name:name.trim(), config:(sc.data&&sc.data.config)||{}, source_site_id:id}).select('*').single();
+        if(r.error){ alert('Could not save theme: '+r.error.message); return; }
+        themes.unshift(r.data); renderThemes(); fillThemeSelects(); renderMockups();
+      }
+      if(e.target.closest('[data-convert]')){
+        var email=prompt('Customer login email (so they can sign in to their site):',''); if(email===null) return;
+        var r=await sb.from('sites').update({is_mockup:false, owner_email:(email||'').trim()||null, servicing_status:'partner_serviced', updated_at:new Date().toISOString()}).eq('id',id).select('id');
+        if(r.error||!r.data||!r.data.length){ alert('Could not convert: '+((r.error&&r.error.message)||'no permission')); return; }
+        loadClients(); gotoPanel('clients');
+      }
+      if(e.target.closest('[data-del]')){
+        if(!confirm('Delete this demo? This cannot be undone.')) return;
+        var r=await sb.from('sites').delete().eq('id',id);
+        if(r.error){ alert('Could not delete: '+r.error.message); return; }
+        mockups=mockups.filter(function(x){return x.id!==id;}); renderMockups();
+      }
+    });
+    document.getElementById('mockups-list').addEventListener('change', async function(e){
+      var card=e.target.closest('[data-id]'); if(!card) return; var id=card.getAttribute('data-id');
+      if(e.target.matches('[data-showcase]')){
+        await sb.from('sites').update({show_on_showcase:e.target.checked, updated_at:new Date().toISOString()}).eq('id',id);
+        var m=mockups.find(function(x){return x.id===id;}); if(m) m.show_on_showcase=e.target.checked;
+      }
+      if(e.target.matches('[data-applytheme]')){
+        var tid=e.target.value; if(!tid) return;
+        var t=await sb.from('partner_themes').select('config').eq('id',tid).maybeSingle();
+        if(!t.data){ alert('Theme not found'); return; }
+        var r=await sb.from('sites').update({config:t.data.config, updated_at:new Date().toISOString()}).eq('id',id).select('id');
+        e.target.value='';
+        if(r.error||!r.data||!r.data.length){ alert('Could not apply theme: '+((r.error&&r.error.message)||'no permission')); return; }
+        alert('Theme applied. Open the builder to see it.');
+      }
+    });
+    document.getElementById('themes-list').addEventListener('click', async function(e){
+      var b=e.target.closest('[data-deltheme]'); if(!b) return; var id=b.getAttribute('data-deltheme');
+      if(!confirm('Delete this theme?')) return;
+      var r=await sb.from('partner_themes').delete().eq('id',id);
+      if(r.error){ alert('Could not delete: '+r.error.message); return; }
+      themes=themes.filter(function(x){return x.id!==id;}); renderThemes(); fillThemeSelects(); renderMockups();
+    });
     document.getElementById('training-list').addEventListener('change', async function(e){
       var sel=e.target.closest('select[data-mod]'); if(!sel) return;
       var mid=sel.getAttribute('data-mod'); var st=sel.value;
@@ -507,6 +588,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         location:(document.getElementById('a-loc').value||'').trim(),
         planKey:(document.getElementById('a-plan').value||''),
         buildPrice:(document.getElementById('a-price').value||'').trim(),
+        themeId:(document.getElementById('a-theme').value||''),
         notes:(document.getElementById('a-notes').value||'').trim()
       };
       var res;
@@ -613,6 +695,51 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
   async function loadResources(){
     var r=await sb.from('partner_resources').select('id,title,category,type,description,body,download_url,sort,published').order('sort',{ascending:true});
     resources=(r.data||[]); renderResources();
+  }
+
+  // ---------- Phase 6: demos (mockups) + saved themes ----------
+  var mockups=[], themes=[];
+  function fillThemeSelects(){
+    var opts='<option value="">Blank trade site</option>'+themes.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>'; }).join('');
+    ['m-theme','a-theme'].forEach(function(idd){ var sel=document.getElementById(idd); if(sel){ var cur=sel.value; sel.innerHTML=opts; sel.value=cur; } });
+  }
+  function themeOptions(){ return '<option value="">Apply a theme\u2026</option>'+themes.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>'; }).join(''); }
+  function mockupCard(m){
+    var bs='padding:7px 12px;font-size:13px'; var brand=';background:var(--brand);border-color:var(--brand);color:#fff';
+    return '<div class="card" data-id="'+esc(m.id)+'" style="padding:16px 18px;margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
+      +'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(m.business_name||m.slug)+'</div>'
+      +'<div class="muted" style="font-size:13px;margin-top:2px">'+esc(m.slug)+'</div></div>'
+      +'<span class="statusbadge s-pending">Demo</span></div>'
+      +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">'
+      +'<a class="btn" href="/manage" target="_blank" rel="noopener" style="'+bs+brand+'">Open builder</a>'
+      +'<a class="btn" href="/'+encodeURIComponent(m.slug)+'?preview=1" target="_blank" rel="noopener" style="'+bs+'">Preview</a>'
+      +'<button class="btn" data-savetheme style="'+bs+'">Save as theme</button>'
+      +'<button class="btn" data-convert style="'+bs+'">Convert to client</button>'
+      +'<button class="btn" data-del style="'+bs+'">Delete</button>'
+      +'<select data-applytheme style="'+bs+';width:auto">'+themeOptions()+'</select>'
+      +'<label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-soft);font-weight:600"><input type="checkbox" data-showcase'+(m.show_on_showcase?' checked':'')+' style="width:auto"> Show on showcase</label>'
+      +'</div></div>';
+  }
+  function renderMockups(){
+    var box=document.getElementById('mockups-list'); if(!box) return;
+    box.innerHTML = mockups.length ? mockups.map(mockupCard).join('')
+      : '<div class="card empty"><div class="e-ico">\U0001F3A8</div><strong>No demos yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Create a demo above to mock up a tradie site for a prospect.</p></div>';
+  }
+  function themeCard(t){
+    var when=t.created_at?new Date(t.created_at).toLocaleDateString():'';
+    return '<div class="card" style="padding:13px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">'
+      +'<div><div style="font-weight:700">'+esc(t.name)+'</div><div class="muted" style="font-size:12.5px">Saved '+esc(when)+'</div></div>'
+      +'<button class="btn" data-deltheme="'+esc(t.id)+'" style="padding:6px 11px;font-size:13px">Delete</button></div>';
+  }
+  function renderThemes(){
+    var box=document.getElementById('themes-list'); if(!box) return;
+    box.innerHTML = themes.length ? themes.map(themeCard).join('')
+      : '<div class="card empty"><p class="muted">No saved themes yet. Build a demo, then \u201cSave as theme\u201d to reuse the design.</p></div>';
+  }
+  async function loadThemes(){
+    var r=await sb.from('partner_themes').select('id,name,created_at,source_site_id').order('created_at',{ascending:false});
+    themes=(r.data||[]); renderThemes(); fillThemeSelects(); renderMockups();
   }
 
   async function boot(){
