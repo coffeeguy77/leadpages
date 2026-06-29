@@ -1531,6 +1531,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     if(error){ toast('Could not load site: '+error.message); return; }
     allSites = rows||[];
     if(!allSites.length){ toast('No site is assigned to this account yet.'); return; }
+    // Deep-link: /manage?site=<slug> opens that site straight away (e.g. the partner My-page "Edit in builder").
+    try{ var __ds=new URLSearchParams(location.search).get('site'); if(__ds){ var __m=allSites.find(function(x){return x.slug===__ds;}); if(__m){ loadSite(__m); return; } } }catch(_e){}
     // Land on the account picker first (so the wrong page is never edited by accident).
     // A client with a single site goes straight in.
     if(currentRole==='super' || allSites.length>1){ showLanding(); }

@@ -244,6 +244,10 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       <section class="panel" data-panel="mypage">
         <h2>My page</h2>
         <p class="sub">Your own branded homepage at your subdomain — your logo, your pitch, and the demos you choose to show.</p>
+        <div class="card" style="padding:18px 20px;max-width:680px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+          <div><div style="font-weight:700">Your page design</div><div class="muted" style="font-size:13.5px">Edit your homepage in the builder — hero, services, your pitch. Your enabled demos appear automatically at the bottom. Publish it there to make it live.</div></div>
+          <button class="btn btn-brand" id="sc-design" style="white-space:nowrap">Edit in builder</button>
+        </div>
         <div class="card" style="padding:24px;max-width:680px">
           <div class="field">
             <label for="sc-slug">Your address</label>
@@ -278,6 +282,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
             <span class="notice bad hidden" id="sc-err" style="margin:0;padding:8px 12px"></span>
           </div>
           <p class="muted" style="margin-top:16px;font-size:13.5px">Your page: <a id="sc-link" href="#" target="_blank" rel="noopener">—</a> · Choose which demos appear from the <strong>Demos &amp; themes</strong> tab ("Show on showcase").</p>
+          <p class="muted" style="margin-top:6px;font-size:12.5px">The logo, headline, accent and intro above are used for a simple starter page — once you design and publish your homepage in the builder, that takes over.</p>
         </div>
       </section>
 
@@ -513,9 +518,9 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       : '<div class="card empty"><div class="e-ico">\U0001F4C7</div><strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Add your first customer to create their website and start earning.</p></div>';
   }
   async function loadClients(){
-    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,show_on_showcase,created_at').order('created_at',{ascending:false});
+    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,demo_logo:config->logo->>imageUrl,created_at').order('created_at',{ascending:false});
     var all=(r.data||[]);
-    clients=all.filter(function(x){return !x.is_mockup;});
+    clients=all.filter(function(x){return !x.is_mockup && !x.is_partner_home;});
     mockups=all.filter(function(x){return x.is_mockup;});
     renderClients(); renderOverview(); renderMockups();
   }
@@ -607,6 +612,14 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       btn.disabled=false; btn.textContent=was;
       if(r.error||!r.data||!r.data.length){ alert('Could not update: '+((r.error&&r.error.message)||'no permission')); return; }
       c.status=ns; renderClients(); renderOverview();
+    });
+    document.getElementById('sc-design').addEventListener('click', async function(){
+      var btn=this; btn.disabled=true; btn.textContent='Opening…';
+      var res;
+      try{ var r=await fetch('/api/partner/ensure-home',{method:'POST',headers:await authHeader()}); res=await r.json(); }catch(_e){ res={ok:false}; }
+      btn.disabled=false; btn.textContent='Edit in builder';
+      if(!res||!res.ok){ alert((res&&res.error)||'Could not open your homepage.'); return; }
+      window.open('/manage?site='+encodeURIComponent(res.site.slug),'_blank','noopener');
     });
     document.getElementById('sc-slug').addEventListener('input',updateScLink);
     document.getElementById('sc-protect').addEventListener('change',function(){ document.getElementById('sc-pw-row').style.display=this.checked?'':'none'; });
@@ -778,8 +791,8 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     var bs='padding:7px 12px;font-size:13px'; var brand=';background:var(--brand);border-color:var(--brand);color:#fff';
     return '<div class="card" data-id="'+esc(m.id)+'" style="padding:16px 18px;margin-bottom:12px">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
-      +'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(m.business_name||m.slug)+'</div>'
-      +'<div class="muted" style="font-size:13px;margin-top:2px">'+esc(m.slug)+'</div></div>'
+      +'<div style="display:flex;gap:11px;align-items:center">'+(m.demo_logo?('<img src="'+esc(m.demo_logo)+'" alt="" style="width:38px;height:38px;border-radius:9px;object-fit:contain;background:#fff;border:1px solid var(--line);padding:3px;flex:0 0 auto">'):'')+'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(m.business_name||m.slug)+'</div>'
+      +'<div class="muted" style="font-size:13px;margin-top:2px">'+esc(m.slug)+'</div></div></div>'
       +'<span class="statusbadge s-pending">Demo</span></div>'
       +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">'
       +'<a class="btn" href="/manage" target="_blank" rel="noopener" style="'+bs+brand+'">Open builder</a>'
