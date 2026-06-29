@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Partners — LeadPages Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{
+  --bg:#f6f4ef; --surface:#fff; --surface-2:#fbfaf7; --ink:#1b2430; --ink-soft:#5c6675;
+  --ink-faint:#929aa6; --line:#e7e2d8; --line-strong:#d8d2c5; --brand:#1f7a63; --brand-deep:#155c4a;
+  --brand-tint:#eaf3ef; --amber:#b9852b; --bad:#b4453a; --ok:#1f7a63; --radius:14px; --radius-sm:10px;
+  --shadow:0 1px 2px rgba(20,30,40,.04),0 6px 20px rgba(20,30,40,.05);
+  --font-display:'Fraunces',Georgia,serif; --font-ui:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-ui);line-height:1.55}
+a{color:var(--brand)}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-.01em;margin:0}
+.hidden{display:none!important}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.btn{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:14px;padding:9px 15px;border-radius:10px;border:1px solid var(--line-strong);background:#fff;color:var(--ink);cursor:pointer;text-decoration:none;transition:.15s}
+.btn:hover{border-color:var(--ink)}
+.btn-brand{background:var(--brand);border-color:var(--brand);color:#fff}.btn-brand:hover{background:var(--brand-deep)}
+.btn-sm{padding:6px 11px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+input,select,textarea{font-family:var(--font-ui);font-size:14px;padding:9px 11px;border:1px solid var(--line-strong);border-radius:9px;background:#fff;color:var(--ink);width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
+label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-bottom:4px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+
+.top{background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:19px;color:var(--ink);text-decoration:none}
+.brand .mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--brand),#2f9b7e);position:relative}
+.brand .mark::after{content:"";position:absolute;inset:7px 7px auto 7px;height:4px;border-radius:2px;background:#fff;box-shadow:0 6px 0 rgba(255,255,255,.6)}
+.top .links a{font-weight:600;font-size:14px;color:var(--ink-soft);text-decoration:none;margin-left:18px}
+.top .links a:hover{color:var(--brand)}
+
+.center-card{max-width:440px;margin:9vh auto;padding:34px}
+.center-card h1{font-size:25px;margin-bottom:6px}
+.center-card p{color:var(--ink-soft);margin:0 0 18px}
+.notice{padding:12px 14px;border-radius:10px;font-size:14px;margin-top:14px}
+.notice.info{background:var(--brand-tint);color:var(--brand-deep)}
+.notice.bad{background:#fbeae7;color:var(--bad)}
+.muted{color:var(--ink-soft);font-size:14px}
+
+.tabs{display:flex;gap:6px;margin:24px 0 18px}
+.tabs button{background:#fff;border:1px solid var(--line-strong);border-radius:10px;padding:9px 16px;font:inherit;font-weight:600;font-size:14px;color:var(--ink-soft);cursor:pointer}
+.tabs button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.tabs .count{font-size:12px;opacity:.8;margin-left:5px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.chip{background:#fff;border:1px solid var(--line-strong);border-radius:999px;padding:6px 13px;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.section{display:none}.section.on{display:block}
+
+.item{padding:18px 20px;margin-bottom:14px}
+.item .head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.item .nm{font-family:var(--font-display);font-weight:600;font-size:17px}
+.item .meta{font-size:13px;color:var(--ink-soft);margin-top:2px}
+.item .meta a{color:var(--brand)}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:4px 12px;margin-top:12px;font-size:14px}
+.kv .k{color:var(--ink-faint);font-weight:600}
+.kv .v{color:var(--ink)}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.ctrls .grow{flex:1;min-width:180px}
+.statusbadge{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap}
+.s-new{background:var(--brand-tint);color:var(--brand-deep)}.s-reviewing{background:#eef0f3;color:#566}
+.s-approved,.s-active{background:#e6f5ec;color:#1c7a44}.s-rejected,.s-suspended,.s-terminated{background:#fbeae7;color:var(--bad)}
+.s-waitlisted,.s-pending,.s-under_review{background:#fdf4e3;color:var(--amber)}
+.saved{color:var(--ok);font-weight:600;font-size:13px;opacity:0;transition:.2s}.saved.show{opacity:1}
+.empty{padding:40px;text-align:center;color:var(--ink-soft)}
+.linkpill{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;background:#eef0f3;color:#566}
+.linkpill.yes{background:#e6f5ec;color:#1c7a44}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap">
+  <a class="brand" href="/manage"><span class="mark"></span>leadpages</a>
+  <div class="links"><a href="/manage">Command Centre</a><a href="/manage-domains">Domains</a><span id="adm-who" class="muted"></span> <a href="#" id="signout" class="hidden">Sign out</a></div>
+</div></div>
+
+<!-- LOGIN -->
+<div id="view-login" class="hidden"><div class="card center-card">
+  <h1>Admin sign in</h1>
+  <p>Enter your admin email for a secure sign-in link.</p>
+  <div style="margin-bottom:14px"><label for="email">Email</label><input id="email" type="email" autocomplete="email"></div>
+  <button class="btn btn-brand" id="send-link" style="width:100%">Send sign-in link</button>
+  <div class="notice info hidden" id="login-sent">Check your inbox for the sign-in link.</div>
+  <div class="notice bad hidden" id="login-err"></div>
+</div></div>
+
+<div id="view-loading" class="hidden"><div class="card center-card"><p class="muted">Loading…</p></div></div>
+<div id="view-denied" class="hidden"><div class="card center-card"><h1>Not authorised</h1><p>This area is for LeadPages administrators only.</p><button class="btn" id="denied-signout" style="width:100%;justify-content:center">Sign out</button></div></div>
+
+<!-- ADMIN -->
+<div id="view-admin" class="hidden"><div class="wrap" style="padding:26px 20px 60px">
+  <h1 style="font-size:26px">Partner Program</h1>
+  <p class="muted">Review applications, approve partners and manage partner status.</p>
+
+  <div class="tabs">
+    <button data-t="apps" class="on">Applications <span class="count" id="apps-count"></span></button>
+    <button data-t="partners">Partners <span class="count" id="partners-count"></span></button>
+  </div>
+
+  <!-- Applications -->
+  <section class="section on" data-sec="apps">
+    <div class="filters" id="app-filters">
+      <span class="chip on" data-f="all">All</span>
+      <span class="chip" data-f="new">New</span>
+      <span class="chip" data-f="reviewing">Reviewing</span>
+      <span class="chip" data-f="approved">Approved</span>
+      <span class="chip" data-f="waitlisted">Waitlisted</span>
+      <span class="chip" data-f="rejected">Rejected</span>
+    </div>
+    <div id="apps-list"></div>
+  </section>
+
+  <!-- Partners -->
+  <section class="section" data-sec="partners">
+    <div id="partners-list"></div>
+  </section>
+</div></div>
+
+<script>
+(function(){
+  var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var APP_STATUSES=['new','reviewing','approved','rejected','waitlisted'];
+  var PARTNER_STATUSES=['pending','active','under_review','suspended','terminated'];
+  var appFilter='all', apps=[], partners=[];
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function show(v){ ['view-login','view-loading','view-denied','view-admin'].forEach(function(x){ $(x).classList.toggle('hidden', x!==v); }); }
+  function fmtDate(s){ try{ return new Date(s).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return ''; } }
+  async function signOut(){ await sb.auth.signOut(); location.reload(); }
+
+  // ---- login ----
+  $('send-link').addEventListener('click', async function(){
+    var email=($('email').value||'').trim();
+    $('login-err').classList.add('hidden');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $('login-err').textContent='Enter a valid email.'; $('login-err').classList.remove('hidden'); return; }
+    this.disabled=true; this.textContent='Sending…';
+    var r=await sb.auth.signInWithOtp({ email:email, options:{ emailRedirectTo: location.origin+'/partners-admin' } });
+    this.disabled=false; this.textContent='Send sign-in link';
+    if(r.error){ $('login-err').textContent=r.error.message; $('login-err').classList.remove('hidden'); }
+    else $('login-sent').classList.remove('hidden');
+  });
+  $('email').addEventListener('keydown',function(e){ if(e.key==='Enter') $('send-link').click(); });
+  $('signout').addEventListener('click',function(e){ e.preventDefault(); signOut(); });
+  $('denied-signout').addEventListener('click',signOut);
+
+  // ---- tabs / filters ----
+  document.querySelector('.tabs').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-t]'); if(!b) return;
+    document.querySelectorAll('.tabs button').forEach(function(x){ x.classList.toggle('on',x===b); });
+    var t=b.getAttribute('data-t');
+    document.querySelectorAll('.section').forEach(function(s){ s.classList.toggle('on', s.getAttribute('data-sec')===t); });
+  });
+  $('app-filters').addEventListener('click',function(e){
+    var c=e.target.closest('.chip'); if(!c) return;
+    document.querySelectorAll('#app-filters .chip').forEach(function(x){ x.classList.toggle('on',x===c); });
+    appFilter=c.getAttribute('data-f'); renderApps();
+  });
+
+  // ---- Applications ----
+  function statusSelect(cur,opts,attr){
+    return '<select '+attr+'>'+opts.map(function(o){ return '<option value="'+o+'"'+(o===cur?' selected':'')+'>'+o.replace(/_/g,' ')+'</option>'; }).join('')+'</select>';
+  }
+  function appCard(a){
+    var knows = a.knows_local===true?'Yes':a.knows_local===false?'Not yet':'—';
+    var converted = !!a.partner_id;
+    return '<div class="card item" data-id="'+a.id+'">'
+      + '<div class="head"><div><div class="nm">'+esc(a.name||'—')+'</div>'
+      + '<div class="meta"><a href="mailto:'+esc(a.email)+'">'+esc(a.email)+'</a>'+(a.phone?(' · '+esc(a.phone)):'')+(a.location?(' · '+esc(a.location)):'')+' · '+fmtDate(a.created_at)+'</div></div>'
+      + '<span class="statusbadge s-'+esc(a.status)+'">'+esc((a.status||'').replace(/_/g,' '))+'</span></div>'
+      + '<div class="kv">'
+        + (a.background?'<div class="k">Background</div><div class="v">'+esc(a.background)+'</div>':'')
+        + '<div class="k">Knows local</div><div class="v">'+knows+'</div>'
+        + (a.niche?'<div class="k">Preferred niche</div><div class="v">'+esc(a.niche)+'</div>':'')
+        + (a.why?'<div class="k">Why</div><div class="v">'+esc(a.why)+'</div>':'')
+      + '</div>'
+      + '<div style="margin-top:12px"><label>Admin notes</label><textarea rows="2" data-notes>'+esc(a.admin_notes||'')+'</textarea></div>'
+      + '<div class="ctrls">'
+        + '<div><label>Status</label>'+statusSelect(a.status,APP_STATUSES,'data-status')+'</div>'
+        + '<button class="btn btn-sm" data-save>Save</button>'
+        + (converted
+            ? '<span class="linkpill yes">Partner created ✓</span>'
+            : '<button class="btn btn-sm btn-brand" data-convert>Approve &amp; create partner</button>')
+        + '<span class="saved" data-saved>Saved ✓</span>'
+      + '</div></div>';
+  }
+  function renderApps(){
+    var list=appFilter==='all'?apps:apps.filter(function(a){ return a.status===appFilter; });
+    $('apps-count').textContent=apps.length?('· '+apps.length):'';
+    $('apps-list').innerHTML = list.length ? list.map(appCard).join('')
+      : '<div class="card empty">No applications'+(appFilter!=='all'?(' with status “'+appFilter+'”'):'')+' yet.</div>';
+  }
+  $('apps-list').addEventListener('click', async function(e){
+    var card=e.target.closest('.item'); if(!card) return;
+    var id=card.getAttribute('data-id');
+    var a=apps.find(function(x){ return x.id===id; }); if(!a) return;
+    var saved=card.querySelector('[data-saved]');
+
+    if(e.target.closest('[data-save]')){
+      var btn=e.target.closest('[data-save]'); btn.disabled=true;
+      var patch={ status:card.querySelector('[data-status]').value, admin_notes:(card.querySelector('[data-notes]').value||'').trim()||null };
+      var r=await sb.from('partner_applications').update(patch).eq('id',id).select('*');
+      btn.disabled=false;
+      if(r.error||!r.data||!r.data.length){ alert('Could not save: '+((r.error&&r.error.message)||'no permission')); return; }
+      Object.assign(a,r.data[0]); saved.classList.add('show'); setTimeout(function(){ saved.classList.remove('show'); },1600); renderApps();
+    }
+
+    if(e.target.closest('[data-convert]')){
+      var cb=e.target.closest('[data-convert]'); cb.disabled=true; cb.textContent='Creating…';
+      try{
+        if(a.partner_id) throw new Error('Already converted');
+        var pr=await sb.from('partners').insert({
+          display_name:a.name||null, email:a.email||null, phone:a.phone||null,
+          status:'active', application_id:a.id
+        }).select('*').single();
+        if(pr.error||!pr.data) throw new Error((pr.error&&pr.error.message)||'insert failed');
+        var pid=pr.data.id;
+        await sb.from('partner_profiles').insert({ partner_id:pid, support_name:a.name||null, support_email:a.email||null, support_phone:a.phone||null, region:a.location||null });
+        var up=await sb.from('partner_applications').update({ status:'approved', partner_id:pid }).eq('id',a.id).select('*');
+        if(up.data&&up.data[0]) Object.assign(a,up.data[0]);
+        partners.unshift(pr.data); renderPartners();
+        renderApps();
+      }catch(err){ alert('Could not create partner: '+(err.message||err)); cb.disabled=false; cb.textContent='Approve & create partner'; }
+    }
+  });
+
+  // ---- Partners ----
+  function partnerCard(p){
+    var linked = !!p.user_id;
+    return '<div class="card item" data-id="'+p.id+'">'
+      + '<div class="head"><div><div class="nm">'+esc(p.display_name||p.email||'Partner')+'</div>'
+      + '<div class="meta">'+esc(p.email||'')+(p.phone?(' · '+esc(p.phone)):'')+' · joined '+fmtDate(p.created_at)+'</div></div>'
+      + '<span class="statusbadge s-'+esc(p.status)+'">'+esc((p.status||'').replace(/_/g,' '))+'</span></div>'
+      + '<div class="ctrls">'
+        + '<div class="grow"><label>Display name</label><input type="text" data-name value="'+esc(p.display_name||'')+'"></div>'
+        + '<div class="grow"><label>Email</label><input type="email" data-email value="'+esc(p.email||'')+'"></div>'
+        + '<div><label>Phone</label><input type="tel" data-phone value="'+esc(p.phone||'')+'"></div>'
+        + '<div><label>Status</label>'+statusSelect(p.status,PARTNER_STATUSES,'data-status')+'</div>'
+        + '<button class="btn btn-sm btn-brand" data-save>Save</button>'
+        + '<span class="linkpill '+(linked?'yes':'')+'">'+(linked?'Login linked ✓':'Not linked yet')+'</span>'
+        + '<span class="saved" data-saved>Saved ✓</span>'
+      + '</div></div>';
+  }
+  function renderPartners(){
+    $('partners-count').textContent=partners.length?('· '+partners.length):'';
+    $('partners-list').innerHTML = partners.length ? partners.map(partnerCard).join('')
+      : '<div class="card empty">No partners yet. Approve an application to create the first one.</div>';
+  }
+  $('partners-list').addEventListener('click', async function(e){
+    if(!e.target.closest('[data-save]')) return;
+    var card=e.target.closest('.item'); var id=card.getAttribute('data-id');
+    var p=partners.find(function(x){ return x.id===id; }); if(!p) return;
+    var btn=e.target.closest('[data-save]'); btn.disabled=true;
+    var patch={
+      display_name:(card.querySelector('[data-name]').value||'').trim()||null,
+      email:(card.querySelector('[data-email]').value||'').trim()||null,
+      phone:(card.querySelector('[data-phone]').value||'').trim()||null,
+      status:card.querySelector('[data-status]').value,
+      updated_at:new Date().toISOString()
+    };
+    var r=await sb.from('partners').update(patch).eq('id',id).select('*');
+    btn.disabled=false;
+    if(r.error||!r.data||!r.data.length){ alert('Could not save: '+((r.error&&r.error.message)||'no permission')); return; }
+    Object.assign(p,r.data[0]);
+    var saved=card.querySelector('[data-saved]'); saved.classList.add('show'); setTimeout(function(){ saved.classList.remove('show'); },1600);
+    renderPartners();
+  });
+
+  // ---- load ----
+  async function loadAll(){
+    var a=await sb.from('partner_applications').select('*').order('created_at',{ascending:false});
+    apps=(a.data||[]); renderApps();
+    var p=await sb.from('partners').select('*').order('created_at',{ascending:false});
+    partners=(p.data||[]); renderPartners();
+  }
+
+  async function boot(){
+    var session=(await sb.auth.getSession()).data.session;
+    if(!session){ show('view-login'); return; }
+    show('view-loading');
+    $('adm-who').textContent=session.user.email||''; $('signout').classList.remove('hidden');
+    var prof=await sb.from('profiles').select('is_super_admin').eq('id',session.user.id).maybeSingle();
+    if(!(prof.data && prof.data.is_super_admin)){ show('view-denied'); return; }
+    show('view-admin');
+    loadAll();
+  }
+  sb.auth.onAuthStateChange(function(_e,sess){ if(sess && $('view-login') && !$('view-login').classList.contains('hidden')) boot(); });
+  boot();
+})();
+</script>
+</body>
+</html>

@@ -24,7 +24,11 @@
     },
     {
       "source": "/partner",
-      "destination": "/partners.html"
+      "destination": "/partner.html"
+    },
+    {
+      "source": "/partners-admin",
+      "destination": "/partners-admin.html"
     },
     {
       "source": "/",

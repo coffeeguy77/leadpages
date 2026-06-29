@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Partner Dashboard — LeadPages</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{
+  --bg:#f6f4ef; --surface:#fff; --surface-2:#fbfaf7; --ink:#1b2430; --ink-soft:#5c6675;
+  --ink-faint:#929aa6; --line:#e7e2d8; --line-strong:#d8d2c5; --brand:#1f7a63; --brand-deep:#155c4a;
+  --brand-tint:#eaf3ef; --amber:#b9852b; --bad:#b4453a; --ok:#1f7a63; --radius:14px; --radius-sm:10px;
+  --shadow:0 1px 2px rgba(20,30,40,.04),0 6px 20px rgba(20,30,40,.05);
+  --font-display:'Fraunces',Georgia,serif; --font-ui:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-ui);line-height:1.55}
+a{color:var(--brand)}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-.01em;margin:0}
+.hidden{display:none!important}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15px;padding:11px 18px;border-radius:11px;border:1px solid var(--line-strong);background:#fff;color:var(--ink);cursor:pointer;text-decoration:none;transition:.15s}
+.btn:hover{border-color:var(--ink)}
+.btn-brand{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn-brand:hover{background:var(--brand-deep);border-color:var(--brand-deep)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+input,textarea{font-family:var(--font-ui);font-size:15px;padding:11px 13px;border:1px solid var(--line-strong);border-radius:10px;background:#fff;color:var(--ink);width:100%}
+input:focus,textarea:focus{outline:none;border-color:var(--brand)}
+label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+
+/* topbar */
+.top{background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:19px;color:var(--ink);text-decoration:none}
+.brand .mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--brand),#2f9b7e);position:relative}
+.brand .mark::after{content:"";position:absolute;inset:7px 7px auto 7px;height:4px;border-radius:2px;background:#fff;box-shadow:0 6px 0 rgba(255,255,255,.6)}
+.top .who{font-size:13.5px;color:var(--ink-soft);display:flex;align-items:center;gap:12px}
+
+/* login / state cards */
+.center-card{max-width:440px;margin:9vh auto;padding:34px}
+.center-card h1{font-size:26px;margin-bottom:6px}
+.center-card p{color:var(--ink-soft);margin:0 0 18px}
+.muted{color:var(--ink-soft);font-size:14px}
+.notice{padding:13px 15px;border-radius:11px;font-size:14px;margin-top:14px}
+.notice.info{background:var(--brand-tint);color:var(--brand-deep)}
+.notice.warn{background:#fdf4e3;color:var(--amber)}
+.notice.bad{background:#fbeae7;color:var(--bad)}
+
+/* dashboard layout */
+.dash{display:grid;grid-template-columns:230px 1fr;gap:24px;padding:26px 0 60px}
+@media(max-width:780px){ .dash{grid-template-columns:1fr} .side{position:static!important} }
+.side{position:sticky;top:84px;align-self:start}
+.side .pname{font-family:var(--font-display);font-weight:600;font-size:17px;padding:0 6px 4px}
+.side .pstat{font-size:12px;font-weight:600;padding:0 6px 14px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:10px;text-align:left;background:none;border:0;padding:10px 12px;border-radius:10px;font:inherit;font-weight:600;font-size:14.5px;color:var(--ink-soft);cursor:pointer}
+.nav button:hover{background:var(--surface-2);color:var(--ink)}
+.nav button.on{background:var(--brand-tint);color:var(--brand-deep)}
+.panel{display:none}
+.panel.on{display:block}
+.panel h2{font-size:22px;margin-bottom:4px}
+.panel .sub{color:var(--ink-soft);margin:0 0 20px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+@media(max-width:900px){ .kpis{grid-template-columns:1fr 1fr} }
+.kpi{padding:16px}
+.kpi .lab{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-faint);font-weight:700}
+.kpi .val{font-family:var(--font-display);font-weight:700;font-size:26px;margin-top:4px}
+.empty{padding:34px;text-align:center;color:var(--ink-soft)}
+.empty .e-ico{width:46px;height:46px;border-radius:12px;background:var(--brand-tint);display:grid;place-items:center;margin:0 auto 12px;font-size:22px}
+.phase-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--amber);background:#fdf4e3;padding:3px 8px;border-radius:6px;margin-top:10px}
+.field{margin-bottom:15px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){ .row2{grid-template-columns:1fr} }
+.save-row{display:flex;align-items:center;gap:14px;margin-top:6px}
+.saved{color:var(--ok);font-weight:600;font-size:14px;opacity:0;transition:.2s}
+.saved.show{opacity:1}
+.statusbadge{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:7px}
+.s-active{background:#e6f5ec;color:#1c7a44}.s-pending{background:#fdf4e3;color:var(--amber)}
+.s-under_review{background:#eef0f3;color:#566}.s-suspended,.s-terminated{background:#fbeae7;color:var(--bad)}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap">
+  <a class="brand" href="/"><span class="mark"></span>leadpages</a>
+  <div class="who" id="who"></div>
+</div></div>
+
+<!-- LOGIN -->
+<div id="view-login" class="hidden">
+  <div class="card center-card">
+    <h1>Partner sign in</h1>
+    <p>Enter your email and we'll send you a secure sign-in link.</p>
+    <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
+    <button class="btn btn-brand" id="send-link" style="width:100%">Send sign-in link</button>
+    <div class="notice info hidden" id="login-sent">Check your inbox — we've sent a sign-in link to your email.</div>
+    <div class="notice bad hidden" id="login-err"></div>
+    <p class="muted" style="margin-top:18px">Not a partner yet? <a href="/partners">Apply to join the program</a>.</p>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="view-loading" class="hidden"><div class="card center-card"><p class="muted">Loading your dashboard…</p></div></div>
+
+<!-- NOT A PARTNER -->
+<div id="view-none" class="hidden">
+  <div class="card center-card">
+    <h1>No partner account found</h1>
+    <p>This email isn't linked to a LeadPages partner account yet.</p>
+    <a class="btn btn-brand" href="/partners" style="width:100%;justify-content:center">Apply to become a partner</a>
+    <button class="btn" id="none-signout" style="width:100%;justify-content:center;margin-top:10px">Sign out</button>
+  </div>
+</div>
+
+<!-- PENDING / REVIEW -->
+<div id="view-pending" class="hidden">
+  <div class="card center-card">
+    <h1>You're almost in</h1>
+    <p id="pending-msg">Your partner account is being set up. We'll email you as soon as it's active.</p>
+    <button class="btn" id="pending-signout" style="width:100%;justify-content:center">Sign out</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="view-dash" class="hidden">
+  <div class="wrap dash">
+    <aside class="side">
+      <div class="pname" id="d-name">Partner</div>
+      <div class="pstat"><span class="statusbadge s-active" id="d-status">Active</span></div>
+      <nav class="nav" id="nav">
+        <button data-p="overview" class="on">📊 Overview</button>
+        <button data-p="clients">📇 My Clients</button>
+        <button data-p="add">➕ Add Customer</button>
+        <button data-p="commissions">💰 Commissions</button>
+        <button data-p="training">🎓 Training Centre</button>
+        <button data-p="resources">📝 Sales Resources</button>
+        <button data-p="support">🛟 Support</button>
+        <button data-p="profile">⚙️ My Profile</button>
+        <button id="signout" style="color:var(--bad);margin-top:8px">↩ Sign out</button>
+      </nav>
+    </aside>
+
+    <main>
+      <!-- Overview -->
+      <section class="panel on" data-panel="overview">
+        <h2>Overview</h2>
+        <p class="sub">A snapshot of your clients and commissions. Figures fill in as you add clients.</p>
+        <div class="kpis">
+          <div class="card kpi"><div class="lab">Total clients</div><div class="val">0</div></div>
+          <div class="card kpi"><div class="lab">Active websites</div><div class="val">0</div></div>
+          <div class="card kpi"><div class="lab">Pending builds</div><div class="val">0</div></div>
+          <div class="card kpi"><div class="lab">Recurring you generated</div><div class="val">$0<span style="font-size:14px;color:var(--ink-faint)">/mo</span></div></div>
+          <div class="card kpi"><div class="lab">Est. next payout</div><div class="val">$0</div></div>
+          <div class="card kpi"><div class="lab">Pending commissions</div><div class="val">$0</div></div>
+          <div class="card kpi"><div class="lab">Paid commissions</div><div class="val">$0</div></div>
+          <div class="card kpi"><div class="lab">Open support items</div><div class="val">0</div></div>
+        </div>
+        <div class="card empty">
+          <div class="e-ico">🚀</div>
+          <strong>Your dashboard is ready</strong>
+          <p class="muted" style="margin:6px auto 0;max-width:46ch">Once you add your first client and generate their website, your clients, revenue and commissions will appear here.</p>
+          <div class="phase-tag">Client tools arrive in Phase 2</div>
+        </div>
+      </section>
+
+      <!-- Clients -->
+      <section class="panel" data-panel="clients">
+        <h2>My Clients</h2>
+        <p class="sub">The businesses you've brought on and the websites you manage for them.</p>
+        <div class="card empty"><div class="e-ico">📇</div><strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Your client list — plan, status, monthly fee and commission status — will appear here.</p><div class="phase-tag">Phase 2</div></div>
+      </section>
+
+      <!-- Add Customer -->
+      <section class="panel" data-panel="add">
+        <h2>Add Customer</h2>
+        <p class="sub">Bring on a new client and generate their website in seconds.</p>
+        <div class="card empty"><div class="e-ico">➕</div><strong>Adding clients is coming next</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">You'll enter the business details, pick a package and plan, and launch straight into the LeadPages site builder — with the client linked to you for commission.</p><div class="phase-tag">Phase 2</div></div>
+      </section>
+
+      <!-- Commissions -->
+      <section class="panel" data-panel="commissions">
+        <h2>Commissions</h2>
+        <p class="sub">Your upfront and recurring commission, by client and period.</p>
+        <div class="card empty"><div class="e-ico">💰</div><strong>No commissions yet</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">Earn 50% of each build/setup fee and 20% of monthly subscription revenue for clients you generate. Paid on a 30-day cycle, subject to approval and account standing.</p><div class="phase-tag">Phase 3</div></div>
+      </section>
+
+      <!-- Training -->
+      <section class="panel" data-panel="training">
+        <h2>Training Centre</h2>
+        <p class="sub">Step-by-step training from your first sale to ongoing client support.</p>
+        <div class="card empty"><div class="e-ico">🎓</div><strong>Training is on its way</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">Getting started, how to sell your first website, pricing, onboarding, handling objections and quality standards — with progress tracking.</p><div class="phase-tag">Phase 4</div></div>
+      </section>
+
+      <!-- Resources -->
+      <section class="panel" data-panel="resources">
+        <h2>Sales Resources</h2>
+        <p class="sub">Scripts, templates and pitch material ready to use.</p>
+        <div class="card empty"><div class="e-ico">📝</div><strong>Resource library coming soon</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">Sales scripts, cold email and SMS templates, proposals, onboarding forms, pricing sheets and outreach checklists.</p><div class="phase-tag">Phase 4</div></div>
+      </section>
+
+      <!-- Support -->
+      <section class="panel" data-panel="support">
+        <h2>Support</h2>
+        <p class="sub">LeadPages is always behind you. Raise anything technical and we'll handle it.</p>
+        <div class="card empty"><div class="e-ico">🛟</div><strong>Escalation is coming</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">You'll raise support requests on behalf of a client and track their status here. In the meantime, email <a href="mailto:info@beanculture.com.au">support</a> directly.</p><div class="phase-tag">Phase 5</div></div>
+      </section>
+
+      <!-- Profile (functional) -->
+      <section class="panel" data-panel="profile">
+        <h2>My Profile</h2>
+        <p class="sub">The support contact details your clients see. This is live — changes save to your account.</p>
+        <div class="card" style="padding:24px;max-width:620px">
+          <div class="row2">
+            <div class="field"><label for="p-name">Support name (what clients see)</label><input id="p-name" type="text"></div>
+            <div class="field"><label for="p-region">Region you cover</label><input id="p-region" type="text" placeholder="e.g. Canberra & ACT"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="p-email">Support email</label><input id="p-email" type="email"></div>
+            <div class="field"><label for="p-phone">Support phone</label><input id="p-phone" type="tel"></div>
+          </div>
+          <div class="field"><label for="p-bio">Short bio (optional)</label><textarea id="p-bio" rows="3" placeholder="A line or two about you that clients can see."></textarea></div>
+          <div class="save-row">
+            <button class="btn btn-brand" id="save-profile">Save profile</button>
+            <span class="saved" id="profile-saved">Saved ✓</span>
+            <span class="notice bad hidden" id="profile-err" style="margin:0;padding:8px 12px"></span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+(function(){
+  var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var els = {};
+  ['view-login','view-loading','view-none','view-pending','view-dash','login-sent','login-err',
+   'email','send-link','who','d-name','d-status','pending-msg','profile-saved','profile-err'
+  ].forEach(function(id){ els[id]=document.getElementById(id); });
+  var state = { partner:null, profile:null };
+
+  function show(view){
+    ['view-login','view-loading','view-none','view-pending','view-dash'].forEach(function(v){
+      document.getElementById(v).classList.toggle('hidden', v!==view);
+    });
+  }
+  async function authHeader(){
+    var s=(await sb.auth.getSession()).data.session;
+    return s ? {'Authorization':'Bearer '+s.access_token} : {};
+  }
+  async function signOut(){ await sb.auth.signOut(); location.reload(); }
+
+  // ---- login ----
+  els['send-link'].addEventListener('click', async function(){
+    var email=(els['email'].value||'').trim();
+    els['login-err'].classList.add('hidden');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ els['login-err'].textContent='Please enter a valid email.'; els['login-err'].classList.remove('hidden'); return; }
+    els['send-link'].disabled=true; els['send-link'].textContent='Sending…';
+    var r=await sb.auth.signInWithOtp({ email:email, options:{ emailRedirectTo: location.origin+'/partner' } });
+    els['send-link'].disabled=false; els['send-link'].textContent='Send sign-in link';
+    if(r.error){ els['login-err'].textContent=r.error.message||'Could not send the link.'; els['login-err'].classList.remove('hidden'); }
+    else { els['login-sent'].classList.remove('hidden'); }
+  });
+  els['email'].addEventListener('keydown',function(e){ if(e.key==='Enter') els['send-link'].click(); });
+  document.getElementById('none-signout').addEventListener('click',signOut);
+  document.getElementById('pending-signout').addEventListener('click',signOut);
+  document.getElementById('signout').addEventListener('click',signOut);
+
+  // ---- nav ----
+  document.getElementById('nav').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-p]'); if(!b) return;
+    document.querySelectorAll('#nav button[data-p]').forEach(function(x){ x.classList.toggle('on', x===b); });
+    var p=b.getAttribute('data-p');
+    document.querySelectorAll('.panel').forEach(function(s){ s.classList.toggle('on', s.getAttribute('data-panel')===p); });
+  });
+
+  // ---- profile save (RLS lets a partner update their own profile) ----
+  document.getElementById('save-profile').addEventListener('click', async function(){
+    if(!state.partner) return;
+    var btn=this; btn.disabled=true;
+    els['profile-err'].classList.add('hidden');
+    var patch={
+      support_name:(document.getElementById('p-name').value||'').trim()||null,
+      support_email:(document.getElementById('p-email').value||'').trim()||null,
+      support_phone:(document.getElementById('p-phone').value||'').trim()||null,
+      region:(document.getElementById('p-region').value||'').trim()||null,
+      bio:(document.getElementById('p-bio').value||'').trim()||null,
+      updated_at:new Date().toISOString()
+    };
+    var r=await sb.from('partner_profiles').update(patch).eq('partner_id',state.partner.id).select('*');
+    btn.disabled=false;
+    if(r.error || !r.data || !r.data.length){
+      els['profile-err'].textContent='Could not save — please try again.'; els['profile-err'].classList.remove('hidden');
+    } else {
+      els['profile-saved'].classList.add('show'); setTimeout(function(){ els['profile-saved'].classList.remove('show'); },1800);
+    }
+  });
+
+  function fillProfile(p){
+    document.getElementById('p-name').value=(p&&p.support_name)||state.partner.display_name||'';
+    document.getElementById('p-email').value=(p&&p.support_email)||state.partner.email||'';
+    document.getElementById('p-phone').value=(p&&p.support_phone)||state.partner.phone||'';
+    document.getElementById('p-region').value=(p&&p.region)||'';
+    document.getElementById('p-bio').value=(p&&p.bio)||'';
+  }
+
+  function renderDash(){
+    var p=state.partner;
+    els['d-name'].textContent=p.display_name||p.email||'Partner';
+    var badge=els['d-status']; badge.textContent=(p.status||'').replace(/_/g,' ');
+    badge.className='statusbadge s-'+(p.status||'pending');
+    fillProfile(state.profile);
+    show('view-dash');
+  }
+
+  async function loadPartner(session){
+    show('view-loading');
+    els['who'].innerHTML='<span>'+(session.user.email||'')+'</span>';
+    var res;
+    try{
+      var r=await fetch('/api/partner/me',{ headers: Object.assign({'content-type':'application/json'}, await authHeader()) });
+      res=await r.json();
+    }catch(_e){ res={ok:false}; }
+    if(!res || !res.ok){ show('view-none'); return; }
+    state.partner=res.partner; state.profile=res.profile;
+    if(!state.partner){ show('view-none'); return; }
+    var st=state.partner.status;
+    if(st==='active'){ renderDash(); return; }
+    // pending / under_review / suspended / terminated
+    var msg=document.getElementById('pending-msg');
+    if(st==='suspended'){ msg.textContent='Your partner account is currently suspended. Please contact LeadPages to resolve this.'; }
+    else if(st==='terminated'){ msg.textContent='This partner account has been closed. Contact LeadPages if you think this is a mistake.'; }
+    else if(st==='under_review'){ msg.textContent='Your partner account is under review. We\u2019ll be in touch shortly.'; }
+    else { msg.textContent='Your partner account is being set up. We\u2019ll email you as soon as it\u2019s active.'; }
+    show('view-pending');
+  }
+
+  async function boot(){
+    var session=(await sb.auth.getSession()).data.session;
+    if(session){ loadPartner(session); } else { show('view-login'); }
+    sb.auth.onAuthStateChange(function(_e,sess){
+      if(sess && !state.partner){ loadPartner(sess); }
+    });
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
