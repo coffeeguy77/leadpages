@@ -107,6 +107,8 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     <button data-t="apps" class="on">Applications <span class="count" id="apps-count"></span></button>
     <button data-t="partners">Partners <span class="count" id="partners-count"></span></button>
     <button data-t="commissions">Commissions <span class="count" id="comm-count"></span></button>
+    <button data-t="training">Training <span class="count" id="tm-count"></span></button>
+    <button data-t="resources">Resources <span class="count" id="res-count"></span></button>
   </div>
 
   <!-- Applications -->
@@ -139,6 +141,19 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     </div>
     <div id="comm-admin-list"></div>
   </section>
+
+  <!-- Training -->
+  <section class="section" data-sec="training">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><p class="muted" style="margin:0">Create and publish training modules. Partners see published modules and track their own progress.</p><button class="btn btn-brand" id="tm-add">+ Add module</button></div>
+    <datalist id="tm-cats"><option>Getting started</option><option>How LeadPages works</option><option>How to sell your first website</option><option>Choosing a niche</option><option>Creating a demo site</option><option>Customising a website</option><option>Pricing and packages</option><option>Client onboarding</option><option>Handling objections</option><option>Monthly client support</option><option>Quality standards</option><option>When to escalate to LeadPages</option><option>Compliance and brand rules</option></datalist>
+    <div id="training-admin-list"></div>
+  </section>
+
+  <!-- Resources -->
+  <section class="section" data-sec="resources">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><p class="muted" style="margin:0">Create and publish sales resources. Partners can copy text and download files.</p><button class="btn btn-brand" id="res-add">+ Add resource</button></div>
+    <div id="resources-admin-list"></div>
+  </section>
 </div></div>
 
 <script>
@@ -149,6 +164,9 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   var appFilter='all', apps=[], partners=[];
   var COMM_STATUSES=['pending','approved','paid','held','cancelled'];
   var commFilter='all', commissions=[], siteMap={};
+  var TM_TYPES=['article','video','checklist','download'];
+  var RES_TYPES=['script','email','sms','call','proposal','form','questionnaire','pitch','pricing','social','checklist','other'];
+  var modules=[], resources=[];
   function money(c){ if(c==null) return '$0'; return '$'+(Math.round(c)/100).toLocaleString(); }
   function partnerName(pid){ var p=partners.find(function(x){return x.id===pid;}); return p?(p.display_name||p.email||'Partner'):'Partner'; }
   function siteName(sid){ var n=siteMap[sid]; return n||'Client'; }
@@ -353,7 +371,94 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     siteMap={}; (sm.data||[]).forEach(function(x){ siteMap[x.id]=x.business_name||x.slug; });
     var cm=await sb.from('partner_commissions').select('*').order('created_at',{ascending:false});
     commissions=(cm.data||[]); renderComms();
+    loadModules(); loadResources();
   }
+
+  // ---- Training + Resources admin ----
+  function fieldVal(el){ if(el.type==='checkbox') return el.checked; if(el.type==='number') return parseInt(el.value||'0',10)||0; var v=(el.value||'').trim(); return v||null; }
+  function collect(card){ var o={}; card.querySelectorAll('[data-f]').forEach(function(el){ o[el.getAttribute('data-f')]=fieldVal(el); }); o.updated_at=new Date().toISOString(); return o; }
+  function fld(label,f,type,val,extra){ return '<div'+(type==='full'?' class="grow"':'')+'><label>'+label+'</label><input type="'+(type==='full'?'text':type)+'" data-f="'+f+'" value="'+esc(val==null?'':val)+'" '+(extra||'')+'></div>'; }
+  function chk(label,f,val){ return '<label style="display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink-soft)"><input type="checkbox" data-f="'+f+'" style="width:auto"'+(val?' checked':'')+'> '+label+'</label>'; }
+  function selF(label,f,opts,cur){ return '<div><label>'+label+'</label><select data-f="'+f+'">'+opts.map(function(o){return '<option value="'+o+'"'+(o===cur?' selected':'')+'>'+o+'</option>';}).join('')+'</select></div>'; }
+
+  function moduleCard(m){
+    return '<div class="card item" data-id="'+m.id+'"><div class="head"><div class="nm">'+esc(m.title||'Untitled')+'</div>'
+      +'<span class="statusbadge '+(m.published?'s-active':'s-pending')+'">'+(m.published?'Published':'Draft')+'</span></div>'
+      +'<div class="ctrls" style="border:0;padding-top:8px">'
+        + fld('Title','title','full',m.title)
+        + '<div><label>Category</label><input type="text" data-f="category" list="tm-cats" value="'+esc(m.category||'')+'"></div>'
+        + selF('Type','content_type',TM_TYPES,m.content_type||'article')
+        + fld('Sort','sort','number',m.sort==null?0:m.sort,'style="max-width:90px"')
+      +'</div>'
+      +'<div class="ctrls" style="border:0;padding-top:4px">'+fld('Description','description','full',m.description)+'</div>'
+      +'<div class="ctrls" style="border:0;padding-top:4px">'+fld('Video URL','video_url','full',m.video_url)+fld('Download URL','download_url','full',m.download_url)+'</div>'
+      +'<div style="margin-top:8px"><label>Body</label><textarea rows="3" data-f="body">'+esc(m.body||'')+'</textarea></div>'
+      +'<div class="ctrls"><div>'+chk('Required','required',m.required)+'</div><div>'+chk('Published','published',m.published)+'</div>'
+        +'<button class="btn btn-sm btn-brand" data-save>Save</button><button class="btn btn-sm" data-del>Delete</button><span class="saved" data-saved>Saved \u2713</span></div></div>';
+  }
+  function renderModules(){
+    document.getElementById('tm-count').textContent=modules.length?('\u00b7 '+modules.length):'';
+    document.getElementById('training-admin-list').innerHTML = modules.length ? modules.map(moduleCard).join('') : '<div class="card empty">No modules yet. Add one to get started.</div>';
+  }
+  async function loadModules(){ var r=await sb.from('partner_training_modules').select('*').order('sort',{ascending:true}); modules=(r.data||[]); renderModules(); }
+
+  function resCard(r){
+    return '<div class="card item" data-id="'+r.id+'"><div class="head"><div class="nm">'+esc(r.title||'Untitled')+'</div>'
+      +'<span class="statusbadge '+(r.published?'s-active':'s-pending')+'">'+(r.published?'Published':'Draft')+'</span></div>'
+      +'<div class="ctrls" style="border:0;padding-top:8px">'
+        + fld('Title','title','full',r.title)
+        + '<div><label>Category</label><input type="text" data-f="category" value="'+esc(r.category||'')+'"></div>'
+        + selF('Type','type',RES_TYPES,r.type||'script')
+        + fld('Sort','sort','number',r.sort==null?0:r.sort,'style="max-width:90px"')
+      +'</div>'
+      +'<div class="ctrls" style="border:0;padding-top:4px">'+fld('Description','description','full',r.description)+fld('Download URL','download_url','full',r.download_url)+'</div>'
+      +'<div style="margin-top:8px"><label>Body (script / template text)</label><textarea rows="4" data-f="body">'+esc(r.body||'')+'</textarea></div>'
+      +'<div class="ctrls"><div>'+chk('Published','published',r.published)+'</div>'
+        +'<button class="btn btn-sm btn-brand" data-save>Save</button><button class="btn btn-sm" data-del>Delete</button><span class="saved" data-saved>Saved \u2713</span></div></div>';
+  }
+  function renderResources(){
+    document.getElementById('res-count').textContent=resources.length?('\u00b7 '+resources.length):'';
+    document.getElementById('resources-admin-list').innerHTML = resources.length ? resources.map(resCard).join('') : '<div class="card empty">No resources yet. Add one to get started.</div>';
+  }
+  async function loadResources(){ var r=await sb.from('partner_resources').select('*').order('sort',{ascending:true}); resources=(r.data||[]); renderResources(); }
+
+  // add buttons
+  document.getElementById('tm-add').addEventListener('click', async function(){
+    var sort=(modules.reduce(function(a,m){return Math.max(a,m.sort||0);},0))+1;
+    var r=await sb.from('partner_training_modules').insert({title:'New module',content_type:'article',published:false,sort:sort}).select('*').single();
+    if(r.error||!r.data){ alert('Could not add: '+((r.error&&r.error.message)||'no permission')); return; }
+    modules.unshift(r.data); renderModules();
+  });
+  document.getElementById('res-add').addEventListener('click', async function(){
+    var sort=(resources.reduce(function(a,m){return Math.max(a,m.sort||0);},0))+1;
+    var r=await sb.from('partner_resources').insert({title:'New resource',type:'script',published:false,sort:sort}).select('*').single();
+    if(r.error||!r.data){ alert('Could not add: '+((r.error&&r.error.message)||'no permission')); return; }
+    resources.unshift(r.data); renderResources();
+  });
+
+  // save/delete (shared handler factory)
+  function wireCrud(listId, table, arrRef, rerender){
+    document.getElementById(listId).addEventListener('click', async function(e){
+      var card=e.target.closest('.item'); if(!card) return; var id=card.getAttribute('data-id');
+      var arr=arrRef(); var row=arr.find(function(x){return x.id===id;}); if(!row) return;
+      if(e.target.closest('[data-save]')){
+        var btn=e.target.closest('[data-save]'); btn.disabled=true;
+        var patch=collect(card);
+        var r=await sb.from(table).update(patch).eq('id',id).select('*'); btn.disabled=false;
+        if(r.error||!r.data||!r.data.length){ alert('Could not save: '+((r.error&&r.error.message)||'no permission')); return; }
+        Object.assign(row,r.data[0]); rerender();
+        var sv=card.querySelector('[data-saved]'); if(sv){ sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1500); }
+      }
+      if(e.target.closest('[data-del]')){
+        if(!confirm('Delete this item?')) return;
+        var r=await sb.from(table).delete().eq('id',id);
+        if(r.error){ alert('Could not delete: '+r.error.message); return; }
+        var i=arr.indexOf(row); if(i>=0) arr.splice(i,1); rerender();
+      }
+    });
+  }
+  wireCrud('training-admin-list','partner_training_modules',function(){return modules;},renderModules);
+  wireCrud('resources-admin-list','partner_resources',function(){return resources;},renderResources);
 
   async function boot(){
     var session=(await sb.auth.getSession()).data.session;

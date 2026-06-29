@@ -229,16 +229,18 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
 
       <!-- Training -->
       <section class="panel" data-panel="training">
-        <h2>Training Centre</h2>
-        <p class="sub">Step-by-step training from your first sale to ongoing client support.</p>
-        <div class="card empty"><div class="e-ico">🎓</div><strong>Training is on its way</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">Getting started, how to sell your first website, pricing, onboarding, handling objections and quality standards — with progress tracking.</p><div class="phase-tag">Phase 4</div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div><h2>Training Centre</h2><p class="sub" style="margin-bottom:0">Step-by-step training from your first sale to ongoing client support.</p></div>
+          <span class="statusbadge s-active" id="train-progress" style="font-size:13px"></span>
+        </div>
+        <div id="training-list" style="margin-top:16px"><div class="card empty"><p class="muted">Loading training…</p></div></div>
       </section>
 
       <!-- Resources -->
       <section class="panel" data-panel="resources">
         <h2>Sales Resources</h2>
-        <p class="sub">Scripts, templates and pitch material ready to use.</p>
-        <div class="card empty"><div class="e-ico">📝</div><strong>Resource library coming soon</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">Sales scripts, cold email and SMS templates, proposals, onboarding forms, pricing sheets and outreach checklists.</p><div class="phase-tag">Phase 4</div></div>
+        <p class="sub">Scripts, templates and pitch material ready to use — copy or download.</p>
+        <div id="resources-list" style="margin-top:6px"><div class="card empty"><p class="muted">Loading resources…</p></div></div>
       </section>
 
       <!-- Support -->
@@ -354,7 +356,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     badge.className='statusbadge s-'+(p.status||'pending');
     fillProfile(state.profile);
     show('view-dash');
-    wireAdd(); loadPlans(); loadClients(); loadCommissions();
+    wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources();
   }
 
   async function loadPartner(session){
@@ -434,6 +436,18 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
   }
   function wireAdd(){
     if(addWired) return; addWired=true;
+    document.getElementById('training-list').addEventListener('change', async function(e){
+      var sel=e.target.closest('select[data-mod]'); if(!sel) return;
+      var mid=sel.getAttribute('data-mod'); var st=sel.value;
+      progress[mid]={status:st};
+      await sb.from('partner_training_progress').upsert({ partner_id:state.partner.id, module_id:mid, status:st, completed_at: st==='completed'?new Date().toISOString():null, updated_at:new Date().toISOString() }, { onConflict:'partner_id,module_id' });
+      renderTraining();
+    });
+    document.getElementById('resources-list').addEventListener('click', function(e){
+      var b=e.target.closest('[data-copy]'); if(!b) return;
+      var r=resources.find(function(x){return x.id===b.getAttribute('data-copy');}); if(!r) return;
+      try{ navigator.clipboard.writeText(r.body||''); var t=b.textContent; b.textContent='Copied \u2713'; setTimeout(function(){ b.textContent=t; },1500); }catch(_e){}
+    });
     document.getElementById('clients-list').addEventListener('click', async function(e){
       var pub=e.target.closest('[data-pub]'), un=e.target.closest('[data-unpub]');
       if(!pub && !un) return;
@@ -513,6 +527,67 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     set('cm-pending',pend); set('cm-approved',appr); set('cm-paid',paid);
     set('kpi-pendingcomm',pend); set('kpi-payout',appr); set('kpi-paidcomm',paid);
     renderCommissions();
+  }
+
+  // ---------- Phase 4: training + resources ----------
+  var modules=[], progress={}, resources=[];
+  function nl2br(t){ return esc(t).replace(/\n/g,'<br>'); }
+  function tBadge(t){ var m={video:'Video',article:'Article',checklist:'Checklist',download:'Download'}; return '<span class="statusbadge" style="background:var(--brand-tint);color:var(--brand-deep)">'+(m[t]||'Article')+'</span>'; }
+  function moduleCard(m){
+    var st=(progress[m.id]&&progress[m.id].status)||'not_started';
+    var links='';
+    if(m.video_url) links+='<a class="btn" href="'+esc(m.video_url)+'" target="_blank" rel="noopener" style="padding:7px 12px;font-size:13px">\u25B6 Watch</a> ';
+    if(m.download_url) links+='<a class="btn" href="'+esc(m.download_url)+'" target="_blank" rel="noopener" style="padding:7px 12px;font-size:13px">\u2913 Download</a>';
+    var body=m.body?('<div class="muted" style="font-size:14px;margin-top:10px;white-space:pre-wrap">'+nl2br(m.body)+'</div>'):'';
+    var opts=[['not_started','Not started'],['in_progress','In progress'],['completed','Completed']].map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===st?' selected':'')+'>'+o[1]+'</option>'; }).join('');
+    return '<div class="card" style="padding:16px 18px;margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
+      +'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(m.title)+(m.required?' <span class="statusbadge s-pending" style="font-size:10px">Required</span>':'')+'</div>'
+      +(m.description?'<div class="muted" style="font-size:13.5px;margin-top:3px">'+esc(m.description)+'</div>':'')+'</div>'+tBadge(m.content_type)+'</div>'
+      +body+(links?('<div style="margin-top:10px">'+links+'</div>'):'')
+      +'<div style="margin-top:12px;display:flex;align-items:center;gap:8px"><label style="font-size:12px;color:var(--ink-soft);font-weight:600;margin:0">Your progress</label>'
+      +'<select data-mod="'+esc(m.id)+'" style="width:auto;display:inline-block;max-width:180px">'+opts+'</select></div></div>';
+  }
+  function groupRender(arr, cardFn){
+    var cats={}, order=[];
+    arr.forEach(function(x){ var c=x.category||'General'; if(!cats[c]){cats[c]=[];order.push(c);} cats[c].push(x); });
+    return order.map(function(c){ return '<h3 style="font-family:var(--font-display);font-size:16px;margin:18px 0 10px">'+esc(c)+'</h3>'+cats[c].map(cardFn).join(''); }).join('');
+  }
+  function renderTraining(){
+    var box=document.getElementById('training-list'); if(!box) return;
+    var tp=document.getElementById('train-progress');
+    if(!modules.length){ box.innerHTML='<div class="card empty"><div class="e-ico">\U0001F393</div><strong>No training yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Modules appear here as they\u2019re published.</p></div>'; if(tp) tp.textContent=''; return; }
+    var done=modules.filter(function(m){ return progress[m.id]&&progress[m.id].status==='completed'; }).length;
+    if(tp) tp.textContent=done+' of '+modules.length+' completed';
+    box.innerHTML=groupRender(modules, moduleCard);
+  }
+  async function loadTraining(){
+    var mr=await sb.from('partner_training_modules').select('id,title,category,description,content_type,video_url,body,download_url,required,sort,published').order('sort',{ascending:true});
+    modules=(mr.data||[]);
+    var pr=await sb.from('partner_training_progress').select('module_id,status').eq('partner_id',state.partner.id);
+    progress={}; (pr.data||[]).forEach(function(x){ progress[x.module_id]={status:x.status}; });
+    renderTraining();
+  }
+  function resourceCard(r){
+    var body=r.body?('<div class="muted" style="font-size:13.5px;margin-top:10px;white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px">'+nl2br(r.body)+'</div>'):'';
+    var acts='';
+    if(r.body) acts+='<button class="btn" data-copy="'+esc(r.id)+'" style="padding:6px 11px;font-size:13px">Copy</button> ';
+    if(r.download_url) acts+='<a class="btn" href="'+esc(r.download_url)+'" target="_blank" rel="noopener" style="padding:6px 11px;font-size:13px">Download</a>';
+    return '<div class="card" style="padding:16px 18px;margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
+      +'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(r.title)+'</div>'
+      +(r.description?'<div class="muted" style="font-size:13.5px;margin-top:3px">'+esc(r.description)+'</div>':'')+'</div>'
+      +'<span class="statusbadge" style="background:#eef0f3;color:#566">'+esc(r.type||'resource')+'</span></div>'
+      +body+(acts?('<div style="margin-top:10px">'+acts+'</div>'):'')+'</div>';
+  }
+  function renderResources(){
+    var box=document.getElementById('resources-list'); if(!box) return;
+    box.innerHTML = resources.length ? groupRender(resources, resourceCard)
+      : '<div class="card empty"><div class="e-ico">\U0001F4DD</div><strong>No resources yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Scripts, templates and pitch material will appear here.</p></div>';
+  }
+  async function loadResources(){
+    var r=await sb.from('partner_resources').select('id,title,category,type,description,body,download_url,sort,published').order('sort',{ascending:true});
+    resources=(r.data||[]); renderResources();
   }
 
   async function boot(){
