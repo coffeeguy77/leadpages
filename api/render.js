@@ -145,53 +145,99 @@ function scCard(demo, base) {
     '<div class="sc-card-body"><div class="sc-name">' + esc(demo.business_name || demo.slug) + '</div>' +
     '<div class="sc-view">View demo &rarr;</div></div></a>';
 }
+function scFeature(icon, title, body) {
+  return '<div class="sc-feat"><div class="sc-feat-ic">' + icon + '</div><h3>' + title + '</h3><p>' + body + '</p></div>';
+}
 function showcaseHtml(prof, partner, demos, base) {
   const cfg = prof.showcase_config || {};
   const accent = /^#[0-9a-fA-F]{3,8}$/.test(cfg.accent || '') ? cfg.accent : '#ff6a1a';
-  const name = esc(partner.display_name || 'Local Web Partner');
-  const headline = esc(prof.showcase_headline || (partner.display_name ? (partner.display_name + ' — websites that make the phone ring') : 'Websites that make the phone ring'));
-  const intro = esc(cfg.intro || 'Professional, mobile-friendly websites for local businesses — built fast, with lead forms and local support. Take a look at some recent designs below.');
+  const name = esc(partner.display_name || 'Local Web');
+  const headline = esc(prof.showcase_headline || 'Websites that get local tradies booked');
+  const intro = esc(cfg.intro || 'Professional, mobile-first websites built for tradespeople \u2014 with a lead form that reaches you the moment someone needs a quote. Take a look at some recent designs below.');
   const logo = cfg.logo ? ('<img src="' + esc(cfg.logo) + '" alt="' + name + '" class="sc-logo">') : ('<span class="sc-logo-text">' + name + '</span>');
   const email = prof.support_email ? esc(prof.support_email) : '';
   const phone = prof.support_phone ? esc(prof.support_phone) : '';
-  const contact = (email || phone)
-    ? '<div class="sc-contact">' + (email ? '<a class="sc-btn" href="mailto:' + email + '">Email ' + name + '</a>' : '') + (phone ? '<a class="sc-btn ghost" href="tel:' + phone.replace(/[^+0-9]/g, '') + '">' + phone + '</a>' : '') + '</div>'
-    : '';
+  const tel = phone ? phone.replace(/[^+0-9]/g, '') : '';
+  const navCta = email ? '<a class="sc-btn sm" href="mailto:' + email + '">Get in touch</a>'
+    : (phone ? '<a class="sc-btn sm" href="tel:' + tel + '">Call us</a>' : '');
+  const heroCtas = '<div class="sc-hero-ctas">'
+    + (demos.length ? '<a class="sc-btn" href="#work">See recent work</a>' : '')
+    + (email ? '<a class="sc-btn ghost" href="mailto:' + email + '">Get a website</a>'
+             : (phone ? '<a class="sc-btn ghost" href="tel:' + tel + '">Call ' + name + '</a>' : ''))
+    + '</div>';
+
+  const feats = '<div class="sc-feats">'
+    + scFeature('&#128241;', 'Built for mobile', 'Most tradie enquiries come from a phone. Every site looks sharp and loads fast on mobile first.')
+    + scFeature('&#9889;', 'Leads reach you instantly', 'A built-in quote form that emails you the moment someone needs work \u2014 no missed jobs.')
+    + scFeature('&#128269;', 'Found on Google', 'Local search basics are baked in so nearby customers can actually find you.')
+    + scFeature('&#128640;', 'Live in days', 'No drawn-out web project. Your site can be online and taking enquiries this week.')
+    + scFeature('&#9999;&#65039;', 'Easy to update', 'Prices, services, hours \u2014 change anything any time, no developer needed.')
+    + scFeature('&#129309;', 'Local support', 'A real person who knows your business, not an overseas help desk.')
+    + '</div>';
+
   const grid = demos.length
     ? '<div class="sc-grid">' + demos.map(d => scCard(d, base)).join('') + '</div>'
     : '<p class="sc-empty">New designs coming soon.</p>';
+  const work = demos.length
+    ? '<section class="sc-work" id="work"><div class="wrap"><h2>Recent work</h2><p class="sc-sub">Tap any design to see it live.</p>' + grid + '</div></section>'
+    : '';
+
+  const contactBits = [];
+  if (email) contactBits.push('<a class="sc-btn" href="mailto:' + email + '">Email ' + name + '</a>');
+  if (phone) contactBits.push('<a class="sc-btn ghost" href="tel:' + tel + '">' + phone + '</a>');
+  const contact = (email || phone)
+    ? '<section class="sc-contact" id="contact"><div class="wrap"><h2>Ready for a website that works?</h2>'
+      + '<p class="sc-sub" style="max-width:52ch;margin-inline:auto">Tell ' + name + ' about your trade and we\u2019ll put together a site that brings in the work.</p>'
+      + '<div class="sc-contact-btns">' + contactBits.join('') + '</div></div></section>'
+    : '';
+
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
-    '<title>' + name + ' — Local business websites</title>' +
+    '<title>' + name + ' \u2014 Websites for tradies</title>' +
     '<meta name="description" content="' + intro + '">' +
-    '<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">' +
+    '<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">' +
     '<style>' +
-    ':root{--accent:' + accent + ';--ink:#15191e;--steel:#5b6571;--line:#e3e5e9;--paper:#fff;--hi:#f4f6f8}' +
-    '*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.55}' +
+    ':root{--accent:' + accent + ';--ink:#15191e;--steel:#5b6571;--line:#e6e8ec;--paper:#fff;--hi:#f5f7f9}' +
+    '*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.55}' +
     'h1,h2,h3{font-family:Archivo,sans-serif;font-weight:900;letter-spacing:-.02em;margin:0}a{color:inherit}' +
     '.wrap{max-width:1080px;margin:0 auto;padding:0 22px}' +
-    '.sc-head{background:radial-gradient(120% 120% at 80% -10%,#1e242c,#15191e);color:#fff;padding:30px 0 64px}' +
-    '.sc-nav{display:flex;align-items:center;justify-content:space-between;height:64px}' +
-    '.sc-logo{max-height:42px;max-width:200px;display:block}.sc-logo-text{font-family:Archivo;font-weight:900;font-size:22px}' +
-    '.sc-hero{max-width:760px;margin-top:26px}.sc-hero h1{font-size:clamp(30px,5vw,50px);line-height:1.04}' +
-    '.sc-hero p{color:#c4ccd4;font-size:18px;margin:16px 0 0;max-width:60ch}' +
-    '.sc-contact{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap}' +
-    '.sc-btn{display:inline-flex;align-items:center;font-family:Archivo;font-weight:800;font-size:15px;padding:13px 22px;border-radius:12px;background:var(--accent);color:#fff;text-decoration:none}' +
-    '.sc-btn.ghost{background:transparent;border:1.5px solid rgba(255,255,255,.25);color:#fff}' +
-    '.sc-body{padding:54px 0 70px}.sc-body h2{font-size:26px;margin-bottom:6px}.sc-sub{color:var(--steel);margin:0 0 26px}' +
-    '.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}' +
+    '.sc-btn{display:inline-flex;align-items:center;gap:8px;font-family:Archivo;font-weight:800;font-size:15.5px;padding:14px 24px;border-radius:13px;background:var(--accent);color:#fff;text-decoration:none;border:1.5px solid var(--accent)}' +
+    '.sc-btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.3)}' +
+    '.sc-btn.sm{padding:9px 16px;font-size:14px}' +
+    '.sc-top{position:sticky;top:0;z-index:5;background:rgba(21,25,30,.82);backdrop-filter:blur(8px)}' +
+    '.sc-top .sc-nav{display:flex;align-items:center;justify-content:space-between;height:66px}' +
+    '.sc-logo{max-height:40px;max-width:190px;display:block}.sc-logo-text{font-family:Archivo;font-weight:900;font-size:21px;color:#fff}' +
+    '.sc-hero{background:radial-gradient(130% 130% at 85% -20%,#222a33,#13171c);color:#fff;padding:70px 0 84px;text-align:left}' +
+    '.sc-hero h1{font-size:clamp(32px,5.4vw,56px);line-height:1.03;max-width:16ch}' +
+    '.sc-hero p{color:#c4ccd4;font-size:19px;margin:18px 0 0;max-width:56ch}' +
+    '.sc-hero-ctas{margin-top:30px;display:flex;gap:13px;flex-wrap:wrap}' +
+    '.sc-why{padding:64px 0 20px}.sc-why h2{font-size:clamp(24px,3.4vw,32px);text-align:center}.sc-why .sc-sub{text-align:center}' +
+    '.sc-sub{color:var(--steel);margin:8px 0 0}' +
+    '.sc-feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:36px}' +
+    '.sc-feat{border:1px solid var(--line);border-radius:16px;padding:24px;background:var(--paper)}' +
+    '.sc-feat-ic{font-size:26px;width:50px;height:50px;border-radius:12px;background:var(--hi);display:flex;align-items:center;justify-content:center;margin-bottom:14px}' +
+    '.sc-feat h3{font-size:18px}.sc-feat p{color:var(--steel);margin:8px 0 0;font-size:14.5px}' +
+    '.sc-work{padding:60px 0}.sc-work h2{font-size:clamp(24px,3.4vw,32px)}' +
+    '.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;margin-top:22px}' +
     '.sc-card{display:block;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .1s,box-shadow .15s;background:var(--paper)}' +
     '.sc-card:hover{transform:translateY(-3px);box-shadow:0 16px 36px -18px rgba(0,0,0,.3)}' +
     '.sc-card-top{height:96px;background:linear-gradient(135deg,var(--accent),#15191e);display:flex;align-items:flex-end;padding:12px}' +
     '.sc-trade{font-family:Inter;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.25);padding:4px 9px;border-radius:7px}' +
     '.sc-card-body{padding:15px 16px}.sc-name{font-family:Archivo;font-weight:800;font-size:17px}.sc-view{color:var(--accent);font-weight:700;font-size:14px;margin-top:7px}' +
     '.sc-empty{color:var(--steel)}' +
-    '.sc-foot{border-top:1px solid var(--line);padding:24px 0;color:var(--steel);font-size:13px;text-align:center}' +
+    '.sc-contact{background:var(--hi);padding:66px 0;text-align:center}.sc-contact h2{font-size:clamp(24px,3.6vw,34px)}' +
+    '.sc-contact-btns{margin-top:24px;display:flex;gap:13px;flex-wrap:wrap;justify-content:center}' +
+    '.sc-contact .sc-btn.ghost{color:var(--ink);border-color:var(--line)}' +
+    '.sc-foot{border-top:1px solid var(--line);padding:26px 0;color:var(--steel);font-size:13px;text-align:center}' +
+    '@media(max-width:640px){.sc-hero{padding:52px 0 60px}}' +
     '</style></head><body>' +
-    '<header class="sc-head"><div class="wrap"><div class="sc-nav">' + logo + '</div>' +
-    '<div class="sc-hero"><h1>' + headline + '</h1><p>' + intro + '</p>' + contact + '</div></div></header>' +
-    '<main class="sc-body"><div class="wrap"><h2>Recent designs</h2><p class="sc-sub">Tap any design to see it live.</p>' + grid + '</div></main>' +
-    '<footer class="sc-foot"><div class="wrap">Powered by LeadPages</div></footer></body></html>';
+    '<div class="sc-top"><div class="wrap"><div class="sc-nav">' + logo + (navCta || '') + '</div></div></div>' +
+    '<header class="sc-hero"><div class="wrap"><h1>' + headline + '</h1><p>' + intro + '</p>' + heroCtas + '</div></header>' +
+    '<section class="sc-why"><div class="wrap"><h2>Why a website built for your trade</h2><p class="sc-sub">Everything a local tradie needs to win more work \u2014 nothing they don\u2019t.</p>' + feats + '</div></section>' +
+    work +
+    contact +
+    '<footer class="sc-foot"><div class="wrap">' + name + ' \u00b7 Powered by LeadPages</div></footer></body></html>';
 }
+
 async function renderShowcase(req, res, slug, base) {
   try {
     const prof = (await supabase.from('partner_profiles')
