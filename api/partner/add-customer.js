@@ -75,10 +75,18 @@ module.exports = async (req,res) => {
 
   const slug=await uniqueSlug(slugify(businessName));
 
+  // Optionally seed the design from one of the partner's saved themes.
+  let base = {};
+  const themeId = clean(b.themeId, 80);
+  if (themeId) {
+    const t = await admin.from('partner_themes').select('config').eq('id', themeId).eq('partner_id', partner.id).maybeSingle();
+    if (t.data && t.data.config && typeof t.data.config === 'object') base = Object.assign({}, t.data.config);
+  }
+
   // Minimal starter config — the partner customises in the builder. Intake details
   // are kept on the config so the builder/admin can see who the lead was.
-  const config={
-    trade: industry || '',
+  const config=Object.assign(base, {
+    trade: industry || base.trade || '',
     _intake: {
       contactName: clean(b.contactName,160) || null,
       phone: clean(b.phone,60) || null,
@@ -88,7 +96,7 @@ module.exports = async (req,res) => {
       addedByPartner: partner.id,
       addedAt: new Date().toISOString(),
     },
-  };
+  });
 
   const row={
     slug,
