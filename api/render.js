@@ -389,9 +389,9 @@ async function showcaseRespond(req, res, prof, base) {
     .limit(48)).data || [];
   const home = (await supabase.from('sites')
     .select('*').eq('servicing_partner_id', prof.partner_id).eq('is_partner_home', true).maybeSingle()).data;
-  if (home) return sendHtml(res, buildAgencyHtml(home, req.headers.host || '', demos, base), true);
   res.setHeader('content-type', 'text/html; charset=utf-8');
-  res.setHeader('cache-control', 'public, s-maxage=30, stale-while-revalidate=120');
+  res.setHeader('cache-control', 'public, s-maxage=5, stale-while-revalidate=20');
+  if (home) return res.status(200).send(buildAgencyHtml(home, req.headers.host || '', demos, base));
   return res.status(200).send(showcaseHtml(prof, partner, demos, base));
 }
 
