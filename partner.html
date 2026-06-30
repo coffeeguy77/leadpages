@@ -650,11 +650,12 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       var err=document.getElementById('sc-err'); err.classList.add('hidden');
       var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var btn=this; btn.disabled=true;
       var dom=(document.getElementById('sc-domain').value||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/\s+/g,'');
-      var patch={ showcase_slug:slug||null, showcase_domain:dom||null, showcase_enabled:document.getElementById('sc-enabled').checked, showcase_protected:false, showcase_password:null, showcase_headline:(document.getElementById('sc-headline').value||'').trim()||null, showcase_config:{ logo:scLogo||null, intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:(document.getElementById('sc-accent').value||'').trim()||null }, updated_at:new Date().toISOString() };
-      var r=await sb.from('partner_profiles').update(patch).eq('partner_id',state.partner.id).select('*'); btn.disabled=false;
-      if(r.error){ err.textContent=(/duplicate|unique/i.test(r.error.message)?'That address is already taken \u2014 pick another.':('Could not save: '+r.error.message)); err.classList.remove('hidden'); return; }
-      if(!r.data||!r.data.length){ err.textContent='Could not save (no permission).'; err.classList.remove('hidden'); return; }
-      state.profile=r.data[0];
+      var payload={ slug:slug, domain:dom, enabled:document.getElementById('sc-enabled').checked, headline:(document.getElementById('sc-headline').value||'').trim(), config:{ logo:scLogo||null, intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:(document.getElementById('sc-accent').value||'').trim()||null } };
+      var res;
+      try{ var r=await fetch('/api/partner/save-showcase',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
+      btn.disabled=false;
+      if(!res||!res.ok){ err.textContent=(res&&res.error)||'Could not save.'; err.classList.remove('hidden'); if(res&&res.field==='slug'){ var sm=document.getElementById('sc-slug-msg'); sm.style.color='var(--bad)'; sm.textContent=res.error; } return; }
+      state.profile=res.profile;
       var sv=document.getElementById('sc-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1700); updateScLink();
     });
     document.getElementById('ov-add').addEventListener('click',function(){ gotoPanel('add'); });
