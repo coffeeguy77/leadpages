@@ -19,6 +19,7 @@ const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 const brokerTpl   = require('../broker.template.json');     // broker-leads
 const tradeTpl    = require('../trade.template.json');      // trade
+const agencyTpl   = require('../agency.template.json');     // partner web-studio homepage
 const brokerApp   = require('../brokerapp.template.json');  // broker-app (calculator suite)
 
 const supabase = createClient(
@@ -136,6 +137,21 @@ function scPasswordHtml(slug, partner, tried) {
     '<button type="submit" style="width:100%;padding:13px;border-radius:11px;border:0;background:#ff6a1a;color:#fff;font-weight:700;font-size:16px;cursor:pointer">View portfolio</button>' +
     '</form></body></html>';
 }
+function demoGateHtml(site, tried) {
+  const biz = esc(site.business_name || 'This sample');
+  return '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">' +
+    '<title>' + biz + ' \u2014 private preview</title>' +
+    '<body style="margin:0;font-family:Inter,system-ui,sans-serif;background:#15191e;color:#fff;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px">' +
+    '<form method="get" style="max-width:380px;width:100%;text-align:center">' +
+    '<input type="hidden" name="preview" value="1">' +
+    '<div style="font-size:34px;margin-bottom:10px">&#128274;</div>' +
+    '<h1 style="font-family:Archivo,sans-serif;font-size:23px;margin:0 0 6px">Private preview</h1>' +
+    '<p style="opacity:.75;margin:0 0 18px">Enter the password you were sent to view this sample.</p>' +
+    (tried ? '<p style="color:#ff8a65;margin:0 0 12px;font-size:14px">That password didn\u2019t match. Try again.</p>' : '') +
+    '<input name="pw" type="password" autofocus placeholder="Password" style="width:100%;padding:13px 15px;border-radius:11px;border:0;font-size:16px;margin-bottom:12px">' +
+    '<button type="submit" style="width:100%;padding:13px;border-radius:11px;border:0;background:#ff6a1a;color:#fff;font-weight:700;font-size:16px;cursor:pointer">View sample</button>' +
+    '</form></body></html>';
+}
 function scCard(demo, base) {
   const cfg = demo.config || {};
   const trade = esc((cfg.trade || '').toString());
@@ -242,6 +258,79 @@ function showcaseHtml(prof, partner, demos, base) {
     '<footer class="sc-foot"><div class="wrap">' + name + ' \u00b7 Powered by LeadPages</div></footer></body></html>';
 }
 
+function hexOr(v, d) { return /^#[0-9a-fA-F]{3,8}$/.test(v || '') ? v : d; }
+
+function buildAgencyHtml(site, host, demos, base) {
+  const cfg = site.config || {};
+  const sec = cfg.sections || {};
+  const hero = sec.hero || {};
+  const theme = cfg.theme || {};
+  const accent = hexOr(theme.hivis, '#ff6a1a');
+  const ink = hexOr(theme.steel, '#15191e');
+  const brand = hexOr(theme.pipe, accent);
+  const studio = esc(site.business_name || 'Web Studio');
+  const logoUrl = (cfg.logo && cfg.logo.imageUrl) ? esc(cfg.logo.imageUrl) : '';
+  const logo = logoUrl ? ('<img src="' + logoUrl + '" alt="' + studio + '" class="ag-logo-img">') : ('<span class="ag-logo-txt">' + studio + '</span>');
+
+  const heroTitleRaw = (hero.title != null && String(hero.title).trim()) ? String(hero.title) : 'Websites that bring in the work';
+  const heroHl = (hero.titleHl != null) ? String(hero.titleHl).trim() : '';
+  let heroTitle = esc(heroTitleRaw);
+  if (heroHl) {
+    const safeHl = esc(heroHl);
+    heroTitle = (heroTitle.indexOf(safeHl) >= 0) ? heroTitle.replace(safeHl, '<span class="hl">' + safeHl + '</span>') : (heroTitle + ' <span class="hl">' + safeHl + '</span>');
+  }
+  const heroEyebrow = esc(hero.eyebrow || 'Web design studio');
+  const heroSub = esc((hero.sub && String(hero.sub).trim()) || 'Professional, mobile-first websites for local businesses across Canberra and the ACT \u2014 built fast, with lead forms that put enquiries straight in your inbox.');
+
+  const phone = (cfg.phone || '').trim();
+  const phoneHref = phone.replace(/[^+0-9]/g, '');
+  const email = (cfg.email || '').trim();
+  const heroCall = phone ? ('<a class="call" href="tel:' + esc(phoneHref) + '">Or call ' + esc(phone) + '</a>') : (email ? ('<a class="call" href="mailto:' + esc(email) + '">Or email us</a>') : '');
+
+  const svcs = (Array.isArray(cfg.services) ? cfg.services : []).filter(function (x) { return x && x.on !== false && (x.title || x.body); }).slice(0, 6);
+  const svcList = svcs.length ? svcs : [
+    { icon: '\uD83D\uDCF1', title: 'Mobile-first design', body: 'Sites that look sharp and load fast on the phone, where most local customers find you.' },
+    { icon: '\u26A1', title: 'Lead forms that work', body: 'Enquiry forms that land straight in your inbox so you never miss a job.' },
+    { icon: '\uD83D\uDD0E', title: 'Found on Google', body: 'Local search basics built in so nearby customers can actually find you.' }
+  ];
+  const services = svcList.map(function (x) { return '<div class="svc"><span class="ic">' + esc(x.icon || '\u2728') + '</span><h3>' + esc(x.title || '') + '</h3><p>' + esc(x.body || x.desc || '') + '</p></div>'; }).join('');
+
+  const work = (demos && demos.length) ? demos.map(function (d) {
+    const dc = d.config || {}; const trade = esc((dc.trade || '').toString());
+    const lg = (dc.logo && dc.logo.imageUrl) ? esc(dc.logo.imageUrl) : '';
+    const lock = d.preview_password ? '<span class="ag-lock">&#128274;</span>' : '';
+    const chip = lg ? ('<span class="ag-chip"><img src="' + lg + '" alt="" loading="lazy"></span>') : ('<span class="ag-chip mono">' + esc((d.business_name || '?').trim().slice(0, 1).toUpperCase()) + '</span>');
+    const url = 'https://' + base + '/' + encodeURIComponent(d.slug) + '?preview=1';
+    return '<a class="ag-card" href="' + url + '" target="_blank" rel="noopener"><div class="ag-top">' + chip + (trade ? '<span class="ag-trade">' + trade + '</span>' : '') + lock + '</div><div class="ag-body"><div class="ag-name">' + esc(d.business_name || d.slug) + '</div><div class="ag-view">View site &rarr;</div></div></a>';
+  }).join('') : '<p class="ag-empty">New work coming soon.</p>';
+
+  const tb = sec.textBox || {};
+  const aboutEyebrow = esc(tb.eyebrow || 'About the studio');
+  const aboutHeading = esc((tb.heading && String(tb.heading).replace(/\{\{\s*businessName\s*\}\}/g, site.business_name || 'us')) || 'Local websites, done properly');
+  const aboutBody = esc((tb.content && String(tb.content).trim()) || (tb.intro && String(tb.intro).trim()) || 'We design and build websites for local trades and small businesses \u2014 clean, quick to launch, and easy to update. You get a site that earns its keep and a real person to call when you need a change.');
+  const aboutImgUrl = tb.image ? esc(tb.image) : '';
+  const aboutImg = aboutImgUrl ? ('<div class="about-img"><img src="' + aboutImgUrl + '" alt=""></div>') : '<div class="about-img"></div>';
+
+  let cbtns = '';
+  if (email) cbtns += '<a class="btn" href="mailto:' + esc(email) + '">Email ' + studio + '</a>';
+  if (phone) cbtns += '<a class="btn ghost" href="tel:' + esc(phoneHref) + '">' + esc(phone) + '</a>';
+  if (!cbtns) cbtns = '<a class="btn" href="#">Get in touch</a>';
+
+  const domainAction = 'https://' + (base || 'leadpages.com.au') + '/domains';
+
+  let html = agencyTpl.html;
+  const map = {
+    '{{ACCENT}}': accent, '{{INK}}': ink, '{{BRAND}}': brand, '{{STUDIO}}': studio, '{{LOGO}}': logo,
+    '{{HERO_EYEBROW}}': heroEyebrow, '{{HERO_TITLE}}': heroTitle, '{{HERO_SUB}}': heroSub, '{{HERO_CALL}}': heroCall,
+    '{{DOMAIN_ACTION}}': domainAction, '{{SERVICES}}': services, '{{WORK}}': work,
+    '{{ABOUT_EYEBROW}}': aboutEyebrow, '{{ABOUT_HEADING}}': aboutHeading, '{{ABOUT_BODY}}': aboutBody, '{{ABOUT_IMG}}': aboutImg,
+    '{{CONTACT_HEADING}}': 'Let\u2019s build yours', '{{CONTACT_SUB}}': esc('Tell us about your business and we\u2019ll put together a site that brings in the work.'),
+    '{{CONTACT_BTNS}}': cbtns, '{{YEAR}}': String(new Date().getFullYear())
+  };
+  for (const k of Object.keys(map)) html = html.split(k).join(map[k]);
+  return html;
+}
+
 function buildTradeHtml(site, host) {
   const template = templateFor(site);
   const tpl = TOKEN_TEMPLATES[template] || TOKEN_TEMPLATES['broker-leads'];
@@ -297,25 +386,9 @@ async function renderShowcase(req, res, slug, base) {
     const partner = (await supabase.from('partners').select('display_name,status').eq('id', prof.partner_id).maybeSingle()).data;
     if (!partner || partner.status === 'suspended' || partner.status === 'terminated') return notFound(res);
 
-    // Password gate (covers both the builder homepage and the generated fallback).
-    if (prof.showcase_protected && prof.showcase_password) {
-      const token = crypto.createHash('sha1').update(String(prof.showcase_password) + ':' + slug).digest('hex');
-      const cookies = parseCookies(req.headers.cookie);
-      if (cookies['lp_sc_' + slug] !== token) {
-        const pw = (req.query && req.query.pw) || '';
-        if (pw && pw === prof.showcase_password) {
-          res.setHeader('Set-Cookie', 'lp_sc_' + slug + '=' + token + '; Path=/; Max-Age=2592000; HttpOnly; SameSite=Lax');
-          res.statusCode = 302; res.setHeader('location', '/'); return res.end();
-        }
-        res.status(200).setHeader('content-type', 'text/html; charset=utf-8');
-        res.setHeader('cache-control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex');
-        return res.send(scPasswordHtml(slug, partner, !!pw));
-      }
-    }
-
     // Demos the partner has switched on for their page.
     const demos = (await supabase.from('sites')
-      .select('slug,business_name,config')
+      .select('slug,business_name,config,preview_password')
       .eq('show_on_showcase', true)
       .or('servicing_partner_id.eq.' + prof.partner_id + ',referring_partner_id.eq.' + prof.partner_id)
       .limit(48)).data || [];
@@ -325,11 +398,7 @@ async function renderShowcase(req, res, slug, base) {
       .select('*').eq('servicing_partner_id', prof.partner_id).eq('is_partner_home', true).maybeSingle()).data;
     const isPreview = !!(req.query && req.query.preview);
     if (home && (home.status === 'live' || isPreview)) {
-      let html = buildTradeHtml(home, req.headers.host || '');
-      const accent = (prof.showcase_config && prof.showcase_config.accent) || '#ff6a1a';
-      const strip = partnerDemosBlock(demos, base, accent);
-      if (strip) { const i = html.lastIndexOf('</body>'); html = i >= 0 ? (html.slice(0, i) + strip + html.slice(i)) : (html + strip); }
-      return sendHtml(res, html, home.status === 'live');
+      return sendHtml(res, buildAgencyHtml(home, req.headers.host || '', demos, base), home.status === 'live');
     }
 
     // Fallback: the generated showcase page (until the home site is designed + published).
@@ -382,11 +451,39 @@ module.exports = async (req, res) => {
     // 404s. The builder can still preview them via ?preview=, and those responses
     // are never cached or indexed (see sendHtml).
     if (!isLive && !isPreview) return notFound(res);
+    // Per-sample password: an individual demo/sample link can be locked so prospects
+    // can't browse each other's jobs. The partner shares the password per prospect.
+    if (site.preview_password) {
+      const _tok = crypto.createHash('sha1').update(String(site.preview_password) + ':' + site.slug).digest('hex');
+      const _ck = parseCookies(req.headers.cookie);
+      if (_ck['lp_pw_' + site.slug] !== _tok) {
+        const _pw = (req.query && req.query.pw) || '';
+        if (_pw && _pw === site.preview_password) {
+          res.setHeader('Set-Cookie', 'lp_pw_' + site.slug + '=' + _tok + '; Path=/; Max-Age=2592000; HttpOnly; SameSite=Lax');
+        } else {
+          res.status(200).setHeader('content-type', 'text/html; charset=utf-8');
+          res.setHeader('cache-control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex');
+          return res.send(demoGateHtml(site, !!_pw));
+        }
+      }
+    }
     if (isLive && (site.billing_status === 'suspended' || site.billing_status === 'flagged_deletion')) {
       const key = site.is_system ? 'suspended_system' : (site.is_demo ? 'suspended_demo' : 'suspended_client');
       let tpl = null;
       try { const r = await supabase.from('system_pages').select('content').eq('key', key).maybeSingle(); tpl = r.data && r.data.content; } catch (e) { tpl = null; }
       return suspendedPage(res, site, tpl);
+    }
+
+    // Partner homepage: render through the premium web-studio theme (not the tradie
+    // look) on the clean URL/preview, so the builder preview matches the live page.
+    if (site.is_partner_home) {
+      const pid = site.servicing_partner_id;
+      const _demos = pid ? ((await supabase.from('sites')
+        .select('slug,business_name,config,preview_password')
+        .eq('show_on_showcase', true)
+        .or('servicing_partner_id.eq.' + pid + ',referring_partner_id.eq.' + pid)
+        .limit(48)).data || []) : [];
+      return sendHtml(res, buildAgencyHtml(site, host, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au'), isLive);
     }
 
     const template = templateFor(site);
