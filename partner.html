@@ -252,8 +252,8 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
           <div class="field">
             <label for="sc-slug">Your address</label>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <input id="sc-slug" type="text" placeholder="your-name" style="max-width:220px">
-              <span class="muted">.leadpages.com.au</span>
+              <span class="muted">leadpages.com.au/</span>
+              <input id="sc-slug" type="text" placeholder="your-name" style="max-width:200px">
               <button class="btn" id="sc-check" style="padding:8px 14px;font-size:14px">Check</button>
               <span id="sc-slug-msg" style="font-size:13px;font-weight:600"></span>
             </div>
@@ -274,8 +274,6 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
               <span id="sc-logo-msg" class="muted" style="font-size:13px"></span>
             </div>
           </div>
-          <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin:6px 0 10px"><input type="checkbox" id="sc-protect" style="width:auto"> Password-protect my page</label>
-          <div class="field" id="sc-pw-row" style="display:none"><label for="sc-password">Page password</label><input id="sc-password" type="text" placeholder="Share this with people you send the link to"></div>
           <div class="save-row">
             <button class="btn btn-brand" id="sc-save">Save my page</button>
             <span class="saved" id="sc-saved">Saved ✓</span>
@@ -518,7 +516,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       : '<div class="card empty"><div class="e-ico">\U0001F4C7</div><strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Add your first customer to create their website and start earning.</p></div>';
   }
   async function loadClients(){
-    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,demo_logo:config->logo->>imageUrl,created_at').order('created_at',{ascending:false});
+    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,preview_password,demo_logo:config->logo->>imageUrl,created_at').order('created_at',{ascending:false});
     var all=(r.data||[]);
     clients=all.filter(function(x){return !x.is_mockup && !x.is_partner_home;});
     mockups=all.filter(function(x){return x.is_mockup;});
@@ -572,6 +570,11 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         await sb.from('sites').update({show_on_showcase:e.target.checked, updated_at:new Date().toISOString()}).eq('id',id);
         var m=mockups.find(function(x){return x.id===id;}); if(m) m.show_on_showcase=e.target.checked;
       }
+      if(e.target.matches('[data-pw]')){
+        var pwv=(e.target.value||'').trim()||null;
+        await sb.from('sites').update({preview_password:pwv, updated_at:new Date().toISOString()}).eq('id',id);
+        var mp=mockups.find(function(x){return x.id===id;}); if(mp) mp.preview_password=pwv;
+      }
       if(e.target.matches('[data-applytheme]')){
         var tid=e.target.value; if(!tid) return;
         var t=await sb.from('partner_themes').select('config').eq('id',tid).maybeSingle();
@@ -622,7 +625,6 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       window.open('/manage?site='+encodeURIComponent(res.site.slug),'_blank','noopener');
     });
     document.getElementById('sc-slug').addEventListener('input',updateScLink);
-    document.getElementById('sc-protect').addEventListener('change',function(){ document.getElementById('sc-pw-row').style.display=this.checked?'':'none'; });
     document.getElementById('sc-check').addEventListener('click', async function(){
       var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var msg=document.getElementById('sc-slug-msg');
       if(!slug){ msg.textContent=''; return; }
@@ -642,7 +644,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     document.getElementById('sc-save').addEventListener('click', async function(){
       var err=document.getElementById('sc-err'); err.classList.add('hidden');
       var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var btn=this; btn.disabled=true;
-      var patch={ showcase_slug:slug||null, showcase_enabled:document.getElementById('sc-enabled').checked, showcase_protected:document.getElementById('sc-protect').checked, showcase_password:(document.getElementById('sc-password').value||'').trim()||null, showcase_headline:(document.getElementById('sc-headline').value||'').trim()||null, showcase_config:{ logo:scLogo||null, intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:(document.getElementById('sc-accent').value||'').trim()||null }, updated_at:new Date().toISOString() };
+      var patch={ showcase_slug:slug||null, showcase_enabled:document.getElementById('sc-enabled').checked, showcase_protected:false, showcase_password:null, showcase_headline:(document.getElementById('sc-headline').value||'').trim()||null, showcase_config:{ logo:scLogo||null, intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:(document.getElementById('sc-accent').value||'').trim()||null }, updated_at:new Date().toISOString() };
       var r=await sb.from('partner_profiles').update(patch).eq('partner_id',state.partner.id).select('*'); btn.disabled=false;
       if(r.error){ err.textContent=(/duplicate|unique/i.test(r.error.message)?'That address is already taken \u2014 pick another.':('Could not save: '+r.error.message)); err.classList.remove('hidden'); return; }
       if(!r.data||!r.data.length){ err.textContent='Could not save (no permission).'; err.classList.remove('hidden'); return; }
@@ -801,6 +803,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       +'<button class="btn" data-convert style="'+bs+'">Convert to client</button>'
       +'<button class="btn" data-del style="'+bs+'">Delete</button>'
       +'<select data-applytheme style="'+bs+';width:auto">'+themeOptions()+'</select>'
+      +'<input data-pw type="text" value="'+esc(m.preview_password||'')+'" placeholder="\U0001F512 Sample password (optional)" style="'+bs+';width:auto;min-width:185px">'
       +'<label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-soft);font-weight:600"><input type="checkbox" data-showcase'+(m.show_on_showcase?' checked':'')+' style="width:auto"> Show on showcase</label>'
       +'</div></div>';
   }
@@ -830,13 +833,12 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
   function scBase(){ return 'leadpages.com.au'; }
   function updateScLink(){
     var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var a=document.getElementById('sc-link');
-    if(slug){ a.href='https://'+slug+'.'+scBase(); a.textContent=slug+'.'+scBase(); } else { a.href='#'; a.textContent='\u2014'; }
+    if(slug){ a.href='https://'+scBase()+'/'+slug; a.textContent=scBase()+'/'+slug; } else { a.href='#'; a.textContent='\u2014'; }
   }
   function loadMyPage(){
     var pf=state.profile||{}; var cfg=pf.showcase_config||{}; var g=function(id){return document.getElementById(id);};
     g('sc-slug').value=pf.showcase_slug||''; g('sc-enabled').checked=!!pf.showcase_enabled;
     g('sc-headline').value=pf.showcase_headline||''; g('sc-accent').value=cfg.accent||''; g('sc-intro').value=cfg.intro||'';
-    g('sc-protect').checked=!!pf.showcase_protected; g('sc-password').value=pf.showcase_password||''; g('sc-pw-row').style.display=pf.showcase_protected?'':'none';
     scLogo=cfg.logo||''; if(scLogo){ g('sc-logo-prev').src=scLogo; g('sc-logo-prev').style.display=''; g('sc-logo-clear').style.display=''; }
     updateScLink();
   }
