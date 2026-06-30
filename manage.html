@@ -1531,8 +1531,6 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     if(error){ toast('Could not load site: '+error.message); return; }
     allSites = rows||[];
     if(!allSites.length){ toast('No site is assigned to this account yet.'); return; }
-    // Deep-link: /manage?site=<slug> opens that site straight away (e.g. the partner My-page "Edit in builder").
-    try{ var __ds=new URLSearchParams(location.search).get('site'); if(__ds){ var __m=allSites.find(function(x){return x.slug===__ds;}); if(__m){ loadSite(__m); return; } } }catch(_e){}
     // Land on the account picker first (so the wrong page is never edited by accident).
     // A client with a single site goes straight in.
     if(currentRole==='super' || allSites.length>1){ showLanding(); }
@@ -1896,31 +1894,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     applyRoleGating();
     ensureSiteBar();
     try{ renderSiteAnalytics(); }catch(e){}
-    try{ lpRenderSupportContact(); }catch(e){}
     if(document.body.classList.contains('lp-prev-open')) previewLoad();
-  }
-  /* Partner Program: show the customer (site owner) their assigned support contact. */
-  function lpRenderSupportContact(){
-    var ID='lp-support-card'; var ex=document.getElementById(ID); if(ex) ex.remove();
-    if(currentRole==='super') return; if(!currentSiteId) return;
-    sb.auth.getSession().then(function(r){
-      var em=((r&&r.data&&r.data.session&&r.data.session.user&&r.data.session.user.email)||'').toLowerCase();
-      if(!em || !currentOwnerEmail || em!==String(currentOwnerEmail).toLowerCase()) return; // owner only
-      fetch('/api/site/support-contact?siteId='+encodeURIComponent(currentSiteId)).then(function(x){return x.json();}).then(function(j){
-        if(!j||!j.ok||!j.partner) return; var p=j.partner; var rows=[];
-        if(p.email) rows.push('<a href="mailto:'+esc(p.email)+'" style="color:#1f7a63;text-decoration:none;">'+esc(p.email)+'</a>');
-        if(p.phone) rows.push('<a href="tel:'+esc(String(p.phone).replace(/[^+0-9]/g,''))+'" style="color:#1f7a63;text-decoration:none;">'+esc(p.phone)+'</a>');
-        var c=document.createElement('div'); c.id=ID;
-        c.style.cssText='position:fixed;left:16px;bottom:16px;z-index:9000;max-width:300px;background:#fff;border:1px solid #e3e7e3;border-radius:14px;box-shadow:0 10px 30px rgba(15,26,23,.18);padding:14px 16px;font-family:system-ui,-apple-system,sans-serif;';
-        c.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#86978f;font-weight:700;">Your support contact</div><button type="button" aria-label="Dismiss" style="border:0;background:none;cursor:pointer;color:#86978f;font-size:16px;line-height:1;">\u00d7</button></div>'
-          +'<div style="font-weight:700;margin-top:5px;color:#16241f;">'+esc(p.name||'Your LeadPages partner')+'</div>'
-          +(p.region?'<div style="font-size:12.5px;color:#5c6675;">'+esc(p.region)+'</div>':'')
-          +(rows.length?'<div style="font-size:13.5px;margin-top:7px;line-height:1.7;">'+rows.join('<br>')+'</div>':'')
-          +'<div style="font-size:11px;color:#929aa6;margin-top:8px;">Powered by LeadPages</div>';
-        c.querySelector('button').addEventListener('click',function(){ c.remove(); });
-        document.body.appendChild(c);
-      }).catch(function(){});
-    }).catch(function(){});
   }
   function applyTemplateChrome(){
     var isApp=(currentSiteTemplate==='broker-app');
