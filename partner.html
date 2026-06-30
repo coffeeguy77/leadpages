@@ -94,13 +94,21 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
 <div id="view-login" class="hidden">
   <div class="card center-card">
     <h1>Partner sign in</h1>
-    <p>Enter your email and we'll send you a secure sign-in link.</p>
+    <p>Sign in with a one-time code, a magic link, or your password.</p>
     <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
     <button class="btn btn-brand" id="send-link" style="width:100%">Send sign-in link</button>
     <div class="notice info hidden" id="login-sent">Check your email — we sent a sign-in link and a 6-digit code. Click the link, or paste the code below.</div>
     <div id="code-row" class="hidden" style="margin-top:14px">
       <div class="field"><label for="login-code">6-digit code from your email</label><input id="login-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"></div>
       <button class="btn btn-brand" id="verify-code" style="width:100%">Verify &amp; sign in</button>
+    </div>
+    <div style="text-align:center;color:#9aa3af;font-size:12px;margin:16px 0 8px">— or use a password —</div>
+    <div class="field"><label for="login-pass">Password</label><input id="login-pass" type="password" autocomplete="current-password" placeholder="Your password"></div>
+    <button class="btn" id="pw-signin" style="width:100%">Sign in with password</button>
+    <div style="text-align:center;margin-top:10px"><button type="button" id="forgot-pw" style="background:none;border:0;color:#e8662a;cursor:pointer;font-size:13px;text-decoration:underline;font-family:inherit">Forgot password?</button></div>
+    <div id="setpw-row" class="hidden" style="margin-top:14px;border-top:1px solid #e6e9ef;padding-top:14px">
+      <div class="field"><label for="new-pass">Choose a new password</label><input id="new-pass" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div>
+      <button class="btn btn-brand" id="set-pass" style="width:100%">Save password &amp; continue</button>
     </div>
     <div class="notice bad hidden" id="login-err"></div>
     <p class="muted" style="margin-top:18px">Not a partner yet? <a href="/partners">Apply to join the program</a>.</p>
@@ -386,6 +394,12 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
             <span class="notice bad hidden" id="profile-err" style="margin:0;padding:8px 12px"></span>
           </div>
         </div>
+        <div class="card" style="padding:24px;max-width:620px;margin-top:16px">
+          <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 4px">Password</h3>
+          <p class="sub" style="margin:0 0 14px">Set a password so you can sign in without waiting for a code.</p>
+          <div class="field"><label for="pf-pass">New password</label><input id="pf-pass" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div>
+          <div class="save-row"><button class="btn btn-brand" id="pf-pass-save">Save password</button><span class="saved" id="pf-pass-saved">Saved ✓</span><span class="notice bad hidden" id="pf-pass-err" style="margin:0;padding:8px 12px"></span></div>
+        </div>
       </section>
     </main>
   </div>
@@ -436,6 +450,33 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     if(session) loadPartner(session);
   });
   document.getElementById('login-code').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('verify-code').click(); });
+  document.getElementById('pw-signin').addEventListener('click', async function(){
+    var email=(els['email'].value||'').trim(); var pass=document.getElementById('login-pass').value||'';
+    els['login-err'].classList.add('hidden');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ els['login-err'].textContent='Please enter a valid email.'; els['login-err'].classList.remove('hidden'); return; }
+    if(!pass){ els['login-err'].textContent='Enter your password.'; els['login-err'].classList.remove('hidden'); return; }
+    this.disabled=true; this.textContent='Signing in\u2026';
+    var r=await sb.auth.signInWithPassword({ email:email, password:pass });
+    this.disabled=false; this.textContent='Sign in with password';
+    if(r.error){ els['login-err'].textContent=r.error.message||'That email and password did not match.'; els['login-err'].classList.remove('hidden'); return; }
+    var session=(await sb.auth.getSession()).data.session; if(session) loadPartner(session);
+  });
+  document.getElementById('login-pass').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('pw-signin').click(); });
+  document.getElementById('forgot-pw').addEventListener('click', async function(){
+    var email=(els['email'].value||'').trim(); var le=els['login-err']; var ls=els['login-sent']; le.classList.add('hidden');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ le.textContent='Enter your email above first.'; le.classList.remove('hidden'); return; }
+    try{ await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin+'/partner' }); }catch(_e){}
+    ls.textContent='If an account matches, a reset link has been sent to '+email+'. Click it, then choose a new password here.'; ls.classList.remove('hidden');
+  });
+  document.getElementById('set-pass').addEventListener('click', async function(){
+    var pw=document.getElementById('new-pass').value||''; var le=els['login-err']; le.classList.add('hidden');
+    if(pw.length<8){ le.textContent='Password must be at least 8 characters.'; le.classList.remove('hidden'); return; }
+    this.disabled=true; this.textContent='Saving\u2026';
+    var r=await sb.auth.updateUser({ password: pw });
+    this.disabled=false; this.textContent='Save password & continue';
+    if(r.error){ le.textContent=r.error.message||'Could not set password.'; le.classList.remove('hidden'); return; }
+    var session=(await sb.auth.getSession()).data.session; if(session) loadPartner(session);
+  });
   document.getElementById('none-signout').addEventListener('click',signOut);
   document.getElementById('pending-signout').addEventListener('click',signOut);
   document.getElementById('signout').addEventListener('click',signOut);
@@ -468,6 +509,17 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     } else {
       els['profile-saved'].classList.add('show'); setTimeout(function(){ els['profile-saved'].classList.remove('show'); },1800);
     }
+  });
+
+  document.getElementById('pf-pass-save').addEventListener('click', async function(){
+    var pw=document.getElementById('pf-pass').value||''; var err=document.getElementById('pf-pass-err'); err.classList.add('hidden');
+    if(pw.length<8){ err.textContent='Password must be at least 8 characters.'; err.classList.remove('hidden'); return; }
+    var btn=this; btn.disabled=true;
+    var r=await sb.auth.updateUser({ password: pw });
+    btn.disabled=false;
+    if(r.error){ err.textContent=r.error.message||'Could not set password.'; err.classList.remove('hidden'); return; }
+    document.getElementById('pf-pass').value='';
+    var sv=document.getElementById('pf-pass-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1800);
   });
 
   function fillProfile(p){
@@ -1034,6 +1086,13 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     var session=(await sb.auth.getSession()).data.session;
     if(session){ loadPartner(session); } else { show('view-login'); }
     sb.auth.onAuthStateChange(function(_e,sess){
+      if(_e==='PASSWORD_RECOVERY'){
+        show('view-login');
+        var sp=document.getElementById('setpw-row'); if(sp) sp.classList.remove('hidden');
+        var ls=document.getElementById('login-sent'); if(ls){ ls.textContent='You’re verified — choose a new password below to finish signing in.'; ls.classList.remove('hidden'); }
+        var np=document.getElementById('new-pass'); if(np) np.focus();
+        return;
+      }
       if(sess && !state.partner){ loadPartner(sess); }
     });
   }
