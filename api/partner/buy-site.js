@@ -25,9 +25,23 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return json(res, 405, { error: 'POST only' });
   try {
     const body = await readBody(req);
-    const siteId = String(body.siteId || '').trim();
-    const email = String(body.email || '').trim().toLowerCase();
+    let siteId = String(body.siteId || '').trim();
+    let email = String(body.email || '').trim().toLowerCase();
     let planKey = String(body.planKey || '').trim();
+
+    // A quote link carries everything: resolve it to the demo + price + plan + email.
+    let quoteId = null, quotePrice = null;
+    const quoteToken = String(body.quoteToken || '').trim();
+    if (quoteToken) {
+      const { data: q } = await sb.from('partner_quotes').select('*').eq('token', quoteToken).maybeSingle();
+      if (!q) return json(res, 404, { error: 'This quote could not be found.' });
+      if (q.status === 'paid') return json(res, 409, { error: 'This quote has already been accepted and paid.' });
+      if (!q.site_id) return json(res, 400, { error: 'This quote is not linked to a site.' });
+      quoteId = q.id; quotePrice = Math.round(Number(q.price) || 0);
+      siteId = q.site_id;
+      if (!email) email = String(q.email || '').trim().toLowerCase();
+      if (!planKey) planKey = String(q.plan_key || '').trim();
+    }
     if (!siteId) return json(res, 400, { error: 'Missing siteId.' });
 
     // Load the demo. It must have a sale price and a partner behind it.
@@ -39,7 +53,7 @@ module.exports = async (req, res) => {
 
     const partnerId = site.servicing_partner_id || site.referring_partner_id;
     if (!partnerId) return json(res, 400, { error: 'This demo is not set up for purchase yet.' });
-    const salePrice = Math.round(Number(site.sale_price) || 0);
+    const salePrice = quotePrice != null ? quotePrice : Math.round(Number(site.sale_price) || 0);
     if (salePrice <= 0) return json(res, 400, { error: 'This demo does not have a price set yet. Ask your provider to set one.' });
     if (site.is_mockup === false && site.status === 'live') return json(res, 409, { error: 'This site has already been purchased.' });
 
@@ -78,11 +92,13 @@ module.exports = async (req, res) => {
       'metadata[plan_key]': planKey,
       'metadata[sale_price]': String(salePrice),
       'metadata[partner_id]': partnerId,
+      'metadata[quote_id]': quoteId || '',
       'subscription_data[metadata][purchase]': 'site',
       'subscription_data[metadata][site_id]': site.id,
       'subscription_data[metadata][plan_key]': planKey,
       'subscription_data[metadata][sale_price]': String(salePrice),
       'subscription_data[metadata][partner_id]': partnerId,
+      'subscription_data[metadata][quote_id]': quoteId || '',
     };
     if (email) params.customer_email = email;
 
