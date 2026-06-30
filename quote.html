@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Your website quote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#10141b; --soft:#5b6675; --line:#e6e9ef; --bg:#f6f7f9; --accent:#ff6a1a; --accent-d:#e85d12; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:620px;margin:0 auto;padding:28px 18px 60px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px 28px;box-shadow:0 14px 40px rgba(20,30,50,.06)}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 6px}
+  h1{font-family:Archivo,sans-serif;font-size:30px;line-height:1.12;margin:0 0 6px;font-weight:800}
+  .from{color:var(--soft);font-size:14.5px;margin:0 0 22px}
+  .desc{font-size:15px;color:#2a3340;margin:0 0 22px;white-space:pre-wrap}
+  .feats{list-style:none;margin:0 0 24px;padding:0}
+  .feats li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;font-size:15px;border-bottom:1px dashed var(--line)}
+  .feats li:last-child{border-bottom:0}
+  .tick{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:rgba(255,106,26,.12);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:1px}
+  .pricebox{background:#0e1116;color:#fff;border-radius:14px;padding:20px 22px;display:flex;align-items:center;justify-content:space-between;margin:0 0 8px}
+  .pricebox .lbl{font-size:13px;color:#aeb6c4}
+  .pricebox .amt{font-family:Archivo,sans-serif;font-size:30px;font-weight:800}
+  .mo{font-size:13px;color:var(--soft);margin:0 0 22px;text-align:right}
+  .btns{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{flex:1;min-width:180px;text-align:center;border-radius:11px;padding:15px 18px;font-weight:700;font-size:15.5px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);text-decoration:none;display:inline-block;font-family:inherit}
+  .btn:hover{border-color:#cfd5df}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-d);border-color:var(--accent-d)}
+  .btn[disabled]{opacity:.6;cursor:default}
+  .meta{margin:22px 0 0;font-size:13.5px;color:var(--soft)}
+  .meta b{color:var(--ink);font-weight:600}
+  .msg{margin:14px 0 0;font-size:14px;text-align:center;min-height:20px}
+  .msg.err{color:#c0392b}
+  .foot{text-align:center;color:var(--soft);font-size:13px;margin:24px 0 0}
+  .foot a{color:var(--accent);text-decoration:none}
+  .paid{background:#e9f8ef;border:1px solid #bfe8cd;color:#1c7a3f;border-radius:12px;padding:14px 16px;font-weight:600;margin:0 0 18px;text-align:center}
+  .center{text-align:center;color:var(--soft);padding:60px 0}
+  .secure{display:flex;align-items:center;justify-content:center;gap:6px;color:#98a1b0;font-size:12.5px;margin:14px 0 0}
+</style>
+</head>
+<body>
+  <div class="wrap" id="root">
+    <div class="center">Loading your quote…</div>
+  </div>
+
+<script>
+(function(){
+  var root = document.getElementById('root');
+  var token = new URLSearchParams(location.search).get('t') || '';
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function aud(cents){ return '$' + (Math.round(cents||0)/100).toLocaleString('en-AU',{minimumFractionDigits:0,maximumFractionDigits:2}); }
+
+  function fail(m){ root.innerHTML = '<div class="card"><h1>Quote unavailable</h1><p class="from">'+esc(m)+'</p></div>'; }
+
+  if(!token){ fail('No quote was specified. Please use the link from your email.'); return; }
+
+  fetch('/api/partner/quote-get?t=' + encodeURIComponent(token))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d || !d.ok){ fail((d && d.error) || 'This quote could not be loaded.'); return; }
+      render(d);
+    })
+    .catch(function(){ fail('Could not load this quote. Please check your connection and try again.'); });
+
+  function render(d){
+    var q = d.quote, demo = d.demo || {}, partner = d.partner || {};
+    var feats = (q.features||[]).map(function(f){ return '<li><span class="tick">&#10003;</span><span>'+esc(f)+'</span></li>'; }).join('');
+    var previewUrl = '';
+    if(demo.slug){ previewUrl = '/' + encodeURIComponent(demo.slug) + '?preview=1' + (demo.password ? ('&pw=' + encodeURIComponent(demo.password)) : ''); }
+    var isPaid = q.status === 'paid';
+
+    var html = '<div class="card">';
+    html += '<p class="eyebrow">Website quote</p>';
+    html += '<h1>'+esc(q.business_name||'Your new website')+'</h1>';
+    html += '<p class="from">Prepared by '+esc(partner.display_name||'your web provider')+(q.contact_person?(' &middot; for '+esc(q.contact_person)):'')+'</p>';
+    if(isPaid){ html += '<div class="paid">&#10003; Accepted &amp; paid — your site is being set live. Check your email for your sign-in link.</div>'; }
+    if(q.job_description){ html += '<p class="desc">'+esc(q.job_description)+'</p>'; }
+    if(feats){ html += '<p style="font-weight:700;margin:0 0 6px;font-size:14px">What\'s included</p><ul class="feats">'+feats+'</ul>'; }
+    html += '<div class="pricebox"><span class="lbl">One-off build</span><span class="amt">'+aud(q.price)+'</span></div>';
+    html += '<p class="mo">+ monthly hosting, set up at checkout</p>';
+    html += '<div class="btns">';
+    if(previewUrl){ html += '<a class="btn" href="'+previewUrl+'" target="_blank" rel="noopener">Preview your site</a>'; }
+    if(!isPaid){ html += '<button class="btn primary" id="accept">Accept &amp; pay</button>'; }
+    html += '</div>';
+    html += '<div class="msg" id="msg"></div>';
+    html += '<div class="secure">&#128274; Secure checkout by Stripe</div>';
+    var contact = [];
+    if(partner.support_email) contact.push('<a href="mailto:'+esc(partner.support_email)+'">'+esc(partner.support_email)+'</a>');
+    if(partner.support_phone) contact.push(esc(partner.support_phone));
+    html += '</div>';
+    if(contact.length){ html += '<div class="foot">Questions? Contact '+esc(partner.display_name||'us')+' &middot; '+contact.join(' &middot; ')+'</div>'; }
+    root.innerHTML = html;
+
+    var btn = document.getElementById('accept'), msg = document.getElementById('msg');
+    if(btn){
+      btn.onclick = function(){
+        btn.disabled = true; msg.className='msg'; msg.textContent = 'Setting up secure checkout…';
+        fetch('/api/partner/buy-site', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ quoteToken: token }) })
+          .then(function(r){ return r.json().catch(function(){ return {}; }); })
+          .then(function(j){
+            if(j && j.url){ window.location = j.url; return; }
+            msg.className='msg err'; msg.textContent = (j && j.error) || 'Could not start checkout. Please try again.'; btn.disabled = false;
+          })
+          .catch(function(){ msg.className='msg err'; msg.textContent = 'Network error — please try again.'; btn.disabled = false; });
+      };
+    }
+  }
+})();
+</script>
+</body>
+</html>

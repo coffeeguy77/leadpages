@@ -31,6 +31,10 @@
       "destination": "/partners-admin.html"
     },
     {
+      "source": "/quote",
+      "destination": "/quote.html"
+    },
+    {
       "source": "/",
       "has": [
         {

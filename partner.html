@@ -142,6 +142,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         <button data-p="demos">🎨 Demos &amp; themes</button>
         <button data-p="mypage">🌐 My page</button>
         <button data-p="payouts">💵 Payouts</button>
+        <button data-p="quotes">🧾 Quotes</button>
         <button data-p="commissions">💰 Commissions</button>
         <button data-p="training">🎓 Training Centre</button>
         <button data-p="resources">📝 Sales Resources</button>
@@ -307,6 +308,29 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         </div>
       </section>
 
+      <!-- Quotes -->
+      <section class="panel" data-panel="quotes">
+        <h2>Quotes</h2>
+        <p class="sub">Build a quote tied to a client’s demo. They get a link to preview the site, accept, and pay — which sets it live and books your commission automatically.</p>
+        <div class="card" style="padding:24px;max-width:720px">
+          <div class="field"><label for="q-site">Demo this quote is for</label><select id="q-site"></select></div>
+          <div class="field"><label for="q-biz">Business name</label><input id="q-biz" type="text" placeholder="Client business name"></div>
+          <div class="field"><label for="q-contact">Contact person</label><input id="q-contact" type="text" placeholder="Who you’re dealing with"></div>
+          <div class="field"><label for="q-address">Address</label><input id="q-address" type="text" placeholder="Business address (optional)"></div>
+          <div class="field"><label for="q-email">Client email</label><input id="q-email" type="email" placeholder="client@business.com.au"></div>
+          <div class="field"><label for="q-plan">Hosting plan</label><select id="q-plan"></select></div>
+          <div class="field"><label>Phone numbers</label><div id="q-phones"></div><button type="button" class="btn" id="q-addphone" style="margin-top:6px;padding:7px 12px">+ Add phone</button></div>
+          <div class="field"><label for="q-desc">Job description</label><textarea id="q-desc" rows="3" placeholder="What you’re quoting for" style="width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:15px;box-sizing:border-box;resize:vertical"></textarea></div>
+          <div class="field"><label>Key features / requirements</label><div id="q-feats"></div><button type="button" class="btn" id="q-addfeat" style="margin-top:6px;padding:7px 12px">+ Add feature</button></div>
+          <div class="field" style="max-width:220px"><label for="q-price">Price ($)</label><input id="q-price" type="number" min="0" step="50" placeholder="1500"></div>
+          <div id="q-breakdown" class="muted" style="font-size:13.5px;margin:-6px 0 14px"></div>
+          <div class="save-row"><button class="btn btn-brand" id="q-create">Create &amp; send quote</button><span class="saved" id="q-saved">Sent ✓</span></div>
+          <div id="q-msg" class="muted" style="font-size:13.5px;margin-top:10px"></div>
+        </div>
+        <h3 style="font-family:var(--font-display);font-size:17px;margin:24px 0 10px">Sent quotes</h3>
+        <div id="q-list" class="muted">No quotes yet.</div>
+      </section>
+
       <!-- Commissions -->
       <section class="panel" data-panel="commissions">
         <h2>Commissions</h2>
@@ -461,7 +485,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     badge.className='statusbadge s-'+(p.status||'pending');
     fillProfile(state.profile);
     show('view-dash');
-    wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage(); loadPayouts();
+    wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage(); loadPayouts(); loadQuotes();
   }
 
   async function loadPartner(session){
@@ -671,6 +695,30 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       var sv=document.getElementById('po-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1700);
       renderMockups();
     });
+    document.getElementById('q-addphone').addEventListener('click', function(){ addPhoneRow(''); });
+    document.getElementById('q-addfeat').addEventListener('click', function(){ addFeatRow(''); });
+    document.getElementById('q-price').addEventListener('input', function(){ var d=parseFloat(this.value||'0'); document.getElementById('q-breakdown').innerHTML = d>0 ? demoBreakdown(Math.round(d*100)) : ''; });
+    document.getElementById('q-create').addEventListener('click', async function(){
+      var btn=this, msg=document.getElementById('q-msg');
+      var siteId=document.getElementById('q-site').value;
+      var biz=(document.getElementById('q-biz').value||'').trim();
+      var priceD=parseFloat(document.getElementById('q-price').value||'0');
+      msg.style.color='var(--bad)';
+      if(!siteId){ msg.textContent='Pick which demo this quote is for.'; return; }
+      if(!biz){ msg.textContent='Enter the business name.'; return; }
+      if(!(priceD>0)){ msg.textContent='Enter a price.'; return; }
+      var payload={ siteId:siteId, businessName:biz, contactPerson:(document.getElementById('q-contact').value||'').trim(), address:(document.getElementById('q-address').value||'').trim(), email:(document.getElementById('q-email').value||'').trim(), phones:collectList('q-phones'), jobDescription:(document.getElementById('q-desc').value||'').trim(), features:collectList('q-feats'), price:Math.round(priceD*100), planKey:document.getElementById('q-plan').value||'' };
+      btn.disabled=true; msg.style.color=''; msg.textContent='Creating\u2026';
+      var res; try{ var r=await fetch('/api/partner/quote-create',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
+      btn.disabled=false;
+      if(!res||!res.ok){ msg.style.color='var(--bad)'; msg.textContent=(res&&res.error)||'Could not create quote.'; return; }
+      var qs=document.getElementById('q-saved'); qs.classList.add('show'); setTimeout(function(){ qs.classList.remove('show'); },1700);
+      msg.style.color=''; msg.innerHTML='Quote created'+(res.emailed?' and emailed to the client':'')+'. Link: <a href="'+esc(res.url)+'" target="_blank" rel="noopener">'+esc(res.url)+'</a>';
+      ['q-biz','q-contact','q-address','q-email','q-desc','q-price'].forEach(function(id){ document.getElementById(id).value=''; });
+      document.getElementById('q-phones').innerHTML=''; document.getElementById('q-feats').innerHTML=''; addPhoneRow(''); addFeatRow('');
+      document.getElementById('q-breakdown').innerHTML='';
+      loadQuotes();
+    });
     document.getElementById('sc-check').addEventListener('click', async function(){
       var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var msg=document.getElementById('sc-slug-msg');
       if(!slug){ msg.textContent=''; return; }
@@ -863,6 +911,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     var box=document.getElementById('mockups-list'); if(!box) return;
     box.innerHTML = mockups.length ? mockups.map(mockupCard).join('')
       : '<div class="card empty"><div class="e-ico">\U0001F3A8</div><strong>No demos yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Create a demo above to mock up a tradie site for a prospect.</p></div>';
+    try{ fillQuoteDemoSelect(); }catch(_e){}
   }
   function themeCard(t){
     var when=t.created_at?new Date(t.created_at).toLocaleDateString():'';
@@ -902,6 +951,48 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     var fd=new FormData(); fd.append('file',file); fd.append('api_key',sg.apiKey); fd.append('timestamp',sg.timestamp); fd.append('public_id',sg.publicId); if(sg.assetFolder)fd.append('asset_folder',sg.assetFolder); if(sg.overwrite)fd.append('overwrite',sg.overwrite); fd.append('signature',sg.signature);
     var ur=await fetch('https://api.cloudinary.com/v1_1/'+(sg.cloudName||'dzx6x1hou')+'/image/upload',{method:'POST',body:fd});
     var uj=await ur.json(); if(!ur.ok||!uj.secure_url) throw new Error('Upload failed'); return uj.secure_url;
+  }
+
+  // ---------- Quote builder ----------
+  function addRow(containerId, placeholder, val){
+    var c=document.getElementById(containerId); if(!c) return;
+    var row=document.createElement('div'); row.style.cssText='display:flex;gap:8px;margin-bottom:8px';
+    var inp=document.createElement('input'); inp.type='text'; inp.placeholder=placeholder; inp.value=val||''; inp.style.cssText='flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px';
+    var rm=document.createElement('button'); rm.type='button'; rm.className='btn'; rm.textContent='\u00d7'; rm.style.cssText='padding:8px 12px'; rm.onclick=function(){ row.remove(); };
+    row.appendChild(inp); row.appendChild(rm); c.appendChild(row);
+  }
+  function addPhoneRow(v){ addRow('q-phones','Phone number', v); }
+  function addFeatRow(v){ addRow('q-feats','e.g. Online booking form', v); }
+  function collectList(id){ var out=[]; var c=document.getElementById(id); if(!c) return out; c.querySelectorAll('input').forEach(function(i){ var v=(i.value||'').trim(); if(v) out.push(v); }); return out; }
+  function fillQuoteDemoSelect(){
+    var sel=document.getElementById('q-site'); if(!sel) return;
+    var cur=sel.value;
+    sel.innerHTML='<option value="">Choose a demo\u2026</option>'+(mockups||[]).map(function(m){ return '<option value="'+esc(m.id)+'">'+esc(m.business_name||m.slug)+'</option>'; }).join('');
+    if(cur) sel.value=cur;
+  }
+  async function loadQuotes(){
+    fillQuoteDemoSelect();
+    try{
+      var pr=await sb.from('billing_plans').select('key,name,monthly_amount').eq('active',true).order('sort',{ascending:true});
+      var plans=(pr.data||[]); var psel=document.getElementById('q-plan');
+      if(psel){ var def=(state.profile&&state.profile.default_plan_key)||''; psel.innerHTML=plans.map(function(pl){ return '<option value="'+esc(pl.key)+'"'+(pl.key===def?' selected':'')+'>'+esc(pl.name)+' \u2014 $'+Math.round((pl.monthly_amount||0)/100)+'/mo</option>'; }).join(''); }
+    }catch(_e){}
+    if(document.getElementById('q-phones') && !document.getElementById('q-phones').children.length) addPhoneRow('');
+    if(document.getElementById('q-feats') && !document.getElementById('q-feats').children.length) addFeatRow('');
+    var box=document.getElementById('q-list'); if(!box) return;
+    var qr=await sb.from('partner_quotes').select('token,business_name,price,status,email,created_at').eq('partner_id',state.partner.id).order('created_at',{ascending:false});
+    if(qr.error){ box.innerHTML='<span style="color:var(--bad)">Could not load quotes: '+esc(qr.error.message)+'</span>'; return; }
+    var rows=(qr.data||[]);
+    if(!rows.length){ box.innerHTML='No quotes yet.'; return; }
+    box.innerHTML=rows.map(function(q){
+      var url=location.origin+'/quote?t='+encodeURIComponent(q.token);
+      var badge=q.status==='paid'?'<span class="statusbadge s-active">Paid</span>':'<span class="statusbadge s-pending">'+esc(q.status||'sent')+'</span>';
+      return '<div class="card" style="padding:13px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between">'
+        +'<div><div style="font-weight:600">'+esc(q.business_name||'\u2014')+' \u00b7 '+fmtAUD(q.price)+' '+badge+'</div><div class="muted" style="font-size:12.5px">'+esc(q.email||'no email on file')+'</div></div>'
+        +'<div style="display:flex;gap:8px"><button class="btn" data-copy="'+esc(url)+'" style="padding:7px 12px">Copy link</button><a class="btn" href="'+esc(url)+'" target="_blank" rel="noopener" style="padding:7px 12px">View</a></div>'
+        +'</div>';
+    }).join('');
+    box.querySelectorAll('[data-copy]').forEach(function(b){ b.onclick=function(){ try{ navigator.clipboard.writeText(b.getAttribute('data-copy')); }catch(_e){} b.textContent='Copied!'; setTimeout(function(){ b.textContent='Copy link'; },1400); }; });
   }
 
   // ---------- Phase 7: pricing & payouts ----------
