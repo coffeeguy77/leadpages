@@ -377,36 +377,41 @@ function partnerDemosBlock(demos, base, accent) {
     + '<section class="lpw-wrap" id="recent-work"><div class="lpw-in"><h2 class="lpw-h">Recent work</h2><p class="lpw-sub">A few sites we\u2019ve designed for local trades \u2014 tap any one to see it live.</p><div class="lpw-grid">' + cards + '</div></div></section>';
 }
 
+const SC_SELECT = 'partner_id,showcase_slug,showcase_domain,showcase_enabled,showcase_headline,showcase_config,support_email,support_phone';
+
+async function showcaseRespond(req, res, prof, base) {
+  const partner = (await supabase.from('partners').select('display_name,status').eq('id', prof.partner_id).maybeSingle()).data;
+  if (!partner || partner.status === 'suspended' || partner.status === 'terminated') return notFound(res);
+  const demos = (await supabase.from('sites')
+    .select('slug,business_name,config,preview_password')
+    .eq('show_on_showcase', true)
+    .or('servicing_partner_id.eq.' + prof.partner_id + ',referring_partner_id.eq.' + prof.partner_id)
+    .limit(48)).data || [];
+  const home = (await supabase.from('sites')
+    .select('*').eq('servicing_partner_id', prof.partner_id).eq('is_partner_home', true).maybeSingle()).data;
+  if (home) return sendHtml(res, buildAgencyHtml(home, req.headers.host || '', demos, base), true);
+  res.setHeader('content-type', 'text/html; charset=utf-8');
+  res.setHeader('cache-control', 'public, s-maxage=30, stale-while-revalidate=120');
+  return res.status(200).send(showcaseHtml(prof, partner, demos, base));
+}
+
 async function renderShowcase(req, res, slug, base) {
   try {
-    const prof = (await supabase.from('partner_profiles')
-      .select('partner_id,showcase_slug,showcase_enabled,showcase_protected,showcase_password,showcase_headline,showcase_config,support_email,support_phone')
-      .ilike('showcase_slug', slug).maybeSingle()).data;
+    const prof = (await supabase.from('partner_profiles').select(SC_SELECT).ilike('showcase_slug', slug).maybeSingle()).data;
     if (!prof || !prof.showcase_enabled) return notFound(res);
-    const partner = (await supabase.from('partners').select('display_name,status').eq('id', prof.partner_id).maybeSingle()).data;
-    if (!partner || partner.status === 'suspended' || partner.status === 'terminated') return notFound(res);
-
-    // Demos the partner has switched on for their page.
-    const demos = (await supabase.from('sites')
-      .select('slug,business_name,config,preview_password')
-      .eq('show_on_showcase', true)
-      .or('servicing_partner_id.eq.' + prof.partner_id + ',referring_partner_id.eq.' + prof.partner_id)
-      .limit(48)).data || [];
-
-    // Builder-editable homepage (a trade site flagged is_partner_home).
-    const home = (await supabase.from('sites')
-      .select('*').eq('servicing_partner_id', prof.partner_id).eq('is_partner_home', true).maybeSingle()).data;
-    if (home) {
-      // The partner's My-page "Make live" toggle (showcase_enabled, checked above) is the
-      // gate — no separate publish step in the builder is needed.
-      return sendHtml(res, buildAgencyHtml(home, req.headers.host || '', demos, base), true);
-    }
-
-    // No home site yet: a simple generated starter until they design one.
-    res.setHeader('content-type', 'text/html; charset=utf-8');
-    res.setHeader('cache-control', 'public, s-maxage=30, stale-while-revalidate=120');
-    return res.status(200).send(showcaseHtml(prof, partner, demos, base));
+    return await showcaseRespond(req, res, prof, base);
   } catch (e) { console.error('showcase error:', e); return notFound(res); }
+}
+
+async function renderShowcaseByDomain(req, res, host) {
+  try {
+    const h = String(host || '').toLowerCase();
+    const alt = h.indexOf('www.') === 0 ? h.slice(4) : ('www.' + h);
+    const prof = (await supabase.from('partner_profiles').select(SC_SELECT).in('showcase_domain', [h, alt]).maybeSingle()).data;
+    if (!prof || !prof.showcase_enabled) return notFound(res);
+    // Demo links + domain search always point at the primary host where tenant sites live.
+    return await showcaseRespond(req, res, prof, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au');
+  } catch (e) { console.error('showcase domain error:', e); return notFound(res); }
 }
 
 module.exports = async (req, res) => {
@@ -446,6 +451,8 @@ module.exports = async (req, res) => {
     }
 
     if (error || !site) {
+      // Partner's own domain (e.g. yourstudio.com.au) -> their studio page.
+      if (isCustom) return renderShowcaseByDomain(req, res, host);
       // Path-based partner showcase: leadpages.com.au/<showcase-slug>
       if (slug && !isCustom) return renderShowcase(req, res, slug, host);
       return notFound(res);
