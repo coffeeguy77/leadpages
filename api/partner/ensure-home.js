@@ -33,7 +33,19 @@ module.exports = async (req,res) => {
     slug, business_name:name, template:'trade', vertical:'trade', status:'draft',
     is_partner_home:true, is_mockup:false,
     referring_partner_id:partner.id, servicing_partner_id:partner.id, servicing_status:'partner_serviced',
-    config:{ trade:'Web Design', _partnerHome:true }
+    config:{
+      trade:'Web Design', _partnerHome:true, phone:'', email:'',
+      sections:{
+        hero:{ eyebrow:'Web design studio', title:'Websites that bring in the work', titleHl:'the work', sub:'Professional, mobile-first websites for local businesses \u2014 built fast, with lead forms that put enquiries straight in your inbox.' },
+        textBox:{ on:true, eyebrow:'About the studio', heading:'Local websites, done properly', intro:'', content:'We design and build websites for local trades and small businesses \u2014 clean, quick to launch, and easy to update. You get a site that earns its keep and a real person to call when you need a change.' }
+      },
+      services:[
+        { on:true, icon:'\uD83D\uDCF1', title:'Mobile-first design', body:'Sites that look sharp and load fast on the phone, where most local customers find you.' },
+        { on:true, icon:'\u26A1', title:'Lead forms that work', body:'Enquiry forms that land straight in your inbox so you never miss a job.' },
+        { on:true, icon:'\uD83D\uDD0E', title:'Found on Google', body:'Local search basics built in so nearby customers can actually find you.' },
+        { on:true, icon:'\uD83D\uDE80', title:'Live in days', body:'No drawn-out web project \u2014 your site can be online and taking enquiries this week.' }
+      ]
+    }
   };
   try{
     const ins=await admin.from('sites').insert(row).select('id,slug,business_name,status,is_partner_home').single();
