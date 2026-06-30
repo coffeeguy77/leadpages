@@ -112,6 +112,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     <button data-t="partners">Partners <span class="count" id="partners-count"></span></button>
     <button data-t="commissions">Commissions <span class="count" id="comm-count"></span></button>
     <button data-t="training">Training <span class="count" id="tm-count"></span></button>
+    <button data-t="courses">Courses <span class="count" id="co-count"></span></button>
     <button data-t="resources">Resources <span class="count" id="res-count"></span></button>
     <button data-t="clients">Clients <span class="count" id="cl-count"></span></button>
     <button data-t="audit">Audit</button>
@@ -153,6 +154,12 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><p class="muted" style="margin:0">Create and publish training modules. Partners see published modules and track their own progress.</p><button class="btn btn-brand" id="tm-add">+ Add module</button></div>
     <datalist id="tm-cats"><option>Getting started</option><option>How LeadPages works</option><option>How to sell your first website</option><option>Choosing a niche</option><option>Creating a demo site</option><option>Customising a website</option><option>Pricing and packages</option><option>Client onboarding</option><option>Handling objections</option><option>Monthly client support</option><option>Quality standards</option><option>When to escalate to LeadPages</option><option>Compliance and brand rules</option></datalist>
     <div id="training-admin-list"></div>
+  </section>
+
+  <!-- Courses -->
+  <section class="section" data-sec="courses">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><p class="muted" style="margin:0">Group training modules into ordered courses. Partners see published courses with a progress bar. Assign a module to a course in the Training tab.</p><button class="btn btn-brand" id="co-add">+ Add course</button></div>
+    <div id="courses-admin-list"></div>
   </section>
 
   <!-- Resources -->
@@ -406,12 +413,12 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     siteMap={}; (sm.data||[]).forEach(function(x){ siteMap[x.id]=x.business_name||x.slug; });
     var cm=await sb.from('partner_commissions').select('*').order('created_at',{ascending:false});
     commissions=(cm.data||[]); renderComms();
-    loadModules(); loadResources(); loadAdminClients(); loadAudit();
+    loadCourses(); loadModules(); loadResources(); loadAdminClients(); loadAudit();
   }
 
   // ---- Training + Resources admin ----
   function fieldVal(el){ if(el.type==='checkbox') return el.checked; if(el.type==='number') return parseInt(el.value||'0',10)||0; var v=(el.value||'').trim(); return v||null; }
-  function collect(card){ var o={}; card.querySelectorAll('[data-f]').forEach(function(el){ o[el.getAttribute('data-f')]=fieldVal(el); }); o.updated_at=new Date().toISOString(); return o; }
+  function collect(card){ var o={}; card.querySelectorAll('[data-f]').forEach(function(el){ o[el.getAttribute('data-f')]=fieldVal(el); }); Object.keys(o).forEach(function(k){ if(/_id$/.test(k) && o[k]==='') o[k]=null; }); o.updated_at=new Date().toISOString(); return o; }
   function fld(label,f,type,val,extra){ return '<div'+(type==='full'?' class="grow"':'')+'><label>'+label+'</label><input type="'+(type==='full'?'text':type)+'" data-f="'+f+'" value="'+esc(val==null?'':val)+'" '+(extra||'')+'></div>'; }
   function chk(label,f,val){ return '<label style="display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink-soft)"><input type="checkbox" data-f="'+f+'" style="width:auto"'+(val?' checked':'')+'> '+label+'</label>'; }
   function selF(label,f,opts,cur){ return '<div><label>'+label+'</label><select data-f="'+f+'">'+opts.map(function(o){return '<option value="'+o+'"'+(o===cur?' selected':'')+'>'+o+'</option>';}).join('')+'</select></div>'; }
@@ -422,6 +429,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
       +'<div class="ctrls" style="border:0;padding-top:8px">'
         + fld('Title','title','full',m.title)
         + '<div><label>Category</label><input type="text" data-f="category" list="tm-cats" value="'+esc(m.category||'')+'"></div>'
+        + courseSelF(m.course_id)
         + selF('Type','content_type',TM_TYPES,m.content_type||'article')
         + fld('Sort','sort','number',m.sort==null?0:m.sort,'style="max-width:90px"')
       +'</div>'
@@ -456,6 +464,30 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     document.getElementById('resources-admin-list').innerHTML = resources.length ? resources.map(resCard).join('') : '<div class="card empty">No resources yet. Add one to get started.</div>';
   }
   async function loadResources(){ var r=await sb.from('partner_resources').select('*').order('sort',{ascending:true}); resources=(r.data||[]); renderResources(); }
+
+  // ---- Courses ----
+  var courses=[];
+  function courseSelF(cur){ return '<div><label>Course</label><select data-f="course_id"><option value="">No course</option>'+courses.map(function(c){return '<option value="'+c.id+'"'+(c.id===cur?' selected':'')+'>'+esc(c.title||'Untitled')+'</option>';}).join('')+'</select></div>'; }
+  function courseCard(c){
+    return '<div class="card item" data-id="'+c.id+'"><div class="head"><div class="nm">'+esc(c.title||'Untitled')+'</div>'
+      +'<span class="statusbadge '+(c.published?'s-active':'s-pending')+'">'+(c.published?'Published':'Draft')+'</span></div>'
+      +'<div class="ctrls" style="border:0;padding-top:8px">'+fld('Title','title','full',c.title)+fld('Sort','sort','number',c.sort==null?0:c.sort,'style="max-width:90px"')+'</div>'
+      +'<div class="ctrls" style="border:0;padding-top:4px">'+fld('Description','description','full',c.description)+'</div>'
+      +'<div class="ctrls"><div>'+chk('Published','published',c.published)+'</div>'
+        +'<button class="btn btn-sm btn-brand" data-save>Save</button><button class="btn btn-sm" data-del>Delete</button><span class="saved" data-saved>Saved \u2713</span></div></div>';
+  }
+  function renderCourses(){
+    document.getElementById('co-count').textContent=courses.length?('\u00b7 '+courses.length):'';
+    document.getElementById('courses-admin-list').innerHTML = courses.length ? courses.map(courseCard).join('') : '<div class="card empty">No courses yet. Add one, then assign modules to it in the Training tab.</div>';
+  }
+  async function loadCourses(){ var r=await sb.from('partner_courses').select('*').order('sort',{ascending:true}); courses=(r.data||[]); renderCourses(); renderModules(); }
+  document.getElementById('co-add').addEventListener('click', async function(){
+    var sort=(courses.reduce(function(a,c){return Math.max(a,c.sort||0);},0))+1;
+    var r=await sb.from('partner_courses').insert({title:'New course',published:false,sort:sort}).select('*').single();
+    if(r.error||!r.data){ alert('Could not add: '+((r.error&&r.error.message)||'no permission')); return; }
+    courses.unshift(r.data); renderCourses();
+  });
+  wireCrud('courses-admin-list','partner_courses',function(){return courses;},function(){ renderCourses(); renderModules(); });
 
   // add buttons
   document.getElementById('tm-add').addEventListener('click', async function(){
