@@ -714,6 +714,17 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       <div class="apgroup-h">On the demo</div>
       <div id="dt-list"></div>
     </div>
+    <div class="card">
+      <h2>Shared partner themes</h2>
+      <p class="lede">Save the design of the site you're editing as a theme <strong>every partner</strong> can apply to their own demos. Build the look you want on any site, then share it &mdash; partners see it in their theme picker.</p>
+      <div class="dt-add">
+        <input type="text" id="sht-name" class="tin" placeholder="Theme name, e.g. Bold Tradie Orange">
+        <button class="btn" id="sht-save">Share current design with partners</button>
+      </div>
+      <p class="hint" style="margin-top:2px;">Captures the current site's full design. Open a site first, design it, then share.</p>
+      <div class="apgroup-h">Shared with partners</div>
+      <div id="sht-list"></div>
+    </div>
   </div>
 </div>
 
@@ -3846,6 +3857,39 @@ function heroCtaCard(c){
     if(r.error){ toast('Delete failed: '+r.error.message); return; }
     toast('Removed \u201c'+name+'\u201d'); renderDemoThemes();
   }
+  async function renderSharedThemes(){
+    var box=$('sht-list'); if(!box) return;
+    var sv=$('sht-save'); if(sv && !sv._w){ sv._w=true; sv.addEventListener('click',shareCurrentDesign); }
+    box.innerHTML='<p class="hint" style="margin:0;">Loading…</p>';
+    var rows=[];
+    try{ var r=await sb.from('partner_themes').select('id,name,created_at').eq('shared_with_partners',true).order('created_at',{ascending:false}); if(r.error) throw r.error; rows=r.data||[]; }
+    catch(e){ box.innerHTML='<p class="hint" style="margin:0;color:#b4543c;">Could not load shared themes: '+(e.message||e)+'</p>'; return; }
+    if(!rows.length){ box.innerHTML='<p class="hint" style="margin:0;">No shared themes yet. Open a site, design it, then share it above.</p>'; return; }
+    box.innerHTML='';
+    rows.forEach(function(t){
+      var when=t.created_at?new Date(t.created_at).toLocaleDateString():'';
+      var row=document.createElement('div'); row.className='dt-row';
+      row.innerHTML='<span class="dt-name">'+esc(t.name)+(when?' <span class="dt-label">shared '+esc(when)+'</span>':'')+'</span>'+'<button class="btn ghost sht-del" type="button">Remove</button>';
+      row.querySelector('.sht-del').addEventListener('click',function(){ removeSharedTheme(t.id,t.name); });
+      box.appendChild(row);
+    });
+  }
+  async function shareCurrentDesign(){
+    if(!currentSiteId){ toast('Open a site first, then share its design'); return; }
+    var name=($('sht-name').value||'').trim(); if(!name){ toast('Give the theme a name first'); return; }
+    var btn=$('sht-save'); if(btn){ btn.disabled=true; btn.textContent='Sharing…'; }
+    var cfg=JSON.parse(JSON.stringify(data||{})); delete cfg.savedThemes; delete cfg.users; cfg.pages=JSON.parse(JSON.stringify((data&&data.pages)||[]));
+    var r=await sb.from('partner_themes').insert({ partner_id:null, name:name, config:cfg, shared_with_partners:true, source_site_id:currentSiteId });
+    if(btn){ btn.disabled=false; btn.textContent='Share current design with partners'; }
+    if(r.error){ toast('Share failed: '+r.error.message); return; }
+    $('sht-name').value=''; toast('Shared “'+name+'” with partners'); renderSharedThemes();
+  }
+  async function removeSharedTheme(id,name){
+    if(!confirm('Stop sharing “'+name+'” with partners?')) return;
+    var r=await sb.from('partner_themes').delete().eq('id',id);
+    if(r.error){ toast('Remove failed: '+r.error.message); return; }
+    toast('Removed “'+name+'”'); renderSharedThemes();
+  }
   /* ===== end leadpages integration ===== */
   const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details'], broker:['appearance','contact','logo','landing','details'], leads:['rates'] };
   const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes'], 'broker-leads':['details'], 'trade':['details','landing'] };
@@ -3920,7 +3964,7 @@ function heroCtaCard(c){
   function gate(){ if(!authed){ const av=document.getElementById('admin-view'); if(av && av.hidden) return; showLogin(); } }
 
   /* ---------- nav switcher (six tabs) ---------- */
-  const NAV=[['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',renderDemoThemes]];
+  const NAV=[['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }]];
   let activeView='rates';
   function showView(which){
     activeView=which;
