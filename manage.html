@@ -1188,7 +1188,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   function previewApply(a){
     var fr=lpFrame(); if(!fr||!lpPrevReady) return;
     try{ var w=fr.contentWindow; if(!w) return;
-      if(currentSiteTemplate==='trade'){ if(w.__applyTradeConfig) w.__applyTradeConfig(data); }
+      if(currentIsPartnerHome){ if(w.__applyAgencyConfig) w.__applyAgencyConfig(Object.assign({business:currentBusinessName},data)); }
+      else if(currentSiteTemplate==='trade'){ if(w.__applyTradeConfig) w.__applyTradeConfig(data); }
       else if(w.__applyAppearance){ w.__applyAppearance(a||curAppr()); }
     }catch(e){}
   }
@@ -1479,7 +1480,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   let authed=false, currentRole='super';
   /* ===== leadpages: live Supabase auth + DB-backed config ===== */
   const sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
-  let currentSiteId=null, currentSiteSlug=null, currentSiteTemplate=null, currentBusinessName='', currentCustomDomain='', currentOwnerEmail='', allSites=[];
+  let currentSiteId=null, currentSiteSlug=null, currentSiteTemplate=null, currentBusinessName='', currentCustomDomain='', currentOwnerEmail='', currentIsPartnerHome=false, allSites=[];
 
   async function lpLogin(){
     const email=$('li-user').value.trim(), pass=$('li-pass').value;
@@ -1527,7 +1528,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var __so=document.getElementById('lp-signout-top'); if(__so) __so.onclick=function(e){ e.preventDefault(); signOutLP(); };
   }
   async function loadSitesFromDB(){
-    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,custom_domain,owner_email,config,template,is_demo,is_favorite').order('created_at',{ascending:true});
+    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,custom_domain,owner_email,config,template,is_demo,is_favorite,is_partner_home').order('created_at',{ascending:true});
     if(error){ toast('Could not load site: '+error.message); return; }
     allSites = rows||[];
     if(!allSites.length){ toast('No site is assigned to this account yet.'); return; }
@@ -1877,7 +1878,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     OPTIONAL_COMPONENTS.forEach(function(id){ if(d.sections[id] && d.sections[id].on===true) lpSeedComponent(d,id); });
   }
   function loadSite(site){
-    currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app';
+    currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app'; currentIsPartnerHome=!!site.is_partner_home;
     currentBusinessName=site.business_name||''; currentCustomDomain=site.custom_domain||''; currentOwnerEmail=site.owner_email||'';
     landingSub='details';
     if(currentSiteTemplate==='broker-app'){
