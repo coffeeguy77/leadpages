@@ -521,7 +521,13 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       : '<div class="card empty"><div class="e-ico">\U0001F4C7</div><strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Add your first customer to create their website and start earning.</p></div>';
   }
   async function loadClients(){
-    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,preview_password,demo_logo:config->logo->>imageUrl,created_at').order('created_at',{ascending:false});
+    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,preview_password,logo_obj:config->logo,created_at').order('created_at',{ascending:false});
+    if(r.error){
+      console.error('loadClients error:', r.error);
+      var em='Couldn\u2019t load your sites: '+(r.error.message||'unknown error')+'. If this names a missing column, that database update hasn\u2019t been run yet (e.g. partner_phase6d.sql adds preview_password).';
+      var mb=document.getElementById('mockups-list'); if(mb) mb.innerHTML='<div class="card" style="padding:16px;border:1px solid var(--bad)"><strong style="color:var(--bad)">Couldn\u2019t load demos</strong><div class="muted" style="font-size:13px;margin-top:6px">'+esc(em)+'</div></div>';
+      return;
+    }
     var all=(r.data||[]);
     clients=all.filter(function(x){return !x.is_mockup && !x.is_partner_home;});
     mockups=all.filter(function(x){return x.is_mockup;});
@@ -800,7 +806,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     var bs='padding:7px 12px;font-size:13px'; var brand=';background:var(--brand);border-color:var(--brand);color:#fff';
     return '<div class="card" data-id="'+esc(m.id)+'" style="padding:16px 18px;margin-bottom:12px">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
-      +'<div style="display:flex;gap:11px;align-items:center">'+(m.demo_logo?('<img src="'+esc(m.demo_logo)+'" alt="" style="width:38px;height:38px;border-radius:9px;object-fit:contain;background:#fff;border:1px solid var(--line);padding:3px;flex:0 0 auto">'):'')+'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(m.business_name||m.slug)+'</div>'
+      +'<div style="display:flex;gap:11px;align-items:center">'+((m.logo_obj&&m.logo_obj.imageUrl)?('<img src="'+esc(m.logo_obj.imageUrl)+'" alt="" style="width:38px;height:38px;border-radius:9px;object-fit:contain;background:#fff;border:1px solid var(--line);padding:3px;flex:0 0 auto">'):'')+'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(m.business_name||m.slug)+'</div>'
       +'<div class="muted" style="font-size:13px;margin-top:2px">'+esc(m.slug)+'</div></div></div>'
       +'<span class="statusbadge s-pending">Demo</span></div>'
       +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">'
