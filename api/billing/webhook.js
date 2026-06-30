@@ -221,6 +221,23 @@ module.exports = async (req, res) => {
             const effRate = salePrice > 0 ? Number((share / salePrice).toFixed(4)) : 0;
             await createCommission({ partnerId: partnerId, siteId: md.site_id, type: 'build', rate: effRate, gross: salePrice, commissionOverride: share, periodStart: new Date().toISOString(), invoiceId: obj.invoice || null, partnerActive: await partnerIsActive(partnerId) });
           }
+          // From a quote? Relabel the site to the client's details and mark it paid.
+          if (md.quote_id) {
+            const q = (await sb.from('partner_quotes').select('*').eq('id', md.quote_id).maybeSingle()).data;
+            if (q) {
+              const upd = { updated_at: new Date().toISOString() };
+              if (q.business_name) upd.business_name = q.business_name;
+              const cfgRow = (await sb.from('sites').select('config').eq('id', md.site_id).maybeSingle()).data;
+              const cfg = (cfgRow && cfgRow.config && typeof cfgRow.config === 'object') ? cfgRow.config : {};
+              cfg._intake = Object.assign({}, cfg._intake, {
+                contactName: q.contact_person || null, address: q.address || null,
+                phones: q.phones || [], email: q.email || null, fromQuote: q.id,
+              });
+              upd.config = cfg;
+              await sb.from('sites').update(upd).eq('id', md.site_id);
+              await sb.from('partner_quotes').update({ status: 'paid', paid_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', md.quote_id);
+            }
+          }
           break; // sale handled
         }
         const ownerId = md.owner_user_id || (await ownerForCustomer(customerId));
