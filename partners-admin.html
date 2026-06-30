@@ -82,7 +82,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
 
 <div class="top"><div class="wrap">
   <a class="brand" href="/manage"><span class="mark"></span>leadpages</a>
-  <div class="links"><a href="/manage">Command Centre</a><a href="/manage-domains">Domains</a><span id="adm-who" class="muted"></span> <a href="#" id="signout" class="hidden">Sign out</a></div>
+  <div class="links"><a href="/manage">Command Centre</a><a href="/manage-domains">Domains</a><a href="/help" target="_blank" rel="noopener">Help</a><span id="adm-who" class="muted"></span> <a href="#" id="signout" class="hidden">Sign out</a></div>
 </div></div>
 
 <!-- LOGIN -->
@@ -114,6 +114,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     <button data-t="training">Training <span class="count" id="tm-count"></span></button>
     <button data-t="courses">Courses <span class="count" id="co-count"></span></button>
     <button data-t="resources">Resources <span class="count" id="res-count"></span></button>
+    <button data-t="wiki">Wiki <span class="count" id="wk-count"></span></button>
     <button data-t="clients">Clients <span class="count" id="cl-count"></span></button>
     <button data-t="audit">Audit</button>
   </div>
@@ -166,6 +167,13 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   <section class="section" data-sec="resources">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><p class="muted" style="margin:0">Create and publish sales resources. Partners can copy text and download files.</p><button class="btn btn-brand" id="res-add">+ Add resource</button></div>
     <div id="resources-admin-list"></div>
+  </section>
+
+  <!-- Wiki -->
+  <section class="section" data-sec="wiki">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><p class="muted" style="margin:0">Help articles shown at <strong>/help</strong>. Choose who can see each one. Body supports # headings, ** bold **, - bullets and links.</p><button class="btn btn-brand" id="wk-add">+ Add article</button></div>
+    <datalist id="wk-cats"><option>Getting started</option><option>Your account</option><option>Building a site</option><option>Themes &amp; design</option><option>Demos &amp; quotes</option><option>Clients &amp; billing</option><option>Commissions &amp; payouts</option><option>Domains</option><option>Troubleshooting</option><option>Policies</option></datalist>
+    <div id="wiki-admin-list"></div>
   </section>
 
   <!-- Clients & transfers -->
@@ -413,7 +421,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     siteMap={}; (sm.data||[]).forEach(function(x){ siteMap[x.id]=x.business_name||x.slug; });
     var cm=await sb.from('partner_commissions').select('*').order('created_at',{ascending:false});
     commissions=(cm.data||[]); renderComms();
-    loadCourses(); loadModules(); loadResources(); loadAdminClients(); loadAudit();
+    loadCourses(); loadModules(); loadResources(); loadWiki(); loadAdminClients(); loadAudit();
   }
 
   // ---- Training + Resources admin ----
@@ -488,6 +496,33 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     courses.unshift(r.data); renderCourses();
   });
   wireCrud('courses-admin-list','partner_courses',function(){return courses;},function(){ renderCourses(); renderModules(); });
+
+  // ---- Wiki ----
+  var wiki=[];
+  function audSel(cur){ var o=[['client','Everyone (clients, partners, admin)'],['partner','Partners & admin'],['super','Admin only']]; return '<div><label>Who can see this</label><select data-f="audience">'+o.map(function(a){return '<option value="'+a[0]+'"'+((cur||'client')===a[0]?' selected':'')+'>'+a[1]+'</option>';}).join('')+'</select></div>'; }
+  function wikiCard(w){
+    return '<div class="card item" data-id="'+w.id+'"><div class="head"><div class="nm">'+esc(w.title||'Untitled')+'</div>'
+      +'<span class="statusbadge '+(w.published?'s-active':'s-pending')+'">'+(w.published?'Published':'Draft')+'</span></div>'
+      +'<div class="ctrls" style="border:0;padding-top:8px">'+fld('Title','title','full',w.title)
+        +'<div><label>Category</label><input type="text" data-f="category" list="wk-cats" value="'+esc(w.category||'')+'"></div>'
+        +audSel(w.audience)
+        +fld('Sort','sort','number',w.sort==null?0:w.sort,'style="max-width:90px"')+'</div>'
+      +'<div style="margin-top:8px"><label>Body</label><textarea rows="6" data-f="body">'+esc(w.body||'')+'</textarea></div>'
+      +'<div class="ctrls"><div>'+chk('Published','published',w.published)+'</div>'
+        +'<button class="btn btn-sm btn-brand" data-save>Save</button><button class="btn btn-sm" data-del>Delete</button><span class="saved" data-saved>Saved \u2713</span></div></div>';
+  }
+  function renderWiki(){
+    document.getElementById('wk-count').textContent=wiki.length?('\u00b7 '+wiki.length):'';
+    document.getElementById('wiki-admin-list').innerHTML = wiki.length ? wiki.map(wikiCard).join('') : '<div class="card empty">No help articles yet. Add one to get started.</div>';
+  }
+  async function loadWiki(){ var r=await sb.from('wiki_articles').select('*').order('sort',{ascending:true}); wiki=(r.data||[]); renderWiki(); }
+  document.getElementById('wk-add').addEventListener('click', async function(){
+    var sort=(wiki.reduce(function(a,w){return Math.max(a,w.sort||0);},0))+1;
+    var r=await sb.from('wiki_articles').insert({title:'New article',audience:'client',published:false,sort:sort}).select('*').single();
+    if(r.error||!r.data){ alert('Could not add: '+((r.error&&r.error.message)||'no permission')); return; }
+    wiki.unshift(r.data); renderWiki();
+  });
+  wireCrud('wiki-admin-list','wiki_articles',function(){return wiki;},renderWiki);
 
   // add buttons
   document.getElementById('tm-add').addEventListener('click', async function(){

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help Centre · LeadPages</title>
+<meta name="robots" content="noindex">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{
+  --ink:#16201c; --ink-soft:#3f4d47; --ink-faint:#7d8a83; --line:#e7e2d8; --line-strong:#d8d2c5;
+  --brand:#1f7a63; --brand-deep:#155c4a; --brand-tint:#eaf3ef; --surface:#fbfaf6; --surface-2:#f4f1e9;
+  --radius:14px; --radius-sm:10px;
+  --font-display:'Archivo',system-ui,sans-serif; --font-ui:'Inter',system-ui,sans-serif;
+}
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--font-ui);color:var(--ink);background:var(--surface);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
+.top{border-bottom:1px solid var(--line);background:#fff;position:sticky;top:0;z-index:10}
+.top .wrap{max-width:920px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:800;font-size:19px;color:var(--ink);text-decoration:none}
+.brand .mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--brand),#2f9b7e);position:relative}
+.brand .mark::after{content:"";position:absolute;inset:7px 7px auto 7px;height:4px;border-radius:2px;background:#fff;box-shadow:0 6px 0 rgba(255,255,255,.6)}
+.top .links{margin-left:auto;display:flex;gap:14px;font-size:13.5px;font-weight:600}
+.top .links a{color:var(--ink-soft);text-decoration:none}
+.top .links a:hover{color:var(--brand)}
+.wrap{max-width:920px;margin:0 auto;padding:0 20px}
+.hero{padding:34px 20px 6px;max-width:920px;margin:0 auto}
+.hero h1{font-family:var(--font-display);font-weight:800;font-size:30px;margin:0 0 6px}
+.hero p{color:var(--ink-soft);margin:0;max-width:60ch}
+.search{width:100%;padding:13px 15px;border:1px solid var(--line-strong);border-radius:12px;font-size:15px;font-family:var(--font-ui);margin:18px 0 6px;background:#fff}
+.search:focus{outline:none;border-color:var(--brand)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+.chip{background:#fff;border:1px solid var(--line-strong);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.note{background:var(--brand-tint);color:var(--brand-deep);border:1px solid #cfe6dd;border-radius:12px;padding:11px 14px;font-size:13.5px;margin:16px 0}
+.cat{margin:26px 0 4px;font-family:var(--font-display);font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint)}
+.art{background:#fff;border:1px solid var(--line);border-radius:var(--radius);margin:10px 0;overflow:hidden}
+.art summary{list-style:none;cursor:pointer;padding:15px 18px;display:flex;align-items:center;gap:12px;font-family:var(--font-display);font-weight:600;font-size:16px}
+.art summary::-webkit-details-marker{display:none}
+.art summary .aud{margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--brand-deep);background:var(--brand-tint);border-radius:999px;padding:3px 9px}
+.art summary .chev{color:var(--ink-faint);transition:transform .15s}
+.art[open] summary .chev{transform:rotate(90deg)}
+.art .body{padding:2px 18px 18px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:14.5px}
+.art .body h3{font-family:var(--font-display);color:var(--ink);font-size:17px;margin:16px 0 6px}
+.art .body h4{font-family:var(--font-display);color:var(--ink);font-size:15px;margin:14px 0 6px}
+.art .body p{margin:9px 0}
+.art .body ul{margin:9px 0;padding-left:20px}
+.art .body li{margin:4px 0}
+.art .body code{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:1px 5px;font-size:13px}
+.art .body a{word-break:break-word}
+.empty{text-align:center;color:var(--ink-faint);padding:46px 20px}
+.foot{max-width:920px;margin:30px auto;padding:18px 20px;color:var(--ink-faint);font-size:12.5px;border-top:1px solid var(--line)}
+@media(max-width:560px){ .hero h1{font-size:25px} }
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <a class="brand" href="/"><span class="mark"></span>leadpages</a>
+  <div class="links"><a href="/partner">Partner dashboard</a><a href="/">Home</a></div>
+</div></div>
+
+<div class="hero">
+  <h1>Help Centre</h1>
+  <p>Guides for getting the most out of LeadPages — finding your way around, building sites, and the day-to-day of running your account.</p>
+  <input class="search" id="q" placeholder="Search the help centre…" autocomplete="off">
+  <div class="chips" id="chips"></div>
+  <div id="role-note"></div>
+</div>
+
+<div class="wrap"><div id="list"><div class="empty">Loading help…</div></div></div>
+<div class="foot">Can't find what you need? Reach out to your LeadPages support contact and we'll help you out.</div>
+
+<script>
+  var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var articles=[], activeCat='__all__', query='';
+
+  function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function inlineMd(t){
+    t=t.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+    t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
+    t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+    t=t.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g,'$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+    return t;
+  }
+  function mdLite(src){
+    var lines=String(src||'').split(/\r?\n/), out=[], inList=false;
+    function closeList(){ if(inList){ out.push('</ul>'); inList=false; } }
+    for(var i=0;i<lines.length;i++){
+      var ln=lines[i];
+      if(/^\s*-\s+/.test(ln)){ if(!inList){ out.push('<ul>'); inList=true; } out.push('<li>'+inlineMd(esc(ln.replace(/^\s*-\s+/,'')))+'</li>'); continue; }
+      closeList();
+      if(/^##\s+/.test(ln)){ out.push('<h4>'+inlineMd(esc(ln.replace(/^##\s+/,'')))+'</h4>'); continue; }
+      if(/^#\s+/.test(ln)){ out.push('<h3>'+inlineMd(esc(ln.replace(/^#\s+/,'')))+'</h3>'); continue; }
+      if(/^\s*$/.test(ln)){ continue; }
+      out.push('<p>'+inlineMd(esc(ln))+'</p>');
+    }
+    closeList();
+    return out.join('');
+  }
+  function audLabel(a){ return a==='super'?'Admin':(a==='partner'?'Partner':''); }
+
+  function renderChips(){
+    var cats=[]; var seen={};
+    articles.forEach(function(a){ var c=a.category||'General'; if(!seen[c]){ seen[c]=1; cats.push(c); } });
+    var html='<span class="chip'+(activeCat==='__all__'?' on':'')+'" data-c="__all__">All</span>';
+    cats.forEach(function(c){ html+='<span class="chip'+(activeCat===c?' on':'')+'" data-c="'+esc(c)+'">'+esc(c)+'</span>'; });
+    document.getElementById('chips').innerHTML=cats.length?html:'';
+  }
+  function render(){
+    var box=document.getElementById('list');
+    var q=query.trim().toLowerCase();
+    var rows=articles.filter(function(a){
+      if(activeCat!=='__all__' && (a.category||'General')!==activeCat) return false;
+      if(!q) return true;
+      return (a.title||'').toLowerCase().indexOf(q)>=0 || (a.body||'').toLowerCase().indexOf(q)>=0 || (a.category||'').toLowerCase().indexOf(q)>=0;
+    });
+    if(!rows.length){ box.innerHTML='<div class="empty">No articles'+(q?' match your search':' yet')+'.</div>'; return; }
+    var groups={}, order=[];
+    rows.forEach(function(a){ var c=a.category||'General'; if(!groups[c]){ groups[c]=[]; order.push(c); } groups[c].push(a); });
+    box.innerHTML=order.map(function(c){
+      return '<div class="cat">'+esc(c)+'</div>'+groups[c].map(function(a){
+        var lab=audLabel(a.audience);
+        return '<details class="art"'+(q?' open':'')+'><summary><span class="chev">\u203A</span>'+esc(a.title)
+          +(lab?'<span class="aud">'+lab+'</span>':'')+'</summary>'
+          +'<div class="body">'+mdLite(a.body)+'</div></details>';
+      }).join('');
+    }).join('');
+  }
+
+  async function detectRole(){
+    var note=document.getElementById('role-note');
+    try{
+      var sess=(await sb.auth.getSession()).data.session;
+      if(!sess){ note.innerHTML='<div class="note">You\u2019re viewing public help. Partners and admins \u2014 <a href="/partner">sign in</a> to see your full set of guides.</div>'; return; }
+      note.innerHTML='<div class="note">Signed in \u2014 showing every guide available to your account.</div>';
+    }catch(e){}
+  }
+
+  async function load(){
+    try{
+      var r=await sb.from('wiki_articles').select('id,title,category,audience,body,sort').eq('published',true).order('sort',{ascending:true}).order('title',{ascending:true});
+      if(r.error) throw r.error;
+      articles=r.data||[];
+    }catch(e){
+      document.getElementById('list').innerHTML='<div class="empty">Could not load help right now. Please try again shortly.</div>';
+      return;
+    }
+    renderChips(); render();
+  }
+
+  document.getElementById('q').addEventListener('input',function(){ query=this.value; render(); });
+  document.getElementById('chips').addEventListener('click',function(e){
+    var c=e.target.closest('.chip'); if(!c) return;
+    activeCat=c.getAttribute('data-c'); renderChips(); render();
+  });
+
+  detectRole(); load();
+</script>
+</body>
+</html>

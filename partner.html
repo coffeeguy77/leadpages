@@ -154,6 +154,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         <button data-p="commissions">💰 Commissions</button>
         <button data-p="training">🎓 Training Centre</button>
         <button data-p="resources">📝 Sales Resources</button>
+        <button id="help-link">📚 Help &amp; guides</button>
         <button data-p="support">🛟 Support</button>
         <button data-p="profile">⚙️ My Profile</button>
         <button id="signout" style="color:var(--bad);margin-top:8px">↩ Sign out</button>
@@ -488,6 +489,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     var p=b.getAttribute('data-p');
     document.querySelectorAll('.panel').forEach(function(s){ s.classList.toggle('on', s.getAttribute('data-panel')===p); });
   });
+  var __hl=document.getElementById('help-link'); if(__hl) __hl.onclick=function(){ window.open('/help','_blank','noopener'); };
 
   // ---- profile save (RLS lets a partner update their own profile) ----
   document.getElementById('save-profile').addEventListener('click', async function(){
