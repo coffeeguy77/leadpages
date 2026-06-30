@@ -24,5 +24,10 @@ module.exports = async (req,res) => {
 
   const ex = await admin.from('partner_profiles').select('partner_id').ilike('showcase_slug', slug).maybeSingle();
   if(ex.data && ex.data.partner_id !== mineId) return res.status(200).json({ ok:true, available:false, reason:'That name is taken.' });
+
+  // A tenant site with this slug would shadow the partner page at /<slug>, so it's not free.
+  const site = await admin.from('sites').select('id').eq('slug', slug).maybeSingle();
+  if(site.data) return res.status(200).json({ ok:true, available:false, reason:'That name is already in use.' });
+
   return res.status(200).json({ ok:true, available:true });
 };
