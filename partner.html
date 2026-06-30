@@ -141,6 +141,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         <button data-p="add">➕ Add Customer</button>
         <button data-p="demos">🎨 Demos &amp; themes</button>
         <button data-p="mypage">🌐 My page</button>
+        <button data-p="payouts">💵 Payouts</button>
         <button data-p="commissions">💰 Commissions</button>
         <button data-p="training">🎓 Training Centre</button>
         <button data-p="resources">📝 Sales Resources</button>
@@ -286,6 +287,23 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
           </div>
           <p class="muted" style="margin-top:16px;font-size:13.5px">Your page: <a id="sc-link" href="#" target="_blank" rel="noopener">—</a> · Choose which demos appear from the <strong>Demos &amp; themes</strong> tab ("Show on showcase").</p>
           <p class="muted" style="margin-top:6px;font-size:12.5px">The logo, headline, accent and intro above are used for a simple starter page — once you design and publish your homepage in the builder, that takes over.</p>
+        </div>
+      </section>
+
+      <!-- Payouts & pricing -->
+      <section class="panel" data-panel="payouts">
+        <h2>Payouts &amp; pricing</h2>
+        <p class="sub">Set a price per demo and see exactly what you earn. Each sale is split 50/50, with a $750 minimum to LeadPages.</p>
+        <div class="card" style="padding:24px;max-width:680px">
+          <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin-bottom:14px"><input type="checkbox" id="po-gst" style="width:auto"> I’m registered for GST</label>
+          <div class="field"><label for="po-abn">ABN</label><input id="po-abn" type="text" placeholder="Needed before we can pay you"><div class="muted" style="font-size:12.5px;margin-top:6px">If you’re not registered for GST, GST is removed from your share (you receive 10% less). Add your ABN so we can pay you.</div></div>
+          <div class="field"><label for="po-plan">Default hosting plan</label><select id="po-plan"></select><div class="muted" style="font-size:12.5px;margin-top:6px">What a new client starts on — they can change it at signup.</div></div>
+          <div class="save-row"><button class="btn btn-brand" id="po-save">Save</button><span class="saved" id="po-saved">Saved ✓</span></div>
+        </div>
+        <h3 style="font-family:var(--font-display);font-size:17px;margin:24px 0 10px">Price calculator</h3>
+        <div class="card" style="padding:20px;max-width:680px">
+          <div class="field" style="max-width:240px"><label for="po-calc">Sale price ($)</label><input id="po-calc" type="number" min="0" step="50" placeholder="1000"></div>
+          <div id="po-breakdown" class="muted" style="font-size:14.5px"></div>
         </div>
       </section>
 
@@ -443,7 +461,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     badge.className='statusbadge s-'+(p.status||'pending');
     fillProfile(state.profile);
     show('view-dash');
-    wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage();
+    wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage(); loadPayouts();
   }
 
   async function loadPartner(session){
@@ -521,7 +539,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       : '<div class="card empty"><div class="e-ico">\U0001F4C7</div><strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Add your first customer to create their website and start earning.</p></div>';
   }
   async function loadClients(){
-    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,preview_password,logo_obj:config->logo,created_at').order('created_at',{ascending:false});
+    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,preview_password,sale_price,logo_obj:config->logo,created_at').order('created_at',{ascending:false});
     if(r.error){
       console.error('loadClients error:', r.error);
       var em='Couldn\u2019t load your sites: '+(r.error.message||'unknown error')+'. If this names a missing column, that database update hasn\u2019t been run yet (e.g. partner_phase6d.sql adds preview_password).';
@@ -586,6 +604,12 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         await sb.from('sites').update({preview_password:pwv, updated_at:new Date().toISOString()}).eq('id',id);
         var mp=mockups.find(function(x){return x.id===id;}); if(mp) mp.preview_password=pwv;
       }
+      if(e.target.matches('[data-price]')){
+        var dol=parseFloat(e.target.value||'0'); var cents=dol>0?Math.round(dol*100):null;
+        await sb.from('sites').update({sale_price:cents, updated_at:new Date().toISOString()}).eq('id',id);
+        var mpr=mockups.find(function(x){return x.id===id;}); if(mpr) mpr.sale_price=cents;
+        var cd=e.target.closest('[data-id]'); var bd=cd&&cd.querySelector('[data-breakdown]'); if(bd) bd.innerHTML=demoBreakdown(cents);
+      }
       if(e.target.matches('[data-applytheme]')){
         var tid=e.target.value; if(!tid) return;
         var t=await sb.from('partner_themes').select('config').eq('id',tid).maybeSingle();
@@ -636,6 +660,17 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       window.open('/manage?site='+encodeURIComponent(res.site.slug),'_blank','noopener');
     });
     document.getElementById('sc-slug').addEventListener('input',updateScLink);
+    document.getElementById('po-calc').addEventListener('input', renderCalc);
+    document.getElementById('po-gst').addEventListener('change', renderCalc);
+    document.getElementById('po-save').addEventListener('click', async function(){
+      var btn=this; btn.disabled=true;
+      var patch={ gst_registered:document.getElementById('po-gst').checked, abn:(document.getElementById('po-abn').value||'').trim()||null, default_plan_key:(document.getElementById('po-plan').value||'')||null, updated_at:new Date().toISOString() };
+      var r=await sb.from('partner_profiles').update(patch).eq('partner_id',state.partner.id).select('*'); btn.disabled=false;
+      if(r.error||!r.data||!r.data.length){ alert('Could not save: '+((r.error&&r.error.message)||'no permission')); return; }
+      state.profile=r.data[0];
+      var sv=document.getElementById('po-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1700);
+      renderMockups();
+    });
     document.getElementById('sc-check').addEventListener('click', async function(){
       var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var msg=document.getElementById('sc-slug-msg');
       if(!slug){ msg.textContent=''; return; }
@@ -816,8 +851,12 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       +'<button class="btn" data-convert style="'+bs+'">Convert to client</button>'
       +'<button class="btn" data-del style="'+bs+'">Delete</button>'
       +'<select data-applytheme style="'+bs+';width:auto">'+themeOptions()+'</select>'
-      +'<input data-pw type="text" value="'+esc(m.preview_password||'')+'" placeholder="\U0001F512 Sample password (optional)" style="'+bs+';width:auto;min-width:185px">'
+      +'<input data-pw type="text" value="'+esc(m.preview_password||'')+'" placeholder="Sample password (optional)" style="'+bs+';width:auto;min-width:185px">'
       +'<label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-soft);font-weight:600"><input type="checkbox" data-showcase'+(m.show_on_showcase?' checked':'')+' style="width:auto"> Show on showcase</label>'
+      +'</div>'
+      +'<div style="margin-top:11px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:11px">'
+      +'<label style="font-size:13px;font-weight:600;color:var(--ink-soft)">Sale price $<input data-price type="number" min="0" step="50" value="'+(m.sale_price?Math.round(m.sale_price/100):'')+'" style="width:110px;margin-left:6px;padding:7px 10px;border:1px solid var(--line);border-radius:8px"></label>'
+      +'<span data-breakdown style="font-size:13px;color:var(--ink-soft)">'+demoBreakdown(m.sale_price)+'</span>'
       +'</div></div>';
   }
   function renderMockups(){
@@ -863,6 +902,41 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     var fd=new FormData(); fd.append('file',file); fd.append('api_key',sg.apiKey); fd.append('timestamp',sg.timestamp); fd.append('public_id',sg.publicId); if(sg.assetFolder)fd.append('asset_folder',sg.assetFolder); if(sg.overwrite)fd.append('overwrite',sg.overwrite); fd.append('signature',sg.signature);
     var ur=await fetch('https://api.cloudinary.com/v1_1/'+(sg.cloudName||'dzx6x1hou')+'/image/upload',{method:'POST',body:fd});
     var uj=await ur.json(); if(!ur.ok||!uj.secure_url) throw new Error('Upload failed'); return uj.secure_url;
+  }
+
+  // ---------- Phase 7: pricing & payouts ----------
+  function lpSplit(priceCents, gstReg){
+    var p=Math.max(0,Math.round(priceCents||0));
+    var lp=Math.max(75000, Math.floor(p/2)); if(lp>p) lp=p;
+    var partner=p-lp, gstOff=0;
+    if(!gstReg){ gstOff=Math.round(partner*0.10); partner=partner-gstOff; }
+    return { price:p, lp:lp, partner:partner, gstOff:gstOff };
+  }
+  function fmtAUD(cents){ return '$'+(Math.round(cents)/100).toLocaleString('en-AU',{minimumFractionDigits:0,maximumFractionDigits:2}); }
+  function demoBreakdown(cents){
+    cents=Math.round(cents||0);
+    if(!cents) return 'Set a price to see your share.';
+    var gst=!!(state.profile&&state.profile.gst_registered);
+    var sx=lpSplit(cents,gst);
+    return 'You get <strong style="color:var(--ink)">'+fmtAUD(sx.partner)+'</strong> \u00b7 LeadPages '+fmtAUD(sx.lp)+(sx.gstOff?(' \u00b7 GST \u2212'+fmtAUD(sx.gstOff)):'');
+  }
+  function renderCalc(){
+    var d=parseFloat(document.getElementById('po-calc').value||'0'); var cents=d>0?Math.round(d*100):0;
+    var gst=document.getElementById('po-gst').checked;
+    var b=document.getElementById('po-breakdown'); if(!b) return;
+    if(!cents){ b.innerHTML=''; return; }
+    var sx=lpSplit(cents,gst);
+    b.innerHTML='On a '+fmtAUD(cents)+' sale: <strong style="color:var(--ink)">you get '+fmtAUD(sx.partner)+'</strong>, LeadPages gets '+fmtAUD(sx.lp)+'.'+(sx.gstOff?(' <span style="color:var(--bad)">GST of '+fmtAUD(sx.gstOff)+' removed</span> \u2014 register for GST + add your ABN to keep it.'):'');
+  }
+  async function loadPayouts(){
+    var pf=state.profile||{};
+    document.getElementById('po-gst').checked=!!pf.gst_registered;
+    document.getElementById('po-abn').value=pf.abn||'';
+    var pr=await sb.from('billing_plans').select('key,name,monthly_amount').eq('active',true).order('sort',{ascending:true});
+    var plans=(pr.data||[]); var sel=document.getElementById('po-plan');
+    sel.innerHTML='<option value="">No default</option>'+plans.map(function(pl){ return '<option value="'+esc(pl.key)+'">'+esc(pl.name)+' \u2014 $'+Math.round((pl.monthly_amount||0)/100)+'/mo</option>'; }).join('');
+    sel.value=pf.default_plan_key||'';
+    renderCalc();
   }
 
   async function boot(){
