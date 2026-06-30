@@ -357,6 +357,7 @@ function search(){
 }
 $('go').onclick=search;
 $('q').addEventListener('keydown',function(e){ if(e.key==='Enter') search(); });
+(function(){ try{ var _pq=new URLSearchParams(location.search).get('q'); if(_pq){ $('q').value=_pq; search(); } }catch(_e){} })();
 
 /* ---------------- post-payment progress ---------------- */
 function showProgress(list, state){
