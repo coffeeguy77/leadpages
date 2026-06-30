@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Messages · LeadPages</title>
+<meta name="robots" content="noindex">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{
+  --ink:#16201c;--ink-soft:#3f4d47;--ink-faint:#7d8a83;--line:#e7e2d8;--line-strong:#d8d2c5;
+  --brand:#1f7a63;--brand-deep:#155c4a;--brand-tint:#eaf3ef;--surface:#fbfaf6;--surface-2:#f4f1e9;--bad:#b4452f;
+  --font-display:'Archivo',system-ui,sans-serif;--font-ui:'Inter',system-ui,sans-serif;
+}
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--font-ui);color:var(--ink);background:var(--surface);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100%}
+a{color:var(--brand)}
+.top{border-bottom:1px solid var(--line);background:#fff}
+.top .wrap{max-width:1100px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:800;font-size:18px;color:var(--ink);text-decoration:none}
+.brand .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--brand),#2f9b7e)}
+.top .who{margin-left:auto;font-size:13px;color:var(--ink-soft);display:flex;align-items:center;gap:12px}
+.top .who a{color:var(--ink-soft);text-decoration:none;font-weight:600}
+.btn{appearance:none;border:1px solid var(--line-strong);background:#fff;border-radius:10px;padding:9px 14px;font:inherit;font-weight:600;font-size:14px;color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--brand)}
+.btn-brand{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn-brand:hover{background:var(--brand-deep)}
+.btn-sm{padding:6px 11px;font-size:13px}
+input,textarea,select{font:inherit;color:var(--ink);border:1px solid var(--line-strong);border-radius:10px;padding:10px 12px;background:#fff;width:100%}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
+.main{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:16px 18px;display:flex;gap:16px;min-height:0}
+/* login */
+.login{max-width:420px;margin:8vh auto;background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px}
+.login h1{font-family:var(--font-display);font-weight:800;font-size:24px;margin:0 0 6px}
+.login p{color:var(--ink-soft);margin:0 0 18px;font-size:14px}
+.login .row{margin-bottom:10px}
+.login .alt{font-size:13px;color:var(--ink-soft);margin-top:12px}
+.login .alt button{background:none;border:0;color:var(--brand);font-weight:600;cursor:pointer;padding:0}
+.msg-ok{background:var(--brand-tint);color:var(--brand-deep);border:1px solid #cfe6dd;border-radius:10px;padding:10px 12px;font-size:13.5px;margin-bottom:10px}
+.msg-err{background:#fceeea;color:var(--bad);border:1px solid #f2ccc2;border-radius:10px;padding:10px 12px;font-size:13.5px;margin-bottom:10px}
+/* panes */
+.pane{background:#fff;border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;min-height:0}
+.list{width:320px;flex:0 0 320px}
+.list .lhead{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.list .lhead h2{font-family:var(--font-display);font-size:16px;margin:0}
+.convs{overflow:auto;flex:1}
+.conv{padding:13px 16px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.conv:hover{background:var(--surface-2)}
+.conv.on{background:var(--brand-tint)}
+.conv .ci{flex:1;min-width:0}
+.conv .nm{font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:7px}
+.conv .pre{color:var(--ink-faint);font-size:12.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv .kind{font-size:11px;color:var(--ink-faint);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--brand);flex:0 0 auto;margin-top:6px;visibility:hidden}
+.conv.unread .dot{visibility:visible}
+.conv.unread .nm{font-weight:700}
+/* thread */
+.thread{flex:1;min-width:0}
+.thread .thead{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.thread .thead h2{font-family:var(--font-display);font-size:16px;margin:0}
+.thread .thead .sub{font-size:12.5px;color:var(--ink-faint)}
+.bubbles{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.b{max-width:74%;}
+.b .meta{font-size:11.5px;color:var(--ink-faint);margin:0 4px 3px}
+.b .bub{padding:10px 13px;border-radius:14px;font-size:14.5px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+.b.them{align-self:flex-start}
+.b.them .bub{background:var(--surface-2);border:1px solid var(--line);border-top-left-radius:5px}
+.b.me{align-self:flex-end}
+.b.me .meta{text-align:right}
+.b.me .bub{background:var(--brand);color:#fff;border-top-right-radius:5px}
+.composer{border-top:1px solid var(--line);padding:12px;display:flex;gap:10px;align-items:flex-end}
+.composer textarea{resize:none;min-height:44px;max-height:140px}
+.empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);text-align:center;padding:30px;font-size:14px}
+/* new conversation panel */
+.newbox{padding:16px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.newbox h3{font-family:var(--font-display);font-size:14px;margin:0 0 10px}
+.newbox .opt{margin-bottom:8px}
+.hidden{display:none!important}
+@media(max-width:760px){
+  .main{flex-direction:column;padding:10px}
+  .list{width:auto;flex:none;max-height:42vh}
+  .thread{min-height:46vh}
+  .list.collapsed{display:none}
+}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <a class="brand" href="/"><span class="mark"></span>leadpages</a>
+  <div class="who" id="who"></div>
+</div></div>
+
+<!-- LOGIN -->
+<div id="view-login" class="hidden">
+  <div class="login">
+    <h1>Messages</h1>
+    <p>Sign in to message your provider or LeadPages support.</p>
+    <div id="login-feedback"></div>
+    <div id="login-email-step">
+      <div class="row"><input id="li-email" type="email" placeholder="you@email.com" autocomplete="email"></div>
+      <div class="row"><button class="btn btn-brand" id="li-link" style="width:100%">Email me a magic link</button></div>
+      <div class="alt">Prefer a code? <button id="li-usecode">Use a 6-digit code</button></div>
+    </div>
+    <div id="login-code-step" class="hidden">
+      <div class="row"><input id="li-code" inputmode="numeric" placeholder="6-digit code"></div>
+      <div class="row"><button class="btn btn-brand" id="li-verify" style="width:100%">Verify &amp; sign in</button></div>
+      <div class="alt"><button id="li-back">Back</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="view-app" class="main hidden">
+  <div class="pane list" id="listpane">
+    <div class="lhead"><h2>Conversations</h2><button class="btn btn-sm btn-brand" id="new-btn">New</button></div>
+    <div id="newbox" class="newbox hidden"></div>
+    <div class="convs" id="convs"></div>
+  </div>
+  <div class="pane thread" id="threadpane">
+    <div id="thread-empty" class="empty">Select a conversation, or start a new one.</div>
+    <div id="thread-on" class="hidden" style="display:flex;flex-direction:column;min-height:0;flex:1">
+      <div class="thead"><button class="btn btn-sm hidden" id="back-btn" style="margin-right:2px">&larr;</button><div><h2 id="t-title">—</h2><div class="sub" id="t-sub"></div></div><button class="btn btn-sm" id="refresh-btn" style="margin-left:auto">Refresh</button></div>
+      <div class="bubbles" id="bubbles"></div>
+      <div class="composer">
+        <textarea id="composer-text" placeholder="Write a message…" rows="1"></textarea>
+        <button class="btn btn-brand" id="send-btn">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var me={uid:null,role:'client',partnerId:null,name:''};
+  var convos=[], reads={}, sitesById={}, partnersById={}, mySites=[], activeId=null, activeMsgs=[], poll=null;
+
+  function $(id){ return document.getElementById(id); }
+  function show(id){ ['view-login','view-app'].forEach(function(v){ $(v).classList.toggle('hidden', v!==id); }); }
+  function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmt(ts){
+    if(!ts) return '';
+    var d=new Date(ts), now=new Date(), sameDay=d.toDateString()===now.toDateString();
+    if(sameDay) return d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+    var diff=(now-d)/86400000;
+    if(diff<7) return d.toLocaleDateString([], {weekday:'short'})+' '+d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+    return d.toLocaleDateString([], {day:'numeric',month:'short'});
+  }
+
+  /* ---------- LOGIN ---------- */
+  function loginFb(kind,msg){ $('login-feedback').innerHTML = msg?('<div class="'+(kind==='ok'?'msg-ok':'msg-err')+'">'+esc(msg)+'</div>'):''; }
+  function wireLogin(){
+    $('li-link').addEventListener('click', async function(){
+      var email=($('li-email').value||'').trim(); if(!email){ loginFb('err','Enter your email first.'); return; }
+      this.disabled=true; loginFb('', '');
+      var r=await sb.auth.signInWithOtp({ email:email, options:{ emailRedirectTo: location.origin+'/messages' } });
+      this.disabled=false;
+      if(r.error){ loginFb('err', r.error.message); return; }
+      loginFb('ok','Check your email — tap the link, or enter the code below.');
+      $('login-code-step').classList.remove('hidden');
+    });
+    $('li-usecode').addEventListener('click', function(){ $('login-code-step').classList.remove('hidden'); });
+    $('li-back').addEventListener('click', function(){ $('login-code-step').classList.add('hidden'); });
+    $('li-verify').addEventListener('click', async function(){
+      var email=($('li-email').value||'').trim(), token=($('li-code').value||'').trim();
+      if(!email||!token){ loginFb('err','Enter your email and the code.'); return; }
+      this.disabled=true; loginFb('','');
+      var r=await sb.auth.verifyOtp({ email:email, token:token, type:'email' });
+      this.disabled=false;
+      if(r.error){ loginFb('err', r.error.message); return; }
+      var s=(await sb.auth.getSession()).data.session; if(s) init(s);
+    });
+  }
+
+  /* ---------- ROLE + LOOKUPS ---------- */
+  async function detectRole(uid){
+    me.uid=uid; me.role='client'; me.partnerId=null;
+    try{ var s=await sb.rpc('is_super'); if(s&&s.data===true){ me.role='super'; me.name='LeadPages'; return; } }catch(e){}
+    try{
+      var p=await sb.rpc('my_partner_id');
+      if(p&&p.data){ me.role='partner'; me.partnerId=p.data;
+        var pr=await sb.from('partners').select('display_name').eq('id',p.data).maybeSingle();
+        me.name=(pr.data&&pr.data.display_name)||'Your business'; return;
+      }
+    }catch(e){}
+    me.name='You';
+  }
+  async function loadLookups(){
+    var ps=await sb.from('partners').select('id,display_name').limit(1000);
+    partnersById={}; (ps.data||[]).forEach(function(p){ partnersById[p.id]=p; });
+    var ss=await sb.from('sites').select('id,business_name,owner_user_id,servicing_partner_id,status').limit(2000);
+    var arr=ss.data||[]; sitesById={}; arr.forEach(function(s){ sitesById[s.id]=s; });
+    mySites=arr.filter(function(s){ return s.owner_user_id===me.uid; });
+  }
+
+  /* ---------- CONVERSATIONS ---------- */
+  function convLabel(c){
+    if(me.role==='client') return c.kind==='partner_client' ? 'My provider' : 'LeadPages support';
+    if(me.role==='partner'){
+      if(c.kind==='partner_lp') return 'LeadPages support';
+      var s=sitesById[c.client_site_id]; return 'Client: '+((s&&s.business_name)||'Client');
+    }
+    if(c.kind==='partner_lp'){ var p=partnersById[c.partner_id]; return 'Partner: '+((p&&p.display_name)||'Partner'); }
+    var s2=sitesById[c.client_site_id]; return 'Client: '+((s2&&s2.business_name)||'Client');
+  }
+  function convKindText(c){
+    if(c.kind==='partner_lp') return 'Partner ↔ LeadPages';
+    if(c.kind==='partner_client') return 'Provider ↔ client';
+    return 'Client support';
+  }
+  function isUnread(c){
+    var lr=reads[c.id]; if(!lr) return true;
+    return new Date(c.last_message_at) > new Date(lr);
+  }
+  async function loadConvos(){
+    var r=await sb.from('conversations').select('*').order('last_message_at',{ascending:false});
+    if(r.error){ $('convs').innerHTML='<div class="empty" style="padding:24px">Could not load messages.<br><span style="font-size:12px">'+esc(r.error.message)+'</span></div>'; return; }
+    convos=r.data||[];
+    var rd=await sb.from('conversation_reads').select('conversation_id,last_read_at').eq('user_id',me.uid);
+    reads={}; (rd.data||[]).forEach(function(x){ reads[x.conversation_id]=x.last_read_at; });
+    renderConvos();
+  }
+  function renderConvos(){
+    var box=$('convs');
+    if(!convos.length){ box.innerHTML='<div class="empty" style="padding:26px">No conversations yet.<br>Tap <strong>New</strong> to start one.</div>'; return; }
+    box.innerHTML=convos.map(function(c){
+      return '<div class="conv'+(c.id===activeId?' on':'')+(isUnread(c)?' unread':'')+'" data-id="'+c.id+'">'
+        +'<div class="ci"><div class="nm">'+esc(convLabel(c))+'</div>'
+        +'<div class="kind">'+convKindText(c)+'</div>'
+        +'<div class="pre">'+fmt(c.last_message_at)+'</div></div><span class="dot"></span></div>';
+    }).join('');
+  }
+
+  /* ---------- THREAD ---------- */
+  async function selectConv(id){
+    activeId=id; renderConvos();
+    var c=convos.find(function(x){return x.id===id;}); if(!c) return;
+    $('thread-empty').classList.add('hidden'); $('thread-on').classList.remove('hidden');
+    $('t-title').textContent=convLabel(c); $('t-sub').textContent=convKindText(c);
+    if(window.matchMedia('(max-width:760px)').matches){ $('listpane').classList.add('collapsed'); $('back-btn').classList.remove('hidden'); }
+    await loadMsgs(id);
+    await markRead(id);
+    startPoll(id);
+  }
+  async function loadMsgs(id){
+    var r=await sb.from('messages').select('*').eq('conversation_id',id).order('created_at',{ascending:true});
+    activeMsgs=(r.data||[]); renderMsgs();
+  }
+  function senderLabel(m){
+    if(m.sender_id===me.uid) return 'You';
+    if(m.sender_role==='super') return 'LeadPages';
+    if(m.sender_role==='partner') return (me.role==='client')?'Your provider':'Partner';
+    if(m.sender_role==='client') return 'Client';
+    return 'Them';
+  }
+  function renderMsgs(){
+    var box=$('bubbles');
+    if(!activeMsgs.length){ box.innerHTML='<div class="empty">No messages yet — say hello.</div>'; return; }
+    box.innerHTML=activeMsgs.map(function(m){
+      var mine=m.sender_id===me.uid;
+      return '<div class="b '+(mine?'me':'them')+'"><div class="meta">'+esc(senderLabel(m))+' · '+fmt(m.created_at)+'</div>'
+        +'<div class="bub">'+esc(m.body)+'</div></div>';
+    }).join('');
+    box.scrollTop=box.scrollHeight;
+  }
+  async function markRead(id){
+    await sb.from('conversation_reads').upsert({ conversation_id:id, user_id:me.uid, last_read_at:new Date().toISOString() }, { onConflict:'conversation_id,user_id' });
+    reads[id]=new Date().toISOString(); renderConvos();
+  }
+  async function sendMsg(){
+    var t=($('composer-text').value||'').trim(); if(!t || !activeId) return;
+    var btn=$('send-btn'); btn.disabled=true;
+    var r=await sb.from('messages').insert({ conversation_id:activeId, sender_id:me.uid, sender_role:me.role, body:t }).select('*').single();
+    btn.disabled=false;
+    if(r.error){ alert('Could not send: '+r.error.message); return; }
+    $('composer-text').value=''; $('composer-text').style.height='auto';
+    activeMsgs.push(r.data); renderMsgs();
+    await markRead(activeId);
+    await loadConvos(); renderConvos();
+  }
+  function startPoll(id){
+    stopPoll();
+    poll=setInterval(async function(){
+      if(activeId!==id) return;
+      var before=activeMsgs.length;
+      await loadMsgs(id);
+      if(activeMsgs.length!==before){ await markRead(id); }
+    }, 8000);
+  }
+  function stopPoll(){ if(poll){ clearInterval(poll); poll=null; } }
+
+  /* ---------- NEW CONVERSATION ---------- */
+  function openNewBox(){
+    var box=$('newbox'); box.classList.toggle('hidden');
+    if(box.classList.contains('hidden')) return;
+    var html='<h3>Start a conversation</h3>';
+    if(me.role==='client'){
+      var site=mySites[0];
+      if(site && site.servicing_partner_id) html+='<div class="opt"><button class="btn btn-sm" data-new="provider" style="width:100%">Message my provider</button></div>';
+      html+='<div class="opt"><button class="btn btn-sm" data-new="support" style="width:100%">Contact LeadPages support</button></div>';
+      if(!site) html='<h3>Start a conversation</h3><p style="font-size:13px;color:var(--ink-faint);margin:0">No site is linked to your account yet. Please contact your provider directly.</p>';
+    } else if(me.role==='partner'){
+      html+='<div class="opt"><button class="btn btn-sm" data-new="lp" style="width:100%">Message LeadPages</button></div>';
+      var clients=Object.keys(sitesById).map(function(k){return sitesById[k];}).filter(function(s){ return s.servicing_partner_id===me.partnerId && s.owner_user_id; });
+      if(clients.length){
+        html+='<div class="opt"><label style="font-size:12px;color:var(--ink-soft);font-weight:600">Message a client</label>'
+          +'<select id="new-client"><option value="">Choose a client…</option>'
+          +clients.map(function(s){ return '<option value="'+s.id+'">'+esc(s.business_name||'Client')+'</option>'; }).join('')+'</select></div>';
+      } else {
+        html+='<p style="font-size:12.5px;color:var(--ink-faint);margin:4px 0 0">Clients appear here once they have an account on their site.</p>';
+      }
+    } else { // super
+      var aps=Object.keys(partnersById).map(function(k){return partnersById[k];});
+      html+='<div class="opt"><label style="font-size:12px;color:var(--ink-soft);font-weight:600">Message a partner</label>'
+        +'<select id="new-partner"><option value="">Choose a partner…</option>'
+        +aps.map(function(p){ return '<option value="'+p.id+'">'+esc(p.display_name||'Partner')+'</option>'; }).join('')+'</select></div>';
+      var cs=Object.keys(sitesById).map(function(k){return sitesById[k];}).filter(function(s){ return s.owner_user_id; });
+      html+='<div class="opt"><label style="font-size:12px;color:var(--ink-soft);font-weight:600">Message a client</label>'
+        +'<select id="new-superclient"><option value="">Choose a client…</option>'
+        +cs.map(function(s){ return '<option value="'+s.id+'">'+esc(s.business_name||'Client')+'</option>'; }).join('')+'</select></div>';
+    }
+    box.innerHTML=html;
+  }
+  async function findOrCreate(kind, match, insertRow){
+    var qy=sb.from('conversations').select('*').eq('kind',kind);
+    Object.keys(match).forEach(function(k){ qy=qy.eq(k,match[k]); });
+    var ex=await qy.limit(1);
+    if(ex.data && ex.data.length) return ex.data[0];
+    var ins=await sb.from('conversations').insert(Object.assign({kind:kind,created_by:me.uid},insertRow)).select('*').single();
+    if(ins.error){ alert('Could not start conversation: '+ins.error.message); return null; }
+    return ins.data;
+  }
+  async function startConv(conv){
+    if(!conv) return;
+    $('newbox').classList.add('hidden');
+    if(!convos.find(function(x){return x.id===conv.id;})) convos.unshift(conv);
+    renderConvos(); selectConv(conv.id);
+  }
+  function wireNew(){
+    $('new-btn').addEventListener('click', openNewBox);
+    $('newbox').addEventListener('click', async function(e){
+      var b=e.target.closest('[data-new]'); if(!b) return;
+      var kind=b.getAttribute('data-new');
+      if(kind==='support'){ var site=mySites[0]; startConv(await findOrCreate('client_support',{client_user_id:me.uid},{client_user_id:me.uid,client_site_id:site?site.id:null})); }
+      if(kind==='provider'){ var s=mySites[0]; if(s&&s.servicing_partner_id) startConv(await findOrCreate('partner_client',{partner_id:s.servicing_partner_id,client_site_id:s.id},{partner_id:s.servicing_partner_id,client_site_id:s.id,client_user_id:me.uid})); }
+      if(kind==='lp'){ startConv(await findOrCreate('partner_lp',{partner_id:me.partnerId},{partner_id:me.partnerId})); }
+    });
+    $('newbox').addEventListener('change', async function(e){
+      if(e.target.id==='new-client'){ var sid=e.target.value; if(!sid) return; var s=sitesById[sid];
+        startConv(await findOrCreate('partner_client',{partner_id:me.partnerId,client_site_id:sid},{partner_id:me.partnerId,client_site_id:sid,client_user_id:s.owner_user_id})); }
+      if(e.target.id==='new-partner'){ var pid=e.target.value; if(!pid) return;
+        startConv(await findOrCreate('partner_lp',{partner_id:pid},{partner_id:pid})); }
+      if(e.target.id==='new-superclient'){ var sid2=e.target.value; if(!sid2) return; var s2=sitesById[sid2];
+        startConv(await findOrCreate('client_support',{client_user_id:s2.owner_user_id},{client_user_id:s2.owner_user_id,client_site_id:sid2})); }
+    });
+  }
+
+  /* ---------- WIRING ---------- */
+  function wireApp(){
+    $('convs').addEventListener('click', function(e){ var c=e.target.closest('.conv'); if(c) selectConv(c.getAttribute('data-id')); });
+    $('send-btn').addEventListener('click', sendMsg);
+    $('composer-text').addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } });
+    $('composer-text').addEventListener('input', function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,140)+'px'; });
+    $('refresh-btn').addEventListener('click', function(){ if(activeId) loadMsgs(activeId); });
+    $('back-btn').addEventListener('click', function(){ $('listpane').classList.remove('collapsed'); stopPoll(); activeId=null; renderConvos(); $('thread-on').classList.add('hidden'); $('thread-empty').classList.remove('hidden'); });
+  }
+
+  /* ---------- INIT ---------- */
+  async function init(session){
+    await detectRole(session.user.id);
+    var label = me.role==='super'?'LeadPages admin':(me.role==='partner'?(me.name||'Partner'):'Client');
+    $('who').innerHTML='<span>'+esc(label)+'</span><a href="#" id="signout">Sign out</a>';
+    $('signout').addEventListener('click', async function(e){ e.preventDefault(); stopPoll(); await sb.auth.signOut(); location.reload(); });
+    show('view-app');
+    await loadLookups();
+    await loadConvos();
+  }
+
+  async function boot(){
+    wireLogin(); wireApp(); wireNew();
+    var session=(await sb.auth.getSession()).data.session;
+    if(session){ init(session); } else { show('view-login'); }
+    sb.auth.onAuthStateChange(function(_evt, sess){ if(sess && !me.uid) init(sess); });
+  }
+  boot();
+</script>
+</body>
+</html>

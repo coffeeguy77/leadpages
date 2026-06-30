@@ -145,6 +145,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       <div class="pstat"><span class="statusbadge s-active" id="d-status">Active</span></div>
       <nav class="nav" id="nav">
         <button data-p="overview" class="on">📊 Overview</button>
+        <button id="messages-link">💬 Messages</button>
         <button data-p="clients">📇 My Clients</button>
         <button data-p="add">➕ Add Customer</button>
         <button data-p="demos">🎨 Demos &amp; themes</button>
@@ -490,6 +491,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     document.querySelectorAll('.panel').forEach(function(s){ s.classList.toggle('on', s.getAttribute('data-panel')===p); });
   });
   var __hl=document.getElementById('help-link'); if(__hl) __hl.onclick=function(){ window.open('/help','_blank','noopener'); };
+  var __ml=document.getElementById('messages-link'); if(__ml) __ml.onclick=function(){ window.open('/messages','_blank','noopener'); };
 
   // ---- profile save (RLS lets a partner update their own profile) ----
   document.getElementById('save-profile').addEventListener('click', async function(){

@@ -39,6 +39,10 @@
       "destination": "/help.html"
     },
     {
+      "source": "/messages",
+      "destination": "/messages.html"
+    },
+    {
       "source": "/",
       "has": [
         {
