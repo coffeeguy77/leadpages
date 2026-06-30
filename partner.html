@@ -258,6 +258,11 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
               <span id="sc-slug-msg" style="font-size:13px;font-weight:600"></span>
             </div>
           </div>
+          <div class="field">
+            <label for="sc-domain">Your own domain (optional)</label>
+            <input id="sc-domain" type="text" placeholder="e.g. yourstudio.com.au">
+            <div class="muted" style="font-size:12.5px;margin-top:6px">Already own a domain? Point it here and it loads your page too. After saving, add a CNAME record at your registrar pointing to <strong>cname.vercel-dns.com</strong>, then let us know so we can connect it. Your <strong>leadpages.com.au/your-name</strong> address keeps working either way.</div>
+          </div>
           <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin-bottom:14px"><input type="checkbox" id="sc-enabled" style="width:auto"> Make my page live</label>
           <div class="row2">
             <div class="field"><label for="sc-headline">Headline</label><input id="sc-headline" type="text" placeholder="e.g. Canberra websites that get you booked"></div>
@@ -644,7 +649,8 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     document.getElementById('sc-save').addEventListener('click', async function(){
       var err=document.getElementById('sc-err'); err.classList.add('hidden');
       var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var btn=this; btn.disabled=true;
-      var patch={ showcase_slug:slug||null, showcase_enabled:document.getElementById('sc-enabled').checked, showcase_protected:false, showcase_password:null, showcase_headline:(document.getElementById('sc-headline').value||'').trim()||null, showcase_config:{ logo:scLogo||null, intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:(document.getElementById('sc-accent').value||'').trim()||null }, updated_at:new Date().toISOString() };
+      var dom=(document.getElementById('sc-domain').value||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/\s+/g,'');
+      var patch={ showcase_slug:slug||null, showcase_domain:dom||null, showcase_enabled:document.getElementById('sc-enabled').checked, showcase_protected:false, showcase_password:null, showcase_headline:(document.getElementById('sc-headline').value||'').trim()||null, showcase_config:{ logo:scLogo||null, intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:(document.getElementById('sc-accent').value||'').trim()||null }, updated_at:new Date().toISOString() };
       var r=await sb.from('partner_profiles').update(patch).eq('partner_id',state.partner.id).select('*'); btn.disabled=false;
       if(r.error){ err.textContent=(/duplicate|unique/i.test(r.error.message)?'That address is already taken \u2014 pick another.':('Could not save: '+r.error.message)); err.classList.remove('hidden'); return; }
       if(!r.data||!r.data.length){ err.textContent='Could not save (no permission).'; err.classList.remove('hidden'); return; }
@@ -837,7 +843,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
   }
   function loadMyPage(){
     var pf=state.profile||{}; var cfg=pf.showcase_config||{}; var g=function(id){return document.getElementById(id);};
-    g('sc-slug').value=pf.showcase_slug||''; g('sc-enabled').checked=!!pf.showcase_enabled;
+    g('sc-slug').value=pf.showcase_slug||''; g('sc-domain').value=pf.showcase_domain||''; g('sc-enabled').checked=!!pf.showcase_enabled;
     g('sc-headline').value=pf.showcase_headline||''; g('sc-accent').value=cfg.accent||''; g('sc-intro').value=cfg.intro||'';
     scLogo=cfg.logo||''; if(scLogo){ g('sc-logo-prev').src=scLogo; g('sc-logo-prev').style.display=''; g('sc-logo-clear').style.display=''; }
     updateScLink();
