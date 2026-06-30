@@ -414,6 +414,89 @@ async function renderShowcaseByDomain(req, res, host) {
   } catch (e) { console.error('showcase domain error:', e); return notFound(res); }
 }
 
+// ---- Client self-signup buy bar (shown on a partner's priced demo previews) ----
+async function buyPlans(site) {
+  let plans = [];
+  try {
+    const pr = await supabase.from('billing_plans').select('key,name,monthly_amount').eq('active', true).order('sort', { ascending: true });
+    plans = pr.data || [];
+  } catch (e) { plans = []; }
+  let def = site.plan_key || '';
+  if (!def) {
+    const pid = site.servicing_partner_id || site.referring_partner_id;
+    if (pid) { try { const pp = await supabase.from('partner_profiles').select('default_plan_key').eq('partner_id', pid).maybeSingle(); def = (pp.data && pp.data.default_plan_key) || ''; } catch (e) {} }
+  }
+  if (!def && plans[0]) def = plans[0].key;
+  return { plans: plans, def: def };
+}
+
+function buyBarHtml(site, plans, def) {
+  const sp = Math.round(site.sale_price || 0);
+  const dollars = (sp / 100).toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  const defPlan = plans.find(function (p) { return p.key === def; }) || plans[0] || null;
+  const moTxt = defPlan ? (' + $' + Math.round((defPlan.monthly_amount || 0) / 100) + '/mo hosting') : '';
+  const opts = plans.map(function (p) { return '<option value="' + esc(p.key) + '"' + (p.key === def ? ' selected' : '') + '>' + esc(p.name) + ' \u2014 $' + Math.round((p.monthly_amount || 0) / 100) + '/mo</option>'; }).join('');
+  const biz = esc(site.business_name || 'this site');
+  const sid = esc(site.id);
+  return '' +
+'<div id="lpbuy-bar" role="region" aria-label="Get this website"><div class="lpbuy-bar-in">' +
+  '<div class="lpbuy-bar-txt"><strong>Like this site?</strong> Make it yours &mdash; <b>$' + dollars + '</b> once' + moTxt + '.</div>' +
+  '<button id="lpbuy-open" class="lpbuy-cta">Get this website</button>' +
+'</div></div>' +
+'<div id="lpbuy-modal" role="dialog" aria-modal="true" aria-label="Get this website"><div class="lpbuy-card">' +
+  '<button id="lpbuy-close" class="lpbuy-x" aria-label="Close">&times;</button>' +
+  '<h2 class="lpbuy-h">Get ' + biz + ' live</h2>' +
+  '<p class="lpbuy-sub">Your site is built and ready. Pay once and it goes live on your hosting plan &mdash; you can change the plan anytime.</p>' +
+  '<div class="lpbuy-row"><span>One-off build</span><b>$' + dollars + '</b></div>' +
+  '<label class="lpbuy-lbl">Your email<input id="lpbuy-email" type="email" autocomplete="email" placeholder="you@business.com.au"></label>' +
+  '<label class="lpbuy-lbl">Hosting plan<select id="lpbuy-plan">' + opts + '</select></label>' +
+  '<button id="lpbuy-go" class="lpbuy-cta lpbuy-go">Continue to secure payment</button>' +
+  '<div id="lpbuy-msg" class="lpbuy-msg"></div>' +
+  '<div class="lpbuy-fine">Secure checkout by Stripe. We&rsquo;ll email you a sign-in link to manage your site.</div>' +
+'</div></div>' +
+'<style>' +
+'#lpbuy-bar{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;background:#0e1116;color:#fff;box-shadow:0 -8px 30px rgba(0,0,0,.25);font-family:Inter,system-ui,sans-serif}' +
+'.lpbuy-bar-in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:16px;justify-content:space-between;padding:13px 18px;flex-wrap:wrap}' +
+'.lpbuy-bar-txt{font-size:15px;line-height:1.35}.lpbuy-bar-txt b{color:#ff8a3d}' +
+'.lpbuy-cta{background:#ff6a1a;color:#fff;border:0;border-radius:10px;padding:12px 20px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}' +
+'.lpbuy-cta:hover{background:#ff7e36}' +
+'#lpbuy-modal{display:none;position:fixed;inset:0;z-index:2147483001;background:rgba(8,10,14,.6);align-items:center;justify-content:center;padding:18px;font-family:Inter,system-ui,sans-serif}' +
+'.lpbuy-card{background:#fff;color:#111;border-radius:16px;max-width:420px;width:100%;padding:26px 24px;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.4)}' +
+'.lpbuy-x{position:absolute;top:12px;right:14px;background:none;border:0;font-size:26px;line-height:1;color:#888;cursor:pointer}' +
+'.lpbuy-h{font-family:Archivo,Inter,sans-serif;font-size:22px;margin:0 0 6px}' +
+'.lpbuy-sub{font-size:13.5px;color:#555;margin:0 0 16px;line-height:1.5}' +
+'.lpbuy-row{display:flex;justify-content:space-between;align-items:center;background:#f5f6f8;border-radius:10px;padding:11px 14px;font-size:14px;margin-bottom:14px}.lpbuy-row b{font-size:17px}' +
+'.lpbuy-lbl{display:block;font-size:12.5px;font-weight:600;color:#333;margin-bottom:12px}' +
+'.lpbuy-lbl input,.lpbuy-lbl select{display:block;width:100%;margin-top:5px;padding:11px 12px;border:1px solid #d6d9e0;border-radius:9px;font-size:15px;font-family:inherit;box-sizing:border-box}' +
+'.lpbuy-go{width:100%;margin-top:4px}' +
+'.lpbuy-msg{font-size:13px;color:#c0392b;margin-top:10px;min-height:18px;text-align:center}' +
+'.lpbuy-fine{font-size:11.5px;color:#999;margin-top:12px;text-align:center;line-height:1.5}' +
+'@media(max-width:560px){.lpbuy-bar-in{justify-content:center;text-align:center}.lpbuy-cta{width:100%}}' +
+'</style>' +
+'<script>(function(){' +
+'var M=document.getElementById("lpbuy-modal"),O=document.getElementById("lpbuy-open"),X=document.getElementById("lpbuy-close"),G=document.getElementById("lpbuy-go"),E=document.getElementById("lpbuy-email"),P=document.getElementById("lpbuy-plan"),S=document.getElementById("lpbuy-msg");' +
+'if(O)O.onclick=function(){M.style.display="flex";setTimeout(function(){E&&E.focus();},50);};' +
+'if(X)X.onclick=function(){M.style.display="none";};' +
+'if(M)M.onclick=function(e){if(e.target===M)M.style.display="none";};' +
+'if(G)G.onclick=async function(){' +
+'var em=(E.value||"").trim();' +
+'if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(em)){S.style.color="#c0392b";S.textContent="Please enter a valid email address.";return;}' +
+'G.disabled=true;S.style.color="#555";S.textContent="Setting up secure checkout...";' +
+'try{' +
+'var r=await fetch("/api/partner/buy-site",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({siteId:"' + sid + '",planKey:P.value,email:em})});' +
+'var j=await r.json().catch(function(){return {};});' +
+'if(j&&j.url){window.location=j.url;return;}' +
+'S.style.color="#c0392b";S.textContent=(j&&j.error)||"Could not start checkout. Please try again.";G.disabled=false;' +
+'}catch(err){S.style.color="#c0392b";S.textContent="Network error - please try again.";G.disabled=false;}' +
+'};' +
+'})();</script>';
+}
+
+function injectBuyBar(html, bar) {
+  if (!bar) return html;
+  return html.indexOf('</body>') !== -1 ? html.replace('</body>', bar + '</body>') : (html + bar);
+}
+
 module.exports = async (req, res) => {
   try {
     const rawHost = (req.headers.host || '').toLowerCase();
@@ -577,6 +660,11 @@ module.exports = async (req, res) => {
       '{{pageDesc}}':     esc(pageDesc)
     };
     for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
+
+    // Self-signup buy bar: only on an unsold, priced demo that belongs to a partner.
+    if (site.is_mockup && Number(site.sale_price) > 0 && (site.servicing_partner_id || site.referring_partner_id)) {
+      try { const _bp = await buyPlans(site); html = injectBuyBar(html, buyBarHtml(site, _bp.plans, _bp.def)); } catch (e) { console.error('buy bar error:', e && e.message); }
+    }
 
     return sendHtml(res, html, isLive);
   } catch (e) {
