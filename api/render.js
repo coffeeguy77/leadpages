@@ -396,12 +396,13 @@ async function renderShowcase(req, res, slug, base) {
     // Builder-editable homepage (a trade site flagged is_partner_home).
     const home = (await supabase.from('sites')
       .select('*').eq('servicing_partner_id', prof.partner_id).eq('is_partner_home', true).maybeSingle()).data;
-    const isPreview = !!(req.query && req.query.preview);
-    if (home && (home.status === 'live' || isPreview)) {
-      return sendHtml(res, buildAgencyHtml(home, req.headers.host || '', demos, base), home.status === 'live');
+    if (home) {
+      // The partner's My-page "Make live" toggle (showcase_enabled, checked above) is the
+      // gate — no separate publish step in the builder is needed.
+      return sendHtml(res, buildAgencyHtml(home, req.headers.host || '', demos, base), true);
     }
 
-    // Fallback: the generated showcase page (until the home site is designed + published).
+    // No home site yet: a simple generated starter until they design one.
     res.setHeader('content-type', 'text/html; charset=utf-8');
     res.setHeader('cache-control', 'public, s-maxage=30, stale-while-revalidate=120');
     return res.status(200).send(showcaseHtml(prof, partner, demos, base));
@@ -438,13 +439,17 @@ module.exports = async (req, res) => {
       if (slug && !page) page = slug;
     } else if (slug) {
       ({ data: site, error } = await supabase
-        .from('sites').select('*').eq('slug', slug).single());
+        .from('sites').select('*').eq('slug', slug).maybeSingle());
     } else {
       ({ data: site, error } = await supabase
         .from('sites').select('*').eq('custom_domain', host).maybeSingle());
     }
 
-    if (error || !site) return notFound(res);
+    if (error || !site) {
+      // Path-based partner showcase: leadpages.com.au/<showcase-slug>
+      if (slug && !isCustom) return renderShowcase(req, res, slug, host);
+      return notFound(res);
+    }
     const isPreview = !!(req.query && req.query.preview);
     const isLive = site.status === 'live';
     // Non-live sites (e.g. partner drafts) are hidden from the public: a clean URL
