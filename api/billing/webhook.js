@@ -72,7 +72,7 @@ async function siteForInvoice(inv) {
 }
 
 async function createCommission(o) {
-  const commission = Math.round(o.gross * o.rate);
+  const commission = (o.commissionOverride != null) ? Math.round(o.commissionOverride) : Math.round(o.gross * o.rate);
   if (commission <= 0) return;
   // dedupe (the unique indexes are the hard backstop)
   if (o.type === 'build') {
@@ -99,6 +99,44 @@ async function partnerIsActive(pid) {
   const r = await sb.from('partners').select('status').eq('id', pid).maybeSingle();
   return !!(r.data && r.data.status === 'active');
 }
+// Partner's build/sale share: LeadPages keeps max($750, half); the partner gets
+// the rest, less a flat 10% if the partner is NOT registered for GST.
+function lpSplitCents(price, gstReg) {
+  const p = Math.max(0, Math.round(price || 0));
+  let lp = Math.max(75000, Math.floor(p / 2)); if (lp > p) lp = p;
+  let partner = p - lp;
+  if (!gstReg) partner = partner - Math.round(partner * 0.10);
+  return partner < 0 ? 0 : partner;
+}
+async function partnerGst(pid) {
+  if (!pid) return false;
+  const r = await sb.from('partner_profiles').select('gst_registered').eq('partner_id', pid).maybeSingle();
+  return !!(r.data && r.data.gst_registered);
+}
+// Find or create the Supabase auth user for a buyer's email (service role), so a
+// self-signup client can magic-link in to manage the site they just bought.
+async function ensureAuthUser(email) {
+  email = String(email || '').trim().toLowerCase(); if (!email) return null;
+  const base = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const h = { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' };
+  try {
+    const r = await fetch(base + '/auth/v1/admin/users', { method: 'POST', headers: h, body: JSON.stringify({ email: email, email_confirm: true }) });
+    const j = await r.json().catch(() => ({}));
+    if (r.ok && j && j.id) return j.id;
+  } catch (e) {}
+  // Already registered — page through and match by email.
+  for (let page = 1; page <= 5; page++) {
+    try {
+      const lr = await fetch(base + '/auth/v1/admin/users?per_page=200&page=' + page, { headers: { apikey: key, Authorization: 'Bearer ' + key } });
+      const lj = await lr.json().catch(() => ({}));
+      const users = (lj && lj.users) || [];
+      const hit = users.find((u) => String(u.email || '').toLowerCase() === email);
+      if (hit) return hit.id;
+      if (users.length < 200) break;
+    } catch (e) { break; }
+  }
+  return null;
+}
 async function accrueCommissions(inv) {
   const site = await siteForInvoice(inv);
   if (!site) return;
@@ -110,9 +148,15 @@ async function accrueCommissions(inv) {
     if (recurring) { recurGross += amt; if (l.period) { if (recurPS == null) recurPS = l.period.start; recurPE = l.period.end || recurPE; } }
     else buildGross += amt;
   }
-  // BUILD (50%) follows lead ATTRIBUTION — always the partner who generated the client.
+  // BUILD/SALE follows lead ATTRIBUTION — the partner who generated the client.
+  // Their share is the lpSplit of the one-off sale (NOT a flat 50%): LeadPages
+  // keeps max($750, half); the partner gets the rest, less 10% if not GST-registered.
+  // (Deduped by site+type, so booking here OR at checkout completion is safe.)
   if (buildGross > 0 && site.referring_partner_id) {
-    await createCommission({ partnerId: site.referring_partner_id, siteId: site.id, type: 'build', rate: BUILD_RATE, gross: buildGross, periodStart: toISO(inv.created), invoiceId: inv.id, partnerActive: await partnerIsActive(site.referring_partner_id) });
+    const gstReg = await partnerGst(site.referring_partner_id);
+    const partnerShare = lpSplitCents(buildGross, gstReg);
+    const effRate = buildGross > 0 ? Number((partnerShare / buildGross).toFixed(4)) : 0;
+    await createCommission({ partnerId: site.referring_partner_id, siteId: site.id, type: 'build', rate: effRate, gross: buildGross, commissionOverride: partnerShare, periodStart: toISO(inv.created), invoiceId: inv.id, partnerActive: await partnerIsActive(site.referring_partner_id) });
   }
   // RECURRING (20%) follows commission ELIGIBILITY — the current earner, and only
   // while recurring is switched on for this client (transfers can redirect or stop it).
@@ -140,6 +184,45 @@ module.exports = async (req, res) => {
         const customerId = obj.customer;
         const subId = obj.subscription;
         const md = obj.metadata || {};
+        // --- Client self-signup: a demo was purchased from its preview ---
+        if (md.purchase === 'site' && md.site_id) {
+          const email = (obj.customer_details && obj.customer_details.email) || obj.customer_email || md.email || null;
+          const buyerId = email ? await ensureAuthUser(email) : null;
+          const cur = (await sb.from('sites').select('servicing_partner_id, referring_partner_id, commission_partner_id').eq('id', md.site_id).maybeSingle()).data || {};
+          const partnerId = md.partner_id || cur.referring_partner_id || cur.servicing_partner_id || null;
+          let monthly = null;
+          if (md.plan_key) { const pl = (await sb.from('billing_plans').select('monthly_amount').eq('key', md.plan_key).maybeSingle()).data; monthly = pl ? pl.monthly_amount : null; }
+          let itemId = null;
+          try { const subFull = await stripe('subscriptions/' + subId, 'GET'); itemId = subFull.items && subFull.items.data && subFull.items.data[0] && subFull.items.data[0].id; } catch (e) {}
+          const patch = {
+            is_mockup: false, show_on_showcase: false, status: 'live',
+            billing_status: 'active', setup_paid: true,
+            plan_key: md.plan_key || undefined, monthly_amount: (monthly != null ? monthly : undefined),
+            stripe_item_id: itemId || undefined, suspended_at: null, delete_flagged_at: null,
+            servicing_status: 'partner_serviced', recurring_commission_active: true,
+            updated_at: new Date().toISOString(),
+          };
+          if (email) patch.owner_email = email;
+          if (buyerId) patch.owner_user_id = buyerId;
+          if (partnerId) { patch.referring_partner_id = partnerId; patch.servicing_partner_id = cur.servicing_partner_id || partnerId; patch.commission_partner_id = cur.commission_partner_id || partnerId; }
+          await sb.from('sites').update(patch).eq('id', md.site_id);
+          if (buyerId) {
+            await sb.from('billing_customers').upsert({
+              owner_user_id: buyerId, stripe_customer_id: customerId, stripe_subscription_id: subId,
+              status: 'active', updated_at: new Date().toISOString(),
+            }, { onConflict: 'owner_user_id' });
+          }
+          // Book the partner's sale commission now (authoritative attribution +
+          // timing). Deduped by site+type so the invoice path won't double it.
+          const salePrice = Math.round(Number(md.sale_price) || 0);
+          if (partnerId && salePrice > 0) {
+            const gstReg = await partnerGst(partnerId);
+            const share = lpSplitCents(salePrice, gstReg);
+            const effRate = salePrice > 0 ? Number((share / salePrice).toFixed(4)) : 0;
+            await createCommission({ partnerId: partnerId, siteId: md.site_id, type: 'build', rate: effRate, gross: salePrice, commissionOverride: share, periodStart: new Date().toISOString(), invoiceId: obj.invoice || null, partnerActive: await partnerIsActive(partnerId) });
+          }
+          break; // sale handled
+        }
         const ownerId = md.owner_user_id || (await ownerForCustomer(customerId));
         if (ownerId) {
           await sb.from('billing_customers').upsert({
