@@ -528,8 +528,19 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   }
   function renderClientsAdmin(){
     document.getElementById('cl-count').textContent=clientsAdmin.length?('\u00b7 '+clientsAdmin.length):'';
-    document.getElementById('clients-admin-list').innerHTML = clientsAdmin.length ? clientsAdmin.map(clientAdminCard).join('')
-      : '<div class="card empty">No clients have a partner yet. Clients added by partners appear here.</div>';
+    var host=document.getElementById('clients-admin-list');
+    if(!clientsAdmin.length){ host.innerHTML='<div class="card empty">No clients have a partner yet. Clients added by partners appear here.</div>'; return; }
+    var groups={};
+    clientsAdmin.forEach(function(c){ var k=c.servicing_partner_id||c.referring_partner_id||'__lp__'; (groups[k]=groups[k]||[]).push(c); });
+    var keys=Object.keys(groups).sort(function(a,b){ var la=(a==='__lp__'?'LeadPages direct':plabel(a)).toLowerCase(), lb=(b==='__lp__'?'LeadPages direct':plabel(b)).toLowerCase(); return la<lb?-1:(la>lb?1:0); });
+    host.innerHTML=keys.map(function(k){
+      var list=groups[k]; var nm=(k==='__lp__')?'LeadPages direct':plabel(k);
+      var liveN=list.filter(function(x){return x.status==='live';}).length;
+      return '<div style="margin:18px 0 8px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px">'
+        +'<div style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--ink)">'+esc(nm)+'</div>'
+        +'<span class="muted" style="font-size:13px">'+list.length+' site'+(list.length===1?'':'s')+' \u00b7 '+liveN+' live</span></div>'
+        +list.map(clientAdminCard).join('');
+    }).join('');
   }
   async function loadAdminClients(){
     var r=await sb.from('sites').select('id,business_name,slug,status,plan_key,monthly_amount,referring_partner_id,servicing_partner_id,commission_partner_id,recurring_commission_active,servicing_status,is_mockup,is_partner_home')

@@ -394,6 +394,8 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 /* account landing + top sign-out */
 #lp-signout-top{position:fixed;top:14px;right:18px;z-index:9500;font:600 12.5px var(--font-ui);color:var(--brand-deep);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;text-decoration:none;}
 #lp-signout-top:hover{background:var(--brand-tint);}
+#lp-partneradmin-top{position:fixed;top:14px;right:104px;z-index:9500;font:600 12.5px var(--font-ui);color:#fff;background:var(--brand);border:1px solid var(--brand);border-radius:999px;padding:6px 14px;cursor:pointer;text-decoration:none;}
+#lp-partneradmin-top:hover{background:var(--brand-deep);}
 #lp-landing{position:fixed;inset:0;background:var(--bg);z-index:9000;overflow:auto;padding:46px 20px;display:none;}
 #lp-landing.show{display:block;}
 .lpl-wrap{max-width:720px;margin:0 auto;}
@@ -413,6 +415,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 </head>
 <body>
 <a id="lp-signout-top" href="#">Sign out</a>
+<a id="lp-partneradmin-top" href="/partners-admin" style="display:none">Partner Admin</a>
 <div id="lp-landing"><div class="lpl-wrap">
   <p class="eyebrow">Control panel</p>
   <h1 style="margin:0 0 4px">Select an account</h1>
@@ -1521,6 +1524,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       if(prof && prof.is_super_admin) role='super';
     }catch(e){}
     currentRole=role;
+    var __pa=document.getElementById('lp-partneradmin-top'); if(__pa) __pa.style.display=(role==='super')?'':'none';
     await loadSitesFromDB();
     applyRoleGating();
     ensureSiteBar();
@@ -1528,7 +1532,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var __so=document.getElementById('lp-signout-top'); if(__so) __so.onclick=function(e){ e.preventDefault(); signOutLP(); };
   }
   async function loadSitesFromDB(){
-    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,custom_domain,owner_email,config,template,is_demo,is_favorite,is_partner_home').order('created_at',{ascending:true});
+    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,custom_domain,owner_email,config,template,is_demo,is_favorite,is_partner_home,referring_partner_id,servicing_partner_id').order('created_at',{ascending:true});
     if(error){ toast('Could not load site: '+error.message); return; }
     allSites = rows||[];
     if(!allSites.length){ toast('No site is assigned to this account yet.'); return; }
@@ -1556,7 +1560,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   function renderLanding(){
     var list=document.getElementById('lpl-list'); if(!list) return;
     var q=(LPL.q||'').toLowerCase();
-    var items=(allSites||[]).filter(function(s){ return lplGroup(s)===LPL.grp; })
+    var items=(allSites||[]).filter(function(s){ return !s.servicing_partner_id && !s.referring_partner_id && !s.is_partner_home; }).filter(function(s){ return lplGroup(s)===LPL.grp; })
       .filter(function(s){ return !q || (s.business_name||'').toLowerCase().indexOf(q)>=0 || (s.slug||'').toLowerCase().indexOf(q)>=0; })
       .sort(function(a,b){
         var fa=a.is_favorite?0:1, fb=b.is_favorite?0:1; if(fa!==fb) return fa-fb;
