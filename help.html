@@ -55,6 +55,26 @@ a{color:var(--brand)}
 .empty{text-align:center;color:var(--ink-faint);padding:46px 20px}
 .foot{max-width:920px;margin:30px auto;padding:18px 20px;color:var(--ink-faint);font-size:12.5px;border-top:1px solid var(--line)}
 @media(max-width:560px){ .hero h1{font-size:25px} }
+
+.assistant{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:18px 0 4px;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+.assistant .as-head{font-family:var(--font-display);font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px}
+.assistant .as-sub{color:var(--ink-faint);font-size:12.5px;margin:2px 0 0}
+.as-log{margin:12px 0 0;display:flex;flex-direction:column;gap:10px}
+.as-log:empty{display:none}
+.as-q,.as-a{max-width:92%;padding:10px 13px;border-radius:13px;font-size:14px;line-height:1.5;white-space:normal}
+.as-q{align-self:flex-end;background:var(--brand);color:#fff;border-top-right-radius:5px}
+.as-a{align-self:flex-start;background:var(--surface-2);border:1px solid var(--line);border-top-left-radius:5px}
+.as-a h3{font-family:var(--font-display);font-size:15px;margin:8px 0 4px;color:var(--ink)}
+.as-a h4{font-family:var(--font-display);font-size:14px;margin:8px 0 4px;color:var(--ink)}
+.as-a p{margin:6px 0}.as-a ul{margin:6px 0;padding-left:18px}.as-a li{margin:3px 0}
+.as-a code{background:#fff;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12.5px}
+.as-a.err{background:#fceeea;border-color:#f2ccc2;color:var(--bad)}
+.as-row{display:flex;gap:8px;margin-top:12px}
+.as-row input{flex:1;padding:11px 13px;border:1px solid var(--line-strong);border-radius:11px;font:inherit;font-size:14.5px}
+.as-row input:focus{outline:none;border-color:var(--brand)}
+.as-row button{appearance:none;border:0;background:var(--brand);color:#fff;border-radius:11px;padding:0 18px;font:inherit;font-weight:600;cursor:pointer}
+.as-row button:disabled{opacity:.6;cursor:default}
+.as-typing{align-self:flex-start;color:var(--ink-faint);font-size:13px;padding:4px 2px}
 </style>
 </head>
 <body>
@@ -69,6 +89,15 @@ a{color:var(--brand)}
   <input class="search" id="q" placeholder="Search the help centre…" autocomplete="off">
   <div class="chips" id="chips"></div>
   <div id="role-note"></div>
+  <div class="assistant" id="assistant">
+    <div class="as-head">💬 Ask the assistant</div>
+    <div class="as-sub">Get an instant answer drawn from the guides available to your account.</div>
+    <div class="as-log" id="as-log"></div>
+    <div class="as-row">
+      <input id="as-input" placeholder="e.g. How do I send a quote?" autocomplete="off">
+      <button id="as-send">Ask</button>
+    </div>
+  </div>
 </div>
 
 <div class="wrap"><div id="list"><div class="empty">Loading help…</div></div></div>
@@ -77,6 +106,7 @@ a{color:var(--brand)}
 <script>
   var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
   var articles=[], activeCat='__all__', query='';
+  var authToken=null, asHistory=[], asBusy=false;
 
   function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function inlineMd(t){
@@ -135,6 +165,7 @@ a{color:var(--brand)}
     var note=document.getElementById('role-note');
     try{
       var sess=(await sb.auth.getSession()).data.session;
+      authToken=sess&&sess.access_token||null;
       if(!sess){ note.innerHTML='<div class="note">You\u2019re viewing public help. Partners and admins \u2014 <a href="/partner">sign in</a> to see your full set of guides.</div>'; return; }
       note.innerHTML='<div class="note">Signed in \u2014 showing every guide available to your account.</div>';
     }catch(e){}
@@ -157,6 +188,26 @@ a{color:var(--brand)}
     var c=e.target.closest('.chip'); if(!c) return;
     activeCat=c.getAttribute('data-c'); renderChips(); render();
   });
+
+  // ---- Ask the assistant ----
+  function asAdd(cls, html){ var el=document.createElement('div'); el.className=cls; el.innerHTML=html; document.getElementById('as-log').appendChild(el); el.scrollIntoView({block:'nearest'}); return el; }
+  async function askAssistant(){
+    if(asBusy) return;
+    var inp=document.getElementById('as-input'); var q=(inp.value||'').trim(); if(!q) return;
+    inp.value=''; asBusy=true; document.getElementById('as-send').disabled=true;
+    asAdd('as-q', esc(q));
+    var typing=asAdd('as-typing','Thinking…');
+    try{
+      var r=await fetch('/api/assist',{ method:'POST', headers:{'content-type':'application/json', ...(authToken?{Authorization:'Bearer '+authToken}:{})}, body: JSON.stringify({ question:q, history:asHistory }) });
+      var data=await r.json();
+      typing.remove();
+      if(!data.ok){ asAdd('as-a err', esc(data.error||'Something went wrong.')); }
+      else { asAdd('as-a', mdLite(data.answer)); asHistory.push({role:'user',content:q}); asHistory.push({role:'assistant',content:data.answer}); if(asHistory.length>8) asHistory=asHistory.slice(-8); }
+    }catch(e){ typing.remove(); asAdd('as-a err','Could not reach the assistant. Please try again.'); }
+    asBusy=false; document.getElementById('as-send').disabled=false; inp.focus();
+  }
+  document.getElementById('as-send').addEventListener('click', askAssistant);
+  document.getElementById('as-input').addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); askAssistant(); } });
 
   detectRole(); load();
 </script>
