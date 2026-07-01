@@ -418,9 +418,10 @@ body.lp-cmd-on #lp-signout-top,body.lp-cmd-on #lp-partneradmin-top,body.lp-cmd-o
 .lpl-star.on{color:#e3a72b;}
 .lpl-name{font-weight:600;} .lpl-slug{color:var(--ink-faint);font-size:12px;}
 .lpl-edit{margin-left:auto;}
-body.lp-landing-on #lp-partneradmin-top{display:none !important;}
+body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{display:none !important;}
 .lpl-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-top:22px;}
-.lpl-seg{display:inline-flex;flex-wrap:wrap;gap:10px;border:0;border-radius:0;overflow:visible;margin:0 0 14px;}
+.lpl-toprow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;}
+.lpl-seg{display:inline-flex;flex-wrap:wrap;gap:10px;border:0;border-radius:0;overflow:visible;margin:0;}
 .lpl-seg button{appearance:none;border:1px solid var(--line);background:#fff;padding:9px 16px;font:600 13px var(--font-ui);color:var(--ink);cursor:pointer;border-radius:10px;display:inline-flex;align-items:center;}
 .lpl-seg button.on{border-color:var(--brand);color:var(--brand-deep);background:var(--brand-tint);}
 .lpl-seg-ct{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;margin-left:8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-soft);font-size:11.5px;font-weight:700;}
@@ -467,7 +468,7 @@ body.lp-landing-on #lp-partneradmin-top{display:none !important;}
   <h1 style="margin:0 0 4px">Site Switcher</h1>
   <p class="sub" style="margin:0 0 4px">Choose a customer, demo, or partner site to manage. You'll only edit a site after selecting it.</p>
   <div class="lpl-card">
-    <div class="lpl-seg" id="lpl-seg"><button data-grp="customer" class="on">Customer Sites <span class="lpl-seg-ct" id="lpl-ct-customer"></span></button><button data-grp="demo">Demo Sites <span class="lpl-seg-ct" id="lpl-ct-demo"></span></button><button data-grp="partner" id="lpl-seg-partner" style="display:none">Partner Sites <span class="lpl-seg-ct" id="lpl-ct-partner"></span></button></div>
+    <div class="lpl-toprow"><div class="lpl-seg" id="lpl-seg"><button data-grp="customer" class="on">Customer Sites <span class="lpl-seg-ct" id="lpl-ct-customer"></span></button><button data-grp="demo">Demo Sites <span class="lpl-seg-ct" id="lpl-ct-demo"></span></button><button data-grp="partner" id="lpl-seg-partner" style="display:none">Partner Sites <span class="lpl-seg-ct" id="lpl-ct-partner"></span></button></div><a href="#" id="lpl-signout" class="btn ghost">Sign Out</a></div>
     <input class="lpl-search" id="lpl-search" placeholder="Search by site name, slug, business name or domain...">
     <div class="lpl-listhead"><div><h2 id="lpl-listtitle">Customer Sites</h2><span class="lpl-countpill" id="lpl-listcount"></span></div><div class="lpl-sort">Sort by <select id="lpl-sort"><option value="updated">Last updated</option><option value="name">Name</option><option value="leads">Leads</option></select></div></div>
     <div id="lpl-list"></div>
@@ -1626,6 +1627,7 @@ body.lp-landing-on #lp-partneradmin-top{display:none !important;}
       var ls=document.getElementById('lpl-search'); if(ls) ls.oninput=function(){ LPL.q=ls.value; renderLanding(); };
       var so=document.getElementById('lpl-sort'); if(so){ so.value=LPL.sort||'updated'; so.onchange=function(){ LPL.sort=so.value; renderLanding(); }; }
       var hn=document.getElementById('lpl-help-new'); if(hn) hn.onclick=function(){ hideLanding(); openCreateSite(); };
+      var sob=document.getElementById('lpl-signout'); if(sob) sob.onclick=function(e){ e.preventDefault(); signOutLP(); };
     }
     if(!LPL.leadsTried){ LPL.leadsTried=true; (async function(){ try{ var r=await sb.from('leads').select('site_id'); if(r&&!r.error&&r.data){ var m={}; r.data.forEach(function(x){ if(x&&x.site_id){ m[x.site_id]=(m[x.site_id]||0)+1; } }); LPL.leads=m; renderLanding(); } }catch(_e){} })(); }
     renderLanding(); el.classList.add('show');
