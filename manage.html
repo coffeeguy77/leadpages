@@ -48,7 +48,7 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .ci-toggle{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;margin-left:auto;white-space:nowrap;}
 .ci-toggle input{width:15px;height:15px;}
 #svc-list.hide-inactive .svc-row[data-active="0"]{display:none;}
-#pc-row.hide-inactive [data-active="0"]{display:none !important;}
+.pcf.hide-inactive [data-active="0"]{display:none !important;}
 .svc-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
 .lead-item{padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--surface-2);}
 .li-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13.5px;font-weight:500;}
@@ -2027,7 +2027,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var _compChips=_byLabel(OPTIONAL_COMPONENTS.slice()).map(_secChip).join('');
     var _layKeys=Object.keys(LAYOUTS).filter(function(k){ return k!=='classic'; }).sort(function(a,b){ var la=LAYOUTS[a].name.toLowerCase(), lb=LAYOUTS[b].name.toLowerCase(); return la<lb?-1:(la>lb?1:0); });
     var _layChips=_layKeys.map(function(k){ var on=_presetOn(c,k); var canEdit=(k==='quote-first')||(k==='classic')||(_presetFeatures(k).length>0);
-      return '<span style="display:inline-flex;align-items:stretch;border:1px solid '+(on?'var(--brand,#1f7a63)':'var(--line)')+';border-radius:8px;overflow:hidden;">'
+      return '<span data-active="'+(on?'1':'0')+'" style="display:inline-flex;align-items:stretch;border:1px solid '+(on?'var(--brand,#1f7a63)':'var(--line)')+';border-radius:8px;overflow:hidden;">'
         +'<button type="button" class="lay-toggle" data-lay="'+k+'" style="border:0;background:'+(on?'var(--brand,#1f7a63)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+';padding:6px 13px;font:600 12.5px var(--font-ui);cursor:pointer;">'+(on?'\u2713 ':'')+esc(LAYOUTS[k].name)+'</button>'
         +(canEdit?'<button type="button" class="lay-edit" data-lay="'+k+'" style="border:0;border-left:1px solid '+(on?'rgba(255,255,255,.45)':'var(--line)')+';background:'+(on?'var(--brand,#1f7a63)':'#f4f5f7')+';color:'+(on?'#fff':'var(--ink-soft)')+';padding:6px 11px;font:600 12px var(--font-ui);cursor:pointer;">Edit</button>':'')
       +'</span>'; }).join('');
@@ -2036,13 +2036,13 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var _subHtml='<div class="card" style="margin:0;padding:14px 16px;">'
       + '<div class="svc-head" style="margin-bottom:4px;"><div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);">Page Content</div><label class="ci-toggle"><input type="checkbox" id="sec-hide-inactive"'+(secHideInactive?' checked':'')+'> Hide inactive</label></div>'
       + '<div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">Every section of the page. Switch one off to hide it, or press Edit to change its content.</div>'
-      + '<div id="pc-row" style="display:flex;flex-wrap:wrap;gap:8px;">'+_pcChips+'</div>'
-      + '<div style="margin-top:16px;padding-top:13px;border-top:1px solid var(--line);">'+ _hdr('Optional components','Off by default \u2014 switch on any you want to add.') + _row(_compChips) +'</div>'
-      + '<div style="margin-top:16px;padding-top:13px;border-top:1px solid var(--line);">'+ _hdr('Layout presets','Mix &amp; match \u2014 switch on any combination. Each shows its block on the page; press Edit to customise it.') + _row(_layChips) +'</div>'
+      + '<div id="pc-row" class="pcf" style="display:flex;flex-wrap:wrap;gap:8px;">'+_pcChips+'</div>'
+      + '<div class="pcf-sec" style="margin-top:16px;padding-top:13px;border-top:1px solid var(--line);">'+ _hdr('Optional components','Off by default \u2014 switch on any you want to add.') + '<div class="pcf" style="display:flex;flex-wrap:wrap;gap:8px;">'+_compChips+'</div>' +'</div>'
+      + '<div class="pcf-sec" style="margin-top:16px;padding-top:13px;border-top:1px solid var(--line);">'+ _hdr('Layout presets','Mix &amp; match \u2014 switch on any combination. Each shows its block on the page; press Edit to customise it.') + '<div class="pcf" style="display:flex;flex-wrap:wrap;gap:8px;">'+_layChips+'</div>' +'</div>'
       + '</div>';
     _subHtml+='<div id="lsub-body"></div>';
     box.innerHTML=_subHtml;
-    (function(){ var t=$('sec-hide-inactive'); if(t){ t.onchange=function(){ secHideInactive=t.checked; var r=$('pc-row'); if(r) r.classList.toggle('hide-inactive', secHideInactive); }; } var r=$('pc-row'); if(r) r.classList.toggle('hide-inactive', secHideInactive); })();
+    (function(){ function _apply(){ var on=secHideInactive; box.querySelectorAll('.pcf').forEach(function(r){ r.classList.toggle('hide-inactive', on); }); box.querySelectorAll('.pcf-sec').forEach(function(sec){ if(!on){ sec.style.display=''; return; } var has=sec.querySelector('.pcf [data-active="1"]'); sec.style.display=has?'':'none'; }); } var t=$('sec-hide-inactive'); if(t){ t.onchange=function(){ secHideInactive=t.checked; _apply(); }; } _apply(); })();
     box.querySelectorAll('.sec-toggle').forEach(function(b){ b.addEventListener('click',function(){ var id=b.getAttribute('data-sec'); var willOn=!_secOn(c,id); _setSecOn(c,id,willOn); if(willOn&&OFF_BY_DEFAULT_SECTIONS.indexOf(id)>=0) lpSeedComponent(c,id); if(id==='textBox'&&willOn&&Array.isArray(c.sectionOrder)&&c.sectionOrder.indexOf('textBox')<0){ var _hi=c.sectionOrder.indexOf('hero'); if(_hi>=0) c.sectionOrder.splice(_hi+1,0,'textBox'); else c.sectionOrder.unshift('textBox'); } persist(); previewApply(); renderDetails(); }); });
     box.querySelectorAll('.sec-edit').forEach(function(b){ b.addEventListener('click',function(){ landingSub=b.getAttribute('data-sec'); renderDetails(); }); });
     box.querySelectorAll('.sec-editonly').forEach(function(b){ b.addEventListener('click',function(){ var id=b.getAttribute('data-sec'); if(id==='details'){ openSettingsPage(); return; } landingSub=id; renderDetails(); }); });
