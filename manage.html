@@ -1944,7 +1944,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     try{ renderSiteAnalytics(); }catch(e){}
     try{ lpRenderSupportContact(); }catch(e){}
     if(document.body.classList.contains('lp-prev-open')) previewLoad();
-    try{ lpScopeSync(); }catch(e){}
+    try{ lpScopeSync(); lpBkSync(); }catch(e){}
   }
   /* Partner Program: show the customer (site owner) their assigned support contact. */
   function lpRenderSupportContact(){
@@ -4044,7 +4044,7 @@ function heroCtaCard(c){
     else { btn.textContent='\uD83D\uDCCB Scope'; }
     var panel=document.getElementById('lp-scope-panel'); if(panel && panel.style.display==='block') lpScopeRender();
   }
-  function lpScopeOpen(){ lpScopeEnsure(); var pnl=document.getElementById('lp-scope-panel'); if(!pnl) return; pnl.style.display=(pnl.style.display==='block')?'none':'block'; if(pnl.style.display==='block'){ LPSCOPE.cfg=lpCurrentScope(); lpScopeRender(); } }
+  function lpScopeOpen(){ lpScopeEnsure(); var __bp=document.getElementById('lp-bk-panel'); if(__bp) __bp.style.display='none'; var pnl=document.getElementById('lp-scope-panel'); if(!pnl) return; pnl.style.display=(pnl.style.display==='block')?'none':'block'; if(pnl.style.display==='block'){ LPSCOPE.cfg=lpCurrentScope(); lpScopeRender(); } }
   function lpScopeRender(){
     var body=document.getElementById('lp-scope-body'); if(!body) return;
     var scope=LPSCOPE.cfg;
@@ -4075,6 +4075,87 @@ function heroCtaCard(c){
     lpScopeRender(); lpScopeSync();
   }
   lpScopeEnsure();
+
+  /* ---- Site backup: snapshot / restore / download / import the full site config ---- */
+  function lpBkEnsure(){
+    if(document.getElementById('lp-bk-btn')) return;
+    var b=document.createElement('button'); b.id='lp-bk-btn'; b.type='button'; b.textContent='\uD83D\uDCBE Backup';
+    b.style.cssText='position:fixed;right:132px;bottom:16px;z-index:9998;background:#155c4a;color:#fff;border:0;border-radius:999px;padding:11px 18px;font:600 14px Inter,system-ui,sans-serif;box-shadow:0 8px 22px -8px rgba(0,0,0,.4);cursor:pointer;display:none';
+    b.addEventListener('click',lpBkOpen); document.body.appendChild(b);
+    var p=document.createElement('div'); p.id='lp-bk-panel';
+    p.style.cssText='position:fixed;right:16px;bottom:64px;z-index:9999;width:380px;max-width:calc(100vw - 32px);max-height:72vh;overflow:auto;background:#fff;border:1px solid #e2ddd2;border-radius:14px;box-shadow:0 20px 50px -18px rgba(0,0,0,.45);padding:16px 18px;display:none;font-family:Inter,system-ui,sans-serif;color:#16201c';
+    p.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong style="font-family:Archivo,sans-serif;font-size:16px">Site backups</strong><button type="button" id="lp-bk-close" style="border:0;background:none;font-size:20px;cursor:pointer;color:#7d8a83;line-height:1">\u00d7</button></div>'
+      +'<p style="font-size:12.5px;color:#7d8a83;margin:0 0 10px;line-height:1.5">Save a restore point of this site\u2019s full design and content. If a site is ever changed or damaged, restore a saved copy \u2014 or download one to keep and re-upload later.</p>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button type="button" class="btn" id="lp-bk-save" style="background:#155c4a;color:#fff;border:0">+ Save backup now</button><button type="button" class="btn" id="lp-bk-import">Import from file</button><input id="lp-bk-file" type="file" accept="application/json,.json" style="display:none"></div>'
+      +'<div id="lp-bk-list"><div style="color:#7d8a83;font-size:13px">Loading\u2026</div></div>';
+    document.body.appendChild(p);
+    document.getElementById('lp-bk-close').addEventListener('click',function(){ p.style.display='none'; });
+    document.getElementById('lp-bk-save').addEventListener('click',lpBkSave);
+    document.getElementById('lp-bk-import').addEventListener('click',function(){ document.getElementById('lp-bk-file').click(); });
+    document.getElementById('lp-bk-file').addEventListener('change',lpBkImport);
+    document.getElementById('lp-bk-list').addEventListener('click',lpBkListClick);
+  }
+  function lpBkSync(){ lpBkEnsure(); var b=document.getElementById('lp-bk-btn'); if(b) b.style.display=currentSiteId?'block':'none'; }
+  function lpBkOpen(){ lpBkEnsure(); var sp=document.getElementById('lp-scope-panel'); if(sp) sp.style.display='none'; var p=document.getElementById('lp-bk-panel'); p.style.display=(p.style.display==='block')?'none':'block'; if(p.style.display==='block') lpBkLoad(); }
+  function lpBkCurrentConfig(){ var s=(allSites||[]).find(function(x){return x.id===currentSiteId;}); return (s&&s.config)||(typeof data!=='undefined'?data:{})||{}; }
+  async function lpBkLoad(){
+    var list=document.getElementById('lp-bk-list'); if(!currentSiteId){ list.innerHTML='<div style="color:#7d8a83;font-size:13px">Load a site first.</div>'; return; }
+    try{
+      var r=await sb.from('site_backups').select('id,label,created_at').eq('site_id',currentSiteId).order('created_at',{ascending:false});
+      if(r.error) throw r.error;
+      var rows=r.data||[];
+      if(!rows.length){ list.innerHTML='<div style="color:#7d8a83;font-size:13px">No backups yet. Save one now to create a restore point.</div>'; return; }
+      list.innerHTML=rows.map(function(x){
+        var d=new Date(x.created_at); var when=d.toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'})+' '+d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+        return '<div style="border:1px solid #eee6d9;border-radius:10px;padding:10px 12px;margin-bottom:8px"><div style="font-weight:600;font-size:13.5px">'+lpEsc(x.label||'Backup')+'</div><div style="color:#7d8a83;font-size:12px;margin:2px 0 8px">'+when+'</div>'
+          +'<div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn" data-bk-restore="'+x.id+'" style="font-size:12.5px;padding:5px 10px">Restore</button><button type="button" class="btn" data-bk-dl="'+x.id+'" style="font-size:12.5px;padding:5px 10px">Download</button><button type="button" class="btn" data-bk-del="'+x.id+'" style="font-size:12.5px;padding:5px 10px">Delete</button></div></div>';
+      }).join('');
+    }catch(e){ list.innerHTML='<div style="color:#b4452f;font-size:13px">Could not load backups: '+lpEsc(e.message||'error')+'</div>'; }
+  }
+  async function lpBkSave(){
+    if(!currentSiteId) return;
+    var label=prompt('Name this backup:', 'Backup '+new Date().toLocaleDateString()); if(label===null) return;
+    try{
+      var cur=(await sb.from('sites').select('config').eq('id',currentSiteId).maybeSingle()).data;
+      var cfg=(cur&&cur.config)||lpBkCurrentConfig();
+      var r=await sb.from('site_backups').insert({site_id:currentSiteId,label:(label||'Backup').slice(0,120),config:cfg}).select('id');
+      if(r.error) throw r.error;
+      if(typeof toast==='function') toast('Backup saved'); lpBkLoad();
+    }catch(e){ alert('Could not save backup: '+(e.message||e)); }
+  }
+  async function lpBkApplyConfig(cfg){
+    var r=await sb.from('sites').update({config:cfg, updated_at:new Date().toISOString()}).eq('id',currentSiteId).select('id');
+    if(r.error){ alert('Could not restore: '+r.error.message); return false; }
+    var s=(allSites||[]).find(function(x){return x.id===currentSiteId;}); if(s){ s.config=cfg; }
+    if(typeof loadSite==='function' && s){ loadSite(s); }
+    if(typeof toast==='function') toast('Site restored'); return true;
+  }
+  async function lpBkListClick(e){
+    var rb=e.target.closest('[data-bk-restore]'), db=e.target.closest('[data-bk-dl]'), xb=e.target.closest('[data-bk-del]');
+    if(rb){ if(!confirm('Restore this backup? The current design will be replaced with this saved copy.')) return;
+      try{ var r=await sb.from('site_backups').select('config').eq('id',rb.getAttribute('data-bk-restore')).maybeSingle(); if(r.error||!r.data) throw (r.error||new Error('not found'));
+        if(await lpBkApplyConfig(r.data.config)){ var pn=document.getElementById('lp-bk-panel'); if(pn) pn.style.display='none'; }
+      }catch(err){ alert('Could not restore: '+(err.message||err)); } return; }
+    if(db){ try{ var r2=await sb.from('site_backups').select('config').eq('id',db.getAttribute('data-bk-dl')).maybeSingle(); if(r2.error||!r2.data) throw (r2.error||new Error('not found'));
+        var s=(allSites||[]).find(function(x){return x.id===currentSiteId;}); var name=((s&&s.slug)||'site')+'-backup.json';
+        var blob=new Blob([JSON.stringify(r2.data.config,null,2)],{type:'application/json'}); var url=URL.createObjectURL(blob);
+        var a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      }catch(err){ alert('Could not download: '+(err.message||err)); } return; }
+    if(xb){ if(!confirm('Delete this backup? This cannot be undone.')) return;
+      try{ var r3=await sb.from('site_backups').delete().eq('id',xb.getAttribute('data-bk-del')); if(r3.error) throw r3.error; lpBkLoad(); }catch(err){ alert('Could not delete: '+(err.message||err)); } return; }
+  }
+  function lpBkImport(e){
+    var f=e.target.files&&e.target.files[0]; if(!f) return;
+    var reader=new FileReader();
+    reader.onload=function(){
+      var cfg; try{ cfg=JSON.parse(reader.result); }catch(err){ alert('That file isn\u2019t a valid backup (couldn\u2019t read the JSON).'); return; }
+      if(!cfg || typeof cfg!=='object' || Array.isArray(cfg)){ alert('That file doesn\u2019t look like a site backup.'); return; }
+      if(!confirm('Import this file and replace the current site design with it?')) return;
+      lpBkApplyConfig(cfg).then(function(ok){ if(ok){ var pn=document.getElementById('lp-bk-panel'); if(pn) pn.style.display='none'; } });
+    };
+    reader.readAsText(f); e.target.value='';
+  }
+  lpBkEnsure();
 })();
 </script>
 </body>
