@@ -418,6 +418,41 @@ body.lp-cmd-on #lp-signout-top,body.lp-cmd-on #lp-partneradmin-top,body.lp-cmd-o
 .lpl-star.on{color:#e3a72b;}
 .lpl-name{font-weight:600;} .lpl-slug{color:var(--ink-faint);font-size:12px;}
 .lpl-edit{margin-left:auto;}
+body.lp-landing-on #lp-partneradmin-top{display:none !important;}
+.lpl-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-top:22px;}
+.lpl-seg{display:inline-flex;flex-wrap:wrap;gap:10px;border:0;border-radius:0;overflow:visible;margin:0 0 14px;}
+.lpl-seg button{appearance:none;border:1px solid var(--line);background:#fff;padding:9px 16px;font:600 13px var(--font-ui);color:var(--ink);cursor:pointer;border-radius:10px;display:inline-flex;align-items:center;}
+.lpl-seg button.on{border-color:var(--brand);color:var(--brand-deep);background:var(--brand-tint);}
+.lpl-seg-ct{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;margin-left:8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-soft);font-size:11.5px;font-weight:700;}
+.lpl-seg button.on .lpl-seg-ct{background:var(--brand);color:#fff;border-color:var(--brand);}
+.lpl-listhead{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:16px 0 12px;}
+.lpl-listhead h2{font-family:var(--font-display);font-weight:500;font-size:20px;margin:0;display:inline;}
+.lpl-countpill{display:inline-block;margin-left:10px;padding:2px 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-soft);font-size:12px;font-weight:600;}
+.lpl-sort{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:13px;}
+.lpl-sort select{padding:7px 10px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--ink);cursor:pointer;}
+.lpl-card2{display:flex;align-items:center;gap:16px;padding:16px;background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:12px;}
+.lpl-logo{width:56px;height:56px;border-radius:12px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--surface-2);border:1px solid var(--line);font-weight:700;color:var(--brand);font-size:20px;}
+.lpl-logo img{width:100%;height:100%;object-fit:contain;}
+.lpl-body{flex:1;min-width:0;}
+.lpl-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.lpl-title .lpl-name{font-weight:700;font-size:16px;color:var(--ink);}
+.lpl-sub2{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:3px 0 9px;}
+.lpl-slug2{color:var(--ink-faint);font-size:13px;}
+.lpl-dot{color:var(--ink-faint);}
+.lpl-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;color:var(--ink-soft);font-size:12.5px;}
+.lpl-meta span{display:inline-flex;align-items:center;gap:5px;}
+.lpl-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:600;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-soft);white-space:nowrap;}
+.lpl-badge.ok{background:#e7f6ec;color:#0a7d33;border-color:#cdeeda;}
+.lpl-badge.warn{background:#fdf3e5;color:#b4690e;border-color:#f4e0c4;}
+.lpl-dom-ok{color:#0a7d33;} .lpl-dom-no{color:#b4690e;}
+.lpl-manage{flex:0 0 auto;}
+.lpl-fav2{flex:0 0 auto;cursor:pointer;font-size:18px;line-height:1;background:none;border:0;color:#d3cbb0;padding:4px 6px;}
+.lpl-fav2.on{color:#e3a72b;}
+.lpl-newcard{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;box-sizing:border-box;padding:16px;border:1.5px dashed var(--line-strong);border-radius:12px;background:var(--surface-2);color:var(--brand-deep);font:600 14px var(--font-ui);cursor:pointer;margin-top:2px;}
+.lpl-newcard:hover{background:var(--brand-tint);border-color:var(--brand);}
+.lpl-help{text-align:center;color:var(--ink-soft);font-size:13px;margin:16px 0 0;}
+.lpl-help a{color:var(--brand-deep);cursor:pointer;text-decoration:underline;}
+.lpl-pgroup{margin:20px 0 10px;font-weight:700;font-size:15px;color:var(--ink);}
 .bar-fav{cursor:pointer;background:none;border:1px solid var(--line);border-radius:8px;color:#d3cbb0;font-size:15px;padding:6px 10px;}
 .bar-fav.on{color:#e3a72b;border-color:#ecdcc0;}
 </style>
@@ -427,14 +462,17 @@ body.lp-cmd-on #lp-signout-top,body.lp-cmd-on #lp-partneradmin-top,body.lp-cmd-o
 <a id="lp-signout-top" href="#">Sign Out</a>
 <a id="lp-partneradmin-top" href="/partners-admin" style="display:none">Partner Admin</a>
 <div id="lp-landing"><div class="lpl-wrap">
-  <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="leadpages" style="height:72px;width:auto;display:block;margin:0 0 16px">
+  <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="leadpages" style="height:60px;width:auto;display:block;margin:0 0 18px">
   <p class="eyebrow">Control panel</p>
-  <h1 style="margin:0 0 4px">Select an account</h1>
-  <p class="sub" style="margin:0 0 4px">Choose a site to edit — nothing is editable until you pick one, so you can't change the wrong page by accident.</p>
-  <div class="lpl-seg" id="lpl-seg"><button data-grp="customer" class="on">Customer sites</button><button data-grp="demo">Demo sites</button><button data-grp="partner" id="lpl-seg-partner" style="display:none">Partner sites</button></div>
-  <input class="lpl-search" id="lpl-search" placeholder="Search by name or address…">
-  <div id="lpl-list"></div>
-  <div style="margin-top:14px"><button class="btn ghost" id="lpl-new">+ New site</button></div>
+  <h1 style="margin:0 0 4px">Site Switcher</h1>
+  <p class="sub" style="margin:0 0 4px">Choose a customer, demo, or partner site to manage. You'll only edit a site after selecting it.</p>
+  <div class="lpl-card">
+    <div class="lpl-seg" id="lpl-seg"><button data-grp="customer" class="on">Customer Sites <span class="lpl-seg-ct" id="lpl-ct-customer"></span></button><button data-grp="demo">Demo Sites <span class="lpl-seg-ct" id="lpl-ct-demo"></span></button><button data-grp="partner" id="lpl-seg-partner" style="display:none">Partner Sites <span class="lpl-seg-ct" id="lpl-ct-partner"></span></button></div>
+    <input class="lpl-search" id="lpl-search" placeholder="Search by site name, slug, business name or domain...">
+    <div class="lpl-listhead"><div><h2 id="lpl-listtitle">Customer Sites</h2><span class="lpl-countpill" id="lpl-listcount"></span></div><div class="lpl-sort">Sort by <select id="lpl-sort"><option value="updated">Last updated</option><option value="name">Name</option><option value="leads">Leads</option></select></div></div>
+    <div id="lpl-list"></div>
+  </div>
+  <p class="lpl-help">Can't find a site? Check your account access or <a id="lpl-help-new">create a new site</a>.</p>
 </div></div>
 <div class="wrap">
   <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="leadpages" style="height:72px;width:auto;display:block;margin:0 0 16px">
@@ -1565,7 +1603,7 @@ body.lp-cmd-on #lp-signout-top,body.lp-cmd-on #lp-partneradmin-top,body.lp-cmd-o
     var __so=document.getElementById('lp-signout-top'); if(__so) __so.onclick=function(e){ e.preventDefault(); signOutLP(); };
   }
   async function loadSitesFromDB(){
-    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,custom_domain,owner_email,config,template,is_demo,is_favorite,is_partner_home,referring_partner_id,servicing_partner_id,is_mockup').order('created_at',{ascending:true});
+    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,custom_domain,owner_email,config,template,is_demo,is_favorite,is_partner_home,referring_partner_id,servicing_partner_id,is_mockup,status,updated_at').order('created_at',{ascending:true});
     if(error){ toast('Could not load site: '+error.message); return; }
     allSites = rows||[];
     if(!allSites.length){ toast('No site is assigned to this account yet.'); return; }
@@ -1578,68 +1616,68 @@ body.lp-cmd-on #lp-signout-top,body.lp-cmd-on #lp-partneradmin-top,body.lp-cmd-o
     else { loadSite(allSites[0]); }
   }
   /* ---------- account landing (pick a site before editing) ---------- */
-  var LPL={ grp:'customer', q:'', wired:false, partners:{} };
+  var LPL={ grp:'customer', q:'', sort:'updated', wired:false, partners:{}, leads:null, leadsTried:false };
   function showLanding(){
     var el=document.getElementById('lp-landing'); if(!el) return;
+    document.body.classList.add('lp-landing-on');
     if(!LPL.wired){
       LPL.wired=true;
       document.querySelectorAll('#lpl-seg button').forEach(function(b){ b.onclick=function(){ LPL.grp=b.getAttribute('data-grp'); document.querySelectorAll('#lpl-seg button').forEach(function(x){ x.classList.toggle('on',x===b); }); renderLanding(); }; });
       var ls=document.getElementById('lpl-search'); if(ls) ls.oninput=function(){ LPL.q=ls.value; renderLanding(); };
-      var ln=document.getElementById('lpl-new'); if(ln) ln.onclick=function(){ hideLanding(); openCreateSite(); };
+      var so=document.getElementById('lpl-sort'); if(so){ so.value=LPL.sort||'updated'; so.onchange=function(){ LPL.sort=so.value; renderLanding(); }; }
+      var hn=document.getElementById('lpl-help-new'); if(hn) hn.onclick=function(){ hideLanding(); openCreateSite(); };
     }
+    if(!LPL.leadsTried){ LPL.leadsTried=true; (async function(){ try{ var r=await sb.from('leads').select('site_id'); if(r&&!r.error&&r.data){ var m={}; r.data.forEach(function(x){ if(x&&x.site_id){ m[x.site_id]=(m[x.site_id]||0)+1; } }); LPL.leads=m; renderLanding(); } }catch(_e){} })(); }
     renderLanding(); el.classList.add('show');
   }
-  function hideLanding(){ var el=document.getElementById('lp-landing'); if(el) el.classList.remove('show'); }
+  function hideLanding(){ var el=document.getElementById('lp-landing'); if(el) el.classList.remove('show'); document.body.classList.remove('lp-landing-on'); }
   function lplGroup(s){ return (currentRole!=='super') ? (s.is_mockup ? 'demo' : 'customer') : (s.is_demo ? 'demo' : 'customer'); }
+  function _lplMatch(s,q){ return (s.business_name||'').toLowerCase().indexOf(q)>=0 || (s.slug||'').toLowerCase().indexOf(q)>=0 || (s.custom_domain||'').toLowerCase().indexOf(q)>=0; }
+  function _lplType(s){ var t; if(s.servicing_partner_id||s.referring_partner_id||s.is_partner_home) t='Partner site'; else if((currentRole!=='super'?s.is_mockup:s.is_demo)) t='Demo site'; else t='Customer site'; return '<span class="lpl-badge">'+t+'</span>'; }
+  function _lplStatus(s){ if(s.is_demo||s.is_mockup) return '<span class="lpl-badge">Demo</span>'; var st=(s.status||'').toLowerCase(); if(st==='live'||st==='active') return '<span class="lpl-badge ok">Active</span>'; if(st==='draft') return '<span class="lpl-badge warn">Draft</span>'; if(!st) return '<span class="lpl-badge">Needs setup</span>'; return '<span class="lpl-badge">'+esc(st.charAt(0).toUpperCase()+st.slice(1))+'</span>'; }
+  function _lplLogo(s){ var url=(s.config&&s.config.logo&&s.config.logo.imageUrl)||''; if(url) return '<span class="lpl-logo"><img src="'+esc(url)+'" alt=""></span>'; var nm=(s.business_name||s.slug||'?').trim(); return '<span class="lpl-logo">'+esc((nm.charAt(0)||'?').toUpperCase())+'</span>'; }
+  function _lplMeta(s){ var m=[]; var lc=(LPL.leads&&LPL.leads[s.id]); if(lc!=null) m.push('<span>Leads: '+lc+'</span>'); m.push(s.custom_domain?'<span class="lpl-dom-ok">Domain connected</span>':'<span class="lpl-dom-no">Domain not connected</span>'); if(s.updated_at) m.push('<span>Last updated: '+anaAgo(s.updated_at)+'</span>'); return m.length?'<div class="lpl-meta">'+m.join('')+'</div>':''; }
+  function _lplCard(s){ return '<div class="lpl-card2">'+_lplLogo(s)+'<div class="lpl-body"><div class="lpl-title"><span class="lpl-name">'+esc(s.business_name||s.slug)+'</span>'+_lplStatus(s)+'</div><div class="lpl-sub2"><span class="lpl-slug2">'+esc(s.slug||'')+'</span><span class="lpl-dot">\u00b7</span>'+_lplType(s)+'</div>'+_lplMeta(s)+'</div><div class="lpl-manage"><button class="btn" data-edit="'+s.id+'">Manage Site</button></div><button class="lpl-fav2'+(s.is_favorite?' on':'')+'" title="Favourite" data-fav="'+s.id+'">'+(s.is_favorite?'\u2605':'\u2606')+'</button></div>'; }
+  function _lplNewCard(){ return '<div class="lpl-newcard" id="lpl-newcard">+ New Site</div>'; }
+  function _lplSort(items){ var mode=LPL.sort||'updated'; return items.slice().sort(function(a,b){ var fa=a.is_favorite?0:1, fb=b.is_favorite?0:1; if(fa!==fb) return fa-fb; if(mode==='name') return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); if(mode==='leads'){ var la=(LPL.leads&&LPL.leads[a.id])||0, lb=(LPL.leads&&LPL.leads[b.id])||0; if(la!==lb) return lb-la; } var ua=a.updated_at?new Date(a.updated_at).getTime():0, ub=b.updated_at?new Date(b.updated_at).getTime():0; if(ua!==ub) return ub-ua; return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); }); }
+  function _lplWire(list){ list.querySelectorAll('[data-edit]').forEach(function(b){ b.onclick=function(){ var s=allSites.find(function(x){return x.id===b.getAttribute('data-edit');}); if(s){ hideLanding(); loadSite(s); } }; }); list.querySelectorAll('[data-fav]').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); lplToggleFav(b.getAttribute('data-fav')); }; }); var nc=document.getElementById('lpl-newcard'); if(nc) nc.onclick=function(){ hideLanding(); openCreateSite(); }; }
+  function lplUpdateCounts(){ var base=(allSites||[]).filter(function(s){ return (currentRole==='super') ? (!s.servicing_partner_id && !s.referring_partner_id && !s.is_partner_home) : true; }); var c1=document.getElementById('lpl-ct-customer'); if(c1) c1.textContent=base.filter(function(s){return lplGroup(s)==='customer';}).length; var c2=document.getElementById('lpl-ct-demo'); if(c2) c2.textContent=base.filter(function(s){return lplGroup(s)==='demo';}).length; if(currentRole==='super'){ var c3=document.getElementById('lpl-ct-partner'); if(c3) c3.textContent=(allSites||[]).filter(function(s){ return s.servicing_partner_id||s.referring_partner_id||s.is_partner_home; }).length; } }
   function renderLanding(){
     var list=document.getElementById('lpl-list'); if(!list) return;
+    lplUpdateCounts();
     if(currentRole==='super' && LPL.grp==='partner') return renderPartnerLanding();
+    var titleEl=document.getElementById('lpl-listtitle'); if(titleEl) titleEl.textContent=(LPL.grp==='demo'?'Demo Sites':'Customer Sites');
     var q=(LPL.q||'').toLowerCase();
-    var items=(allSites||[]).filter(function(s){ return (currentRole==='super') ? (!s.servicing_partner_id && !s.referring_partner_id && !s.is_partner_home) : true; }).filter(function(s){ return lplGroup(s)===LPL.grp; })
-      .filter(function(s){ return !q || (s.business_name||'').toLowerCase().indexOf(q)>=0 || (s.slug||'').toLowerCase().indexOf(q)>=0; })
-      .sort(function(a,b){
-        var fa=a.is_favorite?0:1, fb=b.is_favorite?0:1; if(fa!==fb) return fa-fb;
-        return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase());
-      });
-    if(!items.length){ list.innerHTML='<p class="hint" style="color:#888;">No '+(LPL.grp==='demo'?'demo':'customer')+' sites'+(q?' match your search':' yet')+'.</p>'; return; }
-    list.innerHTML='';
-    items.forEach(function(s){
-      var row=document.createElement('div'); row.className='lpl-item';
-      row.innerHTML='<button class="lpl-star'+(s.is_favorite?' on':'')+'" title="Favourite" data-fav="'+s.id+'">'+(s.is_favorite?'\u2605':'\u2606')+'</button>'
-        +'<div><div class="lpl-name">'+esc(s.business_name||s.slug)+'</div><div class="lpl-slug">/'+esc(s.slug||'')+(s.is_demo?' \u00b7 demo':'')+'</div></div>'
-        +'<div class="lpl-edit"><button class="btn" data-edit="'+s.id+'">Edit</button></div>';
-      list.appendChild(row);
-    });
-    list.querySelectorAll('[data-edit]').forEach(function(b){ b.onclick=function(){ var s=allSites.find(function(x){return x.id===b.getAttribute('data-edit');}); if(s){ hideLanding(); loadSite(s); } }; });
-    list.querySelectorAll('[data-fav]').forEach(function(b){ b.onclick=function(){ lplToggleFav(b.getAttribute('data-fav')); }; });
+    var items=(allSites||[]).filter(function(s){ return (currentRole==='super') ? (!s.servicing_partner_id && !s.referring_partner_id && !s.is_partner_home) : true; }).filter(function(s){ return lplGroup(s)===LPL.grp; }).filter(function(s){ return !q || _lplMatch(s,q); });
+    items=_lplSort(items);
+    var cnt=document.getElementById('lpl-listcount'); if(cnt) cnt.textContent=items.length+' site'+(items.length===1?'':'s');
+    var html='';
+    if(!items.length){ html='<p class="hint" style="color:#888;">No '+(LPL.grp==='demo'?'demo':'customer')+' sites'+(q?' match your search':' yet')+'.</p>'; }
+    else { items.forEach(function(s){ html+=_lplCard(s); }); }
+    html+=_lplNewCard();
+    list.innerHTML=html;
+    _lplWire(list);
   }
   async function loadLandingPartners(){
     try{ var r=await sb.from('partners').select('id,display_name,status'); LPL.partners={}; (r.data||[]).forEach(function(pp){ LPL.partners[pp.id]=pp; }); }catch(e){ LPL.partners={}; }
   }
   function renderPartnerLanding(){
     var list=document.getElementById('lpl-list'); if(!list) return;
+    var titleEl=document.getElementById('lpl-listtitle'); if(titleEl) titleEl.textContent='Partner Sites';
     var q=(LPL.q||'').toLowerCase();
     var sites=(allSites||[]).filter(function(s){ return s.servicing_partner_id || s.referring_partner_id || s.is_partner_home; });
     var groups={}, order=[];
     sites.forEach(function(s){ var pid=s.servicing_partner_id || s.referring_partner_id || '__none__'; if(!groups[pid]){ groups[pid]=[]; order.push(pid); } groups[pid].push(s); });
-    // search matches partner name OR any of their sites
-    if(q){ order=order.filter(function(pid){ var nm=((LPL.partners[pid]&&LPL.partners[pid].display_name)||'').toLowerCase(); if(nm.indexOf(q)>=0) return true; return groups[pid].some(function(s){ return (s.business_name||'').toLowerCase().indexOf(q)>=0 || (s.slug||'').toLowerCase().indexOf(q)>=0; }); }); }
+    if(q){ order=order.filter(function(pid){ var nm=((LPL.partners[pid]&&LPL.partners[pid].display_name)||'').toLowerCase(); if(nm.indexOf(q)>=0) return true; return groups[pid].some(function(s){ return _lplMatch(s,q); }); }); }
     order.sort(function(a,b){ var na=((LPL.partners[a]&&LPL.partners[a].display_name)||'zzzz').toLowerCase(), nb=((LPL.partners[b]&&LPL.partners[b].display_name)||'zzzz').toLowerCase(); return na.localeCompare(nb); });
-    if(!order.length){ list.innerHTML='<p class="hint" style="color:#888;">No partner sites'+(q?' match your search':' yet')+'.</p>'; return; }
+    var shown=0; order.forEach(function(pid){ shown+=groups[pid].length; });
+    var cnt=document.getElementById('lpl-listcount'); if(cnt) cnt.textContent=shown+' site'+(shown===1?'':'s');
     var html='';
-    order.forEach(function(pid){
-      var pinfo=LPL.partners[pid];
-      var pname=pinfo?esc(pinfo.display_name||'Partner'):(pid==='__none__'?'Unassigned':'Partner');
-      var status=(pinfo&&pinfo.status)?(' \u00b7 '+esc(pinfo.status)):'';
-      var gs=groups[pid].slice().sort(function(a,b){ return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); });
-      html+='<div style="margin:18px 0 8px;font-weight:700;font-size:14px;color:var(--ink)">'+pname+'<span style="color:var(--ink-faint);font-weight:500;font-size:12px">'+status+' \u00b7 '+gs.length+' site'+(gs.length===1?'':'s')+'</span></div>';
-      gs.forEach(function(s){
-        var kind=s.is_partner_home?'partner home':(s.is_mockup?'demo':'client');
-        html+='<div class="lpl-item"><div style="flex:1"><div class="lpl-name">'+esc(s.business_name||s.slug)+'</div><div class="lpl-slug">/'+esc(s.slug||'')+' \u00b7 '+kind+'</div></div><div class="lpl-edit"><button class="btn" data-edit="'+s.id+'">Edit</button></div></div>';
-      });
-    });
+    if(!order.length){ html='<p class="hint" style="color:#888;">No partner sites'+(q?' match your search':' yet')+'.</p>'; }
+    else { order.forEach(function(pid){ var pinfo=LPL.partners[pid]; var pname=pinfo?esc(pinfo.display_name||'Partner'):(pid==='__none__'?'Unassigned':'Partner'); var gs=_lplSort(groups[pid]); html+='<div class="lpl-pgroup">'+pname+' <span style="color:var(--ink-faint);font-weight:500;font-size:12px;">'+gs.length+' site'+(gs.length===1?'':'s')+'</span></div>'; gs.forEach(function(s){ html+=_lplCard(s); }); }); }
+    html+=_lplNewCard();
     list.innerHTML=html;
-    list.querySelectorAll('[data-edit]').forEach(function(b){ b.onclick=function(){ var s=allSites.find(function(x){return x.id===b.getAttribute('data-edit');}); if(s){ hideLanding(); loadSite(s); } }; });
+    _lplWire(list);
   }
   async function lplToggleFav(id){
     var s=allSites.find(function(x){return x.id===id;}); if(!s) return;
