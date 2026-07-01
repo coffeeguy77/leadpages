@@ -405,6 +405,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 #lp-signout-top:hover{background:var(--brand-tint);}
 #lp-partneradmin-top{position:fixed;top:14px;right:104px;z-index:9500;font:600 12.5px var(--font-ui);color:#fff;background:var(--brand);border:1px solid var(--brand);border-radius:999px;padding:6px 14px;cursor:pointer;text-decoration:none;}
 #lp-partneradmin-top:hover{background:var(--brand-deep);}
+body.lp-cmd-on #lp-signout-top,body.lp-cmd-on #lp-partneradmin-top,body.lp-cmd-on #lp-prev-toggle,body.lp-cmd-on #lp-scope-btn,body.lp-cmd-on #lp-bk-btn{display:none !important;}
 #lp-landing{position:fixed;inset:0;background:var(--bg);z-index:9000;overflow:auto;padding:46px 20px;display:none;}
 #lp-landing.show{display:block;}
 .lpl-wrap{max-width:1080px;margin:0 auto;}
@@ -455,6 +456,12 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     <button class="btn ghost" id="btn-snippet">Get embed snippet</button>
     <button class="btn ghost" id="btn-copy">Copy JSON</button>
     <button class="btn" id="btn-download">Download site config (config.json)</button>
+  </div>
+
+  <div id="lp-cmd" class="bar" style="display:none;flex-direction:column;align-items:stretch;gap:0;">
+    <div id="lpc-context" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div>
+    <div style="margin-top:16px;"><div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 8px;">Publishing &amp; preview</div><div id="lpc-primary" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div></div>
+    <div style="margin-top:16px;"><div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 8px;">Site tools</div><div id="lpc-tools" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div></div>
   </div>
 
   <div class="adminnav" role="tablist">
@@ -1986,6 +1993,9 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   }
   function applyTemplateChrome(){
     var isApp=(currentSiteTemplate==='broker-app');
+    document.body.classList.toggle('lp-cmd-on', !isApp);
+    var __bar=document.querySelector('.bar:not(#lp-cmd)'); if(__bar) __bar.style.display=isApp?'':'none';
+    var __cmd=document.getElementById('lp-cmd'); if(__cmd) __cmd.style.display=isApp?'none':'flex';
     var ond=$('nav-details'); if(ond&&ond.parentNode) ond.parentNode.style.display=((currentSiteTemplate==='trade')&&tplNav().length<=1)?'none':''; if(ond&&currentSiteTemplate==='trade') ond.textContent='Page editor';
     ['btn-import','btn-snippet','btn-copy','btn-download'].forEach(function(id){ var b=$(id); if(b) b.style.display=isApp?'':'none'; });
     var ge=$('g-effective'), gu=$('g-updated');
@@ -3884,6 +3894,44 @@ function heroCtaCard(c){
       }
     }
     if(currentRole==='super') updateSiteControls();
+    if(currentSiteTemplate!=='broker-app') layoutCmdCard();
+  }
+  function layoutCmdCard(){
+    var ctx=$('lpc-context'), prim=$('lpc-primary'), tools=$('lpc-tools');
+    if(!ctx||!prim||!tools) return;
+    var mv=function(id,row){ var el=$(id); if(el&&el.parentNode!==row) row.appendChild(el); };
+    mv('site-label', ctx);
+    mv('btn-publish', prim);
+    mv('btn-viewlive', prim);
+    if(!$('lpc-preview')){ var pv=document.createElement('button'); pv.className='btn ghost'; pv.id='lpc-preview'; pv.type='button'; pv.textContent='Live Preview'; pv.addEventListener('click',previewOpen); prim.appendChild(pv); }
+    mv('lpc-preview', prim);
+    mv('btn-settings', tools);
+    mv('btn-billing', tools);
+    mv('btn-domains', tools);
+    if(!$('lpc-scope')){ var sc=document.createElement('button'); sc.className='btn ghost'; sc.id='lpc-scope'; sc.type='button'; sc.textContent='Scope'; sc.addEventListener('click',function(){ if(typeof lpScopeOpen==='function') lpScopeOpen(); }); tools.appendChild(sc); }
+    mv('lpc-scope', tools);
+    if(!$('lpc-backups')){ var bk=document.createElement('button'); bk.className='btn ghost'; bk.id='lpc-backups'; bk.type='button'; bk.textContent='Backups'; bk.addEventListener('click',function(){ if(typeof lpBkOpen==='function') lpBkOpen(); }); tools.appendChild(bk); }
+    mv('lpc-backups', tools);
+    mv('btn-switch', tools);
+    mv('btn-fav', tools);
+    mv('btn-newsite', tools);
+    if(!$('lpc-acct')){
+      var acct=document.createElement('div'); acct.id='lpc-acct'; acct.style.cssText='position:relative;';
+      if(currentRole==='super'){
+        acct.innerHTML='<button type="button" id="lpc-acct-btn" class="btn ghost">Partner Admin \u25BE</button>'
+          +'<div id="lpc-acct-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);min-width:200px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:6px;z-index:9500;">'
+          +'<a href="/partners-admin" class="lpc-mi" style="display:block;padding:9px 12px;border-radius:8px;color:var(--ink);text-decoration:none;font:600 13.5px var(--font-ui);">Partner dashboard</a>'
+          +'<a href="/partners-admin" id="lpc-acct-settings" class="lpc-mi" style="display:block;padding:9px 12px;border-radius:8px;color:var(--ink);text-decoration:none;font:600 13.5px var(--font-ui);">Account settings</a>'
+          +'<a href="#" id="lpc-acct-signout" class="lpc-mi" style="display:block;padding:9px 12px;border-radius:8px;color:var(--ink);text-decoration:none;font:600 13.5px var(--font-ui);">Sign Out</a>'
+          +'</div>';
+      } else {
+        acct.innerHTML='<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
+      }
+      ctx.appendChild(acct);
+      var sob=$('lpc-acct-signout'); if(sob) sob.addEventListener('click',function(e){ e.preventDefault(); signOutLP(); });
+      var ab=$('lpc-acct-btn'), am=$('lpc-acct-menu');
+      if(ab&&am){ ab.addEventListener('click',function(e){ e.stopPropagation(); am.style.display=(am.style.display==='none'?'block':'none'); }); document.addEventListener('click',function(){ am.style.display='none'; }); am.addEventListener('click',function(e){ e.stopPropagation(); }); }
+    }
   }
   /* ---- demo themes (super-admin: manage looks shown on /demo) ---- */
   async function renderDemoThemes(){
