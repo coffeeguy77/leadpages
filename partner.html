@@ -1059,7 +1059,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     var when=t.created_at?new Date(t.created_at).toLocaleDateString():'';
     if(t._shared){
       return '<div class="card" style="padding:13px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">'
-        +'<div><div style="font-weight:700">'+esc(t.name)+' <span class="statusbadge" style="background:#eef5f1;color:#1f7a63">Shared by LeadPages</span></div><div class="muted" style="font-size:12.5px">Available in your theme picker</div></div></div>';
+        +'<div style="display:flex;gap:12px;align-items:center">'+(t.thumb_url?('<img src="'+esc(t.thumb_url)+'" style="width:72px;height:50px;object-fit:cover;border-radius:8px;border:1px solid var(--line)">'):'')+'<div><div style="font-weight:700">'+esc(t.name)+' <span class="statusbadge" style="background:#eef5f1;color:#1f7a63">Shared by LeadPages</span></div><div class="muted" style="font-size:12.5px">Available in your theme picker</div></div></div></div>';
     }
     return '<div class="card" style="padding:13px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">'
       +'<div><div style="font-weight:700">'+esc(t.name)+'</div><div class="muted" style="font-size:12.5px">Saved '+esc(when)+'</div></div>'
@@ -1071,7 +1071,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       : '<div class="card empty"><p class="muted">No saved themes yet. Build a demo, then \u201cSave as theme\u201d to reuse the design.</p></div>';
   }
   async function loadThemes(){
-    var r=await sb.from('partner_themes').select('id,name,created_at,source_site_id,partner_id,shared_with_partners').order('created_at',{ascending:false});
+    var r=await sb.from('partner_themes').select('id,name,created_at,source_site_id,partner_id,shared_with_partners,thumb_url').order('created_at',{ascending:false});
     var mine=state.partner?state.partner.id:null;
     themes=(r.data||[]).map(function(t){ t._shared = !!t.shared_with_partners && t.partner_id!==mine; return t; });
     themes.sort(function(a,b){ if(a._shared!==b._shared) return a._shared?1:-1; return 0; });

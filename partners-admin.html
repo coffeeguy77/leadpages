@@ -117,6 +117,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     <button data-t="courses">Courses <span class="count" id="co-count"></span></button>
     <button data-t="resources">Resources <span class="count" id="res-count"></span></button>
     <button data-t="wiki">Wiki <span class="count" id="wk-count"></span></button>
+    <button data-t="themelib">Theme library <span class="count" id="tl-count"></span></button>
     <button data-t="clients">Clients <span class="count" id="cl-count"></span></button>
     <button data-t="audit">Audit</button>
   </div>
@@ -176,6 +177,20 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><p class="muted" style="margin:0">Help articles shown at <strong>/help</strong>. Choose who can see each one. Body supports # headings, ** bold **, - bullets and links.</p><button class="btn btn-brand" id="wk-add">+ Add article</button></div>
     <datalist id="wk-cats"><option>Getting started</option><option>Your account</option><option>Building a site</option><option>Themes &amp; design</option><option>Demos &amp; quotes</option><option>Clients &amp; billing</option><option>Commissions &amp; payouts</option><option>Domains</option><option>Troubleshooting</option><option>Policies</option></datalist>
     <div id="wiki-admin-list"></div>
+  </section>
+
+  <!-- Theme library -->
+  <section class="section" data-sec="themelib">
+    <p class="muted" style="margin:0 0 14px">Upload polished design files (.json) partners can load as a ready-made theme. Prep one by downloading a site backup, swapping in sample images, then uploading it here with a friendly name and thumbnail.</p>
+    <div class="card" style="margin-bottom:16px">
+      <div class="ctrls" style="border:0"><div><label>Friendly label</label><input type="text" id="tl-name" placeholder="e.g. Bold Tradie \u2014 Orange"></div>
+        <div><label>Thumbnail URL</label><input type="text" id="tl-thumb-url" placeholder="https://\u2026 or use Upload"></div>
+        <div style="align-self:end"><button class="btn btn-sm" id="tl-thumb-btn">Upload image</button><input id="tl-thumb-file" type="file" accept="image/*" style="display:none"></div>
+        <div style="align-self:end"><img id="tl-thumb-prev" style="width:72px;height:50px;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:none"></div></div>
+      <div class="ctrls" style="border:0;padding-top:8px;align-items:center"><div><label>Design file (.json)</label><button class="btn btn-sm" id="tl-json-btn">Choose file</button><input id="tl-json-file" type="file" accept="application/json,.json" style="display:none"> <span id="tl-json-status" class="muted" style="font-size:12.5px;margin-left:6px"></span></div></div>
+      <div class="ctrls"><button class="btn btn-brand" id="tl-add">+ Add to library</button></div>
+    </div>
+    <div id="themelib-list"></div>
   </section>
 
   <!-- Clients & transfers -->
@@ -434,7 +449,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     siteMap={}; (sm.data||[]).forEach(function(x){ siteMap[x.id]=x.business_name||x.slug; });
     var cm=await sb.from('partner_commissions').select('*').order('created_at',{ascending:false});
     commissions=(cm.data||[]); renderComms();
-    loadCourses(); loadModules(); loadResources(); loadWiki(); loadAdminClients(); loadAudit();
+    loadCourses(); loadModules(); loadResources(); loadWiki(); loadThemeLib(); loadAdminClients(); loadAudit();
   }
 
   // ---- Training + Resources admin ----
@@ -536,6 +551,46 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     wiki.unshift(r.data); renderWiki();
   });
   wireCrud('wiki-admin-list','wiki_articles',function(){return wiki;},renderWiki);
+
+  // ---- Theme library ----
+  var tlThemes=[], tlConfig=null;
+  function renderThemeLib(){
+    document.getElementById('tl-count').textContent=tlThemes.length?('\u00b7 '+tlThemes.length):'';
+    var box=document.getElementById('themelib-list');
+    box.innerHTML = tlThemes.length ? tlThemes.map(function(t){
+      var when=t.created_at?new Date(t.created_at).toLocaleDateString():'';
+      var thumb=t.thumb_url?('<img src="'+esc(t.thumb_url)+'" style="width:80px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--line);flex:0 0 auto">'):'<div style="width:80px;height:56px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);flex:0 0 auto"></div>';
+      return '<div class="card item" data-id="'+t.id+'" style="margin-bottom:8px"><div style="display:flex;gap:12px;align-items:center">'+thumb+'<div style="flex:1"><div style="font-weight:600">'+esc(t.name||'Untitled')+'</div><div class="muted" style="font-size:12px">Shared theme'+(when?(' \u00b7 '+when):'')+'</div></div><button class="btn btn-sm" data-tldel>Delete</button></div></div>';
+    }).join('') : '<div class="card empty">No themes in the library yet.</div>';
+  }
+  async function loadThemeLib(){ var r=await sb.from('partner_themes').select('id,name,thumb_url,created_at').eq('shared_with_partners',true).order('created_at',{ascending:false}); tlThemes=(r.data||[]); renderThemeLib(); }
+  async function uploadThemeThumb(file){
+    var sess=(await sb.auth.getSession()).data.session; var token=sess&&sess.access_token;
+    var folder='leadpages/themes'; var pid=folder+'/'+Math.random().toString(36).slice(2,10);
+    var sr=await fetch('/api/cloudinary/sign',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({publicId:pid,assetFolder:folder})});
+    var sg=await sr.json(); if(!sr.ok||!sg.signature) throw new Error(sg.error||'Could not sign upload');
+    var fd=new FormData(); fd.append('file',file); fd.append('api_key',sg.apiKey); fd.append('timestamp',sg.timestamp); fd.append('public_id',sg.publicId); if(sg.assetFolder)fd.append('asset_folder',sg.assetFolder); if(sg.overwrite)fd.append('overwrite',sg.overwrite); fd.append('signature',sg.signature);
+    var ur=await fetch('https://api.cloudinary.com/v1_1/'+(sg.cloudName||'dzx6x1hou')+'/image/upload',{method:'POST',body:fd});
+    var uj=await ur.json(); if(!ur.ok||!uj.secure_url) throw new Error('Upload failed'); return uj.secure_url;
+  }
+  function tlPrev(){ var u=(document.getElementById('tl-thumb-url').value||'').trim(); var img=document.getElementById('tl-thumb-prev'); if(u){ img.src=u; img.style.display=''; } else { img.style.display='none'; } }
+  document.getElementById('tl-thumb-url').addEventListener('input', tlPrev);
+  document.getElementById('tl-thumb-btn').addEventListener('click', function(){ document.getElementById('tl-thumb-file').click(); });
+  document.getElementById('tl-thumb-file').addEventListener('change', async function(e){ var f=e.target.files&&e.target.files[0]; if(!f) return; this.disabled=true; try{ var u=await uploadThemeThumb(f); document.getElementById('tl-thumb-url').value=u; tlPrev(); }catch(err){ alert('Upload failed: '+(err.message||err)); } this.disabled=false; });
+  document.getElementById('tl-json-btn').addEventListener('click', function(){ document.getElementById('tl-json-file').click(); });
+  document.getElementById('tl-json-file').addEventListener('change', function(e){ var f=e.target.files&&e.target.files[0]; if(!f) return; var rd=new FileReader(); rd.onload=function(){ try{ var o=JSON.parse(rd.result); if(!o||typeof o!=='object'||Array.isArray(o)) throw new Error('bad'); tlConfig=o; document.getElementById('tl-json-status').textContent=f.name+' loaded \u2713'; }catch(err){ tlConfig=null; document.getElementById('tl-json-status').textContent='That file isn\u2019t valid JSON'; } }; rd.readAsText(f); e.target.value=''; });
+  document.getElementById('tl-add').addEventListener('click', async function(){
+    var name=(document.getElementById('tl-name').value||'').trim();
+    var thumb=(document.getElementById('tl-thumb-url').value||'').trim()||null;
+    if(!name){ alert('Give the theme a friendly label first.'); return; }
+    if(!tlConfig){ alert('Choose a design .json file first.'); return; }
+    this.disabled=true;
+    var r=await sb.from('partner_themes').insert({ partner_id:null, name:name, config:tlConfig, thumb_url:thumb, shared_with_partners:true });
+    this.disabled=false;
+    if(r.error){ alert('Could not add theme: '+r.error.message); return; }
+    document.getElementById('tl-name').value=''; document.getElementById('tl-thumb-url').value=''; tlPrev(); tlConfig=null; document.getElementById('tl-json-status').textContent=''; loadThemeLib();
+  });
+  document.getElementById('themelib-list').addEventListener('click', async function(e){ var b=e.target.closest('[data-tldel]'); if(!b) return; var card=e.target.closest('[data-id]'); if(!card) return; if(!confirm('Delete this theme from the library?')) return; var r=await sb.from('partner_themes').delete().eq('id',card.getAttribute('data-id')); if(r.error){ alert('Could not delete: '+r.error.message); return; } loadThemeLib(); });
 
   // add buttons
   document.getElementById('tm-add').addEventListener('click', async function(){
