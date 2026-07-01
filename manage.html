@@ -423,7 +423,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 <script src="/icons.js"></script>
 </head>
 <body>
-<a id="lp-signout-top" href="#">Sign out</a>
+<a id="lp-signout-top" href="#">Sign Out</a>
 <a id="lp-partneradmin-top" href="/partners-admin" style="display:none">Partner Admin</a>
 <div id="lp-landing"><div class="lpl-wrap">
   <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="leadpages" style="height:72px;width:auto;display:block;margin:0 0 16px">
@@ -586,7 +586,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
         </div>
       </div>
       <div class="apgroup-h">Save this look</div>
-      <p class="hint" style="margin:-6px 0 12px;">Tune the colours above, then <strong>Publish to live site</strong> to save them to this site. To save a reusable, named look for the demo site (<strong>/demo</strong>), sign in as the platform admin and use the <strong>Demo themes</strong> tab — those are the ones visitors can switch between.</p>
+      <p class="hint" style="margin:-6px 0 12px;">Tune the colours above, then <strong>Publish Site</strong> to save them to this site. To save a reusable, named look for the demo site (<strong>/demo</strong>), sign in as the platform admin and use the <strong>Demo themes</strong> tab — those are the ones visitors can switch between.</p>
       <div class="ap-saverow">
         <button class="btn ghost sm" id="ap-download">Download theme file</button>
         <label class="btn ghost sm" for="ap-upload">Upload theme file</label>
@@ -3805,7 +3805,7 @@ function heroCtaCard(c){
       payload={ config:lc, business_name:(currentBusinessName||'').trim(), custom_domain:((currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'')||null), updated_at:new Date().toISOString() }; if(currentRole==='super'){ payload.owner_email=((currentOwnerEmail||'').trim().toLowerCase()||null); }
     }
     const { error } = await sb.from('sites').update(payload).eq('id', currentSiteId);
-    if(btn){ btn.disabled=false; btn.textContent='Publish to live site'; }
+    if(btn){ btn.disabled=false; btn.textContent='Publish Site'; }
     if(error){ toast('Publish failed: '+error.message); return; }
     try{ persist(); }catch(e){}
     var sref=allSites.find(function(x){return x.id===currentSiteId;}); if(sref){ if(payload.business_name) sref.business_name=payload.business_name; sref.custom_domain=payload.custom_domain; if(payload.owner_email!==undefined) sref.owner_email=payload.owner_email; sref.config=payload.config; }
@@ -3817,20 +3817,14 @@ function heroCtaCard(c){
     const dl=$('btn-download'); if(!dl) return; const bar=dl.parentNode;
     if(!$('btn-publish')){
       const pb=document.createElement('button'); pb.className='btn'; pb.id='btn-publish';
-      pb.textContent='Publish to live site'; pb.addEventListener('click',publishToDB);
+      pb.textContent='Publish Site'; pb.addEventListener('click',publishToDB);
       bar.insertBefore(pb, dl);
     }
     if(!$('btn-viewlive')){
       const vb=document.createElement('button'); vb.className='btn ghost'; vb.id='btn-viewlive';
-      vb.textContent='View live site \u2197';
+      vb.textContent='View Live Site \u2197';
       vb.addEventListener('click',function(){ var u=lpLiveUrl(); if(u) window.open(u,'_blank','noopener'); else if(typeof toast==='function') toast('This site has no slug yet.'); });
       bar.insertBefore(vb, dl);
-    }
-    if(!$('btn-viewfresh')){
-      const fb=document.createElement('button'); fb.className='btn ghost'; fb.id='btn-viewfresh';
-      fb.textContent='View fresh \u21BB'; fb.title='Opens your live site with the cache bypassed so you see your latest changes straight away.';
-      fb.addEventListener('click',function(){ var u=lpLiveUrl(); if(!u){ if(typeof toast==='function') toast('This site has no slug yet.'); return; } u+=(u.indexOf('?')<0?'?':'&')+'_cb='+Date.now(); window.open(u,'_blank','noopener'); });
-      bar.insertBefore(fb, dl);
     }
     if(!$('btn-domains')){
       const dbn=document.createElement('button'); dbn.className='btn ghost'; dbn.id='btn-domains';
@@ -3840,7 +3834,7 @@ function heroCtaCard(c){
     }
     if(currentRole==='super' && !$('btn-switch')){
       const sw=document.createElement('button'); sw.className='btn ghost'; sw.id='btn-switch';
-      sw.textContent='Switch account'; sw.addEventListener('click',function(){ showLanding(); });
+      sw.textContent='Switch Account'; sw.addEventListener('click',function(){ showLanding(); });
       bar.appendChild(sw);
     }
     if(currentRole==='super' && !$('btn-fav')){
@@ -3850,7 +3844,7 @@ function heroCtaCard(c){
     }
     if(currentRole==='super' && !$('btn-newsite')){
       const nb=document.createElement('button'); nb.className='btn ghost'; nb.id='btn-newsite';
-      nb.textContent='+ New site'; nb.addEventListener('click',openCreateSite);
+      nb.textContent='+ New Site'; nb.addEventListener('click',openCreateSite);
       bar.appendChild(nb);
     }
     if(!$('btn-billing')){
@@ -4129,7 +4123,7 @@ function heroCtaCard(c){
   /* ---- Site backup: snapshot / restore / download / import the full site config ---- */
   function lpBkEnsure(){
     if(document.getElementById('lp-bk-btn')) return;
-    var b=document.createElement('button'); b.id='lp-bk-btn'; b.type='button'; b.textContent='\uD83D\uDCBE Backup';
+    var b=document.createElement('button'); b.id='lp-bk-btn'; b.type='button'; b.textContent='\uD83D\uDCBE Backups';
     b.style.cssText='position:fixed;right:132px;bottom:16px;z-index:9998;background:#155c4a;color:#fff;border:0;border-radius:999px;padding:11px 18px;font:600 14px Inter,system-ui,sans-serif;box-shadow:0 8px 22px -8px rgba(0,0,0,.4);cursor:pointer;display:none';
     b.addEventListener('click',lpBkOpen); document.body.appendChild(b);
     var p=document.createElement('div'); p.id='lp-bk-panel';
@@ -4150,9 +4144,9 @@ function heroCtaCard(c){
     var b=document.getElementById('lp-bk-btn'); if(!b) return;
     b.style.display=currentSiteId?'block':'none';
     var panel=document.getElementById('lp-bk-panel'); if(panel) panel.style.display='none';
-    b.textContent='\uD83D\uDCBE Backup';
+    b.textContent='\uD83D\uDCBE Backups';
     if(!currentSiteId) return;
-    try{ var r=await sb.from('site_backups').select('id',{count:'exact',head:true}).eq('site_id',currentSiteId); var n=r.count||0; b.textContent='\uD83D\uDCBE Backup'+(n?(' \u00b7 '+n):''); }catch(e){}
+    try{ var r=await sb.from('site_backups').select('id',{count:'exact',head:true}).eq('site_id',currentSiteId); var n=r.count||0; b.textContent='\uD83D\uDCBE Backups'+(n?(' \u00b7 '+n):''); }catch(e){}
   }
   function lpBkOpen(){ lpBkEnsure(); var sp=document.getElementById('lp-scope-panel'); if(sp) sp.style.display='none'; var p=document.getElementById('lp-bk-panel'); p.style.display=(p.style.display==='block')?'none':'block'; if(p.style.display==='block') lpBkLoad(); }
   function lpBkCurrentConfig(){ var s=(allSites||[]).find(function(x){return x.id===currentSiteId;}); return (s&&s.config)||(typeof data!=='undefined'?data:{})||{}; }
