@@ -619,7 +619,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       : '<div class="card empty"><div class="e-ico">\U0001F4C7</div><strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Add your first customer to create their website and start earning.</p></div>';
   }
   async function loadClients(){
-    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,preview_password,sale_price,logo_obj:config->logo,created_at').order('created_at',{ascending:false});
+    var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,preview_password,sale_price,logo_obj:config->logo,config,created_at').order('created_at',{ascending:false});
     if(r.error){
       console.error('loadClients error:', r.error);
       var em='Couldn\u2019t load your sites: '+(r.error.message||'unknown error')+'. If this names a missing column, that database update hasn\u2019t been run yet (e.g. partner_phase6d.sql adds preview_password).';
@@ -651,6 +651,9 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       window.open('/manage','_blank','noopener');
     });
     document.getElementById('mockups-list').addEventListener('click', async function(e){
+      var _cd=e.target.closest('[data-id]');
+      if(e.target.closest('[data-scupload]')){ if(_cd){ var _fi=_cd.querySelector('[data-scfile]'); if(_fi) _fi.click(); } return; }
+      if(e.target.closest('[data-scclear]')){ if(_cd){ await saveShowcase(_cd.getAttribute('data-id'),{image:null}); } return; }
       var card=e.target.closest('[data-id]'); if(!card) return; var id=card.getAttribute('data-id');
       var m=mockups.find(function(x){return x.id===id;}); if(!m) return;
       if(e.target.closest('[data-savetheme]')){
@@ -675,6 +678,15 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     });
     document.getElementById('mockups-list').addEventListener('change', async function(e){
       var card=e.target.closest('[data-id]'); if(!card) return; var id=card.getAttribute('data-id');
+      if(e.target.matches('[data-scfile]')){
+        var file=e.target.files&&e.target.files[0]; if(!file) return;
+        var prev=card.querySelector('[data-scprev]'); if(prev) prev.innerHTML='<span style="font-size:11px;color:#888">\u2026</span>';
+        try{ var urlimg=await uploadShowcaseImg(id,file); await saveShowcase(id,{image:urlimg}); }
+        catch(err){ alert('Upload failed: '+(err.message||err)); renderMockups(); }
+        return;
+      }
+      if(e.target.matches('[data-sccolor]')){ await saveShowcase(id,{color:e.target.value}); return; }
+      if(e.target.matches('[data-scfit]')){ await saveShowcase(id,{fit:e.target.value}); return; }
       if(e.target.matches('[data-showcase]')){
         await sb.from('sites').update({show_on_showcase:e.target.checked, updated_at:new Date().toISOString()}).eq('id',id);
         var m=mockups.find(function(x){return x.id===id;}); if(m) m.show_on_showcase=e.target.checked;
@@ -985,7 +997,9 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       +'<div style="margin-top:11px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:11px">'
       +'<label style="font-size:13px;font-weight:600;color:var(--ink-soft)">Sale price $<input data-price type="number" min="0" step="50" value="'+(m.sale_price?Math.round(m.sale_price/100):'')+'" style="width:110px;margin-left:6px;padding:7px 10px;border:1px solid var(--line);border-radius:8px"></label>'
       +'<span data-breakdown style="font-size:13px;color:var(--ink-soft)">'+demoBreakdown(m.sale_price)+'</span>'
-      +'</div></div>';
+      +'</div>'
+      +scControls(m)
+      +'</div>';
   }
   function renderMockups(){
     var box=document.getElementById('mockups-list'); if(!box) return;
@@ -1038,6 +1052,48 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     var fd=new FormData(); fd.append('file',file); fd.append('api_key',sg.apiKey); fd.append('timestamp',sg.timestamp); fd.append('public_id',sg.publicId); if(sg.assetFolder)fd.append('asset_folder',sg.assetFolder); if(sg.overwrite)fd.append('overwrite',sg.overwrite); fd.append('signature',sg.signature);
     var ur=await fetch('https://api.cloudinary.com/v1_1/'+(sg.cloudName||'dzx6x1hou')+'/image/upload',{method:'POST',body:fd});
     var uj=await ur.json(); if(!ur.ok||!uj.secure_url) throw new Error('Upload failed'); return uj.secure_url;
+  }
+
+  async function uploadShowcaseImg(id, file){
+    var sess=(await sb.auth.getSession()).data.session; var token=sess&&sess.access_token;
+    var folder='leadpages/partners/'+state.partner.id+'/showcase'; var pid=folder+'/'+id+'-'+Math.random().toString(36).slice(2,8);
+    var sr=await fetch('/api/cloudinary/sign',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({publicId:pid,assetFolder:folder})});
+    var sg=await sr.json(); if(!sr.ok||!sg.signature) throw new Error(sg.error||'Could not sign upload');
+    var fd=new FormData(); fd.append('file',file); fd.append('api_key',sg.apiKey); fd.append('timestamp',sg.timestamp); fd.append('public_id',sg.publicId); if(sg.assetFolder)fd.append('asset_folder',sg.assetFolder); if(sg.overwrite)fd.append('overwrite',sg.overwrite); fd.append('signature',sg.signature);
+    var ur=await fetch('https://api.cloudinary.com/v1_1/'+(sg.cloudName||'dzx6x1hou')+'/image/upload',{method:'POST',body:fd});
+    var uj=await ur.json(); if(!ur.ok||!uj.secure_url) throw new Error('Upload failed'); return uj.secure_url;
+  }
+  async function saveShowcase(id, patch){
+    var cur=(await sb.from('sites').select('config').eq('id',id).maybeSingle()).data;
+    var config=(cur&&cur.config)||{};
+    config.showcase=Object.assign({}, config.showcase||{}, patch);
+    Object.keys(config.showcase).forEach(function(k){ if(config.showcase[k]===null||config.showcase[k]==='') delete config.showcase[k]; });
+    var r=await sb.from('sites').update({config:config, updated_at:new Date().toISOString()}).eq('id',id).select('id');
+    if(r.error||!r.data||!r.data.length){ alert('Could not save: '+((r.error&&r.error.message)||'no permission')); return; }
+    var m=mockups.find(function(x){return x.id===id;}); if(m){ m.config=config; }
+    renderMockups();
+  }
+  function scControls(m){
+    var sc=(m.config&&m.config.showcase)||{};
+    var fit=['cover','contain','fill'].indexOf(sc.fit)>=0?sc.fit:'cover';
+    var bs2='padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;cursor:pointer';
+    var prevInner = sc.image ? '<img src="'+esc(sc.image)+'" style="width:100%;height:100%;object-fit:'+fit+'">' : '';
+    var prevBg = (sc.color&&/^#[0-9a-fA-F]{3,8}$/.test(sc.color)) ? esc(sc.color) : '#f2f3f5';
+    return '<div style="margin-top:11px;border-top:1px solid var(--line);padding-top:11px">'
+      +'<div style="font-size:13px;font-weight:600;color:var(--ink-soft);margin-bottom:8px">Showcase card image</div>'
+      +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+      +'<div data-scprev style="width:56px;height:56px;border-radius:10px;overflow:hidden;flex:0 0 auto;border:1px solid var(--line);background:'+prevBg+'">'+prevInner+'</div>'
+      +'<button class="btn" data-scupload style="'+bs2+'">Upload image</button>'
+      +'<input data-scfile type="file" accept="image/*" style="display:none">'
+      +'<button class="btn" data-scclear style="'+bs2+';'+(sc.image?'':'display:none')+'">Remove</button>'
+      +'<label style="font-size:13px;color:var(--ink-soft);font-weight:600;display:inline-flex;align-items:center;gap:6px">Colour <input data-sccolor type="color" value="'+((sc.color&&/^#[0-9a-fA-F]{6}$/.test(sc.color))?esc(sc.color):'#1f7a63')+'" style="width:42px;height:30px;padding:0;border:1px solid var(--line);border-radius:6px;cursor:pointer"></label>'
+      +'<label style="font-size:13px;color:var(--ink-soft);font-weight:600;display:inline-flex;align-items:center;gap:6px">Fit <select data-scfit style="'+bs2+';width:auto">'
+        +'<option value="cover"'+(fit==='cover'?' selected':'')+'>Cover</option>'
+        +'<option value="contain"'+(fit==='contain'?' selected':'')+'>Fit</option>'
+        +'<option value="fill"'+(fit==='fill'?' selected':'')+'>Stretch</option></select></label>'
+      +'</div>'
+      +'<p class="muted" style="font-size:12px;margin:8px 0 0">Upload a photo or logo (shown as a square), or pick a colour. Image is used first; colour is the fallback.</p>'
+      +'</div>';
   }
 
   // ---------- Quote builder ----------
