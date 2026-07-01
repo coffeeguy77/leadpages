@@ -88,9 +88,11 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
 <!-- LOGIN -->
 <div id="view-login" class="hidden"><div class="card center-card">
   <h1>Admin sign in</h1>
-  <p>Enter your admin email for a secure sign-in link.</p>
+  <p>Sign in with your admin email and password.</p>
   <div style="margin-bottom:14px"><label for="email">Email</label><input id="email" type="email" autocomplete="email"></div>
-  <button class="btn btn-brand" id="send-link" style="width:100%">Send sign-in link</button>
+  <div style="margin-bottom:12px"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password"></div>
+  <button class="btn btn-brand" id="pw-signin" style="width:100%;margin-bottom:10px">Sign in</button>
+  <button class="btn" id="send-link" style="width:100%">Email me a sign-in link instead</button>
   <div class="notice info hidden" id="login-sent">Check your email — we sent a sign-in link and a 6-digit code. Click the link, or paste the code below.</div>
   <div id="code-row" class="hidden" style="margin-top:14px">
     <div style="margin-bottom:10px"><label for="login-code">6-digit code from your email</label><input id="login-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"></div>
@@ -215,6 +217,17 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   async function signOut(){ await sb.auth.signOut(); location.reload(); }
 
   // ---- login ----
+  $('pw-signin').addEventListener('click', async function(){
+    var email=($('email').value||'').trim(), pass=$('pw').value||'';
+    $('login-err').classList.add('hidden');
+    if(!email||!pass){ $('login-err').textContent='Enter your email and password.'; $('login-err').classList.remove('hidden'); return; }
+    this.disabled=true; this.textContent='Signing in\u2026';
+    var r=await sb.auth.signInWithPassword({ email:email, password:pass });
+    this.disabled=false; this.textContent='Sign in';
+    if(r.error){ $('login-err').textContent=r.error.message||'Sign-in failed.'; $('login-err').classList.remove('hidden'); return; }
+    boot();
+  });
+  $('pw').addEventListener('keydown',function(e){ if(e.key==='Enter') $('pw-signin').click(); });
   $('send-link').addEventListener('click', async function(){
     var email=($('email').value||'').trim();
     $('login-err').classList.add('hidden');

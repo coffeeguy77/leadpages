@@ -101,8 +101,9 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
     <div id="login-feedback"></div>
     <div id="login-email-step">
       <div class="row"><input id="li-email" type="email" placeholder="you@email.com" autocomplete="email"></div>
-      <div class="row"><button class="btn btn-brand" id="li-link" style="width:100%">Email me a magic link</button></div>
-      <div class="alt">Prefer a code? <button id="li-usecode">Use a 6-digit code</button></div>
+      <div class="row"><input id="li-pass" type="password" placeholder="Password" autocomplete="current-password"></div>
+      <div class="row"><button class="btn btn-brand" id="li-pw" style="width:100%">Sign in</button></div>
+      <div class="alt">No password? <button id="li-link">Email me a sign-in link</button> · <button id="li-usecode">use a code</button></div>
     </div>
     <div id="login-code-step" class="hidden">
       <div class="row"><input id="li-code" inputmode="numeric" placeholder="6-digit code"></div>
@@ -116,6 +117,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
 <div id="view-app" class="main hidden">
   <div class="pane list" id="listpane">
     <div class="lhead"><h2>Conversations</h2><button class="btn btn-sm btn-brand" id="new-btn">New</button></div>
+    <div id="conv-filter-wrap" class="hidden" style="padding:8px 12px;border-bottom:1px solid var(--line)"><input id="conv-filter" placeholder="Filter by name\u2026" style="width:100%;padding:8px 10px;border:1px solid var(--line-strong);border-radius:9px;font-size:13.5px"></div>
     <div id="newbox" class="newbox hidden"></div>
     <div class="convs" id="convs"></div>
   </div>
@@ -136,6 +138,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
   var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
   var me={uid:null,role:'client',partnerId:null,name:''};
   var convos=[], reads={}, sitesById={}, partnersById={}, mySites=[], activeId=null, activeMsgs=[], poll=null;
+  var convFilter='';
 
   function $(id){ return document.getElementById(id); }
   function show(id){ ['view-login','view-app'].forEach(function(v){ $(v).classList.toggle('hidden', v!==id); }); }
@@ -152,6 +155,16 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
   /* ---------- LOGIN ---------- */
   function loginFb(kind,msg){ $('login-feedback').innerHTML = msg?('<div class="'+(kind==='ok'?'msg-ok':'msg-err')+'">'+esc(msg)+'</div>'):''; }
   function wireLogin(){
+    $('li-pw').addEventListener('click', async function(){
+      var email=($('li-email').value||'').trim(), pass=$('li-pass').value||'';
+      if(!email||!pass){ loginFb('err','Enter your email and password.'); return; }
+      this.disabled=true; loginFb('','');
+      var r=await sb.auth.signInWithPassword({ email:email, password:pass });
+      this.disabled=false;
+      if(r.error){ loginFb('err', r.error.message||'Sign-in failed.'); return; }
+      var s2=(await sb.auth.getSession()).data.session; if(s2) init(s2);
+    });
+    $('li-pass').addEventListener('keydown', function(e){ if(e.key==='Enter') $('li-pw').click(); });
     $('li-link').addEventListener('click', async function(){
       var email=($('li-email').value||'').trim(); if(!email){ loginFb('err','Enter your email first.'); return; }
       this.disabled=true; loginFb('', '');
@@ -225,7 +238,10 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
   function renderConvos(){
     var box=$('convs');
     if(!convos.length){ box.innerHTML='<div class="empty" style="padding:26px">No conversations yet.<br>Tap <strong>New</strong> to start one.</div>'; return; }
-    box.innerHTML=convos.map(function(c){
+    var list=convos;
+    if(convFilter){ var qf=convFilter.toLowerCase(); list=convos.filter(function(c){ return convLabel(c).toLowerCase().indexOf(qf)>=0; }); }
+    if(!list.length){ box.innerHTML='<div class="empty" style="padding:26px">No conversations match.</div>'; return; }
+    box.innerHTML=list.map(function(c){
       return '<div class="conv'+(c.id===activeId?' on':'')+(isUnread(c)?' unread':'')+'" data-id="'+c.id+'">'
         +'<div class="ci"><div class="nm">'+esc(convLabel(c))+'</div>'
         +'<div class="kind">'+convKindText(c)+'</div>'
@@ -373,6 +389,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
     var label = me.role==='super'?'LeadPages admin':(me.role==='partner'?(me.name||'Partner'):'Client');
     $('who').innerHTML='<span>'+esc(label)+'</span><a href="#" id="signout">Sign out</a>';
     $('signout').addEventListener('click', async function(e){ e.preventDefault(); stopPoll(); await sb.auth.signOut(); location.reload(); });
+    if(me.role==='super'){ var fw=$('conv-filter-wrap'); if(fw){ fw.classList.remove('hidden'); $('conv-filter').addEventListener('input', function(){ convFilter=this.value.trim(); renderConvos(); }); } }
     show('view-app');
     await loadLookups();
     await loadConvos();
