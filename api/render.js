@@ -34,6 +34,9 @@ const PRIMARY_HOSTS = (process.env.PRIMARY_HOSTS || 'leadpages.webculture.au,lea
 // token templates (server-side identity injection)
 const TOKEN_TEMPLATES = { 'broker-leads': brokerTpl.html, 'trade': tradeTpl.html };
 
+// Default favicon shown on every generated site unless the client uploads their own (cfg.favicon).
+const DEFAULT_FAVICON = process.env.DEFAULT_FAVICON || 'https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico';
+
 const esc = s => String(s ?? '').replace(/[&<>"]/g,
   c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 
@@ -363,7 +366,8 @@ function buildTradeHtml(site, host) {
   const tokens = {
     '{{businessName}}': esc(site.business_name), '{{phoneText}}': esc(cfg.phoneText), '{{email}}': esc(cfg.email),
     '{{phone}}': esc(cfg.phone), '{{domain}}': esc(host), '{{initial}}': esc((site.business_name || 'B').trim().charAt(0).toUpperCase()),
-    '{{trade}}': esc(_trade), '{{pageTitle}}': esc(pageTitle), '{{pageDesc}}': esc(pageDesc)
+    '{{trade}}': esc(_trade), '{{pageTitle}}': esc(pageTitle), '{{pageDesc}}': esc(pageDesc),
+    '{{favicon}}': esc(cfg.favicon || DEFAULT_FAVICON)
   };
   for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
   return html;
@@ -678,7 +682,8 @@ module.exports = async (req, res) => {
       '{{initial}}':      esc((site.business_name || 'B').trim().charAt(0).toUpperCase()),
       '{{trade}}':        esc(_trade),
       '{{pageTitle}}':    esc(pageTitle),
-      '{{pageDesc}}':     esc(pageDesc)
+      '{{pageDesc}}':     esc(pageDesc),
+      '{{favicon}}':      esc(cfg.favicon || DEFAULT_FAVICON)
     };
     for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
 
