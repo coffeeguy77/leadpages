@@ -45,7 +45,7 @@
 
   /* ---- Header ---- */
   header.site{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  .nav{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .nav{display:flex;align-items:center;justify-content:space-between;min-height:66px;padding:6px 0}
   .brand{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:900;font-size:20px;letter-spacing:-.03em;text-decoration:none;color:var(--ink)}
   .brand .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand-l));position:relative;flex:0 0 auto}
   .brand .mark::after{content:"";position:absolute;inset:8px 8px auto 8px;height:5px;border-radius:3px;background:#fff;box-shadow:0 7px 0 rgba(255,255,255,.65)}
@@ -187,7 +187,7 @@
 
 <header class="site">
   <div class="wrap nav">
-    <a class="brand" href="/"><span class="mark"></span>leadpages</a>
+    <a class="brand" href="/"><img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="leadpages" style="height:88px;width:auto;display:block"></a>
     <nav class="nav-links">
       <a class="navlink" href="#how">How it works</a>
       <a class="navlink" href="#earnings">Earnings</a>
@@ -458,7 +458,7 @@
 
 <footer class="site">
   <div class="wrap">
-    <a class="brand" href="/" style="color:#fff"><span class="mark"></span>leadpages</a>
+    <a class="brand" href="/" style="color:#fff"><img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png" alt="leadpages" style="height:88px;width:auto;display:block"></a>
     <div>
       <span style="color:#7e9c92">Powered by LeadPages — local support, powerful platform.</span>
       <a href="#how">How it works</a><a href="#earnings">Earnings</a><a href="#apply">Apply</a>

@@ -33,7 +33,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
 :focus-visible{outline:3px solid var(--brand);outline-offset:2px}
 
 .top{background:var(--surface);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;min-height:60px;padding:6px 0}
 .brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:19px;color:var(--ink);text-decoration:none}
 .brand .mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--brand),#2f9b7e);position:relative}
 .brand .mark::after{content:"";position:absolute;inset:7px 7px auto 7px;height:4px;border-radius:2px;background:#fff;box-shadow:0 6px 0 rgba(255,255,255,.6)}
@@ -81,7 +81,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
 <body>
 
 <div class="top"><div class="wrap">
-  <a class="brand" href="/manage"><span class="mark"></span>leadpages</a>
+  <a class="brand" href="/manage"><img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="leadpages" style="height:88px;width:auto;display:block"></a>
   <div class="links"><a href="/manage">Command Centre</a><a href="/manage-domains">Domains</a><a href="/help" target="_blank" rel="noopener">Help</a><a href="/messages" target="_blank" rel="noopener">Messages</a><span id="adm-who" class="muted"></span> <a href="#" id="signout" class="hidden">Sign out</a></div>
 </div></div>
 
