@@ -47,6 +47,8 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .calc-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:2px;}
 .ci-toggle{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;margin-left:auto;white-space:nowrap;}
 .ci-toggle input{width:15px;height:15px;}
+#svc-list.hide-inactive .svc-row[data-active="0"]{display:none;}
+.svc-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
 .lead-item{padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--surface-2);}
 .li-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13.5px;font-weight:500;}
 .li-when{color:var(--ink-faint);font-size:12px;font-weight:400;}
@@ -3380,7 +3382,7 @@ function heroCtaCard(c){
       _prDraw();
     } else if(sub==='services'){
       body.innerHTML=secCard(c,'services','Services section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro text','ta']])
-        +'<div class="card" style="margin-bottom:22px;"><h2>Service cards</h2><p class="lede">Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 change its icon, heading and text.</p><div id="svc-list"></div></div>';
+        +'<div class="card" style="margin-bottom:22px;"><div class="svc-head"><h2 style="margin:0">Service cards</h2><label class="ci-toggle"><input type="checkbox" id="svc-hide-inactive" checked> Hide inactive</label></div><p class="lede">Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 change its icon, heading and text.</p><div id="svc-list"></div></div>';
       wireSec(c,'services',true,[['eyebrow'],['heading'],['intro']]); wireTradeServices(c);
     } else if(sub==='why'){
       body.innerHTML=secCard(c,'why','Why us section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+listCard('why','Reasons','Each reason can show an outline icon (pick from the library) or a number badge if no icon is set, plus a heading and text. Edit, hide, reorder or add.'); wireSec(c,'why',true,[['eyebrow'],['heading']]); listEditor($('le-why'),c,'why');
@@ -3735,7 +3737,7 @@ function heroCtaCard(c){
     var box=$('svc-list'); if(!box) return;
     if(!Array.isArray(c.services)||!c.services.length){ c.services=JSON.parse(JSON.stringify(DEFAULT_TRADE_SVCS)); }
     box.innerHTML=c.services.map(function(s,i){
-      return '<div class="svc-row" data-row="'+i+'" style="border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;'+(s.on===false?'opacity:.5;':'')+'">'
+      return '<div class="svc-row" data-row="'+i+'" data-active="'+(s.on===false?'0':'1')+'" style="border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;'+(s.on===false?'opacity:.5;':'')+'">'
         +'<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">'
         +'<label style="display:flex;gap:7px;align-items:center;font-weight:600;font-size:13px;white-space:nowrap;"><input type="checkbox" class="svc-on" data-i="'+i+'"'+(s.on===false?'':' checked')+'> Shown</label>'
         +'<div class="iconctl"><button type="button" class="icon-pick" tabindex="-1" title="Choose an icon"></button><input type="text" class="svc-ic icon-input tin" data-i="'+i+'" style="width:56px;text-align:center;font-size:18px;" placeholder="icon"></div>'
@@ -3746,8 +3748,11 @@ function heroCtaCard(c){
     }).join('');
     c.services.forEach(function(s,i){ var ic=box.querySelector('.svc-ic[data-i="'+i+'"]'); if(ic) ic.value=s.icon||''; var tt=box.querySelector('.svc-t[data-i="'+i+'"]'); if(tt) tt.value=s.title||''; var bb=box.querySelector('.svc-b[data-i="'+i+'"]'); if(bb) bb.value=s.body||''; }); refreshIconBtns(box);
     box.addEventListener('input',function(e){ var el=e.target, i=+el.getAttribute('data-i'); if(isNaN(i)) return; var s=c.services[i]; if(!s) return; if(el.classList.contains('svc-ic')) s.icon=el.value; else if(el.classList.contains('svc-t')) s.title=el.value; else if(el.classList.contains('svc-b')) s.body=el.value; persist(); previewApply(); });
-    box.addEventListener('change',function(e){ var el=e.target; if(!el.classList.contains('svc-on')) return; var i=+el.getAttribute('data-i'); var s=c.services[i]; if(s){ s.on=el.checked; var row=box.querySelector('.svc-row[data-row="'+i+'"]'); if(row) row.style.opacity=el.checked?'':'.5'; persist(); previewApply(); } });
+    box.addEventListener('change',function(e){ var el=e.target; if(!el.classList.contains('svc-on')) return; var i=+el.getAttribute('data-i'); var s=c.services[i]; if(s){ s.on=el.checked; var row=box.querySelector('.svc-row[data-row="'+i+'"]'); if(row){ row.style.opacity=el.checked?'':'.5'; row.setAttribute('data-active', el.checked?'1':'0'); } persist(); previewApply(); } });
+    wireSvcHide(); applySvcFilter();
   }
+  function wireSvcHide(){ var t=$('svc-hide-inactive'); if(!t||t.__w) return; t.__w=1; t.addEventListener('change', applySvcFilter); }
+  function applySvcFilter(){ var box=$('svc-list'); if(!box) return; var t=$('svc-hide-inactive'); box.classList.toggle('hide-inactive', !!(t&&t.checked)); }
   function siteConfigForSave(){
     const c=liveConfig();   // strips demo users
     delete c.states;        // sites inherit master rates unless explicitly overriding
