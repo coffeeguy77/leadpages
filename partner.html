@@ -390,6 +390,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
             <div class="field"><label for="p-phone">Support phone</label><input id="p-phone" type="tel"></div>
           </div>
           <div class="field"><label for="p-bio">Short bio (optional)</label><textarea id="p-bio" rows="3" placeholder="A line or two about you that clients can see."></textarea></div>
+          <div class="field"><label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;cursor:pointer"><input type="checkbox" id="p-notify" style="width:auto"> Email me when I get a new message</label><div class="muted" style="font-size:12.5px;margin-top:4px">All client and LeadPages correspondence stays in the app for your records. We’ll email you a heads-up when there’s something new to read.</div></div>
           <div class="save-row">
             <button class="btn btn-brand" id="save-profile">Save profile</button>
             <span class="saved" id="profile-saved">Saved ✓</span>
@@ -504,6 +505,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       support_phone:(document.getElementById('p-phone').value||'').trim()||null,
       region:(document.getElementById('p-region').value||'').trim()||null,
       bio:(document.getElementById('p-bio').value||'').trim()||null,
+      notify_new_message:document.getElementById('p-notify').checked,
       updated_at:new Date().toISOString()
     };
     var r=await sb.from('partner_profiles').update(patch).eq('partner_id',state.partner.id).select('*');
@@ -532,6 +534,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     document.getElementById('p-phone').value=(p&&p.support_phone)||state.partner.phone||'';
     document.getElementById('p-region').value=(p&&p.region)||'';
     document.getElementById('p-bio').value=(p&&p.bio)||'';
+    document.getElementById('p-notify').checked = !(p && p.notify_new_message===false);
   }
 
   function renderDash(){
@@ -541,7 +544,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     badge.className='statusbadge s-'+(p.status||'pending');
     fillProfile(state.profile);
     show('view-dash');
-    wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage(); loadPayouts(); loadQuotes();
+    wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage(); loadPayouts(); loadQuotes(); loadMsgBadge();
   }
 
   async function loadPartner(session){
@@ -596,6 +599,10 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     var acts='';
     if(mine){
       acts+='<a class="btn" href="/manage" target="_blank" rel="noopener" style="'+bs+brand+'">Open builder</a>';
+      acts+='<a class="btn" href="/messages" target="_blank" rel="noopener" style="'+bs+'">\uD83D\uDCAC Message</a>';
+      acts+='<button class="btn" data-cinfo="'+esc(c.id)+'" style="'+bs+'">Info</button>';
+      acts+='<button class="btn" data-crename="'+esc(c.id)+'" style="'+bs+'">Rename</button>';
+      acts+='<button class="btn" data-cslug="'+esc(c.id)+'" style="'+bs+'">Change URL</button>';
       if(live){
         acts+='<a class="btn" href="/s/'+encodeURIComponent(c.slug)+'" target="_blank" rel="noopener" style="'+bs+'">View site</a>';
         acts+='<button class="btn" data-unpub="'+esc(c.id)+'" style="'+bs+'">Unpublish</button>';
@@ -607,11 +614,17 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       if(live) acts+='<a class="btn" href="/s/'+encodeURIComponent(c.slug)+'" target="_blank" rel="noopener" style="'+bs+'">View site</a>';
       else acts+='<span class="muted" style="font-size:13px;align-self:center">Managed by another provider</span>';
     }
+    var cinfo='<div data-cinfobox="'+esc(c.id)+'" style="display:none;margin-top:10px;border-top:1px solid var(--line);padding-top:10px;font-size:13.5px;color:var(--ink-soft);line-height:1.7">'
+      +'<div><strong>Business:</strong> '+esc(c.business_name||'\u2014')+'</div>'
+      +'<div><strong>URL:</strong> leadpages.com.au/'+esc(c.slug)+'</div>'
+      +'<div><strong>Plan:</strong> '+esc(c.plan_key||'\u2014')+(c.monthly_amount!=null?(' ('+money(c.monthly_amount)+'/mo)'):'')+'</div>'
+      +'<div><strong>Status:</strong> '+esc(c.status||'\u2014')+(c.billing_status?(' \u00b7 billing: '+esc(c.billing_status)):'')+'</div>'
+      +'</div>';
     return '<div class="card" style="padding:16px 18px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
       +'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(c.business_name||c.slug)+'</div>'
       +'<div class="muted" style="font-size:13px;margin-top:2px">'+esc(c.slug)+plan+fee+'</div></div>'
       +'<div>'+badge+'</div></div>'
-      +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+acts+'</div></div>';
+      +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+acts+'</div>'+cinfo+'</div>';
   }
   function renderClients(){
     var box=document.getElementById('clients-list'); if(!box) return;
@@ -663,11 +676,27 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         if(r.error){ alert('Could not save theme: '+r.error.message); return; }
         themes.unshift(r.data); renderThemes(); fillThemeSelects(); renderMockups();
       }
-      if(e.target.closest('[data-convert]')){
-        var email=prompt('Customer login email (so they can sign in to their site):',''); if(email===null) return;
-        var r=await sb.from('sites').update({is_mockup:false, owner_email:(email||'').trim()||null, servicing_status:'partner_serviced', updated_at:new Date().toISOString()}).eq('id',id).select('id');
-        if(r.error||!r.data||!r.data.length){ alert('Could not convert: '+((r.error&&r.error.message)||'no permission')); return; }
-        loadClients(); gotoPanel('clients');
+      if(e.target.closest('[data-renamedemo]')){
+        var nm=prompt('Rename this demo:', m.business_name||''); if(nm===null) return; nm=nm.trim(); if(!nm) return;
+        var r=await sb.from('sites').update({business_name:nm, updated_at:new Date().toISOString()}).eq('id',id).select('id');
+        if(r.error||!r.data||!r.data.length){ alert('Could not rename: '+((r.error&&r.error.message)||'no permission')); return; }
+        m.business_name=nm; renderMockups(); return;
+      }
+      if(e.target.closest('[data-scope]')){
+        var bx=card.querySelector('[data-scopebox]'); if(bx) bx.style.display=(bx.style.display==='none'||!bx.style.display)?'block':'none'; return;
+      }
+      if(e.target.closest('[data-scopeadd]')){
+        var host=card.querySelector('[data-scopeitems]'); if(host){ var tmp=document.createElement('div'); tmp.innerHTML=scopeRow({}); host.appendChild(tmp.firstChild); } return;
+      }
+      if(e.target.closest('[data-scoperm]')){
+        var row=e.target.closest('[data-scoperow]'); if(row) row.remove(); return;
+      }
+      if(e.target.closest('[data-scopesave]')){
+        var desc=(card.querySelector('[data-scopedesc]').value||'').trim();
+        var its=[]; card.querySelectorAll('[data-scoperow]').forEach(function(row){ var t=(row.querySelector('[data-scopetext]').value||'').trim(); if(t) its.push({text:t, done:row.querySelector('[data-scopedone]').checked}); });
+        var ok=await saveScope(id,{description:desc, items:its});
+        if(ok){ var sv=card.querySelector('[data-scopesaved]'); if(sv){ sv.style.display='inline'; setTimeout(function(){ sv.style.display='none'; },1600); } }
+        return;
       }
       if(e.target.closest('[data-del]')){
         if(!confirm('Delete this demo? This cannot be undone.')) return;
@@ -732,6 +761,23 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       try{ navigator.clipboard.writeText(r.body||''); var t=b.textContent; b.textContent='Copied \u2713'; setTimeout(function(){ b.textContent=t; },1500); }catch(_e){}
     });
     document.getElementById('clients-list').addEventListener('click', async function(e){
+      var _cc=e.target.closest('[data-cinfo],[data-crename],[data-cslug]');
+      if(_cc){
+        var cid=_cc.getAttribute('data-cinfo')||_cc.getAttribute('data-crename')||_cc.getAttribute('data-cslug');
+        var cc=clients.find(function(x){return x.id===cid;}); if(!cc) return;
+        if(_cc.hasAttribute('data-cinfo')){ var bx=document.querySelector('[data-cinfobox="'+cid+'"]'); if(bx) bx.style.display=(bx.style.display==='none'||!bx.style.display)?'block':'none'; return; }
+        if(_cc.hasAttribute('data-crename')){ var nm=prompt('Rename this client site:', cc.business_name||''); if(nm===null) return; nm=nm.trim(); if(!nm) return;
+          var rr=await sb.from('sites').update({business_name:nm, updated_at:new Date().toISOString()}).eq('id',cid).select('id');
+          if(rr.error||!rr.data||!rr.data.length){ alert('Could not rename: '+((rr.error&&rr.error.message)||'no permission')); return; }
+          cc.business_name=nm; renderClients(); return; }
+        if(_cc.hasAttribute('data-cslug')){ var sl=prompt('Change the site URL (leadpages.com.au/...). Lowercase letters, numbers and hyphens. Note: this changes the live web address.', cc.slug||''); if(sl===null) return;
+          sl=(sl||'').trim().toLowerCase().replace(/[^a-z0-9-]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''); if(!sl){ alert('That URL isn\u2019t valid.'); return; }
+          var ex=await sb.from('sites').select('id').eq('slug',sl).neq('id',cid).limit(1);
+          if(ex.data&&ex.data.length){ alert('That URL is already taken \u2014 try another.'); return; }
+          var r2=await sb.from('sites').update({slug:sl, updated_at:new Date().toISOString()}).eq('id',cid).select('id');
+          if(r2.error||!r2.data||!r2.data.length){ alert('Could not change URL: '+((r2.error&&r2.error.message)||'no permission')); return; }
+          cc.slug=sl; renderClients(); return; }
+      }
       var pub=e.target.closest('[data-pub]'), un=e.target.closest('[data-unpub]');
       if(!pub && !un) return;
       var btn=pub||un; var id=btn.getAttribute(pub?'data-pub':'data-unpub');
@@ -988,7 +1034,8 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       +'<a class="btn" href="/manage" target="_blank" rel="noopener" style="'+bs+brand+'">Open builder</a>'
       +'<a class="btn" href="/'+encodeURIComponent(m.slug)+'?preview=1" target="_blank" rel="noopener" style="'+bs+'">Preview</a>'
       +'<button class="btn" data-savetheme style="'+bs+'">Save as theme</button>'
-      +'<button class="btn" data-convert style="'+bs+'">Convert to client</button>'
+      +'<button class="btn" data-scope style="'+bs+'">Project scope</button>'
+      +'<button class="btn" data-renamedemo style="'+bs+'">Rename</button>'
       +'<button class="btn" data-del style="'+bs+'">Delete</button>'
       +'<select data-applytheme style="'+bs+';width:auto">'+themeOptions()+'</select>'
       +'<input data-pw type="text" value="'+esc(m.preview_password||'')+'" placeholder="Sample password (optional)" style="'+bs+';width:auto;min-width:185px">'
@@ -999,6 +1046,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       +'<span data-breakdown style="font-size:13px;color:var(--ink-soft)">'+demoBreakdown(m.sale_price)+'</span>'
       +'</div>'
       +scControls(m)
+      +scopeEditor(m)
       +'</div>';
   }
   function renderMockups(){
@@ -1094,6 +1142,47 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
       +'</div>'
       +'<p class="muted" style="font-size:12px;margin:8px 0 0">Upload a photo or logo (shown as a square), or pick a colour. Image is used first; colour is the fallback.</p>'
       +'</div>';
+  }
+  function scopeRow(it){
+    it=it||{};
+    return '<div data-scoperow style="display:flex;gap:8px;align-items:center;margin-bottom:6px">'
+      +'<input type="checkbox" data-scopedone'+(it.done?' checked':'')+' style="width:auto;flex:0 0 auto">'
+      +'<input type="text" data-scopetext value="'+esc(it.text||'')+'" placeholder="e.g. Online booking form" style="flex:1;padding:7px 10px;border:1px solid var(--line);border-radius:7px;font-size:13.5px">'
+      +'<button class="btn" data-scoperm style="padding:5px 10px;font-size:13px">\u00d7</button></div>';
+  }
+  function scopeEditor(m){
+    var sc=(m.config&&m.config.scope)||{};
+    var items=Array.isArray(sc.items)?sc.items:[];
+    var bs3='padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;cursor:pointer';
+    return '<div data-scopebox style="display:none;margin-top:11px;border-top:1px solid var(--line);padding-top:11px">'
+      +'<div style="font-size:13px;font-weight:600;color:var(--ink-soft);margin-bottom:6px">Project scope</div>'
+      +'<textarea data-scopedesc rows="3" placeholder="Job description \u2014 what are you building for this client?" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit">'+esc(sc.description||'')+'</textarea>'
+      +'<div style="font-size:12px;color:var(--ink-soft);margin:10px 0 4px;font-weight:600">Features / tasks (tick when done)</div>'
+      +'<div data-scopeitems>'+items.map(scopeRow).join('')+'</div>'
+      +'<button class="btn" data-scopeadd style="'+bs3+';margin-top:4px">+ Add feature line</button>'
+      +'<div style="margin-top:10px"><button class="btn" data-scopesave style="'+bs3+';background:var(--brand);border-color:var(--brand);color:#fff">Save scope</button> <span data-scopesaved class="muted" style="display:none;font-size:13px;margin-left:8px">Saved \u2713</span></div>'
+      +'</div>';
+  }
+  async function saveScope(id, scope){
+    var cur=(await sb.from('sites').select('config').eq('id',id).maybeSingle()).data;
+    var config=(cur&&cur.config)||{};
+    config.scope=scope;
+    var r=await sb.from('sites').update({config:config, updated_at:new Date().toISOString()}).eq('id',id).select('id');
+    if(r.error||!r.data||!r.data.length){ alert('Could not save scope: '+((r.error&&r.error.message)||'no permission')); return false; }
+    var m=mockups.find(function(x){return x.id===id;}); if(m){ m.config=config; }
+    return true;
+  }
+  async function loadMsgBadge(){
+    try{
+      var sess=(await sb.auth.getSession()).data.session; var myid=sess&&sess.user&&sess.user.id; if(!myid) return;
+      var cr=await sb.from('conversations').select('id,last_message_at'); var convs=cr.data||[]; if(!convs.length) return;
+      var rd=await sb.from('conversation_reads').select('conversation_id,last_read_at').eq('user_id',myid);
+      var reads={}; (rd.data||[]).forEach(function(x){ reads[x.conversation_id]=x.last_read_at; });
+      var unread=convs.filter(function(c){ var lr=reads[c.id]; return !lr || new Date(c.last_message_at)>new Date(lr); }).length;
+      var btn=document.getElementById('messages-link'); if(!btn) return;
+      var old=btn.querySelector('[data-msgbadge]'); if(old) old.remove();
+      if(unread>0){ var b=document.createElement('span'); b.setAttribute('data-msgbadge',''); b.textContent=unread>9?'9+':String(unread); b.style.cssText='margin-left:7px;background:var(--bad);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:1px 7px;vertical-align:middle'; btn.appendChild(b); }
+    }catch(_e){}
   }
 
   // ---------- Quote builder ----------
