@@ -293,6 +293,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
     if(r.error){ alert('Could not send: '+r.error.message); return; }
     $('composer-text').value=''; $('composer-text').style.height='auto';
     activeMsgs.push(r.data); renderMsgs();
+    try{ var _t=(await sb.auth.getSession()).data.session; _t=_t&&_t.access_token; fetch('/api/notify-message',{method:'POST',headers:Object.assign({'content-type':'application/json'},_t?{Authorization:'Bearer '+_t}:{}),body:JSON.stringify({conversationId:activeId})}); }catch(_e){}
     await markRead(activeId);
     await loadConvos(); renderConvos();
   }

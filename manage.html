@@ -1914,6 +1914,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     try{ renderSiteAnalytics(); }catch(e){}
     try{ lpRenderSupportContact(); }catch(e){}
     if(document.body.classList.contains('lp-prev-open')) previewLoad();
+    try{ lpScopeSync(); }catch(e){}
   }
   /* Partner Program: show the customer (site owner) their assigned support contact. */
   function lpRenderSupportContact(){
@@ -3983,6 +3984,67 @@ function heroCtaCard(c){
     var cl=$('btn-clear-leads'); if(cl && !cl.__wired){ cl.__wired=1; cl.addEventListener('click',function(){ try{localStorage.removeItem('linray_demo_leads');}catch(e){} renderLeads(); toast('Demo leads cleared'); }); }
   }
   init();
+
+  /* ---- Project scope panel: shows the demo's config.scope while building, tick tasks done ---- */
+  var LPSCOPE={cfg:null};
+  function lpEsc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function lpScopeEnsure(){
+    if(document.getElementById('lp-scope-btn')) return;
+    var btn=document.createElement('button'); btn.id='lp-scope-btn'; btn.type='button'; btn.textContent='\uD83D\uDCCB Scope';
+    btn.style.cssText='position:fixed;right:16px;bottom:16px;z-index:9998;background:#1f7a63;color:#fff;border:0;border-radius:999px;padding:11px 18px;font:600 14px Inter,system-ui,sans-serif;box-shadow:0 8px 22px -8px rgba(0,0,0,.4);cursor:pointer;display:none';
+    btn.addEventListener('click',lpScopeOpen);
+    document.body.appendChild(btn);
+    var panel=document.createElement('div'); panel.id='lp-scope-panel';
+    panel.style.cssText='position:fixed;right:16px;bottom:64px;z-index:9999;width:360px;max-width:calc(100vw - 32px);max-height:70vh;overflow:auto;background:#fff;border:1px solid #e2ddd2;border-radius:14px;box-shadow:0 20px 50px -18px rgba(0,0,0,.45);padding:16px 18px;display:none;font-family:Inter,system-ui,sans-serif;color:#16201c';
+    panel.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong style="font-family:Archivo,sans-serif;font-size:16px">Project scope</strong><button type="button" id="lp-scope-close" style="border:0;background:none;font-size:20px;cursor:pointer;color:#7d8a83;line-height:1">\u00d7</button></div><div id="lp-scope-body"><div style="color:#7d8a83;font-size:13px">Loading\u2026</div></div>';
+    document.body.appendChild(panel);
+    document.getElementById('lp-scope-close').addEventListener('click',function(){ panel.style.display='none'; });
+    document.getElementById('lp-scope-body').addEventListener('change',function(e){ if(e.target && e.target.getAttribute && e.target.getAttribute('data-lpscope-idx')!==null && e.target.hasAttribute('data-lpscope-done')) lpScopeToggle(parseInt(e.target.getAttribute('data-lpscope-idx'),10), e.target.checked); });
+  }
+  function lpCurrentScope(){
+    var s=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null;
+    return (s&&s.config&&s.config.scope) || (typeof data!=='undefined'&&data&&data.scope) || null;
+  }
+  function lpScopeSync(){
+    lpScopeEnsure();
+    var btn=document.getElementById('lp-scope-btn'); if(!btn) return;
+    var scope=lpCurrentScope(); LPSCOPE.cfg=scope;
+    btn.style.display = currentSiteId ? 'block' : 'none';
+    if(scope && Array.isArray(scope.items) && scope.items.length){ var done=scope.items.filter(function(i){return i.done;}).length; btn.textContent='\uD83D\uDCCB Scope '+done+'/'+scope.items.length; }
+    else { btn.textContent='\uD83D\uDCCB Scope'; }
+    var panel=document.getElementById('lp-scope-panel'); if(panel && panel.style.display==='block') lpScopeRender();
+  }
+  function lpScopeOpen(){ lpScopeEnsure(); var pnl=document.getElementById('lp-scope-panel'); if(!pnl) return; pnl.style.display=(pnl.style.display==='block')?'none':'block'; if(pnl.style.display==='block'){ LPSCOPE.cfg=lpCurrentScope(); lpScopeRender(); } }
+  function lpScopeRender(){
+    var body=document.getElementById('lp-scope-body'); if(!body) return;
+    var scope=LPSCOPE.cfg;
+    if(!currentSiteId){ body.innerHTML='<div style="color:#7d8a83;font-size:13px">Load a site to see its scope.</div>'; return; }
+    if(!scope || (!(scope.description&&String(scope.description).trim()) && !(Array.isArray(scope.items)&&scope.items.length))){
+      body.innerHTML='<div style="color:#7d8a83;font-size:13px;line-height:1.6">No scope for this site yet.<br>Add one in <strong>/partner \u2192 Demos &amp; themes \u2192 Project scope</strong>.</div>'; return;
+    }
+    var html='';
+    if(scope.description&&String(scope.description).trim()) html+='<div style="font-size:13.5px;color:#3f4d47;white-space:pre-wrap;line-height:1.55;margin-bottom:12px">'+lpEsc(scope.description)+'</div>';
+    var items=Array.isArray(scope.items)?scope.items:[];
+    if(items.length){
+      var done=items.filter(function(i){return i.done;}).length, pct=Math.round(done/items.length*100);
+      html+='<div style="height:7px;border-radius:999px;background:#eee9df;overflow:hidden;margin-bottom:12px"><div style="height:100%;width:'+pct+'%;background:#1f7a63"></div></div>';
+      html+=items.map(function(it,idx){ return '<label style="display:flex;gap:9px;align-items:flex-start;margin-bottom:9px;font-size:13.5px;cursor:pointer"><input type="checkbox" data-lpscope-done data-lpscope-idx="'+idx+'"'+(it.done?' checked':'')+' style="margin-top:2px;flex:0 0 auto"><span style="'+(it.done?'text-decoration:line-through;color:#9aa39c':'color:#16201c')+'">'+lpEsc(it.text||'')+'</span></label>'; }).join('');
+    }
+    body.innerHTML=html;
+  }
+  async function lpScopeToggle(idx, done){
+    var scope=LPSCOPE.cfg; if(!scope||!Array.isArray(scope.items)||!scope.items[idx]) return;
+    scope.items[idx].done=!!done;
+    try{
+      var cur=(await sb.from('sites').select('config').eq('id',currentSiteId).maybeSingle()).data;
+      var cfg=(cur&&cur.config)||{}; cfg.scope=scope;
+      await sb.from('sites').update({config:cfg, updated_at:new Date().toISOString()}).eq('id',currentSiteId);
+      var s=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null; if(s) s.config=cfg;
+      if(typeof data!=='undefined'&&data) data.scope=scope;
+    }catch(e){ if(typeof toast==='function') toast('Could not save scope'); }
+    lpScopeRender(); lpScopeSync();
+  }
+  lpScopeEnsure();
 })();
 </script>
 </body>
