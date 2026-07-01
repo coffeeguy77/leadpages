@@ -404,6 +404,7 @@ async function showcaseRespond(req, res, prof, base) {
   const demos = (await supabase.from('sites')
     .select('slug,business_name,config,preview_password')
     .eq('show_on_showcase', true)
+    .eq('is_mockup', true)
     .or('servicing_partner_id.eq.' + prof.partner_id + ',referring_partner_id.eq.' + prof.partner_id)
     .limit(48)).data || [];
   const home = (await supabase.from('sites')
@@ -595,6 +596,7 @@ module.exports = async (req, res) => {
       const _demos = pid ? ((await supabase.from('sites')
         .select('slug,business_name,config,preview_password')
         .eq('show_on_showcase', true)
+    .eq('is_mockup', true)
         .or('servicing_partner_id.eq.' + pid + ',referring_partner_id.eq.' + pid)
         .limit(48)).data || []) : [];
       return sendHtml(res, buildAgencyHtml(site, host, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au'), isLive);
