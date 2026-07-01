@@ -3677,12 +3677,27 @@ function heroCtaCard(c){
               +'<div class="f"><label>Padding <span class="hint" id="lg-pad-val">'+_pad+'px</span></label><input type="range" id="lg-pad" min="0" max="28" step="1" value="'+_pad+'" style="width:100%;"></div>'
               +'<div class="f"><label>Corner radius <span class="hint" id="lg-rad-val">'+_rad+'px</span></label><input type="range" id="lg-rad" min="0" max="40" step="1" value="'+_rad+'" style="width:100%;"></div></div></div>'
         +'</div>'
-        +headerCtaCard(c);
-      wireTradeBranding(c); wireLogoSize(c); wireHeaderCta(c);
+        +_faviconCard(c)+headerCtaCard(c);
+      wireTradeBranding(c); wireLogoSize(c); wireHeaderCta(c); wireFavicon(c);
     } else if(sub==='sectionOrder'){
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Position \u2014 section order</h2><button class="btn ghost" id="ord-reset" type="button">Reset to default</button></div><p class="lede" style="margin:0 0 12px;">Drag the sections into the order you want them on the page. Switch components on in Page Content, then drag them into position here.</p><div id="ord-list"></div></div>';
       wireOrder(c);
     }
+  }
+  function _faviconCard(c){
+    var fav=c.favicon||'';
+    var prev=fav?'<img src="'+esc(fav)+'" alt="favicon" style="width:34px;height:34px;object-fit:contain;border:1px solid var(--line);border-radius:7px;background:#fff;padding:3px;box-sizing:border-box;">':'<span class="hint" style="margin:0;">Showing the default LeadPages icon.</span>';
+    return '<div class="card" style="margin-bottom:22px;"><h2>Browser tab icon (favicon)</h2><p class="lede">The small icon shown in the browser tab. Upload your own \u2014 or leave it blank and the LeadPages icon is used.</p>'
+      +'<div id="fav-prev" style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">'+prev+'</div>'
+      +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><input type="file" id="fav-file" accept="image/png,image/x-icon,image/svg+xml,image/jpeg,.ico">'
+      +(fav?'<button type="button" class="btn ghost sm" id="fav-clear">Use default icon</button>':'')+'</div>'
+      +'<div class="hint" style="margin-top:6px;">PNG, ICO or SVG. A square 32\u00d732 or 48\u00d748 image works best.</div></div>';
+  }
+  function wireFavicon(c){
+    var f=$('fav-file');
+    if(f) f.addEventListener('change',function(e){ var file=e.target.files[0]; if(!file) return; if(file.size>2000000){ toast('Icon too large (max ~2 MB)'); e.target.value=''; return; } var prevPid=c._favPid||''; toast('Uploading icon\u2026'); cwUpload(file,['favicon']).then(function(r){ c.favicon=r.url; c._favPid=r.publicId; persist(); if(prevPid&&prevPid!==r.publicId) cwDelete(prevPid); toast('Favicon uploaded'); renderLandingSub(c); }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); }); e.target.value=''; });
+    var clr=$('fav-clear');
+    if(clr) clr.addEventListener('click',function(){ if(c._favPid){ cwDelete(c._favPid); delete c._favPid; } delete c.favicon; persist(); toast('Using the default icon'); renderLandingSub(c); });
   }
   function headerCtaCard(c){
     var H=(c.sections&&c.sections.header)||{};
