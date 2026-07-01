@@ -3916,21 +3916,16 @@ function heroCtaCard(c){
     mv('btn-fav', tools);
     mv('btn-newsite', tools);
     if(!$('lpc-acct')){
-      var acct=document.createElement('div'); acct.id='lpc-acct'; acct.style.cssText='position:relative;';
+      var acct=document.createElement('div'); acct.id='lpc-acct'; acct.style.cssText='margin-left:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
       if(currentRole==='super'){
-        acct.innerHTML='<button type="button" id="lpc-acct-btn" class="btn ghost">Partner Admin \u25BE</button>'
-          +'<div id="lpc-acct-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);min-width:200px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:6px;z-index:9500;">'
-          +'<a href="/partners-admin" class="lpc-mi" style="display:block;padding:9px 12px;border-radius:8px;color:var(--ink);text-decoration:none;font:600 13.5px var(--font-ui);">Partner dashboard</a>'
-          +'<a href="/partners-admin" id="lpc-acct-settings" class="lpc-mi" style="display:block;padding:9px 12px;border-radius:8px;color:var(--ink);text-decoration:none;font:600 13.5px var(--font-ui);">Account settings</a>'
-          +'<a href="#" id="lpc-acct-signout" class="lpc-mi" style="display:block;padding:9px 12px;border-radius:8px;color:var(--ink);text-decoration:none;font:600 13.5px var(--font-ui);">Sign Out</a>'
-          +'</div>';
+        acct.innerHTML='<a href="/partners-admin" class="btn ghost" style="text-decoration:none;">Partner dashboard</a>'
+          +'<a href="/partners-admin" id="lpc-acct-settings" class="btn ghost" style="text-decoration:none;">Account settings</a>'
+          +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
       } else {
         acct.innerHTML='<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
       }
       ctx.appendChild(acct);
       var sob=$('lpc-acct-signout'); if(sob) sob.addEventListener('click',function(e){ e.preventDefault(); signOutLP(); });
-      var ab=$('lpc-acct-btn'), am=$('lpc-acct-menu');
-      if(ab&&am){ ab.addEventListener('click',function(e){ e.stopPropagation(); am.style.display=(am.style.display==='none'?'block':'none'); }); document.addEventListener('click',function(){ am.style.display='none'; }); am.addEventListener('click',function(e){ e.stopPropagation(); }); }
     }
   }
   /* ---- demo themes (super-admin: manage looks shown on /demo) ---- */
