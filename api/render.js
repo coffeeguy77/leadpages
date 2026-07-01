@@ -152,6 +152,25 @@ function demoGateHtml(site, tried) {
     '<button type="submit" style="width:100%;padding:13px;border-radius:11px;border:0;background:#ff6a1a;color:#fff;font-weight:700;font-size:16px;cursor:pointer">View sample</button>' +
     '</form></body></html>';
 }
+function scMedia(demo) {
+  const cfg = demo.config || {};
+  const sc = cfg.showcase || {};
+  const box = 'position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:#f2f3f5;display:block';
+  const imgCss = 'position:absolute;inset:0;width:100%;height:100%;';
+  const fitOk = ['cover', 'contain', 'fill'].indexOf(sc.fit) >= 0;
+  const color = /^#[0-9a-fA-F]{3,8}$/.test(sc.color || '') ? sc.color : '';
+  if (sc.image) {
+    const fit = fitOk ? sc.fit : 'cover';
+    return '<div style="' + box + '"><img src="' + esc(sc.image) + '" alt="" loading="lazy" style="' + imgCss + 'object-fit:' + fit + '"></div>';
+  }
+  if (color) return '<div style="' + box + 'background:' + esc(color) + '"></div>';
+  const logo = (cfg.logo && cfg.logo.imageUrl) ? esc(cfg.logo.imageUrl) : '';
+  if (logo) {
+    const fit = fitOk ? sc.fit : 'contain';
+    return '<div style="' + box + '"><img src="' + logo + '" alt="" loading="lazy" style="' + imgCss + 'object-fit:' + fit + ';padding:14%"></div>';
+  }
+  return '<div style="' + box + 'background:linear-gradient(135deg,var(--accent,#ff6a1a),#15191e)"></div>';
+}
 function scCard(demo, base) {
   const cfg = demo.config || {};
   const trade = esc((cfg.trade || '').toString());
@@ -161,7 +180,7 @@ function scCard(demo, base) {
     ? '<span class="sc-card-logo"><img src="' + logoUrl + '" alt="" loading="lazy"></span>'
     : '<span class="sc-card-logo mono">' + esc((demo.business_name || '?').trim().slice(0, 1).toUpperCase()) + '</span>';
   return '<a class="sc-card" href="' + url + '" target="_blank" rel="noopener">' +
-    '<div class="sc-card-top">' + chip + (trade ? '<span class="sc-trade">' + trade + '</span>' : '') + '</div>' +
+    scMedia(demo) +
     '<div class="sc-card-body"><div class="sc-name">' + esc(demo.business_name || demo.slug) + '</div>' +
     '<div class="sc-view">View demo &rarr;</div></div></a>';
 }
@@ -301,7 +320,7 @@ function buildAgencyHtml(site, host, demos, base) {
     const lock = d.preview_password ? '<span class="ag-lock">&#128274;</span>' : '';
     const chip = lg ? ('<span class="ag-chip"><img src="' + lg + '" alt="" loading="lazy"></span>') : ('<span class="ag-chip mono">' + esc((d.business_name || '?').trim().slice(0, 1).toUpperCase()) + '</span>');
     const url = 'https://' + base + '/' + encodeURIComponent(d.slug) + '?preview=1';
-    return '<a class="ag-card" href="' + url + '" target="_blank" rel="noopener"><div class="ag-top">' + chip + (trade ? '<span class="ag-trade">' + trade + '</span>' : '') + lock + '</div><div class="ag-body"><div class="ag-name">' + esc(d.business_name || d.slug) + '</div><div class="ag-view">View site &rarr;</div></div></a>';
+    return '<a class="ag-card" href="' + url + '" target="_blank" rel="noopener"><div style="position:relative">' + scMedia(d) + (lock ? '<span style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.5);color:#fff;border-radius:6px;padding:2px 6px;font-size:13px">' + lock + '</span>' : '') + '</div><div class="ag-body"><div class="ag-name">' + esc(d.business_name || d.slug) + '</div><div class="ag-view">View site &rarr;</div></div></a>';
   }).join('') : '<p class="ag-empty">New work coming soon.</p>';
 
   const tb = sec.textBox || {};
@@ -360,7 +379,7 @@ function partnerDemosBlock(demos, base, accent) {
     const chip = logoUrl
       ? '<span class="lpw-logo"><img src="' + logoUrl + '" alt="" loading="lazy"></span>'
       : '<span class="lpw-logo lpw-mono">' + esc((d.business_name || '?').trim().slice(0, 1).toUpperCase()) + '</span>';
-    return '<a class="lpw-card" href="' + url + '" target="_blank" rel="noopener"><div class="lpw-top">' + chip + (trade ? '<span class="lpw-trade">' + trade + '</span>' : '') + '</div><div class="lpw-body"><div class="lpw-name">' + esc(d.business_name || d.slug) + '</div><div class="lpw-view">View demo &rarr;</div></div></a>';
+    return '<a class="lpw-card" href="' + url + '" target="_blank" rel="noopener">' + scMedia(d) + '<div class="lpw-body"><div class="lpw-name">' + esc(d.business_name || d.slug) + '</div><div class="lpw-view">View demo &rarr;</div></div></a>';
   }).join('');
   return '<style>'
     + '.lpw-wrap{--lpw-ac:' + ac + ';font-family:Inter,system-ui,sans-serif;background:#fff;color:#15191e;padding:60px 22px;border-top:1px solid #e6e8ec}'
