@@ -1543,7 +1543,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var __so=document.getElementById('lp-signout-top'); if(__so) __so.onclick=function(e){ e.preventDefault(); signOutLP(); };
   }
   async function loadSitesFromDB(){
-    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,custom_domain,owner_email,config,template,is_demo,is_favorite,is_partner_home,referring_partner_id,servicing_partner_id').order('created_at',{ascending:true});
+    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,custom_domain,owner_email,config,template,is_demo,is_favorite,is_partner_home,referring_partner_id,servicing_partner_id,is_mockup').order('created_at',{ascending:true});
     if(error){ toast('Could not load site: '+error.message); return; }
     allSites = rows||[];
     if(!allSites.length){ toast('No site is assigned to this account yet.'); return; }
@@ -1567,11 +1567,11 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     renderLanding(); el.classList.add('show');
   }
   function hideLanding(){ var el=document.getElementById('lp-landing'); if(el) el.classList.remove('show'); }
-  function lplGroup(s){ return s.is_demo ? 'demo' : 'customer'; }
+  function lplGroup(s){ return (currentRole!=='super') ? (s.is_mockup ? 'demo' : 'customer') : (s.is_demo ? 'demo' : 'customer'); }
   function renderLanding(){
     var list=document.getElementById('lpl-list'); if(!list) return;
     var q=(LPL.q||'').toLowerCase();
-    var items=(allSites||[]).filter(function(s){ return !s.servicing_partner_id && !s.referring_partner_id && !s.is_partner_home; }).filter(function(s){ return lplGroup(s)===LPL.grp; })
+    var items=(allSites||[]).filter(function(s){ return (currentRole==='super') ? (!s.servicing_partner_id && !s.referring_partner_id && !s.is_partner_home) : true; }).filter(function(s){ return lplGroup(s)===LPL.grp; })
       .filter(function(s){ return !q || (s.business_name||'').toLowerCase().indexOf(q)>=0 || (s.slug||'').toLowerCase().indexOf(q)>=0; })
       .sort(function(a,b){
         var fa=a.is_favorite?0:1, fb=b.is_favorite?0:1; if(fa!==fb) return fa-fb;
