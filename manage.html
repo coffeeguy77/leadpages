@@ -2038,17 +2038,11 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
     var _grpL=function(heading,keys){ var real=keys.filter(function(k){return !!LAYOUTS[k];}); if(!real.length) return ''; return '<div class="pcf-sec" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);">'+_subhdr(heading)+'<div class="pcf" style="display:flex;flex-wrap:wrap;gap:8px;">'+real.map(_layChip).join('')+'</div></div>'; };
     var CORE_GROUPS=[
       ['Business Identity & Hero Area',['branding','logo','details','hero','splitHero','heroBeforeAfter','heroSlider','emerg','mobileBar','sectionOrder']],
-      ['Services & Selling Content',['services','serviceProcess','serviceAreas','serviceAreaMap','seoTokens','finance','specialOffer','textBox','videoReels']],
-      ['Lead Capture & Conversion',['estimateBuilder','quote','promotions','jobsFeed','emergencyAvailability','faq']],
+      ['Services & Selling Content',['services','serviceProcess','serviceAreas','serviceAreaMap','seoTokens','finance','textBox','videoReels']],
+      ['Lead Capture & Conversion',['quote','promotions','faq','estimateBuilder','jobsFeed','emergencyAvailability','specialOffer','responseCards']],
       ['Trust, Proof & Authority',['trustBar','certifications','reviews','reviewHighlights','customerReactions','proofStream','activityCounter','activityTimeline']],
-      ['Projects, Gallery & Before/After',['projectFeed','featuredProjects','beforeAfter','beforeAfterFeed']],
+      ['Projects, Gallery & Before/After',['projectFeed','featuredProjects','projectStats','beforeAfter','beforeAfterFeed']],
       ['Company & Location Details',['crew','area','why','navMenu','footer','lpFooter']]
-    ];
-    var ADDON_GROUPS=[
-      ['Visual Add-ons',[]],
-      ['Project Add-ons',['projectStats']],
-      ['Trust Add-ons',[]],
-      ['Conversion Add-ons',['responseCards']]
     ];
     var PRESET_GROUPS=[
       ['Authority & Trust Presets',['authority-builder','premium-showcase','photo-proof','social-proof-feed','reviews-first']],
@@ -2056,12 +2050,10 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       ['Conversion Presets',['quote-first','offer-funnel','emergency-response']]
     ];
     var _coreHtml=CORE_GROUPS.map(function(g){return _grpS(g[0],g[1]);}).join('');
-    var _addonHtml=ADDON_GROUPS.map(function(g){return _grpS(g[0],g[1]);}).join('');
     var _presetHtml=PRESET_GROUPS.map(function(g){return _grpL(g[0],g[1]);}).join('');
     var _subHtml='<div class="card" style="margin:0;padding:14px 16px;">'
       + '<div class="svc-head" style="margin-bottom:12px;"><div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);">Page editor</div><label class="ci-toggle"><input type="checkbox" id="sec-hide-inactive"'+(secHideInactive?' checked':'')+'> Hide inactive</label></div>'
       + '<div class="pcf-section">'+_sectitle('Core Website Sections','The main sections that make up the customer-facing page.')+_coreHtml+'</div>'
-      + (_addonHtml?('<div class="pcf-section" style="margin-top:22px;padding-top:16px;border-top:1px solid var(--line);">'+_sectitle('Add-On Sections','Extra blocks you can switch on when this business needs them.')+_addonHtml+'</div>'):'')
       + (_presetHtml?('<div class="pcf-section" style="margin-top:22px;padding-top:16px;border-top:1px solid var(--line);">'+_sectitle('Conversion & Layout Presets','Ready-made combinations for different page goals.')+_presetHtml+'</div>'):'')
       + '</div>';
     _subHtml+='<div id="lsub-body"></div>';
