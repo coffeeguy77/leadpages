@@ -2024,27 +2024,49 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
       +'</span>'; }
     function _editOnlyChip(id){ var active=(landingSub===id); var lbl=labelOf(id);
       return '<button type="button" class="sec-editonly" data-sec="'+id+'" data-active="0" style="border:1px solid '+(active?'var(--brand,#1f7a63)':'var(--line)')+';background:'+(active?'var(--brand,#1f7a63)':'#fff')+';color:'+(active?'#fff':'var(--ink)')+';border-radius:999px;padding:6px 14px;font:600 12.5px var(--font-ui);cursor:pointer;">'+esc(lbl)+'</button>'; }
-    var _pcIds=_byLabel(subs.map(function(x){return x[0];}).filter(function(id){ return OPTIONAL_COMPONENTS.indexOf(id)<0; }));
-    var _pcChips=_pcIds.map(function(id){ return (PAGE_CONTENT_EDITONLY.indexOf(id)>=0)?_editOnlyChip(id):_secChip(id); }).join('');
-    var _compChips=_byLabel(OPTIONAL_COMPONENTS.slice()).map(_secChip).join('');
-    var _layKeys=Object.keys(LAYOUTS).filter(function(k){ return k!=='classic'; }).sort(function(a,b){ var la=LAYOUTS[a].name.toLowerCase(), lb=LAYOUTS[b].name.toLowerCase(); return la<lb?-1:(la>lb?1:0); });
-    var _layChips=_layKeys.map(function(k){ var on=_presetOn(c,k); var canEdit=(k==='quote-first')||(k==='classic')||(_presetFeatures(k).length>0);
+    // ---- Reorganised editor groups (UI organisation only: chips + wiring unchanged) ----
+    var _layChip=function(k){ var on=_presetOn(c,k); var canEdit=(k==='quote-first')||(k==='classic')||(_presetFeatures(k).length>0);
       return '<span data-active="'+(on?'1':'0')+'" style="display:inline-flex;align-items:stretch;border:1px solid '+(on?'var(--brand,#1f7a63)':'var(--line)')+';border-radius:8px;overflow:hidden;">'
         +'<button type="button" class="lay-toggle" data-lay="'+k+'" style="border:0;background:'+(on?'var(--brand,#1f7a63)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+';padding:6px 13px;font:600 12.5px var(--font-ui);cursor:pointer;">'+(on?'\u2713 ':'')+esc(LAYOUTS[k].name)+'</button>'
         +(canEdit?'<button type="button" class="lay-edit" data-lay="'+k+'" style="border:0;border-left:1px solid '+(on?'rgba(255,255,255,.45)':'var(--line)')+';background:'+(on?'var(--brand,#1f7a63)':'#f4f5f7')+';color:'+(on?'#fff':'var(--ink-soft)')+';padding:6px 11px;font:600 12px var(--font-ui);cursor:pointer;">Edit</button>':'')
-      +'</span>'; }).join('');
-    var _hdr=function(title,sub){ return '<div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:'+(sub?'4px':'10px')+';">'+title+'</div>'+(sub?'<div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">'+sub+'</div>':''); };
-    var _row=function(chips){ return '<div style="display:flex;flex-wrap:wrap;gap:8px;">'+chips+'</div>'; };
+      +'</span>'; };
+    var _sChip=function(id){ return (PAGE_CONTENT_EDITONLY.indexOf(id)>=0)?_editOnlyChip(id):_secChip(id); };
+    var _has=function(id){ return subs.some(function(x){return x[0]===id;}); };
+    var _subhdr=function(t){ return '<div style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 8px;opacity:.85;">'+t+'</div>'; };
+    var _sectitle=function(t,help){ return '<div style="font-size:13px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--ink);margin:0 0 3px;">'+t+'</div><div style="font-size:12px;color:var(--ink-soft);margin:0 0 12px;">'+help+'</div>'; };
+    var _grpS=function(heading,ids){ var real=ids.filter(_has); if(!real.length) return ''; return '<div class="pcf-sec" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);">'+_subhdr(heading)+'<div class="pcf" style="display:flex;flex-wrap:wrap;gap:8px;">'+real.map(_sChip).join('')+'</div></div>'; };
+    var _grpL=function(heading,keys){ var real=keys.filter(function(k){return !!LAYOUTS[k];}); if(!real.length) return ''; return '<div class="pcf-sec" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);">'+_subhdr(heading)+'<div class="pcf" style="display:flex;flex-wrap:wrap;gap:8px;">'+real.map(_layChip).join('')+'</div></div>'; };
+    var CORE_GROUPS=[
+      ['Business Identity & Hero Area',['branding','logo','details','hero','splitHero','heroBeforeAfter','heroSlider','emerg','mobileBar','sectionOrder']],
+      ['Services & Selling Content',['services','serviceProcess','serviceAreas','serviceAreaMap','seoTokens','finance','specialOffer','textBox','videoReels']],
+      ['Lead Capture & Conversion',['estimateBuilder','quote','promotions','jobsFeed','emergencyAvailability','faq']],
+      ['Trust, Proof & Authority',['trustBar','certifications','reviews','reviewHighlights','customerReactions','proofStream','activityCounter','activityTimeline']],
+      ['Projects, Gallery & Before/After',['projectFeed','featuredProjects','beforeAfter','beforeAfterFeed']],
+      ['Company & Location Details',['crew','area','why','navMenu','footer','lpFooter']]
+    ];
+    var ADDON_GROUPS=[
+      ['Visual Add-ons',[]],
+      ['Project Add-ons',['projectStats']],
+      ['Trust Add-ons',[]],
+      ['Conversion Add-ons',['responseCards']]
+    ];
+    var PRESET_GROUPS=[
+      ['Authority & Trust Presets',['authority-builder','premium-showcase','photo-proof','social-proof-feed','reviews-first']],
+      ['Project Showcase Presets',['ba-hero-slider','hero-image-slider','service-area-dominator']],
+      ['Conversion Presets',['quote-first','offer-funnel','emergency-response']]
+    ];
+    var _coreHtml=CORE_GROUPS.map(function(g){return _grpS(g[0],g[1]);}).join('');
+    var _addonHtml=ADDON_GROUPS.map(function(g){return _grpS(g[0],g[1]);}).join('');
+    var _presetHtml=PRESET_GROUPS.map(function(g){return _grpL(g[0],g[1]);}).join('');
     var _subHtml='<div class="card" style="margin:0;padding:14px 16px;">'
-      + '<div class="svc-head" style="margin-bottom:4px;"><div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);">Page Content</div><label class="ci-toggle"><input type="checkbox" id="sec-hide-inactive"'+(secHideInactive?' checked':'')+'> Hide inactive</label></div>'
-      + '<div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">Every section of the page. Switch one off to hide it, or press Edit to change its content.</div>'
-      + '<div id="pc-row" class="pcf" style="display:flex;flex-wrap:wrap;gap:8px;">'+_pcChips+'</div>'
-      + '<div class="pcf-sec" style="margin-top:16px;padding-top:13px;border-top:1px solid var(--line);">'+ _hdr('Optional components','Off by default \u2014 switch on any you want to add.') + '<div class="pcf" style="display:flex;flex-wrap:wrap;gap:8px;">'+_compChips+'</div>' +'</div>'
-      + '<div class="pcf-sec" style="margin-top:16px;padding-top:13px;border-top:1px solid var(--line);">'+ _hdr('Layout presets','Mix &amp; match \u2014 switch on any combination. Each shows its block on the page; press Edit to customise it.') + '<div class="pcf" style="display:flex;flex-wrap:wrap;gap:8px;">'+_layChips+'</div>' +'</div>'
+      + '<div class="svc-head" style="margin-bottom:12px;"><div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);">Page editor</div><label class="ci-toggle"><input type="checkbox" id="sec-hide-inactive"'+(secHideInactive?' checked':'')+'> Hide inactive</label></div>'
+      + '<div class="pcf-section">'+_sectitle('Core Website Sections','The main sections that make up the customer-facing page.')+_coreHtml+'</div>'
+      + (_addonHtml?('<div class="pcf-section" style="margin-top:22px;padding-top:16px;border-top:1px solid var(--line);">'+_sectitle('Add-On Sections','Extra blocks you can switch on when this business needs them.')+_addonHtml+'</div>'):'')
+      + (_presetHtml?('<div class="pcf-section" style="margin-top:22px;padding-top:16px;border-top:1px solid var(--line);">'+_sectitle('Conversion & Layout Presets','Ready-made combinations for different page goals.')+_presetHtml+'</div>'):'')
       + '</div>';
     _subHtml+='<div id="lsub-body"></div>';
     box.innerHTML=_subHtml;
-    (function(){ function _apply(){ var on=secHideInactive; box.querySelectorAll('.pcf').forEach(function(r){ r.classList.toggle('hide-inactive', on); }); box.querySelectorAll('.pcf-sec').forEach(function(sec){ if(!on){ sec.style.display=''; return; } var has=sec.querySelector('.pcf [data-active="1"]'); sec.style.display=has?'':'none'; }); } var t=$('sec-hide-inactive'); if(t){ t.onchange=function(){ secHideInactive=t.checked; _apply(); }; } _apply(); })();
+    (function(){ function _apply(){ var on=secHideInactive; box.querySelectorAll('.pcf').forEach(function(r){ r.classList.toggle('hide-inactive', on); }); box.querySelectorAll('.pcf-sec,.pcf-section').forEach(function(sec){ var chips=sec.querySelectorAll('[data-active]'); if(!chips.length){ sec.style.display='none'; return; } if(!on){ sec.style.display=''; return; } var hasActive=sec.querySelector('[data-active="1"]'); sec.style.display=hasActive?'':'none'; }); } var t=$('sec-hide-inactive'); if(t){ t.onchange=function(){ secHideInactive=t.checked; _apply(); }; } _apply(); })();
     box.querySelectorAll('.sec-toggle').forEach(function(b){ b.addEventListener('click',function(){ var id=b.getAttribute('data-sec'); var willOn=!_secOn(c,id); _setSecOn(c,id,willOn); if(willOn&&OFF_BY_DEFAULT_SECTIONS.indexOf(id)>=0) lpSeedComponent(c,id); if(id==='textBox'&&willOn&&Array.isArray(c.sectionOrder)&&c.sectionOrder.indexOf('textBox')<0){ var _hi=c.sectionOrder.indexOf('hero'); if(_hi>=0) c.sectionOrder.splice(_hi+1,0,'textBox'); else c.sectionOrder.unshift('textBox'); } persist(); previewApply(); renderDetails(); }); });
     box.querySelectorAll('.sec-edit').forEach(function(b){ b.addEventListener('click',function(){ landingSub=b.getAttribute('data-sec'); renderDetails(); }); });
     box.querySelectorAll('.sec-editonly').forEach(function(b){ b.addEventListener('click',function(){ var id=b.getAttribute('data-sec'); if(id==='details'){ openSettingsPage(); return; } landingSub=id; renderDetails(); }); });
