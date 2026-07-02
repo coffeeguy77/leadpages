@@ -1,8 +1,14 @@
 {
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/s/:slug", "destination": "/api/render?slug=:slug" },
-    { "source": "/s/:slug/:page", "destination": "/api/render?slug=:slug&page=:page" }
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/s/([^/]+)/?", "dest": "/api/render?slug=$1" },
+    { "src": "/s/([^/]+)/([^/]+)/?", "dest": "/api/render?slug=$1&page=$2" },
+    { "src": "/manage/?", "dest": "/manage.html" },
+    { "src": "/privacy-policy/?", "dest": "/privacy-policy.html" },
+    { "src": "/terms-of-use/?", "dest": "/terms-of-use.html" },
+    { "src": "/instagram-data-policy/?", "dest": "/instagram-data-policy.html" },
+    { "src": "/(.+\\.[a-zA-Z0-9]+)$", "dest": "/$1" },
+    { "src": "/(.*)", "dest": "/api/render?page=$1" }
   ],
   "crons": [
     { "path": "/api/send-due", "schedule": "*/15 * * * *" }
