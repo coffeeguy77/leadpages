@@ -4158,12 +4158,15 @@ function heroCtaCard(c){
   function gate(){ if(!authed){ const av=document.getElementById('admin-view'); if(av && av.hidden) return; showLogin(); } }
 
   /* ---------- Client mailer (mini newsletter / CRM email) ---------- */
-  var MAILER={ mode:'all', selected:{}, schedule:false, imageUrl:'', imgPid:'', clients:[], campaigns:[],
+  var MAILER={ mode:'all', selected:{}, schedule:false, imageUrl:'', imgPid:'', subject:'', body:'', date:'', time:'', clients:[], campaigns:[],
     tz:(function(){ try{ return Intl.DateTimeFormat().resolvedOptions().timeZone||'Australia/Sydney'; }catch(e){ return 'Australia/Sydney'; } })() };
   var MAILER_TZ=[['Sydney','Australia/Sydney'],['Melbourne','Australia/Melbourne'],['Brisbane','Australia/Brisbane'],['Adelaide','Australia/Adelaide'],['Perth','Australia/Perth'],['Darwin','Australia/Darwin'],['Hobart','Australia/Hobart'],['Auckland','Pacific/Auckland'],['Singapore','Asia/Singapore'],['London','Europe/London'],['New York','America/New_York'],['Los Angeles','America/Los_Angeles'],['Dubai','Asia/Dubai']];
   function _mesc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function mailerBodyHtml(t){ return String(t||'').split(/\n{2,}/).map(function(p){ return '<p>'+_mesc(p).replace(/\n/g,'<br>')+'</p>'; }).join(''); }
   function mailerWallToUTC(localStr,tz){ try{ var dp=localStr.split('T'); var d=dp[0].split('-').map(Number), t=(dp[1]||'00:00').split(':').map(Number); var guess=Date.UTC(d[0],d[1]-1,d[2],t[0],t[1]||0); var dtf=new Intl.DateTimeFormat('en-US',{timeZone:tz,hour12:false,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}); function off(ts){ var m={}; dtf.formatToParts(new Date(ts)).forEach(function(p){ m[p.type]=p.value; }); return Date.UTC(+m.year,+m.month-1,+m.day,+m.hour,+m.minute,+m.second)-ts; } var o=off(guess), utc=guess-o; o=off(utc); utc=guess-o; return new Date(utc).toISOString(); }catch(e){ return new Date(localStr).toISOString(); } }
+  function _mlrToday(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+  function _mlrTimeOpts(){ var sel=MAILER.time||'09:00'; var out=''; for(var h=0;h<24;h++){ for(var m=0;m<60;m+=15){ var v=(h<10?'0':'')+h+':'+(m<10?'0':'')+m; var hh=h%12; if(hh===0)hh=12; var lbl=hh+':'+(m<10?'0':'')+m+' '+(h<12?'AM':'PM'); out+='<option value="'+v+'"'+(v===sel?' selected':'')+'>'+lbl+'</option>'; } } return out; }
+  function mailerCapture(){ var su=$('mlr-subject'); if(su)MAILER.subject=su.value; var bo=$('mlr-body'); if(bo)MAILER.body=bo.value; var dt=$('mlr-date'); if(dt)MAILER.date=dt.value; var tm=$('mlr-time'); if(tm)MAILER.time=tm.value; var tz=$('mlr-tz'); if(tz)MAILER.tz=tz.value; }
   async function renderMailer(){
     var box=$('av-mailer'); if(!box) return;
     if(!currentSiteId){ box.innerHTML='<div class="card"><p class="lede">Select a site first.</p></div>'; return; }
@@ -4203,13 +4206,13 @@ function heroCtaCard(c){
     +       '<div id="mlr-picklist" class="mlr-picklist"'+(MAILER.mode==='all'?' style="display:none"':'')+'>'+(clientRows||'<p class="hint" style="color:#999;padding:8px;">No clients with an email address yet. New enquiries that include an email will appear here.</p>')+'</div>'
     +     '</div>'
     +     '<div class="mlr-col">'
-    +       '<label class="mlr-lbl">Subject</label><input id="mlr-subject" class="tin" placeholder="A quick update from your team\u2026">'
-    +       '<label class="mlr-lbl" style="margin-top:12px;">Message</label><textarea id="mlr-body" class="tin" rows="7" placeholder="Write your update or offer here\u2026"></textarea>'
+    +       '<label class="mlr-lbl">Subject</label><input id="mlr-subject" class="tin" value="'+_mesc(MAILER.subject||'')+'" placeholder="A quick update from your team\u2026">'
+    +       '<label class="mlr-lbl" style="margin-top:12px;">Message</label><textarea id="mlr-body" class="tin" rows="7" placeholder="Write your update or offer here\u2026">'+_mesc(MAILER.body||'')+'</textarea>'
     +       '<div class="mlr-imgrow"><button type="button" class="btn ghost" id="mlr-imgbtn">Insert image</button><span id="mlr-imgname" class="hint" style="color:#999;"></span><input type="file" id="mlr-imgfile" accept="image/*" style="display:none"></div>'
     +       '<div id="mlr-imgprev">'+(MAILER.imageUrl?'<img src="'+_mesc(MAILER.imageUrl)+'" style="max-width:220px;border-radius:10px;margin-top:8px;">':'')+'</div>'
     +       '<label class="mlr-lbl" style="margin-top:14px;">When</label>'
     +       '<div class="mlr-segrow"><button type="button" class="btn ghost mlr-when'+(!MAILER.schedule?' on':'')+'" data-when="now">Send now</button><button type="button" class="btn ghost mlr-when'+(MAILER.schedule?' on':'')+'" data-when="later">Schedule</button></div>'
-    +       '<div id="mlr-sched"'+(MAILER.schedule?'':' style="display:none"')+' class="mlr-sched"><input type="datetime-local" id="mlr-when" class="tin"><select id="mlr-tz" class="tin">'+tzopts+'</select></div>'
+    +       '<div id="mlr-sched"'+(MAILER.schedule?'':' style="display:none"')+' class="mlr-sched"><input type="date" id="mlr-date" class="tin" value="'+_mesc(MAILER.date||_mlrToday())+'"><select id="mlr-time" class="tin">'+_mlrTimeOpts()+'</select><select id="mlr-tz" class="tin">'+tzopts+'</select></div>'
     +       '<div style="margin-top:16px;"><button class="btn" id="mlr-send">Send</button> <span id="mlr-status" class="hint" style="margin-left:8px;"></span></div>'
     +     '</div>'
     +   '</div>'
@@ -4219,12 +4222,13 @@ function heroCtaCard(c){
     mailerWire(box);
   }
   function mailerWire(box){
-    box.querySelectorAll('.mlr-seg').forEach(function(b){ b.onclick=function(){ MAILER.mode=b.getAttribute('data-mode'); mailerBuild(box); }; });
-    box.querySelectorAll('.mlr-when').forEach(function(b){ b.onclick=function(){ MAILER.schedule=(b.getAttribute('data-when')==='later'); mailerBuild(box); }; });
+    box.querySelectorAll('.mlr-seg').forEach(function(b){ b.onclick=function(){ mailerCapture(); MAILER.mode=b.getAttribute('data-mode'); mailerBuild(box); }; });
+    box.querySelectorAll('.mlr-when').forEach(function(b){ b.onclick=function(){ mailerCapture(); MAILER.schedule=(b.getAttribute('data-when')==='later'); if(MAILER.schedule){ if(!MAILER.date)MAILER.date=_mlrToday(); if(!MAILER.time)MAILER.time='09:00'; } mailerBuild(box); }; });
     box.querySelectorAll('.mlr-pick').forEach(function(b){ b.onchange=function(){ MAILER.selected[b.getAttribute('data-id')]=b.checked; }; });
     box.querySelectorAll('.mlr-opt').forEach(function(b){ b.onclick=function(e){ e.preventDefault(); mailerOptOut(b.getAttribute('data-id'), b.getAttribute('data-email'), b.getAttribute('data-out')==='1'); }; });
     var ib=$('mlr-imgbtn'), ifl=$('mlr-imgfile');
     if(ib&&ifl){ ib.onclick=function(){ ifl.click(); }; ifl.onchange=async function(){ var f=ifl.files&&ifl.files[0]; if(!f) return; var nm=$('mlr-imgname'); if(nm) nm.textContent='Uploading\u2026'; try{ var up=await cwUpload(f,['mailer']); MAILER.imageUrl=(up&&up.url)||''; MAILER.imgPid=(up&&up.publicId)||''; if(nm) nm.textContent=f.name; var pv=$('mlr-imgprev'); if(pv) pv.innerHTML=MAILER.imageUrl?'<img src="'+_mesc(MAILER.imageUrl)+'" style="max-width:220px;border-radius:10px;margin-top:8px;">':''; }catch(e){ if(nm) nm.textContent=(e&&e.message)||'Upload failed'; } }; }
+    var su=$('mlr-subject'); if(su) su.oninput=function(){ MAILER.subject=su.value; }; var bo=$('mlr-body'); if(bo) bo.oninput=function(){ MAILER.body=bo.value; }; var dt=$('mlr-date'); if(dt) dt.onchange=function(){ MAILER.date=dt.value; }; var tm=$('mlr-time'); if(tm) tm.onchange=function(){ MAILER.time=tm.value; }; var tzs=$('mlr-tz'); if(tzs) tzs.onchange=function(){ MAILER.tz=tzs.value; };
     var snd=$('mlr-send'); if(snd) snd.onclick=mailerSend;
   }
   async function mailerOptOut(id, email, optOut){
@@ -4234,6 +4238,7 @@ function heroCtaCard(c){
     var box=$('av-mailer'); if(box) mailerBuild(box);
   }
   async function mailerSend(){
+    mailerCapture();
     var st=$('mlr-status');
     var subject=($('mlr-subject')&&$('mlr-subject').value.trim())||'';
     var bodyTxt=($('mlr-body')&&$('mlr-body').value)||'';
@@ -4246,7 +4251,7 @@ function heroCtaCard(c){
       if(!recipients.length){ setErr('Pick at least one client.'); return; }
     }
     var sendAt=null;
-    if(MAILER.schedule){ var w=$('mlr-when')&&$('mlr-when').value; var tz=($('mlr-tz')&&$('mlr-tz').value)||MAILER.tz; if(!w){ setErr('Pick a date and time.'); return; } sendAt=mailerWallToUTC(w,tz); MAILER.tz=tz; }
+    if(MAILER.schedule){ var dv=($('mlr-date')&&$('mlr-date').value)||MAILER.date||''; var tv=($('mlr-time')&&$('mlr-time').value)||MAILER.time||''; var tz=($('mlr-tz')&&$('mlr-tz').value)||MAILER.tz; if(!dv||!tv){ setErr('Pick a date and time.'); return; } sendAt=mailerWallToUTC(dv+'T'+tv,tz); MAILER.tz=tz; }
     var payload={ siteId:currentSiteId, subject:subject, bodyHtml:mailerBodyHtml(bodyTxt), imageUrl:MAILER.imageUrl||null, recipientMode:MAILER.mode, recipients:recipients, sendAt:sendAt, timezone:(($('mlr-tz')&&$('mlr-tz').value)||MAILER.tz) };
     if(st){ st.style.color='#667'; st.textContent='Working\u2026'; }
     var btn=$('mlr-send'); if(btn) btn.disabled=true;
@@ -4259,10 +4264,10 @@ function heroCtaCard(c){
         if(j.scheduled){ toast('Scheduled \u2713'); if(st){ st.style.color='#0a7d33'; st.textContent='Scheduled for '+new Date(j.sendAt).toLocaleString()+'.'; } }
         else { toast('Sent to '+(j.sent||0)+' \u2713'); if(st){ st.style.color='#0a7d33'; st.textContent='Sent to '+(j.sent||0)+(j.failed?(', '+j.failed+' failed'):'')+(j.skipped?(', '+j.skipped+' opted out'):'')+'.'; } }
         if($('mlr-subject')) $('mlr-subject').value=''; if($('mlr-body')) $('mlr-body').value='';
-        MAILER.imageUrl=''; MAILER.imgPid=''; MAILER.selected={};
+        MAILER.subject=''; MAILER.body=''; MAILER.date=''; MAILER.time=''; MAILER.imageUrl=''; MAILER.imgPid=''; MAILER.selected={};
         renderMailer();
       } else {
-        setErr('Could not send'+(j.error?(' ('+j.error+')'):'')+'. Check the email provider setup.');
+        setErr('Send failed \u2014 HTTP '+res.status+(j.error?(' \u00b7 '+j.error):'')+(j.detail?(': '+j.detail):'')+'.');
       }
     }catch(e){ setErr('Network error \u2014 please try again.'); }
     if(btn) btn.disabled=false;
