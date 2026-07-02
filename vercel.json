@@ -1,5 +1,5 @@
 {
-  "cleanUrls": true,
-  "rewrites": [ ...your existing rewrites... ],
-  "crons": [ { "path": "/api/send-due", "schedule": "*/15 * * * *" } ]
+  "crons": [
+    { "path": "/api/send-due", "schedule": "*/15 * * * *" }
+  ]
 }
