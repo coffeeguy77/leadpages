@@ -1,4 +1,9 @@
 {
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/s/:slug", "destination": "/api/render?slug=:slug" },
+    { "source": "/s/:slug/:page", "destination": "/api/render?slug=:slug&page=:page" }
+  ],
   "crons": [
     { "path": "/api/send-due", "schedule": "*/15 * * * *" }
   ]
