@@ -3107,7 +3107,7 @@ function heroCtaCard(c){
     }).catch(function(){ var body=document.getElementById('se-body'); if(body) body.innerHTML='<div class="hint">Couldn\u2019t load \u2014 is the billing API deployed?</div>'; });
   }
   /* ===================== Site analytics ===================== */
-  var ANA={ period:30, active:null, sort:'visitors', data:[], leads:[], leadsCount:0, globalData:null };
+  var ANA={ period:30, active:null, sort:'visitors', data:[], leads:[], leadsCount:0, statusCounts:null, globalData:null };
   function anaEsc(x){ return String(x==null?'':x).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
   var ANA_METRICS=[ {k:'page_view',label:'Visitors',ic:'\U0001F441',color:'#2563eb'}, {k:'call_click',label:'Calls',ic:'\U0001F4DE',color:'#16a34a'}, {k:'lead_submit',label:'Forms',ic:'\u2709',color:'#d97706'}, {k:'conv',label:'Conversion',ic:'\U0001F4C8',color:'#7c3aed'} ];
   function anaSince(){ return ANA.period? new Date(Date.now()-ANA.period*864e5).toISOString() : '1970-01-01T00:00:00Z'; }
@@ -3127,12 +3127,13 @@ function heroCtaCard(c){
   }
   async function anaFetchSite(){ if(!currentSiteId){ ANA.data=[]; ANA.leads=[]; ANA.leadsCount=0; return; }
     var j=await anaStats({siteId:currentSiteId,days:(ANA.period||0)});
-    if(j){ ANA.data=j.events||[]; ANA.leads=(j.leads||[]).slice(0,50); ANA.leadsCount=(j.leadsCount!=null?j.leadsCount:(j.leads||[]).length); return; }
+    if(j){ ANA.data=j.events||[]; ANA.leads=(j.leads||[]).slice(0,50); ANA.leadsCount=(j.leadsCount!=null?j.leadsCount:(j.leads||[]).length); ANA.statusCounts=j.statusCounts||null; return; }
     /* fallback: direct read (only works if RLS permits the signed-in user) */
     var since=anaSince();
     try{ var ev=await sb.from('events').select('event,created_at,props').eq('site_id',currentSiteId).gte('created_at',since).limit(10000); ANA.data=ev.data||[]; }catch(e){ ANA.data=[]; }
     try{ var ld=await sb.from('leads').select('name,kind,created_at').eq('site_id',currentSiteId).gte('created_at',since).order('created_at',{ascending:false}).limit(50); ANA.leads=ld.data||[]; }catch(e){ ANA.leads=[]; }
     try{ var lc=await sb.from('leads').select('id',{count:'exact',head:true}).eq('site_id',currentSiteId).gte('created_at',since); ANA.leadsCount=(lc.count!=null?lc.count:(ANA.leads||[]).length); }catch(e){ ANA.leadsCount=(ANA.leads||[]).length; }
+    try{ var scd=await sb.from('leads').select('status').eq('site_id',currentSiteId).gte('created_at',since); var _c={new:0,contacted:0,won:0,lost:0,total:0}; (scd.data||[]).forEach(function(r){ _c.total++; var st=r.status||'new'; if(_c[st]!=null)_c[st]++; }); ANA.statusCounts=_c; }catch(e){ ANA.statusCounts=null; }
   }
   async function anaFetchGlobal(){ var j=await anaStats({days:(ANA.period||0)}); if(j){ ANA.globalData=j.events||[]; return; } var since=anaSince(); try{ var ev=await sb.from('events').select('event,site_id,created_at').gte('created_at',since).limit(20000); ANA.globalData=ev.data||[]; }catch(e){ ANA.globalData=[]; } }
   function anaGlobalRows(){ var by={}; (allSites||[]).forEach(function(x){ by[x.id]={name:x.business_name||x.slug,slug:x.slug,visitors:0,calls:0,forms:0,last:null}; });
@@ -3141,7 +3142,7 @@ function heroCtaCard(c){
     rows.sort(function(a,b){ if(ANA.sort==='name')return (a.name||'').localeCompare(b.name||''); return (b[ANA.sort]||0)-(a[ANA.sort]||0); }); return rows;
   }
   function anaDetailHTML(k){ var days=ANA.period&&ANA.period<=30?ANA.period:30;
-    if(k==='conv'){ var c=anaCounts(ANA.data); function p(n,d){return d?(Math.round(n/d*1000)/10):0;} return '<h3>How visitors convert</h3><div style="font-size:12.5px;color:#6c6c68;margin-bottom:10px;">Of everyone who landed on the page</div><div style="display:flex;gap:14px;flex-wrap:wrap;">'+anaFunnel('Visited',c.page_view,100)+anaFunnel('Clicked to call',c.call_click,p(c.call_click,c.page_view))+anaFunnel('Sent the form',c.lead_submit,p(c.lead_submit,c.page_view))+'</div>'; }
+    if(k==='conv'){ var c=anaCounts(ANA.data); function p(n,d){return d?(Math.round(n/d*1000)/10):0;} var sc=ANA.statusCounts||{won:0,lost:0,total:0}; var dec=(sc.won||0)+(sc.lost||0); var wr=dec?p(sc.won,dec):null; return '<h3>How enquiries turn into jobs</h3><div style="font-size:12.5px;color:#6c6c68;margin-bottom:10px;">Conversion is your win rate \u2014 jobs won \u00f7 jobs decided (won + lost). Mark a lead Won or Lost to update it.</div><div style="display:flex;gap:14px;flex-wrap:wrap;">'+anaFunnel('Won',sc.won||0,wr==null?0:wr)+anaFunnel('Lost',sc.lost||0,dec?p(sc.lost,dec):0)+anaFunnel('Still open',Math.max(0,(sc.total||0)-dec),0)+'</div><div style="font-size:12.5px;color:#6c6c68;margin:16px 0 10px;">The visitor funnel</div><div style="display:flex;gap:14px;flex-wrap:wrap;">'+anaFunnel('Visited',c.page_view,100)+anaFunnel('Clicked to call',c.call_click,p(c.call_click,c.page_view))+anaFunnel('Sent the form',c.lead_submit,p(c.lead_submit,c.page_view))+'</div>'; }
     var m=null; ANA_METRICS.forEach(function(x){ if(x.k===k)m=x; }); if(!m)return '';
     var html='<h3>'+m.label+'</h3><div style="font-size:12.5px;color:#6c6c68;">Per day, last '+days+' days</div>'+anaBars(anaDaily(ANA.data,k,days),m.color);
     if(k==='call_click'){ var locs={}; (ANA.data||[]).forEach(function(e){ if(e.event==='call_click'){ var L=(e.props&&e.props.location)||'other'; locs[L]=(locs[L]||0)+1; } }); var nm={heroCall:'Hero button',headCall:'Header button',navPhone:'Phone number',formCall:'Form link',emergCall:'Emergency bar',footPhone:'Footer'}; var ks=Object.keys(locs).sort(function(a,b){return locs[b]-locs[a];}); if(ks.length) html+='<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">'+ks.map(function(L){return '<span style="background:#f2f1ec;border-radius:8px;padding:5px 10px;font-size:12.5px;">'+(nm[L]||L)+': <b>'+locs[L]+'</b></span>';}).join('')+'</div>'; }
@@ -3383,8 +3384,9 @@ function heroCtaCard(c){
     if(act==='status'){
       var sid=b.getAttribute('data-id'), v=b.getAttribute('data-v');
       var row=(LPLEADS.rows||[]).find(function(x){return String(x.id)===String(sid);});
-      if(row){ var prev=row.status; row.status=v; lpLeadsPaint();
-        try{ var r=await sb.from('leads').update({status:v}).eq('id',sid); if(r.error){ row.status=prev; lpLeadsPaint(); if(typeof toast==='function') toast('Could not update status'); } }
+      if(row){ var prev=row.status||'new'; row.status=v; lpLeadsPaint();
+        if(ANA.statusCounts){ var _sc=ANA.statusCounts; if(_sc[prev]!=null&&_sc[prev]>0)_sc[prev]--; if(_sc[v]!=null)_sc[v]++; try{ if(typeof anaRender==='function') anaRender(); }catch(_e){} }
+        try{ var r=await sb.from('leads').update({status:v}).eq('id',sid); if(r.error){ row.status=prev; lpLeadsPaint(); if(ANA.statusCounts){ var _s2=ANA.statusCounts; if(_s2[v]!=null&&_s2[v]>0)_s2[v]--; if(_s2[prev]!=null)_s2[prev]++; try{ if(typeof anaRender==='function') anaRender(); }catch(_e){} } if(typeof toast==='function') toast('Could not update status'); } }
         catch(err){ row.status=prev; lpLeadsPaint(); }
       }
       return;
@@ -3392,8 +3394,8 @@ function heroCtaCard(c){
   }
 
   function anaRender(){ var el=document.getElementById('lp-analytics'); if(!el)return; if(!currentSiteId){ el.innerHTML=''; return; }
-    var c=anaCounts(ANA.data); var formsN=Math.max(c.lead_submit, ANA.leadsCount||0); var conv=c.page_view?Math.round(formsN/c.page_view*1000)/10:0;
-    var vals={page_view:c.page_view,call_click:c.call_click,lead_submit:formsN,conv:conv+'%'};
+    var c=anaCounts(ANA.data); var formsN=Math.max(c.lead_submit, ANA.leadsCount||0); var _sc=ANA.statusCounts||{won:0,lost:0}; var _dec=(_sc.won||0)+(_sc.lost||0); var conv=_dec?Math.round((_sc.won/_dec)*1000)/10:null;
+    var vals={page_view:c.page_view,call_click:c.call_click,lead_submit:formsN,conv:(conv==null?'\u2014':(conv+'%'))};
     var pills=ANA_METRICS.map(function(m){ return '<button type="button" class="ana-pill'+(ANA.active===m.k?' on':'')+'" data-act="m" data-m="'+m.k+'"><span class="ana-v">'+vals[m.k]+'</span><span class="ana-l">'+m.label+'</span></button>'; }).join('');
     var gbtn=(currentRole==='super')?'<button type="button" class="ana-pill gbtn'+(ANA.active==='global'?' on':'')+'" data-act="g"><span class="ana-v">'+(allSites?allSites.length:0)+'</span><span class="ana-l">\u25A6 All sites</span></button>':'';
     var period='<div class="ana-period">'+[[7,'7d'],[30,'30d'],[0,'All']].map(function(p){return '<button type="button" data-act="p" data-p="'+p[0]+'" class="'+(ANA.period===p[0]?'on':'')+'">'+p[1]+'</button>';}).join('')+'</div>';
