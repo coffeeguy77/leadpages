@@ -141,6 +141,21 @@ async function deliverCampaign(campaign) {
 
 module.exports = async (req, res) => {
   const json = (code, obj) => { res.statusCode = code; res.setHeader('content-type', 'application/json'); res.end(JSON.stringify(obj)); };
+  // GET: return recent campaigns for a site (service role, so it works regardless of RLS).
+  if (req.method === 'GET') {
+    const u = await requireUser(req);
+    if (!u) return json(401, { ok: false, error: 'auth' });
+    try {
+      const url = new URL(req.url, 'https://x');
+      const siteId = (url.searchParams.get('siteId') || '').trim();
+      if (!siteId) return json(400, { ok: false, error: 'no_site' });
+      const r = await admin.from('email_campaigns')
+        .select('id,subject,status,total_recipients,sent_count,failed_count,send_at,sent_at,created_at')
+        .eq('site_id', siteId).order('created_at', { ascending: false }).limit(8);
+      return json(200, { ok: true, campaigns: r.data || [] });
+    } catch (e) { return json(500, { ok: false, error: 'server' }); }
+  }
+
   if (req.method !== 'POST') return json(405, { ok: false, error: 'method' });
 
   const user = await requireUser(req);
