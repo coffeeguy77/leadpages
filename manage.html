@@ -4172,7 +4172,7 @@ function heroCtaCard(c){
     if(!currentSiteId){ box.innerHTML='<div class="card"><p class="lede">Select a site first.</p></div>'; return; }
     box.innerHTML='<div class="card"><p class="lede">Loading your clients\u2026</p></div>';
     try{ var r=await sb.from('leads').select('id,name,email,phone,email_opt_out,created_at').eq('site_id',currentSiteId).not('email','is',null).order('created_at',{ascending:false}).limit(1000); MAILER.clients=(r.data||[]).filter(function(x){ return x.email; }); }catch(e){ MAILER.clients=[]; }
-    try{ var rc=await sb.from('email_campaigns').select('id,subject,status,total_recipients,sent_count,failed_count,send_at,sent_at,created_at').eq('site_id',currentSiteId).order('created_at',{ascending:false}).limit(8); MAILER.campaigns=rc.data||[]; }catch(e){ MAILER.campaigns=[]; }
+    try{ var _cs=await sb.auth.getSession(); var _ct=_cs&&_cs.data&&_cs.data.session&&_cs.data.session.access_token; var rc=await fetch('/api/send-campaign?siteId='+encodeURIComponent(currentSiteId),{headers:_ct?{Authorization:'Bearer '+_ct}:{}}); var _jc=await rc.json().catch(function(){return{};}); MAILER.campaigns=(_jc&&_jc.campaigns)||[]; }catch(e){ MAILER.campaigns=[]; }
     mailerBuild(box);
   }
   function mailerBuild(box){
