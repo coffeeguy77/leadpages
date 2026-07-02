@@ -190,6 +190,9 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .mlr-hrow:last-child{border-bottom:0;}
 .mlr-hsub{font-weight:600;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .mlr-hmeta{color:var(--ink-faint);font-size:12px;white-space:nowrap;}
+.mlr-hact{display:inline-flex;gap:6px;margin-left:auto;}
+.mlr-mini{background:none;border:1px solid var(--line);border-radius:8px;padding:3px 10px;font:600 11.5px var(--font-ui);color:var(--brand-deep);cursor:pointer;white-space:nowrap;}
+.mlr-mini:hover{border-color:var(--brand);background:var(--brand-tint);}
 .tin.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.55;}
 textarea.tin{resize:vertical;}
 .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
@@ -4167,6 +4170,9 @@ function heroCtaCard(c){
   function _mlrToday(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
   function _mlrTimeOpts(){ var sel=MAILER.time||'09:00'; var out=''; for(var h=0;h<24;h++){ for(var m=0;m<60;m+=15){ var v=(h<10?'0':'')+h+':'+(m<10?'0':'')+m; var hh=h%12; if(hh===0)hh=12; var lbl=hh+':'+(m<10?'0':'')+m+' '+(h<12?'AM':'PM'); out+='<option value="'+v+'"'+(v===sel?' selected':'')+'>'+lbl+'</option>'; } } return out; }
   function mailerCapture(){ var su=$('mlr-subject'); if(su)MAILER.subject=su.value; var bo=$('mlr-body'); if(bo)MAILER.body=bo.value; var dt=$('mlr-date'); if(dt)MAILER.date=dt.value; var tm=$('mlr-time'); if(tm)MAILER.time=tm.value; var tz=$('mlr-tz'); if(tz)MAILER.tz=tz.value; }
+  function _mlrHtmlToText(h){ if(!h)return ''; var t=String(h); t=t.replace(/<\/p>\s*<p>/gi,'\n\n').replace(/<br\s*\/?>/gi,'\n').replace(/<\/?p[^>]*>/gi,''); t=t.replace(/<[^>]+>/g,''); t=t.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,String.fromCharCode(39)).replace(/&nbsp;/g,' '); return t.trim(); }
+  function mailerUseAgain(id){ var c=(MAILER.campaigns||[]).find(function(x){ return String(x.id)===String(id); }); if(!c)return; MAILER.subject=c.subject||''; MAILER.body=_mlrHtmlToText(c.body_html||''); MAILER.imageUrl=c.image_url||''; MAILER.imgPid=''; MAILER.mode=c.recipient_mode||'all'; MAILER.selected={}; MAILER.schedule=false; MAILER.date=''; MAILER.time=''; var box=$('av-mailer'); if(box){ mailerBuild(box); try{ box.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_e){} } if(typeof toast==='function') toast('Loaded \u2014 edit and send'); }
+  async function mailerRunNow(id){ try{ var se=await sb.auth.getSession(); var tk=se&&se.data&&se.data.session&&se.data.session.access_token; var r=await fetch('/api/send-campaign',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(tk||'')},body:JSON.stringify({campaignId:id,action:'deliver'})}); var j=await r.json().catch(function(){return{};}); if(r.ok&&j.ok){ if(typeof toast==='function') toast('Sent to '+(j.sent||0)+' \u2713'); renderMailer(); } else { if(typeof toast==='function') toast('Send failed \u2014 HTTP '+r.status+(j.error?(' '+j.error):'')); } }catch(e){ if(typeof toast==='function') toast('Network error'); } }
   async function renderMailer(){
     var box=$('av-mailer'); if(!box) return;
     if(!currentSiteId){ box.innerHTML='<div class="card"><p class="lede">Select a site first.</p></div>'; return; }
@@ -4192,7 +4198,9 @@ function heroCtaCard(c){
     }).join('');
     var hist=MAILER.campaigns.length?('<div class="mlr-histwrap">'+MAILER.campaigns.map(function(c){
       var st=c.status||''; var badge=(st==='sent')?'ok':((st==='scheduled')?'':'warn');
-      return '<div class="mlr-hrow"><span class="mlr-hsub">'+_mesc(c.subject||'(no subject)')+'</span><span class="lpl-badge '+badge+'">'+_mesc(st)+'</span><span class="mlr-hmeta">'+(c.status==='scheduled'&&c.send_at?('for '+new Date(c.send_at).toLocaleString()):((c.sent_count||0)+' sent'+(c.failed_count?(' \u00b7 '+c.failed_count+' failed'):'')))+'</span></div>';
+      var meta=(c.status==='scheduled'&&c.send_at)?('for '+new Date(c.send_at).toLocaleString()):((c.sent_count||0)+' sent'+(c.failed_count?(', '+c.failed_count+' failed'):''));
+      var acts=(st==='scheduled'?'<button type="button" class="mlr-mini" data-runnow="'+c.id+'">Send now</button>':'')+'<button type="button" class="mlr-mini" data-again="'+c.id+'">Use again</button>';
+      return '<div class="mlr-hrow"><span class="mlr-hsub">'+_mesc(c.subject||'(no subject)')+'</span><span class="lpl-badge '+badge+'">'+_mesc(st)+'</span><span class="mlr-hmeta">'+meta+'</span><span class="mlr-hact">'+acts+'</span></div>';
     }).join('')+'</div>'):'<p class="hint" style="color:#999;">No campaigns yet.</p>';
 
     box.innerHTML=''
@@ -4226,6 +4234,8 @@ function heroCtaCard(c){
     box.querySelectorAll('.mlr-when').forEach(function(b){ b.onclick=function(){ mailerCapture(); MAILER.schedule=(b.getAttribute('data-when')==='later'); if(MAILER.schedule){ if(!MAILER.date)MAILER.date=_mlrToday(); if(!MAILER.time)MAILER.time='09:00'; } mailerBuild(box); }; });
     box.querySelectorAll('.mlr-pick').forEach(function(b){ b.onchange=function(){ MAILER.selected[b.getAttribute('data-id')]=b.checked; }; });
     box.querySelectorAll('.mlr-opt').forEach(function(b){ b.onclick=function(e){ e.preventDefault(); mailerOptOut(b.getAttribute('data-id'), b.getAttribute('data-email'), b.getAttribute('data-out')==='1'); }; });
+    box.querySelectorAll('[data-again]').forEach(function(b){ b.onclick=function(){ mailerUseAgain(b.getAttribute('data-again')); }; });
+    box.querySelectorAll('[data-runnow]').forEach(function(b){ b.onclick=function(){ mailerRunNow(b.getAttribute('data-runnow')); }; });
     var ib=$('mlr-imgbtn'), ifl=$('mlr-imgfile');
     if(ib&&ifl){ ib.onclick=function(){ ifl.click(); }; ifl.onchange=async function(){ var f=ifl.files&&ifl.files[0]; if(!f) return; var nm=$('mlr-imgname'); if(nm) nm.textContent='Uploading\u2026'; try{ var up=await cwUpload(f,['mailer']); MAILER.imageUrl=(up&&up.url)||''; MAILER.imgPid=(up&&up.publicId)||''; if(nm) nm.textContent=f.name; var pv=$('mlr-imgprev'); if(pv) pv.innerHTML=MAILER.imageUrl?'<img src="'+_mesc(MAILER.imageUrl)+'" style="max-width:220px;border-radius:10px;margin-top:8px;">':''; }catch(e){ if(nm) nm.textContent=(e&&e.message)||'Upload failed'; } }; }
     var su=$('mlr-subject'); if(su) su.oninput=function(){ MAILER.subject=su.value; }; var bo=$('mlr-body'); if(bo) bo.oninput=function(){ MAILER.body=bo.value; }; var dt=$('mlr-date'); if(dt) dt.onchange=function(){ MAILER.date=dt.value; }; var tm=$('mlr-time'); if(tm) tm.onchange=function(){ MAILER.time=tm.value; }; var tzs=$('mlr-tz'); if(tzs) tzs.onchange=function(){ MAILER.tz=tzs.value; };
