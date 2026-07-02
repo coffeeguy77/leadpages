@@ -1,98 +1,74 @@
-// api/stats.js — reads analytics for the /manage dashboard using the service role,
-// so it works even if row-level security on `events`/`leads` would block the
-// signed-in user's own SELECT. This is why the stats panel could read 0 while the
-// events were being written fine: the writes use the service role (events.js), but
-// the dashboard was reading with the user's session and getting blocked/filtered.
+// api/stats.js — powers the Visitors / Calls / Forms / Conversion dashboard in
+// /manage. The dashboard calls GET /api/stats?siteId=<id>&days=<n> with the
+// logged-in user's Supabase token; global (all-sites) view omits siteId.
 //
-// Auth: requires a valid Supabase session (Bearer token) — same check as the
-// cloudinary sign endpoint — so only logged-in admins/brokers can pull stats.
+// Returns (per site):
+//   { events:[{event,created_at,props}], leads:[{name,kind,created_at,status}],
+//     leadsCount, statusCounts:{new,contacted,won,lost,total} }
+// Returns (global):
+//   { events:[{event,site_id,created_at}] }
 //
-// Query params:
-//   siteId=<uuid>   → returns { events:[{event,created_at,props}], leads:[{name,kind,created_at}], leadsCount }
-//   (no siteId)     → global: returns { events:[{event,site_id,created_at}] }
-//   days=<n>        → period window (0 / missing = all time)
-//
-// created_at is filtered in JS and a missing created_at is treated as "include",
-// so legacy rows written before the timestamp default was added still show up.
+// Auth: Authorization: Bearer <supabase access token>. Uses service role to
+// read (so it doesn't depend on RLS being configured on the events table).
 
 const { createClient } = require('@supabase/supabase-js');
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const admin = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
-async function verifyAuth(req) {
-  const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  if (!token) return false;
+async function requireUser(req) {
+  const h = req.headers.authorization || '';
+  const token = h.startsWith('Bearer ') ? h.slice(7) : '';
+  if (!token) return null;
   try {
-    const r = await fetch(process.env.SUPABASE_URL + '/auth/v1/user', {
-      headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token },
+    const userClient = createClient(SUPABASE_URL, process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY, {
+      global: { headers: { Authorization: 'Bearer ' + token } }
     });
-    return r.ok;
-  } catch (e) {
-    return false;
-  }
+    const { data, error } = await userClient.auth.getUser(token);
+    if (error || !data || !data.user) return null;
+    return data.user;
+  } catch { return null; }
 }
 
-function json(res, code, obj) {
-  res.statusCode = code;
-  res.setHeader('content-type', 'application/json');
-  res.setHeader('cache-control', 'no-store');
-  return res.end(JSON.stringify(obj));
+function sinceIso(days) {
+  const d = parseInt(days, 10);
+  if (!d || d <= 0) return '1970-01-01T00:00:00Z';
+  return new Date(Date.now() - d * 86400000).toISOString();
 }
 
 module.exports = async (req, res) => {
-  if (!(await verifyAuth(req))) return json(res, 401, { error: 'unauthorized' });
+  const json = (code, obj) => { res.statusCode = code; res.setHeader('content-type', 'application/json'); res.end(JSON.stringify(obj)); };
+  if (req.method !== 'GET') return json(405, { error: 'method' });
 
-  let siteId = null, days = 30;
-  try {
-    const u = new URL(req.url, 'http://x');
-    siteId = u.searchParams.get('siteId');
-    const d = parseInt(u.searchParams.get('days') || '30', 10);
-    if (!isNaN(d)) days = d;
-  } catch (e) { /* fall through with defaults */ }
-
-  const sinceMs = days > 0 ? (Date.now() - days * 864e5) : 0;
-  const inPeriod = (r) => {
-    if (days <= 0) return true;
-    if (!r || !r.created_at) return true; // legacy rows with no timestamp
-    return new Date(r.created_at).getTime() >= sinceMs;
-  };
+  const user = await requireUser(req);
+  if (!user) return json(401, { error: 'auth' });
 
   try {
-    if (siteId) {
-      let events = [], leads = [];
-      try {
-        const e = await supabase.from('events')
-          .select('event,created_at,props')
-          .eq('site_id', siteId)
-          .order('created_at', { ascending: false })
-          .limit(20000);
-        events = (e.data || []).filter(inPeriod);
-      } catch (_e) { events = []; }
-      try {
-        const l = await supabase.from('leads')
-          .select('name,kind,created_at')
-          .eq('site_id', siteId)
-          .order('created_at', { ascending: false })
-          .limit(500);
-        leads = (l.data || []).filter(inPeriod);
-      } catch (_e) { leads = []; }
-      return json(res, 200, { events, leads, leadsCount: leads.length });
+    const url = new URL(req.url, 'https://x');
+    const siteId = (url.searchParams.get('siteId') || '').trim();
+    const since = sinceIso(url.searchParams.get('days'));
+
+    // Global view: events across all sites (super-admin overview table).
+    if (!siteId) {
+      const ev = await admin.from('events').select('event,site_id,created_at').gte('created_at', since).limit(20000);
+      return json(200, { events: ev.data || [] });
     }
 
-    // global (all sites) — used by the super-admin "All sites" view
-    let events = [];
-    try {
-      const e = await supabase.from('events')
-        .select('event,site_id,created_at')
-        .order('created_at', { ascending: false })
-        .limit(40000);
-      events = (e.data || []).filter(inPeriod);
-    } catch (_e) { events = []; }
-    return json(res, 200, { events });
+    // Per-site view.
+    const ev = await admin.from('events').select('event,created_at,props').eq('site_id', siteId).gte('created_at', since).limit(10000);
+    const ld = await admin.from('leads').select('name,kind,created_at,status').eq('site_id', siteId).gte('created_at', since).order('created_at', { ascending: false }).limit(50);
+    const all = await admin.from('leads').select('status').eq('site_id', siteId).gte('created_at', since);
+
+    const statusCounts = { new: 0, contacted: 0, won: 0, lost: 0, total: 0 };
+    (all.data || []).forEach((r) => { statusCounts.total++; const s = (r.status || 'new'); if (statusCounts[s] != null) statusCounts[s]++; });
+
+    return json(200, {
+      events: ev.data || [],
+      leads: ld.data || [],
+      leadsCount: statusCounts.total,
+      statusCounts
+    });
   } catch (e) {
-    return json(res, 200, { events: [], leads: [], leadsCount: 0 });
+    console.error('stats error:', e && e.message);
+    return json(500, { error: 'server' });
   }
 };

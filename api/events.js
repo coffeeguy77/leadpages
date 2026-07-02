@@ -1,104 +1,67 @@
-// api/events.js — receives analytics pings from tenant pages and stores them.
+// api/events.js — receives the analytics beacons the public pages fire
+// (page_view, call_click, lead_submit) and stores them in the events table,
+// which powers the Visitors / Calls / Forms / Conversion stats in /manage.
 //
-// The trade/broker templates fire fetch('/api/events', …) for page_view,
-// call_click (the money metric) and lead_submit. Until now this endpoint did
-// not exist, so every ping 404'd and the events table stayed empty — which is
-// why the stats panel in /manage showed nothing. This stores each event against
-// its site so the analytics in manage.html light up.
+// Payload (from the site template's trackEvent):
+//   { site: "<business name>", siteId?: "<uuid>", slug?: "<slug>",
+//     event: "page_view"|"call_click"|"lead_submit"|..., props: {...} }
 //
-// Payload (from the templates):
-//   { site: "<business name>", event: "page_view"|"call_click"|"lead_submit",
-//     props: { …, ts }, siteId?: "<uuid>", slug?: "<slug>" }
-//
-// Always returns fast (204) and never throws back at the page — a tracking
-// hiccup must never disrupt a real visitor.
+// Public endpoint (no auth — it's called from every visitor's browser).
+// Uses the service-role key to write. Always returns 200 so a hiccup never
+// throws errors into a visitor's page.
 
 const { createClient } = require('@supabase/supabase-js');
+const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
-// In-process cache so we don't hit the DB to resolve the same site on every
-// page_view. Serverless instances are short-lived, so this is just a cheap win.
-const siteCache = new Map(); // key -> { id, ts }
-const CACHE_MS = 5 * 60 * 1000;
+const clean = (s, n = 120) => (s == null ? '' : String(s)).trim().slice(0, n);
+const ALLOWED = ['page_view', 'call_click', 'lead_submit', 'quote_open', 'cta_click'];
 
 function readBody(req) {
   return new Promise((resolve) => {
     if (req.body) {
-      if (typeof req.body === 'string') {
-        try { return resolve(JSON.parse(req.body)); } catch { return resolve({}); }
-      }
+      if (typeof req.body === 'string') { try { return resolve(JSON.parse(req.body)); } catch { return resolve({}); } }
       return resolve(req.body);
     }
-    let raw = '';
-    req.on('data', (c) => { raw += c; });
+    let raw = ''; req.on('data', (c) => { raw += c; });
     req.on('end', () => { try { resolve(raw ? JSON.parse(raw) : {}); } catch { resolve({}); } });
     req.on('error', () => resolve({}));
   });
 }
 
 async function resolveSiteId({ siteId, slug, site }) {
-  // 1) explicit id is best
-  if (siteId) return siteId;
-
-  const cacheKey = slug ? 's:' + slug : (site ? 'b:' + site : null);
-  if (cacheKey) {
-    const hit = siteCache.get(cacheKey);
-    if (hit && (Date.now() - hit.ts) < CACHE_MS) return hit.id;
-  }
-
-  let row = null;
-  if (slug) {
-    const r = await supabase.from('sites').select('id').eq('slug', slug).maybeSingle();
-    row = r.data;
-  }
-  if (!row && site) {
-    // business_name match (case-insensitive); pick the first if duplicated
-    const r = await supabase.from('sites').select('id').ilike('business_name', site).limit(1);
-    row = (r.data && r.data[0]) || null;
-  }
-
-  const id = row ? row.id : null;
-  if (cacheKey && id) siteCache.set(cacheKey, { id, ts: Date.now() });
-  return id;
+  if (siteId) return siteId; // trust the id the template was rendered with
+  try {
+    if (slug) { const r = await admin.from('sites').select('id').eq('slug', slug).maybeSingle(); if (r.data) return r.data.id; }
+    if (site) { const r = await admin.from('sites').select('id').ilike('business_name', site).limit(1); if (r.data && r.data[0]) return r.data[0].id; }
+  } catch { /* ignore */ }
+  return null;
 }
 
 module.exports = async (req, res) => {
-  // Be permissive about method so a misconfigured call still no-ops cleanly.
-  if (req.method !== 'POST') { res.statusCode = 204; return res.end(); }
+  const ok = () => { res.statusCode = 200; res.setHeader('content-type', 'application/json'); res.end('{"ok":true}'); };
+  if (req.method !== 'POST') return ok();
 
   try {
-    const body = await readBody(req);
-    const event = (body.event || '').toString().slice(0, 64);
-    if (!event) { res.statusCode = 204; return res.end(); }
+    const b = await readBody(req);
+    const event = clean(b.event, 40);
+    if (!event || ALLOWED.indexOf(event) < 0) return ok(); // ignore unknown/empty events quietly
 
-    const site_id = await resolveSiteId({
-      siteId: body.siteId,
-      slug: body.slug,
-      site: body.site
-    });
+    const site_id = await resolveSiteId({ siteId: clean(b.siteId, 64), slug: clean(b.slug, 120), site: clean(b.site, 160) });
 
-    // If we can't resolve the site we still 204 (never error back at the page).
-    if (!site_id) { res.statusCode = 204; return res.end(); }
+    // Keep props small + JSON-safe.
+    let props = {};
+    if (b.props && typeof b.props === 'object') {
+      try { props = JSON.parse(JSON.stringify(b.props)); } catch { props = {}; }
+    }
 
-    const props = (body.props && typeof body.props === 'object') ? body.props : {};
-
-    await supabase.from('events').insert({
-      site_id,
+    await admin.from('events').insert({
+      site_id: site_id || null,
       event,
       props,
-      created_at: new Date().toISOString()
+      site: clean(b.site, 160) || null
     });
-
-    res.statusCode = 204;
-    return res.end();
   } catch (e) {
-    // Swallow everything — analytics must never break the page.
     console.error('events error:', e && e.message);
-    res.statusCode = 204;
-    return res.end();
   }
+  return ok();
 };
