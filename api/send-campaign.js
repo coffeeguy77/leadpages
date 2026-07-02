@@ -149,8 +149,18 @@ module.exports = async (req, res) => {
       const url = new URL(req.url, 'https://x');
       const siteId = (url.searchParams.get('siteId') || '').trim();
       if (!siteId) return json(400, { ok: false, error: 'no_site' });
+      // Backstop for scheduled sends: deliver any that are now due (covers a missed
+      // cron run). The status-claim update keeps it safe if the cron also fires.
+      try {
+        const nowIso = new Date().toISOString();
+        const due = await admin.from('email_campaigns').select('*').eq('site_id', siteId).eq('status', 'scheduled').lte('send_at', nowIso).limit(5);
+        for (const c of (due.data || [])) {
+          const claim = await admin.from('email_campaigns').update({ status: 'sending' }).eq('id', c.id).eq('status', 'scheduled').select('id').maybeSingle();
+          if (claim.data) { try { await deliverCampaign(c); } catch (e2) { await admin.from('email_campaigns').update({ status: 'failed' }).eq('id', c.id); } }
+        }
+      } catch (e) { /* ignore backstop errors */ }
       const r = await admin.from('email_campaigns')
-        .select('id,subject,status,total_recipients,sent_count,failed_count,send_at,sent_at,created_at')
+        .select('id,subject,body_html,image_url,recipient_mode,status,total_recipients,sent_count,failed_count,send_at,sent_at,created_at')
         .eq('site_id', siteId).order('created_at', { ascending: false }).limit(8);
       return json(200, { ok: true, campaigns: r.data || [] });
     } catch (e) { return json(500, { ok: false, error: 'server' }); }
@@ -163,6 +173,16 @@ module.exports = async (req, res) => {
 
   try {
     const b = await readBody(req);
+
+    // "Send now" for an existing (e.g. scheduled) campaign — deliver immediately.
+    if (b.action === 'deliver' && b.campaignId) {
+      const cr = await admin.from('email_campaigns').select('*').eq('id', String(b.campaignId)).maybeSingle();
+      if (cr.error || !cr.data) return json(404, { ok: false, error: 'not_found' });
+      await admin.from('email_campaigns').update({ status: 'sending' }).eq('id', cr.data.id);
+      const r2 = await deliverCampaign(cr.data);
+      return json(200, { ok: true, campaignId: cr.data.id, scheduled: false, ...r2 });
+    }
+
     const siteId = clean(b.siteId, 64);
     const subject = clean(b.subject, 200);
     const bodyHtml = (b.bodyHtml == null ? '' : String(b.bodyHtml)).slice(0, 50000);
