@@ -1,7 +1,6 @@
 // api/instagram/save-token.js
-// POST {slug, token} — saves a long-lived token directly to ig_connections.
-// POST {slug, token:'', disconnect:true} — clears the connection.
-// Only callable from the manage editor (checks Origin/Referer).
+// POST {slug, token} — verify + save a long-lived token to ig_connections.
+// POST {slug, disconnect:true} — DELETE the connection row entirely.
 
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -10,7 +9,6 @@ module.exports = async (req, res) => {
   res.setHeader('Content-Type','application/json');
   res.setHeader('cache-control','no-store');
 
-  // Only allow from manage page
   const origin = req.headers.origin || req.headers.referer || '';
   if(!origin.includes('leadpages.com.au') && !origin.includes('localhost')){
     return res.status(403).json({ok:false, error:'Forbidden'});
@@ -26,20 +24,18 @@ module.exports = async (req, res) => {
   const slug = String(body.slug||'').trim();
   if(!slug) return res.status(400).json({ok:false,error:'Missing slug'});
 
-  // Disconnect
+  // ---- Disconnect: DELETE the row (avoids not-null constraints entirely) ----
   if(body.disconnect){
-    const {error}=await supabase.from('ig_connections')
-      .update({access_token:null,token_expires_at:null,ig_username:null,ig_user_id:null,ig_cache:null,ig_cache_at:null})
-      .eq('slug',slug);
+    const {error}=await supabase.from('ig_connections').delete().eq('slug',slug);
     if(error) return res.status(500).json({ok:false,error:error.message});
-    return res.json({ok:true});
+    return res.json({ok:true,disconnected:true});
   }
 
   const token = String(body.token||'').trim();
   if(!token) return res.status(400).json({ok:false,error:'Missing token'});
 
-  // Verify the token works and get username
-  let username=null, igUserId=null, expiresAt=null;
+  // Verify token + get identity (ig_user_id is NOT NULL in the table, so we must have it)
+  let username=null, igUserId=null;
   try {
     const uRes=await fetch('https://graph.instagram.com/me?fields=id,username&access_token='+encodeURIComponent(token));
     const uJson=await uRes.json().catch(()=>({}));
@@ -47,15 +43,16 @@ module.exports = async (req, res) => {
     username=uJson.username||null;
     igUserId=uJson.id||null;
   } catch(e){ return res.status(500).json({ok:false,error:'Could not verify token: '+String(e&&e.message||e)}); }
+  if(!igUserId) return res.status(400).json({ok:false,error:'Token verified but no user id returned'});
 
-  // Long-lived tokens expire in ~60 days — set expiry
-  expiresAt=new Date(Date.now()+(60*24*60*60*1000)).toISOString();
+  const expiresAt=new Date(Date.now()+(60*24*60*60*1000)).toISOString();
 
   const row={slug,access_token:token,token_expires_at:expiresAt,ig_username:username,ig_user_id:igUserId,ig_cache:null,ig_cache_at:null};
   const {error:e1}=await supabase.from('ig_connections').upsert(row,{onConflict:'slug'});
   if(e1){
+    // Retry without optional cache columns in case they don't exist
     const {error:e2}=await supabase.from('ig_connections')
-      .upsert({slug,access_token:token,token_expires_at:expiresAt,ig_username:username},{onConflict:'slug'});
+      .upsert({slug,access_token:token,token_expires_at:expiresAt,ig_username:username,ig_user_id:igUserId},{onConflict:'slug'});
     if(e2) return res.status(500).json({ok:false,error:e2.message});
   }
 
