@@ -5,8 +5,6 @@ const APP_ID    = process.env.INSTAGRAM_APP_ID;
 const APP_SEC   = process.env.INSTAGRAM_APP_SECRET;
 const REDIRECT  = 'https://www.leadpages.com.au/api/instagram/callback';
 const STATE_SEC = process.env.IG_STATE_SECRET || APP_SEC || '';
-// Business Login scope for instagram_business_basic
-const SCOPE     = 'instagram_business_basic,instagram_business_manage_comments,instagram_business_manage_messages';
 
 function sign(p){ return crypto.createHmac('sha256',STATE_SEC).update(p).digest('base64url'); }
 function makeState(slug){
@@ -20,16 +18,18 @@ module.exports = async (req, res) => {
     if(!slug) return res.status(400).send('Missing site slug.');
     if(!APP_ID||!APP_SEC) return res.status(500).send('Instagram connection is not configured yet.');
 
-    console.log('[ig-connect] slug='+slug+' appId='+APP_ID+' redirect='+REDIRECT);
+    console.log('[ig-connect] slug='+slug+' appId='+APP_ID);
 
-    // Use force_reauth=true as Meta's Business Login embed URL does
+    // Build URL manually — do NOT encodeURIComponent the scope so commas stay as commas
+    const state = encodeURIComponent(makeState(slug));
+    const redirect = encodeURIComponent(REDIRECT);
     const url = 'https://www.instagram.com/oauth/authorize'
       +'?force_reauth=true'
-      +'&client_id='+encodeURIComponent(APP_ID)
-      +'&redirect_uri='+encodeURIComponent(REDIRECT)
+      +'&client_id='+APP_ID
+      +'&redirect_uri='+redirect
       +'&response_type=code'
-      +'&scope='+encodeURIComponent(SCOPE)
-      +'&state='+encodeURIComponent(makeState(slug));
+      +'&scope=instagram_business_basic'
+      +'&state='+state;
 
     res.setHeader('cache-control','no-store');
     res.writeHead(302,{Location:url});
