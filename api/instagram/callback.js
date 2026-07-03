@@ -1,125 +1,39 @@
-// api/instagram/callback.js — Instagram Business Login token exchange
-const crypto = require('crypto');
-const { createClient } = require('@supabase/supabase-js');
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+// api/instagram/callback.js — relay page. Does NOT exchange the code itself.
+// Returns a tiny HTML page whose JS POSTs code+state to /api/instagram/exchange.
+// Link-preview scanners and prefetchers don't execute JS, so they can't burn
+// the one-time code before the real browser does.
 
-const APP_ID    = process.env.INSTAGRAM_APP_ID;
-const APP_SEC   = process.env.INSTAGRAM_APP_SECRET;
-const REDIRECT  = 'https://www.leadpages.com.au/api/instagram/callback';
-const STATE_SEC = process.env.IG_STATE_SECRET || APP_SEC || '';
-const BACK      = 'https://www.leadpages.com.au/manage';
-
-function sign(p){ return crypto.createHmac('sha256',STATE_SEC).update(p).digest('base64url'); }
-
-function verifyState(state){
-  try {
-    const parts=String(state||'').split('.');
-    if(parts.length!==2) return null;
-    const exp=sign(parts[0]);
-    const a=Buffer.from(parts[1],'base64url'), b=Buffer.from(exp,'base64url');
-    if(a.length!==b.length||!crypto.timingSafeEqual(a,b)) return null;
-    const obj=JSON.parse(Buffer.from(parts[0],'base64url').toString('utf8'));
-    if(!obj||!obj.s) return null;
-    if(Date.now()-Number(obj.t||0)>15*60*1000) return null;
-    return String(obj.s);
-  } catch(_){ return null; }
-}
-
-function done(res,slug,status,detail){
-  const u=BACK+'?ig='+encodeURIComponent(status)
-    +(slug?'&site='+encodeURIComponent(slug):'')
-    +(detail?'&ig_detail='+encodeURIComponent(String(detail).slice(0,200)):'');
+module.exports = async (req, res) => {
   res.setHeader('cache-control','no-store');
-  res.writeHead(302,{Location:u});
-  res.end();
-}
-
-module.exports = async (req,res) => {
-  // Parse code directly from raw URL to avoid framework quirks
-  let code=null;
-  try { code=new URL('https://x.com'+(req.url||'')).searchParams.get('code'); } catch(_){}
-  const q=req.query||{};
-  code=code||q.code||'';
-  code=String(code).replace(/#_$/,'').trim();
-
-  const slug=verifyState(q.state);
-  let step='init';
-  try {
-    if(q.error) return done(res,slug,'denied',q.error_description||q.error);
-    if(!slug)   return res.status(400).send('Invalid or expired connection request — please try again.');
-    if(!APP_ID||!APP_SEC) return res.status(500).send('Instagram connection is not configured.');
-    if(!code) return done(res,slug,'error','no_code');
-
-    console.log('[ig-callback] slug='+slug+' codeLen='+code.length+' appId='+APP_ID);
-
-    // Step 1: code -> short-lived token (Business Login endpoint)
-    step='short_token';
-    const form='client_id='+encodeURIComponent(APP_ID)
-      +'&client_secret='+encodeURIComponent(APP_SEC)
-      +'&grant_type=authorization_code'
-      +'&redirect_uri='+encodeURIComponent(REDIRECT)
-      +'&code='+encodeURIComponent(code);
-
-    const sRes=await fetch('https://api.instagram.com/oauth/access_token',{
-      method:'POST',
-      headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:form
-    });
-    const sText=await sRes.text();
-    let sJson={};
-    try{sJson=JSON.parse(sText);}catch(_){}
-    console.log('[ig-callback] step1 status='+sRes.status+' body='+sText.slice(0,400));
-
-    const shortTok=sJson.access_token;
-    if(!sRes.ok||!shortTok){
-      const err=(sJson.error_message||sJson.error||sText||'unknown').slice(0,200);
-      return done(res,slug,'error','step1:'+err);
-    }
-
-    // Step 2: short -> long-lived 60-day token
-    step='long_token';
-    const lRes=await fetch('https://graph.instagram.com/access_token'
-      +'?grant_type=ig_exchange_token'
-      +'&client_secret='+encodeURIComponent(APP_SEC)
-      +'&access_token='+encodeURIComponent(shortTok));
-    const lText=await lRes.text();
-    let lJson={};
-    try{lJson=JSON.parse(lText);}catch(_){}
-    console.log('[ig-callback] step2 status='+lRes.status+' body='+lText.slice(0,300));
-
-    const longTok=lJson.access_token;
-    if(!lRes.ok||!longTok){
-      const err=(lJson.error&&lJson.error.message||lText||'unknown').slice(0,200);
-      return done(res,slug,'error','step2:'+err);
-    }
-    const expiresAt=new Date(Date.now()+(Number(lJson.expires_in||5184000)*1000)).toISOString();
-
-    // Step 3: get username
-    step='username';
-    let username=null,igUserId=null;
-    try{
-      const uRes=await fetch('https://graph.instagram.com/me?fields=id,username&access_token='+encodeURIComponent(longTok));
-      const uJson=await uRes.json().catch(()=>({}));
-      if(uRes.ok){username=uJson.username||null;igUserId=uJson.id||null;}
-      console.log('[ig-callback] step3 username='+username);
-    }catch(_){}
-
-    // Step 4: upsert ig_connections
-    step='db';
-    const row={slug,access_token:longTok,token_expires_at:expiresAt,ig_username:username,ig_user_id:igUserId,ig_cache:null,ig_cache_at:null};
-    const {error:e1}=await supabase.from('ig_connections').upsert(row,{onConflict:'slug'});
-    if(e1){
-      console.log('[ig-callback] upsert err: '+e1.message+' retrying without cache cols');
-      const {error:e2}=await supabase.from('ig_connections')
-        .upsert({slug,access_token:longTok,token_expires_at:expiresAt,ig_username:username},{onConflict:'slug'});
-      if(e2) return done(res,slug,'error','step4:'+String(e2.message).slice(0,120));
-    }
-
-    console.log('[ig-callback] SUCCESS slug='+slug+' username='+username);
-    return done(res,slug,'connected');
-
-  }catch(e){
-    console.log('[ig-callback] EXCEPTION step='+step+' '+String(e&&e.message||e));
-    return done(res,slug,'error',step+':'+String(e&&e.message||e).slice(0,120));
+  res.setHeader('x-robots-tag','noindex');
+  res.setHeader('content-type','text/html; charset=utf-8');
+  res.status(200).send(`<!doctype html>
+<html><head><meta name="robots" content="noindex"><title>Connecting Instagram…</title>
+<style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#1a2230}</style>
+</head><body>
+<div id="msg">Finishing Instagram connection…</div>
+<script>
+(function(){
+  var p=new URLSearchParams(location.search);
+  var code=p.get('code'), state=p.get('state'), err=p.get('error');
+  function go(status, site, detail){
+    var u='/manage?ig='+encodeURIComponent(status)
+      +(site?'&site='+encodeURIComponent(site):'')
+      +(detail?'&ig_detail='+encodeURIComponent(String(detail).slice(0,200)):'');
+    location.replace(u);
   }
+  if(err){ go('denied','', p.get('error_description')||err); return; }
+  if(!code||!state){ go('error','','missing_code_or_state'); return; }
+  fetch('/api/instagram/exchange',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({code:code,state:state})
+  }).then(function(r){return r.json();})
+  .then(function(j){
+    if(j&&j.ok) go('connected', j.slug||'');
+    else go('error', j&&j.slug||'', (j&&j.error)||'unknown');
+  })
+  .catch(function(e){ go('error','','network:'+e); });
+})();
+</script></body></html>`);
 };

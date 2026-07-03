@@ -18,18 +18,14 @@ module.exports = async (req, res) => {
     if(!slug) return res.status(400).send('Missing site slug.');
     if(!APP_ID||!APP_SEC) return res.status(500).send('Instagram connection is not configured yet.');
 
-    console.log('[ig-connect] slug='+slug+' appId='+APP_ID);
+    console.log('[ig-connect] slug='+slug);
 
-    // Build URL manually — do NOT encodeURIComponent the scope so commas stay as commas
-    const state = encodeURIComponent(makeState(slug));
-    const redirect = encodeURIComponent(REDIRECT);
     const url = 'https://www.instagram.com/oauth/authorize'
-      +'?force_reauth=true'
-      +'&client_id='+APP_ID
-      +'&redirect_uri='+redirect
+      +'?client_id='+APP_ID
+      +'&redirect_uri='+encodeURIComponent(REDIRECT)
       +'&response_type=code'
       +'&scope=instagram_business_basic'
-      +'&state='+state;
+      +'&state='+encodeURIComponent(makeState(slug));
 
     res.setHeader('cache-control','no-store');
     res.writeHead(302,{Location:url});
