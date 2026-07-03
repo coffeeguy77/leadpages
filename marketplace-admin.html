@@ -174,6 +174,41 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
   </div>
 </dialog>
 
+
+<!-- blocks builder dialog -->
+<dialog id="blk-dlg" style="max-width:680px">
+  <div class="dhead" id="blk-dlg-title">Page blocks</div>
+  <div class="dbody">
+    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+      <div class="note">Blocks render top to bottom on the public page. <a id="blk-view" href="#" target="_blank" rel="noopener" style="color:var(--rose-d);font-weight:700">Preview page &rarr;</a></div>
+      <select id="blk-add-type" style="width:auto">
+        <option value="">+ Add block…</option>
+        <option value="rich_text">Text</option>
+        <option value="benefits">Benefits list</option>
+        <option value="image">Image</option>
+        <option value="gallery">Gallery</option>
+        <option value="demo_embed">Live demo (iframe)</option>
+        <option value="faq">FAQ</option>
+        <option value="quote">Quote</option>
+        <option value="cta">Call to action</option>
+      </select>
+    </div>
+    <div class="list" id="blk-list"></div>
+    <div class="note" id="blk-empty" style="display:none">No blocks yet — the public page shows the feature summary until you add some.</div>
+  </div>
+  <div class="dfoot"><button class="btn ghost" id="blk-close">Close</button></div>
+</dialog>
+
+<!-- block edit dialog -->
+<dialog id="be-dlg">
+  <div class="dhead" id="be-title">Edit block</div>
+  <div class="dbody" id="be-fields"></div>
+  <div class="dfoot">
+    <button class="btn ghost" id="be-cancel">Cancel</button>
+    <button class="btn" id="be-save">Save block</button>
+  </div>
+</dialog>
+
 <script>
 (function(){
   var sb=window.supabase.createClient(window.__LP.url, window.__LP.anon);
@@ -241,6 +276,7 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
         +'<div class="sl">/'+esc(f.slug)+' · '+esc(catName(f.category_id))+' · sort '+f.sort_order+'</div></div>'
         +'<span class="pillst '+(f.status==='live'?'live':'draft')+'">'+esc(f.status)+'</span>'
         +'<span class="sp"></span>'
+        +'<button class="btn sm ghost" data-blocks="'+f.id+'">Page</button>'
         +'<button class="btn sm ghost" data-edit-feat="'+f.id+'">Edit</button>'
         +'<button class="btn sm danger" data-del-feat="'+f.id+'">Delete</button>'
         +'</div>';
@@ -332,6 +368,136 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
       if(!confirm('Delete this feature and its content blocks?'))return;
       var r2=await sb.from('catalog_features').delete().eq('id',t.dataset.delFeat);
       if(r2.error)alert('Delete failed: '+r2.error.message); else loadAll();
+    }
+  });
+
+
+  /* ---------- blocks builder ---------- */
+  var BLOCKS=[], blkFeat=null, beEdit=null, beType=null;
+  var TYPE_LABEL={rich_text:'Text',benefits:'Benefits',image:'Image',gallery:'Gallery',demo_embed:'Live demo',faq:'FAQ',quote:'Quote',cta:'Call to action'};
+
+  async function openBlocks(fid){
+    blkFeat=FEATS.find(function(x){return x.id===fid;}); if(!blkFeat)return;
+    $('blk-dlg-title').textContent='Page blocks — '+blkFeat.name;
+    $('blk-view').href='/marketplace/'+blkFeat.slug;
+    await loadBlocks();
+    $('blk-dlg').showModal();
+  }
+  async function loadBlocks(){
+    var r=await sb.from('catalog_blocks').select('*').eq('feature_id',blkFeat.id).order('sort_order');
+    BLOCKS=r.data||[]; renderBlocks();
+  }
+  function blockPreview(b){
+    var p=b.payload||{};
+    switch(b.block_type){
+      case 'rich_text':return (p.heading||String(p.text||'').slice(0,60))||'(empty)';
+      case 'benefits':return (p.heading||'')+' · '+((p.items||[]).length)+' items';
+      case 'image':return p.caption||p.url||'(no image)';
+      case 'gallery':return ((p.images||[]).length)+' images';
+      case 'demo_embed':return p.url||'(no url)';
+      case 'faq':return ((p.items||[]).length)+' questions';
+      case 'quote':return String(p.text||'').slice(0,60);
+      case 'cta':return p.heading||p.button_label||'CTA';
+      default:return '';
+    }
+  }
+  function renderBlocks(){
+    $('blk-empty').style.display=BLOCKS.length?'none':'block';
+    $('blk-list').innerHTML=BLOCKS.map(function(b,i){
+      return '<div class="item">'
+        +'<span class="pillst draft">'+esc(TYPE_LABEL[b.block_type]||b.block_type)+'</span>'
+        +'<div class="sl" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(blockPreview(b))+'</div>'
+        +'<button class="btn sm ghost" data-bmove="'+b.id+'|-1"'+(i===0?' disabled':'')+'>&uarr;</button>'
+        +'<button class="btn sm ghost" data-bmove="'+b.id+'|1"'+(i===BLOCKS.length-1?' disabled':'')+'>&darr;</button>'
+        +'<button class="btn sm ghost" data-bedit="'+b.id+'">Edit</button>'
+        +'<button class="btn sm danger" data-bdel="'+b.id+'">Delete</button>'
+        +'</div>';
+    }).join('');
+  }
+  $('blk-close').addEventListener('click',function(){$('blk-dlg').close();});
+  $('blk-add-type').addEventListener('change',function(){
+    var t=this.value; this.value=''; if(!t)return; openBE(null,t);
+  });
+
+  /* ---- per-type edit forms ---- */
+  function fld(label,id,type,val,ph){
+    if(type==='ta')return '<label>'+label+'</label><textarea id="'+id+'" placeholder="'+(ph||'')+'">'+esc(val||'')+'</textarea>';
+    return '<label>'+label+'</label><input id="'+id+'" value="'+esc(val||'')+'" placeholder="'+(ph||'')+'">';
+  }
+  function beForm(t,p){
+    p=p||{};
+    switch(t){
+      case 'rich_text':return fld('Heading (optional)','be-h','in',p.heading)
+        +fld('Text — blank line starts a new paragraph','be-t','ta',p.text);
+      case 'benefits':return fld('Heading (optional)','be-h','in',p.heading)
+        +fld('Items — one per line as: Title | description','be-t','ta',(p.items||[]).map(function(i){return i.title+(i.text?' | '+i.text:'');}).join('\n'),'Always fresh | Posts appear automatically');
+      case 'image':return fld('Image URL','be-u','in',p.url,'https://res.cloudinary.com/…')
+        +fld('Alt text','be-a','in',p.alt)+fld('Caption (optional)','be-c','in',p.caption);
+      case 'gallery':return fld('Image URLs — one per line','be-t','ta',(p.images||[]).map(function(g){return g.url||g;}).join('\n'));
+      case 'demo_embed':return fld('Page URL to embed','be-u','in',p.url,'https://www.leadpages.com.au/beanculture')
+        +fld('Height in pixels (default 560)','be-hn','in',p.height);
+      case 'faq':return fld('Heading (optional)','be-h','in',p.heading)
+        +fld('Questions — one per line as: Question? | Answer','be-t','ta',(p.items||[]).map(function(i){return i.q+' | '+i.a;}).join('\n'));
+      case 'quote':return fld('Quote text','be-t','ta',p.text)
+        +fld('Name','be-n','in',p.name)+fld('Role (optional)','be-r','in',p.role);
+      case 'cta':return fld('Heading','be-h','in',p.heading,'Ready to offer this?')
+        +fld('Text (optional)','be-t','ta',p.text)
+        +fld('Button label','be-bl','in',p.button_label,'Become a partner')
+        +fld('Button URL','be-u','in',p.button_url,'/partners');
+      default:return '';
+    }
+  }
+  function beRead(t){
+    function v(id){var e=$(id);return e?e.value.trim():'';}
+    switch(t){
+      case 'rich_text':return {heading:v('be-h')||null,text:v('be-t')};
+      case 'benefits':return {heading:v('be-h')||null,items:v('be-t').split('\n').filter(Boolean).map(function(l){var s=l.split('|');return {title:s[0].trim(),text:(s[1]||'').trim()};})};
+      case 'image':return {url:v('be-u'),alt:v('be-a'),caption:v('be-c')||null};
+      case 'gallery':return {images:v('be-t').split('\n').map(function(s){return s.trim();}).filter(Boolean).map(function(u){return {url:u};})};
+      case 'demo_embed':return {url:v('be-u'),height:parseInt(v('be-hn'),10)||560};
+      case 'faq':return {heading:v('be-h')||null,items:v('be-t').split('\n').filter(Boolean).map(function(l){var s=l.split('|');return {q:s[0].trim(),a:(s[1]||'').trim()};})};
+      case 'quote':return {text:v('be-t'),name:v('be-n')||null,role:v('be-r')||null};
+      case 'cta':return {heading:v('be-h'),text:v('be-t')||null,button_label:v('be-bl')||'Become a partner',button_url:v('be-u')||'/partners'};
+      default:return {};
+    }
+  }
+  function openBE(b,type){
+    beEdit=b?b.id:null; beType=b?b.block_type:type;
+    $('be-title').textContent=(b?'Edit':'New')+' '+(TYPE_LABEL[beType]||beType)+' block';
+    $('be-fields').innerHTML=beForm(beType,b?b.payload:null);
+    $('be-dlg').showModal();
+  }
+  $('be-cancel').addEventListener('click',function(){$('be-dlg').close();});
+  $('be-save').addEventListener('click',async function(){
+    var payload=beRead(beType);
+    $('be-save').disabled=true; var r;
+    if(beEdit){ r=await sb.from('catalog_blocks').update({payload:payload}).eq('id',beEdit); }
+    else{
+      var maxSort=BLOCKS.length?Math.max.apply(null,BLOCKS.map(function(b){return b.sort_order;}))+1:1;
+      r=await sb.from('catalog_blocks').insert({feature_id:blkFeat.id,block_type:beType,payload:payload,sort_order:maxSort});
+    }
+    $('be-save').disabled=false;
+    if(r.error){alert('Save failed: '+r.error.message);return;}
+    $('be-dlg').close(); loadBlocks();
+  });
+
+  document.addEventListener('click',async function(e){
+    var t=e.target;
+    if(t.dataset.blocks){openBlocks(t.dataset.blocks);}
+    if(t.dataset.bedit){var b=BLOCKS.find(function(x){return x.id===t.dataset.bedit;});if(b)openBE(b,null);}
+    if(t.dataset.bdel){
+      if(!confirm('Delete this block?'))return;
+      var r=await sb.from('catalog_blocks').delete().eq('id',t.dataset.bdel);
+      if(r.error)alert('Delete failed: '+r.error.message); else loadBlocks();
+    }
+    if(t.dataset.bmove){
+      var parts=t.dataset.bmove.split('|'), id=parts[0], dir=parseInt(parts[1],10);
+      var i=BLOCKS.findIndex(function(x){return x.id===id;}), j=i+dir;
+      if(i<0||j<0||j>=BLOCKS.length)return;
+      var a=BLOCKS[i], b2=BLOCKS[j];
+      var r1=await sb.from('catalog_blocks').update({sort_order:b2.sort_order}).eq('id',a.id);
+      var r2=await sb.from('catalog_blocks').update({sort_order:a.sort_order}).eq('id',b2.id);
+      if(r1.error||r2.error)alert('Reorder failed'); else loadBlocks();
     }
   });
 

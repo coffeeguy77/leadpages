@@ -146,14 +146,14 @@ footer a:hover{color:#D9A0AC}
         : '<div class="fthumb">';
       if(f.badge) thumb+='<span class="fbadge">'+esc(f.badge)+'</span>';
       thumb+='</div>';
-      var demo=f.demo_url?'<a class="fdemo" href="'+esc(f.demo_url)+'" target="_blank" rel="noopener">See it live &rarr;</a>':'';
-      return '<article class="fcard">'+thumb
+      var demo='<span class="fdemo">Read more &rarr;</span>';
+      return '<a class="fcard" href="/marketplace/'+esc(f.slug)+'">'+thumb
         +'<div class="fbody">'
         +'<span class="fcat">'+esc(catName(f.category_id))+'</span>'
         +'<h3>'+esc(f.name)+'</h3>'
         +(f.tagline?'<div class="ftag">'+esc(f.tagline)+'</div>':'')
         +(f.summary?'<p class="fsum">'+esc(f.summary)+'</p>':'')
-        +demo+'</div></article>';
+        +demo+'</div></a>';
     }).join('');
   }
 

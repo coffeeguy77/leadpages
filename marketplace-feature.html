@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<title>Marketplace — LeadPages</title>
+<meta name="description" content="A LeadPages platform feature, explained.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAF5F2; --shell:#F1E5DF; --ink:#2E2A2B; --mut:#6E6265;
+  --rose:#A84A5E; --rose-d:#7E3346; --gum:#2F413A; --line:#E4D5CD;
+  --disp:'Young Serif',Georgia,serif; --body:'Figtree',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.65}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px}
+h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.12}
+.sitenav{background:var(--gum)}
+.sitenav .wrap{max-width:1140px;display:flex;align-items:center;justify-content:space-between;height:72px}
+.sitenav img{height:48px;width:auto}
+.sitenav .links{display:flex;align-items:center;gap:24px}
+.sitenav .links a{color:#E9EFEA;font-weight:600;font-size:15px}
+.sitenav .links a:hover{color:#D9A0AC}
+.sitenav .links a.cta{background:var(--rose);color:#fff;padding:9px 18px;border-radius:999px}
+.sitenav .links a.cta:hover{background:var(--rose-d)}
+@media(max-width:640px){.sitenav .links a:not(.cta){display:none}}
+.crumb{padding:22px 0 0;font-size:14px;color:var(--mut)}
+.crumb a{color:var(--rose-d);font-weight:600}
+.hero{padding:26px 0 42px}
+.hbadge{display:inline-block;background:var(--rose);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 11px;border-radius:999px;margin-bottom:12px}
+.hcat{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--rose);display:block;margin-bottom:10px}
+.hero h1{font-size:clamp(30px,4.6vw,46px)}
+.htag{font-size:19px;color:var(--mut);margin-top:12px;max-width:56ch}
+.hcta{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.btn{display:inline-flex;font-weight:700;padding:13px 26px;border-radius:999px;background:var(--rose);color:#fff;border:2px solid var(--rose);font-size:15.5px;cursor:pointer;font-family:var(--body)}
+.btn:hover{background:var(--rose-d);border-color:var(--rose-d)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--paper)}
+.himg{border-radius:18px;overflow:hidden;border:1px solid var(--line);box-shadow:0 22px 56px rgba(46,42,43,.12);margin-top:34px}
+.himg img{width:100%}
+article{padding:14px 0 80px}
+.blk{margin:44px 0}
+.blk h2{font-size:clamp(23px,3vw,30px);margin-bottom:14px}
+.blk p{color:#4A4144;margin-bottom:14px;font-size:16.5px}
+.bene{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+@media(max-width:640px){.bene{grid-template-columns:1fr}}
+.bn{display:flex;gap:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.bn .t{color:var(--rose);font-weight:800;font-size:17px;line-height:1.5}
+.bn b{display:block;font-size:15.5px}
+.bn span{font-size:14.5px;color:var(--mut)}
+.imgblk{border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.cap{font-size:13.5px;color:var(--mut);margin-top:8px;text-align:center}
+.gal{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:640px){.gal{grid-template-columns:1fr 1fr}}
+.gal img{border-radius:12px;border:1px solid var(--line);width:100%;height:150px;object-fit:cover;cursor:pointer}
+.lb{position:fixed;inset:0;background:rgba(38,32,34,.86);display:none;align-items:center;justify-content:center;padding:26px;z-index:60;cursor:zoom-out}
+.lb.show{display:flex}
+.lb img{max-width:94vw;max-height:90vh;border-radius:12px;height:auto;object-fit:contain}
+.demo{border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 18px 46px rgba(46,42,43,.1)}
+.demo iframe{display:block;width:100%;border:0}
+.faq details{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.faq summary{padding:15px 18px;font-weight:700;cursor:pointer;list-style:none;position:relative}
+.faq summary::after{content:"+";position:absolute;right:18px;color:var(--rose);font-weight:800}
+.faq details[open] summary::after{content:"–"}
+.faq .a{padding:0 18px 15px;color:var(--mut);font-size:15.5px}
+.ctab{background:var(--gum);color:#F3EFEA;border-radius:18px;padding:40px 36px;text-align:center}
+.ctab h2{color:#F3EFEA}
+.ctab p{color:#C9D2CC;max-width:52ch;margin:8px auto 22px}
+.qt{border-left:5px solid var(--rose);background:#fff;border-radius:0 14px 14px 0;padding:24px 26px}
+.qt p{font-family:var(--disp);font-size:20px;line-height:1.4;color:var(--ink);margin-bottom:12px}
+.qt .by{font-size:14px;color:var(--mut);font-weight:600}
+.status{padding:90px 24px;text-align:center;color:var(--mut)}
+.status h1{font-size:26px;margin-bottom:10px}
+.back{background:var(--shell);text-align:center;padding:56px 24px}
+.back h2{font-size:clamp(24px,3.2vw,32px);margin-bottom:10px}
+.back p{color:var(--mut);margin-bottom:22px}
+footer{background:var(--gum);color:#C9D2CC;padding:44px 0 36px;font-size:14px}
+footer .wrap{max-width:1140px;display:flex;justify-content:space-between;gap:26px;flex-wrap:wrap}
+footer img{height:42px;margin-bottom:12px}
+footer a{color:#E9EFEA;font-weight:600;margin-right:22px}
+footer a:hover{color:#D9A0AC}
+.abn{margin-top:14px;color:#8FA096;font-size:12.5px}
+</style>
+</head>
+<body>
+
+<nav class="sitenav">
+  <div class="wrap">
+    <a href="/"><img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="LeadPages"></a>
+    <div class="links">
+      <a href="/marketplace">Marketplace</a>
+      <a href="/domains">Domains</a>
+      <a class="cta" href="/partners">Become a partner</a>
+    </div>
+  </div>
+</nav>
+
+<div id="page"><div class="status">Loading&hellip;</div></div>
+
+<section class="back">
+  <h2>Every feature, on every site</h2>
+  <p>Everything in the marketplace is included with the platform — offer it all to your clients.</p>
+  <a class="btn" href="/partners">Become a partner</a>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="LeadPages">
+      <div>Smart sites. More leads. Built in Canberra, Australia.</div>
+      <div class="abn">Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div>
+    </div>
+    <div>
+      <a href="/">Home</a><a href="/marketplace">Marketplace</a><a href="/partners">Become a partner</a><a href="/privacy-policy">Privacy</a>
+    </div>
+  </div>
+</footer>
+
+<div class="lb" id="lb"><img id="lb-img" alt=""></div>
+
+<script>
+(function(){
+  var page=document.getElementById('page');
+  function esc(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML;}
+  function paras(t){return String(t||'').split(/\n\s*\n/).filter(Boolean).map(function(p){return '<p>'+esc(p).replace(/\n/g,'<br>')+'</p>';}).join('');}
+  function safeUrl(u){u=String(u||'').trim();return /^https?:\/\//i.test(u)?u:'';}
+
+  var slug=(location.pathname.split('/').filter(Boolean)[1]||'').toLowerCase();
+  if(!slug){notFound();return;}
+
+  fetch('/api/catalog?slug='+encodeURIComponent(slug))
+    .then(function(r){if(!r.ok)throw 0;return r.json();})
+    .then(render).catch(notFound);
+
+  function notFound(){
+    page.innerHTML='<div class="status"><h1>We couldn&rsquo;t find that feature</h1>'
+      +'<p>It may have moved or is not live yet.</p>'
+      +'<p style="margin-top:18px"><a class="btn" href="/marketplace">Back to the marketplace</a></p></div>';
+  }
+
+  function block(b){
+    var p=b.payload||{};
+    switch(b.block_type){
+      case 'rich_text':
+        return '<div class="blk">'+(p.heading?'<h2>'+esc(p.heading)+'</h2>':'')+paras(p.text)+'</div>';
+      case 'benefits':
+        var items=(p.items||[]).map(function(it){
+          return '<div class="bn"><span class="t">✓</span><div><b>'+esc(it.title)+'</b>'
+            +(it.text?'<span>'+esc(it.text)+'</span>':'')+'</div></div>';}).join('');
+        return '<div class="blk">'+(p.heading?'<h2>'+esc(p.heading)+'</h2>':'')+'<div class="bene">'+items+'</div></div>';
+      case 'image':
+        var iu=safeUrl(p.url); if(!iu)return '';
+        return '<div class="blk"><div class="imgblk"><img src="'+esc(iu)+'" alt="'+esc(p.alt||'')+'" loading="lazy"></div>'
+          +(p.caption?'<div class="cap">'+esc(p.caption)+'</div>':'')+'</div>';
+      case 'gallery':
+        var gs=(p.images||[]).map(function(g){var u=safeUrl(g.url||g);return u?'<img src="'+esc(u)+'" alt="'+esc(g.alt||'')+'" loading="lazy" data-lb="'+esc(u)+'">':'';}).join('');
+        return gs?'<div class="blk"><div class="gal">'+gs+'</div></div>':'';
+      case 'demo_embed':
+        var du=safeUrl(p.url); if(!du)return '';
+        var h=Math.min(Math.max(parseInt(p.height,10)||560,240),1200);
+        return '<div class="blk"><div class="demo"><iframe src="'+esc(du)+'" style="height:'+h+'px" loading="lazy" title="Live demo"></iframe></div>'
+          +'<div class="cap"><a href="'+esc(du)+'" target="_blank" rel="noopener" style="color:var(--rose-d);font-weight:700">Open the live demo in a new tab &rarr;</a></div></div>';
+      case 'faq':
+        var qs=(p.items||[]).map(function(it){
+          return '<details><summary>'+esc(it.q)+'</summary><div class="a">'+esc(it.a)+'</div></details>';}).join('');
+        return '<div class="blk faq">'+(p.heading?'<h2>'+esc(p.heading)+'</h2>':'')+qs+'</div>';
+      case 'cta':
+        var cu=safeUrl(p.button_url)||'/partners';
+        return '<div class="blk"><div class="ctab"><h2>'+esc(p.heading||'Ready to offer this?')+'</h2>'
+          +(p.text?'<p>'+esc(p.text)+'</p>':'')
+          +'<a class="btn" style="background:var(--paper);border-color:var(--paper);color:var(--gum)" href="'+esc(cu)+'">'+esc(p.button_label||'Become a partner')+'</a></div></div>';
+      case 'quote':
+        return '<div class="blk"><div class="qt"><p>&ldquo;'+esc(p.text)+'&rdquo;</p>'
+          +(p.name?'<div class="by">'+esc(p.name)+(p.role?' · '+esc(p.role):'')+'</div>':'')+'</div></div>';
+      default: return '';
+    }
+  }
+
+  function render(j){
+    var f=j.feature, blocks=j.blocks||[];
+    document.title=f.name+' — LeadPages Marketplace';
+    var html='<div class="wrap crumb"><a href="/marketplace">&larr; Marketplace</a></div>'
+      +'<header class="hero"><div class="wrap">'
+      +(f.badge?'<span class="hbadge">'+esc(f.badge)+'</span>':'')
+      +'<h1>'+esc(f.name)+'</h1>'
+      +(f.tagline?'<div class="htag">'+esc(f.tagline)+'</div>':'')
+      +'<div class="hcta">'
+      +(safeUrl(f.demo_url)?'<a class="btn" href="'+esc(safeUrl(f.demo_url))+'" target="_blank" rel="noopener">See it live</a>':'')
+      +'<a class="btn ghost" href="/partners">Become a partner</a></div>'
+      +(safeUrl(f.hero_image_url)?'<div class="himg"><img src="'+esc(safeUrl(f.hero_image_url))+'" alt=""></div>':'')
+      +'</div></header>'
+      +'<article><div class="wrap">';
+    if(blocks.length){ html+=blocks.map(block).join(''); }
+    else if(f.summary){ html+='<div class="blk">'+paras(f.summary)+'</div>'; }
+    html+='</div></article>';
+    page.innerHTML=html;
+  }
+
+  // gallery lightbox
+  var lb=document.getElementById('lb'), lbi=document.getElementById('lb-img');
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    if(t.dataset&&t.dataset.lb){lbi.src=t.dataset.lb;lb.classList.add('show');}
+    else if(t===lb||t===lbi){lb.classList.remove('show');lbi.src='';}
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){lb.classList.remove('show');lbi.src='';}});
+})();
+</script>
+</body>
+</html>

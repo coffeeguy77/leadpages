@@ -1,26 +1,96 @@
 {
   "crons": [
-    { "path": "/api/billing/cron", "schedule": "0 3 * * *" }
+    {
+      "path": "/api/billing/cron",
+      "schedule": "0 3 * * *"
+    }
   ],
   "rewrites": [
-    { "source": "/manage", "destination": "/manage.html" },
-    { "source": "/tradies", "destination": "/tradies.html" },
-    { "source": "/domains", "destination": "/domains.html" },
-    { "source": "/marketplace", "destination": "/marketplace.html" },
-    { "source": "/marketplace-admin", "destination": "/marketplace-admin.html" },
-    { "source": "/partners", "destination": "/partners.html" },
-    { "source": "/partner", "destination": "/partner.html" },
-    { "source": "/partners-admin", "destination": "/partners-admin.html" },
-    { "source": "/quote", "destination": "/quote.html" },
-    { "source": "/help", "destination": "/help.html" },
-    { "source": "/messages", "destination": "/messages.html" },
-    { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
-    { "source": "/terms-of-use", "destination": "/terms-of-use.html" },
-    { "source": "/instagram-data-policy", "destination": "/instagram-data-policy.html" },
-    { "source": "/", "has": [{ "type": "host", "value": "^(www\\.)?leadpages\\.(webculture\\.au|com\\.au)$" }], "destination": "/home.html" },
-    { "source": "/", "destination": "/api/render" },
-    { "source": "/s/:slug", "destination": "/api/render?slug=:slug" },
-    { "source": "/:slug/:page", "destination": "/api/render?slug=:slug&page=:page" },
-    { "source": "/:slug", "destination": "/api/render?slug=:slug" }
+    {
+      "source": "/manage",
+      "destination": "/manage.html"
+    },
+    {
+      "source": "/tradies",
+      "destination": "/tradies.html"
+    },
+    {
+      "source": "/domains",
+      "destination": "/domains.html"
+    },
+    {
+      "source": "/marketplace",
+      "destination": "/marketplace.html"
+    },
+    {
+      "source": "/marketplace/:slug",
+      "destination": "/marketplace-feature.html"
+    },
+    {
+      "source": "/marketplace-admin",
+      "destination": "/marketplace-admin.html"
+    },
+    {
+      "source": "/partners",
+      "destination": "/partners.html"
+    },
+    {
+      "source": "/partner",
+      "destination": "/partner.html"
+    },
+    {
+      "source": "/partners-admin",
+      "destination": "/partners-admin.html"
+    },
+    {
+      "source": "/quote",
+      "destination": "/quote.html"
+    },
+    {
+      "source": "/help",
+      "destination": "/help.html"
+    },
+    {
+      "source": "/messages",
+      "destination": "/messages.html"
+    },
+    {
+      "source": "/privacy-policy",
+      "destination": "/privacy-policy.html"
+    },
+    {
+      "source": "/terms-of-use",
+      "destination": "/terms-of-use.html"
+    },
+    {
+      "source": "/instagram-data-policy",
+      "destination": "/instagram-data-policy.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "^(www\\.)?leadpages\\.(webculture\\.au|com\\.au)$"
+        }
+      ],
+      "destination": "/home.html"
+    },
+    {
+      "source": "/",
+      "destination": "/api/render"
+    },
+    {
+      "source": "/s/:slug",
+      "destination": "/api/render?slug=:slug"
+    },
+    {
+      "source": "/:slug/:page",
+      "destination": "/api/render?slug=:slug&page=:page"
+    },
+    {
+      "source": "/:slug",
+      "destination": "/api/render?slug=:slug"
+    }
   ]
 }
