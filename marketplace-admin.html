@@ -380,7 +380,7 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
   async function openBlocks(fid){
     blkFeat=FEATS.find(function(x){return x.id===fid;}); if(!blkFeat)return;
     $('blk-dlg-title').textContent='Page blocks — '+blkFeat.name;
-    $('blk-view').href='/marketplace/'+blkFeat.slug;
+    $('blk-view').href='/marketplace/'+blkFeat.slug+'?fresh=1';
     await loadBlocks();
     $('blk-dlg').showModal();
   }
