@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<title>Find a LeadPages partner near you</title>
+<meta name="description" content="Get a beautiful, lead-generating website for your business. Find a LeadPages partner near you, or tell us what you need and we'll match you.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAF5F2; --shell:#F1E5DF; --ink:#2E2A2B; --mut:#6E6265;
+  --rose:#A84A5E; --rose-d:#7E3346; --gum:#2F413A; --line:#E4D5CD;
+  --ok:#3E7C52; --bad:#B23B3B;
+  --disp:'Young Serif',Georgia,serif; --body:'Figtree',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.6}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.12}
+.sitenav{background:var(--gum)}
+.sitenav .wrap{display:flex;align-items:center;justify-content:space-between;height:72px}
+.sitenav img{height:48px;width:auto}
+.sitenav .links{display:flex;align-items:center;gap:24px}
+.sitenav .links a{color:#E9EFEA;font-weight:600;font-size:15px}
+.sitenav .links a:hover{color:#D9A0AC}
+.sitenav .links a.cta{background:var(--rose);color:#fff;padding:9px 18px;border-radius:999px}
+.sitenav .links a.cta:hover{background:var(--rose-d)}
+@media(max-width:640px){.sitenav .links a:not(.cta){display:none}}
+.hero{background:var(--gum);color:#F3EFEA;padding:60px 0 68px;text-align:center}
+.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#D9A0AC}
+.hero h1{font-size:clamp(30px,4.6vw,46px);margin:12px 0 14px}
+.hero p{color:#C9D2CC;font-size:18px;max-width:56ch;margin:0 auto}
+main{padding:44px 0 90px}
+.filters{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:8px}
+.filters select,.filters input{padding:12px 16px;border:1.5px solid var(--line);border-radius:999px;font-family:var(--body);font-size:15px;background:#fff;color:var(--ink)}
+.filters input{min-width:260px}
+.filters select:focus,.filters input:focus{border-color:var(--rose);outline:none}
+.dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:26px}
+@media(max-width:960px){.dgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.dgrid{grid-template-columns:1fr}}
+.pcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px}
+.pcard h3{font-size:19px;margin-bottom:4px}
+.ploc{font-size:13.5px;font-weight:700;color:var(--rose);letter-spacing:.04em;text-transform:uppercase}
+.pblurb{color:var(--mut);font-size:14.5px;margin-top:10px}
+.psite{display:inline-block;margin-top:12px;font-weight:700;color:var(--rose-d);font-size:14.5px;border-bottom:2px solid var(--rose)}
+.status{color:var(--mut);text-align:center;padding:40px 0 20px;font-size:16px}
+.enquiry{background:var(--shell);padding:76px 0}
+.enquiry .lede{color:var(--mut);max-width:54ch;margin:14px auto 0;text-align:center}
+.formcard{background:#fff;border:1px solid var(--line);border-radius:22px;padding:34px;max-width:720px;margin:34px auto 0;box-shadow:0 18px 50px rgba(46,42,43,.08)}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:620px){.fg{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field.full{grid-column:1/-1}
+.field label{font-size:13px;font-weight:700;color:var(--mut)}
+input,select,textarea{padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;width:100%;font-family:var(--body);font-size:15px;color:var(--ink);background:#fff}
+input:focus,select:focus,textarea:focus{border-color:var(--rose);outline:none}
+textarea{min-height:90px;resize:vertical}
+.btn{display:inline-flex;justify-content:center;font-weight:700;padding:14px 30px;border-radius:999px;background:var(--rose);color:#fff;border:0;font-size:16px;cursor:pointer;font-family:var(--body)}
+.btn:hover{background:var(--rose-d)}
+.btn[disabled]{opacity:.6;cursor:default}
+.ferr{color:var(--bad);font-weight:600;font-size:14.5px;margin-top:12px;min-height:20px}
+.fok{display:none;text-align:center;padding:14px 0 4px}
+.fok .tl{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;background:var(--rose);color:#fff;font-size:24px;font-weight:800}
+.fok h3{margin-bottom:6px}
+.fok p{color:var(--mut)}
+footer{background:var(--gum);color:#C9D2CC;padding:44px 0 36px;font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:26px;flex-wrap:wrap}
+footer img{height:42px;margin-bottom:12px}
+footer a{color:#E9EFEA;font-weight:600;margin-right:22px}
+footer a:hover{color:#D9A0AC}
+.abn{margin-top:14px;color:#8FA096;font-size:12.5px}
+</style>
+</head>
+<body>
+
+<nav class="sitenav">
+  <div class="wrap">
+    <a href="/"><img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="LeadPages"></a>
+    <div class="links">
+      <a href="/marketplace">Marketplace</a>
+      <a href="/domains">Domains</a>
+      <a class="cta" href="/partners">Become a partner</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">For business owners</span>
+    <h1>Get a website that wins you work</h1>
+    <p>LeadPages partners build beautiful, lead-generating websites for Australian businesses. Find one near you — or tell us what you need and we&rsquo;ll match you.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="filters">
+      <select id="f-state" aria-label="Filter by state">
+        <option value="">All of Australia</option>
+        <option>ACT</option><option>NSW</option><option>VIC</option><option>QLD</option>
+        <option>SA</option><option>WA</option><option>TAS</option><option>NT</option>
+      </select>
+      <input id="f-q" type="search" placeholder="Suburb or postcode&hellip;" aria-label="Search by suburb or postcode">
+    </div>
+    <div class="dgrid" id="dgrid"></div>
+    <div class="status" id="dstatus">Loading partners&hellip;</div>
+  </div>
+</main>
+
+<section class="enquiry" id="enquire">
+  <div class="wrap">
+    <h2 style="text-align:center">Tell us what you need</h2>
+    <p class="lede">Share a few details and we&rsquo;ll match you with the right partner — usually within one business day.</p>
+    <div class="formcard">
+      <div id="fbody">
+        <div class="fg">
+          <div class="field"><label for="e-biz">Business name</label><input id="e-biz" autocomplete="organization"></div>
+          <div class="field"><label for="e-name">Your name</label><input id="e-name" autocomplete="name"></div>
+          <div class="field"><label for="e-email">Email</label><input id="e-email" type="email" autocomplete="email"></div>
+          <div class="field"><label for="e-phone">Phone (optional)</label><input id="e-phone" type="tel" autocomplete="tel"></div>
+          <div class="field"><label for="e-suburb">Suburb</label><input id="e-suburb"></div>
+          <div class="field"><label for="e-state">State</label>
+            <select id="e-state"><option value="">Choose&hellip;</option>
+              <option>ACT</option><option>NSW</option><option>VIC</option><option>QLD</option>
+              <option>SA</option><option>WA</option><option>TAS</option><option>NT</option>
+            </select>
+          </div>
+          <div class="field full"><label for="e-msg">What does your business do, and what do you need?</label><textarea id="e-msg"></textarea></div>
+        </div>
+        <button class="btn" id="e-send" style="width:100%">Send my enquiry</button>
+        <div class="ferr" id="e-err"></div>
+      </div>
+      <div class="fok" id="fok">
+        <div class="tl">✓</div>
+        <h3>Thanks — we&rsquo;re on it</h3>
+        <p>We&rsquo;ll be in touch shortly to match you with a partner.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="LeadPages">
+      <div>Smart sites. More leads. Built in Canberra, Australia.</div>
+      <div class="abn">Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div>
+    </div>
+    <div>
+      <a href="/">Home</a><a href="/marketplace">Marketplace</a><a href="/partners">Become a partner</a><a href="/privacy-policy">Privacy</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  function esc(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML;}
+  function safeUrl(u){u=String(u||'').trim();return /^https?:\/\//i.test(u)?u:'';}
+
+  /* ---- directory ---- */
+  var ALL=[];
+  function renderDir(){
+    var q=($('f-q').value||'').trim().toLowerCase();
+    var st=$('f-state').value;
+    var list=ALL.filter(function(p){
+      if(st && p.state!==st) return false;
+      if(q){
+        var hay=((p.suburb||'')+' '+(p.postcode||'')+' '+(p.business_name||'')).toLowerCase();
+        if(hay.indexOf(q)<0) return false;
+      }
+      return true;
+    });
+    var g=$('dgrid'), s=$('dstatus');
+    if(!ALL.length){
+      g.innerHTML='';
+      s.style.display='block';
+      s.innerHTML='Our first partners are onboarding now — <a href="#enquire" style="color:var(--rose-d);font-weight:700">tell us what you need</a> and we&rsquo;ll match you directly.';
+      return;
+    }
+    if(!list.length){
+      g.innerHTML='';
+      s.style.display='block';
+      s.innerHTML='No partners match that search yet — <a href="#enquire" style="color:var(--rose-d);font-weight:700">send an enquiry</a> and we&rsquo;ll match you.';
+      return;
+    }
+    s.style.display='none';
+    g.innerHTML=list.map(function(p){
+      var loc=[p.suburb,p.state,p.postcode].filter(Boolean).join(', ');
+      var site=safeUrl(p.website_url);
+      return '<div class="pcard">'
+        +(loc?'<div class="ploc">'+esc(loc)+'</div>':'')
+        +'<h3>'+esc(p.business_name)+'</h3>'
+        +(p.blurb?'<p class="pblurb">'+esc(p.blurb)+'</p>':'')
+        +(site?'<a class="psite" href="'+esc(site)+'" target="_blank" rel="noopener">Visit website &rarr;</a>':'')
+        +'</div>';
+    }).join('');
+  }
+  $('f-q').addEventListener('input',renderDir);
+  $('f-state').addEventListener('change',renderDir);
+  fetch('/api/partner-directory').then(function(r){return r.json();}).then(function(j){
+    ALL=(j&&j.partners)||[]; renderDir();
+  }).catch(function(){ALL=[];renderDir();});
+
+  /* ---- enquiry ---- */
+  $('e-send').addEventListener('click',function(){
+    var btn=$('e-send'); $('e-err').textContent='';
+    var body={
+      business_name:$('e-biz').value.trim(),
+      contact_name:$('e-name').value.trim(),
+      email:$('e-email').value.trim(),
+      phone:$('e-phone').value.trim(),
+      suburb:$('e-suburb').value.trim(),
+      state:$('e-state').value,
+      message:$('e-msg').value.trim()
+    };
+    if(!body.business_name){$('e-err').textContent='Please tell us your business name.';return;}
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(body.email)){$('e-err').textContent='Please enter a valid email address.';return;}
+    btn.disabled=true;btn.textContent='Sending\u2026';
+    fetch('/api/partner-lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .then(function(r){return r.json();})
+      .then(function(j){
+        btn.disabled=false;btn.textContent='Send my enquiry';
+        if(j&&j.ok){$('fbody').style.display='none';$('fok').style.display='block';}
+        else{$('e-err').textContent=(j&&j.error)||'Something went wrong — please try again.';}
+      })
+      .catch(function(){btn.disabled=false;btn.textContent='Send my enquiry';$('e-err').textContent='Network error — please try again.';});
+  });
+})();
+</script>
+</body>
+</html>

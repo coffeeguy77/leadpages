@@ -31,6 +31,10 @@
       "destination": "/marketplace-admin.html"
     },
     {
+      "source": "/find-a-partner",
+      "destination": "/find-a-partner.html"
+    },
+    {
       "source": "/partners",
       "destination": "/partners.html"
     },
