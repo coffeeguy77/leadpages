@@ -4,124 +4,371 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
-<link rel="shortcut icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
-<title>Leadpages — lead-generating websites for tradies & mortgage brokers</title>
-<meta name="description" content="Done-for-you lead websites. Choose your path: high-converting sites for tradies, or a full calculator suite for mortgage brokers. Built in Canberra.">
+<title>LeadPages — build a beautiful web design business from home</title>
+<meta name="description" content="LeadPages is the Australian platform for starting your own web design business. No code, no experience — build stunning websites for tradies, salons, cafés and companies, from home.">
+<meta property="og:title" content="LeadPages — build a beautiful web design business from home">
+<meta property="og:description" content="The Australian platform for starting your own web design studio. No code, no experience — just great websites your clients will love.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#15191e; --hivis:#ff6a1a; --hazard:#ffd21e;
-  --euc:#1f7a63; --euc-d:#185f4d; --mint:#7fd9b6; --brass:#cda86a;
-  --mono:'Space Mono',monospace;
+  --paper:#FAF5F2;
+  --shell:#F1E5DF;
+  --ink:#2E2A2B;
+  --mut:#6E6265;
+  --rose:#A84A5E;
+  --rose-d:#7E3346;
+  --gum:#2F413A;
+  --gum-l:#43584F;
+  --line:#E4D5CD;
+  --disp:'Young Serif',Georgia,serif;
+  --body:'Figtree',system-ui,sans-serif;
+  --r:16px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--ink);color:#fff;min-height:100vh;overflow-x:hidden}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.6;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
-.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
-.btn{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:16px;padding:14px 28px;border-radius:11px;border:0;cursor:pointer;transition:transform .1s,box-shadow .15s}
-.btn:active{transform:translateY(1px)}
+img{max-width:100%;display:block}
+.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rose)}
+.on-dark .eyebrow{color:#D9A0AC}
+h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.12}
+h2{font-size:clamp(28px,4vw,40px);margin:10px 0 14px}
+.lede{font-size:18px;color:var(--mut);max-width:56ch}
+.on-dark .lede{color:#C9D2CC}
+.btn{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:16px;padding:14px 26px;border-radius:999px;border:2px solid transparent;cursor:pointer;transition:transform .15s ease,background .15s ease,color .15s ease}
+.btn:focus-visible{outline:3px solid var(--rose);outline-offset:3px}
+.btn-rose{background:var(--rose);color:#fff}
+.btn-rose:hover{background:var(--rose-d);transform:translateY(-1px)}
+.btn-ghost{border-color:var(--ink);color:var(--ink)}
+.btn-ghost:hover{background:var(--ink);color:var(--paper)}
+.btn-cream{background:var(--paper);color:var(--gum)}
+.btn-cream:hover{background:#fff;transform:translateY(-1px)}
+.sec{padding:88px 0}
+.sec-shell{background:var(--shell)}
+.sec-gum{background:var(--gum);color:#F3EFEA}
+.center{text-align:center}
+.center .lede{margin-inline:auto}
 
-/* top bar */
-.topbar{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:22px 30px}
-.logo{display:flex;align-items:center;gap:11px;font-weight:900;font-family:'Archivo';font-size:19px}
-.logo .mk{width:34px;height:34px;border-radius:9px;background:#fff;color:var(--ink);display:grid;place-items:center;font-size:17px}
-.logo small{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:rgba(255,255,255,.6);font-weight:400;text-transform:uppercase;margin-top:1px}
-.toplogin{font-size:14px;font-weight:600;color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.25);padding:9px 16px;border-radius:10px;transition:.15s}
-.toplogin:hover{background:#fff;color:var(--ink)}
+.nav{position:sticky;top:0;z-index:50;background:var(--gum)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:76px}
+.nav img{height:52px;width:auto}
+.nav-links{display:flex;align-items:center;gap:26px}
+.nav-links a{color:#E9EFEA;font-weight:600;font-size:15.5px;border-bottom:2px solid transparent;padding:4px 0}
+.nav-links a:hover{border-color:#D9A0AC}
+.nav .btn{padding:10px 20px;font-size:15px}
+.menu-btn{display:none;background:none;border:0;color:#fff;font-size:26px;cursor:pointer;padding:6px}
 
-/* split */
-.split{display:flex;min-height:100vh}
-.half{flex:1;position:relative;display:flex;align-items:center;justify-content:center;padding:120px 40px 70px;overflow:hidden;transition:flex .4s cubic-bezier(.4,0,.2,1)}
-.half-in{max-width:440px;position:relative;z-index:2}
-.half .eyebrow{margin-bottom:16px;display:block}
-.half h2{font-size:clamp(34px,4vw,52px);line-height:1.02;margin-bottom:18px}
-.half p{font-size:17px;line-height:1.55;margin-bottom:28px;opacity:.92}
-.half .feats{display:flex;flex-direction:column;gap:9px;margin-bottom:30px}
-.half .feats span{font-size:14px;opacity:.85;display:flex;align-items:center;gap:9px}
-.half .feats b{font-weight:700}
-.bgmark{position:absolute;font-size:340px;line-height:1;opacity:.05;z-index:1;pointer-events:none;user-select:none}
+.hero{padding:84px 0 96px;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.hero h1{font-size:clamp(38px,5.6vw,60px)}
+.hero h1 em{font-style:normal;color:var(--rose)}
+.hero .lede{margin:20px 0 30px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:26px}
+.hero-note{font-size:14.5px;color:var(--mut)}
+.hero-note strong{color:var(--ink)}
 
-/* tradie half */
-.tradie{background:radial-gradient(120% 100% at 20% 20%,#222a33,var(--ink));}
-.tradie h2{font-family:'Archivo';font-weight:900;letter-spacing:-.02em}
-.tradie h2 .hl{color:var(--hivis)}
-.tradie .eyebrow{color:var(--hivis)}
-.tradie .feats b{color:var(--hazard)}
-.tradie .btn{background:var(--hivis);color:#fff;box-shadow:0 5px 0 #c44a08}
-.tradie .btn:hover{background:#ff7a30}
-.tradie .bgmark{right:-40px;bottom:-70px;transform:rotate(-12deg)}
-.tradie .tape{position:absolute;top:0;left:0;right:0;height:10px;background:repeating-linear-gradient(-45deg,var(--hazard) 0 18px,var(--ink) 18px 36px);opacity:.9;z-index:3}
+.deck{position:relative;height:460px}
+.site-card{position:absolute;width:78%;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(46,42,43,.16);overflow:hidden;border:1px solid var(--line);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.site-card .bar{display:flex;gap:6px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:#FBF9F8}
+.site-card .bar i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.site-card .bar span{font-size:11.5px;color:var(--mut);margin-left:8px;font-weight:600}
+.site-card .body{padding:18px 18px 22px}
+.sc-hero{height:86px;border-radius:9px;display:flex;align-items:flex-end;padding:12px}
+.sc-hero b{font-family:var(--disp);font-weight:400;color:#fff;font-size:17px;text-shadow:0 1px 8px rgba(0,0,0,.35)}
+.sc-row{display:flex;gap:8px;margin-top:12px}
+.sc-chip{flex:1;height:44px;border-radius:8px;background:var(--shell)}
+.sc-btnrow{display:flex;gap:8px;margin-top:12px}
+.sc-cta{height:34px;border-radius:999px;flex:1}
+.card-a{top:0;left:0;transform:rotate(-5deg);z-index:1}
+.card-b{top:70px;left:14%;transform:rotate(2.5deg);z-index:2}
+.card-c{top:150px;left:26%;transform:rotate(-1.5deg);z-index:3}
+.deck:hover .card-a{transform:rotate(-8deg) translate(-14px,-8px)}
+.deck:hover .card-b{transform:rotate(4deg) translate(6px,-4px)}
+.deck:hover .card-c{transform:rotate(0) translateY(-10px)}
+.g-plumb{background:linear-gradient(135deg,#28455C,#4E7C9C)}
+.g-salon{background:linear-gradient(135deg,#8E3F4F,#C77B8B)}
+.g-cafe{background:linear-gradient(135deg,#4A3B2E,#8C6F52)}
+.c-plumb{background:#28455C}.c-salon{background:#A84A5E}.c-cafe{background:#6C5439}
 
-/* broker half */
-.broker{background:radial-gradient(120% 100% at 80% 20%,#26333f,#161d27);border-left:1px solid rgba(255,255,255,.08)}
-.broker h2{font-family:'Fraunces';font-weight:600;letter-spacing:-.01em}
-.broker h2 .hl{color:var(--mint);font-style:italic;font-weight:500}
-.broker .eyebrow{color:var(--brass)}
-.broker .feats b{color:var(--brass)}
-.broker .btn{background:var(--euc);color:#fff;box-shadow:0 5px 0 var(--euc-d)}
-.broker .btn:hover{background:#23866d}
-.broker .bgmark{left:-30px;bottom:-80px;font-family:'Fraunces'}
+.strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0;background:#FFFDFC}
+.strip .wrap{display:flex;justify-content:center;gap:14px 44px;flex-wrap:wrap;font-size:14.5px;color:var(--mut);font-weight:600}
+.strip b{color:var(--ink)}
 
-.half:hover{flex:1.18}
+.chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:820px;margin:26px auto 0}
+.chip{padding:10px 18px;border-radius:999px;background:#fff;border:1px solid var(--line);font-weight:600;font-size:15px}
+.chip.hl{background:var(--rose);border-color:var(--rose);color:#fff}
 
-/* center seam chip */
-.seam{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:15;background:var(--ink);border:1px solid rgba(255,255,255,.15);width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.04em;text-align:center;color:rgba(255,255,255,.7);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px}
+.step{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:30px 26px}
+.step .n{font-family:var(--disp);font-size:34px;color:var(--rose)}
+.step h3{font-size:21px;margin:12px 0 8px}
+.step p{color:var(--mut);font-size:15.5px}
 
-@media(max-width:860px){
-  .split{flex-direction:column}
-  .half{padding:96px 28px 56px;min-height:auto}
-  .half:hover{flex:1}
-  .broker{border-left:0;border-top:1px solid rgba(255,255,255,.08)}
-  .seam{display:none}
-  .bgmark{font-size:220px}
-  .tradie .bgmark,.broker .bgmark{bottom:-40px}
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px}
+.feat{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:28px 24px;transition:transform .18s ease,box-shadow .18s ease}
+.feat:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(46,42,43,.10)}
+.feat .ico{width:46px;height:46px;border-radius:12px;background:var(--gum);color:#F3EFEA;display:grid;place-items:center;font-size:21px;margin-bottom:16px}
+.feat h3{font-size:19px;margin-bottom:8px}
+.feat p{color:var(--mut);font-size:15px}
+
+.money{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px}
+.m-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:var(--r);padding:30px 26px}
+.m-card .fig{font-family:var(--disp);font-size:clamp(26px,3vw,34px);color:#F0C7CF}
+.m-card .lab{font-weight:700;margin:6px 0 8px}
+.m-card p{font-size:15px;color:#C9D2CC}
+.m-note{margin-top:26px;font-size:14.5px;color:#A9B7AE;max-width:64ch}
+
+.incl{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.inc{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}
+.inc .tick{color:var(--rose);font-weight:800;font-size:18px;line-height:1.5}
+.inc b{display:block;font-size:16px}
+.inc span{font-size:14.5px;color:var(--mut)}
+
+.life{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px}
+.vig{background:#fff;border:1px solid var(--line);border-left:5px solid var(--rose);border-radius:12px;padding:26px 24px}
+.vig h3{font-size:19px;margin-bottom:8px}
+.vig p{color:var(--mut);font-size:15.5px}
+
+.owner{display:flex;align-items:center;justify-content:space-between;gap:26px;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:34px 38px;flex-wrap:wrap}
+.owner h3{font-family:var(--disp);font-size:24px;font-weight:400}
+.owner p{color:var(--mut);margin-top:6px}
+
+.final{padding:96px 0;text-align:center}
+.final h2{font-size:clamp(30px,4.6vw,46px);max-width:20ch;margin-inline:auto}
+.final .lede{margin:16px auto 30px}
+footer{background:var(--gum);color:#C9D2CC;padding:56px 0 40px;font-size:14.5px}
+footer .wrap{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}
+footer img{height:46px;margin-bottom:14px}
+.f-links{display:flex;gap:26px;flex-wrap:wrap}
+.f-links a{color:#E9EFEA;font-weight:600}
+.f-links a:hover{color:#D9A0AC}
+.abn{margin-top:18px;color:#8FA096;font-size:13px}
+
+.rv{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .rv{opacity:1;transform:none;transition:none}
+  .site-card,.btn,.feat{transition:none}
 }
-@media(prefers-reduced-motion:reduce){.half,.half:hover{transition:none}}
+
+@media (max-width:980px){
+  .hero .wrap{grid-template-columns:1fr;gap:48px}
+  .deck{height:420px;max-width:520px;margin:0 auto}
+  .steps,.feats,.money,.life{grid-template-columns:1fr 1fr}
+  .incl{grid-template-columns:1fr 1fr}
+}
+@media (max-width:680px){
+  .sec{padding:64px 0}
+  .steps,.feats,.money,.life,.incl{grid-template-columns:1fr}
+  .nav-links{display:none;position:absolute;top:76px;left:0;right:0;background:var(--gum);flex-direction:column;padding:18px 24px 26px;gap:18px;border-top:1px solid var(--gum-l)}
+  .nav-links.open{display:flex}
+  .menu-btn{display:block}
+  .deck{height:380px}
+  .site-card{width:88%}
+  .card-b{left:6%}.card-c{left:12%}
+  .owner{padding:26px 22px}
+}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <a href="/" class="logo"><span class="mk">▰</span><span>Web Culture<small>Lead websites · Canberra</small></span></a>
-  <a href="/manage.html" class="toplogin">Client login</a>
+<nav class="nav">
+  <div class="wrap">
+    <a href="/"><img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="LeadPages"></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">☰</button>
+    <div class="nav-links" id="navLinks">
+      <a href="#how">How it works</a>
+      <a href="#platform">The platform</a>
+      <a href="#money">Earnings</a>
+      <a href="/domains">Domains</a>
+      <a class="btn btn-rose" href="/partners">Become a partner</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">The Australian web design platform</span>
+      <h1>Build a beautiful web design business. <em>From home.</em></h1>
+      <p class="lede">LeadPages gives you everything to design, launch and care for stunning client websites — no code, no experience, no office. You bring the care for your clients; we bring the rest.</p>
+      <div class="hero-cta">
+        <a class="btn btn-rose" href="/partners">Become a partner</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <p class="hero-note"><strong>Any business, any industry</strong> — trades, salons, cafés, brokers, studios and more.</p>
+    </div>
+    <div class="deck" aria-hidden="true">
+      <div class="site-card card-a">
+        <div class="bar"><i></i><i></i><i></i><span>duncansplumbing.com.au</span></div>
+        <div class="body">
+          <div class="sc-hero g-plumb"><b>Duncan&rsquo;s Plumbing</b></div>
+          <div class="sc-row"><div class="sc-chip"></div><div class="sc-chip"></div><div class="sc-chip"></div></div>
+          <div class="sc-btnrow"><div class="sc-cta c-plumb"></div><div class="sc-cta" style="background:var(--shell)"></div></div>
+        </div>
+      </div>
+      <div class="site-card card-b">
+        <div class="bar"><i></i><i></i><i></i><span>rosettahair.com.au</span></div>
+        <div class="body">
+          <div class="sc-hero g-salon"><b>Rosetta Hair Studio</b></div>
+          <div class="sc-row"><div class="sc-chip"></div><div class="sc-chip"></div><div class="sc-chip"></div></div>
+          <div class="sc-btnrow"><div class="sc-cta c-salon"></div><div class="sc-cta" style="background:var(--shell)"></div></div>
+        </div>
+      </div>
+      <div class="site-card card-c">
+        <div class="bar"><i></i><i></i><i></i><span>beanculture.com.au</span></div>
+        <div class="body">
+          <div class="sc-hero g-cafe"><b>Bean Culture Coffee</b></div>
+          <div class="sc-row"><div class="sc-chip"></div><div class="sc-chip"></div><div class="sc-chip"></div></div>
+          <div class="sc-btnrow"><div class="sc-cta c-cafe"></div><div class="sc-cta" style="background:var(--shell)"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="strip">
+  <div class="wrap">
+    <span><b>Built in Canberra</b> · Australian hosting &amp; support</span>
+    <span><b>50+ industries</b> ready to launch</span>
+    <span><b>Live Instagram</b>, leads &amp; email built in</span>
+  </div>
 </div>
 
-<main class="split">
-  <a class="half tradie" href="/tradies.html" aria-label="Sites for tradies">
-    <div class="tape"></div>
-    <span class="bgmark">🔧</span>
-    <div class="half-in">
-      <span class="eyebrow">For tradies</span>
-      <h2>Get the phone <span class="hl">ringing.</span></h2>
-      <p>A site built for your trade — tap-to-call, fast quote form and call tracking. Live in 24 hours.</p>
-      <div class="feats">
-        <span>✓ Plumber, electrician, carpenter, air-con &amp; <b>more</b></span>
-        <span>✓ Built-in <b>call &amp; lead tracking</b></span>
-        <span>✓ From <b>$295</b> setup + $39/mo</span>
-      </div>
-      <span class="btn">Enter tradie sites →</span>
+<section class="sec center rv">
+  <div class="wrap">
+    <span class="eyebrow">Anyone, any business</span>
+    <h2>If they have customers, you can build their site</h2>
+    <p class="lede">Every LeadPages site starts from professionally designed, industry-ready content — so your first draft already looks like your best work.</p>
+    <div class="chips">
+      <span class="chip">Plumbers</span><span class="chip">Hair &amp; beauty</span><span class="chip hl">Cafés</span>
+      <span class="chip">Electricians</span><span class="chip">Mortgage brokers</span><span class="chip">Landscapers</span>
+      <span class="chip hl">Florists</span><span class="chip">Personal trainers</span><span class="chip">Cleaners</span>
+      <span class="chip">Photographers</span><span class="chip hl">Company pages</span><span class="chip">…and 40+ more</span>
     </div>
-  </a>
+  </div>
+</section>
 
-  <a class="half broker" href="/brokers.html" aria-label="Sites for mortgage brokers">
-    <span class="bgmark">◈</span>
-    <div class="half-in">
-      <span class="eyebrow">For mortgage brokers</span>
-      <h2>Turn calculators into <span class="hl">clients.</span></h2>
-      <p>A full home-loan calculator suite on your own branded site. Every figure a visitor checks becomes a lead.</p>
-      <div class="feats">
-        <span>✓ <b>7</b> calculators, every result a lead</span>
-        <span>✓ Your <b>rates, brand &amp; domain</b></span>
-        <span>✓ From <b>$499</b> setup + $39/mo</span>
-      </div>
-      <span class="btn">Enter broker sites →</span>
+<section class="sec sec-shell" id="how">
+  <div class="wrap center rv">
+    <span class="eyebrow">How it works</span>
+    <h2>From kitchen table to launched client site</h2>
+    <div class="steps" style="text-align:left">
+      <div class="step"><div class="n">1</div><h3>Pick the industry</h3><p>Choose from 50+ trade and business themes. The site arrives pre-filled with professional copy, sections and imagery for that industry.</p></div>
+      <div class="step"><div class="n">2</div><h3>Make it theirs</h3><p>Swap in your client&rsquo;s name, colours, photos and Instagram. Our AI helps write anything custom. No code — just a friendly editor.</p></div>
+      <div class="step"><div class="n">3</div><h3>Launch &amp; get paid</h3><p>Connect their domain, press publish, and hand over a site that captures leads from day one. You set the price; clients pay you.</p></div>
     </div>
-  </a>
+  </div>
+</section>
 
-  <div class="seam">PICK<br>ONE</div>
-</main>
+<section class="sec" id="platform">
+  <div class="wrap center rv">
+    <span class="eyebrow">The platform</span>
+    <h2>What your clients&rsquo; sites can do</h2>
+    <p class="lede">Every feature below is built in — no plugins, no extra subscriptions, no maintenance for you.</p>
+    <div class="feats" style="text-align:left">
+      <div class="feat"><div class="ico">◎</div><h3>Live Instagram feeds</h3><p>Clients connect their own Instagram in one tap. Galleries and project feeds stay fresh without anyone lifting a finger.</p></div>
+      <div class="feat"><div class="ico">▤</div><h3>Project portfolios</h3><p>Job cards with photos, locations and tags — before-and-afters that turn browsers into callers.</p></div>
+      <div class="feat"><div class="ico">✉</div><h3>Lead capture &amp; inbox</h3><p>Quote forms, call tracking and a message inbox, so every enquiry lands somewhere your client will see it.</p></div>
+      <div class="feat"><div class="ico">➤</div><h3>Email campaigns</h3><p>Send offers and updates to captured leads — built into the same dashboard, no third-party tools.</p></div>
+      <div class="feat"><div class="ico">✎</div><h3>AI-assisted copy</h3><p>Professional website copy written in minutes, in your client&rsquo;s voice — you polish, not draft.</p></div>
+      <div class="feat"><div class="ico">★</div><h3>Reviews &amp; trust</h3><p>Badges, testimonials and certifications, laid out to make small businesses look established and credible.</p></div>
+    </div>
+  </div>
+</section>
 
+<section class="sec sec-gum on-dark" id="money">
+  <div class="wrap rv">
+    <span class="eyebrow">The money story</span>
+    <h2>You set the prices. You keep what you charge.</h2>
+    <p class="lede">Partners charge their clients directly — LeadPages is simply your flat platform cost. Here&rsquo;s what partners typically charge:</p>
+    <div class="money">
+      <div class="m-card"><div class="fig">$800&ndash;$1,500</div><div class="lab">Site setup</div><p>A one-off design &amp; launch fee for each new client website you build.</p></div>
+      <div class="m-card"><div class="fig">$49&ndash;$99<span style="font-size:18px">/mo</span></div><div class="lab">Care plans</div><p>Recurring income for hosting, updates and small changes — the heart of a home business.</p></div>
+      <div class="m-card"><div class="fig">Add-ons</div><div class="lab">Domains, email &amp; more</div><p>Domain registration, email campaigns and extra pages — more ways to be valuable to every client.</p></div>
+    </div>
+    <p class="m-note">Ten clients on a $79/mo care plan is $790 every month before you build a single new site. Figures are examples of typical partner pricing — you&rsquo;re always in charge of your own rates.</p>
+  </div>
+</section>
+
+<section class="sec sec-shell">
+  <div class="wrap center rv">
+    <span class="eyebrow">Everything included</span>
+    <h2>A business in a box — the whole box</h2>
+    <div class="incl" style="text-align:left">
+      <div class="inc"><span class="tick">✓</span><div><b>The site builder</b><span>50+ industry themes, drag-simple editing, instant publishing.</span></div></div>
+      <div class="inc"><span class="tick">✓</span><div><b>Hosting &amp; security</b><span>Fast Australian hosting, SSL and backups — all handled.</span></div></div>
+      <div class="inc"><span class="tick">✓</span><div><b>Leads &amp; messaging</b><span>Quote forms, lead inbox and email campaigns for every site.</span></div></div>
+      <div class="inc"><span class="tick">✓</span><div><b>Domain search</b><span>Find and connect .com.au domains without leaving the platform.</span></div></div>
+      <div class="inc"><span class="tick">✓</span><div><b>AI writing help</b><span>Client-ready copy drafted for you, in minutes.</span></div></div>
+      <div class="inc"><span class="tick">✓</span><div><b>Training &amp; support</b><span>Real humans in Canberra, plus guides for winning your first clients.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap center rv">
+    <span class="eyebrow">Built for real life</span>
+    <h2>A business that fits around your life</h2>
+    <div class="life" style="text-align:left">
+      <div class="vig"><h3>School hours only</h3><p>Build sites while the kids are at school, publish before pickup. Your clients never need to know your office is the kitchen bench.</p></div>
+      <div class="vig"><h3>The side income</h3><p>Keep the day job and take on two or three local clients. Care plans quietly build a second income underneath your salary.</p></div>
+      <div class="vig"><h3>The full studio</h3><p>Go all in — your own brand, your own client list, your own prices. Some partners run LeadPages as a full-time design agency.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" style="padding-top:0">
+  <div class="wrap rv">
+    <div class="owner">
+      <div>
+        <h3>Own a business and just want a great website?</h3>
+        <p>Tell us what you do and we&rsquo;ll set you up — or match you with a LeadPages partner.</p>
+      </div>
+      <a class="btn btn-rose" href="/quote">Get your website</a>
+    </div>
+  </div>
+</section>
+
+<section class="final sec-shell">
+  <div class="wrap rv">
+    <span class="eyebrow">Ready when you are</span>
+    <h2>Your web design business starts this week</h2>
+    <p class="lede">Apply to become a LeadPages partner — we&rsquo;ll walk you through the platform and help you plan your first client.</p>
+    <a class="btn btn-rose" href="/partners">Apply to become a partner</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="LeadPages">
+      <div>Smart sites. More leads.<br>Built in Canberra, Australia.</div>
+      <div class="abn">Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div>
+    </div>
+    <div class="f-links">
+      <a href="/partners">Become a partner</a>
+      <a href="/domains">Domains</a>
+      <a href="/quote">Get a website</a>
+      <a href="/privacy-policy">Privacy</a>
+      <a href="/terms-of-use">Terms</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var mb=document.getElementById('menuBtn'),nl=document.getElementById('navLinks');
+  if(mb)mb.addEventListener('click',function(){var o=nl.classList.toggle('open');mb.setAttribute('aria-expanded',o?'true':'false');});
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+    document.querySelectorAll('.rv').forEach(function(el){io.observe(el);});
+  }else{document.querySelectorAll('.rv').forEach(function(el){el.classList.add('in');});}
+})();
+</script>
 </body>
 </html>
