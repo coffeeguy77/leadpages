@@ -1,0 +1,66 @@
+{
+ "label": "Builder (AAM1)",
+ "section": "projectFeed",
+ "config": {
+  "eyebrow": "RECENT PROJECTS",
+  "heading": "Our latest work",
+  "intro": "A few recent jobs across Canberra and the surrounding region.",
+  "accent": "#28455C",
+  "cardStyle": "overlay",
+  "columns": 3,
+  "showLocation": true,
+  "showTags": true
+ },
+ "projects": [
+  {
+   "title": "Deck & pergola build",
+   "location": "Kambah ACT",
+   "tags": [
+    "Decking",
+    "Outdoor"
+   ],
+   "img": "https://picsum.photos/seed/aam1a/800/600"
+  },
+  {
+   "title": "Kitchen renovation",
+   "location": "Braddon ACT",
+   "tags": [
+    "Renovation"
+   ],
+   "img": "https://picsum.photos/seed/aam1b/800/600"
+  },
+  {
+   "title": "Garage conversion",
+   "location": "Queanbeyan NSW",
+   "tags": [
+    "Extension"
+   ],
+   "img": "https://picsum.photos/seed/aam1c/800/600"
+  },
+  {
+   "title": "Bathroom refit",
+   "location": "Gungahlin ACT",
+   "tags": [
+    "Renovation",
+    "Plumbing"
+   ],
+   "img": "https://picsum.photos/seed/aam1d/800/600"
+  },
+  {
+   "title": "New home frame & lockup",
+   "location": "Googong NSW",
+   "tags": [
+    "New build"
+   ],
+   "img": "https://picsum.photos/seed/aam1e/800/600"
+  },
+  {
+   "title": "Heritage repairs",
+   "location": "Ainslie ACT",
+   "tags": [
+    "Restoration"
+   ],
+   "img": "https://picsum.photos/seed/aam1f/800/600"
+  }
+ ]
+}
