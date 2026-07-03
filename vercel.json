@@ -19,6 +19,10 @@
       "destination": "/domains.html"
     },
     {
+      "source": "/showcase",
+      "destination": "/showcase.html"
+    },
+    {
       "source": "/marketplace",
       "destination": "/marketplace.html"
     },
@@ -29,6 +33,18 @@
     {
       "source": "/marketplace-admin",
       "destination": "/marketplace-admin.html"
+    },
+    {
+      "source": "/start-your-business",
+      "destination": "/start-your-business.html"
+    },
+    {
+      "source": "/resources",
+      "destination": "/resources.html"
+    },
+    {
+      "source": "/resources/:slug",
+      "destination": "/resource-:slug.html"
     },
     {
       "source": "/find-a-partner",

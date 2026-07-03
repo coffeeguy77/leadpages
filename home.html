@@ -8,6 +8,8 @@
 <meta name="description" content="LeadPages is the Australian platform for starting your own web design business. No code, no experience — build stunning websites for tradies, salons, cafés and companies, from home.">
 <meta property="og:title" content="LeadPages — build a beautiful web design business from home">
 <meta property="og:description" content="The Australian platform for starting your own web design studio. No code, no experience — just great websites your clients will love.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -31,7 +33,7 @@ html{scroll-behavior:smooth}
 body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.6;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
-.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+.wrap{max-width:1440px;margin:0 auto;padding:0 24px}
 .eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rose)}
 .on-dark .eyebrow{color:#D9A0AC}
 h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.12}
@@ -61,7 +63,7 @@ h2{font-size:clamp(28px,4vw,40px);margin:10px 0 14px}
 .nav .btn{padding:10px 20px;font-size:15px}
 .menu-btn{display:none;background:none;border:0;color:#fff;font-size:26px;cursor:pointer;padding:6px}
 
-.hero{padding:84px 0 96px;overflow:hidden}
+.hero{padding:84px 0 96px;overflow:hidden;position:relative}.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(760px 420px at 88% 0%,rgba(168,74,94,.10),transparent 62%),radial-gradient(560px 380px at 0% 100%,rgba(47,65,58,.07),transparent 60%);pointer-events:none}.hero .wrap{position:relative}
 .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
 .hero h1{font-size:clamp(38px,5.6vw,60px)}
 .hero h1 em{font-style:normal;color:var(--rose)}
@@ -108,9 +110,9 @@ h2{font-size:clamp(28px,4vw,40px);margin:10px 0 14px}
 .step p{color:var(--mut);font-size:15.5px}
 
 .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px}
-.feat{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:28px 24px;transition:transform .18s ease,box-shadow .18s ease}
+.feat{display:block;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:28px 24px;transition:transform .18s ease,box-shadow .18s ease}
 .feat:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(46,42,43,.10)}
-.feat .ico{width:46px;height:46px;border-radius:12px;background:var(--gum);color:#F3EFEA;display:grid;place-items:center;font-size:21px;margin-bottom:16px}
+.feat .ico{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--gum),#43584F);color:#F0C7CF;display:grid;place-items:center;margin-bottom:18px}.feat .ico svg{width:26px;height:26px}
 .feat h3{font-size:19px;margin-bottom:8px}
 .feat p{color:var(--mut);font-size:15px}
 
@@ -148,7 +150,7 @@ footer img{height:92px;margin-bottom:14px}
 .abn{margin-top:18px;color:#8FA096;font-size:13px}
 
 .rv{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
-.rv.in{opacity:1;transform:none}
+.rv.in{opacity:1;transform:none}.feat.rv,.step.rv,.inc.rv,.vig.rv{transition-delay:calc(var(--d,0)*90ms)}
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .rv{opacity:1;transform:none;transition:none}
@@ -182,6 +184,7 @@ footer img{height:92px;margin-bottom:14px}
     <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">☰</button>
     <div class="nav-links" id="navLinks">
       <a href="/start-your-business">Start your business</a>
+      <a href="/showcase">Showcase</a>
       <a href="#platform">The platform</a>
       <a href="/resources">Resources</a>
       <a href="/domains">Domains</a>
@@ -271,13 +274,14 @@ footer img{height:92px;margin-bottom:14px}
     <h2>What your clients&rsquo; sites can do</h2>
     <p class="lede">Every feature below is built in — no plugins, no extra subscriptions, no maintenance for you.</p>
     <div class="feats" style="text-align:left">
-      <div class="feat"><div class="ico">◎</div><h3>Live Instagram feeds</h3><p>Clients connect their own Instagram in one tap. Galleries and project feeds stay fresh without anyone lifting a finger.</p></div>
-      <div class="feat"><div class="ico">▤</div><h3>Project portfolios</h3><p>Job cards with photos, locations and tags — before-and-afters that turn browsers into callers.</p></div>
-      <div class="feat"><div class="ico">✉</div><h3>Lead capture &amp; inbox</h3><p>Quote forms, call tracking and a message inbox, so every enquiry lands somewhere your client will see it.</p></div>
-      <div class="feat"><div class="ico">➤</div><h3>Email campaigns</h3><p>Send offers and updates to captured leads — built into the same dashboard, no third-party tools.</p></div>
-      <div class="feat"><div class="ico">✎</div><h3>AI-assisted copy</h3><p>Professional website copy written in minutes, in your client&rsquo;s voice — you polish, not draft.</p></div>
-      <div class="feat"><div class="ico">★</div><h3>Reviews &amp; trust</h3><p>Badges, testimonials and certifications, laid out to make small businesses look established and credible.</p></div>
+      <a class="feat" href="/marketplace/instagram-gallery"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></div><h3>Live Instagram feeds</h3><p>Clients connect their own Instagram in one tap. Galleries and project feeds stay fresh without anyone lifting a finger.</p></a>
+      <a class="feat" href="/marketplace/project-feed"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg></div><h3>Project portfolios</h3><p>Job cards with photos, locations and tags — before-and-afters that turn browsers into callers.</p></a>
+      <a class="feat" href="/marketplace/quote-lead-capture"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3 8 9 6 9-6"/></svg></div><h3>Lead capture &amp; inbox</h3><p>Quote forms, call tracking and a message inbox, so every enquiry lands somewhere your client will see it.</p></a>
+      <a class="feat" href="/marketplace/email-campaigns"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14"/><path d="M21 3l-7 18-4-7-7-4Z"/></svg></div><h3>Email campaigns</h3><p>Send offers and updates to captured leads — built into the same dashboard, no third-party tools.</p></a>
+      <a class="feat" href="/marketplace"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div><h3>AI-assisted copy</h3><p>Professional website copy written in minutes, in your client&rsquo;s voice — you polish, not draft.</p></a>
+      <a class="feat" href="/marketplace/reviews-trust"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3 2.9 5.9 6.1.9-4.5 4.4 1.1 6.3L12 17.8 6.4 20.5l1.1-6.3L3 9.8l6.1-.9Z"/></svg></div><h3>Reviews &amp; trust</h3><p>Badges, testimonials and certifications, laid out to make small businesses look established and credible.</p></a>
     </div>
+    <p style="margin-top:34px"><a class="btn btn-ghost" href="/marketplace">Explore the full marketplace &rarr;</a></p>
   </div>
 </section>
 
@@ -330,6 +334,22 @@ footer img{height:92px;margin-bottom:14px}
         <p>Tell us what you do and we&rsquo;ll set you up — or match you with a LeadPages partner.</p>
       </div>
       <a class="btn btn-rose" href="/find-a-partner">Get your website</a>
+    </div>
+  </div>
+</section>
+
+
+<section class="sec" style="padding-top:0">
+  <div class="wrap rv">
+    <div class="owner" style="background:var(--gum);border-color:var(--gum);color:#F3EFEA">
+      <div>
+        <h3 style="color:#F3EFEA">Every business needs a name</h3>
+        <p style="color:#C9D2CC">Search Australian domains right here — .com.au from the start.</p>
+      </div>
+      <form action="/domains" method="get" style="display:flex;gap:10px;flex-wrap:wrap;flex:1;max-width:520px;min-width:280px">
+        <input name="q" placeholder="yourbusiness.com.au" aria-label="Search a domain" style="flex:1;min-width:200px;padding:13px 18px;border-radius:999px;border:0;font-family:var(--body);font-size:15.5px">
+        <button class="btn btn-rose" type="submit" style="border:0">Search</button>
+      </form>
     </div>
   </div>
 </section>

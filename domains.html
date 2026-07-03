@@ -8,6 +8,8 @@
 <title>Find your domain · LeadPages</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -24,7 +26,7 @@
   .wrap{max-width:920px;margin:0 auto;padding:0 20px}
   /* site nav */
   .sitenav{background:var(--gum)}
-  .sitenav .wrap{max-width:1140px;display:flex;align-items:center;justify-content:space-between;height:116px;padding:0 24px}
+  .sitenav .wrap{max-width:1440px;display:flex;align-items:center;justify-content:space-between;height:116px;padding:0 24px}
   .sitenav img{height:96px;width:auto;display:block}
   .sitenav .links{display:flex;align-items:center;gap:24px}
   .sitenav .links a{color:#E9EFEA;font-weight:600;font-size:15px;text-decoration:none}
@@ -105,7 +107,7 @@
   .dot.ok{background:var(--ok)} .dot.work{background:var(--rose)} .dot.bad{background:var(--bad)}
   /* site footer */
   .sitefoot{background:var(--gum);color:#C9D2CC;padding:44px 0 36px;font-size:14px}
-  .sitefoot .wrap{max-width:1140px;display:flex;justify-content:space-between;gap:26px;flex-wrap:wrap;padding:0 24px}
+  .sitefoot .wrap{max-width:1440px;display:flex;justify-content:space-between;gap:26px;flex-wrap:wrap;padding:0 24px}
   .sitefoot img{height:84px;margin-bottom:12px;display:block}
   .sitefoot a{color:#E9EFEA;font-weight:600;text-decoration:none;margin-right:22px}
   .sitefoot a:hover{color:#D9A0AC}
@@ -451,5 +453,10 @@ $('progManage').onclick=function(){ window.location.href='/manage'; };
     </div>
   </div>
 </footer>
+<script id="lp-prefill">
+(function(){try{var q=new URLSearchParams(location.search).get('q');
+if(q){var i=document.getElementById('q');var b=document.getElementById('go');
+if(i){i.value=q;} if(i&&b){setTimeout(function(){b.click();},400);}}}catch(_){}})();
+</script>
 </body>
 </html>

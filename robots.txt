@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /manage
+Disallow: /marketplace-admin
+Disallow: /partners-admin
+Sitemap: https://www.leadpages.com.au/sitemap.xml

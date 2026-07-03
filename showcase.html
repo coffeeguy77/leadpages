@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico"><title>Showcase — real LeadPages sites, live</title><meta name="description" content="Live LeadPages client sites you can scroll — real businesses, real results, built from industry themes.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet"><style>
+:root{--paper:#FAF5F2;--shell:#F1E5DF;--ink:#2E2A2B;--mut:#6E6265;--rose:#A84A5E;--rose-d:#7E3346;--gum:#2F413A;--line:#E4D5CD;--ok:#3E7C52;--bad:#B23B3B;--disp:'Young Serif',Georgia,serif;--body:'Figtree',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.65}
+a{color:inherit;text-decoration:none}img{max-width:100%;display:block}
+.wrap{max-width:1440px;margin:0 auto;padding:0 24px}
+h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.14}
+.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rose)}
+.on-dark .eyebrow{color:#D9A0AC}
+.lede{font-size:18px;color:var(--mut);max-width:58ch}
+.btn{display:inline-flex;justify-content:center;font-weight:700;padding:14px 28px;border-radius:999px;background:var(--rose);color:#fff;border:2px solid var(--rose);font-size:16px;cursor:pointer;font-family:var(--body)}
+.btn:hover{background:var(--rose-d);border-color:var(--rose-d)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--paper)}
+.sitenav{background:var(--gum);position:sticky;top:0;z-index:50}
+.sitenav .wrap{display:flex;align-items:center;justify-content:space-between;height:116px}
+.sitenav img{height:96px;width:auto}
+.sitenav .links{display:flex;align-items:center;gap:24px}
+.sitenav .links a{color:#E9EFEA;font-weight:600;font-size:15px}
+.sitenav .links a:hover{color:#D9A0AC}
+.sitenav .links a.cta{background:var(--rose);color:#fff;padding:9px 18px;border-radius:999px}
+.sitenav .links a.cta:hover{background:var(--rose-d)}
+@media(max-width:680px){.sitenav .links a:not(.cta){display:none}}
+.hero{background:var(--gum);color:#F3EFEA;padding:64px 0 72px}
+.hero h1{font-size:clamp(30px,4.8vw,48px);margin:12px 0 14px;max-width:22ch}
+.hero p{color:#C9D2CC;font-size:18px;max-width:58ch}
+.sec{padding:80px 0}
+.sec-shell{background:var(--shell)}
+.sec-gum{background:var(--gum);color:#F3EFEA}
+.sec h2{font-size:clamp(26px,3.8vw,38px);margin:8px 0 14px}
+.center{text-align:center}.center .lede{margin-inline:auto}
+footer{background:var(--gum);color:#C9D2CC;padding:44px 0 36px;font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:26px;flex-wrap:wrap}
+footer img{height:84px;margin-bottom:12px}
+footer a{color:#E9EFEA;font-weight:600;margin-right:22px}
+footer a:hover{color:#D9A0AC}
+.abn{margin-top:14px;color:#8FA096;font-size:12.5px}
+
+.rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:38px}
+@media(max-width:900px){.rgrid{grid-template-columns:1fr}}
+.rcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px 26px;display:flex;flex-direction:column;transition:transform .18s ease,box-shadow .18s ease}
+.rcard:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(46,42,43,.10)}
+.rcard h3{font-size:20px;margin-bottom:10px}
+.rcard p{color:var(--mut);font-size:15px;flex:1}
+.rmore{margin-top:14px;font-weight:700;color:var(--rose-d);font-size:14.5px}
+
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:34px}
+@media(max-width:900px){.sgrid{grid-template-columns:1fr}}
+.show{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 14px 40px rgba(46,42,43,.07);transition:transform .2s ease,box-shadow .2s ease}
+.show:hover{transform:translateY(-5px);box-shadow:0 26px 60px rgba(46,42,43,.13)}
+.sframe{position:relative;height:420px;overflow:hidden;background:var(--shell)}
+.sframe iframe{width:200%;height:840px;border:0;transform:scale(.5);transform-origin:0 0;pointer-events:none}
+.sbar{display:flex;gap:6px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);background:#FBF9F8}
+.sbar i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.sbar span{font-size:12px;color:var(--mut);margin-left:8px;font-weight:700}
+.sbody{padding:20px 24px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.stag{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--rose)}
+.sbody h3{font-size:21px;margin-top:2px}
+.svisit{font-weight:700;color:#fff;background:var(--rose);padding:10px 20px;border-radius:999px;font-size:14.5px}
+.svisit:hover{background:var(--rose-d)}
+.pills{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:34px}
+.pill{padding:10px 20px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:700;font-size:14.5px;cursor:pointer;color:var(--mut);font-family:var(--body)}
+.pill.on{background:var(--rose);border-color:var(--rose);color:#fff}
+.note-live{display:inline-flex;align-items:center;gap:8px;background:#E4EFE7;color:#2C6A42;font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px;margin-top:16px}
+.note-live i{width:8px;height:8px;border-radius:50%;background:#3E7C52;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+</style></head><body>
+<nav class="sitenav"><div class="wrap">
+<a href="/"><img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png" alt="LeadPages"></a>
+<div class="links"><a href="/start-your-business">Start your business</a><a href="/marketplace">Marketplace</a><a href="/resources">Resources</a><a class="cta" href="/partners">Become a partner</a></div>
+</div></nav>
+
+<header class="hero"><div class="wrap" style="text-align:center">
+<span class="eyebrow">Showcase</span>
+<h1 style="margin-inline:auto">Real sites. Real businesses. Live right now.</h1>
+<p style="margin-inline:auto">These aren&rsquo;t mockups — every site below is a live LeadPages site you can scroll, built the same way you&rsquo;ll build for your clients.</p>
+<span class="note-live"><i></i>Live previews — scroll any card</span>
+</div></header>
+<main class="sec" style="padding-top:44px"><div class="wrap">
+<div class="pills" id="pills" style="margin-top:0"></div>
+<div class="sgrid" id="sgrid"></div>
+</div></main>
+<section class="sec sec-shell" style="text-align:center"><div class="wrap">
+<h2>Your clients&rsquo; sites could be here next</h2>
+<p class="lede" style="margin:14px auto 26px">Every showcase site started as an industry theme and an afternoon&rsquo;s work.</p>
+<a class="btn" href="/start-your-business">Start your business</a>
+</div></section>
+<script>
+(function(){
+  // Edit this list as new client sites launch: {name, industry, url}
+  var SITES=[
+    {name:"Bean Culture Coffee",industry:"Caf\u00e9s & hospitality",url:"https://www.leadpages.com.au/beanculture"},
+    {name:"Duncan's Plumbing",industry:"Trades",url:"https://www.duncansplumbing.com.au"}
+  ];
+  var active='All';
+  function cats(){var s=['All'];SITES.forEach(function(x){if(s.indexOf(x.industry)<0)s.push(x.industry);});return s;}
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+  function render(){
+    document.getElementById('pills').innerHTML=cats().map(function(c){
+      return '<button class="pill'+(c===active?' on':'')+'" data-c="'+esc(c)+'">'+esc(c)+'</button>';}).join('');
+    var list=active==='All'?SITES:SITES.filter(function(s){return s.industry===active;});
+    document.getElementById('sgrid').innerHTML=list.map(function(s){
+      var host=s.url.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'');
+      return '<div class="show">'
+        +'<div class="sbar"><i></i><i></i><i></i><span>'+esc(host)+'</span></div>'
+        +'<div class="sframe"><iframe src="'+esc(s.url)+'" loading="lazy" title="'+esc(s.name)+'"></iframe></div>'
+        +'<div class="sbody"><div><div class="stag">'+esc(s.industry)+'</div><h3>'+esc(s.name)+'</h3></div>'
+        +'<a class="svisit" href="'+esc(s.url)+'" target="_blank" rel="noopener">Visit live site &rarr;</a></div></div>';
+    }).join('');
+  }
+  document.getElementById('pills').addEventListener('click',function(e){
+    var b=e.target.closest('.pill');if(!b)return;active=b.getAttribute('data-c');render();});
+  render();
+})();
+</script>
+
+<footer><div class="wrap">
+<div><img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png" alt="LeadPages"><div>Smart sites. More leads. Built in Canberra, Australia.</div>
+<div class="abn">Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div></div>
+<div><a href="/">Home</a><a href="/start-your-business">Start your business</a><a href="/marketplace">Marketplace</a><a href="/resources">Resources</a><a href="/privacy-policy">Privacy</a></div>
+</div></footer>
+</body></html>
