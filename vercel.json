@@ -6,6 +6,8 @@
     { "source": "/manage", "destination": "/manage.html" },
     { "source": "/tradies", "destination": "/tradies.html" },
     { "source": "/domains", "destination": "/domains.html" },
+    { "source": "/marketplace", "destination": "/marketplace.html" },
+    { "source": "/marketplace-admin", "destination": "/marketplace-admin.html" },
     { "source": "/partners", "destination": "/partners.html" },
     { "source": "/partner", "destination": "/partner.html" },
     { "source": "/partners-admin", "destination": "/partners-admin.html" },

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<title>Marketplace — everything a LeadPages site can do</title>
+<meta name="description" content="Browse every LeadPages feature — live Instagram feeds, project portfolios, lead capture, email campaigns and more. All built in, no plugins.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAF5F2; --shell:#F1E5DF; --ink:#2E2A2B; --mut:#6E6265;
+  --rose:#A84A5E; --rose-d:#7E3346; --gum:#2F413A; --gum-l:#43584F;
+  --line:#E4D5CD;
+  --disp:'Young Serif',Georgia,serif; --body:'Figtree',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.6}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.12}
+.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#D9A0AC}
+.sitenav{background:var(--gum)}
+.sitenav .wrap{display:flex;align-items:center;justify-content:space-between;height:72px}
+.sitenav img{height:48px;width:auto}
+.sitenav .links{display:flex;align-items:center;gap:24px}
+.sitenav .links a{color:#E9EFEA;font-weight:600;font-size:15px}
+.sitenav .links a:hover{color:#D9A0AC}
+.sitenav .links a.cta{background:var(--rose);color:#fff;padding:9px 18px;border-radius:999px}
+.sitenav .links a.cta:hover{background:var(--rose-d)}
+@media(max-width:640px){.sitenav .links a:not(.cta){display:none}}
+.hero{background:var(--gum);color:#F3EFEA;padding:64px 0 72px;text-align:center}
+.hero h1{font-size:clamp(30px,4.6vw,46px);margin:12px 0 14px}
+.hero p{color:#C9D2CC;font-size:18px;max-width:58ch;margin:0 auto}
+.pills{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:34px 0 8px}
+.pill{padding:10px 20px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:700;font-size:14.5px;cursor:pointer;color:var(--mut);font-family:var(--body)}
+.pill:hover{border-color:var(--rose);color:var(--rose-d)}
+.pill.on{background:var(--rose);border-color:var(--rose);color:#fff}
+.pill:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
+main{padding:26px 0 96px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:26px}
+@media(max-width:960px){.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+.fcard{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .18s ease,box-shadow .18s ease}
+.fcard:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(46,42,43,.10)}
+.fthumb{height:150px;background:linear-gradient(135deg,var(--shell),#E6D2C8);position:relative}
+.fthumb img{width:100%;height:100%;object-fit:cover}
+.fbadge{position:absolute;top:12px;left:12px;background:var(--rose);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px}
+.fbody{padding:20px 22px 22px;display:flex;flex-direction:column;gap:8px;flex:1}
+.fcat{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--rose)}
+.fbody h3{font-size:20px}
+.ftag{color:var(--ink);font-weight:600;font-size:15px}
+.fsum{color:var(--mut);font-size:14.5px;flex:1}
+.fdemo{align-self:flex-start;margin-top:6px;font-weight:700;color:var(--rose-d);font-size:14.5px;border-bottom:2px solid var(--rose);padding-bottom:1px}
+.status{color:var(--mut);text-align:center;padding:48px 0;font-size:16px}
+.band{background:var(--shell);text-align:center;padding:72px 24px}
+.band h2{font-size:clamp(26px,3.6vw,36px);margin-bottom:12px}
+.band p{color:var(--mut);max-width:52ch;margin:0 auto 26px}
+.btn{display:inline-flex;font-weight:700;padding:14px 28px;border-radius:999px;background:var(--rose);color:#fff}
+.btn:hover{background:var(--rose-d)}
+footer{background:var(--gum);color:#C9D2CC;padding:44px 0 36px;font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:26px;flex-wrap:wrap}
+footer img{height:42px;margin-bottom:12px}
+footer a{color:#E9EFEA;font-weight:600;margin-right:22px}
+footer a:hover{color:#D9A0AC}
+.abn{margin-top:14px;color:#8FA096;font-size:12.5px}
+</style>
+</head>
+<body>
+
+<nav class="sitenav">
+  <div class="wrap">
+    <a href="/"><img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="LeadPages"></a>
+    <div class="links">
+      <a href="/#how">How it works</a>
+      <a href="/domains">Domains</a>
+      <a class="cta" href="/partners">Become a partner</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">The marketplace</span>
+    <h1>Everything a LeadPages site can do</h1>
+    <p>Every feature below is built into the platform — no plugins, no extra subscriptions. Browse by category to see what you can offer your clients.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="pills" id="pills" role="tablist" aria-label="Filter by category"></div>
+    <div class="grid" id="grid"></div>
+    <div class="status" id="status">Loading the marketplace…</div>
+  </div>
+</main>
+
+<section class="band">
+  <h2>Want these on your clients&rsquo; sites?</h2>
+  <p>Every marketplace feature comes standard with the platform. Become a LeadPages partner and offer them all from day one.</p>
+  <a class="btn" href="/partners">Become a partner</a>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="LeadPages">
+      <div>Smart sites. More leads. Built in Canberra, Australia.</div>
+      <div class="abn">Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div>
+    </div>
+    <div>
+      <a href="/">Home</a><a href="/partners">Become a partner</a><a href="/domains">Domains</a><a href="/privacy-policy">Privacy</a><a href="/terms-of-use">Terms</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var CATS=[], FEATS=[], active='all';
+  var pills=document.getElementById('pills'),
+      grid=document.getElementById('grid'),
+      status=document.getElementById('status');
+
+  function esc(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML;}
+
+  function renderPills(){
+    var html='<button class="pill'+(active==='all'?' on':'')+'" data-c="all" role="tab" aria-selected="'+(active==='all')+'">All features</button>';
+    CATS.forEach(function(c){
+      html+='<button class="pill'+(active===c.id?' on':'')+'" data-c="'+esc(c.id)+'" role="tab" aria-selected="'+(active===c.id)+'">'+esc(c.name)+'</button>';
+    });
+    pills.innerHTML=html;
+  }
+
+  function catName(id){var c=CATS.find(function(x){return x.id===id;});return c?c.name:'';}
+
+  function renderGrid(){
+    var list=active==='all'?FEATS:FEATS.filter(function(f){return f.category_id===active;});
+    if(!list.length){grid.innerHTML='';status.style.display='block';status.textContent='Nothing in this category yet — check back soon.';return;}
+    status.style.display='none';
+    grid.innerHTML=list.map(function(f){
+      var thumb=f.hero_image_url
+        ? '<div class="fthumb"><img src="'+esc(f.hero_image_url)+'" alt="" loading="lazy">'
+        : '<div class="fthumb">';
+      if(f.badge) thumb+='<span class="fbadge">'+esc(f.badge)+'</span>';
+      thumb+='</div>';
+      var demo=f.demo_url?'<a class="fdemo" href="'+esc(f.demo_url)+'" target="_blank" rel="noopener">See it live &rarr;</a>':'';
+      return '<article class="fcard">'+thumb
+        +'<div class="fbody">'
+        +'<span class="fcat">'+esc(catName(f.category_id))+'</span>'
+        +'<h3>'+esc(f.name)+'</h3>'
+        +(f.tagline?'<div class="ftag">'+esc(f.tagline)+'</div>':'')
+        +(f.summary?'<p class="fsum">'+esc(f.summary)+'</p>':'')
+        +demo+'</div></article>';
+    }).join('');
+  }
+
+  pills.addEventListener('click',function(e){
+    var b=e.target.closest('.pill'); if(!b) return;
+    active=b.getAttribute('data-c'); renderPills(); renderGrid();
+  });
+
+  fetch('/api/catalog').then(function(r){return r.json();}).then(function(j){
+    if(j&&j.categories){CATS=j.categories;FEATS=j.features||[];renderPills();renderGrid();}
+    else{status.textContent='The marketplace could not load. Please refresh to try again.';}
+  }).catch(function(){status.textContent='The marketplace could not load. Please refresh to try again.';});
+})();
+</script>
+</body>
+</html>
