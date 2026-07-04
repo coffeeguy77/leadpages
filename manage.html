@@ -363,6 +363,17 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 /* App ghost mode — section placed but subscription inactive */
 [data-ghost="true"]{pointer-events:none;user-select:none;filter:grayscale(.4) opacity(.65);position:relative;}
 [data-ghost="true"]::after{content:"";position:absolute;inset:0;z-index:9;cursor:not-allowed;}
+/* Standard mode — hide inactive sections and toggles */
+body.lp-standard-mode .lp-hide-inactive-row,
+body.lp-standard-mode #hide-inactive-toggle,
+body.lp-standard-mode .calc-hide-inactive,
+body.lp-standard-mode [data-standard-hide] { display:none!important; }
+body.lp-standard-mode .lp-sec-item[data-active="false"] { display:none!important; }
+body.lp-standard-mode .lp-preset-strip { display:none!important; }
+#lp-mode-toggle.standard-mode { background:#B9852B!important; }
+#lp-mode-toggle.standard-mode::before { content:"Standard "; }
+.lp-standard-banner { display:none; background:#FEF3C7; color:#92400E; font-size:12px; font-weight:700; padding:4px 14px; border-radius:999px; }
+body.lp-standard-mode .lp-standard-banner { display:inline-block; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
@@ -498,6 +509,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 </head>
 <body>
 <a id="lp-signout-top" href="#">Sign Out</a>
+<button id="lp-mode-toggle" title="Switch between Classic and Standard editor view" style="margin-left:8px;background:var(--brand,#1f7b63);color:#fff;border:0;border-radius:999px;padding:4px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.04em">Classic</button>
 <a id="lp-partneradmin-top" href="/partners-admin" style="display:none">Partner Admin</a>
 <a id="lp-dashboard-top" href="/partner-dashboard" style="font-size:13px;font-weight:600;color:var(--brand,#1f7a63);margin-left:10px">&#8592; Dashboard</a>
 <div id="lp-landing"><div class="lpl-wrap">
@@ -1648,8 +1660,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     }catch(e){}
     currentRole=role;
     var __pa=document.getElementById('lp-partneradmin-top'); if(__pa) __pa.style.display=(role==='super')?'':'none';
+    var __mt=document.getElementById('lp-mode-toggle'); if(__mt) __mt.style.display=(role==='super'||role==='broker')?'':'none';
     await loadSitesFromDB();
     applyRoleGating();
+    initEditorMode();
     ensureSiteBar();
     var __pt=document.getElementById('lp-prev-toggle'); if(__pt) __pt.hidden=false;
     var __so=document.getElementById('lp-signout-top'); if(__so) __so.onclick=function(e){ e.preventDefault(); signOutLP(); };
@@ -4661,6 +4675,92 @@ function heroCtaCard(c){
       else alert('Error: '+(j.error||'unknown'));
     }catch(e){ alert('Network error: '+e.message); }
   }
+
+
+  /* ═══════════════════════════════════════════════════
+     Classic / Standard editor mode
+     - Super admin: Classic by default
+     - Partners: Standard by default
+     - Persisted in localStorage per user
+  ═══════════════════════════════════════════════════ */
+  var LP_MODE_KEY = 'lp_editor_mode';
+
+  function _getModeDefault(role) {
+    return role === 'super' ? 'classic' : 'standard';
+  }
+
+  function _getCurrentMode(role) {
+    var stored = localStorage.getItem(LP_MODE_KEY);
+    if (stored === 'classic' || stored === 'standard') return stored;
+    return _getModeDefault(role);
+  }
+
+  function _applyMode(mode, role) {
+    var isStandard = mode === 'standard';
+    document.body.classList.toggle('lp-standard-mode', isStandard);
+    var btn = document.getElementById('lp-mode-toggle');
+    if (btn) {
+      btn.textContent = isStandard ? 'Standard' : 'Classic';
+      btn.classList.toggle('standard-mode', isStandard);
+      btn.title = isStandard
+        ? (role === 'super' ? 'Previewing Standard (client) view — click for Classic' : 'Standard mode — click for Classic')
+        : 'Classic mode — click for Standard (client view)';
+    }
+    // Show/hide sections based on active state in standard mode
+    if (isStandard) {
+      _enforceStandardMode();
+    } else {
+      _clearStandardMode();
+    }
+  }
+
+  function _enforceStandardMode() {
+    // Hide section cards where the section is not active (on===false or not in site_apps)
+    var cards = document.querySelectorAll('.lp-sec-item, .sec-card, [data-sec-key]');
+    cards.forEach(function(card) {
+      var key = card.getAttribute('data-sec-key') || card.getAttribute('data-sec');
+      if (!key) return;
+      var cfg = data && data.sections && data.sections[key];
+      var isOn = cfg ? cfg.on !== false : false;
+      // Also check site_apps
+      var inSiteApps = _siteApps && _siteApps.some(function(a) {
+        return a.app_registry && a.app_registry.section_key === key && a.enabled;
+      });
+      card.setAttribute('data-active', (isOn || inSiteApps) ? 'true' : 'false');
+    });
+    // Hide the Hide Inactive / Show Features buttons
+    var hideBtn = document.getElementById('hide-inactive-toggle');
+    if (hideBtn) hideBtn.setAttribute('data-standard-hide', '1');
+    var showBtn = document.getElementById('show-features-btn');
+    if (showBtn) showBtn.setAttribute('data-standard-hide', '1');
+  }
+
+  function _clearStandardMode() {
+    var cards = document.querySelectorAll('[data-active]');
+    cards.forEach(function(card) { card.removeAttribute('data-active'); });
+    var els = document.querySelectorAll('[data-standard-hide]');
+    els.forEach(function(el) { el.removeAttribute('data-standard-hide'); });
+  }
+
+  function initEditorMode() {
+    var role = typeof currentRole !== 'undefined' ? currentRole : 'broker';
+    var mode = _getCurrentMode(role);
+    _applyMode(mode, role);
+
+    var btn = document.getElementById('lp-mode-toggle');
+    if (btn) {
+      btn.addEventListener('click', function() {
+        var current = _getCurrentMode(role);
+        var next = current === 'classic' ? 'standard' : 'classic';
+        localStorage.setItem(LP_MODE_KEY, next);
+        _applyMode(next, role);
+      });
+    }
+  }
+
+  // Call after role is known (after applyRoleGating)
+  var _origApplyRoleGating = typeof applyRoleGating !== 'undefined' ? applyRoleGating : null;
+
 
   previewInit();
   buildLogin(); bootAuth();
