@@ -349,6 +349,15 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
         var pid=pr.data.id;
         await sb.from('partner_profiles').insert({ partner_id:pid, support_name:a.name||null, support_email:a.email||null, support_phone:a.phone||null, region:a.location||null });
         var up=await sb.from('partner_applications').update({ status:'approved', partner_id:pid }).eq('id',a.id).select('*');
+        // Send welcome email with magic link
+        try{
+          var tok=(await sb.auth.getSession()).data.session;
+          if(tok&&tok.access_token){
+            await fetch('/api/partner-welcome',{method:'POST',
+              headers:{'content-type':'application/json',Authorization:'Bearer '+tok.access_token},
+              body:JSON.stringify({partnerId:pid,email:a.email,name:a.name})});
+          }
+        }catch(we){ console.warn('Welcome email failed:',we); }
         if(up.data&&up.data[0]) Object.assign(a,up.data[0]);
         partners.unshift(pr.data); renderPartners();
         renderApps();

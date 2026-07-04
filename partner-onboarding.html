@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<title>Getting started — LeadPages Partner</title>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{
+  --bg:#F6F4EF;--surf:#fff;--surf2:#FBFAF7;
+  --ink:#1B2430;--soft:#5C6675;--faint:#929AA6;
+  --line:#E7E2D8;
+  --brand:#2F413A;--brand-d:#1E2E28;--brand-t:#EAF3EF;
+  --rose:#A84A5E;--rose-d:#7E3346;
+  --ok:#3E7C52;--ok-bg:#E4EFE7;
+  --r:14px;--shadow:0 1px 2px rgba(27,36,48,.04),0 8px 28px rgba(27,36,48,.06);
+  --disp:'Young Serif',Georgia,serif;--body:'Figtree',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.14}
+a{color:var(--brand);font-weight:600}
+.hidden{display:none!important}
+/* topbar */
+.topbar{background:var(--brand)}
+.topbar .inner{max-width:980px;margin:0 auto;padding:0 22px;display:flex;align-items:center;height:62px;gap:14px}
+.topbar img{height:40px;width:auto}
+.topbar .sp{flex:1}
+.topbar a,.topbar button{color:#E9EFEA;font-size:13.5px;font-weight:600;background:none;border:0;cursor:pointer;font-family:var(--body);text-decoration:none}
+.topbar a:hover,.topbar button:hover{color:#D9A0AC}
+/* hero */
+.hero{background:linear-gradient(160deg,var(--brand-d),var(--brand));color:#F3EFEA;padding:56px 22px 60px;text-align:center}
+.hero .eyebrow{font-size:12.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#D9A0AC;margin-bottom:10px}
+.hero h1{font-size:clamp(28px,4.6vw,44px);margin-bottom:12px}
+.hero .sub{color:#C9D2CC;font-size:17px;max-width:54ch;margin:0 auto 26px}
+/* progress bar */
+.prog-wrap{max-width:480px;margin:0 auto}
+.prog-bar-bg{height:8px;background:rgba(255,255,255,.2);border-radius:999px;overflow:hidden;margin-bottom:8px}
+.prog-bar{height:100%;background:#D9A0AC;border-radius:999px;transition:width .4s ease}
+.prog-label{font-size:13.5px;color:#C9D2CC;font-weight:700}
+/* page */
+.page{max-width:980px;margin:0 auto;padding:36px 22px 80px;display:grid;grid-template-columns:280px 1fr;gap:32px;align-items:start}
+@media(max-width:780px){.page{grid-template-columns:1fr;gap:24px}}
+/* sidebar steps */
+.steps-list{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);position:sticky;top:24px}
+.step-item{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .12s}
+.step-item:last-child{border-bottom:0}
+.step-item:hover{background:var(--surf2)}
+.step-item.active{background:var(--brand-t);border-left:3px solid var(--brand)}
+.step-item.active .step-num{background:var(--brand);color:#fff}
+.step-item.done .step-num{background:var(--ok-bg);color:var(--ok)}
+.step-num{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-weight:800;font-size:13px;flex:0 0 auto;color:var(--faint)}
+.step-label{font-weight:700;font-size:14px;flex:1}
+.step-done-ic{color:var(--ok);font-size:17px;flex:0 0 auto}
+/* main content */
+.main-card{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:30px;box-shadow:var(--shadow)}
+.main-card h2{font-size:24px;margin-bottom:8px}
+.main-card .lede{color:var(--soft);margin-bottom:22px;font-size:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1.5px solid var(--line);background:var(--surf);border-radius:999px;padding:11px 20px;font-weight:700;font-size:14.5px;cursor:pointer;font-family:var(--body);color:var(--ink);transition:border-color .12s,background .12s;text-decoration:none}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:var(--brand-d);border-color:var(--brand-d)}
+.btn.rose{background:var(--rose);border-color:var(--rose);color:#fff}
+.btn.rose:hover{background:var(--rose-d);border-color:var(--rose-d)}
+.btn.sm{padding:8px 15px;font-size:13px}
+.btn.done-btn{background:var(--ok-bg);border-color:var(--ok-bg);color:var(--ok)}
+.btn[disabled]{opacity:.55;cursor:default}
+/* step content layouts */
+.action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;align-items:center}
+.checklist{list-style:none;margin:0 0 20px}
+.checklist li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
+.checklist li:last-child{border-bottom:0}
+.ch-ic{color:var(--ok);font-weight:800;font-size:16px;line-height:1.4;flex:0 0 auto}
+/* script box */
+.script-box{background:var(--surf2);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0;font-style:italic;color:var(--ink);font-size:15px;line-height:1.7;position:relative}
+.script-box .from{font-size:12px;font-weight:800;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;font-style:normal;margin-bottom:6px}
+/* tip cards */
+.tips{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+@media(max-width:580px){.tips{grid-template-columns:1fr}}
+.tip{background:var(--surf2);border:1px solid var(--line);border-radius:12px;padding:16px}
+.tip h4{font-size:15px;margin-bottom:4px}
+.tip p{font-size:14px;color:var(--soft)}
+/* completed state */
+.step-complete-banner{background:var(--ok-bg);border:1px solid #C4DECB;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:10px;color:var(--ok);font-weight:700;margin-top:20px}
+/* all done */
+.done-hero{text-align:center;padding:40px 0}
+.done-hero .tick{width:72px;height:72px;border-radius:50%;background:var(--ok-bg);display:grid;place-items:center;margin:0 auto 18px;font-size:32px;color:var(--ok)}
+.done-hero h2{font-size:28px;margin-bottom:10px}
+.done-hero p{color:var(--soft);max-width:44ch;margin:0 auto 24px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="inner">
+    <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png" alt="LeadPages">
+    <span class="sp"></span>
+    <a href="/partner-dashboard">Dashboard</a>
+    <a href="/manage">Editor</a>
+    <button id="top-so">Sign out</button>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="eyebrow">Partner onboarding</div>
+  <h1 id="hero-title">Welcome — let's get you set up</h1>
+  <p class="sub" id="hero-sub">Five quick steps and you'll have everything you need to build your first client site.</p>
+  <div class="prog-wrap">
+    <div class="prog-bar-bg"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+    <div class="prog-label" id="prog-label">0 of 6 steps complete</div>
+  </div>
+</header>
+
+<div class="page" id="main-page">
+  <aside class="steps-list" id="steps-list"></aside>
+  <main class="main-card" id="step-content"></main>
+</div>
+
+<script>
+(function(){
+  var sb=window.supabase.createClient(window.__LP.url,window.__LP.anon);
+  var $=function(id){return document.getElementById(id);};
+  var USER=null, PARTNER=null, STEPS=[], currentStep=0;
+
+  function esc(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML;}
+  function token(){return sb.auth.getSession().then(function(r){return r.data&&r.data.session&&r.data.session.access_token||null;});}
+  function apiFetch(url,opts){return token().then(function(t){return fetch(url,Object.assign({headers:Object.assign({'content-type':'application/json'},t?{Authorization:'Bearer '+t}:{})},opts||{}));});}
+
+  /* ── step definitions ──────────────────────────────── */
+  var STEP_DEFS=[
+    {key:'welcome',label:'Welcome',
+     render:function(st){
+       var name=PARTNER&&(PARTNER.display_name||PARTNER.email)||'there';
+       return '<h2>Welcome to LeadPages, '+esc(name.split(' ')[0])+'</h2>'
+         +'<p class="lede">You\'re now a LeadPages partner. Here\'s what that means and what you get.</p>'
+         +'<ul class="checklist">'
+         +'<li><span class="ch-ic">◎</span><span><strong>50+ industry themes</strong> — pick one, customise it, publish. Your client has a professional site in hours.</span></li>'
+         +'<li><span class="ch-ic">◎</span><span><strong>Built-in lead capture, Instagram feeds, project portfolios</strong> — everything in the App Marketplace is yours to offer.</span></li>'
+         +'<li><span class="ch-ic">◎</span><span><strong>You set the prices.</strong> You keep everything you charge. The platform is your cost; the client pays you.</span></li>'
+         +'<li><span class="ch-ic">◎</span><span><strong>We send you leads.</strong> Business owners who enquire through our Find-a-Partner page get matched to partners near them.</span></li>'
+         +'<li><span class="ch-ic">◎</span><span><strong>One-button layouts.</strong> Save your preferred app combination as a template and apply it to every new site instantly.</span></li>'
+         +'</ul>'
+         +'<div class="action-row">'
+         +(st.completed?'<span class="btn done-btn">✓ Done</span>':'<button class="btn primary" id="step-cta">Got it — let\'s go</button>')
+         +'<a class="btn" href="/start-your-business" target="_blank" rel="noopener">Read the opportunity page</a>'
+         +'</div>'
+         +(st.completed?'<div class="step-complete-banner"><span>✓</span><span>Welcome step complete</span></div>':'');
+     }},
+    {key:'platform_tour',label:'Platform tour',
+     render:function(st){
+       return '<h2>Tour the platform</h2>'
+         +'<p class="lede">The App Command Centre is where every site is built. This three-minute orientation covers what matters.</p>'
+         +'<ul class="checklist">'
+         +'<li><span class="ch-ic">1</span><span>Open the editor and pick any trade from the theme list — try a plumber or café.</span></li>'
+         +'<li><span class="ch-ic">2</span><span>Find the <strong>App Marketplace tab</strong> — that\'s where you enable sections per site.</span></li>'
+         +'<li><span class="ch-ic">3</span><span>Open <strong>Appearance</strong> and change the brand colour. Watch the live preview update.</span></li>'
+         +'<li><span class="ch-ic">4</span><span>Hit <strong>Publish</strong> and view the live site. That\'s how fast it goes.</span></li>'
+         +'</ul>'
+         +'<div class="action-row">'
+         +'<a class="btn primary" href="/manage" target="_blank" rel="noopener">Open the editor</a>'
+         +(st.completed?'<span class="btn done-btn">✓ Done</span>':'<button class="btn" id="step-cta">I\'ve completed the tour</button>')
+         +'</div>'
+         +(st.completed?'<div class="step-complete-banner"><span>✓</span><span>Platform tour complete</span></div>':'');
+     }},
+    {key:'demo_site',label:'Build a demo site',
+     render:function(st){
+       return '<h2>Build your first demo site</h2>'
+         +'<p class="lede">Your demo site is your sales tool. Pick an industry you\'ll focus on and build it as you\'d build it for a real client. This is what you show prospects.</p>'
+         +'<div class="tips">'
+         +'<div class="tip"><h4>Pick a relatable industry</h4><p>Tradespeople, salons and cafés are the easiest first conversations. Pick one you know locally.</p></div>'
+         +'<div class="tip"><h4>Use real-ish content</h4><p>Change the suburb and a few details to feel local. Your demo should feel like it could be real.</p></div>'
+         +'<div class="tip"><h4>Enable 2–3 apps</h4><p>Turn on the Project Portfolio and Quote form in the App Marketplace tab. These are what clients ask about most.</p></div>'
+         +'<div class="tip"><h4>Save a template</h4><p>Once you\'re happy with the layout, save it as a partner template. You\'ll apply it to every new site in one click.</p></div>'
+         +'</div>'
+         +'<div class="action-row">'
+         +'<a class="btn primary" href="/manage" target="_blank" rel="noopener">Build in the editor</a>'
+         +(st.completed?'<span class="btn done-btn">✓ Done</span>':'<button class="btn" id="step-cta">My demo site is built</button>')
+         +'</div>'
+         +(st.completed?'<div class="step-complete-banner"><span>✓</span><span>Demo site built</span></div>':'');
+     }},
+    {key:'first_template',label:'Save a template',
+     render:function(st){
+       return '<h2>Save your starter template</h2>'
+         +'<p class="lede">A template saves your preferred app layout so you can apply it to any new client site with one click. Build a site once the way you like it; every site after is faster.</p>'
+         +'<ul class="checklist">'
+         +'<li><span class="ch-ic">1</span><span>Open any site in the editor.</span></li>'
+         +'<li><span class="ch-ic">2</span><span>Go to the <strong>App Marketplace</strong> tab and enable the apps you want in your standard layout.</span></li>'
+         +'<li><span class="ch-ic">3</span><span>Click <strong>"Save current layout as template"</strong> at the bottom of the tab. Name it something like "My standard tradie layout".</span></li>'
+         +'<li><span class="ch-ic">4</span><span>Next time you build: open the editor for the new site → App Marketplace → Apply a template → done.</span></li>'
+         +'</ul>'
+         +'<div class="action-row">'
+         +'<a class="btn primary" href="/manage" target="_blank" rel="noopener">Open the editor</a>'
+         +(st.completed?'<span class="btn done-btn">✓ Done</span>':'<button class="btn" id="step-cta">Template saved</button>')
+         +'</div>'
+         +(st.completed?'<div class="step-complete-banner"><span>✓</span><span>Template saved</span></div>':'');
+     }},
+    {key:'first_client',label:'Find your first client',
+     render:function(st){
+       return '<h2>Find your first real client</h2>'
+         +'<p class="lede">Your first client is almost always someone you already know, or a business you already visit. Here\'s the exact script that works.</p>'
+         +'<div class="script-box">'
+         +'<div class="from">What to say (in person or by text)</div>'
+         +'&ldquo;Hey [name], I\'ve started building websites for local businesses and I thought of you. I went looking for your site online and couldn\'t find it &mdash; I reckon you\'re losing jobs to the [competitor] who shows up on Google. I\'ve already mocked one up for you &mdash; want to see it? Takes two minutes.&rdquo;'
+         +'</div>'
+         +'<ul class="checklist">'
+         +'<li><span class="ch-ic">◎</span><span>List every business you already use — mechanic, hairdresser, local tradie, café. Check each one\'s web presence on your phone.</span></li>'
+         +'<li><span class="ch-ic">◎</span><span>No website, Facebook-only, or a site that looks like 2012 on mobile: those are your prospects.</span></li>'
+         +'<li><span class="ch-ic">◎</span><span>Open the demo in their industry before you talk to them. Showing beats telling.</span></li>'
+         +'<li><span class="ch-ic">◎</span><span>Quote simply: &ldquo;$1,000 to build, $79 a month after that.&rdquo; Two numbers. Say it, then wait.</span></li>'
+         +'</ul>'
+         +'<div class="action-row">'
+         +'<a class="btn" href="/resources/winning-your-first-website-client" target="_blank" rel="noopener">Read the full guide</a>'
+         +(st.completed?'<span class="btn done-btn">✓ First client added</span>':'<button class="btn primary" id="step-cta">I\'ve got my first client</button>')
+         +'</div>'
+         +(st.completed?'<div class="step-complete-banner"><span>✓</span><span>First client step complete</span></div>':'');
+     }},
+    {key:'directory_listed',label:'List yourself',
+     render:function(st){
+       return '<h2>List yourself in the partner directory</h2>'
+         +'<p class="lede">The Find-a-Partner page sends business owners directly to partners near them. Fill this in and you\'re live immediately.</p>'
+         +'<div id="dir-ob-wrap" style="margin-bottom:14px">'
+         +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px">'
+         +'<div><label for="ob-biz" style="display:block;font-size:12px;font-weight:800;color:var(--soft);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.06em">Business name</label><input id="ob-biz" type="text" style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:var(--body);font-size:14px"></div>'
+         +'<div><label for="ob-suburb" style="display:block;font-size:12px;font-weight:800;color:var(--soft);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.06em">Suburb</label><input id="ob-suburb" type="text" style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:var(--body);font-size:14px"></div>'
+         +'<div><label for="ob-state" style="display:block;font-size:12px;font-weight:800;color:var(--soft);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.06em">State</label><select id="ob-state" style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:var(--body);font-size:14px"><option value="">Choose…</option><option>ACT</option><option>NSW</option><option>VIC</option><option>QLD</option><option>SA</option><option>WA</option><option>TAS</option><option>NT</option></select></div>'
+         +'<div><label for="ob-website" style="display:block;font-size:12px;font-weight:800;color:var(--soft);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.06em">Website or demo URL</label><input id="ob-website" type="url" placeholder="https://" style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:var(--body);font-size:14px"></div>'
+         +'</div>'
+         +'<label for="ob-blurb" style="display:block;font-size:12px;font-weight:800;color:var(--soft);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.06em">One sentence about you</label>'
+         +'<textarea id="ob-blurb" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:var(--body);font-size:14px;resize:vertical" placeholder="e.g. I build websites for local tradies across Canberra and surrounds."></textarea>'
+         +'<div style="font-size:13px;color:var(--bad);margin-top:6px;min-height:16px" id="ob-dir-err"></div>'
+         +'</div>'
+         +'<div class="action-row">'
+         +'<button class="btn primary" id="ob-dir-save">Publish my listing</button>'
+         +(st.completed?'<span class="btn done-btn">\u2713 Listed</span>':'<button class="btn" id="step-cta">I\'ll do this later</button>')
+         +'<a class="btn" href="/find-a-partner" target="_blank" rel="noopener">Preview directory</a>'
+         +'</div>'
+         +(st.completed?'<div class="step-complete-banner"><span>\u2713</span><span>You\'re live on the partner directory</span></div>':'');
+     }},
+  ];
+
+  /* ── rendering ─────────────────────────────────────── */
+  function stepStatus(key){return STEPS.find(function(s){return s.key===key;})||{key:key,completed:false};}
+
+  function renderSidebar(){
+    var done=STEPS.filter(function(s){return s.completed;}).length;
+    var pct=Math.round(done/STEP_DEFS.length*100);
+    $('prog-bar').style.width=pct+'%';
+    $('prog-label').textContent=done+' of '+STEP_DEFS.length+' steps complete';
+    if(done===STEP_DEFS.length){
+      $('hero-title').textContent='You\'re fully set up';
+      $('hero-sub').textContent='Every onboarding step is complete. Time to grow your client list.';
+    }
+    $('steps-list').innerHTML=STEP_DEFS.map(function(def,i){
+      var st=stepStatus(def.key);
+      var active=i===currentStep;
+      return '<div class="step-item'+(active?' active':'')+(st.completed?' done':'')+'" data-i="'+i+'">'
+        +'<span class="step-num">'+(st.completed?'':'')+(i+1)+'</span>'
+        +'<span class="step-label">'+esc(def.label)+'</span>'
+        +(st.completed?'<span class="step-done-ic">✓</span>':'')
+        +'</div>';
+    }).join('');
+    if(done===STEP_DEFS.length){
+      $('steps-list').innerHTML+='<div class="step-item" style="background:var(--ok-bg);cursor:default"><span class="step-num" style="background:var(--ok);color:#fff;border-color:var(--ok)">✓</span><span class="step-label" style="color:var(--ok)">All done!</span></div>';
+    }
+  }
+
+  function renderContent(){
+    var def=STEP_DEFS[currentStep];
+    if(!def){$('step-content').innerHTML='';return;}
+    var st=stepStatus(def.key);
+    // Check if all done
+    var allDone=STEPS.filter(function(s){return s.completed;}).length===STEP_DEFS.length;
+    if(allDone && currentStep===STEP_DEFS.length-1){
+      $('step-content').innerHTML='<div class="done-hero">'
+        +'<div class="tick">🎉</div>'
+        +'<h2>You\'re set up and ready to go</h2>'
+        +'<p>Every onboarding step is done. Your partner account is fully configured. Go get your first (or next) client.</p>'
+        +'<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'
+        +'<a class="btn primary" href="/partner-dashboard">Go to dashboard</a>'
+        +'<a class="btn" href="/resources">Read the guides</a>'
+        +'</div></div>';
+      return;
+    }
+    $('step-content').innerHTML=def.render(st);
+    // Wire CTA
+    var cta=$('step-cta');
+    if(cta){
+      cta.addEventListener('click',async function(){
+        cta.disabled=true; cta.textContent='Saving\u2026';
+        await markStep(def.key);
+        // Auto-advance to next incomplete step
+        var nextIdx=STEP_DEFS.findIndex(function(d,i){ return i>currentStep && !stepStatus(d.key).completed; });
+        if(nextIdx>=0) currentStep=nextIdx;
+        else {
+          var anyIdx=STEP_DEFS.findIndex(function(d,i){ return i!==currentStep && !stepStatus(d.key).completed; });
+          if(anyIdx>=0) currentStep=anyIdx;
+        }
+        renderSidebar(); renderContent();
+      });
+    }
+  }
+
+  async function markStep(key){
+    await apiFetch('/api/partner-onboarding',{method:'POST',body:JSON.stringify({step:key})});
+    var idx=STEPS.findIndex(function(s){return s.key===key;});
+    if(idx>=0) STEPS[idx].completed=true;
+    else STEPS.push({key:key,completed:true,completed_at:new Date().toISOString()});
+  }
+
+  $('steps-list').addEventListener('click',function(e){
+    var item=e.target.closest('[data-i]'); if(!item) return;
+    currentStep=parseInt(item.getAttribute('data-i'),10);
+    renderSidebar(); renderContent();
+  });
+
+  $('top-so').addEventListener('click',function(){
+    sb.auth.signOut().then(function(){location.href='/partner-dashboard';});
+  });
+
+  /* ── boot ──────────────────────────────────────────── */
+  async function boot(){
+    // Handle magic link token
+    try{
+      var sp=new URLSearchParams(location.search);
+      var th=sp.get('token_hash');
+      if(th){
+        var vr=await sb.auth.verifyOtp({token_hash:th,type:sp.get('type')||'email'});
+        if(!vr.error) history.replaceState(null,'','/partner-onboarding');
+      }
+    }catch(e){}
+
+    var sess=(await sb.auth.getSession()).data.session;
+    if(!sess){location.href='/partner-dashboard';return;}
+    USER=sess.user;
+
+    // Load onboarding progress
+    try{
+      var r=await apiFetch('/api/partner-onboarding');
+      var j=await r.json();
+      PARTNER=j.partner; STEPS=j.steps||[];
+      // Start at first incomplete step
+      var first=STEP_DEFS.findIndex(function(d){return !stepStatus(d.key).completed;});
+      currentStep=first>=0?first:0;
+      renderSidebar(); renderContent();
+    }catch(e){
+      $('step-content').innerHTML='<p style="color:var(--soft)">Could not load your onboarding progress. <a href="/partner-dashboard">Go to dashboard</a></p>';
+    }
+  }
+
+  /* directory step wiring */
+  function obToken(){return sb.auth.getSession().then(function(r){return r.data&&r.data.session&&r.data.session.access_token||null;});}
+  function obFetch(url,opts){return obToken().then(function(t){return fetch(url,Object.assign({headers:Object.assign({'content-type':'application/json'},t?{Authorization:'Bearer '+t}:{})},opts||{}));});}
+  document.addEventListener('click',async function(e){
+    if(!e.target||e.target.id!=='ob-dir-save') return;
+    var btn=e.target;
+    var biz=document.getElementById('ob-biz'); var errEl=document.getElementById('ob-dir-err');
+    if(errEl) errEl.textContent='';
+    if(!biz||!biz.value.trim()){if(errEl) errEl.textContent='Business name is required.';return;}
+    btn.disabled=true; btn.textContent='Saving…';
+    try{
+      var r=await obFetch('/api/partner-directory-self',{method:'POST',body:JSON.stringify({
+        action:'save',
+        business_name:biz.value.trim(),
+        suburb:(document.getElementById('ob-suburb')||{value:''}).value.trim(),
+        state:(document.getElementById('ob-state')||{value:''}).value,
+        website_url:(document.getElementById('ob-website')||{value:''}).value.trim(),
+        blurb:(document.getElementById('ob-blurb')||{value:''}).value.trim()
+      })});
+      var j=await r.json();
+      btn.disabled=false; btn.textContent='Publish my listing';
+      if(!j.ok){if(errEl)errEl.textContent=j.error||'Could not save.';return;}
+      await markStep('directory_listed');
+      renderSidebar(); renderContent();
+    }catch(er){btn.disabled=false;btn.textContent='Publish my listing';if(errEl)errEl.textContent='Network error.';}
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>
