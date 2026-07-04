@@ -354,264 +354,100 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+window.LP_ICONS[name]+'</svg>';
   }
 
-  function initPlayground(id,payload){
-    var root=document.getElementById(id);if(!root)return;
-    var presets=(payload&&payload.presets&&payload.presets.length?payload.presets:['aam1']);
-    var st=null,cur=presets[0],dev='desktop';
+  function initPlayground(id, payload) {
+    var root = document.getElementById(id); if (!root) return;
+    var secKey = payload && payload.section_key;
+    var demoCfg = payload && payload.demo_config;
 
-    function q(r){return root.querySelector('[data-r="'+r+'"]');}
+    // ── device switcher ──────────────────────────────────────
+    var PG_W = { desktop: null, tablet: 768, phone: 390 };
+    var dev = 'desktop';
+    var iframe = root.querySelector('[data-r="iframe"]');
+    var wrap   = root.querySelector('[data-r="wrap"]');
 
-    /* ── device switching ── */
-    function applyDevice(){
-      var wrap=q('wrap'),vp=q('vp'),canvas=q('canvas');
-      var cfg=PG_DEV[dev];
-      if(dev==='desktop'){
+    function applyDevice() {
+      var w = PG_W[dev];
+      if (!w) {
+        iframe.style.width = '100%';
+        iframe.style.transform = 'none';
+        iframe.style.marginBottom = '';
+        wrap.style.height = '';
         wrap.classList.remove('framed');
-        vp.style.width='100%';
-        vp.style.transform='none';
-        vp.style.marginBottom='';
-        wrap.style.height='auto';
       } else {
         wrap.classList.add('framed');
-        vp.style.width=cfg.w+'px';
-        var avail=wrap.clientWidth-48;
-        var s=Math.min(1,avail/cfg.w);
-        vp.style.transform='scale('+s+')';
-        vp.style.transformOrigin='top center';
-        /* collapse the scaled white space below */
-        setTimeout(function(){
-          var h=vp.scrollHeight;
-          vp.style.marginBottom=((h*s)-h)+'px';
-          wrap.style.height=(h*s+48)+'px';
-        },60);
+        iframe.style.width = w + 'px';
+        var avail = wrap.clientWidth - 48;
+        var s = Math.min(1, avail / w);
+        iframe.style.transform = 'scale(' + s + ')';
+        iframe.style.transformOrigin = 'top center';
+        setTimeout(function() {
+          var h = iframe.scrollHeight || 600;
+          iframe.style.marginBottom = ((h * s) - h) + 'px';
+          wrap.style.height = (h * s + 48) + 'px';
+        }, 400);
       }
     }
-    window.addEventListener('resize',function(){if(st)applyDevice();});
+    window.addEventListener('resize', function() { applyDevice(); });
 
-    /* ── render the section using verbatim template classes ── */
-    function renderSection(){
-      var c=st.config;
-      /* badges */
-      var badges=(st.headBadges||[]).filter(function(b){return b.on!==false;});
-      var badgeHtml='';
-      if(badges.length){
-        var sep=(c.headSep==='space')?'':' fp-hb-piped';
-        badgeHtml='<div class="fp-headbadges'+sep+'">'
-          +badges.map(function(b){
-            var ic=_lpIcon(b.icon);
-            return '<div class="fp-hb">'
-              +(ic?'<div class="fp-hb-ic">'+ic+'</div>':'')
-              +(b.label?'<div class="fp-hb-label">'+esc(b.label)+'</div>':'')
-              +(b.sub?'<div class="fp-hb-sub">'+esc(b.sub)+'</div>':'')
-              +'</div>';}).join('')
-          +'</div>';
-      }
-      /* cards */
-      var cols=PG_DEV[dev].cols;
-      var cards=(st.items||[]).map(function(p){
-        var img=p.img
-          ?'<img class="fp-img" src="'+esc(p.img)+'" alt="" loading="lazy">'
-          :'<div class="fp-ph">No image</div>';
-        return '<div class="fp-card">'
-          +'<div class="fp-shot">'+img
-          +(p.type?'<span class="fp-tag">'+esc(p.type)+'</span>':'')
-          +'</div>'
-          +'<div class="fp-body">'
-          +'<div class="fp-title">'+esc(p.title||'')+'</div>'
-          +(p.location?'<div class="fp-loc">'+esc(p.location)+'</div>':'')
-          +(p.description?'<div class="fp-desc">'+esc(p.description)+'</div>':'')
-          +'</div></div>';}).join('');
-      /* CSS variables on the section node (same as template updater) */
-      var secStyle='';
-      if(c.cardBg) secStyle+='--fp-card-bg:'+c.cardBg+';';
-      if(c.cardText) secStyle+='--fp-text:'+c.cardText+';';
-      if(c.accent) secStyle+='--pipe:'+c.accent+';';
-      /* verbatim skeleton */
-      q('canvas').innerHTML=
-        '<section data-sec="featuredProjects" class="section" style="'+secStyle+'">'
-        +'<div class="wrap">'
-        +'<div class="section-head fp-head">'
-        +'<div class="fp-head-text">'
-        +'<span class="eyebrow">'+esc(c.eyebrow||'')+'</span>'
-        +'<h2>'+esc(c.heading||'')+'</h2>'
-        +(c.intro?'<p>'+esc(c.intro)+'</p>':'<p style="display:none"></p>')
-        +'</div>'
-        +badgeHtml
-        +'</div>'
-        +'<div class="fp-grid" style="grid-template-columns:repeat('+cols+',1fr)">'+cards+'</div>'
-        +'</div></section>';
+    // ── device buttons ───────────────────────────────────────
+    root.addEventListener('click', function(e) {
+      var t = e.target.closest('[data-d]'); if (!t) return;
+      dev = t.getAttribute('data-d');
+      root.querySelectorAll('.pg-devbtns button').forEach(function(b) {
+        b.classList.toggle('on', b === t);
+      });
       applyDevice();
-    }
-
-    /* ── editor controls ── */
-    function colorRow(key,label,val){
-      var v=val||'';
-      return '<label>'+label+'</label><div class="pg-cr">'
-        +'<input type="color" data-cp="'+key+'" value="'+(v||'#0f1720')+'">'
-        +'<input type="text" data-ct="'+key+'" value="'+esc(v)+'" placeholder="Theme default">'
-        +'<button type="button" class="pg-mini" data-cd="'+key+'">Default</button>'
-        +'</div>';
-    }
-    function renderCtl(){
-      var c=st.config;
-      /* badges list */
-      var badgeItems=(st.headBadges||[]).map(function(b,i){
-        var ic=_lpIcon(b.icon||'shield-check');
-        return '<div class="pg-item">'
-          +'<div class="pg-itemrow">'
-          +'<button class="pg-mini" data-bmv="'+i+'|-1">&uarr;</button>'
-          +'<button class="pg-mini" data-bmv="'+i+'|1">&darr;</button>'
-          +'<button class="pg-mini" data-bdel="'+i+'">Delete</button>'
-          +'</div>'
-          +'<div class="pg-2">'
-          +'<div><label>Icon name</label><div class="pg-icrow">'
-          +'<span class="pg-icprev">'+(ic||'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"></svg>')+'</span>'
-          +'<input type="text" data-bic="'+i+'" value="'+esc(b.icon||'')+'" placeholder="shield-check"></div></div>'
-          +'<div><label>Label</label><input type="text" data-blb="'+i+'" value="'+esc(b.label||'')+'"></div>'
-          +'</div>'
-          +'<label>Sub-text</label><input type="text" data-bsb="'+i+'" value="'+esc(b.sub||'')+'">'
-          +'</div>';}).join('');
-      /* project items list */
-      var projItems=(st.items||[]).map(function(p,i){
-        return '<div class="pg-item">'
-          +'<div class="pg-itemrow">'
-          +'<button class="pg-mini" data-pmv="'+i+'|-1">&uarr;</button>'
-          +'<button class="pg-mini" data-pmv="'+i+'|1">&darr;</button>'
-          +'<button class="pg-mini" data-pdel="'+i+'">Delete</button>'
-          +'</div>'
-          +'<div class="pg-2">'
-          +'<div><label>Title</label><input type="text" data-pt="'+i+'" value="'+esc(p.title||'')+'"></div>'
-          +'<div><label>Photo tag</label><input type="text" data-py="'+i+'" value="'+esc(p.type||'')+'"></div>'
-          +'<div><label>Location / client</label><input type="text" data-pl="'+i+'" value="'+esc(p.location||'')+'"></div>'
-          +'<div><label>Image URL</label><input type="text" data-pi="'+i+'" value="'+esc(p.img||'')+'"></div>'
-          +'</div>'
-          +'<label>Description</label><textarea data-pd="'+i+'">'+esc(p.description||p.desc||'')+'</textarea>'
-          +'</div>';}).join('');
-      q('ctl').innerHTML=
-        /* card 1: section copy */
-        '<div class="pg-ecard"><h4>Project Portfolio</h4><p class="hint">Heading, eyebrow and intro text.</p>'
-        +'<div class="pg-3">'
-        +'<div><label>Eyebrow</label><input type="text" data-k="eyebrow" value="'+esc(c.eyebrow||'')+'"></div>'
-        +'<div><label>Heading</label><input type="text" data-k="heading" value="'+esc(c.heading||'')+'"></div>'
-        +'<div><label>Brand / accent colour</label><div class="pg-cr">'
-        +'<input type="color" data-cp="accent" value="'+(c.accent||'#1f7bb8')+'">'
-        +'<input type="text" data-ct="accent" value="'+esc(c.accent||'')+'">'
-        +'</div></div></div>'
-        +'<label>Intro</label><textarea data-k="intro">'+esc(c.intro||'')+'</textarea>'
-        +'</div>'
-        /* card 2: header badges */
-        +'<div class="pg-ecard"><h4>Header badges</h4><p class="hint">Icon + label + sub-text rows shown under the heading. Separator style applies between them.</p>'
-        +'<label>Separator</label>'
-        +'<select data-k="headSep"><option value="pipe"'+(c.headSep!=='space'?' selected':'')+'>Vertical line ( | )</option>'
-        +'<option value="space"'+(c.headSep==='space'?' selected':'')+'>Spacing only</option></select>'
-        +badgeItems
-        +'<button class="pg-add" data-badd="1">+ Add badge</button></div>'
-        /* card 3: card colours */
-        +'<div class="pg-ecard"><h4>Card colours</h4><p class="hint">Override the card background and text. Default follows the site theme.</p>'
-        +'<div class="pg-2"><div>'+colorRow('cardBg','Card background',c.cardBg)+'</div>'
-        +'<div>'+colorRow('cardText','Card text',c.cardText)+'</div></div></div>'
-        /* card 4: project items */
-        +'<div class="pg-ecard"><h4>Project items</h4><p class="hint">Each card has a photo, title, tag chip, location and description.</p>'
-        +projItems
-        +'<button class="pg-add" data-padd="1">+ Add project</button></div>';
-    }
-
-    /* ── event wiring ── */
-    function swap(arr,i,d){var j=i+d;if(j<0||j>=arr.length)return;var t=arr[i];arr[i]=arr[j];arr[j]=t;}
-
-    root.addEventListener('input',function(e){
-      var t=e.target,c=st.config;
-      if(t.dataset.k){c[t.dataset.k]=t.value;renderSection();}
-      if(t.dataset.cp){
-        c[t.dataset.cp]=t.value;
-        var tx=root.querySelector('[data-ct="'+t.dataset.cp+'"]');if(tx)tx.value=t.value;
-        renderSection();
-      }
-      if(t.dataset.ct){
-        var v=t.value.trim();
-        if(/^#[0-9a-fA-F]{6}$/.test(v)){
-          c[t.dataset.ct]=v;
-          var cp=root.querySelector('[data-cp="'+t.dataset.ct+'"]');if(cp)cp.value=v;
-          renderSection();
-        }
-      }
-      if(t.dataset.bic!==undefined){
-        var bi=+t.dataset.bic;
-        st.headBadges[bi].icon=t.value.trim();
-        var pv=t.closest('.pg-icrow').querySelector('.pg-icprev');
-        if(pv){var ic=_lpIcon(t.value.trim());pv.innerHTML=ic||'';}
-        renderSection();
-      }
-      if(t.dataset.blb!==undefined){st.headBadges[+t.dataset.blb].label=t.value;renderSection();}
-      if(t.dataset.bsb!==undefined){st.headBadges[+t.dataset.bsb].sub=t.value;renderSection();}
-      if(t.dataset.pt!==undefined){st.items[+t.dataset.pt].title=t.value;renderSection();}
-      if(t.dataset.py!==undefined){st.items[+t.dataset.py].type=t.value;renderSection();}
-      if(t.dataset.pl!==undefined){st.items[+t.dataset.pl].location=t.value;renderSection();}
-      if(t.dataset.pi!==undefined){st.items[+t.dataset.pi].img=t.value.trim();renderSection();}
-      if(t.dataset.pd!==undefined){st.items[+t.dataset.pd].description=t.value;renderSection();}
-    });
-    root.addEventListener('change',function(e){
-      var t=e.target;
-      if(t.dataset.k==='headSep'){st.config.headSep=t.value;renderSection();}
-    });
-    root.addEventListener('click',function(e){
-      var t=e.target.closest('[data-d],[data-p],[data-cd],[data-badd],[data-bdel],[data-bmv],[data-padd],[data-pdel],[data-pmv]');
-      if(!t)return;
-      if(t.dataset.d){
-        dev=t.dataset.d;
-        q('wrap').querySelectorAll&&root.querySelectorAll('.pg-devbtns button').forEach(function(b){b.classList.toggle('on',b===t);});
-        renderSection();
-      }
-      if(t.dataset.p){load(t.dataset.p);}
-      if(t.dataset.cd){st.config[t.dataset.cd]='';renderCtl();renderSection();}
-      if(t.dataset.badd){
-        st.headBadges=st.headBadges||[];
-        st.headBadges.push({on:true,icon:'shield-check',label:'NEW BADGE',sub:'Sub-text here'});
-        renderCtl();renderSection();
-      }
-      if(t.dataset.bdel!==undefined&&t.dataset.bdel!==''){
-        st.headBadges.splice(+t.dataset.bdel,1);renderCtl();renderSection();
-      }
-      if(t.dataset.bmv){
-        var a=t.dataset.bmv.split('|');swap(st.headBadges,+a[0],+a[1]);renderCtl();renderSection();
-      }
-      if(t.dataset.padd){
-        st.items=st.items||[];
-        st.items.push({title:'New project',type:'',location:'',description:'',img:''});
-        renderCtl();renderSection();
-      }
-      if(t.dataset.pdel!==undefined&&t.dataset.pdel!==''){
-        st.items.splice(+t.dataset.pdel,1);renderCtl();renderSection();
-      }
-      if(t.dataset.pmv){
-        var b=t.dataset.pmv.split('|');swap(st.items,+b[0],+b[1]);renderCtl();renderSection();
-      }
     });
 
-    /* ── load preset ── */
-    function load(name){
-      fetch('/playground/'+encodeURIComponent(name)+'.json').then(function(r){return r.json();})
-        .then(function(j){
-          cur=name;st=JSON.parse(JSON.stringify(j));
-          /* preset buttons */
-          if(presets.length>1){
-            root.querySelectorAll('.pg-presets button').forEach(function(b){
-              b.classList.toggle('on',b.dataset.p===name);});
-          }
-          renderCtl();renderSection();
-        }).catch(function(){
-          q('canvas').innerHTML='<p style="color:#B23B3B;padding:40px">Could not load preset "'+esc(name)+'".</p>';
-        });
+    // ── load iframe ──────────────────────────────────────────
+    function loadDemo() {
+      if (!secKey) {
+        root.querySelector('[data-r="canvas"]').innerHTML =
+          '<p style="padding:40px;color:#6E6265;text-align:center">No demo configured yet for this app.<br>Add a playground block via Marketplace Admin.</p>';
+        return;
+      }
+      var src = '/marketplace/demos/demo-' + secKey + '.html';
+      // Remove existing iframe if any
+      var old = root.querySelector('iframe.pg-iframe');
+      if (old) old.remove();
+      var fr = document.createElement('iframe');
+      fr.className = 'pg-iframe';
+      fr.setAttribute('data-r', 'iframe');
+      fr.src = src;
+      fr.style.cssText = 'width:100%;border:0;display:block;min-height:400px';
+      fr.setAttribute('scrolling', 'no');
+      // Auto-height on load
+      fr.addEventListener('load', function() {
+        try {
+          var h = fr.contentDocument.body.scrollHeight;
+          fr.style.height = (h + 32) + 'px';
+        } catch(e) { fr.style.height = '600px'; }
+        applyDevice();
+      });
+      var canvas = root.querySelector('[data-r="canvas"]');
+      canvas.innerHTML = '';
+      canvas.appendChild(fr);
+      iframe = fr;
     }
 
-    /* ── init presets bar ── */
-    if(presets.length>1){
-      q('presets').innerHTML=presets.map(function(p){
-        return '<button data-p="'+esc(p)+'" class="'+(p===cur?'on':'')+'">'+esc(p)+'</button>';}).join('');
-    } else { q('presets').style.display='none'; }
+    // ── editor panel ─────────────────────────────────────────
+    function renderCtl() {
+      var ctl = root.querySelector('[data-r="ctl"]');
+      if (!ctl) return;
+      ctl.innerHTML = '<div class="pg-ecard"><h4>Live demo</h4>'
+        + '<p class="hint">This is a live preview of the ' + esc(secKey || 'section') + ' section as it appears on a real site. '
+        + 'Your partner can customise every element — colours, text, images — in the App Command Centre.</p>'
+        + (secKey ? '<a class="btn" href="/manage" target="_blank" rel="noopener" style="display:inline-flex;margin-top:10px">Try it in the editor →</a>' : '')
+        + '</div>'
+        + (demoCfg ? '<div class="pg-ecard"><h4>Demo data</h4><p class="hint">Showing example content. Real sites use your client's own text, photos and branding.</p></div>' : '');
+    }
 
-    load(cur);
+    // ── init ─────────────────────────────────────────────────
+    loadDemo();
+    renderCtl();
+    applyDevice();
   }
+
   // gallery lightbox
   var lb=document.getElementById('lb'), lbi=document.getElementById('lb-img');
   document.addEventListener('click',function(e){
