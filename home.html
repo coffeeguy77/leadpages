@@ -174,13 +174,6 @@ footer img{height:92px;margin-bottom:14px}
   .card-b{left:6%}.card-c{left:12%}
   .owner{padding:26px 22px}
 }
-@media(max-width:800px){
-  .dom-ext-grid{grid-template-columns:1fr 1fr!important}
-  .dom-steps-grid{grid-template-columns:1fr!important}
-}
-@media(max-width:480px){
-  .dom-ext-grid{grid-template-columns:1fr!important}
-}
 </style>
 </head>
 <body>
@@ -360,6 +353,53 @@ footer img{height:92px;margin-bottom:14px}
     </div>
   </div>
 </section>
+
+<!-- live counter -->
+<section class="sec" style="padding:48px 0 52px;background:var(--gum);color:#E9EFEA">
+  <div class="wrap" style="text-align:center">
+    <p class="eyebrow" style="color:#D9A0AC;margin-bottom:14px">Growing every day</p>
+    <div style="display:flex;justify-content:center;gap:48px;flex-wrap:wrap">
+      <div>
+        <div id="ctr-trades" style="font-family:var(--disp);font-size:52px;line-height:1;color:#fff">—</div>
+        <div style="font-size:14px;color:#C9D2CC;margin-top:6px;font-weight:600">Trade types in the library</div>
+      </div>
+      <div>
+        <div id="ctr-packs" style="font-family:var(--disp);font-size:52px;line-height:1;color:#fff">—</div>
+        <div style="font-size:14px;color:#C9D2CC;margin-top:6px;font-weight:600">Content packs generated</div>
+      </div>
+      <div>
+        <div id="ctr-sites" style="font-family:var(--disp);font-size:52px;line-height:1;color:#fff">—</div>
+        <div style="font-size:14px;color:#C9D2CC;margin-top:6px;font-weight:600">Sites using AI content</div>
+      </div>
+    </div>
+    <p style="margin-top:18px;font-size:14px;color:#829A8C">Partners generate new trade types any time — the library expands automatically.</p>
+  </div>
+</section>
+<script>
+(function(){
+  function animCount(el, target, duration){
+    var start=0, step=Math.ceil(target/60), t=null;
+    function tick(){
+      start=Math.min(start+step, target);
+      el.textContent=start.toLocaleString('en-AU');
+      if(start<target) t=setTimeout(tick, duration/Math.ceil(target/step));
+    }
+    tick();
+  }
+  fetch('/api/trade-stats').then(function(r){return r.json();}).then(function(j){
+    var t=$('ctr-trades'), p=$('ctr-packs'), s=$('ctr-sites');
+    function $(id){return document.getElementById(id);}
+    if(t) animCount(t, j.trades||0, 800);
+    if(p) animCount(p, j.packs||0, 800);
+    if(s) animCount(s, j.sites||0, 800);
+  }).catch(function(){
+    ['ctr-trades','ctr-packs','ctr-sites'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.textContent='—';
+    });
+  });
+})();
+</script>
+<!-- end counter -->
 
 <section class="final sec-shell">
   <div class="wrap rv">

@@ -359,10 +359,6 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 .lp-ic{display:inline-block;vertical-align:middle}
 .icbtn .lp-ic{width:26px;height:26px;stroke:#26313f}
 .icon-pick .lp-ic{width:22px;height:22px;stroke:#26313f}
-
-/* App ghost mode — section placed but subscription inactive */
-[data-ghost="true"]{pointer-events:none;user-select:none;filter:grayscale(.4) opacity(.65);position:relative;}
-[data-ghost="true"]::after{content:"";position:absolute;inset:0;z-index:9;cursor:not-allowed;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
@@ -499,7 +495,6 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <body>
 <a id="lp-signout-top" href="#">Sign Out</a>
 <a id="lp-partneradmin-top" href="/partners-admin" style="display:none">Partner Admin</a>
-<a id="lp-dashboard-top" href="/partner-dashboard" style="font-size:13px;font-weight:600;color:var(--brand,#1f7a63);margin-left:10px">&#8592; Dashboard</a>
 <div id="lp-landing"><div class="lpl-wrap">
   <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="leadpages" style="height:60px;width:auto;display:block;margin:0 0 18px">
   <p class="eyebrow">Control panel</p>
@@ -546,7 +541,6 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     <button class="anav-btn" id="nav-details" aria-selected="false" style="display:none">Details</button>
     <button class="anav-btn" id="nav-rates" aria-selected="true" style="display:none">Rates &amp; leads</button>
     <button class="anav-btn" id="nav-landing" aria-selected="false">Landing pages</button>
-    <button class="anav-btn" id="nav-apps" aria-selected="false">App Marketplace</button>
     <button class="anav-btn" id="nav-mailer" aria-selected="false">Email clients</button>
     <button class="anav-btn" id="nav-appearance" aria-selected="false">Appearance</button>
     <button class="anav-btn" id="nav-contact" aria-selected="false">Contact</button>
@@ -556,9 +550,6 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   </div>
 
   <div id="av-details" hidden></div>
-
-  <!-- ===================== APP MARKETPLACE ===================== -->
-  <div id="av-apps" hidden></div>
 
   <div id="av-mailer" hidden></div>
 
@@ -2048,19 +2039,6 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       data=JSON.parse(JSON.stringify(site.config||{}));
       if(currentSiteTemplate==='trade') lpSeedTrade(data);
     }
-    // Phase B: reconcile site_apps -> data.sections + sectionOrder
-    if(currentSiteId && currentSiteTemplate==='trade'){
-      _reconcileSiteApps(currentSiteId, data).then(function(){
-        applyTemplateChrome();
-        applyRoleGating();
-        ensureSiteBar();
-        try{ renderSiteAnalytics(); }catch(e){}
-        try{ lpRenderSupportContact(); }catch(e){}
-        if(document.body.classList.contains('lp-prev-open')) previewLoad();
-        try{ lpScopeSync(); lpBkSync(); }catch(e){}
-      });
-      return; // async path takes over
-    }
     applyTemplateChrome();
     applyRoleGating();
     ensureSiteBar();
@@ -2616,28 +2594,31 @@ function heroCtaCard(c){
   };
   
   window.__tradeStarterCard=function(isSuper){
-    var builder = isSuper ? `
-      <details class="tb-box">
-        <summary>Create a new service / business type (super)</summary>
+    var builder = `
+      <details class="tb-box" open>
+        <summary>Generate new service type with AI</summary>
         <div class="tb-inner">
-          <p class="tb-hint">Type what the page is for (e.g. <em>coffee cart hire</em>). I'll suggest a category and build the exact, ready-to-run prompt for you. Copy it into a new Claude chat, paste the JSON it returns back here, and the new service drops straight into the picker above.</p>
+          <p class="tb-hint">Type a trade or business type and the AI will instantly generate a complete content pack — hero copy, services, reviews, FAQ and colour theme. Takes about 10 seconds. The pack saves to the library so all partners can use it.</p>
           <div class="tb-row">
-            <div class="f"><label>Service / business name</label><input id="tb-name" class="tin" type="text" placeholder="e.g. coffee cart hire, café, Airbnb host"></div>
+            <div class="f"><label>Trade / business type</label><input id="tb-name" class="tin" type="text" placeholder="e.g. coffee cart hire, solar installer, dog groomer"></div>
             <div class="f"><label>Category</label><select id="tb-cat" class="tin"></select></div>
           </div>
           <div class="f" id="tb-newcatwrap" style="display:none;"><label>New category name</label><input id="tb-newcat" class="tin" type="text" placeholder="e.g. Mobile & Hospitality"></div>
-          <div style="margin-top:4px;"><button type="button" class="btn" id="tb-gen">Generate prompt</button></div>
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button type="button" class="btn" id="tb-gen" style="min-width:160px">✨ Generate with AI</button>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;margin:0">
+              <input type="checkbox" id="tb-force-new" style="width:auto"> Generate fresh variant (ignores existing)
+            </label>
+          </div>
           <div id="tb-genwrap" style="display:none;margin-top:12px;">
-            <label>1 &middot; Copy this prompt into a new Claude chat</label>
-            <textarea id="tb-prompt" class="tb-ta" rows="8" readonly></textarea>
-            <div style="margin-top:6px;"><button type="button" class="btn ghost" id="tb-copy">Copy prompt</button></div>
-            <label style="display:block;margin-top:12px;">2 &middot; Paste the JSON Claude gives you back</label>
-            <textarea id="tb-json" class="tb-ta" rows="6" placeholder="Paste the JSON object here…"></textarea>
-            <div style="margin-top:6px;"><button type="button" class="btn" id="tb-add">Add to my services</button></div>
-            <div class="tb-status" id="tb-status"></div>
+            <div class="tb-status" id="tb-status" style="margin-bottom:8px"></div>
+            <div id="tb-variant-bar" style="display:none;margin-bottom:10px;padding:10px 12px;background:var(--shell);border-radius:10px;font-size:13px">
+              <span id="tb-variant-info"></span>
+              <button type="button" class="btn ghost" id="tb-try-another" style="margin-left:10px;padding:4px 10px;font-size:12px">Try another variant</button>
+            </div>
           </div>
         </div>
-      </details>` : '';
+      </details>`
     return `<div class="card" style="margin-bottom:22px;"><h2>Service starter content</h2>
       <p class="lede">Load a complete set of starter copy, services and colours for a service or business type, then fine-tune everything in the tabs above. This replaces the current page content — your business name and contact details stay.</p>
       <div class="f"><label>Service / business type</label>
@@ -2736,10 +2717,41 @@ function heroCtaCard(c){
     catEl.addEventListener('change',syncNew);
     nameEl.addEventListener('input',function(){ var g=window.__guessCat(nameEl.value); if(catEl.value!=='__new'){ for(var k=0;k<catEl.options.length;k++){ if(catEl.options[k].value===g){ catEl.selectedIndex=k; break; } } } });
     function chosenCat(){ return catEl.value==='__new' ? (newEl.value.trim()||'Other & Specialist') : catEl.value; }
-    genBtn.addEventListener('click',function(){
+    genBtn.addEventListener('click',async function(){
       var name=nameEl.value.trim(); if(!name){ statusEl.style.color='#b42318'; statusEl.textContent='Type a trade name first.'; return; }
-      promptEl.value=window.__buildTradePrompt(name, chosenCat());
-      genWrap.style.display=''; statusEl.textContent='';
+      genBtn.disabled=true; genBtn.textContent='Generating…';
+      genWrap.style.display=''; statusEl.style.color=getComputedStyle(document.documentElement).getPropertyValue('--ink')||'#2E2A2B'; statusEl.textContent='Asking AI to build the “'+name+'” pack… (~10 seconds)';
+      var varBar=document.getElementById('tb-variant-bar'), varInfo=document.getElementById('tb-variant-info'), tryAnother=document.getElementById('tb-try-another');
+      if(varBar) varBar.style.display='none';
+      try{
+        var tok=(await sb.auth.getSession()).data.session;
+        var token=tok&&tok.access_token||'';
+        var forceNew=document.getElementById('tb-force-new')&&document.getElementById('tb-force-new').checked;
+        var r=await fetch('/api/trade-generate',{method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+token},
+          body:JSON.stringify({trade:name,category:chosenCat(),forceNew:forceNew})});
+        var j=await r.json();
+        genBtn.disabled=false; genBtn.textContent='✨ Generate with AI';
+        if(!j.ok||!j.pack){ statusEl.style.color='#b42318'; statusEl.textContent='Error: '+(j.error||'Unknown error'); return; }
+        var pack=j.pack, slug=j.slug;
+        statusEl.style.color='#0a7d33'; statusEl.textContent=(j.source==='generated'?'✨ New pack generated':'Loaded existing pack')+' — applying to this site…';
+        if(varBar&&varInfo){
+          varInfo.textContent='Variant '+j.variant+' of '+j.totalVariants+' for “'+name+'”';
+          varBar.style.display='block';
+          if(tryAnother) tryAnother.onclick=function(){ document.getElementById('tb-force-new').checked=true; genBtn.click(); };
+        }
+        try{ window.__registerTradePack(slug,j.category||chosenCat(),pack); }catch(e){}
+        if(window.__tp2opts){ var hp=document.getElementById(window.__tp2opts.hidden); if(hp) hp.value=slug; window.__initTradePicker2(window.__tp2opts); }
+        lpSaveServicePack(slug,j.category||chosenCat(),pack).then(function(){});
+        setTimeout(function(){
+          var btn=document.getElementById('trade-pack-load');
+          var hp=document.getElementById('trade-pack'); if(hp) hp.value=slug;
+          if(btn) btn.click();
+        },300);
+      }catch(e){
+        genBtn.disabled=false; genBtn.textContent='✨ Generate with AI';
+        statusEl.style.color='#b42318'; statusEl.textContent='Network error: '+String(e.message||e);
+      }
     });
     if(copyBtn) copyBtn.addEventListener('click',function(){ promptEl.select(); try{ navigator.clipboard.writeText(promptEl.value); }catch(e){ try{document.execCommand('copy');}catch(e2){} } copyBtn.textContent='Copied ✓'; setTimeout(function(){copyBtn.textContent='Copy prompt';},1500); });
     if(addBtn) addBtn.addEventListener('click',function(){
@@ -4325,7 +4337,7 @@ function heroCtaCard(c){
   }
 
   /* ---------- nav switcher (six tabs) ---------- */
-  const NAV=[['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['apps','av-apps',renderAppsMarketplace]];
+  const NAV=[['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer]];
   let activeView='rates';
   function showView(which){
     activeView=which;
@@ -4334,329 +4346,6 @@ function heroCtaCard(c){
   NAV.forEach(function(it){ const b=$('nav-'+it[0]); if(b) b.addEventListener('click',function(){ showView(it[0]); }); });
   window.__adminGate=gate;
   var __dtsave=document.getElementById('dt-save'); if(__dtsave) __dtsave.addEventListener('click',saveCurrentAsDemoTheme);
-
-  /* ═══════════════════════════════════════════════════════
-     APP MARKETPLACE — Phase A2
-     Reads app_registry + site_apps for the current site.
-     Writes cfg.sections[key].on and cfg.sectionOrder via
-     the existing persist() + previewApply() pipeline.
-  ═══════════════════════════════════════════════════════ */
-  var _appsLoaded=false, _appsList=[], _siteApps=[];
-
-
-  /* ═══════════════════════════════════════════════════════
-     Phase B — site_apps ↔ cfg.sections reconciliation
-     Called each time a site loads. Fetches site_apps rows,
-     merges on/off state into data.sections, rebuilds
-     data.sectionOrder. Caches result in _siteApps so
-     renderAppsMarketplace can read it without a second fetch.
-  ═══════════════════════════════════════════════════════ */
-
-  async function _applyPartnerTemplate(c, siteId){
-    var partnerId=(window.__adminGate&&window.__adminGate.uid)||'';
-    if(!partnerId){ alert('Could not identify partner — please reload.'); return; }
-    try{
-      var r=await fetch('/api/partner-templates?partner_id='+encodeURIComponent(partnerId));
-      var j=await r.json();
-      var tmpls=(j.templates||[]);
-      if(!tmpls.length){ alert('No saved templates yet. Build a layout you like, then save it as a template.'); return; }
-      var opts=tmpls.map(function(t,i){ return (i+1)+'. '+t.name+(t.is_default?' (default)':''); }).join('\n');
-      var pick=prompt('Choose a template to apply:\n\n'+opts+'\n\nEnter the number:');
-      if(!pick) return;
-      var idx=parseInt(pick,10)-1;
-      if(isNaN(idx)||idx<0||idx>=tmpls.length){ alert('Invalid selection.'); return; }
-      var tmpl=tmpls[idx];
-      // Apply: for each app in template, set cfg.sections on state and push to site_apps
-      var apps=tmpl.apps||[];
-      if(!c.sections) c.sections={};
-      var applyPromises=apps.map(function(a){
-        var reg=_appsList.find(function(x){return x.id===a.app_id;});
-        if(!reg) return Promise.resolve();
-        var key=reg.section_key;
-        if(!c.sections[key]) c.sections[key]={};
-        // Apply config defaults (don't overwrite existing values)
-        var defaults=a.config_defaults||{};
-        Object.keys(defaults).forEach(function(k){
-          if(k!=='on'&&c.sections[key][k]===undefined) c.sections[key][k]=defaults[k];
-        });
-        // Set on state
-        if(a.enabled){
-          if(c.sections[key].on===false) delete c.sections[key].on;
-        } else {
-          c.sections[key].on=false;
-        }
-        // Persist to site_apps
-        return fetch('/api/site-apps',{method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            site_id:siteId, app_id:a.app_id,
-            action:a.enabled?'enable':'disable',
-            position_slot:a.slot||reg.default_position||'mid',
-            position_order:a.order||0,
-            config:defaults})});
-      });
-      await Promise.all(applyPromises);
-      persist(); previewApply();
-      // Refresh Marketplace tab
-      await _loadAppsView(c, siteId);
-      alert('Template applied: '+tmpl.name);
-    }catch(e){ alert('Error applying template: '+e.message); }
-  }
-
-  async function _reconcileSiteApps(siteId, cfg){
-    if(!siteId) return;
-    try{
-      var r=await fetch('/api/site-apps?site_id='+encodeURIComponent(siteId));
-      var j=await r.json();
-      _siteApps=(j.apps||[]);
-      if(!_siteApps.length) return; // no site_apps rows yet — cfg is authoritative
-
-      if(!cfg.sections) cfg.sections={};
-
-      // SLOT order for sectionOrder reconstruction
-      var SLOT_IDX={nav:0,hero:1,upper:2,mid:3,lower:4,footer:5};
-      var ordered=[];
-
-      _siteApps.forEach(function(row){
-        var reg=row.app_registry; if(!reg) return;
-        var key=reg.section_key;
-        var enabled=row.enabled;
-        var tier=reg.tier;
-        var sub=row.site_app_subscriptions&&row.site_app_subscriptions[0];
-
-        // Determine effective on state
-        var active=enabled;
-        if(active && (tier==='paid'||tier==='metered')){
-          if(!sub||sub.status==='cancelled'||sub.status==='suspended') active=false;
-          if(sub&&sub.access_until&&new Date(sub.access_until)<new Date()) active=false;
-        }
-
-        // Merge: preserve existing cfg content, only update on flag
-        if(!cfg.sections[key]) cfg.sections[key]={};
-        if(active){
-          // enabled + subscribed: ensure on is not false
-          if(cfg.sections[key].on===false) delete cfg.sections[key].on;
-        } else if(enabled && !active){
-          // ghost: placed but not subscribed — keep on for layout, mark ghost
-          cfg.sections[key].__ghost=true;
-          if(cfg.sections[key].on===false) delete cfg.sections[key].on;
-        } else {
-          // explicitly disabled
-          cfg.sections[key].on=false;
-        }
-
-        // Merge app config defaults (don't overwrite existing values)
-        var appCfg=row.config||{};
-        Object.keys(appCfg).forEach(function(k){
-          if(k!=='on'&&k!=='__ghost'&&cfg.sections[key][k]===undefined){
-            cfg.sections[key][k]=appCfg[k];
-          }
-        });
-
-        ordered.push({
-          key:key,
-          slotIdx:SLOT_IDX[row.position_slot||reg.default_position||'mid']||3,
-          order:row.position_order||0
-        });
-      });
-
-      // Rebuild sectionOrder from slot+order
-      ordered.sort(function(a,b){
-        return a.slotIdx!==b.slotIdx ? a.slotIdx-b.slotIdx : a.order-b.order;
-      });
-      if(ordered.length){
-        cfg.sectionOrder=ordered.map(function(o){return o.key;});
-      }
-    }catch(e){
-      console.warn('[LeadPages] site_apps reconciliation failed:',e);
-    }
-  }
-
-  function renderAppsMarketplace(){
-    var box=$('av-apps'); if(!box) return;
-    var c=data||{};
-    var siteId=c.id||c.siteId||(c.config&&c.config.siteId)||'';
-    box.innerHTML='<div class="card"><h2>App Marketplace</h2>'
-      +'<p class="lede">Enable, position and configure the sections available for this site. '
-      +'Default apps are always on. Free apps are included with the platform. '
-      +'Paid apps require an active subscription for the client.</p>'
-      +'<div id="amp-status" style="color:var(--ink-soft);font-size:13px;margin:12px 0">Loading apps…</div>'
-      +'<div id="amp-body"></div>'
-      +'</div>'
-      +'<div class="card" id="amp-tmpl-card">'
-      +'<h2>Partner templates</h2>'
-      +'<p class="lede">Save your preferred app layout as a template — apply it to new sites with one click.</p>'
-      +'<div id="amp-tmpl-body"><button class="btn ghost" id="amp-save-tmpl">Save current layout as template</button> <button class="btn ghost" id="amp-load-tmpl">Apply a template to this site</button></div>'
-      +'</div>';
-    _loadAppsView(c, siteId);
-    var st=$('amp-save-tmpl');
-    if(st) st.addEventListener('click',function(){ _savePartnerTemplate(c); });
-    var lt=$('amp-load-tmpl');
-    if(lt) lt.addEventListener('click',function(){ _applyPartnerTemplate(c, siteId); });
-  }
-
-  async function _loadAppsView(c, siteId){
-    var status=$('amp-status'), body=$('amp-body'); if(!status||!body) return;
-    try{
-      // fetch all apps from registry
-      var r=await fetch('/api/apps?all=1');
-      var j=await r.json();
-      _appsList=(j.apps||[]);
-      // site_apps already reconciled by loadSite — use cache
-      // (re-fetch only if cache is empty, e.g. apps tab opened before site loaded)
-      if(!_siteApps.length && siteId){
-        var sr=await fetch('/api/site-apps?site_id='+encodeURIComponent(siteId));
-        var sj=await sr.json();
-        _siteApps=(sj.apps||[]);
-      }
-      status.textContent='';
-      _renderAppsBody(c, siteId, body);
-    }catch(e){
-      status.textContent='Could not load apps: '+String(e.message||e);
-    }
-  }
-
-  function _renderAppsBody(c, siteId, body){
-    var SEC=c.sections||{};
-    // Group apps by position slot for the layout track
-    var SLOTS=[
-      {key:'hero',label:'Hero'},
-      {key:'upper',label:'Upper'},
-      {key:'mid',label:'Mid'},
-      {key:'lower',label:'Lower'},
-    ];
-    var TIERS={default:'Default',free:'Free',paid:'Paid',metered:'Metered (API)'};
-    var TIER_COLORS={default:'#E2EAE4',free:'#E8F0FE',paid:'#F6E7EA',metered:'#EBE7F6'};
-    var TIER_TC={default:'#155c4a',free:'#1E40AF',paid:'#7E3346',metered:'#5B3FA3'};
-
-    function appStatus(app){
-      var secKey=app.section_key;
-      var on=(OFF_BY_DEFAULT_SECTIONS&&OFF_BY_DEFAULT_SECTIONS.indexOf(secKey)>=0)
-        ?(SEC[secKey]&&SEC[secKey].on===true)
-        :(!(SEC[secKey]&&SEC[secKey].on===false));
-      var siteApp=_siteApps.find(function(a){return a.app_id===app.id;});
-      var ghost=siteApp&&siteApp.activation_state==='ghost';
-      var inactive=siteApp&&siteApp.activation_state==='inactive';
-      return {on:on, ghost:ghost, inactive:inactive, siteApp:siteApp};
-    }
-
-    function appCard(app){
-      var st=appStatus(app);
-      var tier=TIERS[app.tier]||app.tier;
-      var tc=TIER_TC[app.tier]||'#333';
-      var tbg=TIER_COLORS[app.tier]||'#eee';
-      var isDefault=app.tier==='default';
-      var statusBadge=st.inactive
-        ?'<span style="background:#FEE2E2;color:#991B1B;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px">INACTIVE</span>'
-        :st.ghost
-        ?'<span style="background:#FEF9C3;color:#92400E;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px">AWAITING ACTIVATION</span>'
-        :'';
-      return '<div class="lead-item" data-appid="'+app.id+'" data-seckey="'+app.section_key+'">'
-        +'<div class="li-top">'
-        +'<div><span style="font-weight:700">'+esc(app.name)+'</span>'+statusBadge+'</div>'
-        +'<div class="li-right">'
-        +'<span style="background:'+tbg+';color:'+tc+';font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px">'+tier+'</span>'
-        +(isDefault?'':'<label class="ci-toggle" title="Enable/disable this section">'
-          +'<input type="checkbox" class="amp-toggle" data-seckey="'+app.section_key+'" data-appid="'+app.id+'"'+(st.on?' checked':'')+(st.inactive?' disabled':'')+' style="pointer-events:'+(st.inactive?'none':'auto')+'">'
-          +'</label>')
-        +'</div></div>'
-        +(app.tagline?'<div class="li-sub">'+esc(app.tagline)+'</div>':'')
-        +(app.api_dependency?'<div style="font-size:11.5px;color:var(--amber);margin-top:3px">Requires: '+esc(app.api_dependency)+'</div>':'')
-        +(st.ghost&&app.price_monthly_aud?'<div style="font-size:12px;color:var(--ink-soft);margin-top:4px">$'+app.price_monthly_aud+'/mo or $'+app.price_annual_aud+'/yr — contact admin to activate</div>':'')
-        +'</div>';
-    }
-
-    var html='<div style="margin-top:18px">'
-      +'<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px">Layout track — drag to reorder within each slot</div>';
-
-    SLOTS.forEach(function(slot){
-      var slotApps=_appsList.filter(function(a){
-        return a.default_position===slot.key||a.default_position===slot.key;
-      });
-      if(!slotApps.length) return;
-      html+='<div style="margin-bottom:18px"><div style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--brand);margin-bottom:8px;padding:6px 0;border-bottom:2px solid var(--brand-tint)">'+slot.label+' zone</div>';
-      html+=slotApps.map(appCard).join('');
-      html+='</div>';
-    });
-
-    // Footer apps (always on)
-    var footerApps=_appsList.filter(function(a){return a.default_position==='footer';});
-    if(footerApps.length){
-      html+='<div style="margin-bottom:18px"><div style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--brand);margin-bottom:8px;padding:6px 0;border-bottom:2px solid var(--brand-tint)">Footer (always on)</div>';
-      html+=footerApps.map(appCard).join('');
-      html+='</div>';
-    }
-    html+='</div>';
-    body.innerHTML=html;
-
-    // Wire toggles
-    body.querySelectorAll('.amp-toggle').forEach(function(cb){
-      cb.addEventListener('change',function(){
-        var key=cb.getAttribute('data-seckey');
-        var appid=cb.getAttribute('data-appid');
-        var on=cb.checked;
-        _toggleApp(c, siteId, key, appid, on);
-      });
-    });
-  }
-
-  async function _toggleApp(c, siteId, secKey, appId, on){
-    // 1. Update cfg.sections (same as _setSecOn)
-    if(!c.sections)c.sections={};
-    if(!c.sections[secKey])c.sections[secKey]={};
-    if(OFF_BY_DEFAULT_SECTIONS&&OFF_BY_DEFAULT_SECTIONS.indexOf(secKey)>=0){
-      c.sections[secKey].on=on;
-    } else {
-      if(on){ if(c.sections[secKey].on===false) delete c.sections[secKey].on; }
-      else { c.sections[secKey].on=false; }
-    }
-    persist(); previewApply();
-
-    // 2. Update _siteApps cache so Marketplace tab stays in sync
-    var _cacheRow=_siteApps.find(function(a){return a.app_id===appId;});
-    if(_cacheRow){ _cacheRow.enabled=on; _cacheRow.activation_state=on?'active':'disabled'; }
-    else if(on){ _siteApps.push({app_id:appId,enabled:true,activation_state:'active',app_registry:{section_key:secKey}}); }
-
-    // 3. Write to site_apps table
-    if(siteId){
-      try{
-        await fetch('/api/site-apps',{method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            site_id:siteId, app_id:appId,
-            action:on?'enable':'disable',
-            position_slot:(function(){ var a=_appsList.find(function(x){return x.id===appId;}); return a?a.default_position:'mid'; })(),
-          })});
-      }catch(e){ console.warn('site-apps sync failed:',e); }
-    }
-  }
-
-  async function _savePartnerTemplate(c){
-    var name=prompt('Template name (e.g. "My standard tradie layout"):');
-    if(!name||!name.trim()) return;
-    var partnerId=(window.__adminGate&&window.__adminGate.uid)||'';
-    if(!partnerId){ alert('Could not identify partner — please reload.'); return; }
-    // Build apps array from current enabled state
-    var apps=_appsList.filter(function(a){
-      var st=appStatus? appStatus(a):{on:false};
-      return true; // include all, with their on state
-    }).map(function(a){
-      var SEC=(c.sections||{}); var secKey=a.section_key;
-      var on=(OFF_BY_DEFAULT_SECTIONS&&OFF_BY_DEFAULT_SECTIONS.indexOf(secKey)>=0)
-        ?(SEC[secKey]&&SEC[secKey].on===true):(!(SEC[secKey]&&SEC[secKey].on===false));
-      return {app_id:a.id,slot:a.default_position,order:a.sort_order,
-              config_defaults:SEC[secKey]||{},enabled:on};
-    });
-    try{
-      var r=await fetch('/api/partner-templates',{method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({action:'save',partner_id:partnerId,name:name.trim(),apps:apps})});
-      var j=await r.json();
-      if(j.ok) alert('Template saved: '+name.trim());
-      else alert('Error: '+(j.error||'unknown'));
-    }catch(e){ alert('Network error: '+e.message); }
-  }
-
   previewInit();
   buildLogin(); bootAuth();
   renderAppearance();
