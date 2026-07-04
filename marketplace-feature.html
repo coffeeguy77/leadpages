@@ -86,9 +86,12 @@ article{padding:14px 0 80px}
 .pg-presets button,.pg-dev button{border:1.5px solid var(--line);background:#fff;color:var(--mut);border-radius:999px;padding:8px 16px;font-weight:800;font-size:13px;cursor:pointer;font-family:var(--body)}
 .pg-presets button.on,.pg-dev button.on{background:var(--rose);border-color:var(--rose);color:#fff}
 .pg-dev{display:flex;gap:6px}
-.pg-stagewrap{background:#EDE7E2;border:1px solid var(--line);border-radius:18px;padding:22px;overflow:hidden}
-.pg-viewport{margin:0 auto;background:#fff;box-shadow:0 14px 40px rgba(46,42,43,.14);border-radius:12px;overflow:hidden;transform-origin:top center}
-.pg-canvas{padding:56px 24px}
+.pg-stagewrap{overflow:visible}
+.pg-stagewrap.framed{background:#EDE7E2;border:1px solid var(--line);border-radius:18px;padding:22px;overflow:hidden}
+.pg-viewport{margin:0 auto;transform-origin:top center}
+.pg-stagewrap.framed .pg-viewport{background:#fff;box-shadow:0 14px 40px rgba(46,42,43,.14);border-radius:12px;overflow:hidden}
+.pg-canvas{padding:56px 0}
+.pg-stagewrap.framed .pg-canvas{padding:48px 24px}
 /* faithful fp section (widths driven per device by JS, no viewport media queries) */
 .fpk{font-size:13px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
 .fph{font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;line-height:1.04;margin:8px 0 12px;color:#1A2230}
@@ -297,6 +300,14 @@ footer a:hover{color:#D9A0AC}
     /* -------- device viewport: width-locked canvas, scaled to fit -------- */
     function fit(){
       var vp=q('vp'), wrap=q('wrap'); if(!vp)return;
+      if(dev==='desktop'){
+        wrap.classList.remove('framed');
+        vp.style.width='100%';
+        vp.style.transform='none';
+        wrap.style.height='auto';
+        return;
+      }
+      wrap.classList.add('framed');
       var W=PG_DEV[dev].w;
       vp.style.width=W+'px';
       var avail=wrap.clientWidth-44;
