@@ -4714,32 +4714,45 @@ function heroCtaCard(c){
     }
   }
 
+  function _getStandardHideEls() {
+    // Find Hide Inactive and Show Features buttons by text content — no IDs
+    return Array.from(document.querySelectorAll('button')).filter(function(b) {
+      var t = b.textContent.trim();
+      return t === 'Hide Inactive' || t === 'Show Features' || t === 'Show inactive' || t === 'Hide inactive';
+    });
+  }
+
   function _enforceStandardMode() {
-    // Hide section cards where the section is not active (on===false or not in site_apps)
-    var cards = document.querySelectorAll('.lp-sec-item, .sec-card, [data-sec-key]');
-    cards.forEach(function(card) {
-      var key = card.getAttribute('data-sec-key') || card.getAttribute('data-sec');
+    // Hide Hide Inactive / Show Features buttons directly
+    _getStandardHideEls().forEach(function(b) {
+      b.setAttribute('data-standard-hide', '1');
+      b.style.display = 'none';
+    });
+    // Hide section chips where section is inactive
+    var chips = document.querySelectorAll('.lp-sec-btn, [data-sec-toggle]');
+    chips.forEach(function(chip) {
+      var key = chip.getAttribute('data-sec') || chip.getAttribute('data-sec-key');
       if (!key) return;
       var cfg = data && data.sections && data.sections[key];
-      var isOn = cfg ? cfg.on !== false : false;
-      // Also check site_apps
-      var inSiteApps = _siteApps && _siteApps.some(function(a) {
-        return a.app_registry && a.app_registry.section_key === key && a.enabled;
-      });
-      card.setAttribute('data-active', (isOn || inSiteApps) ? 'true' : 'false');
+      var isOn = cfg ? cfg.on !== false : true;
+      chip.setAttribute('data-active', isOn ? 'true' : 'false');
     });
-    // Hide the Hide Inactive / Show Features buttons
-    var hideBtn = document.getElementById('hide-inactive-toggle');
-    if (hideBtn) hideBtn.setAttribute('data-standard-hide', '1');
-    var showBtn = document.getElementById('show-features-btn');
-    if (showBtn) showBtn.setAttribute('data-standard-hide', '1');
   }
 
   function _clearStandardMode() {
-    var cards = document.querySelectorAll('[data-active]');
-    cards.forEach(function(card) { card.removeAttribute('data-active'); });
-    var els = document.querySelectorAll('[data-standard-hide]');
-    els.forEach(function(el) { el.removeAttribute('data-standard-hide'); });
+    // Restore hidden buttons
+    _getStandardHideEls().forEach(function(b) {
+      b.removeAttribute('data-standard-hide');
+      b.style.display = '';
+    });
+    // Also restore any that were hidden by setAttribute
+    document.querySelectorAll('[data-standard-hide]').forEach(function(el) {
+      el.removeAttribute('data-standard-hide');
+      el.style.display = '';
+    });
+    document.querySelectorAll('[data-active]').forEach(function(el) {
+      el.removeAttribute('data-active');
+    });
   }
 
   function initEditorMode() {
