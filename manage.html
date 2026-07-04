@@ -370,10 +370,10 @@ body[data-lp-standard] .sec-inactive { display:none!important; }
 body[data-lp-standard] [data-inactive="true"] { display:none!important; }
 body[data-lp-standard] .chip-off { display:none!important; }
 body[data-lp-standard] .feat-off { display:none!important; }
-/* Keep hide-inactive enforced — clicking a chip cannot reveal inactive sections */
-body[data-lp-standard] .pcf.hide-inactive { display:none!important; }
-body[data-lp-standard] .pcf-group.hide-inactive { display:none!important; }
-body[data-lp-standard] .lp-sec-group.hide-inactive { display:none!important; }
+/* Standard mode: hide chips where section is off, keep active ones visible */
+body[data-lp-standard] .sec-edit[data-active="0"] { display:none!important; }
+body[data-lp-standard] .sec-editonly[data-active="0"] { display:none!important; }
+body[data-lp-standard] button[data-active="0"] { display:none!important; }
 body.lp-standard-mode .lp-hide-inactive-row,
 body.lp-standard-mode #hide-inactive-toggle,
 body.lp-standard-mode .calc-hide-inactive,
