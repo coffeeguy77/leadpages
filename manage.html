@@ -364,6 +364,16 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 [data-ghost="true"]{pointer-events:none;user-select:none;filter:grayscale(.4) opacity(.65);position:relative;}
 [data-ghost="true"]::after{content:"";position:absolute;inset:0;z-index:9;cursor:not-allowed;}
 /* Standard mode — hide inactive sections and toggles */
+/* In standard mode, clicking a section chip must NOT reveal all inactive items */
+body[data-lp-standard] .lp-inactive { display:none!important; }
+body[data-lp-standard] .sec-inactive { display:none!important; }
+body[data-lp-standard] [data-inactive="true"] { display:none!important; }
+body[data-lp-standard] .chip-off { display:none!important; }
+body[data-lp-standard] .feat-off { display:none!important; }
+/* Keep hide-inactive enforced — clicking a chip cannot reveal inactive sections */
+body[data-lp-standard] .pcf.hide-inactive { display:none!important; }
+body[data-lp-standard] .pcf-group.hide-inactive { display:none!important; }
+body[data-lp-standard] .lp-sec-group.hide-inactive { display:none!important; }
 body.lp-standard-mode .lp-hide-inactive-row,
 body.lp-standard-mode #hide-inactive-toggle,
 body.lp-standard-mode .calc-hide-inactive,
@@ -4723,29 +4733,34 @@ function heroCtaCard(c){
   }
 
   function _enforceStandardMode() {
-    // Hide Hide Inactive / Show Features buttons directly
+    // Step 1: if "Show Features" is active (all visible), click "Hide Inactive" first
+    // so we get back to the normal hidden state before we lock it down
+    Array.from(document.querySelectorAll('button')).forEach(function(b) {
+      if (b.textContent.trim() === 'Hide Inactive' && b.classList.contains('on')) {
+        // already in hide-inactive mode — good
+      } else if (b.textContent.trim() === 'Show Features') {
+        // currently showing all — need to click Hide Inactive to reset
+        var hideBtn = Array.from(document.querySelectorAll('button')).find(function(x) {
+          return x.textContent.trim() === 'Hide Inactive';
+        });
+        if (hideBtn) hideBtn.click();
+      }
+    });
+    // Step 2: hide the toggle buttons
     _getStandardHideEls().forEach(function(b) {
       b.setAttribute('data-standard-hide', '1');
       b.style.display = 'none';
     });
-    // Hide section chips where section is inactive
-    var chips = document.querySelectorAll('.lp-sec-btn, [data-sec-toggle]');
-    chips.forEach(function(chip) {
-      var key = chip.getAttribute('data-sec') || chip.getAttribute('data-sec-key');
-      if (!key) return;
-      var cfg = data && data.sections && data.sections[key];
-      var isOn = cfg ? cfg.on !== false : true;
-      chip.setAttribute('data-active', isOn ? 'true' : 'false');
-    });
+    // Step 3: mark body so CSS can suppress reveal behaviour
+    document.body.setAttribute('data-lp-standard', '1');
   }
 
   function _clearStandardMode() {
-    // Restore hidden buttons
+    document.body.removeAttribute('data-lp-standard');
     _getStandardHideEls().forEach(function(b) {
       b.removeAttribute('data-standard-hide');
       b.style.display = '';
     });
-    // Also restore any that were hidden by setAttribute
     document.querySelectorAll('[data-standard-hide]').forEach(function(el) {
       el.removeAttribute('data-standard-hide');
       el.style.display = '';
