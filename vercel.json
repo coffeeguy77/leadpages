@@ -11,6 +11,18 @@
       "destination": "/manage.html"
     },
     {
+      "source": "/partner-dashboard",
+      "destination": "/partner-dashboard.html"
+    },
+    {
+      "source": "/partner-onboarding",
+      "destination": "/partner-onboarding.html"
+    },
+    {
+      "source": "/billing",
+      "destination": "/billing.html"
+    },
+    {
       "source": "/tradies",
       "destination": "/tradies.html"
     },
