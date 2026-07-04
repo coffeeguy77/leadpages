@@ -4361,7 +4361,7 @@ function heroCtaCard(c){
     var partnerId=(window.__adminGate&&window.__adminGate.uid)||'';
     if(!partnerId){ alert('Could not identify partner — please reload.'); return; }
     try{
-      var r=await fetch('/api/partner-templates?partner_id='+encodeURIComponent(partnerId));
+      var r=await fetch('/api/api-partner-templates?partner_id='+encodeURIComponent(partnerId));
       var j=await r.json();
       var tmpls=(j.templates||[]);
       if(!tmpls.length){ alert('No saved templates yet. Build a layout you like, then save it as a template.'); return; }
@@ -4391,7 +4391,7 @@ function heroCtaCard(c){
           c.sections[key].on=false;
         }
         // Persist to site_apps
-        return fetch('/api/site-apps',{method:'POST',
+        return fetch('/api/api-site-apps',{method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({
             site_id:siteId, app_id:a.app_id,
@@ -4411,7 +4411,7 @@ function heroCtaCard(c){
   async function _reconcileSiteApps(siteId, cfg){
     if(!siteId) return;
     try{
-      var r=await fetch('/api/site-apps?site_id='+encodeURIComponent(siteId));
+      var r=await fetch('/api/api-site-apps?site_id='+encodeURIComponent(siteId));
       var j=await r.json();
       _siteApps=(j.apps||[]);
       if(!_siteApps.length) return; // no site_apps rows yet — cfg is authoritative
@@ -4504,13 +4504,13 @@ function heroCtaCard(c){
     var status=$('amp-status'), body=$('amp-body'); if(!status||!body) return;
     try{
       // fetch all apps from registry
-      var r=await fetch('/api/apps?all=1');
+      var r=await fetch('/api/api-apps?all=1');
       var j=await r.json();
       _appsList=(j.apps||[]);
       // site_apps already reconciled by loadSite — use cache
       // (re-fetch only if cache is empty, e.g. apps tab opened before site loaded)
       if(!_siteApps.length && siteId){
-        var sr=await fetch('/api/site-apps?site_id='+encodeURIComponent(siteId));
+        var sr=await fetch('/api/api-site-apps?site_id='+encodeURIComponent(siteId));
         var sj=await sr.json();
         _siteApps=(sj.apps||[]);
       }
@@ -4625,7 +4625,7 @@ function heroCtaCard(c){
     // 3. Write to site_apps table
     if(siteId){
       try{
-        await fetch('/api/site-apps',{method:'POST',
+        await fetch('/api/api-site-apps',{method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({
             site_id:siteId, app_id:appId,
@@ -4653,7 +4653,7 @@ function heroCtaCard(c){
               config_defaults:SEC[secKey]||{},enabled:on};
     });
     try{
-      var r=await fetch('/api/partner-templates',{method:'POST',
+      var r=await fetch('/api/api-partner-templates',{method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({action:'save',partner_id:partnerId,name:name.trim(),apps:apps})});
       var j=await r.json();
