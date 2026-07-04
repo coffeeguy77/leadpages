@@ -4712,6 +4712,12 @@ function heroCtaCard(c){
 
   function _applyMode(mode, role) {
     var isStandard = mode === 'standard';
+    // Set body attribute FIRST so renderDetails picks it up
+    if (isStandard) {
+      document.body.setAttribute('data-lp-standard', '1');
+    } else {
+      document.body.removeAttribute('data-lp-standard');
+    }
     document.body.classList.toggle('lp-standard-mode', isStandard);
     var btn = document.getElementById('lp-mode-toggle');
     if (btn) {
@@ -4721,7 +4727,9 @@ function heroCtaCard(c){
         ? (role === 'super' ? 'Previewing Standard (client) view — click for Classic' : 'Standard mode — click for Classic')
         : 'Classic mode — click for Standard (client view)';
     }
-    // Show/hide sections based on active state in standard mode
+    // Re-render the details panel so it picks up the new mode immediately
+    try { renderDetails(); } catch(e) {}
+    // After render, enforce standard-specific hiding
     if (isStandard) {
       _enforceStandardMode();
     } else {
