@@ -22,7 +22,7 @@
     --shadow:0 1px 2px rgba(46,42,43,.05),0 10px 28px rgba(46,42,43,.07);
   }
   *{box-sizing:border-box}
-  body{margin:0;font:16px/1.55 var(--bodyf);color:var(--ink);background:var(--gum);min-height:100vh;display:flex;flex-direction:column}
+  body{margin:0;font:16px/1.55 var(--bodyf);color:var(--ink);background:var(--paper);min-height:100vh;display:flex;flex-direction:column}
   .wrap{max-width:920px;margin:0 auto;padding:0 20px}
   /* site nav */
   .sitenav{background:var(--gum)}
@@ -112,6 +112,10 @@
   .sitefoot a{color:#E9EFEA;font-weight:600;text-decoration:none;margin-right:22px}
   .sitefoot a:hover{color:#D9A0AC}
   .sitefoot .abn{margin-top:14px;color:#8FA096;font-size:12.5px}
+.ext-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:800px){.ext-grid{grid-template-columns:1fr 1fr}.steps-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:480px){.ext-grid,.steps-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -138,10 +142,37 @@
   </div>
 </header>
 
-<div style="background:var(--paper);flex:1;min-height:480px"><main class="wrap" style="padding-top:32px;padding-bottom:48px">
+<main class="wrap" style="flex:1;min-height:480px;padding-top:32px;padding-bottom:48px">
   <div id="status" class="status" hidden></div>
   <div id="exact"></div>
   <div id="alts"></div>
+
+  <div id="dom-filler" style="margin-top:48px">
+    <p style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:14px">Popular Australian extensions</p>
+    <div class="ext-grid" style="margin-bottom:40px">
+      <div style="background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:16px 18px"><div style="font-weight:800;font-size:19px">.com.au</div><div style="font-size:13px;color:var(--mut);margin-top:3px">From $29/yr</div><div style="margin-top:8px;font-size:11.5px;font-weight:800;color:var(--gum);background:#EAF3EF;display:inline-block;padding:2px 9px;border-radius:999px">Most popular</div></div>
+      <div style="background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:16px 18px"><div style="font-weight:800;font-size:19px">.au</div><div style="font-size:13px;color:var(--mut);margin-top:3px">From $25/yr</div><div style="margin-top:8px;font-size:11.5px;font-weight:800;color:var(--mut);background:var(--shell);display:inline-block;padding:2px 9px;border-radius:999px">Shorter URL</div></div>
+      <div style="background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:16px 18px"><div style="font-weight:800;font-size:19px">.net.au</div><div style="font-size:13px;color:var(--mut);margin-top:3px">From $29/yr</div><div style="margin-top:8px;font-size:11.5px;font-weight:800;color:var(--mut);background:var(--shell);display:inline-block;padding:2px 9px;border-radius:999px">Tech &amp; services</div></div>
+      <div style="background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:16px 18px"><div style="font-weight:800;font-size:19px">.com</div><div style="font-size:13px;color:var(--mut);margin-top:3px">From $19/yr</div><div style="margin-top:8px;font-size:11.5px;font-weight:800;color:var(--mut);background:var(--shell);display:inline-block;padding:2px 9px;border-radius:999px">Global reach</div></div>
+    </div>
+    <p style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:14px">How it works</p>
+    <div class="steps-grid" style="margin-bottom:40px">
+      <div style="display:flex;gap:13px;align-items:flex-start"><div style="width:36px;height:36px;border-radius:10px;background:var(--gum);color:#F3EFEA;display:grid;place-items:center;flex:0 0 auto;font-weight:800;font-size:16px">1</div><div><div style="font-weight:800;margin-bottom:3px">Search your name</div><div style="font-size:13.5px;color:var(--mut)">Type your business name and we check every Australian extension plus smart alternatives instantly.</div></div></div>
+      <div style="display:flex;gap:13px;align-items:flex-start"><div style="width:36px;height:36px;border-radius:10px;background:var(--gum);color:#F3EFEA;display:grid;place-items:center;flex:0 0 auto;font-weight:800;font-size:16px">2</div><div><div style="font-weight:800;margin-bottom:3px">Register in seconds</div><div style="font-size:13.5px;color:var(--mut)">Pick your domain and pay once. Private registration keeps your details off the public WHOIS record.</div></div></div>
+      <div style="display:flex;gap:13px;align-items:flex-start"><div style="width:36px;height:36px;border-radius:10px;background:var(--gum);color:#F3EFEA;display:grid;place-items:center;flex:0 0 auto;font-weight:800;font-size:16px">3</div><div><div style="font-weight:800;margin-bottom:3px">Auto-connects to your site</div><div style="font-size:13.5px;color:var(--mut)">Your domain points to your LeadPages site automatically. No DNS fiddling needed.</div></div></div>
+    </div>
+    <div style="background:var(--shell);border-radius:16px;padding:22px 24px">
+      <p style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:12px">Popular searches</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="?q=smiths+plumbing" style="background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 15px;font-size:13.5px;font-weight:700;color:var(--ink)">smithsplumbing.com.au</a>
+        <a href="?q=canberra+solar" style="background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 15px;font-size:13.5px;font-weight:700;color:var(--ink)">canberrasolar.com.au</a>
+        <a href="?q=prestige+cleaning" style="background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 15px;font-size:13.5px;font-weight:700;color:var(--ink)">prestigecleaning.com.au</a>
+        <a href="?q=bella+hair" style="background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 15px;font-size:13.5px;font-weight:700;color:var(--ink)">bellahairstudio.com.au</a>
+        <a href="?q=reliable+electrical" style="background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 15px;font-size:13.5px;font-weight:700;color:var(--ink)">reliableelectrical.com.au</a>
+        <a href="?q=grove+landscaping" style="background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 15px;font-size:13.5px;font-weight:700;color:var(--ink)">grovelandscaping.com.au</a>
+      </div>
+    </div>
+  </div>
 
 
 <aside class="cart" id="cart">
@@ -382,6 +413,7 @@ $('regGo').onclick = async function(){
 /* ---------------- search ---------------- */
 var LAST=null, searching=false;
 function search(){
+  var _f=document.getElementById('dom-filler');if(_f)_f.style.display='none';
   var q=$('q').value.trim();
   if(q.length<2){ return; }
   if(searching) return; searching=true; $('go').disabled=true;
@@ -398,7 +430,7 @@ function search(){
 }
 $('go').onclick=search;
 $('q').addEventListener('keydown',function(e){ if(e.key==='Enter') search(); });
-(function(){ try{ var _pq=new URLSearchParams(location.search).get('q'); if(_pq){ $('q').value=_pq; search(); } }catch(_e){} })();
+(function(){ try{ var _pq=new URLSearchParams(location.search).get('q'); if(_pq){ var _f2=document.getElementById('dom-filler');if(_f2)_f2.style.display='none'; $('q').value=_pq; search(); } }catch(_e){} })();
 
 /* ---------------- post-payment progress ---------------- */
 function showProgress(list, state){
@@ -441,7 +473,7 @@ $('progManage').onclick=function(){ window.location.href='/manage'; };
   else if(p.get('status')==='cancelled'){ $('note').textContent='Checkout cancelled — your cart is still here whenever you\u2019re ready.'; }
 })();
 </script>
-</main></div>
+</main>
 <footer class="sitefoot">
   <div class="wrap">
     <div>
