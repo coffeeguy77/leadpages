@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
     if (slug) {
       const { data: feature, error } = await supabase
         .from('catalog_features')
-        .select('id,slug,name,tagline,summary,hero_image_url,demo_url,badge,category_id,status')
+        .select('id,slug,name,tagline,summary,hero_image_url,demo_url,badge,category_id,status,section_key')
         .eq('slug', slug).eq('status', 'live').maybeSingle();
       if (error) return res.status(500).json({ error: error.message });
       if (!feature) return res.status(404).json({ error: 'not_found' });
