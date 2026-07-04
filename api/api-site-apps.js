@@ -14,22 +14,17 @@ module.exports = async (req, res) => {
       // get enabled apps + subscription status in one query
       const {data,error} = await sb.from('site_apps')
         .select(`id,app_id,enabled,position_slot,position_order,config,placed_at,
-          app_registry(slug,section_key,name,tier,default_position,can_reposition,hero_exclusive),
-          site_app_subscriptions(status,billing_cycle,current_period_end,access_until)`)
+          app_registry(slug,section_key,name,tier,default_position,can_reposition,hero_exclusive)`)
         .eq('site_id',site_id)
         .order('position_order',{ascending:true});
       if (error) return res.status(500).json({ok:false,error:error.message});
       // annotate each app with its activation state
       const annotated=(data||[]).map(function(row){
-        const sub=(row.site_app_subscriptions&&row.site_app_subscriptions[0])||null;
         const tier=row.app_registry&&row.app_registry.tier;
-        let state='inactive'; // not subscribed / not enabled
+        let state='inactive';
         if(!row.enabled) state='disabled';
         else if(tier==='default'||tier==='free') state='active';
-        else if(sub&&sub.status==='active') state='active';
-        else if(sub&&sub.status==='grace') state='grace';
-        else if(sub&&(sub.status==='suspended'||sub.status==='cancelled')) state='inactive';
-        else state='ghost'; // placed but no subscription
+        else state='ghost';
         return Object.assign({},row,{activation_state:state});
       });
       return res.status(200).json({ok:true,apps:annotated});
