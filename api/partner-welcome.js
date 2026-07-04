@@ -1,0 +1,129 @@
+// api/partner-welcome.js
+// POST { partnerId, email, name }
+// Called by partners-admin when approving an application. Sends a welcome email
+// via Resend with a magic-link sign-in so the new partner can access the dashboard
+// without needing to set a password. Also creates a Supabase auth user if needed.
+
+const { createClient } = require('@supabase/supabase-js');
+const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+const FROM = process.env.LEADS_FROM || 'LeadPages <noreply@leadpages.webculture.au>';
+const BASE = process.env.BASE_URL || 'https://www.leadpages.com.au';
+
+async function ensureAuthUser(email) {
+  email = String(email || '').trim().toLowerCase();
+  if (!email) return null;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const base = process.env.SUPABASE_URL;
+  const h = { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' };
+  // Try create
+  try {
+    const r = await fetch(base + '/auth/v1/admin/users', {
+      method: 'POST', headers: h,
+      body: JSON.stringify({ email, email_confirm: true }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (r.ok && j && j.id) return j.id;
+  } catch (e) {}
+  // Already exists — find by email
+  for (let page = 1; page <= 5; page++) {
+    try {
+      const lr = await fetch(base + '/auth/v1/admin/users?per_page=200&page=' + page,
+        { headers: { apikey: key, Authorization: 'Bearer ' + key } });
+      const lj = await lr.json().catch(() => ({}));
+      const users = (lj && lj.users) || [];
+      const hit = users.find((u) => String(u.email || '').toLowerCase() === email);
+      if (hit) return hit.id;
+      if (users.length < 200) break;
+    } catch (e) { break; }
+  }
+  return null;
+}
+
+module.exports = async (req, res) => {
+  res.setHeader('content-type', 'application/json');
+  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+
+  // Admin-only: verify caller
+  const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+  if (!token) return res.status(401).json({ error: 'unauthorized' });
+  try {
+    const ur = await fetch(process.env.SUPABASE_URL + '/auth/v1/user', {
+      headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token },
+    });
+    const u = await ur.json().catch(() => ({}));
+    const list = (process.env.SUPER_ADMIN_EMAILS || '').toLowerCase().split(/[,\s]+/).filter(Boolean);
+    if (!u || !list.includes(String(u.email || '').toLowerCase())) {
+      return res.status(403).json({ error: 'admins only' });
+    }
+  } catch (e) { return res.status(401).json({ error: 'unauthorized' }); }
+
+  let body = req.body;
+  if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
+  body = body || {};
+  const { partnerId, email, name } = body;
+  if (!partnerId || !email) return res.status(400).json({ error: 'partnerId and email required' });
+
+  try {
+    // 1. Ensure Supabase auth user exists
+    const userId = await ensureAuthUser(email);
+
+    // 2. Link user_id to partner row
+    if (userId) {
+      await sb.from('partners').update({ user_id: userId, updated_at: new Date().toISOString() })
+        .eq('id', partnerId);
+    }
+
+    // 3. Generate a magic link (OTP) for first login
+    let magicUrl = BASE + '/partner-dashboard';
+    if (userId) {
+      try {
+        const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const r = await fetch(process.env.SUPABASE_URL + '/auth/v1/admin/users/' + userId + '/links', {
+          method: 'POST',
+          headers: { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'magiclink', redirect_to: BASE + '/partner-dashboard' }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (j && j.action_link) magicUrl = j.action_link;
+      } catch (e) {}
+    }
+
+    // 4. Send welcome email via Resend
+    const resendKey = process.env.RESEND_API_KEY;
+    if (resendKey) {
+      const firstName = String(name || email).split(' ')[0];
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + resendKey, 'content-type': 'application/json' },
+        body: JSON.stringify({
+          from: FROM,
+          to: email,
+          subject: 'Welcome to LeadPages — your partner account is ready',
+          html: `<!DOCTYPE html><html><body style="font-family:system-ui,sans-serif;background:#F6F4EF;margin:0;padding:32px 16px">
+<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:18px;padding:36px;border:1px solid #E7E2D8">
+  <img src="${BASE}/images/logo.png" alt="LeadPages" style="height:48px;margin-bottom:24px;display:block">
+  <h1 style="font-family:Georgia,serif;font-weight:400;font-size:28px;margin:0 0 12px;color:#1B2430">Welcome, ${firstName}.</h1>
+  <p style="color:#5C6675;font-size:16px;line-height:1.6;margin:0 0 20px">Your LeadPages partner account is approved and ready. You can now build client websites, manage your sites, and access the full platform.</p>
+  <h2 style="font-family:Georgia,serif;font-weight:400;font-size:18px;margin:0 0 10px;color:#1B2430">Your first steps</h2>
+  <ol style="color:#5C6675;font-size:15px;line-height:1.7;margin:0 0 24px;padding-left:20px">
+    <li>Sign in and complete the platform tour</li>
+    <li>Build your first demo site (pick any industry)</li>
+    <li>Save your preferred layout as a template</li>
+    <li>List yourself in the partner directory</li>
+    <li>Find your first real client</li>
+  </ol>
+  <a href="${magicUrl}" style="display:inline-block;background:#2F413A;color:#fff;text-decoration:none;border-radius:999px;padding:14px 28px;font-weight:700;font-size:16px;margin-bottom:20px">Access your dashboard →</a>
+  <p style="color:#929AA6;font-size:13px;margin:0">This sign-in link expires in 24 hours. After that, visit <a href="${BASE}/partner-dashboard" style="color:#2F413A">${BASE}/partner-dashboard</a> and sign in with your email.</p>
+  <hr style="border:none;border-top:1px solid #E7E2D8;margin:24px 0">
+  <p style="color:#929AA6;font-size:12px;margin:0">LeadPages · Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</p>
+</div></body></html>`,
+        }),
+      });
+    }
+
+    return res.status(200).json({ ok: true, userId, magicLink: magicUrl });
+  } catch (e) {
+    return res.status(500).json({ error: String(e && e.message || e) });
+  }
+};
