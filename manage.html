@@ -2198,7 +2198,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var _coreHtml=CORE_GROUPS.map(function(g){return _grpS(g[0],g[1]);}).join('');
     var _presetHtml=PRESET_GROUPS.map(function(g){return _grpL(g[0],g[1]);}).join('');
     var _subHtml='<div class="card" style="margin:0;padding:14px 16px;">'
-      + '<div class="svc-head" style="margin-bottom:12px;"><div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);">Page editor</div><div class="sec-modeseg" id="sec-modeseg"><button type="button" data-mode="hide" class="'+(secHideInactive?'on':'')+'">Hide Inactive</button><button type="button" data-mode="features" class="'+(secHideInactive?'':'on')+'">Show Features</button></div></div>'
+      + '<div class="svc-head" style="margin-bottom:12px;"><div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);">Page editor</div>'+(document.body.getAttribute('data-lp-standard')==='1'?'':'<div class="sec-modeseg" id="sec-modeseg"><button type="button" data-mode="hide" class="'+(secHideInactive?'on':'')+'">Hide Inactive</button><button type="button" data-mode="features" class="'+(secHideInactive?'':'on')+'">Show Features</button></div>')+'</div>'
       + '<div class="pcf-section">'+_sectitle('Core Website Sections','The main sections that make up the customer-facing page.')+_coreHtml+'</div>'
       + (_presetHtml?('<div class="pcf-section" style="margin-top:22px;padding-top:16px;border-top:1px solid var(--line);">'+_sectitle('Conversion & Layout Presets','Ready-made combinations for different page goals.')+_presetHtml+'</div>'):'')
       + '</div>';
@@ -2211,6 +2211,11 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     box.querySelectorAll('.lay-toggle').forEach(function(b){ b.addEventListener('click',function(){ togglePreset(c,b.getAttribute('data-lay')); renderDetails(); }); });
     box.querySelectorAll('.lay-edit').forEach(function(b){ b.addEventListener('click',function(){ editPreset(c,b.getAttribute('data-lay')); }); });
     renderLandingSub(c);
+    // Re-enforce standard mode after re-render
+    if(document.body.getAttribute('data-lp-standard')==='1'){
+      var seg=document.getElementById('sec-modeseg');
+      if(seg) seg.style.display='none';
+    }
   }
   function wireDetailFields(c,t){
     function setv(id,v){ var el=$(id); if(el) el.value=(v==null?'':v); }
