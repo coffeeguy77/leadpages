@@ -180,6 +180,45 @@ module.exports = async (req, res) => {
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
+        // ── App subscription checkout (Phase D) ──────────────────────
+        if (obj.mode === 'subscription' && obj.metadata && obj.metadata.billing_type === 'app') {
+          const { site_id: sid, app_id: aid, owner_user_id: ouid, billing_cycle: cyc } = obj.metadata || {};
+          if (sid && aid) {
+            const customerId2 = obj.customer;
+            const subId2 = obj.subscription;
+            let itemId2 = null;
+            try {
+              const subFull2 = await stripe('subscriptions/' + subId2 + '?expand[]=items.data', 'GET');
+              const items2 = (subFull2.items && subFull2.items.data) || [];
+              const appItem = items2.find((it) => it.metadata && it.metadata.app_id === aid) || items2[0];
+              if (appItem) itemId2 = appItem.id;
+            } catch (e) {}
+            const isAnnual = cyc === 'annual';
+            const now2 = new Date().toISOString();
+            const periodEnd2 = new Date();
+            if (isAnnual) periodEnd2.setFullYear(periodEnd2.getFullYear() + 1);
+            else periodEnd2.setMonth(periodEnd2.getMonth() + 1);
+            await sb.from('site_app_subscriptions').upsert({
+              site_id: sid, app_id: aid, billing_cycle: cyc || 'monthly',
+              status: 'active', started_at: now2,
+              current_period_start: now2, current_period_end: periodEnd2.toISOString(),
+              access_until: periodEnd2.toISOString(),
+              stripe_subscription_item_id: itemId2 || null,
+              stripe_customer_id: customerId2, updated_at: now2,
+            }, { onConflict: 'site_id,app_id' });
+            // Ensure billing_customer row exists for this owner
+            if (ouid) {
+              await sb.from('billing_customers').upsert({
+                owner_user_id: ouid, stripe_customer_id: customerId2,
+                stripe_subscription_id: subId2, status: 'active',
+                updated_at: now2,
+              }, { onConflict: 'owner_user_id' });
+            }
+          }
+          break; // app checkout handled — don't fall into hosting path
+        }
+        // ── END app subscription checkout ─────────────────────────────
+        if (obj.mode !== 'subscription') break;
         if (obj.mode !== 'subscription') break;
         const customerId = obj.customer;
         const subId = obj.subscription;
