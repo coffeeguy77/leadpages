@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<title>App Registry — LeadPages Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{--paper:#FAF5F2;--shell:#F1E5DF;--ink:#2E2A2B;--mut:#6E6265;--rose:#A84A5E;--rose-d:#7E3346;--gum:#2F413A;--line:#E4D5CD;--ok:#3E7C52;--bad:#B23B3B;--disp:'Young Serif',Georgia,serif;--body:'Figtree',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);font-size:15px;line-height:1.55}
+.hidden{display:none!important}
+a{color:inherit;text-decoration:none}
+.topbar{background:var(--gum);color:#E9EFEA}
+.topbar .wrap{max-width:1400px;margin:0 auto;padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:66px}
+.topbar img{height:44px}
+.wrap{max-width:1400px;margin:0 auto;padding:0 22px}
+main{padding:28px 0 90px}
+h1{font-family:var(--disp);font-weight:400;font-size:26px}
+h2{font-family:var(--disp);font-weight:400;font-size:20px;margin-bottom:12px}
+h3{font-size:17px;margin-bottom:6px}
+.tabs{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+.tabs button{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:9px 20px;font-weight:700;cursor:pointer;font-family:var(--body);color:var(--mut)}
+.tabs button.on{background:var(--gum);border-color:var(--gum);color:#fff}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+label{display:block;font-size:12px;font-weight:800;color:var(--mut);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.06em}
+input,select,textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;font-family:var(--body);color:var(--ink);background:#fff}
+input:focus,select:focus,textarea:focus{border-color:var(--rose);outline:none}
+textarea{min-height:72px;resize:vertical}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 16px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:0 16px}
+@media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:580px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.btn{display:inline-flex;align-items:center;gap:7px;border:0;border-radius:999px;padding:9px 18px;font-weight:700;font-size:14px;cursor:pointer;font-family:var(--body);background:var(--rose);color:#fff}
+.btn:hover{background:var(--rose-d)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.sm{padding:6px 13px;font-size:13px}
+.btn.danger{background:#fff;color:var(--bad);border:1.5px solid #E8C9C9}
+.btn[disabled]{opacity:.55;cursor:default}
+.err{color:var(--bad);font-size:13px;margin-top:8px}
+/* app list */
+.app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
+@media(max-width:1100px){.app-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.app-grid{grid-template-columns:1fr}}
+.app-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;transition:box-shadow .15s}
+.app-card:hover{box-shadow:0 8px 24px rgba(46,42,43,.10)}
+.app-card.selected{border-color:var(--rose);box-shadow:0 0 0 2px rgba(168,74,94,.18)}
+.app-name{font-weight:800;font-size:15px}
+.app-slug{font-size:12px;color:var(--mut);margin-top:2px}
+.pill{display:inline-block;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;margin-top:6px;text-transform:uppercase}
+.pill.default{background:#E2EAE4;color:var(--gum)}
+.pill.free{background:var(--shell);color:var(--mut)}
+.pill.paid{background:#F6E7EA;color:var(--rose-d)}
+.pill.metered{background:#EBE7F6;color:#5B3FA3}
+.pill.live{background:#E4EFE7;color:var(--ok)}
+.pill.draft{background:var(--shell);color:var(--mut)}
+.pill.coming_soon{background:#FEF3C7;color:#92400E}
+.pill.pos{background:#E8F0FE;color:#1E40AF}
+/* filter bar */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.filters button{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-size:13px;cursor:pointer;color:var(--mut);font-family:var(--body)}
+.filters button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+/* preset items */
+.preset-item{border:1px solid var(--line);border-radius:10px;padding:13px;margin-bottom:10px}
+.preset-top{display:flex;justify-content:flex-end;gap:6px;margin-bottom:8px}
+/* dialog */
+dialog{border:0;border-radius:18px;padding:0;max-width:640px;width:calc(100vw - 36px);box-shadow:0 30px 80px rgba(0,0,0,.28)}
+dialog::backdrop{background:rgba(38,32,34,.55)}
+.dhead{padding:16px 20px;border-bottom:1px solid var(--line);font-family:var(--disp);font-size:19px}
+.dbody{padding:16px 20px;max-height:74vh;overflow:auto}
+.dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+.note{font-size:13px;color:var(--mut);margin-top:4px}
+.center-card{max-width:420px;margin:70px auto}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap">
+  <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png" alt="LeadPages">
+  <div style="display:flex;align-items:center;gap:12px">
+    <span id="who" style="font-size:13px;color:#C9D2CC"></span>
+    <button class="btn sm ghost hidden" id="signout" style="color:#E9EFEA;border-color:rgba(255,255,255,.3)">Sign out</button>
+  </div>
+</div></div>
+
+<main class="wrap">
+
+<!-- LOGIN -->
+<div id="view-login" class="card center-card">
+  <h1 style="margin-bottom:14px">Admin sign in</h1>
+  <label for="em">Email</label><input id="em" type="email" autocomplete="username">
+  <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password">
+  <div class="err" id="lerr"></div>
+  <button class="btn" id="signin" style="width:100%;justify-content:center;margin-top:10px">Sign in</button>
+</div>
+
+<div id="view-loading" class="card center-card hidden"><p>Checking access…</p></div>
+<div id="view-denied" class="card center-card hidden">
+  <h1>Not authorised</h1>
+  <button class="btn ghost" id="denied-so" style="margin-top:14px;width:100%;justify-content:center">Sign out</button>
+</div>
+
+<!-- ADMIN -->
+<div id="view-admin" class="hidden">
+  <div class="toprow" style="margin-bottom:20px;margin-top:4px">
+    <h1>App Registry</h1>
+    <div style="display:flex;gap:8px">
+      <a class="btn ghost sm" href="/marketplace" target="_blank">View marketplace</a>
+      <button class="btn sm" id="app-new">+ Register app</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button id="tab-apps" class="on">All apps</button>
+    <button id="tab-presets">Presets</button>
+    <button id="tab-subs">Site subscriptions</button>
+  </div>
+
+  <!-- APPS pane -->
+  <div id="pane-apps">
+    <div class="filters" id="tier-filters">
+      <button class="on" data-tf="all">All tiers</button>
+      <button data-tf="default">Default</button>
+      <button data-tf="free">Free</button>
+      <button data-tf="paid">Paid</button>
+      <button data-tf="metered">Metered</button>
+    </div>
+    <div class="app-grid" id="app-grid"></div>
+    <p class="note" id="app-empty" style="display:none">No apps registered yet.</p>
+  </div>
+
+  <!-- PRESETS pane -->
+  <div id="pane-presets" class="hidden">
+    <div class="card">
+      <div class="toprow">
+        <div>
+          <h2 style="margin-bottom:4px">Demo presets</h2>
+          <p class="note">Scenario configs shown in the marketplace playground.</p>
+        </div>
+        <button class="btn sm" id="preset-new">+ Add preset</button>
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:inline;margin:0;letter-spacing:0;text-transform:none;font-size:14px;font-weight:600">Filter by app: </label>
+        <select id="preset-app-filter" style="width:auto;display:inline;margin-left:8px">
+          <option value="">All apps</option>
+        </select>
+      </div>
+      <div id="preset-list"></div>
+      <p class="note" id="preset-empty" style="display:none">No presets yet.</p>
+    </div>
+  </div>
+
+  <!-- SUBS pane -->
+  <div id="pane-subs" class="hidden">
+    <div class="card">
+      <div class="toprow">
+        <div><h2 style="margin-bottom:4px">Site subscriptions</h2>
+        <p class="note">Manage paid app access per site. Admin-activated for now.</p></div>
+        <button class="btn sm" id="sub-new">+ Add subscription</button>
+      </div>
+      <div id="sub-list"></div>
+      <p class="note" id="sub-empty" style="display:none">No subscriptions yet.</p>
+    </div>
+  </div>
+</div>
+
+<!-- APP DIALOG -->
+<dialog id="app-dlg">
+  <div class="dhead" id="app-dlg-title">Register app</div>
+  <div class="dbody">
+    <div class="g2">
+      <div><label>Name</label><input id="a-name"></div>
+      <div><label>Slug (hyphens)</label><input id="a-slug"></div>
+      <div><label>Section key (data-sec=)</label><input id="a-seckey" placeholder="featuredProjects"></div>
+      <div><label>Tier</label>
+        <select id="a-tier">
+          <option value="default">Default (every site)</option>
+          <option value="free" selected>Free marketplace app</option>
+          <option value="paid">Paid (subscription)</option>
+          <option value="metered">Metered (API cost)</option>
+        </select></div>
+      <div><label>Monthly price AUD</label><input id="a-pm" type="number" step="0.01" placeholder="0.00"></div>
+      <div><label>Annual price AUD</label><input id="a-pa" type="number" step="0.01" placeholder="0.00"></div>
+      <div><label>Default position</label>
+        <select id="a-pos">
+          <option value="nav">Nav</option><option value="hero">Hero</option>
+          <option value="upper">Upper</option><option value="mid" selected>Mid</option>
+          <option value="lower">Lower</option><option value="footer">Footer</option>
+        </select></div>
+      <div><label>Marketplace status</label>
+        <select id="a-mktst">
+          <option value="draft" selected>Draft</option>
+          <option value="live">Live</option>
+          <option value="coming_soon">Coming soon</option>
+        </select></div>
+      <div><label>API dependency</label><input id="a-api" placeholder="Meta API, Google Maps…"></div>
+      <div><label>Sort order</label><input id="a-sort" type="number" value="0"></div>
+    </div>
+    <div style="display:flex;gap:22px;margin-top:12px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:14px;font-weight:600;margin:0">
+        <input type="checkbox" id="a-repo" style="width:auto"> Can reposition</label>
+      <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:14px;font-weight:600;margin:0">
+        <input type="checkbox" id="a-hero" style="width:auto"> Hero slot exclusive (one only)</label>
+      <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:14px;font-weight:600;margin:0">
+        <input type="checkbox" id="a-vis" checked style="width:auto"> Visible in builder</label>
+    </div>
+    <label>Tagline</label><input id="a-tag">
+    <label>Description</label><textarea id="a-desc"></textarea>
+    <div class="err" id="a-err"></div>
+  </div>
+  <div class="dfoot">
+    <button class="btn ghost" id="a-cancel">Cancel</button>
+    <button class="btn" id="a-save">Save app</button>
+  </div>
+</dialog>
+
+<!-- PRESET DIALOG -->
+<dialog id="preset-dlg">
+  <div class="dhead" id="preset-dlg-title">Add preset</div>
+  <div class="dbody">
+    <label>App</label><select id="p-app"></select>
+    <div class="g2">
+      <div><label>Slug</label><input id="p-slug"></div>
+      <div><label>Label</label><input id="p-label"></div>
+    </div>
+    <label>Description</label><input id="p-desc">
+    <label>Config JSON</label><textarea id="p-config" style="min-height:200px;font-family:monospace;font-size:13px"></textarea>
+    <div class="g2">
+      <div><label>Sort order</label><input id="p-sort" type="number" value="0"></div>
+      <div><label>Live</label><select id="p-live"><option value="true">Yes</option><option value="false">No</option></select></div>
+    </div>
+    <div class="err" id="p-err"></div>
+  </div>
+  <div class="dfoot">
+    <button class="btn ghost" id="p-cancel">Cancel</button>
+    <button class="btn" id="p-save">Save preset</button>
+  </div>
+</dialog>
+
+<!-- SUBSCRIPTION DIALOG -->
+<dialog id="sub-dlg">
+  <div class="dhead">Add site subscription</div>
+  <div class="dbody">
+    <label>Site ID (UUID from profiles)</label><input id="s-site">
+    <label>App</label><select id="s-app"></select>
+    <div class="g2">
+      <div><label>Billing cycle</label>
+        <select id="s-cycle"><option value="monthly">Monthly</option><option value="annual">Annual</option></select>
+      </div>
+      <div><label>Price AUD</label><input id="s-price" type="number" step="0.01"></div>
+    </div>
+    <div class="err" id="s-err"></div>
+  </div>
+  <div class="dfoot">
+    <button class="btn ghost" id="s-cancel">Cancel</button>
+    <button class="btn" id="s-save">Activate subscription</button>
+  </div>
+</dialog>
+
+<script>
+(function(){
+  var sb=window.supabase.createClient(window.__LP.url,window.__LP.anon);
+  var $=function(id){return document.getElementById(id);};
+  var APPS=[],PRESETS=[],SUBS=[],editAppId=null,editPresetId=null;
+  var tierFilter='all';
+
+  function esc(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML;}
+  function slugify(s){return String(s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
+
+  /* auth */
+  function show(id){['view-login','view-loading','view-denied','view-admin'].forEach(function(v){$(v).classList.toggle('hidden',v!==id);});}
+  async function boot(){
+    var sess=(await sb.auth.getSession()).data.session;
+    if(!sess){show('view-login');return;}
+    show('view-loading');
+    $('who').textContent=sess.user.email||'';
+    $('signout').classList.remove('hidden');
+    var p=await sb.from('profiles').select('is_super_admin').eq('id',sess.user.id).maybeSingle();
+    if(!(p.data&&p.data.is_super_admin)){show('view-denied');return;}
+    show('view-admin'); loadAll();
+  }
+  $('signin').addEventListener('click',async function(){
+    $('lerr').textContent='';
+    var r=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
+    if(r.error){$('lerr').textContent=r.error.message;return;}
+    boot();
+  });
+  $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')$('signin').click();});
+  function so(){sb.auth.signOut().then(function(){location.reload();});}
+  $('signout').addEventListener('click',so); $('denied-so').addEventListener('click',so);
+
+  /* tabs */
+  ['apps','presets','subs'].forEach(function(t){
+    $('tab-'+t).addEventListener('click',function(){
+      ['apps','presets','subs'].forEach(function(x){
+        $('tab-'+x).classList.toggle('on',x===t);
+        $('pane-'+x).classList.toggle('hidden',x!==t);
+      });
+    });
+  });
+
+  /* load */
+  async function loadAll(){
+    var [ar,pr,sr]=await Promise.all([
+      sb.from('app_registry').select('*').order('sort_order'),
+      sb.from('app_presets').select('*,app_registry(name)').order('sort_order'),
+      sb.from('site_app_subscriptions').select('*,app_registry(name)').order('created_at',{ascending:false}).limit(100)
+    ]);
+    APPS=ar.data||[]; PRESETS=pr.data||[]; SUBS=sr.data||[];
+    renderApps(); renderPresets(); renderSubs();
+    fillAppSelects();
+  }
+  function fillAppSelects(){
+    var opts='<option value="">-- select app --</option>'+APPS.map(function(a){return '<option value="'+a.id+'">'+esc(a.name)+'</option>';}).join('');
+    $('p-app').innerHTML=opts; $('s-app').innerHTML=opts;
+    $('preset-app-filter').innerHTML='<option value="">All apps</option>'+APPS.map(function(a){return '<option value="'+a.id+'">'+esc(a.name)+'</option>';}).join('');
+  }
+
+  /* apps */
+  $('tier-filters').addEventListener('click',function(e){
+    var b=e.target.closest('[data-tf]');if(!b)return;
+    tierFilter=b.getAttribute('data-tf');
+    $('tier-filters').querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b);});
+    renderApps();
+  });
+  function renderApps(){
+    var list=tierFilter==='all'?APPS:APPS.filter(function(a){return a.tier===tierFilter;});
+    $('app-empty').style.display=list.length?'none':'block';
+    $('app-grid').innerHTML=list.map(function(a){
+      return '<div class="app-card" data-aid="'+a.id+'">'
+        +'<div class="app-name">'+esc(a.name)+'</div>'
+        +'<div class="app-slug">'+esc(a.section_key)+'</div>'
+        +'<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'
+        +'<span class="pill '+esc(a.tier)+'">'+esc(a.tier)+'</span>'
+        +'<span class="pill '+esc(a.marketplace_status)+'">'+esc(a.marketplace_status)+'</span>'
+        +'<span class="pill pos">'+esc(a.default_position)+'</span>'
+        +(a.price_monthly_aud?'<span class="pill paid">$'+a.price_monthly_aud+'/mo</span>':'')
+        +'</div></div>';
+    }).join('');
+  }
+  $('app-grid').addEventListener('click',function(e){
+    var c=e.target.closest('[data-aid]');if(!c)return;
+    var a=APPS.find(function(x){return x.id===c.getAttribute('data-aid');});
+    if(a)openApp(a);
+  });
+  $('app-new').addEventListener('click',function(){openApp(null);});
+  function openApp(a){
+    editAppId=a?a.id:null;
+    $('app-dlg-title').textContent=a?'Edit app — '+a.name:'Register app';
+    $('a-name').value=a?a.name:''; $('a-slug').value=a?a.slug:'';
+    $('a-seckey').value=a?a.section_key:''; $('a-tier').value=a?a.tier:'free';
+    $('a-pm').value=a&&a.price_monthly_aud?a.price_monthly_aud:'';
+    $('a-pa').value=a&&a.price_annual_aud?a.price_annual_aud:'';
+    $('a-pos').value=a?a.default_position:'mid'; $('a-mktst').value=a?a.marketplace_status:'draft';
+    $('a-api').value=a&&a.api_dependency||''; $('a-sort').value=a?a.sort_order:0;
+    $('a-tag').value=a&&a.tagline||''; $('a-desc').value=a&&a.description||'';
+    $('a-repo').checked=a?a.can_reposition:true;
+    $('a-hero').checked=a?a.hero_exclusive:false;
+    $('a-vis').checked=a?a.builder_visible:true;
+    $('a-err').textContent='';
+    $('app-dlg').showModal();
+  }
+  $('a-cancel').addEventListener('click',function(){$('app-dlg').close();});
+  $('a-name').addEventListener('input',function(){if(!editAppId)$('a-slug').value=slugify($('a-name').value);});
+  $('a-save').addEventListener('click',async function(){
+    var row={name:$('a-name').value.trim(),slug:$('a-slug').value.trim(),
+      section_key:$('a-seckey').value.trim(),tier:$('a-tier').value,
+      price_monthly_aud:parseFloat($('a-pm').value)||null,
+      price_annual_aud:parseFloat($('a-pa').value)||null,
+      default_position:$('a-pos').value,marketplace_status:$('a-mktst').value,
+      api_dependency:$('a-api').value.trim()||null,sort_order:parseInt($('a-sort').value)||0,
+      tagline:$('a-tag').value.trim()||null,description:$('a-desc').value.trim()||null,
+      can_reposition:$('a-repo').checked,hero_exclusive:$('a-hero').checked,
+      builder_visible:$('a-vis').checked,updated_at:new Date().toISOString()};
+    if(!row.name||!row.slug||!row.section_key){$('a-err').textContent='Name, slug and section key required.';return;}
+    $('a-save').disabled=true;
+    var r=editAppId
+      ? await sb.from('app_registry').update(row).eq('id',editAppId)
+      : await sb.from('app_registry').insert(row);
+    $('a-save').disabled=false;
+    if(r.error){$('a-err').textContent=r.error.message;return;}
+    $('app-dlg').close(); loadAll();
+  });
+
+  /* presets */
+  $('preset-app-filter').addEventListener('change',renderPresets);
+  function renderPresets(){
+    var fid=$('preset-app-filter').value;
+    var list=fid?PRESETS.filter(function(p){return p.app_id===fid;}):PRESETS;
+    $('preset-empty').style.display=list.length?'none':'block';
+    $('preset-list').innerHTML=list.map(function(p){
+      var appName=p.app_registry?p.app_registry.name:'';
+      return '<div class="preset-item">'
+        +'<div class="preset-top">'
+        +'<button class="btn sm ghost" data-ep="'+p.id+'">Edit</button>'
+        +'<button class="btn sm danger" data-dp="'+p.id+'">Delete</button>'
+        +'</div>'
+        +'<div style="font-weight:800">'+esc(p.label)+'</div>'
+        +'<div style="font-size:13px;color:var(--mut)">'+esc(appName)+' · /'+esc(p.slug)
+        +(p.description?' · '+esc(p.description):'')+'</div>'
+        +'<div style="font-size:12px;color:var(--mut);margin-top:4px">'+(p.is_live?'Live':'Hidden')+'</div>'
+        +'</div>';
+    }).join('');
+  }
+  $('preset-new').addEventListener('click',function(){openPreset(null);});
+  $('preset-list').addEventListener('click',async function(e){
+    var t=e.target;
+    if(t.dataset.ep){var p=PRESETS.find(function(x){return x.id===t.dataset.ep;});if(p)openPreset(p);}
+    if(t.dataset.dp){
+      if(!confirm('Delete this preset?'))return;
+      await sb.from('app_presets').delete().eq('id',t.dataset.dp);
+      loadAll();
+    }
+  });
+  function openPreset(p){
+    editPresetId=p?p.id:null;
+    $('preset-dlg-title').textContent=p?'Edit preset':'Add preset';
+    $('p-app').value=p?p.app_id:''; $('p-slug').value=p?p.slug:'';
+    $('p-label').value=p?p.label:''; $('p-desc').value=p&&p.description||'';
+    $('p-config').value=p?JSON.stringify(p.config,null,2):'{}';
+    $('p-sort').value=p?p.sort_order:0; $('p-live').value=p?String(p.is_live):'true';
+    $('p-err').textContent='';
+    $('preset-dlg').showModal();
+  }
+  $('p-cancel').addEventListener('click',function(){$('preset-dlg').close();});
+  $('p-save').addEventListener('click',async function(){
+    var cfg;
+    try{cfg=JSON.parse($('p-config').value);}
+    catch(e){$('p-err').textContent='Invalid JSON: '+e.message;return;}
+    var row={app_id:$('p-app').value,slug:$('p-slug').value.trim(),
+      label:$('p-label').value.trim(),description:$('p-desc').value.trim()||null,
+      config:cfg,sort_order:parseInt($('p-sort').value)||0,is_live:$('p-live').value==='true'};
+    if(!row.app_id||!row.slug||!row.label){$('p-err').textContent='App, slug and label required.';return;}
+    $('p-save').disabled=true;
+    var r=editPresetId
+      ? await sb.from('app_presets').update(row).eq('id',editPresetId)
+      : await sb.from('app_presets').insert(row);
+    $('p-save').disabled=false;
+    if(r.error){$('p-err').textContent=r.error.message;return;}
+    $('preset-dlg').close(); loadAll();
+  });
+
+  /* subscriptions */
+  function renderSubs(){
+    $('sub-empty').style.display=SUBS.length?'none':'block';
+    $('sub-list').innerHTML=SUBS.map(function(s){
+      var an=s.app_registry?s.app_registry.name:'';
+      return '<div class="preset-item">'
+        +'<div style="font-weight:800">'+esc(an)+'</div>'
+        +'<div style="font-size:13px;color:var(--mut)">Site: '+esc(s.site_id)+'</div>'
+        +'<div style="font-size:13px;margin-top:4px;display:flex;gap:10px;flex-wrap:wrap">'
+        +'<span class="pill '+(s.status==='active'?'live':'draft')+'">'+esc(s.status)+'</span>'
+        +'<span>'+esc(s.billing_cycle)+'</span>'
+        +'<span>$'+esc(s.price_aud)+'/'+esc(s.billing_cycle==='annual'?'yr':'mo')+'</span>'
+        +(s.current_period_end?'<span>Renews '+new Date(s.current_period_end).toLocaleDateString('en-AU')+'</span>':'')
+        +'</div></div>';
+    }).join('');
+  }
+  $('sub-new').addEventListener('click',function(){$('sub-dlg').showModal();});
+  $('s-cancel').addEventListener('click',function(){$('sub-dlg').close();});
+  $('s-save').addEventListener('click',async function(){
+    $('s-err').textContent='';
+    var site=$('s-site').value.trim(),app=$('s-app').value,cycle=$('s-cycle').value,price=parseFloat($('s-price').value);
+    if(!site||!app||!price){$('s-err').textContent='All fields required.';return;}
+    var now=new Date(),end=new Date(now);
+    if(cycle==='annual')end.setFullYear(end.getFullYear()+1);
+    else end.setMonth(end.getMonth()+1);
+    $('s-save').disabled=true;
+    var r=await sb.from('site_app_subscriptions').upsert({
+      site_id:site,app_id:app,billing_cycle:cycle,price_aud:price,
+      status:'active',started_at:now.toISOString(),
+      current_period_start:now.toISOString(),current_period_end:end.toISOString(),
+      access_until:end.toISOString(),updated_at:now.toISOString()
+    },{onConflict:'site_id,app_id'});
+    $('s-save').disabled=false;
+    if(r.error){$('s-err').textContent=r.error.message;return;}
+    $('sub-dlg').close(); loadAll();
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>

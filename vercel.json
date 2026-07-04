@@ -35,6 +35,10 @@
       "destination": "/marketplace-admin.html"
     },
     {
+      "source": "/apps-admin",
+      "destination": "/apps-admin.html"
+    },
+    {
       "source": "/start-your-business",
       "destination": "/start-your-business.html"
     },
