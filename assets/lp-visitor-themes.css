@@ -1,0 +1,99 @@
+/**
+ * Published-page visitor / site theme overlays (Phase 2).
+ * Layered on trade brand tokens — does not replace config.theme.
+ */
+
+/* Site-wide theme overlays (owner default, before visitor widget overrides) */
+html[data-lp-site-theme="command-dark"] {
+  --lp-visitor-bg: #12151a;
+  --lp-visitor-panel: #1e2430;
+  --lp-visitor-text: #eef2f7;
+  --lp-visitor-muted: #a8b2c3;
+  --lp-visitor-border: #2e3648;
+}
+html[data-lp-site-theme="command-dark"] body {
+  background: var(--lp-visitor-bg) !important;
+  color: var(--lp-visitor-text) !important;
+}
+html[data-lp-site-theme="command-dark"] .section,
+html[data-lp-site-theme="command-dark"] .svc,
+html[data-lp-site-theme="command-dark"] .cardish {
+  color: var(--lp-visitor-text);
+}
+
+html[data-lp-site-theme="blush"] body {
+  background: #faf3f2 !important;
+}
+html[data-lp-site-theme="blueprint"] body {
+  background: #f0f4f8 !important;
+}
+
+/* Visitor widget preference effects */
+html[data-lp-visitor-text="large"] {
+  font-size: 106.25%;
+}
+html[data-lp-visitor-text="larger"] {
+  font-size: 112.5%;
+}
+
+html[data-lp-visitor-contrast="high"] {
+  filter: contrast(1.12);
+}
+html[data-lp-visitor-contrast="high"] a,
+html[data-lp-visitor-contrast="high"] button {
+  text-decoration-thickness: 2px;
+}
+
+html[data-lp-visitor-theme="dark"] body {
+  background: #12151a !important;
+  color: #eef2f7 !important;
+}
+html[data-lp-visitor-theme="dark"] .section-head h2,
+html[data-lp-visitor-theme="dark"] h1,
+html[data-lp-visitor-theme="dark"] h2,
+html[data-lp-visitor-theme="dark"] h3 {
+  color: #f3f6fa;
+}
+
+html[data-lp-visitor-motion="reduced"] *,
+html[data-lp-visitor-motion="reduced"] *::before,
+html[data-lp-visitor-motion="reduced"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-lp-visitor-links="highlight"] a:not(.lpa-btn) {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+}
+
+html[data-lp-visitor-spacing="comfortable"] body {
+  line-height: 1.65 !important;
+}
+html[data-lp-visitor-spacing="comfortable"] .section {
+  padding-top: calc(var(--section-pad, 48px) * 1.08);
+  padding-bottom: calc(var(--section-pad, 48px) * 1.08);
+}
+
+/* Skip link */
+.lpa-skip {
+  position: absolute;
+  left: 12px;
+  top: -80px;
+  z-index: 2147483002;
+  background: #111;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font: 600 14px/1.2 system-ui, sans-serif;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.lpa-skip:focus {
+  top: 12px;
+  outline: 3px solid #3ddda0;
+  outline-offset: 2px;
+}

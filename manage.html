@@ -2152,6 +2152,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var eb=d.sections.estimateBuilder;
     if(eb && !(Array.isArray(eb.options)&&eb.options.length)){ var opts=DEFAULT_TRADE_LISTS['estimateBuilder.options']; if(Array.isArray(opts)) eb.options=JSON.parse(JSON.stringify(opts)); }
     OPTIONAL_COMPONENTS.forEach(function(id){ if(d.sections[id] && d.sections[id].on===true) lpSeedComponent(d,id); });
+    _vaSeed(d);
   }
   function loadSite(site){
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app'; currentIsPartnerHome=!!site.is_partner_home;
@@ -2168,6 +2169,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       // landing / trade: edit the raw site config (no calculator defaults)
       data=JSON.parse(JSON.stringify(site.config||{}));
       if(currentSiteTemplate==='trade') lpSeedTrade(data);
+      else _vaSeed(data);
     }
     // Phase B: reconcile site_apps -> data.sections + sectionOrder
     if(currentSiteId && currentSiteTemplate==='trade'){
@@ -3023,41 +3025,90 @@ function heroCtaCard(c){
     'command-dark':{bg:'#12151a',panel:'#1e2430',accent:'#2ecc8f',text:'#eef2f7'},
     'blush':{bg:'#faf3f2',panel:'#ffffff',accent:'#c45c7a',text:'#2a1f2e'},
     'blueprint':{bg:'#f0f4f8',panel:'#ffffff',accent:'#2563eb',text:'#1a2a3a'},
-    'system':{bg:'#e8eaed',panel:'#ffffff',accent:'#1f7a63',text:'#1b2430'}
+    'system':{bg:'#e8eaed',panel:'#ffffff',accent:'#1f7a63',text:'#1b2430'},
+    'match-brand':{bg:'#eef2f6',panel:'#ffffff',accent:'#1f7bb8',text:'#1a2230'}
   };
-  function _aaPrefs(){ return (window.LPWorkspaceAppearance&&window.LPWorkspaceAppearance.load)?window.LPWorkspaceAppearance.load():{theme:'classic-light',density:'comfortable',textSize:'standard',reducedMotion:false,highContrast:false,strongFocus:true}; }
-  function _aaSet(partial){ if(window.LPWorkspaceAppearance&&window.LPWorkspaceAppearance.set) window.LPWorkspaceAppearance.set(partial); }
-  function closeAppearanceAccessibilityPage(){ var p=document.getElementById('aa-page'); if(p) p.remove(); }
-  function openAppearanceAccessibilityPage(tab){
-    closeAppearanceAccessibilityPage();
-    var prefs=_aaPrefs();
-    var activeTab=tab||'workspace';
-    var p=document.createElement('div'); p.id='aa-page';
-    var themeKeys=['classic-light','command-dark','blush','blueprint','system'];
-    var themeCards=themeKeys.map(function(key){
-      var meta=(window.LPWorkspaceAppearance&&window.LPWorkspaceAppearance.THEME_META&&window.LPWorkspaceAppearance.THEME_META[key])||{name:key,description:''};
+  var DEFAULT_VISITOR_APPEARANCE={
+    siteTheme:'classic-light',
+    allowVisitorControls:false,
+    accessibilityButtonPosition:'bottom-right',
+    defaultTextSize:'standard',
+    defaultContrast:'standard',
+    reducedMotionSupport:true,
+    showAccessibilityButton:true
+  };
+  var AA_SITE_THEME_META={
+    'classic-light':{name:'Classic Light',description:'Clean, warm, and familiar.'},
+    'command-dark':{name:'Command Dark',description:'Premium dark theme for comfortable reading.'},
+    'blush':{name:'Blush',description:'Soft rose theme for boutique brands.'},
+    'blueprint':{name:'Blueprint',description:'Professional blue for service businesses.'},
+    'match-brand':{name:'Match brand',description:'Use your existing brand colours.'}
+  };
+  function _vaCfg(){
+    if(!data) data={};
+    if(!data.visitorAppearance) data.visitorAppearance=Object.assign({},DEFAULT_VISITOR_APPEARANCE);
+    else data.visitorAppearance=Object.assign({},DEFAULT_VISITOR_APPEARANCE,data.visitorAppearance);
+    return data.visitorAppearance;
+  }
+  function _vaSeed(d){
+    if(!d) return;
+    if(!d.visitorAppearance) d.visitorAppearance=Object.assign({},DEFAULT_VISITOR_APPEARANCE);
+    else d.visitorAppearance=Object.assign({},DEFAULT_VISITOR_APPEARANCE,d.visitorAppearance);
+  }
+  function _vaUpdate(partial, quiet){
+    var v=_vaCfg();
+    Object.assign(v,partial||{});
+    data.visitorAppearance=v;
+    persist();
+    if(typeof previewApply==='function') previewApply();
+    if(!quiet&&typeof toast==='function') toast('Published page settings saved — publish to go live');
+  }
+  function _aaThemeCards(keys, selected, attr){
+    return keys.map(function(key){
+      var meta=AA_SITE_THEME_META[key]||(window.LPWorkspaceAppearance&&window.LPWorkspaceAppearance.THEME_META&&window.LPWorkspaceAppearance.THEME_META[key])||{name:key,description:''};
       var prev=AA_THEME_PREVIEWS[key]||AA_THEME_PREVIEWS['classic-light'];
-      var sel=prefs.theme===key;
-      return '<button type="button" class="aa-theme-card" data-aa-theme="'+key+'" aria-pressed="'+(sel?'true':'false')+'">'
+      var sel=selected===key;
+      return '<button type="button" class="aa-theme-card" '+attr+'="'+key+'" aria-pressed="'+(sel?'true':'false')+'">'
         +'<div class="aa-preview" style="background:'+prev.bg+'"><div class="aa-preview-bar" style="background:'+prev.panel+';border-bottom:1px solid rgba(0,0,0,.06)"></div>'
         +'<div class="aa-preview-body"><div class="aa-preview-card" style="background:'+prev.panel+';border:1px solid rgba(0,0,0,.08)"></div><div class="aa-preview-accent" style="background:'+prev.accent+'"></div></div></div>'
         +'<strong style="font-size:14px">'+esc(meta.name)+'</strong>'
         +'<span style="font-size:12px;color:var(--text-soft);line-height:1.4">'+esc(meta.description)+'</span>'
         +'</button>';
     }).join('');
+  }
+  function _aaSwitchTab(p, tab){
+    p.querySelectorAll('.aa-tab').forEach(function(t){
+      var on=t.getAttribute('data-aa-tab')===tab;
+      t.setAttribute('aria-selected', on?'true':'false');
+    });
+    var ws=$('aa-panel-workspace'), pub=$('aa-panel-published');
+    if(ws) ws.hidden=(tab!=='workspace');
+    if(pub) pub.hidden=(tab!=='published');
+  }
+  function _aaPrefs(){ return (window.LPWorkspaceAppearance&&window.LPWorkspaceAppearance.load)?window.LPWorkspaceAppearance.load():{theme:'classic-light',density:'comfortable',textSize:'standard',reducedMotion:false,highContrast:false,strongFocus:true}; }
+  function _aaSet(partial){ if(window.LPWorkspaceAppearance&&window.LPWorkspaceAppearance.set) window.LPWorkspaceAppearance.set(partial); }
+  function closeAppearanceAccessibilityPage(){ var p=document.getElementById('aa-page'); if(p) p.remove(); }
+  function openAppearanceAccessibilityPage(tab){
+    closeAppearanceAccessibilityPage();
+    var prefs=_aaPrefs();
+    var va=_vaCfg();
+    var activeTab=tab||'workspace';
+    var p=document.createElement('div'); p.id='aa-page';
+    var workspaceThemes=['classic-light','command-dark','blush','blueprint','system'];
+    var siteThemes=['classic-light','command-dark','blush','blueprint','match-brand'];
     p.innerHTML='<div class="aa-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px;flex-wrap:wrap;">'
-      +'<div><p class="eyebrow" style="margin:0 0 4px">Workspace</p><h1 style="margin:0;font:700 26px/1.15 var(--font-display,Georgia),serif">Appearance &amp; Accessibility</h1>'
-      +'<p class="sub" style="margin:8px 0 0;max-width:52ch">Customise how the admin and editor looks for you. These preferences are saved on this device only.</p></div>'
+      +'<div><p class="eyebrow" style="margin:0 0 4px">LeadPages</p><h1 style="margin:0;font:700 26px/1.15 var(--font-display,Georgia),serif">Appearance &amp; Accessibility</h1>'
+      +'<p class="sub" style="margin:8px 0 0;max-width:56ch">Workspace preferences are saved on this device. Published page settings are saved to your site config when you publish.</p></div>'
       +'<button type="button" class="btn ghost" id="aa-close">Close</button></div>'
       +'<div class="aa-tabs" role="tablist" aria-label="Appearance sections">'
       +'<button type="button" class="aa-tab" role="tab" id="aa-tab-workspace" aria-selected="'+(activeTab==='workspace'?'true':'false')+'" data-aa-tab="workspace">Workspace</button>'
-      +'<button type="button" class="aa-tab" role="tab" id="aa-tab-published" aria-selected="false" data-aa-tab="published" disabled title="Coming in Phase 2">Published Pages</button>'
+      +'<button type="button" class="aa-tab" role="tab" id="aa-tab-published" aria-selected="'+(activeTab==='published'?'true':'false')+'" data-aa-tab="published">Published Pages</button>'
       +'<button type="button" class="aa-tab" role="tab" id="aa-tab-health" aria-selected="false" data-aa-tab="health" disabled title="Coming in Phase 3">Accessibility Health</button>'
       +'<button type="button" class="aa-tab" role="tab" id="aa-tab-marketplace" aria-selected="false" data-aa-tab="marketplace" disabled title="Coming in Phase 3">Marketplace</button>'
       +'</div>'
       +'<div id="aa-panel-workspace" role="tabpanel" aria-labelledby="aa-tab-workspace"'+(activeTab==='workspace'?'':' hidden')+'>'
       +'<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 4px">Theme</h2><p class="lede" style="margin:0 0 6px">Choose a workspace theme. Changes apply instantly across the command centre.</p>'
-      +'<div class="aa-theme-grid">'+themeCards+'</div></div>'
+      +'<div class="aa-theme-grid">'+_aaThemeCards(workspaceThemes,prefs.theme,'data-aa-theme')+'</div></div>'
       +'<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 12px">Display</h2>'
       +'<div class="aa-row"><span style="font-weight:600;min-width:110px">UI density</span><div class="aa-seg" role="group" aria-label="UI density">'
       +'<button type="button" data-aa-density="comfortable" aria-pressed="'+(prefs.density!=='compact'?'true':'false')+'">Comfortable</button>'
@@ -3069,15 +3120,37 @@ function heroCtaCard(c){
       +'<div class="card"><h2 style="margin:0 0 12px">Accessibility</h2>'
       +'<label class="aa-toggle"><input type="checkbox" id="aa-reduced-motion"'+(prefs.reducedMotion?' checked':'')+'> Reduced motion</label>'
       +'<label class="aa-toggle"><input type="checkbox" id="aa-high-contrast"'+(prefs.highContrast?' checked':'')+'> High contrast mode</label>'
-      +'<label class="aa-toggle"><input type="checkbox" id="aa-strong-focus"'+(prefs.strongFocus!==false?' checked':'')+'> Strong focus outlines</label>'
-      +'<p class="hint" style="margin:12px 0 0">Published page and visitor controls arrive in Phase 2. Marketplace integration and health checks arrive in Phase 3.</p></div>'
+      +'<label class="aa-toggle"><input type="checkbox" id="aa-strong-focus"'+(prefs.strongFocus!==false?' checked':'')+'> Strong focus outlines</label></div>'
       +'</div>'
-      +'<div id="aa-panel-stub" class="aa-phase-note" hidden>This section is not available yet.</div>'
+      +'<div id="aa-panel-published" role="tabpanel" aria-labelledby="aa-tab-published"'+(activeTab==='published'?'':' hidden')+'>'
+      +'<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 4px">Default site theme</h2><p class="lede" style="margin:0 0 6px">Sets the default look for visitors on your published LeadPage. Visitors can still adjust preferences when viewing controls are enabled.</p>'
+      +'<div class="aa-theme-grid">'+_aaThemeCards(siteThemes,va.siteTheme,'data-va-theme')+'</div></div>'
+      +'<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 12px">Visitor controls</h2>'
+      +'<label class="aa-toggle" style="display:flex;margin-bottom:10px"><input type="checkbox" id="va-allow"'+(va.allowVisitorControls?' checked':'')+'> Enable visitor viewing preferences</label>'
+      +'<label class="aa-toggle" style="display:flex;margin-bottom:10px"><input type="checkbox" id="va-show-btn"'+(va.showAccessibilityButton!==false?' checked':'')+'> Show accessibility floating button</label>'
+      +'<div class="aa-row"><span style="font-weight:600;min-width:130px">Button position</span><div class="aa-seg" role="group" aria-label="Button position">'
+      +'<button type="button" data-va-pos="bottom-right" aria-pressed="'+(va.accessibilityButtonPosition!=='bottom-left'?'true':'false')+'">Bottom right</button>'
+      +'<button type="button" data-va-pos="bottom-left" aria-pressed="'+(va.accessibilityButtonPosition==='bottom-left'?'true':'false')+'">Bottom left</button></div></div></div>'
+      +'<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 12px">Default visitor preferences</h2>'
+      +'<div class="aa-row"><span style="font-weight:600;min-width:130px">Default text size</span><div class="aa-seg" role="group" aria-label="Default text size">'
+      +'<button type="button" data-va-text="standard" aria-pressed="'+(va.defaultTextSize!=='large'?'true':'false')+'">Standard</button>'
+      +'<button type="button" data-va-text="large" aria-pressed="'+(va.defaultTextSize==='large'?'true':'false')+'">Large</button></div></div>'
+      +'<div class="aa-row"><span style="font-weight:600;min-width:130px">Default contrast</span><div class="aa-seg" role="group" aria-label="Default contrast">'
+      +'<button type="button" data-va-contrast="standard" aria-pressed="'+(va.defaultContrast!=='high'?'true':'false')+'">Standard</button>'
+      +'<button type="button" data-va-contrast="high" aria-pressed="'+(va.defaultContrast==='high'?'true':'false')+'">High Contrast</button></div></div>'
+      +'<label class="aa-toggle"><input type="checkbox" id="va-reduced"'+(va.reducedMotionSupport!==false?' checked':'')+'> Reduced motion support</label></div>'
+      +'<div class="card"><p class="lede" style="margin:0 0 12px">Preview your published page with live preview open, then publish to apply these settings on the live site.</p>'
+      +'<button type="button" class="btn ghost" id="va-preview-btn">Open live preview</button></div>'
+      +'<p class="hint" style="margin:14px 0 0">Marketplace app registration and accessibility health checks arrive in Phase 3.</p>'
+      +'</div>'
       +'</div>';
     document.body.appendChild(p);
     document.getElementById('aa-close').addEventListener('click',closeAppearanceAccessibilityPage);
     p.addEventListener('click',function(e){ if(e.target===p) closeAppearanceAccessibilityPage(); });
     document.addEventListener('keydown',function _aaEsc(ev){ if(ev.key==='Escape'){ closeAppearanceAccessibilityPage(); document.removeEventListener('keydown',_aaEsc); } });
+    p.querySelectorAll('.aa-tab:not([disabled])').forEach(function(btn){
+      btn.addEventListener('click',function(){ _aaSwitchTab(p, btn.getAttribute('data-aa-tab')); });
+    });
     p.querySelectorAll('[data-aa-theme]').forEach(function(btn){
       btn.addEventListener('click',function(){
         var key=btn.getAttribute('data-aa-theme');
@@ -3088,21 +3161,52 @@ function heroCtaCard(c){
     });
     p.querySelectorAll('[data-aa-density]').forEach(function(btn){
       btn.addEventListener('click',function(){
-        var d=btn.getAttribute('data-aa-density');
-        _aaSet({density:d});
+        _aaSet({density:btn.getAttribute('data-aa-density')});
         p.querySelectorAll('[data-aa-density]').forEach(function(b){ b.setAttribute('aria-pressed',b===btn?'true':'false'); });
       });
     });
     p.querySelectorAll('[data-aa-text]').forEach(function(btn){
       btn.addEventListener('click',function(){
-        var t=btn.getAttribute('data-aa-text');
-        _aaSet({textSize:t});
+        _aaSet({textSize:btn.getAttribute('data-aa-text')});
         p.querySelectorAll('[data-aa-text]').forEach(function(b){ b.setAttribute('aria-pressed',b===btn?'true':'false'); });
       });
     });
     var rm=$('aa-reduced-motion'); if(rm) rm.addEventListener('change',function(){ _aaSet({reducedMotion:!!rm.checked}); });
     var hc=$('aa-high-contrast'); if(hc) hc.addEventListener('change',function(){ _aaSet({highContrast:!!hc.checked}); });
     var sf=$('aa-strong-focus'); if(sf) sf.addEventListener('change',function(){ _aaSet({strongFocus:!!sf.checked}); });
+    p.querySelectorAll('[data-va-theme]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var key=btn.getAttribute('data-va-theme');
+        _vaUpdate({siteTheme:key}, true);
+        p.querySelectorAll('[data-va-theme]').forEach(function(b){ b.setAttribute('aria-pressed',b===btn?'true':'false'); });
+        if(typeof toast==='function') toast('Site theme updated');
+      });
+    });
+    var vAllow=$('va-allow'); if(vAllow) vAllow.addEventListener('change',function(){ _vaUpdate({allowVisitorControls:!!vAllow.checked}); });
+    var vShow=$('va-show-btn'); if(vShow) vShow.addEventListener('change',function(){ _vaUpdate({showAccessibilityButton:!!vShow.checked}); });
+    var vRed=$('va-reduced'); if(vRed) vRed.addEventListener('change',function(){ _vaUpdate({reducedMotionSupport:!!vRed.checked}); });
+    p.querySelectorAll('[data-va-pos]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        _vaUpdate({accessibilityButtonPosition:btn.getAttribute('data-va-pos')});
+        p.querySelectorAll('[data-va-pos]').forEach(function(b){ b.setAttribute('aria-pressed',b===btn?'true':'false'); });
+      });
+    });
+    p.querySelectorAll('[data-va-text]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        _vaUpdate({defaultTextSize:btn.getAttribute('data-va-text')});
+        p.querySelectorAll('[data-va-text]').forEach(function(b){ b.setAttribute('aria-pressed',b===btn?'true':'false'); });
+      });
+    });
+    p.querySelectorAll('[data-va-contrast]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        _vaUpdate({defaultContrast:btn.getAttribute('data-va-contrast')});
+        p.querySelectorAll('[data-va-contrast]').forEach(function(b){ b.setAttribute('aria-pressed',b===btn?'true':'false'); });
+      });
+    });
+    var vPrev=$('va-preview-btn'); if(vPrev) vPrev.addEventListener('click',function(){
+      closeAppearanceAccessibilityPage();
+      var pt=$('lp-prev-toggle'); if(pt){ pt.click(); } else if(typeof toast==='function') toast('Open live preview from the editor side panel');
+    });
   }
 
   /* ===================== Plan builder (admin) ===================== */
