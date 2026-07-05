@@ -378,9 +378,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(21,92,74,0.2) !important;
 }
-.amp-tile-default {
-  opacity: 0.75;
-}
+
 /* Standard mode — hide inactive sections and toggles */
 /* In standard mode, clicking a section chip must NOT reveal all inactive items */
 body[data-lp-standard] .lp-inactive { display:none!important; }
@@ -4645,10 +4643,9 @@ function heroCtaCard(c){
       return '<button type="button" class="amp-tile'+(isDefault?' amp-tile-default':'')+'"'
         +' data-appid="'+app.id+'" data-seckey="'+app.section_key+'"'
         +' data-on="'+(isOn?'1':'0')+'"'
-        +(isDefault?' disabled':'')
         +' style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;'
         +'width:100%;padding:14px 8px 12px;border:1.5px solid '+borderColor+';border-radius:12px;'
-        +'background:'+activeBg+';cursor:'+(isDefault?'default':'pointer')+';'
+        +'background:'+activeBg+';cursor:pointer;'
         +'transition:all .15s;text-align:center;gap:6px;'
         +'box-shadow:'+(isOn?'0 2px 8px rgba(21,92,74,0.25)':'0 1px 3px rgba(0,0,0,0.06)')+'">'
         +'<span style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;'
@@ -4685,7 +4682,7 @@ function heroCtaCard(c){
     body.innerHTML=html;
 
     // Wire tile clicks
-    body.querySelectorAll('.amp-tile:not(.amp-tile-default)').forEach(function(tile){
+    body.querySelectorAll('.amp-tile').forEach(function(tile){
       tile.addEventListener('click',function(){
         var key=tile.getAttribute('data-seckey');
         var appid=tile.getAttribute('data-appid');
