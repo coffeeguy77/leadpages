@@ -1,0 +1,441 @@
+/**
+ * LeadPages workspace theme tokens (Phase 1).
+ * Applied via document.documentElement.dataset.theme
+ * Legacy aliases (--surface, --ink, --brand, …) keep manage.html working.
+ */
+
+/* Shared token aliases — map legacy editor vars to semantic tokens */
+:root,
+[data-theme="classic-light"] {
+  --bg: #f6f4ef;
+  --bg-soft: #fbfaf7;
+  --panel: #ffffff;
+  --panel-soft: #fbfaf7;
+  --panel-raised: #ffffff;
+  --text: #1b2430;
+  --text-soft: #5c6675;
+  --muted: #929aa6;
+  --border: #e7e2d8;
+  --border-strong: #d8d2c5;
+  --accent: #1f7a63;
+  --accent-hover: #155c4a;
+  --accent-soft: #eaf3ef;
+  --accent-text: #ffffff;
+  --success: #1f7a63;
+  --success-soft: #eaf3ef;
+  --warning: #b9852b;
+  --warning-soft: #f6efe0;
+  --danger: #b42318;
+  --danger-soft: #fdf3f1;
+  --focus: #155c4a;
+  --shadow: 0 1px 2px rgba(27, 36, 48, 0.04), 0 8px 28px rgba(27, 36, 48, 0.06);
+  --radius: 14px;
+  --input-bg: #ffffff;
+  --button-bg: #1f7a63;
+  --button-border: #1f7a63;
+  --chart-primary: #155c4a;
+  --chart-secondary: #059669;
+  --chart-warning: #d97706;
+
+  /* Legacy aliases used throughout manage.html */
+  --surface: var(--panel);
+  --surface-2: var(--panel-soft);
+  --ink: var(--text);
+  --ink-soft: var(--text-soft);
+  --ink-faint: var(--muted);
+  --line: var(--border);
+  --line-strong: var(--border-strong);
+  --brand: var(--accent);
+  --brand-deep: var(--accent-hover);
+  --brand-tint: var(--accent-soft);
+  --amber: var(--warning);
+  --radius-sm: 10px;
+}
+
+[data-theme="command-dark"] {
+  --bg: #12151a;
+  --bg-soft: #181c24;
+  --panel: #1e2430;
+  --panel-soft: #252b38;
+  --panel-raised: #2a3140;
+  --text: #eef2f7;
+  --text-soft: #a8b2c3;
+  --muted: #7a8496;
+  --border: #2e3648;
+  --border-strong: #3d465c;
+  --accent: #2ecc8f;
+  --accent-hover: #3ddda0;
+  --accent-soft: rgba(46, 204, 143, 0.14);
+  --accent-text: #0d1a14;
+  --success: #2ecc8f;
+  --success-soft: rgba(46, 204, 143, 0.12);
+  --warning: #e8b84a;
+  --warning-soft: rgba(232, 184, 74, 0.14);
+  --danger: #f07070;
+  --danger-soft: rgba(240, 112, 112, 0.12);
+  --focus: #3ddda0;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 32px rgba(0, 0, 0, 0.45);
+  --input-bg: #252b38;
+  --button-bg: #2ecc8f;
+  --button-border: #2ecc8f;
+  --chart-primary: #3ddda0;
+  --chart-secondary: #5eead4;
+  --chart-warning: #e8b84a;
+
+  --surface: var(--panel);
+  --surface-2: var(--panel-soft);
+  --ink: var(--text);
+  --ink-soft: var(--text-soft);
+  --ink-faint: var(--muted);
+  --line: var(--border);
+  --line-strong: var(--border-strong);
+  --brand: var(--accent);
+  --brand-deep: var(--accent-hover);
+  --brand-tint: var(--accent-soft);
+  --amber: var(--warning);
+}
+
+[data-theme="blush"] {
+  --bg: #faf3f2;
+  --bg-soft: #fdf8f7;
+  --panel: #ffffff;
+  --panel-soft: #fff5f4;
+  --panel-raised: #ffffff;
+  --text: #2a1f2e;
+  --text-soft: #6b5a68;
+  --muted: #9a8894;
+  --border: #edd8d6;
+  --border-strong: #dfc4c0;
+  --accent: #c45c7a;
+  --accent-hover: #a84864;
+  --accent-soft: #fce8ee;
+  --accent-text: #ffffff;
+  --success: #5a9a7a;
+  --success-soft: #e8f4ed;
+  --warning: #c49a3a;
+  --warning-soft: #faf0dc;
+  --danger: #b44a4a;
+  --danger-soft: #fceaea;
+  --focus: #a84864;
+  --shadow: 0 1px 2px rgba(42, 31, 46, 0.05), 0 8px 28px rgba(42, 31, 46, 0.07);
+  --input-bg: #ffffff;
+  --button-bg: #c45c7a;
+  --button-border: #c45c7a;
+  --chart-primary: #c45c7a;
+  --chart-secondary: #9a6a8a;
+  --chart-warning: #c49a3a;
+
+  --surface: var(--panel);
+  --surface-2: var(--panel-soft);
+  --ink: var(--text);
+  --ink-soft: var(--text-soft);
+  --ink-faint: var(--muted);
+  --line: var(--border);
+  --line-strong: var(--border-strong);
+  --brand: var(--accent);
+  --brand-deep: var(--accent-hover);
+  --brand-tint: var(--accent-soft);
+  --amber: var(--warning);
+}
+
+[data-theme="blueprint"] {
+  --bg: #f0f4f8;
+  --bg-soft: #f5f8fb;
+  --panel: #ffffff;
+  --panel-soft: #f3f7fb;
+  --panel-raised: #ffffff;
+  --text: #1a2a3a;
+  --text-soft: #4a5d72;
+  --muted: #7a8d9e;
+  --border: #d4e0ea;
+  --border-strong: #b8cad8;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: #e8f0fe;
+  --accent-text: #ffffff;
+  --success: #0d9488;
+  --success-soft: #e6f7f5;
+  --warning: #d97706;
+  --warning-soft: #fef3e2;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --focus: #1d4ed8;
+  --shadow: 0 1px 2px rgba(26, 42, 58, 0.05), 0 8px 28px rgba(26, 42, 58, 0.07);
+  --input-bg: #ffffff;
+  --button-bg: #2563eb;
+  --button-border: #2563eb;
+  --chart-primary: #2563eb;
+  --chart-secondary: #0d9488;
+  --chart-warning: #d97706;
+
+  --surface: var(--panel);
+  --surface-2: var(--panel-soft);
+  --ink: var(--text);
+  --ink-soft: var(--text-soft);
+  --ink-faint: var(--muted);
+  --line: var(--border);
+  --line-strong: var(--border-strong);
+  --brand: var(--accent);
+  --brand-deep: var(--accent-hover);
+  --brand-tint: var(--accent-soft);
+  --amber: var(--warning);
+}
+
+/* UI density */
+html[data-lp-density="compact"] {
+  --radius: 10px;
+  --radius-sm: 8px;
+}
+html[data-lp-density="compact"] .wrap {
+  padding-top: 18px;
+  padding-bottom: 52px;
+}
+html[data-lp-density="compact"] .card {
+  padding: 14px 16px;
+}
+html[data-lp-density="compact"] .bar {
+  padding: 12px;
+  margin: 16px 0;
+}
+html[data-lp-density="compact"] .btn {
+  padding: 7px 12px;
+  font-size: 13px;
+}
+html[data-lp-density="compact"] .anav-btn {
+  padding: 8px 11px;
+  font-size: 13.5px;
+}
+
+/* Text size */
+html[data-lp-text-size="large"] {
+  font-size: 15px;
+}
+html[data-lp-text-size="extra-large"] {
+  font-size: 17px;
+}
+
+/* High contrast workspace mode */
+html[data-lp-high-contrast="true"] {
+  --text: #0a0e14;
+  --text-soft: #2a3340;
+  --border: #8a919c;
+  --border-strong: #5c6675;
+  --ink: var(--text);
+  --ink-soft: var(--text-soft);
+  --line: var(--border);
+  --line-strong: var(--border-strong);
+}
+html[data-theme="command-dark"][data-lp-high-contrast="true"] {
+  --text: #ffffff;
+  --text-soft: #d8dee8;
+  --border: #6a7588;
+  --border-strong: #8a96a8;
+  --ink: var(--text);
+  --ink-soft: var(--text-soft);
+  --line: var(--border);
+  --line-strong: var(--border-strong);
+}
+
+/* Strong focus outlines */
+html[data-lp-strong-focus="true"] :focus-visible {
+  outline: 3px solid var(--focus) !important;
+  outline-offset: 2px !important;
+}
+
+/* Workspace reduced motion */
+html[data-lp-reduced-motion="true"] .btn,
+html[data-lp-reduced-motion="true"] .anav-btn,
+html[data-lp-reduced-motion="true"] .statebtn,
+html[data-lp-reduced-motion="true"] .preset-sw,
+html[data-lp-reduced-motion="true"] .toast,
+html[data-lp-reduced-motion="true"] #ord-list .ord-row {
+  transition-duration: 0.001ms !important;
+}
+html[data-lp-reduced-motion="true"] {
+  scroll-behavior: auto !important;
+}
+
+/* Shell polish — token-backed surfaces (Phase 1) */
+.btn {
+  background: var(--button-bg);
+  border-color: var(--button-border);
+  color: var(--accent-text);
+}
+.btn.ghost {
+  background: var(--panel);
+  color: var(--accent-hover);
+}
+.btn.ghost:hover {
+  background: var(--accent-soft);
+}
+.f input[type="text"],
+.f input[type="number"],
+.tin,
+.brkg input,
+.clr-hex,
+.apsel {
+  background: var(--input-bg);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+.lsub-extra {
+  background: var(--bg-soft);
+}
+.modal .box {
+  background: var(--panel);
+  color: var(--text);
+}
+.toast {
+  background: var(--text);
+  color: var(--panel);
+}
+
+#aa-page {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(16, 22, 32, 0.55);
+  overflow: auto;
+  padding: 32px 16px;
+}
+#aa-page .aa-card {
+  max-width: 880px;
+  margin: 0 auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 30px 80px rgba(10, 15, 25, 0.4);
+  padding: 26px 26px 30px;
+}
+
+/* Appearance & Accessibility overlay (workspace settings UI) */
+#aa-page .aa-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 14px 0 20px;
+}
+#aa-page .aa-theme-card {
+  appearance: none;
+  cursor: pointer;
+  text-align: left;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+  color: inherit;
+}
+#aa-page .aa-theme-card:hover {
+  border-color: var(--accent);
+}
+#aa-page .aa-theme-card[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+#aa-page .aa-preview {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  height: 72px;
+  display: flex;
+  flex-direction: column;
+}
+#aa-page .aa-preview-bar {
+  height: 14px;
+  flex-shrink: 0;
+}
+#aa-page .aa-preview-body {
+  flex: 1;
+  padding: 8px;
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+#aa-page .aa-preview-card {
+  flex: 1;
+  height: 28px;
+  border-radius: 4px;
+}
+#aa-page .aa-preview-accent {
+  width: 36px;
+  height: 10px;
+  border-radius: 999px;
+  align-self: center;
+}
+#aa-page .aa-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+#aa-page .aa-tab {
+  appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 10px 14px;
+  font: 600 13.5px var(--font-ui, Inter, system-ui, sans-serif);
+  color: var(--text-soft);
+  cursor: pointer;
+}
+#aa-page .aa-tab[aria-selected="true"] {
+  color: var(--accent-hover);
+  border-bottom-color: var(--accent);
+}
+#aa-page .aa-tab:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+#aa-page .aa-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+#aa-page .aa-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+#aa-page .aa-seg {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  overflow: hidden;
+}
+#aa-page .aa-seg button {
+  appearance: none;
+  border: none;
+  background: var(--panel);
+  color: var(--text-soft);
+  font: 600 13px var(--font-ui, Inter, system-ui, sans-serif);
+  padding: 8px 14px;
+  cursor: pointer;
+}
+#aa-page .aa-seg button + button {
+  border-left: 1px solid var(--border);
+}
+#aa-page .aa-seg button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+#aa-page .aa-phase-note {
+  font-size: 13px;
+  color: var(--text-soft);
+  padding: 14px 16px;
+  background: var(--bg-soft);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  margin-top: 8px;
+}

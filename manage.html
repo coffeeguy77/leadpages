@@ -532,6 +532,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 .bar-fav{cursor:pointer;background:none;border:1.5px solid var(--line);border-radius:8px;color:var(--brand,#1f7a63);font-size:15px;padding:5px 9px;display:flex;align-items:center;justify-content:center;}
 .bar-fav.on{color:var(--brand,#1f7a63);border-color:var(--brand,#1f7a63);background:var(--brand-tint,#E8F0EC);}
 </style>
+<link rel="stylesheet" href="/assets/lp-themes.css">
+<script src="/assets/lp-workspace-appearance.js"></script>
 <script src="/icons.js"></script>
 </head>
 <body>
@@ -1752,6 +1754,13 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var so=document.getElementById('lpl-sort'); if(so){ so.value=LPL.sort||'updated'; so.onchange=function(){ LPL.sort=so.value; renderLanding(); }; }
       var hn=document.getElementById('lpl-help-new'); if(hn) hn.onclick=function(){ hideLanding(); openCreateSite(); };
       var sob=document.getElementById('lpl-signout'); if(sob) sob.onclick=function(e){ e.preventDefault(); signOutLP(); };
+      var toprow=document.querySelector('#lp-landing .lpl-toprow');
+      var laa=document.getElementById('lpl-appearance');
+      if(!laa&&toprow&&sob){
+        laa=document.createElement('button'); laa.id='lpl-appearance'; laa.type='button'; laa.className='btn ghost'; laa.textContent='Appearance';
+        toprow.insertBefore(laa, sob);
+      }
+      if(laa) laa.onclick=function(e){ e.preventDefault(); openAppearanceAccessibilityPage(); };
     }
     if(!LPL.leadsTried){ LPL.leadsTried=true; (async function(){ try{ var r=await sb.from('leads').select('site_id'); if(r&&!r.error&&r.data){ var mp={}; r.data.forEach(function(x){ if(x&&x.site_id){ mp[x.site_id]=(mp[x.site_id]||0)+1; } }); LPL.leads=mp; renderLanding(); } }catch(_e){} })(); }
     renderLanding(); el.classList.add('show');
@@ -2974,6 +2983,7 @@ function heroCtaCard(c){
       +'<div style="margin-top:6px;"><button class="btn" id="d-save">Save details</button><span id="d-saved" style="margin-left:10px;font-size:13px;color:#0a7d33;"></span></div></div>';
     var danger=(currentRole==='super')?('<div class="card danger" style="margin-bottom:0;"><h2 style="margin:0 0 4px;color:#b42318;">Danger zone</h2><p class="lede" style="margin:0 0 12px;">Unlock, then tap Delete twice to confirm. This permanently removes the site and can\u2019t be undone.</p><div style="display:flex;gap:10px;align-items:center;"><button type="button" id="btn-dellock" class="sp-lock" title="Unlock to allow delete">\uD83D\uDD12</button><button type="button" id="btn-delsite" class="sp-del" disabled>Delete site</button></div></div>'):'';
     p.innerHTML='<div class="sp-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h1 style="margin:0;font:700 26px/1.1 var(--font-display,Georgia),serif;">Settings</h1><button type="button" id="set-close" class="btn ghost">Close</button></div>'
+      +'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Appearance &amp; Accessibility</h2><p class="lede" style="margin:0 0 12px;">Workspace theme, text size, density, and accessibility preferences for the admin and editor.</p><button type="button" class="btn" id="open-aa-inline">Open Appearance &amp; Accessibility</button></div>'
       +detailFields
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced. The suspended page is what the public sees when a site is paused for non-payment.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button> <button type="button" class="btn ghost" id="open-susp">Edit suspended page</button></div>':'')
       +window.__tradeStarterCard(currentRole==='super')
@@ -2984,6 +2994,7 @@ function heroCtaCard(c){
     document.getElementById('set-close').addEventListener('click',closeSettingsPage);
     p.addEventListener('click',function(e){ if(e.target===p) closeSettingsPage(); });
     document.addEventListener('keydown',function _esc(ev){ if(ev.key==='Escape'){ closeSettingsPage(); document.removeEventListener('keydown',_esc); } });
+    var oaa=$('open-aa-inline'); if(oaa) oaa.addEventListener('click',function(){ closeSettingsPage(); openAppearanceAccessibilityPage(); });
     // wire site detail fields + demo
     wireDetailFields(c0(),'trade');
     var dmo=$('set-demo'); if(dmo) dmo.addEventListener('change',function(){ if(currentSiteId) lplToggleDemo(currentSiteId); });
@@ -3005,6 +3016,95 @@ function heroCtaCard(c){
     }
   }
   function c0(){ return data||{}; }
+
+  /* ===================== Appearance & Accessibility (Phase 1 — workspace) ===================== */
+  var AA_THEME_PREVIEWS={
+    'classic-light':{bg:'#f6f4ef',panel:'#ffffff',accent:'#1f7a63',text:'#1b2430'},
+    'command-dark':{bg:'#12151a',panel:'#1e2430',accent:'#2ecc8f',text:'#eef2f7'},
+    'blush':{bg:'#faf3f2',panel:'#ffffff',accent:'#c45c7a',text:'#2a1f2e'},
+    'blueprint':{bg:'#f0f4f8',panel:'#ffffff',accent:'#2563eb',text:'#1a2a3a'},
+    'system':{bg:'#e8eaed',panel:'#ffffff',accent:'#1f7a63',text:'#1b2430'}
+  };
+  function _aaPrefs(){ return (window.LPWorkspaceAppearance&&window.LPWorkspaceAppearance.load)?window.LPWorkspaceAppearance.load():{theme:'classic-light',density:'comfortable',textSize:'standard',reducedMotion:false,highContrast:false,strongFocus:true}; }
+  function _aaSet(partial){ if(window.LPWorkspaceAppearance&&window.LPWorkspaceAppearance.set) window.LPWorkspaceAppearance.set(partial); }
+  function closeAppearanceAccessibilityPage(){ var p=document.getElementById('aa-page'); if(p) p.remove(); }
+  function openAppearanceAccessibilityPage(tab){
+    closeAppearanceAccessibilityPage();
+    var prefs=_aaPrefs();
+    var activeTab=tab||'workspace';
+    var p=document.createElement('div'); p.id='aa-page';
+    var themeKeys=['classic-light','command-dark','blush','blueprint','system'];
+    var themeCards=themeKeys.map(function(key){
+      var meta=(window.LPWorkspaceAppearance&&window.LPWorkspaceAppearance.THEME_META&&window.LPWorkspaceAppearance.THEME_META[key])||{name:key,description:''};
+      var prev=AA_THEME_PREVIEWS[key]||AA_THEME_PREVIEWS['classic-light'];
+      var sel=prefs.theme===key;
+      return '<button type="button" class="aa-theme-card" data-aa-theme="'+key+'" aria-pressed="'+(sel?'true':'false')+'">'
+        +'<div class="aa-preview" style="background:'+prev.bg+'"><div class="aa-preview-bar" style="background:'+prev.panel+';border-bottom:1px solid rgba(0,0,0,.06)"></div>'
+        +'<div class="aa-preview-body"><div class="aa-preview-card" style="background:'+prev.panel+';border:1px solid rgba(0,0,0,.08)"></div><div class="aa-preview-accent" style="background:'+prev.accent+'"></div></div></div>'
+        +'<strong style="font-size:14px">'+esc(meta.name)+'</strong>'
+        +'<span style="font-size:12px;color:var(--text-soft);line-height:1.4">'+esc(meta.description)+'</span>'
+        +'</button>';
+    }).join('');
+    p.innerHTML='<div class="aa-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px;flex-wrap:wrap;">'
+      +'<div><p class="eyebrow" style="margin:0 0 4px">Workspace</p><h1 style="margin:0;font:700 26px/1.15 var(--font-display,Georgia),serif">Appearance &amp; Accessibility</h1>'
+      +'<p class="sub" style="margin:8px 0 0;max-width:52ch">Customise how the admin and editor looks for you. These preferences are saved on this device only.</p></div>'
+      +'<button type="button" class="btn ghost" id="aa-close">Close</button></div>'
+      +'<div class="aa-tabs" role="tablist" aria-label="Appearance sections">'
+      +'<button type="button" class="aa-tab" role="tab" id="aa-tab-workspace" aria-selected="'+(activeTab==='workspace'?'true':'false')+'" data-aa-tab="workspace">Workspace</button>'
+      +'<button type="button" class="aa-tab" role="tab" id="aa-tab-published" aria-selected="false" data-aa-tab="published" disabled title="Coming in Phase 2">Published Pages</button>'
+      +'<button type="button" class="aa-tab" role="tab" id="aa-tab-health" aria-selected="false" data-aa-tab="health" disabled title="Coming in Phase 3">Accessibility Health</button>'
+      +'<button type="button" class="aa-tab" role="tab" id="aa-tab-marketplace" aria-selected="false" data-aa-tab="marketplace" disabled title="Coming in Phase 3">Marketplace</button>'
+      +'</div>'
+      +'<div id="aa-panel-workspace" role="tabpanel" aria-labelledby="aa-tab-workspace"'+(activeTab==='workspace'?'':' hidden')+'>'
+      +'<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 4px">Theme</h2><p class="lede" style="margin:0 0 6px">Choose a workspace theme. Changes apply instantly across the command centre.</p>'
+      +'<div class="aa-theme-grid">'+themeCards+'</div></div>'
+      +'<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 12px">Display</h2>'
+      +'<div class="aa-row"><span style="font-weight:600;min-width:110px">UI density</span><div class="aa-seg" role="group" aria-label="UI density">'
+      +'<button type="button" data-aa-density="comfortable" aria-pressed="'+(prefs.density!=='compact'?'true':'false')+'">Comfortable</button>'
+      +'<button type="button" data-aa-density="compact" aria-pressed="'+(prefs.density==='compact'?'true':'false')+'">Compact</button></div></div>'
+      +'<div class="aa-row"><span style="font-weight:600;min-width:110px">Text size</span><div class="aa-seg" role="group" aria-label="Text size">'
+      +'<button type="button" data-aa-text="standard" aria-pressed="'+(prefs.textSize==='standard'||!prefs.textSize?'true':'false')+'">Standard</button>'
+      +'<button type="button" data-aa-text="large" aria-pressed="'+(prefs.textSize==='large'?'true':'false')+'">Large</button>'
+      +'<button type="button" data-aa-text="extra-large" aria-pressed="'+(prefs.textSize==='extra-large'?'true':'false')+'">Extra Large</button></div></div></div>'
+      +'<div class="card"><h2 style="margin:0 0 12px">Accessibility</h2>'
+      +'<label class="aa-toggle"><input type="checkbox" id="aa-reduced-motion"'+(prefs.reducedMotion?' checked':'')+'> Reduced motion</label>'
+      +'<label class="aa-toggle"><input type="checkbox" id="aa-high-contrast"'+(prefs.highContrast?' checked':'')+'> High contrast mode</label>'
+      +'<label class="aa-toggle"><input type="checkbox" id="aa-strong-focus"'+(prefs.strongFocus!==false?' checked':'')+'> Strong focus outlines</label>'
+      +'<p class="hint" style="margin:12px 0 0">Published page and visitor controls arrive in Phase 2. Marketplace integration and health checks arrive in Phase 3.</p></div>'
+      +'</div>'
+      +'<div id="aa-panel-stub" class="aa-phase-note" hidden>This section is not available yet.</div>'
+      +'</div>';
+    document.body.appendChild(p);
+    document.getElementById('aa-close').addEventListener('click',closeAppearanceAccessibilityPage);
+    p.addEventListener('click',function(e){ if(e.target===p) closeAppearanceAccessibilityPage(); });
+    document.addEventListener('keydown',function _aaEsc(ev){ if(ev.key==='Escape'){ closeAppearanceAccessibilityPage(); document.removeEventListener('keydown',_aaEsc); } });
+    p.querySelectorAll('[data-aa-theme]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var key=btn.getAttribute('data-aa-theme');
+        _aaSet({theme:key});
+        p.querySelectorAll('[data-aa-theme]').forEach(function(b){ b.setAttribute('aria-pressed',b===btn?'true':'false'); });
+        if(typeof toast==='function') toast('Workspace theme updated');
+      });
+    });
+    p.querySelectorAll('[data-aa-density]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var d=btn.getAttribute('data-aa-density');
+        _aaSet({density:d});
+        p.querySelectorAll('[data-aa-density]').forEach(function(b){ b.setAttribute('aria-pressed',b===btn?'true':'false'); });
+      });
+    });
+    p.querySelectorAll('[data-aa-text]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var t=btn.getAttribute('data-aa-text');
+        _aaSet({textSize:t});
+        p.querySelectorAll('[data-aa-text]').forEach(function(b){ b.setAttribute('aria-pressed',b===btn?'true':'false'); });
+      });
+    });
+    var rm=$('aa-reduced-motion'); if(rm) rm.addEventListener('change',function(){ _aaSet({reducedMotion:!!rm.checked}); });
+    var hc=$('aa-high-contrast'); if(hc) hc.addEventListener('change',function(){ _aaSet({highContrast:!!hc.checked}); });
+    var sf=$('aa-strong-focus'); if(sf) sf.addEventListener('change',function(){ _aaSet({strongFocus:!!sf.checked}); });
+  }
+
   /* ===================== Plan builder (admin) ===================== */
   var BP={ plans:[] };
   function _bpFetch(opts){ return cwToken().then(function(token){ return fetch('/api/billing/plans', Object.assign({headers:Object.assign({'content-type':'application/json'}, token?{Authorization:'Bearer '+token}:{})}, opts||{})); }); }
@@ -4102,6 +4202,12 @@ function heroCtaCard(c){
       bb.addEventListener('click',function(e){ e.stopPropagation(); openBillingPage(); });
       var pubBtnB=$('btn-publish'); if(pubBtnB) bar.insertBefore(bb, pubBtnB); else bar.insertBefore(bb, dl);
     }
+    if(!$('btn-appearance-aa')){
+      const ab=document.createElement('button'); ab.className='btn ghost'; ab.id='btn-appearance-aa'; ab.title='Appearance & Accessibility';
+      ab.innerHTML='<span style="display:inline-flex;align-items:center;gap:7px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>Appearance</span>';
+      ab.addEventListener('click',function(e){ e.stopPropagation(); openAppearanceAccessibilityPage(); });
+      var pubBtnA=$('btn-publish'); if(pubBtnA) bar.insertBefore(ab, pubBtnA); else bar.insertBefore(ab, dl);
+    }
     if(currentRole==='super' && !$('btn-settings')){
       const cg=document.createElement('button'); cg.className='btn ghost'; cg.id='btn-settings'; cg.title='Settings';
       cg.innerHTML='<span style="display:inline-flex;align-items:center;gap:7px;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>Settings</span>';
@@ -4110,7 +4216,7 @@ function heroCtaCard(c){
     }
     if(!$('site-label')){
       const w=document.createElement('div'); w.id='site-label';
-      w.style.cssText='display:flex;align-items:center;gap:6px;margin-right:auto;font-size:13px;color:#555;';
+      w.style.cssText='display:flex;align-items:center;gap:6px;margin-right:auto;font-size:13px;color:var(--text-soft);';
       bar.insertBefore(w, bar.firstChild);
     }
     const lbl=$('site-label'); if(lbl){
