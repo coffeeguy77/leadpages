@@ -363,6 +363,23 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 /* App ghost mode — section placed but subscription inactive */
 [data-ghost="true"]{pointer-events:none;user-select:none;filter:grayscale(.4) opacity(.65);position:relative;}
 [data-ghost="true"]::after{content:"";position:absolute;inset:0;z-index:9;cursor:not-allowed;}
+/* App Marketplace tile grid */
+.amp-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.amp-tile {
+  min-height: 90px;
+  font-family: var(--font-ui);
+  align-items: center;
+}
+.amp-tile:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(21,92,74,0.2) !important;
+}
+
 /* Standard mode — hide inactive sections and toggles */
 /* In standard mode, clicking a section chip must NOT reveal all inactive items */
 body[data-lp-standard] .lp-inactive { display:none!important; }
@@ -380,7 +397,7 @@ body.lp-standard-mode .calc-hide-inactive,
 body.lp-standard-mode [data-standard-hide] { display:none!important; }
 body.lp-standard-mode .lp-sec-item[data-active="false"] { display:none!important; }
 body.lp-standard-mode .lp-preset-strip { display:none!important; }
-#lp-mode-toggle.standard-mode { background:#B9852B!important; }
+#lp-mode-toggle.standard-mode { background:var(--brand-deep,#155c4a)!important; }
 #lp-mode-toggle.standard-mode::before { content:"Standard "; }
 .lp-standard-banner { display:none; background:#FEF3C7; color:#92400E; font-size:12px; font-weight:700; padding:4px 14px; border-radius:999px; }
 body.lp-standard-mode .lp-standard-banner { display:inline-block; }
@@ -511,8 +528,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 .lpl-legal a:hover{color:var(--brand-deep);text-decoration:underline;}
 .lpl-legal span{color:var(--ink-faint);margin:0 4px;}
 .lpl-pgroup{margin:20px 0 10px;font-weight:700;font-size:15px;color:var(--ink);}
-.bar-fav{cursor:pointer;background:none;border:1px solid var(--line);border-radius:8px;color:#d3cbb0;font-size:15px;padding:6px 10px;}
-.bar-fav.on{color:#e3a72b;border-color:#ecdcc0;}
+.bar-fav{cursor:pointer;background:none;border:1.5px solid var(--line);border-radius:8px;color:var(--brand,#1f7a63);font-size:15px;padding:5px 9px;display:flex;align-items:center;justify-content:center;}
+.bar-fav.on{color:var(--brand,#1f7a63);border-color:var(--brand,#1f7a63);background:var(--brand-tint,#E8F0EC);}
 </style>
 <script src="/icons.js"></script>
 </head>
@@ -1766,7 +1783,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   // refresh the per-site star / demo / delete-lock controls in the bar
   function updateSiteControls(){
     var s=(allSites||[]).find(function(x){return x.id===currentSiteId;});
-    var fav=document.getElementById('btn-fav'); if(fav&&s){ fav.classList.toggle('on',!!s.is_favorite); fav.textContent=s.is_favorite?'\u2605':'\u2606'; }
+    var fav=document.getElementById('btn-fav'); if(fav&&s){ fav.classList.toggle('on',!!s.is_favorite); fav.innerHTML=s.is_favorite?'<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"var(--brand,#1f7a63)\" stroke=\"var(--brand,#1f7a63)\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg>':'<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"var(--brand,#1f7a63)\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg>'; }
     var demo=document.getElementById('btn-demo'); if(demo&&s){ demo.textContent=s.is_demo?'Demo: on':'Demo: off'; demo.classList.toggle('on',!!s.is_demo); }
     var del=document.getElementById('btn-delsite'); var lock=document.getElementById('btn-dellock');
     if(del&&lock){ del.disabled=true; lock.textContent='\uD83D\uDD12'; lock.title='Unlock to allow delete'; }
@@ -4000,7 +4017,7 @@ function heroCtaCard(c){
     }
     if(currentRole==='super' && !$('btn-fav')){
       const fv=document.createElement('button'); fv.className='bar-fav'; fv.id='btn-fav'; fv.title='Favourite this site';
-      fv.textContent='\u2606'; fv.addEventListener('click',function(){ if(currentSiteId) lplToggleFav(currentSiteId); });
+      fv.innerHTML='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"var(--brand,#1f7a63)\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg>'; fv.addEventListener('click',function(){ if(currentSiteId) lplToggleFav(currentSiteId); });
       bar.appendChild(fv);
     }
     if(currentRole==='super' && !$('btn-newsite')){
@@ -4072,6 +4089,7 @@ function heroCtaCard(c){
       if(currentRole==='super'){
         acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">&#8592; Dashboard</a>'
           +'<a href="/partners-admin" class="btn ghost" style="text-decoration:none;">Partner Admin</a>'
+          +'<a href="/marketplace-admin" class="btn ghost" style="text-decoration:none;">Marketplace Admin</a>'
           +modeBtn
           +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
       } else if(currentRole==='broker'){
@@ -4590,30 +4608,56 @@ function heroCtaCard(c){
       return {on:on, ghost:ghost, inactive:inactive, siteApp:siteApp};
     }
 
-    function appCard(app){
+    // Icon map: section_key -> icon name (stroke icons from icons.js)
+    var APP_ICONS={
+      'quote':'message-square','hero':'layout','heroSlider':'sliders',
+      'splitHero':'columns','heroBeforeAfter':'toggle-left','services':'grid',
+      'serviceProcess':'list','serviceAreaMap':'map','serviceAreas':'map-pin',
+      'area':'map-pin','reviews':'star','reviewHighlights':'star',
+      'trustBar':'shield','certifications':'award','proofStream':'activity',
+      'crew':'users','why':'check-circle','faq':'help-circle','textBox':'type',
+      'beforeAfter':'image','beforeAfterFeed':'layers','featuredProjects':'briefcase',
+      'projectFeed':'layers','projectStats':'bar-chart-2','activityCounter':'trending-up',
+      'activityTimeline':'clock','videoReels':'play-circle','jobsFeed':'rss',
+      'customerReactions':'smile','responseCards':'zap','specialOffer':'tag',
+      'promotions-hero':'megaphone','promotions-inline':'percent','finance':'credit-card',
+      'estimateBuilder':'calculator','emergencyAvailability':'alert-circle',
+      'emerg':'phone-call','instaGallery':'instagram','igProjectFeed':'instagram',
+      'navMenu':'menu','footer':'minus-square','certifications':'award',
+      'reviewHighlights':'message-circle','proofStream':'activity',
+      'serviceAreaMap':'map'
+    };
+
+    function appTile(app){
       var st=appStatus(app);
-      var tier=TIERS[app.tier]||app.tier;
-      var tc=TIER_TC[app.tier]||'#333';
-      var tbg=TIER_COLORS[app.tier]||'#eee';
       var isDefault=app.tier==='default';
-      var statusBadge=st.inactive
-        ?'<span style="background:#FEE2E2;color:#991B1B;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px">INACTIVE</span>'
-        :st.ghost
-        ?'<span style="background:#FEF9C3;color:#92400E;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px">AWAITING ACTIVATION</span>'
-        :'';
-      return '<div class="lead-item" data-appid="'+app.id+'" data-seckey="'+app.section_key+'">'
-        +'<div class="li-top">'
-        +'<div><span style="font-weight:700">'+esc(app.name)+'</span>'+statusBadge+'</div>'
-        +'<div class="li-right">'
-        +'<span style="background:'+tbg+';color:'+tc+';font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px">'+tier+'</span>'
-        +(isDefault?'':'<label class="ci-toggle" title="Enable/disable this section">'
-          +'<input type="checkbox" class="amp-toggle" data-seckey="'+app.section_key+'" data-appid="'+app.id+'"'+(st.on?' checked':'')+(st.inactive?' disabled':'')+' style="pointer-events:'+(st.inactive?'none':'auto')+'">'
-          +'</label>')
-        +'</div></div>'
-        +(app.tagline?'<div class="li-sub">'+esc(app.tagline)+'</div>':'')
-        +(app.api_dependency?'<div style="font-size:11.5px;color:var(--amber);margin-top:3px">Requires: '+esc(app.api_dependency)+'</div>':'')
-        +(st.ghost&&app.price_monthly_aud?'<div style="font-size:12px;color:var(--ink-soft);margin-top:4px">$'+app.price_monthly_aud+'/mo or $'+app.price_annual_aud+'/yr — contact admin to activate</div>':'')
-        +'</div>';
+      var isOn=st.on&&!st.inactive;
+      var iconName=APP_ICONS[app.section_key]||'box';
+      var iconSvg=(window.LP_ICONS&&window.LP_ICONS[iconName])||'<circle cx="12" cy="12" r="9"/>';
+      // Active = darker green bg, white icon+text; Inactive = white bg, muted
+      var activeBg=isOn?'var(--brand-deep,#155c4a)':'#fff';
+      var activeColor=isOn?'#fff':'var(--ink)';
+      var activeIconColor=isOn?'rgba(255,255,255,0.9)':'var(--brand,#1f7a63)';
+      var borderColor=isOn?'var(--brand-deep,#155c4a)':'var(--line,#E5E1DC)';
+      var tierDot=app.tier==='paid'?'<span style="position:absolute;top:7px;right:8px;font-size:9px;font-weight:800;color:'+(isOn?'rgba(255,255,255,0.7)':'#7E3346')+';letter-spacing:.04em">PAID</span>'
+        :app.tier==='metered'?'<span style="position:absolute;top:7px;right:8px;font-size:9px;font-weight:800;color:'+(isOn?'rgba(255,255,255,0.7)':'#5B3FA3')+';letter-spacing:.04em">API</span>':''
+      var ghostNote=st.ghost?'<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(254,249,195,0.95);color:#92400E;font-size:9px;font-weight:700;text-align:center;padding:2px 4px;border-radius:0 0 10px 10px">AWAITING</div>':'';
+      return '<button type="button" class="amp-tile'+(isDefault?' amp-tile-default':'')+'"'
+        +' data-appid="'+app.id+'" data-seckey="'+app.section_key+'"'
+        +' data-on="'+(isOn?'1':'0')+'"'
+        +' style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;'
+        +'width:100%;padding:14px 8px 12px;border:1.5px solid '+borderColor+';border-radius:12px;'
+        +'background:'+activeBg+';cursor:pointer;'
+        +'transition:all .15s;text-align:center;gap:6px;'
+        +'box-shadow:'+(isOn?'0 2px 8px rgba(21,92,74,0.25)':'0 1px 3px rgba(0,0,0,0.06)')+'">'
+        +'<span style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;min-height:40px;border-radius:10px;flex-shrink:0;'
+        +'background:'+(isOn?'rgba(255,255,255,0.15)':'var(--brand-tint,#E8F0EC)')+'">'
+        +'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="'+activeIconColor+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:block">'+iconSvg+'</svg>'
+        +'</span>'
+        +'<span style="font-size:11.5px;font-weight:700;color:'+activeColor+';line-height:1.25;word-break:break-word">'+esc(app.name)+'</span>'
+        +(app.tagline?'<span style="font-size:10px;color:'+(isOn?'rgba(255,255,255,0.7)':'var(--ink-soft)')+';line-height:1.3">'+esc(app.tagline.substring(0,40))+(app.tagline.length>40?'…':'')+'</span>':'')
+        +tierDot+ghostNote
+        +'</button>';
     }
 
     var html='<div style="margin-top:18px">'
@@ -4625,7 +4669,7 @@ function heroCtaCard(c){
       });
       if(!slotApps.length) return;
       html+='<div style="margin-bottom:18px"><div style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--brand);margin-bottom:8px;padding:6px 0;border-bottom:2px solid var(--brand-tint)">'+slot.label+' zone</div>';
-      html+=slotApps.map(appCard).join('');
+      html+='<div class="amp-tile-grid">'+slotApps.map(appTile).join('')+'</div>';
       html+='</div>';
     });
 
@@ -4633,19 +4677,33 @@ function heroCtaCard(c){
     var footerApps=_appsList.filter(function(a){return a.default_position==='footer';});
     if(footerApps.length){
       html+='<div style="margin-bottom:18px"><div style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--brand);margin-bottom:8px;padding:6px 0;border-bottom:2px solid var(--brand-tint)">Footer (always on)</div>';
-      html+=footerApps.map(appCard).join('');
+      html+='<div class="amp-tile-grid">'+footerApps.map(appTile).join('')+'</div>';
       html+='</div>';
     }
     html+='</div>';
     body.innerHTML=html;
 
-    // Wire toggles
-    body.querySelectorAll('.amp-toggle').forEach(function(cb){
-      cb.addEventListener('change',function(){
-        var key=cb.getAttribute('data-seckey');
-        var appid=cb.getAttribute('data-appid');
-        var on=cb.checked;
-        _toggleApp(c, siteId, key, appid, on);
+    // Wire tile clicks
+    body.querySelectorAll('.amp-tile').forEach(function(tile){
+      tile.addEventListener('click',function(){
+        var key=tile.getAttribute('data-seckey');
+        var appid=tile.getAttribute('data-appid');
+        var on=tile.getAttribute('data-on')==='1';
+        var next=!on;
+        _toggleApp(c, siteId, key, appid, next);
+        // Update tile appearance immediately
+        tile.setAttribute('data-on', next?'1':'0');
+        var activeBg=next?'var(--brand-deep,#155c4a)':'#fff';
+        var activeColor=next?'#fff':'var(--ink)';
+        tile.style.background=activeBg;
+        tile.style.borderColor=next?'var(--brand-deep,#155c4a)':'var(--line,#E5E1DC)';
+        tile.style.boxShadow=next?'0 2px 8px rgba(21,92,74,0.25)':'0 1px 3px rgba(0,0,0,0.06)';
+        tile.querySelectorAll('span').forEach(function(s,idx){
+          if(idx===0) s.style.background=next?'rgba(255,255,255,0.15)':'var(--brand-tint,#E8F0EC)';
+          if(idx===1) s.style.color=activeColor;
+          if(idx===2) s.style.color=next?'rgba(255,255,255,0.7)':'var(--ink-soft)';
+        });
+        var svg=tile.querySelector('svg'); if(svg) svg.setAttribute('stroke',next?'rgba(255,255,255,0.9)':'var(--brand,#1f7a63)');
       });
     });
   }
@@ -4730,7 +4788,7 @@ function heroCtaCard(c){
     if (!btn) return;
     var isStandard = mode === 'standard';
     btn.textContent = isStandard ? 'Standard' : 'Classic';
-    btn.style.background = isStandard ? 'var(--amber,#B9852B)' : '';
+    btn.style.background = isStandard ? 'var(--brand-deep,#155c4a)' : '';
     btn.style.color = isStandard ? '#fff' : '';
     btn.title = isStandard
       ? (role === 'super' ? 'Previewing Standard (client) view — click for Classic' : 'Standard mode — click for Classic')
