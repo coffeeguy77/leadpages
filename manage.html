@@ -5073,7 +5073,7 @@ function heroCtaCard(c){
   }
   async function lpBkSave(){
     if(!currentSiteId) return;
-    var label=prompt('Name this backup:', 'Backup '+new Date().toLocaleDateString()); if(label===null) return;
+    var label='Backup '+new Date().toLocaleDateString('en-AU',{day:'2-digit',month:'2-digit',year:'numeric'});
     try{
       var cur=(await sb.from('sites').select('config').eq('id',currentSiteId).maybeSingle()).data;
       var cfg=(cur&&cur.config)||lpBkCurrentConfig();
@@ -5232,22 +5232,45 @@ function heroCtaCard(c){
         box.querySelectorAll('.dash-period').forEach(function(b){ b.style.background=''; b.style.color=''; b.style.borderColor=''; });
         btn.style.background='var(--brand-deep,#155c4a)'; btn.style.color='#fff'; btn.style.borderColor='var(--brand-deep,#155c4a)';
         window._dashChartPeriod=btn.getAttribute('data-p');
+        localStorage.setItem('lp_chart_period',window._dashChartPeriod);
         _dashLoadStats(window._dashChartPeriod);
         _dashDrawChart(window._dashChartPeriod);
       });
     });
+    // Restore saved chart prefs
+    var _savedType=localStorage.getItem('lp_chart_type')||'bar';
+    var _savedPeriod=localStorage.getItem('lp_chart_period')||'30d';
+    var _savedPerDay=localStorage.getItem('lp_chart_perday')==='1';
+    window._dashChartType=_savedType;
+    window._dashChartPeriod=_savedPeriod;
+    // Apply saved period button state
+    box.querySelectorAll('.dash-period').forEach(function(b){
+      var active=b.getAttribute('data-p')===_savedPeriod;
+      b.style.background=active?'var(--brand-deep,#155c4a)':''; b.style.color=active?'#fff':''; b.style.borderColor=active?'var(--brand-deep,#155c4a)':'';
+    });
+    // Apply saved chart type
+    box.querySelectorAll('.dash-chart-type').forEach(function(b){
+      var active=b.getAttribute('data-ct')===_savedType;
+      b.style.background=active?'var(--brand-deep,#155c4a)':'#fff'; b.style.color=active?'#fff':'var(--ink)';
+    });
+    // Apply saved per-day
+    var pdCheck=document.getElementById('dash-perday');
+    if(pdCheck) pdCheck.checked=_savedPerDay;
     // Wire chart type buttons
     box.querySelectorAll('.dash-chart-type').forEach(function(btn){
       btn.addEventListener('click',function(){
         box.querySelectorAll('.dash-chart-type').forEach(function(b){ b.style.background='#fff'; b.style.color='var(--ink)'; });
         btn.style.background='var(--brand-deep,#155c4a)'; btn.style.color='#fff';
         window._dashChartType=btn.getAttribute('data-ct');
+        localStorage.setItem('lp_chart_type',window._dashChartType);
         _dashDrawChart(window._dashChartPeriod||'30d');
       });
     });
     // Wire per-day toggle
-    var pdCheck=document.getElementById('dash-perday');
-    if(pdCheck) pdCheck.addEventListener('change',function(){ _dashDrawChart(window._dashChartPeriod||'30d'); });
+    if(pdCheck) pdCheck.addEventListener('change',function(){
+      localStorage.setItem('lp_chart_perday',pdCheck.checked?'1':'0');
+      _dashDrawChart(window._dashChartPeriod||'30d');
+    });
     // Draw chart — retry until ANA data is available
     (function _tryChart(n){
       if(typeof ANA!=='undefined'&&ANA.data&&ANA.data.length>0){
@@ -5443,7 +5466,7 @@ function heroCtaCard(c){
             +'</div>';
         }).join('')+'</div>';
         list.addEventListener('click',lpBkListClick);
-      }).catch(function(){ list.innerHTML='<p style="color:var(--ink-soft);font-size:13px">Backups unavailable.</p>'; });
+      }).catch(function(e){ list.innerHTML='<p style="color:var(--ink-soft);font-size:13px">Could not load backups: '+esc(String(e&&e.message||e))+'</p>'; console.error('_dashLoadBk error',e); });
   }
 
   function _dashRenderScope(scope){
