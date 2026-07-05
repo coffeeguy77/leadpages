@@ -373,6 +373,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 .amp-tile {
   min-height: 90px;
   font-family: var(--font-ui);
+  align-items: center;
 }
 .amp-tile:not(:disabled):hover {
   transform: translateY(-1px);
@@ -1782,7 +1783,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   // refresh the per-site star / demo / delete-lock controls in the bar
   function updateSiteControls(){
     var s=(allSites||[]).find(function(x){return x.id===currentSiteId;});
-    var fav=document.getElementById('btn-fav'); if(fav&&s){ fav.classList.toggle('on',!!s.is_favorite); fav.textContent=s.is_favorite?'\u2605':'\u2606'; }
+    var fav=document.getElementById('btn-fav'); if(fav&&s){ fav.classList.toggle('on',!!s.is_favorite); fav.innerHTML=s.is_favorite?'<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"var(--brand,#1f7a63)\" stroke=\"var(--brand,#1f7a63)\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg>':'<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"var(--brand,#1f7a63)\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg>'; }
     var demo=document.getElementById('btn-demo'); if(demo&&s){ demo.textContent=s.is_demo?'Demo: on':'Demo: off'; demo.classList.toggle('on',!!s.is_demo); }
     var del=document.getElementById('btn-delsite'); var lock=document.getElementById('btn-dellock');
     if(del&&lock){ del.disabled=true; lock.textContent='\uD83D\uDD12'; lock.title='Unlock to allow delete'; }
@@ -4016,7 +4017,7 @@ function heroCtaCard(c){
     }
     if(currentRole==='super' && !$('btn-fav')){
       const fv=document.createElement('button'); fv.className='bar-fav'; fv.id='btn-fav'; fv.title='Favourite this site';
-      fv.textContent='\u2606'; fv.addEventListener('click',function(){ if(currentSiteId) lplToggleFav(currentSiteId); });
+      fv.innerHTML='<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"var(--brand,#1f7a63)\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg>'; fv.addEventListener('click',function(){ if(currentSiteId) lplToggleFav(currentSiteId); });
       bar.appendChild(fv);
     }
     if(currentRole==='super' && !$('btn-newsite')){
@@ -4648,9 +4649,9 @@ function heroCtaCard(c){
         +'background:'+activeBg+';cursor:pointer;'
         +'transition:all .15s;text-align:center;gap:6px;'
         +'box-shadow:'+(isOn?'0 2px 8px rgba(21,92,74,0.25)':'0 1px 3px rgba(0,0,0,0.06)')+'">'
-        +'<span style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;'
+        +'<span style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;min-height:40px;border-radius:10px;flex-shrink:0;'
         +'background:'+(isOn?'rgba(255,255,255,0.15)':'var(--brand-tint,#E8F0EC)')+'">'
-        +'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="'+activeIconColor+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+iconSvg+'</svg>'
+        +'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="'+activeIconColor+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:block">'+iconSvg+'</svg>'
         +'</span>'
         +'<span style="font-size:11.5px;font-weight:700;color:'+activeColor+';line-height:1.25;word-break:break-word">'+esc(app.name)+'</span>'
         +(app.tagline?'<span style="font-size:10px;color:'+(isOn?'rgba(255,255,255,0.7)':'var(--ink-soft)')+';line-height:1.3">'+esc(app.tagline.substring(0,40))+(app.tagline.length>40?'…':'')+'</span>':'')
