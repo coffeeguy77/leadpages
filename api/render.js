@@ -521,6 +521,69 @@ function injectBuyBar(html, bar) {
   return html.indexOf('</body>') !== -1 ? html.replace('</body>', bar + '</body>') : (html + bar);
 }
 
+function visitorAppearanceCfg(cfg) {
+  const va = (cfg && cfg.visitorAppearance) || {};
+  return {
+    siteTheme: va.siteTheme || 'classic-light',
+    allowVisitorControls: va.allowVisitorControls === true,
+    accessibilityButtonPosition: va.accessibilityButtonPosition || 'bottom-right',
+    defaultTextSize: va.defaultTextSize || 'standard',
+    defaultContrast: va.defaultContrast || 'standard',
+    reducedMotionSupport: va.reducedMotionSupport !== false,
+    showAccessibilityButton: va.showAccessibilityButton !== false
+  };
+}
+
+function visitorWidgetEnabled(cfg) {
+  const va = visitorAppearanceCfg(cfg);
+  if (!va.allowVisitorControls) return false;
+  if (!va.showAccessibilityButton) return false;
+  // Phase 3: gate on marketplace app sections.lpAccessibility when registered
+  const sec = cfg && cfg.sections && cfg.sections.lpAccessibility;
+  if (sec && sec.on === false) return false;
+  return true;
+}
+
+function injectVisitorAccessibility(html, cfg) {
+  if (!html) return html;
+  const va = visitorAppearanceCfg(cfg);
+  let out = html;
+
+  if (out.includes('<body>') && !out.includes('class="lpa-skip"')) {
+    out = out.replace('<body>', '<body>\n<a class="lpa-skip" href="#top">Skip to content</a>');
+  }
+
+  if (out.includes('</head>') && !out.includes('lp-visitor-themes.css')) {
+    out = out.replace(
+      '</head>',
+      '<link rel="stylesheet" href="/assets/lp-visitor-themes.css">\n</head>'
+    );
+  }
+
+  const widgetOn = visitorWidgetEnabled(cfg);
+  const boot = '<script>window.__LP_VISITOR_A11Y__=' + safeJson({
+    enabled: widgetOn,
+    position: va.accessibilityButtonPosition,
+    defaults: va
+  }) + ';</script>';
+
+  if (widgetOn && !out.includes('lp-visitor-accessibility.js')) {
+    const assets =
+      boot +
+      '<link rel="stylesheet" href="/assets/lp-visitor-accessibility.css">' +
+      '<script src="/assets/lp-visitor-accessibility.js" defer></script>';
+    out = out.indexOf('</body>') !== -1
+      ? out.replace('</body>', assets + '\n</body>')
+      : (out + assets);
+  } else if (!out.includes('window.__LP_VISITOR_A11Y__')) {
+    out = out.indexOf('</body>') !== -1
+      ? out.replace('</body>', boot + '\n</body>')
+      : (out + boot);
+  }
+
+  return out;
+}
+
 module.exports = async (req, res) => {
   try {
     const rawHost = (req.headers.host || '').toLowerCase();
@@ -632,6 +695,7 @@ module.exports = async (req, res) => {
 
       let html = brokerApp.html.replaceAll('__BROKERAPP_CONFIG__', safeJson(cfg));
       html = html.replaceAll('<!--DEMO_BAR-->', demoBar);
+      html = injectVisitorAccessibility(html, cfg);
       return sendHtml(res, html, isLive);
     }
 
@@ -691,6 +755,8 @@ module.exports = async (req, res) => {
     if (site.is_mockup && Number(site.sale_price) > 0 && (site.servicing_partner_id || site.referring_partner_id)) {
       try { const _bp = await buyPlans(site); html = injectBuyBar(html, buyBarHtml(site, _bp.plans, _bp.def)); } catch (e) { console.error('buy bar error:', e && e.message); }
     }
+
+    html = injectVisitorAccessibility(html, cfg);
 
     return sendHtml(res, html, isLive);
   } catch (e) {

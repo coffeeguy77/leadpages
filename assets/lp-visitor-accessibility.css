@@ -1,0 +1,141 @@
+/* LeadPages visitor accessibility widget (Phase 2) */
+
+#lpa-root {
+  position: fixed;
+  z-index: 2147483000;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #1b2430;
+}
+#lpa-root[data-pos="bottom-left"] {
+  left: 16px;
+  bottom: 16px;
+}
+#lpa-root[data-pos="bottom-right"] {
+  right: 16px;
+  bottom: 16px;
+}
+
+#lpa-trigger {
+  appearance: none;
+  border: 1px solid rgba(27, 36, 48, 0.12);
+  background: #fff;
+  color: #1b2430;
+  border-radius: 999px;
+  padding: 11px 16px;
+  font: 600 13.5px/1 inherit;
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(27, 36, 48, 0.18);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+#lpa-trigger:hover {
+  border-color: #1f7a63;
+}
+#lpa-trigger:focus-visible {
+  outline: 3px solid #155c4a;
+  outline-offset: 2px;
+}
+#lpa-trigger svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+#lpa-panel {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  width: min(320px, calc(100vw - 32px));
+  background: #fff;
+  border: 1px solid #e7e2d8;
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(27, 36, 48, 0.22);
+  padding: 16px;
+}
+#lpa-root[data-pos="bottom-left"] #lpa-panel {
+  right: auto;
+  left: 0;
+}
+#lpa-root[data-open="true"] #lpa-panel {
+  display: block;
+}
+
+#lpa-panel h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+#lpa-panel fieldset {
+  border: 0;
+  margin: 0 0 12px;
+  padding: 0;
+}
+#lpa-panel legend {
+  font-size: 12px;
+  font-weight: 700;
+  color: #5c6675;
+  margin-bottom: 6px;
+}
+#lpa-panel .lpa-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+#lpa-panel .lpa-opt {
+  appearance: none;
+  border: 1px solid #d8d2c5;
+  background: #fff;
+  color: #1b2430;
+  border-radius: 8px;
+  padding: 8px 11px;
+  font: 600 12.5px/1 inherit;
+  cursor: pointer;
+  min-height: 40px;
+}
+#lpa-panel .lpa-opt[aria-pressed="true"] {
+  background: #eaf3ef;
+  border-color: #1f7a63;
+  color: #155c4a;
+}
+#lpa-panel .lpa-opt:focus-visible {
+  outline: 3px solid #155c4a;
+  outline-offset: 1px;
+}
+#lpa-reset {
+  appearance: none;
+  width: 100%;
+  border: 1px dashed #d8d2c5;
+  background: #fbfaf7;
+  color: #155c4a;
+  border-radius: 8px;
+  padding: 10px;
+  font: 600 13px inherit;
+  cursor: pointer;
+  margin-top: 4px;
+}
+#lpa-reset:focus-visible {
+  outline: 3px solid #155c4a;
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  #lpa-root[data-pos="bottom-right"],
+  #lpa-root[data-pos="bottom-left"] {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+  }
+  #lpa-trigger {
+    width: 100%;
+    justify-content: center;
+  }
+  #lpa-panel {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100%;
+  }
+}
