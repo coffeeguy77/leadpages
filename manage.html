@@ -5079,7 +5079,9 @@ function heroCtaCard(c){
       var cfg=(cur&&cur.config)||lpBkCurrentConfig();
       var r=await sb.from('site_backups').insert({site_id:currentSiteId,label:(label||'Backup').slice(0,120),config:cfg}).select('id');
       if(r.error) throw r.error;
-      if(typeof toast==='function') toast('Backup saved'); lpBkLoad();
+      if(typeof toast==='function') toast('Backup saved');
+      lpBkLoad();
+      if(typeof _dashLoadBk==='function') _dashLoadBk();
     }catch(e){ alert('Could not save backup: '+(e.message||e)); }
   }
   async function lpBkApplyConfig(cfg){
@@ -5138,8 +5140,8 @@ function heroCtaCard(c){
       +'<div style="flex:1;min-width:200px">'
       +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">'
       +'<h2 style="margin:0;font-size:22px">'+biz+'</h2>'
-      +'<span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;'+(isActive?'background:#D1FAE5;color:#065F46':'background:#FEE2E2;color:#991B1B')+'">'+( isActive?'Active':'Inactive')+'</span>'
-      +(isDomainConn?'<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#E0F2FE;color:#0369A1">Domain connected</span>':'<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#FEF3C7;color:#92400E">No domain</span>')
+      +'<span class="lpl-badge '+(isActive?'ok':'off')+'">'+(isActive?'Active':'Inactive')+'</span>'
+      +(isDomainConn?'<span class="lpl-badge" style="background:#E0F2FE;color:#0369A1;border-color:#BFDBFE">Domain connected</span>':'<span class="lpl-badge" style="background:#FEF3C7;color:#92400E;border-color:#FDE68A">No domain</span>')
       +'</div>'
       +(slug?'<p style="margin:0;font-size:13px;color:var(--ink-soft)">'+slug+(domain?' · '+domain:'')+'</p>':'')
       +'</div>'
@@ -5533,7 +5535,10 @@ function heroCtaCard(c){
         var clH=b.call?Math.max(2,Math.round((b.call/maxVal)*(CH-6))):0;
         var seg=bw>9?Math.floor(bw/3):0;
         var out='';
-        if(pvH) out+='<rect x="'+x+'" y="'+(CH-pvH)+'" width="'+bw+'" height="'+pvH+'" rx="2" fill="#155c4a" opacity="0.85"/>';
+        if(pvH){
+          out+='<rect x="'+x+'" y="'+(CH-pvH)+'" width="'+bw+'" height="'+pvH+'" rx="2" fill="#155c4a" opacity="0.85"/>';
+          if(perDay&&b.pv) out+='<text x="'+(x+bw/2)+'" y="'+(CH-pvH-3)+'" text-anchor="middle" font-size="9" font-weight="700" fill="#155c4a">'+b.pv+'</text>';
+        }
         if(ldH&&seg) out+='<rect x="'+x+'" y="'+(CH-ldH)+'" width="'+seg+'" height="'+ldH+'" rx="2" fill="#059669"/>';
         if(clH&&seg) out+='<rect x="'+(x+seg+1)+'" y="'+(CH-clH)+'" width="'+seg+'" height="'+clH+'" rx="2" fill="#D97706"/>';
         return out;
