@@ -5169,24 +5169,18 @@ function heroCtaCard(c){
       +'</div>'
       +'</div>'
 
-      // ── Two-column layout ──
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">'
-
-      // Left: Captured leads
-      +'<div style="display:flex;flex-direction:column;gap:20px">'
-      +'<div id="dash-leads-card" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:0 1px 4px rgba(0,0,0,.04)">'
+      // ── Captured Leads — full width ──
+      +'<div id="dash-leads-card" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:20px">'
       +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">'
       +'<h3 style="margin:0;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)">Captured Leads</h3>'
       +'<span style="flex:1"></span>'
-      +'<button class="btn ghost dash-ll-action" data-ll="refresh" style="font-size:12px;padding:4px 10px">Refresh</button>'
-      +'<button class="btn ghost dash-ll-action" data-ll="timeline" style="font-size:12px;padding:4px 10px">Activity</button>'
+      +'<button class="btn ghost" id="dash-leads-refresh" style="font-size:12px;padding:4px 10px">Refresh</button>'
       +'</div>'
       +'<div id="dash-leads-body"><p style="color:var(--ink-soft);font-size:13px">Loading\u2026</p></div>'
       +'</div>'
-      +'</div>'
 
-      // Right: Backups + Scope
-      +'<div style="display:flex;flex-direction:column;gap:20px">'
+      // ── Backups + Scope side by side ──
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">'
 
       // Backups
       +'<div id="dash-backups" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:0 1px 4px rgba(0,0,0,.04)">'
@@ -5210,8 +5204,7 @@ function heroCtaCard(c){
       +'<div id="dash-scope-body"><p style="color:var(--ink-soft);font-size:13px">Loading\u2026</p></div>'
       +'</div>'
 
-      +'</div>' // end right col
-      +'</div>' // end two-col
+      +'</div>' // end backups+scope grid
     ; // end box.innerHTML
 
     // Wire period buttons
@@ -5223,12 +5216,18 @@ function heroCtaCard(c){
       });
     });
 
-    // Wire leads actions
+    // Wire leads refresh
+    var dlRefresh=document.getElementById('dash-leads-refresh');
+    if(dlRefresh) dlRefresh.addEventListener('click',function(){ _dashLoadLeads(siteId); });
+    // Wire View message expand (delegated)
     box.addEventListener('click',function(e){
-      var ll=e.target.closest('.dash-ll-action'); if(!ll) return;
-      var act=ll.getAttribute('data-ll');
-      if(act==='refresh') _dashLoadLeads(siteId);
-      if(act==='timeline'){ LPLEADS.timeline=!LPLEADS.timeline; lpLeadsPaint(); _dashSyncLeads(); }
+      var btn=e.target.closest('[data-dash-lead]'); if(!btn) return;
+      var lid=btn.getAttribute('data-dash-lead');
+      var detail=document.getElementById('dash-lead-detail-'+lid);
+      if(!detail) return;
+      var open=detail.style.display==='block';
+      detail.style.display=open?'none':'block';
+      btn.textContent=open?'View message':'Hide message';
     });
 
     // Wire backup buttons
@@ -5321,18 +5320,28 @@ function heroCtaCard(c){
           var sub=esc(l.suburb||l.postcode||'');
           var date=l.created_at?new Date(l.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
           var isNew=l.created_at&&(Date.now()-new Date(l.created_at).getTime())<86400000*3;
-          return '<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fff">'
+          var detail=esc(l.detail||l.other||'');
+          var email=esc(l.email||'');
+          var rowId='dash-lead-'+l.id;
+          return '<div style="border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden" id="'+rowId+'">'
+            +'<div style="display:flex;align-items:center;gap:12px;padding:14px 16px">'
             +'<div style="flex:1;min-width:0">'
-            +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">'
+            +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px">'
             +'<span style="font-weight:700;font-size:14px">'+name+'</span>'
             +(sub?'<span style="font-size:12px;color:var(--ink-soft)">&middot; '+sub+'</span>':'')
             +(isNew?'<span style="background:#D1FAE5;color:#065F46;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px">NEW</span>':'')
             +'</div>'
-            +(job?'<div style="font-size:13px;color:var(--ink-soft);margin-bottom:4px">'+job+'</div>':'')
+            +(job?'<div style="font-size:13px;color:var(--ink-soft)">'+job+'</div>':'')
             +'</div>'
-            +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">'
+            +'<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">'
             +(phone?'<a href="tel:'+phone+'" style="font-size:13px;font-weight:600;color:var(--brand);text-decoration:none">'+phone+'</a>':'')
-            +'<span style="font-size:11px;color:var(--ink-faint)">'+date+'</span>'
+            +'<span style="font-size:11px;color:var(--ink-faint);white-space:nowrap">'+date+'</span>'
+            +'<button data-dash-lead="'+esc(l.id)+'" style="font-size:12px;font-weight:600;font-family:inherit;background:none;border:1px solid var(--line);border-radius:8px;padding:5px 12px;cursor:pointer;color:var(--ink);white-space:nowrap">View message</button>'
+            +'</div>'
+            +'</div>'
+            +'<div id="dash-lead-detail-'+esc(l.id)+'" style="display:none;padding:0 16px 14px;border-top:1px solid var(--line);background:var(--surf2,#F8F7F5)">'
+            +(detail?'<div style="font-size:13px;color:var(--ink);padding:12px 0;line-height:1.6">'+detail+'</div>':'<p style="font-size:13px;color:var(--ink-soft);padding:12px 0">No additional message.</p>')
+            +(email?'<div style="font-size:12px;color:var(--ink-soft)">Email: <a href="mailto:'+email+'" style="color:var(--brand)">'+email+'</a></div>':'')
             +'</div>'
             +'</div>';
         }).join('')+'</div>';
