@@ -501,7 +501,23 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 .lpl-countpill{display:inline-block;margin-left:10px;padding:2px 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-soft);font-size:12px;font-weight:600;}
 .lpl-sort{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:13px;}
 .lpl-sort select{padding:7px 10px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--ink);cursor:pointer;}
-.lpl-card2{display:flex;align-items:center;gap:16px;padding:16px;background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:12px;}
+/* ── Premium site list ──────────────────────────────── */
+.lpl-card2{
+  display:flex;align-items:center;gap:18px;
+  padding:16px 20px;background:#fff;
+  border:1px solid var(--line);border-radius:14px;
+  margin-bottom:10px;
+  transition:box-shadow .15s,border-color .15s;
+}
+.lpl-card2:hover{ box-shadow:0 4px 20px rgba(0,0,0,0.08); border-color:var(--brand-light,#9ac4b4); }
+/* Tile grid mode */
+#lpl-list.lpl-tile-mode{ display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+#lpl-list.lpl-tile-mode .lpl-card2{ flex-direction:column; align-items:flex-start; padding:18px; gap:12px; }
+#lpl-list.lpl-tile-mode .lpl-manage{ margin-top:auto; width:100%; }
+#lpl-list.lpl-tile-mode .lpl-manage .btn{ width:100%; justify-content:center; }
+#lpl-list.lpl-tile-mode .lpl-fav2{ position:absolute; top:12px; right:12px; }
+#lpl-list.lpl-tile-mode .lpl-card2{ position:relative; }
+#lpl-list.lpl-tile-mode .lpl-newcard{ min-height:120px; }
 .lpl-logo{width:56px;height:56px;border-radius:12px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--surface-2);border:1px solid var(--line);font-weight:700;color:var(--brand);font-size:20px;}
 .lpl-logo img{width:100%;height:100%;object-fit:contain;}
 .lpl-body{flex:1;min-width:0;}
@@ -541,10 +557,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <h1 style="margin:0 0 4px">Site Switcher</h1>
   <p class="sub" style="margin:0 0 4px">Choose a customer, demo, or partner site to manage. You'll only edit a site after selecting it.</p>
   <div class="lpl-card">
-    <div class="lpl-toprow"><div class="lpl-seg" id="lpl-seg"><button data-grp="customer" class="on">Customer Sites <span class="lpl-seg-ct" id="lpl-ct-customer"></span></button><button data-grp="demo">Demo Sites <span class="lpl-seg-ct" id="lpl-ct-demo"></span></button><button data-grp="partner" id="lpl-seg-partner" style="display:none">Partner Sites <span class="lpl-seg-ct" id="lpl-ct-partner"></span></button></div><a href="#" id="lpl-signout" class="btn ghost">Sign Out</a></div>
+    <div class="lpl-toprow"><div class="lpl-seg" id="lpl-seg"><button data-grp="customer" class="on">Customer Sites <span class="lpl-seg-ct" id="lpl-ct-customer"></span></button><button data-grp="demo">Demo Sites <span class="lpl-seg-ct" id="lpl-ct-demo"></span></button><button data-grp="partner" id="lpl-seg-partner" style="display:none">Partner Sites <span class="lpl-seg-ct" id="lpl-ct-partner"></span></button></div><button id="lpl-view-toggle" class="btn ghost" style="font-size:12px;padding:6px 12px" title="Switch between list and tile view">Tile view</button><a href="#" id="lpl-signout" class="btn ghost">Sign Out</a></div>
     <input class="lpl-search" id="lpl-search" placeholder="Search by site name, slug, business name or domain...">
     <div class="lpl-listhead"><div><h2 id="lpl-listtitle">Customer Sites</h2><span class="lpl-countpill" id="lpl-listcount"></span></div><div class="lpl-sort">Sort by <select id="lpl-sort"><option value="updated">Last updated</option><option value="name">Name</option><option value="leads">Leads</option></select></div></div>
-    <div id="lpl-list"></div>
+    <div id="lpl-list" class="lpl-list-mode"></div>
   </div>
   <p class="lpl-help">Can't find a site? Check your account access or <a id="lpl-help-new">create a new site</a>.</p>
   <p class="lpl-legal"><a href="/privacy-policy.html">Privacy Policy</a> <span>&middot;</span> <a href="/terms-of-use.html">Terms of Use</a> <span>&middot;</span> <a href="/instagram-data-policy.html">Instagram Data</a></p>
@@ -578,6 +594,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   </div>
 
   <div class="adminnav" role="tablist">
+    <button class="anav-btn" id="nav-dashboard" aria-selected="false" style="display:none">Dashboard</button>
     <button class="anav-btn" id="nav-details" aria-selected="false" style="display:none">Details</button>
     <button class="anav-btn" id="nav-rates" aria-selected="true" style="display:none">Rates &amp; leads</button>
     <button class="anav-btn" id="nav-landing" aria-selected="false">Landing pages</button>
@@ -590,6 +607,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     <button class="anav-btn" id="nav-demothemes" aria-selected="false" style="display:none">Demo themes</button>
   </div>
 
+  <div id="av-dashboard" hidden></div>
   <div id="av-details" hidden></div>
 
   <!-- ===================== APP MARKETPLACE ===================== -->
@@ -1709,6 +1727,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function showLanding(){
     var el=document.getElementById('lp-landing'); if(!el) return;
     document.body.classList.add('lp-landing-on');
+    _lplWireViewToggle();
     if(!LPL.wired){
       LPL.wired=true;
       document.querySelectorAll('#lpl-seg button').forEach(function(b){ b.onclick=function(){ LPL.grp=b.getAttribute('data-grp'); document.querySelectorAll('#lpl-seg button').forEach(function(x){ x.classList.toggle('on',x===b); }); renderLanding(); }; });
@@ -1747,6 +1766,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     html+=_lplNewCard();
     list.innerHTML=html;
     _lplWire(list);
+    _lplApplyView();
   }
   async function loadLandingPartners(){
     try{ var r=await sb.from('partners').select('id,display_name,status'); LPL.partners={}; (r.data||[]).forEach(function(pp){ LPL.partners[pp.id]=pp; }); }catch(e){ LPL.partners={}; }
@@ -1768,6 +1788,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     html+=_lplNewCard();
     list.innerHTML=html;
     _lplWire(list);
+    _lplApplyView();
   }
   async function lplToggleFav(id){
     var s=allSites.find(function(x){return x.id===id;}); if(!s) return;
@@ -4083,17 +4104,23 @@ function heroCtaCard(c){
     mv('btn-switch', tools);
     mv('btn-fav', tools);
     mv('btn-newsite', tools);
+    // Inject mode toggle beside Settings
+    if(!document.getElementById('lp-mode-toggle')&&(currentRole==='super'||currentRole==='broker')){
+      var _mt=document.createElement('button'); _mt.type='button'; _mt.id='lp-mode-toggle';
+      _mt.className='btn ghost'; _mt.style.fontSize='12px'; _mt.textContent='Classic';
+      tools.insertBefore(_mt,tools.firstChild);
+    }
     if(!$('lpc-acct')){
       var acct=document.createElement('div'); acct.id='lpc-acct'; acct.style.cssText='margin-left:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
       var modeBtn='<button type="button" id="lp-mode-toggle" class="btn ghost" style="font-size:12px;">Classic</button>';
+      // Mode toggle will be injected into lpc-tools after Settings
       if(currentRole==='super'){
         acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">&#8592; Dashboard</a>'
           +'<a href="/partners-admin" class="btn ghost" style="text-decoration:none;">Partner Admin</a>'
-          +modeBtn
+          +'<a href="/marketplace-admin" class="btn ghost" style="text-decoration:none;">Marketplace Admin</a>'
           +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
       } else if(currentRole==='broker'){
         acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">&#8592; Dashboard</a>'
-          +modeBtn
           +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
       } else {
         acct.innerHTML='<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
@@ -4196,8 +4223,8 @@ function heroCtaCard(c){
     toast('Removed “'+name+'”'); renderSharedThemes();
   }
   /* ===== end leadpages integration ===== */
-  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details','mailer','apps'], broker:['appearance','contact','logo','landing','details','mailer','apps'], leads:['rates'] };
-  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes','mailer'], 'broker-leads':['details','mailer'], 'trade':['details','landing','apps','mailer'] };
+  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details','mailer','apps','dashboard'], broker:['appearance','contact','logo','landing','details','mailer','apps','dashboard'], leads:['rates'] };
+  const TEMPLATE_NAV={ 'broker-app':['dashboard','rates','landing','appearance','contact','logo','users','demothemes','mailer'], 'broker-leads':['details','mailer'], 'trade':['dashboard','details','landing','apps','mailer'] };
   function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
     if($('login-mask')) return;
@@ -4392,7 +4419,7 @@ function heroCtaCard(c){
   }
 
   /* ---------- nav switcher (six tabs) ---------- */
-  const NAV=[['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['apps','av-apps',renderAppsMarketplace]];
+  const NAV=[['dashboard','av-dashboard',renderDashboard],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['apps','av-apps',renderAppsMarketplace]];
   let activeView='rates';
   function showView(which){
     activeView=which;
@@ -5029,6 +5056,113 @@ function heroCtaCard(c){
     reader.readAsText(f); e.target.value='';
   }
   lpBkEnsure();
+
+  /* ── renderDashboard ─────────────────────────────── */
+  function renderDashboard(){
+    var box=document.getElementById('av-dashboard'); if(!box) return;
+    var c=data||{}, s=currentSite||{};
+    var siteId=c.id||c.siteId||(c.config&&c.config.siteId)||'';
+    var biz=esc((c.config&&c.config.businessName)||s.business_name||s.slug||'This site');
+    box.innerHTML=
+      '<div class="card">'      +'<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">'      +'<div style="flex:1"><h2 style="margin:0 0 2px">'+biz+'</h2>'      +'<p class="lede" style="margin:0">'+esc(s.slug||'')+'</p></div>'      +(s.domain?'<a href="https://'+esc(s.domain)+'" target="_blank" rel="noopener" class="btn ghost" style="text-decoration:none">View live site ↗</a>':'')
+      +'</div>'      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:24px">'      +['Visitors','Calls','Forms','Conversion'].map(function(l,i){
+        var vals=[window._lpStatVis,window._lpStatCalls,window._lpStatForms,window._lpStatConv];
+        return '<div style="padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surf2,#F8F7F5)"><div style="font-size:26px;font-weight:800;color:var(--brand-deep);line-height:1">'+(vals[i]||'—')+'</div><div style="font-size:12px;color:var(--ink-soft);margin-top:3px">'+l+'</div></div>';
+      }).join('')      +'</div>'      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'      +'<h3 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:0;flex:1">Captured Leads</h3></div>'      +'<div id="dash-leads" style="margin-bottom:24px"><p class="hint">Loading…</p></div>'      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'      +'<h3 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:0;flex:1">Scope List</h3>'      +'<button class="btn ghost" id="dash-scope-add" style="font-size:12px;padding:5px 12px">+ Add item</button></div>'      +'<div id="dash-scope" style="margin-bottom:24px"><p class="hint">Loading…</p></div>'      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'      +'<h3 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin:0;flex:1">Backups</h3>'      +'<button class="btn ghost" id="dash-backup-now" style="font-size:12px;padding:5px 12px">Back up now</button></div>'      +'<div id="dash-backups"><p class="hint">Loading…</p></div></div>';
+    _dashLeads(c,siteId); _dashScope(c); _dashBackups(siteId);
+    var sa=document.getElementById('dash-scope-add');
+    if(sa) sa.addEventListener('click',function(){
+      var item=prompt('New scope item:'); if(!item||!item.trim()) return;
+      if(!c.config)c.config={}; if(!c.config.scope)c.config.scope=[];
+      c.config.scope.push({text:item.trim(),done:false,at:new Date().toISOString()});
+      persist(); _dashScope(c);
+    });
+    var bn=document.getElementById('dash-backup-now');
+    if(bn) bn.addEventListener('click',function(){
+      bn.disabled=true; bn.textContent='Backing up…';
+      var b=document.getElementById('lp-bk-btn'); if(b) b.click();
+      setTimeout(function(){ bn.disabled=false; bn.textContent='Back up now'; _dashBackups(siteId); },2500);
+    });
+  }
+
+  function _dashLeads(c,siteId){
+    var el=document.getElementById('dash-leads'); if(!el) return;
+    if(!siteId){ el.innerHTML='<p class="hint">No site loaded.</p>'; return; }
+    sb.from('leads').select('*').eq('site_id',siteId).order('created_at',{ascending:false}).limit(10)
+      .then(function(r){
+        var rows=r.data||[];
+        if(!rows.length){ el.innerHTML='<p class="hint">No leads yet.</p>'; return; }
+        el.innerHTML='<div style="border:1px solid var(--line);border-radius:12px;overflow:hidden">'+rows.map(function(l){
+          var name=esc(l.name||l.fname||'Anonymous');
+          var phone=esc(l.phone||'');
+          var job=esc(l.job||l.message||l.detail||'');
+          var sub=esc(l.suburb||'');
+          var date=l.created_at?new Date(l.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+          return '<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line);background:#fff">'            +'<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">'+name+(sub?' <span style=\"color:var(--ink-soft);font-size:12px\">'+sub+'</span>':'')+' <span style=\"background:#E8F0EC;color:var(--brand-deep);font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px\">✓ NEW</span></div>'+(job?'<div style=\"font-size:13px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis\">'+job+'</div>':'')+'</div>'+(phone?'<a href=\"tel:'+phone+'\" style=\"font-size:13px;font-weight:600;color:var(--brand);text-decoration:none\">'+phone+'</a>':'')+'<span style=\"font-size:11px;color:var(--ink-faint)\">'+date+'</span></div>';
+        }).join('')+'</div>';
+      }).catch(function(){ el.innerHTML='<p class="hint">Could not load leads.</p>'; });
+  }
+
+  function _dashScope(c){
+    var el=document.getElementById('dash-scope'); if(!el) return;
+    var scope=(c.config&&c.config.scope)||[];
+    if(!scope.length){ el.innerHTML='<p class="hint">No scope items. Click + Add item.</p>'; return; }
+    el.innerHTML='<div style="border:1px solid var(--line);border-radius:12px;overflow:hidden">'+scope.map(function(item,idx){
+      var done=item.done===true;
+      return '<div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:#fff">'        +'<input type="checkbox" data-sci="'+idx+'" '+(done?'checked':'')+' style="width:16px;height:16px;cursor:pointer;accent-color:var(--brand)">'        +'<span style="flex:1;font-size:14px;'+(done?'text-decoration:line-through;color:var(--ink-soft)':'')+'">'+esc(item.text||item)+'</span>'        +'<button data-scd="'+idx+'" style="background:none;border:0;color:var(--ink-faint);cursor:pointer;font-size:18px;padding:0 4px">×</button></div>';
+    }).join('')+'</div>';
+    el.querySelectorAll('[data-sci]').forEach(function(cb){
+      cb.addEventListener('change',function(){
+        var sc=(data.config&&data.config.scope)||[]; var idx=parseInt(cb.getAttribute('data-sci'));
+        if(sc[idx])sc[idx].done=cb.checked; persist(); _dashScope(data);
+      });
+    });
+    el.querySelectorAll('[data-scd]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var sc=(data.config&&data.config.scope)||[]; sc.splice(parseInt(btn.getAttribute('data-scd')),1);
+        persist(); _dashScope(data);
+      });
+    });
+  }
+
+  function _dashBackups(siteId){
+    var el=document.getElementById('dash-backups'); if(!el) return;
+    if(!siteId){ el.innerHTML='<p class="hint">Save site first to enable backups.</p>'; return; }
+    sb.from('site_backups').select('id,created_at,label').eq('site_id',siteId).order('created_at',{ascending:false}).limit(10)
+      .then(function(r){
+        var rows=r.data||[];
+        if(!rows.length){ el.innerHTML='<p class="hint">No backups yet.</p>'; return; }
+        el.innerHTML='<div style="border:1px solid var(--line);border-radius:12px;overflow:hidden">'+rows.map(function(bk){
+          var date=new Date(bk.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+          return '<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line);background:#fff">'            +'<div style="flex:1"><div style="font-weight:600;font-size:14px">'+esc(bk.label||'Manual backup')+'</div>'            +'<div style="font-size:12px;color:var(--ink-soft)">'+date+'</div></div>'            +'<button data-restore="'+esc(bk.id)+'" class="btn ghost" style="font-size:12px;padding:5px 12px">Restore</button></div>';
+        }).join('')+'</div>';
+      }).catch(function(){ el.innerHTML='<p class="hint">Backups unavailable.</p>'; });
+  }
+
+  /* ── List / Tile view toggle ─────────────────────── */
+  var LPL_VIEW=localStorage.getItem('lp_list_view')||'list';
+  function _lplApplyView(){
+    var list=document.getElementById('lpl-list'); if(!list) return;
+    var btn=document.getElementById('lpl-view-toggle');
+    if(LPL_VIEW==='tile'){
+      list.classList.add('lpl-tile-mode'); list.classList.remove('lpl-list-mode');
+      if(btn) btn.textContent='List view';
+    } else {
+      list.classList.add('lpl-list-mode'); list.classList.remove('lpl-tile-mode');
+      if(btn) btn.textContent='Tile view';
+    }
+  }
+  function _lplWireViewToggle(){
+    var btn=document.getElementById('lpl-view-toggle'); if(!btn||btn._vw) return;
+    btn._vw=true;
+    btn.addEventListener('click',function(){
+      LPL_VIEW=LPL_VIEW==='list'?'tile':'list';
+      localStorage.setItem('lp_list_view',LPL_VIEW);
+      _lplApplyView();
+    });
+    _lplApplyView();
+  }
+
 })();
 </script>
 
