@@ -5161,9 +5161,18 @@ function heroCtaCard(c){
 
       // ── Activity chart ──
       +'<div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:28px;box-shadow:0 1px 4px rgba(0,0,0,.04)">'
-      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">'
       +'<h3 style="margin:0;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)">Activity</h3>'
       +'<span style="flex:1"></span>'
+      // Chart type buttons
+      +'<div style="display:flex;gap:4px;margin-right:8px">'
+      +[{t:"bar",label:"▬ Bar"},{t:"line",label:"↗ Line"},{t:"area",label:"◢ Area"}].map(function(ct,ci){ return '<button class="dash-chart-type" data-ct="'+ct.t+'" style="font-size:11px;padding:4px 9px;border:1px solid var(--line);border-radius:7px;background:'+(ci===0?'var(--brand-deep,#155c4a)':'#fff')+';color:'+(ci===0?'#fff':'var(--ink)')+';cursor:pointer;font-family:inherit;font-weight:600">'+ct.label+'</button>'; }).join('')
+      +'</div>'
+      // Per-day toggle
+      +'<label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--ink-soft);cursor:pointer;margin-right:8px">'
+      +'<input type="checkbox" id="dash-perday" style="accent-color:var(--brand,#1f7a63);width:13px;height:13px"> Per day'
+      +'</label>'
+      // Period buttons
       +['7d','30d','All'].map(function(p,pi){ return '<button class="btn ghost dash-period" data-p="'+p+'" style="font-size:12px;padding:4px 10px'+(pi===1?';background:var(--brand-deep,#155c4a);color:#fff;border-color:var(--brand-deep,#155c4a)':'')+'">'+p+'</button>'; }).join('')
       +'</div>'
       +'<div id="dash-chart" style="min-height:140px"></div>'
@@ -5217,12 +5226,33 @@ function heroCtaCard(c){
       btn.addEventListener('click',function(){
         box.querySelectorAll('.dash-period').forEach(function(b){ b.style.background=''; b.style.color=''; b.style.borderColor=''; });
         btn.style.background='var(--brand-deep,#155c4a)'; btn.style.color='#fff'; btn.style.borderColor='var(--brand-deep,#155c4a)';
-        _dashLoadStats(btn.getAttribute('data-p'));
-        _dashDrawChart(btn.getAttribute('data-p'));
+        window._dashChartPeriod=btn.getAttribute('data-p');
+        _dashLoadStats(window._dashChartPeriod);
+        _dashDrawChart(window._dashChartPeriod);
       });
     });
-    // Initial chart draw after ANA loads
-    setTimeout(function(){ _dashDrawChart('30d'); }, 1200);
+    // Wire chart type buttons
+    box.querySelectorAll('.dash-chart-type').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        box.querySelectorAll('.dash-chart-type').forEach(function(b){ b.style.background='#fff'; b.style.color='var(--ink)'; });
+        btn.style.background='var(--brand-deep,#155c4a)'; btn.style.color='#fff';
+        window._dashChartType=btn.getAttribute('data-ct');
+        _dashDrawChart(window._dashChartPeriod||'30d');
+      });
+    });
+    // Wire per-day toggle
+    var pdCheck=document.getElementById('dash-perday');
+    if(pdCheck) pdCheck.addEventListener('change',function(){ _dashDrawChart(window._dashChartPeriod||'30d'); });
+    // Draw chart — retry until ANA data is available
+    (function _tryChart(n){
+      if(typeof ANA!=='undefined'&&ANA.data&&ANA.data.length>0){
+        _dashDrawChart('30d');
+      } else if(n<20){
+        setTimeout(function(){ _tryChart(n+1); }, 400);
+      } else {
+        _dashDrawChart('30d'); // draw empty state after 8s
+      }
+    })(0);
 
     // Wire leads refresh
     var dlRefresh=document.getElementById('dash-leads-refresh');
@@ -5311,7 +5341,10 @@ function heroCtaCard(c){
       var _tries=0;
       var _interval=setInterval(function(){
         _tries++;
-        if(_applyAna()||_tries>10) clearInterval(_interval);
+        if(_applyAna()||_tries>10){
+          clearInterval(_interval);
+          if(_applyAna()) _dashDrawChart(window._dashChartPeriod||'30d');
+        }
       },500);
     }
     // Last updated
@@ -5442,23 +5475,22 @@ function heroCtaCard(c){
 
   function _dashDrawChart(period){
     var el=document.getElementById('dash-chart'); if(!el) return;
-    // Get ANA data — retry if not loaded yet
-    var data=(typeof ANA!=='undefined'&&ANA.data)||[];
-    if(!data.length){
-      el.innerHTML='<div style="height:140px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:13px;border:1.5px dashed var(--line);border-radius:10px">No activity yet. Stats will appear once the site starts receiving traffic.</div>';
+    window._dashChartPeriod=period||'30d';
+    var chartType=window._dashChartType||'bar';
+    var perDay=!!(document.getElementById('dash-perday')&&document.getElementById('dash-perday').checked);
+    var rawData=(typeof ANA!=='undefined'&&ANA.data)||[];
+    if(!rawData.length){
+      el.innerHTML='<div style="height:140px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:13px;border:1.5px dashed var(--line);border-radius:10px">No activity data yet. Stats will appear once the site starts receiving traffic.</div>';
       return;
     }
-    // Determine date range
     var days=period==='7d'?7:period==='30d'?30:90;
     var now=new Date(); now.setHours(23,59,59,999);
     var since=new Date(now); since.setDate(since.getDate()-days+1); since.setHours(0,0,0,0);
-    // Build daily buckets
     var buckets={};
     for(var d=new Date(since);d<=now;d.setDate(d.getDate()+1)){
-      var key=d.toISOString().substring(0,10);
-      buckets[key]={pv:0,lead:0,call:0};
+      buckets[d.toISOString().substring(0,10)]={pv:0,lead:0,call:0};
     }
-    data.forEach(function(e){
+    rawData.forEach(function(e){
       var day=(e.created_at||'').substring(0,10);
       if(!buckets[day]) return;
       if(e.event==='page_view') buckets[day].pv++;
@@ -5466,51 +5498,70 @@ function heroCtaCard(c){
       else if(e.event==='call_click'||e.event==='phone_click') buckets[day].call++;
     });
     var keys=Object.keys(buckets).sort();
+    var CH=140, W=Math.max(400,el.clientWidth||600), padL=30, padR=10, padB=22;
+    var usable=W-padL-padR;
     var maxVal=Math.max(1,Math.max.apply(null,keys.map(function(k){return buckets[k].pv;})));
-    var barW=Math.max(4,Math.floor((el.clientWidth-40)/keys.length)-2);
-    var chartH=120;
-    // Build SVG bar chart
-    var bars=keys.map(function(k,i){
-      var b=buckets[k];
-      var pvH=Math.round((b.pv/maxVal)*chartH);
-      var ldH=Math.round((b.lead/maxVal)*chartH);
-      var clH=Math.round((b.call/maxVal)*chartH);
-      var x=20+i*(barW+2);
-      var pvBar=pvH?'<rect x="'+x+'" y="'+(chartH-pvH)+'" width="'+barW+'" height="'+pvH+'" rx="2" fill="var(--brand-deep,#155c4a)" opacity="0.85"><title>'+k+': '+b.pv+' visitors</title></rect>':'';
-      var ldBar=ldH?'<rect x="'+x+'" y="'+(chartH-ldH)+'" width="'+Math.max(2,Math.floor(barW/2))+'" height="'+ldH+'" rx="2" fill="#6EE7B7"><title>'+k+': '+b.lead+' leads</title></rect>':'';
-      var clBar=clH?'<rect x="'+(x+Math.floor(barW/2))+'" y="'+(chartH-clH)+'" width="'+Math.max(2,Math.floor(barW/2))+'" height="'+clH+'" rx="2" fill="#FCD34D"><title>'+k+': '+b.call+' calls</title></rect>':'';
-      return pvBar+ldBar+clBar;
+    function xp(i){return padL+i*(usable/Math.max(keys.length-1,1));}
+    function yp(v){return CH-Math.round((v/maxVal)*(CH-6));}
+    // Grid + Y labels
+    var grid='';
+    [0,Math.round(maxVal/2),maxVal].forEach(function(v,i){
+      var y=CH-(i*(CH-6)/2);
+      grid+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="#E5E1DC" stroke-width="1"/>';
+      grid+='<text x="'+(padL-4)+'" y="'+(y+4)+'" text-anchor="end" font-size="10" fill="#9E9891">'+v+'</text>';
+    });
+    // X labels
+    var nth=Math.max(1,Math.floor(keys.length/7));
+    var xlabels=keys.map(function(k,i){
+      if(i%nth!==0&&i!==keys.length-1) return '';
+      return '<text x="'+xp(i)+'" y="'+(CH+16)+'" text-anchor="middle" font-size="10" fill="#9E9891">'+k.substring(5)+'</text>';
     }).join('');
-    // Y-axis labels
-    var yLabels=[0,Math.round(maxVal/2),maxVal].map(function(v,i){
-      var y=chartH-(i*(chartH/2));
-      return '<text x="16" y="'+y+'" text-anchor="end" font-size="10" fill="var(--ink-soft)">'+v+'</text>';
-    }).join('');
-    // X-axis labels (show every Nth)
-    var nth=Math.max(1,Math.floor(keys.length/6));
-    var xLabels=keys.filter(function(_,i){return i%nth===0;}).map(function(k,i){
-      var idx=keys.indexOf(k);
-      var x=20+idx*(barW+2)+barW/2;
-      var label=k.substring(5); // MM-DD
-      return '<text x="'+x+'" y="'+(chartH+14)+'" text-anchor="middle" font-size="10" fill="var(--ink-soft)">'+label+'</text>';
-    }).join('');
-    var svgW=Math.max(300,20+keys.length*(barW+2)+20);
-    el.innerHTML='<svg width="100%" height="'+(chartH+20)+'" viewBox="0 0 '+svgW+' '+(chartH+20)+'" preserveAspectRatio="none" style="display:block;overflow:visible">'+yLabels+bars+xLabels+'</svg>';
+    var pvVals=keys.map(function(k){return buckets[k].pv;});
+    var ldVals=keys.map(function(k){return buckets[k].lead;});
+    var clVals=keys.map(function(k){return buckets[k].call;});
+    var series='';
+    if(chartType==='bar'){
+      var bw=Math.max(3,Math.floor(usable/keys.length)-2);
+      series=keys.map(function(k,idx){
+        var b=buckets[k];
+        var x=xp(idx)-(bw/2);
+        var pvH=b.pv?Math.max(2,Math.round((b.pv/maxVal)*(CH-6))):0;
+        var ldH=b.lead?Math.max(2,Math.round((b.lead/maxVal)*(CH-6))):0;
+        var clH=b.call?Math.max(2,Math.round((b.call/maxVal)*(CH-6))):0;
+        var seg=bw>9?Math.floor(bw/3):0;
+        var out='';
+        if(pvH) out+='<rect x="'+x+'" y="'+(CH-pvH)+'" width="'+bw+'" height="'+pvH+'" rx="2" fill="#155c4a" opacity="0.85"/>';
+        if(ldH&&seg) out+='<rect x="'+x+'" y="'+(CH-ldH)+'" width="'+seg+'" height="'+ldH+'" rx="2" fill="#059669"/>';
+        if(clH&&seg) out+='<rect x="'+(x+seg+1)+'" y="'+(CH-clH)+'" width="'+seg+'" height="'+clH+'" rx="2" fill="#D97706"/>';
+        return out;
+      }).join('');
+    } else {
+      // line or area
+      function buildPath(vals,color,fillColor){
+        if(!vals.length) return '';
+        var pts=vals.map(function(v,i){return xp(i)+','+yp(v);}).join(' ');
+        var out='';
+        if(fillColor){
+          var d='M'+xp(0)+','+CH;
+          vals.forEach(function(v,i){d+=' L'+xp(i)+','+yp(v);});
+          d+=' L'+xp(vals.length-1)+','+CH+' Z';
+          out+='<path d="'+d+'" fill="'+fillColor+'" opacity="0.15"/>';
+        }
+        out+='<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+        vals.forEach(function(v,i){
+          if(v) out+='<circle cx="'+xp(i)+'" cy="'+yp(v)+'" r="3" fill="'+color+'"/>';
+        });
+        return out;
+      }
+      var fill=chartType==='area';
+      series+=buildPath(pvVals,'#155c4a',fill?'#155c4a':null);
+      series+=buildPath(ldVals,'#059669',fill?'#059669':null);
+      series+=buildPath(clVals,'#D97706',fill?'#D97706':null);
+    }
+    var svgH=CH+padB;
+    el.innerHTML='<svg width="100%" height="'+svgH+'" viewBox="0 0 '+W+' '+svgH+'" style="display:block;overflow:visible">'+grid+series+xlabels+'</svg>';
   }
 
-  // lpScopeApply was missing — define it to save scope into site config in Supabase
-  async function lpScopeApply(scope){
-    if(!currentSiteId) return;
-    try{
-      // Update scope in allSites cache
-      var sref=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null;
-      if(sref){ if(!sref.config) sref.config={}; sref.config.scope=scope; }
-      // Save to Supabase
-      var cfg=sref&&sref.config ? JSON.parse(JSON.stringify(sref.config)) : {};
-      cfg.scope=scope;
-      await sb.from('sites').update({config:cfg}).eq('id',currentSiteId);
-    }catch(e){ console.error('scope save error',e&&e.message); }
-  }
 
   function _dashAppsCount(){
     var el=document.getElementById('dash-s-apps'); if(!el) return;
