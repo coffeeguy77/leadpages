@@ -5250,12 +5250,15 @@ function heroCtaCard(c){
 
     // Wire scope add
     var scAdd=document.getElementById('dash-scope-add');
-    if(scAdd) scAdd.addEventListener('click',function(){
+    if(scAdd) scAdd.addEventListener('click',async function(){
       var txt=prompt('New task:'); if(!txt||!txt.trim()) return;
-      var scope=lpCurrentScope()||{items:[],notes:''};
+      var scope=lpCurrentScope()||{items:[]};
       if(!scope.items) scope.items=[];
       scope.items.push({text:txt.trim(),done:false,at:new Date().toISOString()});
-      lpScopeApply(scope); persist(); _dashRenderScope();
+      _dashRenderScope(scope); // show immediately
+      scAdd.disabled=true; scAdd.textContent='Saving…';
+      await lpScopeApply(scope);
+      scAdd.disabled=false; scAdd.textContent='+ Add task';
     });
 
     // Load data
@@ -5405,9 +5408,9 @@ function heroCtaCard(c){
       }).catch(function(){ list.innerHTML='<p style="color:var(--ink-soft);font-size:13px">Backups unavailable.</p>'; });
   }
 
-  function _dashRenderScope(){
+  function _dashRenderScope(scope){
     var el=document.getElementById('dash-scope-body'); if(!el) return;
-    var scope=lpCurrentScope();
+    if(!scope) scope=lpCurrentScope();
     var items=(scope&&scope.items)||[];
     if(!items.length){ el.innerHTML='<p style="color:var(--ink-soft);font-size:13px">No tasks yet. Click \u201c+ Add task\u201d to start.</p>'; return; }
     el.innerHTML='<div style="display:flex;flex-direction:column;gap:6px">'+items.map(function(item,idx){
@@ -5420,16 +5423,19 @@ function heroCtaCard(c){
         +'</div>';
     }).join('')+'</div>';
     el.querySelectorAll('[data-dsc]').forEach(function(cb){
-      cb.addEventListener('change',function(){
+      cb.addEventListener('change',async function(){
         var scope2=lpCurrentScope()||{items:[]}; var idx=parseInt(cb.getAttribute('data-dsc'),10);
         if(scope2.items[idx]) scope2.items[idx].done=cb.checked;
-        lpScopeApply(scope2); persist(); _dashRenderScope();
+        _dashRenderScope(scope2);
+        await lpScopeApply(scope2);
       });
     });
     el.querySelectorAll('[data-dsd]').forEach(function(btn){
-      btn.addEventListener('click',function(){
+      btn.addEventListener('click',async function(){
         var scope2=lpCurrentScope()||{items:[]}; var idx=parseInt(btn.getAttribute('data-dsd'),10);
-        scope2.items.splice(idx,1); lpScopeApply(scope2); persist(); _dashRenderScope();
+        scope2.items.splice(idx,1);
+        _dashRenderScope(scope2);
+        await lpScopeApply(scope2);
       });
     });
   }
@@ -5490,6 +5496,20 @@ function heroCtaCard(c){
     }).join('');
     var svgW=Math.max(300,20+keys.length*(barW+2)+20);
     el.innerHTML='<svg width="100%" height="'+(chartH+20)+'" viewBox="0 0 '+svgW+' '+(chartH+20)+'" preserveAspectRatio="none" style="display:block;overflow:visible">'+yLabels+bars+xLabels+'</svg>';
+  }
+
+  // lpScopeApply was missing — define it to save scope into site config in Supabase
+  async function lpScopeApply(scope){
+    if(!currentSiteId) return;
+    try{
+      // Update scope in allSites cache
+      var sref=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null;
+      if(sref){ if(!sref.config) sref.config={}; sref.config.scope=scope; }
+      // Save to Supabase
+      var cfg=sref&&sref.config ? JSON.parse(JSON.stringify(sref.config)) : {};
+      cfg.scope=scope;
+      await sb.from('sites').update({config:cfg}).eq('id',currentSiteId);
+    }catch(e){ console.error('scope save error',e&&e.message); }
   }
 
   function _dashAppsCount(){
