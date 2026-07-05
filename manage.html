@@ -5272,7 +5272,7 @@ function heroCtaCard(c){
     var bkSave=document.getElementById('dash-bk-save');
     var bkImport=document.getElementById('dash-bk-import');
     var bkFile=document.getElementById('dash-bk-file');
-    if(bkSave) bkSave.addEventListener('click', function(){ bkSave.disabled=true; bkSave.textContent='Saving\u2026'; lpBkSave().finally(function(){ bkSave.disabled=false; bkSave.textContent='+ Save now'; _dashLoadBk(); }); });
+    if(bkSave) bkSave.addEventListener('click',async function(){ bkSave.disabled=true; bkSave.textContent='Saving\u2026'; try{ await lpBkSave(); }catch(e){} bkSave.disabled=false; bkSave.textContent='+ Save now'; });
     if(bkImport) bkImport.addEventListener('click',function(){ bkFile.click(); });
     if(bkFile) bkFile.addEventListener('change', function(e){ lpBkImport(e); setTimeout(_dashLoadBk,2000); });
     var bkList=document.getElementById('dash-bk-list');
