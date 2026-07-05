@@ -4224,7 +4224,7 @@ function heroCtaCard(c){
   }
   /* ===== end leadpages integration ===== */
   const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details','mailer','apps','dashboard'], broker:['appearance','contact','logo','landing','details','mailer','apps','dashboard'], leads:['rates'] };
-  const TEMPLATE_NAV={ 'broker-app':['dashboard','rates','landing','appearance','contact','logo','users','demothemes','mailer'], 'broker-leads':['details','mailer'], 'trade':['dashboard','details','landing','apps','mailer'] };
+  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes','mailer'], 'broker-leads':['details','mailer'], 'trade':['dashboard','details','landing','apps','mailer'] };
   function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
     if($('login-mask')) return;
