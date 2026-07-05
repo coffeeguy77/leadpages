@@ -5159,15 +5159,18 @@ function heroCtaCard(c){
       }).join('')
       +'</div>'
 
-      // ── Trends shell ──
+      // ── Activity chart ──
       +'<div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:28px;box-shadow:0 1px 4px rgba(0,0,0,.04)">'
       +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
       +'<h3 style="margin:0;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)">Activity</h3>'
       +'<span style="flex:1"></span>'
-      +['7d','30d','All'].map(function(p){ return '<button class="btn ghost dash-period" data-p="'+p+'" style="font-size:12px;padding:4px 10px">'+p+'</button>'; }).join('')
+      +['7d','30d','All'].map(function(p,pi){ return '<button class="btn ghost dash-period" data-p="'+p+'" style="font-size:12px;padding:4px 10px'+(pi===1?';background:var(--brand-deep,#155c4a);color:#fff;border-color:var(--brand-deep,#155c4a)':'')+'">'+p+'</button>'; }).join('')
       +'</div>'
-      +'<div id="dash-chart" style="height:120px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:13px;border:1.5px dashed var(--line);border-radius:10px">'
-      +'<span id="dash-chart-inner">No activity yet. Stats will appear once the site starts receiving traffic.</span>'
+      +'<div id="dash-chart" style="min-height:140px"></div>'
+      +'<div style="display:flex;gap:16px;margin-top:10px;font-size:11.5px;font-weight:600;color:var(--ink-soft)">'
+      +'<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:var(--brand-deep,#155c4a);display:inline-block"></span>Visitors</span>'
+      +'<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#6EE7B7;display:inline-block"></span>Leads</span>'
+      +'<span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:#FCD34D;display:inline-block"></span>Calls</span>'
       +'</div>'
       +'</div>'
 
@@ -5212,11 +5215,14 @@ function heroCtaCard(c){
     // Wire period buttons
     box.querySelectorAll('.dash-period').forEach(function(btn){
       btn.addEventListener('click',function(){
-        box.querySelectorAll('.dash-period').forEach(function(b){ b.style.background=''; b.style.color=''; });
-        btn.style.background='var(--brand-deep,#155c4a)'; btn.style.color='#fff';
+        box.querySelectorAll('.dash-period').forEach(function(b){ b.style.background=''; b.style.color=''; b.style.borderColor=''; });
+        btn.style.background='var(--brand-deep,#155c4a)'; btn.style.color='#fff'; btn.style.borderColor='var(--brand-deep,#155c4a)';
         _dashLoadStats(btn.getAttribute('data-p'));
+        _dashDrawChart(btn.getAttribute('data-p'));
       });
     });
+    // Initial chart draw after ANA loads
+    setTimeout(function(){ _dashDrawChart('30d'); }, 1200);
 
     // Wire leads refresh
     var dlRefresh=document.getElementById('dash-leads-refresh');
@@ -5426,6 +5432,64 @@ function heroCtaCard(c){
         scope2.items.splice(idx,1); lpScopeApply(scope2); persist(); _dashRenderScope();
       });
     });
+  }
+
+  function _dashDrawChart(period){
+    var el=document.getElementById('dash-chart'); if(!el) return;
+    // Get ANA data — retry if not loaded yet
+    var data=(typeof ANA!=='undefined'&&ANA.data)||[];
+    if(!data.length){
+      el.innerHTML='<div style="height:140px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:13px;border:1.5px dashed var(--line);border-radius:10px">No activity yet. Stats will appear once the site starts receiving traffic.</div>';
+      return;
+    }
+    // Determine date range
+    var days=period==='7d'?7:period==='30d'?30:90;
+    var now=new Date(); now.setHours(23,59,59,999);
+    var since=new Date(now); since.setDate(since.getDate()-days+1); since.setHours(0,0,0,0);
+    // Build daily buckets
+    var buckets={};
+    for(var d=new Date(since);d<=now;d.setDate(d.getDate()+1)){
+      var key=d.toISOString().substring(0,10);
+      buckets[key]={pv:0,lead:0,call:0};
+    }
+    data.forEach(function(e){
+      var day=(e.created_at||'').substring(0,10);
+      if(!buckets[day]) return;
+      if(e.event==='page_view') buckets[day].pv++;
+      else if(e.event==='lead_submit') buckets[day].lead++;
+      else if(e.event==='call_click'||e.event==='phone_click') buckets[day].call++;
+    });
+    var keys=Object.keys(buckets).sort();
+    var maxVal=Math.max(1,Math.max.apply(null,keys.map(function(k){return buckets[k].pv;})));
+    var barW=Math.max(4,Math.floor((el.clientWidth-40)/keys.length)-2);
+    var chartH=120;
+    // Build SVG bar chart
+    var bars=keys.map(function(k,i){
+      var b=buckets[k];
+      var pvH=Math.round((b.pv/maxVal)*chartH);
+      var ldH=Math.round((b.lead/maxVal)*chartH);
+      var clH=Math.round((b.call/maxVal)*chartH);
+      var x=20+i*(barW+2);
+      var pvBar=pvH?'<rect x="'+x+'" y="'+(chartH-pvH)+'" width="'+barW+'" height="'+pvH+'" rx="2" fill="var(--brand-deep,#155c4a)" opacity="0.85"><title>'+k+': '+b.pv+' visitors</title></rect>':'';
+      var ldBar=ldH?'<rect x="'+x+'" y="'+(chartH-ldH)+'" width="'+Math.max(2,Math.floor(barW/2))+'" height="'+ldH+'" rx="2" fill="#6EE7B7"><title>'+k+': '+b.lead+' leads</title></rect>':'';
+      var clBar=clH?'<rect x="'+(x+Math.floor(barW/2))+'" y="'+(chartH-clH)+'" width="'+Math.max(2,Math.floor(barW/2))+'" height="'+clH+'" rx="2" fill="#FCD34D"><title>'+k+': '+b.call+' calls</title></rect>':'';
+      return pvBar+ldBar+clBar;
+    }).join('');
+    // Y-axis labels
+    var yLabels=[0,Math.round(maxVal/2),maxVal].map(function(v,i){
+      var y=chartH-(i*(chartH/2));
+      return '<text x="16" y="'+y+'" text-anchor="end" font-size="10" fill="var(--ink-soft)">'+v+'</text>';
+    }).join('');
+    // X-axis labels (show every Nth)
+    var nth=Math.max(1,Math.floor(keys.length/6));
+    var xLabels=keys.filter(function(_,i){return i%nth===0;}).map(function(k,i){
+      var idx=keys.indexOf(k);
+      var x=20+idx*(barW+2)+barW/2;
+      var label=k.substring(5); // MM-DD
+      return '<text x="'+x+'" y="'+(chartH+14)+'" text-anchor="middle" font-size="10" fill="var(--ink-soft)">'+label+'</text>';
+    }).join('');
+    var svgW=Math.max(300,20+keys.length*(barW+2)+20);
+    el.innerHTML='<svg width="100%" height="'+(chartH+20)+'" viewBox="0 0 '+svgW+' '+(chartH+20)+'" preserveAspectRatio="none" style="display:block;overflow:visible">'+yLabels+bars+xLabels+'</svg>';
   }
 
   function _dashAppsCount(){
