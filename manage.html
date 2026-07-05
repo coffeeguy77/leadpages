@@ -397,7 +397,7 @@ body.lp-standard-mode .calc-hide-inactive,
 body.lp-standard-mode [data-standard-hide] { display:none!important; }
 body.lp-standard-mode .lp-sec-item[data-active="false"] { display:none!important; }
 body.lp-standard-mode .lp-preset-strip { display:none!important; }
-#lp-mode-toggle.standard-mode { background:#B9852B!important; }
+#lp-mode-toggle.standard-mode { background:var(--brand-deep,#155c4a)!important; }
 #lp-mode-toggle.standard-mode::before { content:"Standard "; }
 .lp-standard-banner { display:none; background:#FEF3C7; color:#92400E; font-size:12px; font-weight:700; padding:4px 14px; border-radius:999px; }
 body.lp-standard-mode .lp-standard-banner { display:inline-block; }
@@ -4787,7 +4787,7 @@ function heroCtaCard(c){
     if (!btn) return;
     var isStandard = mode === 'standard';
     btn.textContent = isStandard ? 'Standard' : 'Classic';
-    btn.style.background = isStandard ? 'var(--amber,#B9852B)' : '';
+    btn.style.background = isStandard ? 'var(--brand-deep,#155c4a)' : '';
     btn.style.color = isStandard ? '#fff' : '';
     btn.title = isStandard
       ? (role === 'super' ? 'Previewing Standard (client) view — click for Classic' : 'Standard mode — click for Classic')
