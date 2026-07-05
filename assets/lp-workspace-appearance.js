@@ -92,6 +92,10 @@
     root.dataset.lpHighContrast = p.highContrast ? 'true' : 'false';
     root.dataset.lpStrongFocus = p.strongFocus !== false ? 'true' : 'false';
 
+    try {
+      global.dispatchEvent(new CustomEvent('lp-workspace-appearance-change', { detail: p }));
+    } catch (e) { /* ignore */ }
+
     return p;
   }
 
