@@ -5150,9 +5150,11 @@ function heroCtaCard(c){
       +'<div id="dash-stat-row" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:28px">'
       +['Visitors','Leads','Calls','Forms','Conversion','Apps on','Updated'].map(function(l,i){
         var ids=['dash-s-vis','dash-s-leads','dash-s-calls','dash-s-forms','dash-s-conv','dash-s-apps','dash-s-updated'];
+        var isConv=(l==='Conversion');
         return '<div style="padding:16px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)">'
           +'<div id="'+ids[i]+'" style="font-size:24px;font-weight:800;color:var(--brand-deep,#155c4a);line-height:1;margin-bottom:4px">\u2014</div>'
           +'<div style="font-size:11.5px;color:var(--ink-soft);font-weight:600">'+l+'</div>'
+          +(isConv?'<span id="dash-s-conv-bench" style="display:none;font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;margin-top:5px;letter-spacing:.03em"></span>':'')
           +'</div>';
       }).join('')
       +'</div>'
@@ -5277,7 +5279,21 @@ function heroCtaCard(c){
         if(cls) cls.textContent=c.phone_click||'0';
         if(fms) fms.textContent=c.lead_submit||'0';
         var total=Math.max(c.page_view||0,1);
-        if(cvn) cvn.textContent=total>0?Math.round((leadsN/total)*100)+'%':'0%';
+        var cvnPct=total>0?Math.round((leadsN/total)*100):0;
+        if(cvn) cvn.textContent=cvnPct+'%';
+        // Benchmark indicator
+        var cvnBench=document.getElementById('dash-s-conv-bench');
+        if(cvnBench){
+          var label,color;
+          if(cvnPct>=10){label='Excellent';color='#065F46';bg='#D1FAE5';}
+          else if(cvnPct>=5){label='Good';color='#1E40AF';bg='#DBEAFE';}
+          else if(cvnPct>=2){label='Average';color='#92400E';bg='#FEF3C7';}
+          else{label='Below avg';color='#991B1B';bg='#FEE2E2';}
+          cvnBench.textContent=label;
+          cvnBench.style.background=bg;
+          cvnBench.style.color=color;
+          cvnBench.style.display='inline-block';
+        }
         return true;
       }catch(e){ return false; }
     }
