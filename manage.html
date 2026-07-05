@@ -3560,7 +3560,7 @@ function heroCtaCard(c){
   }
   async function anaRefresh(){ anaRender(); await anaFetchSite(); if(ANA.active==='global'){ await anaFetchGlobal(); } anaRender(); }
   function anaInit(){ var el=document.getElementById('lp-analytics'); if(el)return el; var nav=document.querySelector('.adminnav'); if(!nav||!nav.parentNode)return null; el=document.createElement('div'); el.id='lp-analytics'; nav.parentNode.insertBefore(el,nav); el.addEventListener('click',anaClick); document.addEventListener('click',function(ev){ if(ANA.active && !el.contains(ev.target)){ ANA.active=null; anaRender(); } }); return el; }
-  async function renderSiteAnalytics(){ if(!anaInit())return; if(currentSiteTemplate==='trade'){ var ael=document.getElementById('lp-analytics'); if(ael) ael.style.display='none'; return; } try{ lpBillingGate(); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} } ANA.active=null; ANA.globalData=null; anaRender(); lpExtrasInit(); LPDOM.open=null; renderMyDomains(); renderLeadsCRM(); await anaFetchSite(); anaRender(); if(LPLEADS.timeline) lpLeadsPaint(); }
+  async function renderSiteAnalytics(){ if(!anaInit())return; if(currentSiteTemplate==='trade'){ var ael=document.getElementById('lp-analytics'); if(ael) ael.style.display='none'; /* fall through to load data */ } try{ lpBillingGate(); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} } ANA.active=null; ANA.globalData=null; anaRender(); lpExtrasInit(); LPDOM.open=null; renderMyDomains(); renderLeadsCRM(); await anaFetchSite(); anaRender(); if(LPLEADS.timeline) lpLeadsPaint(); }
   function renderLandingSub(c){
     var body=$('lsub-body'); if(!body) return; var sub=landingSub;
     if(sub==='details'){
@@ -5262,24 +5262,34 @@ function heroCtaCard(c){
   /* ── Dashboard data loaders ───────────────────────────── */
 
   function _dashLoadStats(period){
-    // Pull from existing ANA system
     var vis=document.getElementById('dash-s-vis');
     var lds=document.getElementById('dash-s-leads');
     var cls=document.getElementById('dash-s-calls');
     var fms=document.getElementById('dash-s-forms');
     var cvn=document.getElementById('dash-s-conv');
     var upd=document.getElementById('dash-s-updated');
-    // Try ANA data if loaded
-    try{
-      var c=anaCounts(ANA.data);
-      if(vis) vis.textContent=c.page_view||'\u2014';
-      var leadsN=Math.max(c.lead_submit||0, ANA.leadsCount||0);
-      if(lds) lds.textContent=leadsN||'\u2014';
-      if(cls) cls.textContent=c.phone_click||'\u2014';
-      if(fms) fms.textContent=c.lead_submit||'\u2014';
-      var total=c.page_view||1;
-      if(cvn) cvn.textContent=total>0?Math.round((leadsN/total)*100)+'%':'\u2014';
-    }catch(e){}
+    function _applyAna(){
+      try{
+        if(typeof ANA==='undefined'||!ANA.data||!ANA.data.length){ return false; }
+        var c=anaCounts(ANA.data);
+        if(vis) vis.textContent=c.page_view||'0';
+        var leadsN=Math.max(c.lead_submit||0, ANA.leadsCount||0);
+        if(lds) lds.textContent=leadsN||'0';
+        if(cls) cls.textContent=c.phone_click||'0';
+        if(fms) fms.textContent=c.lead_submit||'0';
+        var total=Math.max(c.page_view||0,1);
+        if(cvn) cvn.textContent=total>0?Math.round((leadsN/total)*100)+'%':'0%';
+        return true;
+      }catch(e){ return false; }
+    }
+    // Try immediately, then retry up to 5x as ANA loads async
+    if(!_applyAna()){
+      var _tries=0;
+      var _interval=setInterval(function(){
+        _tries++;
+        if(_applyAna()||_tries>10) clearInterval(_interval);
+      },500);
+    }
     // Last updated
     if(upd){
       try{
@@ -5291,10 +5301,44 @@ function heroCtaCard(c){
 
   function _dashLoadLeads(siteId){
     if(!siteId) return;
-    // Trigger existing leads system
-    try{ lpLeadsLoad(); }catch(e){}
-    // Mirror leads into dash-leads-body after paint
-    setTimeout(_dashSyncLeads, 800);
+    var el=document.getElementById('dash-leads-body'); if(!el) return;
+    el.innerHTML='<p style="color:var(--ink-soft);font-size:13px">Loading\u2026</p>';
+    // Query leads directly from Supabase
+    sb.from('leads').select('*').eq('site_id',siteId).order('created_at',{ascending:false}).limit(20)
+      .then(function(r){
+        var rows=r.data||[];
+        // Also update leads stat card
+        var lds=document.getElementById('dash-s-leads');
+        if(lds) lds.textContent=rows.length||'0';
+        if(!rows.length){
+          el.innerHTML='<p style="color:var(--ink-soft);font-size:13px">No enquiries yet. When someone submits the quote form, they\u2019ll appear here.</p>';
+          return;
+        }
+        el.innerHTML='<div style="display:flex;flex-direction:column;gap:8px">'+rows.map(function(l){
+          var name=esc(l.name||l.fname||'Anonymous');
+          var phone=esc(l.phone||'');
+          var job=esc(l.job||l.message||l.detail||l.service||'');
+          var sub=esc(l.suburb||l.postcode||'');
+          var date=l.created_at?new Date(l.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+          var isNew=l.created_at&&(Date.now()-new Date(l.created_at).getTime())<86400000*3;
+          return '<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fff">'
+            +'<div style="flex:1;min-width:0">'
+            +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">'
+            +'<span style="font-weight:700;font-size:14px">'+name+'</span>'
+            +(sub?'<span style="font-size:12px;color:var(--ink-soft)">&middot; '+sub+'</span>':'')
+            +(isNew?'<span style="background:#D1FAE5;color:#065F46;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px">NEW</span>':'')
+            +'</div>'
+            +(job?'<div style="font-size:13px;color:var(--ink-soft);margin-bottom:4px">'+job+'</div>':'')
+            +'</div>'
+            +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">'
+            +(phone?'<a href="tel:'+phone+'" style="font-size:13px;font-weight:600;color:var(--brand);text-decoration:none">'+phone+'</a>':'')
+            +'<span style="font-size:11px;color:var(--ink-faint)">'+date+'</span>'
+            +'</div>'
+            +'</div>';
+        }).join('')+'</div>';
+      }).catch(function(e){
+        el.innerHTML='<p style="color:var(--ink-soft);font-size:13px">Could not load leads: '+esc(String(e&&e.message||e))+'</p>';
+      });
   }
 
   function _dashSyncLeads(){
