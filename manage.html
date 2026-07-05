@@ -4331,7 +4331,12 @@ function heroCtaCard(c){
     const roleAllow=ALLOWED[currentRole]||ALLOWED.super;
     const tnav=tplNav();
     const allow=roleAllow.filter(function(k){ return tnav.indexOf(k)>=0; });
-    NAV.forEach(function(it){ const b=$('nav-'+it[0]); if(b) b.style.display = allow.indexOf(it[0])>=0 ? '' : 'none'; });
+    // First: hide ALL nav buttons and panes to reset state cleanly
+    NAV.forEach(function(it){
+      const b=$('nav-'+it[0]); if(b) b.style.display = allow.indexOf(it[0])>=0 ? '' : 'none';
+      const v=$(it[1]); if(v){ v.hidden=true; }
+      const nb=$('nav-'+it[0]); if(nb) nb.setAttribute('aria-selected','false');
+    });
     const leads=(currentRole==='leads');
     document.body.classList.toggle('role-leads', leads);
     const av=$('av-rates'); if(av){ Array.prototype.forEach.call(av.children,function(c){ if(c.classList.contains('leads-card')) return; c.style.display = leads ? 'none' : ''; }); }
