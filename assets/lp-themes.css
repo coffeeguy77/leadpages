@@ -36,6 +36,8 @@
   --chart-primary: #155c4a;
   --chart-secondary: #059669;
   --chart-warning: #d97706;
+  --chart-grid: #e7e2d8;
+  --surf2: var(--panel-soft);
 
   /* Legacy aliases used throughout manage.html */
   --surface: var(--panel);
@@ -81,6 +83,8 @@
   --chart-primary: #3ddda0;
   --chart-secondary: #5eead4;
   --chart-warning: #e8b84a;
+  --chart-grid: #2e3648;
+  --surf2: var(--panel-soft);
 
   --surface: var(--panel);
   --surface-2: var(--panel-soft);
@@ -124,6 +128,8 @@
   --chart-primary: #c45c7a;
   --chart-secondary: #9a6a8a;
   --chart-warning: #c49a3a;
+  --chart-grid: #edd8d6;
+  --surf2: var(--panel-soft);
 
   --surface: var(--panel);
   --surface-2: var(--panel-soft);
@@ -167,6 +173,8 @@
   --chart-primary: #2563eb;
   --chart-secondary: #0d9488;
   --chart-warning: #d97706;
+  --chart-grid: #d4e0ea;
+  --surf2: var(--panel-soft);
 
   --surface: var(--panel);
   --surface-2: var(--panel-soft);
@@ -438,4 +446,61 @@ html[data-lp-reduced-motion="true"] {
   border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
   margin-top: 8px;
+}
+
+/* Dashboard + site switcher shared surfaces */
+.lp-dash-card,
+.lp-dash-stat {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+}
+.lp-dash-stat {
+  padding: 16px;
+}
+.lp-dash-row {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.lp-dash-row-muted {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel-soft);
+}
+.lp-badge-info {
+  background: var(--accent-soft) !important;
+  color: var(--accent-hover) !important;
+  border-color: var(--border) !important;
+}
+.lp-badge-warn-inline {
+  background: var(--warning-soft) !important;
+  color: var(--warning) !important;
+  border-color: var(--border) !important;
+}
+.lp-badge-new {
+  background: var(--success-soft);
+  color: var(--success);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* Floating backup / scope panels */
+#lp-bk-panel,
+#lp-scope-panel {
+  background: var(--panel) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+#lp-bk-panel strong,
+#lp-scope-panel strong {
+  color: var(--text);
+}
+#lp-bk-close,
+#lp-scope-close {
+  color: var(--muted) !important;
 }
