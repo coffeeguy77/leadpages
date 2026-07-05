@@ -5122,11 +5122,11 @@ function heroCtaCard(c){
     var box=document.getElementById('av-dashboard'); if(!box) return;
     var c=data||{}, cfg=c.config||{};
     var siteId=currentSiteId||'';
-    var biz=esc(cfg.businessName||currentSite&&currentSite.business_name||currentSite&&currentSite.slug||'This site');
-    var slug=esc(currentSite&&currentSite.slug||'');
-    var domain=esc(currentSite&&(currentSite.custom_domain||currentSite.domain)||'');
-    var isActive=currentSite&&currentSite.status==='active';
-    var isDomainConn=!!(currentSite&&(currentSite.custom_domain||currentSite.domain));
+    var biz=esc(cfg.businessName||currentBusinessName||currentSiteSlug||'This site');
+    var slug=esc(currentSiteSlug||'');
+    var domain=esc(currentCustomDomain||'');
+    var isActive=true;
+    var isDomainConn=!!(currentCustomDomain);
 
     box.innerHTML=
       // ── Header ──
@@ -5281,8 +5281,11 @@ function heroCtaCard(c){
       if(cvn) cvn.textContent=total>0?Math.round((leadsN/total)*100)+'%':'\u2014';
     }catch(e){}
     // Last updated
-    if(upd&&currentSite&&currentSite.updated_at){
-      try{ upd.textContent=new Date(currentSite.updated_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}); }catch(_){}
+    if(upd){
+      try{
+        var _s=(typeof allSites!=='undefined'&&allSites||[]).find(function(x){return x.id===currentSiteId||x.slug===currentSiteSlug;});
+        if(_s&&_s.updated_at) upd.textContent=new Date(_s.updated_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+      }catch(_){}
     }
   }
 
