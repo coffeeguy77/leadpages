@@ -455,9 +455,8 @@ body.lp-standard-mode .lp-standard-banner { display:inline-block; }
 .ll-tltx{color:#3a3a35;}
 .ll-tlwhen{margin-left:auto;color:#9a9a93;font-size:12px;}
 /* account landing + top sign-out */
-#lp-signout-top{position:fixed;top:14px;right:18px;z-index:9500;font:600 12.5px var(--font-ui);color:var(--brand-deep);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;text-decoration:none;}
-#lp-signout-top:hover{background:var(--brand-tint);}
-#lp-partneradmin-top{position:fixed;top:14px;right:104px;z-index:9500;font:600 12.5px var(--font-ui);color:#fff;background:var(--brand);border:1px solid var(--brand);border-radius:999px;padding:6px 14px;cursor:pointer;text-decoration:none;}
+
+
 #lp-partneradmin-top:hover{background:var(--brand-deep);}
 body.lp-cmd-on #lp-signout-top,body.lp-cmd-on #lp-partneradmin-top,body.lp-cmd-on #lp-prev-toggle,body.lp-cmd-on #lp-scope-btn,body.lp-cmd-on #lp-bk-btn{display:none !important;}
 #lp-landing{position:fixed;inset:0;background:var(--bg);z-index:9000;overflow:auto;padding:46px 20px;display:none;}
@@ -518,10 +517,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/icons.js"></script>
 </head>
 <body>
-<a id="lp-signout-top" href="#">Sign Out</a>
-<button id="lp-mode-toggle" title="Switch between Classic and Standard editor view" style="margin-left:8px;background:var(--brand,#1f7b63);color:#fff;border:0;border-radius:999px;padding:4px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.04em">Classic</button>
-<a id="lp-partneradmin-top" href="/partners-admin" style="display:none">Partner Admin</a>
-<a id="lp-dashboard-top" href="/partner-dashboard" style="font-size:13px;font-weight:600;color:var(--brand,#1f7a63);margin-left:10px">&#8592; Dashboard</a>
+
 <div id="lp-landing"><div class="lpl-wrap">
   <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-white.png" alt="leadpages" style="height:60px;width:auto;display:block;margin:0 0 18px">
   <p class="eyebrow">Control panel</p>
@@ -4072,14 +4068,34 @@ function heroCtaCard(c){
     mv('btn-newsite', tools);
     if(!$('lpc-acct')){
       var acct=document.createElement('div'); acct.id='lpc-acct'; acct.style.cssText='margin-left:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
+      var modeBtn='<button type="button" id="lp-mode-toggle" class="btn ghost" style="font-size:12px;">Classic</button>';
       if(currentRole==='super'){
-        acct.innerHTML='<a href="/partners-admin" class="btn ghost" style="text-decoration:none;">Partner dashboard</a>'
+        acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">&#8592; Dashboard</a>'
+          +'<a href="/partners-admin" class="btn ghost" style="text-decoration:none;">Partner Admin</a>'
+          +modeBtn
+          +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
+      } else if(currentRole==='broker'){
+        acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">&#8592; Dashboard</a>'
+          +modeBtn
           +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
       } else {
         acct.innerHTML='<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
       }
       ctx.appendChild(acct);
       var sob=$('lpc-acct-signout'); if(sob) sob.addEventListener('click',function(e){ e.preventDefault(); signOutLP(); });
+      // Wire mode toggle (created dynamically)
+      var mtBtn=document.getElementById('lp-mode-toggle');
+      if(mtBtn){
+        var _role=currentRole||'broker';
+        var _curMode=_getCurrentMode(_role);
+        _applyModeBtn(mtBtn,_curMode,_role);
+        mtBtn.addEventListener('click',function(){
+          var cur=_getCurrentMode(_role);
+          var next=cur==='classic'?'standard':'classic';
+          localStorage.setItem(LP_MODE_KEY,next);
+          _applyMode(next,_role);
+        });
+      }
     }
   }
   /* ---- demo themes (super-admin: manage looks shown on /demo) ---- */
@@ -4710,9 +4726,19 @@ function heroCtaCard(c){
     return _getModeDefault(role);
   }
 
+  function _applyModeBtn(btn, mode, role) {
+    if (!btn) return;
+    var isStandard = mode === 'standard';
+    btn.textContent = isStandard ? 'Standard' : 'Classic';
+    btn.style.background = isStandard ? 'var(--amber,#B9852B)' : '';
+    btn.style.color = isStandard ? '#fff' : '';
+    btn.title = isStandard
+      ? (role === 'super' ? 'Previewing Standard (client) view — click for Classic' : 'Standard mode — click for Classic')
+      : 'Classic mode — click for Standard (client view)';
+  }
+
   function _applyMode(mode, role) {
     var isStandard = mode === 'standard';
-    // Set body attribute FIRST so renderDetails picks it up
     if (isStandard) {
       document.body.setAttribute('data-lp-standard', '1');
     } else {
@@ -4720,16 +4746,8 @@ function heroCtaCard(c){
     }
     document.body.classList.toggle('lp-standard-mode', isStandard);
     var btn = document.getElementById('lp-mode-toggle');
-    if (btn) {
-      btn.textContent = isStandard ? 'Standard' : 'Classic';
-      btn.classList.toggle('standard-mode', isStandard);
-      btn.title = isStandard
-        ? (role === 'super' ? 'Previewing Standard (client) view — click for Classic' : 'Standard mode — click for Classic')
-        : 'Classic mode — click for Standard (client view)';
-    }
-    // Re-render the details panel so it picks up the new mode immediately
+    _applyModeBtn(btn, mode, role);
     try { renderDetails(); } catch(e) {}
-    // After render, enforce standard-specific hiding
     if (isStandard) {
       _enforceStandardMode();
     } else {
@@ -4787,16 +4805,7 @@ function heroCtaCard(c){
     var role = typeof currentRole !== 'undefined' ? currentRole : 'broker';
     var mode = _getCurrentMode(role);
     _applyMode(mode, role);
-
-    var btn = document.getElementById('lp-mode-toggle');
-    if (btn) {
-      btn.addEventListener('click', function() {
-        var current = _getCurrentMode(role);
-        var next = current === 'classic' ? 'standard' : 'classic';
-        localStorage.setItem(LP_MODE_KEY, next);
-        _applyMode(next, role);
-      });
-    }
+    // Button wiring handled in ensureSiteBar after dynamic render
   }
 
   // Call after role is known (after applyRoleGating)
