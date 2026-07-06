@@ -7,7 +7,8 @@
 <title>Partner Dashboard — LeadPages</title>
 <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-themes.css">
-<script src="/assets/lp-workspace-appearance.js"></script>
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<script src="/assets/lp-admin-shell.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
 <style>
@@ -23,7 +24,7 @@ img{max-width:100%;display:block}
 h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.14}
 /* topbar */
 .topbar{background:var(--brand);color:#E9EFEA;position:sticky;top:0;z-index:40}
-.topbar .inner{max-width:1400px;margin:0 auto;padding:0 22px;display:flex;align-items:center;gap:16px;height:66px}
+.topbar .inner{max-width:1400px;margin:0 auto;padding:0 22px;display:flex;align-items:center;gap:16px;min-height:66px;flex-wrap:wrap}
 .topbar img{height:44px;width:auto}
 .topbar .spacer{flex:1}
 .topbar .who{font-size:13.5px;color:#C9D2CC}
@@ -130,17 +131,18 @@ textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radi
 textarea:focus{border-color:var(--brand);outline:none}
 </style>
 </head>
-<body>
+<body class="partner-dash-page" data-lp-admin-page="partner-dashboard">
 
 <!-- ── topbar ───────────────────────────────────────── -->
 <div class="topbar">
-  <div class="inner">
-    <img class="leadpages-logo" data-lp-logo="auto" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665886/leadpages-logo-white.png" alt="LeadPages">
-    <span class="spacer"></span>
+  <div class="inner" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <img class="leadpages-logo" data-lp-logo="auto" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665886/leadpages-logo-white.png" alt="LeadPages" style="height:40px;width:auto">
+    <div class="links lp-admin-topbar-nav" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-left:auto">
     <span class="who" id="top-who"></span>
     <a href="/manage" id="top-editor">App Command Centre</a>
     <a href="/partner-onboarding" style="color:#E9EFEA;font-size:13.5px;font-weight:600">Getting started</a>
     <button id="top-signout">Sign out</button>
+    </div>
   </div>
 </div>
 

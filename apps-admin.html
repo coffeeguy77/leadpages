@@ -5,6 +5,8 @@
 <link rel="icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
 <title>App Registry — LeadPages Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<script src="/assets/lp-admin-shell.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
 <style>
@@ -78,10 +80,10 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
 .center-card{max-width:420px;margin:70px auto}
 </style>
 </head>
-<body>
-<div class="topbar"><div class="wrap">
-  <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png" alt="LeadPages">
-  <div style="display:flex;align-items:center;gap:12px">
+<body class="apps-admin-page" data-lp-admin-page="apps-admin">
+<div class="topbar"><div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+  <img class="leadpages-logo" data-lp-logo="auto" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665886/leadpages-logo-white.png" alt="LeadPages" style="height:40px">
+  <div class="links lp-admin-topbar-nav" style="display:flex;align-items:center;gap:12px">
     <span id="who" style="font-size:13px;color:#C9D2CC"></span>
     <button class="btn sm ghost hidden" id="signout" style="color:#E9EFEA;border-color:rgba(255,255,255,.3)">Sign out</button>
   </div>
