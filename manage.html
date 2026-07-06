@@ -132,7 +132,7 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .anav-btn{appearance:none;background:none;border:none;cursor:pointer;font-family:var(--font-ui);font-size:14.5px;font-weight:600;color:var(--ink-soft);padding:10px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;}
 .anav-btn[aria-selected="true"]{color:var(--accent-hover);border-bottom-color:var(--accent);}
 .lsub-row{flex-wrap:wrap;}
-.lsub-extra{margin:-8px 0 22px;padding:11px 14px 4px;background:#faf9f6;border:1px solid var(--line);border-radius:12px;}
+.lsub-extra{margin:-8px 0 22px;padding:11px 14px 4px;background:var(--panel-soft);border:1px solid var(--line);border-radius:12px;}
 .lsub-extra-label{display:block;font-family:var(--font-ui);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 2px 2px;}
 .lsub-extra-nav{border-bottom:none;margin:0;gap:2px 4px;}
 .lsub-extra .anav-btn{padding:8px 11px;font-size:13.5px;}
@@ -549,8 +549,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <div id="lp-cmd" class="bar" style="display:none;flex-direction:column;align-items:stretch;gap:0;">
     <div id="lpc-drawer-top" class="lpc-drawer-top"></div>
     <div id="lpc-context" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div>
-    <div style="margin-top:16px;"><div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 8px;">Publishing &amp; preview</div><div id="lpc-primary" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div></div>
-    <div style="margin-top:16px;"><div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 8px;">Site tools</div><div id="lpc-tools" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div></div>
+    <div style="margin-top:16px;" data-lpc-wrap="primary"><div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 8px;">Publishing &amp; preview</div><div id="lpc-primary" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div></div>
+    <div style="margin-top:16px;" data-lpc-wrap="tools"><div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 8px;">Site tools</div><div id="lpc-tools" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div></div>
     <div id="lpc-drawer-footer" class="lpc-drawer-footer"></div>
   </div>
 
@@ -1470,7 +1470,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(!doc) return;
       var st=doc.getElementById('lp-prev-chrome-hide-css');
       if(!st){ st=doc.createElement('style'); st.id='lp-prev-chrome-hide-css'; doc.head.appendChild(st); }
-      st.textContent=hide?'header.site,header.nav,.site-header{display:none!important}':'';
+      st.textContent=hide?'header.site,header.nav,.site-header,.emerg{display:none!important}':'';
       var w=fr.contentWindow;
       if(w&&w.__lpSetPreviewChrome) w.__lpSetPreviewChrome({ hideHeader:hide });
     }catch(e){}
@@ -2406,9 +2406,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     h+='</div>';
     h+='<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">';
     fields.forEach(function(f){ var key=f[0],label=f[1],ta=f[2]==='ta'; var _full=(ta||f[2]==='image'); var fst=' style="margin:0;'+(_full?'flex:1 1 100%;':'flex:1 1 calc(50% - 6px);min-width:190px;')+'"'; var ph=String(def[key]||'').replace(/\{\{\s*businessName\s*\}\}/g,currentBusinessName||'').replace(/"/g,'&quot;');
-      if(ta) h+='<div class="f"'+fst+'><label>'+label+'</label><textarea id="sec-'+id+'-'+key+'" rows="2" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;" placeholder="'+ph+'"></textarea></div>';
+      if(ta) h+='<div class="f"'+fst+'><label>'+label+'</label><textarea class="tin" id="sec-'+id+'-'+key+'" rows="2" placeholder="'+ph+'"></textarea></div>';
       else if(f[2]==='image') h+='<div class="f"'+fst+'><label>'+label+'</label>'+cwImgHTML('id="sec-'+id+'-'+key+'"',ph,f[3])+'<input type="hidden" id="sec-'+id+'-'+key+'-pid"></div>';
-      else h+='<div class="f"'+fst+'><label>'+label+'</label><input type="text" id="sec-'+id+'-'+key+'" placeholder="'+ph+'"></div>';
+      else h+='<div class="f"'+fst+'><label>'+label+'</label><input type="text" class="tin" id="sec-'+id+'-'+key+'" placeholder="'+ph+'"></div>';
     });
     h+='</div>';
     return h+'</div>';
@@ -4631,6 +4631,11 @@ function heroCtaCard(c){
         var mt=document.createElement('button'); mt.type='button'; mt.id='lp-mode-toggle'; mt.className='btn ghost lp-drawer-phone-hide'; mt.style.fontSize='12px'; mt.textContent='Classic';
         footer.appendChild(mt);
       } else { mv('lp-mode-toggle', footer); }
+      if(!$('lpc-drawer-signout')){
+        var so=document.createElement('button'); so.type='button'; so.id='lpc-drawer-signout'; so.className='btn ghost'; so.textContent='Sign Out';
+        so.addEventListener('click',function(e){ e.preventDefault(); signOutLP(); });
+        footer.appendChild(so);
+      }
     }
     if(!$('lpc-acct')){
       var acct=document.createElement('div'); acct.id='lpc-acct'; acct.className='lpc-acct-desktop'; acct.style.cssText='margin-left:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
@@ -4836,6 +4841,7 @@ function heroCtaCard(c){
     if(allow.indexOf(activeView)<0) activeView=(allow.indexOf(tnav[0])>=0?tnav[0]:allow[0]);
     document.body.classList.remove('lp-cmd-loading');
     showView(activeView);
+    if(window.LPAdminShell&&LPAdminShell.moveChrome) LPAdminShell.moveChrome();
   }
   function gate(){ if(!authed){ const av=document.getElementById('admin-view'); if(av && av.hidden) return; showLogin(); } }
 
