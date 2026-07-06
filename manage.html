@@ -858,8 +858,24 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 </div>
 <div class="toast" id="toast"></div>
 <button type="button" id="lp-prev-toggle" class="lp-prev-toggle" hidden>◧&nbsp;Live preview</button>
+<div class="modal lp-conv-info-modal" id="lp-conv-modal" aria-hidden="true">
+  <div class="box" style="max-width:480px">
+    <h3 style="margin:0 0 12px;font-size:18px">Why conversion rate matters</h3>
+    <p>Conversion rate is the share of visitors who become enquiries. For trade and service websites, industry benchmarks typically look like this:</p>
+    <ul>
+      <li><strong>10%+</strong> — excellent: your site is turning traffic into leads very effectively</li>
+      <li><strong>5–9%</strong> — good: solid performance; small tweaks can lift results further</li>
+      <li><strong>2–4%</strong> — average: typical for many local trade sites</li>
+      <li><strong>Below 2%</strong> — below average: worth reviewing your offer, calls-to-action, and page speed</li>
+    </ul>
+    <p>Tracking this number helps you spot whether more visitors are actually reaching out — not just browsing. A healthy conversion rate means your site is doing its job between ad spend, SEO, and word of mouth.</p>
+    <div class="actions" style="margin-top:16px">
+      <button type="button" class="btn ghost lp-btn-stroke" id="lp-conv-modal-close">Got it</button>
+    </div>
+  </div>
+</div>
 <aside id="lp-prev" class="lp-prev" hidden aria-label="Live preview">
-  <div class="lp-prev-head"><strong>Live preview</strong><span class="lp-prev-sub" id="lp-prev-sub">unsaved look</span><span class="lp-prev-ratio" id="lp-prev-ratio"><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-minus" aria-label="More preview space">&#8722;</button><span class="lp-ratio-val" data-lp-ratio-val>70/30</span><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-plus" aria-label="More editor space">&#43;</button></span><button type="button" class="lp-prev-hide-logo" id="lp-prev-hide-logo" title="Hide header logo for more space">Hide logo</button><span class="lp-dev"><button type="button" data-dev="desktop" aria-pressed="true">Desktop</button><button type="button" data-dev="mobile" aria-pressed="false">Mobile</button></span><span class="lp-prev-actions"><button type="button" id="lp-prev-reload" title="Reload preview">↻</button><button type="button" id="lp-prev-close" title="Close">✕</button></span></div>
+  <div class="lp-prev-head"><strong>Live preview</strong><span class="lp-prev-sub" id="lp-prev-sub">unsaved look</span><span class="lp-prev-ratio" id="lp-prev-ratio"><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-minus" aria-label="More preview space">&#8722;</button><span class="lp-ratio-val" data-lp-ratio-val>70/30</span><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-plus" aria-label="More editor space">&#43;</button></span><button type="button" class="lp-prev-hide-logo" id="lp-prev-hide-logo" title="Hide the site header bar in preview for more space">Hide logo</button><span class="lp-dev"><button type="button" data-dev="desktop" aria-pressed="true">Desktop</button><button type="button" data-dev="mobile" aria-pressed="false">Mobile</button></span><span class="lp-prev-actions"><button type="button" id="lp-prev-reload" title="Reload preview">↻</button><button type="button" id="lp-prev-close" title="Close">✕</button></span></div>
   <div class="lp-prev-body"><iframe id="lp-prev-frame" title="Live calculator preview"></iframe></div>
 </aside>
 
@@ -1350,12 +1366,13 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       else if(currentSiteTemplate==='broker-leads'){ if(w.__applyBrokerConfig) w.__applyBrokerConfig(data); }
       else if(currentSiteTemplate==='broker-app'){ if(w.__applyBrokerAppConfig) w.__applyBrokerAppConfig(data); else if(w.__applyAppearance) w.__applyAppearance(a||curAppr()); }
       else if(w.__applyAppearance){ w.__applyAppearance(a||curAppr()); }
+      lpPreviewApplyChromeHide();
     }catch(e){}
   }
   function previewLoad(){
     var fr=lpFrame(); if(!fr) return;
     lpPrevReady=false; lpPrevSlug=previewTarget();
-    fr.onload=function(){ lpPrevReady=true; previewLayout(); previewApply(curAppr()); };
+    fr.onload=function(){ lpPrevReady=true; previewLayout(); previewApply(curAppr()); lpPreviewApplyChromeHide(); };
     fr.src='/'+lpPrevSlug+'?preview='+Date.now();
   }
   function previewDock(){
@@ -1443,30 +1460,52 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(window.LPAdminShell&&LPAdminShell.syncLayoutSelect) LPAdminShell.syncLayoutSelect();
     if(window.LPAdminShell&&LPAdminShell.syncRatioVisibility) LPAdminShell.syncRatioVisibility();
   }
-  var LP_SHELL_LOGO_KEY='leadpages_hide_shell_logo';
-  function lpShellLogoHidden(){ try{ return localStorage.getItem(LP_SHELL_LOGO_KEY)==='1'; }catch(e){ return false; } }
-  function lpSetShellLogoHidden(on){
-    document.body.classList.toggle('lp-hide-shell-logo', !!on);
-    try{ localStorage.setItem(LP_SHELL_LOGO_KEY, on?'1':'0'); }catch(e){}
+  var LP_PREVIEW_HDR_KEY='leadpages_hide_preview_header';
+  function lpPreviewHeaderHidden(){ try{ return localStorage.getItem(LP_PREVIEW_HDR_KEY)==='1'; }catch(e){ return false; } }
+  function lpPreviewApplyChromeHide(){
+    var hide=lpPreviewHeaderHidden();
+    var fr=lpFrame(); if(!fr||!lpPrevReady) return;
+    try{
+      var doc=fr.contentDocument||fr.contentWindow.document;
+      if(!doc) return;
+      var st=doc.getElementById('lp-prev-chrome-hide-css');
+      if(!st){ st=doc.createElement('style'); st.id='lp-prev-chrome-hide-css'; doc.head.appendChild(st); }
+      st.textContent=hide?'header.site,header.nav,.site-header{display:none!important}':'';
+      var w=fr.contentWindow;
+      if(w&&w.__lpSetPreviewChrome) w.__lpSetPreviewChrome({ hideHeader:hide });
+    }catch(e){}
+    previewLayout();
+  }
+  function lpSetPreviewHeaderHidden(on){
+    try{ localStorage.setItem(LP_PREVIEW_HDR_KEY, on?'1':'0'); }catch(e){}
     var btn=document.getElementById('lp-prev-hide-logo');
     if(btn){ btn.setAttribute('aria-pressed', on?'true':'false'); btn.textContent=on?'Show logo':'Hide logo'; }
+    lpPreviewApplyChromeHide();
   }
   function previewInit(){
     document.body.classList.remove('lp-chrome-hidden');
     try{ localStorage.removeItem('leadpages_chrome_hidden'); }catch(e){}
-    lpSetShellLogoHidden(lpShellLogoHidden());
+    try{ localStorage.removeItem('leadpages_hide_shell_logo'); }catch(e){}
+    lpSetPreviewHeaderHidden(lpPreviewHeaderHidden());
     lpPrevLayout=lpGetPreviewLayout();
     var t=document.getElementById('lp-prev-toggle'); if(t) t.addEventListener('click',function(){ var w=window.innerWidth,h=window.innerHeight; lpSetPreviewLayout((w>=1200||(w>=768&&w<1200&&w>h))?'side':'split'); });
     var c=document.getElementById('lp-prev-close'); if(c) c.addEventListener('click',function(){ lpSetPreviewLayout('off'); });
     var r=document.getElementById('lp-prev-reload'); if(r) r.addEventListener('click',previewLoad);
     var hl=document.getElementById('lp-prev-hide-logo');
-    if(hl) hl.addEventListener('click',function(){ lpSetShellLogoHidden(!document.body.classList.contains('lp-hide-shell-logo')); });
+    if(hl) hl.addEventListener('click',function(){ lpSetPreviewHeaderHidden(!lpPreviewHeaderHidden()); });
     document.querySelectorAll('.lp-dev button').forEach(function(b){ b.addEventListener('click',function(){ previewSetMode(b.getAttribute('data-dev')); }); });
     var layoutSel=document.getElementById('lp-prev-layout-sel');
     if(layoutSel&&!layoutSel.__w){ layoutSel.__w=1; layoutSel.addEventListener('change',function(){ lpSetPreviewLayout(layoutSel.value); }); }
     lpMode=(window.innerWidth>=900)?'desktop':'mobile';
     previewSetMode(lpMode);
     window.addEventListener('resize', function(){ if(lpRsz) clearTimeout(lpRsz); lpRsz=setTimeout(function(){ previewLayout(); if(window.LPAdminShell) LPAdminShell.moveChrome(); },120); });
+    (function(){
+      var m=document.getElementById('lp-conv-modal');
+      var c=document.getElementById('lp-conv-modal-close');
+      function closeConv(){ if(m){ m.classList.remove('show'); m.setAttribute('aria-hidden','true'); } }
+      if(c) c.addEventListener('click',closeConv);
+      if(m) m.addEventListener('click',function(e){ if(e.target===m) closeConv(); });
+    })();
     if(window.LPAdminShell&&LPAdminShell.syncLayoutSelect) LPAdminShell.syncLayoutSelect();
     if(window.LPAdminShell&&LPAdminShell.syncRatioVisibility) LPAdminShell.syncRatioVisibility();
   }
@@ -5649,7 +5688,10 @@ function heroCtaCard(c){
       +'<span class="lpl-badge '+(isActive?'ok':'off')+'">'+(isActive?'Active':'Inactive')+'</span>'
       +(isDomainConn?'<span class="lpl-badge lpl-badge-info">Domain</span>':'<span class="lpl-badge lpl-badge-warn-inline">No domain</span>')
       +'</div>'
-      +(slug?'<p style="margin:0;font-size:12px;color:var(--ink-soft)">'+slug+(domain?' · '+domain:'')+'</p>':'')
+      +(slug?'<p style="margin:0;font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+        +'<span>'+slug+(domain?' \u00b7 '+domain:'')+'</span>'
+        +'<button type="button" id="dash-conv-rate-btn" class="lp-conv-rate-btn" hidden>conversion rate: \u2014</button>'
+        +'</p>':'')
       +'</div>'
       +(domain?'<a href="https://'+domain+'" target="_blank" rel="noopener" class="btn ghost lp-btn-stroke" style="text-decoration:none;font-size:12px;padding:6px 12px">View live \u2197</a>':'')
       +'</div>'
@@ -5661,7 +5703,6 @@ function heroCtaCard(c){
         return '<div class="lp-dash-stat lp-instrument-stat '+item.cls+'">'
           +'<div id="'+item.id+'" class="lp-stat-val" style="font-size:20px;font-weight:800;color:var(--accent-hover);line-height:1;margin-bottom:2px">\u2014</div>'
           +'<div class="lp-stat-lbl" style="font-size:10px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.04em">'+item.l+'</div>'
-          +(item.l==='Conv'?'<span id="dash-s-conv-bench" style="display:none;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px;margin-top:3px;letter-spacing:.03em"></span>':'')
           +'</div>';
       }).join('')
       +'</div>'
@@ -5798,6 +5839,12 @@ function heroCtaCard(c){
     var bkList=document.getElementById('dash-bk-list');
     if(bkList) bkList.addEventListener('click', lpBkListClick);
 
+    var convBtn=document.getElementById('dash-conv-rate-btn');
+    if(convBtn) convBtn.addEventListener('click',function(){
+      var m=document.getElementById('lp-conv-modal');
+      if(m){ m.classList.add('show'); m.setAttribute('aria-hidden','false'); }
+    });
+
     // Wire scope add
     var scAdd=document.getElementById('dash-scope-add');
     if(scAdd) scAdd.addEventListener('click',async function(){
@@ -5837,18 +5884,16 @@ function heroCtaCard(c){
         var total=Math.max(c.page_view||0,1);
         var cvnPct=total>0?Math.round((leadsN/total)*100):0;
         if(cvn) cvn.textContent=cvnPct+'%';
-        // Benchmark indicator
-        var cvnBench=document.getElementById('dash-s-conv-bench');
-        if(cvnBench){
-          var label,color,bg;
-          if(cvnPct>=10){label='Excellent';color='#065F46';bg='#D1FAE5';}
-          else if(cvnPct>=5){label='Good';color='#1E40AF';bg='#DBEAFE';}
-          else if(cvnPct>=2){label='Average';color='#92400E';bg='#FEF3C7';}
-          else{label='Below avg';color='#991B1B';bg='#FEE2E2';}
-          cvnBench.textContent=label;
-          cvnBench.style.background=bg;
-          cvnBench.style.color=color;
-          cvnBench.style.display='inline-block';
+        var tier,label;
+        if(cvnPct>=10){tier='excellent';label='excellent';}
+        else if(cvnPct>=5){tier='good';label='good';}
+        else if(cvnPct>=2){tier='average';label='average';}
+        else{tier='below';label='below average';}
+        var convBtn=document.getElementById('dash-conv-rate-btn');
+        if(convBtn){
+          convBtn.textContent='conversion rate: '+label;
+          convBtn.setAttribute('data-tier',tier);
+          convBtn.hidden=false;
         }
         return true;
       }catch(e){ return false; }

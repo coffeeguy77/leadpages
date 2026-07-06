@@ -95,11 +95,6 @@
       + '<a href="/manage" class="lp-shell-logo-link"><img class="leadpages-logo lp-shell-logo" data-lp-logo="auto" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665886/leadpages-logo-white.png" alt="LeadPages"></a>'
       + '<span class="lp-shell-spacer"></span>'
       + '<div class="lp-shell-tools">'
-      + '<div class="lp-ratio-ctrl" id="lp-shell-ratio" title="Editor / preview split">'
-      + '<button type="button" class="lp-ratio-btn" id="lp-ratio-minus" aria-label="More preview space">&#8722;</button>'
-      + '<span class="lp-ratio-val" data-lp-ratio-val>70/30</span>'
-      + '<button type="button" class="lp-ratio-btn" id="lp-ratio-plus" aria-label="More editor space">&#43;</button>'
-      + '</div>'
       + '<select class="lp-shell-select" id="lp-prev-layout-sel" title="Preview layout" aria-label="Preview layout">'
       + '<option value="off">Preview: Off</option>'
       + '<option value="split">Preview: Split</option>'
@@ -197,9 +192,7 @@
     function syncRatioVisibility() {
       var layout = global.lpGetPreviewLayout ? global.lpGetPreviewLayout() : 'off';
       var show = layout === 'split' || layout === 'side';
-      var ctrl = document.getElementById('lp-shell-ratio');
       var prevCtrl = document.getElementById('lp-prev-ratio');
-      if (ctrl) ctrl.hidden = !show;
       if (prevCtrl) prevCtrl.hidden = !show;
     }
 
@@ -219,13 +212,6 @@
     });
     scrim.addEventListener('click', function () {
       setDrawer(false);
-    });
-
-    document.getElementById('lp-ratio-minus').addEventListener('click', function () {
-      adjustEditorRatio(-RATIO_STEP);
-    });
-    document.getElementById('lp-ratio-plus').addEventListener('click', function () {
-      adjustEditorRatio(RATIO_STEP);
     });
 
     function onLayoutPick(val) {

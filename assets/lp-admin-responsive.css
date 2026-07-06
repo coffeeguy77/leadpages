@@ -79,9 +79,6 @@
   width: auto;
   display: block;
 }
-body.lp-hide-shell-logo .lp-shell-logo-link {
-  display: none;
-}
 .lp-shell-spacer {
   flex: 1;
 }
