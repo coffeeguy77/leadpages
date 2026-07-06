@@ -3,6 +3,38 @@
  * Works with lp-admin-shell.js for compact header + drawer navigation.
  */
 
+:root {
+  --lp-editor-ratio: 70;
+  --lp-preview-ratio: 30;
+}
+
+/* ── Global stroke / active button pattern ── */
+.lp-btn-stroke,
+.lp-shell-chrome-hide,
+.lp-ratio-btn,
+.lp-drawer-body .btn.ghost,
+.lp-drawer-body #lp-cmd .btn.ghost,
+.ll-view,
+.dash-chart-type:not(.on),
+.dash-period:not(.on) {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  background: transparent;
+  color: var(--text);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.lp-btn-stroke.on,
+.lp-btn-stroke[aria-pressed="true"],
+.lp-shell-chrome-hide.on,
+.lp-drawer-body .anav-btn[aria-selected="true"],
+.ll-view:hover,
+.dash-chart-type.on,
+.dash-period.on {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: var(--accent);
+  color: var(--accent-hover);
+}
+
 /* ── Shell header (slim bar: logo + hamburger) ── */
 .lp-admin-shell {
   display: none;
@@ -23,8 +55,8 @@
 }
 .lp-shell-menu {
   appearance: none;
-  border: 1px solid var(--border);
-  background: var(--panel-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  background: transparent;
   color: var(--text);
   width: 40px;
   height: 40px;
@@ -68,22 +100,51 @@
   color: var(--text);
   max-width: 148px;
 }
-.lp-shell-compact {
-  appearance: none;
-  border: 1px solid var(--border);
-  background: var(--panel-soft);
-  color: var(--text-soft);
-  font: 600 12px var(--font-ui, Inter, system-ui, sans-serif);
-  padding: 7px 11px;
+.lp-shell-chrome-hide {
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-sm, 10px);
+  font-size: 16px;
+  line-height: 1;
   cursor: pointer;
-  white-space: nowrap;
+  flex: 0 0 auto;
+  padding: 0;
 }
-.lp-shell-compact.on,
-body.lp-compact-chrome .lp-shell-compact {
-  background: var(--accent-soft);
-  border-color: var(--accent);
+.lp-ratio-ctrl {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: var(--radius-sm, 10px);
+  padding: 2px 4px;
+  background: transparent;
+}
+.lp-ratio-ctrl[hidden] {
+  display: none !important;
+}
+.lp-ratio-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-soft);
+}
+.lp-ratio-btn:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   color: var(--accent-hover);
+}
+.lp-ratio-val {
+  font: 700 11px var(--font-ui, Inter, system-ui, sans-serif);
+  color: var(--text-soft);
+  min-width: 38px;
+  text-align: center;
+  letter-spacing: 0.02em;
 }
 
 /* Drawer + scrim */
@@ -150,19 +211,27 @@ body.lp-drawer-open .lp-admin-drawer {
   align-items: stretch;
   gap: 4px;
   border-bottom: 0;
-  margin: 0 0 16px;
+  margin: 0 0 8px;
+  display: flex !important;
 }
 .lp-drawer-body .anav-btn {
   text-align: left;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
   border-radius: var(--radius-sm, 10px);
   padding: 11px 14px;
   margin: 0;
-  border-bottom: 1px solid var(--border) !important;
+  background: transparent;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent) !important;
 }
 .lp-drawer-body .anav-btn[aria-selected="true"] {
-  background: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
   border-color: var(--accent);
+  color: var(--accent-hover);
+}
+.lp-drawer-body .lp-drawer-tools-label {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
 }
 .lp-drawer-body #lp-cmd {
   display: flex !important;
@@ -189,6 +258,15 @@ body.lp-drawer-open .lp-admin-drawer {
 .lp-drawer-body #lpc-context a.btn {
   width: 100%;
   justify-content: center;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--text);
+}
+.lp-drawer-body #lpc-primary .btn#btn-publish,
+.lp-drawer-body #lpc-primary .btn:not(.ghost) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text, #fff);
 }
 .lp-drawer-section-label {
   font: 700 11px var(--font-ui, Inter, system-ui, sans-serif);
@@ -198,12 +276,22 @@ body.lp-drawer-open .lp-admin-drawer {
   margin: 14px 0 8px;
 }
 
-/* Compact chrome — maximise editor space */
+/* Compact chrome — maximise editor space (always on mobile) */
 body.lp-compact-chrome .lp-chrome-hide {
   display: none !important;
 }
 body.lp-compact-chrome .wrap > .leadpages-logo:not(.lp-shell-logo) {
   display: none !important;
+}
+body.lp-chrome-hidden .lp-admin-shell,
+body.lp-chrome-hidden.lp-prev-open .lp-prev-head {
+  display: none !important;
+}
+body.lp-chrome-hidden.lp-dock-split.lp-prev-open .wrap {
+  flex: 1 1 calc(var(--lp-editor-ratio) * 1%);
+}
+body.lp-chrome-hidden.lp-dock-split.lp-prev-open .lp-prev {
+  flex: 0 0 calc(var(--lp-preview-ratio) * 1%);
 }
 
 /* ── Preview layout modes ── */
@@ -219,7 +307,7 @@ body.lp-dock-split.lp-prev-open .lp-admin-shell {
   flex: 0 0 auto;
 }
 body.lp-dock-split.lp-prev-open .wrap {
-  flex: 1 1 70%;
+  flex: 1 1 calc(var(--lp-editor-ratio) * 1%);
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -229,7 +317,7 @@ body.lp-dock-split.lp-prev-open .wrap {
 }
 body.lp-dock-split.lp-prev-open .lp-prev {
   position: relative !important;
-  flex: 0 0 30%;
+  flex: 0 0 calc(var(--lp-preview-ratio) * 1%);
   width: 100% !important;
   height: auto !important;
   min-height: 0;
@@ -238,6 +326,45 @@ body.lp-dock-split.lp-prev-open .lp-prev {
   bottom: auto !important;
   top: auto !important;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+}
+/* Tablet landscape side dock — 60/40 default */
+@media (min-width: 768px) and (max-width: 1199px) and (orientation: landscape) {
+  body.lp-dock-side.lp-prev-open {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    overflow: hidden;
+  }
+  body.lp-dock-side.lp-prev-open .lp-admin-shell {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 180;
+  }
+  body.lp-dock-side.lp-prev-open .wrap {
+    flex: 0 0 calc(var(--lp-editor-ratio) * 1%);
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    margin-top: 52px;
+    max-width: none;
+    height: calc(100vh - 52px);
+  }
+  body.lp-dock-side.lp-prev-open .lp-prev {
+    position: relative !important;
+    flex: 0 0 calc(var(--lp-preview-ratio) * 1%);
+    width: auto !important;
+    height: calc(100vh - 52px) !important;
+    margin-top: 52px;
+    top: auto !important;
+    right: auto !important;
+  }
+  body.lp-chrome-hidden.lp-dock-side.lp-prev-open .wrap,
+  body.lp-chrome-hidden.lp-dock-side.lp-prev-open .lp-prev {
+    margin-top: 0;
+    height: 100vh;
+  }
 }
 body.lp-dock-split.lp-prev-open .lp-prev-body {
   min-height: 0;
@@ -276,11 +403,47 @@ body.lp-dock-full.lp-prev-open .lp-shell-logo-link img {
   filter: none;
 }
 body.lp-dock-full.lp-prev-open .lp-shell-select,
-body.lp-dock-full.lp-prev-open .lp-shell-compact,
+body.lp-dock-full.lp-prev-open .lp-shell-chrome-hide,
 body.lp-dock-full.lp-prev-open .lp-shell-menu {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.16);
   color: #fff;
+}
+
+/* Preview panel head — compact on mobile */
+.lp-prev-ratio {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 6px;
+}
+.lp-prev-ratio[hidden] {
+  display: none !important;
+}
+.lp-prev-head .lp-ratio-btn {
+  color: rgba(255, 255, 255, 0.85);
+}
+.lp-prev-head .lp-ratio-val {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 10px;
+  min-width: 34px;
+}
+.lp-prev-chrome-btn {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+}
+.lp-prev-chrome-btn.on {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 /* Preview layout picker in preview panel head */
@@ -310,17 +473,164 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   .adminnav {
     display: none;
   }
-  body.lp-drawer-open {
-    overflow: hidden;
-  }
   #lp-cmd.bar {
     display: none !important;
   }
-  body.lp-drawer-open #lp-cmd.bar {
-    /* moved into drawer via JS */
+  body.lp-drawer-open {
+    overflow: hidden;
   }
   .wrap {
-    padding: 16px 14px 56px;
+    padding: 12px 12px 48px;
+  }
+  .lp-prev-head {
+    padding: 6px 10px;
+    gap: 6px;
+    min-height: 0;
+  }
+  .lp-prev-head strong {
+    font-size: 12px;
+  }
+  .lp-prev-sub {
+    display: none;
+  }
+  .lp-prev-layout-pick select {
+    font-size: 10px;
+    padding: 3px 6px;
+    max-width: 88px;
+  }
+  .lp-prev-actions button {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+  /* Instrument panel dashboard */
+  .lp-instrument-panel {
+    margin: 0 -4px;
+  }
+  .lp-instrument-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .lp-instrument-stat {
+    padding: 8px 6px !important;
+    text-align: center;
+    background: transparent !important;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent) !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+  }
+  .lp-instrument-stat .lp-stat-val {
+    font-size: 17px !important;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 2px !important;
+  }
+  .lp-instrument-stat .lp-stat-lbl {
+    font-size: 9px !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    font-weight: 700;
+  }
+  .lp-instrument-stat.lp-stat-wide {
+    grid-column: span 2;
+  }
+  .lp-instrument-chart {
+    background: transparent !important;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+    border-radius: 14px !important;
+    padding: 12px !important;
+    box-shadow: none !important;
+    margin-bottom: 16px !important;
+  }
+  .lp-instrument-chart #dash-chart {
+    min-height: 180px !important;
+  }
+  .lp-instrument-chart h3 {
+    font-size: 11px !important;
+    letter-spacing: 0.08em;
+  }
+  .lp-dash-card {
+    background: transparent !important;
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent) !important;
+    border-radius: 14px !important;
+    padding: 14px !important;
+    box-shadow: none !important;
+  }
+  .lp-dash-row {
+    background: transparent !important;
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent) !important;
+  }
+  .lp-dash-row-muted {
+    background: color-mix(in srgb, var(--accent) 6%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent) !important;
+  }
+  .lp-lead-card-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px !important;
+  }
+  .lp-lead-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .lp-lead-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .lp-lead-detail-text {
+    font-size: 13px;
+    line-height: 1.55;
+    word-break: normal;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  .svc-row {
+    background: color-mix(in srgb, var(--panel) 60%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent) !important;
+  }
+  .svc-row textarea,
+  .svc-row .tin {
+    background: var(--input-bg) !important;
+    color: var(--text) !important;
+    border-color: color-mix(in srgb, var(--border) 80%, transparent) !important;
+  }
+  .svc-row label {
+    color: var(--text-soft) !important;
+  }
+  #lp-scope-panel,
+  #lp-bk-panel {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 78vh !important;
+    border-radius: 18px 18px 0 0 !important;
+    padding: 18px 16px 28px !important;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.28) !important;
+    z-index: 9999 !important;
+  }
+  #lp-scope-btn,
+  #lp-bk-btn {
+    bottom: 16px !important;
+    right: 12px !important;
+    font-size: 12px !important;
+    padding: 9px 14px !important;
+    background: color-mix(in srgb, var(--accent) 18%, transparent) !important;
+    border: 1px solid var(--accent) !important;
+    color: var(--accent-hover) !important;
   }
   .bar {
     flex-direction: column;
@@ -382,6 +692,37 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   .card {
     padding: 16px;
   }
+  .lp-instrument-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .lp-instrument-stat.lp-stat-wide {
+    grid-column: span 1;
+  }
+  .ll-item {
+    background: transparent !important;
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent) !important;
+  }
+  .ll-view {
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    color: var(--text);
+  }
+  .ll-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .ll-right {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-left: 0;
+    white-space: normal;
+  }
+  .lp-dash-duo-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
   .modal {
     padding: 10px;
     align-items: flex-end;
@@ -412,20 +753,43 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   }
 }
 
-@media (min-width: 1024px) and (max-width: 1199px) {
-  body.lp-dock-side.lp-prev-open .wrap {
-    max-width: 100%;
-    margin-right: 0 !important;
+@media (min-width: 768px) and (max-width: 1023px) {
+  #lp-landing .leadpages-logo {
+    height: 100px !important;
+  }
+  .lp-instrument-stats {
+    grid-template-columns: repeat(7, 1fr);
+  }
+  .lp-instrument-stat.lp-stat-wide {
+    grid-column: span 1;
+  }
+  .lp-instrument-chart #dash-chart {
+    min-height: 220px !important;
   }
 }
 
 /* ── Site Switcher (#lp-landing) ── */
+#lp-landing .lpl-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+#lp-landing .lpl-header-main {
+  flex: 1;
+  min-width: 0;
+}
+#lp-landing .lpl-signout-top {
+  flex: 0 0 auto;
+  margin-top: 4px;
+}
 @media (max-width: 767px) {
   #lp-landing {
     padding: 12px 14px 36px;
   }
   #lp-landing .leadpages-logo {
-    height: 44px !important;
+    height: 88px !important;
     margin-bottom: 10px !important;
   }
   #lp-landing h1 {
@@ -469,10 +833,14 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   .lpl-sort {
     margin-left: auto;
     font-size: 12px;
+    color: var(--text-soft);
   }
   .lpl-sort select {
     padding: 5px 8px;
     font-size: 12px;
+    color: var(--text);
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
   }
   .lpl-card2 {
     gap: 8px;
