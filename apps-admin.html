@@ -110,6 +110,7 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
     <h1>App Registry</h1>
     <div style="display:flex;gap:8px">
       <a class="btn ghost sm" href="/marketplace" target="_blank">View marketplace</a>
+      <button class="btn ghost sm" id="app-seed-lpa">+ Accessibility Suite</button>
       <button class="btn sm" id="app-new">+ Register app</button>
     </div>
   </div>
@@ -348,6 +349,23 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
     if(a)openApp(a);
   });
   $('app-new').addEventListener('click',function(){openApp(null);});
+  $('app-seed-lpa').addEventListener('click',function(){
+    var existing=APPS.find(function(a){ return a.section_key==='lpAccessibility'; });
+    if(existing){ openApp(existing); return; }
+    openApp(null);
+    $('a-name').value='Accessibility Suite';
+    $('a-slug').value='accessibility-suite';
+    $('a-seckey').value='lpAccessibility';
+    $('a-tier').value='free';
+    $('a-pos').value='footer';
+    $('a-mktst').value='live';
+    $('a-sort').value='900';
+    $('a-tag').value='Visitor viewing preferences and accessibility controls';
+    $('a-desc').value='Floating preferences widget, skip links, and published-page theme overlays. Configure defaults in Appearance & Accessibility.';
+    $('a-vis').checked=false;
+    $('a-repo').checked=false;
+    $('a-hero').checked=false;
+  });
   function openApp(a){
     editAppId=a?a.id:null;
     $('app-dlg-title').textContent=a?'Edit app — '+a.name:'Register app';
