@@ -481,6 +481,13 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   .lp-admin-shell {
     display: block;
   }
+  /* Ratio +/- only on desktop/tablet landscape — not in mobile header */
+  .lp-prev-ratio,
+  .lp-ratio-ctrl,
+  .lp-shell-chrome-hide,
+  #lp-chrome-hide-btn {
+    display: none !important;
+  }
   .lp-prev-hide-logo {
     display: inline-flex;
     align-items: center;
