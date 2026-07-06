@@ -1451,3 +1451,80 @@ input[type="checkbox"] {
   border-color: var(--accent-hover) !important;
 }
 
+/* ── Section editor surfaces — theme-aware inputs (no white bleed) ── */
+#av-details .card,
+#lsub-body .card,
+#av-details .le-row,
+#lsub-body .le-row,
+#av-details .bro,
+#av-details .us-row {
+  background: var(--panel) !important;
+  border-color: var(--border) !important;
+  color: var(--text);
+}
+#av-details textarea,
+#lsub-body textarea,
+#av-details input[type="text"],
+#lsub-body input[type="text"],
+#av-details input[type="email"],
+#lsub-body input[type="email"],
+#av-details input[type="number"],
+#lsub-body input[type="number"],
+#av-details input[type="url"],
+#lsub-body input[type="url"],
+#av-details input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]),
+#lsub-body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]),
+#av-details select,
+#lsub-body select,
+.le-row textarea,
+.le-row input[type="text"],
+.le-row select {
+  background: var(--input-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px;
+}
+#av-details textarea::placeholder,
+#lsub-body textarea::placeholder,
+#av-details input::placeholder,
+#lsub-body input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+#av-details label,
+#lsub-body label,
+.le-row label {
+  color: var(--text-soft);
+}
+#av-details .lede,
+#lsub-body .lede,
+#av-details .hint,
+#lsub-body .hint {
+  color: var(--text-soft);
+}
+#av-details h2,
+#lsub-body h2,
+#av-details h3,
+#lsub-body h3 {
+  color: var(--text);
+}
+.lsub-extra {
+  background: var(--panel-soft) !important;
+  border-color: var(--border) !important;
+}
+#ord-list .ord-row {
+  background: var(--panel) !important;
+  border-color: var(--border) !important;
+  color: var(--text);
+}
+#ord-list .ord-mv {
+  background: var(--input-bg) !important;
+  border-color: var(--border) !important;
+  color: var(--text-soft);
+}
+.lib-btn {
+  background: var(--panel) !important;
+  border-color: var(--border) !important;
+  color: var(--text);
+}
+
