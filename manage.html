@@ -4563,7 +4563,7 @@ function heroCtaCard(c){
       payload={ config:lc, business_name:(currentBusinessName||'').trim(), custom_domain:((currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'')||null), updated_at:new Date().toISOString() }; if(currentRole==='super'){ payload.owner_email=((currentOwnerEmail||'').trim().toLowerCase()||null); }
     }
     const { error } = await sb.from('sites').update(payload).eq('id', currentSiteId);
-    if(btn){ btn.disabled=false; btn.textContent='Publish Site'; }
+    if(btn){ btn.disabled=false; btn.textContent='Publish Live Site'; }
     if(error){ toast('Publish failed: '+error.message); return; }
     try{ persist(); }catch(e){}
     var sref=allSites.find(function(x){return x.id===currentSiteId;}); if(sref){ if(payload.business_name) sref.business_name=payload.business_name; sref.custom_domain=payload.custom_domain; if(payload.owner_email!==undefined) sref.owner_email=payload.owner_email; sref.config=payload.config; }
@@ -4575,12 +4575,12 @@ function heroCtaCard(c){
     const dl=$('btn-download'); if(!dl) return; const bar=dl.parentNode;
     if(!$('btn-publish')){
       const pb=document.createElement('button'); pb.className='btn'; pb.id='btn-publish';
-      pb.textContent='Publish Site'; pb.addEventListener('click',publishToDB);
+      pb.textContent='Publish Live Site'; pb.addEventListener('click',publishToDB);
       bar.insertBefore(pb, dl);
     }
     if(!$('btn-viewlive')){
       const vb=document.createElement('button'); vb.className='btn ghost'; vb.id='btn-viewlive';
-      vb.textContent='View Live Site \u2197';
+      vb.textContent='View Live Site';
       vb.addEventListener('click',function(){ var u=lpLiveUrl(); if(u) window.open(u,'_blank','noopener'); else if(typeof toast==='function') toast('This site has no slug yet.'); });
       bar.insertBefore(vb, dl);
     }
@@ -4674,6 +4674,16 @@ function heroCtaCard(c){
     mv('lpc-backups', tools);
     mv('btn-fav', tools);
     mv('btn-newsite', tools);
+    if(currentRole==='super'){
+      if(!$('lpc-partner-admin')){ var pa=document.createElement('a'); pa.id='lpc-partner-admin'; pa.className='btn ghost'; pa.href='/partners-admin'; pa.style.textDecoration='none'; pa.textContent='Partner Admin'; tools.appendChild(pa); }
+      else mv('lpc-partner-admin', tools);
+      if(!$('lpc-marketplace-admin')){ var ma=document.createElement('a'); ma.id='lpc-marketplace-admin'; ma.className='btn ghost'; ma.href='/marketplace-admin'; ma.style.textDecoration='none'; ma.textContent='Marketplace Admin'; tools.appendChild(ma); }
+      else mv('lpc-marketplace-admin', tools);
+    }
+    if(currentRole==='broker'){
+      if(!$('lpc-partner-console')){ var pc=document.createElement('a'); pc.id='lpc-partner-console'; pc.className='btn ghost'; pc.href='/partner-dashboard'; pc.style.textDecoration='none'; pc.textContent='Partner Console'; tools.appendChild(pc); }
+      else mv('lpc-partner-console', tools);
+    }
     if(footer){
       footer.innerHTML='';
       var swEl=$('btn-switch');
@@ -4682,13 +4692,6 @@ function heroCtaCard(c){
         swEl.addEventListener('click',function(){ showLanding(); });
       }
       footer.appendChild(swEl);
-      if(currentRole==='super'){
-        if(!$('lpc-partner-admin')){ var pa=document.createElement('a'); pa.id='lpc-partner-admin'; pa.className='btn ghost'; pa.href='/partners-admin'; pa.style.textDecoration='none'; pa.textContent='Partner Admin'; footer.appendChild(pa); }
-        if(!$('lpc-marketplace-admin')){ var ma=document.createElement('a'); ma.id='lpc-marketplace-admin'; ma.className='btn ghost'; ma.href='/marketplace-admin'; ma.style.textDecoration='none'; ma.textContent='Marketplace Admin'; footer.appendChild(ma); }
-      }
-      if(currentRole==='broker'){
-        if(!$('lpc-partner-console')){ var pc=document.createElement('a'); pc.id='lpc-partner-console'; pc.className='btn ghost'; pc.href='/partner-dashboard'; pc.style.textDecoration='none'; pc.textContent='Partner Console'; footer.appendChild(pc); }
-      }
       if(!$('lp-mode-toggle')){
         var mt=document.createElement('button'); mt.type='button'; mt.id='lp-mode-toggle'; mt.className='btn ghost lp-drawer-phone-hide'; mt.style.fontSize='12px'; mt.textContent='Classic';
         footer.appendChild(mt);
@@ -4748,6 +4751,7 @@ function heroCtaCard(c){
     if(window.LPAdminShell&&LPAdminShell.ensureDrawerActions) LPAdminShell.ensureDrawerActions();
     if(window.LPAdminShell&&LPAdminShell.moveChrome) LPAdminShell.moveChrome();
   }
+  window.lpRefreshCmdDrawer=function(){ ensureSiteBar(); layoutCmdCard(); };
   /* ---- demo themes (super-admin: manage looks shown on /demo) ---- */
   async function renderDemoThemes(){
     var box=$('dt-list'); if(!box) return;

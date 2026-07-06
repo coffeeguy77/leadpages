@@ -352,9 +352,25 @@ body.lp-compact-chrome .wrap > .leadpages-logo:not(.lp-shell-logo) {
     gap: 8px;
     width: 100%;
   }
+  body.lp-phone-chrome .lp-drawer-body .lp-drawer-publish-label {
+    margin-top: 4px;
+  }
+  body.lp-phone-chrome .lp-drawer-body .lp-drawer-builder-label {
+    margin-top: 14px;
+  }
+  body.lp-phone-chrome .lp-drawer-body .lp-drawer-tools-label {
+    margin-top: 14px;
+  }
   body.lp-phone-chrome .lp-drawer-body #lpc-tools {
     display: grid !important;
     grid-template-columns: 1fr 1fr;
+  }
+  body.lp-phone-chrome .lp-drawer-body #lpc-tools #btn-settings,
+  body.lp-phone-chrome .lp-drawer-body #lpc-tools #btn-appearance-aa,
+  body.lp-phone-chrome .lp-drawer-body #lpc-tools #lpc-partner-admin,
+  body.lp-phone-chrome .lp-drawer-body #lpc-tools #lpc-marketplace-admin,
+  body.lp-phone-chrome .lp-drawer-body #lpc-tools #lpc-partner-console {
+    grid-column: 1 / -1;
   }
   body.lp-phone-chrome .lp-drawer-body .lpc-drawer-footer {
     display: grid !important;
@@ -367,20 +383,22 @@ body.lp-compact-chrome .wrap > .leadpages-logo:not(.lp-shell-logo) {
     align-items: stretch;
   }
   body.lp-phone-chrome .lp-drawer-body .lpc-drawer-top #btn-publish {
-    flex: 1 1 70%;
-    width: auto;
+    flex: 1 1 100%;
+    width: 100%;
     min-width: 0;
     padding-left: 10px;
     padding-right: 10px;
-    font-size: 12px;
+    font-size: 14px;
+    min-height: 48px;
   }
   body.lp-phone-chrome .lp-drawer-body .lpc-drawer-top #btn-viewlive {
-    flex: 1 1 30%;
-    width: auto;
+    flex: 1 1 100%;
+    width: 100%;
     min-width: 0;
     padding-left: 8px;
     padding-right: 8px;
-    font-size: 11px;
+    font-size: 13px;
+    min-height: 44px;
   }
   body.lp-phone-chrome .lp-drawer-body #lpc-context,
   body.lp-phone-chrome .lp-drawer-body #site-label,
@@ -389,6 +407,7 @@ body.lp-compact-chrome .wrap > .leadpages-logo:not(.lp-shell-logo) {
   body.lp-phone-chrome .lp-drawer-body #lpc-scope,
   body.lp-phone-chrome .lp-drawer-body #lpc-backups,
   body.lp-phone-chrome .lp-drawer-body #btn-fav,
+  body.lp-phone-chrome .lp-drawer-body #btn-newsite,
   body.lp-phone-chrome .lp-drawer-body #lp-mode-toggle {
     display: none !important;
   }
@@ -620,10 +639,10 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   .lp-drawer-section-label:first-child {
     margin-top: 4px;
   }
-  /* Quick actions — hero row */
+  /* Publish — hero row */
   .lp-drawer-body .lpc-drawer-top {
     display: grid !important;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 10px;
     margin-bottom: 4px;
   }
@@ -634,6 +653,10 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     font-weight: 700;
     border-radius: 12px;
     box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 28%, transparent);
+  }
+  .lp-drawer-body .lpc-drawer-top .btn#btn-viewlive {
+    grid-column: 1 / -1;
+    min-height: 44px;
   }
   .lp-drawer-body .lpc-drawer-top .btn {
     min-height: 44px;
@@ -652,6 +675,10 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   .lp-drawer-body #lpc-context select {
     width: 100%;
     font-size: 14px;
+  }
+  /* Builder Menu — 2-column mega grid */
+  .lp-drawer-body .lp-drawer-builder-label {
+    margin-top: 14px;
   }
   /* Pages — 2-column mega grid */
   .lp-drawer-body .adminnav {
@@ -688,7 +715,17 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     border-radius: 12px;
     font-weight: 600;
   }
-  /* Site tools — 2-column grid */
+  /* Site Tools — 2-column grid */
+  .lp-drawer-body .lp-drawer-tools-label {
+    margin-top: 14px;
+  }
+  .lp-drawer-body #lpc-tools #btn-settings,
+  .lp-drawer-body #lpc-tools #btn-appearance-aa,
+  .lp-drawer-body #lpc-tools #lpc-partner-admin,
+  .lp-drawer-body #lpc-tools #lpc-marketplace-admin,
+  .lp-drawer-body #lpc-tools #lpc-partner-console {
+    grid-column: 1 / -1;
+  }
   .lp-drawer-body #lpc-tools {
     display: grid !important;
     grid-template-columns: 1fr 1fr;
