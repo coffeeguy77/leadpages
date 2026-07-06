@@ -3161,10 +3161,13 @@ function heroCtaCard(c){
     var v=_vaCfg();
     Object.assign(v,partial||{});
     data.visitorAppearance=v;
-    if(partial&&partial.allowVisitorControls){
+    if(partial&&partial.allowVisitorControls===true){
       if(!data.sections) data.sections={};
       if(!data.sections.lpAccessibility) data.sections.lpAccessibility={};
       data.sections.lpAccessibility.on=true;
+    }
+    if(partial&&partial.allowVisitorControls===false){
+      if(data.sections&&data.sections.lpAccessibility) data.sections.lpAccessibility.on=false;
     }
     persist();
     if(document.body.classList.contains('lp-prev-open')&&typeof previewLoad==='function') previewLoad();
@@ -3232,6 +3235,9 @@ function heroCtaCard(c){
     var siteId=_aaSiteId();
     await _aaEnsureAppsList();
     var app=_aaLpAccessibilityApp();
+    if(!c.visitorAppearance) c.visitorAppearance=Object.assign({},DEFAULT_VISITOR_APPEARANCE);
+    c.visitorAppearance.allowVisitorControls=!!on;
+    if(on) c.visitorAppearance.showAccessibilityButton=true;
     if(app&&siteId&&(currentSiteTemplate==='trade'||currentSiteTemplate==='broker-leads')){
       await _toggleApp(c, siteId, 'lpAccessibility', app.id, !!on);
     } else {
@@ -3239,9 +3245,10 @@ function heroCtaCard(c){
       if(!c.sections.lpAccessibility) c.sections.lpAccessibility={};
       c.sections.lpAccessibility.on=!!on;
       persist();
-      if(typeof previewApply==='function') previewApply();
+      if(document.body.classList.contains('lp-prev-open')&&typeof previewLoad==='function') previewLoad();
+      else if(typeof previewApply==='function') previewApply();
     }
-    if(!quiet&&typeof toast==='function') toast(on?'Accessibility app enabled':'Accessibility app disabled');
+    if(!quiet&&typeof toast==='function') toast(on?'Visitor preferences enabled — publish to go live':'Visitor preferences disabled');
   }
   function _aaHealthDoc(){
     var fr=lpFrame&&lpFrame();
@@ -3296,7 +3303,7 @@ function heroCtaCard(c){
     var va=_vaCfg();
     add('visitor', 'Visitor controls configured', va.allowVisitorControls===true, va.allowVisitorControls?'Widget enabled in Published Pages settings':'Visitor widget disabled (optional)', 'Enable in Published Pages when you want the floating preferences button.');
     var lpOn=_aaLpAccessibilityOn();
-    add('marketplace', 'Accessibility marketplace app', lpOn||!_aaLpAccessibilityApp(), lpOn?'App enabled on this site':'App not enabled — widget gated when installed', 'Enable the Accessibility Suite app in the Marketplace tab.');
+    add('marketplace', 'Accessibility marketplace app', lpOn||!_aaLpAccessibilityApp(), lpOn?'App enabled on this site':'Enable in Marketplace or Published Pages', 'Enable visitor viewing preferences in Appearance → Marketplace or Published Pages, then publish.');
     var pass=items.filter(function(it){ return it.pass; }).length;
     return { ok:true, score:Math.round((pass/items.length)*100), pass:pass, total:items.length, items:items };
   }
@@ -3337,17 +3344,16 @@ function heroCtaCard(c){
     var app=_aaLpAccessibilityApp();
     var on=_aaLpAccessibilityOn();
     if(!app){
-      if(!isSuper){
-        box.innerHTML='<div class="card" style="margin:0"><h2 style="margin:0 0 8px">Appearance &amp; Accessibility</h2>'
-          +'<p class="lede" style="margin:0 0 12px">Configure visitor viewing preferences and published page themes in the <strong>Published Pages</strong> tab.</p>'
-          +'<button type="button" class="btn ghost" id="aa-goto-published-only">Open Published Pages settings</button></div>';
-        var gp=$('aa-goto-published-only'); if(gp) gp.addEventListener('click',function(){ _aaSwitchTab(p,'published'); });
-        return;
-      }
-      box.innerHTML='<div class="card" style="margin:0"><h2 style="margin:0 0 8px">Accessibility Suite (admin)</h2>'
-        +'<p class="lede" style="margin:0 0 12px">Register the marketplace app in Apps Admin or run <code>scripts/seed-lp-accessibility-app.sql</code>.</p>'
-        +'<label class="aa-toggle" style="display:flex;margin-bottom:8px"><input type="checkbox" id="aa-lpa-fallback"'+(on?' checked':'')+'> Enable on this site (config preview)</label></div>';
+      box.innerHTML='<div class="card" style="margin:0"><h2 style="margin:0 0 8px">Appearance &amp; Accessibility</h2>'
+        +'<p class="lede" style="margin:0 0 12px">Enable visitor viewing preferences and colour schemes on your published site. Settings are saved to your site config — <strong>publish</strong> to apply on the live site.</p>'
+        +'<div class="aa-row"><span style="font-weight:600;min-width:130px">On this site</span><span class="chip '+(on?'ok':'')+'">'+(on?'Enabled':'Disabled')+'</span></div>'
+        +'<label class="aa-toggle" style="display:flex;margin:12px 0"><input type="checkbox" id="aa-lpa-fallback"'+(on?' checked':'')+'> Enable visitor viewing preferences</label>'
+        +'<p class="hint" style="margin:0 0 12px">Turns on the floating accessibility button with text size, contrast, motion, and colour scheme options for visitors.</p>'
+        +'<button type="button" class="btn ghost" id="aa-goto-published-only">Open Published Pages settings</button>'
+        +(isSuper?'<p class="hint" style="margin:12px 0 0">Super admin: register the marketplace app in Apps Admin or run <code>scripts/seed-lp-accessibility-app.sql</code>.</p>':'')
+        +'</div>';
       var fb=$('aa-lpa-fallback'); if(fb) fb.addEventListener('change',function(){ _aaToggleLpAccessibility(!!fb.checked); _aaMarketplaceRender(p); });
+      var gp=$('aa-goto-published-only'); if(gp) gp.addEventListener('click',function(){ _aaSwitchTab(p,'published'); });
       return;
     }
     var appName=app.name==='Accessibility Suite'?'Appearance & Accessibility':app.name;
@@ -3355,7 +3361,7 @@ function heroCtaCard(c){
       +'<p class="lede" style="margin:0 0 12px">'+esc(app.tagline||'Themes, visitor viewing preferences, and WCAG-focused accessibility support for published pages.')+'</p>'
       +'<div class="aa-row"><span style="font-weight:600;min-width:130px">On this site</span><span class="chip '+(on?'ok':'')+'">'+(on?'Enabled':'Disabled')+'</span></div>'
       +'<label class="aa-toggle" style="display:flex;margin:12px 0"><input type="checkbox" id="aa-lpa-toggle"'+(on?' checked':'')+'> Enable for this site</label>'
-      +'<p class="hint" style="margin:0 0 12px">When disabled, the visitor accessibility widget will not appear on the live site. Workspace appearance remains a personal preference on this device.</p>'
+      +'<p class="hint" style="margin:0 0 12px">When disabled, the visitor accessibility widget will not appear on the live site. Remember to <strong>publish</strong> after changing Published Pages settings.</p>'
       +'<button type="button" class="btn" id="aa-goto-published">Configure published pages</button></div>';
     var tg=$('aa-lpa-toggle'); if(tg) tg.addEventListener('change',function(){ _aaToggleLpAccessibility(!!tg.checked, true); _aaMarketplaceRender(p); if(typeof toast==='function') toast(tg.checked?'Enabled on this site':'Disabled on this site'); });
     var gp=$('aa-goto-published'); if(gp) gp.addEventListener('click',function(){ _aaSwitchTab(p,'published'); });
@@ -3418,7 +3424,7 @@ function heroCtaCard(c){
       +'<button type="button" data-va-contrast="standard" aria-pressed="'+(va.defaultContrast!=='high'?'true':'false')+'">Standard</button>'
       +'<button type="button" data-va-contrast="high" aria-pressed="'+(va.defaultContrast==='high'?'true':'false')+'">High Contrast</button></div></div>'
       +'<label class="aa-toggle"><input type="checkbox" id="va-reduced"'+(va.reducedMotionSupport!==false?' checked':'')+'> Reduced motion support</label></div>'
-      +'<div class="card"><p class="lede" style="margin:0 0 12px">Preview your published page with live preview open, then publish to apply these settings on the live site.</p>'
+      +'<div class="card"><p class="lede" style="margin:0 0 12px">Preview your published page with live preview open, then <strong>publish</strong> to apply these settings on the live site.</p>'
       +'<button type="button" class="btn ghost" id="va-preview-btn">Open live preview</button></div>'
       +'</div>'
       +'<div id="aa-panel-health" role="tabpanel" aria-labelledby="aa-tab-health"'+(activeTab==='health'?'':' hidden')+'>'
@@ -5257,7 +5263,7 @@ function heroCtaCard(c){
       'promotions-hero':'megaphone','promotions-inline':'percent','finance':'credit-card',
       'estimateBuilder':'calculator','emergencyAvailability':'alert-circle',
       'emerg':'phone-call','instaGallery':'instagram','igProjectFeed':'instagram',
-      'navMenu':'menu','footer':'minus-square','certifications':'award',
+      'navMenu':'menu','footer':'minus-square','lpAccessibility':'palette',
       'reviewHighlights':'message-circle','proofStream':'activity',
       'serviceAreaMap':'map'
     };
@@ -5285,9 +5291,12 @@ function heroCtaCard(c){
 
     var html='<div style="margin-top:18px">';
     var a11yApp=_appsList.find(function(a){ return a.section_key==='lpAccessibility'; });
+    var a11yOn=_aaLpAccessibilityOn();
     if(a11yApp){
-      var a11yOn=appStatus(a11yApp).on&&!appStatus(a11yApp).inactive;
-      html+='<div class="card" style="margin-bottom:18px;padding:16px 18px;"><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;"><div><h3 style="margin:0 0 4px;font-size:17px;">Appearance &amp; Accessibility</h3><p class="lede" style="margin:0;max-width:52ch;">Themes, visitor viewing preferences, and WCAG-focused accessibility support for published pages.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn ghost" id="amp-a11y-config">Configure</button><button type="button" class="btn'+(a11yOn?' ghost':'')+'" id="amp-a11y-toggle">'+(a11yOn?'Disable':'Enable')+'</button></div></div></div>';
+      var a11yMarketOn=appStatus(a11yApp).on&&!appStatus(a11yApp).inactive;
+      html+='<div class="card" style="margin-bottom:18px;padding:16px 18px;"><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;"><div><h3 style="margin:0 0 4px;font-size:17px;">Appearance &amp; Accessibility</h3><p class="lede" style="margin:0;max-width:52ch;">Themes, visitor viewing preferences, and WCAG-focused accessibility support for published pages.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn ghost" id="amp-a11y-config">Configure</button><button type="button" class="btn'+(a11yMarketOn?' ghost':'')+'" id="amp-a11y-toggle">'+(a11yMarketOn?'Disable':'Enable')+'</button></div></div></div>';
+    } else {
+      html+='<div class="card" style="margin-bottom:18px;padding:16px 18px;"><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;"><div><h3 style="margin:0 0 4px;font-size:17px;">Appearance &amp; Accessibility</h3><p class="lede" style="margin:0;max-width:52ch;">Enable the floating visitor preferences button (text size, contrast, motion, and 9 colour schemes). Publish after enabling.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn ghost" id="amp-a11y-config">Configure</button><button type="button" class="btn'+(a11yOn?' ghost':'')+'" id="amp-a11y-fallback-toggle">'+(a11yOn?'Disable':'Enable')+'</button></div></div></div>';
     }
     html+='<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px">Layout track — drag to reorder within each slot</div>';
 
@@ -5312,6 +5321,7 @@ function heroCtaCard(c){
     body.innerHTML=html;
 
     var a11yTg=$('amp-a11y-toggle'); if(a11yTg&&a11yApp){ a11yTg.addEventListener('click',function(){ var st=appStatus(a11yApp); var next=!(st.on&&!st.inactive); _toggleApp(c, siteId, 'lpAccessibility', a11yApp.id, next); _loadAppsView(c, siteId); }); }
+    var a11yFb=$('amp-a11y-fallback-toggle'); if(a11yFb&&!a11yApp){ a11yFb.addEventListener('click',function(){ var next=!_aaLpAccessibilityOn(); _aaToggleLpAccessibility(next); _loadAppsView(c, siteId); }); }
     var a11yCfg=$('amp-a11y-config'); if(a11yCfg){ a11yCfg.addEventListener('click',function(){ openAppearanceAccessibilityPage('published'); }); }
 
     // Wire tile clicks
@@ -5348,6 +5358,11 @@ function heroCtaCard(c){
     } else {
       if(on){ if(c.sections[secKey].on===false) delete c.sections[secKey].on; }
       else { c.sections[secKey].on=false; }
+    }
+    if(secKey==='lpAccessibility'){
+      if(!c.visitorAppearance) c.visitorAppearance=Object.assign({},DEFAULT_VISITOR_APPEARANCE);
+      c.visitorAppearance.allowVisitorControls=!!on;
+      if(on) c.visitorAppearance.showAccessibilityButton=true;
     }
     persist();
     if(secKey==='lpAccessibility'&&document.body.classList.contains('lp-prev-open')&&typeof previewLoad==='function') previewLoad();

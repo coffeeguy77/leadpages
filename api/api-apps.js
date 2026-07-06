@@ -5,6 +5,31 @@
 const { createClient } = require('@supabase/supabase-js');
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
+const LP_ACCESSIBILITY_APP = {
+  name: 'Appearance & Accessibility',
+  slug: 'appearance-accessibility',
+  section_key: 'lpAccessibility',
+  tier: 'free',
+  tagline: 'Themes, visitor viewing preferences, and WCAG 2.2-focused accessibility support.',
+  description: 'Configure published-page themes, visitor viewing preferences, skip links, and the accessibility floating button from Appearance & Accessibility in the command centre.',
+  default_position: 'footer',
+  marketplace_status: 'live',
+  builder_visible: true,
+  can_reposition: false,
+  hero_exclusive: false,
+  sort_order: 900,
+  updated_at: new Date().toISOString()
+};
+
+async function ensureLpAccessibilityApp() {
+  const { data: existing } = await sb.from('app_registry')
+    .select('id')
+    .eq('section_key', 'lpAccessibility')
+    .maybeSingle();
+  if (existing) return;
+  await sb.from('app_registry').upsert(LP_ACCESSIBILITY_APP, { onConflict: 'slug' });
+}
+
 module.exports = async (req, res) => {
   res.setHeader('access-control-allow-origin','*');
   res.setHeader('cache-control','s-maxage=120,stale-while-revalidate=300');
@@ -30,6 +55,7 @@ module.exports = async (req, res) => {
       .select('id,slug,section_key,name,tagline,tier,price_monthly_aud,price_annual_aud,default_position,can_reposition,hero_exclusive,api_dependency,marketplace_status,builder_visible,sort_order')
       .order('sort_order',{ascending:true});
     if (!all) q = q.eq('marketplace_status','live');
+    if (all) await ensureLpAccessibilityApp();
     const {data:apps,error:ae} = await q;
     if (ae) return res.status(500).json({error:ae.message});
     return res.status(200).json({apps:apps||[]});

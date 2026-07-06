@@ -111,17 +111,60 @@
     return null;
   }
 
+  function parseRgb(color) {
+    if (!color) return null;
+    var m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (m) return { r: +m[1], g: +m[2], b: +m[3] };
+    var hx = color.replace('#', '').trim();
+    if (hx.length === 3) hx = hx.charAt(0) + hx.charAt(0) + hx.charAt(1) + hx.charAt(1) + hx.charAt(2) + hx.charAt(2);
+    if (/^[0-9a-fA-F]{6}$/.test(hx)) {
+      return { r: parseInt(hx.slice(0, 2), 16), g: parseInt(hx.slice(2, 4), 16), b: parseInt(hx.slice(4, 6), 16) };
+    }
+    return null;
+  }
+
+  function isDarkBackground(el) {
+    if (!el || !global.getComputedStyle) return false;
+    var node = el.parentElement;
+    var hops = 0;
+    while (node && node !== global.document.body && node !== global.document.documentElement && hops < 8) {
+      var cs = global.getComputedStyle(node);
+      var bg = (cs.backgroundColor || '').trim();
+      var rgb = parseRgb(bg);
+      if (rgb && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+        var lum = 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
+        if (lum < 145) return true;
+        if (lum > 175) return false;
+      }
+      var theme = node.getAttribute && (node.getAttribute('data-lp-site-theme') || node.getAttribute('data-theme'));
+      if (theme === 'command-dark') return true;
+      if (node.classList) {
+        if (node.classList.contains('nav') || node.classList.contains('sec-gum') || node.tagName === 'FOOTER') return true;
+      }
+      node = node.parentElement;
+      hops += 1;
+    }
+    return false;
+  }
+
+  function resolveInkMode(el) {
+    var explicit = el.getAttribute('data-lp-logo-ink');
+    if (explicit === 'light' || explicit === 'dark') return explicit;
+    if (isDarkBackground(el)) return 'light';
+    return inkFromSrc(el);
+  }
+
   function mountLogo(el, opts) {
     if (!el || el.dataset.lpLogoMounted === 'true') return Promise.resolve(el);
     opts = opts || {};
 
     return loadSvgMarkup().then(function (markup) {
       var wrap = el.classList && el.classList.contains('lp-logo-wrap') ? el : wrapFromElement(el);
-      var srcInk = inkFromSrc(el);
+      var inkMode = resolveInkMode(el);
       var tokens = logoTokens({
         accent: opts.accent || el.getAttribute('data-lp-logo-accent'),
-        ink: opts.ink || (el.getAttribute('data-lp-logo-ink') === 'light' ? '#f3f6fa' : el.getAttribute('data-lp-logo-ink') === 'dark' ? '#13161b' : null),
-        inkMode: el.getAttribute('data-lp-logo-ink') || srcInk,
+        ink: opts.ink || (inkMode === 'light' ? '#f3f6fa' : inkMode === 'dark' ? '#13161b' : null),
+        inkMode: inkMode,
         theme: opts.theme,
         pulse: opts.pulse
       });
@@ -167,9 +210,61 @@
     });
   }
 
+  function isMarketingHost() {
+    var host = (global.location && global.location.hostname) || '';
+    return /^(www\.)?leadpages\.(com\.au|webculture\.au)$/i.test(host);
+  }
+
+  function loadStylesheet(href) {
+    if (!global.document || global.document.querySelector('link[href="' + href + '"]')) return;
+    var link = global.document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    global.document.head.appendChild(link);
+  }
+
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      if (!global.document) return resolve();
+      if (global.document.querySelector('script[src="' + src + '"]')) return resolve();
+      var s = global.document.createElement('script');
+      s.src = src;
+      s.defer = true;
+      s.onload = function () { resolve(); };
+      s.onerror = function () { reject(new Error('script ' + src)); };
+      global.document.body.appendChild(s);
+    });
+  }
+
+  function maybeBootMarketingA11y() {
+    if (!isMarketingHost() || !global.document) return;
+    if (global.__LP_VISITOR_A11Y__ && global.__LP_VISITOR_A11Y__.enabled === false) return;
+    if (!global.__LP_VISITOR_A11Y__) {
+      global.__LP_VISITOR_A11Y__ = {
+        enabled: true,
+        position: 'bottom-right',
+        defaults: {
+          allowColorSchemes: true,
+          colorScheme: 'brand',
+          defaultTextSize: 'standard',
+          defaultContrast: 'standard',
+          reducedMotionSupport: true,
+          showAccessibilityButton: true,
+          allowVisitorControls: true
+        }
+      };
+    }
+    loadStylesheet('/assets/lp-visitor-schemes.css');
+    loadStylesheet('/assets/lp-visitor-accessibility.css');
+    loadScript('/assets/lp-visitor-schemes.js')
+      .then(function () { return loadScript('/assets/lp-visitor-accessibility.js'); })
+      .catch(function () { /* optional */ });
+  }
+
   function init() {
     upgradeAll({ pulse: true }).then(function () {
       applyWorkspaceTheme();
+      maybeBootMarketingA11y();
     });
     if (global.document) {
       global.document.addEventListener('lp-workspace-appearance-change', function () {
