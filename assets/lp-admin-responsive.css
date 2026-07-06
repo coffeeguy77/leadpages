@@ -322,8 +322,44 @@ body.lp-compact-chrome .wrap > .leadpages-logo:not(.lp-shell-logo) {
   .lp-drawer-footer-label {
     margin-top: 18px;
   }
+}
+
+/* Phone mega menu — compact quick actions + hide redundant links */
+@media (max-width: 767px) {
+  body.lp-phone-chrome .lp-drawer-body .lpc-drawer-top {
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    gap: 8px;
+    align-items: stretch;
+  }
+  body.lp-phone-chrome .lp-drawer-body .lpc-drawer-top #btn-publish {
+    flex: 1 1 70%;
+    width: auto;
+    min-width: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 12px;
+  }
+  body.lp-phone-chrome .lp-drawer-body .lpc-drawer-top #btn-viewlive {
+    flex: 1 1 30%;
+    width: auto;
+    min-width: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 11px;
+  }
+  body.lp-phone-chrome .lp-drawer-body #lpc-context,
+  body.lp-phone-chrome .lp-drawer-body #site-label,
+  body.lp-phone-chrome .lp-drawer-body .lp-drawer-site-label,
+  body.lp-phone-chrome .lp-drawer-body #lpc-preview,
+  body.lp-phone-chrome .lp-drawer-body #lpc-scope,
+  body.lp-phone-chrome .lp-drawer-body #lpc-backups,
+  body.lp-phone-chrome .lp-drawer-body #btn-fav,
+  body.lp-phone-chrome .lp-drawer-body #lp-mode-toggle {
+    display: none !important;
+  }
   /* Portrait mobile: compact stats stay on one row */
-  @media (orientation: portrait) and (max-width: 767px) {
+  @media (orientation: portrait) {
     .lp-instrument-stats {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
