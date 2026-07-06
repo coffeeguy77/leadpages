@@ -34,6 +34,10 @@
     return global.innerWidth < BP_TABLET;
   }
 
+  function isPhoneLayout() {
+    return global.innerWidth < 768;
+  }
+
   function isTabletLandscape() {
     var w = global.innerWidth;
     var h = global.innerHeight;
@@ -200,21 +204,36 @@
 
     function moveChrome() {
       var mobile = isMobileLayout();
+      var phone = isPhoneLayout();
       var inner = drawerInner;
       if (!inner) return;
+      document.body.classList.toggle('lp-phone-chrome', mobile && phone);
       if (mobile) {
         document.body.classList.add('lp-compact-chrome');
         while (inner.firstChild) inner.removeChild(inner.firstChild);
         appendDrawerPiece(inner, document.getElementById('lpc-drawer-top'), 'lp-drawer-section-label', 'Quick actions');
-        appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
+        if (!phone) {
+          appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
+        }
         appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label', 'Pages');
         appendDrawerPiece(inner, document.getElementById('lpc-primary'), 'lp-drawer-section-label', 'Publishing & preview');
         appendDrawerPiece(inner, document.getElementById('lpc-tools'), 'lp-drawer-section-label lp-drawer-tools-label', 'Site tools');
         appendDrawerPiece(inner, document.getElementById('lpc-drawer-footer'), 'lp-drawer-section-label lp-drawer-footer-label', 'Account');
         var prim = document.getElementById('lpc-primary');
-        if (prim) prim.style.display = '';
+        if (prim) prim.style.display = 'none';
+        var pubBtn = document.getElementById('btn-publish');
+        var viewBtn = document.getElementById('btn-viewlive');
+        if (phone && pubBtn && viewBtn) {
+          if (!pubBtn.dataset.lpFullText) pubBtn.dataset.lpFullText = pubBtn.textContent;
+          if (!viewBtn.dataset.lpFullText) viewBtn.dataset.lpFullText = viewBtn.textContent;
+          pubBtn.textContent = 'Publish Site';
+          viewBtn.textContent = 'View live \u2197';
+        } else {
+          if (pubBtn && pubBtn.dataset.lpFullText) pubBtn.textContent = pubBtn.dataset.lpFullText;
+          if (viewBtn && viewBtn.dataset.lpFullText) viewBtn.textContent = viewBtn.dataset.lpFullText;
+        }
       } else {
-        document.body.classList.remove('lp-compact-chrome');
+        document.body.classList.remove('lp-compact-chrome', 'lp-phone-chrome');
         setDrawer(false);
         if (adminnav && navHome && adminnav.parentNode !== navHome) navHome.appendChild(adminnav);
         restoreCmdLayout();

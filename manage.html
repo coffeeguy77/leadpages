@@ -4600,15 +4600,15 @@ function heroCtaCard(c){
     mv('btn-publish', drawerTop||prim);
     mv('btn-viewlive', drawerTop||prim);
     mv('site-label', ctx);
-    if(!$('lpc-preview')){ var pv=document.createElement('button'); pv.className='btn ghost'; pv.id='lpc-preview'; pv.type='button'; pv.textContent='Live Preview'; pv.addEventListener('click',function(){ var w=window.innerWidth,h=window.innerHeight; if(typeof lpSetPreviewLayout==='function') lpSetPreviewLayout((w>=1200||(w>=768&&w<1200&&w>h))?'side':'split'); else previewOpen(); }); prim.appendChild(pv); }
+    if(!$('lpc-preview')){ var pv=document.createElement('button'); pv.className='btn ghost lp-drawer-phone-hide'; pv.id='lpc-preview'; pv.type='button'; pv.textContent='Live Preview'; pv.addEventListener('click',function(){ var w=window.innerWidth,h=window.innerHeight; if(typeof lpSetPreviewLayout==='function') lpSetPreviewLayout((w>=1200||(w>=768&&w<1200&&w>h))?'side':'split'); else previewOpen(); }); prim.appendChild(pv); }
     mv('lpc-preview', prim);
     mv('btn-settings', tools);
     mv('btn-appearance-aa', tools);
     mv('btn-billing', tools);
     mv('btn-domains', tools);
-    if(!$('lpc-scope')){ var sc=document.createElement('button'); sc.className='btn ghost'; sc.id='lpc-scope'; sc.type='button'; sc.textContent='Scope'; sc.addEventListener('click',function(){ if(typeof lpScopeOpen==='function') lpScopeOpen(); }); tools.appendChild(sc); }
+    if(!$('lpc-scope')){ var sc=document.createElement('button'); sc.className='btn ghost lp-drawer-phone-hide'; sc.id='lpc-scope'; sc.type='button'; sc.textContent='Scope'; sc.addEventListener('click',function(){ if(typeof lpScopeOpen==='function') lpScopeOpen(); }); tools.appendChild(sc); }
     mv('lpc-scope', tools);
-    if(!$('lpc-backups')){ var bk=document.createElement('button'); bk.className='btn ghost'; bk.id='lpc-backups'; bk.type='button'; bk.textContent='Backups'; bk.addEventListener('click',function(){ if(typeof lpBkOpen==='function') lpBkOpen(); }); tools.appendChild(bk); }
+    if(!$('lpc-backups')){ var bk=document.createElement('button'); bk.className='btn ghost lp-drawer-phone-hide'; bk.id='lpc-backups'; bk.type='button'; bk.textContent='Backups'; bk.addEventListener('click',function(){ if(typeof lpBkOpen==='function') lpBkOpen(); }); tools.appendChild(bk); }
     mv('lpc-backups', tools);
     mv('btn-fav', tools);
     mv('btn-newsite', tools);
@@ -4628,7 +4628,7 @@ function heroCtaCard(c){
         if(!$('lpc-partner-console')){ var pc=document.createElement('a'); pc.id='lpc-partner-console'; pc.className='btn ghost'; pc.href='/partner-dashboard'; pc.style.textDecoration='none'; pc.textContent='Partner Console'; footer.appendChild(pc); }
       }
       if(!$('lp-mode-toggle')){
-        var mt=document.createElement('button'); mt.type='button'; mt.id='lp-mode-toggle'; mt.className='btn ghost'; mt.style.fontSize='12px'; mt.textContent='Classic';
+        var mt=document.createElement('button'); mt.type='button'; mt.id='lp-mode-toggle'; mt.className='btn ghost lp-drawer-phone-hide'; mt.style.fontSize='12px'; mt.textContent='Classic';
         footer.appendChild(mt);
       } else { mv('lp-mode-toggle', footer); }
       if(!$('lpc-drawer-signout')){
