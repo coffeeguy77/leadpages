@@ -538,9 +538,11 @@ function visitorWidgetEnabled(cfg) {
   const va = visitorAppearanceCfg(cfg);
   if (!va.allowVisitorControls) return false;
   if (!va.showAccessibilityButton) return false;
-  // Phase 3: gate on marketplace app sections.lpAccessibility when registered
-  const sec = cfg && cfg.sections && cfg.sections.lpAccessibility;
-  if (sec && sec.on === false) return false;
+  const sections = cfg && cfg.sections;
+  if (sections && Object.prototype.hasOwnProperty.call(sections, 'lpAccessibility')) {
+    const sec = sections.lpAccessibility;
+    if (!sec || sec.on !== true) return false;
+  }
   return true;
 }
 

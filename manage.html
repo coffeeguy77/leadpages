@@ -1361,6 +1361,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     try{ var w=fr.contentWindow; if(!w) return;
       if(currentIsPartnerHome){ if(w.__applyAgencyConfig) w.__applyAgencyConfig(Object.assign({business:currentBusinessName},data)); }
       else if(currentSiteTemplate==='trade'){ if(w.__applyTradeConfig) w.__applyTradeConfig(data); }
+      else if(currentSiteTemplate==='broker-leads'){ if(w.__applyBrokerConfig) w.__applyBrokerConfig(data); }
+      else if(currentSiteTemplate==='broker-app'){ if(w.__applyBrokerAppConfig) w.__applyBrokerAppConfig(data); else if(w.__applyAppearance) w.__applyAppearance(a||curAppr()); }
       else if(w.__applyAppearance){ w.__applyAppearance(a||curAppr()); }
     }catch(e){}
   }
@@ -2034,7 +2036,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function themeFromPreset(tradeKey){ var p=getTradeColourPreset(tradeKey); return { pipe:p.brand, hivis:p.cta, steel:p.dark, safety:p.highlight, accent:p.accent, lightBg:p.lightBg, presetName:p.presetName, presetKey:tradeKey }; }
   const LAYOUTS = { classic: { id: "classic", name: "Classic Conversion", description: "Current tradie landing page.", sections: ["emerg","hero","services","why","area","reviews","quote","faq","footer"], features: [] }, "quote-first": { id: "quote-first", name: "Quote First", description: "Hero and quote form appear together above the fold for paid traffic.", sections: ["emerg","hero","quote","services","why","reviews","area","faq","footer"], features: ["heroQuote"] }, "photo-proof": { id: "photo-proof", name: "Photo Proof", description: "Shows project proof early with a before and after gallery.", sections: ["emerg","hero","services","beforeAfter","reviews","why","area","quote","faq","footer"], features: ["beforeAfter"] }, "emergency-response": { id: "emergency-response", name: "Emergency Response", description: "Urgency-first page: trust badges and quote form pushed high for emergency trades.", sections: ["emerg","hero","responseCards","quote","services","reviews","why","faq","area","footer"], features: ["responseCards"] }, "authority-builder": { id: "authority-builder", name: "Authority Builder", description: "Leads with big credibility numbers to establish an experienced, established business.", sections: ["emerg","hero","projectStats","services","why","area","reviews","quote","faq","footer"], features: ["projectStats"] }, "service-area-dominator": { id: "service-area-dominator", name: "Service Area Dominator", description: "Leads with a large suburb coverage grid under the hero to dominate local SEO and paid search.", sections: ["emerg","hero","serviceAreas","services","why","reviews","area","quote","faq","footer"], features: ["serviceAreas"] }, "reviews-first": { id: "reviews-first", name: "Reviews First", description: "Leads with star-rated review highlights under the hero so visitors hit social proof first.", sections: ["emerg","hero","reviewHighlights","quote","services","reviews","faq","why","area","footer"], features: ["reviewHighlights"] }, "premium-showcase": { id: "premium-showcase", name: "Premium Showcase", description: "A mini portfolio of large project image cards under the hero \u2014 for high-end visual trades.", sections: ["emerg","hero","featuredProjects","services","reviews","why","area","quote","faq","footer"], features: ["featuredProjects"] }, "offer-funnel": { id: "offer-funnel", name: "Offer Funnel", description: "AdWords lead-gen layout: a bold special-offer banner under the hero, straight into the quote form.", sections: ["emerg","hero","specialOffer","quote","services","reviews","faq","why","area","footer"], features: ["specialOffer"] }, "ba-hero-slider": { id: "ba-hero-slider", name: "Before / After Hero Slider", description: "A large interactive before/after wipe slider near the top of the page.", sections: ["emerg","hero","heroBeforeAfter","services","reviews","why","area","quote","faq","footer"], features: ["heroBeforeAfter"] }, "hero-image-slider": { id: "hero-image-slider", name: "Hero Image Slider", description: "Large image hero with editable slides, overlay text, CTA buttons and transitions.", sections: ["emerg","heroSlider","services","why","reviews","area","quote","faq","footer"], features: ["heroSlider"] }, "social-proof-feed": { id: "social-proof-feed", name: "Social Proof Feed", description: "A live, modern \u201cproof feed\u201d of jobs, reviews, videos and before/afters \u2014 every card links to a CTA.", sections: ["emerg","splitHero","activityCounter","activityTimeline","proofStream","projectFeed","jobsFeed","beforeAfterFeed","videoReels","services","reviews","customerReactions","why","crew","area","quote","faq","footer"], features: ["proofStream","splitHero","activityCounter","crew","jobsFeed","beforeAfterFeed","videoReels","activityTimeline","customerReactions","projectFeed"] } };
   function getLayout(layoutId){ return (layoutId && LAYOUTS[layoutId]) ? LAYOUTS[layoutId] : LAYOUTS.classic; }
-  const OFF_BY_DEFAULT_SECTIONS=['instaGallery','igProjectFeed','lpFooter','navMenu','mobileBar','emergencyAvailability','estimateBuilder','finance','serviceAreaMap','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox'];
+  const OFF_BY_DEFAULT_SECTIONS=['instaGallery','igProjectFeed','lpFooter','lpAccessibility','navMenu','mobileBar','emergencyAvailability','estimateBuilder','finance','serviceAreaMap','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox'];
   const OPTIONAL_COMPONENTS=['instaGallery','igProjectFeed','lpFooter','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox'];
   const PAGE_CONTENT_EDITONLY=['details','seoTokens','branding','logo','sectionOrder'];
   function layoutHasFeature(c,feat){ try{ var f=getLayout((c&&c.layout)||"classic").features||[]; return f.indexOf(feat)>=0; }catch(e){ return false; } }
@@ -3081,9 +3083,157 @@ function heroCtaCard(c){
       var on=t.getAttribute('data-aa-tab')===tab;
       t.setAttribute('aria-selected', on?'true':'false');
     });
-    var ws=$('aa-panel-workspace'), pub=$('aa-panel-published');
+    var ws=$('aa-panel-workspace'), pub=$('aa-panel-published'), hl=$('aa-panel-health'), mkt=$('aa-panel-marketplace');
     if(ws) ws.hidden=(tab!=='workspace');
     if(pub) pub.hidden=(tab!=='published');
+    if(hl) hl.hidden=(tab!=='health');
+    if(mkt) mkt.hidden=(tab!=='marketplace');
+    if(tab==='health') _aaHealthRender(p);
+    if(tab==='marketplace') _aaMarketplaceRender(p);
+  }
+  function _aaSiteId(){ return currentSiteId||(data&&(data.id||data.siteId))||''; }
+  async function _aaEnsureAppsList(){
+    if(_appsList&&_appsList.length) return _appsList;
+    try{
+      var r=await fetch('/api/api-apps?all=1');
+      var j=await r.json();
+      _appsList=(j.apps||[]);
+    }catch(e){ _appsList=_appsList||[]; }
+    return _appsList;
+  }
+  function _aaLpAccessibilityApp(){
+    return (_appsList||[]).find(function(a){ return a.section_key==='lpAccessibility'; })||null;
+  }
+  function _aaLpAccessibilityOn(c){
+    c=c||data||{};
+    var s=(c.sections&&c.sections.lpAccessibility)||{};
+    return s.on===true;
+  }
+  async function _aaToggleLpAccessibility(on, quiet){
+    var c=data||{};
+    var siteId=_aaSiteId();
+    await _aaEnsureAppsList();
+    var app=_aaLpAccessibilityApp();
+    if(app&&siteId&&currentSiteTemplate==='trade'){
+      await _toggleApp(c, siteId, 'lpAccessibility', app.id, !!on);
+    } else {
+      if(!c.sections) c.sections={};
+      if(!c.sections.lpAccessibility) c.sections.lpAccessibility={};
+      c.sections.lpAccessibility.on=!!on;
+      persist();
+      if(typeof previewApply==='function') previewApply();
+    }
+    if(!quiet&&typeof toast==='function') toast(on?'Accessibility app enabled':'Accessibility app disabled');
+  }
+  function _aaHealthDoc(){
+    var fr=lpFrame&&lpFrame();
+    if(fr&&lpPrevReady){
+      try{ var d=fr.contentDocument||fr.contentWindow.document; if(d&&d.body) return d; }catch(e){}
+    }
+    return null;
+  }
+  function _aaHealthChecks(doc){
+    if(!doc||!doc.body) return { ok:false, error:'Open live preview to scan your published page, or publish and view the live site.', items:[] };
+    var items=[];
+    function add(id, label, pass, detail, hint){
+      items.push({ id:id, label:label, pass:!!pass, detail:detail||'', hint:hint||'' });
+    }
+    var skip=doc.querySelector('.lpa-skip, a[href="#top"]');
+    add('skip', 'Skip to content link', !!skip, skip?'Found skip link':'No skip link before main content', 'Add a skip link targeting your main landmark (#top).');
+    var imgs=Array.prototype.slice.call(doc.querySelectorAll('img'));
+    var imgBad=imgs.filter(function(img){ return !img.hasAttribute('alt'); });
+    add('img-alt', 'Images have alt text', imgBad.length===0, imgBad.length? (imgBad.length+' image(s) missing alt'): (imgs.length+' image(s) checked'), 'Every informative image needs alt text; decorative images use alt="".');
+    var btns=Array.prototype.slice.call(doc.querySelectorAll('button'));
+    var btnBad=btns.filter(function(b){
+      var t=(b.textContent||'').trim();
+      var al=(b.getAttribute('aria-label')||'').trim();
+      var ald=(b.getAttribute('aria-labelledby')||'').trim();
+      return !t&&!al&&!ald;
+    });
+    add('btn-name', 'Buttons have accessible names', btnBad.length===0, btnBad.length?(btnBad.length+' unnamed button(s)'): (btns.length+' button(s) checked'), 'Add visible text or aria-label to icon-only buttons.');
+    var links=Array.prototype.slice.call(doc.querySelectorAll('a[href]'));
+    var linkBad=links.filter(function(a){
+      var t=(a.textContent||'').trim();
+      var al=(a.getAttribute('aria-label')||'').trim();
+      return !t&&!al&&a.getAttribute('href')!=='#';
+    });
+    add('link-name', 'Links have discernible text', linkBad.length===0, linkBad.length?(linkBad.length+' link(s) without text'): (links.length+' link(s) checked'), 'Avoid empty links; use aria-label when text is icon-only.');
+    var h=Array.prototype.slice.call(doc.querySelectorAll('h1,h2,h3,h4,h5,h6'));
+    var h1c=doc.querySelectorAll('h1').length;
+    add('h1', 'Single page heading (h1)', h1c===1, h1c===0?'No h1 found': (h1c>1?(h1c+' h1 elements'):'One h1 present'), 'Each page should have exactly one h1.');
+    var headingSkip=false;
+    for(var hi=1;hi<h.length;hi++){
+      var prevLv=parseInt(h[hi-1].tagName.slice(1),10);
+      var curLv=parseInt(h[hi].tagName.slice(1),10);
+      if(curLv-prevLv>1){ headingSkip=true; break; }
+    }
+    add('headings', 'Heading levels do not skip', !headingSkip, h.length?(h.length+' heading(s) checked'):'No headings found', 'Avoid jumping from h2 to h4 without an h3.');
+    var inputs=Array.prototype.slice.call(doc.querySelectorAll('input:not([type="hidden"]),select,textarea'));
+    var inpBad=inputs.filter(function(el){
+      var id=el.id;
+      var labelled=id&&doc.querySelector('label[for="'+id.replace(/"/g,'')+'"]');
+      return !labelled&&!el.getAttribute('aria-label')&&!el.getAttribute('aria-labelledby');
+    });
+    add('labels', 'Form fields have labels', inpBad.length===0, inpBad.length?(inpBad.length+' field(s) without labels'): (inputs.length? (inputs.length+' field(s) checked'):'No form fields on page'), 'Associate each input with a label or aria-label.');
+    var va=_vaCfg();
+    add('visitor', 'Visitor controls configured', va.allowVisitorControls===true, va.allowVisitorControls?'Widget enabled in Published Pages settings':'Visitor widget disabled (optional)', 'Enable in Published Pages when you want the floating preferences button.');
+    var lpOn=_aaLpAccessibilityOn();
+    add('marketplace', 'Accessibility marketplace app', lpOn||!_aaLpAccessibilityApp(), lpOn?'App enabled on this site':'App not enabled — widget gated when installed', 'Enable the Accessibility Suite app in the Marketplace tab.');
+    var pass=items.filter(function(it){ return it.pass; }).length;
+    return { ok:true, score:Math.round((pass/items.length)*100), pass:pass, total:items.length, items:items };
+  }
+  function _aaHealthRender(p){
+    p=p||document.getElementById('aa-page');
+    var box=$('aa-health-results'); if(!box||!p) return;
+    var doc=_aaHealthDoc();
+    if(!doc){
+      box.innerHTML='<p class="lede" style="margin:0 0 12px">Open <strong>live preview</strong> from the editor, then run a check to scan the published page DOM.</p>'
+        +'<button type="button" class="btn ghost" id="aa-health-open-prev">Open live preview</button>';
+      var ob=$('aa-health-open-prev'); if(ob) ob.addEventListener('click',function(){
+        closeAppearanceAccessibilityPage();
+        var pt=$('lp-prev-toggle'); if(pt) pt.click(); else if(typeof toast==='function') toast('Open live preview from the editor side panel');
+      });
+      return;
+    }
+    var res=_aaHealthChecks(doc);
+    if(res.error){
+      box.innerHTML='<p class="hint">'+esc(res.error)+'</p>';
+      return;
+    }
+    var html='<div class="aa-health-score'+(res.score>=80?' ok':' warn')+'"><strong>'+res.score+'%</strong> <span>'+res.pass+' of '+res.total+' checks passed</span></div><ul class="aa-health-list">';
+    res.items.forEach(function(it){
+      html+='<li class="aa-health-item'+(it.pass?' pass':' fail')+'"><span class="aa-health-icon">'+(it.pass?'&#10003;':'!')+'</span><div><strong>'+esc(it.label)+'</strong>'
+        +(it.detail?('<div class="aa-health-detail">'+esc(it.detail)+'</div>'):'')
+        +(!it.pass&&it.hint?('<div class="aa-health-hint">'+esc(it.hint)+'</div>'):'')
+        +'</div></li>';
+    });
+    html+='</ul>';
+    box.innerHTML=html;
+  }
+  async function _aaMarketplaceRender(p){
+    p=p||document.getElementById('aa-page');
+    var box=$('aa-marketplace-body'); if(!box) return;
+    box.innerHTML='<p class="hint">Loading marketplace status…</p>';
+    await _aaEnsureAppsList();
+    var app=_aaLpAccessibilityApp();
+    var on=_aaLpAccessibilityOn();
+    if(!app){
+      box.innerHTML='<div class="card" style="margin:0"><h2 style="margin:0 0 8px">Accessibility Suite</h2>'
+        +'<p class="lede" style="margin:0 0 12px">The <code>lpAccessibility</code> app is not registered yet. A super-admin can register it in Apps Admin or run <code>scripts/seed-lp-accessibility-app.sql</code>.</p>'
+        +'<label class="aa-toggle" style="display:flex;margin-bottom:8px"><input type="checkbox" id="aa-lpa-fallback"'+(on?' checked':'')+'> Enable accessibility features on this site (config only)</label>'
+        +'<p class="hint" style="margin:0">When registered, this toggle syncs with <code>site_apps</code> and gates the visitor widget.</p></div>';
+      var fb=$('aa-lpa-fallback'); if(fb) fb.addEventListener('change',function(){ _aaToggleLpAccessibility(!!fb.checked); _aaMarketplaceRender(p); });
+      return;
+    }
+    box.innerHTML='<div class="card" style="margin:0 0 16px"><h2 style="margin:0 0 4px">'+esc(app.name)+'</h2>'
+      +'<p class="lede" style="margin:0 0 12px">'+esc(app.tagline||app.description||'Visitor viewing preferences and accessibility controls for published pages.')+'</p>'
+      +'<div class="aa-row"><span style="font-weight:600;min-width:130px">Status</span><span class="chip '+(on?'ok':'')+'">'+(on?'Enabled on this site':'Disabled')+'</span></div>'
+      +'<label class="aa-toggle" style="display:flex;margin:12px 0"><input type="checkbox" id="aa-lpa-toggle"'+(on?' checked':'')+'> Enable '+esc(app.name)+' on this site</label>'
+      +'<p class="hint" style="margin:0 0 12px">When disabled, the visitor preferences widget will not appear on published pages even if visitor controls are turned on in Published Pages settings.</p>'
+      +'<button type="button" class="btn ghost" id="aa-goto-published">Edit published page defaults</button></div>'
+      +'<p class="hint" style="margin:0">Section key: <code>lpAccessibility</code> · Tier: '+esc(app.tier||'free')+'</p>';
+    var tg=$('aa-lpa-toggle'); if(tg) tg.addEventListener('change',function(){ _aaToggleLpAccessibility(!!tg.checked, true); _aaMarketplaceRender(p); if(typeof toast==='function') toast(tg.checked?'Accessibility app enabled':'Accessibility app disabled'); });
+    var gp=$('aa-goto-published'); if(gp) gp.addEventListener('click',function(){ _aaSwitchTab(p,'published'); });
   }
   function _aaPrefs(){ return (window.LPWorkspaceAppearance&&window.LPWorkspaceAppearance.load)?window.LPWorkspaceAppearance.load():{theme:'classic-light',density:'comfortable',textSize:'standard',reducedMotion:false,highContrast:false,strongFocus:true}; }
   function _aaSet(partial){ if(window.LPWorkspaceAppearance&&window.LPWorkspaceAppearance.set) window.LPWorkspaceAppearance.set(partial); }
@@ -3103,8 +3253,8 @@ function heroCtaCard(c){
       +'<div class="aa-tabs" role="tablist" aria-label="Appearance sections">'
       +'<button type="button" class="aa-tab" role="tab" id="aa-tab-workspace" aria-selected="'+(activeTab==='workspace'?'true':'false')+'" data-aa-tab="workspace">Workspace</button>'
       +'<button type="button" class="aa-tab" role="tab" id="aa-tab-published" aria-selected="'+(activeTab==='published'?'true':'false')+'" data-aa-tab="published">Published Pages</button>'
-      +'<button type="button" class="aa-tab" role="tab" id="aa-tab-health" aria-selected="false" data-aa-tab="health" disabled title="Coming in Phase 3">Accessibility Health</button>'
-      +'<button type="button" class="aa-tab" role="tab" id="aa-tab-marketplace" aria-selected="false" data-aa-tab="marketplace" disabled title="Coming in Phase 3">Marketplace</button>'
+      +'<button type="button" class="aa-tab" role="tab" id="aa-tab-health" aria-selected="'+(activeTab==='health'?'true':'false')+'" data-aa-tab="health">Accessibility Health</button>'
+      +'<button type="button" class="aa-tab" role="tab" id="aa-tab-marketplace" aria-selected="'+(activeTab==='marketplace'?'true':'false')+'" data-aa-tab="marketplace">Marketplace</button>'
       +'</div>'
       +'<div id="aa-panel-workspace" role="tabpanel" aria-labelledby="aa-tab-workspace"'+(activeTab==='workspace'?'':' hidden')+'>'
       +'<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 4px">Theme</h2><p class="lede" style="margin:0 0 6px">Choose a workspace theme. Changes apply instantly across the command centre.</p>'
@@ -3141,8 +3291,14 @@ function heroCtaCard(c){
       +'<label class="aa-toggle"><input type="checkbox" id="va-reduced"'+(va.reducedMotionSupport!==false?' checked':'')+'> Reduced motion support</label></div>'
       +'<div class="card"><p class="lede" style="margin:0 0 12px">Preview your published page with live preview open, then publish to apply these settings on the live site.</p>'
       +'<button type="button" class="btn ghost" id="va-preview-btn">Open live preview</button></div>'
-      +'<p class="hint" style="margin:14px 0 0">Marketplace app registration and accessibility health checks arrive in Phase 3.</p>'
       +'</div>'
+      +'<div id="aa-panel-health" role="tabpanel" aria-labelledby="aa-tab-health"'+(activeTab==='health'?'':' hidden')+'>'
+      +'<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 4px">Accessibility health check</h2>'
+      +'<p class="lede" style="margin:0 0 12px">Quick DOM checks against your live preview. This is a guide — not a full WCAG audit.</p>'
+      +'<button type="button" class="btn" id="aa-health-run">Run check</button></div>'
+      +'<div id="aa-health-results"></div></div>'
+      +'<div id="aa-panel-marketplace" role="tabpanel" aria-labelledby="aa-tab-marketplace"'+(activeTab==='marketplace'?'':' hidden')+'>'
+      +'<div id="aa-marketplace-body"><p class="hint">Loading…</p></div></div>'
       +'</div>';
     document.body.appendChild(p);
     document.getElementById('aa-close').addEventListener('click',closeAppearanceAccessibilityPage);
@@ -3151,6 +3307,9 @@ function heroCtaCard(c){
     p.querySelectorAll('.aa-tab:not([disabled])').forEach(function(btn){
       btn.addEventListener('click',function(){ _aaSwitchTab(p, btn.getAttribute('data-aa-tab')); });
     });
+    var hr=$('aa-health-run'); if(hr) hr.addEventListener('click',function(){ _aaHealthRender(p); if(typeof toast==='function') toast('Health check complete'); });
+    if(activeTab==='health') _aaHealthRender(p);
+    if(activeTab==='marketplace') _aaMarketplaceRender(p);
     p.querySelectorAll('[data-aa-theme]').forEach(function(btn){
       btn.addEventListener('click',function(){
         var key=btn.getAttribute('data-aa-theme');
@@ -4792,6 +4951,7 @@ function heroCtaCard(c){
         if(active){
           // enabled + subscribed: ensure on is not false
           if(cfg.sections[key].on===false) delete cfg.sections[key].on;
+          if(key==='lpAccessibility') cfg.sections[key].on=true;
         } else if(enabled && !active){
           // ghost: placed but not subscribed — keep on for layout, mark ghost
           cfg.sections[key].__ghost=true;
