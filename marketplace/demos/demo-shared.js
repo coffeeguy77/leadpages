@@ -708,9 +708,11 @@
       window.__lpPreviewChromeHide=hide;
       var h=document.querySelector('header.site')||document.querySelector('header.nav');
       if(h) h.style.display=hide?'none':'';
+      var em=document.querySelector('.emerg');
+      if(em) em.style.display=hide?'none':'';
       var st=document.getElementById('lp-prev-chrome-hide-css');
       if(!st&&document.head){ st=document.createElement('style'); st.id='lp-prev-chrome-hide-css'; document.head.appendChild(st); }
-      if(st) st.textContent=hide?'header.site,header.nav,.site-header{display:none!important}':'';
+      if(st) st.textContent=hide?'header.site,header.nav,.site-header,.emerg{display:none!important}':'';
     };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_lpBoot); else _lpBoot();
 })();

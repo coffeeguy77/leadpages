@@ -1470,7 +1470,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(!doc) return;
       var st=doc.getElementById('lp-prev-chrome-hide-css');
       if(!st){ st=doc.createElement('style'); st.id='lp-prev-chrome-hide-css'; doc.head.appendChild(st); }
-      st.textContent=hide?'header.site,header.nav,.site-header{display:none!important}':'';
+      st.textContent=hide?'header.site,header.nav,.site-header,.emerg{display:none!important}':'';
       var w=fr.contentWindow;
       if(w&&w.__lpSetPreviewChrome) w.__lpSetPreviewChrome({ hideHeader:hide });
     }catch(e){}

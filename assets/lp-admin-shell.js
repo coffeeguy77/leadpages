@@ -86,6 +86,12 @@
   function initManageShell() {
     if (!qs('.wrap') || document.getElementById('lp-admin-shell')) return;
 
+    /* Remove legacy header controls from older cached shells */
+    ['lp-chrome-hide-btn', 'lp-shell-ratio', 'lp-ratio-minus', 'lp-ratio-plus'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+    });
+
     var shell = document.createElement('header');
     shell.id = 'lp-admin-shell';
     shell.className = 'lp-admin-shell';
@@ -191,7 +197,7 @@
 
     function syncRatioVisibility() {
       var layout = global.lpGetPreviewLayout ? global.lpGetPreviewLayout() : 'off';
-      var show = layout === 'split' || layout === 'side';
+      var show = (layout === 'split' || layout === 'side') && !isMobileLayout();
       var prevCtrl = document.getElementById('lp-prev-ratio');
       if (prevCtrl) prevCtrl.hidden = !show;
     }
