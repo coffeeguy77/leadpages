@@ -195,6 +195,19 @@
       if (prim) prim.style.display = '';
     }
 
+    function restoreMenuSlotsHome() {
+      restoreCmdLayout();
+      if (adminnav && navHome && adminnav.parentNode !== navHome) {
+        navHome.appendChild(adminnav);
+      }
+      if (cmd && cmdHome && cmd.parentNode !== cmdHome) {
+        cmdHome.appendChild(cmd);
+      }
+      if (global.LPMobileMenu && global.LPMobileMenu.restoreAllMenuSlotHomes) {
+        try { global.LPMobileMenu.restoreAllMenuSlotHomes(); } catch (e) { /* ignore */ }
+      }
+    }
+
     var _drawerLayoutBusy = false;
 
     function refreshCmdDrawer() {
@@ -292,14 +305,25 @@
       document.body.classList.toggle('lp-phone-chrome', mobile && phone);
       if (mobile) {
         document.body.classList.add('lp-compact-chrome');
+        restoreMenuSlotsHome();
         while (inner.firstChild) inner.removeChild(inner.firstChild);
         var usedConfig = false;
-        if (global.LPMobileMenu && global.LPMobileMenu.applyDrawer) {
+        if (global.LPMobileMenu && global.LPMobileMenu.renderCommandCentre) {
+          try {
+            usedConfig = !!global.LPMobileMenu.renderCommandCentre({
+              desktop: false,
+              mobile: mobile,
+              phone: phone,
+              drawerInner: inner
+            });
+          } catch (e) { usedConfig = false; }
+        } else if (global.LPMobileMenu && global.LPMobileMenu.applyDrawer) {
           try {
             usedConfig = !!global.LPMobileMenu.applyDrawer(inner, { phone: phone, mobile: mobile });
           } catch (e) { usedConfig = false; }
         }
         if (!usedConfig) {
+          restoreMenuSlotsHome();
           var publishTop = document.getElementById('lpc-drawer-top');
           var tools = document.getElementById('lpc-tools');
           var footer = document.getElementById('lpc-drawer-footer');
@@ -320,6 +344,7 @@
       } else {
         document.body.classList.remove('lp-compact-chrome', 'lp-phone-chrome');
         setDrawer(false);
+        restoreMenuSlotsHome();
         if (adminnav && navHome && adminnav.parentNode !== navHome) navHome.appendChild(adminnav);
         if (global.LPMobileMenu && global.LPMobileMenu.renderCommandCentre) {
           try {
@@ -417,6 +442,10 @@
       setDrawer: setDrawer,
       syncLayoutSelect: syncLayoutSelect,
       moveChrome: moveChrome,
+      restoreNavHome: function () {
+        if (adminnav && navHome && adminnav.parentNode !== navHome) navHome.appendChild(adminnav);
+      },
+      restoreMenuSlotsHome: restoreMenuSlotsHome,
       ensureDrawerActions: ensureDrawerActions,
       getEditorRatio: getEditorRatio,
       setEditorRatio: setEditorRatio,

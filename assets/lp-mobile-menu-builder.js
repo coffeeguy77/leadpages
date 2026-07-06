@@ -277,6 +277,13 @@
     if (prim) prim.style.display = '';
   }
 
+  function restoreAllMenuSlotHomes() {
+    restoreDesktopCmdStructure();
+    if (global.LPAdminShell && global.LPAdminShell.restoreNavHome) {
+      global.LPAdminShell.restoreNavHome();
+    }
+  }
+
   function applySlotItems(sec, slotEl, userRoles, clearFirst) {
     if (!slotEl || !sec.items || !sec.items.length) return false;
     if (clearFirst) slotEl.innerHTML = '';
@@ -304,7 +311,7 @@
     var cmd = document.getElementById('lp-cmd');
     if (!cmd || !cfg || !cfg.sections) return false;
 
-    restoreDesktopCmdStructure();
+    restoreAllMenuSlotHomes();
 
     cmd.querySelectorAll('[data-lpc-wrap]').forEach(function (w) { w.style.display = ''; });
     var ctx = document.getElementById('lpc-context');
@@ -373,10 +380,11 @@
 
   function renderCommandCentre(opts) {
     opts = opts || getViewportOpts();
-    populateCommandSlots(opts);
     if (opts.drawerInner) {
+      restoreAllMenuSlotHomes();
       return applyDrawer(opts.drawerInner, opts);
     }
+    populateCommandSlots(opts);
     return true;
   }
 
@@ -407,14 +415,23 @@
   }
 
   function slotHasContent(slotId) {
-    var el = document.getElementById(slotId);
+    var el = slotId === 'adminnav'
+      ? document.querySelector('.adminnav')
+      : document.getElementById(slotId);
     if (!el) return false;
     if (slotId === 'adminnav') {
       return Array.prototype.some.call(el.querySelectorAll('.anav-btn'), function (b) {
-        return elVisible(b);
+        return !(b.style && b.style.display === 'none');
       });
     }
-    return Array.prototype.some.call(el.children, function (c) { return elVisible(c); });
+    return Array.prototype.some.call(el.children, function (c) {
+      if (!c || c.nodeType !== 1) return false;
+      if (c.style && c.style.display === 'none') return false;
+      if (slotId === 'lpc-drawer-footer' || slotId === 'lpc-drawer-top' || slotId === 'lpc-tools' || slotId === 'lpc-primary') {
+        return true;
+      }
+      return elVisible(c);
+    });
   }
 
   function applyButtonStyle(wrap, style, sec) {
@@ -496,8 +513,12 @@
     var userRoles = getUserRoles();
     if (!inner || !cfg || !cfg.sections) return false;
 
+    restoreAllMenuSlotHomes();
+    populateCommandSlots(opts);
+
     while (inner.firstChild) inner.removeChild(inner.firstChild);
 
+    var added = 0;
     cfg.sections.forEach(function (sec) {
       if (!sectionVisible(sec, opts)) return;
 
@@ -511,10 +532,11 @@
         inner.appendChild(lbl);
       }
       inner.appendChild(row);
+      added++;
     });
 
-    document.body.classList.toggle('lp-mm-configured', true);
-    return true;
+    document.body.classList.toggle('lp-mm-configured', added > 0);
+    return added > 0;
   }
 
   function renderTabletDrawer(inner, opts) {
@@ -522,8 +544,12 @@
     var cfg = getConfig();
     if (!inner || !cfg || !cfg.sections) return false;
 
+    restoreAllMenuSlotHomes();
+    populateCommandSlots(opts);
+
     while (inner.firstChild) inner.removeChild(inner.firstChild);
 
+    var added = 0;
     cfg.sections.forEach(function (sec) {
       if (!sectionVisible(sec, opts)) return;
       if (sec.id === 'site' && sec.condition === 'site-switcher') {
@@ -561,9 +587,10 @@
 
       if (!sectionHasContent(sec, wrap, opts)) return;
       inner.appendChild(wrap);
+      added++;
     });
 
-    return true;
+    return added > 0;
   }
 
   function applyDrawer(inner, opts) {
@@ -1045,6 +1072,7 @@
     getViewportOpts: getViewportOpts,
     resolveTargetSlot: resolveTargetSlot,
     renderCommandCentre: renderCommandCentre,
+    restoreAllMenuSlotHomes: restoreAllMenuSlotHomes,
     initCommandCentreMenu: initCommandCentreMenu,
     applyDrawer: applyDrawer,
     openBuilder: openBuilder,

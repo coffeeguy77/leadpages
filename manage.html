@@ -2274,7 +2274,6 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     // Phase B: reconcile site_apps -> data.sections + sectionOrder
     if(currentSiteId && currentSiteTemplate==='trade'){
       applyTemplateChrome();
-      applyRoleGating();
       if(window.LPMobileMenu&&LPMobileMenu.initCommandCentreMenu){
         LPMobileMenu.initCommandCentreMenu().catch(function(){ ensureSiteBar(); });
       } else { ensureSiteBar(); }
@@ -4097,7 +4096,7 @@ function heroCtaCard(c){
   }
   async function anaRefresh(){ anaRender(); await anaFetchSite(); if(ANA.active==='global'){ await anaFetchGlobal(); } anaRender(); }
   function anaInit(){ var el=document.getElementById('lp-analytics'); if(el)return el; var nav=document.querySelector('.adminnav'); if(!nav||!nav.parentNode)return null; el=document.createElement('div'); el.id='lp-analytics'; nav.parentNode.insertBefore(el,nav); el.addEventListener('click',anaClick); document.addEventListener('click',function(ev){ if(ANA.active && !el.contains(ev.target)){ ANA.active=null; anaRender(); } }); return el; }
-  async function renderSiteAnalytics(){ if(!anaInit())return; if(currentSiteTemplate==='trade'){ var ael=document.getElementById('lp-analytics'); if(ael) ael.style.display='none'; /* fall through to load data */ } try{ lpBillingGate(); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} } ANA.active=null; ANA.globalData=null; anaRender(); lpExtrasInit(); LPDOM.open=null; renderMyDomains(); renderLeadsCRM(); await anaFetchSite(); anaRender(); if(LPLEADS.timeline) lpLeadsPaint(); }
+  async function renderSiteAnalytics(){ if(!anaInit())return; if(currentSiteTemplate==='trade'){ var ael=document.getElementById('lp-analytics'); if(ael) ael.style.display='none'; /* fall through to load data */ } try{ lpBillingGate(); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} } ANA.active=null; ANA.globalData=null; anaRender(); lpExtrasInit(); LPDOM.open=null; renderMyDomains(); renderLeadsCRM(); await anaFetchSite(); anaRender(); if(LPLEADS.timeline) lpLeadsPaint(); if(typeof window._dashApplyStatsFromAna==='function') window._dashApplyStatsFromAna(); }
   function renderLandingSub(c){
     var body=$('lsub-body'); if(!body) return; var sub=landingSub;
     if(sub==='details'){
@@ -4681,33 +4680,61 @@ function heroCtaCard(c){
     if(currentRole==='super') updateSiteControls();
     if(currentSiteTemplate!=='broker-app') layoutCmdCard();
   }
+  function lpCmdStage(){
+    var s=document.getElementById('lp-cmd-staging');
+    if(!s){ s=document.createElement('div'); s.id='lp-cmd-staging'; s.hidden=true; s.setAttribute('aria-hidden','true'); document.body.appendChild(s); }
+    return s;
+  }
+  function lpEnsureCmdNode(id, factory){
+    var el=$(id);
+    if(el) return el;
+    el=factory();
+    el.id=id;
+    lpCmdStage().appendChild(el);
+    return el;
+  }
   function layoutCmdCard(){
     var ctx=$('lpc-context'), prim=$('lpc-primary'), tools=$('lpc-tools'), footer=$('lpc-drawer-footer');
     if(!ctx||!prim||!tools) return;
     var mv=function(id,row){ var el=$(id); if(el&&row&&el.parentNode!==row) row.appendChild(el); };
     mv('site-label', ctx);
-    if(!$('lpc-preview')){ var pv=document.createElement('button'); pv.className='btn ghost lp-drawer-phone-hide'; pv.id='lpc-preview'; pv.type='button'; pv.textContent='Live Preview'; pv.addEventListener('click',function(){ var w=window.innerWidth,h=window.innerHeight; if(typeof lpSetPreviewLayout==='function') lpSetPreviewLayout((w>=1200||(w>=768&&w<1200&&w>h))?'side':'split'); else previewOpen(); }); }
-    if(!$('lpc-scope')){ var sc=document.createElement('button'); sc.className='btn ghost lp-drawer-phone-hide'; sc.id='lpc-scope'; sc.type='button'; sc.textContent='Scope'; sc.addEventListener('click',function(){ if(typeof lpScopeOpen==='function') lpScopeOpen(); }); }
-    if(!$('lpc-backups')){ var bk=document.createElement('button'); bk.className='btn ghost lp-drawer-phone-hide'; bk.id='lpc-backups'; bk.type='button'; bk.textContent='Backups'; bk.addEventListener('click',function(){ if(typeof lpBkOpen==='function') lpBkOpen(); }); }
+    lpEnsureCmdNode('lpc-preview', function(){
+      var pv=document.createElement('button'); pv.className='btn ghost lp-drawer-phone-hide'; pv.type='button'; pv.textContent='Live Preview';
+      pv.addEventListener('click',function(){ var w=window.innerWidth,h=window.innerHeight; if(typeof lpSetPreviewLayout==='function') lpSetPreviewLayout((w>=1200||(w>=768&&w<1200&&w>h))?'side':'split'); else previewOpen(); });
+      return pv;
+    });
+    lpEnsureCmdNode('lpc-scope', function(){
+      var sc=document.createElement('button'); sc.className='btn ghost lp-drawer-phone-hide'; sc.type='button'; sc.textContent='Scope';
+      sc.addEventListener('click',function(){ if(typeof lpScopeOpen==='function') lpScopeOpen(); });
+      return sc;
+    });
+    lpEnsureCmdNode('lpc-backups', function(){
+      var bk=document.createElement('button'); bk.className='btn ghost lp-drawer-phone-hide'; bk.type='button'; bk.textContent='Backups';
+      bk.addEventListener('click',function(){ if(typeof lpBkOpen==='function') lpBkOpen(); });
+      return bk;
+    });
     if(currentRole==='super'){
-      if(!$('lpc-partner-admin')){ var pa=document.createElement('a'); pa.id='lpc-partner-admin'; pa.className='btn ghost'; pa.href='/partners-admin'; pa.style.textDecoration='none'; pa.textContent='Partner Admin'; }
-      if(!$('lpc-marketplace-admin')){ var ma=document.createElement('a'); ma.id='lpc-marketplace-admin'; ma.className='btn ghost'; ma.href='/marketplace-admin'; ma.style.textDecoration='none'; ma.textContent='Marketplace Admin'; }
+      lpEnsureCmdNode('lpc-partner-admin', function(){ var pa=document.createElement('a'); pa.className='btn ghost'; pa.href='/partners-admin'; pa.style.textDecoration='none'; pa.textContent='Partner Admin'; return pa; });
+      lpEnsureCmdNode('lpc-marketplace-admin', function(){ var ma=document.createElement('a'); ma.className='btn ghost'; ma.href='/marketplace-admin'; ma.style.textDecoration='none'; ma.textContent='Marketplace Admin'; return ma; });
     }
     if(currentRole==='broker'){
-      if(!$('lpc-partner-console')){ var pc=document.createElement('a'); pc.id='lpc-partner-console'; pc.className='btn ghost'; pc.href='/partner-dashboard'; pc.style.textDecoration='none'; pc.textContent='Partner Console'; }
+      lpEnsureCmdNode('lpc-partner-console', function(){ var pc=document.createElement('a'); pc.className='btn ghost'; pc.href='/partner-dashboard'; pc.style.textDecoration='none'; pc.textContent='Partner Console'; return pc; });
     }
     if(footer){
-      if(!$('btn-switch')){
-        var swEl=document.createElement('button'); swEl.className='btn ghost'; swEl.id='btn-switch'; swEl.type='button'; swEl.textContent='Switch Account';
+      lpEnsureCmdNode('btn-switch', function(){
+        var swEl=document.createElement('button'); swEl.className='btn ghost'; swEl.type='button'; swEl.textContent='Switch Account';
         swEl.addEventListener('click',function(){ showLanding(); });
-      }
-      if(!$('lp-mode-toggle')){
-        var mt=document.createElement('button'); mt.type='button'; mt.id='lp-mode-toggle'; mt.className='btn ghost lp-drawer-phone-hide'; mt.style.fontSize='12px'; mt.textContent='Classic';
-      }
-      if(!$('lpc-drawer-signout')){
-        var so=document.createElement('button'); so.type='button'; so.id='lpc-drawer-signout'; so.className='btn ghost'; so.textContent='Sign Out';
+        return swEl;
+      });
+      lpEnsureCmdNode('lp-mode-toggle', function(){
+        var mt=document.createElement('button'); mt.type='button'; mt.className='btn ghost lp-drawer-phone-hide'; mt.style.fontSize='12px'; mt.textContent='Classic';
+        return mt;
+      });
+      lpEnsureCmdNode('lpc-drawer-signout', function(){
+        var so=document.createElement('button'); so.type='button'; so.className='btn ghost'; so.textContent='Sign Out';
         so.addEventListener('click',function(e){ e.preventDefault(); signOutLP(); });
-      }
+        return so;
+      });
     }
     if(!$('lpc-acct')){
       var acct=document.createElement('div'); acct.id='lpc-acct'; acct.className='lpc-acct-desktop'; acct.style.cssText='margin-left:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
@@ -5913,16 +5940,7 @@ function heroCtaCard(c){
     // Wire leads refresh
     var dlRefresh=document.getElementById('dash-leads-refresh');
     if(dlRefresh) dlRefresh.addEventListener('click',function(){ _dashLoadLeads(siteId); });
-    // Wire View message expand (delegated)
-    box.addEventListener('click',function(e){
-      var btn=e.target.closest('[data-dash-lead]'); if(!btn) return;
-      var lid=btn.getAttribute('data-dash-lead');
-      var detail=document.getElementById('dash-lead-detail-'+lid);
-      if(!detail) return;
-      var open=detail.style.display==='block';
-      detail.style.display=open?'none':'block';
-      btn.textContent=open?'View message':'Hide message';
-    });
+    _dashWireLeadClicks();
 
     // Wire backup buttons
     var bkSave=document.getElementById('dash-bk-save');
@@ -5963,42 +5981,68 @@ function heroCtaCard(c){
 
   /* ── Dashboard data loaders ───────────────────────────── */
 
+  function _dashApplyStatsFromAna(){
+    var vis=document.getElementById('dash-s-vis');
+    var lds=document.getElementById('dash-s-leads');
+    var cls=document.getElementById('dash-s-calls');
+    var cvn=document.getElementById('dash-s-conv');
+    if(!vis&&!lds&&!cls&&!cvn) return false;
+    try{
+      if(typeof ANA==='undefined'||!ANA.loaded||!Array.isArray(ANA.data)) return false;
+      var c=anaCounts(ANA.data);
+      if(vis) vis.textContent=c.page_view||'0';
+      var leadsN=Math.max(c.lead_submit||0, ANA.leadsCount||0);
+      if(lds) lds.textContent=leadsN||'0';
+      if(cls) cls.textContent=c.call_click||'0';
+      var total=Math.max(c.page_view||0,1);
+      var cvnPct=total>0?Math.round((leadsN/total)*100):0;
+      if(cvn) cvn.textContent=cvnPct+'%';
+      var tier,label;
+      if(cvnPct>=10){tier='excellent';label='excellent';}
+      else if(cvnPct>=5){tier='good';label='good';}
+      else if(cvnPct>=2){tier='average';label='average';}
+      else{tier='below';label='below average';}
+      var convBtn=document.getElementById('dash-conv-rate-btn');
+      if(convBtn){
+        convBtn.textContent='conversion rate: '+label;
+        convBtn.setAttribute('data-tier',tier);
+        convBtn.hidden=false;
+      }
+      return true;
+    }catch(e){ return false; }
+  }
+  window._dashApplyStatsFromAna=_dashApplyStatsFromAna;
+
+  function _dashWireLeadClicks(){
+    if(window.__dashLeadClickWired) return;
+    window.__dashLeadClickWired=true;
+    document.addEventListener('click',function(e){
+      var btn=e.target.closest('[data-dash-lead]');
+      if(!btn) return;
+      var dash=document.getElementById('av-dashboard');
+      if(!dash||!dash.contains(btn)) return;
+      e.preventDefault();
+      var lid=btn.getAttribute('data-dash-lead');
+      var detail=document.getElementById('dash-lead-detail-'+lid);
+      if(!detail) return;
+      var open=detail.style.display==='block';
+      detail.style.display=open?'none':'block';
+      btn.textContent=open?'View message':'Hide message';
+    });
+  }
+
   function _dashLoadStats(period){
     var vis=document.getElementById('dash-s-vis');
     var lds=document.getElementById('dash-s-leads');
     var cls=document.getElementById('dash-s-calls');
     var cvn=document.getElementById('dash-s-conv');
-    function _applyAna(){
-      try{
-        if(typeof ANA==='undefined'||!ANA.loaded||!Array.isArray(ANA.data)){ return false; }
-        var c=anaCounts(ANA.data);
-        if(vis) vis.textContent=c.page_view||'0';
-        var leadsN=Math.max(c.lead_submit||0, ANA.leadsCount||0);
-        if(lds) lds.textContent=leadsN||'0';
-        if(cls) cls.textContent=c.call_click||'0';
-        var total=Math.max(c.page_view||0,1);
-        var cvnPct=total>0?Math.round((leadsN/total)*100):0;
-        if(cvn) cvn.textContent=cvnPct+'%';
-        var tier,label;
-        if(cvnPct>=10){tier='excellent';label='excellent';}
-        else if(cvnPct>=5){tier='good';label='good';}
-        else if(cvnPct>=2){tier='average';label='average';}
-        else{tier='below';label='below average';}
-        var convBtn=document.getElementById('dash-conv-rate-btn');
-        if(convBtn){
-          convBtn.textContent='conversion rate: '+label;
-          convBtn.setAttribute('data-tier',tier);
-          convBtn.hidden=false;
-        }
-        return true;
-      }catch(e){ return false; }
-    }
-    // Try immediately, then retry up to 5x as ANA loads async
+    function _applyAna(){ return _dashApplyStatsFromAna(); }
+    // Try immediately, then retry until ANA loads async
     if(!_applyAna()){
       var _tries=0;
       var _interval=setInterval(function(){
         _tries++;
-        if(_applyAna()||_tries>10){
+        if(_applyAna()||_tries>20){
           clearInterval(_interval);
           if(_applyAna()) _dashDrawChart(window._dashChartPeriod||'30d');
         }
@@ -6028,7 +6072,7 @@ function heroCtaCard(c){
           var sub=esc(l.suburb||l.postcode||'');
           var date=l.created_at?new Date(l.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
           var isNew=l.created_at&&(Date.now()-new Date(l.created_at).getTime())<86400000*3;
-          var detail=esc(l.detail||l.other||'');
+          var detail=esc(l.detail||l.other||l.message||l.job||'');
           var email=esc(l.email||'');
           var rowId='dash-lead-'+l.id;
           return '<div class="lp-dash-row" style="overflow:hidden" id="'+rowId+'">'
