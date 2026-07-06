@@ -479,40 +479,13 @@ body.lp-cmd-on #lp-signout-top,body.lp-cmd-on #lp-partneradmin-top,body.lp-cmd-o
 .lpl-name{font-weight:600;} .lpl-slug{color:var(--ink-faint);font-size:12px;}
 .lpl-edit{margin-left:auto;}
 body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{display:none !important;}
-.lpl-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-top:22px;}
+/* Site switcher base — premium styles in lp-themes.css #lp-landing */
+.lpl-card{margin-top:22px;}
 .lpl-toprow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;}
-.lpl-listhead{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:16px 0 12px;}
+.lpl-listhead{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:16px 0 10px;}
 .lpl-listhead h2{font-family:var(--font-display);font-weight:500;font-size:20px;margin:0;display:inline;}
-.lpl-countpill{display:inline-block;margin-left:10px;padding:2px 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-soft);font-size:12px;font-weight:600;}
 .lpl-sort{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:13px;}
-.lpl-sort select{padding:7px 10px;border:1px solid var(--border);border-radius:10px;font:inherit;background:var(--input-bg);color:var(--ink);cursor:pointer;}
-.lpl-card2{display:flex;align-items:center;gap:16px;padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;}
-.lpl-logo{width:56px;height:56px;border-radius:12px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--surface-2);border:1px solid var(--line);font-weight:700;color:var(--accent);font-size:20px;}
-.lpl-logo img{width:100%;height:100%;object-fit:contain;}
-.lpl-body{flex:1;min-width:0;}
-.lpl-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.lpl-title .lpl-name{font-weight:700;font-size:16px;color:var(--ink);}
-.lpl-sub2{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:3px 0 9px;}
-.lpl-slug2{color:var(--ink-faint);font-size:13px;}
-.lpl-dot{color:var(--ink-faint);}
-.lpl-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;color:var(--ink-soft);font-size:12.5px;}
-.lpl-meta span{display:inline-flex;align-items:center;gap:5px;}
-.lpl-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:600;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-soft);white-space:nowrap;}
-.lpl-badge.ok{background:var(--success-soft);color:var(--success);border-color:var(--border);}
-.lpl-badge.warn{background:var(--warning-soft);color:var(--warning);border-color:var(--border);}
-.lpl-dom-ok{color:var(--success);} .lpl-dom-no{color:var(--warning);}
-.lpl-manage{flex:0 0 auto;}
-.lpl-fav2{flex:0 0 auto;cursor:pointer;font-size:18px;line-height:1;background:none;border:0;color:#d3cbb0;padding:4px 6px;}
-.lpl-fav2.on{color:var(--accent);}
-.lpl-newcard{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;box-sizing:border-box;padding:16px;border:1.5px dashed var(--line-strong);border-radius:12px;background:var(--surface-2);color:var(--accent-hover);font:600 14px var(--font-ui);cursor:pointer;margin-top:2px;}
-.lpl-newcard:hover{background:var(--accent-soft);border-color:var(--accent);}
-.lpl-help{text-align:center;color:var(--ink-soft);font-size:13px;margin:16px 0 0;}
-.lpl-help a{color:var(--accent-hover);cursor:pointer;text-decoration:underline;}
-.lpl-legal{text-align:center;color:var(--ink-faint);font-size:12px;margin:8px 0 0;}
-.lpl-legal a{color:var(--ink-soft);text-decoration:none;}
-.lpl-legal a:hover{color:var(--accent-hover);text-decoration:underline;}
-.lpl-legal span{color:var(--ink-faint);margin:0 4px;}
-.lpl-pgroup{margin:20px 0 10px;font-weight:700;font-size:15px;color:var(--ink);}
+.lpl-pgroup{margin:16px 0 6px;font-weight:700;font-size:14px;color:var(--ink);}
 .bar-fav{cursor:pointer;background:none;border:1.5px solid var(--line);border-radius:8px;color:var(--accent);font-size:15px;padding:5px 9px;display:flex;align-items:center;justify-content:center;}
 .bar-fav.on{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);}
 </style>
@@ -538,7 +511,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         <button data-grp="customer" data-role-show="broker" style="display:none">Clients <span class="lpl-seg-ct" id="lpl-ct-broker-customer"></span></button>
         <button data-grp="demo" data-role-show="broker" style="display:none">Demos <span class="lpl-seg-ct" id="lpl-ct-broker-demo"></span></button>
         <button data-grp="listing" data-role-show="broker" style="display:none">My Listing <span class="lpl-seg-ct" id="lpl-ct-listing"></span></button>
-      </div><a href="#" id="lpl-signout" class="btn ghost">Sign Out</a></div>
+      </div><a href="#" id="lpl-signout" class="btn lpl-btn-outline">Sign Out</a></div>
     <input class="lpl-search" id="lpl-search" placeholder="Search by site name, slug, business name or domain...">
     <div class="lpl-listhead"><div><h2 id="lpl-listtitle">Customer Sites</h2><span class="lpl-countpill" id="lpl-listcount"></span></div><div class="lpl-sort">Sort by <select id="lpl-sort"><option value="updated">Last updated</option><option value="name">Name</option><option value="leads">Leads</option></select></div></div>
     <div id="lpl-list"></div>
@@ -1789,7 +1762,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var toprow=document.querySelector('#lp-landing .lpl-toprow');
       var laa=document.getElementById('lpl-appearance');
       if(!laa&&toprow&&sob){
-        laa=document.createElement('button'); laa.id='lpl-appearance'; laa.type='button'; laa.className='btn ghost'; laa.textContent='Appearance';
+        laa=document.createElement('button'); laa.id='lpl-appearance'; laa.type='button'; laa.className='btn lpl-btn-outline'; laa.textContent='Appearance';
         toprow.insertBefore(laa, sob);
       }
       if(laa) laa.onclick=function(e){ e.preventDefault(); openAppearanceAccessibilityPage(); };
@@ -1818,11 +1791,11 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     return s.is_mockup ? 'demo' : 'customer';
   }
   function _lplMatch(s,q){ return (s.business_name||'').toLowerCase().indexOf(q)>=0 || (s.slug||'').toLowerCase().indexOf(q)>=0 || (s.custom_domain||'').toLowerCase().indexOf(q)>=0; }
-  function _lplType(s){ var t; if(s.servicing_partner_id||s.referring_partner_id||s.is_partner_home) t='Partner site'; else if((currentRole!=='super'?s.is_mockup:s.is_demo)) t='Demo site'; else t='Customer site'; return '<span class="lpl-badge">'+t+'</span>'; }
-  function _lplStatus(s){ if(s.is_demo||s.is_mockup) return '<span class="lpl-badge">Demo</span>'; var st=(s.status||'').toLowerCase(); if(st==='live'||st==='active') return '<span class="lpl-badge ok">Active</span>'; if(st==='draft') return '<span class="lpl-badge warn">Draft</span>'; if(!st) return '<span class="lpl-badge">Needs setup</span>'; return '<span class="lpl-badge">'+esc(st.charAt(0).toUpperCase()+st.slice(1))+'</span>'; }
-  function _lplLogo(s){ var url=(s.config&&s.config.logo&&s.config.logo.imageUrl)||''; if(url) return '<span class="lpl-logo"><img src="'+esc(url)+'" alt=""></span>'; var nm=(s.business_name||s.slug||'?').trim(); return '<span class="lpl-logo">'+esc((nm.charAt(0)||'?').toUpperCase())+'</span>'; }
-  function _lplMeta(s){ var m=[]; var lc=(LPL.leads&&LPL.leads[s.id]); if(lc!=null) m.push('<span>Leads: '+lc+'</span>'); m.push(s.custom_domain?'<span class="lpl-dom-ok">Domain connected</span>':'<span class="lpl-dom-no">Domain not connected</span>'); if(s.updated_at) m.push('<span>Last updated: '+anaAgo(s.updated_at)+'</span>'); return m.length?'<div class="lpl-meta">'+m.join('')+'</div>':''; }
-  function _lplCard(s){ return '<div class="lpl-card2">'+_lplLogo(s)+'<div class="lpl-body"><div class="lpl-title"><span class="lpl-name">'+esc(s.business_name||s.slug)+'</span>'+_lplStatus(s)+'</div><div class="lpl-sub2"><span class="lpl-slug2">'+esc(s.slug||'')+'</span><span class="lpl-dot">\u00b7</span>'+_lplType(s)+'</div>'+_lplMeta(s)+'</div><div class="lpl-manage"><button class="btn" data-edit="'+s.id+'">Manage Site</button></div><button class="lpl-fav2'+(s.is_favorite?' on':'')+'" title="Favourite" data-fav="'+s.id+'">'+(s.is_favorite?'\u2605':'\u2606')+'</button></div>'; }
+  function _lplType(s){ var t; if(s.servicing_partner_id||s.referring_partner_id||s.is_partner_home) t='Partner site'; else if((currentRole!=='super'?s.is_mockup:s.is_demo)) t='Demo site'; else t='Customer site'; return '<span class="lpl-type">'+t+'</span>'; }
+  function _lplStatus(s){ if(s.is_demo||s.is_mockup) return '<span class="lpl-badge">Demo</span>'; var st=(s.status||'').toLowerCase(); if(st==='live'||st==='active') return '<span class="lpl-badge ok">Active</span>'; if(st==='draft') return '<span class="lpl-badge warn">Draft</span>'; if(!st) return '<span class="lpl-badge">Setup</span>'; return '<span class="lpl-badge">'+esc(st.charAt(0).toUpperCase()+st.slice(1))+'</span>'; }
+  function _lplLogo(s){ var url=(s.config&&s.config.logo&&s.config.logo.imageUrl)||''; if(url) return '<span class="lpl-logo--has"><img src="'+esc(url)+'" alt=""></span>'; return ''; }
+  function _lplMetaInline(s){ var bits=[]; var lc=(LPL.leads&&LPL.leads[s.id]); if(lc!=null) bits.push('Leads: '+lc); bits.push(s.custom_domain?'<span class="lpl-dom-ok">Domain connected</span>':'<span class="lpl-dom-no">Domain not connected</span>'); if(s.updated_at) bits.push(anaAgo(s.updated_at)); return bits.join(' \u00b7 '); }
+  function _lplCard(s){ return '<div class="lpl-card2">'+_lplLogo(s)+'<div class="lpl-body"><div class="lpl-title"><span class="lpl-name">'+esc(s.business_name||s.slug)+'</span>'+_lplStatus(s)+'<button type="button" class="lpl-fav2'+(s.is_favorite?' on':'')+'" title="Favourite" data-fav="'+s.id+'">'+(s.is_favorite?'\u2605':'\u2606')+'</button></div><div class="lpl-subline"><span class="lpl-slug2">'+esc(s.slug||'')+'</span><span class="lpl-dot">\u00b7</span>'+_lplType(s)+'<span class="lpl-dot">\u00b7</span><span class="lpl-meta-inline">'+_lplMetaInline(s)+'</span></div></div><div class="lpl-manage"><button type="button" class="lpl-btn-manage" data-edit="'+s.id+'">Manage</button></div></div>'; }
   function _lplNewCard(){ return '<div class="lpl-newcard" id="lpl-newcard">+ New Site</div>'; }
   function _lplSort(items){ var mode=LPL.sort||'updated'; return items.slice().sort(function(a,b){ var fa=a.is_favorite?0:1, fb=b.is_favorite?0:1; if(fa!==fb) return fa-fb; if(mode==='name') return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); if(mode==='leads'){ var la=(LPL.leads&&LPL.leads[a.id])||0, lb=(LPL.leads&&LPL.leads[b.id])||0; if(la!==lb) return lb-la; } var ua=a.updated_at?new Date(a.updated_at).getTime():0, ub=b.updated_at?new Date(b.updated_at).getTime():0; if(ua!==ub) return ub-ua; return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); }); }
   function _lplWire(list){ list.querySelectorAll('[data-edit]').forEach(function(b){ b.onclick=function(){ var s=allSites.find(function(x){return x.id===b.getAttribute('data-edit');}); if(s){ hideLanding(); loadSite(s); } }; }); list.querySelectorAll('[data-fav]').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); lplToggleFav(b.getAttribute('data-fav')); }; }); var nc=document.getElementById('lpl-newcard'); if(nc) nc.onclick=function(){ hideLanding(); openCreateSite(); }; }
