@@ -75,9 +75,12 @@
   text-decoration: none;
 }
 .lp-shell-logo-link img {
-  height: 34px;
+  height: 51px;
   width: auto;
   display: block;
+}
+body.lp-hide-shell-logo .lp-shell-logo-link {
+  display: none;
 }
 .lp-shell-spacer {
   flex: 1;
@@ -322,14 +325,10 @@ body.lp-compact-chrome .wrap > .leadpages-logo:not(.lp-shell-logo) {
   .lp-drawer-footer-label {
     margin-top: 18px;
   }
-  /* Portrait mobile: hide Forms + Apps stats */
+  /* Portrait mobile: compact stats stay on one row */
   @media (orientation: portrait) and (max-width: 767px) {
-    .lp-stat-forms,
-    .lp-stat-apps {
-      display: none !important;
-    }
     .lp-instrument-stats {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
 }
@@ -463,20 +462,21 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   min-width: 34px;
 }
 
-/* Preview layout picker in preview panel head */
-.lp-prev-layout-pick {
+/* Hide-logo control in preview panel head */
+.lp-prev-hide-logo {
   display: none;
-  align-items: center;
-  gap: 6px;
-  margin-left: 8px;
-}
-.lp-prev-layout-pick select {
-  font: 600 11.5px system-ui, sans-serif;
+  font: 600 10px var(--font-ui, Inter, system-ui, sans-serif);
   padding: 4px 8px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.lp-prev-hide-logo[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 /* ── Command Centre responsive ── */
@@ -484,8 +484,9 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   .lp-admin-shell {
     display: block;
   }
-  .lp-prev-layout-pick {
+  .lp-prev-hide-logo {
     display: inline-flex;
+    align-items: center;
   }
   .adminnav {
     display: none;
@@ -510,10 +511,9 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   .lp-prev-sub {
     display: none;
   }
-  .lp-prev-layout-pick select {
+  .lp-prev-hide-logo {
     font-size: 10px;
     padding: 3px 6px;
-    max-width: 88px;
   }
   .lp-prev-actions button {
     width: 26px;
@@ -525,8 +525,8 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     margin: 0 -4px;
   }
   .lp-instrument-stats {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
     margin-bottom: 12px;
   }
   .lp-instrument-stat {
@@ -709,7 +709,7 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     padding: 16px;
   }
   .lp-instrument-stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   .lp-instrument-stat.lp-stat-wide {
     grid-column: span 1;
@@ -764,7 +764,7 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   .lp-admin-scrim {
     display: none !important;
   }
-  .lp-prev-layout-pick {
+  .lp-prev-hide-logo {
     display: none !important;
   }
 }
@@ -774,7 +774,7 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     height: 100px !important;
   }
   .lp-instrument-stats {
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
   .lp-instrument-stat.lp-stat-wide {
     grid-column: span 1;

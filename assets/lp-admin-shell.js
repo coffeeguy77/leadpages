@@ -103,7 +103,6 @@
       + '<select class="lp-shell-select" id="lp-prev-layout-sel" title="Preview layout" aria-label="Preview layout">'
       + '<option value="off">Preview: Off</option>'
       + '<option value="split">Preview: Split</option>'
-      + '<option value="fullscreen">Preview: Full screen</option>'
       + '<option value="side">Preview: Side panel</option>'
       + '</select>'
       + '</div></div>';
@@ -206,10 +205,9 @@
 
     function syncLayoutSelect() {
       var sel = document.getElementById('lp-prev-layout-sel');
-      var panelSel = document.getElementById('lp-prev-layout-panel');
       var val = global.lpGetPreviewLayout ? global.lpGetPreviewLayout() : loadPref(PREVIEW_KEY, 'off');
+      if (val === 'fullscreen') val = 'split';
       if (sel) sel.value = val;
-      if (panelSel) panelSel.value = val;
       syncRatioVisibility();
     }
 
