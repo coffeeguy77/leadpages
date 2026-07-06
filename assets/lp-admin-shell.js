@@ -195,6 +195,43 @@
       if (prim) prim.style.display = '';
     }
 
+    function ensureDrawerActions() {
+      var top = document.getElementById('lpc-drawer-top');
+      var tools = document.getElementById('lpc-tools');
+      var footer = document.getElementById('lpc-drawer-footer');
+      var prim = document.getElementById('lpc-primary');
+      var pub = document.getElementById('btn-publish');
+      var view = document.getElementById('btn-viewlive');
+      if (top) {
+        if (pub && pub.parentNode !== top) top.appendChild(pub);
+        if (view && view.parentNode !== top) top.appendChild(view);
+      }
+      var toolIds = [
+        'btn-settings', 'btn-appearance-aa', 'btn-billing', 'btn-domains',
+        'btn-newsite', 'lpc-scope', 'lpc-backups', 'btn-fav', 'lpc-preview'
+      ];
+      if (tools) {
+        toolIds.forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el && el.parentNode !== tools) tools.appendChild(el);
+        });
+      }
+      var footerIds = [
+        'btn-switch', 'lpc-partner-admin', 'lpc-marketplace-admin',
+        'lpc-partner-console', 'lp-mode-toggle', 'lpc-drawer-signout'
+      ];
+      if (footer) {
+        footerIds.forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el && el.parentNode !== footer) footer.appendChild(el);
+        });
+      }
+      if (prim) {
+        var preview = document.getElementById('lpc-preview');
+        if (preview && preview.parentNode === prim && tools) tools.appendChild(preview);
+      }
+    }
+
     function setDrawer(open) {
       document.body.classList.toggle('lp-drawer-open', !!open);
       var btn = document.getElementById('lp-shell-menu');
@@ -207,6 +244,7 @@
       var phone = isPhoneLayout();
       var inner = drawerInner;
       if (!inner) return;
+      ensureDrawerActions();
       document.body.classList.toggle('lp-phone-chrome', mobile && phone);
       if (mobile) {
         document.body.classList.add('lp-compact-chrome');
@@ -216,11 +254,13 @@
           appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
         }
         appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label', 'Pages');
-        appendDrawerPiece(inner, document.getElementById('lpc-primary'), 'lp-drawer-section-label', 'Publishing & preview');
+        if (!phone) {
+          appendDrawerPiece(inner, document.getElementById('lpc-primary'), 'lp-drawer-section-label', 'Publishing & preview');
+        }
         appendDrawerPiece(inner, document.getElementById('lpc-tools'), 'lp-drawer-section-label lp-drawer-tools-label', 'Site tools');
         appendDrawerPiece(inner, document.getElementById('lpc-drawer-footer'), 'lp-drawer-section-label lp-drawer-footer-label', 'Account');
         var prim = document.getElementById('lpc-primary');
-        if (prim) prim.style.display = 'none';
+        if (prim) prim.style.display = phone ? 'none' : '';
         var pubBtn = document.getElementById('btn-publish');
         var viewBtn = document.getElementById('btn-viewlive');
         if (phone && pubBtn && viewBtn) {
@@ -261,7 +301,12 @@
     }
 
     document.getElementById('lp-shell-menu').addEventListener('click', function () {
-      setDrawer(!document.body.classList.contains('lp-drawer-open'));
+      var opening = !document.body.classList.contains('lp-drawer-open');
+      if (opening) {
+        ensureDrawerActions();
+        moveChrome();
+      }
+      setDrawer(opening);
     });
     document.getElementById('lp-drawer-close').addEventListener('click', function () {
       setDrawer(false);
@@ -319,6 +364,7 @@
       setDrawer: setDrawer,
       syncLayoutSelect: syncLayoutSelect,
       moveChrome: moveChrome,
+      ensureDrawerActions: ensureDrawerActions,
       getEditorRatio: getEditorRatio,
       setEditorRatio: setEditorRatio,
       adjustEditorRatio: adjustEditorRatio,

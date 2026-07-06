@@ -987,6 +987,29 @@ html[data-lp-reduced-motion="true"] {
   color: var(--text) !important;
 }
 
+/* Dashboard activity chart — living area line */
+.lp-dash-chart-host {
+  min-height: 240px;
+}
+.lp-instrument-chart .lp-dash-chart-svg {
+  width: 100%;
+}
+.lp-dash-chart-svg .lp-dash-line-main {
+  stroke: var(--accent-hover, var(--chart-primary));
+}
+html[data-lp-reduced-motion="true"] .lp-dash-chart-svg animate,
+html[data-lp-reduced-motion="true"] .lp-dash-chart-svg animateMotion,
+html[data-lp-visitor-motion="reduced"] .lp-dash-chart-svg animate,
+html[data-lp-visitor-motion="reduced"] .lp-dash-chart-svg animateMotion {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-dash-chart-svg animate,
+  .lp-dash-chart-svg animateMotion {
+    display: none;
+  }
+}
+
 /* Project scope custom checkboxes */
 .lp-scope-row {
   display: flex;
