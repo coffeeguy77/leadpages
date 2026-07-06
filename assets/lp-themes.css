@@ -515,6 +515,7 @@ html[data-lp-reduced-motion="true"] {
   --soft: var(--text-soft);
   --faint: var(--muted);
   --brand-d: var(--accent-hover);
+  --brand-t: var(--accent-soft);
   --line-s: var(--border-strong);
   --ok: var(--success);
   --ok-bg: var(--success-soft);
