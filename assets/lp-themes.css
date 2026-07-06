@@ -639,19 +639,19 @@ html[data-lp-reduced-motion="true"] {
 }
 .lpl-seg button {
   appearance: none;
-  border: 1px solid transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
   background: transparent;
-  padding: 9px 16px;
+  padding: 8px 14px;
   font: 600 13px var(--font-ui, Inter, system-ui, sans-serif);
-  color: var(--text-soft);
+  color: var(--text);
   cursor: pointer;
   border-radius: var(--radius-sm, 10px);
   display: inline-flex;
   align-items: center;
 }
 .lpl-seg button:hover {
-  color: var(--text);
-  background: var(--panel-soft);
+  border-color: var(--accent);
+  color: var(--accent-hover);
 }
 .lpl-seg button.on {
   background: var(--accent);
@@ -659,24 +659,251 @@ html[data-lp-reduced-motion="true"] {
   border-color: var(--accent);
 }
 .lpl-seg-ct {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  margin-left: 8px;
-  border-radius: 6px;
-  background: var(--panel-soft);
-  border: 1px solid var(--border);
-  color: var(--text-soft);
-  font-size: 11.5px;
+  display: inline;
+  margin-left: 6px;
+  padding: 0;
+  min-width: 0;
+  height: auto;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
   font-weight: 700;
+  opacity: 0.85;
 }
 .lpl-seg button.on .lpl-seg-ct {
-  background: color-mix(in srgb, var(--accent-text) 18%, transparent);
-  color: var(--accent-text);
-  border-color: transparent;
+  opacity: 0.92;
+}
+
+/* Site switcher — premium app list */
+#lp-landing {
+  -webkit-tap-highlight-color: transparent;
+}
+#lp-landing .lpl-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin-top: 16px;
+}
+#lp-landing .lpl-toprow .lpl-btn-outline {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  color: var(--accent-hover);
+}
+#lp-landing .lpl-toprow .lpl-btn-outline:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: var(--accent);
+}
+#lp-landing .lpl-search {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: var(--radius-sm, 10px);
+}
+#lp-landing .lpl-search:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+#lp-landing .lpl-countpill {
+  background: transparent;
+  border: none;
+  color: var(--text-soft);
+  padding: 0;
+  margin-left: 6px;
+  font-weight: 600;
+}
+#lp-landing .lpl-sort select {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.lpl-card2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 0;
+  box-shadow: none;
+}
+.lpl-card2:last-child {
+  border-bottom: none;
+}
+.lpl-logo--has {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+}
+.lpl-logo--has img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.lpl-body {
+  flex: 1;
+  min-width: 0;
+}
+.lpl-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+.lpl-title .lpl-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lpl-subline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-soft);
+  line-height: 1.35;
+}
+.lpl-subline .lpl-slug2 {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+.lpl-subline .lpl-dot {
+  color: var(--muted);
+}
+.lpl-type {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+.lpl-meta-inline {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+.lpl-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.lpl-badge.ok {
+  color: var(--success);
+}
+.lpl-badge.warn {
+  color: var(--warning);
+}
+.lpl-dom-ok {
+  color: var(--success);
+}
+.lpl-dom-no {
+  color: var(--warning);
+}
+.lpl-fav2 {
+  flex: 0 0 auto;
+  margin-left: auto;
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+  background: none;
+  border: 0;
+  color: color-mix(in srgb, var(--text-soft) 55%, transparent);
+  padding: 2px 4px;
+}
+.lpl-fav2.on {
+  color: var(--warning);
+}
+.lpl-manage {
+  flex: 0 0 auto;
+}
+.lpl-btn-manage {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent-hover);
+  font: 700 12.5px var(--font-ui, Inter, system-ui, sans-serif);
+  padding: 7px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.lpl-btn-manage:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: var(--accent);
+}
+.lpl-newcard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  margin-top: 8px;
+  border: 1.5px dashed color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: var(--radius-sm, 10px);
+  background: transparent;
+  color: var(--accent-hover);
+  font: 600 14px var(--font-ui, Inter, system-ui, sans-serif);
+  cursor: pointer;
+}
+.lpl-newcard:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-color: var(--accent);
+}
+#lp-landing .lpl-help {
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 13px;
+  margin: 20px 0 0;
+}
+#lp-landing .lpl-help a {
+  color: var(--accent-hover);
+  cursor: pointer;
+  text-decoration: none;
+}
+#lp-landing .lpl-legal {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  margin: 10px 0 0;
+}
+#lp-landing .lpl-legal a {
+  color: var(--text-soft);
+  text-decoration: none;
+}
+#lp-landing .lpl-legal a:hover {
+  color: var(--accent-hover);
+}
+#lp-landing .lpl-pgroup {
+  margin: 14px 0 4px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-soft);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* Page editor section / layout pills */
