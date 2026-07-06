@@ -51,6 +51,8 @@
   --brand-deep: var(--accent-hover);
   --brand-tint: var(--accent-soft);
   --amber: var(--warning);
+  --lp-logo-accent: var(--accent);
+  --lp-logo-ink: #13161b;
   --radius-sm: 10px;
 }
 
@@ -97,6 +99,8 @@
   --brand-deep: var(--accent-hover);
   --brand-tint: var(--accent-soft);
   --amber: var(--warning);
+  --lp-logo-accent: var(--accent);
+  --lp-logo-ink: #eef2f7;
 }
 
 [data-theme="blush"] {
@@ -142,6 +146,8 @@
   --brand-deep: var(--accent-hover);
   --brand-tint: var(--accent-soft);
   --amber: var(--warning);
+  --lp-logo-accent: var(--accent);
+  --lp-logo-ink: #2a1f2e;
 }
 
 [data-theme="blueprint"] {
@@ -187,6 +193,8 @@
   --brand-deep: var(--accent-hover);
   --brand-tint: var(--accent-soft);
   --amber: var(--warning);
+  --lp-logo-accent: var(--accent);
+  --lp-logo-ink: #1a2a3a;
 }
 
 /* UI density */

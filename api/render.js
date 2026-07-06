@@ -525,6 +525,8 @@ function visitorAppearanceCfg(cfg) {
   const va = (cfg && cfg.visitorAppearance) || {};
   return {
     siteTheme: va.siteTheme || 'classic-light',
+    colorScheme: va.colorScheme || va.defaultColorScheme || 'brand',
+    allowColorSchemes: va.allowColorSchemes !== false,
     allowVisitorControls: va.allowVisitorControls === true,
     accessibilityButtonPosition: va.accessibilityButtonPosition || 'bottom-right',
     defaultTextSize: va.defaultTextSize || 'standard',
@@ -557,8 +559,20 @@ function injectVisitorAccessibility(html, cfg) {
   if (out.includes('</head>') && !out.includes('lp-visitor-themes.css')) {
     out = out.replace(
       '</head>',
-      '<link rel="stylesheet" href="/assets/lp-visitor-themes.css">\n</head>'
+      '<link rel="stylesheet" href="/assets/lp-visitor-themes.css">\n'
+      + '<link rel="stylesheet" href="/assets/lp-visitor-schemes.css">\n'
+      + '<link rel="stylesheet" href="/assets/lp-logo.css">\n</head>'
     );
+  }
+
+  const brandAssets =
+    '<script src="/assets/lp-visitor-schemes.js" defer></script>\n'
+    + '<script src="/assets/lp-logo.js" defer></script>\n';
+
+  if (!out.includes('lp-visitor-schemes.js')) {
+    out = out.indexOf('</body>') !== -1
+      ? out.replace('</body>', brandAssets + '</body>')
+      : (out + brandAssets);
   }
 
   const widgetOn = visitorWidgetEnabled(cfg);

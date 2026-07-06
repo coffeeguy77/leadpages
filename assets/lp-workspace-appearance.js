@@ -7,9 +7,13 @@
 
   var STORAGE_KEY = 'leadpages_workspace_appearance';
 
-  var LOGO = {
-    light: 'https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665886/leadpages-logo-white.png',
-    dark: 'https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665885/leadpages-logo-black.png'
+  var LOGO_SVG = '/assets/leadpages-logo.svg';
+
+  var LOGO_THEME = {
+    'classic-light': { accent: '#1f7a63', ink: '#13161b' },
+    'command-dark': { accent: '#2ecc8f', ink: '#eef2f7' },
+    blush: { accent: '#c45c7a', ink: '#2a1f2e' },
+    blueprint: { accent: '#2563eb', ink: '#1a2a3a' }
   };
 
   var DEFAULTS = {
@@ -25,32 +29,27 @@
     'classic-light': {
       name: 'Classic Light',
       description: 'Clean, warm, and familiar.',
-      mode: 'light',
-      logo: LOGO.light
+      mode: 'light'
     },
     'command-dark': {
       name: 'Command Dark',
       description: 'Premium dark workspace for long sessions.',
-      mode: 'dark',
-      logo: LOGO.dark
+      mode: 'dark'
     },
     blush: {
       name: 'Blush',
       description: 'Soft rose theme for boutique and lifestyle brands.',
-      mode: 'light',
-      logo: LOGO.light
+      mode: 'light'
     },
     blueprint: {
       name: 'Blueprint',
       description: 'Professional blue theme for service and trade businesses.',
-      mode: 'light',
-      logo: LOGO.light
+      mode: 'light'
     },
     system: {
       name: 'System Default',
       description: 'Follows your device light or dark preference.',
-      mode: 'auto',
-      logo: LOGO.light
+      mode: 'auto'
     }
   };
 
@@ -92,19 +91,26 @@
     return allowed.indexOf(theme) >= 0 ? theme : 'classic-light';
   }
 
+  function logoTokensForResolved(resolved) {
+    var tokens = LOGO_THEME[resolved];
+    if (tokens) return tokens;
+    return LOGO_THEME['classic-light'];
+  }
+
   function logoForResolved(resolved) {
-    var meta = THEME_META[resolved];
-    if (meta && meta.logo) return meta.logo;
-    if (meta && meta.mode === 'dark') return LOGO.dark;
-    return LOGO.light;
+    return LOGO_SVG;
   }
 
   function applyLogos(resolved) {
     if (!global.document) return;
-    var url = logoForResolved(resolved);
-    global.document.querySelectorAll('.leadpages-logo, [data-lp-logo="auto"]').forEach(function (el) {
-      if (el && el.tagName === 'IMG') el.src = url;
-    });
+    var tokens = logoTokensForResolved(resolved);
+    var root = global.document.documentElement;
+    root.style.setProperty('--lp-logo-accent', tokens.accent);
+    root.style.setProperty('--lp-logo-ink', tokens.ink);
+    if (global.LPLogo) {
+      if (global.LPLogo.applyWorkspaceTheme) global.LPLogo.applyWorkspaceTheme();
+      if (global.LPLogo.upgradeAll) global.LPLogo.upgradeAll({ pulse: true, theme: resolved });
+    }
   }
 
   function apply(prefs) {
@@ -165,13 +171,15 @@
     STORAGE_KEY: STORAGE_KEY,
     DEFAULTS: DEFAULTS,
     THEME_META: THEME_META,
-    LOGO: LOGO,
+    LOGO_SVG: LOGO_SVG,
+    LOGO_THEME: LOGO_THEME,
     load: load,
     save: save,
     set: set,
     apply: apply,
     resolveTheme: resolveTheme,
     logoForResolved: logoForResolved,
+    logoTokensForResolved: logoTokensForResolved,
     applyLogos: applyLogos,
     init: init
   };

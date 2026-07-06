@@ -1,0 +1,200 @@
+/**
+ * LeadPages universal inline SVG logo.
+ * Upgrades img.leadpages-logo / [data-lp-logo] to themed inline SVG with optional ring pulse.
+ */
+(function (global) {
+  'use strict';
+
+  var SVG_URL = '/assets/leadpages-logo.svg';
+  var svgCache = null;
+  var svgPromise = null;
+
+  var THEME_LOGO = {
+    'classic-light': { accent: '#1f7a63', ink: '#13161b' },
+    'command-dark': { accent: '#2ecc8f', ink: '#eef2f7' },
+    blush: { accent: '#c45c7a', ink: '#2a1f2e' },
+    blueprint: { accent: '#2563eb', ink: '#1a2a3a' }
+  };
+
+  function loadSvgMarkup() {
+    if (svgCache) return Promise.resolve(svgCache);
+    if (svgPromise) return svgPromise;
+    svgPromise = fetch(SVG_URL, { credentials: 'same-origin' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('logo fetch ' + res.status);
+        return res.text();
+      })
+      .then(function (text) {
+        svgCache = String(text || '').replace(/<\?xml[^>]*>\s*/i, '').trim();
+        return svgCache;
+      })
+      .catch(function () {
+        svgCache =
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 320" aria-hidden="true">'
+          + '<text x="360" y="170" fill="var(--lp-logo-ink,#13161b)" font-family="system-ui,sans-serif" font-size="72" font-weight="700">leadpages</text></svg>';
+        return svgCache;
+      });
+    return svgPromise;
+  }
+
+  function resolvedWorkspaceTheme() {
+    if (global.LPWorkspaceAppearance && global.LPWorkspaceAppearance.resolveTheme) {
+      var p = global.LPWorkspaceAppearance.load ? global.LPWorkspaceAppearance.load() : {};
+      return global.LPWorkspaceAppearance.resolveTheme(p.theme || 'classic-light');
+    }
+    var root = global.document && global.document.documentElement;
+    return (root && root.dataset && root.dataset.theme) || 'classic-light';
+  }
+
+  function logoTokens(opts) {
+    opts = opts || {};
+    if (opts.accent || opts.ink) {
+      return {
+        accent: opts.accent || '#2ecc8f',
+        ink: opts.ink || '#13161b'
+      };
+    }
+    if (opts.inkMode === 'light') return { accent: opts.accent || '#2ecc8f', ink: '#f3f6fa' };
+    if (opts.inkMode === 'dark') return { accent: opts.accent || '#1f7a63', ink: '#13161b' };
+
+    var theme = opts.theme || resolvedWorkspaceTheme();
+    var meta = THEME_LOGO[theme];
+    if (meta) return { accent: meta.accent, ink: meta.ink };
+
+    var root = global.document && global.document.documentElement;
+    if (root) {
+      var cs = global.getComputedStyle(root);
+      return {
+        accent: (cs.getPropertyValue('--lp-logo-accent') || cs.getPropertyValue('--accent') || '#2ecc8f').trim(),
+        ink: (cs.getPropertyValue('--lp-logo-ink') || cs.getPropertyValue('--text') || '#13161b').trim()
+      };
+    }
+    return { accent: '#2ecc8f', ink: '#13161b' };
+  }
+
+  function shouldPulse(el, opts) {
+    if (opts && opts.pulse === false) return false;
+    if (opts && opts.pulse === true) return true;
+    if (el && el.hasAttribute('data-lp-logo-pulse')) return true;
+    if (el && el.classList && el.classList.contains('lp-logo-pulse')) return true;
+    return false;
+  }
+
+  function wrapFromElement(el) {
+    var wrap = global.document.createElement('span');
+    wrap.className = 'lp-logo-wrap leadpages-logo';
+    if (el.className) {
+      el.className.split(/\s+/).forEach(function (c) {
+        if (c && c !== 'leadpages-logo') wrap.classList.add(c);
+      });
+    }
+    if (el.id) wrap.id = el.id;
+    ['data-lp-logo', 'data-lp-logo-pulse', 'data-lp-logo-ink', 'data-lp-logo-accent', 'title'].forEach(function (a) {
+      if (el.hasAttribute(a)) wrap.setAttribute(a, el.getAttribute(a));
+    });
+    var alt = el.getAttribute('alt') || 'LeadPages';
+    wrap.setAttribute('role', 'img');
+    wrap.setAttribute('aria-label', alt);
+    if (el.getAttribute('style')) wrap.setAttribute('style', el.getAttribute('style'));
+    return wrap;
+  }
+
+  function applyTokens(wrap, tokens) {
+    wrap.style.setProperty('--lp-logo-accent', tokens.accent);
+    wrap.style.setProperty('--lp-logo-ink', tokens.ink);
+  }
+
+  function inkFromSrc(el) {
+    var src = (el.getAttribute('src') || '').toLowerCase();
+    if (src.indexOf('white') >= 0 || src.indexOf('-wh') >= 0) return 'light';
+    if (src.indexOf('black') >= 0 || src.indexOf('-bk') >= 0) return 'dark';
+    return null;
+  }
+
+  function mountLogo(el, opts) {
+    if (!el || el.dataset.lpLogoMounted === 'true') return Promise.resolve(el);
+    opts = opts || {};
+
+    return loadSvgMarkup().then(function (markup) {
+      var wrap = el.classList && el.classList.contains('lp-logo-wrap') ? el : wrapFromElement(el);
+      var srcInk = inkFromSrc(el);
+      var tokens = logoTokens({
+        accent: opts.accent || el.getAttribute('data-lp-logo-accent'),
+        ink: opts.ink || (el.getAttribute('data-lp-logo-ink') === 'light' ? '#f3f6fa' : el.getAttribute('data-lp-logo-ink') === 'dark' ? '#13161b' : null),
+        inkMode: el.getAttribute('data-lp-logo-ink') || srcInk,
+        theme: opts.theme,
+        pulse: opts.pulse
+      });
+      applyTokens(wrap, tokens);
+
+      if (shouldPulse(wrap, opts)) wrap.classList.add('lp-logo-pulse');
+
+      wrap.innerHTML = markup;
+      var svg = wrap.querySelector('svg');
+      if (svg) {
+        svg.setAttribute('aria-hidden', 'true');
+        svg.setAttribute('focusable', 'false');
+        if (!svg.getAttribute('role')) svg.removeAttribute('role');
+      }
+
+      if (el !== wrap && el.parentNode) el.parentNode.replaceChild(wrap, el);
+      wrap.dataset.lpLogoMounted = 'true';
+      return wrap;
+    });
+  }
+
+  function upgradeAll(opts) {
+    if (!global.document) return Promise.resolve();
+    opts = opts || {};
+    var nodes = [];
+    global.document.querySelectorAll('[data-lp-logo], .leadpages-logo, img[src*="leadpages-logo"]').forEach(function (el) {
+      if (el.tagName === 'IMG' || el.hasAttribute('data-lp-logo') || el.classList.contains('leadpages-logo')) {
+        nodes.push(el);
+      }
+    });
+    return Promise.all(nodes.map(function (el) { return mountLogo(el, opts); }));
+  }
+
+  function applyWorkspaceTheme() {
+    if (!global.document) return;
+    var theme = resolvedWorkspaceTheme();
+    var tokens = logoTokens({ theme: theme });
+    var root = global.document.documentElement;
+    root.style.setProperty('--lp-logo-accent', tokens.accent);
+    root.style.setProperty('--lp-logo-ink', tokens.ink);
+    global.document.querySelectorAll('.lp-logo-wrap.leadpages-logo, [data-lp-logo].lp-logo-wrap').forEach(function (wrap) {
+      applyTokens(wrap, tokens);
+    });
+  }
+
+  function init() {
+    upgradeAll({ pulse: true }).then(function () {
+      applyWorkspaceTheme();
+    });
+    if (global.document) {
+      global.document.addEventListener('lp-workspace-appearance-change', function () {
+        applyWorkspaceTheme();
+        upgradeAll({ pulse: true });
+      });
+    }
+  }
+
+  global.LPLogo = {
+    SVG_URL: SVG_URL,
+    THEME_LOGO: THEME_LOGO,
+    loadSvgMarkup: loadSvgMarkup,
+    logoTokens: logoTokens,
+    mountLogo: mountLogo,
+    upgradeAll: upgradeAll,
+    applyWorkspaceTheme: applyWorkspaceTheme,
+    init: init
+  };
+
+  if (global.document) {
+    if (global.document.readyState === 'loading') {
+      global.document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  }
+})(typeof window !== 'undefined' ? window : globalThis);

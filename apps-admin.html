@@ -79,6 +79,8 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
 .note{font-size:13px;color:var(--mut);margin-top:4px}
 .center-card{max-width:420px;margin:70px auto}
 </style>
+<link rel="stylesheet" href="/assets/lp-logo.css">
+<script src="/assets/lp-logo.js" defer></script>
 </head>
 <body class="apps-admin-page" data-lp-admin-page="apps-admin">
 <div class="topbar"><div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -603,7 +605,9 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
     var srcdoc='<!DOCTYPE html><html><head><meta charset="UTF-8">'
       +'<script src="https://www.leadpages.com.au/icons.js"><\/script>'
       +'<style>'+DS_CSS+'<\/style>'
-      +'</head><body><main id="top">'
+      +'<link rel="stylesheet" href="/assets/lp-logo.css">
+<script src="/assets/lp-logo.js" defer></script>
+</head><body><main id="top">'
       +'<section data-sec="'+key+'" '+secData.attrs+'>'+secData.html+'</section>'
       +'</main><script>var SITE_CONFIG='+JSON.stringify(dsCurrentCfg)+';(function(){'+DS_APPLY_JS+'})();<\/script>'
       +'</body></html>';

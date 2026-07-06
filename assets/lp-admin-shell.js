@@ -102,7 +102,7 @@
     shell.innerHTML =
       '<div class="lp-admin-shell-inner">'
       + '<button type="button" class="lp-shell-menu" id="lp-shell-menu" aria-label="Open menu" aria-expanded="false">&#9776;</button>'
-      + '<a href="/manage" class="lp-shell-logo-link"><img class="leadpages-logo lp-shell-logo" data-lp-logo="auto" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665886/leadpages-logo-white.png" alt="LeadPages"></a>'
+      + '<a href="/manage" class="lp-shell-logo-link"><span class="leadpages-logo lp-shell-logo" data-lp-logo="auto" data-lp-logo-pulse role="img" aria-label="LeadPages"></span></a>'
       + '<span class="lp-shell-spacer"></span>'
       + '<div class="lp-shell-tools">'
       + '<select class="lp-shell-select" id="lp-prev-layout-sel" title="Preview layout" aria-label="Preview layout">'

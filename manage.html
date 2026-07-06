@@ -490,6 +490,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 .bar-fav.on{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);}
 </style>
 <script src="/assets/lp-workspace-appearance.js"></script>
+<link rel="stylesheet" href="/assets/lp-logo.css">
+<script src="/assets/lp-logo.js"></script>
 <script src="/assets/lp-admin-shell.js"></script>
 <script src="/icons.js"></script>
 </head>
@@ -498,7 +500,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <div id="lp-landing"><div class="lpl-wrap">
   <div class="lpl-header-row">
     <div class="lpl-header-main">
-      <img class="leadpages-logo" data-lp-logo="auto" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665886/leadpages-logo-white.png" alt="leadpages" style="height:120px;width:auto;display:block;margin:0 0 14px">
+      <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse role="img" aria-label="leadpages" style="height:120px;width:auto;display:block;margin:0 0 14px"></span>
       <p class="eyebrow">Control panel</p>
       <h1 style="margin:0 0 4px">Site Switcher</h1>
       <p class="sub" style="margin:0 0 4px">Choose a customer, demo, or partner site to manage. You'll only edit a site after selecting it.</p>
@@ -525,7 +527,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <p class="lpl-legal"><a href="/privacy-policy.html">Privacy Policy</a> <span>&middot;</span> <a href="/terms-of-use.html">Terms of Use</a> <span>&middot;</span> <a href="/instagram-data-policy.html">Instagram Data</a></p>
 </div></div>
 <div class="wrap">
-  <img class="leadpages-logo lp-chrome-hide" data-lp-logo="auto" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665886/leadpages-logo-white.png" alt="leadpages" style="height:72px;width:auto;display:block;margin:0 0 16px">
+  <span class="leadpages-logo lp-chrome-hide" data-lp-logo="auto" data-lp-logo-pulse role="img" aria-label="leadpages" style="height:72px;width:auto;display:block;margin:0 0 16px"></span>
   <p class="eyebrow lp-chrome-hide">Control panel</p>
   <h1 class="lp-chrome-hide">App Command Centre</h1>
   <p class="sub lp-chrome-hide">Update the figures the calculator uses — brackets, fees, grants, surcharges and first-home thresholds — then publish. No code required. Use the live preview on the right to sanity-check a change before you export.</p>
@@ -3106,6 +3108,8 @@ function heroCtaCard(c){
   };
   var DEFAULT_VISITOR_APPEARANCE={
     siteTheme:'classic-light',
+    colorScheme:'brand',
+    allowColorSchemes:true,
     allowVisitorControls:false,
     accessibilityButtonPosition:'bottom-right',
     defaultTextSize:'standard',
@@ -3119,6 +3123,28 @@ function heroCtaCard(c){
     'blush':{name:'Blush',description:'Soft rose theme for boutique brands.'},
     'blueprint':{name:'Blueprint',description:'Professional blue for service businesses.'},
     'match-brand':{name:'Match brand',description:'Use your existing brand colours.'}
+  };
+  var AA_COLOR_SCHEME_META={
+    brand:{name:'Brand',description:'Your site colours'},
+    rose:{name:'Rose',description:'Soft blush — salons & lifestyle'},
+    steel:{name:'Steel',description:'Navy & steel — tradies & pros'},
+    autumn:{name:'Autumn',description:'Warm amber tones'},
+    winter:{name:'Winter',description:'Cool frost & ice'},
+    spring:{name:'Spring',description:'Fresh greens'},
+    summer:{name:'Summer',description:'Bright & sunny'},
+    festive:{name:'Festive',description:'Holiday season'},
+    seasonal:{name:'Seasonal',description:'Auto-changes with the season'}
+  };
+  var AA_SCHEME_PREVIEWS={
+    brand:{bg:'#eef2f6',accent:'#1f7bb8'},
+    rose:{bg:'#faf3f2',accent:'#c45c7a'},
+    steel:{bg:'#eef2f7',accent:'#2563eb'},
+    autumn:{bg:'#faf6f0',accent:'#c2410c'},
+    winter:{bg:'#f0f7fc',accent:'#0284c7'},
+    spring:{bg:'#f3faf5',accent:'#16a34a'},
+    summer:{bg:'#fffaf3',accent:'#ea580c'},
+    festive:{bg:'#f8faf6',accent:'#dc2626'},
+    seasonal:{bg:'#f4f6f8',accent:'#64748b'}
   };
   function _vaCfg(){
     if(!data) data={};
@@ -3153,6 +3179,18 @@ function heroCtaCard(c){
       return '<button type="button" class="aa-theme-card" '+attr+'="'+key+'" aria-pressed="'+(sel?'true':'false')+'">'
         +'<div class="aa-preview" style="background:'+prev.bg+'"><div class="aa-preview-bar" style="background:'+prev.panel+';border-bottom:1px solid rgba(0,0,0,.06)"></div>'
         +'<div class="aa-preview-body"><div class="aa-preview-card" style="background:'+prev.panel+';border:1px solid rgba(0,0,0,.08)"></div><div class="aa-preview-accent" style="background:'+prev.accent+'"></div></div></div>'
+        +'<strong style="font-size:14px">'+esc(meta.name)+'</strong>'
+        +'<span style="font-size:12px;color:var(--text-soft);line-height:1.4">'+esc(meta.description)+'</span>'
+        +'</button>';
+    }).join('');
+  }
+  function _aaSchemeCards(keys, selected, attr){
+    return keys.map(function(key){
+      var meta=AA_COLOR_SCHEME_META[key]||{name:key,description:''};
+      var prev=AA_SCHEME_PREVIEWS[key]||AA_SCHEME_PREVIEWS.brand;
+      var sel=selected===key;
+      return '<button type="button" class="aa-theme-card" '+attr+'="'+key+'" aria-pressed="'+(sel?'true':'false')+'">'
+        +'<div class="aa-preview" style="background:'+prev.bg+'"><div class="aa-preview-accent" style="background:'+prev.accent+';height:28px;border-radius:6px;margin:12px"></div></div>'
         +'<strong style="font-size:14px">'+esc(meta.name)+'</strong>'
         +'<span style="font-size:12px;color:var(--text-soft);line-height:1.4">'+esc(meta.description)+'</span>'
         +'</button>';
@@ -3333,6 +3371,7 @@ function heroCtaCard(c){
     var p=document.createElement('div'); p.id='aa-page';
     var workspaceThemes=['classic-light','command-dark','blush','blueprint','system'];
     var siteThemes=['classic-light','command-dark','blush','blueprint','match-brand'];
+    var colorSchemes=['brand','rose','steel','autumn','winter','spring','summer','festive','seasonal'];
     p.innerHTML='<div class="aa-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px;flex-wrap:wrap;">'
       +'<div><p class="eyebrow" style="margin:0 0 4px">LeadPages</p><h1 style="margin:0;font:700 26px/1.15 var(--font-display,Georgia),serif">Appearance &amp; Accessibility</h1>'
       +'<p class="sub" style="margin:8px 0 0;max-width:56ch">Workspace preferences are saved on this device. Published page settings are saved to your site config when you publish.</p></div>'
@@ -3362,6 +3401,9 @@ function heroCtaCard(c){
       +'<div id="aa-panel-published" role="tabpanel" aria-labelledby="aa-tab-published"'+(activeTab==='published'?'':' hidden')+'>'
       +'<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 4px">Default site theme</h2><p class="lede" style="margin:0 0 6px">Sets the default look for visitors on your published LeadPage. Visitors can still adjust preferences when viewing controls are enabled.</p>'
       +'<div class="aa-theme-grid">'+_aaThemeCards(siteThemes,va.siteTheme,'data-va-theme')+'</div></div>'
+      +'<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 4px">Colour scheme</h2><p class="lede" style="margin:0 0 6px">Let visitors pick a look — rose for lifestyle brands, steel for tradies, or seasonal palettes. They can change this in the viewing preferences widget.</p>'
+      +'<label class="aa-toggle" style="display:flex;margin-bottom:12px"><input type="checkbox" id="va-allow-schemes"'+(va.allowColorSchemes!==false?' checked':'')+'> Allow visitor colour schemes</label>'
+      +'<div class="aa-theme-grid">'+_aaSchemeCards(colorSchemes,va.colorScheme||'brand','data-va-scheme')+'</div></div>'
       +'<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 12px">Visitor controls</h2>'
       +'<label class="aa-toggle" style="display:flex;margin-bottom:10px"><input type="checkbox" id="va-allow"'+(va.allowVisitorControls?' checked':'')+'> Enable visitor viewing preferences</label>'
       +'<label class="aa-toggle" style="display:flex;margin-bottom:10px"><input type="checkbox" id="va-show-btn"'+(va.showAccessibilityButton!==false?' checked':'')+'> Show accessibility floating button</label>'
@@ -3428,6 +3470,15 @@ function heroCtaCard(c){
         if(typeof toast==='function') toast('Site theme updated');
       });
     });
+    p.querySelectorAll('[data-va-scheme]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var key=btn.getAttribute('data-va-scheme');
+        _vaUpdate({colorScheme:key}, true);
+        p.querySelectorAll('[data-va-scheme]').forEach(function(b){ b.setAttribute('aria-pressed',b===btn?'true':'false'); });
+        if(typeof toast==='function') toast('Colour scheme default updated');
+      });
+    });
+    var vSchemes=$('va-allow-schemes'); if(vSchemes) vSchemes.addEventListener('change',function(){ _vaUpdate({allowColorSchemes:!!vSchemes.checked}); });
     var vAllow=$('va-allow'); if(vAllow) vAllow.addEventListener('change',function(){ _vaUpdate({allowVisitorControls:!!vAllow.checked}); });
     var vShow=$('va-show-btn'); if(vShow) vShow.addEventListener('change',function(){ _vaUpdate({showAccessibilityButton:!!vShow.checked}); });
     var vRed=$('va-reduced'); if(vRed) vRed.addEventListener('change',function(){ _vaUpdate({reducedMotionSupport:!!vRed.checked}); });

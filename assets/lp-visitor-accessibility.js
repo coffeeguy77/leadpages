@@ -12,7 +12,8 @@
     theme: 'light',
     motion: 'standard',
     links: 'standard',
-    spacing: 'standard'
+    spacing: 'standard',
+    colorScheme: 'brand'
   };
 
   var cfg = global.__LP_VISITOR_A11Y__ || {};
@@ -54,6 +55,11 @@
     root.dataset.lpVisitorSpacing = p.spacing === 'comfortable' ? 'comfortable' : 'standard';
     if (p.theme === 'dark') root.setAttribute('data-lp-visitor-theme-active', 'dark');
     else root.removeAttribute('data-lp-visitor-theme-active');
+    if (global.LPVisitorSchemes && global.LPVisitorSchemes.apply) {
+      var scheme = p.colorScheme || (cfg.defaults && cfg.defaults.colorScheme) || 'brand';
+      if (cfg.defaults && cfg.defaults.allowColorSchemes === false) scheme = 'brand';
+      global.LPVisitorSchemes.apply(scheme);
+    }
   }
 
   function defaultsFromSite() {
@@ -64,12 +70,18 @@
       theme: 'light',
       motion: va.reducedMotionSupport === false ? 'standard' : 'standard',
       links: 'standard',
-      spacing: 'standard'
+      spacing: 'standard',
+      colorScheme: va.colorScheme || va.defaultColorScheme || 'brand'
     };
   }
 
   function loadPrefs() {
-    return Object.assign({}, defaultsFromSite(), DEFAULTS, read() || {});
+    var p = Object.assign({}, defaultsFromSite(), DEFAULTS, read() || {});
+    if (global.LPVisitorSchemes && global.LPVisitorSchemes.readStorage) {
+      var sc = global.LPVisitorSchemes.readStorage();
+      if (sc) p.colorScheme = sc;
+    }
+    return p;
   }
 
   function textBtnLabel(size) {
@@ -82,6 +94,32 @@
     if (cur === 'standard') return 'large';
     if (cur === 'large') return 'larger';
     return 'standard';
+  }
+
+  function _schemeButtons() {
+    var schemes = (global.LPVisitorSchemes && global.LPVisitorSchemes.SCHEMES) || {
+      brand: { name: 'Brand', emoji: '✦' },
+      rose: { name: 'Rose', emoji: '🌸' },
+      steel: { name: 'Steel', emoji: '🔩' },
+      seasonal: { name: 'Seasonal', emoji: '📅' }
+    };
+    return Object.keys(schemes).map(function (key) {
+      var s = schemes[key];
+      return '<button type="button" class="lpa-scheme" data-val="' + key + '" aria-pressed="false" title="' + (s.description || s.name) + '">' +
+        '<span class="lpa-scheme-emoji" aria-hidden="true">' + (s.emoji || '') + '</span>' +
+        '<span class="lpa-scheme-name">' + s.name + '</span></button>';
+    }).join('');
+  }
+
+  function syncButtons(root, prefs) {
+    root.querySelectorAll('[data-group]').forEach(function (row) {
+      var group = row.getAttribute('data-group');
+      var val = prefs[group];
+      row.querySelectorAll('.lpa-opt, .lpa-scheme').forEach(function (btn) {
+        var on = btn.getAttribute('data-val') === val;
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    });
   }
 
   function buildUI() {
@@ -126,6 +164,10 @@
       '<button type="button" class="lpa-opt" data-val="standard" aria-pressed="false">Standard</button>' +
       '<button type="button" class="lpa-opt" data-val="comfortable" aria-pressed="false">Comfortable</button>' +
       '</div></fieldset>' +
+      (cfg.defaults && cfg.defaults.allowColorSchemes === false ? '' :
+        '<fieldset><legend>Colour scheme</legend><div class="lpa-scheme-grid" data-group="colorScheme">' +
+        _schemeButtons() +
+        '</div></fieldset>') +
       '<button type="button" id="lpa-reset">Reset preferences</button>' +
       '</div>';
 
@@ -170,24 +212,29 @@
       });
     });
 
+    root.querySelectorAll('.lpa-scheme').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var val = btn.getAttribute('data-val');
+        prefs.colorScheme = val;
+        save(prefs);
+        if (global.LPVisitorSchemes && global.LPVisitorSchemes.setScheme) {
+          global.LPVisitorSchemes.setScheme(val, true);
+        }
+        apply(prefs);
+        syncButtons(root, prefs);
+      });
+    });
+
     root.querySelector('#lpa-reset').addEventListener('click', function () {
       try {
         global.localStorage.removeItem(STORAGE_KEY);
+        if (global.LPVisitorSchemes && global.LPVisitorSchemes.STORAGE_KEY) {
+          global.localStorage.removeItem(global.LPVisitorSchemes.STORAGE_KEY);
+        }
       } catch (e) { /* ignore */ }
       prefs = defaultsFromSite();
       apply(prefs);
       syncButtons(root, prefs);
-    });
-  }
-
-  function syncButtons(root, prefs) {
-    root.querySelectorAll('[data-group]').forEach(function (row) {
-      var group = row.getAttribute('data-group');
-      var val = prefs[group];
-      row.querySelectorAll('.lpa-opt').forEach(function (btn) {
-        var on = btn.getAttribute('data-val') === val;
-        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      });
     });
   }
 
@@ -196,6 +243,9 @@
       try {
         global.applyVisitorAppearance({ visitorAppearance: cfg.defaults });
       } catch (e) { /* ignore */ }
+    }
+    if (global.LPVisitorSchemes && global.LPVisitorSchemes.boot) {
+      global.LPVisitorSchemes.boot(cfg);
     }
     var prefs = loadPrefs();
     apply(prefs);

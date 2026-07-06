@@ -1,0 +1,128 @@
+/**
+ * Visitor-facing colour schemes (frontend look & feel).
+ * Layered on trade brand tokens via data-lp-visitor-scheme on html.
+ */
+
+html[data-lp-visitor-scheme="brand"] {
+  /* Uses site brand — no overrides */
+}
+
+/* Rose — soft blush for lifestyle, beauty, boutique */
+html[data-lp-visitor-scheme="rose"] {
+  --lp-logo-accent: #c45c7a;
+  --lp-logo-ink: #2a1f2e;
+  --lp-scheme-accent: #c45c7a;
+  --lp-scheme-accent-soft: #fce8ee;
+  --lp-scheme-bg: #faf3f2;
+  --lp-scheme-text: #2a1f2e;
+}
+html[data-lp-visitor-scheme="rose"] body {
+  background: var(--lp-scheme-bg) !important;
+}
+html[data-lp-visitor-scheme="rose"] .btn-primary,
+html[data-lp-visitor-scheme="rose"] .cta,
+html[data-lp-visitor-scheme="rose"] .pipe-btn {
+  --pipe: var(--lp-scheme-accent);
+}
+
+/* Steel — navy/industrial for tradies and blokes */
+html[data-lp-visitor-scheme="steel"] {
+  --lp-logo-accent: #3b82f6;
+  --lp-logo-ink: #0f172a;
+  --lp-scheme-accent: #2563eb;
+  --lp-scheme-accent-soft: #dbeafe;
+  --lp-scheme-bg: #eef2f7;
+  --lp-scheme-text: #0f172a;
+}
+html[data-lp-visitor-scheme="steel"] body {
+  background: var(--lp-scheme-bg) !important;
+}
+html[data-lp-visitor-scheme="steel"] .btn-primary,
+html[data-lp-visitor-scheme="steel"] .cta,
+html[data-lp-visitor-scheme="steel"] .pipe-btn {
+  --pipe: var(--lp-scheme-accent);
+}
+
+/* Autumn */
+html[data-lp-visitor-scheme="autumn"] {
+  --lp-logo-accent: #c2410c;
+  --lp-logo-ink: #292018;
+  --lp-scheme-accent: #c2410c;
+  --lp-scheme-accent-soft: #ffedd5;
+  --lp-scheme-bg: #faf6f0;
+  --lp-scheme-text: #292018;
+}
+html[data-lp-visitor-scheme="autumn"] body {
+  background: var(--lp-scheme-bg) !important;
+}
+
+/* Winter */
+html[data-lp-visitor-scheme="winter"] {
+  --lp-logo-accent: #38bdf8;
+  --lp-logo-ink: #0c1929;
+  --lp-scheme-accent: #0284c7;
+  --lp-scheme-accent-soft: #e0f2fe;
+  --lp-scheme-bg: #f0f7fc;
+  --lp-scheme-text: #0c1929;
+}
+html[data-lp-visitor-scheme="winter"] body {
+  background: var(--lp-scheme-bg) !important;
+}
+
+/* Spring */
+html[data-lp-visitor-scheme="spring"] {
+  --lp-logo-accent: #16a34a;
+  --lp-logo-ink: #14291c;
+  --lp-scheme-accent: #16a34a;
+  --lp-scheme-accent-soft: #dcfce7;
+  --lp-scheme-bg: #f3faf5;
+  --lp-scheme-text: #14291c;
+}
+html[data-lp-visitor-scheme="spring"] body {
+  background: var(--lp-scheme-bg) !important;
+}
+
+/* Summer */
+html[data-lp-visitor-scheme="summer"] {
+  --lp-logo-accent: #f97316;
+  --lp-logo-ink: #2a1a10;
+  --lp-scheme-accent: #ea580c;
+  --lp-scheme-accent-soft: #ffedd5;
+  --lp-scheme-bg: #fffaf3;
+  --lp-scheme-text: #2a1a10;
+}
+html[data-lp-visitor-scheme="summer"] body {
+  background: var(--lp-scheme-bg) !important;
+}
+
+/* Festive — Dec holidays */
+html[data-lp-visitor-scheme="festive"] {
+  --lp-logo-accent: #dc2626;
+  --lp-logo-ink: #14532d;
+  --lp-scheme-accent: #dc2626;
+  --lp-scheme-accent-soft: #fef2f2;
+  --lp-scheme-bg: #f8faf6;
+  --lp-scheme-text: #14532d;
+}
+html[data-lp-visitor-scheme="festive"] body {
+  background: var(--lp-scheme-bg) !important;
+}
+
+/* Scheme-aware logo pulse tint */
+html[data-lp-visitor-scheme]:not([data-lp-visitor-scheme="brand"]) .lp-logo-pulse {
+  --lp-logo-accent: var(--lp-scheme-accent, var(--lp-logo-accent));
+}
+
+/* Owner default site themes — logo tokens */
+html[data-lp-site-theme="command-dark"] {
+  --lp-logo-accent: #2ecc8f;
+  --lp-logo-ink: #eef2f7;
+}
+html[data-lp-site-theme="blush"] {
+  --lp-logo-accent: #c45c7a;
+  --lp-logo-ink: #2a1f2e;
+}
+html[data-lp-site-theme="blueprint"] {
+  --lp-logo-accent: #2563eb;
+  --lp-logo-ink: #1a2a3a;
+}
