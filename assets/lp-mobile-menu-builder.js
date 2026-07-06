@@ -79,20 +79,48 @@
   function rolesMatch(required, userRoles) {
     if (!required || !required.length) return true;
     var u = userRoles || getUserRoles();
+    if (!Array.isArray(u)) u = [u];
     for (var i = 0; i < required.length; i++) {
       if (u.indexOf(required[i]) >= 0) return true;
     }
     return false;
   }
 
-  async function getToken() {
+  function cwToken() {
     try {
+      if (typeof global.cwToken === 'function') return global.cwToken();
       if (global.sb && global.sb.auth) {
-        var s = await global.sb.auth.getSession();
-        return s && s.data && s.data.session && s.data.session.access_token;
+        return global.sb.auth.getSession().then(function (r) {
+          return (r && r.data && r.data.session && r.data.session.access_token) || null;
+        });
       }
     } catch (e) { /* ignore */ }
+    return Promise.resolve(null);
+  }
+
+  async function getToken() {
+    try {
+      var tk = await cwToken();
+      return tk || null;
+    } catch (e) { /* ignore */ }
     return null;
+  }
+
+  async function apiFetch(path, opts) {
+    var tk = await getToken();
+    var r = await fetch(path, Object.assign({
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + (tk || '')
+      }
+    }, opts || {}));
+    var text = await r.text();
+    var j;
+    try { j = JSON.parse(text); } catch (e) { j = { error: text || ('HTTP ' + r.status) }; }
+    if (!r.ok && !(j && j.error)) j.error = 'HTTP ' + r.status;
+    j._status = r.status;
+    j._ok = r.ok;
+    return j;
   }
 
   function normalizeConfig(cfg) {
@@ -123,7 +151,9 @@
       try {
         var tk = await getToken();
         var r = await fetch(API, { headers: tk ? { Authorization: 'Bearer ' + tk } : {} });
-        var j = await r.json();
+        var text = await r.text();
+        var j;
+        try { j = JSON.parse(text); } catch (e) { j = null; }
         if (j && j.ok) {
           config = normalizeConfig(j.content);
           defaults = j.defaults || deepClone(FALLBACK_DEFAULT);
@@ -374,18 +404,12 @@
   }
 
   async function save(newConfig) {
-    var tk = await getToken();
-    var r = await fetch(API, {
+    var j = await apiFetch(API, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + (tk || '')
-      },
       body: JSON.stringify({ content: newConfig })
     });
-    var j = await r.json();
     if (j && j.ok) {
-      config = deepClone(newConfig);
+      config = normalizeConfig(deepClone(newConfig));
       if (global.LPAdminShell && global.LPAdminShell.moveChrome) {
         global.LPAdminShell.moveChrome();
       }
@@ -401,40 +425,125 @@
     }).join('');
   }
 
+  function getLiveNavButtons() {
+    var nav = document.querySelector('.adminnav');
+    if (!nav) return [];
+    return Array.prototype.filter.call(nav.querySelectorAll('.anav-btn'), function (btn) {
+      return elVisible(btn);
+    }).map(function (btn) {
+      return { id: btn.id || '', label: (btn.textContent || '').trim() || btn.id };
+    });
+  }
+
+  function slotPreviewLines(sec, roles) {
+    if (sec.slot === 'adminnav') {
+      return getLiveNavButtons().map(function (b) {
+        return { label: b.label, outline: true };
+      });
+    }
+    if (sec.slot === 'lpc-context') {
+      if (sec.condition === 'site-switcher') {
+        return [{ label: 'Site switcher', outline: true }];
+      }
+      return [{ label: 'Site context', outline: true }];
+    }
+    if (sec.slot && !sec.items) {
+      var slotMeta = SLOT_CATALOG[sec.slot];
+      return [{ label: slotMeta ? slotMeta.label : sec.slot, outline: true }];
+    }
+    return (sec.items || []).filter(function (it) {
+      return rolesMatch(it.roles || sec.roles, roles);
+    }).map(function (it) {
+      return {
+        label: itemLabel(it.id),
+        outline: sec.buttonStyle === 'outline' || sec.buttonStyle === 'nav',
+        primary: it.id === 'btn-publish'
+      };
+    });
+  }
+
+  function previewHtml(draft, roles) {
+    roles = Array.isArray(roles) ? roles : [roles || getUserRoles()[0] || 'super'];
+    var html = '';
+    (draft.sections || []).forEach(function (sec) {
+      if (!rolesMatch(sec.roles, roles)) return;
+      if (sec.condition === 'site-switcher' && typeof global.lpDrawerShowSiteSwitcher === 'function') {
+        try {
+          if (!global.lpDrawerShowSiteSwitcher()) return;
+        } catch (e) { return; }
+      }
+      var lines = slotPreviewLines(sec, roles);
+      if (!lines.length) return;
+      html += '<div class="mmb-psec">';
+      if (sec.title) html += '<div class="mmb-psec-title">' + esc(sec.title) + '</div>';
+      var grid = sec.layout === 'grid-2';
+      if (grid) html += '<div class="mmb-pgrid">';
+      lines.forEach(function (line) {
+        var cls = 'mmb-pbtn';
+        if (line.outline) cls += ' outline';
+        if (line.primary) cls += ' primary';
+        html += '<div class="' + cls + '">' + esc(line.label) + '</div>';
+      });
+      if (grid) html += '</div>';
+      html += '</div>';
+    });
+    if (!html) {
+      return '<p class="mmb-preview-empty">Nothing visible for this role preview.</p>';
+    }
+    return html;
+  }
+
+  function previewRoleLabel(role) {
+    if (role === 'super') return 'Super admin';
+    if (role === 'partner') return 'Partner';
+    return 'Client';
+  }
+
   function injectBuilderCss() {
     if (document.getElementById('lp-mm-builder-css')) return;
     var s = document.createElement('style');
     s.id = 'lp-mm-builder-css';
     s.textContent = ''
-      + '#mm-builder{position:fixed;inset:0;z-index:9999;background:rgba(16,22,32,.55);overflow:auto;padding:24px 12px;}'
-      + '#mm-builder .mmb-card{max-width:960px;margin:0 auto;background:var(--bg,#faf9f6);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:24px;}'
-      + '#mm-builder .mmb-sec{border:1px solid var(--line,#e3e3e0);border-radius:14px;padding:14px 16px;margin-bottom:12px;background:#fff;}'
+      + '#mm-builder{position:fixed;inset:0;z-index:9999;background:color-mix(in srgb,var(--bg,#12151a) 55%,rgba(16,22,32,.72));overflow:auto;padding:24px 12px;color:var(--text,var(--ink,#1b2430));}'
+      + '#mm-builder .mmb-card{max-width:980px;margin:0 auto;background:var(--surface,var(--panel,#fff));color:var(--text,var(--ink,#1b2430));border:1px solid var(--line,var(--border,#e3e3e0));border-radius:18px;box-shadow:var(--shadow,0 30px 80px rgba(10,15,25,.4));padding:24px;}'
+      + '#mm-builder h1{color:var(--text,var(--ink,#1b2430));}'
+      + '#mm-builder .lede{color:var(--text-soft,var(--ink-soft,#5c6675));}'
+      + '#mm-builder .mmb-sec{border:1px solid var(--line,var(--border,#e3e3e0));border-radius:14px;padding:14px 16px;margin-bottom:12px;background:var(--surface-2,var(--panel-soft,#f7f6f1));}'
       + '#mm-builder .mmb-sec-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}'
-      + '#mm-builder .mmb-sec-head input[type=text]{flex:1;min-width:140px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;}'
+      + '#mm-builder .mmb-sec-head input[type=text]{flex:1;min-width:140px;font:inherit;padding:8px 10px;border:1px solid var(--line-strong,var(--border-strong,#d8d2c5));border-radius:8px;background:var(--input-bg,var(--panel,#fff));color:var(--text,var(--ink,#1b2430));}'
       + '#mm-builder .mmb-sec-actions{display:flex;gap:6px;margin-left:auto;}'
-      + '#mm-builder .mmb-mini{font:inherit;font-size:12px;padding:5px 9px;border-radius:7px;border:1px solid var(--line);background:#f7f6f1;cursor:pointer;}'
-      + '#mm-builder .mmb-mini:hover{background:#ecebe5;}'
-      + '#mm-builder .mmb-mini.danger{color:#b42318;border-color:#f0c8c2;}'
+      + '#mm-builder .mmb-mini{font:inherit;font-size:12px;padding:5px 9px;border-radius:7px;border:1px solid var(--line,var(--border,#e3e3e0));background:var(--panel,var(--surface,#fff));color:var(--text,var(--ink,#1b2430));cursor:pointer;}'
+      + '#mm-builder .mmb-mini:hover{background:var(--accent-soft,rgba(46,204,143,.14));border-color:var(--accent,#1f7a63);}'
+      + '#mm-builder .mmb-mini.danger{color:var(--danger,#b42318);border-color:color-mix(in srgb,var(--danger,#b42318) 35%,transparent);background:var(--danger-soft,#fdf3f1);}'
       + '#mm-builder .mmb-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;}'
       + '#mm-builder .mmb-f{flex:1;min-width:140px;}'
-      + '#mm-builder .mmb-f label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#6c6c68;}'
-      + '#mm-builder .mmb-f select,#mm-builder .mmb-f input[type=text]{width:100%;font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;}'
-      + '#mm-builder .mmb-roles{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;}'
+      + '#mm-builder .mmb-f label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-soft,var(--ink-soft,#6c6c68));}'
+      + '#mm-builder .mmb-f select,#mm-builder .mmb-f input[type=text]{width:100%;font:inherit;padding:7px 9px;border:1px solid var(--line-strong,var(--border-strong,#d8d2c5));border-radius:8px;background:var(--input-bg,var(--panel,#fff));color:var(--text,var(--ink,#1b2430));}'
+      + '#mm-builder .mmb-roles{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--text,var(--ink,#1b2430));}'
       + '#mm-builder .mmb-role{display:flex;align-items:center;gap:5px;}'
+      + '#mm-builder .mmb-slot-note{font-size:12.5px;color:var(--text-soft,var(--ink-soft,#6c6c68));margin:8px 0;padding:10px 12px;border-radius:10px;background:var(--panel-soft,var(--accent-soft,rgba(46,204,143,.08)));border:1px solid color-mix(in srgb,var(--accent,#1f7a63) 20%,transparent);}'
+      + '#mm-builder .mmb-live-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}'
+      + '#mm-builder .mmb-live-tab{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line,var(--border,#e3e3e0));background:var(--panel,var(--surface,#fff));color:var(--text-soft,var(--ink-soft,#5c6675));}'
       + '#mm-builder .mmb-items{margin-top:8px;}'
-      + '#mm-builder .mmb-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0efea;font-size:13px;}'
+      + '#mm-builder .mmb-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line,var(--border,#f0efea));font-size:13px;color:var(--text,var(--ink,#1b2430));}'
       + '#mm-builder .mmb-item:last-child{border-bottom:none;}'
       + '#mm-builder .mmb-item-name{flex:1;font-weight:500;}'
       + '#mm-builder .mmb-add-row{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;}'
-      + '#mm-builder .mmb-preview{margin-top:16px;border:1px dashed var(--line);border-radius:14px;padding:14px;background:#f9f8f4;max-width:360px;}'
-      + '#mm-builder .mmb-preview h3{margin:0 0 10px;font-size:14px;}'
+      + '#mm-builder .mmb-preview-wrap{margin-top:18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,360px);gap:18px;align-items:start;}'
+      + '@media(max-width:860px){#mm-builder .mmb-preview-wrap{grid-template-columns:1fr;}}'
+      + '#mm-builder .mmb-preview{border:1px dashed var(--line,var(--border,#e3e3e0));border-radius:14px;padding:14px;background:var(--bg-soft,var(--bg,#f9f8f4));max-width:360px;}'
+      + '#mm-builder .mmb-preview h3{margin:0 0 10px;font-size:14px;color:var(--text,var(--ink,#1b2430));}'
+      + '#mm-builder .mmb-preview-role{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}'
+      + '#mm-builder .mmb-preview-role button{font:inherit;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line,var(--border,#e3e3e0));background:var(--panel,var(--surface,#fff));color:var(--text-soft,var(--ink-soft,#5c6675));cursor:pointer;}'
+      + '#mm-builder .mmb-preview-role button.on{background:var(--accent-soft,rgba(46,204,143,.14));border-color:var(--accent,#1f7a63);color:var(--accent-hover,var(--accent,#1f7a63));font-weight:700;}'
       + '#mm-builder .mmb-psec{margin-bottom:10px;}'
-      + '#mm-builder .mmb-psec-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#8a8a82;margin-bottom:5px;}'
-      + '#mm-builder .mmb-pbtn{display:block;width:100%;padding:8px;margin-bottom:5px;border-radius:8px;font-size:13px;text-align:center;border:1px solid var(--line);background:#fff;}'
-      + '#mm-builder .mmb-pbtn.primary{background:var(--accent,#1f7a63);color:#fff;border-color:transparent;}'
-      + '#mm-builder .mmb-pbtn.outline{background:transparent;}'
+      + '#mm-builder .mmb-psec-title{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-soft,var(--ink-soft,#8a8a82));margin-bottom:5px;}'
+      + '#mm-builder .mmb-pbtn{display:block;width:100%;padding:8px;margin-bottom:5px;border-radius:8px;font-size:13px;text-align:center;border:1px solid var(--line,var(--border,#e3e3e0));background:var(--panel,var(--surface,#fff));color:var(--text,var(--ink,#1b2430));}'
+      + '#mm-builder .mmb-pbtn.primary{background:var(--button-bg,var(--accent,#1f7a63));color:var(--accent-text,#fff);border-color:transparent;}'
+      + '#mm-builder .mmb-pbtn.outline{background:transparent;color:var(--text,var(--ink,#1b2430));border-color:color-mix(in srgb,var(--accent,#1f7a63) 45%,transparent);}'
       + '#mm-builder .mmb-pgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}'
-      + '#mm-builder .mmb-msg{font-size:13px;margin-left:8px;}';
+      + '#mm-builder .mmb-preview-empty{font-size:13px;color:var(--text-soft,var(--ink-soft,#8a8a82));margin:0;}'
+      + '#mm-builder .mmb-msg{font-size:13px;margin-left:8px;color:var(--text-soft,var(--ink-soft,#5c6675));}';
     document.head.appendChild(s);
   }
 
@@ -473,6 +582,22 @@
       return '<option value="' + k + '">' + esc(ACTION_CATALOG[k].label) + '</option>';
     }).join('');
 
+    var slotNote = '';
+    if (sec.slot === 'adminnav') {
+      var tabs = getLiveNavButtons();
+      slotNote = '<div class="mmb-slot-note">Builder tabs come from the live editor nav for this site template. '
+        + (tabs.length ? 'Currently visible tabs:' : 'No builder tabs are visible for this site yet.')
+        + '</div>'
+        + (tabs.length ? '<div class="mmb-live-tabs">' + tabs.map(function (t) {
+          return '<span class="mmb-live-tab">' + esc(t.label) + '</span>';
+        }).join('') + '</div>' : '');
+    } else if (sec.slot === 'lpc-context') {
+      slotNote = '<div class="mmb-slot-note">Shows the site switcher / editing context when the user has multiple sites or partner access.</div>';
+    } else if (sec.slot && !sec.items) {
+      var sm = SLOT_CATALOG[sec.slot];
+      slotNote = '<div class="mmb-slot-note">Uses the live <strong>' + esc(sm ? sm.label : sec.slot) + '</strong> slot from the command bar.</div>';
+    }
+
     return '<div class="mmb-sec" data-sec-idx="' + idx + '">'
       + '<div class="mmb-sec-head">'
       + '<input type="text" data-sec-title value="' + esc(sec.title || '') + '" placeholder="Section title">'
@@ -488,35 +613,10 @@
       + '<div class="mmb-f"><label>Content slot</label><select data-sec-slot>' + slotOpts + '</select></div>'
       + '</div>'
       + '<div class="mmb-f"><label>Who can see this section</label><div class="mmb-roles">' + roleCheckboxes(sec.roles, 'sec') + '</div></div>'
+      + slotNote
       + (sec.items ? ('<div class="mmb-items">' + itemsHtml + '</div>'
         + '<div class="mmb-add-row"><select data-sec-add-item="' + idx + '"><option value="">Add menu item…</option>' + itemOpts + '</select></div>') : '')
       + '</div>';
-  }
-
-  function previewHtml(draft) {
-    var roles = ['super', 'partner', 'client'];
-    var html = '';
-    (draft.sections || []).forEach(function (sec) {
-      if (!rolesMatch(sec.roles, roles)) return;
-      html += '<div class="mmb-psec">';
-      if (sec.title) html += '<div class="mmb-psec-title">' + esc(sec.title) + '</div>';
-      if (sec.slot === 'adminnav') {
-        html += '<div class="mmb-pbtn outline">Dashboard</div><div class="mmb-pbtn outline">Details</div>';
-      } else if (sec.items) {
-        var grid = sec.layout === 'grid-2';
-        if (grid) html += '<div class="mmb-pgrid">';
-        sec.items.forEach(function (it) {
-          if (!rolesMatch(it.roles || sec.roles, roles)) return;
-          var cls = 'mmb-pbtn';
-          if (sec.buttonStyle === 'outline') cls += ' outline';
-          if (it.id === 'btn-publish') cls += ' primary';
-          html += '<div class="' + cls + '">' + esc(itemLabel(it.id)) + '</div>';
-        });
-        if (grid) html += '</div>';
-      }
-      html += '</div>';
-    });
-    return html || '<p style="font-size:13px;color:#999;">No sections visible for preview roles.</p>';
   }
 
   function readDraftFromDom(root, draft) {
@@ -556,21 +656,31 @@
     return draft;
   }
 
-  function rerenderBuilder(body, draft) {
+  function rerenderBuilder(body, draft, previewRole) {
+    previewRole = previewRole || getUserRoles()[0] || 'super';
     body.innerHTML = draft.sections.map(function (s, i) {
       return renderBuilderSection(s, i, draft);
     }).join('')
-      + '<button type="button" class="btn ghost" id="mmb-add-sec">+ Add section</button>'
-      + '<div class="mmb-preview" id="mmb-preview"><h3>Phone preview (all roles)</h3><div id="mmb-preview-body">' + previewHtml(draft) + '</div></div>';
-    wireBuilderEvents(body, draft);
+      + '<button type="button" class="btn ghost" id="mmb-add-sec">+ Add section</button>';
+    var prev = document.getElementById('mmb-preview-body');
+    if (prev) prev.innerHTML = previewHtml(draft, previewRole);
+    var roleBtns = document.querySelectorAll('#mmb-preview-roles .mmb-preview-role-btn');
+    roleBtns.forEach(function (btn) {
+      btn.classList.toggle('on', btn.getAttribute('data-preview-role') === previewRole);
+    });
   }
 
-  function wireBuilderEvents(body, draft) {
+  function wireBuilderEvents(body, draft, previewRole) {
+    previewRole = previewRole || getUserRoles()[0] || 'super';
+
     function sync() {
       readDraftFromDom(body, draft);
       var prev = document.getElementById('mmb-preview-body');
-      if (prev) prev.innerHTML = previewHtml(draft);
+      if (prev) prev.innerHTML = previewHtml(draft, previewRole);
     }
+
+    if (body.__mmbWired) return;
+    body.__mmbWired = true;
 
     body.addEventListener('change', function (e) {
       if (e.target.matches('[data-sec-add-item]')) {
@@ -579,7 +689,7 @@
         if (id && draft.sections[idx]) {
           if (!draft.sections[idx].items) draft.sections[idx].items = [];
           draft.sections[idx].items.push({ id: id, roles: draft.sections[idx].roles.slice() });
-          rerenderBuilder(body, draft);
+          rerenderBuilder(body, draft, previewRole);
         }
         e.target.value = '';
         return;
@@ -596,7 +706,7 @@
           var tmp = draft.sections[i - 1];
           draft.sections[i - 1] = draft.sections[i];
           draft.sections[i] = tmp;
-          rerenderBuilder(body, draft);
+          rerenderBuilder(body, draft, previewRole);
         }
         return;
       }
@@ -607,7 +717,7 @@
           var t2 = draft.sections[j + 1];
           draft.sections[j + 1] = draft.sections[j];
           draft.sections[j] = t2;
-          rerenderBuilder(body, draft);
+          rerenderBuilder(body, draft, previewRole);
         }
         return;
       }
@@ -615,7 +725,7 @@
       if (rm) {
         var k = parseInt(rm.getAttribute('data-idx'), 10);
         draft.sections.splice(k, 1);
-        rerenderBuilder(body, draft);
+        rerenderBuilder(body, draft, previewRole);
         return;
       }
       var iu = e.target.closest('.mmb-item-up');
@@ -625,7 +735,7 @@
         var arr = draft.sections[si] && draft.sections[si].items;
         if (arr && ii > 0) {
           var t3 = arr[ii - 1]; arr[ii - 1] = arr[ii]; arr[ii] = t3;
-          rerenderBuilder(body, draft);
+          rerenderBuilder(body, draft, previewRole);
         }
         return;
       }
@@ -636,7 +746,7 @@
         var arr2 = draft.sections[si2] && draft.sections[si2].items;
         if (arr2 && ii2 < arr2.length - 1) {
           var t4 = arr2[ii2 + 1]; arr2[ii2 + 1] = arr2[ii2]; arr2[ii2] = t4;
-          rerenderBuilder(body, draft);
+          rerenderBuilder(body, draft, previewRole);
         }
         return;
       }
@@ -646,25 +756,36 @@
         var ii3 = parseInt(irm.getAttribute('data-item'), 10);
         if (draft.sections[si3] && draft.sections[si3].items) {
           draft.sections[si3].items.splice(ii3, 1);
-          rerenderBuilder(body, draft);
+          rerenderBuilder(body, draft, previewRole);
         }
+        return;
       }
-    });
-
-    var addSec = document.getElementById('mmb-add-sec');
-    if (addSec) {
-      addSec.addEventListener('click', function () {
+      if (e.target.closest('#mmb-add-sec')) {
         draft.sections.push({
           id: 'sec-' + Date.now(),
           title: 'New section',
           layout: 'stack',
           buttonStyle: 'outline',
           separator: 'line',
-      roles: ['super', 'partner', 'client'],
-      slot: 'lpc-tools',
-      items: []
+          roles: ['super', 'partner', 'client'],
+          slot: 'lpc-tools',
+          items: []
         });
-        rerenderBuilder(body, draft);
+        rerenderBuilder(body, draft, previewRole);
+      }
+    });
+
+    var previewRoles = document.getElementById('mmb-preview-roles');
+    if (previewRoles && !previewRoles.__mmbWired) {
+      previewRoles.__mmbWired = true;
+      previewRoles.addEventListener('click', function (e) {
+        var btn = e.target.closest('.mmb-preview-role-btn');
+        if (!btn) return;
+        previewRole = btn.getAttribute('data-preview-role') || previewRole;
+        sync();
+        previewRoles.querySelectorAll('.mmb-preview-role-btn').forEach(function (b) {
+          b.classList.toggle('on', b === btn);
+        });
       });
     }
   }
@@ -679,6 +800,7 @@
     injectBuilderCss();
     await load(true);
     var draft = deepClone(getConfig());
+    var previewRole = getUserRoles()[0] || 'super';
 
     var p = document.createElement('div');
     p.id = 'mm-builder';
@@ -687,7 +809,13 @@
       + '<div><h1 style="margin:0;font:700 24px/1.1 var(--font-display,Georgia),serif;">Mobile command menu</h1>'
       + '<p class="lede" style="margin:6px 0 0;">Configure the phone mega menu for the command centre — sections, layouts, separators, button styles, and role access.</p></div>'
       + '<div><button type="button" class="btn ghost" id="mmb-close">Close</button></div></div>'
-      + '<div id="mmb-body"></div>'
+      + '<div class="mmb-preview-wrap"><div id="mmb-body"></div>'
+      + '<div class="mmb-preview" id="mmb-preview"><h3>Phone preview</h3>'
+      + '<div class="mmb-preview-role" id="mmb-preview-roles">'
+      + ROLES.map(function (r) {
+        return '<button type="button" class="mmb-preview-role-btn' + (r === previewRole ? ' on' : '') + '" data-preview-role="' + r + '">' + previewRoleLabel(r) + '</button>';
+      }).join('')
+      + '</div><div id="mmb-preview-body">' + previewHtml(draft, previewRole) + '</div></div></div>'
       + '<div style="margin-top:16px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;">'
       + '<button type="button" class="btn" id="mmb-save">Save menu</button>'
       + '<button type="button" class="btn ghost" id="mmb-reset">Reset to defaults</button>'
@@ -695,7 +823,8 @@
     document.body.appendChild(p);
 
     var body = document.getElementById('mmb-body');
-    rerenderBuilder(body, draft);
+    rerenderBuilder(body, draft, previewRole);
+    wireBuilderEvents(body, draft, previewRole);
 
     document.getElementById('mmb-close').addEventListener('click', closeBuilder);
     p.addEventListener('click', function (e) { if (e.target === p) closeBuilder(); });
@@ -703,7 +832,7 @@
     document.getElementById('mmb-reset').addEventListener('click', function () {
       if (!global.confirm('Reset the mobile menu to factory defaults?')) return;
       draft = deepClone(defaults || FALLBACK_DEFAULT);
-      rerenderBuilder(body, draft);
+      rerenderBuilder(body, draft, previewRole);
     });
 
     document.getElementById('mmb-save').addEventListener('click', async function () {
@@ -719,13 +848,19 @@
         if (j && j.ok) {
           msg.textContent = 'Saved — open the phone menu to see changes.';
           msg.style.color = '#0a7d33';
+        } else if (j && j._status === 401) {
+          msg.textContent = 'Please sign in again, then retry.';
+          msg.style.color = '#b42318';
+        } else if (j && j._status === 403) {
+          msg.textContent = 'Super admin access required to save.';
+          msg.style.color = '#b42318';
         } else {
           msg.textContent = (j && j.error) || 'Save failed';
           msg.style.color = '#b42318';
         }
       } catch (e) {
         btn.disabled = false;
-        msg.textContent = 'Save failed';
+        msg.textContent = 'Save failed — check your connection.';
         msg.style.color = '#b42318';
       }
     });

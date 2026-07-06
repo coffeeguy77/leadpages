@@ -2621,6 +2621,7 @@ function heroCtaCard(c){
     /* ===== Cloudinary uploads: customer asset namespace + lifecycle ===== */
   var CW_CLOUD='dzx6x1hou';
   function cwToken(){ try{ return sb.auth.getSession().then(function(r){ return (r&&r.data&&r.data.session&&r.data.session.access_token)||null; }); }catch(e){ return Promise.resolve(null); } }
+  window.cwToken = cwToken;
   function cwSiteSeg(){ return String(currentSiteId||currentSiteSlug||'unsited').toLowerCase().replace(/[^a-z0-9\-]/g,'')||'unsited'; }
   function cwSiteSegSlug(){ return String(currentSiteSlug||'').toLowerCase().replace(/[^a-z0-9\-]/g,''); }
   function cwSeg(s){ return String(s||'x').toLowerCase().replace(/[^a-z0-9_\-]/g,'')||'x'; }
