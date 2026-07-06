@@ -33,10 +33,10 @@
   min-height: 44px;
 }
 #lpa-trigger:hover {
-  border-color: #1f7a63;
+  border-color: var(--lpa-accent, #6366f1);
 }
 #lpa-trigger:focus-visible {
-  outline: 3px solid #155c4a;
+  outline: 3px solid var(--lpa-focus, #4338ca);
   outline-offset: 2px;
 }
 #lpa-trigger svg {
@@ -97,12 +97,12 @@
   min-height: 40px;
 }
 #lpa-panel .lpa-opt[aria-pressed="true"] {
-  background: #eaf3ef;
-  border-color: #1f7a63;
-  color: #155c4a;
+  background: var(--lpa-accent-soft, #eef2ff);
+  border-color: var(--lpa-accent, #6366f1);
+  color: var(--lpa-accent-hover, #4338ca);
 }
 #lpa-panel .lpa-opt:focus-visible {
-  outline: 3px solid #155c4a;
+  outline: 3px solid var(--lpa-focus, #4338ca);
   outline-offset: 1px;
 }
 #lpa-reset {
@@ -110,7 +110,7 @@
   width: 100%;
   border: 1px dashed #d8d2c5;
   background: #fbfaf7;
-  color: #155c4a;
+  color: var(--lpa-accent-hover, #4338ca);
   border-radius: 8px;
   padding: 10px;
   font: 600 13px inherit;
@@ -118,7 +118,7 @@
   margin-top: 4px;
 }
 #lpa-reset:focus-visible {
-  outline: 3px solid #155c4a;
+  outline: 3px solid var(--lpa-focus, #4338ca);
   outline-offset: 2px;
 }
 

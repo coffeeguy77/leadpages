@@ -16,12 +16,12 @@ INSERT INTO app_registry (
   sort_order,
   updated_at
 ) VALUES (
-  'Accessibility Suite',
-  'accessibility-suite',
+  'Appearance & Accessibility',
+  'appearance-accessibility',
   'lpAccessibility',
   'free',
-  'Visitor viewing preferences and accessibility controls',
-  'Floating preferences widget, skip links, and published-page theme overlays. Configure defaults in Appearance & Accessibility.',
+  'Themes, visitor viewing preferences, and WCAG 2.2-focused accessibility support.',
+  'Configure published-page themes, visitor viewing preferences, skip links, and the accessibility floating button from Appearance & Accessibility in the command centre.',
   'footer',
   'live',
   false,

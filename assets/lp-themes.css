@@ -581,3 +581,226 @@ html[data-lp-reduced-motion="true"] {
 #lp-scope-close {
   color: var(--muted) !important;
 }
+
+/* ── Manage.html: semantic success (not theme accent) ── */
+.badge.ok,
+.chip.ok,
+.lp-badge.pub {
+  background: var(--success-soft) !important;
+  color: var(--success) !important;
+  border-color: transparent;
+}
+.lp-badge.pub {
+  border: 1px solid var(--border);
+}
+
+/* ── Page editor section pills (token-backed) ── */
+.lp-sec-pill {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.lp-sec-pill[data-on="1"] {
+  border-color: var(--accent);
+}
+.lp-sec-pill[data-active="1"] {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.lp-sec-toggle,
+.lp-sec-edit,
+.lp-sec-editonly,
+.lp-lay-toggle,
+.lp-lay-edit {
+  appearance: none;
+  border: 0;
+  font: 600 12.5px var(--font-ui, Inter, system-ui, sans-serif);
+  cursor: pointer;
+  background: var(--panel);
+  color: var(--text);
+}
+.lp-sec-toggle {
+  padding: 6px 13px;
+}
+.lp-sec-pill[data-on="1"] .lp-sec-toggle {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+.lp-sec-edit,
+.lp-lay-edit {
+  padding: 6px 11px;
+  font-size: 12px;
+  border-left: 1px solid var(--border);
+  background: var(--panel-soft);
+  color: var(--text-soft);
+}
+.lp-sec-pill[data-on="1"] .lp-sec-edit,
+.lp-lay-pill[data-on="1"] .lp-lay-edit {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-left-color: rgba(255, 255, 255, 0.35);
+}
+.lp-sec-editonly {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: var(--panel);
+  color: var(--text);
+}
+.lp-sec-editonly[data-active="1"],
+.lp-sec-edit[data-active="1"] {
+  background: var(--accent-hover);
+  color: var(--accent-text);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.lp-lay-pill {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.lp-lay-pill[data-on="1"] {
+  border-color: var(--accent);
+}
+.lp-lay-toggle {
+  padding: 6px 13px;
+}
+.lp-lay-pill[data-on="1"] .lp-lay-toggle {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+.lpf-ver {
+  border: 2px solid var(--border) !important;
+  border-radius: 10px;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--panel) !important;
+  min-width: 118px;
+}
+.lpf-ver[aria-pressed="true"] {
+  border-color: var(--accent) !important;
+}
+.lpf-ver[aria-pressed="true"] .lpf-ver-label {
+  color: var(--accent) !important;
+}
+.lpf-ver-label {
+  padding: 5px 8px;
+  font: 600 11.5px var(--font-ui);
+  color: var(--text);
+}
+
+/* ── Builder / editor surfaces (dark-mode safe) ── */
+.lsub-extra {
+  background: var(--panel-soft) !important;
+  border-color: var(--border) !important;
+}
+.modal .box,
+.bro,
+.us-row,
+.login-card,
+.cs-modal,
+.icon-box,
+.seg2 .segb,
+.clr input[type="color"],
+.apsel,
+.ai-chip,
+.lp-ap-preview,
+.lpd-chip,
+.lpd-detail,
+.lpd-live,
+#ord-list .ord-row,
+#ord-list .ord-mv,
+.icon-pick,
+.icchip,
+.icbtn {
+  background: var(--panel) !important;
+  color: var(--text);
+  border-color: var(--border);
+}
+.seg2 .segb.on,
+.sec-modeseg button.on {
+  background: var(--accent) !important;
+  color: var(--accent-text) !important;
+}
+.ai-chip {
+  border-color: var(--accent) !important;
+  color: var(--accent-hover) !important;
+}
+.ai-chip:hover {
+  background: var(--accent-soft) !important;
+}
+.brkg-row {
+  border-left-color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+  border-color: var(--border) !important;
+}
+#lp-mode-toggle.standard-mode {
+  background: var(--accent-hover) !important;
+  color: var(--accent-text) !important;
+}
+.lp-prev-toggle {
+  background: var(--accent) !important;
+}
+.lp-prev-body iframe {
+  background: var(--panel);
+}
+.f input:focus,
+.brkg input:focus,
+.tin:focus,
+select:focus,
+textarea:focus {
+  outline-color: var(--focus) !important;
+  border-color: var(--accent) !important;
+}
+.chk input,
+.ci-toggle input,
+input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+.eyebrow {
+  color: var(--accent);
+}
+.statebtn[aria-selected="true"] {
+  color: var(--accent-hover) !important;
+  border-bottom-color: var(--accent) !important;
+}
+.anav-btn[aria-selected="true"],
+.lsub-extra .anav-btn[aria-selected="true"] {
+  color: var(--accent-hover) !important;
+  border-bottom-color: var(--accent) !important;
+}
+#ord-list .ord-row.drop-before {
+  box-shadow: 0 -3px 0 0 var(--accent) !important;
+}
+#ord-list .ord-row.drop-after {
+  box-shadow: 0 3px 0 0 var(--accent) !important;
+}
+#ord-list .ord-mv:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+.bar-fav {
+  color: var(--accent) !important;
+}
+.bar-fav.on {
+  border-color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+}
+.lpd-live,
+.lpd-open {
+  color: var(--accent) !important;
+}
+.lpd-chip.on {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.amp-tile[data-on="1"] {
+  background: var(--accent-hover) !important;
+  border-color: var(--accent-hover) !important;
+  color: var(--accent-text) !important;
+}
+

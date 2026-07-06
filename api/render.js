@@ -538,11 +538,10 @@ function visitorWidgetEnabled(cfg) {
   const va = visitorAppearanceCfg(cfg);
   if (!va.allowVisitorControls) return false;
   if (!va.showAccessibilityButton) return false;
-  const sections = cfg && cfg.sections;
-  if (sections && Object.prototype.hasOwnProperty.call(sections, 'lpAccessibility')) {
-    const sec = sections.lpAccessibility;
-    if (!sec || sec.on !== true) return false;
-  }
+  const sec = cfg && cfg.sections && cfg.sections.lpAccessibility;
+  // Marketplace gate: block only when explicitly disabled on the site.
+  // Sites without lpAccessibility use Published Pages settings only (backwards compatible).
+  if (sec && sec.on === false) return false;
   return true;
 }
 
