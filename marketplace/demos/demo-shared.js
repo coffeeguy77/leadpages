@@ -701,6 +701,16 @@
       if(va.reducedMotionSupport!==false) de.dataset.lpVisitorMotion='standard';
     }
   }
-    window.__applyTradeConfig=function(_c){ applyCfg(_c); try{applyVisitorAppearance(_c);}catch(_e){} try{_lpFooterApply(_c);}catch(_e){} _lpRichWalk(document.body); };
+    window.__applyTradeConfig=function(_c){ applyCfg(_c); try{applyVisitorAppearance(_c);}catch(_e){} try{_lpFooterApply(_c);}catch(_e){} _lpRichWalk(document.body); try{ if(window.__lpPreviewChromeHide) window.__lpSetPreviewChrome({hideHeader:window.__lpPreviewChromeHide}); }catch(_e){} };
+    window.__lpSetPreviewChrome=function(opts){
+      opts=opts||{};
+      var hide=!!opts.hideHeader;
+      window.__lpPreviewChromeHide=hide;
+      var h=document.querySelector('header.site')||document.querySelector('header.nav');
+      if(h) h.style.display=hide?'none':'';
+      var st=document.getElementById('lp-prev-chrome-hide-css');
+      if(!st&&document.head){ st=document.createElement('style'); st.id='lp-prev-chrome-hide-css'; document.head.appendChild(st); }
+      if(st) st.textContent=hide?'header.site,header.nav,.site-header{display:none!important}':'';
+    };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_lpBoot); else _lpBoot();
 })();
