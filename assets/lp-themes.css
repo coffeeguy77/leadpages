@@ -529,24 +529,24 @@ html[data-lp-reduced-motion="true"] {
 /* Dashboard + site switcher shared surfaces */
 .lp-dash-card,
 .lp-dash-stat {
-  background: var(--panel);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
   border-radius: 14px;
   padding: 20px 22px;
-  box-shadow: var(--shadow);
+  box-shadow: none;
 }
 .lp-dash-stat {
-  padding: 16px;
+  padding: 12px 14px;
 }
 .lp-dash-row {
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
   border-radius: 12px;
-  background: var(--panel);
+  background: transparent;
 }
 .lp-dash-row-muted {
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
   border-radius: 10px;
-  background: var(--panel-soft);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 .lp-badge-info {
   background: var(--accent-soft) !important;
@@ -654,8 +654,8 @@ html[data-lp-reduced-motion="true"] {
   color: var(--accent-hover);
 }
 .lpl-seg button.on {
-  background: var(--accent);
-  color: var(--accent-text);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent-hover);
   border-color: var(--accent);
 }
 .lpl-seg-ct {
@@ -713,9 +713,18 @@ html[data-lp-reduced-motion="true"] {
   margin-left: 6px;
   font-weight: 600;
 }
+#lp-landing .lpl-sort {
+  color: var(--text-soft);
+}
 #lp-landing .lpl-sort select {
   background: transparent;
   border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--text);
+  font-family: var(--font-ui, Inter, system-ui, sans-serif);
+}
+#lp-landing .lpl-sort select option {
+  background: var(--panel);
+  color: var(--text);
 }
 .lpl-card2 {
   display: flex;
@@ -904,6 +913,41 @@ html[data-lp-reduced-motion="true"] {
   color: var(--text-soft);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+/* Editor service rows — themed, no white cards */
+.svc-row {
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent) !important;
+  border-radius: 12px !important;
+  padding: 14px !important;
+  margin-bottom: 12px;
+  background: color-mix(in srgb, var(--panel) 50%, transparent) !important;
+}
+.svc-row textarea {
+  background: var(--input-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent) !important;
+}
+.svc-row label {
+  color: var(--text-soft) !important;
+}
+
+/* Instrument panel chart controls */
+.dash-chart-type,
+.dash-period {
+  font-family: var(--font-ui, Inter, system-ui, sans-serif);
+}
+.dash-chart-type.on,
+.dash-period.on {
+  background: color-mix(in srgb, var(--accent) 18%, transparent) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-hover) !important;
+}
+.dash-chart-type:not(.on),
+.dash-period:not(.on) {
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+  color: var(--text) !important;
 }
 
 /* Page editor section / layout pills */
