@@ -195,19 +195,6 @@
       if (prim) prim.style.display = '';
     }
 
-    function restoreMenuSlotsHome() {
-      restoreCmdLayout();
-      if (adminnav && navHome && adminnav.parentNode !== navHome) {
-        navHome.appendChild(adminnav);
-      }
-      if (cmd && cmdHome && cmd.parentNode !== cmdHome) {
-        cmdHome.appendChild(cmd);
-      }
-      if (global.LPMobileMenu && global.LPMobileMenu.restoreAllMenuSlotHomes) {
-        try { global.LPMobileMenu.restoreAllMenuSlotHomes(); } catch (e) { /* ignore */ }
-      }
-    }
-
     var _drawerLayoutBusy = false;
 
     function refreshCmdDrawer() {
@@ -222,16 +209,7 @@
     }
 
     function prepareDrawerButtons() {
-      if (global.LPMobileMenu && global.LPMobileMenu.renderCommandCentre) {
-        try {
-          global.LPMobileMenu.renderCommandCentre({
-            desktop: !isMobileLayout(),
-            mobile: isMobileLayout(),
-            phone: isPhoneLayout()
-          });
-        } catch (e) { /* ignore */ }
-        return;
-      }
+      if (!isMobileLayout()) return;
       var top = document.getElementById('lpc-drawer-top');
       var tools = document.getElementById('lpc-tools');
       var footer = document.getElementById('lpc-drawer-footer');
@@ -262,6 +240,7 @@
       if (!_drawerLayoutBusy && global.lpRefreshCmdDrawer) {
         try { global.lpRefreshCmdDrawer(); } catch (e) { /* ignore */ }
       }
+      prepareDrawerButtons();
     }
 
     function drawerSectionHasItems(el) {
@@ -288,42 +267,38 @@
       return false;
     }
 
-    function moveChrome(opts) {
-      opts = opts || {};
+    function restoreDrawerSlotsHome() {
+      restoreCmdLayout();
+      if (adminnav && navHome && adminnav.parentNode !== navHome) navHome.appendChild(adminnav);
+      if (cmd && cmdHome && cmd.parentNode !== cmdHome) cmdHome.appendChild(cmd);
+    }
+
+    function moveChrome() {
       var mobile = isMobileLayout();
       var phone = isPhoneLayout();
       var inner = drawerInner;
       if (!inner || _drawerLayoutBusy) return;
-      if (!opts.skipRefresh) {
-        _drawerLayoutBusy = true;
-        try {
-          if (global.lpRefreshCmdDrawer) global.lpRefreshCmdDrawer();
-        } finally {
-          _drawerLayoutBusy = false;
+      _drawerLayoutBusy = true;
+      try {
+        if (global.lpRefreshCmdDrawer) {
+          try { global.lpRefreshCmdDrawer(); } catch (e) { /* ignore */ }
         }
+        prepareDrawerButtons();
+      } finally {
+        _drawerLayoutBusy = false;
       }
       document.body.classList.toggle('lp-phone-chrome', mobile && phone);
       if (mobile) {
         document.body.classList.add('lp-compact-chrome');
-        restoreMenuSlotsHome();
+        restoreDrawerSlotsHome();
         while (inner.firstChild) inner.removeChild(inner.firstChild);
         var usedConfig = false;
-        if (global.LPMobileMenu && global.LPMobileMenu.renderCommandCentre) {
-          try {
-            usedConfig = !!global.LPMobileMenu.renderCommandCentre({
-              desktop: false,
-              mobile: mobile,
-              phone: phone,
-              drawerInner: inner
-            });
-          } catch (e) { usedConfig = false; }
-        } else if (global.LPMobileMenu && global.LPMobileMenu.applyDrawer) {
+        if (global.LPMobileMenu && global.LPMobileMenu.applyDrawer) {
           try {
             usedConfig = !!global.LPMobileMenu.applyDrawer(inner, { phone: phone, mobile: mobile });
           } catch (e) { usedConfig = false; }
         }
         if (!usedConfig) {
-          restoreMenuSlotsHome();
           var publishTop = document.getElementById('lpc-drawer-top');
           var tools = document.getElementById('lpc-tools');
           var footer = document.getElementById('lpc-drawer-footer');
@@ -334,6 +309,9 @@
             appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
           }
           appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label lp-drawer-builder-label', 'Builder Menu');
+          if (!phone) {
+            appendDrawerPiece(inner, document.getElementById('lpc-primary'), 'lp-drawer-section-label', 'Publishing & preview');
+          }
           appendDrawerPiece(inner, tools, 'lp-drawer-section-label lp-drawer-tools-label', 'Site Tools');
           if (drawerSectionHasItems(footer)) {
             appendDrawerPiece(inner, footer, 'lp-drawer-section-label lp-drawer-footer-label', 'Account');
@@ -344,15 +322,9 @@
       } else {
         document.body.classList.remove('lp-compact-chrome', 'lp-phone-chrome');
         setDrawer(false);
-        restoreMenuSlotsHome();
+        restoreDrawerSlotsHome();
         if (adminnav && navHome && adminnav.parentNode !== navHome) navHome.appendChild(adminnav);
-        if (global.LPMobileMenu && global.LPMobileMenu.renderCommandCentre) {
-          try {
-            global.LPMobileMenu.renderCommandCentre({ desktop: true, mobile: false, phone: false });
-          } catch (e) { /* ignore */ }
-        } else {
-          restoreCmdLayout();
-        }
+        restoreCmdLayout();
         if (cmd && cmdHome && cmd.parentNode !== cmdHome) cmdHome.appendChild(cmd);
         while (inner.firstChild) inner.removeChild(inner.firstChild);
       }
@@ -442,10 +414,6 @@
       setDrawer: setDrawer,
       syncLayoutSelect: syncLayoutSelect,
       moveChrome: moveChrome,
-      restoreNavHome: function () {
-        if (adminnav && navHome && adminnav.parentNode !== navHome) navHome.appendChild(adminnav);
-      },
-      restoreMenuSlotsHome: restoreMenuSlotsHome,
       ensureDrawerActions: ensureDrawerActions,
       getEditorRatio: getEditorRatio,
       setEditorRatio: setEditorRatio,
