@@ -671,10 +671,20 @@
     var fn=document.getElementById('lpFooter'); if(!fn) return;
     if(F.on!==true){ fn.style.display='none'; return; }
     fn.style.display='';
-    var WH='https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665886/leadpages-logo-white.png';
-    var BK='https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665885/leadpages-logo-black.png';
+    var WH='/assets/leadpages-logo.svg';
+    var BK='/assets/leadpages-logo.svg';
     var src=(F.version==='custom'&&F.customUrl)?F.customUrl:(F.version==='black'?BK:WH);
-    var img=fn.querySelector('.lp-foot-logo'); if(img){ if(img.getAttribute('src')!==src) img.src=src; var sz=(F.size!=null?+F.size:30); if(isNaN(sz))sz=30; img.style.height=Math.max(10,Math.min(200,sz))+'px'; }
+    var img=fn.querySelector('.lp-foot-logo'); if(img){
+      if(F.version==='custom'&&F.customUrl){ if(img.getAttribute('src')!==src) img.src=src; }
+      else {
+        img.setAttribute('data-lp-logo','auto');
+        img.setAttribute('data-lp-logo-pulse','');
+        img.setAttribute('data-lp-logo-ink', F.version==='black'?'dark':'light');
+        if(img.getAttribute('src')!==src) img.src=src;
+        if(window.LPLogo&&window.LPLogo.mountLogo) window.LPLogo.mountLogo(img,{pulse:true});
+      }
+      var sz=(F.size!=null?+F.size:30); if(isNaN(sz))sz=30; img.style.height=Math.max(10,Math.min(200,sz))+'px';
+    }
     var bg=(/^#[0-9a-fA-F]{6}$/.test(F.bg||''))?F.bg:'#0e1217';
     var op=(F.bgOpacity!=null?+F.bgOpacity:100); if(isNaN(op))op=100; op=Math.max(0,Math.min(100,op))/100;
     var r=parseInt(bg.slice(1,3),16),g=parseInt(bg.slice(3,5),16),b=parseInt(bg.slice(5,7),16);
@@ -693,6 +703,12 @@
     var st=va.siteTheme||'classic-light';
     if(!st||st==='classic-light'||st==='match-brand') de.removeAttribute('data-lp-site-theme');
     else de.setAttribute('data-lp-site-theme', st);
+    var scheme=va.colorScheme||'brand';
+    if(va.allowColorSchemes===false) scheme='brand';
+    try{ var _scs=JSON.parse(localStorage.getItem('leadpages_visitor_colour_scheme')||'null'); if(_scs&&va.allowColorSchemes!==false) scheme=_scs; }catch(e){}
+    if(scheme==='seasonal'){ var _sm=new Date().getMonth(); scheme=(_sm<=1)?'summer':(_sm<=4)?'autumn':(_sm<=7)?'winter':(_sm<=10)?'spring':'festive'; }
+    if(!scheme||scheme==='brand'){ de.removeAttribute('data-lp-visitor-scheme'); de.removeAttribute('data-lp-visitor-scheme-choice'); }
+    else { de.setAttribute('data-lp-visitor-scheme', scheme); de.setAttribute('data-lp-visitor-scheme-choice', scheme); }
     var stored=null;
     try{ stored=JSON.parse(localStorage.getItem('leadpages_visitor_accessibility')||'null'); }catch(e){}
     if(!stored){

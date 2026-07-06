@@ -208,6 +208,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   window.LP_searchIcons=function(q,cat){ q=String(q||"").trim().toLowerCase(); var catOf=window.__LP_CATOF,idx=window.__LP_TERMIDX,out=[]; var curated=(q&&window.LP_ICON_TERMS[q])?window.LP_ICON_TERMS[q].filter(function(k){return I[k];}):[]; Object.keys(I).forEach(function(k){ if(cat&&catOf[k]!==cat) return; if(q){ var s=(k+" "+(catOf[k]||"")+" "+((idx[k]||[]).join(" "))).toLowerCase().replace(/-/g," "); if(s.indexOf(q)<0&&curated.indexOf(k)<0) return; } out.push(k); }); if(curated.length){ var seen={}; curated.forEach(function(k){seen[k]=1;}); out=curated.concat(out.filter(function(k){return !seen[k];})); } return out; };
 })();
 </script>
+<link rel="stylesheet" href="/assets/lp-logo.css">
+<script src="/assets/lp-logo.js" defer></script>
 </head>
 <body>
 

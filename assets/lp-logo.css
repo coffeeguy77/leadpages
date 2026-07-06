@@ -1,0 +1,87 @@
+/**
+ * LeadPages universal SVG logo — sizing, theming, ring pulse.
+ */
+.lp-logo-wrap {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 0;
+  --lp-logo-accent: #2ecc8f;
+  --lp-logo-ink: #13161b;
+}
+
+.lp-logo-wrap svg {
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+}
+
+/* Default heights when no inline height is set */
+.leadpages-logo.lp-logo-wrap:not([style*="height"]) {
+  height: 40px;
+}
+
+.lp-shell-logo.lp-logo-wrap {
+  height: 51px;
+}
+
+#lp-landing .leadpages-logo.lp-logo-wrap {
+  height: 120px;
+}
+
+.wrap > .leadpages-logo.lp-logo-wrap:not(.lp-shell-logo) {
+  height: 72px;
+}
+
+/* Ring pulse — outer and inner circles only */
+.lp-logo-pulse #outer-circle {
+  animation: lp-logo-ring-pulse 2.6s ease-in-out infinite;
+  transform-origin: 160px 134px;
+}
+
+.lp-logo-pulse #inner-circle {
+  animation: lp-logo-ring-pulse 2.6s ease-in-out infinite;
+  animation-delay: 0.4s;
+  transform-origin: 153px 134px;
+}
+
+@keyframes lp-logo-ring-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    filter: none;
+  }
+  50% {
+    opacity: 0.62;
+    filter: brightness(1.12);
+  }
+}
+
+/* Respect reduced motion — workspace + visitor + system */
+@media (prefers-reduced-motion: reduce) {
+  .lp-logo-pulse #outer-circle,
+  .lp-logo-pulse #inner-circle {
+    animation: none !important;
+  }
+}
+
+html[data-lp-reduced-motion="true"] .lp-logo-pulse #outer-circle,
+html[data-lp-reduced-motion="true"] .lp-logo-pulse #inner-circle,
+html[data-lp-visitor-motion="reduced"] .lp-logo-pulse #outer-circle,
+html[data-lp-visitor-motion="reduced"] .lp-logo-pulse #inner-circle {
+  animation: none !important;
+}
+
+/* Footer strip logo */
+.lp-foot-logo.lp-logo-wrap {
+  height: 30px;
+}
+
+/* Marketing / dark header variants */
+.lp-logo-wrap[data-lp-logo-ink="light"] {
+  --lp-logo-ink: #f3f6fa;
+}
+
+.lp-logo-wrap[data-lp-logo-ink="dark"] {
+  --lp-logo-ink: #13161b;
+}
