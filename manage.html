@@ -425,6 +425,13 @@ body.lp-standard-mode .lp-standard-banner { display:inline-block; }
 
 /* Captured leads CRM (sits below the stats pills) */
 #lp-leads{margin:4px 0 20px;}
+@media (min-width:1024px){
+  #lp-leads .ll-card{padding:20px 22px;margin-bottom:24px;}
+  #lp-leads .ll-head h2{font-size:19px;}
+  #lp-leads .ll-item{padding:13px 15px;}
+  #dash-leads-card{padding:18px 20px;}
+  #dash-leads-card .lp-dash-row{padding:12px 14px;}
+}
 .ll-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px 18px;}
 .ll-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .ll-head h2{margin:0;font:600 17px/1.2 var(--font-display,Georgia),serif;}
@@ -496,6 +503,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/icons.js"></script>
 </head>
 <body data-lp-admin-page="manage">
+<script>
+(function(){
+  var r=document.documentElement;
+  ['data-lp-visitor-scheme','data-lp-visitor-scheme-choice','data-lp-site-theme','data-lp-visitor-text','data-lp-visitor-contrast','data-lp-visitor-theme','data-lp-visitor-motion','data-lp-visitor-links','data-lp-visitor-spacing'].forEach(function(a){ r.removeAttribute(a); });
+})();
+</script>
 
 <div id="lp-landing"><div class="lpl-wrap">
   <div class="lpl-header-row">
@@ -877,7 +890,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   </div>
 </div>
 <aside id="lp-prev" class="lp-prev" hidden aria-label="Live preview">
-  <div class="lp-prev-head"><strong>Live preview</strong><span class="lp-prev-sub" id="lp-prev-sub">unsaved look</span><span class="lp-prev-ratio" id="lp-prev-ratio"><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-minus" aria-label="More preview space">&#8722;</button><span class="lp-ratio-val" data-lp-ratio-val>70/30</span><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-plus" aria-label="More editor space">&#43;</button></span><button type="button" class="lp-prev-hide-logo" id="lp-prev-hide-logo" title="Hide the site header bar in preview for more space">Hide logo</button><span class="lp-dev"><button type="button" data-dev="desktop" aria-pressed="true">Desktop</button><button type="button" data-dev="mobile" aria-pressed="false">Mobile</button></span><span class="lp-prev-actions"><button type="button" id="lp-prev-reload" title="Reload preview">↻</button><button type="button" id="lp-prev-close" title="Close">✕</button></span></div>
+  <div class="lp-prev-head"><strong>Live preview</strong><span class="lp-prev-sub" id="lp-prev-sub">unsaved look</span><span class="lp-prev-ratio" id="lp-prev-ratio"><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-minus" aria-label="More preview space">&#8722;</button><span class="lp-ratio-val" data-lp-ratio-val title="Click for 50/50 editor/preview split">70/30</span><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-plus" aria-label="More editor space">&#43;</button></span><button type="button" class="lp-prev-hide-logo" id="lp-prev-hide-logo" title="Hide the site header bar in preview for more space">Hide logo</button><span class="lp-dev"><button type="button" data-dev="desktop" aria-pressed="true">Desktop</button><button type="button" data-dev="mobile" aria-pressed="false">Mobile</button></span><span class="lp-prev-actions"><button type="button" id="lp-prev-reload" title="Reload preview">↻</button><button type="button" id="lp-prev-close" title="Close">✕</button></span></div>
   <div class="lp-prev-body"><iframe id="lp-prev-frame" title="Live calculator preview"></iframe></div>
 </aside>
 
@@ -1390,7 +1403,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(tabletSide){
         lpPw=Math.round(V*(100-editorPct)/100);
       } else {
-        lpPw=Math.round(Math.min(Math.max(V*((100-editorPct)/100),400),860));
+        var maxPw=V>=1920?1280:(V>=1440?1040:860);
+        lpPw=Math.round(Math.min(Math.max(V*((100-editorPct)/100),400),maxPw));
       }
       document.body.style.setProperty('--lp-pw', lpPw+'px');
       return true;
@@ -1415,7 +1429,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var wrap=document.querySelector('.wrap');
     if(wrap){
       if(side){
-        var V=window.innerWidth, lr=V-lpPw, ww=Math.min(1080, Math.max(360, lr-40)), mx=Math.max(0,(lr-ww)/2);
+        var V=window.innerWidth, lr=V-lpPw, ww=Math.min(V>=1920?1280:1080, Math.max(360, lr-40)), mx=Math.max(0,(lr-ww)/2);
         wrap.style.maxWidth=ww+'px'; wrap.style.marginLeft=mx+'px'; wrap.style.marginRight=(lpPw+mx)+'px';
       } else { wrap.style.maxWidth=''; wrap.style.marginLeft=''; wrap.style.marginRight=''; }
     }
@@ -1431,7 +1445,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       // desktop: cap to the command-centre width (the .wrap max-width) and centre it,
       // so the preview lines up edge-to-edge with the editor above. In the side dock the
       // panel is narrower than the cap, so this simply fills the panel.
-      var capW=Math.min(availW, 1040); // 1040 = command-centre card width (.wrap 1080 minus its 20px side padding)
+      var capW=Math.min(availW, window.innerWidth>=1920?1440:(window.innerWidth>=1440?1200:1040));
       fr.style.width=capW+'px'; fr.style.marginLeft=Math.max(0,(availW-capW)/2)+'px';
     }
   }
@@ -3763,7 +3777,7 @@ function heroCtaCard(c){
     }).catch(function(){ var body=document.getElementById('se-body'); if(body) body.innerHTML='<div class="hint">Couldn\u2019t load \u2014 is the billing API deployed?</div>'; });
   }
   /* ===================== Site analytics ===================== */
-  var ANA={ period:30, active:null, sort:'visitors', data:[], leads:[], leadsCount:0, statusCounts:null, globalData:null };
+  var ANA={ period:30, active:null, sort:'visitors', data:[], leads:[], leadsCount:0, statusCounts:null, globalData:null, loaded:false };
   function anaEsc(x){ return String(x==null?'':x).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
   var ANA_METRICS=[ {k:'page_view',label:'Visitors',ic:'\U0001F441',color:'#2563eb'}, {k:'call_click',label:'Calls',ic:'\U0001F4DE',color:'#16a34a'}, {k:'lead_submit',label:'Forms',ic:'\u2709',color:'#d97706'}, {k:'conv',label:'Conversion',ic:'\U0001F4C8',color:'#7c3aed'} ];
   function anaSince(){ return ANA.period? new Date(Date.now()-ANA.period*864e5).toISOString() : '1970-01-01T00:00:00Z'; }
@@ -3781,15 +3795,16 @@ function heroCtaCard(c){
       return await r.json();
     }catch(e){ return null; }
   }
-  async function anaFetchSite(){ if(!currentSiteId){ ANA.data=[]; ANA.leads=[]; ANA.leadsCount=0; return; }
+  async function anaFetchSite(){ if(!currentSiteId){ ANA.data=[]; ANA.leads=[]; ANA.leadsCount=0; ANA.loaded=false; return; }
     var j=await anaStats({siteId:currentSiteId,days:(ANA.period||0)});
-    if(j){ ANA.data=j.events||[]; ANA.leads=(j.leads||[]).slice(0,50); ANA.leadsCount=(j.leadsCount!=null?j.leadsCount:(j.leads||[]).length); ANA.statusCounts=j.statusCounts||null; return; }
+    if(j){ ANA.data=j.events||[]; ANA.leads=(j.leads||[]).slice(0,50); ANA.leadsCount=(j.leadsCount!=null?j.leadsCount:(j.leads||[]).length); ANA.statusCounts=j.statusCounts||null; ANA.loaded=true; return; }
     /* fallback: direct read (only works if RLS permits the signed-in user) */
     var since=anaSince();
     try{ var ev=await sb.from('events').select('event,created_at,props').eq('site_id',currentSiteId).gte('created_at',since).limit(10000); ANA.data=ev.data||[]; }catch(e){ ANA.data=[]; }
     try{ var ld=await sb.from('leads').select('name,kind,created_at').eq('site_id',currentSiteId).gte('created_at',since).order('created_at',{ascending:false}).limit(50); ANA.leads=ld.data||[]; }catch(e){ ANA.leads=[]; }
     try{ var lc=await sb.from('leads').select('id',{count:'exact',head:true}).eq('site_id',currentSiteId).gte('created_at',since); ANA.leadsCount=(lc.count!=null?lc.count:(ANA.leads||[]).length); }catch(e){ ANA.leadsCount=(ANA.leads||[]).length; }
     try{ var scd=await sb.from('leads').select('status').eq('site_id',currentSiteId).gte('created_at',since); var _c={new:0,contacted:0,won:0,lost:0,total:0}; (scd.data||[]).forEach(function(r){ _c.total++; var st=r.status||'new'; if(_c[st]!=null)_c[st]++; }); ANA.statusCounts=_c; }catch(e){ ANA.statusCounts=null; }
+    ANA.loaded=true;
   }
   async function anaFetchGlobal(){ var j=await anaStats({days:(ANA.period||0)}); if(j){ ANA.globalData=j.events||[]; return; } var since=anaSince(); try{ var ev=await sb.from('events').select('event,site_id,created_at').gte('created_at',since).limit(20000); ANA.globalData=ev.data||[]; }catch(e){ ANA.globalData=[]; } }
   function anaGlobalRows(){ var by={}; (allSites||[]).forEach(function(x){ by[x.id]={name:x.business_name||x.slug,slug:x.slug,visitors:0,calls:0,forms:0,last:null}; });
@@ -4628,7 +4643,7 @@ function heroCtaCard(c){
       bar.insertBefore(w, bar.firstChild);
     }
     const lbl=$('site-label'); if(lbl){
-      if(allSites.length>1){
+      if((currentRole==='super'||currentRole==='broker')&&allSites.length>1){
         lbl.innerHTML='<span>Editing site:</span>';
         const sel=document.createElement('select'); sel.className='tin'; sel.style.cssText='width:auto;padding:4px 8px;';
         var mkOpts=function(grp,label){
@@ -4642,6 +4657,9 @@ function heroCtaCard(c){
         mkOpts('customer','Customer sites'); mkOpts('demo','Demo sites');
         sel.addEventListener('change',function(){ const x=allSites.find(function(y){return y.id===sel.value;}); if(x) loadSite(x); });
         lbl.appendChild(sel);
+      } else if((currentRole==='super'||currentRole==='broker')&&currentSiteSlug){
+        const nm=(allSites.find(function(x){return x.id===currentSiteId;})||allSites[0]||{}).business_name||currentSiteSlug;
+        lbl.innerHTML='<span>Editing: <strong>'+nm+'</strong> \u00b7 /'+currentSiteSlug+'</span>';
       } else if(currentSiteSlug){
         const nm=(allSites[0]?allSites[0].business_name:currentSiteSlug);
         lbl.innerHTML='<span>Editing: <strong>'+nm+'</strong> \u00b7 /'+currentSiteSlug+'</span>';
@@ -4748,10 +4766,15 @@ function heroCtaCard(c){
         var dt=document.getElementById('lp-mode-toggle-dt'); if(dt) _applyModeBtn(dt,next,_role2);
       });
     }
-    if(window.LPAdminShell&&LPAdminShell.ensureDrawerActions) LPAdminShell.ensureDrawerActions();
     if(window.LPAdminShell&&LPAdminShell.moveChrome) LPAdminShell.moveChrome();
   }
   window.lpRefreshCmdDrawer=function(){ ensureSiteBar(); layoutCmdCard(); };
+  window.lpDrawerShowSiteSwitcher=function(){
+    var role=currentRole||'';
+    if(role!=='super'&&role!=='broker') return false;
+    if((allSites||[]).length>1) return true;
+    return !!(currentSiteSlug||currentSiteId);
+  };
   /* ---- demo themes (super-admin: manage looks shown on /demo) ---- */
   async function renderDemoThemes(){
     var box=$('dt-list'); if(!box) return;
@@ -5723,7 +5746,7 @@ function heroCtaCard(c){
     if(db){ try{
         var j2=await lpBkFetch('?id='+encodeURIComponent(db.getAttribute('data-bk-dl')));
         var cfg=(j2&&j2.backup&&j2.backup.config)||null;
-        if(!cfg) throw new Error('not found');
+        if(!cfg) throw new Error((j2&&j2.error)||'Backup config missing');
         var s=(allSites||[]).find(function(x){return x.id===currentSiteId;}); var name=((s&&s.slug)||'site')+'-backup.json';
         var blob=new Blob([JSON.stringify(cfg,null,2)],{type:'application/json'}); var url=URL.createObjectURL(blob);
         var a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
@@ -5957,7 +5980,7 @@ function heroCtaCard(c){
     var cvn=document.getElementById('dash-s-conv');
     function _applyAna(){
       try{
-        if(typeof ANA==='undefined'||!ANA.data||!ANA.data.length){ return false; }
+        if(typeof ANA==='undefined'||!ANA.loaded||!Array.isArray(ANA.data)){ return false; }
         var c=anaCounts(ANA.data);
         if(vis) vis.textContent=c.page_view||'0';
         var leadsN=Math.max(c.lead_submit||0, ANA.leadsCount||0);
