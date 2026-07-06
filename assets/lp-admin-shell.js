@@ -208,8 +208,7 @@
       if (el && el.parentNode !== row) row.appendChild(el);
     }
 
-    function ensureDrawerActions() {
-      refreshCmdDrawer();
+    function prepareDrawerButtons() {
       var top = document.getElementById('lpc-drawer-top');
       var tools = document.getElementById('lpc-tools');
       var footer = document.getElementById('lpc-drawer-footer');
@@ -234,6 +233,13 @@
       if (view && !view.dataset.lpFullText) view.dataset.lpFullText = view.textContent;
       if (pub) pub.textContent = 'Publish Live Site';
       if (view) view.textContent = 'View Live Site';
+    }
+
+    function ensureDrawerActions() {
+      if (!_drawerLayoutBusy && global.lpRefreshCmdDrawer) {
+        try { global.lpRefreshCmdDrawer(); } catch (e) { /* ignore */ }
+      }
+      prepareDrawerButtons();
     }
 
     function drawerSectionHasItems(el) {
@@ -264,10 +270,13 @@
       var mobile = isMobileLayout();
       var phone = isPhoneLayout();
       var inner = drawerInner;
-      if (!inner) return;
+      if (!inner || _drawerLayoutBusy) return;
       _drawerLayoutBusy = true;
       try {
-        ensureDrawerActions();
+        if (global.lpRefreshCmdDrawer) {
+          try { global.lpRefreshCmdDrawer(); } catch (e) { /* ignore */ }
+        }
+        prepareDrawerButtons();
       } finally {
         _drawerLayoutBusy = false;
       }
