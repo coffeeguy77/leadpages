@@ -546,6 +546,9 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   color: rgba(255, 255, 255, 0.7);
   font-size: 10px;
   min-width: 34px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* Hide-logo control in preview panel head */

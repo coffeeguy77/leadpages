@@ -33,6 +33,17 @@
   height: 72px;
 }
 
+/* Marketing site — large white logo on dark chrome */
+.nav .lp-logo-wrap,
+.nav img.leadpages-logo,
+footer .lp-logo-wrap,
+footer img.leadpages-logo {
+  width: 300px !important;
+  max-width: min(300px, 70vw) !important;
+  height: auto !important;
+  --lp-logo-ink: #f3f6fa;
+}
+
 /* Ring pulse — outer and inner circles only */
 .lp-logo-pulse #outer-circle {
   animation: lp-logo-ring-pulse 2.6s ease-in-out infinite;

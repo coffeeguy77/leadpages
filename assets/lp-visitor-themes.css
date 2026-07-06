@@ -29,15 +29,20 @@ html[data-lp-site-theme="blueprint"] body {
 }
 
 /* Visitor widget preference effects */
-html[data-lp-visitor-text="large"] {
-  font-size: 106.25%;
+html[data-lp-visitor-text="large"],
+html[data-lp-visitor-text="large"] body {
+  font-size: 118.75% !important;
 }
-html[data-lp-visitor-text="larger"] {
-  font-size: 112.5%;
+html[data-lp-visitor-text="larger"],
+html[data-lp-visitor-text="larger"] body {
+  font-size: 131.25% !important;
 }
 
 html[data-lp-visitor-contrast="high"] {
-  filter: contrast(1.12);
+  filter: contrast(1.18);
+}
+html[data-lp-visitor-contrast="high"] body {
+  filter: none;
 }
 html[data-lp-visitor-contrast="high"] a,
 html[data-lp-visitor-contrast="high"] button {

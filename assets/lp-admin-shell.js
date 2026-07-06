@@ -195,7 +195,10 @@
       if (prim) prim.style.display = '';
     }
 
+    var _drawerLayoutBusy = false;
+
     function refreshCmdDrawer() {
+      if (_drawerLayoutBusy) return;
       if (global.lpRefreshCmdDrawer) global.lpRefreshCmdDrawer();
     }
 
@@ -250,12 +253,24 @@
       drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
     }
 
+    function showSiteSwitcherInDrawer() {
+      if (typeof global.lpDrawerShowSiteSwitcher === 'function') {
+        try { return !!global.lpDrawerShowSiteSwitcher(); } catch (e) { /* ignore */ }
+      }
+      return false;
+    }
+
     function moveChrome() {
       var mobile = isMobileLayout();
       var phone = isPhoneLayout();
       var inner = drawerInner;
       if (!inner) return;
-      ensureDrawerActions();
+      _drawerLayoutBusy = true;
+      try {
+        ensureDrawerActions();
+      } finally {
+        _drawerLayoutBusy = false;
+      }
       document.body.classList.toggle('lp-phone-chrome', mobile && phone);
       if (mobile) {
         document.body.classList.add('lp-compact-chrome');
@@ -266,7 +281,7 @@
         if (drawerSectionHasItems(publishTop) || phone) {
           appendDrawerPiece(inner, publishTop, 'lp-drawer-section-label lp-drawer-publish-label', 'Publish');
         }
-        if (!phone) {
+        if (!phone || showSiteSwitcherInDrawer()) {
           appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
         }
         appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label lp-drawer-builder-label', 'Builder Menu');
@@ -342,8 +357,10 @@
       }
       var ratioMinus = ev.target.closest('#lp-prev-ratio-minus');
       var ratioPlus = ev.target.closest('#lp-prev-ratio-plus');
+      var ratioVal = ev.target.closest('[data-lp-ratio-val]');
       if (ratioMinus) adjustEditorRatio(-RATIO_STEP);
       if (ratioPlus) adjustEditorRatio(RATIO_STEP);
+      if (ratioVal) setEditorRatio(50);
     });
 
     applyRatioVars();

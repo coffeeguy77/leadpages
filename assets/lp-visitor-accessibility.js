@@ -53,6 +53,9 @@
     root.dataset.lpVisitorMotion = p.motion === 'reduced' ? 'reduced' : 'standard';
     root.dataset.lpVisitorLinks = p.links === 'highlight' ? 'highlight' : 'standard';
     root.dataset.lpVisitorSpacing = p.spacing === 'comfortable' ? 'comfortable' : 'standard';
+    if (global.document.body) {
+      global.document.body.style.fontSize = text === 'larger' ? '1.3125rem' : text === 'large' ? '1.1875rem' : '';
+    }
     if (p.theme === 'dark') root.setAttribute('data-lp-visitor-theme-active', 'dark');
     else root.removeAttribute('data-lp-visitor-theme-active');
     if (global.LPVisitorSchemes && global.LPVisitorSchemes.apply) {
@@ -268,6 +271,7 @@
   }
 
   function ensureAssets(cb) {
+    loadStylesheet('/assets/lp-visitor-themes.css');
     loadStylesheet('/assets/lp-visitor-schemes.css');
     loadStylesheet('/assets/lp-visitor-accessibility.css');
     if (global.LPVisitorSchemes && global.LPVisitorAccessibility) {

@@ -182,6 +182,14 @@
 
       if (el !== wrap && el.parentNode) el.parentNode.replaceChild(wrap, el);
       wrap.dataset.lpLogoMounted = 'true';
+      if (isMarketingHost()) {
+        wrap.style.width = '300px';
+        wrap.style.maxWidth = 'min(300px, 70vw)';
+        wrap.style.height = 'auto';
+        if (!el.getAttribute('data-lp-logo-ink') || el.getAttribute('data-lp-logo-ink') === 'auto') {
+          applyTokens(wrap, { accent: tokens.accent, ink: '#f3f6fa' });
+        }
+      }
       return wrap;
     });
   }
@@ -212,7 +220,14 @@
 
   function isMarketingHost() {
     var host = (global.location && global.location.hostname) || '';
-    return /^(www\.)?leadpages\.(com\.au|webculture\.au)$/i.test(host);
+    var path = (global.location && global.location.pathname) || '';
+    if (!/^(www\.)?leadpages\.(com\.au|webculture\.au)$/i.test(host)) return false;
+    if (global.document && global.document.body) {
+      if (global.document.body.getAttribute('data-lp-admin-page')) return false;
+      if (global.document.body.classList.contains('lp-cmd-on')) return false;
+    }
+    if (/^\/(manage|partner-dashboard|partners-admin|apps-admin|marketplace-admin)(\/|$)/.test(path)) return false;
+    return true;
   }
 
   function loadStylesheet(href) {
@@ -254,6 +269,7 @@
         }
       };
     }
+    loadStylesheet('/assets/lp-visitor-themes.css');
     loadStylesheet('/assets/lp-visitor-schemes.css');
     loadStylesheet('/assets/lp-visitor-accessibility.css');
     loadScript('/assets/lp-visitor-schemes.js')

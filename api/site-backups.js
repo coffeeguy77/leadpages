@@ -40,15 +40,28 @@ async function isSuperAdmin(userId) {
   return !!(data && data.is_super_admin);
 }
 
+async function partnerIdForUser(userId) {
+  const { data } = await admin.from('partners').select('id,status').eq('user_id', userId).maybeSingle();
+  if (!data || data.status !== 'active') return null;
+  return data.id;
+}
+
 async function assertSiteAccess(user, siteId) {
   if (!siteId) return { ok: false, code: 400, error: 'no_site' };
-  const { data: site, error } = await admin.from('sites').select('id,owner_user_id').eq('id', siteId).maybeSingle();
+  const { data: site, error } = await admin.from('sites')
+    .select('id,owner_user_id,servicing_partner_id,referring_partner_id')
+    .eq('id', siteId)
+    .maybeSingle();
   if (error || !site) return { ok: false, code: 404, error: 'site_not_found' };
   const adminUser = await isSuperAdmin(user.id);
-  if (!adminUser && site.owner_user_id && site.owner_user_id !== user.id) {
-    return { ok: false, code: 403, error: 'not_your_site' };
+  if (adminUser) return { ok: true, site };
+  if (site.owner_user_id && site.owner_user_id === user.id) return { ok: true, site };
+  const partnerId = await partnerIdForUser(user.id);
+  if (partnerId && (site.servicing_partner_id === partnerId || site.referring_partner_id === partnerId)) {
+    return { ok: true, site };
   }
-  return { ok: true, site };
+  if (!site.owner_user_id) return { ok: true, site };
+  return { ok: false, code: 403, error: 'not_your_site' };
 }
 
 async function assertBackupAccess(user, backupId) {
