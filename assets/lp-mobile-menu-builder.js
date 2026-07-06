@@ -95,6 +95,27 @@
     return null;
   }
 
+  function normalizeConfig(cfg) {
+    if (!cfg || !Array.isArray(cfg.sections)) return cfg;
+    var defs = defaults || FALLBACK_DEFAULT;
+    (defs.sections || []).forEach(function (defSec) {
+      var sec = cfg.sections.find(function (s) { return s && s.id === defSec.id; });
+      if (!sec) {
+        cfg.sections.push(deepClone(defSec));
+        return;
+      }
+      if (defSec.id === 'publish') {
+        if (!sec.slot) sec.slot = 'lpc-drawer-top';
+        if (!sec.items || !sec.items.length) {
+          sec.items = deepClone(defSec.items || [{ id: 'btn-publish' }, { id: 'btn-viewlive' }]);
+        }
+      }
+      if (defSec.id === 'tools' && !sec.slot) sec.slot = 'lpc-tools';
+      if (defSec.id === 'account' && !sec.slot) sec.slot = 'lpc-drawer-footer';
+    });
+    return cfg;
+  }
+
   async function load(force) {
     if (!force && config) return config;
     if (!force && loadPromise) return loadPromise;
@@ -104,8 +125,8 @@
         var r = await fetch(API, { headers: tk ? { Authorization: 'Bearer ' + tk } : {} });
         var j = await r.json();
         if (j && j.ok) {
-          config = j.content;
-          defaults = j.defaults || j.content;
+          config = normalizeConfig(j.content);
+          defaults = j.defaults || deepClone(FALLBACK_DEFAULT);
         }
       } catch (e) { /* use baked-in default */ }
       if (!config) {
@@ -120,10 +141,10 @@
   var FALLBACK_DEFAULT = {
     version: 1,
     sections: [
-      { id: 'publish', title: 'Publish', layout: 'stack', buttonStyle: 'publish-duo', separator: 'none', roles: ['super', 'partner', 'client'], items: [{ id: 'btn-publish' }, { id: 'btn-viewlive' }] },
+      { id: 'publish', title: 'Publish', layout: 'stack', buttonStyle: 'publish-duo', separator: 'none', roles: ['super', 'partner', 'client'], slot: 'lpc-drawer-top', items: [{ id: 'btn-publish' }, { id: 'btn-viewlive' }] },
       { id: 'site', title: 'Site', layout: 'stack', buttonStyle: 'default', separator: 'line', roles: ['super', 'partner'], condition: 'site-switcher', slot: 'lpc-context' },
       { id: 'builder', title: 'Builder Menu', layout: 'tabs', buttonStyle: 'nav', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'adminnav' },
-      { id: 'tools', title: 'Site Tools', layout: 'stack', buttonStyle: 'outline', separator: 'line', roles: ['super', 'partner', 'client'], items: [
+      { id: 'tools', title: 'Site Tools', layout: 'stack', buttonStyle: 'outline', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'lpc-tools', items: [
         { id: 'btn-settings', roles: ['super', 'partner', 'client'] },
         { id: 'btn-appearance-aa', roles: ['super', 'partner', 'client'] },
         { id: 'btn-billing', roles: ['super', 'partner', 'client'] },
@@ -196,6 +217,14 @@
     if (el && el.parentNode !== row) row.appendChild(el);
   }
 
+  function moveItemsIntoSlot(sec, slotEl) {
+    if (!slotEl) return false;
+    if (sec.items && sec.items.length) {
+      visibleItems(sec).forEach(function (it) { moveItemToRow(it.id, slotEl); });
+    }
+    return slotEl.children.length > 0;
+  }
+
   function buildSectionRow(sec) {
     var row = document.createElement('div');
     row.className = 'lp-mm-sec-body';
@@ -207,34 +236,33 @@
         ? document.querySelector('.adminnav')
         : document.getElementById(sec.slot);
       if (slotEl) {
-        if (sec.slot === 'lpc-drawer-footer') {
-          var footer = document.getElementById('lpc-drawer-footer');
-          if (footer) {
-            footer.innerHTML = '';
-            var vis = visibleItems(sec);
-            vis.forEach(function (it) { moveItemToRow(it.id, footer); });
-            if (footer.children.length) row.appendChild(footer);
+        if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
+          if (sec.slot === 'lpc-drawer-footer') {
+            slotEl.innerHTML = '';
+          }
+          if (moveItemsIntoSlot(sec, slotEl) && slotEl.parentNode !== row) {
+            row.appendChild(slotEl);
           }
         } else if (slotEl.parentNode !== row) {
           row.appendChild(slotEl);
         }
       }
     } else if (sec.items && sec.items.length) {
-      var visItems = visibleItems(sec);
-      visItems.forEach(function (it) {
-        moveItemToRow(it.id, row);
-      });
+      moveItemsIntoSlot(sec, row);
     }
     return row;
   }
 
   function sectionHasContent(sec, row) {
     if (sec.slot) {
-      if (sec.slot === 'lpc-drawer-footer') {
-        var f = document.getElementById('lpc-drawer-footer');
-        return f && f.children.length > 0;
+      if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
+        var slot = document.getElementById(sec.slot);
+        return slot && slot.children.length > 0;
       }
-      return slotHasContent(sec.slot === 'adminnav' ? 'adminnav' : sec.slot);
+      if (sec.slot === 'adminnav') {
+        return slotHasContent('adminnav');
+      }
+      return slotHasContent(sec.slot);
     }
     if (!row) return false;
     return Array.prototype.some.call(row.children, function (c) { return elVisible(c); });
@@ -301,12 +329,12 @@
         wrap.appendChild(lbl);
       }
 
-      if (sec.slot === 'lpc-drawer-footer' || sec.id === 'account') {
-        var footer = document.getElementById('lpc-drawer-footer');
-        if (footer) {
-          var vis = visibleItems(sec);
-          vis.forEach(function (it) { moveItemToRow(it.id, footer); });
-          if (footer.children.length) wrap.appendChild(footer);
+      if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
+        if (sec.slot === 'lpc-drawer-footer') {
+          targetSlot.innerHTML = '';
+        }
+        if (moveItemsIntoSlot(sec, targetSlot) && targetSlot.parentNode !== wrap) {
+          wrap.appendChild(targetSlot);
         }
       } else if (targetSlot.parentNode !== wrap) {
         wrap.appendChild(targetSlot);
@@ -632,8 +660,9 @@
           layout: 'stack',
           buttonStyle: 'outline',
           separator: 'line',
-          roles: ['super', 'partner', 'client'],
-          items: []
+      roles: ['super', 'partner', 'client'],
+      slot: 'lpc-tools',
+      items: []
         });
         rerenderBuilder(body, draft);
       });

@@ -1437,6 +1437,22 @@ body.lp-mm-configured .lp-drawer-body #lpc-tools {
   gap: 8px;
   width: 100%;
 }
+body.lp-phone-chrome.lp-mm-configured .lp-drawer-body .lpc-drawer-top {
+  flex-direction: column !important;
+  gap: 10px;
+}
+body.lp-phone-chrome.lp-mm-configured .lp-drawer-body .lpc-drawer-top .btn#btn-publish {
+  min-height: 48px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+body.lp-phone-chrome.lp-mm-configured .lp-drawer-body .lpc-drawer-top .btn#btn-viewlive {
+  min-height: 44px;
+  border-radius: 12px;
+  font-weight: 600;
+}
 body.lp-mm-configured .lp-mm-sec-body {
   width: 100%;
 }

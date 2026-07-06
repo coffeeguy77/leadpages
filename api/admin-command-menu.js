@@ -17,6 +17,7 @@ const DEFAULT_MENU = {
       buttonStyle: 'publish-duo',
       separator: 'none',
       roles: ['super', 'partner', 'client'],
+      slot: 'lpc-drawer-top',
       items: [{ id: 'btn-publish' }, { id: 'btn-viewlive' }]
     },
     {
@@ -45,6 +46,7 @@ const DEFAULT_MENU = {
       buttonStyle: 'outline',
       separator: 'line',
       roles: ['super', 'partner', 'client'],
+      slot: 'lpc-tools',
       items: [
         { id: 'btn-settings', roles: ['super', 'partner', 'client'] },
         { id: 'btn-appearance-aa', roles: ['super', 'partner', 'client'] },
