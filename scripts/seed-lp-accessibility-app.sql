@@ -24,7 +24,7 @@ INSERT INTO app_registry (
   'Configure published-page themes, visitor viewing preferences, skip links, and the accessibility floating button from Appearance & Accessibility in the command centre.',
   'footer',
   'live',
-  false,
+  true,
   false,
   false,
   900,
