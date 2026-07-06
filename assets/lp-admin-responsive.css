@@ -344,6 +344,22 @@ body.lp-compact-chrome .wrap > .leadpages-logo:not(.lp-shell-logo) {
 
 /* Phone mega menu — compact quick actions + hide redundant links */
 @media (max-width: 767px) {
+  body.lp-phone-chrome .lp-drawer-body .lpc-drawer-top,
+  body.lp-phone-chrome .lp-drawer-body #lpc-tools,
+  body.lp-phone-chrome .lp-drawer-body .lpc-drawer-footer {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+  body.lp-phone-chrome .lp-drawer-body #lpc-tools {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+  }
+  body.lp-phone-chrome .lp-drawer-body .lpc-drawer-footer {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+  }
   body.lp-phone-chrome .lp-drawer-body .lpc-drawer-top {
     flex-direction: row !important;
     flex-wrap: nowrap;
