@@ -6,7 +6,6 @@
 
   var PREVIEW_KEY = 'leadpages_preview_layout';
   var RATIO_KEY = 'leadpages_preview_ratio';
-  var CHROME_KEY = 'leadpages_chrome_hidden';
   var BP_TABLET = 1024;
   var RATIO_STEP = 10;
   var RATIO_MIN = 20;
@@ -84,23 +83,6 @@
     return 'split';
   }
 
-  function setChromeHidden(on) {
-    document.body.classList.toggle('lp-chrome-hidden', !!on);
-    savePref(CHROME_KEY, on ? '1' : '0');
-    var btn = document.getElementById('lp-chrome-hide-btn');
-    if (btn) {
-      btn.classList.toggle('on', !!on);
-      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      btn.title = on ? 'Show header bars' : 'Hide header bars';
-    }
-    var prevBtn = document.getElementById('lp-prev-chrome-hide');
-    if (prevBtn) {
-      prevBtn.classList.toggle('on', !!on);
-      prevBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    }
-    if (global.lpPreviewLayoutSync) global.lpPreviewLayoutSync();
-  }
-
   function initManageShell() {
     if (!qs('.wrap') || document.getElementById('lp-admin-shell')) return;
 
@@ -124,7 +106,6 @@
       + '<option value="fullscreen">Preview: Full screen</option>'
       + '<option value="side">Preview: Side panel</option>'
       + '</select>'
-      + '<button type="button" class="lp-shell-chrome-hide" id="lp-chrome-hide-btn" title="Hide header bars" aria-pressed="false">&#x2922;</button>'
       + '</div></div>';
 
     var scrim = document.createElement('div');
@@ -175,6 +156,12 @@
       return lbl;
     }
 
+    function appendDrawerPiece(inner, el, labelCls, labelText) {
+      if (!el || el.parentNode === inner) return;
+      if (labelText) ensureDrawerLabel(inner, labelCls || 'lp-drawer-section-label', labelText);
+      inner.appendChild(el);
+    }
+
     function setDrawer(open) {
       document.body.classList.toggle('lp-drawer-open', !!open);
       var btn = document.getElementById('lp-shell-menu');
@@ -189,20 +176,21 @@
       if (mobile) {
         document.body.classList.add('lp-compact-chrome');
         while (inner.firstChild) inner.removeChild(inner.firstChild);
-        if (adminnav && adminnav.parentNode !== inner) {
-          ensureDrawerLabel(inner, 'lp-drawer-section-label', 'Pages');
-          inner.appendChild(adminnav);
-        }
-        if (cmd && cmd.parentNode !== inner) {
-          ensureDrawerLabel(inner, 'lp-drawer-section-label lp-drawer-tools-label', 'Site & admin');
-          inner.appendChild(cmd);
-        }
+        appendDrawerPiece(inner, document.getElementById('lpc-drawer-top'), 'lp-drawer-section-label', 'Quick actions');
+        appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
+        appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label', 'Pages');
+        appendDrawerPiece(inner, document.getElementById('lpc-tools'), 'lp-drawer-section-label lp-drawer-tools-label', 'Site tools');
+        appendDrawerPiece(inner, document.getElementById('lpc-drawer-footer'), 'lp-drawer-section-label lp-drawer-footer-label', 'Account');
+        var prim = document.getElementById('lpc-primary');
+        if (prim) prim.style.display = 'none';
       } else {
         document.body.classList.remove('lp-compact-chrome');
         setDrawer(false);
         if (adminnav && navHome && adminnav.parentNode !== navHome) navHome.appendChild(adminnav);
         if (cmd && cmdHome && cmd.parentNode !== cmdHome) cmdHome.appendChild(cmd);
         while (inner.firstChild) inner.removeChild(inner.firstChild);
+        var prim2 = document.getElementById('lpc-primary');
+        if (prim2) prim2.style.display = '';
       }
       syncRatioVisibility();
     }
@@ -235,10 +223,6 @@
       setDrawer(false);
     });
 
-    document.getElementById('lp-chrome-hide-btn').addEventListener('click', function () {
-      setChromeHidden(!document.body.classList.contains('lp-chrome-hidden'));
-    });
-
     document.getElementById('lp-ratio-minus').addEventListener('click', function () {
       adjustEditorRatio(-RATIO_STEP);
     });
@@ -268,13 +252,10 @@
       var ratioPlus = ev.target.closest('#lp-prev-ratio-plus');
       if (ratioMinus) adjustEditorRatio(-RATIO_STEP);
       if (ratioPlus) adjustEditorRatio(RATIO_STEP);
-      var chromeHide = ev.target.closest('#lp-prev-chrome-hide');
-      if (chromeHide) setChromeHidden(!document.body.classList.contains('lp-chrome-hidden'));
     });
 
     applyRatioVars();
     syncRatioUI();
-    setChromeHidden(loadPref(CHROME_KEY, '') === '1');
 
     moveChrome();
     syncLayoutSelect();
@@ -301,7 +282,6 @@
       getEditorRatio: getEditorRatio,
       setEditorRatio: setEditorRatio,
       adjustEditorRatio: adjustEditorRatio,
-      setChromeHidden: setChromeHidden,
       syncRatioVisibility: syncRatioVisibility,
       isTabletLandscape: isTabletLandscape
     };

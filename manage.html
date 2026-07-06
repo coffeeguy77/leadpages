@@ -547,9 +547,11 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   </div>
 
   <div id="lp-cmd" class="bar" style="display:none;flex-direction:column;align-items:stretch;gap:0;">
+    <div id="lpc-drawer-top" class="lpc-drawer-top"></div>
     <div id="lpc-context" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div>
     <div style="margin-top:16px;"><div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 8px;">Publishing &amp; preview</div><div id="lpc-primary" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div></div>
     <div style="margin-top:16px;"><div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 8px;">Site tools</div><div id="lpc-tools" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div></div>
+    <div id="lpc-drawer-footer" class="lpc-drawer-footer"></div>
   </div>
 
   <div class="adminnav" role="tablist">
@@ -857,7 +859,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <div class="toast" id="toast"></div>
 <button type="button" id="lp-prev-toggle" class="lp-prev-toggle" hidden>◧&nbsp;Live preview</button>
 <aside id="lp-prev" class="lp-prev" hidden aria-label="Live preview">
-  <div class="lp-prev-head"><strong>Live preview</strong><span class="lp-prev-sub" id="lp-prev-sub">unsaved look</span><span class="lp-prev-ratio" id="lp-prev-ratio"><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-minus" aria-label="More preview space">&#8722;</button><span class="lp-ratio-val" data-lp-ratio-val>70/30</span><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-plus" aria-label="More editor space">&#43;</button></span><span class="lp-prev-layout-pick"><label for="lp-prev-layout-panel" class="sr-only">Layout</label><select id="lp-prev-layout-panel" title="Preview layout"><option value="off">Off</option><option value="split">Split</option><option value="fullscreen">Full screen</option><option value="side">Side</option></select></span><button type="button" class="lp-prev-chrome-btn" id="lp-prev-chrome-hide" title="Hide header bars" aria-pressed="false">&#x2922;</button><span class="lp-dev"><button type="button" data-dev="desktop" aria-pressed="true">Desktop</button><button type="button" data-dev="mobile" aria-pressed="false">Mobile</button></span><span class="lp-prev-actions"><button type="button" id="lp-prev-reload" title="Reload preview">↻</button><button type="button" id="lp-prev-close" title="Close">✕</button></span></div>
+  <div class="lp-prev-head"><strong>Live preview</strong><span class="lp-prev-sub" id="lp-prev-sub">unsaved look</span><span class="lp-prev-ratio" id="lp-prev-ratio"><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-minus" aria-label="More preview space">&#8722;</button><span class="lp-ratio-val" data-lp-ratio-val>70/30</span><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-plus" aria-label="More editor space">&#43;</button></span><span class="lp-prev-layout-pick"><label for="lp-prev-layout-panel" class="sr-only">Layout</label><select id="lp-prev-layout-panel" title="Preview layout"><option value="off">Off</option><option value="split">Split</option><option value="fullscreen">Full screen</option><option value="side">Side</option></select></span><span class="lp-dev"><button type="button" data-dev="desktop" aria-pressed="true">Desktop</button><button type="button" data-dev="mobile" aria-pressed="false">Mobile</button></span><span class="lp-prev-actions"><button type="button" id="lp-prev-reload" title="Reload preview">↻</button><button type="button" id="lp-prev-close" title="Close">✕</button></span></div>
   <div class="lp-prev-body"><iframe id="lp-prev-frame" title="Live calculator preview"></iframe></div>
 </aside>
 
@@ -1441,6 +1443,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(window.LPAdminShell&&LPAdminShell.syncRatioVisibility) LPAdminShell.syncRatioVisibility();
   }
   function previewInit(){
+    document.body.classList.remove('lp-chrome-hidden');
+    try{ localStorage.removeItem('leadpages_chrome_hidden'); }catch(e){}
     lpPrevLayout=lpGetPreviewLayout();
     var t=document.getElementById('lp-prev-toggle'); if(t) t.addEventListener('click',function(){ var w=window.innerWidth,h=window.innerHeight; lpSetPreviewLayout((w>=1200||(w>=768&&w<1200&&w>h))?'side':'split'); });
     var c=document.getElementById('lp-prev-close'); if(c) c.addEventListener('click',function(){ lpSetPreviewLayout('off'); });
@@ -1813,8 +1817,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function _lplType(s){ var t; if(s.servicing_partner_id||s.referring_partner_id||s.is_partner_home) t='Partner site'; else if((currentRole!=='super'?s.is_mockup:s.is_demo)) t='Demo site'; else t='Customer site'; return '<span class="lpl-type">'+t+'</span>'; }
   function _lplStatus(s){ if(s.is_demo||s.is_mockup) return '<span class="lpl-badge">Demo</span>'; var st=(s.status||'').toLowerCase(); if(st==='live'||st==='active') return '<span class="lpl-badge ok">Active</span>'; if(st==='draft') return '<span class="lpl-badge warn">Draft</span>'; if(!st) return '<span class="lpl-badge">Setup</span>'; return '<span class="lpl-badge">'+esc(st.charAt(0).toUpperCase()+st.slice(1))+'</span>'; }
   function _lplLogo(s){ return ''; }
-  function _lplMetaInline(s){ var bits=[]; var lc=(LPL.leads&&LPL.leads[s.id]); if(lc!=null) bits.push('Leads: '+lc); bits.push(s.custom_domain?'<span class="lpl-dom-ok">Domain connected</span>':'<span class="lpl-dom-no">Domain not connected</span>'); if(s.updated_at) bits.push(anaAgo(s.updated_at)); return bits.join(' \u00b7 '); }
-  function _lplCard(s){ return '<div class="lpl-card2"><div class="lpl-body"><div class="lpl-title"><span class="lpl-name">'+esc(s.business_name||s.slug)+'</span>'+_lplStatus(s)+'<button type="button" class="lpl-fav2'+(s.is_favorite?' on':'')+'" title="Favourite" data-fav="'+s.id+'">'+(s.is_favorite?'\u2605':'\u2606')+'</button></div><div class="lpl-subline"><span class="lpl-slug2">'+esc(s.slug||'')+'</span><span class="lpl-dot">\u00b7</span>'+_lplType(s)+'<span class="lpl-dot">\u00b7</span><span class="lpl-meta-inline">'+_lplMetaInline(s)+'</span></div></div><div class="lpl-manage"><button type="button" class="lpl-btn-manage" data-edit="'+s.id+'">Manage</button></div></div>'; }
+  function _lplDomainIcon(s){
+    var on=!!(s.custom_domain);
+    return '<span class="lpl-dom-icon'+(on?' on':'')+'" title="'+(on?'Domain connected':'Domain not connected')+'" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>';
+  }
+  function _lplMetaInline(s){ var bits=[]; if(s.updated_at) bits.push(anaAgo(s.updated_at)); return bits.join(' \u00b7 '); }
+  function _lplCard(s){ return '<div class="lpl-card2"><div class="lpl-body"><div class="lpl-title"><span class="lpl-name">'+esc(s.business_name||s.slug)+'</span>'+_lplStatus(s)+_lplDomainIcon(s)+'<button type="button" class="lpl-fav2'+(s.is_favorite?' on':'')+'" title="Favourite" data-fav="'+s.id+'">'+(s.is_favorite?'\u2605':'\u2606')+'</button></div><div class="lpl-subline"><span class="lpl-slug2">'+esc(s.slug||'')+'</span>'+(_lplMetaInline(s)?'<span class="lpl-dot">\u00b7</span><span class="lpl-meta-inline">'+_lplMetaInline(s)+'</span>':'')+'</div></div><div class="lpl-manage"><button type="button" class="lpl-btn-manage" data-edit="'+s.id+'">Manage</button></div></div>'; }
   function _lplNewCard(){ return '<div class="lpl-newcard" id="lpl-newcard">+ New Site</div>'; }
   function _lplSort(items){ var mode=LPL.sort||'updated'; return items.slice().sort(function(a,b){ var fa=a.is_favorite?0:1, fb=b.is_favorite?0:1; if(fa!==fb) return fa-fb; if(mode==='name') return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); if(mode==='leads'){ var la=(LPL.leads&&LPL.leads[a.id])||0, lb=(LPL.leads&&LPL.leads[b.id])||0; if(la!==lb) return lb-la; } var ua=a.updated_at?new Date(a.updated_at).getTime():0, ub=b.updated_at?new Date(b.updated_at).getTime():0; if(ua!==ub) return ub-ua; return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); }); }
   function _lplWire(list){ list.querySelectorAll('[data-edit]').forEach(function(b){ b.onclick=function(){ var s=allSites.find(function(x){return x.id===b.getAttribute('data-edit');}); if(s){ hideLanding(); loadSite(s); } }; }); list.querySelectorAll('[data-fav]').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); lplToggleFav(b.getAttribute('data-fav')); }; }); var nc=document.getElementById('lpl-newcard'); if(nc) nc.onclick=function(){ hideLanding(); openCreateSite(); }; }
@@ -3817,6 +3825,7 @@ function heroCtaCard(c){
 
   async function renderLeadsCRM(){
     var el=document.getElementById('lp-leads'); if(!el) return;
+    if(currentSiteTemplate==='trade'){ el.innerHTML=''; el.style.display='none'; return; }
     // hide the legacy demo "Captured leads" card so there's only one source of truth
     var legacy=document.querySelector('.leads-card'); if(legacy) legacy.style.display='none';
     if(!currentSiteId){ el.innerHTML=''; return; }
@@ -4536,13 +4545,13 @@ function heroCtaCard(c){
     if(currentSiteTemplate!=='broker-app') layoutCmdCard();
   }
   function layoutCmdCard(){
-    var ctx=$('lpc-context'), prim=$('lpc-primary'), tools=$('lpc-tools');
+    var drawerTop=$('lpc-drawer-top'), ctx=$('lpc-context'), prim=$('lpc-primary'), tools=$('lpc-tools'), footer=$('lpc-drawer-footer');
     if(!ctx||!prim||!tools) return;
-    var mv=function(id,row){ var el=$(id); if(el&&el.parentNode!==row) row.appendChild(el); };
+    var mv=function(id,row){ var el=$(id); if(el&&row&&el.parentNode!==row) row.appendChild(el); };
+    mv('btn-publish', drawerTop||prim);
+    mv('btn-viewlive', drawerTop||prim);
     mv('site-label', ctx);
-    mv('btn-publish', prim);
-    mv('btn-viewlive', prim);
-    if(!$('lpc-preview')){ var pv=document.createElement('button'); pv.className='btn ghost'; pv.id='lpc-preview'; pv.type='button'; pv.textContent='Live Preview'; pv.addEventListener('click',function(){ if(typeof lpSetPreviewLayout==='function') lpSetPreviewLayout(window.innerWidth>=1200?'side':'split'); else previewOpen(); }); prim.appendChild(pv); }
+    if(!$('lpc-preview')){ var pv=document.createElement('button'); pv.className='btn ghost'; pv.id='lpc-preview'; pv.type='button'; pv.textContent='Live Preview'; pv.addEventListener('click',function(){ var w=window.innerWidth,h=window.innerHeight; if(typeof lpSetPreviewLayout==='function') lpSetPreviewLayout((w>=1200||(w>=768&&w<1200&&w>h))?'side':'split'); else previewOpen(); }); prim.appendChild(pv); }
     mv('lpc-preview', prim);
     mv('btn-settings', tools);
     mv('btn-appearance-aa', tools);
@@ -4552,12 +4561,31 @@ function heroCtaCard(c){
     mv('lpc-scope', tools);
     if(!$('lpc-backups')){ var bk=document.createElement('button'); bk.className='btn ghost'; bk.id='lpc-backups'; bk.type='button'; bk.textContent='Backups'; bk.addEventListener('click',function(){ if(typeof lpBkOpen==='function') lpBkOpen(); }); tools.appendChild(bk); }
     mv('lpc-backups', tools);
-    mv('btn-switch', tools);
     mv('btn-fav', tools);
     mv('btn-newsite', tools);
+    if(footer){
+      footer.innerHTML='';
+      var swEl=$('btn-switch');
+      if(!swEl){
+        swEl=document.createElement('button'); swEl.className='btn ghost'; swEl.id='btn-switch'; swEl.type='button'; swEl.textContent='Switch Account';
+        swEl.addEventListener('click',function(){ showLanding(); });
+      }
+      footer.appendChild(swEl);
+      if(currentRole==='super'){
+        if(!$('lpc-partner-admin')){ var pa=document.createElement('a'); pa.id='lpc-partner-admin'; pa.className='btn ghost'; pa.href='/partners-admin'; pa.style.textDecoration='none'; pa.textContent='Partner Admin'; footer.appendChild(pa); }
+        if(!$('lpc-marketplace-admin')){ var ma=document.createElement('a'); ma.id='lpc-marketplace-admin'; ma.className='btn ghost'; ma.href='/marketplace-admin'; ma.style.textDecoration='none'; ma.textContent='Marketplace Admin'; footer.appendChild(ma); }
+      }
+      if(currentRole==='broker'){
+        if(!$('lpc-partner-console')){ var pc=document.createElement('a'); pc.id='lpc-partner-console'; pc.className='btn ghost'; pc.href='/partner-dashboard'; pc.style.textDecoration='none'; pc.textContent='Partner Console'; footer.appendChild(pc); }
+      }
+      if(!$('lp-mode-toggle')){
+        var mt=document.createElement('button'); mt.type='button'; mt.id='lp-mode-toggle'; mt.className='btn ghost'; mt.style.fontSize='12px'; mt.textContent='Classic';
+        footer.appendChild(mt);
+      } else { mv('lp-mode-toggle', footer); }
+    }
     if(!$('lpc-acct')){
-      var acct=document.createElement('div'); acct.id='lpc-acct'; acct.style.cssText='margin-left:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
-      var modeBtn='<button type="button" id="lp-mode-toggle" class="btn ghost" style="font-size:12px;">Classic</button>';
+      var acct=document.createElement('div'); acct.id='lpc-acct'; acct.className='lpc-acct-desktop'; acct.style.cssText='margin-left:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
+      var modeBtn='<button type="button" id="lp-mode-toggle-dt" class="btn ghost" style="font-size:12px;">Classic</button>';
       if(currentRole==='super'){
         acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">&#8592; Dashboard</a>'
           +'<a href="/partners-admin" class="btn ghost" style="text-decoration:none;">Partner Admin</a>'
@@ -4565,7 +4593,7 @@ function heroCtaCard(c){
           +modeBtn
           +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
       } else if(currentRole==='broker'){
-        acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">&#8592; Dashboard</a>'
+        acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">Partner Console</a>'
           +modeBtn
           +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
       } else {
@@ -4573,8 +4601,7 @@ function heroCtaCard(c){
       }
       ctx.appendChild(acct);
       var sob=$('lpc-acct-signout'); if(sob) sob.addEventListener('click',function(e){ e.preventDefault(); signOutLP(); });
-      // Wire mode toggle (created dynamically)
-      var mtBtn=document.getElementById('lp-mode-toggle');
+      var mtBtn=document.getElementById('lp-mode-toggle-dt')||document.getElementById('lp-mode-toggle');
       if(mtBtn){
         var _role=currentRole||'broker';
         var _curMode=_getCurrentMode(_role);
@@ -4584,9 +4611,25 @@ function heroCtaCard(c){
           var next=cur==='classic'?'standard':'classic';
           localStorage.setItem(LP_MODE_KEY,next);
           _applyMode(next,_role);
+          var other=document.getElementById('lp-mode-toggle')||document.getElementById('lp-mode-toggle-dt');
+          if(other&&other!==mtBtn) _applyModeBtn(other,next,_role);
         });
       }
     }
+    var mobMode=document.getElementById('lp-mode-toggle');
+    if(mobMode&&!mobMode.__wired){
+      mobMode.__wired=1;
+      var _role2=currentRole||'broker';
+      _applyModeBtn(mobMode,_getCurrentMode(_role2),_role2);
+      mobMode.addEventListener('click',function(){
+        var cur=_getCurrentMode(_role2);
+        var next=cur==='classic'?'standard':'classic';
+        localStorage.setItem(LP_MODE_KEY,next);
+        _applyMode(next,_role2);
+        var dt=document.getElementById('lp-mode-toggle-dt'); if(dt) _applyModeBtn(dt,next,_role2);
+      });
+    }
+    if(window.LPAdminShell&&LPAdminShell.moveChrome) LPAdminShell.moveChrome();
   }
   /* ---- demo themes (super-admin: manage looks shown on /demo) ---- */
   async function renderDemoThemes(){
@@ -5419,6 +5462,25 @@ function heroCtaCard(c){
     }
     body.innerHTML=html;
   }
+  async function lpScopeApply(scope){
+    if(!currentSiteId||!scope) return false;
+    try{
+      var cur=(await sb.from('sites').select('config').eq('id',currentSiteId).maybeSingle()).data;
+      var cfg=JSON.parse(JSON.stringify((cur&&cur.config)||{}));
+      cfg.scope=scope;
+      var r=await sb.from('sites').update({config:cfg, updated_at:new Date().toISOString()}).eq('id',currentSiteId);
+      if(r.error) throw r.error;
+      var s=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null;
+      if(s) s.config=cfg;
+      if(typeof data!=='undefined'&&data) data.scope=scope;
+      LPSCOPE.cfg=scope;
+      lpScopeSync();
+      return true;
+    }catch(e){
+      if(typeof toast==='function') toast('Could not save scope');
+      return false;
+    }
+  }
   async function lpScopeToggle(idx, done){
     var scope=LPSCOPE.cfg; if(!scope||!Array.isArray(scope.items)||!scope.items[idx]) return;
     scope.items[idx].done=!!done;
@@ -5500,7 +5562,7 @@ function heroCtaCard(c){
   }
   async function lpBkListClick(e){
     var rb=e.target.closest('[data-bk-restore]'), db=e.target.closest('[data-bk-dl]'), xb=e.target.closest('[data-bk-del]');
-    if(rb){ if(!confirm('Restore this backup? The current design will be replaced with this saved copy.')) return;
+    if(rb){ if(!confirm('Restore this backup? This will overwrite the current site design and database content with the saved copy. This cannot be undone.')) return;
       try{ var r=await sb.from('site_backups').select('config').eq('id',rb.getAttribute('data-bk-restore')).maybeSingle(); if(r.error||!r.data) throw (r.error||new Error('not found'));
         if(await lpBkApplyConfig(r.data.config)){ var pn=document.getElementById('lp-bk-panel'); if(pn) pn.style.display='none'; }
       }catch(err){ alert('Could not restore: '+(err.message||err)); } return; }
@@ -5509,7 +5571,7 @@ function heroCtaCard(c){
         var blob=new Blob([JSON.stringify(r2.data.config,null,2)],{type:'application/json'}); var url=URL.createObjectURL(blob);
         var a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
       }catch(err){ alert('Could not download: '+(err.message||err)); } return; }
-    if(xb){ if(!confirm('Delete this backup? This cannot be undone.')) return;
+    if(xb){ if(!confirm('Delete this backup permanently? This cannot be undone.')) return;
       try{ var r3=await sb.from('site_backups').delete().eq('id',xb.getAttribute('data-bk-del')); if(r3.error) throw r3.error; lpBkLoad(); }catch(err){ alert('Could not delete: '+(err.message||err)); } return; }
   }
   function lpBkImport(e){
@@ -5518,7 +5580,7 @@ function heroCtaCard(c){
     reader.onload=function(){
       var cfg; try{ cfg=JSON.parse(reader.result); }catch(err){ alert('That file isn\u2019t a valid backup (couldn\u2019t read the JSON).'); return; }
       if(!cfg || typeof cfg!=='object' || Array.isArray(cfg)){ alert('That file doesn\u2019t look like a site backup.'); return; }
-      if(!confirm('Import this file and replace the current site design with it?')) return;
+      if(!confirm('Import this file and replace the current site design and database content with it? This cannot be undone.')) return;
       lpBkApplyConfig(cfg).then(function(ok){ if(ok){ var pn=document.getElementById('lp-bk-panel'); if(pn) pn.style.display='none'; } });
     };
     reader.readAsText(f); e.target.value='';
@@ -5559,13 +5621,11 @@ function heroCtaCard(c){
 
       // ── Compact stat strip ──
       +'<div id="dash-stat-row" class="lp-instrument-stats">'
-      +['Visitors','Leads','Calls','Forms','Conv','Apps','Updated'].map(function(l,i){
-        var ids=['dash-s-vis','dash-s-leads','dash-s-calls','dash-s-forms','dash-s-conv','dash-s-apps','dash-s-updated'];
-        var wide=(l==='Updated');
-        return '<div class="lp-dash-stat lp-instrument-stat'+(wide?' lp-stat-wide':'')+'">'
-          +'<div id="'+ids[i]+'" class="lp-stat-val" style="font-size:20px;font-weight:800;color:var(--accent-hover);line-height:1;margin-bottom:2px">\u2014</div>'
-          +'<div class="lp-stat-lbl" style="font-size:10px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.04em">'+l+'</div>'
-          +(l==='Conv'?'<span id="dash-s-conv-bench" style="display:none;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px;margin-top:3px;letter-spacing:.03em"></span>':'')
+      +[{l:'Visitors',id:'dash-s-vis',cls:''},{l:'Leads',id:'dash-s-leads',cls:''},{l:'Calls',id:'dash-s-calls',cls:''},{l:'Forms',id:'dash-s-forms',cls:'lp-stat-forms'},{l:'Conv',id:'dash-s-conv',cls:''},{l:'Apps',id:'dash-s-apps',cls:'lp-stat-apps'},{l:'Updated',id:'dash-s-updated',cls:'lp-stat-updated'}].map(function(item){
+        return '<div class="lp-dash-stat lp-instrument-stat '+item.cls+'">'
+          +'<div id="'+item.id+'" class="lp-stat-val" style="font-size:20px;font-weight:800;color:var(--accent-hover);line-height:1;margin-bottom:2px">\u2014</div>'
+          +'<div class="lp-stat-lbl" style="font-size:10px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.04em">'+item.l+'</div>'
+          +(item.l==='Conv'?'<span id="dash-s-conv-bench" style="display:none;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px;margin-top:3px;letter-spacing:.03em"></span>':'')
           +'</div>';
       }).join('')
       +'</div>'
@@ -5578,9 +5638,6 @@ function heroCtaCard(c){
       +'<div style="display:flex;gap:4px;margin-right:4px;flex-wrap:wrap">'
       +[{t:"bar",label:"Bar"},{t:"line",label:"Line"},{t:"area",label:"Area"}].map(function(ct){ return '<button type="button" class="dash-chart-type lp-btn-stroke" data-ct="'+ct.t+'" style="font-size:10px;padding:4px 8px;border-radius:7px;cursor:pointer;font-family:inherit;font-weight:600">'+ct.label+'</button>'; }).join('')
       +'</div>'
-      +'<label style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--ink-soft);cursor:pointer;margin-right:4px">'
-      +'<input type="checkbox" id="dash-perday" style="accent-color:var(--accent);width:12px;height:12px"> Daily'
-      +'</label>'
       +['7d','30d','All'].map(function(p){ return '<button type="button" class="btn ghost dash-period lp-btn-stroke" data-p="'+p+'" style="font-size:11px;padding:4px 8px">'+p+'</button>'; }).join('')
       +'</div>'
       +'<div id="dash-chart" style="min-height:200px"></div>'
@@ -5652,18 +5709,15 @@ function heroCtaCard(c){
     // Restore saved chart prefs — area chart is default star
     var _savedType=localStorage.getItem('lp_chart_type')||'area';
     var _savedPeriod=localStorage.getItem('lp_chart_period')||'30d';
-    var _savedPerDay=localStorage.getItem('lp_chart_perday')==='1';
     window._dashChartType=_savedType;
     window._dashChartPeriod=_savedPeriod;
+    window._dashChartPerDay=true;
     box.querySelectorAll('.dash-period').forEach(function(b){
       if(b.getAttribute('data-p')===_savedPeriod) _dashSetPeriodActive(b);
     });
     box.querySelectorAll('.dash-chart-type').forEach(function(b){
       if(b.getAttribute('data-ct')===_savedType) _dashSetChartTypeActive(b);
     });
-    // Apply saved per-day
-    var pdCheck=document.getElementById('dash-perday');
-    if(pdCheck) pdCheck.checked=_savedPerDay;
     // Wire chart type buttons
     box.querySelectorAll('.dash-chart-type').forEach(function(btn){
       btn.addEventListener('click',function(){
@@ -5672,11 +5726,6 @@ function heroCtaCard(c){
         localStorage.setItem('lp_chart_type',window._dashChartType);
         _dashDrawChart(window._dashChartPeriod||'30d');
       });
-    });
-    // Wire per-day toggle
-    if(pdCheck) pdCheck.addEventListener('change',function(){
-      localStorage.setItem('lp_chart_perday',pdCheck.checked?'1':'0');
-      _dashDrawChart(window._dashChartPeriod||'30d');
     });
     // Draw chart — retry until ANA data is available
     (function _tryChart(n){
@@ -5707,7 +5756,7 @@ function heroCtaCard(c){
     var bkSave=document.getElementById('dash-bk-save');
     var bkImport=document.getElementById('dash-bk-import');
     var bkFile=document.getElementById('dash-bk-file');
-    if(bkSave) bkSave.addEventListener('click',async function(){ bkSave.disabled=true; bkSave.textContent='Saving\u2026'; try{ await lpBkSave(); }catch(e){} bkSave.disabled=false; bkSave.textContent='+ Save now'; });
+    if(bkSave) bkSave.addEventListener('click',async function(){ bkSave.disabled=true; bkSave.textContent='Saving\u2026'; try{ await lpBkSave(); _dashLoadBk(); }catch(e){} bkSave.disabled=false; bkSave.textContent='+ Save now'; });
     if(bkImport) bkImport.addEventListener('click',function(){ bkFile.click(); });
     if(bkFile) bkFile.addEventListener('change', function(e){ lpBkImport(e); setTimeout(_dashLoadBk,2000); });
     var bkList=document.getElementById('dash-bk-list');
@@ -5717,13 +5766,13 @@ function heroCtaCard(c){
     var scAdd=document.getElementById('dash-scope-add');
     if(scAdd) scAdd.addEventListener('click',async function(){
       var txt=prompt('New task:'); if(!txt||!txt.trim()) return;
-      var scope=lpCurrentScope()||{items:[]};
+      var scope=JSON.parse(JSON.stringify(lpCurrentScope()||{items:[]}));
       if(!scope.items) scope.items=[];
       scope.items.push({text:txt.trim(),done:false,at:new Date().toISOString()});
-      _dashRenderScope(scope); // show immediately
       scAdd.disabled=true; scAdd.textContent='Saving…';
-      await lpScopeApply(scope);
+      var ok=await lpScopeApply(scope);
       scAdd.disabled=false; scAdd.textContent='+ Add task';
+      if(ok) _dashRenderScope(scope);
     });
 
     // Load data
@@ -5840,19 +5889,6 @@ function heroCtaCard(c){
       });
   }
 
-  function _dashSyncLeads(){
-    var src=document.getElementById('lp-leads');
-    var dst=document.getElementById('dash-leads-body');
-    if(!dst) return;
-    if(src&&src.innerHTML&&src.innerHTML.trim()){
-      dst.innerHTML=src.innerHTML;
-    } else {
-      var rows=LPLEADS&&LPLEADS.rows||[];
-      if(!rows.length) dst.innerHTML='<p style="color:var(--ink-soft);font-size:13px">No enquiries yet. When someone submits the quote form, they\u2019ll appear here.</p>';
-      else dst.innerHTML='<div class="ll-list">'+rows.map(lpLeadRow).join('')+'</div>';
-    }
-  }
-
   function _dashLoadBk(){
     var list=document.getElementById('dash-bk-list'); if(!list) return;
     if(!currentSiteId){ list.innerHTML='<p style="color:var(--ink-soft);font-size:13px">Save the site first to enable backups.</p>'; return; }
@@ -5863,13 +5899,15 @@ function heroCtaCard(c){
         if(!rows.length){ list.innerHTML='<p style="color:var(--ink-soft);font-size:13px">No backups yet. Click \u201c+ Save now\u201d to create one.</p>'; return; }
         list.innerHTML='<div style="display:flex;flex-direction:column;gap:6px">'+rows.map(function(bk){
           var dt=new Date(bk.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-          return '<div class="lp-dash-row-muted" style="display:flex;align-items:center;gap:10px;padding:10px 12px">'
-            +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--ink)">'+esc(bk.label||'Manual backup')+'</div>'
-            +'<div style="font-size:11px;color:var(--ink-soft)">'+dt+'</div></div>'
+          return '<div class="lp-dash-row-muted" style="padding:10px 12px">'
+            +'<div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px">'+esc(bk.label||'Manual backup')+'</div>'
+            +'<div style="font-size:11px;color:var(--ink-soft);margin-bottom:8px">'+dt+'</div>'
+            +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
             +'<button type="button" data-bk-restore="'+esc(bk.id)+'" class="ll-view lp-btn-stroke">Restore</button>'
-            +'</div>';
+            +'<button type="button" data-bk-dl="'+esc(bk.id)+'" class="ll-view lp-btn-stroke">Download</button>'
+            +'<button type="button" data-bk-del="'+esc(bk.id)+'" class="ll-view lp-btn-stroke">Delete</button>'
+            +'</div></div>';
         }).join('')+'</div>';
-        list.addEventListener('click',lpBkListClick);
       }).catch(function(e){ list.innerHTML='<p style="color:var(--ink-soft);font-size:13px">Could not load backups: '+esc(String(e&&e.message||e))+'</p>'; console.error('_dashLoadBk error',e); });
   }
 
@@ -5878,29 +5916,31 @@ function heroCtaCard(c){
     if(!scope) scope=lpCurrentScope();
     var items=(scope&&scope.items)||[];
     if(!items.length){ el.innerHTML='<p style="color:var(--ink-soft);font-size:13px">No tasks yet. Click \u201c+ Add task\u201d to start.</p>'; return; }
-    el.innerHTML='<div style="display:flex;flex-direction:column;gap:6px">'+items.map(function(item,idx){
+    el.innerHTML='<div class="lp-scope-list">'+items.map(function(item,idx){
       var done=item.done===true;
-      return '<div class="lp-dash-row'+(done?' lp-dash-row-muted':'')+'" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px">'
-        +'<input type="checkbox" data-dsc="'+idx+'" '+(done?'checked':'')+' style="width:15px;height:15px;margin-top:2px;cursor:pointer;accent-color:var(--accent);flex-shrink:0">'
-        +'<span style="flex:1;font-size:13px;line-height:1.5;'+(done?'text-decoration:line-through;color:var(--ink-soft)':'color:var(--ink)')+'">'+esc(item.text||item)+'</span>'
-        +(item.at?'<span style="font-size:10px;color:var(--ink-faint);white-space:nowrap;flex-shrink:0">'+new Date(item.at).toLocaleDateString('en-AU',{day:'numeric',month:'short'})+'</span>':'')
-        +'<button data-dsd="'+idx+'" style="background:none;border:0;color:var(--ink-faint);cursor:pointer;font-size:16px;padding:0;line-height:1;flex-shrink:0">\xd7</button>'
+      return '<div class="lp-dash-row'+(done?' lp-dash-row-muted':'')+' lp-scope-row">'
+        +'<label class="lp-scope-cb'+(done?' on':'')+'"><input type="checkbox" data-dsc="'+idx+'" '+(done?'checked':'')+'><span class="lp-scope-tick"></span></label>'
+        +'<span class="lp-scope-text'+(done?' done':'')+'">'+esc(item.text||item)+'</span>'
+        +(item.at?'<span class="lp-scope-date">'+new Date(item.at).toLocaleDateString('en-AU',{day:'numeric',month:'short'})+'</span>':'')
+        +'<button type="button" data-dsd="'+idx+'" class="lp-scope-del" aria-label="Remove task">\xd7</button>'
         +'</div>';
     }).join('')+'</div>';
     el.querySelectorAll('[data-dsc]').forEach(function(cb){
       cb.addEventListener('change',async function(){
-        var scope2=lpCurrentScope()||{items:[]}; var idx=parseInt(cb.getAttribute('data-dsc'),10);
+        var scope2=JSON.parse(JSON.stringify(lpCurrentScope()||{items:[]}));
+        var idx=parseInt(cb.getAttribute('data-dsc'),10);
         if(scope2.items[idx]) scope2.items[idx].done=cb.checked;
-        _dashRenderScope(scope2);
-        await lpScopeApply(scope2);
+        var ok=await lpScopeApply(scope2);
+        if(ok) _dashRenderScope(scope2);
       });
     });
     el.querySelectorAll('[data-dsd]').forEach(function(btn){
       btn.addEventListener('click',async function(){
-        var scope2=lpCurrentScope()||{items:[]}; var idx=parseInt(btn.getAttribute('data-dsd'),10);
+        var scope2=JSON.parse(JSON.stringify(lpCurrentScope()||{items:[]}));
+        var idx=parseInt(btn.getAttribute('data-dsd'),10);
         scope2.items.splice(idx,1);
-        _dashRenderScope(scope2);
-        await lpScopeApply(scope2);
+        var ok=await lpScopeApply(scope2);
+        if(ok) _dashRenderScope(scope2);
       });
     });
   }
@@ -5921,7 +5961,7 @@ function heroCtaCard(c){
     var CT=_dashChartTokens();
     window._dashChartPeriod=period||'30d';
     var chartType=window._dashChartType||'bar';
-    var perDay=!!(document.getElementById('dash-perday')&&document.getElementById('dash-perday').checked);
+    var perDay=window._dashChartPerDay!==false;
     var rawData=(typeof ANA!=='undefined'&&ANA.data)||[];
     if(!rawData.length){
       el.innerHTML='<div style="height:140px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:13px;border:1.5px dashed var(--line);border-radius:10px">No activity data yet. Stats will appear once the site starts receiving traffic.</div>';
@@ -6016,13 +6056,6 @@ function heroCtaCard(c){
     var enabled=(_siteApps||[]).filter(function(a){ return a.enabled; }).length;
     el.textContent=enabled||'\u2014';
   }
-
-  // Re-sync dashboard leads when leads refresh
-  var _origLpLeadsPaint=lpLeadsPaint;
-  lpLeadsPaint=function(){
-    _origLpLeadsPaint.apply(this,arguments);
-    if(document.getElementById('dash-leads-body')) _dashSyncLeads();
-  };
 
 
   lpBkEnsure();
