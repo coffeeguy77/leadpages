@@ -275,22 +275,30 @@
       if (mobile) {
         document.body.classList.add('lp-compact-chrome');
         while (inner.firstChild) inner.removeChild(inner.firstChild);
-        var publishTop = document.getElementById('lpc-drawer-top');
-        var tools = document.getElementById('lpc-tools');
-        var footer = document.getElementById('lpc-drawer-footer');
-        if (drawerSectionHasItems(publishTop) || phone) {
-          appendDrawerPiece(inner, publishTop, 'lp-drawer-section-label lp-drawer-publish-label', 'Publish');
+        var usedConfig = false;
+        if (global.LPMobileMenu && global.LPMobileMenu.applyDrawer) {
+          try {
+            usedConfig = !!global.LPMobileMenu.applyDrawer(inner, { phone: phone, mobile: mobile });
+          } catch (e) { usedConfig = false; }
         }
-        if (!phone || showSiteSwitcherInDrawer()) {
-          appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
-        }
-        appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label lp-drawer-builder-label', 'Builder Menu');
-        if (!phone) {
-          appendDrawerPiece(inner, document.getElementById('lpc-primary'), 'lp-drawer-section-label', 'Publishing & preview');
-        }
-        appendDrawerPiece(inner, tools, 'lp-drawer-section-label lp-drawer-tools-label', 'Site Tools');
-        if (drawerSectionHasItems(footer)) {
-          appendDrawerPiece(inner, footer, 'lp-drawer-section-label lp-drawer-footer-label', 'Account');
+        if (!usedConfig) {
+          var publishTop = document.getElementById('lpc-drawer-top');
+          var tools = document.getElementById('lpc-tools');
+          var footer = document.getElementById('lpc-drawer-footer');
+          if (drawerSectionHasItems(publishTop) || phone) {
+            appendDrawerPiece(inner, publishTop, 'lp-drawer-section-label lp-drawer-publish-label', 'Publish');
+          }
+          if (!phone || showSiteSwitcherInDrawer()) {
+            appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
+          }
+          appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label lp-drawer-builder-label', 'Builder Menu');
+          if (!phone) {
+            appendDrawerPiece(inner, document.getElementById('lpc-primary'), 'lp-drawer-section-label', 'Publishing & preview');
+          }
+          appendDrawerPiece(inner, tools, 'lp-drawer-section-label lp-drawer-tools-label', 'Site Tools');
+          if (drawerSectionHasItems(footer)) {
+            appendDrawerPiece(inner, footer, 'lp-drawer-section-label lp-drawer-footer-label', 'Account');
+          }
         }
         var prim = document.getElementById('lpc-primary');
         if (prim) prim.style.display = phone ? 'none' : '';

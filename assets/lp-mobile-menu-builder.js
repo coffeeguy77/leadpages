@@ -1,0 +1,719 @@
+/**
+ * Mobile command centre menu — config loader, role filter, drawer renderer, super-admin builder.
+ */
+(function (global) {
+  'use strict';
+
+  var API = '/api/admin-command-menu';
+  var config = null;
+  var defaults = null;
+  var loadPromise = null;
+
+  var ROLES = ['super', 'partner', 'client'];
+  var LAYOUTS = [
+    { id: 'stack', label: 'Stack (vertical)' },
+    { id: 'grid-2', label: '2-column grid' },
+    { id: 'tabs', label: 'Tabs (builder nav)' }
+  ];
+  var BUTTON_STYLES = [
+    { id: 'default', label: 'Default' },
+    { id: 'outline', label: 'Outline' },
+    { id: 'publish-duo', label: 'Publish pair' },
+    { id: 'nav', label: 'Nav tabs' },
+    { id: 'compact', label: 'Compact' }
+  ];
+  var SEPARATORS = [
+    { id: 'none', label: 'None' },
+    { id: 'line', label: 'Divider line' },
+    { id: 'space', label: 'Extra space' }
+  ];
+
+  var ACTION_CATALOG = {
+    'btn-publish': { label: 'Publish Live Site', group: 'Publish' },
+    'btn-viewlive': { label: 'View Live Site', group: 'Publish' },
+    'btn-settings': { label: 'Settings', group: 'Site Tools' },
+    'btn-appearance-aa': { label: 'Appearance', group: 'Site Tools' },
+    'btn-billing': { label: 'Billing', group: 'Site Tools' },
+    'btn-domains': { label: 'Domains', group: 'Site Tools' },
+    'lpc-partner-admin': { label: 'Partner Admin', group: 'Admin' },
+    'lpc-marketplace-admin': { label: 'Marketplace Admin', group: 'Admin' },
+    'lpc-partner-console': { label: 'Partner Console', group: 'Partner' },
+    'btn-newsite': { label: 'New Site', group: 'Site Tools' },
+    'btn-fav': { label: 'Favourite', group: 'Site Tools' },
+    'lpc-scope': { label: 'Scope', group: 'Site Tools' },
+    'lpc-backups': { label: 'Backups', group: 'Site Tools' },
+    'lpc-preview': { label: 'Live Preview', group: 'Preview' },
+    'btn-switch': { label: 'Switch Account', group: 'Account' },
+    'lp-mode-toggle': { label: 'Classic / Standard mode', group: 'Account' },
+    'lpc-drawer-signout': { label: 'Sign Out', group: 'Account' }
+  };
+
+  var SLOT_CATALOG = {
+    'lpc-context': { label: 'Site switcher', group: 'Slots' },
+    adminnav: { label: 'Builder tabs (adminnav)', group: 'Slots' },
+    'lpc-primary': { label: 'Publishing & preview', group: 'Slots' },
+    'lpc-drawer-top': { label: 'Publish row', group: 'Slots' },
+    'lpc-tools': { label: 'Tools container', group: 'Slots' },
+    'lpc-drawer-footer': { label: 'Account footer', group: 'Slots' }
+  };
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function deepClone(o) {
+    return JSON.parse(JSON.stringify(o));
+  }
+
+  function getUserRoles() {
+    if (typeof global.getUserMenuRoles === 'function') {
+      try { return global.getUserMenuRoles(); } catch (e) { /* ignore */ }
+    }
+    return ['super', 'partner', 'client'];
+  }
+
+  function rolesMatch(required, userRoles) {
+    if (!required || !required.length) return true;
+    var u = userRoles || getUserRoles();
+    for (var i = 0; i < required.length; i++) {
+      if (u.indexOf(required[i]) >= 0) return true;
+    }
+    return false;
+  }
+
+  async function getToken() {
+    try {
+      if (global.sb && global.sb.auth) {
+        var s = await global.sb.auth.getSession();
+        return s && s.data && s.data.session && s.data.session.access_token;
+      }
+    } catch (e) { /* ignore */ }
+    return null;
+  }
+
+  async function load(force) {
+    if (!force && config) return config;
+    if (!force && loadPromise) return loadPromise;
+    loadPromise = (async function () {
+      try {
+        var tk = await getToken();
+        var r = await fetch(API, { headers: tk ? { Authorization: 'Bearer ' + tk } : {} });
+        var j = await r.json();
+        if (j && j.ok) {
+          config = j.content;
+          defaults = j.defaults || j.content;
+        }
+      } catch (e) { /* use baked-in default */ }
+      if (!config) {
+        config = deepClone(FALLBACK_DEFAULT);
+        defaults = deepClone(FALLBACK_DEFAULT);
+      }
+      return config;
+    })();
+    return loadPromise;
+  }
+
+  var FALLBACK_DEFAULT = {
+    version: 1,
+    sections: [
+      { id: 'publish', title: 'Publish', layout: 'stack', buttonStyle: 'publish-duo', separator: 'none', roles: ['super', 'partner', 'client'], items: [{ id: 'btn-publish' }, { id: 'btn-viewlive' }] },
+      { id: 'site', title: 'Site', layout: 'stack', buttonStyle: 'default', separator: 'line', roles: ['super', 'partner'], condition: 'site-switcher', slot: 'lpc-context' },
+      { id: 'builder', title: 'Builder Menu', layout: 'tabs', buttonStyle: 'nav', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'adminnav' },
+      { id: 'tools', title: 'Site Tools', layout: 'stack', buttonStyle: 'outline', separator: 'line', roles: ['super', 'partner', 'client'], items: [
+        { id: 'btn-settings', roles: ['super', 'partner', 'client'] },
+        { id: 'btn-appearance-aa', roles: ['super', 'partner', 'client'] },
+        { id: 'btn-billing', roles: ['super', 'partner', 'client'] },
+        { id: 'btn-domains', roles: ['super', 'partner', 'client'] },
+        { id: 'lpc-partner-admin', roles: ['super'] },
+        { id: 'lpc-marketplace-admin', roles: ['super'] },
+        { id: 'lpc-partner-console', roles: ['partner'] }
+      ] },
+      { id: 'account', title: 'Account', layout: 'stack', buttonStyle: 'outline', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'lpc-drawer-footer', items: [
+        { id: 'btn-switch', roles: ['super'] },
+        { id: 'lpc-drawer-signout', roles: ['super', 'partner', 'client'] }
+      ] }
+    ]
+  };
+
+  function getConfig() {
+    return config || deepClone(FALLBACK_DEFAULT);
+  }
+
+  function sectionVisible(sec, opts) {
+    if (!rolesMatch(sec.roles)) return false;
+    if (sec.condition === 'site-switcher') {
+      if (opts && opts.phone) {
+        if (typeof global.lpDrawerShowSiteSwitcher === 'function') {
+          try { return !!global.lpDrawerShowSiteSwitcher(); } catch (e) { return false; }
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function visibleItems(sec, userRoles) {
+    var items = sec.items || [];
+    return items.filter(function (it) {
+      return rolesMatch(it.roles || sec.roles, userRoles);
+    });
+  }
+
+  function elVisible(el) {
+    if (!el || el.nodeType !== 1) return false;
+    if (el.style && el.style.display === 'none') return false;
+    var cs = global.getComputedStyle ? global.getComputedStyle(el) : null;
+    return !cs || cs.display !== 'none';
+  }
+
+  function slotHasContent(slotId) {
+    var el = document.getElementById(slotId);
+    if (!el) return false;
+    if (slotId === 'adminnav') {
+      return Array.prototype.some.call(el.querySelectorAll('.anav-btn'), function (b) {
+        return elVisible(b);
+      });
+    }
+    return Array.prototype.some.call(el.children, function (c) { return elVisible(c); });
+  }
+
+  function applyButtonStyle(wrap, style, sec) {
+    wrap.classList.add('lp-mm-sec');
+    wrap.classList.add('lp-mm-layout-' + (sec.layout || 'stack'));
+    wrap.classList.add('lp-mm-style-' + (style || 'default'));
+    if (sec.separator && sec.separator !== 'none') {
+      wrap.classList.add('lp-mm-sep-' + sec.separator);
+    }
+  }
+
+  function moveItemToRow(itemId, row) {
+    if (!row) return;
+    var el = document.getElementById(itemId);
+    if (el && el.parentNode !== row) row.appendChild(el);
+  }
+
+  function buildSectionRow(sec) {
+    var row = document.createElement('div');
+    row.className = 'lp-mm-sec-body';
+    row.setAttribute('data-mm-sec', sec.id);
+    applyButtonStyle(row, sec.buttonStyle, sec);
+
+    if (sec.slot) {
+      var slotEl = sec.slot === 'adminnav'
+        ? document.querySelector('.adminnav')
+        : document.getElementById(sec.slot);
+      if (slotEl) {
+        if (sec.slot === 'lpc-drawer-footer') {
+          var footer = document.getElementById('lpc-drawer-footer');
+          if (footer) {
+            footer.innerHTML = '';
+            var vis = visibleItems(sec);
+            vis.forEach(function (it) { moveItemToRow(it.id, footer); });
+            if (footer.children.length) row.appendChild(footer);
+          }
+        } else if (slotEl.parentNode !== row) {
+          row.appendChild(slotEl);
+        }
+      }
+    } else if (sec.items && sec.items.length) {
+      var visItems = visibleItems(sec);
+      visItems.forEach(function (it) {
+        moveItemToRow(it.id, row);
+      });
+    }
+    return row;
+  }
+
+  function sectionHasContent(sec, row) {
+    if (sec.slot) {
+      if (sec.slot === 'lpc-drawer-footer') {
+        var f = document.getElementById('lpc-drawer-footer');
+        return f && f.children.length > 0;
+      }
+      return slotHasContent(sec.slot === 'adminnav' ? 'adminnav' : sec.slot);
+    }
+    if (!row) return false;
+    return Array.prototype.some.call(row.children, function (c) { return elVisible(c); });
+  }
+
+  function renderPhoneDrawer(inner, opts) {
+    opts = opts || {};
+    var cfg = getConfig();
+    var userRoles = getUserRoles();
+    if (!inner || !cfg || !cfg.sections) return false;
+
+    while (inner.firstChild) inner.removeChild(inner.firstChild);
+
+    cfg.sections.forEach(function (sec) {
+      if (!sectionVisible(sec, opts)) return;
+
+      var row = buildSectionRow(sec);
+      if (!sectionHasContent(sec, row)) return;
+
+      if (sec.title) {
+        var lbl = document.createElement('div');
+        lbl.className = 'lp-drawer-section-label lp-mm-label lp-mm-label-' + sec.id;
+        lbl.textContent = sec.title;
+        inner.appendChild(lbl);
+      }
+      inner.appendChild(row);
+    });
+
+    document.body.classList.toggle('lp-mm-configured', true);
+    return true;
+  }
+
+  function renderTabletDrawer(inner, opts) {
+    opts = opts || {};
+    var cfg = getConfig();
+    if (!inner || !cfg || !cfg.sections) return false;
+
+    while (inner.firstChild) inner.removeChild(inner.firstChild);
+
+    cfg.sections.forEach(function (sec) {
+      if (!sectionVisible(sec, opts)) return;
+      if (sec.id === 'site' && sec.condition === 'site-switcher') {
+        /* tablet always shows site section */
+      }
+
+      var targetSlot = null;
+      if (sec.id === 'publish') targetSlot = document.getElementById('lpc-drawer-top');
+      else if (sec.id === 'site') targetSlot = document.getElementById('lpc-context');
+      else if (sec.id === 'builder') targetSlot = document.querySelector('.adminnav');
+      else if (sec.id === 'tools') targetSlot = document.getElementById('lpc-tools');
+      else if (sec.id === 'account') targetSlot = document.getElementById('lpc-drawer-footer');
+      else if (sec.slot) targetSlot = sec.slot === 'adminnav' ? document.querySelector('.adminnav') : document.getElementById(sec.slot);
+
+      if (!targetSlot) return;
+
+      var wrap = document.createElement('div');
+      wrap.className = 'lp-mm-tablet-block';
+      applyButtonStyle(wrap, sec.buttonStyle, sec);
+
+      if (sec.title) {
+        var lbl = document.createElement('div');
+        lbl.className = 'lp-drawer-section-label lp-mm-label lp-mm-label-' + sec.id;
+        lbl.textContent = sec.title;
+        wrap.appendChild(lbl);
+      }
+
+      if (sec.slot === 'lpc-drawer-footer' || sec.id === 'account') {
+        var footer = document.getElementById('lpc-drawer-footer');
+        if (footer) {
+          var vis = visibleItems(sec);
+          vis.forEach(function (it) { moveItemToRow(it.id, footer); });
+          if (footer.children.length) wrap.appendChild(footer);
+        }
+      } else if (targetSlot.parentNode !== wrap) {
+        wrap.appendChild(targetSlot);
+      }
+
+      if (!sectionHasContent(sec, wrap)) return;
+      inner.appendChild(wrap);
+    });
+
+    var prim = document.getElementById('lpc-primary');
+    if (prim && !opts.phone) {
+      var hasPrim = Array.prototype.some.call(prim.children, function (c) { return elVisible(c); });
+      if (hasPrim) {
+        var primWrap = document.createElement('div');
+        primWrap.className = 'lp-mm-tablet-block';
+        var pl = document.createElement('div');
+        pl.className = 'lp-drawer-section-label';
+        pl.textContent = 'Publishing & preview';
+        primWrap.appendChild(pl);
+        primWrap.appendChild(prim);
+        inner.appendChild(primWrap);
+      }
+    }
+
+    return true;
+  }
+
+  function applyDrawer(inner, opts) {
+    if (!inner) return false;
+    if (opts.phone) return renderPhoneDrawer(inner, opts);
+    return renderTabletDrawer(inner, opts);
+  }
+
+  function invalidate() {
+    config = null;
+    loadPromise = null;
+  }
+
+  async function save(newConfig) {
+    var tk = await getToken();
+    var r = await fetch(API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + (tk || '')
+      },
+      body: JSON.stringify({ content: newConfig })
+    });
+    var j = await r.json();
+    if (j && j.ok) {
+      config = deepClone(newConfig);
+      if (global.LPAdminShell && global.LPAdminShell.moveChrome) {
+        global.LPAdminShell.moveChrome();
+      }
+    }
+    return j;
+  }
+
+  function roleCheckboxes(selected, prefix) {
+    return ROLES.map(function (r) {
+      var on = !selected || !selected.length || selected.indexOf(r) >= 0;
+      var label = r === 'super' ? 'Super admin' : (r === 'partner' ? 'Partner' : 'Client');
+      return '<label class="mmb-role"><input type="checkbox" data-' + prefix + '-role="' + r + '"' + (on ? ' checked' : '') + '> ' + label + '</label>';
+    }).join('');
+  }
+
+  function injectBuilderCss() {
+    if (document.getElementById('lp-mm-builder-css')) return;
+    var s = document.createElement('style');
+    s.id = 'lp-mm-builder-css';
+    s.textContent = ''
+      + '#mm-builder{position:fixed;inset:0;z-index:9999;background:rgba(16,22,32,.55);overflow:auto;padding:24px 12px;}'
+      + '#mm-builder .mmb-card{max-width:960px;margin:0 auto;background:var(--bg,#faf9f6);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:24px;}'
+      + '#mm-builder .mmb-sec{border:1px solid var(--line,#e3e3e0);border-radius:14px;padding:14px 16px;margin-bottom:12px;background:#fff;}'
+      + '#mm-builder .mmb-sec-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}'
+      + '#mm-builder .mmb-sec-head input[type=text]{flex:1;min-width:140px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;}'
+      + '#mm-builder .mmb-sec-actions{display:flex;gap:6px;margin-left:auto;}'
+      + '#mm-builder .mmb-mini{font:inherit;font-size:12px;padding:5px 9px;border-radius:7px;border:1px solid var(--line);background:#f7f6f1;cursor:pointer;}'
+      + '#mm-builder .mmb-mini:hover{background:#ecebe5;}'
+      + '#mm-builder .mmb-mini.danger{color:#b42318;border-color:#f0c8c2;}'
+      + '#mm-builder .mmb-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;}'
+      + '#mm-builder .mmb-f{flex:1;min-width:140px;}'
+      + '#mm-builder .mmb-f label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#6c6c68;}'
+      + '#mm-builder .mmb-f select,#mm-builder .mmb-f input[type=text]{width:100%;font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;}'
+      + '#mm-builder .mmb-roles{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;}'
+      + '#mm-builder .mmb-role{display:flex;align-items:center;gap:5px;}'
+      + '#mm-builder .mmb-items{margin-top:8px;}'
+      + '#mm-builder .mmb-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0efea;font-size:13px;}'
+      + '#mm-builder .mmb-item:last-child{border-bottom:none;}'
+      + '#mm-builder .mmb-item-name{flex:1;font-weight:500;}'
+      + '#mm-builder .mmb-add-row{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;}'
+      + '#mm-builder .mmb-preview{margin-top:16px;border:1px dashed var(--line);border-radius:14px;padding:14px;background:#f9f8f4;max-width:360px;}'
+      + '#mm-builder .mmb-preview h3{margin:0 0 10px;font-size:14px;}'
+      + '#mm-builder .mmb-psec{margin-bottom:10px;}'
+      + '#mm-builder .mmb-psec-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#8a8a82;margin-bottom:5px;}'
+      + '#mm-builder .mmb-pbtn{display:block;width:100%;padding:8px;margin-bottom:5px;border-radius:8px;font-size:13px;text-align:center;border:1px solid var(--line);background:#fff;}'
+      + '#mm-builder .mmb-pbtn.primary{background:var(--accent,#1f7a63);color:#fff;border-color:transparent;}'
+      + '#mm-builder .mmb-pbtn.outline{background:transparent;}'
+      + '#mm-builder .mmb-pgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}'
+      + '#mm-builder .mmb-msg{font-size:13px;margin-left:8px;}';
+    document.head.appendChild(s);
+  }
+
+  function itemLabel(id) {
+    var c = ACTION_CATALOG[id];
+    return c ? c.label : id;
+  }
+
+  function renderBuilderSection(sec, idx, draft) {
+    var itemsHtml = (sec.items || []).map(function (it, i) {
+      return '<div class="mmb-item" data-sec="' + idx + '" data-item="' + i + '">'
+        + '<span class="mmb-item-name">' + esc(itemLabel(it.id)) + '</span>'
+        + '<span class="mmb-roles">' + roleCheckboxes(it.roles || sec.roles, 'item') + '</span>'
+        + '<button type="button" class="mmb-mini mmb-item-up" data-sec="' + idx + '" data-item="' + i + '">\u2191</button>'
+        + '<button type="button" class="mmb-mini mmb-item-down" data-sec="' + idx + '" data-item="' + i + '">\u2193</button>'
+        + '<button type="button" class="mmb-mini danger mmb-item-rm" data-sec="' + idx + '" data-item="' + i + '">Remove</button>'
+        + '</div>';
+    }).join('');
+
+    var layoutOpts = LAYOUTS.map(function (l) {
+      return '<option value="' + l.id + '"' + (sec.layout === l.id ? ' selected' : '') + '>' + l.label + '</option>';
+    }).join('');
+    var styleOpts = BUTTON_STYLES.map(function (l) {
+      return '<option value="' + l.id + '"' + (sec.buttonStyle === l.id ? ' selected' : '') + '>' + l.label + '</option>';
+    }).join('');
+    var sepOpts = SEPARATORS.map(function (l) {
+      return '<option value="' + l.id + '"' + (sec.separator === l.id ? ' selected' : '') + '>' + l.label + '</option>';
+    }).join('');
+
+    var slotOpts = '<option value="">— items list —</option>'
+      + Object.keys(SLOT_CATALOG).map(function (k) {
+        return '<option value="' + k + '"' + (sec.slot === k ? ' selected' : '') + '>' + esc(SLOT_CATALOG[k].label) + '</option>';
+      }).join('');
+
+    var itemOpts = Object.keys(ACTION_CATALOG).map(function (k) {
+      return '<option value="' + k + '">' + esc(ACTION_CATALOG[k].label) + '</option>';
+    }).join('');
+
+    return '<div class="mmb-sec" data-sec-idx="' + idx + '">'
+      + '<div class="mmb-sec-head">'
+      + '<input type="text" data-sec-title value="' + esc(sec.title || '') + '" placeholder="Section title">'
+      + '<div class="mmb-sec-actions">'
+      + '<button type="button" class="mmb-mini mmb-sec-up" data-idx="' + idx + '">\u2191</button>'
+      + '<button type="button" class="mmb-mini mmb-sec-down" data-idx="' + idx + '">\u2193</button>'
+      + '<button type="button" class="mmb-mini danger mmb-sec-rm" data-idx="' + idx + '">Delete</button>'
+      + '</div></div>'
+      + '<div class="mmb-row">'
+      + '<div class="mmb-f"><label>Layout</label><select data-sec-layout>' + layoutOpts + '</select></div>'
+      + '<div class="mmb-f"><label>Button style</label><select data-sec-style>' + styleOpts + '</select></div>'
+      + '<div class="mmb-f"><label>Separator</label><select data-sec-sep>' + sepOpts + '</select></div>'
+      + '<div class="mmb-f"><label>Content slot</label><select data-sec-slot>' + slotOpts + '</select></div>'
+      + '</div>'
+      + '<div class="mmb-f"><label>Who can see this section</label><div class="mmb-roles">' + roleCheckboxes(sec.roles, 'sec') + '</div></div>'
+      + (sec.items ? ('<div class="mmb-items">' + itemsHtml + '</div>'
+        + '<div class="mmb-add-row"><select data-sec-add-item="' + idx + '"><option value="">Add menu item…</option>' + itemOpts + '</select></div>') : '')
+      + '</div>';
+  }
+
+  function previewHtml(draft) {
+    var roles = ['super', 'partner', 'client'];
+    var html = '';
+    (draft.sections || []).forEach(function (sec) {
+      if (!rolesMatch(sec.roles, roles)) return;
+      html += '<div class="mmb-psec">';
+      if (sec.title) html += '<div class="mmb-psec-title">' + esc(sec.title) + '</div>';
+      if (sec.slot === 'adminnav') {
+        html += '<div class="mmb-pbtn outline">Dashboard</div><div class="mmb-pbtn outline">Details</div>';
+      } else if (sec.items) {
+        var grid = sec.layout === 'grid-2';
+        if (grid) html += '<div class="mmb-pgrid">';
+        sec.items.forEach(function (it) {
+          if (!rolesMatch(it.roles || sec.roles, roles)) return;
+          var cls = 'mmb-pbtn';
+          if (sec.buttonStyle === 'outline') cls += ' outline';
+          if (it.id === 'btn-publish') cls += ' primary';
+          html += '<div class="' + cls + '">' + esc(itemLabel(it.id)) + '</div>';
+        });
+        if (grid) html += '</div>';
+      }
+      html += '</div>';
+    });
+    return html || '<p style="font-size:13px;color:#999;">No sections visible for preview roles.</p>';
+  }
+
+  function readDraftFromDom(root, draft) {
+    root.querySelectorAll('.mmb-sec').forEach(function (secEl) {
+      var idx = parseInt(secEl.getAttribute('data-sec-idx'), 10);
+      var sec = draft.sections[idx];
+      if (!sec) return;
+      var t = secEl.querySelector('[data-sec-title]');
+      if (t) sec.title = t.value;
+      var lay = secEl.querySelector('[data-sec-layout]');
+      if (lay) sec.layout = lay.value;
+      var sty = secEl.querySelector('[data-sec-style]');
+      if (sty) sec.buttonStyle = sty.value;
+      var sep = secEl.querySelector('[data-sec-sep]');
+      if (sep) sec.separator = sep.value;
+      var slot = secEl.querySelector('[data-sec-slot]');
+      if (slot) {
+        sec.slot = slot.value || undefined;
+        if (!sec.slot) delete sec.slot;
+      }
+      sec.roles = [];
+      secEl.querySelectorAll('[data-sec-role]').forEach(function (cb) {
+        if (cb.checked) sec.roles.push(cb.getAttribute('data-sec-role'));
+      });
+      if (!sec.roles.length) sec.roles = ['super', 'partner', 'client'];
+
+      if (sec.items) {
+        secEl.querySelectorAll('.mmb-item').forEach(function (itemEl, i) {
+          if (!sec.items[i]) return;
+          sec.items[i].roles = [];
+          itemEl.querySelectorAll('[data-item-role]').forEach(function (cb) {
+            if (cb.checked) sec.items[i].roles.push(cb.getAttribute('data-item-role'));
+          });
+        });
+      }
+    });
+    return draft;
+  }
+
+  function rerenderBuilder(body, draft) {
+    body.innerHTML = draft.sections.map(function (s, i) {
+      return renderBuilderSection(s, i, draft);
+    }).join('')
+      + '<button type="button" class="btn ghost" id="mmb-add-sec">+ Add section</button>'
+      + '<div class="mmb-preview" id="mmb-preview"><h3>Phone preview (all roles)</h3><div id="mmb-preview-body">' + previewHtml(draft) + '</div></div>';
+    wireBuilderEvents(body, draft);
+  }
+
+  function wireBuilderEvents(body, draft) {
+    function sync() {
+      readDraftFromDom(body, draft);
+      var prev = document.getElementById('mmb-preview-body');
+      if (prev) prev.innerHTML = previewHtml(draft);
+    }
+
+    body.addEventListener('change', function (e) {
+      if (e.target.matches('[data-sec-add-item]')) {
+        var idx = parseInt(e.target.getAttribute('data-sec-add-item'), 10);
+        var id = e.target.value;
+        if (id && draft.sections[idx]) {
+          if (!draft.sections[idx].items) draft.sections[idx].items = [];
+          draft.sections[idx].items.push({ id: id, roles: draft.sections[idx].roles.slice() });
+          rerenderBuilder(body, draft);
+        }
+        e.target.value = '';
+        return;
+      }
+      sync();
+    });
+    body.addEventListener('input', sync);
+
+    body.addEventListener('click', function (e) {
+      var up = e.target.closest('.mmb-sec-up');
+      if (up) {
+        var i = parseInt(up.getAttribute('data-idx'), 10);
+        if (i > 0) {
+          var tmp = draft.sections[i - 1];
+          draft.sections[i - 1] = draft.sections[i];
+          draft.sections[i] = tmp;
+          rerenderBuilder(body, draft);
+        }
+        return;
+      }
+      var dn = e.target.closest('.mmb-sec-down');
+      if (dn) {
+        var j = parseInt(dn.getAttribute('data-idx'), 10);
+        if (j < draft.sections.length - 1) {
+          var t2 = draft.sections[j + 1];
+          draft.sections[j + 1] = draft.sections[j];
+          draft.sections[j] = t2;
+          rerenderBuilder(body, draft);
+        }
+        return;
+      }
+      var rm = e.target.closest('.mmb-sec-rm');
+      if (rm) {
+        var k = parseInt(rm.getAttribute('data-idx'), 10);
+        draft.sections.splice(k, 1);
+        rerenderBuilder(body, draft);
+        return;
+      }
+      var iu = e.target.closest('.mmb-item-up');
+      if (iu) {
+        var si = parseInt(iu.getAttribute('data-sec'), 10);
+        var ii = parseInt(iu.getAttribute('data-item'), 10);
+        var arr = draft.sections[si] && draft.sections[si].items;
+        if (arr && ii > 0) {
+          var t3 = arr[ii - 1]; arr[ii - 1] = arr[ii]; arr[ii] = t3;
+          rerenderBuilder(body, draft);
+        }
+        return;
+      }
+      var idn = e.target.closest('.mmb-item-down');
+      if (idn) {
+        var si2 = parseInt(idn.getAttribute('data-sec'), 10);
+        var ii2 = parseInt(idn.getAttribute('data-item'), 10);
+        var arr2 = draft.sections[si2] && draft.sections[si2].items;
+        if (arr2 && ii2 < arr2.length - 1) {
+          var t4 = arr2[ii2 + 1]; arr2[ii2 + 1] = arr2[ii2]; arr2[ii2] = t4;
+          rerenderBuilder(body, draft);
+        }
+        return;
+      }
+      var irm = e.target.closest('.mmb-item-rm');
+      if (irm) {
+        var si3 = parseInt(irm.getAttribute('data-sec'), 10);
+        var ii3 = parseInt(irm.getAttribute('data-item'), 10);
+        if (draft.sections[si3] && draft.sections[si3].items) {
+          draft.sections[si3].items.splice(ii3, 1);
+          rerenderBuilder(body, draft);
+        }
+      }
+    });
+
+    var addSec = document.getElementById('mmb-add-sec');
+    if (addSec) {
+      addSec.addEventListener('click', function () {
+        draft.sections.push({
+          id: 'sec-' + Date.now(),
+          title: 'New section',
+          layout: 'stack',
+          buttonStyle: 'outline',
+          separator: 'line',
+          roles: ['super', 'partner', 'client'],
+          items: []
+        });
+        rerenderBuilder(body, draft);
+      });
+    }
+  }
+
+  function closeBuilder() {
+    var p = document.getElementById('mm-builder');
+    if (p) p.remove();
+  }
+
+  async function openBuilder() {
+    closeBuilder();
+    injectBuilderCss();
+    await load(true);
+    var draft = deepClone(getConfig());
+
+    var p = document.createElement('div');
+    p.id = 'mm-builder';
+    p.innerHTML = '<div class="mmb-card">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">'
+      + '<div><h1 style="margin:0;font:700 24px/1.1 var(--font-display,Georgia),serif;">Mobile command menu</h1>'
+      + '<p class="lede" style="margin:6px 0 0;">Configure the phone mega menu for the command centre — sections, layouts, separators, button styles, and role access.</p></div>'
+      + '<div><button type="button" class="btn ghost" id="mmb-close">Close</button></div></div>'
+      + '<div id="mmb-body"></div>'
+      + '<div style="margin-top:16px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;">'
+      + '<button type="button" class="btn" id="mmb-save">Save menu</button>'
+      + '<button type="button" class="btn ghost" id="mmb-reset">Reset to defaults</button>'
+      + '<span class="mmb-msg" id="mmb-msg"></span></div></div>';
+    document.body.appendChild(p);
+
+    var body = document.getElementById('mmb-body');
+    rerenderBuilder(body, draft);
+
+    document.getElementById('mmb-close').addEventListener('click', closeBuilder);
+    p.addEventListener('click', function (e) { if (e.target === p) closeBuilder(); });
+
+    document.getElementById('mmb-reset').addEventListener('click', function () {
+      if (!global.confirm('Reset the mobile menu to factory defaults?')) return;
+      draft = deepClone(defaults || FALLBACK_DEFAULT);
+      rerenderBuilder(body, draft);
+    });
+
+    document.getElementById('mmb-save').addEventListener('click', async function () {
+      var btn = this;
+      var msg = document.getElementById('mmb-msg');
+      readDraftFromDom(body, draft);
+      btn.disabled = true;
+      msg.textContent = 'Saving…';
+      msg.style.color = '';
+      try {
+        var j = await save(draft);
+        btn.disabled = false;
+        if (j && j.ok) {
+          msg.textContent = 'Saved — open the phone menu to see changes.';
+          msg.style.color = '#0a7d33';
+        } else {
+          msg.textContent = (j && j.error) || 'Save failed';
+          msg.style.color = '#b42318';
+        }
+      } catch (e) {
+        btn.disabled = false;
+        msg.textContent = 'Save failed';
+        msg.style.color = '#b42318';
+      }
+    });
+  }
+
+  global.LPMobileMenu = {
+    load: load,
+    getConfig: getConfig,
+    getUserRoles: getUserRoles,
+    applyDrawer: applyDrawer,
+    openBuilder: openBuilder,
+    invalidate: invalidate,
+    save: save,
+    ACTION_CATALOG: ACTION_CATALOG,
+    SLOT_CATALOG: SLOT_CATALOG,
+    ROLES: ROLES
+  };
+
+  global.openMobileMenuBuilder = openBuilder;
+})(typeof window !== 'undefined' ? window : globalThis);

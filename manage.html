@@ -500,6 +500,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js"></script>
 <script src="/assets/lp-admin-shell.js"></script>
+<script src="/assets/lp-mobile-menu-builder.js"></script>
 <script src="/icons.js"></script>
 </head>
 <body data-lp-admin-page="manage">
@@ -1793,6 +1794,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var __pa=document.getElementById('lp-partneradmin-top'); if(__pa) __pa.style.display=(role==='super')?'':'none';
     var __mt=document.getElementById('lp-mode-toggle'); if(__mt) __mt.style.display=(role==='super'||role==='broker')?'':'none';
     await loadSitesFromDB();
+    if(window.LPMobileMenu&&LPMobileMenu.load){ try{ await LPMobileMenu.load(); }catch(_e){} }
     applyRoleGating();
     initEditorMode();
     ensureSiteBar();
@@ -3078,6 +3080,7 @@ function heroCtaCard(c){
     p.innerHTML='<div class="sp-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h1 style="margin:0;font:700 26px/1.1 var(--font-display,Georgia),serif;">Settings</h1><button type="button" id="set-close" class="btn ghost">Close</button></div>'
       +'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Appearance &amp; Accessibility</h2><p class="lede" style="margin:0 0 12px;">Workspace theme for the command centre, plus published page visitor settings for this site.</p><button type="button" class="btn" id="open-aa-inline">Workspace appearance</button> <button type="button" class="btn ghost" id="open-aa-published">Published page settings</button></div>'
       +detailFields
+      +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Mobile command menu</h2><p class="lede" style="margin:0 0 12px;">Design the phone mega menu for the command centre — section order, layouts, separators, button styles, and which roles see each item (super admin, partner, client).</p><button type="button" class="btn" id="open-mobile-menu">Edit mobile menu</button></div>':'')
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced. The suspended page is what the public sees when a site is paused for non-payment.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button> <button type="button" class="btn ghost" id="open-susp">Edit suspended page</button></div>':'')
       +window.__tradeStarterCard(currentRole==='super')
       +danger
@@ -3094,6 +3097,7 @@ function heroCtaCard(c){
     var dmo=$('set-demo'); if(dmo) dmo.addEventListener('change',function(){ if(currentSiteId) lplToggleDemo(currentSiteId); });
     var opb=$('open-plans'); if(opb) opb.addEventListener('click',openPlansPage);
     var osp=$('open-susp'); if(osp) osp.addEventListener('click',openSuspendedEditor);
+    var omm=$('open-mobile-menu'); if(omm) omm.addEventListener('click',function(){ closeSettingsPage(); if(typeof openMobileMenuBuilder==='function') openMobileMenuBuilder(); });
     // wire service starter content
     (function(){ var c=c0(); var ct=(c.trade||'').toLowerCase().trim(); var slug='plumber';
       if(ct){ if(ct==='plumber'){ slug='plumber'; } else if(TRADE_PACKS[ct]){ slug=ct; } else { for(var kk in TRADE_PACKS){ var lb=window.__tradeLabel(kk).toLowerCase(); if(lb===ct||lb.indexOf(ct)===0||(TRADE_PACKS[kk].tradeType||'').toLowerCase()===ct){ slug=kk; break; } } } }
@@ -4769,6 +4773,15 @@ function heroCtaCard(c){
     if(window.LPAdminShell&&LPAdminShell.moveChrome) LPAdminShell.moveChrome();
   }
   window.lpRefreshCmdDrawer=function(){ ensureSiteBar(); layoutCmdCard(); };
+  window.getUserMenuRoles=function(){
+    var roles=[];
+    var role=currentRole||'';
+    if(role==='super') roles.push('super');
+    if(role==='broker') roles.push('partner');
+    if(role!=='super'&&role!=='leads') roles.push('client');
+    if(role==='broker'&&roles.indexOf('client')<0) roles.push('client');
+    return roles.length?roles:['client'];
+  };
   window.lpDrawerShowSiteSwitcher=function(){
     var role=currentRole||'';
     if(role!=='super'&&role!=='broker') return false;
