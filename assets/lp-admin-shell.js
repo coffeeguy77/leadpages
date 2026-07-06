@@ -117,7 +117,8 @@
     drawer.className = 'lp-admin-drawer';
     drawer.setAttribute('aria-hidden', 'true');
     drawer.innerHTML =
-      '<div class="lp-drawer-head"><span>Menu</span>'
+      '<div class="lp-drawer-head">'
+      + '<div class="lp-drawer-brand"><img class="leadpages-logo lp-drawer-logo" data-lp-logo="auto" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665886/leadpages-logo-white.png" alt="LeadPages"><span class="lp-drawer-title">Command Centre</span></div>'
       + '<button type="button" class="lp-drawer-close" id="lp-drawer-close" aria-label="Close menu">&#10005;</button></div>'
       + '<div class="lp-drawer-body" id="lp-admin-drawer-inner"></div>';
 

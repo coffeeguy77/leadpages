@@ -132,7 +132,7 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .anav-btn{appearance:none;background:none;border:none;cursor:pointer;font-family:var(--font-ui);font-size:14.5px;font-weight:600;color:var(--ink-soft);padding:10px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;}
 .anav-btn[aria-selected="true"]{color:var(--accent-hover);border-bottom-color:var(--accent);}
 .lsub-row{flex-wrap:wrap;}
-.lsub-extra{margin:-8px 0 22px;padding:11px 14px 4px;background:#faf9f6;border:1px solid var(--line);border-radius:12px;}
+.lsub-extra{margin:-8px 0 22px;padding:11px 14px 4px;background:var(--panel-soft);border:1px solid var(--line);border-radius:12px;}
 .lsub-extra-label{display:block;font-family:var(--font-ui);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 2px 2px;}
 .lsub-extra-nav{border-bottom:none;margin:0;gap:2px 4px;}
 .lsub-extra .anav-btn{padding:8px 11px;font-size:13.5px;}
@@ -2406,9 +2406,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     h+='</div>';
     h+='<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">';
     fields.forEach(function(f){ var key=f[0],label=f[1],ta=f[2]==='ta'; var _full=(ta||f[2]==='image'); var fst=' style="margin:0;'+(_full?'flex:1 1 100%;':'flex:1 1 calc(50% - 6px);min-width:190px;')+'"'; var ph=String(def[key]||'').replace(/\{\{\s*businessName\s*\}\}/g,currentBusinessName||'').replace(/"/g,'&quot;');
-      if(ta) h+='<div class="f"'+fst+'><label>'+label+'</label><textarea id="sec-'+id+'-'+key+'" rows="2" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;" placeholder="'+ph+'"></textarea></div>';
+      if(ta) h+='<div class="f"'+fst+'><label>'+label+'</label><textarea class="tin" id="sec-'+id+'-'+key+'" rows="2" placeholder="'+ph+'"></textarea></div>';
       else if(f[2]==='image') h+='<div class="f"'+fst+'><label>'+label+'</label>'+cwImgHTML('id="sec-'+id+'-'+key+'"',ph,f[3])+'<input type="hidden" id="sec-'+id+'-'+key+'-pid"></div>';
-      else h+='<div class="f"'+fst+'><label>'+label+'</label><input type="text" id="sec-'+id+'-'+key+'" placeholder="'+ph+'"></div>';
+      else h+='<div class="f"'+fst+'><label>'+label+'</label><input type="text" class="tin" id="sec-'+id+'-'+key+'" placeholder="'+ph+'"></div>';
     });
     h+='</div>';
     return h+'</div>';
