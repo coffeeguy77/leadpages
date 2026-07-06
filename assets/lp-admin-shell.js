@@ -86,8 +86,8 @@
   function initManageShell() {
     if (!qs('.wrap') || document.getElementById('lp-admin-shell')) return;
 
-    /* Remove legacy header controls from older cached shells */
-    ['lp-chrome-hide-btn', 'lp-shell-ratio', 'lp-ratio-minus', 'lp-ratio-plus'].forEach(function (id) {
+    /* Remove legacy shell-only header controls (never touch live-preview ratio ids) */
+    ['lp-chrome-hide-btn', 'lp-shell-ratio'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el && el.parentNode) el.parentNode.removeChild(el);
     });
@@ -162,6 +162,34 @@
       inner.appendChild(el);
     }
 
+    function restoreCmdPiece(cmd, el, before) {
+      if (!cmd || !el || cmd.contains(el)) return;
+      if (before && before.parentNode === cmd) cmd.insertBefore(el, before);
+      else cmd.appendChild(el);
+    }
+
+    function restoreCmdLayout() {
+      var cmdEl = document.getElementById('lp-cmd');
+      if (!cmdEl) return;
+      var top = document.getElementById('lpc-drawer-top');
+      var ctx = document.getElementById('lpc-context');
+      var prim = document.getElementById('lpc-primary');
+      var tools = document.getElementById('lpc-tools');
+      var footer = document.getElementById('lpc-drawer-footer');
+      restoreCmdPiece(cmdEl, top, cmdEl.firstChild);
+      restoreCmdPiece(cmdEl, ctx, top ? top.nextSibling : cmdEl.firstChild);
+      if (prim) {
+        var primWrap = cmdEl.querySelector('[data-lpc-wrap="primary"]');
+        if (primWrap && prim.parentNode !== primWrap) primWrap.appendChild(prim);
+      }
+      if (tools) {
+        var toolsWrap = cmdEl.querySelector('[data-lpc-wrap="tools"]');
+        if (toolsWrap && tools.parentNode !== toolsWrap) toolsWrap.appendChild(tools);
+      }
+      restoreCmdPiece(cmdEl, footer, null);
+      if (prim) prim.style.display = '';
+    }
+
     function setDrawer(open) {
       document.body.classList.toggle('lp-drawer-open', !!open);
       var btn = document.getElementById('lp-shell-menu');
@@ -179,27 +207,29 @@
         appendDrawerPiece(inner, document.getElementById('lpc-drawer-top'), 'lp-drawer-section-label', 'Quick actions');
         appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
         appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label', 'Pages');
+        appendDrawerPiece(inner, document.getElementById('lpc-primary'), 'lp-drawer-section-label', 'Publishing & preview');
         appendDrawerPiece(inner, document.getElementById('lpc-tools'), 'lp-drawer-section-label lp-drawer-tools-label', 'Site tools');
         appendDrawerPiece(inner, document.getElementById('lpc-drawer-footer'), 'lp-drawer-section-label lp-drawer-footer-label', 'Account');
         var prim = document.getElementById('lpc-primary');
-        if (prim) prim.style.display = 'none';
+        if (prim) prim.style.display = '';
       } else {
         document.body.classList.remove('lp-compact-chrome');
         setDrawer(false);
         if (adminnav && navHome && adminnav.parentNode !== navHome) navHome.appendChild(adminnav);
+        restoreCmdLayout();
         if (cmd && cmdHome && cmd.parentNode !== cmdHome) cmdHome.appendChild(cmd);
         while (inner.firstChild) inner.removeChild(inner.firstChild);
-        var prim2 = document.getElementById('lpc-primary');
-        if (prim2) prim2.style.display = '';
       }
       syncRatioVisibility();
     }
 
     function syncRatioVisibility() {
       var layout = global.lpGetPreviewLayout ? global.lpGetPreviewLayout() : 'off';
-      var show = (layout === 'split' || layout === 'side') && !isMobileLayout();
+      var show = layout === 'split' || layout === 'side';
       var prevCtrl = document.getElementById('lp-prev-ratio');
       if (prevCtrl) prevCtrl.hidden = !show;
+      var shellRatio = document.getElementById('lp-shell-ratio');
+      if (shellRatio) shellRatio.hidden = true;
     }
 
     function syncLayoutSelect() {

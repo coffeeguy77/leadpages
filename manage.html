@@ -549,8 +549,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <div id="lp-cmd" class="bar" style="display:none;flex-direction:column;align-items:stretch;gap:0;">
     <div id="lpc-drawer-top" class="lpc-drawer-top"></div>
     <div id="lpc-context" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div>
-    <div style="margin-top:16px;"><div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 8px;">Publishing &amp; preview</div><div id="lpc-primary" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div></div>
-    <div style="margin-top:16px;"><div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 8px;">Site tools</div><div id="lpc-tools" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div></div>
+    <div style="margin-top:16px;" data-lpc-wrap="primary"><div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 8px;">Publishing &amp; preview</div><div id="lpc-primary" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div></div>
+    <div style="margin-top:16px;" data-lpc-wrap="tools"><div style="font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 8px;">Site tools</div><div id="lpc-tools" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div></div>
     <div id="lpc-drawer-footer" class="lpc-drawer-footer"></div>
   </div>
 
@@ -4631,6 +4631,11 @@ function heroCtaCard(c){
         var mt=document.createElement('button'); mt.type='button'; mt.id='lp-mode-toggle'; mt.className='btn ghost'; mt.style.fontSize='12px'; mt.textContent='Classic';
         footer.appendChild(mt);
       } else { mv('lp-mode-toggle', footer); }
+      if(!$('lpc-drawer-signout')){
+        var so=document.createElement('button'); so.type='button'; so.id='lpc-drawer-signout'; so.className='btn ghost'; so.textContent='Sign Out';
+        so.addEventListener('click',function(e){ e.preventDefault(); signOutLP(); });
+        footer.appendChild(so);
+      }
     }
     if(!$('lpc-acct')){
       var acct=document.createElement('div'); acct.id='lpc-acct'; acct.className='lpc-acct-desktop'; acct.style.cssText='margin-left:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
@@ -4836,6 +4841,7 @@ function heroCtaCard(c){
     if(allow.indexOf(activeView)<0) activeView=(allow.indexOf(tnav[0])>=0?tnav[0]:allow[0]);
     document.body.classList.remove('lp-cmd-loading');
     showView(activeView);
+    if(window.LPAdminShell&&LPAdminShell.moveChrome) LPAdminShell.moveChrome();
   }
   function gate(){ if(!authed){ const av=document.getElementById('admin-view'); if(av && av.hidden) return; showLogin(); } }
 

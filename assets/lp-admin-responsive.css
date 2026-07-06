@@ -237,6 +237,7 @@ body.lp-drawer-open .lp-admin-drawer {
 .lp-drawer-body #lpc-context,
 .lp-drawer-body #lpc-primary,
 .lp-drawer-body #lpc-tools {
+  display: flex !important;
   flex-direction: column;
   align-items: stretch !important;
 }
@@ -481,11 +482,11 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   .lp-admin-shell {
     display: block;
   }
-  /* Ratio +/- only on desktop/tablet landscape — not in mobile header */
-  .lp-prev-ratio,
+  /* Shell header only — keep +/- in live preview panel */
   .lp-ratio-ctrl,
   .lp-shell-chrome-hide,
-  #lp-chrome-hide-btn {
+  #lp-chrome-hide-btn,
+  #lp-shell-ratio {
     display: none !important;
   }
   .lp-prev-hide-logo {
@@ -495,7 +496,8 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   .adminnav {
     display: none;
   }
-  #lp-cmd.bar {
+  /* Hide cmd bar in page chrome only — not when pieces live in the drawer */
+  #lp-cmd-slot #lp-cmd.bar {
     display: none !important;
   }
   body.lp-drawer-open {
