@@ -195,41 +195,52 @@
       if (prim) prim.style.display = '';
     }
 
+    function refreshCmdDrawer() {
+      if (global.lpRefreshCmdDrawer) global.lpRefreshCmdDrawer();
+    }
+
+    function moveElById(id, row) {
+      if (!row) return;
+      var el = document.getElementById(id);
+      if (el && el.parentNode !== row) row.appendChild(el);
+    }
+
     function ensureDrawerActions() {
+      refreshCmdDrawer();
       var top = document.getElementById('lpc-drawer-top');
       var tools = document.getElementById('lpc-tools');
       var footer = document.getElementById('lpc-drawer-footer');
       var prim = document.getElementById('lpc-primary');
-      var pub = document.getElementById('btn-publish');
-      var view = document.getElementById('btn-viewlive');
-      if (top) {
-        if (pub && pub.parentNode !== top) top.appendChild(pub);
-        if (view && view.parentNode !== top) top.appendChild(view);
-      }
+      moveElById('btn-publish', top);
+      moveElById('btn-viewlive', top);
       var toolIds = [
         'btn-settings', 'btn-appearance-aa', 'btn-billing', 'btn-domains',
+        'lpc-partner-admin', 'lpc-marketplace-admin', 'lpc-partner-console',
         'btn-newsite', 'lpc-scope', 'lpc-backups', 'btn-fav', 'lpc-preview'
       ];
-      if (tools) {
-        toolIds.forEach(function (id) {
-          var el = document.getElementById(id);
-          if (el && el.parentNode !== tools) tools.appendChild(el);
-        });
-      }
-      var footerIds = [
-        'btn-switch', 'lpc-partner-admin', 'lpc-marketplace-admin',
-        'lpc-partner-console', 'lp-mode-toggle', 'lpc-drawer-signout'
-      ];
-      if (footer) {
-        footerIds.forEach(function (id) {
-          var el = document.getElementById(id);
-          if (el && el.parentNode !== footer) footer.appendChild(el);
-        });
-      }
+      if (tools) toolIds.forEach(function (id) { moveElById(id, tools); });
+      var footerIds = ['btn-switch', 'lp-mode-toggle', 'lpc-drawer-signout'];
+      if (footer) footerIds.forEach(function (id) { moveElById(id, footer); });
       if (prim) {
         var preview = document.getElementById('lpc-preview');
         if (preview && preview.parentNode === prim && tools) tools.appendChild(preview);
       }
+      var pub = document.getElementById('btn-publish');
+      var view = document.getElementById('btn-viewlive');
+      if (pub && !pub.dataset.lpFullText) pub.dataset.lpFullText = pub.textContent;
+      if (view && !view.dataset.lpFullText) view.dataset.lpFullText = view.textContent;
+      if (pub) pub.textContent = 'Publish Live Site';
+      if (view) view.textContent = 'View Live Site';
+    }
+
+    function drawerSectionHasItems(el) {
+      if (!el) return false;
+      return Array.prototype.some.call(el.children, function (node) {
+        if (!node || node.nodeType !== 1) return false;
+        if (node.style && node.style.display === 'none') return false;
+        var cs = global.getComputedStyle ? global.getComputedStyle(node) : null;
+        return !cs || cs.display !== 'none';
+      });
     }
 
     function setDrawer(open) {
@@ -249,29 +260,25 @@
       if (mobile) {
         document.body.classList.add('lp-compact-chrome');
         while (inner.firstChild) inner.removeChild(inner.firstChild);
-        appendDrawerPiece(inner, document.getElementById('lpc-drawer-top'), 'lp-drawer-section-label', 'Quick actions');
+        var publishTop = document.getElementById('lpc-drawer-top');
+        var tools = document.getElementById('lpc-tools');
+        var footer = document.getElementById('lpc-drawer-footer');
+        if (drawerSectionHasItems(publishTop) || phone) {
+          appendDrawerPiece(inner, publishTop, 'lp-drawer-section-label lp-drawer-publish-label', 'Publish');
+        }
         if (!phone) {
           appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
         }
-        appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label', 'Pages');
+        appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label lp-drawer-builder-label', 'Builder Menu');
         if (!phone) {
           appendDrawerPiece(inner, document.getElementById('lpc-primary'), 'lp-drawer-section-label', 'Publishing & preview');
         }
-        appendDrawerPiece(inner, document.getElementById('lpc-tools'), 'lp-drawer-section-label lp-drawer-tools-label', 'Site tools');
-        appendDrawerPiece(inner, document.getElementById('lpc-drawer-footer'), 'lp-drawer-section-label lp-drawer-footer-label', 'Account');
+        appendDrawerPiece(inner, tools, 'lp-drawer-section-label lp-drawer-tools-label', 'Site Tools');
+        if (drawerSectionHasItems(footer)) {
+          appendDrawerPiece(inner, footer, 'lp-drawer-section-label lp-drawer-footer-label', 'Account');
+        }
         var prim = document.getElementById('lpc-primary');
         if (prim) prim.style.display = phone ? 'none' : '';
-        var pubBtn = document.getElementById('btn-publish');
-        var viewBtn = document.getElementById('btn-viewlive');
-        if (phone && pubBtn && viewBtn) {
-          if (!pubBtn.dataset.lpFullText) pubBtn.dataset.lpFullText = pubBtn.textContent;
-          if (!viewBtn.dataset.lpFullText) viewBtn.dataset.lpFullText = viewBtn.textContent;
-          pubBtn.textContent = 'Publish Site';
-          viewBtn.textContent = 'View live \u2197';
-        } else {
-          if (pubBtn && pubBtn.dataset.lpFullText) pubBtn.textContent = pubBtn.dataset.lpFullText;
-          if (viewBtn && viewBtn.dataset.lpFullText) viewBtn.textContent = viewBtn.dataset.lpFullText;
-        }
       } else {
         document.body.classList.remove('lp-compact-chrome', 'lp-phone-chrome');
         setDrawer(false);
