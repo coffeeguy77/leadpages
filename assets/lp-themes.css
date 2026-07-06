@@ -846,14 +846,43 @@ html[data-lp-reduced-motion="true"] {
 .lpl-manage {
   flex: 0 0 auto;
 }
+#lp-landing .lpl-signout-top {
+  background: color-mix(in srgb, var(--accent) 14%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent) !important;
+  color: var(--accent-hover) !important;
+}
+#lp-landing .lpl-signout-top:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent) !important;
+  border-color: var(--accent) !important;
+}
+.lpl-dom-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  background: transparent;
+  color: var(--text-soft);
+  flex-shrink: 0;
+}
+.lpl-dom-icon.on {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: var(--accent);
+  color: var(--accent-hover);
+}
+.lpl-dom-icon svg {
+  display: block;
+}
 .lpl-btn-manage {
   appearance: none;
   border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
   background: color-mix(in srgb, var(--accent) 14%, transparent);
   color: var(--accent-hover);
   font: 700 12.5px var(--font-ui, Inter, system-ui, sans-serif);
-  padding: 7px 13px;
-  border-radius: 999px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm, 10px);
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s, border-color 0.15s;
@@ -948,6 +977,88 @@ html[data-lp-reduced-motion="true"] {
   background: transparent !important;
   border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
   color: var(--text) !important;
+}
+
+/* Project scope custom checkboxes */
+.lp-scope-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+}
+.lp-scope-cb {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+.lp-scope-cb input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.lp-scope-tick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  background: transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+.lp-scope-cb.on .lp-scope-tick {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: var(--accent);
+}
+.lp-scope-cb.on .lp-scope-tick::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-top: -2px;
+}
+.lp-scope-text {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.lp-scope-text.done {
+  text-decoration: line-through;
+  color: var(--text-soft);
+}
+.lp-scope-date {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.lp-scope-del {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Instrument stats — single row on desktop/tablet */
+.lp-instrument-stats {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.lp-instrument-stat {
+  min-width: 0;
+  text-align: center;
 }
 
 /* Page editor section / layout pills */
