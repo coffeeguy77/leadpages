@@ -401,6 +401,7 @@
 
   function applyDrawer(inner, opts) {
     if (!inner) return false;
+    if ((global.innerWidth || 9999) >= 1024) return false;
     if (opts.phone) return renderPhoneDrawer(inner, opts);
     return renderTabletDrawer(inner, opts);
   }
