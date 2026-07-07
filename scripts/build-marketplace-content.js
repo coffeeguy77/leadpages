@@ -88,6 +88,7 @@ function buildSellTemplate(key, meta) {
     {
       block_type: 'playground',
       payload: {
+        section_key: key,
         presets: meta.presets || ['default']
       }
     }
