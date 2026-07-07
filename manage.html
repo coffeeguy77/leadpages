@@ -4854,8 +4854,9 @@ function heroCtaCard(c){
     }
     const lbl=$('site-label'); if(lbl){
       if((currentRole==='super'||currentRole==='broker')&&allSites.length>1){
-        lbl.innerHTML='<span>Editing site:</span>';
-        const sel=document.createElement('select'); sel.className='tin'; sel.style.cssText='width:auto;padding:4px 8px;';
+        lbl.innerHTML='';
+        const wrap=document.createElement('div'); wrap.className='lp-sitepick';
+        const sel=document.createElement('select'); sel.className='lp-sitepick-sel tin'; sel.style.cssText='width:100%;';
         var mkOpts=function(grp,label){
           var arr=allSites.filter(function(x){ return (x.is_demo?'demo':'customer')===grp; })
             .sort(function(a,b){ return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); });
@@ -4866,7 +4867,9 @@ function heroCtaCard(c){
         };
         mkOpts('customer','Customer sites'); mkOpts('demo','Demo sites');
         sel.addEventListener('change',function(){ const x=allSites.find(function(y){return y.id===sel.value;}); if(x) loadSite(x); });
-        lbl.appendChild(sel);
+        wrap.appendChild(sel);
+        wrap.insertAdjacentHTML('beforeend','<span class="lp-sitepick-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>');
+        lbl.appendChild(wrap);
       } else if((currentRole==='super'||currentRole==='broker')&&currentSiteSlug){
         const nm=(allSites.find(function(x){return x.id===currentSiteId;})||allSites[0]||{}).business_name||currentSiteSlug;
         lbl.innerHTML='<span>Editing: <strong>'+nm+'</strong> \u00b7 /'+currentSiteSlug+'</span>';
