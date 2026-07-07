@@ -1303,7 +1303,34 @@
     ],
     "presets": [
       "default"
-    ]
+    ],
+    "sampleOverrides": {
+      "crew": {
+        "members": [
+          {
+            "on": true,
+            "name": "Steve Mitchell",
+            "role": "Owner & Master Plumber",
+            "detail": "15 years across Canberra — bathrooms, hot water and emergency callouts.",
+            "photo": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=faces"
+          },
+          {
+            "on": true,
+            "name": "Tom Harris",
+            "role": "Senior Plumber",
+            "detail": "Specialises in renovations and blocked drains.",
+            "photo": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=faces"
+          },
+          {
+            "on": true,
+            "name": "Matt Nguyen",
+            "role": "Apprentice Plumber",
+            "detail": "Third-year apprentice — quality workmanship on every job.",
+            "photo": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=faces"
+          }
+        ]
+      }
+    }
   },
   "instaGallery": {
     "name": "Instagram Gallery",
