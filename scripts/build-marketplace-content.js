@@ -18,6 +18,54 @@ const OUT_DEFAULTS = path.join(ROOT, 'marketplace', 'playground-default-configs.
 
 const SKIP_SECTIONS = new Set(['header', 'footer', 'emerg', 'seoTokens']);
 
+const SAMPLE_IMAGES = {
+  project: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&fit=crop',
+  deck: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=800&fit=crop',
+  bathroom: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1200&h=800&fit=crop',
+  before: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop',
+  after: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=600&fit=crop',
+  crew: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=faces',
+  instagram: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=600&h=600&fit=crop',
+  hero: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&h=1080&fit=crop',
+  generic: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop'
+};
+
+const DEFAULT_SERVICES = [
+  { on: true, icon: 'droplet', title: 'Blocked Drains', body: 'Same-day drain clearing for blocked sinks, toilets and outdoor drains.' },
+  { on: true, icon: 'flame', title: 'Hot Water Systems', body: 'Supply and install gas, electric and heat pump hot water systems.' },
+  { on: true, icon: 'wrench', title: 'Leak Repairs', body: 'Fast leak detection and repair — no damage, no mess.' },
+  { on: true, icon: 'home', title: 'Bathroom Renovations', body: 'Complete bathroom fit-outs from design to final fixture.' }
+];
+
+function pickSampleImage(key, ctx) {
+  if (/before/i.test(key) || /before/i.test(ctx)) return SAMPLE_IMAGES.before;
+  if (/after/i.test(key) || /after/i.test(ctx)) return SAMPLE_IMAGES.after;
+  if (/photo|crew|member|avatar/i.test(key)) return SAMPLE_IMAGES.crew;
+  if (/insta|ig|social|permalink/i.test(key)) return SAMPLE_IMAGES.instagram;
+  if (/slide|hero|banner|cover/i.test(key)) return SAMPLE_IMAGES.hero;
+  if (/deck|landscape/i.test(ctx)) return SAMPLE_IMAGES.deck;
+  if (/bath|ensuite/i.test(ctx)) return SAMPLE_IMAGES.bathroom;
+  if (/project|portfolio|feed|gallery|thumb/i.test(key)) return SAMPLE_IMAGES.project;
+  return SAMPLE_IMAGES.generic;
+}
+
+function fillEmptyImages(obj, ctx) {
+  if (!obj || typeof obj !== 'object') return;
+  if (Array.isArray(obj)) {
+    obj.forEach(function(item, i) { fillEmptyImages(item, ctx + '.' + i); });
+    return;
+  }
+  Object.keys(obj).forEach(function(k) {
+    const v = obj[k];
+    if ((k === 'image' || k === 'photo' || k === 'img' || k === 'imageUrl' || k === 'beforeImage' || k === 'afterImage' || k === 'logo' || k === 'permalink') &&
+        typeof v === 'string' && !v.trim()) {
+      obj[k] = pickSampleImage(k, ctx + '.' + k);
+    } else if (v && typeof v === 'object') {
+      fillEmptyImages(v, ctx + '.' + k);
+    }
+  });
+}
+
 function extractFromManage(name, endMarker) {
   const mg = fs.readFileSync(MANAGE, 'utf8');
   const start = mg.indexOf('const ' + name + '=');
@@ -60,6 +108,10 @@ function buildFlatSample(sectionKey, tradeSections, tradeLists, meta) {
     });
   }
   flat[sectionKey] = sec;
+  if (sectionKey === 'services' && !flat.services) {
+    flat.services = clone(DEFAULT_SERVICES);
+  }
+  fillEmptyImages(flat, sectionKey);
   return flat;
 }
 

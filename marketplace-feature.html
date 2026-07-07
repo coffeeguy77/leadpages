@@ -21,8 +21,8 @@
 body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.65}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
-.wrap{max-width:880px;margin:0 auto;padding:0 24px}
-.wrap-wide{max-width:1120px;margin:0 auto;padding:0 24px}
+.wrap{max-width:1440px;margin:0 auto;padding:0 24px}
+.wrap-wide{max-width:1440px;margin:0 auto;padding:0 24px}
 h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.12}
 .sitenav{background:var(--gum)}
 .sitenav .wrap{max-width:1440px;display:flex;align-items:center;justify-content:space-between;height:116px}
@@ -163,31 +163,31 @@ article{padding:20px 0 88px}
 .fp-lb-prev{left:-58px}
 .fp-lb-next{right:-58px}
 .fp-lb-count{position:absolute;bottom:-36px;left:50%;transform:translateX(-50%);color:#fff;font:600 13px/1 "Barlow",sans-serif;letter-spacing:.04em}
-/* editor panel */
-.pg-panel{margin:22px 0 0;background:linear-gradient(180deg,#FBF9F8 0%,#fff 100%);border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 14px 40px rgba(46,42,43,.06)}
-.pg-ecard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:18px;box-shadow:0 4px 16px rgba(46,42,43,.04)}
-.pg-ecard h4{font-family:var(--disp);font-weight:400;font-size:18px;margin:0 0 3px}
-.pg-ecard .hint{font-size:13px;color:var(--mut);margin:0 0 14px}
-.pg-panel label{display:block;font-size:11.5px;font-weight:800;color:var(--mut);margin:11px 0 4px;text-transform:uppercase;letter-spacing:.07em}
-.pg-panel input[type=text],.pg-panel select,.pg-panel textarea{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;font-family:var(--body);font-size:14px;background:#fff}
-.pg-panel textarea{min-height:62px;resize:vertical}
+/* editor panel — compact app-style controls */
+.pg-panel{margin:0 0 18px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:0 8px 24px rgba(46,42,43,.05)}
+.pg-panel-bottom{margin:18px 0 0;padding:16px 20px;background:linear-gradient(135deg,var(--gum),#243830);border:none;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pg-panel-bottom p{margin:0;color:#C9D2CC;font-size:14.5px;max-width:52ch;line-height:1.45}
+.pg-panel-bottom .btn{margin:0;flex-shrink:0}
+.pg-ctl-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.pg-ctl-head h4{font-family:var(--disp);font-weight:400;font-size:17px;margin:0}
+.pg-ctl-head .hint{font-size:12.5px;color:var(--mut);margin:0}
+.pg-ctl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media(max-width:1100px){.pg-ctl-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.pg-ctl-grid{grid-template-columns:1fr}}
+.pg-ctl-box{background:#FBF9F8;border:1px solid var(--line);border-radius:11px;padding:10px 12px}
+.pg-ctl-box h5{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
+.pg-ctl-box .pg-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.pg-ctl-box.pg-ctl-wide{grid-column:span 2}
+.pg-ctl-box.pg-ctl-full{grid-column:1/-1}
+@media(max-width:640px){.pg-ctl-box.pg-ctl-wide{grid-column:span 1}}
+.pg-panel label{display:block;font-size:10px;font-weight:800;color:var(--mut);margin:0 0 3px;text-transform:uppercase;letter-spacing:.06em}
+.pg-panel input[type=text],.pg-panel select,.pg-panel textarea,.pg-panel input[type=number]{width:100%;padding:7px 9px;border:1.5px solid var(--line);border-radius:8px;font-family:var(--body);font-size:13px;background:#fff}
+.pg-panel textarea{min-height:52px;resize:vertical}
 .pg-panel input:focus,.pg-panel select:focus,.pg-panel textarea:focus{border-color:var(--rose);outline:none}
-.pg-cr{display:flex;gap:8px;align-items:center}
-.pg-cr input[type=color]{width:40px;height:34px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;background:#fff}
+.pg-cr{display:flex;gap:6px;align-items:center}
+.pg-cr input[type=color]{width:36px;height:30px;padding:2px;border:1px solid var(--line);border-radius:7px;cursor:pointer;background:#fff;flex-shrink:0}
 .pg-cr input[type=text]{flex:1}
-.pg-mini{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:6px 11px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--mut);font-family:var(--body)}
-.pg-mini:hover{border-color:var(--ink)}
-.pg-2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
-.pg-3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 16px}
-@media(max-width:760px){.pg-2,.pg-3{grid-template-columns:1fr}}
-.pg-item{border:1px solid var(--line);border-radius:11px;padding:13px 14px;margin-bottom:10px;background:#fff}
-.pg-itemrow{display:flex;justify-content:flex-end;gap:6px;margin-bottom:8px}
-.pg-icrow{display:flex;align-items:center;gap:8px}
-.pg-icprev{width:34px;height:34px;border:1.5px solid var(--line);border-radius:8px;display:grid;place-items:center;background:#fff;flex:0 0 auto}
-.pg-icprev svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-.pg-add{width:100%;border:1.5px dashed var(--line);background:#fff;border-radius:10px;padding:10px;font-weight:800;font-size:13px;color:var(--mut);cursor:pointer;font-family:var(--body)}
-.pg-add:hover{border-color:var(--rose);color:var(--rose-d)}
-.pg-fnote{margin-top:10px;font-size:13px;color:var(--mut)}
+.pg-fnote{margin-top:8px;font-size:12px;color:var(--mut)}
 .status{padding:90px 24px;text-align:center;color:var(--mut)}
 .status h1{font-size:26px;margin-bottom:10px}
 .back{background:var(--shell);text-align:center;padding:56px 24px}
@@ -232,6 +232,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js" defer></script>
 <script src="/lib/playground-preset.js"></script>
+<script src="/lib/playground-field-paths.js"></script>
 </head>
 <body>
 
@@ -336,13 +337,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           +'<button data-d="tablet">Tablet</button>'
           +'<button data-d="phone">Phone</button>'
           +'</div></div>'
+          +'<div class="pg-panel"><div data-r="ctl"></div></div>'
           +'<div class="pg-devicewrap" data-r="wrap">'
           +'<div class="pg-viewport" data-r="vp">'
           +'<div class="pg-canvas" data-r="canvas"></div>'
           +'</div></div>'
-          +'<div class="pg-panel"><div data-r="ctl"></div>'
-          +'<div class="pg-fnote">Same controls as the App Command Centre. Nothing saves — play freely.</div>'
-          +'</div></div>';
+          +'<div class="pg-panel-bottom" data-r="pg-footer"></div>'
+          +'</div>';
       case 'quote':
         return '<div class="blk"><div class="qt"><p>&ldquo;'+esc(p.text)+'&rdquo;</p>'
           +(p.name?'<div class="by">'+esc(p.name)+(p.role?' · '+esc(p.role):'')+'</div>':'')+'</div></div>';
@@ -408,6 +409,37 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var dev = 'desktop';
     var iframe = null;
     var wrap = root.querySelector('[data-r="wrap"]');
+
+    function pgNormKey(key) {
+      if (window.LPPlaygroundFieldPaths && window.LPPlaygroundFieldPaths.normalizePlaygroundPath) {
+        return window.LPPlaygroundFieldPaths.normalizePlaygroundPath(secKey, key);
+      }
+      return key;
+    }
+
+    function pgReadVal(obj, f) {
+      var key = pgNormKey(f.key);
+      var val = pgGet(obj, key);
+      if (f.getTransform === 'areaNames' && Array.isArray(val)) {
+        return val.map(function(a) {
+          return typeof a === 'string' ? a : (a && a.name) || '';
+        }).filter(Boolean).join(f.join || '\n');
+      }
+      if (f.join && Array.isArray(val)) val = val.join(f.join);
+      return val == null ? '' : val;
+    }
+
+    function pgWriteVal(obj, f, raw) {
+      var key = pgNormKey(f.key);
+      var val = raw;
+      if (f.setTransform === 'areaNames') {
+        val = String(raw || '').split(/\r?\n/).map(function(s) { return s.trim(); }).filter(Boolean)
+          .map(function(name) { return { on: true, name: name }; });
+      } else if (f.join) {
+        val = String(raw || '').split('\n').map(function(s) { return s.trim(); }).filter(Boolean);
+      }
+      pgSet(obj, key, val);
+    }
 
     function pgGet(obj, path) {
       var parts = path.split('.');
@@ -625,6 +657,54 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       }).join('');
     }
 
+    function groupPlaygroundFields(defs) {
+      var scalars = [];
+      var groups = {};
+      var groupOrder = [];
+      defs.forEach(function(f) {
+        if (f.key.indexOf('theme.') === 0) {
+          scalars.push({ kind: 'theme', field: f });
+          return;
+        }
+        var m = f.key.match(/^sections\.[^.]+\.([^.]+)\.(\d+)\./);
+        if (m) {
+          var gid = m[1] + '-' + m[2];
+          if (!groups[gid]) {
+            groups[gid] = { id: gid, title: 'Item ' + (parseInt(m[2], 10) + 1), fields: [] };
+            groupOrder.push(gid);
+          }
+          groups[gid].fields.push(f);
+          return;
+        }
+        if (/^services\.\d+\./.test(f.key)) {
+          var sm = f.key.match(/^services\.(\d+)\./);
+          var sid = 'svc-' + sm[1];
+          if (!groups[sid]) {
+            groups[sid] = { id: sid, title: 'Service ' + (parseInt(sm[1], 10) + 1), fields: [] };
+            groupOrder.push(sid);
+          }
+          groups[sid].fields.push(f);
+          return;
+        }
+        scalars.push({ kind: 'scalar', field: f });
+      });
+      return { scalars: scalars, groups: groupOrder.map(function(id) { return groups[id]; }) };
+    }
+
+    function renderFieldInput(f, val) {
+      if (f.type === 'textarea') {
+        return '<div class="pg-field"><label>' + esc(f.label) + '</label><textarea data-pgk="' + esc(f.key) + '">' + esc(String(val || '')) + '</textarea></div>';
+      }
+      if (f.type === 'color') {
+        var col = (val && /^#[0-9a-fA-F]{6}$/.test(String(val))) ? val : '#1f7bb8';
+        return '<div class="pg-field pg-field-color"><label>' + esc(f.label) + '</label><div class="pg-cr">'
+          + '<input type="color" data-pgk="' + esc(f.key) + '" data-pgct="cp" value="' + col + '">'
+          + '<input type="text" data-pgk="' + esc(f.key) + '" data-pgct="ct" value="' + esc(String(val || '')) + '"></div></div>';
+      }
+      var inputType = f.type === 'number' ? 'number' : 'text';
+      return '<div class="pg-field"><label>' + esc(f.label) + '</label><input type="' + inputType + '" data-pgk="' + esc(f.key) + '" value="' + esc(String(val == null ? '' : val)) + '"></div>';
+    }
+
     function renderLiveControls() {
       var host = root.querySelector('[data-r="live"]');
       if (!host) return;
@@ -632,20 +712,23 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         host.innerHTML = '<p class="hint" style="margin:0">No live controls for this section yet.</p>';
         return;
       }
-      host.innerHTML = fieldDefs.map(function(f) {
-        var val = pgGet(liveSiteCfg, f.key);
-        if (f.join && Array.isArray(val)) val = val.join(f.join);
-        if (f.type === 'textarea') {
-          return '<div><label>' + esc(f.label) + '</label><textarea data-pgk="' + esc(f.key) + '">' + esc(String(val || '')) + '</textarea></div>';
-        }
-        if (f.type === 'color') {
-          var col = (val && /^#[0-9a-fA-F]{6}$/.test(String(val))) ? val : '#1f7bb8';
-          return '<div><label>' + esc(f.label) + '</label><div class="pg-cr">'
-            + '<input type="color" data-pgk="' + esc(f.key) + '" data-pgct="cp" value="' + col + '">'
-            + '<input type="text" data-pgk="' + esc(f.key) + '" data-pgct="ct" value="' + esc(String(val || '')) + '"></div></div>';
-        }
-        return '<div><label>' + esc(f.label) + '</label><input type="text" data-pgk="' + esc(f.key) + '" value="' + esc(String(val || '')) + '"></div>';
-      }).join('');
+      var grouped = groupPlaygroundFields(fieldDefs);
+      var html = '<div class="pg-ctl-grid">';
+      grouped.scalars.forEach(function(s) {
+        var f = s.field;
+        var val = pgReadVal(liveSiteCfg, f);
+        var wide = f.type === 'textarea' ? ' pg-ctl-full' : (f.type === 'color' ? ' pg-ctl-wide' : '');
+        html += '<div class="pg-ctl-box' + wide + '"><div class="pg-fields">' + renderFieldInput(f, val) + '</div></div>';
+      });
+      grouped.groups.forEach(function(g) {
+        html += '<div class="pg-ctl-box"><h5>' + esc(g.title) + '</h5><div class="pg-fields">';
+        g.fields.forEach(function(f) {
+          html += renderFieldInput(f, pgReadVal(liveSiteCfg, f));
+        });
+        html += '</div></div>';
+      });
+      html += '</div><p class="pg-fnote">Same controls as the App Command Centre. Nothing saves — play freely.</p>';
+      host.innerHTML = html;
 
       if (host.__pgBound) return;
       host.__pgBound = true;
@@ -656,8 +739,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         if (!key) return;
         var val = t.value;
         var def = fieldDefs.find(function(d) { return d.key === key; });
-        if (def && def.join) val = val.split('\n').map(function(s) { return s.trim(); }).filter(Boolean);
-        pgSet(liveSiteCfg, key, val);
+        if (def) pgWriteVal(liveSiteCfg, def, val);
         if (t.dataset.pgct === 'cp') {
           var tx = host.querySelector('[data-pgk="' + key + '"][data-pgct="ct"]');
           if (tx) tx.value = val;
@@ -705,17 +787,17 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 
     function renderCtl() {
       var ctl = root.querySelector('[data-r="ctl"]');
-      if (!ctl) return;
-      var presetLabel = (demoCfg && demoCfg.label) || activePreset || '';
-      ctl.innerHTML = '<div class="pg-ecard"><h4>Live demo</h4>'
-        + '<p class="hint">This is a live preview of the ' + esc(secKey || 'section') + ' section as it appears on a real site. '
-        + 'Your partner can customise every element in the App Command Centre.</p>'
-        + (secKey ? '<a class="btn" href="/manage" target="_blank" rel="noopener" style="display:inline-flex;margin-top:10px">Try it in the editor →</a>' : '')
-        + '</div>'
-        + '<div class="pg-ecard"><h4>Try it yourself</h4><p class="hint">Adjust the fields below — the preview updates instantly. Nothing saves.</p>'
-        + '<div data-r="live"></div></div>'
-        + (demoCfg ? '<div class="pg-ecard"><h4>Demo data</h4><p class="hint">Showing example content' + (presetLabel ? ' (' + esc(presetLabel) + ')' : '') + '. Real sites use your client&rsquo;s own text, photos and branding.</p></div>' : '');
-      renderLiveControls();
+      var footer = root.querySelector('[data-r="pg-footer"]');
+      if (ctl) {
+        ctl.innerHTML = '<div class="pg-ctl-head"><h4>Customise the preview</h4>'
+          + '<p class="hint">Edit fields — updates instantly</p></div>'
+          + '<div data-r="live"></div>';
+        renderLiveControls();
+      }
+      if (footer) {
+        footer.innerHTML = '<p>Open the App Command Centre to try the full editor on a real site — same controls, full save and publish.</p>'
+          + (secKey ? '<a class="btn" href="/manage" target="_blank" rel="noopener">Try it in the editor →</a>' : '');
+      }
     }
 
     root.addEventListener('click', function(e) {
