@@ -221,22 +221,6 @@
     return !cs || cs.display !== 'none';
   }
 
-  function slotHasContent(slotId) {
-    var el = slotId === 'adminnav'
-      ? document.querySelector('.adminnav')
-      : document.getElementById(slotId);
-    if (!el) return false;
-    if (slotId === 'adminnav') {
-      return Array.prototype.some.call(el.querySelectorAll('.anav-btn'), function (b) {
-        return !(b.style && b.style.display === 'none');
-      });
-    }
-    if (slotId === 'lpc-drawer-footer' || slotId === 'lpc-drawer-top' || slotId === 'lpc-tools') {
-      return el.children.length > 0;
-    }
-    return Array.prototype.some.call(el.children, function (c) { return elVisible(c); });
-  }
-
   function applyButtonStyle(wrap, style, sec) {
     wrap.classList.add('lp-mm-sec');
     wrap.classList.add('lp-mm-layout-' + (sec.layout || 'stack'));
@@ -246,106 +230,87 @@
     }
   }
 
-  function moveItemToRow(itemId, row) {
-    if (!row) return;
+  function appendActionElement(row, itemId, opts) {
+    if (!row) return false;
     var el = document.getElementById(itemId);
-    if (el && el.parentNode !== row) row.appendChild(el);
-  }
-
-  function moveItemsIntoSlot(sec, slotEl, userRoles) {
-    if (!slotEl) return false;
-    if (sec.items && sec.items.length) {
-      visibleItems(sec, userRoles).forEach(function (it) { moveItemToRow(it.id, slotEl); });
+    if (!el) return false;
+    if (el.parentNode !== row) row.appendChild(el);
+    if (opts && opts.phone) {
+      if (itemId === 'btn-publish' || itemId === 'btn-viewlive') {
+        if (!el.dataset.lpFullText) el.dataset.lpFullText = el.textContent;
+        el.textContent = itemId === 'btn-publish' ? 'Publish Live Site' : 'View Live Site';
+      }
     }
-    return slotEl.children.length > 0;
+    return true;
   }
 
-  function getSlotElement(slotId) {
-    if (!slotId) return null;
-    return slotId === 'adminnav'
-      ? document.querySelector('.adminnav')
-      : document.getElementById(slotId);
-  }
-
-  function slotElementHasContent(sec) {
-    var slotEl = getSlotElement(sec.slot);
-    if (!slotEl) return false;
-    if (sec.slot === 'adminnav') return slotHasContent('adminnav');
-    if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
-      return slotEl.children.length > 0;
-    }
-    return Array.prototype.some.call(slotEl.children, function (c) { return elVisible(c); });
-  }
-
-  /** Populate live command-bar controls into drawer slots before config render. */
-  function prepareDrawerSlots(opts) {
-    opts = opts || {};
+  function ensureActionElements() {
     try {
       if (typeof global.lpRefreshCmdDrawer === 'function') global.lpRefreshCmdDrawer();
     } catch (e) { /* ignore */ }
-    if (global.LPAdminShell && typeof global.LPAdminShell.prepareDrawerButtons === 'function') {
-      try { global.LPAdminShell.prepareDrawerButtons(); } catch (e) { /* ignore */ }
+  }
+
+  /** Pull builder nav buttons and action controls back to their page homes before re-render. */
+  function restoreSources() {
+    var nav = document.querySelector('.adminnav');
+    var drawer = document.getElementById('lp-admin-drawer-inner');
+    if (nav && drawer) {
+      drawer.querySelectorAll('.anav-btn').forEach(function (btn) {
+        nav.appendChild(btn);
+      });
     }
-    var cfg = getConfig();
-    var userRoles = getUserRoles();
-    (cfg.sections || []).forEach(function (sec) {
-      if (!sectionVisible(sec, opts)) return;
-      if (sec.slot === 'adminnav') return;
-      if (!sec.items || !sec.items.length) return;
-      var slotId = sec.id === 'publish' ? 'lpc-drawer-top' : sec.slot;
-      var slotEl = getSlotElement(slotId);
-      if (!slotEl) return;
-      moveItemsIntoSlot(sec, slotEl, userRoles);
+    ensureActionElements();
+  }
+
+  function renderBuilderSection(secBody) {
+    var nav = document.querySelector('.adminnav');
+    if (!nav) return false;
+    var host = document.createElement('div');
+    host.className = 'lp-mm-nav adminnav';
+    host.setAttribute('role', 'tablist');
+    var moved = 0;
+    Array.prototype.forEach.call(nav.querySelectorAll('.anav-btn'), function (btn) {
+      if (!elVisible(btn)) return;
+      host.appendChild(btn);
+      moved++;
     });
+    if (!moved) return false;
+    secBody.appendChild(host);
+    return true;
   }
 
-  function buildSectionRow(sec, userRoles) {
-    var row = document.createElement('div');
-    row.className = 'lp-mm-sec-body';
-    row.setAttribute('data-mm-sec', sec.id);
-    applyButtonStyle(row, sec.buttonStyle, sec);
-
-    if (sec.slot) {
-      var slotEl = getSlotElement(sec.slot);
-      if (slotEl) {
-        if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
-          moveItemsIntoSlot(sec, slotEl, userRoles);
-          if (slotEl.children.length > 0 && slotEl.parentNode !== row) {
-            row.appendChild(slotEl);
-          }
-        } else if (slotEl.parentNode !== row) {
-          row.appendChild(slotEl);
-        }
-      }
-    } else if (sec.items && sec.items.length) {
-      moveItemsIntoSlot(sec, row, userRoles);
-    }
-    return row;
+  function renderSiteSection(secBody) {
+    var ctx = document.getElementById('lpc-context');
+    if (!ctx) return false;
+    var hasVisible = Array.prototype.some.call(ctx.children, function (c) { return elVisible(c); });
+    if (!hasVisible && !ctx.textContent.trim()) return false;
+    if (ctx.parentNode !== secBody) secBody.appendChild(ctx);
+    return true;
   }
 
-  function sectionHasContent(sec, row) {
-    if (sec.slot && row) {
-      var inRow = sec.slot === 'adminnav'
-        ? row.querySelector('.adminnav')
-        : row.querySelector('#' + sec.slot);
-      if (inRow) {
-        if (sec.slot === 'adminnav') return slotHasContent('adminnav');
-        if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
-          return inRow.children.length > 0;
-        }
-        return Array.prototype.some.call(inRow.children, function (c) { return elVisible(c); });
-      }
-    }
-    if (sec.slot) return slotElementHasContent(sec);
-    if (!row) return false;
-    return Array.prototype.some.call(row.children, function (c) { return elVisible(c); });
+  function renderItemSection(secBody, sec, userRoles, opts) {
+    if (!sec.items || !sec.items.length) return false;
+    var moved = 0;
+    visibleItems(sec, userRoles).forEach(function (it) {
+      if (appendActionElement(secBody, it.id, opts)) moved++;
+    });
+    return moved > 0;
   }
 
-  function renderPhoneDrawer(inner, opts) {
+  /**
+   * Config-only mobile drawer renderer — no legacy slot containers or fallback menus.
+   * Renders exactly what the menu builder saved (role-filtered).
+   */
+  function renderDrawer(inner, opts) {
+    if (!inner) return false;
+    if ((global.innerWidth || 9999) >= 1024) return false;
+
     opts = opts || {};
+    restoreSources();
+
     var cfg = getConfig();
     var userRoles = getUserRoles();
-    if (!inner || !cfg || !cfg.sections) return false;
+    if (!cfg || !cfg.sections) return false;
 
     while (inner.firstChild) inner.removeChild(inner.firstChild);
 
@@ -353,8 +318,21 @@
     cfg.sections.forEach(function (sec) {
       if (!sectionVisible(sec, opts)) return;
 
-      var row = buildSectionRow(sec, userRoles);
-      if (!sectionHasContent(sec, row)) return;
+      var secBody = document.createElement('div');
+      secBody.className = 'lp-mm-sec-body';
+      secBody.setAttribute('data-mm-sec', sec.id);
+      applyButtonStyle(secBody, sec.buttonStyle, sec);
+
+      var hasContent = false;
+      if (sec.slot === 'adminnav' || sec.id === 'builder') {
+        hasContent = renderBuilderSection(secBody);
+      } else if (sec.slot === 'lpc-context' || sec.id === 'site') {
+        hasContent = renderSiteSection(secBody);
+      } else if (sec.items && sec.items.length) {
+        hasContent = renderItemSection(secBody, sec, userRoles, opts);
+      }
+
+      if (!hasContent) return;
 
       if (sec.title) {
         var lbl = document.createElement('div');
@@ -362,91 +340,16 @@
         lbl.textContent = sec.title;
         inner.appendChild(lbl);
       }
-      inner.appendChild(row);
+      inner.appendChild(secBody);
       added++;
     });
-
-    document.body.classList.toggle('lp-mm-configured', added > 0);
-    return added > 0;
-  }
-
-  function renderTabletDrawer(inner, opts) {
-    opts = opts || {};
-    var cfg = getConfig();
-    var userRoles = getUserRoles();
-    if (!inner || !cfg || !cfg.sections) return false;
-
-    while (inner.firstChild) inner.removeChild(inner.firstChild);
-
-    var added = 0;
-    cfg.sections.forEach(function (sec) {
-      if (!sectionVisible(sec, opts)) return;
-      if (sec.id === 'site' && sec.condition === 'site-switcher') {
-        /* tablet always shows site section */
-      }
-
-      var targetSlot = null;
-      if (sec.id === 'publish') targetSlot = document.getElementById('lpc-drawer-top');
-      else if (sec.id === 'site') targetSlot = document.getElementById('lpc-context');
-      else if (sec.id === 'builder') targetSlot = document.querySelector('.adminnav');
-      else if (sec.id === 'tools') targetSlot = document.getElementById('lpc-tools');
-      else if (sec.id === 'account') targetSlot = document.getElementById('lpc-drawer-footer');
-      else if (sec.slot) targetSlot = sec.slot === 'adminnav' ? document.querySelector('.adminnav') : document.getElementById(sec.slot);
-
-      if (!targetSlot) return;
-
-      var wrap = document.createElement('div');
-      wrap.className = 'lp-mm-tablet-block';
-      applyButtonStyle(wrap, sec.buttonStyle, sec);
-
-      if (sec.title) {
-        var lbl = document.createElement('div');
-        lbl.className = 'lp-drawer-section-label lp-mm-label lp-mm-label-' + sec.id;
-        lbl.textContent = sec.title;
-        wrap.appendChild(lbl);
-      }
-
-      if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
-        moveItemsIntoSlot(sec, targetSlot, userRoles);
-        if (targetSlot.children.length > 0 && targetSlot.parentNode !== wrap) {
-          wrap.appendChild(targetSlot);
-        }
-      } else if (targetSlot.parentNode !== wrap) {
-        wrap.appendChild(targetSlot);
-      }
-
-      if (!sectionHasContent(sec, wrap)) return;
-      inner.appendChild(wrap);
-      added++;
-    });
-
-    var prim = document.getElementById('lpc-primary');
-    if (prim && !opts.phone) {
-      var hasPrim = Array.prototype.some.call(prim.children, function (c) { return elVisible(c); });
-      if (hasPrim) {
-        var primWrap = document.createElement('div');
-        primWrap.className = 'lp-mm-tablet-block';
-        var pl = document.createElement('div');
-        pl.className = 'lp-drawer-section-label';
-        pl.textContent = 'Publishing & preview';
-        primWrap.appendChild(pl);
-        primWrap.appendChild(prim);
-        inner.appendChild(primWrap);
-        added++;
-      }
-    }
 
     document.body.classList.toggle('lp-mm-configured', added > 0);
     return added > 0;
   }
 
   function applyDrawer(inner, opts) {
-    if (!inner) return false;
-    if ((global.innerWidth || 9999) >= 1024) return false;
-    opts = opts || {};
-    prepareDrawerSlots(opts);
-    if (opts.phone) return renderPhoneDrawer(inner, opts);
-    return renderTabletDrawer(inner, opts);
+    return renderDrawer(inner, opts);
   }
 
   function invalidate() {
@@ -922,7 +825,8 @@
     getConfig: getConfig,
     getUserRoles: getUserRoles,
     applyDrawer: applyDrawer,
-    prepareDrawerSlots: prepareDrawerSlots,
+    renderDrawer: renderDrawer,
+    restoreSources: restoreSources,
     openBuilder: openBuilder,
     invalidate: invalidate,
     save: save,
