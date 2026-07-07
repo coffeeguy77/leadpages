@@ -1412,6 +1412,11 @@ body.lp-admin-nav-open {
     min-height: 0 !important;
     justify-content: flex-start !important;
   }
+  /* Desktop: admin links live in account row only — keep DOM nodes for mobile menu */
+  #lp-cmd-slot #lpc-tools #lpc-partner-admin,
+  #lp-cmd-slot #lpc-tools #lpc-marketplace-admin {
+    display: none !important;
+  }
   #lp-cmd-slot .lp-mm-sec-body,
   #lp-cmd-slot .lp-mm-layout-stack,
   #lp-cmd-slot .lp-mm-layout-grid-2 {
