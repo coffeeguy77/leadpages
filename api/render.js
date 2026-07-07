@@ -768,7 +768,11 @@ module.exports = async (req, res) => {
     const _gsv = (cfg.googleSiteVerification || '').trim();
     const _gsvMethod = (cfg.googleVerificationMethod || 'meta');
     if (_gsv && _gsvMethod === 'meta') {
-      const _gmeta = '<meta name="google-site-verification" content="' + esc(_gsv) + '">';
+      const _tok =
+        (_gsv.match(/google-site-verification=([^\s"'>]+)/i) || [])[1] ||
+        (_gsv.match(/content\s*=\s*["']([^"']+)["']/i) || [])[1] ||
+        _gsv;
+      const _gmeta = '<meta name="google-site-verification" content="' + esc(String(_tok || '').trim()) + '">';
       html = /<meta[^>]*name="google-site-verification"[^>]*>/.test(html)
         ? html.replace(/<meta[^>]*name="google-site-verification"[^>]*>/, _gmeta)
         : html.replace('</head>', _gmeta + '\n</head>');
