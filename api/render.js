@@ -765,6 +765,15 @@ module.exports = async (req, res) => {
     };
     for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
 
+    const _gsv = (cfg.googleSiteVerification || '').trim();
+    const _gsvMethod = (cfg.googleVerificationMethod || 'meta');
+    if (_gsv && _gsvMethod === 'meta') {
+      const _gmeta = '<meta name="google-site-verification" content="' + esc(_gsv) + '">';
+      html = /<meta[^>]*name="google-site-verification"[^>]*>/.test(html)
+        ? html.replace(/<meta[^>]*name="google-site-verification"[^>]*>/, _gmeta)
+        : html.replace('</head>', _gmeta + '\n</head>');
+    }
+
     // Self-signup buy bar: only on an unsold, priced demo that belongs to a partner.
     if (site.is_mockup && Number(site.sale_price) > 0 && (site.servicing_partner_id || site.referring_partner_id)) {
       try { const _bp = await buyPlans(site); html = injectBuyBar(html, buyBarHtml(site, _bp.plans, _bp.def)); } catch (e) { console.error('buy bar error:', e && e.message); }
