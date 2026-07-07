@@ -5039,24 +5039,33 @@ function heroCtaCard(c){
       bar.insertBefore(w, bar.firstChild);
     }
     const lbl=$('site-label'); if(lbl){
-      if((currentRole==='super'||currentRole==='broker')&&allSites.length>1){
+      var curPick=allSites.find(function(x){return x.id===currentSiteId;})||null;
+      var useSitePicker=(currentRole==='super'||currentRole==='broker')&&allSites.length>1;
+      /* Partner sites stay in Site Switcher only — not the command-bar picker */
+      if(useSitePicker&&currentRole==='super'&&curPick&&lplGroup(curPick)==='partner') useSitePicker=false;
+      if(useSitePicker){
         lbl.innerHTML='';
         const wrap=document.createElement('div'); wrap.className='lp-sitepick';
         const sel=document.createElement('select'); sel.className='lp-sitepick-sel tin'; sel.style.cssText='width:100%;';
-        var mkOpts=function(grp,label){
-          var arr=allSites.filter(function(x){ return (x.is_demo?'demo':'customer')===grp; })
+        var pickGroups=currentRole==='super'
+          ? [{g:'customer',l:'Clients'},{g:'appdemo',l:'Demos'},{g:'demo',l:'Web Demos'}]
+          : [{g:'customer',l:'Clients'},{g:'demo',l:'Demos'},{g:'listing',l:'My Listing'}];
+        pickGroups.forEach(function(pg){
+          var arr=allSites.filter(function(x){ return lplGroup(x)===pg.g; })
             .sort(function(a,b){ return (a.business_name||a.slug||'').toLowerCase().localeCompare((b.business_name||b.slug||'').toLowerCase()); });
           if(!arr.length) return;
-          var og=document.createElement('optgroup'); og.label=label;
+          var og=document.createElement('optgroup'); og.label=pg.l;
           arr.forEach(function(x){ var o=document.createElement('option'); o.value=x.id; o.textContent=(x.is_favorite?'\u2605 ':'')+x.business_name+' ('+x.slug+')'; if(x.id===currentSiteId)o.selected=true; og.appendChild(o); });
           sel.appendChild(og);
-        };
-        mkOpts('customer','Customer sites'); mkOpts('demo','Demo sites');
-        sel.addEventListener('change',function(){ const x=allSites.find(function(y){return y.id===sel.value;}); if(x) loadSite(x); });
-        wrap.appendChild(sel);
-        wrap.insertAdjacentHTML('beforeend','<span class="lp-sitepick-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>');
-        lbl.appendChild(wrap);
-      } else if((currentRole==='super'||currentRole==='broker')&&currentSiteSlug){
+        });
+        if(sel.children.length){
+          sel.addEventListener('change',function(){ const x=allSites.find(function(y){return y.id===sel.value;}); if(x) loadSite(x); });
+          wrap.appendChild(sel);
+          wrap.insertAdjacentHTML('beforeend','<span class="lp-sitepick-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>');
+          lbl.appendChild(wrap);
+        } else useSitePicker=false;
+      }
+      if(!useSitePicker&&(currentRole==='super'||currentRole==='broker')&&currentSiteSlug){
         const nm=(allSites.find(function(x){return x.id===currentSiteId;})||allSites[0]||{}).business_name||currentSiteSlug;
         lbl.innerHTML='<span>Editing: <strong>'+nm+'</strong> \u00b7 /'+currentSiteSlug+'</span>';
       } else if(currentSiteSlug){
