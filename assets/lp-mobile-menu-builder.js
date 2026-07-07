@@ -133,7 +133,7 @@
         return;
       }
       if (defSec.id === 'publish') {
-        if (!sec.slot) sec.slot = 'lpc-drawer-top';
+        sec.slot = 'lpc-drawer-top';
         if (!sec.items || !sec.items.length) {
           sec.items = deepClone(defSec.items || [{ id: 'btn-publish' }, { id: 'btn-viewlive' }]);
         }
@@ -252,30 +252,65 @@
     if (el && el.parentNode !== row) row.appendChild(el);
   }
 
-  function moveItemsIntoSlot(sec, slotEl) {
+  function moveItemsIntoSlot(sec, slotEl, userRoles) {
     if (!slotEl) return false;
     if (sec.items && sec.items.length) {
-      visibleItems(sec).forEach(function (it) { moveItemToRow(it.id, slotEl); });
+      visibleItems(sec, userRoles).forEach(function (it) { moveItemToRow(it.id, slotEl); });
     }
     return slotEl.children.length > 0;
   }
 
-  function buildSectionRow(sec) {
+  function getSlotElement(slotId) {
+    if (!slotId) return null;
+    return slotId === 'adminnav'
+      ? document.querySelector('.adminnav')
+      : document.getElementById(slotId);
+  }
+
+  function slotElementHasContent(sec) {
+    var slotEl = getSlotElement(sec.slot);
+    if (!slotEl) return false;
+    if (sec.slot === 'adminnav') return slotHasContent('adminnav');
+    if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
+      return slotEl.children.length > 0;
+    }
+    return Array.prototype.some.call(slotEl.children, function (c) { return elVisible(c); });
+  }
+
+  /** Populate live command-bar controls into drawer slots before config render. */
+  function prepareDrawerSlots(opts) {
+    opts = opts || {};
+    try {
+      if (typeof global.lpRefreshCmdDrawer === 'function') global.lpRefreshCmdDrawer();
+    } catch (e) { /* ignore */ }
+    if (global.LPAdminShell && typeof global.LPAdminShell.prepareDrawerButtons === 'function') {
+      try { global.LPAdminShell.prepareDrawerButtons(); } catch (e) { /* ignore */ }
+    }
+    var cfg = getConfig();
+    var userRoles = getUserRoles();
+    (cfg.sections || []).forEach(function (sec) {
+      if (!sectionVisible(sec, opts)) return;
+      if (sec.slot === 'adminnav') return;
+      if (!sec.items || !sec.items.length) return;
+      var slotId = sec.id === 'publish' ? 'lpc-drawer-top' : sec.slot;
+      var slotEl = getSlotElement(slotId);
+      if (!slotEl) return;
+      moveItemsIntoSlot(sec, slotEl, userRoles);
+    });
+  }
+
+  function buildSectionRow(sec, userRoles) {
     var row = document.createElement('div');
     row.className = 'lp-mm-sec-body';
     row.setAttribute('data-mm-sec', sec.id);
     applyButtonStyle(row, sec.buttonStyle, sec);
 
     if (sec.slot) {
-      var slotEl = sec.slot === 'adminnav'
-        ? document.querySelector('.adminnav')
-        : document.getElementById(sec.slot);
+      var slotEl = getSlotElement(sec.slot);
       if (slotEl) {
         if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
-          if (sec.slot === 'lpc-drawer-footer') {
-            slotEl.innerHTML = '';
-          }
-          if (moveItemsIntoSlot(sec, slotEl) && slotEl.parentNode !== row) {
+          moveItemsIntoSlot(sec, slotEl, userRoles);
+          if (slotEl.children.length > 0 && slotEl.parentNode !== row) {
             row.appendChild(slotEl);
           }
         } else if (slotEl.parentNode !== row) {
@@ -283,22 +318,25 @@
         }
       }
     } else if (sec.items && sec.items.length) {
-      moveItemsIntoSlot(sec, row);
+      moveItemsIntoSlot(sec, row, userRoles);
     }
     return row;
   }
 
   function sectionHasContent(sec, row) {
-    if (sec.slot) {
-      if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
-        var slot = document.getElementById(sec.slot);
-        return slot && slot.children.length > 0;
+    if (sec.slot && row) {
+      var inRow = sec.slot === 'adminnav'
+        ? row.querySelector('.adminnav')
+        : row.querySelector('#' + sec.slot);
+      if (inRow) {
+        if (sec.slot === 'adminnav') return slotHasContent('adminnav');
+        if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
+          return inRow.children.length > 0;
+        }
+        return Array.prototype.some.call(inRow.children, function (c) { return elVisible(c); });
       }
-      if (sec.slot === 'adminnav') {
-        return slotHasContent('adminnav');
-      }
-      return slotHasContent(sec.slot);
     }
+    if (sec.slot) return slotElementHasContent(sec);
     if (!row) return false;
     return Array.prototype.some.call(row.children, function (c) { return elVisible(c); });
   }
@@ -315,7 +353,7 @@
     cfg.sections.forEach(function (sec) {
       if (!sectionVisible(sec, opts)) return;
 
-      var row = buildSectionRow(sec);
+      var row = buildSectionRow(sec, userRoles);
       if (!sectionHasContent(sec, row)) return;
 
       if (sec.title) {
@@ -335,10 +373,12 @@
   function renderTabletDrawer(inner, opts) {
     opts = opts || {};
     var cfg = getConfig();
+    var userRoles = getUserRoles();
     if (!inner || !cfg || !cfg.sections) return false;
 
     while (inner.firstChild) inner.removeChild(inner.firstChild);
 
+    var added = 0;
     cfg.sections.forEach(function (sec) {
       if (!sectionVisible(sec, opts)) return;
       if (sec.id === 'site' && sec.condition === 'site-switcher') {
@@ -367,10 +407,8 @@
       }
 
       if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
-        if (sec.slot === 'lpc-drawer-footer') {
-          targetSlot.innerHTML = '';
-        }
-        if (moveItemsIntoSlot(sec, targetSlot) && targetSlot.parentNode !== wrap) {
+        moveItemsIntoSlot(sec, targetSlot, userRoles);
+        if (targetSlot.children.length > 0 && targetSlot.parentNode !== wrap) {
           wrap.appendChild(targetSlot);
         }
       } else if (targetSlot.parentNode !== wrap) {
@@ -379,6 +417,7 @@
 
       if (!sectionHasContent(sec, wrap)) return;
       inner.appendChild(wrap);
+      added++;
     });
 
     var prim = document.getElementById('lpc-primary');
@@ -393,15 +432,19 @@
         primWrap.appendChild(pl);
         primWrap.appendChild(prim);
         inner.appendChild(primWrap);
+        added++;
       }
     }
 
-    return true;
+    document.body.classList.toggle('lp-mm-configured', added > 0);
+    return added > 0;
   }
 
   function applyDrawer(inner, opts) {
     if (!inner) return false;
     if ((global.innerWidth || 9999) >= 1024) return false;
+    opts = opts || {};
+    prepareDrawerSlots(opts);
     if (opts.phone) return renderPhoneDrawer(inner, opts);
     return renderTabletDrawer(inner, opts);
   }
@@ -879,6 +922,7 @@
     getConfig: getConfig,
     getUserRoles: getUserRoles,
     applyDrawer: applyDrawer,
+    prepareDrawerSlots: prepareDrawerSlots,
     openBuilder: openBuilder,
     invalidate: invalidate,
     save: save,
