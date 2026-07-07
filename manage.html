@@ -3153,6 +3153,34 @@ function heroCtaCard(c){
       +'<button type="button" class="btn ghost" id="gsi-push-vercel-cname">Add CNAME to Vercel DNS</button> <span id="gsi-vercel-cname-msg" class="hint"></span>'
       +'<p class="hint" style="margin:10px 0 0;">Or add the CNAME manually at your DNS host if not on Vercel nameservers.</p></div>'
       +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);"><button type="button" class="btn" id="gsi-save">Save &amp; publish</button><span id="gsi-saved" style="font-size:13px;color:#0a7d33;"></span></div></div>';
+    var platformSeoCard=(currentRole==='super')?('<div class="card" style="margin-bottom:20px;border:1px solid var(--accent-soft);" id="psi-card"><h2 style="margin:0 0 4px;">LeadPages marketing site</h2><p class="lede" style="margin:0 0 14px;">Search &amp; indexing for <strong>leadpages.com.au</strong> — homepage, marketplace, resources, and partner pages. Tenant sites use the card below.</p>'
+      +'<p class="lede" style="margin:0 0 6px;font-weight:600;">Sitemap <span class="hint">(submit in Search Console)</span></p>'
+      +'<div id="psi-map-stats" class="hint" style="margin:0 0 10px;padding:10px 12px;background:transparent;border-radius:10px;border:1px solid var(--line);">Loading marketing sitemap\u2026</div>'
+      +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;"><code id="psi-sitemap" style="'+_mono+'flex:1;min-width:200px;">marketing-sitemap.xml</code><button type="button" class="btn ghost sm" id="psi-copy-map">Copy path</button><button type="button" class="btn ghost sm" id="psi-copy-map-url">Copy URL</button></div>'
+      +'<p class="hint" style="margin:0 0 10px;">Full URL: <code id="psi-map-url" style="background:transparent;color:var(--ink,#1b1f2a);padding:1px 6px;border-radius:6px;border:1px solid var(--line);word-break:break-all;">https://www.leadpages.com.au/marketing-sitemap.xml</code></p>'
+      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;"><button type="button" class="btn" id="psi-regen-map">Regenerate sitemap</button><span id="psi-regen-msg" class="hint"></span></div>'
+      +'<p class="lede" style="margin:0 0 8px;font-weight:600;">Verification method</p>'
+      +'<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">'
+      +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;"><input type="radio" name="psi-method" value="meta" checked> <span><strong>HTML meta tag</strong> <span class="hint">— injected on marketing pages. URL-prefix property: <code>https://www.leadpages.com.au/</code></span></span></label>'
+      +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;"><input type="radio" name="psi-method" value="vercel-txt"> <span><strong>DNS TXT via Vercel</strong> <span class="hint">— domain property for <code>leadpages.com.au</code></span></span></label>'
+      +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;"><input type="radio" name="psi-method" value="manual-txt"> <span><strong>DNS TXT (manual)</strong></span></label>'
+      +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;"><input type="radio" name="psi-method" value="cname"> <span><strong>DNS CNAME</strong></span></label>'
+      +'</div>'
+      +'<div id="psi-panel-meta"><p class="lede" style="margin:0 0 6px;">Property URL</p><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px;"><code id="psi-prop" style="'+_mono+'flex:1;min-width:200px;">https://www.leadpages.com.au/</code><button type="button" class="btn ghost sm" id="psi-copy-prop">Copy</button></div>'
+      +'<div class="f" style="margin-bottom:8px;"><label>Verification code</label><input type="text" id="psi-verify" class="tin" placeholder="e.g. AbCdEfGh1234567890" value=""></div>'
+      +'<p class="hint" style="margin:0;">Meta tag is injected on marketing pages after you save.</p></div>'
+      +'<div id="psi-panel-vercel-txt" hidden><p class="lede" style="margin:0 0 6px;">Domain property</p><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px;"><code style="'+_mono+'flex:1;min-width:200px;">leadpages.com.au</code><button type="button" class="btn ghost sm psi-copy-rec" data-copy="leadpages.com.au">Copy</button></div>'
+      +'<div class="f" style="margin-bottom:10px;"><label>TXT value from Google</label><input type="text" id="psi-txt-val" class="tin" placeholder="google-site-verification=…" value=""></div>'
+      +'<div id="psi-vercel-txt-preview" style="margin-bottom:10px;">'+_recRow('Type','TXT')+_recRow('Name / host','@ (root)','psi-txt-name')+_recRow('Value','(enter code above)','psi-txt-value')+'</div>'
+      +'<button type="button" class="btn ghost" id="psi-push-vercel-txt">Add TXT to Vercel DNS</button> <span id="psi-vercel-txt-msg" class="hint"></span></div>'
+      +'<div id="psi-panel-manual-txt" hidden><p class="lede" style="margin:0 0 6px;">Domain property</p><code style="'+_mono+'display:block;margin-bottom:12px;">leadpages.com.au</code>'
+      +'<div class="f" style="margin-bottom:10px;"><label>TXT value from Google</label><input type="text" id="psi-manual-txt-val" class="tin" placeholder="google-site-verification=…" value=""></div>'
+      +'<div id="psi-manual-txt-preview">'+_recRow('Type','TXT')+_recRow('Name / host','@')+_recRow('Value','(enter code above)','psi-manual-txt-preview-val')+'</div></div>'
+      +'<div id="psi-panel-cname" hidden><p class="lede" style="margin:0 0 6px;">Domain property</p><code style="'+_mono+'display:block;margin-bottom:12px;">leadpages.com.au</code>'
+      +'<div class="row"><div class="f"><label>CNAME host</label><input type="text" id="psi-cname-host" class="tin" placeholder="e.g. abc123" value=""></div><div class="f"><label>CNAME target</label><input type="text" id="psi-cname-target" class="tin" placeholder="e.g. gv-….googlehosted.com" value=""></div></div>'
+      +'<div id="psi-cname-preview" style="margin:10px 0;">'+_recRow('Type','CNAME')+_recRow('Name / host','(enter host)','psi-cname-prev-host')+_recRow('Target','(enter target)','psi-cname-prev-target')+'</div>'
+      +'<button type="button" class="btn ghost" id="psi-push-vercel-cname">Add CNAME to Vercel DNS</button> <span id="psi-vercel-cname-msg" class="hint"></span></div>'
+      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);"><button type="button" class="btn" id="psi-save">Save marketing SEO</button><span id="psi-saved" style="font-size:13px;color:#0a7d33;"></span></div></div>'):'';
     if(!document.getElementById('settings-page-css')){ var s=document.createElement('style'); s.id='settings-page-css'; s.textContent='#settings-page{position:fixed;inset:0;z-index:9998;background:rgba(16,22,32,.55);overflow:auto;padding:32px 16px;}#settings-page .sp-card{max-width:880px;margin:0 auto;background:var(--bg);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:26px 26px 30px;}#settings-page .card{background:var(--panel);border-color:var(--line);}#settings-page .sp-starter .tp2-wrap,#settings-page .sp-starter .tb-box{background:var(--panel-soft);}#settings-page .danger{border:1px solid color-mix(in srgb,var(--danger) 55%,transparent);border-radius:14px;background:color-mix(in srgb,var(--danger) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger) 8%,transparent),0 0 28px color-mix(in srgb,var(--danger) 10%,transparent);}#settings-page .danger h2{color:var(--danger);margin:0 0 4px;}#settings-page .danger .lede{color:var(--ink-soft);}#settings-page .sp-del{border:1px solid color-mix(in srgb,var(--danger) 50%,transparent);background:transparent;color:var(--danger);border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s;}#settings-page .sp-del:disabled{opacity:.45;cursor:default;}#settings-page .sp-del.armed{background:color-mix(in srgb,var(--danger) 22%,transparent);border-color:var(--danger);color:var(--danger);box-shadow:0 0 18px color-mix(in srgb,var(--danger) 18%,transparent);}#settings-page .sp-lock{display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--danger);background:transparent;color:var(--danger);border-radius:8px;padding:8px 10px;cursor:pointer;transition:background .15s,box-shadow .15s;}#settings-page .sp-lock:hover{background:color-mix(in srgb,var(--danger) 10%,transparent);}#settings-page .sp-lock.sp-lock--unlocked{background:color-mix(in srgb,var(--danger) 14%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--danger) 12%,transparent);}#settings-page .sp-lock-icon{display:block;}#settings-page .sp-lock .sp-lock-open{display:none;}#settings-page .sp-lock.sp-lock--unlocked .sp-lock-closed{display:none;}#settings-page .sp-lock.sp-lock--unlocked .sp-lock-open{display:block;}'; document.head.appendChild(s); }
     var p=document.createElement('div'); p.id='settings-page';
     var detailFields='<div class="card" style="margin-bottom:20px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Site details</h2><label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="set-demo"'+(demoOn?' checked':'')+'> Demo site</label></div><p class="lede">Business identity and contact \u2014 used across the page and the call buttons.</p>'
@@ -3165,6 +3193,7 @@ function heroCtaCard(c){
     var danger=(currentRole==='super')?('<div class="card danger" style="margin-bottom:0;"><h2>Danger zone</h2><p class="lede" style="margin:0 0 12px;">Unlock, then tap Delete twice to confirm. This permanently removes the site and can\u2019t be undone.</p><div style="display:flex;gap:10px;align-items:center;"><button type="button" id="btn-dellock" class="sp-lock" title="Unlock to allow delete" aria-label="Unlock to allow delete"><svg class="sp-lock-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="sp-lock-closed"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></g><g class="sp-lock-open"><path d="M8 11V7a4 4 0 0 1 7.5-1"/><rect x="5" y="11" width="14" height="10" rx="2"/></g></svg></button><button type="button" id="btn-delsite" class="sp-del" disabled>Delete site</button></div></div>'):'';
     p.innerHTML='<div class="sp-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h1 style="margin:0;font:700 26px/1.1 var(--font-display,Georgia),serif;">Settings</h1><button type="button" id="set-close" class="btn ghost">Close</button></div>'
       +'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Appearance &amp; Accessibility</h2><p class="lede" style="margin:0 0 12px;">Workspace theme for the command centre, plus published page visitor settings for this site.</p><button type="button" class="btn" id="open-aa-inline">Workspace appearance</button> <button type="button" class="btn ghost" id="open-aa-published">Published page settings</button></div>'
+      +platformSeoCard
       +searchCard
       +detailFields
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Mobile command menu</h2><p class="lede" style="margin:0 0 12px;">Design the phone mega menu for the command centre — section order, layouts, separators, button styles, and which roles see each item (super admin, partner, client).</p><button type="button" class="btn" id="open-mobile-menu">Edit mobile menu</button></div>':'')
@@ -3332,6 +3361,122 @@ function heroCtaCard(c){
           if(j.vercel.configured&&!j.vercel.canManageDns){ var tm2=$('gsi-vercel-txt-msg'); if(tm2&&!tm2.textContent) tm2.textContent='Domain not found in Vercel — add it to the LeadPages Vercel project first.'; }
         });
       }
+    })();
+    if(currentRole==='super') (function(){
+      var _propUrl='https://www.leadpages.com.au/';
+      var _mapPath='marketing-sitemap.xml';
+      var _mapUrl='https://www.leadpages.com.au/marketing-sitemap.xml';
+      var cp=$('psi-copy-prop'); if(cp) cp.addEventListener('click',function(){ lpCopyText(_propUrl,'Property URL'); });
+      var cm=$('psi-copy-map'); if(cm) cm.addEventListener('click',function(){ lpCopyText(_mapPath,'Sitemap path'); });
+      var cmu=$('psi-copy-map-url'); if(cmu) cmu.addEventListener('click',function(){ lpCopyText(_mapUrl,'Sitemap URL'); });
+      document.querySelectorAll('.psi-copy-rec').forEach(function(b){ b.addEventListener('click',function(){ lpCopyText(b.getAttribute('data-copy')||'','Record'); }); });
+      function psiMethod(){ var r=document.querySelector('input[name="psi-method"]:checked'); return r?r.value:'meta'; }
+      function psiShowPanel(){ var m=psiMethod(); ['meta','vercel-txt','manual-txt','cname'].forEach(function(k){ var el=$('psi-panel-'+k); if(el) el.hidden=(m!==k); }); }
+      function psiToken(v){
+        v=(v||'').trim(); if(!v) return '';
+        var m=v.match(/google-site-verification=([^\s"'>]+)/i); if(m&&m[1]) return m[1].trim();
+        var c=v.match(/content\s*=\s*["']([^"']+)["']/i); if(c&&c[1]) return c[1].trim();
+        return v.replace(/^['"]|['"]$/g,'').trim();
+      }
+      function psiNormTxt(v){ v=(v||'').trim(); if(!v) return ''; return /^google-site-verification=/i.test(v)?v:('google-site-verification='+v); }
+      function psiSyncTxtPreview(){
+        var full=psiNormTxt((($('psi-txt-val')&&$('psi-txt-val').value)||($('psi-manual-txt-val')&&$('psi-manual-txt-val').value)||($('psi-verify')&&$('psi-verify').value)||''));
+        var tv=$('psi-txt-value'); if(tv) tv.textContent=full||'(enter code above)';
+        var mv=$('psi-manual-txt-preview-val'); if(mv) mv.textContent=full||'(enter code above)';
+      }
+      function psiSyncCnamePreview(){
+        var h=($('psi-cname-host')&&$('psi-cname-host').value||'').trim();
+        var t=($('psi-cname-target')&&$('psi-cname-target').value||'').trim();
+        var ph=$('psi-cname-prev-host'); if(ph) ph.textContent=h||'(enter host)';
+        var pt=$('psi-cname-prev-target'); if(pt) pt.textContent=t||'(enter target)';
+      }
+      document.querySelectorAll('input[name="psi-method"]').forEach(function(r){ r.addEventListener('change',psiShowPanel); });
+      ['psi-verify','psi-txt-val','psi-manual-txt-val'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',psiSyncTxtPreview); });
+      var pch=$('psi-cname-host'), pct=$('psi-cname-target');
+      if(pch) pch.addEventListener('input',psiSyncCnamePreview);
+      if(pct) pct.addEventListener('input',psiSyncCnamePreview);
+      async function psiApi(method,body){
+        var token=await cwToken();
+        return fetch('/api/platform-seo',{method:method||'GET',headers:{'content-type':'application/json',Authorization:'Bearer '+(token||'')},body:body?JSON.stringify(body):undefined}).then(function(r){return r.json().catch(function(){return{};});});
+      }
+      function psiFill(j){
+        if(!j||!j.ok) return;
+        var cfg=j.config||{};
+        var m=cfg.googleVerificationMethod||'meta';
+        document.querySelectorAll('input[name="psi-method"]').forEach(function(r){ r.checked=(r.value===m); });
+        psiShowPanel();
+        var v=$('psi-verify'); if(v) v.value=cfg.googleSiteVerification||'';
+        var tv=$('psi-txt-val'); if(tv) tv.value=cfg.googleSiteVerification||'';
+        var mv=$('psi-manual-txt-val'); if(mv) mv.value=cfg.googleSiteVerification||'';
+        if(pch) pch.value=cfg.googleVerificationCnameHost||'';
+        if(pct) pct.value=cfg.googleVerificationCnameTarget||'';
+        psiSyncTxtPreview(); psiSyncCnamePreview();
+        var el=$('psi-map-stats');
+        if(el){
+          var when=cfg.sitemapGeneratedAt?lpWhen(cfg.sitemapGeneratedAt):'not yet regenerated';
+          var n=(j.sitemap&&j.sitemap.urlCount)||0;
+          el.innerHTML='<strong>'+n+' URLs</strong> in the marketing sitemap.<br>Last regenerated: '+esc(when)+'.<br>Listed in <code>robots.txt</code> as <code>marketing-sitemap.xml</code>.';
+        }
+        if(j.sitemapFullUrl){ var mu=$('psi-map-url'); if(mu) mu.textContent=j.sitemapFullUrl; _mapUrl=j.sitemapFullUrl; }
+        if(j.vercel){
+          if(j.vercel.txtExists){ var tm=$('psi-vercel-txt-msg'); if(tm&&!tm.textContent) tm.textContent='TXT verification record already on Vercel DNS.'; }
+          if(j.vercel.cnameExists){ var cm2=$('psi-vercel-cname-msg'); if(cm2&&!cm2.textContent) cm2.textContent='CNAME verification record already on Vercel DNS.'; }
+        }
+      }
+      psiApi('GET').then(psiFill).catch(function(){ var el=$('psi-map-stats'); if(el) el.textContent='Could not load marketing SEO settings.'; });
+      var gr=$('psi-regen-map');
+      if(gr) gr.addEventListener('click',async function(){
+        var msg=$('psi-regen-msg'); gr.disabled=true;
+        if(msg){ msg.style.color='var(--ink-faint)'; msg.textContent='Regenerating\u2026'; }
+        try{
+          var j=await psiApi('POST',{action:'regenerate-sitemap'});
+          if(j.ok){ if(msg){ msg.style.color='#0a7d33'; msg.textContent='Marketing sitemap updated ('+(j.sitemap&&j.sitemap.urlCount||0)+' URLs).'; } psiFill(j); }
+          else { if(msg){ msg.style.color='#b42318'; msg.textContent=(j.error||'Failed'); } }
+        }catch(e){ if(msg){ msg.style.color='#b42318'; msg.textContent='Failed'; } }
+        finally{ gr.disabled=false; }
+      });
+      var ptxt=$('psi-push-vercel-txt');
+      if(ptxt) ptxt.addEventListener('click',async function(){
+        var msg=$('psi-vercel-txt-msg'); ptxt.disabled=true;
+        if(msg){ msg.style.color='var(--ink-faint)'; msg.textContent='Adding record\u2026'; }
+        try{
+          var val=psiToken(($('psi-txt-val')&&$('psi-txt-val').value)||'');
+          if(!val){ if(msg){ msg.style.color='#b42318'; msg.textContent='Enter the verification code first.'; } return; }
+          var j=await psiApi('POST',{action:'push-vercel-txt',value:val});
+          if(j.ok){ if(msg){ msg.style.color='#0a7d33'; msg.textContent=j.alreadyExists?'TXT record already on Vercel.':'TXT record added on Vercel.'; } }
+          else { if(msg){ msg.style.color='#b42318'; msg.textContent=(j.error||'Could not add TXT record.'); } }
+        }catch(e){ if(msg){ msg.style.color='#b42318'; msg.textContent='Could not add TXT record.'; } }
+        finally{ ptxt.disabled=false; }
+      });
+      var pcname=$('psi-push-vercel-cname');
+      if(pcname) pcname.addEventListener('click',async function(){
+        var msg=$('psi-vercel-cname-msg'); pcname.disabled=true;
+        if(msg){ msg.style.color='var(--ink-faint)'; msg.textContent='Adding record\u2026'; }
+        try{
+          var host=(pch&&pch.value||'').trim(), target=(pct&&pct.value||'').trim();
+          if(!host||!target){ if(msg){ msg.style.color='#b42318'; msg.textContent='Enter CNAME host and target.'; } return; }
+          var j=await psiApi('POST',{action:'push-vercel-cname',cnameHost:host,cnameTarget:target});
+          if(j.ok){ if(msg){ msg.style.color='#0a7d33'; msg.textContent=j.alreadyExists?'CNAME already on Vercel.':'CNAME added on Vercel.'; } }
+          else { if(msg){ msg.style.color='#b42318'; msg.textContent=(j.error||'Could not add CNAME.'); } }
+        }catch(e){ if(msg){ msg.style.color='#b42318'; msg.textContent='Could not add CNAME.'; } }
+        finally{ pcname.disabled=false; }
+      });
+      var ps=$('psi-save'), pok=$('psi-saved');
+      if(ps) ps.addEventListener('click',async function(){
+        ps.disabled=true; var o=ps.textContent; ps.textContent='Saving\u2026'; if(pok){ pok.style.color='#0a7d33'; pok.textContent=''; }
+        var m=psiMethod(); var raw='';
+        if(m==='meta') raw=($('psi-verify')&&$('psi-verify').value)||'';
+        else if(m==='vercel-txt') raw=($('psi-txt-val')&&$('psi-txt-val').value)||'';
+        else if(m==='manual-txt') raw=($('psi-manual-txt-val')&&$('psi-manual-txt-val').value)||'';
+        var body={action:'save',googleVerificationMethod:m,googleSiteVerification:raw};
+        if(m==='cname'){ body.googleVerificationCnameHost=(pch&&pch.value||'').trim(); body.googleVerificationCnameTarget=(pct&&pct.value||'').trim(); }
+        try{
+          var j=await psiApi('POST',body);
+          if(j.ok){ ps.textContent='Saved \u2713'; if(pok) pok.textContent=(m==='meta')?'Meta tag is live on marketing pages.':'Settings saved — complete verification in Search Console.'; psiFill(j); }
+          else { ps.textContent='Save failed'; if(pok){ pok.style.color='#b42318'; pok.textContent=(j.error||'Could not save'); } }
+        }catch(e){ ps.textContent='Save failed'; if(pok){ pok.style.color='#b42318'; pok.textContent='Could not save'; } }
+        setTimeout(function(){ ps.disabled=false; ps.textContent=o; },1800);
+      });
     })();
     // wire service starter content
     (function(){ var c=c0(); var ct=(c.trade||'').toLowerCase().trim(); var slug='plumber';
