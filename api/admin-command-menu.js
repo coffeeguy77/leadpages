@@ -37,7 +37,14 @@ const DEFAULT_MENU = {
       buttonStyle: 'nav',
       separator: 'line',
       roles: ['super', 'partner', 'client'],
-      slot: 'adminnav'
+      slot: 'adminnav',
+      items: [
+        { id: 'nav-dashboard', roles: ['super', 'partner', 'client'] },
+        { id: 'nav-details', roles: ['super', 'partner', 'client'] },
+        { id: 'nav-landing', roles: ['super', 'partner', 'client'] },
+        { id: 'nav-apps', roles: ['super', 'partner', 'client'] },
+        { id: 'nav-mailer', roles: ['super', 'partner', 'client'] }
+      ]
     },
     {
       id: 'tools',

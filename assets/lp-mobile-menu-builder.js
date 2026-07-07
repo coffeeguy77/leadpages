@@ -57,6 +57,44 @@
     'lpc-drawer-footer': { label: 'Account footer', group: 'Slots' }
   };
 
+  /** Builder tab ids (nav-*) — labels for config items when DOM tabs are hidden. */
+  var NAV_TAB_CATALOG = {
+    'nav-dashboard': 'Dashboard',
+    'nav-details': 'Page editor',
+    'nav-rates': 'Rates & leads',
+    'nav-landing': 'Landing pages',
+    'nav-apps': 'App Marketplace',
+    'nav-mailer': 'Email clients',
+    'nav-appearance': 'Appearance',
+    'nav-contact': 'Contact',
+    'nav-logo': 'Logo',
+    'nav-users': 'Users',
+    'nav-demothemes': 'Demo themes'
+  };
+
+  var DEFAULT_BUILDER_ITEMS = [
+    { id: 'nav-dashboard', roles: ['super', 'partner', 'client'] },
+    { id: 'nav-details', roles: ['super', 'partner', 'client'] },
+    { id: 'nav-landing', roles: ['super', 'partner', 'client'] },
+    { id: 'nav-apps', roles: ['super', 'partner', 'client'] },
+    { id: 'nav-mailer', roles: ['super', 'partner', 'client'] }
+  ];
+
+  function mmDebugEnabled() {
+    if (global.LPMobileMenu && global.LPMobileMenu.debug) return true;
+    try {
+      return !!(global.location && /(?:\?|&)mm-debug(?:=1)?(?:&|$)/.test(global.location.search || ''));
+    } catch (e) { return false; }
+  }
+
+  function mmLog() {
+    if (!mmDebugEnabled()) return;
+    try {
+      var args = ['[LPMobileMenu]'].concat(Array.prototype.slice.call(arguments));
+      console.log.apply(console, args);
+    } catch (e) { /* ignore */ }
+  }
+
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;')
@@ -76,14 +114,27 @@
     return ['super', 'partner', 'client'];
   }
 
+  function normalizeRole(role) {
+    if (!role) return role;
+    var r = String(role).toLowerCase().replace(/-/g, '_');
+    if (r === 'superadmin' || r === 'super_admin') return 'super';
+    if (r === 'broker') return 'partner';
+    return role;
+  }
+
   function rolesMatch(required, userRoles) {
     if (!required || !required.length) return true;
     var u = userRoles || getUserRoles();
     if (!Array.isArray(u)) u = [u];
+    u = u.map(normalizeRole);
     for (var i = 0; i < required.length; i++) {
-      if (u.indexOf(required[i]) >= 0) return true;
+      if (u.indexOf(normalizeRole(required[i])) >= 0) return true;
     }
     return false;
+  }
+
+  function isBuilderSection(sec) {
+    return !!(sec && (sec.id === 'builder' || sec.slot === 'adminnav'));
   }
 
   function cwToken() {
@@ -147,6 +198,12 @@
           sec.items.push({ id: 'lpc-drawer-signout', roles: ['super', 'partner', 'client'] });
         }
       }
+      if (defSec.id === 'builder') {
+        if (!sec.slot) sec.slot = 'adminnav';
+        if (!sec.items || !sec.items.length) {
+          sec.items = deepClone(defSec.items || DEFAULT_BUILDER_ITEMS);
+        }
+      }
     });
     return cfg;
   }
@@ -180,7 +237,7 @@
     sections: [
       { id: 'publish', title: 'Publish', layout: 'stack', buttonStyle: 'publish-duo', separator: 'none', roles: ['super', 'partner', 'client'], slot: 'lpc-drawer-top', items: [{ id: 'btn-publish' }, { id: 'btn-viewlive' }] },
       { id: 'site', title: 'Site', layout: 'stack', buttonStyle: 'default', separator: 'line', roles: ['super', 'partner'], condition: 'site-switcher', slot: 'lpc-context' },
-      { id: 'builder', title: 'Builder Menu', layout: 'tabs', buttonStyle: 'nav', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'adminnav' },
+      { id: 'builder', title: 'Builder Menu', layout: 'tabs', buttonStyle: 'nav', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'adminnav', items: deepClone(DEFAULT_BUILDER_ITEMS) },
       { id: 'tools', title: 'Site Tools', layout: 'stack', buttonStyle: 'outline', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'lpc-tools', items: [
         { id: 'btn-settings', roles: ['super', 'partner', 'client'] },
         { id: 'btn-appearance-aa', roles: ['super', 'partner', 'client'] },
@@ -354,6 +411,119 @@
     return out;
   }
 
+  function itemLabel(id) {
+    if (NAV_TAB_CATALOG[id]) return NAV_TAB_CATALOG[id];
+    var c = ACTION_CATALOG[id];
+    return c ? c.label : id;
+  }
+
+  function itemDisplayLabel(id) {
+    var el = document.getElementById(id);
+    if (el && (el.textContent || '').trim()) return (el.textContent || '').trim();
+    return itemLabel(id);
+  }
+
+  function outlineForSection(sec) {
+    return sec.buttonStyle === 'outline' || sec.buttonStyle === 'nav';
+  }
+
+  /**
+   * Shared section item resolver for phone preview + live drawer.
+   * Builder sections prefer saved sec.items; fall back to live editor nav tabs.
+   */
+  function resolveSectionItems(sec, roles, opts) {
+    opts = opts || {};
+    roles = Array.isArray(roles) ? roles : [roles || getUserRoles()[0] || 'super'];
+    var out = [];
+    var debug = mmDebugEnabled();
+
+    if (debug) {
+      mmLog('section', sec.id || sec.slot || '(unnamed)', 'previewRole=', roles);
+    }
+
+    if (isBuilderSection(sec)) {
+      if (sec.items && sec.items.length) {
+        (sec.items || []).forEach(function (it) {
+          if (!it || !it.id) {
+            if (debug) mmLog('  skip: missing item id in builder section');
+            return;
+          }
+          if (!rolesMatch(it.roles || sec.roles, roles)) {
+            if (debug) mmLog('  fail (role)', it.id, itemDisplayLabel(it.id), 'required=', it.roles || sec.roles);
+            return;
+          }
+          out.push({
+            id: it.id,
+            label: itemDisplayLabel(it.id),
+            outline: outlineForSection(sec),
+            primary: false
+          });
+          if (debug) mmLog('  pass (config)', it.id, itemDisplayLabel(it.id));
+        });
+      }
+      if (!out.length) {
+        navMetaFromDom().forEach(function (m) {
+          out.push({
+            id: m.id,
+            label: m.label || itemDisplayLabel(m.id),
+            outline: outlineForSection(sec),
+            primary: false,
+            el: m.el
+          });
+          if (debug) mmLog('  pass (live nav)', m.id, m.label);
+        });
+      }
+      if (!out.length && debug) mmLog('  builder section: no items after config + live nav');
+      return out;
+    }
+
+    if (sec.slot === 'lpc-context') {
+      if (sec.condition === 'site-switcher') {
+        if (opts.preview || (typeof global.lpDrawerShowSiteSwitcher === 'function' && global.lpDrawerShowSiteSwitcher())) {
+          out.push({ id: 'lpc-context', label: 'Site switcher', outline: outlineForSection(sec), primary: false });
+          if (debug) mmLog('  pass (slot)', 'lpc-context', 'Site switcher');
+        } else if (debug) {
+          mmLog('  skip: site-switcher condition not met');
+        }
+        return out;
+      }
+      out.push({ id: 'lpc-context', label: 'Site context', outline: outlineForSection(sec), primary: false });
+      if (debug) mmLog('  pass (slot)', 'lpc-context', 'Site context');
+      return out;
+    }
+
+    if (sec.slot && !sec.items) {
+      var slotMeta = SLOT_CATALOG[sec.slot];
+      out.push({
+        id: sec.slot,
+        label: slotMeta ? slotMeta.label : sec.slot,
+        outline: outlineForSection(sec),
+        primary: false
+      });
+      if (debug) mmLog('  pass (slot)', sec.slot, out[0].label);
+      return out;
+    }
+
+    visibleItems(sec, roles).forEach(function (it) {
+      if (!it || !it.id) {
+        if (debug) mmLog('  skip: missing item id');
+        return;
+      }
+      out.push({
+        id: it.id,
+        label: itemDisplayLabel(it.id),
+        outline: outlineForSection(sec),
+        primary: it.id === 'btn-publish'
+      });
+      if (debug) mmLog('  pass (item)', it.id, itemDisplayLabel(it.id));
+    });
+    (sec.items || []).forEach(function (it) {
+      if (!it || !it.id || rolesMatch(it.roles || sec.roles, roles)) return;
+      if (debug) mmLog('  fail (role)', it.id, itemDisplayLabel(it.id), 'required=', it.roles || sec.roles);
+    });
+    return out;
+  }
+
   function navMetaFromDom() {
     if (typeof global.lpGetDrawerNavMeta === 'function') {
       try {
@@ -370,16 +540,8 @@
     });
   }
 
-  function renderBuilderSection(secBody, sec, buttons) {
-    var metas = (buttons && buttons.length)
-      ? buttons.map(function (btn) {
-        return {
-          id: btn.id || '',
-          label: (btn.textContent || '').trim() || btn.id || 'Menu',
-          el: btn
-        };
-      })
-      : navMetaFromDom();
+  function renderDrawerBuilderSection(secBody, sec, userRoles) {
+    var metas = resolveSectionItems(sec, userRoles, { drawer: true });
     if (!metas.length) return false;
 
     metas.forEach(function (meta) {
@@ -446,17 +608,20 @@
 
     opts = opts || {};
     restoreSources();
-    var navButtons = collectNavButtons(null);
-
     var cfg = getConfig();
     var userRoles = getUserRoles();
     if (!cfg || !cfg.sections) return false;
+
+    if (mmDebugEnabled()) mmLog('loaded config', deepClone(cfg));
 
     while (inner.firstChild) inner.removeChild(inner.firstChild);
 
     var added = 0;
     cfg.sections.forEach(function (sec) {
-      if (!sectionVisible(sec, opts)) return;
+      if (!sectionVisible(sec, opts)) {
+        if (mmDebugEnabled()) mmLog('section hidden:', sec.id || sec.slot, 'sectionVisible=false');
+        return;
+      }
 
       var secBody = document.createElement('div');
       secBody.className = 'lp-mm-sec-body';
@@ -464,15 +629,21 @@
       applyButtonStyle(secBody, sec.buttonStyle, sec);
 
       var hasContent = false;
-      if (sec.slot === 'adminnav' || sec.id === 'builder') {
-        hasContent = renderBuilderSection(secBody, sec, navButtons);
+      if (isBuilderSection(sec)) {
+        hasContent = renderDrawerBuilderSection(secBody, sec, userRoles);
       } else if (sec.slot === 'lpc-context' || sec.id === 'site') {
         hasContent = renderSiteSection(secBody);
       } else if (sec.items && sec.items.length) {
         hasContent = renderItemSection(secBody, sec, userRoles, opts);
+      } else if (sec.slot) {
+        var slotLines = resolveSectionItems(sec, userRoles, opts);
+        hasContent = slotLines.length > 0;
       }
 
-      if (!hasContent) return;
+      if (!hasContent) {
+        if (mmDebugEnabled()) mmLog('section skipped (no content):', sec.id || sec.slot);
+        return;
+      }
 
       if (sec.title) {
         var lbl = document.createElement('div');
@@ -535,44 +706,34 @@
   }
 
   function slotPreviewLines(sec, roles) {
-    if (sec.slot === 'adminnav') {
-      return getLiveNavButtons().map(function (b) {
-        return { label: b.label, outline: true };
-      });
-    }
-    if (sec.slot === 'lpc-context') {
-      if (sec.condition === 'site-switcher') {
-        return [{ label: 'Site switcher', outline: true }];
-      }
-      return [{ label: 'Site context', outline: true }];
-    }
-    if (sec.slot && !sec.items) {
-      var slotMeta = SLOT_CATALOG[sec.slot];
-      return [{ label: slotMeta ? slotMeta.label : sec.slot, outline: true }];
-    }
-    return (sec.items || []).filter(function (it) {
-      return rolesMatch(it.roles || sec.roles, roles);
-    }).map(function (it) {
-      return {
-        label: itemLabel(it.id),
-        outline: sec.buttonStyle === 'outline' || sec.buttonStyle === 'nav',
-        primary: it.id === 'btn-publish'
-      };
-    });
+    return resolveSectionItems(sec, roles, { preview: true });
   }
 
   function previewHtml(draft, roles) {
     roles = Array.isArray(roles) ? roles : [roles || getUserRoles()[0] || 'super'];
+    if (mmDebugEnabled()) mmLog('previewHtml roles=', roles, 'sections=', (draft.sections || []).length);
     var html = '';
     (draft.sections || []).forEach(function (sec) {
-      if (!rolesMatch(sec.roles, roles)) return;
+      if (!rolesMatch(sec.roles, roles)) {
+        if (mmDebugEnabled()) mmLog('preview skip section (role):', sec.id || sec.title);
+        return;
+      }
       if (sec.condition === 'site-switcher' && typeof global.lpDrawerShowSiteSwitcher === 'function') {
         try {
-          if (!global.lpDrawerShowSiteSwitcher()) return;
-        } catch (e) { return; }
+          if (!global.lpDrawerShowSiteSwitcher()) {
+            if (mmDebugEnabled()) mmLog('preview skip section (site-switcher):', sec.id || sec.title);
+            return;
+          }
+        } catch (e) {
+          if (mmDebugEnabled()) mmLog('preview skip section (site-switcher error):', sec.id || sec.title);
+          return;
+        }
       }
       var lines = slotPreviewLines(sec, roles);
-      if (!lines.length) return;
+      if (!lines.length) {
+        if (mmDebugEnabled()) mmLog('preview skip section (no items):', sec.id || sec.title);
+        return;
+      }
       html += '<div class="mmb-psec">';
       if (sec.title) html += '<div class="mmb-psec-title">' + esc(sec.title) + '</div>';
       var grid = sec.layout === 'grid-2';
@@ -646,15 +807,10 @@
     document.head.appendChild(s);
   }
 
-  function itemLabel(id) {
-    var c = ACTION_CATALOG[id];
-    return c ? c.label : id;
-  }
-
   function renderBuilderSection(sec, idx, draft) {
     var itemsHtml = (sec.items || []).map(function (it, i) {
       return '<div class="mmb-item" data-sec="' + idx + '" data-item="' + i + '">'
-        + '<span class="mmb-item-name">' + esc(itemLabel(it.id)) + '</span>'
+        + '<span class="mmb-item-name">' + esc(itemDisplayLabel(it.id)) + '</span>'
         + '<span class="mmb-roles">' + roleCheckboxes(it.roles || sec.roles, 'item') + '</span>'
         + '<button type="button" class="mmb-mini mmb-item-up" data-sec="' + idx + '" data-item="' + i + '">\u2191</button>'
         + '<button type="button" class="mmb-mini mmb-item-down" data-sec="' + idx + '" data-item="' + i + '">\u2193</button>'
@@ -679,15 +835,21 @@
 
     var itemOpts = Object.keys(ACTION_CATALOG).map(function (k) {
       return '<option value="' + k + '">' + esc(ACTION_CATALOG[k].label) + '</option>';
-    }).join('');
+    }).join('')
+      + Object.keys(NAV_TAB_CATALOG).map(function (k) {
+        return '<option value="' + k + '">' + esc(NAV_TAB_CATALOG[k]) + ' (builder tab)</option>';
+      }).join('');
 
+    var showItems = isBuilderSection(sec) || !!(sec.items && sec.items.length);
     var slotNote = '';
-    if (sec.slot === 'adminnav') {
-      var tabs = getLiveNavButtons();
-      slotNote = '<div class="mmb-slot-note">Builder tabs come from the live editor nav for this site template. '
-        + (tabs.length ? 'Currently visible tabs:' : 'No builder tabs are visible for this site yet.')
+    if (isBuilderSection(sec)) {
+      if (!sec.items || !sec.items.length) sec.items = deepClone(DEFAULT_BUILDER_ITEMS);
+      var liveTabs = getLiveNavButtons();
+      slotNote = '<div class="mmb-slot-note">Builder tabs are saved as menu items below. '
+        + 'The phone preview and hamburger drawer use these configured items (role-filtered). '
+        + (liveTabs.length ? 'Live editor tabs for this site right now:' : '')
         + '</div>'
-        + (tabs.length ? '<div class="mmb-live-tabs">' + tabs.map(function (t) {
+        + (liveTabs.length ? '<div class="mmb-live-tabs">' + liveTabs.map(function (t) {
           return '<span class="mmb-live-tab">' + esc(t.label) + '</span>';
         }).join('') + '</div>' : '');
     } else if (sec.slot === 'lpc-context') {
@@ -713,7 +875,7 @@
       + '</div>'
       + '<div class="mmb-f"><label>Who can see this section</label><div class="mmb-roles">' + roleCheckboxes(sec.roles, 'sec') + '</div></div>'
       + slotNote
-      + (sec.items ? ('<div class="mmb-items">' + itemsHtml + '</div>'
+      + (showItems ? ('<div class="mmb-items">' + itemsHtml + '</div>'
         + '<div class="mmb-add-row"><select data-sec-add-item="' + idx + '"><option value="">Add menu item…</option>' + itemOpts + '</select></div>') : '')
       + '</div>';
   }
@@ -975,9 +1137,12 @@
     openBuilder: openBuilder,
     invalidate: invalidate,
     save: save,
+    resolveSectionItems: resolveSectionItems,
     ACTION_CATALOG: ACTION_CATALOG,
+    NAV_TAB_CATALOG: NAV_TAB_CATALOG,
     SLOT_CATALOG: SLOT_CATALOG,
-    ROLES: ROLES
+    ROLES: ROLES,
+    debug: false
   };
 
   global.openMobileMenuBuilder = openBuilder;
