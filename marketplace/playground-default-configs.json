@@ -233,24 +233,24 @@
       "members": [
         {
           "on": true,
-          "name": "Steve",
-          "role": "Owner",
-          "detail": "17 years experience",
-          "photo": ""
+          "name": "Steve Mitchell",
+          "role": "Owner & Master Plumber",
+          "detail": "15 years across Canberra — bathrooms, hot water and emergency callouts.",
+          "photo": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&crop=faces"
         },
         {
           "on": true,
-          "name": "Tom",
-          "role": "Senior Technician",
-          "detail": "Blocked drain specialist",
-          "photo": ""
+          "name": "Tom Harris",
+          "role": "Senior Plumber",
+          "detail": "Specialises in renovations and blocked drains.",
+          "photo": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=faces"
         },
         {
           "on": true,
-          "name": "Matt",
-          "role": "Technician",
-          "detail": "Hot water expert",
-          "photo": ""
+          "name": "Matt Nguyen",
+          "role": "Apprentice Plumber",
+          "detail": "Third-year apprentice — quality workmanship on every job.",
+          "photo": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=faces"
         }
       ]
     }
