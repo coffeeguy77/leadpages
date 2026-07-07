@@ -4591,6 +4591,7 @@ function heroCtaCard(c){
     toast('Published \u2014 live on your site');
   }
   async function signOutLP(){ try{ await sb.auth.signOut(); }catch(e){} location.reload(); }
+  window.signOutLP=signOutLP;
   function ensureSiteBar(){
     const dl=$('btn-download'); if(!dl) return; const bar=dl.parentNode;
     if(!$('btn-publish')){
@@ -4826,6 +4827,26 @@ function heroCtaCard(c){
       out.push(b);
     });
     return out;
+  };
+  window.lpGetDrawerNavMeta=function(){
+    return window.lpGetDrawerNavButtons().map(function(b){
+      return { id:b.id||'', label:(b.textContent||'').trim()||b.id||'Menu' };
+    });
+  };
+  window.lpEnsureDrawerSignOut=function(){
+    var el=$('lpc-drawer-signout');
+    if(el) return el;
+    el=$('lpc-acct-signout');
+    if(el) return el;
+    el=$('lpl-signout');
+    if(el) return el;
+    el=document.createElement('button');
+    el.type='button';
+    el.id='lpc-drawer-signout';
+    el.className='btn ghost';
+    el.textContent='Sign Out';
+    el.addEventListener('click',function(e){ e.preventDefault(); signOutLP(); });
+    return el;
   };
   /* ---- demo themes (super-admin: manage looks shown on /demo) ---- */
   async function renderDemoThemes(){
