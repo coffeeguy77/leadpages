@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 /**
  * Print sell-template summary for marketplace catalog seeding.
- * Templates live in marketplace/sell-templates.json (37 sections).
- * Apply via Marketplace Admin → feature → Page → "Apply sell template".
+ *
+ * Source of truth for marketing copy: marketplace/app-content.json
+ * Regenerate outputs: node scripts/build-marketplace-content.js
+ *
+ * Apply to catalog: Marketplace Admin → feature → Page → "Apply sell template".
  *
  * Usage: node scripts/seed-marketplace-sell-content.js
  */
