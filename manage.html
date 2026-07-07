@@ -3163,7 +3163,14 @@ function heroCtaCard(c){
         return /^google-site-verification=/i.test(v)?v:('google-site-verification='+v);
       }
       function gsiToken(v){
-        v=(v||'').trim(); var m=v.match(/google-site-verification=(.+)/i); return m?m[1].trim():v;
+        v=(v||'').trim();
+        if(!v) return '';
+        // Accept: token only, google-site-verification=token, or full <meta ... content="token" ...>
+        var m=v.match(/google-site-verification=([^\s"'>]+)/i);
+        if(m && m[1]) return m[1].trim();
+        var c=v.match(/content\s*=\s*["']([^"']+)["']/i);
+        if(c && c[1]) return c[1].trim();
+        return v.replace(/^['"]|['"]$/g,'').trim();
       }
       function gsiSyncTxtPreview(){
         var full=gsiNormTxt((($('gsi-txt-val')&&$('gsi-txt-val').value)||($('gsi-manual-txt-val')&&$('gsi-manual-txt-val').value)||($('gsi-verify')&&$('gsi-verify').value)||''));
