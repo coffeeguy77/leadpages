@@ -558,6 +558,7 @@ html[data-lp-reduced-motion="true"] {
 #site-label .lp-sitepick-sel{
   appearance: none;
   background: transparent !important;
+  background-color: transparent !important;
   border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent) !important;
   color: var(--text) !important;
   box-shadow: none !important;
@@ -566,6 +567,14 @@ html[data-lp-reduced-motion="true"] {
   min-width: 0;
   max-width: 100%;
   line-height: 1.2;
+}
+#site-label .lp-sitepick-sel option,
+#site-label .lp-sitepick-sel optgroup{
+  color: var(--text);
+  background: var(--panel);
+}
+html[data-lp-site-theme="command-dark"] #site-label .lp-sitepick-sel{
+  color-scheme: dark;
 }
 #site-label .lp-sitepick-sel:focus{
   outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
