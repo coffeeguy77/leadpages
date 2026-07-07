@@ -301,7 +301,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 
       case 'playground':
         var pgid='pg'+Math.random().toString(36).slice(2,8);
-        setTimeout(function(){initPlayground(pgid,p);},0);
+        setTimeout(function(){initPlayground(pgid,p,_renderFeature);},0);
         return '<div class="blk pg pg-full" id="'+pgid+'">'
           +'<div class="pg-topbar">'
           +'<div class="pg-presets" data-r="presets"></div>'
@@ -324,8 +324,10 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     }
   }
 
+  var _renderFeature=null;
   function render(j){
     var f=j.feature, blocks=j.blocks||[];
+    _renderFeature=f;
     document.title=f.name+' — LeadPages Marketplace';
     var html='<div class="wrap crumb"><a href="/marketplace">&larr; Marketplace</a></div>'
       +'<header class="hero"><div class="wrap">'
@@ -356,60 +358,123 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+window.LP_ICONS[name]+'</svg>';
   }
 
-  function initPlayground(id, payload) {
+  function initPlayground(id, payload, feature) {
     var root = document.getElementById(id); if (!root) return;
-    var secKey = payload && payload.section_key;
-    var demoCfg = payload && payload.demo_config;
+    feature = feature || {};
+    var secKey = (payload && payload.section_key) || feature.section_key || '';
+    var presets = (payload && payload.presets && payload.presets.length) ? payload.presets.slice() : ['aam1'];
+    var activePreset = null;
+    var demoCfg = null;
+    var presetCache = {};
 
-    // ── device switcher ──────────────────────────────────────
     var PG_W = { desktop: null, tablet: 768, phone: 390 };
     var dev = 'desktop';
-    var iframe = root.querySelector('[data-r="iframe"]');
-    var wrap   = root.querySelector('[data-r="wrap"]');
+    var iframe = null;
+    var wrap = root.querySelector('[data-r="wrap"]');
+
+    function getIframe() {
+      return iframe || root.querySelector('iframe.pg-iframe');
+    }
 
     function applyDevice() {
+      var fr = getIframe();
+      if (!fr || !wrap) return;
       var w = PG_W[dev];
       if (!w) {
-        iframe.style.width = '100%';
-        iframe.style.transform = 'none';
-        iframe.style.marginBottom = '';
+        fr.style.width = '100%';
+        fr.style.transform = 'none';
+        fr.style.marginBottom = '';
         wrap.style.height = '';
         wrap.classList.remove('framed');
       } else {
         wrap.classList.add('framed');
-        iframe.style.width = w + 'px';
+        fr.style.width = w + 'px';
         var avail = wrap.clientWidth - 48;
         var s = Math.min(1, avail / w);
-        iframe.style.transform = 'scale(' + s + ')';
-        iframe.style.transformOrigin = 'top center';
+        fr.style.transform = 'scale(' + s + ')';
+        fr.style.transformOrigin = 'top center';
         setTimeout(function() {
-          var h = iframe.scrollHeight || 600;
-          iframe.style.marginBottom = ((h * s) - h) + 'px';
-          wrap.style.height = (h * s + 48) + 'px';
+          try {
+            var h = fr.contentDocument.body.scrollHeight || 600;
+            fr.style.height = (h + 32) + 'px';
+            fr.style.marginBottom = ((h * s) - h) + 'px';
+            wrap.style.height = (h * s + 48) + 'px';
+          } catch(e) {
+            fr.style.height = '600px';
+            wrap.style.height = (600 * s + 48) + 'px';
+          }
         }, 400);
       }
     }
     window.addEventListener('resize', function() { applyDevice(); });
 
-    // ── device buttons ───────────────────────────────────────
-    root.addEventListener('click', function(e) {
-      var t = e.target.closest('[data-d]'); if (!t) return;
-      dev = t.getAttribute('data-d');
-      root.querySelectorAll('.pg-devbtns button').forEach(function(b) {
-        b.classList.toggle('on', b === t);
+    function presetToSiteConfig(preset, sectionKey) {
+      var cfg = preset.config || {};
+      var sec = { on: true };
+      ['eyebrow','heading','intro','cardBg','cardText','headSep','cardStyle','showTag','showTitle','showLocation','showDate','showDesc'].forEach(function(k) {
+        if (cfg[k] != null) sec[k] = cfg[k];
       });
-      applyDevice();
-    });
-
-    // ── load iframe ──────────────────────────────────────────
-    function loadDemo() {
-      if (!secKey) {
-        root.querySelector('[data-r="canvas"]').innerHTML =
-          '<p style="padding:40px;color:#6E6265;text-align:center">No demo configured yet for this app.<br>Add a playground block via Marketplace Admin.</p>';
-        return;
+      if (preset.headBadges) sec.headBadges = preset.headBadges;
+      var items = preset.items || preset.projects;
+      if (items && Array.isArray(items)) {
+        var listKey = (sectionKey === 'featuredProjects') ? 'projects' : 'items';
+        sec[listKey] = items.map(function(it) {
+          return {
+            on: true,
+            title: it.title,
+            tag: it.type || it.tag,
+            location: it.location,
+            description: it.description || it.caption,
+            image: it.img || it.image,
+            service: it.service,
+            date: it.date,
+            caption: it.caption || it.description,
+            permalink: it.permalink
+          };
+        });
       }
-      var src = '/marketplace/demos/demo-' + secKey + '.html';
-      // Remove existing iframe if any
+      var out = { sections: {} };
+      out.sections[sectionKey] = sec;
+      if (cfg.accent) out.theme = { pipe: cfg.accent };
+      return out;
+    }
+
+    function applyToIframe(preset) {
+      var fr = getIframe();
+      if (!fr || !preset) return;
+      var sk = secKey || preset.section || '';
+      if (!sk) return;
+      var siteCfg = presetToSiteConfig(preset, sk);
+      try {
+        if (fr.contentWindow && fr.contentWindow.__applyTradeConfig) {
+          fr.contentWindow.__applyTradeConfig(siteCfg);
+        }
+      } catch(e) {}
+      setTimeout(function() {
+        try {
+          var h = fr.contentDocument.body.scrollHeight;
+          fr.style.height = (h + 32) + 'px';
+        } catch(e2) {}
+        applyDevice();
+      }, 120);
+    }
+
+    function fetchPreset(name) {
+      if (presetCache[name]) return Promise.resolve(presetCache[name]);
+      return fetch('/playground/' + encodeURIComponent(name) + '.json')
+        .then(function(r) { if (!r.ok) throw 0; return r.json(); })
+        .then(function(data) { presetCache[name] = data; return data; });
+    }
+
+    function showNoDemo(msg) {
+      var canvas = root.querySelector('[data-r="canvas"]');
+      if (canvas) {
+        canvas.innerHTML = '<p style="padding:40px;color:#6E6265;text-align:center">' + esc(msg || 'No demo configured yet for this app.') + '<br>Set a section key on the feature or add a playground block via Marketplace Admin.</p>';
+      }
+    }
+
+    function mountIframe(sk) {
+      var src = '/marketplace/demos/demo-' + sk + '.html';
       var old = root.querySelector('iframe.pg-iframe');
       if (old) old.remove();
       var fr = document.createElement('iframe');
@@ -418,8 +483,9 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       fr.src = src;
       fr.style.cssText = 'width:100%;border:0;display:block;min-height:400px';
       fr.setAttribute('scrolling', 'no');
-      // Auto-height on load
-      fr.addEventListener('load', function() {
+      fr.addEventListener('load', function onLoad() {
+        fr.removeEventListener('load', onLoad);
+        if (demoCfg) applyToIframe(demoCfg);
         try {
           var h = fr.contentDocument.body.scrollHeight;
           fr.style.height = (h + 32) + 'px';
@@ -432,22 +498,93 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       iframe = fr;
     }
 
-    // ── editor panel ─────────────────────────────────────────
+    function ensureDemoLoaded(sk) {
+      if (!sk) return Promise.resolve(false);
+      if (getIframe()) return Promise.resolve(true);
+      mountIframe(sk);
+      return Promise.resolve(true);
+    }
+
+    function renderPresets() {
+      var box = root.querySelector('[data-r="presets"]');
+      if (!box) return;
+      box.innerHTML = presets.map(function(name) {
+        var label = (presetCache[name] && presetCache[name].label) || name;
+        return '<button type="button" data-preset="' + esc(name) + '"' + (name === activePreset ? ' class="on"' : '') + '>' + esc(label) + '</button>';
+      }).join('');
+    }
+
+    function selectPreset(name) {
+      return fetchPreset(name).then(function(preset) {
+        activePreset = name;
+        demoCfg = preset;
+        if (!secKey && preset.section) secKey = preset.section;
+        if (!secKey) {
+          showNoDemo('Preset loaded but no section key is set.');
+          renderCtl();
+          renderPresets();
+          return;
+        }
+        return ensureDemoLoaded(secKey).then(function() {
+          applyToIframe(preset);
+          renderCtl();
+          renderPresets();
+        });
+      }).catch(function() {
+        var box = root.querySelector('[data-r="presets"]');
+        if (box) {
+          var err = document.createElement('span');
+          err.className = 'hint';
+          err.style.padding = '8px 0';
+          err.textContent = 'Could not load preset "' + name + '".';
+          if (!box.querySelector('.hint')) box.appendChild(err);
+        }
+      });
+    }
+
     function renderCtl() {
       var ctl = root.querySelector('[data-r="ctl"]');
       if (!ctl) return;
+      var presetLabel = (demoCfg && demoCfg.label) || activePreset || '';
       ctl.innerHTML = '<div class="pg-ecard"><h4>Live demo</h4>'
         + '<p class="hint">This is a live preview of the ' + esc(secKey || 'section') + ' section as it appears on a real site. '
         + 'Your partner can customise every element — colours, text, images — in the App Command Centre.</p>'
         + (secKey ? '<a class="btn" href="/manage" target="_blank" rel="noopener" style="display:inline-flex;margin-top:10px">Try it in the editor →</a>' : '')
         + '</div>'
-        + (demoCfg ? '<div class="pg-ecard"><h4>Demo data</h4><p class="hint">Showing example content. Real sites use your client's own text, photos and branding.</p></div>' : '');
+        + (demoCfg ? '<div class="pg-ecard"><h4>Demo data</h4><p class="hint">Showing example content' + (presetLabel ? ' (' + esc(presetLabel) + ')' : '') + '. Real sites use your client&rsquo;s own text, photos and branding.</p></div>' : '');
     }
 
-    // ── init ─────────────────────────────────────────────────
-    loadDemo();
-    renderCtl();
-    applyDevice();
+    root.addEventListener('click', function(e) {
+      var pb = e.target.closest('[data-preset]');
+      if (pb) {
+        selectPreset(pb.getAttribute('data-preset'));
+        return;
+      }
+      var t = e.target.closest('[data-d]');
+      if (!t) return;
+      dev = t.getAttribute('data-d');
+      root.querySelectorAll('.pg-devbtns button').forEach(function(b) {
+        b.classList.toggle('on', b === t);
+      });
+      applyDevice();
+    });
+
+    Promise.all(presets.map(fetchPreset)).then(function() {
+      renderPresets();
+      if (secKey) {
+        return selectPreset(presets[0]);
+      }
+      var first = presetCache[presets[0]];
+      if (first && first.section) {
+        secKey = first.section;
+        return selectPreset(presets[0]);
+      }
+      showNoDemo();
+      renderCtl();
+    }).catch(function() {
+      showNoDemo('Could not load playground presets.');
+      renderCtl();
+    });
   }
 
   // gallery lightbox

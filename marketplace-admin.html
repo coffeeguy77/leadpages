@@ -165,6 +165,7 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
     <label>Summary <span style="font-weight:400">(card description)</span></label><textarea id="f-summary"></textarea>
     <label>Hero image URL <span style="font-weight:400">(paste a Cloudinary URL)</span></label><input id="f-img" placeholder="https://res.cloudinary.com/dzx6x1hou/image/upload/…">
     <label>Live demo URL <span style="font-weight:400">(optional — e.g. a client site section)</span></label><input id="f-demo" placeholder="https://www.leadpages.com.au/beanculture">
+    <label>Section key <span style="font-weight:400">(data-sec= for playground demos, e.g. featuredProjects)</span></label><input id="f-seckey" placeholder="featuredProjects">
     <div class="grid2">
       <div><label>Badge</label><select id="f-badge"><option value="">None</option><option>NEW</option><option>POPULAR</option></select></div>
       <div><label>Sort order</label><input id="f-sort" type="number" value="0"></div>
@@ -335,6 +336,7 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
     fillCatSelect(f?f.category_id:'');
     $('f-tagline').value=f&&f.tagline||''; $('f-summary').value=f&&f.summary||'';
     $('f-img').value=f&&f.hero_image_url||''; $('f-demo').value=f&&f.demo_url||'';
+    $('f-seckey').value=f&&f.section_key||'';
     $('f-badge').value=f&&f.badge||''; $('f-sort').value=f?f.sort_order:0;
     $('f-status').value=f?f.status:'draft'; $('f-err').textContent='';
     $('feat-dlg').showModal();
@@ -346,7 +348,8 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
     var row={name:$('f-name').value.trim(),slug:slugify($('f-slug').value),
              category_id:$('f-cat').value||null,tagline:$('f-tagline').value.trim()||null,
              summary:$('f-summary').value.trim()||null,hero_image_url:$('f-img').value.trim()||null,
-             demo_url:$('f-demo').value.trim()||null,badge:$('f-badge').value||null,
+             demo_url:$('f-demo').value.trim()||null,section_key:$('f-seckey').value.trim()||null,
+             badge:$('f-badge').value||null,
              sort_order:parseInt($('f-sort').value,10)||0,status:$('f-status').value,
              updated_at:new Date().toISOString()};
     if(!row.name||!row.slug){$('f-err').textContent='Name and slug are required.';return;}
