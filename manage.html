@@ -4813,6 +4813,20 @@ function heroCtaCard(c){
     if((allSites||[]).length>1) return true;
     return !!(currentSiteSlug||currentSiteId);
   };
+  window.lpGetDrawerNavButtons=function(){
+    var roleAllow=ALLOWED[currentRole]||ALLOWED.super;
+    var allow=roleAllow.filter(function(k){ return tplNav().indexOf(k)>=0; });
+    var keys=['dashboard','details','rates','landing','apps','mailer','appearance','contact','logo','users','demothemes'];
+    var out=[];
+    keys.forEach(function(k){
+      if(allow.indexOf(k)<0) return;
+      var b=$('nav-'+k);
+      if(!b) return;
+      b.style.display='';
+      out.push(b);
+    });
+    return out;
+  };
   /* ---- demo themes (super-admin: manage looks shown on /demo) ---- */
   async function renderDemoThemes(){
     var box=$('dt-list'); if(!box) return;
