@@ -512,11 +512,11 @@
     var s = document.createElement('style');
     s.id = 'lp-mm-builder-css';
     s.textContent = ''
-      + '#mm-builder{position:fixed;inset:0;z-index:9999;background:color-mix(in srgb,var(--bg,#12151a) 55%,rgba(16,22,32,.72));overflow:auto;padding:24px 12px;color:var(--text,var(--ink,#1b2430));}'
-      + '#mm-builder .mmb-card{max-width:980px;margin:0 auto;background:var(--surface,var(--panel,#fff));color:var(--text,var(--ink,#1b2430));border:1px solid var(--line,var(--border,#e3e3e0));border-radius:18px;box-shadow:var(--shadow,0 30px 80px rgba(10,15,25,.4));padding:24px;}'
-      + '#mm-builder h1{color:var(--text,var(--ink,#1b2430));}'
-      + '#mm-builder .lede{color:var(--text-soft,var(--ink-soft,#5c6675));}'
-      + '#mm-builder .mmb-sec{border:1px solid var(--line,var(--border,#e3e3e0));border-radius:14px;padding:14px 16px;margin-bottom:12px;background:var(--surface-2,var(--panel-soft,#f7f6f1));}'
+      + '#mm-builder{position:fixed;inset:0;z-index:9999;background:rgba(8,10,14,.78);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);overflow:auto;padding:24px 12px;color:var(--text,var(--ink,#e8edf5));}'
+      + '#mm-builder .mmb-card{max-width:980px;margin:0 auto;background:var(--surface,var(--panel,#161b24));color:var(--text,var(--ink,#e8edf5));border:1px solid var(--line,var(--border,#2a3340));border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.45);padding:24px;}'
+      + '#mm-builder h1{color:var(--text,var(--ink,#e8edf5));}'
+      + '#mm-builder .lede{color:var(--text-soft,var(--ink-soft,#9aa8b8));}'
+      + '#mm-builder .mmb-sec{border:1px solid var(--line,var(--border,#2a3340));border-radius:14px;padding:14px 16px;margin-bottom:12px;background:transparent;}'
       + '#mm-builder .mmb-sec-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}'
       + '#mm-builder .mmb-sec-head input[type=text]{flex:1;min-width:140px;font:inherit;padding:8px 10px;border:1px solid var(--line-strong,var(--border-strong,#d8d2c5));border-radius:8px;background:var(--input-bg,var(--panel,#fff));color:var(--text,var(--ink,#1b2430));}'
       + '#mm-builder .mmb-sec-actions{display:flex;gap:6px;margin-left:auto;}'
@@ -529,7 +529,7 @@
       + '#mm-builder .mmb-f select,#mm-builder .mmb-f input[type=text]{width:100%;font:inherit;padding:7px 9px;border:1px solid var(--line-strong,var(--border-strong,#d8d2c5));border-radius:8px;background:var(--input-bg,var(--panel,#fff));color:var(--text,var(--ink,#1b2430));}'
       + '#mm-builder .mmb-roles{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--text,var(--ink,#1b2430));}'
       + '#mm-builder .mmb-role{display:flex;align-items:center;gap:5px;}'
-      + '#mm-builder .mmb-slot-note{font-size:12.5px;color:var(--text-soft,var(--ink-soft,#6c6c68));margin:8px 0;padding:10px 12px;border-radius:10px;background:var(--panel-soft,var(--accent-soft,rgba(46,204,143,.08)));border:1px solid color-mix(in srgb,var(--accent,#1f7a63) 20%,transparent);}'
+      + '#mm-builder .mmb-slot-note{font-size:12.5px;color:var(--text-soft,var(--ink-soft,#9aa8b8));margin:8px 0;padding:10px 12px;border-radius:10px;background:transparent;border:1px solid color-mix(in srgb,var(--accent,#1f7a63) 25%,transparent);}'
       + '#mm-builder .mmb-live-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}'
       + '#mm-builder .mmb-live-tab{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line,var(--border,#e3e3e0));background:var(--panel,var(--surface,#fff));color:var(--text-soft,var(--ink-soft,#5c6675));}'
       + '#mm-builder .mmb-items{margin-top:8px;}'
@@ -539,7 +539,7 @@
       + '#mm-builder .mmb-add-row{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;}'
       + '#mm-builder .mmb-preview-wrap{margin-top:18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,360px);gap:18px;align-items:start;}'
       + '@media(max-width:860px){#mm-builder .mmb-preview-wrap{grid-template-columns:1fr;}}'
-      + '#mm-builder .mmb-preview{border:1px dashed var(--line,var(--border,#e3e3e0));border-radius:14px;padding:14px;background:var(--bg-soft,var(--bg,#f9f8f4));max-width:360px;}'
+      + '#mm-builder .mmb-preview{border:1px dashed var(--line,var(--border,#2a3340));border-radius:14px;padding:14px;background:transparent;max-width:360px;}'
       + '#mm-builder .mmb-preview h3{margin:0 0 10px;font-size:14px;color:var(--text,var(--ink,#1b2430));}'
       + '#mm-builder .mmb-preview-role{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}'
       + '#mm-builder .mmb-preview-role button{font:inherit;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line,var(--border,#e3e3e0));background:var(--panel,var(--surface,#fff));color:var(--text-soft,var(--ink-soft,#5c6675));cursor:pointer;}'
@@ -854,7 +854,7 @@
         var j = await save(draft);
         btn.disabled = false;
         if (j && j.ok) {
-          msg.textContent = 'Saved — open the phone menu to see changes.';
+          msg.textContent = 'Saved — hamburger menu updated.';
           msg.style.color = '#0a7d33';
         } else if (j && j._status === 401) {
           msg.textContent = 'Please sign in again, then retry.';
