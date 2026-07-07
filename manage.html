@@ -2724,16 +2724,16 @@ function heroCtaCard(c){
   function packToConfig(key,biz){ var p=TRADE_PACKS[key]; biz=(biz||'').trim()||'us'; function sub(o){ if(typeof o==='string')return o.replace(/\{\{\s*businessName\s*\}\}/g,biz); if(Array.isArray(o))return o.map(sub); if(o&&typeof o==='object'){var n={};for(var k in o)n[k]=sub(o[k]);return n;} return o; } if(!p)return {sections:{},trade:'Plumber',theme:themeFromPreset('Plumber'),layout:'classic'}; return { theme:themeFromPreset(p.label), services:sub(JSON.parse(JSON.stringify(p.services))), sections:sub(JSON.parse(JSON.stringify(p.sections))), trade:p.tradeType, layout:'classic' }; }
   // ===== Categorised + searchable trade picker (shared by New Site + editor) =====
   (function(){ if(document.getElementById('cs-pack-style'))return; var st=document.createElement('style'); st.id='cs-pack-style';
-    st.textContent='.cs-packlist{max-height:230px;overflow:auto;border:1px solid #e3e6ea;border-radius:10px;margin-top:8px;background:#fff}'
-      +'.cs-cgroup{border-bottom:1px solid #f0f2f4}.cs-cgroup:last-child{border-bottom:0}'
-      +'.cs-chead{position:sticky;top:0;background:#f6f8fa;color:#5b6470;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:7px 12px;border-bottom:1px solid #eef0f2;z-index:1}'
-      +'.cs-trow{padding:9px 12px;font-size:14px;cursor:pointer;display:flex;align-items:center;line-height:1.2}'
-      +'.cs-trow:hover{background:#f3f6ff}'
-      +'.cs-trow.on{background:#eef4ff;color:#1d4ed8;font-weight:600}'
-      +'.cs-trow.on:after{content:"\\2713";margin-left:auto;color:#1d4ed8;font-weight:700}'
-      +'.cs-picked{margin-top:8px;display:flex;align-items:center;gap:6px;font-size:13px;color:#0b1f3a;flex-wrap:wrap}'
-      +'.cs-picked-lbl{font-weight:700}.cs-picked-cat{color:#7a8290}.cs-picked-cat:before{content:"in ";color:#9aa2ac;font-weight:400}'
-      +'.cs-empty{padding:16px 12px;color:#7a8290;font-size:13px}';
+    st.textContent='.cs-packlist{max-height:230px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px;background:var(--panel)}'
+      +'.cs-cgroup{border-bottom:1px solid var(--line)}.cs-cgroup:last-child{border-bottom:0}'
+      +'.cs-chead{position:sticky;top:0;background:var(--panel-soft);color:var(--ink-soft);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:7px 12px;border-bottom:1px solid var(--line);z-index:1}'
+      +'.cs-trow{padding:9px 12px;font-size:14px;cursor:pointer;display:flex;align-items:center;line-height:1.2;color:var(--ink)}'
+      +'.cs-trow:hover{background:var(--accent-soft)}'
+      +'.cs-trow.on{background:var(--accent-soft);color:var(--accent-hover);font-weight:600}'
+      +'.cs-trow.on:after{content:"\\2713";margin-left:auto;color:var(--accent);font-weight:700}'
+      +'.cs-picked{margin-top:8px;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink);flex-wrap:wrap}'
+      +'.cs-picked-lbl{font-weight:700}.cs-picked-cat{color:var(--ink-soft)}.cs-picked-cat:before{content:"in ";color:var(--ink-faint);font-weight:400}'
+      +'.cs-empty{padding:16px 12px;color:var(--ink-soft);font-size:13px}';
     document.head.appendChild(st);
   })();
   window.__TRADE_CATS=[
@@ -2784,29 +2784,29 @@ function heroCtaCard(c){
   // ===== Two-pane trade picker + super trade builder (additive; does not touch __initTradePicker) =====
   (function(){ if(document.getElementById('tp2-style'))return; var st=document.createElement('style'); st.id='tp2-style';
     st.textContent=[
-     '.tp2-wrap{display:flex;border:1px solid #e3e6ea;border-radius:10px;overflow:hidden;background:#fff;margin-top:8px;height:340px}',
-     '.tp2-cats{width:40%;min-width:150px;max-width:250px;border-right:1px solid #eef0f2;overflow:auto;background:#f8fafc;-webkit-overflow-scrolling:touch}',
-     '.tp2-cat{padding:11px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f2f4;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#374151;line-height:1.25}',
-     '.tp2-cat:hover{background:#eef4ff}',
-     '.tp2-cat.on{background:#fff;color:#1d4ed8;font-weight:600;box-shadow:inset 3px 0 0 #1d4ed8}',
-     '.tp2-count{font-size:11px;color:#9aa2ac;font-weight:500;flex:none}',
-     '.tp2-list{flex:1;overflow:auto;-webkit-overflow-scrolling:touch}',
-     '.tp2-trow{padding:10px 14px;font-size:14px;cursor:pointer;border-bottom:1px solid #f4f6f8;display:flex;align-items:center;line-height:1.25}',
-     '.tp2-trow:hover{background:#f3f6ff}',
-     '.tp2-trow.on{background:#eef4ff;color:#1d4ed8;font-weight:600}',
-     '.tp2-trow.on:after{content:"\\2713";margin-left:auto;color:#1d4ed8;font-weight:700}',
-     '.tp2-empty{padding:18px 14px;color:#7a8290;font-size:13px}',
-     '@media(max-width:560px){.tp2-wrap{height:auto;flex-direction:column}.tp2-cats{width:auto;max-width:none;max-height:150px;border-right:0;border-bottom:1px solid #eef0f2}.tp2-list{max-height:240px}}',
-     '.tb-box{margin-top:16px;border:1px solid #e3e6ea;border-radius:10px;background:#fbfcfe}',
-     '.tb-box>summary{cursor:pointer;padding:12px 14px;font-weight:600;font-size:14px;color:#0b1f3a;list-style:none}',
+     '.tp2-wrap{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel);margin-top:8px;height:340px}',
+     '.tp2-cats{width:40%;min-width:150px;max-width:250px;border-right:1px solid var(--line);overflow:auto;background:var(--panel-soft);-webkit-overflow-scrolling:touch}',
+     '.tp2-cat{padding:11px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--ink-soft);line-height:1.25}',
+     '.tp2-cat:hover{background:var(--accent-soft)}',
+     '.tp2-cat.on{background:var(--panel-raised,var(--panel));color:var(--accent);font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}',
+     '.tp2-count{font-size:11px;color:var(--ink-faint);font-weight:500;flex:none}',
+     '.tp2-list{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--panel)}',
+     '.tp2-trow{padding:10px 14px;font-size:14px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;align-items:center;line-height:1.25;color:var(--ink)}',
+     '.tp2-trow:hover{background:var(--accent-soft)}',
+     '.tp2-trow.on{background:var(--accent-soft);color:var(--accent);font-weight:600}',
+     '.tp2-trow.on:after{content:"\\2713";margin-left:auto;color:var(--accent);font-weight:700}',
+     '.tp2-empty{padding:18px 14px;color:var(--ink-soft);font-size:13px}',
+     '@media(max-width:560px){.tp2-wrap{height:auto;flex-direction:column}.tp2-cats{width:auto;max-width:none;max-height:150px;border-right:0;border-bottom:1px solid var(--line)}.tp2-list{max-height:240px}}',
+     '.tb-box{margin-top:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft)}',
+     '.tb-box>summary{cursor:pointer;padding:12px 14px;font-weight:600;font-size:14px;color:var(--ink);list-style:none}',
      '.tb-box>summary::-webkit-details-marker{display:none}',
-     '.tb-box>summary:before{content:"\\002b";display:inline-block;width:16px;color:#1d4ed8;font-weight:700}',
+     '.tb-box>summary:before{content:"\\002b";display:inline-block;width:16px;color:var(--accent);font-weight:700}',
      '.tb-box[open]>summary:before{content:"\\2212"}',
      '.tb-inner{padding:0 14px 14px}',
      '.tb-row{display:flex;gap:10px;flex-wrap:wrap}.tb-row>*{flex:1;min-width:160px}',
-     '.tb-ta{width:100%;box-sizing:border-box;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.45;border:1px solid #d7dbe0;border-radius:8px;padding:10px;background:#fff;resize:vertical}',
-     '.tb-hint{font-size:12px;color:#667;line-height:1.5;margin:8px 0}',
-     '.tb-status{font-size:13px;margin-top:8px;min-height:18px;line-height:1.5}'
+     '.tb-ta{width:100%;box-sizing:border-box;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.45;border:1px solid var(--line-strong);border-radius:8px;padding:10px;background:var(--input-bg);color:var(--ink);resize:vertical}',
+     '.tb-hint{font-size:12px;color:var(--ink-soft);line-height:1.5;margin:8px 0}',
+     '.tb-status{font-size:13px;margin-top:8px;min-height:18px;line-height:1.5;color:var(--ink-soft)}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -2892,7 +2892,7 @@ function heroCtaCard(c){
           </div>
         </div>
       </details>` : '';
-    return `<div class="card" style="margin-bottom:22px;"><h2>Service starter content</h2>
+    return `<div class="card sp-starter" style="margin-bottom:22px;"><h2>Service starter content</h2>
       <p class="lede">Load a complete set of starter copy, services and colours for a service or business type, then fine-tune everything in the tabs above. This replaces the current page content — your business name and contact details stay.</p>
       <div class="f"><label>Service / business type</label>
         <input id="tp-search" class="tin" type="text" autocomplete="off" placeholder="Search 100+ services… (try &ldquo;fence&rdquo;, &ldquo;drain&rdquo;, &ldquo;hire&rdquo;, &ldquo;café&rdquo;)">
@@ -3181,7 +3181,7 @@ function heroCtaCard(c){
       +'<div id="psi-cname-preview" style="margin:10px 0;">'+_recRow('Type','CNAME')+_recRow('Name / host','(enter host)','psi-cname-prev-host')+_recRow('Target','(enter target)','psi-cname-prev-target')+'</div>'
       +'<button type="button" class="btn ghost" id="psi-push-vercel-cname">Add CNAME to Vercel DNS</button> <span id="psi-vercel-cname-msg" class="hint"></span></div>'
       +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);"><button type="button" class="btn" id="psi-save">Save marketing SEO</button><span id="psi-saved" style="font-size:13px;color:#0a7d33;"></span></div></div>'):'';
-    if(!document.getElementById('settings-page-css')){ var s=document.createElement('style'); s.id='settings-page-css'; s.textContent='#settings-page{position:fixed;inset:0;z-index:9998;background:rgba(16,22,32,.55);overflow:auto;padding:32px 16px;}#settings-page .sp-card{max-width:880px;margin:0 auto;background:var(--bg,#faf9f6);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:26px 26px 30px;}#settings-page .sp-del{border:1px solid #f0c8c2;background:#fff;color:#b42318;border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer}#settings-page .sp-del:disabled{opacity:.5;cursor:default}#settings-page .sp-del.armed{background:#b42318;color:#fff;border-color:#b42318}#settings-page .sp-lock{border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:15px}#settings-page .danger{border:1px solid #f0c8c2;border-radius:14px;background:#fdf3f1;}'; document.head.appendChild(s); }
+    if(!document.getElementById('settings-page-css')){ var s=document.createElement('style'); s.id='settings-page-css'; s.textContent='#settings-page{position:fixed;inset:0;z-index:9998;background:rgba(16,22,32,.55);overflow:auto;padding:32px 16px;}#settings-page .sp-card{max-width:880px;margin:0 auto;background:var(--bg);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:26px 26px 30px;}#settings-page .card{background:var(--panel);border-color:var(--line);}#settings-page .sp-starter .tp2-wrap,#settings-page .sp-starter .tb-box{background:var(--panel-soft);}#settings-page .danger{border:1px solid color-mix(in srgb,var(--danger) 55%,transparent);border-radius:14px;background:color-mix(in srgb,var(--danger) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger) 8%,transparent),0 0 28px color-mix(in srgb,var(--danger) 10%,transparent);}#settings-page .danger h2{color:var(--danger);margin:0 0 4px;}#settings-page .danger .lede{color:var(--ink-soft);}#settings-page .sp-del{border:1px solid color-mix(in srgb,var(--danger) 50%,transparent);background:transparent;color:var(--danger);border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s;}#settings-page .sp-del:disabled{opacity:.45;cursor:default;}#settings-page .sp-del.armed{background:color-mix(in srgb,var(--danger) 22%,transparent);border-color:var(--danger);color:var(--danger);box-shadow:0 0 18px color-mix(in srgb,var(--danger) 18%,transparent);}#settings-page .sp-lock{display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--danger);background:transparent;color:var(--danger);border-radius:8px;padding:8px 10px;cursor:pointer;transition:background .15s,box-shadow .15s;}#settings-page .sp-lock:hover{background:color-mix(in srgb,var(--danger) 10%,transparent);}#settings-page .sp-lock.sp-lock--unlocked{background:color-mix(in srgb,var(--danger) 14%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--danger) 12%,transparent);}#settings-page .sp-lock-icon{display:block;}#settings-page .sp-lock .sp-lock-open{display:none;}#settings-page .sp-lock.sp-lock--unlocked .sp-lock-closed{display:none;}#settings-page .sp-lock.sp-lock--unlocked .sp-lock-open{display:block;}'; document.head.appendChild(s); }
     var p=document.createElement('div'); p.id='settings-page';
     var detailFields='<div class="card" style="margin-bottom:20px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Site details</h2><label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="set-demo"'+(demoOn?' checked':'')+'> Demo site</label></div><p class="lede">Business identity and contact \u2014 used across the page and the call buttons.</p>'
       +lpFld('Business name','d-biz','')
@@ -3190,7 +3190,7 @@ function heroCtaCard(c){
       +'<div class="row">'+lpFld('Email','d-email','')+lpFld('Region','d-region','')+'</div>'
       +'<div class="row">'+lpFld('Service / business type','d-trade','e.g. Plumber, Café, Airbnb host')+lpFld('Licence','d-licence','')+'</div>'
       +'<div style="margin-top:6px;"><button class="btn" id="d-save">Save details</button><span id="d-saved" style="margin-left:10px;font-size:13px;color:#0a7d33;"></span></div></div>';
-    var danger=(currentRole==='super')?('<div class="card danger" style="margin-bottom:0;"><h2 style="margin:0 0 4px;color:#b42318;">Danger zone</h2><p class="lede" style="margin:0 0 12px;">Unlock, then tap Delete twice to confirm. This permanently removes the site and can\u2019t be undone.</p><div style="display:flex;gap:10px;align-items:center;"><button type="button" id="btn-dellock" class="sp-lock" title="Unlock to allow delete">\uD83D\uDD12</button><button type="button" id="btn-delsite" class="sp-del" disabled>Delete site</button></div></div>'):'';
+    var danger=(currentRole==='super')?('<div class="card danger" style="margin-bottom:0;"><h2>Danger zone</h2><p class="lede" style="margin:0 0 12px;">Unlock, then tap Delete twice to confirm. This permanently removes the site and can\u2019t be undone.</p><div style="display:flex;gap:10px;align-items:center;"><button type="button" id="btn-dellock" class="sp-lock" title="Unlock to allow delete" aria-label="Unlock to allow delete"><svg class="sp-lock-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="sp-lock-closed"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></g><g class="sp-lock-open"><path d="M8 11V7a4 4 0 0 1 7.5-1"/><rect x="5" y="11" width="14" height="10" rx="2"/></g></svg></button><button type="button" id="btn-delsite" class="sp-del" disabled>Delete site</button></div></div>'):'';
     p.innerHTML='<div class="sp-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h1 style="margin:0;font:700 26px/1.1 var(--font-display,Georgia),serif;">Settings</h1><button type="button" id="set-close" class="btn ghost">Close</button></div>'
       +'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Appearance &amp; Accessibility</h2><p class="lede" style="margin:0 0 12px;">Workspace theme for the command centre, plus published page visitor settings for this site.</p><button type="button" class="btn" id="open-aa-inline">Workspace appearance</button> <button type="button" class="btn ghost" id="open-aa-published">Published page settings</button></div>'
       +platformSeoCard
@@ -3489,7 +3489,7 @@ function heroCtaCard(c){
     // wire danger zone (lock + double-tap delete)
     var lk=$('btn-dellock'), del=$('btn-delsite');
     if(lk&&del){
-      lk.addEventListener('click',function(){ var locked=del.disabled; del.disabled=!locked; lk.textContent=locked?'\uD83D\uDD13':'\uD83D\uDD12'; lk.title=locked?'Delete unlocked':'Unlock to allow delete'; del.__armed=false; del.classList.remove('armed'); del.textContent='Delete site'; });
+      lk.addEventListener('click',function(){ var locked=del.disabled; del.disabled=!locked; lk.classList.toggle('sp-lock--unlocked',locked); lk.title=locked?'Delete unlocked':'Unlock to allow delete'; lk.setAttribute('aria-label',locked?'Delete unlocked':'Unlock to allow delete'); del.__armed=false; del.classList.remove('armed'); del.textContent='Delete site'; });
       del.addEventListener('click',function(){ if(del.disabled) return; if(!del.__armed){ del.__armed=true; del.classList.add('armed'); del.textContent='Tap again to delete'; if(del.__t) clearTimeout(del.__t); del.__t=setTimeout(function(){ del.__armed=false; del.classList.remove('armed'); del.textContent='Delete site'; },4000); return; } del.__armed=false; if(del.__t) clearTimeout(del.__t); closeSettingsPage(); deleteSiteNow(); });
     }
   }
