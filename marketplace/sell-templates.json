@@ -3,12 +3,21 @@
     "name": "Activity Counter",
     "tagline": "Live-style numeric counters",
     "summary": "\"47 jobs this month\" — animated busy counters.",
+    "hero_image_url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Activity Counter",
           "text": "Three large counters with value and label — jobs this month, active teams, years serving. Pairs with Split Hero and Activity Timeline."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
+          "alt": "Social proof sections",
+          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
         }
       },
       {
@@ -66,12 +75,21 @@
     "name": "Activity Timeline",
     "tagline": "Chronological \"what we are working on\" feed",
     "summary": "Timeline of current and recent activity.",
+    "hero_image_url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Activity Timeline",
           "text": "Vertical timeline with events — job started, quote sent, review received. Shows the business is active today, not a static brochure."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
+          "alt": "Social proof sections",
+          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
         }
       },
       {
@@ -129,12 +147,21 @@
     "name": "Service Area Copy",
     "tagline": "Paragraph plus suburb list for local SEO",
     "summary": "Tell visitors exactly where you work.",
+    "hero_image_url": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Service Area Copy",
           "text": "Combines a short area paragraph with a suburb list — critical for local SEO and paid search quality scores. Visitors self-qualify before they call."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=720&fit=crop&q=80",
+          "alt": "Core content sections",
+          "caption": "Services, reviews and quote sections working together on a client site."
         }
       },
       {
@@ -192,12 +219,21 @@
     "name": "Before & After Gallery",
     "tagline": "Side-by-side or stacked transformation gallery",
     "summary": "Static before/after pairs for proof-heavy pages.",
+    "hero_image_url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Before & After Gallery",
           "text": "Photo Proof layout centrepiece. Multiple before/after pairs with title, caption and optional image URLs — ideal when you have great job photos."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=1200&h=720&fit=crop&q=80",
+          "alt": "Before and after gallery",
+          "caption": "Side-by-side transformation pairs for visual trades."
         }
       },
       {
@@ -255,12 +291,21 @@
     "name": "Before/After Feed",
     "tagline": "Scrolling feed of transformation pairs",
     "summary": "Multiple before/after cards in a social feed format.",
+    "hero_image_url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Before/After Feed",
           "text": "Feed-style before/after cards with title, location, time, caption and image pair — more entries than the static gallery, optimised for proof layouts."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
+          "alt": "Social proof sections",
+          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
         }
       },
       {
@@ -318,12 +363,21 @@
     "name": "Certifications",
     "tagline": "License and accreditation cards",
     "summary": "Prove you are licensed, insured and industry-accredited.",
+    "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Certifications",
           "text": "Three accreditation cards with name, body, number and expiry — Master Plumbers, public liability, trade licence. Critical for regulated trades."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&h=720&fit=crop&q=80",
+          "alt": "Trust and conversion sections",
+          "caption": "Stats, credentials and offer banners that close the sale."
         }
       },
       {
@@ -381,12 +435,21 @@
     "name": "Meet the Team",
     "tagline": "Team member cards with photo and role",
     "summary": "Put faces to the business — owner and crew.",
+    "hero_image_url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Meet the Team",
           "text": "Team member cards with name, role, specialty and photo — builds trust for residential clients who want to know who is coming to their door."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=720&fit=crop&q=80",
+          "alt": "Meet the team section",
+          "caption": "Team cards with photos, roles and specialties — builds residential trust."
         }
       },
       {
@@ -444,12 +507,21 @@
     "name": "Customer Reactions",
     "tagline": "Short reaction quotes in a feed format",
     "summary": "Quick customer reactions — lighter than full reviews.",
+    "hero_image_url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Customer Reactions",
           "text": "Short reaction cards — \"Called at 7am, fixed by 9\" — designed for feed layouts where full review walls feel too heavy."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
+          "alt": "Social proof sections",
+          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
         }
       },
       {
@@ -507,12 +579,21 @@
     "name": "Emergency Availability",
     "tagline": "After-hours status and schedule display",
     "summary": "Show when you are available for emergencies.",
+    "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Emergency Availability",
           "text": "Displays weekday and weekend hours, after-hours messaging and emergency CTA — critical for plumbers, locksmiths and electricians running 24/7 ads."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=1200&h=720&fit=crop&q=80",
+          "alt": "Emergency availability banner",
+          "caption": "After-hours status and schedule — pairs with 24/7 ad campaigns."
         }
       },
       {
@@ -570,12 +651,21 @@
     "name": "Estimate Builder",
     "tagline": "Interactive ballpark pricing wizard",
     "summary": "Visitors self-serve a price range before they call.",
+    "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Estimate Builder",
           "text": "Multi-step estimate wizard with configurable options and min/max ranges per answer — blocked drains, hot water, urgency surcharges. Sets price expectations early."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1554224311-beee415c201f?w=1200&h=720&fit=crop&q=80",
+          "alt": "Estimate builder wizard",
+          "caption": "Interactive ballpark pricing — qualifies leads before they call."
         }
       },
       {
@@ -633,12 +723,21 @@
     "name": "FAQ Accordion",
     "tagline": "Collapsible questions that cut support calls",
     "summary": "Answer the questions every visitor asks before they call.",
+    "hero_image_url": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "FAQ Accordion",
           "text": "Accordion FAQ reduces phone time spent on pricing, licensing, areas and hours. Each item is a question plus answer — expandable on click."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=720&fit=crop&q=80",
+          "alt": "Core content sections",
+          "caption": "Services, reviews and quote sections working together on a client site."
         }
       },
       {
@@ -696,12 +795,21 @@
     "name": "Project Portfolio",
     "tagline": "Large image cards for premium project showcase",
     "summary": "Mini portfolio under the hero for high-end visual trades.",
+    "hero_image_url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Project Portfolio",
           "text": "Premium Showcase layout feature. Large project cards with title, type tag, location, description and optional gallery — built for builders, landscapers and renovators."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://res.cloudinary.com/dzx6x1hou/image/upload/c_fill,w_1200,h_720,q_80/leadpages/391656d6-1148-48f2-9ac6-a938595c7449/featuredprojects/image/mqx6b5b7542qs.jpg",
+          "alt": "Project portfolio grid",
+          "caption": "Large project cards with gallery lightbox — from a real builder site (AAM1)."
         }
       },
       {
@@ -760,12 +868,21 @@
     "name": "Finance Options",
     "tagline": "Weekly payment callout for larger jobs",
     "summary": "Let customers spread the cost of big jobs.",
+    "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Finance Options",
           "text": "Finance section with eyebrow, heading, weekly amount, period and disclaimer — pairs with third-party finance providers for kitchens, solar and renovations."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&h=720&fit=crop&q=80",
+          "alt": "Trust and conversion sections",
+          "caption": "Stats, credentials and offer banners that close the sale."
         }
       },
       {
@@ -823,12 +940,21 @@
     "name": "Hero Banner",
     "tagline": "First impression above the fold",
     "summary": "The hero sets tone, urgency and trust before the visitor scrolls.",
+    "hero_image_url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Hero Banner",
           "text": "Every trade site lives or dies on the first screen. LeadPages heroes pair a bold headline with highlighted urgency text, supporting sub-copy and icon badges — built for local service searches on mobile."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=1200&h=720&fit=crop&q=80",
+          "alt": "Hero banner with headline and CTA",
+          "caption": "Bold headline, highlight text and trust badges above the fold."
         }
       },
       {
@@ -886,12 +1012,21 @@
     "name": "Hero Before/After",
     "tagline": "Interactive drag-to-reveal hero transformation",
     "summary": "Let visitors swipe between before and after in the hero itself.",
+    "hero_image_url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Hero Before/After",
           "text": "The highest-impact proof for renovation, rendering, cleaning and landscaping trades. A draggable wipe sits in the hero zone so proof lands before the scroll."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=720&fit=crop&q=80",
+          "alt": "Before and after hero wipe",
+          "caption": "Drag-to-reveal transformation in the primary viewport."
         }
       },
       {
@@ -949,12 +1084,21 @@
     "name": "Hero Image Slider",
     "tagline": "Rotating image hero with overlay copy and CTAs",
     "summary": "A full-width slider for visual trades — roofing, landscaping, building.",
+    "hero_image_url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Hero Image Slider",
           "text": "Show multiple jobs or offers in rotation without rebuilding the page. Each slide carries its own headline, highlight, sub-text and dual CTAs with fade or slide transitions."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&h=720&fit=crop&q=80",
+          "alt": "Image slider hero",
+          "caption": "Rotating slides with overlay copy — ideal for visual trades."
         }
       },
       {
@@ -1012,12 +1156,21 @@
     "name": "Instagram Project Feed",
     "tagline": "Instagram grid styled as project cards",
     "summary": "Instagram posts rendered as project cards with CTAs.",
+    "hero_image_url": "https://images.unsplash.com/photo-1611162617474-5b21e939e113?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Instagram Project Feed",
           "text": "Like Project Feed but sourced from Instagram — title from caption, tag label, call and quote buttons with custom colours."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=720&fit=crop&q=80",
+          "alt": "Instagram integration",
+          "caption": "Instagram grids and project feeds pulled into the site automatically."
         }
       },
       {
@@ -1075,12 +1228,21 @@
     "name": "Instagram Gallery",
     "tagline": "Grid of Instagram posts on your site",
     "summary": "Embed your Instagram grid without manual image uploads.",
+    "hero_image_url": "https://images.unsplash.com/photo-1611162617474-5b21e939e113?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Instagram Gallery",
           "text": "Pulls from connected Instagram or manual grid — eyebrow, heading, post count and column layout. Keeps the site fresh with social content."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=1200&h=720&fit=crop&q=80",
+          "alt": "Instagram gallery grid",
+          "caption": "Live Instagram grid embedded on the trade site."
         }
       },
       {
@@ -1138,12 +1300,21 @@
     "name": "Jobs Feed",
     "tagline": "Compact \"fresh off the tools\" job list",
     "summary": "Shorter job cards optimised for the proof stream.",
+    "hero_image_url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Jobs Feed",
           "text": "Compact job entries with title, location, time and quick result line — designed for high-velocity social proof layouts."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
+          "alt": "Social proof sections",
+          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
         }
       },
       {
@@ -1201,12 +1372,21 @@
     "name": "Navigation Menu",
     "tagline": "Custom nav links — pills or underline style",
     "summary": "Add a secondary navigation row to any page.",
+    "hero_image_url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Navigation Menu",
           "text": "Configurable nav with pill or underline style, left or centre alignment and custom link items — useful for multi-page sites and anchor links."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&h=720&fit=crop&q=80",
+          "alt": "Hero and layout sections",
+          "caption": "Above-the-fold hero and layout blocks on a live LeadPages trade site."
         }
       },
       {
@@ -1264,12 +1444,21 @@
     "name": "Project Feed",
     "tagline": "Card feed of latest completed jobs",
     "summary": "Social-style feed of recent projects with photos.",
+    "hero_image_url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Project Feed",
           "text": "Manual or Instagram-sourced project cards with title, location, service, date and image — core of the Social Proof Feed layout."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
+          "alt": "Social proof sections",
+          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
         }
       },
       {
@@ -1327,12 +1516,21 @@
     "name": "Project Stats",
     "tagline": "Big-number credibility bar",
     "summary": "Lead with \"2,400+ jobs\" or \"15 years\" — authority at a glance.",
+    "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Project Stats",
           "text": "Authority Builder layout centrepiece. Large stat values with labels — jobs completed, years operating, review count, emergency availability."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&h=720&fit=crop&q=80",
+          "alt": "Trust and conversion sections",
+          "caption": "Stats, credentials and offer banners that close the sale."
         }
       },
       {
@@ -1390,12 +1588,21 @@
     "name": "Proof Stream",
     "tagline": "Mixed proof cards — jobs, reviews, video, before/after",
     "summary": "The all-in-one social proof feed.",
+    "hero_image_url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Proof Stream",
           "text": "Single feed mixing job cards, photos, reviews, videos and before/afters — each with CTA. The centrepiece of the Social Proof Feed layout."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&h=720&fit=crop&q=80",
+          "alt": "Proof stream feed",
+          "caption": "Mixed jobs, reviews and before/after cards in one scrolling feed."
         }
       },
       {
@@ -1453,12 +1660,21 @@
     "name": "Quote Form",
     "tagline": "Lead capture form with configurable fields",
     "summary": "Turn visitors into callbacks — the primary conversion point.",
+    "hero_image_url": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Quote Form",
           "text": "Configurable quote form with field labels, job-type options and success message. Submissions flow to the partner CRM and site owner inbox."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1200&h=720&fit=crop&q=80",
+          "alt": "Quote form section",
+          "caption": "Lead capture form with configurable fields — submissions go to CRM."
         }
       },
       {
@@ -1516,12 +1732,21 @@
     "name": "Response Cards",
     "tagline": "Urgency cards for emergency trades",
     "summary": "Three bold cards that answer \"what happens when I call?\"",
+    "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Response Cards",
           "text": "Emergency Response layout feature. Cards like \"60-min response\", \"Answer every call\" and \"Quote before we start\" — reduces anxiety on urgent searches."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&h=720&fit=crop&q=80",
+          "alt": "Trust and conversion sections",
+          "caption": "Stats, credentials and offer banners that close the sale."
         }
       },
       {
@@ -1579,12 +1804,21 @@
     "name": "Review Highlights",
     "tagline": "Star-rated snippets directly under the hero",
     "summary": "Hit social proof before services on Reviews First layout.",
+    "hero_image_url": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Review Highlights",
           "text": "Short quote snippets with star rating and name — three cards designed for the zone directly under the hero on Reviews First pages."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=720&fit=crop&q=80",
+          "alt": "Core content sections",
+          "caption": "Services, reviews and quote sections working together on a client site."
         }
       },
       {
@@ -1642,12 +1876,21 @@
     "name": "Reviews Wall",
     "tagline": "Full review cards with source attribution",
     "summary": "Show the full wall of customer quotes.",
+    "hero_image_url": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Reviews Wall",
           "text": "Three or more review cards with name, quote and source (Google, Facebook, hipages). Complements Review Highlights for partners who want depth over snippets."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=720&fit=crop&q=80",
+          "alt": "Core content sections",
+          "caption": "Services, reviews and quote sections working together on a client site."
         }
       },
       {
@@ -1705,12 +1948,21 @@
     "name": "Service Area Map",
     "tagline": "Map section with coverage intro",
     "summary": "Visual service area section for geographic trust.",
+    "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Service Area Map",
           "text": "Eyebrow, heading and intro for a map-style coverage block — pair with suburb lists and area copy for geographic dominance."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&h=720&fit=crop&q=80",
+          "alt": "Trust and conversion sections",
+          "caption": "Stats, credentials and offer banners that close the sale."
         }
       },
       {
@@ -1768,12 +2020,21 @@
     "name": "Service Areas Grid",
     "tagline": "Suburb grid for geographic dominance",
     "summary": "Large suburb grid under the hero for local SEO.",
+    "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Service Areas Grid",
           "text": "Service Area Dominator layout feature. Six or more suburb names in a grid — tells Google and visitors exactly where you operate."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&h=720&fit=crop&q=80",
+          "alt": "Trust and conversion sections",
+          "caption": "Stats, credentials and offer banners that close the sale."
         }
       },
       {
@@ -1831,12 +2092,21 @@
     "name": "How It Works",
     "tagline": "Step-by-step process timeline",
     "summary": "Show the journey from call to completed job.",
+    "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "How It Works",
           "text": "Five-step timeline — call, inspect, quote, complete, guarantee. Reduces anxiety for first-time customers who have not hired a tradie before."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&h=720&fit=crop&q=80",
+          "alt": "Trust and conversion sections",
+          "caption": "Stats, credentials and offer banners that close the sale."
         }
       },
       {
@@ -1894,12 +2164,21 @@
     "name": "Services Grid",
     "tagline": "Icon cards for every service you offer",
     "summary": "List what you fix, install or maintain in scannable cards.",
+    "hero_image_url": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Services Grid",
           "text": "The workhorse section for every trade site. Icon cards with title and short body copy — visitors scan services in seconds and jump to quote or call."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=720&fit=crop&q=80",
+          "alt": "Core content sections",
+          "caption": "Services, reviews and quote sections working together on a client site."
         }
       },
       {
@@ -1957,12 +2236,21 @@
     "name": "Special Offer Banner",
     "tagline": "Limited-time offer strip for ad landing pages",
     "summary": "Bold offer between hero and quote on Offer Funnel layout.",
+    "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Special Offer Banner",
           "text": "Offer Funnel layout centrepiece. Eyebrow, heading, intro, bullet points and CTA — designed to pair with paid ads promoting a specific deal."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&h=720&fit=crop&q=80",
+          "alt": "Trust and conversion sections",
+          "caption": "Stats, credentials and offer banners that close the sale."
         }
       },
       {
@@ -2020,12 +2308,21 @@
     "name": "Split Hero",
     "tagline": "Two-column hero with live activity feed",
     "summary": "Pair a bold headline with a scrolling feed of recent jobs.",
+    "hero_image_url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Split Hero",
           "text": "Built for the Social Proof Feed layout. The left column sells; the right column shows real-time-style job activity so visitors feel the business is busy and trusted."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&h=720&fit=crop&q=80",
+          "alt": "Split hero with activity feed",
+          "caption": "Headline plus live activity feed — built for social proof layouts."
         }
       },
       {
@@ -2083,12 +2380,21 @@
     "name": "Text Box",
     "tagline": "Flexible text block with optional side image",
     "summary": "Long-form copy with optional image — about us, story, methodology.",
+    "hero_image_url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Text Box",
           "text": "Full-width or image-side text block with eyebrow, heading, intro and rich paragraph. Place after hero for \"our story\" or methodology content."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&h=720&fit=crop&q=80",
+          "alt": "Hero and layout sections",
+          "caption": "Above-the-fold hero and layout blocks on a live LeadPages trade site."
         }
       },
       {
@@ -2146,12 +2452,21 @@
     "name": "Trust Bar",
     "tagline": "Scrolling badge strip under the hero",
     "summary": "Licensed, insured, fixed pricing — instant credibility strip.",
+    "hero_image_url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Trust Bar",
           "text": "Thin badge row that sits directly under the hero on most layouts. Toggle badges on/off — licensed, insured, 5-star, 24/7, family owned."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&h=720&fit=crop&q=80",
+          "alt": "Hero and layout sections",
+          "caption": "Above-the-fold hero and layout blocks on a live LeadPages trade site."
         }
       },
       {
@@ -2209,12 +2524,21 @@
     "name": "Video Reels",
     "tagline": "Short-form video cards from the job site",
     "summary": "Reel-style video thumbnails with links.",
+    "hero_image_url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Video Reels",
           "text": "Video cards with title, duration tag, thumbnail and external video URL — opens in new tab. Perfect for Instagram Reels and YouTube Shorts."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
+          "alt": "Social proof sections",
+          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
         }
       },
       {
@@ -2272,12 +2596,21 @@
     "name": "Why Choose Us",
     "tagline": "Numbered reasons or icon points that build trust",
     "summary": "Answer \"why you?\" before the visitor compares competitors.",
+    "hero_image_url": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Why Choose Us",
           "text": "Four proof points with icons or numbers — upfront pricing, on-time arrival, reviews count, years in business. Reduces bounce from comparison shoppers."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=720&fit=crop&q=80",
+          "alt": "Core content sections",
+          "caption": "Services, reviews and quote sections working together on a client site."
         }
       },
       {
