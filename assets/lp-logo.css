@@ -46,12 +46,12 @@ footer img.leadpages-logo {
 
 /* Ring pulse — outer and inner circles only */
 .lp-logo-pulse #outer-circle {
-  animation: lp-logo-ring-pulse 2.6s ease-in-out infinite;
+  animation: lp-logo-ring-pulse 2.6s cubic-bezier(.45,0,.25,1) infinite;
   transform-origin: 160px 134px;
 }
 
 .lp-logo-pulse #inner-circle {
-  animation: lp-logo-ring-pulse 2.6s ease-in-out infinite;
+  animation: lp-logo-ring-pulse 2.6s cubic-bezier(.45,0,.25,1) infinite;
   animation-delay: 0.4s;
   transform-origin: 153px 134px;
 }
@@ -63,8 +63,14 @@ footer img.leadpages-logo {
     filter: none;
   }
   50% {
-    opacity: 0.62;
-    filter: brightness(1.12);
+    opacity: 0.92;
+    /* Make the accent shift obvious without changing the base token. */
+    filter:
+      saturate(1.9)
+      brightness(1.35)
+      hue-rotate(38deg)
+      drop-shadow(0 0 10px rgba(46, 204, 143, 0.55))
+      drop-shadow(0 0 18px rgba(46, 204, 143, 0.28));
   }
 }
 
