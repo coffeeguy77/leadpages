@@ -219,6 +219,29 @@ body.lp-drawer-open .lp-admin-drawer {
   border-bottom: 0;
   margin: 0 0 8px;
   display: flex !important;
+  visibility: visible !important;
+}
+.lp-drawer-body .lp-mm-drawer-nav,
+.lp-drawer-body .lp-mm-drawer-action {
+  display: flex !important;
+  visibility: visible !important;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  text-align: center;
+  padding: 12px 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--text);
+}
+.lp-drawer-body .lp-mm-drawer-nav.on,
+.lp-drawer-body .lp-mm-drawer-nav[aria-selected="true"] {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: var(--accent);
+  color: var(--accent-hover);
 }
 .lp-drawer-body .anav-btn {
   text-align: left;
@@ -364,7 +387,8 @@ body.lp-compact-chrome .wrap > .leadpages-logo:not(.lp-shell-logo) {
   }
   body.lp-phone-chrome .lp-drawer-body .lp-mm-layout-grid-2 > .btn,
   body.lp-phone-chrome .lp-drawer-body .lp-mm-layout-grid-2 > a.btn,
-  body.lp-phone-chrome .lp-drawer-body .lp-mm-layout-grid-2 > .anav-btn {
+  body.lp-phone-chrome .lp-drawer-body .lp-mm-layout-grid-2 > .anav-btn,
+  body.lp-phone-chrome .lp-drawer-body .lp-mm-layout-grid-2 > .lp-mm-drawer-nav {
     width: 100%;
     min-width: 0;
   }
@@ -663,12 +687,26 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     grid-template-columns: 1fr 1fr;
     gap: 8px;
     margin: 0 0 6px;
+    visibility: visible !important;
+  }
+  .lp-drawer-body .lp-mm-sec-body {
+    display: flex !important;
+    flex-direction: column;
+    gap: 8px;
+    visibility: visible !important;
   }
   .lp-drawer-body .lp-mm-nav {
     display: flex !important;
     flex-direction: column;
     gap: 8px;
     margin: 0 0 6px;
+    visibility: visible !important;
+  }
+  .lp-drawer-body .lp-mm-drawer-nav,
+  .lp-drawer-body .lp-mm-drawer-action {
+    min-height: 48px;
+    display: flex !important;
+    visibility: visible !important;
   }
   .lp-drawer-body .anav-btn {
     text-align: center;
@@ -1401,9 +1439,11 @@ body.lp-admin-nav-open {
 }
 .lp-mm-layout-tabs .adminnav,
 .lp-mm-layout-tabs .lp-mm-nav {
+  display: flex !important;
   flex-direction: column;
   border-bottom: none;
   gap: 6px;
+  visibility: visible !important;
 }
 .lp-mm-style-outline .btn,
 .lp-mm-style-outline a.btn {
@@ -1430,9 +1470,10 @@ body.lp-admin-nav-open {
 }
 .lp-mm-style-nav .adminnav,
 .lp-mm-style-nav .lp-mm-nav {
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   gap: 6px;
+  visibility: visible !important;
 }
 .lp-mm-label-builder {
   margin-top: 14px;
@@ -1442,9 +1483,10 @@ body.lp-admin-nav-open {
 }
 body.lp-mm-configured .lp-mm-sec-body {
   width: 100%;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   gap: 8px;
+  visibility: visible !important;
 }
 body.lp-mm-configured .lp-mm-sec-body.lp-mm-layout-grid-2 {
   display: grid !important;
@@ -1452,26 +1494,34 @@ body.lp-mm-configured .lp-mm-sec-body.lp-mm-layout-grid-2 {
   gap: 8px;
 }
 body.lp-mm-configured .lp-mm-sec-body .btn,
-body.lp-mm-configured .lp-mm-sec-body a.btn {
+body.lp-mm-configured .lp-mm-sec-body a.btn,
+body.lp-mm-configured .lp-mm-sec-body .lp-mm-drawer-nav,
+body.lp-mm-configured .lp-mm-sec-body .lp-mm-drawer-action {
   width: 100%;
   justify-content: center;
+  display: flex !important;
+  visibility: visible !important;
 }
 body.lp-mm-configured .lp-mm-sec-body.lp-mm-layout-grid-2 > .btn,
-body.lp-mm-configured .lp-mm-sec-body.lp-mm-layout-grid-2 > a.btn {
+body.lp-mm-configured .lp-mm-sec-body.lp-mm-layout-grid-2 > a.btn,
+body.lp-mm-configured .lp-mm-sec-body.lp-mm-layout-grid-2 > .lp-mm-drawer-nav,
+body.lp-mm-configured .lp-mm-sec-body.lp-mm-layout-grid-2 > .lp-mm-drawer-action {
   width: 100%;
   min-width: 0;
 }
 body.lp-mm-configured .lp-mm-sec-body #lpc-context {
   width: 100%;
 }
-body.lp-mm-configured .lp-mm-sec-body.lp-mm-layout-grid-2 > .anav-btn {
+body.lp-mm-configured .lp-mm-sec-body.lp-mm-layout-grid-2 > .anav-btn,
+body.lp-mm-configured .lp-mm-sec-body.lp-mm-layout-grid-2 > .lp-mm-drawer-nav {
   text-align: center;
   padding: 14px 10px;
   font-size: 13.5px;
   font-weight: 600;
   border-radius: 12px;
   min-height: 48px;
-  display: flex;
+  display: flex !important;
+  visibility: visible !important;
   align-items: center;
   justify-content: center;
   border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);

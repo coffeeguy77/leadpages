@@ -140,6 +140,13 @@
       }
       if (defSec.id === 'tools' && !sec.slot) sec.slot = 'lpc-tools';
       if (defSec.id === 'account' && !sec.slot) sec.slot = 'lpc-drawer-footer';
+      if (defSec.id === 'account') {
+        sec.items = sec.items || [];
+        var hasSignOut = sec.items.some(function (it) { return it && it.id === 'lpc-drawer-signout'; });
+        if (!hasSignOut) {
+          sec.items.push({ id: 'lpc-drawer-signout', roles: ['super', 'partner', 'client'] });
+        }
+      }
     });
     return cfg;
   }
@@ -242,10 +249,55 @@
     }
   }
 
+  function resolveActionElement(itemId) {
+    var el = document.getElementById(itemId);
+    if (el) return el;
+    if (itemId === 'lpc-drawer-signout') {
+      if (typeof global.lpEnsureDrawerSignOut === 'function') {
+        try { return global.lpEnsureDrawerSignOut(); } catch (e) { /* ignore */ }
+      }
+      return document.getElementById('lpc-acct-signout') || document.getElementById('lpl-signout');
+    }
+    return null;
+  }
+
+  function triggerSignOut() {
+    var landing = document.getElementById('lpl-signout');
+    if (landing) { landing.click(); return; }
+    var acct = document.getElementById('lpc-acct-signout');
+    if (acct) { acct.click(); return; }
+    var drawer = document.getElementById('lpc-drawer-signout');
+    if (drawer) { drawer.click(); return; }
+    if (typeof global.signOutLP === 'function') global.signOutLP();
+  }
+
+  function appendSignOutProxy(row) {
+    var src = resolveActionElement('lpc-drawer-signout');
+    var proxy = document.createElement('button');
+    proxy.type = 'button';
+    proxy.className = 'btn ghost lp-mm-drawer-action';
+    proxy.textContent = (src && (src.textContent || '').trim()) || 'Sign Out';
+    proxy.addEventListener('click', function (e) {
+      e.preventDefault();
+      triggerSignOut();
+      if (global.LPAdminShell && global.LPAdminShell.setDrawer) {
+        global.LPAdminShell.setDrawer(false);
+      }
+    });
+    row.appendChild(proxy);
+    return true;
+  }
+
   function appendActionElement(row, itemId, opts) {
     if (!row) return false;
-    var el = document.getElementById(itemId);
+
+    if (itemId === 'lpc-drawer-signout') {
+      return appendSignOutProxy(row);
+    }
+
+    var el = resolveActionElement(itemId);
     if (!el) return false;
+
     if (el.parentNode !== row) row.appendChild(el);
     if (opts && opts.phone) {
       if (itemId === 'btn-publish' || itemId === 'btn-viewlive') {
@@ -253,6 +305,8 @@
         el.textContent = itemId === 'btn-publish' ? 'Publish Live Site' : 'View Live Site';
       }
     }
+    el.style.display = '';
+    el.style.visibility = 'visible';
     return true;
   }
 
@@ -300,28 +354,67 @@
     return out;
   }
 
-  function renderBuilderSection(secBody, sec, buttons) {
-    buttons = buttons || collectNavButtons(null);
-    if (!buttons.length) return false;
-
-    buttons.forEach(function (btn) {
-      btn.style.display = '';
-    });
-
-    if (sec.layout === 'grid-2') {
-      buttons.forEach(function (btn) {
-        secBody.appendChild(btn);
-      });
-      return true;
+  function navMetaFromDom() {
+    if (typeof global.lpGetDrawerNavMeta === 'function') {
+      try {
+        var meta = global.lpGetDrawerNavMeta();
+        if (meta && meta.length) return meta;
+      } catch (e) { /* ignore */ }
     }
-
-    var host = document.createElement('div');
-    host.className = 'lp-mm-nav';
-    host.setAttribute('role', 'tablist');
-    buttons.forEach(function (btn) {
-      host.appendChild(btn);
+    return collectNavButtons(null).map(function (btn) {
+      return {
+        id: btn.id || '',
+        label: (btn.textContent || '').trim() || btn.id || 'Menu',
+        el: btn
+      };
     });
-    secBody.appendChild(host);
+  }
+
+  function renderBuilderSection(secBody, sec, buttons) {
+    var metas = (buttons && buttons.length)
+      ? buttons.map(function (btn) {
+        return {
+          id: btn.id || '',
+          label: (btn.textContent || '').trim() || btn.id || 'Menu',
+          el: btn
+        };
+      })
+      : navMetaFromDom();
+    if (!metas.length) return false;
+
+    metas.forEach(function (meta) {
+      var srcBtn = meta.el || document.getElementById(meta.id);
+      var row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'btn ghost lp-mm-drawer-nav';
+      row.setAttribute('data-mm-nav-target', meta.id || '');
+      row.textContent = meta.label || meta.id || 'Menu';
+      if (srcBtn && srcBtn.getAttribute('aria-selected') === 'true') {
+        row.classList.add('on');
+      }
+      row.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (srcBtn) srcBtn.click();
+        else if (meta.id) {
+          var fallback = document.getElementById(meta.id);
+          if (fallback) fallback.click();
+        }
+        if (global.LPAdminShell && global.LPAdminShell.setDrawer) {
+          global.LPAdminShell.setDrawer(false);
+        }
+      });
+      if (sec.layout === 'grid-2') {
+        secBody.appendChild(row);
+      } else {
+        if (!secBody.querySelector('.lp-mm-nav')) {
+          var host = document.createElement('div');
+          host.className = 'lp-mm-nav';
+          host.setAttribute('role', 'tablist');
+          secBody.appendChild(host);
+        }
+        secBody.querySelector('.lp-mm-nav').appendChild(row);
+      }
+    });
     return true;
   }
 
