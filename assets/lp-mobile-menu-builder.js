@@ -265,6 +265,11 @@
   /** Pull drawer nodes back to page homes so clearing the drawer cannot destroy them. */
   function restoreSources() {
     var drawer = document.getElementById('lp-admin-drawer-inner');
+    var navSlot = document.getElementById('lp-nav-slot');
+    if (drawer && navSlot) {
+      var navInDrawer = drawer.querySelector('.adminnav');
+      if (navInDrawer) navSlot.appendChild(navInDrawer);
+    }
     var navHome = getNavHome();
     if (drawer && navHome) {
       drawer.querySelectorAll('.anav-btn').forEach(function (btn) {
@@ -274,11 +279,34 @@
     ensureActionElements();
   }
 
-  function renderBuilderSection(secBody, sec) {
+  function collectNavButtons(drawer) {
+    if (typeof global.lpGetDrawerNavButtons === 'function') {
+      try {
+        var synced = global.lpGetDrawerNavButtons();
+        if (synced && synced.length) return synced;
+      } catch (e) { /* ignore */ }
+    }
+    var out = [];
+    var seen = {};
+    function add(btn) {
+      if (!btn || !btn.id || seen[btn.id]) return;
+      if (!navButtonShown(btn)) return;
+      seen[btn.id] = 1;
+      out.push(btn);
+    }
     var navHome = getNavHome();
-    if (!navHome) return false;
-    var buttons = Array.prototype.filter.call(navHome.querySelectorAll('.anav-btn'), navButtonShown);
+    if (navHome) navHome.querySelectorAll('.anav-btn').forEach(add);
+    if (drawer) drawer.querySelectorAll('.anav-btn').forEach(add);
+    return out;
+  }
+
+  function renderBuilderSection(secBody, sec, buttons) {
+    buttons = buttons || collectNavButtons(null);
     if (!buttons.length) return false;
+
+    buttons.forEach(function (btn) {
+      btn.style.display = '';
+    });
 
     if (sec.layout === 'grid-2') {
       buttons.forEach(function (btn) {
@@ -325,6 +353,7 @@
 
     opts = opts || {};
     restoreSources();
+    var navButtons = collectNavButtons(null);
 
     var cfg = getConfig();
     var userRoles = getUserRoles();
@@ -343,7 +372,7 @@
 
       var hasContent = false;
       if (sec.slot === 'adminnav' || sec.id === 'builder') {
-        hasContent = renderBuilderSection(secBody, sec);
+        hasContent = renderBuilderSection(secBody, sec, navButtons);
       } else if (sec.slot === 'lpc-context' || sec.id === 'site') {
         hasContent = renderSiteSection(secBody);
       } else if (sec.items && sec.items.length) {
@@ -398,6 +427,13 @@
   }
 
   function getLiveNavButtons() {
+    if (typeof global.lpGetDrawerNavButtons === 'function') {
+      try {
+        return global.lpGetDrawerNavButtons().map(function (btn) {
+          return { id: btn.id || '', label: (btn.textContent || '').trim() || btn.id };
+        });
+      } catch (e) { /* ignore */ }
+    }
     var nav = getNavHome();
     if (!nav) return [];
     return Array.prototype.filter.call(nav.querySelectorAll('.anav-btn'), navButtonShown).map(function (btn) {
