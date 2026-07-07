@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const pp = require('../lib/playground-preset');
+const md = require('../lib/marketplace-data');
 
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const ROOT = path.join(__dirname, '..');
@@ -38,20 +39,12 @@ async function requireSuperAdmin(req) {
   return user;
 }
 
-function loadJson(rel) {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
-  } catch {
-    return null;
-  }
-}
-
 function buildDefaultPreset(sectionKey) {
   if (!sectionKey) return null;
-  const defaults = loadJson('marketplace/playground-default-configs.json') || {};
+  const defaults = md.defaultConfigs || {};
   const flat = defaults[sectionKey];
   if (!flat) return null;
-  const sellTemplates = loadJson('marketplace/sell-templates.json') || {};
+  const sellTemplates = md.sellTemplates || {};
   const appName = (sellTemplates[sectionKey] && sellTemplates[sectionKey].name) || sectionKey;
   const siteConfig = pp.flatDemoToSiteConfig(flat, sectionKey);
   return pp.normalizePreset(
@@ -61,23 +54,40 @@ function buildDefaultPreset(sectionKey) {
 }
 
 function listFilePresets(sectionKey) {
-  if (!fs.existsSync(PLAYGROUND_DIR)) return [];
-  return fs.readdirSync(PLAYGROUND_DIR)
-    .filter((f) => f.endsWith('.json'))
-    .map((f) => {
-      try {
-        const raw = JSON.parse(fs.readFileSync(path.join(PLAYGROUND_DIR, f), 'utf8'));
-        const slug = f.replace(/\.json$/, '');
-        const preset = pp.normalizePreset(raw, { slug, source: 'file', section_key: sectionKey || raw.section_key || raw.section });
-        if (sectionKey && preset.section_key && preset.section_key !== sectionKey) return null;
-        // Generic empty default.json applies to no specific section — use built-in sample instead.
-        if (sectionKey && slug === 'default' && !preset.section_key) return null;
-        return preset;
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
+  const seen = {};
+  const presets = [];
+
+  function addPreset(slug, raw) {
+    if (seen[slug]) return;
+    try {
+      const preset = pp.normalizePreset(raw, { slug, source: 'file', section_key: sectionKey || raw.section_key || raw.section });
+      if (sectionKey && preset.section_key && preset.section_key !== sectionKey) return;
+      if (sectionKey && slug === 'default' && !preset.section_key) return;
+      seen[slug] = 1;
+      presets.push(preset);
+    } catch {
+      /* skip */
+    }
+  }
+
+  Object.keys(md.filePresets || {}).forEach(function(slug) {
+    addPreset(slug, md.filePresets[slug]);
+  });
+
+  if (fs.existsSync(PLAYGROUND_DIR)) {
+    fs.readdirSync(PLAYGROUND_DIR)
+      .filter((f) => f.endsWith('.json'))
+      .forEach((f) => {
+        try {
+          const raw = JSON.parse(fs.readFileSync(path.join(PLAYGROUND_DIR, f), 'utf8'));
+          addPreset(f.replace(/\.json$/, ''), raw);
+        } catch {
+          /* skip */
+        }
+      });
+  }
+
+  return presets;
 }
 
 function normalizeDbPreset(row) {
@@ -90,8 +100,8 @@ function normalizeDbPreset(row) {
 }
 
 async function getPlaygroundMeta(sectionKey) {
-  const fieldDefs = loadJson('marketplace/playground-field-defs.json') || {};
-  const sellTemplates = loadJson('marketplace/sell-templates.json') || {};
+  const fieldDefs = md.fieldDefs || {};
+  const sellTemplates = md.sellTemplates || {};
   const filePresets = listFilePresets(sectionKey);
   let dbPresets = [];
 
@@ -151,6 +161,10 @@ module.exports = async (req, res) => {
       const sectionKey = ((req.query && req.query.section_key) || '').trim();
       const slug = ((req.query && req.query.slug) || '').trim();
       if (slug) {
+        if (md.filePresets && md.filePresets[slug]) {
+          const preset = pp.normalizePreset(md.filePresets[slug], { slug, source: 'file', section_key: sectionKey });
+          return res.status(200).json(preset);
+        }
         const filePath = path.join(PLAYGROUND_DIR, slug + '.json');
         if (fs.existsSync(filePath)) {
           const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
