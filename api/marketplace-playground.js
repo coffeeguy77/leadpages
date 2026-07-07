@@ -46,6 +46,20 @@ function loadJson(rel) {
   }
 }
 
+function buildDefaultPreset(sectionKey) {
+  if (!sectionKey) return null;
+  const defaults = loadJson('marketplace/playground-default-configs.json') || {};
+  const flat = defaults[sectionKey];
+  if (!flat) return null;
+  const sellTemplates = loadJson('marketplace/sell-templates.json') || {};
+  const appName = (sellTemplates[sectionKey] && sellTemplates[sectionKey].name) || sectionKey;
+  const siteConfig = pp.flatDemoToSiteConfig(flat, sectionKey);
+  return pp.normalizePreset(
+    pp.dbConfigFromSiteConfig(sectionKey, siteConfig),
+    { slug: 'default', label: appName + ' (sample)', source: 'default', section_key: sectionKey }
+  );
+}
+
 function listFilePresets(sectionKey) {
   if (!fs.existsSync(PLAYGROUND_DIR)) return [];
   return fs.readdirSync(PLAYGROUND_DIR)
@@ -56,6 +70,8 @@ function listFilePresets(sectionKey) {
         const slug = f.replace(/\.json$/, '');
         const preset = pp.normalizePreset(raw, { slug, source: 'file', section_key: sectionKey || raw.section_key || raw.section });
         if (sectionKey && preset.section_key && preset.section_key !== sectionKey) return null;
+        // Generic empty default.json applies to no specific section — use built-in sample instead.
+        if (sectionKey && slug === 'default' && !preset.section_key) return null;
         return preset;
       } catch {
         return null;
@@ -98,6 +114,13 @@ async function getPlaygroundMeta(sectionKey) {
   const presets = [];
   dbPresets.forEach((p) => { if (!seen[p.slug]) { seen[p.slug] = 1; presets.push(p); } });
   filePresets.forEach((p) => { if (!seen[p.slug]) { seen[p.slug] = 1; presets.push(p); } });
+  if (sectionKey) {
+    const built = buildDefaultPreset(sectionKey);
+    if (built && !seen[built.slug]) {
+      seen[built.slug] = 1;
+      presets.push(built);
+    }
+  }
 
   return {
     contract_version: pp.CONTRACT_VERSION,
@@ -138,6 +161,10 @@ module.exports = async (req, res) => {
           const meta = await getPlaygroundMeta(sectionKey);
           const found = (meta.presets || []).find((p) => p.slug === slug);
           if (found) return res.status(200).json(found);
+          if (slug === 'default') {
+            const built = buildDefaultPreset(sectionKey);
+            if (built) return res.status(200).json(built);
+          }
         }
         return res.status(404).json({ error: 'preset_not_found' });
       }
