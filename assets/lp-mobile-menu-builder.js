@@ -214,6 +214,18 @@
     });
   }
 
+  var NAV_HOME_SEL = '#lp-nav-slot > .adminnav';
+
+  function getNavHome() {
+    return document.querySelector(NAV_HOME_SEL);
+  }
+
+  /** Matches applyRoleGating — inline display:none means hidden for this site/role. */
+  function navButtonShown(btn) {
+    if (!btn || btn.nodeType !== 1) return false;
+    return !(btn.style && btn.style.display === 'none');
+  }
+
   function elVisible(el) {
     if (!el || el.nodeType !== 1) return false;
     if (el.style && el.style.display === 'none') return false;
@@ -250,31 +262,37 @@
     } catch (e) { /* ignore */ }
   }
 
-  /** Pull builder nav buttons and action controls back to their page homes before re-render. */
+  /** Pull drawer nodes back to page homes so clearing the drawer cannot destroy them. */
   function restoreSources() {
-    var nav = document.querySelector('.adminnav');
     var drawer = document.getElementById('lp-admin-drawer-inner');
-    if (nav && drawer) {
+    var navHome = getNavHome();
+    if (drawer && navHome) {
       drawer.querySelectorAll('.anav-btn').forEach(function (btn) {
-        nav.appendChild(btn);
+        navHome.appendChild(btn);
       });
     }
     ensureActionElements();
   }
 
-  function renderBuilderSection(secBody) {
-    var nav = document.querySelector('.adminnav');
-    if (!nav) return false;
+  function renderBuilderSection(secBody, sec) {
+    var navHome = getNavHome();
+    if (!navHome) return false;
+    var buttons = Array.prototype.filter.call(navHome.querySelectorAll('.anav-btn'), navButtonShown);
+    if (!buttons.length) return false;
+
+    if (sec.layout === 'grid-2') {
+      buttons.forEach(function (btn) {
+        secBody.appendChild(btn);
+      });
+      return true;
+    }
+
     var host = document.createElement('div');
-    host.className = 'lp-mm-nav adminnav';
+    host.className = 'lp-mm-nav';
     host.setAttribute('role', 'tablist');
-    var moved = 0;
-    Array.prototype.forEach.call(nav.querySelectorAll('.anav-btn'), function (btn) {
-      if (!elVisible(btn)) return;
+    buttons.forEach(function (btn) {
       host.appendChild(btn);
-      moved++;
     });
-    if (!moved) return false;
     secBody.appendChild(host);
     return true;
   }
@@ -325,7 +343,7 @@
 
       var hasContent = false;
       if (sec.slot === 'adminnav' || sec.id === 'builder') {
-        hasContent = renderBuilderSection(secBody);
+        hasContent = renderBuilderSection(secBody, sec);
       } else if (sec.slot === 'lpc-context' || sec.id === 'site') {
         hasContent = renderSiteSection(secBody);
       } else if (sec.items && sec.items.length) {
@@ -380,11 +398,9 @@
   }
 
   function getLiveNavButtons() {
-    var nav = document.querySelector('.adminnav');
+    var nav = getNavHome();
     if (!nav) return [];
-    return Array.prototype.filter.call(nav.querySelectorAll('.anav-btn'), function (btn) {
-      return elVisible(btn);
-    }).map(function (btn) {
+    return Array.prototype.filter.call(nav.querySelectorAll('.anav-btn'), navButtonShown).map(function (btn) {
       return { id: btn.id || '', label: (btn.textContent || '').trim() || btn.id };
     });
   }
