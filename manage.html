@@ -573,7 +573,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <div class="adminnav" role="tablist">
     <button class="anav-btn" id="nav-dashboard" aria-selected="false" style="display:none">Dashboard</button>
     <button class="anav-btn" id="nav-details" aria-selected="false" style="display:none">Details</button>
-    <button class="anav-btn" id="nav-rates" aria-selected="true" style="display:none">Rates &amp; leads</button>
+    <button class="anav-btn" id="nav-rates" aria-selected="false" style="display:none">Rates &amp; leads</button>
     <button class="anav-btn" id="nav-landing" aria-selected="false">Landing pages</button>
     <button class="anav-btn" id="nav-apps" aria-selected="false">App Marketplace</button>
     <button class="anav-btn" id="nav-mailer" aria-selected="false">Email clients</button>
@@ -592,7 +592,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 
   <div id="av-mailer" hidden></div>
 
-  <div id="av-rates">
+  <div id="av-rates" hidden>
   <div class="card" style="margin-bottom:22px;">
     <div class="calc-head"><h2 style="margin:0">Calculators shown on the site</h2><label class="ci-toggle"><input type="checkbox" id="calc-hide-inactive" checked> Hide inactive</label></div>
     <p class="lede">Tick the calculators you want visible on the public page. Unticked ones are hidden from the tabs entirely.</p>
@@ -1821,7 +1821,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     // Single-site normal client: skip switcher, open their site directly
     if(currentRole!=='super'&&currentRole!=='broker'){
       var mySites=(allSites||[]).filter(function(s){return !s.is_partner_home;});
-      if(mySites.length===1){ hideLanding(); loadSite(mySites[0].slug||mySites[0].id); return; }
+      if(mySites.length===1){ hideLanding(); loadSite(mySites[0]); return; }
     }
     document.body.classList.add('lp-landing-on');
     // Wire role-based tabs on first show
@@ -2304,16 +2304,17 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     }
     // Phase B: reconcile site_apps -> data.sections + sectionOrder
     if(currentSiteId && currentSiteTemplate==='trade'){
+      applyTemplateChrome();
+      applyRoleGating();
+      ensureSiteBar();
       _reconcileSiteApps(currentSiteId, data).then(function(){
-        applyTemplateChrome();
         applyRoleGating();
-        ensureSiteBar();
         try{ renderSiteAnalytics(); }catch(e){}
         try{ lpRenderSupportContact(); }catch(e){}
         if(document.body.classList.contains('lp-prev-open')) previewLoad();
         try{ lpScopeSync(); lpBkSync(); }catch(e){}
       });
-      return; // async path takes over
+      return; // async reconcile continues in background
     }
     applyTemplateChrome();
     applyRoleGating();
@@ -5404,8 +5405,11 @@ function heroCtaCard(c){
     document.body.classList.toggle('role-leads', leads);
     const av=$('av-rates'); if(av){ Array.prototype.forEach.call(av.children,function(c){ if(c.classList.contains('leads-card')) return; c.style.display = leads ? 'none' : ''; }); }
     if(allow.indexOf(activeView)<0) activeView=(allow.indexOf(tnav[0])>=0?tnav[0]:allow[0]);
+    if(document.body.classList.contains('lp-landing-on') && !currentSiteId){
+      return;
+    }
     document.body.classList.remove('lp-cmd-loading');
-    showView(activeView);
+    if(activeView) showView(activeView);
     if(window.LPAdminShell&&LPAdminShell.moveChrome) LPAdminShell.moveChrome();
   }
   function gate(){ if(!authed){ const av=document.getElementById('admin-view'); if(av && av.hidden) return; showLogin(); } }
@@ -5535,7 +5539,7 @@ function heroCtaCard(c){
 
   /* ---------- nav switcher (six tabs) ---------- */
   const NAV=[['dashboard','av-dashboard',renderDashboard],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['apps','av-apps',renderAppsMarketplace]];
-  let activeView='rates';
+  let activeView=null;
   function showView(which){
     activeView=which;
     NAV.forEach(function(it){ const v=$(it[1]), b=$('nav-'+it[0]); const on=(it[0]===which); if(v) v.hidden=!on; if(b) b.setAttribute('aria-selected', on?'true':'false'); if(on && it[2]) it[2](); });
@@ -6037,7 +6041,6 @@ function heroCtaCard(c){
     renderCalcToggles(); renderLeads(); renderStatebar(); renderEditor();
     var cl=$('btn-clear-leads'); if(cl && !cl.__wired){ cl.__wired=1; cl.addEventListener('click',function(){ try{localStorage.removeItem('linray_demo_leads');}catch(e){} renderLeads(); toast('Demo leads cleared'); }); }
   }
-  init();
 
   /* ---- Project scope panel: shows the demo's config.scope while building, tick tasks done ---- */
   var LPSCOPE={cfg:null};
