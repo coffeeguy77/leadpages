@@ -1372,7 +1372,34 @@ body.lp-admin-nav-open {
   padding: 0 4px;
 }
 
-/* Config-driven mobile menu (LPMobileMenu) */
+/* Config-driven mobile menu (LPMobileMenu) — drawer only; never style desktop command card */
+@media (min-width: 1024px) {
+  #lp-cmd-slot #lpc-primary,
+  #lp-cmd-slot #lpc-tools,
+  #lp-cmd-slot #lpc-context,
+  #lp-cmd-slot #lpc-acct {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+  #lp-cmd-slot #lpc-primary .btn,
+  #lp-cmd-slot #lpc-tools .btn,
+  #lp-cmd-slot #lpc-tools a.btn,
+  #lp-cmd-slot #lpc-acct .btn,
+  #lp-cmd-slot #lpc-acct a.btn {
+    width: auto !important;
+    min-height: 0 !important;
+    justify-content: flex-start !important;
+  }
+  #lp-cmd-slot .lp-mm-sec-body,
+  #lp-cmd-slot .lp-mm-layout-stack,
+  #lp-cmd-slot .lp-mm-layout-grid-2 {
+    display: contents !important;
+  }
+}
+
 .lp-mm-sep-line {
   margin-top: 14px;
   padding-top: 14px;

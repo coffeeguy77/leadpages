@@ -12,7 +12,7 @@ const DEFAULT_MENU = {
   sections: [
     {
       id: 'publish',
-      title: 'Publishing & preview',
+      title: 'Publish',
       layout: 'stack',
       buttonStyle: 'publish-duo',
       separator: 'none',
@@ -52,11 +52,6 @@ const DEFAULT_MENU = {
         { id: 'btn-appearance-aa', roles: ['super', 'partner', 'client'] },
         { id: 'btn-billing', roles: ['super', 'partner', 'client'] },
         { id: 'btn-domains', roles: ['super', 'partner', 'client'] },
-        { id: 'lpc-preview', roles: ['super', 'partner', 'client'] },
-        { id: 'lpc-scope', roles: ['super', 'partner', 'client'] },
-        { id: 'lpc-backups', roles: ['super', 'partner', 'client'] },
-        { id: 'btn-fav', roles: ['super'] },
-        { id: 'btn-newsite', roles: ['super'] },
         { id: 'lpc-partner-admin', roles: ['super'] },
         { id: 'lpc-marketplace-admin', roles: ['super'] },
         { id: 'lpc-partner-console', roles: ['partner'] }
@@ -72,7 +67,6 @@ const DEFAULT_MENU = {
       slot: 'lpc-drawer-footer',
       items: [
         { id: 'btn-switch', roles: ['super'] },
-        { id: 'lp-mode-toggle', roles: ['super', 'partner'] },
         { id: 'lpc-drawer-signout', roles: ['super', 'partner', 'client'] }
       ]
     }

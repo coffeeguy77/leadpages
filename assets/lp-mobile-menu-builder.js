@@ -171,7 +171,7 @@
   var FALLBACK_DEFAULT = {
     version: 1,
     sections: [
-      { id: 'publish', title: 'Publishing & preview', layout: 'stack', buttonStyle: 'publish-duo', separator: 'none', roles: ['super', 'partner', 'client'], slot: 'lpc-drawer-top', items: [{ id: 'btn-publish' }, { id: 'btn-viewlive' }] },
+      { id: 'publish', title: 'Publish', layout: 'stack', buttonStyle: 'publish-duo', separator: 'none', roles: ['super', 'partner', 'client'], slot: 'lpc-drawer-top', items: [{ id: 'btn-publish' }, { id: 'btn-viewlive' }] },
       { id: 'site', title: 'Site', layout: 'stack', buttonStyle: 'default', separator: 'line', roles: ['super', 'partner'], condition: 'site-switcher', slot: 'lpc-context' },
       { id: 'builder', title: 'Builder Menu', layout: 'tabs', buttonStyle: 'nav', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'adminnav' },
       { id: 'tools', title: 'Site Tools', layout: 'stack', buttonStyle: 'outline', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'lpc-tools', items: [
@@ -179,18 +179,12 @@
         { id: 'btn-appearance-aa', roles: ['super', 'partner', 'client'] },
         { id: 'btn-billing', roles: ['super', 'partner', 'client'] },
         { id: 'btn-domains', roles: ['super', 'partner', 'client'] },
-        { id: 'lpc-preview', roles: ['super', 'partner', 'client'] },
-        { id: 'lpc-scope', roles: ['super', 'partner', 'client'] },
-        { id: 'lpc-backups', roles: ['super', 'partner', 'client'] },
-        { id: 'btn-fav', roles: ['super'] },
-        { id: 'btn-newsite', roles: ['super'] },
         { id: 'lpc-partner-admin', roles: ['super'] },
         { id: 'lpc-marketplace-admin', roles: ['super'] },
         { id: 'lpc-partner-console', roles: ['partner'] }
       ] },
       { id: 'account', title: 'Account', layout: 'stack', buttonStyle: 'outline', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'lpc-drawer-footer', items: [
         { id: 'btn-switch', roles: ['super'] },
-        { id: 'lp-mode-toggle', roles: ['super', 'partner'] },
         { id: 'lpc-drawer-signout', roles: ['super', 'partner', 'client'] }
       ] }
     ]
@@ -220,185 +214,6 @@
     });
   }
 
-  function getViewportOpts() {
-    var w = global.innerWidth || 1200;
-    return {
-      desktop: w >= 1024,
-      mobile: w < 1024,
-      phone: w < 768
-    };
-  }
-
-  function resolveTargetSlot(sec, opts) {
-    opts = opts || {};
-    if (sec.id === 'publish') {
-      return opts.desktop ? 'lpc-primary' : 'lpc-drawer-top';
-    }
-    if (sec.id === 'account' && opts.desktop) {
-      return 'lpc-acct';
-    }
-    return sec.slot || null;
-  }
-
-  function normalizePublishLabels() {
-    var pub = document.getElementById('btn-publish');
-    var view = document.getElementById('btn-viewlive');
-    if (pub && !pub.dataset.lpFullText) pub.dataset.lpFullText = pub.textContent;
-    if (view && !view.dataset.lpFullText) view.dataset.lpFullText = view.textContent;
-    if (pub) pub.textContent = 'Publish Live Site';
-    if (view) view.textContent = 'View Live Site';
-  }
-
-  function restoreDesktopCmdStructure() {
-    var cmd = document.getElementById('lp-cmd');
-    if (!cmd) return;
-    var top = document.getElementById('lpc-drawer-top');
-    var ctx = document.getElementById('lpc-context');
-    var primWrap = cmd.querySelector('[data-lpc-wrap="primary"]');
-    var toolsWrap = cmd.querySelector('[data-lpc-wrap="tools"]');
-    var footer = document.getElementById('lpc-drawer-footer');
-
-    function restore(el, before) {
-      if (!el || cmd.contains(el)) return;
-      if (before && before.parentNode === cmd) cmd.insertBefore(el, before);
-      else cmd.appendChild(el);
-    }
-
-    restore(top, cmd.firstChild);
-    restore(ctx, top ? top.nextSibling : cmd.firstChild);
-    if (primWrap && primWrap.parentNode !== cmd) cmd.appendChild(primWrap);
-    if (toolsWrap && toolsWrap.parentNode !== cmd) cmd.appendChild(toolsWrap);
-    restore(footer, null);
-
-    var prim = document.getElementById('lpc-primary');
-    if (prim && primWrap && prim.parentNode !== primWrap) primWrap.appendChild(prim);
-    var tools = document.getElementById('lpc-tools');
-    if (tools && toolsWrap && tools.parentNode !== toolsWrap) toolsWrap.appendChild(tools);
-    if (prim) prim.style.display = '';
-  }
-
-  function applySlotItems(sec, slotEl, userRoles, clearFirst) {
-    if (!slotEl || !sec.items || !sec.items.length) return false;
-    if (clearFirst) slotEl.innerHTML = '';
-    var vis = visibleItems(sec, userRoles);
-    vis.forEach(function (it) { moveItemToRow(it.id, slotEl); });
-    (sec.items || []).forEach(function (it) {
-      var el = document.getElementById(it.id);
-      if (!el) return;
-      var show = vis.some(function (v) { return v.id === it.id; });
-      el.style.display = show ? '' : 'none';
-    });
-    return vis.length > 0;
-  }
-
-  function slotWrapKey(slotId) {
-    if (slotId === 'lpc-primary') return 'primary';
-    if (slotId === 'lpc-tools') return 'tools';
-    return null;
-  }
-
-  function populateCommandSlots(opts) {
-    opts = opts || getViewportOpts();
-    var cfg = getConfig();
-    var userRoles = getUserRoles();
-    var cmd = document.getElementById('lp-cmd');
-    if (!cmd || !cfg || !cfg.sections) return false;
-
-    restoreDesktopCmdStructure();
-
-    cmd.querySelectorAll('[data-lpc-wrap]').forEach(function (w) { w.style.display = ''; });
-    var ctx = document.getElementById('lpc-context');
-    if (ctx) ctx.style.display = '';
-    var acct = document.getElementById('lpc-acct');
-    if (acct) acct.style.display = '';
-    var drawerTop = document.getElementById('lpc-drawer-top');
-    if (drawerTop) drawerTop.innerHTML = '';
-
-    cfg.sections.forEach(function (sec) {
-      var slotId = resolveTargetSlot(sec, opts);
-      var visible = sectionVisible(sec, opts);
-      var wrapKey = slotWrapKey(slotId);
-
-      if (wrapKey) {
-        var wrap = cmd.querySelector('[data-lpc-wrap="' + wrapKey + '"]');
-        var slotEl = document.getElementById(slotId);
-        if (!wrap || !slotEl) return;
-        if (!visible) {
-          wrap.style.display = 'none';
-          return;
-        }
-        var lbl = wrap.querySelector('div[style*="font-size"]') || wrap.firstElementChild;
-        if (lbl && sec.title) lbl.textContent = sec.title;
-        applySlotItems(sec, slotEl, userRoles);
-        applyButtonStyle(slotEl, sec.buttonStyle, sec);
-        var hasContent = slotHasContent(slotId) || slotEl.children.length > 0;
-        wrap.style.display = hasContent ? '' : 'none';
-        return;
-      }
-
-      if (slotId === 'lpc-context') {
-        if (!visible && ctx) ctx.style.display = 'none';
-        return;
-      }
-
-      if (slotId === 'lpc-acct') {
-        if (!acct) return;
-        if (!visible) {
-          acct.style.display = 'none';
-          return;
-        }
-        applySlotItems(sec, acct, userRoles);
-        applyButtonStyle(acct, sec.buttonStyle, sec);
-        acct.style.display = acct.children.length ? '' : 'none';
-        return;
-      }
-
-      if (slotId === 'lpc-drawer-footer') {
-        var footer = document.getElementById('lpc-drawer-footer');
-        if (!footer) return;
-        if (!visible) {
-          footer.innerHTML = '';
-          return;
-        }
-        footer.innerHTML = '';
-        applySlotItems(sec, footer, userRoles);
-        applyButtonStyle(footer, sec.buttonStyle, sec);
-      }
-    });
-
-    normalizePublishLabels();
-    document.body.classList.toggle('lp-mm-configured', true);
-    return true;
-  }
-
-  function renderCommandCentre(opts) {
-    opts = opts || getViewportOpts();
-    populateCommandSlots(opts);
-    if (opts.drawerInner) {
-      return applyDrawer(opts.drawerInner, opts);
-    }
-    return true;
-  }
-
-  var _initBusy = false;
-
-  async function initCommandCentreMenu() {
-    if (_initBusy) return getConfig();
-    _initBusy = true;
-    try {
-      await load();
-      if (typeof global.lpRefreshCmdDrawer === 'function') {
-        global.lpRefreshCmdDrawer();
-      }
-      if (global.LPAdminShell && global.LPAdminShell.moveChrome) {
-        global.LPAdminShell.moveChrome({ skipRefresh: true });
-      }
-      return getConfig();
-    } finally {
-      _initBusy = false;
-    }
-  }
-
   function elVisible(el) {
     if (!el || el.nodeType !== 1) return false;
     if (el.style && el.style.display === 'none') return false;
@@ -407,12 +222,17 @@
   }
 
   function slotHasContent(slotId) {
-    var el = document.getElementById(slotId);
+    var el = slotId === 'adminnav'
+      ? document.querySelector('.adminnav')
+      : document.getElementById(slotId);
     if (!el) return false;
     if (slotId === 'adminnav') {
       return Array.prototype.some.call(el.querySelectorAll('.anav-btn'), function (b) {
-        return elVisible(b);
+        return !(b.style && b.style.display === 'none');
       });
+    }
+    if (slotId === 'lpc-drawer-footer' || slotId === 'lpc-drawer-top' || slotId === 'lpc-tools') {
+      return el.children.length > 0;
     }
     return Array.prototype.some.call(el.children, function (c) { return elVisible(c); });
   }
@@ -440,21 +260,19 @@
     return slotEl.children.length > 0;
   }
 
-  function buildSectionRow(sec, opts) {
-    opts = opts || {};
+  function buildSectionRow(sec) {
     var row = document.createElement('div');
     row.className = 'lp-mm-sec-body';
     row.setAttribute('data-mm-sec', sec.id);
     applyButtonStyle(row, sec.buttonStyle, sec);
 
-    var slotId = resolveTargetSlot(sec, opts);
-    if (slotId) {
-      var slotEl = slotId === 'adminnav'
+    if (sec.slot) {
+      var slotEl = sec.slot === 'adminnav'
         ? document.querySelector('.adminnav')
-        : document.getElementById(slotId);
+        : document.getElementById(sec.slot);
       if (slotEl) {
-        if (slotId === 'lpc-drawer-footer' || slotId === 'lpc-drawer-top' || slotId === 'lpc-tools') {
-          if (slotId === 'lpc-drawer-footer') {
+        if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
+          if (sec.slot === 'lpc-drawer-footer') {
             slotEl.innerHTML = '';
           }
           if (moveItemsIntoSlot(sec, slotEl) && slotEl.parentNode !== row) {
@@ -470,21 +288,16 @@
     return row;
   }
 
-  function sectionHasContent(sec, row, opts) {
-    opts = opts || {};
-    var slotId = resolveTargetSlot(sec, opts) || sec.slot;
-    if (slotId) {
-      if (slotId === 'lpc-drawer-footer' || slotId === 'lpc-drawer-top' || slotId === 'lpc-tools' || slotId === 'lpc-primary') {
-        var slot = document.getElementById(slotId);
+  function sectionHasContent(sec, row) {
+    if (sec.slot) {
+      if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
+        var slot = document.getElementById(sec.slot);
         return slot && slot.children.length > 0;
       }
-      if (slotId === 'adminnav') {
+      if (sec.slot === 'adminnav') {
         return slotHasContent('adminnav');
       }
-      if (slotId === 'lpc-acct') {
-        return slotHasContent('lpc-acct');
-      }
-      return slotHasContent(slotId);
+      return slotHasContent(sec.slot);
     }
     if (!row) return false;
     return Array.prototype.some.call(row.children, function (c) { return elVisible(c); });
@@ -498,11 +311,12 @@
 
     while (inner.firstChild) inner.removeChild(inner.firstChild);
 
+    var added = 0;
     cfg.sections.forEach(function (sec) {
       if (!sectionVisible(sec, opts)) return;
 
-      var row = buildSectionRow(sec, opts);
-      if (!sectionHasContent(sec, row, opts)) return;
+      var row = buildSectionRow(sec);
+      if (!sectionHasContent(sec, row)) return;
 
       if (sec.title) {
         var lbl = document.createElement('div');
@@ -511,10 +325,11 @@
         inner.appendChild(lbl);
       }
       inner.appendChild(row);
+      added++;
     });
 
-    document.body.classList.toggle('lp-mm-configured', true);
-    return true;
+    document.body.classList.toggle('lp-mm-configured', added > 0);
+    return added > 0;
   }
 
   function renderTabletDrawer(inner, opts) {
@@ -530,10 +345,13 @@
         /* tablet always shows site section */
       }
 
-      var slotId = resolveTargetSlot(sec, opts);
-      var targetSlot = slotId === 'adminnav'
-        ? document.querySelector('.adminnav')
-        : (slotId ? document.getElementById(slotId) : null);
+      var targetSlot = null;
+      if (sec.id === 'publish') targetSlot = document.getElementById('lpc-drawer-top');
+      else if (sec.id === 'site') targetSlot = document.getElementById('lpc-context');
+      else if (sec.id === 'builder') targetSlot = document.querySelector('.adminnav');
+      else if (sec.id === 'tools') targetSlot = document.getElementById('lpc-tools');
+      else if (sec.id === 'account') targetSlot = document.getElementById('lpc-drawer-footer');
+      else if (sec.slot) targetSlot = sec.slot === 'adminnav' ? document.querySelector('.adminnav') : document.getElementById(sec.slot);
 
       if (!targetSlot) return;
 
@@ -548,8 +366,8 @@
         wrap.appendChild(lbl);
       }
 
-      if (slotId === 'lpc-drawer-footer' || slotId === 'lpc-drawer-top' || slotId === 'lpc-tools' || slotId === 'lpc-primary') {
-        if (slotId === 'lpc-drawer-footer') {
+      if (sec.slot === 'lpc-drawer-footer' || sec.slot === 'lpc-drawer-top' || sec.slot === 'lpc-tools') {
+        if (sec.slot === 'lpc-drawer-footer') {
           targetSlot.innerHTML = '';
         }
         if (moveItemsIntoSlot(sec, targetSlot) && targetSlot.parentNode !== wrap) {
@@ -559,15 +377,31 @@
         wrap.appendChild(targetSlot);
       }
 
-      if (!sectionHasContent(sec, wrap, opts)) return;
+      if (!sectionHasContent(sec, wrap)) return;
       inner.appendChild(wrap);
     });
+
+    var prim = document.getElementById('lpc-primary');
+    if (prim && !opts.phone) {
+      var hasPrim = Array.prototype.some.call(prim.children, function (c) { return elVisible(c); });
+      if (hasPrim) {
+        var primWrap = document.createElement('div');
+        primWrap.className = 'lp-mm-tablet-block';
+        var pl = document.createElement('div');
+        pl.className = 'lp-drawer-section-label';
+        pl.textContent = 'Publishing & preview';
+        primWrap.appendChild(pl);
+        primWrap.appendChild(prim);
+        inner.appendChild(primWrap);
+      }
+    }
 
     return true;
   }
 
   function applyDrawer(inner, opts) {
     if (!inner) return false;
+    if ((global.innerWidth || 9999) >= 1024) return false;
     if (opts.phone) return renderPhoneDrawer(inner, opts);
     return renderTabletDrawer(inner, opts);
   }
@@ -584,7 +418,9 @@
     });
     if (j && j.ok) {
       config = normalizeConfig(deepClone(newConfig));
-      await initCommandCentreMenu();
+      if (global.LPAdminShell && global.LPAdminShell.moveChrome) {
+        global.LPAdminShell.moveChrome();
+      }
     }
     return j;
   }
@@ -1018,7 +854,7 @@
         var j = await save(draft);
         btn.disabled = false;
         if (j && j.ok) {
-          msg.textContent = 'Saved — command centre menu updated.';
+          msg.textContent = 'Saved — open the phone menu to see changes.';
           msg.style.color = '#0a7d33';
         } else if (j && j._status === 401) {
           msg.textContent = 'Please sign in again, then retry.';
@@ -1042,10 +878,6 @@
     load: load,
     getConfig: getConfig,
     getUserRoles: getUserRoles,
-    getViewportOpts: getViewportOpts,
-    resolveTargetSlot: resolveTargetSlot,
-    renderCommandCentre: renderCommandCentre,
-    initCommandCentreMenu: initCommandCentreMenu,
     applyDrawer: applyDrawer,
     openBuilder: openBuilder,
     invalidate: invalidate,

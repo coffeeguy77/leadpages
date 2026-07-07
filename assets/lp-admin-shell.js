@@ -209,16 +209,7 @@
     }
 
     function prepareDrawerButtons() {
-      if (global.LPMobileMenu && global.LPMobileMenu.renderCommandCentre) {
-        try {
-          global.LPMobileMenu.renderCommandCentre({
-            desktop: !isMobileLayout(),
-            mobile: isMobileLayout(),
-            phone: isPhoneLayout()
-          });
-        } catch (e) { /* ignore */ }
-        return;
-      }
+      if (!isMobileLayout()) return;
       var top = document.getElementById('lpc-drawer-top');
       var tools = document.getElementById('lpc-tools');
       var footer = document.getElementById('lpc-drawer-footer');
@@ -249,6 +240,7 @@
       if (!_drawerLayoutBusy && global.lpRefreshCmdDrawer) {
         try { global.lpRefreshCmdDrawer(); } catch (e) { /* ignore */ }
       }
+      prepareDrawerButtons();
     }
 
     function drawerSectionHasItems(el) {
@@ -275,60 +267,63 @@
       return false;
     }
 
-    function moveChrome(opts) {
-      opts = opts || {};
+    function restoreDrawerSlotsHome() {
+      restoreCmdLayout();
+      if (adminnav && navHome && adminnav.parentNode !== navHome) navHome.appendChild(adminnav);
+      if (cmd && cmdHome && cmd.parentNode !== cmdHome) cmdHome.appendChild(cmd);
+    }
+
+    function moveChrome() {
       var mobile = isMobileLayout();
       var phone = isPhoneLayout();
       var inner = drawerInner;
       if (!inner || _drawerLayoutBusy) return;
-      if (!opts.skipRefresh) {
+
+      document.body.classList.toggle('lp-phone-chrome', mobile && phone);
+
+      if (mobile) {
+        document.body.classList.add('lp-compact-chrome');
         _drawerLayoutBusy = true;
         try {
+          restoreDrawerSlotsHome();
           if (global.lpRefreshCmdDrawer) global.lpRefreshCmdDrawer();
+          prepareDrawerButtons();
         } finally {
           _drawerLayoutBusy = false;
         }
-      }
-      document.body.classList.toggle('lp-phone-chrome', mobile && phone);
-      if (mobile) {
-        document.body.classList.add('lp-compact-chrome');
         while (inner.firstChild) inner.removeChild(inner.firstChild);
-        var usedConfig = false;
-        if (global.LPMobileMenu && global.LPMobileMenu.applyDrawer) {
-          try {
-            usedConfig = !!global.LPMobileMenu.applyDrawer(inner, { phone: phone, mobile: mobile });
-          } catch (e) { usedConfig = false; }
+        var publishTop = document.getElementById('lpc-drawer-top');
+        var tools = document.getElementById('lpc-tools');
+        var footer = document.getElementById('lpc-drawer-footer');
+        if (drawerSectionHasItems(publishTop) || phone) {
+          appendDrawerPiece(inner, publishTop, 'lp-drawer-section-label lp-drawer-publish-label', 'Publish');
         }
-        if (!usedConfig) {
-          var publishTop = document.getElementById('lpc-drawer-top');
-          var tools = document.getElementById('lpc-tools');
-          var footer = document.getElementById('lpc-drawer-footer');
-          if (drawerSectionHasItems(publishTop) || phone) {
-            appendDrawerPiece(inner, publishTop, 'lp-drawer-section-label lp-drawer-publish-label', 'Publish');
-          }
-          if (!phone || showSiteSwitcherInDrawer()) {
-            appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
-          }
-          appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label lp-drawer-builder-label', 'Builder Menu');
-          appendDrawerPiece(inner, tools, 'lp-drawer-section-label lp-drawer-tools-label', 'Site Tools');
-          if (drawerSectionHasItems(footer)) {
-            appendDrawerPiece(inner, footer, 'lp-drawer-section-label lp-drawer-footer-label', 'Account');
-          }
+        if (!phone || showSiteSwitcherInDrawer()) {
+          appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
+        }
+        appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label lp-drawer-builder-label', 'Builder Menu');
+        if (!phone) {
+          appendDrawerPiece(inner, document.getElementById('lpc-primary'), 'lp-drawer-section-label', 'Publishing & preview');
+        }
+        appendDrawerPiece(inner, tools, 'lp-drawer-section-label lp-drawer-tools-label', 'Site Tools');
+        if (drawerSectionHasItems(footer)) {
+          appendDrawerPiece(inner, footer, 'lp-drawer-section-label lp-drawer-footer-label', 'Account');
         }
         var prim = document.getElementById('lpc-primary');
         if (prim) prim.style.display = phone ? 'none' : '';
       } else {
-        document.body.classList.remove('lp-compact-chrome', 'lp-phone-chrome');
+        document.body.classList.remove('lp-compact-chrome', 'lp-phone-chrome', 'lp-mm-configured');
         setDrawer(false);
+        restoreDrawerSlotsHome();
         if (adminnav && navHome && adminnav.parentNode !== navHome) navHome.appendChild(adminnav);
-        if (global.LPMobileMenu && global.LPMobileMenu.renderCommandCentre) {
-          try {
-            global.LPMobileMenu.renderCommandCentre({ desktop: true, mobile: false, phone: false });
-          } catch (e) { /* ignore */ }
-        } else {
-          restoreCmdLayout();
-        }
         if (cmd && cmdHome && cmd.parentNode !== cmdHome) cmdHome.appendChild(cmd);
+        _drawerLayoutBusy = true;
+        try {
+          if (typeof global.lpLayoutDesktopCmd === 'function') global.lpLayoutDesktopCmd();
+          else if (global.lpRefreshCmdDrawer) global.lpRefreshCmdDrawer();
+        } finally {
+          _drawerLayoutBusy = false;
+        }
         while (inner.firstChild) inner.removeChild(inner.firstChild);
       }
       syncRatioVisibility();

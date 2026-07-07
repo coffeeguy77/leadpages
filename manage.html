@@ -1794,10 +1794,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var __pa=document.getElementById('lp-partneradmin-top'); if(__pa) __pa.style.display=(role==='super')?'':'none';
     var __mt=document.getElementById('lp-mode-toggle'); if(__mt) __mt.style.display=(role==='super'||role==='broker')?'':'none';
     await loadSitesFromDB();
+    if(window.LPMobileMenu&&LPMobileMenu.load){ try{ await LPMobileMenu.load(); }catch(_e){} }
     applyRoleGating();
-    if(window.LPMobileMenu&&LPMobileMenu.initCommandCentreMenu){ try{ await LPMobileMenu.initCommandCentreMenu(); }catch(_e){ ensureSiteBar(); } }
-    else { ensureSiteBar(); }
     initEditorMode();
+    ensureSiteBar();
     var __pt=document.getElementById('lp-prev-toggle'); if(__pt) __pt.hidden=false;
     var __so=document.getElementById('lp-signout-top'); if(__so) __so.onclick=function(e){ e.preventDefault(); signOutLP(); };
   }
@@ -2273,28 +2273,20 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     }
     // Phase B: reconcile site_apps -> data.sections + sectionOrder
     if(currentSiteId && currentSiteTemplate==='trade'){
-      applyTemplateChrome();
-      applyRoleGating();
-      if(window.LPMobileMenu&&LPMobileMenu.initCommandCentreMenu){
-        LPMobileMenu.initCommandCentreMenu().catch(function(){ ensureSiteBar(); });
-      } else { ensureSiteBar(); }
       _reconcileSiteApps(currentSiteId, data).then(function(){
+        applyTemplateChrome();
         applyRoleGating();
-        if(window.LPMobileMenu&&LPMobileMenu.initCommandCentreMenu){
-          LPMobileMenu.initCommandCentreMenu().catch(function(){ ensureSiteBar(); });
-        } else { ensureSiteBar(); }
+        ensureSiteBar();
         try{ renderSiteAnalytics(); }catch(e){}
         try{ lpRenderSupportContact(); }catch(e){}
         if(document.body.classList.contains('lp-prev-open')) previewLoad();
         try{ lpScopeSync(); lpBkSync(); }catch(e){}
       });
-      return;
+      return; // async path takes over
     }
     applyTemplateChrome();
     applyRoleGating();
-    if(window.LPMobileMenu&&LPMobileMenu.initCommandCentreMenu){
-      LPMobileMenu.initCommandCentreMenu().catch(function(){ ensureSiteBar(); });
-    } else { ensureSiteBar(); }
+    ensureSiteBar();
     try{ renderSiteAnalytics(); }catch(e){}
     try{ lpRenderSupportContact(); }catch(e){}
     if(document.body.classList.contains('lp-prev-open')) previewLoad();
@@ -4682,44 +4674,114 @@ function heroCtaCard(c){
     if(currentSiteTemplate!=='broker-app') layoutCmdCard();
   }
   function layoutCmdCard(){
-    var ctx=$('lpc-context'), prim=$('lpc-primary'), tools=$('lpc-tools'), footer=$('lpc-drawer-footer');
+    var drawerTop=$('lpc-drawer-top'), ctx=$('lpc-context'), prim=$('lpc-primary'), tools=$('lpc-tools'), footer=$('lpc-drawer-footer');
     if(!ctx||!prim||!tools) return;
+    document.body.classList.remove('lp-mm-configured');
+    var cmdEl=$('lp-cmd');
+    if(cmdEl){
+      cmdEl.querySelectorAll('[class*="lp-mm-"]').forEach(function(el){
+        el.className=(el.className||'').replace(/\s*lp-mm-[^\s]+/g,'').trim();
+      });
+    }
+    prim.style.cssText='display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
+    tools.style.cssText='display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
+    var primWrap=document.querySelector('[data-lpc-wrap="primary"]');
+    if(primWrap){
+      var pl=primWrap.querySelector('div[style*="font-size"]')||primWrap.firstElementChild;
+      if(pl) pl.textContent='Publishing & preview';
+    }
+    var toolsWrap=document.querySelector('[data-lpc-wrap="tools"]');
+    if(toolsWrap){
+      var tl=toolsWrap.querySelector('div[style*="font-size"]')||toolsWrap.firstElementChild;
+      if(tl) tl.textContent='Site tools';
+    }
     var mv=function(id,row){ var el=$(id); if(el&&row&&el.parentNode!==row) row.appendChild(el); };
+    mv('btn-publish', prim);
+    mv('btn-viewlive', prim);
     mv('site-label', ctx);
-    if(!$('lpc-preview')){ var pv=document.createElement('button'); pv.className='btn ghost lp-drawer-phone-hide'; pv.id='lpc-preview'; pv.type='button'; pv.textContent='Live Preview'; pv.addEventListener('click',function(){ var w=window.innerWidth,h=window.innerHeight; if(typeof lpSetPreviewLayout==='function') lpSetPreviewLayout((w>=1200||(w>=768&&w<1200&&w>h))?'side':'split'); else previewOpen(); }); }
-    if(!$('lpc-scope')){ var sc=document.createElement('button'); sc.className='btn ghost lp-drawer-phone-hide'; sc.id='lpc-scope'; sc.type='button'; sc.textContent='Scope'; sc.addEventListener('click',function(){ if(typeof lpScopeOpen==='function') lpScopeOpen(); }); }
-    if(!$('lpc-backups')){ var bk=document.createElement('button'); bk.className='btn ghost lp-drawer-phone-hide'; bk.id='lpc-backups'; bk.type='button'; bk.textContent='Backups'; bk.addEventListener('click',function(){ if(typeof lpBkOpen==='function') lpBkOpen(); }); }
+    if(!$('lpc-preview')){ var pv=document.createElement('button'); pv.className='btn ghost lp-drawer-phone-hide'; pv.id='lpc-preview'; pv.type='button'; pv.textContent='Live Preview'; pv.addEventListener('click',function(){ var w=window.innerWidth,h=window.innerHeight; if(typeof lpSetPreviewLayout==='function') lpSetPreviewLayout((w>=1200||(w>=768&&w<1200&&w>h))?'side':'split'); else previewOpen(); }); prim.appendChild(pv); }
+    mv('lpc-preview', prim);
+    mv('btn-settings', tools);
+    mv('btn-appearance-aa', tools);
+    mv('btn-billing', tools);
+    mv('btn-domains', tools);
+    if(!$('lpc-scope')){ var sc=document.createElement('button'); sc.className='btn ghost lp-drawer-phone-hide'; sc.id='lpc-scope'; sc.type='button'; sc.textContent='Scope'; sc.addEventListener('click',function(){ if(typeof lpScopeOpen==='function') lpScopeOpen(); }); tools.appendChild(sc); }
+    mv('lpc-scope', tools);
+    if(!$('lpc-backups')){ var bk=document.createElement('button'); bk.className='btn ghost lp-drawer-phone-hide'; bk.id='lpc-backups'; bk.type='button'; bk.textContent='Backups'; bk.addEventListener('click',function(){ if(typeof lpBkOpen==='function') lpBkOpen(); }); tools.appendChild(bk); }
+    mv('lpc-backups', tools);
+    mv('btn-fav', tools);
+    mv('btn-newsite', tools);
     if(currentRole==='super'){
-      if(!$('lpc-partner-admin')){ var pa=document.createElement('a'); pa.id='lpc-partner-admin'; pa.className='btn ghost'; pa.href='/partners-admin'; pa.style.textDecoration='none'; pa.textContent='Partner Admin'; }
-      if(!$('lpc-marketplace-admin')){ var ma=document.createElement('a'); ma.id='lpc-marketplace-admin'; ma.className='btn ghost'; ma.href='/marketplace-admin'; ma.style.textDecoration='none'; ma.textContent='Marketplace Admin'; }
+      if(!$('lpc-partner-admin')){ var pa=document.createElement('a'); pa.id='lpc-partner-admin'; pa.className='btn ghost'; pa.href='/partners-admin'; pa.style.textDecoration='none'; pa.textContent='Partner Admin'; tools.appendChild(pa); }
+      else mv('lpc-partner-admin', tools);
+      if(!$('lpc-marketplace-admin')){ var ma=document.createElement('a'); ma.id='lpc-marketplace-admin'; ma.className='btn ghost'; ma.href='/marketplace-admin'; ma.style.textDecoration='none'; ma.textContent='Marketplace Admin'; tools.appendChild(ma); }
+      else mv('lpc-marketplace-admin', tools);
     }
     if(currentRole==='broker'){
-      if(!$('lpc-partner-console')){ var pc=document.createElement('a'); pc.id='lpc-partner-console'; pc.className='btn ghost'; pc.href='/partner-dashboard'; pc.style.textDecoration='none'; pc.textContent='Partner Console'; }
+      if(!$('lpc-partner-console')){ var pc=document.createElement('a'); pc.id='lpc-partner-console'; pc.className='btn ghost'; pc.href='/partner-dashboard'; pc.style.textDecoration='none'; pc.textContent='Partner Console'; tools.appendChild(pc); }
+      else mv('lpc-partner-console', tools);
     }
     if(footer){
-      if(!$('btn-switch')){
-        var swEl=document.createElement('button'); swEl.className='btn ghost'; swEl.id='btn-switch'; swEl.type='button'; swEl.textContent='Switch Account';
+      footer.innerHTML='';
+      var swEl=$('btn-switch');
+      if(!swEl){
+        swEl=document.createElement('button'); swEl.className='btn ghost'; swEl.id='btn-switch'; swEl.type='button'; swEl.textContent='Switch Account';
         swEl.addEventListener('click',function(){ showLanding(); });
       }
+      footer.appendChild(swEl);
       if(!$('lp-mode-toggle')){
         var mt=document.createElement('button'); mt.type='button'; mt.id='lp-mode-toggle'; mt.className='btn ghost lp-drawer-phone-hide'; mt.style.fontSize='12px'; mt.textContent='Classic';
-      }
+        footer.appendChild(mt);
+      } else { mv('lp-mode-toggle', footer); }
       if(!$('lpc-drawer-signout')){
         var so=document.createElement('button'); so.type='button'; so.id='lpc-drawer-signout'; so.className='btn ghost'; so.textContent='Sign Out';
         so.addEventListener('click',function(e){ e.preventDefault(); signOutLP(); });
+        footer.appendChild(so);
       }
     }
-    if(!$('lpc-acct')){
-      var acct=document.createElement('div'); acct.id='lpc-acct'; acct.className='lpc-acct-desktop'; acct.style.cssText='margin-left:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
+    var acct=$('lpc-acct');
+    if(!acct){
+      acct=document.createElement('div'); acct.id='lpc-acct'; acct.className='lpc-acct-desktop';
+      acct.style.cssText='margin-left:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center;';
       ctx.appendChild(acct);
+    } else if(acct.parentNode!==ctx){ ctx.appendChild(acct); }
+    var modeBtn='<button type="button" id="lp-mode-toggle-dt" class="btn ghost" style="font-size:12px;">Classic</button>';
+    if(currentRole==='super'){
+      acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">&#8592; Dashboard</a>'
+        +'<a href="/partners-admin" class="btn ghost" style="text-decoration:none;">Partner Admin</a>'
+        +'<a href="/marketplace-admin" class="btn ghost" style="text-decoration:none;">Marketplace Admin</a>'
+        +modeBtn
+        +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
+    } else if(currentRole==='broker'){
+      acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">Partner Console</a>'
+        +modeBtn
+        +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
+    } else {
+      acct.innerHTML='<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
     }
-    lpWireModeToggle();
-    if(window.LPMobileMenu&&LPMobileMenu.renderCommandCentre){
-      var opts=window.LPMobileMenu.getViewportOpts?LPMobileMenu.getViewportOpts():{desktop:window.innerWidth>=1024,mobile:window.innerWidth<1024,phone:window.innerWidth<768};
-      LPMobileMenu.renderCommandCentre(opts);
+    if(!acct.__wired){
+      acct.__wired=1;
+      acct.addEventListener('click',function(e){
+        if(e.target.closest('#lpc-acct-signout')){ e.preventDefault(); signOutLP(); }
+      });
     }
-  }
-  function lpWireModeToggle(){
+    var mtBtn=document.getElementById('lp-mode-toggle-dt')||document.getElementById('lp-mode-toggle');
+    if(mtBtn){
+      var _role=currentRole||'broker';
+      var _curMode=_getCurrentMode(_role);
+      _applyModeBtn(mtBtn,_curMode,_role);
+      if(!mtBtn.__wired){
+        mtBtn.__wired=1;
+        mtBtn.addEventListener('click',function(){
+          var cur=_getCurrentMode(_role);
+          var next=cur==='classic'?'standard':'classic';
+          localStorage.setItem(LP_MODE_KEY,next);
+          _applyMode(next,_role);
+          var other=document.getElementById('lp-mode-toggle')||document.getElementById('lp-mode-toggle-dt');
+          if(other&&other!==mtBtn) _applyModeBtn(other,next,_role);
+        });
+      }
+    }
     var mobMode=document.getElementById('lp-mode-toggle');
     if(mobMode&&!mobMode.__wired){
       mobMode.__wired=1;
@@ -4733,23 +4795,9 @@ function heroCtaCard(c){
         var dt=document.getElementById('lp-mode-toggle-dt'); if(dt) _applyModeBtn(dt,next,_role2);
       });
     }
-    var mtBtn=document.getElementById('lp-mode-toggle-dt')||document.getElementById('lp-mode-toggle');
-    if(mtBtn&&!mtBtn.__wired){
-      mtBtn.__wired=1;
-      var _role=currentRole||'broker';
-      var _curMode=_getCurrentMode(_role);
-      _applyModeBtn(mtBtn,_curMode,_role);
-      mtBtn.addEventListener('click',function(){
-        var cur=_getCurrentMode(_role);
-        var next=cur==='classic'?'standard':'classic';
-        localStorage.setItem(LP_MODE_KEY,next);
-        _applyMode(next,_role);
-        var other=document.getElementById('lp-mode-toggle')||document.getElementById('lp-mode-toggle-dt');
-        if(other&&other!==mtBtn) _applyModeBtn(other,next,_role);
-      });
-    }
   }
   window.lpRefreshCmdDrawer=function(){ ensureSiteBar(); layoutCmdCard(); };
+  window.lpLayoutDesktopCmd=layoutCmdCard;
   window.getUserMenuRoles=function(){
     var roles=[];
     var role=currentRole||'';
