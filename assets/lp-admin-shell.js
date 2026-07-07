@@ -150,27 +150,17 @@
     var navHome = navSlot;
     var cmdHome = cmdSlot;
 
-    function ensureDrawerLabel(inner, cls, text) {
-      var lbl = inner.querySelector('.' + cls);
-      if (!lbl) {
-        lbl = document.createElement('div');
-        lbl.className = cls;
-        lbl.textContent = text;
-        inner.appendChild(lbl);
-      }
-      return lbl;
-    }
-
-    function appendDrawerPiece(inner, el, labelCls, labelText) {
-      if (!el || el.parentNode === inner) return;
-      if (labelText) ensureDrawerLabel(inner, labelCls || 'lp-drawer-section-label', labelText);
-      inner.appendChild(el);
-    }
-
     function restoreCmdPiece(cmd, el, before) {
       if (!cmd || !el || cmd.contains(el)) return;
       if (before && before.parentNode === cmd) cmd.insertBefore(el, before);
       else cmd.appendChild(el);
+    }
+
+    function setDrawer(open) {
+      document.body.classList.toggle('lp-drawer-open', !!open);
+      var btn = document.getElementById('lp-shell-menu');
+      if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
     }
 
     function restoreCmdLayout() {
@@ -197,80 +187,22 @@
 
     var _drawerLayoutBusy = false;
 
-    function refreshCmdDrawer() {
-      if (_drawerLayoutBusy) return;
-      if (global.lpRefreshCmdDrawer) global.lpRefreshCmdDrawer();
-    }
-
-    function moveElById(id, row) {
-      if (!row) return;
-      var el = document.getElementById(id);
-      if (el && el.parentNode !== row) row.appendChild(el);
-    }
-
-    function prepareDrawerButtons() {
-      if (!isMobileLayout()) return;
-      var top = document.getElementById('lpc-drawer-top');
-      var tools = document.getElementById('lpc-tools');
-      var footer = document.getElementById('lpc-drawer-footer');
-      var prim = document.getElementById('lpc-primary');
-      moveElById('btn-publish', top);
-      moveElById('btn-viewlive', top);
-      var toolIds = [
-        'btn-settings', 'btn-appearance-aa', 'btn-billing', 'btn-domains',
-        'lpc-partner-admin', 'lpc-marketplace-admin', 'lpc-partner-console',
-        'btn-newsite', 'lpc-scope', 'lpc-backups', 'btn-fav', 'lpc-preview'
-      ];
-      if (tools) toolIds.forEach(function (id) { moveElById(id, tools); });
-      var footerIds = ['btn-switch', 'lp-mode-toggle', 'lpc-drawer-signout'];
-      if (footer) footerIds.forEach(function (id) { moveElById(id, footer); });
-      if (prim) {
-        var preview = document.getElementById('lpc-preview');
-        if (preview && preview.parentNode === prim && tools) tools.appendChild(preview);
-      }
-      var pub = document.getElementById('btn-publish');
-      var view = document.getElementById('btn-viewlive');
-      if (pub && !pub.dataset.lpFullText) pub.dataset.lpFullText = pub.textContent;
-      if (view && !view.dataset.lpFullText) view.dataset.lpFullText = view.textContent;
-      if (pub) pub.textContent = 'Publish Live Site';
-      if (view) view.textContent = 'View Live Site';
-    }
-
-    function ensureDrawerActions() {
-      if (!_drawerLayoutBusy && global.lpRefreshCmdDrawer) {
-        try { global.lpRefreshCmdDrawer(); } catch (e) { /* ignore */ }
-      }
-      prepareDrawerButtons();
-    }
-
-    function drawerSectionHasItems(el) {
-      if (!el) return false;
-      return Array.prototype.some.call(el.children, function (node) {
-        if (!node || node.nodeType !== 1) return false;
-        if (node.style && node.style.display === 'none') return false;
-        var cs = global.getComputedStyle ? global.getComputedStyle(node) : null;
-        return !cs || cs.display !== 'none';
-      });
-    }
-
-    function setDrawer(open) {
-      document.body.classList.toggle('lp-drawer-open', !!open);
-      var btn = document.getElementById('lp-shell-menu');
-      if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
-    }
-
-    function showSiteSwitcherInDrawer() {
-      if (typeof global.lpDrawerShowSiteSwitcher === 'function') {
-        try { return !!global.lpDrawerShowSiteSwitcher(); } catch (e) { /* ignore */ }
-      }
-      return false;
-    }
-
     function restoreDrawerSlotsHome() {
+      if (global.LPMobileMenu && global.LPMobileMenu.restoreSources) {
+        try { global.LPMobileMenu.restoreSources(); } catch (e) { /* ignore */ }
+      }
       restoreCmdLayout();
       if (adminnav && navHome && adminnav.parentNode !== navHome) navHome.appendChild(adminnav);
       if (cmd && cmdHome && cmd.parentNode !== cmdHome) cmdHome.appendChild(cmd);
+    }
+
+    function renderMobileDrawer(inner, phone, mobile) {
+      if (!inner) return;
+      if (global.LPMobileMenu && global.LPMobileMenu.renderDrawer) {
+        try {
+          global.LPMobileMenu.renderDrawer(inner, { phone: phone, mobile: mobile });
+        } catch (e) { /* ignore */ }
+      }
     }
 
     function moveChrome() {
@@ -283,48 +215,13 @@
 
       if (mobile) {
         document.body.classList.add('lp-compact-chrome');
-        _drawerLayoutBusy = true;
-        try {
-          restoreDrawerSlotsHome();
-          if (global.lpRefreshCmdDrawer) global.lpRefreshCmdDrawer();
-          prepareDrawerButtons();
-        } finally {
-          _drawerLayoutBusy = false;
-        }
+        restoreDrawerSlotsHome();
         while (inner.firstChild) inner.removeChild(inner.firstChild);
-        var usedConfig = false;
-        if (global.LPMobileMenu && global.LPMobileMenu.applyDrawer) {
-          try {
-            usedConfig = !!global.LPMobileMenu.applyDrawer(inner, { phone: phone, mobile: mobile });
-          } catch (e) { usedConfig = false; }
-        }
-        if (!usedConfig) {
-          var publishTop = document.getElementById('lpc-drawer-top');
-          var tools = document.getElementById('lpc-tools');
-          var footer = document.getElementById('lpc-drawer-footer');
-          if (drawerSectionHasItems(publishTop) || phone) {
-            appendDrawerPiece(inner, publishTop, 'lp-drawer-section-label lp-drawer-publish-label', 'Publish');
-          }
-          if (!phone || showSiteSwitcherInDrawer()) {
-            appendDrawerPiece(inner, document.getElementById('lpc-context'), 'lp-drawer-section-label lp-drawer-site-label', 'Site');
-          }
-          appendDrawerPiece(inner, adminnav, 'lp-drawer-section-label lp-drawer-builder-label', 'Builder Menu');
-          if (!phone) {
-            appendDrawerPiece(inner, document.getElementById('lpc-primary'), 'lp-drawer-section-label', 'Publishing & preview');
-          }
-          appendDrawerPiece(inner, tools, 'lp-drawer-section-label lp-drawer-tools-label', 'Site Tools');
-          if (drawerSectionHasItems(footer)) {
-            appendDrawerPiece(inner, footer, 'lp-drawer-section-label lp-drawer-footer-label', 'Account');
-          }
-        }
-        var prim = document.getElementById('lpc-primary');
-        if (prim) prim.style.display = phone ? 'none' : '';
+        renderMobileDrawer(inner, phone, mobile);
       } else {
         document.body.classList.remove('lp-compact-chrome', 'lp-phone-chrome', 'lp-mm-configured');
         setDrawer(false);
         restoreDrawerSlotsHome();
-        if (adminnav && navHome && adminnav.parentNode !== navHome) navHome.appendChild(adminnav);
-        if (cmd && cmdHome && cmd.parentNode !== cmdHome) cmdHome.appendChild(cmd);
         _drawerLayoutBusy = true;
         try {
           if (typeof global.lpLayoutDesktopCmd === 'function') global.lpLayoutDesktopCmd();
@@ -360,7 +257,6 @@
         setDrawer(false);
         return;
       }
-      ensureDrawerActions();
       if (global.LPMobileMenu && global.LPMobileMenu.load) {
         global.LPMobileMenu.load().then(function () {
           moveChrome();
@@ -432,8 +328,6 @@
       setDrawer: setDrawer,
       syncLayoutSelect: syncLayoutSelect,
       moveChrome: moveChrome,
-      ensureDrawerActions: ensureDrawerActions,
-      prepareDrawerButtons: prepareDrawerButtons,
       getEditorRatio: getEditorRatio,
       setEditorRatio: setEditorRatio,
       adjustEditorRatio: adjustEditorRatio,

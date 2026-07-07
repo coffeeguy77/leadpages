@@ -342,16 +342,8 @@ body.lp-compact-chrome .wrap > .leadpages-logo:not(.lp-shell-logo) {
   }
 }
 
-/* Phone mega menu — compact quick actions + hide redundant links */
+/* Phone mega menu — config-driven drawer layout */
 @media (max-width: 767px) {
-  body.lp-phone-chrome .lp-drawer-body .lpc-drawer-top,
-  body.lp-phone-chrome .lp-drawer-body #lpc-tools,
-  body.lp-phone-chrome .lp-drawer-body .lpc-drawer-footer {
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 8px;
-    width: 100%;
-  }
   body.lp-phone-chrome .lp-drawer-body .lp-drawer-publish-label {
     margin-top: 4px;
   }
@@ -361,55 +353,36 @@ body.lp-compact-chrome .wrap > .leadpages-logo:not(.lp-shell-logo) {
   body.lp-phone-chrome .lp-drawer-body .lp-drawer-tools-label {
     margin-top: 14px;
   }
-  body.lp-phone-chrome .lp-drawer-body #lpc-tools {
+  body.lp-phone-chrome .lp-drawer-body .lp-mm-layout-grid-2 {
     display: grid !important;
     grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
   }
-  body.lp-phone-chrome .lp-drawer-body #lpc-tools #btn-settings,
-  body.lp-phone-chrome .lp-drawer-body #lpc-tools #btn-appearance-aa,
-  body.lp-phone-chrome .lp-drawer-body #lpc-tools #lpc-partner-admin,
-  body.lp-phone-chrome .lp-drawer-body #lpc-tools #lpc-marketplace-admin,
-  body.lp-phone-chrome .lp-drawer-body #lpc-tools #lpc-partner-console {
+  body.lp-phone-chrome .lp-drawer-body .lp-mm-layout-grid-2 #btn-settings,
+  body.lp-phone-chrome .lp-drawer-body .lp-mm-layout-grid-2 #btn-appearance-aa,
+  body.lp-phone-chrome .lp-drawer-body .lp-mm-layout-grid-2 #lpc-partner-admin,
+  body.lp-phone-chrome .lp-drawer-body .lp-mm-layout-grid-2 #lpc-marketplace-admin,
+  body.lp-phone-chrome .lp-drawer-body .lp-mm-layout-grid-2 #lpc-partner-console {
     grid-column: 1 / -1;
   }
-  body.lp-phone-chrome .lp-drawer-body .lpc-drawer-footer {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
-  }
-  body.lp-phone-chrome .lp-drawer-body .lpc-drawer-top {
-    flex-direction: row !important;
-    flex-wrap: nowrap;
-    gap: 8px;
-    align-items: stretch;
-  }
-  body.lp-phone-chrome .lp-drawer-body .lpc-drawer-top #btn-publish {
-    flex: 1 1 100%;
+  body.lp-phone-chrome .lp-drawer-body .lp-mm-style-publish-duo {
+    display: flex !important;
+    flex-direction: column;
+    gap: 10px;
     width: 100%;
-    min-width: 0;
-    padding-left: 10px;
-    padding-right: 10px;
-    font-size: 14px;
+  }
+  body.lp-phone-chrome .lp-drawer-body .lp-mm-style-publish-duo #btn-publish {
     min-height: 48px;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 28%, transparent);
   }
-  body.lp-phone-chrome .lp-drawer-body .lpc-drawer-top #btn-viewlive {
-    flex: 1 1 100%;
-    width: 100%;
-    min-width: 0;
-    padding-left: 8px;
-    padding-right: 8px;
-    font-size: 13px;
+  body.lp-phone-chrome .lp-drawer-body .lp-mm-style-publish-duo #btn-viewlive {
     min-height: 44px;
-  }
-  body.lp-phone-chrome .lp-drawer-body #lpc-context,
-  body.lp-phone-chrome .lp-drawer-body #site-label,
-  body.lp-phone-chrome .lp-drawer-body .lp-drawer-site-label,
-  body.lp-phone-chrome .lp-drawer-body #lpc-preview,
-  body.lp-phone-chrome .lp-drawer-body #lpc-scope,
-  body.lp-phone-chrome .lp-drawer-body #lpc-backups,
-  body.lp-phone-chrome .lp-drawer-body #btn-fav,
-  body.lp-phone-chrome .lp-drawer-body #btn-newsite,
-  body.lp-phone-chrome .lp-drawer-body #lp-mode-toggle {
-    display: none !important;
+    border-radius: 12px;
+    font-weight: 600;
   }
   /* Portrait mobile: compact stats stay on one row */
   @media (orientation: portrait) {
@@ -1457,43 +1430,27 @@ body.lp-admin-nav-open {
 .lp-mm-label-tools {
   margin-top: 14px;
 }
-body.lp-mm-configured .lp-drawer-body .lpc-drawer-top,
-body.lp-mm-configured .lp-drawer-body #lpc-tools {
-  display: flex !important;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-}
-body.lp-phone-chrome.lp-mm-configured .lp-drawer-body .lpc-drawer-top {
-  flex-direction: column !important;
-  gap: 10px;
-}
-body.lp-phone-chrome.lp-mm-configured .lp-drawer-body .lpc-drawer-top .btn#btn-publish {
-  min-height: 48px;
-  font-size: 15px;
-  font-weight: 700;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 28%, transparent);
-}
-body.lp-phone-chrome.lp-mm-configured .lp-drawer-body .lpc-drawer-top .btn#btn-viewlive {
-  min-height: 44px;
-  border-radius: 12px;
-  font-weight: 600;
-}
 body.lp-mm-configured .lp-mm-sec-body {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 body.lp-mm-configured .lp-mm-sec-body .btn,
 body.lp-mm-configured .lp-mm-sec-body a.btn {
   width: 100%;
   justify-content: center;
 }
-body.lp-phone-chrome.lp-mm-configured .lp-drawer-body #lpc-context,
-body.lp-phone-chrome.lp-mm-configured .lp-drawer-body #lpc-preview,
-body.lp-phone-chrome.lp-mm-configured .lp-drawer-body #lpc-scope,
-body.lp-phone-chrome.lp-mm-configured .lp-drawer-body #lpc-backups,
-body.lp-phone-chrome.lp-mm-configured .lp-drawer-body #btn-fav,
-body.lp-phone-chrome.lp-mm-configured .lp-drawer-body #btn-newsite,
-body.lp-phone-chrome.lp-mm-configured .lp-drawer-body #lp-mode-toggle {
-  display: none !important;
+body.lp-mm-configured .lp-mm-sec-body #lpc-context {
+  width: 100%;
+}
+body.lp-mm-layout-tabs .lp-mm-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+body.lp-mm-layout-tabs .lp-mm-nav .anav-btn {
+  width: 100%;
+  justify-content: flex-start;
 }
