@@ -3068,6 +3068,19 @@ function heroCtaCard(c){
     closeSettingsPage();
     var sref=(allSites||[]).find(function(x){return x.id===currentSiteId;});
     var demoOn=!!(sref&&sref.is_demo);
+    var _cfgSeo=c0();
+    var _gsvVal=((_cfgSeo&&_cfgSeo.googleSiteVerification)||'').trim();
+    var _propUrl=lpLiveUrl();
+    var _mapUrl=lpSitemapUrl();
+    var _mono='font-family:ui-monospace,Menlo,monospace;font-size:12.5px;word-break:break-all;background:var(--soft,#f1f1ee);border:1px solid var(--line);border-radius:8px;padding:10px 12px;';
+    var searchCard='<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Search &amp; indexing</h2><p class="lede" style="margin:0 0 14px;">Verify site ownership in <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>, then submit your sitemap so Google can discover your pages.</p>'
+      +'<p class="lede" style="margin:0 0 6px;font-weight:600;">Property URL <span class="hint">(add this as a URL-prefix property in Search Console)</span></p>'
+      +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px;"><code id="gsi-prop" style="'+_mono+'flex:1;min-width:200px;">'+esc(_propUrl||'(publish site first)')+'</code><button type="button" class="btn ghost sm" id="gsi-copy-prop"'+( _propUrl?'':' disabled')+'>Copy</button></div>'
+      +'<p class="lede" style="margin:0 0 6px;font-weight:600;">Sitemap URL <span class="hint">(submit under Sitemaps after verification)</span></p>'
+      +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px;"><code id="gsi-sitemap" style="'+_mono+'flex:1;min-width:200px;">'+esc(_mapUrl||'(publish site first)')+'</code><button type="button" class="btn ghost sm" id="gsi-copy-map"'+( _mapUrl?'':' disabled')+'>Copy</button></div>'
+      +'<div class="f" style="margin-bottom:10px;"><label>Google verification code <span class="hint">HTML tag method — paste only the <code>content</code> value from Search Console</span></label><input type="text" id="gsi-verify" class="tin" placeholder="e.g. AbCdEfGh1234567890" value="'+esc(_gsvVal)+'"></div>'
+      +'<p class="hint" style="margin:0 0 12px;">In Search Console choose <strong>HTML tag</strong> verification, copy the code inside <code>content=&quot;...&quot;</code>, paste it here, save, then click Verify in Google. We inject the meta tag on your live homepage, suburb pages, and landing pages.</p>'
+      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><button type="button" class="btn" id="gsi-save">Save &amp; publish</button><span id="gsi-saved" style="font-size:13px;color:#0a7d33;"></span></div></div>';
     if(!document.getElementById('settings-page-css')){ var s=document.createElement('style'); s.id='settings-page-css'; s.textContent='#settings-page{position:fixed;inset:0;z-index:9998;background:rgba(16,22,32,.55);overflow:auto;padding:32px 16px;}#settings-page .sp-card{max-width:880px;margin:0 auto;background:var(--bg,#faf9f6);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:26px 26px 30px;}#settings-page .sp-del{border:1px solid #f0c8c2;background:#fff;color:#b42318;border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer}#settings-page .sp-del:disabled{opacity:.5;cursor:default}#settings-page .sp-del.armed{background:#b42318;color:#fff;border-color:#b42318}#settings-page .sp-lock{border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:15px}#settings-page .danger{border:1px solid #f0c8c2;border-radius:14px;background:#fdf3f1;}'; document.head.appendChild(s); }
     var p=document.createElement('div'); p.id='settings-page';
     var detailFields='<div class="card" style="margin-bottom:20px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Site details</h2><label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="set-demo"'+(demoOn?' checked':'')+'> Demo site</label></div><p class="lede">Business identity and contact \u2014 used across the page and the call buttons.</p>'
@@ -3080,6 +3093,7 @@ function heroCtaCard(c){
     var danger=(currentRole==='super')?('<div class="card danger" style="margin-bottom:0;"><h2 style="margin:0 0 4px;color:#b42318;">Danger zone</h2><p class="lede" style="margin:0 0 12px;">Unlock, then tap Delete twice to confirm. This permanently removes the site and can\u2019t be undone.</p><div style="display:flex;gap:10px;align-items:center;"><button type="button" id="btn-dellock" class="sp-lock" title="Unlock to allow delete">\uD83D\uDD12</button><button type="button" id="btn-delsite" class="sp-del" disabled>Delete site</button></div></div>'):'';
     p.innerHTML='<div class="sp-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h1 style="margin:0;font:700 26px/1.1 var(--font-display,Georgia),serif;">Settings</h1><button type="button" id="set-close" class="btn ghost">Close</button></div>'
       +'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Appearance &amp; Accessibility</h2><p class="lede" style="margin:0 0 12px;">Workspace theme for the command centre, plus published page visitor settings for this site.</p><button type="button" class="btn" id="open-aa-inline">Workspace appearance</button> <button type="button" class="btn ghost" id="open-aa-published">Published page settings</button></div>'
+      +searchCard
       +detailFields
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Mobile command menu</h2><p class="lede" style="margin:0 0 12px;">Design the phone mega menu for the command centre — section order, layouts, separators, button styles, and which roles see each item (super admin, partner, client).</p><button type="button" class="btn" id="open-mobile-menu">Edit mobile menu</button></div>':'')
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced. The suspended page is what the public sees when a site is paused for non-payment.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button> <button type="button" class="btn ghost" id="open-susp">Edit suspended page</button></div>':'')
@@ -3099,6 +3113,18 @@ function heroCtaCard(c){
     var opb=$('open-plans'); if(opb) opb.addEventListener('click',openPlansPage);
     var osp=$('open-susp'); if(osp) osp.addEventListener('click',openSuspendedEditor);
     var omm=$('open-mobile-menu'); if(omm) omm.addEventListener('click',function(){ closeSettingsPage(); if(typeof openMobileMenuBuilder==='function') openMobileMenuBuilder(); });
+    (function(){
+      var cp=$('gsi-copy-prop'); if(cp) cp.addEventListener('click',function(){ lpCopyText(_propUrl,'Property URL'); });
+      var cm=$('gsi-copy-map'); if(cm) cm.addEventListener('click',function(){ lpCopyText(_mapUrl,'Sitemap URL'); });
+      var gv=$('gsi-verify'), gs=$('gsi-save'), gok=$('gsi-saved');
+      if(gv&&gs){ gs.addEventListener('click',async function(){
+        gs.disabled=true; var o=gs.textContent; gs.textContent='Saving\u2026'; if(gok){ gok.style.color='#0a7d33'; gok.textContent=''; }
+        var c=c0(); var v=(gv.value||'').trim(); if(v) c.googleSiteVerification=v; else delete c.googleSiteVerification;
+        try{ await publishToDB(); gs.textContent='Saved \u2713'; if(gok) gok.textContent='Verification tag is live after publish.'; }
+        catch(e){ gs.textContent='Save failed'; if(gok){ gok.style.color='#b42318'; gok.textContent='Could not save \u2014 try again.'; } }
+        setTimeout(function(){ gs.disabled=false; gs.textContent=o; },1800);
+      }); }
+    })();
     // wire service starter content
     (function(){ var c=c0(); var ct=(c.trade||'').toLowerCase().trim(); var slug='plumber';
       if(ct){ if(ct==='plumber'){ slug='plumber'; } else if(TRADE_PACKS[ct]){ slug=ct; } else { for(var kk in TRADE_PACKS){ var lb=window.__tradeLabel(kk).toLowerCase(); if(lb===ct||lb.indexOf(ct)===0||(TRADE_PACKS[kk].tradeType||'').toLowerCase()===ct){ slug=kk; break; } } } }
@@ -3845,6 +3871,17 @@ function heroCtaCard(c){
     if(dom) return 'https://'+dom+'/';
     var slug=(currentSiteSlug||'').trim();
     return slug ? ('https://leadpages.com.au/'+slug) : '';
+  }
+  function lpSitemapUrl(){
+    var dom=(currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'');
+    if(dom) return 'https://'+dom+'/sitemap.xml';
+    var slug=(currentSiteSlug||'').trim();
+    return slug ? ('https://leadpages.com.au/'+slug+'/sitemap.xml') : '';
+  }
+  function lpCopyText(text,label){
+    if(!text) return;
+    var done=function(){ if(typeof toast==='function') toast((label||'Copied')+' copied to clipboard'); };
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(function(){}); }
   }
 
   function lpWhen(ts){

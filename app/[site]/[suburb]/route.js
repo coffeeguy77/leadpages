@@ -62,7 +62,13 @@ export async function GET(request, ctx) {
 
   let html = await loadTemplate();
   html = applyTenantTokens(html, tok, host);
-  html = applySeoHead(html, { title, description, canonical, robots: 'index,follow' });
+  html = applySeoHead(html, {
+    title,
+    description,
+    canonical,
+    robots: 'index,follow',
+    googleVerification: (config.googleSiteVerification || '').trim() || undefined,
+  });
   html = applyHero(html, {
     title: merged.sections.hero.title || '',
     titleHl: merged.sections.hero.titleHl || '',
