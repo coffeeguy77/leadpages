@@ -7,6 +7,14 @@
   ],
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap.xml"
+    },
+    {
+      "source": "/:slug/sitemap.xml",
+      "destination": "/api/sitemap.xml?slug=:slug"
+    },
+    {
       "source": "/manage",
       "destination": "/manage.html"
     },
