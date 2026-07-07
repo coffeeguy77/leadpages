@@ -543,6 +543,43 @@ html[data-lp-reduced-motion="true"] {
   padding: 20px 22px;
   box-shadow: none;
 }
+
+/* Command Centre: site dropdown (keep minimal, theme-driven) */
+#site-label{
+  min-width: 0;
+}
+#site-label .lp-sitepick{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: min(520px, 62vw);
+}
+#site-label .lp-sitepick-sel{
+  appearance: none;
+  background: transparent !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+  border-radius: var(--radius-sm, 10px) !important;
+  padding: 6px 34px 6px 10px !important;
+  min-width: 0;
+  max-width: 100%;
+  line-height: 1.2;
+}
+#site-label .lp-sitepick-sel:focus{
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 0;
+  border-color: var(--accent) !important;
+}
+#site-label .lp-sitepick-arrow{
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+}
 .lp-dash-stat {
   padding: 12px 14px;
 }
