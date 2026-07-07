@@ -216,7 +216,6 @@
       if (mobile) {
         document.body.classList.add('lp-compact-chrome');
         restoreDrawerSlotsHome();
-        while (inner.firstChild) inner.removeChild(inner.firstChild);
         renderMobileDrawer(inner, phone, mobile);
       } else {
         document.body.classList.remove('lp-compact-chrome', 'lp-phone-chrome', 'lp-mm-configured');
