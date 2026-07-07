@@ -356,11 +356,23 @@
 
     document.getElementById('lp-shell-menu').addEventListener('click', function () {
       var opening = !document.body.classList.contains('lp-drawer-open');
-      if (opening) {
-        ensureDrawerActions();
-        moveChrome();
+      if (!opening) {
+        setDrawer(false);
+        return;
       }
-      setDrawer(opening);
+      ensureDrawerActions();
+      if (global.LPMobileMenu && global.LPMobileMenu.load) {
+        global.LPMobileMenu.load().then(function () {
+          moveChrome();
+          setDrawer(true);
+        }).catch(function () {
+          moveChrome();
+          setDrawer(true);
+        });
+        return;
+      }
+      moveChrome();
+      setDrawer(true);
     });
     document.getElementById('lp-drawer-close').addEventListener('click', function () {
       setDrawer(false);
@@ -421,6 +433,7 @@
       syncLayoutSelect: syncLayoutSelect,
       moveChrome: moveChrome,
       ensureDrawerActions: ensureDrawerActions,
+      prepareDrawerButtons: prepareDrawerButtons,
       getEditorRatio: getEditorRatio,
       setEditorRatio: setEditorRatio,
       adjustEditorRatio: adjustEditorRatio,
