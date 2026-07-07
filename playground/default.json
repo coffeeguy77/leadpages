@@ -1,5 +1,9 @@
 {
+  "contract_version": 1,
   "label": "Default",
-  "section": "",
-  "config": {}
+  "section_key": "",
+  "site_config": {
+    "sections": {},
+    "theme": {}
+  }
 }

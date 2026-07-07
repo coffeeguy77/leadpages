@@ -1,9 +1,10 @@
 // api/marketplace-playground.js
-// GET  ?section_key=featuredProjects  -> { field_defs, presets, sell_template }
-// POST { action:'sync_site', site_slug, section_key, preset_slug?, label? }  (super admin)
+// GET  ?section_key=featuredProjects  -> { contract_version, field_defs, presets[], sell_template }
+// POST { action:'sync_site'|'save_preset'|'export_file_preset', ... }  (super admin)
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
+const pp = require('../lib/playground-preset');
 
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const ROOT = path.join(__dirname, '..');
@@ -51,10 +52,11 @@ function listFilePresets(sectionKey) {
     .filter((f) => f.endsWith('.json'))
     .map((f) => {
       try {
-        const data = JSON.parse(fs.readFileSync(path.join(PLAYGROUND_DIR, f), 'utf8'));
+        const raw = JSON.parse(fs.readFileSync(path.join(PLAYGROUND_DIR, f), 'utf8'));
         const slug = f.replace(/\.json$/, '');
-        if (sectionKey && data.section && data.section !== sectionKey) return null;
-        return { slug, label: data.label || slug, source: 'file', section: data.section || null, data };
+        const preset = pp.normalizePreset(raw, { slug, source: 'file', section_key: sectionKey || raw.section_key || raw.section });
+        if (sectionKey && preset.section_key && preset.section_key !== sectionKey) return null;
+        return preset;
       } catch {
         return null;
       }
@@ -62,28 +64,13 @@ function listFilePresets(sectionKey) {
     .filter(Boolean);
 }
 
-function normalizeDbPreset(p) {
-  const cfg = p.config || {};
-  if (cfg.demo_config) {
-    return {
-      slug: p.slug,
-      label: p.label || p.slug,
-      source: 'db',
-      section: cfg.section_key || null,
-      data: {
-        label: p.label || p.slug,
-        section: cfg.section_key || null,
-        demo_config: cfg.demo_config
-      }
-    };
-  }
-  return {
-    slug: p.slug,
-    label: p.label || p.slug,
+function normalizeDbPreset(row) {
+  return pp.normalizePreset(row.config || {}, {
+    slug: row.slug,
+    label: row.label,
     source: 'db',
-    section: cfg.section_key || cfg.section || null,
-    data: cfg
-  };
+    section_key: (row.config && row.config.section_key) || null
+  });
 }
 
 async function getPlaygroundMeta(sectionKey) {
@@ -113,6 +100,7 @@ async function getPlaygroundMeta(sectionKey) {
   filePresets.forEach((p) => { if (!seen[p.slug]) { seen[p.slug] = 1; presets.push(p); } });
 
   return {
+    contract_version: pp.CONTRACT_VERSION,
     section_key: sectionKey || null,
     field_defs: sectionKey ? (fieldDefs[sectionKey] || []) : fieldDefs,
     presets,
@@ -120,18 +108,13 @@ async function getPlaygroundMeta(sectionKey) {
   };
 }
 
-function extractSectionConfig(siteConfig, sectionKey) {
+function extractSiteConfig(siteConfig, sectionKey) {
   const cfg = siteConfig || {};
   const sec = (cfg.sections && cfg.sections[sectionKey]) || cfg[sectionKey] || {};
-  return {
-    section_key: sectionKey,
-    demo_config: {
-      sections: { [sectionKey]: Object.assign({ on: true }, sec) },
-      theme: cfg.theme || {},
-      phone: cfg.phone || cfg.phoneText || null,
-      business: cfg.business || cfg.business_name || cfg.name || null
-    }
-  };
+  return pp.flatDemoToSiteConfig(
+    Object.assign({}, cfg, { sections: { [sectionKey]: Object.assign({ on: true }, sec) } }),
+    sectionKey
+  );
 }
 
 module.exports = async (req, res) => {
@@ -143,6 +126,21 @@ module.exports = async (req, res) => {
   try {
     if (req.method === 'GET') {
       const sectionKey = ((req.query && req.query.section_key) || '').trim();
+      const slug = ((req.query && req.query.slug) || '').trim();
+      if (slug) {
+        const filePath = path.join(PLAYGROUND_DIR, slug + '.json');
+        if (fs.existsSync(filePath)) {
+          const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const preset = pp.normalizePreset(raw, { slug, source: 'file', section_key: sectionKey });
+          return res.status(200).json(preset);
+        }
+        if (sectionKey) {
+          const meta = await getPlaygroundMeta(sectionKey);
+          const found = (meta.presets || []).find((p) => p.slug === slug);
+          if (found) return res.status(200).json(found);
+        }
+        return res.status(404).json({ error: 'preset_not_found' });
+      }
       const meta = await getPlaygroundMeta(sectionKey);
       return res.status(200).json(meta);
     }
@@ -170,7 +168,10 @@ module.exports = async (req, res) => {
         if (siteErr) return res.status(500).json({ error: siteErr.message });
         if (!site) return res.status(404).json({ error: 'site_not_found' });
 
-        const payload = extractSectionConfig(site.config, sectionKey);
+        const siteConfig = extractSiteConfig(site.config, sectionKey);
+        const dbConfig = pp.dbConfigFromSiteConfig(sectionKey, siteConfig);
+        const preset = pp.normalizePreset(dbConfig, { slug: presetSlug, label, source: 'db', section_key: sectionKey });
+
         const { data: app } = await sb.from('app_registry')
           .select('id,slug,name')
           .eq('section_key', sectionKey)
@@ -180,8 +181,8 @@ module.exports = async (req, res) => {
           return res.status(200).json({
             ok: true,
             saved: false,
-            message: 'No app_registry row for this section_key — returning extracted config only.',
-            config: payload,
+            message: 'No app_registry row for this section_key — returning extracted preset only.',
+            preset,
             site: { slug: site.slug, business_name: site.business_name }
           });
         }
@@ -191,7 +192,7 @@ module.exports = async (req, res) => {
           slug: presetSlug,
           label,
           description: 'Synced from live site ' + site.slug,
-          config: payload,
+          config: dbConfig,
           sort_order: 0,
           is_live: true,
           updated_at: new Date().toISOString()
@@ -212,28 +213,65 @@ module.exports = async (req, res) => {
           ok: true,
           saved: true,
           app: app.slug,
-          preset_slug: presetSlug,
-          config: payload,
+          preset,
           site: { slug: site.slug, business_name: site.business_name }
         });
+      }
+
+      if (action === 'save_preset') {
+        const sectionKey = (body.section_key || '').trim();
+        const presetSlug = (body.preset_slug || '').trim();
+        const label = (body.label || presetSlug).trim();
+        const siteConfig = body.site_config;
+        if (!sectionKey || !presetSlug || !siteConfig) {
+          return res.status(400).json({ error: 'section_key, preset_slug, and site_config required' });
+        }
+        const dbConfig = pp.dbConfigFromSiteConfig(sectionKey, siteConfig);
+        const preset = pp.normalizePreset(dbConfig, { slug: presetSlug, label, source: 'db', section_key: sectionKey });
+
+        const { data: app } = await sb.from('app_registry')
+          .select('id,slug')
+          .eq('section_key', sectionKey)
+          .maybeSingle();
+        if (!app) return res.status(404).json({ error: 'app_not_found' });
+
+        const row = {
+          app_id: app.id,
+          slug: presetSlug,
+          label,
+          description: body.description || 'Saved via marketplace playground API',
+          config: dbConfig,
+          sort_order: parseInt(body.sort_order, 10) || 0,
+          is_live: body.is_live !== false,
+          updated_at: new Date().toISOString()
+        };
+
+        const { data: existing } = await sb.from('app_presets')
+          .select('id')
+          .eq('app_id', app.id)
+          .eq('slug', presetSlug)
+          .maybeSingle();
+
+        const r = existing
+          ? await sb.from('app_presets').update(row).eq('id', existing.id)
+          : await sb.from('app_presets').insert(row);
+
+        if (r.error) return res.status(500).json({ error: r.error.message });
+        return res.status(200).json({ ok: true, preset });
       }
 
       if (action === 'export_file_preset') {
         const sectionKey = (body.section_key || '').trim();
         const presetSlug = (body.preset_slug || '').trim();
-        const config = body.config;
-        if (!sectionKey || !presetSlug || !config) {
-          return res.status(400).json({ error: 'section_key, preset_slug, and config required' });
+        const siteConfig = body.site_config;
+        if (!sectionKey || !presetSlug || !siteConfig) {
+          return res.status(400).json({ error: 'section_key, preset_slug, and site_config required' });
         }
-        const out = {
-          label: body.label || presetSlug,
-          section: sectionKey,
-          config: (config.sections && config.sections[sectionKey]) || config.config || config
-        };
-        if (config.headBadges) out.headBadges = config.headBadges;
-        if (config.items) out.items = config.items;
-        if (config.projects) out.items = config.projects;
-        return res.status(200).json({ ok: true, preset: out });
+        const preset = pp.normalizePreset(
+          pp.dbConfigFromSiteConfig(sectionKey, siteConfig),
+          { slug: presetSlug, label: body.label || presetSlug, source: 'file', section_key: sectionKey }
+        );
+        return res.status(200).json({ ok: true, preset: pp.fileJsonFromPreset(preset) });
       }
 
       return res.status(400).json({ error: 'unknown_action' });

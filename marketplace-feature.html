@@ -210,6 +210,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 </script>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js" defer></script>
+<script src="/lib/playground-preset.js"></script>
 </head>
 <body>
 
@@ -445,38 +446,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     }
     window.addEventListener('resize', function() { applyDevice(); });
 
-    function presetToSiteConfig(preset, sectionKey) {
-      if (preset && preset.demo_config) return JSON.parse(JSON.stringify(preset.demo_config));
-      if (preset && preset.sections) return JSON.parse(JSON.stringify(preset));
-      var cfg = preset.config || {};
-      var sec = { on: true };
-      ['eyebrow','heading','intro','cardBg','cardText','headSep','cardStyle','showTag','showTitle','showLocation','showDate','showDesc','title','sub','titleHl'].forEach(function(k) {
-        if (cfg[k] != null) sec[k] = cfg[k];
-      });
-      if (preset.headBadges) sec.headBadges = preset.headBadges;
-      var items = preset.items || preset.projects;
-      if (items && Array.isArray(items)) {
-        var listKey = (sectionKey === 'featuredProjects') ? 'projects' : 'items';
-        sec[listKey] = items.map(function(it) {
-          return {
-            on: true,
-            title: it.title,
-            tag: it.type || it.tag,
-            location: it.location,
-            description: it.description || it.caption,
-            image: it.img || it.image,
-            service: it.service,
-            date: it.date,
-            caption: it.caption || it.description,
-            permalink: it.permalink
-          };
-        });
+    function presetToSiteConfig(preset) {
+      if (window.LPPlaygroundPreset) {
+        return window.LPPlaygroundPreset.presetToSiteConfig(preset);
       }
-      var out = { sections: {} };
-      out.sections[sectionKey] = sec;
-      if (cfg.accent) out.theme = { pipe: cfg.accent };
-      if (preset.theme) out.theme = Object.assign({}, out.theme, preset.theme);
-      return out;
+      if (preset && preset.site_config) return JSON.parse(JSON.stringify(preset.site_config));
+      if (preset && preset.demo_config) return JSON.parse(JSON.stringify(preset.demo_config));
+      return { sections: {}, theme: {} };
     }
 
     function applyLiveConfig() {
@@ -497,20 +473,42 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     }
 
     function applyPreset(preset) {
-      var sk = secKey || (preset && (preset.section || preset.section_key)) || '';
+      var p = preset;
+      if (window.LPPlaygroundPreset && preset && !preset.site_config) {
+        p = window.LPPlaygroundPreset.normalizePreset(preset, {
+          slug: preset.slug,
+          source: preset.source,
+          section_key: secKey,
+          label: preset.label
+        });
+      }
+      var sk = secKey || p.section_key || '';
       if (!sk) return;
       secKey = sk;
-      var next = presetToSiteConfig(preset.data || preset, sk);
-      liveSiteCfg = deepMerge({ sections: {}, theme: {} }, next);
+      liveSiteCfg = deepMerge({ sections: {}, theme: {} }, presetToSiteConfig(p));
+      demoCfg = p;
       applyLiveConfig();
       renderLiveControls();
     }
 
     function fetchPreset(name) {
       if (presetCache[name]) return Promise.resolve(presetCache[name]);
-      return fetch('/playground/' + encodeURIComponent(name) + '.json')
+      var url = '/api/marketplace-playground?slug=' + encodeURIComponent(name);
+      if (secKey) url += '&section_key=' + encodeURIComponent(secKey);
+      return fetch(url)
         .then(function(r) { if (!r.ok) throw 0; return r.json(); })
-        .then(function(data) { presetCache[name] = data; return data; });
+        .then(function(data) {
+          var preset = data;
+          if (window.LPPlaygroundPreset) {
+            preset = window.LPPlaygroundPreset.normalizePreset(data, {
+              slug: name,
+              source: data.source || 'file',
+              section_key: secKey || data.section_key
+            });
+          }
+          presetCache[name] = preset;
+          return preset;
+        });
     }
 
     function loadPlaygroundMeta() {
@@ -522,7 +520,16 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           if (meta.field_defs && meta.field_defs.length) fieldDefs = meta.field_defs;
           if (meta.presets && meta.presets.length) {
             meta.presets.forEach(function(p) {
-              presetCache[p.slug] = p.data || p;
+              var preset = p;
+              if (window.LPPlaygroundPreset) {
+                preset = window.LPPlaygroundPreset.normalizePreset(p, {
+                  slug: p.slug,
+                  source: p.source,
+                  section_key: p.section_key || secKey,
+                  label: p.label
+                });
+              }
+              presetCache[p.slug] = preset;
               if (presets.indexOf(p.slug) < 0) presets.push(p.slug);
             });
           }
@@ -635,7 +642,9 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       return fetchPreset(name).then(function(preset) {
         activePreset = name;
         demoCfg = preset;
-        if (!secKey && preset.section) secKey = preset.section;
+        if (!secKey && (preset.section_key || preset.section)) {
+          secKey = preset.section_key || preset.section;
+        }
         return loadPlaygroundMeta().then(function() {
           if (!secKey) {
             showNoDemo('Preset loaded but no section key is set.');
@@ -695,13 +704,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       renderPresets();
       if (secKey) return selectPreset(presets[0]);
       var first = presetCache[presets[0]];
-      if (first && first.section) {
-        secKey = first.section;
+      if (first && (first.section_key || first.section)) {
+        secKey = first.section_key || first.section;
         return loadPlaygroundMeta().then(function() { return selectPreset(presets[0]); });
       }
       return fetchPreset(presets[0]).then(function(p) {
-        if (p.section) {
-          secKey = p.section;
+        if (p.section_key || p.section) {
+          secKey = p.section_key || p.section;
           return loadPlaygroundMeta().then(function() { return selectPreset(presets[0]); });
         }
         showNoDemo();

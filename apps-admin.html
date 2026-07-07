@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css">
 <script src="/assets/lp-admin-shell.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/lib/playground-preset.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
 <style>
 :root{--paper:#FAF5F2;--shell:#F1E5DF;--ink:#2E2A2B;--mut:#6E6265;--rose:#A84A5E;--rose-d:#7E3346;--gum:#2F413A;--line:#E4D5CD;--ok:#3E7C52;--bad:#B23B3B;--disp:'Young Serif',Georgia,serif;--body:'Figtree',system-ui,sans-serif}
@@ -551,9 +552,16 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
     if(app&&app.id){
       sb.from('app_presets').select('config').eq('app_id',app.id).eq('slug','demo').maybeSingle()
         .then(function(r){
-          dsCurrentCfg=(r.data&&r.data.config&&r.data.config.demo_config)
-            ? JSON.parse(JSON.stringify(r.data.config.demo_config))
-            : JSON.parse(JSON.stringify(DS_DEFAULT_CONFIGS[key]||{}));
+          var cfg=r.data&&r.data.config;
+          if(cfg&&cfg.contract_version===1&&cfg.site_config&&window.LPPlaygroundPreset){
+            dsCurrentCfg=window.LPPlaygroundPreset.siteConfigToFlatDemo(cfg.site_config);
+          } else if(cfg&&cfg.demo_config){
+            dsCurrentCfg=JSON.parse(JSON.stringify(cfg.demo_config));
+          } else if(cfg&&cfg.site_config&&window.LPPlaygroundPreset){
+            dsCurrentCfg=window.LPPlaygroundPreset.siteConfigToFlatDemo(cfg.site_config);
+          } else {
+            dsCurrentCfg=JSON.parse(JSON.stringify(DS_DEFAULT_CONFIGS[key]||{}));
+          }
           dsRenderFields(); dsRenderPreview();
         });
     } else {
@@ -628,7 +636,12 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
     var saveBtn=$('ds-save'); saveBtn.disabled=true; saveBtn.textContent='Saving…';
     var app=APPS.find(function(a){return a.section_key===dsCurrentKey;});
     if(!app){saveBtn.disabled=false;saveBtn.textContent='Save demo';alert('App not found for: '+dsCurrentKey);return;}
-    var payload={section_key:dsCurrentKey,demo_config:dsCurrentCfg};
+    var siteConfig=window.LPPlaygroundPreset
+      ? window.LPPlaygroundPreset.flatDemoToSiteConfig(dsCurrentCfg, dsCurrentKey)
+      : { sections: {} };
+    var payload=window.LPPlaygroundPreset
+      ? window.LPPlaygroundPreset.dbConfigFromSiteConfig(dsCurrentKey, siteConfig)
+      : { section_key: dsCurrentKey, demo_config: dsCurrentCfg };
     var ex=await sb.from('app_presets').select('id').eq('app_id',app.id).eq('slug','demo').maybeSingle();
     var r=ex&&ex.data&&ex.data.id
       ? await sb.from('app_presets').update({config:payload,label:'Demo preset'}).eq('id',ex.data.id)

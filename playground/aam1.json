@@ -1,69 +1,85 @@
 {
+ "contract_version": 1,
  "label": "Builder (AAM1)",
- "section": "featuredProjects",
- "config": {
-  "eyebrow": "Recent work",
-  "heading": "RENDERING SERVICES ACROSS CANBERRA",
-  "intro": "From full exterior render transformations to textured coatings, cement render, acrylic render and patch repairs, AAM1 Coating Services helps Canberra properties look cleaner, sharper and built to last.",
-  "accent": "#43CA13",
-  "cardBg": "#032D15",
-  "cardText": "#ffffff",
-  "headSep": "pipe"
- },
- "headBadges": [
-  {
-   "on": true,
-   "icon": "shield-check",
-   "label": "BUILT TO LAST",
-   "sub": "Premium systems for Australian conditions"
+ "section_key": "featuredProjects",
+ "site_config": {
+  "sections": {
+   "featuredProjects": {
+    "on": true,
+    "eyebrow": "Recent work",
+    "heading": "RENDERING SERVICES ACROSS CANBERRA",
+    "intro": "From full exterior render transformations to textured coatings, cement render, acrylic render and patch repairs, AAM1 Coating Services helps Canberra properties look cleaner, sharper and built to last.",
+    "cardBg": "#032D15",
+    "cardText": "#ffffff",
+    "headSep": "pipe",
+    "headBadges": [
+     {
+      "on": true,
+      "icon": "shield-check",
+      "label": "BUILT TO LAST",
+      "sub": "Premium systems for Australian conditions"
+     },
+     {
+      "on": true,
+      "icon": "building-2",
+      "label": "COMMERCIAL SPECIALIST",
+      "sub": "Experienced in large scale complex projects"
+     },
+     {
+      "on": true,
+      "icon": "clipboard-check",
+      "label": "UPFRONT & TRANSPARENT",
+      "sub": "Clear quotes, honest advice and no surprises"
+     },
+     {
+      "on": true,
+      "icon": "clock",
+      "label": "RELIABLE & ON TIME",
+      "sub": "Professional teams that deliver on time"
+     }
+    ],
+    "projects": [
+     {
+      "on": true,
+      "title": "Exterior Render",
+      "tag": "EXTERIOR HOUSE RENDERING",
+      "location": "CHASE CONSTRUCTION",
+      "description": "Give tired brick, blueboard or cement sheet a clean modern finish with professional exterior rendering.",
+      "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/leadpages/391656d6-1148-48f2-9ac6-a938595c7449/featuredprojects/image/mqx6b5b7542qs.jpg",
+      "caption": "Give tired brick, blueboard or cement sheet a clean modern finish with professional exterior rendering."
+     },
+     {
+      "on": true,
+      "title": "Texture Coating",
+      "tag": "MODERN TEXTURED FINISHES",
+      "location": "HINDMARSH CONSTRUCTION",
+      "description": "Create depth, protection and street appeal with premium texture coatings. A great choice for new builds.",
+      "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/leadpages/391656d6-1148-48f2-9ac6-a938595c7449/featuredprojects/image/mqx6bioskl5lp.jpg",
+      "caption": "Create depth, protection and street appeal with premium texture coatings. A great choice for new builds."
+     },
+     {
+      "on": true,
+      "title": "Commercial Rendering",
+      "tag": "LARGE BUILDING FAÇADES",
+      "location": "GEOCON CONSTRUCTION",
+      "description": "Professional rendering and texture coatings for large-scale building exteriors across Canberra.",
+      "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/leadpages/391656d6-1148-48f2-9ac6-a938595c7449/featuredprojects/image/mqx6czcb7yicz.jpg",
+      "caption": "Professional rendering and texture coatings for large-scale building exteriors across Canberra."
+     },
+     {
+      "on": true,
+      "title": "Venetian Plaster",
+      "tag": "POLISHED FEATURE WALLS",
+      "location": "INTERIOR & EXTERIOR FINISHES",
+      "description": "Add a luxury designer finish with handcrafted Venetian plaster. Perfect for feature walls, bathrooms and premium spaces.",
+      "image": "https://res.cloudinary.com/dzx6x1hou/image/upload/leadpages/391656d6-1148-48f2-9ac6-a938595c7449/featuredprojects/image/mqx6oj0us9tdt.jpg",
+      "caption": "Add a luxury designer finish with handcrafted Venetian plaster. Perfect for feature walls, bathrooms and premium spaces."
+     }
+    ]
+   }
   },
-  {
-   "on": true,
-   "icon": "building-2",
-   "label": "COMMERCIAL SPECIALIST",
-   "sub": "Experienced in large scale complex projects"
-  },
-  {
-   "on": true,
-   "icon": "clipboard-check",
-   "label": "UPFRONT & TRANSPARENT",
-   "sub": "Clear quotes, honest advice and no surprises"
-  },
-  {
-   "on": true,
-   "icon": "clock",
-   "label": "RELIABLE & ON TIME",
-   "sub": "Professional teams that deliver on time"
+  "theme": {
+   "pipe": "#43CA13"
   }
- ],
- "items": [
-  {
-   "title": "Exterior Render",
-   "type": "EXTERIOR HOUSE RENDERING",
-   "location": "CHASE CONSTRUCTION",
-   "description": "Give tired brick, blueboard or cement sheet a clean modern finish with professional exterior rendering.",
-   "img": "https://res.cloudinary.com/dzx6x1hou/image/upload/leadpages/391656d6-1148-48f2-9ac6-a938595c7449/featuredprojects/image/mqx6b5b7542qs.jpg"
-  },
-  {
-   "title": "Texture Coating",
-   "type": "MODERN TEXTURED FINISHES",
-   "location": "HINDMARSH CONSTRUCTION",
-   "description": "Create depth, protection and street appeal with premium texture coatings. A great choice for new builds.",
-   "img": "https://res.cloudinary.com/dzx6x1hou/image/upload/leadpages/391656d6-1148-48f2-9ac6-a938595c7449/featuredprojects/image/mqx6bioskl5lp.jpg"
-  },
-  {
-   "title": "Commercial Rendering",
-   "type": "LARGE BUILDING FA\u00c7ADES",
-   "location": "GEOCON CONSTRUCTION",
-   "description": "Professional rendering and texture coatings for large-scale building exteriors across Canberra.",
-   "img": "https://res.cloudinary.com/dzx6x1hou/image/upload/leadpages/391656d6-1148-48f2-9ac6-a938595c7449/featuredprojects/image/mqx6czcb7yicz.jpg"
-  },
-  {
-   "title": "Venetian Plaster",
-   "type": "POLISHED FEATURE WALLS",
-   "location": "INTERIOR & EXTERIOR FINISHES",
-   "description": "Add a luxury designer finish with handcrafted Venetian plaster. Perfect for feature walls, bathrooms and premium spaces.",
-   "img": "https://res.cloudinary.com/dzx6x1hou/image/upload/leadpages/391656d6-1148-48f2-9ac6-a938595c7449/featuredprojects/image/mqx6oj0us9tdt.jpg"
-  }
- ]
+ }
 }
