@@ -1,0 +1,1117 @@
+{
+  "hero": [
+    {
+      "type": "text",
+      "key": "sections.hero.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.hero.title",
+      "label": "Headline"
+    },
+    {
+      "type": "text",
+      "key": "sections.hero.titleHl",
+      "label": "Highlight text"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.hero.sub",
+      "label": "Sub-headline"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "heroSlider": [
+    {
+      "type": "text",
+      "key": "heroSlider.slides.0.headline",
+      "label": "Slide 1 headline"
+    },
+    {
+      "type": "text",
+      "key": "heroSlider.slides.0.sub",
+      "label": "Slide 1 sub"
+    },
+    {
+      "type": "text",
+      "key": "heroSlider.slides.1.headline",
+      "label": "Slide 2 headline"
+    },
+    {
+      "type": "text",
+      "key": "heroSlider.slides.1.sub",
+      "label": "Slide 2 sub"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "reviews": [
+    {
+      "type": "text",
+      "key": "reviews.items.0.name",
+      "label": "Reviewer 1 name"
+    },
+    {
+      "type": "textarea",
+      "key": "reviews.items.0.text",
+      "label": "Reviewer 1 text"
+    },
+    {
+      "type": "text",
+      "key": "reviews.items.1.name",
+      "label": "Reviewer 2 name"
+    },
+    {
+      "type": "textarea",
+      "key": "reviews.items.1.text",
+      "label": "Reviewer 2 text"
+    },
+    {
+      "type": "text",
+      "key": "reviews.items.2.name",
+      "label": "Reviewer 3 name"
+    },
+    {
+      "type": "textarea",
+      "key": "reviews.items.2.text",
+      "label": "Reviewer 3 text"
+    }
+  ],
+  "services": [
+    {
+      "type": "text",
+      "key": "services.0.title",
+      "label": "Service 1 title"
+    },
+    {
+      "type": "text",
+      "key": "services.0.body",
+      "label": "Service 1 description"
+    },
+    {
+      "type": "text",
+      "key": "services.1.title",
+      "label": "Service 2 title"
+    },
+    {
+      "type": "text",
+      "key": "services.1.body",
+      "label": "Service 2 description"
+    },
+    {
+      "type": "text",
+      "key": "services.2.title",
+      "label": "Service 3 title"
+    },
+    {
+      "type": "text",
+      "key": "services.2.body",
+      "label": "Service 3 description"
+    },
+    {
+      "type": "text",
+      "key": "services.3.title",
+      "label": "Service 4 title"
+    },
+    {
+      "type": "text",
+      "key": "services.3.body",
+      "label": "Service 4 description"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "faq": [
+    {
+      "type": "text",
+      "key": "faq.items.0.q",
+      "label": "Question 1"
+    },
+    {
+      "type": "text",
+      "key": "faq.items.0.a",
+      "label": "Answer 1"
+    },
+    {
+      "type": "text",
+      "key": "faq.items.1.q",
+      "label": "Question 2"
+    },
+    {
+      "type": "text",
+      "key": "faq.items.1.a",
+      "label": "Answer 2"
+    },
+    {
+      "type": "text",
+      "key": "faq.items.2.q",
+      "label": "Question 3"
+    },
+    {
+      "type": "text",
+      "key": "faq.items.2.a",
+      "label": "Answer 3"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "why": [
+    {
+      "type": "text",
+      "key": "why.items.0.title",
+      "label": "Point 1 title"
+    },
+    {
+      "type": "text",
+      "key": "why.items.0.body",
+      "label": "Point 1 description"
+    },
+    {
+      "type": "text",
+      "key": "why.items.1.title",
+      "label": "Point 2 title"
+    },
+    {
+      "type": "text",
+      "key": "why.items.1.body",
+      "label": "Point 2 description"
+    },
+    {
+      "type": "text",
+      "key": "why.items.2.title",
+      "label": "Point 3 title"
+    },
+    {
+      "type": "text",
+      "key": "why.items.2.body",
+      "label": "Point 3 description"
+    },
+    {
+      "type": "text",
+      "key": "why.items.3.title",
+      "label": "Point 4 title"
+    },
+    {
+      "type": "text",
+      "key": "why.items.3.body",
+      "label": "Point 4 description"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "crew": [
+    {
+      "type": "text",
+      "key": "crew.items.0.name",
+      "label": "Person 1 name"
+    },
+    {
+      "type": "text",
+      "key": "crew.items.0.role",
+      "label": "Person 1 role"
+    },
+    {
+      "type": "textarea",
+      "key": "crew.items.0.bio",
+      "label": "Person 1 bio"
+    },
+    {
+      "type": "text",
+      "key": "crew.items.0.img",
+      "label": "Person 1 photo URL"
+    },
+    {
+      "type": "text",
+      "key": "crew.items.1.name",
+      "label": "Person 2 name"
+    },
+    {
+      "type": "text",
+      "key": "crew.items.1.role",
+      "label": "Person 2 role"
+    },
+    {
+      "type": "textarea",
+      "key": "crew.items.1.bio",
+      "label": "Person 2 bio"
+    },
+    {
+      "type": "text",
+      "key": "crew.items.1.img",
+      "label": "Person 2 photo URL"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "trustBar": [
+    {
+      "type": "text",
+      "key": "trustBar.items.0.text",
+      "label": "Badge 1"
+    },
+    {
+      "type": "text",
+      "key": "trustBar.items.1.text",
+      "label": "Badge 2"
+    },
+    {
+      "type": "text",
+      "key": "trustBar.items.2.text",
+      "label": "Badge 3"
+    },
+    {
+      "type": "text",
+      "key": "trustBar.items.3.text",
+      "label": "Badge 4"
+    },
+    {
+      "type": "text",
+      "key": "trustBar.items.4.text",
+      "label": "Badge 5"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "certifications": [
+    {
+      "type": "text",
+      "key": "certifications.items.0.label",
+      "label": "Cert 1 name"
+    },
+    {
+      "type": "text",
+      "key": "certifications.items.0.sub",
+      "label": "Cert 1 sub"
+    },
+    {
+      "type": "text",
+      "key": "certifications.items.1.label",
+      "label": "Cert 2 name"
+    },
+    {
+      "type": "text",
+      "key": "certifications.items.1.sub",
+      "label": "Cert 2 sub"
+    },
+    {
+      "type": "text",
+      "key": "certifications.items.2.label",
+      "label": "Cert 3 name"
+    },
+    {
+      "type": "text",
+      "key": "certifications.items.2.sub",
+      "label": "Cert 3 sub"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "serviceAreas": [
+    {
+      "type": "text",
+      "key": "serviceAreas.heading",
+      "label": "Section heading"
+    },
+    {
+      "type": "textarea",
+      "key": "serviceAreas.areas",
+      "label": "Areas (one per line)",
+      "join": "\n"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "beforeAfter": [
+    {
+      "type": "text",
+      "key": "beforeAfter.items.0.label",
+      "label": "Job 1 label"
+    },
+    {
+      "type": "text",
+      "key": "beforeAfter.items.0.before",
+      "label": "Job 1 before image URL"
+    },
+    {
+      "type": "text",
+      "key": "beforeAfter.items.0.after",
+      "label": "Job 1 after image URL"
+    },
+    {
+      "type": "text",
+      "key": "beforeAfter.items.1.label",
+      "label": "Job 2 label"
+    },
+    {
+      "type": "text",
+      "key": "beforeAfter.items.1.before",
+      "label": "Job 2 before image URL"
+    },
+    {
+      "type": "text",
+      "key": "beforeAfter.items.1.after",
+      "label": "Job 2 after image URL"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "responseCards": [
+    {
+      "type": "text",
+      "key": "responseCards.items.0.title",
+      "label": "Card 1 title"
+    },
+    {
+      "type": "text",
+      "key": "responseCards.items.0.body",
+      "label": "Card 1 body"
+    },
+    {
+      "type": "text",
+      "key": "responseCards.items.1.title",
+      "label": "Card 2 title"
+    },
+    {
+      "type": "text",
+      "key": "responseCards.items.1.body",
+      "label": "Card 2 body"
+    },
+    {
+      "type": "text",
+      "key": "responseCards.items.2.title",
+      "label": "Card 3 title"
+    },
+    {
+      "type": "text",
+      "key": "responseCards.items.2.body",
+      "label": "Card 3 body"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "projectStats": [
+    {
+      "type": "text",
+      "key": "projectStats.stats.0.value",
+      "label": "Stat 1 value"
+    },
+    {
+      "type": "text",
+      "key": "projectStats.stats.0.label",
+      "label": "Stat 1 label"
+    },
+    {
+      "type": "text",
+      "key": "projectStats.stats.1.value",
+      "label": "Stat 2 value"
+    },
+    {
+      "type": "text",
+      "key": "projectStats.stats.1.label",
+      "label": "Stat 2 label"
+    },
+    {
+      "type": "text",
+      "key": "projectStats.stats.2.value",
+      "label": "Stat 3 value"
+    },
+    {
+      "type": "text",
+      "key": "projectStats.stats.2.label",
+      "label": "Stat 3 label"
+    },
+    {
+      "type": "text",
+      "key": "projectStats.stats.3.value",
+      "label": "Stat 4 value"
+    },
+    {
+      "type": "text",
+      "key": "projectStats.stats.3.label",
+      "label": "Stat 4 label"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "specialOffer": [
+    {
+      "type": "text",
+      "key": "specialOffer.heading",
+      "label": "Offer heading"
+    },
+    {
+      "type": "textarea",
+      "key": "specialOffer.body",
+      "label": "Offer description"
+    },
+    {
+      "type": "text",
+      "key": "specialOffer.cta",
+      "label": "CTA button"
+    },
+    {
+      "type": "text",
+      "key": "specialOffer.expiry",
+      "label": "Expiry text"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "serviceProcess": [
+    {
+      "type": "text",
+      "key": "serviceProcess.heading",
+      "label": "Section heading"
+    },
+    {
+      "type": "text",
+      "key": "serviceProcess.steps.0.title",
+      "label": "Step 1 title"
+    },
+    {
+      "type": "text",
+      "key": "serviceProcess.steps.0.body",
+      "label": "Step 1 description"
+    },
+    {
+      "type": "text",
+      "key": "serviceProcess.steps.1.title",
+      "label": "Step 2 title"
+    },
+    {
+      "type": "text",
+      "key": "serviceProcess.steps.1.body",
+      "label": "Step 2 description"
+    },
+    {
+      "type": "text",
+      "key": "serviceProcess.steps.2.title",
+      "label": "Step 3 title"
+    },
+    {
+      "type": "text",
+      "key": "serviceProcess.steps.2.body",
+      "label": "Step 3 description"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "finance": [
+    {
+      "type": "text",
+      "key": "finance.heading",
+      "label": "Section heading"
+    },
+    {
+      "type": "textarea",
+      "key": "finance.body",
+      "label": "Description"
+    },
+    {
+      "type": "text",
+      "key": "finance.options.0",
+      "label": "Option 1"
+    },
+    {
+      "type": "text",
+      "key": "finance.options.1",
+      "label": "Option 2"
+    },
+    {
+      "type": "text",
+      "key": "finance.options.2",
+      "label": "Option 3"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "activityCounter": [
+    {
+      "type": "text",
+      "key": "activityCounter.stats.0.value",
+      "label": "Stat 1 value"
+    },
+    {
+      "type": "text",
+      "key": "activityCounter.stats.0.label",
+      "label": "Stat 1 label"
+    },
+    {
+      "type": "text",
+      "key": "activityCounter.stats.1.value",
+      "label": "Stat 2 value"
+    },
+    {
+      "type": "text",
+      "key": "activityCounter.stats.1.label",
+      "label": "Stat 2 label"
+    },
+    {
+      "type": "text",
+      "key": "activityCounter.stats.2.value",
+      "label": "Stat 3 value"
+    },
+    {
+      "type": "text",
+      "key": "activityCounter.stats.2.label",
+      "label": "Stat 3 label"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "estimateBuilder": [
+    {
+      "type": "text",
+      "key": "estimateBuilder.heading",
+      "label": "Section heading"
+    },
+    {
+      "type": "text",
+      "key": "estimateBuilder.services.0.label",
+      "label": "Service 1 name"
+    },
+    {
+      "type": "number",
+      "key": "estimateBuilder.services.0.price",
+      "label": "Service 1 price ($)"
+    },
+    {
+      "type": "text",
+      "key": "estimateBuilder.services.1.label",
+      "label": "Service 2 name"
+    },
+    {
+      "type": "number",
+      "key": "estimateBuilder.services.1.price",
+      "label": "Service 2 price ($)"
+    },
+    {
+      "type": "text",
+      "key": "estimateBuilder.services.2.label",
+      "label": "Service 3 name"
+    },
+    {
+      "type": "number",
+      "key": "estimateBuilder.services.2.price",
+      "label": "Service 3 price ($)"
+    },
+    {
+      "type": "text",
+      "key": "estimateBuilder.services.3.label",
+      "label": "Service 4 name"
+    },
+    {
+      "type": "number",
+      "key": "estimateBuilder.services.3.price",
+      "label": "Service 4 price ($)"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "featuredProjects": [
+    {
+      "type": "text",
+      "key": "sections.featuredProjects.heading",
+      "label": "Section heading"
+    },
+    {
+      "type": "text",
+      "key": "sections.featuredProjects.eyebrow",
+      "label": "Eyebrow text"
+    },
+    {
+      "type": "color",
+      "key": "sections.featuredProjects.accent",
+      "label": "Accent colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.featuredProjects.items.0.title",
+      "label": "Project 1 title"
+    },
+    {
+      "type": "text",
+      "key": "sections.featuredProjects.items.0.type",
+      "label": "Project 1 type"
+    },
+    {
+      "type": "text",
+      "key": "sections.featuredProjects.items.0.location",
+      "label": "Project 1 location"
+    },
+    {
+      "type": "text",
+      "key": "sections.featuredProjects.items.0.img",
+      "label": "Project 1 image URL"
+    },
+    {
+      "type": "text",
+      "key": "sections.featuredProjects.items.1.title",
+      "label": "Project 2 title"
+    },
+    {
+      "type": "text",
+      "key": "sections.featuredProjects.items.1.img",
+      "label": "Project 2 image URL"
+    },
+    {
+      "type": "text",
+      "key": "sections.featuredProjects.items.2.title",
+      "label": "Project 3 title"
+    },
+    {
+      "type": "text",
+      "key": "sections.featuredProjects.items.2.img",
+      "label": "Project 3 image URL"
+    }
+  ],
+  "projectFeed": [
+    {
+      "type": "text",
+      "key": "sections.projectFeed.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.projectFeed.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "proofStream": [
+    {
+      "type": "text",
+      "key": "sections.proofStream.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.proofStream.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "splitHero": [
+    {
+      "type": "text",
+      "key": "sections.splitHero.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.splitHero.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.splitHero.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "heroBeforeAfter": [
+    {
+      "type": "text",
+      "key": "sections.heroBeforeAfter.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.heroBeforeAfter.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.heroBeforeAfter.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "reviewHighlights": [
+    {
+      "type": "text",
+      "key": "sections.reviewHighlights.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.reviewHighlights.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.reviewHighlights.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "area": [
+    {
+      "type": "text",
+      "key": "sections.area.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.area.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.area.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "quote": [
+    {
+      "type": "text",
+      "key": "sections.quote.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.quote.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "textBox": [
+    {
+      "type": "text",
+      "key": "sections.textBox.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.textBox.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.textBox.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "emergencyAvailability": [
+    {
+      "type": "text",
+      "key": "sections.emergencyAvailability.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.emergencyAvailability.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.emergencyAvailability.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "serviceAreaMap": [
+    {
+      "type": "text",
+      "key": "sections.serviceAreaMap.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.serviceAreaMap.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.serviceAreaMap.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "instaGallery": [
+    {
+      "type": "text",
+      "key": "sections.instaGallery.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.instaGallery.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.instaGallery.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "igProjectFeed": [
+    {
+      "type": "text",
+      "key": "sections.igProjectFeed.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.igProjectFeed.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.igProjectFeed.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "activityTimeline": [
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.activityTimeline.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "customerReactions": [
+    {
+      "type": "text",
+      "key": "sections.customerReactions.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.customerReactions.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "videoReels": [
+    {
+      "type": "text",
+      "key": "sections.videoReels.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.videoReels.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "jobsFeed": [
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.jobsFeed.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "beforeAfterFeed": [
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.beforeAfterFeed.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "navMenu": [
+    {
+      "type": "text",
+      "key": "sections.navMenu.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.navMenu.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.navMenu.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ]
+}

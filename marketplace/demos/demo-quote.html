@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="./demo-shared.css">
+<script src="https://www.leadpages.com.au/icons.js"></script>
+</head>
+<body>
+<main id="top">
+<section data-sec="quote" class="section">
+<div class="wrap quote-grid">
+      <div>
+        <span class="eyebrow" style="color:var(--safety)">Fast quote</span>
+        <h2>Tell us the problem.<br>We'll call you straight back.</h2>
+        <p class="lead-sub">Two minutes now saves you a flooded weekend. Send the details and a plumber calls you — usually within the hour during the day.</p>
+        <ul class="q-points">
+          <li><span class="t">✓</span>Upfront fixed price, no call-out surprises</li>
+          <li><span class="t">✓</span>Same-day where we can get to you</li>
+          <li><span class="t">✓</span>Licensed, insured, local</li>
+        </ul>
+      </div>
+      <div class="qcard">
+        <div id="quoteForm">
+          <h3>Get my quote</h3>
+          <div class="form-row" style="margin-top:12px">
+            <div class="ff"><label for="name">Name</label><input id="name" type="text" autocomplete="name" required></div>
+            <div class="ff"><label for="phone">Phone</label><input id="phone" type="tel" autocomplete="tel" required></div>
+          </div>
+          <div class="ff"><label for="email">Email</label><input id="email" type="email" autocomplete="email" required></div>
+          <div class="ff">
+            <label for="job">What's the problem?</label>
+            <select id="job">
+              <option>Blocked drain</option><option>Burst or leaking pipe</option><option>No hot water</option>
+              <option>Hidden leak / high water bill</option><option>General plumbing / other</option>
+            </select>
+          </div>
+          <div class="ff"><label for="suburb">Suburb</label><input id="suburb" type="text" autocomplete="address-level2" placeholder="e.g. Gungahlin"></div>
+          <div class="ff"><label for="detail">Anything else? (optional)</label><textarea id="detail" placeholder="A quick description helps us bring the right gear."></textarea></div>
+          <button class="btn btn-call" type="button" onclick="submitLead()">Send &amp; get my call back</button>
+          <p class="q-fine">Genuine emergency? Don't wait — <a id="formCall" href="#" style="color:var(--pipe);font-weight:700">call us now</a>.</p>
+        </div>
+        <div class="q-success" id="quoteSuccess">
+          <div class="big">Got it — sit tight. ✓</div>
+          <p style="margin-top:10px;color:var(--muted);font-weight:500">A {{businessName}} plumber will call you on the number you gave us. If it's an emergency, please call {{phoneText}} so we can get moving now.</p>
+        </div>
+      </div>
+    </div>
+</section>
+</main>
+
+<script>
+var SITE_CONFIG={"sections":{"quote":{"on":true,"eyebrow":"Fast quote","heading":"Tell us the problem. We'll call you straight back.","sub":"Two minutes now saves you a flooded weekend. Send the details and a plumber calls you — usually within the hour during the day.","button":"Send & get my call back","formTitle":"Get my quote","lblName":"Name","lblPhone":"Phone","lblJob":"What's the problem?","lblSuburb":"Suburb","lblDetail":"Anything else? (optional)","successTitle":"Got it — sit tight. ✓"}},"phone":"0261000000"};
+</script>
+<script src="./demo-shared.js"></script>
+</body>
+</html>

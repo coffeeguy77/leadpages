@@ -210,6 +210,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 </script>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js" defer></script>
+<script src="/lib/playground-preset.js"></script>
 </head>
 <body>
 
@@ -366,11 +367,48 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var activePreset = null;
     var demoCfg = null;
     var presetCache = {};
+    var fieldDefs = [];
+    var liveSiteCfg = { sections: {}, theme: {} };
+    var pgMetaLoaded = false;
 
     var PG_W = { desktop: null, tablet: 768, phone: 390 };
     var dev = 'desktop';
     var iframe = null;
     var wrap = root.querySelector('[data-r="wrap"]');
+
+    function pgGet(obj, path) {
+      var parts = path.split('.');
+      var cur = obj;
+      for (var i = 0; i < parts.length; i++) {
+        if (cur == null) return '';
+        cur = cur[parts[i]];
+      }
+      return cur == null ? '' : cur;
+    }
+
+    function pgSet(obj, path, val) {
+      var parts = path.split('.');
+      var cur = obj;
+      for (var i = 0; i < parts.length - 1; i++) {
+        var p = parts[i];
+        if (cur[p] == null) cur[p] = isNaN(parseInt(parts[i + 1], 10)) ? {} : [];
+        cur = cur[p];
+      }
+      cur[parts[parts.length - 1]] = val;
+    }
+
+    function deepMerge(target, src) {
+      if (!src || typeof src !== 'object') return target;
+      Object.keys(src).forEach(function(k) {
+        if (src[k] && typeof src[k] === 'object' && !Array.isArray(src[k])) {
+          if (!target[k] || typeof target[k] !== 'object') target[k] = {};
+          deepMerge(target[k], src[k]);
+        } else {
+          target[k] = src[k];
+        }
+      });
+      return target;
+    }
 
     function getIframe() {
       return iframe || root.querySelector('iframe.pg-iframe');
@@ -408,46 +446,21 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     }
     window.addEventListener('resize', function() { applyDevice(); });
 
-    function presetToSiteConfig(preset, sectionKey) {
-      var cfg = preset.config || {};
-      var sec = { on: true };
-      ['eyebrow','heading','intro','cardBg','cardText','headSep','cardStyle','showTag','showTitle','showLocation','showDate','showDesc'].forEach(function(k) {
-        if (cfg[k] != null) sec[k] = cfg[k];
-      });
-      if (preset.headBadges) sec.headBadges = preset.headBadges;
-      var items = preset.items || preset.projects;
-      if (items && Array.isArray(items)) {
-        var listKey = (sectionKey === 'featuredProjects') ? 'projects' : 'items';
-        sec[listKey] = items.map(function(it) {
-          return {
-            on: true,
-            title: it.title,
-            tag: it.type || it.tag,
-            location: it.location,
-            description: it.description || it.caption,
-            image: it.img || it.image,
-            service: it.service,
-            date: it.date,
-            caption: it.caption || it.description,
-            permalink: it.permalink
-          };
-        });
+    function presetToSiteConfig(preset) {
+      if (window.LPPlaygroundPreset) {
+        return window.LPPlaygroundPreset.presetToSiteConfig(preset);
       }
-      var out = { sections: {} };
-      out.sections[sectionKey] = sec;
-      if (cfg.accent) out.theme = { pipe: cfg.accent };
-      return out;
+      if (preset && preset.site_config) return JSON.parse(JSON.stringify(preset.site_config));
+      if (preset && preset.demo_config) return JSON.parse(JSON.stringify(preset.demo_config));
+      return { sections: {}, theme: {} };
     }
 
-    function applyToIframe(preset) {
+    function applyLiveConfig() {
       var fr = getIframe();
-      if (!fr || !preset) return;
-      var sk = secKey || preset.section || '';
-      if (!sk) return;
-      var siteCfg = presetToSiteConfig(preset, sk);
+      if (!fr) return;
       try {
         if (fr.contentWindow && fr.contentWindow.__applyTradeConfig) {
-          fr.contentWindow.__applyTradeConfig(siteCfg);
+          fr.contentWindow.__applyTradeConfig(liveSiteCfg);
         }
       } catch(e) {}
       setTimeout(function() {
@@ -459,11 +472,74 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       }, 120);
     }
 
+    function applyPreset(preset) {
+      var p = preset;
+      if (window.LPPlaygroundPreset && preset && !preset.site_config) {
+        p = window.LPPlaygroundPreset.normalizePreset(preset, {
+          slug: preset.slug,
+          source: preset.source,
+          section_key: secKey,
+          label: preset.label
+        });
+      }
+      var sk = secKey || p.section_key || '';
+      if (!sk) return;
+      secKey = sk;
+      liveSiteCfg = deepMerge({ sections: {}, theme: {} }, presetToSiteConfig(p));
+      demoCfg = p;
+      applyLiveConfig();
+      renderLiveControls();
+    }
+
     function fetchPreset(name) {
       if (presetCache[name]) return Promise.resolve(presetCache[name]);
-      return fetch('/playground/' + encodeURIComponent(name) + '.json')
+      var url = '/api/marketplace-playground?slug=' + encodeURIComponent(name);
+      if (secKey) url += '&section_key=' + encodeURIComponent(secKey);
+      return fetch(url)
         .then(function(r) { if (!r.ok) throw 0; return r.json(); })
-        .then(function(data) { presetCache[name] = data; return data; });
+        .then(function(data) {
+          var preset = data;
+          if (window.LPPlaygroundPreset) {
+            preset = window.LPPlaygroundPreset.normalizePreset(data, {
+              slug: name,
+              source: data.source || 'file',
+              section_key: secKey || data.section_key
+            });
+          }
+          presetCache[name] = preset;
+          return preset;
+        });
+    }
+
+    function loadPlaygroundMeta() {
+      if (!secKey || pgMetaLoaded) return Promise.resolve();
+      return fetch('/api/marketplace-playground?section_key=' + encodeURIComponent(secKey))
+        .then(function(r) { return r.ok ? r.json() : {}; })
+        .then(function(meta) {
+          pgMetaLoaded = true;
+          if (meta.field_defs && meta.field_defs.length) fieldDefs = meta.field_defs;
+          if (meta.presets && meta.presets.length) {
+            meta.presets.forEach(function(p) {
+              var preset = p;
+              if (window.LPPlaygroundPreset) {
+                preset = window.LPPlaygroundPreset.normalizePreset(p, {
+                  slug: p.slug,
+                  source: p.source,
+                  section_key: p.section_key || secKey,
+                  label: p.label
+                });
+              }
+              presetCache[p.slug] = preset;
+              if (presets.indexOf(p.slug) < 0) presets.push(p.slug);
+            });
+          }
+        })
+        .catch(function() {
+          return fetch('/marketplace/playground-field-defs.json')
+            .then(function(r) { return r.json(); })
+            .then(function(all) { if (all[secKey]) fieldDefs = all[secKey]; })
+            .catch(function() {});
+        });
     }
 
     function showNoDemo(msg) {
@@ -485,7 +561,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       fr.setAttribute('scrolling', 'no');
       fr.addEventListener('load', function onLoad() {
         fr.removeEventListener('load', onLoad);
-        if (demoCfg) applyToIframe(demoCfg);
+        if (demoCfg) applyPreset(demoCfg);
+        else if (liveSiteCfg && liveSiteCfg.sections && Object.keys(liveSiteCfg.sections).length) applyLiveConfig();
         try {
           var h = fr.contentDocument.body.scrollHeight;
           fr.style.height = (h + 32) + 'px';
@@ -509,35 +586,86 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       var box = root.querySelector('[data-r="presets"]');
       if (!box) return;
       box.innerHTML = presets.map(function(name) {
-        var label = (presetCache[name] && presetCache[name].label) || name;
+        var cached = presetCache[name];
+        var label = (cached && cached.label) || name;
         return '<button type="button" data-preset="' + esc(name) + '"' + (name === activePreset ? ' class="on"' : '') + '>' + esc(label) + '</button>';
       }).join('');
+    }
+
+    function renderLiveControls() {
+      var host = root.querySelector('[data-r="live"]');
+      if (!host) return;
+      if (!fieldDefs.length) {
+        host.innerHTML = '<p class="hint" style="margin:0">No live controls for this section yet.</p>';
+        return;
+      }
+      host.innerHTML = fieldDefs.map(function(f) {
+        var val = pgGet(liveSiteCfg, f.key);
+        if (f.join && Array.isArray(val)) val = val.join(f.join);
+        if (f.type === 'textarea') {
+          return '<div><label>' + esc(f.label) + '</label><textarea data-pgk="' + esc(f.key) + '">' + esc(String(val || '')) + '</textarea></div>';
+        }
+        if (f.type === 'color') {
+          var col = (val && /^#[0-9a-fA-F]{6}$/.test(String(val))) ? val : '#1f7bb8';
+          return '<div><label>' + esc(f.label) + '</label><div class="pg-cr">'
+            + '<input type="color" data-pgk="' + esc(f.key) + '" data-pgct="cp" value="' + col + '">'
+            + '<input type="text" data-pgk="' + esc(f.key) + '" data-pgct="ct" value="' + esc(String(val || '')) + '"></div></div>';
+        }
+        return '<div><label>' + esc(f.label) + '</label><input type="text" data-pgk="' + esc(f.key) + '" value="' + esc(String(val || '')) + '"></div>';
+      }).join('');
+
+      if (host.__pgBound) return;
+      host.__pgBound = true;
+      var timer = null;
+      host.addEventListener('input', function(e) {
+        var t = e.target;
+        var key = t.getAttribute('data-pgk');
+        if (!key) return;
+        var val = t.value;
+        var def = fieldDefs.find(function(d) { return d.key === key; });
+        if (def && def.join) val = val.split('\n').map(function(s) { return s.trim(); }).filter(Boolean);
+        pgSet(liveSiteCfg, key, val);
+        if (t.dataset.pgct === 'cp') {
+          var tx = host.querySelector('[data-pgk="' + key + '"][data-pgct="ct"]');
+          if (tx) tx.value = val;
+        }
+        if (t.dataset.pgct === 'ct' && /^#[0-9a-fA-F]{6}$/.test(val)) {
+          var cp = host.querySelector('[data-pgk="' + key + '"][data-pgct="cp"]');
+          if (cp) cp.value = val;
+        }
+        clearTimeout(timer);
+        timer = setTimeout(applyLiveConfig, 300);
+      });
     }
 
     function selectPreset(name) {
       return fetchPreset(name).then(function(preset) {
         activePreset = name;
         demoCfg = preset;
-        if (!secKey && preset.section) secKey = preset.section;
-        if (!secKey) {
-          showNoDemo('Preset loaded but no section key is set.');
-          renderCtl();
-          renderPresets();
-          return;
+        if (!secKey && (preset.section_key || preset.section)) {
+          secKey = preset.section_key || preset.section;
         }
-        return ensureDemoLoaded(secKey).then(function() {
-          applyToIframe(preset);
-          renderCtl();
-          renderPresets();
+        return loadPlaygroundMeta().then(function() {
+          if (!secKey) {
+            showNoDemo('Preset loaded but no section key is set.');
+            renderCtl();
+            renderPresets();
+            return;
+          }
+          return ensureDemoLoaded(secKey).then(function() {
+            applyPreset(preset);
+            renderCtl();
+            renderPresets();
+          });
         });
       }).catch(function() {
         var box = root.querySelector('[data-r="presets"]');
-        if (box) {
+        if (box && !box.querySelector('.hint')) {
           var err = document.createElement('span');
           err.className = 'hint';
           err.style.padding = '8px 0';
           err.textContent = 'Could not load preset "' + name + '".';
-          if (!box.querySelector('.hint')) box.appendChild(err);
+          box.appendChild(err);
         }
       });
     }
@@ -548,10 +676,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       var presetLabel = (demoCfg && demoCfg.label) || activePreset || '';
       ctl.innerHTML = '<div class="pg-ecard"><h4>Live demo</h4>'
         + '<p class="hint">This is a live preview of the ' + esc(secKey || 'section') + ' section as it appears on a real site. '
-        + 'Your partner can customise every element — colours, text, images — in the App Command Centre.</p>'
+        + 'Your partner can customise every element in the App Command Centre.</p>'
         + (secKey ? '<a class="btn" href="/manage" target="_blank" rel="noopener" style="display:inline-flex;margin-top:10px">Try it in the editor →</a>' : '')
         + '</div>'
+        + '<div class="pg-ecard"><h4>Try it yourself</h4><p class="hint">Adjust the fields below — the preview updates instantly. Nothing saves.</p>'
+        + '<div data-r="live"></div></div>'
         + (demoCfg ? '<div class="pg-ecard"><h4>Demo data</h4><p class="hint">Showing example content' + (presetLabel ? ' (' + esc(presetLabel) + ')' : '') + '. Real sites use your client&rsquo;s own text, photos and branding.</p></div>' : '');
+      renderLiveControls();
     }
 
     root.addEventListener('click', function(e) {
@@ -569,18 +700,22 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       applyDevice();
     });
 
-    Promise.all(presets.map(fetchPreset)).then(function() {
+    loadPlaygroundMeta().then(function() {
       renderPresets();
-      if (secKey) {
-        return selectPreset(presets[0]);
-      }
+      if (secKey) return selectPreset(presets[0]);
       var first = presetCache[presets[0]];
-      if (first && first.section) {
-        secKey = first.section;
-        return selectPreset(presets[0]);
+      if (first && (first.section_key || first.section)) {
+        secKey = first.section_key || first.section;
+        return loadPlaygroundMeta().then(function() { return selectPreset(presets[0]); });
       }
-      showNoDemo();
-      renderCtl();
+      return fetchPreset(presets[0]).then(function(p) {
+        if (p.section_key || p.section) {
+          secKey = p.section_key || p.section;
+          return loadPlaygroundMeta().then(function() { return selectPreset(presets[0]); });
+        }
+        showNoDemo();
+        renderCtl();
+      });
     }).catch(function() {
       showNoDemo('Could not load playground presets.');
       renderCtl();

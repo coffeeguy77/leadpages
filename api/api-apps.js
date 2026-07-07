@@ -3,6 +3,7 @@
 // GET  /api/apps?slug=<slug>  -> {app, schema, presets} single app (public)
 // GET  /api/apps?all=1        -> all apps inc draft (admin only, service role)
 const { createClient } = require('@supabase/supabase-js');
+const pp = require('../lib/playground-preset');
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 const LP_ACCESSIBILITY_APP = {
@@ -48,7 +49,20 @@ module.exports = async (req, res) => {
         sb.from('app_presets').select('slug,label,description,config,sort_order')
           .eq('app_id',app.id).eq('is_live',true).order('sort_order',{ascending:true})
       ]);
-      return res.status(200).json({app, schema:schema||null, presets:presets||[]});
+      const normalizedPresets = (presets || []).map(function(row) {
+        return pp.normalizePreset(row.config || {}, {
+          slug: row.slug,
+          label: row.label,
+          source: 'db',
+          section_key: app.section_key
+        });
+      });
+      return res.status(200).json({
+        app,
+        schema: schema || null,
+        contract_version: pp.CONTRACT_VERSION,
+        presets: normalizedPresets
+      });
     }
 
     let q = sb.from('app_registry')
