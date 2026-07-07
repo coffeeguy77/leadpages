@@ -1,0 +1,1556 @@
+{
+  "navMenu": {
+    "name": "Navigation Menu",
+    "tagline": "Navigation Menu",
+    "summary": "Showcase navigation menu on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Navigation Menu",
+          "text": "Give every client a polished navigation menu section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "textBox": {
+    "name": "Text Box",
+    "tagline": "Built for {{businessName}}",
+    "summary": "A short introduction that sets the scene for what follows.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Text Box",
+          "text": "Give every client a polished text box section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "emergencyAvailability": {
+    "name": "Emergency Availability",
+    "tagline": "After-hours & emergencies",
+    "summary": "We keep the phone on outside business hours for genuine emergencies — leave your details and we’ll call you straight back.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Emergency Availability",
+          "text": "Give every client a polished emergency availability section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "serviceAreaMap": {
+    "name": "Service Area Map",
+    "tagline": "Suburbs we cover across the ACT",
+    "summary": "Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Service Area Map",
+          "text": "Give every client a polished service area map section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "estimateBuilder": {
+    "name": "Estimate Builder",
+    "tagline": "Get a ballpark price in 30 seconds",
+    "summary": "Answer a few quick questions for an indicative range. For an exact price, send the details through and we’ll confirm.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Estimate Builder",
+          "text": "Give every client a polished estimate builder section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "certifications": {
+    "name": "Certifications",
+    "tagline": "Licensed, insured & accredited",
+    "summary": "Fully qualified and backed by recognised industry accreditations — so you know the job is done right.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Certifications",
+          "text": "Give every client a polished certifications section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "finance": {
+    "name": "Finance Options",
+    "tagline": "Finance options available",
+    "summary": "Spread the cost of larger jobs with approved finance — get the work done now and pay it off over time.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Finance Options",
+          "text": "Give every client a polished finance options section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "trustBar": {
+    "name": "Trust Bar",
+    "tagline": "Trust Bar",
+    "summary": "Showcase trust bar on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Trust Bar",
+          "text": "Give every client a polished trust bar section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "serviceProcess": {
+    "name": "Service Process",
+    "tagline": "How It Works",
+    "summary": "Showcase service process on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Service Process",
+          "text": "Give every client a polished service process section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "projectFeed": {
+    "name": "Project Feed",
+    "tagline": "Latest Work",
+    "summary": "Showcase project feed on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Project Feed",
+          "text": "Give every client a polished project feed section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "instaGallery": {
+    "name": "Instagram Gallery",
+    "tagline": "Follow us on Instagram",
+    "summary": "Showcase instagram gallery on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Instagram Gallery",
+          "text": "Give every client a polished instagram gallery section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "igProjectFeed": {
+    "name": "Instagram Project Feed",
+    "tagline": "From the grid",
+    "summary": "Showcase instagram project feed on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Instagram Project Feed",
+          "text": "Give every client a polished instagram project feed section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "activityTimeline": {
+    "name": "Activity Timeline",
+    "tagline": "What we’re working on",
+    "summary": "Showcase activity timeline on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Activity Timeline",
+          "text": "Give every client a polished activity timeline section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "customerReactions": {
+    "name": "Customer Reactions",
+    "tagline": "What customers are saying",
+    "summary": "Showcase customer reactions on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Customer Reactions",
+          "text": "Give every client a polished customer reactions section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "videoReels": {
+    "name": "Video Reels",
+    "tagline": "Reels from the job",
+    "summary": "Showcase video reels on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Video Reels",
+          "text": "Give every client a polished video reels section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "jobsFeed": {
+    "name": "Jobs Feed",
+    "tagline": "Fresh off the tools",
+    "summary": "Showcase jobs feed on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Jobs Feed",
+          "text": "Give every client a polished jobs feed section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "beforeAfterFeed": {
+    "name": "Before/After Feed",
+    "tagline": "See the difference",
+    "summary": "Showcase before/after feed on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Before/After Feed",
+          "text": "Give every client a polished before/after feed section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "crew": {
+    "name": "Meet the Team",
+    "tagline": "Meet The Team",
+    "summary": "Showcase meet the team on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Meet the Team",
+          "text": "Give every client a polished meet the team section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "splitHero": {
+    "name": "Split Hero",
+    "tagline": "Canberra's most active drain cleaning team",
+    "summary": "Showcase split hero on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Split Hero",
+          "text": "Give every client a polished split hero section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "activityCounter": {
+    "name": "Activity Counter",
+    "tagline": "We don’t slow down",
+    "summary": "Showcase activity counter on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Activity Counter",
+          "text": "Give every client a polished activity counter section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "proofStream": {
+    "name": "Proof Stream",
+    "tagline": "Proof we're working, every day",
+    "summary": "Real jobs, real reviews, real results — straight from the team.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Proof Stream",
+          "text": "Give every client a polished proof stream section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "heroSlider": {
+    "name": "Hero Slider",
+    "tagline": "Hero Slider",
+    "summary": "Showcase hero slider on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Hero Slider",
+          "text": "Give every client a polished hero slider section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "heroBeforeAfter": {
+    "name": "Hero Before/After",
+    "tagline": "Drag To Reveal The Result",
+    "summary": "Show customers the transformation in one simple swipe.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Hero Before/After",
+          "text": "Give every client a polished hero before/after section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "specialOffer": {
+    "name": "Special Offer",
+    "tagline": "Free onsite quote",
+    "summary": "Book before Friday",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Special Offer",
+          "text": "Give every client a polished special offer section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "featuredProjects": {
+    "name": "Project Portfolio",
+    "tagline": "A selection of recent projects",
+    "summary": "Showcase project portfolio on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Project Portfolio",
+          "text": "Give every client a polished project portfolio section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "aam1"
+          ]
+        }
+      }
+    ]
+  },
+  "reviewHighlights": {
+    "name": "Review Highlights",
+    "tagline": "What your neighbours say",
+    "summary": "Showcase review highlights on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Review Highlights",
+          "text": "Give every client a polished review highlights section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "serviceAreas": {
+    "name": "Service Areas",
+    "tagline": "Suburbs we cover across Canberra & the ACT",
+    "summary": "Showcase service areas on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Service Areas",
+          "text": "Give every client a polished service areas section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "projectStats": {
+    "name": "Project Stats",
+    "tagline": "A track record you can check",
+    "summary": "Showcase project stats on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Project Stats",
+          "text": "Give every client a polished project stats section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "responseCards": {
+    "name": "Response Cards",
+    "tagline": "Call us now — we solve this today",
+    "summary": "Real help, fast. Here's what you get the moment you call.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Response Cards",
+          "text": "Give every client a polished response cards section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "beforeAfter": {
+    "name": "Before & After",
+    "tagline": "Real Results From Local Jobs",
+    "summary": "Show customers the standard of work before they call.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Before & After",
+          "text": "Give every client a polished before & after section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "hero": {
+    "name": "Hero Banner",
+    "tagline": "Blocked drain?",
+    "summary": "Fast, fixed-price plumbing across the ACT — blocked drains, burst pipes, hot water and leaks. You'll know the price before we start.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Hero Banner",
+          "text": "Give every client a polished hero banner section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "services": {
+    "name": "Services",
+    "tagline": "One call sorts the lot.",
+    "summary": "From a slow kitchen sink to a flooded laundry at 2am — we handle the everyday and the emergencies.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Services",
+          "text": "Give every client a polished services section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "why": {
+    "name": "Why Choose Us",
+    "tagline": "No call-out games. No surprise bills.",
+    "summary": "Showcase why choose us on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Why Choose Us",
+          "text": "Give every client a polished why choose us section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "area": {
+    "name": "Service Area",
+    "tagline": "Across Canberra & the ACT",
+    "summary": "If you're in the ACT, we cover you. Same-day where we can, every day of the week.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Service Area",
+          "text": "Give every client a polished service area section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "reviews": {
+    "name": "Reviews",
+    "tagline": "212 five-star reviews and counting.",
+    "summary": "Showcase reviews on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Reviews",
+          "text": "Give every client a polished reviews section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "faq": {
+    "name": "FAQ",
+    "tagline": "Quick answers.",
+    "summary": "Showcase faq on every trade site you build.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love FAQ",
+          "text": "Give every client a polished faq section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "quote": {
+    "name": "Quote Form",
+    "tagline": "Tell us the problem. We'll call you straight back.",
+    "summary": "Two minutes now saves you a flooded weekend. Send the details and a plumber calls you — usually within the hour during the day.",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Why partners love Quote Form",
+          "text": "Give every client a polished quote form section without custom dev work.\n\nToggle it on in the App Command Centre, customise the content, and preview changes live before publishing."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you get",
+          "items": [
+            {
+              "title": "Live on real sites",
+              "text": "Same component your clients see in production — not a mockup."
+            },
+            {
+              "title": "Preset scenarios",
+              "text": "Switch between industry examples in the playground below."
+            },
+            {
+              "title": "Command Centre control",
+              "text": "Partners edit every field without touching code."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  }
+}

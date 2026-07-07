@@ -1,0 +1,369 @@
+{
+  "hero": {
+    "business": "Ace Plumbing Co.",
+    "trade": "plumber",
+    "theme": {
+      "pipe": "#1f7bb8"
+    },
+    "hero": {
+      "h1": "Blocked drain? We'll clear it today.",
+      "sub": "Fast, fixed-price plumbing across the ACT.",
+      "cta": "Get a free quote",
+      "badges": [
+        {
+          "icon": "shield-check",
+          "text": "Licensed & insured"
+        },
+        {
+          "icon": "clock",
+          "text": "Same-day service"
+        }
+      ]
+    }
+  },
+  "heroSlider": {
+    "business": "Prestige Solar",
+    "trade": "solar",
+    "theme": {
+      "pipe": "#f59e0b"
+    },
+    "heroSlider": {
+      "slides": [
+        {
+          "headline": "Solar that pays for itself",
+          "sub": "Government rebates available now",
+          "img": ""
+        },
+        {
+          "headline": "Battery storage solutions",
+          "sub": "Store your energy, cut your bill",
+          "img": ""
+        }
+      ]
+    }
+  },
+  "reviews": {
+    "reviews": {
+      "items": [
+        {
+          "name": "Sarah M.",
+          "stars": 5,
+          "text": "Absolutely brilliant service. Fixed our burst pipe within the hour — couldn't recommend more highly.",
+          "source": "Google"
+        },
+        {
+          "name": "James K.",
+          "stars": 5,
+          "text": "Professional, on time and great value. Will definitely use again.",
+          "source": "Google"
+        },
+        {
+          "name": "Lisa T.",
+          "stars": 5,
+          "text": "Top quality work. Very honest with pricing and no hidden extras.",
+          "source": "Facebook"
+        }
+      ]
+    }
+  },
+  "services": {
+    "services": [
+      {
+        "on": true,
+        "icon": "droplet",
+        "title": "Blocked Drains",
+        "body": "Same-day drain clearing for blocked sinks, toilets and outdoor drains."
+      },
+      {
+        "on": true,
+        "icon": "flame",
+        "title": "Hot Water Systems",
+        "body": "Supply and install gas, electric and heat pump hot water systems."
+      },
+      {
+        "on": true,
+        "icon": "wrench",
+        "title": "Leak Repairs",
+        "body": "Fast leak detection and repair — no damage, no mess."
+      },
+      {
+        "on": true,
+        "icon": "home",
+        "title": "Bathroom Renovations",
+        "body": "Complete bathroom fit-outs from design to final fixture."
+      }
+    ]
+  },
+  "faq": {
+    "faq": {
+      "items": [
+        {
+          "q": "Do you offer same-day service?",
+          "a": "Yes — for most jobs we can be there the same day you call. Emergency callouts are available 24/7."
+        },
+        {
+          "q": "Are you licensed and insured?",
+          "a": "Fully licensed plumber and gasfitter, with full public liability insurance."
+        },
+        {
+          "q": "Do you provide written quotes?",
+          "a": "Always. You'll get a clear written quote before we start any work — no surprises."
+        },
+        {
+          "q": "What areas do you cover?",
+          "a": "We cover all suburbs across the ACT and surrounding NSW."
+        }
+      ]
+    }
+  },
+  "why": {
+    "why": {
+      "items": [
+        {
+          "icon": "shield-check",
+          "title": "Upfront pricing",
+          "body": "Fixed quotes before we start — no hidden charges, ever."
+        },
+        {
+          "icon": "clock",
+          "title": "On time, every time",
+          "body": "We respect your schedule and always call ahead if running late."
+        },
+        {
+          "icon": "star",
+          "title": "5-star rated",
+          "body": "Over 200 Google reviews from happy customers across the ACT."
+        },
+        {
+          "icon": "award",
+          "title": "15+ years experience",
+          "body": "Trusted by Canberra homeowners and businesses since 2009."
+        }
+      ]
+    }
+  },
+  "crew": {
+    "crew": {
+      "items": [
+        {
+          "name": "Michael Chen",
+          "role": "Master Plumber & Owner",
+          "bio": "Licensed master plumber with 15 years experience across residential and commercial projects.",
+          "img": ""
+        },
+        {
+          "name": "Sarah Williams",
+          "role": "Senior Plumber",
+          "bio": "Specialises in bathroom renovations and hot water system installations.",
+          "img": ""
+        },
+        {
+          "name": "Tom Harris",
+          "role": "Apprentice Plumber",
+          "bio": "Third-year apprentice, passionate about quality workmanship.",
+          "img": ""
+        }
+      ]
+    }
+  },
+  "trustBar": {
+    "trustBar": {
+      "items": [
+        {
+          "icon": "shield-check",
+          "text": "Fully licensed"
+        },
+        {
+          "icon": "award",
+          "text": "Master Plumbers member"
+        },
+        {
+          "icon": "star",
+          "text": "5-star Google rating"
+        },
+        {
+          "icon": "clock",
+          "text": "24/7 emergency"
+        },
+        {
+          "icon": "dollar-sign",
+          "text": "Fixed-price quotes"
+        }
+      ]
+    }
+  },
+  "certifications": {
+    "certifications": {
+      "items": [
+        {
+          "label": "Master Plumbers",
+          "sub": "Member since 2010",
+          "icon": "award"
+        },
+        {
+          "label": "Licensed Plumber",
+          "sub": "ACT licence #12345",
+          "icon": "shield-check"
+        },
+        {
+          "label": "Public Liability",
+          "sub": "$20M insured",
+          "icon": "umbrella"
+        }
+      ]
+    }
+  },
+  "serviceAreas": {
+    "serviceAreas": {
+      "heading": "Areas we service",
+      "areas": [
+        "Canberra CBD",
+        "Belconnen",
+        "Tuggeranong",
+        "Gungahlin",
+        "Woden",
+        "Queanbeyan",
+        "Yass",
+        "Murrumbateman"
+      ]
+    }
+  },
+  "beforeAfter": {
+    "beforeAfter": {
+      "items": [
+        {
+          "before": "",
+          "after": "",
+          "label": "Complete bathroom renovation"
+        },
+        {
+          "before": "",
+          "after": "",
+          "label": "Pipe replacement"
+        }
+      ]
+    }
+  },
+  "responseCards": {
+    "responseCards": {
+      "items": [
+        {
+          "icon": "clock",
+          "title": "60-min response",
+          "body": "We're on site within the hour for urgent callouts."
+        },
+        {
+          "icon": "phone",
+          "title": "Answer every call",
+          "body": "Real people answer 24/7 — no call centres, no voicemail."
+        },
+        {
+          "icon": "dollar-sign",
+          "title": "Quote before we start",
+          "body": "Fixed price agreed before any work begins."
+        }
+      ]
+    }
+  },
+  "projectStats": {
+    "projectStats": {
+      "stats": [
+        {
+          "value": "2,400+",
+          "label": "Jobs completed"
+        },
+        {
+          "value": "15",
+          "label": "Years in business"
+        },
+        {
+          "value": "200+",
+          "label": "Google reviews"
+        },
+        {
+          "value": "24/7",
+          "label": "Emergency available"
+        }
+      ]
+    }
+  },
+  "specialOffer": {
+    "specialOffer": {
+      "heading": "July special",
+      "body": "Book a hot water service this month and get a free pressure check — valued at $120.",
+      "cta": "Claim this offer",
+      "expiry": "31 July 2026"
+    }
+  },
+  "serviceProcess": {
+    "serviceProcess": {
+      "heading": "How it works",
+      "steps": [
+        {
+          "title": "Call or request online",
+          "body": "Tell us what's happening and we'll give you an upfront price."
+        },
+        {
+          "title": "We arrive on time",
+          "body": "Our plumber arrives in a fully stocked van — ready to fix it first visit."
+        },
+        {
+          "title": "Job done right",
+          "body": "We clean up after ourselves and follow up to make sure you're happy."
+        }
+      ]
+    }
+  },
+  "finance": {
+    "finance": {
+      "heading": "Flexible payment options",
+      "body": "We partner with leading finance providers so you can spread the cost of larger jobs.",
+      "options": [
+        "Interest-free terms available",
+        "Apply in minutes",
+        "No deposit on approved finance"
+      ]
+    }
+  },
+  "activityCounter": {
+    "activityCounter": {
+      "stats": [
+        {
+          "value": 47,
+          "label": "Jobs this month"
+        },
+        {
+          "value": 3,
+          "label": "Active teams today"
+        },
+        {
+          "value": 12,
+          "label": "Years serving Canberra"
+        }
+      ]
+    }
+  },
+  "estimateBuilder": {
+    "estimateBuilder": {
+      "heading": "Get an instant estimate",
+      "services": [
+        {
+          "label": "Blocked drain clearance",
+          "price": 180
+        },
+        {
+          "label": "Hot water replacement",
+          "price": 1200
+        },
+        {
+          "label": "Leak repair",
+          "price": 150
+        },
+        {
+          "label": "Tap replacement",
+          "price": 120
+        }
+      ]
+    }
+  }
+}

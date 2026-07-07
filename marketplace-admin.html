@@ -166,6 +166,18 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
     <label>Hero image URL <span style="font-weight:400">(paste a Cloudinary URL)</span></label><input id="f-img" placeholder="https://res.cloudinary.com/dzx6x1hou/image/upload/…">
     <label>Live demo URL <span style="font-weight:400">(optional — e.g. a client site section)</span></label><input id="f-demo" placeholder="https://www.leadpages.com.au/beanculture">
     <label>Section key <span style="font-weight:400">(data-sec= for playground demos, e.g. featuredProjects)</span></label><input id="f-seckey" placeholder="featuredProjects">
+    <div class="card" style="margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#FBF9F8">
+      <div style="font-weight:800;font-size:13px;margin-bottom:8px">Demo sync from live site</div>
+      <p class="note" style="margin:0 0 10px">Pull a section&rsquo;s config from a published trade site into <code>app_presets</code> for the playground.</p>
+      <div class="grid2">
+        <div><label>Site slug</label><input id="f-sync-site" placeholder="aam1"></div>
+        <div><label>Preset slug</label><input id="f-sync-preset" placeholder="live-sync" value="live-sync"></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button type="button" class="btn sm" id="f-sync-btn">Sync demo preset</button>
+        <span class="note" id="f-sync-status" style="margin:0"></span>
+      </div>
+    </div>
     <div class="grid2">
       <div><label>Badge</label><select id="f-badge"><option value="">None</option><option>NEW</option><option>POPULAR</option></select></div>
       <div><label>Sort order</label><input id="f-sort" type="number" value="0"></div>
@@ -186,7 +198,9 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
   <div class="dbody">
     <div class="row" style="justify-content:space-between;margin-bottom:10px">
       <div class="note">Blocks render top to bottom on the public page. <a id="blk-view" href="#" target="_blank" rel="noopener" style="color:var(--rose-d);font-weight:700">Preview page &rarr;</a></div>
-      <select id="blk-add-type" style="width:auto">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button type="button" class="btn sm ghost" id="blk-apply-sell">Apply sell template</button>
+        <select id="blk-add-type" style="width:auto">
         <option value="">+ Add block…</option>
         <option value="rich_text">Text</option>
         <option value="benefits">Benefits list</option>
@@ -362,6 +376,44 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
     $('feat-dlg').close(); loadAll();
   });
 
+  $('f-sync-btn').addEventListener('click', async function() {
+    var secKey = ($('f-seckey').value || '').trim();
+    var siteSlug = ($('f-sync-site').value || '').trim().toLowerCase();
+    var presetSlug = ($('f-sync-preset').value || 'live-sync').trim();
+    $('f-sync-status').textContent = '';
+    if (!secKey) { $('f-sync-status').textContent = 'Set a section key first.'; return; }
+    if (!siteSlug) { $('f-sync-status').textContent = 'Enter a site slug.'; return; }
+    $('f-sync-btn').disabled = true;
+    $('f-sync-status').textContent = 'Syncing…';
+    try {
+      var sess = (await sb.auth.getSession()).data.session;
+      if (!sess) { $('f-sync-status').textContent = 'Sign in required.'; return; }
+      var r = await fetch('/api/marketplace-playground', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + sess.access_token
+        },
+        body: JSON.stringify({
+          action: 'sync_site',
+          site_slug: siteSlug,
+          section_key: secKey,
+          preset_slug: presetSlug,
+          label: 'Live sync: ' + siteSlug
+        })
+      });
+      var j = await r.json();
+      if (!r.ok) { $('f-sync-status').textContent = j.error || 'Sync failed.'; return; }
+      $('f-sync-status').textContent = j.saved
+        ? ('Saved preset "' + presetSlug + '" from ' + siteSlug)
+        : (j.message || 'Extracted config (not saved to DB).');
+    } catch (err) {
+      $('f-sync-status').textContent = 'Sync failed.';
+    } finally {
+      $('f-sync-btn').disabled = false;
+    }
+  });
+
   /* ---------- list actions ---------- */
   document.addEventListener('click',async function(e){
     var t=e.target;
@@ -395,6 +447,32 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
     var r=await sb.from('catalog_blocks').select('*').eq('feature_id',blkFeat.id).order('sort_order');
     BLOCKS=r.data||[]; renderBlocks();
   }
+
+  $('blk-apply-sell').addEventListener('click', async function() {
+    if (!blkFeat) return;
+    var secKey = (blkFeat.section_key || '').trim();
+    if (!secKey) { alert('Set a section_key on this feature first (Edit feature).'); return; }
+    if (!confirm('Replace all blocks with the default sell template for ' + secKey + '?')) return;
+  var tpl = null;
+  try {
+    var r = await fetch('/marketplace/sell-templates.json');
+    var all = await r.json();
+    tpl = all[secKey];
+  } catch (e) {}
+  if (!tpl || !tpl.blocks) { alert('No sell template for section_key: ' + secKey); return; }
+    await sb.from('catalog_blocks').delete().eq('feature_id', blkFeat.id);
+    var rows = tpl.blocks.map(function(b, i) {
+      return {
+        feature_id: blkFeat.id,
+        sort_order: i,
+        block_type: b.block_type,
+        payload: b.payload || {}
+      };
+    });
+    var ins = await sb.from('catalog_blocks').insert(rows);
+    if (ins.error) { alert('Failed: ' + ins.error.message); return; }
+    await loadBlocks();
+  });
   function blockPreview(b){
     var p=b.payload||{};
     switch(b.block_type){
@@ -449,7 +527,7 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
         +fld('Questions — one per line as: Question? | Answer','be-t','ta',(p.items||[]).map(function(i){return i.q+' | '+i.a;}).join('\n'));
       case 'quote':return fld('Quote text','be-t','ta',p.text)
         +fld('Name','be-n','in',p.name)+fld('Role (optional)','be-r','in',p.role);
-      case 'playground':return fld('Preset names - one per line (JSON files in /playground/)','be-t','ta',(p.presets||['aam1']).join('\n'),'aam1');
+      case 'playground':return fld('Preset names - one per line (JSON files in /playground/ or DB app_presets)','be-t','ta',(p.presets||['aam1']).join('\n'),'aam1');
       case 'cta':return fld('Heading','be-h','in',p.heading,'Ready to offer this?')
         +fld('Text (optional)','be-t','ta',p.text)
         +fld('Button label','be-bl','in',p.button_label,'Become a partner')
