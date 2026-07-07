@@ -5150,14 +5150,18 @@ function heroCtaCard(c){
       ctx.appendChild(acct);
     } else if(acct.parentNode!==ctx){ ctx.appendChild(acct); }
     var modeBtn='<button type="button" id="lp-mode-toggle-dt" class="btn ghost" style="font-size:12px;">Classic</button>';
+    var showSiteSwitcher=(currentRole==='super'||currentRole==='broker')&&((allSites||[]).length>1||!!currentSiteId);
+    var siteSwBtn=showSiteSwitcher?'<button type="button" id="lpc-site-switcher-dt" class="btn ghost">Site Switcher</button>':'';
     if(currentRole==='super'){
       acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">&#8592; Dashboard</a>'
+        +siteSwBtn
         +'<a href="/partners-admin" class="btn ghost" style="text-decoration:none;">Partner Admin</a>'
         +'<a href="/marketplace-admin" class="btn ghost" style="text-decoration:none;">Marketplace Admin</a>'
         +modeBtn
         +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
     } else if(currentRole==='broker'){
       acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">Partner Console</a>'
+        +siteSwBtn
         +modeBtn
         +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
     } else {
@@ -5166,6 +5170,7 @@ function heroCtaCard(c){
     if(!acct.__wired){
       acct.__wired=1;
       acct.addEventListener('click',function(e){
+        if(e.target.closest('#lpc-site-switcher-dt')){ e.preventDefault(); showLanding(); return; }
         if(e.target.closest('#lpc-acct-signout')){ e.preventDefault(); signOutLP(); }
       });
     }
