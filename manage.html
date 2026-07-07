@@ -724,7 +724,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <div id="av-landing" hidden>
     <div class="card">
       <div class="card-head"><h2>Landing pages</h2><button class="btn" id="lp-new">+ New page</button></div>
-      <p class="lede">Build SEO-optimised pages that automatically use your theme colours and fonts, then add them to the site's top menu or footer. Each page gets its own clean URL slug.</p>
+      <p class="lede">Build SEO-optimised pages that automatically use your theme colours and fonts, then add them to the site's top menu or footer. Each page gets its own clean URL slug. Published pages are included in <code>sitemap.xml</code> — after publishing, go to <strong>Settings \u2192 Search &amp; indexing</strong> and click <strong>Regenerate sitemap</strong>.</p>
       <div id="lp-list" class="lp-list"></div>
     </div>
 
@@ -1692,7 +1692,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-img-pad').addEventListener('input',function(){ var n=parseInt(this.value,10); lpField('imgPad', isNaN(n)?16:Math.max(0,Math.min(96,n))); });
     $('lp-cta-call').addEventListener('change',function(){ lpField('showCall',this.checked); });
     $('lp-cta-quote').addEventListener('change',function(){ lpField('showQuote',this.checked); });
-    $('lp-save').addEventListener('click',function(){ persist(); lpSaveDB(); toast('Page saved'); renderSeoPages(); });
+    $('lp-save').addEventListener('click',function(){ if(lpCur) lpCur.updatedAt=new Date().toISOString(); persist(); lpSaveDB(); var pub=lpCur&&lpCur.status==='published'; renderSeoPages(); toast(pub?'Page saved — regenerate sitemap in Settings when you add or publish pages.':'Page saved'); });
     $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; });
     $('lp-del').addEventListener('click',function(){ if(!lpCur) return; data.pages=data.pages.filter(x=>x.id!==lpCur.id); persist(); lpSaveDB(); $('lp-editor').hidden=true; lpCur=null; renderSeoPages(); toast('Page deleted'); });
     $('lp-undo').addEventListener('click',function(){ if(lpHi>0){ lpHi--; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
@@ -3113,9 +3113,12 @@ function heroCtaCard(c){
     var _mono='font-family:ui-monospace,Menlo,monospace;font-size:12.5px;word-break:break-all;background:var(--soft,#f1f1ee);border:1px solid var(--line);border-radius:8px;padding:10px 12px;';
     var _recRow=function(lbl,val,id){ return '<div style="margin-bottom:10px;"><div class="hint" style="font-weight:600;margin-bottom:4px;">'+lbl+'</div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;"><code'+(id?' id="'+id+'"':'')+' style="'+_mono+'flex:1;min-width:180px;">'+esc(val||'—')+'</code>'+(val?'<button type="button" class="btn ghost sm gsi-copy-rec" data-copy="'+esc(val)+'">Copy</button>':'')+'</div></div>'; };
     var searchCard='<div class="card" style="margin-bottom:20px;" id="gsi-card"><h2 style="margin:0 0 4px;">Search &amp; indexing</h2><p class="lede" style="margin:0 0 14px;">Verify ownership in <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>, then submit your sitemap.</p>'
-      +'<p class="lede" style="margin:0 0 6px;font-weight:600;">Sitemap path <span class="hint">(paste this in Search Console)</span></p>'
-      +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;"><code id="gsi-sitemap" style="'+_mono+'flex:1;min-width:200px;">sitemap.xml</code><button type="button" class="btn ghost sm" id="gsi-copy-map">Copy</button></div>'
-      +'<p class="hint" style="margin:0 0 16px;">Full URL: <code style="background:var(--soft,#f1f1ee);padding:1px 6px;border-radius:6px;border:1px solid var(--line);">'+esc(_mapUrl||'(publish site first)')+'</code></p>'
+      +'<p class="lede" style="margin:0 0 6px;font-weight:600;">Sitemap <span class="hint">(submit in Search Console)</span></p>'
+      +'<div id="gsi-map-stats" class="hint" style="margin:0 0 10px;padding:10px 12px;background:var(--soft,#f1f1ee);border-radius:8px;border:1px solid var(--line);">Loading sitemap details\u2026</div>'
+      +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;"><code id="gsi-sitemap" style="'+_mono+'flex:1;min-width:200px;">sitemap.xml</code><button type="button" class="btn ghost sm" id="gsi-copy-map">Copy path</button><button type="button" class="btn ghost sm" id="gsi-copy-map-url">Copy URL</button></div>'
+      +'<p class="hint" style="margin:0 0 10px;">Full URL: <code id="gsi-map-url" style="background:var(--soft,#f1f1ee);padding:1px 6px;border-radius:6px;border:1px solid var(--line);word-break:break-all;">'+esc(_mapUrl||'(publish site first)')+'</code></p>'
+      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;"><button type="button" class="btn" id="gsi-regen-map">Regenerate sitemap</button><span id="gsi-regen-msg" class="hint"></span></div>'
+      +'<p class="hint" style="margin:0 0 16px;">After adding or publishing landing pages, click <strong>Regenerate sitemap</strong> so Google sees the latest URLs.</p>'
       +'<p class="lede" style="margin:0 0 8px;font-weight:600;">Verification method</p>'
       +'<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">'
       +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;"><input type="radio" name="gsi-method" value="meta"'+(_gsvMethod==='meta'?' checked':'')+'> <span><strong>HTML meta tag</strong> <span class="hint">— easiest; works on platform URLs and custom domains. URL-prefix property in Search Console.</span></span></label>'
@@ -3185,6 +3188,43 @@ function heroCtaCard(c){
     (function(){
       var cp=$('gsi-copy-prop'); if(cp) cp.addEventListener('click',function(){ lpCopyText(_propUrl,'Property URL'); });
       var cm=$('gsi-copy-map'); if(cm) cm.addEventListener('click',function(){ lpCopyText('sitemap.xml','Sitemap path'); });
+      var cmu=$('gsi-copy-map-url'); if(cmu) cmu.addEventListener('click',function(){ var u=($('gsi-map-url')&&$('gsi-map-url').textContent)||_mapUrl||''; if(u&&u.indexOf('(')!==0) lpCopyText(u,'Sitemap URL'); });
+      async function gsiLoadSitemap(){
+        var el=$('gsi-map-stats'); if(!el||!currentSiteId){ if(el) el.textContent='Select a site to view sitemap details.'; return; }
+        try{
+          var token=await cwToken();
+          var r=await fetch('/api/site/sitemap?siteId='+encodeURIComponent(currentSiteId),{headers:token?{Authorization:'Bearer '+token}:{}});
+          var j=await r.json();
+          if(!j.ok){ el.textContent='Could not load sitemap details.'; return; }
+          var c=j.counts||{};
+          var when=j.generatedAt?lpWhen(j.generatedAt):'not yet regenerated';
+          var lpList=j.landingPages||[];
+          var lp=lpList.length?lpList.map(function(p){return esc(p.title||p.slug);}).join(', '):'none published yet';
+          el.innerHTML='<strong>'+(c.total||0)+' URLs</strong> \u2014 '+(c.home||0)+' home, '+(c.suburbs||0)+' service areas, '+(c.landingPages||0)+' landing page'+(c.landingPages===1?'':'s')+'.<br>Last regenerated: '+esc(when)+'.<br>Landing pages in sitemap: '+lp+'.';
+          var mu=$('gsi-map-url'); if(mu&&j.fullUrl) mu.textContent=j.fullUrl;
+        }catch(e){ if(el) el.textContent='Could not load sitemap details.'; }
+      }
+      var gr=$('gsi-regen-map');
+      if(gr) gr.addEventListener('click',async function(){
+        if(!currentSiteId) return;
+        var msg=$('gsi-regen-msg');
+        gr.disabled=true;
+        if(msg){ msg.style.color='var(--ink-faint)'; msg.textContent='Saving pages and rebuilding\u2026'; }
+        try{
+          await lpSaveDB();
+          var token=await cwToken();
+          var r=await fetch('/api/site/sitemap',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(token||'')},body:JSON.stringify({siteId:currentSiteId,action:'regenerate'})});
+          var j=await r.json();
+          if(j.ok){
+            if(msg){ msg.style.color='#0a7d33'; msg.textContent='Sitemap updated \u2014 '+(j.counts&&j.counts.total||0)+' URLs ('+(j.counts&&j.counts.landingPages||0)+' landing pages). Resubmit in Search Console if needed.'; }
+            gsiLoadSitemap();
+          } else {
+            if(msg){ msg.style.color='#b42318'; msg.textContent=(j&&j.error)||'Regenerate failed'; }
+          }
+        }catch(e){ if(msg){ msg.style.color='#b42318'; msg.textContent='Regenerate failed'; } }
+        finally{ gr.disabled=false; }
+      });
+      if(currentSiteId) gsiLoadSitemap();
       document.querySelectorAll('.gsi-copy-rec').forEach(function(b){ b.addEventListener('click',function(){ lpCopyText(b.getAttribute('data-copy')||'','Record'); }); });
       function gsiMethod(){ var r=document.querySelector('input[name="gsi-method"]:checked'); return r?r.value:'meta'; }
       function gsiShowPanel(){

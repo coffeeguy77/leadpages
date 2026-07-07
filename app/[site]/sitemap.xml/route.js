@@ -2,7 +2,7 @@
 // Per-tenant sitemap on the platform host: https://leadpages.com.au/{slug}/sitemap.xml
 
 import { getSiteBySlug } from '../../../lib/seo/store.js';
-import { buildSiteSitemapUrls, buildSitemapXml } from '../../../lib/seo/sitemap.js';
+import { buildSiteSitemapEntries, buildSitemapXml } from '../../../lib/seo/sitemap.js';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,16 +25,21 @@ export async function GET(request, ctx) {
   if (!site || site.status !== 'live') return notFound();
 
   const url = new URL(request.url);
-  const urls = buildSiteSitemapUrls({
+  const entries = buildSiteSitemapEntries({
     slug: site.slug,
     config: site.config,
     origin: url.origin,
     customDomain: site.customDomain,
   });
 
-  if (!urls.length) return notFound();
+  if (!entries.length) return notFound();
 
-  return new Response(buildSitemapXml(urls), {
-    headers: { 'content-type': 'application/xml', 'cache-control': 'public, s-maxage=86400' },
+  const generated = (site.config && site.config.sitemapGeneratedAt) || '';
+  return new Response(buildSitemapXml(entries), {
+    headers: {
+      'content-type': 'application/xml',
+      'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      ...(generated ? { 'x-sitemap-generated': generated } : {}),
+    },
   });
 }
