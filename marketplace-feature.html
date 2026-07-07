@@ -74,6 +74,10 @@ article{padding:20px 0 88px}
 .pg-band h2{font-size:clamp(26px,3.5vw,36px);margin:8px 0 10px}
 .pg-band p{color:var(--mut);font-size:16px;line-height:1.55}
 .imgblk{border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.blk-shot .blk-eyebrow{margin-bottom:8px}
+.blk-shot .imgblk{border-radius:18px;box-shadow:0 20px 50px rgba(46,42,43,.12);border:1px solid #E8DED8}
+.blk-shot .imgblk img{width:100%;display:block}
+.blk-shot .cap{font-size:14.5px;color:var(--mut);margin-top:12px;text-align:center;max-width:52ch;margin-left:auto;margin-right:auto;line-height:1.5}
 .cap{font-size:13.5px;color:var(--mut);margin-top:8px;text-align:center}
 .gal{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 @media(max-width:640px){.gal{grid-template-columns:1fr 1fr}}
@@ -299,7 +303,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           +(p.heading?'<h2>'+esc(p.heading)+'</h2>':'')+'<div class="bene">'+items+'</div></div>';
       case 'image':
         var iu=safeUrl(p.url); if(!iu)return '';
-        return '<div class="blk"><div class="imgblk"><img src="'+esc(iu)+'" alt="'+esc(p.alt||'')+'" loading="lazy"></div>'
+        return '<div class="blk blk-shot"><div class="blk-eyebrow">In context</div><div class="imgblk"><img src="'+esc(iu)+'" alt="'+esc(p.alt||'')+'" loading="lazy"></div>'
           +(p.caption?'<div class="cap">'+esc(p.caption)+'</div>':'')+'</div>';
       case 'gallery':
         var gs=(p.images||[]).map(function(g){var u=safeUrl(g.url||g);return u?'<img src="'+esc(u)+'" alt="'+esc(g.alt||'')+'" loading="lazy" data-lb="'+esc(u)+'">':'';}).join('');

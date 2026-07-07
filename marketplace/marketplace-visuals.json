@@ -1,0 +1,113 @@
+{
+  "categoryHeroImages": {
+    "heroes-layout": {
+      "url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80",
+      "alt": "Trade site hero section on a job site"
+    },
+    "core-content": {
+      "url": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1400&h=560&fit=crop&q=80",
+      "alt": "Services and content sections on a trade website"
+    },
+    "social-proof": {
+      "url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
+      "alt": "Team and project proof on a trade site"
+    },
+    "trust-conversion": {
+      "url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
+      "alt": "Trust, credentials and conversion sections"
+    },
+    "social-instagram": {
+      "url": "https://images.unsplash.com/photo-1611162617474-5b21e939e113?w=1400&h=560&fit=crop&q=80",
+      "alt": "Instagram and social feed on a trade site"
+    }
+  },
+  "categoryScreenshots": {
+    "heroes-layout": {
+      "url": "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&h=720&fit=crop&q=80",
+      "alt": "Hero and layout sections",
+      "caption": "Above-the-fold hero and layout blocks on a live LeadPages trade site."
+    },
+    "core-content": {
+      "url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=720&fit=crop&q=80",
+      "alt": "Core content sections",
+      "caption": "Services, reviews and quote sections working together on a client site."
+    },
+    "social-proof": {
+      "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
+      "alt": "Social proof sections",
+      "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
+    },
+    "trust-conversion": {
+      "url": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&h=720&fit=crop&q=80",
+      "alt": "Trust and conversion sections",
+      "caption": "Stats, credentials and offer banners that close the sale."
+    },
+    "social-instagram": {
+      "url": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=720&fit=crop&q=80",
+      "alt": "Instagram integration",
+      "caption": "Instagram grids and project feeds pulled into the site automatically."
+    }
+  },
+  "sectionScreenshots": {
+    "hero": {
+      "url": "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=1200&h=720&fit=crop&q=80",
+      "alt": "Hero banner with headline and CTA",
+      "caption": "Bold headline, highlight text and trust badges above the fold."
+    },
+    "heroSlider": {
+      "url": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&h=720&fit=crop&q=80",
+      "alt": "Image slider hero",
+      "caption": "Rotating slides with overlay copy — ideal for visual trades."
+    },
+    "heroBeforeAfter": {
+      "url": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=720&fit=crop&q=80",
+      "alt": "Before and after hero wipe",
+      "caption": "Drag-to-reveal transformation in the primary viewport."
+    },
+    "splitHero": {
+      "url": "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&h=720&fit=crop&q=80",
+      "alt": "Split hero with activity feed",
+      "caption": "Headline plus live activity feed — built for social proof layouts."
+    },
+    "crew": {
+      "url": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=720&fit=crop&q=80",
+      "alt": "Meet the team section",
+      "caption": "Team cards with photos, roles and specialties — builds residential trust."
+    },
+    "featuredProjects": {
+      "url": "https://res.cloudinary.com/dzx6x1hou/image/upload/c_fill,w_1200,h_720,q_80/leadpages/391656d6-1148-48f2-9ac6-a938595c7449/featuredprojects/image/mqx6b5b7542qs.jpg",
+      "alt": "Project portfolio grid",
+      "caption": "Large project cards with gallery lightbox — from a real builder site (AAM1)."
+    },
+    "proofStream": {
+      "url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&h=720&fit=crop&q=80",
+      "alt": "Proof stream feed",
+      "caption": "Mixed jobs, reviews and before/after cards in one scrolling feed."
+    },
+    "quote": {
+      "url": "https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1200&h=720&fit=crop&q=80",
+      "alt": "Quote form section",
+      "caption": "Lead capture form with configurable fields — submissions go to CRM."
+    },
+    "beforeAfter": {
+      "url": "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=1200&h=720&fit=crop&q=80",
+      "alt": "Before and after gallery",
+      "caption": "Side-by-side transformation pairs for visual trades."
+    },
+    "instaGallery": {
+      "url": "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=1200&h=720&fit=crop&q=80",
+      "alt": "Instagram gallery grid",
+      "caption": "Live Instagram grid embedded on the trade site."
+    },
+    "estimateBuilder": {
+      "url": "https://images.unsplash.com/photo-1554224311-beee415c201f?w=1200&h=720&fit=crop&q=80",
+      "alt": "Estimate builder wizard",
+      "caption": "Interactive ballpark pricing — qualifies leads before they call."
+    },
+    "emergencyAvailability": {
+      "url": "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=1200&h=720&fit=crop&q=80",
+      "alt": "Emergency availability banner",
+      "caption": "After-hours status and schedule — pairs with 24/7 ad campaigns."
+    }
+  }
+}

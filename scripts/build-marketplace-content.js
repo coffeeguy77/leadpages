@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const pp = require('../lib/playground-preset');
+const mv = require('../lib/marketplace-visuals');
 
 const ROOT = path.join(__dirname, '..');
 const MANAGE = path.join(ROOT, 'manage.html');
@@ -63,6 +64,7 @@ function buildFlatSample(sectionKey, tradeSections, tradeLists, meta) {
 }
 
 function buildSellTemplate(key, meta) {
+  const hero = mv.getCategoryHero(key, meta);
   const blocks = [
     {
       block_type: 'rich_text',
@@ -70,7 +72,11 @@ function buildSellTemplate(key, meta) {
         heading: meta.pitchHeading || meta.name,
         text: meta.pitch
       }
-    },
+    }
+  ];
+  const shotBlock = mv.screenshotBlock(key, meta, meta.name);
+  if (shotBlock) blocks.push(shotBlock);
+  blocks.push(
     {
       block_type: 'benefits',
       payload: {
@@ -92,11 +98,12 @@ function buildSellTemplate(key, meta) {
         presets: meta.presets || ['default']
       }
     }
-  ];
+  );
   return {
     name: meta.name,
     tagline: meta.tagline,
     summary: meta.summary,
+    hero_image_url: hero ? hero.url : null,
     blocks
   };
 }
