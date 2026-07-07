@@ -36,23 +36,23 @@
     },
     {
       "source": "/tradies",
-      "destination": "/api/marketing-html?file=tradies.html"
+      "destination": "/tradies.html"
     },
     {
       "source": "/domains",
-      "destination": "/api/marketing-html?file=domains.html"
+      "destination": "/domains.html"
     },
     {
       "source": "/showcase",
-      "destination": "/api/marketing-html?file=showcase.html"
+      "destination": "/showcase.html"
     },
     {
       "source": "/marketplace",
-      "destination": "/api/marketing-html?file=marketplace.html"
+      "destination": "/marketplace.html"
     },
     {
       "source": "/marketplace/:slug",
-      "destination": "/api/marketing-html?file=marketplace-feature.html"
+      "destination": "/marketplace-feature.html"
     },
     {
       "source": "/marketplace-admin",
@@ -64,27 +64,27 @@
     },
     {
       "source": "/start-your-business",
-      "destination": "/api/marketing-html?file=start-your-business.html"
+      "destination": "/start-your-business.html"
     },
     {
       "source": "/resources",
-      "destination": "/api/marketing-html?file=resources.html"
+      "destination": "/resources.html"
     },
     {
       "source": "/resources/:slug",
-      "destination": "/api/marketing-html?file=resource-:slug.html"
+      "destination": "/resource-:slug.html"
     },
     {
       "source": "/find-a-partner",
-      "destination": "/api/marketing-html?file=find-a-partner.html"
+      "destination": "/find-a-partner.html"
     },
     {
       "source": "/partners",
-      "destination": "/api/marketing-html?file=partners.html"
+      "destination": "/partners.html"
     },
     {
       "source": "/partner",
-      "destination": "/api/marketing-html?file=partner.html"
+      "destination": "/partner.html"
     },
     {
       "source": "/partners-admin",
@@ -92,27 +92,27 @@
     },
     {
       "source": "/quote",
-      "destination": "/api/marketing-html?file=quote.html"
+      "destination": "/quote.html"
     },
     {
       "source": "/help",
-      "destination": "/api/marketing-html?file=help.html"
+      "destination": "/help.html"
     },
     {
       "source": "/messages",
-      "destination": "/api/marketing-html?file=messages.html"
+      "destination": "/messages.html"
     },
     {
       "source": "/privacy-policy",
-      "destination": "/api/marketing-html?file=privacy-policy.html"
+      "destination": "/privacy-policy.html"
     },
     {
       "source": "/terms-of-use",
-      "destination": "/api/marketing-html?file=terms-of-use.html"
+      "destination": "/terms-of-use.html"
     },
     {
       "source": "/instagram-data-policy",
-      "destination": "/api/marketing-html?file=instagram-data-policy.html"
+      "destination": "/instagram-data-policy.html"
     },
     {
       "source": "/",
@@ -122,7 +122,7 @@
           "value": "^(www\\.)?leadpages\\.(webculture\\.au|com\\.au)$"
         }
       ],
-      "destination": "/api/marketing-html?file=home.html"
+      "destination": "/home.html"
     },
     {
       "source": "/",

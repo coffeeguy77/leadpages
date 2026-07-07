@@ -614,7 +614,7 @@ module.exports = async (req, res) => {
     // not a tenant page. Bounce to the static index so we never shadow it.
     if (!slug && (!host || PRIMARY_HOSTS.includes(host))) {
       res.statusCode = 302;
-      res.setHeader('location', '/index.html');
+      res.setHeader('location', '/home.html');
       return res.end();
     }
 
