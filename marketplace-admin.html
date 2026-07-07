@@ -103,8 +103,12 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
   <div id="view-admin" class="hidden">
     <div class="row" style="justify-content:space-between;margin-bottom:16px">
       <h1>Marketplace catalogue</h1>
-      <a class="btn ghost sm" href="/marketplace" target="_blank" rel="noopener">View public page &rarr;</a>
+      <div class="row">
+        <button class="btn sm ghost" id="setup-all-btn" type="button">Set up all apps</button>
+        <a class="btn ghost sm" href="/marketplace" target="_blank" rel="noopener">View public page &rarr;</a>
+      </div>
     </div>
+    <p class="note" id="setup-all-status" style="margin:-8px 0 14px"></p>
 
     <div class="tabbtns">
       <button id="tab-feats" class="on">Features</button>
@@ -262,6 +266,41 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
   $('signout').addEventListener('click',signout);
   $('denied-signout').addEventListener('click',signout);
   sb.auth.onAuthStateChange(function(_e,sess){if(sess&&!$('view-login').classList.contains('hidden'))boot();});
+
+  $('setup-all-btn').addEventListener('click', async function() {
+    if (!confirm('Set up all 37 marketplace apps?\n\nThis will create/update catalog features, page blocks (sell copy + playground), app_registry rows and demo presets.')) return;
+    var status = $('setup-all-status');
+    var btn = $('setup-all-btn');
+    status.textContent = '';
+    btn.disabled = true;
+    btn.textContent = 'Setting up…';
+    try {
+      var sess = (await sb.auth.getSession()).data.session;
+      if (!sess) { status.textContent = 'Sign in required.'; return; }
+      var r = await fetch('/api/marketplace-setup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + sess.access_token
+        },
+        body: JSON.stringify({ action: 'setup_all' })
+      });
+      var j = await r.json();
+      if (!r.ok) { status.textContent = j.error || 'Setup failed.'; return; }
+      var res = j.result || {};
+      status.textContent = 'Done — ' + (res.features && res.features.length || 0) + ' features, '
+        + (res.apps || 0) + ' apps, ' + (res.presets || 0) + ' demo presets.'
+        + (res.errors && res.errors.length ? ' (' + res.errors.length + ' errors — check console)' : '');
+      if (res.errors && res.errors.length) console.warn('Marketplace setup errors', res.errors);
+      loadAll();
+    } catch (err) {
+      status.textContent = 'Setup failed.';
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Set up all apps';
+    }
+  });
 
   /* ---------- data ---------- */
   async function loadAll(){

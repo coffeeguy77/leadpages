@@ -4,8 +4,10 @@
  *
  * Source of truth for marketing copy: marketplace/app-content.json
  * Regenerate outputs: node scripts/build-marketplace-content.js
+ * Seed catalog + apps to DB: node scripts/seed-marketplace-catalog.js
+ *   (or Marketplace Admin → "Set up all apps")
  *
- * Apply to catalog: Marketplace Admin → feature → Page → "Apply sell template".
+ * Apply to one feature: Marketplace Admin → feature → Page → "Apply sell template".
  *
  * Usage: node scripts/seed-marketplace-sell-content.js
  */
