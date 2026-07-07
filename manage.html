@@ -3070,17 +3070,53 @@ function heroCtaCard(c){
     var demoOn=!!(sref&&sref.is_demo);
     var _cfgSeo=c0();
     var _gsvVal=((_cfgSeo&&_cfgSeo.googleSiteVerification)||'').trim();
+    var _gsvMethod=((_cfgSeo&&_cfgSeo.googleVerificationMethod)||'meta');
+    var _cnameHost=((_cfgSeo&&_cfgSeo.googleVerificationCnameHost)||'').trim();
+    var _cnameTarget=((_cfgSeo&&_cfgSeo.googleVerificationCnameTarget)||'').trim();
+    var _hasDom=!!((currentCustomDomain||'').trim());
     var _propUrl=lpLiveUrl();
     var _mapUrl=lpSitemapUrl();
+    var _domainProp=_hasDom?('https://'+((currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,''))+'/'):'';
+    var _txtFull=_gsvVal?(/^google-site-verification=/i.test(_gsvVal)?_gsvVal:('google-site-verification='+_gsvVal)):('');
     var _mono='font-family:ui-monospace,Menlo,monospace;font-size:12.5px;word-break:break-all;background:var(--soft,#f1f1ee);border:1px solid var(--line);border-radius:8px;padding:10px 12px;';
-    var searchCard='<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Search &amp; indexing</h2><p class="lede" style="margin:0 0 14px;">Verify site ownership in <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>, then submit your sitemap so Google can discover your pages.</p>'
-      +'<p class="lede" style="margin:0 0 6px;font-weight:600;">Property URL <span class="hint">(add this as a URL-prefix property in Search Console)</span></p>'
-      +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px;"><code id="gsi-prop" style="'+_mono+'flex:1;min-width:200px;">'+esc(_propUrl||'(publish site first)')+'</code><button type="button" class="btn ghost sm" id="gsi-copy-prop"'+( _propUrl?'':' disabled')+'>Copy</button></div>'
-      +'<p class="lede" style="margin:0 0 6px;font-weight:600;">Sitemap URL <span class="hint">(submit under Sitemaps after verification)</span></p>'
+    var _recRow=function(lbl,val,id){ return '<div style="margin-bottom:10px;"><div class="hint" style="font-weight:600;margin-bottom:4px;">'+lbl+'</div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;"><code'+(id?' id="'+id+'"':'')+' style="'+_mono+'flex:1;min-width:180px;">'+esc(val||'—')+'</code>'+(val?'<button type="button" class="btn ghost sm gsi-copy-rec" data-copy="'+esc(val)+'">Copy</button>':'')+'</div></div>'; };
+    var searchCard='<div class="card" style="margin-bottom:20px;" id="gsi-card"><h2 style="margin:0 0 4px;">Search &amp; indexing</h2><p class="lede" style="margin:0 0 14px;">Verify ownership in <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>, then submit your sitemap.</p>'
+      +'<p class="lede" style="margin:0 0 6px;font-weight:600;">Sitemap URL</p>'
       +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px;"><code id="gsi-sitemap" style="'+_mono+'flex:1;min-width:200px;">'+esc(_mapUrl||'(publish site first)')+'</code><button type="button" class="btn ghost sm" id="gsi-copy-map"'+( _mapUrl?'':' disabled')+'>Copy</button></div>'
-      +'<div class="f" style="margin-bottom:10px;"><label>Google verification code <span class="hint">HTML tag method — paste only the <code>content</code> value from Search Console</span></label><input type="text" id="gsi-verify" class="tin" placeholder="e.g. AbCdEfGh1234567890" value="'+esc(_gsvVal)+'"></div>'
-      +'<p class="hint" style="margin:0 0 12px;">In Search Console choose <strong>HTML tag</strong> verification, copy the code inside <code>content=&quot;...&quot;</code>, paste it here, save, then click Verify in Google. We inject the meta tag on your live homepage, suburb pages, and landing pages.</p>'
-      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;"><button type="button" class="btn" id="gsi-save">Save &amp; publish</button><span id="gsi-saved" style="font-size:13px;color:#0a7d33;"></span></div></div>';
+      +'<p class="lede" style="margin:0 0 8px;font-weight:600;">Verification method</p>'
+      +'<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">'
+      +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;"><input type="radio" name="gsi-method" value="meta"'+(_gsvMethod==='meta'?' checked':'')+'> <span><strong>HTML meta tag</strong> <span class="hint">— easiest; works on platform URLs and custom domains. URL-prefix property in Search Console.</span></span></label>'
+      +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;'+(_hasDom?'':' opacity:.55')+'"><input type="radio" name="gsi-method" value="vercel-txt"'+(_gsvMethod==='vercel-txt'?' checked':'')+(_hasDom?'':' disabled')+'> <span><strong>DNS TXT via Vercel</strong> <span class="hint">— when nameservers point to Vercel (not Dreamscape). Domain property in Search Console.</span></span></label>'
+      +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;'+(_hasDom?'':' opacity:.55')+'"><input type="radio" name="gsi-method" value="manual-txt"'+(_gsvMethod==='manual-txt'?' checked':'')+(_hasDom?'':' disabled')+'> <span><strong>DNS TXT (manual)</strong> <span class="hint">— copy the record to your DNS host or registrar.</span></span></label>'
+      +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;'+(_hasDom?'':' opacity:.55')+'"><input type="radio" name="gsi-method" value="cname"'+(_gsvMethod==='cname'?' checked':'')+(_hasDom?'':' disabled')+'> <span><strong>DNS CNAME</strong> <span class="hint">— when Google offers a CNAME record instead of TXT.</span></span></label>'
+      +'</div>'
+      +(_hasDom?'':'<p class="hint" style="margin:0 0 12px;padding:10px 12px;background:var(--soft,#f1f1ee);border-radius:8px;">DNS methods need a <strong>custom domain</strong> on this site (Settings → Site details). For <code>leadpages.com.au/your-name</code> only, use <strong>HTML meta tag</strong>.</p>')
+      +'<div id="gsi-panel-meta"' +(_gsvMethod!=='meta'?' hidden':'')+'>'
+      +'<p class="lede" style="margin:0 0 6px;">Property URL <span class="hint">(URL-prefix in Search Console)</span></p>'
+      +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px;"><code id="gsi-prop" style="'+_mono+'flex:1;min-width:200px;">'+esc(_propUrl||'(publish site first)')+'</code><button type="button" class="btn ghost sm" id="gsi-copy-prop"'+( _propUrl?'':' disabled')+'>Copy</button></div>'
+      +'<div class="f" style="margin-bottom:8px;"><label>Verification code <span class="hint">paste the <code>content</code> value from the HTML tag</span></label><input type="text" id="gsi-verify" class="tin" placeholder="e.g. AbCdEfGh1234567890" value="'+esc(_gsvVal)+'"></div>'
+      +'<p class="hint" style="margin:0;">We inject the meta tag on your live pages after you save &amp; publish.</p></div>'
+      +'<div id="gsi-panel-vercel-txt"' +(_gsvMethod!=='vercel-txt'?' hidden':'')+'>'
+      +'<p class="lede" style="margin:0 0 6px;">Domain property <span class="hint">(add in Search Console)</span></p>'
+      +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px;"><code style="'+_mono+'flex:1;min-width:200px;">'+esc(_domainProp)+'</code><button type="button" class="btn ghost sm gsi-copy-rec" data-copy="'+esc(_domainProp)+'">Copy</button></div>'
+      +'<div class="f" style="margin-bottom:10px;"><label>TXT value from Google <span class="hint">full string or token only</span></label><input type="text" id="gsi-txt-val" class="tin" placeholder="google-site-verification=…" value="'+esc(_gsvVal)+'"></div>'
+      +'<p class="hint" style="margin:0 0 10px;">Nameservers must be on <strong>Vercel DNS</strong> (e.g. <code>ns1.vercel-dns.com</code>) — not Dreamscape. Dreamscape advanced DNS is a paid add-on; most connected domains use Vercel instead.</p>'
+      +'<div id="gsi-vercel-txt-preview" style="margin-bottom:10px;">'+_recRow('Type','TXT')+_recRow('Name / host','@ (root)','gsi-txt-name')+_recRow('Value',_txtFull||'(enter code above)','gsi-txt-value')+'</div>'
+      +'<button type="button" class="btn ghost" id="gsi-push-vercel-txt">Add TXT to Vercel DNS</button> <span id="gsi-vercel-txt-msg" class="hint"></span></div>'
+      +'<div id="gsi-panel-manual-txt"' +(_gsvMethod!=='manual-txt'?' hidden':'')+'>'
+      +'<p class="lede" style="margin:0 0 6px;">Domain property</p>'
+      +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px;"><code style="'+_mono+'flex:1;min-width:200px;">'+esc(_domainProp)+'</code><button type="button" class="btn ghost sm gsi-copy-rec" data-copy="'+esc(_domainProp)+'">Copy</button></div>'
+      +'<div class="f" style="margin-bottom:10px;"><label>TXT value from Google</label><input type="text" id="gsi-manual-txt-val" class="tin" placeholder="google-site-verification=…" value="'+esc(_gsvVal)+'"></div>'
+      +'<div id="gsi-manual-txt-preview">'+_recRow('Type','TXT')+_recRow('Name / host','@')+_recRow('Value',_txtFull||'(enter code above)','gsi-manual-txt-preview-val')+'</div>'
+      +'<p class="hint" style="margin:10px 0 0;">Add this at your DNS host (Vercel, registrar, Cloudflare, etc.), wait a few minutes, then verify in Search Console.</p></div>'
+      +'<div id="gsi-panel-cname"' +(_gsvMethod!=='cname'?' hidden':'')+'>'
+      +'<p class="lede" style="margin:0 0 6px;">Domain property</p>'
+      +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px;"><code style="'+_mono+'flex:1;min-width:200px;">'+esc(_domainProp)+'</code><button type="button" class="btn ghost sm gsi-copy-rec" data-copy="'+esc(_domainProp)+'">Copy</button></div>'
+      +'<div class="row"><div class="f"><label>CNAME host <span class="hint">subdomain Google gives you</span></label><input type="text" id="gsi-cname-host" class="tin" placeholder="e.g. abc123" value="'+esc(_cnameHost)+'"></div><div class="f"><label>CNAME target</label><input type="text" id="gsi-cname-target" class="tin" placeholder="e.g. gv-….googlehosted.com" value="'+esc(_cnameTarget)+'"></div></div>'
+      +'<div id="gsi-cname-preview" style="margin:10px 0;">'+_recRow('Type','CNAME')+_recRow('Name / host',_cnameHost||'(enter host)','gsi-cname-prev-host')+_recRow('Target',_cnameTarget||'(enter target)','gsi-cname-prev-target')+'</div>'
+      +'<button type="button" class="btn ghost" id="gsi-push-vercel-cname">Add CNAME to Vercel DNS</button> <span id="gsi-vercel-cname-msg" class="hint"></span>'
+      +'<p class="hint" style="margin:10px 0 0;">Or add the CNAME manually at your DNS host if not on Vercel nameservers.</p></div>'
+      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);"><button type="button" class="btn" id="gsi-save">Save &amp; publish</button><span id="gsi-saved" style="font-size:13px;color:#0a7d33;"></span></div></div>';
     if(!document.getElementById('settings-page-css')){ var s=document.createElement('style'); s.id='settings-page-css'; s.textContent='#settings-page{position:fixed;inset:0;z-index:9998;background:rgba(16,22,32,.55);overflow:auto;padding:32px 16px;}#settings-page .sp-card{max-width:880px;margin:0 auto;background:var(--bg,#faf9f6);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:26px 26px 30px;}#settings-page .sp-del{border:1px solid #f0c8c2;background:#fff;color:#b42318;border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer}#settings-page .sp-del:disabled{opacity:.5;cursor:default}#settings-page .sp-del.armed{background:#b42318;color:#fff;border-color:#b42318}#settings-page .sp-lock{border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:15px}#settings-page .danger{border:1px solid #f0c8c2;border-radius:14px;background:#fdf3f1;}'; document.head.appendChild(s); }
     var p=document.createElement('div'); p.id='settings-page';
     var detailFields='<div class="card" style="margin-bottom:20px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Site details</h2><label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="set-demo"'+(demoOn?' checked':'')+'> Demo site</label></div><p class="lede">Business identity and contact \u2014 used across the page and the call buttons.</p>'
@@ -3116,14 +3152,106 @@ function heroCtaCard(c){
     (function(){
       var cp=$('gsi-copy-prop'); if(cp) cp.addEventListener('click',function(){ lpCopyText(_propUrl,'Property URL'); });
       var cm=$('gsi-copy-map'); if(cm) cm.addEventListener('click',function(){ lpCopyText(_mapUrl,'Sitemap URL'); });
-      var gv=$('gsi-verify'), gs=$('gsi-save'), gok=$('gsi-saved');
-      if(gv&&gs){ gs.addEventListener('click',async function(){
+      document.querySelectorAll('.gsi-copy-rec').forEach(function(b){ b.addEventListener('click',function(){ lpCopyText(b.getAttribute('data-copy')||'','Record'); }); });
+      function gsiMethod(){ var r=document.querySelector('input[name="gsi-method"]:checked'); return r?r.value:'meta'; }
+      function gsiShowPanel(){
+        var m=gsiMethod();
+        ['meta','vercel-txt','manual-txt','cname'].forEach(function(k){ var el=$('gsi-panel-'+k); if(el) el.hidden=(m!==k); });
+      }
+      function gsiNormTxt(v){
+        v=(v||'').trim(); if(!v) return '';
+        return /^google-site-verification=/i.test(v)?v:('google-site-verification='+v);
+      }
+      function gsiToken(v){
+        v=(v||'').trim(); var m=v.match(/google-site-verification=(.+)/i); return m?m[1].trim():v;
+      }
+      function gsiSyncTxtPreview(){
+        var full=gsiNormTxt((($('gsi-txt-val')&&$('gsi-txt-val').value)||($('gsi-manual-txt-val')&&$('gsi-manual-txt-val').value)||($('gsi-verify')&&$('gsi-verify').value)||''));
+        var tv=$('gsi-txt-value'); if(tv) tv.textContent=full||'(enter code above)';
+        var mv=$('gsi-manual-txt-preview-val'); if(mv) mv.textContent=full||'(enter code above)';
+      }
+      function gsiSyncCnamePreview(){
+        var h=($('gsi-cname-host')&&$('gsi-cname-host').value||'').trim();
+        var t=($('gsi-cname-target')&&$('gsi-cname-target').value||'').trim();
+        var ph=$('gsi-cname-prev-host'); if(ph) ph.textContent=h||'(enter host)';
+        var pt=$('gsi-cname-prev-target'); if(pt) pt.textContent=t||'(enter target)';
+      }
+      document.querySelectorAll('input[name="gsi-method"]').forEach(function(r){ r.addEventListener('change',gsiShowPanel); });
+      ['gsi-verify','gsi-txt-val','gsi-manual-txt-val'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('input',gsiSyncTxtPreview); });
+      var ch=$('gsi-cname-host'), ct=$('gsi-cname-target');
+      if(ch) ch.addEventListener('input',gsiSyncCnamePreview);
+      if(ct) ct.addEventListener('input',gsiSyncCnamePreview);
+      async function gsiApiPost(body){
+        var token=await cwToken();
+        var r=await fetch('/api/site/google-verification',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(token||'')},body:JSON.stringify(body)});
+        return { ok:r.ok, status:r.status, data:await r.json().catch(function(){return{};}) };
+      }
+      var ptxt=$('gsi-push-vercel-txt');
+      if(ptxt) ptxt.addEventListener('click',async function(){
+        var msg=$('gsi-vercel-txt-msg'); if(msg){ msg.style.color='var(--ink-faint)'; msg.textContent='Adding record…'; }
+        ptxt.disabled=true;
+        try{
+          var val=gsiToken(($('gsi-txt-val')&&$('gsi-txt-val').value)||'');
+          if(!val){ if(msg){ msg.style.color='#b42318'; msg.textContent='Enter the verification code first.'; } return; }
+          var c=c0(); c.googleVerificationMethod='vercel-txt'; c.googleSiteVerification=val;
+          await publishToDB();
+          var res=await gsiApiPost({ siteId:currentSiteId, action:'push-vercel-txt', value:val });
+          if(res.ok&&res.data.ok){
+            if(msg){ msg.style.color='#0a7d33'; msg.textContent=res.data.alreadyExists?'TXT record already on Vercel.':'TXT record added on Vercel — verify in Search Console after DNS propagates (usually minutes).'; }
+          } else {
+            if(msg){ msg.style.color='#b42318'; msg.textContent=(res.data&&res.data.error)||('Could not add record (HTTP '+res.status+'). Check VERCEL_TOKEN and that the domain is on Vercel DNS.'); }
+          }
+        }catch(e){ if(msg){ msg.style.color='#b42318'; msg.textContent='Could not add TXT record.'; } }
+        finally{ ptxt.disabled=false; }
+      });
+      var pcname=$('gsi-push-vercel-cname');
+      if(pcname) pcname.addEventListener('click',async function(){
+        var msg=$('gsi-vercel-cname-msg'); if(msg){ msg.style.color='var(--ink-faint)'; msg.textContent='Adding record…'; }
+        pcname.disabled=true;
+        try{
+          var host=(ch&&ch.value||'').trim(), target=(ct&&ct.value||'').trim();
+          if(!host||!target){ if(msg){ msg.style.color='#b42318'; msg.textContent='Enter CNAME host and target from Google.'; } return; }
+          var c=c0(); c.googleVerificationMethod='cname'; c.googleVerificationCnameHost=host; c.googleVerificationCnameTarget=target;
+          await publishToDB();
+          var res=await gsiApiPost({ siteId:currentSiteId, action:'push-vercel-cname', cnameHost:host, cnameTarget:target });
+          if(res.ok&&res.data.ok){
+            if(msg){ msg.style.color='#0a7d33'; msg.textContent=res.data.alreadyExists?'CNAME already on Vercel.':'CNAME added on Vercel — verify in Search Console after DNS propagates.'; }
+          } else {
+            if(msg){ msg.style.color='#b42318'; msg.textContent=(res.data&&res.data.error)||('Could not add CNAME (HTTP '+res.status+').'); }
+          }
+        }catch(e){ if(msg){ msg.style.color='#b42318'; msg.textContent='Could not add CNAME record.'; } }
+        finally{ pcname.disabled=false; }
+      });
+      var gs=$('gsi-save'), gok=$('gsi-saved');
+      if(gs){ gs.addEventListener('click',async function(){
         gs.disabled=true; var o=gs.textContent; gs.textContent='Saving\u2026'; if(gok){ gok.style.color='#0a7d33'; gok.textContent=''; }
-        var c=c0(); var v=(gv.value||'').trim(); if(v) c.googleSiteVerification=v; else delete c.googleSiteVerification;
-        try{ await publishToDB(); gs.textContent='Saved \u2713'; if(gok) gok.textContent='Verification tag is live after publish.'; }
-        catch(e){ gs.textContent='Save failed'; if(gok){ gok.style.color='#b42318'; gok.textContent='Could not save \u2014 try again.'; } }
+        var c=c0(); var m=gsiMethod();
+        c.googleVerificationMethod=m;
+        var raw='';
+        if(m==='meta') raw=($('gsi-verify')&&$('gsi-verify').value)||'';
+        else if(m==='vercel-txt') raw=($('gsi-txt-val')&&$('gsi-txt-val').value)||'';
+        else if(m==='manual-txt') raw=($('gsi-manual-txt-val')&&$('gsi-manual-txt-val').value)||'';
+        else if(m==='cname'){ c.googleVerificationCnameHost=(ch&&ch.value||'').trim(); c.googleVerificationCnameTarget=(ct&&ct.value||'').trim(); raw=''; }
+        var tok=gsiToken(raw);
+        if(tok) c.googleSiteVerification=tok; else delete c.googleSiteVerification;
+        if(m!=='cname'){ delete c.googleVerificationCnameHost; delete c.googleVerificationCnameTarget; }
+        try{
+          await publishToDB();
+          gs.textContent='Saved \u2713';
+          if(gok) gok.textContent=(m==='meta')?'Meta tag is live on published pages.':'Settings saved — complete verification in Search Console.';
+        }catch(e){ gs.textContent='Save failed'; if(gok){ gok.style.color='#b42318'; gok.textContent='Could not save \u2014 try again.'; } }
         setTimeout(function(){ gs.disabled=false; gs.textContent=o; },1800);
       }); }
+      if(_hasDom&&currentSiteId){
+        cwToken().then(function(token){
+          return fetch('/api/site/google-verification?siteId='+encodeURIComponent(currentSiteId),{headers:token?{Authorization:'Bearer '+token}:{}});
+        }).then(function(r){return r.json();}).catch(function(){return null;}).then(function(j){
+          if(!j||!j.ok||!j.vercel) return;
+          if(j.vercel.txtExists){ var tm=$('gsi-vercel-txt-msg'); if(tm&&!tm.textContent) tm.textContent='TXT verification record already on Vercel DNS.'; }
+          if(j.vercel.cnameExists){ var cm2=$('gsi-vercel-cname-msg'); if(cm2&&!cm2.textContent) cm2.textContent='CNAME verification record already on Vercel DNS.'; }
+          if(j.vercel.configured&&!j.vercel.canManageDns){ var tm2=$('gsi-vercel-txt-msg'); if(tm2&&!tm2.textContent) tm2.textContent='Domain not found in Vercel — add it to the LeadPages Vercel project first.'; }
+        });
+      }
     })();
     // wire service starter content
     (function(){ var c=c0(); var ct=(c.trade||'').toLowerCase().trim(); var slug='plumber';

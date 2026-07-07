@@ -62,12 +62,14 @@ export async function GET(request, ctx) {
 
   let html = await loadTemplate();
   html = applyTenantTokens(html, tok, host);
+  const _gsvMethod = (config.googleVerificationMethod || 'meta');
+  const _gsvToken = (config.googleSiteVerification || '').trim();
   html = applySeoHead(html, {
     title,
     description,
     canonical,
     robots: 'index,follow',
-    googleVerification: (config.googleSiteVerification || '').trim() || undefined,
+    googleVerification: (_gsvMethod === 'meta' && _gsvToken) ? _gsvToken : undefined,
   });
   html = applyHero(html, {
     title: merged.sections.hero.title || '',

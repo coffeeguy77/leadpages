@@ -766,7 +766,8 @@ module.exports = async (req, res) => {
     for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
 
     const _gsv = (cfg.googleSiteVerification || '').trim();
-    if (_gsv) {
+    const _gsvMethod = (cfg.googleVerificationMethod || 'meta');
+    if (_gsv && _gsvMethod === 'meta') {
       const _gmeta = '<meta name="google-site-verification" content="' + esc(_gsv) + '">';
       html = /<meta[^>]*name="google-site-verification"[^>]*>/.test(html)
         ? html.replace(/<meta[^>]*name="google-site-verification"[^>]*>/, _gmeta)
