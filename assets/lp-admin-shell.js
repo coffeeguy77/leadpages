@@ -442,9 +442,6 @@
     if (page === 'partners-admin' || document.body.classList.contains('partners-admin-page')) {
       initPartnerTopbar({ topbarSelector: '.top' });
     }
-    if (page === 'partner-dashboard' || document.body.classList.contains('partner-dash-page')) {
-      initPartnerTopbar({ topbarSelector: '.topbar' });
-    }
     if (page === 'apps-admin' || document.body.classList.contains('apps-admin-page')) {
       initPartnerTopbar({ topbarSelector: '.topbar' });
     }

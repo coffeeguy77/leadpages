@@ -272,7 +272,7 @@
       if (global.document.body.getAttribute('data-lp-admin-page')) return false;
       if (global.document.body.classList.contains('lp-cmd-on')) return false;
     }
-    if (/^\/(manage|partner-dashboard|partners-admin|apps-admin|marketplace-admin)(\/|$)/.test(path)) return false;
+    if (/^\/(manage|partner|partners-admin|apps-admin|marketplace-admin)(\/|$)/.test(path)) return false;
     return true;
   }
 

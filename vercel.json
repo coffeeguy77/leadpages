@@ -1,4 +1,11 @@
 {
+  "redirects": [
+    {
+      "source": "/partner-dashboard",
+      "destination": "/partner",
+      "permanent": true
+    }
+  ],
   "crons": [
     {
       "path": "/api/billing/cron",
@@ -21,10 +28,6 @@
     {
       "source": "/manage",
       "destination": "/manage.html"
-    },
-    {
-      "source": "/partner-dashboard",
-      "destination": "/partner-dashboard.html"
     },
     {
       "source": "/partner-onboarding",
