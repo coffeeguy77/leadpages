@@ -39,22 +39,7 @@
     }).join(' ');
   }
 
-  var TRADE_CATS = [
-    ['Plumbing & Drains', ['plumber', 'gas-fitter', 'hot-water', 'blocked-drains', 'leak-detection', 'roof-plumbing', 'waterproofing']],
-    ['Electrical, Solar & Data', ['electrician', 'solar', 'solar-battery', 'ev-charger', 'data-cabling', 'security', 'antenna']],
-    ['Heating, Cooling & Insulation', ['aircon', 'insulation']],
-    ['Building & Structural', ['builder', 'bricklayer', 'carpenter', 'concreter', 'excavation', 'steel-fixing', 'welding', 'scaffolding', 'underpinning', 'stonemason', 'asphalt', 'polished-concrete']],
-    ['Renovations & Interiors', ['bathroom-reno', 'kitchen-reno', 'tiler', 'painter', 'plasterer', 'renderer', 'flooring', 'epoxy-flooring', 'splashbacks', 'cabinet-maker', 'wardrobes', 'staircases', 'ceilings', 'soundproofing', 'shopfitting', 'resurfacing', 'balustrading']],
-    ['Roofing & Exteriors', ['roofer', 'roof-restoration', 'metal-roofing', 'guttering', 'roof-ventilation', 'skylights', 'cladding']],
-    ['Doors, Windows & Locks', ['garage-doors', 'automatic-gates', 'glazier', 'locksmith', 'blinds-awnings']],
-    ['Landscaping & Outdoor', ['landscaper', 'gardener', 'lawn-mowing', 'hedge-trimming', 'arborist', 'stump-grinding', 'irrigation', 'turf', 'synthetic-turf', 'paving', 'decking', 'pergolas', 'fencing', 'retaining-walls', 'kerbing', 'water-features', 'outdoor-kitchens', 'shade-sails', 'carports-sheds']],
-    ['Pools', ['pool-building', 'pool-maintenance', 'glass-pool-fencing']],
-    ['Cleaning', ['house-cleaning', 'carpet-cleaning', 'window-cleaning', 'end-of-lease-cleaning', 'oven-cleaning', 'tile-grout-cleaning', 'pressure-washing', 'gutter-cleaning']],
-    ['Pest, Restoration & Hazard', ['pest-control', 'mould-removal', 'water-damage', 'fire-restoration', 'storm-damage', 'asbestos-removal', 'asbestos-roof']],
-    ['Waste, Removals & Demolition', ['rubbish-removal', 'skip-bin-hire', 'removalists', 'demolition']],
-    ['Hire & Events', ['party-hire', 'equipment-hire', 'arcade-amusements']],
-    ['Other & Specialist', ['handyman', 'appliance-repair', 'pool-table-restoration']]
-  ];
+  var TRADE_CATS = [["Plumbing & Drains",["plumber","gas-fitter","hot-water","blocked-drains","leak-detection","roof-plumbing","waterproofing","bore-drilling"]],["Electrical, Solar & Data",["electrician","solar","solar-battery","ev-charger","data-cabling","security","antenna","home-automation","solar-panel-cleaning"]],["Heating, Cooling & Insulation",["aircon","insulation","duct-cleaning","chimney-sweep"]],["Building & Structural",["builder","bricklayer","carpenter","concreter","excavation","steel-fixing","welding","scaffolding","underpinning","stonemason","asphalt","polished-concrete","building-inspection"]],["Renovations & Interiors",["bathroom-reno","kitchen-reno","tiler","painter","plasterer","renderer","flooring","epoxy-flooring","splashbacks","cabinet-maker","wardrobes","staircases","ceilings","soundproofing","shopfitting","resurfacing","balustrading"]],["Roofing & Exteriors",["roofer","roof-restoration","metal-roofing","guttering","roof-ventilation","skylights","cladding","gutter-guards"]],["Doors, Windows & Locks",["garage-doors","automatic-gates","glazier","locksmith","blinds-awnings"]],["Landscaping & Outdoor",["landscaper","gardener","lawn-mowing","hedge-trimming","arborist","stump-grinding","irrigation","turf","synthetic-turf","paving","decking","pergolas","fencing","retaining-walls","kerbing","water-features","outdoor-kitchens","shade-sails","carports-sheds"]],["Pools",["pool-building","pool-maintenance","glass-pool-fencing"]],["Cleaning",["house-cleaning","carpet-cleaning","window-cleaning","end-of-lease-cleaning","oven-cleaning","tile-grout-cleaning","pressure-washing","gutter-cleaning"]],["Pest, Restoration & Hazard",["pest-control","mould-removal","water-damage","fire-restoration","storm-damage","asbestos-removal","asbestos-roof"]],["Waste, Removals & Demolition",["rubbish-removal","skip-bin-hire","removalists","demolition"]],["Hire & Events",["party-hire","equipment-hire","arcade-amusements","traffic-control"]],["Other & Specialist",["handyman","appliance-repair","pool-table-restoration","mobile-mechanic","mobile-tyres"]],["Small Business",["cafe","bakery","restaurant","hair-salon","barber","beauty-salon","gym-fitness","childcare","real-estate","accounting"]]];
 
   function tradeLabel(slug) {
     var p = PACKS[slug];
