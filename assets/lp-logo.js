@@ -12,6 +12,8 @@
   var THEME_LOGO = {
     'classic-light': { accent: '#1f7a63', ink: '#13161b' },
     'command-dark': { accent: '#2ecc8f', ink: '#eef2f7' },
+    'neon-pink': { accent: '#ff4da6', ink: '#fce8f3' },
+    'electric-blue': { accent: '#3b9eff', ink: '#e8f2ff' },
     blush: { accent: '#c45c7a', ink: '#2a1f2e' },
     blueprint: { accent: '#2563eb', ink: '#1a2a3a' }
   };
@@ -137,7 +139,7 @@
         if (lum > 175) return false;
       }
       var theme = node.getAttribute && (node.getAttribute('data-lp-site-theme') || node.getAttribute('data-theme'));
-      if (theme === 'command-dark') return true;
+      if (theme === 'command-dark' || theme === 'neon-pink' || theme === 'electric-blue') return true;
       if (node.classList) {
         if (node.classList.contains('nav') || node.classList.contains('sec-gum') || node.tagName === 'FOOTER') return true;
       }

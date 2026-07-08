@@ -12,6 +12,8 @@
   var LOGO_THEME = {
     'classic-light': { accent: '#1f7a63', ink: '#13161b' },
     'command-dark': { accent: '#2ecc8f', ink: '#eef2f7' },
+    'neon-pink': { accent: '#ff4da6', ink: '#fce8f3' },
+    'electric-blue': { accent: '#3b9eff', ink: '#e8f2ff' },
     blush: { accent: '#c45c7a', ink: '#2a1f2e' },
     blueprint: { accent: '#2563eb', ink: '#1a2a3a' }
   };
@@ -34,6 +36,16 @@
     'command-dark': {
       name: 'Command Dark',
       description: 'Premium dark workspace for long sessions.',
+      mode: 'dark'
+    },
+    'neon-pink': {
+      name: 'Neon Pink',
+      description: 'Bold dark workspace with vivid pink accents.',
+      mode: 'dark'
+    },
+    'electric-blue': {
+      name: 'Electric Blue',
+      description: 'Sleek dark workspace with electric blue highlights.',
       mode: 'dark'
     },
     blush: {
@@ -87,7 +99,7 @@
         return 'classic-light';
       }
     }
-    var allowed = ['classic-light', 'command-dark', 'blush', 'blueprint'];
+    var allowed = ['classic-light', 'command-dark', 'neon-pink', 'electric-blue', 'blush', 'blueprint'];
     return allowed.indexOf(theme) >= 0 ? theme : 'classic-light';
   }
 

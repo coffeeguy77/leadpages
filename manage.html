@@ -3500,6 +3500,8 @@ function heroCtaCard(c){
   var AA_THEME_PREVIEWS={
     'classic-light':{bg:'#f6f4ef',panel:'#ffffff',accent:'#1f7a63',text:'#1b2430'},
     'command-dark':{bg:'#12151a',panel:'#1e2430',accent:'#2ecc8f',text:'#eef2f7'},
+    'neon-pink':{bg:'#140f14',panel:'#221a28',accent:'#ff4da6',text:'#fce8f3'},
+    'electric-blue':{bg:'#0f1419',panel:'#1a2433',accent:'#3b9eff',text:'#e8f2ff'},
     'blush':{bg:'#faf3f2',panel:'#ffffff',accent:'#c45c7a',text:'#2a1f2e'},
     'blueprint':{bg:'#f0f4f8',panel:'#ffffff',accent:'#2563eb',text:'#1a2a3a'},
     'system':{bg:'#e8eaed',panel:'#ffffff',accent:'#1f7a63',text:'#1b2430'},
@@ -3519,6 +3521,8 @@ function heroCtaCard(c){
   var AA_SITE_THEME_META={
     'classic-light':{name:'Classic Light',description:'Clean, warm, and familiar.'},
     'command-dark':{name:'Command Dark',description:'Premium dark theme for comfortable reading.'},
+    'neon-pink':{name:'Neon Pink',description:'Bold dark theme with vivid pink accents.'},
+    'electric-blue':{name:'Electric Blue',description:'Sleek dark theme with electric blue highlights.'},
     'blush':{name:'Blush',description:'Soft rose theme for boutique brands.'},
     'blueprint':{name:'Blueprint',description:'Professional blue for service businesses.'},
     'match-brand':{name:'Match brand',description:'Use your existing brand colours.'}
@@ -3774,8 +3778,8 @@ function heroCtaCard(c){
     var va=_vaCfg();
     var activeTab=tab||'workspace';
     var p=document.createElement('div'); p.id='aa-page';
-    var workspaceThemes=['classic-light','command-dark','blush','blueprint','system'];
-    var siteThemes=['classic-light','command-dark','blush','blueprint','match-brand'];
+    var workspaceThemes=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint','system'];
+    var siteThemes=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint','match-brand'];
     var colorSchemes=['brand','rose','steel','autumn','winter','spring','summer','festive','seasonal'];
     p.innerHTML='<div class="aa-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px;flex-wrap:wrap;">'
       +'<div><p class="eyebrow" style="margin:0 0 4px">LeadPages</p><h1 style="margin:0;font:700 26px/1.15 var(--font-display,Georgia),serif">Appearance &amp; Accessibility</h1>'
