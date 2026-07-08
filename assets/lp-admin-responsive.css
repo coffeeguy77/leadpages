@@ -1342,27 +1342,6 @@ body.lp-admin-nav-open {
   }
 }
 
-/* partner-dashboard */
-@media (max-width: 767px) {
-  .partner-dash-page .topbar .inner {
-    height: auto;
-    min-height: 56px;
-    padding: 10px 14px;
-    flex-wrap: wrap;
-  }
-  .partner-dash-page .topbar .who {
-    display: none;
-  }
-  .partner-dash-page .leads-table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: 0 -4px;
-  }
-  .partner-dash-page .leads-table {
-    min-width: 520px;
-  }
-}
-
 /* apps-admin + marketplace-admin */
 @media (max-width: 767px) {
   .apps-admin-page .topbar .wrap,

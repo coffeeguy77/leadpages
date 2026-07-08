@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
 <link rel="shortcut icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
-<title>Partner Dashboard — LeadPages</title>
+<title>Partner — LeadPages</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
@@ -83,6 +83,11 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
 .statusbadge{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:7px}
 .s-active{background:#e6f5ec;color:#1c7a44}.s-pending{background:#fdf4e3;color:var(--amber)}
 .s-under_review{background:#eef0f3;color:#566}.s-suspended,.s-terminated{background:#fbeae7;color:var(--bad)}
+.dir-specs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.dir-spec{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line-strong);border-radius:999px;cursor:pointer;font-size:13px;background:#fff;color:var(--ink);font-weight:600;transition:.15s}
+.dir-spec.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.dir-spec input{width:auto;margin:0;accent-color:var(--brand)}
+select.tin{font-family:var(--font-ui);font-size:15px;padding:11px 13px;border:1px solid var(--line-strong);border-radius:10px;background:#fff;color:var(--ink);width:100%}
 </style>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js" defer></script>
@@ -153,6 +158,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
         <button data-p="clients">📇 My Clients</button>
         <button data-p="demos">🎨 Demos &amp; themes</button>
         <button data-p="mypage">🌐 My page</button>
+        <button data-p="listing">📍 My listing</button>
         <button data-p="payouts">💵 Payouts</button>
         <button data-p="quotes">🧾 Quotes</button>
         <button data-p="commissions">💰 Commissions</button>
@@ -300,6 +306,45 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
           </div>
           <p class="muted" style="margin-top:16px;font-size:13.5px">Your page: <a id="sc-link" href="#" target="_blank" rel="noopener">—</a> · Choose which demos appear from the <strong>Demos &amp; themes</strong> tab ("Show on showcase").</p>
           <p class="muted" style="margin-top:6px;font-size:12.5px">The logo, headline, accent and intro above are used for a simple starter page — once you design and publish your homepage in the builder, that takes over.</p>
+        </div>
+      </section>
+
+      <!-- Partner directory listing -->
+      <section class="panel" data-panel="listing">
+        <h2>My listing</h2>
+        <p class="sub">Appear on the public <a href="/find-a-partner" target="_blank" rel="noopener">Find a Partner</a> page so business owners can find a local web designer near them.</p>
+        <div class="card" style="padding:24px;max-width:720px">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+            <span class="muted" style="font-size:14px">Directory status</span>
+            <span id="dir-status-badge"></span>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="dir-biz">Business / trading name</label><input id="dir-biz" type="text" autocomplete="organization"></div>
+            <div class="field"><label for="dir-suburb">Suburb</label><input id="dir-suburb" type="text"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="dir-state">State</label>
+              <select id="dir-state" class="tin"><option value="">Choose…</option>
+                <option>ACT</option><option>NSW</option><option>VIC</option><option>QLD</option>
+                <option>SA</option><option>WA</option><option>TAS</option><option>NT</option>
+              </select>
+            </div>
+            <div class="field"><label for="dir-postcode">Postcode</label><input id="dir-postcode" type="text" maxlength="4"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="dir-email">Contact email (public)</label><input id="dir-email" type="email"></div>
+            <div class="field"><label for="dir-phone">Phone (optional)</label><input id="dir-phone" type="tel"></div>
+          </div>
+          <div class="field"><label for="dir-website">Website or demo URL</label><input id="dir-website" type="url" placeholder="https://www.yourbusiness.com.au"></div>
+          <div class="field"><label for="dir-blurb">About you <span class="muted" style="font-weight:500">(2–3 sentences — who you help, where you work)</span></label><textarea id="dir-blurb" rows="3"></textarea></div>
+          <div class="field"><label>Specialties <span class="muted" style="font-weight:500">(tick up to 8)</span></label><div id="dir-specs" class="dir-specs"></div></div>
+          <div class="save-row" style="flex-wrap:wrap">
+            <button class="btn btn-brand" id="dir-save" type="button">Save listing</button>
+            <button class="btn hidden" id="dir-hide" type="button">Hide from directory</button>
+            <button class="btn hidden" id="dir-publish" type="button">Publish listing</button>
+            <span class="notice bad hidden" id="dir-err" style="margin:0;padding:8px 12px"></span>
+            <span class="saved" id="dir-ok">Saved ✓</span>
+          </div>
         </div>
       </section>
 
@@ -492,6 +537,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     document.querySelectorAll('#nav button[data-p]').forEach(function(x){ x.classList.toggle('on', x===b); });
     var p=b.getAttribute('data-p');
     document.querySelectorAll('.panel').forEach(function(s){ s.classList.toggle('on', s.getAttribute('data-panel')===p); });
+    if(p==='listing') loadDirListing();
   });
   var __hl=document.getElementById('help-link'); if(__hl) __hl.onclick=function(){ window.open('/help','_blank','noopener'); };
   var __ml=document.getElementById('messages-link'); if(__ml) __ml.onclick=function(){ window.open('/messages','_blank','noopener'); };
@@ -547,6 +593,8 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     fillProfile(state.profile);
     show('view-dash');
     wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage(); loadPayouts(); loadQuotes(); loadMsgBadge();
+    var startPanel=(new URLSearchParams(location.search)).get('panel');
+    if(startPanel) gotoPanel(startPanel);
   }
 
   async function loadPartner(session){
@@ -579,6 +627,7 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
   function gotoPanel(name){
     document.querySelectorAll('#nav button[data-p]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-p')===name); });
     document.querySelectorAll('.panel').forEach(function(s){ s.classList.toggle('on', s.getAttribute('data-panel')===name); });
+    if(name==='listing') loadDirListing();
   }
   function renderOverview(){
     var total=clients.length, active=clients.filter(function(c){return c.status==='live';}).length;
@@ -1261,6 +1310,101 @@ label{font-weight:600;font-size:13px;display:block;margin-bottom:5px}
     sel.innerHTML='<option value="">No default</option>'+plans.map(function(pl){ return '<option value="'+esc(pl.key)+'">'+esc(pl.name)+' \u2014 $'+Math.round((pl.monthly_amount||0)/100)+'/mo</option>'; }).join('');
     sel.value=pf.default_plan_key||'';
     renderCalc();
+  }
+
+  // ---------- Partner directory listing (Find a Partner) ----------
+  var DIR_SPECS=['Trades & construction','Salons & beauty','Cafes & hospitality',
+    'Mortgage brokers','Photographers','Personal trainers','Retail & shops',
+    'Health & wellness','Professional services','Florists','Cleaners','Removalists'];
+  var dirListing=null, dirWired=false;
+
+  function renderDirSpecs(selected){
+    selected=selected||[];
+    var box=document.getElementById('dir-specs'); if(!box) return;
+    box.innerHTML=DIR_SPECS.map(function(s){
+      var chk=selected.indexOf(s)>=0;
+      return '<label class="dir-spec'+(chk?' on':'')+'"><input type="checkbox" value="'+esc(s)+'"'+(chk?' checked':'')+'> '+esc(s)+'</label>';
+    }).join('');
+    box.querySelectorAll('.dir-spec input').forEach(function(cb){
+      cb.addEventListener('change',function(){
+        cb.parentElement.classList.toggle('on', cb.checked);
+      });
+    });
+  }
+
+  function fillDirForm(l){
+    var pf=state.profile||{};
+    document.getElementById('dir-biz').value=(l&&l.business_name)||state.partner.display_name||'';
+    document.getElementById('dir-suburb').value=(l&&l.suburb)||'';
+    document.getElementById('dir-state').value=(l&&l.state)||'';
+    document.getElementById('dir-postcode').value=(l&&l.postcode)||'';
+    document.getElementById('dir-email').value=(l&&l.email)||pf.support_email||state.partner.email||'';
+    document.getElementById('dir-phone').value=(l&&l.phone)||pf.support_phone||state.partner.phone||'';
+    document.getElementById('dir-website').value=(l&&l.website_url)||'';
+    document.getElementById('dir-blurb').value=(l&&l.blurb)||pf.bio||'';
+    renderDirSpecs((l&&l.specialties)||[]);
+    document.getElementById('dir-hide').classList.toggle('hidden',!(l&&l.is_live));
+    document.getElementById('dir-publish').classList.toggle('hidden',!!(l&&l.is_live));
+    var badge=document.getElementById('dir-status-badge');
+    if(badge){
+      badge.innerHTML=(l&&l.is_live)
+        ?'<span class="statusbadge s-active">Live on directory</span>'
+        :'<span class="statusbadge s-pending">Hidden</span>';
+    }
+  }
+
+  async function loadDirListing(){
+    if(!state.partner) return;
+    if(!dirWired){
+      dirWired=true;
+      document.getElementById('dir-save').addEventListener('click',function(){ saveDirListing('save'); });
+      document.getElementById('dir-hide').addEventListener('click',function(){ saveDirListing('hide'); });
+      document.getElementById('dir-publish').addEventListener('click',function(){ saveDirListing('publish'); });
+    }
+    try{
+      var r=await fetch('/api/partner-directory-self',{ headers: await authHeader() });
+      var j=await r.json();
+      dirListing=j.listing||null;
+      fillDirForm(dirListing);
+    }catch(_e){
+      fillDirForm(null);
+    }
+  }
+
+  async function saveDirListing(action){
+    var err=document.getElementById('dir-err'); var ok=document.getElementById('dir-ok');
+    err.classList.add('hidden'); ok.classList.remove('show');
+    var btnId=action==='hide'?'dir-hide':action==='publish'?'dir-publish':'dir-save';
+    var btn=document.getElementById(btnId); if(btn) btn.disabled=true;
+    var specs=[];
+    document.querySelectorAll('#dir-specs input[type=checkbox]:checked').forEach(function(cb){ specs.push(cb.value); });
+    try{
+      var r=await fetch('/api/partner-directory-self',{
+        method:'POST',
+        headers:Object.assign({'content-type':'application/json'}, await authHeader()),
+        body:JSON.stringify({
+          action:action,
+          business_name:document.getElementById('dir-biz').value.trim(),
+          suburb:document.getElementById('dir-suburb').value.trim(),
+          state:document.getElementById('dir-state').value,
+          postcode:document.getElementById('dir-postcode').value.trim(),
+          email:document.getElementById('dir-email').value.trim(),
+          phone:document.getElementById('dir-phone').value.trim(),
+          website_url:document.getElementById('dir-website').value.trim(),
+          blurb:document.getElementById('dir-blurb').value.trim(),
+          specialties:specs
+        })
+      });
+      var j=await r.json();
+      if(btn) btn.disabled=false;
+      if(!j.ok){ err.textContent=j.error||'Could not save listing.'; err.classList.remove('hidden'); return; }
+      ok.classList.add('show'); setTimeout(function(){ ok.classList.remove('show'); },1800);
+      await loadDirListing();
+    }catch(_e){
+      if(btn) btn.disabled=false;
+      err.textContent='Network error — please try again.';
+      err.classList.remove('hidden');
+    }
   }
 
   async function boot(){

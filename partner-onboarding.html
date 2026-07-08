@@ -100,7 +100,7 @@ a{color:var(--brand);font-weight:600}
   <div class="inner">
     <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png" alt="LeadPages">
     <span class="sp"></span>
-    <a href="/partner-dashboard">Dashboard</a>
+    <a href="/partner">Dashboard</a>
     <a href="/manage">Editor</a>
     <button id="top-so">Sign out</button>
   </div>
@@ -281,7 +281,7 @@ a{color:var(--brand);font-weight:600}
         +'<h2>You\'re set up and ready to go</h2>'
         +'<p>Every onboarding step is done. Your partner account is fully configured. Go get your first (or next) client.</p>'
         +'<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'
-        +'<a class="btn primary" href="/partner-dashboard">Go to dashboard</a>'
+        +'<a class="btn primary" href="/partner">Go to dashboard</a>'
         +'<a class="btn" href="/resources">Read the guides</a>'
         +'</div></div>';
       return;
@@ -319,7 +319,7 @@ a{color:var(--brand);font-weight:600}
   });
 
   $('top-so').addEventListener('click',function(){
-    sb.auth.signOut().then(function(){location.href='/partner-dashboard';});
+    sb.auth.signOut().then(function(){location.href='/partner';});
   });
 
   /* ── boot ──────────────────────────────────────────── */
@@ -335,7 +335,7 @@ a{color:var(--brand);font-weight:600}
     }catch(e){}
 
     var sess=(await sb.auth.getSession()).data.session;
-    if(!sess){location.href='/partner-dashboard';return;}
+    if(!sess){location.href='/partner';return;}
     USER=sess.user;
 
     // Load onboarding progress
@@ -348,7 +348,7 @@ a{color:var(--brand);font-weight:600}
       currentStep=first>=0?first:0;
       renderSidebar(); renderContent();
     }catch(e){
-      $('step-content').innerHTML='<p style="color:var(--soft)">Could not load your onboarding progress. <a href="/partner-dashboard">Go to dashboard</a></p>';
+      $('step-content').innerHTML='<p style="color:var(--soft)">Could not load your onboarding progress. <a href="/partner">Go to dashboard</a></p>';
     }
   }
 

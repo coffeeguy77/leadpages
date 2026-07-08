@@ -75,14 +75,14 @@ module.exports = async (req, res) => {
     }
 
     // 3. Generate a magic link (OTP) for first login
-    let magicUrl = BASE + '/partner-dashboard';
+    let magicUrl = BASE + '/partner';
     if (userId) {
       try {
         const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
         const r = await fetch(process.env.SUPABASE_URL + '/auth/v1/admin/users/' + userId + '/links', {
           method: 'POST',
           headers: { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'magiclink', redirect_to: BASE + '/partner-dashboard' }),
+          body: JSON.stringify({ type: 'magiclink', redirect_to: BASE + '/partner' }),
         });
         const j = await r.json().catch(() => ({}));
         if (j && j.action_link) magicUrl = j.action_link;
@@ -114,7 +114,7 @@ module.exports = async (req, res) => {
     <li>Find your first real client</li>
   </ol>
   <a href="${magicUrl}" style="display:inline-block;background:#2F413A;color:#fff;text-decoration:none;border-radius:999px;padding:14px 28px;font-weight:700;font-size:16px;margin-bottom:20px">Access your dashboard →</a>
-  <p style="color:#929AA6;font-size:13px;margin:0">This sign-in link expires in 24 hours. After that, visit <a href="${BASE}/partner-dashboard" style="color:#2F413A">${BASE}/partner-dashboard</a> and sign in with your email.</p>
+  <p style="color:#929AA6;font-size:13px;margin:0">This sign-in link expires in 24 hours. After that, visit <a href="${BASE}/partner" style="color:#2F413A">${BASE}/partner</a> and sign in with your email.</p>
   <hr style="border:none;border-top:1px solid #E7E2D8;margin:24px 0">
   <p style="color:#929AA6;font-size:12px;margin:0">LeadPages · Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</p>
 </div></body></html>`,

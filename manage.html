@@ -5148,7 +5148,7 @@ function heroCtaCard(c){
       else mv('lpc-marketplace-admin', tools);
     }
     if(currentRole==='broker'){
-      if(!$('lpc-partner-console')){ var pc=document.createElement('a'); pc.id='lpc-partner-console'; pc.className='btn ghost'; pc.href='/partner-dashboard'; pc.style.textDecoration='none'; pc.textContent='Partner Console'; tools.appendChild(pc); }
+      if(!$('lpc-partner-console')){ var pc=document.createElement('a'); pc.id='lpc-partner-console'; pc.className='btn ghost'; pc.href='/partner'; pc.style.textDecoration='none'; pc.textContent='Partner Console'; tools.appendChild(pc); }
       else mv('lpc-partner-console', tools);
     }
     if(footer){
@@ -5179,14 +5179,14 @@ function heroCtaCard(c){
     var showSiteSwitcher=(currentRole==='super'||currentRole==='broker')&&((allSites||[]).length>1||!!currentSiteId);
     var siteSwBtn=showSiteSwitcher?'<button type="button" id="lpc-site-switcher-dt" class="btn ghost">Site Switcher</button>':'';
     if(currentRole==='super'){
-      acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">&#8592; Dashboard</a>'
+      acct.innerHTML='<a href="/partner" class="btn ghost" style="text-decoration:none;">&#8592; Partner</a>'
         +siteSwBtn
         +'<a href="/partners-admin" class="btn ghost" style="text-decoration:none;">Partner Admin</a>'
         +'<a href="/marketplace-admin" class="btn ghost" style="text-decoration:none;">Marketplace Admin</a>'
         +modeBtn
         +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
     } else if(currentRole==='broker'){
-      acct.innerHTML='<a href="/partner-dashboard" class="btn ghost" style="text-decoration:none;">Partner Console</a>'
+      acct.innerHTML='<a href="/partner" class="btn ghost" style="text-decoration:none;">Partner Console</a>'
         +siteSwBtn
         +modeBtn
         +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
