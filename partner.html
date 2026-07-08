@@ -237,6 +237,25 @@
               <span class="statusbadge s-active" style="font-size:11px;letter-spacing:.04em">AI starter packs</span>
             </div>
             <div class="lp-demo-create-body">
+              <div class="lp-community-trade-band" id="m-new-trade-panel">
+                <div class="lp-community-trade-band-inner">
+                  <div class="lp-community-trade-callout-head">
+                    <span class="lp-community-trade-callout-badge" aria-hidden="true">Community</span>
+                    <div>
+                      <strong class="lp-community-trade-callout-title">Add a missing trade to the library</strong>
+                      <p class="lp-community-trade-callout-lede">Can’t find your trade? Create it once — AI writes starter content and adds it for every partner. Uses API credits.</p>
+                    </div>
+                  </div>
+                  <div class="lp-community-trade-callout-body">
+                    <div class="row2">
+                      <div class="field" style="margin:0"><label for="m-new-trade">New trade name</label><input id="m-new-trade" type="text" placeholder="e.g. Coffee cart hire"></div>
+                      <div class="field" style="margin:0"><label for="m-new-cat">Category (optional)</label><input id="m-new-cat" type="text" placeholder="e.g. Hire &amp; Events"></div>
+                    </div>
+                    <button type="button" class="btn btn-brand" id="m-add-trade" style="width:100%;margin-top:12px">Create trade &amp; select</button>
+                    <p class="muted" id="m-new-trade-msg" style="margin:8px 0 0;font-size:13px"></p>
+                  </div>
+                </div>
+              </div>
               <div class="lp-demo-create-fields">
                 <div class="row2">
                   <div class="field"><label for="m-biz">Business name</label><input id="m-biz" type="text" placeholder="e.g. Hilltop Plumbing"></div>
@@ -259,25 +278,6 @@
                   <input id="m-trade-search" type="text" autocomplete="off" placeholder="Search community library… (try plumber, roofer, cleaner)">
                   <input type="hidden" id="m-pack" value="plumber">
                   <div id="m-picked" class="cs-picked"></div>
-
-                  <div class="lp-community-trade-callout" id="m-new-trade-panel">
-                    <div class="lp-community-trade-callout-head">
-                      <span class="lp-community-trade-callout-badge" aria-hidden="true">Community</span>
-                      <div>
-                        <strong class="lp-community-trade-callout-title">Add a missing trade to the library</strong>
-                        <p class="lp-community-trade-callout-lede">Can’t find your trade below? Create it once — AI writes starter content and adds it for every partner. Uses API credits.</p>
-                      </div>
-                    </div>
-                    <div class="lp-community-trade-callout-body">
-                      <div class="row2">
-                        <div class="field" style="margin:0"><label for="m-new-trade">New trade name</label><input id="m-new-trade" type="text" placeholder="e.g. Coffee cart hire"></div>
-                        <div class="field" style="margin:0"><label for="m-new-cat">Category (optional)</label><input id="m-new-cat" type="text" placeholder="e.g. Hire &amp; Events"></div>
-                      </div>
-                      <button type="button" class="btn btn-brand" id="m-add-trade" style="width:100%;margin-top:12px">Create trade &amp; select</button>
-                      <p class="muted" id="m-new-trade-msg" style="margin:8px 0 0;font-size:13px"></p>
-                    </div>
-                  </div>
-
                   <div class="tp2-wrap lp-demo-trade-picker"><div id="m-cats" class="tp2-cats"></div><div id="m-packlist" class="tp2-list"></div></div>
                 </div>
               </div>
