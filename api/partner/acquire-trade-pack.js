@@ -38,12 +38,17 @@ async function getPartner(token) {
 }
 
 async function getUsedPackIds(packSlug, locSlug) {
-  const { data } = await sb
-    .from('pack_location_usage')
-    .select('pack_id')
-    .eq('pack_slug', packSlug)
-    .eq('location_slug', locSlug);
-  return new Set((data || []).map((r) => r.pack_id));
+  try {
+    const { data, error } = await sb
+      .from('pack_location_usage')
+      .select('pack_id')
+      .eq('pack_slug', packSlug)
+      .eq('location_slug', locSlug);
+    if (error) return new Set();
+    return new Set((data || []).map((r) => r.pack_id));
+  } catch (_e) {
+    return new Set();
+  }
 }
 
 async function recordUsage(row) {
@@ -171,10 +176,39 @@ module.exports = async (req, res) => {
     }
 
     if (!variants.length) {
-      return res.status(404).json({
-        ok: false,
-        error: 'No content pack found for this trade. Use “Add new trade” to create one for the community library.',
-        slug,
+      const tradeLabel = tradeName || (body.tradeLabel || '').trim() || slug.replace(/-/g, ' ');
+      if (!confirmNew) {
+        return res.status(200).json({
+          ok: false,
+          needsConfirmation: true,
+          code: 'NO_PACK',
+          message: `No community content exists for this trade yet. Generate the first shared pack for "${tradeLabel}"? (Uses AI credits — available to all partners.)`,
+          slug,
+          trade: tradeLabel,
+        });
+      }
+      const saved = await generateAndSave(tradeLabel, category, partner.userId, 0);
+      await recordUsage({
+        pack_id: saved.id,
+        pack_slug: saved.slug,
+        pack_variant: saved.variant,
+        location_slug: locSlug,
+        location_label: targetLocation,
+        content_hash: contentHash(saved.pack),
+        partner_id: partner.partnerId,
+      });
+      await sb.from('service_packs').update({ use_count: 1 }).eq('id', saved.id);
+      return res.status(200).json({
+        ok: true,
+        source: 'first_pack',
+        slug: saved.slug,
+        label: saved.label,
+        category: saved.category,
+        variant: saved.variant,
+        packId: saved.id,
+        pack: saved.pack,
+        targetLocation,
+        communityAdded: true,
       });
     }
 

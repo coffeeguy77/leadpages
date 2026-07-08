@@ -1152,6 +1152,8 @@
       var packSlug=(document.getElementById('m-pack')&&document.getElementById('m-pack').value)||'plumber';
       var picker=window.LPTradePicker;
       var industry=picker?picker.tradeType(packSlug):'Plumber';
+      var tradeLabel=picker?picker.tradeLabel(packSlug):'Plumber';
+      var tradeCat=picker?picker.tradeCat(packSlug):'';
       var biz=(document.getElementById('m-biz').value||'').trim();
       var targetLocation=(document.getElementById('m-location').value||'').trim();
       if(!biz){ err.textContent='Business name is required.'; err.classList.remove('hidden'); btn.disabled=false; return; }
@@ -1163,7 +1165,7 @@
         var confirmNew=false, done=false, attempts=0;
         while(!done&&attempts<3){
           attempts++;
-          var gj=await acquireTradePack({packSlug:packSlug,targetLocation:targetLocation,confirmNewGeneration:confirmNew});
+          var gj=await acquireTradePack({packSlug:packSlug,tradeLabel:tradeLabel,category:tradeCat||'General',targetLocation:targetLocation,confirmNewGeneration:confirmNew});
           if(gj&&gj.needsConfirmation){
             if(!window.confirm(gj.message||'Generate fresh content for this location?')){ btn.disabled=false; btn.textContent='Create demo'; return; }
             confirmNew=true;

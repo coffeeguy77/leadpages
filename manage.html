@@ -2010,7 +2010,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   const DEFAULT_TRADE_SECTIONS={
     navMenu:{on:false,style:'pills',align:'left',items:[]},
     textBox:{on:false,eyebrow:'About us',heading:'Built for {{businessName}}',intro:'A short introduction that sets the scene for what follows.',content:'Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.',image:'',imageSide:'right',textAlign:'left'},
-    seoTokens:{trade:'',city:'Canberra',region:'ACT',suburb:'Canberra',enableUrlSuburb:false,updateTitle:false,titleTemplate:'{trade} in {suburb} | {business}'},
+    seoTokens:{trade:'',location:'Canberra',city:'Canberra',region:'ACT',suburb:'Canberra',enableUrlSuburb:false,updateTitle:false,titleTemplate:'{trade} in {location} | {business}'},
     emergencyAvailability:{on:false,heading:'After-hours & emergencies',intro:'We keep the phone on outside business hours for genuine emergencies \u2014 leave your details and we\u2019ll call you straight back.',mode:'schedule',available:true,weekdayOpen:'07:00',weekdayClose:'17:00',satOpen:'08:00',satClose:'14:00',sunOpen:'',sunClose:'',availableLabel:'Available now',responseText:'Fast response — usually within the hour',afterHoursLabel:'After hours',afterHoursText:'Leave your details and we’ll call you first thing.',emergencyText:'Genuine emergency? Call anyway — we run after-hours callouts.',cta:{text:'',action:'call'}},
     serviceAreaMap:{on:false,eyebrow:'Service area',heading:'Suburbs we cover across the ACT',intro:'Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch.'},
     estimateBuilder:{on:false,eyebrow:'Instant estimate',heading:'Get a ballpark price in 30 seconds',intro:'Answer a few quick questions for an indicative range. For an exact price, send the details through and we’ll confirm.',currency:'$',disclaimer:'This is a guide only — your final price is confirmed after a quick on-site inspection.',ctaText:'Get my exact quote'},
@@ -2743,17 +2743,45 @@ function heroCtaCard(c){
     if(key==='plumber'){ data.theme=themeFromPreset('Plumber'); delete data.services; data.sections={}; data.trade='Plumber'; data.layout=getLayout(data.layout).id; persist(); landingSub='details'; renderDetails(); previewApply(); toast('Loaded Plumber starter content'); return; }
     var p=TRADE_PACKS[key]; if(!p) return;
     var biz=(currentBusinessName||'').trim()||'us';
-    function sub(o){ if(typeof o==='string') return o.replace(/\{\{\s*businessName\s*\}\}/g,biz); if(Array.isArray(o)) return o.map(sub); if(o&&typeof o==='object'){ var n={}; for(var k in o) n[k]=sub(o[k]); return n; } return o; }
+    var loc=packLocationFromConfig(data);
     data.theme=themeFromPreset(p.label);
-    data.services=sub(JSON.parse(JSON.stringify(p.services)));
-    data.sections=sub(JSON.parse(JSON.stringify(p.sections)));
+    data.services=packTokenSub(JSON.parse(JSON.stringify(p.services)),biz,loc);
+    data.sections=packTokenSub(JSON.parse(JSON.stringify(p.sections)),biz,loc);
     data.trade=p.tradeType;
     data.layout=getLayout(data.layout).id;
     persist(); landingSub='details'; renderDetails(); previewApply(); toast('Loaded '+p.label+' starter content');
   }
 
+  function packLocationFromConfig(c){
+    var se=c&&c.sections&&c.sections.seoTokens;
+    return (se&&(se.location||se.city||se.suburb))||'your area';
+  }
+  function packTokenSub(o,biz,loc){
+    biz=(biz||'').trim()||'us';
+    loc=(loc||'').trim()||'your area';
+    function walk(v){
+      if(typeof v==='string') return v.replace(/\{\{\s*businessName\s*\}\}/gi,biz).replace(/\{business\}/gi,biz).replace(/\{location\}/gi,loc).replace(/\{city\}/gi,loc).replace(/\{suburb\}/gi,loc).replace(/\{region\}/gi,loc);
+      if(Array.isArray(v)) return v.map(walk);
+      if(v&&typeof v==='object'){ var n={}; for(var k in v) n[k]=walk(v[k]); return n; }
+      return v;
+    }
+    return walk(o);
+  }
+
   /* ===================== Create site ===================== */
-  function packToConfig(key,biz){ var p=TRADE_PACKS[key]; biz=(biz||'').trim()||'us'; function sub(o){ if(typeof o==='string')return o.replace(/\{\{\s*businessName\s*\}\}/g,biz); if(Array.isArray(o))return o.map(sub); if(o&&typeof o==='object'){var n={};for(var k in o)n[k]=sub(o[k]);return n;} return o; } if(!p)return {sections:{},trade:'Plumber',theme:themeFromPreset('Plumber'),layout:'classic'}; return { theme:themeFromPreset(p.label), services:sub(JSON.parse(JSON.stringify(p.services))), sections:sub(JSON.parse(JSON.stringify(p.sections))), trade:p.tradeType, layout:'classic' }; }
+  function packToConfig(key,biz,loc){
+    var p=TRADE_PACKS[key];
+    biz=(biz||'').trim()||'us';
+    loc=(loc||'').trim()||'your area';
+    if(!p) return {sections:{},trade:'Plumber',theme:themeFromPreset('Plumber'),layout:'classic'};
+    return {
+      theme:themeFromPreset(p.label),
+      services:packTokenSub(JSON.parse(JSON.stringify(p.services)),biz,loc),
+      sections:packTokenSub(JSON.parse(JSON.stringify(p.sections)),biz,loc),
+      trade:p.tradeType,
+      layout:'classic'
+    };
+  }
   // ===== Categorised + searchable trade picker (shared by New Site + editor) =====
   (function(){ if(document.getElementById('cs-pack-style'))return; var st=document.createElement('style'); st.id='cs-pack-style';
     st.textContent='.cs-packlist{max-height:230px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px;background:var(--panel)}'
@@ -4801,7 +4829,7 @@ function heroCtaCard(c){
       if(!c.sections) c.sections={}; if(!c.sections.seoTokens) c.sections.seoTokens={};
       var se=c.sections.seoTokens;
       var _Sis='width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;';
-      var _toks=['{business}','{trade}','{suburb}','{suburbs}','{city}','{region}','{phone}','{year}'];
+      var _toks=['{business}','{location}','{trade}','{suburb}','{suburbs}','{city}','{region}','{phone}','{year}'];
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Local SEO &amp; tokens</h2><p class="lede">Set your local details, then use tokens in any heading or intro across the page — they fill in automatically. Example: “{trade} in {suburb}” becomes “Plumber in Belconnen”.</p>'
         +'<div class="row">'+lpFld('Trade (noun)','seo-trade','e.g. Plumber')+lpFld('Primary suburb','seo-suburb','e.g. Canberra')+'</div>'
         +'<div class="row">'+lpFld('City','seo-city','Canberra')+lpFld('Region','seo-region','ACT')+'</div>'
