@@ -358,17 +358,32 @@
       <!-- Payouts & pricing -->
       <section class="panel lp-p-panel" data-panel="payouts" data-w="form">
         <h2>Payouts &amp; Pricing</h2>
-        <p class="sub">Set a price per demo and see exactly what you earn. Each sale is split 50/50, with a $750 minimum to LeadPages.</p>
-        <div class="card" style="padding:24px;max-width:680px">
-          <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin-bottom:14px"><input type="checkbox" id="po-gst" style="width:auto"> I’m registered for GST</label>
-          <div class="field"><label for="po-abn">ABN</label><input id="po-abn" type="text" placeholder="Needed before we can pay you"><div class="muted" style="font-size:12.5px;margin-top:6px">If you’re not registered for GST, GST is removed from your share (you receive 10% less). Add your ABN so we can pay you.</div></div>
-          <div class="field"><label for="po-plan">Default hosting plan</label><select id="po-plan"></select><div class="muted" style="font-size:12.5px;margin-top:6px">What a new client starts on — they can change it at signup.</div></div>
-          <div class="save-row"><button class="btn btn-brand" id="po-save">Save</button><span class="saved" id="po-saved">Saved ✓</span></div>
-        </div>
-        <h3 style="font-family:var(--font-display);font-size:17px;margin:24px 0 10px">Price calculator</h3>
-        <div class="card" style="padding:20px;max-width:680px">
-          <div class="field" style="max-width:240px"><label for="po-calc">Sale price ($)</label><input id="po-calc" type="number" min="0" step="50" placeholder="1000"></div>
-          <div id="po-breakdown" class="muted" style="font-size:14.5px"></div>
+        <p class="sub">Manage payout details, set defaults, and preview earnings. Each sale is split 50/50, with a $750 minimum to LeadPages.</p>
+        <div class="lp-stack">
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Payout details</h3>
+            <p class="muted" style="margin:0 0 12px;font-size:13px">Used to process your payouts. Add these before your first payout cycle.</p>
+            <label style="display:inline-flex;align-items:center;gap:8px;font-weight:700;margin-bottom:12px"><input type="checkbox" id="po-gst" style="width:auto"> I’m registered for GST</label>
+            <div class="field"><label for="po-abn">ABN</label><input id="po-abn" type="text" placeholder="Needed before we can pay you"><div class="muted" style="font-size:12.5px;margin-top:6px">If you’re not registered for GST, GST is removed from your share (you receive 10% less).</div></div>
+          </div>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Pricing defaults</h3>
+            <p class="muted" style="margin:0 0 12px;font-size:13px">Defaults used when creating new clients/quotes.</p>
+            <div class="field"><label for="po-plan">Default hosting plan</label><select id="po-plan"></select><div class="muted" style="font-size:12.5px;margin-top:6px">Clients can change at signup.</div></div>
+            <div class="save-row"><button class="btn btn-brand" id="po-save">Save</button><span class="saved" id="po-saved">Saved ✓</span></div>
+          </div>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Earnings calculator</h3>
+            <p class="muted" style="margin:0 0 12px;font-size:13px">Preview what you and LeadPages earn on a build + hosting plan.</p>
+            <div class="row2">
+              <div class="field" style="max-width:260px"><label for="po-calc">Build price ($)</label><input id="po-calc" type="number" min="0" step="50" placeholder="1000"></div>
+              <div class="field"><label for="po-calc-plan">Monthly hosting plan</label><select id="po-calc-plan"></select></div>
+            </div>
+            <div id="po-breakdown" class="muted" style="font-size:14.5px"></div>
+            <div id="po-year" class="muted" style="font-size:13px;margin-top:8px"></div>
+          </div>
         </div>
       </section>
 
@@ -416,12 +431,22 @@
       <section class="panel lp-p-panel" data-panel="commissions" data-w="wide">
         <h2>Commissions</h2>
         <p class="sub">50% of each build fee and 20% of monthly subscription revenue for clients you generate. Paid on a 30-day cycle, subject to approval and account standing.</p>
-        <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpis" style="grid-template-columns:repeat(6,1fr)">
           <div class="card kpi"><div class="lab">Pending</div><div class="val" id="cm-pending">$0</div></div>
-          <div class="card kpi"><div class="lab">Approved (next payout)</div><div class="val" id="cm-approved">$0</div></div>
+          <div class="card kpi"><div class="lab">Approved next payout</div><div class="val" id="cm-approved">$0</div></div>
           <div class="card kpi"><div class="lab">Paid to date</div><div class="val" id="cm-paid">$0</div></div>
+          <div class="card kpi"><div class="lab">Monthly recurring</div><div class="val" id="cm-recurring">$0</div></div>
+          <div class="card kpi"><div class="lab">Build commission</div><div class="val" id="cm-build">$0</div></div>
+          <div class="card kpi"><div class="lab">Subscription commission</div><div class="val" id="cm-sub">$0</div></div>
         </div>
-        <div id="comm-list" style="margin-top:6px"></div>
+
+        <div class="card" style="padding:18px 20px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0">Earnings ledger</h3>
+            <span class="muted" style="font-size:12.5px">Build + recurring commissions</span>
+          </div>
+          <div id="comm-ledger" style="margin-top:12px"></div>
+        </div>
       </section>
 
       <!-- Training -->
@@ -1096,6 +1121,7 @@
     document.getElementById('sc-slug').addEventListener('input',updateScLink);
     document.getElementById('po-calc').addEventListener('input', renderCalc);
     document.getElementById('po-gst').addEventListener('change', renderCalc);
+    var __pcp=document.getElementById('po-calc-plan'); if(__pcp) __pcp.addEventListener('change', renderCalc);
     document.getElementById('po-save').addEventListener('click', async function(){
       var btn=this; btn.disabled=true;
       var patch={ gst_registered:document.getElementById('po-gst').checked, abn:(document.getElementById('po-abn').value||'').trim()||null, default_plan_key:(document.getElementById('po-plan').value||'')||null, updated_at:new Date().toISOString() };
@@ -1104,6 +1130,8 @@
       state.profile=r.data[0];
       var sv=document.getElementById('po-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1700);
       renderMockups();
+      try{ if(document.getElementById('po-calc-plan')) document.getElementById('po-calc-plan').value = state.profile.default_plan_key||''; }catch(_e){}
+      renderCalc();
     });
     document.getElementById('q-addphone').addEventListener('click', function(){ addPhoneRow(''); });
     document.getElementById('q-addfeat').addEventListener('click', function(){ addFeatRow(''); });
@@ -1229,17 +1257,28 @@
       +'</div></div>';
   }
   function renderCommissions(){
-    var box=document.getElementById('comm-list'); if(!box) return;
+    var box=document.getElementById('comm-ledger'); if(!box) return;
     box.innerHTML = commissions.length ? commissions.map(commRow).join('')
       : '<div class="card empty">'+emptyIco('commissions')+'<strong>No commissions yet</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">Your build and recurring commissions appear here automatically once a client\u2019s payment is processed.</p></div>';
   }
   async function loadCommissions(){
     var r=await sb.from('partner_commissions').select('id,type,rate,gross_amount,commission_amount,status,period_start,period_end,site_id,expected_payment_date,paid_date,created_at').order('created_at',{ascending:false});
     commissions=(r.data||[]);
-    var pend=0,appr=0,paid=0;
-    commissions.forEach(function(c){ if(c.status==='pending'||c.status==='held')pend+=c.commission_amount; else if(c.status==='approved')appr+=c.commission_amount; else if(c.status==='paid')paid+=c.commission_amount; });
+    var pend=0,appr=0,paid=0, build=0, sub=0, recur=0;
+    commissions.forEach(function(c){
+      if(c.status==='pending'||c.status==='held')pend+=c.commission_amount;
+      else if(c.status==='approved')appr+=c.commission_amount;
+      else if(c.status==='paid')paid+=c.commission_amount;
+      if(c.type==='build') build+=c.commission_amount;
+      else sub+=c.commission_amount;
+    });
+    // Best-effort recurring estimate from active live clients
+    try{
+      clients.forEach(function(c){ if(c.status==='live' && c.monthly_amount!=null) recur += Math.round(c.monthly_amount*0.20); });
+    }catch(_e){}
     var set=function(id,v){ var e=document.getElementById(id); if(e) e.textContent=money(v); };
     set('cm-pending',pend); set('cm-approved',appr); set('cm-paid',paid);
+    set('cm-build',build); set('cm-sub',sub); set('cm-recurring',recur);
     set('kpi-pendingcomm',pend); set('kpi-payout',appr); set('kpi-paidcomm',paid);
     renderCommissions();
   }
@@ -1642,18 +1681,40 @@
     var d=parseFloat(document.getElementById('po-calc').value||'0'); var cents=d>0?Math.round(d*100):0;
     var gst=document.getElementById('po-gst').checked;
     var b=document.getElementById('po-breakdown'); if(!b) return;
-    if(!cents){ b.innerHTML=''; return; }
+    var py=document.getElementById('po-year');
+    var planKey=(document.getElementById('po-calc-plan')&&document.getElementById('po-calc-plan').value)||'';
+    var planAmt=(window.__lpPartnerPlans && window.__lpPartnerPlans[planKey] && window.__lpPartnerPlans[planKey].monthly_amount!=null)
+      ? Math.round(window.__lpPartnerPlans[planKey].monthly_amount||0) : 0;
+    var recurring = planAmt ? Math.round(planAmt*0.20) : 0;
+    if(!cents){
+      b.innerHTML='';
+      if(py) py.innerHTML='';
+      return;
+    }
     var sx=lpSplit(cents,gst);
-    b.innerHTML='On a '+fmtAUD(cents)+' sale: <strong style="color:var(--ink)">you get '+fmtAUD(sx.partner)+'</strong>, LeadPages gets '+fmtAUD(sx.lp)+'.'+(sx.gstOff?(' <span style="color:var(--bad)">GST of '+fmtAUD(sx.gstOff)+' removed</span> \u2014 register for GST + add your ABN to keep it.'):'');
+    b.innerHTML='On a '+fmtAUD(cents)+' build: <strong style="color:var(--ink)">you get '+fmtAUD(sx.partner)+'</strong>, LeadPages gets '+fmtAUD(sx.lp)+'.'+(sx.gstOff?(' <span style="color:var(--bad)">GST of '+fmtAUD(sx.gstOff)+' removed</span> \u2014 register for GST + add your ABN to keep it.'):'')
+      + (recurring ? (' <span style="color:var(--ink-soft)">· Monthly commission ~'+fmtAUD(recurring)+'/mo</span>') : '');
+    if(py){
+      var firstYear = sx.partner + recurring*12;
+      py.innerHTML = 'Estimated first-year earnings: <strong style="color:var(--text)">'+fmtAUD(firstYear)+'</strong> (build + 12 months recurring).';
+    }
   }
   async function loadPayouts(){
     var pf=state.profile||{};
     document.getElementById('po-gst').checked=!!pf.gst_registered;
     document.getElementById('po-abn').value=pf.abn||'';
     var pr=await sb.from('billing_plans').select('key,name,monthly_amount').eq('active',true).order('sort',{ascending:true});
-    var plans=(pr.data||[]); var sel=document.getElementById('po-plan');
+    var plans=(pr.data||[]);
+    window.__lpPartnerPlans = window.__lpPartnerPlans || {};
+    plans.forEach(function(pl){ if(pl&&pl.key) window.__lpPartnerPlans[pl.key]=pl; });
+    var sel=document.getElementById('po-plan');
     sel.innerHTML='<option value="">No default</option>'+plans.map(function(pl){ return '<option value="'+esc(pl.key)+'">'+esc(pl.name)+' \u2014 $'+Math.round((pl.monthly_amount||0)/100)+'/mo</option>'; }).join('');
     sel.value=pf.default_plan_key||'';
+    var sel2=document.getElementById('po-calc-plan');
+    if(sel2){
+      sel2.innerHTML='<option value="">Choose a plan…</option>'+plans.map(function(pl){ return '<option value="'+esc(pl.key)+'">'+esc(pl.name)+' \u2014 $'+Math.round((pl.monthly_amount||0)/100)+'/mo</option>'; }).join('');
+      sel2.value = pf.default_plan_key || '';
+    }
     renderCalc();
     renderDashAttention();
   }

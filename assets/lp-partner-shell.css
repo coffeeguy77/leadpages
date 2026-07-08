@@ -526,6 +526,11 @@
   }
 }
 
+.lp-partner-page .lp-stack {
+  display: grid;
+  gap: 14px;
+}
+
 .lp-partner-page .kpi { padding: 16px; }
 
 .lp-partner-page .kpi .lab {
