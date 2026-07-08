@@ -1159,7 +1159,7 @@
       if(!biz){ err.textContent='Business name is required.'; err.classList.remove('hidden'); btn.disabled=false; return; }
       if(!targetLocation){ err.textContent='Target location is required (e.g. Canberra, Sydney).'; err.classList.remove('hidden'); btn.disabled=false; return; }
       var seed=document.getElementById('m-seed')&&document.getElementById('m-seed').checked;
-      var starterPack=null, packId=null, packMeta=null;
+      var starterPack=null, packVariant=1, packMeta=null;
       if(seed){
         btn.textContent='Finding content\u2026';
         var confirmNew=false, done=false, attempts=0;
@@ -1172,7 +1172,7 @@
             continue;
           }
           if(!gj||!gj.ok){ err.textContent=(gj&&gj.error)||'Could not load trade content.'; err.classList.remove('hidden'); btn.disabled=false; btn.textContent='Create demo'; return; }
-          starterPack=gj.pack; packId=gj.packId; packMeta=gj; done=true;
+          starterPack=gj.pack; packVariant=gj.variant||1; packMeta=gj; done=true;
         }
       }
       btn.textContent='Creating\u2026';
@@ -1180,7 +1180,7 @@
         businessName:biz||'Untitled demo',
         industry:industry,
         packSlug:packSlug,
-        packId:packId,
+        packVariant:packVariant,
         themeId:(document.getElementById('m-theme').value||''),
         seedContent:!!(seed&&starterPack),
         starterPack:starterPack,
