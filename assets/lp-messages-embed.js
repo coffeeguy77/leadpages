@@ -52,6 +52,10 @@
       '<div class="lme-layout">'
       + '<div class="lme-pane lme-list" id="' + prefix + 'list">'
       + '<div class="lme-list-head"><h3>Conversations</h3><button type="button" class="btn btn-brand btn-sm" id="' + prefix + 'new">New</button></div>'
+      + '<div class="lme-list-filters">'
+      +   '<input id="' + prefix + 'filter" type="text" placeholder="Search…" />'
+      +   '<div class="lme-chips" id="' + prefix + 'chips"></div>'
+      + '</div>'
       + '<div id="' + prefix + 'newbox" class="lme-newbox hidden"></div>'
       + '<div class="lme-convs" id="' + prefix + 'convs"></div>'
       + '</div>'
@@ -60,7 +64,7 @@
       + '<div class="lme-thread-on hidden" id="' + prefix + 'on">'
       + '<div class="lme-thread-head">'
       + '<button type="button" class="btn btn-sm lme-back hidden" id="' + prefix + 'back">&larr;</button>'
-      + '<div><div class="lme-thread-title" id="' + prefix + 'title"></div><div class="lme-thread-sub muted" id="' + prefix + 'sub"></div></div>'
+      + '<div style="min-width:0"><div class="lme-thread-title" id="' + prefix + 'title"></div><div class="lme-thread-sub muted" id="' + prefix + 'sub"></div><div class="lme-thread-meta muted" id="' + prefix + 'meta"></div></div>'
       + '<button type="button" class="btn btn-sm" id="' + prefix + 'refresh">Refresh</button>'
       + '</div>'
       + '<div class="lme-bubbles" id="' + prefix + 'bubbles"></div>'
@@ -92,6 +96,12 @@
       if (c.kind === 'partner_lp') return 'Partner ↔ LeadPages';
       if (c.kind === 'partner_client') return 'Provider ↔ client';
       return 'Client support';
+    }
+
+    function convKindGroup(c) {
+      if (c.kind === 'partner_lp') return 'lp';
+      if (c.kind === 'partner_client') return 'clients';
+      return 'support';
     }
 
     function isUnread(c) {
@@ -130,9 +140,18 @@
         return;
       }
       var list = convos;
+      var kind = (opts.defaultKind || '');
+      try {
+        var chip = $('chips') && $('chips').querySelector('.lme-chip.on');
+        kind = chip ? chip.getAttribute('data-kind') : kind;
+      } catch (_e) {}
+
       if (convFilter) {
         var qf = convFilter.toLowerCase();
         list = convos.filter(function (c) { return convLabel(c).toLowerCase().indexOf(qf) >= 0; });
+      }
+      if (kind) {
+        list = list.filter(function (c) { return convKindGroup(c) === kind; });
       }
       box.innerHTML = list.map(function (c) {
         return '<button type="button" class="lme-conv' + (c.id === activeId ? ' on' : '') + (isUnread(c) ? ' unread' : '') + '" data-id="' + c.id + '">'
@@ -207,6 +226,14 @@
       $('on').classList.remove('hidden');
       $('title').textContent = convLabel(c);
       $('sub').textContent = convKindText(c);
+      // Context line (site status, when available)
+      var meta = '';
+      if (c.client_site_id && sitesById[c.client_site_id]) {
+        var s = sitesById[c.client_site_id];
+        meta = (s.business_name ? (s.business_name + ' · ') : '') + (s.status ? ('Site: ' + s.status) : '');
+      }
+      var metaEl = $('meta');
+      if (metaEl) metaEl.textContent = meta;
       if (global.matchMedia('(max-width:760px)').matches) {
         $('list').classList.add('collapsed');
         $('back').classList.remove('hidden');
@@ -348,6 +375,34 @@
     }
 
     $('new').addEventListener('click', openNewBox);
+    var filterEl = $('filter');
+    if (filterEl) {
+      filterEl.addEventListener('input', function () {
+        convFilter = (this.value || '').trim();
+        renderConvos();
+      });
+    }
+
+    // Kind chips
+    (function () {
+      var chips = $('chips');
+      if (!chips) return;
+      var defs = [
+        { k: '', label: 'All' },
+        { k: 'clients', label: 'Clients' },
+        { k: 'lp', label: 'LeadPages' },
+        { k: 'support', label: 'Support' }
+      ];
+      chips.innerHTML = defs.map(function (d) {
+        return '<button type="button" class="lme-chip' + (d.k === '' ? ' on' : '') + '" data-kind="' + esc(d.k) + '">' + esc(d.label) + '</button>';
+      }).join('');
+      chips.addEventListener('click', function (e) {
+        var b = e.target.closest('.lme-chip');
+        if (!b) return;
+        chips.querySelectorAll('.lme-chip').forEach(function (x) { x.classList.toggle('on', x === b); });
+        renderConvos();
+      });
+    })();
     $('newbox').addEventListener('click', async function (e) {
       var b = e.target.closest('[data-new]');
       if (!b) return;
@@ -407,7 +462,13 @@
       openProvider: openProvider,
       openClientSupport: openClientSupport,
       selectConv: selectConv,
-      destroy: stopPoll,
+      destroy: function () {
+        stopPoll();
+        try {
+          var el = $('filter');
+          if (el) el.value = '';
+        } catch (_e) { /* ignore */ }
+      },
       getUnreadCount: function () { return convos.filter(isUnread).length; }
     };
   }

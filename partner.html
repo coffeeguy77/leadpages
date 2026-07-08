@@ -455,14 +455,46 @@
           <div><h2>Training Centre</h2><p class="sub" style="margin-bottom:0">Step-by-step training from your first sale to ongoing client support.</p></div>
           <span class="statusbadge s-active" id="train-progress" style="font-size:13px"></span>
         </div>
-        <div id="training-list" style="margin-top:16px"><div class="card empty"><p class="muted">Loading training…</p></div></div>
+        <div class="card" style="padding:16px 18px;margin-top:14px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <input id="train-q" type="text" placeholder="Search training…" style="flex:1;min-width:240px">
+            <select id="train-cat" class="tin" style="width:auto;min-width:220px">
+              <option value="">All categories</option>
+              <option value="getting-started">Getting Started</option>
+              <option value="selling">Selling LeadPages</option>
+              <option value="demos">Building Demos</option>
+              <option value="quotes">Sending Quotes</option>
+              <option value="clients">Managing Clients</option>
+              <option value="support">Support Process</option>
+              <option value="pricing">Pricing &amp; Commission</option>
+              <option value="growth">Advanced Partner Growth</option>
+            </select>
+          </div>
+        </div>
+        <div id="training-list" style="margin-top:14px"><div class="card empty"><p class="muted">Loading training…</p></div></div>
       </section>
 
       <!-- Resources -->
       <section class="panel lp-p-panel" data-panel="resources" data-w="wide">
         <h2>Sales Toolkit</h2>
         <p class="sub">Scripts, templates, and pitch material — searchable and ready to copy.</p>
-        <div id="resources-list" style="margin-top:6px"><div class="card empty"><p class="muted">Loading resources…</p></div></div>
+        <div class="card" style="padding:16px 18px;margin-top:14px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <input id="res-q" type="text" placeholder="Search resources…" style="flex:1;min-width:240px">
+            <select id="res-tab" class="tin" style="width:auto;min-width:220px">
+              <option value="">All</option>
+              <option value="emails">Emails</option>
+              <option value="sms">SMS</option>
+              <option value="phone">Phone scripts</option>
+              <option value="objections">Objection handling</option>
+              <option value="proposals">Proposals</option>
+              <option value="onboarding">Onboarding</option>
+              <option value="support">Client support</option>
+              <option value="marketing">Marketing</option>
+            </select>
+          </div>
+        </div>
+        <div id="resources-list" style="margin-top:14px"><div class="card empty"><p class="muted">Loading resources…</p></div></div>
       </section>
 
       <!-- Messages -->
@@ -937,6 +969,10 @@
     var _cq=document.getElementById('clients-q'); if(_cq) _cq.addEventListener('input',function(){ renderClients(); });
     var _dq=document.getElementById('demo-q'); if(_dq) _dq.addEventListener('input',function(){ renderMockups(); });
     var _dc=document.getElementById('demo-clear'); if(_dc) _dc.addEventListener('click',function(){ var i=document.getElementById('demo-q'); if(i){ i.value=''; renderMockups(); } });
+    var _rq=document.getElementById('res-q'); if(_rq) _rq.addEventListener('input', renderResources);
+    var _rt=document.getElementById('res-tab'); if(_rt) _rt.addEventListener('change', renderResources);
+    var _tq=document.getElementById('train-q'); if(_tq) _tq.addEventListener('input', renderTraining);
+    var _tc=document.getElementById('train-cat'); if(_tc) _tc.addEventListener('change', renderTraining);
 
     document.getElementById('m-create').addEventListener('click', async function(){
       var err=document.getElementById('m-err'); err.classList.add('hidden');
@@ -1313,7 +1349,33 @@
     if(!modules.length){ box.innerHTML='<div class="card empty">'+emptyIco('training')+'<strong>No training yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Modules appear here as they\u2019re published.</p></div>'; if(tp) tp.textContent=''; return; }
     var done=modules.filter(function(m){ return progress[m.id]&&progress[m.id].status==='completed'; }).length;
     if(tp) tp.textContent=done+' of '+modules.length+' completed';
-    box.innerHTML=renderCoursesHtml();
+    // Filters (client-side only)
+    var q=(document.getElementById('train-q')&&document.getElementById('train-q').value||'').trim().toLowerCase();
+    var cat=(document.getElementById('train-cat')&&document.getElementById('train-cat').value)||'';
+    function guessCat(m){
+      var t=(m.title||'')+' '+(m.category||'')+' '+(m.description||'');
+      t=t.toLowerCase();
+      if(/getting started|welcome|setup|first/.test(t)) return 'getting-started';
+      if(/sell|pitch|prospect|objection|close/.test(t)) return 'selling';
+      if(/demo|mockup|theme/.test(t)) return 'demos';
+      if(/quote|pricing|proposal/.test(t)) return 'quotes';
+      if(/client|handover|publish|workspace/.test(t)) return 'clients';
+      if(/support|ticket|escalat/.test(t)) return 'support';
+      if(/commission|gst|abn|payout|earn/.test(t)) return 'pricing';
+      if(/growth|referral|scale|advanced/.test(t)) return 'growth';
+      return '';
+    }
+    var filtered = modules.filter(function(m){
+      if(q){
+        var hay=(m.title||'')+' '+(m.category||'')+' '+(m.description||'')+' '+(m.body||'');
+        if(hay.toLowerCase().indexOf(q)<0) return false;
+      }
+      if(cat){
+        return guessCat(m)===cat;
+      }
+      return true;
+    });
+    box.innerHTML = filtered.length ? groupRender(filtered, moduleCard) : '<div class="card empty">'+emptyIco('training')+'<strong>No matches</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Try a different search or category.</p></div>';
   }
   function courseBlock(title,desc,mods){
     var done=mods.filter(function(m){ return progress[m.id]&&progress[m.id].status==='completed'; }).length;
@@ -1360,7 +1422,32 @@
   }
   function renderResources(){
     var box=document.getElementById('resources-list'); if(!box) return;
-    box.innerHTML = resources.length ? groupRender(resources, resourceCard)
+    var q=(document.getElementById('res-q')&&document.getElementById('res-q').value||'').trim().toLowerCase();
+    var tab=(document.getElementById('res-tab')&&document.getElementById('res-tab').value)||'';
+    function guessTab(r){
+      var t=((r.type||'')+' '+(r.category||'')+' '+(r.title||'')+' '+(r.description||'')).toLowerCase();
+      if(/sms|text message/.test(t)) return 'sms';
+      if(/phone|call|voicemail|script/.test(t)) return 'phone';
+      if(/objection|handle|pushback/.test(t)) return 'objections';
+      if(/proposal|quote|scope/.test(t)) return 'proposals';
+      if(/onboard|welcome|handover/.test(t)) return 'onboarding';
+      if(/support|ticket|issue/.test(t)) return 'support';
+      if(/market|facebook|google|seo|ad/.test(t)) return 'marketing';
+      if(/email|newsletter|subject/.test(t)) return 'emails';
+      return '';
+    }
+    var filtered = resources.filter(function(r){
+      if(q){
+        var hay=(r.title||'')+' '+(r.description||'')+' '+(r.body||'')+' '+(r.category||'')+' '+(r.type||'');
+        if(hay.toLowerCase().indexOf(q)<0) return false;
+      }
+      if(tab){
+        return guessTab(r)===tab;
+      }
+      return true;
+    });
+
+    box.innerHTML = filtered.length ? groupRender(filtered, resourceCard)
       : '<div class="card empty">'+emptyIco('resources')+'<strong>No resources yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Scripts, templates and pitch material will appear here.</p></div>';
   }
   async function loadResources(){
