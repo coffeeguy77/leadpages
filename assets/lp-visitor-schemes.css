@@ -118,6 +118,14 @@ html[data-lp-site-theme="command-dark"] {
   --lp-logo-accent: #2ecc8f;
   --lp-logo-ink: #eef2f7;
 }
+html[data-lp-site-theme="neon-pink"] {
+  --lp-logo-accent: #ff4da6;
+  --lp-logo-ink: #fce8f3;
+}
+html[data-lp-site-theme="electric-blue"] {
+  --lp-logo-accent: #3b9eff;
+  --lp-logo-ink: #e8f2ff;
+}
 html[data-lp-site-theme="blush"] {
   --lp-logo-accent: #c45c7a;
   --lp-logo-ink: #2a1f2e;

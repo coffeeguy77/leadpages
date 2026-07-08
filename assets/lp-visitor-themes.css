@@ -21,6 +21,40 @@ html[data-lp-site-theme="command-dark"] .cardish {
   color: var(--lp-visitor-text);
 }
 
+html[data-lp-site-theme="neon-pink"] {
+  --lp-visitor-bg: #140f14;
+  --lp-visitor-panel: #221a28;
+  --lp-visitor-text: #fce8f3;
+  --lp-visitor-muted: #c9a8bc;
+  --lp-visitor-border: #3d2e3a;
+}
+html[data-lp-site-theme="neon-pink"] body {
+  background: var(--lp-visitor-bg) !important;
+  color: var(--lp-visitor-text) !important;
+}
+html[data-lp-site-theme="neon-pink"] .section,
+html[data-lp-site-theme="neon-pink"] .svc,
+html[data-lp-site-theme="neon-pink"] .cardish {
+  color: var(--lp-visitor-text);
+}
+
+html[data-lp-site-theme="electric-blue"] {
+  --lp-visitor-bg: #0f1419;
+  --lp-visitor-panel: #1a2433;
+  --lp-visitor-text: #e8f2ff;
+  --lp-visitor-muted: #a8b8c8;
+  --lp-visitor-border: #2e3d52;
+}
+html[data-lp-site-theme="electric-blue"] body {
+  background: var(--lp-visitor-bg) !important;
+  color: var(--lp-visitor-text) !important;
+}
+html[data-lp-site-theme="electric-blue"] .section,
+html[data-lp-site-theme="electric-blue"] .svc,
+html[data-lp-site-theme="electric-blue"] .cardish {
+  color: var(--lp-visitor-text);
+}
+
 html[data-lp-site-theme="blush"] body {
   background: #faf3f2 !important;
 }
