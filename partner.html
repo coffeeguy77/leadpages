@@ -226,18 +226,45 @@
       <section class="panel lp-p-panel" data-panel="demos" data-w="wide">
         <h2>Demos</h2>
         <p class="sub">Build demos for prospects, save themes, and turn wins into clients.</p>
-        <div class="card" style="padding:20px;max-width:680px">
-          <div class="row2">
-            <div class="field"><label for="m-biz">Demo name (e.g. the prospect's business)</label><input id="m-biz" type="text"></div>
-            <div class="field"><label for="m-industry">Industry / trade</label><input id="m-industry" type="text" list="trade-list"></div>
+        <div class="lp-grid-2">
+          <div>
+            <div class="card" style="padding:20px;margin-bottom:14px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <h3 style="font-family:var(--font-display);font-size:16px">Create Demo</h3>
+                <span class="muted" style="font-size:12.5px">Prospect-ready website mockups</span>
+              </div>
+              <div class="row2" style="margin-top:12px">
+                <div class="field"><label for="m-biz">Demo name</label><input id="m-biz" type="text" placeholder="e.g. Hilltop Plumbing"></div>
+                <div class="field"><label for="m-industry">Industry / trade</label><input id="m-industry" type="text" list="trade-list" placeholder="e.g. Plumber"></div>
+              </div>
+              <div class="field"><label for="m-theme">Start from a theme (optional)</label><select id="m-theme"><option value="">Blank trade site</option></select></div>
+              <div class="save-row">
+                <button class="btn btn-brand" id="m-create">Create demo</button>
+                <span class="notice bad hidden" id="m-err" style="margin:0;padding:8px 12px"></span>
+              </div>
+            </div>
+
+            <div class="card" style="padding:18px 20px">
+              <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Saved Themes</h3>
+              <p class="muted" style="margin:0 0 12px;font-size:13px">Reusable designs you can apply to any demo or client build.</p>
+              <div id="themes-list"></div>
+            </div>
           </div>
-          <div class="field"><label for="m-theme">Start from a saved theme (optional)</label><select id="m-theme"><option value="">Blank trade site</option></select></div>
-          <div class="save-row"><button class="btn btn-brand" id="m-create">Create demo</button><span class="notice bad hidden" id="m-err" style="margin:0;padding:8px 12px"></span></div>
+
+          <div>
+            <div class="card" style="padding:18px 20px;margin-bottom:14px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <h3 style="font-family:var(--font-display);font-size:16px">Demo Library</h3>
+                <span class="muted" style="font-size:12.5px">Open, preview, price, and quote</span>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+                <input id="demo-q" type="text" placeholder="Search demos…" style="flex:1;min-width:240px">
+                <button type="button" class="btn" id="demo-clear" style="padding:9px 12px;font-size:13px">Clear</button>
+              </div>
+            </div>
+            <div id="mockups-list"></div>
+          </div>
         </div>
-        <h3 style="font-family:var(--font-display);font-size:17px;margin:24px 0 10px">Your demos</h3>
-        <div id="mockups-list"></div>
-        <h3 style="font-family:var(--font-display);font-size:17px;margin:24px 0 10px">Saved themes</h3>
-        <div id="themes-list"></div>
       </section>
 
       <!-- My page -->
@@ -349,20 +376,37 @@
       <section class="panel lp-p-panel" data-panel="quotes" data-w="form">
         <h2>Quotes</h2>
         <p class="sub">Build a quote tied to a client’s demo. They get a link to preview the site, accept, and pay — which sets it live and books your commission automatically.</p>
-        <div class="card" style="padding:24px;max-width:720px">
-          <div class="field"><label for="q-site">Demo this quote is for</label><select id="q-site"></select></div>
-          <div class="field"><label for="q-biz">Business name</label><input id="q-biz" type="text" placeholder="Client business name"></div>
-          <div class="field"><label for="q-contact">Contact person</label><input id="q-contact" type="text" placeholder="Who you’re dealing with"></div>
-          <div class="field"><label for="q-address">Address</label><input id="q-address" type="text" placeholder="Business address (optional)"></div>
-          <div class="field"><label for="q-email">Client email</label><input id="q-email" type="email" placeholder="client@business.com.au"></div>
-          <div class="field"><label for="q-plan">Hosting plan</label><select id="q-plan"></select></div>
-          <div class="field"><label>Phone numbers</label><div id="q-phones"></div><button type="button" class="btn" id="q-addphone" style="margin-top:6px;padding:7px 12px">+ Add phone</button></div>
-          <div class="field"><label for="q-desc">Job description</label><textarea id="q-desc" rows="3" placeholder="What you’re quoting for" style="width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:15px;box-sizing:border-box;resize:vertical"></textarea></div>
-          <div class="field"><label>Key features / requirements</label><div id="q-feats"></div><button type="button" class="btn" id="q-addfeat" style="margin-top:6px;padding:7px 12px">+ Add feature</button></div>
-          <div class="field" style="max-width:220px"><label for="q-price">Price ($)</label><input id="q-price" type="number" min="0" step="50" placeholder="1500"></div>
-          <div id="q-breakdown" class="muted" style="font-size:13.5px;margin:-6px 0 14px"></div>
-          <div class="save-row"><button class="btn btn-brand" id="q-create">Create &amp; send quote</button><span class="saved" id="q-saved">Sent ✓</span></div>
-          <div id="q-msg" class="muted" style="font-size:13.5px;margin-top:10px"></div>
+        <div class="lp-grid-2" style="grid-template-columns:1fr 420px">
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 12px">1) Client details</h3>
+            <div class="field"><label for="q-site">Demo this quote is for</label><select id="q-site"></select></div>
+            <div class="field"><label for="q-biz">Business name</label><input id="q-biz" type="text" placeholder="Client business name"></div>
+            <div class="field"><label for="q-contact">Contact person</label><input id="q-contact" type="text" placeholder="Who you’re dealing with"></div>
+            <div class="field"><label for="q-address">Address</label><input id="q-address" type="text" placeholder="Business address (optional)"></div>
+            <div class="field"><label for="q-email">Client email</label><input id="q-email" type="email" placeholder="client@business.com.au"></div>
+            <div class="field"><label>Phone numbers</label><div id="q-phones"></div><button type="button" class="btn" id="q-addphone" style="margin-top:6px;padding:7px 12px">+ Add phone</button></div>
+          </div>
+
+          <div>
+            <div class="card" style="padding:20px;margin-bottom:14px">
+              <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 12px">2) Website package</h3>
+              <div class="field"><label for="q-plan">Hosting plan</label><select id="q-plan"></select></div>
+              <div class="field"><label for="q-desc">Job description</label><textarea id="q-desc" rows="3" placeholder="What you’re quoting for" style="width:100%;padding:11px 12px;border:1px solid var(--border-strong);border-radius:10px;font-family:inherit;font-size:15px;box-sizing:border-box;resize:vertical;background:var(--input-bg);color:var(--text)"></textarea></div>
+              <div class="field"><label>Key features / requirements</label><div id="q-feats"></div><button type="button" class="btn" id="q-addfeat" style="margin-top:6px;padding:7px 12px">+ Add feature</button></div>
+            </div>
+
+            <div class="card" style="padding:20px">
+              <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 12px">3) Review &amp; send</h3>
+              <div class="field" style="max-width:240px"><label for="q-price">Build price ($)</label><input id="q-price" type="number" min="0" step="50" placeholder="1500"></div>
+              <div id="q-breakdown" class="muted" style="font-size:13.5px;margin:-6px 0 10px"></div>
+              <div class="card" style="padding:14px 14px;background:var(--panel-soft);border-color:var(--border);box-shadow:none;margin:10px 0 14px">
+                <div style="font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-soft)">Commission preview</div>
+                <div id="q-commission" class="muted" style="font-size:13.5px;margin-top:8px">Enter a price and choose a hosting plan to see earnings.</div>
+              </div>
+              <div class="save-row"><button class="btn btn-brand" id="q-create">Create &amp; send quote</button><span class="saved" id="q-saved">Sent ✓</span></div>
+              <div id="q-msg" class="muted" style="font-size:13.5px;margin-top:10px"></div>
+            </div>
+          </div>
         </div>
         <h3 style="font-family:var(--font-display);font-size:17px;margin:24px 0 10px">Sent quotes</h3>
         <div id="q-list" class="muted">No quotes yet.</div>
@@ -866,6 +910,8 @@
     var _qa4=document.getElementById('qa-open-builder'); if(_qa4) _qa4.addEventListener('click',function(){ window.open('/manage','_blank','noopener'); });
     var _cab=document.getElementById('clients-add'); if(_cab) _cab.addEventListener('click',function(){ gotoPanel('add'); });
     var _cq=document.getElementById('clients-q'); if(_cq) _cq.addEventListener('input',function(){ renderClients(); });
+    var _dq=document.getElementById('demo-q'); if(_dq) _dq.addEventListener('input',function(){ renderMockups(); });
+    var _dc=document.getElementById('demo-clear'); if(_dc) _dc.addEventListener('click',function(){ var i=document.getElementById('demo-q'); if(i){ i.value=''; renderMockups(); } });
 
     document.getElementById('m-create').addEventListener('click', async function(){
       var err=document.getElementById('m-err'); err.classList.add('hidden');
@@ -885,6 +931,22 @@
       if(e.target.closest('[data-scclear]')){ if(_cd){ await saveShowcase(_cd.getAttribute('data-id'),{image:null}); } return; }
       var card=e.target.closest('[data-id]'); if(!card) return; var id=card.getAttribute('data-id');
       var m=mockups.find(function(x){return x.id===id;}); if(!m) return;
+      if(e.target.closest('[data-more]')){
+        var bx=card.querySelector('[data-morebox="'+id+'"]');
+        if(bx) bx.style.display=(bx.style.display==='none'||!bx.style.display)?'block':'none';
+        return;
+      }
+      if(e.target.closest('[data-quote]')){
+        gotoPanel('quotes');
+        try{
+          fillQuoteDemoSelect();
+          var sel=document.getElementById('q-site'); if(sel){ sel.value=id; }
+          var biz=document.getElementById('q-biz'); if(biz && !biz.value) biz.value=(m.business_name||'');
+          var msg=document.getElementById('q-msg'); if(msg) msg.textContent='';
+          var box=document.querySelector('[data-panel="quotes"]'); if(box) box.scrollIntoView({behavior:'smooth',block:'start'}); 
+        }catch(_e){}
+        return;
+      }
       if(e.target.closest('[data-savetheme]')){
         var name=prompt('Name this theme:', (m.business_name||'Demo')+' theme'); if(!name) return;
         var sc=await sb.from('sites').select('config').eq('id',id).maybeSingle();
@@ -1045,7 +1107,8 @@
     });
     document.getElementById('q-addphone').addEventListener('click', function(){ addPhoneRow(''); });
     document.getElementById('q-addfeat').addEventListener('click', function(){ addFeatRow(''); });
-    document.getElementById('q-price').addEventListener('input', function(){ var d=parseFloat(this.value||'0'); document.getElementById('q-breakdown').innerHTML = d>0 ? demoBreakdown(Math.round(d*100)) : ''; });
+    document.getElementById('q-price').addEventListener('input', function(){ var d=parseFloat(this.value||'0'); document.getElementById('q-breakdown').innerHTML = d>0 ? demoBreakdown(Math.round(d*100)) : ''; qCommissionPreview(); });
+    var _qpl=document.getElementById('q-plan'); if(_qpl) _qpl.addEventListener('change', qCommissionPreview);
     document.getElementById('q-create').addEventListener('click', async function(){
       var btn=this, msg=document.getElementById('q-msg');
       var siteId=document.getElementById('q-site').value;
@@ -1274,34 +1337,82 @@
   }
   function themeOptions(){ return '<option value="">Apply a theme\u2026</option>'+themes.map(function(t){ return '<option value="'+esc(t.id)+'">'+(t._shared?'★ ':'')+esc(t.name)+(t._shared?' (LeadPages)':'')+'</option>'; }).join(''); }
   function mockupCard(m){
-    var bs='padding:7px 12px;font-size:13px'; var brand=';background:var(--brand);border-color:var(--brand);color:#fff';
+    var bs='padding:8px 12px;font-size:13px';
+    var brand=';background:var(--brand);border-color:var(--brand);color:#fff';
+    var sc=(m.config&&m.config.showcase)||{};
+    var fit=['cover','contain','fill'].indexOf(sc.fit)>=0?sc.fit:'cover';
+    var prevBg = (sc.color&&/^#[0-9a-fA-F]{3,8}$/.test(sc.color)) ? esc(sc.color) : 'color-mix(in srgb, var(--accent) 12%, var(--panel))';
+    var prevInner = sc.image ? '<img src="'+esc(sc.image)+'" alt="" style="width:100%;height:100%;object-fit:'+fit+'">' : '';
+    var priceVal = (m.sale_price ? String(Math.round(m.sale_price/100)) : '');
+
     return '<div class="card" data-id="'+esc(m.id)+'" style="padding:16px 18px;margin-bottom:12px">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
-      +'<div style="display:flex;gap:11px;align-items:center">'+((m.logo_obj&&m.logo_obj.imageUrl)?('<img src="'+esc(m.logo_obj.imageUrl)+'" alt="" style="width:38px;height:38px;border-radius:9px;object-fit:contain;background:#fff;border:1px solid var(--line);padding:3px;flex:0 0 auto">'):'')+'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(m.business_name||m.slug)+'</div>'
-      +'<div class="muted" style="font-size:13px;margin-top:2px">'+esc(m.slug)+'</div></div></div>'
-      +'<span class="statusbadge s-pending">Demo</span></div>'
-      +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">'
-      +'<a class="btn" href="/manage" target="_blank" rel="noopener" style="'+bs+brand+'">Open builder</a>'
-      +'<a class="btn" href="/'+encodeURIComponent(m.slug)+'?preview=1" target="_blank" rel="noopener" style="'+bs+'">Preview</a>'
-      +'<button class="btn" data-savetheme style="'+bs+'">Save as theme</button>'
-      +'<button class="btn" data-scope style="'+bs+'">Project scope</button>'
-      +'<button class="btn" data-renamedemo style="'+bs+'">Rename</button>'
-      +'<button class="btn" data-del style="'+bs+'">Delete</button>'
-      +'<select data-applytheme style="'+bs+';width:auto">'+themeOptions()+'</select>'
-      +'<input data-pw type="text" value="'+esc(m.preview_password||'')+'" placeholder="Sample password (optional)" style="'+bs+';width:auto;min-width:185px">'
-      +'<label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-soft);font-weight:600"><input type="checkbox" data-showcase'+(m.show_on_showcase?' checked':'')+' style="width:auto"> Show on showcase</label>'
+        +'<div style="display:flex;gap:12px;align-items:center;min-width:260px;flex:1">'
+          +'<div style="width:56px;height:56px;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:'+prevBg+';flex:0 0 auto;display:grid;place-items:center">'
+            + (prevInner || (m.logo_obj&&m.logo_obj.imageUrl?('<img src="'+esc(m.logo_obj.imageUrl)+'" alt="" style="width:80%;height:80%;object-fit:contain;background:#fff;border-radius:10px;padding:6px">'):''))
+          +'</div>'
+          +'<div style="min-width:0">'
+            +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+              +'<div style="font-family:var(--font-display);font-weight:650;font-size:16px">'+esc(m.business_name||m.slug)+'</div>'
+              +'<span class="statusbadge s-pending">Demo</span>'
+            +'</div>'
+            +'<div class="muted" style="font-size:13px;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap">'
+              +'<span>'+esc(m.slug)+'</span>'
+              +(m.industry?('<span>· '+esc(m.industry)+'</span>'):'')
+              +'<span>· '+demoBreakdown(m.sale_price)+'</span>'
+            +'</div>'
+          +'</div>'
+        +'</div>'
+
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+          +'<a class="btn btn-brand" href="/manage?site='+encodeURIComponent(m.slug||'')+'" target="_blank" rel="noopener" style="'+bs+brand+'">Open workspace</a>'
+          +'<a class="btn" href="/'+encodeURIComponent(m.slug)+'?preview=1" target="_blank" rel="noopener" style="'+bs+'">Preview</a>'
+          +'<button type="button" class="btn" data-quote="'+esc(m.id)+'" style="'+bs+'">Send quote</button>'
+          +'<button type="button" class="btn" data-more="'+esc(m.id)+'" style="'+bs+'">More</button>'
+        +'</div>'
       +'</div>'
-      +'<div style="margin-top:11px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:11px">'
-      +'<label style="font-size:13px;font-weight:600;color:var(--ink-soft)">Sale price $<input data-price type="number" min="0" step="50" value="'+(m.sale_price?Math.round(m.sale_price/100):'')+'" style="width:110px;margin-left:6px;padding:7px 10px;border:1px solid var(--line);border-radius:8px"></label>'
-      +'<span data-breakdown style="font-size:13px;color:var(--ink-soft)">'+demoBreakdown(m.sale_price)+'</span>'
+
+      +'<div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+        +'<label style="font-size:13px;font-weight:700;color:var(--text-soft);display:inline-flex;align-items:center;gap:8px">'
+          +'Sale price $<input data-price type="number" min="0" step="50" value="'+esc(priceVal)+'" style="width:120px;padding:9px 10px;border:1px solid var(--border-strong);border-radius:10px;background:var(--input-bg);color:var(--text)">'
+        +'</label>'
+        +'<span data-breakdown class="muted" style="font-size:13px">'+demoBreakdown(m.sale_price)+'</span>'
+        +'<label style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--text-soft);font-weight:700;margin-left:auto">'
+          +'<input type="checkbox" data-showcase'+(m.show_on_showcase?' checked':'')+' style="width:auto"> Show on showcase'
+        +'</label>'
       +'</div>'
-      +scControls(m)
-      +scopeEditor(m)
-      +'</div>';
+
+      +'<div class="card" data-morebox="'+esc(m.id)+'" style="display:none;margin-top:12px;padding:12px 12px;background:var(--panel);border:1px solid var(--border);border-radius:12px">'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+          +'<button class="btn btn-sm" data-savetheme style="padding:7px 11px;font-size:13px">Save as theme</button>'
+          +'<button class="btn btn-sm" data-renamedemo style="padding:7px 11px;font-size:13px">Rename</button>'
+          +'<button class="btn btn-sm" data-del style="padding:7px 11px;font-size:13px">Archive / delete</button>'
+          +'<select data-applytheme style="padding:7px 11px;font-size:13px;width:auto">'+themeOptions()+'</select>'
+          +'<input data-pw type="text" value="'+esc(m.preview_password||'')+'" placeholder="Preview password (optional)" style="padding:7px 11px;font-size:13px;width:auto;min-width:220px">'
+        +'</div>'
+        +'<details style="margin-top:10px">'
+          +'<summary style="cursor:pointer;font-weight:700;color:var(--text);font-size:13px">Showcase card</summary>'
+          +'<div style="margin-top:10px">'+scControls(m)+'</div>'
+        +'</details>'
+        +'<details style="margin-top:10px">'
+          +'<summary style="cursor:pointer;font-weight:700;color:var(--text);font-size:13px">Project scope</summary>'
+          +'<div style="margin-top:10px">'+scopeEditor(m)+'</div>'
+        +'</details>'
+      +'</div>'
+    +'</div>';
   }
   function renderMockups(){
     var box=document.getElementById('mockups-list'); if(!box) return;
-    box.innerHTML = mockups.length ? mockups.map(mockupCard).join('')
+    var q=(document.getElementById('demo-q')&&document.getElementById('demo-q').value||'').trim().toLowerCase();
+    var list=mockups;
+    if(q){
+      list=mockups.filter(function(m){
+        return String(m.business_name||'').toLowerCase().indexOf(q)>=0
+          || String(m.slug||'').toLowerCase().indexOf(q)>=0
+          || String(m.industry||'').toLowerCase().indexOf(q)>=0;
+      });
+    }
+    box.innerHTML = list.length ? list.map(mockupCard).join('')
       : '<div class="card empty">'+emptyIco('demos')+'<strong>No demos yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Create a demo above to mock up a tradie site for a prospect.</p></div>';
     try{ fillQuoteDemoSelect(); }catch(_e){}
   }
@@ -1457,7 +1568,9 @@
     fillQuoteDemoSelect();
     try{
       var pr=await sb.from('billing_plans').select('key,name,monthly_amount').eq('active',true).order('sort',{ascending:true});
-      var plans=(pr.data||[]); var psel=document.getElementById('q-plan');
+      var plans=(pr.data||[]);
+      window.__lpPartnerPlans={}; plans.forEach(function(pl){ if(pl&&pl.key) window.__lpPartnerPlans[pl.key]=pl; });
+      var psel=document.getElementById('q-plan');
       if(psel){ var def=(state.profile&&state.profile.default_plan_key)||''; psel.innerHTML=plans.map(function(pl){ return '<option value="'+esc(pl.key)+'"'+(pl.key===def?' selected':'')+'>'+esc(pl.name)+' \u2014 $'+Math.round((pl.monthly_amount||0)/100)+'/mo</option>'; }).join(''); }
     }catch(_e){}
     if(document.getElementById('q-phones') && !document.getElementById('q-phones').children.length) addPhoneRow('');
@@ -1478,6 +1591,7 @@
         +'</div>';
     }).join('');
     box.querySelectorAll('[data-copy]').forEach(function(b){ b.onclick=function(){ try{ navigator.clipboard.writeText(b.getAttribute('data-copy')); }catch(_e){} b.textContent='Copied!'; setTimeout(function(){ b.textContent='Copy link'; },1400); }; });
+    try{ qCommissionPreview(); }catch(_e){}
   }
 
   // ---------- Phase 7: pricing & payouts ----------
@@ -1495,6 +1609,34 @@
     var gst=!!(state.profile&&state.profile.gst_registered);
     var sx=lpSplit(cents,gst);
     return 'You get <strong style="color:var(--ink)">'+fmtAUD(sx.partner)+'</strong> \u00b7 LeadPages '+fmtAUD(sx.lp)+(sx.gstOff?(' \u00b7 GST \u2212'+fmtAUD(sx.gstOff)):'');
+  }
+
+  function qCommissionPreview(){
+    var out=document.getElementById('q-commission'); if(!out) return;
+    var cents=Math.round(parseFloat(document.getElementById('q-price').value||'0')*100)||0;
+    if(!cents){ out.textContent='Enter a price and choose a hosting plan to see earnings.'; return; }
+    var gst=!!(state.profile&&state.profile.gst_registered);
+    var split=lpSplit(cents,gst);
+    var planKey=(document.getElementById('q-plan')&&document.getElementById('q-plan').value)||'';
+    var planAmt=0;
+    try{
+      var opt=document.querySelector('#q-plan option[value="'+planKey.replace(/"/g,'\\"')+'"]');
+      // fallback: read from DOM label if needed (best-effort)
+      planAmt = 0;
+    }catch(_e){}
+    // We already have pricing plans loaded in loadQuotes; store map for precision
+    var p = (window.__lpPartnerPlans && window.__lpPartnerPlans[planKey]) || null;
+    if(p && p.monthly_amount!=null) planAmt = Math.round(p.monthly_amount||0);
+    var recurring = planAmt ? Math.round(planAmt*0.20) : 0;
+    var firstYear = split.partner + recurring*12;
+    out.innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px">'
+      +'<div><div style="font-weight:700;color:var(--text)">Build price</div><div class="muted" style="margin-top:2px">'+fmtAUD(cents)+'</div></div>'
+      +'<div><div style="font-weight:700;color:var(--text)">Your build commission</div><div class="muted" style="margin-top:2px">'+fmtAUD(split.partner)+'</div></div>'
+      +'<div><div style="font-weight:700;color:var(--text)">LeadPages share</div><div class="muted" style="margin-top:2px">'+fmtAUD(split.lp)+'</div></div>'
+      +'<div><div style="font-weight:700;color:var(--text)">Monthly commission</div><div class="muted" style="margin-top:2px">'+(recurring?('~'+fmtAUD(recurring)+'/mo'):'—')+'</div></div>'
+      +'</div>'
+      +'<div class="muted" style="margin-top:10px">Estimated first-year earnings: <strong style="color:var(--text)">'+fmtAUD(firstYear)+'</strong> (build + 12 months recurring)</div>';
   }
   function renderCalc(){
     var d=parseFloat(document.getElementById('po-calc').value||'0'); var cents=d>0?Math.round(d*100):0;

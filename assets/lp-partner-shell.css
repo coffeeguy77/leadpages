@@ -513,6 +513,19 @@
   margin-bottom: 18px;
 }
 
+.lp-partner-page .lp-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1023px) {
+  .lp-partner-page .lp-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
 .lp-partner-page .kpi { padding: 16px; }
 
 .lp-partner-page .kpi .lab {
