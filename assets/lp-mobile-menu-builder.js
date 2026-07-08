@@ -66,6 +66,7 @@
     'nav-landing': 'Landing pages',
     'nav-apps': 'App Marketplace',
     'nav-mailer': 'Email clients',
+    'nav-messages': 'Messages',
     'nav-appearance': 'Appearance',
     'nav-contact': 'Contact',
     'nav-logo': 'Logo',
@@ -97,7 +98,8 @@
     { id: 'nav-details', roles: ['super', 'partner', 'client'] },
     { id: 'nav-landing', roles: ['super', 'partner', 'client'] },
     { id: 'nav-apps', roles: ['super', 'partner', 'client'] },
-    { id: 'nav-mailer', roles: ['super', 'partner', 'client'] }
+    { id: 'nav-mailer', roles: ['super', 'partner', 'client'] },
+    { id: 'nav-messages', roles: ['super', 'partner', 'client'] }
   ];
 
   function mmDebugEnabled() {

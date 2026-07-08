@@ -16,12 +16,14 @@
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <link rel="stylesheet" href="/assets/lp-partner-shell.css">
+<link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
 <script src="/assets/lp-workspace-appearance.js"></script>
 <script src="/assets/lp-stroke-icons.js"></script>
 <script src="/assets/lp-logo.js" defer></script>
 <script src="/assets/lp-partner-shell.js" defer></script>
+<script src="/assets/lp-messages-embed.js" defer></script>
 </head>
 <body class="lp-partner-page">
 
@@ -80,7 +82,7 @@
       <div class="pstat"><span class="statusbadge s-active" id="d-status">Active</span></div>
       <nav class="nav" id="nav">
         <button type="button" data-p="overview" class="on" data-icon="overview" data-label="Overview">Overview</button>
-        <button type="button" id="messages-link" data-icon="messages" data-label="Messages">Messages</button>
+        <button type="button" id="messages-link" data-p="messages" data-icon="messages" data-label="Messages">Messages</button>
         <button type="button" data-p="clients" data-icon="clients" data-label="My Clients">My Clients</button>
         <button type="button" data-p="demos" data-icon="demos" data-label="Demos &amp; themes">Demos &amp; themes</button>
         <button type="button" data-p="mypage" data-icon="mypage" data-label="My page">My page</button>
@@ -342,11 +344,27 @@
         <div id="resources-list" style="margin-top:6px"><div class="card empty"><p class="muted">Loading resources…</p></div></div>
       </section>
 
+      <!-- Messages -->
+      <section class="panel" data-panel="messages">
+        <h2>Messages</h2>
+        <p class="sub">Client conversations and LeadPages support — all in one place. No need to leave the partner console.</p>
+        <div id="partner-messages-root"></div>
+      </section>
+
       <!-- Support -->
       <section class="panel" data-panel="support">
         <h2>Support</h2>
-        <p class="sub">LeadPages is always behind you. Raise anything technical and we'll handle it.</p>
-        <div class="card empty"><div class="e-ico" data-icon="support"></div><strong>Escalation is coming</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">You'll raise support requests on behalf of a client and track their status here. In the meantime, email <a href="mailto:info@beanculture.com.au">support</a> directly.</p><div class="phase-tag">Phase 5</div></div>
+        <p class="sub">Contact your LeadPages account manager or raise a support request on behalf of a client.</p>
+        <div class="card" style="padding:24px;max-width:720px;margin-bottom:16px">
+          <h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 6px">LeadPages account manager</h3>
+          <p class="muted" style="margin:0 0 14px;max-width:52ch">Billing, platform issues, or anything you need help with — message your account manager directly.</p>
+          <button type="button" class="btn btn-brand" id="support-lp">Message account manager</button>
+        </div>
+        <div class="card" style="padding:24px;max-width:720px">
+          <h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 6px">Client support</h3>
+          <p class="muted" style="margin:0 0 14px;max-width:52ch">Raise a support request about a specific client account. LeadPages will see which site it relates to.</p>
+          <div id="support-clients-list"><p class="muted">Loading clients…</p></div>
+        </div>
       </section>
 
       <!-- Profile (functional) -->
@@ -460,13 +478,49 @@
   // ---- nav ----
   document.getElementById('nav').addEventListener('click',function(e){
     var b=e.target.closest('button[data-p]'); if(!b) return;
-    document.querySelectorAll('#nav button[data-p]').forEach(function(x){ x.classList.toggle('on', x===b); });
-    var p=b.getAttribute('data-p');
-    document.querySelectorAll('.panel').forEach(function(s){ s.classList.toggle('on', s.getAttribute('data-panel')===p); });
-    if(p==='listing') loadDirListing();
+    gotoPanel(b.getAttribute('data-p'));
   });
   var __hl=document.getElementById('help-link'); if(__hl) __hl.onclick=function(){ window.open('/help','_blank','noopener'); };
-  var __ml=document.getElementById('messages-link'); if(__ml) __ml.onclick=function(){ window.open('/messages','_blank','noopener'); };
+
+  var partnerMsgEmbed=null;
+  function updateMsgBadge(n){
+    var btn=document.getElementById('messages-link'); if(!btn) return;
+    var old=btn.querySelector('[data-msgbadge]'); if(old) old.remove();
+    if(n>0){ var b=document.createElement('span'); b.setAttribute('data-msgbadge',''); b.textContent=n>9?'9+':String(n); b.style.cssText='margin-left:7px;background:var(--bad);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:1px 7px;vertical-align:middle'; btn.appendChild(b); }
+  }
+  function initPartnerMessages(){
+    var root=document.getElementById('partner-messages-root');
+    if(!root||partnerMsgEmbed||!state.partner) return;
+    sb.auth.getSession().then(function(r){
+      var uid=r.data.session&&r.data.session.user&&r.data.session.user.id;
+      if(!uid||!window.LPMessagesEmbed) return;
+      partnerMsgEmbed=window.LPMessagesEmbed.mount({
+        container:root, sb:sb, uid:uid, role:'partner', partnerId:state.partner.id,
+        name:state.partner.display_name||'Partner', idPrefix:'pme-',
+        onUnread:updateMsgBadge
+      });
+    });
+  }
+  function renderSupportClients(){
+    var box=document.getElementById('support-clients-list'); if(!box) return;
+    var mine=clients.filter(function(c){ return state.partner&&c.servicing_partner_id===state.partner.id; });
+    if(!mine.length){ box.innerHTML='<p class="muted" style="margin:0">No clients assigned to you yet.</p>'; return; }
+    box.innerHTML=mine.map(function(c){
+      return '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);flex-wrap:wrap">'
+        +'<div><div style="font-weight:600">'+esc(c.business_name||c.slug)+'</div><div class="muted" style="font-size:13px">'+esc(c.slug)+'</div></div>'
+        +'<button type="button" class="btn btn-sm" data-supto="'+esc(c.id)+'">Get support for this client</button></div>';
+    }).join('');
+  }
+  function openClientMessage(siteId, prefill){
+    gotoPanel('messages');
+    if(!partnerMsgEmbed){ initPartnerMessages(); setTimeout(function(){ if(partnerMsgEmbed) partnerMsgEmbed.openClient(siteId, prefill); }, 400); }
+    else partnerMsgEmbed.openClient(siteId, prefill);
+  }
+  function openLeadPagesMessage(prefill){
+    gotoPanel('messages');
+    if(!partnerMsgEmbed){ initPartnerMessages(); setTimeout(function(){ if(partnerMsgEmbed) partnerMsgEmbed.openLeadPages(prefill); }, 400); }
+    else partnerMsgEmbed.openLeadPages(prefill);
+  }
 
   // ---- profile save (RLS lets a partner update their own profile) ----
   document.getElementById('save-profile').addEventListener('click', async function(){
@@ -526,6 +580,7 @@
     }
     refreshWho({ user: { email: (state.partner && (state.partner.email || state.partner.display_name)) || '' } });
     wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage(); loadPayouts(); loadQuotes(); loadMsgBadge();
+    initPartnerMessages();
     document.querySelectorAll('.e-ico[data-icon]').forEach(function(el){
       if(window.LPStrokeIcons) el.innerHTML=window.LPStrokeIcons.svg(el.getAttribute('data-icon'),{size:24});
     });
@@ -571,10 +626,15 @@
     document.querySelectorAll('#nav button[data-p]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-p')===name); });
     document.querySelectorAll('.panel').forEach(function(s){ s.classList.toggle('on', s.getAttribute('data-panel')===name); });
     if(name==='listing') loadDirListing();
+    if(name==='messages'){ initPartnerMessages(); if(partnerMsgEmbed) partnerMsgEmbed.refresh(); }
+    if(name==='support') renderSupportClients();
     if(window.LPPartnerShell) window.LPPartnerShell.updateChrome(name);
     var main=document.querySelector('.lp-p-main')||document.querySelector('main');
     if(main) main.scrollTop=0;
   }
+  window.gotoPanel=gotoPanel;
+  window.lpPartnerOpenClientMessage=openClientMessage;
+  window.lpPartnerOpenLeadPages=openLeadPagesMessage;
   function renderOverview(){
     var total=clients.length, active=clients.filter(function(c){return c.status==='live';}).length;
     document.getElementById('kpi-clients').textContent=total;
@@ -596,7 +656,8 @@
     var acts='';
     if(mine){
       acts+='<a class="btn" href="/manage" target="_blank" rel="noopener" style="'+bs+brand+'">Open builder</a>';
-      acts+='<a class="btn" href="/messages" target="_blank" rel="noopener" style="'+bs+'">\uD83D\uDCAC Message</a>';
+      acts+='<button type="button" class="btn" data-cmsg="'+esc(c.id)+'" style="'+bs+'">Message</button>';
+      acts+='<button type="button" class="btn" data-csupport="'+esc(c.id)+'" style="'+bs+'">Support</button>';
       acts+='<button class="btn" data-cinfo="'+esc(c.id)+'" style="'+bs+'">Info</button>';
       acts+='<button class="btn" data-crename="'+esc(c.id)+'" style="'+bs+'">Rename</button>';
       acts+='<button class="btn" data-cslug="'+esc(c.id)+'" style="'+bs+'">Change URL</button>';
@@ -758,6 +819,17 @@
       try{ navigator.clipboard.writeText(r.body||''); var t=b.textContent; b.textContent='Copied \u2713'; setTimeout(function(){ b.textContent=t; },1500); }catch(_e){}
     });
     document.getElementById('clients-list').addEventListener('click', async function(e){
+      var _msg=e.target.closest('[data-cmsg]');
+      if(_msg){ openClientMessage(_msg.getAttribute('data-cmsg')); return; }
+      var _sup=e.target.closest('[data-csupport]');
+      if(_sup){
+        var sid=_sup.getAttribute('data-csupport');
+        var sc=clients.find(function(x){return x.id===sid;});
+        var pre='Support request for client: '+((sc&&sc.business_name)||(sc&&sc.slug)||'Client');
+        if(sc&&sc.slug) pre+=' (site: '+sc.slug+')';
+        openLeadPagesMessage(pre+'.\n\n');
+        return;
+      }
       var _cc=e.target.closest('[data-cinfo],[data-crename],[data-cslug]');
       if(_cc){
         var cid=_cc.getAttribute('data-cinfo')||_cc.getAttribute('data-crename')||_cc.getAttribute('data-cslug');
@@ -859,6 +931,17 @@
       var sv=document.getElementById('sc-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1700); updateScLink();
     });
     document.getElementById('ov-add').addEventListener('click',function(){ gotoPanel('add'); });
+    var _slp=document.getElementById('support-lp');
+    if(_slp) _slp.addEventListener('click',function(){ openLeadPagesMessage(''); });
+    var _scl=document.getElementById('support-clients-list');
+    if(_scl) _scl.addEventListener('click',function(e){
+      var b=e.target.closest('[data-supto]'); if(!b) return;
+      var cid=b.getAttribute('data-supto');
+      var cc=clients.find(function(x){return x.id===cid;});
+      var pre='Support request for client: '+((cc&&cc.business_name)||(cc&&cc.slug)||'Client');
+      if(cc&&cc.slug) pre+=' (site: '+cc.slug+')';
+      openLeadPagesMessage(pre+'.\n\nDescribe the issue: ');
+    });
     document.getElementById('add-another').addEventListener('click',function(){
       document.getElementById('add-card').classList.remove('hidden');
       document.getElementById('add-done').classList.add('hidden');
@@ -1176,16 +1259,16 @@
   }
   async function loadMsgBadge(){
     try{
+      if(partnerMsgEmbed){ updateMsgBadge(partnerMsgEmbed.getUnreadCount()); return; }
       var sess=(await sb.auth.getSession()).data.session; var myid=sess&&sess.user&&sess.user.id; if(!myid) return;
       var cr=await sb.from('conversations').select('id,last_message_at'); var convs=cr.data||[]; if(!convs.length) return;
       var rd=await sb.from('conversation_reads').select('conversation_id,last_read_at').eq('user_id',myid);
       var reads={}; (rd.data||[]).forEach(function(x){ reads[x.conversation_id]=x.last_read_at; });
       var unread=convs.filter(function(c){ var lr=reads[c.id]; return !lr || new Date(c.last_message_at)>new Date(lr); }).length;
-      var btn=document.getElementById('messages-link'); if(!btn) return;
-      var old=btn.querySelector('[data-msgbadge]'); if(old) old.remove();
-      if(unread>0){ var b=document.createElement('span'); b.setAttribute('data-msgbadge',''); b.textContent=unread>9?'9+':String(unread); b.style.cssText='margin-left:7px;background:var(--bad);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:1px 7px;vertical-align:middle'; btn.appendChild(b); }
+      updateMsgBadge(unread);
     }catch(_e){}
   }
+  try{ window.addEventListener('lp-messages-unread', function(e){ if(e.detail&&typeof e.detail.count==='number') updateMsgBadge(e.detail.count); }); }catch(_e){}
 
   // ---------- Quote builder ----------
   function addRow(containerId, placeholder, val){

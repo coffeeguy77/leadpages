@@ -10,7 +10,7 @@
 
   var NAV_META = {
     overview: { icon: 'overview', label: 'Overview' },
-    messages: { icon: 'messages', label: 'Messages', external: '/messages' },
+    messages: { icon: 'messages', label: 'Messages' },
     clients: { icon: 'clients', label: 'My Clients' },
     demos: { icon: 'demos', label: 'Demos & themes' },
     mypage: { icon: 'mypage', label: 'My page' },
@@ -255,12 +255,6 @@
     var meta = NAV_META[key];
     if (meta && meta.external) {
       global.open(meta.external, '_blank', 'noopener');
-      setDrawer(false);
-      return;
-    }
-    if (key === 'messages') {
-      var ml = $('messages-link');
-      if (ml) ml.click();
       setDrawer(false);
       return;
     }
