@@ -469,7 +469,11 @@
           if (el) el.value = '';
         } catch (_e) { /* ignore */ }
       },
-      getUnreadCount: function () { return convos.filter(isUnread).length; }
+      getUnreadCount: function () { return convos.filter(isUnread).length; },
+      getUnreadCountByGroup: function (group) {
+        if (!group) return convos.filter(isUnread).length;
+        return convos.filter(function (c) { return isUnread(c) && convKindGroup(c) === group; }).length;
+      }
     };
   }
 
