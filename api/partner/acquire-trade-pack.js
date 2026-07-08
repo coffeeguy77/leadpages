@@ -62,7 +62,8 @@ async function recordUsage(row) {
 async function listVariants(slug) {
   const { data } = await sb
     .from('service_packs')
-    .select('id,variant,slug,label,pack,use_count,content_hash,category')
+    // Avoid selecting columns that may not exist yet (e.g. content_hash before migration).
+    .select('id,variant,slug,label,pack,use_count,category')
     .eq('slug', slug)
     .eq('is_approved', true)
     .order('variant', { ascending: true });
@@ -74,23 +75,28 @@ async function generateAndSave(trade, category, userId, existingCount) {
   const slug = parsed.slug || slugify(trade);
   const hash = contentHash(parsed.pack);
   const nextVariant = existingCount + 1;
-  const { data: saved, error } = await sb
-    .from('service_packs')
-    .insert({
-      slug,
-      category: parsed.category || category || 'General',
-      label: parsed.pack.label || trade,
-      pack: parsed.pack,
-      variant: nextVariant,
-      content_hash: hash,
-      generated_by: userId,
-      is_approved: true,
-      use_count: 0,
-    })
-    .select('id,variant,slug,label,pack,category')
-    .single();
-  if (error) throw new Error('Save failed: ' + error.message);
-  return saved;
+
+  const row = {
+    slug,
+    category: parsed.category || category || 'General',
+    label: parsed.pack.label || trade,
+    pack: parsed.pack,
+    variant: nextVariant,
+    content_hash: hash,
+    generated_by: userId,
+    is_approved: true,
+    use_count: 0,
+  };
+
+  // Some environments haven't migrated `service_packs.content_hash` yet.
+  // Retry without that field instead of failing demo creation.
+  let ins = await sb.from('service_packs').insert(row).select('id,variant,slug,label,pack,category').single();
+  if (ins.error && /content_hash/i.test(ins.error.message || '')) {
+    delete row.content_hash;
+    ins = await sb.from('service_packs').insert(row).select('id,variant,slug,label,pack,category').single();
+  }
+  if (ins.error) throw new Error('Save failed: ' + ins.error.message);
+  return ins.data;
 }
 
 module.exports = async (req, res) => {
@@ -225,7 +231,7 @@ module.exports = async (req, res) => {
         pack_variant: pick.variant,
         location_slug: locSlug,
         location_label: targetLocation,
-        content_hash: pick.content_hash || contentHash(pick.pack),
+        content_hash: contentHash(pick.pack),
         partner_id: partner.partnerId,
       });
       return res.status(200).json({
@@ -264,7 +270,7 @@ module.exports = async (req, res) => {
     );
 
     // Reject if hash collides with an existing variant
-    const dup = variants.find((v) => v.content_hash && v.content_hash === contentHash(saved.pack));
+    const dup = variants.find((v) => v.pack && contentHash(v.pack) === contentHash(saved.pack));
     if (dup) {
       return res.status(409).json({
         ok: false,
