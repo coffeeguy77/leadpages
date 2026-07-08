@@ -75,7 +75,7 @@
   text-decoration: none;
 }
 .lp-shell-logo-link img {
-  height: 51px;
+  height: 153px;
   width: auto;
   display: block;
 }
@@ -210,7 +210,7 @@ body.lp-drawer-open .lp-admin-drawer {
   min-width: 0;
 }
 .lp-drawer-logo {
-  height: 36px;
+  height: 108px;
   width: auto;
   display: block;
   flex: 0 0 auto;
@@ -653,7 +653,7 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     border-bottom: 1px solid var(--border);
   }
   .lp-drawer-logo {
-    height: 40px;
+    height: 120px;
   }
   .lp-drawer-body {
     padding: 16px 16px 28px;
@@ -1108,7 +1108,7 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
 
 @media (min-width: 768px) and (max-width: 1023px) {
   #lp-landing .leadpages-logo {
-    height: 100px !important;
+    height: 300px !important;
   }
   .lp-instrument-stats {
     grid-template-columns: repeat(4, 1fr);
@@ -1142,7 +1142,7 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     padding: 12px 14px 36px;
   }
   #lp-landing .leadpages-logo {
-    height: 88px !important;
+    height: 264px !important;
     margin-bottom: 10px !important;
   }
   #lp-landing h1 {

@@ -134,7 +134,7 @@
     wrap.style.setProperty('--lp-logo-accent', tokens.accent);
     wrap.style.setProperty('--lp-logo-ink', tokens.ink);
     if (isAdminWorkspace()) {
-      wrap.style.setProperty('--lp-logo-pulse-bg', tokens.pulseBg || workspacePulseBg());
+      wrap.style.setProperty('--lp-logo-pulse-bg', 'transparent');
     }
   }
 
@@ -218,8 +218,8 @@
       if (el !== wrap && el.parentNode) el.parentNode.replaceChild(wrap, el);
       wrap.dataset.lpLogoMounted = 'true';
       if (isMarketingHost()) {
-        wrap.style.width = '300px';
-        wrap.style.maxWidth = 'min(300px, 70vw)';
+        wrap.style.width = '900px';
+        wrap.style.maxWidth = 'min(900px, 70vw)';
         wrap.style.height = 'auto';
         if (!el.getAttribute('data-lp-logo-ink') || el.getAttribute('data-lp-logo-ink') === 'auto') {
           applyTokens(wrap, { accent: tokens.accent, ink: '#f3f6fa' });
@@ -247,7 +247,7 @@
     if (!global.document) return;
     var theme = resolvedWorkspaceTheme();
     var tokens = logoTokens({ theme: theme, inkMode: isAdminWorkspace() ? 'workspace' : null });
-    if (isAdminWorkspace()) tokens.pulseBg = workspacePulseBg();
+    if (isAdminWorkspace()) tokens.pulseBg = 'transparent';
     var root = global.document.documentElement;
     root.style.setProperty('--lp-logo-accent', tokens.accent);
     root.style.setProperty('--lp-logo-ink', tokens.ink);
