@@ -94,20 +94,30 @@ function defaultConfig() {
 
 async function loadConfig() {
   const sb = sbClient();
-  if (!sb) return defaultConfig();
-  try {
-    const { data } = await sb.from('system_pages').select('content').eq('key', PLATFORM_KEY).maybeSingle();
-    const base = defaultConfig();
-    if (!data || !data.content || typeof data.content !== 'object') return base;
-    const c = data.content;
-    return Object.assign(base, c, {
-      sitemapUrls: Array.isArray(c.sitemapUrls) && c.sitemapUrls.length
-        ? c.sitemapUrls.map((u) => String(u).trim()).filter(Boolean)
-        : base.sitemapUrls,
-    });
-  } catch {
-    return defaultConfig();
+  const base = defaultConfig();
+  let cfg = base;
+  if (sb) {
+    try {
+      const { data } = await sb.from('system_pages').select('content').eq('key', PLATFORM_KEY).maybeSingle();
+      if (data && data.content && typeof data.content === 'object') {
+        const c = data.content;
+        cfg = Object.assign({}, base, c, {
+          sitemapUrls: Array.isArray(c.sitemapUrls) && c.sitemapUrls.length
+            ? c.sitemapUrls.map((u) => String(u).trim()).filter(Boolean)
+            : base.sitemapUrls,
+        });
+      }
+    } catch {
+      /* use defaults */
+    }
   }
+  const envRaw = process.env.GOOGLE_SITE_VERIFICATION || process.env.PLATFORM_GOOGLE_SITE_VERIFICATION || '';
+  const envTok = tokenFrom(envRaw);
+  if (envTok && !cfg.googleSiteVerification) {
+    cfg.googleSiteVerification = envTok;
+    if (!cfg.googleVerificationMethod) cfg.googleVerificationMethod = 'meta';
+  }
+  return cfg;
 }
 
 async function saveConfig(cfg) {
