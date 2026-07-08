@@ -23,6 +23,7 @@
 <script src="/assets/lp-stroke-icons.js"></script>
 <script src="/assets/lp-logo.js" defer></script>
 <script src="/assets/lp-partner-shell.js" defer></script>
+<script src="/assets/lp-trade-picker.js" defer></script>
 <script src="/assets/lp-messages-embed.js" defer></script>
 </head>
 <body class="lp-partner-page">
@@ -228,19 +229,36 @@
         <p class="sub">Build demos for prospects, save themes, and turn wins into clients.</p>
         <div class="lp-grid-2">
           <div>
-            <div class="card" style="padding:20px;margin-bottom:14px">
-              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-                <h3 style="font-family:var(--font-display);font-size:16px">Create Demo</h3>
-                <span class="muted" style="font-size:12.5px">Prospect-ready website mockups</span>
+            <div class="card lp-demo-create" style="padding:0;margin-bottom:14px;overflow:hidden">
+              <div class="lp-demo-create-hero">
+                <div>
+                  <h3 style="font-family:var(--font-display);font-size:18px;margin:0 0 4px">Create Demo</h3>
+                  <p class="muted" style="margin:0;font-size:13px;max-width:42ch">Pick a trade, load shuffled starter content, and open a prospect-ready mockup in the builder.</p>
+                </div>
+                <span class="statusbadge s-active" style="font-size:11px;letter-spacing:.04em">AI starter packs</span>
               </div>
-              <div class="row2" style="margin-top:12px">
+              <div style="padding:18px 20px 20px">
                 <div class="field"><label for="m-biz">Demo name</label><input id="m-biz" type="text" placeholder="e.g. Hilltop Plumbing"></div>
-                <div class="field"><label for="m-industry">Industry / trade</label><input id="m-industry" type="text" list="trade-list" placeholder="e.g. Plumber"></div>
-              </div>
-              <div class="field"><label for="m-theme">Start from a theme (optional)</label><select id="m-theme"><option value="">Blank trade site</option></select></div>
-              <div class="save-row">
-                <button class="btn btn-brand" id="m-create">Create demo</button>
-                <span class="notice bad hidden" id="m-err" style="margin:0;padding:8px 12px"></span>
+                <div class="field">
+                  <label for="m-trade-search">Industry / trade</label>
+                  <input id="m-trade-search" type="text" autocomplete="off" placeholder="Search 100+ trades… (try plumber, roofer, cleaner)">
+                  <input type="hidden" id="m-pack" value="plumber">
+                  <div id="m-picked" class="cs-picked"></div>
+                  <div class="tp2-wrap"><div id="m-cats" class="tp2-cats"></div><div id="m-packlist" class="tp2-list"></div></div>
+                </div>
+                <div class="row2">
+                  <div class="field"><label for="m-city">Target city</label><input id="m-city" type="text" placeholder="e.g. Canberra"></div>
+                  <div class="field"><label for="m-region">Region</label><input id="m-region" type="text" placeholder="e.g. ACT"></div>
+                </div>
+                <div class="field"><label for="m-theme">Start from a saved theme (optional)</label><select id="m-theme"><option value="">Blank trade site</option></select></div>
+                <label class="lp-demo-seed" style="display:flex;align-items:flex-start;gap:10px;font-weight:600;margin:4px 0 14px;cursor:pointer">
+                  <input type="checkbox" id="m-seed" checked style="width:auto;margin-top:3px">
+                  <span>Load starter content <span class="muted" style="font-weight:500;display:block;font-size:12.5px;margin-top:2px">Pulls a shuffled trade pack with {city} / {business} tokens ready for localisation.</span></span>
+                </label>
+                <div class="save-row" style="margin:0">
+                  <button class="btn btn-brand" id="m-create">Create demo</button>
+                  <span class="notice bad hidden" id="m-err" style="margin:0;padding:8px 12px"></span>
+                </div>
               </div>
             </div>
 
@@ -838,6 +856,7 @@
     }
     refreshWho({ user: { email: (state.partner && (state.partner.email || state.partner.display_name)) || '' } });
     wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage(); loadPayouts(); loadQuotes(); loadMsgBadge();
+    setTimeout(function(){ initDemoTradePicker(); fillDemoLocationDefaults(); }, 0);
     initPartnerMessages();
     document.querySelectorAll('.e-ico[data-icon]').forEach(function(el){
       if(window.LPStrokeIcons) el.innerHTML=window.LPStrokeIcons.svg(el.getAttribute('data-icon'),{size:24});
@@ -887,6 +906,7 @@
     if(name==='listing') loadDirListing();
     if(name==='messages'){ initPartnerMessages(); if(partnerMsgEmbed) partnerMsgEmbed.refresh(); }
     if(name==='support'){ renderSupportClients(); renderSupportHistory(); }
+    if(name==='demos'){ initDemoTradePicker(); fillDemoLocationDefaults(); }
     if(window.LPPartnerShell) window.LPPartnerShell.updateChrome(name);
     var main=document.querySelector('.lp-p-main')||document.querySelector('main');
     if(main) main.scrollTop=0;
@@ -1065,6 +1085,22 @@
     var r=await sb.from('billing_plans').select('key,name,monthly_amount,active,sort').eq('active',true).order('sort',{ascending:true});
     if(r.data){ r.data.forEach(function(pl){ var o=document.createElement('option'); o.value=pl.key; o.textContent=pl.name+' \u2014 '+money(pl.monthly_amount)+'/mo'; sel.appendChild(o); }); sel.dataset.loaded='1'; }
   }
+  function initDemoTradePicker(){
+    if(window.__demoPickerInited||!window.LPTradePicker) return;
+    window.__demoPickerInited=true;
+    window.LPTradePicker.init2({search:'m-trade-search',hidden:'m-pack',picked:'m-picked',cats:'m-cats',list:'m-packlist',defaultSlug:'plumber'});
+  }
+  function fillDemoLocationDefaults(){
+    var pf=state.profile||{};
+    var region=(pf.region||'').trim();
+    var cityEl=document.getElementById('m-city');
+    var regionEl=document.getElementById('m-region');
+    if(cityEl && !cityEl.value) cityEl.value=region.split(/[,&]/)[0].trim()||'Canberra';
+    if(regionEl && !regionEl.value){
+      if(/ACT|NSW|VIC|QLD|SA|WA|TAS|NT/i.test(region)) regionEl.value=region.match(/ACT|NSW|VIC|QLD|SA|WA|TAS|NT/i)[0].toUpperCase();
+      else regionEl.value='ACT';
+    }
+  }
   function wireAdd(){
     if(addWired) return; addWired=true;
     var _qa1=document.getElementById('qa-add-client'); if(_qa1) _qa1.addEventListener('click',function(){ gotoPanel('add'); });
@@ -1082,15 +1118,45 @@
 
     document.getElementById('m-create').addEventListener('click', async function(){
       var err=document.getElementById('m-err'); err.classList.add('hidden');
-      var btn=this; btn.disabled=true; btn.textContent='Creating\u2026';
-      var payload={ businessName:(document.getElementById('m-biz').value||'').trim()||'Untitled demo', industry:(document.getElementById('m-industry').value||'').trim(), themeId:(document.getElementById('m-theme').value||'') };
+      var btn=this; btn.disabled=true;
+      var packSlug=(document.getElementById('m-pack')&&document.getElementById('m-pack').value)||'plumber';
+      var picker=window.LPTradePicker;
+      var industry=picker?picker.tradeType(packSlug):'Plumber';
+      var tradeLabel=picker?picker.tradeLabel(packSlug):'Plumber';
+      var tradeCat=picker?picker.tradeCat(packSlug):'';
+      var biz=(document.getElementById('m-biz').value||'').trim()||'Untitled demo';
+      var seed=document.getElementById('m-seed')&&document.getElementById('m-seed').checked;
+      var starterPack=null;
+      if(seed){
+        btn.textContent='Loading content\u2026';
+        try{
+          var gr=await fetch('/api/api-trade-generate',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify({trade:tradeLabel,category:tradeCat||'General'})});
+          var gj=await gr.json();
+          if(gj&&gj.ok&&gj.pack) starterPack=gj.pack;
+        }catch(_e){}
+      }
+      btn.textContent='Creating\u2026';
+      var payload={
+        businessName:biz,
+        industry:industry,
+        packSlug:packSlug,
+        themeId:(document.getElementById('m-theme').value||''),
+        seedContent:!!(seed&&starterPack),
+        starterPack:starterPack,
+        location:{
+          city:(document.getElementById('m-city').value||'').trim()||'Canberra',
+          region:(document.getElementById('m-region').value||'').trim()||'ACT',
+          suburb:(document.getElementById('m-city').value||'').trim()||'Canberra'
+        }
+      };
       var res;
       try{ var r=await fetch('/api/partner/add-mockup',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
       btn.disabled=false; btn.textContent='Create demo';
       if(!res||!res.ok){ err.textContent=(res&&res.error)||'Could not create the demo.'; err.classList.remove('hidden'); return; }
       mockups.unshift(res.site); renderMockups();
-      document.getElementById('m-biz').value=''; document.getElementById('m-industry').value=''; document.getElementById('m-theme').value='';
-      window.open('/manage','_blank','noopener');
+      document.getElementById('m-biz').value='';
+      if(document.getElementById('m-theme')) document.getElementById('m-theme').value='';
+      window.open('/manage?site='+encodeURIComponent(res.site.slug||''),'_blank','noopener');
     });
     document.getElementById('mockups-list').addEventListener('click', async function(e){
       var _cd=e.target.closest('[data-id]');
@@ -1599,7 +1665,7 @@
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
         +'<div style="display:flex;gap:12px;align-items:center;min-width:260px;flex:1">'
           +'<div style="width:56px;height:56px;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:'+prevBg+';flex:0 0 auto;display:grid;place-items:center">'
-            + (prevInner || (m.logo_obj&&m.logo_obj.imageUrl?('<img src="'+esc(m.logo_obj.imageUrl)+'" alt="" style="width:80%;height:80%;object-fit:contain;background:#fff;border-radius:10px;padding:6px">'):''))
+            + (prevInner || (m.logo_obj&&m.logo_obj.imageUrl?('<img src="'+esc(m.logo_obj.imageUrl)+'" alt="" style="width:80%;height:80%;object-fit:contain;background:var(--panel);border-radius:10px;padding:6px">'):''))
           +'</div>'
           +'<div style="min-width:0">'
             +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
@@ -1640,9 +1706,9 @@
           +'<select data-applytheme style="padding:7px 11px;font-size:13px;width:auto">'+themeOptions()+'</select>'
           +'<input data-pw type="text" value="'+esc(m.preview_password||'')+'" placeholder="Preview password (optional)" style="padding:7px 11px;font-size:13px;width:auto;min-width:220px">'
         +'</div>'
-        +'<details style="margin-top:10px">'
-          +'<summary style="cursor:pointer;font-weight:700;color:var(--text);font-size:13px">Showcase card</summary>'
-          +'<div style="margin-top:10px">'+scControls(m)+'</div>'
+        +'<details class="lp-sc-showcase" style="margin-top:10px">'
+          +'<summary>Showcase card</summary>'
+          +'<div class="lp-sc-showcase-body">'+scControls(m)+'</div>'
         +'</details>'
         +'<details style="margin-top:10px">'
           +'<summary style="cursor:pointer;font-weight:700;color:var(--text);font-size:13px">Project scope</summary>'
@@ -1742,18 +1808,18 @@
   function scControls(m){
     var sc=(m.config&&m.config.showcase)||{};
     var fit=['cover','contain','fill'].indexOf(sc.fit)>=0?sc.fit:'cover';
-    var bs2='padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;cursor:pointer';
+    var bs2='padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--input-bg);color:var(--text);cursor:pointer';
     var prevInner = sc.image ? '<img src="'+esc(sc.image)+'" style="width:100%;height:100%;object-fit:'+fit+'">' : '';
-    var prevBg = (sc.color&&/^#[0-9a-fA-F]{3,8}$/.test(sc.color)) ? esc(sc.color) : '#f2f3f5';
-    return '<div style="margin-top:11px;border-top:1px solid var(--line);padding-top:11px">'
-      +'<div style="font-size:13px;font-weight:600;color:var(--ink-soft);margin-bottom:8px">Showcase card image</div>'
+    var prevBg = (sc.color&&/^#[0-9a-fA-F]{3,8}$/.test(sc.color)) ? esc(sc.color) : 'color-mix(in srgb, var(--accent) 12%, var(--panel))';
+    return '<div class="lp-sc-controls">'
+      +'<div class="lp-sc-controls-title">Showcase card image</div>'
       +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
-      +'<div data-scprev style="width:56px;height:56px;border-radius:10px;overflow:hidden;flex:0 0 auto;border:1px solid var(--line);background:'+prevBg+'">'+prevInner+'</div>'
+      +'<div data-scprev class="lp-sc-preview" style="background:'+prevBg+'">'+prevInner+'</div>'
       +'<button class="btn" data-scupload style="'+bs2+'">Upload image</button>'
       +'<input data-scfile type="file" accept="image/*" style="display:none">'
       +'<button class="btn" data-scclear style="'+bs2+';'+(sc.image?'':'display:none')+'">Remove</button>'
-      +'<label style="font-size:13px;color:var(--ink-soft);font-weight:600;display:inline-flex;align-items:center;gap:6px">Colour <input data-sccolor type="color" value="'+((sc.color&&/^#[0-9a-fA-F]{6}$/.test(sc.color))?esc(sc.color):'#1f7a63')+'" style="width:42px;height:30px;padding:0;border:1px solid var(--line);border-radius:6px;cursor:pointer"></label>'
-      +'<label style="font-size:13px;color:var(--ink-soft);font-weight:600;display:inline-flex;align-items:center;gap:6px">Fit <select data-scfit style="'+bs2+';width:auto">'
+      +'<label class="lp-sc-label">Colour <input data-sccolor type="color" value="'+((sc.color&&/^#[0-9a-fA-F]{6}$/.test(sc.color))?esc(sc.color):'#1f7a63')+'" class="lp-sc-color"></label>'
+      +'<label class="lp-sc-label">Fit <select data-scfit class="lp-sc-select">'
         +'<option value="cover"'+(fit==='cover'?' selected':'')+'>Cover</option>'
         +'<option value="contain"'+(fit==='contain'?' selected':'')+'>Fit</option>'
         +'<option value="fill"'+(fit==='fill'?' selected':'')+'>Stretch</option></select></label>'
@@ -1771,7 +1837,7 @@
   function scopeEditor(m){
     var sc=(m.config&&m.config.scope)||{};
     var items=Array.isArray(sc.items)?sc.items:[];
-    var bs3='padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;cursor:pointer';
+    var bs3='padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--input-bg);color:var(--text);cursor:pointer';
     return '<div data-scopebox style="display:none;margin-top:11px;border-top:1px solid var(--line);padding-top:11px">'
       +'<div style="font-size:13px;font-weight:600;color:var(--ink-soft);margin-bottom:6px">Project scope</div>'
       +'<textarea data-scopedesc rows="3" placeholder="Job description \u2014 what are you building for this client?" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit">'+esc(sc.description||'')+'</textarea>'
