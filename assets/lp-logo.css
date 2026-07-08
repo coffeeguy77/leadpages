@@ -46,36 +46,79 @@ footer img.leadpages-logo {
   --lp-logo-pulse-bg: #2f413a;
 }
 
-/* Ring pulse — pebble ripple: inner circle first, then outward to outer ring */
+/* Ring pulse — 8-phase ripple: inner in, hold glow, outer in, fade out inward-first */
 .lp-logo-pulse #inner-circle {
-  animation: lp-logo-ripple 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation: lp-logo-ripple-inner 5.5s ease-in-out infinite;
   transform-origin: 153px 134px;
 }
 
 .lp-logo-pulse #outer-circle {
-  animation: lp-logo-ripple 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-  animation-delay: 0.52s;
+  animation: lp-logo-ripple-outer 5.5s ease-in-out infinite;
   transform-origin: 160px 134px;
 }
 
-@keyframes lp-logo-ripple {
+/* 1 bg · 2 inner fade · 3 inner glow · 4–5 hold glow · 6 inner fade out · 7–8 bg */
+@keyframes lp-logo-ripple-inner {
   0%,
+  8%,
+  78%,
   100% {
     fill: var(--lp-logo-pulse-bg, var(--bg, #f6f4ef));
     filter: none;
-    opacity: 0.55;
   }
-  32% {
+
+  /* Phase 2 — inner circle fades in */
+  14% {
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 50%, var(--lp-logo-accent, #2ecc8f));
+    filter: none;
+  }
+
+  /* Phases 3–5 — inner glow, held while outer catches up */
+  20%,
+  54% {
     fill: var(--lp-logo-accent, #2ecc8f);
     filter:
       drop-shadow(0 0 6px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 65%, transparent))
       drop-shadow(0 0 14px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 35%, transparent));
-    opacity: 1;
   }
-  58% {
+
+  /* Phase 6 — inner fades back to background first */
+  66% {
     fill: var(--lp-logo-pulse-bg, var(--bg, #f6f4ef));
     filter: none;
-    opacity: 0.55;
+  }
+}
+
+/* 1 bg · 2–3 wait · 4 outer fade · 5 outer glow · 6 hold · 7 outer fade out · 8 bg */
+@keyframes lp-logo-ripple-outer {
+  0%,
+  8%,
+  28%,
+  78%,
+  100% {
+    fill: var(--lp-logo-pulse-bg, var(--bg, #f6f4ef));
+    filter: none;
+  }
+
+  /* Phase 4 — outer circle fades in while inner stays lit */
+  36% {
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 50%, var(--lp-logo-accent, #2ecc8f));
+    filter: none;
+  }
+
+  /* Phases 5–6 — outer glow, held while inner fades out */
+  42%,
+  60% {
+    fill: var(--lp-logo-accent, #2ecc8f);
+    filter:
+      drop-shadow(0 0 6px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 65%, transparent))
+      drop-shadow(0 0 14px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 35%, transparent));
+  }
+
+  /* Phase 7 — outer fades to background (inner already at bg) */
+  72% {
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 50%, var(--lp-logo-accent, #2ecc8f));
+    filter: none;
   }
 }
 
