@@ -7,6 +7,7 @@
   line-height: 0;
   --lp-logo-accent: #2ecc8f;
   --lp-logo-ink: #13161b;
+  --lp-logo-pulse-dark: #0a0a0c;
 }
 
 .lp-logo-wrap svg {
@@ -44,14 +45,14 @@ footer img.leadpages-logo {
   --lp-logo-ink: #f3f6fa;
 }
 
-/* Ring pulse — outer and inner circles only */
+/* Ring pulse — outer and inner circles step from dark into theme accent */
 .lp-logo-pulse #outer-circle {
-  animation: lp-logo-ring-pulse 2.6s cubic-bezier(.45,0,.25,1) infinite;
+  animation: lp-logo-ring-pulse 2.6s cubic-bezier(.45, 0, .25, 1) infinite;
   transform-origin: 160px 134px;
 }
 
 .lp-logo-pulse #inner-circle {
-  animation: lp-logo-ring-pulse 2.6s cubic-bezier(.45,0,.25,1) infinite;
+  animation: lp-logo-ring-pulse 2.6s cubic-bezier(.45, 0, .25, 1) infinite;
   animation-delay: 0.4s;
   transform-origin: 153px 134px;
 }
@@ -59,18 +60,17 @@ footer img.leadpages-logo {
 @keyframes lp-logo-ring-pulse {
   0%,
   100% {
-    opacity: 1;
+    fill: var(--lp-logo-pulse-dark, #0a0a0c);
     filter: none;
+    opacity: 1;
   }
-  50% {
-    opacity: 0.92;
-    /* Make the accent shift obvious without changing the base token. */
+  45%,
+  55% {
+    fill: var(--lp-logo-accent, #2ecc8f);
     filter:
-      saturate(1.9)
-      brightness(1.35)
-      hue-rotate(38deg)
-      drop-shadow(0 0 10px rgba(46, 204, 143, 0.55))
-      drop-shadow(0 0 18px rgba(46, 204, 143, 0.28));
+      drop-shadow(0 0 8px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 70%, transparent))
+      drop-shadow(0 0 18px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 40%, transparent));
+    opacity: 1;
   }
 }
 
