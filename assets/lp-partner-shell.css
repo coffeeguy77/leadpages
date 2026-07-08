@@ -204,6 +204,40 @@
   gap: 2px;
 }
 
+/* ── Desktop sidebar grouping (premium CRM-style) ── */
+.lp-sb {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lp-sb-group {
+  padding: 8px 0;
+  border-top: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+}
+
+.lp-sb-group:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.lp-sb-title {
+  padding: 6px 12px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  opacity: 0.9;
+}
+
+.lp-sb .lp-p-nav,
+.lp-sb .lp-p-nav-item,
+.lp-sb button,
+.lp-sb a {
+  width: 100%;
+}
+
 .lp-p-nav button,
 .lp-p-nav a.lp-p-nav-item {
   display: flex;
@@ -357,6 +391,11 @@
 /* ── Panels ── */
 .lp-p-panel { display: none; animation: lp-p-fade 0.2s ease; }
 .lp-p-panel.on { display: block; }
+
+/* Content width presets (page-level wrappers added in next pass) */
+.lp-p-panel[data-w="wide"] { max-width: 1200px; }
+.lp-p-panel[data-w="form"] { max-width: 960px; }
+.lp-p-panel { margin-right: auto; }
 
 @keyframes lp-p-fade {
   from { opacity: 0; transform: translateY(4px); }
