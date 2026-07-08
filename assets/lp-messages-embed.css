@@ -48,6 +48,48 @@
   font-family: var(--font-display, Georgia, serif);
 }
 
+.lp-messages-embed .lme-list-filters {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  gap: 10px;
+  background: var(--panel-soft, var(--bg-soft));
+}
+
+.lp-messages-embed .lme-list-filters input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--input-bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.lp-messages-embed .lme-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lp-messages-embed .lme-chip {
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.lp-messages-embed .lme-chip.on {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  color: var(--accent);
+}
+
 .lp-messages-embed .btn-sm {
   padding: 6px 11px;
   font-size: 13px;
@@ -166,6 +208,15 @@
 .lp-messages-embed .lme-thread-sub {
   font-size: 12px;
   margin-top: 2px;
+}
+
+.lp-messages-embed .lme-thread-meta {
+  font-size: 12px;
+  margin-top: 4px;
+  color: var(--text-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lp-messages-embed .lme-thread-head .btn:last-child {

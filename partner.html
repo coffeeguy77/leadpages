@@ -271,48 +271,73 @@
       <section class="panel lp-p-panel" data-panel="mypage" data-w="form">
         <h2>Partner Website</h2>
         <p class="sub">Your public partner page — brand, URL, and showcase settings.</p>
-        <div class="card" style="padding:18px 20px;max-width:680px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
-          <div><div style="font-weight:700">Your page design</div><div class="muted" style="font-size:13.5px">Edit your homepage in the builder — hero, services, your pitch. Your enabled demos appear automatically at the bottom. Publish it there to make it live.</div></div>
-          <button class="btn btn-brand" id="sc-design" style="white-space:nowrap">Edit in builder</button>
-        </div>
-        <div class="card" style="padding:24px;max-width:680px">
-          <div class="field">
-            <label for="sc-slug">Your address</label>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <span class="muted">leadpages.com.au/</span>
-              <input id="sc-slug" type="text" placeholder="your-name" style="max-width:200px">
-              <button class="btn" id="sc-check" style="padding:8px 14px;font-size:14px">Check</button>
-              <span id="sc-slug-msg" style="font-size:13px;font-weight:600"></span>
+        <div class="lp-stack" style="max-width:720px">
+          <div class="card" style="padding:20px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+              <div>
+                <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 4px">Public page</h3>
+                <p class="muted" style="margin:0;font-size:13px">Your live address and visibility on LeadPages.</p>
+              </div>
+              <span id="sc-status-badge"></span>
+            </div>
+            <div class="field">
+              <label for="sc-slug">Your address</label>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span class="muted">leadpages.com.au/</span>
+                <input id="sc-slug" type="text" placeholder="your-name" style="max-width:200px">
+                <button class="btn" id="sc-check" style="padding:8px 14px;font-size:14px">Check</button>
+                <span id="sc-slug-msg" style="font-size:13px;font-weight:600"></span>
+              </div>
+            </div>
+            <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin:0"><input type="checkbox" id="sc-enabled" style="width:auto"> Make my page live</label>
+            <p class="muted" style="margin:12px 0 0;font-size:13.5px">Your page: <a id="sc-link" href="#" target="_blank" rel="noopener">—</a></p>
+          </div>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Branding</h3>
+            <p class="muted" style="margin:0 0 14px;font-size:13px">Starter page styling — once you publish a homepage in the builder, that design takes over.</p>
+            <div class="row2">
+              <div class="field"><label for="sc-headline">Headline</label><input id="sc-headline" type="text" placeholder="e.g. Canberra websites that get you booked"></div>
+              <div class="field"><label for="sc-accent">Accent colour</label><input id="sc-accent" type="text" placeholder="#ff6a1a"></div>
+            </div>
+            <div class="field"><label for="sc-intro">Intro text</label><textarea id="sc-intro" rows="3" placeholder="A short pitch prospects see at the top of your page."></textarea></div>
+            <div class="field">
+              <label>Logo</label>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <img id="sc-logo-prev" alt="" style="max-height:46px;max-width:160px;display:none;border:1px solid var(--line);border-radius:8px;padding:4px;background:#fff">
+                <input id="sc-logo-file" type="file" accept="image/*" style="display:none">
+                <button class="btn" id="sc-logo-btn" style="padding:8px 14px;font-size:14px">Upload logo</button>
+                <button class="btn" id="sc-logo-clear" style="padding:8px 14px;font-size:14px;display:none">Remove</button>
+                <span id="sc-logo-msg" class="muted" style="font-size:13px"></span>
+              </div>
             </div>
           </div>
-          <div class="field">
-            <label for="sc-domain">Your own domain (optional)</label>
-            <input id="sc-domain" type="text" placeholder="e.g. yourstudio.com.au">
-            <div class="muted" style="font-size:12.5px;margin-top:6px">Already own a domain? Point it here and it loads your page too. After saving, add a CNAME record at your registrar pointing to <strong>cname.vercel-dns.com</strong>, then let us know so we can connect it. Your <strong>leadpages.com.au/your-name</strong> address keeps working either way.</div>
-          </div>
-          <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin-bottom:14px"><input type="checkbox" id="sc-enabled" style="width:auto"> Make my page live</label>
-          <div class="row2">
-            <div class="field"><label for="sc-headline">Headline</label><input id="sc-headline" type="text" placeholder="e.g. Canberra websites that get you booked"></div>
-            <div class="field"><label for="sc-accent">Accent colour</label><input id="sc-accent" type="text" placeholder="#ff6a1a"></div>
-          </div>
-          <div class="field"><label for="sc-intro">Intro text</label><textarea id="sc-intro" rows="3" placeholder="A short pitch prospects see at the top of your page."></textarea></div>
-          <div class="field">
-            <label>Logo</label>
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-              <img id="sc-logo-prev" alt="" style="max-height:46px;max-width:160px;display:none;border:1px solid var(--line);border-radius:8px;padding:4px;background:#fff">
-              <input id="sc-logo-file" type="file" accept="image/*" style="display:none">
-              <button class="btn" id="sc-logo-btn" style="padding:8px 14px;font-size:14px">Upload logo</button>
-              <button class="btn" id="sc-logo-clear" style="padding:8px 14px;font-size:14px;display:none">Remove</button>
-              <span id="sc-logo-msg" class="muted" style="font-size:13px"></span>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Custom domain</h3>
+            <p class="muted" style="margin:0 0 14px;font-size:13px">Optional — point your own domain at your partner page.</p>
+            <div class="field" style="margin-bottom:0">
+              <label for="sc-domain">Your own domain</label>
+              <input id="sc-domain" type="text" placeholder="e.g. yourstudio.com.au">
+              <div class="muted" style="font-size:12.5px;margin-top:6px">After saving, add a CNAME record at your registrar pointing to <strong>cname.vercel-dns.com</strong>, then let us know so we can connect it. Your <strong>leadpages.com.au/your-name</strong> address keeps working either way.</div>
             </div>
           </div>
-          <div class="save-row">
-            <button class="btn btn-brand" id="sc-save">Save my page</button>
-            <span class="saved" id="sc-saved">Saved ✓</span>
-            <span class="notice bad hidden" id="sc-err" style="margin:0;padding:8px 12px"></span>
+
+          <div class="card" style="padding:20px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+            <div>
+              <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 4px">Homepage &amp; showcase</h3>
+              <p class="muted" style="margin:0;font-size:13px;max-width:52ch">Edit your homepage in the builder — hero, services, your pitch. Enabled demos appear automatically at the bottom. Choose which demos show from the <strong>Demos</strong> tab (“Show on showcase”).</p>
+            </div>
+            <button class="btn btn-brand" id="sc-design" style="white-space:nowrap">Edit in builder</button>
           </div>
-          <p class="muted" style="margin-top:16px;font-size:13.5px">Your page: <a id="sc-link" href="#" target="_blank" rel="noopener">—</a> · Choose which demos appear from the <strong>Demos &amp; themes</strong> tab ("Show on showcase").</p>
-          <p class="muted" style="margin-top:6px;font-size:12.5px">The logo, headline, accent and intro above are used for a simple starter page — once you design and publish your homepage in the builder, that takes over.</p>
+
+          <div class="card" style="padding:20px">
+            <div class="save-row" style="margin:0">
+              <button class="btn btn-brand" id="sc-save">Save my page</button>
+              <span class="saved" id="sc-saved">Saved ✓</span>
+              <span class="notice bad hidden" id="sc-err" style="margin:0;padding:8px 12px"></span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -320,37 +345,63 @@
       <section class="panel lp-p-panel" data-panel="listing" data-w="form">
         <h2>Partner Directory</h2>
         <p class="sub">Appear on the public <a href="/find-a-partner" target="_blank" rel="noopener">Find a Partner</a> page so business owners can find a local web designer near them.</p>
-        <div class="card" style="padding:24px;max-width:720px">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
-            <span class="muted" style="font-size:14px">Directory status</span>
-            <span id="dir-status-badge"></span>
-          </div>
-          <div class="row2">
-            <div class="field"><label for="dir-biz">Business / trading name</label><input id="dir-biz" type="text" autocomplete="organization"></div>
-            <div class="field"><label for="dir-suburb">Suburb</label><input id="dir-suburb" type="text"></div>
-          </div>
-          <div class="row2">
-            <div class="field"><label for="dir-state">State</label>
-              <select id="dir-state" class="tin"><option value="">Choose…</option>
-                <option>ACT</option><option>NSW</option><option>VIC</option><option>QLD</option>
-                <option>SA</option><option>WA</option><option>TAS</option><option>NT</option>
-              </select>
+        <div class="lp-stack" style="max-width:720px">
+          <div class="card" style="padding:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+              <div>
+                <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 4px">Directory status</h3>
+                <p class="muted" style="margin:0;font-size:13px">Control whether prospects can find you on Find a Partner.</p>
+              </div>
+              <span id="dir-status-badge"></span>
             </div>
-            <div class="field"><label for="dir-postcode">Postcode</label><input id="dir-postcode" type="text" maxlength="4"></div>
           </div>
-          <div class="row2">
-            <div class="field"><label for="dir-email">Contact email (public)</label><input id="dir-email" type="email"></div>
-            <div class="field"><label for="dir-phone">Phone (optional)</label><input id="dir-phone" type="tel"></div>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 14px">Business profile</h3>
+            <div class="row2">
+              <div class="field"><label for="dir-biz">Business / trading name</label><input id="dir-biz" type="text" autocomplete="organization"></div>
+              <div class="field"><label for="dir-suburb">Suburb</label><input id="dir-suburb" type="text"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="dir-state">State</label>
+                <select id="dir-state" class="tin"><option value="">Choose…</option>
+                  <option>ACT</option><option>NSW</option><option>VIC</option><option>QLD</option>
+                  <option>SA</option><option>WA</option><option>TAS</option><option>NT</option>
+                </select>
+              </div>
+              <div class="field"><label for="dir-postcode">Postcode</label><input id="dir-postcode" type="text" maxlength="4"></div>
+            </div>
           </div>
-          <div class="field"><label for="dir-website">Website or demo URL</label><input id="dir-website" type="url" placeholder="https://www.yourbusiness.com.au"></div>
-          <div class="field"><label for="dir-blurb">About you <span class="muted" style="font-weight:500">(2–3 sentences — who you help, where you work)</span></label><textarea id="dir-blurb" rows="3"></textarea></div>
-          <div class="field"><label>Specialties <span class="muted" style="font-weight:500">(tick up to 8)</span></label><div id="dir-specs" class="dir-specs"></div></div>
-          <div class="save-row" style="flex-wrap:wrap">
-            <button class="btn btn-brand" id="dir-save" type="button">Save listing</button>
-            <button class="btn hidden" id="dir-hide" type="button">Hide from directory</button>
-            <button class="btn hidden" id="dir-publish" type="button">Publish listing</button>
-            <span class="notice bad hidden" id="dir-err" style="margin:0;padding:8px 12px"></span>
-            <span class="saved" id="dir-ok">Saved ✓</span>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 14px">Contact details</h3>
+            <div class="row2">
+              <div class="field"><label for="dir-email">Contact email (public)</label><input id="dir-email" type="email"></div>
+              <div class="field"><label for="dir-phone">Phone (optional)</label><input id="dir-phone" type="tel"></div>
+            </div>
+            <div class="field" style="margin-bottom:0"><label for="dir-website">Website or demo URL</label><input id="dir-website" type="url" placeholder="https://www.yourbusiness.com.au"></div>
+          </div>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 14px">About you</h3>
+            <div class="field" style="margin-bottom:0"><label for="dir-blurb">Short bio <span class="muted" style="font-weight:500">(2–3 sentences — who you help, where you work)</span></label><textarea id="dir-blurb" rows="3"></textarea></div>
+          </div>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Specialties</h3>
+            <p class="muted" style="margin:0 0 12px;font-size:13px">Tick up to 8 — selected specialties appear first.</p>
+            <div id="dir-specs" class="dir-specs"></div>
+          </div>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 14px">Visibility</h3>
+            <div class="save-row" style="flex-wrap:wrap;margin:0">
+              <button class="btn btn-brand" id="dir-save" type="button">Save listing</button>
+              <button class="btn hidden" id="dir-hide" type="button">Hide from directory</button>
+              <button class="btn hidden" id="dir-publish" type="button">Publish listing</button>
+              <span class="notice bad hidden" id="dir-err" style="margin:0;padding:8px 12px"></span>
+              <span class="saved" id="dir-ok">Saved ✓</span>
+            </div>
           </div>
         </div>
       </section>
@@ -358,17 +409,32 @@
       <!-- Payouts & pricing -->
       <section class="panel lp-p-panel" data-panel="payouts" data-w="form">
         <h2>Payouts &amp; Pricing</h2>
-        <p class="sub">Set a price per demo and see exactly what you earn. Each sale is split 50/50, with a $750 minimum to LeadPages.</p>
-        <div class="card" style="padding:24px;max-width:680px">
-          <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin-bottom:14px"><input type="checkbox" id="po-gst" style="width:auto"> I’m registered for GST</label>
-          <div class="field"><label for="po-abn">ABN</label><input id="po-abn" type="text" placeholder="Needed before we can pay you"><div class="muted" style="font-size:12.5px;margin-top:6px">If you’re not registered for GST, GST is removed from your share (you receive 10% less). Add your ABN so we can pay you.</div></div>
-          <div class="field"><label for="po-plan">Default hosting plan</label><select id="po-plan"></select><div class="muted" style="font-size:12.5px;margin-top:6px">What a new client starts on — they can change it at signup.</div></div>
-          <div class="save-row"><button class="btn btn-brand" id="po-save">Save</button><span class="saved" id="po-saved">Saved ✓</span></div>
-        </div>
-        <h3 style="font-family:var(--font-display);font-size:17px;margin:24px 0 10px">Price calculator</h3>
-        <div class="card" style="padding:20px;max-width:680px">
-          <div class="field" style="max-width:240px"><label for="po-calc">Sale price ($)</label><input id="po-calc" type="number" min="0" step="50" placeholder="1000"></div>
-          <div id="po-breakdown" class="muted" style="font-size:14.5px"></div>
+        <p class="sub">Manage payout details, set defaults, and preview earnings. Each sale is split 50/50, with a $750 minimum to LeadPages.</p>
+        <div class="lp-stack">
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Payout details</h3>
+            <p class="muted" style="margin:0 0 12px;font-size:13px">Used to process your payouts. Add these before your first payout cycle.</p>
+            <label style="display:inline-flex;align-items:center;gap:8px;font-weight:700;margin-bottom:12px"><input type="checkbox" id="po-gst" style="width:auto"> I’m registered for GST</label>
+            <div class="field"><label for="po-abn">ABN</label><input id="po-abn" type="text" placeholder="Needed before we can pay you"><div class="muted" style="font-size:12.5px;margin-top:6px">If you’re not registered for GST, GST is removed from your share (you receive 10% less).</div></div>
+          </div>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Pricing defaults</h3>
+            <p class="muted" style="margin:0 0 12px;font-size:13px">Defaults used when creating new clients/quotes.</p>
+            <div class="field"><label for="po-plan">Default hosting plan</label><select id="po-plan"></select><div class="muted" style="font-size:12.5px;margin-top:6px">Clients can change at signup.</div></div>
+            <div class="save-row"><button class="btn btn-brand" id="po-save">Save</button><span class="saved" id="po-saved">Saved ✓</span></div>
+          </div>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Earnings calculator</h3>
+            <p class="muted" style="margin:0 0 12px;font-size:13px">Preview what you and LeadPages earn on a build + hosting plan.</p>
+            <div class="row2">
+              <div class="field" style="max-width:260px"><label for="po-calc">Build price ($)</label><input id="po-calc" type="number" min="0" step="50" placeholder="1000"></div>
+              <div class="field"><label for="po-calc-plan">Monthly hosting plan</label><select id="po-calc-plan"></select></div>
+            </div>
+            <div id="po-breakdown" class="muted" style="font-size:14.5px"></div>
+            <div id="po-year" class="muted" style="font-size:13px;margin-top:8px"></div>
+          </div>
         </div>
       </section>
 
@@ -416,12 +482,22 @@
       <section class="panel lp-p-panel" data-panel="commissions" data-w="wide">
         <h2>Commissions</h2>
         <p class="sub">50% of each build fee and 20% of monthly subscription revenue for clients you generate. Paid on a 30-day cycle, subject to approval and account standing.</p>
-        <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpis" style="grid-template-columns:repeat(6,1fr)">
           <div class="card kpi"><div class="lab">Pending</div><div class="val" id="cm-pending">$0</div></div>
-          <div class="card kpi"><div class="lab">Approved (next payout)</div><div class="val" id="cm-approved">$0</div></div>
+          <div class="card kpi"><div class="lab">Approved next payout</div><div class="val" id="cm-approved">$0</div></div>
           <div class="card kpi"><div class="lab">Paid to date</div><div class="val" id="cm-paid">$0</div></div>
+          <div class="card kpi"><div class="lab">Monthly recurring</div><div class="val" id="cm-recurring">$0</div></div>
+          <div class="card kpi"><div class="lab">Build commission</div><div class="val" id="cm-build">$0</div></div>
+          <div class="card kpi"><div class="lab">Subscription commission</div><div class="val" id="cm-sub">$0</div></div>
         </div>
-        <div id="comm-list" style="margin-top:6px"></div>
+
+        <div class="card" style="padding:18px 20px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0">Earnings ledger</h3>
+            <span class="muted" style="font-size:12.5px">Build + recurring commissions</span>
+          </div>
+          <div id="comm-ledger" style="margin-top:12px"></div>
+        </div>
       </section>
 
       <!-- Training -->
@@ -430,14 +506,46 @@
           <div><h2>Training Centre</h2><p class="sub" style="margin-bottom:0">Step-by-step training from your first sale to ongoing client support.</p></div>
           <span class="statusbadge s-active" id="train-progress" style="font-size:13px"></span>
         </div>
-        <div id="training-list" style="margin-top:16px"><div class="card empty"><p class="muted">Loading training…</p></div></div>
+        <div class="card" style="padding:16px 18px;margin-top:14px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <input id="train-q" type="text" placeholder="Search training…" style="flex:1;min-width:240px">
+            <select id="train-cat" class="tin" style="width:auto;min-width:220px">
+              <option value="">All categories</option>
+              <option value="getting-started">Getting Started</option>
+              <option value="selling">Selling LeadPages</option>
+              <option value="demos">Building Demos</option>
+              <option value="quotes">Sending Quotes</option>
+              <option value="clients">Managing Clients</option>
+              <option value="support">Support Process</option>
+              <option value="pricing">Pricing &amp; Commission</option>
+              <option value="growth">Advanced Partner Growth</option>
+            </select>
+          </div>
+        </div>
+        <div id="training-list" style="margin-top:14px"><div class="card empty"><p class="muted">Loading training…</p></div></div>
       </section>
 
       <!-- Resources -->
       <section class="panel lp-p-panel" data-panel="resources" data-w="wide">
         <h2>Sales Toolkit</h2>
         <p class="sub">Scripts, templates, and pitch material — searchable and ready to copy.</p>
-        <div id="resources-list" style="margin-top:6px"><div class="card empty"><p class="muted">Loading resources…</p></div></div>
+        <div class="card" style="padding:16px 18px;margin-top:14px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <input id="res-q" type="text" placeholder="Search resources…" style="flex:1;min-width:240px">
+            <select id="res-tab" class="tin" style="width:auto;min-width:220px">
+              <option value="">All</option>
+              <option value="emails">Emails</option>
+              <option value="sms">SMS</option>
+              <option value="phone">Phone scripts</option>
+              <option value="objections">Objection handling</option>
+              <option value="proposals">Proposals</option>
+              <option value="onboarding">Onboarding</option>
+              <option value="support">Client support</option>
+              <option value="marketing">Marketing</option>
+            </select>
+          </div>
+        </div>
+        <div id="resources-list" style="margin-top:14px"><div class="card empty"><p class="muted">Loading resources…</p></div></div>
       </section>
 
       <!-- Messages -->
@@ -451,15 +559,31 @@
       <section class="panel lp-p-panel" data-panel="support" data-w="wide">
         <h2>Support</h2>
         <p class="sub">Contact your LeadPages account manager or raise a support request on behalf of a client.</p>
-        <div class="card" style="padding:24px;max-width:720px;margin-bottom:16px">
-          <h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 6px">LeadPages account manager</h3>
-          <p class="muted" style="margin:0 0 14px;max-width:52ch">Billing, platform issues, or anything you need help with — message your account manager directly.</p>
-          <button type="button" class="btn btn-brand" id="support-lp">Message account manager</button>
-        </div>
-        <div class="card" style="padding:24px;max-width:720px">
-          <h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 6px">Client support</h3>
-          <p class="muted" style="margin:0 0 14px;max-width:52ch">Raise a support request about a specific client account. LeadPages will see which site it relates to.</p>
-          <div id="support-clients-list"><p class="muted">Loading clients…</p></div>
+        <div class="lp-stack" style="max-width:820px">
+          <div class="card" style="padding:20px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+            <div>
+              <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">LeadPages account manager</h3>
+              <p class="muted" style="margin:0;max-width:52ch;font-size:13px">Billing, platform issues, or anything you need help with — message your account manager directly.</p>
+            </div>
+            <button type="button" class="btn btn-brand" id="support-lp">Message account manager</button>
+          </div>
+
+          <div class="card" style="padding:20px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+              <div>
+                <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 4px">Client support</h3>
+                <p class="muted" style="margin:0;font-size:13px;max-width:52ch">Raise a support request about a specific client account. LeadPages will see which site it relates to.</p>
+              </div>
+              <input id="support-clients-q" type="text" placeholder="Search clients…" style="width:min(280px, 72vw)">
+            </div>
+            <div id="support-clients-list"><p class="muted">Loading clients…</p></div>
+          </div>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Support history</h3>
+            <p class="muted" style="margin:0 0 12px;font-size:13px">Past support conversations stay in Messages for your records.</p>
+            <div id="support-history"></div>
+          </div>
         </div>
       </section>
 
@@ -583,6 +707,17 @@
     var btn=document.getElementById('messages-link'); if(!btn) return;
     var old=btn.querySelector('[data-msgbadge]'); if(old) old.remove();
     if(n>0){ var b=document.createElement('span'); b.setAttribute('data-msgbadge',''); b.textContent=n>9?'9+':String(n); b.style.cssText='margin-left:7px;background:var(--bad);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:1px 7px;vertical-align:middle'; btn.appendChild(b); }
+    updateSupportKpi();
+  }
+  function updateSupportKpi(){
+    var el=document.getElementById('kpi-support'); if(!el) return;
+    var n=0;
+    try{
+      if(partnerMsgEmbed && partnerMsgEmbed.getUnreadCountByGroup){
+        n=partnerMsgEmbed.getUnreadCountByGroup('lp')+partnerMsgEmbed.getUnreadCountByGroup('support');
+      }
+    }catch(_e){}
+    el.textContent=String(n);
   }
   function initPartnerMessages(){
     var root=document.getElementById('partner-messages-root');
@@ -599,13 +734,40 @@
   }
   function renderSupportClients(){
     var box=document.getElementById('support-clients-list'); if(!box) return;
+    var qEl=document.getElementById('support-clients-q');
+    var q=(qEl&&qEl.value||'').trim().toLowerCase();
     var mine=clients.filter(function(c){ return state.partner&&c.servicing_partner_id===state.partner.id; });
-    if(!mine.length){ box.innerHTML='<p class="muted" style="margin:0">No clients assigned to you yet.</p>'; return; }
+    if(q){
+      mine=mine.filter(function(c){
+        var hay=((c.business_name||'')+' '+(c.slug||'')).toLowerCase();
+        return hay.indexOf(q)>=0;
+      });
+    }
+    if(!mine.length){
+      box.innerHTML='<div class="card empty" style="padding:24px">'+emptyIco('clients')+'<strong>'+(q?'No matching clients':'No clients assigned to you yet')+'</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">'+(q?'Try a different search term.':'Add a client first, then you can raise support requests on their behalf.')+'</p></div>';
+      return;
+    }
     box.innerHTML=mine.map(function(c){
-      return '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);flex-wrap:wrap">'
-        +'<div><div style="font-weight:600">'+esc(c.business_name||c.slug)+'</div><div class="muted" style="font-size:13px">'+esc(c.slug)+'</div></div>'
+      var live=c.status==='live';
+      var badge=live?'<span class="statusbadge s-active">Live</span>':'<span class="statusbadge s-pending">Draft</span>';
+      return '<div class="lp-support-row">'
+        +'<div class="lp-support-row-main">'
+        +'<div style="font-weight:700;font-size:15px">'+esc(c.business_name||c.slug)+'</div>'
+        +'<div class="muted" style="font-size:13px;margin-top:2px">'+esc(c.slug)+' · '+badge+'</div>'
+        +'</div>'
         +'<button type="button" class="btn btn-sm" data-supto="'+esc(c.id)+'">Get support for this client</button></div>';
     }).join('');
+    try{ if(window.LPStrokeIcons) window.LPStrokeIcons.decorateAll(box); }catch(_e){}
+  }
+  function renderSupportHistory(){
+    var box=document.getElementById('support-history'); if(!box) return;
+    box.innerHTML='<div class="card empty" style="padding:24px;margin:0;box-shadow:none;border-style:dashed">'
+      +emptyIco('messages')
+      +'<strong>No support tickets tracked yet</strong>'
+      +'<p class="muted" style="margin:6px auto 0;max-width:46ch">Support conversations with LeadPages and client-related requests are kept in <strong>Messages</strong>. Open Messages to review past threads.</p>'
+      +'<button type="button" class="btn" data-open-messages style="margin-top:12px">Open Messages</button>'
+      +'</div>';
+    try{ if(window.LPStrokeIcons) window.LPStrokeIcons.decorateAll(box); }catch(_e){}
   }
   function openClientMessage(siteId, prefill){
     gotoPanel('messages');
@@ -724,7 +886,7 @@
     document.querySelectorAll('.panel').forEach(function(s){ s.classList.toggle('on', s.getAttribute('data-panel')===name); });
     if(name==='listing') loadDirListing();
     if(name==='messages'){ initPartnerMessages(); if(partnerMsgEmbed) partnerMsgEmbed.refresh(); }
-    if(name==='support') renderSupportClients();
+    if(name==='support'){ renderSupportClients(); renderSupportHistory(); }
     if(window.LPPartnerShell) window.LPPartnerShell.updateChrome(name);
     var main=document.querySelector('.lp-p-main')||document.querySelector('main');
     if(main) main.scrollTop=0;
@@ -741,6 +903,7 @@
     var rr=0; clients.forEach(function(c){ if(c.status==='live'&&c.monthly_amount!=null) rr+=Math.round(c.monthly_amount*0.20); });
     var kr=document.getElementById('kpi-recurring'); if(kr) kr.innerHTML=money(rr)+'<span style="font-size:14px;color:var(--ink-faint)">/mo</span>';
     renderDashAttention();
+    updateSupportKpi();
   }
 
   function dashRow(iconName, title, detail, actionLabel, actionFnName, tone){
@@ -912,6 +1075,10 @@
     var _cq=document.getElementById('clients-q'); if(_cq) _cq.addEventListener('input',function(){ renderClients(); });
     var _dq=document.getElementById('demo-q'); if(_dq) _dq.addEventListener('input',function(){ renderMockups(); });
     var _dc=document.getElementById('demo-clear'); if(_dc) _dc.addEventListener('click',function(){ var i=document.getElementById('demo-q'); if(i){ i.value=''; renderMockups(); } });
+    var _rq=document.getElementById('res-q'); if(_rq) _rq.addEventListener('input', renderResources);
+    var _rt=document.getElementById('res-tab'); if(_rt) _rt.addEventListener('change', renderResources);
+    var _tq=document.getElementById('train-q'); if(_tq) _tq.addEventListener('input', renderTraining);
+    var _tc=document.getElementById('train-cat'); if(_tc) _tc.addEventListener('change', renderTraining);
 
     document.getElementById('m-create').addEventListener('click', async function(){
       var err=document.getElementById('m-err'); err.classList.add('hidden');
@@ -1094,8 +1261,11 @@
       window.open('/manage?site='+encodeURIComponent(res.site.slug),'_blank','noopener');
     });
     document.getElementById('sc-slug').addEventListener('input',updateScLink);
+    var _scEn=document.getElementById('sc-enabled');
+    if(_scEn) _scEn.addEventListener('change',updateScStatusBadge);
     document.getElementById('po-calc').addEventListener('input', renderCalc);
     document.getElementById('po-gst').addEventListener('change', renderCalc);
+    var __pcp=document.getElementById('po-calc-plan'); if(__pcp) __pcp.addEventListener('change', renderCalc);
     document.getElementById('po-save').addEventListener('click', async function(){
       var btn=this; btn.disabled=true;
       var patch={ gst_registered:document.getElementById('po-gst').checked, abn:(document.getElementById('po-abn').value||'').trim()||null, default_plan_key:(document.getElementById('po-plan').value||'')||null, updated_at:new Date().toISOString() };
@@ -1104,6 +1274,8 @@
       state.profile=r.data[0];
       var sv=document.getElementById('po-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1700);
       renderMockups();
+      try{ if(document.getElementById('po-calc-plan')) document.getElementById('po-calc-plan').value = state.profile.default_plan_key||''; }catch(_e){}
+      renderCalc();
     });
     document.getElementById('q-addphone').addEventListener('click', function(){ addPhoneRow(''); });
     document.getElementById('q-addfeat').addEventListener('click', function(){ addFeatRow(''); });
@@ -1156,7 +1328,7 @@
       btn.disabled=false;
       if(!res||!res.ok){ err.textContent=(res&&res.error)||'Could not save.'; err.classList.remove('hidden'); if(res&&res.field==='slug'){ var sm=document.getElementById('sc-slug-msg'); sm.style.color='var(--bad)'; sm.textContent=res.error; } return; }
       state.profile=res.profile;
-      var sv=document.getElementById('sc-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1700); updateScLink();
+      var sv=document.getElementById('sc-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1700); updateScLink(); updateScStatusBadge();
     });
     document.getElementById('ov-add').addEventListener('click',function(){ gotoPanel('add'); });
     var _slp=document.getElementById('support-lp');
@@ -1169,6 +1341,11 @@
       var pre='Support request for client: '+((cc&&cc.business_name)||(cc&&cc.slug)||'Client');
       if(cc&&cc.slug) pre+=' (site: '+cc.slug+')';
       openLeadPagesMessage(pre+'.\n\nDescribe the issue: ');
+    });
+    var _scq=document.getElementById('support-clients-q');
+    if(_scq) _scq.addEventListener('input',renderSupportClients);
+    document.addEventListener('click',function(e){
+      if(e.target.closest('[data-open-messages]')) gotoPanel('messages');
     });
     document.getElementById('add-another').addEventListener('click',function(){
       document.getElementById('add-card').classList.remove('hidden');
@@ -1219,27 +1396,49 @@
     return '<span class="'+cls+'">'+esc(st||'')+'</span>';
   }
   function clientName(siteId){ var c=clients.find(function(x){return x.id===siteId;}); return c?(c.business_name||c.slug):'Client'; }
+  function commRateLabel(c){
+    if(c.rate!=null && c.rate!=='') return (Number(c.rate)>1 ? Math.round(Number(c.rate)) : Math.round(Number(c.rate)*100))+'%';
+    return c.type==='build'?'50%':'20%';
+  }
   function commRow(c){
-    var label=c.type==='build'?'Build (50%)':'Recurring (20%)';
-    var when=c.paid_date?('Paid '+c.paid_date):(c.expected_payment_date?('Due '+c.expected_payment_date):'');
-    return '<div class="card" style="padding:13px 16px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
-      +'<div><div style="font-weight:700;font-size:15px">'+esc(clientName(c.site_id))+'</div>'
-      +'<div class="muted" style="font-size:12.5px;margin-top:2px">'+label+' \u00b7 on '+money(c.gross_amount)+(when?(' \u00b7 '+esc(when)):'')+'</div></div>'
-      +'<div style="text-align:right"><div style="font-family:var(--font-display);font-weight:700;font-size:18px">'+money(c.commission_amount)+'</div>'+commBadge(c.status)+'</div>'
-      +'</div></div>';
+    var label=c.type==='build'?'Build':'Recurring';
+    var when=c.paid_date?('Paid '+c.paid_date):(c.expected_payment_date?('Due '+c.expected_payment_date):'—');
+    return '<tr>'
+      +'<td data-label="Client"><span style="font-weight:700">'+esc(clientName(c.site_id))+'</span></td>'
+      +'<td data-label="Type">'+esc(label)+'</td>'
+      +'<td data-label="Gross">'+money(c.gross_amount)+'</td>'
+      +'<td data-label="Rate">'+esc(commRateLabel(c))+'</td>'
+      +'<td data-label="Earnings"><span style="font-family:var(--font-display);font-weight:700">'+money(c.commission_amount)+'</span></td>'
+      +'<td data-label="Status">'+commBadge(c.status)+'</td>'
+      +'<td data-label="Date" class="muted" style="font-size:13px">'+esc(when)+'</td>'
+      +'</tr>';
   }
   function renderCommissions(){
-    var box=document.getElementById('comm-list'); if(!box) return;
-    box.innerHTML = commissions.length ? commissions.map(commRow).join('')
+    var box=document.getElementById('comm-ledger'); if(!box) return;
+    box.innerHTML = commissions.length
+      ? '<div class="lp-ledger-wrap"><table class="lp-ledger"><thead><tr>'
+        +'<th>Client</th><th>Type</th><th>Gross</th><th>Rate</th><th>Earnings</th><th>Status</th><th>Date</th>'
+        +'</tr></thead><tbody>'+commissions.map(commRow).join('')+'</tbody></table></div>'
       : '<div class="card empty">'+emptyIco('commissions')+'<strong>No commissions yet</strong><p class="muted" style="margin:6px auto 0;max-width:46ch">Your build and recurring commissions appear here automatically once a client\u2019s payment is processed.</p></div>';
   }
   async function loadCommissions(){
     var r=await sb.from('partner_commissions').select('id,type,rate,gross_amount,commission_amount,status,period_start,period_end,site_id,expected_payment_date,paid_date,created_at').order('created_at',{ascending:false});
     commissions=(r.data||[]);
-    var pend=0,appr=0,paid=0;
-    commissions.forEach(function(c){ if(c.status==='pending'||c.status==='held')pend+=c.commission_amount; else if(c.status==='approved')appr+=c.commission_amount; else if(c.status==='paid')paid+=c.commission_amount; });
+    var pend=0,appr=0,paid=0, build=0, sub=0, recur=0;
+    commissions.forEach(function(c){
+      if(c.status==='pending'||c.status==='held')pend+=c.commission_amount;
+      else if(c.status==='approved')appr+=c.commission_amount;
+      else if(c.status==='paid')paid+=c.commission_amount;
+      if(c.type==='build') build+=c.commission_amount;
+      else sub+=c.commission_amount;
+    });
+    // Best-effort recurring estimate from active live clients
+    try{
+      clients.forEach(function(c){ if(c.status==='live' && c.monthly_amount!=null) recur += Math.round(c.monthly_amount*0.20); });
+    }catch(_e){}
     var set=function(id,v){ var e=document.getElementById(id); if(e) e.textContent=money(v); };
     set('cm-pending',pend); set('cm-approved',appr); set('cm-paid',paid);
+    set('cm-build',build); set('cm-sub',sub); set('cm-recurring',recur);
     set('kpi-pendingcomm',pend); set('kpi-payout',appr); set('kpi-paidcomm',paid);
     renderCommissions();
   }
@@ -1274,7 +1473,33 @@
     if(!modules.length){ box.innerHTML='<div class="card empty">'+emptyIco('training')+'<strong>No training yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Modules appear here as they\u2019re published.</p></div>'; if(tp) tp.textContent=''; return; }
     var done=modules.filter(function(m){ return progress[m.id]&&progress[m.id].status==='completed'; }).length;
     if(tp) tp.textContent=done+' of '+modules.length+' completed';
-    box.innerHTML=renderCoursesHtml();
+    // Filters (client-side only)
+    var q=(document.getElementById('train-q')&&document.getElementById('train-q').value||'').trim().toLowerCase();
+    var cat=(document.getElementById('train-cat')&&document.getElementById('train-cat').value)||'';
+    function guessCat(m){
+      var t=(m.title||'')+' '+(m.category||'')+' '+(m.description||'');
+      t=t.toLowerCase();
+      if(/getting started|welcome|setup|first/.test(t)) return 'getting-started';
+      if(/sell|pitch|prospect|objection|close/.test(t)) return 'selling';
+      if(/demo|mockup|theme/.test(t)) return 'demos';
+      if(/quote|pricing|proposal/.test(t)) return 'quotes';
+      if(/client|handover|publish|workspace/.test(t)) return 'clients';
+      if(/support|ticket|escalat/.test(t)) return 'support';
+      if(/commission|gst|abn|payout|earn/.test(t)) return 'pricing';
+      if(/growth|referral|scale|advanced/.test(t)) return 'growth';
+      return '';
+    }
+    var filtered = modules.filter(function(m){
+      if(q){
+        var hay=(m.title||'')+' '+(m.category||'')+' '+(m.description||'')+' '+(m.body||'');
+        if(hay.toLowerCase().indexOf(q)<0) return false;
+      }
+      if(cat){
+        return guessCat(m)===cat;
+      }
+      return true;
+    });
+    box.innerHTML = filtered.length ? groupRender(filtered, moduleCard) : '<div class="card empty">'+emptyIco('training')+'<strong>No matches</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Try a different search or category.</p></div>';
   }
   function courseBlock(title,desc,mods){
     var done=mods.filter(function(m){ return progress[m.id]&&progress[m.id].status==='completed'; }).length;
@@ -1321,7 +1546,32 @@
   }
   function renderResources(){
     var box=document.getElementById('resources-list'); if(!box) return;
-    box.innerHTML = resources.length ? groupRender(resources, resourceCard)
+    var q=(document.getElementById('res-q')&&document.getElementById('res-q').value||'').trim().toLowerCase();
+    var tab=(document.getElementById('res-tab')&&document.getElementById('res-tab').value)||'';
+    function guessTab(r){
+      var t=((r.type||'')+' '+(r.category||'')+' '+(r.title||'')+' '+(r.description||'')).toLowerCase();
+      if(/sms|text message/.test(t)) return 'sms';
+      if(/phone|call|voicemail|script/.test(t)) return 'phone';
+      if(/objection|handle|pushback/.test(t)) return 'objections';
+      if(/proposal|quote|scope/.test(t)) return 'proposals';
+      if(/onboard|welcome|handover/.test(t)) return 'onboarding';
+      if(/support|ticket|issue/.test(t)) return 'support';
+      if(/market|facebook|google|seo|ad/.test(t)) return 'marketing';
+      if(/email|newsletter|subject/.test(t)) return 'emails';
+      return '';
+    }
+    var filtered = resources.filter(function(r){
+      if(q){
+        var hay=(r.title||'')+' '+(r.description||'')+' '+(r.body||'')+' '+(r.category||'')+' '+(r.type||'');
+        if(hay.toLowerCase().indexOf(q)<0) return false;
+      }
+      if(tab){
+        return guessTab(r)===tab;
+      }
+      return true;
+    });
+
+    box.innerHTML = filtered.length ? groupRender(filtered, resourceCard)
       : '<div class="card empty">'+emptyIco('resources')+'<strong>No resources yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Scripts, templates and pitch material will appear here.</p></div>';
   }
   async function loadResources(){
@@ -1446,12 +1696,18 @@
     var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var a=document.getElementById('sc-link');
     if(slug){ a.href='https://'+scBase()+'/'+slug; a.textContent=scBase()+'/'+slug; } else { a.href='#'; a.textContent='\u2014'; }
   }
+  function updateScStatusBadge(){
+    var badge=document.getElementById('sc-status-badge'); if(!badge) return;
+    var on=!!(document.getElementById('sc-enabled')&&document.getElementById('sc-enabled').checked);
+    badge.innerHTML=on?'<span class="statusbadge s-active">Live</span>':'<span class="statusbadge s-pending">Hidden</span>';
+  }
   function loadMyPage(){
     var pf=state.profile||{}; var cfg=pf.showcase_config||{}; var g=function(id){return document.getElementById(id);};
     g('sc-slug').value=pf.showcase_slug||''; g('sc-domain').value=pf.showcase_domain||''; g('sc-enabled').checked=!!pf.showcase_enabled;
     g('sc-headline').value=pf.showcase_headline||''; g('sc-accent').value=cfg.accent||''; g('sc-intro').value=cfg.intro||'';
     scLogo=cfg.logo||''; if(scLogo){ g('sc-logo-prev').src=scLogo; g('sc-logo-prev').style.display=''; g('sc-logo-clear').style.display=''; }
     updateScLink();
+    updateScStatusBadge();
     renderDashAttention();
   }
   async function scUploadLogo(file){
@@ -1642,18 +1898,40 @@
     var d=parseFloat(document.getElementById('po-calc').value||'0'); var cents=d>0?Math.round(d*100):0;
     var gst=document.getElementById('po-gst').checked;
     var b=document.getElementById('po-breakdown'); if(!b) return;
-    if(!cents){ b.innerHTML=''; return; }
+    var py=document.getElementById('po-year');
+    var planKey=(document.getElementById('po-calc-plan')&&document.getElementById('po-calc-plan').value)||'';
+    var planAmt=(window.__lpPartnerPlans && window.__lpPartnerPlans[planKey] && window.__lpPartnerPlans[planKey].monthly_amount!=null)
+      ? Math.round(window.__lpPartnerPlans[planKey].monthly_amount||0) : 0;
+    var recurring = planAmt ? Math.round(planAmt*0.20) : 0;
+    if(!cents){
+      b.innerHTML='';
+      if(py) py.innerHTML='';
+      return;
+    }
     var sx=lpSplit(cents,gst);
-    b.innerHTML='On a '+fmtAUD(cents)+' sale: <strong style="color:var(--ink)">you get '+fmtAUD(sx.partner)+'</strong>, LeadPages gets '+fmtAUD(sx.lp)+'.'+(sx.gstOff?(' <span style="color:var(--bad)">GST of '+fmtAUD(sx.gstOff)+' removed</span> \u2014 register for GST + add your ABN to keep it.'):'');
+    b.innerHTML='On a '+fmtAUD(cents)+' build: <strong style="color:var(--ink)">you get '+fmtAUD(sx.partner)+'</strong>, LeadPages gets '+fmtAUD(sx.lp)+'.'+(sx.gstOff?(' <span style="color:var(--bad)">GST of '+fmtAUD(sx.gstOff)+' removed</span> \u2014 register for GST + add your ABN to keep it.'):'')
+      + (recurring ? (' <span style="color:var(--ink-soft)">· Monthly commission ~'+fmtAUD(recurring)+'/mo</span>') : '');
+    if(py){
+      var firstYear = sx.partner + recurring*12;
+      py.innerHTML = 'Estimated first-year earnings: <strong style="color:var(--text)">'+fmtAUD(firstYear)+'</strong> (build + 12 months recurring).';
+    }
   }
   async function loadPayouts(){
     var pf=state.profile||{};
     document.getElementById('po-gst').checked=!!pf.gst_registered;
     document.getElementById('po-abn').value=pf.abn||'';
     var pr=await sb.from('billing_plans').select('key,name,monthly_amount').eq('active',true).order('sort',{ascending:true});
-    var plans=(pr.data||[]); var sel=document.getElementById('po-plan');
+    var plans=(pr.data||[]);
+    window.__lpPartnerPlans = window.__lpPartnerPlans || {};
+    plans.forEach(function(pl){ if(pl&&pl.key) window.__lpPartnerPlans[pl.key]=pl; });
+    var sel=document.getElementById('po-plan');
     sel.innerHTML='<option value="">No default</option>'+plans.map(function(pl){ return '<option value="'+esc(pl.key)+'">'+esc(pl.name)+' \u2014 $'+Math.round((pl.monthly_amount||0)/100)+'/mo</option>'; }).join('');
     sel.value=pf.default_plan_key||'';
+    var sel2=document.getElementById('po-calc-plan');
+    if(sel2){
+      sel2.innerHTML='<option value="">Choose a plan…</option>'+plans.map(function(pl){ return '<option value="'+esc(pl.key)+'">'+esc(pl.name)+' \u2014 $'+Math.round((pl.monthly_amount||0)/100)+'/mo</option>'; }).join('');
+      sel2.value = pf.default_plan_key || '';
+    }
     renderCalc();
     renderDashAttention();
   }
@@ -1666,8 +1944,13 @@
 
   function renderDirSpecs(selected){
     selected=selected||[];
+    var sorted=DIR_SPECS.slice().sort(function(a,b){
+      var aSel=selected.indexOf(a)>=0, bSel=selected.indexOf(b)>=0;
+      if(aSel!==bSel) return aSel?-1:1;
+      return 0;
+    });
     var box=document.getElementById('dir-specs'); if(!box) return;
-    box.innerHTML=DIR_SPECS.map(function(s){
+    box.innerHTML=sorted.map(function(s){
       var chk=selected.indexOf(s)>=0;
       return '<label class="dir-spec'+(chk?' on':'')+'"><input type="checkbox" value="'+esc(s)+'"'+(chk?' checked':'')+'> '+esc(s)+'</label>';
     }).join('');
