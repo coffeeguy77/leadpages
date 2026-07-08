@@ -685,6 +685,32 @@
   min-width: 200px;
 }
 
+.lp-partner-page .lp-demos-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.lp-partner-page .lp-demo-create-body {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.35fr);
+  gap: 22px;
+  padding: 18px 20px 20px;
+  align-items: start;
+}
+
+.lp-partner-page .lp-demo-trade-picker {
+  height: 360px;
+}
+
+@media (max-width: 900px) {
+  .lp-partner-page .lp-demo-create-body {
+    grid-template-columns: 1fr;
+  }
+  .lp-partner-page .lp-demo-trade-picker {
+    height: 300px;
+  }
+}
+
 .lp-partner-page .lp-demo-create-hero {
   display: flex;
   justify-content: space-between;
