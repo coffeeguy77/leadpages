@@ -5,9 +5,10 @@
 const { createClient } = require('@supabase/supabase-js');
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-const MENU_KEY = 'admin_command_menu';
+const MENU_KEY_MANAGE = 'admin_command_menu';
+const MENU_KEY_PARTNER = 'admin_command_menu_partner';
 
-const DEFAULT_MENU = {
+const DEFAULT_MENU_MANAGE = {
   version: 1,
   sections: [
     {
@@ -78,7 +79,81 @@ const DEFAULT_MENU = {
       ]
     }
   ]
+  ]
 };
+
+const DEFAULT_MENU_PARTNER = {
+  version: 1,
+  sections: [
+    {
+      id: 'primary',
+      title: '',
+      layout: 'tabs',
+      slot: 'bottom',
+      items: [
+        { id: 'pnav-overview' },
+        { id: 'pnav-clients' },
+        { id: 'pnav-messages' },
+        { id: 'pnav-demos' },
+        { id: 'pnav-profile' }
+      ]
+    },
+    {
+      id: 'main',
+      title: 'Partner menu',
+      layout: 'stack',
+      buttonStyle: 'nav',
+      separator: 'line',
+      items: [
+        { id: 'pnav-overview' },
+        { id: 'pnav-messages' },
+        { id: 'pnav-clients' },
+        { id: 'pnav-demos' },
+        { id: 'pnav-mypage' },
+        { id: 'pnav-listing' },
+        { id: 'pnav-payouts' },
+        { id: 'pnav-quotes' },
+        { id: 'pnav-commissions' },
+        { id: 'pnav-training' },
+        { id: 'pnav-resources' },
+        { id: 'pnav-help' },
+        { id: 'pnav-support' },
+        { id: 'pnav-profile' }
+      ]
+    },
+    {
+      id: 'prefs',
+      title: 'Preferences',
+      layout: 'stack',
+      buttonStyle: 'outline',
+      separator: 'line',
+      items: [{ id: 'pnav-appearance' }]
+    },
+    {
+      id: 'account',
+      title: 'Account',
+      layout: 'stack',
+      buttonStyle: 'outline',
+      separator: 'line',
+      items: [{ id: 'pnav-signout' }]
+    }
+  ]
+};
+
+function menuKeyForSurface(surface) {
+  return surface === 'partner' ? MENU_KEY_PARTNER : MENU_KEY_MANAGE;
+}
+
+function defaultMenuForSurface(surface) {
+  return surface === 'partner' ? DEFAULT_MENU_PARTNER : DEFAULT_MENU_MANAGE;
+}
+
+function parseSurface(req, body) {
+  const q = (req.query && req.query.surface) || '';
+  const fromBody = body && body.surface;
+  const s = String(fromBody || q || 'manage').toLowerCase();
+  return s === 'partner' ? 'partner' : 'manage';
+}
 
 async function authUser(token) {
   const ur = await fetch(process.env.SUPABASE_URL + '/auth/v1/user', {
@@ -117,12 +192,15 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'GET') {
+    const surface = parseSurface(req, null);
+    const menuKey = menuKeyForSurface(surface);
+    const defaults = defaultMenuForSurface(surface);
     try {
-      const { data } = await sb.from('system_pages').select('content').eq('key', MENU_KEY).maybeSingle();
-      const content = data && data.content && validateMenu(data.content) ? data.content : DEFAULT_MENU;
-      return res.status(200).json({ ok: true, content, defaults: DEFAULT_MENU });
+      const { data } = await sb.from('system_pages').select('content').eq('key', menuKey).maybeSingle();
+      const content = data && data.content && validateMenu(data.content) ? data.content : defaults;
+      return res.status(200).json({ ok: true, surface, content, defaults });
     } catch (e) {
-      return res.status(200).json({ ok: true, content: DEFAULT_MENU, defaults: DEFAULT_MENU });
+      return res.status(200).json({ ok: true, surface, content: defaults, defaults });
     }
   }
 
@@ -133,13 +211,15 @@ module.exports = async (req, res) => {
     if (typeof body === 'string') {
       try { body = JSON.parse(body); } catch (e) { body = {}; }
     }
+    const surface = parseSurface(req, body);
+    const menuKey = menuKeyForSurface(surface);
     const content = body && body.content ? body.content : body;
     if (!validateMenu(content)) return res.status(400).json({ error: 'Invalid menu config' });
 
     try {
-      const { error } = await sb.from('system_pages').upsert({ key: MENU_KEY, content }, { onConflict: 'key' });
+      const { error } = await sb.from('system_pages').upsert({ key: menuKey, content }, { onConflict: 'key' });
       if (error) throw error;
-      return res.status(200).json({ ok: true });
+      return res.status(200).json({ ok: true, surface });
     } catch (e) {
       return res.status(500).json({ error: String(e.message || e) });
     }

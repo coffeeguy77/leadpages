@@ -110,6 +110,11 @@
       + '<option value="split">Preview: Split</option>'
       + '<option value="side">Preview: Side panel</option>'
       + '</select>'
+      + '<div class="lp-p-text-size lp-shell-text-size" title="Text size">'
+      + '<button type="button" class="lp-p-icon-btn" id="lp-shell-text-minus" aria-label="Decrease text size"><span aria-hidden="true">−</span></button>'
+      + '<span class="lp-p-text-size-label" id="lp-shell-text-label">A</span>'
+      + '<button type="button" class="lp-p-icon-btn" id="lp-shell-text-plus" aria-label="Increase text size"><span aria-hidden="true">+</span></button>'
+      + '</div>'
       + '</div></div>';
 
     var scrim = document.createElement('div');
@@ -288,6 +293,29 @@
         onLayoutPick(layoutSel.value);
       });
     }
+
+    var TEXT_SIZES = ['standard', 'large', 'extra-large'];
+    function syncShellTextLabel() {
+      var el = document.getElementById('lp-shell-text-label');
+      if (!el || !global.LPWorkspaceAppearance) return;
+      var sz = global.LPWorkspaceAppearance.load().textSize || 'standard';
+      el.textContent = sz === 'extra-large' ? 'XL' : sz === 'large' ? 'L' : 'A';
+    }
+    function bumpShellText(delta) {
+      if (!global.LPWorkspaceAppearance) return;
+      var prefs = global.LPWorkspaceAppearance.load();
+      var idx = TEXT_SIZES.indexOf(prefs.textSize || 'standard');
+      if (idx < 0) idx = 0;
+      idx = Math.max(0, Math.min(TEXT_SIZES.length - 1, idx + delta));
+      global.LPWorkspaceAppearance.set({ textSize: TEXT_SIZES[idx] });
+      syncShellTextLabel();
+    }
+    var tMin = document.getElementById('lp-shell-text-minus');
+    var tPlus = document.getElementById('lp-shell-text-plus');
+    if (tMin) tMin.addEventListener('click', function () { bumpShellText(-1); });
+    if (tPlus) tPlus.addEventListener('click', function () { bumpShellText(1); });
+    syncShellTextLabel();
+    global.addEventListener('lp-workspace-appearance-change', syncShellTextLabel);
 
     document.addEventListener('click', function (ev) {
       var navBtn = ev.target.closest('.anav-btn');

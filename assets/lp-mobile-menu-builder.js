@@ -8,6 +8,7 @@
   var config = null;
   var defaults = null;
   var loadPromise = null;
+  var currentSurface = 'manage';
 
   var ROLES = ['super', 'partner', 'client'];
   var LAYOUTS = [
@@ -70,6 +71,25 @@
     'nav-logo': 'Logo',
     'nav-users': 'Users',
     'nav-demothemes': 'Demo themes'
+  };
+
+  var PARTNER_NAV_CATALOG = {
+    'pnav-overview': 'Overview',
+    'pnav-messages': 'Messages',
+    'pnav-clients': 'My Clients',
+    'pnav-demos': 'Demos & themes',
+    'pnav-mypage': 'My page',
+    'pnav-listing': 'My listing',
+    'pnav-payouts': 'Payouts',
+    'pnav-quotes': 'Quotes',
+    'pnav-commissions': 'Commissions',
+    'pnav-training': 'Training Centre',
+    'pnav-resources': 'Sales Resources',
+    'pnav-help': 'Help & guides',
+    'pnav-support': 'Support',
+    'pnav-profile': 'My Profile',
+    'pnav-appearance': 'Appearance',
+    'pnav-signout': 'Sign out'
   };
 
   var DEFAULT_BUILDER_ITEMS = [
@@ -208,24 +228,26 @@
     return cfg;
   }
 
-  async function load(force) {
-    if (!force && config) return config;
-    if (!force && loadPromise) return loadPromise;
+  async function load(force, surface) {
+    if (surface) currentSurface = surface === 'partner' ? 'partner' : 'manage';
+    if (!force && config && !surface) return config;
+    if (!force && loadPromise && !surface) return loadPromise;
+    var surf = currentSurface;
     loadPromise = (async function () {
       try {
         var tk = await getToken();
-        var r = await fetch(API, { headers: tk ? { Authorization: 'Bearer ' + tk } : {} });
+        var r = await fetch(API + '?surface=' + encodeURIComponent(surf), { headers: tk ? { Authorization: 'Bearer ' + tk } : {} });
         var text = await r.text();
         var j;
         try { j = JSON.parse(text); } catch (e) { j = null; }
         if (j && j.ok) {
           config = normalizeConfig(j.content);
-          defaults = j.defaults || deepClone(FALLBACK_DEFAULT);
+          defaults = j.defaults || deepClone(surf === 'partner' ? PARTNER_FALLBACK_DEFAULT : FALLBACK_DEFAULT);
         }
       } catch (e) { /* use baked-in default */ }
       if (!config) {
-        config = deepClone(FALLBACK_DEFAULT);
-        defaults = deepClone(FALLBACK_DEFAULT);
+        config = deepClone(surf === 'partner' ? PARTNER_FALLBACK_DEFAULT : FALLBACK_DEFAULT);
+        defaults = deepClone(surf === 'partner' ? PARTNER_FALLBACK_DEFAULT : FALLBACK_DEFAULT);
       }
       return config;
     })();
@@ -251,6 +273,23 @@
         { id: 'btn-switch', roles: ['super'] },
         { id: 'lpc-drawer-signout', roles: ['super', 'partner', 'client'] }
       ] }
+    ]
+  };
+
+  var PARTNER_FALLBACK_DEFAULT = {
+    version: 1,
+    sections: [
+      { id: 'primary', title: '', layout: 'tabs', buttonStyle: 'nav', separator: 'none', slot: 'bottom', items: [
+        { id: 'pnav-overview' }, { id: 'pnav-clients' }, { id: 'pnav-messages' }, { id: 'pnav-demos' }, { id: 'pnav-profile' }
+      ] },
+      { id: 'main', title: 'Partner menu', layout: 'stack', buttonStyle: 'nav', separator: 'line', items: [
+        { id: 'pnav-overview' }, { id: 'pnav-messages' }, { id: 'pnav-clients' }, { id: 'pnav-demos' },
+        { id: 'pnav-mypage' }, { id: 'pnav-listing' }, { id: 'pnav-payouts' }, { id: 'pnav-quotes' },
+        { id: 'pnav-commissions' }, { id: 'pnav-training' }, { id: 'pnav-resources' },
+        { id: 'pnav-help' }, { id: 'pnav-support' }, { id: 'pnav-profile' }
+      ] },
+      { id: 'prefs', title: 'Preferences', layout: 'stack', buttonStyle: 'outline', separator: 'line', items: [{ id: 'pnav-appearance' }] },
+      { id: 'account', title: 'Account', layout: 'stack', buttonStyle: 'outline', separator: 'line', items: [{ id: 'pnav-signout' }] }
     ]
   };
 
@@ -412,6 +451,7 @@
   }
 
   function itemLabel(id) {
+    if (PARTNER_NAV_CATALOG[id]) return PARTNER_NAV_CATALOG[id];
     if (NAV_TAB_CATALOG[id]) return NAV_TAB_CATALOG[id];
     var c = ACTION_CATALOG[id];
     return c ? c.label : id;
@@ -668,14 +708,18 @@
     loadPromise = null;
   }
 
-  async function save(newConfig) {
+  async function save(newConfig, surface) {
+    var surf = surface || currentSurface || 'manage';
     var j = await apiFetch(API, {
       method: 'POST',
-      body: JSON.stringify({ content: newConfig })
+      body: JSON.stringify({ surface: surf, content: newConfig })
     });
     if (j && j.ok) {
       config = normalizeConfig(deepClone(newConfig));
-      if (global.LPAdminShell && global.LPAdminShell.moveChrome) {
+      if (surf === 'partner' && global.LPPartnerShell && global.LPPartnerShell.loadMenuConfig) {
+        try { global.LPPartnerShell.loadMenuConfig(); } catch (e) { /* ignore */ }
+      }
+      if (surf === 'manage' && global.LPAdminShell && global.LPAdminShell.moveChrome) {
         global.LPAdminShell.moveChrome();
       }
     }
@@ -803,6 +847,7 @@
       + '#mm-builder .mmb-pbtn.outline{background:transparent;color:var(--text,var(--ink,#1b2430));border-color:color-mix(in srgb,var(--accent,#1f7a63) 45%,transparent);}'
       + '#mm-builder .mmb-pgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}'
       + '#mm-builder .mmb-preview-empty{font-size:13px;color:var(--text-soft,var(--ink-soft,#8a8a82));margin:0;}'
+      + '#mm-builder .mmb-surface-btn.on{background:var(--accent-soft,rgba(46,204,143,.14));border-color:var(--accent,#1f7a63);color:var(--accent-hover,var(--accent,#1f7a63));font-weight:700;}'
       + '#mm-builder .mmb-msg{font-size:13px;margin-left:8px;color:var(--text-soft,var(--ink-soft,#5c6675));}';
     document.head.appendChild(s);
   }
@@ -838,6 +883,9 @@
     }).join('')
       + Object.keys(NAV_TAB_CATALOG).map(function (k) {
         return '<option value="' + k + '">' + esc(NAV_TAB_CATALOG[k]) + ' (builder tab)</option>';
+      }).join('')
+      + Object.keys(PARTNER_NAV_CATALOG).map(function (k) {
+        return '<option value="' + k + '">' + esc(PARTNER_NAV_CATALOG[k]) + ' (partner)</option>';
       }).join('');
 
     var showItems = isBuilderSection(sec) || !!(sec.items && sec.items.length);
@@ -1056,10 +1104,13 @@
     if (p) p.remove();
   }
 
-  async function openBuilder() {
+  async function openBuilder(surface) {
     closeBuilder();
     injectBuilderCss();
-    await load(true);
+    currentSurface = surface === 'partner' ? 'partner' : 'manage';
+    config = null;
+    loadPromise = null;
+    await load(true, currentSurface);
     var draft = deepClone(getConfig());
     var previewRole = getUserRoles()[0] || 'super';
 
@@ -1067,9 +1118,13 @@
     p.id = 'mm-builder';
     p.innerHTML = '<div class="mmb-card">'
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">'
-      + '<div><h1 style="margin:0;font:700 24px/1.1 var(--font-display,Georgia),serif;">Mobile command menu</h1>'
-      + '<p class="lede" style="margin:6px 0 0;">Configure the phone mega menu for the command centre — sections, layouts, separators, button styles, and role access.</p></div>'
+      + '<div><h1 style="margin:0;font:700 24px/1.1 var(--font-display,Georgia),serif;">Mobile menu builder</h1>'
+      + '<p class="lede" style="margin:6px 0 0;">Configure the phone menu for <strong>/manage</strong> or the <strong>/partner</strong> console.</p></div>'
       + '<div><button type="button" class="btn ghost" id="mmb-close">Close</button></div></div>'
+      + '<div class="mmb-surface-pick" id="mmb-surface-pick" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">'
+      + '<button type="button" class="mmb-mini mmb-surface-btn' + (currentSurface === 'manage' ? ' on' : '') + '" data-mmb-surface="manage">Command centre (/manage)</button>'
+      + '<button type="button" class="mmb-mini mmb-surface-btn' + (currentSurface === 'partner' ? ' on' : '') + '" data-mmb-surface="partner">Partner console (/partner)</button>'
+      + '</div>'
       + '<div class="mmb-preview-wrap"><div id="mmb-body"></div>'
       + '<div class="mmb-preview" id="mmb-preview"><h3>Phone preview</h3>'
       + '<div class="mmb-preview-role" id="mmb-preview-roles">'
@@ -1090,9 +1145,29 @@
     document.getElementById('mmb-close').addEventListener('click', closeBuilder);
     p.addEventListener('click', function (e) { if (e.target === p) closeBuilder(); });
 
+    var surfacePick = document.getElementById('mmb-surface-pick');
+    if (surfacePick) {
+      surfacePick.addEventListener('click', async function (e) {
+        var btn = e.target.closest('[data-mmb-surface]');
+        if (!btn) return;
+        var next = btn.getAttribute('data-mmb-surface');
+        if (next === currentSurface) return;
+        readDraftFromDom(body, draft);
+        currentSurface = next === 'partner' ? 'partner' : 'manage';
+        config = null;
+        loadPromise = null;
+        await load(true, currentSurface);
+        draft = deepClone(getConfig());
+        surfacePick.querySelectorAll('.mmb-surface-btn').forEach(function (b) {
+          b.classList.toggle('on', b.getAttribute('data-mmb-surface') === currentSurface);
+        });
+        rerenderBuilder(body, draft, previewRole);
+      });
+    }
+
     document.getElementById('mmb-reset').addEventListener('click', function () {
       if (!global.confirm('Reset the mobile menu to factory defaults?')) return;
-      draft = deepClone(defaults || FALLBACK_DEFAULT);
+      draft = deepClone(defaults || (currentSurface === 'partner' ? PARTNER_FALLBACK_DEFAULT : FALLBACK_DEFAULT));
       rerenderBuilder(body, draft, previewRole);
     });
 
@@ -1104,7 +1179,7 @@
       msg.textContent = 'Saving…';
       msg.style.color = '';
       try {
-        var j = await save(draft);
+        var j = await save(draft, currentSurface);
         btn.disabled = false;
         if (j && j.ok) {
           msg.textContent = 'Saved — hamburger menu updated.';
@@ -1140,8 +1215,11 @@
     resolveSectionItems: resolveSectionItems,
     ACTION_CATALOG: ACTION_CATALOG,
     NAV_TAB_CATALOG: NAV_TAB_CATALOG,
+    PARTNER_NAV_CATALOG: PARTNER_NAV_CATALOG,
     SLOT_CATALOG: SLOT_CATALOG,
     ROLES: ROLES,
+    getSurface: function () { return currentSurface; },
+    setSurface: function (s) { currentSurface = s === 'partner' ? 'partner' : 'manage'; },
     debug: false
   };
 
