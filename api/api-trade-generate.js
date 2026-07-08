@@ -47,7 +47,7 @@ module.exports = async (req, res) => {
   try {
     const { data: existing } = await sb
       .from('service_packs')
-      .select('id,variant,slug,label,pack,use_count,content_hash')
+      .select('id,variant,slug,label,pack,use_count')
       .eq('slug', slug)
       .eq('is_approved', true)
       .order('variant', { ascending: true });
@@ -89,9 +89,7 @@ module.exports = async (req, res) => {
     const nextVariant = variants.length + 1;
     const hash = contentHash(parsed.pack);
 
-    const { data: saved, error: saveErr } = await sb
-      .from('service_packs')
-      .insert({
+    const row = {
         slug,
         category: parsed.category || category,
         label: parsed.pack.label || trade,
@@ -101,9 +99,16 @@ module.exports = async (req, res) => {
         generated_by: user.id,
         is_approved: true,
         use_count: 1,
-      })
-      .select('id,variant,slug,label,pack')
-      .single();
+      };
+
+    let ins = await sb.from('service_packs').insert(row).select('id,variant,slug,label,pack').single();
+    if (ins.error && /content_hash/i.test(ins.error.message||'')) {
+      delete row.content_hash;
+      ins = await sb.from('service_packs').insert(row).select('id,variant,slug,label,pack').single();
+    }
+
+    const saved = ins.data;
+    const saveErr = ins.error;
 
     if (saveErr) return res.status(500).json({ error: 'Save failed: ' + saveErr.message });
 
