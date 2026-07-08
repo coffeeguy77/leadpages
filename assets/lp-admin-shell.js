@@ -333,6 +333,14 @@
       syncRatioVisibility: syncRatioVisibility,
       isTabletLandscape: isTabletLandscape
     };
+
+    if (global.LPLogo && global.LPLogo.refreshWorkspaceLogos) {
+      global.LPLogo.refreshWorkspaceLogos();
+    } else if (global.LPLogo && global.LPLogo.upgradeAll) {
+      global.LPLogo.upgradeAll({ pulse: true }).then(function () {
+        if (global.LPLogo.applyWorkspaceTheme) global.LPLogo.applyWorkspaceTheme();
+      });
+    }
   }
 
   function initPartnerTopbar(opts) {

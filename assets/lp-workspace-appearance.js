@@ -120,8 +120,12 @@
     root.style.setProperty('--lp-logo-accent', tokens.accent);
     root.style.setProperty('--lp-logo-ink', tokens.ink);
     if (global.LPLogo) {
-      if (global.LPLogo.applyWorkspaceTheme) global.LPLogo.applyWorkspaceTheme();
-      if (global.LPLogo.upgradeAll) global.LPLogo.upgradeAll({ pulse: true, theme: resolved });
+      if (global.LPLogo.refreshWorkspaceLogos) {
+        global.LPLogo.refreshWorkspaceLogos({ theme: resolved });
+      } else {
+        if (global.LPLogo.upgradeAll) global.LPLogo.upgradeAll({ pulse: true, theme: resolved });
+        if (global.LPLogo.applyWorkspaceTheme) global.LPLogo.applyWorkspaceTheme();
+      }
     }
   }
 
