@@ -227,25 +227,18 @@
       <section class="panel lp-p-panel" data-panel="demos" data-w="wide">
         <h2>Demos</h2>
         <p class="sub">Build demos for prospects, save themes, and turn wins into clients.</p>
-        <div class="lp-grid-2">
-          <div>
-            <div class="card lp-demo-create" style="padding:0;margin-bottom:14px;overflow:hidden">
-              <div class="lp-demo-create-hero">
-                <div>
-                  <h3 style="font-family:var(--font-display);font-size:18px;margin:0 0 4px">Create Demo</h3>
-                  <p class="muted" style="margin:0;font-size:13px;max-width:42ch">Pick a trade, load shuffled starter content, and open a prospect-ready mockup in the builder.</p>
-                </div>
-                <span class="statusbadge s-active" style="font-size:11px;letter-spacing:.04em">AI starter packs</span>
+        <div class="lp-demos-stack">
+          <div class="card lp-demo-create" style="padding:0;overflow:hidden">
+            <div class="lp-demo-create-hero">
+              <div>
+                <h3 style="font-family:var(--font-display);font-size:18px;margin:0 0 4px">Create Demo</h3>
+                <p class="muted" style="margin:0;font-size:13px;max-width:62ch">Pick a trade, load shuffled starter content, and open a prospect-ready mockup in the builder.</p>
               </div>
-              <div style="padding:18px 20px 20px">
+              <span class="statusbadge s-active" style="font-size:11px;letter-spacing:.04em">AI starter packs</span>
+            </div>
+            <div class="lp-demo-create-body">
+              <div class="lp-demo-create-fields">
                 <div class="field"><label for="m-biz">Demo name</label><input id="m-biz" type="text" placeholder="e.g. Hilltop Plumbing"></div>
-                <div class="field">
-                  <label for="m-trade-search">Industry / trade</label>
-                  <input id="m-trade-search" type="text" autocomplete="off" placeholder="Search 100+ trades… (try plumber, roofer, cleaner)">
-                  <input type="hidden" id="m-pack" value="plumber">
-                  <div id="m-picked" class="cs-picked"></div>
-                  <div class="tp2-wrap"><div id="m-cats" class="tp2-cats"></div><div id="m-packlist" class="tp2-list"></div></div>
-                </div>
                 <div class="row2">
                   <div class="field"><label for="m-city">Target city</label><input id="m-city" type="text" placeholder="e.g. Canberra"></div>
                   <div class="field"><label for="m-region">Region</label><input id="m-region" type="text" placeholder="e.g. ACT"></div>
@@ -260,27 +253,38 @@
                   <span class="notice bad hidden" id="m-err" style="margin:0;padding:8px 12px"></span>
                 </div>
               </div>
-            </div>
-
-            <div class="card" style="padding:18px 20px">
-              <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Saved Themes</h3>
-              <p class="muted" style="margin:0 0 12px;font-size:13px">Reusable designs you can apply to any demo or client build.</p>
-              <div id="themes-list"></div>
+              <div class="lp-demo-create-trade">
+                <div class="field" style="margin-bottom:0">
+                  <label for="m-trade-search">Industry / trade</label>
+                  <input id="m-trade-search" type="text" autocomplete="off" placeholder="Search 100+ trades… (try plumber, roofer, cleaner)">
+                  <input type="hidden" id="m-pack" value="plumber">
+                  <div id="m-picked" class="cs-picked"></div>
+                  <div class="tp2-wrap lp-demo-trade-picker"><div id="m-cats" class="tp2-cats"></div><div id="m-packlist" class="tp2-list"></div></div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div>
-            <div class="card" style="padding:18px 20px;margin-bottom:14px">
-              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-                <h3 style="font-family:var(--font-display);font-size:16px">Demo Library</h3>
-                <span class="muted" style="font-size:12.5px">Open, preview, price, and quote</span>
-              </div>
-              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-                <input id="demo-q" type="text" placeholder="Search demos…" style="flex:1;min-width:240px">
-                <button type="button" class="btn" id="demo-clear" style="padding:9px 12px;font-size:13px">Clear</button>
+          <div class="lp-demos-library">
+            <div class="card" style="padding:18px 20px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap">
+                <div>
+                  <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 4px">Demo Library</h3>
+                  <p class="muted" style="margin:0;font-size:13px">Open, preview, price, and quote your prospect mockups.</p>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;min-width:min(100%, 420px)">
+                  <input id="demo-q" type="text" placeholder="Search demos…" style="flex:1;min-width:200px">
+                  <button type="button" class="btn" id="demo-clear" style="padding:9px 12px;font-size:13px">Clear</button>
+                </div>
               </div>
             </div>
-            <div id="mockups-list"></div>
+            <div id="mockups-list" style="margin-top:14px"></div>
+          </div>
+
+          <div class="card" style="padding:18px 20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Saved Themes</h3>
+            <p class="muted" style="margin:0 0 12px;font-size:13px">Reusable designs you can apply to any demo or client build.</p>
+            <div id="themes-list"></div>
           </div>
         </div>
       </section>
