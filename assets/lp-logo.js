@@ -48,27 +48,56 @@
     return (root && root.dataset && root.dataset.theme) || 'classic-light';
   }
 
+  function isAdminWorkspace() {
+    var body = global.document && global.document.body;
+    if (!body) return false;
+    if (body.getAttribute('data-lp-admin-page')) return true;
+    if (body.classList.contains('lp-cmd-on')) return true;
+    return !!global.document.querySelector('.wrap .adminnav');
+  }
+
+  function workspacePulseBg() {
+    var root = global.document && global.document.documentElement;
+    if (!root || !global.getComputedStyle) return '#f6f4ef';
+    var bg = global.getComputedStyle(root).getPropertyValue('--bg').trim();
+    return bg || '#f6f4ef';
+  }
+
   function logoTokens(opts) {
     opts = opts || {};
-    if (opts.accent || opts.ink) {
+    var theme = opts.theme || resolvedWorkspaceTheme();
+    var fromTheme = THEME_LOGO[theme];
+
+    if (opts.accent && opts.ink) {
+      return { accent: opts.accent, ink: opts.ink };
+    }
+
+    /* Admin workspace always follows the chosen theme — not marketing ink heuristics */
+    if (opts.inkMode === 'workspace' || (isAdminWorkspace() && opts.inkMode !== 'light' && opts.inkMode !== 'dark')) {
+      if (fromTheme) return { accent: fromTheme.accent, ink: fromTheme.ink };
+    }
+
+    if (opts.inkMode === 'light') {
       return {
-        accent: opts.accent || '#2ecc8f',
+        accent: opts.accent || (fromTheme && fromTheme.accent) || '#2ecc8f',
+        ink: opts.ink || '#f3f6fa'
+      };
+    }
+    if (opts.inkMode === 'dark') {
+      return {
+        accent: opts.accent || (fromTheme && fromTheme.accent) || '#1f7a63',
         ink: opts.ink || '#13161b'
       };
     }
-    if (opts.inkMode === 'light') return { accent: opts.accent || '#2ecc8f', ink: '#f3f6fa' };
-    if (opts.inkMode === 'dark') return { accent: opts.accent || '#1f7a63', ink: '#13161b' };
 
-    var theme = opts.theme || resolvedWorkspaceTheme();
-    var meta = THEME_LOGO[theme];
-    if (meta) return { accent: meta.accent, ink: meta.ink };
+    if (fromTheme) return { accent: fromTheme.accent, ink: fromTheme.ink };
 
     var root = global.document && global.document.documentElement;
     if (root) {
       var cs = global.getComputedStyle(root);
       return {
-        accent: (cs.getPropertyValue('--lp-logo-accent') || cs.getPropertyValue('--accent') || '#2ecc8f').trim(),
-        ink: (cs.getPropertyValue('--lp-logo-ink') || cs.getPropertyValue('--text') || '#13161b').trim()
+        accent: (opts.accent || cs.getPropertyValue('--lp-logo-accent') || cs.getPropertyValue('--accent') || '#2ecc8f').trim(),
+        ink: (opts.ink || cs.getPropertyValue('--lp-logo-ink') || cs.getPropertyValue('--text') || '#13161b').trim()
       };
     }
     return { accent: '#2ecc8f', ink: '#13161b' };
@@ -104,6 +133,9 @@
   function applyTokens(wrap, tokens) {
     wrap.style.setProperty('--lp-logo-accent', tokens.accent);
     wrap.style.setProperty('--lp-logo-ink', tokens.ink);
+    if (isAdminWorkspace()) {
+      wrap.style.setProperty('--lp-logo-pulse-bg', tokens.pulseBg || workspacePulseBg());
+    }
   }
 
   function inkFromSrc(el) {
@@ -152,6 +184,7 @@
   function resolveInkMode(el) {
     var explicit = el.getAttribute('data-lp-logo-ink');
     if (explicit === 'light' || explicit === 'dark') return explicit;
+    if (isAdminWorkspace()) return 'workspace';
     if (isDarkBackground(el)) return 'light';
     return inkFromSrc(el);
   }
@@ -191,6 +224,8 @@
         if (!el.getAttribute('data-lp-logo-ink') || el.getAttribute('data-lp-logo-ink') === 'auto') {
           applyTokens(wrap, { accent: tokens.accent, ink: '#f3f6fa' });
         }
+      } else if (isAdminWorkspace()) {
+        applyTokens(wrap, logoTokens({ theme: opts.theme || resolvedWorkspaceTheme(), inkMode: 'workspace' }));
       }
       return wrap;
     });
@@ -211,12 +246,21 @@
   function applyWorkspaceTheme() {
     if (!global.document) return;
     var theme = resolvedWorkspaceTheme();
-    var tokens = logoTokens({ theme: theme });
+    var tokens = logoTokens({ theme: theme, inkMode: isAdminWorkspace() ? 'workspace' : null });
+    if (isAdminWorkspace()) tokens.pulseBg = workspacePulseBg();
     var root = global.document.documentElement;
     root.style.setProperty('--lp-logo-accent', tokens.accent);
     root.style.setProperty('--lp-logo-ink', tokens.ink);
     global.document.querySelectorAll('.lp-logo-wrap.leadpages-logo, [data-lp-logo].lp-logo-wrap').forEach(function (wrap) {
       applyTokens(wrap, tokens);
+    });
+  }
+
+  function refreshWorkspaceLogos(opts) {
+    opts = opts || {};
+    var theme = opts.theme || resolvedWorkspaceTheme();
+    return upgradeAll(Object.assign({ pulse: true, theme: theme }, opts)).then(function () {
+      applyWorkspaceTheme();
     });
   }
 
@@ -286,8 +330,7 @@
     });
     if (global.document) {
       global.document.addEventListener('lp-workspace-appearance-change', function () {
-        applyWorkspaceTheme();
-        upgradeAll({ pulse: true });
+        refreshWorkspaceLogos();
       });
     }
   }
@@ -300,6 +343,7 @@
     mountLogo: mountLogo,
     upgradeAll: upgradeAll,
     applyWorkspaceTheme: applyWorkspaceTheme,
+    refreshWorkspaceLogos: refreshWorkspaceLogos,
     init: init
   };
 

@@ -1861,7 +1861,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(window.LPWorkspaceAppearance){ LPWorkspaceAppearance.applyLogos(LPWorkspaceAppearance.resolveTheme(LPWorkspaceAppearance.load().theme)); }
     renderLanding(); el.classList.add('show');
   }
-  function hideLanding(){ var el=document.getElementById('lp-landing'); if(el) el.classList.remove('show'); document.body.classList.remove('lp-landing-on'); }
+  function hideLanding(){
+    var el=document.getElementById('lp-landing'); if(el) el.classList.remove('show');
+    document.body.classList.remove('lp-landing-on');
+    if(window.LPLogo&&window.LPLogo.refreshWorkspaceLogos){
+      window.LPLogo.refreshWorkspaceLogos();
+    }else if(window.LPWorkspaceAppearance){
+      LPWorkspaceAppearance.applyLogos(LPWorkspaceAppearance.resolveTheme(LPWorkspaceAppearance.load().theme));
+    }
+  }
   function lplGroup(s){
     if(currentRole==='super'){
       // App demos: broker-app or broker-leads template sites (exclude real broker/reporting)
@@ -2287,6 +2295,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   }
   function loadSite(site){
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app'; currentIsPartnerHome=!!site.is_partner_home;
+    if(window.LPLogo&&window.LPLogo.refreshWorkspaceLogos){ window.LPLogo.refreshWorkspaceLogos(); }
     currentBusinessName=site.business_name||''; currentCustomDomain=site.custom_domain||''; currentOwnerEmail=site.owner_email||'';
     landingSub='details';
     if(currentSiteTemplate==='broker-app'){
