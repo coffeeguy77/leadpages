@@ -120,15 +120,15 @@
       "items": [
         {
           "on": true,
-          "beforeImage": "",
-          "afterImage": "",
+          "beforeImage": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop",
+          "afterImage": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop",
           "title": "Front yard transformation",
           "caption": "From tired and patchy to clean, functional and ready to enjoy."
         },
         {
           "on": true,
-          "beforeImage": "",
-          "afterImage": "",
+          "beforeImage": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop",
+          "afterImage": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop",
           "title": "Problem fixed properly",
           "caption": "Clear proof of the issue, the work completed, and the finished result."
         }
@@ -154,8 +154,8 @@
           "location": "Belconnen, ACT",
           "time": "Last week",
           "caption": "Years of grime gone in an afternoon.",
-          "beforeImage": "",
-          "afterImage": ""
+          "beforeImage": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop",
+          "afterImage": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop"
         },
         {
           "on": true,
@@ -163,8 +163,8 @@
           "location": "Kingston, ACT",
           "time": "2 weeks ago",
           "caption": "Full strip-out to a clean, modern finish.",
-          "beforeImage": "",
-          "afterImage": ""
+          "beforeImage": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop",
+          "afterImage": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop"
         },
         {
           "on": true,
@@ -172,8 +172,8 @@
           "location": "Gungahlin, ACT",
           "time": "3 weeks ago",
           "caption": "From overflowing to free-flowing.",
-          "beforeImage": "",
-          "afterImage": ""
+          "beforeImage": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop",
+          "afterImage": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop"
         }
       ]
     }
@@ -197,7 +197,7 @@
           "body": "ACT plumbing & drainage licence",
           "number": "",
           "expiry": "",
-          "image": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
         },
         {
           "on": true,
@@ -205,7 +205,7 @@
           "body": "Master Plumbers Association member",
           "number": "",
           "expiry": "",
-          "image": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
         },
         {
           "on": true,
@@ -213,7 +213,7 @@
           "body": "$20M public liability cover",
           "number": "",
           "expiry": "",
-          "image": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
         }
       ]
     }
@@ -275,7 +275,7 @@
           "message": "Turned up on time, fixed the problem fast and left everything spotless. Couldn’t ask for more.",
           "time": "2 days ago",
           "rating": "5",
-          "image": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
         },
         {
           "on": true,
@@ -284,7 +284,7 @@
           "message": "Mate that’s sorted now, water pressure’s perfect. Thanks heaps — will be calling you again!",
           "time": "9:42 am",
           "rating": "",
-          "image": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
         },
         {
           "on": true,
@@ -293,7 +293,7 @@
           "message": "Highly recommend these guys to anyone in Canberra. Honest pricing and quality work.",
           "time": "1 week ago",
           "rating": "",
-          "image": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
         },
         {
           "on": true,
@@ -302,7 +302,7 @@
           "message": "Quick response on an emergency call-out late at night. Absolute lifesavers.",
           "time": "3 weeks ago",
           "rating": "5",
-          "image": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
         }
       ]
     }
@@ -453,7 +453,7 @@
       "projects": [
         {
           "on": true,
-          "image": "",
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop",
           "title": "Coastal-style backyard",
           "tag": "Landscaping",
           "location": "O’Connor, ACT",
@@ -461,7 +461,7 @@
         },
         {
           "on": true,
-          "image": "",
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop",
           "title": "Spotted gum deck & pergola",
           "tag": "Decking",
           "location": "Ainslie, ACT",
@@ -469,7 +469,7 @@
         },
         {
           "on": true,
-          "image": "",
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop",
           "title": "Ensuite renovation",
           "tag": "Bathroom",
           "location": "Kingston, ACT",
@@ -626,7 +626,7 @@
           "location": "Mitchell, ACT",
           "time": "4 hours ago",
           "result": "Cleared and camera-checked the line.",
-          "image": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
         },
         {
           "on": true,
@@ -634,7 +634,7 @@
           "location": "Woden, ACT",
           "time": "Yesterday",
           "result": "Old unit out, new one installed.",
-          "image": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
         },
         {
           "on": true,
@@ -642,7 +642,7 @@
           "location": "Queanbeyan",
           "time": "2 days ago",
           "result": "Tracked the leak and sealed it for good.",
-          "image": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
         }
       ]
     }
@@ -684,8 +684,8 @@
           "service": "Deck building",
           "date": "2 days ago",
           "caption": "Installed a new Merbau deck in Gungahlin — ready for summer.",
-          "image": "",
-          "permalink": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop",
+          "permalink": "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=600&h=600&fit=crop"
         },
         {
           "on": true,
@@ -694,8 +694,8 @@
           "service": "Deck building",
           "date": "4 days ago",
           "caption": "Low-maintenance composite deck, built to last.",
-          "image": "",
-          "permalink": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop",
+          "permalink": "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=600&h=600&fit=crop"
         },
         {
           "on": true,
@@ -704,8 +704,8 @@
           "service": "Pergola",
           "date": "1 week ago",
           "caption": "Custom pergola built to match the home.",
-          "image": "",
-          "permalink": ""
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop",
+          "permalink": "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=600&h=600&fit=crop"
         }
       ]
     }
@@ -1183,7 +1183,7 @@
       "heading": "Built for {{businessName}}",
       "intro": "A short introduction that sets the scene for what follows.",
       "content": "Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.",
-      "image": "",
+      "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop",
       "imageSide": "right",
       "textAlign": "left"
     }

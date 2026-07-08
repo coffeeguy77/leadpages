@@ -2,6 +2,7 @@
 // GET /api/catalog            -> { categories:[...], features:[...] } (live only)
 // GET /api/catalog?slug=<f>   -> { feature:{...}, blocks:[...] }
 const { createClient } = require('@supabase/supabase-js');
+const demoSites = require('../lib/demo-sites');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 module.exports = async (req, res) => {
@@ -17,6 +18,10 @@ module.exports = async (req, res) => {
         .eq('slug', slug).eq('status', 'live').maybeSingle();
       if (error) return res.status(500).json({ error: error.message });
       if (!feature) return res.status(404).json({ error: 'not_found' });
+      if (!feature.demo_url && feature.section_key) {
+        const site = demoSites.getDemoSiteForApp(feature.section_key);
+        if (site && site.url) feature.demo_url = site.url;
+      }
       const { data: blocks } = await supabase
         .from('catalog_blocks')
         .select('id,sort_order,block_type,payload')

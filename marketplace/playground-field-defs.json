@@ -29,22 +29,22 @@
   "heroSlider": [
     {
       "type": "text",
-      "key": "heroSlider.slides.0.headline",
+      "key": "sections.heroSlider.slides.0.heading",
       "label": "Slide 1 headline"
     },
     {
       "type": "text",
-      "key": "heroSlider.slides.0.sub",
+      "key": "sections.heroSlider.slides.0.subText",
       "label": "Slide 1 sub"
     },
     {
       "type": "text",
-      "key": "heroSlider.slides.1.headline",
+      "key": "sections.heroSlider.slides.1.heading",
       "label": "Slide 2 headline"
     },
     {
       "type": "text",
-      "key": "heroSlider.slides.1.sub",
+      "key": "sections.heroSlider.slides.1.subText",
       "label": "Slide 2 sub"
     },
     {
@@ -56,32 +56,32 @@
   "reviews": [
     {
       "type": "text",
-      "key": "reviews.items.0.name",
+      "key": "sections.reviews.items.0.who",
       "label": "Reviewer 1 name"
     },
     {
       "type": "textarea",
-      "key": "reviews.items.0.text",
+      "key": "sections.reviews.items.0.text",
       "label": "Reviewer 1 text"
     },
     {
       "type": "text",
-      "key": "reviews.items.1.name",
+      "key": "sections.reviews.items.1.who",
       "label": "Reviewer 2 name"
     },
     {
       "type": "textarea",
-      "key": "reviews.items.1.text",
+      "key": "sections.reviews.items.1.text",
       "label": "Reviewer 2 text"
     },
     {
       "type": "text",
-      "key": "reviews.items.2.name",
+      "key": "sections.reviews.items.2.who",
       "label": "Reviewer 3 name"
     },
     {
       "type": "textarea",
-      "key": "reviews.items.2.text",
+      "key": "sections.reviews.items.2.text",
       "label": "Reviewer 3 text"
     }
   ],
@@ -135,32 +135,32 @@
   "faq": [
     {
       "type": "text",
-      "key": "faq.items.0.q",
+      "key": "sections.faq.items.0.q",
       "label": "Question 1"
     },
     {
       "type": "text",
-      "key": "faq.items.0.a",
+      "key": "sections.faq.items.0.a",
       "label": "Answer 1"
     },
     {
       "type": "text",
-      "key": "faq.items.1.q",
+      "key": "sections.faq.items.1.q",
       "label": "Question 2"
     },
     {
       "type": "text",
-      "key": "faq.items.1.a",
+      "key": "sections.faq.items.1.a",
       "label": "Answer 2"
     },
     {
       "type": "text",
-      "key": "faq.items.2.q",
+      "key": "sections.faq.items.2.q",
       "label": "Question 3"
     },
     {
       "type": "text",
-      "key": "faq.items.2.a",
+      "key": "sections.faq.items.2.a",
       "label": "Answer 3"
     },
     {
@@ -172,42 +172,42 @@
   "why": [
     {
       "type": "text",
-      "key": "why.items.0.title",
+      "key": "sections.why.items.0.title",
       "label": "Point 1 title"
     },
     {
       "type": "text",
-      "key": "why.items.0.body",
+      "key": "sections.why.items.0.body",
       "label": "Point 1 description"
     },
     {
       "type": "text",
-      "key": "why.items.1.title",
+      "key": "sections.why.items.1.title",
       "label": "Point 2 title"
     },
     {
       "type": "text",
-      "key": "why.items.1.body",
+      "key": "sections.why.items.1.body",
       "label": "Point 2 description"
     },
     {
       "type": "text",
-      "key": "why.items.2.title",
+      "key": "sections.why.items.2.title",
       "label": "Point 3 title"
     },
     {
       "type": "text",
-      "key": "why.items.2.body",
+      "key": "sections.why.items.2.body",
       "label": "Point 3 description"
     },
     {
       "type": "text",
-      "key": "why.items.3.title",
+      "key": "sections.why.items.3.title",
       "label": "Point 4 title"
     },
     {
       "type": "text",
-      "key": "why.items.3.body",
+      "key": "sections.why.items.3.body",
       "label": "Point 4 description"
     },
     {
@@ -219,42 +219,42 @@
   "crew": [
     {
       "type": "text",
-      "key": "crew.items.0.name",
+      "key": "sections.crew.members.0.name",
       "label": "Person 1 name"
     },
     {
       "type": "text",
-      "key": "crew.items.0.role",
+      "key": "sections.crew.members.0.role",
       "label": "Person 1 role"
     },
     {
       "type": "textarea",
-      "key": "crew.items.0.bio",
+      "key": "sections.crew.members.0.detail",
       "label": "Person 1 bio"
     },
     {
       "type": "text",
-      "key": "crew.items.0.img",
+      "key": "sections.crew.members.0.photo",
       "label": "Person 1 photo URL"
     },
     {
       "type": "text",
-      "key": "crew.items.1.name",
+      "key": "sections.crew.members.1.name",
       "label": "Person 2 name"
     },
     {
       "type": "text",
-      "key": "crew.items.1.role",
+      "key": "sections.crew.members.1.role",
       "label": "Person 2 role"
     },
     {
       "type": "textarea",
-      "key": "crew.items.1.bio",
+      "key": "sections.crew.members.1.detail",
       "label": "Person 2 bio"
     },
     {
       "type": "text",
-      "key": "crew.items.1.img",
+      "key": "sections.crew.members.1.photo",
       "label": "Person 2 photo URL"
     },
     {
@@ -266,27 +266,27 @@
   "trustBar": [
     {
       "type": "text",
-      "key": "trustBar.items.0.text",
+      "key": "sections.trustBar.badges.0.label",
       "label": "Badge 1"
     },
     {
       "type": "text",
-      "key": "trustBar.items.1.text",
+      "key": "sections.trustBar.badges.1.label",
       "label": "Badge 2"
     },
     {
       "type": "text",
-      "key": "trustBar.items.2.text",
+      "key": "sections.trustBar.badges.2.label",
       "label": "Badge 3"
     },
     {
       "type": "text",
-      "key": "trustBar.items.3.text",
+      "key": "sections.trustBar.badges.3.label",
       "label": "Badge 4"
     },
     {
       "type": "text",
-      "key": "trustBar.items.4.text",
+      "key": "sections.trustBar.badges.4.label",
       "label": "Badge 5"
     },
     {
@@ -298,32 +298,32 @@
   "certifications": [
     {
       "type": "text",
-      "key": "certifications.items.0.label",
+      "key": "sections.certifications.items.0.name",
       "label": "Cert 1 name"
     },
     {
       "type": "text",
-      "key": "certifications.items.0.sub",
+      "key": "sections.certifications.items.0.body",
       "label": "Cert 1 sub"
     },
     {
       "type": "text",
-      "key": "certifications.items.1.label",
+      "key": "sections.certifications.items.1.name",
       "label": "Cert 2 name"
     },
     {
       "type": "text",
-      "key": "certifications.items.1.sub",
+      "key": "sections.certifications.items.1.body",
       "label": "Cert 2 sub"
     },
     {
       "type": "text",
-      "key": "certifications.items.2.label",
+      "key": "sections.certifications.items.2.name",
       "label": "Cert 3 name"
     },
     {
       "type": "text",
-      "key": "certifications.items.2.sub",
+      "key": "sections.certifications.items.2.body",
       "label": "Cert 3 sub"
     },
     {
@@ -335,14 +335,16 @@
   "serviceAreas": [
     {
       "type": "text",
-      "key": "serviceAreas.heading",
+      "key": "sections.serviceAreas.heading",
       "label": "Section heading"
     },
     {
       "type": "textarea",
-      "key": "serviceAreas.areas",
+      "key": "sections.serviceAreas.areas",
       "label": "Areas (one per line)",
-      "join": "\n"
+      "join": "\n",
+      "getTransform": "areaNames",
+      "setTransform": "areaNames"
     },
     {
       "type": "color",
@@ -353,32 +355,32 @@
   "beforeAfter": [
     {
       "type": "text",
-      "key": "beforeAfter.items.0.label",
+      "key": "sections.beforeAfter.items.0.title",
       "label": "Job 1 label"
     },
     {
       "type": "text",
-      "key": "beforeAfter.items.0.before",
+      "key": "sections.beforeAfter.items.0.beforeImage",
       "label": "Job 1 before image URL"
     },
     {
       "type": "text",
-      "key": "beforeAfter.items.0.after",
+      "key": "sections.beforeAfter.items.0.afterImage",
       "label": "Job 1 after image URL"
     },
     {
       "type": "text",
-      "key": "beforeAfter.items.1.label",
+      "key": "sections.beforeAfter.items.1.title",
       "label": "Job 2 label"
     },
     {
       "type": "text",
-      "key": "beforeAfter.items.1.before",
+      "key": "sections.beforeAfter.items.1.beforeImage",
       "label": "Job 2 before image URL"
     },
     {
       "type": "text",
-      "key": "beforeAfter.items.1.after",
+      "key": "sections.beforeAfter.items.1.afterImage",
       "label": "Job 2 after image URL"
     },
     {
@@ -390,32 +392,32 @@
   "responseCards": [
     {
       "type": "text",
-      "key": "responseCards.items.0.title",
+      "key": "sections.responseCards.cards.0.title",
       "label": "Card 1 title"
     },
     {
       "type": "text",
-      "key": "responseCards.items.0.body",
+      "key": "sections.responseCards.cards.0.text",
       "label": "Card 1 body"
     },
     {
       "type": "text",
-      "key": "responseCards.items.1.title",
+      "key": "sections.responseCards.cards.1.title",
       "label": "Card 2 title"
     },
     {
       "type": "text",
-      "key": "responseCards.items.1.body",
+      "key": "sections.responseCards.cards.1.text",
       "label": "Card 2 body"
     },
     {
       "type": "text",
-      "key": "responseCards.items.2.title",
+      "key": "sections.responseCards.cards.2.title",
       "label": "Card 3 title"
     },
     {
       "type": "text",
-      "key": "responseCards.items.2.body",
+      "key": "sections.responseCards.cards.2.text",
       "label": "Card 3 body"
     },
     {
@@ -427,42 +429,42 @@
   "projectStats": [
     {
       "type": "text",
-      "key": "projectStats.stats.0.value",
+      "key": "sections.projectStats.stats.0.value",
       "label": "Stat 1 value"
     },
     {
       "type": "text",
-      "key": "projectStats.stats.0.label",
+      "key": "sections.projectStats.stats.0.label",
       "label": "Stat 1 label"
     },
     {
       "type": "text",
-      "key": "projectStats.stats.1.value",
+      "key": "sections.projectStats.stats.1.value",
       "label": "Stat 2 value"
     },
     {
       "type": "text",
-      "key": "projectStats.stats.1.label",
+      "key": "sections.projectStats.stats.1.label",
       "label": "Stat 2 label"
     },
     {
       "type": "text",
-      "key": "projectStats.stats.2.value",
+      "key": "sections.projectStats.stats.2.value",
       "label": "Stat 3 value"
     },
     {
       "type": "text",
-      "key": "projectStats.stats.2.label",
+      "key": "sections.projectStats.stats.2.label",
       "label": "Stat 3 label"
     },
     {
       "type": "text",
-      "key": "projectStats.stats.3.value",
+      "key": "sections.projectStats.stats.3.value",
       "label": "Stat 4 value"
     },
     {
       "type": "text",
-      "key": "projectStats.stats.3.label",
+      "key": "sections.projectStats.stats.3.label",
       "label": "Stat 4 label"
     },
     {
@@ -474,23 +476,18 @@
   "specialOffer": [
     {
       "type": "text",
-      "key": "specialOffer.heading",
+      "key": "sections.specialOffer.heading",
       "label": "Offer heading"
     },
     {
-      "type": "textarea",
-      "key": "specialOffer.body",
-      "label": "Offer description"
-    },
-    {
       "type": "text",
-      "key": "specialOffer.cta",
+      "key": "sections.specialOffer.ctaText",
       "label": "CTA button"
     },
     {
       "type": "text",
-      "key": "specialOffer.expiry",
-      "label": "Expiry text"
+      "key": "sections.specialOffer.intro",
+      "label": "Deadline text"
     },
     {
       "type": "color",
@@ -501,37 +498,37 @@
   "serviceProcess": [
     {
       "type": "text",
-      "key": "serviceProcess.heading",
+      "key": "sections.serviceProcess.heading",
       "label": "Section heading"
     },
     {
       "type": "text",
-      "key": "serviceProcess.steps.0.title",
+      "key": "sections.serviceProcess.steps.0.title",
       "label": "Step 1 title"
     },
     {
       "type": "text",
-      "key": "serviceProcess.steps.0.body",
+      "key": "sections.serviceProcess.steps.0.text",
       "label": "Step 1 description"
     },
     {
       "type": "text",
-      "key": "serviceProcess.steps.1.title",
+      "key": "sections.serviceProcess.steps.1.title",
       "label": "Step 2 title"
     },
     {
       "type": "text",
-      "key": "serviceProcess.steps.1.body",
+      "key": "sections.serviceProcess.steps.1.text",
       "label": "Step 2 description"
     },
     {
       "type": "text",
-      "key": "serviceProcess.steps.2.title",
+      "key": "sections.serviceProcess.steps.2.title",
       "label": "Step 3 title"
     },
     {
       "type": "text",
-      "key": "serviceProcess.steps.2.body",
+      "key": "sections.serviceProcess.steps.2.text",
       "label": "Step 3 description"
     },
     {
@@ -543,28 +540,23 @@
   "finance": [
     {
       "type": "text",
-      "key": "finance.heading",
+      "key": "sections.finance.heading",
       "label": "Section heading"
     },
     {
+      "type": "text",
+      "key": "sections.finance.amount",
+      "label": "From amount"
+    },
+    {
+      "type": "text",
+      "key": "sections.finance.period",
+      "label": "Per period"
+    },
+    {
       "type": "textarea",
-      "key": "finance.body",
+      "key": "sections.finance.description",
       "label": "Description"
-    },
-    {
-      "type": "text",
-      "key": "finance.options.0",
-      "label": "Option 1"
-    },
-    {
-      "type": "text",
-      "key": "finance.options.1",
-      "label": "Option 2"
-    },
-    {
-      "type": "text",
-      "key": "finance.options.2",
-      "label": "Option 3"
     },
     {
       "type": "color",
@@ -575,32 +567,32 @@
   "activityCounter": [
     {
       "type": "text",
-      "key": "activityCounter.stats.0.value",
+      "key": "sections.activityCounter.stats.0.value",
       "label": "Stat 1 value"
     },
     {
       "type": "text",
-      "key": "activityCounter.stats.0.label",
+      "key": "sections.activityCounter.stats.0.label",
       "label": "Stat 1 label"
     },
     {
       "type": "text",
-      "key": "activityCounter.stats.1.value",
+      "key": "sections.activityCounter.stats.1.value",
       "label": "Stat 2 value"
     },
     {
       "type": "text",
-      "key": "activityCounter.stats.1.label",
+      "key": "sections.activityCounter.stats.1.label",
       "label": "Stat 2 label"
     },
     {
       "type": "text",
-      "key": "activityCounter.stats.2.value",
+      "key": "sections.activityCounter.stats.2.value",
       "label": "Stat 3 value"
     },
     {
       "type": "text",
-      "key": "activityCounter.stats.2.label",
+      "key": "sections.activityCounter.stats.2.label",
       "label": "Stat 3 label"
     },
     {
@@ -612,47 +604,47 @@
   "estimateBuilder": [
     {
       "type": "text",
-      "key": "estimateBuilder.heading",
+      "key": "sections.estimateBuilder.heading",
       "label": "Section heading"
     },
     {
       "type": "text",
-      "key": "estimateBuilder.services.0.label",
+      "key": "sections.estimateBuilder.options.0.label",
       "label": "Service 1 name"
     },
     {
       "type": "number",
-      "key": "estimateBuilder.services.0.price",
+      "key": "sections.estimateBuilder.options.0.min",
       "label": "Service 1 price ($)"
     },
     {
       "type": "text",
-      "key": "estimateBuilder.services.1.label",
+      "key": "sections.estimateBuilder.options.1.label",
       "label": "Service 2 name"
     },
     {
       "type": "number",
-      "key": "estimateBuilder.services.1.price",
+      "key": "sections.estimateBuilder.options.1.min",
       "label": "Service 2 price ($)"
     },
     {
       "type": "text",
-      "key": "estimateBuilder.services.2.label",
+      "key": "sections.estimateBuilder.options.2.label",
       "label": "Service 3 name"
     },
     {
       "type": "number",
-      "key": "estimateBuilder.services.2.price",
+      "key": "sections.estimateBuilder.options.2.min",
       "label": "Service 3 price ($)"
     },
     {
       "type": "text",
-      "key": "estimateBuilder.services.3.label",
+      "key": "sections.estimateBuilder.options.3.label",
       "label": "Service 4 name"
     },
     {
       "type": "number",
-      "key": "estimateBuilder.services.3.price",
+      "key": "sections.estimateBuilder.options.3.min",
       "label": "Service 4 price ($)"
     },
     {
@@ -674,47 +666,47 @@
     },
     {
       "type": "color",
-      "key": "sections.featuredProjects.accent",
+      "key": "sections.featuredProjects.cardBg",
       "label": "Accent colour"
     },
     {
       "type": "text",
-      "key": "sections.featuredProjects.items.0.title",
+      "key": "sections.featuredProjects.projects.0.title",
       "label": "Project 1 title"
     },
     {
       "type": "text",
-      "key": "sections.featuredProjects.items.0.type",
+      "key": "sections.featuredProjects.projects.0.tag",
       "label": "Project 1 type"
     },
     {
       "type": "text",
-      "key": "sections.featuredProjects.items.0.location",
+      "key": "sections.featuredProjects.projects.0.location",
       "label": "Project 1 location"
     },
     {
       "type": "text",
-      "key": "sections.featuredProjects.items.0.img",
+      "key": "sections.featuredProjects.projects.0.image",
       "label": "Project 1 image URL"
     },
     {
       "type": "text",
-      "key": "sections.featuredProjects.items.1.title",
+      "key": "sections.featuredProjects.projects.1.title",
       "label": "Project 2 title"
     },
     {
       "type": "text",
-      "key": "sections.featuredProjects.items.1.img",
+      "key": "sections.featuredProjects.projects.1.image",
       "label": "Project 2 image URL"
     },
     {
       "type": "text",
-      "key": "sections.featuredProjects.items.2.title",
+      "key": "sections.featuredProjects.projects.2.title",
       "label": "Project 3 title"
     },
     {
       "type": "text",
-      "key": "sections.featuredProjects.items.2.img",
+      "key": "sections.featuredProjects.projects.2.image",
       "label": "Project 3 image URL"
     }
   ],
