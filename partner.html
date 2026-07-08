@@ -238,15 +238,15 @@
             </div>
             <div class="lp-demo-create-body">
               <div class="lp-demo-create-fields">
-                <div class="field"><label for="m-biz">Demo name</label><input id="m-biz" type="text" placeholder="e.g. Hilltop Plumbing"></div>
                 <div class="row2">
-                  <div class="field"><label for="m-city">Target city</label><input id="m-city" type="text" placeholder="e.g. Canberra"></div>
-                  <div class="field"><label for="m-region">Region</label><input id="m-region" type="text" placeholder="e.g. ACT"></div>
+                  <div class="field"><label for="m-biz">Business name</label><input id="m-biz" type="text" placeholder="e.g. Hilltop Plumbing"></div>
+                  <div class="field"><label for="m-location">Target location</label><input id="m-location" type="text" placeholder="e.g. Canberra, Sydney, Gold Coast"></div>
                 </div>
+                <p class="muted" style="margin:-4px 0 12px;font-size:12.5px">These flow through the content as <strong>{business}</strong> and <strong>{location}</strong> everywhere on the demo site.</p>
                 <div class="field"><label for="m-theme">Start from a saved theme (optional)</label><select id="m-theme"><option value="">Blank trade site</option></select></div>
                 <label class="lp-demo-seed" style="display:flex;align-items:flex-start;gap:10px;font-weight:600;margin:4px 0 14px;cursor:pointer">
                   <input type="checkbox" id="m-seed" checked style="width:auto;margin-top:3px">
-                  <span>Load starter content <span class="muted" style="font-weight:500;display:block;font-size:12.5px;margin-top:2px">Pulls a shuffled trade pack with {city} / {business} tokens ready for localisation.</span></span>
+                  <span>Load starter content <span class="muted" style="font-weight:500;display:block;font-size:12.5px;margin-top:2px">Shuffled community trade pack — unique per location when possible.</span></span>
                 </label>
                 <div class="save-row" style="margin:0">
                   <button class="btn btn-brand" id="m-create">Create demo</button>
@@ -254,13 +254,23 @@
                 </div>
               </div>
               <div class="lp-demo-create-trade">
-                <div class="field" style="margin-bottom:0">
+                <div class="field" style="margin-bottom:10px">
                   <label for="m-trade-search">Industry / trade</label>
-                  <input id="m-trade-search" type="text" autocomplete="off" placeholder="Search 100+ trades… (try plumber, roofer, cleaner)">
+                  <input id="m-trade-search" type="text" autocomplete="off" placeholder="Search community library… (try plumber, roofer, cleaner)">
                   <input type="hidden" id="m-pack" value="plumber">
                   <div id="m-picked" class="cs-picked"></div>
                   <div class="tp2-wrap lp-demo-trade-picker"><div id="m-cats" class="tp2-cats"></div><div id="m-packlist" class="tp2-list"></div></div>
                 </div>
+                <details class="lp-new-trade-box">
+                  <summary>Add a missing trade to the community library</summary>
+                  <div style="padding:12px 0 4px">
+                    <p class="muted" style="margin:0 0 12px;font-size:12.5px">Can’t find your trade? Create it once — AI generates starter content and adds it for all partners. Uses API credits.</p>
+                    <div class="field"><label for="m-new-trade">New trade name</label><input id="m-new-trade" type="text" placeholder="e.g. Coffee cart hire"></div>
+                    <div class="field"><label for="m-new-cat">Category (optional)</label><input id="m-new-cat" type="text" placeholder="e.g. Hire &amp; Events"></div>
+                    <button type="button" class="btn" id="m-add-trade" style="width:100%">Create trade &amp; select</button>
+                    <p class="muted" id="m-new-trade-msg" style="margin:8px 0 0;font-size:13px"></p>
+                  </div>
+                </details>
               </div>
             </div>
           </div>
@@ -1089,21 +1099,37 @@
     var r=await sb.from('billing_plans').select('key,name,monthly_amount,active,sort').eq('active',true).order('sort',{ascending:true});
     if(r.data){ r.data.forEach(function(pl){ var o=document.createElement('option'); o.value=pl.key; o.textContent=pl.name+' \u2014 '+money(pl.monthly_amount)+'/mo'; sel.appendChild(o); }); sel.dataset.loaded='1'; }
   }
-  function initDemoTradePicker(){
+  async function initDemoTradePicker(){
     if(window.__demoPickerInited||!window.LPTradePicker) return;
+    await loadCommunityTradePacks();
     window.__demoPickerInited=true;
     window.LPTradePicker.init2({search:'m-trade-search',hidden:'m-pack',picked:'m-picked',cats:'m-cats',list:'m-packlist',defaultSlug:'plumber'});
+  }
+  async function loadCommunityTradePacks(){
+    if(!window.LPTradePicker) return;
+    try{
+      var r=await fetch('/api/partner/list-trade-packs',{headers:await authHeader()});
+      var j=await r.json();
+      if(j&&j.ok&&j.packs){
+        j.packs.forEach(function(p){
+          window.LPTradePicker.registerPack(p.slug,p.category||'General',{label:p.label,tradeType:p.label});
+        });
+      }
+    }catch(_e){}
   }
   function fillDemoLocationDefaults(){
     var pf=state.profile||{};
     var region=(pf.region||'').trim();
-    var cityEl=document.getElementById('m-city');
-    var regionEl=document.getElementById('m-region');
-    if(cityEl && !cityEl.value) cityEl.value=region.split(/[,&]/)[0].trim()||'Canberra';
-    if(regionEl && !regionEl.value){
-      if(/ACT|NSW|VIC|QLD|SA|WA|TAS|NT/i.test(region)) regionEl.value=region.match(/ACT|NSW|VIC|QLD|SA|WA|TAS|NT/i)[0].toUpperCase();
-      else regionEl.value='ACT';
-    }
+    var locEl=document.getElementById('m-location');
+    if(locEl && !locEl.value) locEl.value=region.split(/[,&]/)[0].trim()||'';
+  }
+  async function acquireTradePack(opts){
+    var r=await fetch('/api/partner/acquire-trade-pack',{
+      method:'POST',
+      headers:Object.assign({'content-type':'application/json'},await authHeader()),
+      body:JSON.stringify(opts)
+    });
+    return r.json();
   }
   function wireAdd(){
     if(addWired) return; addWired=true;
@@ -1128,30 +1154,37 @@
       var industry=picker?picker.tradeType(packSlug):'Plumber';
       var tradeLabel=picker?picker.tradeLabel(packSlug):'Plumber';
       var tradeCat=picker?picker.tradeCat(packSlug):'';
-      var biz=(document.getElementById('m-biz').value||'').trim()||'Untitled demo';
+      var biz=(document.getElementById('m-biz').value||'').trim();
+      var targetLocation=(document.getElementById('m-location').value||'').trim();
+      if(!biz){ err.textContent='Business name is required.'; err.classList.remove('hidden'); btn.disabled=false; return; }
+      if(!targetLocation){ err.textContent='Target location is required (e.g. Canberra, Sydney).'; err.classList.remove('hidden'); btn.disabled=false; return; }
       var seed=document.getElementById('m-seed')&&document.getElementById('m-seed').checked;
-      var starterPack=null;
+      var starterPack=null, packId=null, packMeta=null;
       if(seed){
-        btn.textContent='Loading content\u2026';
-        try{
-          var gr=await fetch('/api/api-trade-generate',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify({trade:tradeLabel,category:tradeCat||'General'})});
-          var gj=await gr.json();
-          if(gj&&gj.ok&&gj.pack) starterPack=gj.pack;
-        }catch(_e){}
+        btn.textContent='Finding content\u2026';
+        var confirmNew=false, done=false, attempts=0;
+        while(!done&&attempts<3){
+          attempts++;
+          var gj=await acquireTradePack({packSlug:packSlug,tradeLabel:tradeLabel,category:tradeCat||'General',targetLocation:targetLocation,confirmNewGeneration:confirmNew});
+          if(gj&&gj.needsConfirmation){
+            if(!window.confirm(gj.message||'Generate fresh content for this location?')){ btn.disabled=false; btn.textContent='Create demo'; return; }
+            confirmNew=true;
+            continue;
+          }
+          if(!gj||!gj.ok){ err.textContent=(gj&&gj.error)||'Could not load trade content.'; err.classList.remove('hidden'); btn.disabled=false; btn.textContent='Create demo'; return; }
+          starterPack=gj.pack; packId=gj.packId; packMeta=gj; done=true;
+        }
       }
       btn.textContent='Creating\u2026';
       var payload={
-        businessName:biz,
+        businessName:biz||'Untitled demo',
         industry:industry,
         packSlug:packSlug,
+        packId:packId,
         themeId:(document.getElementById('m-theme').value||''),
         seedContent:!!(seed&&starterPack),
         starterPack:starterPack,
-        location:{
-          city:(document.getElementById('m-city').value||'').trim()||'Canberra',
-          region:(document.getElementById('m-region').value||'').trim()||'ACT',
-          suburb:(document.getElementById('m-city').value||'').trim()||'Canberra'
-        }
+        targetLocation:targetLocation
       };
       var res;
       try{ var r=await fetch('/api/partner/add-mockup',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
@@ -1160,7 +1193,35 @@
       mockups.unshift(res.site); renderMockups();
       document.getElementById('m-biz').value='';
       if(document.getElementById('m-theme')) document.getElementById('m-theme').value='';
+      if(packMeta&&packMeta.communityAdded) loadCommunityTradePacks();
       window.open('/manage?site='+encodeURIComponent(res.site.slug||''),'_blank','noopener');
+    });
+    var _mat=document.getElementById('m-add-trade');
+    if(_mat) _mat.addEventListener('click', async function(){
+      var msg=document.getElementById('m-new-trade-msg');
+      var name=(document.getElementById('m-new-trade').value||'').trim();
+      var cat=(document.getElementById('m-new-cat').value||'').trim()||'General';
+      var loc=(document.getElementById('m-location').value||'').trim();
+      if(!name){ if(msg){ msg.style.color='var(--bad)'; msg.textContent='Enter a trade name first.'; } return; }
+      if(!loc){ if(msg){ msg.style.color='var(--bad)'; msg.textContent='Enter a target location first — needed for unique content checks.'; } return; }
+      this.disabled=true; if(msg){ msg.style.color='var(--text-soft)'; msg.textContent='Creating community trade pack\u2026'; }
+      var confirmNew=false, gj=null;
+      for(var i=0;i<2;i++){
+        gj=await acquireTradePack({mode:'create',trade:name,category:cat,targetLocation:loc,confirmNewGeneration:confirmNew});
+        if(gj&&gj.needsConfirmation){
+          if(!window.confirm(gj.message||'Create this trade for the community library?')){ this.disabled=false; if(msg) msg.textContent=''; return; }
+          confirmNew=true; continue;
+        }
+        break;
+      }
+      this.disabled=false;
+      if(!gj||!gj.ok){ if(msg){ msg.style.color='var(--bad)'; msg.textContent=(gj&&gj.error)||'Could not create trade.'; } return; }
+      if(window.LPTradePicker) window.LPTradePicker.registerPack(gj.slug,gj.category||cat,{label:gj.label,tradeType:gj.label});
+      var packEl=document.getElementById('m-pack'); if(packEl) packEl.value=gj.slug;
+      var picked=document.getElementById('m-picked');
+      if(picked&&window.LPTradePicker) picked.innerHTML='<span class="cs-picked-lbl">'+gj.label+'</span><span class="cs-picked-cat">'+((gj.category||cat))+'</span>';
+      if(msg){ msg.style.color='var(--success)'; msg.textContent='Added “'+gj.label+'” to the community library and selected it.'; }
+      document.getElementById('m-new-trade').value='';
     });
     document.getElementById('mockups-list').addEventListener('click', async function(e){
       var _cd=e.target.closest('[data-id]');
