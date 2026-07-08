@@ -46,7 +46,7 @@ footer img.leadpages-logo {
   --lp-logo-pulse-bg: #2f413a;
 }
 
-/* Ring pulse — 7-phase ripple: inner in, outer in, both fade out together, rest */
+/* Ring pulse — 7-phase ripple with glow phasing inner → outer, unified fade-out */
 .lp-logo-pulse #inner-circle {
   animation: lp-logo-ripple-inner 5.5s ease-in-out infinite;
   transform-origin: 153px 134px;
@@ -57,68 +57,178 @@ footer img.leadpages-logo {
   transform-origin: 160px 134px;
 }
 
-/* 1 bg · 2 inner fade · 3–5 inner glow · 6 both fade out · 7 rest */
+/*
+ * Glow never snaps via filter:none — always drop-shadow(0 0 0 transparent)
+ * so intensity eases smoothly. Inner glow peaks early, hands off to outer,
+ * then both fill + glow fade out together.
+ */
 @keyframes lp-logo-ripple-inner {
   0%,
   10%,
-  75%,
+  76%,
   100% {
     fill: var(--lp-logo-pulse-bg, var(--bg, #f6f4ef));
-    filter: none;
+    filter: drop-shadow(0 0 0 transparent);
   }
 
-  /* Phase 2 — inner circle fades in */
-  16% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 50%, var(--lp-logo-accent, #2ecc8f));
-    filter: none;
+  /* Phase 2 — inner fill fades in, glow barely starting */
+  15% {
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 55%, var(--lp-logo-accent, #2ecc8f));
+    filter: drop-shadow(0 0 0 transparent);
   }
 
-  /* Phases 3–5 — inner glow, held while outer catches up */
-  22%,
-  55% {
+  19% {
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 20%, var(--lp-logo-accent, #2ecc8f));
+    filter:
+      drop-shadow(0 0 2px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 16%, transparent))
+      drop-shadow(0 0 5px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 8%, transparent));
+  }
+
+  /* Phase 3 — inner at full accent, glow builds */
+  24% {
+    fill: var(--lp-logo-accent, #2ecc8f);
+    filter:
+      drop-shadow(0 0 4px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 42%, transparent))
+      drop-shadow(0 0 10px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 22%, transparent));
+  }
+
+  28% {
     fill: var(--lp-logo-accent, #2ecc8f);
     filter:
       drop-shadow(0 0 6px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 65%, transparent))
       drop-shadow(0 0 14px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 35%, transparent));
   }
 
-  /* Phase 6 — inner + outer fade out together */
+  /* Phase 4 — outer ring fading in; inner glow softens as energy moves outward */
+  34% {
+    fill: var(--lp-logo-accent, #2ecc8f);
+    filter:
+      drop-shadow(0 0 5px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 48%, transparent))
+      drop-shadow(0 0 12px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 26%, transparent));
+  }
+
+  40% {
+    fill: var(--lp-logo-accent, #2ecc8f);
+    filter:
+      drop-shadow(0 0 3px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 28%, transparent))
+      drop-shadow(0 0 8px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 14%, transparent));
+  }
+
+  /* Phase 5 — both lit; inner keeps a soft halo, outer carries main glow */
+  48%,
+  54% {
+    fill: var(--lp-logo-accent, #2ecc8f);
+    filter:
+      drop-shadow(0 0 2px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 14%, transparent))
+      drop-shadow(0 0 5px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 7%, transparent));
+  }
+
+  /* Phase 6 — fill + glow fade out together */
+  58% {
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 25%, var(--lp-logo-accent, #2ecc8f));
+    filter:
+      drop-shadow(0 0 1px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 8%, transparent))
+      drop-shadow(0 0 3px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 4%, transparent));
+  }
+
   64% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 50%, var(--lp-logo-accent, #2ecc8f));
-    filter: none;
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 55%, var(--lp-logo-accent, #2ecc8f));
+    filter:
+      drop-shadow(0 0 1px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 4%, transparent))
+      drop-shadow(0 0 2px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 2%, transparent));
+  }
+
+  70% {
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 85%, var(--lp-logo-accent, #2ecc8f));
+    filter: drop-shadow(0 0 0 transparent);
+  }
+
+  /* Phase 7 — rest on background */
+  73% {
+    fill: var(--lp-logo-pulse-bg, var(--bg, #f6f4ef));
+    filter: drop-shadow(0 0 0 transparent);
   }
 }
 
-/* 1 bg · 2–3 wait · 4 outer fade · 5 both glow · 6 both fade out · 7 rest */
 @keyframes lp-logo-ripple-outer {
   0%,
   10%,
   30%,
-  75%,
+  76%,
   100% {
     fill: var(--lp-logo-pulse-bg, var(--bg, #f6f4ef));
-    filter: none;
+    filter: drop-shadow(0 0 0 transparent);
   }
 
-  /* Phase 4 — outer circle fades in while inner stays lit */
+  /* Phases 2–3 — outer waits, no glow yet */
+  32% {
+    fill: var(--lp-logo-pulse-bg, var(--bg, #f6f4ef));
+    filter: drop-shadow(0 0 0 transparent);
+  }
+
+  /* Phase 4 — outer fill + glow rise as inner hands off */
   36% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 50%, var(--lp-logo-accent, #2ecc8f));
-    filter: none;
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 55%, var(--lp-logo-accent, #2ecc8f));
+    filter:
+      drop-shadow(0 0 1px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 8%, transparent))
+      drop-shadow(0 0 3px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 4%, transparent));
   }
 
-  /* Phase 5 — both rings at full glow */
-  44%,
-  55% {
+  40% {
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 20%, var(--lp-logo-accent, #2ecc8f));
+    filter:
+      drop-shadow(0 0 3px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 24%, transparent))
+      drop-shadow(0 0 8px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 12%, transparent));
+  }
+
+  44% {
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 8%, var(--lp-logo-accent, #2ecc8f));
+    filter:
+      drop-shadow(0 0 4px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 38%, transparent))
+      drop-shadow(0 0 10px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 20%, transparent));
+  }
+
+  /* Phase 5 — outer carries the main glow */
+  50% {
+    fill: var(--lp-logo-accent, #2ecc8f);
+    filter:
+      drop-shadow(0 0 5px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 52%, transparent))
+      drop-shadow(0 0 12px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 28%, transparent));
+  }
+
+  54% {
     fill: var(--lp-logo-accent, #2ecc8f);
     filter:
       drop-shadow(0 0 6px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 65%, transparent))
       drop-shadow(0 0 14px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 35%, transparent));
   }
 
-  /* Phase 6 — inner + outer fade out together */
+  /* Phase 6 — fill + glow fade out together */
+  58% {
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 25%, var(--lp-logo-accent, #2ecc8f));
+    filter:
+      drop-shadow(0 0 5px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 48%, transparent))
+      drop-shadow(0 0 11px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 24%, transparent));
+  }
+
   64% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 50%, var(--lp-logo-accent, #2ecc8f));
-    filter: none;
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 55%, var(--lp-logo-accent, #2ecc8f));
+    filter:
+      drop-shadow(0 0 3px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 22%, transparent))
+      drop-shadow(0 0 7px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 10%, transparent));
+  }
+
+  70% {
+    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, var(--bg, #f6f4ef)) 85%, var(--lp-logo-accent, #2ecc8f));
+    filter:
+      drop-shadow(0 0 1px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 6%, transparent))
+      drop-shadow(0 0 2px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 3%, transparent));
+  }
+
+  /* Phase 7 — rest on background */
+  73% {
+    fill: var(--lp-logo-pulse-bg, var(--bg, #f6f4ef));
+    filter: drop-shadow(0 0 0 transparent);
   }
 }
 
