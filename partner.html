@@ -76,45 +76,90 @@
 
 <!-- DASHBOARD -->
 <div id="view-dash" class="hidden">
-  <div class="wrap lp-p-wrap dash">
-    <aside class="side">
+  <div class="lp-p-wrap lp-p-dash">
+    <aside class="lp-p-side">
       <div class="pname" id="d-name">Partner</div>
       <div class="pstat"><span class="statusbadge s-active" id="d-status">Active</span></div>
-      <nav class="nav" id="nav">
-        <button type="button" data-p="overview" class="on" data-icon="overview" data-label="Overview">Overview</button>
-        <button type="button" id="messages-link" data-p="messages" data-icon="messages" data-label="Messages">Messages</button>
-        <button type="button" data-p="clients" data-icon="clients" data-label="My Clients">My Clients</button>
-        <button type="button" data-p="demos" data-icon="demos" data-label="Demos &amp; themes">Demos &amp; themes</button>
-        <button type="button" data-p="mypage" data-icon="mypage" data-label="My page">My page</button>
-        <button type="button" data-p="listing" data-icon="listing" data-label="My listing">My listing</button>
-        <button type="button" data-p="payouts" data-icon="payouts" data-label="Payouts">Payouts</button>
-        <button type="button" data-p="quotes" data-icon="quotes" data-label="Quotes">Quotes</button>
-        <button type="button" data-p="commissions" data-icon="commissions" data-label="Commissions">Commissions</button>
-        <button type="button" data-p="training" data-icon="training" data-label="Training Centre">Training Centre</button>
-        <button type="button" data-p="resources" data-icon="resources" data-label="Sales Resources">Sales Resources</button>
-        <button type="button" id="help-link" data-icon="help" data-label="Help &amp; guides">Help &amp; guides</button>
-        <button type="button" data-p="support" data-icon="support" data-label="Support">Support</button>
-        <button type="button" data-p="profile" data-icon="profile" data-label="My Profile">My Profile</button>
-        <button type="button" id="signout" data-icon="signout" data-label="Sign out">Sign out</button>
+      <nav class="nav lp-sb" id="nav" aria-label="Partner navigation">
+        <div class="lp-sb-group">
+          <div class="lp-sb-title">Dashboard</div>
+          <button type="button" data-p="overview" class="on" data-icon="overview" data-label="Dashboard">Dashboard</button>
+        </div>
+
+        <div class="lp-sb-group">
+          <div class="lp-sb-title">Sales</div>
+          <button type="button" data-p="demos" data-icon="demos" data-label="Demos">Demos</button>
+          <button type="button" data-p="quotes" data-icon="quotes" data-label="Quotes">Quotes</button>
+          <button type="button" data-p="resources" data-icon="resources" data-label="Sales Toolkit">Sales Toolkit</button>
+          <button type="button" data-p="training" data-icon="training" data-label="Training">Training</button>
+        </div>
+
+        <div class="lp-sb-group">
+          <div class="lp-sb-title">Clients</div>
+          <button type="button" data-p="clients" data-icon="clients" data-label="Clients">Clients</button>
+          <button type="button" id="messages-link" data-p="messages" data-icon="messages" data-label="Messages">Messages</button>
+          <button type="button" data-p="support" data-icon="support" data-label="Support">Support</button>
+        </div>
+
+        <div class="lp-sb-group">
+          <div class="lp-sb-title">Money</div>
+          <button type="button" data-p="commissions" data-icon="commissions" data-label="Commissions">Commissions</button>
+          <button type="button" data-p="payouts" data-icon="payouts" data-label="Payouts &amp; Pricing">Payouts &amp; Pricing</button>
+        </div>
+
+        <div class="lp-sb-group">
+          <div class="lp-sb-title">Partner Profile</div>
+          <button type="button" data-p="mypage" data-icon="mypage" data-label="Partner Website">Partner Website</button>
+          <button type="button" data-p="listing" data-icon="listing" data-label="Partner Directory">Partner Directory</button>
+          <button type="button" data-p="profile" data-icon="profile" data-label="My Profile">My Profile</button>
+        </div>
+
+        <div class="lp-sb-group">
+          <div class="lp-sb-title">Account</div>
+          <button type="button" id="help-link" data-icon="help" data-label="Help">Help</button>
+          <button type="button" id="signout" data-icon="signout" data-label="Sign out">Sign out</button>
+        </div>
       </nav>
     </aside>
 
-    <main>
+    <main class="lp-p-main">
       <!-- Overview -->
-      <section class="panel on" data-panel="overview">
-        <h2>Overview</h2>
-        <p class="sub">A snapshot of your clients and commissions. Revenue figures arrive with commissions (Phase 3).</p>
-        <div class="kpis">
+      <section class="panel lp-p-panel on" data-panel="overview" data-w="wide">
+        <div class="card" id="dash-hero" style="padding:22px 22px;margin-bottom:18px;background:linear-gradient(135deg,color-mix(in srgb, var(--accent) 18%, var(--panel)) 0%, var(--panel) 55%);border-color:color-mix(in srgb, var(--accent) 22%, var(--border));">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+            <div>
+              <h2 style="font-size:26px;margin:0 0 4px">Dashboard</h2>
+              <p class="sub" style="margin:0;max-width:70ch">Your command centre for demos, quotes, client work, and earnings.</p>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button type="button" class="btn btn-brand" id="qa-add-client">Add client</button>
+              <button type="button" class="btn" id="qa-create-demo">Create demo</button>
+              <button type="button" class="btn" id="qa-send-quote">Send quote</button>
+              <button type="button" class="btn" id="qa-open-builder">Open builder</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpis" style="margin-bottom:18px">
           <div class="card kpi"><div class="lab">Total clients</div><div class="val" id="kpi-clients">0</div></div>
           <div class="card kpi"><div class="lab">Active websites</div><div class="val" id="kpi-active">0</div></div>
           <div class="card kpi"><div class="lab">Pending builds</div><div class="val" id="kpi-pending">0</div></div>
-          <div class="card kpi"><div class="lab">Recurring you generated</div><div class="val" id="kpi-recurring">$0<span style="font-size:14px;color:var(--ink-faint)">/mo</span></div></div>
-          <div class="card kpi"><div class="lab">Est. next payout</div><div class="val" id="kpi-payout">$0</div></div>
+          <div class="card kpi"><div class="lab">Monthly recurring generated</div><div class="val" id="kpi-recurring">$0<span style="font-size:14px;color:var(--ink-faint)">/mo</span></div></div>
+          <div class="card kpi"><div class="lab">Estimated next payout</div><div class="val" id="kpi-payout">$0</div></div>
           <div class="card kpi"><div class="lab">Pending commissions</div><div class="val" id="kpi-pendingcomm">$0</div></div>
           <div class="card kpi"><div class="lab">Paid commissions</div><div class="val" id="kpi-paidcomm">$0</div></div>
-          <div class="card kpi"><div class="lab">Open support items</div><div class="val">0</div></div>
+          <div class="card kpi"><div class="lab">Open support items</div><div class="val" id="kpi-support">0</div></div>
         </div>
-        <div class="card empty" id="ov-empty">
+
+        <div class="card" style="padding:18px 20px" id="dash-attn">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+            <h3 style="font-family:var(--font-display);font-size:16px">Needs attention</h3>
+            <span class="muted" style="font-size:12.5px">Based on your current clients, demos, quotes, and messages</span>
+          </div>
+          <div id="dash-actions"><div class="muted" style="font-size:13.5px">Loading…</div></div>
+        </div>
+
+        <div class="card empty" id="ov-empty" style="margin-top:16px">
           <div class="e-ico" data-icon="rocket"></div>
           <strong>Add your first client</strong>
           <p class="muted" style="margin:6px auto 0;max-width:46ch">Bring on a local business and generate their website in seconds. Your clients and recurring income then build from here.</p>
@@ -123,17 +168,24 @@
       </section>
 
       <!-- Clients -->
-      <section class="panel" data-panel="clients">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
-          <div><h2>My Clients</h2><p class="sub" style="margin-bottom:0">The businesses you've brought on and the websites you build for them.</p></div>
+      <section class="panel lp-p-panel" data-panel="clients" data-w="wide">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap">
+          <div>
+            <h2>Clients</h2>
+            <p class="sub" style="margin-bottom:0">A CRM-style workspace for your active builds and live sites.</p>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <input id="clients-q" type="text" placeholder="Search clients…" style="width:min(360px, 72vw)">
+            <button type="button" class="btn btn-brand" id="clients-add">Add client</button>
+          </div>
         </div>
-        <div id="clients-list" style="margin-top:18px"><div class="card empty"><p class="muted">Loading your clients…</p></div></div>
+        <div id="clients-list" style="margin-top:14px"><div class="card empty"><p class="muted">Loading your clients…</p></div></div>
       </section>
 
       <!-- Add Customer -->
-      <section class="panel" data-panel="add">
-        <h2>Add Customer</h2>
-        <p class="sub">Enter the business details and create their website. The client is linked to you for commission, and you finish the build in the editor.</p>
+      <section class="panel lp-p-panel" data-panel="add" data-w="form">
+        <h2>Add client</h2>
+        <p class="sub">Create a new client website and link it to your partner account for commission.</p>
         <div class="card" style="padding:24px;max-width:680px" id="add-card">
           <div class="row2">
             <div class="field"><label for="a-biz">Business name *</label><input id="a-biz" type="text" placeholder="e.g. Hilltop Plumbing"></div>
@@ -171,9 +223,9 @@
       </section>
 
       <!-- Demos & themes -->
-      <section class="panel" data-panel="demos">
-        <h2>Demos &amp; themes</h2>
-        <p class="sub">Mock up tradie sites for prospects — no client, no billing. Save a design as a theme to reuse, or turn a demo into a client when you land them.</p>
+      <section class="panel lp-p-panel" data-panel="demos" data-w="wide">
+        <h2>Demos</h2>
+        <p class="sub">Build demos for prospects, save themes, and turn wins into clients.</p>
         <div class="card" style="padding:20px;max-width:680px">
           <div class="row2">
             <div class="field"><label for="m-biz">Demo name (e.g. the prospect's business)</label><input id="m-biz" type="text"></div>
@@ -189,9 +241,9 @@
       </section>
 
       <!-- My page -->
-      <section class="panel" data-panel="mypage">
-        <h2>My page</h2>
-        <p class="sub">Your own branded homepage at your subdomain — your logo, your pitch, and the demos you choose to show.</p>
+      <section class="panel lp-p-panel" data-panel="mypage" data-w="form">
+        <h2>Partner Website</h2>
+        <p class="sub">Your public partner page — brand, URL, and showcase settings.</p>
         <div class="card" style="padding:18px 20px;max-width:680px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
           <div><div style="font-weight:700">Your page design</div><div class="muted" style="font-size:13.5px">Edit your homepage in the builder — hero, services, your pitch. Your enabled demos appear automatically at the bottom. Publish it there to make it live.</div></div>
           <button class="btn btn-brand" id="sc-design" style="white-space:nowrap">Edit in builder</button>
@@ -238,8 +290,8 @@
       </section>
 
       <!-- Partner directory listing -->
-      <section class="panel" data-panel="listing">
-        <h2>My listing</h2>
+      <section class="panel lp-p-panel" data-panel="listing" data-w="form">
+        <h2>Partner Directory</h2>
         <p class="sub">Appear on the public <a href="/find-a-partner" target="_blank" rel="noopener">Find a Partner</a> page so business owners can find a local web designer near them.</p>
         <div class="card" style="padding:24px;max-width:720px">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
@@ -277,8 +329,8 @@
       </section>
 
       <!-- Payouts & pricing -->
-      <section class="panel" data-panel="payouts">
-        <h2>Payouts &amp; pricing</h2>
+      <section class="panel lp-p-panel" data-panel="payouts" data-w="form">
+        <h2>Payouts &amp; Pricing</h2>
         <p class="sub">Set a price per demo and see exactly what you earn. Each sale is split 50/50, with a $750 minimum to LeadPages.</p>
         <div class="card" style="padding:24px;max-width:680px">
           <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin-bottom:14px"><input type="checkbox" id="po-gst" style="width:auto"> I’m registered for GST</label>
@@ -294,7 +346,7 @@
       </section>
 
       <!-- Quotes -->
-      <section class="panel" data-panel="quotes">
+      <section class="panel lp-p-panel" data-panel="quotes" data-w="form">
         <h2>Quotes</h2>
         <p class="sub">Build a quote tied to a client’s demo. They get a link to preview the site, accept, and pay — which sets it live and books your commission automatically.</p>
         <div class="card" style="padding:24px;max-width:720px">
@@ -317,7 +369,7 @@
       </section>
 
       <!-- Commissions -->
-      <section class="panel" data-panel="commissions">
+      <section class="panel lp-p-panel" data-panel="commissions" data-w="wide">
         <h2>Commissions</h2>
         <p class="sub">50% of each build fee and 20% of monthly subscription revenue for clients you generate. Paid on a 30-day cycle, subject to approval and account standing.</p>
         <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
@@ -329,7 +381,7 @@
       </section>
 
       <!-- Training -->
-      <section class="panel" data-panel="training">
+      <section class="panel lp-p-panel" data-panel="training" data-w="wide">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
           <div><h2>Training Centre</h2><p class="sub" style="margin-bottom:0">Step-by-step training from your first sale to ongoing client support.</p></div>
           <span class="statusbadge s-active" id="train-progress" style="font-size:13px"></span>
@@ -338,21 +390,21 @@
       </section>
 
       <!-- Resources -->
-      <section class="panel" data-panel="resources">
-        <h2>Sales Resources</h2>
-        <p class="sub">Scripts, templates and pitch material ready to use — copy or download.</p>
+      <section class="panel lp-p-panel" data-panel="resources" data-w="wide">
+        <h2>Sales Toolkit</h2>
+        <p class="sub">Scripts, templates, and pitch material — searchable and ready to copy.</p>
         <div id="resources-list" style="margin-top:6px"><div class="card empty"><p class="muted">Loading resources…</p></div></div>
       </section>
 
       <!-- Messages -->
-      <section class="panel" data-panel="messages">
+      <section class="panel lp-p-panel" data-panel="messages" data-w="wide">
         <h2>Messages</h2>
         <p class="sub">Client conversations and LeadPages support — all in one place. No need to leave the partner console.</p>
         <div id="partner-messages-root"></div>
       </section>
 
       <!-- Support -->
-      <section class="panel" data-panel="support">
+      <section class="panel lp-p-panel" data-panel="support" data-w="wide">
         <h2>Support</h2>
         <p class="sub">Contact your LeadPages account manager or raise a support request on behalf of a client.</p>
         <div class="card" style="padding:24px;max-width:720px;margin-bottom:16px">
@@ -368,7 +420,7 @@
       </section>
 
       <!-- Profile (functional) -->
-      <section class="panel" data-panel="profile">
+      <section class="panel lp-p-panel" data-panel="profile" data-w="form">
         <h2>My Profile</h2>
         <p class="sub">The support contact details your clients see. This is live — changes save to your account.</p>
         <div class="card" style="padding:24px;max-width:620px">
@@ -621,6 +673,7 @@
   function esc(x){ return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function money(c){ if(c==null) return '\u2014'; return '$'+(Math.round(c)/100).toLocaleString(); }
   var clients=[], addWired=false;
+  var quotes=[];
 
   function gotoPanel(name){
     document.querySelectorAll('#nav button[data-p]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-p')===name); });
@@ -643,50 +696,148 @@
     var ov=document.getElementById('ov-empty'); if(ov) ov.style.display=total?'none':'';
     var rr=0; clients.forEach(function(c){ if(c.status==='live'&&c.monthly_amount!=null) rr+=Math.round(c.monthly_amount*0.20); });
     var kr=document.getElementById('kpi-recurring'); if(kr) kr.innerHTML=money(rr)+'<span style="font-size:14px;color:var(--ink-faint)">/mo</span>';
+    renderDashAttention();
+  }
+
+  function dashRow(iconName, title, detail, actionLabel, actionFnName, tone){
+    var ico = '<span class="e-ico" data-icon="'+esc(iconName||'overview')+'" style="width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--panel-soft);border:1px solid var(--border)"></span>';
+    var badge = tone ? ('<span class="statusbadge '+esc(tone)+'" style="font-size:12px">'+esc(tone.replace(/^s-/,'').replace(/-/g,' '))+'</span>') : '';
+    var act = actionLabel ? ('<button type="button" class="btn btn-sm" data-da="'+esc(actionFnName||'')+'" style="padding:7px 11px;font-size:13px;white-space:nowrap">'+esc(actionLabel)+'</button>') : '';
+    return '<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid var(--line);flex-wrap:wrap">'
+      + ico
+      + '<div style="flex:1;min-width:240px">'
+      +   '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+      +     '<div style="font-weight:700">'+esc(title||'')+'</div>'+badge
+      +   '</div>'
+      +   (detail?('<div class="muted" style="font-size:13px;margin-top:3px">'+esc(detail)+'</div>'):'')
+      + '</div>'
+      + (act?('<div style="margin-left:auto">'+act+'</div>'):'')
+      + '</div>';
+  }
+
+  function renderDashAttention(){
+    var box=document.getElementById('dash-actions'); if(!box) return;
+    var items=[];
+
+    // Unread messages (best-effort)
+    try{
+      var unread = partnerMsgEmbed ? partnerMsgEmbed.getUnreadCount() : 0;
+      if(unread>0){
+        items.push(dashRow('messages','Unread messages','You have '+unread+' conversation'+(unread===1?'':'s')+' to read.','Open messages','openMessages','s-pending'));
+      }
+    }catch(_e){}
+
+    // Payout details missing (ABN)
+    var pf = state.profile||{};
+    if(!pf.abn){
+      items.push(dashRow('payouts','Complete payout details','Add your ABN so payouts can be processed.','Open payouts','openPayouts','s-pending'));
+    }
+
+    // Quotes awaiting payment/approval (best-effort)
+    var openQuotes = (quotes||[]).filter(function(q){ return (q.status||'')!=='paid'; }).slice(0,3);
+    if(openQuotes.length){
+      items.push(dashRow('quotes','Quotes awaiting action',openQuotes.map(function(q){ return (q.business_name||'Quote')+' · '+fmtAUD(q.price||0)+' · '+(q.status||'sent'); }).join(' / '),'View quotes','openQuotes','s-active'));
+    }
+
+    // Demos that are not live (best-effort)
+    var draftDemos = (mockups||[]).filter(function(m){ return (m.status||'')!=='live'; }).slice(0,3);
+    if(draftDemos.length){
+      items.push(dashRow('demos','Draft demos','Open a demo and publish when it’s ready.','Open demos','openDemos','s-pending'));
+    }
+
+    if(!items.length){
+      box.innerHTML='<div class="muted" style="font-size:13.5px">Nothing urgent right now. Create a demo, send a quote, or add a client to keep momentum.</div>';
+    } else {
+      box.innerHTML = '<div style="border-top:1px solid transparent"></div>'+items.join('');
+      box.querySelectorAll('[data-da]').forEach(function(b){
+        b.addEventListener('click',function(){
+          var k=b.getAttribute('data-da');
+          if(k==='openMessages') gotoPanel('messages');
+          if(k==='openPayouts') gotoPanel('payouts');
+          if(k==='openQuotes') gotoPanel('quotes');
+          if(k==='openDemos') gotoPanel('demos');
+        });
+      });
+      // ensure icons rendered
+      try{ if(window.LPStrokeIcons) window.LPStrokeIcons.decorateAll(box); }catch(_e){}
+    }
   }
   function clientCard(c){
-    var plan=c.plan_key?(' \u00b7 '+esc(c.plan_key)):'';
-    var fee=(c.monthly_amount!=null)?(' \u00b7 '+money(c.monthly_amount)+'/mo'):'';
     var live=c.status==='live';
     var mine=!!(state.partner && c.servicing_partner_id===state.partner.id);
     var badge=live?'<span class="statusbadge s-active">Live</span>':'<span class="statusbadge s-pending">Draft</span>';
     if(!mine) badge+=' <span class="statusbadge tag-muted">Serviced elsewhere</span>';
-    var bs='padding:7px 12px;font-size:13px';
-    var brand=';background:var(--brand);border-color:var(--brand);color:#fff';
-    var acts='';
-    if(mine){
-      acts+='<a class="btn" href="/manage" target="_blank" rel="noopener" style="'+bs+brand+'">Open builder</a>';
-      acts+='<button type="button" class="btn" data-cmsg="'+esc(c.id)+'" style="'+bs+'">Message</button>';
-      acts+='<button type="button" class="btn" data-csupport="'+esc(c.id)+'" style="'+bs+'">Support</button>';
-      acts+='<button class="btn" data-cinfo="'+esc(c.id)+'" style="'+bs+'">Info</button>';
-      acts+='<button class="btn" data-crename="'+esc(c.id)+'" style="'+bs+'">Rename</button>';
-      acts+='<button class="btn" data-cslug="'+esc(c.id)+'" style="'+bs+'">Change URL</button>';
-      if(live){
-        acts+='<a class="btn" href="/s/'+encodeURIComponent(c.slug)+'" target="_blank" rel="noopener" style="'+bs+'">View site</a>';
-        acts+='<button class="btn" data-unpub="'+esc(c.id)+'" style="'+bs+'">Unpublish</button>';
-      } else {
-        acts+='<button class="btn" data-pub="'+esc(c.id)+'" style="'+bs+brand+'">Publish</button>';
-        acts+='<a class="btn" href="/'+encodeURIComponent(c.slug)+'?preview=1" target="_blank" rel="noopener" style="'+bs+'">Preview</a>';
-      }
-    } else {
-      if(live) acts+='<a class="btn" href="/s/'+encodeURIComponent(c.slug)+'" target="_blank" rel="noopener" style="'+bs+'">View site</a>';
-      else acts+='<span class="muted" style="font-size:13px;align-self:center">Managed by another provider</span>';
-    }
+    var plan=c.plan_key?esc(c.plan_key):'\u2014';
+    var price=(c.monthly_amount!=null)?(money(c.monthly_amount)+'/mo'):'\u2014';
+    var domain = c.custom_domain ? esc(c.custom_domain) : ('leadpages.com.au/'+esc(c.slug));
+
+    var primary = mine
+      ? ('<a class="btn btn-brand" href="/manage?site='+encodeURIComponent(c.slug||'')+'" target="_blank" rel="noopener" style="padding:8px 12px;font-size:13px">Open workspace</a>')
+      : (live ? ('<a class="btn" href="/s/'+encodeURIComponent(c.slug)+'" target="_blank" rel="noopener" style="padding:8px 12px;font-size:13px">View site</a>') : '');
+
+    var menuBtn = mine ? ('<button type="button" class="btn" data-cmenu="'+esc(c.id)+'" style="padding:8px 10px;font-size:13px">More</button>') : '';
+
+    var menu = mine ? (
+      '<div class="card" data-cmenubox="'+esc(c.id)+'" style="display:none;position:relative;margin-top:10px;padding:10px 12px;background:var(--panel);border:1px solid var(--border);border-radius:12px">'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+        +'<button type="button" class="btn btn-sm" data-cmsg="'+esc(c.id)+'" style="padding:7px 11px;font-size:13px">Message</button>'
+        +'<button type="button" class="btn btn-sm" data-csupport="'+esc(c.id)+'" style="padding:7px 11px;font-size:13px">Support</button>'
+        +'<button type="button" class="btn btn-sm" data-cinfo="'+esc(c.id)+'" style="padding:7px 11px;font-size:13px">Info</button>'
+        +'<button type="button" class="btn btn-sm" data-crename="'+esc(c.id)+'" style="padding:7px 11px;font-size:13px">Rename</button>'
+        +'<button type="button" class="btn btn-sm" data-cslug="'+esc(c.id)+'" style="padding:7px 11px;font-size:13px">Change URL</button>'
+        +(live
+          ? '<button type="button" class="btn btn-sm" data-unpub="'+esc(c.id)+'" style="padding:7px 11px;font-size:13px">Unpublish</button>'
+          : '<button type="button" class="btn btn-sm" data-pub="'+esc(c.id)+'" style="padding:7px 11px;font-size:13px">Publish</button>'
+        )
+        +(live
+          ? '<a class="btn btn-sm" href="/s/'+encodeURIComponent(c.slug)+'" target="_blank" rel="noopener" style="padding:7px 11px;font-size:13px">View site</a>'
+          : '<a class="btn btn-sm" href="/'+encodeURIComponent(c.slug)+'?preview=1" target="_blank" rel="noopener" style="padding:7px 11px;font-size:13px">Preview</a>'
+        )
+      +'</div>'
+      +'</div>'
+    ) : '';
+
     var cinfo='<div data-cinfobox="'+esc(c.id)+'" style="display:none;margin-top:10px;border-top:1px solid var(--line);padding-top:10px;font-size:13.5px;color:var(--ink-soft);line-height:1.7">'
       +'<div><strong>Business:</strong> '+esc(c.business_name||'\u2014')+'</div>'
-      +'<div><strong>URL:</strong> leadpages.com.au/'+esc(c.slug)+'</div>'
-      +'<div><strong>Plan:</strong> '+esc(c.plan_key||'\u2014')+(c.monthly_amount!=null?(' ('+money(c.monthly_amount)+'/mo)'):'')+'</div>'
+      +'<div><strong>URL:</strong> '+domain+'</div>'
+      +'<div><strong>Plan:</strong> '+plan+(c.monthly_amount!=null?(' ('+money(c.monthly_amount)+'/mo)'):'')+'</div>'
       +'<div><strong>Status:</strong> '+esc(c.status||'\u2014')+(c.billing_status?(' \u00b7 billing: '+esc(c.billing_status)):'')+'</div>'
       +'</div>';
-    return '<div class="card" style="padding:16px 18px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
-      +'<div><div style="font-family:var(--font-display);font-weight:600;font-size:16px">'+esc(c.business_name||c.slug)+'</div>'
-      +'<div class="muted" style="font-size:13px;margin-top:2px">'+esc(c.slug)+plan+fee+'</div></div>'
-      +'<div>'+badge+'</div></div>'
-      +'<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+acts+'</div>'+cinfo+'</div>';
+
+    return '<div class="card" style="padding:16px 18px;margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
+        +'<div style="min-width:240px;flex:1">'
+          +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">'
+            +'<div style="font-family:var(--font-display);font-weight:650;font-size:16px">'+esc(c.business_name||c.slug)+'</div>'
+            +'<div>'+badge+'</div>'
+          +'</div>'
+          +'<div class="muted" style="font-size:13px;margin-top:4px;display:flex;gap:10px;flex-wrap:wrap">'
+            +'<span>'+domain+'</span>'
+            +'<span>Plan: '+plan+'</span>'
+            +'<span>Monthly: '+price+'</span>'
+          +'</div>'
+        +'</div>'
+        +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+          + primary
+          + menuBtn
+        +'</div>'
+      +'</div>'
+      + menu
+      + cinfo
+    +'</div>';
   }
   function renderClients(){
     var box=document.getElementById('clients-list'); if(!box) return;
-    box.innerHTML = clients.length ? clients.map(clientCard).join('')
+    var q=(document.getElementById('clients-q')&&document.getElementById('clients-q').value||'').trim().toLowerCase();
+    var list = clients;
+    if(q){
+      list = clients.filter(function(c){
+        return String(c.business_name||'').toLowerCase().indexOf(q)>=0
+          || String(c.slug||'').toLowerCase().indexOf(q)>=0
+          || String(c.custom_domain||'').toLowerCase().indexOf(q)>=0;
+      });
+    }
+    box.innerHTML = list.length ? list.map(clientCard).join('')
       : '<div class="card empty">'+emptyIco('clients')+'<strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Add your first customer to create their website and start earning.</p></div>';
   }
   async function loadClients(){
@@ -709,6 +860,13 @@
   }
   function wireAdd(){
     if(addWired) return; addWired=true;
+    var _qa1=document.getElementById('qa-add-client'); if(_qa1) _qa1.addEventListener('click',function(){ gotoPanel('add'); });
+    var _qa2=document.getElementById('qa-create-demo'); if(_qa2) _qa2.addEventListener('click',function(){ gotoPanel('demos'); });
+    var _qa3=document.getElementById('qa-send-quote'); if(_qa3) _qa3.addEventListener('click',function(){ gotoPanel('quotes'); });
+    var _qa4=document.getElementById('qa-open-builder'); if(_qa4) _qa4.addEventListener('click',function(){ window.open('/manage','_blank','noopener'); });
+    var _cab=document.getElementById('clients-add'); if(_cab) _cab.addEventListener('click',function(){ gotoPanel('add'); });
+    var _cq=document.getElementById('clients-q'); if(_cq) _cq.addEventListener('input',function(){ renderClients(); });
+
     document.getElementById('m-create').addEventListener('click', async function(){
       var err=document.getElementById('m-err'); err.classList.add('hidden');
       var btn=this; btn.disabled=true; btn.textContent='Creating\u2026';
@@ -828,6 +986,13 @@
         var pre='Support request for client: '+((sc&&sc.business_name)||(sc&&sc.slug)||'Client');
         if(sc&&sc.slug) pre+=' (site: '+sc.slug+')';
         openLeadPagesMessage(pre+'.\n\n');
+        return;
+      }
+      var _mnu=e.target.closest('[data-cmenu]');
+      if(_mnu){
+        var idm=_mnu.getAttribute('data-cmenu');
+        var bx=document.querySelector('[data-cmenubox="'+idm+'"]');
+        if(bx) bx.style.display=(bx.style.display==='none'||!bx.style.display)?'block':'none';
         return;
       }
       var _cc=e.target.closest('[data-cinfo],[data-crename],[data-cslug]');
@@ -1176,6 +1341,7 @@
     g('sc-headline').value=pf.showcase_headline||''; g('sc-accent').value=cfg.accent||''; g('sc-intro').value=cfg.intro||'';
     scLogo=cfg.logo||''; if(scLogo){ g('sc-logo-prev').src=scLogo; g('sc-logo-prev').style.display=''; g('sc-logo-clear').style.display=''; }
     updateScLink();
+    renderDashAttention();
   }
   async function scUploadLogo(file){
     var sess=(await sb.auth.getSession()).data.session; var token=sess&&sess.access_token;
@@ -1300,6 +1466,8 @@
     var qr=await sb.from('partner_quotes').select('token,business_name,price,status,email,created_at').eq('partner_id',state.partner.id).order('created_at',{ascending:false});
     if(qr.error){ box.innerHTML='<span style="color:var(--bad)">Could not load quotes: '+esc(qr.error.message)+'</span>'; return; }
     var rows=(qr.data||[]);
+    quotes = rows;
+    renderDashAttention();
     if(!rows.length){ box.innerHTML='No quotes yet.'; return; }
     box.innerHTML=rows.map(function(q){
       var url=location.origin+'/quote?t='+encodeURIComponent(q.token);
@@ -1345,6 +1513,7 @@
     sel.innerHTML='<option value="">No default</option>'+plans.map(function(pl){ return '<option value="'+esc(pl.key)+'">'+esc(pl.name)+' \u2014 $'+Math.round((pl.monthly_amount||0)/100)+'/mo</option>'; }).join('');
     sel.value=pf.default_plan_key||'';
     renderCalc();
+    renderDashAttention();
   }
 
   // ---------- Partner directory listing (Find a Partner) ----------
