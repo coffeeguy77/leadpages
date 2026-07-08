@@ -36,6 +36,7 @@ module.exports = async (req, res) => {
     res.setHeader('cache-control', 'public, s-maxage=60, stale-while-revalidate=300');
     res.end(html);
   } catch (e) {
+    console.error('marketing-html error:', e && e.message);
     res.statusCode = 500;
     res.setHeader('content-type', 'text/plain; charset=utf-8');
     res.end('error');

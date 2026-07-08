@@ -20,99 +20,99 @@
     },
     {
       "source": "/manage",
-      "destination": "/manage.html"
+      "destination": "/api/marketing-html?file=manage.html"
     },
     {
       "source": "/partner-dashboard",
-      "destination": "/partner-dashboard.html"
+      "destination": "/api/marketing-html?file=partner-dashboard.html"
     },
     {
       "source": "/partner-onboarding",
-      "destination": "/partner-onboarding.html"
+      "destination": "/api/marketing-html?file=partner-onboarding.html"
     },
     {
       "source": "/billing",
-      "destination": "/billing.html"
+      "destination": "/api/marketing-html?file=billing.html"
     },
     {
       "source": "/tradies",
-      "destination": "/tradies.html"
+      "destination": "/api/marketing-html?file=tradies.html"
     },
     {
       "source": "/domains",
-      "destination": "/domains.html"
+      "destination": "/api/marketing-html?file=domains.html"
     },
     {
       "source": "/showcase",
-      "destination": "/showcase.html"
+      "destination": "/api/marketing-html?file=showcase.html"
     },
     {
       "source": "/marketplace",
-      "destination": "/marketplace.html"
+      "destination": "/api/marketing-html?file=marketplace.html"
     },
     {
       "source": "/marketplace/:slug",
-      "destination": "/marketplace-feature.html"
+      "destination": "/api/marketing-html?file=marketplace-feature.html"
     },
     {
       "source": "/marketplace-admin",
-      "destination": "/marketplace-admin.html"
+      "destination": "/api/marketing-html?file=marketplace-admin.html"
     },
     {
       "source": "/apps-admin",
-      "destination": "/apps-admin.html"
+      "destination": "/api/marketing-html?file=apps-admin.html"
     },
     {
       "source": "/start-your-business",
-      "destination": "/start-your-business.html"
+      "destination": "/api/marketing-html?file=start-your-business.html"
     },
     {
       "source": "/resources",
-      "destination": "/resources.html"
+      "destination": "/api/marketing-html?file=resources.html"
     },
     {
       "source": "/resources/:slug",
-      "destination": "/resource-:slug.html"
+      "destination": "/api/marketing-html?file=resource-:slug.html"
     },
     {
       "source": "/find-a-partner",
-      "destination": "/find-a-partner.html"
+      "destination": "/api/marketing-html?file=find-a-partner.html"
     },
     {
       "source": "/partners",
-      "destination": "/partners.html"
+      "destination": "/api/marketing-html?file=partners.html"
     },
     {
       "source": "/partner",
-      "destination": "/partner.html"
+      "destination": "/api/marketing-html?file=partner.html"
     },
     {
       "source": "/partners-admin",
-      "destination": "/partners-admin.html"
+      "destination": "/api/marketing-html?file=partners-admin.html"
     },
     {
       "source": "/quote",
-      "destination": "/quote.html"
+      "destination": "/api/marketing-html?file=quote.html"
     },
     {
       "source": "/help",
-      "destination": "/help.html"
+      "destination": "/api/marketing-html?file=help.html"
     },
     {
       "source": "/messages",
-      "destination": "/messages.html"
+      "destination": "/api/marketing-html?file=messages.html"
     },
     {
       "source": "/privacy-policy",
-      "destination": "/privacy-policy.html"
+      "destination": "/api/marketing-html?file=privacy-policy.html"
     },
     {
       "source": "/terms-of-use",
-      "destination": "/terms-of-use.html"
+      "destination": "/api/marketing-html?file=terms-of-use.html"
     },
     {
       "source": "/instagram-data-policy",
-      "destination": "/instagram-data-policy.html"
+      "destination": "/api/marketing-html?file=instagram-data-policy.html"
     },
     {
       "source": "/",
@@ -122,7 +122,7 @@
           "value": "^(www\\.)?leadpages\\.(webculture\\.au|com\\.au)$"
         }
       ],
-      "destination": "/home.html"
+      "destination": "/api/marketing-html?file=home.html"
     },
     {
       "source": "/",
