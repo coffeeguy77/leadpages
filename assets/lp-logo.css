@@ -7,7 +7,7 @@
   line-height: 0;
   --lp-logo-accent: #2ecc8f;
   --lp-logo-ink: #13161b;
-  --lp-logo-pulse-dark: #0a0a0c;
+  --lp-logo-pulse-bg: var(--bg, #f6f4ef);
 }
 
 .lp-logo-wrap svg {
@@ -43,34 +43,39 @@ footer img.leadpages-logo {
   max-width: min(300px, 70vw) !important;
   height: auto !important;
   --lp-logo-ink: #f3f6fa;
+  --lp-logo-pulse-bg: #2f413a;
 }
 
-/* Ring pulse — outer and inner circles step from dark into theme accent */
-.lp-logo-pulse #outer-circle {
-  animation: lp-logo-ring-pulse 2.6s cubic-bezier(.45, 0, .25, 1) infinite;
-  transform-origin: 160px 134px;
-}
-
+/* Ring pulse — pebble ripple: inner circle first, then outward to outer ring */
 .lp-logo-pulse #inner-circle {
-  animation: lp-logo-ring-pulse 2.6s cubic-bezier(.45, 0, .25, 1) infinite;
-  animation-delay: 0.4s;
+  animation: lp-logo-ripple 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   transform-origin: 153px 134px;
 }
 
-@keyframes lp-logo-ring-pulse {
+.lp-logo-pulse #outer-circle {
+  animation: lp-logo-ripple 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation-delay: 0.52s;
+  transform-origin: 160px 134px;
+}
+
+@keyframes lp-logo-ripple {
   0%,
   100% {
-    fill: var(--lp-logo-pulse-dark, #0a0a0c);
+    fill: var(--lp-logo-pulse-bg, var(--bg, #f6f4ef));
     filter: none;
-    opacity: 1;
+    opacity: 0.55;
   }
-  45%,
-  55% {
+  32% {
     fill: var(--lp-logo-accent, #2ecc8f);
     filter:
-      drop-shadow(0 0 8px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 70%, transparent))
-      drop-shadow(0 0 18px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 40%, transparent));
+      drop-shadow(0 0 6px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 65%, transparent))
+      drop-shadow(0 0 14px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 35%, transparent));
     opacity: 1;
+  }
+  58% {
+    fill: var(--lp-logo-pulse-bg, var(--bg, #f6f4ef));
+    filter: none;
+    opacity: 0.55;
   }
 }
 
