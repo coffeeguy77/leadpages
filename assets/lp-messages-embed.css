@@ -1,0 +1,265 @@
+/**
+ * Embedded messages UI — theme-aware styles for partner + manage.
+ */
+.lp-messages-embed {
+  --lme-radius: var(--radius, 14px);
+  min-height: 420px;
+}
+
+.lp-messages-embed .lme-layout {
+  display: flex;
+  gap: 14px;
+  min-height: 420px;
+  height: min(72vh, 640px);
+}
+
+.lp-messages-embed .lme-pane {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--lme-radius);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-shadow: var(--shadow);
+}
+
+.lp-messages-embed .lme-list {
+  width: min(300px, 36%);
+  flex-shrink: 0;
+}
+
+.lp-messages-embed .lme-thread {
+  flex: 1;
+  min-width: 0;
+}
+
+.lp-messages-embed .lme-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.lp-messages-embed .lme-list-head h3 {
+  margin: 0;
+  font-size: 15px;
+  font-family: var(--font-display, Georgia, serif);
+}
+
+.lp-messages-embed .btn-sm {
+  padding: 6px 11px;
+  font-size: 13px;
+}
+
+.lp-messages-embed .lme-newbox {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel-soft, var(--bg-soft));
+}
+
+.lp-messages-embed .lme-newbox h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.lp-messages-embed .lme-convs {
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lp-messages-embed .lme-conv {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.lp-messages-embed .lme-conv:hover {
+  background: var(--accent-soft);
+}
+
+.lp-messages-embed .lme-conv.on {
+  background: var(--accent-soft);
+}
+
+.lp-messages-embed .lme-conv-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.lp-messages-embed .lme-conv-name {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.lp-messages-embed .lme-conv.unread .lme-conv-name {
+  font-weight: 700;
+}
+
+.lp-messages-embed .lme-conv-kind,
+.lp-messages-embed .lme-conv-time {
+  display: block;
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-top: 2px;
+}
+
+.lp-messages-embed .lme-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 6px;
+  visibility: hidden;
+  flex-shrink: 0;
+}
+
+.lp-messages-embed .lme-conv.unread .lme-dot {
+  visibility: visible;
+}
+
+.lp-messages-embed .lme-thread-empty,
+.lp-messages-embed .lme-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
+.lp-messages-embed .lme-thread-on {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.lp-messages-embed .lme-thread-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.lp-messages-embed .lme-thread-title {
+  font-weight: 600;
+  font-size: 15px;
+  font-family: var(--font-display, Georgia, serif);
+}
+
+.lp-messages-embed .lme-thread-sub {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.lp-messages-embed .lme-thread-head .btn:last-child {
+  margin-left: auto;
+}
+
+.lp-messages-embed .lme-bubbles {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lp-messages-embed .lme-b {
+  max-width: 78%;
+}
+
+.lp-messages-embed .lme-b.me {
+  align-self: flex-end;
+}
+
+.lp-messages-embed .lme-b.them {
+  align-self: flex-start;
+}
+
+.lp-messages-embed .lme-meta {
+  font-size: 11px;
+  margin: 0 4px 3px;
+}
+
+.lp-messages-embed .lme-bub {
+  padding: 10px 13px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.lp-messages-embed .lme-b.them .lme-bub {
+  background: var(--panel-soft, var(--bg-soft));
+  border: 1px solid var(--border);
+  border-top-left-radius: 5px;
+  color: var(--text);
+}
+
+.lp-messages-embed .lme-b.me .lme-bub {
+  background: var(--accent);
+  color: var(--accent-text, #fff);
+  border-top-right-radius: 5px;
+}
+
+.lp-messages-embed .lme-composer {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.lp-messages-embed .lme-composer textarea {
+  flex: 1;
+  resize: none;
+  min-height: 44px;
+  max-height: 140px;
+}
+
+.lp-messages-embed .lme-support-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+@media (max-width: 760px) {
+  .lp-messages-embed .lme-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: 60vh;
+  }
+
+  .lp-messages-embed .lme-list {
+    width: auto;
+    max-height: 38vh;
+  }
+
+  .lp-messages-embed .lme-list.collapsed {
+    display: none;
+  }
+
+  .lp-messages-embed .lme-thread {
+    min-height: 46vh;
+  }
+}
