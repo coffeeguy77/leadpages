@@ -827,7 +827,9 @@
 /* ── Responsive ── */
 @media (max-width: 1023px) {
   .lp-p-side { display: none; }
-  .lp-p-dash { grid-template-columns: 1fr; gap: 0; padding-bottom: calc(var(--lp-partner-bottom-h) + 24px); }
+  /* Reserve space so the fixed bottom tab bar never covers content. */
+  .lp-p-dash { grid-template-columns: 1fr; gap: 0; padding-bottom: calc(var(--lp-partner-bottom-h) + 24px + env(safe-area-inset-bottom, 0)); }
+  .lp-p-main { padding-bottom: calc(var(--lp-partner-bottom-h) + 24px + env(safe-area-inset-bottom, 0)); }
   .lp-p-bottom { display: block; }
   .lp-p-who { display: none; }
 }
