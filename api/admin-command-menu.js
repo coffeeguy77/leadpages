@@ -79,7 +79,6 @@ const DEFAULT_MENU_MANAGE = {
       ]
     }
   ]
-  ]
 };
 
 const DEFAULT_MENU_PARTNER = {
