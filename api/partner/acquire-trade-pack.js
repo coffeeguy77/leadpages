@@ -15,8 +15,13 @@ const {
   locationSlug,
   contentHash,
   buildPrompt,
-  MAX_VARIANTS,
   callClaude,
+  packUsageKey,
+  saveServicePack,
+  bumpPackUseCount,
+  listServicePackVariants,
+  getUsedPackVariants,
+  recordPackLocationUsage,
 } = require('../../lib/trade-pack-utils');
 
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -37,46 +42,13 @@ async function getPartner(token) {
   }
 }
 
-async function getUsedPackIds(packSlug, locSlug) {
-  try {
-    const { data, error } = await sb
-      .from('pack_location_usage')
-      .select('pack_id')
-      .eq('pack_slug', packSlug)
-      .eq('location_slug', locSlug);
-    if (error) return new Set();
-    return new Set((data || []).map((r) => r.pack_id));
-  } catch (_e) {
-    return new Set();
-  }
-}
-
-async function recordUsage(row) {
-  try {
-    await sb.from('pack_location_usage').upsert(row, { onConflict: 'pack_id,location_slug' });
-  } catch (_e) {
-    /* table may not exist yet — non-fatal for demo create */
-  }
-}
-
-async function listVariants(slug) {
-  const { data } = await sb
-    .from('service_packs')
-    // Avoid selecting columns that may not exist yet (e.g. content_hash before migration).
-    .select('id,variant,slug,label,pack,use_count,category')
-    .eq('slug', slug)
-    .eq('is_approved', true)
-    .order('variant', { ascending: true });
-  return data || [];
-}
-
 async function generateAndSave(trade, category, userId, existingCount) {
   const parsed = await callClaude(buildPrompt(trade, category));
   const slug = parsed.slug || slugify(trade);
   const hash = contentHash(parsed.pack);
   const nextVariant = existingCount + 1;
 
-  const row = {
+  return saveServicePack(sb, {
     slug,
     category: parsed.category || category || 'General',
     label: parsed.pack.label || trade,
@@ -86,17 +58,17 @@ async function generateAndSave(trade, category, userId, existingCount) {
     generated_by: userId,
     is_approved: true,
     use_count: 0,
-  };
+  });
+}
 
-  // Some environments haven't migrated `service_packs.content_hash` yet.
-  // Retry without that field instead of failing demo creation.
-  let ins = await sb.from('service_packs').insert(row).select('id,variant,slug,label,pack,category').single();
-  if (ins.error && /content_hash/i.test(ins.error.message || '')) {
-    delete row.content_hash;
-    ins = await sb.from('service_packs').insert(row).select('id,variant,slug,label,pack,category').single();
-  }
-  if (ins.error) throw new Error('Save failed: ' + ins.error.message);
-  return ins.data;
+function packResponse(saved, extra) {
+  return Object.assign({
+    slug: saved.slug,
+    label: saved.label,
+    category: saved.category,
+    variant: saved.variant || 1,
+    pack: saved.pack,
+  }, extra);
 }
 
 module.exports = async (req, res) => {
@@ -135,9 +107,8 @@ module.exports = async (req, res) => {
 
   try {
     const slug = mode === 'create' ? slugify(tradeName) : packSlug;
-    let variants = await listVariants(slug);
+    const variants = await listServicePackVariants(sb, slug);
 
-    // Brand-new trade — generate first community pack immediately
     if (mode === 'create') {
       if (variants.length) {
         return res.status(409).json({
@@ -157,27 +128,19 @@ module.exports = async (req, res) => {
         });
       }
       const saved = await generateAndSave(tradeName, category, partner.userId, 0);
-      await recordUsage({
-        pack_id: saved.id,
+      await recordPackLocationUsage(sb, {
         pack_slug: saved.slug,
-        pack_variant: saved.variant,
+        pack_variant: saved.variant || 1,
         location_slug: locSlug,
         location_label: targetLocation,
         content_hash: contentHash(saved.pack),
         partner_id: partner.partnerId,
       });
-      await sb.from('service_packs').update({ use_count: 1 }).eq('id', saved.id);
+      await bumpPackUseCount(sb, saved.slug, saved.variant);
       return res.status(200).json({
         ok: true,
         source: 'new_trade',
-        slug: saved.slug,
-        label: saved.label,
-        category: saved.category,
-        variant: saved.variant,
-        packId: saved.id,
-        pack: saved.pack,
-        targetLocation,
-        communityAdded: true,
+        ...packResponse(saved, { targetLocation, communityAdded: true }),
       });
     }
 
@@ -194,41 +157,32 @@ module.exports = async (req, res) => {
         });
       }
       const saved = await generateAndSave(tradeLabel, category, partner.userId, 0);
-      await recordUsage({
-        pack_id: saved.id,
+      await recordPackLocationUsage(sb, {
         pack_slug: saved.slug,
-        pack_variant: saved.variant,
+        pack_variant: saved.variant || 1,
         location_slug: locSlug,
         location_label: targetLocation,
         content_hash: contentHash(saved.pack),
         partner_id: partner.partnerId,
       });
-      await sb.from('service_packs').update({ use_count: 1 }).eq('id', saved.id);
+      await bumpPackUseCount(sb, saved.slug, saved.variant);
       return res.status(200).json({
         ok: true,
         source: 'first_pack',
-        slug: saved.slug,
-        label: saved.label,
-        category: saved.category,
-        variant: saved.variant,
-        packId: saved.id,
-        pack: saved.pack,
-        targetLocation,
-        communityAdded: true,
+        ...packResponse(saved, { targetLocation, communityAdded: true }),
       });
     }
 
-    const usedIds = await getUsedPackIds(slug, locSlug);
-    const available = variants.filter((v) => !usedIds.has(v.id));
+    const usedKeys = await getUsedPackVariants(sb, slug, locSlug);
+    const available = variants.filter((v) => !usedKeys.has(packUsageKey(v.slug, v.variant)));
 
     if (available.length) {
       available.sort((a, b) => (a.use_count || 0) - (b.use_count || 0));
       const pick = available[0];
-      await sb.from('service_packs').update({ use_count: (pick.use_count || 0) + 1 }).eq('id', pick.id);
-      await recordUsage({
-        pack_id: pick.id,
+      await bumpPackUseCount(sb, pick.slug, pick.variant);
+      await recordPackLocationUsage(sb, {
         pack_slug: pick.slug,
-        pack_variant: pick.variant,
+        pack_variant: pick.variant || 1,
         location_slug: locSlug,
         location_label: targetLocation,
         content_hash: contentHash(pick.pack),
@@ -237,19 +191,14 @@ module.exports = async (req, res) => {
       return res.status(200).json({
         ok: true,
         source: 'existing',
-        slug: pick.slug,
-        label: pick.label,
-        category: pick.category,
-        variant: pick.variant,
-        packId: pick.id,
-        pack: pick.pack,
-        targetLocation,
-        duplicateAvoided: usedIds.size > 0,
-        unusedAtLocation: available.length,
+        ...packResponse(pick, {
+          targetLocation,
+          duplicateAvoided: usedKeys.size > 0,
+          unusedAtLocation: available.length,
+        }),
       });
     }
 
-    // All variants already used at this location — need fresh AI content
     if (!confirmNew) {
       return res.status(200).json({
         ok: false,
@@ -269,7 +218,6 @@ module.exports = async (req, res) => {
       variants.length
     );
 
-    // Reject if hash collides with an existing variant
     const dup = variants.find((v) => v.pack && contentHash(v.pack) === contentHash(saved.pack));
     if (dup) {
       return res.status(409).json({
@@ -278,29 +226,24 @@ module.exports = async (req, res) => {
       });
     }
 
-    await recordUsage({
-      pack_id: saved.id,
+    await recordPackLocationUsage(sb, {
       pack_slug: saved.slug,
-      pack_variant: saved.variant,
+      pack_variant: saved.variant || 1,
       location_slug: locSlug,
       location_label: targetLocation,
       content_hash: contentHash(saved.pack),
       partner_id: partner.partnerId,
     });
-    await sb.from('service_packs').update({ use_count: 1 }).eq('id', saved.id);
+    await bumpPackUseCount(sb, saved.slug, saved.variant);
 
     return res.status(200).json({
       ok: true,
       source: 'generated',
-      slug: saved.slug,
-      label: saved.label,
-      category: saved.category,
-      variant: saved.variant,
-      packId: saved.id,
-      pack: saved.pack,
-      targetLocation,
-      freshForLocation: true,
-      totalVariants: variants.length + 1,
+      ...packResponse(saved, {
+        targetLocation,
+        freshForLocation: true,
+        totalVariants: variants.length + 1,
+      }),
     });
   } catch (e) {
     return res.status(500).json({ ok: false, error: String(e.message || e) });

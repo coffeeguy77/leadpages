@@ -105,7 +105,7 @@ module.exports = async (req, res) => {
     createdBy: partner.id,
     createdAt: new Date().toISOString(),
     packSlug: clean(b.packSlug, 80) || null,
-    packId: clean(b.packId, 80) || null,
+    packVariant: parseInt(b.packVariant, 10) || 1,
     targetLocation: targetLocation || null,
   };
 
@@ -127,13 +127,16 @@ module.exports = async (req, res) => {
     const ins = await admin.from('sites').insert(row).select('id,slug,business_name,status,is_mockup,show_on_showcase,config,created_at').single();
     if (ins.error || !ins.data) return res.status(500).json({ ok: false, error: 'Could not create the demo. Please try again.' });
 
-    if (b.packId && targetLocation) {
+    if (b.packSlug && targetLocation) {
       try {
-        await admin
+        let q = admin
           .from('pack_location_usage')
           .update({ site_id: ins.data.id })
-          .eq('pack_id', b.packId)
+          .eq('pack_slug', b.packSlug)
           .eq('location_slug', locationSlug(targetLocation));
+        const variant = parseInt(b.packVariant, 10) || 1;
+        q = q.eq('pack_variant', variant);
+        await q;
       } catch (_e) { /* table optional */ }
     }
 

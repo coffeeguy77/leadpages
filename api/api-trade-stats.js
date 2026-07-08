@@ -9,9 +9,8 @@ module.exports = async (req, res) => {
   res.setHeader('content-type', 'application/json');
   res.setHeader('cache-control', 's-maxage=60,stale-while-revalidate=300');
   try {
-    const [packsRes, sitesRes] = await Promise.all([
+    const [packsRes] = await Promise.all([
       sb.from('service_packs').select('slug', { count: 'exact', head: true }).eq('is_approved', true),
-      sb.from('service_packs').select('id', { count: 'exact', head: true }).eq('is_approved', true),
     ]);
     // Count distinct slugs for 'trades'
     const { data: slugs } = await sb.from('service_packs')

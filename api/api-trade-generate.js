@@ -8,6 +8,9 @@ const {
   callClaude,
   validatePack,
   MAX_VARIANTS,
+  saveServicePack,
+  bumpPackUseCount,
+  listServicePackVariants,
 } = require('../lib/trade-pack-utils');
 
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -45,19 +48,12 @@ module.exports = async (req, res) => {
   const slug = slugify(trade);
 
   try {
-    const { data: existing } = await sb
-      .from('service_packs')
-      .select('id,variant,slug,label,pack,use_count')
-      .eq('slug', slug)
-      .eq('is_approved', true)
-      .order('variant', { ascending: true });
-
-    const variants = existing || [];
+    const variants = await listServicePackVariants(sb, slug);
     const wantNew = !variants.length || body.forceNew === true;
 
     if (!wantNew && variants.length > 0) {
       const pick = variants[Math.floor(Math.random() * variants.length)];
-      await sb.from('service_packs').update({ use_count: (pick.use_count || 0) + 1 }).eq('id', pick.id);
+      await bumpPackUseCount(sb, pick.slug, pick.variant);
       return res.status(200).json({
         ok: true,
         source: 'existing',
@@ -89,33 +85,22 @@ module.exports = async (req, res) => {
     const nextVariant = variants.length + 1;
     const hash = contentHash(parsed.pack);
 
-    const row = {
-        slug,
-        category: parsed.category || category,
-        label: parsed.pack.label || trade,
-        pack: parsed.pack,
-        variant: nextVariant,
-        content_hash: hash,
-        generated_by: user.id,
-        is_approved: true,
-        use_count: 1,
-      };
-
-    let ins = await sb.from('service_packs').insert(row).select('id,variant,slug,label,pack').single();
-    if (ins.error && /content_hash/i.test(ins.error.message||'')) {
-      delete row.content_hash;
-      ins = await sb.from('service_packs').insert(row).select('id,variant,slug,label,pack').single();
-    }
-
-    const saved = ins.data;
-    const saveErr = ins.error;
-
-    if (saveErr) return res.status(500).json({ error: 'Save failed: ' + saveErr.message });
+    const saved = await saveServicePack(sb, {
+      slug,
+      category: parsed.category || category,
+      label: parsed.pack.label || trade,
+      pack: parsed.pack,
+      variant: nextVariant,
+      content_hash: hash,
+      generated_by: user.id,
+      is_approved: true,
+      use_count: 1,
+    });
 
     return res.status(200).json({
       ok: true,
       source: 'generated',
-      variant: nextVariant,
+      variant: saved.variant || nextVariant,
       slug: saved.slug,
       pack: saved.pack,
       label: saved.label,
