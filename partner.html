@@ -133,8 +133,7 @@
               <p class="sub" style="margin:0;max-width:70ch">Your command centre for demos, quotes, client work, and earnings.</p>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <button type="button" class="btn btn-brand" id="qa-add-client">Add client</button>
-              <button type="button" class="btn" id="qa-create-demo">Create demo</button>
+              <button type="button" class="btn btn-brand" id="qa-create-demo">Create demo</button>
               <button type="button" class="btn" id="qa-send-quote">Send quote</button>
               <button type="button" class="btn" id="qa-open-builder">Open builder</button>
             </div>
@@ -152,19 +151,38 @@
           <div class="card kpi"><div class="lab">Open support items</div><div class="val" id="kpi-support">0</div></div>
         </div>
 
-        <div class="card" style="padding:18px 20px" id="dash-attn">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-            <h3 style="font-family:var(--font-display);font-size:16px">Needs attention</h3>
-            <span class="muted" style="font-size:12.5px">Based on your current clients, demos, quotes, and messages</span>
+        <div class="lp-dash-widgets">
+          <div class="card lp-dash-widget" id="dash-widget-msgs">
+            <div class="lp-dash-widget-head">
+              <span class="e-ico" data-icon="messages"></span>
+              <div>
+                <h3>Messages</h3>
+                <p class="muted">Client chats and LeadPages support</p>
+              </div>
+              <span class="lp-dash-widget-badge hidden" id="dash-msgs-badge">0</span>
+            </div>
+            <div id="dash-msgs-body" class="lp-dash-widget-body muted">Loading…</div>
+            <button type="button" class="btn lp-dash-widget-action" id="dash-open-msgs">Open messages</button>
           </div>
-          <div id="dash-actions"><div class="muted" style="font-size:13.5px">Loading…</div></div>
+          <div class="card lp-dash-widget" id="dash-widget-demos">
+            <div class="lp-dash-widget-head">
+              <span class="e-ico" data-icon="demos"></span>
+              <div>
+                <h3>Demos</h3>
+                <p class="muted">Prospect mockups ready to quote</p>
+              </div>
+              <span class="lp-dash-widget-count" id="dash-demos-count">0</span>
+            </div>
+            <div id="dash-demos-body" class="lp-dash-widget-body muted">Loading…</div>
+            <button type="button" class="btn btn-brand lp-dash-widget-action" id="dash-open-demos">Create demo</button>
+          </div>
         </div>
 
-        <div class="card empty" id="ov-empty" style="margin-top:16px">
-          <div class="e-ico" data-icon="rocket"></div>
-          <strong>Add your first client</strong>
-          <p class="muted" style="margin:6px auto 0;max-width:46ch">Bring on a local business and generate their website in seconds. Your clients and recurring income then build from here.</p>
-          <button class="btn btn-brand" id="ov-add" style="margin-top:14px">Add a customer</button>
+        <div class="card empty hidden" id="ov-empty" style="margin-top:16px">
+          <div class="e-ico" data-icon="clients"></div>
+          <strong>Clients appear when a demo is purchased</strong>
+          <p class="muted" style="margin:6px auto 0;max-width:46ch">Build demos, send quotes, and when a prospect pays their site becomes your client automatically — linked to your partner account.</p>
+          <button class="btn btn-brand" id="ov-create-demo" style="margin-top:14px">Create a demo</button>
         </div>
       </section>
 
@@ -177,50 +195,9 @@
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
             <input id="clients-q" type="text" placeholder="Search clients…" style="width:min(360px, 72vw)">
-            <button type="button" class="btn btn-brand" id="clients-add">Add client</button>
           </div>
         </div>
         <div id="clients-list" style="margin-top:14px"><div class="card empty"><p class="muted">Loading your clients…</p></div></div>
-      </section>
-
-      <!-- Add Customer -->
-      <section class="panel lp-p-panel" data-panel="add" data-w="form">
-        <h2>Add client</h2>
-        <p class="sub">Create a new client website and link it to your partner account for commission.</p>
-        <div class="card" style="padding:24px;max-width:680px" id="add-card">
-          <div class="row2">
-            <div class="field"><label for="a-biz">Business name *</label><input id="a-biz" type="text" placeholder="e.g. Hilltop Plumbing"></div>
-            <div class="field"><label for="a-industry">Industry / trade</label><input id="a-industry" type="text" list="trade-list" placeholder="e.g. Plumber"><datalist id="trade-list"><option>Plumber</option><option>Gas Fitter</option><option>Hot Water</option><option>Blocked Drains</option><option>Leak Detection</option><option>Roof Plumbing</option><option>Waterproofing</option><option>Electrician</option><option>Solar Installer</option><option>Solar Battery Storage</option><option>EV Charger Installation</option><option>Data &amp; Network Cabling</option><option>Security &amp; CCTV</option><option>Antenna Installation</option><option>Air Conditioning</option><option>Insulation</option><option>Builder</option><option>Bricklayer</option><option>Carpenter</option><option>Concreter</option><option>Excavation</option><option>Steel Fixing &amp; Reinforcing</option><option>Welding &amp; Steel</option><option>Scaffolding</option><option>Underpinning &amp; Restumping</option><option>Stonemason</option><option>Asphalt &amp; Bitumen</option><option>Polished Concrete</option><option>Bathroom Renovations</option><option>Kitchen Renovations</option><option>Tiler</option><option>Painter</option><option>Plasterer</option><option>Rendering</option><option>Flooring</option><option>Epoxy Flooring</option><option>Splashbacks</option><option>Cabinet Maker</option><option>Built-in Wardrobes</option><option>Staircases</option><option>Suspended Ceilings</option><option>Soundproofing &amp; Acoustic</option><option>Shopfitting</option><option>Bath &amp; Benchtop Resurfacing</option><option>Balustrading</option><option>Roofer</option><option>Roof Restoration</option><option>Metal Re-roofing</option><option>Guttering</option><option>Whirlybird &amp; Roof Ventilation</option><option>Skylights</option><option>Cladding</option><option>Garage Doors</option><option>Automatic Gates</option><option>Glazier</option><option>Locksmith</option><option>Blinds &amp; Awnings</option><option>Landscaper</option><option>Garden Maintenance</option><option>Lawn Mowing</option><option>Hedge Trimming</option><option>Tree Lopping</option><option>Stump Grinding</option><option>Irrigation</option><option>Turf Laying</option><option>Synthetic Turf</option><option>Paving</option><option>Decking</option><option>Pergolas &amp; Patios</option><option>Fencing</option><option>Retaining Walls</option><option>Garden Edging &amp; Kerbing</option><option>Water Features</option><option>Outdoor Kitchens</option><option>Shade Sails</option><option>Carports &amp; Sheds</option><option>Pool Building</option><option>Pool Maintenance</option><option>Glass Pool Fencing</option><option>House Cleaning</option><option>Carpet Cleaning</option><option>Window Cleaning</option><option>End of Lease Cleaning</option><option>Oven Cleaning</option><option>Tile &amp; Grout Cleaning</option><option>Pressure Washing</option><option>Gutter Cleaning</option><option>Pest Control</option><option>Mould Removal</option><option>Water Damage Restoration</option><option>Fire &amp; Smoke Restoration</option><option>Storm Damage Repair</option><option>Asbestos Removal</option><option>Asbestos Roof Removal</option><option>Rubbish Removal</option><option>Skip Bin Hire</option><option>Removalists</option><option>Demolition</option><option>Party Hire</option><option>Equipment Hire</option><option>Arcade &amp; Amusements</option><option>Handyman</option><option>Appliance Repair</option><option>Pool Table Restoration</option><option>Cafe</option><option>Coffee Cart</option><option>Mobile Coffee</option></datalist></div>
-          </div>
-          <div class="row2">
-            <div class="field"><label for="a-contact">Contact name</label><input id="a-contact" type="text"></div>
-            <div class="field"><label for="a-email">Customer login email</label><input id="a-email" type="email" placeholder="they sign in to view their site"></div>
-          </div>
-          <div class="row2">
-            <div class="field"><label for="a-phone">Phone</label><input id="a-phone" type="tel"></div>
-            <div class="field"><label for="a-loc">Location / suburb</label><input id="a-loc" type="text"></div>
-          </div>
-          <div class="row2">
-            <div class="field"><label for="a-plan">Monthly subscription plan</label><select id="a-plan"><option value="">Choose later</option></select></div>
-            <div class="field"><label for="a-price">Build / setup price</label><input id="a-price" type="text" placeholder="e.g. $990"></div>
-          </div>
-          <div class="field"><label for="a-theme">Start from a saved theme (optional)</label><select id="a-theme"><option value="">Blank trade site</option></select></div>
-          <div class="field"><label for="a-notes">Notes (optional)</label><textarea id="a-notes" rows="2" placeholder="Anything useful about this client or the job."></textarea></div>
-          <div class="save-row">
-            <button class="btn btn-brand" id="a-submit">Create client &amp; website</button>
-            <span class="notice bad hidden" id="a-err" style="margin:0;padding:8px 12px"></span>
-          </div>
-        </div>
-        <div class="card hidden" id="add-done" style="padding:26px;max-width:680px;text-align:center">
-          <div class="e-ico" style="width:46px;height:46px;border-radius:12px;background:var(--brand-tint);display:grid;place-items:center;margin:0 auto 12px;font-size:22px">✓</div>
-          <strong id="add-done-name" style="font-size:18px"></strong>
-          <p class="muted" style="margin:6px auto 14px;max-width:46ch">Created as a <strong>draft</strong> and linked to you. Build it in the editor, then publish from My Clients when it's ready.</p>
-          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-            <a class="btn btn-brand" id="add-build" href="/manage" target="_blank" rel="noopener">Open the builder</a>
-            <a class="btn" id="add-view" href="#" target="_blank" rel="noopener">Preview</a>
-            <button class="btn" id="add-another">Add another</button>
-          </div>
-        </div>
       </section>
 
       <!-- Demos & themes -->
@@ -452,6 +429,35 @@
         <h2>Payouts &amp; Pricing</h2>
         <p class="sub">Manage payout details, set defaults, and preview earnings. Each sale is split 50/50, with a $750 minimum to LeadPages.</p>
         <div class="lp-stack">
+          <div class="card lp-bank-vault" id="po-bank-card">
+            <div class="lp-bank-vault-hero">
+              <div>
+                <span class="lp-bank-vault-badge">Secure payout</span>
+                <h3 style="font-family:var(--font-display);font-size:18px;margin:8px 0 6px">Bank account details</h3>
+                <p class="muted" style="margin:0;font-size:13px;max-width:58ch">Where we send your commission payouts. After you confirm, these details are locked — only LeadPages admin can change them if your account is compromised.</p>
+              </div>
+              <span class="e-ico lp-bank-vault-icon" data-icon="payouts"></span>
+            </div>
+            <div class="notice info hidden" id="po-bank-locked-banner" style="margin:0 0 16px">
+              <strong>Bank details locked.</strong> Contact LeadPages support if you need to update payout information.
+            </div>
+            <div id="po-bank-form">
+              <div class="row2">
+                <div class="field" style="margin-bottom:14px"><label for="po-bank-name">Account name</label><input id="po-bank-name" type="text" placeholder="Name on the account" autocomplete="off"></div>
+                <div class="field" style="margin-bottom:14px"><label for="po-bank-bank">Bank name</label><input id="po-bank-bank" type="text" placeholder="e.g. Commonwealth Bank" autocomplete="off"></div>
+              </div>
+              <div class="row2">
+                <div class="field" style="margin-bottom:14px"><label for="po-bank-bsb">BSB</label><input id="po-bank-bsb" type="text" inputmode="numeric" maxlength="7" placeholder="000-000" autocomplete="off"></div>
+                <div class="field" style="margin-bottom:14px"><label for="po-bank-acc">Account number</label><input id="po-bank-acc" type="text" inputmode="numeric" placeholder="Account number" autocomplete="off"></div>
+              </div>
+              <div class="save-row">
+                <button type="button" class="btn btn-brand" id="po-bank-save">Save &amp; lock bank details</button>
+                <span class="saved" id="po-bank-saved">Locked ✓</span>
+              </div>
+              <p class="muted" id="po-bank-msg" style="margin:10px 0 0;font-size:13px"></p>
+            </div>
+          </div>
+
           <div class="card" style="padding:20px">
             <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Payout details</h3>
             <p class="muted" style="margin:0 0 12px;font-size:13px">Used to process your payouts. Add these before your first payout cycle.</p>
@@ -462,7 +468,7 @@
           <div class="card" style="padding:20px">
             <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Pricing defaults</h3>
             <p class="muted" style="margin:0 0 12px;font-size:13px">Defaults used when creating new clients/quotes.</p>
-            <div class="field"><label for="po-plan">Default hosting plan</label><select id="po-plan"></select><div class="muted" style="font-size:12.5px;margin-top:6px">Clients can change at signup.</div></div>
+            <div class="field"><label for="po-plan">Default hosting plan</label><select id="po-plan" class="tin lp-select"></select><div class="muted" style="font-size:12.5px;margin-top:6px">Used when sending quotes.</div></div>
             <div class="save-row"><button class="btn btn-brand" id="po-save">Save</button><span class="saved" id="po-saved">Saved ✓</span></div>
           </div>
 
@@ -471,7 +477,7 @@
             <p class="muted" style="margin:0 0 12px;font-size:13px">Preview what you and LeadPages earn on a build + hosting plan.</p>
             <div class="row2">
               <div class="field" style="max-width:260px"><label for="po-calc">Build price ($)</label><input id="po-calc" type="number" min="0" step="50" placeholder="1000"></div>
-              <div class="field"><label for="po-calc-plan">Monthly hosting plan</label><select id="po-calc-plan"></select></div>
+              <div class="field"><label for="po-calc-plan">Monthly hosting plan</label><select id="po-calc-plan" class="tin lp-select"></select></div>
             </div>
             <div id="po-breakdown" class="muted" style="font-size:14.5px"></div>
             <div id="po-year" class="muted" style="font-size:13px;margin-top:8px"></div>
@@ -480,13 +486,13 @@
       </section>
 
       <!-- Quotes -->
-      <section class="panel lp-p-panel" data-panel="quotes" data-w="form">
+      <section class="panel lp-p-panel lp-quote-panel" data-panel="quotes" data-w="form">
         <h2>Quotes</h2>
         <p class="sub">Build a quote tied to a client’s demo. They get a link to preview the site, accept, and pay — which sets it live and books your commission automatically.</p>
         <div class="lp-grid-2" style="grid-template-columns:1fr 420px">
-          <div class="card" style="padding:20px">
+          <div class="card lp-quote-card" style="padding:20px">
             <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 12px">1) Client details</h3>
-            <div class="field"><label for="q-site">Demo this quote is for</label><select id="q-site"></select></div>
+            <div class="field"><label for="q-site">Demo this quote is for</label><select id="q-site" class="tin lp-select"></select></div>
             <div class="field"><label for="q-biz">Business name</label><input id="q-biz" type="text" placeholder="Client business name"></div>
             <div class="field"><label for="q-contact">Contact person</label><input id="q-contact" type="text" placeholder="Who you’re dealing with"></div>
             <div class="field"><label for="q-address">Address</label><input id="q-address" type="text" placeholder="Business address (optional)"></div>
@@ -495,14 +501,14 @@
           </div>
 
           <div>
-            <div class="card" style="padding:20px;margin-bottom:14px">
+            <div class="card lp-quote-card" style="padding:20px;margin-bottom:14px">
               <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 12px">2) Website package</h3>
-              <div class="field"><label for="q-plan">Hosting plan</label><select id="q-plan"></select></div>
+              <div class="field"><label for="q-plan">Hosting plan</label><select id="q-plan" class="tin lp-select"></select></div>
               <div class="field"><label for="q-desc">Job description</label><textarea id="q-desc" rows="3" placeholder="What you’re quoting for" style="width:100%;padding:11px 12px;border:1px solid var(--border-strong);border-radius:10px;font-family:inherit;font-size:15px;box-sizing:border-box;resize:vertical;background:var(--input-bg);color:var(--text)"></textarea></div>
               <div class="field"><label>Key features / requirements</label><div id="q-feats"></div><button type="button" class="btn" id="q-addfeat" style="margin-top:6px;padding:7px 12px">+ Add feature</button></div>
             </div>
 
-            <div class="card" style="padding:20px">
+            <div class="card lp-quote-card" style="padding:20px">
               <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 12px">3) Review &amp; send</h3>
               <div class="field" style="max-width:240px"><label for="q-price">Build price ($)</label><input id="q-price" type="number" min="0" step="50" placeholder="1500"></div>
               <div id="q-breakdown" class="muted" style="font-size:13.5px;margin:-6px 0 10px"></div>
@@ -749,6 +755,7 @@
     var old=btn.querySelector('[data-msgbadge]'); if(old) old.remove();
     if(n>0){ var b=document.createElement('span'); b.setAttribute('data-msgbadge',''); b.textContent=n>9?'9+':String(n); b.style.cssText='margin-left:7px;background:var(--bad);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:1px 7px;vertical-align:middle'; btn.appendChild(b); }
     updateSupportKpi();
+    renderDashWidgets();
   }
   function updateSupportKpi(){
     var el=document.getElementById('kpi-support'); if(!el) return;
@@ -785,7 +792,7 @@
       });
     }
     if(!mine.length){
-      box.innerHTML='<div class="card empty" style="padding:24px">'+emptyIco('clients')+'<strong>'+(q?'No matching clients':'No clients assigned to you yet')+'</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">'+(q?'Try a different search term.':'Add a client first, then you can raise support requests on their behalf.')+'</p></div>';
+      box.innerHTML='<div class="card empty" style="padding:24px">'+emptyIco('clients')+'<strong>'+(q?'No matching clients':'No clients yet')+'</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">'+(q?'Try a different search term.':'Clients are added automatically when a prospect pays for a quoted demo.')+'</p></div>';
       return;
     }
     box.innerHTML=mine.map(function(c){
@@ -878,7 +885,7 @@
       console.error('Partner shell init failed', shellErr);
     }
     refreshWho({ user: { email: (state.partner && (state.partner.email || state.partner.display_name)) || '' } });
-    wireAdd(); loadPlans(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage(); loadPayouts(); loadQuotes(); loadMsgBadge();
+    wireAdd(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage(); loadPayouts(); loadQuotes(); loadMsgBadge();
     setTimeout(function(){ initDemoTradePicker(); fillDemoLocationDefaults(); }, 0);
     initPartnerMessages();
     document.querySelectorAll('.e-ico[data-icon]').forEach(function(el){
@@ -945,73 +952,82 @@
     var ov=document.getElementById('ov-empty'); if(ov) ov.style.display=total?'none':'';
     var rr=0; clients.forEach(function(c){ if(c.status==='live'&&c.monthly_amount!=null) rr+=Math.round(c.monthly_amount*0.20); });
     var kr=document.getElementById('kpi-recurring'); if(kr) kr.innerHTML=money(rr)+'<span style="font-size:14px;color:var(--ink-faint)">/mo</span>';
-    renderDashAttention();
+    renderDashWidgets();
     updateSupportKpi();
   }
 
-  function dashRow(iconName, title, detail, actionLabel, actionFnName, tone){
-    var ico = '<span class="e-ico" data-icon="'+esc(iconName||'overview')+'" style="width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--panel-soft);border:1px solid var(--border)"></span>';
-    var badge = tone ? ('<span class="statusbadge '+esc(tone)+'" style="font-size:12px">'+esc(tone.replace(/^s-/,'').replace(/-/g,' '))+'</span>') : '';
-    var act = actionLabel ? ('<button type="button" class="btn btn-sm" data-da="'+esc(actionFnName||'')+'" style="padding:7px 11px;font-size:13px;white-space:nowrap">'+esc(actionLabel)+'</button>') : '';
-    return '<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid var(--line);flex-wrap:wrap">'
-      + ico
-      + '<div style="flex:1;min-width:240px">'
-      +   '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
-      +     '<div style="font-weight:700">'+esc(title||'')+'</div>'+badge
-      +   '</div>'
-      +   (detail?('<div class="muted" style="font-size:13px;margin-top:3px">'+esc(detail)+'</div>'):'')
-      + '</div>'
-      + (act?('<div style="margin-left:auto">'+act+'</div>'):'')
-      + '</div>';
-  }
-
-  function renderDashAttention(){
-    var box=document.getElementById('dash-actions'); if(!box) return;
-    var items=[];
-
-    // Unread messages (best-effort)
+  function renderDashWidgets(){
+    var msgsBody=document.getElementById('dash-msgs-body');
+    var demosBody=document.getElementById('dash-demos-body');
+    var msgsBadge=document.getElementById('dash-msgs-badge');
+    var demosCount=document.getElementById('dash-demos-count');
+    var unread=0;
     try{
-      var unread = partnerMsgEmbed ? partnerMsgEmbed.getUnreadCount() : 0;
-      if(unread>0){
-        items.push(dashRow('messages','Unread messages','You have '+unread+' conversation'+(unread===1?'':'s')+' to read.','Open messages','openMessages','s-pending'));
-      }
+      if(partnerMsgEmbed) unread=partnerMsgEmbed.getUnreadCount();
     }catch(_e){}
-
-    // Payout details missing (ABN)
-    var pf = state.profile||{};
-    if(!pf.abn){
-      items.push(dashRow('payouts','Complete payout details','Add your ABN so payouts can be processed.','Open payouts','openPayouts','s-pending'));
+    if(msgsBadge){
+      if(unread>0){ msgsBadge.textContent=unread>9?'9+':String(unread); msgsBadge.classList.remove('hidden'); }
+      else msgsBadge.classList.add('hidden');
     }
-
-    // Quotes awaiting payment/approval (best-effort)
-    var openQuotes = (quotes||[]).filter(function(q){ return (q.status||'')!=='paid'; }).slice(0,3);
-    if(openQuotes.length){
-      items.push(dashRow('quotes','Quotes awaiting action',openQuotes.map(function(q){ return (q.business_name||'Quote')+' · '+fmtAUD(q.price||0)+' · '+(q.status||'sent'); }).join(' / '),'View quotes','openQuotes','s-active'));
+    if(msgsBody){
+      if(unread>0){
+        msgsBody.innerHTML='<p style="margin:0 0 8px;font-size:15px;font-weight:600;color:var(--text)">'+unread+' unread conversation'+(unread===1?'':'s')+'</p><p class="muted" style="margin:0;font-size:13px">Reply to client messages and LeadPages support from your inbox.</p>';
+      } else {
+        msgsBody.innerHTML='<p style="margin:0;font-size:13.5px">No unread messages. Client chats and support threads appear here.</p>';
+      }
     }
-
-    // Demos that are not live (best-effort)
-    var draftDemos = (mockups||[]).filter(function(m){ return (m.status||'')!=='live'; }).slice(0,3);
-    if(draftDemos.length){
-      items.push(dashRow('demos','Draft demos','Open a demo and publish when it’s ready.','Open demos','openDemos','s-pending'));
+    if(demosCount) demosCount.textContent=String((mockups||[]).length);
+    if(demosBody){
+      var recent=(mockups||[]).slice(0,4);
+      if(!recent.length){
+        demosBody.innerHTML='<p style="margin:0;font-size:13.5px">No demos yet. Create a mockup site for your next prospect.</p>';
+      } else {
+        demosBody.innerHTML='<ul class="lp-dash-demo-list">'+recent.map(function(m){
+          return '<li><strong>'+esc(m.business_name||m.slug)+'</strong><span class="muted">'+esc(m.slug)+'</span></li>';
+        }).join('')+'</ul>';
+      }
     }
+    try{
+      var w=document.querySelector('.lp-dash-widgets');
+      if(w&&window.LPStrokeIcons) window.LPStrokeIcons.decorateAll(w);
+    }catch(_e){}
+  }
 
-    if(!items.length){
-      box.innerHTML='<div class="muted" style="font-size:13.5px">Nothing urgent right now. Create a demo, send a quote, or add a client to keep momentum.</div>';
-    } else {
-      box.innerHTML = '<div style="border-top:1px solid transparent"></div>'+items.join('');
-      box.querySelectorAll('[data-da]').forEach(function(b){
-        b.addEventListener('click',function(){
-          var k=b.getAttribute('data-da');
-          if(k==='openMessages') gotoPanel('messages');
-          if(k==='openPayouts') gotoPanel('payouts');
-          if(k==='openQuotes') gotoPanel('quotes');
-          if(k==='openDemos') gotoPanel('demos');
-        });
-      });
-      // ensure icons rendered
-      try{ if(window.LPStrokeIcons) window.LPStrokeIcons.decorateAll(box); }catch(_e){}
+  function maskAccountNumber(num){
+    var s=String(num||'').replace(/\D/g,'');
+    if(!s) return '—';
+    if(s.length<=3) return '•••'+s;
+    return '••••'+s.slice(-3);
+  }
+
+  function renderBankDetails(){
+    var pf=state.profile||{};
+    var locked=!!pf.bank_details_locked;
+    var banner=document.getElementById('po-bank-locked-banner');
+    var saveBtn=document.getElementById('po-bank-save');
+    var nameEl=document.getElementById('po-bank-name');
+    var bankEl=document.getElementById('po-bank-bank');
+    var bsbEl=document.getElementById('po-bank-bsb');
+    var accEl=document.getElementById('po-bank-acc');
+    var msg=document.getElementById('po-bank-msg');
+    if(!nameEl) return;
+    nameEl.value=pf.bank_account_name||'';
+    bankEl.value=pf.bank_name||'';
+    bsbEl.value=pf.bank_bsb||'';
+    accEl.value=locked ? maskAccountNumber(pf.bank_account_number) : (pf.bank_account_number||'');
+    [nameEl,bankEl,bsbEl,accEl].forEach(function(el){
+      el.readOnly=locked;
+      el.disabled=locked;
+    });
+    if(banner) banner.classList.toggle('hidden', !locked);
+    if(saveBtn) saveBtn.style.display=locked?'none':'';
+    if(msg){
+      if(locked&&pf.bank_details_locked_at){
+        msg.textContent='Locked on '+new Date(pf.bank_details_locked_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})+'.';
+      } else if(!locked) msg.textContent='';
     }
   }
+
   function clientCard(c){
     var live=c.status==='live';
     var mine=!!(state.partner && c.servicing_partner_id===state.partner.id);
@@ -1088,7 +1104,7 @@
       });
     }
     box.innerHTML = list.length ? list.map(clientCard).join('')
-      : '<div class="card empty">'+emptyIco('clients')+'<strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Add your first customer to create their website and start earning.</p></div>';
+      : '<div class="card empty">'+emptyIco('clients')+'<strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">When a prospect accepts and pays a quote, their site becomes a client on your account.</p></div>';
   }
   async function loadClients(){
     var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,preview_password,sale_price,logo_obj:config->logo,config,created_at').order('created_at',{ascending:false});
@@ -1103,11 +1119,7 @@
     mockups=all.filter(function(x){return x.is_mockup;});
     renderClients(); renderOverview(); renderMockups();
   }
-  async function loadPlans(){
-    var sel=document.getElementById('a-plan'); if(!sel || sel.dataset.loaded) return;
-    var r=await sb.from('billing_plans').select('key,name,monthly_amount,active,sort').eq('active',true).order('sort',{ascending:true});
-    if(r.data){ r.data.forEach(function(pl){ var o=document.createElement('option'); o.value=pl.key; o.textContent=pl.name+' \u2014 '+money(pl.monthly_amount)+'/mo'; sel.appendChild(o); }); sel.dataset.loaded='1'; }
-  }
+  async function loadPlans(){ /* legacy — clients are created via paid quotes only */ }
   async function initDemoTradePicker(){
     if(window.__demoPickerInited||!window.LPTradePicker) return;
     await loadCommunityTradePacks();
@@ -1142,11 +1154,12 @@
   }
   function wireAdd(){
     if(addWired) return; addWired=true;
-    var _qa1=document.getElementById('qa-add-client'); if(_qa1) _qa1.addEventListener('click',function(){ gotoPanel('add'); });
     var _qa2=document.getElementById('qa-create-demo'); if(_qa2) _qa2.addEventListener('click',function(){ gotoPanel('demos'); });
     var _qa3=document.getElementById('qa-send-quote'); if(_qa3) _qa3.addEventListener('click',function(){ gotoPanel('quotes'); });
     var _qa4=document.getElementById('qa-open-builder'); if(_qa4) _qa4.addEventListener('click',function(){ window.open('/manage','_blank','noopener'); });
-    var _cab=document.getElementById('clients-add'); if(_cab) _cab.addEventListener('click',function(){ gotoPanel('add'); });
+    var _ovd=document.getElementById('ov-create-demo'); if(_ovd) _ovd.addEventListener('click',function(){ gotoPanel('demos'); });
+    var _dom=document.getElementById('dash-open-demos'); if(_dom) _dom.addEventListener('click',function(){ gotoPanel('demos'); });
+    var _oms=document.getElementById('dash-open-msgs'); if(_oms) _oms.addEventListener('click',function(){ gotoPanel('messages'); });
     var _cq=document.getElementById('clients-q'); if(_cq) _cq.addEventListener('input',function(){ renderClients(); });
     var _dq=document.getElementById('demo-q'); if(_dq) _dq.addEventListener('input',function(){ renderMockups(); });
     var _dc=document.getElementById('demo-clear'); if(_dc) _dc.addEventListener('click',function(){ var i=document.getElementById('demo-q'); if(i){ i.value=''; renderMockups(); } });
@@ -1416,6 +1429,42 @@
       renderMockups();
       try{ if(document.getElementById('po-calc-plan')) document.getElementById('po-calc-plan').value = state.profile.default_plan_key||''; }catch(_e){}
       renderCalc();
+      renderDashWidgets();
+    });
+    var _pbs=document.getElementById('po-bank-save');
+    if(_pbs) _pbs.addEventListener('click', async function(){
+      var msg=document.getElementById('po-bank-msg');
+      var accountName=(document.getElementById('po-bank-name').value||'').trim();
+      var bankName=(document.getElementById('po-bank-bank').value||'').trim();
+      var bsb=(document.getElementById('po-bank-bsb').value||'').trim();
+      var accountNumber=(document.getElementById('po-bank-acc').value||'').trim();
+      if(!accountName||!bankName||!bsb||!accountNumber){
+        if(msg){ msg.style.color='var(--bad)'; msg.textContent='Fill in all bank fields before saving.'; }
+        return;
+      }
+      if(!window.confirm('Lock these bank details for payouts?\n\nYou will not be able to change them yourself. Contact LeadPages support if you need an update.')){
+        return;
+      }
+      var btn=this; btn.disabled=true;
+      if(msg){ msg.style.color='var(--text-soft)'; msg.textContent='Saving and locking…'; }
+      var res;
+      try{
+        var r=await fetch('/api/partner/save-bank-details',{
+          method:'POST',
+          headers:Object.assign({'content-type':'application/json'},await authHeader()),
+          body:JSON.stringify({ accountName:accountName, bankName:bankName, bsb:bsb, accountNumber:accountNumber, confirmLock:true })
+        });
+        res=await r.json();
+      }catch(_e){ res={ok:false,error:'Network error.'}; }
+      btn.disabled=false;
+      if(!res||!res.ok){
+        if(msg){ msg.style.color='var(--bad)'; msg.textContent=(res&&res.error)||'Could not save bank details.'; }
+        return;
+      }
+      state.profile=Object.assign({}, state.profile||{}, res.profile||{});
+      renderBankDetails();
+      var sv=document.getElementById('po-bank-saved'); if(sv){ sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },2200); }
+      if(msg){ msg.style.color='var(--success)'; msg.textContent='Bank details saved and locked.'; }
     });
     document.getElementById('q-addphone').addEventListener('click', function(){ addPhoneRow(''); });
     document.getElementById('q-addfeat').addEventListener('click', function(){ addFeatRow(''); });
@@ -1470,7 +1519,6 @@
       state.profile=res.profile;
       var sv=document.getElementById('sc-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1700); updateScLink(); updateScStatusBadge();
     });
-    document.getElementById('ov-add').addEventListener('click',function(){ gotoPanel('add'); });
     var _slp=document.getElementById('support-lp');
     if(_slp) _slp.addEventListener('click',function(){ openLeadPagesMessage(''); });
     var _scl=document.getElementById('support-clients-list');
@@ -1486,42 +1534,6 @@
     if(_scq) _scq.addEventListener('input',renderSupportClients);
     document.addEventListener('click',function(e){
       if(e.target.closest('[data-open-messages]')) gotoPanel('messages');
-    });
-    document.getElementById('add-another').addEventListener('click',function(){
-      document.getElementById('add-card').classList.remove('hidden');
-      document.getElementById('add-done').classList.add('hidden');
-      ['a-biz','a-industry','a-contact','a-email','a-phone','a-loc','a-price','a-notes'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
-      var ps=document.getElementById('a-plan'); if(ps) ps.value='';
-    });
-    document.getElementById('a-submit').addEventListener('click', async function(){
-      var err=document.getElementById('a-err'); err.classList.add('hidden');
-      var biz=(document.getElementById('a-biz').value||'').trim();
-      if(!biz){ err.textContent='Business name is required.'; err.classList.remove('hidden'); return; }
-      var btn=this; btn.disabled=true; btn.textContent='Creating\u2026';
-      var payload={
-        businessName:biz,
-        industry:(document.getElementById('a-industry').value||'').trim(),
-        contactName:(document.getElementById('a-contact').value||'').trim(),
-        customerEmail:(document.getElementById('a-email').value||'').trim(),
-        phone:(document.getElementById('a-phone').value||'').trim(),
-        location:(document.getElementById('a-loc').value||'').trim(),
-        planKey:(document.getElementById('a-plan').value||''),
-        buildPrice:(document.getElementById('a-price').value||'').trim(),
-        themeId:(document.getElementById('a-theme').value||''),
-        notes:(document.getElementById('a-notes').value||'').trim()
-      };
-      var res;
-      try{
-        var r=await fetch('/api/partner/add-customer',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)});
-        res=await r.json();
-      }catch(_e){ res={ok:false,error:'Network error. Please try again.'}; }
-      btn.disabled=false; btn.textContent='Create client & website';
-      if(!res||!res.ok){ err.textContent=(res&&res.error)||'Could not create the client. Please try again.'; err.classList.remove('hidden'); return; }
-      clients.unshift(res.site); renderClients(); renderOverview();
-      document.getElementById('add-done-name').textContent=res.site.business_name+' is ready';
-      document.getElementById('add-view').href='/'+encodeURIComponent(res.site.slug)+'?preview=1';
-      document.getElementById('add-card').classList.add('hidden');
-      document.getElementById('add-done').classList.remove('hidden');
     });
   }
 
@@ -1723,7 +1735,7 @@
   var mockups=[], themes=[];
   function fillThemeSelects(){
     var opts='<option value="">Blank trade site</option>'+themes.map(function(t){ return '<option value="'+esc(t.id)+'">'+(t._shared?'★ ':'')+esc(t.name)+(t._shared?' (LeadPages)':'')+'</option>'; }).join('');
-    ['m-theme','a-theme'].forEach(function(idd){ var sel=document.getElementById(idd); if(sel){ var cur=sel.value; sel.innerHTML=opts; sel.value=cur; } });
+    var sel=document.getElementById('m-theme'); if(sel){ var cur=sel.value; sel.innerHTML=opts; sel.value=cur; }
   }
   function themeOptions(){ return '<option value="">Apply a theme\u2026</option>'+themes.map(function(t){ return '<option value="'+esc(t.id)+'">'+(t._shared?'★ ':'')+esc(t.name)+(t._shared?' (LeadPages)':'')+'</option>'; }).join(''); }
   function mockupCard(m){
@@ -1805,6 +1817,7 @@
     box.innerHTML = list.length ? list.map(mockupCard).join('')
       : '<div class="card empty">'+emptyIco('demos')+'<strong>No demos yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">Create a demo above to mock up a tradie site for a prospect.</p></div>';
     try{ fillQuoteDemoSelect(); }catch(_e){}
+    renderDashWidgets();
   }
   function themeCard(t){
     var when=t.created_at?new Date(t.created_at).toLocaleDateString():'';
@@ -1848,7 +1861,7 @@
     scLogo=cfg.logo||''; if(scLogo){ g('sc-logo-prev').src=scLogo; g('sc-logo-prev').style.display=''; g('sc-logo-clear').style.display=''; }
     updateScLink();
     updateScStatusBadge();
-    renderDashAttention();
+    renderDashWidgets();
   }
   async function scUploadLogo(file){
     var sess=(await sb.auth.getSession()).data.session; var token=sess&&sess.access_token;
@@ -1947,7 +1960,7 @@
   function addRow(containerId, placeholder, val){
     var c=document.getElementById(containerId); if(!c) return;
     var row=document.createElement('div'); row.style.cssText='display:flex;gap:8px;margin-bottom:8px';
-    var inp=document.createElement('input'); inp.type='text'; inp.placeholder=placeholder; inp.value=val||''; inp.style.cssText='flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px';
+    var inp=document.createElement('input'); inp.type='text'; inp.placeholder=placeholder; inp.value=val||''; inp.className='lp-quote-inline-input'; inp.style.flex='1';
     var rm=document.createElement('button'); rm.type='button'; rm.className='btn'; rm.textContent='\u00d7'; rm.style.cssText='padding:8px 12px'; rm.onclick=function(){ row.remove(); };
     row.appendChild(inp); row.appendChild(rm); c.appendChild(row);
   }
@@ -1976,7 +1989,7 @@
     if(qr.error){ box.innerHTML='<span style="color:var(--bad)">Could not load quotes: '+esc(qr.error.message)+'</span>'; return; }
     var rows=(qr.data||[]);
     quotes = rows;
-    renderDashAttention();
+    renderDashWidgets();
     if(!rows.length){ box.innerHTML='No quotes yet.'; return; }
     box.innerHTML=rows.map(function(q){
       var url=location.origin+'/quote?t='+encodeURIComponent(q.token);
@@ -2073,7 +2086,8 @@
       sel2.value = pf.default_plan_key || '';
     }
     renderCalc();
-    renderDashAttention();
+    renderBankDetails();
+    renderDashWidgets();
   }
 
   // ---------- Partner directory listing (Find a Partner) ----------

@@ -217,7 +217,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
   var APP_STATUSES=['new','reviewing','approved','rejected','waitlisted'];
   var PARTNER_STATUSES=['pending','active','under_review','suspended','terminated'];
-  var appFilter='all', apps=[], partners=[];
+  var appFilter='all', apps=[], partners=[], partnerProfiles={};
   var COMM_STATUSES=['pending','approved','paid','held','cancelled'];
   var commFilter='all', commissions=[], siteMap={};
   var TM_TYPES=['article','video','checklist','download'];
@@ -370,16 +370,33 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   // ---- Partners ----
   function partnerCard(p){
     var linked = !!p.user_id;
+    var prof = partnerProfiles[p.id] || {};
+    var bankLocked = !!prof.bank_details_locked;
+    var bankLine = '';
+    if (bankLocked) {
+      var bsb = prof.bank_bsb || '—';
+      var bank = prof.bank_name || '—';
+      var acc = prof.bank_account_number ? ('••••' + String(prof.bank_account_number).slice(-3)) : '—';
+      bankLine = '<div class="kv" style="margin-top:10px">'
+        + '<div class="k">Payout bank</div><div class="v"><span class="linkpill yes">Locked</span> '+esc(prof.bank_account_name||'—')+' · '+esc(bank)+' · BSB '+esc(bsb)+' · Acc '+esc(acc)+'</div>'
+        + '</div>';
+    } else if (prof.bank_account_name || prof.bank_bsb) {
+      bankLine = '<div class="kv" style="margin-top:10px"><div class="k">Payout bank</div><div class="v"><span class="linkpill">Unlocked</span> Partner can edit in console</div></div>';
+    } else {
+      bankLine = '<div class="kv" style="margin-top:10px"><div class="k">Payout bank</div><div class="v"><span class="linkpill">Not set</span></div></div>';
+    }
     return '<div class="card item" data-id="'+p.id+'">'
       + '<div class="head"><div><div class="nm">'+esc(p.display_name||p.email||'Partner')+'</div>'
       + '<div class="meta">'+esc(p.email||'')+(p.phone?(' · '+esc(p.phone)):'')+' · joined '+fmtDate(p.created_at)+'</div></div>'
       + '<span class="statusbadge s-'+esc(p.status)+'">'+esc((p.status||'').replace(/_/g,' '))+'</span></div>'
+      + bankLine
       + '<div class="ctrls">'
         + '<div class="grow"><label>Display name</label><input type="text" data-name value="'+esc(p.display_name||'')+'"></div>'
         + '<div class="grow"><label>Email</label><input type="email" data-email value="'+esc(p.email||'')+'"></div>'
         + '<div><label>Phone</label><input type="tel" data-phone value="'+esc(p.phone||'')+'"></div>'
         + '<div><label>Status</label>'+statusSelect(p.status,PARTNER_STATUSES,'data-status')+'</div>'
         + '<button class="btn btn-sm btn-brand" data-save>Save</button>'
+        + (bankLocked ? '<button class="btn btn-sm" data-unlock-bank type="button">Unlock bank details</button>' : '')
         + '<span class="linkpill '+(linked?'yes':'')+'">'+(linked?'Login linked ✓':'Not linked yet')+'</span>'
         + '<span class="saved" data-saved>Saved ✓</span>'
       + '</div></div>';
@@ -390,6 +407,27 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
       : '<div class="card empty">No partners yet. Approve an application to create the first one.</div>';
   }
   $('partners-list').addEventListener('click', async function(e){
+    var unlockBtn=e.target.closest('[data-unlock-bank]');
+    if(unlockBtn){
+      var card=unlockBtn.closest('.item'); var id=card.getAttribute('data-id');
+      if(!window.confirm('Unlock bank details for this partner?\n\nThey will be able to enter new payout information. Use only after identity verification.')) return;
+      unlockBtn.disabled=true;
+      var tok=(await sb.auth.getSession()).data.session;
+      var res;
+      try{
+        var r=await fetch('/api/partner/unlock-bank-details',{
+          method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+(tok&&tok.access_token||'')},
+          body:JSON.stringify({ partnerId:id })
+        });
+        res=await r.json();
+      }catch(_e){ res={ok:false,error:'Network error.'}; }
+      unlockBtn.disabled=false;
+      if(!res||!res.ok){ alert((res&&res.error)||'Could not unlock bank details.'); return; }
+      if(partnerProfiles[id]) partnerProfiles[id].bank_details_locked=false;
+      renderPartners();
+      return;
+    }
     if(!e.target.closest('[data-save]')) return;
     var card=e.target.closest('.item'); var id=card.getAttribute('data-id');
     var p=partners.find(function(x){ return x.id===id; }); if(!p) return;
@@ -457,7 +495,11 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     var a=await sb.from('partner_applications').select('*').order('created_at',{ascending:false});
     apps=(a.data||[]); renderApps();
     var p=await sb.from('partners').select('*').order('created_at',{ascending:false});
-    partners=(p.data||[]); renderPartners();
+    partners=(p.data||[]);
+    var pp=await sb.from('partner_profiles').select('partner_id,bank_account_name,bank_bsb,bank_account_number,bank_name,bank_details_locked,bank_details_locked_at');
+    partnerProfiles={};
+    (pp.data||[]).forEach(function(x){ if(x&&x.partner_id) partnerProfiles[x.partner_id]=x; });
+    renderPartners();
     var sm=await sb.from('sites').select('id,business_name,slug');
     siteMap={}; (sm.data||[]).forEach(function(x){ siteMap[x.id]=x.business_name||x.slug; });
     var cm=await sb.from('partner_commissions').select('*').order('created_at',{ascending:false});
