@@ -7,6 +7,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const { slugify, locationSlug, mergePackIntoConfig } = require('../../lib/trade-pack-utils');
+const { DEFAULT_DEMO_SALE_PRICE_CENTS } = require('../../lib/partner-demo-pricing');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -110,6 +111,11 @@ module.exports = async (req, res) => {
   };
 
   const slug = await uniqueSlug(demoSlugify(businessName) + '-demo');
+
+  const prof = (await admin.from('partner_profiles').select('default_plan_key').eq('partner_id', partner.id).maybeSingle()).data || {};
+  const salePrice = Math.round(Number(b.salePrice) || 0) || DEFAULT_DEMO_SALE_PRICE_CENTS;
+  const planKey = clean(b.planKey, 40) || prof.default_plan_key || null;
+
   const row = {
     slug,
     business_name: businessName,
@@ -117,6 +123,8 @@ module.exports = async (req, res) => {
     vertical: 'trade',
     status: 'draft',
     is_mockup: true,
+    sale_price: salePrice,
+    plan_key: planKey,
     config,
     referring_partner_id: partner.id,
     servicing_partner_id: partner.id,
@@ -124,7 +132,7 @@ module.exports = async (req, res) => {
   };
 
   try {
-    const ins = await admin.from('sites').insert(row).select('id,slug,business_name,status,is_mockup,show_on_showcase,config,created_at').single();
+    const ins = await admin.from('sites').insert(row).select('id,slug,business_name,status,is_mockup,show_on_showcase,sale_price,plan_key,config,created_at').single();
     if (ins.error || !ins.data) return res.status(500).json({ ok: false, error: 'Could not create the demo. Please try again.' });
 
     if (b.packSlug && targetLocation) {

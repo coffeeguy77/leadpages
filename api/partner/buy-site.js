@@ -11,6 +11,7 @@
 // share in the commission ledger (paid out separately).
 
 const { sb, stripe, json, rawBody } = require('../billing/_stripe');
+const { effectiveDemoSalePrice } = require('../../lib/partner-demo-pricing');
 
 function validPrice(p) { return typeof p === 'string' && /^price_/.test(p); }
 
@@ -53,7 +54,7 @@ module.exports = async (req, res) => {
 
     const partnerId = site.servicing_partner_id || site.referring_partner_id;
     if (!partnerId) return json(res, 400, { error: 'This demo is not set up for purchase yet.' });
-    const salePrice = quotePrice != null ? quotePrice : Math.round(Number(site.sale_price) || 0);
+    const salePrice = effectiveDemoSalePrice(site, quotePrice);
     if (salePrice <= 0) return json(res, 400, { error: 'This demo does not have a price set yet. Ask your provider to set one.' });
     if (site.is_mockup === false && site.status === 'live') return json(res, 409, { error: 'This site has already been purchased.' });
 
