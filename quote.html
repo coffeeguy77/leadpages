@@ -45,13 +45,18 @@
   .paid{background:#E4EFE7;border:1px solid #C4DECB;color:#2C6A42;border-radius:12px;padding:14px 16px;font-weight:600;margin:0 0 18px;text-align:center}
   .center{text-align:center;color:var(--soft);padding:60px 0}
   .secure{display:flex;align-items:center;justify-content:center;gap:6px;color:#A79A96;font-size:12.5px;margin:14px 0 0}
-  .partner-hdr{display:flex;gap:14px;align-items:center;margin:0 0 20px;padding-bottom:18px;border-bottom:1px solid var(--line)}
-  .partner-hdr-logo{flex:0 0 auto;width:72px;height:52px;display:flex;align-items:center;justify-content:center}
-  .partner-hdr-logo img{max-height:52px;max-width:72px;width:auto;object-fit:contain;display:block}
-  .partner-hdr-body{min-width:0;flex:1}
-  .partner-hdr-biz{font-weight:700;font-size:16px;margin:0 0 4px;color:var(--ink)}
-  .partner-hdr-contact{font-size:13px;color:var(--soft);line-height:1.45}
-  .partner-hdr-contact a{color:var(--accent-d);text-decoration:none;font-weight:600}
+  .partner-hdr{display:flex;gap:18px;align-items:flex-start;justify-content:space-between;margin:0 0 20px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+  .partner-hdr-body{min-width:0;flex:1;display:flex;flex-direction:column;gap:6px}
+  .partner-hdr-biz{font-weight:700;font-size:17px;margin:0;color:var(--ink);line-height:1.25}
+  .partner-hdr-line{font-size:14px;color:var(--soft);line-height:1.4;margin:0}
+  .partner-hdr-line a{color:var(--accent-d);text-decoration:none;font-weight:600}
+  .partner-hdr-logo{flex:0 0 50%;width:50%;max-width:50%;display:flex;align-items:flex-start;justify-content:flex-end}
+  .partner-hdr-logo img{width:100%;max-width:100%;height:auto;max-height:140px;object-fit:contain;object-position:right top;display:block}
+  @media (max-width:520px){
+    .partner-hdr{flex-direction:column-reverse;gap:14px}
+    .partner-hdr-logo{width:100%;max-width:100%;flex:0 0 auto;justify-content:center}
+    .partner-hdr-logo img{max-height:120px;object-position:center top}
+  }
 .sitefoot-q{background:var(--gum);padding:26px 18px;margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:8px;color:#8FA096;font-size:12.5px}.sitefoot-q .leadpages-logo{height:var(--lp-logo-height,52px);width:auto}
 </style>
 <link rel="stylesheet" href="/assets/lp-logo.css">
@@ -85,22 +90,22 @@
     if(!partner) return '';
     var biz = partner.business_name || partner.display_name || partner.support_name;
     if(!biz && !partner.logo_url && !partner.support_email && !partner.support_phone) return '';
-    var contact = [];
-    if(partner.support_name && partner.support_name !== biz) contact.push(esc(partner.support_name));
-    if(partner.support_email) contact.push('<a href="mailto:'+esc(partner.support_email)+'">'+esc(partner.support_email)+'</a>');
-    if(partner.support_phone) contact.push(esc(partner.support_phone));
+    var lines = [];
+    if(partner.support_name && partner.support_name !== biz) lines.push('<p class="partner-hdr-line">'+esc(partner.support_name)+'</p>');
+    if(partner.support_email) lines.push('<p class="partner-hdr-line"><a href="mailto:'+esc(partner.support_email)+'">'+esc(partner.support_email)+'</a></p>');
+    if(partner.support_phone) lines.push('<p class="partner-hdr-line">'+esc(partner.support_phone)+'</p>');
     if(partner.website_url){
       var web = partner.website_url.replace(/^https?:\/\//i,'');
-      contact.push('<a href="'+esc(partner.website_url)+'" target="_blank" rel="noopener">'+esc(web)+'</a>');
+      lines.push('<p class="partner-hdr-line"><a href="'+esc(partner.website_url)+'" target="_blank" rel="noopener">'+esc(web)+'</a></p>');
     }
-    var html = '<div class="partner-hdr">';
+    var html = '<div class="partner-hdr"><div class="partner-hdr-body">';
+    if(biz) html += '<div class="partner-hdr-biz">'+esc(biz)+'</div>';
+    html += lines.join('');
+    html += '</div>';
     if(partner.logo_url){
       html += '<div class="partner-hdr-logo"><img src="'+esc(partner.logo_url)+'" alt="'+esc(biz||'Partner logo')+'"></div>';
     }
-    html += '<div class="partner-hdr-body">';
-    if(biz) html += '<div class="partner-hdr-biz">'+esc(biz)+'</div>';
-    if(contact.length) html += '<div class="partner-hdr-contact">'+contact.join(' &middot; ')+'</div>';
-    html += '</div></div>';
+    html += '</div>';
     return html;
   }
 
