@@ -12,6 +12,7 @@
 
 const { sb, stripe, json, rawBody } = require('../billing/_stripe');
 const { effectiveDemoSalePrice } = require('../../lib/partner-demo-pricing');
+const { effectiveQuotePriceCents } = require('../../lib/quote-offer');
 
 function validPrice(p) { return typeof p === 'string' && /^price_/.test(p); }
 
@@ -38,7 +39,8 @@ module.exports = async (req, res) => {
       if (!q) return json(res, 404, { error: 'This quote could not be found.' });
       if (q.status === 'paid') return json(res, 409, { error: 'This quote has already been accepted and paid.' });
       if (!q.site_id) return json(res, 400, { error: 'This quote is not linked to a site.' });
-      quoteId = q.id; quotePrice = Math.round(Number(q.price) || 0);
+      quoteId = q.id;
+      quotePrice = effectiveQuotePriceCents(q);
       siteId = q.site_id;
       if (!email) email = String(q.email || '').trim().toLowerCase();
       if (!planKey) planKey = String(q.plan_key || '').trim();

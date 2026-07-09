@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Limited-time website offer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#2E2A2B; --soft:#6E6265; --line:#E4D5CD; --bg:#FAF5F2;
+    --accent:#A84A5E; --accent-d:#7E3346; --gum:#2F413A; --hot:#D85A28; --hot-d:#B8471A;
+    --disp:'Young Serif',Georgia,serif; --bodyf:'Figtree',system-ui,sans-serif; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--bodyf);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:720px;margin:0 auto;padding:28px 18px 60px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:0;box-shadow:0 18px 48px rgba(46,42,43,.09);overflow:hidden}
+  .card-body{padding:30px 28px 32px}
+  .center{text-align:center;color:var(--soft);padding:60px 0}
+  .partner-hdr{display:flex;align-items:stretch;gap:24px;padding:28px 28px 24px;background:linear-gradient(135deg,#F8F2EE 0%,#fff 55%,#F4EFEB 100%);border-bottom:1px solid var(--line)}
+  .partner-hdr-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:10px}
+  .partner-hdr-biz{font-family:var(--disp);font-size:clamp(22px,3.8vw,30px);line-height:1.12;margin:0;color:var(--ink);font-weight:400}
+  .partner-hdr-contact{display:flex;flex-direction:column;gap:6px;font-size:15px;color:#4A4144;line-height:1.45}
+  .partner-hdr-contact a{color:var(--accent-d);text-decoration:none;font-weight:600}
+  .partner-hdr-logo{flex:0 0 46%;max-width:280px;min-height:120px;display:flex;align-items:center;justify-content:flex-end;padding:8px 0 8px 12px}
+  .partner-hdr-logo img{max-height:clamp(88px,18vw,140px);max-width:100%;width:auto;object-fit:contain;display:block}
+  .partner-trust{display:inline-flex;align-items:center;gap:8px;margin-top:4px;padding:8px 12px;border-radius:999px;background:#EEF5F1;border:1px solid #C8DDD2;color:#2F5E4A;font-size:13px;font-weight:600;line-height:1.35;max-width:100%}
+  .partner-trust svg{flex:0 0 auto;width:18px;height:18px}
+  .offer-hero{background:linear-gradient(145deg,#FFF6F0 0%,#FFE8D8 48%,#FFF9F4 100%);border-bottom:1px solid #F0D4C4;padding:28px 24px 26px;text-align:center}
+  .offer-hero .tag{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--hot-d);background:#fff;border:1px solid #F0C9AE;border-radius:999px;padding:6px 12px;margin:0 0 12px}
+  .offer-hero h1{font-family:var(--disp);font-size:clamp(26px,4.8vw,36px);line-height:1.08;margin:0 0 8px;font-weight:400}
+  .offer-hero .sub{margin:0;color:#5A4E50;font-size:15px}
+  .countdown{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:22px 0 8px}
+  .countdown .unit{min-width:72px;padding:12px 10px 10px;border-radius:14px;background:#fff;border:1px solid #F0D4C4;box-shadow:0 8px 20px rgba(184,71,26,.08)}
+  .countdown .num{display:block;font-family:var(--disp);font-size:clamp(28px,6vw,38px);line-height:1;color:var(--hot-d);font-weight:400}
+  .countdown .lbl{display:block;margin-top:4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);font-weight:700}
+  .countdown-live{font-size:13px;color:var(--hot-d);font-weight:700;margin:0}
+  .price-hero{text-align:center;margin:0 0 22px}
+  .price-was{font-size:16px;color:var(--soft);text-decoration:line-through;margin:0 0 4px}
+  .price-now{font-family:var(--disp);font-size:clamp(34px,7vw,48px);line-height:1;margin:0;color:var(--hot-d)}
+  .price-save{display:inline-block;margin-top:8px;padding:6px 12px;border-radius:999px;background:#E8F5EE;color:#2F5E4A;font-size:13px;font-weight:700}
+  .feats{list-style:none;margin:0 0 22px;padding:0}
+  .feats li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;font-size:15px;border-bottom:1px dashed var(--line)}
+  .feats li:last-child{border-bottom:0}
+  .tick{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:#F6E7EA;color:var(--accent-d);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:1px}
+  .btns{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{flex:1;min-width:180px;text-align:center;border-radius:999px;padding:16px 18px;font-weight:700;font-size:16px;cursor:pointer;border:2px solid var(--line);background:#fff;color:var(--ink);text-decoration:none;display:inline-block;font-family:var(--bodyf)}
+  .btn:hover{border-color:var(--ink)}
+  .btn.primary{background:var(--hot);border-color:var(--hot);color:#fff;box-shadow:0 10px 28px rgba(216,90,40,.28)}
+  .btn.primary:hover{background:var(--hot-d);border-color:var(--hot-d)}
+  .btn[disabled]{opacity:.6;cursor:default;box-shadow:none}
+  .msg{margin:14px 0 0;font-size:14px;text-align:center;min-height:20px}
+  .msg.err{color:#B23B3B}
+  .secure{display:flex;align-items:center;justify-content:center;gap:6px;color:#A79A96;font-size:12.5px;margin:14px 0 0}
+  .foot{text-align:center;color:var(--soft);font-size:14px;margin:24px 0 0;line-height:1.5}
+  .foot a{color:var(--accent-d);text-decoration:none;font-weight:600}
+  .expired{background:#F5F0EE;border:1px solid var(--line);border-radius:14px;padding:18px;text-align:center;margin:0 0 18px}
+  .expired h2{font-family:var(--disp);font-size:22px;margin:0 0 8px;font-weight:400}
+  .paid{background:#E4EFE7;border:1px solid #C4DECB;color:#2C6A42;border-radius:12px;padding:14px 16px;font-weight:600;margin:0 0 18px;text-align:center}
+  .mo{font-size:13px;color:var(--soft);margin:0 0 18px;text-align:center}
+  @media (max-width:560px){
+    .partner-hdr{flex-direction:column-reverse;gap:16px;padding:22px 20px 18px}
+    .partner-hdr-logo{flex:0 0 auto;max-width:none;width:100%;justify-content:center;padding:0}
+    .card-body{padding:22px 20px 26px}
+    .countdown .unit{min-width:64px}
+  }
+.sitefoot-q{background:var(--gum);padding:26px 18px;margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:8px;color:#8FA096;font-size:12.5px}.sitefoot-q .leadpages-logo{height:var(--lp-logo-height,52px);width:auto}
+</style>
+<link rel="stylesheet" href="/assets/lp-logo.css">
+<script src="/assets/lp-logo.js" defer></script>
+</head>
+<body>
+  <div class="wrap" id="root"><div class="center">Loading your offer…</div></div>
+<script>
+(function(){
+  var root = document.getElementById('root');
+  var token = new URLSearchParams(location.search).get('t') || '';
+  var isPartnerPreview = new URLSearchParams(location.search).get('pv') === '1';
+  var pageData = null;
+  var timerId = null;
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function aud(cents){ return '$' + (Math.round(cents||0)/100).toLocaleString('en-AU',{minimumFractionDigits:0,maximumFractionDigits:2}); }
+  var SHIELD_SVG = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l7.5 3v6.2c0 4.9-3.2 9.5-7.5 10.8C7.7 21.2 4.5 16.6 4.5 11.7V5.5L12 2.5z" stroke="currentColor" stroke-width="1.6" fill="color-mix(in srgb, currentColor 12%, transparent)"/><path d="M9.2 12.1l1.9 1.9 4.2-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function fail(m){ root.innerHTML = '<div class="card"><div class="card-body"><h1>Offer unavailable</h1><p>'+esc(m)+'</p></div></div>'; }
+
+  if(!token){ fail('No offer was specified. Please use the link from your provider.'); return; }
+
+  fetch('/api/partner/quote-get?t=' + encodeURIComponent(token))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d || !d.ok){ fail((d && d.error) || 'This offer could not be loaded.'); return; }
+      pageData = d;
+      render(d);
+      if(!isPartnerPreview && d.quote && d.quote.status !== 'paid'){
+        fetch('/api/partner/quote-view', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: token }) }).catch(function(){});
+      }
+    })
+    .catch(function(){ fail('Could not load this offer. Please check your connection and try again.'); });
+
+  function partnerBlock(partner){
+    if(!partner) return '';
+    var biz = partner.business_name || partner.display_name || partner.support_name;
+    if(!biz && !partner.logo_url) return '';
+    var contact = [];
+    if(partner.support_email) contact.push('<span><a href="mailto:'+esc(partner.support_email)+'">'+esc(partner.support_email)+'</a></span>');
+    if(partner.support_phone) contact.push('<span>'+esc(partner.support_phone)+'</span>');
+    var html = '<div class="partner-hdr"><div class="partner-hdr-body">';
+    if(biz) html += '<div class="partner-hdr-biz">'+esc(biz)+'</div>';
+    if(contact.length) html += '<div class="partner-hdr-contact">'+contact.join('')+'</div>';
+    if(biz) html += '<div class="partner-trust">'+SHIELD_SVG+'<span>'+esc(biz)+' is an approved partner of LeadPages</span></div>';
+    html += '</div>';
+    if(partner.logo_url) html += '<div class="partner-hdr-logo"><img src="'+esc(partner.logo_url)+'" alt="'+esc(biz||'Partner')+'"></div>';
+    return html + '</div>';
+  }
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  function tickCountdown(){
+    if(!pageData || !pageData.quote) return;
+    var q = pageData.quote;
+    var exp = q.offer_expires_at;
+    var box = document.getElementById('cd');
+    var live = document.getElementById('cd-live');
+    var buy = document.getElementById('buy');
+    if(!exp || !box) return;
+    var ms = new Date(exp).getTime() - Date.now();
+    if(ms <= 0){
+      if(timerId) clearInterval(timerId);
+      box.innerHTML = '<div class="expired"><h2>This offer has ended</h2><p class="sub">The discounted price is no longer available. You can still view the full quote at the standard price.</p><a class="btn" href="/quote?t='+encodeURIComponent(token)+'" style="margin-top:12px;display:inline-block;flex:0">View full quote</a></div>';
+      if(live) live.textContent = 'Offer expired';
+      if(buy){ buy.disabled = true; buy.textContent = 'Offer ended'; }
+      return;
+    }
+    var s = Math.floor(ms / 1000);
+    var d = Math.floor(s / 86400); s -= d * 86400;
+    var h = Math.floor(s / 3600); s -= h * 3600;
+    var m = Math.floor(s / 60); s -= m * 60;
+    box.innerHTML =
+      '<div class="unit"><span class="num">'+pad(d)+'</span><span class="lbl">Days</span></div>' +
+      '<div class="unit"><span class="num">'+pad(h)+'</span><span class="lbl">Hours</span></div>' +
+      '<div class="unit"><span class="num">'+pad(m)+'</span><span class="lbl">Mins</span></div>' +
+      '<div class="unit"><span class="num">'+pad(s)+'</span><span class="lbl">Secs</span></div>';
+    if(live) live.textContent = 'Offer ends ' + new Date(exp).toLocaleString('en-AU', { weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit', hour12:true });
+  }
+
+  function render(d){
+    var q = d.quote, demo = d.demo || {}, partner = d.partner || {};
+    var isPaid = q.status === 'paid';
+    var hasOffer = q.offer_active && q.offer_expires_at && q.offer_discount_pct;
+    var quoteUrl = '/quote?t=' + encodeURIComponent(token);
+    var previewUrl = demo.slug ? '/' + encodeURIComponent(demo.slug) + '?preview=1' + (demo.password ? ('&pw=' + encodeURIComponent(demo.password)) : '') : '';
+
+    if(isPaid){
+      root.innerHTML = '<div class="card">'+partnerBlock(partner)+'<div class="card-body"><div class="paid">&#10003; Already accepted &amp; paid — your site is being set live.</div></div></div>';
+      return;
+    }
+
+    if(!hasOffer){
+      root.innerHTML = '<div class="card">'+partnerBlock(partner)+'<div class="card-body"><div class="expired"><h2>No active offer</h2><p class="sub">This limited-time offer is not currently active.</p><a class="btn primary" href="'+esc(quoteUrl)+'" style="margin-top:12px;display:inline-block;flex:0">View your quote</a></div></div></div>';
+      return;
+    }
+
+    var feats = (q.features||[]).slice(0,6).map(function(f){ return '<li><span class="tick">&#10003;</span><span>'+esc(f)+'</span></li>'; }).join('');
+    var pct = q.offer_discount_pct;
+
+    var html = '<div class="card">';
+    html += partnerBlock(partner);
+    html += '<div class="offer-hero">';
+    html += '<div class="tag">Limited-time offer</div>';
+    html += '<h1>Save '+esc(pct)+'% on your new website</h1>';
+    html += '<p class="sub">Prepared for '+esc(q.contact_person || q.business_name || 'you')+'</p>';
+    html += '<div class="countdown" id="cd"></div>';
+    html += '<p class="countdown-live" id="cd-live">Offer counting down…</p>';
+    html += '</div>';
+    html += '<div class="card-body">';
+    html += '<div class="price-hero">';
+    html += '<p class="price-was">Was '+aud(q.price)+'</p>';
+    html += '<p class="price-now">'+aud(q.offer_price)+'</p>';
+    html += '<div class="price-save">You save '+aud(q.offer_savings)+' on the build</div>';
+    html += '</div>';
+    html += '<p class="mo">+ monthly hosting, set up at checkout</p>';
+    if(feats) html += '<ul class="feats">'+feats+'</ul>';
+    html += '<div class="btns">';
+    html += '<button class="btn primary" id="buy">Buy now — save '+esc(pct)+'%</button>';
+    if(previewUrl) html += '<a class="btn" href="'+previewUrl+'" target="_blank" rel="noopener">Preview site</a>';
+    html += '</div>';
+    html += '<div class="msg" id="msg"></div>';
+    html += '<div class="secure">&#128274; Secure checkout by Stripe</div>';
+    html += '<p style="text-align:center;margin:16px 0 0;font-size:13.5px"><a href="'+esc(quoteUrl)+'" style="color:var(--accent-d);font-weight:600;text-decoration:none">View full quote details</a></p>';
+    html += '</div></div>';
+
+    var contact = [];
+    if(partner.support_email) contact.push('<a href="mailto:'+esc(partner.support_email)+'">'+esc(partner.support_email)+'</a>');
+    if(partner.support_phone) contact.push(esc(partner.support_phone));
+    if(contact.length) html += '<div class="foot">Questions? Contact '+esc(partner.business_name||partner.display_name||'us')+' &middot; '+contact.join(' &middot; ')+'</div>';
+
+    root.innerHTML = html;
+    tickCountdown();
+    timerId = setInterval(tickCountdown, 1000);
+
+    var btn = document.getElementById('buy'), msg = document.getElementById('msg');
+    if(btn){
+      btn.onclick = function(){
+        if(btn.disabled) return;
+        btn.disabled = true; msg.className='msg'; msg.textContent = 'Setting up secure checkout…';
+        fetch('/api/partner/buy-site', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ quoteToken: token }) })
+          .then(function(r){ return r.json().catch(function(){ return {}; }); })
+          .then(function(j){
+            if(j && j.url){ window.location = j.url; return; }
+            msg.className='msg err'; msg.textContent = (j && j.error) || 'Could not start checkout.'; btn.disabled = false;
+          })
+          .catch(function(){ msg.className='msg err'; msg.textContent = 'Network error — please try again.'; btn.disabled = false; });
+      };
+    }
+  }
+})();
+</script>
+<div class="sitefoot-q"><span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse role="img" aria-label="LeadPages"></span><div>Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div></div>
+</body>
+</html>

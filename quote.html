@@ -119,6 +119,7 @@
 (function(){
   var root = document.getElementById('root');
   var token = new URLSearchParams(location.search).get('t') || '';
+  var isPartnerPreview = new URLSearchParams(location.search).get('pv') === '1';
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
   function aud(cents){ return '$' + (Math.round(cents||0)/100).toLocaleString('en-AU',{minimumFractionDigits:0,maximumFractionDigits:2}); }
   var SHIELD_SVG = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l7.5 3v6.2c0 4.9-3.2 9.5-7.5 10.8C7.7 21.2 4.5 16.6 4.5 11.7V5.5L12 2.5z" stroke="currentColor" stroke-width="1.6" fill="color-mix(in srgb, currentColor 12%, transparent)"/><path d="M9.2 12.1l1.9 1.9 4.2-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -132,6 +133,9 @@
     .then(function(d){
       if(!d || !d.ok){ fail((d && d.error) || 'This quote could not be loaded.'); return; }
       render(d);
+      if(!isPartnerPreview && d.quote && d.quote.status !== 'paid'){
+        fetch('/api/partner/quote-view', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: token }) }).catch(function(){});
+      }
     })
     .catch(function(){ fail('Could not load this quote. Please check your connection and try again.'); });
 
@@ -185,6 +189,13 @@
     if(isPaid){ html += '<div class="paid">&#10003; Accepted &amp; paid — your site is being set live. Check your email for your sign-in link.</div>'; }
     if(q.job_description){ html += '<p class="desc">'+esc(q.job_description)+'</p>'; }
     if(feats){ html += '<p style="font-weight:700;margin:0 0 8px;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--soft)">What\'s included</p><ul class="feats">'+feats+'</ul>'; }
+    if(q.offer_active && q.offer_discount_pct){
+      html += '<div style="background:linear-gradient(135deg,#FFF6F0,#FFE8D8);border:1px solid #F0D4C4;border-radius:14px;padding:16px 18px;margin:0 0 18px;text-align:center">';
+      html += '<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#B8471A;margin-bottom:6px">Limited-time offer</div>';
+      html += '<div style="font-size:15px;margin-bottom:10px">Save <strong>'+esc(q.offer_discount_pct)+'%</strong> — now <strong>'+aud(q.offer_price)+'</strong> <span style="text-decoration:line-through;color:var(--soft)">'+aud(q.price)+'</span></div>';
+      html += '<a class="btn primary" href="/offer?t='+encodeURIComponent(token)+'" style="display:inline-block;flex:0;min-width:200px;background:#D85A28;border-color:#D85A28">View offer &amp; buy now</a>';
+      html += '</div>';
+    }
     html += '<div class="pricebox"><span class="lbl">One-off build</span><span class="amt">'+aud(q.price)+'</span></div>';
     html += '<p class="mo">+ monthly hosting, set up at checkout</p>';
     html += '<div class="btns">';

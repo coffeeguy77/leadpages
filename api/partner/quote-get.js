@@ -4,6 +4,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const { publicOfferFields } = require('../../lib/quote-offer');
 
 function partnerLogoUrl(profile, listing) {
   const cfg = (profile && profile.showcase_config) || {};
@@ -41,12 +42,12 @@ module.exports = async (req, res) => {
 
   return res.status(200).json({
     ok: true,
-    quote: {
+    quote: Object.assign({
       token: q.token, business_name: q.business_name, contact_person: q.contact_person,
       address: q.address, email: q.email, phones: q.phones || [], job_description: q.job_description,
       features: q.features || [], price: q.price, plan_key: q.plan_key, status: q.status,
       paid_at: q.paid_at,
-    },
+    }, publicOfferFields(q)),
     demo, partner,
   });
 };

@@ -1366,6 +1366,72 @@
   color: var(--text-soft);
 }
 
+.lp-partner-page .lp-quote-edit-banner {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 10%, var(--panel-soft));
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+}
+
+.lp-partner-page .lp-quote-view {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.lp-partner-page .lp-quote-view--none {
+  color: var(--text-soft);
+}
+
+.lp-partner-page .lp-quote-view--seen {
+  color: color-mix(in srgb, var(--success, #1f7a63) 85%, var(--text));
+}
+
+.lp-partner-page .lp-quote-offer-live {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #b8471a;
+}
+
+.lp-partner-page .lp-quote-offer-ended {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.lp-partner-page .lp-quote-offer-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.lp-partner-page .lp-quote-offer-modal[hidden] {
+  display: none !important;
+}
+
+.lp-partner-page .lp-quote-offer-modal-card {
+  width: min(420px, 100%);
+  padding: 18px 20px;
+}
+
+.lp-partner-page .lp-quote-offer-fields[hidden] {
+  display: none !important;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1023px) {
   .lp-p-side { display: none; }
