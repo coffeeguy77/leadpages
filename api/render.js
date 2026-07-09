@@ -18,6 +18,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 const { effectiveDemoSalePrice } = require('../lib/partner-demo-pricing');
+const { buildPartnerLandingHtml } = require('../lib/partner-landing');
 const brokerTpl   = require('../broker.template.json');     // broker-leads
 const tradeTpl    = require('../trade.template.json');      // trade
 const agencyTpl   = require('../agency.template.json');     // partner web-studio homepage
@@ -432,8 +433,7 @@ async function showcaseRespond(req, res, prof, base) {
     .select('*').eq('servicing_partner_id', prof.partner_id).eq('is_partner_home', true).maybeSingle()).data;
   res.setHeader('content-type', 'text/html; charset=utf-8');
   res.setHeader('cache-control', 'public, s-maxage=5, stale-while-revalidate=20');
-  if (home) return res.status(200).send(buildAgencyHtml(home, req.headers.host || '', demos, base));
-  return res.status(200).send(showcaseHtml(prof, partner, demos, base));
+  return res.status(200).send(buildPartnerLandingHtml(prof, partner, demos, base, { home }));
 }
 
 async function renderShowcase(req, res, slug, base) {
@@ -697,7 +697,23 @@ module.exports = async (req, res) => {
     .eq('is_mockup', true)
         .or('servicing_partner_id.eq.' + pid + ',referring_partner_id.eq.' + pid)
         .limit(48)).data || []) : [];
-      return sendHtml(res, buildAgencyHtml(site, host, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au'), isLive);
+      const partner = pid ? ((await supabase.from('partners').select('display_name,status').eq('id', pid).maybeSingle()).data) : null;
+      const prof = pid ? ((await supabase.from('partner_profiles').select(SC_SELECT).eq('partner_id', pid).maybeSingle()).data) : null;
+      const sc = (prof && prof.showcase_config) || {};
+      const hc = site.config || {};
+      const mergedProf = Object.assign({}, prof || {}, {
+        showcase_headline: (prof && prof.showcase_headline) || ((hc.sections && hc.sections.hero && hc.sections.hero.title) || site.business_name),
+        showcase_config: Object.assign({}, sc, {
+          intro: sc.intro || ((hc.sections && hc.sections.hero && hc.sections.hero.sub) || ''),
+          logo: sc.logo || ((hc.logo && hc.logo.imageUrl) || ''),
+          theme: Object.assign({}, (sc.theme || {}), (hc.theme || {})),
+          accent: sc.accent
+        }),
+        support_email: (prof && prof.support_email) || hc.email || '',
+        support_phone: (prof && prof.support_phone) || hc.phone || ''
+      });
+      const partnerRow = partner || { display_name: site.business_name || 'Web Studio' };
+      return sendHtml(res, buildPartnerLandingHtml(mergedProf, partnerRow, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au', { home: site }), isLive);
     }
 
     const template = templateFor(site);
