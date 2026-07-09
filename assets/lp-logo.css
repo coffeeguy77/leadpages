@@ -39,8 +39,8 @@
 .nav img.leadpages-logo,
 footer .lp-logo-wrap,
 footer img.leadpages-logo {
-  width: 900px !important;
-  max-width: min(900px, 70vw) !important;
+  width: 450px !important;
+  max-width: min(450px, 70vw) !important;
   height: auto !important;
   --lp-logo-ink: #f3f6fa;
   --lp-logo-pulse-bg: transparent;
