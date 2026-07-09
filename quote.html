@@ -119,6 +119,7 @@
 (function(){
   var root = document.getElementById('root');
   var token = new URLSearchParams(location.search).get('t') || '';
+  var isPartnerPreview = new URLSearchParams(location.search).get('pv') === '1';
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
   function aud(cents){ return '$' + (Math.round(cents||0)/100).toLocaleString('en-AU',{minimumFractionDigits:0,maximumFractionDigits:2}); }
   var SHIELD_SVG = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l7.5 3v6.2c0 4.9-3.2 9.5-7.5 10.8C7.7 21.2 4.5 16.6 4.5 11.7V5.5L12 2.5z" stroke="currentColor" stroke-width="1.6" fill="color-mix(in srgb, currentColor 12%, transparent)"/><path d="M9.2 12.1l1.9 1.9 4.2-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -132,6 +133,9 @@
     .then(function(d){
       if(!d || !d.ok){ fail((d && d.error) || 'This quote could not be loaded.'); return; }
       render(d);
+      if(!isPartnerPreview && d.quote && d.quote.status !== 'paid'){
+        fetch('/api/partner/quote-view', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: token }) }).catch(function(){});
+      }
     })
     .catch(function(){ fail('Could not load this quote. Please check your connection and try again.'); });
 

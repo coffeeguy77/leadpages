@@ -1366,6 +1366,32 @@
   color: var(--text-soft);
 }
 
+.lp-partner-page .lp-quote-edit-banner {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 10%, var(--panel-soft));
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+}
+
+.lp-partner-page .lp-quote-view {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.lp-partner-page .lp-quote-view--none {
+  color: var(--text-soft);
+}
+
+.lp-partner-page .lp-quote-view--seen {
+  color: color-mix(in srgb, var(--success, #1f7a63) 85%, var(--text));
+}
+
 /* ── Responsive ── */
 @media (max-width: 1023px) {
   .lp-p-side { display: none; }

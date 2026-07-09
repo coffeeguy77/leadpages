@@ -518,7 +518,8 @@
                 <div style="font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-soft)">Commission preview</div>
                 <div id="q-commission" class="muted" style="font-size:13.5px;margin-top:8px">Enter a price and choose a hosting plan to see earnings.</div>
               </div>
-              <div class="save-row"><button class="btn btn-brand" id="q-create">Create &amp; send quote</button><span class="saved" id="q-saved">Sent ✓</span></div>
+              <div class="save-row"><button class="btn btn-brand" id="q-create">Create &amp; send quote</button><button type="button" class="btn" id="q-cancel-edit" style="display:none">Cancel edit</button><span class="saved" id="q-saved">Sent ✓</span></div>
+              <div id="q-edit-banner" class="lp-quote-edit-banner" hidden>Editing quote — save changes to update the offer sent to your client.</div>
               <div id="q-msg" class="muted" style="font-size:13.5px;margin-top:10px"></div>
             </div>
           </div>
@@ -1470,6 +1471,7 @@
     });
     document.getElementById('q-addphone').addEventListener('click', function(){ addPhoneRow(''); });
     document.getElementById('q-addfeat').addEventListener('click', function(){ addFeatRow(''); });
+    document.getElementById('q-cancel-edit').addEventListener('click', function(){ cancelQuoteEdit(); });
     document.getElementById('q-price').addEventListener('input', function(){ var d=parseFloat(this.value||'0'); document.getElementById('q-breakdown').innerHTML = d>0 ? demoBreakdown(Math.round(d*100)) : ''; qCommissionPreview(); });
     var _qpl=document.getElementById('q-plan'); if(_qpl) _qpl.addEventListener('change', qCommissionPreview);
     document.getElementById('q-create').addEventListener('click', async function(){
@@ -1477,21 +1479,27 @@
       var siteId=document.getElementById('q-site').value;
       var biz=(document.getElementById('q-biz').value||'').trim();
       var priceD=parseFloat(document.getElementById('q-price').value||'0');
+      var editing=!!window.__qEditToken;
       msg.style.color='var(--bad)';
       if(!siteId){ msg.textContent='Pick which demo this quote is for.'; return; }
       if(!biz){ msg.textContent='Enter the business name.'; return; }
       if(!(priceD>0)){ msg.textContent='Enter a price.'; return; }
       if(window.__lpQuoteTagsTrackSubmit) window.__lpQuoteTagsTrackSubmit();
       var payload={ siteId:siteId, businessName:biz, contactPerson:(document.getElementById('q-contact').value||'').trim(), address:(document.getElementById('q-address').value||'').trim(), email:(document.getElementById('q-email').value||'').trim(), phones:collectList('q-phones'), jobDescription:(document.getElementById('q-desc').value||'').trim(), features:collectList('q-feats'), price:Math.round(priceD*100), planKey:document.getElementById('q-plan').value||'' };
-      btn.disabled=true; msg.style.color=''; msg.textContent='Creating\u2026';
-      var res; try{ var r=await fetch('/api/partner/quote-create',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
+      if(editing) payload.token=window.__qEditToken;
+      btn.disabled=true; msg.style.color=''; msg.textContent=editing?'Saving changes\u2026':'Creating\u2026';
+      var endpoint=editing?'/api/partner/quote-update':'/api/partner/quote-create';
+      var res; try{ var r=await fetch(endpoint,{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
       btn.disabled=false;
-      if(!res||!res.ok){ msg.style.color='var(--bad)'; msg.textContent=(res&&res.error)||'Could not create quote.'; return; }
+      if(!res||!res.ok){ msg.style.color='var(--bad)'; msg.textContent=(res&&res.error)||(editing?'Could not update quote.':'Could not create quote.'); return; }
       var qs=document.getElementById('q-saved'); qs.classList.add('show'); setTimeout(function(){ qs.classList.remove('show'); },1700);
-      msg.style.color=''; msg.innerHTML='Quote created'+(res.emailed?' and emailed to the client':'')+'. Link: <a href="'+esc(res.url)+'" target="_blank" rel="noopener">'+esc(res.url)+'</a>';
-      ['q-biz','q-contact','q-address','q-email','q-desc','q-price'].forEach(function(id){ document.getElementById(id).value=''; });
-      document.getElementById('q-phones').innerHTML=''; document.getElementById('q-feats').innerHTML=''; addPhoneRow(''); addFeatRow('');
-      document.getElementById('q-breakdown').innerHTML='';
+      if(editing){
+        msg.style.color=''; msg.innerHTML='Quote updated'+(res.emailed?' and emailed to the client':'')+'. Link: <a href="'+esc(res.url)+'" target="_blank" rel="noopener">'+esc(res.url)+'</a>';
+        cancelQuoteEdit();
+      } else {
+        msg.style.color=''; msg.innerHTML='Quote created'+(res.emailed?' and emailed to the client':'')+'. Link: <a href="'+esc(res.url)+'" target="_blank" rel="noopener">'+esc(res.url)+'</a>';
+        resetQuoteForm();
+      }
       loadQuotes();
     });
     document.getElementById('sc-check').addEventListener('click', async function(){
@@ -1970,6 +1978,80 @@
   function addPhoneRow(v){ addRow('q-phones','Phone number', v); }
   function addFeatRow(v){ addRow('q-feats','e.g. Online booking form', v); }
   function collectList(id){ var out=[]; var c=document.getElementById(id); if(!c) return out; c.querySelectorAll('input').forEach(function(i){ var v=(i.value||'').trim(); if(v) out.push(v); }); return out; }
+
+  function resetQuoteForm(){
+    ['q-biz','q-contact','q-address','q-email','q-desc','q-price'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+    var phones=document.getElementById('q-phones'); if(phones){ phones.innerHTML=''; addPhoneRow(''); }
+    var feats=document.getElementById('q-feats'); if(feats){ feats.innerHTML=''; addFeatRow(''); }
+    var bd=document.getElementById('q-breakdown'); if(bd) bd.innerHTML='';
+    try{ qCommissionPreview(); }catch(_e){}
+  }
+
+  function setQuoteEditMode(on, label){
+    var btn=document.getElementById('q-create');
+    var cancel=document.getElementById('q-cancel-edit');
+    var banner=document.getElementById('q-edit-banner');
+    if(btn) btn.textContent=on?'Save changes':'Create & send quote';
+    if(cancel) cancel.style.display=on?'inline-flex':'none';
+    if(banner){
+      if(on){ banner.hidden=false; banner.textContent='Editing quote for '+(label||'client')+' — save changes to update the offer.'; }
+      else banner.hidden=true;
+    }
+  }
+
+  function cancelQuoteEdit(){
+    window.__qEditToken='';
+    setQuoteEditMode(false);
+    resetQuoteForm();
+    var msg=document.getElementById('q-msg'); if(msg) msg.textContent='';
+  }
+
+  function loadQuoteIntoForm(q){
+    if(!q) return;
+    window.__qEditToken=q.token||'';
+    fillQuoteDemoSelect();
+    document.getElementById('q-site').value=q.site_id||'';
+    document.getElementById('q-biz').value=q.business_name||'';
+    document.getElementById('q-contact').value=q.contact_person||'';
+    document.getElementById('q-address').value=q.address||'';
+    document.getElementById('q-email').value=q.email||'';
+    document.getElementById('q-desc').value=q.job_description||'';
+    document.getElementById('q-price').value=q.price?String(Math.round(q.price)/100):'';
+    if(document.getElementById('q-plan') && q.plan_key) document.getElementById('q-plan').value=q.plan_key;
+    var phones=document.getElementById('q-phones'); phones.innerHTML='';
+    var ph=(q.phones&&q.phones.length)?q.phones:[''];
+    ph.forEach(function(p){ addPhoneRow(p); });
+    var feats=document.getElementById('q-feats'); feats.innerHTML='';
+    var ft=(q.features&&q.features.length)?q.features:[''];
+    ft.forEach(function(f){ addFeatRow(f); });
+    var d=parseFloat(document.getElementById('q-price').value||'0');
+    document.getElementById('q-breakdown').innerHTML = d>0 ? demoBreakdown(Math.round(d*100)) : '';
+    setQuoteEditMode(true, q.business_name||'client');
+    try{ qCommissionPreview(); }catch(_e){}
+    var panel=document.querySelector('[data-panel="quotes"]');
+    if(panel) panel.scrollIntoView({behavior:'smooth',block:'start'});
+    var msg=document.getElementById('q-msg');
+    if(msg){ msg.style.color=''; msg.textContent='Loaded into the form — revise and save when ready.'; }
+  }
+
+  function fmtQuoteDt(iso){
+    if(!iso) return '';
+    try{
+      return new Date(iso).toLocaleString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+    }catch(_e){ return String(iso); }
+  }
+
+  function quoteViewHtml(q){
+    var viewed=q.client_viewed_at||q.client_last_viewed_at;
+    if(!viewed) return '<span class="lp-quote-view lp-quote-view--none">Not viewed yet</span>';
+    var when=fmtQuoteDt(q.client_last_viewed_at||q.client_viewed_at);
+    var n=Math.max(1, parseInt(q.client_view_count,10)||1);
+    var extra=n>1?' &middot; '+n+' views':'';
+    return '<span class="lp-quote-view lp-quote-view--seen">Client viewed '+esc(when)+extra+' — follow up?</span>';
+  }
+
+  var QUOTE_LIST_COLS='token,site_id,business_name,contact_person,address,email,phones,job_description,features,price,plan_key,status,created_at,client_viewed_at,client_last_viewed_at,client_view_count';
+  var QUOTE_LIST_COLS_FALLBACK='token,site_id,business_name,contact_person,address,email,phones,job_description,features,price,plan_key,status,created_at';
   function fillQuoteDemoSelect(){
     var sel=document.getElementById('q-site'); if(!sel) return;
     var cur=sel.value;
@@ -1989,21 +2071,32 @@
     if(document.getElementById('q-feats') && !document.getElementById('q-feats').children.length) addFeatRow('');
     try{ if(window.LpQuoteTags && state.partner) LpQuoteTags.init(state.partner.id); }catch(_e){}
     var box=document.getElementById('q-list'); if(!box) return;
-    var qr=await sb.from('partner_quotes').select('token,business_name,price,status,email,created_at').eq('partner_id',state.partner.id).order('created_at',{ascending:false});
+    var qr=await sb.from('partner_quotes').select(QUOTE_LIST_COLS).eq('partner_id',state.partner.id).order('created_at',{ascending:false});
+    if(qr.error && /column/i.test(String(qr.error.message||''))){
+      qr=await sb.from('partner_quotes').select(QUOTE_LIST_COLS_FALLBACK).eq('partner_id',state.partner.id).order('created_at',{ascending:false});
+    }
     if(qr.error){ box.innerHTML='<span style="color:var(--bad)">Could not load quotes: '+esc(qr.error.message)+'</span>'; return; }
     var rows=(qr.data||[]);
     quotes = rows;
     renderDashWidgets();
     if(!rows.length){ box.innerHTML='No quotes yet.'; return; }
-    box.innerHTML=rows.map(function(q){
-      var url=location.origin+'/quote?t='+encodeURIComponent(q.token);
+    box.innerHTML=rows.map(function(q, idx){
+      var clientUrl=location.origin+'/quote?t='+encodeURIComponent(q.token);
+      var partnerUrl=clientUrl+'&pv=1';
       var badge=q.status==='paid'?'<span class="statusbadge s-active">Paid</span>':'<span class="statusbadge s-pending">'+esc(q.status||'sent')+'</span>';
-      return '<div class="card" style="padding:13px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between">'
-        +'<div><div style="font-weight:600">'+esc(q.business_name||'\u2014')+' \u00b7 '+fmtAUD(q.price)+' '+badge+'</div><div class="muted" style="font-size:12.5px">'+esc(q.email||'no email on file')+'</div></div>'
-        +'<div style="display:flex;gap:8px"><button class="btn" data-copy="'+esc(url)+'" style="padding:7px 12px">Copy link</button><a class="btn" href="'+esc(url)+'" target="_blank" rel="noopener" style="padding:7px 12px">View</a></div>'
-        +'</div>';
+      var canEdit=q.status!=='paid';
+      return '<div class="card lp-quote-sent" style="padding:13px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;justify-content:space-between">'
+        +'<div class="lp-quote-sent-main"><div style="font-weight:600">'+esc(q.business_name||'\u2014')+' \u00b7 '+fmtAUD(q.price)+' '+badge+'</div>'
+        +'<div class="muted" style="font-size:12.5px;margin-top:3px">'+esc(q.email||'no email on file')+'</div>'
+        +'<div style="margin-top:6px">'+quoteViewHtml(q)+'</div></div>'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+        +(canEdit?'<button type="button" class="btn" data-qedit="'+idx+'" style="padding:7px 12px">Edit</button>':'')
+        +'<button class="btn" data-copy="'+esc(clientUrl)+'" style="padding:7px 12px">Copy link</button>'
+        +'<a class="btn" href="'+esc(partnerUrl)+'" target="_blank" rel="noopener" style="padding:7px 12px">View</a>'
+        +'</div></div>';
     }).join('');
     box.querySelectorAll('[data-copy]').forEach(function(b){ b.onclick=function(){ try{ navigator.clipboard.writeText(b.getAttribute('data-copy')); }catch(_e){} b.textContent='Copied!'; setTimeout(function(){ b.textContent='Copy link'; },1400); }; });
+    box.querySelectorAll('[data-qedit]').forEach(function(b){ b.onclick=function(){ var i=parseInt(b.getAttribute('data-qedit'),10); if(!isNaN(i)&&quotes[i]) loadQuoteIntoForm(quotes[i]); }; });
     try{ qCommissionPreview(); }catch(_e){}
   }
 
