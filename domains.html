@@ -27,7 +27,7 @@
   /* site nav */
   .sitenav{background:var(--gum)}
   .sitenav .wrap{max-width:1440px;display:flex;align-items:center;justify-content:space-between;height:116px;padding:0 24px}
-  .sitenav img{height:96px;width:auto;display:block}
+  .sitenav .leadpages-logo{height:var(--lp-logo-height,52px);width:auto;display:block}
   .sitenav .links{display:flex;align-items:center;gap:24px}
   .sitenav .links a{color:#E9EFEA;font-weight:600;font-size:15px;text-decoration:none}
   .sitenav .links a:hover{color:#D9A0AC}
@@ -123,7 +123,7 @@
 <body>
 <nav class="sitenav">
   <div class="wrap">
-    <a href="/"><img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png" alt="LeadPages"></a>
+    <a href="/"><span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span></a>
     <div class="links">
       <a href="/#how">How it works</a>
       <a href="/#platform">The platform</a>
@@ -479,7 +479,7 @@ $('progManage').onclick=function(){ window.location.href='/manage'; };
 <footer class="sitefoot">
   <div class="wrap">
     <div>
-      <img src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png" alt="LeadPages">
+      <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse role="img" aria-label="LeadPages"></span>
       <div>Smart sites. More leads. Built in Canberra, Australia.</div>
       <div class="abn">Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div>
     </div>

@@ -127,7 +127,7 @@
     drawer.setAttribute('aria-hidden', 'true');
     drawer.innerHTML =
       '<div class="lp-drawer-head">'
-      + '<div class="lp-drawer-brand"><img class="leadpages-logo lp-drawer-logo" data-lp-logo="auto" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665886/leadpages-logo-white.png" alt="LeadPages"><span class="lp-drawer-title">Command Centre</span></div>'
+      + '<div class="lp-drawer-brand"><span class="leadpages-logo lp-drawer-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span><span class="lp-drawer-title">Command Centre</span></div>'
       + '<button type="button" class="lp-drawer-close" id="lp-drawer-close" aria-label="Close menu">&#10005;</button></div>'
       + '<div class="lp-drawer-body" id="lp-admin-drawer-inner"></div>';
 

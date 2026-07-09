@@ -60,7 +60,7 @@ h2{font-size:clamp(28px,4vw,40px);margin:10px 0 14px}
 
 .nav{position:sticky;top:0;z-index:50;background:var(--gum)}
 .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:72px}
-.nav img{height:52px;width:auto}
+.nav .leadpages-logo{height:var(--lp-logo-height,52px);width:auto}
 .nav-links{display:flex;align-items:center;gap:26px}
 .nav-links a{color:#E9EFEA;font-weight:600;font-size:15.5px;border-bottom:2px solid transparent;padding:4px 0}
 .nav-links a:hover{border-color:#D9A0AC}
@@ -147,7 +147,7 @@ h2{font-size:clamp(28px,4vw,40px);margin:10px 0 14px}
 .final .lede{margin:16px auto 30px}
 footer{background:var(--gum);color:#C9D2CC;padding:56px 0 40px;font-size:14.5px}
 footer .wrap{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}
-footer img{height:92px;margin-bottom:14px}
+footer .leadpages-logo{height:var(--lp-logo-height,52px);width:auto;margin-bottom:14px;display:block}
 .f-links{display:flex;gap:26px;flex-wrap:wrap}
 .f-links a{color:#E9EFEA;font-weight:600}
 .f-links a:hover{color:#D9A0AC}
@@ -186,7 +186,7 @@ footer img{height:92px;margin-bottom:14px}
 
 <nav class="nav">
   <div class="wrap">
-    <a href="/"><img class="leadpages-logo" data-lp-logo-ink="light" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png" alt="LeadPages" style="width:450px;max-width:70vw;height:auto"></a>
+    <a href="/"><span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span></a>
     <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">☰</button>
     <div class="nav-links" id="navLinks">
       <a href="/start-your-business">Start your business</a>
@@ -419,7 +419,7 @@ footer img{height:92px;margin-bottom:14px}
 <footer>
   <div class="wrap">
     <div>
-      <img class="leadpages-logo" data-lp-logo-ink="light" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png" alt="LeadPages" style="width:450px;max-width:70vw;height:auto">
+      <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span>
       <div>Smart sites. More leads.<br>Built in Canberra, Australia.</div>
       <div class="abn">Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div>
     </div>

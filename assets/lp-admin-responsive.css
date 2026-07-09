@@ -74,8 +74,10 @@
   flex: 0 0 auto;
   text-decoration: none;
 }
-.lp-shell-logo-link img {
-  height: 153px;
+.lp-shell-logo-link img,
+.lp-shell-logo-link .lp-logo-wrap,
+.lp-shell-logo-link .leadpages-logo {
+  height: var(--lp-logo-height, 52px);
   width: auto;
   display: block;
 }
@@ -210,7 +212,7 @@ body.lp-drawer-open .lp-admin-drawer {
   min-width: 0;
 }
 .lp-drawer-logo {
-  height: 108px;
+  height: var(--lp-logo-height, 52px);
   width: auto;
   display: block;
   flex: 0 0 auto;
@@ -653,7 +655,7 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     border-bottom: 1px solid var(--border);
   }
   .lp-drawer-logo {
-    height: 120px;
+    height: var(--lp-logo-height, 52px);
   }
   .lp-drawer-body {
     padding: 16px 16px 28px;
@@ -1107,9 +1109,6 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-  #lp-landing .leadpages-logo {
-    height: 300px !important;
-  }
   .lp-instrument-stats {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -1235,8 +1234,9 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   min-height: 56px;
   padding: 8px 16px;
 }
-.lp-admin-topbar .lp-admin-topbar-logo img {
-  height: 40px;
+.lp-admin-topbar .lp-admin-topbar-logo img,
+.lp-admin-topbar .lp-admin-topbar-logo .leadpages-logo {
+  height: var(--lp-logo-height, 52px);
   width: auto;
   display: block;
 }
@@ -1332,8 +1332,9 @@ body.lp-admin-nav-open {
   .lp-admin-topbar-drawer {
     display: block;
   }
-  .lp-admin-topbar .lp-admin-topbar-logo img {
-    height: 36px;
+  .lp-admin-topbar .lp-admin-topbar-logo img,
+  .lp-admin-topbar .lp-admin-topbar-logo .leadpages-logo {
+    height: var(--lp-logo-height, 52px);
   }
 }
 
