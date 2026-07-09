@@ -12,6 +12,12 @@ async function getUser(req){
 }
 function slugify(s){ return String(s||'').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,32)||'web'; }
 async function uniqueSlug(base){ let slug=base,i=1; for(;;){ const r=await admin.from('sites').select('id').eq('slug',slug).maybeSingle(); if(!r.data) return slug; i+=1; slug=base+'-'+i; if(i>60) return base+'-'+Date.now().toString(36); } }
+function readBody(req){
+  return new Promise((resolve)=>{
+    if(req.body){ if(typeof req.body==='string'){ try{ return resolve(JSON.parse(req.body)); }catch{ return resolve({}); } } return resolve(req.body); }
+    let raw=''; req.on('data',c=>raw+=c); req.on('end',()=>{ try{ resolve(raw?JSON.parse(raw):{}); }catch{ resolve({}); } }); req.on('error',()=>resolve({}));
+  });
+}
 
 module.exports = async (req,res) => {
   if(req.method!=='POST') return res.status(405).json({ ok:false, error:'POST only' });
@@ -21,11 +27,27 @@ module.exports = async (req,res) => {
   if(!partner) return res.status(403).json({ ok:false, error:'not a partner' });
   if(partner.status!=='active') return res.status(403).json({ ok:false, error:'partner account is '+partner.status });
 
+  const b=await readBody(req);
+  const themeId=String((b&&b.themeId)||'').trim();
+  let theme=null;
+  if(themeId){
+    const t=(await admin.from('partner_themes').select('config').eq('id',themeId).eq('partner_id',partner.id).maybeSingle()).data;
+    if(t&&t.config&&t.config.theme) theme=t.config.theme;
+  }
+
   // Existing home?
   const ex=await admin.from('sites')
     .select('id,slug,business_name,status,is_partner_home')
     .eq('servicing_partner_id',partner.id).eq('is_partner_home',true).maybeSingle();
-  if(ex.data) return res.status(200).json({ ok:true, site:ex.data, created:false });
+  if(ex.data){
+    if(theme){
+      const cur=(await admin.from('sites').select('config').eq('id',ex.data.id).maybeSingle()).data;
+      const hc=(cur&&cur.config)||{};
+      hc.theme=Object.assign({},hc.theme||{},theme);
+      await admin.from('sites').update({ config:hc, updated_at:new Date().toISOString() }).eq('id',ex.data.id);
+    }
+    return res.status(200).json({ ok:true, site:ex.data, created:false });
+  }
 
   const name=(partner.display_name||'My Web Design').trim();
   const slug=await uniqueSlug(slugify(name)+'-home');
@@ -47,6 +69,7 @@ module.exports = async (req,res) => {
       ]
     }
   };
+  if(theme) row.config.theme=theme;
   try{
     const ins=await admin.from('sites').insert(row).select('id,slug,business_name,status,is_partner_home').single();
     if(ins.error||!ins.data) return res.status(500).json({ ok:false, error:'Could not create your homepage. Please try again.' });
