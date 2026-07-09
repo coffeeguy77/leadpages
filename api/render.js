@@ -17,6 +17,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
+const { effectiveDemoSalePrice } = require('../lib/partner-demo-pricing');
 const brokerTpl   = require('../broker.template.json');     // broker-leads
 const tradeTpl    = require('../trade.template.json');      // trade
 const agencyTpl   = require('../agency.template.json');     // partner web-studio homepage
@@ -779,8 +780,15 @@ module.exports = async (req, res) => {
     }
 
     // Self-signup buy bar: only on an unsold, priced demo that belongs to a partner.
-    if (site.is_mockup && Number(site.sale_price) > 0 && (site.servicing_partner_id || site.referring_partner_id)) {
-      try { const _bp = await buyPlans(site); html = injectBuyBar(html, buyBarHtml(site, _bp.plans, _bp.def)); } catch (e) { console.error('buy bar error:', e && e.message); }
+    if (site.is_mockup && (site.servicing_partner_id || site.referring_partner_id)) {
+      try {
+        const salePrice = effectiveDemoSalePrice(site);
+        if (salePrice > 0) {
+          const siteForBar = Object.assign({}, site, { sale_price: salePrice });
+          const _bp = await buyPlans(siteForBar);
+          html = injectBuyBar(html, buyBarHtml(siteForBar, _bp.plans, _bp.def));
+        }
+      } catch (e) { console.error('buy bar error:', e && e.message); }
     }
 
     html = injectVisitorAccessibility(html, cfg);
