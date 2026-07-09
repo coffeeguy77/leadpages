@@ -218,8 +218,8 @@
       if (el !== wrap && el.parentNode) el.parentNode.replaceChild(wrap, el);
       wrap.dataset.lpLogoMounted = 'true';
       if (isMarketingHost()) {
-        wrap.style.width = '900px';
-        wrap.style.maxWidth = 'min(900px, 70vw)';
+        wrap.style.width = '450px';
+        wrap.style.maxWidth = 'min(450px, 70vw)';
         wrap.style.height = 'auto';
         if (!el.getAttribute('data-lp-logo-ink') || el.getAttribute('data-lp-logo-ink') === 'auto') {
           applyTokens(wrap, { accent: tokens.accent, ink: '#f3f6fa' });
