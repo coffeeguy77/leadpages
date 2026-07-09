@@ -56,13 +56,6 @@
     return !!global.document.querySelector('.wrap .adminnav');
   }
 
-  function workspacePulseBg() {
-    var root = global.document && global.document.documentElement;
-    if (!root || !global.getComputedStyle) return '#f6f4ef';
-    var bg = global.getComputedStyle(root).getPropertyValue('--bg').trim();
-    return bg || '#f6f4ef';
-  }
-
   function logoTokens(opts) {
     opts = opts || {};
     var theme = opts.theme || resolvedWorkspaceTheme();
@@ -105,10 +98,11 @@
 
   function shouldPulse(el, opts) {
     if (opts && opts.pulse === false) return false;
+    if (el && el.getAttribute('data-lp-logo-pulse') === 'false') return false;
     if (opts && opts.pulse === true) return true;
     if (el && el.hasAttribute('data-lp-logo-pulse')) return true;
     if (el && el.classList && el.classList.contains('lp-logo-pulse')) return true;
-    return false;
+    return true;
   }
 
   function wrapFromElement(el) {
@@ -133,9 +127,7 @@
   function applyTokens(wrap, tokens) {
     wrap.style.setProperty('--lp-logo-accent', tokens.accent);
     wrap.style.setProperty('--lp-logo-ink', tokens.ink);
-    if (isAdminWorkspace()) {
-      wrap.style.setProperty('--lp-logo-pulse-bg', 'transparent');
-    }
+    wrap.style.setProperty('--lp-logo-pulse-bg', 'transparent');
   }
 
   function inkFromSrc(el) {
@@ -218,9 +210,6 @@
       if (el !== wrap && el.parentNode) el.parentNode.replaceChild(wrap, el);
       wrap.dataset.lpLogoMounted = 'true';
       if (isMarketingHost()) {
-        wrap.style.width = '450px';
-        wrap.style.maxWidth = 'min(450px, 70vw)';
-        wrap.style.height = 'auto';
         if (!el.getAttribute('data-lp-logo-ink') || el.getAttribute('data-lp-logo-ink') === 'auto') {
           applyTokens(wrap, { accent: tokens.accent, ink: '#f3f6fa' });
         }
@@ -247,7 +236,6 @@
     if (!global.document) return;
     var theme = resolvedWorkspaceTheme();
     var tokens = logoTokens({ theme: theme, inkMode: isAdminWorkspace() ? 'workspace' : null });
-    if (isAdminWorkspace()) tokens.pulseBg = 'transparent';
     var root = global.document.documentElement;
     root.style.setProperty('--lp-logo-accent', tokens.accent);
     root.style.setProperty('--lp-logo-ink', tokens.ink);

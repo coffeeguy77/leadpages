@@ -84,7 +84,7 @@
 
 .lp-p-logo-link .lp-logo-wrap,
 .lp-p-logo-link .leadpages-logo {
-  height: 108px;
+  height: var(--lp-logo-height, 52px);
   width: auto;
 }
 

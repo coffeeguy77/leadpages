@@ -26,7 +26,7 @@ a{color:var(--brand);text-decoration:none;font-weight:600}
 /* topbar */
 .topbar{background:var(--brand)}
 .topbar .inner{max-width:880px;margin:0 auto;padding:0 22px;display:flex;align-items:center;gap:14px;height:62px}
-.topbar img{height:40px;width:auto}
+.topbar .leadpages-logo{height:var(--lp-logo-height,52px);width:auto;display:block}
 .topbar .sp{flex:1}
 .topbar button,.topbar a{color:#E9EFEA;font-size:13.5px;font-weight:600;background:none;border:0;cursor:pointer;font-family:var(--body)}
 .topbar button:hover,.topbar a:hover{color:#D9A0AC}
@@ -112,7 +112,7 @@ label{display:block;font-size:12px;font-weight:800;color:var(--soft);margin:12px
 
 <div class="topbar">
   <div class="inner">
-    <img class="leadpages-logo" data-lp-logo="auto" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782665886/leadpages-logo-white.png" alt="LeadPages">
+    <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span>
     <span class="sp"></span>
     <span id="top-who" style="color:#C9D2CC;font-size:13.5px"></span>
     <button id="top-signout" class="hidden">Sign out</button>

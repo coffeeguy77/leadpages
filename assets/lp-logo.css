@@ -1,10 +1,16 @@
 /**
  * LeadPages universal SVG logo — sizing, theming, ring pulse.
  */
+:root {
+  --lp-logo-height: 52px;
+}
+
 .lp-logo-wrap {
   display: inline-block;
   vertical-align: middle;
   line-height: 0;
+  height: var(--lp-logo-height);
+  width: auto;
   --lp-logo-accent: #2ecc8f;
   --lp-logo-ink: #13161b;
   --lp-logo-pulse-bg: transparent;
@@ -17,31 +23,30 @@
   max-width: 100%;
 }
 
-/* Default heights when no inline height is set */
 .leadpages-logo.lp-logo-wrap:not([style*="height"]) {
-  height: 120px;
+  height: var(--lp-logo-height);
 }
 
 .lp-shell-logo.lp-logo-wrap {
-  height: 153px;
+  height: var(--lp-logo-height);
 }
 
 #lp-landing .leadpages-logo.lp-logo-wrap {
-  height: 360px;
+  height: var(--lp-logo-height);
 }
 
 .wrap > .leadpages-logo.lp-logo-wrap:not(.lp-shell-logo) {
-  height: 216px;
+  height: var(--lp-logo-height);
 }
 
-/* Marketing site — large white logo on dark chrome */
+/* Marketing site — light ink on dark chrome */
 .nav .lp-logo-wrap,
-.nav img.leadpages-logo,
+.nav .leadpages-logo,
 footer .lp-logo-wrap,
-footer img.leadpages-logo {
-  width: 450px !important;
-  max-width: min(450px, 70vw) !important;
-  height: auto !important;
+footer .leadpages-logo {
+  width: auto !important;
+  max-width: none !important;
+  height: var(--lp-logo-height) !important;
   --lp-logo-ink: #f3f6fa;
   --lp-logo-pulse-bg: transparent;
 }
@@ -72,18 +77,18 @@ footer img.leadpages-logo {
   10%,
   76%,
   100% {
-    fill: var(--lp-logo-pulse-bg, transparent);
+    fill: transparent;
     filter: drop-shadow(0 0 0 transparent);
   }
 
   /* Phase 2 — inner fill fades in, glow barely starting */
   15% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, transparent) 55%, var(--lp-logo-accent, #2ecc8f));
+    fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 45%, transparent);
     filter: drop-shadow(0 0 0 transparent);
   }
 
   19% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, transparent) 20%, var(--lp-logo-accent, #2ecc8f));
+    fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 80%, transparent);
     filter:
       drop-shadow(0 0 2px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 16%, transparent))
       drop-shadow(0 0 5px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 8%, transparent));
@@ -130,27 +135,27 @@ footer img.leadpages-logo {
 
   /* Phase 6 — fill + glow fade out together */
   58% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, transparent) 25%, var(--lp-logo-accent, #2ecc8f));
+    fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 75%, transparent);
     filter:
       drop-shadow(0 0 1px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 8%, transparent))
       drop-shadow(0 0 3px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 4%, transparent));
   }
 
   64% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, transparent) 55%, var(--lp-logo-accent, #2ecc8f));
+    fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 45%, transparent);
     filter:
       drop-shadow(0 0 1px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 4%, transparent))
       drop-shadow(0 0 2px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 2%, transparent));
   }
 
   70% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, transparent) 85%, var(--lp-logo-accent, #2ecc8f));
+    fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 15%, transparent);
     filter: drop-shadow(0 0 0 transparent);
   }
 
   /* Phase 7 — rest on background */
   73% {
-    fill: var(--lp-logo-pulse-bg, transparent);
+    fill: transparent;
     filter: drop-shadow(0 0 0 transparent);
   }
 }
@@ -161,33 +166,33 @@ footer img.leadpages-logo {
   30%,
   76%,
   100% {
-    fill: var(--lp-logo-pulse-bg, transparent);
+    fill: transparent;
     filter: drop-shadow(0 0 0 transparent);
   }
 
   /* Phases 2–3 — outer waits, no glow yet */
   32% {
-    fill: var(--lp-logo-pulse-bg, transparent);
+    fill: transparent;
     filter: drop-shadow(0 0 0 transparent);
   }
 
   /* Phase 4 — outer fill + glow rise as inner hands off */
   36% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, transparent) 55%, var(--lp-logo-accent, #2ecc8f));
+    fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 45%, transparent);
     filter:
       drop-shadow(0 0 1px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 8%, transparent))
       drop-shadow(0 0 3px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 4%, transparent));
   }
 
   40% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, transparent) 20%, var(--lp-logo-accent, #2ecc8f));
+    fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 80%, transparent);
     filter:
       drop-shadow(0 0 3px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 24%, transparent))
       drop-shadow(0 0 8px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 12%, transparent));
   }
 
   44% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, transparent) 8%, var(--lp-logo-accent, #2ecc8f));
+    fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 92%, transparent);
     filter:
       drop-shadow(0 0 4px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 38%, transparent))
       drop-shadow(0 0 10px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 20%, transparent));
@@ -210,21 +215,21 @@ footer img.leadpages-logo {
 
   /* Phase 6 — fill + glow fade out together */
   58% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, transparent) 25%, var(--lp-logo-accent, #2ecc8f));
+    fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 75%, transparent);
     filter:
       drop-shadow(0 0 5px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 48%, transparent))
       drop-shadow(0 0 11px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 24%, transparent));
   }
 
   64% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, transparent) 55%, var(--lp-logo-accent, #2ecc8f));
+    fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 45%, transparent);
     filter:
       drop-shadow(0 0 3px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 22%, transparent))
       drop-shadow(0 0 7px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 10%, transparent));
   }
 
   70% {
-    fill: color-mix(in srgb, var(--lp-logo-pulse-bg, transparent) 85%, var(--lp-logo-accent, #2ecc8f));
+    fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 15%, transparent);
     filter:
       drop-shadow(0 0 1px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 6%, transparent))
       drop-shadow(0 0 2px color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 3%, transparent));
@@ -232,7 +237,7 @@ footer img.leadpages-logo {
 
   /* Phase 7 — rest on background */
   73% {
-    fill: var(--lp-logo-pulse-bg, transparent);
+    fill: transparent;
     filter: drop-shadow(0 0 0 transparent);
   }
 }
@@ -254,7 +259,15 @@ html[data-lp-visitor-motion="reduced"] .lp-logo-pulse #inner-circle {
 
 /* Footer strip logo */
 .lp-foot-logo.lp-logo-wrap {
-  height: 90px;
+  height: var(--lp-logo-height);
+}
+
+/* Mobile /manage site picker — larger hero logo only */
+@media (max-width: 767px) {
+  #lp-landing .leadpages-logo,
+  #lp-landing .leadpages-logo.lp-logo-wrap {
+    height: 264px !important;
+  }
 }
 
 /* Marketing / dark header variants */
