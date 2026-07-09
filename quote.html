@@ -189,6 +189,13 @@
     if(isPaid){ html += '<div class="paid">&#10003; Accepted &amp; paid — your site is being set live. Check your email for your sign-in link.</div>'; }
     if(q.job_description){ html += '<p class="desc">'+esc(q.job_description)+'</p>'; }
     if(feats){ html += '<p style="font-weight:700;margin:0 0 8px;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--soft)">What\'s included</p><ul class="feats">'+feats+'</ul>'; }
+    if(q.offer_active && q.offer_discount_pct){
+      html += '<div style="background:linear-gradient(135deg,#FFF6F0,#FFE8D8);border:1px solid #F0D4C4;border-radius:14px;padding:16px 18px;margin:0 0 18px;text-align:center">';
+      html += '<div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#B8471A;margin-bottom:6px">Limited-time offer</div>';
+      html += '<div style="font-size:15px;margin-bottom:10px">Save <strong>'+esc(q.offer_discount_pct)+'%</strong> — now <strong>'+aud(q.offer_price)+'</strong> <span style="text-decoration:line-through;color:var(--soft)">'+aud(q.price)+'</span></div>';
+      html += '<a class="btn primary" href="/offer?t='+encodeURIComponent(token)+'" style="display:inline-block;flex:0;min-width:200px;background:#D85A28;border-color:#D85A28">View offer &amp; buy now</a>';
+      html += '</div>';
+    }
     html += '<div class="pricebox"><span class="lbl">One-off build</span><span class="amt">'+aud(q.price)+'</span></div>';
     html += '<p class="mo">+ monthly hosting, set up at checkout</p>';
     html += '<div class="btns">';

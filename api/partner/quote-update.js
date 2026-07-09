@@ -4,6 +4,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const { applyOfferToRow, publicOfferFields, clampDiscount } = require('../../lib/quote-offer');
 const FROM = process.env.LEADS_FROM || 'leadpages <noreply@leadpages.webculture.au>';
 
 function readBody(req) {
@@ -41,17 +42,26 @@ async function getUser(req) {
 
 function fmtAUD(cents) { return '$' + (Math.round(cents) / 100).toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
 
-async function emailClient(quote, partner, url, isUpdate) {
+async function emailClient(quote, partner, url, isUpdate, offerUrl) {
   const key = process.env.RESEND_API_KEY;
   if (!key || !quote.email) return;
   const feat = (quote.features || []).map((f) => `<li style="margin:3px 0">${esc(f)}</li>`).join('');
   const who = esc(partner.display_name || 'your web provider');
   const heading = isUpdate ? 'Your website quote has been updated' : 'Your website quote';
+  const offer = publicOfferFields(quote);
+  const offerBlock = offer.offer_active && offerUrl
+    ? `<div style="background:#fff4ec;border:1px solid #ffd4b8;border-radius:12px;padding:14px 16px;margin:0 0 18px">` +
+      `<div style="font-size:12px;color:#a64b12;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Limited-time offer</div>` +
+      `<p style="margin:8px 0 10px;line-height:1.5">Save <strong>${clampDiscount(quote.offer_discount_pct)}%</strong> — buy before the countdown ends.</p>` +
+      `<a href="${esc(offerUrl)}" style="display:inline-block;background:#ff6a1a;color:#fff;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:10px">Claim offer — ${fmtAUD(offer.offer_price)}</a>` +
+      `</div>`
+    : '';
   const html =
     `<div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#1a1f2b">` +
     `<h2 style="font-family:Archivo,system-ui;margin:0 0 4px">${heading}</h2>` +
     `<p style="color:#566;margin:0 0 18px">From ${who} &middot; for ${esc(quote.business_name || '')}</p>` +
     (isUpdate ? `<p style="margin:0 0 14px;line-height:1.5;color:#566">Your provider has revised this quote — review the updated details below.</p>` : '') +
+    offerBlock +
     (quote.job_description ? `<p style="margin:0 0 14px;line-height:1.5">${esc(quote.job_description)}</p>` : '') +
     (feat ? `<p style="font-weight:600;margin:0 0 4px">What's included</p><ul style="margin:0 0 16px;padding-left:20px;line-height:1.5">${feat}</ul>` : '') +
     `<div style="background:#f4f6f9;border-radius:12px;padding:16px 18px;margin:0 0 20px">` +
@@ -115,21 +125,34 @@ module.exports = async (req, res) => {
     status: existing.status === 'draft' ? 'sent' : (existing.status || 'sent'),
     updated_at: new Date().toISOString(),
   };
+  if (b.offerEnabled === true || b.offer_enabled === true) {
+    applyOfferToRow(row, true, b.offerDiscountPct || b.offer_discount_pct || existing.offer_discount_pct || 20, b.offerHours || b.offer_hours || existing.offer_hours || 72);
+  } else if (b.offerEnabled === false || b.offer_enabled === false) {
+    applyOfferToRow(row, false);
+  } else {
+    row.offer_discount_pct = existing.offer_discount_pct;
+    row.offer_hours = existing.offer_hours;
+    row.offer_started_at = existing.offer_started_at;
+    row.offer_expires_at = existing.offer_expires_at;
+  }
 
   const upd = await admin.from('partner_quotes').update(row).eq('id', existing.id).select('*').single();
   if (upd.error || !upd.data) return res.status(500).json({ ok: false, error: 'Could not update the quote. Please try again.' });
 
   const host = (req.headers['x-forwarded-host'] || req.headers.host || 'leadpages.com.au').split(',')[0].trim();
-  const url = 'https://' + host.replace(/\/+$/, '') + '/quote?t=' + quoteToken;
+  const base = 'https://' + host.replace(/\/+$/, '');
+  const url = base + '/quote?t=' + quoteToken;
+  const offerUrl = publicOfferFields(upd.data).offer_active ? (base + '/offer?t=' + quoteToken) : null;
 
   const resend = b.resendEmail !== false;
   const prof = (await admin.from('partner_profiles').select('support_email').eq('partner_id', partner.id).maybeSingle()).data || {};
-  if (resend) await emailClient(upd.data, { display_name: partner.display_name, support_email: prof.support_email }, url, true);
+  if (resend) await emailClient(upd.data, { display_name: partner.display_name, support_email: prof.support_email }, url, true, offerUrl);
 
   return res.status(200).json({
     ok: true,
     quote: upd.data,
     url,
+    offerUrl,
     emailed: !!(resend && process.env.RESEND_API_KEY && row.email),
   });
 };

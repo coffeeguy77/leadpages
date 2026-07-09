@@ -98,6 +98,10 @@
       "destination": "/quote.html"
     },
     {
+      "source": "/offer",
+      "destination": "/offer.html"
+    },
+    {
       "source": "/help",
       "destination": "/help.html"
     },

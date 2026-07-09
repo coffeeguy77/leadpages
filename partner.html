@@ -518,6 +518,16 @@
                 <div style="font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-soft)">Commission preview</div>
                 <div id="q-commission" class="muted" style="font-size:13.5px;margin-top:8px">Enter a price and choose a hosting plan to see earnings.</div>
               </div>
+              <div class="lp-quote-offer-box card" style="padding:14px 14px;background:color-mix(in srgb,var(--accent) 4%,var(--panel-soft));border-color:color-mix(in srgb,var(--accent) 18%,var(--border));box-shadow:none;margin:0 0 14px">
+                <label class="lp-quote-offer-toggle" style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-weight:700">
+                  <input type="checkbox" id="q-offer-on" style="margin-top:3px">
+                  <span>Limited-time buy-now offer <span class="muted" style="font-weight:500;display:block;font-size:12.5px;margin-top:2px">Client gets an /offer link with a live countdown (e.g. save 20% within 72 hours).</span></span>
+                </label>
+                <div id="q-offer-fields" class="lp-quote-offer-fields" hidden style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                  <div class="field" style="margin:0"><label for="q-offer-pct">Discount (%)</label><input id="q-offer-pct" type="number" min="1" max="50" step="1" value="20" class="tin"></div>
+                  <div class="field" style="margin:0"><label for="q-offer-hours">Window (hours)</label><input id="q-offer-hours" type="number" min="1" max="168" step="1" value="72" class="tin"></div>
+                </div>
+              </div>
               <div class="save-row"><button class="btn btn-brand" id="q-create">Create &amp; send quote</button><button type="button" class="btn" id="q-cancel-edit" style="display:none">Cancel edit</button><span class="saved" id="q-saved">Sent ✓</span></div>
               <div id="q-edit-banner" class="lp-quote-edit-banner" hidden>Editing quote — save changes to update the offer sent to your client.</div>
               <div id="q-msg" class="muted" style="font-size:13.5px;margin-top:10px"></div>
@@ -525,6 +535,23 @@
           </div>
         </div>
         <h3 style="font-family:var(--font-display);font-size:17px;margin:24px 0 10px">Sent quotes</h3>
+        <div id="q-offer-modal" class="lp-quote-offer-modal" hidden>
+          <div class="lp-quote-offer-modal-card card">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px">
+              <strong style="font-family:var(--font-display)">Start offer link</strong>
+              <button type="button" class="btn" id="q-offer-modal-x" style="padding:4px 10px">&times;</button>
+            </div>
+            <p class="muted" style="font-size:13px;margin:0 0 12px">Creates a buy-now page with a live countdown. Discount applies at checkout until the timer ends.</p>
+            <div class="lp-grid-2" style="gap:10px">
+              <div class="field" style="margin:0"><label for="q-offer-modal-pct">Save (%)</label><input id="q-offer-modal-pct" type="number" min="1" max="50" value="20" class="tin"></div>
+              <div class="field" style="margin:0"><label for="q-offer-modal-hours">Within (hours)</label><input id="q-offer-modal-hours" type="number" min="1" max="168" value="72" class="tin"></div>
+            </div>
+            <div class="save-row" style="margin-top:14px">
+              <button type="button" class="btn btn-brand" id="q-offer-modal-go">Create offer link</button>
+            </div>
+            <div id="q-offer-modal-msg" class="muted" style="font-size:13px;margin-top:10px"></div>
+          </div>
+        </div>
         <div id="q-list" class="muted">No quotes yet.</div>
       </section>
 
@@ -1472,6 +1499,13 @@
     document.getElementById('q-addphone').addEventListener('click', function(){ addPhoneRow(''); });
     document.getElementById('q-addfeat').addEventListener('click', function(){ addFeatRow(''); });
     document.getElementById('q-cancel-edit').addEventListener('click', function(){ cancelQuoteEdit(); });
+    var _qOfferOn=document.getElementById('q-offer-on'); if(_qOfferOn) _qOfferOn.addEventListener('change', function(){ var f=document.getElementById('q-offer-fields'); if(f) f.hidden=!this.checked; });
+    var _qOmX=document.getElementById('q-offer-modal-x'); if(_qOmX) _qOmX.addEventListener('click', closeOfferModal);
+    var _qOm=document.getElementById('q-offer-modal'); if(_qOm) _qOm.addEventListener('click', function(e){ if(e.target===_qOm) closeOfferModal(); });
+    var _qOmGo=document.getElementById('q-offer-modal-go'); if(_qOmGo) _qOmGo.addEventListener('click', function(){
+      if(!__qOfferModalToken) return;
+      startQuoteOffer(__qOfferModalToken, parseInt(document.getElementById('q-offer-modal-pct').value,10)||20, parseInt(document.getElementById('q-offer-modal-hours').value,10)||72);
+    });
     document.getElementById('q-price').addEventListener('input', function(){ var d=parseFloat(this.value||'0'); document.getElementById('q-breakdown').innerHTML = d>0 ? demoBreakdown(Math.round(d*100)) : ''; qCommissionPreview(); });
     var _qpl=document.getElementById('q-plan'); if(_qpl) _qpl.addEventListener('change', qCommissionPreview);
     document.getElementById('q-create').addEventListener('click', async function(){
@@ -1486,6 +1520,7 @@
       if(!(priceD>0)){ msg.textContent='Enter a price.'; return; }
       if(window.__lpQuoteTagsTrackSubmit) window.__lpQuoteTagsTrackSubmit();
       var payload={ siteId:siteId, businessName:biz, contactPerson:(document.getElementById('q-contact').value||'').trim(), address:(document.getElementById('q-address').value||'').trim(), email:(document.getElementById('q-email').value||'').trim(), phones:collectList('q-phones'), jobDescription:(document.getElementById('q-desc').value||'').trim(), features:collectList('q-feats'), price:Math.round(priceD*100), planKey:document.getElementById('q-plan').value||'' };
+      Object.assign(payload, collectOfferPayload());
       if(editing) payload.token=window.__qEditToken;
       btn.disabled=true; msg.style.color=''; msg.textContent=editing?'Saving changes\u2026':'Creating\u2026';
       var endpoint=editing?'/api/partner/quote-update':'/api/partner/quote-create';
@@ -1494,10 +1529,10 @@
       if(!res||!res.ok){ msg.style.color='var(--bad)'; msg.textContent=(res&&res.error)||(editing?'Could not update quote.':'Could not create quote.'); return; }
       var qs=document.getElementById('q-saved'); qs.classList.add('show'); setTimeout(function(){ qs.classList.remove('show'); },1700);
       if(editing){
-        msg.style.color=''; msg.innerHTML='Quote updated'+(res.emailed?' and emailed to the client':'')+'. Link: <a href="'+esc(res.url)+'" target="_blank" rel="noopener">'+esc(res.url)+'</a>';
+        msg.style.color=''; msg.innerHTML='Quote updated'+(res.emailed?' and emailed to the client':'')+'. Link: <a href="'+esc(res.url)+'" target="_blank" rel="noopener">'+esc(res.url)+'</a>'+(res.offerUrl?' &middot; Offer: <a href="'+esc(res.offerUrl)+'" target="_blank" rel="noopener">'+esc(res.offerUrl)+'</a>':'');
         cancelQuoteEdit();
       } else {
-        msg.style.color=''; msg.innerHTML='Quote created'+(res.emailed?' and emailed to the client':'')+'. Link: <a href="'+esc(res.url)+'" target="_blank" rel="noopener">'+esc(res.url)+'</a>';
+        msg.style.color=''; msg.innerHTML='Quote created'+(res.emailed?' and emailed to the client':'')+'. Link: <a href="'+esc(res.url)+'" target="_blank" rel="noopener">'+esc(res.url)+'</a>'+(res.offerUrl?' &middot; Offer: <a href="'+esc(res.offerUrl)+'" target="_blank" rel="noopener">'+esc(res.offerUrl)+'</a>':'');
         resetQuoteForm();
       }
       loadQuotes();
@@ -1979,11 +2014,25 @@
   function addFeatRow(v){ addRow('q-feats','e.g. Online booking form', v); }
   function collectList(id){ var out=[]; var c=document.getElementById(id); if(!c) return out; c.querySelectorAll('input').forEach(function(i){ var v=(i.value||'').trim(); if(v) out.push(v); }); return out; }
 
+  function collectOfferPayload(){
+    var onEl=document.getElementById('q-offer-on');
+    if(!onEl || !onEl.checked) return { offerEnabled:false };
+    return {
+      offerEnabled:true,
+      offerDiscountPct:parseInt(document.getElementById('q-offer-pct').value,10)||20,
+      offerHours:parseInt(document.getElementById('q-offer-hours').value,10)||72
+    };
+  }
+
   function resetQuoteForm(){
     ['q-biz','q-contact','q-address','q-email','q-desc','q-price'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
     var phones=document.getElementById('q-phones'); if(phones){ phones.innerHTML=''; addPhoneRow(''); }
     var feats=document.getElementById('q-feats'); if(feats){ feats.innerHTML=''; addFeatRow(''); }
     var bd=document.getElementById('q-breakdown'); if(bd) bd.innerHTML='';
+    var onEl=document.getElementById('q-offer-on'); if(onEl){ onEl.checked=false; }
+    var of=document.getElementById('q-offer-fields'); if(of) of.hidden=true;
+    var pct=document.getElementById('q-offer-pct'); if(pct) pct.value='20';
+    var hrs=document.getElementById('q-offer-hours'); if(hrs) hrs.value='72';
     try{ qCommissionPreview(); }catch(_e){}
   }
 
@@ -2018,6 +2067,13 @@
     document.getElementById('q-desc').value=q.job_description||'';
     document.getElementById('q-price').value=q.price?String(Math.round(q.price)/100):'';
     if(document.getElementById('q-plan') && q.plan_key) document.getElementById('q-plan').value=q.plan_key;
+    var onEl=document.getElementById('q-offer-on');
+    var of=document.getElementById('q-offer-fields');
+    var liveOffer=q.offer_expires_at && q.offer_discount_pct && new Date(q.offer_expires_at).getTime()>Date.now();
+    if(onEl){ onEl.checked=!!(q.offer_discount_pct||liveOffer); }
+    if(of) of.hidden=!(onEl&&onEl.checked);
+    if(document.getElementById('q-offer-pct')) document.getElementById('q-offer-pct').value=q.offer_discount_pct||20;
+    if(document.getElementById('q-offer-hours')) document.getElementById('q-offer-hours').value=q.offer_hours||72;
     var phones=document.getElementById('q-phones'); phones.innerHTML='';
     var ph=(q.phones&&q.phones.length)?q.phones:[''];
     ph.forEach(function(p){ addPhoneRow(p); });
@@ -2050,8 +2106,53 @@
     return '<span class="lp-quote-view lp-quote-view--seen">Client viewed '+esc(when)+extra+' — follow up?</span>';
   }
 
-  var QUOTE_LIST_COLS='token,site_id,business_name,contact_person,address,email,phones,job_description,features,price,plan_key,status,created_at,client_viewed_at,client_last_viewed_at,client_view_count';
-  var QUOTE_LIST_COLS_FALLBACK='token,site_id,business_name,contact_person,address,email,phones,job_description,features,price,plan_key,status,created_at';
+  var QUOTE_LIST_COLS='token,site_id,business_name,contact_person,address,email,phones,job_description,features,price,plan_key,status,created_at,client_viewed_at,client_last_viewed_at,client_view_count,offer_discount_pct,offer_hours,offer_started_at,offer_expires_at';
+  var QUOTE_LIST_COLS_FALLBACK='token,site_id,business_name,contact_person,address,email,phones,job_description,features,price,plan_key,status,created_at,client_viewed_at,client_last_viewed_at,client_view_count';
+
+  function offerUrl(token){ return location.origin+'/offer?t='+encodeURIComponent(token); }
+
+  function isOfferLive(q){
+    if(!q||!q.offer_expires_at||!q.offer_discount_pct) return false;
+    return new Date(q.offer_expires_at).getTime()>Date.now();
+  }
+
+  function offerStatusHtml(q){
+    if(!q.offer_discount_pct) return '';
+    if(isOfferLive(q)){
+      return '<span class="lp-quote-offer-live">Save '+esc(q.offer_discount_pct)+'% offer active &middot; ends '+esc(fmtQuoteDt(q.offer_expires_at))+'</span>';
+    }
+    if(q.offer_expires_at) return '<span class="lp-quote-offer-ended">Offer ended</span>';
+    return '';
+  }
+
+  var __qOfferModalToken='';
+  function openOfferModal(token){
+    __qOfferModalToken=token||'';
+    var m=document.getElementById('q-offer-modal'); if(!m) return;
+    m.hidden=false;
+    var msg=document.getElementById('q-offer-modal-msg'); if(msg) msg.textContent='';
+  }
+  function closeOfferModal(){
+    __qOfferModalToken='';
+    var m=document.getElementById('q-offer-modal'); if(m) m.hidden=true;
+  }
+  async function startQuoteOffer(token, pct, hours){
+    var msg=document.getElementById('q-offer-modal-msg');
+    var btn=document.getElementById('q-offer-modal-go');
+    if(btn) btn.disabled=true;
+    if(msg){ msg.style.color=''; msg.textContent='Creating offer link\u2026'; }
+    var res;
+    try{
+      var r=await fetch('/api/partner/quote-offer',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify({token:token,discountPct:pct,hours:hours})});
+      res=await r.json();
+    }catch(_e){ res={ok:false,error:'Network error.'}; }
+    if(btn) btn.disabled=false;
+    if(!res||!res.ok){ if(msg){ msg.style.color='var(--bad)'; msg.textContent=(res&&res.error)||'Could not create offer.'; } return; }
+    closeOfferModal();
+    loadQuotes();
+    var qmsg=document.getElementById('q-msg');
+    if(qmsg){ qmsg.style.color=''; qmsg.innerHTML='Offer link ready: <a href="'+esc(res.offerUrl)+'" target="_blank" rel="noopener">'+esc(res.offerUrl)+'</a>'+(res.emailed?' (emailed to client)':''); }
+  }
   function fillQuoteDemoSelect(){
     var sel=document.getElementById('q-site'); if(!sel) return;
     var cur=sel.value;
@@ -2083,20 +2184,25 @@
     box.innerHTML=rows.map(function(q, idx){
       var clientUrl=location.origin+'/quote?t='+encodeURIComponent(q.token);
       var partnerUrl=clientUrl+'&pv=1';
+      var oUrl=offerUrl(q.token);
       var badge=q.status==='paid'?'<span class="statusbadge s-active">Paid</span>':'<span class="statusbadge s-pending">'+esc(q.status||'sent')+'</span>';
       var canEdit=q.status!=='paid';
+      var offerLine=offerStatusHtml(q);
       return '<div class="card lp-quote-sent" style="padding:13px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;justify-content:space-between">'
         +'<div class="lp-quote-sent-main"><div style="font-weight:600">'+esc(q.business_name||'\u2014')+' \u00b7 '+fmtAUD(q.price)+' '+badge+'</div>'
         +'<div class="muted" style="font-size:12.5px;margin-top:3px">'+esc(q.email||'no email on file')+'</div>'
-        +'<div style="margin-top:6px">'+quoteViewHtml(q)+'</div></div>'
+        +'<div style="margin-top:6px">'+quoteViewHtml(q)+(offerLine?('<br>'+offerLine):'')+'</div></div>'
         +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
         +(canEdit?'<button type="button" class="btn" data-qedit="'+idx+'" style="padding:7px 12px">Edit</button>':'')
+        +(canEdit?(isOfferLive(q)?'<button class="btn" data-copy-offer="'+esc(oUrl)+'" style="padding:7px 12px">Copy offer</button><a class="btn" href="'+esc(oUrl+'&pv=1')+'" target="_blank" rel="noopener" style="padding:7px 12px">Offer</a>':'<button type="button" class="btn" data-qoffer="'+esc(q.token)+'" style="padding:7px 12px">Offer link</button>'):'')
         +'<button class="btn" data-copy="'+esc(clientUrl)+'" style="padding:7px 12px">Copy link</button>'
         +'<a class="btn" href="'+esc(partnerUrl)+'" target="_blank" rel="noopener" style="padding:7px 12px">View</a>'
         +'</div></div>';
     }).join('');
     box.querySelectorAll('[data-copy]').forEach(function(b){ b.onclick=function(){ try{ navigator.clipboard.writeText(b.getAttribute('data-copy')); }catch(_e){} b.textContent='Copied!'; setTimeout(function(){ b.textContent='Copy link'; },1400); }; });
+    box.querySelectorAll('[data-copy-offer]').forEach(function(b){ b.onclick=function(){ try{ navigator.clipboard.writeText(b.getAttribute('data-copy-offer')); }catch(_e){} b.textContent='Copied!'; setTimeout(function(){ b.textContent='Copy offer'; },1400); }; });
     box.querySelectorAll('[data-qedit]').forEach(function(b){ b.onclick=function(){ var i=parseInt(b.getAttribute('data-qedit'),10); if(!isNaN(i)&&quotes[i]) loadQuoteIntoForm(quotes[i]); }; });
+    box.querySelectorAll('[data-qoffer]').forEach(function(b){ b.onclick=function(){ openOfferModal(b.getAttribute('data-qoffer')); }; });
     try{ qCommissionPreview(); }catch(_e){}
   }
 
