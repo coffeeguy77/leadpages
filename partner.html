@@ -2106,8 +2106,22 @@
     return '<span class="lp-quote-view lp-quote-view--seen">Client viewed '+esc(when)+extra+' — follow up?</span>';
   }
 
-  var QUOTE_LIST_COLS='token,site_id,business_name,contact_person,address,email,phones,job_description,features,price,plan_key,status,created_at,client_viewed_at,client_last_viewed_at,client_view_count,offer_discount_pct,offer_hours,offer_started_at,offer_expires_at';
-  var QUOTE_LIST_COLS_FALLBACK='token,site_id,business_name,contact_person,address,email,phones,job_description,features,price,plan_key,status,created_at,client_viewed_at,client_last_viewed_at,client_view_count';
+  var QUOTE_LIST_COLS_BASE='token,site_id,business_name,contact_person,address,email,phones,job_description,features,price,plan_key,status,created_at';
+  var QUOTE_LIST_COLS_VIEWS=QUOTE_LIST_COLS_BASE+',client_viewed_at,client_last_viewed_at,client_view_count';
+  var QUOTE_LIST_COLS_OFFERS=QUOTE_LIST_COLS_BASE+',offer_discount_pct,offer_hours,offer_started_at,offer_expires_at';
+  var QUOTE_LIST_COLS_FULL=QUOTE_LIST_COLS_VIEWS+',offer_discount_pct,offer_hours,offer_started_at,offer_expires_at';
+
+  async function selectPartnerQuotes(partnerId){
+    var tries=[QUOTE_LIST_COLS_FULL,QUOTE_LIST_COLS_VIEWS,QUOTE_LIST_COLS_OFFERS,QUOTE_LIST_COLS_BASE];
+    var lastErr=null;
+    for(var i=0;i<tries.length;i++){
+      var qr=await sb.from('partner_quotes').select(tries[i]).eq('partner_id',partnerId).order('created_at',{ascending:false});
+      if(!qr.error) return qr;
+      lastErr=qr.error;
+      if(!/column/i.test(String(qr.error.message||''))) break;
+    }
+    return { error:lastErr, data:null };
+  }
 
   function offerUrl(token){ return location.origin+'/offer?t='+encodeURIComponent(token); }
 
@@ -2172,10 +2186,7 @@
     if(document.getElementById('q-feats') && !document.getElementById('q-feats').children.length) addFeatRow('');
     try{ if(window.LpQuoteTags && state.partner) LpQuoteTags.init(state.partner.id); }catch(_e){}
     var box=document.getElementById('q-list'); if(!box) return;
-    var qr=await sb.from('partner_quotes').select(QUOTE_LIST_COLS).eq('partner_id',state.partner.id).order('created_at',{ascending:false});
-    if(qr.error && /column/i.test(String(qr.error.message||''))){
-      qr=await sb.from('partner_quotes').select(QUOTE_LIST_COLS_FALLBACK).eq('partner_id',state.partner.id).order('created_at',{ascending:false});
-    }
+    var qr=await selectPartnerQuotes(state.partner.id);
     if(qr.error){ box.innerHTML='<span style="color:var(--bad)">Could not load quotes: '+esc(qr.error.message)+'</span>'; return; }
     var rows=(qr.data||[]);
     quotes = rows;
