@@ -25,6 +25,7 @@
 <script src="/assets/lp-partner-shell.js" defer></script>
 <script src="/assets/lp-trade-picker.js" defer></script>
 <script src="/assets/lp-messages-embed.js" defer></script>
+<script src="/assets/lp-quote-tags.js" defer></script>
 </head>
 <body class="lp-partner-page">
 
@@ -1480,6 +1481,7 @@
       if(!siteId){ msg.textContent='Pick which demo this quote is for.'; return; }
       if(!biz){ msg.textContent='Enter the business name.'; return; }
       if(!(priceD>0)){ msg.textContent='Enter a price.'; return; }
+      if(window.__lpQuoteTagsTrackSubmit) window.__lpQuoteTagsTrackSubmit();
       var payload={ siteId:siteId, businessName:biz, contactPerson:(document.getElementById('q-contact').value||'').trim(), address:(document.getElementById('q-address').value||'').trim(), email:(document.getElementById('q-email').value||'').trim(), phones:collectList('q-phones'), jobDescription:(document.getElementById('q-desc').value||'').trim(), features:collectList('q-feats'), price:Math.round(priceD*100), planKey:document.getElementById('q-plan').value||'' };
       btn.disabled=true; msg.style.color=''; msg.textContent='Creating\u2026';
       var res; try{ var r=await fetch('/api/partner/quote-create',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
@@ -1985,6 +1987,7 @@
     }catch(_e){}
     if(document.getElementById('q-phones') && !document.getElementById('q-phones').children.length) addPhoneRow('');
     if(document.getElementById('q-feats') && !document.getElementById('q-feats').children.length) addFeatRow('');
+    try{ if(window.LpQuoteTags && state.partner) LpQuoteTags.init(state.partner.id); }catch(_e){}
     var box=document.getElementById('q-list'); if(!box) return;
     var qr=await sb.from('partner_quotes').select('token,business_name,price,status,email,created_at').eq('partner_id',state.partner.id).order('created_at',{ascending:false});
     if(qr.error){ box.innerHTML='<span style="color:var(--bad)">Could not load quotes: '+esc(qr.error.message)+'</span>'; return; }

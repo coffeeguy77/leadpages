@@ -7,8 +7,6 @@
 <title>Your website quote</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{ --ink:#2E2A2B; --soft:#6E6265; --line:#E4D5CD; --bg:#FAF5F2;
@@ -16,19 +14,20 @@
     --disp:'Young Serif',Georgia,serif; --bodyf:'Figtree',system-ui,sans-serif; }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--bodyf);line-height:1.55;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:620px;margin:0 auto;padding:28px 18px 60px}
-  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px 28px;box-shadow:0 14px 40px rgba(46,42,43,.07)}
+  .wrap{max-width:720px;margin:0 auto;padding:28px 18px 60px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:0;box-shadow:0 18px 48px rgba(46,42,43,.09);overflow:hidden}
+  .card-body{padding:30px 28px 32px}
   .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 6px}
-  h1{font-family:var(--disp);font-size:29px;line-height:1.12;margin:0 0 6px;font-weight:400}
-  .from{color:var(--soft);font-size:14.5px;margin:0 0 22px}
-  .desc{font-size:15px;color:#4A4144;margin:0 0 22px;white-space:pre-wrap}
+  h1{font-family:var(--disp);font-size:clamp(26px,4.5vw,34px);line-height:1.1;margin:0 0 8px;font-weight:400}
+  .from{color:var(--soft);font-size:15px;margin:0 0 22px}
+  .desc{font-size:15.5px;color:#4A4144;margin:0 0 22px;white-space:pre-wrap;line-height:1.6}
   .feats{list-style:none;margin:0 0 24px;padding:0}
-  .feats li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;font-size:15px;border-bottom:1px dashed var(--line)}
+  .feats li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;font-size:15px;border-bottom:1px dashed var(--line)}
   .feats li:last-child{border-bottom:0}
   .tick{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:#F6E7EA;color:var(--accent-d);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin-top:1px}
   .pricebox{background:var(--gum);color:#F3EFEA;border-radius:14px;padding:20px 22px;display:flex;align-items:center;justify-content:space-between;margin:0 0 8px}
   .pricebox .lbl{font-size:13px;color:#C9D2CC}
-  .pricebox .amt{font-family:var(--disp);font-size:30px;font-weight:400;color:#F0C7CF}
+  .pricebox .amt{font-family:var(--disp);font-size:clamp(28px,5vw,36px);font-weight:400;color:#F0C7CF}
   .mo{font-size:13px;color:var(--soft);margin:0 0 22px;text-align:right}
   .btns{display:flex;gap:12px;flex-wrap:wrap}
   .btn{flex:1;min-width:180px;text-align:center;border-radius:999px;padding:15px 18px;font-weight:700;font-size:15.5px;cursor:pointer;border:2px solid var(--line);background:#fff;color:var(--ink);text-decoration:none;display:inline-block;font-family:var(--bodyf)}
@@ -36,22 +35,76 @@
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   .btn.primary:hover{background:var(--accent-d);border-color:var(--accent-d)}
   .btn[disabled]{opacity:.6;cursor:default}
-  .meta{margin:22px 0 0;font-size:13.5px;color:var(--soft)}
-  .meta b{color:var(--ink);font-weight:600}
   .msg{margin:14px 0 0;font-size:14px;text-align:center;min-height:20px}
   .msg.err{color:#B23B3B}
-  .foot{text-align:center;color:var(--soft);font-size:13px;margin:24px 0 0}
+  .foot{text-align:center;color:var(--soft);font-size:14px;margin:24px 0 0;line-height:1.5}
   .foot a{color:var(--accent-d);text-decoration:none;font-weight:600}
   .paid{background:#E4EFE7;border:1px solid #C4DECB;color:#2C6A42;border-radius:12px;padding:14px 16px;font-weight:600;margin:0 0 18px;text-align:center}
   .center{text-align:center;color:var(--soft);padding:60px 0}
   .secure{display:flex;align-items:center;justify-content:center;gap:6px;color:#A79A96;font-size:12.5px;margin:14px 0 0}
-  .partner-hdr{display:flex;gap:14px;align-items:center;margin:0 0 20px;padding-bottom:18px;border-bottom:1px solid var(--line)}
-  .partner-hdr-logo{flex:0 0 auto;width:72px;height:52px;display:flex;align-items:center;justify-content:center}
-  .partner-hdr-logo img{max-height:52px;max-width:72px;width:auto;object-fit:contain;display:block}
-  .partner-hdr-body{min-width:0;flex:1}
-  .partner-hdr-biz{font-weight:700;font-size:16px;margin:0 0 4px;color:var(--ink)}
-  .partner-hdr-contact{font-size:13px;color:var(--soft);line-height:1.45}
+
+  /* Premium partner header */
+  .partner-hdr{
+    display:flex;align-items:stretch;gap:24px;
+    padding:28px 28px 24px;
+    background:linear-gradient(135deg,#F8F2EE 0%,#fff 55%,#F4EFEB 100%);
+    border-bottom:1px solid var(--line);
+  }
+  .partner-hdr-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:10px}
+  .partner-hdr-biz{
+    font-family:var(--disp);
+    font-size:clamp(22px,3.8vw,30px);
+    line-height:1.12;
+    margin:0;
+    color:var(--ink);
+    font-weight:400;
+  }
+  .partner-hdr-contact{
+    display:flex;flex-direction:column;gap:6px;
+    font-size:15px;color:#4A4144;line-height:1.45;
+  }
   .partner-hdr-contact a{color:var(--accent-d);text-decoration:none;font-weight:600}
+  .partner-hdr-contact span{display:block}
+  .partner-hdr-logo{
+    flex:0 0 46%;
+    max-width:280px;
+    min-height:120px;
+    display:flex;align-items:center;justify-content:flex-end;
+    padding:8px 0 8px 12px;
+  }
+  .partner-hdr-logo img{
+    max-height:clamp(88px,18vw,140px);
+    max-width:100%;
+    width:auto;
+    object-fit:contain;
+    display:block;
+  }
+  .partner-trust{
+    display:inline-flex;align-items:center;gap:8px;
+    margin-top:4px;
+    padding:8px 12px;
+    border-radius:999px;
+    background:#EEF5F1;
+    border:1px solid #C8DDD2;
+    color:#2F5E4A;
+    font-size:13px;font-weight:600;
+    line-height:1.35;
+    max-width:100%;
+  }
+  .partner-trust svg{flex:0 0 auto;width:18px;height:18px}
+  .quote-ref{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+    margin:0 0 18px;padding-bottom:16px;border-bottom:1px dashed var(--line);
+    font-size:13px;color:var(--soft);
+  }
+  .quote-ref strong{color:var(--ink);font-weight:700}
+
+  @media (max-width:560px){
+    .partner-hdr{flex-direction:column-reverse;gap:16px;padding:22px 20px 18px}
+    .partner-hdr-logo{flex:0 0 auto;max-width:none;width:100%;justify-content:center;padding:0}
+    .partner-hdr-logo img{max-height:100px}
+    .card-body{padding:22px 20px 26px}
+  }
 .sitefoot-q{background:var(--gum);padding:26px 18px;margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:8px;color:#8FA096;font-size:12.5px}.sitefoot-q .leadpages-logo{height:var(--lp-logo-height,52px);width:auto}
 </style>
 <link rel="stylesheet" href="/assets/lp-logo.css">
@@ -68,8 +121,9 @@
   var token = new URLSearchParams(location.search).get('t') || '';
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
   function aud(cents){ return '$' + (Math.round(cents||0)/100).toLocaleString('en-AU',{minimumFractionDigits:0,maximumFractionDigits:2}); }
+  var SHIELD_SVG = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l7.5 3v6.2c0 4.9-3.2 9.5-7.5 10.8C7.7 21.2 4.5 16.6 4.5 11.7V5.5L12 2.5z" stroke="currentColor" stroke-width="1.6" fill="color-mix(in srgb, currentColor 12%, transparent)"/><path d="M9.2 12.1l1.9 1.9 4.2-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-  function fail(m){ root.innerHTML = '<div class="card"><h1>Quote unavailable</h1><p class="from">'+esc(m)+'</p></div>'; }
+  function fail(m){ root.innerHTML = '<div class="card"><div class="card-body"><h1>Quote unavailable</h1><p class="from">'+esc(m)+'</p></div></div>'; }
 
   if(!token){ fail('No quote was specified. Please use the link from your email.'); return; }
 
@@ -86,22 +140,32 @@
     var biz = partner.business_name || partner.display_name || partner.support_name;
     if(!biz && !partner.logo_url && !partner.support_email && !partner.support_phone) return '';
     var contact = [];
-    if(partner.support_name && partner.support_name !== biz) contact.push(esc(partner.support_name));
-    if(partner.support_email) contact.push('<a href="mailto:'+esc(partner.support_email)+'">'+esc(partner.support_email)+'</a>');
-    if(partner.support_phone) contact.push(esc(partner.support_phone));
+    if(partner.support_name && partner.support_name !== biz) contact.push('<span>'+esc(partner.support_name)+'</span>');
+    if(partner.support_email) contact.push('<span><a href="mailto:'+esc(partner.support_email)+'">'+esc(partner.support_email)+'</a></span>');
+    if(partner.support_phone) contact.push('<span>'+esc(partner.support_phone)+'</span>');
     if(partner.website_url){
       var web = partner.website_url.replace(/^https?:\/\//i,'');
-      contact.push('<a href="'+esc(partner.website_url)+'" target="_blank" rel="noopener">'+esc(web)+'</a>');
+      contact.push('<span><a href="'+esc(partner.website_url)+'" target="_blank" rel="noopener">'+esc(web)+'</a></span>');
     }
     var html = '<div class="partner-hdr">';
+    html += '<div class="partner-hdr-body">';
+    if(biz) html += '<div class="partner-hdr-biz">'+esc(biz)+'</div>';
+    if(contact.length) html += '<div class="partner-hdr-contact">'+contact.join('')+'</div>';
+    if(biz) html += '<div class="partner-trust">'+SHIELD_SVG+'<span>'+esc(biz)+' is an approved partner of LeadPages</span></div>';
+    html += '</div>';
     if(partner.logo_url){
       html += '<div class="partner-hdr-logo"><img src="'+esc(partner.logo_url)+'" alt="'+esc(biz||'Partner logo')+'"></div>';
     }
-    html += '<div class="partner-hdr-body">';
-    if(biz) html += '<div class="partner-hdr-biz">'+esc(biz)+'</div>';
-    if(contact.length) html += '<div class="partner-hdr-contact">'+contact.join(' &middot; ')+'</div>';
-    html += '</div></div>';
+    html += '</div>';
     return html;
+  }
+
+  function quoteRef(q){
+    var parts = [];
+    if(q.token) parts.push('<span>Ref <strong>'+esc(String(q.token).slice(0,8).toUpperCase())+'</strong></span>');
+    if(q.status) parts.push('<span>Status <strong>'+esc(q.status)+'</strong></span>');
+    if(!parts.length) return '';
+    return '<div class="quote-ref">'+parts.join('')+'</div>';
   }
 
   function render(d){
@@ -113,12 +177,14 @@
 
     var html = '<div class="card">';
     html += partnerBlock(partner);
+    html += '<div class="card-body">';
+    html += quoteRef(q);
     html += '<p class="eyebrow">Website quote</p>';
     html += '<h1>'+esc(q.business_name||'Your new website')+'</h1>';
-    html += '<p class="from">Prepared by '+esc(partner.business_name||partner.display_name||'your web provider')+(q.contact_person?(' &middot; for '+esc(q.contact_person)):'')+'</p>';
+    html += '<p class="from">Prepared for '+esc(q.contact_person||q.business_name||'you')+(q.business_name&&q.contact_person?' at '+esc(q.business_name):'')+'</p>';
     if(isPaid){ html += '<div class="paid">&#10003; Accepted &amp; paid — your site is being set live. Check your email for your sign-in link.</div>'; }
     if(q.job_description){ html += '<p class="desc">'+esc(q.job_description)+'</p>'; }
-    if(feats){ html += '<p style="font-weight:700;margin:0 0 6px;font-size:14px">What\'s included</p><ul class="feats">'+feats+'</ul>'; }
+    if(feats){ html += '<p style="font-weight:700;margin:0 0 8px;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--soft)">What\'s included</p><ul class="feats">'+feats+'</ul>'; }
     html += '<div class="pricebox"><span class="lbl">One-off build</span><span class="amt">'+aud(q.price)+'</span></div>';
     html += '<p class="mo">+ monthly hosting, set up at checkout</p>';
     html += '<div class="btns">';
@@ -127,10 +193,10 @@
     html += '</div>';
     html += '<div class="msg" id="msg"></div>';
     html += '<div class="secure">&#128274; Secure checkout by Stripe</div>';
+    html += '</div></div>';
     var contact = [];
     if(partner.support_email) contact.push('<a href="mailto:'+esc(partner.support_email)+'">'+esc(partner.support_email)+'</a>');
     if(partner.support_phone) contact.push(esc(partner.support_phone));
-    html += '</div>';
     if(contact.length){
       html += '<div class="foot">Questions? Contact '+esc(partner.business_name||partner.display_name||partner.support_name||'us')+' &middot; '+contact.join(' &middot; ')+'</div>';
     }
