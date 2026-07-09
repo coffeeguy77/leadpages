@@ -403,8 +403,8 @@
           btn.textContent = meta.label;
         }
       });
-      nav.querySelectorAll('#messages-link, #help-link').forEach(function (btn) {
-        var id = btn.id === 'messages-link' ? 'messages' : 'help';
+      nav.querySelectorAll('#appearance-link, #messages-link, #help-link').forEach(function (btn) {
+        var id = btn.id === 'messages-link' ? 'messages' : btn.id === 'appearance-link' ? 'appearance' : 'help';
         var meta = NAV_META[id];
         if (meta) {
           btn.setAttribute('data-icon', meta.icon);
@@ -412,6 +412,11 @@
           btn.textContent = meta.label;
         }
       });
+      var al = $('appearance-link');
+      if (al && !al.__lpPwired) {
+        al.__lpPwired = true;
+        al.addEventListener('click', function () { navAction('appearance'); });
+      }
       var so = $('signout');
       if (so) {
         so.setAttribute('data-icon', 'signout');
