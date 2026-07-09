@@ -972,8 +972,8 @@ input {
 .footer__logo img,
 .pl-brand-logo {
   display: block;
-  max-height: 44px;
-  max-width: 200px;
+  max-height: calc(44px * var(--pl-logo-scale, 1));
+  max-width: calc(200px * var(--pl-logo-scale, 1));
   width: auto;
   object-fit: contain;
 }

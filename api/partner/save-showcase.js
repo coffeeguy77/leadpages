@@ -3,7 +3,7 @@
 // words, other partners, and existing tenant sites) so a shadowed/invalid name
 // can never be stored, regardless of what the UI sends. POST (Bearer).
 //
-// Body: { slug, domain, enabled, headline, config:{logo,intro,accent,theme,themeId} }
+// Body: { slug, domain, enabled, headline, config:{logo,logoSize,intro,accent,theme,themeId} }
 
 function cleanHex(v) {
   return /^#[0-9a-fA-F]{3,8}$/.test(v || '') ? v : null;
@@ -16,6 +16,12 @@ function cleanTheme(t) {
     if (h) out[k] = h;
   });
   return Object.keys(out).length ? out : null;
+}
+function cleanLogoSize(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return 1;
+  const stepped = Math.round(n * 2) / 2;
+  return Math.min(10, Math.max(0.5, stepped));
 }
 
 const { createClient } = require('@supabase/supabase-js');
@@ -55,6 +61,7 @@ module.exports = async (req,res) => {
   const accent=cleanHex(cfgIn.accent)||(theme&&theme.hivis)||null;
   const config={
     logo:cfgIn.logo?String(cfgIn.logo).slice(0,400):null,
+    logoSize:cleanLogoSize(cfgIn.logoSize),
     intro:cfgIn.intro?String(cfgIn.intro).slice(0,600):null,
     accent,
     theme,
