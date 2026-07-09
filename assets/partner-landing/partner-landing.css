@@ -1031,23 +1031,22 @@ input {
   font-size: 14px;
 }
 
-.footer__badge-row {
-  display: flex;
+.footer__lp-logo {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  color: var(--text-secondary);
-  font-size: 14px;
+  --lp-logo-height: 30px;
+  opacity: 0.88;
+  transition: opacity 0.15s ease;
 }
 
-.footer__badge {
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-  background: rgba(123, 47, 255, 0.15);
-  border: 1px solid rgba(123, 47, 255, 0.4);
-  color: var(--purple-light);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+.footer__lp-logo:hover {
+  opacity: 1;
+}
+
+.footer__lp-logo .leadpages-logo,
+.footer__lp-logo .lp-logo-wrap {
+  height: var(--lp-logo-height);
+  --lp-logo-ink: #f3f6fa;
 }
 
 /* Responsive */
