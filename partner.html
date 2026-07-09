@@ -314,11 +314,13 @@
           </div>
 
           <div class="card" style="padding:20px">
-            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Branding</h3>
-            <p class="muted" style="margin:0 0 14px;font-size:13px">Starter page styling — once you publish a homepage in the builder, that design takes over.</p>
-            <div class="row2">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Branding &amp; colours</h3>
+            <p class="muted" style="margin:0 0 14px;font-size:13px">Pick a saved demo theme for your public page colours — same palette as your trade demos. Once you publish a homepage in the builder, that design takes over.</p>
+            <div class="field"><label for="sc-theme">Colour theme</label><select id="sc-theme" class="tin lp-select"><option value="">Default LeadPages orange</option></select></div>
+            <div id="sc-theme-preview" class="lp-sc-theme-preview" hidden aria-label="Theme colour preview"></div>
+            <div class="row2" style="margin-top:12px">
               <div class="field"><label for="sc-headline">Headline</label><input id="sc-headline" type="text" placeholder="e.g. Canberra websites that get you booked"></div>
-              <div class="field"><label for="sc-accent">Accent colour</label><input id="sc-accent" type="text" placeholder="#ff6a1a"></div>
+              <div class="field"><label for="sc-accent">Accent override</label><input id="sc-accent" type="text" placeholder="#ff6a1a (optional)"></div>
             </div>
             <div class="field"><label for="sc-intro">Intro text</label><textarea id="sc-intro" rows="3" placeholder="A short pitch prospects see at the top of your page."></textarea></div>
             <div class="field">
@@ -1438,12 +1440,13 @@
     document.getElementById('sc-design').addEventListener('click', async function(){
       var btn=this; btn.disabled=true; btn.textContent='Opening…';
       var res;
-      try{ var r=await fetch('/api/partner/ensure-home',{method:'POST',headers:await authHeader()}); res=await r.json(); }catch(_e){ res={ok:false}; }
+      try{ var r=await fetch('/api/partner/ensure-home',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify({themeId:(document.getElementById('sc-theme')&&document.getElementById('sc-theme').value)||''})}); res=await r.json(); }catch(_e){ res={ok:false}; }
       btn.disabled=false; btn.textContent='Edit in builder';
       if(!res||!res.ok){ alert((res&&res.error)||'Could not open your homepage.'); return; }
       window.open('/manage?site='+encodeURIComponent(res.site.slug),'_blank','noopener');
     });
     document.getElementById('sc-slug').addEventListener('input',updateScLink);
+    var _scTh=document.getElementById('sc-theme'); if(_scTh) _scTh.addEventListener('change', renderScThemePreview);
     var _scEn=document.getElementById('sc-enabled');
     if(_scEn) _scEn.addEventListener('change',updateScStatusBadge);
     document.getElementById('po-calc').addEventListener('input', renderCalc);
@@ -1557,7 +1560,8 @@
       var err=document.getElementById('sc-err'); err.classList.add('hidden');
       var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var btn=this; btn.disabled=true;
       var dom=(document.getElementById('sc-domain').value||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/\s+/g,'');
-      var payload={ slug:slug, domain:dom, enabled:document.getElementById('sc-enabled').checked, headline:(document.getElementById('sc-headline').value||'').trim(), config:{ logo:scLogo||null, intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:(document.getElementById('sc-accent').value||'').trim()||null } };
+      var branding=scBrandingPayload();
+      var payload={ slug:slug, domain:dom, enabled:document.getElementById('sc-enabled').checked, headline:(document.getElementById('sc-headline').value||'').trim(), config:{ logo:scLogo||null, intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:branding.accent, theme:branding.theme, themeId:branding.themeId } };
       var res;
       try{ var r=await fetch('/api/partner/save-showcase',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
       btn.disabled=false;
@@ -1782,6 +1786,36 @@
   function fillThemeSelects(){
     var opts='<option value="">Blank trade site</option>'+themes.map(function(t){ return '<option value="'+esc(t.id)+'">'+(t._shared?'★ ':'')+esc(t.name)+(t._shared?' (LeadPages)':'')+'</option>'; }).join('');
     var sel=document.getElementById('m-theme'); if(sel){ var cur=sel.value; sel.innerHTML=opts; sel.value=cur; }
+    var scSel=document.getElementById('sc-theme');
+    if(scSel){
+      var scCur=scSel.value;
+      scSel.innerHTML='<option value="">Default LeadPages orange</option>'+themes.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>'; }).join('');
+      if(scCur) scSel.value=scCur;
+    }
+  }
+  function scThemeFromId(id){
+    if(!id) return null;
+    var t=themes.find(function(x){ return x.id===id; });
+    return (t&&t.config&&t.config.theme)?t.config.theme:null;
+  }
+  function renderScThemePreview(){
+    var box=document.getElementById('sc-theme-preview'); if(!box) return;
+    var tid=(document.getElementById('sc-theme')&&document.getElementById('sc-theme').value)||'';
+    var theme=scThemeFromId(tid);
+    if(!theme){ box.hidden=true; box.innerHTML=''; return; }
+    box.hidden=false;
+    var keys=[['pipe','Brand'],['hivis','Accent'],['steel','Dark'],['safety','Highlight'],['lightBg','Background']];
+    box.innerHTML=keys.map(function(pair){
+      var col=theme[pair[0]]; if(!col||!/^#[0-9a-fA-F]{3,8}$/.test(col)) return '';
+      return '<span class="lp-sc-swatch" title="'+esc(pair[1])+'" style="background:'+esc(col)+'"></span>';
+    }).join('');
+    if(theme.hivis && !((document.getElementById('sc-accent').value||'').trim())) document.getElementById('sc-accent').placeholder=theme.hivis;
+  }
+  function scBrandingPayload(){
+    var tid=(document.getElementById('sc-theme')&&document.getElementById('sc-theme').value)||'';
+    var theme=scThemeFromId(tid);
+    var accent=(document.getElementById('sc-accent').value||'').trim();
+    return { themeId:tid||null, theme:theme, accent:accent||null };
   }
   function themeOptions(){ return '<option value="">Apply a theme\u2026</option>'+themes.map(function(t){ return '<option value="'+esc(t.id)+'">'+(t._shared?'★ ':'')+esc(t.name)+(t._shared?' (LeadPages)':'')+'</option>'; }).join(''); }
   function mockupCard(m){
@@ -1904,6 +1938,8 @@
     var pf=state.profile||{}; var cfg=pf.showcase_config||{}; var g=function(id){return document.getElementById(id);};
     g('sc-slug').value=pf.showcase_slug||''; g('sc-domain').value=pf.showcase_domain||''; g('sc-enabled').checked=!!pf.showcase_enabled;
     g('sc-headline').value=pf.showcase_headline||''; g('sc-accent').value=cfg.accent||''; g('sc-intro').value=cfg.intro||'';
+    if(g('sc-theme')) g('sc-theme').value=cfg.themeId||'';
+    renderScThemePreview();
     scLogo=cfg.logo||''; if(scLogo){ g('sc-logo-prev').src=scLogo; g('sc-logo-prev').style.display=''; g('sc-logo-clear').style.display=''; }
     updateScLink();
     updateScStatusBadge();
@@ -2106,8 +2142,22 @@
     return '<span class="lp-quote-view lp-quote-view--seen">Client viewed '+esc(when)+extra+' — follow up?</span>';
   }
 
-  var QUOTE_LIST_COLS='token,site_id,business_name,contact_person,address,email,phones,job_description,features,price,plan_key,status,created_at,client_viewed_at,client_last_viewed_at,client_view_count,offer_discount_pct,offer_hours,offer_started_at,offer_expires_at';
-  var QUOTE_LIST_COLS_FALLBACK='token,site_id,business_name,contact_person,address,email,phones,job_description,features,price,plan_key,status,created_at,client_viewed_at,client_last_viewed_at,client_view_count';
+  var QUOTE_LIST_COLS_BASE='token,site_id,business_name,contact_person,address,email,phones,job_description,features,price,plan_key,status,created_at';
+  var QUOTE_LIST_COLS_VIEWS=QUOTE_LIST_COLS_BASE+',client_viewed_at,client_last_viewed_at,client_view_count';
+  var QUOTE_LIST_COLS_OFFERS=QUOTE_LIST_COLS_BASE+',offer_discount_pct,offer_hours,offer_started_at,offer_expires_at';
+  var QUOTE_LIST_COLS_FULL=QUOTE_LIST_COLS_VIEWS+',offer_discount_pct,offer_hours,offer_started_at,offer_expires_at';
+
+  async function selectPartnerQuotes(partnerId){
+    var tries=[QUOTE_LIST_COLS_FULL,QUOTE_LIST_COLS_VIEWS,QUOTE_LIST_COLS_OFFERS,QUOTE_LIST_COLS_BASE];
+    var lastErr=null;
+    for(var i=0;i<tries.length;i++){
+      var qr=await sb.from('partner_quotes').select(tries[i]).eq('partner_id',partnerId).order('created_at',{ascending:false});
+      if(!qr.error) return qr;
+      lastErr=qr.error;
+      if(!/column/i.test(String(qr.error.message||''))) break;
+    }
+    return { error:lastErr, data:null };
+  }
 
   function offerUrl(token){ return location.origin+'/offer?t='+encodeURIComponent(token); }
 
@@ -2172,10 +2222,7 @@
     if(document.getElementById('q-feats') && !document.getElementById('q-feats').children.length) addFeatRow('');
     try{ if(window.LpQuoteTags && state.partner) LpQuoteTags.init(state.partner.id); }catch(_e){}
     var box=document.getElementById('q-list'); if(!box) return;
-    var qr=await sb.from('partner_quotes').select(QUOTE_LIST_COLS).eq('partner_id',state.partner.id).order('created_at',{ascending:false});
-    if(qr.error && /column/i.test(String(qr.error.message||''))){
-      qr=await sb.from('partner_quotes').select(QUOTE_LIST_COLS_FALLBACK).eq('partner_id',state.partner.id).order('created_at',{ascending:false});
-    }
+    var qr=await selectPartnerQuotes(state.partner.id);
     if(qr.error){ box.innerHTML='<span style="color:var(--bad)">Could not load quotes: '+esc(qr.error.message)+'</span>'; return; }
     var rows=(qr.data||[]);
     quotes = rows;

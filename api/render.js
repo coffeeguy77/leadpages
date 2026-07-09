@@ -18,6 +18,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 const { effectiveDemoSalePrice } = require('../lib/partner-demo-pricing');
+const { buildPartnerLandingHtml } = require('../lib/partner-landing');
 const brokerTpl   = require('../broker.template.json');     // broker-leads
 const tradeTpl    = require('../trade.template.json');      // trade
 const agencyTpl   = require('../agency.template.json');     // partner web-studio homepage
@@ -191,9 +192,23 @@ function scCard(demo, base) {
 function scFeature(icon, title, body) {
   return '<div class="sc-feat"><div class="sc-feat-ic">' + icon + '</div><h3>' + title + '</h3><p>' + body + '</p></div>';
 }
+function resolveShowcaseTheme(cfg) {
+  cfg = cfg || {};
+  const theme = cfg.theme || {};
+  const fallbackAccent = /^#[0-9a-fA-F]{3,8}$/.test(cfg.accent || '') ? cfg.accent : '#ff6a1a';
+  const hexOr = (v, d) => (/^#[0-9a-fA-F]{3,8}$/.test(v || '') ? v : d);
+  const accent = hexOr(theme.hivis, fallbackAccent);
+  return {
+    accent,
+    brand: hexOr(theme.pipe, accent),
+    ink: hexOr(theme.steel, '#15191e'),
+    hi: hexOr(theme.lightBg, '#f5f7f9'),
+    safety: hexOr(theme.safety, accent),
+  };
+}
 function showcaseHtml(prof, partner, demos, base) {
   const cfg = prof.showcase_config || {};
-  const accent = /^#[0-9a-fA-F]{3,8}$/.test(cfg.accent || '') ? cfg.accent : '#ff6a1a';
+  const pal = resolveShowcaseTheme(cfg);
   const name = esc(partner.display_name || 'Local Web');
   const headline = esc(prof.showcase_headline || 'Websites that get local tradies booked');
   const intro = esc(cfg.intro || 'Professional, mobile-first websites built for tradespeople \u2014 with a lead form that reaches you the moment someone needs a quote. Take a look at some recent designs below.');
@@ -222,15 +237,15 @@ function showcaseHtml(prof, partner, demos, base) {
     ? '<div class="sc-grid">' + demos.map(d => scCard(d, base)).join('') + '</div>'
     : '<p class="sc-empty">New designs coming soon.</p>';
   const work = demos.length
-    ? '<section class="sc-work" id="work"><div class="wrap"><h2>Recent work</h2><p class="sc-sub">Tap any design to see it live.</p>' + grid + '</div></section>'
+    ? '<section class="sc-work-band" id="work"><div class="sc-in"><div class="sc-work-head"><p class="sc-eyebrow">Portfolio</p><h2>Recent work</h2><p class="sc-sub">Tap any design to see it live.</p></div>' + grid + '</div></section>'
     : '';
 
   const contactBits = [];
   if (email) contactBits.push('<a class="sc-btn" href="mailto:' + email + '">Email ' + name + '</a>');
-  if (phone) contactBits.push('<a class="sc-btn ghost" href="tel:' + tel + '">' + phone + '</a>');
+  if (phone) contactBits.push('<a class="sc-btn ghost light" href="tel:' + tel + '">' + phone + '</a>');
   const contact = (email || phone)
-    ? '<section class="sc-contact" id="contact"><div class="wrap"><h2>Ready for a website that works?</h2>'
-      + '<p class="sc-sub" style="max-width:52ch;margin-inline:auto">Tell ' + name + ' about your trade and we\u2019ll put together a site that brings in the work.</p>'
+    ? '<section class="sc-contact" id="contact"><div class="sc-in"><h2>Ready for a website that works?</h2>'
+      + '<p class="sc-sub">Tell ' + name + ' about your trade and we\u2019ll put together a site that brings in the work.</p>'
       + '<div class="sc-contact-btns">' + contactBits.join('') + '</div></div></section>'
     : '';
 
@@ -239,46 +254,48 @@ function showcaseHtml(prof, partner, demos, base) {
     '<meta name="description" content="' + intro + '">' +
     '<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">' +
     '<style>' +
-    ':root{--accent:' + accent + ';--ink:#15191e;--steel:#5b6571;--line:#e6e8ec;--paper:#fff;--hi:#f5f7f9}' +
+    ':root{--accent:' + pal.accent + ';--brand:' + pal.brand + ';--ink:' + pal.ink + ';--hi:' + pal.hi + ';--safety:' + pal.safety + ';--steel:#5b6571;--line:#e6e8ec;--paper:#fff}' +
     '*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.55}' +
     'h1,h2,h3{font-family:Archivo,sans-serif;font-weight:900;letter-spacing:-.02em;margin:0}a{color:inherit}' +
-    '.wrap{max-width:1080px;margin:0 auto;padding:0 22px}' +
+    '.sc-in{max-width:min(1440px,100%);margin:0 auto;padding:0 clamp(22px,4vw,56px)}' +
+    '.sc-eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--brand);margin:0 0 10px}' +
     '.sc-btn{display:inline-flex;align-items:center;gap:8px;font-family:Archivo;font-weight:800;font-size:15.5px;padding:14px 24px;border-radius:13px;background:var(--accent);color:#fff;text-decoration:none;border:1.5px solid var(--accent)}' +
-    '.sc-btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.3)}' +
+    '.sc-btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.32)}' +
+    '.sc-btn.ghost.light{color:var(--ink);border-color:var(--line);background:#fff}' +
     '.sc-btn.sm{padding:9px 16px;font-size:14px}' +
-    '.sc-top{position:sticky;top:0;z-index:5;background:rgba(21,25,30,.82);backdrop-filter:blur(8px)}' +
-    '.sc-top .sc-nav{display:flex;align-items:center;justify-content:space-between;height:66px}' +
-    '.sc-logo{max-height:40px;max-width:190px;display:block}.sc-logo-text{font-family:Archivo;font-weight:900;font-size:21px;color:#fff}' +
-    '.sc-hero{background:radial-gradient(130% 130% at 85% -20%,#222a33,#13171c);color:#fff;padding:70px 0 84px;text-align:left}' +
-    '.sc-hero h1{font-size:clamp(32px,5.4vw,56px);line-height:1.03;max-width:16ch}' +
-    '.sc-hero p{color:#c4ccd4;font-size:19px;margin:18px 0 0;max-width:56ch}' +
-    '.sc-hero-ctas{margin-top:30px;display:flex;gap:13px;flex-wrap:wrap}' +
-    '.sc-why{padding:64px 0 20px}.sc-why h2{font-size:clamp(24px,3.4vw,32px);text-align:center}.sc-why .sc-sub{text-align:center}' +
-    '.sc-sub{color:var(--steel);margin:8px 0 0}' +
-    '.sc-feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:36px}' +
-    '.sc-feat{border:1px solid var(--line);border-radius:16px;padding:24px;background:var(--paper)}' +
+    '.sc-top{position:sticky;top:0;z-index:5;width:100%;background:color-mix(in srgb,var(--ink) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08)}' +
+    '.sc-top .sc-nav{display:flex;align-items:center;justify-content:space-between;height:68px}' +
+    '.sc-logo{max-height:44px;max-width:200px;display:block}.sc-logo-text{font-family:Archivo;font-weight:900;font-size:22px;color:#fff}' +
+    '.sc-hero{width:100%;background:radial-gradient(120% 120% at 88% -20%,color-mix(in srgb,var(--brand) 38%,var(--ink)),var(--ink) 58%);color:#fff;padding:clamp(56px,8vw,96px) 0 clamp(64px,9vw,108px);position:relative;overflow:hidden}' +
+    '.sc-hero:before{content:"";position:absolute;inset:0;background:radial-gradient(55% 45% at 12% 105%,color-mix(in srgb,var(--accent) 24%,transparent),transparent 70%);pointer-events:none}' +
+    '.sc-hero .sc-in{position:relative;z-index:1}' +
+    '.sc-hero h1{font-size:clamp(34px,6vw,68px);line-height:1.02;max-width:14ch}' +
+    '.sc-hero p{color:#c4ccd4;font-size:clamp(17px,2.2vw,21px);margin:20px 0 0;max-width:58ch}' +
+    '.sc-hero-ctas{margin-top:32px;display:flex;gap:14px;flex-wrap:wrap}' +
+    '.sc-why{width:100%;padding:clamp(56px,7vw,88px) 0 24px}.sc-why h2{font-size:clamp(26px,3.8vw,40px);text-align:center}.sc-why .sc-sub{text-align:center;color:var(--steel);margin:10px 0 0}' +
+    '.sc-feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px;margin-top:40px}' +
+    '.sc-feat{border:1px solid var(--line);border-radius:18px;padding:26px;background:var(--paper);position:relative;overflow:hidden}' +
+    '.sc-feat:before{content:"";position:absolute;top:0;left:0;width:48px;height:4px;background:var(--accent);border-radius:0 0 4px 0}' +
     '.sc-feat-ic{font-size:26px;width:50px;height:50px;border-radius:12px;background:var(--hi);display:flex;align-items:center;justify-content:center;margin-bottom:14px}' +
     '.sc-feat h3{font-size:18px}.sc-feat p{color:var(--steel);margin:8px 0 0;font-size:14.5px}' +
-    '.sc-work{padding:60px 0}.sc-work h2{font-size:clamp(24px,3.4vw,32px)}' +
-    '.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;margin-top:22px}' +
-    '.sc-card{display:block;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .1s,box-shadow .15s;background:var(--paper)}' +
-    '.sc-card:hover{transform:translateY(-3px);box-shadow:0 16px 36px -18px rgba(0,0,0,.3)}' +
-    '.sc-card-top{position:relative;height:104px;background:linear-gradient(135deg,var(--accent),#15191e);display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding:12px}.sc-card-logo{width:48px;height:48px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 8px 18px -8px rgba(0,0,0,.55);flex:0 0 auto}.sc-card-logo img{max-width:84%;max-height:84%;object-fit:contain}.sc-card-logo.mono{font-family:Archivo;font-weight:900;color:var(--accent);font-size:21px}' +
-    '.sc-trade{font-family:Inter;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.25);padding:4px 9px;border-radius:7px}' +
-    '.sc-card-body{padding:15px 16px}.sc-name{font-family:Archivo;font-weight:800;font-size:17px}.sc-view{color:var(--accent);font-weight:700;font-size:14px;margin-top:7px}' +
-    '.sc-empty{color:var(--steel)}' +
-    '.sc-contact{background:var(--hi);padding:66px 0;text-align:center}.sc-contact h2{font-size:clamp(24px,3.6vw,34px)}' +
-    '.sc-contact-btns{margin-top:24px;display:flex;gap:13px;flex-wrap:wrap;justify-content:center}' +
-    '.sc-contact .sc-btn.ghost{color:var(--ink);border-color:var(--line)}' +
-    '.sc-foot{border-top:1px solid var(--line);padding:26px 0;color:var(--steel);font-size:13px;text-align:center}' +
-    '@media(max-width:640px){.sc-hero{padding:52px 0 60px}}' +
+    '.sc-work-band{width:100%;background:var(--ink);color:#fff;padding:clamp(56px,7vw,88px) 0}' +
+    '.sc-work-head{margin-bottom:28px}.sc-work-band h2{font-size:clamp(26px,3.8vw,40px)}.sc-work-band .sc-sub{color:#b4bcc6;margin:10px 0 0}.sc-work-band .sc-eyebrow{color:var(--accent)}' +
+    '.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:20px}' +
+    '.sc-card{display:block;border:1px solid rgba(255,255,255,.1);border-radius:18px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .12s,box-shadow .15s;background:#fff}' +
+    '.sc-card:hover{transform:translateY(-4px);box-shadow:0 24px 48px -20px rgba(0,0,0,.55)}' +
+    '.sc-card-body{padding:16px 18px}.sc-name{font-family:Archivo;font-weight:800;font-size:17px;color:var(--ink)}.sc-view{color:var(--accent);font-weight:700;font-size:14px;margin-top:7px}' +
+    '.sc-empty{color:#b4bcc6}' +
+    '.sc-contact{width:100%;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--brand) 70%,var(--accent)));padding:clamp(56px,7vw,88px) 0;text-align:center;color:#fff}' +
+    '.sc-contact h2{font-size:clamp(26px,4vw,44px)}.sc-contact .sc-sub{max-width:52ch;margin:14px auto 0;opacity:.94}' +
+    '.sc-contact-btns{margin-top:28px;display:flex;gap:14px;flex-wrap:wrap;justify-content:center}' +
+    '.sc-foot{width:100%;border-top:1px solid var(--line);padding:28px 0;color:var(--steel);font-size:13px;text-align:center;background:var(--hi)}' +
     '</style></head><body>' +
-    '<div class="sc-top"><div class="wrap"><div class="sc-nav">' + logo + (navCta || '') + '</div></div></div>' +
-    '<header class="sc-hero"><div class="wrap"><h1>' + headline + '</h1><p>' + intro + '</p>' + heroCtas + '</div></header>' +
-    '<section class="sc-why"><div class="wrap"><h2>Why a website built for your trade</h2><p class="sc-sub">Everything a local tradie needs to win more work \u2014 nothing they don\u2019t.</p>' + feats + '</div></section>' +
+    '<div class="sc-top"><div class="sc-in"><div class="sc-nav">' + logo + (navCta || '') + '</div></div></div>' +
+    '<header class="sc-hero"><div class="sc-in"><p class="sc-eyebrow" style="color:var(--accent)">Web design for local business</p><h1>' + headline + '</h1><p>' + intro + '</p>' + heroCtas + '</div></header>' +
+    '<section class="sc-why"><div class="sc-in"><h2>Why a website built for your trade</h2><p class="sc-sub">Everything a local tradie needs to win more work \u2014 nothing they don\u2019t.</p>' + feats + '</div></section>' +
     work +
     contact +
-    '<footer class="sc-foot"><div class="wrap">' + name + ' \u00b7 Powered by LeadPages</div></footer></body></html>';
+    '<footer class="sc-foot"><div class="sc-in">' + name + ' \u00b7 Powered by LeadPages</div></footer></body></html>';
 }
 
 function hexOr(v, d) { return /^#[0-9a-fA-F]{3,8}$/.test(v || '') ? v : d; }
@@ -388,7 +405,7 @@ function partnerDemosBlock(demos, base, accent) {
   }).join('');
   return '<style>'
     + '.lpw-wrap{--lpw-ac:' + ac + ';font-family:Inter,system-ui,sans-serif;background:#fff;color:#15191e;padding:60px 22px;border-top:1px solid #e6e8ec}'
-    + '.lpw-in{max-width:1080px;margin:0 auto}.lpw-h{font-family:Archivo,Arial,sans-serif;font-weight:900;letter-spacing:-.02em;font-size:clamp(23px,3.3vw,30px);margin:0}'
+    + '.lpw-in{max-width:min(1440px,100%);margin:0 auto;padding:0 clamp(22px,4vw,56px)}.lpw-h{font-family:Archivo,Arial,sans-serif;font-weight:900;letter-spacing:-.02em;font-size:clamp(23px,3.3vw,30px);margin:0}'
     + '.lpw-sub{color:#5b6571;margin:8px 0 24px}.lpw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}'
     + '.lpw-card{display:block;border:1px solid #e6e8ec;border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .1s,box-shadow .15s;background:#fff}'
     + '.lpw-card:hover{transform:translateY(-3px);box-shadow:0 16px 36px -18px rgba(0,0,0,.3)}'
@@ -416,8 +433,7 @@ async function showcaseRespond(req, res, prof, base) {
     .select('*').eq('servicing_partner_id', prof.partner_id).eq('is_partner_home', true).maybeSingle()).data;
   res.setHeader('content-type', 'text/html; charset=utf-8');
   res.setHeader('cache-control', 'public, s-maxage=5, stale-while-revalidate=20');
-  if (home) return res.status(200).send(buildAgencyHtml(home, req.headers.host || '', demos, base));
-  return res.status(200).send(showcaseHtml(prof, partner, demos, base));
+  return res.status(200).send(buildPartnerLandingHtml(prof, partner, demos, base, { home }));
 }
 
 async function renderShowcase(req, res, slug, base) {
@@ -681,7 +697,23 @@ module.exports = async (req, res) => {
     .eq('is_mockup', true)
         .or('servicing_partner_id.eq.' + pid + ',referring_partner_id.eq.' + pid)
         .limit(48)).data || []) : [];
-      return sendHtml(res, buildAgencyHtml(site, host, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au'), isLive);
+      const partner = pid ? ((await supabase.from('partners').select('display_name,status').eq('id', pid).maybeSingle()).data) : null;
+      const prof = pid ? ((await supabase.from('partner_profiles').select(SC_SELECT).eq('partner_id', pid).maybeSingle()).data) : null;
+      const sc = (prof && prof.showcase_config) || {};
+      const hc = site.config || {};
+      const mergedProf = Object.assign({}, prof || {}, {
+        showcase_headline: (prof && prof.showcase_headline) || ((hc.sections && hc.sections.hero && hc.sections.hero.title) || site.business_name),
+        showcase_config: Object.assign({}, sc, {
+          intro: sc.intro || ((hc.sections && hc.sections.hero && hc.sections.hero.sub) || ''),
+          logo: sc.logo || ((hc.logo && hc.logo.imageUrl) || ''),
+          theme: Object.assign({}, (sc.theme || {}), (hc.theme || {})),
+          accent: sc.accent
+        }),
+        support_email: (prof && prof.support_email) || hc.email || '',
+        support_phone: (prof && prof.support_phone) || hc.phone || ''
+      });
+      const partnerRow = partner || { display_name: site.business_name || 'Web Studio' };
+      return sendHtml(res, buildPartnerLandingHtml(mergedProf, partnerRow, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au', { home: site }), isLive);
     }
 
     const template = templateFor(site);

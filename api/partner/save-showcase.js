@@ -3,7 +3,20 @@
 // words, other partners, and existing tenant sites) so a shadowed/invalid name
 // can never be stored, regardless of what the UI sends. POST (Bearer).
 //
-// Body: { slug, domain, enabled, headline, config:{logo,intro,accent} }
+// Body: { slug, domain, enabled, headline, config:{logo,intro,accent,theme,themeId} }
+
+function cleanHex(v) {
+  return /^#[0-9a-fA-F]{3,8}$/.test(v || '') ? v : null;
+}
+function cleanTheme(t) {
+  if (!t || typeof t !== 'object') return null;
+  const out = {};
+  ['pipe', 'hivis', 'steel', 'safety', 'lightBg'].forEach((k) => {
+    const h = cleanHex(t[k]);
+    if (h) out[k] = h;
+  });
+  return Object.keys(out).length ? out : null;
+}
 
 const { createClient } = require('@supabase/supabase-js');
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -38,7 +51,17 @@ module.exports = async (req,res) => {
   const enabled=!!b.enabled;
   const headline=String(b.headline||'').trim().slice(0,160);
   const cfgIn=(b.config&&typeof b.config==='object')?b.config:{};
-  const config={ logo:cfgIn.logo?String(cfgIn.logo).slice(0,400):null, intro:cfgIn.intro?String(cfgIn.intro).slice(0,600):null, accent:(/^#[0-9a-fA-F]{3,8}$/.test(cfgIn.accent||'')?cfgIn.accent:null) };
+  const theme=cleanTheme(cfgIn.theme);
+  const accent=cleanHex(cfgIn.accent)||(theme&&theme.hivis)||null;
+  const config={
+    logo:cfgIn.logo?String(cfgIn.logo).slice(0,400):null,
+    intro:cfgIn.intro?String(cfgIn.intro).slice(0,600):null,
+    accent,
+    theme,
+    themeId:cfgIn.themeId?String(cfgIn.themeId).slice(0,80):null,
+  };
+  if(!config.themeId) delete config.themeId;
+  if(!config.theme) delete config.theme;
 
   // ---- Address (slug) ----
   if(slug){
@@ -69,6 +92,14 @@ module.exports = async (req,res) => {
   try{
     const up=await admin.from('partner_profiles').update(patch).eq('partner_id',partner.id).select('*').single();
     if(up.error){ if(/duplicate|unique/i.test(up.error.message)) return fail(res,'slug','That address is already taken — pick another.'); return res.status(500).json({ ok:false, error:'Could not save. Please try again.' }); }
+    if(theme){
+      const home=await admin.from('sites').select('id,config').eq('servicing_partner_id',partner.id).eq('is_partner_home',true).maybeSingle();
+      if(home.data){
+        const hc=home.data.config||{};
+        hc.theme=Object.assign({},hc.theme||{},theme);
+        await admin.from('sites').update({ config:hc, updated_at:new Date().toISOString() }).eq('id',home.data.id);
+      }
+    }
     return res.status(200).json({ ok:true, profile:up.data });
   }catch(_e){ return res.status(500).json({ ok:false, error:'Could not save. Please try again.' }); }
 };
