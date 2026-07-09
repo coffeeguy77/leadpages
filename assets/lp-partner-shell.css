@@ -1226,6 +1226,20 @@
 }
 
 /* ── Quote section polish ── */
+.lp-partner-page .lp-quote-panel .lp-quote-grid {
+  grid-template-columns: 1fr minmax(280px, 420px);
+}
+
+.lp-partner-page .lp-quote-panel .lp-quote-grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 1023px) {
+  .lp-partner-page .lp-quote-panel .lp-quote-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .lp-partner-page .lp-quote-panel .lp-quote-card {
   border-color: color-mix(in srgb, var(--accent) 10%, var(--border));
   background: linear-gradient(180deg, var(--panel) 0%, color-mix(in srgb, var(--accent) 2%, var(--panel)) 100%);
