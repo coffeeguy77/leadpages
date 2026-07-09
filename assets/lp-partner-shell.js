@@ -336,6 +336,13 @@
     wireNavButtons(body);
   }
 
+  function tabShortLabel(meta) {
+    if (meta.tabLabel) return meta.tabLabel;
+    if (/^my\s+/i.test(meta.label)) return meta.label.replace(/^my\s+/i, '');
+    var parts = meta.label.split(' ');
+    return parts[0];
+  }
+
   function renderBottomTabs() {
     var inner = $('lp-p-bottom-inner');
     if (!inner) return;
@@ -350,7 +357,7 @@
       if (!meta) return '';
       return '<button type="button" class="lp-p-tab" data-p="' + esc(key) + '" aria-label="' + esc(meta.label) + '">'
         + icon(meta.icon, 22)
-        + '<span class="lp-tab-lbl">' + esc(meta.label.split(' ')[0]) + '</span></button>';
+        + '<span class="lp-tab-lbl">' + esc(tabShortLabel(meta)) + '</span></button>';
     }).join('');
 
     inner.querySelectorAll('.lp-p-tab').forEach(function (tab) {

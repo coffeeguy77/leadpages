@@ -45,7 +45,14 @@
   .paid{background:#E4EFE7;border:1px solid #C4DECB;color:#2C6A42;border-radius:12px;padding:14px 16px;font-weight:600;margin:0 0 18px;text-align:center}
   .center{text-align:center;color:var(--soft);padding:60px 0}
   .secure{display:flex;align-items:center;justify-content:center;gap:6px;color:#A79A96;font-size:12.5px;margin:14px 0 0}
-.sitefoot-q{background:var(--gum);padding:26px 18px;margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:8px;color:#8FA096;font-size:12.5px}.sitefoot-q img{height:84px;width:auto}
+  .partner-hdr{display:flex;gap:14px;align-items:center;margin:0 0 20px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+  .partner-hdr-logo{flex:0 0 auto;width:72px;height:52px;display:flex;align-items:center;justify-content:center}
+  .partner-hdr-logo img{max-height:52px;max-width:72px;width:auto;object-fit:contain;display:block}
+  .partner-hdr-body{min-width:0;flex:1}
+  .partner-hdr-biz{font-weight:700;font-size:16px;margin:0 0 4px;color:var(--ink)}
+  .partner-hdr-contact{font-size:13px;color:var(--soft);line-height:1.45}
+  .partner-hdr-contact a{color:var(--accent-d);text-decoration:none;font-weight:600}
+.sitefoot-q{background:var(--gum);padding:26px 18px;margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:8px;color:#8FA096;font-size:12.5px}.sitefoot-q .leadpages-logo{height:var(--lp-logo-height,52px);width:auto}
 </style>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js" defer></script>
@@ -74,6 +81,29 @@
     })
     .catch(function(){ fail('Could not load this quote. Please check your connection and try again.'); });
 
+  function partnerBlock(partner){
+    if(!partner) return '';
+    var biz = partner.business_name || partner.display_name || partner.support_name;
+    if(!biz && !partner.logo_url && !partner.support_email && !partner.support_phone) return '';
+    var contact = [];
+    if(partner.support_name && partner.support_name !== biz) contact.push(esc(partner.support_name));
+    if(partner.support_email) contact.push('<a href="mailto:'+esc(partner.support_email)+'">'+esc(partner.support_email)+'</a>');
+    if(partner.support_phone) contact.push(esc(partner.support_phone));
+    if(partner.website_url){
+      var web = partner.website_url.replace(/^https?:\/\//i,'');
+      contact.push('<a href="'+esc(partner.website_url)+'" target="_blank" rel="noopener">'+esc(web)+'</a>');
+    }
+    var html = '<div class="partner-hdr">';
+    if(partner.logo_url){
+      html += '<div class="partner-hdr-logo"><img src="'+esc(partner.logo_url)+'" alt="'+esc(biz||'Partner logo')+'"></div>';
+    }
+    html += '<div class="partner-hdr-body">';
+    if(biz) html += '<div class="partner-hdr-biz">'+esc(biz)+'</div>';
+    if(contact.length) html += '<div class="partner-hdr-contact">'+contact.join(' &middot; ')+'</div>';
+    html += '</div></div>';
+    return html;
+  }
+
   function render(d){
     var q = d.quote, demo = d.demo || {}, partner = d.partner || {};
     var feats = (q.features||[]).map(function(f){ return '<li><span class="tick">&#10003;</span><span>'+esc(f)+'</span></li>'; }).join('');
@@ -82,9 +112,10 @@
     var isPaid = q.status === 'paid';
 
     var html = '<div class="card">';
+    html += partnerBlock(partner);
     html += '<p class="eyebrow">Website quote</p>';
     html += '<h1>'+esc(q.business_name||'Your new website')+'</h1>';
-    html += '<p class="from">Prepared by '+esc(partner.display_name||'your web provider')+(q.contact_person?(' &middot; for '+esc(q.contact_person)):'')+'</p>';
+    html += '<p class="from">Prepared by '+esc(partner.business_name||partner.display_name||'your web provider')+(q.contact_person?(' &middot; for '+esc(q.contact_person)):'')+'</p>';
     if(isPaid){ html += '<div class="paid">&#10003; Accepted &amp; paid — your site is being set live. Check your email for your sign-in link.</div>'; }
     if(q.job_description){ html += '<p class="desc">'+esc(q.job_description)+'</p>'; }
     if(feats){ html += '<p style="font-weight:700;margin:0 0 6px;font-size:14px">What\'s included</p><ul class="feats">'+feats+'</ul>'; }
@@ -100,7 +131,9 @@
     if(partner.support_email) contact.push('<a href="mailto:'+esc(partner.support_email)+'">'+esc(partner.support_email)+'</a>');
     if(partner.support_phone) contact.push(esc(partner.support_phone));
     html += '</div>';
-    if(contact.length){ html += '<div class="foot">Questions? Contact '+esc(partner.display_name||'us')+' &middot; '+contact.join(' &middot; ')+'</div>'; }
+    if(contact.length){
+      html += '<div class="foot">Questions? Contact '+esc(partner.business_name||partner.display_name||partner.support_name||'us')+' &middot; '+contact.join(' &middot; ')+'</div>';
+    }
     root.innerHTML = html;
 
     var btn = document.getElementById('accept'), msg = document.getElementById('msg');
