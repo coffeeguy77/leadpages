@@ -5582,6 +5582,17 @@ function heroCtaCard(c){
   }
   async function signOutLP(){ try{ localStorage.removeItem(LP_NAV_STATE_KEY); }catch(_e){} try{ await sb.auth.signOut(); }catch(e){} location.reload(); }
   window.signOutLP=signOutLP;
+  function lpSiteEditLabelHtml(){
+    if(!currentSiteSlug) return '';
+    var site=(allSites||[]).find(function(x){ return x.id===currentSiteId; });
+    var biz=(currentBusinessName||(site&&site.business_name)||'').trim();
+    var slug=esc(currentSiteSlug);
+    var norm=function(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,''); };
+    if(biz && norm(biz)!==norm(slug)){
+      return '<span>Editing: <strong>'+esc(biz)+'</strong> \u00b7 /'+slug+'</span>';
+    }
+    return '<span>Editing: <strong>/'+slug+'</strong></span>';
+  }
   function ensureSiteBar(){
     const dl=$('btn-download'); if(!dl) return; const bar=dl.parentNode;
     if(!$('btn-publish')){
@@ -5665,12 +5676,8 @@ function heroCtaCard(c){
           lbl.appendChild(wrap);
         } else useSitePicker=false;
       }
-      if(!useSitePicker&&(currentRole==='super'||currentRole==='broker')&&currentSiteSlug){
-        const nm=(allSites.find(function(x){return x.id===currentSiteId;})||allSites[0]||{}).business_name||currentSiteSlug;
-        lbl.innerHTML='<span>Editing: <strong>'+nm+'</strong> \u00b7 /'+currentSiteSlug+'</span>';
-      } else if(currentSiteSlug){
-        const nm=(allSites[0]?allSites[0].business_name:currentSiteSlug);
-        lbl.innerHTML='<span>Editing: <strong>'+nm+'</strong> \u00b7 /'+currentSiteSlug+'</span>';
+      if(!useSitePicker&&currentSiteSlug){
+        lbl.innerHTML=lpSiteEditLabelHtml();
       }
     }
     if(currentRole==='super') updateSiteControls();
