@@ -537,6 +537,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-admin-shell.js"></script>
 <script src="/assets/lp-messages-embed.js"></script>
 <script src="/assets/lp-mobile-menu-builder.js"></script>
+<script src="/assets/lp-trade-picker.js"></script>
 <script src="/icons.js"></script>
 </head>
 <body data-lp-admin-page="manage">
@@ -3098,7 +3099,7 @@ function quoteStyleCard(c){
     h+=col('qf-err','error','Error Colour','Choose the colour used for required-field warnings or errors.');
     h+=col('qf-suc','success','Success Colour','Choose the colour used after a form is successfully submitted.');
     h+='</div>';
-    h+='<p class="hint" style="margin:8px 0 0;padding:10px 12px;background:#f6f7f9;border-radius:8px;">Tip: Keep strong contrast between text, fields and buttons so the form stays easy to read and simple to complete.</p>';
+    h+='<p class="hint qf-tip" style="margin:8px 0 0;padding:10px 12px;border-radius:8px;border:1px solid var(--line);">Tip: Keep strong contrast between text, fields and buttons so the form stays easy to read and simple to complete.</p>';
     return h+'</div>';
   }
   
@@ -3453,7 +3454,7 @@ function heroCtaCard(c){
         <input id="tp-search" class="tin" type="text" autocomplete="off" placeholder="Search 100+ services… (try &ldquo;fence&rdquo;, &ldquo;drain&rdquo;, &ldquo;hire&rdquo;, &ldquo;café&rdquo;)">
         <input type="hidden" id="trade-pack" value="plumber">
         <div id="tp-picked" class="cs-picked"></div>
-        <div class="tp2-wrap"><div id="tp-cats" class="tp2-cats"></div><div id="tp-packlist" class="tp2-list"></div></div>
+        <div class="tp2-wrap lp-demo-trade-picker"><div id="tp-cats" class="tp2-cats"></div><div id="tp-packlist" class="tp2-list"></div></div>
       </div>
       <div class="f"><button type="button" class="btn" id="trade-pack-load" style="width:100%;margin-top:10px;">Load starter content</button></div>
       ${builder}
@@ -3466,7 +3467,22 @@ function heroCtaCard(c){
     for(i=0;i<C.length;i++){ idx=C[i][1].indexOf(slug); if(idx>-1) C[i][1].splice(idx,1); }
     for(i=0;i<C.length;i++){ if(C[i][0]===cat){ C[i][1].push(slug); found=true; break; } }
     if(!found) C.push([cat,[slug]]);
+    if(window.LPTradePicker) window.LPTradePicker.registerPack(slug,cat,pack);
   };
+
+  function lpSyncTradePickerPacks(){
+    if(!window.LPTradePicker) return;
+    for(var slug in TRADE_PACKS){
+      if(!Object.prototype.hasOwnProperty.call(TRADE_PACKS,slug)) continue;
+      var p=TRADE_PACKS[slug];
+      window.LPTradePicker.registerPack(slug,window.__tradeCat(slug)||'Other & Specialist',p);
+    }
+  }
+  function lpInitSettingsTradePicker(opts){
+    window.__tp2opts=opts;
+    lpSyncTradePickerPacks();
+    if(window.LPTradePicker) window.LPTradePicker.init2(opts);
+  }
 
   /* ---- persist custom service / business-type packs to Supabase (shared catalogue) ---- */
   window.__lpSPLoaded=false;
@@ -3560,7 +3576,7 @@ function heroCtaCard(c){
       if(!slug || !pack || !pack.label || !pack.tradeType || !pack.services || !pack.sections){ statusEl.style.color='#b42318'; statusEl.textContent='JSON is missing required fields (slug, pack.label, tradeType, services, sections).'; return; }
       try{ window.__registerTradePack(slug,cat,pack); }catch(e){ statusEl.style.color='#b42318'; statusEl.textContent='Could not register: '+e.message; return; }
       statusEl.style.color='#0a7d33'; statusEl.innerHTML='Added <b>'+esc(pack.label)+'</b> under <b>'+esc(cat)+'</b>. Saving…';
-      if(window.__tp2opts){ var hp=document.getElementById(window.__tp2opts.hidden); if(hp) hp.value=slug; window.__initTradePicker2(window.__tp2opts); }
+      if(window.__tp2opts){ var hp=document.getElementById(window.__tp2opts.hidden); if(hp) hp.value=slug; lpInitSettingsTradePicker(window.__tp2opts); }
       lpSaveServicePack(slug,cat,pack).then(function(ok){
         if(ok){ statusEl.style.color='#0a7d33'; statusEl.innerHTML='Saved <b>'+esc(pack.label)+'</b> under <b>'+esc(cat)+'</b> — it’ll be here next time too. Click <b>Load starter content</b> to apply.'; }
         else { statusEl.style.color='#b4543c'; statusEl.innerHTML='Added <b>'+esc(pack.label)+'</b> for this session, but saving for next time failed — check you’re signed in as admin and try again.'; }
@@ -3669,12 +3685,15 @@ function heroCtaCard(c){
     var _txtFull=_gsvVal?(/^google-site-verification=/i.test(_gsvVal)?_gsvVal:('google-site-verification='+_gsvVal)):('');
     var _mono='font-family:ui-monospace,Menlo,monospace;font-size:12.5px;word-break:break-all;background:transparent;color:var(--ink,#1b1f2a);border:1px solid var(--line);border-radius:8px;padding:10px 12px;';
     var _recRow=function(lbl,val,id){ return '<div style="margin-bottom:10px;"><div class="hint" style="font-weight:600;margin-bottom:4px;">'+lbl+'</div><div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;"><code'+(id?' id="'+id+'"':'')+' style="'+_mono+'flex:1;min-width:180px;">'+esc(val||'—')+'</code>'+(val?'<button type="button" class="btn ghost sm gsi-copy-rec" data-copy="'+esc(val)+'">Copy</button>':'')+'</div></div>'; };
-    var searchCard='<div class="card" style="margin-bottom:20px;" id="gsi-card"><h2 style="margin:0 0 4px;">Search &amp; indexing</h2><p class="lede" style="margin:0 0 14px;">Verify ownership in <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>, then submit your sitemap.</p>'
+    var _gsiSiteLbl=esc((currentBusinessName||currentSiteSlug||'this site').trim());
+    var _gsiSiteDom=(_hasDom?((currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'')):(currentSiteSlug||''));
+    var _gsiSiteUrl=_hasDom?('https://'+esc(_gsiSiteDom)):(currentSiteSlug?('https://leadpages.com.au/'+esc(currentSiteSlug)+'/'):'');
+    var searchCard='<div class="card" style="margin-bottom:20px;" id="gsi-card"><h2 style="margin:0 0 4px;">Search &amp; indexing</h2><p class="lede" style="margin:0 0 14px;padding:10px 12px;background:var(--panel-soft);border:1px solid var(--line);border-radius:10px;"><strong>This site:</strong> '+_gsiSiteLbl+(_gsiSiteUrl?' — <code style="background:transparent;color:var(--ink,#1b1f2a);padding:1px 6px;border-radius:6px;border:1px solid var(--line);word-break:break-all;">'+_gsiSiteUrl+'</code>':'')+'. <strong>Regenerate sitemap</strong> below updates this tenant only.</p><p class="lede" style="margin:0 0 14px;">Verify ownership in <a href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>, then submit your sitemap.</p>'
       +'<p class="lede" style="margin:0 0 6px;font-weight:600;">Sitemap <span class="hint">(submit in Search Console)</span></p>'
       +'<div id="gsi-map-stats" class="hint" style="margin:0 0 10px;padding:10px 12px;background:transparent;border-radius:10px;border:1px solid var(--line);">Loading sitemap details\u2026</div>'
       +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;"><code id="gsi-sitemap" style="'+_mono+'flex:1;min-width:200px;">sitemap.xml</code><button type="button" class="btn ghost sm" id="gsi-copy-map">Copy path</button><button type="button" class="btn ghost sm" id="gsi-copy-map-url">Copy URL</button></div>'
       +'<p class="hint" style="margin:0 0 10px;">Full URL: <code id="gsi-map-url" style="background:transparent;color:var(--ink,#1b1f2a);padding:1px 6px;border-radius:6px;border:1px solid var(--line);word-break:break-all;">'+esc(_mapUrl||'(publish site first)')+'</code></p>'
-      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;"><button type="button" class="btn" id="gsi-regen-map">Regenerate sitemap</button><span id="gsi-regen-msg" class="hint"></span></div>'
+      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;"><button type="button" class="btn" id="gsi-regen-map">Regenerate tenant sitemap</button><span id="gsi-regen-msg" class="hint"></span></div>'
       +'<p class="hint" style="margin:0 0 16px;">After adding or publishing landing pages, click <strong>Regenerate sitemap</strong> so Google sees the latest URLs.</p>'
       +'<p class="lede" style="margin:0 0 8px;font-weight:600;">Verification method</p>'
       +'<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">'
@@ -3710,12 +3729,12 @@ function heroCtaCard(c){
       +'<button type="button" class="btn ghost" id="gsi-push-vercel-cname">Add CNAME to Vercel DNS</button> <span id="gsi-vercel-cname-msg" class="hint"></span>'
       +'<p class="hint" style="margin:10px 0 0;">Or add the CNAME manually at your DNS host if not on Vercel nameservers.</p></div>'
       +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);"><button type="button" class="btn" id="gsi-save">Save &amp; publish</button><span id="gsi-saved" style="font-size:13px;color:#0a7d33;"></span></div></div>';
-    var platformSeoCard=(currentRole==='super')?('<div class="card" style="margin-bottom:20px;border:1px solid var(--accent-soft);" id="psi-card"><h2 style="margin:0 0 4px;">LeadPages marketing site</h2><p class="lede" style="margin:0 0 14px;">Search &amp; indexing for <strong>leadpages.com.au</strong> — homepage, marketplace, resources, and partner pages. Tenant sites use the card below.</p>'
+    var platformSeoCard=(currentRole==='super')?('<div class="card" style="margin-bottom:20px;border:1px solid var(--accent-soft);" id="psi-card"><h2 style="margin:0 0 4px;">LeadPages marketing site</h2><p class="lede" style="margin:0 0 14px;">Search &amp; indexing for <strong>leadpages.com.au</strong> only — homepage, marketplace, resources, and partner pages. Tenant sites (e.g. aam1.com.au) use <strong>Search &amp; indexing</strong> above.</p>'
       +'<p class="lede" style="margin:0 0 6px;font-weight:600;">Sitemap <span class="hint">(submit in Search Console)</span></p>'
       +'<div id="psi-map-stats" class="hint" style="margin:0 0 10px;padding:10px 12px;background:transparent;border-radius:10px;border:1px solid var(--line);">Loading marketing sitemap\u2026</div>'
       +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;"><code id="psi-sitemap" style="'+_mono+'flex:1;min-width:200px;">marketing-sitemap.xml</code><button type="button" class="btn ghost sm" id="psi-copy-map">Copy path</button><button type="button" class="btn ghost sm" id="psi-copy-map-url">Copy URL</button></div>'
       +'<p class="hint" style="margin:0 0 10px;">Full URL: <code id="psi-map-url" style="background:transparent;color:var(--ink,#1b1f2a);padding:1px 6px;border-radius:6px;border:1px solid var(--line);word-break:break-all;">https://www.leadpages.com.au/marketing-sitemap.xml</code></p>'
-      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;"><button type="button" class="btn" id="psi-regen-map">Regenerate sitemap</button><span id="psi-regen-msg" class="hint"></span></div>'
+      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;"><button type="button" class="btn" id="psi-regen-map">Regenerate marketing sitemap</button><span id="psi-regen-msg" class="hint"></span></div>'
       +'<p class="lede" style="margin:0 0 8px;font-weight:600;">Verification method</p>'
       +'<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">'
       +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;"><input type="radio" name="psi-method" value="meta" checked> <span><strong>HTML meta tag</strong> <span class="hint">— injected on marketing pages. URL-prefix property: <code>https://www.leadpages.com.au/</code></span></span></label>'
@@ -3750,12 +3769,12 @@ function heroCtaCard(c){
     var danger=(currentRole==='super')?('<div class="card danger" style="margin-bottom:0;"><h2>Danger zone</h2><p class="lede" style="margin:0 0 12px;">Unlock, then tap Delete twice to confirm. This permanently removes the site and can\u2019t be undone.</p><div style="display:flex;gap:10px;align-items:center;"><button type="button" id="btn-dellock" class="sp-lock" title="Unlock to allow delete" aria-label="Unlock to allow delete"><svg class="sp-lock-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="sp-lock-closed"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></g><g class="sp-lock-open"><path d="M8 11V7a4 4 0 0 1 7.5-1"/><rect x="5" y="11" width="14" height="10" rx="2"/></g></svg></button><button type="button" id="btn-delsite" class="sp-del" disabled>Delete site</button></div></div>'):'';
     p.innerHTML='<div class="sp-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h1 style="margin:0;font:700 26px/1.1 var(--font-display,Georgia),serif;">Settings</h1><button type="button" id="set-close" class="btn ghost">Close</button></div>'
       +'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Appearance &amp; Accessibility</h2><p class="lede" style="margin:0 0 12px;">Workspace theme for the command centre, plus published page visitor settings for this site.</p><button type="button" class="btn" id="open-aa-inline">Workspace appearance</button> <button type="button" class="btn ghost" id="open-aa-published">Published page settings</button></div>'
-      +platformSeoCard
       +searchCard
       +detailFields
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Mobile command menu</h2><p class="lede" style="margin:0 0 12px;">Design the phone mega menu for the command centre — section order, layouts, separators, button styles, and which roles see each item (super admin, partner, client).</p><button type="button" class="btn" id="open-mobile-menu">Edit mobile menu</button></div>':'')
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced. The suspended page is what the public sees when a site is paused for non-payment.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button> <button type="button" class="btn ghost" id="open-susp">Edit suspended page</button></div>':'')
       +window.__tradeStarterCard(currentRole==='super')
+      +platformSeoCard
       +danger
       +'</div>';
     document.body.appendChild(p);
@@ -3983,6 +4002,7 @@ function heroCtaCard(c){
       psiApi('GET').then(psiFill).catch(function(){ var el=$('psi-map-stats'); if(el) el.textContent='Could not load marketing SEO settings.'; });
       var gr=$('psi-regen-map');
       if(gr) gr.addEventListener('click',async function(){
+        if(!window.confirm('Regenerate the LeadPages marketing sitemap (leadpages.com.au)?\n\nThis does not update tenant sites like aam1.com.au — use Search & indexing for those.')) return;
         var msg=$('psi-regen-msg'); gr.disabled=true;
         if(msg){ msg.style.color='var(--ink-faint)'; msg.textContent='Regenerating\u2026'; }
         try{
@@ -4039,9 +4059,9 @@ function heroCtaCard(c){
     (function(){ var c=c0(); var ct=(c.trade||'').toLowerCase().trim(); var slug='plumber';
       if(ct){ if(ct==='plumber'){ slug='plumber'; } else if(TRADE_PACKS[ct]){ slug=ct; } else { for(var kk in TRADE_PACKS){ var lb=window.__tradeLabel(kk).toLowerCase(); if(lb===ct||lb.indexOf(ct)===0||(TRADE_PACKS[kk].tradeType||'').toLowerCase()===ct){ slug=kk; break; } } } }
       var hp=$('trade-pack'); if(hp) hp.value=slug;
-      lpLoadServicePacks(function(){ if(window.__initTradePicker2) window.__initTradePicker2({search:'tp-search',hidden:'trade-pack',picked:'tp-picked',cats:'tp-cats',list:'tp-packlist',defaultSlug:slug}); });
+      lpLoadServicePacks(function(){ lpInitSettingsTradePicker({search:'tp-search',hidden:'trade-pack',picked:'tp-picked',cats:'tp-cats',list:'tp-packlist',defaultSlug:slug}); });
     })();
-    var tpBtn=$('trade-pack-load'); if(tpBtn) tpBtn.addEventListener('click',function(){ var k=$('trade-pack').value; var nm=window.__tradeLabel(k); if(window.confirm('Load the '+nm+' starter content?\n\nThis replaces the current page copy, services and colours. Your business name and contact details stay. You can fine-tune everything afterwards.')){ applyTradePack(k); closeSettingsPage(); } });
+    var tpBtn=$('trade-pack-load'); if(tpBtn) tpBtn.addEventListener('click',function(){ var k=$('trade-pack').value; var nm=(window.LPTradePicker&&window.LPTradePicker.tradeLabel)?window.LPTradePicker.tradeLabel(k):window.__tradeLabel(k); if(window.confirm('Load the '+nm+' starter content?\n\nThis replaces the current page copy, services and colours. Your business name and contact details stay. You can fine-tune everything afterwards.')){ applyTradePack(k); closeSettingsPage(); } });
     if(window.__wireTradeBuilder) window.__wireTradeBuilder(applyTradePack);
     // wire danger zone (lock + double-tap delete)
     var lk=$('btn-dellock'), del=$('btn-delsite');
@@ -5374,7 +5394,7 @@ function heroCtaCard(c){
         +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Menu items</h2><p class="lede" style="margin:0 0 12px;">A row of links you can drop anywhere on the page with <b>Position</b>. Link to your home page, any Landing page (create them in the <b>Landing pages</b> tab), or an external URL. Drag the handle or use the arrows to reorder.</p>'
           +'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Placement</label><select id="nm-place" class="tin"><option value="bar">Own bar (below the header)</option><option value="header">In the header, beside the logo</option></select></div><div class="f"><p class="hint" style="margin:24px 0 0;">In-header position follows your logo alignment (set on the Logo tab). The style &amp; colour options below style the standalone bar.</p></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Button style</label><select id="nm-style" class="tin"><option value="pills">Pills (filled)</option><option value="solid">Solid buttons</option><option value="outline">Outline buttons</option><option value="shadow">Elevated (shadow)</option><option value="buttons">Bordered buttons</option><option value="tabs">Underline tabs</option><option value="underline">Animated underline</option><option value="links">Plain links</option><option value="ghost">Ghost (subtle)</option></select></div><div class="f"><label>Alignment</label><select id="nm-align" class="tin"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Show items as</label><select id="nm-icons" class="tin"><option value="text">Text only</option><option value="both">Icon + text</option><option value="icon">Icon only</option></select></div><div class="f"><label>Menu background</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-bg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-bgt" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-bg-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Button stroke colour <span class="hint">outline &amp; bordered styles</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-stroke" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-stroket" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-stroke-clr" class="btn ghost sm">Default</button></div></div><div class="f"><label>Button background <span class="hint">pills &amp; solid styles</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-fill" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-fillt" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-fill-clr" class="btn ghost sm">Default</button></div></div></div>'
           +'<div id="nm-list"></div>'
-          +'<div style="margin-top:12px;"><button type="button" id="nm-add" style="appearance:none;border:1px dashed var(--line);background:#fff;border-radius:9px;padding:10px 15px;font:inherit;font-weight:600;cursor:pointer;">+ Add menu item</button></div>'
+          +'<div style="margin-top:12px;"><button type="button" id="nm-add" class="nm-add">+ Add menu item</button></div>'
         +'</div>';
       wireSec(c,'navMenu',true,[]);
       (function(){ var _pl=$('nm-place'); if(_pl){ _pl.value=(_nm.placement==='header')?'header':'bar'; _pl.addEventListener('change',function(){ _nm.placement=_pl.value; persist(); previewApply(); }); } var s=$('nm-style'); if(s){ s.value=_nm.style||'pills'; s.addEventListener('change',function(){ _nm.style=s.value; persist(); previewApply(); }); } var a=$('nm-align'); if(a){ a.value=_nm.align||'left'; a.addEventListener('change',function(){ _nm.align=a.value; persist(); previewApply(); }); } var ic=$('nm-icons'); if(ic){ ic.value=_nm.icons||'text'; ic.addEventListener('change',function(){ _nm.icons=ic.value; persist(); previewApply(); }); } function _nmHex(v){ v=(v||'').trim(); return /^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)?(v.charAt(0)==='#'?v:'#'+v):''; } var _bg=$('nm-bg'),_bgt=$('nm-bgt'); if(_bg&&_bgt){ if(_nm.bg){ _bg.value=_nm.bg; _bgt.value=_nm.bg; } else { _bg.value='#1a2230'; } var _setBg=function(v){ v=_nmHex(v); _nm.bg=v; _bgt.value=v; if(v) _bg.value=v; persist(); previewApply(); }; _bg.addEventListener('input',function(){ _setBg(_bg.value); }); _bgt.addEventListener('input',function(){ _setBg(_bgt.value); }); var _bc=$('nm-bg-clr'); if(_bc) _bc.addEventListener('click',function(){ _nm.bg=''; _bgt.value=''; _bg.value='#1a2230'; persist(); previewApply(); }); } var _sk=$('nm-stroke'),_skt=$('nm-stroket'); if(_sk&&_skt){ if(_nm.stroke){ _sk.value=_nm.stroke; _skt.value=_nm.stroke; } else { _sk.value='#1f7bb8'; } var _setSk=function(v){ v=_nmHex(v); _nm.stroke=v; _skt.value=v; if(v) _sk.value=v; persist(); previewApply(); }; _sk.addEventListener('input',function(){ _setSk(_sk.value); }); _skt.addEventListener('input',function(){ _setSk(_skt.value); }); var _sc=$('nm-stroke-clr'); if(_sc) _sc.addEventListener('click',function(){ _nm.stroke=''; _skt.value=''; _sk.value='#1f7bb8'; persist(); previewApply(); }); } var _fl=$('nm-fill'),_flt=$('nm-fillt'); if(_fl&&_flt){ if(_nm.fill){ _fl.value=_nm.fill; _flt.value=_nm.fill; } else { _fl.value='#1f7bb8'; } var _setFl=function(v){ v=_nmHex(v); _nm.fill=v; _flt.value=v; if(v) _fl.value=v; persist(); previewApply(); }; _fl.addEventListener('input',function(){ _setFl(_fl.value); }); _flt.addEventListener('input',function(){ _setFl(_flt.value); }); var _fc=$('nm-fill-clr'); if(_fc) _fc.addEventListener('click',function(){ _nm.fill=''; _flt.value=''; _fl.value='#1f7bb8'; persist(); previewApply(); }); } })();
@@ -5382,18 +5402,18 @@ function heroCtaCard(c){
         var host=$('nm-list'); if(!host) return;
         function pages(){ return (Array.isArray(data.pages)?data.pages:[]).filter(function(p){ return p&&p.slug; }); }
         var _is='padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;'; var NM_ICONS=[['','\u2014 no icon \u2014'],['home','Home'],['phone','Phone'],['phone-call','Phone call'],['mail','Email'],['map-pin','Location'],['calendar','Calendar'],['clock','Clock'],['star','Star'],['heart','Heart'],['info','Info'],['check-circle','Tick'],['shield-check','Shield'],['award','Award'],['wrench','Wrench'],['hammer','Hammer'],['users','Team'],['user','Person'],['message-circle','Chat'],['image','Gallery'],['file-text','Document'],['book-open','Guide'],['sparkles','Sparkle'],['zap','Bolt'],['arrow-right','Arrow'],['external-link','External']]; function iconSel(it,i){ return '<div class="iconctl" style="flex:0 0 auto;"><button type="button" class="icon-pick" tabindex="-1" title="Choose an icon" style="width:42px;height:42px;">'+iconBtnInner(it.icon||'')+'</button><input type="hidden" class="icon-input" data-i="'+i+'" value="'+esc(it.icon||'')+'"></div>'; }
-        function tsel(it,i){ var o='<option value="home"'+((!it.target||it.target==='home')?' selected':'')+'>Home page</option>'; pages().forEach(function(p){ var v='page:'+p.slug; o+='<option value="'+esc(v)+'"'+(it.target===v?' selected':'')+'>'+esc((p.title||p.slug)+(p.status!=='published'?' (draft)':''))+'</option>'; }); o+='<option value="external"'+(it.target==='external'?' selected':'')+'>External URL\u2026</option>'; return '<select class="nm-target" data-i="'+i+'" style="'+_is+'background:#fff;flex:1 1 150px;">'+o+'</select>'; }
-        function row(it,i,n){ var ext=(it.target==='external'); return '<div class="nm-row" draggable="true" data-i="'+i+'" style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;margin-bottom:8px;">'
-          +'<span class="nm-grip" style="cursor:grab;color:#9aa1ac;font-size:15px;letter-spacing:-2px;line-height:1;">\u22ee\u22ee</span>'
+        function tsel(it,i){ var o='<option value="home"'+((!it.target||it.target==='home')?' selected':'')+'>Home page</option>'; pages().forEach(function(p){ var v='page:'+p.slug; o+='<option value="'+esc(v)+'"'+(it.target===v?' selected':'')+'>'+esc((p.title||p.slug)+(p.status!=='published'?' (draft)':''))+'</option>'; }); o+='<option value="external"'+(it.target==='external'?' selected':'')+'>External URL\u2026</option>'; return '<select class="nm-target tin" data-i="'+i+'" style="'+_is+'flex:1 1 150px;">'+o+'</select>'; }
+        function row(it,i,n){ var ext=(it.target==='external'); return '<div class="nm-row" draggable="true" data-i="'+i+'" style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px;">'
+          +'<span class="nm-grip" style="cursor:grab;color:var(--ink-faint);font-size:15px;letter-spacing:-2px;line-height:1;">\u22ee\u22ee</span>'
           +'<div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
-            +'<input type="text" class="nm-label" data-i="'+i+'" value="'+esc(it.label||'')+'" placeholder="Label" style="flex:1 1 120px;'+_is+'">'
+            +'<input type="text" class="nm-label tin" data-i="'+i+'" value="'+esc(it.label||'')+'" placeholder="Label" style="flex:1 1 120px;'+_is+'">'
             +tsel(it,i)+iconSel(it,i)
-            +'<input type="text" class="nm-url" data-i="'+i+'" value="'+esc(it.url||'')+'" placeholder="https://\u2026" style="flex:1 1 150px;'+_is+(ext?'':'display:none;')+'">'
+            +'<input type="text" class="nm-url tin" data-i="'+i+'" value="'+esc(it.url||'')+'" placeholder="https://\u2026" style="flex:1 1 150px;'+_is+(ext?'':'display:none;')+'">'
           +'</div>'
           +'<span style="display:flex;gap:4px;">'
-            +'<button type="button" class="nm-mv nm-up" data-i="'+i+'" title="Move up"'+(i===0?' disabled':'')+' style="appearance:none;border:1px solid var(--line);background:#fff;border-radius:6px;width:26px;height:26px;cursor:pointer;">\u2191</button>'
-            +'<button type="button" class="nm-mv nm-down" data-i="'+i+'" title="Move down"'+(i===n-1?' disabled':'')+' style="appearance:none;border:1px solid var(--line);background:#fff;border-radius:6px;width:26px;height:26px;cursor:pointer;">\u2193</button>'
-            +'<button type="button" class="nm-del" data-i="'+i+'" title="Remove" style="appearance:none;border:1px solid var(--line);background:#fff;border-radius:6px;width:26px;height:26px;cursor:pointer;color:#b4232a;">\u2715</button>'
+            +'<button type="button" class="nm-mv nm-up" data-i="'+i+'" title="Move up"'+(i===0?' disabled':'')+'>\u2191</button>'
+            +'<button type="button" class="nm-mv nm-down" data-i="'+i+'" title="Move down"'+(i===n-1?' disabled':'')+'>\u2193</button>'
+            +'<button type="button" class="nm-del" data-i="'+i+'" title="Remove">\u2715</button>'
           +'</span>'
         +'</div>'; }
         function draw(){ var its=_nm.items; host.innerHTML = its.length ? its.map(function(it,i){ return row(it,i,its.length); }).join('') : '<p class="hint" style="color:#888;margin:0;">No items yet \u2014 add Home, a Landing page, or an external link below.</p>'; }
@@ -6337,6 +6357,7 @@ function heroCtaCard(c){
     var SEC=c.sections||{};
     // Group apps by position slot for the layout track
     var SLOTS=[
+      {key:'nav',label:'Navigation'},
       {key:'hero',label:'Hero'},
       {key:'upper',label:'Upper'},
       {key:'mid',label:'Mid'},
@@ -6441,19 +6462,8 @@ function heroCtaCard(c){
         var on=tile.getAttribute('data-on')==='1';
         var next=!on;
         _toggleApp(c, siteId, key, appid, next);
-        // Update tile appearance immediately
+        // Update tile appearance immediately (CSS handles colours via data-on)
         tile.setAttribute('data-on', next?'1':'0');
-        var activeBg=next?'var(--accent-hover)':'#fff';
-        var activeColor=next?'#fff':'var(--ink)';
-        tile.style.background=activeBg;
-        tile.style.borderColor=next?'var(--accent-hover)':'var(--line,#E5E1DC)';
-        tile.style.boxShadow=next?'0 2px 8px rgba(21,92,74,0.25)':'0 1px 3px rgba(0,0,0,0.06)';
-        tile.querySelectorAll('span').forEach(function(s,idx){
-          if(idx===0) s.style.background=next?'rgba(255,255,255,0.15)':'var(--accent-soft)';
-          if(idx===1) s.style.color=activeColor;
-          if(idx===2) s.style.color=next?'rgba(255,255,255,0.7)':'var(--ink-soft)';
-        });
-        var svg=tile.querySelector('svg'); if(svg) svg.setAttribute('stroke',next?'rgba(255,255,255,0.9)':'var(--accent)');
       });
     });
   }
