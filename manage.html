@@ -251,18 +251,23 @@ textarea.tin{resize:vertical;}
 .lp-app-row .lp-app-name{font-weight:700;font-size:14px;flex:1 1 160px;min-width:0;}
 .lp-app-mode{font:600 12.5px var(--font-ui);color:var(--ink-soft);}
 .lp-app-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent);text-transform:uppercase;letter-spacing:.04em;}
-#lp-ord-list .ord-row{transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .15s,border-color .15s}
-#lp-ord-list .ord-row.dragging{opacity:.4}
-#lp-ord-list .ord-row.drop-before{box-shadow:0 -3px 0 0 var(--accent)}
-#lp-ord-list .ord-row.drop-after{box-shadow:0 3px 0 0 var(--accent)}
-#lp-ord-list .ord-mv{appearance:none;border:1px solid var(--line);background:var(--input-bg);border-radius:6px;width:24px;height:22px;line-height:1;cursor:pointer;color:var(--text-soft);font-size:12px;padding:0}
-#lp-ord-list .ord-mv:hover{border-color:var(--accent);color:var(--accent)}
-#lp-ord-list .ord-mv:disabled{opacity:.3;cursor:default}
-#lp-ord-list .ord-row--article{border-color:var(--accent);background:var(--accent-soft);color:var(--text)}
-#lp-ord-list .ord-grip{color:var(--muted);font-size:15px;line-height:1;letter-spacing:-2px}
-#lp-ord-list .ord-label{font-weight:600;font-size:13.5px;flex:1;color:var(--text)}
-#lp-layout-order.card{margin-bottom:18px;background:var(--surface-2)}
-#lp-app-edit{border-top:1px solid var(--line);padding-top:16px;margin-top:18px}
+/* Landing page layout order — full theme tokens (mirrors homepage #ord-list) */
+#lp-layout-order.lp-layout-card{margin-bottom:18px;padding:16px 18px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow);}
+#lp-layout-order .lp-layout-title{margin:0;font-size:15px;font-weight:700;color:var(--text,var(--ink));font-family:var(--font-ui);}
+#lp-layout-order .lp-layout-lede{margin:0 0 12px;font-size:13px;color:var(--text-soft,var(--ink-soft));}
+#lp-ord-list{display:flex;flex-direction:column;gap:0;margin:0;}
+#lp-ord-list .ord-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel,var(--surface));color:var(--text,var(--ink));margin-bottom:6px;cursor:grab;transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .15s,border-color .15s;}
+#lp-ord-list .ord-row.dragging{opacity:.4;}
+#lp-ord-list .ord-row.drop-before{box-shadow:0 -3px 0 0 var(--accent);}
+#lp-ord-list .ord-row.drop-after{box-shadow:0 3px 0 0 var(--accent);}
+#lp-ord-list .ord-grip{color:var(--muted,var(--ink-faint));font-size:15px;line-height:1;letter-spacing:-2px;flex:none;}
+#lp-ord-list .ord-label{font-weight:600;font-size:13.5px;flex:1;min-width:0;color:var(--text,var(--ink));}
+#lp-ord-list .ord-actions{display:flex;gap:4px;flex:none;}
+#lp-ord-list .ord-mv{appearance:none;border:1px solid var(--line);background:var(--input-bg,var(--panel));border-radius:6px;width:24px;height:22px;line-height:1;cursor:pointer;color:var(--text-soft,var(--ink-soft));font-size:12px;padding:0;}
+#lp-ord-list .ord-mv:hover{border-color:var(--accent);color:var(--accent);}
+#lp-ord-list .ord-mv:disabled{opacity:.3;cursor:default;}
+#lp-ord-list .ord-row--article{border-color:var(--accent);background:var(--accent-soft);color:var(--text,var(--ink));}
+#lp-app-edit{border-top:1px solid var(--line);padding-top:16px;margin-top:18px;}
 /* contact / brokers */
 .bro{border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;background:#fff;}
 .bro-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
@@ -824,11 +829,11 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         </div>
         <div id="lp-app-warn" class="lp-app-warn" hidden role="status">Choose an app from the list first.</div>
         <div id="lp-layout-order" class="card lp-layout-card" hidden>
-          <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px;">
-            <h3 style="margin:0;font-size:15px;">Page layout — position on page</h3>
+          <div class="card-head">
+            <h2 class="lp-layout-title">Page layout — position on page</h2>
             <button type="button" class="btn ghost sm" id="lp-ord-reset">Reset order</button>
           </div>
-          <p class="lede" style="margin:0 0 12px;font-size:13px;">Drag sections and <strong>Page content</strong> into the order you want on this landing page — e.g. hero, article, quote form.</p>
+          <p class="lede lp-layout-lede">Drag sections and <strong>Page content</strong> into the order you want on this landing page — e.g. hero, article, quote form.</p>
           <div id="lp-ord-list"></div>
         </div>
         <div id="lp-app-list"><p class="hint">No apps on this page yet — add one above, or leave empty for a text-only article page.</p></div>
@@ -1851,14 +1856,21 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(mode==='unique'){ lpPageAppSeed(secKey); if(!lpCur.pageSections[secKey]||!Object.keys(lpCur.pageSections[secKey]).length) lpCopyPageAppFromHome(secKey); }
     persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
   }
+  function lpEnsureOrdCss(){
+    if(document.getElementById('ord-anim-css')) return;
+    var st=document.createElement('style'); st.id='ord-anim-css';
+    st.textContent='#ord-list .ord-row,#lp-ord-list .ord-row{transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .15s,border-color .15s}#ord-list .ord-row.dragging,#lp-ord-list .ord-row.dragging{opacity:.4}#ord-list .ord-row.drop-before,#lp-ord-list .ord-row.drop-before{box-shadow:0 -3px 0 0 var(--accent)}#ord-list .ord-row.drop-after,#lp-ord-list .ord-row.drop-after{box-shadow:0 3px 0 0 var(--accent)}';
+    document.head.appendChild(st);
+  }
   function wireLpPageOrder(p){
     var host=$('lp-ord-list'); if(!host||!p) return;
+    lpEnsureOrdCss();
     var dragId=null;
     function rects(){ var o={}; host.querySelectorAll('.ord-row').forEach(function(r){ o[r.getAttribute('data-id')]=r.getBoundingClientRect().top; }); return o; }
     function flip(prev){ host.querySelectorAll('.ord-row').forEach(function(r){ var id=r.getAttribute('data-id'); if(prev[id]==null) return; var dy=prev[id]-r.getBoundingClientRect().top; if(dy){ r.style.transition='none'; r.style.transform='translateY('+dy+'px)'; requestAnimationFrame(function(){ r.style.transition=''; r.style.transform=''; }); } }); }
     function rowHtml(id,i,n){
       var art=(id==='__lpArticle');
-      return '<div class="ord-row'+(art?' ord-row--article':'')+'" draggable="true" data-id="'+id+'" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:grab;"><span class="ord-grip">\u22ee\u22ee</span><span class="ord-label">'+esc(lpPageLayoutLabel(id))+'</span><span style="display:flex;gap:4px;"><button type="button" class="ord-mv ord-up" data-id="'+id+'" title="Move up"'+(i===0?' disabled':'')+'>\u2191</button><button type="button" class="ord-mv ord-down" data-id="'+id+'" title="Move down"'+(i===n-1?' disabled':'')+'>\u2193</button></span></div>';
+      return '<div class="ord-row'+(art?' ord-row--article':'')+'" draggable="true" data-id="'+id+'"><span class="ord-grip">\u22ee\u22ee</span><span class="ord-label">'+esc(lpPageLayoutLabel(id))+'</span><span class="ord-actions"><button type="button" class="ord-mv ord-up" data-id="'+id+'" title="Move up"'+(i===0?' disabled':'')+'>\u2191</button><button type="button" class="ord-mv ord-down" data-id="'+id+'" title="Move down"'+(i===n-1?' disabled':'')+'>\u2193</button></span></div>';
     }
     function draw(animate){ var prev=animate?rects():null; var ord=lpEnsurePageLayoutOrder(p); host.innerHTML=ord.map(function(id,i){ return rowHtml(id,i,ord.length); }).join(''); if(animate) flip(prev); }
     function saveOrd(ord){ p.pageLayoutOrder=ord; persist(); lpAutosave(); lpPagePreviewReload(); }
@@ -2505,11 +2517,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function _orderList(c){ var base=getLayout(c.layout).sections.slice(); if(base.indexOf('trustBar')<0){ var _thi=base.indexOf('hero'); if(_thi<0)_thi=base.indexOf('heroSlider'); if(_thi<0)_thi=base.indexOf('splitHero'); if(_thi>=0) base.splice(_thi+1,0,'trustBar'); else base.unshift('trustBar'); } var sec=(c&&c.sections)||{}; OPTIONAL_COMPONENTS.concat(['navMenu']).forEach(function(id){ if(sec[id]&&sec[id].on===true&&base.indexOf(id)<0){ if(id==='textBox'){ var hi=base.indexOf('hero'); if(hi>=0){ base.splice(hi+1,0,id); return; } } if(id==='navMenu'){ base.unshift(id); return; } base.push(id); } }); var saved=Array.isArray(c.sectionOrder)?c.sectionOrder.filter(function(x){return base.indexOf(x)>=0;}):[]; base.forEach(function(x){ if(saved.indexOf(x)<0) saved.push(x); }); return saved.filter(function(x){ return _secOn(c,x); }); }
   function wireOrder(c){
     var host=$('ord-list'); if(!host) return;
+    lpEnsureOrdCss();
     var dragId=null;
-    if(!document.getElementById('ord-anim-css')){ var st=document.createElement('style'); st.id='ord-anim-css'; st.textContent='#ord-list .ord-row,#lp-ord-list .ord-row{transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .15s,border-color .15s}#ord-list .ord-row.dragging,#lp-ord-list .ord-row.dragging{opacity:.4}#ord-list .ord-row.drop-before,#lp-ord-list .ord-row.drop-before{box-shadow:0 -3px 0 0 var(--accent)}#ord-list .ord-row.drop-after,#lp-ord-list .ord-row.drop-after{box-shadow:0 3px 0 0 var(--accent)}#ord-list .ord-mv,#lp-ord-list .ord-mv{appearance:none;border:1px solid var(--line);background:var(--input-bg);border-radius:6px;width:24px;height:22px;line-height:1;cursor:pointer;color:var(--text-soft);font-size:12px;padding:0}#ord-list .ord-mv:hover,#lp-ord-list .ord-mv:hover{border-color:var(--accent);color:var(--accent)}#ord-list .ord-mv:disabled,#lp-ord-list .ord-mv:disabled{opacity:.3;cursor:default}#ord-list .ord-grip,#lp-ord-list .ord-grip{color:var(--muted);font-size:15px;line-height:1;letter-spacing:-2px}#ord-list .ord-label,#lp-ord-list .ord-label{font-weight:600;font-size:13.5px;flex:1;color:var(--text)}'; document.head.appendChild(st); }
+    if(!document.getElementById('ord-list-css')){ var st2=document.createElement('style'); st2.id='ord-list-css'; st2.textContent='#ord-list{display:flex;flex-direction:column;gap:0;margin:0}#ord-list .ord-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel,var(--surface));color:var(--text,var(--ink));margin-bottom:6px;cursor:grab}#ord-list .ord-grip{color:var(--muted,var(--ink-faint));font-size:15px;line-height:1;letter-spacing:-2px;flex:none}#ord-list .ord-label{font-weight:600;font-size:13.5px;flex:1;min-width:0;color:var(--text,var(--ink))}#ord-list .ord-actions{display:flex;gap:4px;flex:none}#ord-list .ord-mv{appearance:none;border:1px solid var(--line);background:var(--input-bg,var(--panel));border-radius:6px;width:24px;height:22px;line-height:1;cursor:pointer;color:var(--text-soft,var(--ink-soft));font-size:12px;padding:0}#ord-list .ord-mv:hover{border-color:var(--accent);color:var(--accent)}#ord-list .ord-mv:disabled{opacity:.3;cursor:default}'; document.head.appendChild(st2); }
     function rects(){ var o={}; host.querySelectorAll('.ord-row').forEach(function(r){ o[r.getAttribute('data-id')]=r.getBoundingClientRect().top; }); return o; }
     function flip(prev){ host.querySelectorAll('.ord-row').forEach(function(r){ var id=r.getAttribute('data-id'); if(prev[id]==null) return; var dy=prev[id]-r.getBoundingClientRect().top; if(dy){ r.style.transition='none'; r.style.transform='translateY('+dy+'px)'; requestAnimationFrame(function(){ r.style.transition=''; r.style.transform=''; }); } }); }
-    function rowHtml(id,i,n){ return '<div class="ord-row" draggable="true" data-id="'+id+'" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:grab;"><span class="ord-grip">\u22ee\u22ee</span><span class="ord-label">'+esc(_secLabel(id))+'</span><span style="display:flex;gap:4px;"><button type="button" class="ord-mv ord-up" data-id="'+id+'" title="Move up"'+(i===0?' disabled':'')+'>\u2191</button><button type="button" class="ord-mv ord-down" data-id="'+id+'" title="Move down"'+(i===n-1?' disabled':'')+'>\u2193</button></span></div>'; }
+    function rowHtml(id,i,n){ return '<div class="ord-row" draggable="true" data-id="'+id+'"><span class="ord-grip">\u22ee\u22ee</span><span class="ord-label">'+esc(_secLabel(id))+'</span><span class="ord-actions"><button type="button" class="ord-mv ord-up" data-id="'+id+'" title="Move up"'+(i===0?' disabled':'')+'>\u2191</button><button type="button" class="ord-mv ord-down" data-id="'+id+'" title="Move down"'+(i===n-1?' disabled':'')+'>\u2193</button></span></div>'; }
     function draw(animate){ var prev=animate?rects():null; var ord=_orderList(c); host.innerHTML=ord.map(function(id,i){ return rowHtml(id,i,ord.length); }).join(''); if(animate) flip(prev); }
     function move(id,dir){ var ord=_orderList(c); var i=ord.indexOf(id); if(i<0) return; var j=i+dir; if(j<0||j>=ord.length) return; var prev=rects(); ord.splice(j,0,ord.splice(i,1)[0]); c.sectionOrder=ord; persist(); previewApply(); draw(false); flip(prev); }
     function clearDrop(){ host.querySelectorAll('.drop-before,.drop-after').forEach(function(r){ r.classList.remove('drop-before','drop-after'); }); }
