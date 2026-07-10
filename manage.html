@@ -1797,6 +1797,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(ta) ta.setAttribute('aria-selected', tab==='apps'?'true':'false');
     if(pc) pc.hidden=(tab!=='content');
     if(pa) pa.hidden=(tab!=='apps');
+    if(activeView==='landing') lpNavStateSave({lpEdTab:tab});
     if(tab==='apps') lpRenderAppsTab();
   }
   async function lpEnsureAppsCatalog(){ return _aaEnsureAppsList(); }
@@ -2026,6 +2027,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var ed=$('lp-app-edit'); if(ed) ed.hidden=true;
     lpPageEditKey=null;
     if(lpCur.slug&&document.body.classList.contains('lp-prev-open')) previewLoad();
+    lpNavStateSave({view:'landing', lpPageId:id});
     try{$('lp-editor').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
   }
   function mdToHtml(t){
@@ -2057,6 +2059,33 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   /* ===== leadpages: live Supabase auth + DB-backed config ===== */
   const sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
   let currentSiteId=null, currentSiteSlug=null, currentSiteTemplate=null, currentBusinessName='', currentCustomDomain='', currentOwnerEmail='', currentIsPartnerHome=false, allSites=[];
+  var LP_NAV_STATE_KEY='lp_manage_nav_v1';
+  var lpNavRestorePending=null;
+  function lpNavStateLoad(){ try{ return JSON.parse(localStorage.getItem(LP_NAV_STATE_KEY)||'{}')||{}; }catch(e){ return {}; } }
+  function lpNavStateSave(partial){ try{ var cur=lpNavStateLoad(); Object.assign(cur, partial||{}); localStorage.setItem(LP_NAV_STATE_KEY, JSON.stringify(cur)); }catch(e){} }
+  function lpSyncManageUrl(){
+    if(!currentSiteSlug) return;
+    try{
+      var u=new URL(location.href);
+      u.searchParams.set('site', currentSiteSlug);
+      if(activeView&&activeView!=='dashboard') u.searchParams.set('view', activeView);
+      else u.searchParams.delete('view');
+      history.replaceState(null,'', u.pathname+u.search+(u.hash||''));
+    }catch(e){}
+  }
+  function lpNavRestoreLanding(){
+    if(!lpNavRestorePending||currentSiteTemplate!=='trade') return;
+    var st=lpNavRestorePending; lpNavRestorePending=null;
+    if(st.view!=='landing'||!st.lpPageId) return;
+    setTimeout(function(){
+      showView('landing');
+      var p=(data.pages||[]).find(function(x){ return x.id===st.lpPageId; });
+      if(p){
+        lpOpen(p.id);
+        if(st.lpEdTab&&st.lpEdTab!=='content') lpSetEdTab(st.lpEdTab);
+      }
+    }, 120);
+  }
 
   async function lpLogin(){
     const email=$('li-user').value.trim(), pass=$('li-pass').value;
@@ -2117,8 +2146,24 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(error){ toast('Could not load site: '+error.message); return; }
     allSites = rows||[];
     if(!allSites.length){ toast('No site is assigned to this account yet.'); return; }
+    var __urlView='';
+    try{ __urlView=new URLSearchParams(location.search).get('view')||''; }catch(_uv){}
     // Deep-link: /manage?site=<slug> opens that site straight away (e.g. the partner My-page "Edit in builder").
-    try{ var __ds=new URLSearchParams(location.search).get('site'); if(__ds){ var __m=allSites.find(function(x){return x.slug===__ds;}); if(__m){ loadSite(__m); return; } } }catch(_e){}
+    try{ var __ds=new URLSearchParams(location.search).get('site'); if(__ds){ var __m=allSites.find(function(x){return x.slug===__ds;}); if(__m){ if(__urlView) activeView=__urlView; lpNavRestorePending=lpNavStateLoad(); if(__urlView==='landing'){ lpNavRestorePending.view='landing'; } loadSite(__m); return; } } }catch(_e){}
+    // Restore last site + tab from localStorage (survives refresh).
+    try{
+      var __st=lpNavStateLoad();
+      if(__st.siteId){
+        var __last=allSites.find(function(x){ return x.id===__st.siteId; });
+        if(__last){
+          if(__urlView) activeView=__urlView;
+          else if(__st.view) activeView=__st.view;
+          lpNavRestorePending=__st;
+          loadSite(__last);
+          return;
+        }
+      }
+    }catch(_rs){}
     // Land on the account picker first (so the wrong page is never edited by accident).
     // A client with a single site goes straight in.
     if(currentRole==='super'){ var __pb=document.getElementById('lpl-seg-partner'); if(__pb) __pb.style.display=''; try{ await loadLandingPartners(); }catch(_e){} }
@@ -2637,7 +2682,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     _vaSeed(d);
   }
   function loadSite(site){
+    hideLanding();
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app'; currentIsPartnerHome=!!site.is_partner_home;
+    lpNavStateSave({siteId:site.id, siteSlug:site.slug});
     if(window.LPLogo&&window.LPLogo.refreshWorkspaceLogos){ window.LPLogo.refreshWorkspaceLogos(); }
     currentBusinessName=site.business_name||''; currentCustomDomain=site.custom_domain||''; currentOwnerEmail=site.owner_email||'';
     landingSub='details';
@@ -2665,6 +2712,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         try{ lpRenderSupportContact(); }catch(e){}
         if(document.body.classList.contains('lp-prev-open')) previewLoad();
         try{ lpScopeSync(); lpBkSync(); }catch(e){}
+        lpSyncManageUrl();
+        lpNavRestoreLanding();
       });
       return; // async reconcile continues in background
     }
@@ -2675,6 +2724,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     try{ lpRenderSupportContact(); }catch(e){}
     if(document.body.classList.contains('lp-prev-open')) previewLoad();
     try{ lpScopeSync(); lpBkSync(); }catch(e){}
+    lpSyncManageUrl();
+    lpNavRestoreLanding();
   }
   /* Partner Program: show the customer (site owner) their assigned support contact. */
   function lpRenderSupportContact(){
@@ -6015,6 +6066,9 @@ function heroCtaCard(c){
   let activeView=null;
   function showView(which){
     activeView=which;
+    if(which!=='landing') lpNavStateSave({view:which, lpPageId:null, lpEdTab:null});
+    else lpNavStateSave({view:which});
+    lpSyncManageUrl();
     NAV.forEach(function(it){ const v=$(it[1]), b=$('nav-'+it[0]); const on=(it[0]===which); if(v) v.hidden=!on; if(b) b.setAttribute('aria-selected', on?'true':'false'); if(on && it[2]) it[2](); });
   }
   NAV.forEach(function(it){ const b=$('nav-'+it[0]); if(b) b.addEventListener('click',function(){ showView(it[0]); }); });
