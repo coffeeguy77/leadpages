@@ -756,12 +756,13 @@ module.exports = async (req, res) => {
     if (template === 'trade' && !cfg.trade) cfg.trade = '';
 
     // Sub-page routing: /:site/:page (or /:page on a custom domain) must resolve to a
-    // PUBLISHED landing page in the config; otherwise it's a hard 404 (no soft-404s).
+    // published landing page in the config; draft pages work in ?preview= only.
     let _pageRow = null;
     if (page) {
       const _pages = Array.isArray(cfg.pages) ? cfg.pages : [];
-      _pageRow = _pages.find(p => p && p.slug === page && p.status === 'published') || null;
+      _pageRow = _pages.find(p => p && p.slug === page) || null;
       if (!_pageRow) return notFound(res);
+      if (_pageRow.status !== 'published' && !isPreview) return notFound(res);
     }
 
     // ---- SEO title/description (per-tenant, graceful, never plumber-specific) ----
