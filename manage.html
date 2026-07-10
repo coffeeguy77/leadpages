@@ -1824,6 +1824,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(Array.isArray(home[k])&&home[k].length && (!Array.isArray(sec[k])||!sec[k].length)) return true;
       if(home[k] && typeof home[k]==='string' && home[k].trim() && (!sec[k]||!String(sec[k]).trim())) return true;
     }
+    if(Array.isArray(home.slides)&&home.slides.length){
+      var hi=home.slides.some(function(s){ return s&&(s.imageUrl||s.image||s.heading||s.subText); });
+      var pi=(sec.slides||[]).some(function(s){ return s&&(s.imageUrl||s.image||s.heading||s.subText); });
+      if(hi&&!pi) return true;
+    }
+    var textKeys=['heading','title','sub','subText','eyebrow','button','formTitle','h1'];
+    var homeText=false, pageText=false;
+    textKeys.forEach(function(k){ if(home[k]&&String(home[k]).trim()) homeText=true; if(sec[k]&&String(sec[k]).trim()) pageText=true; });
+    if(homeText&&!pageText) return true;
     var homeKeys=Object.keys(home).filter(function(k){ return k!=='on'; });
     var pageKeys=Object.keys(sec).filter(function(k){ return k!=='on'; });
     if(homeKeys.length>=4 && pageKeys.length<Math.ceil(homeKeys.length*0.45)) return true;
@@ -1835,28 +1844,41 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     lpEnsurePageApps(lpCur);
     var src=lpPageHomeSection(secKey);
     lpCur.pageSections[secKey]=JSON.parse(JSON.stringify(src));
+    if(Array.isArray(lpCur.pageSections[secKey].slides)&&lpCur.pageSections[secKey].slides.length){
+      // keep homepage slide styling; editor expects slides array
+    } else if(secKey==='heroSlider'&&(!lpCur.pageSections[secKey].slides||!lpCur.pageSections[secKey].slides.length)){
+      var tmp={sections:lpCur.pageSections};
+      if(typeof slideFromHero==='function') lpCur.pageSections[secKey].slides=[slideFromHero(data)];
+    }
     lpPageAppSeed(secKey);
     persist(); lpAutosave();
     if(!opts.skipRender) lpRenderAppsTab();
     lpPagePreviewReload();
-    if(!opts.silent) toast('Started from homepage '+_secLabel(secKey)+' — change text for this page; styling and images are kept.');
+    if(!opts.silent) toast('Homepage content copied — edit text for this landing page; styling and images are kept.');
+  }
+  function lpPageAppCopyFromHome(secKey, opts){
+    opts=opts||{};
+    if(!lpCur||!secKey) return;
+    var app=(lpCur.pageApps||[]).find(function(a){ return (a.key||a.section_key)===secKey; });
+    var ps=lpCur.pageSections&&lpCur.pageSections[secKey];
+    if(!opts.force && ps&&Object.keys(ps).length&&!lpPageSectionLooksUninitialized(secKey, ps)){
+      if(!confirm('Replace this page\u2019s unique content with a fresh copy from the homepage? Your current edits for this page will be lost.')) return;
+    }
+    lpCopyPageAppFromHome(secKey, opts);
+    if(app) app.homeCopied=true;
+    if(lpPageEditKey===secKey) lpRenderPageAppEditor(secKey);
   }
   function lpPageAppEnsureUniqueData(secKey){
     if(!lpCur||!secKey) return false;
     var app=(lpCur.pageApps||[]).find(function(a){ return (a.key||a.section_key)===secKey; });
     if(!app||app.mode!=='unique') return false;
-    if(app.uniqueInit){
-      lpPageAppSeed(secKey);
-      return false;
-    }
     var ps=lpCur.pageSections&&lpCur.pageSections[secKey];
     if(ps&&Object.keys(ps).length&&!lpPageSectionLooksUninitialized(secKey, ps)){
-      app.uniqueInit=true;
       lpPageAppSeed(secKey);
       return false;
     }
     lpCopyPageAppFromHome(secKey, {silent:true, skipRender:true});
-    app.uniqueInit=true;
+    app.homeCopied=true;
     return true;
   }
   function lpPageScopedCfg(){ if(!lpCur.pageSections) lpCur.pageSections={}; return {sections:lpCur.pageSections}; }
@@ -1900,7 +1922,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(!app) return;
     app.mode=mode;
     if(mode==='unique'){
-      if(lpPageAppEnsureUniqueData(secKey)) toast('Unique to this page — started from homepage. Edit text here; other landing pages are unchanged.');
+      var copied=lpPageAppEnsureUniqueData(secKey);
+      if(copied) toast('Copied homepage content — edit text for this landing page. Use \u201cUse homepage content\u201d anytime to reset from the homepage.');
     }
     persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
   }
@@ -1988,7 +2011,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         +'<select class="tin lp-app-mode-sel" data-key="'+k+'" style="min-width:130px;">'
         +'<option value="shared"'+(mode==='shared'?' selected':'')+'>Shared (homepage)</option>'
         +'<option value="unique"'+(mode==='unique'?' selected':'')+'>Unique to page</option></select>'
-        +(isUnique?'<button type="button" class="btn ghost sm lp-app-edit-btn" data-key="'+k+'">Edit content</button>'
+        +(isUnique?'<button type="button" class="btn ghost sm lp-app-copy-home" data-key="'+k+'">Use homepage content</button><button type="button" class="btn ghost sm lp-app-edit-btn" data-key="'+k+'">Edit content</button>'
           :'<button type="button" class="btn ghost sm lp-app-home-btn" data-key="'+k+'">Edit on homepage</button>')
         +'<button type="button" class="btn ghost sm danger lp-app-rm" data-key="'+k+'">Remove</button></div>';
     }).join('');
@@ -1997,6 +2020,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     });
     list.querySelectorAll('.lp-app-edit-btn').forEach(function(b){
       b.addEventListener('click',function(){ lpRenderPageAppEditor(b.getAttribute('data-key')); });
+    });
+    list.querySelectorAll('.lp-app-copy-home').forEach(function(b){
+      b.addEventListener('click',function(){ lpPageAppCopyFromHome(b.getAttribute('data-key'), {force:false}); });
     });
     list.querySelectorAll('.lp-app-home-btn').forEach(function(b){
       b.addEventListener('click',function(){ var k=b.getAttribute('data-key'); showView('details'); landingSub=k; renderDetails(); toast('Editing homepage '+_secLabel(k)); });
