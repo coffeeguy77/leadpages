@@ -2,6 +2,7 @@
 // Browser JWT auth + service role DB access (same pattern as /api/stats).
 
 const { createClient } = require('@supabase/supabase-js');
+const { sanitizeSiteConfig } = require('../lib/quote-system/sanitize');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const admin = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -120,7 +121,7 @@ module.exports = async (req, res) => {
       if (action === 'restore') {
         const access = await assertBackupAccess(user, body.id || body.backupId);
         if (!access.ok) return json(access.code, { error: access.error });
-        const cfg = access.backup.config;
+        const cfg = sanitizeSiteConfig(access.backup.config);
         if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) {
           return json(400, { error: 'invalid_config' });
         }
@@ -136,7 +137,7 @@ module.exports = async (req, res) => {
         const siteId = (body.siteId || '').trim();
         const access = await assertSiteAccess(user, siteId);
         if (!access.ok) return json(access.code, { error: access.error });
-        const cfg = body.config;
+        const cfg = sanitizeSiteConfig(body.config);
         if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) {
           return json(400, { error: 'invalid_config' });
         }

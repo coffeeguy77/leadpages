@@ -98,6 +98,14 @@
       "destination": "/quote.html"
     },
     {
+      "source": "/online-quote",
+      "destination": "/online-quote-wizard.html"
+    },
+    {
+      "source": "/quote-portal",
+      "destination": "/quote-portal.html"
+    },
+    {
       "source": "/offer",
       "destination": "/offer.html"
     },

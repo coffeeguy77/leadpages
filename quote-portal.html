@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Your quote</title>
+<style>
+  :root { --pipe:#1f7a63; --ink:#1c2330; --soft:#6b7280; --line:#e5e7eb; --panel:#fff; --hi:#f4f6f9; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,Segoe UI,sans-serif; background:var(--hi); color:var(--ink); line-height:1.5; }
+  .wrap { max-width:640px; margin:0 auto; padding:32px 16px 64px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:24px; box-shadow:0 12px 40px rgba(28,35,48,.06); }
+  h1 { margin:0 0 6px; font-size:1.5rem; }
+  .sub { color:var(--soft); margin:0 0 20px; font-size:14px; }
+  .total { font-size:2rem; font-weight:800; margin:0 0 4px; }
+  .lines { list-style:none; padding:0; margin:16px 0 0; border-top:1px solid var(--line); }
+  .lines li { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid #f3f4f6; font-size:14px; }
+  .badge { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; padding:4px 10px; border-radius:999px; background:#e8f5ef; color:var(--pipe); margin-bottom:12px; }
+  .badge.accepted { background:#e8f5ef; color:#155c4a; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; }
+  .btn { appearance:none; border:none; border-radius:10px; padding:12px 18px; font-weight:600; font-size:14px; cursor:pointer; text-decoration:none; display:inline-block; }
+  .btn-primary { background:var(--pipe); color:#fff; }
+  .btn-ghost { background:#fff; color:var(--pipe); border:1px solid color-mix(in srgb, var(--pipe) 35%, var(--line)); }
+  .btn[disabled] { opacity:.55; cursor:default; }
+  .msg { margin-top:14px; font-size:13px; color:var(--soft); min-height:18px; }
+  .msg.err { color:#b42318; }
+  .loading, .error { text-align:center; color:var(--soft); padding:48px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="qp-root" class="loading">Loading your quote…</div>
+</div>
+<script src="/assets/lp-quote-portal.js" defer></script>
+</body>
+</html>
