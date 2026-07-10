@@ -613,6 +613,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     <button class="anav-btn" id="nav-rates" aria-selected="false" style="display:none">Rates &amp; leads</button>
     <button class="anav-btn" id="nav-landing" aria-selected="false">Landing pages</button>
     <button class="anav-btn" id="nav-apps" aria-selected="false">App Marketplace</button>
+    <button class="anav-btn" id="nav-onlinequotes" aria-selected="false" style="display:none">Online quotes</button>
     <button class="anav-btn" id="nav-mailer" aria-selected="false">Email clients</button>
     <button class="anav-btn" id="nav-messages" aria-selected="false">Messages</button>
     <button class="anav-btn" id="nav-appearance" aria-selected="false">Appearance</button>
@@ -627,6 +628,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 
   <!-- ===================== APP MARKETPLACE ===================== -->
   <div id="av-apps" hidden></div>
+
+  <div id="av-onlinequotes" hidden></div>
 
   <div id="av-mailer" hidden></div>
 
@@ -2434,6 +2437,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     seoTokens:{trade:'',location:'Canberra',city:'Canberra',region:'ACT',suburb:'Canberra',enableUrlSuburb:false,updateTitle:false,titleTemplate:'{trade} in {location} | {business}'},
     emergencyAvailability:{on:false,heading:'After-hours & emergencies',intro:'We keep the phone on outside business hours for genuine emergencies \u2014 leave your details and we\u2019ll call you straight back.',mode:'schedule',available:true,weekdayOpen:'07:00',weekdayClose:'17:00',satOpen:'08:00',satClose:'14:00',sunOpen:'',sunClose:'',availableLabel:'Available now',responseText:'Fast response — usually within the hour',afterHoursLabel:'After hours',afterHoursText:'Leave your details and we’ll call you first thing.',emergencyText:'Genuine emergency? Call anyway — we run after-hours callouts.',cta:{text:'',action:'call'}},
     serviceAreaMap:{on:false,eyebrow:'Service area',heading:'Suburbs we cover across the ACT',intro:'Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch.'},
+    onlineQuote:{on:false,eyebrow:'Online quote',heading:'Get your verified quote',intro:'Answer a few questions — verify your email to see your total, then SMS for the full breakdown.'},
     estimateBuilder:{on:false,eyebrow:'Instant estimate',heading:'Get a ballpark price in 30 seconds',intro:'Answer a few quick questions for an indicative range. For an exact price, send the details through and we’ll confirm.',currency:'$',disclaimer:'This is a guide only — your final price is confirmed after a quick on-site inspection.',ctaText:'Get my exact quote'},
     certifications:{eyebrow:'Accredited & insured',heading:'Licensed, insured & accredited',intro:'Fully qualified and backed by recognised industry accreditations — so you know the job is done right.'},
     finance:{eyebrow:'Flexible payments',heading:'Finance options available',amount:'38',period:'week',description:'Spread the cost of larger jobs with approved finance — get the work done now and pay it off over time.',disclaimer:'Finance is subject to approval. Terms and conditions apply.',cta:{text:'Ask about finance',action:'quote'}},
@@ -2605,7 +2609,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function themeFromPreset(tradeKey){ var p=getTradeColourPreset(tradeKey); return { pipe:p.brand, hivis:p.cta, steel:p.dark, safety:p.highlight, accent:p.accent, lightBg:p.lightBg, presetName:p.presetName, presetKey:tradeKey }; }
   const LAYOUTS = { classic: { id: "classic", name: "Classic Conversion", description: "Current tradie landing page.", sections: ["emerg","hero","services","why","area","reviews","quote","faq","footer"], features: [] }, "quote-first": { id: "quote-first", name: "Quote First", description: "Hero and quote form appear together above the fold for paid traffic.", sections: ["emerg","hero","quote","services","why","reviews","area","faq","footer"], features: ["heroQuote"] }, "photo-proof": { id: "photo-proof", name: "Photo Proof", description: "Shows project proof early with a before and after gallery.", sections: ["emerg","hero","services","beforeAfter","reviews","why","area","quote","faq","footer"], features: ["beforeAfter"] }, "emergency-response": { id: "emergency-response", name: "Emergency Response", description: "Urgency-first page: trust badges and quote form pushed high for emergency trades.", sections: ["emerg","hero","responseCards","quote","services","reviews","why","faq","area","footer"], features: ["responseCards"] }, "authority-builder": { id: "authority-builder", name: "Authority Builder", description: "Leads with big credibility numbers to establish an experienced, established business.", sections: ["emerg","hero","projectStats","services","why","area","reviews","quote","faq","footer"], features: ["projectStats"] }, "service-area-dominator": { id: "service-area-dominator", name: "Service Area Dominator", description: "Leads with a large suburb coverage grid under the hero to dominate local SEO and paid search.", sections: ["emerg","hero","serviceAreas","services","why","reviews","area","quote","faq","footer"], features: ["serviceAreas"] }, "reviews-first": { id: "reviews-first", name: "Reviews First", description: "Leads with star-rated review highlights under the hero so visitors hit social proof first.", sections: ["emerg","hero","reviewHighlights","quote","services","reviews","faq","why","area","footer"], features: ["reviewHighlights"] }, "premium-showcase": { id: "premium-showcase", name: "Premium Showcase", description: "A mini portfolio of large project image cards under the hero \u2014 for high-end visual trades.", sections: ["emerg","hero","featuredProjects","services","reviews","why","area","quote","faq","footer"], features: ["featuredProjects"] }, "offer-funnel": { id: "offer-funnel", name: "Offer Funnel", description: "AdWords lead-gen layout: a bold special-offer banner under the hero, straight into the quote form.", sections: ["emerg","hero","specialOffer","quote","services","reviews","faq","why","area","footer"], features: ["specialOffer"] }, "ba-hero-slider": { id: "ba-hero-slider", name: "Before / After Hero Slider", description: "A large interactive before/after wipe slider near the top of the page.", sections: ["emerg","hero","heroBeforeAfter","services","reviews","why","area","quote","faq","footer"], features: ["heroBeforeAfter"] }, "hero-image-slider": { id: "hero-image-slider", name: "Hero Image Slider", description: "Large image hero with editable slides, overlay text, CTA buttons and transitions.", sections: ["emerg","heroSlider","services","why","reviews","area","quote","faq","footer"], features: ["heroSlider"] }, "social-proof-feed": { id: "social-proof-feed", name: "Social Proof Feed", description: "A live, modern \u201cproof feed\u201d of jobs, reviews, videos and before/afters \u2014 every card links to a CTA.", sections: ["emerg","splitHero","activityCounter","activityTimeline","proofStream","projectFeed","jobsFeed","beforeAfterFeed","videoReels","services","reviews","customerReactions","why","crew","area","quote","faq","footer"], features: ["proofStream","splitHero","activityCounter","crew","jobsFeed","beforeAfterFeed","videoReels","activityTimeline","customerReactions","projectFeed"] } };
   function getLayout(layoutId){ return (layoutId && LAYOUTS[layoutId]) ? LAYOUTS[layoutId] : LAYOUTS.classic; }
-  const OFF_BY_DEFAULT_SECTIONS=['instaGallery','igProjectFeed','lpFooter','lpAccessibility','navMenu','mobileBar','emergencyAvailability','estimateBuilder','finance','serviceAreaMap','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox'];
+  const OFF_BY_DEFAULT_SECTIONS=['instaGallery','igProjectFeed','lpFooter','lpAccessibility','navMenu','mobileBar','emergencyAvailability','onlineQuote','estimateBuilder','finance','serviceAreaMap','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox'];
   const OPTIONAL_COMPONENTS=['instaGallery','igProjectFeed','lpFooter','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox'];
   const PAGE_CONTENT_EDITONLY=['details','seoTokens','branding','logo','sectionOrder'];
   function layoutHasFeature(c,feat){ try{ var f=getLayout((c&&c.layout)||"classic").features||[]; return f.indexOf(feat)>=0; }catch(e){ return false; } }
@@ -2658,7 +2662,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var rb=$('ord-reset'); if(rb) rb.onclick=function(){ var prev=rects(); delete c.sectionOrder; persist(); previewApply(); draw(false); flip(prev); };
   }
   function presetKeyForSite(c){ var t=(c&&c.trade)||'Plumber'; if(TRADE_COLOUR_PRESETS[t]) return t; for(var k in TRADE_PACKS){ if(TRADE_PACKS[k].tradeType===t && TRADE_COLOUR_PRESETS[TRADE_PACKS[k].label]) return TRADE_PACKS[k].label; } return 'Plumber'; }
-  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['trustBar','Trust Bar'],['services','Services'],['serviceProcess','Service Process'],['why','Why us'],['area','Where'],['reviews','Reviews'],['promotions','Promotions'],['certifications','Certifications'],['finance','Finance Options'],['estimateBuilder','Estimate Builder'],['serviceAreaMap','Service Area Map'],['emergencyAvailability','Emergency Availability'],['seoTokens','Local SEO'],['beforeAfter','Before & After'],['responseCards','Response Cards'],['projectStats','Project Stats'],['serviceAreas','Service Areas'],['reviewHighlights','Review Highlights'],['featuredProjects','Project Portfolio'],['specialOffer','Special Offer'],['heroBeforeAfter','Hero B/A Slider'],['heroSlider','Hero Slider'],['splitHero','Split Hero'],['activityCounter','Activity Counter'],['proofStream','Proof Stream'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed'],['beforeAfterFeed','Before/After Feed'],['videoReels','Video Reels'],['activityTimeline','Activity Timeline'],['customerReactions','Customer Reactions'],['textBox','Text Box'],['crew','Team Members'],['quote','Quote'],['faq','FAQ'],['mobileBar','Mobile'],['footer','Footer'],['branding','Branding'],['logo','Logo'],['navMenu','Menu'],['sectionOrder','Position'],['instaGallery','Instagram Gallery'],['igProjectFeed','Instagram Feed'],['lpFooter','LeadPages footer']];
+  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['trustBar','Trust Bar'],['services','Services'],['serviceProcess','Service Process'],['why','Why us'],['area','Where'],['reviews','Reviews'],['promotions','Promotions'],['certifications','Certifications'],['finance','Finance Options'],['estimateBuilder','Estimate Builder'],['serviceAreaMap','Service Area Map'],['emergencyAvailability','Emergency Availability'],['seoTokens','Local SEO'],['beforeAfter','Before & After'],['responseCards','Response Cards'],['projectStats','Project Stats'],['serviceAreas','Service Areas'],['reviewHighlights','Review Highlights'],['featuredProjects','Project Portfolio'],['specialOffer','Special Offer'],['heroBeforeAfter','Hero B/A Slider'],['heroSlider','Hero Slider'],['splitHero','Split Hero'],['activityCounter','Activity Counter'],['proofStream','Proof Stream'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed'],['beforeAfterFeed','Before/After Feed'],['videoReels','Video Reels'],['activityTimeline','Activity Timeline'],['customerReactions','Customer Reactions'],['textBox','Text Box'],['crew','Team Members'],['onlineQuote','Online Quote'],['quote','Quote'],['faq','FAQ'],['mobileBar','Mobile'],['footer','Footer'],['branding','Branding'],['logo','Logo'],['navMenu','Menu'],['sectionOrder','Position'],['instaGallery','Instagram Gallery'],['igProjectFeed','Instagram Feed'],['lpFooter','LeadPages footer']];
   let landingSub='hero';
   const DEFAULT_TRADE_LISTS={'estimateBuilder.options':[
     {on:true,step:'What do you need?',label:'Tap or mixer repair',min:'150',max:'300'},
@@ -2883,7 +2887,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var CORE_GROUPS=[
       ['Business Identity & Hero Area',['branding','logo','details','hero','splitHero','heroBeforeAfter','heroSlider','emerg','mobileBar','sectionOrder']],
       ['Services & Selling Content',['services','serviceProcess','serviceAreas','serviceAreaMap','seoTokens','finance','textBox','videoReels']],
-      ['Lead Capture & Conversion',['quote','promotions','faq','estimateBuilder','jobsFeed','emergencyAvailability','specialOffer','responseCards']],
+      ['Lead Capture & Conversion',['quote','onlineQuote','promotions','faq','estimateBuilder','jobsFeed','emergencyAvailability','specialOffer','responseCards']],
       ['Trust, Proof & Authority',['trustBar','certifications','reviews','reviewHighlights','customerReactions','proofStream','activityCounter','activityTimeline']],
       ['Projects, Gallery & Before/After',['projectFeed','igProjectFeed','instaGallery','featuredProjects','projectStats','beforeAfter','beforeAfterFeed']],
       ['Company & Location Details',['crew','area','why','navMenu','footer','lpFooter']]
@@ -4941,6 +4945,7 @@ function heroCtaCard(c){
     var det=l.details||{};
     var contact=[l.phone,l.email].filter(Boolean).join(' · ');
     var sub=l.message || [det.job,det.suburb].filter(Boolean).join(' · ') || (l.kind||'');
+    if((l.kind||'')==='quote') sub=(det.totalFormatted?('Quote: '+det.totalFormatted):'Online quote')+(sub?' · '+sub:'');
     var body='';
     if(open){
       var lines=[];
@@ -5278,6 +5283,11 @@ function heroCtaCard(c){
         +'<div class="card" style="margin-bottom:22px;"><h2>Button</h2><p class="lede">The call-to-action button. Reuses your existing Quote form or Call action — no new forms.</p><div class="row">'+lpFld('Button text','fin-ctatext','Ask about finance')+lpSel('Button action','fin-ctaaction',[['quote','Quote form'],['call','Call'],['scroll','Scroll to form'],['none','No button']],(c.sections.finance.cta&&c.sections.finance.cta.action)||'quote')+'</div></div>';
       wireSec(c,'finance',true,[['eyebrow','Eyebrow'],['heading','Heading'],['amount','Amount (e.g. 38)'],['period','Per (e.g. week)'],['description','Description','ta'],['disclaimer','Disclaimer','ta']]);
       (function(){ var ct=$('fin-ctatext'); if(ct){ ct.value=(c.sections.finance.cta&&c.sections.finance.cta.text)||''; ct.addEventListener('input',function(){ if(!c.sections.finance.cta)c.sections.finance.cta={}; c.sections.finance.cta.text=ct.value; persist(); previewApply(); }); } var ca=$('fin-ctaaction'); if(ca){ ca.addEventListener('change',function(){ if(!c.sections.finance.cta)c.sections.finance.cta={}; c.sections.finance.cta.action=ca.value; persist(); previewApply(); }); } })();
+    } else if(sub==='onlineQuote'){
+      body.innerHTML=secCard(c,'onlineQuote','Online Quote wizard',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])
+        +'<div class="card" style="margin-bottom:22px;"><h2>How it works</h2><p class="lede">Visitors complete the wizard on your live site. Prices are calculated server-side — email verification reveals the total inc GST; SMS unlocks the itemised breakdown. Quote submissions appear in <strong>Dashboard → Captured leads</strong> with kind <code>quote</code>.</p>'
+        +'<p class="hint" style="margin:0;">Turn this section on, publish, then manage sessions under the <strong>Online quotes</strong> tab. Embed slug: <code>'+esc(currentSiteSlug||'your-slug')+'</code></p></div>';
+      wireSec(c,'onlineQuote',true,[['eyebrow'],['heading'],['intro']]);
     } else if(sub==='estimateBuilder'){
       body.innerHTML=secCard(c,'estimateBuilder','Estimate Builder',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta'],['currency','Currency symbol'],['disclaimer','Disclaimer','ta'],['ctaText','Button text']])
         +listCard('estimateBuilder','Questions & options','Build a multi-step estimate. Group options under the same Question to make a step — visitors pick one option per step and the price ranges add up. Set From/To to 0 for no-cost options. The result hands off to your existing quote form.');
@@ -5892,8 +5902,8 @@ function heroCtaCard(c){
     toast('Removed “'+name+'”'); renderSharedThemes();
   }
   /* ===== end leadpages integration ===== */
-  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details','mailer','messages','apps','dashboard'], broker:['appearance','contact','logo','landing','details','mailer','messages','apps','dashboard'], leads:['rates'] };
-  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','details','landing','apps','mailer','messages'] };
+  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard'], broker:['appearance','contact','logo','landing','details','mailer','messages','apps','onlinequotes','dashboard'], leads:['rates'] };
+  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','details','landing','apps','onlinequotes','mailer','messages'] };
   function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
     if($('login-mask')) return;
@@ -6125,7 +6135,7 @@ function heroCtaCard(c){
   }
 
   /* ---------- nav switcher (six tabs) ---------- */
-  const NAV=[['dashboard','av-dashboard',renderDashboard],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace]];
+  const NAV=[['dashboard','av-dashboard',renderDashboard],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
   let activeView=null;
   function showView(which){
     activeView=which;
@@ -6137,6 +6147,107 @@ function heroCtaCard(c){
   NAV.forEach(function(it){ const b=$('nav-'+it[0]); if(b) b.addEventListener('click',function(){ showView(it[0]); }); });
   window.__adminGate=gate;
   var __dtsave=document.getElementById('dt-save'); if(__dtsave) __dtsave.addEventListener('click',saveCurrentAsDemoTheme);
+
+
+  /* ============================ ONLINE QUOTE ADMIN ============================ */
+  var LPONLINEQUOTE={ siteId:null, config:null, sessions:[] };
+  async function _oqAuthHeaders(){
+    var se=await sb.auth.getSession();
+    var tk=se&&se.data&&se.data.session&&se.data.session.access_token;
+    return tk?{Authorization:'Bearer '+tk}:{};
+  }
+  function _oqMoney(cents){
+    if(cents==null||isNaN(cents)) return '—';
+    return '$'+(Math.round(cents)/100).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+  async function renderOnlineQuoteAdmin(){
+    var box=$('av-onlinequotes'); if(!box) return;
+    if(currentSiteTemplate!=='trade'){
+      box.innerHTML='<div class="card"><p class="lede">Online quotes are available on trade sites only.</p></div>';
+      return;
+    }
+    if(!currentSiteId){ box.innerHTML='<div class="card"><p class="lede">Select a site first.</p></div>'; return; }
+    if(LPONLINEQUOTE.siteId!==currentSiteId){ LPONLINEQUOTE.siteId=currentSiteId; LPONLINEQUOTE.config=null; LPONLINEQUOTE.sessions=[]; }
+    box.innerHTML='<div class="card"><h2>Online Quote System</h2><p class="lede">Loading…</p></div>';
+    try{
+      var hdr=await _oqAuthHeaders();
+      var cfgR=await fetch('/api/quote-system/admin/config?site_id='+encodeURIComponent(currentSiteId),{headers:hdr});
+      var cfgJ=await cfgR.json();
+      var sesR=await fetch('/api/quote-system/admin/sessions?site_id='+encodeURIComponent(currentSiteId)+'&limit=30',{headers:hdr});
+      var sesJ=await sesR.json();
+      LPONLINEQUOTE.config=cfgJ;
+      LPONLINEQUOTE.sessions=(sesJ&&sesJ.sessions)||[];
+      var isSuper=currentRole==='super';
+      var slug=currentSiteSlug||'';
+      var admin=cfgJ.admin;
+      var restricted=cfgJ.error==='classification_restricted';
+      var notConfigured=!admin||cfgJ.message==='not_configured';
+      var html='<div class="card"><h2>Online Quote System</h2>'
+        +'<p class="lede">Verified quote wizard with email and SMS gating. Pricing is calculated server-side — never in page source until verification.</p>';
+      if(notConfigured){
+        html+='<div class="hint" style="margin:12px 0;padding:14px;border-radius:12px;background:var(--panel-soft);">No quote system binding yet. '
+          +(isSuper?'Enable below or run <code>node scripts/seed-bean-culture-quote.js</code> for Bean Culture.':'Contact your platform administrator to provision pricing.')
+          +'</div>';
+      } else if(restricted){
+        html+='<div class="hint" style="margin:12px 0;padding:14px;border-radius:12px;background:var(--panel-soft);">Configuration is restricted (<code>'+esc(cfgJ.classification||'private')+'</code>). '
+          +(isSuper?'Run the SQL migrations and Bean Culture seed, then refresh.':'Your workspace stays blank until an administrator sets up pricing.')
+          +'</div>';
+      } else if(admin){
+        html+='<div style="display:flex;flex-wrap:wrap;gap:16px;margin:16px 0;">'
+          +'<div><span style="font-size:11px;color:var(--ink-soft);display:block;">Status</span><b>'+(admin.enabled?'Enabled':'Disabled')+'</b></div>'
+          +'<div><span style="font-size:11px;color:var(--ink-soft);display:block;">Classification</span><b>'+esc(admin.classification||'—')+'</b></div>'
+          +(admin.activeVersion?'<div><span style="font-size:11px;color:var(--ink-soft);display:block;">Config</span><b>v'+admin.activeVersion.versionNumber+'</b></div>':'')
+          +'</div>';
+        if(isSuper&&admin.activeVersion&&admin.activeVersion.config){
+          var qc=admin.activeVersion.config;
+          html+='<p class="hint">'+(qc.products||[]).length+' products · labour min '+((qc.labour&&qc.labour.minimumHours)||3)+' hr @ '+_oqMoney(qc.labour&&qc.labour.hourlyCents)+'/hr</p>';
+        }
+      }
+      html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0;">'
+        +(slug?'<a class="btn ghost" href="/'+esc(slug)+'" target="_blank" rel="noopener" style="text-decoration:none">Live site ↗</a>':'')
+        +'<button type="button" class="btn ghost" id="oq-refresh">Refresh</button>'
+        +'</div>';
+      html+='<div class="card" style="margin-top:18px;"><h3 style="margin:0 0 8px;">Page section</h3>'
+        +'<p class="lede" style="margin:0 0 10px;">Enable <strong>Online Quote</strong> in Page editor → Lead Capture, then publish. The wizard appears above your quote form on the live site.</p>'
+        +'<button type="button" class="btn ghost" id="oq-goto-editor">Open Page editor</button></div>';
+      if(isSuper){
+        html+='<div class="card" style="margin-top:18px;border:1px solid var(--accent-soft);"><h3 style="margin:0 0 8px;">Super admin</h3>'
+          +'<p class="lede" style="margin:0 0 12px;">Create or enable the quote_systems row for this site (does not copy private pricing to other tenants).</p>'
+          +'<button type="button" class="btn" id="oq-enable">'+(admin&&admin.enabled?'Re-save enabled':'Enable quote system')+'</button></div>';
+      }
+      html+='<div class="card" style="margin-top:18px;"><h3 style="margin:0 0 8px;">Recent sessions</h3>';
+      var sessions=LPONLINEQUOTE.sessions||[];
+      if(!sessions.length){
+        html+='<p class="hint">No wizard sessions yet.</p>';
+      } else {
+        html+='<div style="display:flex;flex-direction:column;gap:8px">';
+        sessions.forEach(function(s){
+          var lq=s.latestQuote||{};
+          var total=_oqMoney(lq.total_cents);
+          html+='<div class="lp-dash-row" style="padding:12px 14px;"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">'
+            +'<span style="font-weight:600;">'+esc((s.contact&&s.contact.name)||'Visitor')+'</span>'
+            +'<span style="font-size:11px;color:var(--ink-soft);">'+esc(s.verificationLevel||s.status||'')+'</span></div>'
+            +'<div style="font-size:13px;color:var(--ink-soft);margin-top:4px;">'+esc((s.contact&&s.contact.email)||'')+' · '+total+'</div></div>';
+        });
+        html+='</div>';
+      }
+      html+='</div></div>';
+      box.innerHTML=html;
+      var ref=$('oq-refresh'); if(ref) ref.addEventListener('click',renderOnlineQuoteAdmin);
+      var ed=$('oq-goto-editor'); if(ed) ed.addEventListener('click',function(){ showView('details'); landingSub='onlineQuote'; renderDetails(); });
+      var en=$('oq-enable'); if(en) en.addEventListener('click',async function(){
+        try{
+          var h=await _oqAuthHeaders(); h['Content-Type']='application/json';
+          var r=await fetch('/api/quote-system/admin/config',{method:'POST',headers:h,body:JSON.stringify({site_id:currentSiteId,enabled:true})});
+          var j=await r.json();
+          if(j.ok){ if(typeof toast==='function') toast('Quote system enabled'); renderOnlineQuoteAdmin(); }
+          else if(typeof toast==='function') toast('Failed: '+(j.error||'unknown'));
+        }catch(e){ if(typeof toast==='function') toast('Network error'); }
+      });
+    }catch(e){
+      box.innerHTML='<div class="card"><p class="lede">Could not load: '+esc(String(e&&e.message||e))+'</p></div>';
+    }
+  }
 
   /* ═══════════════════════════════════════════════════════
      APP MARKETPLACE — Phase A2
@@ -6358,7 +6469,7 @@ function heroCtaCard(c){
       'activityTimeline':'clock','videoReels':'play-circle','jobsFeed':'rss',
       'customerReactions':'smile','responseCards':'zap','specialOffer':'tag',
       'promotions-hero':'megaphone','promotions-inline':'percent','finance':'credit-card',
-      'estimateBuilder':'calculator','emergencyAvailability':'alert-circle',
+      'onlineQuote':'calculator','estimateBuilder':'calculator','emergencyAvailability':'alert-circle',
       'emerg':'phone-call','instaGallery':'instagram','igProjectFeed':'instagram',
       'navMenu':'menu','footer':'minus-square','lpAccessibility':'palette',
       'reviewHighlights':'message-circle','proofStream':'activity',
@@ -7091,8 +7202,10 @@ function heroCtaCard(c){
         }
         el.innerHTML='<div style="display:flex;flex-direction:column;gap:8px">'+rows.map(function(l){
           var name=esc(l.name||l.fname||'Anonymous');
+          var isQuote=(l.kind||'')==='quote';
+          var detObj=(l.details&&typeof l.details==='object')?l.details:{};
           var phone=esc(l.phone||'');
-          var job=esc(l.job||l.message||l.detail||l.service||'');
+          var job=esc(isQuote?(detObj.totalFormatted?('Quote '+detObj.totalFormatted):(l.message||'Online quote')):(l.job||l.message||l.detail||l.service||''));
           var sub=esc(l.suburb||l.postcode||'');
           var date=l.created_at?new Date(l.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
           var isNew=l.created_at&&(Date.now()-new Date(l.created_at).getTime())<86400000*3;
@@ -7105,6 +7218,7 @@ function heroCtaCard(c){
             +'<span style="font-weight:700;font-size:14px">'+name+'</span>'
             +(sub?'<span style="font-size:12px;color:var(--ink-soft)">'+sub+'</span>':'')
             +(isNew?'<span class="lp-badge-new">NEW</span>':'')
+            +(isQuote?'<span class="lp-badge-new" style="background:var(--accent-soft);color:var(--accent)">QUOTE</span>':'')
             +'</div>'
             +'<div class="lp-lead-card-actions">'
             +(phone?'<a href="tel:'+phone+'" style="font-size:13px;font-weight:600;color:var(--accent);text-decoration:none">'+phone+'</a>':'')

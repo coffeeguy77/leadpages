@@ -538,6 +538,30 @@ function injectBuyBar(html, bar) {
   return html.indexOf('</body>') !== -1 ? html.replace('</body>', bar + '</body>') : (html + bar);
 }
 
+function injectOnlineQuote(html, slug, cfg) {
+  const sec = cfg && cfg.sections && cfg.sections.onlineQuote;
+  if (!sec || sec.on !== true) return html;
+  if (html.includes('data-sec="onlineQuote"')) return html;
+  const eyebrow = esc(sec.eyebrow || 'Online quote');
+  const heading = esc(sec.heading || 'Get your quote');
+  const intro = esc(sec.intro || '');
+  const block =
+    '<section data-sec="onlineQuote" class="sec online-quote" id="onlineQuote">' +
+    '<div class="in">' +
+    (eyebrow ? '<p class="ey">' + eyebrow + '</p>' : '') +
+    '<h2>' + heading + '</h2>' +
+    (intro ? '<p class="intro">' + intro + '</p>' : '') +
+    '<div id="lp-online-quote" data-slug="' + esc(slug) + '"></div>' +
+    '</div></section>' +
+    '<script src="/assets/lp-online-quote.js" defer></script>';
+  if (html.includes('<section data-sec="quote"')) {
+    return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');
+  }
+  return html.indexOf('</body>') !== -1
+    ? html.replace('</body>', block + '</body>')
+    : (html + block);
+}
+
 function visitorAppearanceCfg(cfg) {
   const va = (cfg && cfg.visitorAppearance) || {};
   return {
@@ -825,6 +849,9 @@ module.exports = async (req, res) => {
     }
 
     html = injectVisitorAccessibility(html, cfg);
+    if (templateFor(site) === 'trade') {
+      html = injectOnlineQuote(html, site.slug, cfg);
+    }
 
     return sendHtml(res, html, isLive);
   } catch (e) {
