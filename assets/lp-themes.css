@@ -1715,6 +1715,7 @@ input[type="checkbox"] {
 #lsub-body h2,
 #lp-app-edit-body h2,
 #lp-panel-apps h3,
+#lp-layout-order h2,
 #av-details h3,
 #lsub-body h3,
 #lp-app-edit-body h3 {
@@ -1737,8 +1738,9 @@ input[type="checkbox"] {
   color: var(--text-soft);
 }
 #lp-ord-list .ord-row--article {
-  border-color: var(--accent) !important;
-  background: var(--accent-soft) !important;
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border)) !important;
+  background: var(--panel) !important;
+  box-shadow: inset 3px 0 0 var(--accent);
   color: var(--text);
 }
 .lp-app-row {
@@ -1746,11 +1748,12 @@ input[type="checkbox"] {
   border-color: var(--border) !important;
   color: var(--text);
 }
-#lp-layout-order.card,
-#lp-layout-order.lp-layout-card {
-  background: var(--surface-2) !important;
-  border-color: var(--border) !important;
-  box-shadow: var(--shadow);
+#lp-layout-order.lp-layout-section {
+  background: transparent !important;
+  border: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 #lp-layout-order .lp-layout-title,
 #lp-layout-order h2 {
@@ -1758,6 +1761,9 @@ input[type="checkbox"] {
 }
 #lp-layout-order .lp-layout-lede {
   color: var(--text-soft) !important;
+}
+#lp-ord-list .ord-grip {
+  color: var(--muted) !important;
 }
 #lp-ord-list .ord-actions {
   display: flex;

@@ -251,22 +251,23 @@ textarea.tin{resize:vertical;}
 .lp-app-row .lp-app-name{font-weight:700;font-size:14px;flex:1 1 160px;min-width:0;}
 .lp-app-mode{font:600 12.5px var(--font-ui);color:var(--ink-soft);}
 .lp-app-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent);text-transform:uppercase;letter-spacing:.04em;}
-/* Landing page layout order — full theme tokens (mirrors homepage #ord-list) */
-#lp-layout-order.lp-layout-card{margin-bottom:18px;padding:16px 18px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow);}
+/* Landing page layout order — same surface as .lp-app-row (no nested card / surface-2 box) */
+#lp-layout-order.lp-layout-section{margin:20px 0 18px;padding:18px 0 0;border-top:1px solid var(--line);background:transparent;border-radius:0;box-shadow:none;}
+#lp-layout-order .lp-layout-head{margin-bottom:10px;}
 #lp-layout-order .lp-layout-title{margin:0;font-size:15px;font-weight:700;color:var(--text,var(--ink));font-family:var(--font-ui);}
-#lp-layout-order .lp-layout-lede{margin:0 0 12px;font-size:13px;color:var(--text-soft,var(--ink-soft));}
+#lp-layout-order .lp-layout-lede{margin:0 0 14px;font-size:13px;color:var(--text-soft,var(--ink-soft));}
 #lp-ord-list{display:flex;flex-direction:column;gap:0;margin:0;}
-#lp-ord-list .ord-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel,var(--surface));color:var(--text,var(--ink));margin-bottom:6px;cursor:grab;transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .15s,border-color .15s;}
+#lp-ord-list .ord-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel,var(--surface));color:var(--text,var(--ink));margin-bottom:8px;cursor:grab;transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .15s,border-color .15s;}
 #lp-ord-list .ord-row.dragging{opacity:.4;}
 #lp-ord-list .ord-row.drop-before{box-shadow:0 -3px 0 0 var(--accent);}
 #lp-ord-list .ord-row.drop-after{box-shadow:0 3px 0 0 var(--accent);}
 #lp-ord-list .ord-grip{color:var(--muted,var(--ink-faint));font-size:15px;line-height:1;letter-spacing:-2px;flex:none;}
-#lp-ord-list .ord-label{font-weight:600;font-size:13.5px;flex:1;min-width:0;color:var(--text,var(--ink));}
+#lp-ord-list .ord-label{font-weight:700;font-size:14px;flex:1;min-width:0;color:var(--text,var(--ink));}
 #lp-ord-list .ord-actions{display:flex;gap:4px;flex:none;}
 #lp-ord-list .ord-mv{appearance:none;border:1px solid var(--line);background:var(--input-bg,var(--panel));border-radius:6px;width:24px;height:22px;line-height:1;cursor:pointer;color:var(--text-soft,var(--ink-soft));font-size:12px;padding:0;}
 #lp-ord-list .ord-mv:hover{border-color:var(--accent);color:var(--accent);}
 #lp-ord-list .ord-mv:disabled{opacity:.3;cursor:default;}
-#lp-ord-list .ord-row--article{border-color:var(--accent);background:var(--accent-soft);color:var(--text,var(--ink));}
+#lp-ord-list .ord-row--article{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:var(--panel,var(--surface));box-shadow:inset 3px 0 0 var(--accent);}
 #lp-app-edit{border-top:1px solid var(--line);padding-top:16px;margin-top:18px;}
 /* contact / brokers */
 .bro{border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;background:#fff;}
@@ -828,12 +829,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
           <button type="button" class="btn" id="lp-app-add" style="margin-bottom:2px;">+ Add app</button>
         </div>
         <div id="lp-app-warn" class="lp-app-warn" hidden role="status">Choose an app from the list first.</div>
-        <div id="lp-layout-order" class="card lp-layout-card" hidden>
-          <div class="card-head">
+        <div id="lp-layout-order" class="lp-layout-section" hidden>
+          <div class="card-head lp-layout-head">
             <h2 class="lp-layout-title">Page layout — position on page</h2>
             <button type="button" class="btn ghost sm" id="lp-ord-reset">Reset order</button>
           </div>
-          <p class="lede lp-layout-lede">Drag sections and <strong>Page content</strong> into the order you want on this landing page — e.g. hero, article, quote form.</p>
+          <p class="hint lp-layout-lede">Drag sections and <strong>Page content</strong> into the order you want on this landing page — e.g. hero, article, quote form.</p>
           <div id="lp-ord-list"></div>
         </div>
         <div id="lp-app-list"><p class="hint">No apps on this page yet — add one above, or leave empty for a text-only article page.</p></div>
@@ -2153,8 +2154,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     // Restore last site + tab from localStorage (survives refresh).
     try{
       var __st=lpNavStateLoad();
-      if(__st.siteId){
-        var __last=allSites.find(function(x){ return x.id===__st.siteId; });
+      if(__st.siteId||__st.siteSlug){
+        var __last=allSites.find(function(x){ return __st.siteId&&String(x.id)===String(__st.siteId); })
+          ||(__st.siteSlug?allSites.find(function(x){ return x.slug===__st.siteSlug; }):null);
         if(__last){
           if(__urlView) activeView=__urlView;
           else if(__st.view) activeView=__st.view;
@@ -5473,7 +5475,7 @@ function heroCtaCard(c){
     if(currentSiteTemplate!=='broker-app' && document.body.classList.contains('lp-prev-open')) previewLoad();
     toast('Published \u2014 live on your site');
   }
-  async function signOutLP(){ try{ await sb.auth.signOut(); }catch(e){} location.reload(); }
+  async function signOutLP(){ try{ localStorage.removeItem(LP_NAV_STATE_KEY); }catch(_e){} try{ await sb.auth.signOut(); }catch(e){} location.reload(); }
   window.signOutLP=signOutLP;
   function ensureSiteBar(){
     const dl=$('btn-download'); if(!dl) return; const bar=dl.parentNode;
