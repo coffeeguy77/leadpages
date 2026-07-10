@@ -131,8 +131,10 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .modal textarea{width:100%;min-height:260px;font-family:ui-monospace,Menlo,monospace;font-size:12px;border:1px solid var(--line-strong);border-radius:8px;padding:12px;background:var(--surface-2);}
 .modal .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}
 .hint{font-size:12px;color:var(--ink-faint);margin-top:10px;line-height:1.5;}
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60;}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow);padding:11px 18px;border-radius:10px;font-size:13.5px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60;}
 .toast.show{opacity:1;}
+.toast.warn{background:var(--warning-soft);color:var(--warning);border-color:var(--warning);}
+.lp-app-warn{margin:0 0 12px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--warning-soft);color:var(--warning);font-size:13px;font-weight:600;border:1px solid var(--warning);}
 .savednote{font-size:12px;color:var(--accent-hover);font-weight:600;}
 .adminnav{display:flex;gap:6px;margin:0 0 22px;border-bottom:1px solid var(--line);}
 .lp-cmd-loading .adminnav,.lp-cmd-loading [id^="av-"]{visibility:hidden;transition:none;}
@@ -808,6 +810,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
           <div class="f" style="margin:0;flex:1;min-width:220px;"><label>App to add</label><select id="lp-app-pick" class="tin"><option value="">Choose an app…</option></select></div>
           <button type="button" class="btn" id="lp-app-add" style="margin-bottom:2px;">+ Add app</button>
         </div>
+        <div id="lp-app-warn" class="lp-app-warn" hidden role="status">Choose an app from the list first.</div>
         <div id="lp-app-list"><p class="hint">No apps on this page yet — add one above, or leave empty for a text-only article page.</p></div>
         <div id="lp-app-edit" hidden style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px;">
           <div class="card-head" style="margin-bottom:12px;"><h3 id="lp-app-edit-title" style="margin:0;">Edit app</h3><button type="button" class="btn ghost sm" id="lp-app-edit-close">Close editor</button></div>
@@ -1251,7 +1254,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function persist(){ try{ localStorage.setItem('linray_rates', JSON.stringify(data)); }catch(e){} }
   async function lpSaveDB(){ if(!currentSiteId) return; try{ var sref=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null; var cfg; if(sref&&sref.config&&typeof sref.config==='object'){ cfg=JSON.parse(JSON.stringify(sref.config)); } else { cfg=JSON.parse(JSON.stringify(data||{})); delete cfg.savedThemes; delete cfg.users; } cfg.pages=JSON.parse(JSON.stringify((data&&data.pages)||[])); await sb.from('sites').update({ config:cfg, updated_at:new Date().toISOString() }).eq('id', currentSiteId); if(sref) sref.config=cfg; }catch(e){} }
   var _lpAS=null; function lpAutosave(){ if(_lpAS) clearTimeout(_lpAS); _lpAS=setTimeout(function(){ lpSaveDB(); },1000); }
-  function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
+  function toast(msg, kind){ const t=$('toast'); if(!t) return; t.textContent=msg; t.classList.remove('warn'); if(kind==='warn') t.classList.add('warn'); t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, kind==='warn'?2400:1800); }
   function jsonOut(){ return JSON.stringify(data,null,2); }
   // What goes onto the public site: everything EXCEPT the demo sign-in accounts
   // (those are cosmetic and hold demo passwords — they never belong in a public file).
@@ -1750,10 +1753,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(pa) pa.hidden=(tab!=='apps');
     if(tab==='apps') lpRenderAppsTab();
   }
-  async function lpEnsureAppsCatalog(){
-    if(_appsLoaded&&_appsList.length) return;
-    try{ var r=await fetch('/api/apps?all=1'); var j=await r.json(); _appsList=j.apps||[]; _appsLoaded=true; }catch(e){}
-  }
+  async function lpEnsureAppsCatalog(){ return _aaEnsureAppsList(); }
   function lpPageAppSeed(secKey){
     if(!lpCur) return;
     lpEnsurePageApps(lpCur);
@@ -1818,20 +1818,26 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   async function lpRenderAppsTab(){
     if(!lpCur) return;
     await lpEnsureAppsCatalog();
-    var pick=$('lp-app-pick'), list=$('lp-app-list');
+    var pick=$('lp-app-pick'), list=$('lp-app-list'), warn=$('lp-app-warn');
+    if(warn) warn.hidden=true;
+    var pageApps=lpCur.pageApps||[];
     if(pick){
       var apps=lpEnsurePageApps(lpCur), used={};
       apps.forEach(function(a){ used[a.key||a.section_key]=true; });
-      var opts='<option value="">Choose an app…</option>';
+      var opts='<option value="">Choose an app…</option>', avail=0;
       (_appsList||[]).forEach(function(app){
         var k=app.section_key;
-        if(!k||LP_PAGE_APP_SKIP.indexOf(k)>=0||used[k]) return;
+        if(!k||LP_PAGE_APP_SKIP.indexOf(k)>=0||used[k]||app.builder_visible===false) return;
         opts+='<option value="'+k+'">'+esc(app.name||_secLabel(k))+'</option>';
+        avail++;
       });
       pick.innerHTML=opts;
+      if(list&&!pageApps.length&&avail===0){
+        list.innerHTML='<p class="hint">No marketplace apps are available yet. Open the <strong>App Marketplace</strong> tab once to load the catalog, or ask your admin to publish apps.</p>';
+        return;
+      }
     }
     if(!list) return;
-    var pageApps=lpCur.pageApps||[];
     if(!pageApps.length){ list.innerHTML='<p class="hint">No apps on this page yet — add one above, or leave empty for a text-only article page.</p>'; return; }
     list.innerHTML=pageApps.map(function(a, i){
       var k=a.key||a.section_key, mode=a.mode||'shared', isUnique=(mode==='unique');
@@ -1903,7 +1909,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(lptc) lptc.addEventListener('click',function(){ lpSetEdTab('content'); });
     if(lpta) lpta.addEventListener('click',function(){ lpSetEdTab('apps'); });
     var lpaa=$('lp-app-add');
-    if(lpaa) lpaa.addEventListener('click',function(){ var k=($('lp-app-pick')&&$('lp-app-pick').value)||''; if(!k){ toast('Choose an app first'); return; } lpPageAppAdd(k); });
+    if(lpaa) lpaa.addEventListener('click',function(){ var k=($('lp-app-pick')&&$('lp-app-pick').value)||''; var w=$('lp-app-warn'); if(!k){ if(w) w.hidden=false; toast('Choose an app first','warn'); return; } if(w) w.hidden=true; lpPageAppAdd(k); });
+    if($('lp-app-pick')) $('lp-app-pick').addEventListener('change',function(){ var w=$('lp-app-warn'); if(w&&this.value) w.hidden=true; });
     var lpaec=$('lp-app-edit-close');
     if(lpaec) lpaec.addEventListener('click',function(){ lpPageEditKey=null; var ed=$('lp-app-edit'); if(ed) ed.hidden=true; });
   }
@@ -3950,8 +3957,15 @@ function heroCtaCard(c){
     try{
       var r=await fetch('/api/api-apps?all=1');
       var j=await r.json();
-      _appsList=(j.apps||[]);
-    }catch(e){ _appsList=_appsList||[]; }
+      _appsList=(j&&j.apps)||[];
+      if(j&&j.error) throw new Error(j.error);
+    }catch(e){
+      try{
+        var r2=await fetch('/api/api-apps');
+        var j2=await r2.json();
+        _appsList=(j2&&j2.apps)||[];
+      }catch(e2){ _appsList=_appsList||[]; }
+    }
     return _appsList;
   }
   function _aaLpAccessibilityApp(){
