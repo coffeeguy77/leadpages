@@ -199,6 +199,7 @@ Every new UI in `manage.html` (or injected HTML from JS) **must** respect the gl
    - Define full row styles in `manage.html` `<style>` (display, padding, border, `background: var(--panel)`, etc.) — do not rely on inline `style=""` on generated rows
    - Add list id alongside `#ord-list` and `#lp-ord-list` in `lp-themes.css`
    - Use `.ord-row`, `.ord-grip`, `.ord-label`, `.ord-actions`, `.ord-mv` classes
+   - **Do not nest a `.card` with `--surface-2` inside another card** (e.g. `#lp-panel-apps`) — use a flat `.lp-layout-section` with a top border; rows match `.lp-app-row` on `var(--panel)`
 
 6. **Test in at least two themes** before merge: `classic-light` and `neon-pink` (or `command-dark`).
 
