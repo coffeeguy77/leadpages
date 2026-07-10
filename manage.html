@@ -241,6 +241,14 @@ textarea.tin{resize:vertical;}
 .lp-ap-preview{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-height:240px;overflow:auto;font-size:13.5px;line-height:1.55;}
 .lp-ap-actions{display:flex;gap:10px;margin-top:10px;}
 .lp-ed-foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+.lp-ed-tabs{display:flex;gap:4px;margin:0 0 18px;border-bottom:1px solid var(--line);}
+.lp-ed-tab{appearance:none;border:none;background:none;font:700 13.5px var(--font-ui);color:var(--ink-soft);padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:8px 8px 0 0;}
+.lp-ed-tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);}
+.lp-app-add{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+.lp-app-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;margin-bottom:8px;}
+.lp-app-row .lp-app-name{font-weight:700;font-size:14px;flex:1 1 160px;min-width:0;}
+.lp-app-mode{font:600 12.5px var(--font-ui);color:var(--ink-soft);}
+.lp-app-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent);text-transform:uppercase;letter-spacing:.04em;}
 /* contact / brokers */
 .bro{border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;background:#fff;}
 .bro-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
@@ -748,6 +756,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         </div>
       </div>
 
+      <div class="lp-ed-tabs" id="lp-ed-tabs" hidden>
+        <button type="button" class="lp-ed-tab" id="lp-tab-content" aria-selected="true">Page content</button>
+        <button type="button" class="lp-ed-tab" id="lp-tab-apps" aria-selected="false">Marketplace apps</button>
+      </div>
+
+      <div id="lp-panel-content">
       <div class="lp-row">
         <div class="f"><label>Page title <span class="seo-tip">The clickable headline in Google results &amp; the browser tab. ~50–60 characters, lead with the keyword.</span></label><input type="text" id="lp-title" class="tin" placeholder="Home Loans in Canberra | Linray Finance"></div>
         <div class="f"><label>URL slug <span class="seo-tip">The page's web address. Short, hyphenated, keyword-rich, no spaces — e.g. /home-loans-canberra.</span></label><div class="slug-in"><span>/</span><input type="text" id="lp-slug" class="tin" placeholder="home-loans-canberra"></div></div>
@@ -786,6 +800,20 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         <div class="f"><label>Status</label><select id="lp-status" class="apsel"><option value="draft">Draft (hidden)</option><option value="published">Published (live)</option></select></div>
       </div>
       <div class="lp-ed-foot"><button class="btn" id="lp-save">Save page</button><button class="btn ghost" id="lp-close">Close</button><button class="btn ghost danger" id="lp-del">Delete page</button></div>
+      </div>
+
+      <div id="lp-panel-apps" hidden>
+        <p class="lede" style="margin-top:0;">Add marketplace apps to this landing page. Use <strong>Shared</strong> to show the same content as your homepage, or <strong>Unique</strong> for page-specific copy and data.</p>
+        <div class="lp-app-add">
+          <div class="f" style="margin:0;flex:1;min-width:220px;"><label>App to add</label><select id="lp-app-pick" class="tin"><option value="">Choose an app…</option></select></div>
+          <button type="button" class="btn" id="lp-app-add" style="margin-bottom:2px;">+ Add app</button>
+        </div>
+        <div id="lp-app-list"><p class="hint">No apps on this page yet — add one above, or leave empty for a text-only article page.</p></div>
+        <div id="lp-app-edit" hidden style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px;">
+          <div class="card-head" style="margin-bottom:12px;"><h3 id="lp-app-edit-title" style="margin:0;">Edit app</h3><button type="button" class="btn ghost sm" id="lp-app-edit-close">Close editor</button></div>
+          <div id="lp-app-edit-body"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1385,6 +1413,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   window.lpPreviewLayoutSync=lpPreviewLayoutSync;
   function lpFrame(){ return document.getElementById('lp-prev-frame'); }
   function previewTarget(){ return currentSiteSlug || 'demo'; }
+  function previewPageQuery(){
+    if(currentSiteTemplate!=='trade'||!lpCur||!lpCur.slug) return '';
+    return '&page='+encodeURIComponent(lpCur.slug);
+  }
   function previewApply(a){
     var fr=lpFrame(); if(!fr||!lpPrevReady) return;
     try{ var w=fr.contentWindow; if(!w) return;
@@ -1400,7 +1432,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var fr=lpFrame(); if(!fr) return;
     lpPrevReady=false; lpPrevSlug=previewTarget();
     fr.onload=function(){ lpPrevReady=true; previewLayout(); previewApply(curAppr()); lpPreviewApplyChromeHide(); };
-    fr.src='/'+lpPrevSlug+'?preview='+Date.now();
+    fr.src='/'+lpPrevSlug+'?preview='+Date.now()+previewPageQuery();
   }
   function previewDock(){
     var V=window.innerWidth, H=window.innerHeight, layout=lpGetPreviewLayout();
@@ -1678,16 +1710,172 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     ['Suburb page','Write an SEO landing page targeting a specific suburb we service, with genuine local relevance and a call to get a free quote.']
   ];
   function aiPresets(){ return (currentSiteTemplate==='trade')?AI_PRESETS_TRADE:AI_PRESETS_BROKER; }
-  let lpCur=null, lpHist=[], lpHi=-1, lpWired=false;
+  let lpCur=null, lpHist=[], lpHi=-1, lpWired=false, lpEdTab='content', lpPageEditKey=null;
+  var LP_PAGE_APP_SKIP=['details','seoTokens','branding','logo','sectionOrder','mobileBar','lpFooter','lpAccessibility','footer'];
+  var LP_PAGE_APP_FIELDS={
+    hero:[['eyebrow','Eyebrow'],['title','Headline'],['titleHl','Highlight'],['sub','Sub-text','ta']],
+    reviews:[['eyebrow','Eyebrow'],['heading','Heading']],
+    services:[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']],
+    why:[['eyebrow','Eyebrow'],['heading','Heading']],
+    area:[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']],
+    quote:[['eyebrow','Eyebrow'],['heading','Heading'],['sub','Sub-text','ta']],
+    faq:[['eyebrow','Eyebrow'],['heading','Heading']],
+    beforeAfter:[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']],
+    responseCards:[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']],
+    projectStats:[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']],
+    serviceAreas:[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']],
+    reviewHighlights:[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']],
+    featuredProjects:[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']],
+    specialOffer:[['eyebrow','Small label'],['heading','Headline'],['intro','Subline'],['cta','Button text']],
+    crew:[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']],
+    textBox:[['heading','Heading'],['body','Body','ta']],
+    proofStream:[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']],
+    jobsFeed:[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']],
+    certifications:[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']]
+  };
+  var LP_PAGE_APP_LISTS={
+    reviews:'reviews', why:'why', faq:'faq', beforeAfter:'beforeAfterItems', responseCards:'responseCards',
+    projectStats:'projectStats', serviceAreas:'serviceAreas', reviewHighlights:'reviewHighlights',
+    featuredProjects:'featuredProjects', specialOffer:'specialOfferPoints', crew:'crew',
+    proofStream:'proofStream', jobsFeed:'jobsFeed', certifications:'certifications'
+  };
+  function lpEnsurePageApps(p){ if(!p.pageApps) p.pageApps=[]; if(!p.pageSections) p.pageSections={}; return p.pageApps; }
+  function lpPagePreviewReload(){ if(document.body.classList.contains('lp-prev-open')) previewLoad(); else previewApply(data); }
+  function lpSetEdTab(tab){
+    lpEdTab=tab;
+    var tc=$('lp-tab-content'), ta=$('lp-tab-apps'), pc=$('lp-panel-content'), pa=$('lp-panel-apps');
+    if(tc) tc.setAttribute('aria-selected', tab==='content'?'true':'false');
+    if(ta) ta.setAttribute('aria-selected', tab==='apps'?'true':'false');
+    if(pc) pc.hidden=(tab!=='content');
+    if(pa) pa.hidden=(tab!=='apps');
+    if(tab==='apps') lpRenderAppsTab();
+  }
+  async function lpEnsureAppsCatalog(){
+    if(_appsLoaded&&_appsList.length) return;
+    try{ var r=await fetch('/api/apps?all=1'); var j=await r.json(); _appsList=j.apps||[]; _appsLoaded=true; }catch(e){}
+  }
+  function lpPageAppSeed(secKey){
+    if(!lpCur) return;
+    lpEnsurePageApps(lpCur);
+    var tmp={sections:lpCur.pageSections};
+    lpSeedComponent(tmp, secKey);
+  }
+  function lpPageScopedCfg(){ if(!lpCur.pageSections) lpCur.pageSections={}; return {sections:lpCur.pageSections}; }
+  function lpCopyPageAppFromHome(secKey){
+    if(!lpCur) return;
+    lpPageAppSeed(secKey);
+    var src=(data.sections&&data.sections[secKey])||{};
+    lpCur.pageSections[secKey]=JSON.parse(JSON.stringify(src));
+    persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
+    toast('Copied homepage content for '+_secLabel(secKey));
+  }
+  function lpPageAppAdd(secKey){
+    if(!lpCur||!secKey) return;
+    var apps=lpEnsurePageApps(lpCur);
+    if(apps.some(function(a){ return (a.key||a.section_key)===secKey; })){ toast('That app is already on this page'); return; }
+    apps.push({key:secKey, mode:'shared'});
+    persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
+  }
+  function lpPageAppRemove(secKey){
+    if(!lpCur) return;
+    lpCur.pageApps=(lpCur.pageApps||[]).filter(function(a){ return (a.key||a.section_key)!==secKey; });
+    if(lpCur.pageSections) delete lpCur.pageSections[secKey];
+    if(lpPageEditKey===secKey){ lpPageEditKey=null; var ed=$('lp-app-edit'); if(ed) ed.hidden=true; }
+    persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
+  }
+  function lpPageAppSetMode(secKey, mode){
+    if(!lpCur) return;
+    var app=(lpCur.pageApps||[]).find(function(a){ return (a.key||a.section_key)===secKey; });
+    if(!app) return;
+    app.mode=mode;
+    if(mode==='unique'){ lpPageAppSeed(secKey); if(!lpCur.pageSections[secKey]||!Object.keys(lpCur.pageSections[secKey]).length) lpCopyPageAppFromHome(secKey); }
+    persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
+  }
+  function lpPageAppMove(secKey, dir){
+    if(!lpCur||!lpCur.pageApps) return;
+    var apps=lpCur.pageApps, i=apps.findIndex(function(a){ return (a.key||a.section_key)===secKey; });
+    if(i<0) return;
+    var j=i+dir; if(j<0||j>=apps.length) return;
+    var t=apps[i]; apps[i]=apps[j]; apps[j]=t;
+    persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
+  }
+  function lpRenderPageAppEditor(secKey){
+    if(!lpCur) return;
+    lpPageEditKey=secKey;
+    var ed=$('lp-app-edit'), body=$('lp-app-edit-body'), title=$('lp-app-edit-title');
+    if(!ed||!body) return;
+    ed.hidden=false;
+    if(title) title.textContent='Edit unique: '+_secLabel(secKey);
+    var fields=LP_PAGE_APP_FIELDS[secKey]||[['heading','Heading'],['intro','Intro','ta']];
+    var listSk=LP_PAGE_APP_LISTS[secKey];
+    var html=secCard(lpPageScopedCfg(), secKey, _secLabel(secKey), false, fields);
+    if(listSk) html+=listCard(listSk, _secLabel(secKey)+' items', 'Edit the list for this page only.');
+    body.innerHTML=html;
+    wireSec(lpPageScopedCfg(), secKey, false, fields);
+    if(listSk){ var host=$('le-'+listSk); if(host) listEditor(host, lpPageScopedCfg(), listSk); }
+    try{ ed.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
+  }
+  async function lpRenderAppsTab(){
+    if(!lpCur) return;
+    await lpEnsureAppsCatalog();
+    var pick=$('lp-app-pick'), list=$('lp-app-list');
+    if(pick){
+      var apps=lpEnsurePageApps(lpCur), used={};
+      apps.forEach(function(a){ used[a.key||a.section_key]=true; });
+      var opts='<option value="">Choose an app…</option>';
+      (_appsList||[]).forEach(function(app){
+        var k=app.section_key;
+        if(!k||LP_PAGE_APP_SKIP.indexOf(k)>=0||used[k]) return;
+        opts+='<option value="'+k+'">'+esc(app.name||_secLabel(k))+'</option>';
+      });
+      pick.innerHTML=opts;
+    }
+    if(!list) return;
+    var pageApps=lpCur.pageApps||[];
+    if(!pageApps.length){ list.innerHTML='<p class="hint">No apps on this page yet — add one above, or leave empty for a text-only article page.</p>'; return; }
+    list.innerHTML=pageApps.map(function(a, i){
+      var k=a.key||a.section_key, mode=a.mode||'shared', isUnique=(mode==='unique');
+      return '<div class="lp-app-row" data-key="'+k+'">'
+        +'<span class="lp-app-name">'+esc(_secLabel(k))+'</span>'
+        +'<span class="lp-app-badge">'+(isUnique?'Unique':'Shared')+'</span>'
+        +'<select class="tin lp-app-mode-sel" data-key="'+k+'" style="min-width:130px;">'
+        +'<option value="shared"'+(mode==='shared'?' selected':'')+'>Shared (homepage)</option>'
+        +'<option value="unique"'+(mode==='unique'?' selected':'')+'>Unique to page</option></select>'
+        +(isUnique?'<button type="button" class="btn ghost sm lp-app-edit-btn" data-key="'+k+'">Edit content</button>'
+          :'<button type="button" class="btn ghost sm lp-app-home-btn" data-key="'+k+'">Edit on homepage</button>')
+        +'<button type="button" class="btn ghost sm lp-app-up" data-key="'+k+'"'+(i===0?' disabled':'')+' title="Move up">\u2191</button>'
+        +'<button type="button" class="btn ghost sm lp-app-down" data-key="'+k+'"'+(i===pageApps.length-1?' disabled':'')+' title="Move down">\u2193</button>'
+        +'<button type="button" class="btn ghost sm danger lp-app-rm" data-key="'+k+'">Remove</button></div>';
+    }).join('');
+    list.querySelectorAll('.lp-app-mode-sel').forEach(function(sel){
+      sel.addEventListener('change',function(){ lpPageAppSetMode(sel.getAttribute('data-key'), sel.value); });
+    });
+    list.querySelectorAll('.lp-app-edit-btn').forEach(function(b){
+      b.addEventListener('click',function(){ lpRenderPageAppEditor(b.getAttribute('data-key')); });
+    });
+    list.querySelectorAll('.lp-app-home-btn').forEach(function(b){
+      b.addEventListener('click',function(){ var k=b.getAttribute('data-key'); showView('details'); landingSub=k; renderDetails(); toast('Editing homepage '+_secLabel(k)); });
+    });
+    list.querySelectorAll('.lp-app-rm').forEach(function(b){
+      b.addEventListener('click',function(){ lpPageAppRemove(b.getAttribute('data-key')); });
+    });
+    list.querySelectorAll('.lp-app-up').forEach(function(b){
+      b.addEventListener('click',function(){ lpPageAppMove(b.getAttribute('data-key'), -1); });
+    });
+    list.querySelectorAll('.lp-app-down').forEach(function(b){
+      b.addEventListener('click',function(){ lpPageAppMove(b.getAttribute('data-key'), 1); });
+    });
+  }
   function renderSeoPages(){
     if(!data.pages) data.pages=[];
     const list=$('lp-list');
     list.innerHTML = data.pages.length ? data.pages.map(function(p){
-      return '<div class="lp-item"><span class="lp-meta"><span class="lp-t">'+esc(p.title||'Untitled')+'</span> <span class="lp-s">/'+esc(p.slug||'')+'</span></span><span style="display:flex;gap:10px;align-items:center"><span class="lp-badge '+(p.status==='published'?'pub':'draft')+'">'+(p.status==='published'?'Live':'Draft')+'</span><button class="btn ghost sm" data-edit="'+p.id+'">Edit</button></span></div>';
+      var n=(p.pageApps&&p.pageApps.length)?(' <span class="lp-app-badge">'+p.pageApps.length+' app'+(p.pageApps.length===1?'':'s')+'</span>'):'';
+      return '<div class="lp-item"><span class="lp-meta"><span class="lp-t">'+esc(p.title||'Untitled')+n+'</span> <span class="lp-s">/'+esc(p.slug||'')+'</span></span><span style="display:flex;gap:10px;align-items:center"><span class="lp-badge '+(p.status==='published'?'pub':'draft')+'">'+(p.status==='published'?'Live':'Draft')+'</span><button class="btn ghost sm" data-edit="'+p.id+'">Edit</button></span></div>';
     }).join('') : '<p class="hint">No pages yet. Create one to build an SEO-optimised page that matches your theme.</p>';
     const ap=$('lp-ai-presets'); if(ap && !ap.children.length){ aiPresets().forEach(function(pr,i){ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=pr[0]; b.addEventListener('click',function(){ $('lp-ai-prompt').value=pr[1]; }); ap.appendChild(b); }); }
     if(lpWired) return; lpWired=true;
-    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft'}; data.pages.push(p); persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
+    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',pageApps:[],pageSections:{}}; data.pages.push(p); persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
     list.addEventListener('click',function(e){ const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit')); });
     $('lp-tips').addEventListener('change',function(){ $('lp-editor').classList.toggle('show-tips', this.checked); });
     $('lp-slug').addEventListener('input',function(){ this.value=this.value.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+/,'').replace(/--+/g,'-'); lpField('slug',this.value); });
@@ -1711,8 +1899,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-ai-go').addEventListener('click',aiGenerate);
     $('lp-ap-accept').addEventListener('click',function(){ const d=$('lp-approve').getAttribute('data-draft')||''; $('lp-body').value=d; lpField('body',d); lpPush(d); $('lp-approve').hidden=true; toast('Draft applied'); });
     $('lp-ap-discard').addEventListener('click',function(){ $('lp-approve').hidden=true; });
+    var lptc=$('lp-tab-content'), lpta=$('lp-tab-apps');
+    if(lptc) lptc.addEventListener('click',function(){ lpSetEdTab('content'); });
+    if(lpta) lpta.addEventListener('click',function(){ lpSetEdTab('apps'); });
+    var lpaa=$('lp-app-add');
+    if(lpaa) lpaa.addEventListener('click',function(){ var k=($('lp-app-pick')&&$('lp-app-pick').value)||''; if(!k){ toast('Choose an app first'); return; } lpPageAppAdd(k); });
+    var lpaec=$('lp-app-edit-close');
+    if(lpaec) lpaec.addEventListener('click',function(){ lpPageEditKey=null; var ed=$('lp-app-edit'); if(ed) ed.hidden=true; });
   }
-  function lpField(f,v){ if(lpCur){ lpCur[f]=v; persist(); lpAutosave(); } }
+  function lpField(f,v){ if(lpCur){ lpCur[f]=v; persist(); lpAutosave(); if(f==='slug'&&document.body.classList.contains('lp-prev-open')) previewLoad(); } }
   function lpImgPrev(){ var el=document.getElementById('lp-img-prev'); if(!el) return; var u=(lpCur&&lpCur.img)||''; el.innerHTML=u?('<img src="'+esc(u)+'" alt="" style="max-height:120px;max-width:100%;border-radius:8px;margin-top:8px;display:block">'):''; }
   function lpPush(v){ lpHist=lpHist.slice(0,lpHi+1); lpHist.push(v); if(lpHist.length>50)lpHist.shift(); lpHi=lpHist.length-1; }
   function lpOpen(id){
@@ -1726,6 +1921,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-editor').classList.toggle('show-tips', $('lp-tips').checked);
     $('lp-approve').hidden=true;
     lpHist=[lpCur.body||'']; lpHi=0;
+    var tabs=$('lp-ed-tabs');
+    if(tabs) tabs.hidden=(currentSiteTemplate!=='trade');
+    lpSetEdTab('content');
+    var ed=$('lp-app-edit'); if(ed) ed.hidden=true;
+    lpPageEditKey=null;
+    if(lpCur.slug&&document.body.classList.contains('lp-prev-open')) previewLoad();
     try{$('lp-editor').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
   }
   function mdToHtml(t){
