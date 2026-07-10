@@ -3261,6 +3261,26 @@ function heroCtaCard(c){
     data.layout=getLayout(data.layout).id;
     persist(); landingSub='details'; renderDetails(); previewApply(); toast('Loaded '+p.label+' starter content');
   }
+  function applyAcquiredTradePack(gj){
+    var p=gj&&gj.pack; if(!p) return;
+    var bizEl=$('tp-biz'); var locEl=$('tp-location');
+    var biz=((bizEl&&bizEl.value)||currentBusinessName||'').trim()||'us';
+    var loc=((locEl&&locEl.value)||'').trim()||packLocationFromConfig(data);
+    if(biz&&biz!=='us') currentBusinessName=biz;
+    if(loc&&loc!=='your area'){
+      if(!data.sections) data.sections={};
+      if(!data.sections.seoTokens) data.sections.seoTokens={};
+      data.sections.seoTokens.location=loc;
+      if(!data.region) data.region=loc;
+    }
+    data.theme=themeFromPreset(p.label||gj.label||'Plumber');
+    data.services=packTokenSub(JSON.parse(JSON.stringify(p.services||[])),biz,loc);
+    data.sections=packTokenSub(JSON.parse(JSON.stringify(p.sections||{})),biz,loc);
+    data.trade=p.tradeType||p.label||gj.label||'';
+    data.layout=getLayout(data.layout).id;
+    persist(); landingSub='details'; renderDetails(); previewApply();
+    toast('Loaded '+(p.label||gj.label||'starter')+' content');
+  }
 
   function packLocationFromConfig(c){
     var se=c&&c.sections&&c.sections.seoTokens;
@@ -3336,36 +3356,32 @@ function heroCtaCard(c){
     render(''); paintPicked();
   };
 
-  // ===== Two-pane trade picker + super trade builder (additive; does not touch __initTradePicker) =====
-  (function(){ if(document.getElementById('tp2-style'))return; var st=document.createElement('style'); st.id='tp2-style';
-    st.textContent=[
-     '.tp2-wrap{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel);margin-top:8px;height:340px}',
-     '.tp2-cats{width:40%;min-width:150px;max-width:250px;border-right:1px solid var(--line);overflow:auto;background:var(--panel-soft);-webkit-overflow-scrolling:touch}',
-     '.tp2-cat{padding:11px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--ink-soft);line-height:1.25}',
-     '.tp2-cat:hover{background:var(--accent-soft)}',
-     '.tp2-cat.on{background:var(--panel-raised,var(--panel));color:var(--accent);font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}',
-     '.tp2-count{font-size:11px;color:var(--ink-faint);font-weight:500;flex:none}',
-     '.tp2-list{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--panel)}',
-     '.tp2-trow{padding:10px 14px;font-size:14px;cursor:pointer;border-bottom:1px solid var(--line);display:flex;align-items:center;line-height:1.25;color:var(--ink)}',
-     '.tp2-trow:hover{background:var(--accent-soft)}',
-     '.tp2-trow.on{background:var(--accent-soft);color:var(--accent);font-weight:600}',
-     '.tp2-trow.on:after{content:"\\2713";margin-left:auto;color:var(--accent);font-weight:700}',
-     '.tp2-empty{padding:18px 14px;color:var(--ink-soft);font-size:13px}',
-     '@media(max-width:560px){.tp2-wrap{height:auto;flex-direction:column}.tp2-cats{width:auto;max-width:none;max-height:150px;border-right:0;border-bottom:1px solid var(--line)}.tp2-list{max-height:240px}}',
-     '.tb-box{margin-top:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft)}',
-     '.tb-box>summary{cursor:pointer;padding:12px 14px;font-weight:600;font-size:14px;color:var(--ink);list-style:none}',
-     '.tb-box>summary::-webkit-details-marker{display:none}',
-     '.tb-box>summary:before{content:"\\002b";display:inline-block;width:16px;color:var(--accent);font-weight:700}',
-     '.tb-box[open]>summary:before{content:"\\2212"}',
-     '.tb-inner{padding:0 14px 14px}',
-     '.tb-row{display:flex;gap:10px;flex-wrap:wrap}.tb-row>*{flex:1;min-width:160px}',
-     '.tb-ta{width:100%;box-sizing:border-box;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.45;border:1px solid var(--line-strong);border-radius:8px;padding:10px;background:var(--input-bg);color:var(--ink);resize:vertical}',
-     '.tb-hint{font-size:12px;color:var(--ink-soft);line-height:1.5;margin:8px 0}',
-     '.tb-status{font-size:13px;margin-top:8px;min-height:18px;line-height:1.5;color:var(--ink-soft)}'
-    ].join('');
-    document.head.appendChild(st);
-  })();
-  
+  // ===== Service starter — community trade packs (Partner Demos system) =====
+  window.__tradeStarterCard=function(){
+    return '<div class="card sp-starter lp-settings-starter" style="margin-bottom:22px;padding:0;overflow:hidden">'
+      +'<div style="padding:20px 20px 0"><h2 style="margin:0 0 4px">Service starter content</h2>'
+      +'<p class="lede" style="margin:0">Load shuffled community trade content for this site. Your business name and contact details stay \u2014 page copy, services, and colours are replaced.</p></div>'
+      +'<div class="lp-community-trade-band" id="tp-new-trade-panel"><div class="lp-community-trade-band-inner">'
+      +'<div class="lp-community-trade-callout-head"><span class="lp-community-trade-callout-badge" aria-hidden="true">Community</span><div>'
+      +'<strong class="lp-community-trade-callout-title">Add a missing trade to the library</strong>'
+      +'<p class="lp-community-trade-callout-lede">Can\u2019t find your trade? Create it once \u2014 AI writes starter content and adds it for every partner. Uses API credits.</p>'
+      +'</div></div><div class="lp-community-trade-callout-body">'
+      +'<div class="row lp-community-trade-fields"><div class="f" style="margin:0"><label for="tp-new-trade">New trade name</label><input id="tp-new-trade" class="tin" type="text" placeholder="e.g. Coffee cart hire"></div>'
+      +'<div class="f" style="margin:0"><label for="tp-new-cat">Category (optional)</label><input id="tp-new-cat" class="tin" type="text" placeholder="e.g. Hire &amp; Events"></div></div>'
+      +'<button type="button" class="btn" id="tp-add-trade">Create trade &amp; select</button>'
+      +'<p class="hint" id="tp-new-trade-msg" style="margin:8px 0 0;font-size:13px"></p></div></div></div>'
+      +'<div style="padding:0 20px 20px"><div class="row" style="margin-top:16px">'
+      +'<div class="f"><label for="tp-biz">Business name</label><input id="tp-biz" class="tin" type="text" placeholder="e.g. Hilltop Plumbing"></div>'
+      +'<div class="f"><label for="tp-location">Target location</label><input id="tp-location" class="tin" type="text" placeholder="e.g. Canberra, Sydney, Gold Coast"></div></div>'
+      +'<p class="hint" style="margin:-4px 0 12px;font-size:12.5px">These flow through the content as <strong>{business}</strong> and <strong>{location}</strong> everywhere on the site.</p>'
+      +'<div class="f"><label for="tp-search">Industry / trade</label>'
+      +'<input id="tp-search" class="tin" type="text" autocomplete="off" placeholder="Search community library\u2026 (try plumber, roofer, cleaner)">'
+      +'<input type="hidden" id="trade-pack" value="plumber"><div id="tp-picked" class="cs-picked"></div>'
+      +'<div class="tp2-wrap lp-demo-trade-picker"><div id="tp-cats" class="tp2-cats"></div><div id="tp-packlist" class="tp2-list"></div></div></div>'
+      +'<div class="f"><button type="button" class="btn" id="trade-pack-load" style="width:100%;margin-top:10px">Load starter content</button></div>'
+      +'<p class="hint" id="tp-load-msg" style="margin:8px 0 0;font-size:13px;min-height:18px"></p></div></div>';
+  };
+
   window.__guessCat=function(name){
     var n=(' '+String(name||'').toLowerCase()+' ');
     var rules=[
@@ -3388,79 +3404,7 @@ function heroCtaCard(c){
     for(var i=0;i<rules.length;i++){ var kws=rules[i][1]; for(var j=0;j<kws.length;j++){ if(n.indexOf(kws[j])>-1) return rules[i][0]; } }
     return 'Other & Specialist';
   };
-  
-  window.__initTradePicker2=function(o){
-    window.__tp2opts=o;
-    var L=window.__tradeLabel,T=window.__tradeType,CATS=window.__TRADE_CATS;
-    var catsEl=document.getElementById(o.cats), listEl=document.getElementById(o.list),
-        packEl=document.getElementById(o.hidden), searchEl=document.getElementById(o.search), pickedEl=document.getElementById(o.picked);
-    if(!catsEl||!listEl||!packEl) return;
-    if(o.defaultSlug && !packEl.value) packEl.value=o.defaultSlug;
-    var active=0;
-    (function(){ var s=packEl.value; for(var i=0;i<CATS.length;i++){ if(CATS[i][1].indexOf(s)>-1){ active=i; break; } } })();
-    function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-    function hay(s){ return (L(s)+' '+T(s)+' '+s).toLowerCase(); }
-    function matchSlugs(ci,q){ var out=[],slugs=CATS[ci][1]; for(var j=0;j<slugs.length;j++){ var s=slugs[j]; if(!q||hay(s).indexOf(q)>-1) out.push(s); } out.sort(function(a,b){var la=L(a).toLowerCase(),lb=L(b).toLowerCase();return la<lb?-1:(la>lb?1:0);}); return out; }
-    function curQ(){ return searchEl?searchEl.value.trim().toLowerCase():''; }
-    function paintPicked(){ if(pickedEl){ var s=packEl.value; pickedEl.innerHTML='<span class="cs-picked-lbl">'+esc(L(s))+'</span><span class="cs-picked-cat">'+esc(window.__tradeCat(s))+'</span>'; } }
-    function setPick(s){ packEl.value=s; paintPicked(); var r=listEl.querySelectorAll('.tp2-trow'); for(var i=0;i<r.length;i++){ r[i].classList.toggle('on', r[i].getAttribute('data-pack')===s); } }
-    function renderList(q){
-      var slugs=matchSlugs(active,q),html='';
-      for(var j=0;j<slugs.length;j++){ var s=slugs[j]; html+='<div class="tp2-trow'+(packEl.value===s?' on':'')+'" data-pack="'+s+'">'+esc(L(s))+'</div>'; }
-      if(!html) html='<div class="tp2-empty">No trades here match. Try another category or search term.</div>';
-      listEl.innerHTML=html;
-      var rows=listEl.querySelectorAll('.tp2-trow');
-      for(var k=0;k<rows.length;k++){ rows[k].addEventListener('click',function(){ setPick(this.getAttribute('data-pack')); }); }
-    }
-    function renderCats(q){
-      var html='';
-      for(var i=0;i<CATS.length;i++){ var c=matchSlugs(i,q).length; if(q && c===0) continue; html+='<div class="tp2-cat'+(i===active?' on':'')+'" data-ci="'+i+'"><span>'+esc(CATS[i][0])+'</span><span class="tp2-count">'+c+'</span></div>'; }
-      catsEl.innerHTML=html;
-      var rows=catsEl.querySelectorAll('.tp2-cat');
-      for(var k=0;k<rows.length;k++){ rows[k].addEventListener('click',function(){ active=parseInt(this.getAttribute('data-ci'),10); renderCats(curQ()); renderList(curQ()); }); }
-    }
-    function ensureActiveHasMatches(q){ if(matchSlugs(active,q).length>0) return; for(var i=0;i<CATS.length;i++){ if(matchSlugs(i,q).length>0){ active=i; return; } } }
-    function renderAll(){ var q=curQ(); ensureActiveHasMatches(q); renderCats(q); renderList(q); }
-    if(searchEl) searchEl.addEventListener('input', renderAll);
-    renderAll(); paintPicked();
-  };
-  
-  window.__tradeStarterCard=function(isSuper){
-    var builder = isSuper ? `
-      <details class="tb-box">
-        <summary>Create a new service / business type (super)</summary>
-        <div class="tb-inner">
-          <p class="tb-hint">Type what the page is for (e.g. <em>coffee cart hire</em>). I'll suggest a category and build the exact, ready-to-run prompt for you. Copy it into a new Claude chat, paste the JSON it returns back here, and the new service drops straight into the picker above.</p>
-          <div class="tb-row">
-            <div class="f"><label>Service / business name</label><input id="tb-name" class="tin" type="text" placeholder="e.g. coffee cart hire, café, Airbnb host"></div>
-            <div class="f"><label>Category</label><select id="tb-cat" class="tin"></select></div>
-          </div>
-          <div class="f" id="tb-newcatwrap" style="display:none;"><label>New category name</label><input id="tb-newcat" class="tin" type="text" placeholder="e.g. Mobile & Hospitality"></div>
-          <div style="margin-top:4px;"><button type="button" class="btn" id="tb-gen">Generate prompt</button></div>
-          <div id="tb-genwrap" style="display:none;margin-top:12px;">
-            <label>1 &middot; Copy this prompt into a new Claude chat</label>
-            <textarea id="tb-prompt" class="tb-ta" rows="8" readonly></textarea>
-            <div style="margin-top:6px;"><button type="button" class="btn ghost" id="tb-copy">Copy prompt</button></div>
-            <label style="display:block;margin-top:12px;">2 &middot; Paste the JSON Claude gives you back</label>
-            <textarea id="tb-json" class="tb-ta" rows="6" placeholder="Paste the JSON object here…"></textarea>
-            <div style="margin-top:6px;"><button type="button" class="btn" id="tb-add">Add to my services</button></div>
-            <div class="tb-status" id="tb-status"></div>
-          </div>
-        </div>
-      </details>` : '';
-    return `<div class="card sp-starter" style="margin-bottom:22px;"><h2>Service starter content</h2>
-      <p class="lede">Load a complete set of starter copy, services and colours for a service or business type, then fine-tune everything in the tabs above. This replaces the current page content — your business name and contact details stay.</p>
-      <div class="f"><label>Service / business type</label>
-        <input id="tp-search" class="tin" type="text" autocomplete="off" placeholder="Search 100+ services… (try &ldquo;fence&rdquo;, &ldquo;drain&rdquo;, &ldquo;hire&rdquo;, &ldquo;café&rdquo;)">
-        <input type="hidden" id="trade-pack" value="plumber">
-        <div id="tp-picked" class="cs-picked"></div>
-        <div class="tp2-wrap lp-demo-trade-picker"><div id="tp-cats" class="tp2-cats"></div><div id="tp-packlist" class="tp2-list"></div></div>
-      </div>
-      <div class="f"><button type="button" class="btn" id="trade-pack-load" style="width:100%;margin-top:10px;">Load starter content</button></div>
-      ${builder}
-    </div>`;
-  };
-  
+
   window.__registerTradePack=function(slug,cat,pack){
     TRADE_PACKS[slug]=pack;
     var C=window.__TRADE_CATS,found=false,i,idx;
@@ -3470,29 +3414,7 @@ function heroCtaCard(c){
     if(window.LPTradePicker) window.LPTradePicker.registerPack(slug,cat,pack);
   };
 
-  function lpSyncTradePickerPacks(){
-    if(!window.LPTradePicker) return;
-    for(var slug in TRADE_PACKS){
-      if(!Object.prototype.hasOwnProperty.call(TRADE_PACKS,slug)) continue;
-      var p=TRADE_PACKS[slug];
-      window.LPTradePicker.registerPack(slug,window.__tradeCat(slug)||'Other & Specialist',p);
-    }
-  }
-  function lpInitSettingsTradePicker(opts){
-    window.__tp2opts=opts;
-    function boot(){
-      lpSyncTradePickerPacks();
-      if(window.LPTradePicker){
-        window.LPTradePicker.init2(opts);
-      } else if(window.__initTradePicker2){
-        window.__initTradePicker2(opts);
-      }
-    }
-    boot();
-    lpLoadServicePacks(boot);
-  }
-
-  /* ---- persist custom service / business-type packs to Supabase (shared catalogue) ---- */
+  /* ---- persist custom service / business-type packs to Supabase (create-site modal catalogue) ---- */
   window.__lpSPLoaded=false;
   function lpLoadServicePacks(cb){
     if(window.__lpSPLoaded){ if(cb)cb(); return; }
@@ -3507,90 +3429,123 @@ function heroCtaCard(c){
       },function(){ done(); });
     }catch(e){ done(); }
   }
-  function lpSaveServicePack(slug,cat,pack){
-    return new Promise(function(resolve){
-      try{
-        sb.from('service_packs').upsert({slug:slug,category:cat,label:pack.label||slug,pack:pack},{onConflict:'slug'})
-          .then(function(r){ resolve(!(r&&r.error)); },function(){ resolve(false); });
-      }catch(e){ resolve(false); }
-    });
-  }
 
-  window.__buildTradePrompt=function(name,category){
-    var slug=String(name||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-    return `You are generating a "trade starter content pack" for LeadPages, a Canberra / ACT (Australia) tradie landing-page builder. Produce ONE complete pack for the trade: "${name}".
-  
-  Return ONLY a single valid JSON object — no markdown, no commentary, no code fences — with EXACTLY this shape and these counts:
-  
-  {
-    "slug": "${slug}",
-    "category": "${category}",
-    "pack": {
-      "label": "Short trade name, Title Case, 1-3 words",
-      "tradeType": "What to call the worker, e.g. \\"Drain Specialist\\"",
-      "theme": { "pipe": "#hex primary", "hivis": "#hex accent", "steel": "#hex near-black", "safety": "#hex light tint" },
-      "services": [ EXACTLY 6 of { "on": true, "icon": "<single emoji>", "title": "2-4 words", "body": "one short sentence" } ],
-      "sections": {
-        "header": { "cta": "Speak to a <trade>", "button": "Call now" },
-        "emerg": { "text": "one short urgency or availability line; may begin with \\"⚠ \\"" },
-        "hero": { "eyebrow": "short label · qualifier", "title": "2-3 word hook", "titleHl": "2-4 word highlighted finish", "sub": "1-2 sentences, mention the ACT", "badges": [ EXACTLY 4 of { "icon": "one of ✓ ★ $ ⚡", "text": "2-3 words" } ] },
-        "services": { "eyebrow": "What we do", "heading": "punchy 3-5 words", "intro": "one sentence" },
-        "why": { "eyebrow": "Why {{businessName}}", "heading": "3-5 words", "items": [ EXACTLY 4 of { "n": "one of 01 24/7 ★ ⌂", "title": "2-3 words", "body": "one sentence" } ] },
-        "area": { "eyebrow": "Where we work", "heading": "Across Canberra & the ACT", "intro": "one sentence", "suburbs": ["Gungahlin","Belconnen","Woden","Tuggeranong","Civic","Dickson","Queanbeyan","Molonglo","Weston Creek","Kingston"] },
-        "reviews": { "eyebrow": "From the neighbours", "heading": "3-5 words", "items": [ EXACTLY 3 of { "who": "First L. — Suburb", "text": "\\"a quote that uses {{businessName}} once\\"" } ] },
-        "quote": { "eyebrow": "Fast quote", "sub": "one sentence", "button": "Send & get my call back", "formTitle": "Get my quote", "lblName": "Name", "lblPhone": "Phone", "lblSuburb": "Suburb", "lblDetail": "Anything else? (optional)", "successTitle": "Got it — sit tight. ✓", "heading": "one sentence", "lblJob": "a question label", "points": [ EXACTLY 3 of { "text": "short" } ], "jobOptions": [ EXACTLY 5 of { "text": "short option" } ] },
-        "faq": { "eyebrow": "Good to know", "heading": "Quick answers.", "items": [ EXACTLY 2 of { "q": "a question?", "a": "1-2 sentence answer" } ] },
-        "footer": { "blurb": "one sentence summary", "legal": "{{businessName}} — <relevant ACT licence line> (placeholder). ABN 00 000 000 000. Fully insured. Servicing Canberra & the ACT. © 2026 {{businessName}}.", "services": [ EXACTLY 4 of { "label": "short", "href": "#quote" } ] }
+  function lpGuessStarterSlug(){
+    var c=c0(); var ct=(c.trade||'').toLowerCase().trim();
+    if(!ct) return 'plumber';
+    if(ct==='plumber') return 'plumber';
+    for(var kk in TRADE_PACKS){
+      if(!Object.prototype.hasOwnProperty.call(TRADE_PACKS,kk)) continue;
+      var lb=window.__tradeLabel(kk).toLowerCase();
+      if(lb===ct||lb.indexOf(ct)===0||(TRADE_PACKS[kk].tradeType||'').toLowerCase()===ct) return kk;
+    }
+    return 'plumber';
+  }
+  async function lpAuthHeader(){
+    var token=await cwToken();
+    return token?{Authorization:'Bearer '+token}:{};
+  }
+  async function lpLoadCommunityTradePacks(){
+    if(!window.LPTradePicker) return;
+    try{
+      var r=await fetch('/api/partner/list-trade-packs',{headers:await lpAuthHeader()});
+      var j=await r.json();
+      if(j&&j.ok&&j.packs){
+        j.packs.forEach(function(p){
+          window.LPTradePicker.registerPack(p.slug,p.category||'General',{label:p.label,tradeType:p.label});
+        });
       }
+    }catch(_e){}
+  }
+  async function lpAcquireTradePack(opts){
+    var r=await fetch('/api/partner/acquire-trade-pack',{
+      method:'POST',
+      headers:Object.assign({'content-type':'application/json'},await lpAuthHeader()),
+      body:JSON.stringify(opts)
+    });
+    return r.json();
+  }
+  async function lpInitSettingsTradeStarter(){
+    var slug=lpGuessStarterSlug();
+    var hp=$('trade-pack'); if(hp) hp.value=slug;
+    var bizEl=$('tp-biz'), locEl=$('tp-location');
+    if(bizEl && !bizEl.value) bizEl.value=(currentBusinessName||'').trim();
+    if(locEl && !locEl.value){
+      var cfg=c0(); var se=cfg.sections&&cfg.sections.seoTokens;
+      var loc=(se&&(se.location||se.city||se.suburb))||(cfg.region||'').trim();
+      locEl.value=loc.split(/[,&]/)[0].trim()||'';
+    }
+    await lpLoadCommunityTradePacks();
+    if(window.LPTradePicker){
+      window.LPTradePicker.init2({search:'tp-search',hidden:'trade-pack',picked:'tp-picked',cats:'tp-cats',list:'tp-packlist',defaultSlug:slug});
     }
   }
-  
-  Rules:
-  - Australian English; confident, plain, local-tradie tone (not corporate).
-  - Use the literal token {{businessName}} wherever the business name belongs (why.eyebrow, one or two reviews, footer.blurb and footer.legal). Do NOT invent a business name.
-  - "steel" must be near-black; pick colours that suit the trade.
-  - Hit the counts exactly: 6 services, 4 badges, 4 why items, 3 reviews, 3 points, 5 jobOptions, 2 faq, 4 footer services, 10 suburbs (keep the suburbs as listed).
-  - Output the JSON object only.`;
-  };
-  
-  window.__wireTradeBuilder=function(applyFn){
-    var nameEl=document.getElementById('tb-name'), catEl=document.getElementById('tb-cat'),
-        newWrap=document.getElementById('tb-newcatwrap'), newEl=document.getElementById('tb-newcat'),
-        genBtn=document.getElementById('tb-gen'), genWrap=document.getElementById('tb-genwrap'),
-        promptEl=document.getElementById('tb-prompt'), copyBtn=document.getElementById('tb-copy'),
-        jsonEl=document.getElementById('tb-json'), addBtn=document.getElementById('tb-add'),
-        statusEl=document.getElementById('tb-status');
-    if(!nameEl||!catEl) return;
-    var CATS=window.__TRADE_CATS, opts='';
-    for(var i=0;i<CATS.length;i++){ var nm=CATS[i][0]; opts+='<option value="'+nm.replace(/"/g,'&quot;')+'">'+nm+'</option>'; }
-    opts+='<option value="__new">+ New category…</option>';
-    catEl.innerHTML=opts;
-    function syncNew(){ newWrap.style.display=(catEl.value==='__new')?'':'none'; }
-    catEl.addEventListener('change',syncNew);
-    nameEl.addEventListener('input',function(){ var g=window.__guessCat(nameEl.value); if(catEl.value!=='__new'){ for(var k=0;k<catEl.options.length;k++){ if(catEl.options[k].value===g){ catEl.selectedIndex=k; break; } } } });
-    function chosenCat(){ return catEl.value==='__new' ? (newEl.value.trim()||'Other & Specialist') : catEl.value; }
-    genBtn.addEventListener('click',function(){
-      var name=nameEl.value.trim(); if(!name){ statusEl.style.color='#b42318'; statusEl.textContent='Type a trade name first.'; return; }
-      promptEl.value=window.__buildTradePrompt(name, chosenCat());
-      genWrap.style.display=''; statusEl.textContent='';
-    });
-    if(copyBtn) copyBtn.addEventListener('click',function(){ promptEl.select(); try{ navigator.clipboard.writeText(promptEl.value); }catch(e){ try{document.execCommand('copy');}catch(e2){} } copyBtn.textContent='Copied ✓'; setTimeout(function(){copyBtn.textContent='Copy prompt';},1500); });
-    if(addBtn) addBtn.addEventListener('click',function(){
-      var raw=(jsonEl.value||'').trim(); if(!raw){ statusEl.style.color='#b42318'; statusEl.textContent='Paste the JSON first.'; return; }
-      raw=raw.replace(/^```(json)?/i,'').replace(/```$/,'').trim();
-      var obj; try{ obj=JSON.parse(raw); }catch(e){ statusEl.style.color='#b42318'; statusEl.textContent="That isn't valid JSON — check you copied the whole object."; return; }
-      var pack=obj.pack||obj, cat=(obj.category||chosenCat()).toString();
-      var slug=(obj.slug||pack.label||'').toString().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-      if(!slug || !pack || !pack.label || !pack.tradeType || !pack.services || !pack.sections){ statusEl.style.color='#b42318'; statusEl.textContent='JSON is missing required fields (slug, pack.label, tradeType, services, sections).'; return; }
-      try{ window.__registerTradePack(slug,cat,pack); }catch(e){ statusEl.style.color='#b42318'; statusEl.textContent='Could not register: '+e.message; return; }
-      statusEl.style.color='#0a7d33'; statusEl.innerHTML='Added <b>'+esc(pack.label)+'</b> under <b>'+esc(cat)+'</b>. Saving…';
-      if(window.__tp2opts){ var hp=document.getElementById(window.__tp2opts.hidden); if(hp) hp.value=slug; lpInitSettingsTradePicker(window.__tp2opts); }
-      lpSaveServicePack(slug,cat,pack).then(function(ok){
-        if(ok){ statusEl.style.color='#0a7d33'; statusEl.innerHTML='Saved <b>'+esc(pack.label)+'</b> under <b>'+esc(cat)+'</b> — it’ll be here next time too. Click <b>Load starter content</b> to apply.'; }
-        else { statusEl.style.color='#b4543c'; statusEl.innerHTML='Added <b>'+esc(pack.label)+'</b> for this session, but saving for next time failed — check you’re signed in as admin and try again.'; }
+  function lpWireSettingsTradeStarter(){
+    lpInitSettingsTradeStarter();
+    var loadBtn=$('trade-pack-load'), addBtn=$('tp-add-trade');
+    if(loadBtn && !loadBtn.__wired){
+      loadBtn.__wired=true;
+      loadBtn.addEventListener('click', async function(){
+        var msg=$('tp-load-msg');
+        var bizEl=$('tp-biz'), locEl=$('tp-location');
+        var biz=(bizEl&&bizEl.value||'').trim();
+        var targetLocation=(locEl&&locEl.value||'').trim();
+        var packSlug=($('trade-pack')&&$('trade-pack').value)||'plumber';
+        var picker=window.LPTradePicker;
+        var tradeLabel=picker?picker.tradeLabel(packSlug):packSlug;
+        var tradeCat=picker?picker.tradeCat(packSlug):'General';
+        if(!biz){ if(msg){ msg.style.color='#b42318'; msg.textContent='Business name is required.'; } return; }
+        if(!targetLocation){ if(msg){ msg.style.color='#b42318'; msg.textContent='Target location is required (e.g. Canberra, Sydney).'; } return; }
+        if(!window.confirm('Load '+tradeLabel+' starter content?\n\nThis replaces the current page copy, services and colours. Your business name and contact details stay. You can fine-tune everything afterwards.')){ return; }
+        loadBtn.disabled=true; var orig=loadBtn.textContent; loadBtn.textContent='Finding content\u2026';
+        if(msg){ msg.style.color='var(--ink-soft)'; msg.textContent=''; }
+        var confirmNew=false, gj=null, attempts=0;
+        while(attempts<3){
+          attempts++;
+          gj=await lpAcquireTradePack({packSlug:packSlug,tradeLabel:tradeLabel,category:tradeCat||'General',targetLocation:targetLocation,confirmNewGeneration:confirmNew});
+          if(gj&&gj.needsConfirmation){
+            if(!window.confirm(gj.message||'Generate fresh content for this location?')){ loadBtn.disabled=false; loadBtn.textContent=orig; return; }
+            confirmNew=true;
+            continue;
+          }
+          break;
+        }
+        loadBtn.disabled=false; loadBtn.textContent=orig;
+        if(!gj||!gj.ok){ if(msg){ msg.style.color='#b42318'; msg.textContent=(gj&&gj.error)||'Could not load trade content.'; } return; }
+        applyAcquiredTradePack(gj);
+        closeSettingsPage();
       });
-    });
-  };
+    }
+    if(addBtn && !addBtn.__wired){
+      addBtn.__wired=true;
+      addBtn.addEventListener('click', async function(){
+        var msg=$('tp-new-trade-msg');
+        var name=($('tp-new-trade')&&$('tp-new-trade').value||'').trim();
+        var cat=($('tp-new-cat')&&$('tp-new-cat').value||'').trim()||'General';
+        var loc=($('tp-location')&&$('tp-location').value||'').trim();
+        if(!name){ if(msg){ msg.style.color='#b42318'; msg.textContent='Enter a trade name first.'; } return; }
+        if(!loc){ if(msg){ msg.style.color='#b42318'; msg.textContent='Enter a target location first \u2014 needed for unique content checks.'; } return; }
+        addBtn.disabled=true; if(msg){ msg.style.color='var(--ink-soft)'; msg.textContent='Creating community trade pack\u2026'; }
+        var confirmNew=false, gj=null;
+        for(var i=0;i<2;i++){
+          gj=await lpAcquireTradePack({mode:'create',trade:name,category:cat,targetLocation:loc,confirmNewGeneration:confirmNew});
+          if(gj&&gj.needsConfirmation){
+            if(!window.confirm(gj.message||'Create this trade for the community library?')){ addBtn.disabled=false; if(msg) msg.textContent=''; return; }
+            confirmNew=true; continue;
+          }
+          break;
+        }
+        addBtn.disabled=false;
+        if(!gj||!gj.ok){ if(msg){ msg.style.color='#b42318'; msg.textContent=(gj&&gj.error)||'Could not create trade.'; } return; }
+        if(window.LPTradePicker) window.LPTradePicker.registerPack(gj.slug,gj.category||cat,{label:gj.label,tradeType:gj.label});
+        var packEl=$('trade-pack'); if(packEl) packEl.value=gj.slug;
+        var picked=$('tp-picked');
+        if(picked&&window.LPTradePicker) picked.innerHTML='<span class="cs-picked-lbl">'+esc(gj.label)+'</span><span class="cs-picked-cat">'+esc(gj.category||cat)+'</span>';
+        if(msg){ msg.style.color='#0a7d33'; msg.textContent='Added \u201c'+gj.label+'\u201d to the community library and selected it.'; }
+        var nt=$('tp-new-trade'); if(nt) nt.value='';
+      });
+    }
+  }
 
   function openCreateSite(){
     if(currentRole!=='super'){ toast('Only platform admins can create new sites here.'); return; }
@@ -3765,7 +3720,7 @@ function heroCtaCard(c){
       +'<div id="psi-cname-preview" style="margin:10px 0;">'+_recRow('Type','CNAME')+_recRow('Name / host','(enter host)','psi-cname-prev-host')+_recRow('Target','(enter target)','psi-cname-prev-target')+'</div>'
       +'<button type="button" class="btn ghost" id="psi-push-vercel-cname">Add CNAME to Vercel DNS</button> <span id="psi-vercel-cname-msg" class="hint"></span></div>'
       +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);"><button type="button" class="btn" id="psi-save">Save marketing SEO</button><span id="psi-saved" style="font-size:13px;color:#0a7d33;"></span></div></div>'):'';
-    var _spCss='#settings-page{position:fixed;inset:0;z-index:9998;background:rgba(16,22,32,.55);overflow:auto;padding:32px 16px;}#settings-page .sp-card{max-width:880px;margin:0 auto;background:var(--bg);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:26px 26px 30px;}#settings-page .card{background:var(--panel);border-color:var(--line);}#settings-page .gsi-site-banner{margin:0 0 14px;padding:10px 12px;background:color-mix(in srgb,var(--accent) 8%,var(--panel));border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line));border-radius:10px;color:var(--ink);font-size:13px;line-height:1.55;}#settings-page .gsi-site-banner code.gsi-site-url{background:transparent;color:var(--ink);padding:1px 6px;border-radius:6px;border:1px solid var(--line);word-break:break-all;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;}#settings-page .gsi-gsc-link,#settings-page .gsi-gsc-link:visited{color:var(--accent-hover);font-weight:600;text-decoration:underline;text-underline-offset:2px;}#settings-page .gsi-gsc-link:hover{color:var(--accent);}#settings-page .sp-starter .tp2-wrap{height:340px;border-color:var(--line);}#settings-page .sp-starter .tp2-cats{background:var(--panel-soft);border-color:var(--line);}#settings-page .sp-starter .tp2-list{background:var(--panel);}#settings-page .sp-starter .tp2-cat,#settings-page .sp-starter .tp2-trow{color:var(--ink);border-color:var(--line);}#settings-page .sp-starter .tp2-cat.on,#settings-page .sp-starter .tp2-trow.on{background:var(--accent-soft);color:var(--accent-hover);}#settings-page .sp-starter .cs-picked{color:var(--ink);}#settings-page .sp-starter .cs-picked-cat{color:var(--ink-soft);}#settings-page .sp-starter .tb-box{background:var(--panel-soft);border-color:var(--line);}#settings-page .danger{border:1px solid color-mix(in srgb,var(--danger) 55%,transparent);border-radius:14px;background:color-mix(in srgb,var(--danger) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger) 8%,transparent),0 0 28px color-mix(in srgb,var(--danger) 10%,transparent);}#settings-page .danger h2{color:var(--danger);margin:0 0 4px;}#settings-page .danger .lede{color:var(--ink-soft);}#settings-page .sp-del{border:1px solid color-mix(in srgb,var(--danger) 50%,transparent);background:transparent;color:var(--danger);border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s;}#settings-page .sp-del:disabled{opacity:.45;cursor:default;}#settings-page .sp-del.armed{background:color-mix(in srgb,var(--danger) 22%,transparent);border-color:var(--danger);color:var(--danger);box-shadow:0 0 18px color-mix(in srgb,var(--danger) 18%,transparent);}#settings-page .sp-lock{display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--danger);background:transparent;color:var(--danger);border-radius:8px;padding:8px 10px;cursor:pointer;transition:background .15s,box-shadow .15s;}#settings-page .sp-lock:hover{background:color-mix(in srgb,var(--danger) 10%,transparent);}#settings-page .sp-lock.sp-lock--unlocked{background:color-mix(in srgb,var(--danger) 14%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--danger) 12%,transparent);}#settings-page .sp-lock-icon{display:block;}#settings-page .sp-lock .sp-lock-open{display:none;}#settings-page .sp-lock.sp-lock--unlocked .sp-lock-closed{display:none;}#settings-page .sp-lock.sp-lock--unlocked .sp-lock-open{display:block;}';
+    var _spCss='#settings-page{position:fixed;inset:0;z-index:9998;background:rgba(16,22,32,.55);overflow:auto;padding:32px 16px;}#settings-page .sp-card{max-width:880px;margin:0 auto;background:var(--bg);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:26px 26px 30px;}#settings-page .card{background:var(--panel);border-color:var(--line);}#settings-page .gsi-site-banner{margin:0 0 14px;padding:10px 12px;background:color-mix(in srgb,var(--accent) 8%,var(--panel));border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line));border-radius:10px;color:var(--ink);font-size:13px;line-height:1.55;}#settings-page .gsi-site-banner code.gsi-site-url{background:transparent;color:var(--ink);padding:1px 6px;border-radius:6px;border:1px solid var(--line);word-break:break-all;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;}#settings-page .gsi-gsc-link,#settings-page .gsi-gsc-link:visited{color:var(--accent-hover);font-weight:600;text-decoration:underline;text-underline-offset:2px;}#settings-page .gsi-gsc-link:hover{color:var(--accent);}#settings-page .sp-starter .tp2-wrap{height:340px;border-color:var(--line);}#settings-page .sp-starter .tp2-cats{background:var(--panel-soft);border-color:var(--line);}#settings-page .sp-starter .tp2-list{background:var(--panel);}#settings-page .sp-starter .tp2-cat,#settings-page .sp-starter .tp2-trow{color:var(--ink);border-color:var(--line);}#settings-page .sp-starter .tp2-cat.on,#settings-page .sp-starter .tp2-trow.on{background:var(--accent-soft);color:var(--accent-hover);}#settings-page .sp-starter .cs-picked{color:var(--ink);}#settings-page .sp-starter .cs-picked-cat{color:var(--ink-soft);}#settings-page .lp-community-trade-band{display:block;width:100%;box-sizing:border-box;padding:18px 20px 20px;background:color-mix(in srgb,var(--accent) 16%,transparent);border-bottom:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));}#settings-page .lp-community-trade-band-inner{display:grid;grid-template-columns:minmax(220px,1fr) minmax(320px,1.35fr);gap:20px 24px;align-items:start;width:100%;}#settings-page .lp-community-trade-callout-head{display:flex;gap:12px;align-items:flex-start;min-width:0;}#settings-page .lp-community-trade-callout-body{min-width:0;}#settings-page .lp-community-trade-fields{margin-bottom:12px;}#settings-page .lp-community-trade-callout-body .btn{width:100%;}#settings-page .lp-community-trade-callout-badge{flex-shrink:0;margin-top:2px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px;border-radius:999px;background:var(--accent);color:var(--bg,#fff);}#settings-page .lp-community-trade-callout-title{display:block;font-size:14px;margin:0 0 4px;color:var(--ink);}#settings-page .lp-community-trade-callout-lede{margin:0;font-size:13px;line-height:1.5;color:var(--ink-soft);}@media(max-width:900px){#settings-page .lp-community-trade-band-inner{grid-template-columns:1fr;gap:16px;}#settings-page .lp-community-trade-callout-head{padding-bottom:4px;border-bottom:1px solid color-mix(in srgb,var(--accent) 14%,var(--line));}}#settings-page .danger{border:1px solid color-mix(in srgb,var(--danger) 55%,transparent);border-radius:14px;background:color-mix(in srgb,var(--danger) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger) 8%,transparent),0 0 28px color-mix(in srgb,var(--danger) 10%,transparent);}#settings-page .danger h2{color:var(--danger);margin:0 0 4px;}#settings-page .danger .lede{color:var(--ink-soft);}#settings-page .sp-del{border:1px solid color-mix(in srgb,var(--danger) 50%,transparent);background:transparent;color:var(--danger);border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s;}#settings-page .sp-del:disabled{opacity:.45;cursor:default;}#settings-page .sp-del.armed{background:color-mix(in srgb,var(--danger) 22%,transparent);border-color:var(--danger);color:var(--danger);box-shadow:0 0 18px color-mix(in srgb,var(--danger) 18%,transparent);}#settings-page .sp-lock{display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--danger);background:transparent;color:var(--danger);border-radius:8px;padding:8px 10px;cursor:pointer;transition:background .15s,box-shadow .15s;}#settings-page .sp-lock:hover{background:color-mix(in srgb,var(--danger) 10%,transparent);}#settings-page .sp-lock.sp-lock--unlocked{background:color-mix(in srgb,var(--danger) 14%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--danger) 12%,transparent);}#settings-page .sp-lock-icon{display:block;}#settings-page .sp-lock .sp-lock-open{display:none;}#settings-page .sp-lock.sp-lock--unlocked .sp-lock-closed{display:none;}#settings-page .sp-lock.sp-lock--unlocked .sp-lock-open{display:block;}';
     var _spStyle=document.getElementById('settings-page-css');
     if(!_spStyle){ _spStyle=document.createElement('style'); _spStyle.id='settings-page-css'; document.head.appendChild(_spStyle); }
     _spStyle.textContent=_spCss;
@@ -3784,7 +3739,7 @@ function heroCtaCard(c){
       +searchCard
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Mobile command menu</h2><p class="lede" style="margin:0 0 12px;">Design the phone mega menu for the command centre — section order, layouts, separators, button styles, and which roles see each item (super admin, partner, client).</p><button type="button" class="btn" id="open-mobile-menu">Edit mobile menu</button></div>':'')
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced. The suspended page is what the public sees when a site is paused for non-payment.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button> <button type="button" class="btn ghost" id="open-susp">Edit suspended page</button></div>':'')
-      +window.__tradeStarterCard(currentRole==='super')
+      +window.__tradeStarterCard()
       +platformSeoCard
       +danger
       +'</div>';
@@ -4066,14 +4021,8 @@ function heroCtaCard(c){
         setTimeout(function(){ ps.disabled=false; ps.textContent=o; },1800);
       });
     })();
-    // wire service starter content
-    (function(){ var c=c0(); var ct=(c.trade||'').toLowerCase().trim(); var slug='plumber';
-      if(ct){ if(ct==='plumber'){ slug='plumber'; } else if(TRADE_PACKS[ct]){ slug=ct; } else { for(var kk in TRADE_PACKS){ var lb=window.__tradeLabel(kk).toLowerCase(); if(lb===ct||lb.indexOf(ct)===0||(TRADE_PACKS[kk].tradeType||'').toLowerCase()===ct){ slug=kk; break; } } } }
-      var hp=$('trade-pack'); if(hp) hp.value=slug;
-      lpInitSettingsTradePicker({search:'tp-search',hidden:'trade-pack',picked:'tp-picked',cats:'tp-cats',list:'tp-packlist',defaultSlug:slug});
-    })();
-    var tpBtn=$('trade-pack-load'); if(tpBtn) tpBtn.addEventListener('click',function(){ var k=$('trade-pack').value; var nm=(window.LPTradePicker&&window.LPTradePicker.tradeLabel)?window.LPTradePicker.tradeLabel(k):window.__tradeLabel(k); if(!TRADE_PACKS[k]){ toast('No starter pack for “'+nm+'” yet — pick another trade or create one below.'); return; } if(window.confirm('Load the '+nm+' starter content?\n\nThis replaces the current page copy, services and colours. Your business name and contact details stay. You can fine-tune everything afterwards.')){ applyTradePack(k); closeSettingsPage(); } });
-    if(window.__wireTradeBuilder) window.__wireTradeBuilder(applyTradePack);
+    // wire service starter content (community trade packs — same as Partner Demos)
+    lpWireSettingsTradeStarter();
     // wire danger zone (lock + double-tap delete)
     var lk=$('btn-dellock'), del=$('btn-delsite');
     if(lk&&del){

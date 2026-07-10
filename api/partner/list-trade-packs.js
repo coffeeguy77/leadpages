@@ -1,23 +1,8 @@
 // GET /api/partner/list-trade-packs — approved community trade packs for picker merge.
 
 const { createClient } = require('@supabase/supabase-js');
+const { getTradePackActor } = require('../../lib/trade-pack-auth');
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-
-async function getPartner(token) {
-  if (!token) return null;
-  try {
-    const ur = await fetch(process.env.SUPABASE_URL + '/auth/v1/user', {
-      headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token },
-    });
-    const user = await ur.json();
-    if (!user || !user.id) return null;
-    const pr = await sb.from('partners').select('id,status').eq('user_id', user.id).maybeSingle();
-    if (!pr.data || pr.data.status !== 'active') return null;
-    return pr.data;
-  } catch (_e) {
-    return null;
-  }
-}
 
 module.exports = async (req, res) => {
   res.setHeader('content-type', 'application/json');
@@ -25,8 +10,8 @@ module.exports = async (req, res) => {
   if (req.method !== 'GET') return res.status(405).json({ ok: false, error: 'GET only' });
 
   const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  if (!await getPartner(token)) {
-    return res.status(401).json({ ok: false, error: 'Active partner sign-in required' });
+  if (!await getTradePackActor(token, sb)) {
+    return res.status(401).json({ ok: false, error: 'Sign in required (partner or platform admin).' });
   }
 
   try {

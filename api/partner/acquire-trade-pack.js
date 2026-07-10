@@ -24,23 +24,8 @@ const {
   recordPackLocationUsage,
 } = require('../../lib/trade-pack-utils');
 
+const { getTradePackActor } = require('../../lib/trade-pack-auth');
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-
-async function getPartner(token) {
-  if (!token) return null;
-  try {
-    const ur = await fetch(process.env.SUPABASE_URL + '/auth/v1/user', {
-      headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token },
-    });
-    const user = await ur.json();
-    if (!user || !user.id) return null;
-    const pr = await sb.from('partners').select('id,status').eq('user_id', user.id).maybeSingle();
-    if (!pr.data || pr.data.status !== 'active') return null;
-    return { userId: user.id, partnerId: pr.data.id };
-  } catch (_e) {
-    return null;
-  }
-}
 
 async function generateAndSave(trade, category, userId, existingCount) {
   const parsed = await callClaude(buildPrompt(trade, category));
@@ -77,8 +62,8 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'POST only' });
 
   const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  const partner = await getPartner(token);
-  if (!partner) return res.status(401).json({ ok: false, error: 'Active partner sign-in required' });
+  const actor = await getTradePackActor(token, sb);
+  if (!actor) return res.status(401).json({ ok: false, error: 'Sign in required (partner or platform admin).' });
 
   let body = req.body;
   if (typeof body === 'string') {
@@ -127,14 +112,14 @@ module.exports = async (req, res) => {
           trade: tradeName,
         });
       }
-      const saved = await generateAndSave(tradeName, category, partner.userId, 0);
+      const saved = await generateAndSave(tradeName, category, actor.userId, 0);
       await recordPackLocationUsage(sb, {
         pack_slug: saved.slug,
         pack_variant: saved.variant || 1,
         location_slug: locSlug,
         location_label: targetLocation,
         content_hash: contentHash(saved.pack),
-        partner_id: partner.partnerId,
+        partner_id: actor.partnerId,
       });
       await bumpPackUseCount(sb, saved.slug, saved.variant);
       return res.status(200).json({
@@ -156,14 +141,14 @@ module.exports = async (req, res) => {
           trade: tradeLabel,
         });
       }
-      const saved = await generateAndSave(tradeLabel, category, partner.userId, 0);
+      const saved = await generateAndSave(tradeLabel, category, actor.userId, 0);
       await recordPackLocationUsage(sb, {
         pack_slug: saved.slug,
         pack_variant: saved.variant || 1,
         location_slug: locSlug,
         location_label: targetLocation,
         content_hash: contentHash(saved.pack),
-        partner_id: partner.partnerId,
+        partner_id: actor.partnerId,
       });
       await bumpPackUseCount(sb, saved.slug, saved.variant);
       return res.status(200).json({
@@ -186,7 +171,7 @@ module.exports = async (req, res) => {
         location_slug: locSlug,
         location_label: targetLocation,
         content_hash: contentHash(pick.pack),
-        partner_id: partner.partnerId,
+        partner_id: actor.partnerId,
       });
       return res.status(200).json({
         ok: true,
@@ -214,7 +199,7 @@ module.exports = async (req, res) => {
     const saved = await generateAndSave(
       variants[0].label || tradeName || slug,
       variants[0].category || category,
-      partner.userId,
+      actor.userId,
       variants.length
     );
 
@@ -232,7 +217,7 @@ module.exports = async (req, res) => {
       location_slug: locSlug,
       location_label: targetLocation,
       content_hash: contentHash(saved.pack),
-      partner_id: partner.partnerId,
+      partner_id: actor.partnerId,
     });
     await bumpPackUseCount(sb, saved.slug, saved.variant);
 
