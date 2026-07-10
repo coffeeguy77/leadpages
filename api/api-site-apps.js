@@ -3,7 +3,17 @@
 // POST /api/site-apps                -> enable/update/disable an app on a site
 //   body: {site_id, app_id, action:'enable'|'disable'|'update', config?, position_slot?, position_order?}
 const { createClient } = require('@supabase/supabase-js');
+const { subscriptionIsActive } = require('../lib/quote-system/billing');
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+function activationStateForRow(row) {
+  const tier = row.app_registry && row.app_registry.tier;
+  if (!row.enabled) return 'disabled';
+  if (tier === 'default' || tier === 'free') return 'active';
+  const sub = row.site_app_subscriptions && row.site_app_subscriptions[0];
+  if (subscriptionIsActive(sub)) return 'active';
+  return 'ghost';
+}
 
 module.exports = async (req, res) => {
   res.setHeader('content-type','application/json');
@@ -11,21 +21,15 @@ module.exports = async (req, res) => {
     if (req.method==='GET') {
       const site_id = ((req.query&&req.query.site_id)||'').trim();
       if (!site_id) return res.status(400).json({ok:false,error:'site_id required'});
-      // get enabled apps + subscription status in one query
       const {data,error} = await sb.from('site_apps')
         .select(`id,app_id,enabled,position_slot,position_order,config,placed_at,
-          app_registry(slug,section_key,name,tier,default_position,can_reposition,hero_exclusive)`)
+          app_registry(slug,section_key,name,tier,default_position,can_reposition,hero_exclusive,price_monthly_aud,price_annual_aud),
+          site_app_subscriptions(status, access_until)`)
         .eq('site_id',site_id)
         .order('position_order',{ascending:true});
       if (error) return res.status(500).json({ok:false,error:error.message});
-      // annotate each app with its activation state
       const annotated=(data||[]).map(function(row){
-        const tier=row.app_registry&&row.app_registry.tier;
-        let state='inactive';
-        if(!row.enabled) state='disabled';
-        else if(tier==='default'||tier==='free') state='active';
-        else state='ghost';
-        return Object.assign({},row,{activation_state:state});
+        return Object.assign({}, row, { activation_state: activationStateForRow(row) });
       });
       return res.status(200).json({ok:true,apps:annotated});
     }

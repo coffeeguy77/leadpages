@@ -10,6 +10,7 @@ const { updateSession } = require('../../lib/quote-system/session');
 const { sendSmsCode, checkSmsCode } = require('../../lib/quote-system/verify');
 const { finalizeVerifiedPortal } = require('../../lib/quote-system/portal');
 const { sendPortalLinkEmail } = require('../../lib/quote-system/portal-email');
+const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
 
 function normalisePhone(phone) {
   var p = String(phone || '').replace(/[\s\-()]/g, '');
@@ -33,6 +34,9 @@ module.exports = async function handler(req, res) {
     if (result.expired) return json(res, 410, { ok: false, error: 'session_expired' });
 
     const session = result.session;
+
+    const entitled = await assertQuoteAppEntitled(session.site_id);
+    if (!entitled.ok) return json(res, 403, { ok: false, error: entitled.error });
 
     if (!session.email_verified_at) {
       return json(res, 403, { ok: false, error: 'email_not_verified' });

@@ -17,6 +17,7 @@ const {
   verifyEmailCode
 } = require('../../lib/quote-system/verify');
 const { VERIFY_CHANNEL } = require('../../lib/quote-system/constants');
+const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'method_not_allowed' });
@@ -32,6 +33,9 @@ module.exports = async function handler(req, res) {
     if (result.expired) return json(res, 410, { ok: false, error: 'session_expired' });
 
     const session = result.session;
+
+    const entitled = await assertQuoteAppEntitled(session.site_id);
+    if (!entitled.ok) return json(res, 403, { ok: false, error: entitled.error });
 
     if (action === 'send') {
       const email = clean(body.email || session.contact_email, 160).toLowerCase();

@@ -21,6 +21,7 @@ const {
 const { serializeQuoteResult, serializeSession } = require('../../lib/quote-system/serializers');
 const { RESPONSE_LEVEL, SESSION_STATUS } = require('../../lib/quote-system/constants');
 const { createQuoteLead } = require('../../lib/quote-system/crm');
+const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'method_not_allowed' });
@@ -38,6 +39,11 @@ module.exports = async function handler(req, res) {
     const quoteSystem = await getQuoteSystemForSite(session.site_id);
     if (!quoteSystem || !quoteSystem.enabled) {
       return json(res, 403, { ok: false, error: 'quote_not_enabled' });
+    }
+
+    const entitled = await assertQuoteAppEntitled(session.site_id);
+    if (!entitled.ok) {
+      return json(res, 403, { ok: false, error: entitled.error });
     }
 
     const configVersion = await getActiveConfig(quoteSystem);

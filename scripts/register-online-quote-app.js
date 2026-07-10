@@ -13,6 +13,8 @@ const APP = {
   slug: 'online-quote',
   section_key: SECTION_KEY,
   tier: 'paid',
+  price_monthly_aud: 29,
+  price_annual_aud: 290,
   tagline: 'Verified online quotes with gated pricing',
   description: 'Multi-step quote wizard with email and SMS verification. Server-side pricing, CRM integration, and immutable quote versions.',
   default_position: 'mid',

@@ -6208,7 +6208,7 @@ function heroCtaCard(c){
         +'<button type="button" class="btn ghost" id="oq-refresh">Refresh</button>'
         +'</div>';
       html+='<div class="card" style="margin-top:18px;"><h3 style="margin:0 0 8px;">Page section</h3>'
-        +'<p class="lede" style="margin:0 0 10px;">Enable <strong>Online Quote</strong> in Page editor → Lead Capture, then publish. The wizard appears above your quote form on the live site.</p>'
+        +'<p class="lede" style="margin:0 0 10px;">Enable <strong>Online Quote</strong> in App Marketplace or Page editor → Lead Capture, then publish. Requires an active app subscription ($29/mo or $290/yr) unless this is a platform-exempt site.</p>'
         +'<button type="button" class="btn ghost" id="oq-goto-editor">Open Page editor</button></div>';
       if(isSuper){
         html+='<div class="card" style="margin-top:18px;border:1px solid var(--accent-soft);"><h3 style="margin:0 0 8px;">Super admin</h3>'
@@ -6290,6 +6290,14 @@ function heroCtaCard(c){
         var reg=_appsList.find(function(x){return x.id===a.app_id;});
         if(!reg) return Promise.resolve();
         var key=reg.section_key;
+        if(key==='onlineQuote'){
+          if(!c.sections[key]) c.sections[key]={};
+          c.sections[key].on=false;
+          delete c.sections[key].__ghost;
+          return fetch('/api/api-site-apps',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({ site_id:siteId, app_id:a.app_id, action:'disable' })});
+        }
         if(!c.sections[key]) c.sections[key]={};
         // Apply config defaults (don't overwrite existing values)
         var defaults=a.config_defaults||{};
@@ -6550,6 +6558,45 @@ function heroCtaCard(c){
   }
 
   async function _toggleApp(c, siteId, secKey, appId, on){
+    if(on && siteId){
+      var appMeta=_appsList.find(function(a){return a.id===appId;});
+      if(appMeta && (appMeta.tier==='paid'||appMeta.tier==='metered')){
+        var siteAppRow=_siteApps.find(function(a){return a.app_id===appId;});
+        var subRow=siteAppRow&&siteAppRow.site_app_subscriptions&&siteAppRow.site_app_subscriptions[0];
+        var hasSub=subRow&&(subRow.status==='active'||subRow.status==='trialing'||subRow.status==='past_due'||(subRow.status==='cancelled'&&subRow.access_until&&new Date(subRow.access_until)>new Date()));
+        if(!hasSub){
+          var cycle='monthly';
+          if(appMeta.price_monthly_aud!=null && appMeta.price_annual_aud!=null){
+            var useMonthly=window.confirm('Subscribe to '+appMeta.name+'?\n\nMonthly: $'+appMeta.price_monthly_aud+'/mo\nAnnual: $'+appMeta.price_annual_aud+'/yr\n\nOK = monthly, Cancel = annual');
+            cycle=useMonthly?'monthly':'annual';
+          }
+          try{
+            var token=await cwToken();
+            var hdr=Object.assign({'content-type':'application/json'}, token?{Authorization:'Bearer '+token}:{});
+            var cr=await fetch('/api/billing/app-checkout',{method:'POST',headers:hdr,
+              body:JSON.stringify({siteId:siteId,appId:appId,cycle:cycle,returnUrl:location.origin})});
+            var cj=await cr.json();
+            if(cj&&cj.mode==='checkout'&&cj.url){
+              if(currentRole==='super'){
+                window.prompt('Send this payment link to activate '+appMeta.name+':', cj.url);
+              } else {
+                location.href=cj.url;
+                return;
+              }
+            } else if(!(cj&&(cj.mode==='added'||cj.mode==='reactivated'||cj.mode==='upgraded'))){
+              alert((cj&&cj.error)||'Could not start checkout');
+              return;
+            } else if(typeof toast==='function'){
+              toast('Subscription active');
+            }
+            await _reconcileSiteApps(siteId, c);
+          }catch(e){
+            alert('Billing error: '+(e.message||e));
+            return;
+          }
+        }
+      }
+    }
     // 1. Update cfg.sections (same as _setSecOn)
     if(!c.sections)c.sections={};
     if(!c.sections[secKey])c.sections[secKey]={};
@@ -6895,8 +6942,20 @@ function heroCtaCard(c){
       if(typeof _dashLoadBk==='function') _dashLoadBk();
     }catch(e){ alert('Could not save backup: '+(e.message||e)); }
   }
+  function _oqSanitizeImportedConfig(cfg){
+    if(!cfg||typeof cfg!=='object'||Array.isArray(cfg)) return cfg;
+    var out=Object.assign({}, cfg);
+    if(out.sections&&out.sections.onlineQuote){
+      var sec=Object.assign({}, out.sections.onlineQuote);
+      sec.on=false; delete sec.__ghost; delete sec.quoteSystemId; delete sec.quote_system_id;
+      out.sections=Object.assign({}, out.sections, { onlineQuote: sec });
+    }
+    delete out.quoteSystemId; delete out.quote_system_id;
+    return out;
+  }
   async function lpBkApplyConfig(cfg){
     if(!currentSiteId||!cfg) return false;
+    cfg=_oqSanitizeImportedConfig(cfg);
     try{
       var j=await lpBkFetch('', { method:'POST', body:JSON.stringify({ action:'apply', siteId:currentSiteId, config:cfg }) });
       cfg=(j&&j.config)||cfg;

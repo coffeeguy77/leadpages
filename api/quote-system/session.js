@@ -15,6 +15,7 @@ const {
 const { createSession, updateSession } = require('../../lib/quote-system/session');
 const { serializeSession } = require('../../lib/quote-system/serializers');
 const { RESPONSE_LEVEL } = require('../../lib/quote-system/constants');
+const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
 
 module.exports = async function handler(req, res) {
   try {
@@ -45,6 +46,11 @@ module.exports = async function handler(req, res) {
       const quoteSystem = await getQuoteSystemForSite(site.id);
       if (!quoteSystem || !quoteSystem.enabled) {
         return json(res, 403, { ok: false, error: 'quote_not_enabled' });
+      }
+
+      const entitled = await assertQuoteAppEntitled(site.id);
+      if (!entitled.ok) {
+        return json(res, 403, { ok: false, error: entitled.error });
       }
 
       const token = clean(body.token, 128);

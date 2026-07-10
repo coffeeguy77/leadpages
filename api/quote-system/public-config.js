@@ -11,6 +11,7 @@ const {
 } = require('../../lib/quote-system/auth');
 const { serializePublicConfig } = require('../../lib/quote-system/serializers');
 const { CONFIG_CLASSIFICATION } = require('../../lib/quote-system/constants');
+const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return json(res, 405, { ok: false, error: 'method_not_allowed' });
@@ -28,6 +29,16 @@ module.exports = async function handler(req, res) {
       return json(res, 200, {
         ok: true,
         enabled: false,
+        shell: { products: [], addons: [], beverages: [], wizard: { steps: [] }, business: {} }
+      });
+    }
+
+    const entitled = await assertQuoteAppEntitled(site.id);
+    if (!entitled.ok) {
+      return json(res, 200, {
+        ok: true,
+        enabled: false,
+        subscriptionRequired: true,
         shell: { products: [], addons: [], beverages: [], wizard: { steps: [] }, business: {} }
       });
     }

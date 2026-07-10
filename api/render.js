@@ -850,7 +850,11 @@ module.exports = async (req, res) => {
 
     html = injectVisitorAccessibility(html, cfg);
     if (templateFor(site) === 'trade') {
-      html = injectOnlineQuote(html, site.slug, cfg);
+      const { assertQuoteAppEntitled } = require('../lib/quote-system/billing');
+      const entitled = await assertQuoteAppEntitled(site.id);
+      if (entitled.ok) {
+        html = injectOnlineQuote(html, site.slug, cfg);
+      }
     }
 
     return sendHtml(res, html, isLive);
