@@ -1798,10 +1798,58 @@ input[type="checkbox"] {
   color: var(--text-soft);
   border-color: var(--border) !important;
 }
+#settings-page .lp-settings-starter .tp2-wrap,
 #settings-page .sp-starter .tp2-wrap {
   background: var(--panel);
   height: 340px;
   border-color: var(--border, var(--line));
+}
+#settings-page .lp-settings-starter .tp2-cats,
+#settings-page .sp-starter .tp2-cats {
+  background: color-mix(in srgb, var(--accent) 5%, var(--panel));
+  border-color: var(--border, var(--line));
+}
+#settings-page .lp-settings-starter .tp2-list,
+#settings-page .sp-starter .tp2-list {
+  background: var(--panel);
+}
+#settings-page .lp-settings-starter .tp2-cat,
+#settings-page .lp-settings-starter .tp2-trow,
+#settings-page .sp-starter .tp2-cat,
+#settings-page .sp-starter .tp2-trow {
+  color: var(--text, var(--ink));
+  border-color: var(--border, var(--line));
+  background: transparent;
+}
+#settings-page .lp-settings-starter .tp2-cat:hover,
+#settings-page .lp-settings-starter .tp2-trow:hover,
+#settings-page .sp-starter .tp2-cat:hover,
+#settings-page .sp-starter .tp2-trow:hover {
+  background: var(--accent-soft);
+}
+#settings-page .lp-settings-starter .tp2-cat.on,
+#settings-page .lp-settings-starter .tp2-trow.on,
+#settings-page .sp-starter .tp2-cat.on,
+#settings-page .sp-starter .tp2-trow.on {
+  background: var(--accent-soft);
+  color: var(--accent-hover, var(--accent));
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+#settings-page .lp-settings-starter .tp2-count,
+#settings-page .sp-starter .tp2-count {
+  color: var(--muted, var(--ink-faint));
+}
+#settings-page .lp-settings-starter .tp2-empty,
+#settings-page .sp-starter .tp2-empty {
+  color: var(--text-soft, var(--ink-soft));
+}
+#settings-page .lp-settings-starter .cs-picked,
+#settings-page .sp-starter .cs-picked {
+  color: var(--text, var(--ink));
+}
+#settings-page .lp-settings-starter .cs-picked-cat,
+#settings-page .sp-starter .cs-picked-cat {
+  color: var(--text-soft, var(--ink-soft));
 }
 #settings-page .gsi-site-banner {
   margin: 0 0 14px;
@@ -1832,29 +1880,6 @@ input[type="checkbox"] {
 }
 #settings-page .gsi-gsc-link:hover {
   color: var(--accent) !important;
-}
-#settings-page .sp-starter .tp2-cats {
-  background: var(--panel-soft);
-  border-color: var(--border, var(--line));
-}
-#settings-page .sp-starter .tp2-list {
-  background: var(--panel);
-}
-#settings-page .sp-starter .tp2-cat,
-#settings-page .sp-starter .tp2-trow {
-  color: var(--text, var(--ink));
-  border-color: var(--border, var(--line));
-}
-#settings-page .sp-starter .tp2-cat.on,
-#settings-page .sp-starter .tp2-trow.on {
-  background: var(--accent-soft);
-  color: var(--accent-hover);
-}
-#settings-page .sp-starter .cs-picked {
-  color: var(--text, var(--ink));
-}
-#settings-page .sp-starter .cs-picked-cat {
-  color: var(--text-soft, var(--ink-soft));
 }
 #lp-ord-list .ord-row--article {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border)) !important;
