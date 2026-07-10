@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
     const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '50', 10) || 50));
     const admin = getAdmin();
     const { data: sessions, error } = await admin.from('quote_sessions')
-      .select('id,session_token,status,progress,contact_name,contact_email,contact_phone,email_verified_at,sms_verified_at,lead_id,created_at,updated_at')
+      .select('id,session_token,portal_token,status,progress,contact_name,contact_email,contact_phone,email_verified_at,sms_verified_at,accepted_at,lead_id,created_at,updated_at')
       .eq('site_id', siteId)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -59,7 +59,9 @@ module.exports = async function handler(req, res) {
     const out = (sessions || []).map(function(s) {
       return Object.assign(serializeSession(s, level), {
         latestQuote: latestBySession[s.id] || null,
-        verificationLevel: verificationLevelForSession(s)
+        verificationLevel: verificationLevelForSession(s),
+        acceptedAt: s.accepted_at || null,
+        portalPath: s.portal_token ? ('/quote-portal?t=' + encodeURIComponent(s.portal_token)) : null
       });
     });
 

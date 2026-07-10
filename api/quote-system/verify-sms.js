@@ -8,6 +8,8 @@ const { readBody, json, clean } = require('../../lib/quote-system/http');
 const { getSessionByToken } = require('../../lib/quote-system/auth');
 const { updateSession } = require('../../lib/quote-system/session');
 const { sendSmsCode, checkSmsCode } = require('../../lib/quote-system/verify');
+const { finalizeVerifiedPortal } = require('../../lib/quote-system/portal');
+const { sendPortalLinkEmail } = require('../../lib/quote-system/portal-email');
 
 function normalisePhone(phone) {
   var p = String(phone || '').replace(/[\s\-()]/g, '');
@@ -62,7 +64,34 @@ module.exports = async function handler(req, res) {
       if (!check.ok) return json(res, 400, { ok: false, error: check.error || 'invalid_code' });
 
       await updateSession(session.id, { sms_verified_at: new Date().toISOString() });
-      return json(res, 200, { ok: true, smsVerified: true });
+
+      const refreshed = await getSessionByToken(token);
+      const finalized = await finalizeVerifiedPortal(refreshed.session, req);
+
+      let portalPayload = null;
+      if (finalized.ok) {
+        const { getAdmin } = require('../../lib/quote-system/supabase');
+        const { data: site } = await getAdmin().from('sites')
+          .select('id,business_name,config')
+          .eq('id', refreshed.session.site_id)
+          .maybeSingle();
+        const businessName = (site && site.business_name) || 'Your provider';
+        if (refreshed.session.contact_email) {
+          await sendPortalLinkEmail({
+            to: refreshed.session.contact_email,
+            businessName,
+            portalUrl: finalized.portalUrl,
+            totalFormatted: finalized.quote && finalized.quote.totalFormatted
+          });
+        }
+        portalPayload = {
+          portalUrl: finalized.portalUrl,
+          pdfUrl: finalized.pdfUrl,
+          quote: finalized.quote
+        };
+      }
+
+      return json(res, 200, Object.assign({ ok: true, smsVerified: true }, portalPayload || {}));
     }
 
     return json(res, 400, { ok: false, error: 'unknown_action' });

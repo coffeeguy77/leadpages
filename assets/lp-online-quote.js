@@ -46,7 +46,9 @@
       travelZoneId: '',
       contact: { name: '', email: '', phone: '' },
       quote: null,
-      session: null
+      session: null,
+      portalUrl: null,
+      pdfUrl: null
     };
   }
 
@@ -158,13 +160,21 @@
     } else if (q.level === 'email_verified_total') {
       html += '<p class="lp-oq-total">' + esc(q.totalFormatted || '') + ' <small>inc GST</small></p>' +
         '<p>' + esc(q.message || '') + '</p>' +
-        '<div class="lp-oq-verify"><button type="button" class="lp-oq-btn" data-act="send-sms">Text me a code for full breakdown</button></div>';
+        '<div class="lp-oq-verify"><button type="button" class="lp-oq-btn" data-act="send-sms">Text me a code for full breakdown</button></div>' +
+        '<label class="lp-oq-field"><span>SMS verification code</span><input data-field="smsCode" placeholder="6-digit code"></label>' +
+        '<button type="button" class="lp-oq-btn" data-act="confirm-sms">Confirm SMS code</button>';
     } else if (q.level === 'fully_verified_quote') {
       html += '<p class="lp-oq-total">' + esc(q.totalFormatted || '') + ' <small>inc GST</small></p><ul class="lp-oq-lines">';
       (q.breakdown || []).forEach(function(row) {
         html += '<li><span>' + esc(row.label) + '</span><span>' + esc(formatMoney(row.totalCents)) + '</span></li>';
       });
       html += '</ul>';
+      if (this.state.portalUrl) {
+        html += '<div class="lp-oq-verify" style="margin-top:14px">' +
+          '<a class="lp-oq-btn" href="' + esc(this.state.portalUrl) + '" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">Open quote portal</a>' +
+          (this.state.pdfUrl ? ' <a class="lp-oq-btn lp-oq-btn-ghost" href="' + esc(this.state.pdfUrl) + '" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;margin-left:8px">Download PDF</a>' : '') +
+          '</div><p class="lp-oq-muted" style="font-size:12px;margin-top:8px">A copy was emailed to you if an address was provided.</p>';
+      }
     }
     if (sess.emailVerified && q.level === 'public_progress') {
       html += '<label class="lp-oq-field"><span>Verification code</span><input data-field="emailCode" placeholder="6-digit code"></label>' +
@@ -214,6 +224,7 @@
         else if (act === 'send-email') self.sendEmail();
         else if (act === 'confirm-email') self.confirmEmail();
         else if (act === 'send-sms') self.sendSms();
+        else if (act === 'confirm-sms') self.confirmSms();
       });
     });
   };
@@ -305,6 +316,30 @@
       if (!res.sent) alert('SMS verification is not available yet.');
       else alert('Verification code sent to your mobile.');
       self.render();
+    });
+  };
+
+  OnlineQuoteWidget.prototype.confirmSms = function() {
+    var self = this;
+    var codeInp = this.el.querySelector('[data-field="smsCode"]');
+    var code = codeInp ? codeInp.value : '';
+    post('/verify-sms', {
+      token: this.token,
+      action: 'confirm',
+      code: code,
+      phone: this.state.contact.phone
+    }).then(function(res) {
+      if (!res.ok) { alert('Invalid or expired SMS code.'); return; }
+      self.state.portalUrl = res.portalUrl || null;
+      self.state.pdfUrl = res.pdfUrl || null;
+      if (res.quote) self.state.quote = res.quote;
+      return post('/calculate', { token: self.token });
+    }).then(function(res) {
+      if (res && res.ok) {
+        self.state.quote = res.quote;
+        self.state.session = res.session;
+        self.render();
+      }
     });
   };
 

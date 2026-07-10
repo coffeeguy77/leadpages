@@ -6224,10 +6224,13 @@ function heroCtaCard(c){
         sessions.forEach(function(s){
           var lq=s.latestQuote||{};
           var total=_oqMoney(lq.total_cents);
-          html+='<div class="lp-dash-row" style="padding:12px 14px;"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">'
+          var statusBadge=s.status==='accepted'?'<span class="lp-badge-new" style="background:#e8f5ef;color:#155c4a">ACCEPTED</span>':'';
+          html+='<div class="lp-dash-row" style="padding:12px 14px;"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;">'
             +'<span style="font-weight:600;">'+esc((s.contact&&s.contact.name)||'Visitor')+'</span>'
-            +'<span style="font-size:11px;color:var(--ink-soft);">'+esc(s.verificationLevel||s.status||'')+'</span></div>'
-            +'<div style="font-size:13px;color:var(--ink-soft);margin-top:4px;">'+esc((s.contact&&s.contact.email)||'')+' · '+total+'</div></div>';
+            +'<span style="display:flex;gap:6px;align-items:center;">'+statusBadge+'<span style="font-size:11px;color:var(--ink-soft);">'+esc(s.verificationLevel||s.status||'')+'</span></span></div>'
+            +'<div style="font-size:13px;color:var(--ink-soft);margin-top:4px;">'+esc((s.contact&&s.contact.email)||'')+' · '+total+'</div>'
+            +(s.portalPath?'<div style="margin-top:8px;"><a class="btn ghost" href="'+esc(s.portalPath)+'" target="_blank" rel="noopener" style="text-decoration:none;font-size:12px;padding:6px 12px">Portal ↗</a></div>':'')
+            +'</div>';
         });
         html+='</div>';
       }

@@ -102,6 +102,10 @@
       "destination": "/online-quote-wizard.html"
     },
     {
+      "source": "/quote-portal",
+      "destination": "/quote-portal.html"
+    },
+    {
       "source": "/offer",
       "destination": "/offer.html"
     },
