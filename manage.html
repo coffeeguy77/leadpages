@@ -2500,6 +2500,64 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       on('d-rupd',function(v){ c.rates=c.rates||{}; c.rates.updatedAt=v; });
     }
   }
+  function secHexField(prefix, label, placeholder) {
+    return '<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:190px;"><label>'+label+'</label>'
+      +'<div style="display:flex;gap:8px;align-items:center;"><input type="color" id="'+prefix+'-clr" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;">'
+      +'<input type="text" class="tin" id="'+prefix+'" placeholder="'+placeholder+'" style="flex:1;min-width:0;">'
+      +'<button type="button" class="btn ghost sm" id="'+prefix+'-def">Default</button></div></div>';
+  }
+  function secTransitionOpts(cur) {
+    return [['none','None (flat edge)'],['fade','Fade blend'],['wave','Wave'],['angle','Diagonal'],['curve','Soft curve']].map(function(o){
+      return '<option value="'+o[0]+'"'+(cur===o[0]?' selected':'')+'>'+o[1]+'</option>';
+    }).join('');
+  }
+  function secAppearancePanel(id, c) {
+    var a=((c.sections&&c.sections[id])||{}).appearance||{};
+    var custom=a.custom===true;
+    var sw=(a.strokeWidth!=null?a.strokeWidth:2);
+    return '<details class="lp-sec-appearance" style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px;">'
+      +'<summary style="cursor:pointer;font-weight:700;font-size:14px;">Section container style</summary>'
+      +'<p class="hint" style="margin:10px 0 12px;">Full-width background colour, coloured stroke, and transitions between this section and the one above/below.</p>'
+      +'<label style="display:flex;gap:9px;align-items:center;font-weight:600;font-size:14px;margin-bottom:12px;"><input type="checkbox" id="sec-'+id+'-app-custom"'+(custom?' checked':'')+'> Custom section style (otherwise theme default)</label>'
+      +'<div id="sec-'+id+'-app-fields"'+(custom?'':' style="display:none"')+'>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:12px;">'+secHexField('sec-'+id+'-app-bg','Full-width background','Theme default')+secHexField('sec-'+id+'-app-stroke','Stroke colour','None')+'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">'
+      +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:190px;"><label>Stroke width</label><input type="range" id="sec-'+id+'-app-sw" min="0" max="8" step="1" value="'+sw+'" style="width:100%"><span class="hint" id="sec-'+id+'-app-sw-v" style="display:block;margin-top:4px;">'+sw+'px</span></div>'
+      +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:190px;"><label>Stroke sides</label><select id="sec-'+id+'-app-sides" class="tin"><option value="both"'+(a.strokeSides==='both'||!a.strokeSides?' selected':'')+'>Top &amp; bottom</option><option value="top"'+(a.strokeSides==='top'?' selected':'')+'>Top only</option><option value="bottom"'+(a.strokeSides==='bottom'?' selected':'')+'>Bottom only</option><option value="all"'+(a.strokeSides==='all'?' selected':'')+'>All sides</option></select></div>'
+      +'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">'
+      +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:190px;"><label>Transition into section (top)</label><select id="sec-'+id+'-app-ttop" class="tin">'+secTransitionOpts(a.transitionTop||'none')+'</select></div>'
+      +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:190px;"><label>Transition out (bottom)</label><select id="sec-'+id+'-app-tbot" class="tin">'+secTransitionOpts(a.transitionBottom||'none')+'</select></div>'
+      +'</div></div></details>';
+  }
+  function _secAppHex(v){ v=String(v||'').trim(); return /^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)?(v.charAt(0)==='#'?v:'#'+v):''; }
+  function wireSecColorPair(prefix, onSet) {
+    var clr=$(prefix+'-clr'), tx=$(prefix), def=$(prefix+'-def');
+    if(!tx) return;
+    function set(v){ v=_secAppHex(v); onSet(v); if(tx) tx.value=v||''; if(clr&&v) clr.value=v; persist(); previewApply(); }
+    if(clr) clr.addEventListener('input',function(){ set(clr.value); });
+    if(tx) tx.addEventListener('input',function(){ set(tx.value); });
+    if(def) def.addEventListener('click',function(){ set(''); });
+  }
+  function wireSecAppearance(c,id) {
+    function ensureApp(){ if(!c.sections)c.sections={}; if(!c.sections[id])c.sections[id]={}; if(!c.sections[id].appearance)c.sections[id].appearance={}; return c.sections[id].appearance; }
+    var A=((c.sections&&c.sections[id])||{}).appearance||{};
+    var customCb=$('sec-'+id+'-app-custom'), fields=$('sec-'+id+'-app-fields');
+    function syncVis(){ if(fields) fields.style.display=(customCb&&customCb.checked)?'':'none'; }
+    if(customCb){ customCb.checked=A.custom===true; customCb.addEventListener('change',function(){ ensureApp().custom=customCb.checked; syncVis(); persist(); previewApply(); }); }
+    syncVis();
+    wireSecColorPair('sec-'+id+'-app-bg',function(v){ ensureApp().containerBg=v; });
+    wireSecColorPair('sec-'+id+'-app-stroke',function(v){ ensureApp().strokeColor=v; });
+    var bg=$('sec-'+id+'-app-bg'), bgc=$('sec-'+id+'-app-bg-clr'); if(A.containerBg&&bg){ bg.value=A.containerBg; if(bgc)bgc.value=A.containerBg; }
+    var st=$('sec-'+id+'-app-stroke'), stc=$('sec-'+id+'-app-stroke-clr'); if(A.strokeColor&&st){ st.value=A.strokeColor; if(stc)stc.value=A.strokeColor; }
+    var sw=$('sec-'+id+'-app-sw'), swv=$('sec-'+id+'-app-sw-v');
+    if(sw){ sw.addEventListener('input',function(){ ensureApp().strokeWidth=+sw.value; if(swv)swv.textContent=sw.value+'px'; persist(); previewApply(); }); }
+    var sides=$('sec-'+id+'-app-sides');
+    if(sides){ sides.value=A.strokeSides||'both'; sides.addEventListener('change',function(){ ensureApp().strokeSides=sides.value; persist(); previewApply(); }); }
+    var ttop=$('sec-'+id+'-app-ttop'), tbot=$('sec-'+id+'-app-tbot');
+    if(ttop){ ttop.addEventListener('change',function(){ ensureApp().transitionTop=ttop.value; persist(); previewApply(); }); }
+    if(tbot){ tbot.addEventListener('change',function(){ ensureApp().transitionBottom=tbot.value; persist(); previewApply(); }); }
+  }
   function secCard(c,id,title,toggle,fields){
     var s=(c.sections&&c.sections[id])||{}, def=DEFAULT_TRADE_SECTIONS[id]||{};
     var h='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">'+title+'</h2>';
@@ -2512,6 +2570,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       else h+='<div class="f"'+fst+'><label>'+label+'</label><input type="text" class="tin" id="sec-'+id+'-'+key+'" placeholder="'+ph+'"></div>';
     });
     h+='</div>';
+    h+=secAppearancePanel(id, c);
     return h+'</div>';
   }
   function wireSec(c,id,toggle,fields){
@@ -2521,6 +2580,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       el.addEventListener('input',function(){ var o=ensure(); o[key]=el.value; persist(); previewApply(); });
       if(f[2]==='image'){ var pidEl=$('sec-'+id+'-'+key+'-pid'); if(pidEl) pidEl.value=(c.sections&&c.sections[id]&&c.sections[id][key+'_pid'])||''; var rowEl=el.closest('.cw-row'); var up=rowEl&&rowEl.querySelector('.cw-up'); if(up) up.addEventListener('click',function(){ var prev=pidEl?pidEl.value:''; cwPick(function(file){ cwBusy(up,true); cwUpload(file,[id,key]).then(function(r){ var o=ensure(); o[key]=r.url; o[key+'_pid']=r.publicId; el.value=r.url; if(pidEl)pidEl.value=r.publicId; persist(); previewApply(); if(prev&&prev!==r.publicId) cwDelete(prev); }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); }).then(function(){ cwBusy(up,false); }); }); }); var clr=rowEl&&rowEl.querySelector('.cw-clr'); if(clr) clr.addEventListener('click',function(){ var o=ensure(); if(o[key+'_pid']){ cwDelete(o[key+'_pid']); delete o[key+'_pid']; } delete o[key]; el.value=''; if(pidEl)pidEl.value=''; persist(); previewApply(); }); }
     });
+    wireSecAppearance(c, id);
   }
   function wireHero(c){
     var def=DEFAULT_TRADE_SECTIONS.hero, ks=['eyebrow','title','titleHl','sub'], cur=(c.sections&&c.sections.hero)||{};
@@ -2528,6 +2588,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     function writeAll(){ if(!c.sections) c.sections={}; var o=c.sections.hero||(c.sections.hero={}); ks.forEach(function(k){ var el=$('sec-hero-'+k); if(el) o[k]=el.value; }); persist(); previewApply(); }
     ks.forEach(function(k){ var el=$('sec-hero-'+k); if(el) el.addEventListener('input',writeAll); });
     var ob=$('sec-on-hero'); if(ob) ob.addEventListener('change',function(){ if(!c.sections)c.sections={}; if(!c.sections.hero)c.sections.hero={}; c.sections.hero.on=ob.checked; persist(); previewApply(); });
+    wireSecAppearance(c, 'hero');
   }
   function _lpfVer(val,label,img,cur,sw){
     var sel=(cur===val);
