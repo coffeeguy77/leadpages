@@ -4,7 +4,9 @@
   "private": true,
   "description": "SEO landing pages with Supabase-backed leads + analytics",
   "scripts": {
-    "build:icons": "node scripts/build-apple-touch-icon.mjs"
+    "build:icons": "node scripts/build-apple-touch-icon.mjs",
+    "test": "node --test tests/**/*.test.js",
+    "test:quote": "node --test tests/quote-system/*.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0"
