@@ -1800,6 +1800,61 @@ input[type="checkbox"] {
 }
 #settings-page .sp-starter .tp2-wrap {
   background: var(--panel);
+  height: 340px;
+  border-color: var(--border, var(--line));
+}
+#settings-page .gsi-site-banner {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border, var(--line)));
+  border-radius: 10px;
+  color: var(--text, var(--ink));
+  font-size: 13px;
+  line-height: 1.55;
+}
+#settings-page .gsi-site-banner code.gsi-site-url {
+  background: transparent;
+  color: var(--text, var(--ink));
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border, var(--line));
+  word-break: break-all;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 12.5px;
+}
+#settings-page .gsi-gsc-link,
+#settings-page .gsi-gsc-link:visited {
+  color: var(--accent-hover) !important;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+#settings-page .gsi-gsc-link:hover {
+  color: var(--accent) !important;
+}
+#settings-page .sp-starter .tp2-cats {
+  background: var(--panel-soft);
+  border-color: var(--border, var(--line));
+}
+#settings-page .sp-starter .tp2-list {
+  background: var(--panel);
+}
+#settings-page .sp-starter .tp2-cat,
+#settings-page .sp-starter .tp2-trow {
+  color: var(--text, var(--ink));
+  border-color: var(--border, var(--line));
+}
+#settings-page .sp-starter .tp2-cat.on,
+#settings-page .sp-starter .tp2-trow.on {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+#settings-page .sp-starter .cs-picked {
+  color: var(--text, var(--ink));
+}
+#settings-page .sp-starter .cs-picked-cat {
+  color: var(--text-soft, var(--ink-soft));
 }
 #lp-ord-list .ord-row--article {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border)) !important;
