@@ -366,7 +366,8 @@ html[data-lp-reduced-motion="true"] .anav-btn,
 html[data-lp-reduced-motion="true"] .statebtn,
 html[data-lp-reduced-motion="true"] .preset-sw,
 html[data-lp-reduced-motion="true"] .toast,
-html[data-lp-reduced-motion="true"] #ord-list .ord-row {
+html[data-lp-reduced-motion="true"] #ord-list .ord-row,
+html[data-lp-reduced-motion="true"] #lp-ord-list .ord-row {
   transition-duration: 0.001ms !important;
 }
 html[data-lp-reduced-motion="true"] {
@@ -1540,7 +1541,10 @@ body[data-lp-standard] .lp-sec-editonly[data-on="0"] {
 .lpd-detail,
 .lpd-live,
 #ord-list .ord-row,
+#lp-ord-list .ord-row,
 #ord-list .ord-mv,
+#lp-ord-list .ord-mv,
+.lp-app-row,
 .icon-pick,
 .icchip,
 .icbtn {
@@ -1600,13 +1604,16 @@ input[type="checkbox"] {
   color: var(--accent-hover) !important;
   border-bottom-color: var(--accent) !important;
 }
-#ord-list .ord-row.drop-before {
+#ord-list .ord-row.drop-before,
+#lp-ord-list .ord-row.drop-before {
   box-shadow: 0 -3px 0 0 var(--accent) !important;
 }
-#ord-list .ord-row.drop-after {
+#ord-list .ord-row.drop-after,
+#lp-ord-list .ord-row.drop-after {
   box-shadow: 0 3px 0 0 var(--accent) !important;
 }
-#ord-list .ord-mv:hover {
+#ord-list .ord-mv:hover,
+#lp-ord-list .ord-mv:hover {
   border-color: var(--accent) !important;
   color: var(--accent) !important;
 }
@@ -1634,11 +1641,16 @@ input[type="checkbox"] {
   border-color: var(--accent-hover) !important;
 }
 
-/* ── Section editor surfaces — theme-aware inputs (no white bleed) ── */
+/* ── Section editor surfaces — theme-aware inputs (no white bleed) ──
+   When adding a new editor host (panel that renders renderLandingSub output),
+   add its id to EVERY selector block below — see docs/11-DESIGN-SYSTEM.md */
 #av-details .card,
 #lsub-body .card,
+#lp-app-edit-body .card,
+#lp-panel-apps .card,
 #av-details .le-row,
 #lsub-body .le-row,
+#lp-app-edit-body .le-row,
 #av-details .bro,
 #av-details .us-row {
   background: var(--panel) !important;
@@ -1647,18 +1659,25 @@ input[type="checkbox"] {
 }
 #av-details textarea,
 #lsub-body textarea,
+#lp-app-edit-body textarea,
 #av-details input[type="text"],
 #lsub-body input[type="text"],
+#lp-app-edit-body input[type="text"],
 #av-details input[type="email"],
 #lsub-body input[type="email"],
+#lp-app-edit-body input[type="email"],
 #av-details input[type="number"],
 #lsub-body input[type="number"],
+#lp-app-edit-body input[type="number"],
 #av-details input[type="url"],
 #lsub-body input[type="url"],
+#lp-app-edit-body input[type="url"],
 #av-details input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]),
 #lsub-body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]),
+#lp-app-edit-body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]),
 #av-details select,
 #lsub-body select,
+#lp-app-edit-body select,
 .le-row textarea,
 .le-row input[type="text"],
 .le-row select {
@@ -1669,41 +1688,67 @@ input[type="checkbox"] {
 }
 #av-details textarea::placeholder,
 #lsub-body textarea::placeholder,
+#lp-app-edit-body textarea::placeholder,
 #av-details input::placeholder,
-#lsub-body input::placeholder {
+#lsub-body input::placeholder,
+#lp-app-edit-body input::placeholder {
   color: var(--muted);
   opacity: 1;
 }
 #av-details label,
 #lsub-body label,
+#lp-app-edit-body label,
 .le-row label {
   color: var(--text-soft);
 }
 #av-details .lede,
 #lsub-body .lede,
+#lp-app-edit-body .lede,
+#lp-panel-apps .lede,
 #av-details .hint,
-#lsub-body .hint {
+#lsub-body .hint,
+#lp-app-edit-body .hint,
+#lp-panel-apps .hint {
   color: var(--text-soft);
 }
 #av-details h2,
 #lsub-body h2,
+#lp-app-edit-body h2,
+#lp-panel-apps h3,
 #av-details h3,
-#lsub-body h3 {
+#lsub-body h3,
+#lp-app-edit-body h3 {
   color: var(--text);
 }
 .lsub-extra {
   background: var(--panel-soft) !important;
   border-color: var(--border) !important;
 }
-#ord-list .ord-row {
+#ord-list .ord-row,
+#lp-ord-list .ord-row {
   background: var(--panel) !important;
   border-color: var(--border) !important;
   color: var(--text);
 }
-#ord-list .ord-mv {
+#ord-list .ord-mv,
+#lp-ord-list .ord-mv {
   background: var(--input-bg) !important;
   border-color: var(--border) !important;
   color: var(--text-soft);
+}
+#lp-ord-list .ord-row--article {
+  border-color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+  color: var(--text);
+}
+.lp-app-row {
+  background: var(--panel) !important;
+  border-color: var(--border) !important;
+  color: var(--text);
+}
+#lp-layout-order.card {
+  background: var(--surface-2) !important;
+  border-color: var(--border) !important;
 }
 .lib-btn {
   background: var(--panel) !important;

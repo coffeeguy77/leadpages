@@ -58,22 +58,32 @@ Templates load fonts via Google Fonts `<link>` in template HTML.
 
 ## Control Plane Colour Tokens
 
-From `manage.html` `:root`:
+**Source of truth:** [`assets/lp-themes.css`](../assets/lp-themes.css) — loaded by `manage.html` before inline styles.
+
+Workspace themes are applied via `document.documentElement.dataset.theme` (`classic-light`, `command-dark`, `neon-pink`, `electric-blue`, `blush`, `blueprint`). Each theme defines semantic tokens; legacy aliases keep older `manage.html` rules working:
+
+| Semantic token | Legacy alias | Role |
+|----------------|--------------|------|
+| `--panel` | `--surface` | Cards, panels, list rows |
+| `--panel-soft` | `--surface-2` | Secondary surfaces, layout cards |
+| `--text` | `--ink` | Primary text |
+| `--text-soft` | `--ink-soft` | Labels, secondary text |
+| `--muted` | `--ink-faint` | Hints, grip icons |
+| `--border` | `--line` | Borders |
+| `--border-strong` | `--line-strong` | Input borders |
+| `--accent` | `--brand` | Primary actions, highlights |
+| `--accent-hover` | `--brand-deep` | Hover, selected nav |
+| `--accent-soft` | `--brand-tint` | Badges, ghost hover |
+| `--input-bg` | — | Text inputs, select, reorder buttons |
+| `--button-bg` / `--button-border` | — | Primary buttons |
+
+Default light values (when no theme dataset):
 
 | Token | Value | Role |
 |-------|-------|------|
 | `--bg` | `#f6f4ef` | Page background (warm paper) |
-| `--surface` | `#fff` | Cards, panels |
-| `--surface-2` | `#fbfaf7` | Secondary surfaces |
-| `--ink` | `#1b2430` | Primary text |
-| `--ink-soft` | `#5c6675` | Secondary text |
-| `--ink-faint` | `#929aa6` | Tertiary / hints |
-| `--line` | `#e7e2d8` | Borders |
-| `--line-strong` | `#d8d2c5` | Input borders |
-| `--brand` | `#1f7a63` | Primary actions (eucalypt green) |
-| `--brand-deep` | `#155c4a` | Hover, selected states |
-| `--brand-tint` | `#eaf3ef` | Subtle highlights, ghost buttons |
-| `--amber` | `#b9852b` | Accent figures, warnings |
+| `--panel` | `#fff` | Cards, panels |
+| `--panel-soft` | `#fbfaf7` | Secondary surfaces |
 | `--radius` | `14px` | Cards |
 | `--radius-sm` | `10px` | Buttons, inputs |
 | `--shadow` | layered rgba | Card elevation |
@@ -153,7 +163,61 @@ Sticky top region with publish, preview, settings — always visible on trade/br
 
 ### Cards (`.card`)
 
-White surface, border, radius, shadow. Group related settings with `h2` title.
+Themed surface using `var(--panel)`, `var(--border)`, radius, shadow. Group related settings with `h2` title. **Never hardcode `#fff` or `#ffffff` on cards** — dark workspace themes will show white bleed.
+
+---
+
+## Workspace theme compliance (mandatory)
+
+Every new UI in `manage.html` (or injected HTML from JS) **must** respect the global workspace theme. Users switch themes in Settings (Classic Light, Command Dark, Neon Pink, etc.); hardcoded colours break dark themes immediately.
+
+### Rules
+
+1. **Use CSS variables only** for backgrounds, text, and borders:
+   - Surfaces: `var(--panel)`, `var(--panel-soft)`, `var(--surface-2)`
+   - Text: `var(--text)`, `var(--text-soft)`, `var(--muted)`
+   - Borders: `var(--border)`, `var(--line)`
+   - Accent: `var(--accent)`, `var(--accent-soft)`, `var(--accent-hover)`
+   - Inputs: `var(--input-bg)`
+
+2. **Forbidden in new code** (grep before PR):
+   - `background:#fff`, `background:#ffffff`, `background: white`
+   - `color:#566`, `color:#9aa1ac`, `color:#1b2430` (use tokens)
+   - Inline `style="background:…"` with hex colours on dynamic rows
+
+3. **Reuse existing classes** before inventing styles:
+   - `.card`, `.btn`, `.btn.ghost`, `.tin`, `.hint`, `.lede`, `.f`
+   - `.ord-row`, `.ord-mv`, `.ord-grip`, `.ord-label` for drag-reorder lists
+
+4. **New editor panels** that host `renderLandingSub()` output (or duplicate its form markup) must be added to the **section editor surfaces** block in [`assets/lp-themes.css`](../assets/lp-themes.css) — search for `Section editor surfaces`. Add the panel id to **every** selector in that block (cards, inputs, labels, hints, headings). Current hosts:
+   - `#lsub-body` (main Page editor)
+   - `#av-details` (details sub-panels)
+   - `#lp-app-edit-body` (landing page unique app editor)
+   - `#lp-panel-apps` (landing page marketplace apps tab)
+
+5. **New reorder / list UIs** must mirror `#ord-list` theming:
+   - Add `#your-list-id` alongside `#ord-list` and `#lp-ord-list` in `lp-themes.css`
+   - Use `var(--input-bg)` for small move buttons, `var(--panel)` for rows
+
+6. **Test in at least two themes** before merge: `classic-light` and `neon-pink` (or `command-dark`).
+
+### Checklist for new features
+
+- [ ] No hardcoded `#fff` / grey hex in CSS or JS template strings
+- [ ] Cards/rows use `var(--panel)` or `.card`
+- [ ] Inputs use `.tin` or `var(--input-bg)`
+- [ ] If panel renders section editor HTML → added to `lp-themes.css` section editor block
+- [ ] Verified in dark workspace theme (Neon Pink or Command Dark)
+
+### Where themes are set
+
+| File | Role |
+|------|------|
+| `assets/lp-themes.css` | Token definitions per `[data-theme]` + global overrides |
+| `assets/lp-workspace-appearance.js` | Persists workspace theme choice |
+| `manage.html` `<link href="/assets/lp-themes.css">` | Must load before page styles |
+
+---
 
 ### Navigation
 
@@ -240,10 +304,12 @@ Partner showcase pages (`showcaseHtml` in `render.js`) use Inter + Archivo with 
 ## Anti-Patterns
 
 - Hardcoding one client's brand into shared templates
+- **Hardcoding `#fff`, `#ffffff`, or fixed greys in manage.html / injected HTML** (use `lp-themes.css` tokens — see Workspace theme compliance above)
 - Removing settings when reorganising UI
 - Framework CSS on public tenant pages (keep vanilla)
-- Inline styles except dynamic theme injection
+- Inline styles with hex colours except dynamic tenant theme injection on public sites
 - Telegraphic error messages without toast feedback
+- Adding a new `#…-body` editor host without updating `lp-themes.css` section editor selectors
 
 ---
 
