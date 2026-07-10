@@ -1746,9 +1746,23 @@ input[type="checkbox"] {
   border-color: var(--border) !important;
   color: var(--text);
 }
-#lp-layout-order.card {
+#lp-layout-order.card,
+#lp-layout-order.lp-layout-card {
   background: var(--surface-2) !important;
   border-color: var(--border) !important;
+  box-shadow: var(--shadow);
+}
+#lp-layout-order .lp-layout-title,
+#lp-layout-order h2 {
+  color: var(--text) !important;
+}
+#lp-layout-order .lp-layout-lede {
+  color: var(--text-soft) !important;
+}
+#lp-ord-list .ord-actions {
+  display: flex;
+  gap: 4px;
+  flex: none;
 }
 .lib-btn {
   background: var(--panel) !important;

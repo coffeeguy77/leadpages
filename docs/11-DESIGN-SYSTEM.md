@@ -195,9 +195,10 @@ Every new UI in `manage.html` (or injected HTML from JS) **must** respect the gl
    - `#lp-app-edit-body` (landing page unique app editor)
    - `#lp-panel-apps` (landing page marketplace apps tab)
 
-5. **New reorder / list UIs** must mirror `#ord-list` theming:
-   - Add `#your-list-id` alongside `#ord-list` and `#lp-ord-list` in `lp-themes.css`
-   - Use `var(--input-bg)` for small move buttons, `var(--panel)` for rows
+5. **New reorder / list UIs** must mirror `#ord-list` / `#lp-ord-list` theming:
+   - Define full row styles in `manage.html` `<style>` (display, padding, border, `background: var(--panel)`, etc.) — do not rely on inline `style=""` on generated rows
+   - Add list id alongside `#ord-list` and `#lp-ord-list` in `lp-themes.css`
+   - Use `.ord-row`, `.ord-grip`, `.ord-label`, `.ord-actions`, `.ord-mv` classes
 
 6. **Test in at least two themes** before merge: `classic-light` and `neon-pink` (or `command-dark`).
 
