@@ -251,6 +251,14 @@ textarea.tin{resize:vertical;}
 .lp-app-row .lp-app-name{font-weight:700;font-size:14px;flex:1 1 160px;min-width:0;}
 .lp-app-mode{font:600 12.5px var(--font-ui);color:var(--ink-soft);}
 .lp-app-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent);text-transform:uppercase;letter-spacing:.04em;}
+#lp-ord-list .ord-row{transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .15s,border-color .15s}
+#lp-ord-list .ord-row.dragging{opacity:.4}
+#lp-ord-list .ord-row.drop-before{box-shadow:0 -3px 0 0 var(--accent)}
+#lp-ord-list .ord-row.drop-after{box-shadow:0 3px 0 0 var(--accent)}
+#lp-ord-list .ord-mv{appearance:none;border:1px solid var(--line);background:#fff;border-radius:6px;width:24px;height:22px;line-height:1;cursor:pointer;color:#566;font-size:12px;padding:0}
+#lp-ord-list .ord-mv:hover{border-color:var(--accent);color:var(--accent)}
+#lp-ord-list .ord-mv:disabled{opacity:.3;cursor:default}
+#lp-ord-list .ord-row--article{border-color:var(--accent);background:var(--accent-soft)}
 /* contact / brokers */
 .bro{border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;background:#fff;}
 .bro-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
@@ -811,6 +819,14 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
           <button type="button" class="btn" id="lp-app-add" style="margin-bottom:2px;">+ Add app</button>
         </div>
         <div id="lp-app-warn" class="lp-app-warn" hidden role="status">Choose an app from the list first.</div>
+        <div id="lp-layout-order" class="card" style="margin-bottom:18px;padding:16px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-2,#fbfaf7);" hidden>
+          <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px;">
+            <h3 style="margin:0;font-size:15px;">Page layout — position on page</h3>
+            <button type="button" class="btn ghost sm" id="lp-ord-reset">Reset order</button>
+          </div>
+          <p class="lede" style="margin:0 0 12px;font-size:13px;">Drag sections and <strong>Page content</strong> into the order you want on this landing page — e.g. hero, article, quote form.</p>
+          <div id="lp-ord-list"></div>
+        </div>
         <div id="lp-app-list"><p class="hint">No apps on this page yet — add one above, or leave empty for a text-only article page.</p></div>
         <div id="lp-app-edit" hidden style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px;">
           <div class="card-head" style="margin-bottom:12px;"><h3 id="lp-app-edit-title" style="margin:0;">Edit app</h3><button type="button" class="btn ghost sm" id="lp-app-edit-close">Close editor</button></div>
@@ -1743,6 +1759,27 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     proofStream:'proofStream', jobsFeed:'jobsFeed', certifications:'certifications'
   };
   function lpEnsurePageApps(p){ if(!p.pageApps) p.pageApps=[]; if(!p.pageSections) p.pageSections={}; return p.pageApps; }
+  function lpPageHasArticle(p){ return !!(p&&(String(p.h1||'').trim()||String(p.body||'').trim())); }
+  function lpPageLayoutLabel(id){ return id==='__lpArticle'?'Page content':_secLabel(id); }
+  function lpEnsurePageLayoutOrder(p){
+    if(!p) return [];
+    var apps=(p.pageApps||[]).map(function(a){ return a.key||a.section_key; }).filter(Boolean);
+    var ord=p.pageLayoutOrder;
+    if(!Array.isArray(ord)||!ord.length){
+      ord=apps.slice();
+      if(lpPageHasArticle(p)) ord.push('__lpArticle');
+      p.pageLayoutOrder=ord;
+      return ord;
+    }
+    var valid={};
+    apps.forEach(function(k){ valid[k]=true; });
+    if(lpPageHasArticle(p)) valid['__lpArticle']=true;
+    ord=ord.filter(function(id){ return valid[id]; });
+    apps.forEach(function(k){ if(ord.indexOf(k)<0) ord.push(k); });
+    if(lpPageHasArticle(p)&&ord.indexOf('__lpArticle')<0) ord.push('__lpArticle');
+    p.pageLayoutOrder=ord;
+    return ord;
+  }
   function lpPagePreviewReload(){ if(document.body.classList.contains('lp-prev-open')) previewLoad(); else previewApply(data); }
   function lpSetEdTab(tab){
     lpEdTab=tab;
@@ -1761,6 +1798,20 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     lpSeedComponent(tmp, secKey);
   }
   function lpPageScopedCfg(){ if(!lpCur.pageSections) lpCur.pageSections={}; return {sections:lpCur.pageSections}; }
+  function lpPageEditFullCfg(secKey){
+    var base=JSON.parse(JSON.stringify(data));
+    if(!base.sections) base.sections={};
+    if(lpCur){
+      lpEnsurePageApps(lpCur);
+      if(secKey) lpPageAppSeed(secKey);
+      if(lpCur.pageSections){
+        Object.keys(lpCur.pageSections).forEach(function(k){
+          base.sections[k]=lpCur.pageSections[k];
+        });
+      }
+    }
+    return base;
+  }
   function lpCopyPageAppFromHome(secKey){
     if(!lpCur) return;
     lpPageAppSeed(secKey);
@@ -1774,12 +1825,17 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var apps=lpEnsurePageApps(lpCur);
     if(apps.some(function(a){ return (a.key||a.section_key)===secKey; })){ toast('That app is already on this page'); return; }
     apps.push({key:secKey, mode:'shared'});
+    lpEnsurePageLayoutOrder(lpCur);
+    var ord=lpCur.pageLayoutOrder;
+    if(ord.indexOf(secKey)<0) ord.push(secKey);
     persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
   }
   function lpPageAppRemove(secKey){
     if(!lpCur) return;
     lpCur.pageApps=(lpCur.pageApps||[]).filter(function(a){ return (a.key||a.section_key)!==secKey; });
     if(lpCur.pageSections) delete lpCur.pageSections[secKey];
+    if(lpCur.pageLayoutOrder) lpCur.pageLayoutOrder=lpCur.pageLayoutOrder.filter(function(id){ return id!==secKey; });
+    lpEnsurePageLayoutOrder(lpCur);
     if(lpPageEditKey===secKey){ lpPageEditKey=null; var ed=$('lp-app-edit'); if(ed) ed.hidden=true; }
     persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
   }
@@ -1791,13 +1847,28 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(mode==='unique'){ lpPageAppSeed(secKey); if(!lpCur.pageSections[secKey]||!Object.keys(lpCur.pageSections[secKey]).length) lpCopyPageAppFromHome(secKey); }
     persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
   }
-  function lpPageAppMove(secKey, dir){
-    if(!lpCur||!lpCur.pageApps) return;
-    var apps=lpCur.pageApps, i=apps.findIndex(function(a){ return (a.key||a.section_key)===secKey; });
-    if(i<0) return;
-    var j=i+dir; if(j<0||j>=apps.length) return;
-    var t=apps[i]; apps[i]=apps[j]; apps[j]=t;
-    persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
+  function wireLpPageOrder(p){
+    var host=$('lp-ord-list'); if(!host||!p) return;
+    var dragId=null;
+    function rects(){ var o={}; host.querySelectorAll('.ord-row').forEach(function(r){ o[r.getAttribute('data-id')]=r.getBoundingClientRect().top; }); return o; }
+    function flip(prev){ host.querySelectorAll('.ord-row').forEach(function(r){ var id=r.getAttribute('data-id'); if(prev[id]==null) return; var dy=prev[id]-r.getBoundingClientRect().top; if(dy){ r.style.transition='none'; r.style.transform='translateY('+dy+'px)'; requestAnimationFrame(function(){ r.style.transition=''; r.style.transform=''; }); } }); }
+    function rowHtml(id,i,n){
+      var art=(id==='__lpArticle');
+      return '<div class="ord-row'+(art?' ord-row--article':'')+'" draggable="true" data-id="'+id+'" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-bottom:6px;cursor:grab;"><span style="color:#9aa1ac;font-size:15px;line-height:1;letter-spacing:-2px;">\u22ee\u22ee</span><span style="font-weight:600;font-size:13.5px;flex:1;">'+esc(lpPageLayoutLabel(id))+'</span><span style="display:flex;gap:4px;"><button type="button" class="ord-mv ord-up" data-id="'+id+'" title="Move up"'+(i===0?' disabled':'')+'>\u2191</button><button type="button" class="ord-mv ord-down" data-id="'+id+'" title="Move down"'+(i===n-1?' disabled':'')+'>\u2193</button></span></div>';
+    }
+    function draw(animate){ var prev=animate?rects():null; var ord=lpEnsurePageLayoutOrder(p); host.innerHTML=ord.map(function(id,i){ return rowHtml(id,i,ord.length); }).join(''); if(animate) flip(prev); }
+    function saveOrd(ord){ p.pageLayoutOrder=ord; persist(); lpAutosave(); lpPagePreviewReload(); }
+    function move(id,dir){ var ord=lpEnsurePageLayoutOrder(p).slice(); var i=ord.indexOf(id); if(i<0) return; var j=i+dir; if(j<0||j>=ord.length) return; var prev=rects(); ord.splice(j,0,ord.splice(i,1)[0]); saveOrd(ord); draw(false); flip(prev); }
+    function clearDrop(){ host.querySelectorAll('.drop-before,.drop-after').forEach(function(r){ r.classList.remove('drop-before','drop-after'); }); }
+    draw(false);
+    if(!host.__lpOrdBound){ host.__lpOrdBound=true;
+      host.addEventListener('click',function(e){ var u=e.target.closest&&e.target.closest('.ord-up'); var d=e.target.closest&&e.target.closest('.ord-down'); if(u){ move(u.getAttribute('data-id'),-1); } else if(d){ move(d.getAttribute('data-id'),1); } });
+      host.addEventListener('dragstart',function(e){ var r=e.target.closest&&e.target.closest('.ord-row'); if(!r) return; dragId=r.getAttribute('data-id'); try{e.dataTransfer.effectAllowed='move';}catch(_e){} setTimeout(function(){ r.classList.add('dragging'); },0); });
+      host.addEventListener('dragend',function(){ dragId=null; clearDrop(); host.querySelectorAll('.dragging').forEach(function(r){r.classList.remove('dragging');}); });
+      host.addEventListener('dragover',function(e){ e.preventDefault(); var r=e.target.closest&&e.target.closest('.ord-row'); if(!r||r.getAttribute('data-id')===dragId){ clearDrop(); return; } var rc=r.getBoundingClientRect(); var after=(e.clientY-rc.top)>rc.height/2; clearDrop(); r.classList.add(after?'drop-after':'drop-before'); });
+      host.addEventListener('drop',function(e){ e.preventDefault(); var r=e.target.closest&&e.target.closest('.ord-row'); if(!r||dragId==null){ clearDrop(); return; } var tid=r.getAttribute('data-id'); if(tid===dragId){ clearDrop(); return; } var rc=r.getBoundingClientRect(); var after=(e.clientY-rc.top)>rc.height/2; var prev=rects(); var ord=lpEnsurePageLayoutOrder(p).slice(); var from=ord.indexOf(dragId); ord.splice(from,1); var to=ord.indexOf(tid); if(after) to+=1; ord.splice(to,0,dragId); clearDrop(); saveOrd(ord); draw(false); flip(prev); });
+    }
+    var rb=$('lp-ord-reset'); if(rb&&!rb.__lpOrdReset){ rb.__lpOrdReset=true; rb.addEventListener('click',function(){ var prev=rects(); delete p.pageLayoutOrder; lpEnsurePageLayoutOrder(p); saveOrd(p.pageLayoutOrder); draw(false); flip(prev); }); }
   }
   function lpRenderPageAppEditor(secKey){
     if(!lpCur) return;
@@ -1806,13 +1877,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(!ed||!body) return;
     ed.hidden=false;
     if(title) title.textContent='Edit unique: '+_secLabel(secKey);
-    var fields=LP_PAGE_APP_FIELDS[secKey]||[['heading','Heading'],['intro','Intro','ta']];
-    var listSk=LP_PAGE_APP_LISTS[secKey];
-    var html=secCard(lpPageScopedCfg(), secKey, _secLabel(secKey), false, fields);
-    if(listSk) html+=listCard(listSk, _secLabel(secKey)+' items', 'Edit the list for this page only.');
-    body.innerHTML=html;
-    wireSec(lpPageScopedCfg(), secKey, false, fields);
-    if(listSk){ var host=$('le-'+listSk); if(host) listEditor(host, lpPageScopedCfg(), listSk); }
+    var savedSub=landingSub, savedPreview=previewApply;
+    landingSub=secKey;
+    previewApply=function(){ persist(); lpAutosave(); lpPagePreviewReload(); };
+    try{
+      renderLandingSub(lpPageEditFullCfg(secKey), {host:body, sub:secKey});
+    } finally {
+      landingSub=savedSub;
+      previewApply=savedPreview;
+    }
     try{ ed.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
   }
   async function lpRenderAppsTab(){
@@ -1838,8 +1911,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       }
     }
     if(!list) return;
+    var layoutBox=$('lp-layout-order');
+    var hasLayout=(pageApps.length>0)||lpPageHasArticle(lpCur);
+    if(layoutBox) layoutBox.hidden=!hasLayout;
+    if(hasLayout) wireLpPageOrder(lpCur);
     if(!pageApps.length){ list.innerHTML='<p class="hint">No apps on this page yet — add one above, or leave empty for a text-only article page.</p>'; return; }
-    list.innerHTML=pageApps.map(function(a, i){
+    list.innerHTML=pageApps.map(function(a){
       var k=a.key||a.section_key, mode=a.mode||'shared', isUnique=(mode==='unique');
       return '<div class="lp-app-row" data-key="'+k+'">'
         +'<span class="lp-app-name">'+esc(_secLabel(k))+'</span>'
@@ -1849,8 +1926,6 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         +'<option value="unique"'+(mode==='unique'?' selected':'')+'>Unique to page</option></select>'
         +(isUnique?'<button type="button" class="btn ghost sm lp-app-edit-btn" data-key="'+k+'">Edit content</button>'
           :'<button type="button" class="btn ghost sm lp-app-home-btn" data-key="'+k+'">Edit on homepage</button>')
-        +'<button type="button" class="btn ghost sm lp-app-up" data-key="'+k+'"'+(i===0?' disabled':'')+' title="Move up">\u2191</button>'
-        +'<button type="button" class="btn ghost sm lp-app-down" data-key="'+k+'"'+(i===pageApps.length-1?' disabled':'')+' title="Move down">\u2193</button>'
         +'<button type="button" class="btn ghost sm danger lp-app-rm" data-key="'+k+'">Remove</button></div>';
     }).join('');
     list.querySelectorAll('.lp-app-mode-sel').forEach(function(sel){
@@ -1865,12 +1940,11 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     list.querySelectorAll('.lp-app-rm').forEach(function(b){
       b.addEventListener('click',function(){ lpPageAppRemove(b.getAttribute('data-key')); });
     });
-    list.querySelectorAll('.lp-app-up').forEach(function(b){
-      b.addEventListener('click',function(){ lpPageAppMove(b.getAttribute('data-key'), -1); });
-    });
-    list.querySelectorAll('.lp-app-down').forEach(function(b){
-      b.addEventListener('click',function(){ lpPageAppMove(b.getAttribute('data-key'), 1); });
-    });
+    if(lpPageEditKey){
+      var appStill=(lpCur.pageApps||[]).some(function(a){ return (a.key||a.section_key)===lpPageEditKey&&(a.mode||'shared')==='unique'; });
+      if(appStill) lpRenderPageAppEditor(lpPageEditKey);
+      else { lpPageEditKey=null; var ed=$('lp-app-edit'); if(ed) ed.hidden=true; }
+    }
   }
   function renderSeoPages(){
     if(!data.pages) data.pages=[];
@@ -1881,7 +1955,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     }).join('') : '<p class="hint">No pages yet. Create one to build an SEO-optimised page that matches your theme.</p>';
     const ap=$('lp-ai-presets'); if(ap && !ap.children.length){ aiPresets().forEach(function(pr,i){ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=pr[0]; b.addEventListener('click',function(){ $('lp-ai-prompt').value=pr[1]; }); ap.appendChild(b); }); }
     if(lpWired) return; lpWired=true;
-    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',pageApps:[],pageSections:{}}; data.pages.push(p); persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
+    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
     list.addEventListener('click',function(e){ const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit')); });
     $('lp-tips').addEventListener('change',function(){ $('lp-editor').classList.toggle('show-tips', this.checked); });
     $('lp-slug').addEventListener('input',function(){ this.value=this.value.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+/,'').replace(/--+/g,'-'); lpField('slug',this.value); });
@@ -1914,11 +1988,13 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var lpaec=$('lp-app-edit-close');
     if(lpaec) lpaec.addEventListener('click',function(){ lpPageEditKey=null; var ed=$('lp-app-edit'); if(ed) ed.hidden=true; });
   }
-  function lpField(f,v){ if(lpCur){ lpCur[f]=v; persist(); lpAutosave(); if(f==='slug'&&document.body.classList.contains('lp-prev-open')) previewLoad(); } }
+  function lpField(f,v){ if(lpCur){ lpCur[f]=v; if(f==='h1'||f==='body') lpEnsurePageLayoutOrder(lpCur); persist(); lpAutosave(); if(f==='slug'&&document.body.classList.contains('lp-prev-open')) previewLoad(); else if(f==='h1'||f==='body') lpPagePreviewReload(); } }
   function lpImgPrev(){ var el=document.getElementById('lp-img-prev'); if(!el) return; var u=(lpCur&&lpCur.img)||''; el.innerHTML=u?('<img src="'+esc(u)+'" alt="" style="max-height:120px;max-width:100%;border-radius:8px;margin-top:8px;display:block">'):''; }
   function lpPush(v){ lpHist=lpHist.slice(0,lpHi+1); lpHist.push(v); if(lpHist.length>50)lpHist.shift(); lpHi=lpHist.length-1; }
   function lpOpen(id){
     lpCur=data.pages.find(x=>x.id===id); if(!lpCur) return;
+    lpEnsurePageApps(lpCur);
+    lpEnsurePageLayoutOrder(lpCur);
     $('lp-editor').hidden=false;
     $('lp-ed-title').textContent=lpCur.title?('Edit: '+lpCur.title):'New page';
     $('lp-title').value=lpCur.title||''; $('lp-slug').value=lpCur.slug||''; $('lp-meta').value=lpCur.meta||''; $('lp-h1').value=lpCur.h1||''; $('lp-body').value=lpCur.body||'';
@@ -4828,8 +4904,9 @@ function heroCtaCard(c){
   async function anaRefresh(){ anaRender(); await anaFetchSite(); if(ANA.active==='global'){ await anaFetchGlobal(); } anaRender(); }
   function anaInit(){ var el=document.getElementById('lp-analytics'); if(el)return el; var nav=document.querySelector('.adminnav'); if(!nav||!nav.parentNode)return null; el=document.createElement('div'); el.id='lp-analytics'; nav.parentNode.insertBefore(el,nav); el.addEventListener('click',anaClick); document.addEventListener('click',function(ev){ if(ANA.active && !el.contains(ev.target)){ ANA.active=null; anaRender(); } }); return el; }
   async function renderSiteAnalytics(){ if(!anaInit())return; if(currentSiteTemplate==='trade'){ var ael=document.getElementById('lp-analytics'); if(ael) ael.style.display='none'; /* fall through to load data */ } try{ lpBillingGate(); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} } ANA.active=null; ANA.globalData=null; anaRender(); lpExtrasInit(); LPDOM.open=null; renderMyDomains(); renderLeadsCRM(); await anaFetchSite(); anaRender(); if(LPLEADS.timeline) lpLeadsPaint(); }
-  function renderLandingSub(c){
-    var body=$('lsub-body'); if(!body) return; var sub=landingSub;
+  function renderLandingSub(c, opts){
+    opts=opts||{};
+    var body=opts.host||$('lsub-body'); if(!body) return; var sub=(opts.sub!=null)?opts.sub:landingSub;
     if(sub==='details'){
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Site details &amp; starter content</h2><p class="lede">Business name, contact details, the demo flag, service starter content and the danger zone now live on the Settings page.</p><button type="button" class="btn" id="open-settings-inline">Open Settings</button></div>';
       var osb=$('open-settings-inline'); if(osb) osb.addEventListener('click',function(){ openSettingsPage(); });
