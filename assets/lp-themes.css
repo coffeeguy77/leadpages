@@ -1678,6 +1678,12 @@ input[type="checkbox"] {
 #av-details select,
 #lsub-body select,
 #lp-app-edit-body select,
+#av-details .nm-target,
+#lsub-body .nm-target,
+#av-details .nm-label,
+#lsub-body .nm-label,
+#av-details .nm-url,
+#lsub-body .nm-url,
 .le-row textarea,
 .le-row input[type="text"],
 .le-row select {
@@ -1736,6 +1742,64 @@ input[type="checkbox"] {
   background: var(--input-bg) !important;
   border-color: var(--border) !important;
   color: var(--text-soft);
+}
+.nm-row {
+  background: var(--panel) !important;
+  border-color: var(--border) !important;
+  color: var(--text);
+}
+.nm-add {
+  appearance: none;
+  border: 1px dashed var(--border);
+  background: var(--panel-soft) !important;
+  color: var(--text);
+  border-radius: 9px;
+  padding: 10px 15px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+.nm-add:hover {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent);
+  color: var(--accent-hover);
+}
+.nm-mv,
+.nm-del {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--input-bg) !important;
+  color: var(--text-soft);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.nm-mv:hover:not(:disabled) {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+.nm-del {
+  color: var(--danger, #b4232a) !important;
+}
+.nm-del:hover {
+  background: color-mix(in srgb, var(--danger, #b4232a) 12%, transparent) !important;
+  border-color: var(--danger, #b4232a) !important;
+}
+.nm-mv:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.qf-tip {
+  background: var(--panel-soft) !important;
+  color: var(--text-soft);
+  border-color: var(--border) !important;
+}
+#settings-page .sp-starter .tp2-wrap {
+  background: var(--panel);
 }
 #lp-ord-list .ord-row--article {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border)) !important;
