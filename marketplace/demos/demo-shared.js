@@ -383,7 +383,9 @@
         var _hh=node.querySelector('h2'); if(_hh) _hh.textContent=(OQ.heading||'');
         var _pp=node.querySelector('.intro'); if(_pp){ var _pv=(OQ.intro||''); _pp.textContent=_pv; _pp.style.display=_pv?'':'none'; }
         var _oqEl=node.querySelector('#lp-online-quote');
-        if(_oqEl){ var _slug=(C.slug||'').trim().toLowerCase(); if(_slug) _oqEl.setAttribute('data-slug',_slug);
+        if(_oqEl){
+          var _slug=(C.slug||'').trim().toLowerCase();
+          if(_slug) _oqEl.setAttribute('data-slug',_slug);
           if(window.LPOnlineQuoteMount) window.LPOnlineQuoteMount(_oqEl);
         }
       })();
