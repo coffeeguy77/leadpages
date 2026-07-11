@@ -215,29 +215,41 @@
     return html;
   }
 
-  function renderProductCard(p, cart, cartIdx, helpers) {
+  function pickEquipment(state, shell, products, cartIdx, productId) {
+    state._shell = shell;
+    ensureCarts(state, products);
+    if (!state.carts[cartIdx]) state.carts[cartIdx] = defaultCartRow(products[0]);
+    state.carts[cartIdx].productId = productId;
+    state.productId = productId;
+    var prod = (products || []).find(function(p) { return p.id === productId; });
+    normalizeCartStaff(state.carts[cartIdx], prod, shell);
+    state.productId = state.carts[cartIdx].productId;
+  }
+
+  function renderProductCard(p, cart, cartIdx, helpers, shell) {
     var isSel = cart && cart.productId === p.id;
     var qty = isSel && cart ? (cart.quantity || 1) : 1;
     var D = global.LPQuoteDisplay;
-    var inner = (D && D.equipmentCardHtml)
-      ? D.equipmentCardHtml(p, helpers || { esc: esc })
-      : '<strong>' + esc(p.label) + '</strong>';
-    var html = '<div class="lp-oq-product lp-oq-eq-card' + (isSel ? ' is-selected' : '') + '" data-product-card="' + esc(p.id) + '">' +
-      '<button type="button" class="lp-oq-choice' + (isSel ? ' is-selected' : '') + '" data-equipment-pick="' + cartIdx + '" data-val="' + esc(p.id) + '">' +
-      inner + '</button>';
+    var qtyHtml = '';
     if (p.allowQuantity) {
-      html += '<label class="lp-oq-field lp-oq-product-qty"><span>Qty</span>' +
+      qtyHtml = '<label class="lp-oq-eq-qty" data-qty-wrap="' + cartIdx + '"><span>Quantity</span>' +
         '<input type="number" min="1" max="20" data-product-qty="' + cartIdx + '" data-val="' + esc(p.id) + '" value="' + esc(qty) + '"' +
         (isSel ? '' : ' disabled tabindex="-1"') + '></label>';
     }
-    html += '</div>';
-    return html;
+    var inner = (D && D.equipmentCardHtml)
+      ? D.equipmentCardHtml(p, helpers || { esc: esc }, { qtyHtml: qtyHtml })
+      : '<div class="fp-body"><h3 class="fp-title">' + esc(p.label) + '</h3>' + qtyHtml + '</div>';
+    return '<div class="fp-card lp-oq-eq-card' + (isSel ? ' is-selected' : '') + '" role="button" tabindex="0"' +
+      ' data-equipment-pick="' + cartIdx + '" data-val="' + esc(p.id) + '" data-product-card="' + esc(p.id) + '">' +
+      inner + '</div>';
   }
 
   function renderCartRows(state, shell, products, helpers) {
     state._shell = shell;
     if (!products || !products.length) return '<p class="lp-oq-muted">No equipment configured.</p>';
     var carts = ensureCarts(state, products);
+    var layout = (shell && shell.wizard && shell.wizard.layout) || 'cards';
+    var gridCls = layout === 'grid' ? 'lp-oq-choices fp-grid lp-oq-fp-grid' : 'lp-oq-choices';
     var html = '<div class="lp-oq-carts" data-lp-oq-carts>';
 
     carts.forEach(function(cart, cartIdx) {
@@ -246,9 +258,9 @@
           '<div class="lp-oq-cart-head"><strong>Equipment line ' + (cartIdx + 1) + '</strong>' +
           '<button type="button" class="lp-oq-btn lp-oq-btn-ghost lp-oq-cart-remove" data-cart-remove="' + cartIdx + '">Remove</button></div>';
       }
-      html += '<div class="lp-oq-choices">';
+      html += '<div class="' + gridCls + '">';
       products.forEach(function(p) {
-        html += renderProductCard(p, cart, cartIdx, helpers);
+        html += renderProductCard(p, cart, cartIdx, helpers, shell);
       });
       html += '</div>';
       if (carts.length > 1) html += '</div>';
@@ -344,41 +356,60 @@
     state._shell = shell;
     ensureCarts(state, products);
 
-    root.querySelectorAll('[data-equipment-pick]').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
+    if (!root.__lpOqCartWired) {
+      root.__lpOqCartWired = true;
+      root.addEventListener('click', function(e) {
+        if (e.target.closest('[data-product-qty]')) return;
+        if (e.target.closest('[data-cart-add]')) return;
+        if (e.target.closest('[data-cart-remove]')) return;
+        var card = e.target.closest('[data-equipment-pick]');
+        if (!card || !root.contains(card)) return;
         e.preventDefault();
-        var idx = parseInt(btn.getAttribute('data-equipment-pick'), 10);
-        var pid = btn.getAttribute('data-val');
-        ensureCarts(state, products);
-        if (!state.carts[idx]) return;
-        state.carts[idx].productId = pid;
-        var prod = products.find(function(p) { return p.id === pid; });
-        normalizeCartStaff(state.carts[idx], prod, shell);
-        state.productId = state.carts[0] ? state.carts[0].productId : '';
+        var idx = parseInt(card.getAttribute('data-equipment-pick'), 10);
+        var pid = card.getAttribute('data-val');
+        if (!pid || isNaN(idx)) return;
+        var prods = state._wireProducts || products;
+        var sh = state._wireShell || shell;
+        pickEquipment(state, sh, prods, idx, pid);
         rerender();
       });
-    });
-
-    root.querySelectorAll('[data-product-qty]').forEach(function(inp) {
-      inp.addEventListener('click', function(e) { e.stopPropagation(); });
-      inp.addEventListener('change', function() {
+      root.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var card = e.target.closest('[data-equipment-pick]');
+        if (!card || !root.contains(card)) return;
+        e.preventDefault();
+        card.click();
+      });
+      root.addEventListener('change', function(e) {
+        var inp = e.target.closest('[data-product-qty]');
+        if (!inp || !root.contains(inp)) return;
+        e.stopPropagation();
         var idx = parseInt(inp.getAttribute('data-product-qty'), 10);
-        ensureCarts(state, products);
+        var prods = (state._wireProducts) || products;
+        ensureCarts(state, prods);
         if (!state.carts[idx]) return;
         state.carts[idx].quantity = Math.max(1, parseInt(inp.value, 10) || 1);
         rerender();
       });
-    });
+    }
+    state._wireProducts = products;
+    state._wireShell = shell;
 
     var addCart = root.querySelector('[data-cart-add]');
-    if (addCart) addCart.addEventListener('click', function() {
-      ensureCarts(state, products);
-      var next = products[0];
-      state.carts.push(defaultCartRow(next));
-      rerender();
-    });
+    if (addCart && !addCart.__lpOqWired) {
+      addCart.__lpOqWired = true;
+      addCart.addEventListener('click', function(e) {
+        e.preventDefault();
+        ensureCarts(state, products);
+        state.carts.push(defaultCartRow(products[0]));
+        rerender();
+      });
+    }
     root.querySelectorAll('[data-cart-remove]').forEach(function(btn) {
-      btn.addEventListener('click', function() {
+      if (btn.__lpOqWired) return;
+      btn.__lpOqWired = true;
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
         var idx = parseInt(btn.getAttribute('data-cart-remove'), 10);
         ensureCarts(state, products);
         if (state.carts.length > 1) state.carts.splice(idx, 1);
@@ -431,7 +462,7 @@
     allowsShiftPlanner: allowsShiftPlanner,
     extraBaristaEnabled: extraBaristaEnabled,
     nextShiftFromPrevious: nextShiftFromPrevious,
-    ensureCarts: ensureCarts,
+    pickEquipment: pickEquipment,
     ensureShifts: ensureShifts,
     renderLabourPlanning: renderLabourPlanning,
     renderStaffing: renderStaffing,
