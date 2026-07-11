@@ -22,7 +22,7 @@ const block =
   + '      <p class="ey"></p>\n'
   + '      <h2></h2>\n'
   + '      <p class="intro"></p>\n'
-  + '      <div id="lp-online-quote" data-slug=""></div>\n'
+      + '      <div id="lp-online-quote" data-slug="{{slug}}"></div>\n'
   + '    </div>\n'
   + '  </section>\n\n';
 

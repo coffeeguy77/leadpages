@@ -372,22 +372,40 @@
     document.head.appendChild(css);
   }
 
+  function resolveSlug(el) {
+    if (!el) return '';
+    var s = (el.getAttribute('data-slug') || '').trim().toLowerCase();
+    if (s) return s;
+    if (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG && SITE_CONFIG.slug) {
+      return String(SITE_CONFIG.slug).trim().toLowerCase();
+    }
+    if (window.__lpLiveCfg && window.__lpLiveCfg.slug) {
+      return String(window.__lpLiveCfg.slug).trim().toLowerCase();
+    }
+    return '';
+  }
+
+  function mount(el) {
+    if (!el) return;
+    var slug = resolveSlug(el);
+    if (!slug) return;
+    el.setAttribute('data-slug', slug);
+    if (el.__lpOqMounted && el.__lpOqSlug === slug) return;
+    el.__lpOqMounted = true;
+    el.__lpOqSlug = slug;
+    injectStyles();
+    var w = new OnlineQuoteWidget(el);
+    w.init();
+  }
+
   function boot() {
     var el = document.getElementById(ROOT_ID);
     if (!el) return;
     var sec = el.closest('[data-sec="onlineQuote"]');
-    var cfg = (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG) || {};
+    var cfg = (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG) || window.__lpLiveCfg || {};
     var on = cfg.sections && cfg.sections.onlineQuote && cfg.sections.onlineQuote.on === true;
     if (sec && sec.style.display === 'none' && !on) return;
     mount(el);
-  }
-
-  function mount(el) {
-    if (!el || el.__lpOqMounted) return;
-    el.__lpOqMounted = true;
-    injectStyles();
-    var w = new OnlineQuoteWidget(el);
-    w.init();
   }
 
   window.LPOnlineQuoteMount = mount;

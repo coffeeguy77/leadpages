@@ -6201,6 +6201,11 @@ function heroCtaCard(c){
         if(isSuper&&admin.activeVersion&&admin.activeVersion.config){
           var qc=admin.activeVersion.config;
           html+='<p class="hint">'+(qc.products||[]).length+' products · labour min '+((qc.labour&&qc.labour.minimumHours)||3)+' hr @ '+_oqMoney(qc.labour&&qc.labour.hourlyCents)+'/hr</p>';
+        } else if(isSuper&&admin&&(admin.classification==='blank'||!admin.activeVersion)){
+          html+='<div class="hint" style="margin:12px 0;padding:14px;border-radius:12px;background:#fff8e6;border:1px solid #f5d78e;">'
+            +'<strong>Pricing not provisioned.</strong> Enabled alone only sets classification to <code>blank</code> — the public wizard stays unavailable until pricing is loaded.'
+            +(slug==='beanculture'?' Use <strong>Provision Bean Culture pricing</strong> below.':' Send config via API or run a seed script.')
+            +'</div>';
         }
       }
       html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0;">'
@@ -6211,9 +6216,17 @@ function heroCtaCard(c){
         +'<p class="lede" style="margin:0 0 10px;">Enable <strong>Online Quote</strong> in App Marketplace or Page editor → Lead Capture, then publish. Requires an active app subscription ($29/mo or $290/yr) unless this is a platform-exempt site.</p>'
         +'<button type="button" class="btn ghost" id="oq-goto-editor">Open Page editor</button></div>';
       if(isSuper){
+        var _oqBtnLabel=(slug==='beanculture')
+          ?((admin&&admin.classification==='private_superuser'&&admin.activeVersion)?'Re-provision Bean Culture pricing':'Provision Bean Culture pricing')
+          :((admin&&admin.enabled)?'Re-save enabled':'Enable quote system');
         html+='<div class="card" style="margin-top:18px;border:1px solid var(--accent-soft);"><h3 style="margin:0 0 8px;">Super admin</h3>'
-          +'<p class="lede" style="margin:0 0 12px;">Create or enable the quote_systems row for this site (does not copy private pricing to other tenants).</p>'
-          +'<button type="button" class="btn" id="oq-enable">'+(admin&&admin.enabled?'Re-save enabled':'Enable quote system')+'</button></div>';
+          +'<p class="lede" style="margin:0 0 12px;">'
+          +(slug==='beanculture'
+            ?'Loads Bean Culture coffee cart pricing into this site (<code>private_superuser</code>) — required before the wizard works on /beanculture.'
+            :'Create or enable the quote_systems row for this site (does not copy private pricing to other tenants).')
+          +'</p>'
+          +'<button type="button" class="btn" id="oq-enable">'+_oqBtnLabel+'</button>'
+          +'<span id="oq-enable-msg" class="hint" style="margin-left:8px;"></span></div>';
       }
       html+='<div class="card" style="margin-top:18px;"><h3 style="margin:0 0 8px;">Recent sessions</h3>';
       var sessions=LPONLINEQUOTE.sessions||[];
@@ -6239,13 +6252,30 @@ function heroCtaCard(c){
       var ref=$('oq-refresh'); if(ref) ref.addEventListener('click',renderOnlineQuoteAdmin);
       var ed=$('oq-goto-editor'); if(ed) ed.addEventListener('click',function(){ showView('details'); landingSub='onlineQuote'; renderDetails(); });
       var en=$('oq-enable'); if(en) en.addEventListener('click',async function(){
+        var msg=$('oq-enable-msg');
         try{
+          en.disabled=true; if(msg) msg.textContent='Working…';
           var h=await _oqAuthHeaders(); h['Content-Type']='application/json';
-          var r=await fetch('/api/quote-system/admin/config',{method:'POST',headers:h,body:JSON.stringify({site_id:currentSiteId,enabled:true})});
+          var payload={site_id:currentSiteId,enabled:true};
+          if((currentSiteSlug||'')==='beanculture') payload.provision='bean-culture';
+          var r=await fetch('/api/quote-system/admin/config',{method:'POST',headers:h,body:JSON.stringify(payload)});
           var j=await r.json();
-          if(j.ok){ if(typeof toast==='function') toast('Quote system enabled'); renderOnlineQuoteAdmin(); }
-          else if(typeof toast==='function') toast('Failed: '+(j.error||'unknown'));
-        }catch(e){ if(typeof toast==='function') toast('Network error'); }
+          en.disabled=false;
+          if(j.ok){
+            if(typeof toast==='function') toast((currentSiteSlug==='beanculture')?'Bean Culture pricing provisioned':'Quote system saved');
+            if(msg) msg.textContent='';
+            renderOnlineQuoteAdmin();
+            if(document.body.classList.contains('lp-prev-open')&&typeof previewLoad==='function') previewLoad();
+          } else {
+            var err=(j.error==='schema_missing'&&j.message)?j.message:((j.message||j.error||'unknown'));
+            if(msg){ msg.textContent=err; msg.style.color='#b42318'; }
+            if(typeof toast==='function') toast('Failed: '+err);
+          }
+        }catch(e){
+          en.disabled=false;
+          if(msg){ msg.textContent='Network error'; msg.style.color='#b42318'; }
+          if(typeof toast==='function') toast('Network error');
+        }
       });
     }catch(e){
       box.innerHTML='<div class="card"><p class="lede">Could not load: '+esc(String(e&&e.message||e))+'</p></div>';
