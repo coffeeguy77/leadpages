@@ -68,3 +68,88 @@ a{color:inherit}
   .pt-tpl-bar-label{display:none}
   .pt-tpl-switch{min-width:38px;padding:7px 10px;font-size:11px}
 }
+
+/* Shared content sections */
+.pt-section-title{font-size:clamp(28px,4.5vw,44px);line-height:1.1;margin:0 0 14px;letter-spacing:-.03em}
+.pt-section-sub{margin:0 0 28px;opacity:.78;font-size:17px;line-height:1.55;max-width:56ch}
+.pt-section-highlight{font-size:clamp(22px,3vw,32px);margin:0 0 28px;opacity:.9}
+.pt-section-highlight em{font-style:normal;color:var(--pt-accent)}
+.pt-btn-sm{padding:10px 18px;font-size:13px}
+.pt-form-full{grid-column:1/-1}
+.pt-form-consent{flex-direction:row!important;align-items:flex-start;gap:10px;font-size:13px;margin:12px 0}
+.pt-form-consent input{width:auto;margin-top:3px}
+
+.pt-trust{padding:28px 0;border-bottom:1px solid color-mix(in srgb,var(--pt-ink) 8%,transparent)}
+.pt-trust-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px}
+.pt-trust-item strong{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.65}
+.pt-trust-item span{font-weight:700;font-size:15px}
+
+.pt-metrics{padding:20px 0}
+.pt-metrics-grid{display:flex;flex-wrap:wrap;gap:24px}
+.pt-metrics-grid strong{display:block;font-size:clamp(24px,3vw,32px);color:var(--pt-accent);line-height:1}
+.pt-metrics-grid span{font-size:12px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.08em}
+
+.pt-industries,.pt-demos,.pt-services,.pt-benefits,.pt-process,.pt-biography,.pt-service-area,.pt-testimonials,.pt-cases,.pt-faqs,.pt-lead-offer,.pt-contact{padding:clamp(56px,9vw,96px) 0}
+.pt-industry-tags,.pt-area-tags{display:flex;flex-wrap:wrap;gap:10px}
+.pt-industry-tag,.pt-area-tag{padding:8px 16px;border-radius:999px;font-size:13px;font-weight:700;background:color-mix(in srgb,var(--pt-accent) 12%,var(--pt-bg));border:1px solid color-mix(in srgb,var(--pt-accent) 25%,transparent)}
+
+.pt-demo-grid,.pt-services-grid,.pt-benefits-grid,.pt-process-steps,.pt-testimonial-grid,.pt-cases-grid{display:grid;gap:22px}
+.pt-demo-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.pt-services-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.pt-benefits-grid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.pt-process-steps{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.pt-testimonial-grid{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.pt-cases-grid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+
+.pt-demo-card,.pt-service-card,.pt-case-card{border-radius:18px;overflow:hidden;border:1px solid color-mix(in srgb,var(--pt-ink) 10%,transparent);background:color-mix(in srgb,var(--pt-bg) 92%,#fff)}
+.pt-demo-img{display:block;aspect-ratio:16/10;overflow:hidden;background:color-mix(in srgb,var(--pt-ink) 6%,var(--pt-bg))}
+.pt-demo-img img{width:100%;height:100%;object-fit:cover}
+.pt-demo-body{padding:20px 22px 24px}
+.pt-demo-cat{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pt-accent)}
+.pt-demo-feats{margin:10px 0 0;padding-left:18px;font-size:13px;opacity:.8}
+.pt-demo-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+
+.pt-service-card{padding:22px;position:relative}
+.pt-service-card.is-featured{border-color:var(--pt-accent)}
+.pt-service-badge{position:absolute;top:14px;right:14px;font-size:10px;font-weight:800;background:var(--pt-accent);color:#fff;padding:4px 10px;border-radius:999px}
+.pt-service-note{font-size:13px;font-style:italic;opacity:.8}
+.pt-service-price{display:block;font-weight:800;margin:12px 0}
+
+.pt-benefits-grid article,.pt-process-step{padding:20px;border-radius:16px;background:color-mix(in srgb,var(--pt-bg) 90%,#fff);border:1px solid color-mix(in srgb,var(--pt-ink) 8%,transparent)}
+.pt-benefit-num,.pt-process-num{font-size:12px;font-weight:800;color:var(--pt-accent);letter-spacing:.1em}
+
+.pt-bio-grid{display:grid;grid-template-columns:minmax(200px,.8fr) 1.2fr;gap:clamp(28px,5vw,56px);align-items:start}
+.pt-bio-headshot{width:100%;max-width:280px;border-radius:20px;aspect-ratio:1;object-fit:cover}
+.pt-bio-placeholder{width:100%;max-width:280px;aspect-ratio:1;border-radius:20px;background:color-mix(in srgb,var(--pt-ink) 8%,var(--pt-bg))}
+.pt-bio-agency{opacity:.75;font-weight:600;margin-bottom:16px}
+.pt-bio-intro{font-size:18px;line-height:1.55;margin-bottom:16px}
+.pt-bio-full{line-height:1.65;opacity:.88;margin-bottom:16px}
+.pt-bio-meta{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;font-weight:600;opacity:.75;margin:16px 0}
+.pt-bio-contact{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+
+.pt-testimonial-card{padding:24px;border-radius:18px;background:color-mix(in srgb,var(--pt-bg) 92%,#fff);border:1px solid color-mix(in srgb,var(--pt-ink) 8%,transparent);margin:0}
+.pt-testimonial-src{font-size:11px;font-weight:700;opacity:.6;text-transform:uppercase;letter-spacing:.08em}
+.pt-testimonial-card footer{margin-top:14px;font-size:13px;opacity:.75}
+.pt-testimonial-card footer strong{display:block}
+
+.pt-faq-item{padding:16px 0;border-bottom:1px solid color-mix(in srgb,var(--pt-ink) 10%,transparent)}
+.pt-faq-item summary{font-weight:700;cursor:pointer;list-style:none}
+.pt-faq-item summary::-webkit-details-marker{display:none}
+.pt-faq-item p{margin:12px 0 0;opacity:.82;line-height:1.6}
+
+.pt-lead-offer-card{padding:clamp(28px,4vw,40px);border-radius:22px;background:color-mix(in srgb,var(--pt-accent) 10%,var(--pt-bg));border:1px solid color-mix(in srgb,var(--pt-accent) 25%,transparent);text-align:center;max-width:720px;margin:0 auto}
+.pt-contact-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(28px,5vw,48px);align-items:start}
+.pt-contact-list{list-style:none;margin:20px 0;padding:0;line-height:1.8}
+.pt-social{display:flex;gap:16px;margin-top:16px}
+.pt-social a{font-weight:700;color:var(--pt-accent)}
+.pt-lp-disclosure{margin-top:24px;font-size:13px;opacity:.75;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+.pt-case-img{width:100%;aspect-ratio:16/10;object-fit:cover}
+.pt-case-body{padding:20px}
+
+.pt-reveal{opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s}
+.pt-reveal.pt-visible{opacity:1;transform:none}
+
+@media(max-width:860px){
+  .pt-bio-grid,.pt-contact-grid{grid-template-columns:1fr}
+}

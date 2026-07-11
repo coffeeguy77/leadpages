@@ -34,6 +34,27 @@ function initLeadForms() {
         btn.textContent = 'Sending…';
       }
       var kind = form.getAttribute('data-pl-kind') || 'partner-showcase';
+      var partnerId = body.getAttribute('data-pl-partner-id') || '';
+      var template = body.getAttribute('data-pt-template') || '';
+      var extended = form.getAttribute('data-pl-extended') === '1';
+      var details = {
+        source: 'partner-template',
+        template: template,
+        form: kind,
+        partnerId: partnerId || undefined,
+        referrer: document.referrer || undefined,
+        utm: window.location.search || undefined
+      };
+      if (extended) {
+        ['businessName', 'existingWebsite', 'industry', 'suburb', 'projectType', 'mainGoal', 'budget', 'timeframe', 'contactMethod', 'message'].forEach(function (k) {
+          var v = String(fd.get(k) || '').trim();
+          if (v) details[k] = v;
+        });
+        var feats = fd.getAll('features');
+        if (feats && feats.length) details.features = feats;
+        var demoRef = form.closest('[data-demo-ref]');
+        if (demoRef) details.demoRef = demoRef.getAttribute('data-demo-ref');
+      }
       fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -41,11 +62,12 @@ function initLeadForms() {
           site: siteName,
           siteId: siteId || undefined,
           slug: slug || undefined,
+          partnerId: partnerId || undefined,
           kind: kind,
           name: name,
           email: email || null,
           phone: phone,
-          details: { source: 'partner-template', template: body.getAttribute('data-pt-template') || '', form: kind }
+          details: details
         })
       }).then(function () {
         form.reset();
@@ -99,7 +121,7 @@ function initGlitch() {
 
 function initScrollReveal() {
   if (!('IntersectionObserver' in window)) return;
-  var els = document.querySelectorAll('.ch-demo-card, .sg-demo, .at-featured, .hz-card, .pl-demo, .vt-project, .pt-power-grid article');
+  var els = document.querySelectorAll('.pt-demo-card, .pt-reveal, .ch-demo-card, .sg-demo, .hz-card, .pl-demo, .vt-project');
   var obs = new IntersectionObserver(function (entries) {
     entries.forEach(function (en) {
       if (en.isIntersecting) {

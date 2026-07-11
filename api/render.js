@@ -418,7 +418,11 @@ function partnerDemosBlock(demos, base, accent) {
     + '<section class="lpw-wrap" id="recent-work"><div class="lpw-in"><h2 class="lpw-h">Recent work</h2><p class="lpw-sub">A few sites we\u2019ve designed for local trades \u2014 tap any one to see it live.</p><div class="lpw-grid">' + cards + '</div></div></section>';
 }
 
-const SC_SELECT = 'partner_id,showcase_slug,showcase_domain,showcase_enabled,showcase_headline,showcase_config,support_email,support_phone';
+const {
+  fetchPartnerProfileBySlug,
+  fetchPartnerProfileByDomain,
+  fetchPartnerProfileByPartnerId
+} = require('../lib/partner-website/profile-store');
 
 function showcaseRenderOpts(req, home) {
   const q = (req && req.query) || {};
@@ -429,8 +433,9 @@ function showcaseRenderOpts(req, home) {
 }
 
 async function showcaseRespond(req, res, prof, base) {
-  const partner = (await supabase.from('partners').select('display_name,status').eq('id', prof.partner_id).maybeSingle()).data;
+  const partner = (await supabase.from('partners').select('display_name,status,email,phone').eq('id', prof.partner_id).maybeSingle()).data;
   if (!partner || partner.status === 'suspended' || partner.status === 'terminated') return notFound(res);
+  const directory = (await supabase.from('partner_directory').select('*').eq('partner_id', prof.partner_id).maybeSingle()).data;
   const demos = (await supabase.from('sites')
     .select('slug,business_name,config,preview_password')
     .eq('show_on_showcase', true)
@@ -441,12 +446,14 @@ async function showcaseRespond(req, res, prof, base) {
     .select('*').eq('servicing_partner_id', prof.partner_id).eq('is_partner_home', true).maybeSingle()).data;
   res.setHeader('content-type', 'text/html; charset=utf-8');
   res.setHeader('cache-control', 'public, s-maxage=5, stale-while-revalidate=20');
-  return res.status(200).send(buildPartnerLandingHtml(prof, partner, demos, base, showcaseRenderOpts(req, home)));
+  const renderOpts = showcaseRenderOpts(req, home);
+  renderOpts.directory = directory;
+  return res.status(200).send(buildPartnerLandingHtml(prof, partner, demos, base, renderOpts));
 }
 
 async function renderShowcase(req, res, slug, base) {
   try {
-    const prof = (await supabase.from('partner_profiles').select(SC_SELECT).ilike('showcase_slug', slug).maybeSingle()).data;
+    const prof = await fetchPartnerProfileBySlug(supabase, slug);
     if (!prof || !prof.showcase_enabled) return notFound(res);
     return await showcaseRespond(req, res, prof, base);
   } catch (e) { console.error('showcase error:', e); return notFound(res); }
@@ -456,7 +463,7 @@ async function renderShowcaseByDomain(req, res, host) {
   try {
     const h = String(host || '').toLowerCase();
     const alt = h.indexOf('www.') === 0 ? h.slice(4) : ('www.' + h);
-    const prof = (await supabase.from('partner_profiles').select(SC_SELECT).in('showcase_domain', [h, alt]).maybeSingle()).data;
+    const prof = await fetchPartnerProfileByDomain(supabase, [h, alt]);
     if (!prof || !prof.showcase_enabled) return notFound(res);
     // Demo links + domain search always point at the primary host where tenant sites live.
     return await showcaseRespond(req, res, prof, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au');
@@ -756,8 +763,9 @@ module.exports = async (req, res) => {
     .eq('is_mockup', true)
         .or('servicing_partner_id.eq.' + pid + ',referring_partner_id.eq.' + pid)
         .limit(48)).data || []) : [];
-      const partner = pid ? ((await supabase.from('partners').select('display_name,status').eq('id', pid).maybeSingle()).data) : null;
-      const prof = pid ? ((await supabase.from('partner_profiles').select(SC_SELECT).eq('partner_id', pid).maybeSingle()).data) : null;
+      const partner = pid ? ((await supabase.from('partners').select('display_name,status,email,phone').eq('id', pid).maybeSingle()).data) : null;
+      const prof = pid ? (await fetchPartnerProfileByPartnerId(supabase, pid)) : null;
+      const directory = pid ? ((await supabase.from('partner_directory').select('*').eq('partner_id', pid).maybeSingle()).data) : null;
       const sc = (prof && prof.showcase_config) || {};
       const hc = site.config || {};
       const mergedProf = Object.assign({}, prof || {}, {
@@ -772,7 +780,9 @@ module.exports = async (req, res) => {
         support_phone: (prof && prof.support_phone) || hc.phone || ''
       });
       const partnerRow = partner || { display_name: site.business_name || 'Web Studio' };
-      return sendHtml(res, buildPartnerLandingHtml(mergedProf, partnerRow, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au', showcaseRenderOpts(req, site)), isLive);
+      const homeOpts = showcaseRenderOpts(req, site);
+      homeOpts.directory = directory;
+      return sendHtml(res, buildPartnerLandingHtml(mergedProf, partnerRow, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au', homeOpts), isLive);
     }
 
     const template = templateFor(site);

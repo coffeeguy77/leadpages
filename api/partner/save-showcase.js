@@ -6,6 +6,8 @@
 // Body: { slug, domain, enabled, headline, config:{logo,logoSize,intro,accent,theme,themeId,templateKey} }
 
 const { normalizeTemplateKey } = require('../../lib/partner-templates/registry');
+const { websiteProfileFromRow, saveWebsiteProfile } = require('../../lib/partner-website/profile-store');
+const { mergeWebsiteProfilePatch } = require('../../lib/partner-website/validate');
 
 function cleanHex(v) {
   return /^#[0-9a-fA-F]{3,8}$/.test(v || '') ? v : null;
@@ -110,6 +112,17 @@ module.exports = async (req,res) => {
         await admin.from('sites').update({ config:hc, updated_at:new Date().toISOString() }).eq('id',home.data.id);
       }
     }
+    const existingWp = websiteProfileFromRow(up.data) || {};
+    const syncedWp = mergeWebsiteProfilePatch(existingWp, {
+      positioning: {
+        heroHeadline: headline || undefined,
+        heroSupporting: config.intro || undefined
+      },
+      biography: {
+        shortIntro: config.intro ? String(config.intro).slice(0, 240) : undefined
+      }
+    });
+    await saveWebsiteProfile(admin, partner.id, syncedWp, new Date().toISOString());
     return res.status(200).json({ ok:true, profile:up.data });
   }catch(_e){ return res.status(500).json({ ok:false, error:'Could not save. Please try again.' }); }
 };
