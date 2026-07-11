@@ -143,6 +143,9 @@
       beverageId: '', addonIds: [], travelZoneId: ''
     };
     this.previewStep = 0;
+    this.previewZoom = 100;
+    this.previewFocusCard = false;
+    this.previewPinEquipment = false;
     this._render();
   }
 
@@ -203,9 +206,72 @@
     };
   };
 
+  QuoteBuilder.prototype._ensurePreviewEquipmentStep = function() {
+    var shell = this._toShell();
+    var W = wl();
+    var tz = (shell.travelZones || []).length;
+    var steps = W.resolveWizardSteps
+      ? W.resolveWizardSteps(shell.wizard, this.previewProgress, tz)
+      : (shell.wizard.steps || ['equipment', 'contact']);
+    var idx = steps.indexOf('equipment');
+    if (idx < 0) idx = steps.indexOf('products');
+    if (idx >= 0) this.previewStep = idx;
+  };
+
+  QuoteBuilder.prototype._previewNeedsEquipment = function(path) {
+    if (!path) return false;
+    if (path.indexOf('wizard.equipmentCards') === 0) return true;
+    if (path.indexOf('wizard.layout') === 0) return true;
+    if (path.indexOf('products.') === 0) {
+      return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|displayMode|imageSize|imageScale|icon)$/.test(path);
+    }
+    return false;
+  };
+
+  QuoteBuilder.prototype._previewStyleHtml = function() {
+    var D = displayApi();
+    var brand = 'var(--accent, var(--pipe, #1f7a63))';
+    var css = (D && D.layoutCss) ? D.layoutCss(brand) : '';
+    return css ? '<style class="oqb-preview-injected-css">' + css + '</style>' : '';
+  };
+
+  QuoteBuilder.prototype._applyPreviewZoom = function() {
+    if (!this.previewRoot) return;
+    var inner = this.previewRoot.querySelector('.oqb-preview-zoom-inner');
+    var label = this.previewRoot.querySelector('[data-oqb-zoom-label]');
+    var z = Math.max(50, Math.min(200, this.previewZoom || 100));
+    this.previewZoom = z;
+    if (inner) {
+      inner.style.transform = 'scale(' + (z / 100) + ')';
+      inner.style.width = (10000 / z) + '%';
+    }
+    if (label) label.textContent = z + '%';
+  };
+
+  QuoteBuilder.prototype._renderPreviewToolbar = function(shell) {
+    var self = this;
+    var layout = displayApi().wizardLayout ? displayApi().wizardLayout(shell) : (shell.wizard.layout || 'cards');
+    var layoutLabel = (LAYOUTS.find(function(l) { return l.id === layout; }) || LAYOUTS[0]).label;
+  var pinHint = this.previewPinEquipment ? ' · equipment step' : '';
+    return '<div class="oqb-preview-head">'
+      + '<div class="oqb-preview-head-top"><h4>Live preview</h4>'
+      + '<div class="oqb-preview-zoom" aria-label="Preview zoom">'
+      + '<button type="button" class="oqb-preview-zoom-btn" data-oqb-zoom="out" title="Zoom out">−</button>'
+      + '<span class="oqb-preview-zoom-val" data-oqb-zoom-label>' + esc(this.previewZoom) + '%</span>'
+      + '<button type="button" class="oqb-preview-zoom-btn" data-oqb-zoom="in" title="Zoom in">+</button>'
+      + '<button type="button" class="oqb-preview-zoom-btn oqb-preview-zoom-reset" data-oqb-zoom="reset" title="Reset zoom">100%</button>'
+      + '</div></div>'
+      + '<p class="oqb-preview-sub">Layout: <strong>' + esc(layoutLabel) + '</strong>' + esc(pinHint) + '. Card styling updates as you edit — no publish needed.</p>'
+      + '<div class="oqb-preview-tools">'
+      + '<label class="oqb-preview-focus"><input type="checkbox" data-oqb-preview-focus' + (this.previewFocusCard ? ' checked' : '') + '> Focus one equipment card</label>'
+      + '<button type="button" class="oqb-preview-jump" data-oqb-preview-jump="equipment">Show equipment step</button>'
+      + '</div></div>';
+  };
+
   QuoteBuilder.prototype._refreshPreview = function() {
     if (!this.previewRoot || this.showJson) return;
     this.previewRoot.innerHTML = '<div class="oqb-preview">' + this._renderPreview() + '</div>';
+    this._applyPreviewZoom();
     this._wirePreview();
   };
 
@@ -245,9 +311,16 @@
     } else if (stepKey === 'equipment' || stepKey === 'products') {
       var P = global.LPQuotePlanning;
       var prods = filter(shell.products, progress);
+      if (self.previewFocusCard && prods.length && P && P.pickEquipment) {
+        P.pickEquipment(progress, shell, prods, 0, prods[0].id);
+      }
       var choices = '';
       if (P && P.renderCartRows) {
-        choices = P.renderCartRows(progress, shell, prods, { esc: esc, iconHtml: iconSvg });
+        choices = P.renderCartRows(progress, shell, prods, {
+          esc: esc,
+          iconHtml: iconSvg,
+          previewFocusSingle: !!self.previewFocusCard
+        });
       } else {
         choices = prods.map(function(p) {
           var sel = progress.productId === p.id ? ' is-selected' : '';
@@ -302,8 +375,10 @@
     var layoutCls = displayApi().layoutClass
       ? displayApi().layoutClass(shell)
       : (' lp-oq-layout-' + (shell.wizard.layout || 'cards'));
-    return '<div class="oqb-preview-head"><h4>Live preview</h4><p>Layout: <strong>' + esc((LAYOUTS.find(function(l) { return l.id === layout; }) || LAYOUTS[0]).label) + '</strong> — pick a product to test conditional steps.</p></div>' +
-      '<div class="oqb-preview-body oqb-preview-mock"><div class="lp-oq-card' + layoutCls + '">' +
+    return self._renderPreviewToolbar(shell)
+      + self._previewStyleHtml()
+      + '<div class="oqb-preview-body oqb-preview-mock"><div class="oqb-preview-zoom-outer"><div class="oqb-preview-zoom-inner">'
+      + '<div class="lp-oq-card' + layoutCls + '">' +
       '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc((shell.business && shell.business.name) || 'Your business') + '</h2>' +
       '<div class="lp-oq-steps">' + steps.map(function(s, i) {
         return '<span class="lp-oq-step' + (i === self.previewStep ? ' is-active' : (i < self.previewStep ? ' is-done' : '')) + '">' + esc(label(s)) + '</span>';
@@ -312,7 +387,7 @@
       '<div class="lp-oq-foot">' +
       (self.previewStep > 0 ? '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-prev-act="back">Back</button>' : '') +
       (self.previewStep < steps.length - 1 ? '<button type="button" class="lp-oq-btn" data-prev-act="next">Continue</button>' : '<button type="button" class="lp-oq-btn" disabled>Get my quote</button>') +
-      '</div></div></div>';
+      '</div></div></div></div></div>';
   };
 
   QuoteBuilder.prototype._renderTab = function() {
@@ -840,6 +915,11 @@
       btn.addEventListener('click', function() {
         self._syncFromDom();
         self.tab = btn.getAttribute('data-oqb-tab');
+        if (self.tab === 'wizard' || self.tab === 'products') {
+          self.previewPinEquipment = true;
+          self._ensurePreviewEquipmentStep();
+          if (self.tab === 'wizard') self.previewFocusCard = true;
+        }
         self._render();
       });
     });
@@ -890,11 +970,32 @@
     });
 
     this.root.querySelectorAll('[data-oqb-path]').forEach(function(el) {
-      var ev = (el.tagName === 'SELECT' || el.type === 'checkbox') ? 'change' : 'input';
+      if (el.type === 'color') {
+        el.addEventListener('input', function() {
+          var path = el.getAttribute('data-oqb-path');
+          self._setPath(path, el.value);
+          if (self._previewNeedsEquipment(path)) {
+            self.previewPinEquipment = true;
+            self._ensurePreviewEquipmentStep();
+            if (path.indexOf('wizard.equipmentCards') === 0) self.previewFocusCard = true;
+          }
+          self._refreshPreview();
+        });
+        return;
+      }
+      var ev = (el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'range') ? 'change' : 'input';
       el.addEventListener(ev, function() {
-        self._setPath(el.getAttribute('data-oqb-path'), el.type === 'checkbox' ? el.checked : el.value);
-        if (el.getAttribute('data-oqb-path').indexOf('.icon') >= 0) self._render();
-        else self._refreshPreview();
+        var path = el.getAttribute('data-oqb-path');
+        self._setPath(path, el.type === 'checkbox' ? el.checked : el.value);
+        if (path && path.indexOf('.icon') >= 0) self._render();
+        else {
+          if (self._previewNeedsEquipment(path)) {
+            self.previewPinEquipment = true;
+            self._ensurePreviewEquipmentStep();
+            if (path.indexOf('wizard.equipmentCards') === 0) self.previewFocusCard = true;
+          }
+          self._refreshPreview();
+        }
       });
     });
 
@@ -1226,6 +1327,32 @@
     var shell = this._toShell();
     var products = shell.products || [];
     var P = global.LPQuotePlanning;
+
+    root.querySelectorAll('[data-oqb-zoom]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var act = btn.getAttribute('data-oqb-zoom');
+        if (act === 'in') self.previewZoom = Math.min(200, (self.previewZoom || 100) + 10);
+        else if (act === 'out') self.previewZoom = Math.max(50, (self.previewZoom || 100) - 10);
+        else self.previewZoom = 100;
+        self._applyPreviewZoom();
+      });
+    });
+
+    var focusCb = root.querySelector('[data-oqb-preview-focus]');
+    if (focusCb) focusCb.addEventListener('change', function() {
+      self.previewFocusCard = !!focusCb.checked;
+      self.previewPinEquipment = true;
+      self._ensurePreviewEquipmentStep();
+      self._refreshPreview();
+    });
+
+    root.querySelectorAll('[data-oqb-preview-jump]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        self.previewPinEquipment = true;
+        self._ensurePreviewEquipmentStep();
+        self._refreshPreview();
+      });
+    });
 
     if (P && P.wireLabourPlanning) {
       P.wireLabourPlanning(root, this.previewProgress, shell, function() {
