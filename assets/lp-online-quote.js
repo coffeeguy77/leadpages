@@ -373,12 +373,24 @@
   }
 
   function boot() {
-    injectStyles();
     var el = document.getElementById(ROOT_ID);
     if (!el) return;
+    var sec = el.closest('[data-sec="onlineQuote"]');
+    var cfg = (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG) || {};
+    var on = cfg.sections && cfg.sections.onlineQuote && cfg.sections.onlineQuote.on === true;
+    if (sec && sec.style.display === 'none' && !on) return;
+    mount(el);
+  }
+
+  function mount(el) {
+    if (!el || el.__lpOqMounted) return;
+    el.__lpOqMounted = true;
+    injectStyles();
     var w = new OnlineQuoteWidget(el);
     w.init();
   }
+
+  window.LPOnlineQuoteMount = mount;
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
