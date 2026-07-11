@@ -201,6 +201,7 @@
   };
 
   OnlineQuoteWidget.prototype.render = function() {
+    injectStyles();
     var steps = this.steps();
     var stepKey = steps[this.state.step] || 'contact';
     var biz = (this.shell.business && this.shell.business.name) || 'Get your quote';
@@ -258,8 +259,7 @@
             '<input type="number" min="1" max="48" data-field="hours" value="' + esc(s.hours) + '"></label>';
       }
       return wrap({
-        intro: '<p class="lp-oq-intro">Choose your equipment.</p>',
-        fields: fields,
+        intro: '<p class="lp-oq-intro">What equipment would you like to hire?</p>',
         choices: choices
       });
     }
@@ -617,6 +617,8 @@
       '.lp-oq-check{display:flex;align-items:center;gap:8px;margin:10px 0 0;font-size:13px}',
       '.lp-oq-shift,.lp-oq-cart,.lp-oq-staff-row{border:1px dashed color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));border-radius:10px;padding:10px;margin:10px 0}',
       '.lp-oq-cart-head,.lp-oq-staff-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}',
+      '.lp-oq-product-qty{margin-top:8px}',
+      '.lp-oq-product-qty input:disabled{opacity:.45}',
       '.lp-oq-shift-remove,.lp-oq-cart-remove{font-size:12px;padding:4px 10px}'
     ].join('');
   }
