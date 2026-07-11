@@ -17,7 +17,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css">
-<link rel="stylesheet" href="/assets/lp-messages-embed.css">
+<link rel="stylesheet" href="/assets/lp-quote-builder.css">
 <style>
 :root{
   --radius:14px; --radius-sm:10px;
@@ -539,6 +539,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-mobile-menu-builder.js"></script>
 <script src="/assets/lp-trade-picker.js"></script>
 <script src="/icons.js"></script>
+<script src="/assets/lp-quote-builder.js"></script>
 </head>
 <body data-lp-admin-page="manage">
 <script>
@@ -6201,16 +6202,10 @@ function heroCtaCard(c){
   }
   function _oqEditorBlock(admin, isSuper, slug){
     if(!_oqCanEditConfig(admin, isSuper)) return '';
-    var cfg=admin.activeVersion.config;
-    var json=JSON.stringify(cfg, null, 2);
-    return '<div class="card" style="margin-top:18px;border:1px solid var(--line);"><h3 style="margin:0 0 8px;">Quote builder — prices &amp; products</h3>'
-      +'<p class="lede" style="margin:0 0 12px;">Edit products, labour rates, beverages, add-ons and travel zones. Saving creates a new immutable config version. '
-      +(admin.classification==='public'?'This is your tenant quote builder (classification <code>public</code>).':'Super-admin edit of <code>'+esc(admin.classification||'')+'</code> config.')
-      +'</p>'
-      +'<p class="hint" style="margin:0 0 10px;"><strong>Key fields:</strong> <code>products[].baseCents</code> (equipment price), <code>labour.hourlyCents</code>, <code>labour.minimumHours</code>, <code>beverages[]</code>, <code>addons[]</code>, <code>travel.zones[]</code>, <code>business.name</code>, <code>wizard.steps</code></p>'
-      +'<textarea id="oq-config-json" rows="18" style="width:100%;font-family:ui-monospace,monospace;font-size:12px;padding:12px;border:1px solid var(--line);border-radius:10px;">'+esc(json)+'</textarea>'
-      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">'
-      +'<button type="button" class="btn" id="oq-save-config">Save pricing config</button>'
+    return '<div class="card" style="margin-top:18px;border:1px solid var(--line);" id="oq-builder-card">'
+      +'<div id="oq-builder-root"></div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">'
+      +'<button type="button" class="btn" id="oq-save-config">Save quote builder</button>'
       +'<span id="oq-save-msg" class="hint"></span></div></div>';
   }
   async function _oqAuthHeaders(){
@@ -6285,7 +6280,7 @@ function heroCtaCard(c){
         var _showBlank=!admin||!admin.activeVersion||admin.classification==='blank';
         if(_showBlank||(isSuper&&slug!=='beanculture')){
           html+='<div class="card" style="margin-top:18px;"><h3 style="margin:0 0 8px;">Start blank quote builder</h3>'
-            +'<p class="lede" style="margin:0 0 12px;">Creates a <code>public</code> quote system with starter products and labour — edit prices in the builder above, then enable the Online Quote section and publish.</p>'
+            +'<p class="lede" style="margin:0 0 12px;">Creates a <code>public</code> quote system with a visual builder — add products, set prices, pick icons and wizard steps, then enable the Online Quote section and publish.</p>'
             +'<button type="button" class="btn ghost" id="oq-blank-builder">Create blank quote builder</button>'
             +'<span id="oq-blank-msg" class="hint" style="margin-left:8px;"></span></div>';
         }
@@ -6324,13 +6319,23 @@ function heroCtaCard(c){
       }
       html+='</div></div>';
       box.innerHTML=html;
+      LPONLINEQUOTE.builder=null;
+      if(admin&&admin.activeVersion&&admin.activeVersion.config&&window.LPQuoteBuilder){
+        var broot=$('oq-builder-root');
+        if(broot) LPONLINEQUOTE.builder=LPQuoteBuilder.mount(broot,{config:admin.activeVersion.config});
+      }
       var ref=$('oq-refresh'); if(ref) ref.addEventListener('click',renderOnlineQuoteAdmin);
       var ed=$('oq-goto-editor'); if(ed) ed.addEventListener('click',function(){ showView('details'); landingSub='onlineQuote'; renderDetails(); });
       var sc=$('oq-save-config'); if(sc) sc.addEventListener('click',async function(){
-        var ta=$('oq-config-json'), sm=$('oq-save-msg');
-        if(!ta) return;
-        var cfg=_oqParseConfigJson(ta.value);
-        if(!cfg){ if(sm){ sm.textContent='Invalid JSON'; sm.style.color='#b42318'; } return; }
+        var sm=$('oq-save-msg');
+        var cfg=null;
+        if(LPONLINEQUOTE.builder){
+          cfg=LPONLINEQUOTE.builder.getConfig();
+        } else {
+          var ta=$('oq-config-json');
+          if(ta) cfg=_oqParseConfigJson(ta.value);
+        }
+        if(!cfg){ if(sm){ sm.textContent='Nothing to save'; sm.style.color='#b42318'; } return; }
         try{
           sc.disabled=true; if(sm) sm.textContent='Saving…';
           var h=await _oqAuthHeaders(); h['Content-Type']='application/json';
