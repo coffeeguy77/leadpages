@@ -11,14 +11,7 @@ const { sendSmsCode, checkSmsCode } = require('../../lib/quote-system/verify');
 const { finalizeVerifiedPortal } = require('../../lib/quote-system/portal');
 const { sendPortalLinkEmail } = require('../../lib/quote-system/portal-email');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
-
-function normalisePhone(phone) {
-  var p = String(phone || '').replace(/[\s\-()]/g, '');
-  if (!p) return '';
-  if (p.charAt(0) === '0') p = '+61' + p.slice(1);
-  if (p.charAt(0) !== '+') p = '+61' + p;
-  return p;
-}
+const { normaliseAuPhone } = require('../../lib/quote-system/phone');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'method_not_allowed' });
@@ -43,7 +36,7 @@ module.exports = async function handler(req, res) {
     }
 
     if (action === 'send') {
-      const phone = normalisePhone(body.phone || session.contact_phone);
+      const phone = normaliseAuPhone(body.phone || session.contact_phone);
       if (!phone || phone.length < 10) {
         return json(res, 400, { ok: false, error: 'valid_phone_required' });
       }
@@ -60,7 +53,7 @@ module.exports = async function handler(req, res) {
 
     if (action === 'confirm') {
       const code = clean(body.code, 12);
-      const phone = normalisePhone(body.phone || session.contact_phone);
+      const phone = normaliseAuPhone(body.phone || session.contact_phone);
       if (!code) return json(res, 400, { ok: false, error: 'code_required' });
       if (!phone) return json(res, 400, { ok: false, error: 'phone_required' });
 
