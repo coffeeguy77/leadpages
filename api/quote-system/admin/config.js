@@ -17,6 +17,7 @@ const {
 const { serializeAdminConfig } = require('../../../lib/quote-system/serializers');
 const { CONFIG_CLASSIFICATION } = require('../../../lib/quote-system/constants');
 const { getAdmin } = require('../../../lib/quote-system/supabase');
+const { BEAN_CULTURE_SLUG, provisionBeanCultureConfig } = require('../../../lib/quote-system/provision-bean-culture');
 
 async function ensureQuoteSystem(siteId, classification) {
   const admin = getAdmin();
@@ -116,26 +117,38 @@ module.exports = async function handler(req, res) {
       }
 
       const admin = getAdmin();
-      const patch = {};
-      if (body.enabled !== undefined) patch.enabled = !!body.enabled;
+      const { data: siteRow } = await admin.from('sites').select('slug').eq('id', siteId).maybeSingle();
+      const siteSlug = (siteRow && siteRow.slug) || '';
+      const shouldProvisionBeanCulture = isSuper && (
+        body.provision === 'bean-culture' ||
+        (body.enabled && siteSlug === BEAN_CULTURE_SLUG)
+      );
 
-      if (body.config && typeof body.config === 'object') {
-        const configVersion = await insertConfigVersion(
-          quoteSystem.id,
-          body.config,
-          user.id,
-          clean(body.label, 120) || null
-        );
-        quoteSystem.active_config_version_id = configVersion.id;
-      }
+      if (shouldProvisionBeanCulture) {
+        const result = await provisionBeanCultureConfig(quoteSystem.id, user.id);
+        quoteSystem = result.quoteSystem;
+      } else {
+        const patch = {};
+        if (body.enabled !== undefined) patch.enabled = !!body.enabled;
 
-      if (Object.keys(patch).length) {
-        const { data } = await admin.from('quote_systems')
-          .update(patch)
-          .eq('id', quoteSystem.id)
-          .select('*')
-          .single();
-        if (data) quoteSystem = data;
+        if (body.config && typeof body.config === 'object') {
+          const configVersion = await insertConfigVersion(
+            quoteSystem.id,
+            body.config,
+            user.id,
+            clean(body.label, 120) || null
+          );
+          quoteSystem.active_config_version_id = configVersion.id;
+        }
+
+        if (Object.keys(patch).length) {
+          const { data } = await admin.from('quote_systems')
+            .update(patch)
+            .eq('id', quoteSystem.id)
+            .select('*')
+            .single();
+          if (data) quoteSystem = data;
+        }
       }
 
       const active = await getActiveConfig(quoteSystem);
@@ -148,6 +161,10 @@ module.exports = async function handler(req, res) {
     return json(res, 405, { ok: false, error: 'method_not_allowed' });
   } catch (e) {
     console.error('quote-system/admin/config:', e && e.message);
-    return json(res, 500, { ok: false, error: 'server_error' });
+    const msg = String(e && e.message || e);
+    if (/relation.*quote_systems.*does not exist/i.test(msg)) {
+      return json(res, 503, { ok: false, error: 'schema_missing', message: 'Run db/quote_systems_schema.sql in Supabase first.' });
+    }
+    return json(res, 500, { ok: false, error: 'server_error', message: msg });
   }
 };
