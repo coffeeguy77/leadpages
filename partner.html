@@ -314,6 +314,13 @@
           </div>
 
           <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Page design template</h3>
+            <p class="muted" style="margin:0 0 14px;font-size:13px">Choose a unique agency layout for your public partner page. Each design showcases your live demos, LeadPages platform power, and local + platform support story. Use the template bar on your live page to preview before saving.</p>
+            <div id="sc-template-grid" class="lp-sc-template-grid" role="radiogroup" aria-label="Partner page template"></div>
+            <p class="muted" style="margin:12px 0 0;font-size:12.5px">Preview any design: open your page link and use the <strong>Template</strong> bar at the bottom, or append <code>?tpl=causehouse</code> to the URL.</p>
+          </div>
+
+          <div class="card" style="padding:20px">
             <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Branding &amp; colours</h3>
             <p class="muted" style="margin:0 0 14px;font-size:13px">Pick a saved demo theme for your public page colours — same palette as your trade demos. Once you publish a homepage in the builder, that design takes over.</p>
             <div class="field"><label for="sc-theme">Colour theme</label><select id="sc-theme" class="tin lp-select"><option value="">Default LeadPages orange</option></select></div>
@@ -922,7 +929,7 @@
       console.error('Partner shell init failed', shellErr);
     }
     refreshWho({ user: { email: (state.partner && (state.partner.email || state.partner.display_name)) || '' } });
-    wireAdd(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadMyPage(); loadPayouts(); loadQuotes(); loadMsgBadge();
+    wireAdd(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadScTemplates(); loadMyPage(); loadPayouts(); loadQuotes(); loadMsgBadge();
     setTimeout(function(){ initDemoTradePicker(); fillDemoLocationDefaults(); }, 0);
     initPartnerMessages();
     document.querySelectorAll('.e-ico[data-icon]').forEach(function(el){
@@ -1563,12 +1570,17 @@
     });
     var _scLogoSize=document.getElementById('sc-logo-size');
     if(_scLogoSize) _scLogoSize.addEventListener('input', updateScLogoSizePreview);
+    var _scTplGrid=document.getElementById('sc-template-grid');
+    if(_scTplGrid) _scTplGrid.addEventListener('click',function(e){
+      var card=e.target.closest('[data-sc-tpl]'); if(!card) return;
+      setScTemplateKey(card.getAttribute('data-sc-tpl'));
+    });
     document.getElementById('sc-save').addEventListener('click', async function(){
       var err=document.getElementById('sc-err'); err.classList.add('hidden');
       var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var btn=this; btn.disabled=true;
       var dom=(document.getElementById('sc-domain').value||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/\s+/g,'');
       var branding=scBrandingPayload();
-      var payload={ slug:slug, domain:dom, enabled:document.getElementById('sc-enabled').checked, headline:(document.getElementById('sc-headline').value||'').trim(), config:{ logo:scLogo||null, logoSize:scLogoSizeValue(), intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:branding.accent, theme:branding.theme, themeId:branding.themeId } };
+      var payload={ slug:slug, domain:dom, enabled:document.getElementById('sc-enabled').checked, headline:(document.getElementById('sc-headline').value||'').trim(), config:{ logo:scLogo||null, logoSize:scLogoSizeValue(), intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:branding.accent, theme:branding.theme, themeId:branding.themeId, templateKey:scTemplateKey||'converge' } };
       var res;
       try{ var r=await fetch('/api/partner/save-showcase',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
       btn.disabled=false;
@@ -1931,6 +1943,47 @@
 
   // ---------- Phase 6: My page (showcase editor) ----------
   var scLogo='';
+  var scTemplateKey='converge';
+  var scPageTemplates=[];
+  function scTemplateCard(t){
+    var sel=t.id===scTemplateKey?' is-selected':'';
+    return '<button type="button" class="lp-sc-tpl-card'+sel+'" data-sc-tpl="'+esc(t.id)+'" role="radio" aria-checked="'+(sel?'true':'false')+'">'
+      +'<div class="lp-sc-tpl-preview" style="background:'+esc(t.preview)+'"></div>'
+      +'<span class="lp-sc-tpl-name">'+esc(t.label)+'</span>'
+      +'<span class="lp-sc-tpl-tag">'+esc(t.mood)+'</span>'
+      +'<p class="lp-sc-tpl-desc">'+esc(t.description)+'</p>'
+      +'</button>';
+  }
+  function renderScTemplateGrid(){
+    var box=document.getElementById('sc-template-grid'); if(!box) return;
+    if(!scPageTemplates.length){
+      box.innerHTML='<p class="muted" style="font-size:13px">Loading templates…</p>';
+      return;
+    }
+    box.innerHTML=scPageTemplates.map(scTemplateCard).join('');
+  }
+  function setScTemplateKey(id){
+    scTemplateKey=id||'converge';
+    renderScTemplateGrid();
+  }
+  async function loadScTemplates(){
+    try{
+      var r=await fetch('/api/partner/template-registry');
+      var j=await r.json();
+      if(j&&j.ok&&j.templates) scPageTemplates=j.templates;
+    }catch(_e){
+      scPageTemplates=[
+        {id:'converge',label:'Converge Studio',mood:'Bold & conversion',description:'Dark conversion-focused agency',preview:'linear-gradient(135deg,#1a0a2e 0%,#7b2fff 100%)'},
+        {id:'causehouse',label:'Cause House',mood:'Editorial & warm',description:'Big type, word art, clever navigation',preview:'linear-gradient(160deg,#faf8f4 0%,#e8dfd0 100%)'},
+        {id:'signal',label:'Signal Brutalist',mood:'Brutalist',description:'Black and white brutalism with screaming typography',preview:'repeating-linear-gradient(90deg,#000 0,#000 50%,#fff 50%,#fff 100%)'},
+        {id:'atlas',label:'Atlas Editorial',mood:'Editorial magazine',description:'Magazine layout, asymmetric drama',preview:'linear-gradient(180deg,#1c1917 0%,#44403c 50%,#fafaf9 50%)'},
+        {id:'horizon',label:'Horizon Glass',mood:'Light & glass',description:'Soft gradients, glass panels, floating cards',preview:'linear-gradient(135deg,#e0f2fe 0%,#c7d2fe 50%,#ddd6fe 100%)'},
+        {id:'pulse',label:'Pulse Neon',mood:'Neon cyber',description:'Electric dark-mode agency',preview:'linear-gradient(135deg,#0a0a0f 0%,#00f0ff 40%,#ff00aa 100%)'},
+        {id:'vault',label:'Vault Craft',mood:'Warm craft',description:'Warm craft, trusted hands',preview:'linear-gradient(160deg,#fef3e2 0%,#d97706 100%)'}
+      ];
+    }
+    renderScTemplateGrid();
+  }
   function scLogoSizeValue(){
     var el=document.getElementById('sc-logo-size'); var v=parseFloat(el&&el.value);
     if(!Number.isFinite(v)) return 1;
@@ -1972,6 +2025,7 @@
     var pf=state.profile||{}; var cfg=pf.showcase_config||{}; var g=function(id){return document.getElementById(id);};
     g('sc-slug').value=pf.showcase_slug||''; g('sc-domain').value=pf.showcase_domain||''; g('sc-enabled').checked=!!pf.showcase_enabled;
     g('sc-headline').value=pf.showcase_headline||''; g('sc-accent').value=cfg.accent||''; g('sc-intro').value=cfg.intro||'';
+    setScTemplateKey(cfg.templateKey||'converge');
     if(g('sc-theme')) g('sc-theme').value=cfg.themeId||'';
     renderScThemePreview();
     scLogo=cfg.logo||''; if(scLogo){ g('sc-logo-prev').src=scLogo; g('sc-logo-prev').style.display=''; g('sc-logo-clear').style.display=''; }

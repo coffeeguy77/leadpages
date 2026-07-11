@@ -18,7 +18,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 const { effectiveDemoSalePrice } = require('../lib/partner-demo-pricing');
-const { buildPartnerLandingHtml } = require('../lib/partner-landing');
+const { buildPartnerLandingHtml, resolveLandingTheme } = require('../lib/partner-templates');
 const brokerTpl   = require('../broker.template.json');     // broker-leads
 const tradeTpl    = require('../trade.template.json');      // trade
 const agencyTpl   = require('../agency.template.json');     // partner web-studio homepage
@@ -420,6 +420,14 @@ function partnerDemosBlock(demos, base, accent) {
 
 const SC_SELECT = 'partner_id,showcase_slug,showcase_domain,showcase_enabled,showcase_headline,showcase_config,support_email,support_phone';
 
+function showcaseRenderOpts(req, home) {
+  const q = (req && req.query) || {};
+  const tpl = q.tpl || q.template || '';
+  const opts = { home: home || null, showTemplateSwitcher: true };
+  if (tpl) opts.templateOverride = String(tpl).trim();
+  return opts;
+}
+
 async function showcaseRespond(req, res, prof, base) {
   const partner = (await supabase.from('partners').select('display_name,status').eq('id', prof.partner_id).maybeSingle()).data;
   if (!partner || partner.status === 'suspended' || partner.status === 'terminated') return notFound(res);
@@ -433,7 +441,7 @@ async function showcaseRespond(req, res, prof, base) {
     .select('*').eq('servicing_partner_id', prof.partner_id).eq('is_partner_home', true).maybeSingle()).data;
   res.setHeader('content-type', 'text/html; charset=utf-8');
   res.setHeader('cache-control', 'public, s-maxage=5, stale-while-revalidate=20');
-  return res.status(200).send(buildPartnerLandingHtml(prof, partner, demos, base, { home }));
+  return res.status(200).send(buildPartnerLandingHtml(prof, partner, demos, base, showcaseRenderOpts(req, home)));
 }
 
 async function renderShowcase(req, res, slug, base) {
@@ -764,7 +772,7 @@ module.exports = async (req, res) => {
         support_phone: (prof && prof.support_phone) || hc.phone || ''
       });
       const partnerRow = partner || { display_name: site.business_name || 'Web Studio' };
-      return sendHtml(res, buildPartnerLandingHtml(mergedProf, partnerRow, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au', { home: site }), isLive);
+      return sendHtml(res, buildPartnerLandingHtml(mergedProf, partnerRow, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au', showcaseRenderOpts(req, site)), isLive);
     }
 
     const template = templateFor(site);
