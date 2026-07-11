@@ -793,9 +793,17 @@
 }
 
 .oqb-preview-mock .lp-oq-layout-cards .lp-oq-choice {
-  padding: 14px 16px;
-  margin-bottom: 10px;
-  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  min-height: 64px;
+}
+
+.oqb-preview-mock .lp-oq-layout-list .lp-oq-choices,
+.oqb-preview-mock .lp-oq-layout-list .lp-oq-stack {
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .oqb-preview-mock .lp-oq-layout-list .lp-oq-choice {
@@ -803,10 +811,14 @@
   flex-direction: row;
   align-items: center;
   gap: 10px;
-  padding: 8px 11px;
-  margin-bottom: 4px;
-  border-radius: 8px;
+  padding: 9px 12px;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 14%, var(--line));
 }
+
+.oqb-preview-mock .lp-oq-layout-list .lp-oq-choice:last-child { border-bottom: none; }
 
 .oqb-preview-mock .lp-oq-layout-list .lp-oq-choice strong { display: block; }
 .oqb-preview-mock .lp-oq-layout-list .lp-oq-choice span { display: block; margin-top: 2px; font-size: 11px; }
@@ -815,27 +827,36 @@
 .oqb-preview-mock .lp-oq-layout-list .lp-oq-choice-img {
   flex-shrink: 0;
   margin: 0 !important;
-  height: 40px !important;
-  width: 40px !important;
+  height: 36px !important;
+  width: 36px !important;
   object-fit: cover;
+  border-radius: 6px;
 }
 
 .oqb-preview-mock .lp-oq-layout-split .lp-oq-split {
   display: grid;
-  grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
-  gap: 16px;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 18px;
   align-items: start;
 }
 
+.oqb-preview-mock .lp-oq-layout-split .lp-oq-aside {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
 .oqb-preview-mock .lp-oq-layout-split .lp-oq-aside .lp-oq-intro {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ink);
+  margin-bottom: 10px;
 }
 
 .oqb-preview-mock .lp-oq-layout-split .lp-oq-choices {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .oqb-preview-mock .lp-oq-layout-split .lp-oq-choices .lp-oq-choice {

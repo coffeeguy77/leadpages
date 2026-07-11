@@ -270,7 +270,7 @@
     var layoutCls = displayApi().layoutClass ? displayApi().layoutClass(shell) : (
       shell.wizard.layout === 'list' ? ' lp-oq-layout-list' : shell.wizard.layout === 'split' ? ' lp-oq-layout-split' : ' lp-oq-layout-cards'
     );
-    return '<div class="oqb-preview-head"><h4>Live preview</h4><p>Test conditional steps — pick a product to see the flow change.</p></div>' +
+    return '<div class="oqb-preview-head"><h4>Live preview</h4><p>Layout: <strong>' + esc((LAYOUTS.find(function(l) { return l.id === layout; }) || LAYOUTS[0]).label) + '</strong> — pick a product to test conditional steps.</p></div>' +
       '<div class="oqb-preview-body oqb-preview-mock"><div class="lp-oq-card' + layoutCls + '">' +
       '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc((shell.business && shell.business.name) || 'Your business') + '</h2>' +
       '<div class="lp-oq-steps">' + steps.map(function(s, i) {
@@ -725,6 +725,16 @@
     }
   };
 
+  QuoteBuilder.prototype._applyLayout = function(value, radio) {
+    if (!this.config.wizard) this.config.wizard = {};
+    this.config.wizard.layout = value;
+    var self = this;
+    this.root.querySelectorAll('.oqb-layout').forEach(function(lbl) {
+      lbl.classList.toggle('is-on', lbl.querySelector('input[name="oqb-layout"]') === radio);
+    });
+    this._refreshPreview();
+  };
+
   QuoteBuilder.prototype._syncFromDom = function() {
     var self = this;
     this.root.querySelectorAll('[data-oqb-path]').forEach(function(el) {
@@ -766,11 +776,16 @@
     this.root.querySelectorAll('input[name="oqb-layout"]').forEach(function(radio) {
       radio.addEventListener('change', function() {
         if (!radio.checked) return;
-        self.config.wizard.layout = radio.value;
-        self.root.querySelectorAll('.oqb-layout').forEach(function(lbl) {
-          lbl.classList.toggle('is-on', lbl.querySelector('input[name="oqb-layout"]') === radio);
-        });
-        self._refreshPreview();
+        self._applyLayout(radio.value, radio);
+      });
+    });
+
+    this.root.querySelectorAll('.oqb-layout').forEach(function(lbl) {
+      lbl.addEventListener('click', function() {
+        var radio = lbl.querySelector('input[name="oqb-layout"]');
+        if (!radio) return;
+        radio.checked = true;
+        self._applyLayout(radio.value, radio);
       });
     });
 

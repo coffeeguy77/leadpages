@@ -86,19 +86,22 @@
   function layoutCss(brandVar) {
     var b = brandVar || 'var(--pipe, var(--accent, #1f7a63))';
     return [
-      '.lp-oq-layout-cards .lp-oq-choice{padding:16px 18px;margin-bottom:10px;border-radius:14px}',
-      '.lp-oq-layout-list .lp-oq-choice{display:flex;flex-direction:row;align-items:center;gap:12px;padding:9px 12px;margin-bottom:4px;border-radius:8px}',
-      '.lp-oq-layout-list .lp-oq-choice .lp-oq-choice-text{flex:1;min-width:0}',
-      '.lp-oq-layout-list .lp-oq-choice strong{display:block}',
+      '.lp-oq-layout-cards .lp-oq-choice{padding:18px 20px;margin-bottom:12px;border-radius:16px;min-height:72px}',
+      '.lp-oq-layout-cards .lp-oq-choice .lp-oq-ic svg{width:22px;height:22px}',
+      '.lp-oq-layout-list .lp-oq-choices,.lp-oq-layout-list .lp-oq-stack{display:flex;flex-direction:column;gap:0;border:1px solid color-mix(in srgb,' + b + ' 20%,var(--line,var(--border,currentColor)));border-radius:10px;overflow:hidden}',
+      '.lp-oq-layout-list .lp-oq-choice{display:flex;flex-direction:row;align-items:center;gap:12px;padding:10px 14px;margin:0;border-radius:0;border:none;border-bottom:1px solid color-mix(in srgb,' + b + ' 14%,var(--line,var(--border,currentColor)))}',
+      '.lp-oq-layout-list .lp-oq-choice:last-child{border-bottom:none}',
+      '.lp-oq-layout-list .lp-oq-choice strong{display:block;font-size:14px}',
       '.lp-oq-layout-list .lp-oq-choice span{display:block;margin-top:2px;font-size:12px}',
       '.lp-oq-layout-list .lp-oq-choice .lp-oq-ic{flex-shrink:0;margin-right:0}',
-      '.lp-oq-layout-list .lp-oq-choice-img{flex-shrink:0;margin:0!important;height:44px!important;width:44px!important;object-fit:cover}',
-      '.lp-oq-layout-split .lp-oq-split{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:24px;align-items:start}',
-      '.lp-oq-layout-split .lp-oq-aside .lp-oq-intro{font-size:15px;font-weight:600;color:var(--ink,var(--text,inherit));margin:0 0 12px}',
-      '.lp-oq-layout-split .lp-oq-choices{display:flex;flex-direction:column;gap:8px}',
+      '.lp-oq-layout-list .lp-oq-choice-img{flex-shrink:0;margin:0!important;height:40px!important;width:40px!important;object-fit:cover;border-radius:6px}',
+      '.lp-oq-layout-split .lp-oq-split{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:28px;align-items:start}',
+      '.lp-oq-layout-split .lp-oq-aside{padding:14px 16px;border-radius:12px;border:1px solid color-mix(in srgb,' + b + ' 18%,var(--line,var(--border,currentColor)));background:color-mix(in srgb,' + b + ' 6%,transparent)}',
+      '.lp-oq-layout-split .lp-oq-aside .lp-oq-intro{font-size:16px;font-weight:700;color:var(--ink,var(--text,inherit));margin:0 0 14px}',
+      '.lp-oq-layout-split .lp-oq-choices{display:flex;flex-direction:column;gap:10px}',
       '.lp-oq-layout-split .lp-oq-choices .lp-oq-choice{margin-bottom:0}',
       '@media(max-width:720px){.lp-oq-layout-split .lp-oq-split{grid-template-columns:1fr}}'
-    ].join('').replace(/\$brand/g, b);
+    ].join('');
   }
 
   global.LPQuoteDisplay = {
