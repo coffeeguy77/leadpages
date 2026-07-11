@@ -6203,7 +6203,7 @@ function heroCtaCard(c){
   }
   function _oqEditorBlock(admin, isSuper, slug){
     if(!_oqCanEditConfig(admin, isSuper)) return '';
-    return '<div class="card oqb-card-wrap" id="oq-builder-card">'
+    return '<div class="oqb-card-wrap" id="oq-builder-card">'
       +'<div class="oqb-split-wrap"><div id="oq-builder-root" class="oqb-editor-host"></div>'
       +'<div id="oq-preview-root" class="oqb-preview-host"></div></div>'
       +'<div class="oqb-savebar">'
@@ -6346,9 +6346,9 @@ function heroCtaCard(c){
           var r=await fetch('/api/quote-system/admin/config',{method:'POST',headers:h,body:JSON.stringify({site_id:currentSiteId,enabled:true,config:cfg,label:'Admin editor save'})});
           var j=await r.json();
           sc.disabled=false;
-          if(j.ok){ if(sm){ sm.textContent='Saved as v'+(j.admin&&j.admin.activeVersion&&j.admin.activeVersion.versionNumber||'?'); sm.style.color='#0a7d33'; } if(typeof toast==='function') toast('Quote config saved'); renderOnlineQuoteAdmin(); }
-          else { if(sm){ sm.textContent=(j.message||j.error||'Failed'); sm.style.color='#b42318'; } }
-        }catch(e){ sc.disabled=false; if(sm){ sm.textContent='Network error'; sm.style.color='#b42318'; } }
+          if(j.ok){ if(sm){ sm.textContent='Saved as v'+(j.admin&&j.admin.activeVersion&&j.admin.activeVersion.versionNumber||'?'); sm.style.color='var(--success)'; } if(typeof toast==='function') toast('Quote config saved'); renderOnlineQuoteAdmin(); }
+          else { if(sm){ sm.textContent=(j.message||j.error||'Failed'); sm.style.color='var(--danger)'; } }
+        }catch(e){ sc.disabled=false; if(sm){ sm.textContent='Network error'; sm.style.color='var(--danger)'; } }
       });
       var bb=$('oq-blank-builder'); if(bb) bb.addEventListener('click',async function(){
         var bm=$('oq-blank-msg');
