@@ -399,12 +399,19 @@
   function renderCartRows(state, shell, products, helpers) {
     state._shell = shell;
     if (!products || !products.length) return '<p class="lp-oq-muted">No equipment configured.</p>';
+    var h = helpers || {};
+    var previewFocus = !!h.previewFocusSingle;
+    var displayProducts = previewFocus ? products.slice(0, 1) : products;
     var carts = ensureCarts(state, products);
     var layout = (shell && shell.wizard && shell.wizard.layout) || 'cards';
     var gridCls = layout === 'grid' ? 'lp-oq-choices fp-grid lp-oq-fp-grid' : 'lp-oq-choices';
+    if (previewFocus) gridCls += ' lp-oq-preview-focus-single';
     var D = global.LPQuoteDisplay;
     var cardVars = (D && D.equipmentCardVars) ? D.equipmentCardVars(shell) : '';
-    var html = '<div class="lp-oq-carts" data-lp-oq-carts' + (cardVars ? ' style="' + cardVars + '"' : '') + '>';
+    var html = (previewFocus
+      ? '<p class="lp-oq-muted oqb-preview-focus-note" style="margin:0 0 10px;font-size:12px">Focus mode — all equipment cards share this styling.</p>'
+      : '') +
+      '<div class="lp-oq-carts" data-lp-oq-carts' + (cardVars ? ' style="' + cardVars + '"' : '') + '>';
 
     carts.forEach(function(cart, cartIdx) {
       if (carts.length > 1) {
@@ -413,7 +420,7 @@
           '<button type="button" class="lp-oq-btn lp-oq-btn-ghost lp-oq-cart-remove" data-cart-remove="' + cartIdx + '">Remove</button></div>';
       }
       html += '<div class="' + gridCls + '">';
-      products.forEach(function(p) {
+      displayProducts.forEach(function(p) {
         html += renderProductCard(p, cart, cartIdx, helpers, shell);
       });
       html += '</div>';
