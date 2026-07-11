@@ -73,6 +73,8 @@
     if (!cfg.wizard.layout) cfg.wizard.layout = 'cards';
     if (!cfg.wizard.stepLabels) cfg.wizard.stepLabels = {};
     if (!Array.isArray(cfg.wizard.conditions)) cfg.wizard.conditions = [];
+    if (!cfg.wizard.equipmentCards) cfg.wizard.equipmentCards = {};
+    if (cfg.wizard.allowMultiCart == null) cfg.wizard.allowMultiCart = false;
     cfg.products = Array.isArray(cfg.products) ? cfg.products : [];
     cfg.beverages = Array.isArray(cfg.beverages) ? cfg.beverages : [];
     cfg.addons = Array.isArray(cfg.addons) ? cfg.addons : [];
@@ -89,6 +91,12 @@
       if (p.baristasIncluded == null) p.baristasIncluded = 1;
       if (p.allowExtraBarista == null) p.allowExtraBarista = true;
       if (p.allowQuantity == null) p.allowQuantity = false;
+      if (p.maxQuantity != null) {
+        var mq = parseInt(p.maxQuantity, 10);
+        p.maxQuantity = (!isNaN(mq) && mq > 0) ? mq : null;
+      }
+      if (!p.imageFit) p.imageFit = 'cover';
+      if (!p.imagePos) p.imagePos = 'center';
     });
     cfg.beverages.forEach(function(b) {
       if (!b.id) b.id = slugify(b.label) || uid('bev');
@@ -373,6 +381,21 @@
       var sizeOpts = IMAGE_SIZE_OPTIONS.map(function(s) {
         return '<option value="' + s.id + '"' + (size === s.id ? ' selected' : '') + '>' + esc(s.label) + '</option>';
       }).join('');
+      var cardImgRow = '';
+      if (uploadKind === 'products') {
+        var fit = item.imageFit || 'cover';
+        var pos = item.imagePos || 'center';
+        var fitOpts = [['cover', 'Cover (crop to fill)'], ['contain', 'Contain (fit inside)'], ['fill', 'Stretch (fill frame)']].map(function(pair) {
+          return '<option value="' + pair[0] + '"' + (fit === pair[0] ? ' selected' : '') + '>' + esc(pair[1]) + '</option>';
+        }).join('');
+        var posOpts = [['center', 'Centre'], ['left', 'Left'], ['right', 'Right'], ['top', 'Top'], ['bottom', 'Bottom']].map(function(pair) {
+          return '<option value="' + pair[0] + '"' + (pos === pair[0] ? ' selected' : '') + '>' + esc(pair[1]) + '</option>';
+        }).join('');
+        cardImgRow = '<div class="oqb-img-card-row oqb-grid">' +
+          self._field('Card image fit', '<select data-oqb-path="' + esc(path) + '.imageFit">' + fitOpts + '</select>') +
+          self._field('Card image position', '<select data-oqb-path="' + esc(path) + '.imagePos">' + posOpts + '</select>') +
+          '</div>';
+      }
       imgPanel = '<div class="oqb-display-panel oqb-img-panel" data-oqb-img-panel="' + esc(path) + '">' +
         (item.imageUrl
           ? '<img src="' + esc(item.imageUrl) + '" class="oqb-img-preview" style="max-height:' + px + 'px" alt="">'
@@ -390,6 +413,7 @@
         this._field('Scale', '<div class="oqb-scale-wrap"><input type="range" min="50" max="250" step="5" data-oqb-path="' + esc(path) + '.imageScale" value="' + esc(scale) + '">' +
         '<span class="oqb-scale-val" data-oqb-scale-for="' + esc(path) + '">' + esc(scale) + '%</span></div>') +
         '</div>' +
+        cardImgRow +
         '<p class="oqb-hint">Displayed at ~' + px + 'px tall. Stored in your site Cloudinary folder.</p>' +
         '</div>';
     }
@@ -561,6 +585,7 @@
   QuoteBuilder.prototype._renderWizard = function() {
     var w = this.config.wizard || {};
     var layout = w.layout || 'cards';
+    var ec = w.equipmentCards || {};
 
     return '<div class="oqb-section"><h4>Layout style</h4><div class="oqb-layouts">'
       + LAYOUTS.map(function(l) {
@@ -568,6 +593,18 @@
           + '<input type="radio" name="oqb-layout" value="' + l.id + '"' + (layout === l.id ? ' checked' : '') + '>'
           + '<strong>' + esc(l.label) + '</strong><span>' + esc(l.hint) + '</span></label>';
       }).join('') + '</div></div>'
+      + '<div class="oqb-section"><h4>Equipment card styling</h4>'
+      + '<p class="oqb-hint" style="margin-top:0">Applies to all equipment cards on the customer wizard (grid, list, and card layouts).</p>'
+      + '<div class="oqb-grid">'
+      + this._field('Card background (behind text)', '<input type="color" data-oqb-path="wizard.equipmentCards.cardBg" value="' + esc(ec.cardBg || '#ffffff') + '">')
+      + this._field('Card text colour', '<input type="color" data-oqb-path="wizard.equipmentCards.cardText" value="' + esc(ec.cardText || '#1a2230') + '">')
+      + this._field('Feature colour (badge &amp; accent)', '<input type="color" data-oqb-path="wizard.equipmentCards.featureColor" value="' + esc(ec.featureColor || '#1f7a63') + '">')
+      + this._field('Card stroke colour', '<input type="color" data-oqb-path="wizard.equipmentCards.strokeColor" value="' + esc(ec.strokeColor || '#d8dde6') + '">')
+      + this._field('Stroke width (px)', '<input type="number" min="0" max="8" data-oqb-path="wizard.equipmentCards.strokeWidth" value="' + esc(ec.strokeWidth != null ? ec.strokeWidth : 1) + '">')
+      + '</div></div>'
+      + '<div class="oqb-section"><h4>Multi-line equipment</h4>'
+      + this._field('Allow multiple equipment lines', '<label class="oqb-check"><input type="checkbox" data-oqb-path="wizard.allowMultiCart"' + (w.allowMultiCart ? ' checked' : '') + '> Show &ldquo;+ Add another equipment line&rdquo; on the customer wizard (for hiring multiple carts at once)</label>')
+      + '</div>'
       + '<div class="oqb-section"><h4>Wizard steps</h4>'
       + '<p class="oqb-hint" style="margin-top:0">Each step is editable: rename the customer-facing label, drag or use arrows to reorder, set when it appears, or remove it. Contact is locked as the final step.</p>'
       + '<div class="oqb-steps" data-oqb-sortable="1">' + this._renderStepRows() + '</div>'
@@ -595,6 +632,9 @@
         + self._field('Base price (ex GST line)', self._money('products.' + i + '.baseCents', p.baseCents))
         + self._field('Baristas included', '<input type="number" min="1" max="10" data-oqb-path="products.' + i + '.baristasIncluded" value="' + esc(p.baristasIncluded != null ? p.baristasIncluded : 1) + '">')
         + self._field('Allow quantity', '<label class="oqb-check"><input type="checkbox" data-oqb-path="products.' + i + '.allowQuantity"' + (p.allowQuantity ? ' checked' : '') + '> Customer can order more than one</label>')
+        + (p.allowQuantity
+          ? self._field('Max quantity', '<input type="number" min="1" max="999" data-oqb-path="products.' + i + '.maxQuantity" value="' + esc(p.maxQuantity != null ? p.maxQuantity : '') + '" placeholder="e.g. 3 (fleet limit)">')
+          : '')
         + self._field('Extra barista', '<label class="oqb-check"><input type="checkbox" data-oqb-path="products.' + i + '.allowExtraBarista"' + (p.allowExtraBarista !== false ? ' checked' : '') + '> Allow second barista on this cart</label>')
         + self._field('Badge (on image)', '<input type="text" data-oqb-path="products.' + i + '.badge" value="' + esc(p.badge || '') + '" placeholder="e.g. Mobile van">')
         + self._field('Sub-text (under title)', '<input type="text" data-oqb-path="products.' + i + '.subtitle" value="' + esc(p.subtitle || '') + '" placeholder="e.g. Dual-group & onboard power">')
@@ -736,14 +776,20 @@
     if (last === 'gstRegistered') obj[last] = !!value;
     else if (/Cents$/.test(last) || last === 'hourlyCents' || last === 'feeCents' || last === 'fixedCents' || last === 'perHeadCents' || last === 'packageCents' || last === 'baseCents' || last === 'perUnitCents') {
       obj[last] = cents(value);
-    } else if (last === 'minimumHours' || last === 'includedHeads' || last === 'quoteValidityDays' || last === 'minimumNoticeDays' || last === 'minQty' || last === 'baristasIncluded' || last === 'minimumHoursPerShift') {
+    } else if (last === 'minimumHours' || last === 'includedHeads' || last === 'quoteValidityDays' || last === 'minimumNoticeDays' || last === 'minQty' || last === 'baristasIncluded' || last === 'minimumHoursPerShift' || last === 'strokeWidth') {
       obj[last] = parseInt(value, 10) || 0;
-    } else if (last === 'allowShiftPlanner' || last === 'allowQuantity' || last === 'allowExtraBarista' || last === 'enabled') {
+    } else if (last === 'maxQuantity') {
+      if (value === '' || value == null) obj[last] = null;
+      else {
+        var mq = parseInt(value, 10);
+        obj[last] = (!isNaN(mq) && mq > 0) ? mq : null;
+      }
+    } else if (last === 'allowShiftPlanner' || last === 'allowQuantity' || last === 'allowExtraBarista' || last === 'enabled' || last === 'allowMultiCart') {
       obj[last] = !!value;
     } else if (last === 'imageScale') {
       var sc = parseInt(value, 10);
       obj[last] = isNaN(sc) ? 100 : Math.min(250, Math.max(50, sc));
-    } else if (last === 'displayMode' || last === 'imageSize' || last === 'imageUrl' || last === 'imagePid') {
+    } else if (last === 'displayMode' || last === 'imageSize' || last === 'imageUrl' || last === 'imagePid' || last === 'imageFit' || last === 'imagePos') {
       obj[last] = value;
     } else {
       obj[last] = value;

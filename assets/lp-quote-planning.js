@@ -93,25 +93,42 @@
     return cart;
   }
 
+  function productMaxQty(product) {
+    if (!product || !product.allowQuantity) return 1;
+    var n = parseInt(product.maxQuantity, 10);
+    return (!isNaN(n) && n > 0) ? n : 20;
+  }
+
+  function clampCartQuantity(cart, product) {
+    if (!cart || !product) return;
+    var maxQ = productMaxQty(product);
+    var q = parseInt(cart.quantity, 10) || 1;
+    cart.quantity = Math.max(1, Math.min(maxQ, q));
+  }
+
   function ensureCarts(state, products) {
+    products = products || [];
     if (!Array.isArray(state.carts)) state.carts = [];
     if (!state.carts.length && state.productId) {
-      var legacyProd = (products || []).find(function(p) { return p.id === state.productId; });
+      var legacyProd = products.find(function(p) { return p.id === state.productId; });
       state.carts.push(defaultCartRow(legacyProd || { id: state.productId, baristasIncluded: 1 }));
       if (state.extraBaristas > 0) {
         state.carts[0].baristas = (legacyProd && legacyProd.baristasIncluded || 1) + state.extraBaristas;
         state.carts[0].extraBaristaMode = 'full';
       }
     }
-    state.carts = state.carts.filter(function(c) {
-      return c && c.productId && (products || []).some(function(p) { return p.id === c.productId; });
-    });
-    if (!state.carts.length && products && products.length) {
-      state.carts.push(defaultCartRow(products[0]));
+    if (products.length) {
+      state.carts = state.carts.filter(function(c) {
+        return c && c.productId && products.some(function(p) { return p.id === c.productId; });
+      });
+      if (!state.carts.length) {
+        state.carts.push(defaultCartRow(products[0]));
+      }
     }
-    state.carts.forEach(function(cart, i) {
-      var prod = (products || []).find(function(p) { return p.id === cart.productId; }) || products[0];
+    state.carts.forEach(function(cart) {
+      var prod = products.find(function(p) { return p.id === cart.productId; }) || products[0];
       normalizeCartStaff(cart, prod, state._shell || {});
+      if (prod) clampCartQuantity(cart, prod);
     });
     state.productId = state.carts[0] ? state.carts[0].productId : '';
     return state.carts;
@@ -232,8 +249,9 @@
     var D = global.LPQuoteDisplay;
     var qtyHtml = '';
     if (p.allowQuantity) {
+      var maxQ = productMaxQty(p);
       qtyHtml = '<label class="lp-oq-eq-qty" data-qty-wrap="' + cartIdx + '"><span>Quantity</span>' +
-        '<input type="number" min="1" max="20" data-product-qty="' + cartIdx + '" data-val="' + esc(p.id) + '" value="' + esc(qty) + '"' +
+        '<input type="number" min="1" max="' + maxQ + '" data-product-qty="' + cartIdx + '" data-val="' + esc(p.id) + '" value="' + esc(qty) + '"' +
         (isSel ? '' : ' disabled tabindex="-1"') + '></label>';
     }
     var inner = (D && D.equipmentCardHtml)
@@ -250,7 +268,9 @@
     var carts = ensureCarts(state, products);
     var layout = (shell && shell.wizard && shell.wizard.layout) || 'cards';
     var gridCls = layout === 'grid' ? 'lp-oq-choices fp-grid lp-oq-fp-grid' : 'lp-oq-choices';
-    var html = '<div class="lp-oq-carts" data-lp-oq-carts>';
+    var D = global.LPQuoteDisplay;
+    var cardVars = (D && D.equipmentCardVars) ? D.equipmentCardVars(shell) : '';
+    var html = '<div class="lp-oq-carts" data-lp-oq-carts' + (cardVars ? ' style="' + cardVars + '"' : '') + '>';
 
     carts.forEach(function(cart, cartIdx) {
       if (carts.length > 1) {
@@ -266,7 +286,7 @@
       if (carts.length > 1) html += '</div>';
     });
 
-    if (products.length > 1) {
+    if (shell && shell.wizard && shell.wizard.allowMultiCart) {
       html += '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-cart-add>+ Add another equipment line</button>';
     }
     html += '</div>';
@@ -388,7 +408,9 @@
         var prods = (state._wireProducts) || products;
         ensureCarts(state, prods);
         if (!state.carts[idx]) return;
+        var prod = prods.find(function(p) { return p.id === state.carts[idx].productId; }) || {};
         state.carts[idx].quantity = Math.max(1, parseInt(inp.value, 10) || 1);
+        clampCartQuantity(state.carts[idx], prod);
         rerender();
       });
     }
@@ -420,7 +442,7 @@
   }
 
   function progressPayload(state) {
-    ensureCarts(state, []);
+    if (!Array.isArray(state.carts)) state.carts = [];
     var p = {
       productId: state.productId,
       hours: state.hours,
