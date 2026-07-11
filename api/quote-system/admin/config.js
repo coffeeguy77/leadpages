@@ -20,6 +20,10 @@ const { getAdmin } = require('../../../lib/quote-system/supabase');
 const { BEAN_CULTURE_SLUG, provisionBeanCultureConfig } = require('../../../lib/quote-system/provision-bean-culture');
 const { blankQuoteConfig } = require('../../../lib/quote-system/blank-config');
 
+function shouldProvisionBeanCulture(body, isSuper) {
+  return !!(isSuper && body && body.provision === 'bean-culture');
+}
+
 async function ensureQuoteSystem(siteId, classification) {
   const admin = getAdmin();
   let qs = await getQuoteSystemForSite(siteId);
@@ -59,7 +63,7 @@ async function insertConfigVersion(quoteSystemId, config, userId, label) {
   return data;
 }
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   const user = await requireUser(req);
   if (!user) return json(res, 401, { ok: false, error: 'auth' });
 
@@ -137,12 +141,9 @@ module.exports = async function handler(req, res) {
           active_config_version_id: version.id
         });
       } else {
-      const shouldProvisionBeanCulture = isSuper && (
-        body.provision === 'bean-culture' ||
-        (body.enabled && siteSlug === BEAN_CULTURE_SLUG)
-      );
+      const wantsBeanCultureProvision = shouldProvisionBeanCulture(body, isSuper);
 
-      if (shouldProvisionBeanCulture) {
+      if (wantsBeanCultureProvision) {
         const result = await provisionBeanCultureConfig(quoteSystem.id, user.id);
         quoteSystem = result.quoteSystem;
       } else {
@@ -193,3 +194,6 @@ module.exports = async function handler(req, res) {
     return json(res, 500, { ok: false, error: 'server_error', message: msg });
   }
 };
+
+handler.shouldProvisionBeanCulture = shouldProvisionBeanCulture;
+module.exports = handler;
