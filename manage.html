@@ -6209,7 +6209,7 @@ function heroCtaCard(c){
       var html='<div class="card"><h2>Online Quote System</h2>'
         +'<p class="lede">Verified quote wizard with email and SMS gating. Pricing is calculated server-side — never in page source until verification.</p>'
         +'<div class="hint" style="margin:12px 0;padding:14px;border-radius:12px;background:var(--panel-soft);">'
-        +'<strong>Customer journey:</strong> (1) Complete wizard → (2) <em>Email code</em> unlocks total (summary email sent) → (3) <em>SMS code</em> unlocks full breakdown → (4) <strong>Portal link + PDF attached</strong> emailed after SMS. Requires <code>RESEND_API_KEY</code> on Vercel.'
+        +'<strong>Customer journey:</strong> (1) Complete wizard → (2) <em>Email code auto-sent</em> unlocks total (returning emails skip re-verify) → (3) <em>SMS code</em> unlocks full breakdown → (4) <strong>Portal link + PDF attached</strong> emailed after SMS.'
         +'</div>';
       if(notConfigured){
         html+='<div class="hint" style="margin:12px 0;padding:14px;border-radius:12px;background:var(--panel-soft);">No quote system binding yet. '

@@ -61,7 +61,9 @@
       session: null,
       portalUrl: null,
       pdfUrl: null,
-      emailCodeSent: false
+      emailCodeSent: false,
+      emailWhitelisted: false,
+      emailSummarySent: false
     };
   }
 
@@ -167,19 +169,21 @@
     if (!q) return '';
     var html = '<div class="lp-oq-quote"><h3>Your quote</h3>';
     if (q.level === 'public_progress') {
-      html += '<p>' + esc(q.message || 'Verify your email to see your total.') + '</p>' +
-        '<div class="lp-oq-verify"><button type="button" class="lp-oq-btn" data-act="send-email">' +
-        (this.state.emailCodeSent ? 'Resend verification code' : 'Email me a verification code') +
-        '</button></div>';
+      html += '<p>' + esc(q.message || 'Verify your email to see your total.') + '</p>';
       if (this.state.emailCodeSent) {
-        html += '<p class="lp-oq-muted" style="font-size:13px;margin:8px 0 0">Check your inbox for a 6-digit code.</p>';
+        html += '<p class="lp-oq-muted" style="font-size:13px;margin:0 0 12px">We sent a 6-digit code to your email. Enter it below.</p>';
       }
       html += '<label class="lp-oq-field"><span>Email verification code</span>' +
         '<input data-field="emailCode" placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" value="' + esc(this.state.emailCode || '') + '"></label>' +
         '<button type="button" class="lp-oq-btn" data-act="confirm-email" style="margin-top:10px">Confirm email code</button>';
+      if (this.state.emailCodeSent) {
+        html += '<p style="margin-top:10px"><button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-act="send-email" style="font-size:13px;padding:6px 12px">Resend code</button></p>';
+      }
     } else if (q.level === 'email_verified_total') {
       html += '<p class="lp-oq-total">' + esc(q.totalFormatted || '') + ' <small>inc GST</small></p>' +
-        (this.state.emailSummarySent ? '<p class="lp-oq-muted" style="font-size:13px">A summary was emailed to you. Complete SMS below for the full PDF.</p>' : '') +
+        (this.state.emailWhitelisted
+          ? '<p class="lp-oq-muted" style="font-size:13px">Welcome back — your email is already verified.</p>'
+          : (this.state.emailSummarySent ? '<p class="lp-oq-muted" style="font-size:13px">A summary was emailed to you. Complete SMS below for the full PDF.</p>' : '')) +
         '<p>' + esc(q.message || '') + '</p>' +
         '<div class="lp-oq-verify"><button type="button" class="lp-oq-btn" data-act="send-sms">Text me a code for full breakdown</button></div>' +
         '<label class="lp-oq-field"><span>SMS verification code</span><input data-field="smsCode" placeholder="6-digit code"></label>' +
@@ -248,6 +252,15 @@
     });
   };
 
+  OnlineQuoteWidget.prototype.syncContactFromDom = function() {
+    this.el.querySelectorAll('[data-field^="contact."]').forEach(function(inp) {
+      var key = inp.getAttribute('data-field').slice(8);
+      var v = inp.value;
+      if (key === 'phone') this.state.contact.phone = normaliseAuPhone(v);
+      else this.state.contact[key] = v;
+    }, this);
+  };
+
   OnlineQuoteWidget.prototype.ensureSession = function() {
     var self = this;
     var inputs = {
@@ -278,6 +291,12 @@
 
   OnlineQuoteWidget.prototype.calculate = function() {
     var self = this;
+    this.syncContactFromDom();
+    var email = (this.state.contact.email || '').trim();
+    if (!email || email.indexOf('@') < 3) {
+      alert('Enter a valid email address to receive your quote.');
+      return;
+    }
     this.el.querySelector('.lp-oq-body').innerHTML = '<p class="lp-oq-muted">Calculating…</p>';
     this.ensureSession().then(function() {
       return post('/calculate', {
@@ -295,6 +314,13 @@
       if (!res.ok) throw new Error(res.error || 'calculate');
       self.state.quote = res.quote;
       self.state.session = res.session;
+      if (res.emailVerification) {
+        if (res.emailVerification.sent) self.state.emailCodeSent = true;
+        if (res.emailVerification.whitelisted) {
+          self.state.emailWhitelisted = true;
+          self.state.emailSummarySent = true;
+        }
+      }
       self.render();
     }).catch(function() {
       self.el.querySelector('.lp-oq-body').innerHTML = '<p class="lp-oq-error">Could not calculate quote. Please try again.</p>';

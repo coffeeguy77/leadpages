@@ -22,6 +22,9 @@ const { serializeQuoteResult, serializeSession } = require('../../lib/quote-syst
 const { RESPONSE_LEVEL, SESSION_STATUS } = require('../../lib/quote-system/constants');
 const { createQuoteLead } = require('../../lib/quote-system/crm');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
+const { normalizeEmail, isEmailWhitelisted } = require('../../lib/quote-system/email-whitelist');
+const { ensureEmailVerificationSent } = require('../../lib/quote-system/verify');
+const { sendQuoteSummaryEmail } = require('../../lib/quote-system/email-verify-flow');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'method_not_allowed' });
@@ -52,9 +55,43 @@ module.exports = async function handler(req, res) {
     }
 
     const progress = Object.assign({}, session.progress || {}, body.inputs || {});
-    const calc = calculateQuote(configVersion.config, progress);
+    let workingSession = await updateSession(session.id, {
+      progress: progress,
+      status: SESSION_STATUS.SUBMITTED
+    });
 
-    const level = verificationLevelForSession(session);
+    let emailVerification = { required: false, sent: false, whitelisted: false };
+
+    if (workingSession.contact_email && !workingSession.email_verified_at) {
+      const email = normalizeEmail(workingSession.contact_email);
+      emailVerification.required = true;
+
+      if (await isEmailWhitelisted(workingSession.site_id, email)) {
+        workingSession = await updateSession(workingSession.id, {
+          contact_email: email,
+          email_verified_at: new Date().toISOString()
+        });
+        emailVerification.whitelisted = true;
+        try {
+          await sendQuoteSummaryEmail(workingSession);
+        } catch (mailErr) {
+          console.warn('quote-system calculate whitelisted summary:', mailErr && mailErr.message);
+        }
+      } else {
+        const quoteSystemForMail = await getQuoteSystemForSite(workingSession.site_id);
+        const configForMail = quoteSystemForMail ? await getActiveConfig(quoteSystemForMail) : null;
+        const businessName = configForMail &&
+          configForMail.config &&
+          configForMail.config.business &&
+          configForMail.config.business.name;
+        const mail = await ensureEmailVerificationSent(workingSession.id, email, businessName);
+        emailVerification.sent = !!mail.sent;
+        emailVerification.reason = mail.reason || null;
+      }
+    }
+
+    const level = verificationLevelForSession(workingSession);
+    const calc = calculateQuote(configVersion.config, progress);
     const versionNumber = await nextQuoteVersionNumber(session.id);
 
     await insertQuoteVersion({
@@ -70,10 +107,7 @@ module.exports = async function handler(req, res) {
       verification_level: level
     });
 
-    const updatedSession = await updateSession(session.id, {
-      progress: progress,
-      status: SESSION_STATUS.SUBMITTED
-    });
+    const updatedSession = workingSession;
 
     if (!updatedSession.lead_id && updatedSession.contact_email && level !== RESPONSE_LEVEL.PUBLIC_PROGRESS) {
       const admin = require('../../lib/quote-system/supabase').getAdmin();
@@ -98,7 +132,8 @@ module.exports = async function handler(req, res) {
     return json(res, 200, {
       ok: true,
       quote: serializeQuoteResult(calc, level),
-      session: serializeSession(updatedSession, level)
+      session: serializeSession(updatedSession, level),
+      emailVerification: emailVerification
     });
   } catch (e) {
     console.error('quote-system/calculate:', e && e.message);

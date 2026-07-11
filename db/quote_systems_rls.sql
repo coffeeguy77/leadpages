@@ -8,6 +8,7 @@ alter table quote_system_config_versions enable row level security;
 alter table quote_sessions enable row level security;
 alter table quote_versions enable row level security;
 alter table quote_verifications enable row level security;
+alter table quote_verified_emails enable row level security;
 
 -- quote_systems: site owners / partners / super admins may read their binding row.
 -- Writes go through service-role APIs only (no insert/update policies for anon).

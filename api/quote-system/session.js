@@ -16,6 +16,7 @@ const { createSession, updateSession } = require('../../lib/quote-system/session
 const { serializeSession } = require('../../lib/quote-system/serializers');
 const { RESPONSE_LEVEL } = require('../../lib/quote-system/constants');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
+const { normalizeEmail, isEmailWhitelisted } = require('../../lib/quote-system/email-whitelist');
 const { normaliseAuPhone } = require('../../lib/quote-system/phone');
 
 module.exports = async function handler(req, res) {
@@ -69,7 +70,13 @@ module.exports = async function handler(req, res) {
         }
         const contact = body.contact || {};
         if (contact.name) patch.contact_name = clean(contact.name, 120);
-        if (contact.email) patch.contact_email = clean(contact.email, 160);
+        if (contact.email) {
+          const email = normalizeEmail(clean(contact.email, 160));
+          patch.contact_email = email;
+          if (!existing.session.email_verified_at && await isEmailWhitelisted(existing.session.site_id, email)) {
+            patch.email_verified_at = new Date().toISOString();
+          }
+        }
         if (contact.phone) patch.contact_phone = clean(normaliseAuPhone(contact.phone), 60);
 
         const updated = await updateSession(existing.session.id, patch);
