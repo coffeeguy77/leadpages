@@ -43,6 +43,16 @@
     return normaliseAuPhone(this.state.contact.phone);
   }
 
+  function iconHtml(name) {
+    if (!name || !window.LP_ICONS || !window.LP_ICONS[name]) return '';
+    return '<span class="lp-oq-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + window.LP_ICONS[name] + '</svg></span>';
+  }
+
+  function layoutClass(shell) {
+    var layout = (shell && shell.wizard && shell.wizard.layout) || 'cards';
+    return ' lp-oq-layout-' + layout;
+  }
+
   function OnlineQuoteWidget(el) {
     this.el = el;
     this.slug = (el.getAttribute('data-slug') || '').trim().toLowerCase();
@@ -90,14 +100,19 @@
     return (this.shell.wizard && this.shell.wizard.steps) || ['equipment', 'beverages', 'addons', 'contact'];
   };
 
+  OnlineQuoteWidget.prototype.stepLabel = function(key) {
+    var labels = (this.shell.wizard && this.shell.wizard.stepLabels) || {};
+    return labels[key] || key;
+  };
+
   OnlineQuoteWidget.prototype.render = function() {
     var steps = this.steps();
     var stepKey = steps[this.state.step] || 'contact';
     var biz = (this.shell.business && this.shell.business.name) || 'Get your quote';
-    var html = '<div class="lp-oq-card">' +
+    var html = '<div class="lp-oq-card' + layoutClass(this.shell) + '">' +
       '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc(biz) + '</h2>' +
       '<div class="lp-oq-steps">' + steps.map(function(s, i) {
-        return '<span class="lp-oq-step' + (i === this.state.step ? ' is-active' : (i < this.state.step ? ' is-done' : '')) + '">' + esc(s) + '</span>';
+        return '<span class="lp-oq-step' + (i === this.state.step ? ' is-active' : (i < this.state.step ? ' is-done' : '')) + '">' + esc(this.stepLabel(s)) + '</span>';
       }, this).join('') + '</div></div>' +
       '<div class="lp-oq-body">' + this.renderStep(stepKey) + '</div>' +
       '<div class="lp-oq-foot">' + this.renderFooter(stepKey, steps) + '</div>' +
@@ -115,6 +130,7 @@
         products.map(function(p) {
           var sel = s.productId === p.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="productId" data-val="' + esc(p.id) + '">' +
+            iconHtml(p.icon) +
             '<strong>' + esc(p.label) + '</strong>' +
             (p.description ? '<span>' + esc(p.description) + '</span>' : '') +
             '</button>';
@@ -130,6 +146,7 @@
         bevs.map(function(b) {
           var sel = s.beverageId === b.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="beverageId" data-val="' + esc(b.id) + '">' +
+            iconHtml(b.icon) +
             '<strong>' + esc(b.label) + '</strong>' +
             (b.description ? '<span>' + esc(b.description) + '</span>' : '') +
             '</button>';
@@ -142,6 +159,7 @@
         addons.map(function(a) {
           var on = s.addonIds.indexOf(a.id) >= 0 ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice lp-oq-multi' + on + '" data-addon="' + esc(a.id) + '">' +
+            iconHtml(a.icon) +
             '<strong>' + esc(a.label) + '</strong>' +
             (a.description ? '<span>' + esc(a.description) + '</span>' : '') +
             '</button>';
@@ -435,6 +453,10 @@
       '.lp-oq-step.is-active{background:var(--pipe,#1f7a63);color:#fff}',
       '.lp-oq-step.is-done{background:color-mix(in srgb,var(--pipe,#1f7a63) 20%,#fff);color:var(--pipe,#1f7a63)}',
       '.lp-oq-choice{display:block;width:100%;text-align:left;margin:0 0 8px;padding:12px 14px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;cursor:pointer}',
+      '.lp-oq-choice .lp-oq-ic{display:inline-flex;vertical-align:middle;margin-right:8px;color:var(--pipe,#1f7a63)}',
+      '.lp-oq-choice .lp-oq-ic svg{width:18px;height:18px}',
+      '.lp-oq-layout-list .lp-oq-choice{padding:10px 12px}',
+      '.lp-oq-layout-split .lp-oq-body{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;align-items:start}',
       '.lp-oq-choice.is-selected{border-color:var(--pipe,#1f7a63);box-shadow:0 0 0 2px color-mix(in srgb,var(--pipe,#1f7a63) 25%,transparent)}',
       '.lp-oq-choice span{display:block;font-size:13px;color:#6b7280;margin-top:4px}',
       '.lp-oq-field{display:block;margin:10px 0 0}',

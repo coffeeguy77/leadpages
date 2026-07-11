@@ -117,7 +117,7 @@ module.exports = async function handler(req, res) {
         .maybeSingle();
       if (siteRow) {
         try {
-          const leadId = await createQuoteLead(siteRow, updatedSession, calc);
+          const leadId = await createQuoteLead(siteRow, updatedSession, calc, configVersion.config);
           await linkLeadToSession(updatedSession, leadId);
         } catch (leadErr) {
           console.error('quote lead create:', leadErr && leadErr.message);
