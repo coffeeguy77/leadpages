@@ -4890,6 +4890,31 @@ function heroCtaCard(c){
   /* ============================ CAPTURED LEADS (CRM) ============================ */
   var LPLEADS={ siteId:null, rows:[], open:null, loading:false, timeline:false };
   var LEAD_STATUS=[['new','New'],['contacted','Contacted'],['won','Won'],['lost','Lost']];
+  var QUOTE_DETAIL_LABELS={
+    productLabel:'Equipment',hours:'Duration (hrs)',guestCount:'Guests',beverageLabel:'Beverage package',
+    addonLabels:'Add-ons',travelLabel:'Travel zone',totalFormatted:'Total',breakdownSummary:'Breakdown',
+    emailVerified:'Email verified',smsVerified:'SMS verified'
+  };
+
+  function lpQuoteLeadText(l){
+    var det=(l&&l.details&&typeof l.details==='object')?l.details:{};
+    if(l&&l.message) return String(l.message);
+    var parts=[];
+    if(det.totalFormatted) parts.push('Total: '+det.totalFormatted);
+    if(det.productLabel||det.productId) parts.push('Equipment: '+(det.productLabel||det.productId));
+    if(det.hours!=null) parts.push('Duration: '+det.hours+' hrs');
+    if(det.guestCount!=null) parts.push('Guests: '+det.guestCount);
+    if(det.beverageLabel||det.beverageId) parts.push('Beverage: '+(det.beverageLabel||det.beverageId));
+    if(det.addonLabels&&det.addonLabels.length) parts.push('Add-ons: '+det.addonLabels.join(', '));
+    else if(det.addonIds&&det.addonIds.length) parts.push('Add-ons: '+det.addonIds.join(', '));
+    if(det.travelLabel||det.travelZoneId) parts.push('Travel: '+(det.travelLabel||det.travelZoneId));
+    if(det.breakdownSummary) parts.push(det.breakdownSummary);
+    return parts.join('\n');
+  }
+
+  function lpQuoteLeadHtml(l){
+    return esc(lpQuoteLeadText(l)).replace(/\n/g,'<br>');
+  }
 
   async function renderLeadsCRM(){
     var el=document.getElementById('lp-leads'); if(!el) return;
@@ -4949,10 +4974,23 @@ function heroCtaCard(c){
     var body='';
     if(open){
       var lines=[];
-      if(det.job)    lines.push(['Job',det.job]);
-      if(det.suburb) lines.push(['Suburb',det.suburb]);
-      if(det.detail) lines.push(['Details',det.detail]);
-      Object.keys(det).forEach(function(k){ if(['job','suburb','detail'].indexOf(k)>=0)return; if(det[k]==null||det[k]==='')return; lines.push([k,det[k]]); });
+      if((l.kind||'')==='quote'){
+        var qtxt=lpQuoteLeadText(l);
+        if(qtxt) lines.push(['Quote details', qtxt]);
+        Object.keys(det).forEach(function(k){
+          if(['quoteSessionId','productId','beverageId','addonIds','travelZoneId','totalCents','breakdown'].indexOf(k)>=0) return;
+          if(det[k]==null||det[k]==='') return;
+          var val=det[k];
+          if(Array.isArray(val)) val=val.join(', ');
+          if(typeof val==='boolean') val=val?'Yes':'No';
+          lines.push([QUOTE_DETAIL_LABELS[k]||k, val]);
+        });
+      } else {
+        if(det.job)    lines.push(['Job',det.job]);
+        if(det.suburb) lines.push(['Suburb',det.suburb]);
+        if(det.detail) lines.push(['Details',det.detail]);
+        Object.keys(det).forEach(function(k){ if(['job','suburb','detail'].indexOf(k)>=0)return; if(det[k]==null||det[k]==='')return; lines.push([k,det[k]]); });
+      }
       var actions='';
       if(l.phone) actions+='<a class="ll-act" href="tel:'+esc(l.phone)+'">Call</a>';
       if(l.email) actions+='<a class="ll-act" href="mailto:'+esc(l.email)+'">Email</a>';
@@ -4960,7 +4998,7 @@ function heroCtaCard(c){
         return '<button type="button" class="ll-st'+(((l.status||'new')===s[0])?' on':'')+'" data-ll="status" data-id="'+esc(l.id)+'" data-v="'+s[0]+'">'+s[1]+'</button>';
       }).join('');
       body='<div class="ll-detail">'
-        +(lines.length?'<table class="ll-tbl">'+lines.map(function(x){return '<tr><td>'+esc(x[0])+'</td><td>'+esc(x[1])+'</td></tr>';}).join('')+'</table>':'<p class="ll-empty" style="margin:0 0 8px;">No extra details were provided.</p>')
+        +(lines.length?'<table class="ll-tbl">'+lines.map(function(x){return '<tr><td>'+esc(x[0])+'</td><td>'+esc(String(x[1])).replace(/\n/g,'<br>')+'</td></tr>';}).join('')+'</table>':'<p class="ll-empty" style="margin:0 0 8px;">No extra details were provided.</p>')
         +'<div class="ll-actbar">'+actions+'</div>'
         +'<div class="ll-statusbar">'+status+'</div>'
         +'</div>';
@@ -7365,7 +7403,7 @@ function heroCtaCard(c){
           var sub=esc(l.suburb||l.postcode||'');
           var date=l.created_at?new Date(l.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
           var isNew=l.created_at&&(Date.now()-new Date(l.created_at).getTime())<86400000*3;
-          var detail=esc(l.detail||l.other||'');
+          var detail=isQuote?lpQuoteLeadHtml(l):esc(l.detail||l.other||l.message||'');
           var email=esc(l.email||'');
           var rowId='dash-lead-'+l.id;
           return '<div class="lp-dash-row" style="overflow:hidden" id="'+rowId+'">'
