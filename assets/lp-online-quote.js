@@ -243,7 +243,7 @@
       if (!products.length) return '<p class="lp-oq-muted">No equipment configured.</p>';
       var choices = '';
       if (P && P.renderCartRows) {
-        choices = P.renderCartRows(s, this.shell, products, choiceHtml.bind(this));
+        choices = P.renderCartRows(s, this.shell, products, { esc: esc, iconHtml: iconHtml.bind(this) });
       } else {
         choices = products.map(function(p) {
           var sel = s.productId === p.id ? ' is-selected' : '';
@@ -585,7 +585,7 @@
     var layoutRules = (window.LPQuoteDisplay && window.LPQuoteDisplay.layoutCss)
       ? window.LPQuoteDisplay.layoutCss(brand) : '';
     css.textContent = [
-      '.lp-oq-card{font-family:system-ui,-apple-system,Segoe UI,sans-serif;border:1px solid color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor)));border-radius:16px;padding:20px;background:transparent;color:var(--ink, var(--text, inherit))}',
+      '.lp-oq-card{font-family:system-ui,-apple-system,Segoe UI,sans-serif;width:100%;max-width:100%;box-sizing:border-box;border:1px solid color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor)));border-radius:16px;padding:20px;background:transparent;color:var(--ink, var(--text, inherit))}',
       '.lp-oq-title{margin:0 0 8px;font-size:1.35rem;color:var(--ink, var(--text, inherit))}',
       '.lp-oq-steps{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}',
       '.lp-oq-step{font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));background:transparent;color:var(--ink-soft, var(--text-soft, inherit));text-transform:capitalize}',

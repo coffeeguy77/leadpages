@@ -239,7 +239,7 @@
       var prods = filter(shell.products, progress);
       var choices = '';
       if (P && P.renderCartRows) {
-        choices = P.renderCartRows(progress, shell, prods, function(item) { return self._choiceHtml(item); });
+        choices = P.renderCartRows(progress, shell, prods, { esc: esc, iconHtml: iconSvg });
       } else {
         choices = prods.map(function(p) {
           var sel = progress.productId === p.id ? ' is-selected' : '';
@@ -596,6 +596,8 @@
         + self._field('Baristas included', '<input type="number" min="1" max="10" data-oqb-path="products.' + i + '.baristasIncluded" value="' + esc(p.baristasIncluded != null ? p.baristasIncluded : 1) + '">')
         + self._field('Allow quantity', '<label class="oqb-check"><input type="checkbox" data-oqb-path="products.' + i + '.allowQuantity"' + (p.allowQuantity ? ' checked' : '') + '> Customer can order more than one</label>')
         + self._field('Extra barista', '<label class="oqb-check"><input type="checkbox" data-oqb-path="products.' + i + '.allowExtraBarista"' + (p.allowExtraBarista !== false ? ' checked' : '') + '> Allow second barista on this cart</label>')
+        + self._field('Badge (on image)', '<input type="text" data-oqb-path="products.' + i + '.badge" value="' + esc(p.badge || '') + '" placeholder="e.g. Mobile van">')
+        + self._field('Sub-text (under title)', '<input type="text" data-oqb-path="products.' + i + '.subtitle" value="' + esc(p.subtitle || '') + '" placeholder="e.g. Dual-group & onboard power">')
         + self._field('Description', '<textarea rows="2" data-oqb-path="products.' + i + '.description">' + esc(p.description || '') + '</textarea>')
         + '<input type="hidden" data-oqb-path="products.' + i + '.id" value="' + esc(p.id || '') + '">'
         + '<input type="hidden" data-oqb-path="products.' + i + '.type" value="' + esc(p.type || 'equipment') + '">'

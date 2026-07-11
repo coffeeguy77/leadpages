@@ -215,12 +215,16 @@
     return html;
   }
 
-  function renderProductCard(p, cart, cartIdx, choiceHtml) {
+  function renderProductCard(p, cart, cartIdx, helpers) {
     var isSel = cart && cart.productId === p.id;
     var qty = isSel && cart ? (cart.quantity || 1) : 1;
-    var html = '<div class="lp-oq-product' + (isSel ? ' is-selected' : '') + '" data-product-card="' + esc(p.id) + '">' +
+    var D = global.LPQuoteDisplay;
+    var inner = (D && D.equipmentCardHtml)
+      ? D.equipmentCardHtml(p, helpers || { esc: esc })
+      : '<strong>' + esc(p.label) + '</strong>';
+    var html = '<div class="lp-oq-product lp-oq-eq-card' + (isSel ? ' is-selected' : '') + '" data-product-card="' + esc(p.id) + '">' +
       '<button type="button" class="lp-oq-choice' + (isSel ? ' is-selected' : '') + '" data-equipment-pick="' + cartIdx + '" data-val="' + esc(p.id) + '">' +
-      choiceHtml(p) + '</button>';
+      inner + '</button>';
     if (p.allowQuantity) {
       html += '<label class="lp-oq-field lp-oq-product-qty"><span>Qty</span>' +
         '<input type="number" min="1" max="20" data-product-qty="' + cartIdx + '" data-val="' + esc(p.id) + '" value="' + esc(qty) + '"' +
@@ -230,7 +234,7 @@
     return html;
   }
 
-  function renderCartRows(state, shell, products, choiceHtml) {
+  function renderCartRows(state, shell, products, helpers) {
     state._shell = shell;
     if (!products || !products.length) return '<p class="lp-oq-muted">No equipment configured.</p>';
     var carts = ensureCarts(state, products);
@@ -244,7 +248,7 @@
       }
       html += '<div class="lp-oq-choices">';
       products.forEach(function(p) {
-        html += renderProductCard(p, cart, cartIdx, choiceHtml);
+        html += renderProductCard(p, cart, cartIdx, helpers);
       });
       html += '</div>';
       if (carts.length > 1) html += '</div>';
