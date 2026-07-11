@@ -229,6 +229,28 @@
   accent-color: var(--accent);
 }
 
+.oqb-sub {
+  margin: 18px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.oqb-tiers {
+  grid-column: 1 / -1;
+  padding: 12px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 24%, var(--line));
+  border-radius: 10px;
+}
+
+.oqb-tier-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 10px;
+}
+
 /* Money */
 .oqb-money { position: relative; }
 

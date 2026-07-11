@@ -561,6 +561,7 @@ function injectOnlineQuote(html, slug, cfg) {
     '</div></section>' +
     '<script src="/assets/lp-quote-wizard-logic.js" defer></script>' +
     '<script src="/assets/lp-quote-display.js" defer></script>' +
+    '<script src="/assets/lp-quote-planning.js" defer></script>' +
     '<script src="/assets/lp-online-quote.js" defer></script>';
   if (html.includes('<section data-sec="quote"')) {
     return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');

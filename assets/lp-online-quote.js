@@ -77,6 +77,10 @@
       productId: '',
       hours: 3,
       guestCount: 50,
+      unitCount: null,
+      labourPlanning: 'hours',
+      shifts: [],
+      carts: [],
       beverageId: '',
       addonIds: [],
       travelZoneId: '',
@@ -110,11 +114,18 @@
     });
   };
 
+  OnlineQuoteWidget.prototype.planning = function() {
+    return window.LPQuotePlanning || null;
+  };
+
   OnlineQuoteWidget.prototype.progress = function() {
+    var P = this.planning();
+    if (P && P.progressPayload) return P.progressPayload(this.state);
     return {
       productId: this.state.productId,
       hours: this.state.hours,
       guestCount: this.state.guestCount,
+      unitCount: this.state.unitCount,
       beverageId: this.state.beverageId,
       addonIds: this.state.addonIds,
       travelZoneId: this.state.travelZoneId
@@ -144,6 +155,8 @@
 
   OnlineQuoteWidget.prototype.reconcileState = function() {
     var shell = this.shell || {};
+    var P = this.planning();
+    if (P && P.ensureCarts) P.ensureCarts(this.state, shell.products || []);
     var bevs = this.filterItems(shell.beverages);
     if (this.state.beverageId && !bevs.some(function(b) { return b.id === this.state.beverageId; }, this)) {
       this.state.beverageId = '';
@@ -186,23 +199,35 @@
 
   OnlineQuoteWidget.prototype.renderStep = function(key) {
     var s = this.state;
+    var P = this.planning();
     if (key === 'equipment' || key === 'products' || key === 'event') {
       var products = this.filterItems(this.shell.products || []);
-      return '<p class="lp-oq-intro">Choose your setup.</p>' +
-        products.map(function(p) {
+      if (!products.length) return '<p class="lp-oq-muted">No equipment configured.</p>';
+      var html = '<p class="lp-oq-intro">Choose your setup.</p>';
+      if (P && P.renderCartRows) {
+        html += P.renderCartRows(s, this.shell, products, choiceHtml.bind(this));
+      } else {
+        html += products.map(function(p) {
           var sel = s.productId === p.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="productId" data-val="' + esc(p.id) + '">' +
             choiceHtml(p) + '</button>';
-        }).join('') +
-        '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
-        '<input type="number" min="1" max="24" data-field="hours" value="' + esc(s.hours) + '"></label>';
+        }).join('');
+      }
+      if (P && P.renderLabourPlanning) html += P.renderLabourPlanning(s, this.shell);
+      else {
+        html += '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
+          '<input type="number" min="1" max="24" data-field="hours" value="' + esc(s.hours) + '"></label>';
+      }
+      return html;
     }
     if (key === 'beverages') {
       var bevs = this.filterItems(this.shell.beverages || []);
       if (!bevs.length) return '<p class="lp-oq-muted">No packages for this selection.</p>';
-      return '<p class="lp-oq-intro">Guest count and beverage package.</p>' +
-        '<label class="lp-oq-field"><span>Expected guests</span>' +
-        '<input type="number" min="1" max="5000" data-field="guestCount" value="' + esc(s.guestCount) + '"></label>' +
+      var qtyField = (P && P.renderPackageQty)
+        ? P.renderPackageQty(s, this.shell)
+        : '<label class="lp-oq-field"><span>Expected guests</span>' +
+          '<input type="number" min="1" max="5000" data-field="guestCount" value="' + esc(s.guestCount) + '"></label>';
+      return '<p class="lp-oq-intro">Guest count and beverage package.</p>' + qtyField +
         bevs.map(function(b) {
           var sel = s.beverageId === b.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="beverageId" data-val="' + esc(b.id) + '">' +
@@ -292,14 +317,19 @@
 
   OnlineQuoteWidget.prototype.wire = function(stepKey) {
     var self = this;
+    var P = this.planning();
+    var products = this.filterItems(this.shell.products || []);
     this.el.querySelectorAll('[data-pick]').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var key = btn.getAttribute('data-pick');
         self.state[key] = btn.getAttribute('data-val');
+        if (P && P.ensureCarts) P.ensureCarts(self.state, products);
         if (key === 'productId') self.reconcileState();
         self.render();
       });
     });
+    if (P && P.wireLabourPlanning) P.wireLabourPlanning(this.el, this.state, this.shell, function() { self.render(); });
+    if (P && P.wireCartRows) P.wireCartRows(this.el, this.state, this.shell, products, function() { self.reconcileState(); self.render(); });
     this.el.querySelectorAll('[data-addon]').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var id = btn.getAttribute('data-addon');
@@ -316,7 +346,7 @@
         if (f.indexOf('contact.') === 0) {
           var key = f.slice(8);
           self.state.contact[key] = key === 'phone' ? normaliseAuPhone(v) : v;
-        } else if (f === 'hours' || f === 'guestCount') self.state[f] = parseInt(v, 10) || 0;
+        } else if (f === 'hours' || f === 'guestCount' || f === 'unitCount') self.state[f] = parseInt(v, 10) || 0;
         else self.state[f] = v;
       });
     });
@@ -345,14 +375,7 @@
 
   OnlineQuoteWidget.prototype.ensureSession = function() {
     var self = this;
-    var inputs = {
-      productId: this.state.productId,
-      hours: this.state.hours,
-      guestCount: this.state.guestCount,
-      beverageId: this.state.beverageId,
-      addonIds: this.state.addonIds,
-      travelZoneId: this.state.travelZoneId
-    };
+    var inputs = this.progress();
     var body = {
       slug: this.slug,
       progress: inputs,
@@ -383,14 +406,7 @@
     this.ensureSession().then(function() {
       return post('/calculate', {
         token: self.token,
-        inputs: {
-          productId: self.state.productId,
-          hours: self.state.hours,
-          guestCount: self.state.guestCount,
-          beverageId: self.state.beverageId,
-          addonIds: self.state.addonIds,
-          travelZoneId: self.state.travelZoneId
-        }
+        inputs: self.progress()
       });
     }).then(function(res) {
       if (!res.ok) throw new Error(res.error || 'calculate');
@@ -537,7 +553,14 @@
       '.lp-oq-lines li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid color-mix(in srgb, var(--ink-soft, var(--text-soft, currentColor)) 25%, transparent);font-size:14px;color:var(--ink, var(--text, inherit))}',
       '.lp-oq-muted{color:var(--ink-soft, var(--text-soft, inherit))}',
       '.lp-oq-error{color:var(--danger, #b42318)}',
-      '.lp-oq-loading{color:var(--ink-soft, var(--text-soft, inherit))}'
+      '.lp-oq-loading{color:var(--ink-soft, var(--text-soft, inherit))}',
+      '.lp-oq-plan{border:1px solid color-mix(in srgb,' + brand + ' 18%, var(--line, var(--border, currentColor)));border-radius:12px;padding:12px;margin-top:12px}',
+      '.lp-oq-plan legend{font-size:12px;font-weight:600;padding:0 4px}',
+      '.lp-oq-radio{display:inline-flex;align-items:center;gap:6px;margin:0 12px 8px 0;font-size:13px}',
+      '.lp-oq-check{display:flex;align-items:center;gap:8px;margin:10px 0 0;font-size:13px}',
+      '.lp-oq-shift,.lp-oq-cart{border:1px dashed color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));border-radius:10px;padding:10px;margin:10px 0}',
+      '.lp-oq-cart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}',
+      '.lp-oq-shift-remove,.lp-oq-cart-remove{font-size:12px;padding:4px 10px}'
     ].join('');
     document.head.appendChild(css);
   }
