@@ -6203,10 +6203,10 @@ function heroCtaCard(c){
   }
   function _oqEditorBlock(admin, isSuper, slug){
     if(!_oqCanEditConfig(admin, isSuper)) return '';
-    return '<div class="card" style="margin-top:18px;border:1px solid var(--line);" id="oq-builder-card">'
+    return '<div class="card oqb-card-wrap" id="oq-builder-card">'
       +'<div class="oqb-split-wrap"><div id="oq-builder-root" class="oqb-editor-host"></div>'
       +'<div id="oq-preview-root" class="oqb-preview-host"></div></div>'
-      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">'
+      +'<div class="oqb-savebar">'
       +'<button type="button" class="btn" id="oq-save-config">Save quote builder</button>'
       +'<span id="oq-save-msg" class="hint"></span></div></div>';
   }
