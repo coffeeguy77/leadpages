@@ -92,7 +92,7 @@
     this.root = root;
     this.previewRoot = (options && options.previewRoot) || null;
     this.config = normalizeConfig(options && options.config);
-    this.tab = 'overview';
+    this.tab = (options && options.initialTab) || 'wizard';
     this.showJson = false;
     this.previewProgress = { productId: '', hours: 3, guestCount: 50, beverageId: '', addonIds: [], travelZoneId: '' };
     this.previewStep = 0;
@@ -249,6 +249,80 @@
       + '</div>';
   };
 
+  QuoteBuilder.prototype._stepCatalogMap = function() {
+    var catalog = {};
+    STEP_CATALOG.forEach(function(s) { catalog[s.id] = s; });
+    return catalog;
+  };
+
+  QuoteBuilder.prototype._editableSteps = function() {
+    var w = this.config.wizard || {};
+    return (wl().normalizeWizardSteps ? wl().normalizeWizardSteps(w.steps || []) : (w.steps || []))
+      .filter(function(s) { return s !== 'contact'; });
+  };
+
+  QuoteBuilder.prototype._renderStepRows = function() {
+    var self = this;
+    var steps = this._editableSteps();
+    var labels = (this.config.wizard && this.config.wizard.stepLabels) || {};
+    var catalog = this._stepCatalogMap();
+
+    var rows = steps.map(function(stepId, idx) {
+      var meta = catalog[stepId] || { id: stepId, label: stepId, icon: 'package' };
+      var condVal = self._stepConditionValue(stepId);
+      var condOpts = '<option value="">Always show</option><option value="any"' + (condVal === 'any' ? ' selected' : '') + '>When any product selected</option>' +
+        (self.config.products || []).map(function(p) {
+          return '<option value="product:' + esc(p.id) + '"' + (condVal === 'product:' + p.id ? ' selected' : '') + '>When ' + esc(p.label) + '</option>';
+        }).join('');
+      return '<div class="oqb-step-row is-on" draggable="true" data-oqb-step-id="' + esc(stepId) + '" data-oqb-step-idx="' + idx + '">'
+        + '<span class="oqb-drag" title="Drag to reorder" aria-hidden="true">⠿</span>'
+        + '<span class="oqb-step-num">' + (idx + 1) + '</span>'
+        + iconSvg(meta.icon)
+        + '<span class="oqb-step-type">' + esc(meta.label) + '</span>'
+        + '<input type="text" class="oqb-step-label" placeholder="Customer-facing label" data-oqb-step-label="' + esc(stepId) + '" value="' + esc(labels[stepId] || meta.label) + '" aria-label="Label for ' + esc(meta.label) + ' step">'
+        + '<div class="oqb-step-cond"><select data-oqb-step-cond="' + esc(stepId) + '" aria-label="When to show ' + esc(meta.label) + '">' + condOpts + '</select></div>'
+        + '<div class="oqb-step-tools">'
+        + (idx > 0 ? '<button type="button" class="oqb-iconbtn" data-oqb-step-move="up" data-oqb-step-id="' + esc(stepId) + '" title="Move up">↑</button>' : '')
+        + (idx < steps.length - 1 ? '<button type="button" class="oqb-iconbtn" data-oqb-step-move="down" data-oqb-step-id="' + esc(stepId) + '" title="Move down">↓</button>' : '')
+        + '<button type="button" class="oqb-iconbtn oqb-danger" data-oqb-step-remove="' + esc(stepId) + '" title="Remove step">×</button>'
+        + '</div></div>';
+    }).join('');
+
+    var contactMeta = catalog.contact || { label: 'Contact details', icon: 'mail' };
+    var contactRow = '<div class="oqb-step-row is-locked" data-oqb-step-locked="contact">'
+      + '<span class="oqb-step-num">✓</span>'
+      + iconSvg(contactMeta.icon)
+      + '<span class="oqb-step-type">' + esc(contactMeta.label) + '</span>'
+      + '<input type="text" class="oqb-step-label" placeholder="Customer-facing label" data-oqb-step-label="contact" value="' + esc(labels.contact || contactMeta.label) + '" aria-label="Contact step label">'
+      + '<span class="oqb-step-lock">Always last · cannot remove</span>'
+      + '</div>';
+
+    return rows + contactRow;
+  };
+
+  QuoteBuilder.prototype._renderStepActions = function() {
+    var steps = this._editableSteps();
+    var inactive = STEP_CATALOG.filter(function(s) {
+      return s.id !== 'contact' && steps.indexOf(s.id) < 0;
+    });
+    if (!inactive.length) return '<p class="oqb-hint">All step types are in your flow.</p>';
+    return inactive.map(function(s) {
+      return '<button type="button" class="btn ghost oqb-btn-sm" data-oqb-add-step="' + s.id + '">+ Add ' + esc(s.label) + '</button>';
+    }).join(' ');
+  };
+
+  QuoteBuilder.prototype._moveWizardStep = function(stepId, dir) {
+    var steps = this._editableSteps();
+    var idx = steps.indexOf(stepId);
+    if (idx < 0) return;
+    var j = dir === 'up' ? idx - 1 : idx + 1;
+    if (j < 0 || j >= steps.length) return;
+    var tmp = steps[idx];
+    steps[idx] = steps[j];
+    steps[j] = tmp;
+    this.config.wizard.steps = steps.concat(['contact']);
+  };
+
   QuoteBuilder.prototype._renderOverview = function() {
     var c = this.config;
     var b = c.business || {};
@@ -257,13 +331,19 @@
       + this._field('Tagline', '<input type="text" data-oqb-path="business.tagline" value="' + esc(b.tagline || '') + '">')
       + this._field('GST registered', '<label class="oqb-check"><input type="checkbox" data-oqb-path="business.gstRegistered"' + (b.gstRegistered !== false ? ' checked' : '') + '> Prices include 10% GST on quotes</label>')
       + '</div>'
+      + '<div class="oqb-section oqb-journey"><div class="oqb-section-head">'
+      + '<h4>Customer journey — wizard steps</h4>'
+      + '<button type="button" class="btn ghost oqb-btn-sm" data-oqb-tab="wizard">Layout &amp; conditions</button>'
+      + '</div>'
+      + '<p class="oqb-hint" style="margin-top:0">Drag to reorder, edit labels, set visibility rules, or remove steps. Contact is always the final step.</p>'
+      + '<div class="oqb-steps" data-oqb-sortable="1">' + this._renderStepRows() + '</div>'
+      + '<div class="oqb-step-actions">' + this._renderStepActions() + '</div></div>'
       + '<div class="oqb-summary">'
       + '<div class="oqb-stat"><b>' + (c.products || []).length + '</b><span>Products</span></div>'
       + '<div class="oqb-stat"><b>' + (c.beverages || []).length + '</b><span>Packages</span></div>'
       + '<div class="oqb-stat"><b>' + (c.addons || []).length + '</b><span>Add-ons</span></div>'
-      + '<div class="oqb-stat"><b>' + ((c.wizard && c.wizard.steps) || []).length + '</b><span>Wizard steps</span></div>'
-      + '</div>'
-      + '<p class="oqb-hint">Use the tabs above to add/remove options, change prices, pick icons and tune the customer journey.</p>';
+      + '<div class="oqb-stat"><b>' + this._editableSteps().length + 1 + '</b><span>Wizard steps</span></div>'
+      + '</div>';
   };
 
   QuoteBuilder.prototype._stepConditionValue = function(stepId) {
@@ -310,33 +390,8 @@
   };
 
   QuoteBuilder.prototype._renderWizard = function() {
-    var self = this;
     var w = this.config.wizard || {};
-    var steps = (wl().normalizeWizardSteps ? wl().normalizeWizardSteps(w.steps || []) : (w.steps || [])).filter(function(s) { return s !== 'contact'; });
     var layout = w.layout || 'cards';
-    var labels = w.stepLabels || {};
-    var catalog = {};
-    STEP_CATALOG.forEach(function(s) { catalog[s.id] = s; });
-
-    var stepRows = steps.map(function(stepId, idx) {
-      var meta = catalog[stepId] || { id: stepId, label: stepId, icon: 'package' };
-      var condVal = self._stepConditionValue(stepId);
-      var condOpts = '<option value="">Always show</option><option value="any"' + (condVal === 'any' ? ' selected' : '') + '>When any product selected</option>' +
-        (self.config.products || []).map(function(p) {
-          return '<option value="product:' + esc(p.id) + '"' + (condVal === 'product:' + p.id ? ' selected' : '') + '>When ' + esc(p.label) + '</option>';
-        }).join('');
-      return '<div class="oqb-step-row is-on" draggable="true" data-oqb-step-id="' + esc(stepId) + '" data-oqb-step-idx="' + idx + '">'
-        + '<span class="oqb-drag" title="Drag to reorder">⠿</span>'
-        + iconSvg(meta.icon) + '<span style="font-weight:600;min-width:100px">' + esc(meta.label) + '</span>'
-        + '<input type="text" class="oqb-step-label" placeholder="Wizard label" data-oqb-step-label="' + esc(stepId) + '" value="' + esc(labels[stepId] || meta.label) + '">'
-        + '<div class="oqb-step-cond"><select data-oqb-step-cond="' + esc(stepId) + '">' + condOpts + '</select></div>'
-        + '<button type="button" class="oqb-iconbtn oqb-danger" data-oqb-step-remove="' + esc(stepId) + '" title="Remove step">×</button>'
-        + '</div>';
-    }).join('');
-
-    var inactive = STEP_CATALOG.filter(function(s) {
-      return s.id !== 'contact' && steps.indexOf(s.id) < 0;
-    });
 
     return '<div class="oqb-section"><h4>Layout style</h4><div class="oqb-layouts">'
       + LAYOUTS.map(function(l) {
@@ -344,11 +399,10 @@
           + '<input type="radio" name="oqb-layout" value="' + l.id + '"' + (layout === l.id ? ' checked' : '') + '>'
           + '<strong>' + esc(l.label) + '</strong><span>' + esc(l.hint) + '</span></label>';
       }).join('') + '</div></div>'
-      + '<div class="oqb-section"><h4>Wizard steps</h4><p class="oqb-hint">Drag to reorder. Set conditions so steps only appear for certain products. Contact is always last.</p>'
-      + '<div class="oqb-steps" data-oqb-sortable="1">' + stepRows + '</div>'
-      + '<div class="oqb-step-actions">' + inactive.map(function(s) {
-        return '<button type="button" class="btn ghost oqb-btn-sm" data-oqb-add-step="' + s.id + '">+ ' + esc(s.label) + '</button>';
-      }).join(' ') + '</div></div>';
+      + '<div class="oqb-section"><h4>Wizard steps</h4>'
+      + '<p class="oqb-hint" style="margin-top:0">Each step is editable: rename the customer-facing label, drag or use arrows to reorder, set when it appears, or remove it. Contact is locked as the final step.</p>'
+      + '<div class="oqb-steps" data-oqb-sortable="1">' + this._renderStepRows() + '</div>'
+      + '<div class="oqb-step-actions">' + this._renderStepActions() + '</div></div>';
   };
 
   QuoteBuilder.prototype._itemCard = function(title, idx, path, fieldsHtml, moveUp, moveDown) {
@@ -513,6 +567,23 @@
       });
     });
 
+    this.root.querySelectorAll('[data-oqb-step-label]').forEach(function(inp) {
+      inp.addEventListener('input', function() {
+        var step = inp.getAttribute('data-oqb-step-label');
+        if (!self.config.wizard.stepLabels) self.config.wizard.stepLabels = {};
+        self.config.wizard.stepLabels[step] = inp.value;
+        self._refreshPreview();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-step-move]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        self._syncFromDom();
+        self._moveWizardStep(btn.getAttribute('data-oqb-step-id'), btn.getAttribute('data-oqb-step-move'));
+        self._render();
+      });
+    });
+
     var tj = this.root.querySelector('[data-oqb="toggle-json"]');
     if (tj) tj.addEventListener('click', function() {
       if (self.showJson) {
@@ -579,7 +650,7 @@
     var sortable = this.root.querySelector('[data-oqb-sortable]');
     if (sortable) {
       var dragIdx = null;
-      sortable.querySelectorAll('.oqb-step-row').forEach(function(row) {
+      sortable.querySelectorAll('.oqb-step-row[draggable="true"]').forEach(function(row) {
         row.addEventListener('dragstart', function(e) {
           dragIdx = parseInt(row.getAttribute('data-oqb-step-idx'), 10);
           row.classList.add('is-dragging');
@@ -587,7 +658,16 @@
         });
         row.addEventListener('dragend', function() {
           row.classList.remove('is-dragging');
+          sortable.querySelectorAll('.oqb-step-row').forEach(function(r) { r.classList.remove('is-dragover'); });
           dragIdx = null;
+        });
+        row.addEventListener('dragenter', function(e) {
+          e.preventDefault();
+          sortable.querySelectorAll('.oqb-step-row').forEach(function(r) { r.classList.remove('is-dragover'); });
+          row.classList.add('is-dragover');
+        });
+        row.addEventListener('dragleave', function() {
+          row.classList.remove('is-dragover');
         });
         row.addEventListener('dragover', function(e) {
           e.preventDefault();
@@ -595,12 +675,12 @@
         });
         row.addEventListener('drop', function(e) {
           e.preventDefault();
+          row.classList.remove('is-dragover');
           if (dragIdx == null) return;
           var dropIdx = parseInt(row.getAttribute('data-oqb-step-idx'), 10);
-          if (dragIdx === dropIdx) return;
+          if (isNaN(dropIdx) || dragIdx === dropIdx) return;
           self._syncFromDom();
-          var steps = (wl().normalizeWizardSteps ? wl().normalizeWizardSteps(self.config.wizard.steps) : (self.config.wizard.steps || []).slice())
-            .filter(function(s) { return s !== 'contact'; });
+          var steps = self._editableSteps();
           var moved = steps.splice(dragIdx, 1)[0];
           steps.splice(dropIdx, 0, moved);
           self.config.wizard.steps = steps.concat(['contact']);
