@@ -139,7 +139,7 @@
     this.showJson = false;
     this.previewProgress = {
       productId: '', hours: 3, guestCount: 50, unitCount: null,
-      labourPlanning: 'hours', shifts: [], carts: [],
+      labourPlanning: 'hours', eventConfigMode: 'same', shifts: [], carts: [],
       beverageId: '', addonIds: [], travelZoneId: ''
     };
     this.previewStep = 0;
@@ -233,8 +233,8 @@
       var Pe = global.LPQuotePlanning;
       var eventProds = filter(shell.products, progress);
       var eventFields = (Pe && Pe.renderLabourPlanning)
-        ? Pe.renderLabourPlanning(progress, shell)
-        : '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
+        ? Pe.renderLabourPlanning(progress, shell, eventProds)
+        : '<label class="lp-oq-field"><span>Barista 1 — hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
       var eventStaffing = (Pe && Pe.renderStaffing)
         ? Pe.renderStaffing(progress, shell, eventProds)
         : '';
@@ -258,8 +258,8 @@
       var eqFields = '';
       if (steps.indexOf('event') < 0) {
         eqFields = (P && P.renderLabourPlanning)
-          ? P.renderLabourPlanning(progress, shell)
-          : '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
+          ? P.renderLabourPlanning(progress, shell, prods)
+          : '<label class="lp-oq-field"><span>Barista 1 — hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
       }
       body = wrap({ intro: '<p class="lp-oq-intro">What equipment would you like to hire?</p>', choices: choices });
     } else if (stepKey === 'beverages') {
@@ -1231,7 +1231,7 @@
       P.wireLabourPlanning(root, this.previewProgress, shell, function() {
         self._reconcilePreviewSelections();
         self._refreshPreview();
-      });
+      }, products);
     }
     if (P && P.wireStaffing) {
       P.wireStaffing(root, this.previewProgress, shell, products, function() {
@@ -1270,7 +1270,8 @@
       inp.addEventListener('change', function() {
         var f = inp.getAttribute('data-prev-field');
         var v = parseInt(inp.value, 10) || 0;
-        self.previewProgress[f] = v;
+        if (f === 'hours' && P && P.setGlobalBarista1Hours) P.setGlobalBarista1Hours(self.previewProgress, v);
+        else self.previewProgress[f] = v;
         if (f === 'unitCount') self.previewProgress.guestCount = v;
         self._refreshPreview();
       });

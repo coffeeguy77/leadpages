@@ -99,6 +99,7 @@
       guestCount: 50,
       unitCount: null,
       labourPlanning: 'hours',
+      eventConfigMode: 'same',
       shifts: [],
       carts: [],
       beverageId: '',
@@ -226,8 +227,8 @@
     if (key === 'event') {
       var products = this.filterItems(this.shell.products || []);
       var fields = (P && P.renderLabourPlanning)
-        ? P.renderLabourPlanning(s, this.shell)
-        : '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
+        ? P.renderLabourPlanning(s, this.shell, products)
+        : '<label class="lp-oq-field"><span>Barista 1 — event duration (hours)</span>' +
           '<input type="number" min="1" max="48" data-field="hours" value="' + esc(s.hours) + '"></label>';
       var staffing = (P && P.renderStaffing)
         ? P.renderStaffing(s, this.shell, products)
@@ -254,8 +255,8 @@
       var fields = '';
       if (this.steps().indexOf('event') < 0) {
         fields = (P && P.renderLabourPlanning)
-          ? P.renderLabourPlanning(s, this.shell)
-          : '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
+          ? P.renderLabourPlanning(s, this.shell, products)
+          : '<label class="lp-oq-field"><span>Barista 1 — event duration (hours)</span>' +
             '<input type="number" min="1" max="48" data-field="hours" value="' + esc(s.hours) + '"></label>';
       }
       return wrap({
@@ -380,7 +381,7 @@
         self.render();
       });
     });
-    if (P && P.wireLabourPlanning) P.wireLabourPlanning(this.el, this.state, this.shell, function() { self.render(); });
+    if (P && P.wireLabourPlanning) P.wireLabourPlanning(this.el, this.state, this.shell, function() { self.render(); }, products);
     if (P && P.wireStaffing) P.wireStaffing(this.el, this.state, this.shell, products, function() { self.render(); });
     if (P && P.wireCartRows) P.wireCartRows(this.el, this.state, this.shell, products, function() { self.reconcileState(); self.render(); });
     this.el.querySelectorAll('[data-addon]').forEach(function(btn) {
@@ -399,7 +400,10 @@
         if (f.indexOf('contact.') === 0) {
           var key = f.slice(8);
           self.state.contact[key] = key === 'phone' ? normaliseAuPhone(v) : v;
-        } else if (f === 'hours' || f === 'guestCount' || f === 'unitCount') self.state[f] = parseInt(v, 10) || 0;
+        } else if (f === 'hours') {
+          if (P && P.setGlobalBarista1Hours) P.setGlobalBarista1Hours(self.state, v);
+          else self.state.hours = parseInt(v, 10) || 0;
+        } else if (f === 'guestCount' || f === 'unitCount') self.state[f] = parseInt(v, 10) || 0;
         else self.state[f] = v;
       });
     });

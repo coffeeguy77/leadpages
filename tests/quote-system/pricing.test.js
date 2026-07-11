@@ -4,7 +4,8 @@ const {
   resolveTierRate,
   billableShiftHours,
   normalizeCarts,
-  eventBillableHours
+  eventBillableHours,
+  cartEventHours
 } = require('../../lib/quote-system/pricing');
 const { calculateQuote } = require('../../lib/quote-system/calculator');
 const { BEAN_CULTURE_QUOTE_CONFIG } = require('../../lib/quote-system/bean-culture-config');
@@ -109,13 +110,50 @@ test('normalizeCarts — clamps quantity to product maxQuantity', function() {
   assert.deepEqual(normalizeCarts({
     carts: [{ productId: 'cart', quantity: 10 }]
   }, products), [
-    { productId: 'cart', quantity: 3, baristas: 1, extraBaristaMode: 'none', splitHours: 4, extraBaristas: 0 }
+    { productId: 'cart', quantity: 3, hours: null, baristas: 1, extraBaristaMode: 'none', splitHours: 4, extraBaristas: 0 }
   ]);
+});
+
+test('cartEventHours — custom per-cart hours in simple mode', function() {
+  var labour = { minimumHours: 3, allowShiftPlanner: true };
+  var inp = { labourPlanning: 'hours', hours: 6, eventConfigMode: 'custom' };
+  assert.equal(cartEventHours({ hours: 4 }, inp, labour), 4);
+  assert.equal(cartEventHours({ hours: 2 }, inp, labour), 3);
+  assert.equal(cartEventHours({ hours: 8 }, { labourPlanning: 'hours', hours: 6, eventConfigMode: 'same' }, labour), 6);
+});
+
+test('calculateQuote — custom per-cart barista 1 hours', function() {
+  var config = {
+    business: { gstRegistered: false },
+    labour: {
+      hourlyCents: 7500,
+      minimumHours: 3,
+      extraBarista: { enabled: true, hourlyCents: 7500 }
+    },
+    products: [
+      { id: 'cart-a', label: 'Cart A', baseCents: 0, baristasIncluded: 1 },
+      { id: 'cart-b', label: 'Cart B', baseCents: 0, baristasIncluded: 1 }
+    ],
+    beverages: []
+  };
+  var result = calculateQuote(config, {
+    labourPlanning: 'hours',
+    hours: 6,
+    eventConfigMode: 'custom',
+    carts: [
+      { productId: 'cart-a', quantity: 1, hours: 6, baristas: 1 },
+      { productId: 'cart-b', quantity: 1, hours: 3, baristas: 1 }
+    ]
+  });
+  var labourRows = result.breakdown.filter(function(r) { return r.kind === 'labour'; });
+  assert.equal(labourRows.length, 2);
+  assert.equal(labourRows.find(function(r) { return r.productId === 'cart-a'; }).quantity, 6);
+  assert.equal(labourRows.find(function(r) { return r.productId === 'cart-b'; }).quantity, 3);
 });
 
 test('normalizeCarts — legacy productId fallback', function() {
   assert.deepEqual(normalizeCarts({ productId: 'cart', extraBaristas: 1 }, []), [
-    { productId: 'cart', quantity: 1, baristas: 2, extraBaristaMode: 'full', splitHours: 4, extraBaristas: 1 }
+    { productId: 'cart', quantity: 1, hours: null, baristas: 2, extraBaristaMode: 'full', splitHours: 4, extraBaristas: 1 }
   ]);
 });
 
