@@ -62,3 +62,18 @@
 @media(max-width:700px){
   .pl-dual-grid{grid-template-columns:1fr}
 }
+
+/* Section bands */
+.pl-body .pt-industries{background:#0d0d14;padding:clamp(64px,9vw,100px) 0;border-top:1px solid rgba(0,240,255,.12)}
+.pl-body .pt-demos{padding:clamp(64px,9vw,100px) 0}
+.pl-body .pt-services{background:#0d0d14;padding:clamp(64px,9vw,100px) 0;border-top:1px solid rgba(255,0,170,.12)}
+.pl-body .pt-benefits{padding:clamp(64px,9vw,100px) 0}
+.pl-body .pt-process{background:#08080c;padding:clamp(64px,9vw,100px) 0}
+.pl-body .pt-biography{padding:clamp(64px,9vw,100px) 0}
+.pl-body .pt-support{padding:clamp(64px,9vw,100px) 0}
+.pl-body .pt-testimonials{background:#0d0d14;padding:clamp(64px,9vw,100px) 0}
+.pl-body .pt-faqs{padding:clamp(64px,9vw,100px) 0}
+.pl-body .pt-contact{background:#050508;padding:clamp(64px,9vw,110px) 0;border-top:1px solid rgba(0,240,255,.2)}
+.pl-body .pt-enquiry-form{background:#111118;border:1px solid rgba(0,240,255,.25);border-radius:12px;padding:36px;box-shadow:0 0 60px -20px rgba(0,240,255,.2)}
+.pl-body .pt-enquiry-form input,.pl-body .pt-enquiry-form select,.pl-body .pt-enquiry-form textarea{background:#0a0a0f;border-color:rgba(0,240,255,.25);color:#e8e8f0;border-radius:8px}
+.pl-body .pt-lp-badge-logo,.pl-body .pt-lp-disclosure-logo{--lp-logo-ink:#e8e8f0;--lp-logo-accent:var(--neon,var(--pt-glow))}

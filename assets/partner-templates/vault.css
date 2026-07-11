@@ -58,3 +58,18 @@
 @media(max-width:860px){
   .vt-craft-grid,.vt-contact-wrap{grid-template-columns:1fr}
 }
+
+/* Section bands */
+.vt-body .pt-industries{background:#fff;padding:clamp(64px,9vw,100px) 0}
+.vt-body .pt-demos{background:#fff8ef;padding:clamp(64px,9vw,100px) 0}
+.vt-body .pt-services{background:#fef9f3;padding:clamp(64px,9vw,100px) 0}
+.vt-body .pt-benefits{background:#fff;padding:clamp(64px,9vw,100px) 0}
+.vt-body .pt-process{background:#fff8ef;padding:clamp(64px,9vw,100px) 0}
+.vt-body .pt-biography{background:#fff;padding:clamp(64px,9vw,100px) 0}
+.vt-body .pt-support{background:#fef9f3;padding:clamp(64px,9vw,100px) 0}
+.vt-body .pt-testimonials{background:#fff8ef;padding:clamp(64px,9vw,100px) 0}
+.vt-body .pt-faqs{background:#fff;padding:clamp(64px,9vw,100px) 0}
+.vt-body .pt-contact{background:#3d2914;color:#f5e6d3;padding:clamp(64px,9vw,110px) 0}
+.vt-body .pt-contact .pt-section-title,.vt-body .pt-contact .pt-eyebrow{color:#f5e6d3}
+.vt-body .pt-enquiry-form{background:#fff;border-radius:24px;padding:32px;color:#3d2914}
+.vt-body .pt-lp-badge-logo,.vt-body .pt-lp-disclosure-logo{--lp-logo-ink:#f5e6d3;--lp-logo-accent:var(--pt-accent)}

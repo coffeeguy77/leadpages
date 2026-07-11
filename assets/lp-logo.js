@@ -166,6 +166,14 @@
       if (theme === 'command-dark' || theme === 'neon-pink' || theme === 'electric-blue') return true;
       if (node.classList) {
         if (node.classList.contains('nav') || node.classList.contains('sec-gum') || node.tagName === 'FOOTER') return true;
+        if (node.classList.contains('pt-footer') || node.classList.contains('ch-contact') || node.classList.contains('pt-contact')) {
+          var bg2 = (cs.backgroundColor || '').trim();
+          var rgb2 = parseRgb(bg2);
+          if (rgb2) {
+            var lum2 = 0.2126 * rgb2.r + 0.7152 * rgb2.g + 0.0722 * rgb2.b;
+            if (lum2 < 160) return true;
+          }
+        }
       }
       node = node.parentElement;
       hops += 1;
@@ -173,11 +181,24 @@
     return false;
   }
 
+  function isPartnerTemplatePage() {
+    var body = global.document && global.document.body;
+    return !!(body && body.getAttribute('data-pt-template'));
+  }
+
+  function partnerAccent() {
+    var body = global.document && global.document.body;
+    if (!body || !global.getComputedStyle) return null;
+    var accent = global.getComputedStyle(body).getPropertyValue('--pt-accent').trim();
+    return accent || null;
+  }
+
   function resolveInkMode(el) {
     var explicit = el.getAttribute('data-lp-logo-ink');
     if (explicit === 'light' || explicit === 'dark') return explicit;
     if (isAdminWorkspace()) return 'workspace';
     if (isDarkBackground(el)) return 'light';
+    if (explicit === 'auto' || !explicit) return 'dark';
     return inkFromSrc(el);
   }
 
@@ -209,7 +230,12 @@
 
       if (el !== wrap && el.parentNode) el.parentNode.replaceChild(wrap, el);
       wrap.dataset.lpLogoMounted = 'true';
-      if (isMarketingHost()) {
+
+      if (isPartnerTemplatePage()) {
+        var pAccent = partnerAccent() || tokens.accent;
+        var pInk = resolveInkMode(wrap) === 'light' ? '#f5f0e8' : '#1a1612';
+        applyTokens(wrap, { accent: pAccent, ink: pInk });
+      } else if (isMarketingHost()) {
         if (!el.getAttribute('data-lp-logo-ink') || el.getAttribute('data-lp-logo-ink') === 'auto') {
           applyTokens(wrap, { accent: tokens.accent, ink: '#f3f6fa' });
         }
@@ -314,6 +340,14 @@
   function init() {
     upgradeAll({ pulse: true }).then(function () {
       applyWorkspaceTheme();
+      if (isPartnerTemplatePage()) {
+        global.document.querySelectorAll('.leadpages-logo.lp-logo-wrap, [data-lp-logo].lp-logo-wrap').forEach(function (wrap) {
+          var pAccent = partnerAccent();
+          if (!pAccent) return;
+          var ink = resolveInkMode(wrap) === 'light' ? '#f5f0e8' : '#1a1612';
+          applyTokens(wrap, { accent: pAccent, ink: ink });
+        });
+      }
       maybeBootMarketingA11y();
     });
     if (global.document) {

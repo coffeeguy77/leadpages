@@ -61,3 +61,18 @@
   .at-hero-grid,.at-story-cols,.at-port-grid,.at-contact-split{grid-template-columns:1fr}
   .at-port-rest{grid-template-columns:repeat(2,1fr)}
 }
+
+/* Section bands */
+.at-body .pt-industries{background:#fff;padding:clamp(64px,9vw,100px) 0}
+.at-body .pt-demos{background:#f5f5f4;padding:clamp(64px,9vw,100px) 0}
+.at-body .pt-services{background:#fff;padding:clamp(64px,9vw,100px) 0}
+.at-body .pt-benefits{background:#fafaf9;padding:clamp(64px,9vw,100px) 0}
+.at-body .pt-process{background:#fff;padding:clamp(64px,9vw,100px) 0}
+.at-body .pt-biography{background:#f5f5f4;padding:clamp(64px,9vw,100px) 0}
+.at-body .pt-support{background:#fff;padding:clamp(64px,9vw,100px) 0}
+.at-body .pt-testimonials{background:#fafaf9;padding:clamp(64px,9vw,100px) 0}
+.at-body .pt-faqs{background:#f5f5f4;padding:clamp(64px,9vw,100px) 0}
+.at-body .pt-contact{background:#1c1917;color:#fafaf9;padding:clamp(64px,9vw,110px) 0}
+.at-body .pt-contact .pt-section-title,.at-body .pt-contact .pt-eyebrow{color:#fafaf9}
+.at-body .pt-enquiry-form{background:#fff;color:#1c1917;padding:32px;border:1px solid #e7e5e4;border-radius:4px;box-shadow:0 20px 50px -30px rgba(0,0,0,.15)}
+.at-body .pt-lp-badge-logo,.at-body .pt-lp-disclosure-logo{--lp-logo-ink:#fafaf9;--lp-logo-accent:var(--pt-accent)}

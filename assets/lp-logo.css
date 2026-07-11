@@ -257,6 +257,33 @@ html[data-lp-visitor-motion="reduced"] .lp-logo-pulse #inner-circle {
   animation: none !important;
 }
 
+/* Partner template pages — crisp logos, context-aware sizing */
+body[data-pt-template] .pt-lp-badge-logo,
+body[data-pt-template] .pt-lp-disclosure-logo {
+  --lp-logo-height: 48px;
+  image-rendering: -webkit-optimize-contrast;
+  shape-rendering: geometricPrecision;
+}
+body[data-pt-template] .pt-lp-disclosure-logo {
+  --lp-logo-height: 44px;
+}
+body[data-pt-template] .pt-lp-badge .lp-logo-pulse #inner-circle,
+body[data-pt-template] .pt-lp-badge .lp-logo-pulse #outer-circle,
+body[data-pt-template] .pt-lp-disclosure .lp-logo-pulse #inner-circle,
+body[data-pt-template] .pt-lp-disclosure .lp-logo-pulse #outer-circle {
+  animation: none !important;
+  filter: none !important;
+}
+/* Subtle static accent ring on partner logos (no blur) */
+body[data-pt-template] .pt-lp-badge-logo.lp-logo-pulse #inner-circle,
+body[data-pt-template] .pt-lp-disclosure-logo.lp-logo-pulse #inner-circle {
+  fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 35%, transparent);
+}
+body[data-pt-template] .pt-lp-badge-logo.lp-logo-pulse #outer-circle,
+body[data-pt-template] .pt-lp-disclosure-logo.lp-logo-pulse #outer-circle {
+  fill: color-mix(in srgb, var(--lp-logo-accent, #2ecc8f) 18%, transparent);
+}
+
 /* Footer strip logo */
 .lp-foot-logo.lp-logo-wrap {
   height: var(--lp-logo-height);
