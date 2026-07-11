@@ -223,13 +223,17 @@
     var wrap = wrapStep.bind(this);
 
     if (key === 'event') {
+      var products = this.filterItems(this.shell.products || []);
       var fields = (P && P.renderLabourPlanning)
         ? P.renderLabourPlanning(s, this.shell)
         : '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
           '<input type="number" min="1" max="48" data-field="hours" value="' + esc(s.hours) + '"></label>';
+      var staffing = (P && P.renderStaffing)
+        ? P.renderStaffing(s, this.shell, products)
+        : '';
       return wrap({
-        intro: '<p class="lp-oq-intro">When is your event?</p>',
-        fields: fields
+        intro: '<p class="lp-oq-intro">When is your event, and how many baristas do you need?</p>',
+        fields: fields + staffing
       });
     }
 
@@ -377,6 +381,7 @@
       });
     });
     if (P && P.wireLabourPlanning) P.wireLabourPlanning(this.el, this.state, this.shell, function() { self.render(); });
+    if (P && P.wireStaffing) P.wireStaffing(this.el, this.state, this.shell, products, function() { self.render(); });
     if (P && P.wireCartRows) P.wireCartRows(this.el, this.state, this.shell, products, function() { self.reconcileState(); self.render(); });
     this.el.querySelectorAll('[data-addon]').forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -610,8 +615,8 @@
       '.lp-oq-plan legend{font-size:12px;font-weight:600;padding:0 4px}',
       '.lp-oq-radio{display:inline-flex;align-items:center;gap:6px;margin:0 12px 8px 0;font-size:13px}',
       '.lp-oq-check{display:flex;align-items:center;gap:8px;margin:10px 0 0;font-size:13px}',
-      '.lp-oq-shift,.lp-oq-cart{border:1px dashed color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));border-radius:10px;padding:10px;margin:10px 0}',
-      '.lp-oq-cart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}',
+      '.lp-oq-shift,.lp-oq-cart,.lp-oq-staff-row{border:1px dashed color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));border-radius:10px;padding:10px;margin:10px 0}',
+      '.lp-oq-cart-head,.lp-oq-staff-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}',
       '.lp-oq-shift-remove,.lp-oq-cart-remove{font-size:12px;padding:4px 10px}'
     ].join('');
   }
