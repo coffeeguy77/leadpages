@@ -58,7 +58,19 @@
     return '<strong>' + label + '</strong>' + desc;
   }
 
-  /** Portfolio-style equipment card markup (uses fp-* classes from site theme). */
+  function equipmentCardVars(shell) {
+    var ec = (shell && shell.wizard && shell.wizard.equipmentCards) || {};
+    var parts = [];
+    if (ec.cardBg) parts.push('--lp-oq-card-bg:' + ec.cardBg);
+    if (ec.cardText) parts.push('--lp-oq-card-text:' + ec.cardText);
+    if (ec.featureColor) parts.push('--lp-oq-feature:' + ec.featureColor);
+    if (ec.strokeColor) parts.push('--lp-oq-stroke:' + ec.strokeColor);
+    if (ec.strokeWidth != null && ec.strokeWidth !== '') {
+      parts.push('--lp-oq-stroke-w:' + Math.max(0, parseInt(ec.strokeWidth, 10) || 0) + 'px');
+    }
+    return parts.length ? parts.join(';') : '';
+  }
+
   function equipmentCardHtml(item, helpers, opts) {
     var h = helpers || {};
     var o = opts || {};
@@ -125,19 +137,19 @@
       '.lp-oq-fp-grid.fp-grid,.lp-oq-layout-grid .lp-oq-fp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;width:100%;margin-top:16px}',
       '@media(max-width:1100px){.lp-oq-fp-grid.fp-grid,.lp-oq-layout-grid .lp-oq-fp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}',
       '@media(max-width:640px){.lp-oq-fp-grid.fp-grid,.lp-oq-layout-grid .lp-oq-fp-grid{grid-template-columns:1fr}}',
-      '.lp-oq-eq-card.fp-card{cursor:pointer;text-align:left;border:none;font:inherit;color:inherit;width:100%;display:flex;flex-direction:column;height:100%;padding:0;background:var(--fp-card-bg,var(--panel,#fff))}',
-      '.lp-oq-eq-card.fp-card:hover{transform:translateY(-3px);box-shadow:0 22px 54px rgba(20,30,45,.14)}',
-      '.lp-oq-eq-card.fp-card.is-selected{outline:3px solid color-mix(in srgb,' + b + ' 55%,transparent);outline-offset:2px}',
+      '.lp-oq-eq-card.fp-card{cursor:pointer;text-align:left;width:100%;display:flex;flex-direction:column;height:100%;padding:0;background:var(--lp-oq-card-bg,var(--fp-card-bg,var(--panel,#fff)));color:var(--lp-oq-card-text,var(--fp-text,var(--ink,inherit)));border:var(--lp-oq-stroke-w,1px) solid var(--lp-oq-stroke,color-mix(in srgb,' + b + ' 14%,var(--line,var(--border,currentColor))));border-radius:18px;overflow:hidden;box-shadow:0 10px 32px rgba(20,30,45,.08);transition:box-shadow .18s,border-color .18s;box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}',
+      '.lp-oq-eq-card.fp-card:hover{box-shadow:0 22px 54px rgba(20,30,45,.14)}',
+      '.lp-oq-eq-card.fp-card.is-selected{border-color:var(--lp-oq-feature,' + b + ');box-shadow:0 0 0 3px color-mix(in srgb,var(--lp-oq-feature,' + b + ') 32%,transparent),0 16px 42px rgba(20,30,45,.12)}',
       '.lp-oq-eq-card .fp-shot{position:relative;aspect-ratio:3/2;overflow:hidden;background:var(--steel-900,#1a2230)}',
-      '.lp-oq-eq-card .fp-img{width:100%;height:100%;object-fit:cover;display:block}',
+      '.lp-oq-eq-card .fp-img{width:100%;height:100%;display:block}',
       '.lp-oq-eq-card .fp-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,color-mix(in srgb,' + b + ' 12%,#f1f3f6),color-mix(in srgb,' + b + ' 6%,#e3e7ee));color:color-mix(in srgb,' + b + ' 70%,#7c8694);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:13px;padding:12px;text-align:center}',
       '.lp-oq-eq-ph-icon .lp-oq-ic{display:flex;align-items:center;justify-content:center}',
       '.lp-oq-eq-ph-icon .lp-oq-ic svg{width:52px;height:52px;color:' + b + '}',
-      '.lp-oq-eq-card .fp-tag{position:absolute;top:12px;left:12px;background:' + b + ';color:var(--accent-text,var(--on-pipe,#fff));font-weight:700;font-size:10px;letter-spacing:.09em;text-transform:uppercase;padding:5px 10px;border-radius:999px;line-height:1}',
-      '.lp-oq-eq-card .fp-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column}',
-      '.lp-oq-eq-card .fp-title{margin:0;font-size:20px;line-height:1.1;font-weight:800;text-transform:uppercase;color:var(--fp-text,var(--ink,inherit))}',
-      '.lp-oq-eq-card .fp-loc{font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:' + b + ';margin-top:6px}',
-      '.lp-oq-eq-card .fp-desc{font-size:14px;line-height:1.45;margin:10px 0 0;color:color-mix(in srgb,var(--fp-text,var(--ink-soft,var(--text-soft,inherit))) 88%,transparent)}',
+      '.lp-oq-eq-card .fp-tag{position:absolute;top:12px;left:12px;background:var(--lp-oq-feature,' + b + ');color:var(--accent-text,var(--on-pipe,#fff));font-weight:700;font-size:10px;letter-spacing:.09em;text-transform:uppercase;padding:5px 10px;border-radius:999px;line-height:1}',
+      '.lp-oq-eq-card .fp-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column;background:var(--lp-oq-card-bg,var(--fp-card-bg,transparent))}',
+      '.lp-oq-eq-card .fp-title{margin:0;font-size:20px;line-height:1.15;font-weight:800;text-transform:uppercase;color:var(--lp-oq-card-text,var(--fp-text,var(--ink,inherit)));text-rendering:optimizeLegibility}',
+      '.lp-oq-eq-card .fp-loc{font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--lp-oq-feature,' + b + ');margin-top:6px}',
+      '.lp-oq-eq-card .fp-desc{font-size:14px;line-height:1.5;margin:10px 0 0;color:var(--lp-oq-card-text,var(--fp-text,var(--ink-soft,var(--text-soft,inherit))));opacity:.92;text-rendering:optimizeLegibility}',
       '.lp-oq-eq-qty{margin-top:12px;padding-top:12px;border-top:1px solid color-mix(in srgb,' + b + ' 14%,var(--line,var(--border,currentColor)))}',
       '.lp-oq-eq-qty span{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;color:var(--ink-soft,var(--text-soft,inherit))}',
       '.lp-oq-eq-qty input{width:100%;padding:8px 10px;border:1px solid var(--line-strong,var(--border-strong,currentColor));border-radius:8px;font:inherit;background:var(--input-bg,var(--panel,transparent));color:var(--ink,var(--text,inherit));box-sizing:border-box}',
@@ -163,6 +175,7 @@
     displayPx: displayPx,
     choiceVisualHtml: choiceVisualHtml,
     equipmentCardHtml: equipmentCardHtml,
+    equipmentCardVars: equipmentCardVars,
     wizardLayout: wizardLayout,
     layoutClass: layoutClass,
     wrapStepBody: wrapStepBody,

@@ -104,6 +104,15 @@ test('calculateQuote — multi-cart with extra barista per cart', function() {
   assert.equal(result.subtotalCents, 30000 + 67500);
 });
 
+test('normalizeCarts — clamps quantity to product maxQuantity', function() {
+  var products = [{ id: 'cart', allowQuantity: true, maxQuantity: 3, baristasIncluded: 1 }];
+  assert.deepEqual(normalizeCarts({
+    carts: [{ productId: 'cart', quantity: 10 }]
+  }, products), [
+    { productId: 'cart', quantity: 3, baristas: 1, extraBaristaMode: 'none', splitHours: 4, extraBaristas: 0 }
+  ]);
+});
+
 test('normalizeCarts — legacy productId fallback', function() {
   assert.deepEqual(normalizeCarts({ productId: 'cart', extraBaristas: 1 }, []), [
     { productId: 'cart', quantity: 1, baristas: 2, extraBaristaMode: 'full', splitHours: 4, extraBaristas: 1 }
