@@ -81,11 +81,24 @@ module.exports = async function handler(req, res) {
           .maybeSingle();
         const businessName = (site && site.business_name) || 'Your provider';
         if (refreshed.session.contact_email) {
+          const { buildQuotePdfBuffer } = require('../../lib/quote-system/pdf');
+          let pdfBuffer = null;
+          try {
+            pdfBuffer = await buildQuotePdfBuffer({
+              businessName,
+              contactName: refreshed.session.contact_name,
+              contactEmail: refreshed.session.contact_email,
+              quote: finalized.quote || {}
+            });
+          } catch (pdfErr) {
+            console.warn('quote-system verify-sms pdf:', pdfErr && pdfErr.message);
+          }
           await sendPortalLinkEmail({
             to: refreshed.session.contact_email,
             businessName,
             portalUrl: finalized.portalUrl,
-            totalFormatted: finalized.quote && finalized.quote.totalFormatted
+            totalFormatted: finalized.quote && finalized.quote.totalFormatted,
+            pdfBuffer
           });
         }
         portalPayload = {

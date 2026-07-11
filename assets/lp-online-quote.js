@@ -163,10 +163,11 @@
         html += '<p class="lp-oq-muted" style="font-size:13px;margin:8px 0 0">Check your inbox for a 6-digit code.</p>';
       }
       html += '<label class="lp-oq-field"><span>Email verification code</span>' +
-        '<input data-field="emailCode" placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></label>' +
+        '<input data-field="emailCode" placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" value="' + esc(this.state.emailCode || '') + '"></label>' +
         '<button type="button" class="lp-oq-btn" data-act="confirm-email" style="margin-top:10px">Confirm email code</button>';
     } else if (q.level === 'email_verified_total') {
       html += '<p class="lp-oq-total">' + esc(q.totalFormatted || '') + ' <small>inc GST</small></p>' +
+        (this.state.emailSummarySent ? '<p class="lp-oq-muted" style="font-size:13px">A summary was emailed to you. Complete SMS below for the full PDF.</p>' : '') +
         '<p>' + esc(q.message || '') + '</p>' +
         '<div class="lp-oq-verify"><button type="button" class="lp-oq-btn" data-act="send-sms">Text me a code for full breakdown</button></div>' +
         '<label class="lp-oq-field"><span>SMS verification code</span><input data-field="smsCode" placeholder="6-digit code"></label>' +
@@ -181,7 +182,7 @@
         html += '<div class="lp-oq-verify" style="margin-top:14px">' +
           '<a class="lp-oq-btn" href="' + esc(this.state.portalUrl) + '" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">Open quote portal</a>' +
           (this.state.pdfUrl ? ' <a class="lp-oq-btn lp-oq-btn-ghost" href="' + esc(this.state.pdfUrl) + '" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;margin-left:8px">Download PDF</a>' : '') +
-          '</div><p class="lp-oq-muted" style="font-size:12px;margin-top:8px">A copy was emailed to you if an address was provided.</p>';
+          '</div><p class="lp-oq-muted" style="font-size:12px;margin-top:8px">Check your email for the portal link and PDF attachment.</p>';
       }
     }
     html += '</div>';
@@ -301,9 +302,16 @@
   OnlineQuoteWidget.prototype.confirmEmail = function() {
     var self = this;
     var codeInp = this.el.querySelector('[data-field="emailCode"]');
-    var code = codeInp ? codeInp.value : '';
+    var code = ((codeInp && codeInp.value) || this.state.emailCode || '').trim();
+    if (!code) {
+      alert('Enter the 6-digit code from your email.');
+      return;
+    }
     post('/verify-email', { token: this.token, action: 'confirm', code: code }).then(function(res) {
       if (!res.ok) { alert('Invalid or expired code.'); return; }
+      if (res.summaryEmailSent) {
+        self.state.emailSummarySent = true;
+      }
       return post('/calculate', { token: self.token });
     }).then(function(res) {
       if (res && res.ok) {
