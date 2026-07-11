@@ -15,6 +15,7 @@
 
   var LAYOUTS = [
     { id: 'cards', label: 'Choice cards', hint: 'Large tappable cards — best for 2–6 options' },
+    { id: 'grid', label: 'Choice grid', hint: 'Multi-column cards with images — great for equipment' },
     { id: 'list', label: 'Compact list', hint: 'Stacked rows — good for many options' },
     { id: 'split', label: 'Split panel', hint: 'Label left, choices right — desktop-friendly' }
   ];
@@ -220,14 +221,20 @@
     var wrap = displayApi().wrapStepBody
       ? function(parts) { return displayApi().wrapStepBody(parts, layout); }
       : function(parts) { return (parts.intro || '') + (parts.fields || '') + (parts.choices || '') + (parts.extra || ''); };
-    if (stepKey === 'equipment' || stepKey === 'event') {
+    if (stepKey === 'event') {
+      var Pe = global.LPQuotePlanning;
+      body = wrap({
+        intro: '<p class="lp-oq-intro">When is your event?</p>',
+        fields: (Pe && Pe.renderLabourPlanning)
+          ? Pe.renderLabourPlanning(progress, shell)
+          : '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>'
+      });
+    } else if (stepKey === 'equipment' || stepKey === 'products') {
       var P = global.LPQuotePlanning;
       var prods = filter(shell.products, progress);
       var choices = '';
-      var fields = '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
       if (P && P.renderCartRows) {
         choices = P.renderCartRows(progress, shell, prods, function(item) { return self._choiceHtml(item); });
-        fields = P.renderLabourPlanning ? P.renderLabourPlanning(progress, shell) : fields;
       } else {
         choices = prods.map(function(p) {
           var sel = progress.productId === p.id ? ' is-selected' : '';
@@ -235,7 +242,13 @@
             self._choiceHtml(p) + '</button>';
         }).join('');
       }
-      body = wrap({ intro: '<p class="lp-oq-intro">Choose your setup.</p>', fields: fields, choices: choices });
+      var eqFields = '';
+      if (steps.indexOf('event') < 0) {
+        eqFields = (P && P.renderLabourPlanning)
+          ? P.renderLabourPlanning(progress, shell)
+          : '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
+      }
+      body = wrap({ intro: '<p class="lp-oq-intro">Choose your equipment.</p>', fields: eqFields, choices: choices });
     } else if (stepKey === 'beverages') {
       var Pq = global.LPQuotePlanning;
       body = wrap({

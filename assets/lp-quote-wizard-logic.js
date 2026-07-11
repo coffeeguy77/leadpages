@@ -5,7 +5,8 @@
   'use strict';
 
   var STEP_ALIASES = {
-    equipment: 'equipment', products: 'equipment', event: 'equipment',
+    equipment: 'equipment', products: 'equipment',
+    event: 'event',
     beverages: 'beverages', packages: 'beverages',
     addons: 'addons', travel: 'travel', contact: 'contact'
   };
@@ -91,9 +92,13 @@
   }
 
   function catalogLabel(stepId) {
-    var norm = normalizeStepId(stepId);
+    var raw = String(stepId || '').trim();
     for (var i = 0; i < STEP_CATALOG.length; i++) {
-      if (STEP_CATALOG[i].id === norm) return STEP_CATALOG[i].label;
+      if (STEP_CATALOG[i].id === raw) return STEP_CATALOG[i].label;
+    }
+    var norm = normalizeStepId(stepId);
+    for (var j = 0; j < STEP_CATALOG.length; j++) {
+      if (STEP_CATALOG[j].id === norm) return STEP_CATALOG[j].label;
     }
     return stepId;
   }

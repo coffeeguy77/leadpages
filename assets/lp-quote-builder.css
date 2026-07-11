@@ -799,6 +799,28 @@
   min-height: 64px;
 }
 
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choices,
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-stack {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choice {
+  margin: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+}
+
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choice-img {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 90px !important;
+  margin: 0 0 8px !important;
+}
+
 .oqb-preview-mock .lp-oq-layout-list .lp-oq-choices,
 .oqb-preview-mock .lp-oq-layout-list .lp-oq-stack {
   border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
