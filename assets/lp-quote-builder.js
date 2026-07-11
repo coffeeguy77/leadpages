@@ -210,52 +210,68 @@
     var filter = W.filterByShowWhen || function(items) { return items || []; };
 
     var body = '';
+    var layout = displayApi().wizardLayout ? displayApi().wizardLayout(shell) : (shell.wizard.layout || 'cards');
+    var wrap = displayApi().wrapStepBody
+      ? function(parts) { return displayApi().wrapStepBody(parts, layout); }
+      : function(parts) { return (parts.intro || '') + (parts.fields || '') + (parts.choices || '') + (parts.extra || ''); };
     if (stepKey === 'equipment' || stepKey === 'event') {
       var P = global.LPQuotePlanning;
       var prods = filter(shell.products, progress);
-      body = '<p class="lp-oq-intro">Choose your setup.</p>';
+      var choices = '';
+      var fields = '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
       if (P && P.renderCartRows) {
-        body += P.renderCartRows(progress, shell, prods, function(item) { return self._choiceHtml(item); });
-        body += P.renderLabourPlanning(progress, shell);
+        choices = P.renderCartRows(progress, shell, prods, function(item) { return self._choiceHtml(item); });
+        fields = P.renderLabourPlanning ? P.renderLabourPlanning(progress, shell) : fields;
       } else {
-        body += prods.map(function(p) {
+        choices = prods.map(function(p) {
           var sel = progress.productId === p.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="productId" data-val="' + esc(p.id) + '">' +
             self._choiceHtml(p) + '</button>';
-        }).join('') +
-        '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
+        }).join('');
       }
+      body = wrap({ intro: '<p class="lp-oq-intro">Choose your setup.</p>', fields: fields, choices: choices });
     } else if (stepKey === 'beverages') {
       var Pq = global.LPQuotePlanning;
-      body = '<p class="lp-oq-intro">Guest count &amp; package.</p>' +
-        (Pq && Pq.renderPackageQty ? Pq.renderPackageQty(progress, shell) :
-          '<label class="lp-oq-field"><span>Guests</span><input type="number" data-prev-field="guestCount" value="' + esc(progress.guestCount) + '"></label>') +
-        filter(shell.beverages, progress).map(function(b) {
+      body = wrap({
+        intro: '<p class="lp-oq-intro">Guest count &amp; package.</p>',
+        fields: (Pq && Pq.renderPackageQty ? Pq.renderPackageQty(progress, shell) :
+          '<label class="lp-oq-field"><span>Guests</span><input type="number" data-prev-field="guestCount" value="' + esc(progress.guestCount) + '"></label>'),
+        choices: filter(shell.beverages, progress).map(function(b) {
           var sel = progress.beverageId === b.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="beverageId" data-val="' + esc(b.id) + '">' +
             self._choiceHtml(b) + '</button>';
-        }).join('');
+        }).join('')
+      });
     } else if (stepKey === 'travel') {
-      body = '<p class="lp-oq-intro">Where is your event?</p>' +
-        shell.travelZones.map(function(z) {
+      body = wrap({
+        intro: '<p class="lp-oq-intro">Where is your event?</p>',
+        choices: shell.travelZones.map(function(z) {
           var sel = progress.travelZoneId === z.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="travelZoneId" data-val="' + esc(z.id) + '">' +
             self._choiceHtml(z) + '</button>';
-        }).join('');
+        }).join('')
+      });
     } else if (stepKey === 'addons') {
-      body = '<p class="lp-oq-intro">Optional extras.</p>' +
-        filter(shell.addons, progress).map(function(a) {
+      body = wrap({
+        intro: '<p class="lp-oq-intro">Optional extras.</p>',
+        choices: filter(shell.addons, progress).map(function(a) {
           var on = progress.addonIds.indexOf(a.id) >= 0 ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice lp-oq-multi' + on + '" data-prev-addon="' + esc(a.id) + '">' +
             self._choiceHtml(a) + '</button>';
-        }).join('');
+        }).join('')
+      });
     } else {
-      body = '<p class="lp-oq-intro">Contact details (preview).</p>' +
-        '<label class="lp-oq-field"><span>Name</span><input disabled placeholder="Customer name"></label>';
+      body = wrap({
+        intro: '<p class="lp-oq-intro">Contact details (preview).</p>',
+        fields: '<label class="lp-oq-field"><span>Name</span><input disabled placeholder="Customer name"></label>'
+      });
     }
 
-    return '<div class="oqb-preview-head"><h4>Live preview</h4><p>Test conditional steps — pick a product to see the flow change.</p></div>' +
-      '<div class="oqb-preview-body oqb-preview-mock"><div class="lp-oq-card' + (shell.wizard.layout === 'list' ? ' lp-oq-layout-list' : shell.wizard.layout === 'split' ? ' lp-oq-layout-split' : '') + '">' +
+    var layoutCls = displayApi().layoutClass ? displayApi().layoutClass(shell) : (
+      shell.wizard.layout === 'list' ? ' lp-oq-layout-list' : shell.wizard.layout === 'split' ? ' lp-oq-layout-split' : ' lp-oq-layout-cards'
+    );
+    return '<div class="oqb-preview-head"><h4>Live preview</h4><p>Layout: <strong>' + esc((LAYOUTS.find(function(l) { return l.id === layout; }) || LAYOUTS[0]).label) + '</strong> — pick a product to test conditional steps.</p></div>' +
+      '<div class="oqb-preview-body oqb-preview-mock"><div class="lp-oq-card' + layoutCls + '">' +
       '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc((shell.business && shell.business.name) || 'Your business') + '</h2>' +
       '<div class="lp-oq-steps">' + steps.map(function(s, i) {
         return '<span class="lp-oq-step' + (i === self.previewStep ? ' is-active' : (i < self.previewStep ? ' is-done' : '')) + '">' + esc(label(s)) + '</span>';
@@ -709,6 +725,16 @@
     }
   };
 
+  QuoteBuilder.prototype._applyLayout = function(value, radio) {
+    if (!this.config.wizard) this.config.wizard = {};
+    this.config.wizard.layout = value;
+    var self = this;
+    this.root.querySelectorAll('.oqb-layout').forEach(function(lbl) {
+      lbl.classList.toggle('is-on', lbl.querySelector('input[name="oqb-layout"]') === radio);
+    });
+    this._refreshPreview();
+  };
+
   QuoteBuilder.prototype._syncFromDom = function() {
     var self = this;
     this.root.querySelectorAll('[data-oqb-path]').forEach(function(el) {
@@ -744,6 +770,22 @@
         if (!self.config.wizard.stepLabels) self.config.wizard.stepLabels = {};
         self.config.wizard.stepLabels[step] = inp.value;
         self._refreshPreview();
+      });
+    });
+
+    this.root.querySelectorAll('input[name="oqb-layout"]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        if (!radio.checked) return;
+        self._applyLayout(radio.value, radio);
+      });
+    });
+
+    this.root.querySelectorAll('.oqb-layout').forEach(function(lbl) {
+      lbl.addEventListener('click', function() {
+        var radio = lbl.querySelector('input[name="oqb-layout"]');
+        if (!radio) return;
+        radio.checked = true;
+        self._applyLayout(radio.value, radio);
       });
     });
 

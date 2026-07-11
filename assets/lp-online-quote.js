@@ -59,8 +59,22 @@
   }
 
   function layoutClass(shell) {
+    var D = window.LPQuoteDisplay;
+    if (D && D.layoutClass) return D.layoutClass(shell);
     var layout = (shell && shell.wizard && shell.wizard.layout) || 'cards';
     return ' lp-oq-layout-' + layout;
+  }
+
+  function stepLayout(shell) {
+    var D = window.LPQuoteDisplay;
+    if (D && D.wizardLayout) return D.wizardLayout(shell);
+    return (shell && shell.wizard && shell.wizard.layout) || 'cards';
+  }
+
+  function wrapStep(parts) {
+    var D = window.LPQuoteDisplay;
+    if (D && D.wrapStepBody) return D.wrapStepBody(parts, stepLayout(this.shell));
+    return (parts.intro || '') + (parts.fields || '') + (parts.choices || '') + (parts.extra || '');
   }
 
   function wl() {
@@ -200,25 +214,27 @@
   OnlineQuoteWidget.prototype.renderStep = function(key) {
     var s = this.state;
     var P = this.planning();
+    var wrap = wrapStep.bind(this);
     if (key === 'equipment' || key === 'products' || key === 'event') {
       var products = this.filterItems(this.shell.products || []);
       if (!products.length) return '<p class="lp-oq-muted">No equipment configured.</p>';
-      var html = '<p class="lp-oq-intro">Choose your setup.</p>';
+      var choices = '';
       if (P && P.renderCartRows) {
-        html += P.renderCartRows(s, this.shell, products, choiceHtml.bind(this));
+        choices = P.renderCartRows(s, this.shell, products, choiceHtml.bind(this));
       } else {
-        html += products.map(function(p) {
+        choices = products.map(function(p) {
           var sel = s.productId === p.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="productId" data-val="' + esc(p.id) + '">' +
             choiceHtml(p) + '</button>';
         }).join('');
       }
-      if (P && P.renderLabourPlanning) html += P.renderLabourPlanning(s, this.shell);
+      var fields = '';
+      if (P && P.renderLabourPlanning) fields = P.renderLabourPlanning(s, this.shell);
       else {
-        html += '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
+        fields = '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
           '<input type="number" min="1" max="24" data-field="hours" value="' + esc(s.hours) + '"></label>';
       }
-      return html;
+      return wrap({ intro: '<p class="lp-oq-intro">Choose your setup.</p>', fields: fields, choices: choices });
     }
     if (key === 'beverages') {
       var bevs = this.filterItems(this.shell.beverages || []);
@@ -227,36 +243,45 @@
         ? P.renderPackageQty(s, this.shell)
         : '<label class="lp-oq-field"><span>Expected guests</span>' +
           '<input type="number" min="1" max="5000" data-field="guestCount" value="' + esc(s.guestCount) + '"></label>';
-      return '<p class="lp-oq-intro">Guest count and beverage package.</p>' + qtyField +
-        bevs.map(function(b) {
+      return wrap({
+        intro: '<p class="lp-oq-intro">Guest count and beverage package.</p>',
+        fields: qtyField,
+        choices: bevs.map(function(b) {
           var sel = s.beverageId === b.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="beverageId" data-val="' + esc(b.id) + '">' +
             choiceHtml(b) + '</button>';
-        }).join('');
+        }).join('')
+      });
     }
     if (key === 'travel') {
       var zones = this.shell.travelZones || [];
-      return '<p class="lp-oq-intro">Where is your event?</p>' +
-        zones.map(function(z) {
+      return wrap({
+        intro: '<p class="lp-oq-intro">Where is your event?</p>',
+        choices: zones.map(function(z) {
           var sel = s.travelZoneId === z.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="travelZoneId" data-val="' + esc(z.id) + '">' +
             choiceHtml(z) + '</button>';
-        }).join('');
+        }).join('')
+      });
     }
     if (key === 'addons') {
       var addons = this.filterItems(this.shell.addons || []);
       if (!addons.length) return '<p class="lp-oq-muted">No add-ons for this quote.</p>';
-      return '<p class="lp-oq-intro">Optional extras.</p>' +
-        addons.map(function(a) {
+      return wrap({
+        intro: '<p class="lp-oq-intro">Optional extras.</p>',
+        choices: addons.map(function(a) {
           var on = s.addonIds.indexOf(a.id) >= 0 ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice lp-oq-multi' + on + '" data-addon="' + esc(a.id) + '">' +
             choiceHtml(a) + '</button>';
-        }).join('');
+        }).join('')
+      });
     }
-    return '<p class="lp-oq-intro">Your details to receive the quote.</p>' +
-      '<label class="lp-oq-field"><span>Name</span><input data-field="contact.name" value="' + esc(s.contact.name) + '"></label>' +
-      '<label class="lp-oq-field"><span>Email</span><input type="email" data-field="contact.email" value="' + esc(s.contact.email) + '"></label>' +
-      '<label class="lp-oq-field"><span>Mobile</span><input type="tel" data-field="contact.phone" placeholder="0414 631 463" value="' + esc(s.contact.phone) + '"></label>';
+    return wrap({
+      intro: '<p class="lp-oq-intro">Your details to receive the quote.</p>',
+      fields: '<label class="lp-oq-field"><span>Name</span><input data-field="contact.name" value="' + esc(s.contact.name) + '"></label>' +
+        '<label class="lp-oq-field"><span>Email</span><input type="email" data-field="contact.email" value="' + esc(s.contact.email) + '"></label>' +
+        '<label class="lp-oq-field"><span>Mobile</span><input type="tel" data-field="contact.phone" placeholder="0414 631 463" value="' + esc(s.contact.phone) + '"></label>'
+    });
   };
 
   OnlineQuoteWidget.prototype.renderFooter = function(stepKey, steps) {
@@ -522,10 +547,15 @@
   };
 
   function injectStyles() {
-    if (document.getElementById('lp-oq-styles')) return;
     var brand = 'var(--pipe, var(--accent, #1f7a63))';
-    var css = document.createElement('style');
-    css.id = 'lp-oq-styles';
+    var css = document.getElementById('lp-oq-styles');
+    if (!css) {
+      css = document.createElement('style');
+      css.id = 'lp-oq-styles';
+      document.head.appendChild(css);
+    }
+    var layoutRules = (window.LPQuoteDisplay && window.LPQuoteDisplay.layoutCss)
+      ? window.LPQuoteDisplay.layoutCss(brand) : '';
     css.textContent = [
       '.lp-oq-card{font-family:system-ui,-apple-system,Segoe UI,sans-serif;border:1px solid color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor)));border-radius:16px;padding:20px;background:transparent;color:var(--ink, var(--text, inherit))}',
       '.lp-oq-title{margin:0 0 8px;font-size:1.35rem;color:var(--ink, var(--text, inherit))}',
@@ -537,8 +567,7 @@
       '.lp-oq-choice .lp-oq-ic{display:inline-flex;vertical-align:middle;margin-right:8px;color:' + brand + '}',
       '.lp-oq-choice .lp-oq-ic svg{width:18px;height:18px}',
       '.lp-oq-choice-img{display:block;margin:0 0 8px;border-radius:8px;object-fit:contain;max-width:100%}',
-      '.lp-oq-layout-list .lp-oq-choice{padding:10px 12px}',
-      '.lp-oq-layout-split .lp-oq-body{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;align-items:start}',
+      layoutRules,
       '.lp-oq-choice.is-selected{border-color:' + brand + ';box-shadow:0 0 0 2px color-mix(in srgb,' + brand + ' 30%, transparent)}',
       '.lp-oq-choice span{display:block;font-size:13px;color:var(--ink-soft, var(--text-soft, inherit));margin-top:4px}',
       '.lp-oq-field{display:block;margin:10px 0 0}',
@@ -562,7 +591,6 @@
       '.lp-oq-cart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}',
       '.lp-oq-shift-remove,.lp-oq-cart-remove{font-size:12px;padding:4px 10px}'
     ].join('');
-    document.head.appendChild(css);
   }
 
   function resolveSlug(el) {
