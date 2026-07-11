@@ -303,17 +303,32 @@
 
   OnlineQuoteWidget.prototype.sendEmail = function() {
     var self = this;
-    post('/verify-email', {
-      token: this.token,
-      action: 'send',
-      email: this.state.contact.email
+    var email = (this.state.contact.email || '').trim();
+    if (!email || email.indexOf('@') < 3) {
+      alert('Enter a valid email address first.');
+      return;
+    }
+    this.ensureSession().then(function() {
+      return post('/verify-email', {
+        token: self.token,
+        action: 'send',
+        email: email
+      });
     }).then(function(res) {
+      if (!res || !res.ok) {
+        alert('Could not send code. ' + (res && res.error ? res.error : 'Try again shortly.'));
+        return;
+      }
       if (res.sent) {
         self.state.emailCodeSent = true;
         self.render();
+      } else if (res.reason === 'no_key') {
+        alert('Email verification is not configured yet. Please contact the business directly.');
       } else {
         alert('Could not send code. Try again shortly.');
       }
+    }).catch(function() {
+      alert('Could not send code. Try again shortly.');
     });
   };
 

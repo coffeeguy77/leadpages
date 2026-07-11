@@ -20,6 +20,7 @@ const { sendEmailVerifiedTotalEmail } = require('../../lib/quote-system/portal-e
 const { calculateQuote } = require('../../lib/quote-system/calculator');
 const { formatMoney } = require('../../lib/quote-system/serializers');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
+const { VERIFY_CHANNEL } = require('../../lib/quote-system/constants');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'method_not_allowed' });
