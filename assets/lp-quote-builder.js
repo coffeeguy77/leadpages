@@ -4,10 +4,11 @@
 (function(global) {
   'use strict';
 
-  var STEP_CATALOG = [
+  var STEP_CATALOG = (global.LPQuoteWizardLogic && global.LPQuoteWizardLogic.STEP_CATALOG) || [
     { id: 'equipment', label: 'Equipment / products', icon: 'package' },
     { id: 'event', label: 'Event details', icon: 'calendar' },
     { id: 'beverages', label: 'Packages / per-head', icon: 'users' },
+    { id: 'travel', label: 'Travel zone', icon: 'map-pin' },
     { id: 'addons', label: 'Add-ons & extras', icon: 'plus-circle' },
     { id: 'contact', label: 'Contact details', icon: 'mail' }
   ];
@@ -61,6 +62,7 @@
     }
     if (!cfg.wizard.layout) cfg.wizard.layout = 'cards';
     if (!cfg.wizard.stepLabels) cfg.wizard.stepLabels = {};
+    if (!Array.isArray(cfg.wizard.conditions)) cfg.wizard.conditions = [];
     cfg.products = Array.isArray(cfg.products) ? cfg.products : [];
     cfg.beverages = Array.isArray(cfg.beverages) ? cfg.beverages : [];
     cfg.addons = Array.isArray(cfg.addons) ? cfg.addons : [];
@@ -84,11 +86,16 @@
     return '<svg class="oqb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' + ic + '</svg>';
   }
 
+  function wl() { return global.LPQuoteWizardLogic || {}; }
+
   function QuoteBuilder(root, options) {
     this.root = root;
+    this.previewRoot = (options && options.previewRoot) || null;
     this.config = normalizeConfig(options && options.config);
     this.tab = 'overview';
     this.showJson = false;
+    this.previewProgress = { productId: '', hours: 3, guestCount: 50, beverageId: '', addonIds: [], travelZoneId: '' };
+    this.previewStep = 0;
     this._render();
   }
 
@@ -127,6 +134,89 @@
     html += '</div>';
     this.root.innerHTML = html;
     this._wire();
+    this._refreshPreview();
+  };
+
+  QuoteBuilder.prototype._toShell = function() {
+    var c = this.config;
+    return {
+      business: c.business || {},
+      products: c.products || [],
+      beverages: c.beverages || [],
+      addons: c.addons || [],
+      travelZones: (c.travel && c.travel.zones) || [],
+      wizard: c.wizard || {}
+    };
+  };
+
+  QuoteBuilder.prototype._refreshPreview = function() {
+    if (!this.previewRoot || this.showJson) return;
+    this.previewRoot.innerHTML = '<div class="oqb-preview">' + this._renderPreview() + '</div>';
+    this._wirePreview();
+  };
+
+  QuoteBuilder.prototype._renderPreview = function() {
+    var self = this;
+    var shell = this._toShell();
+    var W = wl();
+    var tz = shell.travelZones.length;
+    var steps = W.resolveWizardSteps
+      ? W.resolveWizardSteps(shell.wizard, this.previewProgress, tz)
+      : (shell.wizard.steps || ['equipment', 'contact']);
+    if (this.previewStep >= steps.length) this.previewStep = Math.max(0, steps.length - 1);
+    var stepKey = steps[this.previewStep] || 'contact';
+    var labels = shell.wizard.stepLabels || {};
+    var label = function(k) { return labels[k] || (W.catalogLabel ? W.catalogLabel(k) : k); };
+    var progress = this.previewProgress;
+    var filter = W.filterByShowWhen || function(items) { return items || []; };
+
+    var body = '';
+    if (stepKey === 'equipment' || stepKey === 'event') {
+      body = '<p class="lp-oq-intro">Choose your setup.</p>' +
+        filter(shell.products, progress).map(function(p) {
+          var sel = progress.productId === p.id ? ' is-selected' : '';
+          return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="productId" data-val="' + esc(p.id) + '">' +
+            iconSvg(p.icon) + '<strong>' + esc(p.label) + '</strong></button>';
+        }).join('') +
+        '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
+    } else if (stepKey === 'beverages') {
+      body = '<p class="lp-oq-intro">Guest count &amp; package.</p>' +
+        '<label class="lp-oq-field"><span>Guests</span><input type="number" data-prev-field="guestCount" value="' + esc(progress.guestCount) + '"></label>' +
+        filter(shell.beverages, progress).map(function(b) {
+          var sel = progress.beverageId === b.id ? ' is-selected' : '';
+          return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="beverageId" data-val="' + esc(b.id) + '">' +
+            iconSvg(b.icon) + '<strong>' + esc(b.label) + '</strong></button>';
+        }).join('');
+    } else if (stepKey === 'travel') {
+      body = '<p class="lp-oq-intro">Where is your event?</p>' +
+        shell.travelZones.map(function(z) {
+          var sel = progress.travelZoneId === z.id ? ' is-selected' : '';
+          return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="travelZoneId" data-val="' + esc(z.id) + '">' +
+            iconSvg(z.icon || 'map-pin') + '<strong>' + esc(z.label) + '</strong></button>';
+        }).join('');
+    } else if (stepKey === 'addons') {
+      body = '<p class="lp-oq-intro">Optional extras.</p>' +
+        filter(shell.addons, progress).map(function(a) {
+          var on = progress.addonIds.indexOf(a.id) >= 0 ? ' is-selected' : '';
+          return '<button type="button" class="lp-oq-choice lp-oq-multi' + on + '" data-prev-addon="' + esc(a.id) + '">' +
+            iconSvg(a.icon) + '<strong>' + esc(a.label) + '</strong></button>';
+        }).join('');
+    } else {
+      body = '<p class="lp-oq-intro">Contact details (preview).</p>' +
+        '<label class="lp-oq-field"><span>Name</span><input disabled placeholder="Customer name"></label>';
+    }
+
+    return '<div class="oqb-preview-head"><h4>Live preview</h4><p>Test conditional steps — pick a product to see the flow change.</p></div>' +
+      '<div class="oqb-preview-body oqb-preview-mock"><div class="lp-oq-card' + (shell.wizard.layout === 'list' ? ' lp-oq-layout-list' : shell.wizard.layout === 'split' ? ' lp-oq-layout-split' : '') + '">' +
+      '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc((shell.business && shell.business.name) || 'Your business') + '</h2>' +
+      '<div class="lp-oq-steps">' + steps.map(function(s, i) {
+        return '<span class="lp-oq-step' + (i === self.previewStep ? ' is-active' : (i < self.previewStep ? ' is-done' : '')) + '">' + esc(label(s)) + '</span>';
+      }).join('') + '</div></div>' +
+      '<div class="lp-oq-body">' + body + '</div>' +
+      '<div class="lp-oq-foot">' +
+      (self.previewStep > 0 ? '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-prev-act="back">Back</button>' : '') +
+      (self.previewStep < steps.length - 1 ? '<button type="button" class="lp-oq-btn" data-prev-act="next">Continue</button>' : '<button type="button" class="lp-oq-btn" disabled>Get my quote</button>') +
+      '</div></div></div>';
   };
 
   QuoteBuilder.prototype._renderTab = function() {
@@ -176,23 +266,77 @@
       + '<p class="oqb-hint">Use the tabs above to add/remove options, change prices, pick icons and tune the customer journey.</p>';
   };
 
+  QuoteBuilder.prototype._stepConditionValue = function(stepId) {
+    var W = wl();
+    var norm = W.normalizeStepId ? W.normalizeStepId(stepId) : stepId;
+    var conds = (this.config.wizard.conditions) || [];
+    for (var i = 0; i < conds.length; i++) {
+      if ((W.normalizeStepId ? W.normalizeStepId(conds[i].step) : conds[i].step) !== norm) continue;
+      var when = conds[i].when;
+      if (!when) return '';
+      if (when.values && when.values.indexOf('*') >= 0) return 'any';
+      if (when.field === 'productId' && when.values && when.values.length === 1) return 'product:' + when.values[0];
+      if (when.field === 'productId' && when.values && when.values.length > 1) return 'products';
+      return '';
+    }
+    return '';
+  };
+
+  QuoteBuilder.prototype._setStepCondition = function(stepId, value) {
+    var W = wl();
+    var norm = W.normalizeStepId ? W.normalizeStepId(stepId) : stepId;
+    var conds = (this.config.wizard.conditions || []).filter(function(c) {
+      return (W.normalizeStepId ? W.normalizeStepId(c.step) : c.step) !== norm;
+    });
+    if (value === 'any') conds.push({ step: norm, when: { field: 'productId', values: ['*'] } });
+    else if (value && value.indexOf('product:') === 0) {
+      conds.push({ step: norm, when: { field: 'productId', values: [value.slice(8)] } });
+    }
+    this.config.wizard.conditions = conds;
+  };
+
+  QuoteBuilder.prototype._showWhenChips = function(itemPath, item) {
+    var self = this;
+    var products = this.config.products || [];
+    if (!products.length) return '';
+    var selected = (item.showWhen && item.showWhen.field === 'productId' && item.showWhen.values) ? item.showWhen.values.slice() : [];
+    var always = !item.showWhen;
+    return '<div class="oqb-showwhen"><p class="oqb-showwhen-title">Show when product</p><div class="oqb-chips">' +
+      '<label class="oqb-chip' + (always ? ' is-on' : '') + '"><input type="checkbox" data-oqb-showwhen-all="' + esc(itemPath) + '"' + (always ? ' checked' : '') + '> Any product</label>' +
+      products.map(function(p) {
+        var on = !always && selected.indexOf(p.id) >= 0;
+        return '<label class="oqb-chip' + (on ? ' is-on' : '') + '"><input type="checkbox" data-oqb-showwhen-val="' + esc(itemPath) + '" value="' + esc(p.id) + '"' + (on ? ' checked' : '') + '> ' + esc(p.label) + '</label>';
+      }).join('') + '</div></div>';
+  };
+
   QuoteBuilder.prototype._renderWizard = function() {
     var self = this;
     var w = this.config.wizard || {};
-    var steps = w.steps || [];
+    var steps = (wl().normalizeWizardSteps ? wl().normalizeWizardSteps(w.steps || []) : (w.steps || [])).filter(function(s) { return s !== 'contact'; });
     var layout = w.layout || 'cards';
     var labels = w.stepLabels || {};
+    var catalog = {};
+    STEP_CATALOG.forEach(function(s) { catalog[s.id] = s; });
 
-    var stepRows = STEP_CATALOG.map(function(step) {
-      var on = steps.indexOf(step.id) >= 0;
-      var order = on ? (steps.indexOf(step.id) + 1) : '';
-      return '<div class="oqb-step-row' + (on ? ' is-on' : '') + '">'
-        + '<label class="oqb-check oqb-step-toggle"><input type="checkbox" data-oqb-step="' + step.id + '"' + (on ? ' checked' : '') + '>'
-        + iconSvg(step.icon) + '<span>' + esc(step.label) + '</span></label>'
-        + (on ? '<input type="text" class="oqb-step-label" placeholder="Step label on wizard" data-oqb-step-label="' + step.id + '" value="' + esc(labels[step.id] || step.label) + '">' : '')
-        + (on ? '<span class="oqb-step-order">#' + order + '</span>' : '')
+    var stepRows = steps.map(function(stepId, idx) {
+      var meta = catalog[stepId] || { id: stepId, label: stepId, icon: 'package' };
+      var condVal = self._stepConditionValue(stepId);
+      var condOpts = '<option value="">Always show</option><option value="any"' + (condVal === 'any' ? ' selected' : '') + '>When any product selected</option>' +
+        (self.config.products || []).map(function(p) {
+          return '<option value="product:' + esc(p.id) + '"' + (condVal === 'product:' + p.id ? ' selected' : '') + '>When ' + esc(p.label) + '</option>';
+        }).join('');
+      return '<div class="oqb-step-row is-on" draggable="true" data-oqb-step-id="' + esc(stepId) + '" data-oqb-step-idx="' + idx + '">'
+        + '<span class="oqb-drag" title="Drag to reorder">⠿</span>'
+        + iconSvg(meta.icon) + '<span style="font-weight:600;min-width:100px">' + esc(meta.label) + '</span>'
+        + '<input type="text" class="oqb-step-label" placeholder="Wizard label" data-oqb-step-label="' + esc(stepId) + '" value="' + esc(labels[stepId] || meta.label) + '">'
+        + '<div class="oqb-step-cond"><select data-oqb-step-cond="' + esc(stepId) + '">' + condOpts + '</select></div>'
+        + '<button type="button" class="oqb-iconbtn oqb-danger" data-oqb-step-remove="' + esc(stepId) + '" title="Remove step">×</button>'
         + '</div>';
     }).join('');
+
+    var inactive = STEP_CATALOG.filter(function(s) {
+      return s.id !== 'contact' && steps.indexOf(s.id) < 0;
+    });
 
     return '<div class="oqb-section"><h4>Layout style</h4><div class="oqb-layouts">'
       + LAYOUTS.map(function(l) {
@@ -200,13 +344,11 @@
           + '<input type="radio" name="oqb-layout" value="' + l.id + '"' + (layout === l.id ? ' checked' : '') + '>'
           + '<strong>' + esc(l.label) + '</strong><span>' + esc(l.hint) + '</span></label>';
       }).join('') + '</div></div>'
-      + '<div class="oqb-section"><h4>Wizard steps</h4><p class="oqb-hint">Turn steps on/off and drag order with the arrows. Contact is always last.</p>'
-      + '<div class="oqb-steps">' + stepRows + '</div>'
-      + '<div class="oqb-step-actions">'
-      + STEP_CATALOG.filter(function(s) { return steps.indexOf(s.id) < 0; }).map(function(s) {
+      + '<div class="oqb-section"><h4>Wizard steps</h4><p class="oqb-hint">Drag to reorder. Set conditions so steps only appear for certain products. Contact is always last.</p>'
+      + '<div class="oqb-steps" data-oqb-sortable="1">' + stepRows + '</div>'
+      + '<div class="oqb-step-actions">' + inactive.map(function(s) {
         return '<button type="button" class="btn ghost oqb-btn-sm" data-oqb-add-step="' + s.id + '">+ ' + esc(s.label) + '</button>';
-      }).join(' ')
-      + '</div></div>';
+      }).join(' ') + '</div></div>';
   };
 
   QuoteBuilder.prototype._itemCard = function(title, idx, path, fieldsHtml, moveUp, moveDown) {
@@ -260,6 +402,7 @@
         + self._field('Guests included free', '<input type="number" min="0" data-oqb-path="beverages.' + i + '.includedHeads" value="' + esc(b.includedHeads != null ? b.includedHeads : 0) + '">')
         + self._field('Flat package price (optional)', self._money('beverages.' + i + '.packageCents', b.packageCents))
         + self._field('Description', '<textarea rows="2" data-oqb-path="beverages.' + i + '.description">' + esc(b.description || '') + '</textarea>')
+        + self._showWhenChips('beverages.' + i, b)
         + '<input type="hidden" data-oqb-path="beverages.' + i + '.id" value="' + esc(b.id || '') + '">'
         + '</div>';
       return self._itemCard(b.label || 'New package', i, 'beverages', fields, i > 0, i < list.length - 1);
@@ -278,6 +421,7 @@
         + self._field('Icon', self._iconSelect('addons.' + i + '.icon', a.icon || ''))
         + self._field('Fixed price', self._money('addons.' + i + '.fixedCents', a.fixedCents))
         + self._field('Description', '<textarea rows="2" data-oqb-path="addons.' + i + '.description">' + esc(a.description || '') + '</textarea>')
+        + self._showWhenChips('addons.' + i, a)
         + '<input type="hidden" data-oqb-path="addons.' + i + '.id" value="' + esc(a.id || '') + '">'
         + '</div>';
       return self._itemCard(a.label || 'New add-on', i, 'addons', fields, i > 0, i < list.length - 1);
@@ -293,12 +437,13 @@
     var cards = list.map(function(z, i) {
       var fields = '<div class="oqb-grid">'
         + self._field('Zone name', '<input type="text" data-oqb-path="travel.zones.' + i + '.label" value="' + esc(z.label || '') + '">')
+        + self._field('Icon', self._iconSelect('travel.zones.' + i + '.icon', z.icon || 'map-pin'))
         + self._field('Travel fee', self._money('travel.zones.' + i + '.feeCents', z.feeCents))
         + '<input type="hidden" data-oqb-path="travel.zones.' + i + '.id" value="' + esc(z.id || '') + '">'
         + '</div>';
       return self._itemCard(z.label || 'New zone', i, 'travel.zones', fields, i > 0, i < list.length - 1);
     }).join('');
-    return '<p class="oqb-hint">Distance or region fees added to the quote total.</p>'
+    return '<p class="oqb-hint">Distance or region fees. Add the <strong>Travel zone</strong> step in Wizard flow so customers pick a zone.</p>'
       + '<div class="oqb-items">' + (cards || '<p class="oqb-empty">No travel zones — all areas free.</p>') + '</div>'
       + '<button type="button" class="btn ghost" data-oqb-add="travel">+ Add travel zone</button>';
   };
@@ -385,8 +530,84 @@
       el.addEventListener(ev, function() {
         self._setPath(el.getAttribute('data-oqb-path'), el.type === 'checkbox' ? el.checked : el.value);
         if (el.getAttribute('data-oqb-path').indexOf('.icon') >= 0) self._render();
+        else self._refreshPreview();
       });
     });
+
+    this.root.querySelectorAll('[data-oqb-step-cond]').forEach(function(sel) {
+      sel.addEventListener('change', function() {
+        self._syncFromDom();
+        self._setStepCondition(sel.getAttribute('data-oqb-step-cond'), sel.value);
+        self._refreshPreview();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-step-remove]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        self._syncFromDom();
+        var stepId = btn.getAttribute('data-oqb-step-remove');
+        self.config.wizard.steps = (self.config.wizard.steps || []).filter(function(s) { return s !== stepId; });
+        if (self.config.wizard.steps.indexOf('contact') < 0) self.config.wizard.steps.push('contact');
+        self._render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-showwhen-all]').forEach(function(cb) {
+      cb.addEventListener('change', function() {
+        self._syncFromDom();
+        var path = cb.getAttribute('data-oqb-showwhen-all');
+        self._setShowWhen(path, cb.checked ? null : { field: 'productId', values: [] });
+        self._render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-showwhen-val]').forEach(function(cb) {
+      cb.addEventListener('change', function() {
+        self._syncFromDom();
+        var path = cb.getAttribute('data-oqb-showwhen-val');
+        var card = cb.closest('.oqb-item');
+        if (!card) return;
+        var vals = [];
+        card.querySelectorAll('[data-oqb-showwhen-val]:checked').forEach(function(c) { vals.push(c.value); });
+        var allCb = card.querySelector('[data-oqb-showwhen-all]');
+        if (allCb) allCb.checked = vals.length === 0;
+        self._setShowWhen(path, vals.length ? { field: 'productId', values: vals } : null);
+        self._refreshPreview();
+      });
+    });
+
+    var sortable = this.root.querySelector('[data-oqb-sortable]');
+    if (sortable) {
+      var dragIdx = null;
+      sortable.querySelectorAll('.oqb-step-row').forEach(function(row) {
+        row.addEventListener('dragstart', function(e) {
+          dragIdx = parseInt(row.getAttribute('data-oqb-step-idx'), 10);
+          row.classList.add('is-dragging');
+          if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+        });
+        row.addEventListener('dragend', function() {
+          row.classList.remove('is-dragging');
+          dragIdx = null;
+        });
+        row.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+        });
+        row.addEventListener('drop', function(e) {
+          e.preventDefault();
+          if (dragIdx == null) return;
+          var dropIdx = parseInt(row.getAttribute('data-oqb-step-idx'), 10);
+          if (dragIdx === dropIdx) return;
+          self._syncFromDom();
+          var steps = (wl().normalizeWizardSteps ? wl().normalizeWizardSteps(self.config.wizard.steps) : (self.config.wizard.steps || []).slice())
+            .filter(function(s) { return s !== 'contact'; });
+          var moved = steps.splice(dragIdx, 1)[0];
+          steps.splice(dropIdx, 0, moved);
+          self.config.wizard.steps = steps.concat(['contact']);
+          self._render();
+        });
+      });
+    }
 
     this.root.querySelectorAll('[data-oqb-step]').forEach(function(cb) {
       cb.addEventListener('change', function() {
@@ -430,7 +651,13 @@
         if (kind === 'addons') self.config.addons.push({ id: uid('addon'), label: 'New add-on', fixedCents: 0, icon: 'plus-circle' });
         if (kind === 'travel') {
           if (!self.config.travel) self.config.travel = { zones: [] };
-          self.config.travel.zones.push({ id: uid('zone'), label: 'New zone', feeCents: 0 });
+          self.config.travel.zones.push({ id: uid('zone'), label: 'New zone', feeCents: 0, icon: 'map-pin' });
+          var wsteps = (self.config.wizard.steps || []).slice();
+          if (wsteps.indexOf('travel') < 0) {
+            if (wsteps.indexOf('contact') >= 0) wsteps.splice(wsteps.indexOf('contact'), 0, 'travel');
+            else wsteps.push('travel');
+            self.config.wizard.steps = wsteps;
+          }
         }
         self._render();
       });
@@ -471,6 +698,84 @@
         list[idx] = list[j];
         list[j] = tmp;
         self._render();
+      });
+    });
+  };
+
+  QuoteBuilder.prototype._setShowWhen = function(path, when) {
+    var parts = path.split('.');
+    var list = this.config[parts[0]];
+    var idx = parseInt(parts[1], 10);
+    if (!list || !list[idx]) return;
+    if (!when) delete list[idx].showWhen;
+    else list[idx].showWhen = when;
+  };
+
+  QuoteBuilder.prototype._reconcilePreviewSelections = function() {
+    var shell = this._toShell();
+    var p = this.previewProgress;
+    var W = wl();
+    var bevs = W.filterByShowWhen ? W.filterByShowWhen(shell.beverages, p) : shell.beverages;
+    if (p.beverageId && !bevs.some(function(b) { return b.id === p.beverageId; })) p.beverageId = '';
+    var addons = W.filterByShowWhen ? W.filterByShowWhen(shell.addons, p) : shell.addons;
+    var ids = addons.map(function(a) { return a.id; });
+    p.addonIds = (p.addonIds || []).filter(function(id) { return ids.indexOf(id) >= 0; });
+  };
+
+  QuoteBuilder.prototype._clampPreviewStep = function() {
+    var shell = this._toShell();
+    var W = wl();
+    var steps = W.resolveWizardSteps
+      ? W.resolveWizardSteps(shell.wizard, this.previewProgress, shell.travelZones.length)
+      : (shell.wizard.steps || ['contact']);
+    if (this.previewStep >= steps.length) this.previewStep = Math.max(0, steps.length - 1);
+  };
+
+  QuoteBuilder.prototype._wirePreview = function() {
+    var self = this;
+    if (!this.previewRoot) return;
+    var root = this.previewRoot;
+
+    root.querySelectorAll('[data-prev-pick]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var key = btn.getAttribute('data-prev-pick');
+        self.previewProgress[key] = btn.getAttribute('data-val');
+        if (key === 'productId') self._reconcilePreviewSelections();
+        self._clampPreviewStep();
+        self._refreshPreview();
+      });
+    });
+
+    root.querySelectorAll('[data-prev-addon]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var id = btn.getAttribute('data-prev-addon');
+        var idx = self.previewProgress.addonIds.indexOf(id);
+        if (idx >= 0) self.previewProgress.addonIds.splice(idx, 1);
+        else self.previewProgress.addonIds.push(id);
+        self._refreshPreview();
+      });
+    });
+
+    root.querySelectorAll('[data-prev-field]').forEach(function(inp) {
+      inp.addEventListener('change', function() {
+        var f = inp.getAttribute('data-prev-field');
+        var v = parseInt(inp.value, 10) || 0;
+        self.previewProgress[f] = v;
+        self._refreshPreview();
+      });
+    });
+
+    root.querySelectorAll('[data-prev-act]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var act = btn.getAttribute('data-prev-act');
+        var shell = self._toShell();
+        var W = wl();
+        var steps = W.resolveWizardSteps
+          ? W.resolveWizardSteps(shell.wizard, self.previewProgress, shell.travelZones.length)
+          : (shell.wizard.steps || ['contact']);
+        if (act === 'back') self.previewStep = Math.max(0, self.previewStep - 1);
+        else if (act === 'next') self.previewStep = Math.min(steps.length - 1, self.previewStep + 1);
+        self._refreshPreview();
       });
     });
   };

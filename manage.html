@@ -539,6 +539,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-mobile-menu-builder.js"></script>
 <script src="/assets/lp-trade-picker.js"></script>
 <script src="/icons.js"></script>
+<script src="/assets/lp-quote-wizard-logic.js"></script>
 <script src="/assets/lp-quote-builder.js"></script>
 </head>
 <body data-lp-admin-page="manage">
@@ -6203,7 +6204,8 @@ function heroCtaCard(c){
   function _oqEditorBlock(admin, isSuper, slug){
     if(!_oqCanEditConfig(admin, isSuper)) return '';
     return '<div class="card" style="margin-top:18px;border:1px solid var(--line);" id="oq-builder-card">'
-      +'<div id="oq-builder-root"></div>'
+      +'<div class="oqb-split-wrap"><div id="oq-builder-root" class="oqb-editor-host"></div>'
+      +'<div id="oq-preview-root" class="oqb-preview-host"></div></div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">'
       +'<button type="button" class="btn" id="oq-save-config">Save quote builder</button>'
       +'<span id="oq-save-msg" class="hint"></span></div></div>';
@@ -6320,9 +6322,11 @@ function heroCtaCard(c){
       html+='</div></div>';
       box.innerHTML=html;
       LPONLINEQUOTE.builder=null;
+      LPONLINEQUOTE.preview=null;
       if(admin&&admin.activeVersion&&admin.activeVersion.config&&window.LPQuoteBuilder){
         var broot=$('oq-builder-root');
-        if(broot) LPONLINEQUOTE.builder=LPQuoteBuilder.mount(broot,{config:admin.activeVersion.config});
+        var proot=$('oq-preview-root');
+        if(broot) LPONLINEQUOTE.builder=LPQuoteBuilder.mount(broot,{config:admin.activeVersion.config,previewRoot:proot});
       }
       var ref=$('oq-refresh'); if(ref) ref.addEventListener('click',renderOnlineQuoteAdmin);
       var ed=$('oq-goto-editor'); if(ed) ed.addEventListener('click',function(){ showView('details'); landingSub='onlineQuote'; renderDetails(); });

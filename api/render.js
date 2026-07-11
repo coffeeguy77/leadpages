@@ -559,6 +559,7 @@ function injectOnlineQuote(html, slug, cfg) {
     (intro ? '<p class="intro">' + intro + '</p>' : '') +
     '<div id="lp-online-quote" data-slug="' + esc(slug) + '"></div>' +
     '</div></section>' +
+    '<script src="/assets/lp-quote-wizard-logic.js" defer></script>' +
     '<script src="/assets/lp-online-quote.js" defer></script>';
   if (html.includes('<section data-sec="quote"')) {
     return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');

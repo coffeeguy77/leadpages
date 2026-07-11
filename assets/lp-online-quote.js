@@ -53,6 +53,10 @@
     return ' lp-oq-layout-' + layout;
   }
 
+  function wl() {
+    return window.LPQuoteWizardLogic || {};
+  }
+
   function OnlineQuoteWidget(el) {
     this.el = el;
     this.slug = (el.getAttribute('data-slug') || '').trim().toLowerCase();
@@ -96,13 +100,61 @@
     });
   };
 
+  OnlineQuoteWidget.prototype.progress = function() {
+    return {
+      productId: this.state.productId,
+      hours: this.state.hours,
+      guestCount: this.state.guestCount,
+      beverageId: this.state.beverageId,
+      addonIds: this.state.addonIds,
+      travelZoneId: this.state.travelZoneId
+    };
+  };
+
+  OnlineQuoteWidget.prototype.resolvedSteps = function() {
+    var shell = this.shell || {};
+    var wizard = shell.wizard || {};
+    var tz = (shell.travelZones || []).length;
+    var W = wl();
+    if (W.resolveWizardSteps) {
+      return W.resolveWizardSteps(
+        Object.assign({}, wizard, { travelZones: shell.travelZones || [] }),
+        this.progress(),
+        tz
+      );
+    }
+    return wizard.steps || ['equipment', 'beverages', 'addons', 'contact'];
+  };
+
+  OnlineQuoteWidget.prototype.filterItems = function(items) {
+    var W = wl();
+    if (W.filterByShowWhen) return W.filterByShowWhen(items, this.progress());
+    return items || [];
+  };
+
+  OnlineQuoteWidget.prototype.reconcileState = function() {
+    var shell = this.shell || {};
+    var bevs = this.filterItems(shell.beverages);
+    if (this.state.beverageId && !bevs.some(function(b) { return b.id === this.state.beverageId; }, this)) {
+      this.state.beverageId = '';
+    }
+    var addons = this.filterItems(shell.addons);
+    var ids = addons.map(function(a) { return a.id; });
+    this.state.addonIds = this.state.addonIds.filter(function(id) { return ids.indexOf(id) >= 0; });
+    var steps = this.resolvedSteps();
+    if (this.state.step >= steps.length) this.state.step = Math.max(0, steps.length - 1);
+  };
+
   OnlineQuoteWidget.prototype.steps = function() {
-    return (this.shell.wizard && this.shell.wizard.steps) || ['equipment', 'beverages', 'addons', 'contact'];
+    return this.resolvedSteps();
   };
 
   OnlineQuoteWidget.prototype.stepLabel = function(key) {
     var labels = (this.shell.wizard && this.shell.wizard.stepLabels) || {};
-    return labels[key] || key;
+    if (labels[key]) return labels[key];
+    var W = wl();
+    if (W.catalogLabel) return W.catalogLabel(key);
+    return key;
   };
 
   OnlineQuoteWidget.prototype.render = function() {
@@ -125,7 +177,7 @@
   OnlineQuoteWidget.prototype.renderStep = function(key) {
     var s = this.state;
     if (key === 'equipment' || key === 'products' || key === 'event') {
-      var products = this.shell.products || [];
+      var products = this.filterItems(this.shell.products || []);
       return '<p class="lp-oq-intro">Choose your setup.</p>' +
         products.map(function(p) {
           var sel = s.productId === p.id ? ' is-selected' : '';
@@ -139,7 +191,8 @@
         '<input type="number" min="1" max="24" data-field="hours" value="' + esc(s.hours) + '"></label>';
     }
     if (key === 'beverages') {
-      var bevs = this.shell.beverages || [];
+      var bevs = this.filterItems(this.shell.beverages || []);
+      if (!bevs.length) return '<p class="lp-oq-muted">No packages for this selection.</p>';
       return '<p class="lp-oq-intro">Guest count and beverage package.</p>' +
         '<label class="lp-oq-field"><span>Expected guests</span>' +
         '<input type="number" min="1" max="5000" data-field="guestCount" value="' + esc(s.guestCount) + '"></label>' +
@@ -152,8 +205,19 @@
             '</button>';
         }).join('');
     }
+    if (key === 'travel') {
+      var zones = this.shell.travelZones || [];
+      return '<p class="lp-oq-intro">Where is your event?</p>' +
+        zones.map(function(z) {
+          var sel = s.travelZoneId === z.id ? ' is-selected' : '';
+          return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="travelZoneId" data-val="' + esc(z.id) + '">' +
+            iconHtml(z.icon || 'map-pin') +
+            '<strong>' + esc(z.label) + '</strong>' +
+            '</button>';
+        }).join('');
+    }
     if (key === 'addons') {
-      var addons = this.shell.addons || [];
+      var addons = this.filterItems(this.shell.addons || []);
       if (!addons.length) return '<p class="lp-oq-muted">No add-ons for this quote.</p>';
       return '<p class="lp-oq-intro">Optional extras.</p>' +
         addons.map(function(a) {
@@ -233,6 +297,7 @@
       btn.addEventListener('click', function() {
         var key = btn.getAttribute('data-pick');
         self.state[key] = btn.getAttribute('data-val');
+        if (key === 'productId') self.reconcileState();
         self.render();
       });
     });
@@ -259,8 +324,8 @@
     this.el.querySelectorAll('[data-act]').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var act = btn.getAttribute('data-act');
-        if (act === 'back') { self.state.step--; self.render(); }
-        else if (act === 'next') { self.state.step++; self.render(); }
+        if (act === 'back') { self.state.step--; self.reconcileState(); self.render(); }
+        else if (act === 'next') { self.state.step++; self.reconcileState(); self.render(); }
         else if (act === 'calculate') self.calculate();
         else if (act === 'send-email') self.sendEmail();
         else if (act === 'confirm-email') self.confirmEmail();
