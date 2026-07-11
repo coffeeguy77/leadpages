@@ -141,6 +141,12 @@
     return normalizeConfig(this.config);
   };
 
+  QuoteBuilder.prototype.loadConfig = function(raw) {
+    this.config = normalizeConfig(raw);
+    this.previewStep = 0;
+    this._render();
+  };
+
   QuoteBuilder.prototype._render = function() {
     var self = this;
     var c = this.config;
@@ -700,7 +706,7 @@
     }
     var last = parts[parts.length - 1];
     if (last === 'gstRegistered') obj[last] = !!value;
-    else if (/Cents$/.test(last) || last === 'hourlyCents' || last === 'feeCents' || last === 'fixedCents' || last === 'perHeadCents' || last === 'packageCents' || last === 'baseCents') {
+    else if (/Cents$/.test(last) || last === 'hourlyCents' || last === 'feeCents' || last === 'fixedCents' || last === 'perHeadCents' || last === 'packageCents' || last === 'baseCents' || last === 'perUnitCents') {
       obj[last] = cents(value);
     } else if (last === 'minimumHours' || last === 'includedHeads' || last === 'quoteValidityDays' || last === 'minimumNoticeDays' || last === 'minQty' || last === 'baristasIncluded' || last === 'minimumHoursPerShift') {
       obj[last] = parseInt(value, 10) || 0;

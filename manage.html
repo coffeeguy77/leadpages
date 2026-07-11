@@ -6205,9 +6205,19 @@ function heroCtaCard(c){
   }
   function _oqEditorBlock(admin, isSuper, slug){
     if(!_oqCanEditConfig(admin, isSuper)) return '';
+    var cfgJson='';
+    try{ cfgJson=JSON.stringify(admin.activeVersion.config,null,2); }catch(e){ cfgJson='{}'; }
     return '<div class="oqb-card-wrap" id="oq-builder-card">'
       +'<div class="oqb-split-wrap"><div id="oq-builder-root" class="oqb-editor-host"></div>'
       +'<div id="oq-preview-root" class="oqb-preview-host"></div></div>'
+      +'<details class="oqb-json-override" style="margin:14px 0;padding:12px;border:1px solid var(--line);border-radius:12px;">'
+      +'<summary style="cursor:pointer;font-weight:600;">Override config (JSON)</summary>'
+      +'<p class="hint" style="margin:10px 0 8px;">Paste a full config JSON to replace the builder, or edit prices here then load. Saving writes your version — it will <strong>not</strong> auto-reset to the Bean Culture seed file.</p>'
+      +'<textarea id="oq-config-json" class="oqb-json" style="min-height:220px;width:100%;box-sizing:border-box;font-family:ui-monospace,monospace;font-size:12px;">'+esc(cfgJson)+'</textarea>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">'
+      +'<button type="button" class="btn ghost" id="oq-load-json">Load JSON into builder</button>'
+      +'<button type="button" class="btn ghost" id="oq-pull-json">Copy from builder</button>'
+      +'</div><span id="oq-json-msg" class="hint" style="display:block;margin-top:8px;"></span></details>'
       +'<div class="oqb-savebar">'
       +'<button type="button" class="btn" id="oq-save-config">Save quote builder</button>'
       +'<span id="oq-save-msg" class="hint"></span></div></div>';
@@ -6291,12 +6301,12 @@ function heroCtaCard(c){
       }
       if(isSuper){
         var _oqBtnLabel=(slug==='beanculture')
-          ?((admin&&admin.classification==='private_superuser'&&admin.activeVersion)?'Re-provision Bean Culture pricing':'Provision Bean Culture pricing')
+          ?((admin&&admin.classification==='private_superuser'&&admin.activeVersion)?'Reset to Bean Culture seed file':'Provision Bean Culture pricing')
           :((admin&&admin.enabled)?'Re-save enabled':'Enable quote system');
         html+='<div class="card" style="margin-top:18px;border:1px solid var(--accent-soft);"><h3 style="margin:0 0 8px;">Super admin</h3>'
           +'<p class="lede" style="margin:0 0 12px;">'
           +(slug==='beanculture'
-            ?'Loads Bean Culture coffee cart pricing into this site (<code>private_superuser</code>) — required before the wizard works on /beanculture.'
+            ?'<strong>Reset only</strong> — loads the Bean Culture seed template and discards builder edits. Use <strong>Save quote builder</strong> to keep your changes.'
             :'Create or enable the quote_systems row for this site (does not copy private pricing to other tenants).')
           +'</p>'
           +'<button type="button" class="btn" id="oq-enable">'+_oqBtnLabel+'</button>'
@@ -6353,7 +6363,7 @@ function heroCtaCard(c){
         try{
           sc.disabled=true; if(sm) sm.textContent='Saving…';
           var h=await _oqAuthHeaders(); h['Content-Type']='application/json';
-          var r=await fetch('/api/quote-system/admin/config',{method:'POST',headers:h,body:JSON.stringify({site_id:currentSiteId,enabled:true,config:cfg,label:'Admin editor save'})});
+          var r=await fetch('/api/quote-system/admin/config',{method:'POST',headers:h,body:JSON.stringify({site_id:currentSiteId,config:cfg,label:'Admin editor save'})});
           var j=await r.json();
           sc.disabled=false;
           if(j.ok){ if(sm){ sm.textContent='Saved as v'+(j.admin&&j.admin.activeVersion&&j.admin.activeVersion.versionNumber||'?'); sm.style.color='var(--success)'; } if(typeof toast==='function') toast('Quote config saved'); renderOnlineQuoteAdmin(); }
@@ -6374,6 +6384,7 @@ function heroCtaCard(c){
       });
       var en=$('oq-enable'); if(en) en.addEventListener('click',async function(){
         var msg=$('oq-enable-msg');
+        if((currentSiteSlug||'')==='beanculture'&&!confirm('Replace the active config with the Bean Culture seed file? Your unsaved builder edits will be lost unless you saved first.')) return;
         try{
           en.disabled=true; if(msg) msg.textContent='Working…';
           var h=await _oqAuthHeaders(); h['Content-Type']='application/json';
@@ -6397,6 +6408,24 @@ function heroCtaCard(c){
           if(msg){ msg.textContent='Network error'; msg.style.color='#b42318'; }
           if(typeof toast==='function') toast('Network error');
         }
+      });
+      var lj=$('oq-load-json'); if(lj) lj.addEventListener('click',function(){
+        var jm=$('oq-json-msg');
+        var ta=$('oq-config-json');
+        var parsed=_oqParseConfigJson(ta&&ta.value);
+        if(!parsed){ if(jm){ jm.textContent='Invalid JSON'; jm.style.color='var(--danger)'; } return; }
+        if(LPONLINEQUOTE.builder&&LPONLINEQUOTE.builder.loadConfig){
+          LPONLINEQUOTE.builder.loadConfig(parsed);
+          if(jm){ jm.textContent='Loaded into builder — click Save quote builder to persist.'; jm.style.color='var(--success)'; }
+        } else if(jm){ jm.textContent='Builder not ready'; jm.style.color='var(--danger)'; }
+      });
+      var pj=$('oq-pull-json'); if(pj) pj.addEventListener('click',function(){
+        var jm=$('oq-json-msg');
+        var ta=$('oq-config-json');
+        var cfg=LPONLINEQUOTE.builder?LPONLINEQUOTE.builder.getConfig():null;
+        if(!cfg||!ta){ if(jm){ jm.textContent='Nothing to copy'; jm.style.color='var(--danger)'; } return; }
+        ta.value=JSON.stringify(cfg,null,2);
+        if(jm){ jm.textContent='Copied current builder state to JSON.'; jm.style.color='var(--success)'; }
       });
     }catch(e){
       box.innerHTML='<div class="card"><p class="lede">Could not load: '+esc(String(e&&e.message||e))+'</p></div>';
