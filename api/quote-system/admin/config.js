@@ -18,6 +18,7 @@ const { serializeAdminConfig } = require('../../../lib/quote-system/serializers'
 const { CONFIG_CLASSIFICATION } = require('../../../lib/quote-system/constants');
 const { getAdmin } = require('../../../lib/quote-system/supabase');
 const { BEAN_CULTURE_SLUG, provisionBeanCultureConfig } = require('../../../lib/quote-system/provision-bean-culture');
+const { blankQuoteConfig } = require('../../../lib/quote-system/blank-config');
 
 async function ensureQuoteSystem(siteId, classification) {
   const admin = getAdmin();
@@ -72,6 +73,7 @@ module.exports = async function handler(req, res) {
       if (!access.ok) return json(res, access.code, { ok: false, error: access.error });
 
       const isSuper = await isSuperAdmin(user.id);
+      const isOwner = !!(access.site && access.site.owner_user_id === user.id);
       const quoteSystem = await getQuoteSystemForSite(siteId);
       if (!quoteSystem) {
         return json(res, 200, {
@@ -82,7 +84,7 @@ module.exports = async function handler(req, res) {
       }
 
       const configVersion = await getActiveConfig(quoteSystem);
-      const mayRead = canReadFullConfig(quoteSystem, { isSuper, isAdminRequest: true });
+      const mayRead = canReadFullConfig(quoteSystem, { isSuper, isAdminRequest: true, isOwner });
 
       if (!mayRead) {
         return json(res, 403, {
@@ -107,18 +109,34 @@ module.exports = async function handler(req, res) {
       if (!access.ok) return json(res, access.code, { ok: false, error: access.error });
 
       const isSuper = await isSuperAdmin(user.id);
+      const isOwner = !!(access.site && access.site.owner_user_id === user.id);
       let quoteSystem = await getQuoteSystemForSite(siteId);
       if (!quoteSystem) {
         quoteSystem = await ensureQuoteSystem(siteId, CONFIG_CLASSIFICATION.BLANK);
       }
 
-      if (!canWriteConfig(quoteSystem, { isSuper })) {
+      if (!canWriteConfig(quoteSystem, { isSuper, isOwner })) {
         return json(res, 403, { ok: false, error: 'write_restricted' });
       }
 
       const admin = getAdmin();
-      const { data: siteRow } = await admin.from('sites').select('slug').eq('id', siteId).maybeSingle();
+      const { data: siteRow } = await admin.from('sites').select('slug,business_name').eq('id', siteId).maybeSingle();
       const siteSlug = (siteRow && siteRow.slug) || '';
+
+      if (body.provision === 'blank-builder') {
+        const starter = blankQuoteConfig((siteRow && siteRow.business_name) || '');
+        await admin.from('quote_systems').update({
+          enabled: true,
+          configuration_classification: CONFIG_CLASSIFICATION.PUBLIC,
+          updated_at: new Date().toISOString()
+        }).eq('id', quoteSystem.id);
+        const version = await insertConfigVersion(quoteSystem.id, starter, user.id, 'Blank builder starter');
+        quoteSystem = Object.assign({}, quoteSystem, {
+          enabled: true,
+          configuration_classification: CONFIG_CLASSIFICATION.PUBLIC,
+          active_config_version_id: version.id
+        });
+      } else {
       const shouldProvisionBeanCulture = isSuper && (
         body.provision === 'bean-culture' ||
         (body.enabled && siteSlug === BEAN_CULTURE_SLUG)
@@ -130,13 +148,19 @@ module.exports = async function handler(req, res) {
       } else {
         const patch = {};
         if (body.enabled !== undefined) patch.enabled = !!body.enabled;
+        if (body.classification && isSuper) {
+          const cls = clean(body.classification, 32);
+          if ([CONFIG_CLASSIFICATION.BLANK, CONFIG_CLASSIFICATION.PUBLIC, CONFIG_CLASSIFICATION.PRIVATE_SUPERUSER].includes(cls)) {
+            patch.configuration_classification = cls;
+          }
+        }
 
         if (body.config && typeof body.config === 'object') {
           const configVersion = await insertConfigVersion(
             quoteSystem.id,
             body.config,
             user.id,
-            clean(body.label, 120) || null
+            clean(body.label, 120) || 'Saved from admin'
           );
           quoteSystem.active_config_version_id = configVersion.id;
         }
@@ -149,6 +173,7 @@ module.exports = async function handler(req, res) {
             .single();
           if (data) quoteSystem = data;
         }
+      }
       }
 
       const active = await getActiveConfig(quoteSystem);

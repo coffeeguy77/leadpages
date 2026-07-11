@@ -6150,7 +6150,31 @@ function heroCtaCard(c){
 
 
   /* ============================ ONLINE QUOTE ADMIN ============================ */
-  var LPONLINEQUOTE={ siteId:null, config:null, sessions:[] };
+  var LPONLINEQUOTE={ siteId:null, config:null, sessions:[], draftConfig:null };
+  function _oqCanEditConfig(admin, isSuper){
+    if(!admin||!admin.activeVersion||!admin.activeVersion.config) return false;
+    if(admin.classification==='private_superuser') return !!isSuper;
+    return true;
+  }
+  function _oqDollars(cents){ if(cents==null||isNaN(cents)) return ''; return (Math.round(cents)/100).toFixed(2); }
+  function _oqParseConfigJson(raw){
+    try{ var c=JSON.parse(raw); if(!c||typeof c!=='object'||Array.isArray(c)) throw new Error('invalid'); return c; }
+    catch(e){ return null; }
+  }
+  function _oqEditorBlock(admin, isSuper, slug){
+    if(!_oqCanEditConfig(admin, isSuper)) return '';
+    var cfg=admin.activeVersion.config;
+    var json=JSON.stringify(cfg, null, 2);
+    return '<div class="card" style="margin-top:18px;border:1px solid var(--line);"><h3 style="margin:0 0 8px;">Quote builder — prices &amp; products</h3>'
+      +'<p class="lede" style="margin:0 0 12px;">Edit products, labour rates, beverages, add-ons and travel zones. Saving creates a new immutable config version. '
+      +(admin.classification==='public'?'This is your tenant quote builder (classification <code>public</code>).':'Super-admin edit of <code>'+esc(admin.classification||'')+'</code> config.')
+      +'</p>'
+      +'<p class="hint" style="margin:0 0 10px;"><strong>Key fields:</strong> <code>products[].baseCents</code> (equipment price), <code>labour.hourlyCents</code>, <code>labour.minimumHours</code>, <code>beverages[]</code>, <code>addons[]</code>, <code>travel.zones[]</code>, <code>business.name</code>, <code>wizard.steps</code></p>'
+      +'<textarea id="oq-config-json" rows="18" style="width:100%;font-family:ui-monospace,monospace;font-size:12px;padding:12px;border:1px solid var(--line);border-radius:10px;">'+esc(json)+'</textarea>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">'
+      +'<button type="button" class="btn" id="oq-save-config">Save pricing config</button>'
+      +'<span id="oq-save-msg" class="hint"></span></div></div>';
+  }
   async function _oqAuthHeaders(){
     var se=await sb.auth.getSession();
     var tk=se&&se.data&&se.data.session&&se.data.session.access_token;
@@ -6183,7 +6207,10 @@ function heroCtaCard(c){
       var restricted=cfgJ.error==='classification_restricted';
       var notConfigured=!admin||cfgJ.message==='not_configured';
       var html='<div class="card"><h2>Online Quote System</h2>'
-        +'<p class="lede">Verified quote wizard with email and SMS gating. Pricing is calculated server-side — never in page source until verification.</p>';
+        +'<p class="lede">Verified quote wizard with email and SMS gating. Pricing is calculated server-side — never in page source until verification.</p>'
+        +'<div class="hint" style="margin:12px 0;padding:14px;border-radius:12px;background:var(--panel-soft);">'
+        +'<strong>Customer journey:</strong> (1) Complete wizard → (2) <em>Email code</em> unlocks total (summary email sent) → (3) <em>SMS code</em> unlocks full breakdown → (4) <strong>Portal link + PDF attached</strong> emailed after SMS. Requires <code>RESEND_API_KEY</code> on Vercel.'
+        +'</div>';
       if(notConfigured){
         html+='<div class="hint" style="margin:12px 0;padding:14px;border-radius:12px;background:var(--panel-soft);">No quote system binding yet. '
           +(isSuper?'Enable below or run <code>node scripts/seed-bean-culture-quote.js</code> for Bean Culture.':'Contact your platform administrator to provision pricing.')
@@ -6208,6 +6235,7 @@ function heroCtaCard(c){
             +'</div>';
         }
       }
+      html+=_oqEditorBlock(admin, isSuper, slug);
       html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:16px 0;">'
         +(slug?'<a class="btn ghost" href="/'+esc(slug)+'" target="_blank" rel="noopener" style="text-decoration:none">Live site ↗</a>':'')
         +'<button type="button" class="btn ghost" id="oq-refresh">Refresh</button>'
@@ -6215,6 +6243,15 @@ function heroCtaCard(c){
       html+='<div class="card" style="margin-top:18px;"><h3 style="margin:0 0 8px;">Page section</h3>'
         +'<p class="lede" style="margin:0 0 10px;">Enable <strong>Online Quote</strong> in App Marketplace or Page editor → Lead Capture, then publish. Requires an active app subscription ($29/mo or $290/yr) unless this is a platform-exempt site.</p>'
         +'<button type="button" class="btn ghost" id="oq-goto-editor">Open Page editor</button></div>';
+      if(isSuper||!notConfigured){
+        var _showBlank=!admin||!admin.activeVersion||admin.classification==='blank';
+        if(_showBlank||(isSuper&&slug!=='beanculture')){
+          html+='<div class="card" style="margin-top:18px;"><h3 style="margin:0 0 8px;">Start blank quote builder</h3>'
+            +'<p class="lede" style="margin:0 0 12px;">Creates a <code>public</code> quote system with starter products and labour — edit prices in the builder above, then enable the Online Quote section and publish.</p>'
+            +'<button type="button" class="btn ghost" id="oq-blank-builder">Create blank quote builder</button>'
+            +'<span id="oq-blank-msg" class="hint" style="margin-left:8px;"></span></div>';
+        }
+      }
       if(isSuper){
         var _oqBtnLabel=(slug==='beanculture')
           ?((admin&&admin.classification==='private_superuser'&&admin.activeVersion)?'Re-provision Bean Culture pricing':'Provision Bean Culture pricing')
@@ -6251,6 +6288,33 @@ function heroCtaCard(c){
       box.innerHTML=html;
       var ref=$('oq-refresh'); if(ref) ref.addEventListener('click',renderOnlineQuoteAdmin);
       var ed=$('oq-goto-editor'); if(ed) ed.addEventListener('click',function(){ showView('details'); landingSub='onlineQuote'; renderDetails(); });
+      var sc=$('oq-save-config'); if(sc) sc.addEventListener('click',async function(){
+        var ta=$('oq-config-json'), sm=$('oq-save-msg');
+        if(!ta) return;
+        var cfg=_oqParseConfigJson(ta.value);
+        if(!cfg){ if(sm){ sm.textContent='Invalid JSON'; sm.style.color='#b42318'; } return; }
+        try{
+          sc.disabled=true; if(sm) sm.textContent='Saving…';
+          var h=await _oqAuthHeaders(); h['Content-Type']='application/json';
+          var r=await fetch('/api/quote-system/admin/config',{method:'POST',headers:h,body:JSON.stringify({site_id:currentSiteId,enabled:true,config:cfg,label:'Admin editor save'})});
+          var j=await r.json();
+          sc.disabled=false;
+          if(j.ok){ if(sm){ sm.textContent='Saved as v'+(j.admin&&j.admin.activeVersion&&j.admin.activeVersion.versionNumber||'?'); sm.style.color='#0a7d33'; } if(typeof toast==='function') toast('Quote config saved'); renderOnlineQuoteAdmin(); }
+          else { if(sm){ sm.textContent=(j.message||j.error||'Failed'); sm.style.color='#b42318'; } }
+        }catch(e){ sc.disabled=false; if(sm){ sm.textContent='Network error'; sm.style.color='#b42318'; } }
+      });
+      var bb=$('oq-blank-builder'); if(bb) bb.addEventListener('click',async function(){
+        var bm=$('oq-blank-msg');
+        try{
+          bb.disabled=true; if(bm) bm.textContent='Creating…';
+          var h=await _oqAuthHeaders(); h['Content-Type']='application/json';
+          var r=await fetch('/api/quote-system/admin/config',{method:'POST',headers:h,body:JSON.stringify({site_id:currentSiteId,provision:'blank-builder'})});
+          var j=await r.json();
+          bb.disabled=false;
+          if(j.ok){ if(typeof toast==='function') toast('Blank quote builder created'); renderOnlineQuoteAdmin(); }
+          else { if(bm){ bm.textContent=(j.message||j.error||'Failed'); bm.style.color='#b42318'; } }
+        }catch(e){ bb.disabled=false; if(bm) bm.textContent='Network error'; }
+      });
       var en=$('oq-enable'); if(en) en.addEventListener('click',async function(){
         var msg=$('oq-enable-msg');
         try{

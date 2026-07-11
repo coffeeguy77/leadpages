@@ -16,7 +16,9 @@ const {
   sendEmailCode,
   verifyEmailCode
 } = require('../../lib/quote-system/verify');
-const { VERIFY_CHANNEL } = require('../../lib/quote-system/constants');
+const { sendEmailVerifiedTotalEmail } = require('../../lib/quote-system/portal-email');
+const { calculateQuote } = require('../../lib/quote-system/calculator');
+const { formatMoney } = require('../../lib/quote-system/serializers');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
 
 module.exports = async function handler(req, res) {
@@ -70,7 +72,38 @@ module.exports = async function handler(req, res) {
       if (!verified.ok) return json(res, 400, { ok: false, error: verified.error });
 
       await updateSession(session.id, { email_verified_at: new Date().toISOString() });
-      return json(res, 200, { ok: true, emailVerified: true });
+
+      let emailSummary = null;
+      try {
+        const quoteSystem = await getQuoteSystemForSite(session.site_id);
+        const configVersion = quoteSystem ? await getActiveConfig(quoteSystem) : null;
+        if (configVersion && configVersion.config && session.contact_email) {
+          const calc = calculateQuote(configVersion.config, session.progress || {});
+          const totalFormatted = formatMoney(calc.totalCents);
+          const { getAdmin } = require('../../lib/quote-system/supabase');
+          const { data: site } = await getAdmin().from('sites')
+            .select('slug,business_name')
+            .eq('id', session.site_id)
+            .maybeSingle();
+          const businessName = (configVersion.config.business && configVersion.config.business.name)
+            || (site && site.business_name)
+            || 'Your provider';
+          emailSummary = await sendEmailVerifiedTotalEmail({
+            to: session.contact_email,
+            businessName,
+            totalFormatted,
+            siteSlug: site && site.slug
+          });
+        }
+      } catch (mailErr) {
+        console.warn('quote-system verify-email summary mail:', mailErr && mailErr.message);
+      }
+
+      return json(res, 200, {
+        ok: true,
+        emailVerified: true,
+        summaryEmailSent: !!(emailSummary && emailSummary.sent)
+      });
     }
 
     return json(res, 400, { ok: false, error: 'unknown_action' });
