@@ -48,7 +48,8 @@
       quote: null,
       session: null,
       portalUrl: null,
-      pdfUrl: null
+      pdfUrl: null,
+      emailCodeSent: false
     };
   }
 
@@ -151,12 +152,19 @@
 
   OnlineQuoteWidget.prototype.renderQuotePanel = function() {
     var q = this.state.quote;
-    var sess = this.state.session || {};
     if (!q) return '';
     var html = '<div class="lp-oq-quote"><h3>Your quote</h3>';
     if (q.level === 'public_progress') {
       html += '<p>' + esc(q.message || 'Verify your email to see your total.') + '</p>' +
-        '<div class="lp-oq-verify"><button type="button" class="lp-oq-btn" data-act="send-email">Email me a verification code</button></div>';
+        '<div class="lp-oq-verify"><button type="button" class="lp-oq-btn" data-act="send-email">' +
+        (this.state.emailCodeSent ? 'Resend verification code' : 'Email me a verification code') +
+        '</button></div>';
+      if (this.state.emailCodeSent) {
+        html += '<p class="lp-oq-muted" style="font-size:13px;margin:8px 0 0">Check your inbox for a 6-digit code.</p>';
+      }
+      html += '<label class="lp-oq-field"><span>Email verification code</span>' +
+        '<input data-field="emailCode" placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" maxlength="8"></label>' +
+        '<button type="button" class="lp-oq-btn" data-act="confirm-email" style="margin-top:10px">Confirm email code</button>';
     } else if (q.level === 'email_verified_total') {
       html += '<p class="lp-oq-total">' + esc(q.totalFormatted || '') + ' <small>inc GST</small></p>' +
         '<p>' + esc(q.message || '') + '</p>' +
@@ -175,10 +183,6 @@
           (this.state.pdfUrl ? ' <a class="lp-oq-btn lp-oq-btn-ghost" href="' + esc(this.state.pdfUrl) + '" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;margin-left:8px">Download PDF</a>' : '') +
           '</div><p class="lp-oq-muted" style="font-size:12px;margin-top:8px">A copy was emailed to you if an address was provided.</p>';
       }
-    }
-    if (sess.emailVerified && q.level === 'public_progress') {
-      html += '<label class="lp-oq-field"><span>Verification code</span><input data-field="emailCode" placeholder="6-digit code"></label>' +
-        '<button type="button" class="lp-oq-btn" data-act="confirm-email">Confirm code</button>';
     }
     html += '</div>';
     return html;
@@ -285,8 +289,12 @@
       action: 'send',
       email: this.state.contact.email
     }).then(function(res) {
-      alert(res.sent ? 'Verification code sent to your email.' : 'Could not send code. Try again shortly.');
-      self.render();
+      if (res.sent) {
+        self.state.emailCodeSent = true;
+        self.render();
+      } else {
+        alert('Could not send code. Try again shortly.');
+      }
     });
   };
 
