@@ -31,6 +31,18 @@
     return fetch(API + path).then(function(r) { return r.json(); });
   }
 
+  function normaliseAuPhone(phone) {
+    var digits = String(phone || '').replace(/\D/g, '');
+    if (!digits) return '';
+    if (digits.indexOf('61') === 0) return '+' + digits;
+    if (digits.charAt(0) === '0') return '+61' + digits.slice(1);
+    return '+61' + digits;
+  }
+
+  function contactPhone() {
+    return normaliseAuPhone(this.state.contact.phone);
+  }
+
   function OnlineQuoteWidget(el) {
     this.el = el;
     this.slug = (el.getAttribute('data-slug') || '').trim().toLowerCase();
@@ -136,7 +148,7 @@
     return '<p class="lp-oq-intro">Your details to receive the quote.</p>' +
       '<label class="lp-oq-field"><span>Name</span><input data-field="contact.name" value="' + esc(s.contact.name) + '"></label>' +
       '<label class="lp-oq-field"><span>Email</span><input type="email" data-field="contact.email" value="' + esc(s.contact.email) + '"></label>' +
-      '<label class="lp-oq-field"><span>Mobile</span><input type="tel" data-field="contact.phone" value="' + esc(s.contact.phone) + '"></label>';
+      '<label class="lp-oq-field"><span>Mobile</span><input type="tel" data-field="contact.phone" placeholder="0414 631 463" value="' + esc(s.contact.phone) + '"></label>';
   };
 
   OnlineQuoteWidget.prototype.renderFooter = function(stepKey, steps) {
@@ -215,8 +227,10 @@
       inp.addEventListener('change', function() {
         var f = inp.getAttribute('data-field');
         var v = inp.value;
-        if (f.indexOf('contact.') === 0) self.state.contact[f.slice(8)] = v;
-        else if (f === 'hours' || f === 'guestCount') self.state[f] = parseInt(v, 10) || 0;
+        if (f.indexOf('contact.') === 0) {
+          var key = f.slice(8);
+          self.state.contact[key] = key === 'phone' ? normaliseAuPhone(v) : v;
+        } else if (f === 'hours' || f === 'guestCount') self.state[f] = parseInt(v, 10) || 0;
         else self.state[f] = v;
       });
     });
@@ -247,7 +261,11 @@
     var body = {
       slug: this.slug,
       progress: inputs,
-      contact: this.state.contact
+      contact: {
+        name: this.state.contact.name,
+        email: this.state.contact.email,
+        phone: contactPhone.call(this)
+      }
     };
     if (this.token) body.token = this.token;
     return post('/session', body).then(function(res) {
@@ -324,10 +342,15 @@
 
   OnlineQuoteWidget.prototype.sendSms = function() {
     var self = this;
+    var phone = contactPhone.call(this);
+    if (!phone || phone.length < 11) {
+      alert('Enter a valid Australian mobile number (e.g. 0414 631 463).');
+      return;
+    }
     post('/verify-sms', {
       token: this.token,
       action: 'send',
-      phone: this.state.contact.phone
+      phone: phone
     }).then(function(res) {
       if (!res.sent) alert('SMS verification is not available yet.');
       else alert('Verification code sent to your mobile.');
@@ -343,7 +366,7 @@
       token: this.token,
       action: 'confirm',
       code: code,
-      phone: this.state.contact.phone
+      phone: contactPhone.call(this)
     }).then(function(res) {
       if (!res.ok) { alert('Invalid or expired SMS code.'); return; }
       self.state.portalUrl = res.portalUrl || null;

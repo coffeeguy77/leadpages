@@ -16,6 +16,7 @@ const { createSession, updateSession } = require('../../lib/quote-system/session
 const { serializeSession } = require('../../lib/quote-system/serializers');
 const { RESPONSE_LEVEL } = require('../../lib/quote-system/constants');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
+const { normaliseAuPhone } = require('../../lib/quote-system/phone');
 
 module.exports = async function handler(req, res) {
   try {
@@ -69,7 +70,7 @@ module.exports = async function handler(req, res) {
         const contact = body.contact || {};
         if (contact.name) patch.contact_name = clean(contact.name, 120);
         if (contact.email) patch.contact_email = clean(contact.email, 160);
-        if (contact.phone) patch.contact_phone = clean(contact.phone, 60);
+        if (contact.phone) patch.contact_phone = clean(normaliseAuPhone(contact.phone), 60);
 
         const updated = await updateSession(existing.session.id, patch);
         const level = verificationLevelForSession(updated);
