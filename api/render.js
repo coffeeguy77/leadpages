@@ -541,7 +541,13 @@ function injectBuyBar(html, bar) {
 function injectOnlineQuote(html, slug, cfg) {
   const sec = cfg && cfg.sections && cfg.sections.onlineQuote;
   if (!sec || sec.on !== true) return html;
-  if (html.includes('data-sec="onlineQuote"')) return html;
+  const safeSlug = esc(slug || (cfg && cfg.slug) || '');
+  if (html.includes('data-sec="onlineQuote"')) {
+    return html.replace(
+      /(<div\s+id="lp-online-quote")(?:\s+data-slug="[^"]*")?/,
+      '$1 data-slug="' + safeSlug + '"'
+    );
+  }
   const eyebrow = esc(sec.eyebrow || 'Online quote');
   const heading = esc(sec.heading || 'Get your quote');
   const intro = esc(sec.intro || '');
@@ -815,6 +821,7 @@ module.exports = async (req, res) => {
       '{{email}}':        esc(cfg.email),
       '{{phone}}':        esc(cfg.phone),
       '{{domain}}':       esc(host),
+      '{{slug}}':         esc(site.slug),
       '{{initial}}':      esc((site.business_name || 'B').trim().charAt(0).toUpperCase()),
       '{{trade}}':        esc(_trade),
       '{{pageTitle}}':    esc(pageTitle),
