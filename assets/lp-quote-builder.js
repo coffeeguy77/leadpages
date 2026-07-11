@@ -25,6 +25,15 @@
     'heart', 'award', 'sparkles', 'cup-soda', 'chef-hat'
   ];
 
+  var IMAGE_SIZE_OPTIONS = (global.LPQuoteDisplay && global.LPQuoteDisplay.IMAGE_SIZE_OPTIONS) || [
+    { id: 'compact', label: 'Compact (56px)' },
+    { id: 'standard', label: 'Standard (80px)' },
+    { id: 'large', label: 'Large (120px)' },
+    { id: 'hero', label: 'Hero (180px)' }
+  ];
+
+  function displayApi() { return global.LPQuoteDisplay || {}; }
+
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -67,16 +76,40 @@
     cfg.beverages = Array.isArray(cfg.beverages) ? cfg.beverages : [];
     cfg.addons = Array.isArray(cfg.addons) ? cfg.addons : [];
     if (!cfg.labour) cfg.labour = { label: 'Labour', hourlyCents: 7500, minimumHours: 3 };
+    if (cfg.labour.allowShiftPlanner == null) cfg.labour.allowShiftPlanner = true;
+    if (cfg.labour.minimumHoursPerShift == null) cfg.labour.minimumHoursPerShift = cfg.labour.minimumHours || 3;
+    if (!cfg.labour.extraBarista) cfg.labour.extraBarista = { enabled: true, label: 'Additional barista', hourlyCents: cfg.labour.hourlyCents || 7500 };
     if (!cfg.travel) cfg.travel = { zones: [] };
     if (!Array.isArray(cfg.travel.zones)) cfg.travel.zones = [];
     if (!cfg.rules) cfg.rules = { gstRate: 0.1, quoteValidityDays: 14, minimumNoticeDays: 3 };
     cfg.products.forEach(function(p, i) {
       if (!p.id) p.id = slugify(p.label) || uid('product');
       if (!p.type) p.type = 'equipment';
+      if (p.baristasIncluded == null) p.baristasIncluded = 1;
+      if (p.allowExtraBarista == null) p.allowExtraBarista = true;
+      if (p.allowQuantity == null) p.allowQuantity = false;
     });
-    cfg.beverages.forEach(function(b) { if (!b.id) b.id = slugify(b.label) || uid('bev'); });
+    cfg.beverages.forEach(function(b) {
+      if (!b.id) b.id = slugify(b.label) || uid('bev');
+      if (!b.pricingMode) b.pricingMode = (b.tiers && b.tiers.length) ? 'tiered' : (b.packageCents && !b.perHeadCents ? 'flat' : 'per_head');
+      if (!Array.isArray(b.tiers)) b.tiers = [];
+    });
     cfg.addons.forEach(function(a) { if (!a.id) a.id = slugify(a.label) || uid('addon'); });
     cfg.travel.zones.forEach(function(z) { if (!z.id) z.id = slugify(z.label) || uid('zone'); });
+    ['products', 'beverages', 'addons'].forEach(function(key) {
+      (cfg[key] || []).forEach(function(item) {
+        if (!item.displayMode) {
+          item.displayMode = item.imageUrl ? 'image' : (item.icon ? 'icon' : 'text');
+        }
+        if (item.imageScale == null) item.imageScale = 100;
+        if (!item.imageSize) item.imageSize = 'standard';
+      });
+    });
+    (cfg.travel.zones || []).forEach(function(z) {
+      if (!z.displayMode) z.displayMode = z.imageUrl ? 'image' : (z.icon ? 'icon' : 'text');
+      if (z.imageScale == null) z.imageScale = 100;
+      if (!z.imageSize) z.imageSize = 'standard';
+    });
     return cfg;
   }
 
@@ -91,10 +124,15 @@
   function QuoteBuilder(root, options) {
     this.root = root;
     this.previewRoot = (options && options.previewRoot) || null;
+    this.media = (options && options.media) || null;
     this.config = normalizeConfig(options && options.config);
     this.tab = (options && options.initialTab) || 'wizard';
     this.showJson = false;
-    this.previewProgress = { productId: '', hours: 3, guestCount: 50, beverageId: '', addonIds: [], travelZoneId: '' };
+    this.previewProgress = {
+      productId: '', hours: 3, guestCount: 50, unitCount: null,
+      labourPlanning: 'hours', shifts: [], carts: [],
+      beverageId: '', addonIds: [], travelZoneId: ''
+    };
     this.previewStep = 0;
     this._render();
   }
@@ -145,7 +183,8 @@
       beverages: c.beverages || [],
       addons: c.addons || [],
       travelZones: (c.travel && c.travel.zones) || [],
-      wizard: c.wizard || {}
+      wizard: c.wizard || {},
+      labour: c.labour || {}
     };
   };
 
@@ -172,34 +211,43 @@
 
     var body = '';
     if (stepKey === 'equipment' || stepKey === 'event') {
-      body = '<p class="lp-oq-intro">Choose your setup.</p>' +
-        filter(shell.products, progress).map(function(p) {
+      var P = global.LPQuotePlanning;
+      var prods = filter(shell.products, progress);
+      body = '<p class="lp-oq-intro">Choose your setup.</p>';
+      if (P && P.renderCartRows) {
+        body += P.renderCartRows(progress, shell, prods, function(item) { return self._choiceHtml(item); });
+        body += P.renderLabourPlanning(progress, shell);
+      } else {
+        body += prods.map(function(p) {
           var sel = progress.productId === p.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="productId" data-val="' + esc(p.id) + '">' +
-            iconSvg(p.icon) + '<strong>' + esc(p.label) + '</strong></button>';
+            self._choiceHtml(p) + '</button>';
         }).join('') +
         '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
+      }
     } else if (stepKey === 'beverages') {
+      var Pq = global.LPQuotePlanning;
       body = '<p class="lp-oq-intro">Guest count &amp; package.</p>' +
-        '<label class="lp-oq-field"><span>Guests</span><input type="number" data-prev-field="guestCount" value="' + esc(progress.guestCount) + '"></label>' +
+        (Pq && Pq.renderPackageQty ? Pq.renderPackageQty(progress, shell) :
+          '<label class="lp-oq-field"><span>Guests</span><input type="number" data-prev-field="guestCount" value="' + esc(progress.guestCount) + '"></label>') +
         filter(shell.beverages, progress).map(function(b) {
           var sel = progress.beverageId === b.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="beverageId" data-val="' + esc(b.id) + '">' +
-            iconSvg(b.icon) + '<strong>' + esc(b.label) + '</strong></button>';
+            self._choiceHtml(b) + '</button>';
         }).join('');
     } else if (stepKey === 'travel') {
       body = '<p class="lp-oq-intro">Where is your event?</p>' +
         shell.travelZones.map(function(z) {
           var sel = progress.travelZoneId === z.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="travelZoneId" data-val="' + esc(z.id) + '">' +
-            iconSvg(z.icon || 'map-pin') + '<strong>' + esc(z.label) + '</strong></button>';
+            self._choiceHtml(z) + '</button>';
         }).join('');
     } else if (stepKey === 'addons') {
       body = '<p class="lp-oq-intro">Optional extras.</p>' +
         filter(shell.addons, progress).map(function(a) {
           var on = progress.addonIds.indexOf(a.id) >= 0 ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice lp-oq-multi' + on + '" data-prev-addon="' + esc(a.id) + '">' +
-            iconSvg(a.icon) + '<strong>' + esc(a.label) + '</strong></button>';
+            self._choiceHtml(a) + '</button>';
         }).join('');
     } else {
       body = '<p class="lp-oq-intro">Contact details (preview).</p>' +
@@ -230,6 +278,87 @@
       case 'rules': return this._renderRules();
       default: return this._renderOverview();
     }
+  };
+
+  QuoteBuilder.prototype._choiceHtml = function(item) {
+    var D = displayApi();
+    if (D.choiceVisualHtml) {
+      return D.choiceVisualHtml(item, { esc: esc, iconHtml: iconSvg });
+    }
+    return iconSvg(item.icon) + '<strong>' + esc(item.label) + '</strong>';
+  };
+
+  QuoteBuilder.prototype._getItemAtPath = function(path) {
+    var parts = path.split('.');
+    var obj = this.config;
+    for (var i = 0; i < parts.length; i++) {
+      if (obj == null) return null;
+      obj = obj[parts[i]];
+    }
+    return obj;
+  };
+
+  QuoteBuilder.prototype._deleteItemImage = function(item) {
+    if (!item || !item.imagePid || !this.media || !this.media.delete) return;
+    this.media.delete(item.imagePid);
+    item.imagePid = '';
+    item.imageUrl = '';
+  };
+
+  QuoteBuilder.prototype._displayBlock = function(path, item, uploadKind) {
+    var self = this;
+    var D = displayApi();
+    var mode = D.inferDisplayMode ? D.inferDisplayMode(item) : (item.displayMode || 'text');
+    var size = item.imageSize || 'standard';
+    var scale = item.imageScale != null ? item.imageScale : 100;
+    var px = D.displayPx ? D.displayPx(size, scale) : 80;
+    var radioName = 'oqb-dm-' + path.replace(/\./g, '-');
+    var canUpload = !!(this.media && this.media.upload && this.media.pick);
+
+    var modes = '<div class="oqb-display-modes">' +
+      [['text', 'Text only'], ['icon', 'Icon'], ['image', 'Uploaded image']].map(function(pair) {
+        return '<label class="oqb-display-mode' + (mode === pair[0] ? ' is-on' : '') + '">' +
+          '<input type="radio" name="' + esc(radioName) + '" value="' + pair[0] + '" data-oqb-display-mode="' + esc(path) + '"' +
+          (mode === pair[0] ? ' checked' : '') + '> ' + esc(pair[1]) + '</label>';
+      }).join('') + '</div>';
+
+    var iconPanel = '';
+    if (mode === 'icon') {
+      iconPanel = '<div class="oqb-display-panel"><span class="oqb-display-panel-label">Pick an icon</span>' +
+        this._iconSelect(path + '.icon', item.icon || '') + '</div>';
+    }
+
+    var imgPanel = '';
+    if (mode === 'image') {
+      var sizeOpts = IMAGE_SIZE_OPTIONS.map(function(s) {
+        return '<option value="' + s.id + '"' + (size === s.id ? ' selected' : '') + '>' + esc(s.label) + '</option>';
+      }).join('');
+      imgPanel = '<div class="oqb-display-panel oqb-img-panel" data-oqb-img-panel="' + esc(path) + '">' +
+        (item.imageUrl
+          ? '<img src="' + esc(item.imageUrl) + '" class="oqb-img-preview" style="max-height:' + px + 'px" alt="">'
+          : '<div class="oqb-img-empty">No image uploaded</div>') +
+        '<div class="oqb-img-actions">' +
+        (canUpload
+          ? '<button type="button" class="btn ghost oqb-btn-sm" data-oqb-img-up="' + esc(path) + '" data-oqb-upload-kind="' + esc(uploadKind) + '">Upload image</button>'
+          : '<span class="oqb-hint">Sign in to upload images</span>') +
+        (item.imageUrl ? '<button type="button" class="btn ghost oqb-btn-sm" data-oqb-img-clr="' + esc(path) + '">Remove image</button>' : '') +
+        '</div>' +
+        '<input type="hidden" data-oqb-path="' + esc(path) + '.imageUrl" value="' + esc(item.imageUrl || '') + '">' +
+        '<input type="hidden" data-oqb-path="' + esc(path) + '.imagePid" value="' + esc(item.imagePid || '') + '">' +
+        '<div class="oqb-img-size-row">' +
+        this._field('Base size', '<select data-oqb-path="' + esc(path) + '.imageSize">' + sizeOpts + '</select>') +
+        this._field('Scale', '<div class="oqb-scale-wrap"><input type="range" min="50" max="250" step="5" data-oqb-path="' + esc(path) + '.imageScale" value="' + esc(scale) + '">' +
+        '<span class="oqb-scale-val" data-oqb-scale-for="' + esc(path) + '">' + esc(scale) + '%</span></div>') +
+        '</div>' +
+        '<p class="oqb-hint">Displayed at ~' + px + 'px tall. Stored in your site Cloudinary folder.</p>' +
+        '</div>';
+    }
+
+    return '<div class="oqb-display" data-oqb-display="' + esc(path) + '">' +
+      '<p class="oqb-showwhen-title">How customers see this option</p>' +
+      modes + iconPanel + imgPanel +
+      '<input type="hidden" data-oqb-path="' + esc(path) + '.displayMode" value="' + esc(mode) + '">' +
+      '</div>';
   };
 
   QuoteBuilder.prototype._field = function(label, inner) {
@@ -422,8 +551,11 @@
     var cards = list.map(function(p, i) {
       var fields = '<div class="oqb-grid">'
         + self._field('Name', '<input type="text" data-oqb-path="products.' + i + '.label" value="' + esc(p.label || '') + '">')
-        + self._field('Icon', self._iconSelect('products.' + i + '.icon', p.icon || ''))
+        + self._displayBlock('products.' + i, p, 'products')
         + self._field('Base price (ex GST line)', self._money('products.' + i + '.baseCents', p.baseCents))
+        + self._field('Baristas included', '<input type="number" min="1" max="10" data-oqb-path="products.' + i + '.baristasIncluded" value="' + esc(p.baristasIncluded != null ? p.baristasIncluded : 1) + '">')
+        + self._field('Allow quantity', '<label class="oqb-check"><input type="checkbox" data-oqb-path="products.' + i + '.allowQuantity"' + (p.allowQuantity ? ' checked' : '') + '> Customer can order more than one</label>')
+        + self._field('Extra barista', '<label class="oqb-check"><input type="checkbox" data-oqb-path="products.' + i + '.allowExtraBarista"' + (p.allowExtraBarista !== false ? ' checked' : '') + '> Allow second barista on this cart</label>')
         + self._field('Description', '<textarea rows="2" data-oqb-path="products.' + i + '.description">' + esc(p.description || '') + '</textarea>')
         + '<input type="hidden" data-oqb-path="products.' + i + '.id" value="' + esc(p.id || '') + '">'
         + '<input type="hidden" data-oqb-path="products.' + i + '.type" value="' + esc(p.type || 'equipment') + '">'
@@ -437,31 +569,63 @@
 
   QuoteBuilder.prototype._renderLabour = function() {
     var l = this.config.labour || {};
+    var eb = l.extraBarista || {};
     return '<div class="oqb-grid">'
       + this._field('Labour label', '<input type="text" data-oqb-path="labour.label" value="' + esc(l.label || 'Labour') + '">')
       + this._field('Hourly rate', this._money('labour.hourlyCents', l.hourlyCents))
-      + this._field('Minimum hours', '<input type="number" min="1" max="24" data-oqb-path="labour.minimumHours" value="' + esc(l.minimumHours != null ? l.minimumHours : 3) + '">')
+      + this._field('Minimum hours (simple mode)', '<input type="number" min="1" max="48" data-oqb-path="labour.minimumHours" value="' + esc(l.minimumHours != null ? l.minimumHours : 3) + '">')
+      + this._field('Shift planner', '<label class="oqb-check"><input type="checkbox" data-oqb-path="labour.allowShiftPlanner"' + (l.allowShiftPlanner !== false ? ' checked' : '') + '> Let customers plan multi-day events with start/end per day</label>')
+      + this._field('Minimum hours per shift', '<input type="number" min="1" max="24" data-oqb-path="labour.minimumHoursPerShift" value="' + esc(l.minimumHoursPerShift != null ? l.minimumHoursPerShift : (l.minimumHours || 3)) + '">')
       + '</div>'
-      + '<p class="oqb-hint">Labour is multiplied by event duration. Shorter events still bill the minimum hours.</p>';
+      + '<h4 class="oqb-sub">Extra barista</h4><div class="oqb-grid">'
+      + this._field('Enabled', '<label class="oqb-check"><input type="checkbox" data-oqb-path="labour.extraBarista.enabled"' + (eb.enabled !== false ? ' checked' : '') + '> Offer additional barista per cart</label>')
+      + this._field('Label', '<input type="text" data-oqb-path="labour.extraBarista.label" value="' + esc(eb.label || 'Additional barista') + '">')
+      + this._field('Hourly rate', this._money('labour.extraBarista.hourlyCents', eb.hourlyCents != null ? eb.hourlyCents : l.hourlyCents))
+      + '</div>'
+      + '<p class="oqb-hint">Simple hours mode bills the minimum when shorter. Shift planner sums each day (with per-shift minimum). Staffing multiplies by baristas per cart.</p>';
+  };
+
+  QuoteBuilder.prototype._renderTierRows = function(bevIdx, tiers) {
+    var self = this;
+    return (tiers || []).map(function(t, ti) {
+      return '<div class="oqb-tier-row" data-oqb-tier="' + bevIdx + '" data-oqb-tier-idx="' + ti + '">' +
+        self._field('From qty', '<input type="number" min="1" data-oqb-path="beverages.' + bevIdx + '.tiers.' + ti + '.minQty" value="' + esc(t.minQty != null ? t.minQty : 1) + '">') +
+        self._field('Per unit ($)', self._money('beverages.' + bevIdx + '.tiers.' + ti + '.perUnitCents', t.perUnitCents)) +
+        (ti > 0 ? '<button type="button" class="btn ghost oqb-tier-remove" data-oqb-tier-remove="' + bevIdx + '" data-oqb-tier-idx="' + ti + '">Remove tier</button>' : '') +
+        '</div>';
+    }).join('');
   };
 
   QuoteBuilder.prototype._renderPackages = function() {
     var self = this;
     var list = this.config.beverages || [];
     var cards = list.map(function(b, i) {
+      var mode = b.pricingMode || 'per_head';
+      var tierBlock = mode === 'tiered'
+        ? '<div class="oqb-tiers"><p class="oqb-hint">Tiers apply to the whole quantity — e.g. 100+ @ $3/unit ($300), under 100 @ $5/unit.</p>' +
+          self._renderTierRows(i, b.tiers) +
+          '<button type="button" class="btn ghost" data-oqb-add-tier="' + i + '">+ Add pricing tier</button></div>'
+        : '';
       var fields = '<div class="oqb-grid">'
         + self._field('Package name', '<input type="text" data-oqb-path="beverages.' + i + '.label" value="' + esc(b.label || '') + '">')
-        + self._field('Icon', self._iconSelect('beverages.' + i + '.icon', b.icon || ''))
-        + self._field('Per guest over included ($)', self._money('beverages.' + i + '.perHeadCents', b.perHeadCents))
-        + self._field('Guests included free', '<input type="number" min="0" data-oqb-path="beverages.' + i + '.includedHeads" value="' + esc(b.includedHeads != null ? b.includedHeads : 0) + '">')
-        + self._field('Flat package price (optional)', self._money('beverages.' + i + '.packageCents', b.packageCents))
+        + self._displayBlock('beverages.' + i, b, 'packages')
+        + self._field('Pricing mode', '<select data-oqb-path="beverages.' + i + '.pricingMode">' +
+          '<option value="per_head"' + (mode === 'per_head' ? ' selected' : '') + '>Per guest (over included)</option>' +
+          '<option value="tiered"' + (mode === 'tiered' ? ' selected' : '') + '>Volume tiers (per unit)</option>' +
+          '<option value="flat"' + (mode === 'flat' ? ' selected' : '') + '>Flat package price</option></select>')
+        + (mode === 'tiered'
+          ? self._field('Unit label', '<input type="text" data-oqb-path="beverages.' + i + '.unitLabel" value="' + esc(b.unitLabel || 'units') + '" placeholder="e.g. coffees">') + tierBlock
+          : (mode === 'flat'
+            ? self._field('Flat package price', self._money('beverages.' + i + '.packageCents', b.packageCents))
+            : self._field('Per guest over included ($)', self._money('beverages.' + i + '.perHeadCents', b.perHeadCents))
+              + self._field('Guests included free', '<input type="number" min="0" data-oqb-path="beverages.' + i + '.includedHeads" value="' + esc(b.includedHeads != null ? b.includedHeads : 0) + '">')))
         + self._field('Description', '<textarea rows="2" data-oqb-path="beverages.' + i + '.description">' + esc(b.description || '') + '</textarea>')
         + self._showWhenChips('beverages.' + i, b)
         + '<input type="hidden" data-oqb-path="beverages.' + i + '.id" value="' + esc(b.id || '') + '">'
         + '</div>';
       return self._itemCard(b.label || 'New package', i, 'beverages', fields, i > 0, i < list.length - 1);
     }).join('');
-    return '<p class="oqb-hint">Per-head beverage or catering packages. Leave empty if not applicable.</p>'
+    return '<p class="oqb-hint">Per-head, volume-tiered (e.g. 100 coffees @ $3), or flat packages.</p>'
       + '<div class="oqb-items">' + (cards || '<p class="oqb-empty">No packages yet.</p>') + '</div>'
       + '<button type="button" class="btn ghost" data-oqb-add="packages">+ Add package</button>';
   };
@@ -472,7 +636,7 @@
     var cards = list.map(function(a, i) {
       var fields = '<div class="oqb-grid">'
         + self._field('Add-on name', '<input type="text" data-oqb-path="addons.' + i + '.label" value="' + esc(a.label || '') + '">')
-        + self._field('Icon', self._iconSelect('addons.' + i + '.icon', a.icon || ''))
+        + self._displayBlock('addons.' + i, a, 'addons')
         + self._field('Fixed price', self._money('addons.' + i + '.fixedCents', a.fixedCents))
         + self._field('Description', '<textarea rows="2" data-oqb-path="addons.' + i + '.description">' + esc(a.description || '') + '</textarea>')
         + self._showWhenChips('addons.' + i, a)
@@ -491,7 +655,7 @@
     var cards = list.map(function(z, i) {
       var fields = '<div class="oqb-grid">'
         + self._field('Zone name', '<input type="text" data-oqb-path="travel.zones.' + i + '.label" value="' + esc(z.label || '') + '">')
-        + self._field('Icon', self._iconSelect('travel.zones.' + i + '.icon', z.icon || 'map-pin'))
+        + self._displayBlock('travel.zones.' + i, z, 'travel')
         + self._field('Travel fee', self._money('travel.zones.' + i + '.feeCents', z.feeCents))
         + '<input type="hidden" data-oqb-path="travel.zones.' + i + '.id" value="' + esc(z.id || '') + '">'
         + '</div>';
@@ -522,8 +686,15 @@
     if (last === 'gstRegistered') obj[last] = !!value;
     else if (/Cents$/.test(last) || last === 'hourlyCents' || last === 'feeCents' || last === 'fixedCents' || last === 'perHeadCents' || last === 'packageCents' || last === 'baseCents') {
       obj[last] = cents(value);
-    } else if (last === 'minimumHours' || last === 'includedHeads' || last === 'quoteValidityDays' || last === 'minimumNoticeDays') {
+    } else if (last === 'minimumHours' || last === 'includedHeads' || last === 'quoteValidityDays' || last === 'minimumNoticeDays' || last === 'minQty' || last === 'baristasIncluded' || last === 'minimumHoursPerShift') {
       obj[last] = parseInt(value, 10) || 0;
+    } else if (last === 'allowShiftPlanner' || last === 'allowQuantity' || last === 'allowExtraBarista' || last === 'enabled') {
+      obj[last] = !!value;
+    } else if (last === 'imageScale') {
+      var sc = parseInt(value, 10);
+      obj[last] = isNaN(sc) ? 100 : Math.min(250, Math.max(50, sc));
+    } else if (last === 'displayMode' || last === 'imageSize' || last === 'imageUrl' || last === 'imagePid') {
+      obj[last] = value;
     } else {
       obj[last] = value;
     }
@@ -726,12 +897,16 @@
       btn.addEventListener('click', function() {
         self._syncFromDom();
         var kind = btn.getAttribute('data-oqb-add');
-        if (kind === 'products') self.config.products.push({ id: uid('product'), label: 'New product', type: 'equipment', baseCents: 0, icon: 'package' });
-        if (kind === 'packages') self.config.beverages.push({ id: uid('bev'), label: 'New package', perHeadCents: 0, includedHeads: 0, icon: 'users' });
-        if (kind === 'addons') self.config.addons.push({ id: uid('addon'), label: 'New add-on', fixedCents: 0, icon: 'plus-circle' });
+        if (kind === 'products') self.config.products.push({ id: uid('product'), label: 'New product', type: 'equipment', baseCents: 0, icon: 'package', displayMode: 'icon' });
+        if (kind === 'packages') self.config.beverages.push({
+          id: uid('bev'), label: 'New package', pricingMode: 'per_head', perHeadCents: 0, includedHeads: 0,
+          tiers: [{ minQty: 100, perUnitCents: 300 }, { minQty: 1, perUnitCents: 500 }],
+          unitLabel: 'units', icon: 'users', displayMode: 'icon'
+        });
+        if (kind === 'addons') self.config.addons.push({ id: uid('addon'), label: 'New add-on', fixedCents: 0, icon: 'plus-circle', displayMode: 'icon' });
         if (kind === 'travel') {
           if (!self.config.travel) self.config.travel = { zones: [] };
-          self.config.travel.zones.push({ id: uid('zone'), label: 'New zone', feeCents: 0, icon: 'map-pin' });
+          self.config.travel.zones.push({ id: uid('zone'), label: 'New zone', feeCents: 0, icon: 'map-pin', displayMode: 'icon' });
           var wsteps = (self.config.wizard.steps || []).slice();
           if (wsteps.indexOf('travel') < 0) {
             if (wsteps.indexOf('contact') >= 0) wsteps.splice(wsteps.indexOf('contact'), 0, 'travel');
@@ -750,10 +925,12 @@
         if (!card) return;
         var path = card.getAttribute('data-oqb-item');
         var idx = parseInt(card.getAttribute('data-oqb-idx'), 10);
-        if (path === 'products') self.config.products.splice(idx, 1);
-        else if (path === 'beverages') self.config.beverages.splice(idx, 1);
-        else if (path === 'addons') self.config.addons.splice(idx, 1);
-        else if (path === 'travel.zones') self.config.travel.zones.splice(idx, 1);
+        var removed = null;
+        if (path === 'products') { removed = self.config.products[idx]; self.config.products.splice(idx, 1); }
+        else if (path === 'beverages') { removed = self.config.beverages[idx]; self.config.beverages.splice(idx, 1); }
+        else if (path === 'addons') { removed = self.config.addons[idx]; self.config.addons.splice(idx, 1); }
+        else if (path === 'travel.zones') { removed = self.config.travel.zones[idx]; self.config.travel.zones.splice(idx, 1); }
+        if (removed) self._deleteItemImage(removed);
         self._render();
       });
     });
@@ -777,6 +954,115 @@
         var tmp = list[idx];
         list[idx] = list[j];
         list[j] = tmp;
+        self._render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-display-mode]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        if (!radio.checked) return;
+        self._syncFromDom();
+        var path = radio.getAttribute('data-oqb-display-mode');
+        self._setPath(path + '.displayMode', radio.value);
+        self._render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-img-up]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        if (!self.media || !self.media.pick || !self.media.upload) return;
+        var path = btn.getAttribute('data-oqb-img-up');
+        var kind = btn.getAttribute('data-oqb-upload-kind') || 'items';
+        var item = self._getItemAtPath(path);
+        if (!item) return;
+        if (!item.id) item.id = uid(kind);
+        self.media.pick(function(file) {
+          btn.disabled = true;
+          var oldPid = item.imagePid || '';
+          self.media.upload(file, [kind, item.id]).then(function(res) {
+            item.imageUrl = res.url || '';
+            item.imagePid = res.publicId || '';
+            item.displayMode = 'image';
+            if (oldPid && oldPid !== item.imagePid && self.media.delete) self.media.delete(oldPid);
+            self._render();
+          }).catch(function(err) {
+            if (typeof global.toast === 'function') global.toast('Upload failed: ' + ((err && err.message) || err));
+            else alert('Upload failed');
+          }).then(function() { btn.disabled = false; });
+        });
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-img-clr]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        self._syncFromDom();
+        var path = btn.getAttribute('data-oqb-img-clr');
+        var item = self._getItemAtPath(path);
+        if (item) self._deleteItemImage(item);
+        self._render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-path$=".imageScale"]').forEach(function(inp) {
+      inp.addEventListener('input', function() {
+        self._setPath(inp.getAttribute('data-oqb-path'), inp.value);
+        var path = inp.getAttribute('data-oqb-path').replace(/\.imageScale$/, '');
+        var lbl = self.root.querySelector('[data-oqb-scale-for="' + path + '"]');
+        if (lbl) lbl.textContent = inp.value + '%';
+        var panel = inp.closest('[data-oqb-img-panel]');
+        var preview = panel && panel.querySelector('.oqb-img-preview');
+        if (preview) {
+          var item = self._getItemAtPath(path);
+          var px = displayApi().displayPx ? displayApi().displayPx(item && item.imageSize, inp.value) : 80;
+          preview.style.maxHeight = px + 'px';
+        }
+        self._refreshPreview();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-path$=".imageSize"]').forEach(function(sel) {
+      sel.addEventListener('change', function() {
+        self._setPath(sel.getAttribute('data-oqb-path'), sel.value);
+        self._render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-add-tier]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        self._syncFromDom();
+        var idx = parseInt(btn.getAttribute('data-oqb-add-tier'), 10);
+        var bev = self.config.beverages[idx];
+        if (!bev) return;
+        if (!Array.isArray(bev.tiers)) bev.tiers = [];
+        bev.tiers.push({ minQty: 1, perUnitCents: 0 });
+        self._render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-tier-remove]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        self._syncFromDom();
+        var bevIdx = parseInt(btn.getAttribute('data-oqb-tier-remove'), 10);
+        var tierIdx = parseInt(btn.getAttribute('data-oqb-tier-idx'), 10);
+        var bev = self.config.beverages[bevIdx];
+        if (!bev || !bev.tiers) return;
+        bev.tiers.splice(tierIdx, 1);
+        self._render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-path$=".pricingMode"]').forEach(function(sel) {
+      sel.addEventListener('change', function() {
+        self._setPath(sel.getAttribute('data-oqb-path'), sel.value);
+        var m = sel.getAttribute('data-oqb-path').match(/beverages\.(\d+)\.pricingMode/);
+        if (m) {
+          var bi = parseInt(m[1], 10);
+          var bev = self.config.beverages[bi];
+          if (bev && sel.value === 'tiered' && (!bev.tiers || !bev.tiers.length)) {
+            bev.tiers = [{ minQty: 100, perUnitCents: 300 }, { minQty: 1, perUnitCents: 500 }];
+            if (!bev.unitLabel) bev.unitLabel = 'units';
+          }
+        }
         self._render();
       });
     });
@@ -815,6 +1101,22 @@
     var self = this;
     if (!this.previewRoot) return;
     var root = this.previewRoot;
+    var shell = this._toShell();
+    var products = shell.products || [];
+    var P = global.LPQuotePlanning;
+
+    if (P && P.wireLabourPlanning) {
+      P.wireLabourPlanning(root, this.previewProgress, shell, function() {
+        self._reconcilePreviewSelections();
+        self._refreshPreview();
+      });
+    }
+    if (P && P.wireCartRows) {
+      P.wireCartRows(root, this.previewProgress, shell, products, function() {
+        self._reconcilePreviewSelections();
+        self._refreshPreview();
+      });
+    }
 
     root.querySelectorAll('[data-prev-pick]').forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -841,6 +1143,7 @@
         var f = inp.getAttribute('data-prev-field');
         var v = parseInt(inp.value, 10) || 0;
         self.previewProgress[f] = v;
+        if (f === 'unitCount') self.previewProgress.guestCount = v;
         self._refreshPreview();
       });
     });

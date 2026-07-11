@@ -540,6 +540,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-trade-picker.js"></script>
 <script src="/icons.js"></script>
 <script src="/assets/lp-quote-wizard-logic.js"></script>
+<script src="/assets/lp-quote-display.js"></script>
+<script src="/assets/lp-quote-planning.js"></script>
 <script src="/assets/lp-quote-builder.js"></script>
 </head>
 <body data-lp-admin-page="manage">
@@ -6326,7 +6328,15 @@ function heroCtaCard(c){
       if(admin&&admin.activeVersion&&admin.activeVersion.config&&window.LPQuoteBuilder){
         var broot=$('oq-builder-root');
         var proot=$('oq-preview-root');
-        if(broot) LPONLINEQUOTE.builder=LPQuoteBuilder.mount(broot,{config:admin.activeVersion.config,previewRoot:proot});
+        if(broot) LPONLINEQUOTE.builder=LPQuoteBuilder.mount(broot,{
+          config:admin.activeVersion.config,
+          previewRoot:proot,
+          media:{
+            upload:function(file,segment){ return cwUpload(file,['onlineQuote'].concat(segment)); },
+            delete:cwDelete,
+            pick:cwPick
+          }
+        });
       }
       var ref=$('oq-refresh'); if(ref) ref.addEventListener('click',renderOnlineQuoteAdmin);
       var ed=$('oq-goto-editor'); if(ed) ed.addEventListener('click',function(){ showView('details'); landingSub='onlineQuote'; renderDetails(); });
@@ -6339,7 +6349,7 @@ function heroCtaCard(c){
           var ta=$('oq-config-json');
           if(ta) cfg=_oqParseConfigJson(ta.value);
         }
-        if(!cfg){ if(sm){ sm.textContent='Nothing to save'; sm.style.color='#b42318'; } return; }
+        if(!cfg){ if(sm){ sm.textContent='Nothing to save'; sm.style.color='var(--danger)'; } return; }
         try{
           sc.disabled=true; if(sm) sm.textContent='Saving…';
           var h=await _oqAuthHeaders(); h['Content-Type']='application/json';
