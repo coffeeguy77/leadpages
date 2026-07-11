@@ -253,7 +253,7 @@
           ? P.renderLabourPlanning(progress, shell)
           : '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
       }
-      body = wrap({ intro: '<p class="lp-oq-intro">Choose your equipment.</p>', fields: eqFields, choices: choices });
+      body = wrap({ intro: '<p class="lp-oq-intro">What equipment would you like to hire?</p>', choices: choices });
     } else if (stepKey === 'beverages') {
       var Pq = global.LPQuotePlanning;
       body = wrap({
@@ -291,9 +291,9 @@
       });
     }
 
-    var layoutCls = displayApi().layoutClass ? displayApi().layoutClass(shell) : (
-      shell.wizard.layout === 'list' ? ' lp-oq-layout-list' : shell.wizard.layout === 'split' ? ' lp-oq-layout-split' : ' lp-oq-layout-cards'
-    );
+    var layoutCls = displayApi().layoutClass
+      ? displayApi().layoutClass(shell)
+      : (' lp-oq-layout-' + (shell.wizard.layout || 'cards'));
     return '<div class="oqb-preview-head"><h4>Live preview</h4><p>Layout: <strong>' + esc((LAYOUTS.find(function(l) { return l.id === layout; }) || LAYOUTS[0]).label) + '</strong> — pick a product to test conditional steps.</p></div>' +
       '<div class="oqb-preview-body oqb-preview-mock"><div class="lp-oq-card' + layoutCls + '">' +
       '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc((shell.business && shell.business.name) || 'Your business') + '</h2>' +

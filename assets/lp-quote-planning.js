@@ -215,44 +215,45 @@
     return html;
   }
 
+  function renderProductCard(p, cart, cartIdx, choiceHtml) {
+    var isSel = cart && cart.productId === p.id;
+    var qty = isSel && cart ? (cart.quantity || 1) : 1;
+    var html = '<div class="lp-oq-product' + (isSel ? ' is-selected' : '') + '" data-product-card="' + esc(p.id) + '">' +
+      '<button type="button" class="lp-oq-choice' + (isSel ? ' is-selected' : '') + '" data-equipment-pick="' + cartIdx + '" data-val="' + esc(p.id) + '">' +
+      choiceHtml(p) + '</button>';
+    if (p.allowQuantity) {
+      html += '<label class="lp-oq-field lp-oq-product-qty"><span>Qty</span>' +
+        '<input type="number" min="1" max="20" data-product-qty="' + cartIdx + '" data-val="' + esc(p.id) + '" value="' + esc(qty) + '"' +
+        (isSel ? '' : ' disabled tabindex="-1"') + '></label>';
+    }
+    html += '</div>';
+    return html;
+  }
+
   function renderCartRows(state, shell, products, choiceHtml) {
     state._shell = shell;
+    if (!products || !products.length) return '<p class="lp-oq-muted">No equipment configured.</p>';
     var carts = ensureCarts(state, products);
-    var multi = products.length > 1;
-    var html = '';
-    if (!multi) {
-      var p = products[0];
-      if (!p) return '<p class="lp-oq-muted">No equipment configured.</p>';
-      var sel = state.productId === p.id ? ' is-selected' : '';
-      html += '<button type="button" class="lp-oq-choice' + sel + '" data-pick="productId" data-val="' + esc(p.id) + '">' +
-        choiceHtml(p) + '</button>';
-      var cart = carts[0] || defaultCartRow(p);
-      if (p.allowQuantity) {
-        html += '<label class="lp-oq-field"><span>Quantity</span>' +
-          '<input type="number" min="1" max="20" data-cart-field="quantity" data-cart-idx="0" value="' + esc(cart.quantity || 1) + '"></label>';
-      }
-      return html;
-    }
+    var html = '<div class="lp-oq-carts" data-lp-oq-carts>';
 
-    html += '<div class="lp-oq-carts" data-lp-oq-carts>';
-    carts.forEach(function(cart, i) {
-      html += '<div class="lp-oq-cart" data-cart-idx="' + i + '">' +
-        '<div class="lp-oq-cart-head"><strong>Cart ' + (i + 1) + '</strong>' +
-        (carts.length > 1 ? '<button type="button" class="lp-oq-btn lp-oq-btn-ghost lp-oq-cart-remove" data-cart-remove="' + i + '">Remove</button>' : '') +
-        '</div>';
-      products.forEach(function(p) {
-        var on = cart.productId === p.id ? ' is-selected' : '';
-        html += '<button type="button" class="lp-oq-choice' + on + '" data-cart-pick="' + i + '" data-val="' + esc(p.id) + '">' +
-          choiceHtml(p) + '</button>';
-      });
-      var prod = products.find(function(p) { return p.id === cart.productId; }) || products[0];
-      if (prod && prod.allowQuantity !== false) {
-        html += '<label class="lp-oq-field"><span>Quantity</span>' +
-          '<input type="number" min="1" max="20" data-cart-field="quantity" data-cart-idx="' + i + '" value="' + esc(cart.quantity || 1) + '"></label>';
+    carts.forEach(function(cart, cartIdx) {
+      if (carts.length > 1) {
+        html += '<div class="lp-oq-cart" data-cart-idx="' + cartIdx + '">' +
+          '<div class="lp-oq-cart-head"><strong>Equipment line ' + (cartIdx + 1) + '</strong>' +
+          '<button type="button" class="lp-oq-btn lp-oq-btn-ghost lp-oq-cart-remove" data-cart-remove="' + cartIdx + '">Remove</button></div>';
       }
+      html += '<div class="lp-oq-choices">';
+      products.forEach(function(p) {
+        html += renderProductCard(p, cart, cartIdx, choiceHtml);
+      });
       html += '</div>';
+      if (carts.length > 1) html += '</div>';
     });
-    html += '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-cart-add>+ Add equipment</button></div>';
+
+    if (products.length > 1) {
+      html += '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-cart-add>+ Add another equipment line</button>';
+    }
+    html += '</div>';
     return html;
   }
 
@@ -338,25 +339,33 @@
   function wireCartRows(root, state, shell, products, rerender) {
     state._shell = shell;
     ensureCarts(state, products);
-    root.querySelectorAll('[data-cart-pick]').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var idx = parseInt(btn.getAttribute('data-cart-pick'), 10);
-        state.carts[idx].productId = btn.getAttribute('data-val');
-        var prod = products.find(function(p) { return p.id === state.carts[idx].productId; });
+
+    root.querySelectorAll('[data-equipment-pick]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var idx = parseInt(btn.getAttribute('data-equipment-pick'), 10);
+        var pid = btn.getAttribute('data-val');
+        ensureCarts(state, products);
+        if (!state.carts[idx]) return;
+        state.carts[idx].productId = pid;
+        var prod = products.find(function(p) { return p.id === pid; });
         normalizeCartStaff(state.carts[idx], prod, shell);
         state.productId = state.carts[0] ? state.carts[0].productId : '';
         rerender();
       });
     });
-    root.querySelectorAll('[data-cart-field]').forEach(function(inp) {
+
+    root.querySelectorAll('[data-product-qty]').forEach(function(inp) {
+      inp.addEventListener('click', function(e) { e.stopPropagation(); });
       inp.addEventListener('change', function() {
-        var idx = parseInt(inp.getAttribute('data-cart-idx'), 10);
-        var key = inp.getAttribute('data-cart-field');
+        var idx = parseInt(inp.getAttribute('data-product-qty'), 10);
         ensureCarts(state, products);
-        state.carts[idx][key] = parseInt(inp.value, 10) || 1;
+        if (!state.carts[idx]) return;
+        state.carts[idx].quantity = Math.max(1, parseInt(inp.value, 10) || 1);
         rerender();
       });
     });
+
     var addCart = root.querySelector('[data-cart-add]');
     if (addCart) addCart.addEventListener('click', function() {
       ensureCarts(state, products);

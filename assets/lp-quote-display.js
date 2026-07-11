@@ -74,31 +74,49 @@
     var fields = parts.fields || '';
     var choices = parts.choices || '';
     var extra = parts.extra || '';
+    var choiceBlock = choices
+      ? (choices.indexOf('lp-oq-choices') >= 0 ? choices : '<div class="lp-oq-choices">' + choices + '</div>')
+      : '';
 
     if (layout === 'split' && choices) {
       return '<div class="lp-oq-split">' +
         '<div class="lp-oq-aside">' + intro + fields + extra + '</div>' +
-        '<div class="lp-oq-choices">' + choices + '</div></div>';
+        choiceBlock + '</div>';
     }
-    return '<div class="lp-oq-stack">' + intro + fields + choices + extra + '</div>';
+    return '<div class="lp-oq-stack">' + intro + fields + choiceBlock + extra + '</div>';
   }
 
   function layoutCss(brandVar) {
     var b = brandVar || 'var(--pipe, var(--accent, #1f7a63))';
     return [
-      '.lp-oq-layout-cards .lp-oq-choice{padding:18px 20px;margin-bottom:12px;border-radius:16px;min-height:72px}',
-      '.lp-oq-layout-cards .lp-oq-choice .lp-oq-ic svg{width:22px;height:22px}',
-      '.lp-oq-layout-grid .lp-oq-choices,.lp-oq-layout-grid .lp-oq-stack{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}',
-      '.lp-oq-layout-grid .lp-oq-choice{margin:0;height:100%;display:flex;flex-direction:column;align-items:flex-start;padding:14px;border-radius:14px}',
+      '.lp-oq-stack>.lp-oq-intro{margin:0 0 12px}',
+      '.lp-oq-layout-cards .lp-oq-choices .lp-oq-choice{padding:18px 20px;margin-bottom:12px;border-radius:16px;min-height:72px}',
+      '.lp-oq-layout-cards .lp-oq-choices .lp-oq-choice .lp-oq-ic svg{width:22px;height:22px}',
+      '.lp-oq-layout-cards .lp-oq-product{margin-bottom:12px;border:1px solid color-mix(in srgb,' + b + ' 18%,var(--line,var(--border,currentColor)));border-radius:14px;padding:8px}',
+      '.lp-oq-layout-cards .lp-oq-product.is-selected{border-color:' + b + ';box-shadow:0 0 0 2px color-mix(in srgb,' + b + ' 28%,transparent)}',
+      '.lp-oq-layout-cards .lp-oq-product .lp-oq-choice{margin:0;border:none;box-shadow:none;background:transparent}',
+      '.lp-oq-layout-grid .lp-oq-stack{display:block}',
+      '.lp-oq-layout-grid .lp-oq-choices{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:14px;margin-top:12px}',
+      '.lp-oq-layout-grid .lp-oq-product{display:flex;flex-direction:column;height:100%;border:1px solid color-mix(in srgb,' + b + ' 18%,var(--line,var(--border,currentColor)));border-radius:14px;padding:8px;background:transparent}',
+      '.lp-oq-layout-grid .lp-oq-product.is-selected{border-color:' + b + ';box-shadow:0 0 0 2px color-mix(in srgb,' + b + ' 28%,transparent)}',
+      '.lp-oq-layout-grid .lp-oq-product .lp-oq-choice{margin:0;height:auto;flex:1;display:flex;flex-direction:column;align-items:flex-start;padding:10px;border:none;box-shadow:none;background:transparent}',
+      '.lp-oq-layout-grid .lp-oq-product .lp-oq-choice.is-selected{border:none;box-shadow:none}',
       '.lp-oq-layout-grid .lp-oq-choice-img{width:100%!important;height:auto!important;max-height:120px!important;margin:0 0 10px!important;object-fit:contain}',
-      '.lp-oq-layout-grid .lp-oq-choice strong{margin-top:auto}',
-      '.lp-oq-layout-list .lp-oq-choices,.lp-oq-layout-list .lp-oq-stack{display:flex;flex-direction:column;gap:0;border:1px solid color-mix(in srgb,' + b + ' 20%,var(--line,var(--border,currentColor)));border-radius:10px;overflow:hidden}',
-      '.lp-oq-layout-list .lp-oq-choice{display:flex;flex-direction:row;align-items:center;gap:12px;padding:10px 14px;margin:0;border-radius:0;border:none;border-bottom:1px solid color-mix(in srgb,' + b + ' 14%,var(--line,var(--border,currentColor)))}',
-      '.lp-oq-layout-list .lp-oq-choice:last-child{border-bottom:none}',
-      '.lp-oq-layout-list .lp-oq-choice strong{display:block;font-size:14px}',
-      '.lp-oq-layout-list .lp-oq-choice span{display:block;margin-top:2px;font-size:12px}',
-      '.lp-oq-layout-list .lp-oq-choice .lp-oq-ic{flex-shrink:0;margin-right:0}',
-      '.lp-oq-layout-list .lp-oq-choice-img{flex-shrink:0;margin:0!important;height:40px!important;width:40px!important;object-fit:cover;border-radius:6px}',
+      '.lp-oq-layout-grid .lp-oq-product .lp-oq-choice strong{margin-top:auto}',
+      '.lp-oq-layout-grid .lp-oq-product-qty{margin:0 8px 8px;padding-top:0}',
+      '.lp-oq-layout-grid .lp-oq-product-qty input{font-size:14px}',
+      '.lp-oq-layout-list .lp-oq-stack{display:block}',
+      '.lp-oq-layout-list .lp-oq-choices{display:flex;flex-direction:column;gap:0;border:1px solid color-mix(in srgb,' + b + ' 20%,var(--line,var(--border,currentColor)));border-radius:10px;overflow:hidden;margin-top:12px}',
+      '.lp-oq-layout-list .lp-oq-product{display:flex;flex-direction:row;align-items:center;gap:12px;padding:10px 14px;margin:0;border-radius:0;border:none;border-bottom:1px solid color-mix(in srgb,' + b + ' 14%,var(--line,var(--border,currentColor)))}',
+      '.lp-oq-layout-list .lp-oq-product:last-child{border-bottom:none}',
+      '.lp-oq-layout-list .lp-oq-product .lp-oq-choice{display:flex;flex-direction:row;align-items:center;gap:12px;flex:1;padding:0;margin:0;border:none;box-shadow:none;background:transparent;text-align:left}',
+      '.lp-oq-layout-list .lp-oq-product.is-selected .lp-oq-choice{border:none;box-shadow:none}',
+      '.lp-oq-layout-list .lp-oq-product .lp-oq-choice strong{display:block;font-size:14px}',
+      '.lp-oq-layout-list .lp-oq-product .lp-oq-choice span{display:block;margin-top:2px;font-size:12px}',
+      '.lp-oq-layout-list .lp-oq-product .lp-oq-ic{flex-shrink:0;margin-right:0}',
+      '.lp-oq-layout-list .lp-oq-product .lp-oq-choice-img{flex-shrink:0;margin:0!important;height:40px!important;width:40px!important;object-fit:cover;border-radius:6px}',
+      '.lp-oq-layout-list .lp-oq-product-qty{flex-shrink:0;margin:0;min-width:88px}',
+      '.lp-oq-layout-list .lp-oq-product-qty span{font-size:11px}',
       '.lp-oq-layout-split .lp-oq-split{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:28px;align-items:start}',
       '.lp-oq-layout-split .lp-oq-aside{padding:14px 16px;border-radius:12px;border:1px solid color-mix(in srgb,' + b + ' 18%,var(--line,var(--border,currentColor)));background:color-mix(in srgb,' + b + ' 6%,transparent)}',
       '.lp-oq-layout-split .lp-oq-aside .lp-oq-intro{font-size:16px;font-weight:700;color:var(--ink,var(--text,inherit));margin:0 0 14px}',
