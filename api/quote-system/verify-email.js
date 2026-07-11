@@ -11,16 +11,12 @@ const {
 } = require('../../lib/quote-system/auth');
 const { updateSession } = require('../../lib/quote-system/session');
 const {
-  generateCode,
-  storeVerification,
-  sendEmailCode,
+  ensureEmailVerificationSent,
   verifyEmailCode
 } = require('../../lib/quote-system/verify');
-const { sendEmailVerifiedTotalEmail } = require('../../lib/quote-system/portal-email');
-const { calculateQuote } = require('../../lib/quote-system/calculator');
-const { formatMoney } = require('../../lib/quote-system/serializers');
+const { sendQuoteSummaryEmail } = require('../../lib/quote-system/email-verify-flow');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
-const { VERIFY_CHANNEL } = require('../../lib/quote-system/constants');
+const { normalizeEmail, whitelistEmail } = require('../../lib/quote-system/email-whitelist');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'method_not_allowed' });
@@ -41,13 +37,11 @@ module.exports = async function handler(req, res) {
     if (!entitled.ok) return json(res, 403, { ok: false, error: entitled.error });
 
     if (action === 'send') {
-      const email = clean(body.email || session.contact_email, 160).toLowerCase();
+      const email = normalizeEmail(clean(body.email || session.contact_email, 160));
       if (!email || email.indexOf('@') < 3) {
         return json(res, 400, { ok: false, error: 'valid_email_required' });
       }
 
-      const code = generateCode();
-      await storeVerification(session.id, VERIFY_CHANNEL.EMAIL, email, code);
       await updateSession(session.id, { contact_email: email });
 
       const quoteSystem = await getQuoteSystemForSite(session.site_id);
@@ -57,11 +51,12 @@ module.exports = async function handler(req, res) {
         configVersion.config.business &&
         configVersion.config.business.name;
 
-      const mail = await sendEmailCode(email, code, businessName);
+      const mail = await ensureEmailVerificationSent(session.id, email, businessName);
       return json(res, 200, {
         ok: true,
         sent: mail.sent,
-        reason: mail.reason || null
+        reason: mail.reason || null,
+        alreadyPending: !!mail.alreadyPending
       });
     }
 
@@ -74,28 +69,13 @@ module.exports = async function handler(req, res) {
 
       await updateSession(session.id, { email_verified_at: new Date().toISOString() });
 
+      if (session.contact_email) {
+        await whitelistEmail(session.site_id, session.contact_email);
+      }
+
       let emailSummary = null;
       try {
-        const quoteSystem = await getQuoteSystemForSite(session.site_id);
-        const configVersion = quoteSystem ? await getActiveConfig(quoteSystem) : null;
-        if (configVersion && configVersion.config && session.contact_email) {
-          const calc = calculateQuote(configVersion.config, session.progress || {});
-          const totalFormatted = formatMoney(calc.totalCents);
-          const { getAdmin } = require('../../lib/quote-system/supabase');
-          const { data: site } = await getAdmin().from('sites')
-            .select('slug,business_name')
-            .eq('id', session.site_id)
-            .maybeSingle();
-          const businessName = (configVersion.config.business && configVersion.config.business.name)
-            || (site && site.business_name)
-            || 'Your provider';
-          emailSummary = await sendEmailVerifiedTotalEmail({
-            to: session.contact_email,
-            businessName,
-            totalFormatted,
-            siteSlug: site && site.slug
-          });
-        }
+        emailSummary = await sendQuoteSummaryEmail(session);
       } catch (mailErr) {
         console.warn('quote-system verify-email summary mail:', mailErr && mailErr.message);
       }
