@@ -223,11 +223,16 @@
       : function(parts) { return (parts.intro || '') + (parts.fields || '') + (parts.choices || '') + (parts.extra || ''); };
     if (stepKey === 'event') {
       var Pe = global.LPQuotePlanning;
+      var eventProds = filter(shell.products, progress);
+      var eventFields = (Pe && Pe.renderLabourPlanning)
+        ? Pe.renderLabourPlanning(progress, shell)
+        : '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
+      var eventStaffing = (Pe && Pe.renderStaffing)
+        ? Pe.renderStaffing(progress, shell, eventProds)
+        : '';
       body = wrap({
-        intro: '<p class="lp-oq-intro">When is your event?</p>',
-        fields: (Pe && Pe.renderLabourPlanning)
-          ? Pe.renderLabourPlanning(progress, shell)
-          : '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>'
+        intro: '<p class="lp-oq-intro">When is your event, and how many baristas do you need?</p>',
+        fields: eventFields + eventStaffing
       });
     } else if (stepKey === 'equipment' || stepKey === 'products') {
       var P = global.LPQuotePlanning;
@@ -605,6 +610,7 @@
   QuoteBuilder.prototype._renderLabour = function() {
     var l = this.config.labour || {};
     var eb = l.extraBarista || {};
+    var ss = eb.splitShift || {};
     return '<div class="oqb-grid">'
       + this._field('Labour label', '<input type="text" data-oqb-path="labour.label" value="' + esc(l.label || 'Labour') + '">')
       + this._field('Hourly rate', this._money('labour.hourlyCents', l.hourlyCents))
@@ -617,7 +623,14 @@
       + this._field('Label', '<input type="text" data-oqb-path="labour.extraBarista.label" value="' + esc(eb.label || 'Additional barista') + '">')
       + this._field('Hourly rate', this._money('labour.extraBarista.hourlyCents', eb.hourlyCents != null ? eb.hourlyCents : l.hourlyCents))
       + '</div>'
-      + '<p class="oqb-hint">Simple hours mode bills the minimum when shorter. Shift planner sums each day (with per-shift minimum). Staffing multiplies by baristas per cart.</p>';
+      + '<h4 class="oqb-sub">Split-shift barista (peak)</h4><div class="oqb-grid">'
+      + this._field('Enabled', '<label class="oqb-check"><input type="checkbox" data-oqb-path="labour.extraBarista.splitShift.enabled"' + (ss.enabled !== false ? ' checked' : '') + '> Offer morning peak / split-shift option</label>')
+      + this._field('Label', '<input type="text" data-oqb-path="labour.extraBarista.splitShift.label" value="' + esc(ss.label || 'Split-shift barista (peak)') + '">')
+      + this._field('Client hourly rate', this._money('labour.extraBarista.splitShift.hourlyCents', ss.hourlyCents != null ? ss.hourlyCents : 10000))
+      + this._field('Minimum hours per day', '<input type="number" min="3" max="12" data-oqb-path="labour.extraBarista.splitShift.minimumHours" value="' + esc(ss.minimumHours != null ? ss.minimumHours : 3) + '">')
+      + this._field('Default peak hours', '<input type="number" min="3" max="12" data-oqb-path="labour.extraBarista.splitShift.defaultHours" value="' + esc(ss.defaultHours != null ? ss.defaultHours : 4) + '">')
+      + '</div>'
+      + '<p class="oqb-hint">Equipment step picks what to hire; event step sets hours and baristas per cart. + Add day copies the previous day\'s times on the next calendar date. Split-shift bills the second barista at the peak rate (e.g. $100/hr) for busy morning hours only.</p>';
   };
 
   QuoteBuilder.prototype._renderTierRows = function(bevIdx, tiers) {
@@ -1168,6 +1181,12 @@
 
     if (P && P.wireLabourPlanning) {
       P.wireLabourPlanning(root, this.previewProgress, shell, function() {
+        self._reconcilePreviewSelections();
+        self._refreshPreview();
+      });
+    }
+    if (P && P.wireStaffing) {
+      P.wireStaffing(root, this.previewProgress, shell, products, function() {
         self._reconcilePreviewSelections();
         self._refreshPreview();
       });

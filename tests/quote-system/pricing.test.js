@@ -106,8 +106,54 @@ test('calculateQuote — multi-cart with extra barista per cart', function() {
 
 test('normalizeCarts — legacy productId fallback', function() {
   assert.deepEqual(normalizeCarts({ productId: 'cart', extraBaristas: 1 }, []), [
-    { productId: 'cart', quantity: 1, extraBaristas: 1 }
+    { productId: 'cart', quantity: 1, baristas: 2, extraBaristaMode: 'full', splitHours: 4, extraBaristas: 1 }
   ]);
+});
+
+test('calculateQuote — split-shift extra barista at $100/hr', function() {
+  var config = {
+    business: { gstRegistered: false },
+    labour: {
+      hourlyCents: 7500,
+      minimumHours: 3,
+      extraBarista: {
+        enabled: true,
+        hourlyCents: 7500,
+        splitShift: { enabled: true, hourlyCents: 10000, minimumHours: 3, defaultHours: 4 }
+      }
+    },
+    products: [{ id: 'cart', label: 'Cart', baseCents: 0, baristasIncluded: 1 }],
+    beverages: []
+  };
+  var result = calculateQuote(config, {
+    labourPlanning: 'hours',
+    hours: 6,
+    carts: [{ productId: 'cart', quantity: 1, baristas: 2, extraBaristaMode: 'split', splitHours: 4 }]
+  });
+  var base = result.breakdown.find(function(r) { return r.baristaRole === 'base'; });
+  var split = result.breakdown.find(function(r) { return r.extraBaristaMode === 'split'; });
+  assert.equal(base.quantity, 6);
+  assert.equal(base.unitCents, 7500);
+  assert.equal(split.quantity, 4);
+  assert.equal(split.unitCents, 10000);
+  assert.equal(split.totalCents, 40000);
+});
+
+test('nextShiftFromPrevious — copies hours on next calendar day', function() {
+  var shifts = [{ date: '2026-08-01', startTime: '07:00', endTime: '15:00' }];
+  var next = (function(shifts) {
+    function nextCalendarDay(dateStr) {
+      if (!dateStr) return '';
+      var d = new Date(dateStr + 'T12:00:00');
+      d.setDate(d.getDate() + 1);
+      return d.toISOString().slice(0, 10);
+    }
+    var prev = shifts[shifts.length - 1];
+    return { date: nextCalendarDay(prev.date), startTime: prev.startTime, endTime: prev.endTime };
+  })(shifts);
+  assert.equal(next.date, '2026-08-02');
+  assert.equal(next.startTime, '07:00');
+  assert.equal(next.endTime, '15:00');
 });
 
 test('calculateQuote — coffee cart 3hr minimum labour', function() {
