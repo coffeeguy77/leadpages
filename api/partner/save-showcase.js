@@ -3,7 +3,9 @@
 // words, other partners, and existing tenant sites) so a shadowed/invalid name
 // can never be stored, regardless of what the UI sends. POST (Bearer).
 //
-// Body: { slug, domain, enabled, headline, config:{logo,logoSize,intro,accent,theme,themeId} }
+// Body: { slug, domain, enabled, headline, config:{logo,logoSize,intro,accent,theme,themeId,templateKey} }
+
+const { normalizeTemplateKey } = require('../../lib/partner-templates/registry');
 
 function cleanHex(v) {
   return /^#[0-9a-fA-F]{3,8}$/.test(v || '') ? v : null;
@@ -66,6 +68,7 @@ module.exports = async (req,res) => {
     accent,
     theme,
     themeId:cfgIn.themeId?String(cfgIn.themeId).slice(0,80):null,
+    templateKey:normalizeTemplateKey(cfgIn.templateKey),
   };
   if(!config.themeId) delete config.themeId;
   if(!config.theme) delete config.theme;
