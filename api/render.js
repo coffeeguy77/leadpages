@@ -542,11 +542,29 @@ function injectOnlineQuote(html, slug, cfg) {
   const sec = cfg && cfg.sections && cfg.sections.onlineQuote;
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
+  const QUOTE_SCRIPTS = [
+    '/assets/lp-quote-wizard-logic.js',
+    '/assets/lp-quote-display.js',
+    '/assets/lp-quote-planning.js',
+    '/assets/lp-online-quote.js'
+  ];
+
+  function ensureQuoteScripts(doc) {
+    let out = doc;
+    QUOTE_SCRIPTS.forEach(function(src) {
+      if (!out.includes(src)) {
+        out = out.replace('</body>', '<script src="' + src + '" defer></script>\n</body>');
+      }
+    });
+    return out;
+  }
+
   if (html.includes('data-sec="onlineQuote"')) {
-    return html.replace(
+    html = html.replace(
       /(<div\s+id="lp-online-quote")(?:\s+data-slug="[^"]*")?/,
       '$1 data-slug="' + safeSlug + '"'
     );
+    return ensureQuoteScripts(html);
   }
   const eyebrow = esc(sec.eyebrow || 'Online quote');
   const heading = esc(sec.heading || 'Get your quote');

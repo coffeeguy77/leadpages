@@ -53,6 +53,12 @@
     if (D.choiceVisualHtml) {
       return D.choiceVisualHtml(item, { esc: esc, iconHtml: iconHtml });
     }
+    if (item && item.displayMode === 'image' && item.imageUrl) {
+      var px = (D.displayPx) ? D.displayPx(item.imageSize, item.imageScale) : 80;
+      return '<img class="lp-oq-choice-img" src="' + esc(item.imageUrl) + '" alt="" style="height:' + px + 'px;width:auto;max-width:100%;object-fit:contain;display:block;margin:0 0 8px;border-radius:8px">' +
+        '<strong>' + esc(item.label) + '</strong>' +
+        (item.description ? '<span>' + esc(item.description) + '</span>' : '');
+    }
     return iconHtml(item.icon) +
       '<strong>' + esc(item.label) + '</strong>' +
       (item.description ? '<span>' + esc(item.description) + '</span>' : '');
@@ -215,7 +221,19 @@
     var s = this.state;
     var P = this.planning();
     var wrap = wrapStep.bind(this);
-    if (key === 'equipment' || key === 'products' || key === 'event') {
+
+    if (key === 'event') {
+      var fields = (P && P.renderLabourPlanning)
+        ? P.renderLabourPlanning(s, this.shell)
+        : '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
+          '<input type="number" min="1" max="48" data-field="hours" value="' + esc(s.hours) + '"></label>';
+      return wrap({
+        intro: '<p class="lp-oq-intro">When is your event?</p>',
+        fields: fields
+      });
+    }
+
+    if (key === 'equipment' || key === 'products') {
       var products = this.filterItems(this.shell.products || []);
       if (!products.length) return '<p class="lp-oq-muted">No equipment configured.</p>';
       var choices = '';
@@ -229,12 +247,17 @@
         }).join('');
       }
       var fields = '';
-      if (P && P.renderLabourPlanning) fields = P.renderLabourPlanning(s, this.shell);
-      else {
-        fields = '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
-          '<input type="number" min="1" max="24" data-field="hours" value="' + esc(s.hours) + '"></label>';
+      if (this.steps().indexOf('event') < 0) {
+        fields = (P && P.renderLabourPlanning)
+          ? P.renderLabourPlanning(s, this.shell)
+          : '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
+            '<input type="number" min="1" max="48" data-field="hours" value="' + esc(s.hours) + '"></label>';
       }
-      return wrap({ intro: '<p class="lp-oq-intro">Choose your setup.</p>', fields: fields, choices: choices });
+      return wrap({
+        intro: '<p class="lp-oq-intro">Choose your equipment.</p>',
+        fields: fields,
+        choices: choices
+      });
     }
     if (key === 'beverages') {
       var bevs = this.filterItems(this.shell.beverages || []);

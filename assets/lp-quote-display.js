@@ -88,6 +88,10 @@
     return [
       '.lp-oq-layout-cards .lp-oq-choice{padding:18px 20px;margin-bottom:12px;border-radius:16px;min-height:72px}',
       '.lp-oq-layout-cards .lp-oq-choice .lp-oq-ic svg{width:22px;height:22px}',
+      '.lp-oq-layout-grid .lp-oq-choices,.lp-oq-layout-grid .lp-oq-stack{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}',
+      '.lp-oq-layout-grid .lp-oq-choice{margin:0;height:100%;display:flex;flex-direction:column;align-items:flex-start;padding:14px;border-radius:14px}',
+      '.lp-oq-layout-grid .lp-oq-choice-img{width:100%!important;height:auto!important;max-height:120px!important;margin:0 0 10px!important;object-fit:contain}',
+      '.lp-oq-layout-grid .lp-oq-choice strong{margin-top:auto}',
       '.lp-oq-layout-list .lp-oq-choices,.lp-oq-layout-list .lp-oq-stack{display:flex;flex-direction:column;gap:0;border:1px solid color-mix(in srgb,' + b + ' 20%,var(--line,var(--border,currentColor)));border-radius:10px;overflow:hidden}',
       '.lp-oq-layout-list .lp-oq-choice{display:flex;flex-direction:row;align-items:center;gap:12px;padding:10px 14px;margin:0;border-radius:0;border:none;border-bottom:1px solid color-mix(in srgb,' + b + ' 14%,var(--line,var(--border,currentColor)))}',
       '.lp-oq-layout-list .lp-oq-choice:last-child{border-bottom:none}',

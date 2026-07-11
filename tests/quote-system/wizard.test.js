@@ -50,6 +50,13 @@ test('normalizeWizardSteps — contact always last', function() {
   );
 });
 
+test('normalizeWizardSteps — event and equipment stay separate', function() {
+  assert.deepEqual(
+    normalizeWizardSteps(['event', 'equipment', 'beverages', 'contact']),
+    ['event', 'equipment', 'beverages', 'contact']
+  );
+});
+
 test('matchesWhen — wildcard', function() {
   assert.equal(matchesWhen({ field: 'productId', values: ['*'] }, {}), true);
 });
