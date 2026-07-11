@@ -59,15 +59,156 @@
     return eb.splitShift || {};
   }
 
-  function defaultCartRow(product) {
+  function defaultCartRow(product, template) {
     var included = Math.max(1, Number(product && product.baristasIncluded) || 1);
-    return {
+    var row = {
       productId: product ? product.id : '',
       quantity: 1,
       baristas: included,
       extraBaristaMode: 'none',
-      splitHours: Math.max(3, Number(splitShiftSettings({ labour: { extraBarista: {} } }).defaultHours) || 4)
+      splitHours: Math.max(3, Number(splitShiftSettings({ labour: { extraBarista: {} } }).defaultHours) || 4),
+      hours: null
     };
+    if (template) {
+      if (template.hours != null) row.hours = template.hours;
+      if (template.baristas != null) row.baristas = template.baristas;
+      if (template.extraBaristaMode) row.extraBaristaMode = template.extraBaristaMode;
+      if (template.splitHours != null) row.splitHours = template.splitHours;
+    }
+    return row;
+  }
+
+  function defaultHours(state, shell) {
+    var min = Math.max(1, Number(shellLabour(shell).minimumHours) || 3);
+    var h = parseInt(state.hours, 10);
+    return (!isNaN(h) && h > 0) ? h : min;
+  }
+
+  function isMultiCart(carts) {
+    return (carts || []).length > 1;
+  }
+
+  function ensureEventConfig(state, products) {
+    var carts = ensureCarts(state, products);
+    var shell = state._shell || {};
+    if (!isMultiCart(carts)) {
+      state.eventConfigMode = 'same';
+    } else if (state.eventConfigMode !== 'custom') {
+      state.eventConfigMode = 'same';
+    }
+    var baseH = defaultHours(state, shell);
+    state.hours = baseH;
+    carts.forEach(function(cart) {
+      var ch = parseInt(cart.hours, 10);
+      if (isNaN(ch) || ch < 1) cart.hours = baseH;
+      else cart.hours = Math.max(1, Math.min(48, ch));
+    });
+    return carts;
+  }
+
+  function syncAllCartsEvent(state, templateIdx) {
+    var idx = templateIdx != null ? templateIdx : 0;
+    var src = state.carts && state.carts[idx];
+    if (!src) return;
+    var h = parseInt(src.hours, 10);
+    if (!isNaN(h) && h > 0) state.hours = h;
+    state.carts.forEach(function(cart, i) {
+      if (i === idx) return;
+      cart.hours = src.hours;
+      cart.baristas = src.baristas;
+      cart.extraBaristaMode = src.extraBaristaMode;
+      cart.splitHours = src.splitHours;
+    });
+  }
+
+  function setGlobalBarista1Hours(state, hours) {
+    var h = Math.max(1, Math.min(48, parseInt(hours, 10) || 3));
+    state.hours = h;
+    (state.carts || []).forEach(function(cart) { cart.hours = h; });
+  }
+
+  function renderBarista1HoursField(state, opts) {
+    opts = opts || {};
+    var val = opts.hours != null ? opts.hours : defaultHours(state, state._shell || {});
+    var attrs = opts.cartIdx != null
+      ? ' data-cart-hours="' + opts.cartIdx + '"'
+      : ' data-field="hours"';
+    var hint = opts.hint
+      ? '<p class="lp-oq-muted" style="font-size:12px;margin:4px 0 0">' + esc(opts.hint) + '</p>' : '';
+    return '<label class="lp-oq-field"><span>Barista 1 — event duration (hours)</span>' +
+      '<input type="number" min="1" max="48"' + attrs + ' value="' + esc(val) + '"></label>' + hint;
+  }
+
+  function renderEventConfigMode(state, carts) {
+    if (!isMultiCart(carts)) return '';
+    var mode = state.eventConfigMode === 'custom' ? 'custom' : 'same';
+    return '<fieldset class="lp-oq-plan lp-oq-event-config"><legend>Multiple equipment lines</legend>' +
+      '<p class="lp-oq-muted" style="margin:0 0 10px">You have more than one equipment line. Use the same event hours and barista setup for each, or configure each line separately.</p>' +
+      '<label class="lp-oq-radio"><input type="radio" name="lp-oq-event-config" value="same"' +
+      (mode === 'same' ? ' checked' : '') + ' data-event-config="same"> Same hours &amp; staffing for all equipment lines</label>' +
+      '<label class="lp-oq-radio"><input type="radio" name="lp-oq-event-config" value="custom"' +
+      (mode === 'custom' ? ' checked' : '') + ' data-event-config="custom"> Custom configuration per equipment line</label>' +
+      '</fieldset>';
+  }
+
+  function renderStaffingRow(state, shell, products, cart, i, opts) {
+    opts = opts || {};
+    var splitCfg = splitShiftSettings(shell);
+    var splitEnabled = splitCfg.enabled !== false;
+    var splitRate = Number(splitCfg.hourlyCents) || 10000;
+    var splitMin = Math.max(3, Number(splitCfg.minimumHours) || 3);
+    var prod = (products || []).find(function(p) { return p.id === cart.productId; }) || {};
+    var included = Math.max(1, Number(prod.baristasIncluded) || 1);
+    var allowExtra = extraBaristaEnabled(shell) && prod.allowExtraBarista !== false;
+    var baristas = cart.baristas != null ? cart.baristas : included;
+    var cartLabel = opts.cartLabel || (prod.label || 'Equipment');
+    var staffIdx = opts.staffIdx != null ? opts.staffIdx : i;
+    var radioSuffix = opts.radioSuffix != null ? opts.radioSuffix : i;
+    var simpleHours = state.labourPlanning !== 'shifts';
+
+    var html = '<div class="lp-oq-staff-row" data-staff-idx="' + staffIdx + '">' +
+      '<p class="lp-oq-staff-label"><strong>' + esc(cartLabel) + '</strong>' +
+      (cart.quantity > 1 ? ' <span class="lp-oq-muted">×' + esc(cart.quantity) + '</span>' : '') + '</p>';
+
+    if (simpleHours && opts.showBarista1Hours) {
+      html += renderBarista1HoursField(state, {
+        cartIdx: i,
+        hours: cart.hours,
+        hint: 'Barista 1 works this many hours for this equipment line.'
+      });
+    }
+
+    html += '<div class="lp-oq-staff-count">';
+    for (var n = included; n <= Math.min(included + 1, 4); n++) {
+      html += '<label class="lp-oq-radio"><input type="radio" name="lp-oq-baristas-' + radioSuffix + '" value="' + n + '"' +
+        (baristas === n ? ' checked' : '') + ' data-staff-field="baristas" data-staff-idx="' + staffIdx + '"> ' +
+        n + ' barista' + (n > 1 ? 's' : '') + ' <span class="lp-oq-muted">(Barista 1' + (n > included ? ' + Barista 2' : '') + ')</span></label>';
+    }
+    html += '</div>';
+
+    if (allowExtra && baristas > included) {
+      var mode = cart.extraBaristaMode === 'split' ? 'split' : 'full';
+      var b1h = cart.hours != null ? cart.hours : defaultHours(state, shell);
+      html += '<div class="lp-oq-extra-mode">';
+      html += '<label class="lp-oq-radio"><input type="radio" name="lp-oq-extra-' + radioSuffix + '" value="full"' +
+        (mode === 'full' ? ' checked' : '') + ' data-staff-field="extraBaristaMode" data-staff-idx="' + staffIdx + '"> ' +
+        'Barista 2 — full shift (' + esc(b1h) + ' hrs, same as Barista 1)</label>';
+      if (splitEnabled) {
+        html += '<label class="lp-oq-radio"><input type="radio" name="lp-oq-extra-' + radioSuffix + '" value="split"' +
+          (mode === 'split' ? ' checked' : '') + ' data-staff-field="extraBaristaMode" data-staff-idx="' + staffIdx + '"> ' +
+          'Barista 2 — split shift (peak hours only)</label>';
+        if (mode === 'split') {
+          var splitH = cart.splitHours || splitCfg.defaultHours || 4;
+          html += '<label class="lp-oq-field"><span>Barista 2 — peak hours (hours)</span>' +
+            '<input type="number" min="3" max="12" data-staff-field="splitHours" data-staff-idx="' + staffIdx + '" value="' + esc(splitH) + '"></label>' +
+            '<p class="lp-oq-muted" style="font-size:12px;margin:4px 0 0">Barista 1 works ' + esc(b1h) + ' hrs; Barista 2 covers the busy period for ' + esc(splitH) + ' hrs. Billed at $' +
+            (splitRate / 100).toFixed(0) + '/hr (min ' + splitMin + ' hrs).</p>';
+        }
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
   }
 
   function normalizeCartStaff(cart, product, shell) {
@@ -144,21 +285,37 @@
     return state.shifts;
   }
 
-  function renderLabourPlanning(state, shell) {
+  function renderLabourPlanning(state, shell, products) {
+    state._shell = shell;
+    var carts = products ? ensureEventConfig(state, products) : [];
+    var multi = isMultiCart(carts);
+    var custom = multi && state.eventConfigMode === 'custom';
+    var configBlock = multi ? renderEventConfigMode(state, carts) : '';
+
     if (!allowsShiftPlanner(shell)) {
-      return '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
-        '<input type="number" min="1" max="48" data-field="hours" value="' + esc(state.hours != null ? state.hours : 3) + '"></label>';
+      return configBlock + (state.labourPlanning !== 'shifts' && !custom
+        ? renderBarista1HoursField(state, { hint: 'How long Barista 1 is on site for this event.' })
+        : '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
+          '<input type="number" min="1" max="48" data-field="hours" value="' + esc(state.hours != null ? state.hours : 3) + '"></label>');
     }
     var mode = state.labourPlanning === 'shifts' ? 'shifts' : 'hours';
-    var html = '<fieldset class="lp-oq-plan"><legend>Event scheduling</legend>' +
+    var html = configBlock + '<fieldset class="lp-oq-plan"><legend>Event scheduling</legend>' +
       '<label class="lp-oq-radio"><input type="radio" name="lp-oq-labour" value="hours"' + (mode === 'hours' ? ' checked' : '') + '> Simple hours</label>' +
       '<label class="lp-oq-radio"><input type="radio" name="lp-oq-labour" value="shifts"' + (mode === 'shifts' ? ' checked' : '') + '> Multi-day shift planner</label>';
     if (mode === 'hours') {
-      html += '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
-        '<input type="number" min="1" max="48" data-field="hours" value="' + esc(state.hours != null ? state.hours : 3) + '"></label>';
+      if (!custom) {
+        html += renderBarista1HoursField(state, {
+          hint: multi
+            ? 'Barista 1 works this many hours on every equipment line (unless you choose custom per line below).'
+            : 'How long Barista 1 is on site. If you add Barista 2 on full shift, they work the same hours.'
+        });
+      } else {
+        html += '<p class="lp-oq-muted" style="margin:8px 0 0">Set Barista 1 hours and staffing for each equipment line below.</p>';
+      }
     } else {
       ensureShifts(state);
-      html += '<div class="lp-oq-shifts" data-lp-oq-shifts>';
+      html += '<p class="lp-oq-muted" style="margin:8px 0 0">Barista 1 is scheduled for each day below. Configure baristas per equipment line in the staffing section.</p>' +
+        '<div class="lp-oq-shifts" data-lp-oq-shifts>';
       state.shifts.forEach(function(sh, i) {
         html += '<div class="lp-oq-shift" data-shift-idx="' + i + '">' +
           '<label class="lp-oq-field"><span>Day ' + (i + 1) + ' date</span><input type="date" data-shift-field="date" value="' + esc(sh.date || '') + '"></label>' +
@@ -175,58 +332,35 @@
 
   function renderStaffing(state, shell, products) {
     state._shell = shell;
-    var carts = ensureCarts(state, products);
+    var carts = ensureEventConfig(state, products);
     if (!carts.length) return '';
 
-    var splitCfg = splitShiftSettings(shell);
-    var splitEnabled = splitCfg.enabled !== false;
-    var splitRate = Number(splitCfg.hourlyCents) || 10000;
-    var splitMin = Math.max(3, Number(splitCfg.minimumHours) || 3);
-
+    var multi = isMultiCart(carts);
+    var custom = multi && state.eventConfigMode === 'custom';
     var html = '<fieldset class="lp-oq-plan lp-oq-staffing"><legend>Barista staffing</legend>' +
-      '<p class="lp-oq-muted" style="margin:0 0 12px">How many baristas per equipment line? Choose split shift if the second barista only covers the busy morning period.</p>';
+      '<p class="lp-oq-muted" style="margin:0 0 12px">Barista 1 is included with your equipment. Add Barista 2 if you need cover for the full event or just the busy peak.</p>';
 
-    carts.forEach(function(cart, i) {
-      var prod = (products || []).find(function(p) { return p.id === cart.productId; }) || {};
-      var included = Math.max(1, Number(prod.baristasIncluded) || 1);
-      var allowExtra = extraBaristaEnabled(shell) && prod.allowExtraBarista !== false;
-      var baristas = cart.baristas != null ? cart.baristas : included;
-      var cartLabel = carts.length > 1 ? 'Cart ' + (i + 1) : (prod.label || 'Equipment');
-      if (carts.length > 1 && prod.label) cartLabel += ' — ' + prod.label;
-
-      html += '<div class="lp-oq-staff-row" data-staff-idx="' + i + '">' +
-        '<p class="lp-oq-staff-label"><strong>' + esc(cartLabel) + '</strong>' +
-        (cart.quantity > 1 ? ' <span class="lp-oq-muted">×' + esc(cart.quantity) + '</span>' : '') + '</p>';
-
-      html += '<div class="lp-oq-staff-count">';
-      for (var n = included; n <= Math.min(included + 1, 4); n++) {
-        html += '<label class="lp-oq-radio"><input type="radio" name="lp-oq-baristas-' + i + '" value="' + n + '"' +
-          (baristas === n ? ' checked' : '') + ' data-staff-field="baristas" data-staff-idx="' + i + '"> ' +
-          n + ' barista' + (n > 1 ? 's' : '') + '</label>';
-      }
-      html += '</div>';
-
-      if (allowExtra && baristas > included) {
-        var mode = cart.extraBaristaMode === 'split' ? 'split' : 'full';
-        html += '<div class="lp-oq-extra-mode">';
-        html += '<label class="lp-oq-radio"><input type="radio" name="lp-oq-extra-' + i + '" value="full"' +
-          (mode === 'full' ? ' checked' : '') + ' data-staff-field="extraBaristaMode" data-staff-idx="' + i + '"> ' +
-          esc(extraBaristaLabel(shell)) + ' — full shift (same hours)</label>';
-        if (splitEnabled) {
-          html += '<label class="lp-oq-radio"><input type="radio" name="lp-oq-extra-' + i + '" value="split"' +
-            (mode === 'split' ? ' checked' : '') + ' data-staff-field="extraBaristaMode" data-staff-idx="' + i + '"> ' +
-            esc(splitCfg.label || 'Split-shift barista (peak)') + ' — morning peak only</label>';
-          if (mode === 'split') {
-            var splitH = cart.splitHours || splitCfg.defaultHours || 4;
-            html += '<label class="lp-oq-field"><span>Peak hours per day</span>' +
-              '<input type="number" min="3" max="12" data-staff-field="splitHours" data-staff-idx="' + i + '" value="' + esc(splitH) + '"></label>' +
-              '<p class="lp-oq-muted" style="font-size:12px;margin:4px 0 0">Billed at $' + (splitRate / 100).toFixed(0) + '/hr (min ' + splitMin + ' hrs/day)</p>';
-          }
-        }
-        html += '</div>';
-      }
-      html += '</div>';
-    });
+    if (multi && !custom) {
+      var cart0 = carts[0];
+      html += renderStaffingRow(state, shell, products, cart0, 0, {
+        staffIdx: 0,
+        radioSuffix: 'all',
+        cartLabel: 'All equipment lines',
+        showBarista1Hours: false
+      });
+    } else {
+      carts.forEach(function(cart, i) {
+        var prod = (products || []).find(function(p) { return p.id === cart.productId; }) || {};
+        var cartLabel = multi ? 'Equipment line ' + (i + 1) : (prod.label || 'Equipment');
+        if (multi && prod.label) cartLabel += ' — ' + prod.label;
+        html += renderStaffingRow(state, shell, products, cart, i, {
+          staffIdx: i,
+          radioSuffix: i,
+          cartLabel: cartLabel,
+          showBarista1Hours: custom && state.labourPlanning !== 'shifts'
+        });
+      });
+    }
 
     html += '</fieldset>';
     return html;
@@ -316,7 +450,29 @@
       '<input type="number" min="1" max="50000" data-field="' + dataField + '" value="' + esc(val) + '"></label>';
   }
 
-  function wireLabourPlanning(root, state, shell, rerender) {
+  function wireLabourPlanning(root, state, shell, rerender, products) {
+    state._shell = shell;
+    if (products) ensureEventConfig(state, products);
+
+    root.querySelectorAll('input[name="lp-oq-event-config"]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        state.eventConfigMode = radio.value === 'custom' ? 'custom' : 'same';
+        if (state.eventConfigMode === 'custom') syncAllCartsEvent(state, 0);
+        rerender();
+      });
+    });
+
+    root.querySelectorAll('[data-cart-hours]').forEach(function(inp) {
+      inp.addEventListener('change', function() {
+        var idx = parseInt(inp.getAttribute('data-cart-hours'), 10);
+        if (!state.carts[idx]) return;
+        var h = Math.max(1, Math.min(48, parseInt(inp.value, 10) || 3));
+        state.carts[idx].hours = h;
+        if (idx === 0) state.hours = h;
+        rerender();
+      });
+    });
+
     root.querySelectorAll('input[name="lp-oq-labour"]').forEach(function(radio) {
       radio.addEventListener('change', function() {
         state.labourPlanning = radio.value;
@@ -350,23 +506,37 @@
     });
   }
 
+  function applyStaffingChange(state, shell, products, idx, key, rawValue) {
+    var carts = state.carts || [];
+    var value = key === 'splitHours'
+      ? Math.max(3, parseInt(rawValue, 10) || 4)
+      : (key === 'baristas' ? parseInt(rawValue, 10) || 1 : rawValue);
+    var applyAll = state.eventConfigMode !== 'custom' && isMultiCart(carts);
+
+    function updateCart(cart, cartIdx) {
+      var prod = (products || []).find(function(p) { return p.id === cart.productId; }) || {};
+      if (key === 'baristas') cart.baristas = value;
+      else if (key === 'extraBaristaMode') cart.extraBaristaMode = value;
+      else if (key === 'splitHours') cart.splitHours = value;
+      normalizeCartStaff(cart, prod, shell);
+    }
+
+    if (applyAll) {
+      carts.forEach(function(cart, i) { updateCart(cart, i); });
+    } else {
+      updateCart(carts[idx], idx);
+    }
+  }
+
   function wireStaffing(root, state, shell, products, rerender) {
     state._shell = shell;
-    ensureCarts(state, products);
+    ensureEventConfig(state, products);
 
     root.querySelectorAll('[data-staff-field]').forEach(function(inp) {
       inp.addEventListener('change', function() {
         var idx = parseInt(inp.getAttribute('data-staff-idx'), 10);
         var key = inp.getAttribute('data-staff-field');
-        var prod = products.find(function(p) { return p.id === state.carts[idx].productId; }) || {};
-        if (key === 'baristas') {
-          state.carts[idx].baristas = parseInt(inp.value, 10) || 1;
-        } else if (key === 'extraBaristaMode') {
-          state.carts[idx].extraBaristaMode = inp.value;
-        } else if (key === 'splitHours') {
-          state.carts[idx].splitHours = Math.max(3, parseInt(inp.value, 10) || 4);
-        }
-        normalizeCartStaff(state.carts[idx], prod, shell);
+        applyStaffingChange(state, shell, products, idx, key, inp.value);
         rerender();
       });
     });
@@ -423,7 +593,7 @@
       addCart.addEventListener('click', function(e) {
         e.preventDefault();
         ensureCarts(state, products);
-        state.carts.push(defaultCartRow(products[0]));
+        state.carts.push(defaultCartRow(products[0], state.carts[0]));
         rerender();
       });
     }
@@ -446,6 +616,7 @@
     var p = {
       productId: state.productId,
       hours: state.hours,
+      eventConfigMode: state.eventConfigMode || 'same',
       guestCount: state.guestCount,
       unitCount: state.unitCount,
       beverageId: state.beverageId,
@@ -457,6 +628,7 @@
         return {
           productId: c.productId,
           quantity: c.quantity,
+          hours: c.hours,
           baristas: c.baristas,
           extraBaristaMode: c.extraBaristaMode,
           splitHours: c.splitHours,
@@ -486,6 +658,7 @@
     nextShiftFromPrevious: nextShiftFromPrevious,
     pickEquipment: pickEquipment,
     ensureShifts: ensureShifts,
+    setGlobalBarista1Hours: setGlobalBarista1Hours,
     renderLabourPlanning: renderLabourPlanning,
     renderStaffing: renderStaffing,
     renderCartRows: renderCartRows,
