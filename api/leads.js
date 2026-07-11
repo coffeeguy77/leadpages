@@ -77,9 +77,13 @@ function contactEmailFor(siteRow) {
 function detailLines(details) {
   if (!details || typeof details !== 'object') return [];
   const out = [];
-  if (details.job) out.push(['Job', details.job]);
-  if (details.suburb) out.push(['Suburb', details.suburb]);
-  if (details.detail) out.push(['Details', details.detail]);
+  if (details.businessName) out.push(['Business', details.businessName]);
+  if (details.industry) out.push(['Industry', details.industry]);
+  if (details.suburb) out.push(['Region', details.suburb]);
+  if (details.mainGoal) out.push(['Goal', details.mainGoal]);
+  if (details.budget) out.push(['Budget', details.budget]);
+  if (details.message) out.push(['Message', details.message]);
+  if (details.partnerId) out.push(['Partner ID', details.partnerId]);
   // include any other fields generically
   Object.keys(details).forEach((k) => {
     if (['job', 'suburb', 'detail'].includes(k)) return;

@@ -26,6 +26,7 @@
 <script src="/assets/lp-trade-picker.js" defer></script>
 <script src="/assets/lp-messages-embed.js" defer></script>
 <script src="/assets/lp-quote-tags.js" defer></script>
+<script src="/assets/partner-website-admin.js" defer></script>
 </head>
 <body class="lp-partner-page">
 
@@ -348,6 +349,12 @@
                 <p class="muted" style="font-size:12px;margin:6px 0 0">50% to 10× — scales your logo on the public partner page.</p>
               </div>
             </div>
+          </div>
+
+          <div class="card" style="padding:20px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Page content</h3>
+            <p class="muted" style="margin:0 0 14px;font-size:13px">Biography, services, testimonials, FAQs, SEO, and enquiry form — shared across all seven page designs.</p>
+            <div id="pwp-editor"></div>
           </div>
 
           <div class="card" style="padding:20px">
@@ -2039,6 +2046,7 @@
     updateScLink();
     updateScStatusBadge();
     renderDashWidgets();
+    if(window.LPPartnerWebsiteAdmin) window.LPPartnerWebsiteAdmin.load({ authHeader: authHeader });
   }
   async function scUploadLogo(file){
     var sess=(await sb.auth.getSession()).data.session; var token=sess&&sess.access_token;
