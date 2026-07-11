@@ -25,6 +25,15 @@
     'heart', 'award', 'sparkles', 'cup-soda', 'chef-hat'
   ];
 
+  var IMAGE_SIZE_OPTIONS = (global.LPQuoteDisplay && global.LPQuoteDisplay.IMAGE_SIZE_OPTIONS) || [
+    { id: 'compact', label: 'Compact (56px)' },
+    { id: 'standard', label: 'Standard (80px)' },
+    { id: 'large', label: 'Large (120px)' },
+    { id: 'hero', label: 'Hero (180px)' }
+  ];
+
+  function displayApi() { return global.LPQuoteDisplay || {}; }
+
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -77,6 +86,20 @@
     cfg.beverages.forEach(function(b) { if (!b.id) b.id = slugify(b.label) || uid('bev'); });
     cfg.addons.forEach(function(a) { if (!a.id) a.id = slugify(a.label) || uid('addon'); });
     cfg.travel.zones.forEach(function(z) { if (!z.id) z.id = slugify(z.label) || uid('zone'); });
+    ['products', 'beverages', 'addons'].forEach(function(key) {
+      (cfg[key] || []).forEach(function(item) {
+        if (!item.displayMode) {
+          item.displayMode = item.imageUrl ? 'image' : (item.icon ? 'icon' : 'text');
+        }
+        if (item.imageScale == null) item.imageScale = 100;
+        if (!item.imageSize) item.imageSize = 'standard';
+      });
+    });
+    (cfg.travel.zones || []).forEach(function(z) {
+      if (!z.displayMode) z.displayMode = z.imageUrl ? 'image' : (z.icon ? 'icon' : 'text');
+      if (z.imageScale == null) z.imageScale = 100;
+      if (!z.imageSize) z.imageSize = 'standard';
+    });
     return cfg;
   }
 
@@ -91,6 +114,7 @@
   function QuoteBuilder(root, options) {
     this.root = root;
     this.previewRoot = (options && options.previewRoot) || null;
+    this.media = (options && options.media) || null;
     this.config = normalizeConfig(options && options.config);
     this.tab = (options && options.initialTab) || 'wizard';
     this.showJson = false;
@@ -176,7 +200,7 @@
         filter(shell.products, progress).map(function(p) {
           var sel = progress.productId === p.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="productId" data-val="' + esc(p.id) + '">' +
-            iconSvg(p.icon) + '<strong>' + esc(p.label) + '</strong></button>';
+            self._choiceHtml(p) + '</button>';
         }).join('') +
         '<label class="lp-oq-field"><span>Hours</span><input type="number" min="1" data-prev-field="hours" value="' + esc(progress.hours) + '"></label>';
     } else if (stepKey === 'beverages') {
@@ -185,21 +209,21 @@
         filter(shell.beverages, progress).map(function(b) {
           var sel = progress.beverageId === b.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="beverageId" data-val="' + esc(b.id) + '">' +
-            iconSvg(b.icon) + '<strong>' + esc(b.label) + '</strong></button>';
+            self._choiceHtml(b) + '</button>';
         }).join('');
     } else if (stepKey === 'travel') {
       body = '<p class="lp-oq-intro">Where is your event?</p>' +
         shell.travelZones.map(function(z) {
           var sel = progress.travelZoneId === z.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="travelZoneId" data-val="' + esc(z.id) + '">' +
-            iconSvg(z.icon || 'map-pin') + '<strong>' + esc(z.label) + '</strong></button>';
+            self._choiceHtml(z) + '</button>';
         }).join('');
     } else if (stepKey === 'addons') {
       body = '<p class="lp-oq-intro">Optional extras.</p>' +
         filter(shell.addons, progress).map(function(a) {
           var on = progress.addonIds.indexOf(a.id) >= 0 ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice lp-oq-multi' + on + '" data-prev-addon="' + esc(a.id) + '">' +
-            iconSvg(a.icon) + '<strong>' + esc(a.label) + '</strong></button>';
+            self._choiceHtml(a) + '</button>';
         }).join('');
     } else {
       body = '<p class="lp-oq-intro">Contact details (preview).</p>' +
@@ -230,6 +254,87 @@
       case 'rules': return this._renderRules();
       default: return this._renderOverview();
     }
+  };
+
+  QuoteBuilder.prototype._choiceHtml = function(item) {
+    var D = displayApi();
+    if (D.choiceVisualHtml) {
+      return D.choiceVisualHtml(item, { esc: esc, iconHtml: iconSvg });
+    }
+    return iconSvg(item.icon) + '<strong>' + esc(item.label) + '</strong>';
+  };
+
+  QuoteBuilder.prototype._getItemAtPath = function(path) {
+    var parts = path.split('.');
+    var obj = this.config;
+    for (var i = 0; i < parts.length; i++) {
+      if (obj == null) return null;
+      obj = obj[parts[i]];
+    }
+    return obj;
+  };
+
+  QuoteBuilder.prototype._deleteItemImage = function(item) {
+    if (!item || !item.imagePid || !this.media || !this.media.delete) return;
+    this.media.delete(item.imagePid);
+    item.imagePid = '';
+    item.imageUrl = '';
+  };
+
+  QuoteBuilder.prototype._displayBlock = function(path, item, uploadKind) {
+    var self = this;
+    var D = displayApi();
+    var mode = D.inferDisplayMode ? D.inferDisplayMode(item) : (item.displayMode || 'text');
+    var size = item.imageSize || 'standard';
+    var scale = item.imageScale != null ? item.imageScale : 100;
+    var px = D.displayPx ? D.displayPx(size, scale) : 80;
+    var radioName = 'oqb-dm-' + path.replace(/\./g, '-');
+    var canUpload = !!(this.media && this.media.upload && this.media.pick);
+
+    var modes = '<div class="oqb-display-modes">' +
+      [['text', 'Text only'], ['icon', 'Icon'], ['image', 'Uploaded image']].map(function(pair) {
+        return '<label class="oqb-display-mode' + (mode === pair[0] ? ' is-on' : '') + '">' +
+          '<input type="radio" name="' + esc(radioName) + '" value="' + pair[0] + '" data-oqb-display-mode="' + esc(path) + '"' +
+          (mode === pair[0] ? ' checked' : '') + '> ' + esc(pair[1]) + '</label>';
+      }).join('') + '</div>';
+
+    var iconPanel = '';
+    if (mode === 'icon') {
+      iconPanel = '<div class="oqb-display-panel"><span class="oqb-display-panel-label">Pick an icon</span>' +
+        this._iconSelect(path + '.icon', item.icon || '') + '</div>';
+    }
+
+    var imgPanel = '';
+    if (mode === 'image') {
+      var sizeOpts = IMAGE_SIZE_OPTIONS.map(function(s) {
+        return '<option value="' + s.id + '"' + (size === s.id ? ' selected' : '') + '>' + esc(s.label) + '</option>';
+      }).join('');
+      imgPanel = '<div class="oqb-display-panel oqb-img-panel" data-oqb-img-panel="' + esc(path) + '">' +
+        (item.imageUrl
+          ? '<img src="' + esc(item.imageUrl) + '" class="oqb-img-preview" style="max-height:' + px + 'px" alt="">'
+          : '<div class="oqb-img-empty">No image uploaded</div>') +
+        '<div class="oqb-img-actions">' +
+        (canUpload
+          ? '<button type="button" class="btn ghost oqb-btn-sm" data-oqb-img-up="' + esc(path) + '" data-oqb-upload-kind="' + esc(uploadKind) + '">Upload image</button>'
+          : '<span class="oqb-hint">Sign in to upload images</span>') +
+        (item.imageUrl ? '<button type="button" class="btn ghost oqb-btn-sm" data-oqb-img-clr="' + esc(path) + '">Remove image</button>' : '') +
+        '</div>' +
+        '<input type="hidden" data-oqb-path="' + esc(path) + '.imageUrl" value="' + esc(item.imageUrl || '') + '">' +
+        '<input type="hidden" data-oqb-path="' + esc(path) + '.imagePid" value="' + esc(item.imagePid || '') + '">' +
+        '<div class="oqb-img-size-row">' +
+        this._field('Base size', '<select data-oqb-path="' + esc(path) + '.imageSize">' + sizeOpts + '</select>') +
+        this._field('Scale', '<div class="oqb-scale-wrap"><input type="range" min="50" max="250" step="5" data-oqb-path="' + esc(path) + '.imageScale" value="' + esc(scale) + '">' +
+        '<span class="oqb-scale-val" data-oqb-scale-for="' + esc(path) + '">' + esc(scale) + '%</span></div>') +
+        '</div>' +
+        '<p class="oqb-hint">Displayed at ~' + px + 'px tall. Stored in your site Cloudinary folder.</p>' +
+        '</div>';
+    }
+
+    return '<div class="oqb-display" data-oqb-display="' + esc(path) + '">' +
+      '<p class="oqb-showwhen-title">How customers see this option</p>' +
+      modes + iconPanel + imgPanel +
+      '<input type="hidden" data-oqb-path="' + esc(path) + '.displayMode" value="' + esc(mode) + '">' +
+      '</div>';
   };
 
   QuoteBuilder.prototype._field = function(label, inner) {
@@ -422,7 +527,7 @@
     var cards = list.map(function(p, i) {
       var fields = '<div class="oqb-grid">'
         + self._field('Name', '<input type="text" data-oqb-path="products.' + i + '.label" value="' + esc(p.label || '') + '">')
-        + self._field('Icon', self._iconSelect('products.' + i + '.icon', p.icon || ''))
+        + self._displayBlock('products.' + i, p, 'products')
         + self._field('Base price (ex GST line)', self._money('products.' + i + '.baseCents', p.baseCents))
         + self._field('Description', '<textarea rows="2" data-oqb-path="products.' + i + '.description">' + esc(p.description || '') + '</textarea>')
         + '<input type="hidden" data-oqb-path="products.' + i + '.id" value="' + esc(p.id || '') + '">'
@@ -451,7 +556,7 @@
     var cards = list.map(function(b, i) {
       var fields = '<div class="oqb-grid">'
         + self._field('Package name', '<input type="text" data-oqb-path="beverages.' + i + '.label" value="' + esc(b.label || '') + '">')
-        + self._field('Icon', self._iconSelect('beverages.' + i + '.icon', b.icon || ''))
+        + self._displayBlock('beverages.' + i, b, 'packages')
         + self._field('Per guest over included ($)', self._money('beverages.' + i + '.perHeadCents', b.perHeadCents))
         + self._field('Guests included free', '<input type="number" min="0" data-oqb-path="beverages.' + i + '.includedHeads" value="' + esc(b.includedHeads != null ? b.includedHeads : 0) + '">')
         + self._field('Flat package price (optional)', self._money('beverages.' + i + '.packageCents', b.packageCents))
@@ -472,7 +577,7 @@
     var cards = list.map(function(a, i) {
       var fields = '<div class="oqb-grid">'
         + self._field('Add-on name', '<input type="text" data-oqb-path="addons.' + i + '.label" value="' + esc(a.label || '') + '">')
-        + self._field('Icon', self._iconSelect('addons.' + i + '.icon', a.icon || ''))
+        + self._displayBlock('addons.' + i, a, 'addons')
         + self._field('Fixed price', self._money('addons.' + i + '.fixedCents', a.fixedCents))
         + self._field('Description', '<textarea rows="2" data-oqb-path="addons.' + i + '.description">' + esc(a.description || '') + '</textarea>')
         + self._showWhenChips('addons.' + i, a)
@@ -491,7 +596,7 @@
     var cards = list.map(function(z, i) {
       var fields = '<div class="oqb-grid">'
         + self._field('Zone name', '<input type="text" data-oqb-path="travel.zones.' + i + '.label" value="' + esc(z.label || '') + '">')
-        + self._field('Icon', self._iconSelect('travel.zones.' + i + '.icon', z.icon || 'map-pin'))
+        + self._displayBlock('travel.zones.' + i, z, 'travel')
         + self._field('Travel fee', self._money('travel.zones.' + i + '.feeCents', z.feeCents))
         + '<input type="hidden" data-oqb-path="travel.zones.' + i + '.id" value="' + esc(z.id || '') + '">'
         + '</div>';
@@ -524,6 +629,11 @@
       obj[last] = cents(value);
     } else if (last === 'minimumHours' || last === 'includedHeads' || last === 'quoteValidityDays' || last === 'minimumNoticeDays') {
       obj[last] = parseInt(value, 10) || 0;
+    } else if (last === 'imageScale') {
+      var sc = parseInt(value, 10);
+      obj[last] = isNaN(sc) ? 100 : Math.min(250, Math.max(50, sc));
+    } else if (last === 'displayMode' || last === 'imageSize' || last === 'imageUrl' || last === 'imagePid') {
+      obj[last] = value;
     } else {
       obj[last] = value;
     }
@@ -726,12 +836,12 @@
       btn.addEventListener('click', function() {
         self._syncFromDom();
         var kind = btn.getAttribute('data-oqb-add');
-        if (kind === 'products') self.config.products.push({ id: uid('product'), label: 'New product', type: 'equipment', baseCents: 0, icon: 'package' });
-        if (kind === 'packages') self.config.beverages.push({ id: uid('bev'), label: 'New package', perHeadCents: 0, includedHeads: 0, icon: 'users' });
-        if (kind === 'addons') self.config.addons.push({ id: uid('addon'), label: 'New add-on', fixedCents: 0, icon: 'plus-circle' });
+        if (kind === 'products') self.config.products.push({ id: uid('product'), label: 'New product', type: 'equipment', baseCents: 0, icon: 'package', displayMode: 'icon' });
+        if (kind === 'packages') self.config.beverages.push({ id: uid('bev'), label: 'New package', perHeadCents: 0, includedHeads: 0, icon: 'users', displayMode: 'icon' });
+        if (kind === 'addons') self.config.addons.push({ id: uid('addon'), label: 'New add-on', fixedCents: 0, icon: 'plus-circle', displayMode: 'icon' });
         if (kind === 'travel') {
           if (!self.config.travel) self.config.travel = { zones: [] };
-          self.config.travel.zones.push({ id: uid('zone'), label: 'New zone', feeCents: 0, icon: 'map-pin' });
+          self.config.travel.zones.push({ id: uid('zone'), label: 'New zone', feeCents: 0, icon: 'map-pin', displayMode: 'icon' });
           var wsteps = (self.config.wizard.steps || []).slice();
           if (wsteps.indexOf('travel') < 0) {
             if (wsteps.indexOf('contact') >= 0) wsteps.splice(wsteps.indexOf('contact'), 0, 'travel');
@@ -750,10 +860,12 @@
         if (!card) return;
         var path = card.getAttribute('data-oqb-item');
         var idx = parseInt(card.getAttribute('data-oqb-idx'), 10);
-        if (path === 'products') self.config.products.splice(idx, 1);
-        else if (path === 'beverages') self.config.beverages.splice(idx, 1);
-        else if (path === 'addons') self.config.addons.splice(idx, 1);
-        else if (path === 'travel.zones') self.config.travel.zones.splice(idx, 1);
+        var removed = null;
+        if (path === 'products') { removed = self.config.products[idx]; self.config.products.splice(idx, 1); }
+        else if (path === 'beverages') { removed = self.config.beverages[idx]; self.config.beverages.splice(idx, 1); }
+        else if (path === 'addons') { removed = self.config.addons[idx]; self.config.addons.splice(idx, 1); }
+        else if (path === 'travel.zones') { removed = self.config.travel.zones[idx]; self.config.travel.zones.splice(idx, 1); }
+        if (removed) self._deleteItemImage(removed);
         self._render();
       });
     });
@@ -777,6 +889,75 @@
         var tmp = list[idx];
         list[idx] = list[j];
         list[j] = tmp;
+        self._render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-display-mode]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        if (!radio.checked) return;
+        self._syncFromDom();
+        var path = radio.getAttribute('data-oqb-display-mode');
+        self._setPath(path + '.displayMode', radio.value);
+        self._render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-img-up]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        if (!self.media || !self.media.pick || !self.media.upload) return;
+        var path = btn.getAttribute('data-oqb-img-up');
+        var kind = btn.getAttribute('data-oqb-upload-kind') || 'items';
+        var item = self._getItemAtPath(path);
+        if (!item) return;
+        if (!item.id) item.id = uid(kind);
+        self.media.pick(function(file) {
+          btn.disabled = true;
+          var oldPid = item.imagePid || '';
+          self.media.upload(file, [kind, item.id]).then(function(res) {
+            item.imageUrl = res.url || '';
+            item.imagePid = res.publicId || '';
+            item.displayMode = 'image';
+            if (oldPid && oldPid !== item.imagePid && self.media.delete) self.media.delete(oldPid);
+            self._render();
+          }).catch(function(err) {
+            if (typeof global.toast === 'function') global.toast('Upload failed: ' + ((err && err.message) || err));
+            else alert('Upload failed');
+          }).then(function() { btn.disabled = false; });
+        });
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-img-clr]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        self._syncFromDom();
+        var path = btn.getAttribute('data-oqb-img-clr');
+        var item = self._getItemAtPath(path);
+        if (item) self._deleteItemImage(item);
+        self._render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-path$=".imageScale"]').forEach(function(inp) {
+      inp.addEventListener('input', function() {
+        self._setPath(inp.getAttribute('data-oqb-path'), inp.value);
+        var path = inp.getAttribute('data-oqb-path').replace(/\.imageScale$/, '');
+        var lbl = self.root.querySelector('[data-oqb-scale-for="' + path + '"]');
+        if (lbl) lbl.textContent = inp.value + '%';
+        var panel = inp.closest('[data-oqb-img-panel]');
+        var preview = panel && panel.querySelector('.oqb-img-preview');
+        if (preview) {
+          var item = self._getItemAtPath(path);
+          var px = displayApi().displayPx ? displayApi().displayPx(item && item.imageSize, inp.value) : 80;
+          preview.style.maxHeight = px + 'px';
+        }
+        self._refreshPreview();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-path$=".imageSize"]').forEach(function(sel) {
+      sel.addEventListener('change', function() {
+        self._setPath(sel.getAttribute('data-oqb-path'), sel.value);
         self._render();
       });
     });

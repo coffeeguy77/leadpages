@@ -48,6 +48,16 @@
     return '<span class="lp-oq-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + window.LP_ICONS[name] + '</svg></span>';
   }
 
+  function choiceHtml(item) {
+    var D = window.LPQuoteDisplay || {};
+    if (D.choiceVisualHtml) {
+      return D.choiceVisualHtml(item, { esc: esc, iconHtml: iconHtml });
+    }
+    return iconHtml(item.icon) +
+      '<strong>' + esc(item.label) + '</strong>' +
+      (item.description ? '<span>' + esc(item.description) + '</span>' : '');
+  }
+
   function layoutClass(shell) {
     var layout = (shell && shell.wizard && shell.wizard.layout) || 'cards';
     return ' lp-oq-layout-' + layout;
@@ -182,10 +192,7 @@
         products.map(function(p) {
           var sel = s.productId === p.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="productId" data-val="' + esc(p.id) + '">' +
-            iconHtml(p.icon) +
-            '<strong>' + esc(p.label) + '</strong>' +
-            (p.description ? '<span>' + esc(p.description) + '</span>' : '') +
-            '</button>';
+            choiceHtml(p) + '</button>';
         }).join('') +
         '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
         '<input type="number" min="1" max="24" data-field="hours" value="' + esc(s.hours) + '"></label>';
@@ -199,10 +206,7 @@
         bevs.map(function(b) {
           var sel = s.beverageId === b.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="beverageId" data-val="' + esc(b.id) + '">' +
-            iconHtml(b.icon) +
-            '<strong>' + esc(b.label) + '</strong>' +
-            (b.description ? '<span>' + esc(b.description) + '</span>' : '') +
-            '</button>';
+            choiceHtml(b) + '</button>';
         }).join('');
     }
     if (key === 'travel') {
@@ -211,9 +215,7 @@
         zones.map(function(z) {
           var sel = s.travelZoneId === z.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="travelZoneId" data-val="' + esc(z.id) + '">' +
-            iconHtml(z.icon || 'map-pin') +
-            '<strong>' + esc(z.label) + '</strong>' +
-            '</button>';
+            choiceHtml(z) + '</button>';
         }).join('');
     }
     if (key === 'addons') {
@@ -223,10 +225,7 @@
         addons.map(function(a) {
           var on = s.addonIds.indexOf(a.id) >= 0 ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice lp-oq-multi' + on + '" data-addon="' + esc(a.id) + '">' +
-            iconHtml(a.icon) +
-            '<strong>' + esc(a.label) + '</strong>' +
-            (a.description ? '<span>' + esc(a.description) + '</span>' : '') +
-            '</button>';
+            choiceHtml(a) + '</button>';
         }).join('');
     }
     return '<p class="lp-oq-intro">Your details to receive the quote.</p>' +
@@ -521,6 +520,7 @@
       '.lp-oq-choice{display:block;width:100%;text-align:left;margin:0 0 8px;padding:12px 14px;border:1px solid color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));border-radius:12px;background:transparent;color:var(--ink, var(--text, inherit));cursor:pointer;font:inherit}',
       '.lp-oq-choice .lp-oq-ic{display:inline-flex;vertical-align:middle;margin-right:8px;color:' + brand + '}',
       '.lp-oq-choice .lp-oq-ic svg{width:18px;height:18px}',
+      '.lp-oq-choice-img{display:block;margin:0 0 8px;border-radius:8px;object-fit:contain;max-width:100%}',
       '.lp-oq-layout-list .lp-oq-choice{padding:10px 12px}',
       '.lp-oq-layout-split .lp-oq-body{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;align-items:start}',
       '.lp-oq-choice.is-selected{border-color:' + brand + ';box-shadow:0 0 0 2px color-mix(in srgb,' + brand + ' 30%, transparent)}',
