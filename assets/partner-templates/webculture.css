@@ -697,27 +697,27 @@ html:has(body.wc-body) {
   min-width: 0;
 }
 .prm-icon-ring--cta {
-  width: 56px;
-  height: 56px;
+  width: 80px;
+  height: 80px;
   flex-shrink: 0;
   border-radius: 50%;
   background: transparent;
-  border: 2px solid #fff;
+  border: 2.5px solid #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--wc-ink);
   box-shadow: none;
 }
-.prm-icon-ring--cta .prm-icon svg { width: 24px; height: 24px; }
+.prm-icon-ring--cta .prm-icon svg { width: 36px; height: 36px; }
 .prm-final-cta-title {
   margin: 0;
-  font-size: clamp(20px, 2.5vw, 28px);
+  font-size: clamp(17px, 1.85vw, 24px);
   line-height: 1.18;
   font-weight: 700;
   color: var(--wc-ink);
   letter-spacing: -0.02em;
-  max-width: 28ch;
+  white-space: nowrap;
 }
 .prm-final-cta-sub {
   margin: 0;
