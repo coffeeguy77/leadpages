@@ -62,8 +62,11 @@ test('Web Culture build — renders premium sections from profile', function() {
   const html = build(prof, partner, demos, 'leadpages.com.au', { themeContent: content });
   assert.ok(html.includes('wc-body'));
   assert.ok(html.includes('prm-hero-showcase'));
-  assert.ok(html.includes('prm-gallery-strip') || html.includes('prm-gallery'));
   assert.ok(html.includes('prm-demo-showcase'));
+  assert.ok(html.includes('Choose an industry.'));
+  assert.ok(html.includes('Explore a real website.'));
+  assert.ok(!html.includes('prm-gallery-strip'));
+  assert.match(html, /id="demos"[\s\S]*Choose an industry\./);
   assert.ok(html.includes('data-prm-tab'));
   assert.ok(html.includes('prm-lead-flow'));
   assert.ok(html.includes('prm-service-card'));
@@ -71,10 +74,9 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('WHAT WE DO'));
   assert.ok(html.includes('Websites that do more for your business.'));
   assert.ok(html.includes('wc-section--ink wc-services'));
+  assert.ok(!html.includes('ONE CONNECTED SERVICE'));
+  assert.ok(!html.includes('prm-platform-diagram'));
   assert.ok(html.includes('prm-timeline'));
-  assert.ok(html.includes('prm-platform-diagram'));
-  assert.ok(html.includes('prm-platform-bridge'));
-  assert.match(html, /prm-platform-card[\s\S]*prm-platform-circle[\s\S]*prm-platform-card/);
   assert.ok(html.includes('prm-final-cta--slim'));
   assert.ok(html.includes('Ready for a website that works harder for your business?'));
   assert.ok(html.includes('Let\u2019s build something great together.'));
