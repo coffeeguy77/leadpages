@@ -71,6 +71,8 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.indexOf('Choose an industry.') < html.indexOf('id="services"'));
   assert.ok(html.includes('data-prm-tab'));
   assert.ok(html.includes('prm-lead-flow'));
+  assert.ok(!html.includes('New Customers'));
+  assert.ok(!html.includes('prm-flow-branch'));
   assert.ok(html.includes('prm-service-card'));
   assert.ok(html.includes('id="services"'));
   assert.ok(html.includes('WHAT WE DO'));
