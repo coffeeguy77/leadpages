@@ -1593,9 +1593,19 @@
       var payload={ slug:slug, domain:dom, enabled:document.getElementById('sc-enabled').checked, headline:(document.getElementById('sc-headline').value||'').trim(), config:{ logo:scLogo?String(scLogo):null, logoSize:scLogoSizeValue(), intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:branding.accent, theme:branding.theme, themeId:branding.themeId, templateKey:scTemplateKey||'converge' } };
       var res;
       try{ var r=await fetch('/api/partner/save-showcase',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
-      btn.disabled=false;
-      if(!res||!res.ok){ err.textContent=(res&&res.error)||'Could not save.'; err.classList.remove('hidden'); if(res&&res.field==='slug'){ var sm=document.getElementById('sc-slug-msg'); sm.style.color='var(--bad)'; sm.textContent=res.error; } return; }
+      if(!res||!res.ok){ btn.disabled=false; err.textContent=(res&&res.error)||'Could not save.'; err.classList.remove('hidden'); if(res&&res.field==='slug'){ var sm=document.getElementById('sc-slug-msg'); sm.style.color='var(--bad)'; sm.textContent=res.error; } return; }
       state.profile=res.profile;
+      if(window.LPPartnerWebsiteAdmin&&window.LPPartnerWebsiteAdmin.collectProfile){
+        try{
+          var wp=window.LPPartnerWebsiteAdmin.collectProfile();
+          if(!wp.identity) wp.identity={};
+          wp.identity.logoUrl=scLogo||null;
+          var pr=await fetch('/api/partner/website-profile',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify({section:'all',websiteProfile:wp})});
+          var pj=await pr.json();
+          if(pj&&pj.ok&&pj.profile) state.profile=pj.profile;
+        }catch(_e2){}
+      }
+      btn.disabled=false;
       loadMyPage();
       var sv=document.getElementById('sc-saved'); sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1700); updateScLink(); updateScStatusBadge();
     });

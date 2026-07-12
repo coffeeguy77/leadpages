@@ -316,6 +316,14 @@
   align-items: center;
   gap: 12px;
   color: var(--ch-text);
+  max-width: min(52vw, 220px);
+}
+.ch-brand-logo-only {
+  gap: 0;
+  max-width: min(56vw, 240px);
+}
+.ch-brand-logo-only .ch-brand-img-plate {
+  max-width: 100%;
 }
 .ch-brand-img,
 .ch-brand img {

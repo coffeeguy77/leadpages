@@ -82,8 +82,8 @@ module.exports = async (req, res) => {
   const patch = body.websiteProfile || body.profile || body;
 
   let current = validateWebsiteProfile(currentWp);
-  if (section !== 'all' && patch && typeof patch === 'object' && !patch.identity && !patch.biography) {
-    current = validateWebsiteProfile(Object.assign({}, current, { [section]: patch }));
+  if (section !== 'all') {
+    current = mergeWebsiteProfilePatch(current, { [section]: patch });
   } else {
     current = mergeWebsiteProfilePatch(current, patch);
   }
@@ -93,10 +93,13 @@ module.exports = async (req, res) => {
   const saved = await saveWebsiteProfile(admin, partner.id, validated, now);
   if (!saved.ok) return res.status(500).json({ ok: false, error: 'Could not save profile.' });
 
-  const profileLogo = normalizeLogoForStorage(validated.identity && validated.identity.logoUrl);
-  if (profileLogo) {
+  const identityTouched = section === 'all' || section === 'identity' || !!(patch && patch.identity);
+  if (identityTouched) {
     const cur = await admin.from('partner_profiles').select('showcase_config').eq('partner_id', partner.id).maybeSingle();
-    const cfg = Object.assign({}, (cur.data && cur.data.showcase_config) || {}, { logo: profileLogo });
+    const cfg = Object.assign({}, (cur.data && cur.data.showcase_config) || {});
+    const profileLogo = normalizeLogoForStorage(validated.identity && validated.identity.logoUrl);
+    if (profileLogo) cfg.logo = profileLogo;
+    else delete cfg.logo;
     const logoUp = await admin.from('partner_profiles').update({ showcase_config: cfg, updated_at: now }).eq('partner_id', partner.id).select('*').single();
     if (!logoUp.error && logoUp.data) saved.profile = logoUp.data;
   }

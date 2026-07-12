@@ -8,7 +8,7 @@
 //
 // Returns: { ok:true, partner:{id,status,display_name,email,phone}|null, profile:{...}|null }
 
-const { createClient } = require('@supabase/supabase-js');
+const { extractLogoValue, normalizeLogoForStorage } = require('../lib/partner-website/logo');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -53,6 +53,14 @@ module.exports = async (req, res) => {
       .insert({ partner_id: p.id, support_name: p.display_name || null, support_email: p.email || null, support_phone: p.phone || null })
       .select('*').single();
     prof = ins.data || null;
+  }
+
+  if (prof && prof.showcase_config) {
+    const cfg = Object.assign({}, prof.showcase_config);
+    const logo = normalizeLogoForStorage(cfg.logo);
+    if (logo) cfg.logo = logo;
+    else delete cfg.logo;
+    prof = Object.assign({}, prof, { showcase_config: cfg });
   }
 
   return res.status(200).json({

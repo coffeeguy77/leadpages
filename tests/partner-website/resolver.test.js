@@ -25,6 +25,20 @@ test('validateWebsiteProfile — service selections require serviceKey', functio
   assert.equal(out.serviceSelections[0].serviceKey, 'new-websites');
 });
 
+test('mergeWebsiteProfilePatch — deep merges identity without wiping fields', function() {
+  var base = validateWebsiteProfile({
+    identity: { agencyName: 'Web Culture', headshotUrl: 'https://example.com/photo.jpg', logoUrl: 'https://example.com/old.png' },
+    biography: { shortIntro: 'Hi there' }
+  });
+  var merged = mergeWebsiteProfilePatch(base, {
+    identity: { logoUrl: 'https://example.com/new.png' }
+  });
+  assert.equal(merged.identity.agencyName, 'Web Culture');
+  assert.equal(merged.identity.headshotUrl, 'https://example.com/photo.jpg');
+  assert.equal(merged.identity.logoUrl, 'https://example.com/new.png');
+  assert.equal(merged.biography.shortIntro, 'Hi there');
+});
+
 test('mergeWebsiteProfilePatch — deep merges sections', function() {
   var base = validateWebsiteProfile({
     biography: { shortIntro: 'Hi' },
