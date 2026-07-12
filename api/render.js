@@ -19,6 +19,7 @@ const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 const { effectiveDemoSalePrice } = require('../lib/partner-demo-pricing');
 const { buildPartnerLandingHtml, resolveLandingTheme } = require('../lib/partner-templates');
+const { extractLogoValue } = require('../lib/partner-website/logo');
 const brokerTpl   = require('../broker.template.json');     // broker-leads
 const tradeTpl    = require('../trade.template.json');      // trade
 const agencyTpl   = require('../agency.template.json');     // partner web-studio homepage
@@ -772,7 +773,7 @@ module.exports = async (req, res) => {
         showcase_headline: (prof && prof.showcase_headline) || ((hc.sections && hc.sections.hero && hc.sections.hero.title) || site.business_name),
         showcase_config: Object.assign({}, sc, {
           intro: sc.intro || ((hc.sections && hc.sections.hero && hc.sections.hero.sub) || ''),
-          logo: sc.logo || ((hc.logo && hc.logo.imageUrl) || ''),
+          logo: extractLogoValue(sc.logo) || '',
           theme: Object.assign({}, (sc.theme || {}), (hc.theme || {})),
           accent: sc.accent
         }),

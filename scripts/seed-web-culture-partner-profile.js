@@ -13,6 +13,7 @@ try { require('dotenv').config({ path: '.env.local' }); require('dotenv').config
 const { createClient } = require('@supabase/supabase-js');
 const { validateWebsiteProfile } = require('../lib/partner-website/validate');
 const { saveWebsiteProfile } = require('../lib/partner-website/profile-store');
+const { extractLogoValue } = require('../lib/partner-website/logo');
 const {
   buildWebCultureWebsiteProfile,
   buildWebCultureShowcasePatch
@@ -78,6 +79,7 @@ async function main() {
   const websiteProfile = validateWebsiteProfile(buildWebCultureWebsiteProfile());
   const showcasePatch = buildWebCultureShowcasePatch();
   const existingCfg = (prof && prof.showcase_config) || {};
+  const preservedLogo = extractLogoValue(existingCfg.logo);
 
   console.log('Partner:', partner.display_name, '(' + partner.id + ')');
   console.log('Showcase slug:', prof && prof.showcase_slug ? prof.showcase_slug : '(none)');
@@ -100,7 +102,10 @@ async function main() {
 
   const profileUpdate = {
     showcase_headline: showcasePatch.showcase_headline,
-    showcase_config: Object.assign({}, existingCfg, showcasePatch.showcase_config, { websiteProfile: websiteProfile }),
+    showcase_config: Object.assign({}, existingCfg, showcasePatch.showcase_config, {
+      websiteProfile: websiteProfile,
+      logo: preservedLogo || existingCfg.logo || null
+    }),
     updated_at: now
   };
   const up = await admin.from('partner_profiles').update(profileUpdate).eq('partner_id', partner.id);

@@ -5,6 +5,7 @@ const { computeProfileCompletion } = require('../../lib/partner-website/completi
 const { resolvePartnerThemeContent, PLATFORM_SERVICES, ENQUIRY_GOALS, ENQUIRY_FEATURES } = require('../../lib/partner-website/resolver');
 const { PLATFORM_FAQS } = require('../../lib/partner-website/platform-defaults');
 const { websiteProfileFromRow, saveWebsiteProfile } = require('../../lib/partner-website/profile-store');
+const { extractLogoValue, normalizeLogoForStorage } = require('../../lib/partner-website/logo');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -91,6 +92,14 @@ module.exports = async (req, res) => {
   const now = new Date().toISOString();
   const saved = await saveWebsiteProfile(admin, partner.id, validated, now);
   if (!saved.ok) return res.status(500).json({ ok: false, error: 'Could not save profile.' });
+
+  const profileLogo = normalizeLogoForStorage(validated.identity && validated.identity.logoUrl);
+  if (profileLogo) {
+    const cur = await admin.from('partner_profiles').select('showcase_config').eq('partner_id', partner.id).maybeSingle();
+    const cfg = Object.assign({}, (cur.data && cur.data.showcase_config) || {}, { logo: profileLogo });
+    const logoUp = await admin.from('partner_profiles').update({ showcase_config: cfg, updated_at: now }).eq('partner_id', partner.id).select('*').single();
+    if (!logoUp.error && logoUp.data) saved.profile = logoUp.data;
+  }
 
   const content = resolvePartnerThemeContent({ prof: saved.profile, partner, directory, demos: [], base: 'leadpages.com.au', home: null });
   return res.status(200).json({
