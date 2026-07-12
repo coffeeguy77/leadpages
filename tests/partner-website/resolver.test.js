@@ -50,7 +50,38 @@ test('resolvePartnerThemeContent — legacy showcase fields migrate', function()
   assert.equal(content.hero.headline, 'Legacy headline');
   assert.ok(content.hero.supportingText.includes('Legacy intro'));
   assert.equal(content.partner.displayName, 'Alex Partner');
+  assert.equal(content.partner.logoUrl, 'https://example.com/logo.png');
   assert.ok(content.serviceArea.areas.length >= 1);
+});
+
+test('resolvePartnerThemeContent — normalises object logo format', function() {
+  var prof = {
+    partner_id: 'p1',
+    showcase_config: { logo: { imageUrl: 'https://example.com/object-logo.png' } }
+  };
+  var content = resolvePartnerThemeContent({
+    prof,
+    partner: { id: 'p1', display_name: 'Alex Partner' },
+    demos: [],
+    base: 'leadpages.com.au'
+  });
+  assert.equal(content.partner.logoUrl, 'https://example.com/object-logo.png');
+});
+
+test('resolvePartnerThemeContent — falls back to partner home site logo', function() {
+  var prof = {
+    partner_id: 'p1',
+    showcase_config: { templateKey: 'causehouse' }
+  };
+  var home = { config: { logo: { imageUrl: 'https://example.com/home-logo.png' } } };
+  var content = resolvePartnerThemeContent({
+    prof,
+    partner: { id: 'p1', display_name: 'Alex Partner' },
+    demos: [],
+    base: 'leadpages.com.au',
+    home: home
+  });
+  assert.equal(content.partner.logoUrl, 'https://example.com/home-logo.png');
 });
 
 test('resolvePartnerThemeContent — enabled services from selections', function() {

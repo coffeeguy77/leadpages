@@ -63,17 +63,6 @@ module.exports = async (req,res) => {
   const cfgIn=(b.config&&typeof b.config==='object')?b.config:{};
   const theme=cleanTheme(cfgIn.theme);
   const accent=cleanHex(cfgIn.accent)||(theme&&theme.hivis)||null;
-  const config={
-    logo:cfgIn.logo?String(cfgIn.logo).slice(0,400):null,
-    logoSize:cleanLogoSize(cfgIn.logoSize),
-    intro:cfgIn.intro?String(cfgIn.intro).slice(0,600):null,
-    accent,
-    theme,
-    themeId:cfgIn.themeId?String(cfgIn.themeId).slice(0,80):null,
-    templateKey:normalizeTemplateKey(cfgIn.templateKey),
-  };
-  if(!config.themeId) delete config.themeId;
-  if(!config.theme) delete config.theme;
 
   // ---- Address (slug) ----
   if(slug){
@@ -96,6 +85,20 @@ module.exports = async (req,res) => {
   // ---- Going live needs somewhere to live ----
   if(enabled && !slug && !domain) return fail(res,'slug','Choose an address before making your page live.');
 
+  const curProf=await admin.from('partner_profiles').select('showcase_config').eq('partner_id',partner.id).maybeSingle();
+  const existingCfg=(curProf.data&&curProf.data.showcase_config)||{};
+  const config=Object.assign({},existingCfg,{
+    logo:'logo' in cfgIn?(cfgIn.logo?String(cfgIn.logo).slice(0,400):null):existingCfg.logo,
+    logoSize:'logoSize' in cfgIn?cleanLogoSize(cfgIn.logoSize):cleanLogoSize(existingCfg.logoSize),
+    intro:'intro' in cfgIn?(cfgIn.intro?String(cfgIn.intro).slice(0,600):null):existingCfg.intro,
+    accent:accent!=null?accent:existingCfg.accent,
+    theme:theme||existingCfg.theme,
+    themeId:cfgIn.themeId?String(cfgIn.themeId).slice(0,80):(existingCfg.themeId||null),
+    templateKey:normalizeTemplateKey(cfgIn.templateKey||existingCfg.templateKey),
+  });
+  if(!config.themeId) delete config.themeId;
+  if(!config.theme) delete config.theme;
+
   const patch={
     showcase_slug: slug||null, showcase_domain: domain||null, showcase_enabled: enabled,
     showcase_protected:false, showcase_password:null, showcase_headline: headline||null,
@@ -104,13 +107,13 @@ module.exports = async (req,res) => {
   try{
     const up=await admin.from('partner_profiles').update(patch).eq('partner_id',partner.id).select('*').single();
     if(up.error){ if(/duplicate|unique/i.test(up.error.message)) return fail(res,'slug','That address is already taken — pick another.'); return res.status(500).json({ ok:false, error:'Could not save. Please try again.' }); }
-    if(theme){
-      const home=await admin.from('sites').select('id,config').eq('servicing_partner_id',partner.id).eq('is_partner_home',true).maybeSingle();
-      if(home.data){
-        const hc=home.data.config||{};
-        hc.theme=Object.assign({},hc.theme||{},theme);
-        await admin.from('sites').update({ config:hc, updated_at:new Date().toISOString() }).eq('id',home.data.id);
-      }
+    const home=await admin.from('sites').select('id,config').eq('servicing_partner_id',partner.id).eq('is_partner_home',true).maybeSingle();
+    if(home.data){
+      const hc=home.data.config||{};
+      if(theme) hc.theme=Object.assign({},hc.theme||{},theme);
+      if(config.logo) hc.logo={ imageUrl: String(config.logo) };
+      else if('logo' in cfgIn && !config.logo) delete hc.logo;
+      await admin.from('sites').update({ config:hc, updated_at:new Date().toISOString() }).eq('id',home.data.id);
     }
     const existingWp = websiteProfileFromRow(up.data) || {};
     const syncedWp = mergeWebsiteProfilePatch(existingWp, {

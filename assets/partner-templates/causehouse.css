@@ -311,7 +311,55 @@
   min-height: 80px;
 }
 .ch-brand { justify-self: start; text-decoration: none; }
-.ch-brand img { max-height: calc(40px * var(--pt-logo-scale, 1)); }
+.ch-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ch-text);
+}
+.ch-brand-img,
+.ch-brand img {
+  display: block;
+  max-height: calc(40px * var(--pt-logo-scale, 1));
+  width: auto;
+  max-width: min(220px, 32vw);
+  object-fit: contain;
+}
+.ch-brand-img-plate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #fff;
+  border: 2px solid var(--ch-text);
+  box-shadow: 2px 2px 0 0 var(--ch-border);
+  line-height: 0;
+}
+.ch-brand-img-plate-footer {
+  padding: 8px 12px;
+}
+.ch-logo-plate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 24px;
+  border-radius: 10px;
+  background: #fff;
+  border: 2px solid var(--ch-text);
+  box-shadow: var(--ch-shadow);
+  line-height: 0;
+  max-width: 100%;
+}
+.ch-logo-plate-hero {
+  padding: clamp(24px, 4vw, 36px) clamp(28px, 5vw, 40px);
+}
+.ch-brand-name {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 700;
+  line-height: 1.1;
+}
 .ch-brand-text {
   font-family: 'Fraunces', Georgia, serif;
   font-size: 22px;
@@ -559,6 +607,25 @@
   object-fit: cover;
   border: 2px solid var(--ch-border);
   box-shadow: var(--ch-shadow);
+}
+.ch-bio-logo-wrap {
+  max-width: 360px;
+  min-height: 280px;
+  padding: 48px 32px;
+  border: 2px solid var(--ch-border);
+  border-radius: 12px;
+  background: var(--ch-surface);
+  box-shadow: var(--ch-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ch-bio-logo {
+  width: auto;
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  display: block;
 }
 .ch-bio-placeholder {
   width: 100%;
@@ -819,6 +886,18 @@
   align-items: start;
 }
 .ch-footer-logo { max-height: calc(44px * var(--pt-logo-scale, 1)); }
+.ch-footer-brand-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+.ch-footer-brand-lockup .ch-footer-logo {
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+}
+.ch-footer-brand-lockup .ch-footer-name { margin: 0; }
 .ch-footer-name {
   font-family: 'Fraunces', serif;
   font-size: 24px;
@@ -932,6 +1011,20 @@
   height: 100%;
   min-height: 320px;
   object-fit: cover;
+  display: block;
+}
+.ch-hero-logo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(32px, 4vw, 48px);
+  background: var(--ch-surface);
+}
+.ch-hero-logo {
+  width: auto;
+  max-width: min(280px, 70%);
+  max-height: min(280px, 50vh);
+  object-fit: contain;
   display: block;
 }
 .ch-brand-mark {
