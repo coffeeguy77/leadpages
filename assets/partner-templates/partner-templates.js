@@ -15,7 +15,9 @@ document.addEventListener('DOMContentLoaded', function () {
 function initPartnerLogos() {
   if (!document.body.getAttribute('data-pt-template')) return;
   if (window.LPLogo && window.LPLogo.upgradeAll) {
-    window.LPLogo.upgradeAll({ pulse: false }).catch(function () {});
+    var tpl = document.body.getAttribute('data-pt-template') || '';
+    var pulse = tpl === 'webculture';
+    window.LPLogo.upgradeAll({ pulse: pulse }).catch(function () {});
   }
 }
 
