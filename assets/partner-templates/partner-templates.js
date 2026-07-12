@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', function () {
   initGlitch();
   initScrollReveal();
   initPartnerLogos();
+  initCausehouseFaqExpand();
+  initCausehouseStagedForm();
 });
 
 function initPartnerLogos() {
@@ -141,5 +143,33 @@ function initScrollReveal() {
   els.forEach(function (el) {
     el.classList.add('pt-reveal');
     obs.observe(el);
+  });
+}
+
+function initCausehouseFaqExpand() {
+  document.querySelectorAll('[data-ch-faq-expand]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var more = document.querySelector('[data-ch-faq-more]');
+      if (!more) return;
+      var open = more.hidden;
+      more.hidden = !open;
+      btn.hidden = open;
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+}
+
+function initCausehouseStagedForm() {
+  document.querySelectorAll('[data-ch-staged-form]').forEach(function (form) {
+    var toggle = form.querySelector('[data-ch-form-more]');
+    var extended = form.querySelector('[data-ch-form-extended]');
+    if (!toggle || !extended) return;
+    toggle.addEventListener('click', function () {
+      var open = extended.hidden;
+      extended.hidden = !open;
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      toggle.textContent = open ? 'Hide extra details' : toggle.getAttribute('data-label-default') || toggle.textContent;
+    });
+    toggle.setAttribute('data-label-default', toggle.textContent);
   });
 }
