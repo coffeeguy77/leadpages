@@ -1,0 +1,5 @@
+<svg viewBox="0 0 56 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path class="wc-cloud-shape" fill="currentColor" d="M14 32h28a9 9 0 0 0 1.6-17.9A11.5 11.5 0 0 0 24.5 5.5 12.5 12.5 0 0 0 9.5 22.5 10 10 0 0 0 14 32z"/>
+  <path class="wc-cloud-arrow wc-cloud-arrow--up" fill="currentColor" d="M21 25.5V16.5l-3.5 3.5V16l7-7 7 7v4l-3.5-3.5v9z"/>
+  <path class="wc-cloud-arrow wc-cloud-arrow--down" fill="currentColor" d="M35 14.5v9l3.5-3.5v4l-7 7-7-7v-4l3.5 3.5v-9z"/>
+</svg>
