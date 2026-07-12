@@ -964,7 +964,12 @@
       var r=await fetch('/api/partner/me',{ headers: Object.assign({'content-type':'application/json'}, await authHeader()) });
       res=await r.json();
     }catch(_e){ res={ok:false}; }
-    if(!res || !res.ok){ show('view-none'); return; }
+    if(!res || !res.ok){
+      var noneMsg=document.querySelector('#view-none p');
+      if(noneMsg) noneMsg.textContent=(res&&res.error)||'We could not load your partner account. Please sign out, sign back in, and try again.';
+      show('view-none');
+      return;
+    }
     state.partner=res.partner; state.profile=res.profile;
     if(!state.partner){ show('view-none'); return; }
     var st=state.partner.status;

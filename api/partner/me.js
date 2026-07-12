@@ -8,7 +8,8 @@
 //
 // Returns: { ok:true, partner:{id,status,display_name,email,phone}|null, profile:{...}|null }
 
-const { extractLogoValue, normalizeLogoForStorage } = require('../lib/partner-website/logo');
+const { createClient } = require('@supabase/supabase-js');
+const { normalizeLogoForStorage } = require('../../lib/partner-website/logo');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -27,45 +28,53 @@ async function getUser(req) {
 }
 
 module.exports = async (req, res) => {
-  const user = await getUser(req);
-  if (!user) return res.status(401).json({ ok: false, error: 'unauthorized' });
+  try {
+    const user = await getUser(req);
+    if (!user) return res.status(401).json({ ok: false, error: 'unauthorized' });
 
-  // 1) Already linked?
-  let p = (await admin.from('partners').select('*').eq('user_id', user.id).maybeSingle()).data;
+    // 1) Already linked?
+    let p = (await admin.from('partners').select('*').eq('user_id', user.id).maybeSingle()).data;
 
-  // 2) Otherwise claim an admin-created, not-yet-linked row that matches the email.
-  if (!p && user.email) {
-    const byEmail = (await admin.from('partners').select('*').is('user_id', null).ilike('email', user.email).limit(1)).data;
-    if (byEmail && byEmail.length) {
-      const upd = await admin.from('partners')
-        .update({ user_id: user.id, updated_at: new Date().toISOString() })
-        .eq('id', byEmail[0].id).select('*').single();
-      p = upd.data || byEmail[0];
+    // 2) Claim by email — unlinked row, or row whose email matches but user_id drifted.
+    if (!p && user.email) {
+      const byEmail = (await admin.from('partners').select('*').ilike('email', user.email).limit(5)).data || [];
+      const claimable = byEmail.find(function(row) {
+        return !row.user_id || row.user_id === user.id;
+      });
+      if (claimable) {
+        const upd = await admin.from('partners')
+          .update({ user_id: user.id, updated_at: new Date().toISOString() })
+          .eq('id', claimable.id).select('*').single();
+        p = upd.data || claimable;
+      }
     }
+
+    if (!p) return res.status(200).json({ ok: true, partner: null, profile: null });
+
+    // 3) Ensure a profile row exists for the dashboard editor.
+    let prof = (await admin.from('partner_profiles').select('*').eq('partner_id', p.id).maybeSingle()).data;
+    if (!prof) {
+      const ins = await admin.from('partner_profiles')
+        .insert({ partner_id: p.id, support_name: p.display_name || null, support_email: p.email || null, support_phone: p.phone || null })
+        .select('*').single();
+      prof = ins.data || null;
+    }
+
+    if (prof && prof.showcase_config) {
+      const cfg = Object.assign({}, prof.showcase_config);
+      const logo = normalizeLogoForStorage(cfg.logo);
+      if (logo) cfg.logo = logo;
+      else delete cfg.logo;
+      prof = Object.assign({}, prof, { showcase_config: cfg });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      partner: { id: p.id, status: p.status, display_name: p.display_name, email: p.email, phone: p.phone },
+      profile: prof || null,
+    });
+  } catch (err) {
+    console.error('partner/me error:', err);
+    return res.status(500).json({ ok: false, error: 'Could not load partner account.' });
   }
-
-  if (!p) return res.status(200).json({ ok: true, partner: null, profile: null });
-
-  // 3) Ensure a profile row exists for the dashboard editor.
-  let prof = (await admin.from('partner_profiles').select('*').eq('partner_id', p.id).maybeSingle()).data;
-  if (!prof) {
-    const ins = await admin.from('partner_profiles')
-      .insert({ partner_id: p.id, support_name: p.display_name || null, support_email: p.email || null, support_phone: p.phone || null })
-      .select('*').single();
-    prof = ins.data || null;
-  }
-
-  if (prof && prof.showcase_config) {
-    const cfg = Object.assign({}, prof.showcase_config);
-    const logo = normalizeLogoForStorage(cfg.logo);
-    if (logo) cfg.logo = logo;
-    else delete cfg.logo;
-    prof = Object.assign({}, prof, { showcase_config: cfg });
-  }
-
-  return res.status(200).json({
-    ok: true,
-    partner: { id: p.id, status: p.status, display_name: p.display_name, email: p.email, phone: p.phone },
-    profile: prof || null,
-  });
 };
