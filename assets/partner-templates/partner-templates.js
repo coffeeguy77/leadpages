@@ -94,7 +94,7 @@ function initLeadForms() {
 
 function initMobileMenu() {
   var btn = document.querySelector('[data-pt-menu]');
-  var nav = document.querySelector('.ch-nav-links, .sg-nav, .at-mast-nav, .hz-nav nav, .pl-nav, .vt-nav');
+  var nav = document.querySelector('.ch-nav-links, .ch-nav, .sg-nav, .at-mast-nav, .hz-nav nav, .pl-nav, .vt-nav');
   if (!btn || !nav) return;
   btn.addEventListener('click', function () {
     var open = nav.classList.toggle('is-open');
@@ -129,7 +129,7 @@ function initGlitch() {
 
 function initScrollReveal() {
   if (!('IntersectionObserver' in window)) return;
-  var els = document.querySelectorAll('.pt-demo-card, .pt-reveal, .ch-demo-card, .sg-demo, .hz-card, .pl-demo, .vt-project');
+  var els = document.querySelectorAll('.pt-demo-card, .pt-reveal, .ch-demo-card, .ch-card-hard, .sg-demo, .hz-card, .pl-demo, .vt-project');
   var obs = new IntersectionObserver(function (entries) {
     entries.forEach(function (en) {
       if (en.isIntersecting) {
