@@ -5,6 +5,7 @@ const { resolvePartnerThemeContent } = require('../../lib/partner-website/resolv
 const { buildWebCultureWebsiteProfile } = require('../../lib/partner-website/web-culture-profile');
 const { validateWebsiteProfile } = require('../../lib/partner-website/validate');
 const { build } = require('../../lib/partner-templates/causehouse');
+const { buildPartnerLandingHtml } = require('../../lib/partner-templates');
 
 test('groupServicesByCategory — returns at most four categories', function() {
   const services = [
@@ -31,6 +32,30 @@ test('buildCausehouseCopy — profile-driven hero trust and footer', function() 
   assert.equal(copy.heroTrust[0].label, 'Canberra-based partner');
   assert.equal(copy.footer.tagline, 'Canberra website strategy, design and connected business systems.');
   assert.equal(copy.partner.heading, 'Work directly with Shaun Matthews.');
+});
+
+test('Cause House build — logo size slider scales nav logo CSS variable', function() {
+  const partner = { id: 'p1', display_name: 'Test Partner' };
+  const baseCfg = {
+    templateKey: 'causehouse',
+    logo: 'https://example.com/logo.png'
+  };
+  const html1 = buildPartnerLandingHtml(
+    { partner_id: 'p1', showcase_config: Object.assign({}, baseCfg, { logoSize: 1 }) },
+    partner,
+    [],
+    'leadpages.com.au',
+    { showTemplateSwitcher: false }
+  );
+  const html2 = buildPartnerLandingHtml(
+    { partner_id: 'p1', showcase_config: Object.assign({}, baseCfg, { logoSize: 2 }) },
+    partner,
+    [],
+    'leadpages.com.au',
+    { showTemplateSwitcher: false }
+  );
+  assert.ok(html1.includes('--pt-logo-scale:1'));
+  assert.ok(html2.includes('--pt-logo-scale:2'));
 });
 
 test('Cause House build — renders logo from object showcase_config', function() {
