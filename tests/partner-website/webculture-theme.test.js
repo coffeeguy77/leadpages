@@ -71,10 +71,9 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('WHAT WE DO'));
   assert.ok(html.includes('Websites that do more for your business.'));
   assert.ok(html.includes('wc-section--ink wc-services'));
+  assert.ok(!html.includes('ONE CONNECTED SERVICE'));
+  assert.ok(!html.includes('prm-platform-diagram'));
   assert.ok(html.includes('prm-timeline'));
-  assert.ok(html.includes('prm-platform-diagram'));
-  assert.ok(html.includes('prm-platform-bridge'));
-  assert.match(html, /prm-platform-card[\s\S]*prm-platform-circle[\s\S]*prm-platform-card/);
   assert.ok(html.includes('prm-final-cta--slim'));
   assert.ok(html.includes('Ready for a website that works harder for your business?'));
   assert.ok(html.includes('Let\u2019s build something great together.'));
