@@ -2046,7 +2046,7 @@
     updateScLink();
     updateScStatusBadge();
     renderDashWidgets();
-    if(window.LPPartnerWebsiteAdmin) window.LPPartnerWebsiteAdmin.load({ authHeader: authHeader });
+    if(window.LPPartnerWebsiteAdmin) window.LPPartnerWebsiteAdmin.load({ authHeader: authHeader, partnerId: state.partner && state.partner.id });
   }
   async function scUploadLogo(file){
     var sess=(await sb.auth.getSession()).data.session; var token=sess&&sess.access_token;
