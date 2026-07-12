@@ -84,6 +84,9 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(!html.includes('<span>Name *</span>'));
   assert.ok(html.includes('prm-review-top'));
   assert.ok(html.includes('wc-footer-lp-eyebrow'));
+  assert.ok(html.includes('data-lp-logo-pulse'));
+  assert.ok(!html.includes('data-lp-logo-pulse="false"'));
+  assert.ok(html.includes('prm-icon-ring--cloud'));
   assert.ok(html.includes('Powered by'));
   assert.ok(!html.includes('Partners Website Demo Site'));
 });
