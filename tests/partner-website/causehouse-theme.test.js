@@ -46,7 +46,7 @@ test('Cause House build — renders logo from object showcase_config', function(
   const content = resolvePartnerThemeContent({ prof, partner, demos: [], base: 'leadpages.com.au' });
   const html = build(prof, partner, [], 'leadpages.com.au', { themeContent: content });
   assert.ok(html.includes('object-logo.png'));
-  assert.ok(html.includes('ch-brand-img'));
+  assert.ok(html.includes('ch-nav-logo'));
   assert.ok(html.includes('ch-hero-mark-logo'));
   assert.ok(html.includes('ch-hero-logo'));
 });
