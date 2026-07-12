@@ -344,6 +344,14 @@
       if (isPartnerTemplatePage()) {
         global.document.querySelectorAll('.leadpages-logo.lp-logo-wrap, [data-lp-logo].lp-logo-wrap').forEach(function (wrap) {
           var pAccent = partnerAccent();
+          if (wrap.classList.contains('wc-footer-lp-logo')) {
+            applyTokens(wrap, {
+              accent: pAccent || '#C5E13F',
+              ink: '#ffffff'
+            });
+            wrap.classList.add('lp-logo-pulse');
+            return;
+          }
           if (!pAccent) return;
           var ink = resolveInkMode(wrap) === 'light' ? '#f5f0e8' : '#1a1612';
           applyTokens(wrap, { accent: pAccent, ink: ink });
