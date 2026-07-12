@@ -344,6 +344,7 @@
       + '<button type="button" class="btn btn-brand" id="pwp-save">Save page content</button>'
       + '<span class="saved" id="pwp-saved">Saved ✓</span>'
       + '<span class="notice bad hidden" id="pwp-err" style="margin:0;padding:8px 12px"></span>'
+      + '<p class="muted" style="margin:8px 0 0;font-size:12px;width:100%">Logo, URL, and template are saved with <strong>Save my page</strong> at the bottom of this screen.</p>'
       + '</div>';
     showTab(state.activeTab);
     wireEditor();
@@ -367,6 +368,15 @@
     if (!el) return '';
     if (el.type === 'checkbox') return el.checked;
     return (el.value || '').trim();
+  }
+
+  function partnerLogoUrl() {
+    var prev = document.getElementById('sc-logo-prev');
+    var wrap = document.getElementById('sc-logo-preview');
+    if (!prev || !wrap || wrap.hidden) return '';
+    var src = String(prev.getAttribute('src') || '').trim();
+    if (!src || /^blob:/i.test(src)) return '';
+    return src;
   }
 
   function collectProfile() {
@@ -437,7 +447,8 @@
     return {
       identity: {
         agencyName: val('pwp-agency'),
-        headshotUrl: val('pwp-headshot')
+        headshotUrl: val('pwp-headshot'),
+        logoUrl: partnerLogoUrl() || undefined
       },
       positioning: {
         heroEyebrow: val('pwp-hero-eyebrow'),
@@ -571,6 +582,7 @@
       }
       state.websiteProfile = j.websiteProfile;
       state.completion = j.completion;
+      if (j.profile) state.profile = j.profile;
       var sv = $('pwp-saved');
       if (sv) { sv.classList.add('show'); setTimeout(function() { sv.classList.remove('show'); }, 1700); }
       renderEditor();
