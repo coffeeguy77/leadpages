@@ -68,7 +68,7 @@ test('resolvePartnerThemeContent — normalises object logo format', function() 
   assert.equal(content.partner.logoUrl, 'https://example.com/object-logo.png');
 });
 
-test('resolvePartnerThemeContent — falls back to partner home site logo', function() {
+test('resolvePartnerThemeContent — ignores partner home site logo', function() {
   var prof = {
     partner_id: 'p1',
     showcase_config: { templateKey: 'causehouse' }
@@ -81,7 +81,7 @@ test('resolvePartnerThemeContent — falls back to partner home site logo', func
     base: 'leadpages.com.au',
     home: home
   });
-  assert.equal(content.partner.logoUrl, 'https://example.com/home-logo.png');
+  assert.equal(content.partner.logoUrl, null);
 });
 
 test('resolvePartnerThemeContent — enabled services from selections', function() {

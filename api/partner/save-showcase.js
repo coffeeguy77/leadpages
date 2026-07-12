@@ -8,6 +8,7 @@
 const { normalizeTemplateKey } = require('../../lib/partner-templates/registry');
 const { websiteProfileFromRow, saveWebsiteProfile } = require('../../lib/partner-website/profile-store');
 const { mergeWebsiteProfilePatch } = require('../../lib/partner-website/validate');
+const { extractLogoValue, normalizeLogoForStorage } = require('../../lib/partner-website/logo');
 
 function cleanHex(v) {
   return /^#[0-9a-fA-F]{3,8}$/.test(v || '') ? v : null;
@@ -88,7 +89,7 @@ module.exports = async (req,res) => {
   const curProf=await admin.from('partner_profiles').select('showcase_config').eq('partner_id',partner.id).maybeSingle();
   const existingCfg=(curProf.data&&curProf.data.showcase_config)||{};
   const config=Object.assign({},existingCfg,{
-    logo:'logo' in cfgIn?(cfgIn.logo?String(cfgIn.logo).slice(0,400):null):existingCfg.logo,
+    logo:'logo' in cfgIn ? normalizeLogoForStorage(cfgIn.logo) : normalizeLogoForStorage(existingCfg.logo),
     logoSize:'logoSize' in cfgIn?cleanLogoSize(cfgIn.logoSize):cleanLogoSize(existingCfg.logoSize),
     intro:'intro' in cfgIn?(cfgIn.intro?String(cfgIn.intro).slice(0,600):null):existingCfg.intro,
     accent:accent!=null?accent:existingCfg.accent,
@@ -117,6 +118,9 @@ module.exports = async (req,res) => {
     }
     const existingWp = websiteProfileFromRow(up.data) || {};
     const syncedWp = mergeWebsiteProfilePatch(existingWp, {
+      identity: {
+        logoUrl: config.logo || undefined
+      },
       positioning: {
         heroHeadline: headline || undefined,
         heroSupporting: config.intro || undefined
