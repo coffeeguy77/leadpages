@@ -756,6 +756,32 @@ html:has(body.wc-body) {
   gap: clamp(20px, 4vw, 40px);
 }
 .wc-footer-brand { justify-self: start; }
+.wc-footer-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.wc-footer-cloud-mark {
+  color: var(--wc-primary);
+  flex-shrink: 0;
+  line-height: 0;
+}
+.wc-footer-cloud-svg {
+  display: block;
+  width: 48px;
+  height: auto;
+  animation: wc-cloud-float 3.2s ease-in-out infinite;
+  transform-origin: center center;
+}
+.wc-footer-wordmark {
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fff;
+  line-height: 1.1;
+}
 .wc-footer-logo {
   display: block;
   max-height: calc(40px * var(--pt-logo-scale, 1));
@@ -869,6 +895,7 @@ body.wc-body .wc-footer-lp-logo.lp-logo-pulse #outer-circle {
 @media (prefers-reduced-motion: reduce) {
   .wc-btn:hover, .prm-btn:hover { transform: none; }
   .prm-icon-ring--cloud .prm-icon svg { animation: none; }
+  .wc-footer-cloud-svg { animation: none; }
   body.wc-body .wc-footer-lp-logo.lp-logo-pulse #inner-circle,
   body.wc-body .wc-footer-lp-logo.lp-logo-pulse #outer-circle {
     animation: none !important;
