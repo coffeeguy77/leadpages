@@ -55,3 +55,21 @@
   .sg-contact-wrap{grid-template-columns:1fr}
   .sg-nav{flex-wrap:wrap}
 }
+
+/* Section bands */
+.sg-body .pt-trust{background:#fff;border-bottom:4px solid #000}
+.sg-body .pt-industries{background:#fafafa;padding:clamp(64px,9vw,100px) 0}
+.sg-body .pt-demos{background:#fff;padding:clamp(64px,9vw,100px) 0}
+.sg-body .pt-services{background:#f5f5f5;padding:clamp(64px,9vw,100px) 0}
+.sg-body .pt-benefits{background:#fff;padding:clamp(64px,9vw,100px) 0}
+.sg-body .pt-process{background:#000;color:#fff;padding:clamp(64px,9vw,100px) 0}
+.sg-body .pt-process .pt-section-title,.sg-body .pt-process .pt-eyebrow{color:#fff}
+.sg-body .pt-biography{background:#fafafa;padding:clamp(64px,9vw,100px) 0}
+.sg-body .pt-support{background:#f5f5f5;padding:clamp(64px,9vw,100px) 0}
+.sg-body .pt-testimonials{background:#fff;padding:clamp(64px,9vw,100px) 0}
+.sg-body .pt-faqs{background:#fafafa;padding:clamp(64px,9vw,100px) 0}
+.sg-body .pt-contact{background:#000;color:#fff;padding:clamp(64px,9vw,110px) 0;border-top:4px solid #000}
+.sg-body .pt-contact .pt-section-title,.sg-body .pt-contact .pt-eyebrow{color:#fff}
+.sg-body .pt-enquiry-form{border:4px solid #fff;background:#111;padding:32px;border-radius:0}
+.sg-body .pt-enquiry-form input,.sg-body .pt-enquiry-form select,.sg-body .pt-enquiry-form textarea{border:3px solid #fff;border-radius:0;background:#000;color:#fff}
+.sg-body .pt-lp-badge-logo,.sg-body .pt-lp-disclosure-logo{--lp-logo-ink:#fff;--lp-logo-accent:var(--pt-accent)}

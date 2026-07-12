@@ -4,7 +4,15 @@ document.addEventListener('DOMContentLoaded', function () {
   initWordArt();
   initGlitch();
   initScrollReveal();
+  initPartnerLogos();
 });
+
+function initPartnerLogos() {
+  if (!document.body.getAttribute('data-pt-template')) return;
+  if (window.LPLogo && window.LPLogo.upgradeAll) {
+    window.LPLogo.upgradeAll({ pulse: false }).catch(function () {});
+  }
+}
 
 function initLeadForms() {
   var body = document.body;
