@@ -6,6 +6,7 @@
 
   var state = {
     authHeader: null,
+    partnerId: null,
     websiteProfile: null,
     platform: null,
     completion: null,
@@ -84,6 +85,25 @@
       + '</nav>';
   }
 
+  function headshotField() {
+    var url = (wp().identity && wp().identity.headshotUrl) || '';
+    var preview = url
+      ? '<img id="pwp-headshot-img" src="' + esc(url) + '" alt="Profile photo preview">'
+      : '<span class="pwp-headshot-ph" id="pwp-headshot-ph">No photo</span>';
+    return '<div class="field"><label>Profile photo</label>'
+      + '<div class="pwp-headshot-row">'
+      + '<div id="pwp-headshot-preview" class="pwp-headshot-preview"' + (url ? '' : ' data-empty="1"') + '>' + preview + '</div>'
+      + '<div class="pwp-headshot-actions">'
+      + '<input type="file" id="pwp-headshot-file" accept="image/*" hidden>'
+      + '<button type="button" class="btn" id="pwp-headshot-upload">Upload photo</button>'
+      + '<button type="button" class="btn" id="pwp-headshot-clear"' + (url ? '' : ' hidden') + '>Remove</button>'
+      + '<span id="pwp-headshot-msg" class="muted" style="font-size:13px"></span>'
+      + '</div></div>'
+      + '<input type="hidden" id="pwp-headshot" value="' + esc(url) + '">'
+      + '<p class="muted" style="font-size:12px;margin:8px 0 0">Uploaded to your partner Cloudinary folder. Shown in your biography section.</p>'
+      + '</div>';
+  }
+
   function panelOverview() {
     var c = state.completion || {};
     return '<div class="pwp-panel" data-pwp-panel="overview">'
@@ -91,7 +111,7 @@
       + completionHtml()
       + '<div class="pwp-overview-grid">'
       + field('Agency / trading name', 'pwp-agency', wp().identity && wp().identity.agencyName, { hint: 'Shown in hero, footer, and SEO.' })
-      + field('Profile photo URL', 'pwp-headshot', wp().identity && wp().identity.headshotUrl, { placeholder: 'https://…' })
+      + headshotField()
       + '</div>'
       + '</div>';
   }
@@ -485,6 +505,51 @@
     };
   }
 
+  function setHeadshotPreview(url) {
+    var preview = $('pwp-headshot-preview');
+    var hidden = $('pwp-headshot');
+    var clearBtn = $('pwp-headshot-clear');
+    if (hidden) hidden.value = url || '';
+    if (!preview) return;
+    if (url) {
+      preview.removeAttribute('data-empty');
+      preview.innerHTML = '<img id="pwp-headshot-img" src="' + esc(url) + '" alt="Profile photo preview">';
+      if (clearBtn) clearBtn.hidden = false;
+    } else {
+      preview.setAttribute('data-empty', '1');
+      preview.innerHTML = '<span class="pwp-headshot-ph" id="pwp-headshot-ph">No photo</span>';
+      if (clearBtn) clearBtn.hidden = true;
+    }
+  }
+
+  async function uploadHeadshot(file) {
+    if (!state.authHeader || !state.partnerId) throw new Error('Not signed in.');
+    var headers = await state.authHeader();
+    var token = headers.Authorization && headers.Authorization.replace(/^Bearer\s+/i, '');
+    if (!token) throw new Error('Not signed in.');
+    var folder = 'leadpages/partners/' + state.partnerId + '/profile';
+    var pid = folder + '/headshot-' + Math.random().toString(36).slice(2, 10);
+    var sr = await fetch('/api/cloudinary/sign', {
+      method: 'POST',
+      headers: Object.assign({ 'content-type': 'application/json' }, headers),
+      body: JSON.stringify({ publicId: pid, assetFolder: folder })
+    });
+    var sg = await sr.json();
+    if (!sr.ok || !sg.signature) throw new Error(sg.error || 'Could not sign upload');
+    var fd = new FormData();
+    fd.append('file', file);
+    fd.append('api_key', sg.apiKey);
+    fd.append('timestamp', sg.timestamp);
+    fd.append('public_id', sg.publicId);
+    if (sg.assetFolder) fd.append('asset_folder', sg.assetFolder);
+    if (sg.overwrite) fd.append('overwrite', sg.overwrite);
+    fd.append('signature', sg.signature);
+    var ur = await fetch('https://api.cloudinary.com/v1_1/' + (sg.cloudName || 'dzx6x1hou') + '/image/upload', { method: 'POST', body: fd });
+    var uj = await ur.json();
+    if (!ur.ok || !uj.secure_url) throw new Error('Upload failed');
+    return uj.secure_url;
+  }
+
   async function saveProfile() {
     var err = $('pwp-err');
     var btn = $('pwp-save');
@@ -527,6 +592,15 @@
     root.addEventListener('click', function(e) {
       var tab = e.target.closest('[data-pwp-tab]');
       if (tab) { showTab(tab.getAttribute('data-pwp-tab')); return; }
+      if (e.target.id === 'pwp-headshot-upload' || e.target.closest('#pwp-headshot-upload')) {
+        var fileInput = $('pwp-headshot-file');
+        if (fileInput) fileInput.click();
+        return;
+      }
+      if (e.target.id === 'pwp-headshot-clear' || e.target.closest('#pwp-headshot-clear')) {
+        setHeadshotPreview('');
+        return;
+      }
       if (e.target.id === 'pwp-save' || e.target.closest('#pwp-save')) { saveProfile(); return; }
       if (e.target.id === 'pwp-add-testimonial') {
         var box = $('pwp-testimonials');
@@ -553,11 +627,31 @@
       var rmF = e.target.getAttribute('data-pwp-remove-faq');
       if (rmF != null) { var fr = e.target.closest('[data-pwp-faq]'); if (fr) fr.remove(); return; }
     });
+    root.addEventListener('change', function(e) {
+      if (e.target.id !== 'pwp-headshot-file') return;
+      var file = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+      var msg = $('pwp-headshot-msg');
+      var btn = $('pwp-headshot-upload');
+      if (msg) msg.textContent = 'Uploading…';
+      if (btn) btn.disabled = true;
+      uploadHeadshot(file).then(function(url) {
+        setHeadshotPreview(url);
+        if (msg) msg.textContent = 'Uploaded ✓';
+        setTimeout(function() { if (msg) msg.textContent = ''; }, 2000);
+      }).catch(function(err) {
+        if (msg) msg.textContent = (err && err.message) || 'Upload failed';
+      }).finally(function() {
+        if (btn) btn.disabled = false;
+      });
+    });
   }
 
   async function load(opts) {
     opts = opts || {};
     state.authHeader = opts.authHeader;
+    state.partnerId = opts.partnerId || null;
     var root = $('pwp-editor');
     if (!root) return;
     root.innerHTML = '<p class="muted" style="font-size:13px">Loading page content editor…</p>';
