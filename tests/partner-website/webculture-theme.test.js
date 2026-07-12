@@ -66,7 +66,9 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('Choose an industry.'));
   assert.ok(html.includes('Explore a real website.'));
   assert.ok(!html.includes('prm-gallery-strip'));
-  assert.match(html, /id="demos"[\s\S]*Choose an industry\./);
+  assert.ok(!html.includes('wc-hero-demos'));
+  assert.ok(html.indexOf('prm-lead-flow') < html.indexOf('Choose an industry.'));
+  assert.ok(html.indexOf('Choose an industry.') < html.indexOf('id="services"'));
   assert.ok(html.includes('data-prm-tab'));
   assert.ok(html.includes('prm-lead-flow'));
   assert.ok(html.includes('prm-service-card'));
