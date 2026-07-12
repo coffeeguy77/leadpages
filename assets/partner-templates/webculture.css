@@ -42,16 +42,16 @@ html:has(body.wc-body) {
   --wc-radius-card: 12px;
   --wc-radius-input: 8px;
 
-  --wc-ring-flow: 48px;
-  --wc-ring-proof: 40px;
-  --wc-ring-feature: 44px;
-  --wc-ring-timeline: 40px;
-  --wc-icon-flow: 24px;
-  --wc-icon-proof: 18px;
-  --wc-icon-feature: 18px;
-  --wc-icon-service: 48px;
-  --wc-icon-timeline: 18px;
-  --wc-icon-platform: 12px;
+  --wc-ring-flow: 96px;
+  --wc-ring-proof: 80px;
+  --wc-ring-feature: 88px;
+  --wc-ring-timeline: 80px;
+  --wc-icon-flow: 48px;
+  --wc-icon-proof: 36px;
+  --wc-icon-feature: 36px;
+  --wc-icon-service: 96px;
+  --wc-icon-timeline: 36px;
+  --wc-icon-platform: 24px;
 
   --pt-accent: var(--wc-primary);
   --pt-brand: var(--wc-primary);
@@ -241,7 +241,7 @@ html:has(body.wc-body) {
   border-color: var(--wc-ink);
 }
 .wc-btn:hover, .prm-btn:hover { transform: translateY(-1px); box-shadow: var(--wc-shadow); }
-.prm-btn-icon .prm-icon svg { width: 15px; height: 15px; }
+.prm-btn-icon .prm-icon svg { width: 30px; height: 30px; }
 
 /* Header */
 .wc-header {
@@ -506,7 +506,7 @@ html:has(body.wc-body) {
   font-size: 11px; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.06em; background: var(--wc-card);
 }
-.prm-partner-badge .prm-icon svg { width: 14px; height: 14px; color: var(--wc-primary); }
+.prm-partner-badge .prm-icon svg { width: 28px; height: 28px; color: var(--wc-primary); }
 .wc-process-panel {
   padding: clamp(28px, 4vw, 40px);
   background: var(--wc-ink);
@@ -609,7 +609,7 @@ html:has(body.wc-body) {
   margin-bottom: 16px;
 }
 .prm-review-stars { display: flex; gap: 3px; }
-.prm-review-stars .prm-icon svg { width: 16px; height: 16px; color: #E6A800; }
+.prm-review-stars .prm-icon svg { width: 32px; height: 32px; color: #E6A800; }
 .prm-review-rating { font-size: 13px; font-weight: 600; opacity: 0.72; margin: 0; }
 .prm-review-card blockquote {
   margin: 0;
