@@ -38,7 +38,12 @@ test('Cause House build — uses agency name and grouped services', function() {
   const prof = {
     partner_id: 'p1',
     showcase_headline: wp.positioning.heroHeadline,
-    showcase_config: { templateKey: 'causehouse', websiteProfile: wp }
+    showcase_config: {
+      templateKey: 'causehouse',
+      websiteProfile: wp,
+      logo: 'https://example.com/web-culture-logo.png',
+      logoSize: 1.5
+    }
   };
   const partner = { id: 'p1', display_name: 'Shaun Matthews', email: 'a@b.com', phone: '0400000000' };
   const demos = [
@@ -50,6 +55,9 @@ test('Cause House build — uses agency name and grouped services', function() {
   const html = build(prof, partner, demos, 'leadpages.com.au', { themeContent: content });
   assert.ok(html.includes('Web Culture'));
   assert.ok(!html.includes('Partners Website Demo Site'));
+  assert.ok(html.includes('ch-brand-img'));
+  assert.ok(html.includes('web-culture-logo.png'));
+  assert.ok(html.includes('ch-hero-logo'));
   assert.ok(html.includes('YOUR CANBERRA WEBSITE PARTNER'));
   assert.ok(html.includes('Canberra-based partner'));
   assert.ok(html.includes('LeadPages platform client'));
