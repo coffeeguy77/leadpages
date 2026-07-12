@@ -4,7 +4,8 @@ const {
   resolvePartnerLogo,
   isUsableLogoUrl,
   extractLogoValue,
-  normalizeLogoForStorage
+  normalizeLogoForStorage,
+  partnerLogoDisplayUrl
 } = require('../../lib/partner-website/logo');
 const { buildPartnerLandingHtml } = require('../../lib/partner-templates');
 
@@ -50,6 +51,13 @@ test('isUsableLogoUrl — accepts https and protocol-relative URLs', function() 
   assert.equal(isUsableLogoUrl('//res.cloudinary.com/demo/logo.png'), true);
   assert.equal(isUsableLogoUrl(''), false);
   assert.equal(isUsableLogoUrl('[object Object]'), false);
+});
+
+test('partnerLogoDisplayUrl — adds Cloudinary width transform for sharp display', function() {
+  const url = 'https://res.cloudinary.com/demo/image/upload/v123/partners/logo.png';
+  const out = partnerLogoDisplayUrl(url, 440);
+  assert.ok(out.includes('/upload/w_440,q_auto,f_auto,c_limit/'));
+  assert.ok(out.includes('logo.png'));
 });
 
 test('buildPartnerLandingHtml — uses showcase logo only for Cause House nav', function() {
