@@ -307,25 +307,24 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto 1fr;
   align-items: center;
-  gap: 20px;
-  min-height: 80px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  gap: 16px;
+  padding: 8px 0;
 }
 .ch-brand { justify-self: start; text-decoration: none; display: flex; align-items: center; min-width: 0; }
 .ch-brand-lockup {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
   color: var(--ch-text);
-  max-width: min(48vw, 320px);
+  max-width: min(calc(100px * var(--pt-logo-scale, 1)), 70vw);
 }
 .ch-nav-logo {
   display: block;
-  height: calc(44px * var(--pt-logo-scale, 1));
-  width: auto;
-  max-width: min(300px, 46vw);
+  width: calc(100px * var(--pt-logo-scale, 1));
+  max-width: min(70vw, 720px);
+  height: auto;
+  max-height: 42px;
   object-fit: contain;
+  object-position: left center;
 }
 .ch-brand-img,
 .ch-brand img {
@@ -333,16 +332,6 @@
   max-height: calc(52px * var(--pt-logo-scale, 1));
   width: auto;
   max-width: min(240px, 40vw);
-  object-fit: contain;
-}
-.ch-hero-logo-mark {
-  margin: 0 0 20px;
-}
-.ch-hero-mark-logo {
-  display: block;
-  height: calc(56px * var(--pt-logo-scale, 1));
-  width: auto;
-  max-width: min(320px, 78vw);
   object-fit: contain;
 }
 .ch-brand-img-plate {
@@ -1789,10 +1778,12 @@
 @media (max-width: 900px) {
   .ch-header .ch-shell {
     grid-template-columns: minmax(0, 1fr) auto;
+    padding: 6px 0;
   }
   .ch-nav-logo {
-    max-width: min(240px, 58vw);
-    height: calc(40px * var(--pt-logo-scale, 1));
+    width: calc(84px * var(--pt-logo-scale, 1));
+    max-width: min(64vw, 560px);
+    max-height: 36px;
   }
   .ch-nav,
   .ch-header-cta { display: none; }
@@ -1800,7 +1791,7 @@
   .ch-nav.is-open {
     display: flex;
     position: fixed;
-    inset: 80px 20px auto;
+    inset: 58px 20px auto;
     flex-direction: column;
     background: var(--ch-bg);
     padding: 24px;

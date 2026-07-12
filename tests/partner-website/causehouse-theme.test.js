@@ -47,8 +47,8 @@ test('Cause House build — renders logo from object showcase_config', function(
   const html = build(prof, partner, [], 'leadpages.com.au', { themeContent: content });
   assert.ok(html.includes('object-logo.png'));
   assert.ok(html.includes('ch-nav-logo'));
-  assert.ok(html.includes('ch-hero-mark-logo'));
   assert.ok(html.includes('ch-hero-logo'));
+  assert.ok(!html.includes('ch-hero-mark-logo'));
 });
 
 test('Cause House build — uses agency name and grouped services', function() {
@@ -73,11 +73,9 @@ test('Cause House build — uses agency name and grouped services', function() {
   const html = build(prof, partner, demos, 'leadpages.com.au', { themeContent: content });
   assert.ok(html.includes('Web Culture'));
   assert.ok(!html.includes('Partners Website Demo Site'));
-  assert.ok(html.includes('ch-brand-img'));
-  assert.ok(html.includes('ch-brand-img-plate'));
-  assert.ok(html.includes('web-culture-logo.png'));
-  assert.ok(html.includes('ch-hero-mark-logo'));
+  assert.ok(html.includes('ch-nav-logo'));
   assert.ok(html.includes('ch-hero-logo'));
+  assert.ok(!html.includes('ch-hero-mark-logo'));
   assert.ok(html.includes('YOUR CANBERRA WEBSITE PARTNER'));
   assert.ok(html.includes('Canberra-based partner'));
   assert.ok(html.includes('LeadPages platform client'));
