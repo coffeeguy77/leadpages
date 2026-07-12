@@ -69,6 +69,8 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('prm-service-card'));
   assert.ok(html.includes('prm-timeline'));
   assert.ok(html.includes('prm-platform-diagram'));
+  assert.ok(html.includes('prm-platform-bridge'));
+  assert.match(html, /prm-platform-card[\s\S]*prm-platform-circle[\s\S]*prm-platform-card/);
   assert.ok(html.includes('prm-final-cta'));
   assert.ok(html.includes('data-pl-lead-form'));
   assert.ok(!html.includes('Partners Website Demo Site'));
