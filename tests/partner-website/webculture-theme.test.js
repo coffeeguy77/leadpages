@@ -83,7 +83,9 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('placeholder="Name *"'));
   assert.ok(!html.includes('<span>Name *</span>'));
   assert.ok(html.includes('prm-review-top'));
-  assert.ok(html.includes('wc-footer-lp-eyebrow'));
+  assert.ok(html.includes('wc-footer-lockup'));
+  assert.ok(html.includes('wc-footer-cloud-mark'));
+  assert.ok(html.includes('wc-footer-wordmark'));
   assert.ok(html.includes('data-lp-logo-pulse'));
   assert.ok(!html.includes('data-lp-logo-pulse="false"'));
   assert.ok(html.includes('prm-icon-ring--cloud'));
