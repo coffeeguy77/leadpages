@@ -72,11 +72,12 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('prm-platform-bridge'));
   assert.match(html, /prm-platform-card[\s\S]*prm-platform-circle[\s\S]*prm-platform-card/);
   assert.ok(html.includes('prm-final-cta--slim'));
+  assert.ok(html.includes('Ready for a website that works harder for your business?'));
   assert.ok(html.includes('Let\u2019s build something great together.'));
   assert.ok(html.includes('prm-icon-ring--cta'));
+  assert.match(html, /prm-icon-ring--cta[\s\S]*prm-final-cta-title/);
   assert.ok(!html.includes('prm-review-badge'));
   assert.ok(!html.includes('prm-review-contact'));
-  assert.ok(!html.includes('Ready for a website that works harder for your business?'));
   assert.ok(html.includes('data-pl-lead-form'));
   assert.ok(html.includes('prm-form--compact'));
   assert.ok(html.includes('placeholder="Name *"'));
