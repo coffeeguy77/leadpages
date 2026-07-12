@@ -403,7 +403,7 @@ html:has(body.wc-body) {
 .prm-proof-card { display: flex; gap: 14px; align-items: flex-start; }
 .prm-proof-card h3 { margin: 0 0 4px; font-size: 16px; font-weight: 700; color: #fff; }
 .prm-proof-card p { margin: 0; font-size: 14px; color: #fff; opacity: 0.92; line-height: 1.5; }
-.prm-icon-ring--cloud { color: #fff; }
+.prm-icon-ring--cloud { color: var(--wc-primary); }
 .prm-icon-ring--cloud .prm-icon svg {
   animation: wc-cloud-float 3.2s ease-in-out infinite;
   transform-origin: center center;
