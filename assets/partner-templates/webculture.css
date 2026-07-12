@@ -456,8 +456,8 @@ html:has(body.wc-body) {
 .prm-feature-list { list-style: none; padding: 0; margin: 32px 0 0; display: flex; flex-direction: column; gap: 18px; }
 .prm-feature-item { display: flex; align-items: center; gap: 14px; font-weight: 600; font-size: 15px; color: var(--wc-ink); }
 
-/* Services — cream, forest icons */
-.wc-services { background: var(--wc-bg); }
+/* Services — forest band, lime icons */
+.wc-services { /* background from .wc-section--ink */ }
 .wc-service-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -465,6 +465,7 @@ html:has(body.wc-body) {
   margin-top: 36px;
 }
 .prm-service-card { text-align: center; }
+.wc-services .prm-service-icon { display: flex; justify-content: center; color: var(--wc-primary); }
 .prm-service-icon { display: flex; justify-content: center; color: var(--wc-ink); }
 .prm-service-icon .prm-icon svg { width: var(--wc-icon-service); height: var(--wc-icon-service); }
 .prm-service-title {
@@ -473,7 +474,9 @@ html:has(body.wc-body) {
   margin: 18px 0 8px; letter-spacing: -0.02em;
   color: var(--wc-ink);
 }
+.wc-services .prm-service-title { color: var(--wc-on-dark); }
 .prm-service-summary { font-size: 15px; color: var(--wc-muted); margin: 0 auto; max-width: 28ch; line-height: 1.55; }
+.wc-services .prm-service-summary { color: var(--wc-on-dark); opacity: 0.9; }
 
 /* Partner + process */
 .wc-partner-process { background: var(--wc-bg); }
