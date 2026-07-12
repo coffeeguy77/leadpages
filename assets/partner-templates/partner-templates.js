@@ -12,13 +12,22 @@ document.addEventListener('DOMContentLoaded', function () {
   initWebcultureFormMore();
 });
 
+function initWebcultureFooterLogo() {
+  var footerLp = document.querySelector('.wc-footer-lp-logo');
+  if (!footerLp || !window.LPLogo || !window.LPLogo.mountLogo) return Promise.resolve();
+  footerLp.dataset.lpLogoMounted = 'false';
+  var accent = getComputedStyle(document.documentElement).getPropertyValue('--pt-accent').trim() || '#C5E13F';
+  return window.LPLogo.mountLogo(footerLp, { pulse: true, ink: '#ffffff', accent: accent });
+}
+
 function initPartnerLogos() {
   if (!document.body.getAttribute('data-pt-template')) return;
-  if (window.LPLogo && window.LPLogo.upgradeAll) {
-    var tpl = document.body.getAttribute('data-pt-template') || '';
-    var pulse = tpl === 'webculture';
-    window.LPLogo.upgradeAll({ pulse: pulse }).catch(function () {});
-  }
+  if (!window.LPLogo || !window.LPLogo.upgradeAll) return;
+  var tpl = document.body.getAttribute('data-pt-template') || '';
+  var pulse = tpl === 'webculture';
+  window.LPLogo.upgradeAll({ pulse: pulse }).then(function () {
+    if (tpl === 'webculture') return initWebcultureFooterLogo();
+  }).catch(function () {});
 }
 
 function initLeadForms() {
