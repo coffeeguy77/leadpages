@@ -328,9 +328,19 @@
 .ch-brand-img,
 .ch-brand img {
   display: block;
-  max-height: calc(40px * var(--pt-logo-scale, 1));
+  max-height: calc(52px * var(--pt-logo-scale, 1));
   width: auto;
-  max-width: min(220px, 32vw);
+  max-width: min(240px, 40vw);
+  object-fit: contain;
+}
+.ch-hero-logo-mark {
+  margin: 0 0 20px;
+}
+.ch-hero-mark-logo {
+  display: block;
+  max-height: calc(64px * var(--pt-logo-scale, 1));
+  width: auto;
+  max-width: min(280px, 72vw);
   object-fit: contain;
 }
 .ch-brand-img-plate {
