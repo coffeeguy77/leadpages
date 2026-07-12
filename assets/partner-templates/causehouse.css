@@ -322,7 +322,7 @@
   width: calc(100px * var(--pt-logo-scale, 1));
   max-width: min(70vw, 720px);
   height: auto;
-  max-height: 42px;
+  max-height: calc(42px * var(--pt-logo-scale, 1));
   object-fit: contain;
   object-position: left center;
 }
@@ -1783,7 +1783,7 @@
   .ch-nav-logo {
     width: calc(84px * var(--pt-logo-scale, 1));
     max-width: min(64vw, 560px);
-    max-height: 36px;
+    max-height: calc(36px * var(--pt-logo-scale, 1));
   }
   .ch-nav,
   .ch-header-cta { display: none; }
