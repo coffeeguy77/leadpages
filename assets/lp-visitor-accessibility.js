@@ -42,7 +42,13 @@
     return 'standard';
   }
 
+  function isPartnerTemplatePage() {
+    var body = global.document && global.document.body;
+    return !!(body && body.getAttribute('data-pt-template'));
+  }
+
   function apply(prefs) {
+    if (isPartnerTemplatePage()) return;
     var root = global.document && global.document.documentElement;
     if (!root) return;
     var p = prefs || {};
