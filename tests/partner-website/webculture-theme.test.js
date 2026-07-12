@@ -1,0 +1,85 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const { groupDemosByIndustryTab, buildWebcultureCopy } = require('../../lib/partner-website/webculture-theme');
+const { resolvePartnerThemeContent } = require('../../lib/partner-website/resolver');
+const { buildWebCultureWebsiteProfile } = require('../../lib/partner-website/web-culture-profile');
+const { validateWebsiteProfile } = require('../../lib/partner-website/validate');
+const { build } = require('../../lib/partner-templates/webculture');
+const { buildPartnerLandingHtml, normalizeTemplateKey } = require('../../lib/partner-templates');
+const { PARTNER_TEMPLATES } = require('../../lib/partner-templates/registry');
+
+test('registry — includes webculture template', function() {
+  const tpl = PARTNER_TEMPLATES.find(function(t) { return t.id === 'webculture'; });
+  assert.ok(tpl);
+  assert.equal(normalizeTemplateKey('webculture'), 'webculture');
+});
+
+test('groupDemosByIndustryTab — groups demos by industry', function() {
+  const demos = [
+    { slug: 'a', name: 'Tradie', industry: 'Trades', url: 'https://x/a' },
+    { slug: 'b', name: 'Cafe', industry: 'Hospitality', url: 'https://x/b' }
+  ];
+  const groups = groupDemosByIndustryTab(demos);
+  assert.ok(groups.length >= 2);
+  assert.equal(groups[0].tab.key, 'trades');
+});
+
+test('buildWebcultureCopy — uses profile agency name not hardcoded Web Culture', function() {
+  const content = resolvePartnerThemeContent({
+    prof: {
+      showcase_config: {
+        websiteProfile: validateWebsiteProfile(Object.assign(buildWebCultureWebsiteProfile(), {
+          identity: { agencyName: 'Acme Digital', badgeStatus: 'leadpages-partner' }
+        }))
+      }
+    },
+    partner: { display_name: 'Alex Partner' },
+    demos: [],
+    base: 'leadpages.com.au'
+  });
+  const copy = buildWebcultureCopy(content);
+  assert.ok(copy.partner.heading.includes('local partner'));
+  assert.equal(content.partner.agencyName, 'Acme Digital');
+});
+
+test('Web Culture build — renders premium sections from profile', function() {
+  const wp = validateWebsiteProfile(buildWebCultureWebsiteProfile());
+  const prof = {
+    partner_id: 'p1',
+    showcase_headline: wp.positioning.heroHeadline,
+    showcase_config: {
+      templateKey: 'webculture',
+      websiteProfile: wp,
+      logo: 'https://example.com/logo.png'
+    }
+  };
+  const partner = { id: 'p1', display_name: 'Shaun Matthews', email: 'a@b.com', phone: '0400000000' };
+  const demos = [
+    { slug: 'demo-tradie', business_name: 'Tradie Pro', config: { trade: 'Trades', showcase: { image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80' } } },
+    { slug: 'demo-cafe', business_name: 'Cafe Demo', config: { trade: 'Hospitality', showcase: { image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80' } } }
+  ];
+  const content = resolvePartnerThemeContent({ prof, partner, directory: null, demos, base: 'leadpages.com.au' });
+  const html = build(prof, partner, demos, 'leadpages.com.au', { themeContent: content });
+  assert.ok(html.includes('wc-body'));
+  assert.ok(html.includes('prm-hero-showcase'));
+  assert.ok(html.includes('prm-gallery'));
+  assert.ok(html.includes('prm-demo-showcase'));
+  assert.ok(html.includes('data-prm-tab'));
+  assert.ok(html.includes('prm-lead-flow'));
+  assert.ok(html.includes('prm-service-card'));
+  assert.ok(html.includes('prm-timeline'));
+  assert.ok(html.includes('prm-platform-diagram'));
+  assert.ok(html.includes('prm-final-cta'));
+  assert.ok(html.includes('data-pl-lead-form'));
+  assert.ok(!html.includes('Partners Website Demo Site'));
+});
+
+test('buildPartnerLandingHtml — dispatches webculture template', function() {
+  const prof = {
+    showcase_config: { templateKey: 'webculture', logo: 'https://example.com/logo.png' },
+    showcase_headline: 'Test headline'
+  };
+  const html = buildPartnerLandingHtml(prof, { display_name: 'Test' }, [], 'leadpages.com.au', { showTemplateSwitcher: false });
+  assert.ok(html.includes('data-pt-template="webculture"'));
+  assert.ok(html.includes('/assets/partner-templates/webculture.css'));
+});
