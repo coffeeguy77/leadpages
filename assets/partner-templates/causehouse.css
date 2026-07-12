@@ -322,8 +322,37 @@
   display: block;
   max-height: calc(40px * var(--pt-logo-scale, 1));
   width: auto;
-  max-width: min(180px, 28vw);
+  max-width: min(220px, 32vw);
   object-fit: contain;
+}
+.ch-brand-img-plate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #fff;
+  border: 2px solid var(--ch-text);
+  box-shadow: 2px 2px 0 0 var(--ch-border);
+  line-height: 0;
+}
+.ch-brand-img-plate-footer {
+  padding: 8px 12px;
+}
+.ch-logo-plate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 24px;
+  border-radius: 10px;
+  background: #fff;
+  border: 2px solid var(--ch-text);
+  box-shadow: var(--ch-shadow);
+  line-height: 0;
+  max-width: 100%;
+}
+.ch-logo-plate-hero {
+  padding: clamp(24px, 4vw, 36px) clamp(28px, 5vw, 40px);
 }
 .ch-brand-name {
   font-family: 'Fraunces', Georgia, serif;

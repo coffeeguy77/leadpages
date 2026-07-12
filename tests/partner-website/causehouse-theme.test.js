@@ -56,6 +56,7 @@ test('Cause House build — uses agency name and grouped services', function() {
   assert.ok(html.includes('Web Culture'));
   assert.ok(!html.includes('Partners Website Demo Site'));
   assert.ok(html.includes('ch-brand-img'));
+  assert.ok(html.includes('ch-brand-img-plate'));
   assert.ok(html.includes('web-culture-logo.png'));
   assert.ok(html.includes('ch-hero-logo'));
   assert.ok(html.includes('YOUR CANBERRA WEBSITE PARTNER'));
