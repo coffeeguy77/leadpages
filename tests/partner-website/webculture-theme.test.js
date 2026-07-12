@@ -82,4 +82,5 @@ test('buildPartnerLandingHtml — dispatches webculture template', function() {
   const html = buildPartnerLandingHtml(prof, { display_name: 'Test' }, [], 'leadpages.com.au', { showTemplateSwitcher: false });
   assert.ok(html.includes('data-pt-template="webculture"'));
   assert.ok(html.includes('/assets/partner-templates/webculture.css'));
+  assert.ok(html.includes('__LP_VISITOR_A11Y__={enabled:false}'));
 });

@@ -67,7 +67,13 @@
     return resolveScheme(key);
   }
 
+  function isPartnerTemplatePage() {
+    var body = global.document && global.document.body;
+    return !!(body && body.getAttribute('data-pt-template'));
+  }
+
   function apply(schemeKey) {
+    if (isPartnerTemplatePage()) return;
     var root = global.document && global.document.documentElement;
     if (!root) return;
     var resolved = effectiveScheme(schemeKey);

@@ -77,6 +77,15 @@ a{color:inherit}
 .pt-lp-disclosure-logo{--lp-logo-height:44px;display:inline-block;line-height:0}
 .pt-lp-disclosure-text{display:block;margin-top:10px;font-size:13px;line-height:1.5;opacity:.72;max-width:38ch}
 
+/* Partner templates own their palette — block visitor theme overlays */
+html[data-lp-visitor-theme] body[data-pt-template],
+html[data-lp-site-theme] body[data-pt-template],
+html[data-lp-visitor-scheme]:not([data-lp-visitor-scheme="brand"]) body[data-pt-template]{
+  background:var(--pt-bg)!important;
+  color:var(--pt-ink)!important;
+  filter:none!important;
+}
+
 /* Disable pulse blur on compact partner logos */
 .pt-lp-badge .lp-logo-pulse #inner-circle,
 .pt-lp-badge .lp-logo-pulse #outer-circle,

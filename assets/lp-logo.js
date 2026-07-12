@@ -313,6 +313,7 @@
 
   function maybeBootMarketingA11y() {
     if (!isMarketingHost() || !global.document) return;
+    if (isPartnerTemplatePage()) return;
     if (global.__LP_VISITOR_A11Y__ && global.__LP_VISITOR_A11Y__.enabled === false) return;
     if (!global.__LP_VISITOR_A11Y__) {
       global.__LP_VISITOR_A11Y__ = {

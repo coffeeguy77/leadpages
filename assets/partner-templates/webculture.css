@@ -14,6 +14,10 @@
  *        lime ring + forest glyph on light features, forest on services
  */
 
+html:has(body.wc-body) {
+  background: #FDFCF0;
+}
+
 .wc-body {
   font-family: 'Inter', system-ui, sans-serif;
   background: #FDFCF0;
