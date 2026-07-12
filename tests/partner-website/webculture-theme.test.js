@@ -62,8 +62,11 @@ test('Web Culture build — renders premium sections from profile', function() {
   const html = build(prof, partner, demos, 'leadpages.com.au', { themeContent: content });
   assert.ok(html.includes('wc-body'));
   assert.ok(html.includes('prm-hero-showcase'));
-  assert.ok(html.includes('prm-gallery-strip') || html.includes('prm-gallery'));
   assert.ok(html.includes('prm-demo-showcase'));
+  assert.ok(html.includes('Choose an industry.'));
+  assert.ok(html.includes('Explore a real website.'));
+  assert.ok(!html.includes('prm-gallery-strip'));
+  assert.match(html, /id="demos"[\s\S]*Choose an industry\./);
   assert.ok(html.includes('data-prm-tab'));
   assert.ok(html.includes('prm-lead-flow'));
   assert.ok(html.includes('prm-service-card'));
