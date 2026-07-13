@@ -132,6 +132,9 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('prm-partner-agency'));
   assert.ok(html.includes('prm-partner-contact-line'));
   assert.ok(html.includes('Work directly with Shaun'));
+  const partnerChunk = html.slice(html.indexOf('prm-partner-card'), html.indexOf('prm-partner-card') + 2500);
+  const contactMatches = partnerChunk.match(/Work directly with Shaun/g) || [];
+  assert.equal(contactMatches.length, 1, 'contact line should appear once in partner card');
   assert.ok(!html.includes('Shaun Matthews'));
   assert.ok(html.includes('wc-footer-local'));
   assert.ok(html.includes('Canberra Website Design'));
