@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initWebcultureDemoTabs();
   initWebcultureGallery();
   initWebcultureFormMore();
+  initWebcultureHeroShowcase();
 });
 
 // Avoid bfcache showing a previously visited trade demo when returning to a partner theme page.
@@ -246,5 +247,93 @@ function initWebcultureFormMore() {
       panel.hidden = !open;
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
+  });
+}
+
+function initWebcultureHeroShowcase() {
+  document.querySelectorAll('[data-prm-hero-showcase]').forEach(function (root) {
+    var picks = root.querySelectorAll('[data-prm-hero-pick]');
+    var browserStack = root.querySelector('[data-prm-hero-stack="browser"]');
+    var slideCount = browserStack ? browserStack.querySelectorAll('[data-prm-hero-slide]').length : 0;
+    if (!slideCount) return;
+    var interval = parseInt(root.getAttribute('data-prm-hero-interval') || '5500', 10);
+    var index = 0;
+    var timer = null;
+    var paused = false;
+    var urlEl = root.querySelector('[data-prm-hero-url]');
+    var toastTitle = root.querySelector('[data-prm-toast-title]');
+    var toastBody = root.querySelector('[data-prm-toast-body]');
+    var toastTime = root.querySelector('[data-prm-toast-time]');
+
+    function slideAt(i) {
+      return root.querySelector('[data-prm-hero-stack="browser"] [data-prm-hero-slide="' + i + '"]');
+    }
+
+    function toastForSlide(i) {
+      var slide = slideAt(i);
+      if (!slide) return;
+      var name = slide.getAttribute('data-demo-name') || 'Live demo';
+      if (toastTitle) toastTitle.textContent = 'New quote request';
+      if (toastBody) toastBody.textContent = name + ' enquiry';
+      if (toastTime) toastTime.textContent = (i % 3 === 0) ? 'Just now' : ((i % 3 === 1) ? '2 mins ago' : '5 mins ago');
+    }
+
+    function setActive(next) {
+      index = (next + slideCount) % slideCount;
+      root.querySelectorAll('[data-prm-hero-slide]').forEach(function (slide) {
+        var slideIndex = parseInt(slide.getAttribute('data-prm-hero-slide'), 10);
+        var active = slideIndex === index;
+        slide.classList.toggle('is-active', active);
+        slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+        slide.tabIndex = active ? 0 : -1;
+      });
+      picks.forEach(function (pick) {
+        var active = parseInt(pick.getAttribute('data-prm-hero-pick'), 10) === index;
+        pick.classList.toggle('is-active', active);
+        pick.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      var current = slideAt(index);
+      if (current && urlEl) {
+        urlEl.textContent = current.getAttribute('data-demo-host') || urlEl.textContent;
+      }
+      toastForSlide(index);
+    }
+
+    function startTimer() {
+      if (timer) window.clearInterval(timer);
+      if (slideCount < 2 || paused) return;
+      timer = window.setInterval(function () {
+        setActive(index + 1);
+      }, interval);
+    }
+
+    picks.forEach(function (pick) {
+      pick.addEventListener('click', function () {
+        var next = parseInt(pick.getAttribute('data-prm-hero-pick'), 10);
+        if (Number.isNaN(next)) return;
+        setActive(next);
+        startTimer();
+      });
+    });
+
+    root.addEventListener('mouseenter', function () {
+      paused = true;
+      if (timer) window.clearInterval(timer);
+    });
+    root.addEventListener('mouseleave', function () {
+      paused = false;
+      startTimer();
+    });
+    root.addEventListener('focusin', function () {
+      paused = true;
+      if (timer) window.clearInterval(timer);
+    });
+    root.addEventListener('focusout', function () {
+      paused = false;
+      startTimer();
+    });
+
+    setActive(0);
+    startTimer();
   });
 }
