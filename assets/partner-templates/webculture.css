@@ -431,11 +431,27 @@ html:has(body.wc-body) {
 }
 .prm-eco-browser-zone .prm-hero-browser {
   width: 100%;
+  max-width: 100%;
+  margin-right: 0;
+  transform: none;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   border-bottom: 0;
   box-shadow: none;
   transition: transform 200ms ease-out;
+}
+.prm-eco-browser-zone .prm-browser-screen {
+  aspect-ratio: 16 / 9;
+  isolation: isolate;
+}
+.prm-eco-browser-zone .prm-live-frame {
+  contain: paint;
+}
+.prm-eco-browser-zone .prm-live-frame--desktop .prm-live-iframe {
+  width: 200%;
+  height: 200%;
+  transform: scale(0.5);
+  transform-origin: 0 0;
 }
 .prm-eco-browser-zone .prm-hero-phone {
   position: absolute;
