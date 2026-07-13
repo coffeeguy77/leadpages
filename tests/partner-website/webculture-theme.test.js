@@ -63,10 +63,11 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('wc-body'));
   assert.ok(html.includes('prm-hero-showcase'));
   assert.ok(html.includes('data-prm-hero-showcase'));
-  assert.ok(html.includes('prm-hero-picker'));
-  assert.ok(html.includes('prm-phone-bezel'));
-  assert.ok(html.includes('data-prm-hero-slide="0"'));
-  assert.ok(html.includes('data-prm-hero-slide="1"'));
+  assert.ok(html.includes('prm-hero-dots'));
+  assert.ok(html.includes('prm-phone-shell'));
+  assert.ok(html.includes('prm-live-iframe'));
+  assert.ok(html.includes('data-prm-hero-pick="0"'));
+  assert.ok(html.includes('data-prm-hero-pick="1"'));
   assert.ok(html.includes('YOUR LOCAL LEADPAGES PARTNER'));
   assert.ok(html.includes('Websites that work harder for your business.'));
   assert.ok(html.includes('Work directly with Web Culture to create a professional website'));
