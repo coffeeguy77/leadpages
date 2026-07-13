@@ -137,7 +137,7 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.equal(contactMatches.length, 1, 'contact line should appear once in partner card');
   assert.ok(!html.includes('Shaun Matthews'));
   assert.ok(html.includes('wc-footer-local'));
-  assert.ok(html.includes('Canberra Website Design'));
+  assert.ok(html.includes('Canberra Website Designer'));
   assert.ok(html.includes('wc-sticky-cta'));
   assert.ok(html.includes('data-wc-sticky-cta'));
   assert.ok(html.includes('wc-footer-lockup'));
