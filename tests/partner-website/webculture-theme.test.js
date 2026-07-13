@@ -166,7 +166,8 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('Book Consultation'));
   assert.ok(html.includes('>Call</a>'));
   assert.ok(html.includes('Customer'));
-  assert.ok(html.includes('data-prm-flow-step'));
+  assert.ok(html.includes('prm-flow-arrow'));
+  assert.ok(!html.includes('prm-flow-connectors'));
   const partnerChunk = html.slice(html.indexOf('prm-partner-card'), html.indexOf('prm-partner-card') + 2500);
   const contactMatches = partnerChunk.match(/Work directly with Shaun/g) || [];
   assert.equal(contactMatches.length, 1, 'contact line should appear once in partner card');

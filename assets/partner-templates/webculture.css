@@ -1222,25 +1222,12 @@ html:has(body.wc-body) {
 }
 .prm-lead-flow .prm-h2 { max-width: 24ch; margin-bottom: 28px; }
 .prm-flow-board {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
   position: relative;
 }
-.prm-flow-connectors {
-  grid-column: 1 / -1;
-  width: 100%;
-  height: 88px;
-  color: var(--wc-primary);
-  margin-bottom: -56px;
-  opacity: 0.85;
-}
-.prm-flow-board.is-pulsing .prm-flow-connectors {
-  animation: prm-flow-pulse 3.5s ease-in-out infinite;
-}
-.prm-flow-board.is-sequencing .prm-flow-connectors { animation: none; }
-.prm-flow-board.is-glowing .prm-flow-connectors {
+.prm-flow-connectors { display: none !important; }
+.prm-flow-board.is-glowing .prm-flow-arrow .prm-flow-arrow-icon {
   opacity: 1;
-  filter: drop-shadow(0 0 12px rgba(197, 225, 63, 0.5));
+  filter: drop-shadow(0 0 8px rgba(197, 225, 63, 0.55));
   transition: opacity 220ms ease-out, filter 220ms ease-out;
 }
 .prm-flow-step { transition: opacity 220ms ease-out; }
@@ -1251,20 +1238,39 @@ html:has(body.wc-body) {
 .prm-flow-board:not(.is-sequencing) .prm-flow-step { opacity: 0.55; }
 .prm-flow-board.is-sequencing .prm-flow-step { opacity: 0.4; }
 .prm-flow-board.is-sequencing .prm-flow-step.is-lit { opacity: 1; }
-@keyframes prm-flow-pulse {
-  0%, 100% { opacity: 0.55; filter: drop-shadow(0 0 0 transparent); }
-  50% { opacity: 1; filter: drop-shadow(0 0 10px rgba(197, 225, 63, 0.45)); }
-}
-.prm-flow-connectors { pointer-events: none; }
 .prm-flow-steps--horizontal {
   list-style: none; padding: 0; margin: 0;
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px;
 }
 .prm-flow-step {
   display: flex; flex-direction: column; align-items: center; text-align: center;
-  padding: 0 6px; position: relative; z-index: 1;
+  padding: 0 4px; position: relative; z-index: 1;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.prm-flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  align-self: flex-start;
+  padding-top: calc(var(--wc-ring-flow) / 2 - 10px);
+  color: var(--wc-primary);
+  opacity: 0.9;
+}
+.prm-flow-arrow-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.75;
+  transition: opacity 200ms ease-out, filter 200ms ease-out;
+}
+.prm-flow-arrow-icon .prm-icon svg {
+  width: 18px;
+  height: 18px;
 }
 .prm-flow-label { font-weight: 600; font-size: 14px; margin-top: 10px; color: var(--wc-on-dark); }
 .prm-flow-sub { font-size: 11px; opacity: 0.7; margin-top: 2px; }
@@ -2407,9 +2413,9 @@ body.wc-body .wc-footer-lp-logo.lp-logo-pulse #outer-circle {
   .prm-eco-dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .prm-eco-browser-zone .prm-hero-phone { width: 28%; min-width: 80px; max-width: 110px; }
   .prm-eco-toast { max-width: 160px; font-size: 10px; }
-  .prm-flow-steps--horizontal { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
-  .prm-flow-label { font-size: 12px; }
-  .prm-flow-sub { font-size: 10px; }
+  .prm-flow-steps--horizontal { flex-wrap: wrap; justify-content: center; gap: 8px 4px; }
+  .prm-flow-arrow { padding-top: calc(var(--wc-ring-flow) / 2 - 8px); }
+  .prm-flow-step { flex: 0 1 auto; min-width: 72px; }
   .prm-demo-trust { grid-template-columns: 1fr; }
   .wc-hero-trust-meta { flex-direction: column; }
   .prm-journey-device--phone { left: 6px; bottom: 6px; width: 72px; }
@@ -2464,6 +2470,7 @@ body.wc-body:has(.pt-tpl-bar) .wc-footer {
   .prm-icon-ring--cloud .prm-icon svg { animation: none; }
   .prm-live-poster { transition: none; }
   .prm-flow-board.is-pulsing .prm-flow-connectors { animation: none; }
+  .prm-flow-arrow-icon { transition: none; }
   .prm-browser-live-dot { animation: none; }
   .prm-hero-journey [data-journey-pop],
   .prm-journey-device,
