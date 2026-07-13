@@ -84,6 +84,8 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('local support every step of the way'));
   assert.ok(html.includes('Explore Live Demos'));
   assert.ok(html.includes('Plan My Website'));
+  assert.ok(html.includes('>Contact</a>'));
+  assert.ok(!html.includes('>FAQ</a>'));
   assert.ok(html.includes('Canberra-Based Partner'));
   assert.ok(html.includes('Explore Live Websites'));
   assert.ok(html.includes('Powered by LeadPages'));
