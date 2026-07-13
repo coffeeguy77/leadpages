@@ -37,9 +37,10 @@ test('buildWebcultureCopy — uses profile agency name not hardcoded Web Culture
     demos: [],
     base: 'leadpages.com.au'
   });
-  const copy = buildWebcultureCopy(content);
-  assert.ok(copy.partner.heading.includes('local partner'));
+  buildWebcultureCopy(content);
   assert.equal(content.partner.agencyName, 'Acme Digital');
+  assert.equal(content.partner.publicIntro.agencyHeading, 'Acme Digital');
+  assert.match(content.partner.publicIntro.contactLine, /Work directly with Alex/);
 });
 
 test('Web Culture build — renders premium sections from profile', function() {
@@ -66,11 +67,20 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('prm-hero-dots'));
   assert.ok(html.includes('prm-phone-shell'));
   assert.ok(html.includes('prm-live-iframe'));
+  assert.ok(html.includes('data-prm-live-scroll'));
   assert.ok(html.includes('data-prm-hero-pick="0"'));
   assert.ok(html.includes('data-prm-hero-pick="1"'));
   assert.ok(html.includes('YOUR LOCAL LEADPAGES PARTNER'));
-  assert.ok(html.includes('Websites that work harder for your business.'));
-  assert.ok(html.includes('Work directly with Web Culture to create a professional website'));
+  assert.ok(html.includes('wc-hero-title'));
+  assert.ok(html.includes('wc-highlight'));
+  assert.ok(html.includes('work harder'));
+  assert.ok(html.includes('for your business.'));
+  assert.ok(html.includes('wc-hero-lead'));
+  assert.ok(html.includes('wc-lead-brand'));
+  assert.ok(html.includes('wc-lead-em'));
+  assert.ok(html.includes('Work directly with'));
+  assert.ok(html.includes('wc-lead-brand'));
+  assert.ok(html.includes('Web Culture</strong> to create a professional website'));
   assert.ok(html.includes('local support every step of the way'));
   assert.ok(html.includes('Explore Live Demos'));
   assert.ok(html.includes('Plan My Website'));
@@ -82,6 +92,10 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(!html.includes('YOUR CANBERRA WEBSITE PARTNER'));
   assert.ok(!html.includes('built to win business'));
   assert.ok(html.includes('prm-demo-showcase'));
+  assert.ok(html.includes('data-prm-demo-carousel'));
+  assert.ok(html.includes('data-prm-demo-prev'));
+  assert.ok(html.includes('data-prm-demo-next'));
+  assert.ok(html.includes('prm-demo-indicator'));
   assert.ok(html.includes('Choose an industry.'));
   assert.ok(html.includes('Explore a real website.'));
   assert.ok(!html.includes('prm-gallery-strip'));
@@ -90,6 +104,7 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.indexOf('Choose an industry.') < html.indexOf('id="services"'));
   assert.ok(html.includes('data-prm-tab'));
   assert.ok(html.includes('prm-lead-flow'));
+  assert.ok(html.includes('data-prm-flow-board'));
   assert.ok(!html.includes('New Customers'));
   assert.ok(!html.includes('prm-flow-branch'));
   assert.ok(html.includes('prm-service-card'));
@@ -100,18 +115,28 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(!html.includes('ONE CONNECTED SERVICE'));
   assert.ok(!html.includes('prm-platform-diagram'));
   assert.ok(html.includes('prm-timeline'));
+  assert.ok(html.includes('data-prm-timeline-animate'));
   assert.ok(html.includes('prm-final-cta--slim'));
-  assert.ok(html.includes('Ready for a website that works harder for your business?'));
-  assert.ok(html.includes('Let\u2019s build something great together.'));
+  assert.ok(html.includes('Ready for a website that works as hard as you do?'));
+  assert.ok(html.includes('Let\u2019s build something your customers will remember.'));
   assert.ok(html.includes('prm-icon-ring--cta'));
   assert.match(html, /prm-icon-ring--cta[\s\S]*prm-final-cta-title/);
   assert.ok(!html.includes('prm-review-badge'));
   assert.ok(!html.includes('prm-review-contact'));
   assert.ok(html.includes('data-pl-lead-form'));
   assert.ok(html.includes('prm-form--compact'));
+  assert.ok(html.includes('Let\u2019s talk about your business.'));
   assert.ok(html.includes('placeholder="Name *"'));
   assert.ok(!html.includes('<span>Name *</span>'));
   assert.ok(html.includes('prm-review-top'));
+  assert.ok(html.includes('prm-partner-agency'));
+  assert.ok(html.includes('prm-partner-contact-line'));
+  assert.ok(html.includes('Work directly with Shaun'));
+  assert.ok(!html.includes('Shaun Matthews'));
+  assert.ok(html.includes('wc-footer-local'));
+  assert.ok(html.includes('Canberra Website Design'));
+  assert.ok(html.includes('wc-sticky-cta'));
+  assert.ok(html.includes('data-wc-sticky-cta'));
   assert.ok(html.includes('wc-footer-lockup'));
   assert.ok(html.includes('wc-footer-cloud-mark'));
   assert.ok(html.includes('wc-wordmark--footer'));
@@ -144,10 +169,13 @@ test('Web Culture build — stale DB positioning does not override theme hero co
   const content = resolvePartnerThemeContent({ prof, partner, directory: { suburb: 'Mitchell' }, demos: [], base: 'leadpages.com.au' });
   const html = build(prof, partner, [], 'leadpages.com.au', { themeContent: content });
   assert.ok(html.includes('YOUR LOCAL LEADPAGES PARTNER'));
-  assert.ok(html.includes('Websites that work harder for your business.'));
-  assert.ok(html.includes('Work directly with Web Culture to create a professional website'));
-  assert.ok(!html.includes('<p class="wc-lead">Work directly with Shaun Matthews'));
+  assert.ok(html.includes('wc-hero-title'));
+  assert.ok(html.includes('work harder'));
+  assert.ok(html.includes('wc-lead-brand'));
+  assert.ok(html.includes('Web Culture</strong> to create a professional website'));
+  assert.ok(!html.includes('<p class="wc-hero-lead">Work directly with Shaun Matthews'));
   assert.ok(!html.includes('<h1 class="wc-display prm-serif">Web Culture</h1>'));
+  assert.ok(!html.includes('Shaun Matthews'));
 });
 
 test('buildPartnerLandingHtml — dispatches webculture template', function() {
