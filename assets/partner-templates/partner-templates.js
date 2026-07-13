@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initWebcultureGallery();
   initWebcultureFormMore();
   initWebcultureHeroShowcase();
-  initWebcultureHeroJourney();
+  initWebcultureHeroEcosystem();
   initWebcultureFlowPulse();
   initWebcultureTimeline();
   initWebcultureStickyCta();
@@ -539,39 +539,77 @@ function initWebcultureHeroJourney() {
   });
 }
 
+function initWebcultureHeroEcosystem() {
+  document.querySelectorAll('[data-prm-hero-ecosystem]').forEach(function (root) {
+    var toasts = [
+      root.querySelector('[data-prm-eco-toast="lead"]'),
+      root.querySelector('[data-prm-eco-toast="crm"]')
+    ].filter(Boolean);
+    initLiveIframeScroll(root);
+    if (!toasts.length) return;
+    if (prefersReducedMotion()) {
+      toasts[0].classList.add('is-visible');
+      toasts[0].setAttribute('aria-hidden', 'false');
+      return;
+    }
+    var index = 0;
+    var timer = null;
+    function show(i) {
+      index = i % toasts.length;
+      toasts.forEach(function (toast, j) {
+        var on = j === index;
+        toast.classList.toggle('is-visible', on);
+        toast.setAttribute('aria-hidden', on ? 'false' : 'true');
+      });
+    }
+    function start() {
+      if (timer) window.clearInterval(timer);
+      timer = window.setInterval(function () {
+        show(index + 1);
+      }, 4200);
+    }
+    show(0);
+    start();
+    root.addEventListener('mouseenter', function () {
+      if (timer) window.clearInterval(timer);
+    });
+    root.addEventListener('mouseleave', start);
+  });
+}
+
 function initWebcultureFlowPulse() {
   if (prefersReducedMotion()) return;
   document.querySelectorAll('[data-prm-flow-board]').forEach(function (board) {
-    if (!('IntersectionObserver' in window)) {
+    var flowSteps = Array.prototype.slice.call(board.querySelectorAll('[data-prm-flow-step]'));
+    if (!flowSteps.length) {
       board.classList.add('is-pulsing');
       return;
     }
+    if (!('IntersectionObserver' in window)) {
+      flowSteps.forEach(function (step) { step.classList.add('is-lit'); });
+      board.classList.add('is-pulsing');
+      return;
+    }
+    board.classList.add('is-sequencing');
     var obs = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
-        if (!en.isIntersecting) return;
-        var flowSteps = Array.prototype.slice.call(board.querySelectorAll('[data-prm-flow-step]'));
-        if (!flowSteps.length) {
-          board.classList.add('is-pulsing');
-          obs.unobserve(board);
-          return;
-        }
-        board.classList.add('is-sequencing');
+        var ratio = en.intersectionRatio;
+        var litCount = Math.max(1, Math.ceil(ratio * flowSteps.length));
         flowSteps.forEach(function (step, i) {
-          window.setTimeout(function () {
-            step.classList.add('is-lit');
-          }, i * 420);
+          step.classList.toggle('is-lit', i < litCount);
         });
-        window.setTimeout(function () {
+        if (ratio >= 0.75) {
           board.classList.add('is-glowing');
-          window.setTimeout(function () {
-            board.classList.remove('is-glowing');
-            board.classList.remove('is-sequencing');
-            board.classList.add('is-pulsing');
-          }, 600);
-        }, flowSteps.length * 420 + 120);
-        obs.unobserve(board);
+        } else {
+          board.classList.remove('is-glowing');
+        }
+        if (ratio >= 0.92) {
+          board.classList.add('is-complete');
+          board.classList.remove('is-sequencing');
+          board.classList.add('is-pulsing');
+        }
       });
-    }, { threshold: 0.3 });
+    }, { threshold: [0, 0.12, 0.25, 0.38, 0.5, 0.62, 0.75, 0.88, 1], rootMargin: '0px 0px -5% 0px' });
     obs.observe(board);
   });
 }
