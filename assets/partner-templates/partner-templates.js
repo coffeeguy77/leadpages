@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initWebcultureGallery();
   initWebcultureFormMore();
   initWebcultureHeroShowcase();
+  initWebcultureHeroJourney();
   initWebcultureFlowPulse();
   initWebcultureTimeline();
   initWebcultureStickyCta();
@@ -281,6 +282,14 @@ function initWebcultureDemoCarousel() {
         var active = i === index;
         p.classList.toggle('is-active', active);
         p.hidden = !active;
+        if (active) {
+          p.classList.remove('is-entering');
+          void p.offsetWidth;
+          p.classList.add('is-entering');
+          window.setTimeout(function () {
+            p.classList.remove('is-entering');
+          }, 380);
+        }
       });
       section.querySelectorAll('[data-prm-faq-panel]').forEach(function (faqPanel) {
         faqPanel.hidden = faqPanel.getAttribute('data-prm-faq-panel') !== key;
@@ -481,10 +490,95 @@ function initWebcultureHeroShowcase() {
   });
 }
 
+function initWebcultureHeroJourney() {
+  if (prefersReducedMotion()) {
+    document.querySelectorAll('[data-prm-hero-journey]').forEach(function (root) {
+      root.setAttribute('data-journey-step', '5');
+      root.classList.add('is-step-5');
+    });
+    return;
+  }
+  document.querySelectorAll('[data-prm-hero-journey]').forEach(function (root) {
+    var steps = Array.prototype.slice.call(root.querySelectorAll('[data-journey-step]'));
+    var caption = root.querySelector('[data-prm-journey-caption]');
+    var interval = parseInt(root.getAttribute('data-prm-journey-interval') || '7000', 10);
+    var stepCount = steps.length || 6;
+    var stepMs = Math.max(900, Math.round(interval / stepCount));
+    var index = 0;
+    var timer = null;
+
+    function labels() {
+      return steps.map(function (step) {
+        var label = step.querySelector('.prm-journey-step-label');
+        return label ? label.textContent : '';
+      });
+    }
+
+    var stepLabels = labels();
+
+    function setStep(next) {
+      index = next % stepCount;
+      root.setAttribute('data-journey-step', String(index));
+      for (var c = 0; c < 6; c++) root.classList.remove('is-step-' + c);
+      root.classList.add('is-step-' + index);
+      steps.forEach(function (step, i) {
+        step.classList.toggle('is-active', i === index);
+      });
+      if (caption && stepLabels[index]) caption.textContent = stepLabels[index];
+    }
+
+    function tick() {
+      setStep(index + 1);
+    }
+
+    function start() {
+      if (timer) window.clearInterval(timer);
+      timer = window.setInterval(tick, stepMs);
+    }
+
+    setStep(0);
+    start();
+    root.addEventListener('mouseenter', function () {
+      if (timer) window.clearInterval(timer);
+    });
+    root.addEventListener('mouseleave', start);
+  });
+}
+
 function initWebcultureFlowPulse() {
   if (prefersReducedMotion()) return;
   document.querySelectorAll('[data-prm-flow-board]').forEach(function (board) {
-    board.classList.add('is-pulsing');
+    if (!('IntersectionObserver' in window)) {
+      board.classList.add('is-pulsing');
+      return;
+    }
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var flowSteps = Array.prototype.slice.call(board.querySelectorAll('[data-prm-flow-step]'));
+        if (!flowSteps.length) {
+          board.classList.add('is-pulsing');
+          obs.unobserve(board);
+          return;
+        }
+        board.classList.add('is-sequencing');
+        flowSteps.forEach(function (step, i) {
+          window.setTimeout(function () {
+            step.classList.add('is-lit');
+          }, i * 420);
+        });
+        window.setTimeout(function () {
+          board.classList.add('is-glowing');
+          window.setTimeout(function () {
+            board.classList.remove('is-glowing');
+            board.classList.remove('is-sequencing');
+            board.classList.add('is-pulsing');
+          }, 600);
+        }, flowSteps.length * 420 + 120);
+        obs.unobserve(board);
+      });
+    }, { threshold: 0.3 });
+    obs.observe(board);
   });
 }
 
@@ -492,6 +586,9 @@ function initWebcultureTimeline() {
   document.querySelectorAll('[data-prm-timeline-animate]').forEach(function (timeline) {
     if (!('IntersectionObserver' in window)) {
       timeline.classList.add('is-complete');
+      timeline.querySelectorAll('.prm-timeline-step').forEach(function (step) {
+        step.classList.add('is-lit');
+      });
       return;
     }
     var obs = new IntersectionObserver(function (entries) {
@@ -509,6 +606,23 @@ function initWebcultureTimeline() {
     }, { threshold: 0.25 });
     obs.observe(timeline);
   });
+
+  if (window.matchMedia && window.matchMedia('(min-width: 1024px)').matches) {
+    document.querySelectorAll('[data-prm-timeline-interactive]').forEach(function (timeline) {
+      var steps = Array.prototype.slice.call(timeline.querySelectorAll('[data-prm-timeline-step]'));
+      steps.forEach(function (step) {
+        step.addEventListener('mouseenter', function () {
+          timeline.classList.add('is-hovered');
+          steps.forEach(function (s) { s.classList.remove('is-focused'); });
+          step.classList.add('is-focused');
+        });
+      });
+      timeline.addEventListener('mouseleave', function () {
+        timeline.classList.remove('is-hovered');
+        steps.forEach(function (s) { s.classList.remove('is-focused'); });
+      });
+    });
+  }
 }
 
 function initWebcultureDemoFaq() {
