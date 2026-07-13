@@ -545,9 +545,54 @@ function initWebcultureHeroEcosystem() {
       root.querySelector('[data-prm-eco-toast="lead"]'),
       root.querySelector('[data-prm-eco-toast="crm"]')
     ].filter(Boolean);
+    var pipeSteps = Array.prototype.slice.call(root.querySelectorAll('[data-prm-eco-pipe]'));
+    var widgets = Array.prototype.slice.call(root.querySelectorAll('[data-prm-eco-widget]'));
+    var reduced = prefersReducedMotion();
+
     initLiveIframeScroll(root);
+
+    if ('IntersectionObserver' in window && !reduced) {
+      var viewObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          root.classList.toggle('is-inview', en.isIntersecting);
+        });
+      }, { threshold: 0.2 });
+      viewObs.observe(root);
+    } else {
+      root.classList.add('is-inview');
+    }
+
+    if (!reduced && pipeSteps.length) {
+      pipeSteps.forEach(function (step) {
+        step.addEventListener('mouseenter', function () {
+          root.classList.add('is-pipe-hover');
+          pipeSteps.forEach(function (s) { s.classList.remove('is-pipe-active'); });
+          step.classList.add('is-pipe-active');
+        });
+      });
+      root.addEventListener('mouseleave', function () {
+        root.classList.remove('is-pipe-hover');
+        pipeSteps.forEach(function (s) { s.classList.remove('is-pipe-active'); });
+      });
+    }
+
+    if (!reduced && widgets.length) {
+      widgets.forEach(function (widget) {
+        widget.addEventListener('mouseenter', function () {
+          widgets.forEach(function (w) { w.classList.remove('is-widget-active'); });
+          widget.classList.add('is-widget-active');
+        });
+      });
+      var dash = root.querySelector('.prm-eco-dashboard');
+      if (dash) {
+        dash.addEventListener('mouseleave', function () {
+          widgets.forEach(function (w) { w.classList.remove('is-widget-active'); });
+        });
+      }
+    }
+
     if (!toasts.length) return;
-    if (prefersReducedMotion()) {
+    if (reduced) {
       toasts[0].classList.add('is-visible');
       toasts[0].setAttribute('aria-hidden', 'false');
       return;
@@ -572,8 +617,12 @@ function initWebcultureHeroEcosystem() {
     start();
     root.addEventListener('mouseenter', function () {
       if (timer) window.clearInterval(timer);
+      root.classList.add('is-hovered');
     });
-    root.addEventListener('mouseleave', start);
+    root.addEventListener('mouseleave', function () {
+      root.classList.remove('is-hovered');
+      start();
+    });
   });
 }
 

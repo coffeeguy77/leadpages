@@ -402,6 +402,17 @@ html:has(body.wc-body) {
     0 36px 88px rgba(11, 33, 20, 0.14),
     0 12px 28px rgba(11, 33, 20, 0.06);
   overflow: hidden;
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 280ms ease-out,
+    transform 280ms ease-out,
+    box-shadow 200ms ease-out,
+    border-color 200ms ease-out;
+}
+.prm-hero-ecosystem.is-inview {
+  opacity: 1;
+  transform: translateY(0);
 }
 .prm-eco-ambient {
   position: absolute;
@@ -410,6 +421,7 @@ html:has(body.wc-body) {
     radial-gradient(ellipse at 38% 14%, rgba(197, 225, 63, 0.16) 0%, transparent 52%),
     radial-gradient(ellipse at 82% 78%, rgba(11, 33, 20, 0.05) 0%, transparent 48%);
   pointer-events: none;
+  transition: opacity 200ms ease-out;
 }
 .prm-eco-stack { position: relative; z-index: 1; }
 .prm-eco-browser-zone {
@@ -423,6 +435,7 @@ html:has(body.wc-body) {
   border-bottom-right-radius: 0;
   border-bottom: 0;
   box-shadow: none;
+  transition: transform 200ms ease-out;
 }
 .prm-eco-browser-zone .prm-hero-phone {
   position: absolute;
@@ -433,6 +446,7 @@ html:has(body.wc-body) {
   max-width: 128px;
   z-index: 3;
   filter: drop-shadow(0 20px 36px rgba(11, 33, 20, 0.22));
+  transition: transform 200ms ease-out, filter 200ms ease-out;
 }
 .prm-eco-toast {
   position: absolute;
@@ -489,6 +503,7 @@ html:has(body.wc-body) {
 .prm-eco-dashboard-grid .wc-dashboard-widget {
   min-height: 58px;
   padding: 10px 12px;
+  transition: transform 180ms ease-out, box-shadow 180ms ease-out, border-color 180ms ease-out;
 }
 .prm-eco-pipeline {
   display: flex;
@@ -505,6 +520,7 @@ html:has(body.wc-body) {
   align-items: center;
   gap: 4px;
   min-width: 52px;
+  transition: opacity 200ms ease-out;
 }
 .prm-eco-pipeline-bridge {
   width: 20px;
@@ -518,6 +534,7 @@ html:has(body.wc-body) {
   height: 36px;
   color: var(--wc-primary);
   background: var(--wc-ink);
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
 }
 .prm-icon-ring--eco-pipe .prm-icon svg { width: 18px; height: 18px; }
 .prm-eco-pipeline-label {
@@ -526,6 +543,69 @@ html:has(body.wc-body) {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--wc-muted);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .prm-hero-ecosystem.is-inview:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 42px 100px rgba(11, 33, 20, 0.17),
+      0 16px 36px rgba(11, 33, 20, 0.08);
+    border-color: color-mix(in srgb, var(--wc-primary) 28%, var(--wc-border));
+  }
+  .prm-hero-ecosystem.is-hovered .prm-eco-ambient {
+    opacity: 1;
+    background:
+      radial-gradient(ellipse at 38% 14%, rgba(197, 225, 63, 0.24) 0%, transparent 58%),
+      radial-gradient(ellipse at 82% 78%, rgba(11, 33, 20, 0.06) 0%, transparent 50%);
+  }
+  .prm-hero-ecosystem.is-hovered .prm-eco-browser-zone .prm-hero-browser {
+    transform: translateY(-2px);
+  }
+  .prm-hero-ecosystem.is-hovered .prm-eco-browser-zone .prm-hero-phone {
+    transform: translateY(-5px);
+    filter: drop-shadow(0 24px 40px rgba(11, 33, 20, 0.26));
+  }
+  .prm-hero-ecosystem.is-hovered .prm-eco-toast.is-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 38px rgba(11, 33, 20, 0.15);
+  }
+  .prm-eco-dashboard-grid .wc-dashboard-widget:hover,
+  .prm-eco-dashboard-grid .wc-dashboard-widget.is-widget-active {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(11, 33, 20, 0.09);
+    border-color: color-mix(in srgb, var(--wc-primary) 40%, transparent);
+  }
+  .prm-hero-ecosystem.is-pipe-hover .prm-eco-pipeline-step {
+    opacity: 0.42;
+  }
+  .prm-hero-ecosystem.is-pipe-hover .prm-eco-pipeline-step.is-pipe-active {
+    opacity: 1;
+  }
+  .prm-eco-pipeline-step.is-pipe-active .prm-icon-ring--eco-pipe {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgba(197, 225, 63, 0.32);
+  }
+  .prm-eco-pipeline-step:hover .prm-eco-pipeline-label {
+    color: var(--wc-ink);
+  }
+  .wc-hero-trust-strip li {
+    transition: color 180ms ease-out;
+  }
+  .wc-hero-trust-strip li:hover {
+    color: var(--wc-ink);
+  }
+  .wc-hero-trust-strip li:hover .wc-hero-trust-icon .prm-icon svg {
+    color: var(--wc-primary);
+  }
+  .wc-hero-response-badge {
+    transition: transform 180ms ease-out, box-shadow 180ms ease-out, border-color 180ms ease-out;
+  }
+  .wc-hero-response-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(11, 33, 20, 0.08);
+    border-color: color-mix(in srgb, var(--wc-primary) 35%, var(--wc-border));
+  }
 }
 
 /* Legacy hero dashboard (standalone) */
@@ -2466,6 +2546,22 @@ body.wc-body:has(.pt-tpl-bar) .wc-footer {
   padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 @media (prefers-reduced-motion: reduce) {
+  .prm-hero-ecosystem {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .prm-eco-ambient,
+  .prm-eco-browser-zone .prm-hero-browser,
+  .prm-eco-browser-zone .prm-hero-phone,
+  .prm-eco-toast,
+  .prm-eco-dashboard-grid .wc-dashboard-widget,
+  .prm-eco-pipeline-step,
+  .prm-icon-ring--eco-pipe,
+  .wc-hero-trust-strip li,
+  .wc-hero-response-badge {
+    transition: none;
+  }
   .wc-btn:hover, .prm-btn:hover { transform: none; }
   .prm-icon-ring--cloud .prm-icon svg { animation: none; }
   .prm-live-poster { transition: none; }

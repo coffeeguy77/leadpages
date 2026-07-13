@@ -65,6 +65,8 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('wc-hero-visual'));
   assert.ok(html.includes('data-prm-hero-ecosystem'));
   assert.ok(html.includes('prm-eco-dashboard'));
+  assert.ok(html.includes('data-prm-eco-widget="0"'));
+  assert.ok(html.includes('data-prm-eco-pipe="0"'));
   assert.ok(html.includes('Website Visitors'));
   assert.ok(html.includes('wc-hero-trust-strip'));
   assert.ok(html.includes('wc-hero-response-badge'));
