@@ -499,22 +499,16 @@ function initWebcultureHeroJourney() {
     return;
   }
   document.querySelectorAll('[data-prm-hero-journey]').forEach(function (root) {
-    var steps = Array.prototype.slice.call(root.querySelectorAll('[data-journey-step]'));
+    var steps = Array.prototype.slice.call(root.querySelectorAll('.prm-journey-step[data-journey-step]'));
     var caption = root.querySelector('[data-prm-journey-caption]');
     var interval = parseInt(root.getAttribute('data-prm-journey-interval') || '7000', 10);
     var stepCount = steps.length || 6;
     var stepMs = Math.max(900, Math.round(interval / stepCount));
     var index = 0;
     var timer = null;
-
-    function labels() {
-      return steps.map(function (step) {
-        var label = step.querySelector('.prm-journey-step-label');
-        return label ? label.textContent : '';
-      });
-    }
-
-    var stepLabels = labels();
+    var labels = steps.map(function (step) {
+      return step.getAttribute('title') || '';
+    });
 
     function setStep(next) {
       index = next % stepCount;
@@ -524,7 +518,7 @@ function initWebcultureHeroJourney() {
       steps.forEach(function (step, i) {
         step.classList.toggle('is-active', i === index);
       });
-      if (caption && stepLabels[index]) caption.textContent = stepLabels[index];
+      if (caption && labels[index]) caption.textContent = labels[index];
     }
 
     function tick() {

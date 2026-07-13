@@ -513,8 +513,13 @@ html:has(body.wc-body) {
   z-index: 1;
   min-height: 220px;
   padding: 18px 16px 8px;
+  overflow: hidden;
 }
-.prm-journey-device { opacity: 0.35; transition: opacity 200ms ease-out, transform 200ms ease-out; }
+.prm-journey-device {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease-out, transform 200ms ease-out, visibility 200ms ease-out;
+}
 .prm-journey-device--site {
   position: relative;
   width: min(100%, 280px);
@@ -612,37 +617,51 @@ html:has(body.wc-body) {
   background: var(--wc-ink);
 }
 .prm-journey-track {
-  list-style: none; padding: 0 12px 0; margin: 0;
-  display: flex; gap: 4px; justify-content: center;
+  list-style: none; padding: 0 12px; margin: 10px 0 0;
+  display: flex; gap: 6px; justify-content: center; align-items: center;
+  min-height: 10px;
 }
 .prm-journey-step {
   width: 6px; height: 6px; border-radius: 50%;
   background: rgba(11, 33, 20, 0.16);
   transition: background 200ms ease-out, transform 200ms ease-out;
+  flex-shrink: 0;
+  overflow: hidden;
+  font-size: 0; line-height: 0;
 }
-.prm-journey-step.is-active { background: var(--wc-primary); transform: scale(1.15); }
+.prm-journey-step.is-active { background: var(--wc-primary); transform: scale(1.2); }
 .prm-journey-caption {
   text-align: center; font-size: 12px; font-weight: 600; color: var(--wc-muted);
-  margin: 8px 12px 12px; min-height: 1.2em;
+  margin: 6px 12px 12px; min-height: 1.2em;
 }
 .prm-hero-journey[data-journey-step="0"] .prm-journey-device--site,
-.prm-hero-journey.is-step-0 .prm-journey-device--site { opacity: 1; }
+.prm-hero-journey.is-step-0 .prm-journey-device--site {
+  opacity: 1; visibility: visible;
+}
 .prm-hero-journey[data-journey-step="1"] .prm-journey-device--site,
-.prm-hero-journey.is-step-1 .prm-journey-device--site { opacity: 1; }
+.prm-hero-journey.is-step-1 .prm-journey-device--site {
+  opacity: 1; visibility: visible;
+}
 .prm-hero-journey[data-journey-step="1"] .prm-journey-form-pop,
 .prm-hero-journey.is-step-1 .prm-journey-form-pop { opacity: 1; transform: translateY(0); }
 .prm-hero-journey[data-journey-step="2"] .prm-journey-device--site,
 .prm-hero-journey[data-journey-step="2"] .prm-journey-device--crm,
 .prm-hero-journey.is-step-2 .prm-journey-device--site,
-.prm-hero-journey.is-step-2 .prm-journey-device--crm { opacity: 1; }
+.prm-hero-journey.is-step-2 .prm-journey-device--crm {
+  opacity: 1; visibility: visible;
+}
 .prm-hero-journey[data-journey-step="2"] .prm-journey-lead,
 .prm-hero-journey.is-step-2 .prm-journey-lead { opacity: 1; transform: translateY(0); }
 .prm-hero-journey[data-journey-step="3"] .prm-journey-device--phone,
-.prm-hero-journey.is-step-3 .prm-journey-device--phone { opacity: 1; }
+.prm-hero-journey.is-step-3 .prm-journey-device--phone {
+  opacity: 1; visibility: visible;
+}
 .prm-hero-journey[data-journey-step="3"] .prm-journey-notification,
 .prm-hero-journey.is-step-3 .prm-journey-notification { opacity: 1; transform: translateY(0); }
 .prm-hero-journey[data-journey-step="4"] .prm-journey-device--crm,
-.prm-hero-journey.is-step-4 .prm-journey-device--crm { opacity: 1; }
+.prm-hero-journey.is-step-4 .prm-journey-device--crm {
+  opacity: 1; visibility: visible;
+}
 .prm-hero-journey[data-journey-step="4"] .prm-journey-lead,
 .prm-hero-journey.is-step-4 .prm-journey-lead { opacity: 1; transform: translateY(0); }
 .prm-hero-journey[data-journey-step="4"] .prm-journey-lead-status,
@@ -2154,8 +2173,10 @@ body.wc-body .wc-footer-lp-logo.lp-logo-pulse #outer-circle {
     width: 2px; height: 24px;
     background: linear-gradient(180deg, rgba(255,255,255,0.2), var(--wc-primary));
   }
-  .prm-journey-device--crm { position: static; width: auto; margin-top: 10px; }
-  .prm-journey-device--phone { position: absolute; left: 6px; bottom: 6px; width: 72px; }
+  .prm-journey-device--crm {
+    top: 8px; right: 6px; width: 118px;
+  }
+  .prm-journey-device--phone { left: 6px; bottom: 6px; width: 72px; }
   .prm-journey-canvas { min-height: 200px; }
   .prm-final-cta-inner {
     flex-direction: column;
