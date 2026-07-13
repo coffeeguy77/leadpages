@@ -5,7 +5,8 @@ const {
   publicPartnerIntro,
   publicPartnerLabel,
   publicPhotoAlt,
-  placeholderInitial
+  placeholderInitial,
+  publicPartnerBio
 } = require('../../lib/partner-website/public-identity');
 
 test('publicPartnerIntro — agency first with first-name contact line', function() {
@@ -31,6 +32,14 @@ test('publicPartnerLabel — never returns surname by default', function() {
   assert.equal(placeholderInitial('Web Culture', 'Shaun Matthews', { displaySurnamePublicly: false }), 'W');
 });
 
-test('publicFirstName — respects explicit surname opt-in', function() {
-  assert.equal(publicFirstName('Shaun Matthews', { displaySurnamePublicly: true }), 'Shaun');
+test('publicPartnerBio — strips duplicate work-directly opener when contact line is shown', function() {
+  const intro = publicPartnerIntro('Web Culture', 'Shaun Matthews', { displaySurnamePublicly: false });
+  const bio = publicPartnerBio(
+    'Work directly with Shaun Matthews, your local website partner in Mitchell. Get a professionally built website.',
+    intro,
+    { agencyName: 'Web Culture', displayName: 'Shaun Matthews' }
+  );
+  assert.equal(intro.contactLine, 'Work directly with Shaun');
+  assert.ok(!bio.toLowerCase().startsWith('work directly with'));
+  assert.match(bio, /your local website partner/i);
 });
