@@ -62,9 +62,10 @@ test('Web Culture build — renders premium sections from profile', function() {
   const html = build(prof, partner, demos, 'leadpages.com.au', { themeContent: content });
   assert.ok(html.includes('wc-body'));
   assert.ok(html.includes('prm-hero-showcase'));
-  assert.ok(html.includes('Web Culture'));
-  assert.ok(html.includes('Work directly with Shaun Matthews'));
-  assert.ok(html.includes('your local website partner in Gungahlin'));
+  assert.ok(html.includes('YOUR LOCAL LEADPAGES PARTNER'));
+  assert.ok(html.includes('Beautiful websites. Smarter systems. Better business.'));
+  assert.ok(html.includes('Your website should do more than look good.'));
+  assert.ok(html.includes('continue working long after you'));
   assert.ok(html.includes('Explore live demos'));
   assert.ok(html.includes('Plan my website'));
   assert.ok(html.includes('Gungahlin Partner'));
