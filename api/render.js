@@ -18,7 +18,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 const { effectiveDemoSalePrice } = require('../lib/partner-demo-pricing');
-const { buildPartnerLandingHtml, resolveLandingTheme } = require('../lib/partner-templates');
+const { buildPartnerLandingHtml, resolveLandingTheme, normalizeTemplateKey } = require('../lib/partner-templates');
 const { extractLogoValue } = require('../lib/partner-website/logo');
 const brokerTpl   = require('../broker.template.json');     // broker-leads
 const tradeTpl    = require('../trade.template.json');      // trade
@@ -52,6 +52,21 @@ function sendHtml(res, html, isLive) {
   res.setHeader('content-type', 'text/html; charset=utf-8');
   if (isLive) {
     res.setHeader('cache-control', 'public, s-maxage=30, stale-while-revalidate=300');
+  } else {
+    res.setHeader('cache-control', 'no-store');
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  }
+  return res.status(200).send(html);
+}
+
+// Partner showcase / premium theme pages must not use stale-while-revalidate.
+// Edge caches can otherwise serve an old trade-template HTML snapshot (e.g. plumber
+// demo site) for the same URL while the partner theme is revalidated.
+function sendPartnerLandingHtml(res, html, isLive) {
+  res.setHeader('content-type', 'text/html; charset=utf-8');
+  if (isLive) {
+    res.setHeader('cache-control', 'private, max-age=0, must-revalidate');
+    res.setHeader('CDN-Cache-Control', 'max-age=0, must-revalidate');
   } else {
     res.setHeader('cache-control', 'no-store');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
@@ -446,7 +461,8 @@ async function showcaseRespond(req, res, prof, base) {
   const home = (await supabase.from('sites')
     .select('*').eq('servicing_partner_id', prof.partner_id).eq('is_partner_home', true).maybeSingle()).data;
   res.setHeader('content-type', 'text/html; charset=utf-8');
-  res.setHeader('cache-control', 'public, s-maxage=5, stale-while-revalidate=20');
+  res.setHeader('cache-control', 'private, max-age=0, must-revalidate');
+  res.setHeader('CDN-Cache-Control', 'max-age=0, must-revalidate');
   const renderOpts = showcaseRenderOpts(req, home);
   renderOpts.directory = directory;
   return res.status(200).send(buildPartnerLandingHtml(prof, partner, demos, base, renderOpts));
@@ -775,7 +791,9 @@ module.exports = async (req, res) => {
           intro: sc.intro || ((hc.sections && hc.sections.hero && hc.sections.hero.sub) || ''),
           logo: extractLogoValue(sc.logo) || '',
           theme: Object.assign({}, (sc.theme || {}), (hc.theme || {})),
-          accent: sc.accent
+          accent: sc.accent,
+          templateKey: normalizeTemplateKey(sc.templateKey || 'webculture'),
+          websiteProfile: sc.websiteProfile
         }),
         support_email: (prof && prof.support_email) || hc.email || '',
         support_phone: (prof && prof.support_phone) || hc.phone || ''
@@ -783,7 +801,7 @@ module.exports = async (req, res) => {
       const partnerRow = partner || { display_name: site.business_name || 'Web Studio' };
       const homeOpts = showcaseRenderOpts(req, site);
       homeOpts.directory = directory;
-      return sendHtml(res, buildPartnerLandingHtml(mergedProf, partnerRow, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au', homeOpts), isLive);
+      return sendPartnerLandingHtml(res, buildPartnerLandingHtml(mergedProf, partnerRow, _demos, SHOWCASE_SUFFIXES[0] || 'leadpages.com.au', homeOpts), isLive);
     }
 
     const template = templateFor(site);
