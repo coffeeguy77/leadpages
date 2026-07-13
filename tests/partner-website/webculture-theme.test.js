@@ -129,6 +129,9 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('placeholder="Name *"'));
   assert.ok(!html.includes('<span>Name *</span>'));
   assert.ok(html.includes('prm-review-top'));
+  assert.ok(html.includes('data-prm-review-slider'));
+  assert.ok(html.includes('prm-review-slide'));
+  assert.ok(html.includes('prm-review-indicator'));
   assert.ok(html.includes('prm-partner-agency'));
   assert.ok(html.includes('prm-partner-contact-line'));
   assert.ok(html.includes('Work directly with Shaun'));
