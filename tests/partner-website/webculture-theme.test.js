@@ -69,7 +69,13 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('data-prm-hero-pick="0"'));
   assert.ok(html.includes('data-prm-hero-pick="1"'));
   assert.ok(html.includes('YOUR LOCAL LEADPAGES PARTNER'));
-  assert.ok(html.includes('Websites that work harder for your business.'));
+  assert.ok(html.includes('wc-hero-title'));
+  assert.ok(html.includes('wc-highlight'));
+  assert.ok(html.includes('work harder'));
+  assert.ok(html.includes('for your business.'));
+  assert.ok(html.includes('wc-hero-lead'));
+  assert.ok(html.includes('wc-lead-brand'));
+  assert.ok(html.includes('wc-lead-em'));
   assert.ok(html.includes('Work directly with Web Culture to create a professional website'));
   assert.ok(html.includes('local support every step of the way'));
   assert.ok(html.includes('Explore Live Demos'));
@@ -144,9 +150,11 @@ test('Web Culture build — stale DB positioning does not override theme hero co
   const content = resolvePartnerThemeContent({ prof, partner, directory: { suburb: 'Mitchell' }, demos: [], base: 'leadpages.com.au' });
   const html = build(prof, partner, [], 'leadpages.com.au', { themeContent: content });
   assert.ok(html.includes('YOUR LOCAL LEADPAGES PARTNER'));
-  assert.ok(html.includes('Websites that work harder for your business.'));
-  assert.ok(html.includes('Work directly with Web Culture to create a professional website'));
-  assert.ok(!html.includes('<p class="wc-lead">Work directly with Shaun Matthews'));
+  assert.ok(html.includes('wc-hero-title'));
+  assert.ok(html.includes('work harder'));
+  assert.ok(html.includes('wc-lead-brand'));
+  assert.ok(html.includes('Web Culture</strong> to create a professional website'));
+  assert.ok(!html.includes('<p class="wc-hero-lead">Work directly with Shaun Matthews'));
   assert.ok(!html.includes('<h1 class="wc-display prm-serif">Web Culture</h1>'));
 });
 

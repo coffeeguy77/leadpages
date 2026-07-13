@@ -292,6 +292,47 @@ html:has(body.wc-body) {
   gap: clamp(32px, 5vw, 56px);
   align-items: center;
 }
+.wc-hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.wc-hero .wc-eyebrow--pill { margin-bottom: 22px; }
+.wc-hero-title {
+  max-width: 11.5em;
+  margin: 0 0 26px;
+}
+.wc-hero-lead-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 44ch;
+  margin-bottom: 28px;
+}
+.wc-hero-lead {
+  margin: 0;
+  font-size: clamp(17px, 1.85vw, 19px);
+  line-height: 1.72;
+  font-weight: 400;
+  color: color-mix(in srgb, var(--wc-ink) 78%, var(--wc-muted));
+  letter-spacing: -0.01em;
+}
+.wc-hero-lead--secondary {
+  color: color-mix(in srgb, var(--wc-ink) 68%, var(--wc-muted));
+  font-size: clamp(16px, 1.7vw, 18px);
+  line-height: 1.68;
+}
+.wc-lead-brand {
+  color: var(--wc-ink);
+  font-weight: 700;
+}
+.wc-lead-em {
+  font-weight: 600;
+  color: var(--wc-ink);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  box-shadow: inset 0 -0.34em 0 color-mix(in srgb, var(--wc-primary) 68%, transparent);
+}
 .wc-hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
 .wc-trust-row {
   list-style: none; padding: 0; margin: 0;
