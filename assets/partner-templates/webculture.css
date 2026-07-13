@@ -1428,7 +1428,49 @@ body.wc-body .wc-footer-lp-logo.lp-logo-pulse #outer-circle {
     padding: 8px 0;
   }
   .prm-platform-link { display: none; }
-  .wc-service-grid { grid-template-columns: repeat(2, 1fr); }
+  .wc-service-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-top: 28px;
+  }
+  .prm-service-card {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    grid-template-areas:
+      "icon title"
+      "icon copy";
+    column-gap: 16px;
+    row-gap: 4px;
+    align-items: start;
+    text-align: left;
+    padding: 14px 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--wc-on-dark) 12%, transparent);
+  }
+  .prm-service-card:last-child { border-bottom: 0; padding-bottom: 0; }
+  .prm-service-card:first-child { padding-top: 0; }
+  .prm-service-icon {
+    grid-area: icon;
+    place-self: center;
+    justify-content: flex-start;
+  }
+  .prm-service-icon .prm-icon svg {
+    width: 44px;
+    height: 44px;
+  }
+  .prm-service-title {
+    grid-area: title;
+    display: block;
+    margin: 0;
+    font-size: 17px;
+    align-self: end;
+  }
+  .prm-service-summary {
+    grid-area: copy;
+    margin: 0;
+    max-width: none;
+    font-size: 14px;
+    line-height: 1.5;
+  }
   .prm-demo-actions--stage { position: static; margin-top: 16px; justify-content: flex-start; }
   .prm-demo-stage { padding-bottom: 0; }
   .prm-timeline { grid-template-columns: 1fr; gap: 14px; }
@@ -1508,7 +1550,6 @@ body.wc-body .wc-footer-lp-logo.lp-logo-pulse #outer-circle {
     box-shadow: var(--wc-shadow);
     z-index: 99;
   }
-  .wc-service-grid { grid-template-columns: 1fr; }
   .wc-sticky-cta {
     left: 50%;
     right: auto;
