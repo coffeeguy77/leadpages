@@ -100,6 +100,12 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('prm-demo-indicator'));
   assert.ok(html.includes('Choose an industry.'));
   assert.ok(html.includes('Explore a real website.'));
+  assert.ok(html.includes('prm-demo-desc--below'));
+  assert.ok(html.includes('prm-demo-faq'));
+  assert.ok(html.includes('id="faqs"'));
+  assert.ok(html.includes('How much does a business website cost?'));
+  assert.ok(!html.includes('prm-feature-list'));
+  assert.ok(!html.includes('Built to convert'));
   assert.ok(!html.includes('prm-gallery-strip'));
   assert.ok(!html.includes('wc-hero-demos'));
   assert.ok(html.indexOf('prm-lead-flow') < html.indexOf('Choose an industry.'));

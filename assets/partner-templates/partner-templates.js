@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initWebcultureTimeline();
   initWebcultureStickyCta();
   initWebcultureReviewSlider();
+  initWebcultureDemoFaq();
 });
 
 // Avoid bfcache showing a previously visited trade demo when returning to a partner theme page.
@@ -500,6 +501,19 @@ function initWebcultureTimeline() {
       });
     }, { threshold: 0.25 });
     obs.observe(timeline);
+  });
+}
+
+function initWebcultureDemoFaq() {
+  document.querySelectorAll('[data-prm-faq-expand]').forEach(function (btn) {
+    var panel = btn.closest('.prm-demo-faq');
+    if (!panel) return;
+    var more = panel.querySelector('[data-prm-faq-more]');
+    if (!more) return;
+    btn.addEventListener('click', function () {
+      more.hidden = false;
+      btn.hidden = true;
+    });
   });
 }
 
