@@ -282,6 +282,9 @@ function initWebcultureDemoCarousel() {
         p.classList.toggle('is-active', active);
         p.hidden = !active;
       });
+      section.querySelectorAll('[data-prm-faq-panel]').forEach(function (faqPanel) {
+        faqPanel.hidden = faqPanel.getAttribute('data-prm-faq-panel') !== key;
+      });
       if (panel) initLiveIframeScroll(panel);
     }
 
@@ -423,12 +426,16 @@ function initWebcultureHeroShowcase() {
 
       frames.forEach(function (frame) {
         frame.classList.remove('is-live');
+        frame.classList.add('is-switching');
         var poster = frame.querySelector('.prm-live-poster');
         if (poster && thumb) poster.src = thumb;
         var iframe = frame.querySelector('.prm-live-iframe');
         if (!iframe) return;
         if (iframe.getAttribute('src') !== url) iframe.src = url;
         else frame.classList.add('is-live');
+        window.setTimeout(function () {
+          frame.classList.remove('is-switching');
+        }, 280);
       });
 
       toastForPick(pick);
