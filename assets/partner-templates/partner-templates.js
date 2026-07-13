@@ -12,6 +12,13 @@ document.addEventListener('DOMContentLoaded', function () {
   initWebcultureFormMore();
 });
 
+// Avoid bfcache showing a previously visited trade demo when returning to a partner theme page.
+window.addEventListener('pageshow', function (event) {
+  if (event.persisted && document.body && document.body.getAttribute('data-pt-template')) {
+    window.location.reload();
+  }
+});
+
 function initWebcultureFooterLogo() {
   var footerLp = document.querySelector('.wc-footer-lp-logo');
   if (!footerLp || !window.LPLogo || !window.LPLogo.mountLogo) return Promise.resolve();
