@@ -252,56 +252,79 @@ function initWebcultureFormMore() {
 
 function initWebcultureHeroShowcase() {
   document.querySelectorAll('[data-prm-hero-showcase]').forEach(function (root) {
-    var picks = root.querySelectorAll('[data-prm-hero-pick]');
-    var browserStack = root.querySelector('[data-prm-hero-stack="browser"]');
-    var slideCount = browserStack ? browserStack.querySelectorAll('[data-prm-hero-slide]').length : 0;
-    if (!slideCount) return;
-    var interval = parseInt(root.getAttribute('data-prm-hero-interval') || '5500', 10);
+    var picks = Array.prototype.slice.call(root.querySelectorAll('[data-prm-hero-pick]'));
+    if (!picks.length) return;
+    var interval = parseInt(root.getAttribute('data-prm-hero-interval') || '6000', 10);
     var index = 0;
     var timer = null;
     var paused = false;
     var urlEl = root.querySelector('[data-prm-hero-url]');
+    var openEl = root.querySelector('[data-prm-hero-open]');
+    var phoneOpenEl = root.querySelector('[data-prm-hero-phone-open]');
     var toastTitle = root.querySelector('[data-prm-toast-title]');
     var toastBody = root.querySelector('[data-prm-toast-body]');
     var toastTime = root.querySelector('[data-prm-toast-time]');
+    var frames = Array.prototype.slice.call(root.querySelectorAll('.prm-live-frame'));
 
-    function slideAt(i) {
-      return root.querySelector('[data-prm-hero-stack="browser"] [data-prm-hero-slide="' + i + '"]');
+    function pickAt(i) {
+      return picks[(i + picks.length) % picks.length];
     }
 
-    function toastForSlide(i) {
-      var slide = slideAt(i);
-      if (!slide) return;
-      var name = slide.getAttribute('data-demo-name') || 'Live demo';
+    function bindIframe(frame) {
+      var iframe = frame.querySelector('.prm-live-iframe');
+      if (!iframe || iframe.dataset.prmLiveBound === '1') return;
+      iframe.dataset.prmLiveBound = '1';
+      iframe.addEventListener('load', function () {
+        frame.classList.add('is-live');
+      });
+    }
+
+    frames.forEach(bindIframe);
+
+    function toastForPick(pick) {
+      if (!pick) return;
+      var name = pick.getAttribute('data-demo-name') || 'Live demo';
       if (toastTitle) toastTitle.textContent = 'New quote request';
       if (toastBody) toastBody.textContent = name + ' enquiry';
-      if (toastTime) toastTime.textContent = (i % 3 === 0) ? 'Just now' : ((i % 3 === 1) ? '2 mins ago' : '5 mins ago');
+      if (toastTime) {
+        var idx = parseInt(pick.getAttribute('data-prm-hero-pick'), 10) || 0;
+        toastTime.textContent = (idx % 3 === 0) ? 'Just now' : ((idx % 3 === 1) ? '2 mins ago' : '5 mins ago');
+      }
     }
 
     function setActive(next) {
-      index = (next + slideCount) % slideCount;
-      root.querySelectorAll('[data-prm-hero-slide]').forEach(function (slide) {
-        var slideIndex = parseInt(slide.getAttribute('data-prm-hero-slide'), 10);
-        var active = slideIndex === index;
-        slide.classList.toggle('is-active', active);
-        slide.setAttribute('aria-hidden', active ? 'false' : 'true');
-        slide.tabIndex = active ? 0 : -1;
+      index = (next + picks.length) % picks.length;
+      var pick = pickAt(index);
+      var url = pick.getAttribute('data-demo-url') || '#demos';
+      var host = pick.getAttribute('data-demo-host') || '';
+      var thumb = pick.getAttribute('data-demo-thumb') || '';
+
+      picks.forEach(function (btn) {
+        var active = parseInt(btn.getAttribute('data-prm-hero-pick'), 10) === index;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-selected', active ? 'true' : 'false');
       });
-      picks.forEach(function (pick) {
-        var active = parseInt(pick.getAttribute('data-prm-hero-pick'), 10) === index;
-        pick.classList.toggle('is-active', active);
-        pick.setAttribute('aria-selected', active ? 'true' : 'false');
+
+      if (urlEl && host) urlEl.textContent = host;
+      if (openEl) openEl.href = url;
+      if (phoneOpenEl) phoneOpenEl.href = url;
+
+      frames.forEach(function (frame) {
+        frame.classList.remove('is-live');
+        var poster = frame.querySelector('.prm-live-poster');
+        if (poster && thumb) poster.src = thumb;
+        var iframe = frame.querySelector('.prm-live-iframe');
+        if (!iframe) return;
+        if (iframe.getAttribute('src') !== url) iframe.src = url;
+        else frame.classList.add('is-live');
       });
-      var current = slideAt(index);
-      if (current && urlEl) {
-        urlEl.textContent = current.getAttribute('data-demo-host') || urlEl.textContent;
-      }
-      toastForSlide(index);
+
+      toastForPick(pick);
     }
 
     function startTimer() {
       if (timer) window.clearInterval(timer);
-      if (slideCount < 2 || paused) return;
+      if (picks.length < 2 || paused) return;
       timer = window.setInterval(function () {
         setActive(index + 1);
       }, interval);
