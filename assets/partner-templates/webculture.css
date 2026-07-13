@@ -342,6 +342,77 @@ html:has(body.wc-body) {
 }
 .wc-trust-check { color: var(--wc-primary); font-weight: 700; margin-right: 4px; }
 
+/* Hero — platform benefits */
+.wc-hero-benefits {
+  position: relative;
+  padding: clamp(20px, 3vw, 28px);
+  border-radius: var(--wc-radius-card);
+  background:
+    radial-gradient(ellipse at 18% 12%, rgba(197, 225, 63, 0.16) 0%, transparent 52%),
+    linear-gradient(165deg, #ffffff 0%, #f8f6ee 100%);
+  border: 1px solid var(--wc-border);
+  box-shadow: var(--wc-shadow);
+}
+.wc-hero-benefits-eyebrow {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--wc-muted);
+}
+.wc-hero-benefits-title {
+  margin: 0 0 22px;
+  font-size: clamp(24px, 2.8vw, 30px);
+  line-height: 1.16;
+  letter-spacing: -0.02em;
+  color: var(--wc-ink);
+}
+.wc-hero-benefit-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.wc-hero-benefit-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid color-mix(in srgb, var(--wc-ink) 8%, transparent);
+  transition: transform 180ms ease-out, box-shadow 180ms ease-out;
+}
+.wc-hero-benefit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(11, 33, 20, 0.08);
+}
+.wc-hero-benefit-card .prm-icon-ring--feature {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+.wc-hero-benefit-card .prm-icon-ring--feature .prm-icon svg {
+  width: 28px;
+  height: 28px;
+}
+.wc-hero-benefit-copy h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--wc-ink);
+}
+.wc-hero-benefit-copy p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--wc-muted);
+}
+
 /* Showcase */
 .prm-hero-showcase { position: relative; }
 .prm-hero-stage {
@@ -1311,6 +1382,7 @@ body.wc-body .wc-footer-lp-logo.lp-logo-pulse #outer-circle {
   .wc-nav, .wc-header-cta { display: none; }
   .wc-header .wc-menu-btn { display: inline-flex; }
   .wc-hero-grid { grid-template-columns: 1fr; }
+  .wc-hero-benefit-grid { grid-template-columns: 1fr; }
   .prm-hero-devices { min-height: 280px; }
   .prm-hero-phone { width: 30%; min-width: 96px; max-width: 132px; right: 0; bottom: 0; }
   .prm-quote-toast { max-width: 190px; padding: 10px 12px; bottom: 6%; }
