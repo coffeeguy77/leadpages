@@ -103,9 +103,18 @@ html[data-lp-visitor-scheme]:not([data-lp-visitor-scheme="brand"]) body[data-pt-
 .pt-tpl-switch.is-active{color:#fff;background:var(--pt-accent,#ff6a1a);border-color:var(--pt-accent,#ff6a1a);box-shadow:0 8px 24px -8px color-mix(in srgb,var(--pt-accent,#ff6a1a) 70%,transparent)}
 
 @media(max-width:640px){
-  .pt-tpl-bar{gap:5px;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px))}
+  .pt-tpl-bar{
+    flex-wrap:nowrap;
+    justify-content:flex-start;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    gap:6px;
+    padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));
+  }
+  .pt-tpl-bar::-webkit-scrollbar{display:none}
   .pt-tpl-bar-label{display:none}
-  .pt-tpl-switch{min-width:38px;padding:7px 10px;font-size:11px}
+  .pt-tpl-switch{min-width:38px;padding:7px 12px;font-size:11px;flex-shrink:0}
 }
 
 /* Shared content sections */
