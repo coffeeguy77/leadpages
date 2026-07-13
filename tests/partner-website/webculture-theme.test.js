@@ -117,6 +117,33 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(!html.includes('Partners Website Demo Site'));
 });
 
+test('Web Culture build — stale DB positioning does not override theme hero copy', function() {
+  const wp = validateWebsiteProfile(buildWebCultureWebsiteProfile());
+  const prof = {
+    partner_id: 'p1',
+    showcase_headline: 'Web Culture',
+    showcase_config: {
+      templateKey: 'webculture',
+      intro: 'Work directly with Shaun Matthews, your local website partner in Mitchell. Get a professionally built website, live demos you can explore, and ongoing support from someone who understands your business.',
+      websiteProfile: Object.assign({}, wp, {
+        positioning: {
+          heroEyebrow: 'Web Culture',
+          heroHeadline: 'Web Culture',
+          heroSupporting: 'Work directly with Shaun Matthews, your local website partner in Mitchell. Get a professionally built website, live demos you can explore, and ongoing support from someone who understands your business.'
+        }
+      })
+    }
+  };
+  const partner = { id: 'p1', display_name: 'Shaun Matthews', email: 'a@b.com', phone: '0400000000' };
+  const content = resolvePartnerThemeContent({ prof, partner, directory: { suburb: 'Mitchell' }, demos: [], base: 'leadpages.com.au' });
+  const html = build(prof, partner, [], 'leadpages.com.au', { themeContent: content });
+  assert.ok(html.includes('YOUR LOCAL LEADPAGES PARTNER'));
+  assert.ok(html.includes('Websites that work harder for your business.'));
+  assert.ok(html.includes('Work directly with Web Culture to create a professional website'));
+  assert.ok(!html.includes('<p class="wc-lead">Work directly with Shaun Matthews'));
+  assert.ok(!html.includes('<h1 class="wc-display prm-serif">Web Culture</h1>'));
+});
+
 test('buildPartnerLandingHtml — dispatches webculture template', function() {
   const prof = {
     showcase_config: { templateKey: 'webculture', logo: 'https://example.com/logo.png' },
