@@ -1089,6 +1089,62 @@ html:has(body.wc-body) {
   align-items: start;
 }
 .wc-testimonial-col { max-width: 38ch; }
+.prm-review-slider { width: 100%; }
+.prm-review-slider-viewport { position: relative; }
+.prm-review-slides {
+  display: grid;
+  grid-template: 1fr / 1fr;
+  align-items: start;
+}
+.prm-review-slide {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 520ms ease-in-out, visibility 520ms ease-in-out;
+  pointer-events: none;
+}
+.prm-review-slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 1;
+}
+.prm-review-slider-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+}
+.prm-review-nav {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--wc-on-dark) 35%, transparent);
+  background: transparent;
+  color: var(--wc-on-dark);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 180ms ease-out, border-color 180ms ease-out, transform 180ms ease-out;
+}
+.prm-review-nav:hover { transform: translateY(-1px); background: rgba(255,255,255,0.06); }
+.prm-review-indicators { display: flex; gap: 8px; align-items: center; justify-content: center; flex: 1; }
+.prm-review-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 0;
+  padding: 0;
+  background: color-mix(in srgb, var(--wc-on-dark) 28%, transparent);
+  cursor: pointer;
+  transition: transform 180ms ease-out, background 180ms ease-out;
+}
+.prm-review-indicator.is-active {
+  background: var(--wc-primary);
+  transform: scale(1.15);
+}
 .prm-review-card { margin: 0; }
 .prm-review-top {
   display: flex;
@@ -1435,6 +1491,9 @@ body.wc-body .wc-footer-lp-logo.lp-logo-pulse #outer-circle {
   .prm-live-poster { transition: none; }
   .prm-flow-board.is-pulsing .prm-flow-connectors { animation: none; }
   .prm-timeline-step,
+  .prm-review-slide,
+  .prm-review-nav,
+  .prm-review-indicator,
   .prm-service-card,
   .prm-tab,
   .prm-demo-nav,

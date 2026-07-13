@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initWebcultureFlowPulse();
   initWebcultureTimeline();
   initWebcultureStickyCta();
+  initWebcultureReviewSlider();
 });
 
 // Avoid bfcache showing a previously visited trade demo when returning to a partner theme page.
@@ -534,4 +535,79 @@ function initWebcultureStickyCta() {
   trackVisibility(footer, function (v) { footerVisible = v; });
 
   refresh();
+}
+
+function initWebcultureReviewSlider() {
+  document.querySelectorAll('[data-prm-review-slider]').forEach(function (root) {
+    var slides = Array.prototype.slice.call(root.querySelectorAll('[data-prm-review-slide]'));
+    if (slides.length < 2) return;
+    var indicators = Array.prototype.slice.call(root.querySelectorAll('[data-prm-review-indicator]'));
+    var prevBtn = root.querySelector('[data-prm-review-prev]');
+    var nextBtn = root.querySelector('[data-prm-review-next]');
+    var interval = parseInt(root.getAttribute('data-prm-review-interval') || '7000', 10);
+    var index = 0;
+    var timer = null;
+    var paused = false;
+    var reduced = prefersReducedMotion();
+
+    function activate(next) {
+      index = (next + slides.length) % slides.length;
+      slides.forEach(function (slide, i) {
+        var active = i === index;
+        slide.classList.toggle('is-active', active);
+        slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+      });
+      indicators.forEach(function (dot, i) {
+        var active = i === index;
+        dot.classList.toggle('is-active', active);
+        dot.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+    }
+
+    function startTimer() {
+      if (timer) window.clearInterval(timer);
+      if (reduced || paused || slides.length < 2) return;
+      timer = window.setInterval(function () {
+        activate(index + 1);
+      }, interval);
+    }
+
+    indicators.forEach(function (dot, i) {
+      dot.addEventListener('click', function () {
+        activate(i);
+        startTimer();
+      });
+    });
+    if (prevBtn) {
+      prevBtn.addEventListener('click', function () {
+        activate(index - 1);
+        startTimer();
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function () {
+        activate(index + 1);
+        startTimer();
+      });
+    }
+    root.addEventListener('mouseenter', function () {
+      paused = true;
+      if (timer) window.clearInterval(timer);
+    });
+    root.addEventListener('mouseleave', function () {
+      paused = false;
+      startTimer();
+    });
+    root.addEventListener('focusin', function () {
+      paused = true;
+      if (timer) window.clearInterval(timer);
+    });
+    root.addEventListener('focusout', function () {
+      paused = false;
+      startTimer();
+    });
+
+    activate(0);
+    startTimer();
+  });
 }
