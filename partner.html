@@ -1192,10 +1192,20 @@
       var j=await r.json();
       if(j&&j.ok&&j.packs){
         j.packs.forEach(function(p){
-          window.LPTradePicker.registerPack(p.slug,p.category||'General',{label:p.label,tradeType:p.label});
+          window.LPTradePicker.registerPack(p.slug,p.category||'General',{label:p.label,tradeType:p.label},{silent:true});
         });
+        window.LPTradePicker.refresh();
       }
     }catch(_e){}
+  }
+  function applyCreatedCommunityTrade(gj, fallbackCat){
+    if(!gj||!window.LPTradePicker) return false;
+    var slug=gj.slug; if(!slug) return false;
+    var cat=gj.category||fallbackCat||'General';
+    var label=gj.label||slug;
+    window.LPTradePicker.registerPack(slug,cat,{label:label,tradeType:label});
+    window.LPTradePicker.selectPack(slug);
+    return true;
   }
   function fillDemoLocationDefaults(){
     var pf=state.profile||{};
@@ -1296,13 +1306,17 @@
         break;
       }
       this.disabled=false;
-      if(!gj||!gj.ok){ if(msg){ msg.style.color='var(--bad)'; msg.textContent=(gj&&gj.error)||'Could not create trade.'; } return; }
-      if(window.LPTradePicker) window.LPTradePicker.registerPack(gj.slug,gj.category||cat,{label:gj.label,tradeType:gj.label});
-      var packEl=document.getElementById('m-pack'); if(packEl) packEl.value=gj.slug;
-      var picked=document.getElementById('m-picked');
-      if(picked&&window.LPTradePicker) picked.innerHTML='<span class="cs-picked-lbl">'+gj.label+'</span><span class="cs-picked-cat">'+((gj.category||cat))+'</span>';
-      if(msg){ msg.style.color='var(--success)'; msg.textContent='Added “'+gj.label+'” to the community library and selected it.'; }
-      document.getElementById('m-new-trade').value='';
+      if(gj&&(gj.ok||gj.alreadyExists)&&gj.slug){
+        applyCreatedCommunityTrade(gj,cat);
+        var search=document.getElementById('m-trade-search'); if(search) search.value='';
+        document.getElementById('m-new-trade').value='';
+        if(msg){
+          if(gj.ok){ msg.style.color='var(--success)'; msg.textContent='Added “'+gj.label+'” to the community library and selected it — visible in the list now.'; }
+          else { msg.style.color='var(--success)'; msg.textContent=(gj.error||('“'+(gj.label||gj.slug)+'” already exists — selected in the list.')); }
+        }
+        return;
+      }
+      if(msg){ msg.style.color='var(--bad)'; msg.textContent=(gj&&gj.error)||'Could not create trade.'; }
     });
     document.getElementById('mockups-list').addEventListener('click', async function(e){
       var _cd=e.target.closest('[data-id]');
