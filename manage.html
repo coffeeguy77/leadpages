@@ -5752,7 +5752,7 @@ function heroCtaCard(c){
         +_faviconCard(c)+headerCtaCard(c);
       wireTradeBranding(c); wireLogoSize(c); wireHeaderCta(c); wireFavicon(c);
     } else if(sub==='sectionOrder'){
-      body.innerHTML='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Position \u2014 section order</h2><button class="btn ghost" id="ord-reset" type="button">Reset to default</button></div><p class="lede" style="margin:0 0 12px;">Drag the sections into the order you want them on the page. Switch components on in Page Content, then drag them into position here.</p><div id="ord-list"></div></div>';
+      body.innerHTML='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Position \u2014 section order</h2><button class="btn ghost" id="ord-reset" type="button">Reset to default</button></div><p class="lede" style="margin:0 0 12px;">Drag the sections into the order you want them on the page \u2014 including <strong>Service Process</strong> (How it works) and <strong>Team Members</strong>. Switch other components on in Page Content, then drag them into position here.</p><div id="ord-list"></div></div>';
       wireOrder(c);
     }
   }
