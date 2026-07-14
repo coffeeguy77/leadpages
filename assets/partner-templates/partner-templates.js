@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initWebcultureFlowPulse();
   initWebcultureTimeline();
   initWebcultureStickyCta();
+  initWebcultureColourLab();
   initWebcultureReviewSlider();
   initWebcultureDemoFaq();
 });
@@ -93,6 +94,8 @@ function initLeadForms() {
         var demoRef = form.closest('[data-demo-ref]');
         if (demoRef) details.demoRef = demoRef.getAttribute('data-demo-ref');
       }
+      var colourPreview = document.body.getAttribute('data-wc-colour-preview');
+      if (colourPreview) details.colourSchemePreview = colourPreview;
       fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -751,6 +754,130 @@ function initWebcultureStickyCta() {
   trackVisibility(footer, function (v) { footerVisible = v; });
 
   refresh();
+}
+
+function initWebcultureColourLab() {
+  var root = document.querySelector('[data-wc-colour-lab]');
+  if (!root || document.body.getAttribute('data-pt-template') !== 'webculture') return;
+
+  var dataEl = root.querySelector('[data-wc-colour-lab-data]');
+  var fab = root.querySelector('[data-wc-colour-lab-fab]');
+  var panel = root.querySelector('[data-wc-colour-lab-panel]');
+  var scrim = root.querySelector('[data-wc-colour-lab-scrim]');
+  var closeBtn = root.querySelector('[data-wc-colour-lab-close]');
+  var resetBtn = root.querySelector('[data-wc-colour-lab-reset]');
+  var cta = root.querySelector('[data-wc-colour-lab-cta]');
+  var fabDot = root.querySelector('.wc-colour-lab__fab-dot');
+  if (!dataEl || !fab || !panel) return;
+
+  var config;
+  try {
+    config = JSON.parse(dataEl.textContent || '{}');
+  } catch (_e) {
+    return;
+  }
+  var presets = (config && config.presets) || [];
+  var siteDefault = (config && config.siteDefault) || null;
+  if (!presets.length || !siteDefault) return;
+
+  var byId = {};
+  presets.forEach(function (p) { byId[p.id] = p; });
+  byId['site-default'] = siteDefault;
+
+  var storageKey = 'wc-colour-preview:' + (document.body.getAttribute('data-pl-partner-id') || 'anon');
+  var activeId = siteDefault.custom ? 'site-default' : (siteDefault.id || 'culture');
+
+  function paletteVars(p) {
+    return {
+      '--wc-set-primary': p.primary,
+      '--wc-set-ink': p.ink,
+      '--wc-set-bg': p.bg,
+      '--wc-set-beige': p.surface,
+      '--wc-set-muted': p.muted || '',
+      '--wc-set-glow': p.glow || p.primary,
+      '--pt-accent': p.primary,
+      '--pt-brand': p.primary,
+      '--pt-ink': p.ink,
+      '--pt-bg': p.bg,
+      '--pt-glow': p.glow || p.primary
+    };
+  }
+
+  function applyPalette(p, id) {
+    if (!p) return;
+    var vars = paletteVars(p);
+    var html = document.documentElement;
+    Object.keys(vars).forEach(function (k) {
+      if (vars[k]) html.style.setProperty(k, vars[k]);
+      else html.style.removeProperty(k);
+    });
+    document.body.setAttribute('data-wc-colour-preview', id || '');
+    if (fabDot) fabDot.style.background = p.primary;
+    root.querySelectorAll('[data-wc-colour-preset]').forEach(function (btn) {
+      var on = btn.getAttribute('data-wc-colour-preset') === id;
+      btn.classList.toggle('is-active', on);
+      btn.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    if (typeof initWebcultureFooterLogo === 'function') {
+      try { initWebcultureFooterLogo(); } catch (_err) {}
+    }
+  }
+
+  function selectPreset(id, persist) {
+    var p = byId[id];
+    if (!p && id !== 'site-default') return;
+    if (id === 'site-default') p = siteDefault;
+    activeId = id;
+    applyPalette(p, id);
+    if (persist !== false) {
+      try { sessionStorage.setItem(storageKey, id); } catch (_e) {}
+    }
+  }
+
+  function setOpen(open) {
+    root.classList.toggle('is-open', open);
+    fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+    panel.hidden = !open;
+    if (scrim) scrim.hidden = !open;
+    document.body.classList.toggle('wc-colour-lab-open', open);
+  }
+
+  fab.addEventListener('click', function () {
+    setOpen(panel.hidden);
+  });
+  if (closeBtn) closeBtn.addEventListener('click', function () { setOpen(false); });
+  if (scrim) scrim.addEventListener('click', function () { setOpen(false); });
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function () {
+      selectPreset(siteDefault.custom ? 'site-default' : (siteDefault.id || 'culture'));
+    });
+  }
+  if (cta) {
+    cta.addEventListener('click', function () {
+      setOpen(false);
+    });
+  }
+
+  root.querySelectorAll('[data-wc-colour-preset]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      selectPreset(btn.getAttribute('data-wc-colour-preset'));
+    });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && root.classList.contains('is-open')) setOpen(false);
+  });
+
+  var stored = null;
+  try { stored = sessionStorage.getItem(storageKey); } catch (_e) {}
+  if (stored && byId[stored]) {
+    selectPreset(stored, false);
+  } else {
+    applyPalette(
+      siteDefault.custom ? siteDefault : (byId[activeId] || siteDefault),
+      activeId
+    );
+  }
 }
 
 function initWebcultureReviewSlider() {

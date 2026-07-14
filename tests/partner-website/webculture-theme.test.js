@@ -180,6 +180,14 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('Canberra Website Designer'));
   assert.ok(html.includes('wc-sticky-cta'));
   assert.ok(html.includes('data-wc-sticky-cta'));
+  assert.ok(html.includes('data-wc-colour-lab'));
+  assert.ok(html.includes('data-wc-colour-lab-fab'));
+  assert.ok(html.includes('Try colours'));
+  assert.ok(html.includes('Live colour studio'));
+  assert.ok(html.includes('data-wc-colour-preset="basalt"'));
+  assert.ok(html.includes('data-wc-colour-preset="orchid"'));
+  assert.ok(html.includes('Pick a colour scheme'));
+  assert.ok(!html.includes('pt-tpl-bar'));
   assert.ok(html.includes('wc-footer-lockup'));
   assert.ok(html.includes('wc-footer-cloud-mark'));
   assert.ok(html.includes('wc-wordmark--footer'));
