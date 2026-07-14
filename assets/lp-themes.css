@@ -1549,19 +1549,44 @@ body[data-lp-standard] .lp-sec-editonly[data-on="0"] {
 .icchip,
 .icbtn {
   background: var(--panel) !important;
-  color: var(--text);
+  color: var(--text) !important;
   border-color: var(--border);
 }
 /* Icon strokes follow theme text so they stay visible on dark panels */
 .icon-pick .lp-ic,
 .icbtn .lp-ic {
-  stroke: currentColor;
-  color: inherit;
+  stroke: currentColor !important;
+  color: inherit !important;
 }
 .icon-box #icon-search {
-  background: var(--panel-soft, var(--panel));
-  color: var(--text);
-  border-color: var(--border);
+  background: var(--input-bg, var(--panel-soft, #2a3140)) !important;
+  color: var(--text) !important;
+  border-color: var(--border-strong, var(--border)) !important;
+}
+/* Dark themes: force white glyphs — manage.html inline styles load after this file */
+[data-theme="command-dark"] .icon-pick,
+[data-theme="neon-pink"] .icon-pick,
+[data-theme="electric-blue"] .icon-pick,
+[data-theme="command-dark"] .icbtn,
+[data-theme="neon-pink"] .icbtn,
+[data-theme="electric-blue"] .icbtn {
+  color: #ffffff !important;
+}
+[data-theme="command-dark"] .icon-pick .lp-ic,
+[data-theme="neon-pink"] .icon-pick .lp-ic,
+[data-theme="electric-blue"] .icon-pick .lp-ic,
+[data-theme="command-dark"] .icbtn .lp-ic,
+[data-theme="neon-pink"] .icbtn .lp-ic,
+[data-theme="electric-blue"] .icbtn .lp-ic {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
+[data-theme="command-dark"] .icon-box #icon-search,
+[data-theme="neon-pink"] .icon-box #icon-search,
+[data-theme="electric-blue"] .icon-box #icon-search {
+  background: #2a3140 !important;
+  color: #ffffff !important;
+  border-color: #3d465c !important;
 }
 .seg2 .segb.on,
 .sec-modeseg button.on {
