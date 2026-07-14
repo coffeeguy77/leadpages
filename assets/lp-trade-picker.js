@@ -1,11 +1,13 @@
 /**
  * Shared categorised trade picker (manage + partner console).
  * Labels humanise slugs; DB packs can extend via LPTradePicker.registerPack().
+ * registerPack / selectPack refresh any live pickers so new trades appear immediately.
  */
 (function (global) {
   'use strict';
 
   var PACKS = {};
+  var INSTANCES = [];
 
   function injectStyles() {
     if (document.getElementById('lp-tp2-style')) return;
@@ -60,8 +62,16 @@
     return '';
   }
 
-  function registerPack(slug, cat, pack) {
-    PACKS[slug] = pack;
+  function catIndexForSlug(slug) {
+    for (var i = 0; i < TRADE_CATS.length; i++) {
+      if (TRADE_CATS[i][1].indexOf(slug) > -1) return i;
+    }
+    return -1;
+  }
+
+  function registerPack(slug, cat, pack, opts) {
+    if (!slug) return;
+    PACKS[slug] = pack || PACKS[slug] || {};
     for (var i = 0; i < TRADE_CATS.length; i++) {
       var idx = TRADE_CATS[i][1].indexOf(slug);
       if (idx > -1) TRADE_CATS[i][1].splice(idx, 1);
@@ -75,24 +85,54 @@
       }
     }
     if (!found) TRADE_CATS.push([cat || 'Other & Specialist', [slug]]);
+    if (!(opts && opts.silent)) refreshAll();
+  }
+
+  function refreshAll() {
+    for (var i = 0; i < INSTANCES.length; i++) {
+      if (INSTANCES[i] && typeof INSTANCES[i].refresh === 'function') INSTANCES[i].refresh();
+    }
+  }
+
+  function selectPack(slug, opts) {
+    if (!slug) return false;
+    var ok = false;
+    for (var i = 0; i < INSTANCES.length; i++) {
+      if (INSTANCES[i] && typeof INSTANCES[i].select === 'function') {
+        if (INSTANCES[i].select(slug, opts)) ok = true;
+      }
+    }
+    return ok;
+  }
+
+  function pruneInstances() {
+    INSTANCES = INSTANCES.filter(function (inst) {
+      return inst && inst.isLive && inst.isLive();
+    });
   }
 
   function init2(o) {
     injectStyles();
+    pruneInstances();
     var catsEl = document.getElementById(o.cats);
     var listEl = document.getElementById(o.list);
     var packEl = document.getElementById(o.hidden);
     var searchEl = document.getElementById(o.search);
     var pickedEl = document.getElementById(o.picked);
     if (!catsEl || !listEl || !packEl) return;
+
+    // Re-bind if the same picker mounts again (settings reopen, panel remount).
+    for (var ii = INSTANCES.length - 1; ii >= 0; ii--) {
+      if (INSTANCES[ii] && INSTANCES[ii].packId === o.hidden) INSTANCES.splice(ii, 1);
+    }
+
     if (o.defaultSlug && !packEl.value) packEl.value = o.defaultSlug;
 
     var active = 0;
     (function () {
       var s = packEl.value;
-      for (var i = 0; i < TRADE_CATS.length; i++) {
-        if (TRADE_CATS[i][1].indexOf(s) > -1) { active = i; break; }
-      }
+      var ci = catIndexForSlug(s);
+      if (ci > -1) active = ci;
     })();
 
     function esc(t) {
@@ -101,7 +141,7 @@
     function hay(s) { return (tradeLabel(s) + ' ' + tradeType(s) + ' ' + s).toLowerCase(); }
     function matchSlugs(ci, q) {
       var out = [];
-      var slugs = TRADE_CATS[ci][1];
+      var slugs = TRADE_CATS[ci] ? TRADE_CATS[ci][1] : [];
       for (var j = 0; j < slugs.length; j++) {
         var s = slugs[j];
         if (!q || hay(s).indexOf(q) > -1) out.push(s);
@@ -129,6 +169,7 @@
       }
     }
     function renderList(q) {
+      if (active < 0 || active >= TRADE_CATS.length) active = 0;
       var slugs = matchSlugs(active, q);
       var html = '';
       for (var j = 0; j < slugs.length; j++) {
@@ -171,14 +212,60 @@
       renderCats(q);
       renderList(q);
     }
-    if (searchEl) searchEl.addEventListener('input', renderAll);
+    function scrollSelectedIntoView() {
+      var row = listEl.querySelector('.tp2-trow.on');
+      if (row && typeof row.scrollIntoView === 'function') {
+        try { row.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (_e) { row.scrollIntoView(false); }
+      }
+      var cat = catsEl.querySelector('.tp2-cat.on');
+      if (cat && typeof cat.scrollIntoView === 'function') {
+        try { cat.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (_e2) { cat.scrollIntoView(false); }
+      }
+    }
+    function select(slug, opts) {
+      if (!slug) return false;
+      opts = opts || {};
+      if (catIndexForSlug(slug) < 0) return false;
+      if (!(opts.keepSearch) && searchEl) searchEl.value = '';
+      var ci = catIndexForSlug(slug);
+      if (ci > -1) active = ci;
+      setPick(slug);
+      renderAll();
+      scrollSelectedIntoView();
+      return true;
+    }
+    function refresh() {
+      if (!catsEl.isConnected || !listEl.isConnected || !packEl.isConnected) return;
+      var s = packEl.value;
+      var ci = catIndexForSlug(s);
+      if (ci > -1) active = ci;
+      if (active >= TRADE_CATS.length) active = Math.max(0, TRADE_CATS.length - 1);
+      renderAll();
+      paintPicked();
+    }
+
+    if (searchEl && !searchEl.__lpTp2Wired) {
+      searchEl.__lpTp2Wired = true;
+      searchEl.addEventListener('input', renderAll);
+    }
     renderAll();
     paintPicked();
+
+    INSTANCES.push({
+      packId: o.hidden,
+      refresh: refresh,
+      select: select,
+      isLive: function () {
+        return !!(catsEl.isConnected && listEl.isConnected && packEl.isConnected);
+      }
+    });
   }
 
   global.LPTradePicker = {
     init2: init2,
     registerPack: registerPack,
+    selectPack: selectPack,
+    refresh: refreshAll,
     tradeLabel: tradeLabel,
     tradeType: tradeType,
     tradeCat: tradeCat,
