@@ -6051,6 +6051,12 @@ function heroCtaCard(c){
         +colorField(i,'titleColor','Title colour',s.titleColor)
         +colorField(i,'color','Font colour',s.color)
         +'</div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;align-items:flex-end;">'
+        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label style="display:flex;gap:8px;align-items:center;font-weight:600;"><input type="checkbox" class="svc-glow-on" data-i="'+i+'"'+(s.glowOn===true?' checked':'')+'> Icon / image outer glow</label>'
+        +'<div class="svc-glow-row" data-i="'+i+'" style="margin-top:8px;'+(s.glowOn===true?'':'display:none')+'">'+colorField(i,'glowColor','Glow colour',s.glowColor)+'</div></div>'
+        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Icon / image position</label><select class="svc-align tin" data-i="'+i+'"><option value="left"'+(s.mediaAlign==='left'||!s.mediaAlign?' selected':'')+'>Left</option><option value="center"'+(s.mediaAlign==='center'?' selected':'')+'>Centre</option><option value="right"'+(s.mediaAlign==='right'?' selected':'')+'>Right</option></select></div>'
+        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Image fit</label><select class="svc-fit tin" data-i="'+i+'"><option value="contain"'+(s.imageFit!=='cover'&&s.imageFit!=='fill'&&s.imageFit!=='stretch'?' selected':'')+'>Contain (fit, no crop)</option><option value="cover"'+(s.imageFit==='cover'?' selected':'')+'>Cover (fill &amp; crop)</option><option value="fill"'+(s.imageFit==='fill'?' selected':'')+'>Fill (stretch to box)</option><option value="stretch"'+(s.imageFit==='stretch'?' selected':'')+'>Stretch</option></select><span class="hint" style="display:block;margin-top:4px;">Applies when an image is uploaded</span></div>'
+        +'</div>'
         +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">'
         +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Background opacity <span class="svc-op-v" data-i="'+i+'" style="font-weight:700;color:var(--accent);">'+op+'%</span></label>'
         +'<input type="range" class="svc-op" data-i="'+i+'" min="0" max="100" value="'+op+'" style="width:100%;">'
@@ -6087,8 +6093,15 @@ function heroCtaCard(c){
       persist(); previewApply();
     });
     box.addEventListener('change',function(e){
-      var el=e.target; if(!el.classList.contains('svc-on')) return; var i=+el.getAttribute('data-i'); var s=c.services[i];
-      if(s){ s.on=el.checked; var row=box.querySelector('.svc-row[data-row="'+i+'"]'); if(row){ row.style.opacity=el.checked?'':'.5'; row.setAttribute('data-active', el.checked?'1':'0'); } persist(); previewApply(); }
+      var el=e.target; var i=+el.getAttribute('data-i'); var s=c.services[i];
+      if(el.classList.contains('svc-on')){
+        if(s){ s.on=el.checked; var row=box.querySelector('.svc-row[data-row="'+i+'"]'); if(row){ row.style.opacity=el.checked?'':'.5'; row.setAttribute('data-active', el.checked?'1':'0'); } persist(); previewApply(); }
+        return;
+      }
+      if(!s) return;
+      if(el.classList.contains('svc-glow-on')){ s.glowOn=el.checked; var gr=box.querySelector('.svc-glow-row[data-i="'+i+'"]'); if(gr) gr.style.display=el.checked?'':'none'; persist(); previewApply(); return; }
+      if(el.classList.contains('svc-align')){ s.mediaAlign=el.value; persist(); previewApply(); return; }
+      if(el.classList.contains('svc-fit')){ s.imageFit=el.value; persist(); previewApply(); return; }
     });
     box.addEventListener('click',function(e){
       var t=e.target; if(!t||!t.classList) return;
