@@ -93,10 +93,11 @@ function templateFor(site) {
   return site.vertical === 'trade' ? 'trade' : 'broker-leads';
 }
 
-function notFound(res) {
+function notFound(res, msg) {
   res.status(404).setHeader('content-type', 'text/html; charset=utf-8');
+  const body = msg || 'Page not found.';
   return res.send('<!doctype html><meta charset="utf-8"><title>Not found</title>' +
-    '<body style="font-family:system-ui;text-align:center;padding:80px;color:#444">Page not found.</body>');
+    '<body style="font-family:system-ui;text-align:center;padding:80px;color:#444">' + body + '</body>');
 }
 
 function suspendedPage(res, site, tpl) {
@@ -746,7 +747,9 @@ module.exports = async (req, res) => {
     // Non-live sites (e.g. partner drafts) are hidden from the public: a clean URL
     // 404s. The builder can still preview them via ?preview=, and those responses
     // are never cached or indexed (see sendHtml).
-    if (!isLive && !isPreview) return notFound(res);
+    if (!isLive && !isPreview) {
+      return notFound(res, 'This site isn\u2019t published yet. Open it from the builder with Live Preview, or publish it first.');
+    }
     // Per-sample password: an individual demo/sample link can be locked so prospects
     // can't browse each other's jobs. The partner shares the password per prospect.
     if (site.preview_password) {
