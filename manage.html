@@ -3106,24 +3106,52 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var themeFeat=((c.theme&&(c.theme.hivis||c.theme.pipe))||'#ff6a1f');
     var feat=(/^#[0-9a-fA-F]{6}$/.test(F.accent||''))?F.accent:themeFeat;
     var featSet=(/^#[0-9a-fA-F]{6}$/.test(F.accent||''));
+    var ink=(/^#[0-9a-fA-F]{6}$/.test(F.ink||''))?F.ink:'#ffffff';
+    var inkSet=(/^#[0-9a-fA-F]{6}$/.test(F.ink||''));
     var h='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">LeadPages footer</h2><span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">Always on</span></div>';
-    h+='<p class="hint" style="margin:8px 0 14px;">A branded LeadPages strip at the bottom of every page. The coloured logo cannot be deleted. Pick the feature colour used on the logo highlights.</p>';
+    h+='<p class="hint" style="margin:8px 0 14px;">A branded LeadPages strip at the bottom of every page. The logo cannot be deleted. Feature colour tints \u201cMore leads\u201d; logo text colour tints the arrow, LeadPages wordmark and Smart sites line.</p>';
     h+='<div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:10px;background:#0e1217;margin-bottom:16px;">';
-    h+='<img id="lpf-preview-logo" src="/assets/leadpages-logo.svg" alt="LeadPages" style="height:28px;width:auto;--lp-logo-ink:#ffffff;--lp-logo-accent:'+feat+';" data-lp-logo="auto" data-lp-logo-ink="light" data-lp-logo-pulse data-lp-logo-accent="'+feat+'">';
-    h+='<div style="font-size:12.5px;color:#fff;line-height:1.4;">Coloured LeadPages logo<br><span style="opacity:.75;">Feature colour: <code id="lpf-feat-swatch" style="color:'+feat+';">'+feat+'</code></span></div></div>';
-    h+='<div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:4px;"><div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Feature colour</label><p class="hint" style="margin:2px 0 6px;font-size:12px;">Coloured highlights on the LeadPages logo. Default follows your site feature colour.</p><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="lpf-feat-clr" value="'+feat+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="lpf-feat-tx" value="'+(featSet?F.accent:'')+'" placeholder="'+themeFeat+' (theme)" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"><button type="button" class="btn ghost" id="lpf-feat-def" style="padding:6px 10px;">Default</button></div></div></div>';
+    h+='<span id="lpf-preview-logo" class="lp-foot-logo" style="display:inline-block;height:28px;width:auto;line-height:0;--lp-logo-ink:'+ink+';--lp-logo-accent:'+feat+';" data-lp-logo="auto" data-lp-logo-ink="light" data-lp-logo-pulse data-lp-logo-accent="'+feat+'"></span>';
+    h+='<div style="font-size:12.5px;color:#fff;line-height:1.4;">Coloured LeadPages logo<br><span style="opacity:.75;">Feature <code id="lpf-feat-swatch" style="color:'+feat+';">'+feat+'</code> · Text <code id="lpf-ink-swatch" style="color:'+ink+';">'+ink+'</code></span></div></div>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:4px;">';
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Feature colour</label><p class="hint" style="margin:2px 0 6px;font-size:12px;">\u201cMore leads\u201d highlights. Default follows your site feature colour.</p><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="lpf-feat-clr" value="'+feat+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="lpf-feat-tx" value="'+(featSet?F.accent:'')+'" placeholder="'+themeFeat+' (theme)" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"><button type="button" class="btn ghost" id="lpf-feat-def" style="padding:6px 10px;">Default</button></div></div>';
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Logo text colour</label><p class="hint" style="margin:2px 0 6px;font-size:12px;">Arrow, LeadPages wordmark and Smart sites text.</p><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="lpf-ink-clr" value="'+ink+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="lpf-ink-tx" value="'+(inkSet?F.ink:'')+'" placeholder="#ffffff (white)" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"><button type="button" class="btn ghost" id="lpf-ink-def" style="padding:6px 10px;">Default</button></div></div>';
+    h+='</div>';
     h+='<div style="display:flex;flex-wrap:wrap;gap:14px;"><div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Logo size <span id="lpf-size-v" style="font-weight:700;color:var(--accent);">'+size+'px</span></label><input type="range" id="lpf-size" min="12" max="120" value="'+size+'" style="width:100%;"></div>';
     h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Background opacity <span id="lpf-op-v" style="font-weight:700;color:var(--accent);">'+op+'%</span></label><input type="range" id="lpf-op" min="0" max="100" value="'+op+'" style="width:100%;"></div></div>';
     h+='<div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;"><div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Position</label><select id="lpf-align" class="tin" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;"><option value="left"'+(F.align==='left'?' selected':'')+'>Left</option><option value="center"'+(F.align!=='left'&&F.align!=='right'?' selected':'')+'>Centre</option><option value="right"'+(F.align==='right'?' selected':'')+'>Right</option></select></div>';
     h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Background colour</label><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="lpf-bg-clr" value="'+bg+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="lpf-bg-tx" value="'+(/^#[0-9a-fA-F]{6}$/.test(F.bg||'')?F.bg:'')+'" placeholder="'+bg+'" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"></div></div></div>';
-    h+='<div class="f" style="margin:12px 0 0;"><label>Footer text (optional)</label><input type="text" id="lpf-text" value="'+esc(F.text||'')+'" placeholder="e.g. Built with LeadPages" style="width:100%;"><p class="hint" style="margin:6px 0 0;">Text colour is always white so it stays readable on the strip.</p></div>';
+    h+='<div class="f" style="margin:12px 0 0;"><label>Footer text (optional)</label><input type="text" id="lpf-text" value="'+esc(F.text||'')+'" placeholder="e.g. Built with LeadPages" style="width:100%;"><p class="hint" style="margin:6px 0 0;">Optional caption beside the logo. Caption text stays white.</p></div>';
     return h+'</div>';
   }
   function wireLpFooter(c){
     function F(){ if(!c.sections)c.sections={}; if(!c.sections.lpFooter)c.sections.lpFooter={}; c.sections.lpFooter.on=true; return c.sections.lpFooter; }
     function themeFeat(){ return ((c.theme&&(c.theme.hivis||c.theme.pipe))||'#ff6a1f'); }
     function activeFeat(){ var a=F().accent; return (/^#[0-9a-fA-F]{6}$/.test(a||''))?a:themeFeat(); }
-    function previewFeat(col){ var sw=$('lpf-feat-swatch'); if(sw){ sw.textContent=col; sw.style.color=col; } var lg=$('lpf-preview-logo'); if(lg){ lg.style.setProperty('--lp-logo-accent',col); lg.setAttribute('data-lp-logo-accent',col); } try{ if(window.LPLogo&&window.LPLogo.upgradeAll) window.LPLogo.upgradeAll({pulse:true,ink:'#ffffff',accent:col}); }catch(_e){} }
+    function activeInk(){ var a=F().ink; return (/^#[0-9a-fA-F]{6}$/.test(a||''))?a:'#ffffff'; }
+    function previewFeat(col, inkCol){
+      col=col||activeFeat(); inkCol=inkCol||activeInk();
+      var sw=$('lpf-feat-swatch'); if(sw){ sw.textContent=col; sw.style.color=col; }
+      var iw=$('lpf-ink-swatch'); if(iw){ iw.textContent=inkCol; iw.style.color=inkCol; }
+      var lg=$('lpf-preview-logo');
+      if(lg){
+        lg.setAttribute('data-lp-logo-accent',col);
+        lg.style.setProperty('--lp-logo-accent',col);
+        lg.style.setProperty('--lp-logo-ink',inkCol);
+        if(window.LPLogo&&window.LPLogo.mountLogo){
+          window.LPLogo.mountLogo(lg,{pulse:true,ink:inkCol,accent:col}).then(function(wrap){
+            var el=wrap||$('lpf-preview-logo');
+            if(!el) return;
+            if(el.id!=='lpf-preview-logo') el.id='lpf-preview-logo';
+            el.classList.add('lp-foot-logo');
+            el.setAttribute('data-lp-logo-accent',col);
+            el.style.setProperty('--lp-logo-accent',col);
+            el.style.setProperty('--lp-logo-ink',inkCol);
+            el.style.height='28px';
+          });
+        }
+      }
+    }
     F();
     var sz=$('lpf-size'),szv=$('lpf-size-v'); if(sz) sz.addEventListener('input',function(){ F().size=+sz.value; if(szv)szv.textContent=sz.value+'px'; persist(); previewApply(); });
     var op=$('lpf-op'),opv=$('lpf-op-v'); if(op) op.addEventListener('input',function(){ F().bgOpacity=+op.value; if(opv)opv.textContent=op.value+'%'; persist(); previewApply(); });
@@ -3132,11 +3160,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(bgc) bgc.addEventListener('input',function(){ F().bg=bgc.value; if(bgt)bgt.value=bgc.value; persist(); previewApply(); });
     if(bgt) bgt.addEventListener('input',function(){ var v=bgt.value.trim(); if(v===''){F().bg='';} else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){F().bg=v; if(bgc)bgc.value=v;} } persist(); previewApply(); });
     var fclr=$('lpf-feat-clr'),ftx=$('lpf-feat-tx'),fdef=$('lpf-feat-def');
-    if(fclr) fclr.addEventListener('input',function(){ F().accent=fclr.value; if(ftx)ftx.value=fclr.value; previewFeat(fclr.value); persist(); previewApply(); });
-    if(ftx) ftx.addEventListener('input',function(){ var v=ftx.value.trim(); if(v===''){ F().accent=''; previewFeat(themeFeat()); if(fclr)fclr.value=themeFeat(); } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ F().accent=v; if(fclr)fclr.value=v; previewFeat(v); } } persist(); previewApply(); });
-    if(fdef) fdef.addEventListener('click',function(){ F().accent=''; if(ftx)ftx.value=''; if(fclr)fclr.value=themeFeat(); previewFeat(themeFeat()); persist(); previewApply(); });
+    if(fclr) fclr.addEventListener('input',function(){ F().accent=fclr.value; if(ftx)ftx.value=fclr.value; previewFeat(fclr.value, activeInk()); persist(); previewApply(); });
+    if(ftx) ftx.addEventListener('input',function(){ var v=ftx.value.trim(); if(v===''){ F().accent=''; previewFeat(themeFeat(), activeInk()); if(fclr)fclr.value=themeFeat(); } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ F().accent=v; if(fclr)fclr.value=v; previewFeat(v, activeInk()); } } persist(); previewApply(); });
+    if(fdef) fdef.addEventListener('click',function(){ F().accent=''; if(ftx)ftx.value=''; if(fclr)fclr.value=themeFeat(); previewFeat(themeFeat(), activeInk()); persist(); previewApply(); });
+    var iclr=$('lpf-ink-clr'),itx=$('lpf-ink-tx'),idef=$('lpf-ink-def');
+    if(iclr) iclr.addEventListener('input',function(){ F().ink=iclr.value; if(itx)itx.value=iclr.value; previewFeat(activeFeat(), iclr.value); persist(); previewApply(); });
+    if(itx) itx.addEventListener('input',function(){ var v=itx.value.trim(); if(v===''){ F().ink=''; previewFeat(activeFeat(), '#ffffff'); if(iclr)iclr.value='#ffffff'; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ F().ink=v; if(iclr)iclr.value=v; previewFeat(activeFeat(), v); } } persist(); previewApply(); });
+    if(idef) idef.addEventListener('click',function(){ F().ink=''; if(itx)itx.value=''; if(iclr)iclr.value='#ffffff'; previewFeat(activeFeat(), '#ffffff'); persist(); previewApply(); });
     var tx=$('lpf-text'); if(tx) tx.addEventListener('input',function(){ F().text=tx.value; persist(); previewApply(); });
-    previewFeat(activeFeat());
+    previewFeat(activeFeat(), activeInk());
   }
   
 function reqFieldsCard(c){
