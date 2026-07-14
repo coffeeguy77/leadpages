@@ -125,6 +125,43 @@ assert('trailing commas', () => {
   if (p.slug !== 'test') throw new Error('bad slug after comma fix');
 });
 
+assert('smart quotes', () => {
+  const messy = '{“slug”:“diesel-mechanic”,“category”:“Auto”,“pack”:{“label”:“Diesel Mechanic”,“tradeType”:“Diesel Mechanic”,“theme”:{“pipe”:“#1a1a1a”,“hivis”:“#c5e13f”,“steel”:“#0b0b0b”,“safety”:“#f4f1ea”},“services”:[{"on":true,"icon":"🛠","title":"Service","body":"Body."},{"on":true,"icon":"✓","title":"A","body":"B."},{"on":true,"icon":"✓","title":"C","body":"D."},{"on":true,"icon":"✓","title":"E","body":"F."}],“sections”:{“hero”:{},“reviews”:{},“quote”:{}}}}';
+  const p = parseAiJson(messy);
+  if (p.slug !== 'diesel-mechanic') throw new Error('smart quotes not normalised');
+});
+
+assert('truncated mid-object recovers', () => {
+  const truncated = '{"slug":"diesel-mechanic","category":"Auto","pack":{"label":"Diesel Mechanic","tradeType":"Diesel Mechanic","theme":{"pipe":"#3D4F5F","hivis":"#E87722","steel":"#1A1A1A","safety":"#F5F0E8"},"services":[{"on":true,"icon":"🔧","title":"Engine rebuilds","body":"Full rebuilds for heavy vehicles."},{"on":true,"icon":"🚚","title":"Fleet servicing","body":"Scheduled care for commercial fleets."},{"on":true,"icon":"⚡","title":"Diagnostics","body":"Computer diagnostics that find faults fast."},{"on":true,"icon":"🛡","title":"Warranty work","body":"Trusted repairs with clear timelines."}],"sections":{"hero":{"eyebrow":"Diesel · {location}","title":"Heavy duty","titleHl":"done right","sub":"Local diesel help across {location}.","badges":[{"icon":"✓","text":"Licensed"},{"icon":"★","text":"Local"},{"icon":"$","text":"Fair"},{"icon":"⚡","text":"Fast"}]},"reviews":{"eyebrow":"Neighbours","heading":"Local proof","items":[{"who":"Sam — {location}","text":"\\"{business} fixed our truck fast.\\""}]},"quote":{"eyebrow":"Fast quote","sub":"Tell us the job.","button":"Send","formTitle":"Quote","lblName":"Name","lblPhone":"Phone","lblSuburb":"Suburb","lblDetail":"Detail","successTitle":"Got it","heading":"Quote","lblJob":"Need?","points":[{"text":"Fast"}],"jobOptions":[{"text":"Repair"}]},"faq":{"eyebrow":"FAQ","heading":"Answers","items":[{"q":"Cover {location}?","a":"Yes."}]';
+  const p = parseAiJson(truncated);
+  if (p.slug !== 'diesel-mechanic') throw new Error('truncated slug lost');
+  if (!p.pack || p.pack.label !== 'Diesel Mechanic') throw new Error('truncated label lost');
+  if (!Array.isArray(p.pack.services) || p.pack.services.length < 4) throw new Error('truncated services lost');
+});
+
+assert('hydrateSparsePack fills gaps', () => {
+  const { hydrateSparsePack } = require('../lib/trade-pack-utils');
+  const sparse = {
+    slug: 'diesel-mechanic',
+    category: 'Auto',
+    pack: {
+      label: 'Diesel Mechanic',
+      tradeType: 'Diesel Mechanic',
+      theme: { pipe: '#111' },
+      services: [
+        { on: true, icon: '✓', title: 'A', body: 'a' },
+        { on: true, icon: '✓', title: 'B', body: 'b' },
+        { on: true, icon: '✓', title: 'C', body: 'c' },
+        { on: true, icon: '✓', title: 'D', body: 'd' },
+      ],
+      sections: {},
+    },
+  };
+  const h = hydrateSparsePack(sparse, 'Diesel Mechanic', 'Auto');
+  const err = validatePack(h);
+  if (err) throw new Error(err);
+});
+
 assert('validatePack', () => {
   const err = validatePack(sample);
   if (err) throw new Error(err);
