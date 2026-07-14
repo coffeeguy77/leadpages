@@ -119,10 +119,10 @@ test('Web Culture build — renders premium sections from profile', function() {
   assert.ok(html.includes('prm-form-trust'));
   assert.ok(html.includes('Friendly local support'));
   assert.ok(html.includes('LIVE CLIENT WEBSITE'));
-  assert.ok(html.includes('prm-transform'));
-  assert.ok(html.includes('Facebook only'));
-  assert.ok(html.includes('Manual quoting'));
-  assert.ok(html.includes('Professional website'));
+  assert.ok(!html.includes('prm-transform'));
+  assert.ok(!html.includes('Facebook only'));
+  assert.ok(!html.includes('Manual quoting'));
+  assert.ok(!html.includes('Missed enquiries'));
   assert.ok(!html.includes('prm-proof-stats'));
   assert.ok(html.includes('prm-review-summary'));
   assert.ok(html.includes('prm-review-stars'));
