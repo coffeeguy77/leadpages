@@ -5,7 +5,7 @@
 //
 // Body: { slug, domain, enabled, headline, config:{logo,logoSize,intro,accent,theme,themeId,templateKey} }
 
-const { normalizeTemplateKey } = require('../../lib/partner-templates/registry');
+const { getCultureColorPreset } = require('../../lib/partner-website/webculture-color-presets');
 const { websiteProfileFromRow, saveWebsiteProfile } = require('../../lib/partner-website/profile-store');
 const { mergeWebsiteProfilePatch } = require('../../lib/partner-website/validate');
 const { extractLogoValue, normalizeLogoForStorage } = require('../../lib/partner-website/logo');
@@ -27,6 +27,11 @@ function cleanLogoSize(v) {
   if (!Number.isFinite(n)) return 1;
   const stepped = Math.round(n * 2) / 2;
   return Math.min(10, Math.max(0.5, stepped));
+}
+function cleanCulturePreset(v) {
+  const id = String(v || 'culture').trim().toLowerCase();
+  if (id === 'custom') return 'custom';
+  return getCultureColorPreset(id).id;
 }
 
 const { createClient } = require('@supabase/supabase-js');
@@ -88,6 +93,9 @@ module.exports = async (req,res) => {
 
   const curProf=await admin.from('partner_profiles').select('showcase_config').eq('partner_id',partner.id).maybeSingle();
   const existingCfg=(curProf.data&&curProf.data.showcase_config)||{};
+  const cultureColorPreset=('cultureColorPreset' in cfgIn)
+    ? cleanCulturePreset(cfgIn.cultureColorPreset)
+    : cleanCulturePreset(existingCfg.cultureColorPreset||'culture');
   const config=Object.assign({},existingCfg,{
     logo:'logo' in cfgIn ? normalizeLogoForStorage(cfgIn.logo) : normalizeLogoForStorage(existingCfg.logo),
     logoSize:'logoSize' in cfgIn?cleanLogoSize(cfgIn.logoSize):cleanLogoSize(existingCfg.logoSize),
@@ -95,7 +103,8 @@ module.exports = async (req,res) => {
     accent:accent!=null?accent:existingCfg.accent,
     theme:theme||existingCfg.theme,
     themeId:cfgIn.themeId?String(cfgIn.themeId).slice(0,80):(existingCfg.themeId||null),
-    templateKey:normalizeTemplateKey(cfgIn.templateKey||existingCfg.templateKey),
+    templateKey:'webculture',
+    cultureColorPreset:cultureColorPreset
   });
   if(!config.themeId) delete config.themeId;
   if(!config.theme) delete config.theme;

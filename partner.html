@@ -315,20 +315,23 @@
           </div>
 
           <div class="card" style="padding:20px">
-            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Page design template</h3>
-            <p class="muted" style="margin:0 0 14px;font-size:13px">Choose a unique agency layout for your public partner page. Each design showcases your live demos, LeadPages platform power, and local + platform support story. Use the template bar on your live page to preview before saving.</p>
-            <div id="sc-template-grid" class="lp-sc-template-grid" role="radiogroup" aria-label="Partner page template"></div>
-            <p class="muted" style="margin:12px 0 0;font-size:12.5px">Preview any design: open your page link and use the <strong>Template</strong> bar at the bottom, or append <code>?tpl=causehouse</code> to the URL.</p>
-          </div>
-
-          <div class="card" style="padding:20px">
-            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Branding &amp; colours</h3>
-            <p class="muted" style="margin:0 0 14px;font-size:13px">Pick a saved demo theme for your public page colours — same palette as your trade demos. Once you publish a homepage in the builder, that design takes over.</p>
-            <div class="field"><label for="sc-theme">Colour theme</label><select id="sc-theme" class="tin lp-select"><option value="">Default LeadPages orange</option></select></div>
-            <div id="sc-theme-preview" class="lp-sc-theme-preview" hidden aria-label="Theme colour preview"></div>
-            <div class="row2" style="margin-top:12px">
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Culture page colours</h3>
+            <p class="muted" style="margin:0 0 14px;font-size:13px">Pick a Culture colour way, or override with your own custom theme. Colours apply to your live partner page immediately after you save.</p>
+            <div id="sc-culture-presets" class="lp-sc-culture-presets" role="radiogroup" aria-label="Culture colour theme"></div>
+            <div id="sc-culture-custom" class="lp-sc-culture-custom" hidden>
+              <p class="muted" style="margin:0 0 10px;font-size:12.5px">Custom theme — saved for this partner only.</p>
+              <div class="row2">
+                <div class="field"><label for="sc-c-primary">Accent</label><input id="sc-c-primary" class="tin" type="color" value="#C5E13F"></div>
+                <div class="field"><label for="sc-c-ink">Ink</label><input id="sc-c-ink" class="tin" type="color" value="#0B2114"></div>
+              </div>
+              <div class="row2">
+                <div class="field"><label for="sc-c-bg">Background</label><input id="sc-c-bg" class="tin" type="color" value="#FDFCF0"></div>
+                <div class="field"><label for="sc-c-surface">Surface</label><input id="sc-c-surface" class="tin" type="color" value="#F5F2E6"></div>
+              </div>
+            </div>
+            <div class="row2" style="margin-top:14px">
               <div class="field"><label for="sc-headline">Headline</label><input id="sc-headline" type="text" placeholder="e.g. Canberra websites that get you booked"></div>
-              <div class="field"><label for="sc-accent">Accent override</label><input id="sc-accent" type="text" placeholder="#ff6a1a (optional)"></div>
+              <div class="field" style="display:none"><label for="sc-accent">Accent override</label><input id="sc-accent" type="text" placeholder="#C5E13F"></div>
             </div>
             <div class="field"><label for="sc-intro">Intro text</label><textarea id="sc-intro" rows="3" placeholder="A short pitch prospects see at the top of your page."></textarea></div>
             <div class="field">
@@ -352,8 +355,9 @@
           </div>
 
           <div class="card" style="padding:20px">
-            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Page content</h3>
-            <p class="muted" style="margin:0 0 14px;font-size:13px">Biography, services, testimonials, FAQs, SEO, and enquiry form — shared across all seven page designs.</p>
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Page content &amp; sections</h3>
+            <p class="muted" style="margin:0 0 10px;font-size:13px">Edit copy, turn sections on or off, and fine-tune your Culture page. Starts filled with current Culture demo content — change anything you do not want. LeadPages platform credit stays on.</p>
+            <p class="muted" id="pwp-seed-note" style="display:none;margin:0 0 14px;font-size:12.5px;color:var(--success,#0a7d33)">Starter Culture content loaded — review and save when you are happy.</p>
             <div id="pwp-editor"></div>
           </div>
 
@@ -1481,13 +1485,12 @@
     document.getElementById('sc-design').addEventListener('click', async function(){
       var btn=this; btn.disabled=true; btn.textContent='Opening…';
       var res;
-      try{ var r=await fetch('/api/partner/ensure-home',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify({themeId:(document.getElementById('sc-theme')&&document.getElementById('sc-theme').value)||''})}); res=await r.json(); }catch(_e){ res={ok:false}; }
+      try{ var r=await fetch('/api/partner/ensure-home',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify({})}); res=await r.json(); }catch(_e){ res={ok:false}; }
       btn.disabled=false; btn.textContent='Edit in builder';
       if(!res||!res.ok){ alert((res&&res.error)||'Could not open your homepage.'); return; }
       window.open('/manage?site='+encodeURIComponent(res.site.slug),'_blank','noopener');
     });
     document.getElementById('sc-slug').addEventListener('input',updateScLink);
-    var _scTh=document.getElementById('sc-theme'); if(_scTh) _scTh.addEventListener('change', renderScThemePreview);
     var _scEn=document.getElementById('sc-enabled');
     if(_scEn) _scEn.addEventListener('change',updateScStatusBadge);
     document.getElementById('po-calc').addEventListener('input', renderCalc);
@@ -1599,17 +1602,21 @@
     });
     var _scLogoSize=document.getElementById('sc-logo-size');
     if(_scLogoSize) _scLogoSize.addEventListener('input', updateScLogoSizePreview);
-    var _scTplGrid=document.getElementById('sc-template-grid');
-    if(_scTplGrid) _scTplGrid.addEventListener('click',function(e){
-      var card=e.target.closest('[data-sc-tpl]'); if(!card) return;
-      setScTemplateKey(card.getAttribute('data-sc-tpl'));
+    var _scPresets=document.getElementById('sc-culture-presets');
+    if(_scPresets) _scPresets.addEventListener('click',function(e){
+      var card=e.target.closest('[data-sc-cpreset]'); if(!card) return;
+      setCultureColorPreset(card.getAttribute('data-sc-cpreset'));
+    });
+    ['sc-c-primary','sc-c-ink','sc-c-bg','sc-c-surface'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el) el.addEventListener('input', function(){ setCultureColorPreset('custom'); });
     });
     document.getElementById('sc-save').addEventListener('click', async function(){
       var err=document.getElementById('sc-err'); err.classList.add('hidden');
       var slug=(document.getElementById('sc-slug').value||'').trim().toLowerCase(); var btn=this; btn.disabled=true;
       var dom=(document.getElementById('sc-domain').value||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/\s+/g,'');
       var branding=scBrandingPayload();
-      var payload={ slug:slug, domain:dom, enabled:document.getElementById('sc-enabled').checked, headline:(document.getElementById('sc-headline').value||'').trim(), config:{ logo:scLogo?String(scLogo):null, logoSize:scLogoSizeValue(), intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:branding.accent, theme:branding.theme, themeId:branding.themeId, templateKey:scTemplateKey||'converge' } };
+      var payload={ slug:slug, domain:dom, enabled:document.getElementById('sc-enabled').checked, headline:(document.getElementById('sc-headline').value||'').trim(), config:{ logo:scLogo?String(scLogo):null, logoSize:scLogoSizeValue(), intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:branding.accent, theme:branding.theme, themeId:null, templateKey:'webculture', cultureColorPreset:branding.cultureColorPreset } };
       var res;
       try{ var r=await fetch('/api/partner/save-showcase',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
       if(!res||!res.ok){ btn.disabled=false; err.textContent=(res&&res.error)||'Could not save.'; err.classList.remove('hidden'); if(res&&res.field==='slug'){ var sm=document.getElementById('sc-slug-msg'); sm.style.color='var(--bad)'; sm.textContent=res.error; } return; }
@@ -1845,36 +1852,43 @@
   function fillThemeSelects(){
     var opts='<option value="">Blank trade site</option>'+themes.map(function(t){ return '<option value="'+esc(t.id)+'">'+(t._shared?'★ ':'')+esc(t.name)+(t._shared?' (LeadPages)':'')+'</option>'; }).join('');
     var sel=document.getElementById('m-theme'); if(sel){ var cur=sel.value; sel.innerHTML=opts; sel.value=cur; }
-    var scSel=document.getElementById('sc-theme');
-    if(scSel){
-      var scCur=scSel.value;
-      scSel.innerHTML='<option value="">Default LeadPages orange</option>'+themes.map(function(t){ return '<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>'; }).join('');
-      if(scCur) scSel.value=scCur;
-    }
   }
   function scThemeFromId(id){
     if(!id) return null;
     var t=themes.find(function(x){ return x.id===id; });
     return (t&&t.config&&t.config.theme)?t.config.theme:null;
   }
-  function renderScThemePreview(){
-    var box=document.getElementById('sc-theme-preview'); if(!box) return;
-    var tid=(document.getElementById('sc-theme')&&document.getElementById('sc-theme').value)||'';
-    var theme=scThemeFromId(tid);
-    if(!theme){ box.hidden=true; box.innerHTML=''; return; }
-    box.hidden=false;
-    var keys=[['pipe','Brand'],['hivis','Accent'],['steel','Dark'],['safety','Highlight'],['lightBg','Background']];
-    box.innerHTML=keys.map(function(pair){
-      var col=theme[pair[0]]; if(!col||!/^#[0-9a-fA-F]{3,8}$/.test(col)) return '';
-      return '<span class="lp-sc-swatch" title="'+esc(pair[1])+'" style="background:'+esc(col)+'"></span>';
-    }).join('');
-    if(theme.hivis && !((document.getElementById('sc-accent').value||'').trim())) document.getElementById('sc-accent').placeholder=theme.hivis;
+  function scHexFromColorInput(id, fallback){
+    var el=document.getElementById(id);
+    var v=(el&&el.value||'').trim();
+    return /^#[0-9a-fA-F]{6}$/.test(v)?v:(fallback||'#C5E13F');
   }
   function scBrandingPayload(){
-    var tid=(document.getElementById('sc-theme')&&document.getElementById('sc-theme').value)||'';
-    var theme=scThemeFromId(tid);
-    var accent=(document.getElementById('sc-accent').value||'').trim();
-    return { themeId:tid||null, theme:theme, accent:accent||null };
+    var preset=scCulturePreset||'culture';
+    if(preset==='custom'){
+      var primary=scHexFromColorInput('sc-c-primary','#C5E13F');
+      var ink=scHexFromColorInput('sc-c-ink','#0B2114');
+      var bg=scHexFromColorInput('sc-c-bg','#FDFCF0');
+      var surface=scHexFromColorInput('sc-c-surface','#F5F2E6');
+      var accentEl=document.getElementById('sc-accent');
+      if(accentEl) accentEl.value=primary;
+      return {
+        cultureColorPreset:'custom',
+        themeId:null,
+        accent:primary,
+        theme:{ pipe:surface, hivis:primary, steel:ink, safety:primary, lightBg:bg }
+      };
+    }
+    var p=(scCulturePresets||[]).find(function(x){ return x.id===preset; })||null;
+    var accent=(p&&p.primary)||'#C5E13F';
+    var accentEl2=document.getElementById('sc-accent');
+    if(accentEl2) accentEl2.value=accent;
+    return {
+      cultureColorPreset:preset,
+      themeId:null,
+      accent:accent,
+      theme:p?{ pipe:p.surface||accent, hivis:p.primary, steel:p.ink, safety:p.primary, lightBg:p.bg }:null
+    };
   }
   function themeOptions(){ return '<option value="">Apply a theme\u2026</option>'+themes.map(function(t){ return '<option value="'+esc(t.id)+'">'+(t._shared?'★ ':'')+esc(t.name)+(t._shared?' (LeadPages)':'')+'</option>'; }).join(''); }
   function mockupCard(m){
@@ -1991,47 +2005,50 @@
     if(l.url) return String(l.url).trim();
     return '';
   }
-  var scTemplateKey='converge';
-  var scPageTemplates=[];
-  function scTemplateCard(t){
-    var sel=t.id===scTemplateKey?' is-selected':'';
-    return '<button type="button" class="lp-sc-tpl-card'+sel+'" data-sc-tpl="'+esc(t.id)+'" role="radio" aria-checked="'+(sel?'true':'false')+'">'
-      +'<div class="lp-sc-tpl-preview" style="background:'+esc(t.preview)+'"></div>'
-      +'<span class="lp-sc-tpl-name">'+esc(t.label)+'</span>'
-      +'<span class="lp-sc-tpl-tag">'+esc(t.mood)+'</span>'
-      +'<p class="lp-sc-tpl-desc">'+esc(t.description)+'</p>'
+  var scCulturePresets=[];
+  var scCulturePreset='culture';
+  function scCulturePresetCard(p){
+    var sel=p.id===scCulturePreset?' is-selected':'';
+    return '<button type="button" class="lp-sc-cpreset'+sel+'" data-sc-cpreset="'+esc(p.id)+'" role="radio" aria-checked="'+(sel?'true':'false')+'">'
+      +'<span class="lp-sc-cpreset-swatches" aria-hidden="true">'
+      +'<i style="background:'+esc(p.primary)+'"></i>'
+      +'<i style="background:'+esc(p.ink)+'"></i>'
+      +'<i style="background:'+esc(p.bg)+'"></i>'
+      +'</span>'
+      +'<span class="lp-sc-cpreset-name">'+esc(p.name)+'</span>'
+      +'<span class="lp-sc-cpreset-blurb">'+esc(p.blurb||'')+'</span>'
       +'</button>';
   }
-  function renderScTemplateGrid(){
-    var box=document.getElementById('sc-template-grid'); if(!box) return;
-    if(!scPageTemplates.length){
-      box.innerHTML='<p class="muted" style="font-size:13px">Loading templates…</p>';
-      return;
-    }
-    box.innerHTML=scPageTemplates.map(scTemplateCard).join('');
+  function renderCulturePresets(){
+    var box=document.getElementById('sc-culture-presets'); if(!box) return;
+    var list=(scCulturePresets||[]).slice();
+    list.push({ id:'custom', name:'Custom', blurb:'Override with your own colours.', primary:'#C5E13F', ink:'#0B2114', bg:'#FDFCF0' });
+    box.innerHTML=list.map(scCulturePresetCard).join('');
+    var custom=document.getElementById('sc-culture-custom');
+    if(custom) custom.hidden=scCulturePreset!=='custom';
   }
-  function setScTemplateKey(id){
-    scTemplateKey=id||'converge';
-    renderScTemplateGrid();
+  function setCultureColorPreset(id){
+    scCulturePreset=id||'culture';
+    renderCulturePresets();
   }
   async function loadScTemplates(){
     try{
       var r=await fetch('/api/partner/template-registry');
       var j=await r.json();
-      if(j&&j.ok&&j.templates) scPageTemplates=j.templates;
+      if(j&&j.ok&&j.cultureColorPresets) scCulturePresets=j.cultureColorPresets;
     }catch(_e){
-      scPageTemplates=[
-        {id:'converge',label:'Converge Studio',mood:'Bold & conversion',description:'Dark conversion-focused agency',preview:'linear-gradient(135deg,#1a0a2e 0%,#7b2fff 100%)'},
-        {id:'causehouse',label:'Cause House',mood:'Editorial & warm',description:'Big type, word art, clever navigation',preview:'linear-gradient(160deg,#faf8f4 0%,#e8dfd0 100%)'},
-        {id:'webculture',label:'Web Culture',mood:'Premium & visual',description:'Browser mockups, demo gallery, interactive showcase',preview:'linear-gradient(160deg,#f4ebdd 0%,#bfea4b 45%,#183525 100%)'},
-        {id:'signal',label:'Signal Brutalist',mood:'Brutalist',description:'Black and white brutalism with screaming typography',preview:'repeating-linear-gradient(90deg,#000 0,#000 50%,#fff 50%,#fff 100%)'},
-        {id:'atlas',label:'Atlas Editorial',mood:'Editorial magazine',description:'Magazine layout, asymmetric drama',preview:'linear-gradient(180deg,#1c1917 0%,#44403c 50%,#fafaf9 50%)'},
-        {id:'horizon',label:'Horizon Glass',mood:'Light & glass',description:'Soft gradients, glass panels, floating cards',preview:'linear-gradient(135deg,#e0f2fe 0%,#c7d2fe 50%,#ddd6fe 100%)'},
-        {id:'pulse',label:'Pulse Neon',mood:'Neon cyber',description:'Electric dark-mode agency',preview:'linear-gradient(135deg,#0a0a0f 0%,#00f0ff 40%,#ff00aa 100%)'},
-        {id:'vault',label:'Vault Craft',mood:'Warm craft',description:'Warm craft, trusted hands',preview:'linear-gradient(160deg,#fef3e2 0%,#d97706 100%)'}
+      scCulturePresets=[
+        {id:'culture',name:'Culture Lime',blurb:'The signature forest and lime look.',primary:'#C5E13F',ink:'#0B2114',bg:'#FDFCF0'},
+        {id:'basalt',name:'Basalt',blurb:'Charcoal ground with a copper spark.',primary:'#D97706',ink:'#141414',bg:'#F7F4EF'},
+        {id:'rivet',name:'Rivet',blurb:'Deep navy with a sharp signal accent.',primary:'#F97316',ink:'#0B1C33',bg:'#F4F7FB'},
+        {id:'tarmac',name:'Tarmac',blurb:'Near-black with an electric teal edge.',primary:'#14B8A6',ink:'#0A0F14',bg:'#F3F6F7'},
+        {id:'petal',name:'Petal',blurb:'Soft rose warmth on cream.',primary:'#E8A0A8',ink:'#3D2A32',bg:'#FFF8F7'},
+        {id:'willow',name:'Willow',blurb:'Calm sage and soft daylight green.',primary:'#8FAE6B',ink:'#243028',bg:'#F7F9F3'},
+        {id:'orchid',name:'Orchid',blurb:'Quiet mauve with a polished finish.',primary:'#B28BB8',ink:'#2C2130',bg:'#FBF7FC'},
+        {id:'dune',name:'Dune',blurb:'Warm sand and terracotta.',primary:'#C47A4A',ink:'#2B2118',bg:'#FBF6EF'}
       ];
     }
-    renderScTemplateGrid();
+    renderCulturePresets();
   }
   function scLogoSizeValue(){
     var el=document.getElementById('sc-logo-size'); var v=parseFloat(el&&el.value);
@@ -2076,10 +2093,16 @@
   function loadMyPage(){
     var pf=state.profile||{}; var cfg=pf.showcase_config||{}; var g=function(id){return document.getElementById(id);};
     g('sc-slug').value=pf.showcase_slug||''; g('sc-domain').value=pf.showcase_domain||''; g('sc-enabled').checked=!!pf.showcase_enabled;
-    g('sc-headline').value=pf.showcase_headline||''; g('sc-accent').value=cfg.accent||''; g('sc-intro').value=cfg.intro||'';
-    setScTemplateKey(cfg.templateKey||'converge');
-    if(g('sc-theme')) g('sc-theme').value=cfg.themeId||'';
-    renderScThemePreview();
+    g('sc-headline').value=pf.showcase_headline||''; g('sc-intro').value=cfg.intro||'';
+    if(g('sc-accent')) g('sc-accent').value=cfg.accent||'';
+    var preset=cfg.cultureColorPreset||'culture';
+    setCultureColorPreset(preset);
+    if(preset==='custom' && cfg.theme){
+      if(g('sc-c-primary')) g('sc-c-primary').value=cfg.theme.hivis||cfg.accent||'#C5E13F';
+      if(g('sc-c-ink')) g('sc-c-ink').value=cfg.theme.steel||'#0B2114';
+      if(g('sc-c-bg')) g('sc-c-bg').value=cfg.theme.lightBg||'#FDFCF0';
+      if(g('sc-c-surface')) g('sc-c-surface').value=cfg.theme.pipe||'#F5F2E6';
+    }
     scLogo=scLogoFromCfg(cfg);
     if(scLogo){ var wrap=g('sc-logo-preview'); g('sc-logo-prev').src=scLogo; if(wrap) wrap.hidden=false; g('sc-logo-clear').style.display=''; }
     setScLogoSizeUI(cfg.logoSize!=null?cfg.logoSize:1);

@@ -60,10 +60,10 @@ test('partnerLogoDisplayUrl — adds Cloudinary width transform for sharp displa
   assert.ok(out.includes('logo.png'));
 });
 
-test('buildPartnerLandingHtml — uses showcase logo only for Cause House nav', function() {
+test('buildPartnerLandingHtml — uses showcase logo only for Culture nav', function() {
   const prof = {
     showcase_config: {
-      templateKey: 'causehouse',
+      templateKey: 'webculture',
       logo: 'https://example.com/showcase-logo.png',
       logoSize: 2
     },
@@ -72,7 +72,7 @@ test('buildPartnerLandingHtml — uses showcase logo only for Cause House nav', 
   const partner = { display_name: 'Alex Partner' };
   const home = { config: { logo: { imageUrl: 'https://example.com/home-logo.png' } } };
   const html = buildPartnerLandingHtml(prof, partner, [], 'leadpages.com.au', { home, showTemplateSwitcher: false });
-  assert.ok(html.includes('ch-nav-logo'));
   assert.ok(html.includes('showcase-logo.png'));
   assert.ok(!html.includes('home-logo.png'));
+  assert.ok(!html.includes('pt-tpl-bar'));
 });
