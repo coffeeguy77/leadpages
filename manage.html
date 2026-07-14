@@ -2152,7 +2152,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   let authed=false, currentRole='super';
   /* ===== leadpages: live Supabase auth + DB-backed config ===== */
   const sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
-  let currentSiteId=null, currentSiteSlug=null, currentSiteTemplate=null, currentBusinessName='', currentCustomDomain='', currentOwnerEmail='', currentIsPartnerHome=false, currentSiteStatus='', allSites=[];
+  let currentSiteId=null, currentSiteSlug=null, currentSiteTemplate=null, currentBusinessName='', currentCustomDomain='', currentOwnerEmail='', currentIsPartnerHome=false, currentSiteStatus='', currentReferringPartnerId=null, currentServicingPartnerId=null, currentCommissionPartnerId=null, currentRecurringCommissionActive=true, allSites=[];
   var LP_NAV_STATE_KEY='lp_manage_nav_v1';
   var lpNavRestorePending=null;
   function lpNavStateLoad(){ try{ return JSON.parse(localStorage.getItem(LP_NAV_STATE_KEY)||'{}')||{}; }catch(e){ return {}; } }
@@ -2244,7 +2244,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var __so=document.getElementById('lp-signout-top'); if(__so) __so.onclick=function(e){ e.preventDefault(); signOutLP(); };
   }
   async function loadSitesFromDB(){
-    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,custom_domain,owner_email,owner_user_id,config,template,is_demo,is_favorite,is_partner_home,referring_partner_id,servicing_partner_id,is_mockup,status,updated_at').order('created_at',{ascending:true});
+    const { data:rows, error } = await sb.from('sites').select('id,slug,business_name,custom_domain,owner_email,owner_user_id,config,template,is_demo,is_favorite,is_partner_home,referring_partner_id,servicing_partner_id,commission_partner_id,recurring_commission_active,servicing_status,is_mockup,status,updated_at').order('created_at',{ascending:true});
     if(error){ toast('Could not load site: '+error.message); return; }
     allSites = rows||[];
     if(!allSites.length){ toast('No site is assigned to this account yet.'); return; }
@@ -2826,6 +2826,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     hideLanding();
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app'; currentIsPartnerHome=!!site.is_partner_home;
     currentSiteStatus=String(site.status||'').toLowerCase();
+    currentReferringPartnerId=site.referring_partner_id||null;
+    currentServicingPartnerId=site.servicing_partner_id||null;
+    currentCommissionPartnerId=site.commission_partner_id||null;
+    currentRecurringCommissionActive=site.recurring_commission_active!==false;
     lpNavStateSave({siteId:site.id, siteSlug:site.slug});
     if(window.LPLogo&&window.LPLogo.refreshWorkspaceLogos){ window.LPLogo.refreshWorkspaceLogos(); }
     currentBusinessName=site.business_name||''; currentCustomDomain=site.custom_domain||''; currentOwnerEmail=site.owner_email||'';
@@ -3845,6 +3849,101 @@ function heroCtaCard(c){
   }
   function closeSettingsPage(){ var p=document.getElementById('settings-page'); if(p) p.remove(); }
   function closeAccountPage(){ var p=document.getElementById('account-page'); if(p) p.remove(); }
+
+  /** Super-admin: assign a servicing/commission partner without granting build attribution. */
+  async function wireAssignPartnerCard(){
+    var sel=$('ap-partner'), save=$('ap-save'), ok=$('ap-saved'), err=$('ap-err');
+    if(!sel||!save||!currentSiteId) return;
+    function say(msg, bad){ if(ok){ ok.style.color=bad?'#b42318':'#0a7d33'; ok.textContent=msg||''; } if(err) err.textContent=''; }
+    try{
+      if(typeof LPL==='undefined'||!LPL.partners||!Object.keys(LPL.partners).length){
+        if(typeof loadLandingPartners==='function') await loadLandingPartners();
+      }
+      var r=await sb.from('partners').select('id,display_name,email,status').eq('status','active').order('display_name',{ascending:true});
+      var list=r.data||[];
+      var cur=currentServicingPartnerId||'';
+      var opts='<option value="__lp__"'+(cur?'':' selected')+'>LeadPages direct (no partner)</option>';
+      list.forEach(function(p){
+        opts+='<option value="'+esc(p.id)+'"'+(p.id===cur?' selected':'')+'>'+esc(p.display_name||p.email||'Partner')+'</option>';
+      });
+      if(cur && !list.some(function(p){ return p.id===cur; })){
+        var orphan=(LPL.partners&&LPL.partners[cur])||{};
+        opts+='<option value="'+esc(cur)+'" selected>'+esc(orphan.display_name||'Current partner (inactive)')+'</option>';
+      }
+      sel.innerHTML=opts;
+    }catch(e){
+      sel.innerHTML='<option value="">Could not load partners</option>';
+      say('Could not load partners', true);
+      return;
+    }
+    save.addEventListener('click', async function(){
+      if(!currentSiteId){ say('No site loaded', true); return; }
+      var toSel=sel.value; var toId=(toSel&&toSel!=='__lp__')?toSel:null;
+      var fromId=currentServicingPartnerId||null;
+      if(String(fromId||'')===String(toId||'')){ say('Already assigned'); return; }
+      save.disabled=true; var o=save.textContent; save.textContent='Saving\u2026'; say('');
+      var patch={
+        servicing_partner_id:toId,
+        servicing_status:toId?'partner_serviced':'leadpages_direct',
+        updated_at:new Date().toISOString()
+      };
+      if(toId){
+        // Hosting commission only — do not set referring_partner_id (no build-fee share).
+        patch.commission_partner_id=toId;
+        patch.recurring_commission_active=true;
+      } else {
+        patch.commission_partner_id=null;
+        patch.recurring_commission_active=false;
+      }
+      var r1=await sb.from('sites').update(patch).eq('id', currentSiteId).select('id,servicing_partner_id,commission_partner_id,recurring_commission_active,servicing_status,referring_partner_id');
+      if(r1.error||!r1.data||!r1.data.length){
+        save.disabled=false; save.textContent=o;
+        say((r1.error&&r1.error.message)||'Could not save assignment', true);
+        return;
+      }
+      var row=r1.data[0];
+      currentServicingPartnerId=row.servicing_partner_id||null;
+      currentCommissionPartnerId=row.commission_partner_id||null;
+      currentRecurringCommissionActive=row.recurring_commission_active!==false;
+      currentReferringPartnerId=row.referring_partner_id||currentReferringPartnerId;
+      var sref=allSites.find(function(x){ return x.id===currentSiteId; });
+      if(sref){
+        sref.servicing_partner_id=currentServicingPartnerId;
+        sref.commission_partner_id=currentCommissionPartnerId;
+        sref.recurring_commission_active=currentRecurringCommissionActive;
+        sref.servicing_status=row.servicing_status;
+      }
+      try{
+        var me=(await sb.auth.getSession()).data.session;
+        var uid=me&&me.user&&me.user.id; var email=me&&me.user&&me.user.email;
+        await sb.from('client_transfer_events').insert({
+          site_id:currentSiteId,
+          from_partner_id:fromId,
+          to_partner_id:toId,
+          reason:'assign_from_settings',
+          effective_date:new Date().toISOString().slice(0,10),
+          keep_commission_trail:true,
+          continue_recurring:!!toId,
+          recurring_earner:toId?'new':'none',
+          notes:'Assigned from site Settings. Hosting 20% only — no build fee attribution.',
+          created_by:uid||null,
+          created_by_email:email||null
+        });
+        await sb.from('partner_audit_logs').insert({
+          actor_id:uid||null,
+          actor_email:email||null,
+          action:'assign_partner_settings',
+          partner_id:toId,
+          site_id:currentSiteId,
+          detail:{ from:fromId, to:toId, hosting_only:true, build_fee:false }
+        });
+      }catch(_log){}
+      save.disabled=false; save.textContent=o;
+      say(toId?'Partner assigned — site is on their dashboard (20% hosting)':'Cleared — LeadPages direct');
+      if(typeof toast==='function') toast(toId?'Partner assigned':'Partner assignment cleared');
+    });
+  }
+
   function openAccountPage(){
     closeAccountPage();
     var email='';
@@ -3861,7 +3960,7 @@ function heroCtaCard(c){
       +'<p class="lede" style="margin:0 0 10px;">This is the email you use to open the command centre.</p>'
       +'<p id="acct-email" style="margin:0;font-weight:600;word-break:break-all;">Loading\u2026</p>'
       +'</div>'
-      +'<div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;">'
+      +'<div class="card" style="margin-bottom:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;">'
       +'<h2 style="margin:0 0 4px;font-size:17px;">Password</h2>'
       +'<p class="lede" style="margin:0 0 14px;">Set a password so you can sign in with your email without waiting for a code.</p>'
       +'<label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;" for="acct-pass">New password</label>'
@@ -3872,7 +3971,21 @@ function heroCtaCard(c){
       +'<button type="button" class="btn" id="acct-pass-save">Save password</button>'
       +'<span id="acct-pass-saved" style="font-size:13px;color:#0a7d33;display:none;">Saved \u2713</span>'
       +'<span id="acct-pass-err" style="font-size:13px;color:#b42318;"></span>'
-      +'</div></div></div>';
+      +'</div></div>'
+      +(currentRole==='super'&&currentSiteId
+        ?('<div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;" id="assign-partner-card">'
+          +'<h2 style="margin:0 0 4px;font-size:17px;">Assign partner</h2>'
+          +'<p class="lede" style="margin:0 0 12px;">Put this site on a partner\u2019s dashboard. They earn <strong>20% of hosting</strong> while managing the client — not a share of the build fee.</p>'
+          +'<div class="f" style="margin-bottom:10px;"><label for="ap-partner">Partner</label>'
+          +'<select id="ap-partner" class="apsel" style="width:100%;"><option value="">Loading partners\u2026</option></select></div>'
+          +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">'
+          +'<button type="button" class="btn" id="ap-save">Save partner assignment</button>'
+          +'<span id="ap-saved" style="font-size:13px;color:#0a7d33;"></span></div>'
+          +'<p id="ap-err" class="hint" style="margin:10px 0 0;color:#b42318;"></p>'
+          +'<p class="hint" style="margin:12px 0 0;">Or manage this under Settings \u2192 Assign partner.</p>'
+          +'</div>')
+        :'')
+      +'</div>';
     p.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(16,22,32,.55);overflow:auto;padding:32px 16px;';
     document.body.appendChild(p);
     document.getElementById('acct-close').addEventListener('click',closeAccountPage);
@@ -3900,6 +4013,7 @@ function heroCtaCard(c){
       if(ok){ ok.style.display='inline'; setTimeout(function(){ ok.style.display='none'; },1800); }
       if(typeof toast==='function') toast('Password saved — you can sign in with email and password');
     });
+    if(currentRole==='super'&&currentSiteId) wireAssignPartnerCard();
   }
   function openSettingsPage(){
     closeSettingsPage();
@@ -4001,10 +4115,28 @@ function heroCtaCard(c){
       +'<div class="row">'+lpFld('Email','d-email','')+lpFld('Region','d-region','')+'</div>'
       +'<div class="row">'+lpFld('Service / business type','d-trade','e.g. Plumber, Café, Airbnb host')+lpFld('Licence','d-licence','')+'</div>'
       +'<div style="margin-top:6px;"><button class="btn" id="d-save">Save details</button><span id="d-saved" style="margin-left:10px;font-size:13px;color:#0a7d33;"></span></div></div>';
+    var assignPartnerCard='';
+    if(currentRole==='super'){
+      assignPartnerCard='<div class="card" style="margin-bottom:20px;" id="assign-partner-card"><h2 style="margin:0 0 4px;">Assign partner</h2>'
+        +'<p class="lede" style="margin:0 0 12px;">Put this site on a partner\u2019s dashboard for ongoing support. They get <strong>20% of hosting fees</strong> while the client stays under their management. They do <strong>not</strong> get a share of the build fee (the sale didn\u2019t go through them).</p>'
+        +'<div class="f" style="margin-bottom:10px;"><label for="ap-partner">Partner</label>'
+        +'<select id="ap-partner" class="apsel" style="width:100%;"><option value="">Loading partners\u2026</option></select></div>'
+        +'<ul class="hint" style="margin:0 0 14px;padding-left:18px;line-height:1.55;">'
+        +'<li>Site appears in that partner\u2019s Clients list</li>'
+        +'<li>Hosting commission earner is set to this partner (20%)</li>'
+        +'<li>Referring / build attribution is left unchanged</li>'
+        +'</ul>'
+        +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">'
+        +'<button type="button" class="btn" id="ap-save">Save partner assignment</button>'
+        +'<span id="ap-saved" style="font-size:13px;color:#0a7d33;"></span></div>'
+        +'<p id="ap-err" class="hint" style="margin:10px 0 0;color:#b42318;"></p>'
+        +'</div>';
+    }
     var danger=(currentRole==='super')?('<div class="card danger" style="margin-bottom:0;"><h2>Danger zone</h2><p class="lede" style="margin:0 0 12px;">Unlock, then tap Delete twice to confirm. This permanently removes the site and can\u2019t be undone.</p><div style="display:flex;gap:10px;align-items:center;"><button type="button" id="btn-dellock" class="sp-lock" title="Unlock to allow delete" aria-label="Unlock to allow delete"><svg class="sp-lock-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="sp-lock-closed"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></g><g class="sp-lock-open"><path d="M8 11V7a4 4 0 0 1 7.5-1"/><rect x="5" y="11" width="14" height="10" rx="2"/></g></svg></button><button type="button" id="btn-delsite" class="sp-del" disabled>Delete site</button></div></div>'):'';
     p.innerHTML='<div class="sp-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h1 style="margin:0;font:700 26px/1.1 var(--font-display,Georgia),serif;">Settings</h1><button type="button" id="set-close" class="btn ghost">Close</button></div>'
       +'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Appearance &amp; Accessibility</h2><p class="lede" style="margin:0 0 12px;">Workspace theme for the command centre, plus published page visitor settings for this site.</p><button type="button" class="btn" id="open-aa-inline">Workspace appearance</button> <button type="button" class="btn ghost" id="open-aa-published">Published page settings</button></div>'
       +detailFields
+      +assignPartnerCard
       +searchCard
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Mobile command menu</h2><p class="lede" style="margin:0 0 12px;">Design the phone mega menu for the command centre — section order, layouts, separators, button styles, and which roles see each item (super admin, partner, client).</p><button type="button" class="btn" id="open-mobile-menu">Edit mobile menu</button></div>':'')
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced. The suspended page is what the public sees when a site is paused for non-payment.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button> <button type="button" class="btn ghost" id="open-susp">Edit suspended page</button></div>':'')
@@ -4025,6 +4157,7 @@ function heroCtaCard(c){
     var opb=$('open-plans'); if(opb) opb.addEventListener('click',openPlansPage);
     var osp=$('open-susp'); if(osp) osp.addEventListener('click',openSuspendedEditor);
     var omm=$('open-mobile-menu'); if(omm) omm.addEventListener('click',function(){ closeSettingsPage(); if(typeof openMobileMenuBuilder==='function') openMobileMenuBuilder(); });
+    if(currentRole==='super') wireAssignPartnerCard();
     (function(){
       var cp=$('gsi-copy-prop'); if(cp) cp.addEventListener('click',function(){ lpCopyText(_propUrl,'Property URL'); });
       var cm=$('gsi-copy-map'); if(cm) cm.addEventListener('click',function(){ lpCopyText('sitemap.xml','Sitemap path'); });
