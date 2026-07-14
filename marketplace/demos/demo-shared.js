@@ -87,7 +87,31 @@
       var nmEl=document.querySelector('a.brand .nm'); var _SCb=(typeof SITE_CONFIG!=='undefined'&&SITE_CONFIG)||{}; var BIZ=(_SCb.business||_SCb.name||_SCb.business_name||_SCb.businessName||(nmEl&&nmEl.textContent.trim())||'');
       function tok(s){ return String(s==null?'':s).replace(/\{\{\s*businessName\s*\}\}/g,BIZ); }
       if(SEC.hero&&Array.isArray(SEC.hero.badges)) rlist('.badges',SEC.hero.badges,function(b){return '<div class="badge"><span class="b-ic">'+lpIcon(b.icon)+'</span>'+esc(b.text||'')+'</div>';});
-      if(SEC.why&&Array.isArray(SEC.why.items)) rlist('.why-grid',SEC.why.items,function(w){return '<div class="why-item">'+(w.icon?'<div class="wic">'+lpIcon(w.icon)+'</div>':'<div class="n">'+esc(w.n||'')+'</div>')+'<h3>'+esc(w.title||'')+'</h3><p>'+esc(w.body||'')+'</p></div>';});
+      if(SEC.why&&Array.isArray(SEC.why.items)){
+        var _whyAl=((SEC.why.iconAlign==='center'||SEC.why.iconAlign==='right')?SEC.why.iconAlign:'left');
+        rlist('.why-grid',SEC.why.items,function(w){return '<div class="why-item align-'+_whyAl+'">'+(w.icon?'<div class="wic">'+lpIcon(w.icon)+'</div>':'<div class="n">'+esc(w.n||'')+'</div>')+'<h3>'+esc(w.title||'')+'</h3><p>'+esc(w.body||'')+'</p></div>';});
+      }
+      (function(){
+        var WY=SEC.why||{}; var whyNode=document.querySelector('[data-sec="why"]'); if(!whyNode) return;
+        function _whyHex(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; }
+        function _whySet(name,val){ if(val) whyNode.style.setProperty(name,val); else whyNode.style.removeProperty(name); }
+        var bg=_whyHex(WY.bg); if(bg){ _whySet('--why-bg',bg); whyNode.style.background=bg; } else { whyNode.style.removeProperty('--why-bg'); whyNode.style.background=''; }
+        _whySet('--why-eyebrow', _whyHex(WY.eyebrowColor));
+        _whySet('--why-headline', _whyHex(WY.titleColor));
+        _whySet('--why-heading', _whyHex(WY.headingColor));
+        _whySet('--why-text', _whyHex(WY.textColor));
+        _whySet('--why-icon', _whyHex(WY.iconColor));
+        var itemStrokeOn=WY.strokeOn===true; var itemStroke=_whyHex(WY.stroke)||'#ffffff';
+        if(itemStrokeOn){ _whySet('--why-item-stroke', itemStroke); whyNode.style.setProperty('--why-item-stroke-w','1px'); whyNode.style.setProperty('--why-item-pad','18px 16px'); }
+        else { whyNode.style.removeProperty('--why-item-stroke'); whyNode.style.removeProperty('--why-item-stroke-w'); whyNode.style.removeProperty('--why-item-pad'); }
+        var secStrokeOn=WY.sectionStrokeOn!==false; var secStroke=_whyHex(WY.sectionStroke);
+        whyNode.classList.toggle('why-sec-stroke-off', !secStrokeOn);
+        if(secStrokeOn&&secStroke) _whySet('--why-sec-stroke', secStroke); else whyNode.style.removeProperty('--why-sec-stroke');
+        var _al=(WY.iconAlign==='center'||WY.iconAlign==='right')?WY.iconAlign:'left';
+        whyNode.style.setProperty('--why-align', _al);
+        var S={compact:32,standard:42,large:56,hero:72}; var base=S[WY.iconSize]||42; var sc=parseInt(WY.iconScale,10); if(isNaN(sc)) sc=100; var px=Math.round(base*Math.max(50,Math.min(250,sc))/100);
+        whyNode.style.setProperty('--why-ic-size', px+'px');
+      })();
       var _RVSRC={google:{m:'G',n:'Google',c:'#4285F4'},facebook:{m:'f',n:'Facebook',c:'#1877F2'},hipages:{m:'h',n:'hipages',c:'#fc6c2c'},productreview:{m:'P',n:'ProductReview',c:'#19a39b'},word:{m:'♡',n:'Word of mouth',c:'#7a7a7a'}};
       function _rvKey(s){ s=String(s||'').toLowerCase().replace(/[^a-z]/g,''); if(s.indexOf('google')>=0)return 'google'; if(s.indexOf('face')>=0)return 'facebook'; if(s.indexOf('hipage')>=0)return 'hipages'; if(s.indexOf('product')>=0)return 'productreview'; if(s.indexOf('word')>=0||s.indexOf('mouth')>=0)return 'word'; return ''; }
       function _rvBadge(s){ if(!s||!String(s).trim())return ''; var k=_rvKey(s); if(k){ var d=_RVSRC[k]; return '<span class="rv-src"><span class="rv-mono" style="background:'+d.c+'">'+d.m+'</span>'+d.n+'</span>'; } return '<span class="rv-src"><span class="rv-mono" style="background:#888">★</span>'+esc(String(s).trim())+'</span>'; }
