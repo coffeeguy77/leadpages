@@ -3178,6 +3178,54 @@ function wireQuoteStyle(c){
     function colWire(id,key){ var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def'); if(clr) clr.addEventListener('input',function(){ Q()[key]=clr.value; if(tx)tx.value=clr.value; persist(); previewApply(); }); if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ Q()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ Q()[key]=v; if(clr)clr.value=v; } } persist(); previewApply(); }); if(df) df.addEventListener('click',function(){ Q()[key]=''; if(tx)tx.value=''; persist(); previewApply(); }); }
     colWire('qf-bg','bg'); colWire('qf-ibg','inputBg'); colWire('qf-ibd','inputBorder'); colWire('qf-lbl','label'); colWire('qf-txt','text'); colWire('qf-btnbg','btnBg'); colWire('qf-btntx','btnText'); colWire('qf-btnhv','btnHover'); colWire('qf-acc','accent'); colWire('qf-err','error'); colWire('qf-suc','success'); var _ho=$('qf-hoveroff'); if(_ho) _ho.addEventListener('change',function(){ Q().btnHoverOff=_ho.checked; persist(); previewApply(); }); colWire('qf-btnsh','btnShadow'); var _so=$('qf-shadowon'); if(_so) _so.addEventListener('change',function(){ Q().btnShadowOn=_so.checked; if(_so.checked) Q().btnShadowOff=false; else Q().btnShadowOff=true; persist(); previewApply(); });
   }
+
+  function crewStyleCard(c){
+    var CW=(c.sections&&c.sections.crew)||{};
+    var layout=CW.layout==='split'?'split':'cards';
+    var flip=CW.splitFlip===true;
+    var photoSize=(CW.photoSize!=null&&CW.photoSize!=='')?+CW.photoSize:112; if(isNaN(photoSize)) photoSize=112;
+    var photoZoom=(CW.photoZoom!=null&&CW.photoZoom!=='')?+CW.photoZoom:100; if(isNaN(photoZoom)) photoZoom=100;
+    var photoPos=CW.photoPos||'center';
+    var op=(CW.bgOpacity!=null&&CW.bgOpacity!=='')?+CW.bgOpacity:100; if(isNaN(op)) op=100;
+    var DEF={ cardBg:'#ffffff', stroke:'#e7e7e7', eyebrowColor:'#1f7bb8', titleColor:'#1a2230', fontColor:'#8a93a0', nameColor:'#1a2230', roleColor:'#1a2230' };
+    var col=function(id,key,label,sample){ var dv=DEF[key]||'#1a2230'; var v=(CW[key]&&/^#[0-9a-fA-F]{6}$/.test(CW[key]))?CW[key]:''; return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label style="font-weight:600;">'+label+'</label><p class="hint" style="margin:2px 0 6px;font-size:12px;">Template: <span style="font-weight:700;color:'+(v||dv)+';">'+sample+'</span></p><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(v||dv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" value="'+v+'" placeholder="'+dv+' (default)" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>'; };
+    var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Layout</h2><p class="lede" style="margin:0 0 12px;">Cards is the current centre-photo grid. Split puts the photo full-height on one third and the bio on two thirds.</p>';
+    h+='<div class="row" style="margin-bottom:10px;"><div class="f"><label>Team layout</label><select id="cw-layout" class="tin"><option value="cards"'+(layout==='cards'?' selected':'')+'>Cards (photo on top)</option><option value="split"'+(layout==='split'?' selected':'')+'>Split (photo 33% / content 66%)</option></select></div>';
+    h+='<div class="f" id="cw-flip-wrap" style="'+(layout==='split'?'':'display:none')+'"><label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:28px;"><input type="checkbox" id="cw-flip"'+(flip?' checked':'')+'> Flip \u2014 photo on the right</label></div></div></div>';
+    h+='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Colours</h2><p class="lede" style="margin:0 0 10px;">Each control matches an item on the Team Members template so you can find the exact text or surface to change.</p>';
+    h+='<div style="display:grid;grid-template-columns:minmax(180px,240px) 1fr;gap:16px;align-items:start;margin-bottom:16px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#f7f8fa;">';
+    h+='<div style="font-size:12px;line-height:1.45;"><div style="font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#1f7bb8;margin-bottom:4px;">Eyebrow</div><div style="font-weight:800;font-size:18px;color:#1a2230;margin-bottom:10px;">Title</div><div style="background:#fff;border:1px solid #e7e7e7;border-radius:12px;padding:14px;text-align:center;"><div style="width:54px;height:54px;border-radius:50%;margin:0 auto 8px;background:#cbd5e1;"></div><div style="font-weight:800;text-transform:uppercase;color:#1a2230;">Name</div><div style="font-weight:700;font-size:12px;margin-top:4px;color:#1a2230;">Position</div><div style="font-size:11px;margin-top:3px;color:#8a93a0;">Font / detail</div></div></div>';
+    h+='<div style="font-size:12.5px;color:#5b6878;"><p style="margin:0 0 8px;"><strong>Background</strong> = card fill &nbsp;\u00b7&nbsp; <strong>Stroke</strong> = card border</p><p style="margin:0 0 8px;"><strong>Eyebrow</strong> = small section label &nbsp;\u00b7&nbsp; <strong>Title</strong> = section heading</p><p style="margin:0;"><strong>Name</strong> / <strong>Position</strong> / <strong>Font</strong> colour the member text and intro detail line.</p></div></div>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:14px;">';
+    h+=col('cw-bg','cardBg','Background colour','Card fill');
+    h+=col('cw-stroke','stroke','Stroke colour','Card border');
+    h+=col('cw-eyebrow','eyebrowColor','Eyebrow colour','OUR TEAM');
+    h+=col('cw-title','titleColor','Title colour','Meet The Team');
+    h+=col('cw-font','fontColor','Font colour','Intro & specialty line');
+    h+=col('cw-name','nameColor','Name colour','Member name');
+    h+=col('cw-role','roleColor','Position colour','Job title / role');
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Background transparency <span id="cw-op-v" style="font-weight:700;color:var(--accent);">'+op+'%</span></label><input type="range" id="cw-op" min="0" max="100" value="'+op+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">100% = solid \u00b7 0% = clear (needs a background colour)</span></div>';
+    h+='</div></div>';
+    h+='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Photo size, zoom &amp; position</h2><p class="lede" style="margin:0 0 12px;">Adjust how team photos sit in the circle (cards) or the tall image panel (split layout).</p>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:14px;">';
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Photo size <span id="cw-psz-v" style="font-weight:700;color:var(--accent);">'+photoSize+'px</span></label><input type="range" id="cw-psz" min="64" max="220" step="2" value="'+photoSize+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">Cards layout circle diameter (split uses the full column height)</span></div>';
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Photo zoom <span id="cw-pzm-v" style="font-weight:700;color:var(--accent);">'+photoZoom+'%</span></label><input type="range" id="cw-pzm" min="100" max="200" step="5" value="'+photoZoom+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">Crop in closer on the face</span></div>';
+    h+='<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label>Photo position</label><select id="cw-ppos" class="tin"><option value="center"'+(photoPos==='center'?' selected':'')+'>Centre</option><option value="top"'+(photoPos==='top'?' selected':'')+'>Top</option><option value="bottom"'+(photoPos==='bottom'?' selected':'')+'>Bottom</option><option value="left"'+(photoPos==='left'?' selected':'')+'>Left</option><option value="right"'+(photoPos==='right'?' selected':'')+'>Right</option></select></div>';
+    h+='</div></div>';
+    return h;
+  }
+  function wireCrewStyle(c){
+    function CW(){ if(!c.sections)c.sections={}; if(!c.sections.crew)c.sections.crew={}; return c.sections.crew; }
+    function colWire(id,key){ var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def'); if(clr) clr.addEventListener('input',function(){ CW()[key]=clr.value; if(tx)tx.value=clr.value; persist(); previewApply(); }); if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ CW()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ CW()[key]=v; if(clr)clr.value=v; } } persist(); previewApply(); }); if(df) df.addEventListener('click',function(){ CW()[key]=''; if(tx)tx.value=''; persist(); previewApply(); }); }
+    colWire('cw-bg','cardBg'); colWire('cw-stroke','stroke'); colWire('cw-eyebrow','eyebrowColor'); colWire('cw-title','titleColor'); colWire('cw-font','fontColor'); colWire('cw-name','nameColor'); colWire('cw-role','roleColor');
+    var lay=$('cw-layout'), flip=$('cw-flip'), flipWrap=$('cw-flip-wrap');
+    if(lay) lay.addEventListener('change',function(){ CW().layout=lay.value; if(flipWrap) flipWrap.style.display=lay.value==='split'?'':'none'; persist(); previewApply(); });
+    if(flip) flip.addEventListener('change',function(){ CW().splitFlip=flip.checked; persist(); previewApply(); });
+    var op=$('cw-op'),opv=$('cw-op-v'); if(op) op.addEventListener('input',function(){ CW().bgOpacity=+op.value; if(opv)opv.textContent=op.value+'%'; persist(); previewApply(); });
+    var psz=$('cw-psz'),pszv=$('cw-psz-v'); if(psz) psz.addEventListener('input',function(){ CW().photoSize=+psz.value; if(pszv)pszv.textContent=psz.value+'px'; persist(); previewApply(); });
+    var pzm=$('cw-pzm'),pzmv=$('cw-pzm-v'); if(pzm) pzm.addEventListener('input',function(){ CW().photoZoom=+pzm.value; if(pzmv)pzmv.textContent=pzm.value+'%'; persist(); previewApply(); });
+    var ppos=$('cw-ppos'); if(ppos) ppos.addEventListener('change',function(){ CW().photoPos=ppos.value; persist(); previewApply(); });
+  }
   
 function heroCtaCard(c){
     var H=(c.sections&&c.sections.hero)||{};
@@ -5675,7 +5723,8 @@ function heroCtaCard(c){
     } else if(sub==='customerReactions'){
       body.innerHTML=secCard(c,'customerReactions','Customer Reactions section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])+listCard('customerReactions','Reactions','Screenshot-style proof cards \u2014 pick a style (Google review, Facebook, SMS, Messenger) and add the name, message and time, or choose Screenshot image and paste a real screenshot URL. Edit, hide, reorder or add.'); wireSec(c,'customerReactions',true,[['eyebrow'],['heading'],['intro']]); listEditor($('le-customerReactions'),c,'customerReactions');
     } else if(sub==='crew'){
-      body.innerHTML=secCard(c,'crew','Team Members section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])+listCard('crew','Team members','Name, title, an experience / specialty line, and an optional photo URL (blank shows an initial avatar). Shows on every layout. Edit, hide, reorder or add.'); wireSec(c,'crew',true,[['eyebrow'],['heading'],['intro']]); listEditor($('le-crew'),c,'crew');
+      body.innerHTML=secCard(c,'crew','Team Members section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])+crewStyleCard(c)+listCard('crew','Team members','Name, title, an experience / specialty line, and an optional photo URL (blank shows an initial avatar). Shows on every layout. Edit, hide, reorder or add.');
+      wireSec(c,'crew',true,[['eyebrow'],['heading'],['intro']]); wireCrewStyle(c); listEditor($('le-crew'),c,'crew');
     } else if(sub==='mobileBar'){
       try{ console.log('%c[LeadPages] Mobile editor build JUN27-F loaded','color:#0a7d4d;font-weight:700'); }catch(_x){}
       var _m=(c.sections&&c.sections.mobileBar)||{}; var _b=_m.buttons||{};

@@ -626,12 +626,26 @@ section[data-sec="activityCounter"]{border-top:1px solid var(--line,#e7e7e7);bor
 
 /* Team Members (reusable) */
 .crew-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:22px;margin-top:30px}
-.crew-card{text-align:center;background:#fff;border:1px solid var(--line,#e7e7e7);border-radius:16px;padding:28px 20px;box-shadow:0 10px 30px rgba(20,30,45,.06)}
-.crew-photo{width:112px;height:112px;border-radius:50%;margin:0 auto 16px;object-fit:cover;display:block;background:var(--steel-900,#1a2230)}
-.crew-avatar{width:112px;height:112px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,var(--pipe,#1f7bb8),var(--pipe-deep,#155a87));color:#fff;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:46px;line-height:1}
-.crew-name{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;font-size:25px;line-height:1;margin:0;color:var(--ink,#1a2230)}
-.crew-role{color:var(--ink,#1a2230);font-weight:700;font-size:15px;margin:7px 0 0}
-.crew-detail{color:#8a93a0;font-size:13px;font-weight:600;margin:3px 0 0}
+.crew-grid.crew-layout-split{display:flex;flex-direction:column;gap:18px}
+.crew-card{text-align:center;background:var(--crew-card-bg,#fff);border:1px solid var(--crew-stroke,var(--line,#e7e7e7));border-radius:16px;padding:28px 20px;box-shadow:0 10px 30px rgba(20,30,45,.06);color:var(--crew-font,#8a93a0)}
+.crew-media{width:var(--crew-photo-size,112px);height:var(--crew-photo-size,112px);border-radius:50%;margin:0 auto 16px;overflow:hidden;background:var(--steel-900,#1a2230);position:relative;flex:none}
+.crew-photo{width:100%;height:100%;object-fit:cover;object-position:var(--crew-photo-pos,center);display:block;transform:scale(var(--crew-photo-zoom,1));transform-origin:var(--crew-photo-pos,center)}
+.crew-avatar{width:100%;height:100%;border-radius:inherit;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,var(--pipe,#1f7bb8),var(--pipe-deep,#155a87));color:#fff;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:calc(var(--crew-photo-size,112px) * .4);line-height:1}
+.crew-name{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;font-size:25px;line-height:1;margin:0;color:var(--crew-name,var(--ink,#1a2230))}
+.crew-role{color:var(--crew-role,var(--ink,#1a2230));font-weight:700;font-size:15px;margin:7px 0 0}
+.crew-detail{color:var(--crew-font,#8a93a0);font-size:13px;font-weight:600;margin:3px 0 0}
+section[data-sec="crew"] .eyebrow{color:var(--crew-eyebrow,inherit)}
+section[data-sec="crew"] .section-head h2{color:var(--crew-title,inherit)}
+section[data-sec="crew"] .section-head p{color:var(--crew-font,inherit)}
+.crew-card.crew-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);padding:0;overflow:hidden;text-align:left;align-items:stretch;min-height:220px}
+.crew-card.crew-split.flip{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.crew-card.crew-split .crew-media{width:100%;height:100%;min-height:220px;margin:0;border-radius:0;align-self:stretch}
+.crew-card.crew-split.flip .crew-media{order:2}
+.crew-card.crew-split .crew-body{padding:28px 26px;display:flex;flex-direction:column;justify-content:center}
+@media(max-width:700px){
+  .crew-card.crew-split,.crew-card.crew-split.flip{grid-template-columns:1fr;min-height:0}
+  .crew-card.crew-split .crew-media,.crew-card.crew-split.flip .crew-media{order:0;min-height:200px;aspect-ratio:16/10;height:auto}
+}
 
 /* Social Proof Feed \u2014 Jobs Feed + Before/After Feed */
 section[data-sec="jobsFeed"],section[data-sec="beforeAfterFeed"]{display:none}
