@@ -203,8 +203,17 @@
   }
 
   function mountLogo(el, opts) {
-    if (!el || el.dataset.lpLogoMounted === 'true') return Promise.resolve(el);
     opts = opts || {};
+    if (!el) return Promise.resolve(el);
+    if (el.dataset.lpLogoMounted === 'true') {
+      if (opts.accent || opts.ink || el.getAttribute('data-lp-logo-accent')) {
+        applyTokens(el, {
+          accent: opts.accent || el.getAttribute('data-lp-logo-accent') || (el.style.getPropertyValue('--lp-logo-accent') || '').trim() || '#2ecc8f',
+          ink: opts.ink || (el.style.getPropertyValue('--lp-logo-ink') || '').trim() || '#ffffff'
+        });
+      }
+      return Promise.resolve(el);
+    }
 
     return loadSvgMarkup().then(function (markup) {
       var wrap = el.classList && el.classList.contains('lp-logo-wrap') ? el : wrapFromElement(el);
@@ -240,7 +249,14 @@
           applyTokens(wrap, { accent: tokens.accent, ink: '#f3f6fa' });
         }
       } else if (isAdminWorkspace()) {
-        applyTokens(wrap, logoTokens({ theme: opts.theme || resolvedWorkspaceTheme(), inkMode: 'workspace' }));
+        if (opts.accent || opts.ink || el.getAttribute('data-lp-logo-accent')) {
+          applyTokens(wrap, {
+            accent: opts.accent || el.getAttribute('data-lp-logo-accent') || tokens.accent,
+            ink: opts.ink || tokens.ink
+          });
+        } else {
+          applyTokens(wrap, logoTokens({ theme: opts.theme || resolvedWorkspaceTheme(), inkMode: 'workspace' }));
+        }
       }
       return wrap;
     });
@@ -266,6 +282,7 @@
     root.style.setProperty('--lp-logo-accent', tokens.accent);
     root.style.setProperty('--lp-logo-ink', tokens.ink);
     global.document.querySelectorAll('.lp-logo-wrap.leadpages-logo, [data-lp-logo].lp-logo-wrap').forEach(function (wrap) {
+      if (wrap.getAttribute('data-lp-logo-accent') || wrap.classList.contains('lp-foot-logo')) return;
       applyTokens(wrap, tokens);
     });
   }
