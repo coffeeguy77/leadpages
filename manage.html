@@ -3179,6 +3179,27 @@ function wireQuoteStyle(c){
     colWire('qf-bg','bg'); colWire('qf-ibg','inputBg'); colWire('qf-ibd','inputBorder'); colWire('qf-lbl','label'); colWire('qf-txt','text'); colWire('qf-btnbg','btnBg'); colWire('qf-btntx','btnText'); colWire('qf-btnhv','btnHover'); colWire('qf-acc','accent'); colWire('qf-err','error'); colWire('qf-suc','success'); var _ho=$('qf-hoveroff'); if(_ho) _ho.addEventListener('change',function(){ Q().btnHoverOff=_ho.checked; persist(); previewApply(); }); colWire('qf-btnsh','btnShadow'); var _so=$('qf-shadowon'); if(_so) _so.addEventListener('change',function(){ Q().btnShadowOn=_so.checked; if(_so.checked) Q().btnShadowOff=false; else Q().btnShadowOff=true; persist(); previewApply(); });
   }
 
+  function reviewsStyleCard(c){
+    var RV=(c.sections&&c.sections.reviews)||{};
+    var DEF={ cardBg:'#ffffff', stroke:'#e7e7e7', starColor:'#ffc400', textColor:'#33414f', whoColor:'#1a2230', eyebrowColor:'#1f7bb8', titleColor:'#1a2230' };
+    var col=function(id,key,label,sample){ var dv=DEF[key]||'#1a2230'; var v=(RV[key]&&/^#[0-9a-fA-F]{6}$/.test(RV[key]))?RV[key]:''; return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label style="font-weight:600;">'+label+'</label><p class="hint" style="margin:2px 0 6px;font-size:12px;">Sample: <span style="font-weight:700;color:'+(v||dv)+';">'+sample+'</span></p><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(v||dv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" value="'+v+'" placeholder="'+dv+' (default)" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>'; };
+    var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Colours</h2><p class="lede" style="margin:0 0 12px;">Style the Reviews section heading and each review card.</p><div style="display:flex;flex-wrap:wrap;gap:14px;">';
+    h+=col('rv-bg','cardBg','Background colour','Card fill');
+    h+=col('rv-stroke','stroke','Stroke colour','Card border');
+    h+=col('rv-stars','starColor','Star colour','★★★★★');
+    h+=col('rv-text','textColor','Text colour','Quote body');
+    h+=col('rv-who','whoColor','Name & suburb colour','Marcus T. — Belconnen');
+    h+=col('rv-eyebrow','eyebrowColor','Eyebrow colour','From the neighbours');
+    h+=col('rv-title','titleColor','Title colour','Reviews heading');
+    h+='</div></div>';
+    return h;
+  }
+  function wireReviewsStyle(c){
+    function RV(){ if(!c.sections)c.sections={}; if(!c.sections.reviews)c.sections.reviews={}; return c.sections.reviews; }
+    function colWire(id,key){ var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def'); if(clr) clr.addEventListener('input',function(){ RV()[key]=clr.value; if(tx)tx.value=clr.value; persist(); previewApply(); }); if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ RV()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ RV()[key]=v; if(clr)clr.value=v; } } persist(); previewApply(); }); if(df) df.addEventListener('click',function(){ RV()[key]=''; if(tx)tx.value=''; persist(); previewApply(); }); }
+    colWire('rv-bg','cardBg'); colWire('rv-stroke','stroke'); colWire('rv-stars','starColor'); colWire('rv-text','textColor'); colWire('rv-who','whoColor'); colWire('rv-eyebrow','eyebrowColor'); colWire('rv-title','titleColor');
+  }
+
   function servicesStyleCard(c){
     var SV=(c.sections&&c.sections.services)||{};
     var DEF={ eyebrowColor:'#1f7bb8', titleColor:'#1a2230', introColor:'#5b6878' };
@@ -5651,7 +5672,7 @@ function heroCtaCard(c){
     } else if(sub==='area'){
       body.innerHTML=secCard(c,'area','Service area section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro line','ta'],['ctaTitle','Call-out heading (blank = auto per trade)'],['ctaSub','Call-out subtext (blank = auto)','ta']])+'<div class="card" style="margin-bottom:22px;"><h2>Suburbs</h2><p class="lede">One per line (or comma-separated) — shown as tags.</p><textarea id="le-suburbs" rows="6" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;"></textarea></div>'; wireSec(c,'area',true,[['eyebrow'],['heading'],['intro']]); wireSuburbs(c);
     } else if(sub==='reviews'){
-      body.innerHTML=secCard(c,'reviews','Reviews section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+listCard('reviews','Reviews','Customer quotes (stars stay at five). Edit, hide or remove each.')+listCard('reviewSources','Review sources','Show which platforms your reviews come from — Google, Facebook, hipages, ProductReview. Add a rating and link; logos are optional (a clean text badge shows otherwise).'); wireSec(c,'reviews',true,[['eyebrow'],['heading']]); listEditor($('le-reviews'),c,'reviews'); listEditor($('le-reviewSources'),c,'reviewSources');
+      body.innerHTML=secCard(c,'reviews','Reviews section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+reviewsStyleCard(c)+listCard('reviews','Reviews','Customer quotes (stars stay at five). Edit, hide or remove each.')+listCard('reviewSources','Review sources','Show which platforms your reviews come from — Google, Facebook, hipages, ProductReview. Add a rating and link; logos are optional (a clean text badge shows otherwise).'); wireSec(c,'reviews',true,[['eyebrow'],['heading']]); wireReviewsStyle(c); listEditor($('le-reviews'),c,'reviews'); listEditor($('le-reviewSources'),c,'reviewSources');
     } else if(sub==='beforeAfter'){
       body.innerHTML=secCard(c,'beforeAfter','Before & After section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])+listCard('beforeAfterItems','Before / after items','Each card shows a before and an after image with a title and caption. Leave an image URL blank to show a clean placeholder \u2014 no upload needed yet.'); wireSec(c,'beforeAfter',true,[['eyebrow'],['heading'],['intro']]); listEditor($('le-beforeAfterItems'),c,'beforeAfterItems');
     } else if(sub==='responseCards'){

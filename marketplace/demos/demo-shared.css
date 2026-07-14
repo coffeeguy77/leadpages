@@ -137,11 +137,13 @@ section[data-sec="services"] .section-head p{color:var(--svc-sec-intro,inherit)}
 
 /* reviews */
 .reviews{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
-.review{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
-.review .stars{color:var(--safety);letter-spacing:2px;font-size:16px}
-.review p{margin-top:12px;font-size:15.5px;font-weight:500;color:#33414f}
-.review .who{margin-top:14px;font-weight:700;font-size:14.5px}
-.review .who span{color:var(--muted);font-weight:500}
+.review{background:var(--rv-card-bg,var(--white));border:1px solid var(--rv-stroke,var(--line));border-radius:var(--radius);padding:24px}
+.review .stars{color:var(--rv-stars,var(--safety));letter-spacing:2px;font-size:16px}
+.review p{margin-top:12px;font-size:15.5px;font-weight:500;color:var(--rv-text,#33414f)}
+.review .who{margin-top:14px;font-weight:700;font-size:14.5px;color:var(--rv-who,inherit)}
+.review .who span{color:var(--rv-who,var(--muted));font-weight:500}
+section[data-sec="reviews"] .eyebrow{color:var(--rv-eyebrow,inherit)}
+section[data-sec="reviews"] .section-head h2{color:var(--rv-title,inherit)}
 @media(max-width:860px){.reviews{grid-template-columns:1fr}}
 
 /* quote form */
