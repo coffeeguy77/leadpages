@@ -1552,6 +1552,17 @@ body[data-lp-standard] .lp-sec-editonly[data-on="0"] {
   color: var(--text);
   border-color: var(--border);
 }
+/* Icon strokes follow theme text so they stay visible on dark panels */
+.icon-pick .lp-ic,
+.icbtn .lp-ic {
+  stroke: currentColor;
+  color: inherit;
+}
+.icon-box #icon-search {
+  background: var(--panel-soft, var(--panel));
+  color: var(--text);
+  border-color: var(--border);
+}
 .seg2 .segb.on,
 .sec-modeseg button.on {
   background: var(--accent) !important;
