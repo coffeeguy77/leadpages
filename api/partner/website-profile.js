@@ -6,6 +6,7 @@ const { resolvePartnerThemeContent, PLATFORM_SERVICES, ENQUIRY_GOALS, ENQUIRY_FE
 const { PLATFORM_FAQS } = require('../../lib/partner-website/platform-defaults');
 const { websiteProfileFromRow, saveWebsiteProfile } = require('../../lib/partner-website/profile-store');
 const { extractLogoValue, normalizeLogoForStorage } = require('../../lib/partner-website/logo');
+const { isSparseWebsiteProfile, buildCultureStarterProfile } = require('../../lib/partner-website/culture-starter');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -58,12 +59,31 @@ module.exports = async (req, res) => {
   const currentWp = websiteProfileFromRow(prof) || {};
 
   if (req.method === 'GET') {
-    const content = resolvePartnerThemeContent({ prof, partner, directory, demos: [], base: 'leadpages.com.au', home: null });
+    let wp = validateWebsiteProfile(currentWp);
+    let seeded = false;
+    if (isSparseWebsiteProfile(wp)) {
+      wp = validateWebsiteProfile(mergeWebsiteProfilePatch(buildCultureStarterProfile(partner, directory), currentWp));
+      seeded = true;
+    }
+    const content = resolvePartnerThemeContent({
+      prof: Object.assign({}, prof, {
+        showcase_config: Object.assign({}, (prof && prof.showcase_config) || {}, {
+          templateKey: 'webculture',
+          websiteProfile: wp
+        })
+      }),
+      partner: partner,
+      directory: directory,
+      demos: [],
+      base: 'leadpages.com.au',
+      home: null
+    });
     const completion = computeProfileCompletion(content);
     return res.status(200).json({
       ok: true,
       profile: prof,
-      websiteProfile: validateWebsiteProfile(currentWp),
+      websiteProfile: wp,
+      seededFromCultureDemo: seeded,
       resolvedPreview: content,
       completion,
       platform: {

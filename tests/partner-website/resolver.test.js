@@ -85,7 +85,7 @@ test('resolvePartnerThemeContent — normalises object logo format', function() 
 test('resolvePartnerThemeContent — ignores partner home site logo', function() {
   var prof = {
     partner_id: 'p1',
-    showcase_config: { templateKey: 'causehouse' }
+    showcase_config: { templateKey: 'webculture' }
   };
   var home = { config: { logo: { imageUrl: 'https://example.com/home-logo.png' } } };
   var content = resolvePartnerThemeContent({

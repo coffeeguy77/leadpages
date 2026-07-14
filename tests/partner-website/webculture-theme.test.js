@@ -8,10 +8,12 @@ const { build } = require('../../lib/partner-templates/webculture');
 const { buildPartnerLandingHtml, normalizeTemplateKey } = require('../../lib/partner-templates');
 const { PARTNER_TEMPLATES } = require('../../lib/partner-templates/registry');
 
-test('registry — includes webculture template', function() {
-  const tpl = PARTNER_TEMPLATES.find(function(t) { return t.id === 'webculture'; });
-  assert.ok(tpl);
+test('registry — Culture is the only partner template', function() {
+  assert.equal(PARTNER_TEMPLATES.length, 1);
+  assert.equal(PARTNER_TEMPLATES[0].id, 'webculture');
   assert.equal(normalizeTemplateKey('webculture'), 'webculture');
+  assert.equal(normalizeTemplateKey('causehouse'), 'webculture');
+  assert.equal(normalizeTemplateKey('converge'), 'webculture');
 });
 
 test('groupDemosByIndustryTab — groups demos by industry', function() {

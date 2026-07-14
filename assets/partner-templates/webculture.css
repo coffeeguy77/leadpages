@@ -20,22 +20,23 @@ html:has(body.wc-body) {
 
 .wc-body {
   font-family: 'Inter', system-ui, sans-serif;
-  background: #FDFCF0;
-  color: #0B2114;
+  background: var(--wc-bg);
+  color: var(--wc-ink);
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 
-  --wc-bg: #FDFCF0;
-  --wc-beige: #F5F2E6;
+  --wc-bg: var(--wc-set-bg, #FDFCF0);
+  --wc-beige: var(--wc-set-beige, #F5F2E6);
   --wc-card: #FFFFFF;
-  --wc-ink: #0B2114;
-  --wc-muted: #5C6B60;
-  --wc-primary: #C5E13F;
-  --wc-on-primary: #0B2114;
+  --wc-ink: var(--wc-set-ink, #0B2114);
+  --wc-muted: var(--wc-set-muted, #5C6B60);
+  --wc-primary: var(--wc-set-primary, #C5E13F);
+  --wc-glow: var(--wc-set-glow, var(--wc-primary));
+  --wc-on-primary: var(--wc-set-ink, #0B2114);
   --wc-on-dark: #FDFCF0;
-  --wc-border: rgba(11, 33, 20, 0.14);
-  --wc-shadow: 0 24px 64px rgba(11, 33, 20, 0.1);
+  --wc-border: color-mix(in srgb, var(--wc-ink) 14%, transparent);
+  --wc-shadow: 0 24px 64px color-mix(in srgb, var(--wc-ink) 10%, transparent);
   --wc-section-pad: clamp(72px, 9vw, 96px);
   --wc-max: 1140px;
   --wc-radius-btn: 999px;

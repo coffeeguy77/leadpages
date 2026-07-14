@@ -308,17 +308,27 @@
   function panelVisibility() {
     var v = wp().visibility || {};
     var keys = [
-      ['hero', 'Hero'], ['trust', 'Trust bar'], ['demos', 'Live demos'], ['services', 'Services'],
-      ['biography', 'Biography'], ['serviceArea', 'Service area'], ['testimonials', 'Testimonials'],
-      ['caseStudies', 'Case studies'], ['faqs', 'FAQs'], ['leadOffer', 'Lead offer'], ['contact', 'Contact form']
+      ['hero', 'Hero'],
+      ['platformBacking', 'Connected system'],
+      ['demos', 'Live demos'],
+      ['services', 'Services'],
+      ['biography', 'About / partner'],
+      ['process', 'Process'],
+      ['testimonials', 'Testimonials'],
+      ['faqs', 'FAQs'],
+      ['contact', 'Contact form'],
+      ['serviceArea', 'Service area'],
+      ['leadOffer', 'Lead offer'],
+      ['caseStudies', 'Case studies']
     ];
     var checks = keys.map(function(pair) {
       var on = v[pair[0]] !== false;
       return '<label class="pwp-vis-item"><input type="checkbox" id="pwp-vis-' + pair[0] + '"' + (on ? ' checked' : '') + ' style="width:auto"> ' + esc(pair[1]) + '</label>';
     }).join('');
     return '<div class="pwp-panel hidden" data-pwp-panel="visibility">'
-      + '<p class="muted" style="margin:0 0 16px">Toggle which sections appear on your public page.</p>'
+      + '<p class="muted" style="margin:0 0 16px">Turn Culture page sections on or off. LeadPages branding in the hero trust strip and footer stays on — it cannot be removed.</p>'
       + '<div class="pwp-vis-grid">' + checks + '</div>'
+      + '<p class="muted" style="margin:16px 0 0;font-size:12.5px">Always on: navigation, final CTA, sticky contact bar, and Powered by LeadPages.</p>'
       + '</div>';
   }
 
@@ -440,9 +450,12 @@
     });
 
     var visibility = {};
-    ['hero', 'trust', 'demos', 'services', 'biography', 'serviceArea', 'testimonials', 'caseStudies', 'faqs', 'leadOffer', 'contact'].forEach(function(k) {
-      visibility[k] = val('pwp-vis-' + k);
+    ['hero', 'trust', 'demos', 'services', 'biography', 'serviceArea', 'testimonials', 'caseStudies', 'faqs', 'leadOffer', 'contact', 'process', 'platformBacking'].forEach(function(k) {
+      var el = $('pwp-vis-' + k);
+      visibility[k] = el ? !!el.checked : (wp().visibility && wp().visibility[k] !== false);
     });
+    // Trust chip / Powered by LeadPages always on — not partner-removable.
+    visibility.trust = true;
 
     return {
       identity: {
@@ -677,6 +690,8 @@
       state.websiteProfile = j.websiteProfile;
       state.platform = j.platform;
       state.completion = j.completion;
+      var seedNote = document.getElementById('pwp-seed-note');
+      if (seedNote) seedNote.style.display = j.seededFromCultureDemo ? '' : 'none';
       renderEditor();
     } catch (_e) {
       root.innerHTML = '<p class="notice bad" style="margin:0">Could not load page content editor.</p>';
