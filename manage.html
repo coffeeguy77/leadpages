@@ -3179,6 +3179,23 @@ function wireQuoteStyle(c){
     colWire('qf-bg','bg'); colWire('qf-ibg','inputBg'); colWire('qf-ibd','inputBorder'); colWire('qf-lbl','label'); colWire('qf-txt','text'); colWire('qf-btnbg','btnBg'); colWire('qf-btntx','btnText'); colWire('qf-btnhv','btnHover'); colWire('qf-acc','accent'); colWire('qf-err','error'); colWire('qf-suc','success'); var _ho=$('qf-hoveroff'); if(_ho) _ho.addEventListener('change',function(){ Q().btnHoverOff=_ho.checked; persist(); previewApply(); }); colWire('qf-btnsh','btnShadow'); var _so=$('qf-shadowon'); if(_so) _so.addEventListener('change',function(){ Q().btnShadowOn=_so.checked; if(_so.checked) Q().btnShadowOff=false; else Q().btnShadowOff=true; persist(); previewApply(); });
   }
 
+  function servicesStyleCard(c){
+    var SV=(c.sections&&c.sections.services)||{};
+    var DEF={ eyebrowColor:'#1f7bb8', titleColor:'#1a2230', introColor:'#5b6878' };
+    var col=function(id,key,label,sample){ var dv=DEF[key]||'#1a2230'; var v=(SV[key]&&/^#[0-9a-fA-F]{6}$/.test(SV[key]))?SV[key]:''; return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:220px;"><label style="font-weight:600;">'+label+'</label><p class="hint" style="margin:2px 0 6px;font-size:12px;">Sample: <span style="font-weight:700;color:'+(v||dv)+';">'+sample+'</span></p><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(v||dv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" value="'+v+'" placeholder="'+dv+' (default)" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>'; };
+    var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Section colours</h2><p class="lede" style="margin:0 0 12px;">Colour the Services eyebrow, heading and intro above the cards.</p><div style="display:flex;flex-wrap:wrap;gap:14px;">';
+    h+=col('sv-eyebrow','eyebrowColor','Eyebrow colour','OUR SERVICES');
+    h+=col('sv-title','titleColor','Title colour','What we do');
+    h+=col('sv-intro','introColor','Intro colour','Supporting text under the title');
+    h+='</div></div>';
+    return h;
+  }
+  function wireServicesStyle(c){
+    function SV(){ if(!c.sections)c.sections={}; if(!c.sections.services)c.sections.services={}; return c.sections.services; }
+    function colWire(id,key){ var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def'); if(clr) clr.addEventListener('input',function(){ SV()[key]=clr.value; if(tx)tx.value=clr.value; persist(); previewApply(); }); if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ SV()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ SV()[key]=v; if(clr)clr.value=v; } } persist(); previewApply(); }); if(df) df.addEventListener('click',function(){ SV()[key]=''; if(tx)tx.value=''; persist(); previewApply(); }); }
+    colWire('sv-eyebrow','eyebrowColor'); colWire('sv-title','titleColor'); colWire('sv-intro','introColor');
+  }
+
   function crewStyleCard(c){
     var CW=(c.sections&&c.sections.crew)||{};
     var layout=CW.layout==='split'?'split':'cards';
@@ -5626,8 +5643,9 @@ function heroCtaCard(c){
       _prDraw();
     } else if(sub==='services'){
       body.innerHTML=secCard(c,'services','Services section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro text','ta']])
+        +servicesStyleCard(c)
         +'<div class="card" style="margin-bottom:22px;"><div class="svc-head"><h2 style="margin:0">Service cards</h2><label class="ci-toggle"><input type="checkbox" id="svc-hide-inactive" checked> Hide inactive</label></div><p class="lede">Untick anything this client doesn\u2019t do, or re-purpose a card \u2014 icon or image, colours, size, heading and text.</p><div id="svc-list"></div></div>';
-      wireSec(c,'services',true,[['eyebrow'],['heading'],['intro']]); wireTradeServices(c);
+      wireSec(c,'services',true,[['eyebrow'],['heading'],['intro']]); wireServicesStyle(c); wireTradeServices(c);
     } else if(sub==='why'){
       body.innerHTML=secCard(c,'why','Why us section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+listCard('why','Reasons','Each reason can show an outline icon (pick from the library) or a number badge if no icon is set, plus a heading and text. Edit, hide, reorder or add.'); wireSec(c,'why',true,[['eyebrow'],['heading']]); listEditor($('le-why'),c,'why');
     } else if(sub==='area'){
@@ -6052,8 +6070,6 @@ function heroCtaCard(c){
         +colorField(i,'color','Font colour',s.color)
         +'</div>'
         +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;align-items:flex-end;">'
-        +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label style="display:flex;gap:8px;align-items:center;font-weight:600;"><input type="checkbox" class="svc-glow-on" data-i="'+i+'"'+(s.glowOn===true?' checked':'')+'> Icon / image outer glow</label>'
-        +'<div class="svc-glow-row" data-i="'+i+'" style="margin-top:8px;'+(s.glowOn===true?'':'display:none')+'">'+colorField(i,'glowColor','Glow colour',s.glowColor)+'</div></div>'
         +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Icon / image position</label><select class="svc-align tin" data-i="'+i+'"><option value="left"'+(s.mediaAlign==='left'||!s.mediaAlign?' selected':'')+'>Left</option><option value="center"'+(s.mediaAlign==='center'?' selected':'')+'>Centre</option><option value="right"'+(s.mediaAlign==='right'?' selected':'')+'>Right</option></select></div>'
         +'<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:170px;"><label>Image fit</label><select class="svc-fit tin" data-i="'+i+'"><option value="contain"'+(s.imageFit!=='cover'&&s.imageFit!=='fill'&&s.imageFit!=='stretch'?' selected':'')+'>Contain (fit, no crop)</option><option value="cover"'+(s.imageFit==='cover'?' selected':'')+'>Cover (fill &amp; crop)</option><option value="fill"'+(s.imageFit==='fill'?' selected':'')+'>Fill (stretch to box)</option><option value="stretch"'+(s.imageFit==='stretch'?' selected':'')+'>Stretch</option></select><span class="hint" style="display:block;margin-top:4px;">Applies when an image is uploaded</span></div>'
         +'</div>'
@@ -6099,7 +6115,6 @@ function heroCtaCard(c){
         return;
       }
       if(!s) return;
-      if(el.classList.contains('svc-glow-on')){ s.glowOn=el.checked; var gr=box.querySelector('.svc-glow-row[data-i="'+i+'"]'); if(gr) gr.style.display=el.checked?'':'none'; persist(); previewApply(); return; }
       if(el.classList.contains('svc-align')){ s.mediaAlign=el.value; persist(); previewApply(); return; }
       if(el.classList.contains('svc-fit')){ s.imageFit=el.value; persist(); previewApply(); return; }
     });
