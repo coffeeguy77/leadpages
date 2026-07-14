@@ -301,13 +301,41 @@
       }
       var CW=SEC.crew||{}; var cwNode=document.querySelector('[data-sec="crew"]');
       if(cwNode){
-        var _cwe=cwNode.querySelector('.eyebrow'); if(_cwe) _cwe.textContent=(CW.eyebrow!=null?CW.eyebrow:'Our team');
+        function _cwHex(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; }
+        function _cwRgba(hex,op){ hex=_cwHex(hex); if(!hex) return ''; var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return 'rgba('+r+','+g+','+b+','+op+')'; }
+        function _cwSet(name,val){ if(val) cwNode.style.setProperty(name,val); else cwNode.style.removeProperty(name); }
+        var _cwe=cwNode.querySelector('.eyebrow'); if(_cwe){ _cwe.textContent=(CW.eyebrow!=null?CW.eyebrow:'Our team'); }
         var _cwh=cwNode.querySelector('h2'); if(_cwh) _cwh.textContent=(CW.heading!=null?CW.heading:'Meet The Team');
         var _cwi=cwNode.querySelector('.section-head p'); if(_cwi){ var _cwiv=(CW.intro!=null?CW.intro:''); _cwi.textContent=_cwiv; _cwi.style.display=_cwiv?'':'none'; }
+        var _bg=_cwHex(CW.cardBg); var _op=CW.bgOpacity!=null?+CW.bgOpacity:100; if(isNaN(_op))_op=100; _op=Math.max(0,Math.min(100,_op))/100;
+        _cwSet('--crew-card-bg', _bg?(_op>=1?_bg:_cwRgba(_bg,_op)):'');
+        _cwSet('--crew-stroke', _cwHex(CW.stroke));
+        _cwSet('--crew-eyebrow', _cwHex(CW.eyebrowColor));
+        _cwSet('--crew-title', _cwHex(CW.titleColor));
+        _cwSet('--crew-font', _cwHex(CW.fontColor));
+        _cwSet('--crew-name', _cwHex(CW.nameColor));
+        _cwSet('--crew-role', _cwHex(CW.roleColor));
+        var _psz=CW.photoSize!=null?+CW.photoSize:112; if(isNaN(_psz))_psz=112; _psz=Math.max(64,Math.min(220,_psz));
+        var _pzm=CW.photoZoom!=null?+CW.photoZoom:100; if(isNaN(_pzm))_pzm=100; _pzm=Math.max(100,Math.min(200,_pzm))/100;
+        var _pp={center:'center',top:'center top',bottom:'center bottom',left:'left center',right:'right center'};
+        var _ppos=_pp[CW.photoPos]||'center';
+        cwNode.style.setProperty('--crew-photo-size',_psz+'px');
+        cwNode.style.setProperty('--crew-photo-zoom',String(_pzm));
+        cwNode.style.setProperty('--crew-photo-pos',_ppos);
         var _cwd=[{name:'Steve',role:'Owner',detail:'17 years experience'},{name:'Tom',role:'Senior Technician',detail:'Blocked drain specialist'},{name:'Matt',role:'Technician',detail:'Hot water expert'}];
         var _cwit=(Array.isArray(CW.members)&&CW.members.length)?CW.members:_cwd;
+        var _split=CW.layout==='split'; var _flip=CW.splitFlip===true;
         var _cwg=cwNode.querySelector('.crew-grid');
-        if(_cwg){ _cwg.innerHTML=_cwit.filter(function(it){return it&&it.on!==false&&((it.name&&String(it.name).trim())||(it.role&&String(it.role).trim())||(it.detail&&String(it.detail).trim()));}).map(function(it){ var _p=(it.photo!=null?String(it.photo).trim():''); var _nm=(it.name!=null?String(it.name).trim():''); var _av=_p?('<img class="crew-photo" src="'+esc(_p)+'" alt="'+esc(_nm)+'" loading="lazy">'):('<div class="crew-avatar">'+esc((_nm||'?').charAt(0).toUpperCase())+'</div>'); return '<div class="crew-card">'+_av+(_nm?'<h3 class="crew-name">'+esc(_nm)+'</h3>':'')+(it.role?'<p class="crew-role">'+esc(it.role)+'</p>':'')+(it.detail?'<p class="crew-detail">'+esc(it.detail)+'</p>':'')+'</div>'; }).join(''); }
+        if(_cwg){
+          _cwg.classList.toggle('crew-layout-split',_split);
+          _cwg.innerHTML=_cwit.filter(function(it){return it&&it.on!==false&&((it.name&&String(it.name).trim())||(it.role&&String(it.role).trim())||(it.detail&&String(it.detail).trim()));}).map(function(it){
+            var _p=(it.photo!=null?String(it.photo).trim():''); var _nm=(it.name!=null?String(it.name).trim():'');
+            var _media='<div class="crew-media">'+(_p?('<img class="crew-photo" src="'+esc(_p)+'" alt="'+esc(_nm)+'" loading="lazy">'):('<div class="crew-avatar">'+esc((_nm||'?').charAt(0).toUpperCase())+'</div>'))+'</div>';
+            var _body=(_nm?'<h3 class="crew-name">'+esc(_nm)+'</h3>':'')+(it.role?'<p class="crew-role">'+esc(it.role)+'</p>':'')+(it.detail?'<p class="crew-detail">'+esc(it.detail)+'</p>':'');
+            if(_split) return '<div class="crew-card crew-split'+(_flip?' flip':'')+'">'+_media+'<div class="crew-body">'+_body+'</div></div>';
+            return '<div class="crew-card">'+_media+_body+'</div>';
+          }).join('');
+        }
         cwNode.style.display=(CW.on===false)?'none':'';
       }
       ;(function(){ var CR=SEC.certifications||{}; var node=document.querySelector('[data-sec="certifications"]'); if(node&&CR.on!==false){ var host=node.querySelector('.cert-grid'); if(host){ var its=(CR.items||[]).filter(function(x){return x&&x.on!==false;}); host.innerHTML=its.map(function(x){ var logo=x.image?'<img class="cert-logo" src="'+esc(x.image)+'" alt="'+esc(x.name||'')+'" loading="lazy">':''; var meta=''; if(x.number) meta+='<span>No. '+esc(x.number)+'</span>'; if(x.expiry) meta+='<span>Exp '+esc(x.expiry)+'</span>'; return '<div class="cert-card">'+logo+(x.name?'<div class="cert-name">'+esc(x.name)+'</div>':'')+(x.body?'<div class="cert-body">'+esc(x.body)+'</div>':'')+(meta?'<div class="cert-meta">'+meta+'</div>':'')+'</div>'; }).join(''); if(!its.length) node.style.display='none'; } } })();
