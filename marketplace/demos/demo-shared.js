@@ -826,8 +826,12 @@
     // LeadPages branded strip is always on — logo cannot be removed.
     if(C&&C.sections){ if(!C.sections.lpFooter) C.sections.lpFooter={}; C.sections.lpFooter.on=true; }
     fn.style.display='';
-    var accent=((C&&C.theme&&(C.theme.hivis||C.theme.pipe))||'')+'';
-    if(!/^#[0-9a-fA-F]{6}$/.test(accent)) accent='';
+    var accent='';
+    if(/^#[0-9a-fA-F]{6}$/.test(F.accent||'')) accent=F.accent;
+    else {
+      accent=((C&&C.theme&&(C.theme.hivis||C.theme.pipe))||'')+'';
+      if(!/^#[0-9a-fA-F]{6}$/.test(accent)) accent='';
+    }
     var src='/assets/leadpages-logo.svg';
     var logo=fn.querySelector('.lp-foot-logo, .lp-logo-wrap.lp-foot-logo, a.lp-foot-link .lp-logo-wrap');
     var host=fn.querySelector('a.lp-foot-link')||fn;
