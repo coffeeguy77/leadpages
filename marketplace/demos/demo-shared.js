@@ -690,9 +690,29 @@
       }catch(_mbErr){}
       }
       var F=S.footer||{}; var ft=document.querySelector('footer.site'); if(ft){
-        if(F.blurb!=null){ var fp=ft.querySelector('.foot-grid p'); if(fp) fp.textContent=tok(F.blurb); }
-        if(F.legal!=null){ var fl=ft.querySelector('.foot-legal'); if(fl) fl.textContent=tok(F.legal); }
-        if(Array.isArray(F.services)){ var cols=ft.querySelectorAll('.foot-grid > div'); var col=cols[cols.length-1]; if(col){ var h4=col.querySelector('h4'); var lk=F.services.filter(function(s){return s&&s.label&&s.on!==false;}); col.innerHTML=(h4?h4.outerHTML:'')+lk.map(function(s){return '<a href="'+esc(s.href||'#quote')+'">'+esc(s.label)+'</a>';}).join(''); } }
+        var blurbText=F.blurb!=null?String(tok(F.blurb)).trim():'';
+        var legalText=F.legal!=null?String(tok(F.legal)).trim():'';
+        var fp=ft.querySelector('.foot-blurb')||ft.querySelector('.foot-grid p');
+        if(fp){ if(F.blurb!=null) fp.textContent=blurbText; else blurbText=String(fp.textContent||'').trim(); fp.hidden=!blurbText; fp.classList.add('foot-blurb'); }
+        else blurbText='';
+        var fl=ft.querySelector('.foot-legal:not(.foot-privacy)');
+        if(fl){ if(F.legal!=null) fl.textContent=legalText; else legalText=String(fl.textContent||'').trim(); fl.hidden=!legalText; }
+        else legalText='';
+        ft.classList.toggle('foot-no-blurb',!blurbText);
+        ft.classList.toggle('foot-no-legal',!legalText);
+        ft.classList.toggle('foot-meta-empty',!blurbText&&!legalText);
+        var cols=ft.querySelectorAll('.foot-grid > div');
+        var callCol=ft.querySelector('.foot-call')||(cols.length>1?cols[1]:null);
+        if(callCol){
+          callCol.classList.add('foot-call');
+          if(F.callTitle!=null){ var h4c=callCol.querySelector('h4'); if(h4c) h4c.textContent=String(F.callTitle).trim()||'Call us'; }
+          if(Array.isArray(F.callItems)){
+            var callTitle=(F.callTitle!=null&&String(F.callTitle).trim())?String(F.callTitle).trim():((callCol.querySelector('h4')&&callCol.querySelector('h4').textContent)||'Call us');
+            var ci=F.callItems.filter(function(s){return s&&s.label&&s.on!==false;});
+            callCol.innerHTML='<h4>'+esc(callTitle)+'</h4>'+ci.map(function(s){return '<a href="'+esc(s.href||'#')+'">'+esc(s.label)+'</a>';}).join('');
+          }
+        }
+        if(Array.isArray(F.services)){ var col=cols[cols.length-1]; if(col){ var h4=col.querySelector('h4'); var lk=F.services.filter(function(s){return s&&s.label&&s.on!==false;}); col.innerHTML=(h4?h4.outerHTML:'<h4>Services</h4>')+lk.map(function(s){return '<a href="'+esc(s.href||'#quote')+'">'+esc(s.label)+'</a>';}).join(''); } }
       }
     })();
     (function(){ var S=C.sections||{};
@@ -779,28 +799,55 @@
   function _lpFooterApply(C){
     var F=(C&&C.sections&&C.sections.lpFooter)||{};
     var fn=document.getElementById('lpFooter'); if(!fn) return;
-    if(F.on!==true){ fn.style.display='none'; return; }
+    // LeadPages branded strip is always on — logo cannot be removed.
+    if(C&&C.sections){ if(!C.sections.lpFooter) C.sections.lpFooter={}; C.sections.lpFooter.on=true; }
     fn.style.display='';
-    var WH='/assets/leadpages-logo.svg';
-    var BK='/assets/leadpages-logo.svg';
-    var src=(F.version==='custom'&&F.customUrl)?F.customUrl:(F.version==='black'?BK:WH);
-    var img=fn.querySelector('.lp-foot-logo'); if(img){
-      if(F.version==='custom'&&F.customUrl){ if(img.getAttribute('src')!==src) img.src=src; }
-      else {
-        img.setAttribute('data-lp-logo','auto');
-        img.setAttribute('data-lp-logo-pulse','');
-        img.setAttribute('data-lp-logo-ink', F.version==='black'?'dark':'light');
-        if(img.getAttribute('src')!==src) img.src=src;
-        if(window.LPLogo&&window.LPLogo.mountLogo) window.LPLogo.mountLogo(img,{pulse:true});
+    var accent=((C&&C.theme&&(C.theme.hivis||C.theme.pipe))||'')+'';
+    if(!/^#[0-9a-fA-F]{6}$/.test(accent)) accent='';
+    var src='/assets/leadpages-logo.svg';
+    var logo=fn.querySelector('.lp-foot-logo, .lp-logo-wrap.lp-foot-logo, a.lp-foot-link .lp-logo-wrap');
+    var host=fn.querySelector('a.lp-foot-link')||fn;
+    function _sizeLogo(el){ var sz=(F.size!=null?+F.size:30); if(isNaN(sz))sz=30; sz=Math.max(10,Math.min(200,sz)); if(el){ el.style.height=sz+'px'; el.style.width='auto'; el.style.maxHeight=sz+'px'; } }
+    if(logo){
+      if(logo.tagName==='IMG' || (logo.classList&&logo.classList.contains('lp-foot-logo')&&!logo.classList.contains('lp-logo-wrap'))){
+        logo.setAttribute('data-lp-logo','auto');
+        logo.setAttribute('data-lp-logo-pulse','');
+        logo.setAttribute('data-lp-logo-ink','light');
+        if(accent) logo.setAttribute('data-lp-logo-accent',accent);
+        if(logo.getAttribute('src')!==src) logo.src=src;
+        logo.style.setProperty('--lp-logo-ink','#ffffff');
+        logo.style.setProperty('--lp-logo-accent',accent||'var(--hivis,#ff6a1f)');
+        _sizeLogo(logo);
+        if(window.LPLogo&&window.LPLogo.mountLogo){
+          window.LPLogo.mountLogo(logo,{pulse:true,ink:'#ffffff',accent:accent||undefined}).then(function(wrap){
+            if(wrap){ wrap.classList.add('lp-foot-logo'); wrap.style.setProperty('--lp-logo-ink','#ffffff'); if(accent) wrap.style.setProperty('--lp-logo-accent',accent); _sizeLogo(wrap); }
+          });
+        }
+      } else {
+        logo.style.setProperty('--lp-logo-ink','#ffffff');
+        logo.style.setProperty('--lp-logo-accent',accent||'var(--hivis,#ff6a1f)');
+        _sizeLogo(logo);
+        if(window.LPLogo&&window.LPLogo.mountLogo) window.LPLogo.mountLogo(logo,{pulse:true,ink:'#ffffff',accent:accent||undefined});
       }
-      var sz=(F.size!=null?+F.size:30); if(isNaN(sz))sz=30; img.style.height=Math.max(10,Math.min(200,sz))+'px';
+    } else if(host){
+      var img=document.createElement('img');
+      img.className='lp-foot-logo'; img.alt='LeadPages'; img.src=src;
+      img.setAttribute('data-lp-logo','auto'); img.setAttribute('data-lp-logo-pulse',''); img.setAttribute('data-lp-logo-ink','light');
+      if(accent) img.setAttribute('data-lp-logo-accent',accent);
+      host.appendChild(img);
+      _sizeLogo(img);
+      if(window.LPLogo&&window.LPLogo.mountLogo) window.LPLogo.mountLogo(img,{pulse:true,ink:'#ffffff',accent:accent||undefined});
     }
     var bg=(/^#[0-9a-fA-F]{6}$/.test(F.bg||''))?F.bg:'#0e1217';
     var op=(F.bgOpacity!=null?+F.bgOpacity:100); if(isNaN(op))op=100; op=Math.max(0,Math.min(100,op))/100;
     var r=parseInt(bg.slice(1,3),16),g=parseInt(bg.slice(3,5),16),b=parseInt(bg.slice(5,7),16);
     fn.style.background='rgba('+r+','+g+','+b+','+op+')';
     fn.classList.remove('lpf-left','lpf-center','lpf-right'); fn.classList.add('lpf-'+(F.align==='left'?'left':F.align==='right'?'right':'center'));
-    var txt=fn.querySelector('.lp-foot-txt'); if(txt){ if(F.text&&String(F.text).trim()){ txt.textContent=F.text; txt.style.display=''; var lum=(0.299*r+0.587*g+0.114*b); txt.style.color=(lum>150?'#1a2230':'#ffffff'); } else { txt.textContent=''; txt.style.display='none'; } }
+    var _acc=accent||(((getComputedStyle(document.documentElement).getPropertyValue('--hivis')||'').trim())||'#ff6a1f');
+    fn.style.setProperty('--lp-logo-accent',_acc);
+    fn.style.setProperty('--lp-logo-ink','#ffffff');
+    fn.querySelectorAll('.lp-foot-logo, .lp-logo-wrap').forEach(function(el){ el.style.setProperty('--lp-logo-accent',_acc); el.style.setProperty('--lp-logo-ink','#ffffff'); });
+    var txt=fn.querySelector('.lp-foot-txt'); if(txt){ if(F.text&&String(F.text).trim()){ txt.textContent=F.text; txt.style.display=''; txt.style.color='#ffffff'; } else { txt.textContent=''; txt.style.display='none'; } }
   }
   function _lpBoot(){ applyCfg(SITE_CONFIG); window.__lpLiveCfg=SITE_CONFIG; _lpTopTemplate(); try{_lpFooterApply(SITE_CONFIG);}catch(_e){} try{ var _p=_lpActivePage(); if(_p) _lpRenderPage(_p); }catch(e){}  try{_lpRichWalk(document.body);}catch(e){} }
   function _siteBase(){ try{ var path=location.pathname.replace(/\/+$/,''); var seg=path.split('/').pop()||''; var pgs=(SITE_CONFIG&&SITE_CONFIG.pages)||[]; var onPage=pgs.some(function(p){ return p&&p.status==='published'&&String(p.slug||'').toLowerCase()===seg.toLowerCase(); }); if(onPage){ return path.slice(0,path.length-seg.length).replace(/\/+$/,''); } return path; }catch(e){ return ''; } }
