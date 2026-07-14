@@ -96,10 +96,14 @@ module.exports = async (req, res) => {
 
     if (mode === 'create') {
       if (variants.length) {
+        const existing = variants[0];
         return res.status(409).json({
           ok: false,
-          error: `“${variants[0].label}” already exists in the community library. Select it from the trade list.`,
-          slug,
+          alreadyExists: true,
+          error: `“${existing.label}” already exists in the community library — it has been selected for you. Do not create it again.`,
+          slug: existing.slug || slug,
+          label: existing.label,
+          category: existing.category || category || 'General',
         });
       }
       if (!confirmNew) {
