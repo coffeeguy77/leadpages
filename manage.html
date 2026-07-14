@@ -392,7 +392,7 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 
 /* Icon picker */
 .iconctl{display:inline-flex;align-items:center;gap:6px}
-.icon-pick{width:42px;height:42px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 auto}
+.icon-pick{width:42px;height:42px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#26313f;cursor:pointer;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 auto}
 .icon-pick:hover{border-color:var(--accent);box-shadow:0 0 0 3px rgba(20,30,45,.05)}
 .icon-ov{position:fixed;inset:0;background:rgba(15,20,30,.55);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px}
 .icon-box{background:#fff;border-radius:16px;width:min(680px,100%);max-height:84vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35)}
@@ -402,11 +402,11 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 .icchip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;cursor:pointer;white-space:nowrap}
 .icchip.on{background:var(--brand,#1a2230);color:#fff;border-color:var(--brand,#1a2230)}
 .icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:8px;padding:16px;overflow:auto}
-.icbtn{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s,box-shadow .12s,border-color .12s}
+.icbtn{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:#fff;color:#26313f;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .12s,box-shadow .12s,border-color .12s}
 .icbtn:hover{transform:translateY(-1px);border-color:var(--accent);box-shadow:0 5px 14px rgba(0,0,0,.1)}
 .lp-ic{display:inline-block;vertical-align:middle}
-.icbtn .lp-ic{width:26px;height:26px;stroke:#26313f}
-.icon-pick .lp-ic{width:22px;height:22px;stroke:#26313f}
+.icbtn .lp-ic{width:26px;height:26px;stroke:currentColor}
+.icon-pick .lp-ic{width:22px;height:22px;stroke:currentColor}
 
 /* App ghost mode — section placed but subscription inactive */
 [data-ghost="true"]{pointer-events:none;user-select:none;filter:grayscale(.4) opacity(.65);position:relative;}
