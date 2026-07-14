@@ -2152,7 +2152,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   let authed=false, currentRole='super';
   /* ===== leadpages: live Supabase auth + DB-backed config ===== */
   const sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
-  let currentSiteId=null, currentSiteSlug=null, currentSiteTemplate=null, currentBusinessName='', currentCustomDomain='', currentOwnerEmail='', currentIsPartnerHome=false, allSites=[];
+  let currentSiteId=null, currentSiteSlug=null, currentSiteTemplate=null, currentBusinessName='', currentCustomDomain='', currentOwnerEmail='', currentIsPartnerHome=false, currentSiteStatus='', allSites=[];
   var LP_NAV_STATE_KEY='lp_manage_nav_v1';
   var lpNavRestorePending=null;
   function lpNavStateLoad(){ try{ return JSON.parse(localStorage.getItem(LP_NAV_STATE_KEY)||'{}')||{}; }catch(e){ return {}; } }
@@ -2214,7 +2214,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   }
   async function afterLogin(){
     authed=true;
-    let role='broker';
+    let role='client';
     try{
       // Use session directly — avoids a redundant getUser network call
       var __sess = (await sb.auth.getSession()).data.session;
@@ -2222,6 +2222,14 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(__uid){
         const { data:prof } = await sb.from('profiles').select('is_super_admin').eq('id',__uid).maybeSingle();
         if(prof && prof.is_super_admin) role='super';
+        else {
+          // Partners are linked on partners.user_id; everyone else with sites is a site owner (client).
+          try{
+            const { data:prow } = await sb.from('partners').select('id').eq('user_id',__uid).maybeSingle();
+            if(prow && prow.id) role='broker';
+            else role='client';
+          }catch(_pe){ role='client'; }
+        }
       }
     }catch(e){}
     currentRole=role;
@@ -2780,6 +2788,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function loadSite(site){
     hideLanding();
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app'; currentIsPartnerHome=!!site.is_partner_home;
+    currentSiteStatus=String(site.status||'').toLowerCase();
     lpNavStateSave({siteId:site.id, siteSlug:site.slug});
     if(window.LPLogo&&window.LPLogo.refreshWorkspaceLogos){ window.LPLogo.refreshWorkspaceLogos(); }
     currentBusinessName=site.business_name||''; currentCustomDomain=site.custom_domain||''; currentOwnerEmail=site.owner_email||'';
@@ -3798,6 +3807,63 @@ function heroCtaCard(c){
     else { var lb=$('site-label'); if(lb) lb.innerHTML='<span>No sites left.</span>'; }
   }
   function closeSettingsPage(){ var p=document.getElementById('settings-page'); if(p) p.remove(); }
+  function closeAccountPage(){ var p=document.getElementById('account-page'); if(p) p.remove(); }
+  function openAccountPage(){
+    closeAccountPage();
+    var email='';
+    try{
+      var s=(sb.auth.getSession&&null);
+    }catch(_e){}
+    var p=document.createElement('div'); p.id='account-page';
+    p.innerHTML='<div class="sp-card" style="max-width:560px;margin:10vh auto;background:var(--bg);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:26px 26px 30px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;">'
+      +'<h1 style="margin:0;font:700 24px/1.1 var(--font-display,Georgia),serif;">Account</h1>'
+      +'<button type="button" id="acct-close" class="btn ghost">Close</button></div>'
+      +'<div class="card" style="margin-bottom:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;">'
+      +'<h2 style="margin:0 0 4px;font-size:17px;">Sign-in email</h2>'
+      +'<p class="lede" style="margin:0 0 10px;">This is the email you use to open the command centre.</p>'
+      +'<p id="acct-email" style="margin:0;font-weight:600;word-break:break-all;">Loading\u2026</p>'
+      +'</div>'
+      +'<div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;">'
+      +'<h2 style="margin:0 0 4px;font-size:17px;">Password</h2>'
+      +'<p class="lede" style="margin:0 0 14px;">Set a password so you can sign in with your email without waiting for a code.</p>'
+      +'<label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;" for="acct-pass">New password</label>'
+      +'<input id="acct-pass" type="password" class="tin" autocomplete="new-password" placeholder="At least 8 characters" style="width:100%;margin-bottom:12px;">'
+      +'<label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;" for="acct-pass2">Confirm password</label>'
+      +'<input id="acct-pass2" type="password" class="tin" autocomplete="new-password" placeholder="Repeat password" style="width:100%;margin-bottom:14px;">'
+      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">'
+      +'<button type="button" class="btn" id="acct-pass-save">Save password</button>'
+      +'<span id="acct-pass-saved" style="font-size:13px;color:#0a7d33;display:none;">Saved \u2713</span>'
+      +'<span id="acct-pass-err" style="font-size:13px;color:#b42318;"></span>'
+      +'</div></div></div>';
+    p.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(16,22,32,.55);overflow:auto;padding:32px 16px;';
+    document.body.appendChild(p);
+    document.getElementById('acct-close').addEventListener('click',closeAccountPage);
+    p.addEventListener('click',function(e){ if(e.target===p) closeAccountPage(); });
+    sb.auth.getSession().then(function(r){
+      var u=r&&r.data&&r.data.session&&r.data.session.user;
+      var el=document.getElementById('acct-email');
+      if(el) el.textContent=(u&&u.email)||'Signed in';
+      email=(u&&u.email)||'';
+    }).catch(function(){ var el=document.getElementById('acct-email'); if(el) el.textContent='Signed in'; });
+    document.getElementById('acct-pass-save').addEventListener('click', async function(){
+      var pw=(document.getElementById('acct-pass').value||'');
+      var pw2=(document.getElementById('acct-pass2').value||'');
+      var err=document.getElementById('acct-pass-err');
+      var ok=document.getElementById('acct-pass-saved');
+      if(err) err.textContent=''; if(ok) ok.style.display='none';
+      if(pw.length<8){ if(err) err.textContent='Password must be at least 8 characters.'; return; }
+      if(pw!==pw2){ if(err) err.textContent='Passwords do not match.'; return; }
+      var btn=this; btn.disabled=true; btn.textContent='Saving\u2026';
+      var r=await sb.auth.updateUser({ password: pw });
+      btn.disabled=false; btn.textContent='Save password';
+      if(r.error){ if(err) err.textContent=r.error.message||'Could not set password.'; return; }
+      document.getElementById('acct-pass').value='';
+      document.getElementById('acct-pass2').value='';
+      if(ok){ ok.style.display='inline'; setTimeout(function(){ ok.style.display='none'; },1800); }
+      if(typeof toast==='function') toast('Password saved — you can sign in with email and password');
+    });
+  }
   function openSettingsPage(){
     closeSettingsPage();
     var sref=(allSites||[]).find(function(x){return x.id===currentSiteId;});
@@ -3808,7 +3874,7 @@ function heroCtaCard(c){
     var _cnameHost=((_cfgSeo&&_cfgSeo.googleVerificationCnameHost)||'').trim();
     var _cnameTarget=((_cfgSeo&&_cfgSeo.googleVerificationCnameTarget)||'').trim();
     var _hasDom=!!((currentCustomDomain||'').trim());
-    var _propUrl=lpLiveUrl();
+    var _propUrl=lpLiveUrl({ publicOnly:true });
     var _mapUrl=lpSitemapUrl();
     var _domainProp=_hasDom?('https://'+((currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,''))+'/'):'';
     var _txtFull=_gsvVal?(/^google-site-verification=/i.test(_gsvVal)?_gsvVal:('google-site-verification='+_gsvVal)):('');
@@ -4933,11 +4999,39 @@ function heroCtaCard(c){
    currentBusinessName, allSites, currentRole, esc, toast. ============================ */
 
   // Live public URL for the current site (routing is /<slug>, custom domain wins).
-  function lpLiveUrl(){
+  // Draft / non-live sites require ?preview= or the public renderer returns 404.
+  function lpSiteIsLive(){
+    var st=String(currentSiteStatus||'').toLowerCase();
+    if(st) return st==='live'||st==='active';
+    var sref=(allSites||[]).find(function(x){ return x.id===currentSiteId; });
+    st=String((sref&&sref.status)||'').toLowerCase();
+    return st==='live'||st==='active';
+  }
+  function lpLiveUrl(opts){
+    opts=opts||{};
+    var forcePreview=!!opts.preview || (!opts.publicOnly && !lpSiteIsLive());
     var dom=(currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'');
-    if(dom) return 'https://'+dom+'/';
     var slug=(currentSiteSlug||'').trim();
-    return slug ? ('https://leadpages.com.au/'+slug) : '';
+    var base='';
+    if(dom) base='https://'+dom+'/';
+    else if(slug) base=(opts.relative||forcePreview) ? ('/'+slug) : ('https://leadpages.com.au/'+slug);
+    else return '';
+    if(forcePreview){
+      var joiner=base.indexOf('?')>=0?'&':'?';
+      return base+joiner+'preview=1';
+    }
+    return base;
+  }
+  function lpOpenSitePreview(){
+    var live=lpSiteIsLive();
+    var u=lpLiveUrl({ preview:!live, relative:!live });
+    if(!u){ if(typeof toast==='function') toast('This site has no slug yet.'); return; }
+    window.open(u,'_blank','noopener');
+    if(!live && typeof toast==='function') toast('Opening private preview — publish to make it public');
+  }
+  function lpRefreshViewLiveLabel(){
+    var vb=$('btn-viewlive'); if(!vb) return;
+    vb.textContent=lpSiteIsLive()?'View Live Site':'Preview site';
   }
   function lpSitemapUrl(){
     var dom=(currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'');
@@ -5014,7 +5108,7 @@ function heroCtaCard(c){
     }
     var rows=LPDOM.rows||[];
     if(!rows.length){ el.innerHTML=''; return; }   // nothing to show: stay out of the way
-    var live=lpLiveUrl();
+    var live=lpLiveUrl({ publicOnly:true });
     var chips=rows.map(function(d,i){
       var st=(d.status||'unknown').toLowerCase();
       return '<button type="button" class="lpd-chip'+(LPDOM.open===i?' on':'')+'" data-lpd="'+i+'">'
@@ -5726,18 +5820,27 @@ function heroCtaCard(c){
     const btn=$('btn-publish'); if(btn){ btn.disabled=true; btn.textContent='Publishing\u2026'; }
     var payload;
     if(currentSiteTemplate==='broker-app'){
-      payload={ config:siteConfigForSave(), updated_at:new Date().toISOString() };
+      payload={ config:siteConfigForSave(), status:'live', updated_at:new Date().toISOString() };
     } else {
       var lc=JSON.parse(JSON.stringify(data||{})); delete lc.savedThemes;
-      payload={ config:lc, business_name:(currentBusinessName||'').trim(), custom_domain:((currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'')||null), updated_at:new Date().toISOString() }; if(currentRole==='super'){ payload.owner_email=((currentOwnerEmail||'').trim().toLowerCase()||null); }
+      payload={ config:lc, business_name:(currentBusinessName||'').trim(), custom_domain:((currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'')||null), status:'live', updated_at:new Date().toISOString() }; if(currentRole==='super'){ payload.owner_email=((currentOwnerEmail||'').trim().toLowerCase()||null); }
     }
-    const { error } = await sb.from('sites').update(payload).eq('id', currentSiteId);
+    var wentLive=true;
+    var result=await sb.from('sites').update(payload).eq('id', currentSiteId);
+    // Some owner policies can save config but not flip status — retry without status.
+    if(result.error && payload.status){
+      delete payload.status;
+      wentLive=false;
+      result=await sb.from('sites').update(payload).eq('id', currentSiteId);
+    }
     if(btn){ btn.disabled=false; btn.textContent='Publish Live Site'; }
-    if(error){ toast('Publish failed: '+error.message); return; }
+    if(result.error){ toast('Publish failed: '+result.error.message); return; }
     try{ persist(); }catch(e){}
-    var sref=allSites.find(function(x){return x.id===currentSiteId;}); if(sref){ if(payload.business_name) sref.business_name=payload.business_name; sref.custom_domain=payload.custom_domain; if(payload.owner_email!==undefined) sref.owner_email=payload.owner_email; sref.config=payload.config; }
+    if(wentLive) currentSiteStatus='live';
+    var sref=allSites.find(function(x){return x.id===currentSiteId;}); if(sref){ if(payload.business_name) sref.business_name=payload.business_name; sref.custom_domain=payload.custom_domain; if(payload.owner_email!==undefined) sref.owner_email=payload.owner_email; sref.config=payload.config; if(wentLive) sref.status='live'; }
+    lpRefreshViewLiveLabel();
     if(currentSiteTemplate!=='broker-app' && document.body.classList.contains('lp-prev-open')) previewLoad();
-    toast('Published \u2014 live on your site');
+    toast(wentLive?'Published \u2014 live on your site':'Published — saved. Use Preview until this site is set live.');
   }
   async function signOutLP(){ try{ localStorage.removeItem(LP_NAV_STATE_KEY); }catch(_e){} try{ await sb.auth.signOut(); }catch(e){} location.reload(); }
   window.signOutLP=signOutLP;
@@ -5762,8 +5865,15 @@ function heroCtaCard(c){
     if(!$('btn-viewlive')){
       const vb=document.createElement('button'); vb.className='btn ghost'; vb.id='btn-viewlive';
       vb.textContent='View Live Site';
-      vb.addEventListener('click',function(){ var u=lpLiveUrl(); if(u) window.open(u,'_blank','noopener'); else if(typeof toast==='function') toast('This site has no slug yet.'); });
+      vb.addEventListener('click',function(){ lpOpenSitePreview(); });
       bar.insertBefore(vb, dl);
+    }
+    lpRefreshViewLiveLabel();
+    if(!$('btn-account')){
+      const abn=document.createElement('button'); abn.className='btn ghost'; abn.id='btn-account';
+      abn.textContent='Account';
+      abn.addEventListener('click',function(e){ e.stopPropagation(); openAccountPage(); });
+      bar.insertBefore(abn, dl);
     }
     if(!$('btn-domains')){
       const dbn=document.createElement('button'); dbn.className='btn ghost'; dbn.id='btn-domains';
@@ -5841,6 +5951,7 @@ function heroCtaCard(c){
     }
     if(currentRole==='super') updateSiteControls();
     if(currentSiteTemplate!=='broker-app') layoutCmdCard();
+    lpRefreshViewLiveLabel();
   }
   function layoutCmdCard(){
     var drawerTop=$('lpc-drawer-top'), ctx=$('lpc-context'), prim=$('lpc-primary'), tools=$('lpc-tools'), footer=$('lpc-drawer-footer');
@@ -5868,9 +5979,10 @@ function heroCtaCard(c){
     mv('btn-publish', prim);
     mv('btn-viewlive', prim);
     mv('site-label', ctx);
-    if(!$('lpc-preview')){ var pv=document.createElement('button'); pv.className='btn ghost lp-drawer-phone-hide'; pv.id='lpc-preview'; pv.type='button'; pv.textContent='Live Preview'; pv.addEventListener('click',function(){ var w=window.innerWidth,h=window.innerHeight; if(typeof lpSetPreviewLayout==='function') lpSetPreviewLayout((w>=1200||(w>=768&&w<1200&&w>h))?'side':'split'); else previewOpen(); }); prim.appendChild(pv); }
+    if(!$('lpc-preview')){ var pv=document.createElement('button'); pv.className='btn ghost'; pv.id='lpc-preview'; pv.type='button'; pv.textContent='Live Preview'; pv.addEventListener('click',function(){ var w=window.innerWidth,h=window.innerHeight; if(typeof lpSetPreviewLayout==='function') lpSetPreviewLayout((w>=1200||(w>=768&&w<1200&&w>h))?'side':'split'); else previewOpen(); }); prim.appendChild(pv); }
     mv('lpc-preview', prim);
     mv('btn-settings', tools);
+    mv('btn-account', tools);
     mv('btn-appearance-aa', tools);
     mv('btn-billing', tools);
     mv('btn-domains', tools);
@@ -5917,27 +6029,35 @@ function heroCtaCard(c){
     var modeBtn='<button type="button" id="lp-mode-toggle-dt" class="btn ghost" style="font-size:12px;">Classic</button>';
     var showSiteSwitcher=(currentRole==='super'||currentRole==='broker')&&((allSites||[]).length>1||!!currentSiteId);
     var siteSwBtn=showSiteSwitcher?'<button type="button" id="lpc-site-switcher-dt" class="btn ghost">Site Switcher</button>':'';
+    var accountBtn='<button type="button" id="lpc-acct-password" class="btn ghost">Account</button>';
     if(currentRole==='super'){
       acct.innerHTML='<a href="/partner" class="btn ghost" style="text-decoration:none;">&#8592; Partner</a>'
         +siteSwBtn
         +'<a href="/partners-admin" class="btn ghost" style="text-decoration:none;">Partner Admin</a>'
         +'<a href="/marketplace-admin" class="btn ghost" style="text-decoration:none;">Marketplace Admin</a>'
+        +accountBtn
         +modeBtn
         +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
     } else if(currentRole==='broker'){
       acct.innerHTML='<a href="/partner" class="btn ghost" style="text-decoration:none;">Partner Console</a>'
         +siteSwBtn
+        +accountBtn
         +modeBtn
         +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
     } else {
-      acct.innerHTML='<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
+      acct.innerHTML=accountBtn
+        +'<button type="button" id="lpc-acct-signout" class="btn ghost">Sign Out</button>';
     }
     if(!acct.__wired){
       acct.__wired=1;
       acct.addEventListener('click',function(e){
         if(e.target.closest('#lpc-site-switcher-dt')){ e.preventDefault(); showLanding(); return; }
+        if(e.target.closest('#lpc-acct-password')||e.target.closest('#btn-account')){ e.preventDefault(); openAccountPage(); return; }
         if(e.target.closest('#lpc-acct-signout')){ e.preventDefault(); signOutLP(); }
       });
+    } else {
+      // Re-bound via innerHTML; ensure Account still works when re-rendered
+      var _ap=$('lpc-acct-password'); if(_ap&&!_ap.__acctWired){ _ap.__acctWired=1; _ap.addEventListener('click',function(e){ e.preventDefault(); openAccountPage(); }); }
     }
     var mtBtn=document.getElementById('lp-mode-toggle-dt')||document.getElementById('lp-mode-toggle');
     if(mtBtn){
@@ -5976,9 +6096,9 @@ function heroCtaCard(c){
     var roles=[];
     var role=currentRole||'';
     if(role==='super') roles.push('super');
-    if(role==='broker') roles.push('partner');
-    if(role!=='super'&&role!=='leads') roles.push('client');
-    if(role==='broker'&&roles.indexOf('client')<0) roles.push('client');
+    if(role==='broker'){ roles.push('partner'); roles.push('client'); }
+    if(role==='client') roles.push('client');
+    if(role!=='super'&&role!=='leads'&&roles.indexOf('client')<0) roles.push('client');
     return roles.length?roles:['client'];
   };
   window.lpDrawerShowSiteSwitcher=function(){
@@ -6102,7 +6222,7 @@ function heroCtaCard(c){
     toast('Removed “'+name+'”'); renderSharedThemes();
   }
   /* ===== end leadpages integration ===== */
-  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard'], broker:['appearance','contact','logo','landing','details','mailer','messages','apps','onlinequotes','dashboard'], leads:['rates'] };
+  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard'], broker:['appearance','contact','logo','landing','details','mailer','messages','apps','onlinequotes','dashboard'], client:['appearance','contact','logo','landing','details','mailer','messages','apps','onlinequotes','dashboard'], leads:['rates'] };
   const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','details','landing','apps','onlinequotes','mailer','messages'] };
   function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
@@ -6120,7 +6240,11 @@ function heroCtaCard(c){
       +'<label>Password</label><input type="password" id="li-pass" class="tin" placeholder="Your password" autocomplete="current-password">'
       +'<button class="btn" id="li-go" style="width:100%;margin-top:6px">Sign in with password</button>'
       +'<div class="login-foot"><button class="lk" id="li-forgot">Forgot password?</button></div>'
-      +'<div class="login-note">Tip: tap \u201cEmail me a sign-in code\u201d, then either click the link in that email or paste the code above.</div>'
+      +'<div id="li-setpw-row" hidden style="margin-top:14px;border-top:1px solid var(--line,#e6e9ef);padding-top:14px">'
+      +'<label>Choose a new password</label><input type="password" id="li-newpass" class="tin" autocomplete="new-password" placeholder="At least 8 characters">'
+      +'<button class="btn" id="li-setpass" style="width:100%;margin-top:6px">Save password &amp; continue</button>'
+      +'</div>'
+      +'<div class="login-note">Tip: tap \u201cEmail me a sign-in code\u2026\u201d, then either click the link in that email or paste the code above. Prefer password? Set one under Account after you sign in.</div>'
       +'</div></div>';
     (document.getElementById('admin-view')||document.body).appendChild(m);
     $('li-go').addEventListener('click',lpLogin);
@@ -6148,9 +6272,34 @@ function heroCtaCard(c){
     $('li-forgot').addEventListener('click',function(){
       const v=$('li-user').value.trim();
       $('li-err').style.color='var(--accent-hover)';
-      try{ if(v) sb.auth.resetPasswordForEmail(v); }catch(e){}
-      $('li-err').textContent = v ? ('If an account matches, a reset link has been sent to '+v+'.') : 'Enter your email above first.';
+      try{
+        if(v) sb.auth.resetPasswordForEmail(v, { redirectTo: location.origin+'/manage' });
+      }catch(e){}
+      $('li-err').textContent = v ? ('If an account matches, a reset link has been sent to '+v+'. Open it, then choose a new password here.') : 'Enter your email above first.';
     });
+    var __sp=$('li-setpass'); if(__sp) __sp.addEventListener('click', async function(){
+      var pw=($('li-newpass').value||'');
+      if(pw.length<8){ $('li-err').style.color=''; $('li-err').textContent='Password must be at least 8 characters.'; return; }
+      this.disabled=true; this.textContent='Saving\u2026';
+      var r=await sb.auth.updateUser({ password: pw });
+      this.disabled=false; this.textContent='Save password & continue';
+      if(r.error){ $('li-err').style.color=''; $('li-err').textContent=r.error.message||'Could not set password.'; return; }
+      var m=$('login-mask'); if(m) m.style.display='none';
+      try{ await afterLogin(); }catch(e){}
+    });
+    if(!window.__lpAuthRecoveryWired){
+      window.__lpAuthRecoveryWired=1;
+      sb.auth.onAuthStateChange(function(ev){
+        if(ev!=='PASSWORD_RECOVERY') return;
+        buildLogin();
+        var mask=$('login-mask'); if(mask) mask.style.display='flex';
+        loginBooting(false);
+        var row=$('li-setpw-row'); if(row) row.hidden=false;
+        $('li-err').style.color='#0a7d33';
+        $('li-err').textContent='You\u2019re verified — choose a new password below to finish signing in.';
+        var np=$('li-newpass'); if(np) np.focus();
+      });
+    }
   }
   function showLogin(){ buildLogin(); const m=$('login-mask'); if(!m) return; $('li-user').value=''; $('li-pass').value=''; $('li-err').textContent=''; $('li-err').style.color=''; m.style.display='flex'; setTimeout(()=>{var u=$('li-user'); if(u) u.focus();},30); }
   function doLogin(){

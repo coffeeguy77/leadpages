@@ -32,6 +32,7 @@
   var ACTION_CATALOG = {
     'btn-publish': { label: 'Publish Live Site', group: 'Publish' },
     'btn-viewlive': { label: 'View Live Site', group: 'Publish' },
+    'btn-account': { label: 'Account', group: 'Account' },
     'btn-settings': { label: 'Settings', group: 'Site Tools' },
     'btn-appearance-aa': { label: 'Appearance', group: 'Site Tools' },
     'btn-billing': { label: 'Billing', group: 'Site Tools' },
@@ -259,10 +260,11 @@
   var FALLBACK_DEFAULT = {
     version: 1,
     sections: [
-      { id: 'publish', title: 'Publish', layout: 'stack', buttonStyle: 'publish-duo', separator: 'none', roles: ['super', 'partner', 'client'], slot: 'lpc-drawer-top', items: [{ id: 'btn-publish' }, { id: 'btn-viewlive' }] },
+      { id: 'publish', title: 'Publish', layout: 'stack', buttonStyle: 'publish-duo', separator: 'none', roles: ['super', 'partner', 'client'], slot: 'lpc-drawer-top', items: [{ id: 'btn-publish' }, { id: 'btn-viewlive' }, { id: 'lpc-preview' }] },
       { id: 'site', title: 'Site', layout: 'stack', buttonStyle: 'default', separator: 'line', roles: ['super', 'partner'], condition: 'site-switcher', slot: 'lpc-context' },
       { id: 'builder', title: 'Builder Menu', layout: 'tabs', buttonStyle: 'nav', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'adminnav', items: deepClone(DEFAULT_BUILDER_ITEMS) },
       { id: 'tools', title: 'Site Tools', layout: 'stack', buttonStyle: 'outline', separator: 'line', roles: ['super', 'partner', 'client'], slot: 'lpc-tools', items: [
+        { id: 'btn-account', roles: ['super', 'partner', 'client'] },
         { id: 'btn-settings', roles: ['super', 'partner', 'client'] },
         { id: 'btn-appearance-aa', roles: ['super', 'partner', 'client'] },
         { id: 'btn-billing', roles: ['super', 'partner', 'client'] },
