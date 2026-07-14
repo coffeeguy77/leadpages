@@ -832,49 +832,54 @@
       accent=((C&&C.theme&&(C.theme.hivis||C.theme.pipe))||'')+'';
       if(!/^#[0-9a-fA-F]{6}$/.test(accent)) accent='';
     }
+    if(!accent) accent='#ff6a1f';
+    var ink=(/^#[0-9a-fA-F]{6}$/.test(F.ink||''))?F.ink:'#ffffff';
     var src='/assets/leadpages-logo.svg';
-    var logo=fn.querySelector('.lp-foot-logo, .lp-logo-wrap.lp-foot-logo, a.lp-foot-link .lp-logo-wrap');
     var host=fn.querySelector('a.lp-foot-link')||fn;
     function _sizeLogo(el){ var sz=(F.size!=null?+F.size:30); if(isNaN(sz))sz=30; sz=Math.max(10,Math.min(200,sz)); if(el){ el.style.height=sz+'px'; el.style.width='auto'; el.style.maxHeight=sz+'px'; } }
-    if(logo){
-      if(logo.tagName==='IMG' || (logo.classList&&logo.classList.contains('lp-foot-logo')&&!logo.classList.contains('lp-logo-wrap'))){
-        logo.setAttribute('data-lp-logo','auto');
-        logo.setAttribute('data-lp-logo-pulse','');
-        logo.setAttribute('data-lp-logo-ink','light');
-        if(accent) logo.setAttribute('data-lp-logo-accent',accent);
-        if(logo.getAttribute('src')!==src) logo.src=src;
-        logo.style.setProperty('--lp-logo-ink','#ffffff');
-        logo.style.setProperty('--lp-logo-accent',accent||'var(--hivis,#ff6a1f)');
-        _sizeLogo(logo);
-        if(window.LPLogo&&window.LPLogo.mountLogo){
-          window.LPLogo.mountLogo(logo,{pulse:true,ink:'#ffffff',accent:accent||undefined}).then(function(wrap){
-            if(wrap){ wrap.classList.add('lp-foot-logo'); wrap.style.setProperty('--lp-logo-ink','#ffffff'); if(accent) wrap.style.setProperty('--lp-logo-accent',accent); _sizeLogo(wrap); }
-          });
-        }
-      } else {
-        logo.style.setProperty('--lp-logo-ink','#ffffff');
-        logo.style.setProperty('--lp-logo-accent',accent||'var(--hivis,#ff6a1f)');
-        _sizeLogo(logo);
-        if(window.LPLogo&&window.LPLogo.mountLogo) window.LPLogo.mountLogo(logo,{pulse:true,ink:'#ffffff',accent:accent||undefined});
-      }
-    } else if(host){
-      var img=document.createElement('img');
-      img.className='lp-foot-logo'; img.alt='LeadPages'; img.src=src;
-      img.setAttribute('data-lp-logo','auto'); img.setAttribute('data-lp-logo-pulse',''); img.setAttribute('data-lp-logo-ink','light');
-      if(accent) img.setAttribute('data-lp-logo-accent',accent);
-      host.appendChild(img);
-      _sizeLogo(img);
-      if(window.LPLogo&&window.LPLogo.mountLogo) window.LPLogo.mountLogo(img,{pulse:true,ink:'#ffffff',accent:accent||undefined});
+    function _paint(el){
+      if(!el) return;
+      el.classList.add('lp-foot-logo');
+      el.setAttribute('data-lp-logo-accent',accent);
+      el.setAttribute('data-lp-logo-ink','light');
+      el.style.setProperty('--lp-logo-accent',accent);
+      el.style.setProperty('--lp-logo-ink',ink);
+      _sizeLogo(el);
     }
+    function _ensureMounted(done){
+      var logo=fn.querySelector('.lp-foot-logo, a.lp-foot-link .lp-logo-wrap, a.lp-foot-link img');
+      if(!logo){
+        var img=document.createElement('img');
+        img.className='lp-foot-logo'; img.alt='LeadPages'; img.src=src;
+        img.setAttribute('data-lp-logo','auto'); img.setAttribute('data-lp-logo-pulse','');
+        host.appendChild(img); logo=img;
+      }
+      _paint(logo);
+      if(window.LPLogo&&window.LPLogo.mountLogo){
+        // Remount if still an <img> so CSS variables actually drive fills.
+        if(logo.tagName==='IMG'){
+          try{ delete logo.dataset.lpLogoMounted; }catch(_e){}
+          window.LPLogo.mountLogo(logo,{pulse:true,ink:ink,accent:accent}).then(function(wrap){
+            _paint(wrap||fn.querySelector('.lp-logo-wrap, .lp-foot-logo'));
+            if(typeof done==='function') done();
+          });
+          return;
+        }
+        _paint(logo);
+        // Force tokens again in case a workspace refresh overwrote them.
+        window.LPLogo.mountLogo(logo,{pulse:true,ink:ink,accent:accent}).then(function(wrap){ _paint(wrap||logo); if(typeof done==='function') done(); });
+        return;
+      }
+      if(typeof done==='function') done();
+    }
+    _ensureMounted();
     var bg=(/^#[0-9a-fA-F]{6}$/.test(F.bg||''))?F.bg:'#0e1217';
     var op=(F.bgOpacity!=null?+F.bgOpacity:100); if(isNaN(op))op=100; op=Math.max(0,Math.min(100,op))/100;
     var r=parseInt(bg.slice(1,3),16),g=parseInt(bg.slice(3,5),16),b=parseInt(bg.slice(5,7),16);
     fn.style.background='rgba('+r+','+g+','+b+','+op+')';
     fn.classList.remove('lpf-left','lpf-center','lpf-right'); fn.classList.add('lpf-'+(F.align==='left'?'left':F.align==='right'?'right':'center'));
-    var _acc=accent||(((getComputedStyle(document.documentElement).getPropertyValue('--hivis')||'').trim())||'#ff6a1f');
-    fn.style.setProperty('--lp-logo-accent',_acc);
-    fn.style.setProperty('--lp-logo-ink','#ffffff');
-    fn.querySelectorAll('.lp-foot-logo, .lp-logo-wrap').forEach(function(el){ el.style.setProperty('--lp-logo-accent',_acc); el.style.setProperty('--lp-logo-ink','#ffffff'); });
+    fn.style.setProperty('--lp-logo-accent',accent);
+    fn.style.setProperty('--lp-logo-ink',ink);
     var txt=fn.querySelector('.lp-foot-txt'); if(txt){ if(F.text&&String(F.text).trim()){ txt.textContent=F.text; txt.style.display=''; txt.style.color='#ffffff'; } else { txt.textContent=''; txt.style.display='none'; } }
   }
   function _lpBoot(){ applyCfg(SITE_CONFIG); window.__lpLiveCfg=SITE_CONFIG; _lpTopTemplate(); try{_lpFooterApply(SITE_CONFIG);}catch(_e){} try{ var _p=_lpActivePage(); if(_p) _lpRenderPage(_p); }catch(e){}  try{_lpRichWalk(document.body);}catch(e){} }
