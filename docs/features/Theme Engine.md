@@ -18,7 +18,9 @@ LeadPages has **two theme systems** in one editor:
 | **trade** | `data.theme` | Branding subtab — colour pickers + `TRADE_COLOUR_PRESETS` | `__applyTradeConfig` sets CSS vars |
 | **broker-app** | `data.appearance` | Appearance tab | `__applyAppearance` |
 
-Trade tokens: `pipe`, `hivis`, `steel`, `safety`, `lightBg`, `accent`, `presetKey`, `presetName`.
+Trade tokens: `pipe`, `hivis`, `steel`, `safety`, `lightBg`, `h1`, `h2`, `paragraph`, `accent`, `presetKey`, `presetName`.
+
+Typography colours (`h1` / `h2` / `paragraph`) map to CSS `--h1`, `--h2`, `--paragraph` for hero headlines, section titles, and body/intro copy.
 
 ---
 
@@ -57,7 +59,7 @@ Partners rebrand client sites quickly; tradies pick industry-appropriate palette
 **Trade — Branding subtab**
 
 ```text
-Colour pickers (TRADE_COLOURS × 5)
+Colour pickers (TRADE_COLOURS × 8)
 ├── pipe — Brand
 ├── hivis — CTA
 ├── steel — Header/footer
