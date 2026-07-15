@@ -34,8 +34,7 @@ function cleanCulturePreset(v) {
   return getCultureColorPreset(id).id;
 }
 
-const { createClient } = require('@supabase/supabase-js');
-const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const { admin, resolvePartnerActor } = require('../../lib/partner/resolve-actor');
 
 const RESERVED = new Set(['www','app','api','manage','partner','partners','partners-admin','tradies','domains','home','admin','mail','ftp','dashboard','login','assets','static','cdn','status','blog','help','support','leadpages']);
 const PLATFORM_DOMAINS = ['leadpages.com.au','leadpages.webculture.au'];
@@ -46,22 +45,15 @@ function readBody(req){
     let raw=''; req.on('data',c=>raw+=c); req.on('end',()=>{ try{ resolve(raw?JSON.parse(raw):{}); }catch{ resolve({}); } }); req.on('error',()=>resolve({}));
   });
 }
-async function getUser(req){
-  const token=String(req.headers.authorization||'').replace(/^Bearer\s+/i,'');
-  if(!token) return null;
-  try{ const r=await fetch(process.env.SUPABASE_URL+'/auth/v1/user',{ headers:{ apikey:process.env.SUPABASE_ANON_KEY, Authorization:'Bearer '+token } }); if(!r.ok) return null; const u=await r.json(); return u&&u.id?{id:u.id}:null; }catch(_e){ return null; }
-}
 const fail=(res,field,error)=>res.status(200).json({ ok:false, field, error });
 
 module.exports = async (req,res) => {
   if(req.method!=='POST') return res.status(405).json({ ok:false, error:'POST only' });
-  const user=await getUser(req); if(!user) return res.status(401).json({ ok:false, error:'unauthorized' });
-  const pr=await admin.from('partners').select('id,status').eq('user_id',user.id).maybeSingle();
-  const partner=pr.data;
-  if(!partner) return res.status(403).json({ ok:false, error:'not a partner' });
-  if(partner.status!=='active') return res.status(403).json({ ok:false, error:'partner account is '+partner.status });
 
   const b=await readBody(req);
+  const actor=await resolvePartnerActor(req,{ body:b });
+  if(actor.error) return res.status(actor.error.status).json(actor.error.body);
+  const partner=actor.partner;
   const slug=String(b.slug||'').trim().toLowerCase();
   let domain=String(b.domain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/\s+/g,'');
   const enabled=!!b.enabled;
