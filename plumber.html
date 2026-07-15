@@ -385,6 +385,7 @@ const SITE_CONFIG = {
           </div>
           <div class="ff"><label for="suburb">Suburb</label><input id="suburb" type="text" autocomplete="address-level2" placeholder="e.g. Gungahlin"></div>
           <div class="ff"><label for="detail">Anything else? (optional)</label><textarea id="detail" placeholder="A quick description helps us bring the right gear."></textarea></div>
+          <div class="lp-hp" aria-hidden="true" style="position:absolute;left:-10000px;height:1px;overflow:hidden"><label for="lp_hp">Company website</label><input type="text" id="lp_hp" name="lp_hp" value="" tabindex="-1" autocomplete="off"></div>
           <button class="btn btn-call" type="button" onclick="submitLead()">Send &amp; get my call back</button>
           <p class="q-fine">Genuine emergency? Don't wait — <a id="formCall" href="#" style="color:var(--pipe);font-weight:700">call us now</a>.</p>
         </div>
@@ -462,6 +463,8 @@ function trackEvent(name, props = {}){
   });
 })();
 
+try{ window.__lpFormT = window.__lpFormT || Date.now(); document.addEventListener("focusin",function(){ window.__lpFormT = window.__lpFormT || Date.now(); },true); }catch(e){}
+
 /* quote submit stub */
 async function submitLead(){
   const g = id => document.getElementById(id);
@@ -479,6 +482,8 @@ async function submitLead(){
         name: data.name,
         email: null,
         phone: data.phone,
+        lp_hp: (g('lp_hp')&&g('lp_hp').value)||'',
+        _t: window.__lpFormT||Date.now(),
         details: { job:data.job, suburb:data.suburb, detail:data.detail }
       })
     });

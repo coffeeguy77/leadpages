@@ -618,9 +618,11 @@ function openCheckout(){
     +'<div class="row2"><div class="field"><label>Your name</label><input id="co-name" placeholder="First name"></div><div class="field"><label>Preferred web address</label><input id="co-slug" placeholder="linray-finance"></div></div>'
     +'<div class="row2"><div class="field"><label>Phone</label><input id="co-phone" placeholder="0412 ..."></div><div class="field"><label>Email</label><input id="co-email" type="email" placeholder="you@email.com"></div></div>'
     +'<div class="field"><label>Anything we should know? (optional)</label><textarea id="co-notes" rows="2" placeholder="Your aggregator, current rates, areas you serve, ACL/credit rep number..."></textarea></div>'
+    +'<div class="lp-hp" aria-hidden="true" style="position:absolute;left:-10000px;height:1px;overflow:hidden"><label>Company website</label><input type="text" id="co-lp-hp" name="lp_hp" value="" tabindex="-1" autocomplete="off"></div>'
     +'<div class="err" id="co-err"></div>'
     +'<div class="modal-act"><button class="btn btn-light" onclick="closeCheckout()">Back</button><button class="btn btn-euc" id="co-submit" onclick="submitOrder()">Place order →</button></div>';
   document.getElementById('coScrim').classList.add('on'); closeCart();
+  window.__lpFormT = window.__lpFormT || Date.now();
   setTimeout(function(){ var b=document.getElementById('co-biz'); if(b) b.focus(); },80);
 }
 function closeCheckout(){ document.getElementById('coScrim').classList.remove('on'); }
@@ -633,7 +635,7 @@ async function submitOrder(){
   var details={ product:c.product, productName:p.name, setup:p.setup, monthly:p.monthly, slug:val('co-slug'), notes:val('co-notes'), vertical:'broker', source:'storefront-broker' };
   var btn=document.getElementById('co-submit'); btn.disabled=true; btn.textContent='Placing order…';
   var ok=false;
-  try{ var r=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ site:'Broker order — '+biz, kind:'order', name:name, email:email, phone:phone, details:details })}); ok=r.ok; }catch(e){ ok=false; }
+  try{ var r=await fetch('/api/leads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ site:'Broker order — '+biz, kind:'order', name:name, email:email, phone:phone, lp_hp:val('co-lp-hp'), _t:window.__lpFormT||Date.now(), details:details })}); ok=r.ok; }catch(e){ ok=false; }
   btn.disabled=false; btn.textContent='Place order →';
   if(!ok){ err.textContent='Something went wrong sending that. Call us or try again.'; return; }
   track('order',{product:c.product,setup:p.setup,monthly:p.monthly});

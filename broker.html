@@ -450,6 +450,7 @@ const SITE_CONFIG = {
               <option>Buy an investment property</option>
             </select>
           </div>
+          <div class="lp-hp" aria-hidden="true" style="position:absolute;left:-10000px;height:1px;overflow:hidden"><label for="lp_hp">Company website</label><input type="text" id="lp_hp" name="lp_hp" value="" tabindex="-1" autocomplete="off"></div>
           <button class="btn btn-primary" type="button" onclick="submitLead()">Request my free assessment</button>
           <p class="form-fine">By submitting you agree to be contacted about your enquiry. Your details are never sold.</p>
         </div>
@@ -533,6 +534,8 @@ function trackEvent(name, props = {}) {
   });
 })();
 
+try{ window.__lpFormT = window.__lpFormT || Date.now(); document.addEventListener("focusin",function(){ window.__lpFormT = window.__lpFormT || Date.now(); },true); }catch(e){}
+
 /* ---- lead submit stub ---- */
 async function submitLead(){
   const data = {
@@ -554,6 +557,8 @@ async function submitLead(){
         name: (data.firstName + " " + data.lastName).trim(),
         email: data.email,
         phone: data.phone,
+        lp_hp: (document.getElementById('lp_hp')&&document.getElementById('lp_hp').value)||'',
+        _t: window.__lpFormT||Date.now(),
         details: { goal: data.goal, firstName: data.firstName, lastName: data.lastName }
       })
     });

@@ -341,6 +341,7 @@ The quote block lives in `<section id="quote" data-sec="quote">`:
 Default fields in template HTML (before config hydration):
 
 - `#name`, `#phone`, `#email`, `#job` (select), `#suburb`, `#detail`
+- Hidden honeypot: `#lp_hp` (`.lp-hp`, not shown to people)
 - Button: `onclick="submitLead()"`
 - Success panel: `#quoteSuccess` with `.big` heading
 
@@ -351,7 +352,7 @@ async function submitLead() {
   // 1. Collect field values
   // 2. Validate required flags from SITE_CONFIG.sections.quote
   // 3. trackEvent('lead_submit', { job, suburb })
-  // 4. POST /api/leads { site, siteId, slug, kind:'trade', name, email, phone, details }
+  // 4. POST /api/leads { site, siteId, slug, kind:'trade', name, email, phone, lp_hp, _t, details }
   // 5. Always: hide #quoteForm, show #quoteSuccess (.show class)
 }
 ```
@@ -367,10 +368,13 @@ Payload shape (matches `api/leads.js` header comment):
   "name": "...",
   "email": "...",
   "phone": "...",
+  "lp_hp": "",
+  "_t": 1710000000000,
   "details": { "job": "...", "suburb": "...", "detail": "..." }
 }
 ```
 
+`lp_hp` must stay empty for real visitors. `_t` is a client page/form start timestamp used for a soft min-fill check.
 ### Config hydration (`__applyTradeConfig`)
 
 When preview or live page loads `SITE_CONFIG`, the quote section is updated:
@@ -657,7 +661,7 @@ flowchart TD
 1. **Email field editor** — `lblEmail`, `reqEmail`, optional `showEmail` toggle.
 2. **Hide/show fields** — per-field visibility beyond required flags.
 3. **Editor preview of notification target** — read-only “Emails go to …” from resolved config.
-4. **Honeypot / CAPTCHA** — reduce spam on public POST.
+4. **CAPTCHA / Turnstile** — soft honeypot (`lp_hp`) + `_t` timing already live on `/api/leads`; add CAPTCHA only if spam persists.
 5. **Webhook option** — parallel to email for CRM integrations.
 6. **Align `api/manage.html`** if legacy copy lacks quote helpers.
 
