@@ -13,6 +13,12 @@
     if(th.steel){ rs.setProperty('--steel-900',th.steel); rs.setProperty('--steel-950',shade(th.steel,-30)); rs.setProperty('--steel-800',shade(th.steel,18)); } else { rs.removeProperty('--steel-900'); rs.removeProperty('--steel-950'); rs.removeProperty('--steel-800'); }
     setv(th.safety,'--safety',null,0);
     setv(th.lightBg,'--light',null,0);
+    setv(th.h1,'--h1',null,0);
+    setv(th.h2,'--h2',null,0);
+    setv(th.paragraph,'--paragraph',null,0);
+    // Drive general page body text from paragraph picker when set (keeps default --ink otherwise).
+    setv(th.paragraph,'--body-text',null,0);
+    if(th.paragraph){ rs.setProperty('--muted', th.paragraph); } else { rs.removeProperty('--muted'); }
     if(Array.isArray(C.services)){ var grid=document.querySelector('.svcs'); if(grid){
       function _svcHex(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; }
       function _svcRgba(hex,op){ hex=_svcHex(hex); if(!hex) return ''; var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return 'rgba('+r+','+g+','+b+','+op+')'; }

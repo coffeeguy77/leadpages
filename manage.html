@@ -2482,8 +2482,17 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     {on:true,icon:'\uD83D\uDD0E',title:'Leak Detection',body:'Hidden leak driving up your water bill? We pinpoint it without tearing the place apart.'},
     {on:true,icon:'\uD83D\uDEE0\uFE0F',title:'General Plumbing',body:"Taps, toilets, gas fitting, renovations and the jobs you've been putting off. Done right, first time."}
   ];
-  const DEFAULT_TRADE_THEME={ pipe:'#1f7bb8', hivis:'#ff6a1f', steel:'#1a2230', safety:'#ffc400', lightBg:'#eef2f6' };
-  const TRADE_COLOURS=[['pipe','Brand','buttons, links, accents'],['hivis','Call-to-action','the orange call buttons'],['steel','Header & dark bands','top bar, hero, footer'],['safety','Highlight','badges & small accents'],['lightBg','Page background','behind the content sections']];
+  const DEFAULT_TRADE_THEME={ pipe:'#1f7bb8', hivis:'#ff6a1f', steel:'#1a2230', safety:'#ffc400', lightBg:'#eef2f6', h1:'#ffffff', h2:'#1a2230', paragraph:'#5b6878' };
+  const TRADE_COLOURS=[
+    ['pipe','Brand','buttons, links, accents'],
+    ['hivis','Call-to-action','the orange call buttons'],
+    ['steel','Header & dark bands','top bar, hero, footer'],
+    ['safety','Highlight','badges & small accents'],
+    ['lightBg','Page background','behind the content sections'],
+    ['h1','H1 heading','hero and display headlines'],
+    ['h2','H2 heading','section titles'],
+    ['paragraph','Paragraph text','body copy and section intros']
+  ];
   const DEFAULT_TRADE_SECTIONS={
     navMenu:{on:false,style:'pills',align:'left',items:[]},
     textBox:{on:false,eyebrow:'About us',heading:'Built for {{businessName}}',intro:'A short introduction that sets the scene for what follows.',content:'Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.',image:'',imageSide:'right',textAlign:'left'},
