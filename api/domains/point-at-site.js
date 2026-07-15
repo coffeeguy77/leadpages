@@ -18,8 +18,8 @@ const {
 const DOMAINS_ENABLED = String(process.env.DOMAINS_FEATURE_ENABLED || 'true') !== 'false';
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-const APEX_A = '76.76.21.21';
-const WWW_CNAME = 'cname.vercel-dns.com';
+const APEX_A = String(process.env.VERCEL_APEX_A_RECORD || '76.76.21.21').trim() || '76.76.21.21';
+const WWW_CNAME = String(process.env.VERCEL_WWW_CNAME || 'cname.vercel-dns.com').trim() || 'cname.vercel-dns.com';
 
 async function isSuper(userId) {
   try {
@@ -199,7 +199,7 @@ module.exports = async (req, res) => {
       custom_domain: customDomain,
       vercel_ok: !!vercelOk,
       hint: !vercelResult.configured
-        ? 'Set VERCEL_TOKEN + VERCEL_PROJECT_ID to auto-attach hostnames to the project.'
+        ? 'Set VERCEL_TOKEN (or VERCEL_ACCESS_TOKEN) + VERCEL_PROJECT_ID to auto-attach hostnames to the project.'
         : !siteIdIn
           ? 'Vercel attach done. Set this hostname as the site custom domain in Manage → Site details if routing is not linked yet.'
           : null
