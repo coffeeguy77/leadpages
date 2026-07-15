@@ -17,6 +17,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const { limited } = require('./_rate-limit');
+const { assessLeadSpam } = require('../lib/lead-spam');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -164,6 +165,11 @@ module.exports = async (req, res) => {
 
   try {
     const body = await readBody(req);
+
+    const spam = assessLeadSpam(body);
+    if (spam.spam) {
+      return ok({ stored: false, skipped: 'spam', reason: spam.reason });
+    }
 
     const lead = {
       name: clean(body.name, 120),

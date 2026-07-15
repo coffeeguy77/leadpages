@@ -234,7 +234,9 @@ String fields are trimmed and length-capped via `clean(s, maxLen)`.
 
 ```text
 POST /api/leads
+  ├─ soft rate limit (skip store on abuse; still 200)
   ├─ readBody → normalize lead + details
+  ├─ assessLeadSpam(body) → skip store on honeypot / too_fast / name_url
   ├─ detailLines(details) → human-readable pairs
   ├─ message = pairs joined with ' · '  (CRM list one-liner)
   ├─ resolveSite({ siteId, slug, site })
@@ -243,6 +245,15 @@ POST /api/leads
   ├─ sendEmail({ to, business, lead, dets })  [best-effort]
   └─ return ok({ stored, emailed, mail, store_error })
 ```
+
+### Soft spam skip responses (still HTTP 200)
+
+```javascript
+{ ok: true, stored: false, skipped: 'rate_limited' }
+{ ok: true, stored: false, skipped: 'spam', reason: 'honeypot' | 'too_fast' | 'name_url' | … }
+```
+
+Templates always thank the visitor. Only `lp_hp` (and aliases `hp` / `honeypot` / `_gotcha`) is a honeypot — **not** a real `website` field. Missing `_t` / honeypot on older cached pages is allowed.
 
 ---
 
@@ -605,7 +616,7 @@ flowchart TD
 | Topic | Detail |
 |-------|--------|
 | **Public endpoint** | Expected — same threat model as `/api/events` |
-| **Spam / abuse** | No CAPTCHA or honeypot in handler; consider edge rate limits |
+| **Spam / abuse** | Soft honeypot (`lp_hp`) + min fill time (`_t`) via `lib/lead-spam.js`; IP rate limit (20/min). Still HTTP 200 with `skipped: 'spam'`. CAPTCHA only if spam persists. |
 | **PII in logs** | `console.error` logs message only, not full body |
 | **Service role key** | Server-only; never exposed to browser |
 | **Reply-To spoofing** | `reply_to` set to visitor email — standard for owner reply workflow |
@@ -634,7 +645,7 @@ flowchart TD
 1. **Require `siteId` in all templates** — drop business-name fallback for new sites.
 2. **Idempotency-Key** — dedupe double submissions within a time window.
 3. **Server-side validation** — minimum `phone` or `email` per `kind`.
-4. **CAPTCHA or Turnstile** — reduce spam on public POST.
+4. **CAPTCHA or Turnstile** — only if soft honeypot + rate limits are not enough.
 5. **Webhook queue for email** — retry Resend failures asynchronously.
 6. **SMS notification channel** — optional Twilio parallel to email.
 7. **Owner in-app push** — realtime Supabase subscription in `manage.html`.

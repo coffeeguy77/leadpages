@@ -11,6 +11,10 @@ function initLeadForms() {
   var siteName = body.getAttribute("data-pl-site") || "Partner website";
 
   document.querySelectorAll("[data-pl-lead-form]").forEach(function (form) {
+    if (!window.__lpFormT) window.__lpFormT = Date.now();
+    form.addEventListener("focusin", function () {
+      window.__lpFormT = window.__lpFormT || Date.now();
+    }, { once: true });
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var btn = form.querySelector('button[type="submit"]');
@@ -39,6 +43,8 @@ function initLeadForms() {
           name: name,
           email: email || null,
           phone: phone,
+          lp_hp: String(fd.get("lp_hp") || ""),
+          _t: window.__lpFormT || Date.now(),
           details: { source: "partner-landing", form: kind }
         })
       }).then(function () {
