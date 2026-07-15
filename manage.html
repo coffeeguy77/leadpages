@@ -1485,7 +1485,11 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   }
   function previewDock(){
     var V=window.innerWidth, H=window.innerHeight, layout=lpGetPreviewLayout();
-    var tabletSide=V>=768&&V<1200&&V>H;
+    /* Phones in landscape often report width > 768 — use short edge */
+    var phone=Math.min(V,H)<600;
+    var tabletSide=!phone&&V>=768&&V<1200&&V>H;
+    /* Phones never use side rail — it shrinks the admin pane to editor-ratio width */
+    if(phone&&(layout==='side'||layout==='bottom')) layout='split';
     if(V<1200&&layout==='side'&&!tabletSide) layout='split';
     document.body.classList.remove('lp-dock-side','lp-dock-bottom','lp-dock-split','lp-dock-full');
     var editorPct=window.LPAdminShell&&LPAdminShell.getEditorRatio?LPAdminShell.getEditorRatio():70;
@@ -1521,10 +1525,16 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var side=previewDock();
     var wrap=document.querySelector('.wrap');
     if(wrap){
-      if(side){
+      if(side&&window.innerWidth>=768){
         var V=window.innerWidth, lr=V-lpPw, ww=Math.min(V>=1920?1280:1080, Math.max(360, lr-40)), mx=Math.max(0,(lr-ww)/2);
         wrap.style.maxWidth=ww+'px'; wrap.style.marginLeft=mx+'px'; wrap.style.marginRight=(lpPw+mx)+'px';
-      } else { wrap.style.maxWidth=''; wrap.style.marginLeft=''; wrap.style.marginRight=''; }
+        wrap.style.width='';
+      } else {
+        wrap.style.maxWidth='';
+        wrap.style.marginLeft='';
+        wrap.style.marginRight='';
+        wrap.style.width='';
+      }
     }
     var body=document.querySelector('.lp-prev-body'), fr=lpFrame();
     if(!body||!fr) return;
@@ -1563,8 +1573,27 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     lpPrevLayout='off';
     try{ localStorage.setItem(LP_PREVIEW_KEY,'off'); }catch(e){}
     document.body.classList.remove('lp-prev-open','lp-dock-side','lp-dock-bottom','lp-dock-split','lp-dock-full');
-    var wrap=document.querySelector('.wrap'); if(wrap){ wrap.style.maxWidth=''; wrap.style.marginLeft=''; wrap.style.marginRight=''; }
-    var p=document.getElementById('lp-prev'); if(p) p.hidden=true;
+    var wrap=document.querySelector('.wrap');
+    if(wrap){
+      wrap.style.maxWidth='';
+      wrap.style.width='';
+      wrap.style.flex='';
+      wrap.style.marginLeft='';
+      wrap.style.marginRight='';
+      wrap.style.marginBottom='';
+      wrap.style.paddingBottom='';
+      wrap.style.height='';
+      wrap.style.minHeight='';
+      wrap.style.overflow='';
+    }
+    var p=document.getElementById('lp-prev');
+    if(p){
+      p.hidden=true;
+      p.style.cssText='';
+    }
+    var fr=lpFrame();
+    if(fr){ fr.style.width=''; fr.style.height=''; fr.style.marginLeft=''; fr.style.transform=''; }
+    document.body.style.removeProperty('--lp-pw');
     var t=document.getElementById('lp-prev-toggle'); if(t&&authed) t.hidden=false;
     if(window.LPAdminShell&&LPAdminShell.syncLayoutSelect) LPAdminShell.syncLayoutSelect();
     if(window.LPAdminShell&&LPAdminShell.syncRatioVisibility) LPAdminShell.syncRatioVisibility();

@@ -449,6 +449,12 @@ body.lp-compact-chrome .wrap > .leadpages-logo:not(.lp-shell-logo) {
   }
 }
 
+/* Preview panel must never occupy layout space when closed */
+#lp-prev[hidden],
+.lp-prev[hidden] {
+  display: none !important;
+}
+
 /* ── Preview layout modes ── */
 body.lp-dock-split {
   overflow: hidden;
@@ -460,6 +466,7 @@ body.lp-dock-split.lp-prev-open {
 }
 body.lp-dock-split.lp-prev-open .lp-admin-shell {
   flex: 0 0 auto;
+  width: 100%;
 }
 body.lp-dock-split.lp-prev-open .wrap {
   flex: 1 1 calc(var(--lp-editor-ratio) * 1%);
@@ -482,8 +489,88 @@ body.lp-dock-split.lp-prev-open .lp-prev {
   top: auto !important;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
 }
-/* Tablet landscape side dock — 60/40 default */
-@media (min-width: 768px) and (max-width: 1199px) and (orientation: landscape) {
+
+/*
+ * Phone (portrait or landscape): keep admin at full viewport width whether
+ * preview is open or closed. Split uses a fixed bottom sheet so body never
+ * becomes a horizontal flex that can leave the admin pane at editor-ratio width.
+ */
+@media (max-width: 767px), (max-height: 500px) and (max-width: 1023px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  .lp-admin-shell,
+  .lp-admin-shell-inner,
+  .wrap {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box;
+  }
+  body:not(.lp-prev-open) .wrap {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  body.lp-dock-split {
+    overflow: auto;
+  }
+  body.lp-dock-split.lp-prev-open {
+    display: block;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  body.lp-dock-split.lp-prev-open .lp-admin-shell {
+    flex: none;
+    width: 100%;
+  }
+  body.lp-dock-split.lp-prev-open .wrap {
+    flex: none;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0;
+    overflow: visible;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    /* Room for fixed bottom preview sheet */
+    padding-bottom: calc(var(--lp-preview-ratio, 40) * 1vh + 12px);
+  }
+  body.lp-dock-split.lp-prev-open .lp-prev {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    flex: none !important;
+    width: 100% !important;
+    height: calc(var(--lp-preview-ratio, 40) * 1vh) !important;
+    min-height: 180px;
+    max-height: 70vh;
+    z-index: 200;
+    box-shadow: 0 -8px 26px rgba(0, 0, 0, 0.32);
+  }
+  body.lp-dock-side.lp-prev-open .wrap,
+  body.lp-dock-bottom.lp-prev-open .wrap {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  body.lp-dock-side.lp-prev-open .lp-prev {
+    /* Side rail is unusable on phones — fall back to bottom sheet */
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    height: 42vh !important;
+  }
+}
+/* Tablet landscape side dock — 60/40 default (exclude short phone landscape) */
+@media (min-width: 768px) and (max-width: 1199px) and (orientation: landscape) and (min-height: 501px) {
   body.lp-dock-side.lp-prev-open {
     display: flex;
     flex-direction: row;
