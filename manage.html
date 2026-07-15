@@ -5343,14 +5343,28 @@ function heroCtaCard(c){
     st=String((sref&&sref.status)||'').toLowerCase();
     return st==='live'||st==='active';
   }
+  function lpHostOnly(v){
+    return String(v||'').trim().replace(/^https?:\/\//i,'').replace(/\/.*$/,'').toLowerCase();
+  }
+  function lpHttpsUrl(hostOrUrl){
+    var s=String(hostOrUrl||'').trim();
+    if(!s) return '';
+    if(/^\//.test(s)) return s; // same-origin relative path
+    s=s.replace(/^https?:\/\//i,'');
+    return 'https://'+s.replace(/^\/+/, '');
+  }
   function lpLiveUrl(opts){
     opts=opts||{};
     var forcePreview=!!opts.preview || (!opts.publicOnly && !lpSiteIsLive());
-    var dom=(currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'');
+    var dom=lpHostOnly(currentCustomDomain||'');
     var slug=(currentSiteSlug||'').trim();
     var base='';
-    if(dom) base='https://'+dom+'/';
-    else if(slug) base=(opts.relative||forcePreview) ? ('/'+slug) : ('https://leadpages.com.au/'+slug);
+    if(dom) base=lpHttpsUrl(dom)+'/';
+    else if(slug){
+      // Always absolute https for public/live opens so browsers never treat the host as a relative path.
+      if(opts.relative && forcePreview) base='/'+slug;
+      else base=lpHttpsUrl('leadpages.com.au/'+slug.replace(/^\/+/, ''));
+    }
     else return '';
     if(forcePreview){
       var joiner=base.indexOf('?')>=0?'&':'?';
@@ -5360,7 +5374,7 @@ function heroCtaCard(c){
   }
   function lpOpenSitePreview(){
     var live=lpSiteIsLive();
-    var u=lpLiveUrl({ preview:!live, relative:!live });
+    var u=lpLiveUrl({ preview:!live });
     if(!u){ if(typeof toast==='function') toast('This site has no slug yet.'); return; }
     window.open(u,'_blank','noopener');
     if(!live && typeof toast==='function') toast('Opening private preview — publish to make it public');
@@ -5370,10 +5384,10 @@ function heroCtaCard(c){
     vb.textContent=lpSiteIsLive()?'View Live Site':'Preview site';
   }
   function lpSitemapUrl(){
-    var dom=(currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'');
-    if(dom) return 'https://'+dom+'/sitemap.xml';
+    var dom=lpHostOnly(currentCustomDomain||'');
+    if(dom) return lpHttpsUrl(dom)+'/sitemap.xml';
     var slug=(currentSiteSlug||'').trim();
-    return slug ? ('https://leadpages.com.au/'+slug+'/sitemap.xml') : '';
+    return slug ? lpHttpsUrl('leadpages.com.au/'+slug.replace(/^\/+/, '')+'/sitemap.xml') : '';
   }
   function lpCopyText(text,label){
     if(!text) return;
@@ -5402,11 +5416,8 @@ function heroCtaCard(c){
   // ---- create the two always-visible containers around #lp-analytics ----
   function lpExtrasInit(){
     var ana=document.getElementById('lp-analytics'); if(!ana||!ana.parentNode) return false;
-    if(!document.getElementById('lp-domains')){
-      var dm=document.createElement('div'); dm.id='lp-domains';
-      ana.parentNode.insertBefore(dm, ana);                 // above the stats pills
-      dm.addEventListener('click', lpDomClick);
-    }
+    // My domains panel removed — Domains / Settings already cover DNS + domain management.
+    var stale=document.getElementById('lp-domains'); if(stale&&stale.parentNode) stale.parentNode.removeChild(stale);
     if(!document.getElementById('lp-leads')){
       var ld=document.createElement('div'); ld.id='lp-leads';
       ana.parentNode.insertBefore(ld, ana.nextSibling);     // below the stats pills
@@ -5420,57 +5431,8 @@ function heroCtaCard(c){
   /* ============================ MY DOMAINS ============================ */
   var LPDOM={ siteId:null, rows:[], open:null, loading:false };
   async function renderMyDomains(){
-    var el=document.getElementById('lp-domains'); if(!el) return;
-    if(!currentSiteId){ el.innerHTML=''; return; }
-    // Scope strictly to the site being edited — refetch whenever the site changes,
-    // so one client's domains never bleed onto another site.
-    if(LPDOM.siteId!==currentSiteId){
-      LPDOM.siteId=currentSiteId; LPDOM.open=null; LPDOM.rows=[]; LPDOM.loading=true;
-      el.innerHTML='<div class="lpd-bar"><span class="lpd-title">My domains</span><span class="lpd-hint">loading…</span></div>';
-      var rows=[];
-      try{
-        var r=await sb.from('domains')
-          .select('id,domain_name,status,managed_external,site_id,created_at')
-          .eq('site_id',currentSiteId).order('created_at',{ascending:true});
-        rows=r.data||[];
-      }catch(e){ rows=[]; }
-      // Surface the site's own custom domain (e.g. a domain the client already owns)
-      // even if it isn't a registered domains-table row yet.
-      var cd=(currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'');
-      if(cd && !rows.some(function(x){ return String(x.domain_name||'').toLowerCase().replace(/^www\./,'')===cd; })){
-        rows.unshift({ id:'custom', domain_name:cd, status:'connected', managed_external:false, site_id:currentSiteId, created_at:null, _custom:true });
-      }
-      LPDOM.rows=rows; LPDOM.loading=false;
-    }
-    var rows=LPDOM.rows||[];
-    if(!rows.length){ el.innerHTML=''; return; }   // nothing to show: stay out of the way
-    var live=lpLiveUrl({ publicOnly:true });
-    var chips=rows.map(function(d,i){
-      var st=(d.status||'unknown').toLowerCase();
-      return '<button type="button" class="lpd-chip'+(LPDOM.open===i?' on':'')+'" data-lpd="'+i+'">'
-        +'<span class="lpd-dot s-'+esc(st)+'"></span>'
-        +'<span class="lpd-name">'+esc(d.domain_name||'(domain)')+'</span>'
-        +(d.managed_external?'<span class="lpd-tag">external</span>':'')
-        +'</button>';
-    }).join('');
-    var head='<div class="lpd-bar"><span class="lpd-title">My domains <span class="lpd-count">'+rows.length+'</span></span>'
-      +'<a class="lpd-live" href="/manage-domains.html" target="_blank" rel="noopener">Manage DNS &amp; email ↗</a>'
-      +(live?'<a class="lpd-live" href="'+esc(live)+'" target="_blank" rel="noopener">View live site ↗</a>':'')
-      +'</div>';
-    var detail='';
-    if(LPDOM.open!=null && rows[LPDOM.open]){
-      var d=rows[LPDOM.open];
-      var url=d.domain_name?('https://'+String(d.domain_name).replace(/^https?:\/\//,'')):'';
-      detail='<div class="lpd-detail">'
-        +'<div class="lpd-drow"><span>Domain</span><b>'+esc(d.domain_name||'—')+'</b></div>'
-        +'<div class="lpd-drow"><span>Status</span><b>'+esc(d._custom?'Custom domain on this site':(d.status||'unknown'))+'</b></div>'
-        +'<div class="lpd-drow"><span>Points at</span><b>'+(currentSiteSlug?('/'+esc(currentSiteSlug)):'<i style="color:#9a9a93">this site</i>')+'</b></div>'
-        +(d._custom?'':'<div class="lpd-drow"><span>Added</span><b>'+esc(lpWhen(d.created_at)||'—')+'</b></div>')
-        +(d._custom?'<div class="lpd-drow"><span>Source</span><b>Set in Site details \u2192 Custom domain</b></div>':'')
-        +(url?'<div style="margin-top:8px;"><a class="lpd-open" href="'+esc(url)+'" target="_blank" rel="noopener">Open '+esc(d.domain_name)+' ↗</a></div>':'')
-        +'</div>';
-    }
-    el.innerHTML=head+'<div class="lpd-chips">'+chips+'</div>'+detail;
+    var el=document.getElementById('lp-domains');
+    if(el&&el.parentNode) el.parentNode.removeChild(el);
   }
   function lpDomClick(e){
     var b=e.target.closest('[data-lpd]'); if(!b) return;
@@ -7953,7 +7915,7 @@ function heroCtaCard(c){
     var siteId=currentSiteId||'';
     var biz=esc(cfg.businessName||currentBusinessName||currentSiteSlug||'This site');
     var slug=esc(currentSiteSlug||'');
-    var domain=esc(currentCustomDomain||'');
+    var domainHost=lpHostOnly(currentCustomDomain||''); var domain=esc(domainHost); var liveUrl=lpLiveUrl({ publicOnly:true })||(domainHost?lpHttpsUrl(domainHost):'');
     var isActive=true;
     var isDomainConn=!!(currentCustomDomain);
 
@@ -7973,7 +7935,7 @@ function heroCtaCard(c){
         +'<button type="button" id="dash-conv-rate-btn" class="lp-conv-rate-btn" hidden>conversion rate: \u2014</button>'
         +'</p>':'')
       +'</div>'
-      +(domain?'<a href="https://'+domain+'" target="_blank" rel="noopener" class="btn ghost lp-btn-stroke" style="text-decoration:none;font-size:12px;padding:6px 12px">View live \u2197</a>':'')
+      +(liveUrl?'<a href="'+esc(liveUrl)+'" target="_blank" rel="noopener" class="btn ghost lp-btn-stroke" style="text-decoration:none;font-size:12px;padding:6px 12px">View live \u2197</a>':'')
       +'</div>'
       +'</div>'
 
