@@ -746,6 +746,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     if(e.target.closest('[data-cancelx]')){ card.querySelector('.xfer').classList.add('hidden'); return; }
     if(e.target.closest('[data-apply]')){
       var btn=e.target.closest('[data-apply]'); btn.disabled=true;
+      if(!id || String(id).length < 10){ btn.disabled=false; alert('Missing site id — transfer cancelled.'); return; }
       var get=function(k){ var el=card.querySelector('[data-x="'+k+'"]'); return el?el.value:''; };
       var getc=function(k){ var el=card.querySelector('[data-x="'+k+'"]'); return el?el.checked:false; };
       var toSel=get('to'); var toId=(toSel==='__lp__')?null:toSel;
@@ -761,12 +762,18 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
         else if(earner==='none' || (earner==='new' && !toId)) patch.recurring_commission_active=false;
         else patch.commission_partner_id=origCommission;
       }
-      var r1=await sb.from('sites').update(patch).eq('id',id).select('*');
+      var r1=await sb.from('sites').update(patch).eq('id',id).select('id');
       if(r1.error||!r1.data||!r1.data.length){ btn.disabled=false; alert('Could not transfer: '+((r1.error&&r1.error.message)||'no permission')); return; }
+      if(r1.data.length!==1 || String(r1.data[0].id)!==String(id)){
+        btn.disabled=false;
+        alert('Transfer blocked: expected exactly one site update.');
+        return;
+      }
+      var r2=await sb.from('sites').select('*').eq('id',id).maybeSingle();
       await sb.from('client_transfer_events').insert({ site_id:id, from_partner_id:fromId, to_partner_id:toId, reason:(get('reason')||'').trim()||null, effective_date:get('eff')||null, keep_commission_trail:keep, continue_recurring:cont, recurring_earner:earner, notes:(get('notes')||'').trim()||null, created_by:me&&me.id, created_by_email:me&&me.email });
       await sb.from('partner_audit_logs').insert({ actor_id:me&&me.id, actor_email:me&&me.email, action:'transfer', partner_id:toId, site_id:id, detail:{from:fromId,to:toId,keep_attribution:keep,continue_recurring:cont,earner:earner} });
       btn.disabled=false;
-      Object.assign(c,r1.data[0]); renderClientsAdmin(); loadAudit();
+      Object.assign(c,(r2&&r2.data)||r1.data[0]); renderClientsAdmin(); loadAudit();
     }
   });
 

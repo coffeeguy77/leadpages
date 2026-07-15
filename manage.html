@@ -4122,8 +4122,9 @@ function heroCtaCard(c){
       say('Could not load partners', true);
       return;
     }
-    save.addEventListener('click', async function(){
-      if(!currentSiteId){ say('No site loaded', true); return; }
+    save.onclick = async function(){
+      var siteId=currentSiteId;
+      if(!siteId || String(siteId).length < 10){ say('No site loaded', true); return; }
       var toSel=sel.value; var toId=(toSel&&toSel!=='__lp__')?toSel:null;
       var fromId=currentServicingPartnerId||null;
       if(String(fromId||'')===String(toId||'')){ say('Already assigned'); return; }
@@ -4141,18 +4142,29 @@ function heroCtaCard(c){
         patch.commission_partner_id=null;
         patch.recurring_commission_active=false;
       }
-      var r1=await sb.from('sites').update(patch).eq('id', currentSiteId).select('id,servicing_partner_id,commission_partner_id,recurring_commission_active,servicing_status,referring_partner_id');
+      var r1=await sb.from('sites').update(patch).eq('id', siteId).select('id,servicing_partner_id,commission_partner_id,recurring_commission_active,servicing_status,referring_partner_id');
       if(r1.error||!r1.data||!r1.data.length){
         save.disabled=false; save.textContent=o;
         say((r1.error&&r1.error.message)||'Could not save assignment', true);
         return;
       }
+      if(r1.data.length>1){
+        console.error('assign partner matched multiple rows', r1.data.length, siteId);
+        save.disabled=false; save.textContent=o;
+        say('Blocked: update matched more than one site. Nothing trusted.', true);
+        return;
+      }
       var row=r1.data[0];
+      if(String(row.id)!==String(siteId)){
+        save.disabled=false; save.textContent=o;
+        say('Blocked: unexpected site id in response.', true);
+        return;
+      }
       currentServicingPartnerId=row.servicing_partner_id||null;
       currentCommissionPartnerId=row.commission_partner_id||null;
       currentRecurringCommissionActive=row.recurring_commission_active!==false;
       currentReferringPartnerId=row.referring_partner_id||currentReferringPartnerId;
-      var sref=allSites.find(function(x){ return x.id===currentSiteId; });
+      var sref=allSites.find(function(x){ return x.id===siteId; });
       if(sref){
         sref.servicing_partner_id=currentServicingPartnerId;
         sref.commission_partner_id=currentCommissionPartnerId;
@@ -4163,7 +4175,7 @@ function heroCtaCard(c){
         var me=(await sb.auth.getSession()).data.session;
         var uid=me&&me.user&&me.user.id; var email=me&&me.user&&me.user.email;
         await sb.from('client_transfer_events').insert({
-          site_id:currentSiteId,
+          site_id:siteId,
           from_partner_id:fromId,
           to_partner_id:toId,
           reason:'assign_from_settings',
@@ -4180,14 +4192,14 @@ function heroCtaCard(c){
           actor_email:email||null,
           action:'assign_partner_settings',
           partner_id:toId,
-          site_id:currentSiteId,
+          site_id:siteId,
           detail:{ from:fromId, to:toId, hosting_only:true, build_fee:false }
         });
       }catch(_log){}
       save.disabled=false; save.textContent=o;
       say(toId?'Partner assigned — site is on their dashboard (20% hosting)':'Cleared — LeadPages direct');
       if(typeof toast==='function') toast(toId?'Partner assigned':'Partner assignment cleared');
-    });
+    };
   }
 
   function openAccountPage(){
