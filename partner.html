@@ -1276,6 +1276,7 @@
       : '<div class="card empty">'+emptyIco('clients')+'<strong>No clients yet</strong><p class="muted" style="margin:6px auto 0;max-width:44ch">When a prospect accepts and pays a quote, their site becomes a client on your account.</p></div>';
   }
   async function loadClients(){
+    var pid=state.partner&&state.partner.id;
     var r=await sb.from('sites').select('id,slug,business_name,status,template,plan_key,monthly_amount,billing_status,servicing_status,servicing_partner_id,referring_partner_id,commission_partner_id,is_mockup,is_partner_home,show_on_showcase,preview_password,sale_price,logo_obj:config->logo,config,created_at').order('created_at',{ascending:false});
     if(r.error){
       console.error('loadClients error:', r.error);
@@ -1284,8 +1285,14 @@
       return;
     }
     var all=(r.data||[]);
-    clients=all.filter(function(x){return !x.is_mockup && !x.is_partner_home;});
-    mockups=all.filter(function(x){return x.is_mockup;});
+    // Super-admins (and any role whose RLS returns every site) must only see THIS partner's
+    // book — otherwise Partner desk looks like every LeadPages site was "transferred away".
+    function relatedToPartner(x){
+      if(!pid) return false;
+      return x.servicing_partner_id===pid || x.referring_partner_id===pid || x.commission_partner_id===pid;
+    }
+    clients=all.filter(function(x){ return !x.is_mockup && !x.is_partner_home && relatedToPartner(x); });
+    mockups=all.filter(function(x){ return x.is_mockup && relatedToPartner(x); });
     renderClients(); renderOverview(); renderMockups();
   }
   async function loadPlans(){ /* legacy — clients are created via paid quotes only */ }
