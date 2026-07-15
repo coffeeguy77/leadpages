@@ -5311,8 +5311,8 @@ function heroCtaCard(c){
   var ANA_METRICS=[ {k:'page_view',label:'Visitors',ic:'\U0001F441',color:'#2563eb'}, {k:'call_click',label:'Calls',ic:'\U0001F4DE',color:'#16a34a'}, {k:'lead_submit',label:'Forms',ic:'\u2709',color:'#d97706'}, {k:'conv',label:'Conversion',ic:'\U0001F4C8',color:'#7c3aed'} ];
   function anaSince(){ return ANA.period? new Date(Date.now()-ANA.period*864e5).toISOString() : '1970-01-01T00:00:00Z'; }
   function anaAgo(iso){ if(!iso)return ''; var s=Math.floor((Date.now()-new Date(iso).getTime())/1000); if(s<60)return 'just now'; var m=Math.floor(s/60); if(m<60)return m+'m ago'; var h=Math.floor(m/60); if(h<24)return h+'h ago'; var d=Math.floor(h/24); if(d<30)return d+'d ago'; return new Date(iso).toLocaleDateString(); }
-  function anaCounts(rows){ var c={page_view:0,call_click:0,lead_submit:0}; (rows||[]).forEach(function(e){ if(c[e.event]!=null)c[e.event]++; }); return c; }
-  function anaDaily(rows,type,days){ var m={},now=Date.now(); for(var i=days-1;i>=0;i--){ m[new Date(now-i*864e5).toISOString().slice(0,10)]=0; } (rows||[]).forEach(function(e){ if(e.event!==type)return; var k=(e.created_at||'').slice(0,10); if(k in m)m[k]++; }); return Object.keys(m).map(function(k){return {d:k,n:m[k]};}); }
+  function anaCounts(rows){ var c={page_view:0,call_click:0,lead_submit:0}; (rows||[]).forEach(function(e){ if(c[e.event]!=null)c[e.event]+=(e&&e.count>0?e.count:1); }); return c; }
+  function anaDaily(rows,type,days){ var m={},now=Date.now(); for(var i=days-1;i>=0;i--){ m[new Date(now-i*864e5).toISOString().slice(0,10)]=0; } (rows||[]).forEach(function(e){ if(e.event!==type)return; var k=(e.created_at||'').slice(0,10); if(k in m)m[k]+=(e&&e.count>0?e.count:1); }); return Object.keys(m).map(function(k){return {d:k,n:m[k]};}); }
   function anaBars(series,color){ var max=1; series.forEach(function(s){ if(s.n>max)max=s.n; }); var col=color||'var(--chart-primary)'; return '<div style="display:flex;align-items:flex-end;gap:2px;height:50px;margin-top:8px;">'+series.map(function(s){ var h=Math.max(2,Math.round(s.n/max*50)); return '<div title="'+s.d+': '+s.n+'" style="flex:1;min-width:3px;height:'+h+'px;background:'+col+';border-radius:2px 2px 0 0;opacity:'+(s.n?1:.22)+';"></div>'; }).join('')+'</div>'; }
   function anaFunnel(label,n,pct){ return '<div style="flex:1;min-width:130px;background:#f7f6f1;border-radius:11px;padding:13px 15px;"><div style="font:700 26px/1 var(--font-display,Georgia),serif;">'+n+'</div><div style="font-size:12.5px;color:#6c6c68;margin-top:3px;">'+label+'</div><div style="font-size:12px;color:var(--accent);font-weight:700;margin-top:5px;">'+pct+'%</div></div>'; }
   async function anaStats(params){
@@ -5337,7 +5337,7 @@ function heroCtaCard(c){
   }
   async function anaFetchGlobal(){ var j=await anaStats({days:(ANA.period||0)}); if(j){ ANA.globalData=j.events||[]; return; } var since=anaSince(); try{ var ev=await sb.from('events').select('event,site_id,created_at').gte('created_at',since).limit(20000); ANA.globalData=ev.data||[]; }catch(e){ ANA.globalData=[]; } }
   function anaGlobalRows(){ var by={}; (allSites||[]).forEach(function(x){ by[x.id]={name:x.business_name||x.slug,slug:x.slug,visitors:0,calls:0,forms:0,last:null}; });
-    (ANA.globalData||[]).forEach(function(e){ var r=by[e.site_id]; if(!r)return; if(e.event==='page_view')r.visitors++; else if(e.event==='call_click')r.calls++; else if(e.event==='lead_submit')r.forms++; if(!r.last||e.created_at>r.last)r.last=e.created_at; });
+    (ANA.globalData||[]).forEach(function(e){ var r=by[e.site_id]; if(!r)return; var w=(e&&e.count>0?e.count:1); if(e.event==='page_view')r.visitors+=w; else if(e.event==='call_click')r.calls+=w; else if(e.event==='lead_submit')r.forms+=w; if(!r.last||e.created_at>r.last)r.last=e.created_at; });
     var rows=Object.keys(by).map(function(k){return by[k];}); rows.forEach(function(r){ r.conv=r.visitors?(r.forms/r.visitors*100):0; });
     rows.sort(function(a,b){ if(ANA.sort==='name')return (a.name||'').localeCompare(b.name||''); return (b[ANA.sort]||0)-(a[ANA.sort]||0); }); return rows;
   }
@@ -5345,7 +5345,7 @@ function heroCtaCard(c){
     if(k==='conv'){ var c=anaCounts(ANA.data); function p(n,d){return d?(Math.round(n/d*1000)/10):0;} var sc=ANA.statusCounts||{won:0,lost:0,total:0}; var dec=(sc.won||0)+(sc.lost||0); var wr=dec?p(sc.won,dec):null; return '<h3>How enquiries turn into jobs</h3><div style="font-size:12.5px;color:#6c6c68;margin-bottom:10px;">Conversion is your win rate \u2014 jobs won \u00f7 jobs decided (won + lost). Mark a lead Won or Lost to update it.</div><div style="display:flex;gap:14px;flex-wrap:wrap;">'+anaFunnel('Won',sc.won||0,wr==null?0:wr)+anaFunnel('Lost',sc.lost||0,dec?p(sc.lost,dec):0)+anaFunnel('Still open',Math.max(0,(sc.total||0)-dec),0)+'</div><div style="font-size:12.5px;color:#6c6c68;margin:16px 0 10px;">The visitor funnel</div><div style="display:flex;gap:14px;flex-wrap:wrap;">'+anaFunnel('Visited',c.page_view,100)+anaFunnel('Clicked to call',c.call_click,p(c.call_click,c.page_view))+anaFunnel('Sent the form',c.lead_submit,p(c.lead_submit,c.page_view))+'</div>'; }
     var m=null; ANA_METRICS.forEach(function(x){ if(x.k===k)m=x; }); if(!m)return '';
     var html='<h3>'+m.label+'</h3><div style="font-size:12.5px;color:#6c6c68;">Per day, last '+days+' days</div>'+anaBars(anaDaily(ANA.data,k,days),m.color);
-    if(k==='call_click'){ var locs={}; (ANA.data||[]).forEach(function(e){ if(e.event==='call_click'){ var L=(e.props&&e.props.location)||'other'; locs[L]=(locs[L]||0)+1; } }); var nm={heroCall:'Hero button',headCall:'Header button',navPhone:'Phone number',formCall:'Form link',emergCall:'Emergency bar',footPhone:'Footer'}; var ks=Object.keys(locs).sort(function(a,b){return locs[b]-locs[a];}); if(ks.length) html+='<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">'+ks.map(function(L){return '<span style="background:#f2f1ec;border-radius:8px;padding:5px 10px;font-size:12.5px;">'+(nm[L]||L)+': <b>'+locs[L]+'</b></span>';}).join('')+'</div>'; }
+    if(k==='call_click'){ var locs={}; (ANA.data||[]).forEach(function(e){ if(e.event!=='call_click')return; var bag=(e.props&&e.props.locations)||null; if(bag&&typeof bag==='object'){ Object.keys(bag).forEach(function(L){ locs[L]=(locs[L]||0)+(bag[L]|0); }); return; } var L=(e.props&&e.props.location)||'other'; locs[L]=(locs[L]||0)+(e.count>0?e.count:1); }); var nm={heroCall:'Hero button',headCall:'Header button',navPhone:'Phone number',formCall:'Form link',emergCall:'Emergency bar',footPhone:'Footer'}; var ks=Object.keys(locs).sort(function(a,b){return locs[b]-locs[a];}); if(ks.length) html+='<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">'+ks.map(function(L){return '<span style="background:#f2f1ec;border-radius:8px;padding:5px 10px;font-size:12.5px;">'+(nm[L]||L)+': <b>'+locs[L]+'</b></span>';}).join('')+'</div>'; }
     if(k==='lead_submit'){ var rows=(ANA.leads||[]).slice(0,6); html+='<div style="margin-top:12px;">'+(rows.length?rows.map(function(l){return '<div style="display:flex;justify-content:space-between;border-top:1px solid #f0efe9;padding:7px 0;font-size:13px;"><span>'+anaEsc(l.name||'(no name)')+'</span><span style="color:#999;">'+anaAgo(l.created_at)+'</span></div>';}).join(''):'<div style="color:#999;font-size:13px;">No form submissions in this period.</div>')+'</div>'; }
     return html;
   }
@@ -5600,7 +5600,8 @@ function heroCtaCard(c){
   function lpTimelineHTML(){
     // Build a simple activity feed from the analytics events already loaded for
     // this site (ANA.data), newest first: page views, call clicks, form submits.
-    var ev=(typeof ANA!=='undefined' && ANA.data)?ANA.data.slice():[];
+    // Skip rolled daily aggregates — they are not individual moments.
+    var ev=(typeof ANA!=='undefined' && ANA.data)?ANA.data.filter(function(e){ return !e||!e.rolled; }).slice():[];
     ev.sort(function(a,b){ return (b.created_at||'').localeCompare(a.created_at||''); });
     var label={page_view:'Visited the page',call_click:'Clicked to call',lead_submit:'Submitted the quote form'};
     var icon={page_view:'👁',call_click:'📞',lead_submit:'✉'};
@@ -8344,9 +8345,10 @@ function heroCtaCard(c){
     rawData.forEach(function(e){
       var day=(e.created_at||'').substring(0,10);
       if(!buckets[day]) return;
-      if(e.event==='page_view') buckets[day].pv++;
-      else if(e.event==='lead_submit') buckets[day].lead++;
-      else if(e.event==='call_click'||e.event==='phone_click') buckets[day].call++;
+      var w=(e&&e.count>0)?e.count:1;
+      if(e.event==='page_view') buckets[day].pv+=w;
+      else if(e.event==='lead_submit') buckets[day].lead+=w;
+      else if(e.event==='call_click'||e.event==='phone_click') buckets[day].call+=w;
     });
     var keys=Object.keys(buckets).sort();
     var isPhone=window.innerWidth<768;

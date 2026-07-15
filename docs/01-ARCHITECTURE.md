@@ -592,8 +592,11 @@ Platform HTML pages are served via clean URLs:
 | Path | Schedule | Purpose |
 |------|----------|---------|
 | `/api/billing/cron` | `0 3 * * *` (daily 03:00 UTC) | Contra accrual; flag 90-day suspended sites |
+| `/api/cron/events-rollup` | `15 4 * * *` (daily 04:15 UTC) | Roll raw `events` older than ~90 days into `event_daily`, then delete |
 
 `cron/send-due.js` exists for email campaigns but is **not** registered in `vercel.json` — may require manual cron setup or external trigger.
+
+**Events retention:** apply `db/event_daily.sql` in Supabase once. Override keep window with `EVENTS_RAW_KEEP_DAYS` (default 90, minimum 14). `/api/stats` merges `event_daily` + recent raw rows so dashboards keep long-range totals.
 
 ### 12.4 Environment variables
 
