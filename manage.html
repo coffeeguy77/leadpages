@@ -808,6 +808,13 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       </div>
       <div class="f"><label>Meta description <span class="seo-tip">The grey summary under your title in Google. ~150 characters, include the keyword and a reason to click.</span></label><textarea id="lp-meta" class="tin" rows="2" placeholder="Compare home loan repayments and borrowing power with a local Canberra broker..."></textarea><div class="charcount" id="lp-meta-count"></div></div>
       <div class="f"><label>H1 heading <span class="seo-tip">The single biggest on-page heading. One per page, should contain your main keyword.</span></label><input type="text" id="lp-h1" class="tin" placeholder="Home loans, made simple in Canberra"></div>
+      <div class="apgroup-h">Font colours</div>
+      <p class="hint" style="margin:-4px 0 10px;">Optional colours for this landing page only. Leave blank to use the site theme.</p>
+      <div class="lp-row" style="gap:12px;">
+        <div class="f" style="margin:0;flex:1;min-width:160px;"><label>H1 colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="lp-h1-color" value="#1a2230" style="width:42px;height:36px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="lp-h1-color-t" class="tin" placeholder="Default" style="flex:1;min-width:0;"><button type="button" class="btn ghost sm" id="lp-h1-color-clr">Default</button></div></div>
+        <div class="f" style="margin:0;flex:1;min-width:160px;"><label>H2 colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="lp-h2-color" value="#1a2230" style="width:42px;height:36px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="lp-h2-color-t" class="tin" placeholder="Default" style="flex:1;min-width:0;"><button type="button" class="btn ghost sm" id="lp-h2-color-clr">Default</button></div></div>
+        <div class="f" style="margin:0;flex:1;min-width:160px;"><label>Paragraph colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="lp-p-color" value="#5b6878" style="width:42px;height:36px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="lp-p-color-t" class="tin" placeholder="Default" style="flex:1;min-width:0;"><button type="button" class="btn ghost sm" id="lp-p-color-clr">Default</button></div></div>
+      </div>
 
       <div class="apgroup-h">Write with AI</div>
       <div class="ai-box">
@@ -2111,6 +2118,26 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-img-pad').addEventListener('input',function(){ var n=parseInt(this.value,10); lpField('imgPad', isNaN(n)?16:Math.max(0,Math.min(96,n))); });
     $('lp-cta-call').addEventListener('change',function(){ lpField('showCall',this.checked); });
     $('lp-cta-quote').addEventListener('change',function(){ lpField('showQuote',this.checked); });
+    (function wireLpTextColors(){
+      function hexOk(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; }
+      function to6(h){ h=hexOk(h); if(!h) return ''; if(h.length===4) return '#'+h.charAt(1)+h.charAt(1)+h.charAt(2)+h.charAt(2)+h.charAt(3)+h.charAt(3); return h; }
+      window.__lpFillTextColors=function(p){
+        var map=[['h1Color','lp-h1-color','lp-h1-color-t','#1a2230'],['h2Color','lp-h2-color','lp-h2-color-t','#1a2230'],['paragraphColor','lp-p-color','lp-p-color-t','#5b6878']];
+        map.forEach(function(row){
+          var key=row[0], cp=$(row[1]), tx=$(row[2]), fallback=row[3];
+          var v=hexOk(p&&p[key]); if(cp) cp.value=to6(v)||fallback; if(tx) tx.value=v||'';
+        });
+      };
+      function bind(key,cpId,txId,clrId){
+        var cp=$(cpId), tx=$(txId), clr=$(clrId);
+        if(cp) cp.addEventListener('input',function(){ if(tx) tx.value=cp.value; lpField(key,cp.value); });
+        if(tx) tx.addEventListener('input',function(){ var v=hexOk(tx.value); if(v){ if(cp) cp.value=to6(v); lpField(key,v); } else if(!String(tx.value||'').trim()){ lpField(key,''); } });
+        if(clr) clr.addEventListener('click',function(){ if(tx) tx.value=''; if(cp) cp.value=(key==='paragraphColor'?'#5b6878':'#1a2230'); lpField(key,''); });
+      }
+      bind('h1Color','lp-h1-color','lp-h1-color-t','lp-h1-color-clr');
+      bind('h2Color','lp-h2-color','lp-h2-color-t','lp-h2-color-clr');
+      bind('paragraphColor','lp-p-color','lp-p-color-t','lp-p-color-clr');
+    })();
     $('lp-save').addEventListener('click',function(){ if(lpCur) lpCur.updatedAt=new Date().toISOString(); persist(); lpSaveDB(); var pub=lpCur&&lpCur.status==='published'; renderSeoPages(); toast(pub?'Page saved — regenerate sitemap in Settings when you add or publish pages.':'Page saved'); });
     $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; });
     $('lp-del').addEventListener('click',function(){ if(!lpCur) return; data.pages=data.pages.filter(x=>x.id!==lpCur.id); persist(); lpSaveDB(); $('lp-editor').hidden=true; lpCur=null; renderSeoPages(); toast('Page deleted'); });
@@ -2128,7 +2155,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var lpaec=$('lp-app-edit-close');
     if(lpaec) lpaec.addEventListener('click',function(){ lpPageEditKey=null; var ed=$('lp-app-edit'); if(ed) ed.hidden=true; });
   }
-  function lpField(f,v){ if(lpCur){ lpCur[f]=v; if(f==='h1'||f==='body') lpEnsurePageLayoutOrder(lpCur); persist(); lpAutosave(); if(f==='slug'&&document.body.classList.contains('lp-prev-open')) previewLoad(); else if(f==='h1'||f==='body') lpPagePreviewReload(); } }
+  function lpField(f,v){ if(lpCur){ lpCur[f]=v; if(f==='h1'||f==='body') lpEnsurePageLayoutOrder(lpCur); persist(); lpAutosave(); if(f==='slug'&&document.body.classList.contains('lp-prev-open')) previewLoad(); else if(f==='h1'||f==='body'||f==='h1Color'||f==='h2Color'||f==='paragraphColor') lpPagePreviewReload(); } }
   function lpImgPrev(){ var el=document.getElementById('lp-img-prev'); if(!el) return; var u=(lpCur&&lpCur.img)||''; el.innerHTML=u?('<img src="'+esc(u)+'" alt="" style="max-height:120px;max-width:100%;border-radius:8px;margin-top:8px;display:block">'):''; }
   function lpPush(v){ lpHist=lpHist.slice(0,lpHi+1); lpHist.push(v); if(lpHist.length>50)lpHist.shift(); lpHi=lpHist.length-1; }
   function lpOpen(id){
@@ -2140,6 +2167,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-title').value=lpCur.title||''; $('lp-slug').value=lpCur.slug||''; $('lp-meta').value=lpCur.meta||''; $('lp-h1').value=lpCur.h1||''; $('lp-body').value=lpCur.body||'';
     $('lp-menu').value=lpCur.menu||'top'; $('lp-status').value=lpCur.status||'draft';
     $('lp-img').value=lpCur.img||''; $('lp-img-mode').value=lpCur.imgMode||'center'; $('lp-img-pad').value=(lpCur.imgPad!=null?lpCur.imgPad:16); $('lp-cta-call').checked=(lpCur.showCall!==false); $('lp-cta-quote').checked=(lpCur.showQuote!==false); lpImgPrev();
+    if(typeof window.__lpFillTextColors==='function') window.__lpFillTextColors(lpCur);
     $('lp-meta-count').textContent=(lpCur.meta||'').length+' characters';
     $('lp-editor').classList.toggle('show-tips', $('lp-tips').checked);
     $('lp-approve').hidden=true;
@@ -2482,17 +2510,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     {on:true,icon:'\uD83D\uDD0E',title:'Leak Detection',body:'Hidden leak driving up your water bill? We pinpoint it without tearing the place apart.'},
     {on:true,icon:'\uD83D\uDEE0\uFE0F',title:'General Plumbing',body:"Taps, toilets, gas fitting, renovations and the jobs you've been putting off. Done right, first time."}
   ];
-  const DEFAULT_TRADE_THEME={ pipe:'#1f7bb8', hivis:'#ff6a1f', steel:'#1a2230', safety:'#ffc400', lightBg:'#eef2f6', h1:'#ffffff', h2:'#1a2230', paragraph:'#5b6878' };
-  const TRADE_COLOURS=[
-    ['pipe','Brand','buttons, links, accents'],
-    ['hivis','Call-to-action','the orange call buttons'],
-    ['steel','Header & dark bands','top bar, hero, footer'],
-    ['safety','Highlight','badges & small accents'],
-    ['lightBg','Page background','behind the content sections'],
-    ['h1','H1 heading','hero and display headlines'],
-    ['h2','H2 heading','section titles'],
-    ['paragraph','Paragraph text','body copy and section intros']
-  ];
+  const DEFAULT_TRADE_THEME={ pipe:'#1f7bb8', hivis:'#ff6a1f', steel:'#1a2230', safety:'#ffc400', lightBg:'#eef2f6' };
+  const TRADE_COLOURS=[['pipe','Brand','buttons, links, accents'],['hivis','Call-to-action','the orange call buttons'],['steel','Header & dark bands','top bar, hero, footer'],['safety','Highlight','badges & small accents'],['lightBg','Page background','behind the content sections']];
   const DEFAULT_TRADE_SECTIONS={
     navMenu:{on:false,style:'pills',align:'left',items:[]},
     textBox:{on:false,eyebrow:'About us',heading:'Built for {{businessName}}',intro:'A short introduction that sets the scene for what follows.',content:'Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.',image:'',imageSide:'right',textAlign:'left'},
