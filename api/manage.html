@@ -3315,57 +3315,8 @@ function heroCtaCard(c){
   /* ============================ MY DOMAINS ============================ */
   var LPDOM={ siteId:null, rows:[], open:null, loading:false };
   async function renderMyDomains(){
-    var el=document.getElementById('lp-domains'); if(!el) return;
-    if(!currentSiteId){ el.innerHTML=''; return; }
-    // Scope strictly to the site being edited — refetch whenever the site changes,
-    // so one client's domains never bleed onto another site.
-    if(LPDOM.siteId!==currentSiteId){
-      LPDOM.siteId=currentSiteId; LPDOM.open=null; LPDOM.rows=[]; LPDOM.loading=true;
-      el.innerHTML='<div class="lpd-bar"><span class="lpd-title">My domains</span><span class="lpd-hint">loading…</span></div>';
-      var rows=[];
-      try{
-        var r=await sb.from('domains')
-          .select('id,domain_name,status,managed_external,site_id,created_at')
-          .eq('site_id',currentSiteId).order('created_at',{ascending:true});
-        rows=r.data||[];
-      }catch(e){ rows=[]; }
-      // Surface the site's own custom domain (e.g. a domain the client already owns)
-      // even if it isn't a registered domains-table row yet.
-      var cd=(currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'');
-      if(cd && !rows.some(function(x){ return String(x.domain_name||'').toLowerCase().replace(/^www\./,'')===cd; })){
-        rows.unshift({ id:'custom', domain_name:cd, status:'connected', managed_external:false, site_id:currentSiteId, created_at:null, _custom:true });
-      }
-      LPDOM.rows=rows; LPDOM.loading=false;
-    }
-    var rows=LPDOM.rows||[];
-    if(!rows.length){ el.innerHTML=''; return; }   // nothing to show: stay out of the way
-    var live=lpLiveUrl();
-    var chips=rows.map(function(d,i){
-      var st=(d.status||'unknown').toLowerCase();
-      return '<button type="button" class="lpd-chip'+(LPDOM.open===i?' on':'')+'" data-lpd="'+i+'">'
-        +'<span class="lpd-dot s-'+esc(st)+'"></span>'
-        +'<span class="lpd-name">'+esc(d.domain_name||'(domain)')+'</span>'
-        +(d.managed_external?'<span class="lpd-tag">external</span>':'')
-        +'</button>';
-    }).join('');
-    var head='<div class="lpd-bar"><span class="lpd-title">My domains <span class="lpd-count">'+rows.length+'</span></span>'
-      +'<a class="lpd-live" href="/manage-domains.html" target="_blank" rel="noopener">Manage DNS &amp; email ↗</a>'
-      +(live?'<a class="lpd-live" href="'+esc(live)+'" target="_blank" rel="noopener">View live site ↗</a>':'')
-      +'</div>';
-    var detail='';
-    if(LPDOM.open!=null && rows[LPDOM.open]){
-      var d=rows[LPDOM.open];
-      var url=d.domain_name?('https://'+String(d.domain_name).replace(/^https?:\/\//,'')):'';
-      detail='<div class="lpd-detail">'
-        +'<div class="lpd-drow"><span>Domain</span><b>'+esc(d.domain_name||'—')+'</b></div>'
-        +'<div class="lpd-drow"><span>Status</span><b>'+esc(d._custom?'Custom domain on this site':(d.status||'unknown'))+'</b></div>'
-        +'<div class="lpd-drow"><span>Points at</span><b>'+(currentSiteSlug?('/'+esc(currentSiteSlug)):'<i style="color:#9a9a93">this site</i>')+'</b></div>'
-        +(d._custom?'':'<div class="lpd-drow"><span>Added</span><b>'+esc(lpWhen(d.created_at)||'—')+'</b></div>')
-        +(d._custom?'<div class="lpd-drow"><span>Source</span><b>Set in Site details \u2192 Custom domain</b></div>':'')
-        +(url?'<div style="margin-top:8px;"><a class="lpd-open" href="'+esc(url)+'" target="_blank" rel="noopener">Open '+esc(d.domain_name)+' ↗</a></div>':'')
-        +'</div>';
-    }
-    el.innerHTML=head+'<div class="lpd-chips">'+chips+'</div>'+detail;
+    var el=document.getElementById('lp-domains');
+    if(el&&el.parentNode) el.parentNode.removeChild(el);
   }
   function lpDomClick(e){
     var b=e.target.closest('[data-lpd]'); if(!b) return;
