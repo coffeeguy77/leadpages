@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ops Command — LeadPages</title>
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<link rel="shortcut icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
+<meta name="theme-color" content="#12151a">
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<script src="/assets/lp-workspace-appearance.js"></script>
+<link rel="stylesheet" href="/assets/lp-logo.css">
+<script src="/assets/lp-logo.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{
+  --font-display:'Fraunces',Georgia,serif;
+  --font-ui:'Inter',system-ui,sans-serif;
+  color-scheme:light;
+}
+html[data-theme="command-dark"],
+html[data-theme="neon-pink"],
+html[data-theme="electric-blue"]{color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-ui);}
+body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:antialiased;}
+.gate,.hub{flex:1;min-height:0;display:flex;}
+.gate{align-items:center;justify-content:center;padding:24px;}
+.gate-card{
+  width:min(420px,100%);padding:28px 26px;border-radius:16px;
+  background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);
+}
+.gate-card h1{font-family:var(--font-display);font-weight:600;font-size:26px;margin:0 0 6px;}
+.gate-card p{margin:0 0 16px;color:var(--ink-soft);font-size:14px;line-height:1.5;}
+.gate-card label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px;}
+.gate-card input{
+  width:100%;margin:0 0 12px;padding:10px 12px;border-radius:10px;
+  border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit;
+}
+.gate-card .msg{min-height:1.2em;font-size:13px;color:var(--danger);margin:0 0 10px;}
+.hub{display:none;}
+.hub.on{display:flex;}
+.side{
+  width:240px;flex:none;display:flex;flex-direction:column;
+  border-right:1px solid var(--line);background:var(--bg-soft,var(--surface));
+  padding:16px 12px 18px;
+}
+.side-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 14px;border-bottom:1px solid var(--line);}
+.side-brand .mark{
+  width:34px;height:34px;border-radius:10px;overflow:hidden;flex:none;
+  background:color-mix(in srgb,var(--accent) 16%,transparent);
+}
+.side-brand .mark img,.side-brand .mark svg{width:100%;height:100%;display:block;}
+.side-brand .txt{min-width:0;}
+.side-brand .eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 2px;}
+.side-brand h1{font-family:var(--font-display);font-size:18px;font-weight:600;margin:0;line-height:1.15;}
+.nav{display:flex;flex-direction:column;gap:4px;padding:14px 0;flex:1;overflow:auto;}
+.nav button{
+  appearance:none;width:100%;text-align:left;border:1px solid transparent;
+  background:transparent;color:var(--ink-soft);font:600 13.5px/1.2 var(--font-ui);
+  padding:11px 12px;border-radius:10px;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.nav button:hover{background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--ink);border-color:color-mix(in srgb,var(--accent) 18%,transparent);}
+.nav button.on{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--ink);border-color:color-mix(in srgb,var(--accent) 28%,transparent);}
+.nav button small{font-size:10.5px;font-weight:600;color:var(--ink-faint);letter-spacing:.02em;}
+.side-foot{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px;}
+.who{font-size:12px;color:var(--ink-faint);padding:0 8px;word-break:break-all;}
+.side-actions{display:flex;flex-wrap:wrap;gap:6px;padding:0 4px;}
+.btn{
+  appearance:none;border:1px solid var(--accent);background:transparent;color:var(--accent);
+  font:600 12.5px/1 var(--font-ui);padding:9px 12px;border-radius:9px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;
+}
+.btn:hover{background:color-mix(in srgb,var(--accent) 12%,transparent);}
+.btn.solid{background:var(--accent);color:var(--accent-text,#fff);border-color:var(--accent);}
+.btn.ghost{border-color:var(--line-strong);color:var(--ink-soft);}
+.btn.ghost:hover{color:var(--ink);border-color:var(--accent);}
+.btn.wide{width:100%;justify-content:center;}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg);}
+.top{
+  flex:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface);
+}
+.top h2{font-family:var(--font-display);font-size:20px;font-weight:600;margin:0;margin-right:auto;}
+.top .hint{font-size:12.5px;color:var(--ink-faint);}
+.frame-wrap{flex:1;min-height:0;position:relative;background:var(--bg);}
+.frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg);}
+.menu-toggle{display:none;}
+@media (max-width:900px){
+  .hub{flex-direction:column;}
+  .side{
+    width:100%;border-right:0;border-bottom:1px solid var(--line);
+    padding:10px 12px;max-height:none;
+  }
+  .side.collapsed .nav,.side.collapsed .side-foot{display:none;}
+  .menu-toggle{display:inline-flex;}
+  .nav{flex-direction:row;flex-wrap:wrap;padding:10px 0;}
+  .nav button{width:auto;flex:1 1 calc(50% - 4px);}
+}
+.hide{display:none!important;}
+</style>
+</head>
+<body>
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="eyebrow" style="font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">LeadPages</div>
+    <h1>Ops Command</h1>
+    <p>One signed-in desk for sites, domains, partners, marketplace, apps, and messages.</p>
+    <div id="gate-login">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username">
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password">
+      <p class="msg" id="gate-msg"></p>
+      <button type="button" class="btn solid wide" id="gate-go">Sign in</button>
+    </div>
+    <div id="gate-denied" class="hide">
+      <p>This hub is for LeadPages super admins only.</p>
+      <button type="button" class="btn wide" id="gate-out">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<div class="hub" id="hub">
+  <aside class="side" id="side">
+    <div class="side-brand">
+      <div class="mark" data-lp-logo="workspace" aria-hidden="true"></div>
+      <div class="txt">
+        <p class="eyebrow">Super admin</p>
+        <h1>Ops Command</h1>
+      </div>
+    </div>
+    <nav class="nav" id="nav" aria-label="Ops areas"></nav>
+    <div class="side-foot">
+      <div class="who" id="who"></div>
+      <div class="side-actions">
+        <button type="button" class="btn ghost" id="btn-appearance">Theme</button>
+        <button type="button" class="btn ghost" id="btn-signout">Sign out</button>
+      </div>
+    </div>
+  </aside>
+  <section class="main">
+    <header class="top">
+      <button type="button" class="btn ghost menu-toggle" id="btn-menu" aria-label="Toggle menu">Menu</button>
+      <h2 id="panel-title">Sites</h2>
+      <span class="hint" id="panel-hint">Site switcher, editor, account &amp; billing</span>
+      <a class="btn ghost" id="btn-popout" href="/manage" target="_blank" rel="noopener">Open tab</a>
+      <button type="button" class="btn" id="btn-reload">Reload</button>
+    </header>
+    <div class="frame-wrap">
+      <iframe id="panel" title="Ops panel" allow="clipboard-read; clipboard-write"></iframe>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  if(window.LPWorkspaceAppearance){ try{ LPWorkspaceAppearance.init(); }catch(e){} }
+  var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var PANELS = [
+    { id:'sites', title:'Sites', hint:'Site switcher, editor, account & billing', src:'/manage', label:'Sites' },
+    { id:'domains', title:'Domains', hint:'DNS, Point at LeadPages, reseller overview', src:'/manage-domains', label:'Domains' },
+    { id:'messages', title:'Messages', hint:'Support inbox & partner threads', src:'/messages', label:'Messages' },
+    { id:'partners', title:'Partners', hint:'Partner program, commissions, training', src:'/partners-admin', label:'Partners' },
+    { id:'marketplace', title:'Marketplace', hint:'Feature catalogue & categories', src:'/marketplace-admin', label:'Marketplace' },
+    { id:'apps', title:'Apps', hint:'App registry, schemas & presets', src:'/apps-admin', label:'Apps' },
+    { id:'partner', title:'Partner console', hint:'Earnings, clients & partner view', src:'/partner', label:'Partner desk' }
+  ];
+  var cur = null;
+  var loaded = {};
+  var $ = function(id){ return document.getElementById(id); };
+
+  function showGate(mode){
+    $('gate').style.display = 'flex';
+    $('hub').classList.remove('on');
+    $('gate-login').classList.toggle('hide', mode !== 'login');
+    $('gate-denied').classList.toggle('hide', mode !== 'denied');
+  }
+  function showHub(){
+    $('gate').style.display = 'none';
+    $('hub').classList.add('on');
+  }
+
+  function paintNav(){
+    var nav = $('nav');
+    nav.innerHTML = PANELS.map(function(p){
+      return '<button type="button" data-id="'+p.id+'"'+(cur&&cur.id===p.id?' class="on"':'')+'>'
+        +'<span>'+p.label+'</span><small>↵</small></button>';
+    }).join('');
+    nav.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click', function(){ openPanel(b.getAttribute('data-id')); });
+    });
+  }
+
+  function openPanel(id, force){
+    var p = PANELS.find(function(x){ return x.id === id; }) || PANELS[0];
+    cur = p;
+    try{ history.replaceState(null,'','#'+p.id); }catch(e){}
+    paintNav();
+    $('panel-title').textContent = p.title;
+    $('panel-hint').textContent = p.hint;
+    var pop = $('btn-popout');
+    pop.href = p.src;
+    pop.textContent = 'Open tab';
+    var frame = $('panel');
+    if(force || loaded[p.id] !== p.src){
+      frame.src = p.src;
+      loaded[p.id] = p.src;
+    } else if(frame.src.indexOf(p.src) < 0){
+      frame.src = p.src;
+      loaded[p.id] = p.src;
+    }
+  }
+
+  async function requireSuper(){
+    var session = (await sb.auth.getSession()).data.session;
+    if(!session){ showGate('login'); return null; }
+    var prof = await sb.from('profiles').select('is_super_admin,full_name').eq('id', session.user.id).maybeSingle();
+    if(!(prof.data && prof.data.is_super_admin)){ showGate('denied'); return null; }
+    $('who').textContent = session.user.email || '';
+    showHub();
+    if(window.LPLogo && window.LPLogo.refreshWorkspaceLogos){
+      try{
+        var th = LPWorkspaceAppearance.resolveTheme(LPWorkspaceAppearance.load().theme);
+        LPLogo.refreshWorkspaceLogos({ theme: th });
+      }catch(e){}
+    }
+    var hash = (location.hash || '#sites').replace(/^#/,'');
+    openPanel(hash);
+    return session;
+  }
+
+  $('gate-go').addEventListener('click', async function(){
+    var btn = $('gate-go'); var msg = $('gate-msg');
+    btn.disabled = true; msg.textContent = '';
+    try{
+      var r = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
+      if(r.error) throw r.error;
+      await requireSuper();
+    }catch(e){
+      msg.textContent = (e && e.message) || 'Could not sign in.';
+    }
+    btn.disabled = false;
+  });
+  $('password').addEventListener('keydown', function(e){ if(e.key==='Enter') $('gate-go').click(); });
+  $('gate-out').addEventListener('click', async function(){ await sb.auth.signOut(); showGate('login'); });
+  $('btn-signout').addEventListener('click', async function(){ await sb.auth.signOut(); location.reload(); });
+  $('btn-reload').addEventListener('click', function(){ if(cur) openPanel(cur.id, true); });
+  $('btn-menu').addEventListener('click', function(){ $('side').classList.toggle('collapsed'); });
+  $('btn-appearance').addEventListener('click', function(){
+    openPanel('sites');
+    $('panel-hint').textContent = 'Open Settings → Appearance & Accessibility to change the shared workspace theme.';
+  });
+  window.addEventListener('hashchange', function(){
+    var id = (location.hash || '#sites').replace(/^#/,'');
+    if(!cur || cur.id !== id) openPanel(id);
+  });
+
+  requireSuper();
+})();
+</script>
+</body>
+</html>

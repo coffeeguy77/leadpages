@@ -6391,7 +6391,7 @@ function heroCtaCard(c){
     if(!$('btn-domains')){
       const dbn=document.createElement('button'); dbn.className='btn ghost'; dbn.id='btn-domains';
       dbn.textContent='Domains';
-      dbn.addEventListener('click',function(){ window.open('/manage-domains.html','_blank','noopener'); });
+      dbn.addEventListener('click',function(){ window.open('/manage-domains','_blank','noopener'); });
       bar.insertBefore(dbn, dl);
     }
     if(currentRole==='super' && !$('btn-switch')){
@@ -6506,6 +6506,8 @@ function heroCtaCard(c){
     mv('btn-fav', tools);
     mv('btn-newsite', tools);
     if(currentRole==='super'){
+      if(!$('lpc-ops-command')){ var oc=document.createElement('a'); oc.id='lpc-ops-command'; oc.className='btn'; oc.href='/command'; oc.style.textDecoration='none'; oc.textContent='Ops Command'; tools.appendChild(oc); }
+      else mv('lpc-ops-command', tools);
       if(!$('lpc-partner-admin')){ var pa=document.createElement('a'); pa.id='lpc-partner-admin'; pa.className='btn ghost'; pa.href='/partners-admin'; pa.style.textDecoration='none'; pa.textContent='Partner Admin'; tools.appendChild(pa); }
       else mv('lpc-partner-admin', tools);
       if(!$('lpc-marketplace-admin')){ var ma=document.createElement('a'); ma.id='lpc-marketplace-admin'; ma.className='btn ghost'; ma.href='/marketplace-admin'; ma.style.textDecoration='none'; ma.textContent='Marketplace Admin'; tools.appendChild(ma); }
@@ -6544,7 +6546,8 @@ function heroCtaCard(c){
     var siteSwBtn=showSiteSwitcher?'<button type="button" id="lpc-site-switcher-dt" class="btn ghost">Site Switcher</button>':'';
     var accountBtn='<button type="button" id="lpc-acct-password" class="btn ghost">Account</button>';
     if(currentRole==='super'){
-      acct.innerHTML='<a href="/partner" class="btn ghost" style="text-decoration:none;">&#8592; Partner</a>'
+      acct.innerHTML='<a href="/command" class="btn" style="text-decoration:none;">Ops Command</a>'
+        +'<a href="/partner" class="btn ghost" style="text-decoration:none;">&#8592; Partner</a>'
         +siteSwBtn
         +'<a href="/partners-admin" class="btn ghost" style="text-decoration:none;">Partner Admin</a>'
         +'<a href="/marketplace-admin" class="btn ghost" style="text-decoration:none;">Marketplace Admin</a>'

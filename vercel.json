@@ -34,6 +34,18 @@
       "destination": "/manage.html"
     },
     {
+      "source": "/command",
+      "destination": "/command.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/command.html"
+    },
+    {
+      "source": "/manage-domains",
+      "destination": "/manage-domains.html"
+    },
+    {
       "source": "/partner-onboarding",
       "destination": "/partner-onboarding.html"
     },
