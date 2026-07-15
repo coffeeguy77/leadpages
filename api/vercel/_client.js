@@ -1,7 +1,12 @@
 // api/vercel/_client.js — Vercel REST helpers (not a route).
 // Used when client domains use Vercel nameservers for DNS (not Dreamscape advanced DNS).
 
-const VERCEL_API = 'https://api.vercel.com';
+const VERCEL_API = (process.env.VERCEL_API_BASE_URL || 'https://api.vercel.com').replace(/\/+$/, '');
+
+function authToken() {
+  // Prefer VERCEL_TOKEN; accept VERCEL_ACCESS_TOKEN (dashboard / historical name).
+  return String(process.env.VERCEL_TOKEN || process.env.VERCEL_ACCESS_TOKEN || '').trim();
+}
 
 function teamQuery(pathHasQuery) {
   const teamId = process.env.VERCEL_TEAM_ID;
@@ -10,9 +15,9 @@ function teamQuery(pathHasQuery) {
 }
 
 async function vercelFetch(path, opts) {
-  const token = process.env.VERCEL_TOKEN;
+  const token = authToken();
   if (!token) {
-    const err = new Error('VERCEL_TOKEN is not configured');
+    const err = new Error('VERCEL_TOKEN (or VERCEL_ACCESS_TOKEN) is not configured');
     err.code = 'no_token';
     throw err;
   }
@@ -102,7 +107,7 @@ function cacheTagForSiteId(id) {
 
 /**
  * Mark CDN cache entries with these tags as stale (background revalidate on next hit).
- * Requires VERCEL_TOKEN + VERCEL_PROJECT_ID (or VERCEL_PROJECT_ID_OR_NAME).
+ * Requires VERCEL_TOKEN (or VERCEL_ACCESS_TOKEN) + VERCEL_PROJECT_ID.
  */
 async function invalidateByTags(tags, target) {
   const list = (Array.isArray(tags) ? tags : [tags])
@@ -130,11 +135,6 @@ async function invalidateByTags(tags, target) {
  * @param {{ redirect?: string, redirectStatusCode?: number }} [opts]
  */
 async function addProjectDomain(name, opts) {
- * List domains attached to the LeadPages Vercel project (paginated).
- * Uses redirects=false so redirect aliases do not inflate capacity noise as badly.
- * Caps pages to avoid runaway on huge accounts.
- */
-async function listProjectDomains(opts) {
   const proj = projectId();
   if (!proj) {
     const err = new Error('VERCEL_PROJECT_ID is not configured');
@@ -176,6 +176,19 @@ async function getProjectDomain(name) {
     if (e.status === 404) return null;
     throw e;
   }
+}
+
+/**
+ * List domains attached to the LeadPages Vercel project (paginated).
+ * Uses redirects=false so redirect aliases do not inflate capacity noise as badly.
+ */
+async function listProjectDomains(opts) {
+  const proj = projectId();
+  if (!proj) {
+    const err = new Error('VERCEL_PROJECT_ID is not configured');
+    err.code = 'no_project';
+    throw err;
+  }
   const maxPages = Math.min(50, Math.max(1, (opts && opts.maxPages) || 20));
   const limit = Math.min(100, Math.max(1, (opts && opts.limit) || 100));
   const includeRedirects = !!(opts && opts.includeRedirects);
@@ -206,8 +219,9 @@ async function countProjectDomains(opts) {
 }
 
 module.exports = {
-  isConfigured: () => !!process.env.VERCEL_TOKEN,
-  projectConfigured: () => !!(process.env.VERCEL_TOKEN && projectId()),
+  isConfigured: () => !!authToken(),
+  projectConfigured: () => !!(authToken() && projectId()),
+  authToken,
   listDnsRecords,
   createDnsRecord,
   getDomainInfo,
