@@ -1,32 +1,64 @@
 // app/seo-sitemap.xml/route.js
-// Lists every tenant x service-area suburb page so Google can discover them.
-// Submit https://YOUR-DOMAIN/seo-sitemap.xml in Search Console, and add it to robots.txt.
+// Platform sitemap INDEX for Search Console.
+// Points at each live tenant's existing /{slug}/sitemap.xml (home + suburbs + landing pages)
+// instead of loading every site's full config into one giant urlset.
 
-import { listSites } from '../../lib/seo/store.js';
-import { serviceAreas, slugify } from '../../lib/seo/tokens.js';
+import { listLiveSiteSlugs } from '../../lib/seo/store.js';
+import {
+  buildSitemapIndexXml,
+  sitemapIndexPlan,
+  SITEMAP_INDEX_PAGE_SIZE
+} from '../../lib/seo/sitemap.js';
 
 export const dynamic = 'force-dynamic';
 
+const XML_HEADERS = {
+  'content-type': 'application/xml; charset=utf-8',
+  'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+};
+
+async function collectAllLiveSlugs() {
+  const page = 1000;
+  let offset = 0;
+  let total = Infinity;
+  const slugs = [];
+  while (offset < total && slugs.length < 500000) {
+    const batch = await listLiveSiteSlugs({ offset: offset, limit: page });
+    total = batch.total;
+    if (!batch.slugs.length) break;
+    slugs.push.apply(slugs, batch.slugs);
+    offset += batch.slugs.length;
+    if (batch.slugs.length < page) break;
+  }
+  return { slugs: slugs, total: total === Infinity ? slugs.length : total };
+}
+
 export async function GET(request) {
   const origin = new URL(request.url).origin;
-  let sites = [];
-  try { sites = await listSites(); } catch (e) { return new Response('error', { status: 500 }); }
-
-  const urls = [];
-  for (const s of sites) {
-    if (!s.slug) continue;
-    for (const a of serviceAreas(s.config)) {
-      urls.push(origin + '/' + s.slug + '/' + slugify(a));
-    }
+  let data;
+  try {
+    data = await collectAllLiveSlugs();
+  } catch (e) {
+    return new Response('<!-- sitemap error: ' + String(e && e.message || e) + ' -->', {
+      status: 500,
+      headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'no-store' }
+    });
   }
 
-  const body =
-    '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    urls.map((u) => '  <url><loc>' + u.replace(/&/g, '&amp;') + '</loc><changefreq>weekly</changefreq></url>').join('\n') +
-    '\n</urlset>';
+  const plan = sitemapIndexPlan(data.total, SITEMAP_INDEX_PAGE_SIZE);
+  let locs;
 
-  return new Response(body, {
-    headers: { 'content-type': 'application/xml', 'cache-control': 'public, s-maxage=86400' },
-  });
+  if (plan.mode === 'sharded') {
+    locs = [];
+    for (let i = 1; i <= plan.pages; i++) {
+      locs.push(origin + '/seo-sitemaps/' + i + '.xml');
+    }
+  } else {
+    locs = data.slugs.map(function (slug) {
+      return origin + '/' + encodeURIComponent(slug) + '/sitemap.xml';
+    });
+  }
+
+  const body = buildSitemapIndexXml(locs);
+  return new Response(body, { headers: XML_HEADERS });
 }

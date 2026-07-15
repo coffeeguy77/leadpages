@@ -108,7 +108,7 @@ flowchart TB
 | Tenant site (custom domain) | `https://client.com.au/` | `api/render.js` (Host header lookup) |
 | Tenant sub-page | `/{slug}/{page}` | `api/render.js` (`config.pages`) |
 | Local SEO suburb page | `/{site}/{suburb}` | `app/[site]/[suburb]/route.js` |
-| SEO sitemap | `/seo-sitemap.xml` | `app/seo-sitemap.xml/route.js` |
+| SEO sitemap | `/seo-sitemap.xml` | `app/seo-sitemap.xml/route.js` (index → live `/{slug}/sitemap.xml`) |
 | Partner showcase | `{slug}.leadpages.com.au` | `api/render.js` (showcase mode) |
 | API / webhooks | `/api/*` | Matching `api/**/*.js` function |
 
@@ -946,7 +946,7 @@ flowchart TD
 | **Service role everywhere** | High | Key leak = full DB compromise | Secret rotation; least-privilege views |
 | **Anon key in HTML** | Low | Expected for Supabase; relies on RLS | Audit RLS policies |
 | **`cron/send-due` not in vercel.json** | Low | Scheduled campaigns may not fire | Register cron or document manual trigger |
-| **Sitemap includes non-live sites** | Low | `seo-sitemap.xml` lists all sites with service areas | Filter by `status = live` |
+| **Sitemap includes non-live sites** | Done | `/seo-sitemap.xml` is a live-only index of `/{slug}/sitemap.xml` |
 | **Two token syntaxes** | Low | `{{}}` vs `{}` — developer confusion | Document (this file) and lint |
 | **Legacy `ADMIN_PASSWORD`** | Medium | Shared secret in body | Migrate to Supabase admin role |
 
