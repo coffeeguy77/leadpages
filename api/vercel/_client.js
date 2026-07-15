@@ -82,12 +82,57 @@ function findMatchingRecord(records, type, name, value) {
   }) || null;
 }
 
+function projectId() {
+  return process.env.VERCEL_PROJECT_ID || process.env.VERCEL_PROJECT_ID_OR_NAME || '';
+}
+
+function cacheTagForSlug(slug) {
+  const s = String(slug || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+  return s ? ('lp-site-' + s) : '';
+}
+
+function cacheTagForSiteId(id) {
+  const s = String(id || '').toLowerCase().replace(/[^a-f0-9-]+/g, '').slice(0, 64);
+  return s ? ('lp-siteid-' + s) : '';
+}
+
+/**
+ * Mark CDN cache entries with these tags as stale (background revalidate on next hit).
+ * Requires VERCEL_TOKEN + VERCEL_PROJECT_ID (or VERCEL_PROJECT_ID_OR_NAME).
+ */
+async function invalidateByTags(tags, target) {
+  const list = (Array.isArray(tags) ? tags : [tags])
+    .map(function (t) { return String(t || '').trim(); })
+    .filter(Boolean)
+    .slice(0, 16);
+  if (!list.length) return { skipped: 'no_tags' };
+  const proj = projectId();
+  if (!proj) {
+    const err = new Error('VERCEL_PROJECT_ID is not configured');
+    err.code = 'no_project';
+    throw err;
+  }
+  const q = '?projectIdOrName=' + encodeURIComponent(proj);
+  return vercelFetch('/v1/edge-cache/invalidate-by-tags' + q, {
+    method: 'POST',
+    body: target ? { tags: list, target: target } : { tags: list },
+  });
+}
+
 module.exports = {
   isConfigured: () => !!process.env.VERCEL_TOKEN,
+  projectConfigured: () => !!(process.env.VERCEL_TOKEN && projectId()),
   listDnsRecords,
   createDnsRecord,
   getDomainInfo,
   normalizeTxtValue,
   tokenFromValue,
   findMatchingRecord,
+  cacheTagForSlug,
+  cacheTagForSiteId,
+  invalidateByTags,
 };

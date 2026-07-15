@@ -16,6 +16,7 @@
 //     RESEND_API_KEY being present, so a missing key never loses a lead.
 
 const { createClient } = require('@supabase/supabase-js');
+const { limited } = require('./_rate-limit');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -156,6 +157,10 @@ module.exports = async (req, res) => {
   };
 
   if (req.method !== 'POST') return ok({ skipped: 'method' });
+  // Soft rate limit: keep thank-you UX (200) but skip store/email on abuse.
+  if (limited(req, { key: 'leads', max: 20, windowMs: 60000 })) {
+    return ok({ stored: false, skipped: 'rate_limited' });
+  }
 
   try {
     const body = await readBody(req);
