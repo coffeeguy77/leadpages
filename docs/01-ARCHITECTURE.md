@@ -294,7 +294,7 @@ sequenceDiagram
 | **~1–2k sites** | Stretch target with Supabase plan sizing + event archival |
 | **10k+** | Needs stronger write-side controls (rate limits, aggregation) and domain ops hygiene — not blocked by “one project per site” |
 
-Site *count* is cheap (one `sites` row each). Shared Postgres writes (`events`/`leads`) and custom-domain quotas bind first — mitigated early with soft IP rate limits on `/api/events` and `/api/leads`.
+Site *count* is cheap (one `sites` row each). Shared Postgres writes (`events`/`leads`) and custom-domain quotas bind first — mitigated early with soft IP rate limits on `/api/events` and `/api/leads`, plus soft Vercel domain-capacity awareness via `GET /api/domain-quota` (super-admin hint under Custom domain; never blocks `custom_domain` saves).
 
 ### 6.4 Sub-page routing
 
@@ -613,6 +613,7 @@ Set in Vercel project settings (never committed):
 | Instagram | `INSTAGRAM_APP_ID`, `INSTAGRAM_APP_SECRET` |
 | Auth / ops | `SUPER_ADMIN_EMAILS`, `ADMIN_PASSWORD`, `CRON_SECRET`, `PRIMARY_HOSTS` |
 | Vercel CDN purge | `VERCEL_TOKEN`, `VERCEL_PROJECT_ID` (or `VERCEL_PROJECT_ID_OR_NAME`), optional `VERCEL_TEAM_ID` |
+| Vercel domain quota awareness | `VERCEL_DOMAIN_SOFT_LIMIT` (default 80; `0` off), `VERCEL_DOMAIN_HARD_LIMIT` (default 100; `0` off), optional `VERCEL_DOMAIN_QUOTA_CACHE_MS` |
 
 ---
 

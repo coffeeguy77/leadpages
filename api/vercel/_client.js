@@ -130,6 +130,11 @@ async function invalidateByTags(tags, target) {
  * @param {{ redirect?: string, redirectStatusCode?: number }} [opts]
  */
 async function addProjectDomain(name, opts) {
+ * List domains attached to the LeadPages Vercel project (paginated).
+ * Uses redirects=false so redirect aliases do not inflate capacity noise as badly.
+ * Caps pages to avoid runaway on huge accounts.
+ */
+async function listProjectDomains(opts) {
   const proj = projectId();
   if (!proj) {
     const err = new Error('VERCEL_PROJECT_ID is not configured');
@@ -171,6 +176,33 @@ async function getProjectDomain(name) {
     if (e.status === 404) return null;
     throw e;
   }
+  const maxPages = Math.min(50, Math.max(1, (opts && opts.maxPages) || 20));
+  const limit = Math.min(100, Math.max(1, (opts && opts.limit) || 100));
+  const includeRedirects = !!(opts && opts.includeRedirects);
+  const out = [];
+  let until = null;
+  for (let page = 0; page < maxPages; page++) {
+    let path =
+      '/v9/projects/' +
+      encodeURIComponent(proj) +
+      '/domains?limit=' +
+      limit +
+      '&redirects=' +
+      (includeRedirects ? 'true' : 'false');
+    if (until != null) path += '&until=' + encodeURIComponent(String(until));
+    const j = await vercelFetch(path);
+    const batch = (j && j.domains) || [];
+    for (let i = 0; i < batch.length; i++) out.push(batch[i]);
+    const next = j && j.pagination && j.pagination.next;
+    if (next == null || !batch.length) break;
+    until = next;
+  }
+  return out;
+}
+
+async function countProjectDomains(opts) {
+  const domains = await listProjectDomains(opts);
+  return { count: domains.length, domains: domains };
 }
 
 module.exports = {
@@ -187,4 +219,6 @@ module.exports = {
   invalidateByTags,
   addProjectDomain,
   getProjectDomain,
+  listProjectDomains,
+  countProjectDomains,
 };

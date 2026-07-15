@@ -250,6 +250,11 @@ UNIQUE text column — authoritative for render Host lookup.
 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Checkout |
 | `PUBLIC_BASE_URL` | Success/cancel URLs |
 | `PRIMARY_HOSTS` | Non-custom hosts |
+| `VERCEL_TOKEN` / `VERCEL_PROJECT_ID` | CDN purge + project domain listing |
+| `VERCEL_DOMAIN_SOFT_LIMIT` | Soft warn threshold for project domains (default 80; `0` disables) |
+| `VERCEL_DOMAIN_HARD_LIMIT` | Critical awareness threshold (default 100; `0` disables) |
+
+`GET /api/domain-quota` (super-admin) reports Vercel project domain count + `sites.custom_domain` routing count. Decisions are **warn / critical / ok** only — **never** blocks saving `custom_domain`.
 
 ---
 
@@ -260,6 +265,7 @@ UNIQUE text column — authoritative for render Host lookup.
 | Marketing "auto-connects to your site" | Purchase still does not set routing; **Point at LeadPages** now auto-adds Vercel project domains (and can set `custom_domain` when `site_id` is provided) |
 | `site_id` on checkout | Accepted by API but not sent from UI |
 | Feature flag naming | `DOMAINS_FEATURE_ENABLED` vs `DOMAIN_FEATURE_ENABLED` |
+| Vercel project domain add | Still manual in Vercel console; app only tracks capacity soft signals |
 
 ---
 

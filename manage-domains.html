@@ -417,6 +417,8 @@ function renderAddForm(i,mode){
         ? '<div class="note" style="margin-top:6px">Will link site id <code>'+esc(linked)+'</code>.</div>'
         : '<div class="form-grid"><label class="f">Site id (optional)<input id="siteLinkId-'+i+'" placeholder="uuid from Manage" style="width:280px"></label></div>')
       +'<div class="form-grid"><button class="btn sm" id="siteAdd">Point at LeadPages</button></div>';
+    box.innerHTML='<div class="note">This adds the records to point <b>'+esc(dom)+'</b> at your LeadPages site (Vercel): an A record on the root and a CNAME on www. You still need the hostname added in the Vercel project and set as the site\u2019s custom domain in Manage. Super-admins can check project domain capacity via Site details (soft warn only — never blocks saves).</div>'
+      +'<div class="form-grid"><button class="btn sm" id="siteAdd">Add site records</button></div>';
     $('siteAdd').onclick=async function(){
       var btn=$('siteAdd'); if(btn) btn.disabled=true;
       dnsMsg(i,'','Connecting DNS + Vercel…');
