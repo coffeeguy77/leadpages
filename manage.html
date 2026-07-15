@@ -4354,6 +4354,7 @@ function heroCtaCard(c){
     _spStyle.textContent=_spCss;
     var p=document.createElement('div'); p.id='settings-page';
     var detailFields='<div class="card" style="margin-bottom:20px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Client site details</h2><label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="set-demo"'+(demoOn?' checked':'')+'> Demo site</label></div><p class="lede">Business identity and contact \u2014 used across the page and the call buttons.</p>'
+      +(currentSiteId?('<div class="f" style="margin-bottom:14px;"><label>Site ID <span class="hint">— for Domain Manager / Point at LeadPages</span></label><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><code id="set-site-id" style="font-family:ui-monospace,Menlo,monospace;font-size:12.5px;word-break:break-all;background:transparent;color:var(--ink,#1b1f2a);border:1px solid var(--line);border-radius:8px;padding:10px 12px;flex:1;min-width:200px;">'+esc(currentSiteId)+'</code><button type="button" class="btn ghost sm" id="set-copy-site-id">Copy</button></div></div>'):'')
       +lpFld('Business name','d-biz','')
       +(currentRole==='super'?(lpFld('Custom domain (optional)','d-domain','e.g. yourbusiness.com.au')+lpDomainQuotaHintHtml()+lpFld('Client login email — lets this customer log in & edit only this site','d-owner','customer@business.com.au')):'')
       +'<div class="row">'+lpFld('Phone (shown to visitors)','d-phoneText','(02) 1234 5678')+lpFld('Phone (for the call button)','d-phone','+61...')+'</div>'
@@ -4399,6 +4400,7 @@ function heroCtaCard(c){
     // wire site detail fields + demo
     wireDetailFields(c0(),'trade');
     var dmo=$('set-demo'); if(dmo) dmo.addEventListener('change',function(){ if(currentSiteId) lplToggleDemo(currentSiteId); });
+    var csid=$('set-copy-site-id'); if(csid) csid.addEventListener('click',function(){ if(currentSiteId) lpCopyText(currentSiteId,'Site ID'); });
     var opb=$('open-plans'); if(opb) opb.addEventListener('click',openPlansPage);
     var osp=$('open-susp'); if(osp) osp.addEventListener('click',openSuspendedEditor);
     var omm=$('open-mobile-menu'); if(omm) omm.addEventListener('click',function(){ closeSettingsPage(); if(typeof openMobileMenuBuilder==='function') openMobileMenuBuilder(); });
