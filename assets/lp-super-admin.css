@@ -1,0 +1,343 @@
+/**
+ * LeadPages super-admin / Ops Command shared UI.
+ * Uses workspace theme tokens from lp-themes.css (--bg, --ink, --accent, …).
+ * Applied on hub panels (and any page that opts in via body.lp-super-admin).
+ */
+body.lp-super-admin,
+body.lp-hub-embed {
+  margin: 0;
+  min-height: 100%;
+  font-family: var(--font-ui, 'Inter', system-ui, sans-serif);
+  font-size: 14.5px;
+  line-height: 1.5;
+  background: var(--bg) !important;
+  color: var(--ink) !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.lp-super-admin .lp-sa-wrap,
+body.lp-hub-embed .lp-sa-wrap,
+body.lp-hub-embed > .wrap,
+body.lp-hub-embed main.wrap,
+body.lp-hub-embed .page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 18px 20px 72px;
+}
+
+body.lp-super-admin h1,
+body.lp-hub-embed h1 {
+  font-family: var(--font-display, 'Fraunces', Georgia, serif);
+  font-weight: 560;
+  font-size: clamp(22px, 3vw, 28px);
+  letter-spacing: -0.015em;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+
+body.lp-super-admin h2,
+body.lp-hub-embed h2 {
+  font-family: var(--font-display, 'Fraunces', Georgia, serif);
+  font-weight: 520;
+  font-size: 19px;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+
+body.lp-super-admin .lede,
+body.lp-hub-embed .lede,
+body.lp-super-admin .note,
+body.lp-hub-embed .note,
+body.lp-hub-embed .sub {
+  color: var(--ink-soft);
+  font-size: 13.5px;
+}
+
+/* Cards / surfaces */
+body.lp-super-admin .card,
+body.lp-hub-embed .card,
+body.lp-hub-embed .bcard,
+body.lp-hub-embed .pane,
+body.lp-hub-embed .item,
+body.lp-hub-embed .login-card,
+body.lp-hub-embed .center-card {
+  background: var(--surface, var(--panel)) !important;
+  border: 1px solid var(--line, var(--border)) !important;
+  border-radius: var(--radius, 14px);
+  color: var(--ink) !important;
+  box-shadow: var(--shadow, none);
+}
+
+body.lp-hub-embed .card,
+body.lp-hub-embed .bcard {
+  padding: 20px 22px;
+  margin-bottom: 16px;
+}
+
+/* Buttons */
+body.lp-super-admin .btn,
+body.lp-hub-embed .btn,
+body.lp-hub-embed button.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 9px 15px;
+  border-radius: 10px;
+  border: 1px solid var(--accent, var(--brand));
+  background: transparent;
+  color: var(--accent, var(--brand));
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+body.lp-super-admin .btn:hover,
+body.lp-hub-embed .btn:hover {
+  background: color-mix(in srgb, var(--accent, var(--brand)) 12%, transparent);
+}
+
+body.lp-super-admin .btn.primary,
+body.lp-super-admin .btn.solid,
+body.lp-super-admin .btn-brand,
+body.lp-hub-embed .btn.primary,
+body.lp-hub-embed .btn.solid,
+body.lp-hub-embed .btn-brand,
+body.lp-hub-embed .btn:not(.ghost):not(.danger):not(.sm):not(.btn-brand) {
+  /* keep explicit classes preferred; don't force all buttons solid */
+}
+
+body.lp-hub-embed .btn.primary,
+body.lp-hub-embed .btn.solid,
+body.lp-hub-embed .btn-brand,
+body.lp-hub-embed button.btn.primary {
+  background: var(--accent, var(--brand)) !important;
+  border-color: var(--accent, var(--brand)) !important;
+  color: var(--accent-text, #fff) !important;
+}
+
+body.lp-hub-embed .btn.ghost,
+body.lp-hub-embed .btn.sm.ghost {
+  background: transparent !important;
+  border-color: var(--line-strong, var(--border-strong)) !important;
+  color: var(--ink-soft) !important;
+}
+
+body.lp-hub-embed .btn.danger,
+body.lp-hub-embed .btn.danger:hover {
+  border-color: var(--danger, var(--bad));
+  color: var(--danger, var(--bad));
+  background: transparent;
+}
+
+body.lp-hub-embed .btn.sm {
+  padding: 6px 12px;
+  font-size: 12.5px;
+}
+
+body.lp-hub-embed .btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Forms */
+body.lp-hub-embed input,
+body.lp-hub-embed select,
+body.lp-hub-embed textarea,
+body.lp-hub-embed .tin {
+  font: inherit;
+  color: var(--ink) !important;
+  background: var(--input-bg, var(--panel-soft, transparent)) !important;
+  border: 1px solid var(--line-strong, var(--border-strong)) !important;
+  border-radius: 10px;
+  padding: 9px 11px;
+}
+
+body.lp-hub-embed input:focus,
+body.lp-hub-embed select:focus,
+body.lp-hub-embed textarea:focus,
+body.lp-hub-embed .tin:focus {
+  outline: 2px solid var(--accent, var(--brand));
+  outline-offset: 0;
+  border-color: var(--accent, var(--brand)) !important;
+}
+
+body.lp-hub-embed label {
+  color: var(--ink-soft) !important;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Tabs / chips / pills */
+body.lp-hub-embed .tabs,
+body.lp-hub-embed .tabbtns,
+body.lp-hub-embed .filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 16px;
+}
+
+body.lp-hub-embed .tabs button,
+body.lp-hub-embed .tabbtns button,
+body.lp-hub-embed .filters button,
+body.lp-hub-embed .chip {
+  appearance: none;
+  background: transparent !important;
+  border: 1px solid var(--line-strong) !important;
+  color: var(--ink-soft) !important;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font: 600 13px var(--font-ui, inherit);
+  cursor: pointer;
+}
+
+body.lp-hub-embed .tabs button.on,
+body.lp-hub-embed .tabbtns button.on,
+body.lp-hub-embed .filters button.on,
+body.lp-hub-embed .chip.on {
+  background: color-mix(in srgb, var(--accent) 16%, transparent) !important;
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent) !important;
+  color: var(--ink) !important;
+}
+
+/* Lists / rows */
+body.lp-hub-embed .list .item,
+body.lp-hub-embed .app-row,
+body.lp-hub-embed .pm-row {
+  border-color: var(--line) !important;
+  color: var(--ink);
+}
+
+body.lp-hub-embed .pillst,
+body.lp-hub-embed .badge,
+body.lp-hub-embed .statusbadge {
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+body.lp-hub-embed .muted,
+body.lp-hub-embed .sl,
+body.lp-hub-embed .err {
+  color: var(--ink-faint);
+}
+
+body.lp-hub-embed .err {
+  color: var(--danger, var(--bad)) !important;
+}
+
+/* Partner picker */
+.lp-sa-picker {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 20px;
+}
+.lp-sa-picker-search {
+  width: min(420px, 100%);
+}
+.lp-sa-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: min(62vh, 640px);
+  overflow: auto;
+  padding-right: 4px;
+}
+.lp-sa-pick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface, var(--panel));
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+}
+.lp-sa-pick:hover,
+.lp-sa-pick:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  outline: none;
+}
+.lp-sa-pick .nm {
+  font-weight: 650;
+  font-size: 14.5px;
+}
+.lp-sa-pick .meta {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+}
+.lp-sa-pick .sp {
+  flex: 1;
+}
+.lp-sa-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin: 0 0 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--ink);
+  font-size: 13px;
+}
+.lp-sa-banner strong {
+  font-weight: 700;
+}
+
+/* Hide page-local top chrome in hub */
+body.lp-hub-embed > .top,
+body.lp-hub-embed > .topbar,
+body.lp-hub-embed .lp-hub-chrome {
+  display: none !important;
+}
+
+/* Force marketplace/apps off their fixed paper/gum palette in hub */
+body.lp-hub-embed.marketplace-admin-page,
+body.lp-hub-embed.apps-admin-page,
+body.lp-hub-embed.partners-admin-page,
+body.lp-hub-embed.messages-page,
+body.lp-hub-embed.billing-page {
+  background: var(--bg) !important;
+  color: var(--ink) !important;
+}
+
+body.lp-hub-embed.marketplace-admin-page .item,
+body.lp-hub-embed.apps-admin-page .app-card,
+body.lp-hub-embed.partners-admin-page .item {
+  background: var(--surface, var(--panel)) !important;
+  border-color: var(--line) !important;
+  color: var(--ink) !important;
+}
+
+body.lp-hub-embed.marketplace-admin-page .item .nm,
+body.lp-hub-embed.marketplace-admin-page .item .sl,
+body.lp-hub-embed.partners-admin-page .item .nm,
+body.lp-hub-embed.partners-admin-page .item .meta {
+  color: inherit;
+}
+body.lp-hub-embed.marketplace-admin-page .item .sl,
+body.lp-hub-embed.partners-admin-page .item .meta {
+  color: var(--ink-faint) !important;
+}
+
+/* Dialogs */
+body.lp-hub-embed dialog {
+  background: var(--surface, var(--panel));
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+body.lp-hub-embed dialog::backdrop {
+  background: rgba(10, 14, 20, 0.55);
+}

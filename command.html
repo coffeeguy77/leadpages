@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<link rel="stylesheet" href="/assets/lp-super-admin.css">
 <script src="/assets/lp-workspace-appearance.js"></script>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js"></script>
@@ -182,11 +183,12 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
   var PANELS = [
     { id:'sites', title:'Sites', hint:'Site switcher, editor, account & billing', path:'/manage', label:'Sites' },
     { id:'domains', title:'Domains', hint:'DNS, Point at LeadPages, reseller overview', path:'/manage-domains', label:'Domains' },
+    { id:'billing', title:'Billing', hint:'Site subscriptions, Stripe, account status', path:'/billing', label:'Billing' },
     { id:'messages', title:'Messages', hint:'Support inbox & partner threads', path:'/messages', label:'Messages' },
     { id:'partners', title:'Partners', hint:'Partner program, commissions, training', path:'/partners-admin', label:'Partners' },
     { id:'marketplace', title:'Marketplace', hint:'Feature catalogue & categories', path:'/marketplace-admin', label:'Marketplace' },
     { id:'apps', title:'Apps', hint:'App registry, schemas & presets', path:'/apps-admin', label:'Apps' },
-    { id:'partner', title:'Partner console', hint:'Earnings, clients & partner view', path:'/partner', label:'Partner desk' }
+    { id:'partner', title:'Partner console', hint:'View partner desks as admin', path:'/partner', label:'Partner desk' }
   ];
   var THEMES = ['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint'];
   var cur = null;
