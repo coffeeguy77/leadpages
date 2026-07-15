@@ -123,6 +123,56 @@ async function invalidateByTags(tags, target) {
   });
 }
 
+/**
+ * Add a hostname to the LeadPages Vercel project.
+ * POST /v10/projects/{idOrName}/domains
+ * @param {string} name
+ * @param {{ redirect?: string, redirectStatusCode?: number }} [opts]
+ */
+async function addProjectDomain(name, opts) {
+  const proj = projectId();
+  if (!proj) {
+    const err = new Error('VERCEL_PROJECT_ID is not configured');
+    err.code = 'no_project';
+    throw err;
+  }
+  const body = { name: String(name || '').trim().toLowerCase() };
+  if (!body.name) {
+    const err = new Error('domain name required');
+    err.code = 'bad_name';
+    throw err;
+  }
+  if (opts && opts.redirect) {
+    body.redirect = String(opts.redirect).trim().toLowerCase();
+    body.redirectStatusCode = opts.redirectStatusCode || 308;
+  }
+  return vercelFetch('/v10/projects/' + encodeURIComponent(proj) + '/domains', {
+    method: 'POST',
+    body: body,
+  });
+}
+
+/**
+ * GET /v9/projects/{idOrName}/domains/{domain}
+ */
+async function getProjectDomain(name) {
+  const proj = projectId();
+  if (!proj) {
+    const err = new Error('VERCEL_PROJECT_ID is not configured');
+    err.code = 'no_project';
+    throw err;
+  }
+  const host = String(name || '').trim().toLowerCase();
+  try {
+    return await vercelFetch(
+      '/v9/projects/' + encodeURIComponent(proj) + '/domains/' + encodeURIComponent(host)
+    );
+  } catch (e) {
+    if (e.status === 404) return null;
+    throw e;
+  }
+}
+
 module.exports = {
   isConfigured: () => !!process.env.VERCEL_TOKEN,
   projectConfigured: () => !!(process.env.VERCEL_TOKEN && projectId()),
@@ -135,4 +185,6 @@ module.exports = {
   cacheTagForSlug,
   cacheTagForSiteId,
   invalidateByTags,
+  addProjectDomain,
+  getProjectDomain,
 };

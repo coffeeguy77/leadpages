@@ -151,11 +151,13 @@ sequenceDiagram
 
 ### Step A: Infrastructure
 
-1. Add domain in **Vercel project → Domains**
-2. Point DNS:
-   - Root: `A` → `76.76.21.21`
-   - `www`: `CNAME` → `cname.vercel-dns.com`
-   - Or use manage-domains **"Point at my site"** quick action
+1. Prefer manage-domains **"Point at LeadPages"** (`POST /api/domains/point-at-site`):
+   - Dreamscape DNS: root `A` → `76.76.21.21`, `www` `CNAME` → `cname.vercel-dns.com`
+   - Attaches apex + `www` to the LeadPages **Vercel project** (`VERCEL_TOKEN` + `VERCEL_PROJECT_ID`)
+   - Optional `site_id` (domain row, `?site_id=`, or input) also sets `sites.custom_domain`
+2. Manual fallback: add the hostname in **Vercel project → Domains**, then set DNS yourself
+
+`already_exists` on Vercel is treated as success so re-clicks are safe. Missing Vercel env soft-skips project attach; DNS can still succeed.
 
 ### Step B: Application routing
 
@@ -255,7 +257,7 @@ UNIQUE text column — authoritative for render Host lookup.
 
 | Claim vs reality |
 |------------------|
-| Marketing "auto-connects to your site" | Registration does not set `sites.custom_domain` or Vercel domain |
+| Marketing "auto-connects to your site" | Purchase still does not set routing; **Point at LeadPages** now auto-adds Vercel project domains (and can set `custom_domain` when `site_id` is provided) |
 | `site_id` on checkout | Accepted by API but not sent from UI |
 | Feature flag naming | `DOMAINS_FEATURE_ENABLED` vs `DOMAIN_FEATURE_ENABLED` |
 

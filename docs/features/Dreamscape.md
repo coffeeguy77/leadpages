@@ -164,7 +164,7 @@ Overlays: #authOv (OTP sign-in) · #regOv (registrant + checkout)
 |------------|-------------|
 | Back to dashboard | `/manage` |
 | Register → Continue to secure checkout | Stripe Checkout URL from `/api/domains/checkout` |
-| Point at my site | Adds A `76.76.21.21` + CNAME `www` → `cname.vercel-dns.com` via DNS API |
+| Point at my site | Adds A `76.76.21.21` + CNAME `www` → `cname.vercel-dns.com` via Dreamscape DNS **and** attaches apex + `www` to the Vercel project via `POST /api/domains/point-at-site` (optional `site_id` sets `sites.custom_domain`) |
 
 From `manage.html`, **My domains** bar links to `/manage-domains.html` (new tab) — see [features/Dashboard](Dashboard.md).
 
@@ -200,7 +200,7 @@ From `manage.html`, **My domains** bar links to `/manage-domains.html` (new tab)
 |--------|------|---------|
 | ✉ Forward an email | `mail` | `MAILFWD` — `email@domain` → external inbox |
 | ↗ Forward a web address | `web` | `WEBFWD` — subdomain redirect |
-| ◍ Point at my site | `site` | A `@` → `76.76.21.21`, CNAME `www` → `cname.vercel-dns.com` |
+| ◍ Point at my site | `site` | Calls `POST /api/domains/point-at-site` — Dreamscape A/CNAME + Vercel project domain attach (apex + www); optional `site_id` for routing |
 | (default form) | `generic` | A, AAAA, CNAME, TXT, MX |
 
 Supported record types in API: `A`, `AAAA`, `CNAME`, `TXT`, `MX`, `SRV`, `CAA`, `WEBFWD`, `MAILFWD`.
@@ -443,6 +443,7 @@ flowchart LR
 | `/api/domains/availability` | GET | Public | `doSearch()` | Domain search + retail prices |
 | `/api/domains/list` | GET | Bearer | `loadDomains()` | User or all reseller domains |
 | `/api/domains/dns` | GET/POST/DELETE | Bearer | `loadDns`, `addRec`, `delRec` | DNS CRUD |
+| `/api/domains/point-at-site` | POST | Bearer | `#siteAdd` | Dreamscape DNS + Vercel project domain attach |
 | `/api/domains/detail` | GET/PATCH | Bearer | `loadNs`, `saveNs` | Nameservers, `on_dreamscape_dns` |
 | `/api/domains/checkout` | POST | Bearer | `regGo` | Stripe session URL |
 | `/api/domains/account` | GET | Super | `loadBalance()` | Reseller credit |
@@ -649,8 +650,8 @@ flowchart TD
 
 ## Future Improvements
 
-1. **Auto-link domain to site** — pass `site_id` from `manage.html`; webhook sets `domains.site_id` and optionally `sites.custom_domain`.
-2. **Vercel domain API** — add project domain on “Point at my site”.
+1. **Auto-link domain to site** — pass `site_id` from `manage.html` into Domain Manager / checkout; webhook sets `domains.site_id` and optionally `sites.custom_domain`.
+2. ~~**Vercel domain API**~~ — **Done:** `POST /api/domains/point-at-site` attaches apex + `www` via `api/vercel/_client.addProjectDomain`.
 3. **Raise list limit** — paginate Dreamscape domain list for large resellers.
 4. **Manager success redirect** — `success_url` variant when checkout started from manager.
 5. **Order retry job** — cron to fulfil `requires_admin_balance` orders after top-up.
