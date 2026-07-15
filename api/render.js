@@ -46,12 +46,24 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g,
 // safe JSON for embedding inside a <script> tag (prevents </script> breakout)
 const safeJson = obj => JSON.stringify(obj || {}).replace(/</g, '\\u003c');
 
-// Send rendered HTML. Live sites are cached/CDN-friendly as before; non-live
-// (draft) previews are never cached and never indexed.
-function sendHtml(res, html, isLive) {
+// Send rendered HTML. Live sites are CDN-cached with tags so Publish can
+// invalidate instantly; drafts are never cached or indexed.
+function sendHtml(res, html, isLive, cacheMeta) {
   res.setHeader('content-type', 'text/html; charset=utf-8');
   if (isLive) {
-    res.setHeader('cache-control', 'public, s-maxage=30, stale-while-revalidate=300');
+    // 15 min fresh + 1 h SWR. Publish calls /api/purge-site-cache to invalidate tags.
+    res.setHeader('cache-control', 'public, s-maxage=900, stale-while-revalidate=3600');
+    res.setHeader('CDN-Cache-Control', 'public, s-maxage=900, stale-while-revalidate=3600');
+    const tags = [];
+    if (cacheMeta && cacheMeta.slug) {
+      const s = String(cacheMeta.slug).toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+      if (s) tags.push('lp-site-' + s);
+    }
+    if (cacheMeta && cacheMeta.siteId) {
+      const id = String(cacheMeta.siteId).toLowerCase().replace(/[^a-f0-9-]+/g, '').slice(0, 64);
+      if (id) tags.push('lp-siteid-' + id);
+    }
+    if (tags.length) res.setHeader('Vercel-Cache-Tag', tags.join(','));
   } else {
     res.setHeader('cache-control', 'no-store');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
@@ -834,7 +846,7 @@ module.exports = async (req, res) => {
       let html = brokerApp.html.replaceAll('__BROKERAPP_CONFIG__', safeJson(cfg));
       html = html.replaceAll('<!--DEMO_BAR-->', demoBar);
       html = injectVisitorAccessibility(html, cfg);
-      return sendHtml(res, html, isLive);
+      return sendHtml(res, html, isLive, { slug: site.slug, siteId: site.id });
     }
 
     // ---- token templates: broker-leads / trade ----
@@ -921,7 +933,7 @@ module.exports = async (req, res) => {
       html = injectOnlineQuote(html, site.slug, cfg);
     }
 
-    return sendHtml(res, html, isLive);
+    return sendHtml(res, html, isLive, { slug: site.slug, siteId: site.id });
   } catch (e) {
     console.error('render error:', e);
     return res.status(500).send('Server error');

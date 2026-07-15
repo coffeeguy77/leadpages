@@ -280,11 +280,21 @@ sequenceDiagram
 
 | Site state | `Cache-Control` | `X-Robots-Tag` |
 |------------|-----------------|----------------|
-| Live | `public, s-maxage=30, stale-while-revalidate=300` | (template default) |
+| Live | `public, s-maxage=900, stale-while-revalidate=3600` + `Vercel-Cache-Tag: lp-site-{slug},lp-siteid-{uuid}` | (template default) |
 | Draft / preview | `no-store` | `noindex, nofollow` |
 | Suspended | `no-store` | `noindex` + `retry-after: 86400` |
 
-**Why 30s for live tenants:** Editor publishes must reach visitors quickly without manual CDN purge. Suburb pages use 24h cache because AI intros are expensive and geographically stable — see [08-SEO](08-SEO.md).
+**Why 15 minutes for live tenants:** Long enough for CDN to absorb most traffic without re-running `api/render.js` on every hit. **Publish** calls `POST /api/purge-site-cache`, which invalidates the site’s cache tags so visitors still see updates within seconds. Without `VERCEL_TOKEN` + `VERCEL_PROJECT_ID`, purge soft-skips and content falls back to the 15-minute TTL. Suburb pages use 24h cache because AI intros are expensive and geographically stable — see [08-SEO](08-SEO.md).
+
+### 6.3.1 Capacity band (current architecture)
+
+| Band | Guidance |
+|------|----------|
+| **Hundreds of live sites** | Smooth with CDN tags + purge-on-publish |
+| **~1–2k sites** | Stretch target with Supabase plan sizing + event archival |
+| **10k+** | Needs stronger write-side controls (rate limits, aggregation) and domain ops hygiene — not blocked by “one project per site” |
+
+Site *count* is cheap (one `sites` row each). Shared Postgres writes (`events`/`leads`) and custom-domain quotas bind first — mitigated early with soft IP rate limits on `/api/events` and `/api/leads`.
 
 ### 6.4 Sub-page routing
 
@@ -599,6 +609,7 @@ Set in Vercel project settings (never committed):
 | AI | `ANTHROPIC_API_KEY` |
 | Instagram | `INSTAGRAM_APP_ID`, `INSTAGRAM_APP_SECRET` |
 | Auth / ops | `SUPER_ADMIN_EMAILS`, `ADMIN_PASSWORD`, `CRON_SECRET`, `PRIMARY_HOSTS` |
+| Vercel CDN purge | `VERCEL_TOKEN`, `VERCEL_PROJECT_ID` (or `VERCEL_PROJECT_ID_OR_NAME`), optional `VERCEL_TEAM_ID` |
 
 ---
 

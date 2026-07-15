@@ -12,6 +12,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const { limited } = require('./_rate-limit');
 
 const clean = (s, n = 120) => (s == null ? '' : String(s)).trim().slice(0, n);
 const ALLOWED = ['page_view', 'call_click', 'lead_submit', 'quote_open', 'cta_click'];
@@ -40,6 +41,8 @@ async function resolveSiteId({ siteId, slug, site }) {
 module.exports = async (req, res) => {
   const ok = () => { res.statusCode = 200; res.setHeader('content-type', 'application/json'); res.end('{"ok":true}'); };
   if (req.method !== 'POST') return ok();
+  // Soft rate limit: drop spam without erroring visitor pages (always 200).
+  if (limited(req, { key: 'events', max: 120, windowMs: 60000 })) return ok();
 
   try {
     const b = await readBody(req);

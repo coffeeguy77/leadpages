@@ -6287,6 +6287,18 @@ function heroCtaCard(c){
     if(wentLive) currentSiteStatus='live';
     var sref=allSites.find(function(x){return x.id===currentSiteId;}); if(sref){ if(payload.business_name) sref.business_name=payload.business_name; sref.custom_domain=payload.custom_domain; if(payload.owner_email!==undefined) sref.owner_email=payload.owner_email; sref.config=payload.config; if(wentLive) sref.status='live'; }
     lpRefreshViewLiveLabel();
+    // Invalidate CDN HTML for this site so longer cache does not delay live updates.
+    try{
+      var sess=await sb.auth.getSession();
+      var tok=sess&&sess.data&&sess.data.session&&sess.data.session.access_token;
+      if(tok&&(currentSiteId||currentSiteSlug)){
+        fetch('/api/purge-site-cache',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+          body:JSON.stringify({siteId:currentSiteId||null,slug:currentSiteSlug||null})
+        }).catch(function(){});
+      }
+    }catch(_purgeErr){}
     if(currentSiteTemplate!=='broker-app' && document.body.classList.contains('lp-prev-open')) previewLoad();
     toast(wentLive?'Published \u2014 live on your site':'Published — saved. Use Preview until this site is set live.');
   }

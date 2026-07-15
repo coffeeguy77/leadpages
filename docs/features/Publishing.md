@@ -346,7 +346,7 @@ fr.src = '/' + lpPrevSlug + '?preview=' + Date.now();
 | Mode | URL pattern | `isLive` in render | Public cache |
 |------|-------------|-------------------|--------------|
 | **Builder preview** | `/{slug}?preview=1` | `false` for cache headers | `no-store`, `X-Robots-Tag: noindex` |
-| **Production (live)** | `/{slug}` or custom domain | `true` | `public, s-maxage=30, stale-while-revalidate=300` |
+| **Production (live)** | `/{slug}` or custom domain | `true` | `public, s-maxage=900, stale-while-revalidate=3600` (+ cache tags; purged on Publish) |
 | **Draft without preview** | `/{slug}` | — | **404 Not found** |
 
 **Instant edits:** After iframe load, `previewApply()` calls `__applyTradeConfig(data)` or `__applyAppearance()` without re-fetching HTML — faster than publish for WYSIWYG.
@@ -409,9 +409,10 @@ Legacy: landing grid treats `active` like live (`_lplStatus` in `manage.html`).
 ### `sendHtml()` — caching policy
 
 ```javascript
-function sendHtml(res, html, isLive) {
+function sendHtml(res, html, isLive, cacheMeta) {
   if (isLive) {
-    res.setHeader('cache-control', 'public, s-maxage=30, stale-while-revalidate=300');
+    res.setHeader('cache-control', 'public, s-maxage=900, stale-while-revalidate=3600');
+    // + Vercel-Cache-Tag: lp-site-{slug}, lp-siteid-{id}
   } else {
     res.setHeader('cache-control', 'no-store');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
@@ -419,7 +420,7 @@ function sendHtml(res, html, isLive) {
 }
 ```
 
-Draft previews are never CDN-indexed. Live pages get short edge cache (30 s) with stale revalidation.
+Draft previews are never CDN-indexed. Live pages get a 15-minute edge cache with stale revalidation; **Publish** invalidates `lp-site-*` tags via `/api/purge-site-cache` so updates are not stuck waiting for TTL.
 
 ### Config injection
 
@@ -738,7 +739,7 @@ Draft sites are **security through obscurity** (404 on clean URL), not encryptio
 | TD-P1 | **Toast says "live" on config publish** | `publishToDB` toast | Partners think site is public when still draft |
 | TD-P2 | **Publish vs status split** | Two UIs, two concepts | Missed go-live step; support tickets |
 | TD-P3 | **`active` vs `live` status** | `_lplStatus`, render uses `live` only | Inconsistent badges if legacy rows |
-| TD-P4 | **No CDN purge on publish** | `sendHtml` cache | Stale live content ≤30 s |
+| TD-P4 | **CDN purge depends on Vercel env** | `/api/purge-site-cache` | Without `VERCEL_TOKEN` + `VERCEL_PROJECT_ID`, live HTML waits up to s-maxage (15 min) after publish |
 | TD-P5 | **`lpSaveDB` merge vs full publish** | SEO tab | Rare race if concurrent editors |
 | TD-P6 | **`api/manage.html` drift** | Duplicate file | Wrong docs if wrong file deployed |
 | TD-P7 | **View Live ignores draft** | `lpLiveUrl()` no preview param | Button 404s on draft sites |
