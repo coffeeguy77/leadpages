@@ -714,12 +714,13 @@ Tracking is intentionally **low-friction over high-integrity** — suitable for 
 | TD-T2 | **`siteId` not always in beacon body** | Reference templates | Falls back to name lookup; orphan rows possible |
 | TD-T3 | **`calc_freq` dropped** | `broker.html` calculator | Calculator usage not tracked |
 | TD-T4 | **Storefront events lack `site_id`** | `tradies.html`, `brokers.html` | Pollutes global queries; not attributed to tenants |
-| TD-T5 | **No rate limiting on ingest** | `api/events.js` | Vulnerable to event spam |
+| TD-T5 | Soft IP rate limit on ingest | `api/events.js` via `api/_rate-limit.js` | 120 posts / IP / minute (always 200) |
 | TD-T6 | **Global stats without role gate** | `api/stats.js` | Any authenticated user could fetch all-site events |
 | TD-T7 | **Duplicate root files** | `events.js`, `stats.js` | Drift risk vs `api/` copies |
 | TD-T8 | **Conversion definition split** | ANA vs Dashboard | Win rate vs lead/visitor % confuses power users |
 | TD-T9 | **Dashboard chart period decoupled** | `_dashChartPeriod` vs `ANA.period` | Trade chart may disagree with pill period |
 | TD-T10 | **`quote_open` / `cta_click` unused** | ALLOWED but unwired | Dead event types in schema |
+| TD-T11 | **Apply `event_daily` SQL once** | Supabase | Cron soft-skips until `db/event_daily.sql` is applied |
 
 Tracked in [13-ROADMAP](../13-ROADMAP.md) as NT-9 (`phone_click` fix).
 

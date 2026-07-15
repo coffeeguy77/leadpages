@@ -1198,7 +1198,7 @@ Tables referenced in code but **without** versioned SQL in `db/`:
 5. **Config JSON Schema** — validate `sites.config` on publish to catch corruption early.
 6. **Audit direct HTML writes** — migrate sensitive CRUD to API layer with consistent auth.
 7. **Index hot paths** — `events(site_id, created_at)`, `leads(site_id, created_at)`, `sites(slug)`, `sites(custom_domain)`.
-8. **Archive old events** — partition or aggregate after 12 months to keep dashboard queries fast.
+8. **Archive old events** — apply `db/event_daily.sql`; nightly `/api/cron/events-rollup` aggregates raw rows older than ~90 days into `event_daily` and deletes them. `/api/stats` merges both so dashboards stay accurate.
 
 ---
 
