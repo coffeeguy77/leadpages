@@ -4,6 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Domain Manager — LeadPages</title>
+<script>
+(function(){
+  try{
+    var raw=localStorage.getItem('leadpages_workspace_appearance');
+    var prefs=raw?JSON.parse(raw):null;
+    var theme=(prefs&&prefs.theme)||'classic-light';
+    if(theme==='system'){
+      theme=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'command-dark':'classic-light';
+    }
+    var allowed=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint'];
+    if(allowed.indexOf(theme)<0) theme='classic-light';
+    document.documentElement.dataset.theme=theme;
+    var dark=(theme==='command-dark'||theme==='neon-pink'||theme==='electric-blue');
+    var bg=dark?'#12151a':(theme==='blush'?'#faf3f2':(theme==='blueprint'?'#f0f4f8':'#f6f4ef'));
+    document.documentElement.style.colorScheme=dark?'dark':'light';
+    document.documentElement.style.background=bg;
+    // Paint before CSS so body never flashes browser-default white
+    var s=document.createElement('style');
+    s.id='lp-domains-boot-bg';
+    s.textContent='html,body{background:'+bg+'!important;color:'+(dark?'#eef2f7':'#1b2430')+'!important}';
+    document.documentElement.appendChild(s);
+  }catch(e){}
+})();
+</script>
 <link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
 <link rel="shortcut icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
@@ -25,14 +49,35 @@
 html[data-theme="command-dark"],
 html[data-theme="neon-pink"],
 html[data-theme="electric-blue"]{ color-scheme: dark; }
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);}
+html,body{margin:0;min-height:100%;background:var(--bg,#f6f4ef) !important;color:var(--ink,#1b2430) !important;}
+html[data-theme="command-dark"],html[data-theme="command-dark"] body{background:#12151a !important;color:#eef2f7 !important;}
+html[data-theme="neon-pink"],html[data-theme="neon-pink"] body{background:#140f14 !important;color:#fce8f3 !important;}
+html[data-theme="electric-blue"],html[data-theme="electric-blue"] body{background:#0f1419 !important;color:#e8f2ff !important;}
+html[data-theme="blush"],html[data-theme="blush"] body{background:#faf3f2 !important;color:#2a1f2e !important;}
+html[data-theme="blueprint"],html[data-theme="blueprint"] body{background:#f0f4f8 !important;color:#1a2a3a !important;}
+html[data-theme="classic-light"],html[data-theme="classic-light"] body{background:#f6f4ef !important;color:#1b2430 !important;}
 *{box-sizing:border-box}
 body{font-family:var(--font-ui);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
-.wrap{max-width:980px;margin:0 auto;padding:28px 20px 80px;}
+.wrap{max-width:980px;margin:0 auto;padding:28px 20px 80px;background:transparent !important;}
+html[data-theme="command-dark"] .card,
+html[data-theme="command-dark"] .bar,
+html[data-theme="command-dark"] .modal,
+html[data-theme="neon-pink"] .card,
+html[data-theme="neon-pink"] .bar,
+html[data-theme="neon-pink"] .modal,
+html[data-theme="electric-blue"] .card,
+html[data-theme="electric-blue"] .bar,
+html[data-theme="electric-blue"] .modal{background:var(--panel,#1e2430) !important;color:var(--ink,#eef2f7) !important;}
+html[data-theme="command-dark"] input,
+html[data-theme="command-dark"] select,
+html[data-theme="neon-pink"] input,
+html[data-theme="neon-pink"] select,
+html[data-theme="electric-blue"] input,
+html[data-theme="electric-blue"] select{background:var(--input-bg,#252b38) !important;color:var(--ink,#eef2f7) !important;border-color:var(--line-strong,#3d465c) !important;}
 .eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);margin:0 0 6px;}
 h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,34px);margin:0;letter-spacing:-.01em;color:var(--ink);}
 .sub{color:var(--ink-soft);margin:8px 0 0;max-width:62ch;}
-.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:22px 0;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:22px 0;padding:14px 16px;background:var(--surface) !important;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
 .bar .who{font-weight:600;color:var(--ink);} .bar .who small{display:block;font-weight:400;color:var(--ink-faint);font-size:11.5px;}
 .spacer{flex:1}
 .btn{appearance:none;border:1px solid var(--brand);background:transparent;color:var(--brand);font-family:var(--font-ui);font-weight:600;font-size:13.5px;padding:9px 15px;border-radius:var(--radius-sm);cursor:pointer;transition:.15s;text-decoration:none;display:inline-block;}
@@ -41,7 +86,7 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,34px
 .btn.sm{padding:5px 11px;font-size:12px;}
 .btn.danger{border-color:var(--bad);color:var(--bad);background:transparent;} .btn.danger:hover{background:color-mix(in srgb,var(--bad) 12%,transparent);}
 .btn[disabled]{opacity:.5;cursor:not-allowed;}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px;color:var(--ink);}
+.card{background:var(--surface) !important;border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:18px;color:var(--ink);}
 .card h2{font-family:var(--font-display);font-weight:500;font-size:19px;margin:0 0 4px;color:var(--ink);}
 .card .lede{color:var(--ink-soft);font-size:13px;margin:0 0 16px;}
 .row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);}
@@ -51,16 +96,18 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,34px
 .chip{font-size:11px;font-weight:600;border-radius:999px;padding:2px 10px;border:1px solid var(--line-strong);color:var(--ink-soft);background:transparent;}
 .chip.ok{color:var(--ok,var(--success,#2ecc8f));border-color:var(--ok,var(--success,#2ecc8f));}
 .chip.ext{color:var(--amber,var(--warning,#e8b84a));border-color:var(--amber,var(--warning,#e8b84a));}
-.detail{margin-top:4px;padding:16px;background:transparent;border:1px solid var(--line);border-radius:var(--radius-sm);color:var(--ink);}
+.detail{margin-top:4px;padding:16px;background:transparent !important;border:1px solid var(--line);border-radius:var(--radius-sm);color:var(--ink);}
 .qa{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
 table.dns{width:100%;border-collapse:collapse;font-size:13px;color:var(--ink);}
 table.dns th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-weight:700;padding:6px 8px;border-bottom:1px solid var(--line-strong);}
 table.dns td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle;color:var(--ink);}
 table.dns td.val{font-family:ui-monospace,Menlo,monospace;font-size:12px;word-break:break-all;}
+table.dns td.acts{text-align:right;white-space:nowrap;}
+table.dns td.acts .btn{margin-left:4px;}
 .ttype{font-weight:700;font-size:11px;color:var(--brand);background:var(--brand-tint);border-radius:6px;padding:2px 7px;}
 .form-grid{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line-strong);}
 label.f{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--ink-soft);font-weight:600;}
-input,select{font-family:var(--font-ui);font-size:13px;padding:7px 9px;border:1px solid var(--line-strong);border-radius:8px;background:var(--input-bg,transparent);color:var(--ink);}
+input,select{font-family:var(--font-ui);font-size:13px;padding:7px 9px;border:1px solid var(--line-strong);border-radius:8px;background:var(--input-bg,transparent) !important;color:var(--ink) !important;}
 input:focus,select:focus{outline:2px solid var(--brand);outline-offset:0;border-color:var(--brand);}
 .note{font-size:12px;color:var(--ink-faint);margin-top:8px;}
 .msg{font-size:12.5px;margin-top:8px;} .msg.err{color:var(--bad);} .msg.ok{color:var(--ok,var(--success));}
@@ -72,7 +119,7 @@ input:focus,select:focus{outline:2px solid var(--brand);outline-offset:0;border-
 .empty{color:var(--ink-faint);font-size:13px;padding:18px 0;text-align:center;}
 .overlay{position:fixed;inset:0;background:rgba(27,36,48,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;}
 .overlay.show{display:flex;}
-.modal{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius);max-width:420px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+.modal{background:var(--surface) !important;color:var(--ink);border:1px solid var(--line);border-radius:var(--radius);max-width:420px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.35);}
 .modal h2{font-family:var(--font-display);font-weight:500;margin:0 0 4px;font-size:22px;color:var(--ink);}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--brand-tint);border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -100,7 +147,7 @@ input:focus,select:focus{outline:2px solid var(--brand);outline-offset:0;border-
 .inv-detail{padding:6px 0 10px;border-bottom:1px solid var(--line);}
 .inv-line{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;padding:3px 0;color:var(--ink-soft);}
 .inv-line .d{flex:1;}
-.nsbox{margin-bottom:14px;padding:11px 13px;background:transparent;border:1px solid var(--line);border-radius:8px;}
+.nsbox{margin-bottom:14px;padding:11px 13px;background:transparent !important;border:1px solid var(--line);border-radius:8px;}
 .nsrow{display:flex;gap:8px;align-items:center;color:var(--ink);}
 .nsrow b{color:var(--ink);}
 .nsval{font-size:12.5px;margin-top:5px;color:var(--ink);}
@@ -249,12 +296,28 @@ if(window.LPWorkspaceAppearance){ try{ LPWorkspaceAppearance.init(); }catch(e){}
     try{
       var t=(document.documentElement.dataset.theme||'');
       var dark=(t==='command-dark'||t==='neon-pink'||t==='electric-blue');
+      var bg=dark?'#12151a':(t==='blush'?'#faf3f2':(t==='blueprint'?'#f0f4f8':'#f6f4ef'));
+      var ink=dark?'#eef2f7':'#1b2430';
+      document.documentElement.style.colorScheme=dark?'dark':'light';
+      document.documentElement.style.background=bg;
+      if(document.body){
+        document.body.style.background=bg;
+        document.body.style.color=ink;
+      }
       var meta=document.querySelector('meta[name="theme-color"]');
       if(meta) meta.setAttribute('content', dark?'#12151a':'#1f7a63');
+      var boot=document.getElementById('lp-domains-boot-bg');
+      if(boot) boot.textContent='html,body{background:'+bg+'!important;color:'+ink+'!important}';
     }catch(e){}
   }
   paint();
   document.addEventListener('lp-workspace-appearance-change', paint);
+  window.addEventListener('storage', function(ev){
+    if(ev.key==='leadpages_workspace_appearance' && window.LPWorkspaceAppearance){
+      try{ LPWorkspaceAppearance.apply(LPWorkspaceAppearance.load()); }catch(e){}
+      paint();
+    }
+  });
 })();
 var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
 var $ = function(id){ return document.getElementById(id); };
@@ -344,6 +407,7 @@ function renderDomains(){
 }
 
 /* ---------- DNS editor ---------- */
+var DNS_RECS = {}; // index -> records array for edit forms
 function valueOf(rec){
   var t=rec.type;
   if(t==='MX') return esc(rec.content)+'  <span class="dmeta">priority '+esc(rec.priority)+'</span>';
@@ -363,9 +427,12 @@ async function loadDns(i){
   var r=await api('/api/domains/dns?'+dnsQuery(d));
   if(!r.ok){ host.innerHTML='<div class="detail"><div class="msg err">'+esc((r.data&&r.data.error)||'Could not load DNS.')+'</div></div>'; return; }
   var recs=(r.data&&r.data.records)||[];
-  var rows = recs.map(function(rec){
+  DNS_RECS[i]=recs;
+  var rows = recs.map(function(rec,ri){
     return '<tr><td><span class="ttype">'+esc(rec.type)+'</span></td><td>'+nameOf(rec,d.domain_name)+'</td><td class="val">'+valueOf(rec)+'</td>'
-      +'<td style="text-align:right"><button class="btn danger sm" data-del="'+esc(rec.id)+'">Delete</button></td></tr>';
+      +'<td class="acts">'
+      +(rec.id!=null?('<button type="button" class="btn ghost sm" data-edit="'+ri+'">Edit</button><button type="button" class="btn danger sm" data-del="'+esc(rec.id)+'">Delete</button>'):'—')
+      +'</td></tr>';
   }).join('');
   host.innerHTML='<div class="detail">'
     +'<div id="nsHost-'+i+'"></div>'
@@ -376,13 +443,77 @@ async function loadDns(i){
     +'</div>'
     +'<table class="dns"><thead><tr><th>Type</th><th>Name</th><th>Value</th><th></th></tr></thead>'
     +'<tbody>'+(rows||'<tr><td colspan="4" class="empty">No records yet.</td></tr>')+'</tbody></table>'
+    +'<div id="editForm-'+i+'"></div>'
     +'<div id="addForm-'+i+'"></div>'
     +'<div class="msg" id="dnsMsg-'+i+'"></div>'
     +'</div>';
   host.querySelectorAll('[data-del]').forEach(function(b){ b.onclick=function(){ delRec(i,b.getAttribute('data-del')); }; });
+  host.querySelectorAll('[data-edit]').forEach(function(b){ b.onclick=function(){ renderEditForm(i,Number(b.getAttribute('data-edit'))); }; });
   host.querySelectorAll('[data-qa]').forEach(function(b){ b.onclick=function(){ renderAddForm(i,b.getAttribute('data-qa')); }; });
   renderAddForm(i,'generic');
   loadNs(i);
+}
+function renderEditForm(i,ri){
+  var box=$('editForm-'+i); if(!box) return;
+  var rec=(DNS_RECS[i]||[])[ri];
+  if(!rec||rec.id==null){ box.innerHTML=''; return; }
+  var t=String(rec.type||'').toUpperCase();
+  var fields='';
+  if(t==='MAILFWD'){
+    fields='<label class="f">Address<input id="e_email" value="'+esc(rec.email||'')+'" style="width:120px"></label>'
+      +'<label class="f">Forward to<input id="e_forward_to" value="'+esc(rec.forward_to||'')+'" style="width:220px"></label>';
+  } else if(t==='WEBFWD'){
+    fields='<label class="f">From<input id="e_subdomain" value="'+esc(rec.subdomain||'@')+'" style="width:110px"></label>'
+      +'<label class="f">Redirect to<input id="e_forward_to" value="'+esc(rec.forward_to||'')+'" style="width:240px"></label>';
+  } else if(t==='SRV'){
+    fields='<label class="f">Name<input id="e_subdomain" value="'+esc(rec.subdomain||'')+'" style="width:110px"></label>'
+      +'<label class="f">Target<input id="e_target" value="'+esc(rec.target||'')+'" style="width:180px"></label>'
+      +'<label class="f">Port<input id="e_port" value="'+esc(rec.port!=null?rec.port:'')+'" style="width:70px"></label>'
+      +'<label class="f">Priority<input id="e_priority" value="'+esc(rec.priority!=null?rec.priority:0)+'" style="width:70px"></label>'
+      +'<label class="f">Weight<input id="e_weight" value="'+esc(rec.weight!=null?rec.weight:0)+'" style="width:70px"></label>';
+  } else if(t==='CAA'){
+    fields='<label class="f">Flag<input id="e_flag" value="'+esc(rec.flag!=null?rec.flag:0)+'" style="width:70px"></label>'
+      +'<label class="f">Tag<input id="e_tag" value="'+esc(rec.tag||'issue')+'" style="width:100px"></label>'
+      +'<label class="f">Value<input id="e_value" value="'+esc(rec.value||'')+'" style="width:200px"></label>';
+  } else {
+    fields='<label class="f">Name<input id="e_subdomain" value="'+esc(rec.subdomain||'@')+'" style="width:110px"></label>'
+      +'<label class="f">Value<input id="e_content" value="'+esc(rec.content||'')+'" style="width:220px"></label>';
+    if(t==='MX'){
+      fields+='<label class="f">Priority<input id="e_priority" value="'+esc(rec.priority!=null?rec.priority:10)+'" style="width:70px"></label>';
+    }
+  }
+  box.innerHTML='<div class="form-grid" style="border-top-color:var(--brand)">'
+    +'<span class="ttype" style="align-self:center">Edit '+esc(t)+'</span>'
+    +fields
+    +'<button type="button" class="btn sm" id="eSave">Save</button>'
+    +'<button type="button" class="btn ghost sm" id="eCancel">Cancel</button>'
+    +'</div>';
+  $('eCancel').onclick=function(){ box.innerHTML=''; };
+  $('eSave').onclick=function(){ saveEditRec(i,ri); };
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function buildEditPayload(t){
+  t=String(t||'').toUpperCase();
+  var v=function(id){ var el=$(id); return el?el.value.trim():''; };
+  var n=function(id,d){ var el=$(id); if(!el||el.value==='') return d; var x=Number(el.value); return isFinite(x)?x:d; };
+  if(t==='MAILFWD') return {type:t,email:v('e_email'),forward_to:v('e_forward_to')};
+  if(t==='WEBFWD') return {type:t,subdomain:v('e_subdomain')||'@',forward_to:v('e_forward_to'),cloak:false};
+  if(t==='SRV') return {type:t,subdomain:v('e_subdomain'),target:v('e_target'),port:n('e_port',0),priority:n('e_priority',0),weight:n('e_weight',0)};
+  if(t==='CAA') return {type:t,flag:n('e_flag',0),tag:v('e_tag')||'issue',value:v('e_value')};
+  var rec={type:t,subdomain:v('e_subdomain')||'@',content:v('e_content')};
+  if(t==='MX') rec.priority=n('e_priority',10);
+  return rec;
+}
+async function saveEditRec(i,ri){
+  var d=DOMAINS[i];
+  var orig=(DNS_RECS[i]||[])[ri];
+  if(!orig||orig.id==null){ dnsMsg(i,'err','Missing record.'); return; }
+  var rec=buildEditPayload(orig.type);
+  dnsMsg(i,'','Saving…');
+  var r=await api('/api/domains/dns',{method:'PATCH',body:JSON.stringify(Object.assign(dnsBody(d),{record_id:orig.id,record:rec}))});
+  if(!r.ok){ dnsMsg(i,'err',(r.data&&r.data.error)||'Could not update the record.'); return; }
+  dnsMsg(i,'ok','Record updated.');
+  loadDns(i);
 }
 async function loadNs(i){
   var d=DOMAINS[i]; var box=$('nsHost-'+i); if(!box) return;
