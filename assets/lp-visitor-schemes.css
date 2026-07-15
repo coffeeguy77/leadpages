@@ -53,7 +53,7 @@ html[data-lp-visitor-scheme="autumn"] {
   --lp-scheme-text: #292018;
 }
 html[data-lp-visitor-scheme="autumn"] body {
-  background: var(--lp-scheme-bg) !important;
+  background: #01081e !important;
 }
 
 /* Winter */
