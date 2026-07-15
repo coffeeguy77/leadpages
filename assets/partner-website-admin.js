@@ -10,6 +10,8 @@
     websiteProfile: null,
     platform: null,
     completion: null,
+    showcaseSites: [],
+    industryTabDefaults: [],
     activeTab: 'overview',
     dirty: false,
     loading: false
@@ -21,6 +23,7 @@
     { id: 'biography', label: 'Biography' },
     { id: 'location', label: 'Service area' },
     { id: 'services', label: 'Services' },
+    { id: 'industryDemos', label: 'Industry demos' },
     { id: 'testimonials', label: 'Testimonials' },
     { id: 'caseStudies', label: 'Case studies' },
     { id: 'faqs', label: 'FAQs' },
@@ -305,6 +308,58 @@
       + '</div>';
   }
 
+  function siteOptionLabel(s) {
+    var kind = s.is_mockup ? 'Demo' : 'Client';
+    var trade = s.trade ? ' · ' + s.trade : '';
+    return (s.business_name || s.slug) + ' (' + kind + trade + ')';
+  }
+
+  function siteSelectHtml(selectedId, index) {
+    var opts = '<option value="">— Choose a site or demo —</option>';
+    (state.showcaseSites || []).forEach(function(s) {
+      var sel = selectedId && String(selectedId) === String(s.id) ? ' selected' : '';
+      opts += '<option value="' + esc(s.id) + '"' + sel + '>' + esc(siteOptionLabel(s)) + '</option>';
+    });
+    return '<select id="pwp-ind-site-' + index + '" data-pwp-ind-field="siteId">' + opts + '</select>';
+  }
+
+  function industryTabRows() {
+    var showcase = (wp().industryShowcase && wp().industryShowcase.tabs) || [];
+    var defaults = state.industryTabDefaults || [];
+    var rows = showcase.slice();
+    if (!rows.length && defaults.length) {
+      rows = defaults.map(function(t, i) {
+        return { key: t.key, label: t.label, siteId: '', enabled: true, sortOrder: i };
+      });
+    }
+    if (!rows.length) {
+      rows = [{ key: 'trades', label: 'Trades', siteId: '', enabled: true, sortOrder: 0 }];
+    }
+    return rows.map(function(t, i) {
+      return '<div class="pwp-ind-row" data-pwp-ind-tab="' + i + '">'
+        + '<div class="pwp-ind-row-head">'
+        + field('Tab name', 'pwp-ind-label-' + i, t.label || '', { placeholder: 'e.g. Trades' })
+        + '<label class="pwp-ind-on"><input type="checkbox" id="pwp-ind-on-' + i + '"' + (t.enabled !== false ? ' checked' : '') + ' style="width:auto"> Show tab</label>'
+        + '</div>'
+        + '<div class="field"><label for="pwp-ind-site-' + i + '">Site or demo on this tab</label>'
+        + siteSelectHtml(t.siteId || '', i)
+        + '<p class="muted" style="font-size:12px;margin:6px 0 0">Pick any client site or demo from your book. This is what appears in “Choose an industry / Explore a real website.”</p>'
+        + '</div>'
+        + '<input type="hidden" id="pwp-ind-key-' + i + '" value="' + esc(t.key || '') + '">'
+        + '<button type="button" class="btn" data-pwp-remove-ind="' + i + '" style="padding:6px 12px;font-size:13px">Remove tab</button>'
+        + '</div>';
+    }).join('');
+  }
+
+  function panelIndustryDemos() {
+    return '<div class="pwp-panel hidden" data-pwp-panel="industryDemos">'
+      + '<p class="muted" style="margin:0 0 16px">Control the industry scroller on your public page. Rename tabs (including Trades), pick which client site or demo each tab shows, or add your own industry tab.</p>'
+      + '<div id="pwp-ind-tabs">' + industryTabRows() + '</div>'
+      + '<button type="button" class="btn" id="pwp-add-ind-tab" style="margin-top:12px">Add industry tab</button>'
+      + '<p class="muted" style="margin:14px 0 0;font-size:12.5px">Leave tabs empty to fall back to automatic grouping of demos marked “Show on showcase” by trade.</p>'
+      + '</div>';
+  }
+
   function panelVisibility() {
     var v = wp().visibility || {};
     var keys = [
@@ -342,6 +397,7 @@
       + panelBiography()
       + panelLocation()
       + panelServices()
+      + panelIndustryDemos()
       + panelTestimonials()
       + panelCaseStudies()
       + panelFaqs()
@@ -449,6 +505,25 @@
       partnerFaqs.push({ question: q, answer: a, enabled: val('pwp-f-on-' + i) });
     });
 
+    var industryTabs = [];
+    document.querySelectorAll('[data-pwp-ind-tab]').forEach(function(row) {
+      var i = row.getAttribute('data-pwp-ind-tab');
+      var label = val('pwp-ind-label-' + i);
+      var siteId = val('pwp-ind-site-' + i);
+      var key = val('pwp-ind-key-' + i);
+      if (!label && !siteId) return;
+      if (!key && label) {
+        key = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+      }
+      industryTabs.push({
+        key: key || ('tab-' + (industryTabs.length + 1)),
+        label: label || key || 'Industry',
+        siteId: siteId || null,
+        enabled: val('pwp-ind-on-' + i),
+        sortOrder: industryTabs.length
+      });
+    });
+
     var visibility = {};
     ['hero', 'trust', 'demos', 'services', 'biography', 'serviceArea', 'testimonials', 'caseStudies', 'faqs', 'leadOffer', 'contact', 'process', 'platformBacking'].forEach(function(k) {
       var el = $('pwp-vis-' + k);
@@ -525,7 +600,8 @@
       serviceSelections: serviceSelections,
       testimonials: testimonials,
       caseStudies: caseStudies,
-      partnerFaqs: partnerFaqs
+      partnerFaqs: partnerFaqs,
+      industryShowcase: { tabs: industryTabs }
     };
   }
 
@@ -574,6 +650,14 @@
     return uj.secure_url;
   }
 
+  function profileUrl(path) {
+    var url = path || '/api/partner/website-profile';
+    if (state.partnerId) {
+      url += (url.indexOf('?') >= 0 ? '&' : '?') + 'partner_id=' + encodeURIComponent(state.partnerId);
+    }
+    return url;
+  }
+
   async function saveProfile() {
     var err = $('pwp-err');
     var btn = $('pwp-save');
@@ -582,10 +666,12 @@
     btn.disabled = true;
     state.loading = true;
     try {
-      var r = await fetch('/api/partner/website-profile', {
+      var payload = { section: 'all', websiteProfile: collectProfile() };
+      if (state.partnerId) payload.partner_id = state.partnerId;
+      var r = await fetch(profileUrl('/api/partner/website-profile'), {
         method: 'POST',
         headers: Object.assign({ 'content-type': 'application/json' }, await state.authHeader()),
-        body: JSON.stringify({ section: 'all', websiteProfile: collectProfile() })
+        body: JSON.stringify(payload)
       });
       var j = await r.json();
       if (!j.ok) {
@@ -645,6 +731,31 @@
         fbox.insertAdjacentHTML('beforeend', faqRow({}, fi));
         return;
       }
+      if (e.target.id === 'pwp-add-ind-tab' || e.target.closest('#pwp-add-ind-tab')) {
+        var box = $('pwp-ind-tabs');
+        if (!box) return;
+        var ni = box.querySelectorAll('[data-pwp-ind-tab]').length;
+        var html = '<div class="pwp-ind-row" data-pwp-ind-tab="' + ni + '">'
+          + '<div class="pwp-ind-row-head">'
+          + field('Tab name', 'pwp-ind-label-' + ni, '', { placeholder: 'e.g. Trades' })
+          + '<label class="pwp-ind-on"><input type="checkbox" id="pwp-ind-on-' + ni + '" checked style="width:auto"> Show tab</label>'
+          + '</div>'
+          + '<div class="field"><label for="pwp-ind-site-' + ni + '">Site or demo on this tab</label>'
+          + siteSelectHtml('', ni)
+          + '<p class="muted" style="font-size:12px;margin:6px 0 0">Pick any client site or demo from your book. This is what appears in “Choose an industry / Explore a real website.”</p>'
+          + '</div>'
+          + '<input type="hidden" id="pwp-ind-key-' + ni + '" value="tab-' + (ni + 1) + '">'
+          + '<button type="button" class="btn" data-pwp-remove-ind="' + ni + '" style="padding:6px 12px;font-size:13px">Remove tab</button>'
+          + '</div>';
+        box.insertAdjacentHTML('beforeend', html);
+        return;
+      }
+      var rmInd = e.target.getAttribute('data-pwp-remove-ind');
+      if (rmInd != null) {
+        var row = e.target.closest('[data-pwp-ind-tab]');
+        if (row) row.remove();
+        return;
+      }
       var rmT = e.target.getAttribute('data-pwp-remove-testimonial');
       if (rmT != null) { var tr = e.target.closest('[data-pwp-testimonial]'); if (tr) tr.remove(); return; }
       var rmC = e.target.getAttribute('data-pwp-remove-case');
@@ -681,15 +792,19 @@
     if (!root) return;
     root.innerHTML = '<p class="muted" style="font-size:13px">Loading page content editor…</p>';
     try {
-      var r = await fetch('/api/partner/website-profile', { headers: await state.authHeader() });
+      var r = await fetch(profileUrl('/api/partner/website-profile'), { headers: await state.authHeader() });
       var j = await r.json();
       if (!j.ok) {
-        root.innerHTML = '<p class="notice bad" style="margin:0">' + esc(j.error || 'Could not load profile.') + '</p>';
+        var msg = j.error || 'Could not load profile.';
+        if (j.can_pick) msg = 'Choose a partner from Ops Command to edit their website.';
+        root.innerHTML = '<p class="notice bad" style="margin:0">' + esc(msg) + '</p>';
         return;
       }
       state.websiteProfile = j.websiteProfile;
       state.platform = j.platform;
       state.completion = j.completion;
+      state.showcaseSites = j.showcaseSites || [];
+      state.industryTabDefaults = j.industryTabDefaults || [];
       var seedNote = document.getElementById('pwp-seed-note');
       if (seedNote) seedNote.style.display = j.seededFromCultureDemo ? '' : 'none';
       renderEditor();

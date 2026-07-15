@@ -522,6 +522,7 @@ const {
   fetchPartnerProfileByDomain,
   fetchPartnerProfileByPartnerId
 } = require('../lib/partner-website/profile-store');
+const { fetchPartnerShowcaseSites } = require('../lib/partner-website/fetch-showcase-sites');
 
 function showcaseRenderOpts(req, home) {
   const q = (req && req.query) || {};
@@ -535,12 +536,7 @@ async function showcaseRespond(req, res, prof, base) {
   const partner = (await supabase.from('partners').select('display_name,status,email,phone').eq('id', prof.partner_id).maybeSingle()).data;
   if (!partner || partner.status === 'suspended' || partner.status === 'terminated') return notFound(res);
   const directory = (await supabase.from('partner_directory').select('*').eq('partner_id', prof.partner_id).maybeSingle()).data;
-  const demos = (await supabase.from('sites')
-    .select('slug,business_name,config,preview_password')
-    .eq('show_on_showcase', true)
-    .eq('is_mockup', true)
-    .or('servicing_partner_id.eq.' + prof.partner_id + ',referring_partner_id.eq.' + prof.partner_id)
-    .limit(48)).data || [];
+  const demos = await fetchPartnerShowcaseSites(supabase, prof.partner_id, prof);
   const home = (await supabase.from('sites')
     .select('*').eq('servicing_partner_id', prof.partner_id).eq('is_partner_home', true).maybeSingle()).data;
   res.setHeader('content-type', 'text/html; charset=utf-8');
@@ -859,15 +855,10 @@ module.exports = async (req, res) => {
     // look) on the clean URL/preview, so the builder preview matches the live page.
     if (site.is_partner_home) {
       const pid = site.servicing_partner_id;
-      const _demos = pid ? ((await supabase.from('sites')
-        .select('slug,business_name,config,preview_password')
-        .eq('show_on_showcase', true)
-    .eq('is_mockup', true)
-        .or('servicing_partner_id.eq.' + pid + ',referring_partner_id.eq.' + pid)
-        .limit(48)).data || []) : [];
       const partner = pid ? ((await supabase.from('partners').select('display_name,status,email,phone').eq('id', pid).maybeSingle()).data) : null;
       const prof = pid ? (await fetchPartnerProfileByPartnerId(supabase, pid)) : null;
       const directory = pid ? ((await supabase.from('partner_directory').select('*').eq('partner_id', pid).maybeSingle()).data) : null;
+      const _demos = pid ? (await fetchPartnerShowcaseSites(supabase, pid, prof)) : [];
       const sc = (prof && prof.showcase_config) || {};
       const hc = site.config || {};
       const mergedProf = Object.assign({}, prof || {}, {

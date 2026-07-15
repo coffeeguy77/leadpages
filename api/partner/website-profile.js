@@ -1,27 +1,14 @@
 // GET/POST /api/partner/website-profile — structured Partner Website profile
-const { createClient } = require('@supabase/supabase-js');
+// Super-admins may act as a partner via ?partner_id= / body.partner_id.
 const { validateWebsiteProfile, mergeWebsiteProfilePatch } = require('../../lib/partner-website/validate');
 const { computeProfileCompletion } = require('../../lib/partner-website/completion');
 const { resolvePartnerThemeContent, PLATFORM_SERVICES, ENQUIRY_GOALS, ENQUIRY_FEATURES } = require('../../lib/partner-website/resolver');
 const { PLATFORM_FAQS } = require('../../lib/partner-website/platform-defaults');
 const { websiteProfileFromRow, saveWebsiteProfile } = require('../../lib/partner-website/profile-store');
-const { extractLogoValue, normalizeLogoForStorage } = require('../../lib/partner-website/logo');
+const { normalizeLogoForStorage } = require('../../lib/partner-website/logo');
 const { isSparseWebsiteProfile, buildCultureStarterProfile } = require('../../lib/partner-website/culture-starter');
-
-const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-
-async function getUser(req) {
-  const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  if (!token) return null;
-  try {
-    const r = await fetch(process.env.SUPABASE_URL + '/auth/v1/user', {
-      headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token }
-    });
-    if (!r.ok) return null;
-    const u = await r.json();
-    return u && u.id ? u : null;
-  } catch (_e) { return null; }
-}
+const { INDUSTRY_TABS } = require('../../lib/partner-website/webculture-theme');
+const { admin, resolvePartnerActor } = require('../../lib/partner/resolve-actor');
 
 function readBody(req) {
   return new Promise((resolve) => {
@@ -36,25 +23,50 @@ function readBody(req) {
   });
 }
 
+async function ensureProfile(partnerId) {
+  const profRow = await admin.from('partner_profiles').select('*').eq('partner_id', partnerId).maybeSingle();
+  let prof = profRow.data;
+  if (!prof) {
+    const ins = await admin.from('partner_profiles').insert({ partner_id: partnerId }).select('*').single();
+    prof = ins.data;
+  }
+  return prof;
+}
+
+async function listShowcaseSites(partnerId) {
+  const rows = (await admin.from('sites')
+    .select('id,slug,business_name,is_mockup,is_partner_home,show_on_showcase,status,config')
+    .or('servicing_partner_id.eq.' + partnerId + ',referring_partner_id.eq.' + partnerId + ',commission_partner_id.eq.' + partnerId)
+    .order('created_at', { ascending: false })
+    .limit(200)).data || [];
+  return rows
+    .filter(function(s) { return !s.is_partner_home; })
+    .map(function(s) {
+      const cfg = s.config || {};
+      return {
+        id: s.id,
+        slug: s.slug,
+        business_name: s.business_name,
+        is_mockup: !!s.is_mockup,
+        show_on_showcase: !!s.show_on_showcase,
+        status: s.status,
+        trade: String(cfg.trade || '').trim() || null
+      };
+    });
+}
+
 module.exports = async (req, res) => {
   res.setHeader('content-type', 'application/json');
   res.setHeader('cache-control', 'no-store');
 
-  const user = await getUser(req);
-  if (!user) return res.status(401).json({ ok: false, error: 'unauthorized' });
+  let body = {};
+  if (req.method === 'POST') body = await readBody(req);
 
-  const pr = await admin.from('partners').select('id,display_name,email,phone,status').eq('user_id', user.id).maybeSingle();
-  const partner = pr.data;
-  if (!partner) return res.status(403).json({ ok: false, error: 'not a partner' });
-  if (partner.status !== 'active') return res.status(403).json({ ok: false, error: 'partner account is ' + partner.status });
+  const actor = await resolvePartnerActor(req, { body: body });
+  if (actor.error) return res.status(actor.error.status).json(actor.error.body);
+  const partner = actor.partner;
 
-  const profRow = await admin.from('partner_profiles').select('*').eq('partner_id', partner.id).maybeSingle();
-  let prof = profRow.data;
-  if (!prof) {
-    const ins = await admin.from('partner_profiles').insert({ partner_id: partner.id }).select('*').single();
-    prof = ins.data;
-  }
-
+  const prof = await ensureProfile(partner.id);
   const directory = (await admin.from('partner_directory').select('*').eq('partner_id', partner.id).maybeSingle()).data;
   const currentWp = websiteProfileFromRow(prof) || {};
 
@@ -79,13 +91,18 @@ module.exports = async (req, res) => {
       home: null
     });
     const completion = computeProfileCompletion(content);
+    const showcaseSites = await listShowcaseSites(partner.id);
     return res.status(200).json({
       ok: true,
+      as_admin: !!actor.asAdmin,
+      partner: { id: partner.id, display_name: partner.display_name, status: partner.status },
       profile: prof,
       websiteProfile: wp,
       seededFromCultureDemo: seeded,
       resolvedPreview: content,
       completion,
+      showcaseSites: showcaseSites,
+      industryTabDefaults: INDUSTRY_TABS.map(function(t) { return { key: t.key, label: t.label }; }),
       platform: {
         services: PLATFORM_SERVICES,
         faqs: PLATFORM_FAQS,
@@ -97,7 +114,6 @@ module.exports = async (req, res) => {
 
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'GET or POST only' });
 
-  const body = await readBody(req);
   const section = String(body.section || 'all').trim();
   const patch = body.websiteProfile || body.profile || body;
 
@@ -127,6 +143,7 @@ module.exports = async (req, res) => {
   const content = resolvePartnerThemeContent({ prof: saved.profile, partner, directory, demos: [], base: 'leadpages.com.au', home: null });
   return res.status(200).json({
     ok: true,
+    as_admin: !!actor.asAdmin,
     profile: saved.profile,
     websiteProfile: validated,
     completion: computeProfileCompletion(content),

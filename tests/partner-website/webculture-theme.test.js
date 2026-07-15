@@ -26,6 +26,37 @@ test('groupDemosByIndustryTab — groups demos by industry', function() {
   assert.equal(groups[0].tab.key, 'trades');
 });
 
+test('groupDemosByIndustryTab — uses configured tab label and site pick', function() {
+  const demos = [
+    { id: 's1', slug: 'a', name: 'Ace Plumbing', industry: 'Plumbing', url: 'https://x/a' },
+    { id: 's2', slug: 'b', name: 'Cafe', industry: 'Hospitality', url: 'https://x/b' }
+  ];
+  const groups = groupDemosByIndustryTab(demos, {
+    tabs: [
+      { key: 'trades', label: 'Home Services', siteId: 's1', enabled: true, sortOrder: 0 },
+      { key: 'cafe', label: 'Cafes', siteId: 's2', enabled: true, sortOrder: 1 }
+    ]
+  });
+  assert.equal(groups.length, 2);
+  assert.equal(groups[0].tab.label, 'Home Services');
+  assert.equal(groups[0].demos[0].slug, 'a');
+  assert.equal(groups[1].tab.label, 'Cafes');
+});
+
+test('validateWebsiteProfile — industryShowcase tabs', function() {
+  const wp = validateWebsiteProfile({
+    industryShowcase: {
+      tabs: [
+        { key: 'trades', label: 'Trades', siteId: 'abc-123', enabled: true },
+        { label: 'Custom Industry', siteId: 'def-456' }
+      ]
+    }
+  });
+  assert.equal(wp.industryShowcase.tabs.length, 2);
+  assert.equal(wp.industryShowcase.tabs[0].label, 'Trades');
+  assert.equal(wp.industryShowcase.tabs[1].key, 'custom-industry');
+});
+
 test('buildWebcultureCopy — uses profile agency name not hardcoded Web Culture', function() {
   const content = resolvePartnerThemeContent({
     prof: {

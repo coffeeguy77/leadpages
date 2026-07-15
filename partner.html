@@ -367,7 +367,7 @@
 
           <div class="card" style="padding:20px">
             <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Page content &amp; sections</h3>
-            <p class="muted" style="margin:0 0 10px;font-size:13px">Edit copy, turn sections on or off, and fine-tune your Culture page. Starts filled with current Culture demo content — change anything you do not want. LeadPages platform credit stays on.</p>
+            <p class="muted" style="margin:0 0 10px;font-size:13px">Edit copy, turn sections on or off, choose industry-demo tabs, and fine-tune your Culture page. Starts filled with current Culture demo content — change anything you do not want. LeadPages platform credit stays on.</p>
             <p class="muted" id="pwp-seed-note" style="display:none;margin:0 0 14px;font-size:12.5px;color:var(--success,#0a7d33)">Starter Culture content loaded — review and save when you are happy.</p>
             <div id="pwp-editor"></div>
           </div>
@@ -1730,8 +1730,11 @@
       var dom=(document.getElementById('sc-domain').value||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/\s+/g,'');
       var branding=scBrandingPayload();
       var payload={ slug:slug, domain:dom, enabled:document.getElementById('sc-enabled').checked, headline:(document.getElementById('sc-headline').value||'').trim(), config:{ logo:scLogo?String(scLogo):null, logoSize:scLogoSizeValue(), intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:branding.accent, theme:branding.theme, themeId:null, templateKey:'webculture', cultureColorPreset:branding.cultureColorPreset } };
+      if(state.partner&&state.partner.id) payload.partner_id=state.partner.id;
       var res;
-      try{ var r=await fetch('/api/partner/save-showcase',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
+      var saveUrl='/api/partner/save-showcase';
+      if(state.asAdmin&&state.partner&&state.partner.id) saveUrl+='?partner_id='+encodeURIComponent(state.partner.id);
+      try{ var r=await fetch(saveUrl,{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(payload)}); res=await r.json(); }catch(_e){ res={ok:false,error:'Network error.'}; }
       if(!res||!res.ok){ btn.disabled=false; err.textContent=(res&&res.error)||'Could not save.'; err.classList.remove('hidden'); if(res&&res.field==='slug'){ var sm=document.getElementById('sc-slug-msg'); sm.style.color='var(--bad)'; sm.textContent=res.error; } return; }
       state.profile=res.profile;
       if(window.LPPartnerWebsiteAdmin&&window.LPPartnerWebsiteAdmin.collectProfile){
@@ -1739,7 +1742,10 @@
           var wp=window.LPPartnerWebsiteAdmin.collectProfile();
           if(!wp.identity) wp.identity={};
           wp.identity.logoUrl=scLogo||null;
-          var pr=await fetch('/api/partner/website-profile',{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify({section:'all',websiteProfile:wp})});
+          var wpUrl='/api/partner/website-profile';
+          var wpBody={section:'all',websiteProfile:wp};
+          if(state.partner&&state.partner.id){ wpBody.partner_id=state.partner.id; wpUrl+='?partner_id='+encodeURIComponent(state.partner.id); }
+          var pr=await fetch(wpUrl,{method:'POST',headers:Object.assign({'content-type':'application/json'},await authHeader()),body:JSON.stringify(wpBody)});
           var pj=await pr.json();
           if(pj&&pj.ok&&pj.profile) state.profile=pj.profile;
         }catch(_e2){}
