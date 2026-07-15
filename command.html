@@ -46,7 +46,7 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 .hub{display:none;}
 .hub.on{display:flex;}
 .side{
-  width:240px;flex:none;display:flex;flex-direction:column;
+  width:248px;flex:none;display:flex;flex-direction:column;
   border-right:1px solid var(--line);background:var(--bg-soft,var(--surface));
   padding:16px 12px 18px;
 }
@@ -72,6 +72,18 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 .side-foot{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px;}
 .who{font-size:12px;color:var(--ink-faint);padding:0 8px;word-break:break-all;}
 .side-actions{display:flex;flex-wrap:wrap;gap:6px;padding:0 4px;}
+.theme-pop{
+  display:none;flex-direction:column;gap:4px;padding:8px;margin:0 4px;
+  border:1px solid var(--line);border-radius:10px;background:var(--surface);
+}
+.theme-pop.on{display:flex;}
+.theme-pop button{
+  appearance:none;border:1px solid transparent;background:transparent;color:var(--ink-soft);
+  text-align:left;padding:8px 10px;border-radius:8px;font:600 12.5px/1.2 var(--font-ui);cursor:pointer;
+}
+.theme-pop button:hover,.theme-pop button.on{
+  background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--ink);border-color:color-mix(in srgb,var(--accent) 22%,transparent);
+}
 .btn{
   appearance:none;border:1px solid var(--accent);background:transparent;color:var(--accent);
   font:600 12.5px/1 var(--font-ui);padding:9px 12px;border-radius:9px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;
@@ -138,6 +150,7 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
     <nav class="nav" id="nav" aria-label="Ops areas"></nav>
     <div class="side-foot">
       <div class="who" id="who"></div>
+      <div class="theme-pop" id="theme-pop" role="menu" aria-label="Workspace theme"></div>
       <div class="side-actions">
         <button type="button" class="btn ghost" id="btn-appearance">Theme</button>
         <button type="button" class="btn ghost" id="btn-signout">Sign out</button>
@@ -149,7 +162,7 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
       <button type="button" class="btn ghost menu-toggle" id="btn-menu" aria-label="Toggle menu">Menu</button>
       <h2 id="panel-title">Sites</h2>
       <span class="hint" id="panel-hint">Site switcher, editor, account &amp; billing</span>
-      <a class="btn ghost" id="btn-popout" href="/manage" target="_blank" rel="noopener">Open tab</a>
+      <a class="btn ghost" id="btn-popout" href="/manage" target="_blank" rel="noopener">Open full page</a>
       <button type="button" class="btn" id="btn-reload">Reload</button>
     </header>
     <div class="frame-wrap">
@@ -162,15 +175,20 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 (function(){
   if(window.LPWorkspaceAppearance){ try{ LPWorkspaceAppearance.init(); }catch(e){} }
   var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  function embedSrc(path){
+    var base = path.indexOf('?') >= 0 ? path + '&embed=1' : path + '?embed=1';
+    return base;
+  }
   var PANELS = [
-    { id:'sites', title:'Sites', hint:'Site switcher, editor, account & billing', src:'/manage', label:'Sites' },
-    { id:'domains', title:'Domains', hint:'DNS, Point at LeadPages, reseller overview', src:'/manage-domains', label:'Domains' },
-    { id:'messages', title:'Messages', hint:'Support inbox & partner threads', src:'/messages', label:'Messages' },
-    { id:'partners', title:'Partners', hint:'Partner program, commissions, training', src:'/partners-admin', label:'Partners' },
-    { id:'marketplace', title:'Marketplace', hint:'Feature catalogue & categories', src:'/marketplace-admin', label:'Marketplace' },
-    { id:'apps', title:'Apps', hint:'App registry, schemas & presets', src:'/apps-admin', label:'Apps' },
-    { id:'partner', title:'Partner console', hint:'Earnings, clients & partner view', src:'/partner', label:'Partner desk' }
+    { id:'sites', title:'Sites', hint:'Site switcher, editor, account & billing', path:'/manage', label:'Sites' },
+    { id:'domains', title:'Domains', hint:'DNS, Point at LeadPages, reseller overview', path:'/manage-domains', label:'Domains' },
+    { id:'messages', title:'Messages', hint:'Support inbox & partner threads', path:'/messages', label:'Messages' },
+    { id:'partners', title:'Partners', hint:'Partner program, commissions, training', path:'/partners-admin', label:'Partners' },
+    { id:'marketplace', title:'Marketplace', hint:'Feature catalogue & categories', path:'/marketplace-admin', label:'Marketplace' },
+    { id:'apps', title:'Apps', hint:'App registry, schemas & presets', path:'/apps-admin', label:'Apps' },
+    { id:'partner', title:'Partner console', hint:'Earnings, clients & partner view', path:'/partner', label:'Partner desk' }
   ];
+  var THEMES = ['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint'];
   var cur = null;
   var loaded = {};
   var $ = function(id){ return document.getElementById(id); };
@@ -186,11 +204,55 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
     $('hub').classList.add('on');
   }
 
+  function paintThemeMeta(){
+    try{
+      var meta = document.querySelector('meta[name="theme-color"]');
+      var t = document.documentElement.dataset.theme || '';
+      var dark = (t === 'command-dark' || t === 'neon-pink' || t === 'electric-blue');
+      if(meta) meta.setAttribute('content', dark ? '#12151a' : '#1f7a63');
+    }catch(e){}
+  }
+
+  function pushThemeToPanel(){
+    var frame = $('panel');
+    if(!frame || !frame.contentWindow) return;
+    try{
+      var prefs = LPWorkspaceAppearance.load();
+      frame.contentWindow.postMessage({ type:'lp-workspace-appearance', prefs: prefs }, '*');
+    }catch(e){}
+  }
+
+  function paintThemeMenu(){
+    var pop = $('theme-pop');
+    if(!pop || !window.LPWorkspaceAppearance) return;
+    var prefs = LPWorkspaceAppearance.load();
+    var curTheme = prefs.theme || 'classic-light';
+    var meta = LPWorkspaceAppearance.THEME_META || {};
+    pop.innerHTML = THEMES.map(function(id){
+      var m = meta[id] || { name: id };
+      return '<button type="button" role="menuitem" data-theme="'+id+'"'+(curTheme===id?' class="on"':'')+'>'+m.name+'</button>';
+    }).join('');
+    pop.querySelectorAll('button').forEach(function(b){
+      b.onclick = function(){
+        LPWorkspaceAppearance.set({ theme: b.getAttribute('data-theme') });
+        paintThemeMenu();
+        paintThemeMeta();
+        pushThemeToPanel();
+        if(window.LPLogo && LPLogo.refreshWorkspaceLogos){
+          try{
+            var th = LPWorkspaceAppearance.resolveTheme(LPWorkspaceAppearance.load().theme);
+            LPLogo.refreshWorkspaceLogos({ theme: th });
+          }catch(e){}
+        }
+      };
+    });
+  }
+
   function paintNav(){
     var nav = $('nav');
     nav.innerHTML = PANELS.map(function(p){
       return '<button type="button" data-id="'+p.id+'"'+(cur&&cur.id===p.id?' class="on"':'')+'>'
-        +'<span>'+p.label+'</span><small>↵</small></button>';
+        +'<span>'+p.label+'</span><small>→</small></button>';
     }).join('');
     nav.querySelectorAll('button').forEach(function(b){
       b.addEventListener('click', function(){ openPanel(b.getAttribute('data-id')); });
@@ -205,16 +267,19 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
     $('panel-title').textContent = p.title;
     $('panel-hint').textContent = p.hint;
     var pop = $('btn-popout');
-    pop.href = p.src;
-    pop.textContent = 'Open tab';
+    pop.href = p.path;
+    pop.textContent = 'Open full page';
     var frame = $('panel');
-    if(force || loaded[p.id] !== p.src){
-      frame.src = p.src;
-      loaded[p.id] = p.src;
-    } else if(frame.src.indexOf(p.src) < 0){
-      frame.src = p.src;
-      loaded[p.id] = p.src;
+    var src = embedSrc(p.path);
+    if(force || loaded[p.id] !== src){
+      frame.src = src;
+      loaded[p.id] = src;
+    } else if(String(frame.getAttribute('src')||'').indexOf(p.path) < 0){
+      frame.src = src;
+      loaded[p.id] = src;
     }
+    // Re-push theme after navigation settles
+    setTimeout(pushThemeToPanel, 400);
   }
 
   async function requireSuper(){
@@ -224,6 +289,8 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
     if(!(prof.data && prof.data.is_super_admin)){ showGate('denied'); return null; }
     $('who').textContent = session.user.email || '';
     showHub();
+    paintThemeMenu();
+    paintThemeMeta();
     if(window.LPLogo && window.LPLogo.refreshWorkspaceLogos){
       try{
         var th = LPWorkspaceAppearance.resolveTheme(LPWorkspaceAppearance.load().theme);
@@ -253,12 +320,19 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
   $('btn-reload').addEventListener('click', function(){ if(cur) openPanel(cur.id, true); });
   $('btn-menu').addEventListener('click', function(){ $('side').classList.toggle('collapsed'); });
   $('btn-appearance').addEventListener('click', function(){
-    openPanel('sites');
-    $('panel-hint').textContent = 'Open Settings → Appearance & Accessibility to change the shared workspace theme.';
+    $('theme-pop').classList.toggle('on');
   });
   window.addEventListener('hashchange', function(){
     var id = (location.hash || '#sites').replace(/^#/,'');
     if(!cur || cur.id !== id) openPanel(id);
+  });
+  window.addEventListener('message', function(ev){
+    if(ev && ev.data && ev.data.type === 'lp-hub-panel-ready') pushThemeToPanel();
+  });
+  document.addEventListener('lp-workspace-appearance-change', function(){
+    paintThemeMenu();
+    paintThemeMeta();
+    pushThemeToPanel();
   });
 
   requireSuper();

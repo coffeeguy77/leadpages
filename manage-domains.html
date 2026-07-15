@@ -37,6 +37,7 @@
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css">
 <script src="/assets/lp-workspace-appearance.js"></script>
+<script src="/assets/lp-hub-embed.js"></script>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -53,6 +54,12 @@ html,body{margin:0;min-height:100%;background:var(--bg,#f6f4ef) !important;color
 html[data-theme="command-dark"],html[data-theme="command-dark"] body{background:#12151a !important;color:#eef2f7 !important;}
 html[data-theme="neon-pink"],html[data-theme="neon-pink"] body{background:#140f14 !important;color:#fce8f3 !important;}
 html[data-theme="electric-blue"],html[data-theme="electric-blue"] body{background:#0f1419 !important;color:#e8f2ff !important;}
+*{box-sizing:border-box}
+body{font-family:var(--font-ui);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:980px;margin:0 auto;padding:28px 20px 80px;background:transparent;}
+.card,.bar,.modal{background:var(--surface) !important;}
+table.dns td.acts{text-align:right;white-space:nowrap;}
+table.dns td.acts .btn{margin-left:4px;}
 html[data-theme="blush"],html[data-theme="blush"] body{background:#faf3f2 !important;color:#2a1f2e !important;}
 html[data-theme="blueprint"],html[data-theme="blueprint"] body{background:#f0f4f8 !important;color:#1a2a3a !important;}
 html[data-theme="classic-light"],html[data-theme="classic-light"] body{background:#f6f4ef !important;color:#1b2430 !important;}
@@ -155,16 +162,16 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:transpar
 .hide{display:none!important;}
 </style>
 </head>
-<body>
+<body class="domains-page" data-lp-admin-page="manage-domains">
 <div class="wrap">
-  <p class="eyebrow">Domain Manager</p>
-  <h1>Domains</h1>
-  <p class="sub">Manage your domains, point them at your site, set up email forwarding, and edit DNS — all in one place.</p>
+  <p class="eyebrow lp-hub-chrome">Domain Manager</p>
+  <h1 class="lp-hub-chrome">Domains</h1>
+  <p class="sub lp-hub-chrome">Manage your domains, point them at your site, set up email forwarding, and edit DNS — all in one place.</p>
 
   <div class="bar">
     <div class="who" id="who">Loading…</div>
     <div class="spacer"></div>
-    <a class="btn" href="/manage">Back to dashboard</a>
+    <a class="btn lp-hub-chrome" href="/manage">Back to dashboard</a>
   </div>
 
   <div class="card hide" id="dashCard">
@@ -407,6 +414,7 @@ function renderDomains(){
 }
 
 /* ---------- DNS editor ---------- */
+var DNS_RECS = {};
 var DNS_RECS = {}; // index -> records array for edit forms
 function valueOf(rec){
   var t=rec.type;
