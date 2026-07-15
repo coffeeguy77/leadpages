@@ -329,6 +329,75 @@ function showcaseHtml(prof, partner, demos, base) {
 
 function hexOr(v, d) { return /^#[0-9a-fA-F]{3,8}$/.test(v || '') ? v : d; }
 
+/** Normalise theme hex to #rrggbb (empty if invalid). Mirrors demo-shared applyCfg. */
+function themeHex(v) {
+  v = String(v || '').trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) return v;
+  if (/^#[0-9a-fA-F]{3}$/.test(v)) return '#' + v[1] + v[1] + v[2] + v[2] + v[3] + v[3];
+  if (/^[0-9a-fA-F]{6}$/.test(v)) return '#' + v;
+  if (/^[0-9a-fA-F]{3}$/.test(v)) return '#' + v[0] + v[0] + v[1] + v[1] + v[2] + v[2];
+  return '';
+}
+
+/** Same lighten/darken math as marketplace/demos/demo-shared.js `shade`. */
+function shadeHex(hex, pct) {
+  if (!hex || hex.charAt(0) !== '#' || hex.length < 7) return hex;
+  const cl = (n) => Math.max(0, Math.min(255, Math.round(n)));
+  let r = parseInt(hex.slice(1, 3), 16);
+  let g = parseInt(hex.slice(3, 5), 16);
+  let b = parseInt(hex.slice(5, 7), 16);
+  const f = pct / 100;
+  r = cl(r + (pct < 0 ? r : 255 - r) * f);
+  g = cl(g + (pct < 0 ? g : 255 - g) * f);
+  b = cl(b + (pct < 0 ? b : 255 - b) * f);
+  return '#' + [r, g, b].map((x) => ('0' + x.toString(16)).slice(-2)).join('');
+}
+
+/**
+ * Build :root CSS for trade theme tokens so first paint matches brand colours
+ * instead of the template defaults (--hivis orange / --pipe blue).
+ */
+function tradeThemeRootCss(theme) {
+  const th = theme || {};
+  const vars = [];
+  const pipe = themeHex(th.pipe);
+  if (pipe) {
+    vars.push('--pipe:' + pipe);
+    vars.push('--pipe-deep:' + shadeHex(pipe, -22));
+    vars.push('--pipe-glow:' + shadeHex(pipe, 14));
+  }
+  const hivis = themeHex(th.hivis);
+  if (hivis) {
+    vars.push('--hivis:' + hivis);
+    vars.push('--hivis-600:' + shadeHex(hivis, -12));
+  }
+  const steel = themeHex(th.steel);
+  if (steel) {
+    vars.push('--steel-900:' + steel);
+    vars.push('--steel-950:' + shadeHex(steel, -30));
+    vars.push('--steel-800:' + shadeHex(steel, 18));
+  }
+  const safety = themeHex(th.safety);
+  if (safety) vars.push('--safety:' + safety);
+  const lightBg = themeHex(th.lightBg);
+  if (lightBg) vars.push('--light:' + lightBg);
+  if (!vars.length) return '';
+  return ':root{' + vars.join(';') + '}';
+}
+
+/** Inject brand theme CSS vars into <head> before body paints (trade FOUC fix). */
+function injectTradeThemeVars(html, cfg) {
+  if (!html || !cfg) return html;
+  const css = tradeThemeRootCss(cfg.theme);
+  if (!css) return html;
+  const block = '<style id="lp-theme-vars">' + css + '</style>\n';
+  if (html.includes('id="lp-theme-vars"')) {
+    return html.replace(/<style id="lp-theme-vars">[\s\S]*?<\/style>\n?/, block);
+  }
+  if (html.includes('</head>')) return html.replace('</head>', block + '</head>');
+  return block + html;
+}
+
 function buildAgencyHtml(site, host, demos, base) {
   const cfg = site.config || {};
   const sec = cfg.sections || {};
@@ -417,6 +486,7 @@ function buildTradeHtml(site, host) {
     '{{favicon}}': esc(cfg.favicon || DEFAULT_FAVICON)
   };
   for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
+  if (template === 'trade') html = injectTradeThemeVars(html, cfg);
   return html;
 }
 
@@ -929,7 +999,8 @@ module.exports = async (req, res) => {
     }
 
     html = injectVisitorAccessibility(html, cfg);
-    if (templateFor(site) === 'trade') {
+    if (template === 'trade') {
+      html = injectTradeThemeVars(html, cfg);
       html = injectOnlineQuote(html, site.slug, cfg);
     }
 
