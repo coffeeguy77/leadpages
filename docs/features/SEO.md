@@ -619,24 +619,24 @@ flowchart TD
 
 | ID | Issue | Location | Impact |
 |----|-------|----------|--------|
-| TD-S1 | **Sitemap includes non-live sites** | `seo-sitemap.xml/route.js` | Search Console noise; roadmap NT-7 |
+| TD-S1 | **Sitemap is live-only index** | `seo-sitemap.xml/route.js` | Points at `/{slug}/sitemap.xml` (includes suburbs + landing pages) |
 | TD-S2 | **`metaTemplate` not in editor** | `manage.html` seoTokens subtab | Suburb meta requires config JSON or deploy |
 | TD-S3 | **Two suburb lists** | `sections.area.suburbs` vs `serviceAreas.areas` | Operator confusion; only latter drives SEO routes |
 | TD-S4 | **Routing collision** | App Router vs `/:slug/:page` rewrite | Suburb slug = page slug breaks one path |
 | TD-S5 | **Landing canonical** | Stays `https://{{domain}}/` | Landing pages may share homepage canonical in template |
 | TD-S6 | **Client-only landing meta** | `_lpRenderPage` after shell load | Crawlers that don't execute JS see server `pageTitle` only (partially mitigated by render.js pre-set) |
 | TD-S7 | **`seoTitle` / `seoDescription` no editor UI** | Top-level config keys | Must edit JSON or API; defaults hardcode Canberra/ACT |
-| TD-S8 | **robots.txt sitemap URL** | Root `robots.txt` | Points at marketing sitemap, not `/seo-sitemap.xml` |
+| TD-S8 | **robots.txt lists marketing + SEO sitemaps** | Root `robots.txt` | Done |
 | TD-S9 | **`api/manage.html` drift** | Legacy editor copy | Same seoTokens UI but not source of truth |
 | TD-S10 | **Geographic defaults** | `render.js` fallbacks | Non-ACT tenants get Canberra copy unless overridden |
 
-Tracked in [13-ROADMAP](../13-ROADMAP.md): NT-7 (sitemap filter), MT-9 (`metaTemplate` editor), MT-10 (align suburb lists).
+Tracked in [13-ROADMAP](../13-ROADMAP.md): NT-7 (sitemap live index — done), MT-9 (`metaTemplate` editor), MT-10 (align suburb lists).
 
 ---
 
 ## Future Improvements
 
-1. **Filter sitemap by `sites.status === 'live'`** — NT-7.
+1. ~~**Filter sitemap by `sites.status === 'live'`** — NT-7.~~ Done via sitemap index.
 2. **Expose `metaTemplate` in Local SEO subtab** — MT-9.
 3. **Editor fields for `seoTitle` / `seoDescription`** — site-wide overrides without JSON.
 4. **Align `area.suburbs` with `serviceAreas.areas`** — single list UX.

@@ -32,7 +32,7 @@ High impact, foundational work that unblocks everything else.
 | NT-4 | **Editor organisation** | `manage.html` ~5,400 lines — grouped settings without removing options | `manage.html` |
 | NT-5 | **Partner dashboard polish** | Client list, onboarding, directory flow | `partner-dashboard.html` |
 | NT-6 | **Domain purchase → site connect** | Today manual: Vercel domain + `custom_domain` field | `api/domains/*`, `manage.html` |
-| NT-7 | **SEO sitemap live filter** | Sitemap includes non-live sites today | `app/seo-sitemap.xml/route.js` |
+| NT-7 | **SEO sitemap live filter** | Done — `/seo-sitemap.xml` indexes live tenants only | `app/seo-sitemap.xml/route.js` |
 | NT-8 | **Critical path tests** | Render gates, leads, events ingest | CI / Vercel |
 | NT-9 | **Fix trade dashboard Calls metric** | `phone_click` vs `call_click` mismatch | `manage.html` `_dashLoadStats` |
 | NT-10 | **Close auth gaps** | `api-partner-templates`, `api-site-apps` lack Bearer | `api/` |
