@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css">
 <link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-super-admin.css">
 <script src="/assets/lp-workspace-appearance.js"></script>
 <script src="/assets/lp-hub-embed.js"></script>
 <script src="/assets/lp-admin-shell.js"></script>
@@ -99,7 +100,7 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
 <main class="wrap">
 
 <!-- LOGIN -->
-<div id="view-login" class="card center-card">
+<div id="view-login" class="card center-card hidden">
   <h1 style="margin-bottom:14px">Admin sign in</h1>
   <label for="em">Email</label><input id="em" type="email" autocomplete="username">
   <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password">
@@ -107,7 +108,7 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
   <button class="btn" id="signin" style="width:100%;justify-content:center;margin-top:10px">Sign in</button>
 </div>
 
-<div id="view-loading" class="card center-card hidden"><p>Checking access…</p></div>
+<div id="view-loading" class="card center-card"><p>Checking access…</p></div>
 <div id="view-denied" class="card center-card hidden">
   <h1>Not authorised</h1>
   <button class="btn ghost" id="denied-so" style="margin-top:14px;width:100%;justify-content:center">Sign out</button>
@@ -284,9 +285,9 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
   /* auth */
   function show(id){['view-login','view-loading','view-denied','view-admin'].forEach(function(v){$(v).classList.toggle('hidden',v!==id);});}
   async function boot(){
+    show('view-loading');
     var sess=(await sb.auth.getSession()).data.session;
     if(!sess){show('view-login');return;}
-    show('view-loading');
     $('who').textContent=sess.user.email||'';
     $('signout').classList.remove('hidden');
     var p=await sb.from('profiles').select('is_super_admin').eq('id',sess.user.id).maybeSingle();
@@ -302,6 +303,20 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
   $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')$('signin').click();});
   function so(){sb.auth.signOut().then(function(){location.reload();});}
   $('signout').addEventListener('click',so); $('denied-so').addEventListener('click',so);
+  sb.auth.onAuthStateChange(function(_e, sess){
+    if(sess && !$('view-admin').classList.contains('hidden')) return;
+    if(sess) boot();
+  });
+  // Prefer shared hub session: retry once if first getSession is empty
+  (async function(){
+    show('view-loading');
+    var sess=(await sb.auth.getSession()).data.session;
+    if(!sess){
+      await new Promise(function(r){ setTimeout(r, 350); });
+      sess=(await sb.auth.getSession()).data.session;
+    }
+    if(sess) boot(); else show('view-login');
+  })();
 
   /* tabs */
   ['apps','presets','subs'].forEach(function(t){
@@ -657,7 +672,6 @@ dialog::backdrop{background:rgba(38,32,34,.55)}
 
   $('tab-presets').addEventListener('click',function(){ setTimeout(dsInit,50); });
 
-  boot();
 })();
 </script>
 </body>

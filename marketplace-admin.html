@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css">
 <link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-super-admin.css">
 <script src="/assets/lp-workspace-appearance.js"></script>
 <script src="/assets/lp-hub-embed.js"></script>
 <script src="/assets/lp-admin-shell.js"></script>
@@ -86,7 +87,7 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
 <main class="wrap">
 
   <!-- login -->
-  <div id="view-login" class="card center-card">
+  <div id="view-login" class="card center-card hidden">
     <h1>Admin sign in</h1>
     <p class="note">Sign in with your admin email and password.</p>
     <label for="email">Email</label><input id="email" type="email" autocomplete="username">
@@ -269,7 +270,7 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
   function signout(){sb.auth.signOut().then(function(){location.reload();});}
   $('signout').addEventListener('click',signout);
   $('denied-signout').addEventListener('click',signout);
-  sb.auth.onAuthStateChange(function(_e,sess){if(sess&&!$('view-login').classList.contains('hidden'))boot();});
+  sb.auth.onAuthStateChange(function(_e,sess){if(sess&&!$('view-admin').classList.contains('hidden'))return; if(sess)boot();});
 
   $('setup-all-btn').addEventListener('click', async function() {
     if (!confirm('Set up all 37 marketplace apps?\n\nThis will create/update catalog features, page blocks (sell copy + playground), app_registry rows and demo presets.')) return;
@@ -633,7 +634,12 @@ dialog .dfoot{padding:14px 20px;border-top:1px solid var(--line);display:flex;ga
     }
   });
 
-  boot();
+  (async function(){
+    show('view-loading');
+    var sess=(await sb.auth.getSession()).data.session;
+    if(!sess){ await new Promise(function(r){ setTimeout(r,350); }); sess=(await sb.auth.getSession()).data.session; }
+    if(sess) boot(); else show('view-login');
+  })();
 })();
 </script>
 </body>

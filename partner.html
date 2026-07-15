@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <link rel="stylesheet" href="/assets/lp-partner-shell.css">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
+<link rel="stylesheet" href="/assets/lp-super-admin.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
 <script src="/assets/lp-workspace-appearance.js"></script>
@@ -61,11 +62,20 @@
 
 <!-- NOT A PARTNER -->
 <div id="view-none" class="hidden">
-  <div class="card center-card">
+  <div class="card center-card" id="none-own">
     <h1>No partner account found</h1>
     <p>This email isn't linked to a LeadPages partner account yet.</p>
     <a class="btn btn-brand" href="/partners" style="width:100%;justify-content:center">Apply to become a partner</a>
     <button class="btn" id="none-signout" style="width:100%;justify-content:center;margin-top:10px">Sign out</button>
+  </div>
+  <div class="card center-card hidden" id="none-admin-pick" style="max-width:560px">
+    <h1>Partner desk</h1>
+    <p class="lede">Signed in as admin. Choose a partner account to view their console.</p>
+    <input class="lp-sa-picker-search" id="partner-pick-q" type="search" placeholder="Search name or email…">
+    <div class="lp-sa-picker">
+      <div class="lp-sa-picker-list" id="partner-pick-list"><p class="muted">Loading partners…</p></div>
+    </div>
+    <button class="btn" id="none-admin-signout" style="margin-top:8px">Sign out</button>
   </div>
 </div>
 
@@ -732,7 +742,7 @@
   ['view-login','view-loading','view-none','view-pending','view-dash','login-sent','login-err',
    'email','send-link','who','d-name','d-status','pending-msg','profile-saved','profile-err'
   ].forEach(function(id){ els[id]=document.getElementById(id); });
-  var state = { partner:null, profile:null };
+  var state = { partner:null, profile:null, asAdmin:false };
 
   function show(view){
     ['view-login','view-loading','view-none','view-pending','view-dash'].forEach(function(v){
@@ -798,6 +808,9 @@
     var session=(await sb.auth.getSession()).data.session; if(session) loadPartner(session);
   });
   document.getElementById('none-signout').addEventListener('click',signOut);
+  var nas=document.getElementById('none-admin-signout'); if(nas) nas.addEventListener('click',signOut);
+  var pq=document.getElementById('partner-pick-q');
+  if(pq) pq.addEventListener('input', function(){ paintPartnerPicker(pq.value); });
   document.getElementById('pending-signout').addEventListener('click',signOut);
   document.getElementById('signout').addEventListener('click',signOut);
 
@@ -961,24 +974,41 @@
     if(whoEl && session && session.user) whoEl.innerHTML='<span>'+(session.user.email||'')+'</span>';
   }
 
-  async function loadPartner(session){
+  async function loadPartner(session, asPartnerId){
     show('view-loading');
     refreshWho(session);
     var res;
+    var q='';
     try{
-      var r=await fetch('/api/partner/me',{ headers: Object.assign({'content-type':'application/json'}, await authHeader()) });
+      var sp=new URLSearchParams(location.search);
+      asPartnerId=asPartnerId||sp.get('as')||sp.get('partner_id')||'';
+    }catch(_e){}
+    if(asPartnerId) q='?partner_id='+encodeURIComponent(asPartnerId);
+    try{
+      var r=await fetch('/api/partner/me'+q,{ headers: Object.assign({'content-type':'application/json'}, await authHeader()) });
       res=await r.json();
     }catch(_e){ res={ok:false}; }
     if(!res || !res.ok){
-      var noneMsg=document.querySelector('#view-none p');
+      var noneMsg=document.querySelector('#none-own p');
       if(noneMsg) noneMsg.textContent=(res&&res.error)||'We could not load your partner account. Please sign out, sign back in, and try again.';
       show('view-none');
+      showNoneMode('own');
       return;
     }
-    state.partner=res.partner; state.profile=res.profile;
-    if(!state.partner){ show('view-none'); return; }
+    state.partner=res.partner; state.profile=res.profile; state.asAdmin=!!res.as_admin;
+    if(!state.partner){
+      if(res.can_pick){
+        show('view-none');
+        showNoneMode('pick');
+        loadPartnerPicker();
+        return;
+      }
+      show('view-none');
+      showNoneMode('own');
+      return;
+    }
     var st=state.partner.status;
-    if(st==='active'){ renderDash(); return; }
+    if(st==='active' || state.asAdmin){ renderDash(); paintAdminBanner(); return; }
     // pending / under_review / suspended / terminated
     var msg=document.getElementById('pending-msg');
     if(st==='suspended'){ msg.textContent='Your partner account is currently suspended. Please contact LeadPages to resolve this.'; }
@@ -986,6 +1016,81 @@
     else if(st==='under_review'){ msg.textContent='Your partner account is under review. We\u2019ll be in touch shortly.'; }
     else { msg.textContent='Your partner account is being set up. We\u2019ll email you as soon as it\u2019s active.'; }
     show('view-pending');
+  }
+
+  function showNoneMode(mode){
+    var own=document.getElementById('none-own');
+    var pick=document.getElementById('none-admin-pick');
+    if(own) own.classList.toggle('hidden', mode!=='own');
+    if(pick) pick.classList.toggle('hidden', mode!=='pick');
+  }
+
+  var PARTNER_PICK=[];
+  function paintPartnerPicker(filter){
+    var host=document.getElementById('partner-pick-list');
+    if(!host) return;
+    var q=String(filter||'').toLowerCase().trim();
+    var rows=PARTNER_PICK.filter(function(p){
+      if(!q) return true;
+      return String(p.display_name||'').toLowerCase().indexOf(q)>=0 || String(p.email||'').toLowerCase().indexOf(q)>=0;
+    });
+    if(!rows.length){
+      host.innerHTML='<p class="muted">No partners match.</p>';
+      return;
+    }
+    host.innerHTML=rows.map(function(p){
+      return '<button type="button" class="lp-sa-pick" data-pid="'+esc(p.id)+'">'
+        +'<div><div class="nm">'+esc(p.display_name||'Partner')+'</div>'
+        +'<div class="meta">'+esc(p.email||'')+(p.status?(' · '+esc(p.status)):'')+'</div></div>'
+        +'<span class="sp"></span><span class="btn sm ghost">Open</span></button>';
+    }).join('');
+    host.querySelectorAll('[data-pid]').forEach(function(b){
+      b.onclick=function(){
+        var id=b.getAttribute('data-pid');
+        try{
+          var u=new URL(location.href);
+          u.searchParams.set('as', id);
+          history.replaceState(null,'',u.pathname+u.search+(location.hash||''));
+        }catch(_e){}
+        loadPartner(null, id);
+      };
+    });
+  }
+  async function loadPartnerPicker(){
+    var host=document.getElementById('partner-pick-list');
+    if(host) host.innerHTML='<p class="muted">Loading partners…</p>';
+    try{
+      var r=await fetch('/api/partner/me?list=1',{ headers: Object.assign({'content-type':'application/json'}, await authHeader()) });
+      var j=await r.json();
+      PARTNER_PICK=(j&&j.partners)||[];
+    }catch(_e){ PARTNER_PICK=[]; }
+    paintPartnerPicker((document.getElementById('partner-pick-q')||{}).value||'');
+  }
+  function paintAdminBanner(){
+    var wrap=document.querySelector('.lp-p-main')||document.querySelector('#view-dash');
+    if(!wrap) return;
+    var existing=document.getElementById('lp-sa-as-banner');
+    if(!state.asAdmin){ if(existing) existing.remove(); return; }
+    if(!existing){
+      existing=document.createElement('div');
+      existing.id='lp-sa-as-banner';
+      existing.className='lp-sa-banner';
+      wrap.insertBefore(existing, wrap.firstChild);
+    }
+    existing.innerHTML='Viewing as <strong>'+esc((state.partner&&state.partner.display_name)||'partner')+'</strong>'
+      +(state.partner&&state.partner.email?(' · '+esc(state.partner.email)):'')
+      +'<span style="flex:1"></span>'
+      +'<button type="button" class="btn sm ghost" id="lp-sa-as-switch">Switch partner</button>';
+    var sw=document.getElementById('lp-sa-as-switch');
+    if(sw) sw.onclick=function(){
+      try{
+        var u=new URL(location.href);
+        u.searchParams.delete('as'); u.searchParams.delete('partner_id');
+        history.replaceState(null,'',u.pathname+u.search+(location.hash||''));
+      }catch(_e){}
+      state.partner=null; state.profile=null; state.asAdmin=false;
+      show('view-none'); showNoneMode('pick'); loadPartnerPicker();
+    };
   }
 
   // ---------- Phase 2: clients + add customer ----------

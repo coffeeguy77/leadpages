@@ -7,10 +7,10 @@
 <title>Billing — LeadPages</title>
 <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-themes.css">
-<link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<link rel="stylesheet" href="/assets/lp-super-admin.css">
 <script src="/assets/lp-workspace-appearance.js"></script>
-<script src="/assets/lp-workspace-appearance.js"></script>
+<script src="/assets/lp-hub-embed.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
 <style>
@@ -108,9 +108,9 @@ label{display:block;font-size:12px;font-weight:800;color:var(--soft);margin:12px
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js" defer></script>
 </head>
-<body>
+<body class="billing-page" data-lp-admin-page="billing">
 
-<div class="topbar">
+<div class="topbar lp-hub-chrome">
   <div class="inner">
     <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span>
     <span class="sp"></span>
@@ -120,7 +120,7 @@ label{display:block;font-size:12px;font-weight:800;color:var(--soft);margin:12px
 </div>
 
 <!-- LOGIN -->
-<div id="view-login" class="page">
+<div id="view-login" class="page hidden">
   <div class="login-card">
     <h2>Billing</h2>
     <p class="sub">Sign in to view and manage your subscription.</p>
@@ -197,12 +197,17 @@ label{display:block;font-size:12px;font-weight:800;color:var(--soft);margin:12px
       var th=sp.get('token_hash');
       if(th){
         var vr=await sb.auth.verifyOtp({token_hash:th,type:sp.get('type')||'email'});
-        if(!vr.error){history.replaceState(null,'','/billing'+(sp.get('site')?'?site='+sp.get('site'):''));}
+        if(!vr.error){history.replaceState(null,'','/billing'+(sp.get('site')?'?site='+sp.get('site'):'')+(sp.get('embed')?'&embed=1':''));}
       }
     }catch(e){}
 
+    show('view-login');
     var sess=(await sb.auth.getSession()).data.session;
-    if(!sess){show('view-login');return;}
+    if(!sess){
+      await new Promise(function(r){ setTimeout(r, 350); });
+      sess=(await sb.auth.getSession()).data.session;
+    }
+    if(!sess){ show('view-login'); return; }
     USER=sess.user;
     $('top-who').textContent=USER.email||'';
     $('top-signout').classList.remove('hidden');
@@ -224,6 +229,10 @@ label{display:block;font-size:12px;font-weight:800;color:var(--soft);margin:12px
 
   $('top-signout').addEventListener('click',function(){
     sb.auth.signOut().then(function(){location.reload();});
+  });
+  sb.auth.onAuthStateChange(function(_e,sess){
+    if(sess && USER && sess.user && sess.user.id===USER.id) return;
+    if(sess) boot();
   });
 
   /* ── login ────────────────────────────────────────── */
@@ -275,22 +284,28 @@ label{display:block;font-size:12px;font-weight:800;color:var(--soft);margin:12px
 
   /* ── sites ────────────────────────────────────────── */
   async function loadSites(targetSlug){
-    var r=await sb.from('sites')
-      .select('id,slug,business_name,plan_key,monthly_amount,billing_status,status')
-      .eq('owner_user_id',USER.id)
-      .order('created_at',{ascending:true});
+    var superR=await sb.from('profiles').select('is_super_admin').eq('id',USER.id).maybeSingle();
+    var isSuper=!!(superR.data&&superR.data.is_super_admin);
+    var q=sb.from('sites')
+      .select('id,slug,business_name,plan_key,monthly_amount,billing_status,status,is_partner_home')
+      .order('created_at',{ascending:true})
+      .limit(isSuper?500:50);
+    if(!isSuper) q=q.eq('owner_user_id',USER.id);
+    var r=await q;
     SITES=(r.data||[]).filter(function(s){return !s.is_partner_home;});
     if(!SITES.length){
       $('bill-body').innerHTML='<div class="bcard"><p style="color:var(--soft)">No sites are linked to your account yet. Contact your web designer for assistance.</p></div>';
       return;
     }
     // Build selector
-    $('site-sel').innerHTML=SITES.map(function(s){
-      return '<option value="'+esc(s.id)+'"'+(targetSlug&&s.slug===targetSlug?' selected':'')+'>'+esc(s.business_name||s.slug)+'</option>';
+    $('site-sel').innerHTML=(isSuper?'<option value="">Select a site…</option>':'')+SITES.map(function(s){
+      return '<option value="'+esc(s.id)+'"'+(targetSlug&&s.slug===targetSlug?' selected':'')+'>'+esc(s.business_name||s.slug)+(isSuper?(' · '+esc(s.slug)):'')+'</option>';
     }).join('');
-    if(SITES.length===1) $('site-sel-row').style.display='none';
-    selectedSiteId=$('site-sel').value||SITES[0].id;
-    loadBilling();
+    if(SITES.length===1 && !isSuper) $('site-sel-row').style.display='none';
+    else $('site-sel-row').style.display='';
+    selectedSiteId=$('site-sel').value||(isSuper?'':SITES[0].id);
+    if(selectedSiteId) loadBilling();
+    else $('bill-body').innerHTML='<div class="bcard"><p style="color:var(--soft)">Choose a site to inspect billing.</p></div>';
   }
   $('site-sel').addEventListener('change',function(){
     selectedSiteId=this.value; loadBilling();

@@ -22,9 +22,11 @@
     if (!isEmbed()) return false;
     var root = global.document.documentElement;
     var body = global.document.body;
-    root.classList.add('lp-hub-embed');
+    root.classList.add('lp-hub-embed', 'lp-super-admin');
     root.dataset.lpHubEmbed = '1';
-    if (body) body.classList.add('lp-hub-embed');
+    if (body) {
+      body.classList.add('lp-hub-embed', 'lp-super-admin');
+    }
     return true;
   }
 
