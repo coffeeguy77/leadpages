@@ -410,11 +410,35 @@ function renderAddForm(i,mode){
       +'<button class="btn sm" id="wfAdd">Add redirect</button></div>';
     $('wfAdd').onclick=function(){ addRec(i,{type:'WEBFWD',subdomain:$('wfSub').value.trim()||'@',forward_to:$('wfTo').value.trim(),cloak:false}); };
   } else if(mode==='site'){
+    var siteParam=(typeof URLSearchParams!=='undefined'?(new URLSearchParams(location.search).get('site_id')||''):'')||'';
+    var linked=d.site_id||siteParam;
+    box.innerHTML='<div class="note">Points <b>'+esc(dom)+'</b> at LeadPages: Dreamscape DNS (A @ → 76.76.21.21, CNAME www → cname.vercel-dns.com) and attaches apex + www to the Vercel project. Optionally links site routing (<code>custom_domain</code>).</div>'
+      +(linked
+        ? '<div class="note" style="margin-top:6px">Will link site id <code>'+esc(linked)+'</code>.</div>'
+        : '<div class="form-grid"><label class="f">Site id (optional)<input id="siteLinkId-'+i+'" placeholder="uuid from Manage" style="width:280px"></label></div>')
+      +'<div class="form-grid"><button class="btn sm" id="siteAdd">Point at LeadPages</button></div>';
     box.innerHTML='<div class="note">This adds the records to point <b>'+esc(dom)+'</b> at your LeadPages site (Vercel): an A record on the root and a CNAME on www. You still need the hostname added in the Vercel project and set as the site\u2019s custom domain in Manage. Super-admins can check project domain capacity via Site details (soft warn only — never blocks saves).</div>'
       +'<div class="form-grid"><button class="btn sm" id="siteAdd">Add site records</button></div>';
     $('siteAdd').onclick=async function(){
-      await addRec(i,{type:'A',subdomain:'@',content:'76.76.21.21'},true);
-      await addRec(i,{type:'CNAME',subdomain:'www',content:'cname.vercel-dns.com'});
+      var btn=$('siteAdd'); if(btn) btn.disabled=true;
+      dnsMsg(i,'','Connecting DNS + Vercel…');
+      var siteId=linked || (($('siteLinkId-'+i)&&$('siteLinkId-'+i).value.trim())||'');
+      var payload=Object.assign(dnsBody(d), siteId?{site_id:siteId}:{});
+      var r=await api('/api/domains/point-at-site',{method:'POST',body:JSON.stringify(payload)});
+      if(btn) btn.disabled=false;
+      if(!r.ok){ dnsMsg(i,'err',(r.data&&r.data.error)||'Could not connect domain.'); return; }
+      var bits=[];
+      var dns=r.data&&r.data.dns; if(dns){ bits.push('DNS apex '+(dns.apex&&dns.apex.status||'?')+', www '+(dns.www&&dns.www.status||'?')); }
+      var v=r.data&&r.data.vercel;
+      if(v&&v.configured){ bits.push('Vercel apex '+(v.apex&&v.apex.status||'?')+', www '+(v.www&&v.www.status||'?')); }
+      else if(v&&!v.configured){ bits.push('Vercel skip (token/project not configured)'); }
+      var cd=r.data&&r.data.custom_domain;
+      if(cd&&cd.set) bits.push('custom domain set to '+cd.value);
+      else if(cd&&cd.error) bits.push('routing not set ('+cd.error+')');
+      else if(r.data&&r.data.hint) bits.push(r.data.hint);
+      var vercelBad=v&&v.configured&&v.apex&&!(v.apex.status==='added'||v.apex.status==='pending'||v.apex.status==='already_exists');
+      dnsMsg(i, vercelBad?'err':'ok', bits.join(' · ')||'Connected.');
+      loadDns(i);
     };
   } else {
     box.innerHTML='<div class="form-grid">'
