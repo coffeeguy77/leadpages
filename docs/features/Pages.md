@@ -121,6 +121,7 @@ Static HTML in `manage.html` (lines ~742–797). Two cards:
 │  EDITOR CARD (#lp-editor) — hidden until lpOpen()           │
 │  Tools: Undo / Redo / Show SEO tips                         │
 │  Fields: title, slug, meta (+ char count), h1               │
+│  Font colours: optional h1 / h2 / paragraph pickers         │
 │  AI box: presets (#lp-ai-presets), prompt, [Generate draft] │
 │  Body: Markdown textarea (#lp-body)                         │
 │  Approve panel (#lp-approve): preview, Use / Discard        │
@@ -346,6 +347,9 @@ flowchart LR
   "slug": "refinancing",
   "meta": "Meta description for SERP",
   "h1": "Headline on page",
+  "h1Color": "#1a2230",
+  "h2Color": "#1a2230",
+  "paragraphColor": "#5b6878",
   "body": "Markdown content",
   "menu": "top|footer|none",
   "status": "published|draft",
@@ -359,6 +363,8 @@ flowchart LR
 ```
 
 **Defaults on create** (`#lp-new`): `menu:'top'`, `status:'draft'`, empty strings for text fields.
+
+**Optional typography colours** (`h1Color` / `h2Color` / `paragraphColor`): hex strings set in the Landing pages editor. Empty or omitted uses the site theme. Applied as CSS vars `--lp-h1` / `--lp-h2` / `--lp-p` on the page article in `_lpArticleBlock`.
 
 **Note:** `menu` (`top` / `footer` / `none`) is **stored** but **not auto-synced** to `sections.navMenu` — operators link pages manually via Nav menu editor (`page:{slug}` targets). See Technical Debt.
 
