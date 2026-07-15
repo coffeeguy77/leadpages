@@ -2943,6 +2943,27 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       : 'Edit this client\u2019s site details \u2014 business name, contact and the figures their page shows \u2014 then publish. The live preview shows their real page (it refreshes when you publish).';
   }
   function lpFld(label,id,ph){ return '<div class="f"><label>'+label+'</label><input type="text" id="'+id+'"'+(ph?' placeholder="'+ph+'"':'')+'></div>'; }
+  function lpDomainQuotaHintHtml(){ return '<div id="d-domain-quota" class="hint" style="margin:-2px 0 14px;line-height:1.45;" hidden></div>'; }
+  async function lpRefreshDomainQuota(){
+    var el=$('d-domain-quota'); if(!el||currentRole!=='super') return;
+    try{
+      var se=await sb.auth.getSession();
+      var tok=se&&se.data&&se.data.session&&se.data.session.access_token;
+      if(!tok){ el.hidden=true; return; }
+      var r=await fetch('/api/domain-quota',{headers:{Authorization:'Bearer '+tok}});
+      var j=await r.json().catch(function(){return {};});
+      if(!j||!j.ok){ el.hidden=true; return; }
+      var msg='', color='#667';
+      if(j.decision==='critical'){ msg=j.message||('Near Vercel domain capacity ('+j.count+' / '+j.hardLimit+').'); color='#b42318'; }
+      else if(j.decision==='warn'){ msg=j.message||('Approaching Vercel domain capacity ('+j.count+' / soft '+j.softLimit+').'); color='#9a6700'; }
+      else if(j.configured&&j.count!=null){
+        msg='Vercel project domains: '+j.count+(j.softLimit!=null?(' · soft warn at '+j.softLimit):'')+(j.routingCount!=null?(' · routing fields in use: '+j.routingCount):'')+'. Saving a custom domain is never blocked by this check.';
+      } else {
+        msg=j.message||'Domain capacity check idle until VERCEL_TOKEN + VERCEL_PROJECT_ID are set.';
+      }
+      el.textContent=msg; el.style.color=color; el.hidden=!msg;
+    }catch(e){ el.hidden=true; }
+  }
   function lpSel(label,id,opts,cur){ return '<div class="f"><label>'+label+'</label><select id="'+id+'" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;">'+opts.map(function(o){return '<option value="'+o[0]+'"'+(String(cur)===String(o[0])?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></div>'; }
   function lpNum(label,id,cur){ return '<div class="f"><label>'+label+'</label><input type="number" id="'+id+'" value="'+(cur!=null?cur:'')+'"></div>'; }
   function lpRange(label,id,cur,min,max,suf){ return '<div class="f"><label>'+label+' <span id="'+id+'-v" style="font-weight:700;color:var(--accent);">'+(cur!=null?cur:'')+(suf||'')+'</span></label><input type="range" id="'+id+'" min="'+min+'" max="'+max+'" value="'+(cur!=null?cur:0)+'" style="width:100%;"></div>'; }
@@ -2955,7 +2976,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var typeBits=(t==='broker-leads')?(lpFld('Suburb','d-suburb','')+'<h3 style="margin:18px 0 8px;font-size:14px;">Rates shown on the page</h3><div class="row3">'+lpFld('Variable rate %','d-var','')+lpFld('Comparison rate %','d-comp','')+lpFld('Updated label','d-rupd','e.g. Jun 2026')+'</div>'):'';
       box.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Site details</h2><p class="lede">These feed your client\u2019s landing page. Publish to push them live.</p>'
         +lpFld('Business name','d-biz','')
-        +(currentRole==='super'?(lpFld('Custom domain (optional)','d-domain','e.g. yourbusiness.com.au')+lpFld('Client login email — lets this customer log in & edit only this site','d-owner','customer@business.com.au')+'<details style="margin:-4px 0 14px;font-size:12px;color:#667;"><summary style="cursor:pointer;">How custom domains and client logins work</summary><div style="margin-top:6px;line-height:1.5;">Leave the custom domain blank to use the leadpages address. To use their own domain: add it in Vercel → Domains, point the DNS to Vercel, then type it here and Save. The client login email lets that customer sign in and edit only this site.</div></details>'):'')
+        +(currentRole==='super'?(lpFld('Custom domain (optional)','d-domain','e.g. yourbusiness.com.au')+lpDomainQuotaHintHtml()+lpFld('Client login email — lets this customer log in & edit only this site','d-owner','customer@business.com.au')+'<details style="margin:-4px 0 14px;font-size:12px;color:#667;"><summary style="cursor:pointer;">How custom domains and client logins work</summary><div style="margin-top:6px;line-height:1.5;">Leave the custom domain blank to use the leadpages address. To use their own domain: add it in Vercel → Domains, point the DNS to Vercel, then type it here and Save. The client login email lets that customer sign in and edit only this site.</div></details>'):'')
         +'<div class="row">'+lpFld('Phone (shown to visitors)','d-phoneText','(02) 1234 5678')+lpFld('Phone (for the call button)','d-phone','+61...')+'</div>'
         +'<div class="row">'+lpFld('Email','d-email','')+lpFld('Region','d-region','')+'</div>'+typeBits+'</div>';
       wireDetailFields(c,t); return;
@@ -3028,6 +3049,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       on('d-comp',function(v){ c.rates=c.rates||{}; c.rates.comparisonRate=(v===''?undefined:(parseFloat(v)||v)); });
       on('d-rupd',function(v){ c.rates=c.rates||{}; c.rates.updatedAt=v; });
     }
+    if(currentRole==='super') lpRefreshDomainQuota();
   }
   function secHexField(prefix, label, placeholder) {
     return '<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:190px;"><label>'+label+'</label>'
@@ -4305,7 +4327,7 @@ function heroCtaCard(c){
     var p=document.createElement('div'); p.id='settings-page';
     var detailFields='<div class="card" style="margin-bottom:20px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Client site details</h2><label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;white-space:nowrap;"><input type="checkbox" id="set-demo"'+(demoOn?' checked':'')+'> Demo site</label></div><p class="lede">Business identity and contact \u2014 used across the page and the call buttons.</p>'
       +lpFld('Business name','d-biz','')
-      +(currentRole==='super'?(lpFld('Custom domain (optional)','d-domain','e.g. yourbusiness.com.au')+lpFld('Client login email — lets this customer log in & edit only this site','d-owner','customer@business.com.au')):'')
+      +(currentRole==='super'?(lpFld('Custom domain (optional)','d-domain','e.g. yourbusiness.com.au')+lpDomainQuotaHintHtml()+lpFld('Client login email — lets this customer log in & edit only this site','d-owner','customer@business.com.au')):'')
       +'<div class="row">'+lpFld('Phone (shown to visitors)','d-phoneText','(02) 1234 5678')+lpFld('Phone (for the call button)','d-phone','+61...')+'</div>'
       +'<div class="row">'+lpFld('Email','d-email','')+lpFld('Region','d-region','')+'</div>'
       +'<div class="row">'+lpFld('Service / business type','d-trade','e.g. Plumber, Café, Airbnb host')+lpFld('Licence','d-licence','')+'</div>'

@@ -410,7 +410,7 @@ function renderAddForm(i,mode){
       +'<button class="btn sm" id="wfAdd">Add redirect</button></div>';
     $('wfAdd').onclick=function(){ addRec(i,{type:'WEBFWD',subdomain:$('wfSub').value.trim()||'@',forward_to:$('wfTo').value.trim(),cloak:false}); };
   } else if(mode==='site'){
-    box.innerHTML='<div class="note">This adds the records to point <b>'+esc(dom)+'</b> at your LeadPages site (Vercel): an A record on the root and a CNAME on www.</div>'
+    box.innerHTML='<div class="note">This adds the records to point <b>'+esc(dom)+'</b> at your LeadPages site (Vercel): an A record on the root and a CNAME on www. You still need the hostname added in the Vercel project and set as the site\u2019s custom domain in Manage. Super-admins can check project domain capacity via Site details (soft warn only — never blocks saves).</div>'
       +'<div class="form-grid"><button class="btn sm" id="siteAdd">Add site records</button></div>';
     $('siteAdd').onclick=async function(){
       await addRec(i,{type:'A',subdomain:'@',content:'76.76.21.21'},true);

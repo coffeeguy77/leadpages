@@ -550,7 +550,7 @@ flowchart LR
 | **Custom domain uniqueness** | DB UNIQUE on `sites.custom_domain` — enforced at publish |
 | **PII** | Strip shows domain names only — no registrant WHOIS |
 
-Super-admin custom domain field includes help text about Vercel + DNS — operational steps, not automated verification.
+Super-admin custom domain field includes help text about Vercel + DNS — operational steps, not automated verification. Super also sees a soft **domain capacity** hint from `GET /api/domain-quota` (Vercel project domain count vs `VERCEL_DOMAIN_*_LIMIT`). It never blocks Save.
 
 ---
 
@@ -581,6 +581,7 @@ Super-admin custom domain field includes help text about Vercel + DNS — operat
 8. **Align Dashboard badge** — “Domain connected” if strip would show any chip, not only `custom_domain`.
 9. **Notification** — toast when domain registration completes and strip would gain a chip.
 10. **Consolidate live URL** — single helper exported for Dashboard header and strip (already shared via `lpLiveUrl`).
+11. **Automate Vercel project domain add** on “Point at my site” — hard-fail only on Vercel API rejection; keep soft quota warn from `/api/domain-quota`.
 
 ---
 
