@@ -544,6 +544,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 .bar-fav.on{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);}
 </style>
 <script src="/assets/lp-workspace-appearance.js"></script>
+<script src="/assets/lp-hub-embed.js"></script>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js"></script>
 <script src="/assets/lp-admin-shell.js"></script>
@@ -6391,7 +6392,12 @@ function heroCtaCard(c){
     if(!$('btn-domains')){
       const dbn=document.createElement('button'); dbn.className='btn ghost'; dbn.id='btn-domains';
       dbn.textContent='Domains';
-      dbn.addEventListener('click',function(){ window.open('/manage-domains','_blank','noopener'); });
+      dbn.addEventListener('click',function(){
+        if(window.LPHubEmbed && LPHubEmbed.isEmbed()){
+          try{ window.parent.location.hash = 'domains'; return; }catch(e){}
+        }
+        window.open('/manage-domains','_blank','noopener');
+      });
       bar.insertBefore(dbn, dl);
     }
     if(currentRole==='super' && !$('btn-switch')){

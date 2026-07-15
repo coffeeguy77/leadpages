@@ -1627,3 +1627,119 @@ body.lp-mm-configured .lp-mm-sec-body.lp-mm-layout-grid-2 > .lp-mm-drawer-nav {
   justify-content: center;
   border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
 }
+
+/* ── Ops Command hub embed: one command centre, not nested apps ── */
+html.lp-hub-embed,
+body.lp-hub-embed {
+  background: var(--bg, #f6f4ef) !important;
+  color: var(--ink, #1b2430) !important;
+  min-height: 100%;
+}
+html[data-theme="command-dark"].lp-hub-embed,
+html[data-theme="command-dark"].lp-hub-embed body.lp-hub-embed,
+html[data-theme="neon-pink"].lp-hub-embed,
+html[data-theme="neon-pink"].lp-hub-embed body.lp-hub-embed,
+html[data-theme="electric-blue"].lp-hub-embed,
+html[data-theme="electric-blue"].lp-hub-embed body.lp-hub-embed {
+  background: var(--bg, #12151a) !important;
+  color: var(--ink, #eef2f7) !important;
+}
+
+/* Hide satellite top chrome — shell already owns brand / sign-out / nav */
+body.lp-hub-embed > .top,
+body.lp-hub-embed > .topbar,
+body.lp-hub-embed .lp-hub-hide,
+body.lp-hub-embed .leadpages-logo.lp-chrome-hide,
+body.lp-hub-embed > .wrap > .leadpages-logo,
+body.lp-hub-embed > .wrap > .eyebrow.lp-chrome-hide,
+body.lp-hub-embed > .wrap > h1.lp-chrome-hide,
+body.lp-hub-embed > .wrap > p.sub.lp-chrome-hide,
+body.lp-hub-embed .lp-hub-chrome {
+  display: none !important;
+}
+
+/* Domain Manager title + back-to-dashboard bar chrome */
+body.lp-hub-embed.domains-page > .wrap > .eyebrow,
+body.lp-hub-embed.domains-page > .wrap > h1,
+body.lp-hub-embed.domains-page > .wrap > .sub,
+body.lp-hub-embed [data-lp-hub-hide="title"] {
+  display: none !important;
+}
+body.lp-hub-embed .bar a[href="/manage"],
+body.lp-hub-embed a#lpc-ops-command,
+body.lp-hub-embed a#lpc-partner-admin,
+body.lp-hub-embed a#lpc-marketplace-admin,
+body.lp-hub-embed #lpc-partner-console,
+body.lp-hub-embed [data-lp-hub-dup] {
+  display: none !important;
+}
+
+/* Manage account strip duplicates while inside Ops Command */
+body.lp-hub-embed #lpc-acct-desktop a[href="/command"],
+body.lp-hub-embed #lpc-acct-desktop a[href="/partners-admin"],
+body.lp-hub-embed #lpc-acct-desktop a[href="/marketplace-admin"],
+body.lp-hub-embed .bar a[href="/command"],
+body.lp-hub-embed .bar a[href="/partners-admin"],
+body.lp-hub-embed .bar a[href="/marketplace-admin"] {
+  display: none !important;
+}
+
+/* Marketplace / Apps / Messages inherit workspace theme under hub */
+body.lp-hub-embed.marketplace-admin-page,
+body.lp-hub-embed.apps-admin-page,
+body.lp-hub-embed.messages-page {
+  background: var(--bg, #f6f4ef) !important;
+  color: var(--ink, #1b2430) !important;
+}
+body.lp-hub-embed.marketplace-admin-page .card,
+body.lp-hub-embed.apps-admin-page .card,
+body.lp-hub-embed.messages-page .pane,
+body.lp-hub-embed.messages-page .login {
+  background: var(--surface, var(--panel, #fff)) !important;
+  border-color: var(--line, var(--border, #e7e2d8)) !important;
+  color: inherit;
+}
+
+/* Tighten manage page padding inside hub */
+body.lp-hub-embed > .wrap {
+  padding-top: 12px !important;
+  max-width: none;
+}
+body.lp-hub-embed.marketplace-admin-page main.wrap,
+body.lp-hub-embed.partners-admin-page main.wrap,
+body.lp-hub-embed[data-lp-admin-page="apps-admin"] main.wrap,
+body.lp-hub-embed.apps-admin-page main {
+  padding-top: 16px !important;
+}
+
+/* Messages: full-bleed inside hub */
+body.lp-hub-embed > .main {
+  max-width: none;
+  padding-top: 12px;
+}
+body.lp-hub-embed .pane {
+  background: var(--surface, var(--panel, #fff));
+  border-color: var(--line, var(--border, #e7e2d8));
+}
+
+/* Partner desk: keep partner nav, drop outer page gutters collision */
+body.lp-hub-embed.lp-partner-page #view-login .center-card,
+body.lp-hub-embed.lp-partner-page #view-none .center-card,
+body.lp-hub-embed.lp-partner-page #view-pending .center-card,
+body.lp-hub-embed.lp-partner-page #view-loading .center-card {
+  background: var(--surface, var(--panel));
+  border: 1px solid var(--line, var(--border));
+}
+
+/* Hide extra visitor/a11y floating controls inside hub panels */
+body.lp-hub-embed #lp-visitor-a11y,
+body.lp-hub-embed .lp-visitor-a11y,
+body.lp-hub-embed button.lp-a11y-fab,
+body.lp-hub-embed [data-lp-a11y-fab] {
+  display: none !important;
+}
+
+/* Soften double-login when session is shared — still show if unauthenticated */
+body.lp-hub-embed .center-card {
+  box-shadow: none;
+}
