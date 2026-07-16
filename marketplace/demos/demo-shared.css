@@ -529,7 +529,31 @@ html.layout-ba-hero-slider main#top>[data-sec="faq"]{order:8}
 .bahs-title{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;font-size:28px;line-height:1;margin:0;color:var(--ink,#1a2230)}
 .bahs-cap{color:#55606e;font-size:16px;margin:8px 0 0;max-width:60ch}
 .bahs-cta{flex:0 0 auto}
-@media(max-width:560px){.bahs-grip{width:40px;height:40px}.bahs-title{font-size:24px}}
+.bahs-side{display:none}
+/* Sidebar layout — ~25% text rail + slider */
+section[data-sec="heroBeforeAfter"].bahs-layout-sidebar{padding:0}
+section[data-sec="heroBeforeAfter"].bahs-layout-sidebar>.wrap{max-width:none;width:100%;padding:0;margin:0}
+section[data-sec="heroBeforeAfter"].bahs-layout-sidebar>.wrap>.section-head{display:none}
+.bahs.bahs-split{display:flex;align-items:stretch;gap:0;margin-top:0;width:100%}
+.bahs.bahs-split.bahs-side-right{flex-direction:row-reverse}
+.bahs.bahs-split .bahs-side{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:0;flex:0 0 25%;width:25%;max-width:25%;min-width:220px;box-sizing:border-box;padding:clamp(28px,4vw,52px) clamp(18px,2.2vw,34px);background:var(--bahs-side-bg,#f4f1ea);color:var(--bahs-text,#33414f)}
+.bahs.bahs-split .bahs-stage{flex:1 1 0;min-width:0;aspect-ratio:auto;min-height:min(72vh,640px);border-radius:0;box-shadow:none}
+.bahs.bahs-split .bahs-meta{display:none}
+.bahs-side-eyebrow{display:block;font-family:"Barlow",sans-serif;font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--bahs-eyebrow,#1f5c3a);margin:0 0 14px}
+.bahs-side-title{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(26px,2.4vw,38px);line-height:1.18;letter-spacing:-.01em;color:var(--bahs-title,#1a2230);margin:0 0 14px}
+.bahs-side-text{font-size:15.5px;line-height:1.55;color:var(--bahs-text,#46535f);margin:0 0 22px;max-width:36ch}
+.bahs-feats{list-style:none;margin:0 0 28px;padding:0;display:flex;flex-direction:column;gap:11px;width:100%}
+.bahs-feat{display:flex;align-items:flex-start;gap:10px;font-size:15px;line-height:1.35;font-weight:600;color:var(--bahs-feat,var(--bahs-text,#33414f))}
+.bahs-feat-ic{flex:0 0 auto;display:inline-flex;color:var(--bahs-icon,var(--bahs-eyebrow,#1f5c3a));margin-top:1px}
+.bahs-feat-ic svg,.bahs-feat-ic .lp-ic{width:18px;height:18px;display:block}
+.bahs-side-cta{display:inline-flex;align-items:center;justify-content:center;margin-top:4px;padding:13px 22px;border-radius:8px;font-family:"Barlow",sans-serif;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;background:var(--bahs-cta-bg,#1f5c3a);color:var(--bahs-cta-fg,#ffffff);border:2px solid var(--bahs-cta-bd,var(--bahs-cta-bg,#1f5c3a));transition:filter .15s ease}
+.bahs-side-cta:hover{filter:brightness(1.06)}
+@media(max-width:980px){
+  .bahs.bahs-split,.bahs.bahs-split.bahs-side-right{flex-direction:column}
+  .bahs.bahs-split .bahs-side{flex:none;width:100%;max-width:none;min-width:0;padding:32px 22px}
+  .bahs.bahs-split .bahs-stage{min-height:360px;aspect-ratio:16/10}
+}
+@media(max-width:560px){.bahs-grip{width:40px;height:40px}.bahs-title{font-size:24px}.bahs.bahs-split .bahs-stage{min-height:280px}}
 
 /* Hero Image Slider layout (id: hero-image-slider) — reveal heroSlider, hide normal hero, reorder; other layouts unaffected */
 section[data-sec="heroSlider"]{display:none}
