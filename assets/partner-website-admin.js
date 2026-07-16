@@ -53,9 +53,11 @@
         + hint + '</div>';
     }
     if (type === 'checkbox') {
-      return '<label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin:0">'
+      return '<div class="field" style="margin:0">'
+        + '<label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin:0">'
         + '<input type="checkbox" id="' + id + '"' + (value ? ' checked' : '') + ' style="width:auto"> '
-        + esc(label) + '</label>';
+        + esc(label) + '</label>'
+        + hint + '</div>';
     }
     return '<div class="field"><label for="' + id + '">' + esc(label) + '</label>'
       + '<input id="' + id + '" type="' + type + '" value="' + esc(value || '') + '" placeholder="' + esc(opts.placeholder || '') + '">'
@@ -314,13 +316,16 @@
     return (s.business_name || s.slug) + ' (' + kind + trade + ')';
   }
 
-  function siteSelectHtml(selectedId, index) {
-    var opts = '<option value="">— Choose a site or demo —</option>';
+  function siteSelectHtml(selectedId, index, opts) {
+    opts = opts || {};
+    var idPrefix = opts.idPrefix || 'pwp-ind-site-';
+    var dataAttr = opts.dataAttr || 'data-pwp-ind-field="siteId"';
+    var selOpts = '<option value="">— Choose a site or demo —</option>';
     (state.showcaseSites || []).forEach(function(s) {
       var sel = selectedId && String(selectedId) === String(s.id) ? ' selected' : '';
-      opts += '<option value="' + esc(s.id) + '"' + sel + '>' + esc(siteOptionLabel(s)) + '</option>';
+      selOpts += '<option value="' + esc(s.id) + '"' + sel + '>' + esc(siteOptionLabel(s)) + '</option>';
     });
-    return '<select id="pwp-ind-site-' + index + '" data-pwp-ind-field="siteId">' + opts + '</select>';
+    return '<select id="' + idPrefix + index + '" ' + dataAttr + '>' + selOpts + '</select>';
   }
 
   function industryTabRows() {
@@ -352,11 +357,61 @@
   }
 
   function panelIndustryDemos() {
+    var ind = wp().industryShowcase || {};
+    var hero = wp().heroShowcase || {};
+    var intervalSec = Math.round((ind.intervalMs || 12000) / 1000);
+    var heroIntervalSec = Math.round((hero.intervalMs || 12000) / 1000);
+    var speedChoices = [8, 12, 16, 20, 30];
+    if (speedChoices.indexOf(intervalSec) < 0) intervalSec = 12;
+    if (speedChoices.indexOf(heroIntervalSec) < 0) heroIntervalSec = 12;
+    var heroIds = (hero.siteIds && hero.siteIds.length) ? hero.siteIds.slice() : (hero.siteId ? [hero.siteId] : ['']);
+    if (!heroIds.length) heroIds = [''];
+    var heroRows = heroIds.map(function(id, i) {
+      return '<div class="pwp-hero-site-row" data-pwp-hero-site="' + i + '">'
+        + '<div class="field" style="margin:0;flex:1"><label for="pwp-hero-site-' + i + '">'
+        + (i === 0 ? 'Featured site (desktop + mobile)' : 'Also rotate')
+        + '</label>'
+        + siteSelectHtml(id || '', i, { idPrefix: 'pwp-hero-site-', dataAttr: 'data-pwp-hero-field="siteId"' })
+        + '</div>'
+        + (i > 0
+          ? '<button type="button" class="btn" data-pwp-remove-hero="' + i + '" style="padding:6px 12px;font-size:13px;align-self:end">Remove</button>'
+          : '')
+        + '</div>';
+    }).join('');
+
     return '<div class="pwp-panel hidden" data-pwp-panel="industryDemos">'
-      + '<p class="muted" style="margin:0 0 16px">Control the industry scroller on your public page. Rename tabs (including Trades), pick which client site or demo each tab shows, or add your own industry tab.</p>'
+      + '<h4 style="font-size:15px;margin:0 0 8px">Hero demo (desktop + mobile)</h4>'
+      + '<p class="muted" style="margin:0 0 14px;font-size:13px">Choose which client site or demo appears in the hero visual. Add more sites to rotate; tick hide tabs to keep the hero clean with no picker labels.</p>'
+      + '<div id="pwp-hero-sites" class="pwp-hero-sites">' + heroRows + '</div>'
+      + '<button type="button" class="btn" id="pwp-add-hero-site" style="margin:8px 0 12px">Add hero rotation site</button>'
+      + '<div class="pwp-ind-options">'
+      + field('Hide hero demo tabs', 'pwp-hero-hide-tabs', !!hero.hideTabs, { type: 'checkbox' })
+      + '<div class="field"><label for="pwp-hero-speed">Hero slide speed</label>'
+      + '<select id="pwp-hero-speed">'
+      + [['8', '8 seconds'], ['12', '12 seconds (default)'], ['16', '16 seconds'], ['20', '20 seconds'], ['30', '30 seconds']].map(function(opt) {
+        return '<option value="' + opt[0] + '"' + (String(heroIntervalSec) === opt[0] ? ' selected' : '') + '>' + opt[1] + '</option>';
+      }).join('')
+      + '</select></div>'
+      + '</div>'
+
+      + '<h4 style="font-size:15px;margin:28px 0 8px">Industry demos scroller</h4>'
+      + '<p class="muted" style="margin:0 0 16px">Control “Choose an industry / Explore a real website.” Rename tabs (including Trades), pick which client site or demo each tab shows, or add your own industry tab.</p>'
+      + '<div class="pwp-ind-options" style="margin-bottom:16px">'
+      + field('Hide industry tabs', 'pwp-ind-hide-tabs', !!ind.hideTabs, {
+        type: 'checkbox',
+        hint: 'On by default the Trades / Hospitality labels show. Tick this to hide tab names — useful when previewing a finished site without industry chrome.'
+      })
+      + '<div class="field"><label for="pwp-ind-speed">Industry slide speed</label>'
+      + '<select id="pwp-ind-speed">'
+      + [['8', '8 seconds'], ['12', '12 seconds (default)'], ['16', '16 seconds'], ['20', '20 seconds'], ['30', '30 seconds']].map(function(opt) {
+        return '<option value="' + opt[0] + '"' + (String(intervalSec) === opt[0] ? ' selected' : '') + '>' + opt[1] + '</option>';
+      }).join('')
+      + '</select>'
+      + '<p class="muted" style="font-size:12px;margin:6px 0 0">How long each industry slide stays before advancing.</p></div>'
+      + '</div>'
       + '<div id="pwp-ind-tabs">' + industryTabRows() + '</div>'
       + '<button type="button" class="btn" id="pwp-add-ind-tab" style="margin-top:12px">Add industry tab</button>'
-      + '<p class="muted" style="margin:14px 0 0;font-size:12.5px">Leave tabs empty to fall back to automatic grouping of demos marked “Show on showcase” by trade.</p>'
+      + '<p class="muted" style="margin:14px 0 0;font-size:12.5px">Leave industry tabs empty to fall back to automatic grouping of demos marked “Show on showcase” by trade.</p>'
       + '</div>';
   }
 
@@ -524,6 +579,15 @@
       });
     });
 
+    var heroSiteIds = [];
+    document.querySelectorAll('[data-pwp-hero-site]').forEach(function(row) {
+      var i = row.getAttribute('data-pwp-hero-site');
+      var siteId = val('pwp-hero-site-' + i);
+      if (siteId) heroSiteIds.push(siteId);
+    });
+    var indInterval = parseInt(val('pwp-ind-speed') || '12', 10) || 12;
+    var heroInterval = parseInt(val('pwp-hero-speed') || '12', 10) || 12;
+
     var visibility = {};
     ['hero', 'trust', 'demos', 'services', 'biography', 'serviceArea', 'testimonials', 'caseStudies', 'faqs', 'leadOffer', 'contact', 'process', 'platformBacking'].forEach(function(k) {
       var el = $('pwp-vis-' + k);
@@ -601,7 +665,17 @@
       testimonials: testimonials,
       caseStudies: caseStudies,
       partnerFaqs: partnerFaqs,
-      industryShowcase: { tabs: industryTabs }
+      industryShowcase: {
+        tabs: industryTabs,
+        hideTabs: val('pwp-ind-hide-tabs'),
+        intervalMs: indInterval * 1000
+      },
+      heroShowcase: {
+        siteId: heroSiteIds[0] || null,
+        siteIds: heroSiteIds,
+        hideTabs: val('pwp-hero-hide-tabs'),
+        intervalMs: heroInterval * 1000
+      }
     };
   }
 
@@ -748,6 +822,25 @@
           + '<button type="button" class="btn" data-pwp-remove-ind="' + ni + '" style="padding:6px 12px;font-size:13px">Remove tab</button>'
           + '</div>';
         box.insertAdjacentHTML('beforeend', html);
+        return;
+      }
+      if (e.target.id === 'pwp-add-hero-site' || e.target.closest('#pwp-add-hero-site')) {
+        var hbox = $('pwp-hero-sites');
+        if (!hbox) return;
+        var hi = hbox.querySelectorAll('[data-pwp-hero-site]').length;
+        hbox.insertAdjacentHTML('beforeend',
+          '<div class="pwp-hero-site-row" data-pwp-hero-site="' + hi + '">'
+          + '<div class="field" style="margin:0;flex:1"><label for="pwp-hero-site-' + hi + '">Also rotate</label>'
+          + siteSelectHtml('', hi, { idPrefix: 'pwp-hero-site-', dataAttr: 'data-pwp-hero-field="siteId"' })
+          + '</div>'
+          + '<button type="button" class="btn" data-pwp-remove-hero="' + hi + '" style="padding:6px 12px;font-size:13px;align-self:end">Remove</button>'
+          + '</div>');
+        return;
+      }
+      var rmHero = e.target.getAttribute('data-pwp-remove-hero');
+      if (rmHero != null) {
+        var hrow = e.target.closest('[data-pwp-hero-site]');
+        if (hrow) hrow.remove();
         return;
       }
       var rmInd = e.target.getAttribute('data-pwp-remove-ind');

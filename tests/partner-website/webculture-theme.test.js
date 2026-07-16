@@ -43,18 +43,41 @@ test('groupDemosByIndustryTab — uses configured tab label and site pick', func
   assert.equal(groups[1].tab.label, 'Cafes');
 });
 
+test('pickHeroDemos — prefers heroShowcase featured site', function() {
+  const { pickHeroDemos } = require('../../lib/partner-website/webculture-theme');
+  const demos = [
+    { id: 's1', slug: 'a', name: 'A', industry: 'Trades', url: 'https://x/a' },
+    { id: 's2', slug: 'b', name: 'B', industry: 'Cafe', url: 'https://x/b' }
+  ];
+  const picked = pickHeroDemos(demos, 2, { siteIds: ['s2', 's1'] });
+  assert.equal(picked[0].id, 's2');
+  assert.equal(picked[1].id, 's1');
+});
+
 test('validateWebsiteProfile — industryShowcase tabs', function() {
   const wp = validateWebsiteProfile({
     industryShowcase: {
       tabs: [
         { key: 'trades', label: 'Trades', siteId: 'abc-123', enabled: true },
         { label: 'Custom Industry', siteId: 'def-456' }
-      ]
+      ],
+      hideTabs: true,
+      intervalMs: 16000
+    },
+    heroShowcase: {
+      siteId: 'feat-1',
+      hideTabs: true,
+      intervalSec: 20
     }
   });
   assert.equal(wp.industryShowcase.tabs.length, 2);
   assert.equal(wp.industryShowcase.tabs[0].label, 'Trades');
   assert.equal(wp.industryShowcase.tabs[1].key, 'custom-industry');
+  assert.equal(wp.industryShowcase.hideTabs, true);
+  assert.equal(wp.industryShowcase.intervalMs, 16000);
+  assert.equal(wp.heroShowcase.siteId, 'feat-1');
+  assert.equal(wp.heroShowcase.hideTabs, true);
+  assert.equal(wp.heroShowcase.intervalMs, 20000);
 });
 
 test('buildWebcultureCopy — uses profile agency name not hardcoded Web Culture', function() {

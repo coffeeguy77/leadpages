@@ -268,7 +268,7 @@ function initWebcultureDemoCarousel() {
     var indicators = Array.prototype.slice.call(section.querySelectorAll('[data-prm-demo-indicator]'));
     var prevBtn = section.querySelector('[data-prm-demo-prev]');
     var nextBtn = section.querySelector('[data-prm-demo-next]');
-    var interval = parseInt(section.getAttribute('data-prm-demo-interval') || '8000', 10);
+    var interval = parseInt(section.getAttribute('data-prm-demo-interval') || '12000', 10);
     var index = 0;
     var timer = null;
     var paused = false;
@@ -387,7 +387,7 @@ function initWebcultureHeroShowcase() {
   document.querySelectorAll('[data-prm-hero-showcase]').forEach(function (root) {
     var picks = Array.prototype.slice.call(root.querySelectorAll('[data-prm-hero-pick]'));
     if (!picks.length) return;
-    var interval = parseInt(root.getAttribute('data-prm-hero-interval') || '6000', 10);
+    var interval = parseInt(root.getAttribute('data-prm-hero-interval') || '12000', 10);
     var index = 0;
     var timer = null;
     var paused = false;

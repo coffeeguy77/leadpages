@@ -1459,6 +1459,7 @@ html:has(body.wc-body) {
 /* Demo showcase */
 .prm-demo-showcase { background: var(--wc-bg); padding: var(--wc-section-pad) 0; }
 .prm-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0 36px; }
+.prm-demo-showcase--no-tabs .prm-demo-controls { margin-top: 24px; }
 .prm-tab {
   padding: 10px 22px;
   border-radius: var(--wc-radius-btn);
