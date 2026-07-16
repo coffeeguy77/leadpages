@@ -19,72 +19,136 @@
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
 <style>
 :root{
-  --disp:'Fraunces',Georgia,serif; --body:'Inter',system-ui,sans-serif;
+  --disp:var(--font-display,'Fraunces',Georgia,serif);
+  --body:var(--font-ui,'Inter',system-ui,sans-serif);
+  --pa-accent:var(--accent,var(--brand,#1f7a63));
+  --pa-accent-text:var(--accent-text,#fff);
+  --pa-input:var(--input-bg,var(--surface,transparent));
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-ui);line-height:1.55}
-a{color:var(--brand)}
-h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-.01em;margin:0}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.45}
+a{color:var(--pa-accent)}
+h1,h2,h3{font-family:var(--disp);font-weight:600;letter-spacing:-.01em;margin:0}
 .hidden{display:none!important}
-.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
-.btn{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:14px;padding:9px 15px;border-radius:10px;border:1px solid var(--line-strong);background:#fff;color:var(--ink);cursor:pointer;text-decoration:none;transition:.15s}
-.btn:hover{border-color:var(--ink)}
-.btn-brand{background:var(--brand);border-color:var(--brand);color:#fff}.btn-brand:hover{background:var(--brand-deep)}
-.btn-sm{padding:6px 11px;font-size:13px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 18px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  font-weight:600;font-size:13px;padding:8px 12px;border-radius:9px;
+  border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+  cursor:pointer;text-decoration:none;transition:.15s
+}
+.btn:hover{border-color:color-mix(in srgb,var(--pa-accent) 55%,var(--line-strong))}
+.btn-brand{background:var(--pa-accent);border-color:var(--pa-accent);color:var(--pa-accent-text)}
+.btn-brand:hover{filter:brightness(1.05)}
+.btn-danger{border-color:color-mix(in srgb,var(--bad,#dc2626) 55%,var(--line));color:var(--bad,#dc2626);background:transparent}
+.btn-sm{padding:6px 10px;font-size:12.5px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-input,select,textarea{font-family:var(--font-ui);font-size:14px;padding:9px 11px;border:1px solid var(--line-strong);border-radius:9px;background:#fff;color:var(--ink);width:100%}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
-label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-bottom:4px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+input,select,textarea{
+  font-family:inherit;font-size:13.5px;padding:8px 10px;border:1px solid var(--line-strong);
+  border-radius:9px;background:var(--pa-input);color:var(--ink);width:100%
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pa-accent)}
+label{font-weight:600;font-size:11.5px;color:var(--ink-soft);display:block;margin-bottom:4px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius,12px);box-shadow:var(--shadow,none)}
+:focus-visible{outline:2px solid var(--pa-accent);outline-offset:2px}
 
 .top{background:var(--surface);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;justify-content:space-between;min-height:60px;padding:6px 0}
-.brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:19px;color:var(--ink);text-decoration:none}
-.brand .mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--brand),#2f9b7e);position:relative}
-.brand .mark::after{content:"";position:absolute;inset:7px 7px auto 7px;height:4px;border-radius:2px;background:#fff;box-shadow:0 6px 0 rgba(255,255,255,.6)}
-.top .links a{font-weight:600;font-size:14px;color:var(--ink-soft);text-decoration:none;margin-left:18px}
-.top .links a:hover{color:var(--brand)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;min-height:52px;padding:4px 0}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--disp);font-weight:700;font-size:18px;color:var(--ink);text-decoration:none}
+.top .links a{font-weight:600;font-size:13px;color:var(--ink-soft);text-decoration:none;margin-left:14px}
+.top .links a:hover{color:var(--pa-accent)}
 
-.center-card{max-width:440px;margin:9vh auto;padding:34px}
-.center-card h1{font-size:25px;margin-bottom:6px}
-.center-card p{color:var(--ink-soft);margin:0 0 18px}
-.notice{padding:12px 14px;border-radius:10px;font-size:14px;margin-top:14px}
-.notice.info{background:var(--brand-tint);color:var(--brand-deep)}
-.notice.bad{background:#fbeae7;color:var(--bad)}
-.muted{color:var(--ink-soft);font-size:14px}
+.center-card{max-width:420px;margin:9vh auto;padding:28px}
+.center-card h1{font-size:24px;margin-bottom:6px}
+.center-card p{color:var(--ink-soft);margin:0 0 16px}
+.notice{padding:10px 12px;border-radius:10px;font-size:13.5px;margin-top:12px}
+.notice.info{background:color-mix(in srgb,var(--pa-accent) 14%,transparent);color:var(--ink)}
+.notice.bad{background:color-mix(in srgb,var(--bad,#dc2626) 14%,transparent);color:var(--bad,#b91c1c)}
+.muted{color:var(--ink-soft);font-size:13.5px}
 
-.tabs{display:flex;gap:6px;margin:24px 0 18px}
-.tabs button{background:#fff;border:1px solid var(--line-strong);border-radius:10px;padding:9px 16px;font:inherit;font-weight:600;font-size:14px;color:var(--ink-soft);cursor:pointer}
-.tabs button.on{background:var(--brand);border-color:var(--brand);color:#fff}
-.tabs .count{font-size:12px;opacity:.8;margin-left:5px}
-.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-.chip{background:#fff;border:1px solid var(--line-strong);border-radius:999px;padding:6px 13px;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer}
-.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.pa-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:0 0 14px}
+.pa-head h1{font-size:clamp(22px,3vw,26px)}
+.pa-head .muted{margin:4px 0 0}
+
+.tabs{
+  display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;padding:8px;
+  border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--surface) 80%,transparent)
+}
+.tabs button{
+  background:transparent;border:1px solid transparent;border-radius:999px;
+  padding:7px 12px;font:600 12.5px/1.2 inherit;color:var(--ink-soft);cursor:pointer
+}
+.tabs button:hover{background:color-mix(in srgb,var(--pa-accent) 8%,transparent);color:var(--ink)}
+.tabs button.on{
+  background:color-mix(in srgb,var(--pa-accent) 18%,transparent);
+  border-color:color-mix(in srgb,var(--pa-accent) 40%,transparent);color:var(--ink)
+}
+.tabs .count{font-size:11px;opacity:.75;margin-left:4px;font-weight:700}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{
+  background:transparent;border:1px solid var(--line-strong);border-radius:999px;
+  padding:5px 11px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer
+}
+.chip.on{background:color-mix(in srgb,var(--pa-accent) 18%,transparent);border-color:color-mix(in srgb,var(--pa-accent) 42%,transparent);color:var(--ink)}
 .section{display:none}.section.on{display:block}
 
-.item{padding:18px 20px;margin-bottom:14px}
-.item .head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
-.item .nm{font-family:var(--font-display);font-weight:600;font-size:17px}
-.item .meta{font-size:13px;color:var(--ink-soft);margin-top:2px}
-.item .meta a{color:var(--brand)}
-.kv{display:grid;grid-template-columns:140px 1fr;gap:4px 12px;margin-top:12px;font-size:14px}
+.item{padding:12px 14px;margin-bottom:8px}
+.item .head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.item .nm{font-family:var(--disp);font-weight:600;font-size:15.5px}
+.item .meta{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.item .meta a{color:var(--pa-accent)}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:3px 10px;margin-top:10px;font-size:13px}
 .kv .k{color:var(--ink-faint);font-weight:600}
-.kv .v{color:var(--ink)}
-.ctrls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
-.ctrls .grow{flex:1;min-width:180px}
-.statusbadge{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap}
-.s-new{background:var(--brand-tint);color:var(--brand-deep)}.s-reviewing{background:#eef0f3;color:#566}
-.s-approved,.s-active{background:#e6f5ec;color:#1c7a44}.s-rejected,.s-suspended,.s-terminated{background:#fbeae7;color:var(--bad)}
-.s-waitlisted,.s-pending,.s-under_review{background:#fdf4e3;color:var(--amber)}
-.s-paid{background:#e6f5ec;color:#1c7a44}.s-held{background:#fdf4e3;color:var(--amber)}.s-cancelled{background:#fbeae7;color:var(--bad)}
-.saved{color:var(--ok);font-weight:600;font-size:13px;opacity:0;transition:.2s}.saved.show{opacity:1}
-.empty{padding:40px;text-align:center;color:var(--ink-soft)}
-.linkpill{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;background:#eef0f3;color:#566}
-.linkpill.yes{background:#e6f5ec;color:#1c7a44}
+.kv .v{color:var(--ink);word-break:break-word}
+.ctrls{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.ctrls .grow{flex:1;min-width:160px}
+.statusbadge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap;text-transform:capitalize}
+.s-new{background:color-mix(in srgb,var(--pa-accent) 18%,transparent);color:var(--ink)}
+.s-reviewing{background:color-mix(in srgb,var(--ink) 10%,transparent);color:var(--ink-soft)}
+.s-approved,.s-active,.s-paid{background:color-mix(in srgb,#16a34a 18%,transparent);color:#15803d}
+.s-rejected,.s-suspended,.s-terminated,.s-cancelled{background:color-mix(in srgb,#dc2626 16%,transparent);color:#b91c1c}
+.s-waitlisted,.s-pending,.s-under_review,.s-held{background:color-mix(in srgb,#d97706 18%,transparent);color:#b45309}
+.saved{color:var(--ok,#15803d);font-weight:600;font-size:12.5px;opacity:0;transition:.2s}.saved.show{opacity:1}
+.empty{padding:28px;text-align:center;color:var(--ink-soft)}
+.linkpill{font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink-soft)}
+.linkpill.yes{background:color-mix(in srgb,#16a34a 16%,transparent);color:#15803d}
+
+/* Compact application rows */
+.app-row{padding:0;overflow:hidden}
+.app-row-main{
+  display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;
+  padding:10px 12px;cursor:pointer
+}
+.app-row-main:hover{background:color-mix(in srgb,var(--pa-accent) 6%,transparent)}
+.app-row-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}
+.app-row-actions .btn{flex:none}
+.app-details{
+  display:none;padding:0 12px 12px;border-top:1px solid var(--line);
+  background:color-mix(in srgb,var(--bg) 55%,var(--surface))
+}
+.app-row.is-open .app-details{display:block}
+.app-row.is-open .app-row-main{border-bottom:1px solid transparent}
+.app-toggle{
+  appearance:none;border:0;background:transparent;color:var(--ink-soft);
+  font:600 12px inherit;cursor:pointer;padding:0;text-align:left
+}
+.app-toggle:hover{color:var(--pa-accent)}
+.app-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media(max-width:700px){
+  .app-edit-grid{grid-template-columns:1fr}
+  .app-row-main{grid-template-columns:1fr}
+  .app-row-actions{justify-content:flex-start}
+}
+.pa-modal{
+  position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;
+  padding:18px;background:rgba(10,14,20,.55)
+}
+.pa-modal-card{width:min(560px,100%);max-height:min(88vh,720px);overflow:auto;padding:18px 18px 16px}
+.pa-modal-card h2{font-size:18px;margin:0 0 4px}
+.pa-modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
 </style>
 </head>
-<body class="partners-admin-page" data-lp-admin-page="partners-admin">
+<body class="partners-admin-page lp-super-admin" data-lp-admin-page="partners-admin">
 
 <div class="top lp-hub-chrome"><div class="wrap">
   <a class="brand" href="/manage"><span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse role="img" aria-label="leadpages" style="display:block"></span></a>
@@ -111,21 +175,25 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
 <div id="view-denied" class="hidden"><div class="card center-card"><h1>Not authorised</h1><p>This area is for LeadPages administrators only.</p><button class="btn" id="denied-signout" style="width:100%;justify-content:center">Sign out</button></div></div>
 
 <!-- ADMIN -->
-<div id="view-admin" class="hidden"><div class="wrap" style="padding:26px 20px 60px">
-  <h1 style="font-size:26px">Partner Program</h1>
-  <p class="muted">Review applications, approve partners and manage partner status.</p>
+<div id="view-admin" class="hidden"><div class="wrap lp-sa-wrap" style="padding:18px 18px 56px">
+  <div class="pa-head">
+    <div>
+      <h1>Partner Program</h1>
+      <p class="muted">Applications, partners, commissions, and training — denser ops view.</p>
+    </div>
+  </div>
 
-  <div class="tabs">
-    <button data-t="apps" class="on">Applications <span class="count" id="apps-count"></span></button>
-    <button data-t="partners">Partners <span class="count" id="partners-count"></span></button>
-    <button data-t="commissions">Commissions <span class="count" id="comm-count"></span></button>
-    <button data-t="training">Training <span class="count" id="tm-count"></span></button>
-    <button data-t="courses">Courses <span class="count" id="co-count"></span></button>
-    <button data-t="resources">Resources <span class="count" id="res-count"></span></button>
-    <button data-t="wiki">Wiki <span class="count" id="wk-count"></span></button>
-    <button data-t="themelib">Theme library <span class="count" id="tl-count"></span></button>
-    <button data-t="clients">Clients <span class="count" id="cl-count"></span></button>
-    <button data-t="audit">Audit</button>
+  <div class="tabs" role="tablist" aria-label="Partner program sections">
+    <button type="button" data-t="apps" class="on">Applications <span class="count" id="apps-count"></span></button>
+    <button type="button" data-t="partners">Partners <span class="count" id="partners-count"></span></button>
+    <button type="button" data-t="commissions">Commissions <span class="count" id="comm-count"></span></button>
+    <button type="button" data-t="training">Training <span class="count" id="tm-count"></span></button>
+    <button type="button" data-t="courses">Courses <span class="count" id="co-count"></span></button>
+    <button type="button" data-t="resources">Resources <span class="count" id="res-count"></span></button>
+    <button type="button" data-t="wiki">Wiki <span class="count" id="wk-count"></span></button>
+    <button type="button" data-t="themelib">Themes <span class="count" id="tl-count"></span></button>
+    <button type="button" data-t="clients">Clients <span class="count" id="cl-count"></span></button>
+    <button type="button" data-t="audit">Audit</button>
   </div>
 
   <!-- Applications -->
@@ -207,12 +275,40 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
 
   <!-- Audit -->
   <section class="section" data-sec="audit">
-    <h3 style="font-family:var(--font-display);font-size:17px;margin:0 0 10px">Transfers</h3>
+    <h3 style="font-family:var(--disp);font-size:16px;margin:0 0 10px">Transfers</h3>
     <div id="transfer-log"></div>
-    <h3 style="font-family:var(--font-display);font-size:17px;margin:22px 0 10px">Activity log</h3>
+    <h3 style="font-family:var(--disp);font-size:16px;margin:18px 0 10px">Activity log</h3>
     <div id="audit-log"></div>
   </section>
 </div></div>
+
+<!-- Edit application modal -->
+<div id="app-edit-modal" class="pa-modal hidden" role="dialog" aria-modal="true" aria-labelledby="app-edit-title">
+  <div class="card pa-modal-card">
+    <h2 id="app-edit-title">Edit application</h2>
+    <p class="muted" style="margin:0 0 12px">Fix or redact applicant answers before approving.</p>
+    <input type="hidden" id="ae-id">
+    <div class="app-edit-grid">
+      <div><label for="ae-name">Name</label><input id="ae-name"></div>
+      <div><label for="ae-email">Email</label><input id="ae-email" type="email"></div>
+      <div><label for="ae-phone">Phone</label><input id="ae-phone"></div>
+      <div><label for="ae-location">Location</label><input id="ae-location"></div>
+      <div><label for="ae-niche">Preferred niche</label><input id="ae-niche"></div>
+      <div><label for="ae-knows">Knows local</label>
+        <select id="ae-knows"><option value="">—</option><option value="true">Yes</option><option value="false">Not yet</option></select>
+      </div>
+    </div>
+    <div style="margin-top:10px"><label for="ae-background">Background</label><textarea id="ae-background" rows="2"></textarea></div>
+    <div style="margin-top:10px"><label for="ae-why">Why</label><textarea id="ae-why" rows="2"></textarea></div>
+    <div style="margin-top:10px"><label for="ae-notes">Admin notes</label><textarea id="ae-notes" rows="2"></textarea></div>
+    <div style="margin-top:10px"><label for="ae-status">Status</label><select id="ae-status"></select></div>
+    <div class="pa-modal-actions">
+      <button type="button" class="btn" id="ae-cancel">Cancel</button>
+      <button type="button" class="btn btn-brand" id="ae-save">Save changes</button>
+    </div>
+    <p class="notice bad hidden" id="ae-err"></p>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -294,31 +390,51 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
   });
 
   // ---- Applications ----
+  var appOpenIds={};
   function statusSelect(cur,opts,attr){
     return '<select '+attr+'>'+opts.map(function(o){ return '<option value="'+o+'"'+(o===cur?' selected':'')+'>'+o.replace(/_/g,' ')+'</option>'; }).join('')+'</select>';
   }
+  function knowsLabel(v){
+    return v===true?'Yes':v===false?'Not yet':'—';
+  }
   function appCard(a){
-    var knows = a.knows_local===true?'Yes':a.knows_local===false?'Not yet':'—';
-    var converted = !!a.partner_id;
-    return '<div class="card item" data-id="'+a.id+'">'
-      + '<div class="head"><div><div class="nm">'+esc(a.name||'—')+'</div>'
-      + '<div class="meta"><a href="mailto:'+esc(a.email)+'">'+esc(a.email)+'</a>'+(a.phone?(' · '+esc(a.phone)):'')+(a.location?(' · '+esc(a.location)):'')+' · '+fmtDate(a.created_at)+'</div></div>'
-      + '<span class="statusbadge s-'+esc(a.status)+'">'+esc((a.status||'').replace(/_/g,' '))+'</span></div>'
-      + '<div class="kv">'
-        + (a.background?'<div class="k">Background</div><div class="v">'+esc(a.background)+'</div>':'')
-        + '<div class="k">Knows local</div><div class="v">'+knows+'</div>'
-        + (a.niche?'<div class="k">Preferred niche</div><div class="v">'+esc(a.niche)+'</div>':'')
-        + (a.why?'<div class="k">Why</div><div class="v">'+esc(a.why)+'</div>':'')
+    var converted=!!a.partner_id;
+    var open=!!appOpenIds[a.id];
+    return '<div class="card item app-row'+(open?' is-open':'')+'" data-id="'+a.id+'">'
+      + '<div class="app-row-main" data-toggle-row>'
+        + '<div>'
+          + '<div class="nm">'+esc(a.name||'—')+'</div>'
+          + '<div class="meta"><a href="mailto:'+esc(a.email)+'" data-stop>'+esc(a.email||'')+'</a>'
+            +(a.phone?(' · '+esc(a.phone)):'')+(a.location?(' · '+esc(a.location)):'')
+            +' · '+fmtDate(a.created_at)
+            +' · <button type="button" class="app-toggle" data-toggle>'+(open?'Hide details':'Show details')+'</button>'
+          + '</div>'
+        + '</div>'
+        + '<div class="app-row-actions" data-stop>'
+          + '<span class="statusbadge s-'+esc(a.status)+'">'+esc((a.status||'').replace(/_/g,' '))+'</span>'
+          + '<button type="button" class="btn btn-sm" data-edit>Edit</button>'
+          + (converted
+              ? '<span class="linkpill yes">Partner ✓</span>'
+              : '<button type="button" class="btn btn-sm btn-brand" data-convert>Approve</button>')
+          + '<button type="button" class="btn btn-sm btn-danger" data-delete>Delete</button>'
+        + '</div>'
       + '</div>'
-      + '<div style="margin-top:12px"><label>Admin notes</label><textarea rows="2" data-notes>'+esc(a.admin_notes||'')+'</textarea></div>'
-      + '<div class="ctrls">'
-        + '<div><label>Status</label>'+statusSelect(a.status,APP_STATUSES,'data-status')+'</div>'
-        + '<button class="btn btn-sm" data-save>Save</button>'
-        + (converted
-            ? '<span class="linkpill yes">Partner created ✓</span>'
-            : '<button class="btn btn-sm btn-brand" data-convert>Approve &amp; create partner</button>')
-        + '<span class="saved" data-saved>Saved ✓</span>'
-      + '</div></div>';
+      + '<div class="app-details">'
+        + '<div class="kv">'
+          + '<div class="k">Background</div><div class="v">'+esc(a.background||'—')+'</div>'
+          + '<div class="k">Knows local</div><div class="v">'+esc(knowsLabel(a.knows_local))+'</div>'
+          + '<div class="k">Preferred niche</div><div class="v">'+esc(a.niche||'—')+'</div>'
+          + '<div class="k">Why</div><div class="v">'+esc(a.why||'—')+'</div>'
+          + '<div class="k">Admin notes</div><div class="v">'+esc(a.admin_notes||'—')+'</div>'
+        + '</div>'
+        + '<div class="ctrls">'
+          + '<div><label>Status</label>'+statusSelect(a.status,APP_STATUSES,'data-status')+'</div>'
+          + '<div class="grow"><label>Admin notes</label><textarea rows="2" data-notes>'+esc(a.admin_notes||'')+'</textarea></div>'
+          + '<button type="button" class="btn btn-sm" data-save>Save</button>'
+          + '<span class="saved" data-saved>Saved ✓</span>'
+        + '</div>'
+      + '</div>'
+    + '</div>';
   }
   function renderApps(){
     var list=appFilter==='all'?apps:apps.filter(function(a){ return a.status===appFilter; });
@@ -326,11 +442,87 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
     $('apps-list').innerHTML = list.length ? list.map(appCard).join('')
       : '<div class="card empty">No applications'+(appFilter!=='all'?(' with status “'+appFilter+'”'):'')+' yet.</div>';
   }
+  function openAppEdit(a){
+    $('ae-id').value=a.id;
+    $('ae-name').value=a.name||'';
+    $('ae-email').value=a.email||'';
+    $('ae-phone').value=a.phone||'';
+    $('ae-location').value=a.location||'';
+    $('ae-niche').value=a.niche||'';
+    $('ae-background').value=a.background||'';
+    $('ae-why').value=a.why||'';
+    $('ae-notes').value=a.admin_notes||'';
+    $('ae-knows').value=a.knows_local===true?'true':a.knows_local===false?'false':'';
+    $('ae-status').innerHTML=APP_STATUSES.map(function(o){
+      return '<option value="'+o+'"'+(o===a.status?' selected':'')+'>'+o.replace(/_/g,' ')+'</option>';
+    }).join('');
+    $('ae-err').classList.add('hidden');
+    $('app-edit-modal').classList.remove('hidden');
+  }
+  function closeAppEdit(){ $('app-edit-modal').classList.add('hidden'); }
+  $('ae-cancel').addEventListener('click', closeAppEdit);
+  $('app-edit-modal').addEventListener('click', function(e){
+    if(e.target.id==='app-edit-modal') closeAppEdit();
+  });
+  $('ae-save').addEventListener('click', async function(){
+    var id=$('ae-id').value;
+    var a=apps.find(function(x){ return x.id===id; }); if(!a) return;
+    var knowsVal=$('ae-knows').value;
+    var patch={
+      name:($('ae-name').value||'').trim()||null,
+      email:($('ae-email').value||'').trim()||null,
+      phone:($('ae-phone').value||'').trim()||null,
+      location:($('ae-location').value||'').trim()||null,
+      niche:($('ae-niche').value||'').trim()||null,
+      background:($('ae-background').value||'').trim()||null,
+      why:($('ae-why').value||'').trim()||null,
+      admin_notes:($('ae-notes').value||'').trim()||null,
+      knows_local:knowsVal===''?null:(knowsVal==='true'),
+      status:$('ae-status').value
+    };
+    $('ae-err').classList.add('hidden');
+    this.disabled=true;
+    var r=await sb.from('partner_applications').update(patch).eq('id',id).select('*');
+    this.disabled=false;
+    if(r.error||!r.data||!r.data.length){
+      $('ae-err').textContent=(r.error&&r.error.message)||'Could not save.';
+      $('ae-err').classList.remove('hidden');
+      return;
+    }
+    Object.assign(a,r.data[0]);
+    closeAppEdit();
+    renderApps();
+  });
+
   $('apps-list').addEventListener('click', async function(e){
+    if(e.target.closest('[data-stop]') && !e.target.closest('[data-edit],[data-convert],[data-delete],[data-save],[data-toggle]')){
+      // allow mailto etc without toggling when clicking action area empty space
+    }
     var card=e.target.closest('.item'); if(!card) return;
     var id=card.getAttribute('data-id');
     var a=apps.find(function(x){ return x.id===id; }); if(!a) return;
     var saved=card.querySelector('[data-saved]');
+
+    if(e.target.closest('[data-toggle]') || (e.target.closest('[data-toggle-row]') && !e.target.closest('[data-stop]'))){
+      appOpenIds[id]=!appOpenIds[id];
+      renderApps();
+      return;
+    }
+
+    if(e.target.closest('[data-edit]')){
+      openAppEdit(a);
+      return;
+    }
+
+    if(e.target.closest('[data-delete]')){
+      if(!window.confirm('Delete application for '+((a.name||a.email)||'this applicant')+'?\n\nThis cannot be undone.')) return;
+      var del=await sb.from('partner_applications').delete().eq('id',id);
+      if(del.error){ alert('Could not delete: '+del.error.message); return; }
+      apps=apps.filter(function(x){ return x.id!==id; });
+      delete appOpenIds[id];
+      renderApps();
+      return;
+    }
 
     if(e.target.closest('[data-save]')){
       var btn=e.target.closest('[data-save]'); btn.disabled=true;
@@ -338,7 +530,9 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
       var r=await sb.from('partner_applications').update(patch).eq('id',id).select('*');
       btn.disabled=false;
       if(r.error||!r.data||!r.data.length){ alert('Could not save: '+((r.error&&r.error.message)||'no permission')); return; }
-      Object.assign(a,r.data[0]); saved.classList.add('show'); setTimeout(function(){ saved.classList.remove('show'); },1600); renderApps();
+      Object.assign(a,r.data[0]); if(saved){ saved.classList.add('show'); setTimeout(function(){ saved.classList.remove('show'); },1600); }
+      renderApps();
+      return;
     }
 
     if(e.target.closest('[data-convert]')){
@@ -353,7 +547,6 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
         var pid=pr.data.id;
         await sb.from('partner_profiles').insert({ partner_id:pid, support_name:a.name||null, support_email:a.email||null, support_phone:a.phone||null, region:a.location||null });
         var up=await sb.from('partner_applications').update({ status:'approved', partner_id:pid }).eq('id',a.id).select('*');
-        // Send welcome email with magic link
         try{
           var tok=(await sb.auth.getSession()).data.session;
           if(tok&&tok.access_token){
@@ -365,7 +558,7 @@ label{font-weight:600;font-size:12px;color:var(--ink-soft);display:block;margin-
         if(up.data&&up.data[0]) Object.assign(a,up.data[0]);
         partners.unshift(pr.data); renderPartners();
         renderApps();
-      }catch(err){ alert('Could not create partner: '+(err.message||err)); cb.disabled=false; cb.textContent='Approve & create partner'; }
+      }catch(err){ alert('Could not create partner: '+(err.message||err)); cb.disabled=false; cb.textContent='Approve'; }
     }
   });
 

@@ -175,7 +175,9 @@ body.lp-hub-embed label {
 /* Tabs / chips / pills */
 body.lp-hub-embed .tabs,
 body.lp-hub-embed .tabbtns,
-body.lp-hub-embed .filters {
+body.lp-hub-embed .filters,
+body.lp-super-admin .tabs,
+body.lp-super-admin .filters {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -185,7 +187,9 @@ body.lp-hub-embed .filters {
 body.lp-hub-embed .tabs button,
 body.lp-hub-embed .tabbtns button,
 body.lp-hub-embed .filters button,
-body.lp-hub-embed .chip {
+body.lp-hub-embed .chip,
+body.lp-super-admin .tabs button,
+body.lp-super-admin .chip {
   appearance: none;
   background: transparent !important;
   border: 1px solid var(--line-strong) !important;
@@ -199,7 +203,9 @@ body.lp-hub-embed .chip {
 body.lp-hub-embed .tabs button.on,
 body.lp-hub-embed .tabbtns button.on,
 body.lp-hub-embed .filters button.on,
-body.lp-hub-embed .chip.on {
+body.lp-hub-embed .chip.on,
+body.lp-super-admin .tabs button.on,
+body.lp-super-admin .chip.on {
   background: color-mix(in srgb, var(--accent) 16%, transparent) !important;
   border-color: color-mix(in srgb, var(--accent) 40%, transparent) !important;
   color: var(--ink) !important;
