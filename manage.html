@@ -6154,7 +6154,8 @@ function heroCtaCard(c){
       var _emSafe=_emTh.safety||DEFAULT_TRADE_THEME.safety;
       var _emEM=(c.sections&&c.sections.emerg)||{};
       var _emTrans=_emEM.bgTransparent===true||_emEM.bg==='transparent';
-      body.innerHTML=secCard(c,'emerg','Top emergency bar',true,[['text','Message (the call link stays on automatically)','ta']])
+      body.innerHTML=secCard(c,'emerg','Top emergency bar',true,[['text','Message','ta']])
+        +'<div class="card" style="margin-bottom:22px;"><label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px;"><input type="checkbox" id="em-callon"> Show phone call link in the top bar</label><p class="hint" style="margin:0;">When on, the “Call \u2026 now” link dials your business phone and counts as a call in your stats. Turn it off to show the message only.</p></div>'
         +'<div class="card" style="margin-bottom:22px;"><h2>Layout</h2><p class="lede">Pin the top bar with the logo header, or let the page scroll under a clear bar.</p>'
         +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="em-sticky"'+(_emEM.sticky===true?' checked':'')+'> Sticky with logo header</label>'
         +'<p class="hint" style="margin:-4px 0 14px;">Keeps the top bar pinned above the logo header as the page scrolls.</p>'
@@ -6197,6 +6198,7 @@ function heroCtaCard(c){
         }
         var st=$('em-sticky'); if(st){ st.checked=(EM.sticky===true); st.addEventListener('change',function(){ ens().sticky=st.checked; persist(); previewApply(); }); }
         var tr=$('em-trans'); if(tr){ tr.checked=(EM.bgTransparent===true||EM.bg==='transparent'); tr.addEventListener('change',function(){ ens().bgTransparent=tr.checked; if(tr.checked&&ens().bg==='transparent') ens().bg=''; _syncTransUi(); persist(); previewApply(); }); }
+        var co=$('em-callon'); if(co){ co.checked=(EM.callOn!==false); co.addEventListener('change',function(){ ens().callOn=co.checked; persist(); previewApply(); }); }
         var bg=$('em-bg'),bgt=$('em-bgt');
         if(bg&&bgt){
           var _bgShow=_emNorm(EM.bg)||_emNorm(thHiv);

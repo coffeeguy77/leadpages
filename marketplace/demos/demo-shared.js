@@ -776,7 +776,17 @@
       function tok(s){ return String(s==null?'':s).replace(/\{\{\s*businessName\s*\}\}/g,BIZ); }
       var E=S.emerg||{}; var em=document.querySelector('.emerg');
       if(em){
-        if(E.text!=null){ var ea=em.querySelector('a'); em.textContent=E.text+' '; if(ea) em.appendChild(ea); }
+        var ea=em.querySelector('a')||em.__lpEmergA||document.getElementById('emergCall');
+        if(ea) em.__lpEmergA=ea;
+        var _emCallOn=(E.callOn!==false);
+        if(E.text!=null){
+          var _emMsg=String(E.text);
+          em.textContent=_emCallOn?(_emMsg+(_emMsg?' ':'')):_emMsg;
+          if(_emCallOn&&ea){ ea.style.display=''; em.appendChild(ea); }
+        } else if(ea){
+          if(_emCallOn){ ea.style.display=''; if(!em.contains(ea)) em.appendChild(ea); }
+          else { ea.style.display='none'; }
+        }
         function _emHex(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; }
         var _emSticky=(E.sticky===true);
         var _emTrans=(E.bgTransparent===true||E.bg==='transparent');
