@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accounting — LeadPages</title>
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
+<meta name="theme-color" content="#12151a">
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<link rel="stylesheet" href="/assets/lp-super-admin.css">
+<script src="/assets/lp-workspace-appearance.js"></script>
+<script src="/assets/lp-hub-embed.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{
+  --font-display:'Fraunces',Georgia,serif;
+  --font-ui:'DM Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-ui)}
+.ba-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.ba-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px}
+.ba-tabs button{
+  appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);
+  font:600 13px/1 var(--font-ui);padding:10px 14px;border-radius:999px;cursor:pointer
+}
+.ba-tabs button.on{background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:color-mix(in srgb,var(--accent) 35%,var(--line));color:var(--ink)}
+.ba-kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.ba-kpi{padding:16px 16px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
+.ba-kpi .l{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 6px}
+.ba-kpi .v{font-family:var(--font-display);font-size:26px;font-weight:600;margin:0;letter-spacing:-.02em}
+.ba-kpi .s{font-size:12px;color:var(--ink-soft);margin:6px 0 0}
+.ba-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+@media(max-width:900px){.ba-grid{grid-template-columns:1fr}}
+.ba-card{padding:18px 18px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:16px}
+.ba-card h2{margin:0 0 4px}
+.ba-card .sub{margin:0 0 14px;color:var(--ink-soft);font-size:13px}
+.ba-chart{display:flex;align-items:flex-end;gap:10px;height:160px;padding:8px 4px 0}
+.ba-bar{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.ba-bar .stack{width:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;height:100%}
+.ba-bar .fill{width:100%;border-radius:8px 8px 4px 4px;background:var(--accent);min-height:3px}
+.ba-bar .fill.expense{background:color-mix(in srgb,var(--ink) 35%,transparent);border-radius:4px}
+.ba-bar .m{font-size:10px;font-weight:600;color:var(--ink-faint)}
+.ba-table{width:100%;border-collapse:collapse;font-size:13px}
+.ba-table th,.ba-table td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.ba-table th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint)}
+.ba-pill{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.ba-pill.ok{background:color-mix(in srgb,#16a34a 16%,transparent);color:#15803d}
+.ba-pill.warn{background:color-mix(in srgb,#d97706 18%,transparent);color:#b45309}
+.ba-pill.bad{background:color-mix(in srgb,#dc2626 16%,transparent);color:#b91c1c}
+.ba-pill.muted{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink-soft)}
+.field{margin:0 0 12px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+.field input,.field select,.field textarea{
+  width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);
+  background:var(--input-bg,transparent);color:var(--ink);font:inherit
+}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.row2{grid-template-columns:1fr}}
+.btn{appearance:none;border:1px solid var(--accent);background:transparent;color:var(--accent);font:600 13px/1 var(--font-ui);padding:10px 14px;border-radius:10px;cursor:pointer}
+.btn.solid{background:var(--accent);color:var(--accent-text,#fff)}
+.btn.ghost{border-color:var(--line-strong);color:var(--ink-soft)}
+.hidden{display:none!important}
+.msg{font-size:13px;margin:8px 0 0}
+.msg.bad{color:var(--danger,#b91c1c)}
+.msg.ok{color:#15803d}
+.login-card{max-width:420px;margin:12vh auto;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.bank{font-size:12px;color:var(--ink-soft);line-height:1.45}
+</style>
+</head>
+<body class="lp-super-admin">
+<div id="gate" class="login-card">
+  <h1>Accounting</h1>
+  <p class="lede">Sign in with a super-admin account to manage hosting, commissions, and maintenance.</p>
+  <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="username"></div>
+  <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password"></div>
+  <button class="btn solid" id="login-btn" type="button">Sign in</button>
+  <p class="msg bad" id="gate-msg"></p>
+</div>
+
+<div id="app" class="lp-sa-wrap hidden">
+  <div class="ba-top">
+    <div>
+      <h1>Accounting</h1>
+      <p class="lede" id="lede">Builds, hosting, partner commissions, and maintenance.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn ghost" type="button" id="refresh">Refresh</button>
+      <a class="btn ghost" href="/billing">Client billing</a>
+      <a class="btn ghost" href="/partners-admin">Partners admin</a>
+    </div>
+  </div>
+
+  <nav class="ba-tabs" id="tabs">
+    <button type="button" data-tab="overview" class="on">Overview</button>
+    <button type="button" data-tab="clients">Clients</button>
+    <button type="button" data-tab="partners">Partners &amp; payouts</button>
+    <button type="button" data-tab="invoices">Invoice edits</button>
+    <button type="button" data-tab="maintenance">Maintenance</button>
+    <button type="button" data-tab="new">New hosting account</button>
+  </nav>
+
+  <section data-panel="overview">
+    <div class="ba-kpis" id="kpis"></div>
+    <div class="ba-grid">
+      <div class="ba-card">
+        <h2>Income vs partner expense</h2>
+        <p class="sub">Last 6 months from commission ledger (build + recurring + maintenance gross).</p>
+        <div class="ba-chart" id="income-chart"></div>
+      </div>
+      <div class="ba-card">
+        <h2>Highest earning partner</h2>
+        <p class="sub">Lifetime commission attributed across all types.</p>
+        <div id="top-partner"></div>
+      </div>
+    </div>
+    <div class="ba-grid">
+      <div class="ba-card">
+        <h2>Failed payments</h2>
+        <p class="sub">Sites in <span class="ba-pill warn">past_due</span></p>
+        <div id="failed-list"></div>
+      </div>
+      <div class="ba-card">
+        <h2>Suspended customers</h2>
+        <p class="sub">Hosting stopped after Stripe retries exhausted.</p>
+        <div id="suspended-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <section data-panel="clients" class="hidden">
+    <div class="ba-card">
+      <h2>Client hosting accounts</h2>
+      <p class="sub">Live client sites with plan and billing status.</p>
+      <div style="overflow:auto">
+        <table class="ba-table" id="clients-table"><thead><tr>
+          <th>Business</th><th>Email</th><th>Plan</th><th>Monthly</th><th>Status</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <section data-panel="partners" class="hidden">
+    <div class="ba-card">
+      <h2>Commissions due</h2>
+      <p class="sub">Pending / approved payouts with partner bank details.</p>
+      <div style="overflow:auto">
+        <table class="ba-table" id="payout-table"><thead><tr>
+          <th>Partner</th><th>Type</th><th>Commission</th><th>Due</th><th>Bank</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+    <div class="ba-card">
+      <h2>Partner leaderboard</h2>
+      <div style="overflow:auto">
+        <table class="ba-table" id="leader-table"><thead><tr>
+          <th>Partner</th><th>Earned</th><th>Pending</th><th>Paid</th><th>Bank</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <section data-panel="invoices" class="hidden">
+    <div class="ba-grid">
+      <div class="ba-card">
+        <h2>Edit invoice / dispute</h2>
+        <p class="sub">Record a coupon, discount, or adjusted amount against a Stripe invoice or site. This is the ops ledger for dispute resolution.</p>
+        <div class="field"><label for="adj-invoice">Stripe invoice id</label><input id="adj-invoice" placeholder="in_..."></div>
+        <div class="field"><label for="adj-site">Site id (optional)</label><input id="adj-site" placeholder="uuid"></div>
+        <div class="row2">
+          <div class="field"><label for="adj-coupon">Coupon / discount code</label><input id="adj-coupon" placeholder="WELCOME10"></div>
+          <div class="field"><label for="adj-discount">Discount (AUD)</label><input id="adj-discount" type="number" min="0" step="0.01" placeholder="50.00"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="adj-original">Original amount (AUD)</label><input id="adj-original" type="number" min="0" step="0.01"></div>
+          <div class="field"><label for="adj-adjusted">Adjusted amount (AUD)</label><input id="adj-adjusted" type="number" min="0" step="0.01"></div>
+        </div>
+        <div class="field"><label for="adj-reason">Reason</label><input id="adj-reason" placeholder="Dispute resolution / goodwill credit"></div>
+        <div class="field"><label for="adj-notes">Notes</label><textarea id="adj-notes" rows="3"></textarea></div>
+        <button class="btn solid" type="button" id="adj-save">Save adjustment</button>
+        <p class="msg" id="adj-msg"></p>
+      </div>
+      <div class="ba-card">
+        <h2>Recent adjustments</h2>
+        <div id="adj-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <section data-panel="maintenance" class="hidden">
+    <div class="ba-card">
+      <h2>Maintenance packages</h2>
+      <p class="sub">Default split <strong>70% partner / 30% LeadPages</strong>. Partners sell one-off update jobs and recurring care packages.</p>
+      <div id="pkg-list"></div>
+      <p class="msg" id="maint-warn"></p>
+    </div>
+    <div class="ba-card">
+      <h2>Recent maintenance jobs</h2>
+      <div style="overflow:auto">
+        <table class="ba-table" id="jobs-table"><thead><tr>
+          <th>Title</th><th>Amount</th><th>Partner 70%</th><th>Platform 30%</th><th>Status</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <section data-panel="new" class="hidden">
+    <div class="ba-card" style="max-width:640px">
+      <h2>Create hosting account</h2>
+      <p class="sub">Create a client site record with billing email, plan, and optional partner attribution.</p>
+      <div class="field"><label for="na-biz">Business name</label><input id="na-biz"></div>
+      <div class="row2">
+        <div class="field"><label for="na-email">Client billing email</label><input id="na-email" type="email"></div>
+        <div class="field"><label for="na-phone">Phone</label><input id="na-phone"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="na-contact">Contact name</label><input id="na-contact"></div>
+        <div class="field"><label for="na-plan">Hosting plan</label><select id="na-plan"><option value="">— Select —</option></select></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="na-partner">Servicing partner (optional)</label><select id="na-partner"><option value="">— None —</option></select></div>
+        <div class="field"><label for="na-sale">Build / sale price (AUD)</label><input id="na-sale" type="number" min="0" step="0.01"></div>
+      </div>
+      <div class="field"><label for="na-notes">Billing notes</label><textarea id="na-notes" rows="2"></textarea></div>
+      <label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;margin:0 0 14px">
+        <input type="checkbox" id="na-checkout" style="width:auto"> Create Stripe Checkout link now
+      </label>
+      <div>
+        <button class="btn solid" type="button" id="na-save">Create account</button>
+      </div>
+      <p class="msg" id="na-msg"></p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  if(window.LPWorkspaceAppearance){ try{ LPWorkspaceAppearance.init(); }catch(e){} }
+  var sb=window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var state={ data:null, tab:'overview' };
+  var $=function(id){ return document.getElementById(id); };
+
+  function money(cents){
+    var n=(Number(cents)||0)/100;
+    return n.toLocaleString('en-AU',{style:'currency',currency:'AUD'});
+  }
+  function esc(s){ return String(s==null?'' :s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
+  function statusPill(st){
+    var cls='muted';
+    if(st==='active') cls='ok';
+    else if(st==='past_due') cls='warn';
+    else if(st==='suspended'||st==='flagged_deletion') cls='bad';
+    return '<span class="ba-pill '+cls+'">'+esc(st||'none')+'</span>';
+  }
+  async function authHeader(){
+    var s=(await sb.auth.getSession()).data.session;
+    return s&&s.access_token?{Authorization:'Bearer '+s.access_token}:{};
+  }
+  async function api(path, opts){
+    opts=opts||{};
+    var r=await fetch(path,{
+      method:opts.method||'GET',
+      headers:Object.assign({'content-type':'application/json'}, await authHeader()),
+      body:opts.body?JSON.stringify(opts.body):undefined
+    });
+    var j=await r.json().catch(function(){return {};});
+    if(!r.ok||j.ok===false) throw new Error(j.error||('Request failed '+r.status));
+    return j;
+  }
+
+  function showTab(id){
+    state.tab=id;
+    document.querySelectorAll('#tabs button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-tab')===id); });
+    document.querySelectorAll('[data-panel]').forEach(function(p){ p.classList.toggle('hidden', p.getAttribute('data-panel')!==id); });
+    try{
+      var u=new URL(location.href);
+      u.searchParams.set('tab', id);
+      history.replaceState(null,'',u);
+    }catch(e){}
+  }
+
+  function renderKpis(s){
+    var items=[
+      ['Hosting MRR', money(s.mrr_cents), s.active_hosting_sites+' active sites'],
+      ['Sales (ledger)', money(s.sales_gross_cents), 'Attributed gross'],
+      ['Due to partners', money(s.commissions_due_cents), 'Pending + approved'],
+      ['Paid to partners', money(s.commissions_paid_cents), 'Lifetime'],
+      ['Failed payments', String(s.past_due_count), 'past_due'],
+      ['Suspended', String(s.suspended_count), 'Not live'],
+      ['Maintenance MRR', money(s.maintenance_mrr_cents), s.maintenance_active+' packages'],
+      ['Partners', String(s.partners_count), s.billing_customers+' Stripe customers']
+    ];
+    $('kpis').innerHTML=items.map(function(it){
+      return '<div class="ba-kpi"><p class="l">'+esc(it[0])+'</p><p class="v">'+esc(it[1])+'</p><p class="s">'+esc(it[2])+'</p></div>';
+    }).join('');
+  }
+
+  function renderChart(rows){
+    var max=1;
+    (rows||[]).forEach(function(r){ max=Math.max(max, r.sales||0, r.partnerExpense||0); });
+    $('income-chart').innerHTML=(rows||[]).map(function(r){
+      var hs=Math.max(3, Math.round(((r.sales||0)/max)*100));
+      var he=Math.max(3, Math.round(((r.partnerExpense||0)/max)*100));
+      var label=(r.month||'').slice(5);
+      return '<div class="ba-bar" title="Sales '+money(r.sales)+' · Partner '+money(r.partnerExpense)+'">'
+        +'<div class="stack"><div class="fill" style="height:'+hs+'%"></div><div class="fill expense" style="height:'+he+'%"></div></div>'
+        +'<span class="m">'+esc(label)+'</span></div>';
+    }).join('') || '<p class="sub">No chart data yet.</p>';
+  }
+
+  function renderTop(p){
+    if(!p){ $('top-partner').innerHTML='<p class="sub">No commission data yet.</p>'; return; }
+    $('top-partner').innerHTML='<p style="font-family:var(--font-display);font-size:28px;margin:0 0 6px">'+esc(p.display_name)+'</p>'
+      +'<p class="sub" style="margin:0 0 10px">'+esc(p.email||'')+' · '+esc(p.status||'')+'</p>'
+      +'<p style="margin:0;font-size:20px;font-weight:700">'+money(p.commission_cents)+'</p>'
+      +'<p class="sub">Pending '+money(p.pending_cents)+' · Paid '+money(p.paid_cents)+'</p>'
+      + bankHtml(p.bank);
+  }
+
+  function bankHtml(bank){
+    bank=bank||{};
+    if(!bank.bsb && !bank.account_number) return '<p class="bank">No bank details on file.</p>';
+    return '<div class="bank" style="margin-top:10px"><strong>'+esc(bank.account_name||'Account')+'</strong><br>'
+      +esc(bank.bank_name||'Bank')+' · BSB '+esc(bank.bsb||'—')+' · Acc '+esc(bank.account_number||'—')
+      +(bank.locked?' · locked':'')+'</div>';
+  }
+
+  function simpleList(el, rows, empty){
+    if(!rows||!rows.length){ el.innerHTML='<p class="sub">'+esc(empty)+'</p>'; return; }
+    el.innerHTML='<table class="ba-table"><thead><tr><th>Business</th><th>Email</th><th>Monthly</th><th>Status</th></tr></thead><tbody>'
+      +rows.map(function(r){
+        return '<tr><td><strong>'+esc(r.business_name||r.slug)+'</strong><div class="mono">'+esc(r.slug||'')+'</div></td>'
+          +'<td>'+esc(r.owner_email||'—')+'</td><td>'+money(r.monthly_amount)+'</td><td>'+statusPill(r.billing_status)+'</td></tr>';
+      }).join('')+'</tbody></table>';
+  }
+
+  function renderAll(data){
+    state.data=data;
+    renderKpis(data.summary||{});
+    renderChart((data.charts&&data.charts.income_by_month)||[]);
+    renderTop(data.highest_earning_partner);
+    simpleList($('failed-list'), data.failed_payments, 'No failed payments.');
+    simpleList($('suspended-list'), data.suspended_customers, 'No suspended customers.');
+
+    var ctb=$('clients-table').querySelector('tbody');
+    ctb.innerHTML=(data.clients||[]).map(function(r){
+      return '<tr><td><strong>'+esc(r.business_name||r.slug)+'</strong><div class="mono">'+esc(r.slug)+'</div></td>'
+        +'<td>'+esc(r.owner_email||'—')+'</td><td>'+esc(r.plan_key||'—')+'</td><td>'+money(r.monthly_amount)+'</td><td>'+statusPill(r.billing_status)+'</td></tr>';
+    }).join('') || '<tr><td colspan="5">No clients.</td></tr>';
+
+    $('payout-table').querySelector('tbody').innerHTML=(data.payout_queue||[]).map(function(r){
+      return '<tr><td><strong>'+esc(r.partner.display_name)+'</strong><div class="mono">'+esc(r.partner.email||'')+'</div></td>'
+        +'<td>'+esc(r.type)+'</td><td>'+money(r.commission_cents)+'</td><td>'+esc(r.expected_payment_date||'—')+'</td><td>'+bankHtml(r.bank)+'</td></tr>';
+    }).join('') || '<tr><td colspan="5">Nothing due.</td></tr>';
+
+    $('leader-table').querySelector('tbody').innerHTML=(data.partner_leaderboard||[]).map(function(r){
+      return '<tr><td><strong>'+esc(r.display_name)+'</strong></td><td>'+money(r.commission_cents)+'</td><td>'+money(r.pending_cents)+'</td><td>'+money(r.paid_cents)+'</td><td>'+bankHtml(r.bank)+'</td></tr>';
+    }).join('') || '<tr><td colspan="5">No partners yet.</td></tr>';
+
+    $('adj-list').innerHTML=(data.invoice_adjustments||[]).length
+      ? '<table class="ba-table"><thead><tr><th>Invoice</th><th>Coupon</th><th>Discount</th><th>Adjusted</th><th>Reason</th></tr></thead><tbody>'
+        +(data.invoice_adjustments||[]).map(function(a){
+          return '<tr><td class="mono">'+esc(a.stripe_invoice_id||'—')+'</td><td>'+esc(a.coupon_code||'—')+'</td><td>'+money(a.discount_cents)+'</td><td>'+money(a.adjusted_amount_cents)+'</td><td>'+esc(a.reason||'')+'</td></tr>';
+        }).join('')+'</tbody></table>'
+      : '<p class="sub">No adjustments yet.</p>';
+
+    $('pkg-list').innerHTML=(data.maintenance_packages||[]).map(function(p){
+      return '<div style="padding:12px 0;border-bottom:1px solid var(--line)"><strong>'+esc(p.name)+'</strong> · '+esc(p.package_type)
+        +' · '+money(p.price_cents)
+        +'<div class="sub" style="margin:4px 0 0">Partner '+esc(p.partner_share_pct)+'% / Platform '+esc(p.platform_share_pct)+'% — '+esc(p.description||'')+'</div></div>';
+    }).join('') || '<p class="sub">No packages. Apply db/billing_accounting.sql.</p>';
+
+    if(data.warnings&&data.warnings.message){
+      $('maint-warn').textContent=data.warnings.message;
+      $('maint-warn').className='msg bad';
+    } else { $('maint-warn').textContent=''; }
+
+    $('jobs-table').querySelector('tbody').innerHTML=(data.maintenance_jobs||[]).map(function(j){
+      return '<tr><td>'+esc(j.title)+'</td><td>'+money(j.amount_cents)+'</td><td>'+money(j.partner_share_cents)+'</td><td>'+money(j.platform_share_cents)+'</td><td>'+statusPill(j.status)+'</td></tr>';
+    }).join('') || '<tr><td colspan="5">No jobs yet.</td></tr>';
+
+    var planSel=$('na-plan');
+    var cur=planSel.value;
+    planSel.innerHTML='<option value="">— Select —</option>'+(data.plans||[]).filter(function(p){return p.active!==false;}).map(function(p){
+      return '<option value="'+esc(p.key)+'">'+esc(p.name)+' — '+money(p.monthly_amount)+'/mo</option>';
+    }).join('');
+    planSel.value=cur;
+
+    var partnerSel=$('na-partner');
+    var pcur=partnerSel.value;
+    partnerSel.innerHTML='<option value="">— None —</option>'+(data.partners||[]).map(function(p){
+      return '<option value="'+esc(p.id)+'">'+esc(p.display_name)+' ('+esc(p.email||'')+')</option>';
+    }).join('');
+    partnerSel.value=pcur;
+
+    $('lede').textContent='Updated '+(data.generated_at?new Date(data.generated_at).toLocaleString('en-AU'):'');
+  }
+
+  async function load(){
+    var data=await api('/api/billing/accounting');
+    renderAll(data);
+  }
+
+  async function boot(){
+    var session=(await sb.auth.getSession()).data.session;
+    if(!session){ $('gate').classList.remove('hidden'); $('app').classList.add('hidden'); return; }
+    $('gate').classList.add('hidden'); $('app').classList.remove('hidden');
+    try{
+      await load();
+      var tab=new URL(location.href).searchParams.get('tab')||'overview';
+      showTab(tab);
+    }catch(e){
+      $('gate').classList.remove('hidden'); $('app').classList.add('hidden');
+      $('gate-msg').textContent=e.message||'Could not load accounting.';
+    }
+  }
+
+  $('login-btn').addEventListener('click', async function(){
+    $('gate-msg').textContent='';
+    var email=$('email').value.trim(); var password=$('password').value;
+    var r=await sb.auth.signInWithPassword({email:email,password:password});
+    if(r.error){ $('gate-msg').textContent=r.error.message; return; }
+    boot();
+  });
+  $('refresh').addEventListener('click', function(){ load().catch(function(e){ alert(e.message); }); });
+  document.getElementById('tabs').addEventListener('click', function(e){
+    var b=e.target.closest('[data-tab]'); if(!b) return; showTab(b.getAttribute('data-tab'));
+  });
+
+  $('adj-save').addEventListener('click', async function(){
+    var msg=$('adj-msg'); msg.textContent=''; msg.className='msg';
+    try{
+      var dollars=function(id){ var v=parseFloat($(id).value); return Number.isFinite(v)?Math.round(v*100):null; };
+      await api('/api/billing/invoice-adjust',{method:'POST',body:{
+        stripe_invoice_id:$('adj-invoice').value.trim()||null,
+        site_id:$('adj-site').value.trim()||null,
+        coupon_code:$('adj-coupon').value.trim()||null,
+        discount_cents:dollars('adj-discount')||0,
+        original_amount_cents:dollars('adj-original'),
+        adjusted_amount_cents:dollars('adj-adjusted'),
+        reason:$('adj-reason').value.trim()||null,
+        notes:$('adj-notes').value.trim()||null
+      }});
+      msg.textContent='Adjustment saved.'; msg.className='msg ok';
+      await load();
+    }catch(e){ msg.textContent=e.message; msg.className='msg bad'; }
+  });
+
+  $('na-save').addEventListener('click', async function(){
+    var msg=$('na-msg'); msg.textContent=''; msg.className='msg';
+    try{
+      var sale=parseFloat($('na-sale').value);
+      var res=await api('/api/billing/hosting-account',{method:'POST',body:{
+        businessName:$('na-biz').value.trim(),
+        ownerEmail:$('na-email').value.trim(),
+        phone:$('na-phone').value.trim(),
+        contactName:$('na-contact').value.trim(),
+        planKey:$('na-plan').value||null,
+        partnerId:$('na-partner').value||null,
+        salePrice:Number.isFinite(sale)?Math.round(sale*100):null,
+        notes:$('na-notes').value.trim(),
+        createCheckout:$('na-checkout').checked
+      }});
+      msg.innerHTML='Created <strong>'+esc(res.site.slug)+'</strong>.'
+        +(res.checkout_url?' <a href="'+esc(res.checkout_url)+'" target="_blank" rel="noopener">Open Checkout</a>':'');
+      msg.className='msg ok';
+      await load();
+    }catch(e){ msg.textContent=e.message; msg.className='msg bad'; }
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>
