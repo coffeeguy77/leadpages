@@ -739,6 +739,13 @@
     err.classList.add('hidden');
     btn.disabled = true;
     state.loading = true;
+    if (global.LPBusy) {
+      global.LPBusy.show({
+        title: 'Saving page content',
+        message: 'Updating your partner website…',
+        detail: 'Please wait — do not close this tab.'
+      });
+    }
     try {
       var payload = { section: 'all', websiteProfile: collectProfile() };
       if (state.partnerId) payload.partner_id = state.partnerId;
@@ -763,6 +770,7 @@
       err.textContent = 'Network error — please try again.';
       err.classList.remove('hidden');
     } finally {
+      if (global.LPBusy) global.LPBusy.hide();
       btn.disabled = false;
       state.loading = false;
     }
