@@ -6111,32 +6111,82 @@ function heroCtaCard(c){
     } else if(sub==='faq'){
       body.innerHTML=secCard(c,'faq','FAQ section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+listCard('faq','Questions','Common questions and answers. Edit, hide or remove each.'); wireSec(c,'faq',true,[['eyebrow'],['heading']]); listEditor($('le-faq'),c,'faq');
     } else if(sub==='emerg'){
+      var _emTh=c.theme||{};
+      var _emHiv=_emTh.hivis||DEFAULT_TRADE_THEME.hivis;
+      var _emPipe=_emTh.pipe||DEFAULT_TRADE_THEME.pipe;
+      var _emSteel=_emTh.steel||DEFAULT_TRADE_THEME.steel;
+      var _emSafe=_emTh.safety||DEFAULT_TRADE_THEME.safety;
+      var _emEM=(c.sections&&c.sections.emerg)||{};
+      var _emTrans=_emEM.bgTransparent===true||_emEM.bg==='transparent';
       body.innerHTML=secCard(c,'emerg','Top emergency bar',true,[['text','Message (the call link stays on automatically)','ta']])
-        +'<div class="card" style="margin-bottom:22px;"><h2>Bar colours</h2><p class="lede">Pick a custom background and text colour for the top bar, or leave Default to use your theme hi-vis colour.</p>'
-        +'<div class="row"><div class="f"><label>Background colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="em-bg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="em-bgt" class="tin" placeholder="Theme default (hi-vis)" style="flex:1;min-width:0;"><button type="button" id="em-bg-clr" class="btn ghost sm">Default</button></div></div>'
-        +'<div class="f"><label>Text colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="em-fg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="em-fgt" class="tin" placeholder="Theme default (white)" style="flex:1;min-width:0;"><button type="button" id="em-fg-clr" class="btn ghost sm">Default</button></div></div></div>'
+        +'<div class="card" style="margin-bottom:22px;"><h2>Layout</h2><p class="lede">Pin the top bar with the logo header, or let the page scroll under a clear bar.</p>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="em-sticky"'+(_emEM.sticky===true?' checked':'')+'> Sticky with logo header</label>'
+        +'<p class="hint" style="margin:-4px 0 14px;">Keeps the top bar pinned above the logo header as the page scrolls.</p>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px;"><input type="checkbox" id="em-trans"'+(_emTrans?' checked':'')+'> Transparent background</label>'
+        +'<p class="hint" style="margin:0;">Clears the bar fill so the hero shows through. Text colour still applies.</p>'
+        +'</div>'
+        +'<div class="card" style="margin-bottom:22px;"><h2>Bar colours</h2><p class="lede">Swatches show your current theme colours \u2014 click one to apply it. Or pick a custom colour below.</p>'
+        +'<div id="em-bg-fields" style="'+(_emTrans?'opacity:.45;pointer-events:none;':'')+'">'
+        +'<div class="f" style="margin-bottom:10px;"><label>Background \u2014 theme colours</label><div id="em-bg-swatches" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div></div>'
+        +'<div class="row"><div class="f"><label>Background colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="em-bg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="em-bgt" class="tin" placeholder="'+_emHiv+' (theme CTA)" style="flex:1;min-width:0;"><button type="button" id="em-bg-clr" class="btn ghost sm">Default</button></div></div><div class="f"></div></div>'
+        +'</div>'
+        +'<div class="f" style="margin:14px 0 10px;"><label>Text \u2014 theme colours</label><div id="em-fg-swatches" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div></div>'
+        +'<div class="row"><div class="f"><label>Text colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="em-fg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="em-fgt" class="tin" placeholder="#ffffff (white)" style="flex:1;min-width:0;"><button type="button" id="em-fg-clr" class="btn ghost sm">Default</button></div></div><div class="f"></div></div>'
+        +'<div style="margin-top:14px;"><button type="button" class="btn ghost sm" id="em-import-theme">Import current theme colours</button><span class="hint" style="margin-left:10px;">Sets background to your CTA colour and text to white.</span></div>'
         +'</div>';
       wireSec(c,'emerg',true,[['text']]);
       (function(){
         function ens(){ if(!c.sections)c.sections={}; if(!c.sections.emerg)c.sections.emerg={}; return c.sections.emerg; }
         var EM=(c.sections&&c.sections.emerg)||{};
+        var th=c.theme||{};
+        var thHiv=th.hivis||DEFAULT_TRADE_THEME.hivis;
+        var thPipe=th.pipe||DEFAULT_TRADE_THEME.pipe;
+        var thSteel=th.steel||DEFAULT_TRADE_THEME.steel;
+        var thSafe=th.safety||DEFAULT_TRADE_THEME.safety;
         function _emHex(v){ v=(v||'').trim(); return /^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)?(v.charAt(0)==='#'?v:'#'+v):''; }
+        function _emNorm(v){ v=_emHex(v); if(!v) return ''; if(v.length===4) return ('#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3)).toLowerCase(); return v.toLowerCase(); }
+        function _swatch(host,items,apply){
+          if(!host) return;
+          host.innerHTML=items.map(function(it){
+            var hex=_emNorm(it.hex)||'#000000';
+            return '<button type="button" class="em-sw" data-hex="'+hex+'" title="'+esc(it.label)+' '+hex+'" style="display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;">'
+              +'<span style="width:22px;height:22px;border-radius:6px;background:'+hex+';border:1px solid rgba(0,0,0,.15);flex:0 0 auto;"></span>'
+              +'<span>'+esc(it.label)+'<br><span style="font-weight:500;opacity:.65;font-size:11px;">'+hex+'</span></span></button>';
+          }).join('');
+          host.querySelectorAll('.em-sw').forEach(function(btn){ btn.addEventListener('click',function(){ apply(btn.getAttribute('data-hex')); }); });
+        }
+        function _syncTransUi(){
+          var on=!!(ens().bgTransparent);
+          var wrap=$('em-bg-fields'); if(wrap){ wrap.style.opacity=on?'0.45':''; wrap.style.pointerEvents=on?'none':''; }
+        }
+        var st=$('em-sticky'); if(st){ st.checked=(EM.sticky===true); st.addEventListener('change',function(){ ens().sticky=st.checked; persist(); previewApply(); }); }
+        var tr=$('em-trans'); if(tr){ tr.checked=(EM.bgTransparent===true||EM.bg==='transparent'); tr.addEventListener('change',function(){ ens().bgTransparent=tr.checked; if(tr.checked&&ens().bg==='transparent') ens().bg=''; _syncTransUi(); persist(); previewApply(); }); }
         var bg=$('em-bg'),bgt=$('em-bgt');
         if(bg&&bgt){
-          if(EM.bg){ bg.value=EM.bg; bgt.value=EM.bg; } else { bg.value='#ff6a1f'; }
-          var sB=function(v){ v=_emHex(v); ens().bg=v; bgt.value=v; if(v) bg.value=v; persist(); previewApply(); };
+          var _bgShow=_emNorm(EM.bg)||_emNorm(thHiv);
+          bg.value=_bgShow; if(EM.bg) bgt.value=EM.bg;
+          var sB=function(v){ v=_emHex(v); ens().bg=v; ens().bgTransparent=false; if(tr) tr.checked=false; bgt.value=v; if(v) bg.value=_emNorm(v)||v; _syncTransUi(); persist(); previewApply(); };
           bg.addEventListener('input',function(){ sB(bg.value); });
           bgt.addEventListener('input',function(){ sB(bgt.value); });
-          var bc=$('em-bg-clr'); if(bc) bc.addEventListener('click',function(){ ens().bg=''; bgt.value=''; bg.value='#ff6a1f'; persist(); previewApply(); });
+          var bc=$('em-bg-clr'); if(bc) bc.addEventListener('click',function(){ ens().bg=''; ens().bgTransparent=false; if(tr) tr.checked=false; bgt.value=''; bg.value=_emNorm(thHiv); _syncTransUi(); persist(); previewApply(); });
+          _swatch($('em-bg-swatches'),[
+            {label:'CTA / hi-vis',hex:thHiv},{label:'Brand',hex:thPipe},{label:'Steel',hex:thSteel},{label:'Highlight',hex:thSafe},{label:'White',hex:'#ffffff'},{label:'Black',hex:'#000000'}
+          ],sB);
         }
         var fg=$('em-fg'),fgt=$('em-fgt');
         if(fg&&fgt){
-          if(EM.fg){ fg.value=EM.fg; fgt.value=EM.fg; } else { fg.value='#ffffff'; }
-          var sF=function(v){ v=_emHex(v); ens().fg=v; fgt.value=v; if(v) fg.value=v; persist(); previewApply(); };
+          var _fgShow=_emNorm(EM.fg)||'#ffffff';
+          fg.value=_fgShow; if(EM.fg) fgt.value=EM.fg;
+          var sF=function(v){ v=_emHex(v); ens().fg=v; fgt.value=v; if(v) fg.value=_emNorm(v)||v; persist(); previewApply(); };
           fg.addEventListener('input',function(){ sF(fg.value); });
           fgt.addEventListener('input',function(){ sF(fgt.value); });
           var fc=$('em-fg-clr'); if(fc) fc.addEventListener('click',function(){ ens().fg=''; fgt.value=''; fg.value='#ffffff'; persist(); previewApply(); });
+          _swatch($('em-fg-swatches'),[
+            {label:'White',hex:'#ffffff'},{label:'Black',hex:'#000000'},{label:'Steel',hex:thSteel},{label:'CTA',hex:thHiv},{label:'Brand',hex:thPipe}
+          ],sF);
         }
+        var imp=$('em-import-theme'); if(imp) imp.addEventListener('click',function(){ ens().bg=thHiv; ens().fg='#ffffff'; ens().bgTransparent=false; if(tr) tr.checked=false; if(bg) bg.value=_emNorm(thHiv); if(bgt) bgt.value=thHiv; if(fg) fg.value='#ffffff'; if(fgt) fgt.value='#ffffff'; _syncTransUi(); persist(); previewApply(); });
+        _syncTransUi();
       })();
     } else if(sub==='quote'){
       body.innerHTML=secCard(c,'quote','Quote form section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['sub','Sub-text','ta'],['button','Button text'],['formTitle','Form heading']])
@@ -6206,7 +6256,7 @@ function heroCtaCard(c){
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h2 style="margin:0;">Colours</h2><button class="btn ghost" id="col-reset" type="button">Reset to default</button></div><p class="lede">Pick a tradie preset, then fine-tune \u2014 changes preview live on the right.</p><div id="trade-presets" style="display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 16px;"></div><div class="appr-grid">'+rowsC+'</div>'+'<div style="margin-top:20px;border-top:1px solid var(--line);padding-top:16px;"><h3 style="margin:0 0 4px;font-size:15px;">Theme library</h3><div style="display:flex;align-items:center;gap:8px;margin:0 0 8px;padding:8px 10px;background:#f4f6f5;border:1px solid var(--line);border-radius:8px;"><span class="hint" style="margin:0;">Active theme:</span><strong id="active-theme-name" style="font-size:13.5px;">\u2014</strong></div><p class="hint" style="margin:0 0 10px;">100 ready-made trade palettes \u2014 click one to apply to this site, or <button type="button" class="btn ghost" id="reset-trade-colours" style="padding:3px 9px;">Reset to recommended trade colours</button></p><input type="text" id="lib-filter" class="tin" placeholder="Filter palettes\u2026" style="width:100%;margin-bottom:10px;box-sizing:border-box;"><div id="trade-colour-library" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:8px;max-height:300px;overflow:auto;padding:2px;"></div></div></div>';
       wireTradeColours(c); renderTradePresets(c); renderColourLibrary(c);
     } else if(sub==='logo'){
-      var L0=c.logo||{}; var _hd=Math.max(24,Math.min(320,(L0.heightPx?L0.heightPx:Math.round(40*(L0.scale||1)))||44)); var _hm=Math.max(20,Math.min(160,(L0.heightPxM?L0.heightPxM:Math.round(_hd*0.72)))); var _bgIsC=!!(L0.bg&&L0.bg!=='transparent'); var _bgC=_bgIsC?L0.bg:'#0f1115'; var _pad=(L0.pad!=null?L0.pad:8); var _rad=(L0.radius!=null?L0.radius:12); var _float=!!L0.float; var _hbgV=(L0.headerBg&&L0.headerBg!=='')?L0.headerBg:'#0b1220';
+      var L0=c.logo||{}; var _hd=Math.max(24,Math.min(320,(L0.heightPx?L0.heightPx:Math.round(40*(L0.scale||1)))||44)); var _hm=Math.max(20,Math.min(160,(L0.heightPxM?L0.heightPxM:Math.round(_hd*0.72)))); var _bgIsC=!!(L0.bg&&L0.bg!=='transparent'); var _bgC=_bgIsC?L0.bg:'#0f1115'; var _pad=(L0.pad!=null?L0.pad:8); var _rad=(L0.radius!=null?L0.radius:12); var _float=!!L0.float; var _hbgV=(L0.headerBg&&L0.headerBg!=='')?L0.headerBg:'#0b1220'; var _hopV=(L0.headerBgOpacity!=null&&L0.headerBgOpacity!=='')?Math.max(0,Math.min(100,+L0.headerBgOpacity||0)):100;
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Logo</h2><p class="lede">Show a clean text logo or upload an image \u2014 both replace the default initial badge.</p>'
         +'<div class="row"><div class="f"><label>Logo style</label><select id="lg-mode" class="tin"><option value="mark">Initial badge + name</option><option value="text">Text only</option><option value="image">Image</option></select></div>'+lpFld('Logo text','lg-text','defaults to business name')+'</div>'
         +'<div id="lg-imgwrap" class="f" style="display:none;"><label>Logo image</label><input type="file" id="lg-file" accept="image/*"><div class="hint" style="margin-top:4px;">PNG, JPG or SVG \u2014 large images are optimised automatically on upload.</div><div id="lg-imgprev" style="margin-top:8px;"></div></div></div>'
@@ -6215,7 +6265,10 @@ function heroCtaCard(c){
             +'<div class="f"><label>Mobile height <span class="hint" id="lg-hm-val">'+_hm+'px</span></label><input type="range" id="lg-hm" min="20" max="160" step="1" value="'+_hm+'" style="width:100%;"></div></div>'
           +'<div class="f"><label>Position in header</label><select id="lg-pos" class="tin"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></div>'
           +'<div class="f"><label>Header style</label><select id="lg-hstyle" class="tin"><option value="solid-sticky">Solid bar \u2014 sticky (stays pinned at top)</option><option value="solid-scroll">Solid bar \u2014 scrolls away with the page</option><option value="float">Float over hero \u2014 transparent, scrolls away</option><option value="shrink">Shrink on scroll (big over hero \u2192 compact pinned bar)</option></select></div>'
-          +'<div class="f" id="lg-hbg-row"><label>Header bar colour</label><div style="display:flex;gap:10px;align-items:center;"><input type="color" id="lg-hbg" value="'+_hbgV+'" style="width:56px;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;"><span class="hint" style="margin:0;">The band behind the logo (set it black to match this logo). Used by the solid bar and by the compact bar in \u201cShrink on scroll\u201d.</span></div></div>'
+          +'<div id="lg-hbg-row">'
+          +'<div class="f"><label>Header bar colour</label><div style="display:flex;gap:10px;align-items:center;"><input type="color" id="lg-hbg" value="'+_hbgV+'" style="width:56px;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;"><span class="hint" style="margin:0;">The band behind the logo. Used by the solid bar and by the compact bar in \u201cShrink on scroll\u201d.</span></div></div>'
+          +'<div class="f" style="margin-top:12px;"><label>Header bar transparency <span id="lg-hop-v" style="font-weight:700;color:var(--accent);">'+_hopV+'%</span></label><input type="range" id="lg-hop" min="0" max="100" step="1" value="'+_hopV+'" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">100% = solid \u00b7 0% = clear (hero shows through)</span></div>'
+          +'</div>'
           +'<div class="f"><label>Logo background</label><select id="lg-bgmode" class="tin"><option value="transparent">Transparent</option><option value="color">Solid colour chip</option></select><div class="hint" style="margin-top:4px;">Transparent shows the logo straight on the header. A colour chip frames it \u2014 handy for a logo whose own background doesn\u2019t match.</div></div>'
           +'<div id="lg-bgwrap" style="display:'+(_bgIsC?'block':'none')+';">'
             +'<div class="row"><div class="f"><label>Chip colour</label><input type="color" id="lg-bg" value="'+_bgC+'" style="width:56px;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;"></div>'
@@ -6281,6 +6334,7 @@ function heroCtaCard(c){
     var pos=$('lg-pos'); if(pos){ pos.value=L.position||'left'; pos.addEventListener('change',function(){ L.position=pos.value; persist(); previewApply(); }); }
     var hs=$('lg-hstyle'); if(hs){ hs.value=L.headerStyle||(L.float?'float':'solid-sticky'); var _hsUpd=function(){ var solidish=(hs.value==='solid-sticky'||hs.value==='solid-scroll'||hs.value==='shrink'); var hr=$('lg-hbg-row'); if(hr) hr.style.opacity=solidish?'1':'0.5'; }; _hsUpd(); hs.addEventListener('change',function(){ L.headerStyle=hs.value; if('float' in L) delete L.float; _hsUpd(); persist(); previewApply(); }); }
     var hbg=$('lg-hbg'); if(hbg) hbg.addEventListener('input',function(){ L.headerBg=hbg.value; persist(); previewApply(); });
+    var hop=$('lg-hop'), hopv=$('lg-hop-v'); if(hop){ hop.addEventListener('input',function(){ var v=parseInt(hop.value,10); if(isNaN(v))v=100; v=Math.max(0,Math.min(100,v)); L.headerBgOpacity=v; if(hopv) hopv.textContent=v+'%'; persist(); previewApply(); }); }
     var bm=$('lg-bgmode'), bw=$('lg-bgwrap'); if(bm){ bm.value=(L.bg&&L.bg!=='transparent')?'color':'transparent'; bm.addEventListener('change',function(){ if(bm.value==='color'){ if(!L.bg||L.bg==='transparent') L.bg=(($('lg-bg')&&$('lg-bg').value)||'#0f1115'); if(L.pad==null)L.pad=8; if(L.radius==null)L.radius=12; if(bw)bw.style.display='block'; } else { L.bg='transparent'; if(bw)bw.style.display='none'; } persist(); previewApply(); }); }
     var bg=$('lg-bg'); if(bg) bg.addEventListener('input',function(){ L.bg=bg.value; persist(); previewApply(); });
     var pd=$('lg-pad'); if(pd) pd.addEventListener('input',function(){ var v=parseInt(pd.value,10); if(isNaN(v))v=0; L.pad=v; var e=$('lg-pad-val'); if(e)e.textContent=v+'px'; persist(); previewApply(); });
