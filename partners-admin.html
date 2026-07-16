@@ -547,17 +547,20 @@ label{font-weight:600;font-size:11.5px;color:var(--ink-soft);display:block;margi
         var pid=pr.data.id;
         await sb.from('partner_profiles').insert({ partner_id:pid, support_name:a.name||null, support_email:a.email||null, support_phone:a.phone||null, region:a.location||null });
         var up=await sb.from('partner_applications').update({ status:'approved', partner_id:pid }).eq('id',a.id).select('*');
+        var welcomeOk=false; var welcomeErr='';
         try{
-          var tok=(await sb.auth.getSession()).data.session;
-          if(tok&&tok.access_token){
-            await fetch('/api/partner-welcome',{method:'POST',
-              headers:{'content-type':'application/json',Authorization:'Bearer '+tok.access_token},
-              body:JSON.stringify({partnerId:pid,email:a.email,name:a.name})});
-          }
-        }catch(we){ console.warn('Welcome email failed:',we); }
+          await sendPartnerWelcome(pid, a.email, a.name);
+          welcomeOk=true;
+        }catch(we){
+          welcomeErr=(we&&we.message)||'Welcome email failed';
+          console.warn('Welcome email failed:',we);
+        }
         if(up.data&&up.data[0]) Object.assign(a,up.data[0]);
         partners.unshift(pr.data); renderPartners();
         renderApps();
+        if(!welcomeOk){
+          alert('Partner created, but the welcome letter was not sent'+(welcomeErr?(': '+welcomeErr):'.')+'\n\nOpen the Partners tab and press “Send welcome”.');
+        }
       }catch(err){ alert('Could not create partner: '+(err.message||err)); cb.disabled=false; cb.textContent='Approve'; }
     }
   });
@@ -591,10 +594,24 @@ label{font-weight:600;font-size:11.5px;color:var(--ink-soft);display:block;margi
         + '<div><label>Phone</label><input type="tel" data-phone value="'+esc(p.phone||'')+'"></div>'
         + '<div><label>Status</label>'+statusSelect(p.status,PARTNER_STATUSES,'data-status')+'</div>'
         + '<button class="btn btn-sm btn-brand" data-save>Save</button>'
+        + '<button class="btn btn-sm" data-welcome type="button"'+(p.email?'':' disabled title="Add an email first"')+'>Send welcome</button>'
         + (bankLocked ? '<button class="btn btn-sm" data-unlock-bank type="button">Unlock bank details</button>' : '')
         + '<span class="linkpill '+(linked?'yes':'')+'">'+(linked?'Login linked ✓':'Not linked yet')+'</span>'
         + '<span class="saved" data-saved>Saved ✓</span>'
+        + '<span class="saved" data-welcome-saved>Welcome sent ✓</span>'
       + '</div></div>';
+  }
+  async function sendPartnerWelcome(partnerId, email, name){
+    var tok=(await sb.auth.getSession()).data.session;
+    if(!tok||!tok.access_token) throw new Error('Not signed in.');
+    var r=await fetch('/api/partner-welcome',{
+      method:'POST',
+      headers:{'content-type':'application/json',Authorization:'Bearer '+tok.access_token},
+      body:JSON.stringify({ partnerId:partnerId, email:email||undefined, name:name||undefined })
+    });
+    var j=await r.json().catch(function(){ return {}; });
+    if(!r.ok || !j.ok) throw new Error(j.error || ('Welcome email failed ('+r.status+')'));
+    return j;
   }
   function renderPartners(){
     $('partners-count').textContent=partners.length?('· '+partners.length):'';
@@ -602,6 +619,36 @@ label{font-weight:600;font-size:11.5px;color:var(--ink-soft);display:block;margi
       : '<div class="card empty">No partners yet. Approve an application to create the first one.</div>';
   }
   $('partners-list').addEventListener('click', async function(e){
+    var welcomeBtn=e.target.closest('[data-welcome]');
+    if(welcomeBtn){
+      var card=welcomeBtn.closest('.item'); var id=card.getAttribute('data-id');
+      var p=partners.find(function(x){ return x.id===id; }); if(!p) return;
+      var email=(card.querySelector('[data-email]')&&card.querySelector('[data-email]').value)||p.email||'';
+      var name=(card.querySelector('[data-name]')&&card.querySelector('[data-name]').value)||p.display_name||'';
+      if(!email){ alert('This partner needs an email address before you can send the welcome letter.'); return; }
+      if(!window.confirm('Send the welcome letter to '+email+'?')) return;
+      welcomeBtn.disabled=true; welcomeBtn.textContent='Sending…';
+      try{
+        await sendPartnerWelcome(id, email, name);
+        var mark=card.querySelector('[data-welcome-saved]');
+        if(mark){ mark.classList.add('show'); setTimeout(function(){ mark.classList.remove('show'); },2200); }
+        // Refresh linked state if auth user was created (in place so the sent flash stays visible)
+        var refreshed=await sb.from('partners').select('id,user_id').eq('id',id).maybeSingle();
+        if(refreshed.data){
+          var row=partners.find(function(x){ return x.id===id; });
+          if(row) row.user_id=refreshed.data.user_id;
+          if(refreshed.data.user_id){
+            var pill=card.querySelector('.linkpill');
+            if(pill){ pill.classList.add('yes'); pill.textContent='Login linked \u2713'; }
+          }
+        }
+      }catch(err){
+        alert(err.message||'Could not send welcome letter.');
+      }finally{
+        welcomeBtn.disabled=false; welcomeBtn.textContent='Send welcome';
+      }
+      return;
+    }
     var unlockBtn=e.target.closest('[data-unlock-bank]');
     if(unlockBtn){
       var card=unlockBtn.closest('.item'); var id=card.getAttribute('data-id');
