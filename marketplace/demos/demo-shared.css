@@ -48,10 +48,10 @@ a{color:inherit}
 .btn-pipe{background:var(--pipe);color:#fff}
 .btn-pipe:hover{background:var(--pipe-deep)}
 
-/* emergency strip */
-.emerg{background:var(--hivis);color:#fff;text-align:center;font-family:"Barlow";font-weight:700;
+/* emergency strip / top bar — bg/fg overridable via sections.emerg.bg / .fg */
+.emerg{background:var(--emerg-bg,var(--hivis));color:var(--emerg-fg,#fff);text-align:center;font-family:"Barlow";font-weight:700;
   font-size:14.5px;padding:9px 16px;letter-spacing:.01em}
-.emerg a{text-decoration:none;border-bottom:2px solid rgba(255,255,255,.6)}
+.emerg a{color:inherit;text-decoration:none;border-bottom:2px solid rgba(255,255,255,.6)}
 
 /* header */
 header.site{position:sticky;top:0;z-index:60;background:var(--steel-900);color:#fff}

@@ -6027,7 +6027,33 @@ function heroCtaCard(c){
     } else if(sub==='faq'){
       body.innerHTML=secCard(c,'faq','FAQ section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+listCard('faq','Questions','Common questions and answers. Edit, hide or remove each.'); wireSec(c,'faq',true,[['eyebrow'],['heading']]); listEditor($('le-faq'),c,'faq');
     } else if(sub==='emerg'){
-      body.innerHTML=secCard(c,'emerg','Top emergency bar',true,[['text','Message (the call link stays on automatically)','ta']]); wireSec(c,'emerg',true,[['text']]);
+      body.innerHTML=secCard(c,'emerg','Top emergency bar',true,[['text','Message (the call link stays on automatically)','ta']])
+        +'<div class="card" style="margin-bottom:22px;"><h2>Bar colours</h2><p class="lede">Pick a custom background and text colour for the top bar, or leave Default to use your theme hi-vis colour.</p>'
+        +'<div class="row"><div class="f"><label>Background colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="em-bg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="em-bgt" class="tin" placeholder="Theme default (hi-vis)" style="flex:1;min-width:0;"><button type="button" id="em-bg-clr" class="btn ghost sm">Default</button></div></div>'
+        +'<div class="f"><label>Text colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="em-fg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="em-fgt" class="tin" placeholder="Theme default (white)" style="flex:1;min-width:0;"><button type="button" id="em-fg-clr" class="btn ghost sm">Default</button></div></div></div>'
+        +'</div>';
+      wireSec(c,'emerg',true,[['text']]);
+      (function(){
+        function ens(){ if(!c.sections)c.sections={}; if(!c.sections.emerg)c.sections.emerg={}; return c.sections.emerg; }
+        var EM=(c.sections&&c.sections.emerg)||{};
+        function _emHex(v){ v=(v||'').trim(); return /^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)?(v.charAt(0)==='#'?v:'#'+v):''; }
+        var bg=$('em-bg'),bgt=$('em-bgt');
+        if(bg&&bgt){
+          if(EM.bg){ bg.value=EM.bg; bgt.value=EM.bg; } else { bg.value='#ff6a1f'; }
+          var sB=function(v){ v=_emHex(v); ens().bg=v; bgt.value=v; if(v) bg.value=v; persist(); previewApply(); };
+          bg.addEventListener('input',function(){ sB(bg.value); });
+          bgt.addEventListener('input',function(){ sB(bgt.value); });
+          var bc=$('em-bg-clr'); if(bc) bc.addEventListener('click',function(){ ens().bg=''; bgt.value=''; bg.value='#ff6a1f'; persist(); previewApply(); });
+        }
+        var fg=$('em-fg'),fgt=$('em-fgt');
+        if(fg&&fgt){
+          if(EM.fg){ fg.value=EM.fg; fgt.value=EM.fg; } else { fg.value='#ffffff'; }
+          var sF=function(v){ v=_emHex(v); ens().fg=v; fgt.value=v; if(v) fg.value=v; persist(); previewApply(); };
+          fg.addEventListener('input',function(){ sF(fg.value); });
+          fgt.addEventListener('input',function(){ sF(fgt.value); });
+          var fc=$('em-fg-clr'); if(fc) fc.addEventListener('click',function(){ ens().fg=''; fgt.value=''; fg.value='#ffffff'; persist(); previewApply(); });
+        }
+      })();
     } else if(sub==='quote'){
       body.innerHTML=secCard(c,'quote','Quote form section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['sub','Sub-text','ta'],['button','Button text'],['formTitle','Form heading']])
         +'<div class=\"card\" style=\"margin-bottom:22px;\"><h2 style=\"margin:0 0 4px;\">Form style</h2><p class=\"hint\" style=\"margin:0 0 12px;\">Choose where the colour goes. Button highlight keeps a white form with a coloured button. Coloured form turns the whole form your brand colour and makes the button white.</p><div class=\"f\"><select id=\"q-formstyle\" class=\"tin\"><option value=\"default\">Button highlight (white form, coloured button)</option><option value=\"feature\">Coloured form (brand form, white button)</option></select></div></div>'+quoteStyleCard(c)+listCard('quotePoints','Trust points','The ticked points beside the form. Edit, hide or remove each.')
