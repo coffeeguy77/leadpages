@@ -260,6 +260,11 @@
       }
       var HB=SEC.heroBeforeAfter||{}; var hbNode=document.querySelector('[data-sec="heroBeforeAfter"]');
       if(hbNode){
+        function _bahsHex(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; }
+        function _bahsSet(name,val,fallback){ var c=_bahsHex(val)||fallback||''; if(c) hbNode.style.setProperty(name,c); else hbNode.style.removeProperty(name); }
+        var _sideOn=(HB.layout==='sidebar');
+        var _side=(HB.sidebarSide==='right')?'right':'left';
+        hbNode.classList.toggle('bahs-layout-sidebar',_sideOn);
         var _hbe=hbNode.querySelector('.eyebrow'); if(_hbe) _hbe.textContent=(HB.eyebrow!=null?HB.eyebrow:'See The Difference');
         var _hbh=hbNode.querySelector('h2'); if(_hbh) _hbh.textContent=(HB.heading!=null?HB.heading:'Drag To Reveal The Result');
         var _hbi=hbNode.querySelector('.section-head p'); if(_hbi){ var _hbiv=(HB.intro!=null?HB.intro:'Show customers the transformation in one simple swipe.'); _hbi.textContent=_hbiv; _hbi.style.display=_hbiv?'':'none'; }
@@ -271,6 +276,41 @@
         if(_bef) _bef.innerHTML=(_bu?'<img class="bahs-img" src="'+esc(_bu)+'" alt="'+esc(_bl)+'" loading="lazy">':'<div class="bahs-ph">Before image</div>')+'<span class="bahs-lab bahs-lab-b">'+esc(_bl)+'</span>';
         var _ht=hbNode.querySelector('.bahs-title'); if(_ht){ var _htv=(HB.title!=null?HB.title:'Real local transformation'); _ht.textContent=_htv; _ht.style.display=_htv?'':'none'; }
         var _hc=hbNode.querySelector('.bahs-cap'); if(_hc){ var _hcv=(HB.caption!=null?HB.caption:'A clear look at the problem before and the finished result after the job was completed.'); _hc.textContent=_hcv; _hc.style.display=_hcv?'':'none'; }
+        var _bahs=hbNode.querySelector('.bahs');
+        if(_bahs){
+          _bahs.classList.toggle('bahs-split',_sideOn);
+          _bahs.classList.toggle('bahs-side-left',_sideOn&&_side==='left');
+          _bahs.classList.toggle('bahs-side-right',_sideOn&&_side==='right');
+          var _sideEl=_bahs.querySelector('.bahs-side');
+          if(_sideOn){
+            if(!_sideEl){ _sideEl=document.createElement('div'); _sideEl.className='bahs-side'; _bahs.insertBefore(_sideEl,_bahs.firstChild); }
+            _bahsSet('--bahs-side-bg',HB.sidebarBg,'#f4f1ea');
+            _bahsSet('--bahs-eyebrow',HB.eyebrowColor,'#1f5c3a');
+            _bahsSet('--bahs-title',HB.titleColor,'#1a2230');
+            _bahsSet('--bahs-text',HB.textColor,'#46535f');
+            _bahsSet('--bahs-feat',HB.featureColor,(HB.textColor||'#33414f'));
+            _bahsSet('--bahs-icon',HB.iconColor,(HB.eyebrowColor||'#1f5c3a'));
+            _bahsSet('--bahs-cta-bg',HB.ctaBg,'#1f5c3a');
+            _bahsSet('--bahs-cta-fg',HB.ctaFg,'#ffffff');
+            _bahsSet('--bahs-cta-bd',HB.ctaBorder,(HB.ctaBg||'#1f5c3a'));
+            var _seb=(HB.eyebrow!=null?String(HB.eyebrow):'Featured Project');
+            var _stt=(HB.heading!=null?String(HB.heading):(HB.title!=null?String(HB.title):'From Unused Yard to Complete Outdoor Space'));
+            var _stx=(HB.intro!=null?String(HB.intro):'');
+            var _featDef=[{on:true,icon:'circle-check',label:'Retaining walls & excavation'},{on:true,icon:'circle-check',label:'Paving & steps'},{on:true,icon:'circle-check',label:'Turf & irrigation'},{on:true,icon:'circle-check',label:'Garden beds & planting'},{on:true,icon:'circle-check',label:'Outdoor entertaining area'}];
+            var _featsSrc=Array.isArray(HB.features)?HB.features:_featDef;
+            var _feats=_featsSrc.filter(function(f){ return f&&f.on!==false&&f.label&&String(f.label).trim(); });
+            var _featHtml=_feats.map(function(f){ var ic=(f.icon&&window.LP_ICONS&&window.LP_ICONS[f.icon])?('<span class="bahs-feat-ic"><svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+window.LP_ICONS[f.icon]+'</svg></span>'):''; return '<li class="bahs-feat">'+ic+'<span>'+esc(String(f.label).trim())+'</span></li>'; }).join('');
+            var _ctaT=(HB.ctaText!=null&&String(HB.ctaText).trim())?String(HB.ctaText).trim():'View more projects';
+            var _ctaA=(HB.ctaAction||'quote'); var _ctaHref='#quote';
+            if(_ctaA==='call'){ var _ph=(C&&C.phone)?C.phone:((typeof SITE_CONFIG!=='undefined'&&SITE_CONFIG.phone)?SITE_CONFIG.phone:''); _ctaHref=_ph?('tel:'+String(_ph).replace(/\s+/g,'')):'#quote'; }
+            else if(_ctaA==='link'&&HB.ctaHref){ _ctaHref=String(HB.ctaHref); }
+            else if(_ctaA==='none'){ _ctaHref=''; }
+            var _ctaHtml=_ctaHref?('<a class="bahs-side-cta" href="'+esc(_ctaHref)+'"'+(_ctaA==='link'?' target="_blank" rel="noopener"':'')+'>'+esc(_ctaT)+'</a>'):'';
+            _sideEl.innerHTML=(_seb?'<span class="bahs-side-eyebrow">'+esc(_seb)+'</span>':'')+(_stt?'<h3 class="bahs-side-title">'+esc(_stt)+'</h3>':'')+(_stx?'<p class="bahs-side-text">'+esc(_stx)+'</p>':'')+(_featHtml?'<ul class="bahs-feats">'+_featHtml+'</ul>':'')+_ctaHtml;
+            var _ctaBtn=_sideEl.querySelector('.bahs-side-cta');
+            if(_ctaBtn&&_ctaA==='call'){ _ctaBtn.addEventListener('click',function(){ try{trackEvent('call_click',{location:'heroBeforeAfter'});}catch(_e){} }); }
+          } else if(_sideEl){ _sideEl.innerHTML=''; }
+        }
         var _stg=hbNode.querySelector('.bahs-stage');
         if(_stg){
           var _hd=hbNode.querySelector('.bahs-handle');
