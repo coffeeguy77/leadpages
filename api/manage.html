@@ -3664,7 +3664,7 @@ function heroCtaCard(c){
         +'<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">'+secHexField('hb-ctabd','Button border','#1f5c3a')+'</div></div>';
       var _hbFeat=listCard('heroBeforeAfterFeatures','Feature list','Shown in the sidebar under the paragraph. Each row can have an optional icon. Hide or reorder as needed.');
       body.innerHTML=secCard(c,'heroBeforeAfter','Hero B/A Slider section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta'],['beforeImage','Before image URL','image'],['afterImage','After image URL','image'],['beforeLabel','Before label'],['afterLabel','After label'],['title','Title (classic layout)'],['caption','Caption (classic layout)','ta']])+_hbLayout+_hbCols+_hbCta+_hbFeat;
-      wireSec(c,'heroBeforeAfter',true,[['eyebrow'],['heading'],['intro'],['beforeImage'],['afterImage'],['beforeLabel'],['afterLabel'],['title'],['caption']]);
+      wireSec(c,'heroBeforeAfter',true,[['eyebrow'],['heading'],['intro'],['beforeImage',null,'image'],['afterImage',null,'image'],['beforeLabel'],['afterLabel'],['title'],['caption']]);
       listEditor($('le-heroBeforeAfterFeatures'),c,'heroBeforeAfterFeatures');
       (function(){
         function ens(){ if(!c.sections)c.sections={}; if(!c.sections.heroBeforeAfter)c.sections.heroBeforeAfter={}; return c.sections.heroBeforeAfter; }
