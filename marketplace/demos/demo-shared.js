@@ -702,10 +702,38 @@
         var _spe=spNode.querySelector('.eyebrow'); if(_spe) _spe.textContent=(SP.eyebrow!=null?SP.eyebrow:'How it works');
         var _sph=spNode.querySelector('h2'); if(_sph) _sph.textContent=(SP.heading!=null?SP.heading:'How It Works');
         var _spi=spNode.querySelector('.section-head p'); if(_spi){ var _spiv=(SP.intro!=null?SP.intro:''); _spi.textContent=_spiv; _spi.style.display=_spiv?'':'none'; }
-        var _spd=[{title:'Call Us',text:'Tell us what\u2019s going on. We\u2019ll book a time that suits you.'},{title:'We Inspect',text:'We assess the job on site and explain your options.'},{title:'Fixed Price Quote',text:'A clear, upfront price before any work starts.'},{title:'Work Completed',text:'Tidy, professional work done right the first time.'},{title:'Satisfaction Guaranteed',text:'We\u2019re not happy until you are.'}];
+        var _spd=[{title:'Call Us',text:'Tell us what\u2019s going on. We\u2019ll book a time that suits you.',icon:'phone-call'},{title:'We Inspect',text:'We assess the job on site and explain your options.',icon:'clipboard-list'},{title:'Fixed Price Quote',text:'A clear, upfront price before any work starts.',icon:'file-text'},{title:'Work Completed',text:'Tidy, professional work done right the first time.',icon:'check-circle'},{title:'Satisfaction Guaranteed',text:'We\u2019re not happy until you are.',icon:'shield'}];
         var _spit=(Array.isArray(SP.steps)&&SP.steps.length)?SP.steps:_spd;
         var _spg=spNode.querySelector('.sp-steps');
-        if(_spg){ _spg.innerHTML=_spit.filter(function(s){return s&&s.on!==false&&((s.title&&String(s.title).trim())||(s.text&&String(s.text).trim()));}).map(function(s,i){ return '<div class="sp-step"><div class="sp-num">'+(i+1)+'</div>'+(s.title?'<h3 class="sp-title">'+esc(s.title)+'</h3>':'')+(s.text?'<p class="sp-text">'+esc(s.text)+'</p>':'')+'</div>'; }).join(''); }
+        var _spAlign=(SP.textAlign==='center'||SP.textAlign==='right')?SP.textAlign:'left';
+        var _spArrowOn=SP.arrowsOn!==false;
+        var _spArrowSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>';
+        if(_spg){
+          var _spVis=_spit.filter(function(s){return s&&s.on!==false&&((s.title&&String(s.title).trim())||(s.text&&String(s.text).trim())||(s.icon&&String(s.icon).trim()));});
+          var _spParts=[];
+          _spVis.forEach(function(s,i){
+            var _ic=lpIcon(s.icon);
+            _spParts.push('<div class="sp-step align-'+_spAlign+'"><div class="sp-media"><div class="sp-num">'+(i+1)+'</div>'+(_ic?'<div class="sp-ic">'+_ic+'</div>':'')+'</div><div class="sp-body">'+(s.title?'<h3 class="sp-title">'+esc(s.title)+'</h3>':'')+(s.text?'<p class="sp-text">'+esc(s.text)+'</p>':'')+'</div></div>');
+            if(_spArrowOn&&i<_spVis.length-1) _spParts.push('<div class="sp-arrow" aria-hidden="true">'+_spArrowSvg+'</div>');
+          });
+          _spg.innerHTML=_spParts.join('');
+          _spg.classList.toggle('sp-no-arrows', !_spArrowOn);
+        }
+        function _spHex(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; }
+        function _spSet(name,val){ if(val) spNode.style.setProperty(name,val); else spNode.style.removeProperty(name); }
+        _spSet('--sp-eyebrow', _spHex(SP.eyebrowColor));
+        _spSet('--sp-heading', _spHex(SP.titleColor));
+        _spSet('--sp-intro', _spHex(SP.introColor));
+        _spSet('--sp-step-title', _spHex(SP.stepTitleColor));
+        _spSet('--sp-detail', _spHex(SP.textColor));
+        _spSet('--sp-num-bg', _spHex(SP.numBg));
+        _spSet('--sp-num-fg', _spHex(SP.numFg));
+        _spSet('--sp-icon', _spHex(SP.iconColor));
+        _spSet('--sp-arrow', _spHex(SP.arrowColor)||_spHex(SP.iconColor));
+        spNode.style.setProperty('--sp-align', _spAlign);
+        var _spSizes={compact:32,standard:42,large:56,hero:72}; var _spBase=_spSizes[SP.iconSize]||42; var _spSc=parseInt(SP.iconScale,10); if(isNaN(_spSc)) _spSc=100; var _spPx=Math.round(_spBase*Math.max(50,Math.min(250,_spSc))/100);
+        spNode.style.setProperty('--sp-num-size', _spPx+'px');
+        spNode.style.setProperty('--sp-ic-size', Math.round(_spPx*0.78)+'px');
         spNode.style.display=(SP.on===false)?'none':'';
       }
 
