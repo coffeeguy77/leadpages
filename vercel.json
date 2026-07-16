@@ -54,6 +54,14 @@
       "destination": "/billing.html"
     },
     {
+      "source": "/billing-admin",
+      "destination": "/billing-admin.html"
+    },
+    {
+      "source": "/accounting",
+      "destination": "/billing-admin.html"
+    },
+    {
       "source": "/tradies",
       "destination": "/tradies.html"
     },

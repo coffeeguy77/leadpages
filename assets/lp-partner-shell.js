@@ -18,6 +18,7 @@
     payouts: { icon: 'payouts', label: 'Payouts & pricing' },
     quotes: { icon: 'quotes', label: 'Quotes' },
     commissions: { icon: 'commissions', label: 'Commissions' },
+    maintenance: { icon: 'clients', label: 'Maintenance' },
     training: { icon: 'training', label: 'Training' },
     resources: { icon: 'resources', label: 'Sales toolkit' },
     help: { icon: 'help', label: 'Help', external: '/help' },

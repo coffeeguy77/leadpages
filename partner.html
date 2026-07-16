@@ -118,6 +118,7 @@
         <div class="lp-sb-group">
           <div class="lp-sb-title">Money</div>
           <button type="button" data-p="commissions" data-icon="commissions" data-label="Commissions">Commissions</button>
+          <button type="button" data-p="maintenance" data-icon="clients" data-label="Maintenance">Maintenance</button>
           <button type="button" data-p="payouts" data-icon="payouts" data-label="Payouts &amp; Pricing">Payouts &amp; Pricing</button>
         </div>
 
@@ -597,7 +598,7 @@
       <!-- Commissions -->
       <section class="panel lp-p-panel" data-panel="commissions" data-w="wide">
         <h2>Commissions</h2>
-        <p class="sub">50% of each build fee and 20% of monthly subscription revenue for clients you generate. Paid on a 30-day cycle, subject to approval and account standing.</p>
+        <p class="sub">Build fees, monthly hosting, and maintenance work (70% partner / 30% LeadPages). Paid on a 30-day cycle, subject to approval and account standing.</p>
         <div class="kpis" style="grid-template-columns:repeat(6,1fr)">
           <div class="card kpi"><div class="lab">Pending</div><div class="val" id="cm-pending">$0</div></div>
           <div class="card kpi"><div class="lab">Approved next payout</div><div class="val" id="cm-approved">$0</div></div>
@@ -613,6 +614,38 @@
             <span class="muted" style="font-size:12.5px">Build + recurring commissions</span>
           </div>
           <div id="comm-ledger" style="margin-top:12px"></div>
+        </div>
+      </section>
+
+      <!-- Maintenance packages -->
+      <section class="panel lp-p-panel" data-panel="maintenance" data-w="wide">
+        <h2>Maintenance</h2>
+        <p class="sub">Sell one-off update jobs and recurring care packages to your clients. Split is <strong>70% partner / 30% LeadPages</strong> — chase the work, use the platform to deliver it.</p>
+        <div class="notice info" id="maint-split-note" style="margin:0 0 16px">Partner share 70% · Platform share 30%</div>
+        <div class="card" style="padding:18px 20px;margin-bottom:16px">
+          <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Packages</h3>
+          <p class="muted" style="margin:0 0 12px;font-size:13px">Offer these to clients. Enrol a site, or log a one-off job below.</p>
+          <div id="maint-packages"><p class="muted">Loading packages…</p></div>
+        </div>
+        <div class="card" style="padding:18px 20px;margin-bottom:16px">
+          <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 12px">Log an update job</h3>
+          <div class="row2">
+            <div class="field"><label for="mj-site">Client site</label><select id="mj-site"></select></div>
+            <div class="field"><label for="mj-pkg">Package (optional)</label><select id="mj-pkg"><option value="">— Custom one-off —</option></select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="mj-title">Job title</label><input id="mj-title" placeholder="Homepage copy refresh"></div>
+            <div class="field"><label for="mj-amount">Amount (AUD)</label><input id="mj-amount" type="number" min="0" step="0.01" placeholder="150.00"></div>
+          </div>
+          <div class="field"><label for="mj-desc">Description</label><textarea id="mj-desc" rows="2" placeholder="What the client asked for…"></textarea></div>
+          <p class="muted" id="mj-split-preview" style="font-size:13px;margin:0 0 12px">Your share (70%): — · LeadPages (30%): —</p>
+          <button type="button" class="btn btn-brand" id="mj-save">Create job</button>
+          <span class="saved" id="mj-saved">Saved ✓</span>
+          <p class="notice bad hidden" id="mj-err" style="margin:10px 0 0"></p>
+        </div>
+        <div class="card" style="padding:18px 20px">
+          <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 12px">Your maintenance jobs</h3>
+          <div id="maint-jobs"><p class="muted">No jobs yet.</p></div>
         </div>
       </section>
 
@@ -957,7 +990,7 @@
       console.error('Partner shell init failed', shellErr);
     }
     refreshWho({ user: { email: (state.partner && (state.partner.email || state.partner.display_name)) || '' } });
-    wireAdd(); loadClients(); loadCommissions(); loadTraining(); loadResources(); loadThemes(); loadScTemplates(); loadMyPage(); loadPayouts(); loadQuotes(); loadMsgBadge();
+    wireAdd(); loadClients(); loadCommissions(); loadMaintenance(); loadTraining(); loadResources(); loadThemes(); loadScTemplates(); loadMyPage(); loadPayouts(); loadQuotes(); loadMsgBadge();
     setTimeout(function(){ initDemoTradePicker(); fillDemoLocationDefaults(); }, 0);
     initPartnerMessages();
     document.querySelectorAll('.e-ico[data-icon]').forEach(function(el){
@@ -1294,6 +1327,7 @@
     clients=all.filter(function(x){ return !x.is_mockup && !x.is_partner_home && relatedToPartner(x); });
     mockups=all.filter(function(x){ return x.is_mockup && relatedToPartner(x); });
     renderClients(); renderOverview(); renderMockups();
+    try{ fillMaintSites(); }catch(_e){}
   }
   async function loadPlans(){ /* legacy — clients are created via paid quotes only */ }
   async function initDemoTradePicker(){
@@ -1829,6 +1863,127 @@
     set('kpi-pendingcomm',pend); set('kpi-payout',appr); set('kpi-paidcomm',paid);
     renderCommissions();
   }
+
+  // ---------- Maintenance packages (70/30 split) ----------
+  var maintPackages=[], maintJobs=[];
+  function maintMoney(c){ return money(c); }
+  function updateMjSplitPreview(){
+    var el=document.getElementById('mj-split-preview'); if(!el) return;
+    var aud=parseFloat((document.getElementById('mj-amount')||{}).value);
+    if(!Number.isFinite(aud)||aud<=0){ el.textContent='Your share (70%): — · LeadPages (30%): —'; return; }
+    var cents=Math.round(aud*100);
+    var partner=Math.round(cents*0.70);
+    el.textContent='Your share (70%): '+maintMoney(partner)+' · LeadPages (30%): '+maintMoney(cents-partner);
+  }
+  function renderMaintPackages(){
+    var box=document.getElementById('maint-packages'); if(!box) return;
+    if(!maintPackages.length){
+      box.innerHTML='<p class="muted">No packages available yet. LeadPages admin can seed them via Accounting.</p>';
+      return;
+    }
+    box.innerHTML=maintPackages.map(function(p){
+      return '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid var(--border)">'
+        +'<div><strong>'+esc(p.name)+'</strong> <span class="muted">· '+esc(p.package_type==='recurring'?'Recurring':'One-off')+'</span>'
+        +'<div class="muted" style="font-size:13px;margin-top:4px">'+esc(p.description||'')+'</div></div>'
+        +'<div style="text-align:right"><div style="font-family:var(--font-display);font-weight:700;font-size:18px">'+maintMoney(p.price_cents)+'</div>'
+        +'<div class="muted" style="font-size:12px">You earn ~'+esc(String(p.partner_share_pct||70))+'%</div></div></div>';
+    }).join('');
+    var sel=document.getElementById('mj-pkg');
+    if(sel){
+      var cur=sel.value;
+      sel.innerHTML='<option value="">— Custom one-off —</option>'+maintPackages.map(function(p){
+        return '<option value="'+esc(p.id)+'" data-price="'+esc(String(p.price_cents||0))+'">'+esc(p.name)+' ('+maintMoney(p.price_cents)+')</option>';
+      }).join('');
+      sel.value=cur;
+    }
+  }
+  function renderMaintJobs(){
+    var box=document.getElementById('maint-jobs'); if(!box) return;
+    if(!maintJobs.length){ box.innerHTML='<p class="muted">No maintenance jobs yet.</p>'; return; }
+    box.innerHTML='<div class="lp-ledger-wrap"><table class="lp-ledger"><thead><tr>'
+      +'<th>Job</th><th>Amount</th><th>Your 70%</th><th>Status</th><th>Created</th></tr></thead><tbody>'
+      +maintJobs.map(function(j){
+        return '<tr><td data-label="Job"><strong>'+esc(j.title)+'</strong></td>'
+          +'<td data-label="Amount">'+maintMoney(j.amount_cents)+'</td>'
+          +'<td data-label="Your 70%">'+maintMoney(j.partner_share_cents)+'</td>'
+          +'<td data-label="Status">'+esc(j.status)+'</td>'
+          +'<td data-label="Created" class="muted">'+esc((j.created_at||'').slice(0,10))+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+  }
+  function fillMaintSites(){
+    var sel=document.getElementById('mj-site'); if(!sel) return;
+    var mine=(clients||[]).filter(function(c){ return state.partner && c.servicing_partner_id===state.partner.id && !c.is_mockup; });
+    sel.innerHTML='<option value="">— Choose client —</option>'+mine.map(function(c){
+      return '<option value="'+esc(c.id)+'">'+esc(c.business_name||c.slug)+'</option>';
+    }).join('');
+  }
+  async function loadMaintenance(){
+    try{
+      var r=await fetch('/api/billing/maintenance',{ headers: Object.assign({'content-type':'application/json'}, await authHeader()) });
+      var j=await r.json();
+      if(!j.ok){
+        var box=document.getElementById('maint-packages');
+        if(box) box.innerHTML='<p class="muted">'+(j.warning||j.error||'Maintenance unavailable')+'</p>';
+        return;
+      }
+      maintPackages=j.packages||[];
+      maintJobs=j.jobs||[];
+      if(j.split){
+        var note=document.getElementById('maint-split-note');
+        if(note) note.textContent='Partner share '+j.split.partner_pct+'% · Platform share '+j.split.platform_pct+'%';
+      }
+      renderMaintPackages();
+      renderMaintJobs();
+      fillMaintSites();
+    }catch(_e){
+      var box=document.getElementById('maint-packages');
+      if(box) box.innerHTML='<p class="muted">Could not load maintenance packages.</p>';
+    }
+  }
+  (function wireMaintenance(){
+    var amount=document.getElementById('mj-amount');
+    if(amount) amount.addEventListener('input', updateMjSplitPreview);
+    var pkg=document.getElementById('mj-pkg');
+    if(pkg) pkg.addEventListener('change', function(){
+      var opt=pkg.options[pkg.selectedIndex];
+      var cents=opt && opt.getAttribute('data-price');
+      if(cents && amount){ amount.value=(Number(cents)/100).toFixed(2); updateMjSplitPreview(); }
+    });
+    var btn=document.getElementById('mj-save');
+    if(!btn) return;
+    btn.addEventListener('click', async function(){
+      var err=document.getElementById('mj-err'); if(err){ err.classList.add('hidden'); err.textContent=''; }
+      var siteId=(document.getElementById('mj-site')||{}).value;
+      var title=(document.getElementById('mj-title')||{}).value;
+      var aud=parseFloat((document.getElementById('mj-amount')||{}).value);
+      if(!siteId||!title||!Number.isFinite(aud)){
+        if(err){ err.textContent='Site, title and amount are required.'; err.classList.remove('hidden'); }
+        return;
+      }
+      btn.disabled=true;
+      try{
+        var r=await fetch('/api/billing/maintenance',{
+          method:'POST',
+          headers:Object.assign({'content-type':'application/json'}, await authHeader()),
+          body:JSON.stringify({
+            action:'create_job',
+            site_id:siteId,
+            package_id:(document.getElementById('mj-pkg')||{}).value||null,
+            title:title,
+            description:(document.getElementById('mj-desc')||{}).value||'',
+            amount_cents:Math.round(aud*100),
+            status:'quoted'
+          })
+        });
+        var j=await r.json();
+        if(!j.ok) throw new Error(j.error||'Could not save');
+        var sv=document.getElementById('mj-saved'); if(sv){ sv.classList.add('show'); setTimeout(function(){ sv.classList.remove('show'); },1600); }
+        await loadMaintenance();
+      }catch(e){
+        if(err){ err.textContent=e.message||'Could not save'; err.classList.remove('hidden'); }
+      }finally{ btn.disabled=false; }
+    });
+  })();
 
   // ---------- Phase 4: training + resources ----------
   var modules=[], progress={}, resources=[], courses=[];
