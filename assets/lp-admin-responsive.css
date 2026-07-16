@@ -1707,9 +1707,15 @@ body.lp-hub-embed > .wrap {
 }
 body.lp-hub-embed.marketplace-admin-page main.wrap,
 body.lp-hub-embed.partners-admin-page main.wrap,
+body.lp-hub-embed.partners-admin-page .wrap,
+body.lp-hub-embed.partners-admin-page .lp-sa-wrap,
 body.lp-hub-embed[data-lp-admin-page="apps-admin"] main.wrap,
 body.lp-hub-embed.apps-admin-page main {
   padding-top: 16px !important;
+  max-width: none !important;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 /* Messages: full-bleed inside hub */
