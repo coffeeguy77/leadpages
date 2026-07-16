@@ -1062,27 +1062,32 @@
         {
           "on": true,
           "title": "Call Us",
-          "text": "Tell us what’s going on. We’ll book a time that suits you."
+          "text": "Tell us what’s going on. We’ll book a time that suits you.",
+          "icon": "phone-call"
         },
         {
           "on": true,
           "title": "We Inspect",
-          "text": "We assess the job on site and explain your options."
+          "text": "We assess the job on site and explain your options.",
+          "icon": "clipboard-list"
         },
         {
           "on": true,
           "title": "Fixed Price Quote",
-          "text": "A clear, upfront price before any work starts."
+          "text": "A clear, upfront price before any work starts.",
+          "icon": "file-text"
         },
         {
           "on": true,
           "title": "Work Completed",
-          "text": "Tidy, professional work done right the first time."
+          "text": "Tidy, professional work done right the first time.",
+          "icon": "check-circle"
         },
         {
           "on": true,
           "title": "Satisfaction Guaranteed",
-          "text": "We’re not happy until you are."
+          "text": "We’re not happy until you are.",
+          "icon": "shield"
         }
       ]
     }
