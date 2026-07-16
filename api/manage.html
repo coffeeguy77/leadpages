@@ -2557,6 +2557,9 @@ function heroCtaCard(c){
     var sc=$('sp-sc'), scv=$('sp-sc-v'); if(sc) sc.addEventListener('input',function(){ SP().iconScale=+sc.value; if(scv) scv.textContent=sc.value+'%'; persist(); previewApply(); });
     ['compact','standard','large','hero'].forEach(function(z){ var b=$('sp-msz-'+z); if(b) b.addEventListener('click',function(){ SP().iconSize=z; ['compact','standard','large','hero'].forEach(function(x){ var bb=$('sp-msz-'+x); if(bb){ var on=x===z; bb.style.borderColor=on?'var(--accent)':''; bb.style.color=on?'var(--accent)':''; } }); persist(); previewApply(); }); });
     var def=$('sp-msz-def'); if(def) def.addEventListener('click',function(){ delete SP().iconSize; delete SP().iconScale; ['compact','standard','large','hero'].forEach(function(x){ var bb=$('sp-msz-'+x); if(bb){ bb.style.borderColor=''; bb.style.color=''; } }); if(sc) sc.value=100; if(scv) scv.textContent='100%'; persist(); previewApply(); });
+  
+  }
+
   function featureStripStyleCard(c){
     var FS=(c.sections&&c.sections.featureStrip)||{};
     var DEF={ eyebrowColor:'#1f5c3a', titleColor:'#1a2230', introColor:'#5b6878', itemTitleColor:'#1a2230', textColor:'#46535f', iconColor:'#1f5c3a' };
