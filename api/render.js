@@ -608,6 +608,7 @@ function buyBarHtml(site, plans, def) {
 '</div></div>' +
 '<style>' +
 '#lpbuy-bar{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;background:#0e1116;color:#fff;box-shadow:0 -8px 30px rgba(0,0,0,.25);font-family:Inter,system-ui,sans-serif}' +
+'body{padding-bottom:76px}' +
 '.lpbuy-bar-in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:16px;justify-content:space-between;padding:13px 18px;flex-wrap:wrap}' +
 '.lpbuy-bar-txt{font-size:15px;line-height:1.35}.lpbuy-bar-txt b{color:#ff8a3d}' +
 '.lpbuy-cta{background:#ff6a1a;color:#fff;border:0;border-radius:10px;padding:12px 20px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit}' +
@@ -623,7 +624,7 @@ function buyBarHtml(site, plans, def) {
 '.lpbuy-go{width:100%;margin-top:4px}' +
 '.lpbuy-msg{font-size:13px;color:#c0392b;margin-top:10px;min-height:18px;text-align:center}' +
 '.lpbuy-fine{font-size:11.5px;color:#999;margin-top:12px;text-align:center;line-height:1.5}' +
-'@media(max-width:560px){.lpbuy-bar-in{justify-content:center;text-align:center}.lpbuy-cta{width:100%}}' +
+'@media(max-width:560px){body{padding-bottom:96px}.lpbuy-bar-in{justify-content:center;text-align:center}.lpbuy-cta{width:100%}}' +
 '</style>' +
 '<script>(function(){' +
 'var M=document.getElementById("lpbuy-modal"),O=document.getElementById("lpbuy-open"),X=document.getElementById("lpbuy-close"),G=document.getElementById("lpbuy-go"),E=document.getElementById("lpbuy-email"),P=document.getElementById("lpbuy-plan"),S=document.getElementById("lpbuy-msg");' +
