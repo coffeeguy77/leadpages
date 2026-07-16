@@ -1,8 +1,7 @@
 // api/partner-welcome.js
-// POST { partnerId, email, name }
-// Called by partners-admin when approving an application. Sends a welcome email
-// via Resend with a magic-link sign-in so the new partner can access the dashboard
-// without needing to set a password. Also creates a Supabase auth user if needed.
+// POST { partnerId, email?, name? }
+// Sends (or re-sends) the partner welcome letter via Resend with a magic-link
+// sign-in. Used on approve and from Partners admin "Send welcome".
 
 const { createClient } = require('@supabase/supabase-js');
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -16,7 +15,6 @@ async function ensureAuthUser(email) {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const base = process.env.SUPABASE_URL;
   const h = { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' };
-  // Try create
   try {
     const r = await fetch(base + '/auth/v1/admin/users', {
       method: 'POST', headers: h,
@@ -25,7 +23,6 @@ async function ensureAuthUser(email) {
     const j = await r.json().catch(() => ({}));
     if (r.ok && j && j.id) return j.id;
   } catch (e) {}
-  // Already exists — find by email
   for (let page = 1; page <= 5; page++) {
     try {
       const lr = await fetch(base + '/auth/v1/admin/users?per_page=200&page=' + page,
@@ -40,41 +37,58 @@ async function ensureAuthUser(email) {
   return null;
 }
 
-module.exports = async (req, res) => {
-  res.setHeader('content-type', 'application/json');
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-
-  // Admin-only: verify caller
-  const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  if (!token) return res.status(401).json({ error: 'unauthorized' });
+async function isAdminCaller(token) {
+  if (!token) return false;
   try {
     const ur = await fetch(process.env.SUPABASE_URL + '/auth/v1/user', {
       headers: { apikey: process.env.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token },
     });
+    if (!ur.ok) return false;
     const u = await ur.json().catch(() => ({}));
+    if (!u || !u.id) return false;
     const list = (process.env.SUPER_ADMIN_EMAILS || '').toLowerCase().split(/[,\s]+/).filter(Boolean);
-    if (!u || !list.includes(String(u.email || '').toLowerCase())) {
-      return res.status(403).json({ error: 'admins only' });
-    }
-  } catch (e) { return res.status(401).json({ error: 'unauthorized' }); }
+    if (list.includes(String(u.email || '').toLowerCase())) return true;
+    const prof = await sb.from('profiles').select('is_super_admin').eq('id', u.id).maybeSingle();
+    return !!(prof.data && prof.data.is_super_admin);
+  } catch (e) {
+    return false;
+  }
+}
+
+module.exports = async (req, res) => {
+  res.setHeader('content-type', 'application/json');
+  res.setHeader('cache-control', 'no-store');
+  if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'POST only' });
+
+  const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+  if (!(await isAdminCaller(token))) {
+    return res.status(403).json({ ok: false, error: 'admins only' });
+  }
 
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
   body = body || {};
-  const { partnerId, email, name } = body;
-  if (!partnerId || !email) return res.status(400).json({ error: 'partnerId and email required' });
+  const partnerId = String(body.partnerId || body.partner_id || '').trim();
+  if (!partnerId) return res.status(400).json({ ok: false, error: 'partnerId required' });
+
+  const partner = (await sb.from('partners')
+    .select('id,display_name,email,status,user_id')
+    .eq('id', partnerId)
+    .maybeSingle()).data;
+  if (!partner) return res.status(404).json({ ok: false, error: 'Partner not found.' });
+
+  const email = String(body.email || partner.email || '').trim().toLowerCase();
+  const name = String(body.name || partner.display_name || email || '').trim();
+  if (!email) return res.status(400).json({ ok: false, error: 'Partner has no email address.' });
 
   try {
-    // 1. Ensure Supabase auth user exists
     const userId = await ensureAuthUser(email);
 
-    // 2. Link user_id to partner row
-    if (userId) {
+    if (userId && partner.user_id !== userId) {
       await sb.from('partners').update({ user_id: userId, updated_at: new Date().toISOString() })
         .eq('id', partnerId);
     }
 
-    // 3. Generate a magic link (OTP) for first login
     let magicUrl = BASE + '/partner';
     if (userId) {
       try {
@@ -89,18 +103,20 @@ module.exports = async (req, res) => {
       } catch (e) {}
     }
 
-    // 4. Send welcome email via Resend
     const resendKey = process.env.RESEND_API_KEY;
-    if (resendKey) {
-      const firstName = String(name || email).split(' ')[0];
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + resendKey, 'content-type': 'application/json' },
-        body: JSON.stringify({
-          from: FROM,
-          to: email,
-          subject: 'Welcome to LeadPages — your partner account is ready',
-          html: `<!DOCTYPE html><html><body style="font-family:system-ui,sans-serif;background:#F6F4EF;margin:0;padding:32px 16px">
+    if (!resendKey) {
+      return res.status(500).json({ ok: false, error: 'RESEND_API_KEY is not configured.' });
+    }
+
+    const firstName = String(name || email).split(/\s+/)[0];
+    const er = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + resendKey, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        from: FROM,
+        to: email,
+        subject: 'Welcome to LeadPages — your partner account is ready',
+        html: `<!DOCTYPE html><html><body style="font-family:system-ui,sans-serif;background:#F6F4EF;margin:0;padding:32px 16px">
 <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:18px;padding:36px;border:1px solid #E7E2D8">
   <img src="${BASE}/images/logo.png" alt="LeadPages" style="height:48px;margin-bottom:24px;display:block">
   <h1 style="font-family:Georgia,serif;font-weight:400;font-size:28px;margin:0 0 12px;color:#1B2430">Welcome, ${firstName}.</h1>
@@ -118,12 +134,18 @@ module.exports = async (req, res) => {
   <hr style="border:none;border-top:1px solid #E7E2D8;margin:24px 0">
   <p style="color:#929AA6;font-size:12px;margin:0">LeadPages · Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</p>
 </div></body></html>`,
-        }),
+      }),
+    });
+    const ej = await er.json().catch(() => ({}));
+    if (!er.ok) {
+      return res.status(502).json({
+        ok: false,
+        error: (ej && ej.message) || 'Could not send welcome email via Resend.'
       });
     }
 
-    return res.status(200).json({ ok: true, userId, magicLink: magicUrl });
+    return res.status(200).json({ ok: true, userId: userId || null, emailed: email });
   } catch (e) {
-    return res.status(500).json({ error: String(e && e.message || e) });
+    return res.status(500).json({ ok: false, error: String(e && e.message || e) });
   }
 };
