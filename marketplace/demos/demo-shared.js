@@ -586,6 +586,10 @@
           var _stroke=_tbHex(TB.strokeColour||TB.stroke)||'#ffffff';
           if(_strokeOn){ tbNode.style.setProperty('--tb-stroke',_stroke); tbNode.style.setProperty('--tb-stroke-w','2px'); }
           else { tbNode.style.setProperty('--tb-stroke','transparent'); tbNode.style.setProperty('--tb-stroke-w','0px'); }
+          var _edgeOn=(TB.edgeOn!==false);
+          var _edge=_tbHex(TB.edgeColour||TB.edge)||'#ffffff';
+          if(_edgeOn){ tbNode.style.setProperty('--tb-edge',_edge); tbNode.style.setProperty('--tb-edge-w','2px'); }
+          else { tbNode.style.setProperty('--tb-edge','transparent'); tbNode.style.setProperty('--tb-edge-w','0px'); }
           var _tbfg=_tbHex(TB.fg)||'#ffffff'; tbNode.style.setProperty('--tb-fg',_tbfg); tbNode.style.setProperty('--tb-icon',_tbfg);
           var _tbck='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
           var _tbIc=function(v){ if(!v) return ''; v=String(v); var _i=(window.LP_ICONS&&window.LP_ICONS[v]); if(!_i) return ''; return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+_i+'</svg>'; };
@@ -608,6 +612,8 @@
           tbNode.style.removeProperty('--tb-img-h');
           tbNode.style.removeProperty('--tb-stroke');
           tbNode.style.removeProperty('--tb-stroke-w');
+          tbNode.style.removeProperty('--tb-edge');
+          tbNode.style.removeProperty('--tb-edge-w');
           var _tbck='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
           var _tbIc=function(v){ if(!v) return _tbck; v=String(v); var _i=(window.LP_ICONS&&window.LP_ICONS[v]); if(!_i) return _tbck; return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+_i+'</svg>'; };
           if(_tbr){
