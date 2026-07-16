@@ -31,6 +31,14 @@ a{color:var(--pa-accent)}
 h1,h2,h3{font-family:var(--disp);font-weight:600;letter-spacing:-.01em;margin:0}
 .hidden{display:none!important}
 .wrap{max-width:1100px;margin:0 auto;padding:0 18px}
+/* Ops Command embed: use full panel width */
+body.lp-hub-embed .wrap,
+body.lp-hub-embed .lp-sa-wrap{
+  max-width:none;
+  width:100%;
+  margin:0;
+  box-sizing:border-box;
+}
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:6px;
   font-weight:600;font-size:13px;padding:8px 12px;border-radius:9px;
