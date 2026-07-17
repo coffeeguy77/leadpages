@@ -41,11 +41,17 @@ body{
 .shell{max-width:720px;margin:0 auto;padding:48px 22px 72px}
 .identity{
   display:flex;
-  align-items:center;
-  gap:16px;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:14px;
   margin:0 0 18px;
 }
-.identity img{
+.identity img.mark{
+  width:min(280px,100%);
+  height:auto;
+  display:block;
+}
+.identity img.icon{
   width:72px;height:72px;
   border-radius:16px;
   border:1px solid var(--line);
