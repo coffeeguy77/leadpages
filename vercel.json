@@ -38,6 +38,24 @@
       "destination": "/manage.html"
     },
     {
+      "source": "/settings/integrations/google-ads",
+      "destination": "/settings/integrations/google-ads.html"
+    },
+    {
+      "source": "/settings/integrations/google-ads/",
+      "destination": "/settings/integrations/google-ads.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "^app\\.leadpages\\.com\\.au$"
+        }
+      ],
+      "destination": "/manage.html"
+    },
+    {
       "source": "/command",
       "destination": "/command.html"
     },

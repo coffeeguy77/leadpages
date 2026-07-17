@@ -31,7 +31,7 @@ const supabase = createClient(
 );
 
 // The marketing/admin host. "/" on this host is the homepage, never a tenant page.
-const PRIMARY_HOSTS = (process.env.PRIMARY_HOSTS || 'leadpages.webculture.au,leadpages.com.au')
+const PRIMARY_HOSTS = (process.env.PRIMARY_HOSTS || 'app.leadpages.com.au,leadpages.webculture.au,leadpages.com.au,www.leadpages.com.au')
   .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
 
 // token templates (server-side identity injection)

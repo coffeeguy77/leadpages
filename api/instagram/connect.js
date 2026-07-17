@@ -1,9 +1,11 @@
 // api/instagram/connect.js — Instagram Business Login (multi-tenant)
 const crypto = require('crypto');
+const { appUrl } = require('../../lib/app-url');
 
 const APP_ID    = process.env.INSTAGRAM_APP_ID;
 const APP_SEC   = process.env.INSTAGRAM_APP_SECRET;
-const REDIRECT  = 'https://www.leadpages.com.au/api/instagram/callback';
+// Prefer explicit env; otherwise APP_URL + path. Never derive from request Host.
+const REDIRECT  = (process.env.INSTAGRAM_REDIRECT_URI || (appUrl() + '/api/instagram/callback')).replace(/\/$/, '');
 const STATE_SEC = process.env.IG_STATE_SECRET || APP_SEC || '';
 
 function sign(p){ return crypto.createHmac('sha256',STATE_SEC).update(p).digest('base64url'); }

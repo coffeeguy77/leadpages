@@ -461,7 +461,8 @@ Rewrites: [vercel.json](../vercel.json) — detail in [01-ARCHITECTURE](01-ARCHI
 | Resource | Location |
 |----------|----------|
 | Repository | `github.com/coffeeguy77/leadpages` |
-| Production | `leadpages.com.au`, `leadpages.webculture.au` |
+| Production app | `app.leadpages.com.au` (Command Centre + integrations OAuth) |
+| Production marketing | `leadpages.com.au`, `www.leadpages.com.au`, `leadpages.webculture.au` |
 | Agent instructions | [AGENTS.md](../AGENTS.md), [CLAUDE.md](../CLAUDE.md) |
 
 ---

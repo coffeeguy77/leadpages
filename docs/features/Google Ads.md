@@ -1,29 +1,142 @@
 # Google Ads Integration (Base / v1)
 
 **Document:** `features/Google Ads`  
-**Status:** Engineering reference for the first-release Advertising area  
+**Status:** Engineering reference for the Advertising area + OAuth on the app domain  
 **Audience:** Engineers extending Ads OAuth, conversion upload, or reporting  
-**Prerequisites:** [07-TRACKING](../07-TRACKING.md), [features/Tracking](Tracking.md), [features/Pages](Pages.md), [features/Instagram](Instagram.md) (OAuth pattern)
+**Prerequisites:** [07-TRACKING](../07-TRACKING.md), [features/Tracking](Tracking.md), [features/Pages](Pages.md)
 
 ---
 
-## Executive summary
+## Production application domain
 
-LeadPages joins **first-party site events** (visitors, call clicks, form submissions) with **Google Ads reporting** (spend, clicks, impressions, final URLs) so trade clients can answer:
+The permanent logged-in application origin is:
 
-1. How much did I spend?
-2. How many advertising visitors reached my website?
-3. Which landing pages did they reach?
-4. How many clicked the phone number?
-5. How many submitted a form?
-6. What did each lead action cost?
-7. Which landing page is performing best?
+**`https://app.leadpages.com.au`**
 
-**LeadPages remains the source of truth.** Google conversion delivery is best-effort and logged separately.
+This subdomain is the main LeadPages application domain for Command Centre, settings, and **all current and future platform integrations** (Google Ads, Analytics, Search Console, Meta, Xero, etc.). It is not exclusive to Google Ads.
+
+| Surface | URL |
+|---------|-----|
+| Application origin | `https://app.leadpages.com.au` |
+| Google Ads connection page | `https://app.leadpages.com.au/settings/integrations/google-ads` |
+| Google Ads OAuth callback | `https://app.leadpages.com.au/api/integrations/google-ads/callback` |
+| Public privacy | `https://leadpages.com.au/privacy` |
+| Public terms | `https://leadpages.com.au/terms` |
+
+Public marketing / tenant URLs on `leadpages.com.au` are intentional and must **not** be rewritten to the app subdomain.
 
 ---
 
-## Architecture
+## OAuth configuration (critical)
+
+### Redirect URI rules
+
+- Authorize **and** token exchange use the **identical** redirect URI.
+- The URI is taken only from environment variables (`GOOGLE_ADS_REDIRECT_URI` or `APP_URL` + path).
+- **Never** build the callback from the request `Host` / `X-Forwarded-Host` header.
+- Preview deployments must set their own `APP_URL` / `GOOGLE_ADS_REDIRECT_URI` — they must not silently inherit production.
+
+### Environment variables (Vercel Production)
+
+```bash
+APP_URL=https://app.leadpages.com.au
+GOOGLE_ADS_REDIRECT_URI=https://app.leadpages.com.au/api/integrations/google-ads/callback
+GOOGLE_ADS_CLIENT_ID=
+GOOGLE_ADS_CLIENT_SECRET=
+GOOGLE_ADS_DEVELOPER_TOKEN=
+GOOGLE_ADS_LOGIN_CUSTOMER_ID=
+GOOGLE_ADS_OAUTH_ENCRYPTION_KEY=
+```
+
+Optional: `GOOGLE_ADS_STATE_SECRET` (defaults to encryption key / client secret).
+
+**Do not** expose secrets via `NEXT_PUBLIC_*` or client-side code. The Supabase **anon** key may appear in HTML (public by design); OAuth client secret, developer token, and encryption key must stay server-only.
+
+### Local development
+
+```bash
+APP_URL=http://localhost:3000
+GOOGLE_ADS_REDIRECT_URI=http://localhost:3000/api/integrations/google-ads/callback
+```
+
+Use a separate Google Cloud OAuth client (or add the localhost redirect on a dev client).
+
+### Google Cloud Console checklist
+
+Authorized JavaScript origin:
+
+```
+https://app.leadpages.com.au
+```
+
+Authorized redirect URI (exact match — protocol, host, path, no trailing slash):
+
+```
+https://app.leadpages.com.au/api/integrations/google-ads/callback
+```
+
+Authorized domain:
+
+```
+leadpages.com.au
+```
+
+---
+
+## Integration route layout (future-proof)
+
+Callbacks are integration-specific under the shared app domain:
+
+```
+/api/integrations/google-ads/callback
+/api/integrations/google-analytics/callback   (future)
+/api/integrations/search-console/callback     (future)
+/api/integrations/meta/callback               (future)
+/api/integrations/xero/callback               (future)
+```
+
+Shared helpers live in [`lib/app-url.js`](../../lib/app-url.js) (not AdWords-named). Google Ads OAuth handlers:
+
+| Route | File |
+|-------|------|
+| `POST/GET /api/integrations/google-ads/connect` | [`api/integrations/google-ads/connect.js`](../../api/integrations/google-ads/connect.js) |
+| `GET /api/integrations/google-ads/callback` | [`api/integrations/google-ads/callback.js`](../../api/integrations/google-ads/callback.js) |
+| `POST /api/integrations/google-ads/exchange` | [`api/integrations/google-ads/exchange.js`](../../api/integrations/google-ads/exchange.js) |
+
+Compatibility shims remain at `/api/google-ads/connect|callback|exchange` → integrations path. Reporting APIs stay at `/api/google-ads/{status,report,accounts,…}`.
+
+---
+
+## OAuth state and return location
+
+Signed, expiring state (`makeState` / `parseState`) includes:
+
+- `siteId`, `slug`
+- `userId` (from authenticated session at connect time)
+- `returnPath` (allowlisted only)
+
+After successful connection, users are redirected to:
+
+```
+https://app.leadpages.com.au/settings/integrations/google-ads?gads=connected&siteId=…
+```
+
+Arbitrary return URLs are rejected (`safeReturnPath`) to prevent open redirects.
+
+Connect prefers `Authorization: Bearer` + JSON `{ url }` so the access token is not placed in the query string / Referer.
+
+---
+
+## Cookies / CORS / auth session
+
+- Supabase auth runs on the app origin (`app.leadpages.com.au`). Prefer **host-only** cookies (no `Domain=.leadpages.com.au` unless deliberately sharing with another subdomain).
+- Production cookies must be `Secure`; existing preview password cookie in render uses `HttpOnly; SameSite=Lax` (no Domain) — keep that pattern.
+- Authenticated API routes use Bearer JWT; do **not** enable wildcard CORS for them.
+- `PRIMARY_HOSTS` includes `app.leadpages.com.au` so the app host is not treated as a tenant site.
+
+---
+
+## Architecture (reporting unchanged)
 
 ```mermaid
 flowchart TB
@@ -38,139 +151,28 @@ flowchart TB
     CD[(ads_conversion_deliveries)]
   end
   subgraph google [Google Ads]
-    OAuth[OAuth connect]
+    OAuth[OAuth on app.leadpages.com.au]
     Sync[cron sync-google-ads]
     Upload[uploadClickConversions]
     Met[(ads_metrics_daily)]
   end
-  subgraph ui [manage Advertising]
-    OV[Overview]
-    LP[Landing Pages]
-    HL[Connection and Health]
-  end
   Attr --> TE --> EV --> VS
   TE --> LD --> VS
   LD --> Upload --> CD
-  EV -->|call_click| Upload
   OAuth --> Sync --> Met
-  Met --> OV
-  VS --> LP
 ```
 
----
-
-## Schema
-
-Apply [`db/google_ads_schema.sql`](../../db/google_ads_schema.sql) in Supabase:
-
-| Table | Purpose |
-|-------|---------|
-| `visitor_sessions` | First-party session attribution (gclid, UTMs, landing URL) |
-| `google_ads_connections` | Per-site OAuth tokens + conversion action map + event roles |
-| `ads_metrics_daily` | Synced campaign / landing-page metrics |
-| `ads_conversion_deliveries` | Internal → Google delivery status |
-| `ads_unmatched_urls` | Ads final URLs that did not match a LeadPages page |
-| `leads` attribution columns | Optional `gclid`, `utm_*`, `traffic_source`, etc. |
-
----
-
-## Session attribution
-
-Client: [`assets/lp-attribution.js`](../../assets/lp-attribution.js) (injected by [`api/render.js`](../../api/render.js))
-
-Captures on first hit:
-
-- `gclid` / `gbraid` / `wbraid`
-- `utm_source|medium|campaign|content|term`
-- `visitor_id` / `session_id` (localStorage, 30‑minute session refresh)
-- `landing_page_url`, `device_type`, `page_id` / `page_type` from `SITE_CONFIG`
-
-Every `trackEvent` and `/api/leads` payload inherits the session blob. Server helpers live in [`lib/attribution.js`](../../lib/attribution.js).
-
-Landing pages receive `SITE_CONFIG.pageId` / `pageType: 'landing_page'` from render. Slug renames append to `pages[].previousUrls` in the editor so historical Ads URLs still match.
-
----
-
-## Conversions (v1)
-
-| Event | Google Ads name | Default role | When fired |
-|-------|-----------------|--------------|------------|
-| Form submission | LeadPages — Form Submission | Primary | After successful `leads` insert |
-| Call click | LeadPages — Call Click | Primary | After `call_click` event insert |
-| Email / directions / CTA | Optional | Secondary / off | Only if role ≠ off |
-
-Upload path: Google Ads API `uploadClickConversions` with click id. Delivery status stored in `ads_conversion_deliveries`. Failures never lose the LeadPages event/lead.
-
-Dashboard label for phone events: **Call clicks** (not Calls).
-
----
-
-## Connection flow
-
-1. Advertising → **Connect Google Ads**
-2. Google OAuth (`api/google-ads/connect` → `callback` → `exchange`)
-3. Select Ads account (`accounts` + `save-settings`)
-4. Platform creates conversion actions (`ensureConversionActions`)
-5. Map event roles (Primary / Secondary / Do not send)
-6. Test form + call-click tracking
-7. Cron syncs metrics
-
-Clients never enter Customer ID, Conversion ID, developer token, or tag snippets. Platform env:
-
-- `GOOGLE_ADS_CLIENT_ID`
-- `GOOGLE_ADS_CLIENT_SECRET`
-- `GOOGLE_ADS_DEVELOPER_TOKEN`
-- `GOOGLE_ADS_REDIRECT_URI` (optional)
-- `GOOGLE_ADS_LOGIN_CUSTOMER_ID` (optional MCC)
-- `GOOGLE_ADS_STATE_SECRET` (optional)
-
----
-
-## Reporting UI
-
-Trade Command Centre tab **Advertising** ([`manage.html`](../../manage.html)):
-
-- Overview — spend → clicks → visitors → actions → unique conversions
-- Campaigns — spend / clicks / visitors / call clicks / forms / cost per conversion + CSV
-- Landing Pages — matched by final URL + **Edit Landing Page**
-- Leads — source / campaign / page / “GCLID Present”
-- Connection & Health — tests, click-id capture, unmatched URLs, alerts
-
-API:
-
-- `GET /api/google-ads/status`
-- `GET /api/google-ads/report?view=campaigns|landing_pages|leads|alerts`
-- `GET /api/google-ads/accounts`
-- `POST /api/google-ads/save-settings`
-- `POST /api/google-ads/test`
-- `POST /api/google-ads/disconnect`
-- `GET /api/cron/sync-google-ads` (CRON_SECRET)
-
----
-
-## Metrics
-
-- Visitor conversion rate = (call clicks + forms) ÷ visitors  
-- Ad click-to-lead rate = (call clicks + forms) ÷ Ads clicks  
-- Cost per form / call click  
-- **Cost per lead action** = spend ÷ unique converting sessions (deduped)
-
-Two views: **total actions** vs **unique converting visitors**. CRM form rows remain 1:1 leads.
-
----
-
-## Out of scope (v1)
-
-Search-term reporting, keyword/budget edits, Meta Ads, Xero/revenue, enhanced conversions, dynamic call forwarding, full GA4 replacement, automatic campaign changes.
+See prior sections in git history / PR #328 for conversion roles, metrics, and Advertising UI details.
 
 ---
 
 ## Ops checklist
 
-1. Run `db/google_ads_schema.sql` in Supabase  
-2. Set Google Ads env vars on Vercel  
-3. Confirm cron `/api/cron/sync-google-ads` is registered  
-4. Connect a test site → select account → run form/call tests  
-5. Verify gclid lands in `visitor_sessions` from a tagged URL  
+1. Run `db/google_ads_schema.sql` in Supabase (if not already)  
+2. Attach domain `app.leadpages.com.au` to the Vercel production project  
+3. Set Production env vars listed above  
+4. Configure Google Cloud origins/redirect exactly as listed  
+5. Connect via `/settings/integrations/google-ads`  
+6. Confirm callback hits `/api/integrations/google-ads/callback` (not Host-derived)  
 
-*Last updated: July 2026 — base Google Ads integration.*
+*Last updated: July 2026 — app.leadpages.com.au OAuth domain migration.*

@@ -8482,7 +8482,7 @@ function heroCtaCard(c){
     if(!connected){
       h+='<div class="card" style="margin-bottom:14px"><h2 style="margin:0 0 6px">Connect Google Ads</h2>'
         +'<p class="lede">Link your Google Ads account to see spend, ad clicks and cost per lead alongside LeadPages visitors, call clicks and forms.</p>'
-        +'<button type="button" class="btn" id="gads-connect">Connect Google Ads</button>'
+        +'<button type="button" class="btn" id="gads-connect">Connect Google Ads</button>'+'<a class="btn ghost sm" href="/settings/integrations/google-ads" style="text-decoration:none">Open integrations page</a>'
         +(st&&st.platformConfigured===false?'<p class="hint" style="margin-top:10px">Platform Google Ads credentials are not configured yet (developer token / OAuth client).</p>':'')
         +'</div>';
     } else {
@@ -8645,10 +8645,21 @@ function heroCtaCard(c){
 
   function _gadsWireHealth(){
     var connect=document.getElementById('gads-connect');
-    if(connect) connect.addEventListener('click',function(){
+    if(connect) connect.addEventListener('click',async function(){
       if(!currentSiteId) return;
       var slug=currentSiteSlug||'';
-      location.href='/api/google-ads/connect?siteId='+encodeURIComponent(currentSiteId)+(slug?('&slug='+encodeURIComponent(slug)):'');
+      var tok=await _gadsToken();
+      if(!tok){ toast('Sign in required','warn'); return; }
+      try{
+        var r=await fetch('/api/integrations/google-ads/connect?format=json',{
+          method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+tok,Accept:'application/json'},
+          body:JSON.stringify({siteId:currentSiteId,slug:slug,returnPath:'/settings/integrations/google-ads'})
+        });
+        var j=await r.json();
+        if(!r.ok||!j.url) throw new Error(j.error||'connect_failed');
+        location.href=j.url;
+      }catch(e){ toast((e&&e.message)||'Could not start Google Ads connect','warn'); }
     });
     var save=document.getElementById('gads-save-roles');
     if(save) save.addEventListener('click',async function(){
@@ -8746,13 +8757,16 @@ function heroCtaCard(c){
     if(c2) c2.addEventListener('click',function(){ csvFromTable('#gads-body table','landing-pages.csv'); });
   }
 
-  // Deep-link after OAuth return
+  // Deep-link after OAuth return / Advertising query
   (function(){
     try{
       var u=new URL(location.href);
       if(u.searchParams.get('gads')==='connected'){
-        toast('Google Ads connected — select an account in Advertising');
-        setTimeout(function(){ try{ showView('advertising'); _gadsTab='health'; }catch(e){} }, 400);
+        toast('Google Ads connected — select an account in Connection & Health');
+        setTimeout(function(){ try{ showView('advertising'); _gadsTab='health'; if(typeof _gadsPaint==='function') _gadsPaint(); }catch(e){} }, 400);
+      } else if(u.searchParams.get('view')==='advertising'){
+        if(u.searchParams.get('gadsTab')==='health') _gadsTab='health';
+        setTimeout(function(){ try{ showView('advertising'); }catch(e){} }, 300);
       }
     }catch(e){}
   })();
