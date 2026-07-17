@@ -1,8 +1,9 @@
 # 21 — AI Theme Studio
 
 **Document:** `AI/21-THEME-STUDIO`  
-**Status:** Colour-token MVP shipped; **full product vision supersedes this doc**  
-**Canonical rebuild plan:** [THEME-STUDIO-IMPLEMENTATION-AUDIT](THEME-STUDIO-IMPLEMENTATION-AUDIT.md)
+**Status:** Colour-token MVP shipped; **full product is Theme Studio V2**  
+**Canonical rebuild plan:** [THEME-STUDIO-IMPLEMENTATION-AUDIT](THEME-STUDIO-IMPLEMENTATION-AUDIT.md)  
+**V2 foundations (Phases 1–2):** [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md)
 
 ---
 
@@ -12,10 +13,10 @@ The implementation at `/theme-studio` is an **AI colour-token generator** (five 
 
 | Product | Status |
 |---------|--------|
-| **Theme Studio** (full design system) | Spec + phased plan in the audit — **do not extend the colour screen into this** |
+| **Theme Studio V2** (full design system) | Phases 1–2 library foundations shipped — [23](23-THEME-STUDIO-V2.md). **Do not extend this colour screen into V2.** |
 | **AI Colour Assistant** | Intended home for the current colour generate/refine/approve flow (Editor → Appearance) |
 
-Do not modify production Theme Studio behaviour until the audit plan is approved.
+Do not wire V2 UI onto `theme-studio.html`. Keep colour MVP isolated until relocated.
 
 ---
 
@@ -34,6 +35,7 @@ Flag: `BRAIN_THEME_STUDIO` (default on).
 
 ## Related
 
+- V2 Phases 1–2: [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md)  
 - Rebuild audit & phases: [THEME-STUDIO-IMPLEMENTATION-AUDIT](THEME-STUDIO-IMPLEMENTATION-AUDIT.md)  
 - Roadmap: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md)  
 - Status: [00-STATUS](00-STATUS.md)
