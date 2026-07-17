@@ -48,7 +48,7 @@
 | 5 | OpenAI + Gemini | Done |
 | 6 | Control Centre | Done (+ durable `ai_requests` when SQL applied) |
 | 7 | Landing draft migration | Done — **flag default OFF** |
-| 8 | Theme Studio product | Colour MVP retained; **V2 Phases 1–2 foundations shipped** (library only) — [23](23-THEME-STUDIO-V2.md), [audit](THEME-STUDIO-IMPLEMENTATION-AUDIT.md) |
+| 8 | Theme Studio product | Colour MVP → AI Colour Assistant; **V2 Phases 1–10 shipped** at `/theme-studio-v2` — [23](23-THEME-STUDIO-V2.md) |
 | 9 | Marketing Hub product | **Done** — [22](22-MARKETING-HUB.md) |
 
 Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
