@@ -48,13 +48,15 @@
 
 ---
 
-## Phase 3 — Prompt and context
+## Phase 3 — Prompt and context ✅
 
 | | |
 |--|--|
 | Objectives | Prompt registry + versions; business context resolver (minimal slices) |
-| Deliverables | Prompt files/DB; resolver with permission checks |
-| Gate | Snapshot tests; isolation tests |
+| Deliverables | `lib/brain/prompts/*` (file-based, versioned); `lib/brain/context/*` (slice extract + auth + redaction); gateway wiring |
+| Gate | Snapshot render tests; tenant isolation tests (`tests/brain-phase3.test.js`) |
+| Excluded | Prompt DB tables; automatic site fetch from Supabase |
+| Status | **Complete** — caller supplies preloaded `site`; features opt in via `promptId` / `contextSlices` |
 
 ---
 

@@ -41,10 +41,11 @@ LeadPages is evolving from a website builder into an AI-powered business platfor
 | Architecture & contracts | Complete in this folder |
 | Phase 1 foundation (`lib/brain`) | **Complete** — mock adapter, gateway, router, schema validation, tests |
 | Real provider adapters (Anthropic, …) | **Phase 2 complete** — Anthropic Messages API adapter (raw `fetch`); OpenAI/Gemini later |
+| Prompt registry + context resolver | **Phase 3 complete** — file-based prompts; slice resolver with auth + redaction (no DB) |
 | Feature migrations | **Not started** (Phase 7+) |
 | Theme Studio / Marketing Hub product builds | **Out of scope** (depend on Brain later) |
 
-**Phase:** Phase 2 Anthropic adapter shipped. Default routes stay on **mock** (CI-safe). Set `BRAIN_PROVIDER=anthropic` to route tasks to Claude. Next: Phase 3 prompt registry + context resolver (owner-gated).
+**Phase:** Phase 3 prompt registry + context resolver shipped. Next: Phase 4 routing resilience (retries / flags / soft cost controls) — owner-gated.
 
 ---
 
@@ -107,19 +108,28 @@ Detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 
 ---
 
-## Runtime entry (Phase 1–2)
+## Runtime entry (Phase 1–3)
 
 ```js
 const { createBrain } = require('../../lib/brain');
 const brain = createBrain(); // mock routes by default — no API keys
-const result = await brain.generate({ taskId: 'help.answer', input: 'How do I publish?' });
+
+const result = await brain.generate({
+  taskId: 'seo.suburb_intro',
+  promptId: 'seo.suburb_intro',
+  siteId: site.id,
+  site, // preloaded sites row (Phase 3 has no DB fetch)
+  actor: { userId, role: 'client' },
+  contextSlices: ['site.identity'],
+  input: { suburb: 'Belconnen', trade: 'plumber' }
+});
 
 // Opt-in Anthropic routing (server-side key required):
 // BRAIN_PROVIDER=anthropic ANTHROPIC_API_KEY=...
 ```
 
-Tests: `tests/brain-phase1.test.js`, `tests/brain-anthropic.test.js` (injected `fetch` — no live network).
+Tests: `tests/brain-phase1.test.js`, `tests/brain-anthropic.test.js`, `tests/brain-phase3.test.js`.
 
 ## Notice
 
-Phase 0 was documentation-only. Phase 1–2 add **`lib/brain`** with mock + Anthropic adapters (raw `fetch`, no SDKs). No feature migrations, no Control Centre, no database migrations yet.
+Phase 0 was documentation-only. Phase 1–3 add **`lib/brain`** with mock + Anthropic adapters, file-based prompt registry, and context slice resolver. No feature migrations, no Control Centre, no database migrations yet.

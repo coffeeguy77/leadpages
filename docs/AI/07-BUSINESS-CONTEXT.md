@@ -1,7 +1,7 @@
 # 07 — Business Context
 
 **Document:** `AI/07-BUSINESS-CONTEXT`  
-**Status:** Proposed  
+**Status:** Partial — V1 slice resolver in `lib/brain/context/` (Phase 3); caller supplies site row (no DB fetch yet)  
 **Prerequisites:** [02-DATABASE](../02-DATABASE.md), [01-CURRENT-STATE-AUDIT](01-CURRENT-STATE-AUDIT.md)
 
 ---

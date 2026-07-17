@@ -1,7 +1,7 @@
 # 19 — Developer Guide
 
 **Document:** `AI/19-DEVELOPER-GUIDE`  
-**Status:** Proposed (future implementation)  
+**Status:** Partial — `createBrain()` available; feature migrations still Phase 7+  
 **Prerequisites:** [13-INTERNAL-API-CONTRACTS](13-INTERNAL-API-CONTRACTS.md), [02-VISION-AND-PRINCIPLES](02-VISION-AND-PRINCIPLES.md)
 
 ---
@@ -35,21 +35,34 @@
 
 ---
 
-## Pseudo-example (not implemented)
+## Example (Phase 3 runtime)
 
 ```js
-// inside an api route — conceptual
+const { createBrain } = require('../../lib/brain');
+const brain = createBrain();
+
+// Load site yourself (resolver does not hit the DB yet).
 const result = await brain.generateStructured({
   correlationId,
   taskId: 'content.landing_draft',
   promptId: 'content.landing_draft',
-  siteId,
+  siteId: site.id,
+  site,
   actor: { userId, role },
   contextSlices: ['site.identity', 'site.services', 'site.brand'],
-  input: { brief: req.body.brief }
+  input: { brief: req.body.brief },
+  responseSchema: {
+    type: 'object',
+    required: ['title', 'bodyMarkdown'],
+    properties: {
+      title: { type: 'string' },
+      bodyMarkdown: { type: 'string' }
+    }
+  }
 });
 if (!result.ok) return res.status(502).json({ error: result.error });
-return res.json({ draft: result.output.bodyMarkdown, usage: result.usage });
+// AI suggests — preview/approve before writing sites.config
+return res.json({ draft: result.output, usage: result.usage, prompt: result.prompt });
 ```
 
 ---
