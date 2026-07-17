@@ -102,14 +102,26 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   </section>
 
   <section class="ba-card">
+    <h2>Cost by provider</h2>
+    <p class="sub">Token × published list rates (last 30 days when durable ledger is on).</p>
+    <table class="ba-table"><thead><tr><th>Provider</th><th>Calls</th><th>Tokens in→out</th><th>Est. USD</th></tr></thead><tbody id="by-provider"></tbody></table>
+  </section>
+
+  <section class="ba-card">
     <h2>Recent usage</h2>
-    <p class="sub">Process-local buffer (not durable across serverless cold starts).</p>
-    <table class="ba-table"><thead><tr><th>When</th><th>Task</th><th>Provider</th><th>OK</th><th>Latency</th><th>Tokens</th></tr></thead><tbody id="usage"></tbody></table>
+    <p class="sub" id="usage-sub">Durable ai_requests ledger when available; otherwise this-isolate buffer.</p>
+    <table class="ba-table"><thead><tr><th>When</th><th>Task</th><th>Provider</th><th>OK</th><th>Latency</th><th>Tokens</th><th>USD</th></tr></thead><tbody id="usage"></tbody></table>
   </section>
 
   <section class="ba-card">
     <h2>Recent failures</h2>
     <table class="ba-table"><thead><tr><th>When</th><th>Task</th><th>Code</th></tr></thead><tbody id="failures"></tbody></table>
+  </section>
+
+  <section class="ba-card">
+    <h2>Model rate card</h2>
+    <p class="sub">Rates used for estimates (USD / 1M tokens). Update lib/brain/pricing.js when vendors change prices.</p>
+    <table class="ba-table"><thead><tr><th>Model</th><th>Label</th><th>Input</th><th>Output</th></tr></thead><tbody id="pricing"></tbody></table>
   </section>
 </main>
 
@@ -152,19 +164,25 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     $('notice').textContent = data.notice || '';
     var usage = data.usage || {};
     var byTask = usage.byTask || {};
-    var calls = 0, fails = 0, usd = 0;
-    Object.keys(byTask).forEach(function(k){
-      calls += byTask[k].calls||0;
-      fails += byTask[k].failures||0;
-      usd += byTask[k].estimateUsd||0;
-    });
+    var byProv = usage.byProvider || {};
+    var calls = usage.totalEvents != null ? usage.totalEvents : 0;
+    var fails = usage.failures != null ? usage.failures : 0;
+    var usd = usage.totalCostUsd != null ? Number(usage.totalCostUsd) : 0;
+    if(!calls){
+      Object.keys(byTask).forEach(function(k){
+        calls += byTask[k].calls||0;
+        fails += byTask[k].failures||0;
+        usd += Number(byTask[k].costUsd != null ? byTask[k].costUsd : byTask[k].estimateUsd) || 0;
+      });
+    }
+    var src = usage.source === 'durable' ? 'Durable (30d)' : 'This isolate';
     $('kpis').innerHTML = [
       kpi('Default provider', data.defaultProvider || 'mock'),
       kpi('BRAIN_PROVIDER', data.brainProviderEnv || 'mock'),
       kpi('Landing draft flag', (data.flags && data.flags.landingDraft) ? 'ON' : 'off'),
-      kpi('Usage events', String(usage.totalEvents||0)),
+      kpi('Usage events', String(calls)),
       kpi('Failures', String(fails)),
-      kpi('Est. USD (buffer)', usd.toFixed(4))
+      kpi('Est. USD ('+src+')', usd.toFixed(4))
     ].join('');
 
     $('providers').innerHTML = (data.providers||[]).map(function(p){
@@ -184,16 +202,47 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
         + '<td><button class="btn ghost" data-task="'+esc(r.taskId)+'" data-act="'+(en?'disable_task':'enable_task')+'">'+(en?'Disable':'Enable')+'</button></td></tr>';
     }).join('');
 
+    var provKeys = Object.keys(byProv);
+    $('by-provider').innerHTML = provKeys.length
+      ? provKeys.sort().map(function(k){
+          var r = byProv[k]||{};
+          var c = Number(r.costUsd != null ? r.costUsd : r.estimateUsd) || 0;
+          return '<tr><td><strong>'+esc(k)+'</strong></td><td>'+esc(String(r.calls||0))+'</td>'
+            + '<td class="mono">'+esc((r.inputTokens||0)+'→'+(r.outputTokens||0))+'</td>'
+            + '<td class="mono">$'+c.toFixed(4)+'</td></tr>';
+        }).join('')
+      : '<tr><td colspan="4">No durable provider totals yet — generate a landing draft after applying db/ai_requests.sql.</td></tr>';
+
+    var usub = $('usage-sub');
+    if(usub){
+      usub.textContent = usage.source === 'durable'
+        ? 'Durable ai_requests ledger (last 30 days). Costs from actual tokens × rate card.'
+        : 'Process-local buffer only — apply db/ai_requests.sql for durable billing across cold starts.';
+    }
+
     $('usage').innerHTML = (data.recent||[]).map(function(e){
-      return '<tr><td class="mono">'+esc((e.recordedAt||'').slice(11,19))+'</td><td class="mono">'+esc(e.taskId)+'</td>'
-        + '<td>'+esc(e.provider||'—')+'</td><td>'+(e.success===false?'<span class="ba-pill bad">no</span>':'<span class="ba-pill ok">yes</span>')+'</td>'
+      var when = (e.recordedAt||'');
+      var whenShort = when.length > 16 ? when.slice(5,16).replace('T',' ') : when.slice(11,19);
+      var cost = e.costUsd != null ? Number(e.costUsd) : (e.estimateUsd != null ? Number(e.estimateUsd) : 0);
+      return '<tr><td class="mono">'+esc(whenShort)+'</td><td class="mono">'+esc(e.taskId)+'</td>'
+        + '<td>'+esc(e.provider||'—')+(e.model?' <span class="mono" style="color:var(--ink-faint)">'+esc(e.model)+'</span>':'')+'</td>'
+        + '<td>'+(e.success===false?'<span class="ba-pill bad">no</span>':'<span class="ba-pill ok">yes</span>')+'</td>'
         + '<td>'+esc(e.latencyMs!=null?e.latencyMs+'ms':'—')+'</td>'
-        + '<td class="mono">'+esc((e.inputTokens||0)+'→'+(e.outputTokens||0))+'</td></tr>';
-    }).join('') || '<tr><td colspan="6">No events in this isolate yet.</td></tr>';
+        + '<td class="mono">'+esc((e.inputTokens||0)+'→'+(e.outputTokens||0))+'</td>'
+        + '<td class="mono">$'+(cost||0).toFixed(4)+'</td></tr>';
+    }).join('') || '<tr><td colspan="7">No events yet.</td></tr>';
 
     $('failures').innerHTML = (data.recentFailures||[]).map(function(e){
-      return '<tr><td class="mono">'+esc((e.recordedAt||'').slice(11,19))+'</td><td class="mono">'+esc(e.taskId)+'</td><td class="mono">'+esc(e.errorCode||'—')+'</td></tr>';
+      var when = (e.recordedAt||'');
+      var whenShort = when.length > 16 ? when.slice(5,16).replace('T',' ') : when.slice(11,19);
+      return '<tr><td class="mono">'+esc(whenShort)+'</td><td class="mono">'+esc(e.taskId)+'</td><td class="mono">'+esc(e.errorCode||'—')+'</td></tr>';
     }).join('') || '<tr><td colspan="3">No failures recorded.</td></tr>';
+
+    $('pricing').innerHTML = (data.pricing||[]).map(function(p){
+      return '<tr><td class="mono">'+esc(p.provider)+'/'+esc(p.model)+'</td><td>'+esc(p.label)+'</td>'
+        + '<td class="mono">$'+Number(p.inputPerMTok).toFixed(2)+'</td>'
+        + '<td class="mono">$'+Number(p.outputPerMTok).toFixed(2)+'</td></tr>';
+    }).join('') || '<tr><td colspan="4">No models configured.</td></tr>';
   }
 
   function kpi(l,v){ return '<div class="ba-kpi"><p class="l">'+esc(l)+'</p><p class="v">'+esc(v)+'</p></div>'; }

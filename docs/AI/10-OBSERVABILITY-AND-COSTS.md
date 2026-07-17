@@ -6,9 +6,11 @@
 
 ---
 
-## Current gap
+## Current state
 
-No AI call site persists token usage, cost, latency, or correlation IDs. Partner “AI credits” copy in acquire-trade-pack has **no ledger** in repository code.
+Brain calls persist token usage, estimated USD, latency, and correlation IDs to **`ai_requests`** when `db/ai_requests.sql` has been applied (`lib/brain/usage-persist.js`). Control Centre reads the durable ledger (30-day window) with a process-local buffer fallback. Costs use published model rates in `lib/brain/pricing.js` × actual tokens — ops forecast, not the provider invoice.
+
+Partner “AI credits” copy in acquire-trade-pack still has **no ledger** tied to partner entitlements.
 
 ---
 

@@ -89,7 +89,7 @@ Order for next migrations: [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md).
 2. **Do not migrate assist / suburb / packs** without explicit approval (landing draft was the approved first migration).  
 3. **AI suggests → user approves → publish** — especially Ads and config writes.  
 4. **Control Centre is super-admin only** — never expose keys; UI shows configured + last-four only.  
-5. **Usage store is process-local** — do not assume durable history until `ai_requests` exists.  
+5. **Usage ledger** — Control Centre prefers durable `ai_requests` (run `db/ai_requests.sql`). Costs = actual tokens × `lib/brain/pricing.js` rates (ops forecast, not the provider invoice). Process-local buffer remains as fallback.  
 6. **Prefer `getPlatformBrain()`** in API routes so Control Centre usage recording works.  
 7. If a feature doc still says “browser calls Anthropic”, treat it as **stale** — check this file and `manage.html` / `api/brain/*`.
 
