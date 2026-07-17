@@ -104,6 +104,14 @@
       "destination": "/theme-studio.html"
     },
     {
+      "source": "/theme-studio-v2",
+      "destination": "/theme-studio-v2.html"
+    },
+    {
+      "source": "/theme-studio/colours",
+      "destination": "/theme-studio.html"
+    },
+    {
       "source": "/marketing-hub",
       "destination": "/marketing-hub.html"
     },

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theme Studio — LeadPages</title>
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
+<meta name="theme-color" content="#12151a">
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<link rel="stylesheet" href="/assets/lp-super-admin.css">
+<script src="/assets/lp-workspace-appearance.js"></script>
+<script src="/assets/lp-hub-embed.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{--font-display:'Fraunces',Georgia,serif;--font-ui:'DM Sans',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-ui)}
+.wrap{padding:22px 20px 48px;max-width:1180px;margin:0 auto}
+.login-card{max-width:420px;margin:12vh auto;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.hidden{display:none!important}
+.field{margin:0 0 12px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit}
+.field textarea{min-height:72px;resize:vertical}
+.btn{appearance:none;border:1px solid var(--accent);background:transparent;color:var(--accent);font:600 13px/1 var(--font-ui);padding:10px 14px;border-radius:10px;cursor:pointer;margin:0 6px 6px 0}
+.btn.solid{background:var(--accent);color:var(--accent-text,#fff)}
+.btn.ghost{border-color:var(--line-strong);color:var(--ink-soft)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:16px}
+.card h2{margin:0 0 4px;font-family:var(--font-display);font-size:1.25rem}
+.sub{margin:0 0 14px;color:var(--ink-soft);font-size:13px;line-height:1.45}
+.msg{font-size:13px;margin:8px 0 0}
+.msg.bad{color:#b91c1c}
+.msg.ok{color:#15803d}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.step{padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--ink-soft)}
+.step.on{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.step.done{color:var(--ink)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:960px){.grid3,.grid2{grid-template-columns:1fr}}
+.concept{padding:14px;border:1px solid var(--line);border-radius:12px;cursor:pointer;background:transparent}
+.concept.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.concept h3{margin:0 0 6px;font-family:var(--font-display);font-size:1.05rem}
+.swatch-row{display:flex;gap:6px;margin:8px 0}
+.swatch{width:28px;height:28px;border-radius:6px;border:1px solid var(--line)}
+.preview-frame{width:100%;min-height:620px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.preview-frame.mobile{max-width:412px;margin:0 auto;display:block}
+.pill{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.pill.warn{background:color-mix(in srgb,#d97706 18%,transparent);color:#b45309}
+</style>
+</head>
+<body class="lp-super-admin">
+<div id="gate" class="login-card">
+  <h1>Theme Studio</h1>
+  <p class="sub">Full-site concepts from a business brief. Draft-only — never writes live sites during generate/preview/refine.</p>
+  <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
+  <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
+  <button class="btn solid" id="login-btn" type="button">Sign in</button>
+  <p class="msg bad hidden" id="gate-msg"></p>
+</div>
+
+<main id="app" class="wrap hidden">
+  <div class="top">
+    <div>
+      <h1 style="margin:0;font-family:var(--font-display)">Theme Studio</h1>
+      <p class="sub" style="margin:6px 0 0">Trade and non-trade foundations · real renderer preview · <span class="pill warn">draft only</span></p>
+    </div>
+    <div>
+      <a class="btn ghost" href="/theme-studio" target="_blank" rel="noopener">AI Colour Assistant</a>
+      <button class="btn ghost" id="signout" type="button">Sign out</button>
+    </div>
+  </div>
+
+  <div class="steps" id="steps"></div>
+
+  <section class="card" id="panel-brief">
+    <h2>1. Business brief</h2>
+    <p class="sub">Start a draft workspace. Generation never touches live sites.</p>
+    <div class="grid2">
+      <div class="field"><label>Mode</label>
+        <select id="mode">
+          <option value="new">New site concept</option>
+          <option value="demo">Demo / mockup</option>
+          <option value="redesign">Redesign existing (snapshot only)</option>
+          <option value="restyle">Restyle</option>
+        </select>
+      </div>
+      <div class="field"><label>Source site (optional for redesign)</label><select id="source-site"><option value="">— none —</option></select></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Business name</label><input id="businessName" placeholder="Pink Diamond Vault"></div>
+      <div class="field"><label>Industry</label><input id="industry" placeholder="jewellery"></div>
+    </div>
+    <div class="field"><label>Specialisation</label><input id="specialisation" placeholder="Pink diamonds, engagement rings…"></div>
+    <div class="grid2">
+      <div class="field"><label>Location</label><input id="location" placeholder="Canberra"></div>
+      <div class="field"><label>Desired style</label><input id="desiredStyle" placeholder="Luxury, elegant, editorial…"></div>
+    </div>
+    <div class="field"><label>Target audience</label><input id="audience" placeholder="Affluent couples…"></div>
+    <div class="field"><label>Notes</label><textarea id="notes" placeholder="Anything else for the concept…"></textarea></div>
+    <div class="field"><label>Foundation (optional)</label><select id="foundation"><option value="">Auto-select</option></select></div>
+    <button class="btn solid" id="btn-create" type="button">Create draft &amp; continue</button>
+    <p class="msg" id="brief-msg"></p>
+  </section>
+
+  <section class="card hidden" id="panel-concepts">
+    <h2>2. Generate concepts</h2>
+    <p class="sub">Three distinct concepts via foundation registry + deterministic adapter (Brain when available). Draft versions only.</p>
+    <button class="btn solid" id="btn-generate" type="button">Generate 3 concepts</button>
+    <p class="msg" id="gen-msg"></p>
+    <div class="grid3" id="concept-grid"></div>
+  </section>
+
+  <section class="card hidden" id="panel-preview">
+    <h2>3. Preview &amp; select</h2>
+    <p class="sub">Real trade renderer with draft config. Forms and tracking disabled. Signed short-lived URL.</p>
+    <div>
+      <button class="btn ghost" id="btn-desktop" type="button">Desktop</button>
+      <button class="btn ghost" id="btn-mobile" type="button">Mobile</button>
+      <button class="btn solid" id="btn-select" type="button" disabled>Select this concept</button>
+    </div>
+    <p class="msg" id="preview-msg"></p>
+    <iframe id="preview" class="preview-frame" title="Theme Studio preview"></iframe>
+  </section>
+
+  <section class="card hidden" id="panel-refine">
+    <h2>4. Refine</h2>
+    <p class="sub">Natural-language refinement creates a new version. Undo by selecting a prior concept version after regenerate.</p>
+    <div class="field"><label>Feedback</label><textarea id="feedback" placeholder="Make the CTA softer… change heading to…"></textarea></div>
+    <button class="btn solid" id="btn-refine" type="button">Apply refinement</button>
+    <button class="btn ghost" id="btn-quality" type="button">Run quality check</button>
+    <p class="msg" id="refine-msg"></p>
+    <pre id="quality-out" class="sub" style="white-space:pre-wrap"></pre>
+  </section>
+
+  <section class="card hidden" id="panel-apply">
+    <h2>5. Apply / save</h2>
+    <p class="sub">Default apply creates a non-live demo site or stores on the draft workspace. Live production writes stay disabled unless ops enables them.</p>
+    <div class="field"><label>Scope</label>
+      <select id="scope">
+        <option value="demo">Create demo / mockup site (non-live)</option>
+        <option value="new_site">Create draft site (non-live)</option>
+        <option value="complete">Store complete config on draft only</option>
+        <option value="colours">Colours only (draft store)</option>
+        <option value="my_template">Save as My Template</option>
+      </select>
+    </div>
+    <div class="field"><label>Template name (if saving)</label><input id="template-name" placeholder="Pink Diamond Vault — Editorial"></div>
+    <button class="btn solid" id="btn-apply" type="button">Confirm apply</button>
+    <button class="btn" id="btn-template" type="button">Save as My Template</button>
+    <p class="msg" id="apply-msg"></p>
+  </section>
+</main>
+
+<script>
+(function(){
+  var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var $ = function(id){ return document.getElementById(id); };
+  var state = {
+    draftId: null,
+    versions: [],
+    selectedVersionId: null,
+    previewMode: 'desktop',
+    step: 1
+  };
+
+  var STEP_LABELS = ['Brief','Generate','Preview','Refine','Apply'];
+
+  function esc(s){
+    return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+    });
+  }
+
+  function paintSteps(){
+    $('steps').innerHTML = STEP_LABELS.map(function(label, i){
+      var n = i+1;
+      var cls = 'step'+(n===state.step?' on':'')+(n<state.step?' done':'');
+      return '<span class="'+cls+'">'+n+'. '+esc(label)+'</span>';
+    }).join('');
+  }
+
+  async function token(){
+    var r = await sb.auth.getSession();
+    return (r && r.data && r.data.session && r.data.session.access_token) || null;
+  }
+
+  async function api(path, opts){
+    opts = opts || {};
+    var t = await token();
+    var res = await fetch(path, {
+      method: opts.method || 'POST',
+      headers: Object.assign(
+        {'content-type':'application/json'},
+        t ? {Authorization:'Bearer '+t} : {}
+      ),
+      body: opts.body != null ? JSON.stringify(opts.body) : (opts.method === 'GET' ? undefined : '{}')
+    });
+    var j = await res.json().catch(function(){ return {}; });
+    if(!res.ok) throw new Error(j.message || j.error || ('HTTP '+res.status));
+    return j;
+  }
+
+  async function canUseThemeStudio(){
+    var sess = await sb.auth.getSession();
+    var user = sess && sess.data && sess.data.session && sess.data.session.user;
+    if(!user) return false;
+    var { data: prof } = await sb.from('profiles').select('is_super_admin').eq('id', user.id).maybeSingle();
+    if(prof && prof.is_super_admin) return true;
+    var { data: partner } = await sb.from('partners').select('id,status').eq('user_id', user.id).maybeSingle();
+    return !!(partner && partner.status === 'active');
+  }
+
+  async function loadFoundations(){
+    var j = await api('/api/theme-studio/foundations', { method: 'GET', body: null });
+    var sel = $('foundation');
+    (j.foundations||[]).forEach(function(f){
+      var opt = document.createElement('option');
+      opt.value = f.id;
+      opt.textContent = f.name + ' (' + f.category + ')';
+      sel.appendChild(opt);
+    });
+  }
+
+  async function loadSites(){
+    var { data } = await sb.from('sites').select('id,slug,business_name').order('business_name').limit(500);
+    $('source-site').innerHTML = '<option value="">— none —</option>' + (data||[]).map(function(s){
+      return '<option value="'+esc(s.id)+'">'+esc(s.business_name||s.slug)+'</option>';
+    }).join('');
+  }
+
+  function showFrom(step){
+    state.step = step;
+    paintSteps();
+    $('panel-brief').classList.toggle('hidden', step < 1);
+    $('panel-concepts').classList.toggle('hidden', step < 2);
+    $('panel-preview').classList.toggle('hidden', step < 3);
+    $('panel-refine').classList.toggle('hidden', step < 4);
+    $('panel-apply').classList.toggle('hidden', step < 5);
+  }
+
+  function paintConcepts(versions){
+    state.versions = versions || [];
+    $('concept-grid').innerHTML = state.versions.map(function(v){
+      var theme = v.theme || {};
+      var q = v.quality && v.quality.score != null ? v.quality.score : '—';
+      return '<article class="concept" data-id="'+esc(v.id)+'">'
+        + '<h3>'+esc(v.conceptName||v.conceptId)+'</h3>'
+        + '<p class="sub" style="margin:0 0 8px">'+esc(v.layoutId||'')+' · quality '+esc(q)+'</p>'
+        + '<div class="swatch-row">'
+        + ['pipe','hivis','steel','safety','lightBg'].map(function(k){
+          return '<span class="swatch" title="'+k+'" style="background:'+esc(theme[k]||'#ccc')+'"></span>';
+        }).join('')
+        + '</div>'
+        + '<p class="sub" style="margin:0">'+esc((v.rationale||'').slice(0,140))+'</p>'
+        + '</article>';
+    }).join('') || '<p class="sub">No concepts yet.</p>';
+
+    Array.prototype.forEach.call(document.querySelectorAll('.concept'), function(el){
+      el.onclick = function(){
+        state.selectedVersionId = el.getAttribute('data-id');
+        Array.prototype.forEach.call(document.querySelectorAll('.concept'), function(c){
+          c.classList.toggle('selected', c === el);
+        });
+        $('btn-select').disabled = false;
+        loadPreview();
+      };
+    });
+  }
+
+  async function loadPreview(){
+    if(!state.draftId || !state.selectedVersionId) return;
+    $('preview-msg').className = 'msg';
+    $('preview-msg').textContent = 'Minting signed preview…';
+    try{
+      var j = await api('/api/theme-studio/preview', {
+        body: {
+          draftId: state.draftId,
+          versionId: state.selectedVersionId,
+          mode: state.previewMode
+        }
+      });
+      $('preview').className = 'preview-frame'+(state.previewMode==='mobile'?' mobile':'');
+      $('preview').src = j.url;
+      $('preview-msg').className = 'msg ok';
+      $('preview-msg').textContent = 'Preview loaded (expires ~15 min). Forms & tracking disabled.';
+      showFrom(Math.max(state.step, 3));
+    }catch(e){
+      $('preview-msg').className = 'msg bad';
+      $('preview-msg').textContent = e.message || String(e);
+    }
+  }
+
+  $('login-btn').onclick = async function(){
+    $('gate-msg').classList.add('hidden');
+    var { error } = await sb.auth.signInWithPassword({ email: $('email').value, password: $('password').value });
+    if(error){
+      $('gate-msg').textContent = error.message;
+      $('gate-msg').classList.remove('hidden');
+      return;
+    }
+    boot();
+  };
+
+  $('signout').onclick = async function(){
+    await sb.auth.signOut();
+    location.reload();
+  };
+
+  $('btn-create').onclick = async function(){
+    var msg = $('brief-msg');
+    msg.className = 'msg'; msg.textContent = 'Creating draft…';
+    try{
+      var j = await api('/api/theme-studio/drafts', {
+        body: {
+          mode: $('mode').value,
+          sourceSiteId: $('source-site').value || null,
+          foundationId: $('foundation').value || null,
+          brief: {
+            businessName: $('businessName').value,
+            industry: $('industry').value,
+            specialisation: $('specialisation').value,
+            location: $('location').value,
+            audience: $('audience').value,
+            desiredStyle: $('desiredStyle').value,
+            notes: $('notes').value
+          }
+        }
+      });
+      state.draftId = j.draft.id;
+      msg.className = 'msg ok';
+      msg.textContent = 'Draft '+j.draft.id+(j.notice ? ' · '+j.notice : '');
+      showFrom(2);
+    }catch(e){
+      msg.className = 'msg bad';
+      msg.textContent = e.message || String(e);
+    }
+  };
+
+  $('btn-generate').onclick = async function(){
+    var msg = $('gen-msg');
+    msg.className = 'msg'; msg.textContent = 'Generating…';
+    try{
+      var j = await api('/api/theme-studio/generate-concepts', {
+        body: {
+          draftId: state.draftId,
+          foundationId: $('foundation').value || null
+        }
+      });
+      msg.className = 'msg ok';
+      msg.textContent = 'Generated via '+j.source+' · foundation '+j.foundationName;
+      paintConcepts(j.versions);
+      showFrom(2);
+    }catch(e){
+      msg.className = 'msg bad';
+      msg.textContent = e.message || String(e);
+    }
+  };
+
+  $('btn-desktop').onclick = function(){ state.previewMode = 'desktop'; loadPreview(); };
+  $('btn-mobile').onclick = function(){ state.previewMode = 'mobile'; loadPreview(); };
+
+  $('btn-select').onclick = async function(){
+    var msg = $('preview-msg');
+    try{
+      await api('/api/theme-studio/select-concept', {
+        body: { draftId: state.draftId, versionId: state.selectedVersionId }
+      });
+      msg.className = 'msg ok';
+      msg.textContent = 'Concept selected. Continue to refine or apply.';
+      showFrom(4);
+    }catch(e){
+      msg.className = 'msg bad';
+      msg.textContent = e.message || String(e);
+    }
+  };
+
+  $('btn-refine').onclick = async function(){
+    var msg = $('refine-msg');
+    msg.className = 'msg'; msg.textContent = 'Refining…';
+    try{
+      var j = await api('/api/theme-studio/refine', {
+        body: {
+          draftId: state.draftId,
+          versionId: state.selectedVersionId,
+          feedback: $('feedback').value
+        }
+      });
+      state.selectedVersionId = j.version.id;
+      state.versions = state.versions.concat([j.version]);
+      paintConcepts(state.versions);
+      msg.className = 'msg ok';
+      msg.textContent = 'New version '+j.version.versionNumber+' stored.';
+      loadPreview();
+      showFrom(5);
+    }catch(e){
+      msg.className = 'msg bad';
+      msg.textContent = e.message || String(e);
+    }
+  };
+
+  $('btn-quality').onclick = async function(){
+    try{
+      var j = await api('/api/theme-studio/quality', {
+        body: { draftId: state.draftId, versionId: state.selectedVersionId }
+      });
+      $('quality-out').textContent = JSON.stringify(j.report, null, 2);
+    }catch(e){
+      $('quality-out').textContent = e.message || String(e);
+    }
+  };
+
+  $('btn-apply').onclick = async function(){
+    var msg = $('apply-msg');
+    msg.className = 'msg'; msg.textContent = 'Applying…';
+    try{
+      var scope = $('scope').value;
+      if(scope === 'my_template'){
+        $('btn-template').click();
+        return;
+      }
+      var j = await api('/api/theme-studio/apply', {
+        body: {
+          draftId: state.draftId,
+          versionId: state.selectedVersionId,
+          scope: scope,
+          confirm: true
+        }
+      });
+      msg.className = 'msg ok';
+      msg.textContent = j.notice + (j.targetSite ? (' · site '+j.targetSite.slug) : '');
+    }catch(e){
+      msg.className = 'msg bad';
+      msg.textContent = e.message || String(e);
+    }
+  };
+
+  $('btn-template').onclick = async function(){
+    var msg = $('apply-msg');
+    try{
+      var j = await api('/api/theme-studio/save-template', {
+        body: {
+          draftId: state.draftId,
+          versionId: state.selectedVersionId,
+          name: $('template-name').value || ($('businessName').value + ' template')
+        }
+      });
+      msg.className = 'msg ok';
+      msg.textContent = j.notice;
+      showFrom(5);
+    }catch(e){
+      msg.className = 'msg bad';
+      msg.textContent = e.message || String(e);
+    }
+  };
+
+  async function boot(){
+    var ok = await canUseThemeStudio();
+    if(!ok){
+      $('gate-msg').textContent = 'Theme Studio V2 is limited to superusers and partners.';
+      $('gate-msg').classList.remove('hidden');
+      await sb.auth.signOut();
+      return;
+    }
+    $('gate').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    paintSteps();
+    await loadFoundations();
+    await loadSites();
+    showFrom(1);
+  }
+
+  sb.auth.getSession().then(function(r){
+    if(r && r.data && r.data.session) boot();
+  });
+})();
+</script>
+</body>
+</html>

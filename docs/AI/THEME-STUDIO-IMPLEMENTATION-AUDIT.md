@@ -1,13 +1,13 @@
 # Theme Studio Implementation Audit & Rebuild Plan
 
 **Document:** `AI/THEME-STUDIO-IMPLEMENTATION-AUDIT`  
-**Status:** Audit complete — **Phases 1–2 approved and implemented** (library/fixtures/tests). Stop before Phase 3 UI/drafts/previews.  
+**Status:** Audit complete — **Phases 1–10 implemented** (see [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md)).  
 **Date:** 2026-07-17  
 **Audience:** Product + engineering (AI agents and humans)  
-**Related:** [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md) (Phases 1–2), [21-THEME-STUDIO](21-THEME-STUDIO.md) (colour MVP), [00-STATUS](00-STATUS.md), [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md)
+**Related:** [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md), [21-THEME-STUDIO](21-THEME-STUDIO.md) (AI Colour Assistant), [00-STATUS](00-STATUS.md), [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md)
 
-> **Stop rule:** Phases 1–2 only. Do not build intake UI, generation, previews, draft tables, or live apply without further approval.  
-> The existing colour-token screen may later be retained as **AI Colour Assistant** under Editor → Appearance — not as Theme Studio.
+> **Product URL:** `/theme-studio-v2`. Colour tokens remain at `/theme-studio` (AI Colour Assistant).  
+> Live production apply stays off unless `THEME_STUDIO_ALLOW_LIVE_APPLY=1`.
 
 ---
 

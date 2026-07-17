@@ -28,9 +28,9 @@
 | Control Centre UI | `brain-admin.html` → `/brain-admin` | Super-admin; Ops Command panel “AI Brain” |
 | Durable Brain settings | `db/brain_settings.sql` + `lib/brain/settings-store.js` | Landing provider saved from Control Centre (no env var) |
 | Landing draft API | `api/brain/landing-draft.js` | Flag `BRAIN_LANDING_DRAFT`; loads saved provider |
-| Theme Studio (colour MVP) | `theme-studio.html` + `api/brain/theme-*.js` | Colour tokens only — relocate later to Appearance → AI Colour Assistant |
-| Theme Studio V2 foundations | `lib/theme-studio/` + `fixtures/theme-studio/` | **Phases 1–2 done** — registry, concept schema, validator, adapter; no UI / no live writes — [23](23-THEME-STUDIO-V2.md) |
-| Theme Studio rebuild plan | `docs/AI/THEME-STUDIO-IMPLEMENTATION-AUDIT.md` | Audit + phases; Phases 1–2 implemented per [23](23-THEME-STUDIO-V2.md) |
+| AI Colour Assistant | `/theme-studio` + `api/brain/theme-*.js` | Colour tokens only (former Theme Studio MVP) |
+| Theme Studio V2 | `/theme-studio-v2` + `api/theme-studio/*` + `lib/theme-studio/` | **Phases 1–10 shipped** — draft concepts, preview, refine, apply/demo — [23](23-THEME-STUDIO-V2.md) |
+| Theme Studio rebuild plan | `docs/AI/THEME-STUDIO-IMPLEMENTATION-AUDIT.md` | Audit; V2 product implemented per [23](23-THEME-STUDIO-V2.md) |
 | Marketing Hub | `marketing-hub.html` + `api/brain/ads-*.js` | Phase 9 — suggest only; approve stores, no Ads mutate |
 | Tests | `tests/brain-*.test.js` | No live network; injected `fetch` / mock |
 
