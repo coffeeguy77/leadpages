@@ -262,7 +262,12 @@ textarea.tin{resize:vertical;}
 .ai-row{display:flex;align-items:center;gap:12px;margin-top:8px;}
 .lp-approve{border:1px solid var(--amber);background:var(--amber-tint);border-radius:var(--radius-sm);padding:14px;margin:14px 0;}
 .lp-ap-h{font-weight:700;color:#7a5a1e;font-size:13px;margin-bottom:8px;}
-.lp-ap-preview{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-height:240px;overflow:auto;font-size:13.5px;line-height:1.55;}
+.lp-ap-preview{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-height:420px;overflow:auto;font-size:13.5px;line-height:1.55;}
+.lp-ap-meta{margin:0 0 6px;padding-bottom:6px;border-bottom:1px solid var(--line);color:var(--muted,#5b6878);font-size:12.5px;}
+.lp-ap-meta strong{color:var(--ink,#1a2230);}
+.lp-ap-body{margin-top:12px;}
+.lp-ap-preview details.lp-faq{margin:8px 0;border:1px solid var(--line);border-radius:8px;padding:0 10px;}
+.lp-ap-preview details.lp-faq>summary{cursor:pointer;font-weight:700;padding:8px 0;}
 .lp-ap-actions{display:flex;gap:10px;margin-top:10px;}
 .lp-ed-foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
 .lp-ed-tabs{display:flex;gap:4px;margin:0 0 18px;border-bottom:1px solid var(--line);}
@@ -852,7 +857,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       <div class="f"><textarea id="lp-body" class="tin mono" rows="12" placeholder="Write your page content here. Simple Markdown supported: ## Subheading, **bold**, - bullet."></textarea></div>
 
       <div class="lp-approve" id="lp-approve" hidden>
-        <div class="lp-ap-h">AI draft ready — review before it replaces your content</div>
+        <div class="lp-ap-h">AI draft ready — review before it fills title, slug, meta, H1 and body</div>
         <div class="lp-ap-preview" id="lp-ap-preview"></div>
         <div class="lp-ap-actions"><button class="btn" id="lp-ap-accept">Use this draft</button><button class="btn ghost" id="lp-ap-discard">Discard</button></div>
       </div>
@@ -1815,6 +1820,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     ['Investment loans','Write an SEO landing page for property investors about structuring investment lending, borrowing power and offset, ending with a contact call to action.']
   ];
   const AI_PRESETS_TRADE=[
+    ['Local SEO keyword','Recommend the best primary Google search term for our main service + city, then write a full ~1000-word SEO landing page with FAQ and CTA. Target buyers of the service, not the wrong adjacent intent.'],
     ['Local service page','Write an SEO landing page targeting people searching for our trade in our local area. Emphasise local knowledge, fast response, being fully licensed and insured, and a clear call to get a free quote.'],
     ['Emergency / same-day','Write an SEO landing page for urgent same-day callouts: availability, fast response times, what to do in an emergency, and a prominent call-now action.'],
     ['A specific service','Write an SEO landing page about one specific service we offer \u2014 explain the process, what is included, typical timeframes, and end with a free-quote call to action.'],
@@ -2171,7 +2177,22 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-undo').addEventListener('click',function(){ if(lpHi>0){ lpHi--; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
     $('lp-redo').addEventListener('click',function(){ if(lpHi<lpHist.length-1){ lpHi++; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
     $('lp-ai-go').addEventListener('click',aiGenerate);
-    $('lp-ap-accept').addEventListener('click',function(){ const d=$('lp-approve').getAttribute('data-draft')||''; $('lp-body').value=d; lpField('body',d); lpPush(d); $('lp-approve').hidden=true; toast('Draft applied'); });
+    $('lp-ap-accept').addEventListener('click',function(){
+      var draft={};
+      try{ draft=JSON.parse($('lp-approve').getAttribute('data-draft-json')||'{}')||{}; }catch(e){ draft={}; }
+      var body=String(draft.bodyMarkdown||draft.markdown||$('lp-approve').getAttribute('data-draft')||'');
+      if(draft.title){ $('lp-title').value=draft.title; lpField('title',draft.title); }
+      if(draft.slug){
+        var slug=String(draft.slug).toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+/,'').replace(/--+/g,'-').replace(/-+$/,'');
+        $('lp-slug').value=slug; lpField('slug',slug);
+      }
+      if(draft.meta){ $('lp-meta').value=draft.meta; lpField('meta',draft.meta); $('lp-meta-count').textContent=String(draft.meta).length+' characters'; }
+      if(draft.h1){ $('lp-h1').value=draft.h1; lpField('h1',draft.h1); }
+      $('lp-body').value=body; lpField('body',body); lpPush(body);
+      $('lp-approve').hidden=true;
+      if(lpCur) $('lp-ed-title').textContent=lpCur.title?('Edit: '+lpCur.title):'New page';
+      toast('Draft applied — title, slug, meta, H1 and body filled');
+    });
     $('lp-ap-discard').addEventListener('click',function(){ $('lp-approve').hidden=true; });
     var lptc=$('lp-tab-content'), lpta=$('lp-tab-apps');
     if(lptc) lptc.addEventListener('click',function(){ lpSetEdTab('content'); });
@@ -2209,14 +2230,19 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     try{$('lp-editor').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
   }
   function mdToHtml(t){
-    return esc(t).replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h2>$1</h2>')
+    var s=esc(t);
+    s=s.replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h2>$1</h2>')
       .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-      .replace(/^- (.*)$/gm,'<li>$1</li>').replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
-      .replace(/\n{2,}/g,'</p><p>').replace(/^(?!<[hul])(.+)$/gm,'$1');
+      .replace(/^- (.*)$/gm,'<li>$1</li>').replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>');
+    s=s.replace(/(?:^|\n)\?\?\?\s+(.+)\n([\s\S]*?)(?=(?:\n\?\?\?\s+)|\n(?:<h[23]>)|$)/g,function(_m,q,a){
+      var ans=String(a||'').trim().replace(/\n{2,}/g,'</p><p>').replace(/\n/g,' ');
+      return '\n<details class="lp-faq"><summary>'+String(q||'').trim()+'</summary><div class="lp-faq-a"><p>'+ans+'</p></div></details>\n';
+    });
+    return s.replace(/\n{2,}/g,'</p><p>').replace(/^(?!<[hud])(.+)$/gm,'$1');
   }
   async function aiGenerate(){
     const note=$('lp-ai-note'); const prompt=$('lp-ai-prompt').value.trim() || aiPresets()[0][1];
-    note.textContent='Writing\u2026';
+    note.textContent='Writing full SEO page\u2026';
     if(!currentSiteId){ note.textContent='Select a site first.'; return; }
     try{
       var se=await sb.auth.getSession();
@@ -2236,10 +2262,21 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         note.textContent=(d.message||d.error||('Draft failed (HTTP '+res.status+')'));
         return;
       }
-      var txt=(d.draft&&(d.draft.markdown||d.draft.bodyMarkdown))||'';
-      if(!txt) throw new Error('empty');
+      var draft=d.draft||{};
+      var txt=draft.markdown||draft.bodyMarkdown||'';
+      if(!txt && !draft.title) throw new Error('empty');
       $('lp-approve').setAttribute('data-draft',txt);
-      $('lp-ap-preview').innerHTML='<p>'+mdToHtml(txt)+'</p>';
+      $('lp-approve').setAttribute('data-draft-json',JSON.stringify(draft));
+      var metaBits='';
+      if(draft.primaryKeyword) metaBits+='<div class="lp-ap-meta"><strong>Primary keyword:</strong> '+esc(draft.primaryKeyword)+'</div>';
+      if(draft.title) metaBits+='<div class="lp-ap-meta"><strong>Page title:</strong> '+esc(draft.title)+'</div>';
+      if(draft.slug) metaBits+='<div class="lp-ap-meta"><strong>URL slug:</strong> /'+esc(draft.slug)+'</div>';
+      if(draft.meta) metaBits+='<div class="lp-ap-meta"><strong>Meta description:</strong> '+esc(draft.meta)+'</div>';
+      if(draft.h1) metaBits+='<div class="lp-ap-meta"><strong>H1:</strong> '+esc(draft.h1)+'</div>';
+      if(draft.secondaryKeywords&&draft.secondaryKeywords.length){
+        metaBits+='<div class="lp-ap-meta"><strong>Secondary keywords:</strong> '+esc(draft.secondaryKeywords.join(', '))+'</div>';
+      }
+      $('lp-ap-preview').innerHTML=metaBits+'<div class="lp-ap-body"><p>'+mdToHtml(txt)+'</p></div>';
       $('lp-approve').hidden=false; note.textContent='';
       try{$('lp-approve').scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){}
     }catch(err){ note.textContent='Could not reach the AI draft service. Try again in a moment.'; }

@@ -72,7 +72,7 @@ Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 
 | Feature | Path today | Through Brain? |
 |---------|------------|----------------|
-| Landing page AI draft | `manage.html` → `POST /api/brain/landing-draft` | **Yes** (when `BRAIN_LANDING_DRAFT=1`) |
+| Landing page AI draft | `manage.html` → `POST /api/brain/landing-draft` (prompt **v3**: full SEO fields + ~1000w + FAQ/CTA) | **Yes** (when `BRAIN_LANDING_DRAFT=1`) |
 | Help assist | `api/assist.js` → Anthropic | No |
 | Suburb intros | `lib/seo/suburbIntro.js` → Anthropic | No |
 | Trade packs | `lib/trade-pack-utils.js` → Anthropic | No |

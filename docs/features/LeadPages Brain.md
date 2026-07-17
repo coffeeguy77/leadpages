@@ -12,6 +12,8 @@
 
 LeadPages Brain is the **provider-agnostic AI gateway**. Features should call Brain; Brain selects mock / Anthropic / OpenAI / Gemini. As of Phase 7, only the **landing page AI draft** path is migrated (behind `BRAIN_LANDING_DRAFT=1`). Assist, suburb intros, trade packs, and IG enrich still call Anthropic directly.
 
+Landing draft prompt **v3** returns a full SEO package (~900–1100 words): `primaryKeyword`, `title`, `slug`, `meta`, `h1`, `bodyMarkdown`, `secondaryKeywords`, `faqs[]`, `ctaHeadline`, `ctaBody`. On **Use this draft**, the editor fills title, slug, meta, H1 and body. FAQ answers are composed as collapsible `??? question` blocks in the page body.
+
 ---
 
 ## Surfaces

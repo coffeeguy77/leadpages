@@ -1,10 +1,11 @@
 'use strict';
 
 /**
- * Phase 7 — Landing page AI draft via Brain.
+ * Phase 7+ — Landing page AI draft via Brain.
  * POST /api/brain/landing-draft
  *   { siteId, brief?, template? }
  *
+ * Returns a full SEO draft: title, slug, meta, h1, bodyMarkdown (+ FAQ/CTA composed).
  * Flag: BRAIN_LANDING_DRAFT=1 (default off). Approve UI stays in manage.html.
  */
 
@@ -13,6 +14,10 @@ const {
   getPlatformBrain,
   isLandingDraftEnabled
 } = require('../../lib/brain/platform');
+const {
+  LANDING_DRAFT_SCHEMA,
+  normalizeLandingDraft
+} = require('../../lib/brain/landing-compose');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const admin = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -88,28 +93,6 @@ async function assertSiteAccess(user, siteId) {
   return { ok: false, code: 403, error: 'not_your_site' };
 }
 
-const LANDING_SCHEMA = {
-  type: 'object',
-  required: ['title', 'bodyMarkdown'],
-  properties: {
-    title: { type: 'string' },
-    bodyMarkdown: { type: 'string' }
-  },
-  additionalProperties: false
-};
-
-/** Strip emojis / decorative symbols that hurt SEO copy and editor preview. */
-function stripDecorativeIcons(text) {
-  return String(text || '')
-    .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
-    .replace(/[\u{2600}-\u{27BF}]/gu, '')
-    .replace(/[\u{FE0F}\u{200D}]/gu, '')
-    .replace(/^[ \t]*[✅✔☑☕🏢🎂🎪🌅🎯🔥⭐✨]+[ \t]*/gmu, '')
-    .replace(/[ \t]{2,}/g, ' ')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-}
-
 module.exports = async function landingDraft(req, res) {
   if (req.method !== 'POST') {
     return json(res, 405, { ok: false, error: 'POST only' });
@@ -145,7 +128,7 @@ module.exports = async function landingDraft(req, res) {
   const result = await brain.generateStructured({
     taskId: 'content.landing_draft',
     promptId: 'content.landing_draft',
-    // Active registry version is SEO-first v2
+    // Active registry version is full-page SEO v3
     siteId: site.id,
     site,
     actor: {
@@ -159,7 +142,7 @@ module.exports = async function landingDraft(req, res) {
       template,
       audienceHint
     },
-    responseSchema: LANDING_SCHEMA
+    responseSchema: LANDING_DRAFT_SCHEMA
   });
 
   if (!result.ok) {
@@ -171,24 +154,17 @@ module.exports = async function landingDraft(req, res) {
     });
   }
 
-  // Compose markdown the approve UI expects (title + body). Strip icons as a safety net.
-  const title = stripDecorativeIcons(String(result.output.title || '').trim());
-  const bodyMd = stripDecorativeIcons(String(result.output.bodyMarkdown || '').trim());
-  const markdown = title
-    ? (bodyMd.startsWith('#') ? bodyMd : ('# ' + title + '\n\n' + bodyMd))
-    : bodyMd;
+  const draft = normalizeLandingDraft(result.output, {
+    businessName: site.business_name || (site.config && site.config.businessName) || ''
+  });
 
   return json(res, 200, {
     ok: true,
-    draft: {
-      title,
-      bodyMarkdown: bodyMd,
-      markdown
-    },
+    draft,
     usage: result.usage,
     prompt: result.prompt,
     model: result.model,
     correlationId: result.correlationId,
-    notice: 'AI suggests — preview and approve in the editor before saving.'
+    notice: 'AI suggests — preview and approve in the editor before saving. Approve fills title, slug, meta, H1 and body.'
   });
 };
