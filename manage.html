@@ -1353,7 +1353,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 
   /* ---------- persistence + export ---------- */
   function persist(){ try{ localStorage.setItem('linray_rates', JSON.stringify(data)); }catch(e){} }
-  async function lpSaveDB(){ if(!currentSiteId) return; try{ var sref=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null; var cfg; if(sref&&sref.config&&typeof sref.config==='object'){ cfg=JSON.parse(JSON.stringify(sref.config)); } else { cfg=JSON.parse(JSON.stringify(data||{})); delete cfg.savedThemes; delete cfg.users; } cfg.pages=JSON.parse(JSON.stringify((data&&data.pages)||[])); await sb.from('sites').update({ config:cfg, updated_at:new Date().toISOString() }).eq('id', currentSiteId); if(sref) sref.config=cfg; }catch(e){} }
+  async function lpSaveDB(){ if(!currentSiteId) return; try{ if(lpCur&&(!(data&&data.pages)||!data.pages.some(function(p){return p&&p.id===lpCur.id;}))){ lpResetLandingEditor(); } var sref=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null; var cfg; if(sref&&sref.config&&typeof sref.config==='object'){ cfg=JSON.parse(JSON.stringify(sref.config)); } else { cfg=JSON.parse(JSON.stringify(data||{})); delete cfg.savedThemes; delete cfg.users; } cfg.pages=JSON.parse(JSON.stringify((data&&data.pages)||[])); await sb.from('sites').update({ config:cfg, updated_at:new Date().toISOString() }).eq('id', currentSiteId); if(sref) sref.config=cfg; }catch(e){} }
   var _lpAS=null; function lpAutosave(){ if(_lpAS) clearTimeout(_lpAS); _lpAS=setTimeout(function(){ lpSaveDB(); },1000); }
   function toast(msg, kind){ const t=$('toast'); if(!t) return; t.textContent=msg; t.classList.remove('warn'); if(kind==='warn') t.classList.add('warn'); t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, kind==='warn'?2400:1800); }
   function jsonOut(){ return JSON.stringify(data,null,2); }
@@ -3104,15 +3104,27 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     OPTIONAL_COMPONENTS.forEach(function(id){ if(d.sections[id] && d.sections[id].on===true) lpSeedComponent(d,id); });
     _vaSeed(d);
   }
+  function lpResetLandingEditor(){
+    try{ if(typeof _lpAS!=='undefined'&&_lpAS){ clearTimeout(_lpAS); _lpAS=null; } }catch(e){}
+    lpCur=null; lpHist=[]; lpHi=-1; lpPageEditKey=null;
+    try{
+      var ed=$('lp-editor'); if(ed) ed.hidden=true;
+      var title=$('lp-ed-title'); if(title) title.textContent='';
+      ['lp-title','lp-slug','lp-meta','lp-h1','lp-body','lp-img'].forEach(function(id){ var el=$(id); if(el) el.value=''; });
+    }catch(e){}
+  }
   function loadSite(site){
     hideLanding();
+    // Close any open landing-page editor from the previous site and cancel pending autosaves
+    // so Bean Culture pages never appear (or save) under Lukes etc.
+    lpResetLandingEditor();
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app'; currentIsPartnerHome=!!site.is_partner_home;
     currentSiteStatus=String(site.status||'').toLowerCase();
     currentReferringPartnerId=site.referring_partner_id||null;
     currentServicingPartnerId=site.servicing_partner_id||null;
     currentCommissionPartnerId=site.commission_partner_id||null;
     currentRecurringCommissionActive=site.recurring_commission_active!==false;
-    lpNavStateSave({siteId:site.id, siteSlug:site.slug});
+    lpNavStateSave({siteId:site.id, siteSlug:site.slug, lpPageId:null, lpEdTab:null});
     if(window.LPLogo&&window.LPLogo.refreshWorkspaceLogos){ window.LPLogo.refreshWorkspaceLogos(); }
     currentBusinessName=site.business_name||''; currentCustomDomain=site.custom_domain||''; currentOwnerEmail=site.owner_email||'';
     landingSub='details';
@@ -3134,8 +3146,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       applyTemplateChrome();
       applyRoleGating();
       ensureSiteBar();
+      try{ renderSeoPages(); }catch(e){}
       _reconcileSiteApps(currentSiteId, data).then(function(){
         applyRoleGating();
+        try{ renderSeoPages(); }catch(e){}
         try{ renderSiteAnalytics(); }catch(e){}
         try{ lpRenderSupportContact(); }catch(e){}
         if(document.body.classList.contains('lp-prev-open')) previewLoad();
@@ -3148,6 +3162,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     applyTemplateChrome();
     applyRoleGating();
     ensureSiteBar();
+    try{ renderSeoPages(); }catch(e){}
     try{ renderSiteAnalytics(); }catch(e){}
     try{ lpRenderSupportContact(); }catch(e){}
     if(document.body.classList.contains('lp-prev-open')) previewLoad();

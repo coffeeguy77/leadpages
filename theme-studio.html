@@ -39,16 +39,22 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
 .msg.ok{color:#15803d}
 .swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0}
 @media(max-width:700px){.swatches{grid-template-columns:repeat(2,1fr)}}
-.sw{border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.sw .chip{height:72px}
-.sw .meta{padding:8px 10px;font-size:12px}
-.sw .meta strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint)}
+/* Do NOT use class "chip" — lp-super-admin.css forces .chip { background:transparent !important } */
+.ts-sw{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.ts-swatch{
+  height:72px;width:100%;border:0;padding:0;margin:0;display:block;cursor:pointer;
+  background:var(--ts-color,#888)!important;border-radius:0!important;appearance:auto;
+}
+.ts-sw .meta{padding:8px 10px;font-size:12px}
+.ts-sw .meta strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);margin-bottom:4px}
+.ts-hex{width:100%;padding:6px 8px;border-radius:8px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:12px/1.2 ui-monospace,Menlo,monospace}
 .preview{border-radius:14px;overflow:hidden;border:1px solid var(--line);margin-top:12px}
 .preview .bar{padding:14px 18px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .preview .body{padding:22px 18px}
 .preview .cta{display:inline-block;padding:10px 16px;border-radius:10px;font-weight:700;color:#fff;margin-top:12px}
 .mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:8px}
 </style>
 </head>
 <body class="lp-super-admin">
@@ -89,15 +95,18 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   </section>
 
   <section class="card" id="preview-card">
-    <h2>2. Preview & refine</h2>
-    <p class="sub" id="rationale">Generate a theme to see swatches and a live preview strip.</p>
+    <h2>2. Preview &amp; refine</h2>
+    <p class="sub" id="rationale">Generate a theme to see swatches and a live preview strip. Click a swatch or edit the hex to tweak.</p>
     <div class="swatches" id="swatches"></div>
     <div class="preview" id="preview"></div>
     <div class="field" style="margin-top:16px"><label>Refine feedback</label>
       <textarea id="feedback" placeholder="e.g. Make CTA more orange, darken the header, softer page background"></textarea>
     </div>
-    <button class="btn" id="btn-refine" type="button" disabled>Refine</button>
-    <button class="btn solid" id="btn-approve" type="button" disabled>Approve &amp; save</button>
+    <div class="actions">
+      <button class="btn ghost" id="btn-undo" type="button" disabled>Undo</button>
+      <button class="btn" id="btn-refine" type="button" disabled>Refine</button>
+      <button class="btn solid" id="btn-approve" type="button" disabled>Approve &amp; save</button>
+    </div>
     <p class="msg" id="save-msg"></p>
   </section>
 </main>
@@ -107,9 +116,41 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
   var $ = function(id){ return document.getElementById(id); };
   var draft = null;
+  var historyStack = [];
   var sites = [];
+  var TOKEN_LABELS = [
+    ['pipe','Brand'],['hivis','CTA'],['steel','Header'],['safety','Highlight'],['lightBg','Background']
+  ];
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
+
+  function hexOk(v){
+    v = String(v || '').trim();
+    if(/^#?[0-9a-fA-F]{3}$/.test(v)){
+      v = v.charAt(0) === '#' ? v : '#' + v;
+      return ('#' + v.charAt(1) + v.charAt(1) + v.charAt(2) + v.charAt(2) + v.charAt(3) + v.charAt(3)).toLowerCase();
+    }
+    if(/^#?[0-9a-fA-F]{6}$/.test(v)) return (v.charAt(0) === '#' ? v : '#' + v).toLowerCase();
+    return '';
+  }
+
+  function cloneTheme(t){
+    return {
+      presetName: t && t.presetName || '',
+      pipe: hexOk(t && t.pipe) || '#1f7bb8',
+      hivis: hexOk(t && t.hivis) || '#ff6a1f',
+      steel: hexOk(t && t.steel) || '#1a2230',
+      safety: hexOk(t && t.safety) || '#ffc400',
+      lightBg: hexOk(t && t.lightBg) || '#eef2f6'
+    };
+  }
+
+  function pushHistory(){
+    if(!draft) return;
+    historyStack.push(cloneTheme(draft));
+    if(historyStack.length > 30) historyStack.shift();
+    $('btn-undo').disabled = historyStack.length === 0;
+  }
 
   async function token(){
     var r = await sb.auth.getSession();
@@ -128,15 +169,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     return j;
   }
 
-  function paintTheme(theme, rationale){
-    draft = theme;
-    var labels = [
-      ['pipe','Brand'],['hivis','CTA'],['steel','Header'],['safety','Highlight'],['lightBg','Background']
-    ];
-    $('swatches').innerHTML = labels.map(function(pair){
-      var k = pair[0], label = pair[1], hex = theme[k] || '#ccc';
-      return '<div class="sw"><div class="chip" style="background:'+esc(hex)+'"></div><div class="meta"><strong>'+esc(label)+'</strong><span class="mono">'+esc(hex)+'</span></div></div>';
-    }).join('');
+  function paintPreview(theme){
     $('preview').innerHTML =
       '<div class="bar" style="background:'+esc(theme.steel)+'"><strong>'+esc(theme.presetName||'Preview')+'</strong>'
       + '<span style="color:'+esc(theme.safety)+'">Licensed · Local</span></div>'
@@ -145,9 +178,59 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       + '<p style="color:'+esc(theme.steel)+';opacity:.85;margin:8px 0 0">Fast, fixed-price help across your suburb.</p>'
       + '<span class="cta" style="background:'+esc(theme.hivis)+'">Call now</span>'
       + ' <span style="margin-left:10px;color:'+esc(theme.pipe)+';font-weight:700">Learn more →</span></div>';
-    $('rationale').textContent = rationale || (theme.presetName ? theme.presetName : 'Theme ready — refine or approve.');
+  }
+
+  function wireSwatchEditors(){
+    TOKEN_LABELS.forEach(function(pair){
+      var k = pair[0];
+      var picker = $('ts-pick-'+k);
+      var hex = $('ts-hex-'+k);
+      if(picker){
+        picker.addEventListener('input', function(){
+          pushHistory();
+          draft[k] = hexOk(picker.value) || draft[k];
+          if(hex) hex.value = draft[k];
+          picker.style.setProperty('--ts-color', draft[k]);
+          paintPreview(draft);
+        });
+      }
+      if(hex){
+        hex.addEventListener('change', function(){
+          var v = hexOk(hex.value);
+          if(!v){ hex.value = draft[k]; return; }
+          pushHistory();
+          draft[k] = v;
+          if(picker){
+            picker.value = v;
+            picker.style.setProperty('--ts-color', v);
+          }
+          paintPreview(draft);
+        });
+      }
+    });
+  }
+
+  function paintTheme(theme, rationale, opts){
+    var keepHistory = opts && opts.keepHistory;
+    draft = cloneTheme(theme);
+    if(theme && theme.presetName) draft.presetName = String(theme.presetName);
+    if(!keepHistory){
+      historyStack = [];
+      $('btn-undo').disabled = true;
+    }
+    $('swatches').innerHTML = TOKEN_LABELS.map(function(pair){
+      var k = pair[0], label = pair[1], colour = draft[k] || '#cccccc';
+      return '<div class="ts-sw">'
+        + '<input type="color" class="ts-swatch" id="ts-pick-'+k+'" value="'+esc(colour)+'" style="--ts-color:'+esc(colour)+';background:'+esc(colour)+'!important" title="Pick '+esc(label)+'">'
+        + '<div class="meta"><strong>'+esc(label)+'</strong>'
+        + '<input class="ts-hex" id="ts-hex-'+k+'" value="'+esc(colour)+'" spellcheck="false"></div></div>';
+    }).join('');
+    wireSwatchEditors();
+    paintPreview(draft);
+    $('rationale').textContent = rationale || (draft.presetName ? draft.presetName : 'Theme ready — tweak colours, refine, or approve.');
     $('btn-refine').disabled = false;
     $('btn-approve').disabled = false;
+    $('btn-undo').disabled = historyStack.length === 0;
   }
 
   async function loadSites(){
@@ -201,14 +284,24 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   $('btn-refine').onclick = async function(){
     var msg = $('save-msg'); msg.className='msg'; msg.textContent='Refining…';
     try{
+      pushHistory();
       var j = await api('/api/brain/theme-refine', {
         siteId: $('site').value,
         feedback: $('feedback').value,
         currentTheme: draft
       });
-      paintTheme(j.theme, j.rationale);
-      msg.className='msg ok'; msg.textContent='Refined.';
+      paintTheme(j.theme, j.rationale, { keepHistory: true });
+      msg.className='msg ok'; msg.textContent='Refined. Undo restores the previous colours.';
     }catch(e){ msg.className='msg bad'; msg.textContent=e.message||String(e); }
+  };
+
+  $('btn-undo').onclick = function(){
+    if(!historyStack.length) return;
+    var prev = historyStack.pop();
+    paintTheme(prev, 'Restored previous colours.', { keepHistory: true });
+    $('btn-undo').disabled = historyStack.length === 0;
+    $('save-msg').className = 'msg ok';
+    $('save-msg').textContent = 'Undid last change.';
   };
 
   $('btn-approve').onclick = async function(){

@@ -21,10 +21,11 @@
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-ui)}
 .ba-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
-.ba-kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:18px}
-.ba-kpi{padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
-.ba-kpi .l{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 6px}
-.ba-kpi .v{font-family:var(--font-display);font-size:22px;font-weight:600;margin:0;letter-spacing:-.02em}
+.ba-kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.ba-kpi{flex:1 1 118px;min-width:110px;max-width:200px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
+.ba-kpi.wide{flex:1 1 140px;min-width:130px}
+.ba-kpi .l{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 5px;line-height:1.25}
+.ba-kpi .v{font-family:var(--font-display);font-size:20px;font-weight:600;margin:0;letter-spacing:-.02em;word-break:break-word}
 .ba-card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:16px}
 .ba-card h2{margin:0 0 4px;font-family:var(--font-display);font-size:1.25rem}
 .ba-card .sub{margin:0 0 14px;color:var(--ink-soft);font-size:13px}
@@ -202,10 +203,10 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       kpi('Default provider', data.defaultProvider || 'mock'),
       kpi('BRAIN_PROVIDER', data.brainProviderEnv || 'mock'),
       kpi('Landing drafts', data.landingDraftProvider || data.defaultProvider || 'mock'),
-      kpi('Landing provider saved', data.landingDraftProviderPersisted ? 'durable' : (data.landingDraftProviderSource || 'default')),
-      kpi('Landing draft flag', (data.flags && data.flags.landingDraft) ? 'ON' : 'off'),
+      kpi('Provider save', data.landingDraftProviderPersisted ? 'durable' : (data.landingDraftProviderSource || 'default')),
+      kpi('Draft flag', (data.flags && data.flags.landingDraft) ? 'ON' : 'off'),
       kpi('Usage events', String(calls)),
-      kpi('Est. USD ('+src+')', usd.toFixed(4))
+      kpi('Est. USD · '+src, '$'+usd.toFixed(4), true)
     ].join('');
 
     var lpSel = $('landing-provider');
@@ -271,7 +272,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     }).join('') || '<tr><td colspan="4">No models configured.</td></tr>';
   }
 
-  function kpi(l,v){ return '<div class="ba-kpi"><p class="l">'+esc(l)+'</p><p class="v">'+esc(v)+'</p></div>'; }
+  function kpi(l,v,wide){ return '<div class="ba-kpi'+(wide?' wide':'')+'"><p class="l">'+esc(l)+'</p><p class="v">'+esc(v)+'</p></div>'; }
 
   async function load(){
     var data = await api('GET');
