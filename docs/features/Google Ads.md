@@ -45,12 +45,22 @@ GOOGLE_ADS_CLIENT_ID=
 GOOGLE_ADS_CLIENT_SECRET=
 GOOGLE_ADS_DEVELOPER_TOKEN=
 GOOGLE_ADS_LOGIN_CUSTOMER_ID=          # optional MCC
-GOOGLE_ADS_OAUTH_ENCRYPTION_KEY=       # required ≥32 chars — AES-256-GCM; plaintext refused
+GOOGLE_ADS_OAUTH_ENCRYPTION_KEY=       # required — Base64 of 32 random bytes (see below)
 ```
 
 Optional: `GOOGLE_ADS_STATE_SECRET` (defaults to encryption key / client secret).
 
-`GOOGLE_ADS_OAUTH_ENCRYPTION_KEY` is **required** before Connect succeeds. Refresh tokens are stored as `enc:v1:` AES-256-GCM blobs in `google_ads_connections.refresh_token` (IV + auth tag + ciphertext). Key rotation is not supported in v1 — re-connect after a key change.
+`GOOGLE_ADS_OAUTH_ENCRYPTION_KEY` is **required** before Connect succeeds. Preferred value:
+
+```bash
+openssl rand -base64 32
+```
+
+That produces ~44 characters of standard Base64 decoding to **exactly 32 bytes**, used as the raw AES-256-GCM key. Also accepted: 64 hex chars, or a legacy UTF-8 passphrase ≥32 characters (hashed with SHA-256). After adding/changing the env var in Vercel, **redeploy** Production so serverless functions see it.
+
+Safe check (signed in): `GET /api/integrations/google-ads/encryption-diag` → `{ configured, rawLength, decodedByteLength, runtime, vercelEnvironment }` (never returns the key).
+
+Refresh tokens are stored as `enc:v1:` AES-256-GCM blobs in `google_ads_connections.refresh_token` (IV + auth tag + ciphertext). Key rotation is not supported in v1 — re-connect after a key change.
 
 **Do not** expose secrets via `NEXT_PUBLIC_*` or client-side code. The Supabase **anon** key may appear in HTML (public by design); OAuth client secret, developer token, and encryption key must stay server-only.
 
