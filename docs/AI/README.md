@@ -45,7 +45,7 @@ Legacy callers (assist, suburb intros, trade packs, IG enrich) still hit Anthrop
 | OpenAI + Gemini adapters | **Phase 5 complete** — raw `fetch`; `BRAIN_PROVIDER=openai\|gemini\|anthropic\|mock` |
 | AI Control Centre | **Phase 6 complete** — `/brain-admin` + `GET/POST /api/brain/control` (super-admin) |
 | Landing draft migration | **Phase 7 complete** — `POST /api/brain/landing-draft`; manage.html calls server; flag `BRAIN_LANDING_DRAFT=1` |
-| Theme Studio / Marketing Hub | **Phase 8–9 specs** — [21](21-THEME-STUDIO.md), [22](22-MARKETING-HUB.md); products not built |
+| Theme Studio / Marketing Hub | Colour MVP [21](21-THEME-STUDIO.md); **V2 Phases 1–2** [23](23-THEME-STUDIO-V2.md); Marketing Hub [22](22-MARKETING-HUB.md) |
 
 **Phase:** Phases 0–7 shipped in code. Theme Studio / Marketing Hub remain separate product builds.
 
@@ -90,8 +90,10 @@ Full principles: [02-VISION-AND-PRINCIPLES](02-VISION-AND-PRINCIPLES.md).
 | [18-RISKS-AND-DECISIONS](18-RISKS-AND-DECISIONS.md) | Risks, ADRs, open questions |
 | [19-DEVELOPER-GUIDE](19-DEVELOPER-GUIDE.md) | How features will call Brain |
 | [20-FUTURE-CAPABILITIES](20-FUTURE-CAPABILITIES.md) | Beyond V1 |
-| [21-THEME-STUDIO](21-THEME-STUDIO.md) | Phase 8 product spec stub |
-| [22-MARKETING-HUB](22-MARKETING-HUB.md) | Phase 9 product spec stub |
+| [21-THEME-STUDIO](21-THEME-STUDIO.md) | Colour MVP (future AI Colour Assistant) |
+| [22-MARKETING-HUB](22-MARKETING-HUB.md) | Phase 9 Marketing Hub |
+| [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md) | Theme Studio V2 Phases 1–2 foundations |
+| [THEME-STUDIO-IMPLEMENTATION-AUDIT](THEME-STUDIO-IMPLEMENTATION-AUDIT.md) | Rebuild audit + phased plan |
 
 ---
 

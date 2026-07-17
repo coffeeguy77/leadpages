@@ -1,12 +1,12 @@
 # Theme Studio Implementation Audit & Rebuild Plan
 
 **Document:** `AI/THEME-STUDIO-IMPLEMENTATION-AUDIT`  
-**Status:** Audit complete — awaiting plan approval before production implementation  
+**Status:** Audit complete — **Phases 1–2 approved and implemented** (library/fixtures/tests). Stop before Phase 3 UI/drafts/previews.  
 **Date:** 2026-07-17  
 **Audience:** Product + engineering (AI agents and humans)  
-**Related:** [21-THEME-STUDIO](21-THEME-STUDIO.md) (current colour-token product), [00-STATUS](00-STATUS.md), [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md)
+**Related:** [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md) (Phases 1–2), [21-THEME-STUDIO](21-THEME-STUDIO.md) (colour MVP), [00-STATUS](00-STATUS.md), [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md)
 
-> **Stop rule:** Do not modify production Theme Studio / site-write behaviour until this plan is explicitly approved.  
+> **Stop rule:** Phases 1–2 only. Do not build intake UI, generation, previews, draft tables, or live apply without further approval.  
 > The existing colour-token screen may later be retained as **AI Colour Assistant** under Editor → Appearance — not as Theme Studio.
 
 ---
@@ -387,30 +387,26 @@ Rollback = restore a prior `config_snapshot` onto the draft.
 | Behaviour | **No production code changes** |
 | DoD | Stakeholders approve phases + first implementation phase |
 
-### Phase 1 — Marketplace / foundation metadata & compatibility model
+### Phase 1 — Marketplace / foundation metadata & compatibility model ✅
 
 | Item | Detail |
 |------|--------|
-| Create | `lib/theme-studio/foundations.js` (curated registry); optional `db/theme_studio_foundations.sql` |
-| Modify | Marketplace admin later for editing metadata |
-| DB | Optional foundations table; can start file-based |
-| API | `GET /api/theme-studio/foundations` |
-| UI | None (or read-only diagnostic) |
-| Tests | Foundation schema + compatibility matrix unit tests |
-| Risks | Incomplete industry coverage |
-| Rollback | Delete registry; no site writes |
-| DoD | AI can query foundations with industry/style filters; incompatibilities documented |
+| Create | `lib/theme-studio/foundations.js` + `foundations-data.js` (curated registry; file-based) |
+| Modify | Docs indexes only; no live Theme Studio UI |
+| DB | Deferred — no foundations table yet |
+| API | Deferred to Phase 3 |
+| UI | None |
+| Tests | `tests/theme-studio-phase1-2.test.js` |
+| DoD | Foundations queryable in-process with industry/style scoring + incompatibilities — see [23](23-THEME-STUDIO-V2.md) |
 
-### Phase 2 — Concept schema + config adapter
+### Phase 2 — Concept schema + config adapter ✅
 
 | Item | Detail |
 |------|--------|
-| Create | `lib/theme-studio/concept-schema.js`, `validate-concept.js`, `adapt-to-site-config.js` |
-| Modify | None of live Theme Studio yet |
-| Tests | Fixture concepts → valid config; reject unknown keys; hero exclusivity |
-| Risks | Trade schema edge cases; typography not first-class on trade |
-| Rollback | Unused modules |
-| DoD | Deterministic adapter + validator; no AI required |
+| Create | `concept-schema.js`, `validate-concept.js`, `adapt-to-site-config.js`, leakage, access, brain-contracts |
+| Modify | None of live Theme Studio / site writes |
+| Tests | Fixtures → valid draft config; reject unknown keys; leakage; immutability |
+| DoD | Deterministic adapter + validator; no AI required — see [23](23-THEME-STUDIO-V2.md) |
 
 ### Phase 3 — Business intake + draft creation
 
