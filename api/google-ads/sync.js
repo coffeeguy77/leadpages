@@ -97,8 +97,8 @@ module.exports = async (req, res) => {
       return json(502, {
         error: 'sync_failed',
         message: err,
-        hint: /test|developer token|PERMISSION/i.test(err)
-          ? 'If your developer token is still in Test Access, it cannot read production Ads accounts until Basic Access is approved.'
+        hint: /403|Test Access|Basic Access|DEVELOPER_TOKEN|production account/i.test(err)
+          ? 'OAuth is fine. Sync needs a Basic Access (or higher) developer token to read production Ads account 1382251570.'
           : undefined
       });
     }
