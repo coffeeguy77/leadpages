@@ -20,6 +20,12 @@ const crypto = require('crypto');
 const { effectiveDemoSalePrice } = require('../lib/partner-demo-pricing');
 const { buildPartnerLandingHtml, resolveLandingTheme, normalizeTemplateKey } = require('../lib/partner-templates');
 const { extractLogoValue } = require('../lib/partner-website/logo');
+const {
+  clipSeoTitle,
+  clipSeoDescription,
+  buildCanonicalUrl,
+  landingPageTitle
+} = require('../lib/seo/meta');
 const brokerTpl   = require('../broker.template.json');     // broker-leads
 const tradeTpl    = require('../trade.template.json');      // trade
 const agencyTpl   = require('../agency.template.json');     // partner web-studio homepage
@@ -962,7 +968,7 @@ module.exports = async (req, res) => {
 
     // A landing page supplies its own SEO title/description.
     if (_pageRow) {
-      if (_pageRow.title) pageTitle = `${_pageRow.title}${_biz ? ' \u2014 ' + _biz : ''}`;
+      if (_pageRow.title) pageTitle = landingPageTitle(_pageRow.title, _biz);
       if (_pageRow.meta)  pageDesc  = _pageRow.meta;
       cfg.pageId = _pageRow.id || null;
       cfg.pageSlug = _pageRow.slug || page || null;
@@ -970,6 +976,13 @@ module.exports = async (req, res) => {
     } else {
       cfg.pageType = cfg.pageType || 'main';
     }
+
+    pageTitle = clipSeoTitle(pageTitle);
+    pageDesc = clipSeoDescription(pageDesc);
+    const canonicalUrl = buildCanonicalUrl(rawHost, site, page || '', isCustom)
+      || ('https://' + host + '/');
+    const appleTouchIcon = (cfg.appleTouchIcon || cfg.favicon || '').trim()
+      || 'https://app.leadpages.com.au/assets/apple-touch-icon-180.png';
 
     let html = tpl.replaceAll('__SITE_CONFIG__', safeJson(cfg));
     const tokens = {
@@ -983,7 +996,9 @@ module.exports = async (req, res) => {
       '{{trade}}':        esc(_trade),
       '{{pageTitle}}':    esc(pageTitle),
       '{{pageDesc}}':     esc(pageDesc),
-      '{{favicon}}':      esc(cfg.favicon || DEFAULT_FAVICON)
+      '{{canonical}}':    esc(canonicalUrl),
+      '{{favicon}}':      esc(cfg.favicon || DEFAULT_FAVICON),
+      '{{appleTouchIcon}}': esc(appleTouchIcon)
     };
     for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
 
