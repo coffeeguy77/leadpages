@@ -99,4 +99,21 @@ describe('Brain gateway records actual costUsd', () => {
     assert.equal(events[0].costUsd, 0);
     assert.equal(res.usage.costUsdEstimate, 0);
   });
+
+  it('awaits onUsage when it returns a Promise', async () => {
+    const { createBrain } = require('../lib/brain');
+    let settled = false;
+    const brain = createBrain({
+      onUsage: async () => {
+        await new Promise((r) => setTimeout(r, 40));
+        settled = true;
+      }
+    });
+    const res = await brain.generate({
+      taskId: 'generic.fast',
+      input: 'await usage hook'
+    });
+    assert.equal(res.ok, true);
+    assert.equal(settled, true);
+  });
 });
