@@ -28,7 +28,8 @@
 | Control Centre UI | `brain-admin.html` → `/brain-admin` | Super-admin; Ops Command panel “AI Brain” |
 | Durable Brain settings | `db/brain_settings.sql` + `lib/brain/settings-store.js` | Landing provider saved from Control Centre (no env var) |
 | Landing draft API | `api/brain/landing-draft.js` | Flag `BRAIN_LANDING_DRAFT`; loads saved provider |
-| Theme Studio | `theme-studio.html` + `api/brain/theme-*.js` | Phase 8 — tokens only; approve → `sites.config.theme` |
+| Theme Studio (colour MVP) | `theme-studio.html` + `api/brain/theme-*.js` | Colour tokens only — **not** full design system; see [THEME-STUDIO-IMPLEMENTATION-AUDIT](THEME-STUDIO-IMPLEMENTATION-AUDIT.md) |
+| Theme Studio rebuild plan | `docs/AI/THEME-STUDIO-IMPLEMENTATION-AUDIT.md` | Audit + phased plan; awaiting approval before coding |
 | Marketing Hub | `marketing-hub.html` + `api/brain/ads-*.js` | Phase 9 — suggest only; approve stores, no Ads mutate |
 | Tests | `tests/brain-*.test.js` | No live network; injected `fetch` / mock |
 
@@ -46,7 +47,7 @@
 | 5 | OpenAI + Gemini | Done |
 | 6 | Control Centre | Done (+ durable `ai_requests` when SQL applied) |
 | 7 | Landing draft migration | Done — **flag default OFF** |
-| 8 | Theme Studio product | **Done** — [21](21-THEME-STUDIO.md) |
+| 8 | Theme Studio product | Colour MVP done; **full rebuild plan awaiting approval** — [audit](THEME-STUDIO-IMPLEMENTATION-AUDIT.md) |
 | 9 | Marketing Hub product | **Done** — [22](22-MARKETING-HUB.md) |
 
 Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
