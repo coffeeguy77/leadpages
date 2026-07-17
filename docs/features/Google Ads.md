@@ -46,6 +46,7 @@ GOOGLE_ADS_CLIENT_SECRET=
 GOOGLE_ADS_DEVELOPER_TOKEN=
 GOOGLE_ADS_LOGIN_CUSTOMER_ID=          # optional MCC
 GOOGLE_ADS_OAUTH_ENCRYPTION_KEY=       # required — Base64 of 32 random bytes (see below)
+GOOGLE_ADS_API_VERSION=v22             # optional; default v22 (v18 is sunset and returns HTML 404)
 ```
 
 Optional: `GOOGLE_ADS_STATE_SECRET` (defaults to encryption key / client secret).

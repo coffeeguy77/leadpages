@@ -5,30 +5,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Google Ads — LeadPages Integrations</title>
   <link rel="icon" href="/favicon.ico">
+  <meta name="theme-color" content="#1f7a63">
+  <script>
+  (function(){
+    try{
+      var raw=localStorage.getItem('leadpages_workspace_appearance');
+      var prefs=raw?JSON.parse(raw):null;
+      var theme=(prefs&&prefs.theme)||'classic-light';
+      if(theme==='system'){
+        theme=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'command-dark':'classic-light';
+      }
+      var allowed=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint'];
+      if(allowed.indexOf(theme)<0) theme='classic-light';
+      document.documentElement.dataset.theme=theme;
+      var dark=(theme==='command-dark'||theme==='neon-pink'||theme==='electric-blue');
+      document.documentElement.style.colorScheme=dark?'dark':'light';
+    }catch(e){}
+  })();
+  </script>
+  <link rel="stylesheet" href="/assets/lp-themes.css">
+  <script src="/assets/lp-workspace-appearance.js"></script>
   <style>
-    :root{--ink:#1a2230;--soft:#5b6878;--line:#e5e7eb;--bg:#f6f7f9;--card:#fff;--accent:#1f7a63;--warn:#b45309}
     *{box-sizing:border-box}
     body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg)}
     .wrap{max-width:720px;margin:0 auto;padding:32px 18px 64px}
-    .brand{font-weight:800;letter-spacing:-.02em;font-size:18px;margin-bottom:18px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 20px;box-shadow:0 8px 24px rgba(0,0,0,.04);margin-bottom:14px}
-    h1{font-size:22px;margin:0 0 6px}
-    .lede{color:var(--soft);margin:0 0 16px}
-    .hint{color:var(--soft);font-size:13px}
+    .brand{font-weight:800;letter-spacing:-.02em;font-size:18px;margin-bottom:18px;color:var(--ink)}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 20px;box-shadow:var(--shadow);margin-bottom:14px}
+    h1{font-size:22px;margin:0 0 6px;color:var(--ink)}
+    .lede{color:var(--ink-soft);margin:0 0 16px}
+    .hint{color:var(--ink-soft);font-size:13px}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    label{display:block;font-weight:600;font-size:13px;margin:0 0 6px}
+    label{display:block;font-weight:600;font-size:13px;margin:0 0 6px;color:var(--ink)}
     select,button,.btn{font:inherit}
-    select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:10px;border:1px solid transparent;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;text-decoration:none}
-    .btn.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+    select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--input-bg,var(--panel));color:var(--ink)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:10px;border:1px solid transparent;background:var(--button-bg,var(--accent));color:var(--accent-text,#fff);font-weight:700;cursor:pointer;text-decoration:none}
+    .btn.ghost{background:var(--panel);color:var(--ink);border-color:var(--line)}
     .btn:disabled{opacity:.55;cursor:not-allowed}
     .ok{color:var(--accent);font-weight:700}
-    .warn{color:var(--warn);font-weight:600}
-    .foot{margin-top:22px;font-size:12.5px;color:#9aa3af}
-    .foot a{color:var(--soft)}
+    .warn{color:var(--warning,#b45309);font-weight:600}
+    .foot{margin-top:22px;font-size:12.5px;color:var(--muted)}
+    .foot a{color:var(--ink-soft)}
     .status{display:grid;gap:8px;margin:14px 0;font-size:14px}
-    .status div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:8px 0}
-    code{font-size:12px;background:#f1f5f9;padding:2px 6px;border-radius:6px}
+    .status div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:8px 0;color:var(--ink)}
+    code{font-size:12px;background:var(--accent-soft);padding:2px 6px;border-radius:6px;color:var(--ink)}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Anon key is public (same bootstrap as manage.html). Never put service-role or OAuth client secrets here. -->
@@ -63,9 +82,10 @@
   </div>
   <script>
   (function(){
+    if(window.LPWorkspaceAppearance){ try{ LPWorkspaceAppearance.init(); }catch(e){} }
+
     var SUPABASE_URL = window.__LP_SUPABASE_URL || '';
     var SUPABASE_ANON = window.__LP_SUPABASE_ANON || '';
-    // Injected at deploy via optional meta — fall back to manage's known public env bootstrap if present.
     var metaUrl = document.querySelector('meta[name="lp-supabase-url"]');
     var metaAnon = document.querySelector('meta[name="lp-supabase-anon"]');
     if(metaUrl) SUPABASE_URL = metaUrl.content;
@@ -79,6 +99,11 @@
     function $(id){ return document.getElementById(id); }
     function qs(name){
       try{ return new URLSearchParams(location.search).get(name); }catch(e){ return null; }
+    }
+    function safeErr(msg){
+      var s=String(msg==null?'':msg);
+      if(/<!DOCTYPE|<html/i.test(s)) return 'Google Ads API error — try again after the latest deploy (API version).';
+      return s.slice(0,240)||'request_failed';
     }
 
     async function boot(){
@@ -138,10 +163,9 @@
         var r=await fetch('/api/google-ads/status?siteId='+encodeURIComponent(currentSiteId),{
           headers:{ Authorization:'Bearer '+session.access_token }
         });
-        var j=await r.json();
+        var j=await r.json().catch(function(){ return {}; });
         if(!r.ok) throw new Error(j.error||'status_failed');
         var c=j.connection||{};
-        var connected=!!(j.connected&&c.customerId);
         $('status').innerHTML=
           '<div><span>Platform configured</span><strong>'+(j.platformConfigured?'Yes':'No')+'</strong></div>'
           +'<div><span>OAuth connected</span><strong>'+(j.connected?'Yes':'No')+'</strong></div>'
@@ -151,11 +175,8 @@
         $('disconnect').hidden=!j.connected;
         $('open-adv').hidden=false;
         $('connect').textContent=j.connected?'Reconnect Google Ads':'Connect Google Ads';
-        if(j.connected&&!c.customerId){
-          // prompt account pick
-        }
       }catch(e){
-        $('status').innerHTML='<div><span class="warn">'+(e&&e.message||'Could not load status')+'</span></div>';
+        $('status').innerHTML='<div><span class="warn">'+esc(safeErr(e&&e.message||'Could not load status'))+'</span></div>';
       }
     }
 
@@ -171,10 +192,10 @@
             headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token,Accept:'application/json'},
             body:JSON.stringify({siteId:currentSiteId,slug:slug,returnPath:'/settings/integrations/google-ads'})
           });
-          var j=await r.json();
+          var j=await r.json().catch(function(){ return {}; });
           if(!r.ok||!j.url) throw new Error(j.error||'connect_failed');
           location.href=j.url;
-        }catch(e){ alert((e&&e.message)||'Could not start Google Ads connect'); }
+        }catch(e){ alert(safeErr(e&&e.message)||'Could not start Google Ads connect'); }
       });
       $('open-adv').addEventListener('click', function(){
         var site=sites.find(function(s){ return s.id===currentSiteId; });
@@ -187,30 +208,40 @@
           headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token},
           body:JSON.stringify({siteId:currentSiteId})
         });
-        var j=await r.json();
-        if(!r.ok){ alert(j.error||'Disconnect failed'); return; }
+        var j=await r.json().catch(function(){ return {}; });
+        if(!r.ok){ alert(safeErr(j.error)||'Disconnect failed'); return; }
         await refreshStatus();
       });
       $('accounts').addEventListener('click', async function(){
-        var r=await fetch('/api/google-ads/accounts?siteId='+encodeURIComponent(currentSiteId),{
-          headers:{Authorization:'Bearer '+session.access_token}
-        });
-        var j=await r.json();
-        if(!r.ok){ alert(j.error||'Could not list accounts'); return; }
-        var list=(j.accounts||[]).filter(function(a){ return !a.manager; });
-        if(!list.length){ alert('No Google Ads accounts found'); return; }
-        var labels=list.map(function(a,i){ return (i+1)+'. '+(a.name||a.id)+' ('+a.id+')'; }).join('\n');
-        var choice=prompt('Select account number:\n'+labels,'1');
-        var idx=parseInt(choice||'0',10)-1;
-        if(!(idx>=0&&idx<list.length)) return;
-        var save=await fetch('/api/google-ads/save-settings',{
-          method:'POST',
-          headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token},
-          body:JSON.stringify({siteId:currentSiteId,customerId:list[idx].id})
-        });
-        var out=await save.json();
-        if(!save.ok){ alert(out.error||'Save failed'); return; }
-        await refreshStatus();
+        try{
+          var r=await fetch('/api/google-ads/accounts?siteId='+encodeURIComponent(currentSiteId),{
+            headers:{Authorization:'Bearer '+session.access_token}
+          });
+          var text=await r.text();
+          var j={};
+          try{ j=text?JSON.parse(text):{}; }catch(e){ throw new Error(safeErr(text)); }
+          if(!r.ok) throw new Error(j.error||('accounts_http_'+r.status));
+          var all=j.accounts||[];
+          var list=all.filter(function(a){ return !a.manager; });
+          if(!list.length) list=all;
+          if(!list.length){ alert('No Google Ads accounts found for this Google login. In test mode, the Ads account must be linked to your developer token.'); return; }
+          var labels=list.map(function(a,i){
+            return (i+1)+'. '+(a.name||a.id)+' ('+a.id+')'+(a.manager?' [manager]':'');
+          }).join('\n');
+          var choice=prompt('Select account number:\n'+labels,'1');
+          var idx=parseInt(choice||'0',10)-1;
+          if(!(idx>=0&&idx<list.length)) return;
+          var save=await fetch('/api/google-ads/save-settings',{
+            method:'POST',
+            headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token},
+            body:JSON.stringify({siteId:currentSiteId,customerId:list[idx].id})
+          });
+          var out=await save.json().catch(function(){ return {}; });
+          if(!save.ok){ alert(safeErr(out.error)||'Save failed'); return; }
+          await refreshStatus();
+        }catch(e){
+          alert(safeErr(e&&e.message)||'Could not list accounts');
+        }
       });
     }
 
