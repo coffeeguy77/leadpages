@@ -34,6 +34,37 @@ describe('landing-compose', () => {
     assert.match(body, /Call us to discuss/);
   });
 
+  it('rebuilds collapsible FAQs even when the model already wrote a FAQ section', () => {
+    const body = composeBodyMarkdown({
+      bodyMarkdown:
+        'Intro about coffee cart hire.\n\n' +
+        '## Frequently Asked Questions\n\n' +
+        'How much does coffee cart hire cost?\n' +
+        'Pricing depends on the event.\n\n' +
+        '## Book Your Coffee Cart in Canberra Today\n\n' +
+        'Get in touch for a quote.',
+      faqs: [
+        {
+          question: 'How much does coffee cart hire in Canberra cost?',
+          answer: 'Pricing depends on duration and guest numbers.'
+        },
+        {
+          question: 'Do you travel outside the CBD?',
+          answer: 'Yes, across the ACT region.'
+        }
+      ],
+      ctaHeadline: 'Book Your Coffee Cart in Canberra Today',
+      ctaBody: 'Get in touch with Bean Culture for a fast quote.'
+    });
+    assert.match(body, /\?\?\? How much does coffee cart hire in Canberra cost\?/);
+    assert.match(body, /\?\?\? Do you travel outside the CBD\?/);
+    assert.equal((body.match(/\?\?\?/g) || []).length, 2);
+    // Plain prose FAQ from the model body should not remain.
+    assert.equal(/How much does coffee cart hire cost\?\nPricing depends on the event/.test(body), false);
+    assert.match(body, /## Book Your Coffee Cart in Canberra Today/);
+    assert.match(body, /Get in touch with Bean Culture/);
+  });
+
   it('strips leading H1 from body (H1 is a separate field)', () => {
     const body = composeBodyMarkdown({
       bodyMarkdown: '# Earthmoving Equipment Repairs Canberra\n\nIntro paragraph.',
