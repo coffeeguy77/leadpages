@@ -72,7 +72,10 @@ module.exports = async (req, res) => {
     }
     if (!cfg.encryptionConfigured()) {
       return wantsJson(req)
-        ? sendJson(503, { error: 'encryption_key_required', hint: 'Set GOOGLE_ADS_OAUTH_ENCRYPTION_KEY (≥32 chars) on the server.' })
+        ? sendJson(503, {
+            error: 'encryption_key_required',
+            hint: 'Set GOOGLE_ADS_OAUTH_ENCRYPTION_KEY to Base64 of 32 random bytes (e.g. openssl rand -base64 32), then redeploy. See /api/integrations/google-ads/encryption-diag'
+          })
         : sendText(503, 'GOOGLE_ADS_OAUTH_ENCRYPTION_KEY is required before connecting Google Ads.');
     }
 

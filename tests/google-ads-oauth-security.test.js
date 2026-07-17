@@ -1,5 +1,6 @@
 const { describe, it, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
+const crypto = require('crypto');
 
 const KEYS = [
   'APP_URL',
@@ -14,6 +15,7 @@ const KEYS = [
 function reload() {
   [
     '../lib/app-url',
+    '../lib/google-ads/encryption-key',
     '../lib/google-ads/config',
     '../lib/google-ads/oauth',
     '../lib/google-ads/token-crypto'
@@ -21,7 +23,8 @@ function reload() {
   return {
     cfg: require('../lib/google-ads/config'),
     oauth: require('../lib/google-ads/oauth'),
-    cryptoTok: require('../lib/google-ads/token-crypto')
+    cryptoTok: require('../lib/google-ads/token-crypto'),
+    encKey: require('../lib/google-ads/encryption-key')
   };
 }
 
@@ -60,7 +63,7 @@ describe('google ads oauth security', () => {
   });
 
   it('signs state with nonce and rejects tampering / expiry', () => {
-    process.env.GOOGLE_ADS_OAUTH_ENCRYPTION_KEY = 'x'.repeat(32);
+    process.env.GOOGLE_ADS_OAUTH_ENCRYPTION_KEY = crypto.randomBytes(32).toString('base64');
     process.env.GOOGLE_ADS_CLIENT_SECRET = 'secret';
     const { oauth } = reload();
     const { state, nonce } = oauth.makeState({ siteId: 'site', userId: 'user' });
@@ -80,9 +83,36 @@ describe('google ads oauth security', () => {
     assert.throws(() => cryptoTok.encryptSecret('refresh-token'), /ENCRYPTION_KEY|plaintext/i);
   });
 
-  it('encrypts and decrypts with AES-GCM enc:v1 blobs', () => {
+  it('accepts Base64 of exactly 32 bytes as raw AES key', () => {
+    const bytes = crypto.randomBytes(32);
+    process.env.GOOGLE_ADS_OAUTH_ENCRYPTION_KEY = bytes.toString('base64');
+    const { encKey, cryptoTok } = reload();
+    const diag = encKey.encryptionKeyDiagnostics();
+    assert.equal(diag.configured, true);
+    assert.equal(diag.decodedByteLength, 32);
+    assert.ok(diag.rawLength >= 43);
+    assert.equal(diag.runtime, 'nodejs');
+    const resolved = encKey.resolveEncryptionKey();
+    assert.equal(resolved.mode, 'base64');
+    assert.ok(resolved.key.equals(bytes));
+    const blob = cryptoTok.encryptSecret('refresh-token-value');
+    assert.ok(blob.startsWith('enc:v1:'));
+    assert.equal(cryptoTok.decryptSecret(blob), 'refresh-token-value');
+  });
+
+  it('rejects short Base64 that does not decode to 32 bytes', () => {
+    process.env.GOOGLE_ADS_OAUTH_ENCRYPTION_KEY = crypto.randomBytes(16).toString('base64');
+    const { encKey } = reload();
+    const r = encKey.resolveEncryptionKey();
+    assert.equal(r.configured, false);
+    assert.equal(r.decodedByteLength, 16);
+    assert.ok(r.rawLength < 32 || r.rawLength >= 20);
+  });
+
+  it('encrypts and decrypts with legacy passphrase ≥32 chars', () => {
     process.env.GOOGLE_ADS_OAUTH_ENCRYPTION_KEY = 'unit-test-encryption-key-32chars!!';
-    const { cryptoTok } = reload();
+    const { cryptoTok, encKey } = reload();
+    assert.equal(encKey.resolveEncryptionKey().mode, 'passphrase');
     const blob = cryptoTok.encryptSecret('refresh-token-value');
     assert.ok(blob.startsWith('enc:v1:'));
     assert.equal(cryptoTok.decryptSecret(blob), 'refresh-token-value');
