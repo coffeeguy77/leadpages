@@ -56,6 +56,14 @@
       "destination": "/app-home.html"
     },
     {
+      "source": "/application",
+      "destination": "/application.html"
+    },
+    {
+      "source": "/application/",
+      "destination": "/application.html"
+    },
+    {
       "source": "/command",
       "destination": "/command.html"
     },
