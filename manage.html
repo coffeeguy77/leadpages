@@ -987,7 +987,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   </div>
 </div>
 <aside id="lp-prev" class="lp-prev" hidden aria-label="Live preview">
-  <div class="lp-prev-head"><strong>Live preview</strong><span class="lp-prev-sub" id="lp-prev-sub">unsaved look</span><span class="lp-prev-ratio" id="lp-prev-ratio"><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-minus" aria-label="More preview space">&#8722;</button><span class="lp-ratio-val" data-lp-ratio-val title="Click for 50/50 editor/preview split">70/30</span><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-plus" aria-label="More editor space">&#43;</button></span><button type="button" class="lp-prev-hide-logo" id="lp-prev-hide-logo" title="Hide the site header bar in preview for more space">Hide logo</button><span class="lp-dev"><button type="button" data-dev="desktop" aria-pressed="true">Desktop</button><button type="button" data-dev="mobile" aria-pressed="false">Mobile</button></span><span class="lp-prev-actions"><button type="button" id="lp-prev-reload" title="Reload preview">↻</button><button type="button" id="lp-prev-close" title="Close">✕</button></span></div>
+  <div class="lp-prev-head"><strong>Live preview</strong><span class="lp-prev-sub" id="lp-prev-sub">unsaved look</span><span class="lp-prev-ratio" id="lp-prev-ratio"><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-minus" aria-label="More preview space">&#8722;</button><span class="lp-ratio-val" data-lp-ratio-val title="Click for 50/50 editor/preview split">70/30</span><button type="button" class="lp-ratio-btn" id="lp-prev-ratio-plus" aria-label="More editor space">&#43;</button></span><button type="button" class="lp-prev-hide-logo" id="lp-prev-hide-logo" aria-pressed="false" title="Show or hide the site logo/header in live preview (default: show)">Hide logo</button><span class="lp-dev"><button type="button" data-dev="desktop" aria-pressed="true">Desktop</button><button type="button" data-dev="mobile" aria-pressed="false">Mobile</button></span><span class="lp-prev-actions"><button type="button" id="lp-prev-reload" title="Reload preview">↻</button><button type="button" id="lp-prev-close" title="Close">✕</button></span></div>
   <div class="lp-prev-body"><iframe id="lp-prev-frame" title="Live calculator preview"></iframe></div>
 </aside>
 
@@ -1607,6 +1607,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(window.LPAdminShell&&LPAdminShell.syncRatioVisibility) LPAdminShell.syncRatioVisibility();
   }
   var LP_PREVIEW_HDR_KEY='leadpages_hide_preview_header';
+  /* Preview logo/header: default SHOW. Only hide when localStorage is explicitly '1'. */
   function lpPreviewHeaderHidden(){ try{ return localStorage.getItem(LP_PREVIEW_HDR_KEY)==='1'; }catch(e){ return false; } }
   function lpPreviewApplyChromeHide(){
     var hide=lpPreviewHeaderHidden();
