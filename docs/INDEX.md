@@ -136,7 +136,7 @@ Short summary of every engineering document in `docs/`.
 | [06-DOMAINS](06-DOMAINS.md) | Domain System | Dreamscape integration, purchase flow, DNS, `custom_domain` routing, `manage-domains.html`. |
 | [07-TRACKING](07-TRACKING.md) | Tracking & Analytics | `trackEvent`, `events` table, `/api/stats`, dashboard `ANA` object, analytics UI in editor. |
 | [features/Google Ads](features/Google%20Ads.md) | Google Ads (v1) | OAuth connect, session attribution (gclid/UTMs), conversion upload, Advertising dashboard, metrics sync. |
-| [AI/README](AI/README.md) | LeadPages Brain (design) | Provider-agnostic AI orchestration design set — **documentation phase only**; audit, architecture, migration, roadmap. |
+| [AI/README](AI/README.md) | LeadPages Brain | Provider-agnostic AI gateway — Phases 1–7 in `lib/brain` + Control Centre + landing-draft migration. |
 | [08-SEO](08-SEO.md) | SEO System | Suburb App Router pages, `lib/seo/*`, landing pages, `seoTokens`, sitemap, routing collision notes. |
 | [09-CRM](09-CRM.md) | CRM & Leads | Lead capture, `api/leads.js`, CRM strips, mailer, campaigns, opt-outs, lifecycle. |
 | [10-EDITOR](10-EDITOR.md) | Editor Manual | **Most important doc for editor work.** Complete `manage.html` reference: navigation, panels, flows, major functions, ~438-function index. |
@@ -146,7 +146,7 @@ Short summary of every engineering document in `docs/`.
 
 ### LeadPages Brain design set (`docs/AI/`)
 
-Documentation-only. **No Brain runtime, SDKs, or migrations have been implemented.** Start at [AI/README](AI/README.md).
+Start at [AI/README](AI/README.md). Runtime: `lib/brain/`, `/brain-admin`, `/api/brain/*`.
 
 | Doc | Topic |
 |-----|--------|
@@ -157,6 +157,8 @@ Documentation-only. **No Brain runtime, SDKs, or migrations have been implemente
 | [AI/15-TESTING-STRATEGY](AI/15-TESTING-STRATEGY.md) | Test pyramid |
 | [AI/16-MIGRATION-PLAN](AI/16-MIGRATION-PLAN.md) | Safe migration order |
 | [AI/17-IMPLEMENTATION-ROADMAP](AI/17-IMPLEMENTATION-ROADMAP.md) | Phases 0–9 |
+| [AI/21-THEME-STUDIO](AI/21-THEME-STUDIO.md) | Phase 8 product spec stub |
+| [AI/22-MARKETING-HUB](AI/22-MARKETING-HUB.md) | Phase 9 product spec stub |
 | [AI/18-RISKS-AND-DECISIONS](AI/18-RISKS-AND-DECISIONS.md) | Risks, ADRs, open questions |
 | [AI/19-DEVELOPER-GUIDE](AI/19-DEVELOPER-GUIDE.md) | How features will call Brain |
 | [AI/20-FUTURE-CAPABILITIES](AI/20-FUTURE-CAPABILITIES.md) | Theme Studio, Marketing Hub, beyond V1 |
@@ -183,7 +185,7 @@ Documentation-only. **No Brain runtime, SDKs, or migrations have been implemente
 | **Marketplace apps** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | [10-EDITOR](10-EDITOR.md) § Marketplace | `api/api-apps.js`, `api-site-apps.js` |
 | **Images / Cloudinary** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | [10-EDITOR](10-EDITOR.md) | `api/cloudinary/*` |
 | **Instagram feed** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | [02-DATABASE](02-DATABASE.md) `ig_connections` | `api/instagram/*`, `lib/ig/*` |
-| **AI / LeadPages Brain** | [AI/README](AI/README.md) | [AI/01-CURRENT-STATE-AUDIT](AI/01-CURRENT-STATE-AUDIT.md), [AI/16-MIGRATION-PLAN](AI/16-MIGRATION-PLAN.md) | Current: `api/assist.js`, `lib/trade-pack-utils.js`, `lib/seo/suburbIntro.js`, `lib/ig/enrich.mjs` — **no Brain runtime yet** |
+| **AI / LeadPages Brain** | [AI/README](AI/README.md) | [AI/01-CURRENT-STATE-AUDIT](AI/01-CURRENT-STATE-AUDIT.md), [AI/16-MIGRATION-PLAN](AI/16-MIGRATION-PLAN.md) | Runtime: `lib/brain/`, `/api/brain/*`, `/brain-admin`; legacy direct Anthropic still in assist/packs/suburb/IG |
 | **Database migration** | [02-DATABASE](02-DATABASE.md) | [12-CODING-STANDARDS](12-CODING-STANDARDS.md) | `db/*.sql` |
 | **UI / visual polish** | [11-DESIGN-SYSTEM](11-DESIGN-SYSTEM.md) | [10-EDITOR](10-EDITOR.md) | `manage.html` CSS |
 | **Tech debt / planning** | [13-ROADMAP](13-ROADMAP.md) | [01-ARCHITECTURE](01-ARCHITECTURE.md) §22 | — |
@@ -210,7 +212,7 @@ Documentation-only. **No Brain runtime, SDKs, or migrations have been implemente
 | **Marketplace** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | `app_registry`, `site_apps` |
 | **Media** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | Cloudinary, Instagram |
 | **AI content (current)** | [08-SEO](08-SEO.md), [04-SITE-BUILDER](04-SITE-BUILDER.md) | Direct Anthropic calls — see audit |
-| **LeadPages Brain (proposed)** | [AI/README](AI/README.md) | Provider-agnostic gateway design — not implemented |
+| **LeadPages Brain** | [AI/README](AI/README.md) | Provider-agnostic gateway — Phases 1–7 implemented |
 | **Design / UX** | [11-DESIGN-SYSTEM](11-DESIGN-SYSTEM.md) | Editor tokens, tenant themes |
 
 ---
@@ -453,7 +455,7 @@ Rewrites: [vercel.json](../vercel.json) — detail in [01-ARCHITECTURE](01-ARCHI
 ## Glossary
 
 | Term | Meaning |
-| **LeadPages Brain** | Proposed provider-agnostic AI orchestration layer (`docs/AI/*`) — design phase only; features will call Brain instead of providers directly |
+| **LeadPages Brain** | Provider-agnostic AI orchestration (`lib/brain`, `docs/AI/*`) — Phases 1–7 shipped; remaining features migrate behind flags |
 |------|---------|
 | **Command Centre** | `manage.html` editor |
 | **Trade pack** | Starter `config` for a trade type (`TRADE_PACKS` / `service_packs`) |

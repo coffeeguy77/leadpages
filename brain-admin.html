@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Control Centre — LeadPages</title>
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
+<meta name="theme-color" content="#12151a">
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<link rel="stylesheet" href="/assets/lp-super-admin.css">
+<script src="/assets/lp-workspace-appearance.js"></script>
+<script src="/assets/lp-hub-embed.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{--font-display:'Fraunces',Georgia,serif;--font-ui:'DM Sans',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-ui)}
+.ba-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.ba-kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.ba-kpi{padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
+.ba-kpi .l{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 6px}
+.ba-kpi .v{font-family:var(--font-display);font-size:22px;font-weight:600;margin:0;letter-spacing:-.02em}
+.ba-card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:16px}
+.ba-card h2{margin:0 0 4px;font-family:var(--font-display);font-size:1.25rem}
+.ba-card .sub{margin:0 0 14px;color:var(--ink-soft);font-size:13px}
+.ba-table{width:100%;border-collapse:collapse;font-size:13px}
+.ba-table th,.ba-table td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.ba-table th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint)}
+.ba-pill{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.ba-pill.ok{background:color-mix(in srgb,#16a34a 16%,transparent);color:#15803d}
+.ba-pill.bad{background:color-mix(in srgb,#dc2626 16%,transparent);color:#b91c1c}
+.ba-pill.muted{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink-soft)}
+.btn{appearance:none;border:1px solid var(--accent);background:transparent;color:var(--accent);font:600 13px/1 var(--font-ui);padding:8px 12px;border-radius:10px;cursor:pointer;margin:0 4px 4px 0}
+.btn.solid{background:var(--accent);color:var(--accent-text,#fff)}
+.btn.ghost{border-color:var(--line-strong);color:var(--ink-soft)}
+.login-card{max-width:420px;margin:12vh auto;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.msg{font-size:13px;margin:8px 0 0}
+.msg.bad{color:#b91c1c}
+.msg.ok{color:#15803d}
+.field{margin:0 0 10px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+.field input,.field select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.hidden{display:none!important}
+.notice{font-size:12px;color:var(--ink-soft);line-height:1.45;margin:0 0 12px}
+</style>
+</head>
+<body class="lp-super-admin">
+<div id="gate" class="login-card">
+  <h1>AI Control Centre</h1>
+  <p class="lede">Super-admin only. View Brain providers, routes, flags, and recent usage.</p>
+  <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
+  <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
+  <button class="btn solid" id="login-btn" type="button">Sign in</button>
+  <p class="msg bad hidden" id="gate-msg"></p>
+</div>
+
+<main id="app" class="hidden" style="padding:22px 20px 48px;max-width:1100px;margin:0 auto">
+  <div class="ba-top">
+    <div>
+      <h1 style="margin:0;font-family:var(--font-display)">AI Control Centre</h1>
+      <p class="sub" style="margin:6px 0 0;color:var(--ink-soft)">LeadPages Brain — providers, routes, health, usage</p>
+    </div>
+    <div>
+      <button class="btn ghost" id="refresh" type="button">Refresh</button>
+      <button class="btn ghost" id="signout" type="button">Sign out</button>
+    </div>
+  </div>
+
+  <p class="notice" id="notice"></p>
+  <div class="ba-kpis" id="kpis"></div>
+
+  <div class="grid2">
+    <section class="ba-card">
+      <h2>Providers</h2>
+      <p class="sub">Keys never leave the server — configured yes/no + last-four only.</p>
+      <div id="providers"></div>
+    </section>
+    <section class="ba-card">
+      <h2>Probe</h2>
+      <p class="sub">Health-check a provider or run a mock-safe generate.</p>
+      <div class="field"><label>Provider</label>
+        <select id="probe-provider"><option>mock</option><option>anthropic</option><option>openai</option><option>gemini</option></select>
+      </div>
+      <button class="btn" id="probe-health" type="button">Health check</button>
+      <button class="btn" id="probe-gen" type="button">Test generate (generic.fast)</button>
+      <p class="msg" id="probe-msg"></p>
+    </section>
+  </div>
+
+  <section class="ba-card">
+    <h2>Routes</h2>
+    <p class="sub">Enable/disable is runtime-only on this isolate — use BRAIN_DISABLE_TASKS for durability.</p>
+    <table class="ba-table"><thead><tr><th>Task</th><th>Primary</th><th>Fallback</th><th>Status</th><th></th></tr></thead><tbody id="routes"></tbody></table>
+  </section>
+
+  <section class="ba-card">
+    <h2>Recent usage</h2>
+    <p class="sub">Process-local buffer (not durable across serverless cold starts).</p>
+    <table class="ba-table"><thead><tr><th>When</th><th>Task</th><th>Provider</th><th>OK</th><th>Latency</th><th>Tokens</th></tr></thead><tbody id="usage"></tbody></table>
+  </section>
+
+  <section class="ba-card">
+    <h2>Recent failures</h2>
+    <table class="ba-table"><thead><tr><th>When</th><th>Task</th><th>Code</th></tr></thead><tbody id="failures"></tbody></table>
+  </section>
+</main>
+
+<script>
+(function(){
+  var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var $ = function(id){ return document.getElementById(id); };
+  var state = null;
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
+
+  async function token(){
+    var r = await sb.auth.getSession();
+    return (r && r.data && r.data.session && r.data.session.access_token) || null;
+  }
+
+  async function api(method, body){
+    var t = await token();
+    var opts = {
+      method: method || 'GET',
+      headers: Object.assign({'content-type':'application/json'}, t ? {Authorization:'Bearer '+t} : {})
+    };
+    if(body) opts.body = JSON.stringify(body);
+    var res = await fetch('/api/brain/control', opts);
+    var j = await res.json().catch(function(){ return {}; });
+    if(res.status === 401 || res.status === 403) throw new Error(j.error || 'forbidden');
+    return j;
+  }
+
+  function showApp(){ $('gate').classList.add('hidden'); $('app').classList.remove('hidden'); }
+  function showGate(msg){
+    $('app').classList.add('hidden'); $('gate').classList.remove('hidden');
+    var m = $('gate-msg');
+    if(msg){ m.textContent = msg; m.classList.remove('hidden'); }
+    else m.classList.add('hidden');
+  }
+
+  function paint(data){
+    state = data;
+    $('notice').textContent = data.notice || '';
+    var usage = data.usage || {};
+    var byTask = usage.byTask || {};
+    var calls = 0, fails = 0, usd = 0;
+    Object.keys(byTask).forEach(function(k){
+      calls += byTask[k].calls||0;
+      fails += byTask[k].failures||0;
+      usd += byTask[k].estimateUsd||0;
+    });
+    $('kpis').innerHTML = [
+      kpi('Default provider', data.defaultProvider || 'mock'),
+      kpi('BRAIN_PROVIDER', data.brainProviderEnv || 'mock'),
+      kpi('Landing draft flag', (data.flags && data.flags.landingDraft) ? 'ON' : 'off'),
+      kpi('Usage events', String(usage.totalEvents||0)),
+      kpi('Failures', String(fails)),
+      kpi('Est. USD (buffer)', usd.toFixed(4))
+    ].join('');
+
+    $('providers').innerHTML = (data.providers||[]).map(function(p){
+      var h = (data.health && data.health[p.id]) || {};
+      var pill = h.ok ? '<span class="ba-pill ok">healthy</span>' : '<span class="ba-pill bad">'+esc(h.detail||'down')+'</span>';
+      var key = p.configured ? '<span class="ba-pill ok">key '+esc(p.keyHint)+'</span>' : '<span class="ba-pill muted">no key</span>';
+      return '<div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)">'
+        + '<div><strong>'+esc(p.id)+'</strong><div class="mono" style="color:var(--ink-soft)">'+(p.env?esc(p.env):'built-in')+'</div></div>'
+        + '<div style="text-align:right">'+key+' '+pill+'</div></div>';
+    }).join('');
+
+    $('routes').innerHTML = (data.routes||[]).map(function(r){
+      var en = r.enabled !== false;
+      return '<tr><td class="mono">'+esc(r.taskId)+'</td><td class="mono">'+esc((r.primary&&r.primary.provider)+'/'+(r.primary&&r.primary.model))+'</td>'
+        + '<td class="mono">'+(r.fallback&&r.fallback[0] ? esc(r.fallback[0].provider+'/'+r.fallback[0].model) : '—')+'</td>'
+        + '<td>'+(en?'<span class="ba-pill ok">enabled</span>':'<span class="ba-pill bad">disabled</span>')+'</td>'
+        + '<td><button class="btn ghost" data-task="'+esc(r.taskId)+'" data-act="'+(en?'disable_task':'enable_task')+'">'+(en?'Disable':'Enable')+'</button></td></tr>';
+    }).join('');
+
+    $('usage').innerHTML = (data.recent||[]).map(function(e){
+      return '<tr><td class="mono">'+esc((e.recordedAt||'').slice(11,19))+'</td><td class="mono">'+esc(e.taskId)+'</td>'
+        + '<td>'+esc(e.provider||'—')+'</td><td>'+(e.success===false?'<span class="ba-pill bad">no</span>':'<span class="ba-pill ok">yes</span>')+'</td>'
+        + '<td>'+esc(e.latencyMs!=null?e.latencyMs+'ms':'—')+'</td>'
+        + '<td class="mono">'+esc((e.inputTokens||0)+'→'+(e.outputTokens||0))+'</td></tr>';
+    }).join('') || '<tr><td colspan="6">No events in this isolate yet.</td></tr>';
+
+    $('failures').innerHTML = (data.recentFailures||[]).map(function(e){
+      return '<tr><td class="mono">'+esc((e.recordedAt||'').slice(11,19))+'</td><td class="mono">'+esc(e.taskId)+'</td><td class="mono">'+esc(e.errorCode||'—')+'</td></tr>';
+    }).join('') || '<tr><td colspan="3">No failures recorded.</td></tr>';
+  }
+
+  function kpi(l,v){ return '<div class="ba-kpi"><p class="l">'+esc(l)+'</p><p class="v">'+esc(v)+'</p></div>'; }
+
+  async function load(){
+    var data = await api('GET');
+    if(!data.ok) throw new Error(data.error||'load failed');
+    paint(data);
+  }
+
+  $('login-btn').onclick = async function(){
+    try{
+      var r = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
+      if(r.error) throw r.error;
+      showApp();
+      await load();
+    }catch(e){ showGate((e&&e.message)||'Sign-in failed'); }
+  };
+  $('signout').onclick = async function(){ await sb.auth.signOut(); showGate(); };
+  $('refresh').onclick = function(){ load().catch(function(e){ alert(e.message||e); }); };
+
+  $('probe-health').onclick = async function(){
+    var msg = $('probe-msg');
+    msg.textContent = 'Checking…';
+    try{
+      var j = await api('POST', { action:'health', provider: $('probe-provider').value });
+      msg.className = 'msg '+(j.health&&j.health.ok?'ok':'bad');
+      msg.textContent = JSON.stringify(j.health||j);
+    }catch(e){ msg.className='msg bad'; msg.textContent=e.message||String(e); }
+  };
+  $('probe-gen').onclick = async function(){
+    var msg = $('probe-msg');
+    msg.textContent = 'Generating…';
+    try{
+      var j = await api('POST', { action:'test_generate', taskId:'generic.fast', input:'Control Centre probe' });
+      msg.className = 'msg '+(j.ok?'ok':'bad');
+      msg.textContent = j.ok
+        ? ('OK via '+(j.result.model&&j.result.model.provider)+' — '+(j.result.output&&j.result.output.text||'').slice(0,120))
+        : ((j.result&&j.result.error&&j.result.error.message)||j.error||'failed');
+      await load();
+    }catch(e){ msg.className='msg bad'; msg.textContent=e.message||String(e); }
+  };
+
+  $('routes').addEventListener('click', async function(ev){
+    var btn = ev.target.closest('button[data-task]');
+    if(!btn) return;
+    try{
+      await api('POST', { action: btn.getAttribute('data-act'), taskId: btn.getAttribute('data-task') });
+      await load();
+    }catch(e){ alert(e.message||e); }
+  });
+
+  sb.auth.getSession().then(function(r){
+    if(r && r.data && r.data.session){
+      showApp();
+      load().catch(function(e){ showGate(e.message||'Not authorised'); });
+    }
+  });
+})();
+</script>
+</body>
+</html>

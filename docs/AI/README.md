@@ -39,14 +39,13 @@ LeadPages is evolving from a website builder into an AI-powered business platfor
 |------|--------|
 | Repository audit | Complete |
 | Architecture & contracts | Complete in this folder |
-| Phase 1 foundation (`lib/brain`) | **Complete** — mock adapter, gateway, router, schema validation, tests |
-| Real provider adapters (Anthropic, …) | **Phase 2 complete** — Anthropic Messages API adapter (raw `fetch`); OpenAI/Gemini later |
-| Prompt registry + context resolver | **Phase 3 complete** — file-based prompts; slice resolver with auth + redaction (no DB) |
-| Routing resilience | **Phase 4 complete** — retries, task flags, soft token/cost budgets |
-| Feature migrations | **Not started** (Phase 7+) |
-| Theme Studio / Marketing Hub product builds | **Out of scope** (depend on Brain later) |
+| Phase 1–4 foundation | **Complete** — gateway, mock, Anthropic, prompts, context, resilience |
+| OpenAI + Gemini adapters | **Phase 5 complete** — raw `fetch`; `BRAIN_PROVIDER=openai\|gemini\|anthropic\|mock` |
+| AI Control Centre | **Phase 6 complete** — `/brain-admin` + `GET/POST /api/brain/control` (super-admin) |
+| Landing draft migration | **Phase 7 complete** — `POST /api/brain/landing-draft`; manage.html calls server; flag `BRAIN_LANDING_DRAFT=1` |
+| Theme Studio / Marketing Hub | **Phase 8–9 specs** — [21](21-THEME-STUDIO.md), [22](22-MARKETING-HUB.md); products not built |
 
-**Phase:** Phase 4 resilience shipped. Next phases (owner-gated): additional providers, Control Centre, first feature migration.
+**Phase:** Phases 0–7 shipped in code. Theme Studio / Marketing Hub remain separate product builds.
 
 ---
 
@@ -81,13 +80,15 @@ Full principles: [02-VISION-AND-PRINCIPLES](02-VISION-AND-PRINCIPLES.md).
 | [11-SECURITY-AND-PERMISSIONS](11-SECURITY-AND-PERMISSIONS.md) | Threat model & RBAC |
 | [12-DATA-MODEL](12-DATA-MODEL.md) | Proposed tables (no migrations yet) |
 | [13-INTERNAL-API-CONTRACTS](13-INTERNAL-API-CONTRACTS.md) | Brain generate/stream APIs |
-| [14-AI-CONTROL-CENTRE](14-AI-CONTROL-CENTRE.md) | Superuser ops UI (proposed) |
+| [14-AI-CONTROL-CENTRE](14-AI-CONTROL-CENTRE.md) | Superuser ops UI |
 | [15-TESTING-STRATEGY](15-TESTING-STRATEGY.md) | Test pyramid for Brain |
 | [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md) | Safe move off direct Claude calls |
 | [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md) | Phases 0–9 |
 | [18-RISKS-AND-DECISIONS](18-RISKS-AND-DECISIONS.md) | Risks, ADRs, open questions |
 | [19-DEVELOPER-GUIDE](19-DEVELOPER-GUIDE.md) | How features will call Brain |
-| [20-FUTURE-CAPABILITIES](20-FUTURE-CAPABILITIES.md) | Theme Studio, Marketing Hub, beyond V1 |
+| [20-FUTURE-CAPABILITIES](20-FUTURE-CAPABILITIES.md) | Beyond V1 |
+| [21-THEME-STUDIO](21-THEME-STUDIO.md) | Phase 8 product spec stub |
+| [22-MARKETING-HUB](22-MARKETING-HUB.md) | Phase 9 product spec stub |
 
 ---
 
@@ -109,28 +110,29 @@ Detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 
 ---
 
-## Runtime entry (Phase 1–3)
+## Runtime entry
 
 ```js
-const { createBrain } = require('../../lib/brain');
-const brain = createBrain(); // mock routes by default — no API keys
+const { getPlatformBrain } = require('../../lib/brain/platform');
+const brain = getPlatformBrain(); // mock routes by default — no API keys
 
 const result = await brain.generate({
   taskId: 'seo.suburb_intro',
   promptId: 'seo.suburb_intro',
   siteId: site.id,
-  site, // preloaded sites row (Phase 3 has no DB fetch)
+  site,
   actor: { userId, role: 'client' },
   contextSlices: ['site.identity'],
   input: { suburb: 'Belconnen', trade: 'plumber' }
 });
 
-// Opt-in Anthropic routing (server-side key required):
-// BRAIN_PROVIDER=anthropic ANTHROPIC_API_KEY=...
+// Provider: BRAIN_PROVIDER=anthropic|openai|gemini|mock
+// Landing drafts: BRAIN_LANDING_DRAFT=1 → POST /api/brain/landing-draft
+// Control Centre: /brain-admin (super-admin)
 ```
 
 Tests: `tests/brain-phase*.test.js`, `tests/brain-anthropic.test.js`.
 
 ## Notice
 
-Phase 0 was documentation-only. Phase 1–4 add **`lib/brain`** with mock + Anthropic adapters, prompt registry, context slices, retries/flags/budgets. No feature migrations, no Control Centre, no database migrations yet.
+Phases 1–7 are implemented in **`lib/brain`**, Control Centre, and the landing-draft migration. Durable `ai_requests` DB tables and remaining feature migrations (assist, suburb, packs) are still future work.

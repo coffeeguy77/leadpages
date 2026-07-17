@@ -71,44 +71,49 @@
 
 ---
 
-## Phase 5 — Additional providers
+## Phase 5 — Additional providers ✅
 
 | | |
 |--|--|
 | Objectives | OpenAI and/or Gemini adapters; capability matrix |
-| Gate | Comparative contract tests |
+| Deliverables | `lib/brain/adapters/openai.js`, `gemini.js`; `BRAIN_PROVIDER` multi-provider routing |
+| Gate | Comparative contract tests (`tests/brain-phase5.test.js`) |
+| Status | **Complete** — raw fetch, no SDKs |
 
 ---
 
-## Phase 6 — Control Centre
+## Phase 6 — Control Centre ✅
 
 | | |
 |--|--|
 | Objectives | Superuser ops UI for routes/usage/flags/health |
-| Gate | Security review on secret handling |
+| Deliverables | `brain-admin.html`, `GET/POST /api/brain/control`, Ops Command panel, in-memory usage store |
+| Gate | Secrets never echoed (configured + last-four only) |
+| Status | **Complete** — usage buffer is process-local (not durable) |
 
 ---
 
-## Phase 7 — First migration
+## Phase 7 — First migration ✅
 
 | | |
 |--|--|
 | Objectives | Migrate **landing page AI draft** behind flag |
-| Deliverables | Server route; Brain task; manage.html calls server |
-| Gate | QA parity; flag soak; rollback proven |
+| Deliverables | `POST /api/brain/landing-draft`; manage.html → server; `BRAIN_LANDING_DRAFT=1` |
+| Gate | Flag default off; approve UI unchanged; rollback = unset env |
 | Excluded | Pack/assist/suburb until after soak |
+| Status | **Complete** (flag off until soak) |
 
 ---
 
 ## Phase 8 — AI Theme Studio
 
-Separate product specification. Uses Brain exclusively. Compatible with theme engine / renderer — not freeform HTML.
+Separate product specification: [21-THEME-STUDIO](21-THEME-STUDIO.md). Uses Brain exclusively. Compatible with theme engine / renderer — not freeform HTML. **Not built in this PR.**
 
 ---
 
 ## Phase 9 — AI Marketing Hub
 
-Separate product specification. Uses Brain exclusively. LeadPages-managed campaigns distinct from customer’s other site campaigns (e.g. WordPress). No mutate without approval.
+Separate product specification: [22-MARKETING-HUB](22-MARKETING-HUB.md). Uses Brain exclusively. LeadPages-managed campaigns distinct from customer’s other site campaigns (e.g. WordPress). No mutate without approval. **Not built in this PR.**
 
 ---
 

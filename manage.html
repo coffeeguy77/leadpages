@@ -2217,19 +2217,32 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   async function aiGenerate(){
     const note=$('lp-ai-note'); const prompt=$('lp-ai-prompt').value.trim() || aiPresets()[0][1];
     note.textContent='Writing\u2026';
-    const instructions=(currentSiteTemplate==='trade')
-      ? "You are an expert SEO copywriter for an Australian trade and home-services business website. Using Australian English and simple Markdown (## subheadings, **bold**, - bullets), write a conversion-focused landing page of about 250-400 words. Start with a compelling headline line. Include local relevance and clear benefits (licensed, insured, fast, local), and end with a clear call to action to call or request a free quote. Do NOT invent specific prices, licence numbers, or credentials. Respond with ONLY the page content.\n\nBrief: "
-      : "You are an expert SEO copywriter for an Australian mortgage broker's website. Using Australian English and simple Markdown (## subheadings, **bold**, - bullets), write a conversion-focused landing page of about 250-400 words. Start with a compelling headline line. Include local relevance, clear benefits, and a call to action to use the loan calculators or contact the broker. Do NOT invent specific interest rates, lender names, or credentials. Respond with ONLY the page content.\n\nBrief: ";
+    if(!currentSiteId){ note.textContent='Select a site first.'; return; }
     try{
-      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:instructions+prompt}]})});
-      const d=await res.json();
-      const txt=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+      var se=await sb.auth.getSession();
+      var tok=se&&se.data&&se.data.session&&se.data.session.access_token;
+      if(!tok){ note.textContent='Sign in to generate AI drafts.'; return; }
+      var res=await fetch('/api/brain/landing-draft',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+        body:JSON.stringify({ siteId: currentSiteId, brief: prompt, template: currentSiteTemplate||'trade' })
+      });
+      var d=await res.json().catch(function(){ return {}; });
+      if(res.status===503 && d.error==='landing_draft_disabled'){
+        note.textContent='AI drafts are not enabled yet (BRAIN_LANDING_DRAFT). Ask a super-admin to turn the flag on.';
+        return;
+      }
+      if(!res.ok || !d.ok){
+        note.textContent=(d.message||d.error||('Draft failed (HTTP '+res.status+')'));
+        return;
+      }
+      var txt=(d.draft&&(d.draft.markdown||d.draft.bodyMarkdown))||'';
       if(!txt) throw new Error('empty');
       $('lp-approve').setAttribute('data-draft',txt);
       $('lp-ap-preview').innerHTML='<p>'+mdToHtml(txt)+'</p>';
       $('lp-approve').hidden=false; note.textContent='';
       try{$('lp-approve').scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){}
-    }catch(err){ note.textContent='AI writing runs in the live demo preview here; in production it connects to your own API key behind a small endpoint.'; }
+    }catch(err){ note.textContent='Could not reach the AI draft service. Try again in a moment.'; }
   }
 
   /* ====================== LOGIN GATE ====================== */
