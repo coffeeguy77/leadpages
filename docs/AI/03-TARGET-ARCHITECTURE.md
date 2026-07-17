@@ -1,8 +1,8 @@
 # 03 — Target Architecture
 
 **Document:** `AI/03-TARGET-ARCHITECTURE`  
-**Status:** Proposed  
-**Prerequisites:** [02-VISION-AND-PRINCIPLES](02-VISION-AND-PRINCIPLES.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md)
+**Status:** Partial — core gateway implemented (Phases 1–7); see [00-STATUS](00-STATUS.md)  
+**Prerequisites:** [00-STATUS](00-STATUS.md), [02-VISION-AND-PRINCIPLES](02-VISION-AND-PRINCIPLES.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md)
 
 ---
 

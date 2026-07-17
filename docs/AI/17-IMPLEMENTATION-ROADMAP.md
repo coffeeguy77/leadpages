@@ -8,7 +8,7 @@
 
 ---
 
-## Phase 0 — Documentation and approval (current)
+## Phase 0 — Documentation and approval ✅
 
 | | |
 |--|--|

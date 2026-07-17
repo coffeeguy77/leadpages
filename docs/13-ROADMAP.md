@@ -69,7 +69,7 @@ Platform evolution — requires explicit approval before starting.
 | LT-1 | **Template versioning** | Pin template at site creation; safe upgrades | `sites`, deploy |
 | LT-2 | **Componentized templates** | Replace monolithic `trade.template.json` | `03-TEMPLATE-SYSTEM` |
 | LT-3 | **JSON Schema for `sites.config`** | Validation, generated types | `02-DATABASE` |
-| LT-4 | **AI site generation at scale** | Trade pack generation proven; extend carefully | `api-trade-generate` |
+| LT-4 | **AI site generation at scale** | Brain Phases 1–7 shipped; migrate packs/assist via [AI/00-STATUS](AI/00-STATUS.md) | `lib/brain`, `api-trade-generate` |
 | LT-5 | **Plugin / add-on architecture** | Formal marketplace SDK | `app_registry`, `app_schemas` |
 | LT-6 | **Multi-agent dev workflow** | Safer parallel AI contributions | Docs, CI, branch policy |
 | LT-7 | **Suburb URL prefix** | Resolve `/:slug/:page` collision | Routing, `vercel.json` |

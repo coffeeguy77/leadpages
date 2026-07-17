@@ -76,14 +76,29 @@ LeadPages uses:
 - Dreamscape for domain search, registration, and DNS.
 - Cloudinary for image uploads.
 - Resend for email.
-- Anthropic/Claude for AI features.
+- **LeadPages Brain** (`lib/brain/`) for AI — Phases 1–7 shipped. See `docs/AI/00-STATUS.md`.
+- Providers: Anthropic / OpenAI / Gemini behind Brain (`BRAIN_PROVIDER`); legacy callers still hit Anthropic directly.
 - Instagram Graph API for social/project feed sync.
+
+## LeadPages Brain (AI agents)
+
+Before any AI / assist / draft / Anthropic / OpenAI / Gemini work:
+
+1. Read **`docs/AI/00-STATUS.md`** (canonical phase + flag status).
+2. New AI features must call Brain — **never** provider APIs from the browser.
+3. Landing drafts: `POST /api/brain/landing-draft` — enable with `BRAIN_LANDING_DRAFT=1`.
+4. Control Centre: `/brain-admin` (super-admin only).
+5. Do **not** migrate assist / suburb intros / trade packs / IG enrich without explicit approval.
 
 ## Important Files And Areas
 
 Common major files and folders:
 
 - `manage.html` — main production editor / app command centre.
+- `lib/brain/` — LeadPages Brain gateway (mock / Anthropic / OpenAI / Gemini).
+- `api/brain/` — Control Centre + landing-draft APIs.
+- `brain-admin.html` — AI Control Centre UI (`/brain-admin`).
+- `docs/AI/00-STATUS.md` — where Brain is up to (agents: read first).
 - `builder.html` — legacy site creation flow.
 - `admin.html` — legacy/shared admin tooling.
 - `api/render.js` — main public rendering engine.

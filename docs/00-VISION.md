@@ -363,7 +363,7 @@ flowchart TD
 | **Dreamscape** | Domain registration/DNS | Domain features fail |
 | **Cloudinary** | Image uploads | Media upload fails |
 | **Resend** | Transactional + campaign email | Leads stored but not emailed |
-| **Anthropic** | Trade packs, suburb intros, assist | AI features degrade; fallbacks needed |
+| **LeadPages Brain / LLM providers** | Landing drafts (Brain); trade packs, suburb intros, assist (still direct Anthropic) | Degrade per feature; Brain has mock fallback when configured — [AI/00-STATUS](AI/00-STATUS.md) |
 | **Instagram Graph API** | Project feed sync | Instagram apps show stale/empty |
 
 ---
@@ -379,7 +379,7 @@ Vision-level environment variable groups. Full list: [`01-ARCHITECTURE.md`](./01
 | **Dreamscape** | `DREAMSCAPE_API_TOKEN`, `DREAMSCAPE_RESELLER_ID` | Secret |
 | **Cloudinary** | `CLOUDINARY_URL`, `CLOUDINARY_API_SECRET` | Secret |
 | **Email** | `RESEND_API_KEY`, `LEADS_FROM` | Secret |
-| **AI** | `ANTHROPIC_API_KEY`, `SEO_TEMPLATE_URL` | Secret / URL |
+| **AI** | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `BRAIN_*`, `SEO_TEMPLATE_URL` | Secret / URL — see [AI/00-STATUS](AI/00-STATUS.md) |
 | **Ops** | `CRON_SECRET`, `ADMIN_PASSWORD`, `SUPER_ADMIN_EMAILS` | Secret |
 | **Routing** | `PRIMARY_HOSTS`, `SHOWCASE_BASES`, `PUBLIC_BASE_URL` | Config |
 
