@@ -1,7 +1,7 @@
 # 06 — Prompt Engine
 
 **Document:** `AI/06-PROMPT-ENGINE`  
-**Status:** Proposed  
+**Status:** Partial — file-based registry in `lib/brain/prompts/` (Phase 3); DB-backed registry later  
 **Prerequisites:** [01-CURRENT-STATE-AUDIT](01-CURRENT-STATE-AUDIT.md)
 
 ---

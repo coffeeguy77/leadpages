@@ -92,6 +92,14 @@
       "destination": "/billing-admin.html"
     },
     {
+      "source": "/brain-admin",
+      "destination": "/brain-admin.html"
+    },
+    {
+      "source": "/ai-control",
+      "destination": "/brain-admin.html"
+    },
+    {
       "source": "/tradies",
       "destination": "/tradies.html"
     },

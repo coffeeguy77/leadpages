@@ -1,7 +1,7 @@
 # 16 — Migration Plan
 
 **Document:** `AI/16-MIGRATION-PLAN`  
-**Status:** Proposed — **no migrations executed in docs phase**  
+**Status:** Landing draft migrated (Phase 7) behind `BRAIN_LANDING_DRAFT`; others pending  
 **Prerequisites:** [01-CURRENT-STATE-AUDIT](01-CURRENT-STATE-AUDIT.md)
 
 ---

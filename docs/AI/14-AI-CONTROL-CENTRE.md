@@ -1,7 +1,7 @@
 # 14 — AI Control Centre
 
 **Document:** `AI/14-AI-CONTROL-CENTRE`  
-**Status:** Proposed UI/ops — Phase 6  
+**Status:** Phase 6 shipped — `/brain-admin` + `/api/brain/control` (usage buffer still in-memory)  
 **Prerequisites:** [10-OBSERVABILITY-AND-COSTS](10-OBSERVABILITY-AND-COSTS.md), [05-TASK-ROUTER](05-TASK-ROUTER.md)
 
 ---

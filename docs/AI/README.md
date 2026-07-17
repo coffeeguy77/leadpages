@@ -37,13 +37,15 @@ LeadPages is evolving from a website builder into an AI-powered business platfor
 
 | Item | Status |
 |------|--------|
-| Repository audit | Complete (docs phase) |
-| Architecture & contracts | Proposed in this folder |
-| Provider SDKs / Brain runtime | **Not started** |
-| Migrations / new API routes | **Not started** |
-| Theme Studio / Marketing Hub product builds | **Out of scope** (depend on Brain later) |
+| Repository audit | Complete |
+| Architecture & contracts | Complete in this folder |
+| Phase 1–4 foundation | **Complete** — gateway, mock, Anthropic, prompts, context, resilience |
+| OpenAI + Gemini adapters | **Phase 5 complete** — raw `fetch`; `BRAIN_PROVIDER=openai\|gemini\|anthropic\|mock` |
+| AI Control Centre | **Phase 6 complete** — `/brain-admin` + `GET/POST /api/brain/control` (super-admin) |
+| Landing draft migration | **Phase 7 complete** — `POST /api/brain/landing-draft`; manage.html calls server; flag `BRAIN_LANDING_DRAFT=1` |
+| Theme Studio / Marketing Hub | **Phase 8–9 specs** — [21](21-THEME-STUDIO.md), [22](22-MARKETING-HUB.md); products not built |
 
-**Phase:** Phase 0 — Documentation and approval. Stop here until owners approve Phase 1.
+**Phase:** Phases 0–7 shipped in code. Theme Studio / Marketing Hub remain separate product builds.
 
 ---
 
@@ -78,13 +80,15 @@ Full principles: [02-VISION-AND-PRINCIPLES](02-VISION-AND-PRINCIPLES.md).
 | [11-SECURITY-AND-PERMISSIONS](11-SECURITY-AND-PERMISSIONS.md) | Threat model & RBAC |
 | [12-DATA-MODEL](12-DATA-MODEL.md) | Proposed tables (no migrations yet) |
 | [13-INTERNAL-API-CONTRACTS](13-INTERNAL-API-CONTRACTS.md) | Brain generate/stream APIs |
-| [14-AI-CONTROL-CENTRE](14-AI-CONTROL-CENTRE.md) | Superuser ops UI (proposed) |
+| [14-AI-CONTROL-CENTRE](14-AI-CONTROL-CENTRE.md) | Superuser ops UI |
 | [15-TESTING-STRATEGY](15-TESTING-STRATEGY.md) | Test pyramid for Brain |
 | [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md) | Safe move off direct Claude calls |
 | [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md) | Phases 0–9 |
 | [18-RISKS-AND-DECISIONS](18-RISKS-AND-DECISIONS.md) | Risks, ADRs, open questions |
 | [19-DEVELOPER-GUIDE](19-DEVELOPER-GUIDE.md) | How features will call Brain |
-| [20-FUTURE-CAPABILITIES](20-FUTURE-CAPABILITIES.md) | Theme Studio, Marketing Hub, beyond V1 |
+| [20-FUTURE-CAPABILITIES](20-FUTURE-CAPABILITIES.md) | Beyond V1 |
+| [21-THEME-STUDIO](21-THEME-STUDIO.md) | Phase 8 product spec stub |
+| [22-MARKETING-HUB](22-MARKETING-HUB.md) | Phase 9 product spec stub |
 
 ---
 
@@ -106,6 +110,29 @@ Detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 
 ---
 
+## Runtime entry
+
+```js
+const { getPlatformBrain } = require('../../lib/brain/platform');
+const brain = getPlatformBrain(); // mock routes by default — no API keys
+
+const result = await brain.generate({
+  taskId: 'seo.suburb_intro',
+  promptId: 'seo.suburb_intro',
+  siteId: site.id,
+  site,
+  actor: { userId, role: 'client' },
+  contextSlices: ['site.identity'],
+  input: { suburb: 'Belconnen', trade: 'plumber' }
+});
+
+// Provider: BRAIN_PROVIDER=anthropic|openai|gemini|mock
+// Landing drafts: BRAIN_LANDING_DRAFT=1 → POST /api/brain/landing-draft
+// Control Centre: /brain-admin (super-admin)
+```
+
+Tests: `tests/brain-phase*.test.js`, `tests/brain-anthropic.test.js`.
+
 ## Notice
 
-This folder is **design documentation only**. No provider SDKs, Brain API routes, database migrations, environment variables, or production behaviour changes were introduced as part of this phase.
+Phases 1–7 are implemented in **`lib/brain`**, Control Centre, and the landing-draft migration. Durable `ai_requests` DB tables and remaining feature migrations (assist, suburb, packs) are still future work.
