@@ -3,7 +3,8 @@
 **Document:** `features/Project Feed`  
 **Status:** Definitive engineering reference for the **Project Feed** section, **Split Hero** hero variant, and the **`splitHeroFeed`** list editor in the trade site builder  
 **Audience:** Engineers rebuilding, extending, or debugging project-proof UI; AI development agents  
-**Prerequisites:** [00-VISION](../00-VISION.md), [03-TEMPLATE-SYSTEM](../03-TEMPLATE-SYSTEM.md), [04-SITE-BUILDER](../04-SITE-BUILDER.md), [10-EDITOR](../10-EDITOR.md)
+**Prerequisites:** [00-VISION](../00-VISION.md), [03-TEMPLATE-SYSTEM](../03-TEMPLATE-SYSTEM.md), [04-SITE-BUILDER](../04-SITE-BUILDER.md), [10-EDITOR](../10-EDITOR.md)  
+**AI status:** IG caption enrich (when used with Instagram sync) still bypasses Brain — [AI/00-STATUS](../AI/00-STATUS.md), [Instagram](Instagram.md)
 
 > **Scope note:** This document covers **`config.sections.projectFeed`** (grid + lightbox), **`config.sections.splitHero`** (split hero + live activity wall via **`feed[]`**), and the editor wiring in **`manage.html`**. It also documents **`splitHeroFeed`** as a **`LIST_SCHEMAS`** alias — not a separate section ID. **`igProjectFeed`** is a sibling Instagram-only component; see [Related sections](#related-sections-igprojectfeed-vs-projectfeed).
 

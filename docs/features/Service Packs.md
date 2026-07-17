@@ -3,7 +3,8 @@
 **Document:** `features/Service Packs`  
 **Status:** Definitive engineering reference for trade starter content (Service Packs / Trade Packs)  
 **Audience:** Engineers rebuilding, extending, or debugging pack seeding, pickers, and the shared catalogue; AI development agents  
-**Prerequisites:** [00-VISION](../00-VISION.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md), [04-SITE-BUILDER](../04-SITE-BUILDER.md), [10-EDITOR](../10-EDITOR.md), [02-DATABASE](../02-DATABASE.md)
+**Prerequisites:** [00-VISION](../00-VISION.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md), [04-SITE-BUILDER](../04-SITE-BUILDER.md), [10-EDITOR](../10-EDITOR.md), [02-DATABASE](../02-DATABASE.md)  
+**AI status:** Pack generation still calls Anthropic directly (`lib/trade-pack-utils.js`) — **not yet** migrated to Brain. See [AI/00-STATUS](../AI/00-STATUS.md).
 
 > **Scope note:** This document describes the **trade starter content system** in `manage.html`: the inline `TRADE_PACKS` catalogue, Supabase `service_packs` table, site-creation picker (`#cs-pack`), Settings “Load starter content” (`#trade-pack-load`), and super-admin trade builder. It is **not** the App Marketplace (`site_apps`), partner theme seeds (`partner_themes`), or broker template defaults.
 

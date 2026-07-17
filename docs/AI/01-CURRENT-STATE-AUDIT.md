@@ -1,11 +1,13 @@
 # 01 — Current State Audit
 
 **Document:** `AI/01-CURRENT-STATE-AUDIT`  
-**Status:** Verified against repository (documentation phase)  
+**Status:** Historical audit of **pre-Brain** direct Anthropic call sites (still accurate for unmigrated features)  
 **Audience:** Architects, engineers, AI agents  
-**Prerequisites:** [README](README.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md)
+**Live status:** [00-STATUS](00-STATUS.md) — Brain Phases 1–7 shipped; landing drafts migrated behind flag  
+**Prerequisites:** [00-STATUS](00-STATUS.md), [README](README.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md)
 
-> **Scope:** Facts confirmed in code. Secrets are never reproduced. Unknowns are marked explicitly.
+> **Scope:** Facts confirmed in code at audit time. Secrets are never reproduced. Unknowns are marked explicitly.  
+> **Note (2026-07):** Landing `aiGenerate` (row 6) is outdated — path is now `manage.html` → `POST /api/brain/landing-draft` → Brain when `BRAIN_LANDING_DRAFT=1`. Assist / suburb / packs / IG enrich rows remain correct until those migrate.
 
 ---
 

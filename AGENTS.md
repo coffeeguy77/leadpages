@@ -10,8 +10,9 @@ Before working on LeadPages, read in this order:
 2. `docs/INDEX.md`
 3. `CLAUDE.md`
 4. `AGENTS.md` (this file)
-5. Relevant docs from `docs/INDEX.md` for the task at hand
-6. Source code for the files you will change
+5. **If the task involves AI / Brain / Anthropic / OpenAI / Gemini / drafts / assist:** `docs/AI/00-STATUS.md`
+6. Relevant docs from `docs/INDEX.md` for the task at hand
+7. Source code for the files you will change
 
 Minimum topic docs for common work:
 
@@ -20,8 +21,17 @@ Minimum topic docs for common work:
 - Database / config: `docs/02-DATABASE.md`
 - Editor: `docs/10-EDITOR.md`
 - Standards: `docs/12-CODING-STANDARDS.md`
+- **AI / Brain:** `docs/AI/00-STATUS.md` then `docs/features/LeadPages Brain.md`
 
-Use `docs/INDEX.md` § **Which document to read by task** to pick the right topic docs before step 6.
+Use `docs/INDEX.md` § **Which document to read by task** to pick the right topic docs before step 7.
+
+### Brain rules (do not skip)
+
+- Phases 1–7 are shipped (`lib/brain/`, `/brain-admin`, landing-draft API).
+- New AI features call Brain — never provider APIs from the browser.
+- Landing drafts need `BRAIN_LANDING_DRAFT=1`.
+- Do not migrate assist / suburb / packs / IG enrich without explicit approval.
+- If a feature doc still says “browser → Anthropic”, treat it as stale and trust `docs/AI/00-STATUS.md` + source.
 
 ## Agent Behaviour
 

@@ -69,7 +69,7 @@ Services
 - Dreamscape Domains
 - Cloudinary
 - Resend
-- Anthropic Claude
+- LeadPages Brain (Anthropic / OpenAI / Gemini)
 - Instagram Graph API
 
 Hosting
@@ -137,9 +137,11 @@ Before making any code changes, every AI agent should read:
 
 1. CLAUDE.md
 2. AGENTS.md
-3. Relevant documentation inside `/docs`
+3. `docs/INDEX.md`
+4. **If touching AI:** `docs/AI/00-STATUS.md` (Brain phases, flags, migration matrix)
+5. Relevant documentation inside `/docs` (feature manuals under `docs/features/`)
 
-These files describe the architecture, business rules, coding standards and platform philosophy.
+LeadPages Brain (Phases 1–7) lives in `lib/brain/`. Control Centre: `/brain-admin`. Landing drafts: `BRAIN_LANDING_DRAFT=1`.
 
 ---
 

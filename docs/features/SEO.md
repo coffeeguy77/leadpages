@@ -3,7 +3,8 @@
 **Document:** `features/SEO`  
 **Status:** Definitive engineering reference for titles, meta, suburb pages, landing pages, and sitemaps  
 **Audience:** Engineers rebuilding, extending, or debugging SEO rendering; AI development agents  
-**Prerequisites:** [00-VISION](../00-VISION.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md), [03-TEMPLATE-SYSTEM](../03-TEMPLATE-SYSTEM.md), [08-SEO](../08-SEO.md), [10-EDITOR](../10-EDITOR.md)
+**Prerequisites:** [00-VISION](../00-VISION.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md), [03-TEMPLATE-SYSTEM](../03-TEMPLATE-SYSTEM.md), [08-SEO](../08-SEO.md), [10-EDITOR](../10-EDITOR.md)  
+**AI status:** Suburb intros still direct Anthropic; landing drafts via Brain — [AI/00-STATUS](../AI/00-STATUS.md)
 
 > **Scope note:** This document covers **tenant SEO surfaces** — `api/render.js` double-brace tokens, `config.pages` landing pages, `sections.seoTokens` local SEO, App Router suburb routes (`app/[site]/[suburb]`), and the dynamic sitemap (`app/seo-sitemap.xml`). It is **not** marketing-site SEO (`home.html`, `tradies.html`), partner showcase pages, or broker-app calculator sub-pages beyond shared `config.pages` mechanics.
 
@@ -25,7 +26,8 @@ LeadPages is **strongly SEO-focused**. Two parallel server pipelines plus one cl
 | **Double-brace tokens** | `{{pageTitle}}`, `{{pageDesc}}`, `{{businessName}}`, `{{domain}}` — server-side in `render.js` / template `<head>` |
 | **Single-brace tokens** | `{suburb}`, `{trade}`, `{business}`, … — `sections.seoTokens`, `lib/seo/tokens.js`, client `applyCfg` |
 | **Suburb gate** | Only suburbs in `sections.serviceAreas.areas` get App Router pages |
-| **AI intros** | Cached in `suburb_intros` — one Claude generation per `(site, suburb)` |
+| **AI suburb intros** | Cached in `suburb_intros` — one Anthropic generation per `(site, suburb)` (**not yet** via Brain) |
+| **AI landing drafts** | Editor → `POST /api/brain/landing-draft` (Brain; flag `BRAIN_LANDING_DRAFT`) — see [Pages](Pages.md) |
 | **Landing page gate** | Hard 404 unless `config.pages[].status === 'published'` |
 | **Editor — Local SEO** | Page editor subtab `seoTokens` in `#av-details` |
 | **Editor — Landing pages** | `#av-landing` tab → `renderSeoPages()` |
@@ -219,7 +221,7 @@ There is no first-party tracking of which suburb URLs rank or get crawled.
 | **Add suburb** | Service Areas list editor | `listEditor` → `sections.serviceAreas.areas` |
 | **New landing page** | `#lp-new` | Push to `data.pages`, `lpSaveDB()` |
 | **Autosave page fields** | Input in `#lp-editor` | `lpField` → `lpAutosave()` → `lpSaveDB()` (1s debounce) |
-| **AI generate body** | `#lp-ai-go` | `aiGenerate()` → Anthropic → `config.pages[].body` |
+| **AI generate body** | `#lp-ai-go` | `aiGenerate()` → `/api/brain/landing-draft` → approve → `config.pages[].body` |
 | **Publish site** | Command bar | `publishToDB()` — full config to Supabase |
 | **Verify suburb URL** | Browser | `GET /{slug}/{suburb-slug}` — 404 if not in service areas |
 
@@ -340,7 +342,8 @@ flowchart LR
 | **`/seo-sitemap.xml`** | GET | Crawlers | Dynamic suburb URL list |
 | **Supabase `sites` UPDATE** | PATCH | `lpSaveDB`, `publishToDB` | Persist `config.pages` or full config |
 | **Supabase REST `suburb_intros`** | GET/POST | `lib/seo/store.js` | Read/write cached intros |
-| **Anthropic `/v1/messages`** | POST | `suburbIntro.js`, `aiGenerate` in editor | AI copy |
+| **Anthropic `/v1/messages`** | POST | `suburbIntro.js` (legacy direct) | Suburb intro AI copy |
+| **`POST /api/brain/landing-draft`** | POST | `aiGenerate` in editor | Landing draft via Brain |
 | **`SEO_TEMPLATE_URL` fetch** | GET | `lib/seo/template.js` | Load HTML shell for suburb SSR |
 
 Auth: editor writes require Supabase user JWT + RLS. Public SEO routes use service role server-side only.
@@ -480,7 +483,7 @@ RLS enabled, no public policies — service role only.
 | `lpOpen(id)` / `lpField` / `lpAutosave` | Page editor + debounced save |
 | `lpSaveDB()` | Writes `config.pages` only to Supabase |
 | `publishToDB()` | Full config publish |
-| `aiGenerate()` | Anthropic landing page body draft |
+| `aiGenerate()` | Landing page body draft via Brain API |
 
 ---
 

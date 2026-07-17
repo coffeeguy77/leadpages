@@ -1,8 +1,8 @@
 # 19 — Developer Guide
 
 **Document:** `AI/19-DEVELOPER-GUIDE`  
-**Status:** Partial — `createBrain()` available; feature migrations still Phase 7+  
-**Prerequisites:** [13-INTERNAL-API-CONTRACTS](13-INTERNAL-API-CONTRACTS.md), [02-VISION-AND-PRINCIPLES](02-VISION-AND-PRINCIPLES.md)
+**Status:** Runtime available — prefer `getPlatformBrain()`; landing draft migrated (Phase 7); other features pending  
+**Prerequisites:** [00-STATUS](00-STATUS.md), [13-INTERNAL-API-CONTRACTS](13-INTERNAL-API-CONTRACTS.md), [02-VISION-AND-PRINCIPLES](02-VISION-AND-PRINCIPLES.md)
 
 ---
 

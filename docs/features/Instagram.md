@@ -3,7 +3,8 @@
 **Document:** `features/Instagram`  
 **Status:** Definitive engineering reference for Instagram OAuth, live feeds, and project sync  
 **Audience:** Engineers rebuilding, extending, or debugging Instagram on trade sites; AI development agents  
-**Prerequisites:** [00-VISION](../00-VISION.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md), [02-DATABASE](../02-DATABASE.md), [04-SITE-BUILDER](../04-SITE-BUILDER.md), [10-EDITOR](../10-EDITOR.md)
+**Prerequisites:** [00-VISION](../00-VISION.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md), [02-DATABASE](../02-DATABASE.md), [04-SITE-BUILDER](../04-SITE-BUILDER.md), [10-EDITOR](../10-EDITOR.md)  
+**AI status:** Caption enrich (`lib/ig/enrich.mjs`) still calls Anthropic directly — **not yet** via Brain. See [AI/00-STATUS](../AI/00-STATUS.md).
 
 > **Scope note:** This document covers **per-site Instagram Business Login**, the **`ig_connections`** credential store, **live gallery APIs** (`/api/ig-media`), **editor sections** (`instaGallery`, `igProjectFeed`, `projectFeed`), and **background sync** (`lib/ig/*`). It is **not** a Meta app review guide (see [instagram-data-policy.html](../../instagram-data-policy.html)) or generic social marketing documentation.
 

@@ -3,7 +3,8 @@
 **Document:** `features/Editor`  
 **Status:** Definitive engineering reference for the App Command Centre (`manage.html`)  
 **Audience:** Engineers rebuilding, extending, or debugging the editor shell; AI development agents  
-**Prerequisites:** [00-VISION](../00-VISION.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md), [02-DATABASE](../02-DATABASE.md), [10-EDITOR](../10-EDITOR.md) (deep implementation index)
+**Prerequisites:** [00-VISION](../00-VISION.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md), [02-DATABASE](../02-DATABASE.md), [10-EDITOR](../10-EDITOR.md) (deep implementation index)  
+**AI status:** Landing-tab `aiGenerate` uses Brain — [AI/00-STATUS](../AI/00-STATUS.md), [LeadPages Brain](LeadPages%20Brain.md)
 
 > **Scope note:** This document describes the **editor shell** — authentication, site loading, navigation, persistence, preview, and tab orchestration in `manage.html`. Feature-specific tabs (Dashboard, Marketplace, Mailer, etc.) have dedicated manuals under `docs/features/`. The numbered canon doc [10-EDITOR](../10-EDITOR.md) remains the exhaustive function index.
 
@@ -602,7 +603,7 @@ See [Authentication](Authentication.md), [Billing](Billing.md).
 | TD-E2 | **`api/manage.html` duplicate** | Drift (e.g. missing trade dashboard) |
 | TD-E3 | **No global undo** | Trade edits need backup restore |
 | TD-E4 | **Trade publish not autosaved** | Unpublished work lost if localStorage cleared |
-| TD-E5 | **Anthropic from browser** | `aiGenerate()` — key exposure risk |
+| TD-E5 | ~~Anthropic from browser~~ **Resolved (Phase 7)** | `aiGenerate()` → `/api/brain/landing-draft` — see [AI/00-STATUS](../AI/00-STATUS.md) |
 | TD-E6 | **`renderLandingSub` 800+ lines** | Unmaintainable nested block |
 | TD-E7 | **445 functions one scope** | Collision risk; no modules |
 | TD-E8 | **Leads role legacy** | `demo/demo` path barely used |
