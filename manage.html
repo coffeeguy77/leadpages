@@ -8506,9 +8506,12 @@ function heroCtaCard(c){
         +(st&&st.platformConfigured===false?'<p class="hint" style="margin-top:10px">Platform Google Ads credentials are not configured yet (developer token / OAuth client).</p>':'')
         +'</div>';
     } else {
-      h+='<div class="card" style="margin-bottom:14px"><p class="hint" style="margin:0">Connected: <strong>'+esc(st.connection.accountName||st.connection.customerId)+'</strong>'
-        +(st.connection.lastSyncAt?' · Last sync '+esc(new Date(st.connection.lastSyncAt).toLocaleString()):'')
-        +'</p></div>';
+      h+='<div class="card" style="margin-bottom:14px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">'
+        +'<p class="hint" style="margin:0">Connected: <strong>'+esc(st.connection.accountName||st.connection.customerId)+'</strong>'
+        +(st.connection.lastSyncAt?' · Last sync '+esc(new Date(st.connection.lastSyncAt).toLocaleString()):' · <strong>Never synced</strong>')
+        +(st.connection.lastSyncError?' · <span style="color:#b45309">'+esc(st.connection.lastSyncError)+'</span>':'')
+        +'</p>'
+        +'<button type="button" class="btn ghost sm" id="gads-sync-now">Sync now</button></div>';
     }
     function card(label,val,hint){
       return '<div class="lp-instrument-stat" style="padding:14px 12px"><div style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)">'+label+'</div>'
@@ -8541,6 +8544,11 @@ function heroCtaCard(c){
       +'</div>'
       +'<p class="hint" style="margin-top:12px">Gaps between ad clicks and tracked visitors are normal (repeat clicks, consent, blocked scripts).</p>'
       +'</div>';
+    // Overview also has Sync now when connected — wire after paint via health/tables helpers.
+    setTimeout(function(){
+      var b=document.getElementById('gads-sync-now');
+      if(b && !b._gadsBound){ b._gadsBound=true; b.addEventListener('click',function(){ _gadsRunSync(b); }); }
+    },0);
     return h;
   }
 
@@ -8550,7 +8558,9 @@ function heroCtaCard(c){
       +'<h2 style="margin:0">Campaigns</h2>'
       +'<button type="button" class="btn ghost sm" id="gads-csv-campaigns">CSV export</button></div>';
     if(!rows.length){
-      h+='<p class="hint">No campaign metrics yet. Connect Google Ads and wait for the next sync.</p></div>';
+      h+='<p class="hint" style="margin:0 0 12px">No campaign metrics in this period yet. Metrics appear after a successful Google Ads sync.</p>'
+        +'<button type="button" class="btn" id="gads-sync-now">Sync now</button>'
+        +'<p class="hint" style="margin-top:10px">Automatic sync also runs about every 2 hours. If sync fails while your developer token is still in <strong>Test Access</strong>, production accounts cannot be read until <strong>Basic Access</strong> is approved.</p></div>';
       return h;
     }
     h+='<div style="overflow:auto"><table class="tbl" style="width:100%;font-size:13px"><thead><tr>'
@@ -8621,10 +8631,14 @@ function heroCtaCard(c){
       +'<li>Form conversion tested: <strong>'+(c.formTestAt?new Date(c.formTestAt).toLocaleString():'Not yet')+'</strong></li>'
       +'<li>Call-click conversion tested: <strong>'+(c.callTestAt?new Date(c.callTestAt).toLocaleString():'Not yet')+'</strong></li>'
       +'<li>Click IDs captured ('+_gadsDays+'d): <strong>'+_gadsNum(health.clickIdsCaptured)+'</strong></li>'
-      +'<li>Last Google Ads sync: <strong>'+(c.lastSyncAt?new Date(c.lastSyncAt).toLocaleString():'Never')+'</strong>'
-      +(c.lastSyncError?' <span style="color:#b45309">('+esc(c.lastSyncError)+')</span>':'')+'</li>'
+      +'<li>Last Google Ads sync: <strong>'+(c.lastSyncAt?new Date(c.lastSyncAt).toLocaleString():'Never')+'</strong></li>'
+      +(c.lastSyncError?'<li style="color:#b45309">Last sync error: <strong>'+esc(c.lastSyncError)+'</strong></li>':'')
       +'<li>Matched metric rows: <strong>'+_gadsNum(health.matchedMetricRows)+'</strong></li>'
-      +'</ul>';
+      +'</ul>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px">'
+      +'<button type="button" class="btn" id="gads-sync-now">Sync now</button>'
+      +'<span class="hint" id="gads-sync-note" style="align-self:center">Pulls the last '+_gadsDays+' days from Google Ads</span>'
+      +'</div>';
 
     var roles=c.eventRoles||{};
     h+='<h3 style="margin:0 0 8px;font-size:15px">Which actions should Google Ads count?</h3>'
@@ -8663,6 +8677,35 @@ function heroCtaCard(c){
       +'</select></label></div>';
   }
 
+  async function _gadsRunSync(btn){
+    if(!currentSiteId) return;
+    var el=btn||document.getElementById('gads-sync-now');
+    var note=document.getElementById('gads-sync-note');
+    if(el){ el.disabled=true; el.textContent='Syncing…'; }
+    if(note) note.textContent='Talking to Google Ads…';
+    try{
+      var tok=await _gadsToken();
+      if(!tok) throw new Error('Sign in required');
+      var r=await fetch('/api/google-ads/sync',{
+        method:'POST',
+        headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+        body:JSON.stringify({siteId:currentSiteId,days:_gadsDays||30})
+      });
+      var j=await r.json().catch(function(){ return {}; });
+      if(!r.ok){
+        var msg=j.message||j.error||'sync_failed';
+        if(j.hint) msg+=' — '+j.hint;
+        throw new Error(msg);
+      }
+      toast('Synced '+(j.rows!=null?j.rows:0)+' metric rows ('+(j.from||'')+' → '+(j.to||'')+')');
+      _gadsCache={}; _gadsPaint();
+    }catch(e){
+      toast(String((e&&e.message)||'Sync failed').slice(0,220),'warn');
+      if(el){ el.disabled=false; el.textContent='Sync now'; }
+      if(note) note.textContent='Sync failed — see Connection & Health for the error';
+    }
+  }
+
   function _gadsWireHealth(){
     var connect=document.getElementById('gads-connect');
     if(connect) connect.addEventListener('click',async function(){
@@ -8681,6 +8724,8 @@ function heroCtaCard(c){
         location.href=j.url;
       }catch(e){ toast((e&&e.message)||'Could not start Google Ads connect','warn'); }
     });
+    var syncBtn=document.getElementById('gads-sync-now');
+    if(syncBtn) syncBtn.addEventListener('click',function(){ _gadsRunSync(syncBtn); });
     var save=document.getElementById('gads-save-roles');
     if(save) save.addEventListener('click',async function(){
       var roles={};
@@ -8734,8 +8779,10 @@ function heroCtaCard(c){
         var r=await fetch('/api/google-ads/save-settings',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId,customerId:list[idx].id})});
         var out=await r.json();
         if(!r.ok) throw new Error(out.error||'save_failed');
-        toast('Account selected: '+(list[idx].name||list[idx].id));
-        _gadsCache={}; _gadsPaint();
+        toast('Account selected: '+(list[idx].name||list[idx].id)+' — starting sync…');
+        _gadsCache={};
+        try{ await _gadsRunSync(); }catch(_e){}
+        _gadsPaint();
       }catch(e){
         var em=String((e&&e.message)||'Could not list accounts');
         if(/<!DOCTYPE|<html/i.test(em)) em='Google Ads API error (check API version / developer token)';
@@ -8760,6 +8807,8 @@ function heroCtaCard(c){
   }
 
   function _gadsWireTables(){
+    var syncEmpty=document.getElementById('gads-sync-now');
+    if(syncEmpty) syncEmpty.addEventListener('click',function(){ _gadsRunSync(syncEmpty); });
     document.querySelectorAll('[data-gads-edit-page]').forEach(function(b){
       b.addEventListener('click',function(){
         var id=b.getAttribute('data-gads-edit-page');
