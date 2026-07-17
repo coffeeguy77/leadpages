@@ -34,6 +34,13 @@ Landing draft prompt **v3** returns a full SEO package (~900–1100 words): `pri
 - `BRAIN_LANDING_DRAFT=1` to enable server drafts (default off)
 - Keys: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`
 
+## Usage / cost tracking
+
+- Apply `db/ai_requests.sql` in Supabase once.
+- Every Brain call records tokens + **estimated USD** (`lib/brain/pricing.js` × actual tokens) into `ai_requests`.
+- Control Centre (`/brain-admin`) shows durable totals by provider when the table exists; otherwise the process-local buffer.
+- Estimates are an ops forecast — provider invoices remain the billing source of truth.
+
 ---
 
 ## Related feature manuals

@@ -11,6 +11,8 @@
 const { requireSuper, readBody, json } = require('../billing/_admin-auth');
 const { getPlatformBrain, resetPlatformBrain } = require('../../lib/brain/platform');
 const { getDefaultUsageStore } = require('../../lib/brain/usage-store');
+const { loadDurableUsage } = require('../../lib/brain/usage-persist');
+const { resolveModelRate } = require('../../lib/brain/pricing');
 
 const PROVIDER_ENV = {
   mock: null,
@@ -80,6 +82,48 @@ module.exports = async function brainControl(req, res) {
       }
     }
 
+    const durable = await loadDurableUsage({ limit: 40, days: 30 });
+    const buffer = {
+      usage: store.summary(),
+      recent: store.recent(40),
+      recentFailures: store.recentFailures(20)
+    };
+
+    // Prefer durable ledger for Control Centre totals when available.
+    const usage = durable.available
+      ? {
+          totalEvents: durable.totalEvents,
+          byTask: durable.byTask,
+          byProvider: durable.byProvider,
+          totalCostUsd: durable.totalCostUsd,
+          failures: durable.failures,
+          source: 'durable',
+          days: durable.days
+        }
+      : Object.assign({}, buffer.usage, {
+          totalCostUsd: Object.values(buffer.usage.byTask || {}).reduce(
+            (s, t) => s + (Number(t.estimateUsd) || 0),
+            0
+          ),
+          source: 'buffer'
+        });
+
+    const recent = durable.available ? durable.recent : buffer.recent;
+    const recentFailures = durable.available
+      ? durable.recentFailures
+      : buffer.recentFailures;
+
+    const priceCard = (brain.listModels() || []).slice(0, 12).map((m) => {
+      const rate = resolveModelRate(m.provider, m.model);
+      return {
+        provider: m.provider,
+        model: m.model,
+        label: rate.label,
+        inputPerMTok: rate.inputPerMTok,
+        outputPerMTok: rate.outputPerMTok
+      };
+    });
+
     return json(res, 200, {
       ok: true,
       defaultProvider: brain.config.defaultProvider || 'mock',
@@ -94,12 +138,22 @@ module.exports = async function brainControl(req, res) {
       health,
       routes: routesSnapshot(brain),
       models: brain.listModels(),
-      usage: store.summary(),
-      recent: store.recent(40),
-      recentFailures: store.recentFailures(20),
-      notice:
-        'Usage is process-local (serverless). Durable ai_requests table is a later upgrade. ' +
-        'API keys are never returned — only configured yes/no + last-four hint.'
+      pricing: priceCard,
+      usage,
+      recent,
+      recentFailures,
+      buffer,
+      durable: {
+        available: !!durable.available,
+        error: durable.error || null,
+        days: durable.days || 30
+      },
+      notice: durable.available
+        ? durable.notice +
+          ' API keys are never returned — only configured yes/no + last-four hint.'
+        : (durable.notice ||
+            'Usage buffer is process-local until db/ai_requests.sql is applied. ') +
+          'API keys are never returned — only configured yes/no + last-four hint.'
     });
   }
 
