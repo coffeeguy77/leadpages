@@ -13,7 +13,8 @@ const { createClient } = require('@supabase/supabase-js');
 const {
   getPlatformBrain,
   isLandingDraftEnabled,
-  getLandingDraftProvider
+  getLandingDraftProvider,
+  ensureBrainSettings
 } = require('../../lib/brain/platform');
 const {
   LANDING_DRAFT_SCHEMA,
@@ -143,6 +144,9 @@ module.exports = async function landingDraft(req, res) {
 
   const access = await assertSiteAccess(user, siteId);
   if (!access.ok) return json(res, access.code, { ok: false, error: access.error });
+
+  // Load Control Centre choice from brain_settings (survives cold starts; no env var needed).
+  await ensureBrainSettings(brain);
 
   const site = access.site;
   const briefPack = buildLandingBriefInput(body);

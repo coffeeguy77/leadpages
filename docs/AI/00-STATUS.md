@@ -64,7 +64,7 @@ Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 | `BRAIN_TRADE_PACK` | unset (off) | `1` → trade packs via Brain |
 | `BRAIN_THEME_STUDIO` | on (`1`) | `0` disables Theme Studio APIs |
 | `BRAIN_MARKETING_HUB` | on (`1`) | `0` disables Marketing Hub APIs |
-| `BRAIN_LANDING_PROVIDER` | — | Override provider for landing drafts |
+| `BRAIN_LANDING_PROVIDER` | — | Optional env override; prefer **AI Control Centre → Save provider** (durable `brain_settings`) |
 | `ANTHROPIC_API_KEY` | — | Anthropic adapter / legacy callers |
 | `OPENAI_API_KEY` | — | OpenAI adapter |
 | `GEMINI_API_KEY` | — | Gemini adapter (alias `GOOGLE_AI_API_KEY`) |

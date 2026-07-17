@@ -94,9 +94,9 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
           <option value="mock">mock</option>
         </select>
       </div>
-      <button class="btn solid" id="landing-provider-save" type="button">Apply</button>
+      <button class="btn solid" id="landing-provider-save" type="button">Save provider</button>
       <p class="msg" id="landing-provider-msg"></p>
-      <p class="notice" style="margin-top:10px">Runtime-only on this isolate. Persist with <span class="mono">BRAIN_LANDING_PROVIDER=openai</span> in Vercel.</p>
+      <p class="notice" style="margin-top:10px" id="landing-provider-notice">Saved in Supabase via Control Centre — no Vercel env var needed. One-time: run <span class="mono">db/brain_settings.sql</span> in the Supabase SQL editor if you have not already.</p>
     </section>
   </div>
 
@@ -202,6 +202,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       kpi('Default provider', data.defaultProvider || 'mock'),
       kpi('BRAIN_PROVIDER', data.brainProviderEnv || 'mock'),
       kpi('Landing drafts', data.landingDraftProvider || data.defaultProvider || 'mock'),
+      kpi('Landing provider saved', data.landingDraftProviderPersisted ? 'durable' : (data.landingDraftProviderSource || 'default')),
       kpi('Landing draft flag', (data.flags && data.flags.landingDraft) ? 'ON' : 'off'),
       kpi('Usage events', String(calls)),
       kpi('Est. USD ('+src+')', usd.toFixed(4))
