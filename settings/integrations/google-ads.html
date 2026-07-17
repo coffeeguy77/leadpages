@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Google Ads — LeadPages Integrations</title>
+  <link rel="icon" href="/favicon.ico">
+  <style>
+    :root{--ink:#1a2230;--soft:#5b6878;--line:#e5e7eb;--bg:#f6f7f9;--card:#fff;--accent:#1f7a63;--warn:#b45309}
+    *{box-sizing:border-box}
+    body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+    .wrap{max-width:720px;margin:0 auto;padding:32px 18px 64px}
+    .brand{font-weight:800;letter-spacing:-.02em;font-size:18px;margin-bottom:18px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 20px;box-shadow:0 8px 24px rgba(0,0,0,.04);margin-bottom:14px}
+    h1{font-size:22px;margin:0 0 6px}
+    .lede{color:var(--soft);margin:0 0 16px}
+    .hint{color:var(--soft);font-size:13px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    label{display:block;font-weight:600;font-size:13px;margin:0 0 6px}
+    select,button,.btn{font:inherit}
+    select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:10px;border:1px solid transparent;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;text-decoration:none}
+    .btn.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .ok{color:var(--accent);font-weight:700}
+    .warn{color:var(--warn);font-weight:600}
+    .foot{margin-top:22px;font-size:12.5px;color:#9aa3af}
+    .foot a{color:var(--soft)}
+    .status{display:grid;gap:8px;margin:14px 0;font-size:14px}
+    .status div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:8px 0}
+    code{font-size:12px;background:#f1f5f9;padding:2px 6px;border-radius:6px}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Anon key is public (same bootstrap as manage.html). Never put service-role or OAuth client secrets here. -->
+  <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">LeadPages · Integrations</div>
+    <div class="card">
+      <h1>Google Ads</h1>
+      <p class="lede">Connect a Google Ads account to sync spend and send LeadPages form / call-click conversions. You will not be asked for Customer IDs or conversion labels.</p>
+      <div id="auth-box"><p class="hint">Checking sign-in…</p></div>
+    </div>
+    <div class="card" id="panel" hidden>
+      <label for="site">Site</label>
+      <select id="site"></select>
+      <div class="status" id="status"></div>
+      <div class="row" style="margin-top:14px">
+        <button type="button" class="btn" id="connect">Connect Google Ads</button>
+        <button type="button" class="btn ghost" id="accounts" hidden>Select account</button>
+        <button type="button" class="btn ghost" id="open-adv" hidden>Open Advertising dashboard</button>
+        <button type="button" class="btn ghost" id="disconnect" hidden>Disconnect</button>
+      </div>
+      <p class="hint" style="margin-top:14px">After connecting, choose the Ads account and map conversions in the Advertising tab (Connection &amp; Health).</p>
+    </div>
+    <p class="foot">
+      Application: <code>app.leadpages.com.au</code> ·
+      <a href="https://leadpages.com.au/privacy" target="_blank" rel="noopener">Privacy</a> ·
+      <a href="https://leadpages.com.au/terms" target="_blank" rel="noopener">Terms</a> ·
+      <a href="/manage">Back to Command Centre</a>
+    </p>
+  </div>
+  <script>
+  (function(){
+    var SUPABASE_URL = window.__LP_SUPABASE_URL || '';
+    var SUPABASE_ANON = window.__LP_SUPABASE_ANON || '';
+    // Injected at deploy via optional meta — fall back to manage's known public env bootstrap if present.
+    var metaUrl = document.querySelector('meta[name="lp-supabase-url"]');
+    var metaAnon = document.querySelector('meta[name="lp-supabase-anon"]');
+    if(metaUrl) SUPABASE_URL = metaUrl.content;
+    if(metaAnon) SUPABASE_ANON = metaAnon.content;
+
+    var sb = null;
+    var session = null;
+    var sites = [];
+    var currentSiteId = null;
+
+    function $(id){ return document.getElementById(id); }
+    function qs(name){
+      try{ return new URLSearchParams(location.search).get(name); }catch(e){ return null; }
+    }
+
+    async function boot(){
+      if(window.__LP&&window.__LP.url) SUPABASE_URL=window.__LP.url;
+      if(window.__LP&&window.__LP.anon) SUPABASE_ANON=window.__LP.anon;
+
+      if(!SUPABASE_URL || !SUPABASE_ANON){
+        $('auth-box').innerHTML='<p class="hint">Open this page from the app after sign-in, or continue in Command Centre.</p>'
+          +'<div class="row" style="margin-top:12px"><a class="btn" href="/manage?view=advertising&gadsTab=health">Open Advertising settings</a></div>';
+        return;
+      }
+
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+      var s = await sb.auth.getSession();
+      session = s&&s.data&&s.data.session;
+      if(!session){
+        $('auth-box').innerHTML='<p class="warn">Sign in required.</p><div class="row" style="margin-top:12px"><a class="btn" href="/manage">Sign in to LeadPages</a></div>';
+        return;
+      }
+      $('auth-box').innerHTML='<p class="ok">Signed in as '+esc(session.user.email||session.user.id)+'</p>';
+      $('panel').hidden=false;
+      await loadSites();
+      wire();
+      if(qs('gads')==='connected'){
+        flash('Google Ads connected. Select an account if prompted.');
+        if(qs('siteId')) $('site').value=qs('siteId');
+        currentSiteId=$('site').value;
+        await refreshStatus();
+      } else {
+        await refreshStatus();
+      }
+    }
+
+    function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]); }); }
+    function flash(msg){ var el=document.createElement('p'); el.className='ok'; el.textContent=msg; $('auth-box').appendChild(el); }
+
+    async function loadSites(){
+      var r = await sb.from('sites').select('id,slug,business_name,template').order('business_name');
+      sites = r.data||[];
+      var sel=$('site');
+      sel.innerHTML = sites.map(function(s){
+        return '<option value="'+esc(s.id)+'">'+esc(s.business_name||s.slug)+' ('+esc(s.slug)+')</option>';
+      }).join('') || '<option value="">No sites</option>';
+      var prefer = qs('siteId') || qs('site');
+      if(prefer){
+        var match = sites.find(function(s){ return s.id===prefer || s.slug===prefer; });
+        if(match) sel.value=match.id;
+      }
+      currentSiteId=sel.value||null;
+    }
+
+    async function refreshStatus(){
+      currentSiteId=$('site').value||null;
+      if(!currentSiteId){ $('status').innerHTML=''; return; }
+      $('status').innerHTML='<div><span>Loading…</span></div>';
+      try{
+        var r=await fetch('/api/google-ads/status?siteId='+encodeURIComponent(currentSiteId),{
+          headers:{ Authorization:'Bearer '+session.access_token }
+        });
+        var j=await r.json();
+        if(!r.ok) throw new Error(j.error||'status_failed');
+        var c=j.connection||{};
+        var connected=!!(j.connected&&c.customerId);
+        $('status').innerHTML=
+          '<div><span>Platform configured</span><strong>'+(j.platformConfigured?'Yes':'No')+'</strong></div>'
+          +'<div><span>OAuth connected</span><strong>'+(j.connected?'Yes':'No')+'</strong></div>'
+          +'<div><span>Account</span><strong>'+esc(c.accountName||c.customerId||'—')+'</strong></div>'
+          +'<div><span>Last sync</span><strong>'+(c.lastSyncAt?new Date(c.lastSyncAt).toLocaleString():'—')+'</strong></div>';
+        $('accounts').hidden=!j.connected;
+        $('disconnect').hidden=!j.connected;
+        $('open-adv').hidden=false;
+        $('connect').textContent=j.connected?'Reconnect Google Ads':'Connect Google Ads';
+        if(j.connected&&!c.customerId){
+          // prompt account pick
+        }
+      }catch(e){
+        $('status').innerHTML='<div><span class="warn">'+(e&&e.message||'Could not load status')+'</span></div>';
+      }
+    }
+
+    function wire(){
+      $('site').addEventListener('change', refreshStatus);
+      $('connect').addEventListener('click', async function(){
+        if(!currentSiteId) return;
+        var site=sites.find(function(s){ return s.id===currentSiteId; });
+        var slug=site&&site.slug||'';
+        try{
+          var r=await fetch('/api/integrations/google-ads/connect?format=json',{
+            method:'POST',
+            headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token,Accept:'application/json'},
+            body:JSON.stringify({siteId:currentSiteId,slug:slug,returnPath:'/settings/integrations/google-ads'})
+          });
+          var j=await r.json();
+          if(!r.ok||!j.url) throw new Error(j.error||'connect_failed');
+          location.href=j.url;
+        }catch(e){ alert((e&&e.message)||'Could not start Google Ads connect'); }
+      });
+      $('open-adv').addEventListener('click', function(){
+        var site=sites.find(function(s){ return s.id===currentSiteId; });
+        location.href='/manage?view=advertising&gadsTab=health'+(site&&site.slug?('&site='+encodeURIComponent(site.slug)):'');
+      });
+      $('disconnect').addEventListener('click', async function(){
+        if(!confirm('Disconnect Google Ads from this site?')) return;
+        var r=await fetch('/api/google-ads/disconnect',{
+          method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token},
+          body:JSON.stringify({siteId:currentSiteId})
+        });
+        var j=await r.json();
+        if(!r.ok){ alert(j.error||'Disconnect failed'); return; }
+        await refreshStatus();
+      });
+      $('accounts').addEventListener('click', async function(){
+        var r=await fetch('/api/google-ads/accounts?siteId='+encodeURIComponent(currentSiteId),{
+          headers:{Authorization:'Bearer '+session.access_token}
+        });
+        var j=await r.json();
+        if(!r.ok){ alert(j.error||'Could not list accounts'); return; }
+        var list=(j.accounts||[]).filter(function(a){ return !a.manager; });
+        if(!list.length){ alert('No Google Ads accounts found'); return; }
+        var labels=list.map(function(a,i){ return (i+1)+'. '+(a.name||a.id)+' ('+a.id+')'; }).join('\n');
+        var choice=prompt('Select account number:\n'+labels,'1');
+        var idx=parseInt(choice||'0',10)-1;
+        if(!(idx>=0&&idx<list.length)) return;
+        var save=await fetch('/api/google-ads/save-settings',{
+          method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token},
+          body:JSON.stringify({siteId:currentSiteId,customerId:list[idx].id})
+        });
+        var out=await save.json();
+        if(!save.ok){ alert(out.error||'Save failed'); return; }
+        await refreshStatus();
+      });
+    }
+
+    boot();
+  })();
+  </script>
+</body>
+</html>

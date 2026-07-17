@@ -233,6 +233,7 @@ footer a:hover{color:#fff}
 :focus-visible{outline:3px solid var(--safety);outline-offset:2px;border-radius:5px}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 </style>
+<script src="/assets/lp-attribution.js"></script>
 </head>
 <body>
 
@@ -442,13 +443,14 @@ const SITE_CONFIG = {
    ============================================================ */
 window.dataLayer = window.dataLayer || [];
 function trackEvent(name, props = {}){
+  try{ if(window.LPAttribution&&LPAttribution.enrichProps) props=LPAttribution.enrichProps(props||{}); }catch(_e){}
   const payload = { event:name, site:SITE_CONFIG.business, ts:Date.now(), ...props };
   window.dataLayer.push(payload);
   console.log("[track]", payload);
   fetch('/api/events', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ site:SITE_CONFIG.business, event:name, props:{ ...props, ts:Date.now() } }),
+    body: JSON.stringify({ site:SITE_CONFIG.business, siteId:SITE_CONFIG.siteId, slug:SITE_CONFIG.slug, event:name, props:{ ...props, ts:Date.now() } }),
     keepalive:true             // call_click is the money metric — fire it even as the dialer opens
   }).catch(()=>{});
 }
@@ -484,7 +486,8 @@ async function submitLead(){
         phone: data.phone,
         lp_hp: (g('lp_hp')&&g('lp_hp').value)||'',
         _t: window.__lpFormT||Date.now(),
-        details: { job:data.job, suburb:data.suburb, detail:data.detail }
+        details: { job:data.job, suburb:data.suburb, detail:data.detail },
+        ...(function(){ try{ return window.LPAttribution&&LPAttribution.leadFields?LPAttribution.leadFields():{}; }catch(_e){ return {}; } })()
       })
     });
     if(!res.ok) console.error("Lead save failed:", res.status, await res.text());
@@ -494,7 +497,7 @@ async function submitLead(){
   document.getElementById("quoteSuccess").classList.add("show");
 }
 
-trackEvent("page_view",{ page:"trade_landing", trade:SITE_CONFIG.trade });
+trackEvent("page_view",{ page:SITE_CONFIG.pageType==="landing_page"?"landing_page":"trade_landing", trade:SITE_CONFIG.trade, page_id:SITE_CONFIG.pageId||null });
 </script>
 </body>
 </html>

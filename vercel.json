@@ -14,6 +14,10 @@
     {
       "path": "/api/cron/events-rollup",
       "schedule": "15 4 * * *"
+    },
+    {
+      "path": "/api/cron/sync-google-ads",
+      "schedule": "20 */2 * * *"
     }
   ],
   "rewrites": [
@@ -31,6 +35,24 @@
     },
     {
       "source": "/manage",
+      "destination": "/manage.html"
+    },
+    {
+      "source": "/settings/integrations/google-ads",
+      "destination": "/settings/integrations/google-ads.html"
+    },
+    {
+      "source": "/settings/integrations/google-ads/",
+      "destination": "/settings/integrations/google-ads.html"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "^app\\.leadpages\\.com\\.au$"
+        }
+      ],
       "destination": "/manage.html"
     },
     {

@@ -4,9 +4,11 @@ const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
+const { appUrl } = require('../../lib/app-url');
+
 const APP_ID    = process.env.INSTAGRAM_APP_ID;
 const APP_SEC   = process.env.INSTAGRAM_APP_SECRET;
-const REDIRECT  = 'https://www.leadpages.com.au/api/instagram/callback';
+const REDIRECT  = (process.env.INSTAGRAM_REDIRECT_URI || (appUrl() + '/api/instagram/callback')).replace(/\/$/, '');
 const STATE_SEC = process.env.IG_STATE_SECRET || APP_SEC || '';
 
 function sign(p){ return crypto.createHmac('sha256',STATE_SEC).update(p).digest('base64url'); }

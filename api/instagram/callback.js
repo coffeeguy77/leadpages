@@ -2,8 +2,13 @@
 // Returns a tiny HTML page whose JS POSTs code+state to /api/instagram/exchange.
 // Link-preview scanners and prefetchers don't execute JS, so they can't burn
 // the one-time code before the real browser does.
+// Post-login redirect uses APP_URL (app.leadpages.com.au in production) — not Host.
+
+const { appPath } = require('../../lib/app-url');
 
 module.exports = async (req, res) => {
+  const manageBase = appPath('/manage');
+  const exchangeUrl = appPath('/api/instagram/exchange');
   res.setHeader('cache-control','no-store');
   res.setHeader('x-robots-tag','noindex');
   res.setHeader('content-type','text/html; charset=utf-8');
@@ -16,17 +21,20 @@ module.exports = async (req, res) => {
 (function(){
   var p=new URLSearchParams(location.search);
   var code=p.get('code'), state=p.get('state'), err=p.get('error');
+  var manageBase=${JSON.stringify(manageBase)};
+  var exchangeUrl=${JSON.stringify(exchangeUrl)};
   function go(status, site, detail){
-    var u='/manage?ig='+encodeURIComponent(status)
+    var u=manageBase+(manageBase.indexOf('?')>=0?'&':'?')+'ig='+encodeURIComponent(status)
       +(site?'&site='+encodeURIComponent(site):'')
       +(detail?'&ig_detail='+encodeURIComponent(String(detail).slice(0,200)):'');
     location.replace(u);
   }
   if(err){ go('denied','', p.get('error_description')||err); return; }
   if(!code||!state){ go('error','','missing_code_or_state'); return; }
-  fetch('/api/instagram/exchange',{
+  fetch(exchangeUrl,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
+    credentials:'same-origin',
     body:JSON.stringify({code:code,state:state})
   }).then(function(r){return r.json();})
   .then(function(j){
