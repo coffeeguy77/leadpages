@@ -47,7 +47,7 @@
 | 5 | OpenAI + Gemini | Done |
 | 6 | Control Centre | Done (+ durable `ai_requests` when SQL applied) |
 | 7 | Landing draft migration | Done — **flag default OFF** |
-| 8 | Theme Studio product | **Done** — [21](21-THEME-STUDIO.md) |
+| 8 | Theme Studio product | Colour MVP done; **full rebuild plan awaiting approval** — [audit](THEME-STUDIO-IMPLEMENTATION-AUDIT.md) |
 | 9 | Marketing Hub product | **Done** — [22](22-MARKETING-HUB.md) |
 
 Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
