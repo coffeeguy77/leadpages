@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marketing Hub — LeadPages</title>
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
+<meta name="theme-color" content="#12151a">
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<link rel="stylesheet" href="/assets/lp-super-admin.css">
+<script src="/assets/lp-workspace-appearance.js"></script>
+<script src="/assets/lp-hub-embed.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{--font-display:'Fraunces',Georgia,serif;--font-ui:'DM Sans',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-ui)}
+.wrap{padding:22px 20px 48px;max-width:1040px;margin:0 auto}
+.login-card{max-width:420px;margin:12vh auto;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.hidden{display:none!important}
+.field{margin:0 0 12px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit}
+.field textarea{min-height:72px;resize:vertical}
+.btn{appearance:none;border:1px solid var(--accent);background:transparent;color:var(--accent);font:600 13px/1 var(--font-ui);padding:10px 14px;border-radius:10px;cursor:pointer;margin:0 6px 6px 0}
+.btn.solid{background:var(--accent);color:var(--accent-text,#fff)}
+.btn.ghost{border-color:var(--line-strong);color:var(--ink-soft)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:16px}
+.card h2{margin:0 0 4px;font-family:var(--font-display);font-size:1.2rem}
+.sub{margin:0 0 14px;color:var(--ink-soft);font-size:13px;line-height:1.45}
+.msg{font-size:13px;margin:8px 0 0}
+.msg.bad{color:#b91c1c}
+.msg.ok{color:#15803d}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.pill{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.pill.warn{background:color-mix(in srgb,#d97706 18%,transparent);color:#b45309}
+.list{margin:0;padding-left:18px;font-size:13px;line-height:1.5}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin:0 0 12px}
+.kpi{padding:12px;border:1px solid var(--line);border-radius:12px}
+.kpi .l{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-weight:700}
+.kpi .v{font-family:var(--font-display);font-size:1.15rem;margin-top:4px}
+</style>
+</head>
+<body class="lp-super-admin">
+<div id="gate" class="login-card">
+  <h1>Marketing Hub</h1>
+  <p class="sub">Campaign plans and RSA copy via Brain. Suggestions only — never mutates Google Ads without a separate approved write.</p>
+  <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
+  <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
+  <button class="btn solid" id="login-btn" type="button">Sign in</button>
+  <p class="msg bad hidden" id="gate-msg"></p>
+</div>
+
+<main id="app" class="wrap hidden">
+  <div class="top">
+    <div>
+      <h1 style="margin:0;font-family:var(--font-display)">Marketing Hub</h1>
+      <p class="sub" style="margin:6px 0 0">LeadPages-managed campaign assistance. <span class="pill warn">No Ads API mutate on approve</span></p>
+    </div>
+    <div>
+      <a class="btn ghost" href="/settings/integrations/google-ads" target="_blank" rel="noopener">Google Ads settings</a>
+      <button class="btn ghost" id="signout" type="button">Sign out</button>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>Site & connection</h2>
+    <div class="field"><label>Site</label><select id="site"></select></div>
+    <button class="btn ghost" id="btn-status" type="button">Refresh Ads status</button>
+    <div class="kpis" id="kpis"></div>
+    <p class="sub" id="status-line">Select a site and refresh status. OAuth tokens never enter prompts.</p>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>Campaign plan</h2>
+      <p class="sub">Structured plan suggestion using site context + redacted Ads metrics.</p>
+      <div class="field"><label>Goal</label><input id="goal" value="More qualified calls and quote requests"></div>
+      <div class="field"><label>Budget hints</label><input id="budget" placeholder="e.g. $40/day search, Canberra + Queanbeyan"></div>
+      <div class="field"><label>Extra brief</label><textarea id="plan-brief" placeholder="Offer focus, seasonality, competitors to avoid…"></textarea></div>
+      <button class="btn solid" id="btn-plan" type="button">Suggest plan</button>
+      <button class="btn" id="btn-approve-plan" type="button" disabled>Approve plan (store only)</button>
+      <p class="msg" id="plan-msg"></p>
+      <div id="plan-out"></div>
+    </section>
+
+    <section class="card">
+      <h2>RSA copy</h2>
+      <p class="sub">Headlines ≤30 chars, descriptions ≤90. Character limits enforced server-side.</p>
+      <div class="field"><label>Offer / primary keyword</label><input id="offer" placeholder="e.g. Blocked drain Canberra"></div>
+      <div class="field"><label>Location</label><input id="location" placeholder="Canberra ACT"></div>
+      <div class="field"><label>Landing URL hint</label><input id="landing" value="/"></div>
+      <div class="field"><label>Extra brief</label><textarea id="rsa-brief"></textarea></div>
+      <button class="btn solid" id="btn-rsa" type="button">Suggest RSA</button>
+      <button class="btn" id="btn-approve-rsa" type="button" disabled>Approve RSA (store only)</button>
+      <p class="msg" id="rsa-msg"></p>
+      <div id="rsa-out"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var $ = function(id){ return document.getElementById(id); };
+  var planDraft = null;
+  var rsaDraft = null;
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
+
+  async function token(){
+    var r = await sb.auth.getSession();
+    return (r && r.data && r.data.session && r.data.session.access_token) || null;
+  }
+
+  async function api(path, body){
+    var t = await token();
+    var res = await fetch(path, {
+      method: 'POST',
+      headers: Object.assign({'content-type':'application/json'}, t ? {Authorization:'Bearer '+t} : {}),
+      body: JSON.stringify(body || {})
+    });
+    var j = await res.json().catch(function(){ return {}; });
+    if(!res.ok) throw new Error(j.message || j.error || ('HTTP '+res.status));
+    return j;
+  }
+
+  async function ensureSuper(){
+    var sess = await sb.auth.getSession();
+    var user = sess && sess.data && sess.data.session && sess.data.session.user;
+    if(!user) return false;
+    var { data } = await sb.from('profiles').select('is_super_admin').eq('id', user.id).maybeSingle();
+    return !!(data && data.is_super_admin);
+  }
+
+  async function loadSites(){
+    var { data, error } = await sb.from('sites').select('id,slug,business_name').order('business_name').limit(500);
+    if(error) throw error;
+    $('site').innerHTML = (data||[]).map(function(s){
+      return '<option value="'+esc(s.id)+'">'+esc(s.business_name||s.slug||s.id)+'</option>';
+    }).join('') || '<option value="">No sites</option>';
+  }
+
+  function paintPlan(plan){
+    planDraft = plan;
+    $('btn-approve-plan').disabled = !plan;
+    if(!plan){ $('plan-out').innerHTML=''; return; }
+    $('plan-out').innerHTML =
+      '<p><strong>'+esc(plan.campaignName)+'</strong><br><span class="sub" style="margin:0">'+esc(plan.objective)+' · '+esc(plan.geoFocus)+'</span></p>'
+      + '<p class="sub">'+esc(plan.budgetNotes||'')+'</p>'
+      + '<p><strong>Ad groups</strong></p><ul class="list">'+(plan.adGroups||[]).map(function(g){return '<li>'+esc(g.name)+' — '+esc(g.theme)+'</li>';}).join('')+'</ul>'
+      + '<p><strong>Keywords</strong></p><p class="mono">'+esc((plan.keywords||[]).join(', '))+'</p>'
+      + '<p><strong>Negatives</strong></p><p class="mono">'+esc((plan.negatives||[]).join(', '))+'</p>'
+      + '<p><strong>Landing hints</strong></p><ul class="list">'+(plan.landingPageHints||[]).map(function(u){return '<li class="mono">'+esc(u)+'</li>';}).join('')+'</ul>'
+      + (plan.notes ? '<p class="sub">'+esc(plan.notes)+'</p>' : '');
+  }
+
+  function paintRsa(rsa){
+    rsaDraft = rsa;
+    $('btn-approve-rsa').disabled = !rsa;
+    if(!rsa){ $('rsa-out').innerHTML=''; return; }
+    $('rsa-out').innerHTML =
+      '<p><strong>Headlines</strong> <span class="pill">≤30</span></p><ul class="list">'+(rsa.headlines||[]).map(function(h){
+        return '<li><span class="mono">'+esc(h)+'</span> <span style="color:var(--ink-faint)">('+h.length+')</span></li>';
+      }).join('')+'</ul>'
+      + '<p><strong>Descriptions</strong> <span class="pill">≤90</span></p><ul class="list">'+(rsa.descriptions||[]).map(function(d){
+        return '<li><span class="mono">'+esc(d)+'</span> <span style="color:var(--ink-faint)">('+d.length+')</span></li>';
+      }).join('')+'</ul>'
+      + '<p class="mono">path: /'+esc(rsa.path1)+'/'+esc(rsa.path2)+'</p>'
+      + (rsa.finalUrlHint ? '<p class="mono">url hint: '+esc(rsa.finalUrlHint)+'</p>' : '');
+  }
+
+  $('btn-status').onclick = async function(){
+    var t = await token();
+    var siteId = $('site').value;
+    try{
+      var res = await fetch('/api/google-ads/status?siteId='+encodeURIComponent(siteId)+'&days=30', {
+        headers: t ? {Authorization:'Bearer '+t} : {}
+      });
+      var j = await res.json().catch(function(){ return {}; });
+      var connected = !!(j.connected || (j.connection && j.connection.customer_id) || j.customerId);
+      var spend = j.spend != null ? j.spend : (j.metrics && j.metrics.spend);
+      var clicks = j.clicks != null ? j.clicks : (j.metrics && j.metrics.clicks);
+      var imps = j.impressions != null ? j.impressions : (j.metrics && j.metrics.impressions);
+      var conv = j.conversions != null ? j.conversions : (j.metrics && j.metrics.conversions);
+      $('kpis').innerHTML = [
+        ['Connected', connected ? 'Yes' : 'No'],
+        ['Spend 30d', spend != null ? ('$'+Number(spend).toFixed(2)) : '—'],
+        ['Clicks', clicks != null ? String(clicks) : '—'],
+        ['Impr.', imps != null ? String(imps) : '—'],
+        ['Conv.', conv != null ? String(conv) : '—']
+      ].map(function(row){
+        return '<div class="kpi"><div class="l">'+esc(row[0])+'</div><div class="v">'+esc(row[1])+'</div></div>';
+      }).join('');
+      $('status-line').textContent = connected
+        ? 'Connected — metrics are for context only. Tokens never leave the Ads APIs.'
+        : 'Not connected — you can still generate plans from site context. Connect Ads when ready.';
+    }catch(e){
+      $('status-line').textContent = 'Status unavailable: '+(e.message||e);
+    }
+  };
+
+  $('btn-plan').onclick = async function(){
+    var msg = $('plan-msg'); msg.className='msg'; msg.textContent='Planning…';
+    try{
+      var j = await api('/api/brain/ads-campaign-plan', {
+        siteId: $('site').value,
+        goal: $('goal').value,
+        budgetHints: $('budget').value,
+        brief: $('plan-brief').value
+      });
+      paintPlan(j.plan);
+      msg.className='msg ok'; msg.textContent=j.notice||'Plan ready.';
+    }catch(e){ msg.className='msg bad'; msg.textContent=e.message||String(e); }
+  };
+
+  $('btn-approve-plan').onclick = async function(){
+    var msg = $('plan-msg'); msg.className='msg'; msg.textContent='Saving…';
+    try{
+      var j = await api('/api/brain/ads-approve', {
+        siteId: $('site').value,
+        kind: 'campaign_plan',
+        payload: planDraft
+      });
+      msg.className='msg ok'; msg.textContent=j.notice||'Stored.';
+    }catch(e){ msg.className='msg bad'; msg.textContent=e.message||String(e); }
+  };
+
+  $('btn-rsa').onclick = async function(){
+    var msg = $('rsa-msg'); msg.className='msg'; msg.textContent='Writing…';
+    try{
+      var j = await api('/api/brain/ads-rsa-copy', {
+        siteId: $('site').value,
+        offer: $('offer').value,
+        location: $('location').value,
+        landingUrl: $('landing').value,
+        brief: $('rsa-brief').value
+      });
+      paintRsa(j.rsa);
+      msg.className='msg ok'; msg.textContent=j.notice||'RSA ready.';
+    }catch(e){ msg.className='msg bad'; msg.textContent=e.message||String(e); }
+  };
+
+  $('btn-approve-rsa').onclick = async function(){
+    var msg = $('rsa-msg'); msg.className='msg'; msg.textContent='Saving…';
+    try{
+      var j = await api('/api/brain/ads-approve', {
+        siteId: $('site').value,
+        kind: 'rsa_copy',
+        payload: rsaDraft
+      });
+      msg.className='msg ok'; msg.textContent=j.notice||'Stored.';
+    }catch(e){ msg.className='msg bad'; msg.textContent=e.message||String(e); }
+  };
+
+  function showApp(){ $('gate').classList.add('hidden'); $('app').classList.remove('hidden'); }
+  function showGate(msg){
+    $('app').classList.add('hidden'); $('gate').classList.remove('hidden');
+    var m = $('gate-msg');
+    if(msg){ m.textContent = msg; m.classList.remove('hidden'); }
+    else m.classList.add('hidden');
+  }
+
+  $('login-btn').onclick = async function(){
+    showGate('');
+    var { error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
+    if(error) return showGate(error.message);
+    if(!(await ensureSuper())){ await sb.auth.signOut(); return showGate('Super-admin only.'); }
+    await loadSites();
+    showApp();
+  };
+  $('signout').onclick = async function(){ await sb.auth.signOut(); showGate(''); };
+
+  (async function boot(){
+    if(await ensureSuper()){ await loadSites(); showApp(); }
+  })();
+})();
+</script>
+</body>
+</html>

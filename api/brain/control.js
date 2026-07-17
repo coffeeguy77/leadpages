@@ -159,6 +159,12 @@ module.exports = async function brainControl(req, res) {
       landingDraftProviderEnv: process.env.BRAIN_LANDING_PROVIDER || '',
       flags: Object.assign({}, brain.config.flags || {}, {
         landingDraftEnv: process.env.BRAIN_LANDING_DRAFT || '',
+        igEnrichEnv: process.env.BRAIN_IG_ENRICH || '',
+        suburbIntroEnv: process.env.BRAIN_SUBURB_INTRO || '',
+        helpAssistEnv: process.env.BRAIN_HELP_ASSIST || '',
+        tradePackEnv: process.env.BRAIN_TRADE_PACK || '',
+        themeStudioEnv: process.env.BRAIN_THEME_STUDIO || '1',
+        marketingHubEnv: process.env.BRAIN_MARKETING_HUB || '1',
         disableTasksEnv: process.env.BRAIN_DISABLE_TASKS || '',
         landingDraftProvider: landingProvider
       }),

@@ -12,7 +12,7 @@
 
 ## One-line summary
 
-**Phases 0–7 are shipped.** Brain runtime exists (`lib/brain/`). Control Centre exists (`/brain-admin`). Landing AI drafts go through the server behind a flag. Most legacy features still call Anthropic directly.
+**Phases 0–9 are shipped.** Brain runtime (`lib/brain/`), Control Centre, landing drafts, Theme Studio, Marketing Hub, and flag-gated migrations for IG / suburb / assist / packs. Legacy paths remain when migration flags are off.
 
 ---
 
@@ -21,16 +21,15 @@
 | Area | Location | Notes |
 |------|----------|-------|
 | Brain gateway | `lib/brain/` | `createBrain`, `generate`, `generateStructured` |
-| Platform singleton | `lib/brain/platform.js` | `getPlatformBrain()`, usage store wiring |
+| Platform singleton | `lib/brain/platform.js` | `getPlatformBrain()`, usage + migration flags |
 | Adapters | `lib/brain/adapters/` | `mock`, `anthropic`, `openai`, `gemini` (raw `fetch`, no SDKs) |
 | Prompts | `lib/brain/prompts/` | File-based registry; `{{var}}` render |
-| Context slices | `lib/brain/context/` | Auth + redaction; caller supplies `site` row |
-| Resilience | `lib/brain/resilience.js` | Retries, flags, soft budgets |
+| Context slices | `lib/brain/context/` | Includes `ads.summary` (redacted; no OAuth tokens) |
 | Control Centre UI | `brain-admin.html` → `/brain-admin` | Super-admin; Ops Command panel “AI Brain” |
-| Control Centre API | `api/brain/control.js` | Health, routes, usage buffer, probes |
-| Landing draft API | `api/brain/landing-draft.js` | Site-access gated |
-| Editor caller | `manage.html` → `aiGenerate()` | Calls `/api/brain/landing-draft` (not browser→Anthropic) |
-| Tests | `tests/brain-*.test.js` | No live network; injected `fetch` |
+| Landing draft API | `api/brain/landing-draft.js` | Flag `BRAIN_LANDING_DRAFT` |
+| Theme Studio | `theme-studio.html` + `api/brain/theme-*.js` | Phase 8 — tokens only; approve → `sites.config.theme` |
+| Marketing Hub | `marketing-hub.html` + `api/brain/ads-*.js` | Phase 9 — suggest only; approve stores, no Ads mutate |
+| Tests | `tests/brain-*.test.js` | No live network; injected `fetch` / mock |
 
 ---
 
@@ -44,10 +43,10 @@
 | 3 | Prompts + context | Done |
 | 4 | Retries / flags / budgets | Done |
 | 5 | OpenAI + Gemini | Done |
-| 6 | Control Centre | Done (usage buffer in-memory only) |
+| 6 | Control Centre | Done (+ durable `ai_requests` when SQL applied) |
 | 7 | Landing draft migration | Done — **flag default OFF** |
-| 8 | Theme Studio product | Spec stub only — [21](21-THEME-STUDIO.md) |
-| 9 | Marketing Hub product | Spec stub only — [22](22-MARKETING-HUB.md) |
+| 8 | Theme Studio product | **Done** — [21](21-THEME-STUDIO.md) |
+| 9 | Marketing Hub product | **Done** — [22](22-MARKETING-HUB.md) |
 
 Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 
@@ -58,8 +57,15 @@ Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 | Env | Default | Meaning |
 |-----|---------|---------|
 | `BRAIN_PROVIDER` | `mock` | Route tasks to `mock` / `anthropic` / `openai` / `gemini` |
-| `BRAIN_LANDING_DRAFT` | unset (off) | Set `1` to enable `POST /api/brain/landing-draft` |
-| `ANTHROPIC_API_KEY` | — | Required for Anthropic adapter / legacy callers |
+| `BRAIN_LANDING_DRAFT` | unset (off) | `1` → `POST /api/brain/landing-draft` |
+| `BRAIN_IG_ENRICH` | unset (off) | `1` → IG caption enrich via Brain |
+| `BRAIN_SUBURB_INTRO` | unset (off) | `1` → suburb intros via Brain |
+| `BRAIN_HELP_ASSIST` | unset (off) | `1` → `/api/assist` via Brain |
+| `BRAIN_TRADE_PACK` | unset (off) | `1` → trade packs via Brain |
+| `BRAIN_THEME_STUDIO` | on (`1`) | `0` disables Theme Studio APIs |
+| `BRAIN_MARKETING_HUB` | on (`1`) | `0` disables Marketing Hub APIs |
+| `BRAIN_LANDING_PROVIDER` | — | Override provider for landing drafts |
+| `ANTHROPIC_API_KEY` | — | Anthropic adapter / legacy callers |
 | `OPENAI_API_KEY` | — | OpenAI adapter |
 | `GEMINI_API_KEY` | — | Gemini adapter (alias `GOOGLE_AI_API_KEY`) |
 | `BRAIN_DISABLE_TASKS` | — | CSV of task IDs to disable |
@@ -68,30 +74,31 @@ Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 
 ---
 
-## Migration matrix (what still bypasses Brain)
+## Migration matrix
 
-| Feature | Path today | Through Brain? |
-|---------|------------|----------------|
-| Landing page AI draft | `manage.html` → `POST /api/brain/landing-draft` (prompt **v3**: full SEO fields + ~1000w + FAQ/CTA) | **Yes** (when `BRAIN_LANDING_DRAFT=1`) |
-| Help assist | `api/assist.js` → Anthropic | No |
-| Suburb intros | `lib/seo/suburbIntro.js` → Anthropic | No |
-| Trade packs | `lib/trade-pack-utils.js` → Anthropic | No |
-| IG caption enrich | `lib/ig/enrich.mjs` → Anthropic | No |
-| Legacy `api/manage.html` paste | Manual Claude | No (stale twin) |
+| Feature | Path | Through Brain? |
+|---------|------|----------------|
+| Landing page AI draft | `POST /api/brain/landing-draft` | **Yes** when `BRAIN_LANDING_DRAFT=1` |
+| Help assist | `api/assist.js` | **Yes** when `BRAIN_HELP_ASSIST=1` (else Anthropic) |
+| Suburb intros | `lib/seo/suburbIntro.js` | **Yes** when `BRAIN_SUBURB_INTRO=1` (else Anthropic) |
+| Trade packs | `lib/trade-pack-utils.js` `callClaude` | **Yes** when `BRAIN_TRADE_PACK=1` (else Anthropic) |
+| IG caption enrich | `lib/ig/enrich.mjs` | **Yes** when `BRAIN_IG_ENRICH=1` (else Anthropic) |
+| Theme Studio | `/theme-studio` → `theme.*` tasks | **Yes** (product default on) |
+| Marketing Hub | `/marketing-hub` → `ads.*` tasks | **Yes** (product default on; no Ads mutate) |
 
-Order for next migrations: [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md).
+Order / rollback: [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md).
 
 ---
 
 ## Rules for AI agents working on AI features
 
 1. **New AI features call Brain** — never import provider SDKs; never call Anthropic/OpenAI/Gemini from the browser.  
-2. **Do not migrate assist / suburb / packs** without explicit approval (landing draft was the approved first migration).  
-3. **AI suggests → user approves → publish** — especially Ads and config writes.  
-4. **Control Centre is super-admin only** — never expose keys; UI shows configured + last-four only.  
-5. **Usage ledger** — Control Centre prefers durable `ai_requests` (run `db/ai_requests.sql`). Costs = actual tokens × `lib/brain/pricing.js` rates (ops forecast, not the provider invoice). Process-local buffer remains as fallback.  
-6. **Prefer `getPlatformBrain()`** in API routes so Control Centre usage recording works.  
-7. If a feature doc still says “browser calls Anthropic”, treat it as **stale** — check this file and `manage.html` / `api/brain/*`.
+2. **Migration flags default off** until soak; Theme Studio / Marketing Hub default on (set `=0` to disable).  
+3. **AI suggests → user approves → publish/config write** — Marketing Hub approve **stores** suggestions only; never mutates Google Ads.  
+4. **Control Centre / Theme Studio / Marketing Hub are super-admin** — never expose keys; Ads context is redacted.  
+5. **Usage ledger** — prefer durable `ai_requests` (run `db/ai_requests.sql`).  
+6. **Prefer `getPlatformBrain()`** in API routes.  
+7. Theme Studio writes **trade theme tokens only** (`pipe`, `hivis`, `steel`, `safety`, `lightBg`) — not freeform HTML/CSS.
 
 ---
 
@@ -100,8 +107,7 @@ Order for next migrations: [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md).
 | Need | Doc |
 |------|-----|
 | Overview | [README](README.md) |
-| Legacy inventory | [01-CURRENT-STATE-AUDIT](01-CURRENT-STATE-AUDIT.md) |
+| Theme Studio | [21-THEME-STUDIO](21-THEME-STUDIO.md) |
+| Marketing Hub | [22-MARKETING-HUB](22-MARKETING-HUB.md) |
 | How to call Brain | [19-DEVELOPER-GUIDE](19-DEVELOPER-GUIDE.md) |
-| Landing pages feature | [features/Pages](../features/Pages.md) |
-| SEO / suburb AI | [features/SEO](../features/SEO.md) |
-| Editor shell | [features/Editor](../features/Editor.md) |
+| Migration order | [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md) |
