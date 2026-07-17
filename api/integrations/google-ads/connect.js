@@ -1,16 +1,10 @@
 // GET|POST /api/integrations/google-ads/connect?siteId=&slug=
 // Starts Google Ads OAuth. Requires authenticated session.
 // Redirect URI is taken only from env (GOOGLE_ADS_REDIRECT_URI / APP_URL) — never from Host.
-//
-// Preferred client flow (avoids putting JWT in the query string / Referer):
-//   fetch(connectUrl, { headers: { Authorization: 'Bearer …', Accept: 'application/json' } })
-//   → { url } → location.href = url (Google authorize)
-//
-// Fallback: GET ?access_token=… for simple top-level navigations.
 
 const { createClient } = require('@supabase/supabase-js');
 const cfg = require('../../../lib/google-ads/config');
-const { makeState, authorizeUrl } = require('../../../lib/google-ads/oauth');
+const { makeState, authorizeUrl, reserveStateNonce } = require('../../../lib/google-ads/oauth');
 const { safeReturnPath } = require('../../../lib/app-url');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -42,6 +36,20 @@ function readBody(req) {
   });
 }
 
+async function resolveUserId(token) {
+  const anon = process.env.SUPABASE_ANON_KEY || '';
+  try {
+    const ur = await fetch(process.env.SUPABASE_URL + '/auth/v1/user', {
+      headers: { apikey: anon || process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: 'Bearer ' + token }
+    });
+    if (ur.ok) {
+      const u = await ur.json();
+      if (u && u.id) return u.id;
+    }
+  } catch (e) { /* fall through */ }
+  return null;
+}
+
 module.exports = async (req, res) => {
   const sendJson = (code, obj) => {
     res.statusCode = code;
@@ -62,6 +70,11 @@ module.exports = async (req, res) => {
         ? sendJson(503, { error: 'not_configured' })
         : sendText(503, 'Google Ads is not configured on this platform yet.');
     }
+    if (!cfg.encryptionConfigured()) {
+      return wantsJson(req)
+        ? sendJson(503, { error: 'encryption_key_required', hint: 'Set GOOGLE_ADS_OAUTH_ENCRYPTION_KEY (≥32 chars) on the server.' })
+        : sendText(503, 'GOOGLE_ADS_OAUTH_ENCRYPTION_KEY is required before connecting Google Ads.');
+    }
 
     const body = await readBody(req);
     const q = req.query || {};
@@ -71,6 +84,7 @@ module.exports = async (req, res) => {
       return wantsJson(req) ? sendJson(400, { error: 'missing_siteId' }) : sendText(400, 'Missing siteId or slug.');
     }
 
+    // Prefer Authorization header. access_token query is legacy fallback only.
     const token = bearer(req) || String(q.access_token || '').trim() || null;
     if (!token) {
       return wantsJson(req)
@@ -78,25 +92,7 @@ module.exports = async (req, res) => {
         : sendText(401, 'Sign in required to connect Google Ads.');
     }
 
-    const anon = process.env.SUPABASE_ANON_KEY || '';
-    const userClient = createClient(process.env.SUPABASE_URL, anon || process.env.SUPABASE_SERVICE_ROLE_KEY, {
-      global: { headers: { Authorization: 'Bearer ' + token } }
-    });
-    // Prefer Auth REST so we do not depend on anon key being present in every env.
-    let userId = null;
-    try {
-      const ur = await fetch(process.env.SUPABASE_URL + '/auth/v1/user', {
-        headers: { apikey: anon || process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: 'Bearer ' + token }
-      });
-      if (ur.ok) {
-        const u = await ur.json();
-        userId = u && u.id ? u.id : null;
-      }
-    } catch (e) { /* fall through */ }
-    if (!userId) {
-      const { data: userData } = await userClient.auth.getUser();
-      userId = userData && userData.user && userData.user.id;
-    }
+    const userId = await resolveUserId(token);
     if (!userId) {
       return wantsJson(req)
         ? sendJson(401, { error: 'invalid_session' })
@@ -109,14 +105,24 @@ module.exports = async (req, res) => {
     }
 
     const returnPath = safeReturnPath(body.returnPath || q.returnPath || q.return || '/settings/integrations/google-ads');
-    const state = makeState({
+    const { state, nonce } = makeState({
       siteId: siteId || null,
       slug: slug || null,
       userId,
       returnPath
     });
 
-    console.log('[gads-connect] redirect_uri=' + cfg.oauthRedirectUri() + ' siteId=' + (siteId || '') + ' userId=' + userId);
+    try {
+      await reserveStateNonce(admin, { nonce, siteId: siteId || null, userId });
+    } catch (e) {
+      console.error('gads-connect state reserve failed:', e && e.message);
+      return wantsJson(req)
+        ? sendJson(500, { error: 'state_reserve_failed' })
+        : sendText(500, 'Could not start Google Ads connection (state).');
+    }
+
+    // Log non-secret diagnostics only (never tokens / secrets / full state).
+    console.log('[gads-connect] redirect_uri_set=' + !!process.env.GOOGLE_ADS_REDIRECT_URI + ' site=' + (siteId ? 'yes' : 'no'));
 
     const url = authorizeUrl(state);
     if (wantsJson(req)) {
@@ -132,8 +138,9 @@ module.exports = async (req, res) => {
     res.writeHead(302, { Location: url });
     res.end();
   } catch (e) {
+    console.error('gads-connect error:', e && e.message);
     return wantsJson(req)
-      ? sendJson(500, { error: String(e && e.message || e) })
-      : sendText(500, 'Could not start Google Ads connection: ' + String(e && e.message || e));
+      ? sendJson(500, { error: 'connect_failed' })
+      : sendText(500, 'Could not start Google Ads connection.');
   }
 };

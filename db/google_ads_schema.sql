@@ -40,12 +40,15 @@ alter table public.visitor_sessions enable row level security;
 create table if not exists public.google_ads_connections (
   site_id                 uuid primary key references public.sites(id) on delete cascade,
   slug                    text,
-  refresh_token           text not null,          -- SENSITIVE
-  access_token            text,
+  leadpages_user_id       uuid,                   -- LeadPages user who connected
+  google_account_email    text,
+  granted_scopes          text,
+  refresh_token           text not null,          -- AES-256-GCM enc:v1:… (never plaintext)
+  access_token            text,                   -- short-lived; also encrypted; refreshed from refresh_token
   token_expires_at        timestamptz,
   customer_id             text,                   -- selected Ads account (digits only)
   account_name            text,
-  login_customer_id       text,                   -- MCC if used
+  login_customer_id       text,                   -- MCC / manager customer id when applicable
   conversion_actions      jsonb not null default '{}'::jsonb,
   -- event roles: primary | secondary | off
   event_roles             jsonb not null default '{
@@ -57,6 +60,8 @@ create table if not exists public.google_ads_connections (
     "cta_click":"secondary"
   }'::jsonb,
   tag_id                  text,                   -- AW-XXXXXXXX
+  connection_status       text not null default 'connected', -- connected | disconnected | error
+  disconnected_at         timestamptz,
   enabled                 boolean not null default true,
   last_sync_at            timestamptz,
   last_sync_error         text,
@@ -65,6 +70,16 @@ create table if not exists public.google_ads_connections (
   connected_at            timestamptz not null default now(),
   updated_at              timestamptz not null default now()
 );
+
+create table if not exists public.google_ads_oauth_states (
+  nonce               text primary key,
+  site_id             uuid,
+  leadpages_user_id   uuid,
+  expires_at          timestamptz not null,
+  used_at             timestamptz,
+  created_at          timestamptz not null default now()
+);
+alter table public.google_ads_oauth_states enable row level security;
 
 comment on table public.google_ads_connections is
   'Per-site Google Ads OAuth credentials and conversion settings. Tokens are sensitive; service_role only.';

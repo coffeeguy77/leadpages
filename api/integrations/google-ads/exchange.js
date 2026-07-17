@@ -1,7 +1,15 @@
 // POST /api/integrations/google-ads/exchange
+// Validates signed+one-time state, exchanges code server-side, stores encrypted refresh token.
+// Never returns tokens to the browser.
+
 const { createClient } = require('@supabase/supabase-js');
-const { parseState, exchangeCode } = require('../../../lib/google-ads/oauth');
-const { listAccessibleCustomers, getCustomer, ensureAccessToken } = require('../../../lib/google-ads/client');
+const {
+  parseState,
+  consumeStateNonce,
+  exchangeCode,
+  fetchGoogleAccountEmail
+} = require('../../../lib/google-ads/oauth');
+const { listAccessibleCustomers, getCustomer } = require('../../../lib/google-ads/client');
 const { encryptSecret } = require('../../../lib/google-ads/token-crypto');
 const { safeReturnPath } = require('../../../lib/app-url');
 const cfg = require('../../../lib/google-ads/config');
@@ -30,12 +38,22 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return json(405, { error: 'method' });
 
   try {
+    if (!cfg.encryptionConfigured()) {
+      return json(503, { error: 'encryption_key_required' });
+    }
+
     const body = await readBody(req);
     const state = parseState(body.state);
     if (!state) return json(400, { error: 'invalid_or_expired_state' });
     if (!body.code) return json(400, { error: 'missing_code' });
     if (!state.userId) return json(400, { error: 'missing_user_in_state' });
+    if (!state.n) return json(400, { error: 'missing_nonce' });
 
+    // Replay protection — nonce must exist, be unexpired, and unused.
+    const consumed = await consumeStateNonce(admin, state.n);
+    if (!consumed) return json(400, { error: 'state_already_used_or_expired' });
+
+    // Site identity comes ONLY from signed state (never from callback query params).
     let siteId = state.siteId || null;
     let slug = state.slug || null;
     if (siteId) {
@@ -51,18 +69,49 @@ module.exports = async (req, res) => {
     }
 
     // Token exchange MUST use the identical redirect_uri as authorize.
-    const tok = await exchangeCode(body.code);
-    if (!tok.refresh_token) {
-      return json(400, { error: 'no_refresh_token', hint: 'Re-connect and approve offline access.' });
+    let tok;
+    try {
+      tok = await exchangeCode(body.code);
+    } catch (e) {
+      console.error('google-ads exchange token error:', e && e.message);
+      return json(400, { error: 'token_exchange_failed' });
     }
 
+    if (!tok.refresh_token) {
+      return json(400, {
+        error: 'no_refresh_token',
+        hint: 'Google did not return a refresh token. Re-connect and approve offline access (prompt=consent).'
+      });
+    }
+
+    let googleEmail = null;
+    try {
+      googleEmail = await fetchGoogleAccountEmail(tok.access_token);
+    } catch (e) { /* optional */ }
+
+    const grantedScopes = tok.scope || cfg.scopes().join(' ');
     const exp = new Date(Date.now() + ((tok.expires_in || 3600) * 1000)).toISOString();
+
+    let encRefresh, encAccess;
+    try {
+      encRefresh = encryptSecret(tok.refresh_token);
+      encAccess = tok.access_token ? encryptSecret(tok.access_token) : null;
+    } catch (e) {
+      console.error('google-ads encrypt failed:', e && e.message);
+      return json(503, { error: 'encryption_failed' });
+    }
+
     const row = {
       site_id: siteId,
       slug,
-      refresh_token: encryptSecret(tok.refresh_token),
-      access_token: tok.access_token ? encryptSecret(tok.access_token) : null,
+      leadpages_user_id: state.userId,
+      google_account_email: googleEmail,
+      granted_scopes: grantedScopes,
+      refresh_token: encRefresh,
+      access_token: encAccess,
       token_expires_at: exp,
+      connection_status: 'connected',
+      disconnected_at: null,
       enabled: true,
       connected_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -70,32 +119,35 @@ module.exports = async (req, res) => {
 
     const { data: prev } = await admin
       .from('google_ads_connections')
-      .select('customer_id,account_name,event_roles,conversion_actions')
+      .select('customer_id,account_name,login_customer_id,event_roles,conversion_actions')
       .eq('site_id', siteId)
       .maybeSingle();
     if (prev) {
       row.customer_id = prev.customer_id;
       row.account_name = prev.account_name;
+      row.login_customer_id = prev.login_customer_id;
       if (prev.event_roles) row.event_roles = prev.event_roles;
       if (prev.conversion_actions) row.conversion_actions = prev.conversion_actions;
     }
 
     const { error } = await admin.from('google_ads_connections').upsert(row, { onConflict: 'site_id' });
-    if (error) return json(500, { error: error.message });
+    if (error) {
+      console.error('google-ads upsert:', error.message);
+      return json(500, { error: 'store_failed' });
+    }
 
+    // List accounts for the settings UI — never include tokens in the response.
     let accounts = [];
     try {
-      const conn = Object.assign({}, row, {
-        refresh_token: tok.refresh_token,
-        access_token: tok.access_token || null
-      });
-      const access = await ensureAccessToken(admin, conn);
-      const ids = await listAccessibleCustomers(access);
-      for (let i = 0; i < Math.min(ids.length, 25); i++) {
-        try {
-          accounts.push(await getCustomer(access, ids[i], ids[i]));
-        } catch (e) {
-          accounts.push({ id: ids[i], name: ids[i] });
+      const access = tok.access_token;
+      if (access) {
+        const ids = await listAccessibleCustomers(access);
+        for (let i = 0; i < Math.min(ids.length, 25); i++) {
+          try {
+            accounts.push(await getCustomer(access, ids[i], ids[i]));
+          } catch (e) {
+            accounts.push({ id: ids[i], name: ids[i] });
+          }
         }
       }
     } catch (e) {
@@ -107,12 +159,13 @@ module.exports = async (req, res) => {
       siteId,
       slug,
       userId: state.userId,
+      googleAccountEmail: googleEmail,
       returnPath: safeReturnPath(state.returnPath),
-      redirectUriUsed: cfg.oauthRedirectUri(),
       accounts
+      // intentionally no tokens, no redirectUriUsed with secrets
     });
   } catch (e) {
     console.error('google-ads exchange:', e && e.message);
-    return json(500, { error: (e && e.message) || 'exchange_failed' });
+    return json(500, { error: 'exchange_failed' });
   }
 };

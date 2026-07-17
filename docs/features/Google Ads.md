@@ -44,11 +44,13 @@ GOOGLE_ADS_REDIRECT_URI=https://app.leadpages.com.au/api/integrations/google-ads
 GOOGLE_ADS_CLIENT_ID=
 GOOGLE_ADS_CLIENT_SECRET=
 GOOGLE_ADS_DEVELOPER_TOKEN=
-GOOGLE_ADS_LOGIN_CUSTOMER_ID=
-GOOGLE_ADS_OAUTH_ENCRYPTION_KEY=
+GOOGLE_ADS_LOGIN_CUSTOMER_ID=          # optional MCC
+GOOGLE_ADS_OAUTH_ENCRYPTION_KEY=       # required ≥32 chars — AES-256-GCM; plaintext refused
 ```
 
 Optional: `GOOGLE_ADS_STATE_SECRET` (defaults to encryption key / client secret).
+
+`GOOGLE_ADS_OAUTH_ENCRYPTION_KEY` is **required** before Connect succeeds. Refresh tokens are stored as `enc:v1:` AES-256-GCM blobs in `google_ads_connections.refresh_token` (IV + auth tag + ciphertext). Key rotation is not supported in v1 — re-connect after a key change.
 
 **Do not** expose secrets via `NEXT_PUBLIC_*` or client-side code. The Supabase **anon** key may appear in HTML (public by design); OAuth client secret, developer token, and encryption key must stay server-only.
 
@@ -109,11 +111,16 @@ Compatibility shims remain at `/api/google-ads/connect|callback|exchange` → in
 
 ## OAuth state and return location
 
-Signed, expiring state (`makeState` / `parseState`) includes:
+Signed, short-lived state (`makeState` / `parseState`, 15 minutes) includes:
 
 - `siteId`, `slug`
 - `userId` (from authenticated session at connect time)
 - `returnPath` (allowlisted only)
+- random one-time nonce `n` (reserved in `google_ads_oauth_states`, consumed on exchange — replay rejected)
+
+Authorize requests: `response_type=code`, `access_type=offline`, `include_granted_scopes=true`, `prompt=consent`, scopes `openid` + userinfo.email/profile + adwords.
+
+Site/user identity for storage comes **only** from signed state (not raw callback query params).
 
 After successful connection, users are redirected to:
 
@@ -168,11 +175,13 @@ See prior sections in git history / PR #328 for conversion roles, metrics, and A
 
 ## Ops checklist
 
-1. Run `db/google_ads_schema.sql` in Supabase (if not already)  
-2. Attach domain `app.leadpages.com.au` to the Vercel production project  
-3. Set Production env vars listed above  
-4. Configure Google Cloud origins/redirect exactly as listed  
-5. Connect via `/settings/integrations/google-ads`  
-6. Confirm callback hits `/api/integrations/google-ads/callback` (not Host-derived)  
+1. Run `db/google_ads_schema.sql` in Supabase (new installs)  
+2. For existing DBs, also run `db/google_ads_oauth_hardening.sql`  
+3. Attach domain `app.leadpages.com.au` to the Vercel production project  
+4. Set Production env vars listed above (encryption key required)  
+5. Configure Google Cloud origins/redirect exactly as listed  
+6. Connect via `/settings/integrations/google-ads`  
+7. Confirm callback hits `/api/integrations/google-ads/callback` (not Host-derived)  
+8. After enabling encryption, re-connect any site that previously stored plaintext tokens  
 
-*Last updated: July 2026 — app.leadpages.com.au OAuth domain migration.*
+*Last updated: July 2026 — OAuth hardening (scopes, nonce replay, mandatory encryption, revoke on disconnect).*
