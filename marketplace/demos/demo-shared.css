@@ -1,5 +1,5 @@
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:#F8F7F5;overflow-x:hidden}
+html,body{background:#F8F7F5;overflow-x:clip}
 
 /* ============================================================
    DESIGN TOKENS — "charcoal & hi-vis" trade theme
@@ -52,12 +52,15 @@ a{color:inherit}
 .emerg{background:var(--emerg-bg,var(--hivis));color:var(--emerg-fg,#fff);text-align:center;font-family:"Barlow";font-weight:700;
   font-size:14.5px;padding:9px 16px;letter-spacing:.01em}
 .emerg a{color:inherit;text-decoration:none;border-bottom:2px solid rgba(255,255,255,.6)}
-.emerg.emerg-transparent{background:transparent;--emerg-bg:transparent}
-.emerg.emerg-sticky{position:sticky;top:var(--promo-float-h,0px);z-index:61}
+.emerg.emerg-transparent,.emerg.emerg-transparent[style]{background:transparent!important;--emerg-bg:transparent}
+.emerg.emerg-sticky{position:sticky!important;top:var(--promo-float-h,0px);z-index:61}
 
 /* header — top offset stacks under sticky top bar / promo float */
-header.site{position:sticky;top:var(--emerg-sticky-h,0px);z-index:60;background:var(--steel-900);color:#fff}
-.bar{display:flex;align-items:center;justify-content:space-between;height:70px}header.site .head-nav{display:flex;align-items:center;gap:2px 4px;flex-wrap:wrap;min-width:0}header.site .hn-link{display:inline-flex;align-items:center;gap:6px;color:#fff;text-decoration:none;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.03em;padding:6px 10px;border-radius:8px;opacity:.85;transition:opacity .15s ease,background .15s ease;white-space:nowrap}header.site .hn-link:hover{opacity:1;background:rgba(255,255,255,.12)}header.site .hn-link .lp-ic{width:17px;height:17px;flex:0 0 auto}header.site .head-nav.nm-icononly .hn-txt{display:none}header.site .bar.hnav-left,header.site .bar.hnav-center,header.site .bar.hnav-right{justify-content:flex-start}header.site .bar.hnav-left a.brand{margin-right:18px}header.site .bar.hnav-left .head-call{margin-left:auto}header.site .bar.hnav-right .head-nav{margin-right:auto}header.site .bar.hnav-center .head-nav-l{flex:1;justify-content:flex-end}header.site .bar.hnav-center .head-nav-r{flex:1;justify-content:flex-start}header.site .bar.hnav-center .head-call{margin-left:14px}@media(max-width:900px){header.site .head-nav{display:none}}
+header.site{position:sticky;top:var(--emerg-sticky-h,0px);z-index:60;background:var(--hdr-bg,var(--steel-900));color:#fff;overflow:visible;isolation:isolate}
+header.site.lp-st-top::before,header.site.lp-st-bot::after{content:"";position:absolute;left:0;right:0;z-index:6;pointer-events:none}
+header.site.lp-st-top::before{top:0;height:var(--hdr-st-top-w,0);background:var(--hdr-st-top-c,#fff)}
+header.site.lp-st-bot::after{bottom:0;height:var(--hdr-st-bot-w,0);background:var(--hdr-st-bot-c,#fff)}
+.bar{display:flex;align-items:var(--hdr-logo-align,center);justify-content:space-between;height:auto;min-height:var(--hdr-bar-h,70px);overflow:visible}header.site .head-nav{display:flex;align-items:center;gap:2px 4px;flex-wrap:wrap;min-width:0}header.site .hn-link{display:inline-flex;align-items:center;gap:6px;color:#fff;text-decoration:none;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.03em;padding:6px 10px;border-radius:8px;opacity:.85;transition:opacity .15s ease,background .15s ease;white-space:nowrap}header.site .hn-link:hover{opacity:1;background:rgba(255,255,255,.12)}header.site .hn-link .lp-ic{width:17px;height:17px;flex:0 0 auto}header.site .head-nav.nm-icononly .hn-txt{display:none}header.site .bar.hnav-left,header.site .bar.hnav-center,header.site .bar.hnav-right{justify-content:flex-start}header.site .bar.hnav-left a.brand{margin-right:18px}header.site .bar.hnav-left .head-call{margin-left:auto}header.site .bar.hnav-right .head-nav{margin-right:auto}header.site .bar.hnav-center .head-nav-l{flex:1;justify-content:flex-end}header.site .bar.hnav-center .head-nav-r{flex:1;justify-content:flex-start}header.site .bar.hnav-center .head-call{margin-left:14px}@media(max-width:900px){header.site .head-nav{display:none}}
 .brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:#fff}
 .brand .mark{width:38px;height:38px;border-radius:9px;background:var(--pipe);display:grid;place-items:center;flex:none;
   font-family:"Barlow Condensed";font-weight:800;font-size:22px;color:#fff}
