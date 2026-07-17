@@ -107,15 +107,13 @@
 
 ## Phase 8 — AI Theme Studio
 
-**Status: Colour MVP shipped; V2 Phases 1–2 foundations shipped (library only).**
+**Status: V2 product shipped at `/theme-studio-v2`; colour MVP retargeted as AI Colour Assistant.**
 
 | Item | Detail |
 |------|--------|
-| Colour MVP | `theme.generate` / `theme.refine` → `/theme-studio` (to become **AI Colour Assistant**) |
-| V2 Phases 1–2 | Foundation registry, concept schema, validator, adapter — [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md) |
-| Full vision | Complete website design system — **not** colour-only |
+| AI Colour Assistant | `theme.generate` / `theme.refine` → `/theme-studio` |
+| Theme Studio V2 | `/theme-studio-v2` + `api/theme-studio/*` — [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md) |
 | Canonical plan | [THEME-STUDIO-IMPLEMENTATION-AUDIT](THEME-STUDIO-IMPLEMENTATION-AUDIT.md) |
-| Gate | Stop before Phase 3 (UI / drafts / previews / apply) without further approval |
 
 ---
 
