@@ -1,7 +1,7 @@
 # 04 — Provider Adapters
 
 **Document:** `AI/04-PROVIDER-ADAPTERS`  
-**Status:** Proposed (interfaces only — no implementation)  
+**Status:** Partial — mock + Anthropic implemented in `lib/brain/adapters/`  
 **Prerequisites:** [03-TARGET-ARCHITECTURE](03-TARGET-ARCHITECTURE.md)
 
 ---

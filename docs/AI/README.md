@@ -40,11 +40,11 @@ LeadPages is evolving from a website builder into an AI-powered business platfor
 | Repository audit | Complete |
 | Architecture & contracts | Complete in this folder |
 | Phase 1 foundation (`lib/brain`) | **Complete** — mock adapter, gateway, router, schema validation, tests |
-| Real provider adapters (Anthropic, …) | **Not started** (Phase 2) |
+| Real provider adapters (Anthropic, …) | **Phase 2 complete** — Anthropic Messages API adapter (raw `fetch`); OpenAI/Gemini later |
 | Feature migrations | **Not started** (Phase 7+) |
 | Theme Studio / Marketing Hub product builds | **Out of scope** (depend on Brain later) |
 
-**Phase:** Phase 1 foundation shipped in `lib/brain/`. Next: Phase 2 Anthropic adapter (owner-gated).
+**Phase:** Phase 2 Anthropic adapter shipped. Default routes stay on **mock** (CI-safe). Set `BRAIN_PROVIDER=anthropic` to route tasks to Claude. Next: Phase 3 prompt registry + context resolver (owner-gated).
 
 ---
 
@@ -107,16 +107,19 @@ Detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 
 ---
 
-## Runtime entry (Phase 1)
+## Runtime entry (Phase 1–2)
 
 ```js
 const { createBrain } = require('../../lib/brain');
-const brain = createBrain(); // mock provider — no API keys
+const brain = createBrain(); // mock routes by default — no API keys
 const result = await brain.generate({ taskId: 'help.answer', input: 'How do I publish?' });
+
+// Opt-in Anthropic routing (server-side key required):
+// BRAIN_PROVIDER=anthropic ANTHROPIC_API_KEY=...
 ```
 
-Tests: `tests/brain-phase1.test.js` (no network).
+Tests: `tests/brain-phase1.test.js`, `tests/brain-anthropic.test.js` (injected `fetch` — no live network).
 
 ## Notice
 
-Phase 0 was documentation-only. Phase 1 adds **`lib/brain`** with a **mock** provider only — no Anthropic/OpenAI SDKs, no feature migrations, no Control Centre, no database migrations.
+Phase 0 was documentation-only. Phase 1–2 add **`lib/brain`** with mock + Anthropic adapters (raw `fetch`, no SDKs). No feature migrations, no Control Centre, no database migrations yet.

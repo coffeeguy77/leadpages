@@ -33,15 +33,16 @@
 
 ---
 
-## Phase 2 — First provider
+## Phase 2 — First provider ✅
 
 | | |
 |--|--|
 | Objectives | Anthropic adapter (matches current production) |
-| Deliverables | Normalised usage/errors; structured helper; health check |
+| Deliverables | `lib/brain/adapters/anthropic.js`; normalised usage/errors; structured JSON via prompt+parse; health check; `BRAIN_PROVIDER` routing |
 | Dependencies | Phase 1 |
-| Gate | Contract tests with recorded fixtures; staging key |
-| Excluded | OpenAI/Gemini |
+| Gate | Contract tests with injected `fetch` fixtures (`tests/brain-anthropic.test.js`) |
+| Excluded | OpenAI/Gemini; feature migrations; live CI calls to Anthropic |
+| Status | **Complete** — raw Messages API adapter; default routes remain mock unless `BRAIN_PROVIDER=anthropic` |
 
 **Recommended first provider:** Anthropic — sole verified production provider today.
 
