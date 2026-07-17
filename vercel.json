@@ -201,5 +201,24 @@
       "source": "/:slug",
       "destination": "/api/render?slug=:slug"
     }
+  ],
+  "headers": [
+    {
+      "source": "/googlecR5yH7wsUUmO8hzGE-VVJFv91dYvjDqyO4TeL-xXS28.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300"
+        },
+        {
+          "key": "Content-Type",
+          "value": "text/html; charset=utf-8"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    }
   ]
 }
