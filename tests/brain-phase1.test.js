@@ -1,0 +1,283 @@
+'use strict';
+
+const { describe, it, beforeEach } = require('node:test');
+const assert = require('node:assert/strict');
+const {
+  createBrain,
+  resetDefaultBrain,
+  getDefaultBrain,
+  defaultBrainConfig,
+  validateBrainConfig,
+  createMockAdapter,
+  BrainError,
+  CODES,
+  newCorrelationId,
+  ensureCorrelationId,
+  validateAgainstSchema
+} = require('../lib/brain');
+
+describe('LeadPages Brain Phase 1', () => {
+  beforeEach(() => {
+    resetDefaultBrain();
+  });
+
+  describe('ids', () => {
+    it('creates correlation ids', () => {
+      const a = newCorrelationId();
+      const b = newCorrelationId();
+      assert.ok(a.length >= 8);
+      assert.notEqual(a, b);
+    });
+
+    it('preserves provided correlation ids', () => {
+      assert.equal(ensureCorrelationId('abc-123'), 'abc-123');
+      assert.ok(ensureCorrelationId('').length >= 8);
+    });
+  });
+
+  describe('config', () => {
+    it('validates default config', () => {
+      const cfg = validateBrainConfig(defaultBrainConfig());
+      assert.ok(cfg.routes['content.landing_draft']);
+      assert.equal(cfg.defaultProvider, 'mock');
+    });
+
+    it('rejects routes pointing at unknown models', () => {
+      assert.throws(
+        () => validateBrainConfig({
+          models: { 'mock:default': { provider: 'mock', model: 'mock-default' } },
+          routes: {
+            x: { taskId: 'x', primary: { provider: 'mock', model: 'nope' } }
+          }
+        }),
+        (err) => err instanceof BrainError && err.code === CODES.config_invalid
+      );
+    });
+  });
+
+  describe('schema', () => {
+    it('validates required object fields', () => {
+      const schema = {
+        type: 'object',
+        required: ['title', 'bodyMarkdown'],
+        properties: {
+          title: { type: 'string' },
+          bodyMarkdown: { type: 'string' }
+        }
+      };
+      assert.equal(validateAgainstSchema(schema, { title: 'A', bodyMarkdown: 'B' }).ok, true);
+      assert.equal(validateAgainstSchema(schema, { title: 'A' }).ok, false);
+    });
+  });
+
+  describe('mock adapter', () => {
+    it('returns text without network', async () => {
+      const adapter = createMockAdapter();
+      const result = await adapter.generate({
+        correlationId: 't1',
+        messages: [{ role: 'user', content: 'hello' }],
+        model: { provider: 'mock', model: 'mock-default' }
+      });
+      assert.match(result.text, /MOCK:hello/);
+      assert.ok(result.usage.inputTokens >= 1);
+      assert.equal(result.model.provider, 'mock');
+    });
+
+    it('builds structured fixtures from schema', async () => {
+      const adapter = createMockAdapter();
+      const schema = {
+        type: 'object',
+        required: ['title', 'bodyMarkdown'],
+        properties: {
+          title: { type: 'string' },
+          bodyMarkdown: { type: 'string' }
+        }
+      };
+      const result = await adapter.generate({
+        correlationId: 't2',
+        messages: [{ role: 'user', content: 'Plumber Canberra' }],
+        model: { provider: 'mock', model: 'mock-default' },
+        responseSchema: schema
+      });
+      assert.equal(typeof result.json.title, 'string');
+      assert.match(String(result.json.bodyMarkdown), /Mock draft/);
+    });
+  });
+
+  describe('gateway', () => {
+    it('generate returns provider-independent envelope', async () => {
+      const brain = createBrain();
+      const res = await brain.generate({
+        taskId: 'seo.suburb_intro',
+        siteId: 'site-1',
+        input: { suburb: 'Belconnen', businessName: 'Test Plumbing' }
+      });
+      assert.equal(res.ok, true);
+      assert.ok(res.correlationId);
+      assert.equal(res.taskId, 'seo.suburb_intro');
+      assert.equal(res.model.provider, 'mock');
+      assert.ok(res.output.text);
+      assert.equal(typeof res.usage.costUsdEstimate, 'number');
+    });
+
+    it('generateStructured validates schema', async () => {
+      const brain = createBrain();
+      const schema = {
+        type: 'object',
+        required: ['title', 'bodyMarkdown'],
+        properties: {
+          title: { type: 'string' },
+          bodyMarkdown: { type: 'string' }
+        }
+      };
+      const res = await brain.generateStructured({
+        taskId: 'content.landing_draft',
+        responseSchema: schema,
+        input: { brief: 'Earthmoving repairs Canberra' }
+      });
+      assert.equal(res.ok, true);
+      assert.equal(typeof res.output.title, 'string');
+      assert.equal(typeof res.output.bodyMarkdown, 'string');
+    });
+
+    it('fails closed when structured schema missing', async () => {
+      const brain = createBrain();
+      const res = await brain.generateStructured({
+        taskId: 'content.landing_draft',
+        input: { brief: 'x' }
+      });
+      assert.equal(res.ok, false);
+      assert.equal(res.error.code, CODES.bad_request);
+    });
+
+    it('fails closed on schema mismatch from fixture', async () => {
+      const brain = createBrain({
+        mock: { structuredFixture: { wrong: true } }
+      });
+      const res = await brain.generateStructured({
+        taskId: 'ig.caption_enrich',
+        responseSchema: {
+          type: 'object',
+          required: ['title', 'service', 'location'],
+          properties: {
+            title: { type: 'string' },
+            service: { type: 'string' },
+            location: { type: 'string' }
+          }
+        },
+        input: { caption: 'New kitchen in Braddon' }
+      });
+      assert.equal(res.ok, false);
+      assert.equal(res.error.code, CODES.schema_mismatch);
+    });
+
+    it('records usage callbacks', async () => {
+      const events = [];
+      const brain = createBrain({ onUsage: (e) => events.push(e) });
+      await brain.generate({ taskId: 'help.answer', input: 'How do I publish?' });
+      assert.equal(events.length, 1);
+      assert.equal(events[0].success, true);
+      assert.equal(events[0].taskId, 'help.answer');
+    });
+
+    it('uses fallback adapter when primary fails', async () => {
+      const brain = createBrain({
+        config: {
+          models: {
+            a: { provider: 'mock', model: 'mock-default' },
+            b: { provider: 'mock', model: 'mock-fast' }
+          },
+          routes: {
+            'generic.fast': {
+              taskId: 'generic.fast',
+              primary: { provider: 'mock', model: 'mock-default' },
+              fallback: [{ provider: 'mock', model: 'mock-fast' }]
+            }
+          }
+        },
+        adapters: {
+          mock: createMockAdapter({
+            failWith: new BrainError(CODES.provider_unavailable, 'boom', { retryable: true })
+          })
+        }
+      });
+      // Same adapter instance fails always — fallback still hits same failing mock.
+      // Use dual adapters map with a working secondary id by swapping registry to same provider.
+      // Instead: primary fail once pattern via custom adapter.
+      let calls = 0;
+      const flaky = {
+        id: 'mock',
+        capabilities: () => new Set(['text']),
+        healthCheck: async () => ({ ok: true }),
+        async generate(req) {
+          calls += 1;
+          if (calls === 1) {
+            throw new BrainError(CODES.provider_unavailable, 'down', { retryable: true });
+          }
+          return {
+            text: 'recovered',
+            usage: { inputTokens: 1, outputTokens: 1 },
+            latencyMs: 1,
+            model: req.model
+          };
+        }
+      };
+      const brain2 = createBrain({
+        config: {
+          models: {
+            a: { provider: 'mock', model: 'mock-default' },
+            b: { provider: 'mock', model: 'mock-fast' }
+          },
+          routes: {
+            'generic.fast': {
+              taskId: 'generic.fast',
+              primary: { provider: 'mock', model: 'mock-default' },
+              fallback: [{ provider: 'mock', model: 'mock-fast' }]
+            }
+          }
+        },
+        adapters: { mock: flaky }
+      });
+      const res = await brain2.generate({ taskId: 'generic.fast', input: 'ping' });
+      assert.equal(res.ok, true);
+      assert.equal(res.output.text, 'recovered');
+      assert.equal(res.routing.fallbackUsed, true);
+      assert.equal(calls, 2);
+      void brain;
+    });
+
+    it('rejects unknown tasks', async () => {
+      const brain = createBrain();
+      const res = await brain.generate({ taskId: 'not.a.task', input: 'x' });
+      assert.equal(res.ok, false);
+      assert.equal(res.error.code, CODES.bad_request);
+    });
+
+    it('lists models and routing decisions', () => {
+      const brain = getDefaultBrain();
+      const models = brain.listModels();
+      assert.ok(models.some((m) => m.provider === 'mock'));
+      const decision = brain.getRoutingDecision('pack.trade_generate');
+      assert.equal(decision.structured, true);
+      assert.ok(decision.maxTokens >= 4096);
+    });
+
+    it('health-checks mock provider', async () => {
+      const brain = createBrain();
+      const health = await brain.testProviderConnection('mock');
+      assert.equal(health.ok, true);
+    });
+
+    it('does not require provider API keys', async () => {
+      const saved = process.env.ANTHROPIC_API_KEY;
+      delete process.env.ANTHROPIC_API_KEY;
+      try {
+        const brain = createBrain();
+        const res = await brain.generate({ taskId: 'generic.reason', input: 'ok' });
+        assert.equal(res.ok, true);
+      } finally {
+        if (saved !== undefined) process.env.ANTHROPIC_API_KEY = saved;
+      }
+    });
+  });
+});

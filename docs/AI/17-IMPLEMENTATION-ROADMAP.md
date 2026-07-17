@@ -19,16 +19,17 @@
 
 ---
 
-## Phase 1 — Core foundation
+## Phase 1 — Core foundation ✅
 
 | | |
 |--|--|
 | Objectives | Internal interfaces, mock provider, errors, request IDs, config validation, tests |
-| Deliverables | `lib/brain` skeleton (names TBD), mock adapter, unit tests |
+| Deliverables | `lib/brain/*`, mock adapter, `tests/brain-phase1.test.js` |
 | Dependencies | Phase 0 approval |
 | Risks | Overengineering — keep thin |
 | Gate | Tests green; no provider keys required in CI |
 | Excluded | Real Anthropic calls; Control Centre UI |
+| Status | **Complete** — `createBrain()` / `generate` / `generateStructured` with mock adapter |
 
 ---
 

@@ -37,13 +37,14 @@ LeadPages is evolving from a website builder into an AI-powered business platfor
 
 | Item | Status |
 |------|--------|
-| Repository audit | Complete (docs phase) |
-| Architecture & contracts | Proposed in this folder |
-| Provider SDKs / Brain runtime | **Not started** |
-| Migrations / new API routes | **Not started** |
+| Repository audit | Complete |
+| Architecture & contracts | Complete in this folder |
+| Phase 1 foundation (`lib/brain`) | **Complete** — mock adapter, gateway, router, schema validation, tests |
+| Real provider adapters (Anthropic, …) | **Not started** (Phase 2) |
+| Feature migrations | **Not started** (Phase 7+) |
 | Theme Studio / Marketing Hub product builds | **Out of scope** (depend on Brain later) |
 
-**Phase:** Phase 0 — Documentation and approval. Stop here until owners approve Phase 1.
+**Phase:** Phase 1 foundation shipped in `lib/brain/`. Next: Phase 2 Anthropic adapter (owner-gated).
 
 ---
 
@@ -106,6 +107,16 @@ Detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 
 ---
 
+## Runtime entry (Phase 1)
+
+```js
+const { createBrain } = require('../../lib/brain');
+const brain = createBrain(); // mock provider — no API keys
+const result = await brain.generate({ taskId: 'help.answer', input: 'How do I publish?' });
+```
+
+Tests: `tests/brain-phase1.test.js` (no network).
+
 ## Notice
 
-This folder is **design documentation only**. No provider SDKs, Brain API routes, database migrations, environment variables, or production behaviour changes were introduced as part of this phase.
+Phase 0 was documentation-only. Phase 1 adds **`lib/brain`** with a **mock** provider only — no Anthropic/OpenAI SDKs, no feature migrations, no Control Centre, no database migrations.
