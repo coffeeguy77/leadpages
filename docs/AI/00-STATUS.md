@@ -26,7 +26,8 @@
 | Prompts | `lib/brain/prompts/` | File-based registry; `{{var}}` render |
 | Context slices | `lib/brain/context/` | Includes `ads.summary` (redacted; no OAuth tokens) |
 | Control Centre UI | `brain-admin.html` → `/brain-admin` | Super-admin; Ops Command panel “AI Brain” |
-| Landing draft API | `api/brain/landing-draft.js` | Flag `BRAIN_LANDING_DRAFT` |
+| Durable Brain settings | `db/brain_settings.sql` + `lib/brain/settings-store.js` | Landing provider saved from Control Centre (no env var) |
+| Landing draft API | `api/brain/landing-draft.js` | Flag `BRAIN_LANDING_DRAFT`; loads saved provider |
 | Theme Studio | `theme-studio.html` + `api/brain/theme-*.js` | Phase 8 — tokens only; approve → `sites.config.theme` |
 | Marketing Hub | `marketing-hub.html` + `api/brain/ads-*.js` | Phase 9 — suggest only; approve stores, no Ads mutate |
 | Tests | `tests/brain-*.test.js` | No live network; injected `fetch` / mock |
