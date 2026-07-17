@@ -72,11 +72,20 @@ describe('Phase 7 — landing draft flag', () => {
   });
 
   it('generates structured landing draft via prompt registry', async () => {
+    const { LANDING_DRAFT_SCHEMA } = require('../lib/brain/landing-compose');
     const brain = createBrain({
       mock: {
         structuredFixture: {
-          title: 'Roofing Canberra',
-          bodyMarkdown: '## Local roofers\n\nCall today.',
+          primaryKeyword: 'Roofing Canberra',
+          secondaryKeywords: ['Roof repairs Canberra'],
+          title: 'Roofing Canberra | Canberra Roofs',
+          slug: 'roofing-canberra',
+          meta: 'Canberra Roofs provides roofing and repairs across Canberra.',
+          h1: 'Roofing Canberra',
+          bodyMarkdown: '## Local roofers\n\nCall today for a free quote.',
+          faqs: [{ question: 'Do you re-roof?', answer: 'Yes, full re-roofing.' }],
+          ctaHeadline: 'Get in touch',
+          ctaBody: 'Request a free quote today.',
         },
       },
     });
@@ -97,30 +106,27 @@ describe('Phase 7 — landing draft flag', () => {
       actor: { userId: 'u1', role: 'client' },
       contextSlices: ['site.identity', 'site.brand', 'site.services'],
       input: { brief: 'Family roofing business' },
-      responseSchema: {
-        type: 'object',
-        required: ['title', 'bodyMarkdown'],
-        properties: {
-          title: { type: 'string' },
-          bodyMarkdown: { type: 'string' },
-        },
-      },
+      responseSchema: LANDING_DRAFT_SCHEMA,
     });
     assert.equal(res.ok, true);
-    assert.equal(res.output.title, 'Roofing Canberra');
+    assert.equal(res.output.title, 'Roofing Canberra | Canberra Roofs');
+    assert.equal(res.output.slug, 'roofing-canberra');
+    assert.equal(res.output.h1, 'Roofing Canberra');
     assert.match(res.output.bodyMarkdown, /Local roofers/);
     assert.equal(res.prompt.promptId, 'content.landing_draft');
-    assert.equal(res.prompt.version, 2);
+    assert.equal(res.prompt.version, 3);
   });
 
-  it('active landing draft prompt is SEO-first and bans emoji', () => {
+  it('active landing draft prompt is full-page SEO v3', () => {
     const { createPromptRegistry } = require('../lib/brain');
     const registry = createPromptRegistry();
     const def = registry.get('content.landing_draft');
-    assert.equal(def.version, 2);
+    assert.equal(def.version, 3);
     assert.equal(def.status, 'active');
-    assert.match(def.system, /SEO is the #1 goal/i);
-    assert.match(def.system, /NEVER use emojis/i);
+    assert.match(def.system, /primaryKeyword/i);
+    assert.match(def.system, /900–1100 words|900-1100 words/i);
+    assert.match(def.system, /faqs/i);
+    assert.match(def.system, /no emoji/i);
     assert.match(def.system, /1–2% density|1-2% density/i);
   });
 });

@@ -246,7 +246,7 @@ describe('LeadPages Brain Phase 3 — gateway integration', () => {
     });
 
     assert.equal(textRes.ok, true);
-    assert.equal(textRes.prompt.version, 2);
+    assert.equal(textRes.prompt.version, 3);
     assert.ok(textRes.context);
     assert.deepEqual(textRes.context.slices, [
       'site.identity',
