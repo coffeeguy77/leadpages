@@ -3,7 +3,7 @@
 /**
  * AI Control Centre API — super-admin only.
  * GET  /api/brain/control — status (providers, routes, usage, flags)
- * POST /api/brain/control — actions: health, disable_task, enable_task, test_generate
+ * POST /api/brain/control — actions: health, disable_task, enable_task, test_generate, usage_probe
  *
  * Secrets: never echoed. Health returns configured yes/no only.
  */
@@ -11,7 +11,11 @@
 const { requireSuper, readBody, json } = require('../billing/_admin-auth');
 const { getPlatformBrain, resetPlatformBrain } = require('../../lib/brain/platform');
 const { getDefaultUsageStore } = require('../../lib/brain/usage-store');
-const { loadDurableUsage } = require('../../lib/brain/usage-persist');
+const {
+  loadDurableUsage,
+  persistUsageEvent,
+  getLastPersistStatus
+} = require('../../lib/brain/usage-persist');
 const { resolveModelRate } = require('../../lib/brain/pricing');
 
 const PROVIDER_ENV = {
@@ -113,6 +117,7 @@ module.exports = async function brainControl(req, res) {
       ? durable.recentFailures
       : buffer.recentFailures;
 
+    const lastPersistStatus = getLastPersistStatus();
     const priceCard = (brain.listModels() || []).slice(0, 12).map((m) => {
       const rate = resolveModelRate(m.provider, m.model);
       return {
@@ -123,6 +128,21 @@ module.exports = async function brainControl(req, res) {
         outputPerMTok: rate.outputPerMTok
       };
     });
+
+    const keyHint =
+      ' API keys are never returned — only configured yes/no + last-four hint.';
+    let notice;
+    if (durable.available && durable.totalEvents === 0) {
+      notice =
+        'ledger empty — new Brain calls after deploy will appear here.' + keyHint;
+    } else if (durable.available) {
+      notice = (durable.notice || '') + keyHint;
+    } else {
+      notice =
+        (durable.notice ||
+          'Usage buffer is process-local until db/ai_requests.sql is applied. ') +
+        keyHint;
+    }
 
     return json(res, 200, {
       ok: true,
@@ -146,14 +166,11 @@ module.exports = async function brainControl(req, res) {
       durable: {
         available: !!durable.available,
         error: durable.error || null,
-        days: durable.days || 30
+        days: durable.days || 30,
+        totalEvents: durable.totalEvents != null ? durable.totalEvents : null
       },
-      notice: durable.available
-        ? durable.notice +
-          ' API keys are never returned — only configured yes/no + last-four hint.'
-        : (durable.notice ||
-            'Usage buffer is process-local until db/ai_requests.sql is applied. ') +
-          'API keys are never returned — only configured yes/no + last-four hint.'
+      lastPersistStatus,
+      notice
     });
   }
 
@@ -235,9 +252,45 @@ module.exports = async function brainControl(req, res) {
     return json(res, 200, { ok: true, notice: 'Platform brain singleton reset' });
   }
 
+  if (action === 'usage_probe') {
+    const correlationId =
+      'probe-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+    const result = await persistUsageEvent({
+      correlationId,
+      taskId: 'control.usage_probe',
+      provider: 'mock',
+      model: 'mock-default',
+      inputTokens: 1,
+      outputTokens: 0,
+      cachedTokens: 0,
+      costUsd: 0,
+      latencyMs: 0,
+      success: true,
+      actor: { userId: user.id, role: 'super' },
+      reasonCodes: ['usage_probe']
+    });
+    return json(res, 200, {
+      ok: !!result.ok,
+      persist: result,
+      correlationId,
+      lastPersistStatus: getLastPersistStatus(),
+      notice: result.ok
+        ? 'Probe row written (or duplicate treated as ok). Refresh Control Centre.'
+        : 'Probe insert failed — see persist.error / lastPersistStatus.'
+    });
+  }
+
   return json(res, 400, {
     ok: false,
     error: 'unknown action',
-    allowed: ['health', 'disable_task', 'enable_task', 'test_generate', 'clear_usage', 'reset_brain']
+    allowed: [
+      'health',
+      'disable_task',
+      'enable_task',
+      'test_generate',
+      'clear_usage',
+      'reset_brain',
+      'usage_probe'
+    ]
   });
 };
