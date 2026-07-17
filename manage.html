@@ -32,7 +32,7 @@
 <meta name="apple-mobile-web-app-title" content="LeadPages">
 <meta name="theme-color" content="#1f7a63">
 <meta name="google-site-verification" content="cR5yH7wsUUmO8hzGE-VVJFv91dYvjDqyO4TeL-xXS28" />
-<title>App Command Centre | Lead Pages</title>
+<title>LeadPages — App Command Centre</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -320,7 +320,7 @@ textarea.tin{resize:vertical;}
 .preset-sw .ps-del{position:absolute;top:6px;right:8px;border:none;background:none;color:var(--ink-faint);cursor:pointer;font-size:15px;line-height:1;}
 .preset-sw{position:relative;}
 /* login gate */
-.login-mask{position:fixed;inset:0;z-index:10000;background:rgba(16,33,28,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-mask{position:fixed;inset:0;z-index:10000;background:rgba(16,33,28,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;}
 .login-card{background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.3);width:100%;max-width:380px;padding:30px 28px;font-family:var(--font-ui);}
 .login-card h2{margin:0 0 4px;font-family:var(--font-display);font-size:24px;color:var(--ink);}
 .login-card p.sub{margin:0 0 18px;color:var(--ink-soft);font-size:13.5px;}
@@ -2273,7 +2273,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     const m=$('login-mask'); if(m) m.style.display='none';
     await afterLogin();
   }
-  function loginBooting(on){ var f=$('li-form'), l=$('li-loading'), sub=$('li-sub'); if(f) f.hidden=on; if(l) l.hidden=!on; if(sub) sub.textContent=on?'One moment\u2026':'Sign in to manage this site.'; }
+  function loginBooting(on){ var f=$('li-form'), l=$('li-loading'), sub=$('li-sub'); if(f) f.hidden=on; if(l) l.hidden=!on; if(sub) sub.textContent=on?'One moment\u2026':'Sign in to the App Command Centre to manage your sites.'; }
   async function bootAuth(){
     buildLogin();
     const mask=$('login-mask'); if(mask) mask.style.display='flex';
@@ -7136,7 +7136,18 @@ function heroCtaCard(c){
   function buildLogin(){
     if($('login-mask')) return;
     const m=document.createElement('div'); m.id='login-mask'; m.className='login-mask';
-    m.innerHTML='<div class="login-card"><h2>App Command Centre</h2><p class="sub" id="li-sub">Sign in to manage this site.</p>'
+    m.innerHTML='<div class="login-wrap" style="display:flex;flex-direction:column;gap:16px;width:100%;max-width:440px;padding:18px">'
+      +'<div class="login-about" style="background:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.5);border-radius:18px;padding:20px 22px;box-shadow:0 18px 50px rgba(0,0,0,.22);color:#1b2430">'
+      +'<div style="font-weight:800;font-size:20px;letter-spacing:-.02em;margin:0 0 6px">LeadPages</div>'
+      +'<p style="margin:0 0 10px;font-size:13.5px;line-height:1.5;color:#5c6675">LeadPages is a website and landing-page platform for Australian small businesses and agency partners. Sign in to the App Command Centre to publish sites, manage landing pages, capture leads, and connect integrations such as Google Ads.</p>'
+      +'<p style="margin:0;font-size:12.5px;line-height:1.45;color:#5c6675">'
+      +'<a href="https://www.leadpages.com.au/privacy-policy" target="_blank" rel="noopener" style="color:#155c4a;font-weight:600">Privacy Policy</a>'
+      +' · '
+      +'<a href="https://www.leadpages.com.au/terms-of-use" target="_blank" rel="noopener" style="color:#155c4a;font-weight:600">Terms of Use</a>'
+      +' · '
+      +'<a href="https://leadpages.com.au" target="_blank" rel="noopener" style="color:#155c4a;font-weight:600">leadpages.com.au</a>'
+      +'</p></div>'
+      +'<div class="login-card"><h2>LeadPages</h2><p class="sub" id="li-sub">Sign in to the App Command Centre to manage your sites.</p>'
       +'<div class="login-loading" id="li-loading" hidden>Signing you in\u2026</div>'
       +'<div id="li-form">'
       +'<label>Email</label><input type="email" id="li-user" class="tin" placeholder="you@example.com" autocomplete="username">'
@@ -7153,7 +7164,7 @@ function heroCtaCard(c){
       +'<button class="btn" id="li-setpass" style="width:100%;margin-top:6px">Save password &amp; continue</button>'
       +'</div>'
       +'<div class="login-note">Tip: tap \u201cEmail me a sign-in code\u2026\u201d, then either click the link in that email or paste the code above. Prefer password? Set one under Account after you sign in.</div>'
-      +'</div></div>';
+      +'</div></div></div>';
     (document.getElementById('admin-view')||document.body).appendChild(m);
     $('li-go').addEventListener('click',lpLogin);
     var __mg=$('li-magic'); if(__mg) __mg.addEventListener('click',lpMagic);
