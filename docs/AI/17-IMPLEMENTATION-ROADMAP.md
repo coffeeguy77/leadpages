@@ -107,15 +107,14 @@
 
 ## Phase 8 — AI Theme Studio
 
-**Status: Complete.** Spec: [21-THEME-STUDIO](21-THEME-STUDIO.md).
+**Status: Colour MVP shipped; full product redesign pending approval.**
 
 | Item | Detail |
 |------|--------|
-| Tasks | `theme.generate`, `theme.refine` |
-| UI | `/theme-studio` (+ Ops Command panel) |
-| APIs | `POST /api/brain/theme-generate\|theme-refine\|theme-approve` |
-| Write | Approve merges trade tokens into `sites.config.theme` |
-| Flag | `BRAIN_THEME_STUDIO` (default on) |
+| Colour MVP | `theme.generate` / `theme.refine` → `/theme-studio` (to become **AI Colour Assistant**) |
+| Full vision | Complete website design system — **not** colour-only |
+| Canonical plan | [THEME-STUDIO-IMPLEMENTATION-AUDIT](THEME-STUDIO-IMPLEMENTATION-AUDIT.md) |
+| Gate | No production Theme Studio V2 coding until that plan is approved |
 
 ---
 
