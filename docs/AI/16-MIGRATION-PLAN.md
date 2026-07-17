@@ -22,15 +22,15 @@
 
 ## Per-integration template
 
-### Landing draft (first)
+### Landing draft (first) — **DONE (Phase 7)**
 
 | Item | Detail |
 |------|--------|
-| Current | `manage.html` `aiGenerate` → Anthropic without key |
-| Target | `POST` feature route → Brain `content.landing_draft` |
-| Flag | `ai.brain.landing_draft` |
-| Tests | Mock Brain; UI approve path unchanged |
-| Rollback | Flag off → keep disabled or legacy message |
+| Was | `manage.html` `aiGenerate` → Anthropic without key (broken) |
+| Now | `POST /api/brain/landing-draft` → Brain `content.landing_draft` |
+| Flag | `BRAIN_LANDING_DRAFT=1` (default **off**) |
+| UI | Approve panel unchanged (`#lp-approve`) |
+| Rollback | Unset `BRAIN_LANDING_DRAFT` → API returns 503; editor shows flag message |
 
 ### Suburb intros
 

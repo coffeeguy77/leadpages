@@ -129,7 +129,7 @@ flowchart TB
 | **Domains** | Dreamscape reseller API | Signed requests via `dreamscape.js` |
 | **Images** | Cloudinary | Signed direct browser uploads |
 | **Email** | Resend | Leads, campaigns, notifications |
-| **AI** | Anthropic Claude API | Assist, trade generation, suburb intros |
+| **AI** | LeadPages Brain (`lib/brain`) + Anthropic / OpenAI / Gemini | Gateway Phases 1–7; landing drafts via Brain; assist/suburb/packs/IG still direct Anthropic — [AI/00-STATUS](AI/00-STATUS.md) |
 | **Social** | Instagram Graph API | Per-site project feed |
 | **Runtime dependency** | `@supabase/supabase-js` ^2.45 | Only npm dependency in `package.json` |
 

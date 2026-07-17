@@ -3,7 +3,8 @@
 **Document:** `features/Pages`  
 **Status:** Definitive engineering reference for the **Landing pages** tab in the App Command Centre  
 **Audience:** Engineers rebuilding, extending, or debugging SEO sub-pages; AI development agents  
-**Prerequisites:** [00-VISION](../00-VISION.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md), [08-SEO](../08-SEO.md), [10-EDITOR](../10-EDITOR.md), [03-TEMPLATE-SYSTEM](../03-TEMPLATE-SYSTEM.md)
+**Prerequisites:** [00-VISION](../00-VISION.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md), [08-SEO](../08-SEO.md), [10-EDITOR](../10-EDITOR.md), [03-TEMPLATE-SYSTEM](../03-TEMPLATE-SYSTEM.md)  
+**AI status:** Landing drafts use Brain — see [AI/00-STATUS](../AI/00-STATUS.md), [LeadPages Brain](LeadPages%20Brain.md)
 
 > **Scope note:** This document describes the **Landing pages** editor tab (`#av-landing`) inside `manage.html`. It covers `config.pages[]`, editor functions (`renderSeoPages`, `lpOpen`, `lpCur`, `lpAutosave`, `lpSaveDB`, `aiGenerate`), and the public render path via `api/render.js` + client `_lpRenderPage`. It is **not** the homepage Page editor (`#av-details`), App Router suburb SEO (`app/[site]/[suburb]`), or marketing landing mockups on `tradies.html` / `brokers.html`.
 
@@ -13,7 +14,7 @@
 
 The **Landing pages** tab lets site owners create **theme-aware SEO sub-pages** stored in `sites.config.pages[]`. Each page has its own URL slug (`/{siteSlug}/{pageSlug}` or `/{pageSlug}` on a custom domain), optional hero image, Markdown body, and publish/draft status. Published pages are served by **`api/render.js`** with per-page title/meta injected server-side; the live site client replaces `#top` with an article layout via **`_lpRenderPage`**.
 
-Implementation is **100% client-side in `manage.html`** for editing, with a **narrow autosave** path (`lpSaveDB`) that persists only the `pages` array. Full site publish (`publishToDB`) still required for other config changes to go live. AI draft generation calls Anthropic directly from the browser (`aiGenerate`).
+Implementation is **client-side in `manage.html`** for editing, with a **narrow autosave** path (`lpSaveDB`) that persists only the `pages` array. Full site publish (`publishToDB`) still required for other config changes to go live. AI draft generation calls **`POST /api/brain/landing-draft`** (LeadPages Brain) — not the browser Anthropic API. Requires `BRAIN_LANDING_DRAFT=1` or the editor shows a flag-disabled message.
 
 | Fact | Detail |
 |------|--------|
@@ -255,7 +256,7 @@ Switching sites while editor open: close manually or `lpCur` may reference stale
 | Type | Mechanism | Relevance |
 |------|-----------|-----------|
 | **Toast** | `toast(msg)` | Saved, deleted, upload errors |
-| **AI error** | `#lp-ai-note` fallback text | Demo lacks server proxy for Anthropic |
+| **AI error** | `#lp-ai-note` | Flag off, auth failure, or Brain/provider error message |
 | **Meta length** | `#lp-meta-count` | Inline "a touch long" above 165 chars |
 | **Billing lock** | `#bill-lock` | Blocks all editor tabs |
 
@@ -318,14 +319,14 @@ flowchart LR
 | Endpoint | Method | Called by | Body / query | Response used |
 |----------|--------|-----------|--------------|-----------------|
 | Supabase `sites` | UPDATE | `lpSaveDB`, `publishToDB` | `{ config: { …, pages } }` | Persists array |
-| `https://api.anthropic.com/v1/messages` | POST | `aiGenerate` | `claude-sonnet-4-6`, user prompt | Markdown body draft |
+| `POST /api/brain/landing-draft` | POST | `aiGenerate` | `{ siteId, brief, template }` + Bearer | `{ draft.markdown }` via Brain |
 | Cloudinary (via `cwUpload`) | POST | `#lp-img-file` | `['page', lpCur.id]` tags | `url`, `publicId` |
 | `GET /api/render?slug=&page=` | GET | Public browser | `page` = slug | Full HTML + `__SITE_CONFIG__` |
 
 **Auth:**
 
 - `lpSaveDB` — Supabase session (anon key + user JWT).
-- `aiGenerate` — **direct browser call** to Anthropic (no LeadPages proxy in production path documented in catch block).
+- `aiGenerate` — Bearer JWT → server Brain route (site owner / partner / super). Flag `BRAIN_LANDING_DRAFT=1`.
 - Public render — unauthenticated.
 
 ---
@@ -401,7 +402,7 @@ flowchart LR
 | `lpPush(v)` | ~1610 | Body undo stack (max 50) |
 | `lpImgPrev()` | ~1609 | Image thumbnail in editor |
 | `mdToHtml(t)` | ~1624–1628 | AI preview Markdown → HTML |
-| `aiGenerate()` | ~1630–1646 | Anthropic draft + approve panel |
+| `aiGenerate()` | manage.html | `POST /api/brain/landing-draft` + approve panel |
 | `aiPresets()` | ~1573 | Returns `AI_PRESETS_TRADE` or `AI_PRESETS_BROKER` |
 
 ### Module-level state
@@ -464,10 +465,11 @@ sequenceDiagram
 
 1. User clicks **Generate draft** → `aiGenerate()`.
 2. `#lp-ai-note` = "Writing…".
-3. `fetch` Anthropic with template-specific system instructions + prompt (or first preset).
-4. On success: store draft on `#lp-approve`, render preview via `mdToHtml`, show approve panel.
-5. **Use this draft** → writes body, `lpPush`, `lpField` → autosave chain.
-6. On failure: demo fallback message in `#lp-ai-note`.
+3. `POST /api/brain/landing-draft` with Bearer token, `siteId`, brief, template.
+4. Server runs Brain task `content.landing_draft` (prompt registry + site context slices).
+5. On success: store `draft.markdown` on `#lp-approve`, preview via `mdToHtml`, show approve panel.
+6. **Use this draft** → writes body, `lpPush`, `lpField` → autosave chain (human approve still required).
+7. If flag off (503 `landing_draft_disabled`): note tells user to ask super-admin to enable `BRAIN_LANDING_DRAFT`.
 
 ### Public page request
 
@@ -542,7 +544,7 @@ flowchart TD
 | **Authentication** | Editor behind Supabase auth |
 | **Authorization** | RLS on `sites` UPDATE |
 | **XSS** | List uses `esc()` on title/slug; AI preview uses `mdToHtml` (escaped base) |
-| **Anthropic key** | Browser-direct call — **API key exposure risk** in production; catch block references demo limitation |
+| **AI keys** | Server-side only via Brain (`ANTHROPIC_API_KEY` / provider env) — not sent to the browser |
 | **Slug injection** | Slug sanitized to `[a-z0-9-]` on input |
 | **Public 404** | Draft slugs not enumerable via render (hard 404) |
 | **PII in copy** | User-generated; no server-side moderation |
@@ -554,7 +556,7 @@ flowchart TD
 | ID | Issue | Location | Impact |
 |----|-------|----------|--------|
 | TD-P1 | **`menu` field not wired to nav** | `lp-menu` vs `_navMenuRender` | "Top menu" / "Footer" select stores value but does not auto-add nav links |
-| TD-P2 | **AI calls browser-direct** | `aiGenerate` | API key leakage; CORS failures in production |
+| TD-P2 | ~~AI calls browser-direct~~ **Resolved (Phase 7)** | `aiGenerate` → `/api/brain/landing-draft` | Flag default off until soak; remaining AI features still legacy |
 | TD-P3 | **Canonical stays /** | [08-SEO](../08-SEO.md) | Sub-pages update title/meta client-side but canonical href is homepage |
 | TD-P4 | **Routing collision** | App Router suburbs vs `pages[].slug` | Wrong pipeline if slugs overlap service area names |
 | TD-P5 | **Sitemap gap** | `seo-sitemap.xml` | Landing pages not listed (suburbs only) |
@@ -566,7 +568,7 @@ flowchart TD
 
 ## Future Improvements
 
-1. **Server proxy for AI** — `/api/ai/page-draft` with `ANTHROPIC_API_KEY` server-side.
+1. ~~**Server proxy for AI**~~ — Done: `/api/brain/landing-draft` + Brain (enable with `BRAIN_LANDING_DRAFT=1`).
 2. **Auto-sync `menu` field** — push/remove `navMenu.items` when `menu` is top/footer.
 3. **Per-page canonical** — `https://{{domain}}/{{slug}}` in SSR for landing pages.
 4. **Sitemap entries** — include published `pages[].slug` per site.
@@ -587,7 +589,7 @@ flowchart TB
     Panel["#av-landing"]
     List["#lp-list · renderSeoPages"]
     Ed["#lp-editor · lpOpen · lpCur"]
-    AI["aiGenerate · Anthropic"]
+    AI["aiGenerate · Brain API"]
     Save["lpAutosave → lpSaveDB"]
   end
 

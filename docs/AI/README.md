@@ -1,15 +1,17 @@
 # LeadPages Brain
 
 **Document:** `AI/README`  
-**Status:** Documentation phase only — **no Brain implementation has begun**  
+**Status:** Phases 0–7 shipped — see [00-STATUS](00-STATUS.md)  
 **Audience:** Engineers, product owners, AI development agents  
 **Prerequisites:** [INDEX](../INDEX.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md), [00-VISION](../00-VISION.md)
+
+> **AI agents:** start at [00-STATUS](00-STATUS.md) before changing AI-related code.
 
 ---
 
 ## What it is
 
-**LeadPages Brain** is the proposed provider-agnostic AI orchestration layer for the LeadPages platform. Every current and future AI feature should eventually call the Brain instead of calling OpenAI, Anthropic, Google Gemini, or any other provider directly.
+**LeadPages Brain** is the provider-agnostic AI orchestration layer for the LeadPages platform. Every current and future AI feature should call the Brain instead of calling OpenAI, Anthropic, Google Gemini, or any other provider directly.
 
 ```text
 Feature → LeadPages Brain → Selected provider adapter
@@ -25,11 +27,11 @@ Feature → Gemini
 
 ---
 
-## Why it is being built
+## Why it was built
 
-Today, verified AI usage is **Anthropic Claude only**, via scattered `fetch` calls and inline prompts (see [01-CURRENT-STATE-AUDIT](01-CURRENT-STATE-AUDIT.md)). There is no shared gateway, no usage/cost ledger, no prompt registry, and one broken client-side draft path.
+Historically, AI usage was **Anthropic Claude only**, via scattered `fetch` calls and inline prompts (see [01-CURRENT-STATE-AUDIT](01-CURRENT-STATE-AUDIT.md)). Landing drafts were broken client-side (no key). Brain now provides a shared gateway, adapters (mock / Anthropic / OpenAI / Gemini), prompt registry, context slices, Control Centre, and the first migrated feature (landing drafts).
 
-LeadPages is evolving from a website builder into an AI-powered business platform. Future systems (Theme Studio, Marketing Hub, SEO, CRM, quoting, etc.) must share one internal AI service so providers can be changed, combined, or tested without rewriting each feature.
+Legacy callers (assist, suburb intros, trade packs, IG enrich) still hit Anthropic directly until later migrations.
 
 ---
 
@@ -67,6 +69,7 @@ Full principles: [02-VISION-AND-PRINCIPLES](02-VISION-AND-PRINCIPLES.md).
 
 | Doc | Topic |
 |-----|--------|
+| [00-STATUS](00-STATUS.md) | **Canonical current status for AI agents** |
 | [01-CURRENT-STATE-AUDIT](01-CURRENT-STATE-AUDIT.md) | Verified existing AI integrations |
 | [02-VISION-AND-PRINCIPLES](02-VISION-AND-PRINCIPLES.md) | Permanent rules |
 | [03-TARGET-ARCHITECTURE](03-TARGET-ARCHITECTURE.md) | Components, flows, diagrams |

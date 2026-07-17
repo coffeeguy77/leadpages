@@ -19,8 +19,9 @@ If you are an AI coding agent (Cursor, Claude Code, Copilot, Cloud Agent, or sim
 | 2 | **This file** (`docs/INDEX.md`) | Navigation, indexes, task routing |
 | 3 | [CLAUDE.md](../CLAUDE.md) | Non-negotiable rules, AI workflow |
 | 4 | [AGENTS.md](../AGENTS.md) | Agent behaviour, output expectations |
-| 5 | **Relevant topic docs** | See [Task routing](#which-document-to-read-by-task) below |
-| 6 | **Source code** | Only after steps 1–5 |
+| 5 | **If touching AI:** [AI/00-STATUS](AI/00-STATUS.md) | Brain phases, flags, what still bypasses Brain |
+| 6 | **Relevant topic docs** | See [Task routing](#which-document-to-read-by-task) below |
+| 7 | **Source code** | Only after steps 1–6 |
 
 ### Agent rules (summary)
 
@@ -53,7 +54,7 @@ Full rules: [00-VISION](00-VISION.md), [12-CODING-STANDARDS](12-CODING-STANDARDS
 | **Partner platform** | [05-PARTNERS](05-PARTNERS.md) → [04-SITE-BUILDER](04-SITE-BUILDER.md) → [06-DOMAINS](06-DOMAINS.md) |
 | **DevOps / ops** | [01-ARCHITECTURE](01-ARCHITECTURE.md) § Deployment → [06-DOMAINS](06-DOMAINS.md) → [13-ROADMAP](13-ROADMAP.md) |
 | **Product / planning** | [00-VISION](00-VISION.md) → [13-ROADMAP](13-ROADMAP.md) |
-| **AI / LeadPages Brain** | [AI/README](AI/README.md) → [AI/01-CURRENT-STATE-AUDIT](AI/01-CURRENT-STATE-AUDIT.md) → [AI/03-TARGET-ARCHITECTURE](AI/03-TARGET-ARCHITECTURE.md) |
+| **AI / LeadPages Brain** | [AI/00-STATUS](AI/00-STATUS.md) → [AI/README](AI/README.md) → [features/LeadPages Brain](features/LeadPages%20Brain.md) → [AI/19-DEVELOPER-GUIDE](AI/19-DEVELOPER-GUIDE.md) |
 
 ### Numbered canon (complete set)
 
@@ -136,6 +137,7 @@ Short summary of every engineering document in `docs/`.
 | [06-DOMAINS](06-DOMAINS.md) | Domain System | Dreamscape integration, purchase flow, DNS, `custom_domain` routing, `manage-domains.html`. |
 | [07-TRACKING](07-TRACKING.md) | Tracking & Analytics | `trackEvent`, `events` table, `/api/stats`, dashboard `ANA` object, analytics UI in editor. |
 | [features/Google Ads](features/Google%20Ads.md) | Google Ads (v1) | OAuth connect, session attribution (gclid/UTMs), conversion upload, Advertising dashboard, metrics sync. |
+| [features/LeadPages Brain](features/LeadPages%20Brain.md) | LeadPages Brain | AI gateway Phases 1–7; Control Centre; landing-draft migration. Canonical status: [AI/00-STATUS](AI/00-STATUS.md). |
 | [AI/README](AI/README.md) | LeadPages Brain | Provider-agnostic AI gateway — Phases 1–7 in `lib/brain` + Control Centre + landing-draft migration. |
 | [08-SEO](08-SEO.md) | SEO System | Suburb App Router pages, `lib/seo/*`, landing pages, `seoTokens`, sitemap, routing collision notes. |
 | [09-CRM](09-CRM.md) | CRM & Leads | Lead capture, `api/leads.js`, CRM strips, mailer, campaigns, opt-outs, lifecycle. |
@@ -144,13 +146,14 @@ Short summary of every engineering document in `docs/`.
 | [12-CODING-STANDARDS](12-CODING-STANDARDS.md) | Coding Standards | JS, API, DB, config, git, security standards; agent rules; review checklist. |
 | [13-ROADMAP](13-ROADMAP.md) | Roadmap | Near/medium/long-term priorities, technical debt register, explicit non-goals. |
 
-### LeadPages Brain design set (`docs/AI/`)
+### LeadPages Brain (`docs/AI/` + feature manual)
 
-Start at [AI/README](AI/README.md). Runtime: `lib/brain/`, `/brain-admin`, `/api/brain/*`.
+**Agents start at [AI/00-STATUS](AI/00-STATUS.md).** Runtime: `lib/brain/`, `/brain-admin`, `/api/brain/*`. Feature manual: [features/LeadPages Brain](features/LeadPages%20Brain.md).
 
 | Doc | Topic |
 |-----|--------|
-| [AI/01-CURRENT-STATE-AUDIT](AI/01-CURRENT-STATE-AUDIT.md) | Verified existing Anthropic integrations |
+| [AI/00-STATUS](AI/00-STATUS.md) | **Canonical phase/flag status for AI agents** |
+| [AI/01-CURRENT-STATE-AUDIT](AI/01-CURRENT-STATE-AUDIT.md) | Pre-Brain Anthropic inventory (partially superseded) |
 | [AI/02-VISION-AND-PRINCIPLES](AI/02-VISION-AND-PRINCIPLES.md) | Permanent rules (“AI suggests, user publishes”) |
 | [AI/03-TARGET-ARCHITECTURE](AI/03-TARGET-ARCHITECTURE.md) | Gateway components and flows |
 | [AI/04](AI/04-PROVIDER-ADAPTERS.md)–[AI/14](AI/14-AI-CONTROL-CENTRE.md) | Adapters, router, prompts, context, memory, schemas, costs, security, data model, APIs, Control Centre |
@@ -211,8 +214,9 @@ Start at [AI/README](AI/README.md). Runtime: `lib/brain/`, `/brain-admin`, `/api
 | **Email mailer** | [09-CRM](09-CRM.md) | `api/send-campaign.js` |
 | **Marketplace** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | `app_registry`, `site_apps` |
 | **Media** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | Cloudinary, Instagram |
-| **AI content (current)** | [08-SEO](08-SEO.md), [04-SITE-BUILDER](04-SITE-BUILDER.md) | Direct Anthropic calls — see audit |
-| **LeadPages Brain** | [AI/README](AI/README.md) | Provider-agnostic gateway — Phases 1–7 implemented |
+| **AI / LeadPages Brain** | [AI/00-STATUS](AI/00-STATUS.md), [features/LeadPages Brain](features/LeadPages%20Brain.md) | Gateway Phases 1–7; landing drafts migrated; other features still direct Anthropic |
+| **Landing page AI drafts** | [features/Pages](features/Pages.md) | `POST /api/brain/landing-draft` (`BRAIN_LANDING_DRAFT=1`) |
+| **Suburb / pack AI (legacy)** | [features/SEO](features/SEO.md), [features/Service Packs](features/Service%20Packs.md) | Still direct Anthropic until later migrations |
 | **Design / UX** | [11-DESIGN-SYSTEM](11-DESIGN-SYSTEM.md) | Editor tokens, tenant themes |
 
 ---
@@ -308,7 +312,9 @@ Start at [AI/README](AI/README.md). Runtime: `lib/brain/`, `/brain-admin`, `/api
 | `POST /api/cloudinary/delete` | `cloudinary/delete.js` | Asset delete |
 | `GET /api/instagram/connect` | `instagram/connect.js` | OAuth start |
 | `GET /api/instagram/callback` | `instagram/callback.js` | OAuth callback |
-| `POST /api/api-trade-generate` | `api-trade-generate.js` | AI trade pack |
+| `GET/POST /api/brain/control` | `brain/control.js` | AI Control Centre (super-admin) |
+| `POST /api/brain/landing-draft` | `brain/landing-draft.js` | Landing AI draft via Brain (flag) |
+| `POST /api/api-trade-generate` | `api-trade-generate.js` | AI trade pack (legacy Anthropic) |
 | `GET /api/api-trade-stats` | `api-trade-stats.js` | Trade pack stats |
 
 ### Legacy / admin
@@ -427,7 +433,8 @@ Rewrites: [vercel.json](../vercel.json) — detail in [01-ARCHITECTURE](01-ARCHI
 | **Dreamscape** | Domain registrar API | `dreamscape.js`, `api/domains/*` | [06-DOMAINS](06-DOMAINS.md) |
 | **Cloudinary** | Image CDN + uploads | `api/cloudinary/*`, URLs in config | [10-EDITOR](10-EDITOR.md), [01-ARCHITECTURE](01-ARCHITECTURE.md) |
 | **Resend** | Transactional email | `api/leads.js`, `api/send-campaign.js` | [09-CRM](09-CRM.md) |
-| **Anthropic Claude** | AI copy, suburb intros, trade packs, assist, IG enrich | `lib/seo/suburbIntro.js`, `lib/trade-pack-utils.js`, `api/assist.js`, `lib/ig/enrich.mjs`, `manage.html` | [AI/01-CURRENT-STATE-AUDIT](AI/01-CURRENT-STATE-AUDIT.md), [08-SEO](08-SEO.md), [04-SITE-BUILDER](04-SITE-BUILDER.md) |
+| **LeadPages Brain** | Provider-agnostic AI gateway | `lib/brain/*`, `api/brain/*`, `brain-admin.html` | [AI/00-STATUS](AI/00-STATUS.md), [features/LeadPages Brain](features/LeadPages%20Brain.md) |
+| **Anthropic / OpenAI / Gemini** | Providers behind Brain + legacy direct callers | Adapters in `lib/brain/adapters/`; legacy: `suburbIntro.js`, `trade-pack-utils.js`, `assist.js`, `ig/enrich.mjs` | [AI/00-STATUS](AI/00-STATUS.md), [AI/01-CURRENT-STATE-AUDIT](AI/01-CURRENT-STATE-AUDIT.md) |
 | **Instagram Graph API** | Social / project feeds | `api/instagram/*`, `lib/ig/*` | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 |
 
 ---
@@ -448,15 +455,15 @@ Rewrites: [vercel.json](../vercel.json) — detail in [01-ARCHITECTURE](01-ARCHI
 
 ### Key environment variables (categories)
 
-`SUPABASE_*` · `STRIPE_*` · `DREAMSCAPE_*` · `CLOUDINARY_*` · `RESEND_*` · `ANTHROPIC_*` · `INSTAGRAM_*` · `PRIMARY_HOSTS` · `SUPER_ADMIN_EMAILS` · `CRON_SECRET`
+`SUPABASE_*` · `STRIPE_*` · `DREAMSCAPE_*` · `CLOUDINARY_*` · `RESEND_*` · `ANTHROPIC_*` · `OPENAI_*` · `GEMINI_*` · `BRAIN_*` · `INSTAGRAM_*` · `PRIMARY_HOSTS` · `SUPER_ADMIN_EMAILS` · `CRON_SECRET`
 
 ---
 
 ## Glossary
 
 | Term | Meaning |
-| **LeadPages Brain** | Provider-agnostic AI orchestration (`lib/brain`, `docs/AI/*`) — Phases 1–7 shipped; remaining features migrate behind flags |
 |------|---------|
+| **LeadPages Brain** | Provider-agnostic AI orchestration (`lib/brain`, `docs/AI/*`) — Phases 1–7 shipped; remaining features migrate behind flags |
 | **Command Centre** | `manage.html` editor |
 | **Trade pack** | Starter `config` for a trade type (`TRADE_PACKS` / `service_packs`) |
 | **Hydration** | Client JS (`__applyTradeConfig`) filling template from config |
