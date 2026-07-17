@@ -68,6 +68,7 @@
       <div class="row" style="margin-top:14px">
         <button type="button" class="btn" id="connect">Connect Google Ads</button>
         <button type="button" class="btn ghost" id="accounts" hidden>Select account</button>
+        <button type="button" class="btn ghost" id="sync" hidden>Sync now</button>
         <button type="button" class="btn ghost" id="open-adv" hidden>Open Advertising dashboard</button>
         <button type="button" class="btn ghost" id="disconnect" hidden>Disconnect</button>
       </div>
@@ -172,9 +173,13 @@
           +'<div><span>Account</span><strong>'+esc(c.accountName||c.customerId||'—')+'</strong></div>'
           +'<div><span>Last sync</span><strong>'+(c.lastSyncAt?new Date(c.lastSyncAt).toLocaleString():'—')+'</strong></div>';
         $('accounts').hidden=!j.connected;
+        $('sync').hidden=!(j.connected&&c.customerId);
         $('disconnect').hidden=!j.connected;
         $('open-adv').hidden=false;
         $('connect').textContent=j.connected?'Reconnect Google Ads':'Connect Google Ads';
+        if(c.lastSyncError){
+          $('status').innerHTML+='<div><span class="warn">Last sync error: '+esc(safeErr(c.lastSyncError))+'</span></div>';
+        }
       }catch(e){
         $('status').innerHTML='<div><span class="warn">'+esc(safeErr(e&&e.message||'Could not load status'))+'</span></div>';
       }
@@ -200,6 +205,26 @@
       $('open-adv').addEventListener('click', function(){
         var site=sites.find(function(s){ return s.id===currentSiteId; });
         location.href='/manage?view=advertising&gadsTab=health'+(site&&site.slug?('&site='+encodeURIComponent(site.slug)):'');
+      });
+      $('sync').addEventListener('click', async function(){
+        if(!currentSiteId) return;
+        var btn=$('sync');
+        btn.disabled=true; btn.textContent='Syncing…';
+        try{
+          var r=await fetch('/api/google-ads/sync',{
+            method:'POST',
+            headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token},
+            body:JSON.stringify({siteId:currentSiteId,days:30})
+          });
+          var j=await r.json().catch(function(){ return {}; });
+          if(!r.ok) throw new Error(j.message||j.error||'sync_failed');
+          alert('Synced '+(j.rows!=null?j.rows:0)+' rows ('+(j.from||'')+' → '+(j.to||'')+').');
+          await refreshStatus();
+        }catch(e){
+          alert(safeErr(e&&e.message)||'Sync failed');
+        }finally{
+          btn.disabled=false; btn.textContent='Sync now';
+        }
       });
       $('disconnect').addEventListener('click', async function(){
         if(!confirm('Disconnect Google Ads from this site?')) return;

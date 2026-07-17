@@ -116,7 +116,9 @@ Shared helpers live in [`lib/app-url.js`](../../lib/app-url.js) (not AdWords-nam
 | `GET /api/integrations/google-ads/callback` | [`api/integrations/google-ads/callback.js`](../../api/integrations/google-ads/callback.js) |
 | `POST /api/integrations/google-ads/exchange` | [`api/integrations/google-ads/exchange.js`](../../api/integrations/google-ads/exchange.js) |
 
-Compatibility shims remain at `/api/google-ads/connect|callback|exchange` → integrations path. Reporting APIs stay at `/api/google-ads/{status,report,accounts,…}`.
+Compatibility shims remain at `/api/google-ads/connect|callback|exchange` → integrations path. Reporting APIs stay at `/api/google-ads/{status,report,accounts,sync,…}`.
+
+Manual sync: `POST /api/google-ads/sync` with `{ siteId, days }` (auth required). Cron `/api/cron/sync-google-ads` still runs every 2 hours. If **Last sync = Never**, use **Sync now** in Advertising → Connection & Health. Test Access developer tokens cannot read production Ads accounts until Basic Access is approved.
 
 ---
 
