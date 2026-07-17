@@ -181,39 +181,23 @@ describe('LeadPages Brain Phase 1', () => {
     });
 
     it('uses fallback adapter when primary fails', async () => {
-      const brain = createBrain({
-        config: {
-          models: {
-            a: { provider: 'mock', model: 'mock-default' },
-            b: { provider: 'mock', model: 'mock-fast' }
-          },
-          routes: {
-            'generic.fast': {
-              taskId: 'generic.fast',
-              primary: { provider: 'mock', model: 'mock-default' },
-              fallback: [{ provider: 'mock', model: 'mock-fast' }]
-            }
-          }
-        },
-        adapters: {
-          mock: createMockAdapter({
-            failWith: new BrainError(CODES.provider_unavailable, 'boom', { retryable: true })
-          })
+      let primaryCalls = 0;
+      let fallbackCalls = 0;
+      const primary = {
+        id: 'primary',
+        capabilities: () => new Set(['text']),
+        healthCheck: async () => ({ ok: true }),
+        async generate() {
+          primaryCalls += 1;
+          throw new BrainError(CODES.provider_unavailable, 'down', { retryable: true });
         }
-      });
-      // Same adapter instance fails always — fallback still hits same failing mock.
-      // Use dual adapters map with a working secondary id by swapping registry to same provider.
-      // Instead: primary fail once pattern via custom adapter.
-      let calls = 0;
-      const flaky = {
-        id: 'mock',
+      };
+      const secondary = {
+        id: 'secondary',
         capabilities: () => new Set(['text']),
         healthCheck: async () => ({ ok: true }),
         async generate(req) {
-          calls += 1;
-          if (calls === 1) {
-            throw new BrainError(CODES.provider_unavailable, 'down', { retryable: true });
-          }
+          fallbackCalls += 1;
           return {
             text: 'recovered',
             usage: { inputTokens: 1, outputTokens: 1 },
@@ -222,28 +206,30 @@ describe('LeadPages Brain Phase 1', () => {
           };
         }
       };
-      const brain2 = createBrain({
+      const brain = createBrain({
         config: {
+          // Disable retries so we exercise fallback, not primary retry recovery.
+          resilience: { maxRetries: 0, retryBackoffMs: 0 },
           models: {
-            a: { provider: 'mock', model: 'mock-default' },
-            b: { provider: 'mock', model: 'mock-fast' }
+            a: { provider: 'primary', model: 'p1' },
+            b: { provider: 'secondary', model: 's1' }
           },
           routes: {
             'generic.fast': {
               taskId: 'generic.fast',
-              primary: { provider: 'mock', model: 'mock-default' },
-              fallback: [{ provider: 'mock', model: 'mock-fast' }]
+              primary: { provider: 'primary', model: 'p1' },
+              fallback: [{ provider: 'secondary', model: 's1' }]
             }
           }
         },
-        adapters: { mock: flaky }
+        adapters: { primary, secondary }
       });
-      const res = await brain2.generate({ taskId: 'generic.fast', input: 'ping' });
+      const res = await brain.generate({ taskId: 'generic.fast', input: 'ping' });
       assert.equal(res.ok, true);
       assert.equal(res.output.text, 'recovered');
       assert.equal(res.routing.fallbackUsed, true);
-      assert.equal(calls, 2);
-      void brain;
+      assert.equal(primaryCalls, 1);
+      assert.equal(fallbackCalls, 1);
     });
 
     it('rejects unknown tasks', async () => {

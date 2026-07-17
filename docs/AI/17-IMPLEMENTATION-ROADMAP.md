@@ -60,12 +60,14 @@
 
 ---
 
-## Phase 4 — Routing and resilience
+## Phase 4 — Routing and resilience ✅
 
 | | |
 |--|--|
 | Objectives | Task router, timeouts, retries, fallbacks, flags, soft cost controls |
-| Gate | Chaos tests with mock failures |
+| Deliverables | `lib/brain/resilience.js`; gateway retries; `flags.disabledTasks` / `route.enabled`; soft `budgets` + `onBudgetCheck` |
+| Gate | Chaos-style tests with mock failures (`tests/brain-phase4.test.js`) |
+| Status | **Complete** — timeouts/fallbacks already in Phase 1; Phase 4 adds retries + flags + soft budgets |
 
 ---
 

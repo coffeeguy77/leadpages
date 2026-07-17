@@ -1,7 +1,7 @@
 # 05 — Task Router
 
 **Document:** `AI/05-TASK-ROUTER`  
-**Status:** Proposed  
+**Status:** Partial — policy table + retries/flags/budgets in `lib/brain` (Phase 4); Control Centre overrides later  
 **Prerequisites:** [03-TARGET-ARCHITECTURE](03-TARGET-ARCHITECTURE.md), [04-PROVIDER-ADAPTERS](04-PROVIDER-ADAPTERS.md)
 
 ---

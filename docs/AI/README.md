@@ -42,10 +42,11 @@ LeadPages is evolving from a website builder into an AI-powered business platfor
 | Phase 1 foundation (`lib/brain`) | **Complete** — mock adapter, gateway, router, schema validation, tests |
 | Real provider adapters (Anthropic, …) | **Phase 2 complete** — Anthropic Messages API adapter (raw `fetch`); OpenAI/Gemini later |
 | Prompt registry + context resolver | **Phase 3 complete** — file-based prompts; slice resolver with auth + redaction (no DB) |
+| Routing resilience | **Phase 4 complete** — retries, task flags, soft token/cost budgets |
 | Feature migrations | **Not started** (Phase 7+) |
 | Theme Studio / Marketing Hub product builds | **Out of scope** (depend on Brain later) |
 
-**Phase:** Phase 3 prompt registry + context resolver shipped. Next: Phase 4 routing resilience (retries / flags / soft cost controls) — owner-gated.
+**Phase:** Phase 4 resilience shipped. Next phases (owner-gated): additional providers, Control Centre, first feature migration.
 
 ---
 
@@ -128,8 +129,8 @@ const result = await brain.generate({
 // BRAIN_PROVIDER=anthropic ANTHROPIC_API_KEY=...
 ```
 
-Tests: `tests/brain-phase1.test.js`, `tests/brain-anthropic.test.js`, `tests/brain-phase3.test.js`.
+Tests: `tests/brain-phase*.test.js`, `tests/brain-anthropic.test.js`.
 
 ## Notice
 
-Phase 0 was documentation-only. Phase 1–3 add **`lib/brain`** with mock + Anthropic adapters, file-based prompt registry, and context slice resolver. No feature migrations, no Control Centre, no database migrations yet.
+Phase 0 was documentation-only. Phase 1–4 add **`lib/brain`** with mock + Anthropic adapters, prompt registry, context slices, retries/flags/budgets. No feature migrations, no Control Centre, no database migrations yet.
