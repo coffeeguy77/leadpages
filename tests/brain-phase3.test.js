@@ -174,10 +174,27 @@ describe('LeadPages Brain Phase 3 — context', () => {
         resolver.resolve({
           site: sampleSite,
           actor: { role: 'super' },
-          slices: ['ads.summary'],
+          slices: ['not.a.real.slice'],
         }),
       (err) => err instanceof BrainError && err.code === CODES.bad_request
     );
+  });
+
+  it('resolves ads.summary without tokens', () => {
+    const resolver = createContextResolver();
+    const resolved = resolver.resolve({
+      site: sampleSite,
+      actor: { role: 'super' },
+      adsSummary: {
+        connected: true,
+        customerId: '••••••7890',
+        status: 'connected',
+        metrics30d: { spendAud: 1, clicks: 2, impressions: 3, conversions: 0 }
+      },
+      slices: ['ads.summary']
+    });
+    assert.equal(resolved.context['ads.summary'].connected, true);
+    assert.ok(!JSON.stringify(resolved.context).includes('refresh'));
   });
 });
 
