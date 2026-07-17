@@ -7,7 +7,9 @@ const {
   composeBodyMarkdown,
   normalizeLandingDraft,
   LANDING_DRAFT_SCHEMA,
-  stripDecorativeIcons
+  stripDecorativeIcons,
+  faqsToPageItems,
+  stripFaqBlocks
 } = require('../lib/brain/landing-compose');
 const { validateAgainstSchema } = require('../lib/brain/schema');
 
@@ -19,7 +21,7 @@ describe('landing-compose', () => {
     );
   });
 
-  it('appends FAQ markers and CTA when missing from body', () => {
+  it('keeps FAQs out of body and appends CTA only', () => {
     const body = composeBodyMarkdown({
       bodyMarkdown: '## Heavy diesel machinery repairs\n\nWe fix plant on site.',
       faqs: [
@@ -28,10 +30,53 @@ describe('landing-compose', () => {
       ctaHeadline: 'Contact RTT Truck and Track',
       ctaBody: 'Call us to discuss your machine.'
     });
-    assert.match(body, /## Frequently Asked Questions/);
-    assert.match(body, /\?\?\? Do you service excavators\?/);
+    assert.equal(/Frequently Asked Questions|\?\?\?/.test(body), false);
     assert.match(body, /## Contact RTT Truck and Track/);
     assert.match(body, /Call us to discuss/);
+  });
+
+  it('strips model-written FAQ sections from body (Marketplace FAQ owns Q&As)', () => {
+    const body = composeBodyMarkdown({
+      bodyMarkdown:
+        'Intro about coffee cart hire.\n\n' +
+        '## Frequently Asked Questions\n\n' +
+        '??? How much does coffee cart hire cost?\n' +
+        'Pricing depends on the event.\n\n' +
+        '## Book Your Coffee Cart in Canberra Today\n\n' +
+        'Get in touch for a quote.',
+      faqs: [
+        {
+          question: 'How much does coffee cart hire in Canberra cost?',
+          answer: 'Pricing depends on duration and guest numbers.'
+        }
+      ],
+      ctaHeadline: 'Book Your Coffee Cart in Canberra Today',
+      ctaBody: 'Get in touch with Bean Culture for a fast quote.'
+    });
+    assert.equal(/Frequently Asked Questions|\?\?\?|How much does coffee cart hire cost/.test(body), false);
+    assert.match(body, /Intro about coffee cart hire/);
+    assert.match(body, /## Book Your Coffee Cart in Canberra Today/);
+    assert.match(body, /Get in touch with Bean Culture/);
+  });
+
+  it('maps faqs[] to Marketplace page items (q/a)', () => {
+    assert.deepEqual(
+      faqsToPageItems([
+        { question: 'How much?', answer: 'It depends.' },
+        { q: 'Do you travel?', a: 'Yes.' }
+      ]),
+      [
+        { q: 'How much?', a: 'It depends.', on: true },
+        { q: 'Do you travel?', a: 'Yes.', on: true }
+      ]
+    );
+  });
+
+  it('stripFaqBlocks removes FAQ heading and ??? markers', () => {
+    const stripped = stripFaqBlocks(
+      'Body copy.\n\n## Frequently Asked Questions\n\n??? Q?\nA.\n'
+    );
+    assert.equal(stripped, 'Body copy.');
   });
 
   it('strips leading H1 from body (H1 is a separate field)', () => {
@@ -73,8 +118,10 @@ describe('landing-compose', () => {
     assert.equal(draft.h1, 'Earthmoving Equipment Repairs Canberra');
     assert.match(draft.title, /Earthmoving Equipment Repairs Canberra/);
     assert.ok(draft.meta.length > 40 && draft.meta.length <= 160);
-    assert.match(draft.bodyMarkdown, /\?\?\? What machines do you repair\?/);
+    assert.equal(/\?\?\?|Frequently Asked Questions/.test(draft.bodyMarkdown), false);
     assert.match(draft.bodyMarkdown, /## Get in touch/);
+    assert.equal(draft.faqs.length, 1);
+    assert.equal(draft.faqs[0].question, 'What machines do you repair?');
     assert.deepEqual(draft.secondaryKeywords[0], 'Excavator repairs Canberra');
   });
 

@@ -857,7 +857,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       <div class="f"><textarea id="lp-body" class="tin mono" rows="12" placeholder="Write your page content here. Simple Markdown supported: ## Subheading, **bold**, - bullet."></textarea></div>
 
       <div class="lp-approve" id="lp-approve" hidden>
-        <div class="lp-ap-h">AI draft ready — review before it fills title, slug, meta, H1 and body</div>
+        <div class="lp-ap-h">AI draft ready — review before it fills SEO fields and attaches Marketplace FAQ (Unique)</div>
         <div class="lp-ap-preview" id="lp-ap-preview"></div>
         <div class="lp-ap-actions"><button class="btn" id="lp-ap-accept">Use this draft</button><button class="btn ghost" id="lp-ap-discard">Discard</button></div>
       </div>
@@ -2016,6 +2016,68 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     }
     persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
   }
+  /** Strip FAQ heading / ??? markers from AI body so Marketplace FAQ app owns Q&As. */
+  function lpStripBodyFaqs(body){
+    var b=String(body||'');
+    var ctaRe=/\n##\s*((?:Contact|Get in touch|Ready to|Call |Book |Request )[^\n]*)\n([\s\S]*)$/i;
+    var cta=null;
+    var m=b.match(ctaRe);
+    if(m&&m.index!=null){
+      cta={h:String(m[1]||'').trim(), b:String(m[2]||'').trim()};
+      b=b.slice(0,m.index).trim();
+    }
+    b=b.replace(/\n*##\s*(Frequently Asked Questions|FAQs?)\b[\s\S]*$/i,'').trim();
+    b=b.replace(/(?:^|\n)\?\?\?\s+.+(?:\n(?!\?\?\?|##).*)*/g,'\n').trim();
+    if(cta&&(cta.h||cta.b)){
+      b+='\n\n## '+(cta.h||'Get in touch')+'\n\n'+(cta.b||'')+'\n';
+    }
+    return b.replace(/\n{3,}/g,'\n\n').trim();
+  }
+  /**
+   * Attach Marketplace FAQ as Unique on this landing page and fill items from AI draft.faqs.
+   * @returns {number} number of FAQ items applied
+   */
+  function lpApplyDraftFaqs(faqs){
+    if(!lpCur||currentSiteTemplate!=='trade') return 0;
+    var items=(Array.isArray(faqs)?faqs:[]).map(function(f){
+      return {
+        q:String((f&&(f.question||f.q))||'').trim(),
+        a:String((f&&(f.answer||f.a))||'').trim(),
+        on:true
+      };
+    }).filter(function(it){ return it.q&&it.a; }).slice(0,8);
+    if(!items.length) return 0;
+
+    var apps=lpEnsurePageApps(lpCur);
+    var app=apps.find(function(a){ return (a.key||a.section_key)==='faq'; });
+    if(!app){
+      apps.push({key:'faq', mode:'unique', homeCopied:true});
+    } else {
+      app.mode='unique';
+      app.homeCopied=true;
+    }
+
+    var home={};
+    try{ home=JSON.parse(JSON.stringify(lpPageHomeSection('faq')||{})); }catch(e){ home={}; }
+    lpCur.pageSections.faq=Object.assign({}, home, {
+      on:true,
+      eyebrow:(home.eyebrow!=null&&String(home.eyebrow).trim())?home.eyebrow:'Good to know',
+      heading:(home.heading!=null&&String(home.heading).trim())?home.heading:'Frequently Asked Questions',
+      items:items
+    });
+
+    lpEnsurePageLayoutOrder(lpCur);
+    var ord=(lpCur.pageLayoutOrder||[]).filter(function(id){ return id!=='faq'; });
+    var artIdx=ord.indexOf('__lpArticle');
+    if(artIdx>=0) ord.splice(artIdx+1, 0, 'faq');
+    else ord.push('faq');
+    lpCur.pageLayoutOrder=ord;
+
+    persist(); lpAutosave();
+    try{ lpRenderAppsTab(); }catch(e){}
+    lpPagePreviewReload();
+    return items.length;
+  }
   function lpEnsureOrdCss(){
     if(document.getElementById('ord-anim-css')) return;
     var st=document.createElement('style'); st.id='ord-anim-css';
@@ -2180,7 +2242,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-ap-accept').addEventListener('click',function(){
       var draft={};
       try{ draft=JSON.parse($('lp-approve').getAttribute('data-draft-json')||'{}')||{}; }catch(e){ draft={}; }
-      var body=String(draft.bodyMarkdown||draft.markdown||$('lp-approve').getAttribute('data-draft')||'');
+      var body=lpStripBodyFaqs(String(draft.bodyMarkdown||draft.markdown||$('lp-approve').getAttribute('data-draft')||''));
       if(draft.title){ $('lp-title').value=draft.title; lpField('title',draft.title); }
       if(draft.slug){
         var slug=String(draft.slug).toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+/,'').replace(/--+/g,'-').replace(/-+$/,'');
@@ -2189,9 +2251,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(draft.meta){ $('lp-meta').value=draft.meta; lpField('meta',draft.meta); $('lp-meta-count').textContent=String(draft.meta).length+' characters'; }
       if(draft.h1){ $('lp-h1').value=draft.h1; lpField('h1',draft.h1); }
       $('lp-body').value=body; lpField('body',body); lpPush(body);
+      var faqN=lpApplyDraftFaqs(draft.faqs);
       $('lp-approve').hidden=true;
       if(lpCur) $('lp-ed-title').textContent=lpCur.title?('Edit: '+lpCur.title):'New page';
-      toast('Draft applied — title, slug, meta, H1 and body filled');
+      toast(faqN
+        ?('Draft applied — SEO fields filled + Marketplace FAQ (Unique) with '+faqN+' questions')
+        :'Draft applied — title, slug, meta, H1 and body filled');
     });
     $('lp-ap-discard').addEventListener('click',function(){ $('lp-approve').hidden=true; });
     var lptc=$('lp-tab-content'), lpta=$('lp-tab-apps');
@@ -2276,7 +2341,20 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(draft.secondaryKeywords&&draft.secondaryKeywords.length){
         metaBits+='<div class="lp-ap-meta"><strong>Secondary keywords:</strong> '+esc(draft.secondaryKeywords.join(', '))+'</div>';
       }
-      $('lp-ap-preview').innerHTML=metaBits+'<div class="lp-ap-body"><p>'+mdToHtml(txt)+'</p></div>';
+      var faqHtml='';
+      var faqList=Array.isArray(draft.faqs)?draft.faqs:[];
+      if(faqList.length){
+        faqHtml='<div class="lp-ap-meta"><strong>Marketplace FAQ (Unique):</strong> '+faqList.length+' questions will be attached on accept</div><div class="lp-ap-faqs">';
+        faqList.forEach(function(f){
+          var q=String((f&&(f.question||f.q))||'').trim();
+          var a=String((f&&(f.answer||f.a))||'').trim();
+          if(!q||!a) return;
+          faqHtml+='<details class="lp-faq"><summary>'+esc(q)+'</summary><div class="lp-faq-a"><p>'+esc(a)+'</p></div></details>';
+        });
+        faqHtml+='</div>';
+      }
+      var bodyPreview=lpStripBodyFaqs(txt);
+      $('lp-ap-preview').innerHTML=metaBits+faqHtml+'<div class="lp-ap-body"><p>'+mdToHtml(bodyPreview)+'</p></div>';
       $('lp-approve').hidden=false; note.textContent='';
       try{$('lp-approve').scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){}
     }catch(err){ note.textContent='Could not reach the AI draft service. Try again in a moment.'; }
