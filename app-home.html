@@ -7,9 +7,13 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="LeadPages by Web Culture">
+<meta name="application-name" content="LeadPages by Web Culture">
 <meta name="theme-color" content="#1f7a63">
 <title>LeadPages by Web Culture</title>
-<meta name="description" content="LeadPages by Web Culture is an Australian website and landing-page platform for small businesses and agency partners. Publish sites, capture leads, and connect Google Ads from the App Command Centre.">
+<meta name="description" content="LeadPages by Web Culture is an Australian website and landing-page application. Purpose: publish sites, manage landing pages, capture leads, and connect Google Ads for small businesses and agency partners.">
+<meta property="og:title" content="LeadPages by Web Culture">
+<meta property="og:site_name" content="LeadPages by Web Culture">
+<meta property="og:description" content="Australian website and landing-page application for publishing sites, capturing leads, and connecting Google Ads.">
 <meta name="google-site-verification" content="cR5yH7wsUUmO8hzGE-VVJFv91dYvjDqyO4TeL-xXS28" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,102 +38,85 @@ body{
   color:var(--ink);
   background:
     radial-gradient(900px 420px at 12% -10%, rgba(31,122,99,.18), transparent 60%),
-    radial-gradient(700px 380px at 100% 0%, rgba(21,92,74,.10), transparent 55%),
-    linear-gradient(180deg, #eef5f1 0%, var(--paper) 45%, #e8efeb 100%);
+    linear-gradient(180deg, #eef5f1 0%, var(--paper) 50%, #e8efeb 100%);
   line-height:1.55;
 }
 .shell{max-width:720px;margin:0 auto;padding:48px 22px 72px}
-.identity{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  gap:14px;
-  margin:0 0 18px;
-}
-.identity img.mark{
-  width:min(280px,100%);
-  height:auto;
-  display:block;
-}
-.identity img.icon{
-  width:72px;height:72px;
-  border-radius:16px;
-  border:1px solid var(--line);
-  background:#f7f7f2;
-  flex:none;
+.identity{display:flex;align-items:center;gap:16px;margin:0 0 10px}
+.identity img{
+  width:72px;height:72px;border-radius:16px;border:1px solid var(--line);
+  background:#fff;flex:none;
 }
 .brand{
   font-family:var(--disp);
-  font-size:clamp(28px,5.5vw,40px);
+  font-size:clamp(30px,6vw,44px);
   font-weight:600;
   letter-spacing:-.03em;
   margin:0;
-  color:var(--ink);
-  line-height:1.15;
+  line-height:1.12;
 }
-.org{margin:6px 0 0;font-size:13.5px;color:var(--mut);font-weight:600}
-.lede{margin:0 0 22px;font-size:17px;color:var(--mut);max-width:58ch}
-.card{
+.app-label{margin:0 0 6px;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--accent-hover)}
+.org{margin:8px 0 0;font-size:13.5px;color:var(--mut);font-weight:600}
+.lede{margin:18px 0 20px;font-size:18px;color:var(--ink);max-width:60ch}
+.lede strong{font-weight:700}
+h2{font-family:var(--disp);font-size:24px;font-weight:500;margin:0 0 10px}
+.purpose,.google-data{
   background:var(--panel);
   border:1px solid var(--line);
-  border-radius:18px;
-  padding:26px 24px;
-  box-shadow:0 18px 40px rgba(27,36,48,.06);
-  margin-bottom:14px;
+  border-radius:16px;
+  padding:22px 22px 18px;
+  margin:0 0 14px;
 }
-.card h2{
-  font-family:var(--disp);
-  font-size:22px;
-  font-weight:500;
-  margin:0 0 10px;
-}
-.card p{margin:0 0 12px;color:var(--mut);font-size:15px}
-.card p:last-child{margin-bottom:0}
-.card strong{color:var(--ink);font-weight:700}
+.purpose p,.google-data p{margin:0 0 10px;color:var(--mut);font-size:15.5px}
+.purpose ul{margin:8px 0 4px;padding-left:1.2em;color:var(--mut);font-size:15.5px}
+.purpose li{margin:0 0 6px}
+.purpose strong,.google-data strong{color:var(--ink)}
 .actions{display:flex;flex-wrap:wrap;gap:12px;margin:22px 0 18px}
 .btn{
   display:inline-flex;align-items:center;justify-content:center;
-  font:600 15px var(--ui);
-  padding:12px 18px;border-radius:12px;text-decoration:none;
+  font:600 15px var(--ui);padding:12px 18px;border-radius:12px;text-decoration:none;
   border:1px solid transparent;
 }
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:var(--accent-hover)}
 .btn-ghost{background:transparent;color:var(--accent-hover);border-color:rgba(31,122,99,.35)}
-.btn-ghost:hover{background:rgba(31,122,99,.08)}
 .legal{font-size:14px;color:var(--mut)}
 .legal a{color:var(--accent-hover);font-weight:600;text-decoration:none}
-.legal a:hover{text-decoration:underline}
 .sep{margin:0 8px;opacity:.45}
 </style>
 </head>
 <body>
   <main class="shell">
+    <p class="app-label">Application name</p>
     <div class="identity">
-      <img class="mark" src="https://res.cloudinary.com/dzx6x1hou/image/upload/v1783347892/leadpages.svg" width="280" height="90" alt="leadpages — LeadPages by Web Culture">
-      <div>
-        <h1 class="brand">LeadPages by Web Culture</h1>
-        <p class="org">Operated by Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</p>
-      </div>
+      <img src="/assets/oauth-app-logo-icon-512.png" width="72" height="72" alt="LeadPages by Web Culture">
+      <h1 class="brand">LeadPages by Web Culture</h1>
     </div>
+    <p class="org">Operated by Bean Culture Pty Ltd trading as Web Culture · ABN 33 600 754 676</p>
 
-    <p class="lede"><strong>LeadPages by Web Culture</strong> is an Australian website and landing-page platform for small businesses and agency partners. Use the App Command Centre to publish sites, manage landing pages, capture leads, and connect marketing tools.</p>
+    <p class="lede">The purpose of <strong>LeadPages by Web Culture</strong> is to help Australian small businesses and agency partners design, publish, and manage websites and landing pages, capture leads, and connect marketing integrations such as Google Ads.</p>
 
-    <section class="card" aria-labelledby="purpose-heading">
-      <h2 id="purpose-heading">Purpose of this application</h2>
-      <p><strong>LeadPages by Web Culture</strong> helps partners and site owners design, publish, and manage customer websites and landing pages from one workspace — including content, themes, forms, SEO settings, and publishing — without writing code.</p>
-      <p>This application homepage describes the LeadPages product operated by Web Culture (Bean Culture Pty Ltd). It is the application users authorize when connecting Google services from the App Command Centre at app.leadpages.com.au.</p>
+    <section class="purpose" aria-labelledby="purpose-heading">
+      <h2 id="purpose-heading">Purpose of LeadPages by Web Culture</h2>
+      <p><strong>LeadPages by Web Culture</strong> is a website and landing-page application. Users sign in to the App Command Centre to:</p>
+      <ul>
+        <li>Create and publish customer websites and landing pages</li>
+        <li>Edit content, themes, forms, menus, and SEO settings without code</li>
+        <li>Capture and manage leads from published sites</li>
+        <li>Connect Google Ads to measure campaign performance and website conversions</li>
+      </ul>
+      <p>This page is the public application homepage for <strong>LeadPages by Web Culture</strong> at <strong>https://app.leadpages.com.au</strong>.</p>
     </section>
 
-    <section class="card" aria-labelledby="google-data-heading">
+    <section class="google-data" aria-labelledby="google-data-heading">
       <h2 id="google-data-heading">How LeadPages by Web Culture uses Google user data</h2>
-      <p>When you connect Google Ads, <strong>LeadPages by Web Culture</strong> requests access so you can link your Google Ads account, sync campaign and account performance into your site workspace, and upload website conversion events that help measure lead outcomes.</p>
-      <p>We do not use Google user data to sell ads, and we do not share it with unrelated third parties. See the Privacy Policy for access, use, storage, and retention details.</p>
+      <p>When a user connects Google Ads, <strong>LeadPages by Web Culture</strong> uses Google account access to link Google Ads accounts, sync campaign and account performance into the site workspace, and upload website conversion events that help measure lead outcomes.</p>
+      <p>LeadPages by Web Culture does not sell Google user data and does not share it with unrelated third parties. Details are in the Privacy Policy linked below (same URL as the OAuth consent screen).</p>
     </section>
 
     <div class="actions">
       <a class="btn btn-primary" href="/manage">Sign in to LeadPages by Web Culture</a>
-      <a class="btn btn-ghost" href="https://www.leadpages.com.au/" rel="noopener">Visit leadpages.com.au</a>
+      <a class="btn btn-ghost" href="https://www.leadpages.com.au/" rel="noopener">Marketing site</a>
     </div>
 
     <p class="legal">
