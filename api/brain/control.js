@@ -9,7 +9,12 @@
  */
 
 const { requireSuper, readBody, json } = require('../billing/_admin-auth');
-const { getPlatformBrain, resetPlatformBrain } = require('../../lib/brain/platform');
+const {
+  getPlatformBrain,
+  resetPlatformBrain,
+  getLandingDraftProvider,
+  setLandingDraftProvider
+} = require('../../lib/brain/platform');
 const { getDefaultUsageStore } = require('../../lib/brain/usage-store');
 const {
   loadDurableUsage,
@@ -144,13 +149,18 @@ module.exports = async function brainControl(req, res) {
         keyHint;
     }
 
+    const landingProvider = getLandingDraftProvider(brain);
+
     return json(res, 200, {
       ok: true,
       defaultProvider: brain.config.defaultProvider || 'mock',
       brainProviderEnv: process.env.BRAIN_PROVIDER || 'mock',
+      landingDraftProvider: landingProvider,
+      landingDraftProviderEnv: process.env.BRAIN_LANDING_PROVIDER || '',
       flags: Object.assign({}, brain.config.flags || {}, {
         landingDraftEnv: process.env.BRAIN_LANDING_DRAFT || '',
-        disableTasksEnv: process.env.BRAIN_DISABLE_TASKS || ''
+        disableTasksEnv: process.env.BRAIN_DISABLE_TASKS || '',
+        landingDraftProvider: landingProvider
       }),
       budgets: brain.config.budgets || {},
       resilience: brain.config.resilience || {},
@@ -252,6 +262,28 @@ module.exports = async function brainControl(req, res) {
     return json(res, 200, { ok: true, notice: 'Platform brain singleton reset' });
   }
 
+  if (action === 'set_landing_provider') {
+    const provider = String(body.provider || '').toLowerCase().trim();
+    try {
+      const set = setLandingDraftProvider(provider, brain);
+      return json(res, 200, {
+        ok: true,
+        landingDraftProvider: set,
+        notice:
+          'Landing drafts on this isolate now use ' +
+          set +
+          '. For durability across cold starts set BRAIN_LANDING_PROVIDER=' +
+          set +
+          ' in Vercel.'
+      });
+    } catch (err) {
+      return json(res, 400, {
+        ok: false,
+        error: (err && err.message) || 'invalid provider'
+      });
+    }
+  }
+
   if (action === 'usage_probe') {
     const correlationId =
       'probe-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
@@ -290,7 +322,8 @@ module.exports = async function brainControl(req, res) {
       'test_generate',
       'clear_usage',
       'reset_brain',
-      'usage_probe'
+      'usage_probe',
+      'set_landing_provider'
     ]
   });
 };

@@ -84,6 +84,24 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       <div id="providers"></div>
     </section>
     <section class="ba-card">
+      <h2>Landing draft provider</h2>
+      <p class="sub">Which AI writes SEO landing pages. Use OpenAI if Anthropic keeps drifting into the wrong service (e.g. coffee on a catering brief).</p>
+      <div class="field"><label>Provider for content.landing_draft</label>
+        <select id="landing-provider">
+          <option value="anthropic">anthropic</option>
+          <option value="openai">openai</option>
+          <option value="gemini">gemini</option>
+          <option value="mock">mock</option>
+        </select>
+      </div>
+      <button class="btn solid" id="landing-provider-save" type="button">Apply</button>
+      <p class="msg" id="landing-provider-msg"></p>
+      <p class="notice" style="margin-top:10px">Runtime-only on this isolate. Persist with <span class="mono">BRAIN_LANDING_PROVIDER=openai</span> in Vercel.</p>
+    </section>
+  </div>
+
+  <div class="grid2">
+    <section class="ba-card">
       <h2>Probe</h2>
       <p class="sub">Health-check a provider or run a mock-safe generate.</p>
       <div class="field"><label>Provider</label>
@@ -92,6 +110,10 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       <button class="btn" id="probe-health" type="button">Health check</button>
       <button class="btn" id="probe-gen" type="button">Test generate (generic.fast)</button>
       <p class="msg" id="probe-msg"></p>
+    </section>
+    <section class="ba-card">
+      <h2>Tips</h2>
+      <p class="sub">For corporate catering (not coffee): in Landing pages use <strong>SEO keyword page</strong> mode with negatives like <span class="mono">coffee, barista, wedding, cart</span>.</p>
     </section>
   </div>
 
@@ -179,11 +201,14 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     $('kpis').innerHTML = [
       kpi('Default provider', data.defaultProvider || 'mock'),
       kpi('BRAIN_PROVIDER', data.brainProviderEnv || 'mock'),
+      kpi('Landing drafts', data.landingDraftProvider || data.defaultProvider || 'mock'),
       kpi('Landing draft flag', (data.flags && data.flags.landingDraft) ? 'ON' : 'off'),
       kpi('Usage events', String(calls)),
-      kpi('Failures', String(fails)),
       kpi('Est. USD ('+src+')', usd.toFixed(4))
     ].join('');
+
+    var lpSel = $('landing-provider');
+    if(lpSel && data.landingDraftProvider) lpSel.value = data.landingDraftProvider;
 
     $('providers').innerHTML = (data.providers||[]).map(function(p){
       var h = (data.health && data.health[p.id]) || {};
@@ -263,6 +288,17 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   };
   $('signout').onclick = async function(){ await sb.auth.signOut(); showGate(); };
   $('refresh').onclick = function(){ load().catch(function(e){ alert(e.message||e); }); };
+
+  $('landing-provider-save').onclick = async function(){
+    var msg = $('landing-provider-msg');
+    msg.textContent = 'Saving…';
+    try{
+      var j = await api('POST', { action:'set_landing_provider', provider: $('landing-provider').value });
+      msg.className = 'msg '+(j.ok?'ok':'bad');
+      msg.textContent = j.ok ? (j.notice || ('Using '+j.landingDraftProvider)) : (j.error||'failed');
+      if(j.ok) await load();
+    }catch(e){ msg.className='msg bad'; msg.textContent=e.message||String(e); }
+  };
 
   $('probe-health').onclick = async function(){
     var msg = $('probe-msg');
