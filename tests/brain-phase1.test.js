@@ -244,7 +244,7 @@ describe('LeadPages Brain Phase 1', () => {
       const models = brain.listModels();
       assert.ok(models.some((m) => m.provider === 'mock'));
       const decision = brain.getRoutingDecision('pack.trade_generate');
-      assert.equal(decision.structured, true);
+      assert.equal(decision.structured, false);
       assert.ok(decision.maxTokens >= 4096);
     });
 

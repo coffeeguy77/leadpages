@@ -107,13 +107,30 @@
 
 ## Phase 8 — AI Theme Studio
 
-Separate product specification: [21-THEME-STUDIO](21-THEME-STUDIO.md). Uses Brain exclusively. Compatible with theme engine / renderer — not freeform HTML. **Not built in this PR.**
+**Status: Complete.** Spec: [21-THEME-STUDIO](21-THEME-STUDIO.md).
+
+| Item | Detail |
+|------|--------|
+| Tasks | `theme.generate`, `theme.refine` |
+| UI | `/theme-studio` (+ Ops Command panel) |
+| APIs | `POST /api/brain/theme-generate\|theme-refine\|theme-approve` |
+| Write | Approve merges trade tokens into `sites.config.theme` |
+| Flag | `BRAIN_THEME_STUDIO` (default on) |
 
 ---
 
 ## Phase 9 — AI Marketing Hub
 
-Separate product specification: [22-MARKETING-HUB](22-MARKETING-HUB.md). Uses Brain exclusively. LeadPages-managed campaigns distinct from customer’s other site campaigns (e.g. WordPress). No mutate without approval. **Not built in this PR.**
+**Status: Complete.** Spec: [22-MARKETING-HUB](22-MARKETING-HUB.md).
+
+| Item | Detail |
+|------|--------|
+| Tasks | `ads.campaign_plan`, `ads.rsa_copy` |
+| UI | `/marketing-hub` (+ Ops Command panel) |
+| APIs | `POST /api/brain/ads-campaign-plan\|ads-rsa-copy\|ads-approve` |
+| Write | Approve stores under `sites.config.marketingHub` — **does not** call Google Ads mutate APIs |
+| Context | `ads.summary` slice (redacted; no OAuth tokens in prompts) |
+| Flag | `BRAIN_MARKETING_HUB` (default on) |
 
 ---
 

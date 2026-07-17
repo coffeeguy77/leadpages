@@ -9,10 +9,10 @@
 // POST { question, history?:[{role,content}] }  ->  { ok:true, answer }
 // Auth: optional "Authorization: Bearer <supabase access_token>". No token = client level.
 //
-// Requires env: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, ANTHROPIC_API_KEY
-// Optional env: ASSIST_MODEL (defaults to a current Claude model)
+// When BRAIN_HELP_ASSIST=1, answers go through LeadPages Brain (task help.answer).
 
 const { createClient } = require('@supabase/supabase-js');
+const { getPlatformBrain, isHelpAssistEnabled } = require('../lib/brain/platform');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const MODEL = process.env.ASSIST_MODEL || 'claude-haiku-4-5-20251001';
@@ -48,10 +48,75 @@ async function roleOf(user) {
   return 'client';
 }
 
+function buildSystem(role, ctx) {
+  const who = role === 'super' ? 'an admin who runs the LeadPages platform'
+    : role === 'partner' ? 'a LeadPages partner who builds and sells websites for local businesses'
+    : 'a website client of LeadPages';
+  const fallback = role === 'client' ? 'suggest they contact their provider or LeadPages support'
+    : role === 'partner' ? 'suggest they use the Support area or message LeadPages from their dashboard'
+    : 'say it may need a product decision rather than a documented answer';
+
+  return (
+    'You are the LeadPages help assistant, speaking with ' + who + '.\n' +
+    'Answer ONLY using the help articles provided below. Be concise, warm and practical, and use plain language a busy tradesperson would appreciate.\n' +
+    'If the answer is not covered by the articles, say you are not certain and ' + fallback + '. Never invent features, prices, or policies, and never share guidance intended for a different account level.\n' +
+    'Keep answers short unless asked for detail. You may use simple formatting (short paragraphs and - bullets).\n\n' +
+    'HELP ARTICLES AVAILABLE TO THIS PERSON:\n' + ctx
+  );
+}
+
+async function answerViaBrain(role, question, history, helpContext) {
+  const brain = getPlatformBrain();
+  const messages = [
+    { role: 'system', content: buildSystem(role, helpContext) }
+  ];
+  history.forEach((m) => {
+    if (m && (m.role === 'user' || m.role === 'assistant') && m.content) {
+      messages.push({ role: m.role, content: String(m.content).slice(0, 4000) });
+    }
+  });
+  messages.push({ role: 'user', content: question.slice(0, 4000) });
+
+  const result = await brain.generate({
+    taskId: 'help.answer',
+    actor: { role },
+    messages
+  });
+  if (!result.ok) {
+    const msg = (result.error && result.error.message) || 'Assistant failed';
+    const err = new Error(msg);
+    err.status = 502;
+    throw err;
+  }
+  return (result.output && result.output.text) || "Sorry, I couldn't find an answer for that.";
+}
+
+async function answerViaAnthropic(system, messages) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({ model: MODEL, max_tokens: 700, system, messages }),
+  });
+  const data = await r.json();
+  if (!r.ok) {
+    const detail = (data && data.error && data.error.message) ? data.error.message : ('AI request failed (' + r.status + ')');
+    const err = new Error(detail);
+    err.status = 502;
+    throw err;
+  }
+  return (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim()
+    || "Sorry, I couldn't find an answer for that.";
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'Use POST.' });
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  const useBrain = isHelpAssistEnabled();
+  if (!useBrain && !process.env.ANTHROPIC_API_KEY) {
     return res.status(500).json({
       ok: false,
       error: "The assistant isn't switched on yet. In Vercel, open this project's Settings → Environment Variables, add ANTHROPIC_API_KEY with your Anthropic API key, then redeploy.",
@@ -81,20 +146,7 @@ module.exports = async (req, res) => {
     ? articles.map((a) => '## ' + (a.title || 'Untitled') + ' [' + (a.category || 'General') + ']\n' + (a.body || '')).join('\n\n---\n\n')
     : '(No help articles are available to this account yet.)';
 
-  const who = role === 'super' ? 'an admin who runs the LeadPages platform'
-    : role === 'partner' ? 'a LeadPages partner who builds and sells websites for local businesses'
-    : 'a website client of LeadPages';
-  const fallback = role === 'client' ? 'suggest they contact their provider or LeadPages support'
-    : role === 'partner' ? 'suggest they use the Support area or message LeadPages from their dashboard'
-    : 'say it may need a product decision rather than a documented answer';
-
-  const system =
-    'You are the LeadPages help assistant, speaking with ' + who + '.\n' +
-    'Answer ONLY using the help articles provided below. Be concise, warm and practical, and use plain language a busy tradesperson would appreciate.\n' +
-    'If the answer is not covered by the articles, say you are not certain and ' + fallback + '. Never invent features, prices, or policies, and never share guidance intended for a different account level.\n' +
-    'Keep answers short unless asked for detail. You may use simple formatting (short paragraphs and - bullets).\n\n' +
-    'HELP ARTICLES AVAILABLE TO THIS PERSON:\n' + ctx;
-
+  const system = buildSystem(role, ctx);
   const messages = [];
   history.forEach((m) => {
     if (m && (m.role === 'user' || m.role === 'assistant') && m.content) {
@@ -104,23 +156,14 @@ module.exports = async (req, res) => {
   messages.push({ role: 'user', content: question.slice(0, 4000) });
 
   try {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({ model: MODEL, max_tokens: 700, system, messages }),
-    });
-    const data = await r.json();
-    if (!r.ok) {
-      const detail = (data && data.error && data.error.message) ? data.error.message : ('AI request failed (' + r.status + ')');
-      return res.status(502).json({ ok: false, error: detail });
-    }
-    const answer = (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
-    return res.status(200).json({ ok: true, answer: answer || "Sorry, I couldn't find an answer for that.", role });
+    const answer = useBrain
+      ? await answerViaBrain(role, question, history, ctx)
+      : await answerViaAnthropic(system, messages);
+    return res.status(200).json({ ok: true, answer, role, via: useBrain ? 'brain' : 'anthropic' });
   } catch (e) {
-    return res.status(502).json({ ok: false, error: 'Could not reach the assistant right now. Please try again shortly.' });
+    return res.status(e && e.status ? e.status : 502).json({
+      ok: false,
+      error: (e && e.message) || 'Could not reach the assistant right now. Please try again shortly.'
+    });
   }
 };

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theme Studio — LeadPages</title>
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
+<meta name="theme-color" content="#12151a">
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<link rel="stylesheet" href="/assets/lp-super-admin.css">
+<script src="/assets/lp-workspace-appearance.js"></script>
+<script src="/assets/lp-hub-embed.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{--font-display:'Fraunces',Georgia,serif;--font-ui:'DM Sans',system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-ui)}
+.wrap{padding:22px 20px 48px;max-width:980px;margin:0 auto}
+.login-card{max-width:420px;margin:12vh auto;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.hidden{display:none!important}
+.field{margin:0 0 12px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit}
+.field textarea{min-height:88px;resize:vertical}
+.btn{appearance:none;border:1px solid var(--accent);background:transparent;color:var(--accent);font:600 13px/1 var(--font-ui);padding:10px 14px;border-radius:10px;cursor:pointer;margin:0 6px 6px 0}
+.btn.solid{background:var(--accent);color:var(--accent-text,#fff)}
+.btn.ghost{border-color:var(--line-strong);color:var(--ink-soft)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:16px}
+.card h2{margin:0 0 4px;font-family:var(--font-display);font-size:1.2rem}
+.sub{margin:0 0 14px;color:var(--ink-soft);font-size:13px;line-height:1.45}
+.msg{font-size:13px;margin:8px 0 0}
+.msg.bad{color:#b91c1c}
+.msg.ok{color:#15803d}
+.swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0}
+@media(max-width:700px){.swatches{grid-template-columns:repeat(2,1fr)}}
+.sw{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sw .chip{height:72px}
+.sw .meta{padding:8px 10px;font-size:12px}
+.sw .meta strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint)}
+.preview{border-radius:14px;overflow:hidden;border:1px solid var(--line);margin-top:12px}
+.preview .bar{padding:14px 18px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.preview .body{padding:22px 18px}
+.preview .cta{display:inline-block;padding:10px 16px;border-radius:10px;font-weight:700;color:#fff;margin-top:12px}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+</style>
+</head>
+<body class="lp-super-admin">
+<div id="gate" class="login-card">
+  <h1>Theme Studio</h1>
+  <p class="sub">Generate trade colour themes via Brain. Preview, then approve before saving.</p>
+  <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
+  <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
+  <button class="btn solid" id="login-btn" type="button">Sign in</button>
+  <p class="msg bad hidden" id="gate-msg"></p>
+</div>
+
+<main id="app" class="wrap hidden">
+  <div class="top">
+    <div>
+      <h1 style="margin:0;font-family:var(--font-display)">Theme Studio</h1>
+      <p class="sub" style="margin:6px 0 0">Structured theme tokens only — never freeform HTML. AI suggests; you approve.</p>
+    </div>
+    <div>
+      <button class="btn ghost" id="signout" type="button">Sign out</button>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>1. Choose site</h2>
+    <p class="sub">Themes write to <span class="mono">sites.config.theme</span> (pipe / hivis / steel / safety / lightBg).</p>
+    <div class="field"><label>Site</label>
+      <select id="site"></select>
+    </div>
+    <div class="field"><label>Brief / vibe (optional)</label>
+      <textarea id="brief" placeholder="e.g. Modern plumber, trust + urgency, Canberra outdoor work"></textarea>
+    </div>
+    <div class="field"><label>Mood</label>
+      <input id="mood" value="professional trade, high contrast, Australian hi-vis">
+    </div>
+    <button class="btn solid" id="btn-gen" type="button">Generate theme</button>
+    <p class="msg" id="gen-msg"></p>
+  </section>
+
+  <section class="card" id="preview-card">
+    <h2>2. Preview & refine</h2>
+    <p class="sub" id="rationale">Generate a theme to see swatches and a live preview strip.</p>
+    <div class="swatches" id="swatches"></div>
+    <div class="preview" id="preview"></div>
+    <div class="field" style="margin-top:16px"><label>Refine feedback</label>
+      <textarea id="feedback" placeholder="e.g. Make CTA more orange, darken the header, softer page background"></textarea>
+    </div>
+    <button class="btn" id="btn-refine" type="button" disabled>Refine</button>
+    <button class="btn solid" id="btn-approve" type="button" disabled>Approve &amp; save</button>
+    <p class="msg" id="save-msg"></p>
+  </section>
+</main>
+
+<script>
+(function(){
+  var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+  var $ = function(id){ return document.getElementById(id); };
+  var draft = null;
+  var sites = [];
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
+
+  async function token(){
+    var r = await sb.auth.getSession();
+    return (r && r.data && r.data.session && r.data.session.access_token) || null;
+  }
+
+  async function api(path, body){
+    var t = await token();
+    var res = await fetch(path, {
+      method: 'POST',
+      headers: Object.assign({'content-type':'application/json'}, t ? {Authorization:'Bearer '+t} : {}),
+      body: JSON.stringify(body || {})
+    });
+    var j = await res.json().catch(function(){ return {}; });
+    if(!res.ok) throw new Error(j.message || j.error || ('HTTP '+res.status));
+    return j;
+  }
+
+  function paintTheme(theme, rationale){
+    draft = theme;
+    var labels = [
+      ['pipe','Brand'],['hivis','CTA'],['steel','Header'],['safety','Highlight'],['lightBg','Background']
+    ];
+    $('swatches').innerHTML = labels.map(function(pair){
+      var k = pair[0], label = pair[1], hex = theme[k] || '#ccc';
+      return '<div class="sw"><div class="chip" style="background:'+esc(hex)+'"></div><div class="meta"><strong>'+esc(label)+'</strong><span class="mono">'+esc(hex)+'</span></div></div>';
+    }).join('');
+    $('preview').innerHTML =
+      '<div class="bar" style="background:'+esc(theme.steel)+'"><strong>'+esc(theme.presetName||'Preview')+'</strong>'
+      + '<span style="color:'+esc(theme.safety)+'">Licensed · Local</span></div>'
+      + '<div class="body" style="background:'+esc(theme.lightBg)+'">'
+      + '<div style="color:'+esc(theme.steel)+';font-family:var(--font-display);font-size:1.4rem;font-weight:600">Blocked drain?</div>'
+      + '<p style="color:'+esc(theme.steel)+';opacity:.85;margin:8px 0 0">Fast, fixed-price help across your suburb.</p>'
+      + '<span class="cta" style="background:'+esc(theme.hivis)+'">Call now</span>'
+      + ' <span style="margin-left:10px;color:'+esc(theme.pipe)+';font-weight:700">Learn more →</span></div>';
+    $('rationale').textContent = rationale || (theme.presetName ? theme.presetName : 'Theme ready — refine or approve.');
+    $('btn-refine').disabled = false;
+    $('btn-approve').disabled = false;
+  }
+
+  async function loadSites(){
+    var { data, error } = await sb.from('sites').select('id,slug,business_name').order('business_name').limit(500);
+    if(error) throw error;
+    sites = data || [];
+    $('site').innerHTML = sites.map(function(s){
+      return '<option value="'+esc(s.id)+'">'+esc(s.business_name||s.slug||s.id)+'</option>';
+    }).join('') || '<option value="">No sites</option>';
+  }
+
+  async function ensureSuper(){
+    var sess = await sb.auth.getSession();
+    var user = sess && sess.data && sess.data.session && sess.data.session.user;
+    if(!user) return false;
+    var { data } = await sb.from('profiles').select('is_super_admin').eq('id', user.id).maybeSingle();
+    return !!(data && data.is_super_admin);
+  }
+
+  function showApp(){ $('gate').classList.add('hidden'); $('app').classList.remove('hidden'); }
+  function showGate(msg){
+    $('app').classList.add('hidden'); $('gate').classList.remove('hidden');
+    var m = $('gate-msg');
+    if(msg){ m.textContent = msg; m.classList.remove('hidden'); }
+    else m.classList.add('hidden');
+  }
+
+  $('login-btn').onclick = async function(){
+    showGate('');
+    var { error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
+    if(error) return showGate(error.message);
+    if(!(await ensureSuper())){ await sb.auth.signOut(); return showGate('Super-admin only.'); }
+    await loadSites();
+    showApp();
+  };
+  $('signout').onclick = async function(){ await sb.auth.signOut(); showGate(''); };
+
+  $('btn-gen').onclick = async function(){
+    var msg = $('gen-msg'); msg.className='msg'; msg.textContent='Generating…';
+    try{
+      var j = await api('/api/brain/theme-generate', {
+        siteId: $('site').value,
+        brief: $('brief').value,
+        mood: $('mood').value
+      });
+      paintTheme(j.theme, j.rationale);
+      msg.className='msg ok'; msg.textContent='Generated via ' + ((j.model&&j.model.provider)||'brain') + '.';
+    }catch(e){ msg.className='msg bad'; msg.textContent=e.message||String(e); }
+  };
+
+  $('btn-refine').onclick = async function(){
+    var msg = $('save-msg'); msg.className='msg'; msg.textContent='Refining…';
+    try{
+      var j = await api('/api/brain/theme-refine', {
+        siteId: $('site').value,
+        feedback: $('feedback').value,
+        currentTheme: draft
+      });
+      paintTheme(j.theme, j.rationale);
+      msg.className='msg ok'; msg.textContent='Refined.';
+    }catch(e){ msg.className='msg bad'; msg.textContent=e.message||String(e); }
+  };
+
+  $('btn-approve').onclick = async function(){
+    var msg = $('save-msg'); msg.className='msg'; msg.textContent='Saving…';
+    try{
+      var j = await api('/api/brain/theme-approve', { siteId: $('site').value, theme: draft });
+      msg.className='msg ok'; msg.textContent=j.notice||'Saved.';
+    }catch(e){ msg.className='msg bad'; msg.textContent=e.message||String(e); }
+  };
+
+  (async function boot(){
+    if(await ensureSuper()){ await loadSites(); showApp(); }
+  })();
+})();
+</script>
+</body>
+</html>
