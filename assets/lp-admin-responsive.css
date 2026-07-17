@@ -668,9 +668,10 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   text-underline-offset: 2px;
 }
 
-/* Hide-logo control in preview panel head */
+/* Hide/Show logo control in preview panel head (desktop + mobile; default show) */
 .lp-prev-hide-logo {
-  display: none;
+  display: inline-flex;
+  align-items: center;
   font: 600 10px var(--font-ui, Inter, system-ui, sans-serif);
   padding: 4px 8px;
   border-radius: 6px;
@@ -696,10 +697,6 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   #lp-chrome-hide-btn,
   #lp-shell-ratio {
     display: none !important;
-  }
-  .lp-prev-hide-logo {
-    display: inline-flex;
-    align-items: center;
   }
   .adminnav {
     display: none;
@@ -1188,9 +1185,6 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
 @media (min-width: 1024px) {
   .lp-admin-drawer,
   .lp-admin-scrim {
-    display: none !important;
-  }
-  .lp-prev-hide-logo {
     display: none !important;
   }
 }
