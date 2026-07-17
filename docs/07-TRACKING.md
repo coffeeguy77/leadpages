@@ -18,6 +18,7 @@
 | **Fire-and-forget** | `keepalive: true` on call clicks |
 | **Dual write on forms** | `lead_submit` event + `/api/leads` row |
 | **dataLayer mirror** | GTM-style queue for future tag integration |
+| **Session attribution** | `assets/lp-attribution.js` captures gclid / gbraid / wbraid / UTMs into every event + lead (see [Google Ads](features/Google%20Ads.md)) |
 
 ---
 

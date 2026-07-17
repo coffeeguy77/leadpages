@@ -13,9 +13,15 @@
 const { createClient } = require('@supabase/supabase-js');
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const { limited } = require('./_rate-limit');
+const {
+  pickAttribution,
+  upsertVisitorSession,
+  mergeAttributionIntoProps
+} = require('../lib/attribution');
+const { deliverConversion } = require('../lib/google-ads/conversions');
 
 const clean = (s, n = 120) => (s == null ? '' : String(s)).trim().slice(0, n);
-const ALLOWED = ['page_view', 'call_click', 'lead_submit', 'quote_open', 'cta_click'];
+const ALLOWED = ['page_view', 'call_click', 'lead_submit', 'quote_open', 'cta_click', 'email_click', 'directions_click'];
 
 function readBody(req) {
   return new Promise((resolve) => {
@@ -57,12 +63,49 @@ module.exports = async (req, res) => {
       try { props = JSON.parse(JSON.stringify(b.props)); } catch { props = {}; }
     }
 
+    // Attribution may arrive in props or top-level body fields
+    const attr = pickAttribution(Object.assign({}, b, props));
+    props = mergeAttributionIntoProps(props, attr);
+
+    if (site_id && attr.session_id && attr.visitor_id) {
+      await upsertVisitorSession(admin, site_id, attr);
+    }
+
     await admin.from('events').insert({
       site_id: site_id || null,
       event,
       props,
       site: clean(b.site, 160) || null
     });
+
+    // Call-click → Google Ads conversion (after internal success). Never blocks response.
+    if (event === 'call_click' && site_id) {
+      try {
+        await deliverConversion(admin, {
+          siteId: site_id,
+          eventKey: 'call_click',
+          internalEvent: 'call_click',
+          attr,
+          occurredAt: new Date().toISOString()
+        });
+      } catch (e) {
+        console.error('call_click conversion:', e && e.message);
+      }
+    }
+
+    // Secondary CTA conversions when roles allow
+    if ((event === 'cta_click' || event === 'email_click' || event === 'directions_click') && site_id) {
+      const map = { cta_click: 'cta_click', email_click: 'email_click', directions_click: 'directions_click' };
+      try {
+        await deliverConversion(admin, {
+          siteId: site_id,
+          eventKey: map[event],
+          internalEvent: event,
+          attr,
+          occurredAt: new Date().toISOString()
+        });
+      } catch (e) { /* ignore */ }
+    }
   } catch (e) {
     console.error('events error:', e && e.message);
   }

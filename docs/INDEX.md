@@ -134,6 +134,7 @@ Short summary of every engineering document in `docs/`.
 | [05-PARTNERS](05-PARTNERS.md) | Partner System | Partner tables, APIs, showcase, buy-site, commissions, client transfer, HTML surfaces. |
 | [06-DOMAINS](06-DOMAINS.md) | Domain System | Dreamscape integration, purchase flow, DNS, `custom_domain` routing, `manage-domains.html`. |
 | [07-TRACKING](07-TRACKING.md) | Tracking & Analytics | `trackEvent`, `events` table, `/api/stats`, dashboard `ANA` object, analytics UI in editor. |
+| [features/Google Ads](features/Google%20Ads.md) | Google Ads (v1) | OAuth connect, session attribution (gclid/UTMs), conversion upload, Advertising dashboard, metrics sync. |
 | [08-SEO](08-SEO.md) | SEO System | Suburb App Router pages, `lib/seo/*`, landing pages, `seoTokens`, sitemap, routing collision notes. |
 | [09-CRM](09-CRM.md) | CRM & Leads | Lead capture, `api/leads.js`, CRM strips, mailer, campaigns, opt-outs, lifecycle. |
 | [10-EDITOR](10-EDITOR.md) | Editor Manual | **Most important doc for editor work.** Complete `manage.html` reference: navigation, panels, flows, major functions, ~438-function index. |
@@ -154,6 +155,7 @@ Short summary of every engineering document in `docs/`.
 | **New API endpoint** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §11 | [12-CODING-STANDARDS](12-CODING-STANDARDS.md) | `api/*.js` peers |
 | **Lead forms / CRM** | [09-CRM](09-CRM.md) | [07-TRACKING](07-TRACKING.md) | `api/leads.js`, templates |
 | **Analytics / events** | [07-TRACKING](07-TRACKING.md) | [10-EDITOR](10-EDITOR.md) § Analytics | `api/events.js`, `api/stats.js` |
+| **Google Ads / Advertising** | [features/Google Ads](features/Google%20Ads.md) | [07-TRACKING](07-TRACKING.md), [features/Pages](features/Pages.md) | `api/google-ads/*`, `lib/google-ads/*`, `assets/lp-attribution.js` |
 | **Mailer / campaigns** | [09-CRM](09-CRM.md) | [02-DATABASE](02-DATABASE.md) | `api/send-campaign.js`, `manage.html` |
 | **SEO / suburb pages** | [08-SEO](08-SEO.md) | [03-TEMPLATE-SYSTEM](03-TEMPLATE-SYSTEM.md) | `lib/seo/*`, `app/[site]/[suburb]` |
 | **Partner features** | [05-PARTNERS](05-PARTNERS.md) | [00-VISION](00-VISION.md) § Partners | `api/partner/*`, `partner.html` |

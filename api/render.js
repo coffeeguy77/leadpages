@@ -726,6 +726,23 @@ function visitorWidgetEnabled(cfg) {
   return false;
 }
 
+function injectAttribution(html, cfg) {
+  if (!html || html.includes('lp-attribution.js')) return html;
+  const tag = (cfg && (cfg.googleAdsTagId || cfg.google_ads_tag_id)) || '';
+  let block = '<script src="/assets/lp-attribution.js"></script>\n';
+  if (tag) {
+    const aw = String(tag).replace(/[^\w-]/g, '');
+    if (aw) {
+      block +=
+        '<script async src="https://www.googletagmanager.com/gtag/js?id=' + aw + '"></script>\n' +
+        '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config",' +
+        JSON.stringify(aw) + ');</script>\n';
+    }
+  }
+  if (html.includes('</head>')) return html.replace('</head>', block + '</head>');
+  return block + html;
+}
+
 function injectVisitorAccessibility(html, cfg) {
   if (!html) return html;
   const va = visitorAppearanceCfg(cfg);
@@ -947,6 +964,11 @@ module.exports = async (req, res) => {
     if (_pageRow) {
       if (_pageRow.title) pageTitle = `${_pageRow.title}${_biz ? ' \u2014 ' + _biz : ''}`;
       if (_pageRow.meta)  pageDesc  = _pageRow.meta;
+      cfg.pageId = _pageRow.id || null;
+      cfg.pageSlug = _pageRow.slug || page || null;
+      cfg.pageType = 'landing_page';
+    } else {
+      cfg.pageType = cfg.pageType || 'main';
     }
 
     let html = tpl.replaceAll('__SITE_CONFIG__', safeJson(cfg));
@@ -990,6 +1012,17 @@ module.exports = async (req, res) => {
       } catch (e) { console.error('buy bar error:', e && e.message); }
     }
 
+    // Pull Google tag id from connection when present (for Tracking Health "Tag active").
+    try {
+      const { data: gads } = await supabase
+        .from('google_ads_connections')
+        .select('tag_id,enabled')
+        .eq('site_id', site.id)
+        .maybeSingle();
+      if (gads && gads.enabled && gads.tag_id) cfg.googleAdsTagId = gads.tag_id;
+    } catch (e) { /* table may not exist yet */ }
+
+    html = injectAttribution(html, cfg);
     html = injectVisitorAccessibility(html, cfg);
     if (template === 'trade') {
       html = injectTradeThemeVars(html, cfg);

@@ -626,6 +626,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 
   <div class="adminnav" role="tablist">
     <button class="anav-btn" id="nav-dashboard" aria-selected="false" style="display:none">Dashboard</button>
+    <button class="anav-btn" id="nav-advertising" aria-selected="false" style="display:none">Advertising</button>
     <button class="anav-btn" id="nav-details" aria-selected="false" style="display:none">Details</button>
     <button class="anav-btn" id="nav-rates" aria-selected="false" style="display:none">Rates &amp; leads</button>
     <button class="anav-btn" id="nav-landing" aria-selected="false">Landing pages</button>
@@ -641,6 +642,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   </div>
 
   <div id="av-dashboard" hidden></div>
+  <div id="av-advertising" hidden></div>
   <div id="av-details" hidden></div>
 
   <!-- ===================== APP MARKETPLACE ===================== -->
@@ -2158,7 +2160,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var lpaec=$('lp-app-edit-close');
     if(lpaec) lpaec.addEventListener('click',function(){ lpPageEditKey=null; var ed=$('lp-app-edit'); if(ed) ed.hidden=true; });
   }
-  function lpField(f,v){ if(lpCur){ lpCur[f]=v; if(f==='h1'||f==='body') lpEnsurePageLayoutOrder(lpCur); persist(); lpAutosave(); if(f==='slug'&&document.body.classList.contains('lp-prev-open')) previewLoad(); else if(f==='h1'||f==='body'||f==='h1Color'||f==='h2Color'||f==='paragraphColor') lpPagePreviewReload(); } }
+  function lpField(f,v){ if(lpCur){ if(f==='slug'){ var prev=String(lpCur.slug||'').trim(); var next=String(v||'').trim(); if(prev&&next&&prev!==next){ var hist=Array.isArray(lpCur.previousUrls)?lpCur.previousUrls.slice():[]; if(hist.indexOf('/'+prev)<0) hist.push('/'+prev); if(hist.indexOf(prev)<0) hist.push(prev); lpCur.previousUrls=hist.slice(-20); } } lpCur[f]=v; if(f==='h1'||f==='body') lpEnsurePageLayoutOrder(lpCur); persist(); lpAutosave(); if(f==='slug'&&document.body.classList.contains('lp-prev-open')) previewLoad(); else if(f==='h1'||f==='body'||f==='h1Color'||f==='h2Color'||f==='paragraphColor') lpPagePreviewReload(); } }
   function lpImgPrev(){ var el=document.getElementById('lp-img-prev'); if(!el) return; var u=(lpCur&&lpCur.img)||''; el.innerHTML=u?('<img src="'+esc(u)+'" alt="" style="max-height:120px;max-width:100%;border-radius:8px;margin-top:8px;display:block">'):''; }
   function lpPush(v){ lpHist=lpHist.slice(0,lpHi+1); lpHist.push(v); if(lpHist.length>50)lpHist.shift(); lpHi=lpHist.length-1; }
   function lpOpen(id){
@@ -7107,8 +7109,8 @@ function heroCtaCard(c){
     toast('Removed “'+name+'”'); renderSharedThemes();
   }
   /* ===== end leadpages integration ===== */
-  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard'], broker:['appearance','contact','logo','landing','details','mailer','messages','apps','onlinequotes','dashboard'], client:['appearance','contact','logo','landing','details','mailer','messages','apps','onlinequotes','dashboard'], leads:['rates'] };
-  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','details','landing','apps','onlinequotes','mailer','messages'] };
+  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], broker:['appearance','contact','logo','landing','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], client:['appearance','contact','logo','landing','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], leads:['rates'] };
+  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','details','landing','apps','onlinequotes','mailer','messages'] };
   function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
     if($('login-mask')) return;
@@ -7369,7 +7371,7 @@ function heroCtaCard(c){
   }
 
   /* ---------- nav switcher (six tabs) ---------- */
-  const NAV=[['dashboard','av-dashboard',renderDashboard],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
+  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
   let activeView=null;
   function showView(which){
     activeView=which;
@@ -8368,6 +8370,392 @@ function heroCtaCard(c){
     };
     reader.readAsText(f); e.target.value='';
   }
+
+  /* ═══════════════════════════════════════════════════════════
+     renderAdvertising — Google Ads overview / campaigns /
+     landing pages / leads / connection & health (v1).
+  ══════════════════════════════════════════════════════════ */
+  var _gadsTab='overview';
+  var _gadsDays=30;
+  var _gadsCache={};
+
+  async function _gadsToken(){
+    try{
+      var r=await sb.auth.getSession();
+      return (r&&r.data&&r.data.session&&r.data.session.access_token)||null;
+    }catch(e){ return null; }
+  }
+  async function _gadsFetch(path){
+    var tok=await _gadsToken();
+    var r=await fetch(path,{ headers: tok?{Authorization:'Bearer '+tok}:{} });
+    var j=await r.json().catch(function(){ return {}; });
+    if(!r.ok) throw new Error(j.error||('http_'+r.status));
+    return j;
+  }
+  function _gadsMoney(n){
+    if(n==null||isNaN(n)) return '—';
+    return '$'+Number(n).toLocaleString('en-AU',{minimumFractionDigits:0,maximumFractionDigits:0});
+  }
+  function _gadsPct(n){
+    if(n==null||isNaN(n)) return '—';
+    return (Number(n)*100).toFixed(1)+'%';
+  }
+  function _gadsNum(n){
+    if(n==null||isNaN(n)) return '—';
+    return Number(n).toLocaleString('en-AU');
+  }
+
+  function renderAdvertising(){
+    var box=document.getElementById('av-advertising'); if(!box) return;
+    if(!currentSiteId){
+      box.innerHTML='<div class="card"><h2>Advertising</h2><p class="lede">Select a site to view Google Ads performance.</p></div>';
+      return;
+    }
+    var tabs=[
+      ['overview','Overview'],
+      ['campaigns','Campaigns'],
+      ['landing_pages','Landing Pages'],
+      ['leads','Leads'],
+      ['health','Connection & Health']
+    ];
+    box.innerHTML=
+      '<div class="card" style="margin-bottom:14px">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
+      +'<div><h2 style="margin:0 0 4px">Advertising</h2>'
+      +'<p class="lede" style="margin:0">Google Ads spend, visitors, call clicks and form submissions — joined to your LeadPages landing pages.</p></div>'
+      +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+      +'<select id="gads-days" class="tin" style="width:auto">'
+      +[7,14,30,90].map(function(d){ return '<option value="'+d+'"'+(_gadsDays===d?' selected':'')+'>'+d+' days</option>'; }).join('')
+      +'</select>'
+      +'<button type="button" class="btn ghost sm" id="gads-refresh">Refresh</button>'
+      +'</div></div>'
+      +'<div class="sec-modeseg" style="margin-top:14px" id="gads-tabs">'
+      +tabs.map(function(t){ return '<button type="button" data-gads-tab="'+t[0]+'" class="'+(_gadsTab===t[0]?'on':'')+'">'+t[1]+'</button>'; }).join('')
+      +'</div></div>'
+      +'<div id="gads-body"><p class="hint">Loading…</p></div>';
+
+    var daysEl=document.getElementById('gads-days');
+    if(daysEl) daysEl.addEventListener('change',function(){ _gadsDays=+daysEl.value||30; _gadsPaint(); });
+    var ref=document.getElementById('gads-refresh');
+    if(ref) ref.addEventListener('click',function(){ _gadsCache={}; _gadsPaint(); });
+    document.querySelectorAll('#gads-tabs [data-gads-tab]').forEach(function(b){
+      b.addEventListener('click',function(){
+        _gadsTab=b.getAttribute('data-gads-tab');
+        document.querySelectorAll('#gads-tabs [data-gads-tab]').forEach(function(x){ x.classList.toggle('on', x===b); });
+        _gadsPaint();
+      });
+    });
+    _gadsPaint();
+  }
+
+  async function _gadsPaint(){
+    var body=document.getElementById('gads-body'); if(!body) return;
+    body.innerHTML='<p class="hint">Loading…</p>';
+    try{
+      if(_gadsTab==='overview' || _gadsTab==='health'){
+        var st=await _gadsFetch('/api/google-ads/status?siteId='+encodeURIComponent(currentSiteId)+'&days='+_gadsDays);
+        _gadsCache.status=st;
+        if(_gadsTab==='overview') body.innerHTML=_gadsOverviewHTML(st);
+        else body.innerHTML=_gadsHealthHTML(st);
+        _gadsWireHealth();
+        return;
+      }
+      if(_gadsTab==='campaigns' || _gadsTab==='landing_pages' || _gadsTab==='leads'){
+        var view=_gadsTab;
+        var rep=await _gadsFetch('/api/google-ads/report?siteId='+encodeURIComponent(currentSiteId)+'&days='+_gadsDays+'&view='+view);
+        if(view==='campaigns') body.innerHTML=_gadsCampaignsHTML(rep);
+        else if(view==='landing_pages') body.innerHTML=_gadsLandingHTML(rep);
+        else body.innerHTML=_gadsLeadsHTML(rep);
+        _gadsWireTables();
+        return;
+      }
+    }catch(e){
+      body.innerHTML='<div class="card"><p class="lede">Could not load Advertising data.</p><p class="hint">'+(esc((e&&e.message)||'error'))+'</p>'
+        +'<p class="hint">If you have not applied <code>db/google_ads_schema.sql</code> yet, run it in Supabase first. Platform Google Ads OAuth env vars are also required to connect an account.</p></div>';
+    }
+  }
+
+  function _gadsOverviewHTML(st){
+    var o=(st&&st.overview)||{};
+    var connected=!!(st&&st.connected&&st.connection&&st.connection.customerId);
+    var h='';
+    if(!connected){
+      h+='<div class="card" style="margin-bottom:14px"><h2 style="margin:0 0 6px">Connect Google Ads</h2>'
+        +'<p class="lede">Link your Google Ads account to see spend, ad clicks and cost per lead alongside LeadPages visitors, call clicks and forms.</p>'
+        +'<button type="button" class="btn" id="gads-connect">Connect Google Ads</button>'
+        +(st&&st.platformConfigured===false?'<p class="hint" style="margin-top:10px">Platform Google Ads credentials are not configured yet (developer token / OAuth client).</p>':'')
+        +'</div>';
+    } else {
+      h+='<div class="card" style="margin-bottom:14px"><p class="hint" style="margin:0">Connected: <strong>'+esc(st.connection.accountName||st.connection.customerId)+'</strong>'
+        +(st.connection.lastSyncAt?' · Last sync '+esc(new Date(st.connection.lastSyncAt).toLocaleString()):'')
+        +'</p></div>';
+    }
+    function card(label,val,hint){
+      return '<div class="lp-instrument-stat" style="padding:14px 12px"><div style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)">'+label+'</div>'
+        +'<div style="font-size:22px;font-weight:800;margin-top:4px">'+val+'</div>'
+        +(hint?'<div style="font-size:11px;color:var(--ink-faint);margin-top:4px">'+hint+'</div>':'')
+        +'</div>';
+    }
+    h+='<div class="lp-instrument-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:14px">'
+      +card('Google Ads spend',_gadsMoney(o.spend))
+      +card('Ad clicks',_gadsNum(o.adClicks))
+      +card('Ads visitors',_gadsNum(o.adsVisitors),'Tracked on your pages')
+      +card('Call clicks',_gadsNum(o.callClicks),'Intent — not completed calls')
+      +card('Form submissions',_gadsNum(o.formSubmissions))
+      +card('Unique conversions',_gadsNum(o.uniqueConversions),'Sessions with a call or form')
+      +card('Cost / conversion', o.costPerConversion!=null?_gadsMoney(o.costPerConversion):'—')
+      +card('Conversion rate', _gadsPct(o.conversionRate))
+      +'</div>';
+
+    h+='<div class="card"><h2 style="margin:0 0 10px">Flow</h2>'
+      +'<div style="display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.4">'
+      +'<div><strong>'+_gadsMoney(o.spend)+'</strong> spend</div>'
+      +'<div style="opacity:.5">↓</div>'
+      +'<div><strong>'+_gadsNum(o.adClicks)+'</strong> ad clicks</div>'
+      +'<div style="opacity:.5">↓</div>'
+      +'<div><strong>'+_gadsNum(o.adsVisitors)+'</strong> tracked visitors</div>'
+      +'<div style="opacity:.5">↓</div>'
+      +'<div><strong>'+_gadsNum(o.callClicks)+'</strong> call clicks + <strong>'+_gadsNum(o.formSubmissions)+'</strong> form submissions</div>'
+      +'<div style="opacity:.5">↓</div>'
+      +'<div><strong>'+_gadsNum(o.uniqueConversions)+'</strong> unique converting visitors</div>'
+      +'</div>'
+      +'<p class="hint" style="margin-top:12px">Gaps between ad clicks and tracked visitors are normal (repeat clicks, consent, blocked scripts).</p>'
+      +'</div>';
+    return h;
+  }
+
+  function _gadsCampaignsHTML(rep){
+    var rows=rep.rows||[];
+    var h='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">'
+      +'<h2 style="margin:0">Campaigns</h2>'
+      +'<button type="button" class="btn ghost sm" id="gads-csv-campaigns">CSV export</button></div>';
+    if(!rows.length){
+      h+='<p class="hint">No campaign metrics yet. Connect Google Ads and wait for the next sync.</p></div>';
+      return h;
+    }
+    h+='<div style="overflow:auto"><table class="tbl" style="width:100%;font-size:13px"><thead><tr>'
+      +'<th>Campaign</th><th>Spend</th><th>Clicks</th><th>Visitors</th><th>Call clicks</th><th>Forms</th><th>Cost/conv</th>'
+      +'</tr></thead><tbody>';
+    rows.forEach(function(r){
+      h+='<tr><td>'+esc(r.campaignName||'—')+'</td><td>'+_gadsMoney(r.spend)+'</td><td>'+_gadsNum(r.clicks)+'</td><td>'+_gadsNum(r.visitors)+'</td><td>'+_gadsNum(r.callClicks)+'</td><td>'+_gadsNum(r.forms)+'</td><td>'+(r.costPerConversion!=null?_gadsMoney(r.costPerConversion):'—')+'</td></tr>';
+    });
+    h+='</tbody></table></div></div>';
+    return h;
+  }
+
+  function _gadsLandingHTML(rep){
+    var rows=rep.rows||[];
+    var h='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">'
+      +'<h2 style="margin:0">Landing Pages</h2>'
+      +'<button type="button" class="btn ghost sm" id="gads-csv-landing">CSV export</button></div>';
+    if(!rows.length){
+      h+='<p class="hint">No landing-page traffic in this period yet.</p></div>';
+      return h;
+    }
+    h+='<div style="overflow:auto"><table class="tbl" style="width:100%;font-size:13px"><thead><tr>'
+      +'<th>Landing page</th><th>Spend</th><th>Ad clicks</th><th>Visitors</th><th>Call clicks</th><th>Forms</th><th>Unique</th><th>Cost/lead</th><th></th>'
+      +'</tr></thead><tbody>';
+    rows.forEach(function(r){
+      h+='<tr><td><div style="font-weight:600">'+esc(r.title||'—')+'</div><div class="hint" style="margin:0">'+esc(r.url||'')+'</div></td>'
+        +'<td>'+_gadsMoney(r.spend)+'</td><td>'+_gadsNum(r.adClicks)+'</td><td>'+_gadsNum(r.visitors)+'</td>'
+        +'<td>'+_gadsNum(r.callClicks)+'</td><td>'+_gadsNum(r.forms)+'</td><td>'+_gadsNum(r.uniqueConversions)+'</td>'
+        +'<td>'+(r.costPerLeadAction!=null?_gadsMoney(r.costPerLeadAction):'—')+'</td>'
+        +'<td>'+(r.pageId?'<button type="button" class="btn ghost sm" data-gads-edit-page="'+esc(r.pageId)+'">Edit</button>':'')+'</td></tr>';
+    });
+    h+='</tbody></table></div></div>';
+    return h;
+  }
+
+  function _gadsLeadsHTML(rep){
+    var rows=rep.rows||[];
+    var h='<div class="card"><h2 style="margin:0 0 10px">Attributed leads</h2>'
+      +'<p class="hint" style="margin:0 0 12px">Form submissions with source and campaign. Google click IDs are retained but not shown.</p>';
+    if(!rows.length){ h+='<p class="hint">No leads in this period.</p></div>'; return h; }
+    h+='<div style="overflow:auto"><table class="tbl" style="width:100%;font-size:13px"><thead><tr>'
+      +'<th>Lead</th><th>Date</th><th>Page</th><th>Source</th><th>Campaign</th><th>Conversion</th><th>GCLID</th>'
+      +'</tr></thead><tbody>';
+    rows.forEach(function(r){
+      h+='<tr><td>'+esc(r.name||'—')+'</td><td>'+esc(r.date?new Date(r.date).toLocaleDateString():'—')+'</td>'
+        +'<td>'+esc(r.page||'—')+'</td><td>'+esc(r.source||'—')+'</td><td>'+esc(r.campaign||'—')+'</td>'
+        +'<td>'+esc(r.conversion||'Form')+'</td><td>'+(r.hasGclid?'Present':'—')+'</td></tr>';
+    });
+    h+='</tbody></table></div></div>';
+    return h;
+  }
+
+  function _gadsHealthHTML(st){
+    var c=st.connection||{};
+    var health=st.health||{};
+    var connected=!!(st&&st.connected);
+    var h='<div class="card" style="margin-bottom:14px"><h2 style="margin:0 0 8px">Connection &amp; Health</h2>';
+    if(!connected){
+      h+='<p class="lede">Google Ads is not connected for this site.</p>'
+        +'<button type="button" class="btn" id="gads-connect">Connect Google Ads</button></div>';
+      return h;
+    }
+    h+='<p class="hint" style="margin:0 0 12px">Account: <strong>'+esc(c.accountName||c.customerId||'—')+'</strong></p>'
+      +'<ul style="margin:0 0 14px;padding-left:18px;font-size:13.5px;line-height:1.7">'
+      +'<li>Google Ads connected: <strong>Yes</strong></li>'
+      +'<li>Account selected: <strong>'+(c.customerId?'Yes':'No')+'</strong></li>'
+      +'<li>Tag active: <strong>'+(c.tagActive?'Yes':'Not set')+'</strong></li>'
+      +'<li>Form conversion tested: <strong>'+(c.formTestAt?new Date(c.formTestAt).toLocaleString():'Not yet')+'</strong></li>'
+      +'<li>Call-click conversion tested: <strong>'+(c.callTestAt?new Date(c.callTestAt).toLocaleString():'Not yet')+'</strong></li>'
+      +'<li>Click IDs captured ('+_gadsDays+'d): <strong>'+_gadsNum(health.clickIdsCaptured)+'</strong></li>'
+      +'<li>Last Google Ads sync: <strong>'+(c.lastSyncAt?new Date(c.lastSyncAt).toLocaleString():'Never')+'</strong>'
+      +(c.lastSyncError?' <span style="color:#b45309">('+esc(c.lastSyncError)+')</span>':'')+'</li>'
+      +'<li>Matched metric rows: <strong>'+_gadsNum(health.matchedMetricRows)+'</strong></li>'
+      +'</ul>';
+
+    var roles=c.eventRoles||{};
+    h+='<h3 style="margin:0 0 8px;font-size:15px">Which actions should Google Ads count?</h3>'
+      +'<div style="display:grid;gap:8px;max-width:420px;margin-bottom:14px">'
+      +_gadsRoleRow('form_submission','Form submissions',roles.form_submission||'primary')
+      +_gadsRoleRow('call_click','Phone-number clicks (Call clicks)',roles.call_click||'primary')
+      +_gadsRoleRow('email_click','Email clicks',roles.email_click||'secondary')
+      +_gadsRoleRow('directions_click','Directions clicks',roles.directions_click||'off')
+      +'</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'
+      +'<button type="button" class="btn" id="gads-save-roles">Save conversion settings</button>'
+      +'<button type="button" class="btn ghost" id="gads-test-form">Test form tracking</button>'
+      +'<button type="button" class="btn ghost" id="gads-test-call">Test call-click tracking</button>'
+      +'<button type="button" class="btn ghost" id="gads-pick-account">Change account</button>'
+      +'<button type="button" class="btn ghost" id="gads-disconnect">Disconnect</button>'
+      +'</div>';
+
+    var unmatched=health.unmatchedUrls||[];
+    if(unmatched.length){
+      h+='<h3 style="margin:0 0 8px;font-size:15px">Unmatched advertising URLs</h3><ul style="margin:0;padding-left:18px;font-size:13px">';
+      unmatched.forEach(function(u){ h+='<li>'+esc(u.final_url)+' <span class="hint">('+_gadsNum(u.clicks)+' clicks)</span></li>'; });
+      h+='</ul>';
+    }
+    h+='</div>';
+
+    // Alerts panel
+    h+='<div class="card" id="gads-alerts-card"><p class="hint">Loading alerts…</p></div>';
+    return h;
+  }
+
+  function _gadsRoleRow(key,label,val){
+    return '<div class="f" style="margin:0"><label style="display:flex;justify-content:space-between;gap:10px;align-items:center">'
+      +'<span>'+esc(label)+'</span>'
+      +'<select class="tin gads-role" data-role="'+key+'" style="width:140px">'
+      +['primary','secondary','off'].map(function(v){ return '<option value="'+v+'"'+(val===v?' selected':'')+'>'+(v==='off'?'Do not send':v.charAt(0).toUpperCase()+v.slice(1))+'</option>'; }).join('')
+      +'</select></label></div>';
+  }
+
+  function _gadsWireHealth(){
+    var connect=document.getElementById('gads-connect');
+    if(connect) connect.addEventListener('click',function(){
+      if(!currentSiteId) return;
+      var slug=currentSiteSlug||'';
+      location.href='/api/google-ads/connect?siteId='+encodeURIComponent(currentSiteId)+(slug?('&slug='+encodeURIComponent(slug)):'');
+    });
+    var save=document.getElementById('gads-save-roles');
+    if(save) save.addEventListener('click',async function(){
+      var roles={};
+      document.querySelectorAll('.gads-role').forEach(function(s){ roles[s.getAttribute('data-role')]=s.value; });
+      try{
+        var tok=await _gadsToken();
+        var r=await fetch('/api/google-ads/save-settings',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId,eventRoles:roles})});
+        var j=await r.json();
+        if(!r.ok) throw new Error(j.error||'save_failed');
+        toast('Conversion settings saved');
+        _gadsCache={}; _gadsPaint();
+      }catch(e){ toast((e&&e.message)||'Save failed','warn'); }
+    });
+    async function runTest(type){
+      try{
+        var tok=await _gadsToken();
+        var r=await fetch('/api/google-ads/test',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId,type:type})});
+        var j=await r.json();
+        if(!r.ok) throw new Error(j.error||'test_failed');
+        toast(j.note||'Test recorded');
+        _gadsCache={}; _gadsPaint();
+      }catch(e){ toast((e&&e.message)||'Test failed','warn'); }
+    }
+    var tf=document.getElementById('gads-test-form'); if(tf) tf.addEventListener('click',function(){ runTest('form'); });
+    var tc=document.getElementById('gads-test-call'); if(tc) tc.addEventListener('click',function(){ runTest('call'); });
+    var disc=document.getElementById('gads-disconnect');
+    if(disc) disc.addEventListener('click',async function(){
+      if(!confirm('Disconnect Google Ads from this site?')) return;
+      try{
+        var tok=await _gadsToken();
+        var r=await fetch('/api/google-ads/disconnect',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId})});
+        var j=await r.json();
+        if(!r.ok) throw new Error(j.error||'disconnect_failed');
+        toast('Google Ads disconnected');
+        _gadsCache={}; _gadsPaint();
+      }catch(e){ toast((e&&e.message)||'Disconnect failed','warn'); }
+    });
+    var pick=document.getElementById('gads-pick-account');
+    if(pick) pick.addEventListener('click',async function(){
+      try{
+        var j=await _gadsFetch('/api/google-ads/accounts?siteId='+encodeURIComponent(currentSiteId));
+        var list=(j.accounts||[]).filter(function(a){ return !a.manager; });
+        if(!list.length){ toast('No Google Ads accounts found','warn'); return; }
+        var labels=list.map(function(a,i){ return (i+1)+'. '+(a.name||a.id)+' ('+a.id+')'; }).join('\n');
+        var choice=prompt('Select account number:\n'+labels,'1');
+        var idx=parseInt(choice||'0',10)-1;
+        if(!(idx>=0&&idx<list.length)) return;
+        var tok=await _gadsToken();
+        var r=await fetch('/api/google-ads/save-settings',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId,customerId:list[idx].id})});
+        var out=await r.json();
+        if(!r.ok) throw new Error(out.error||'save_failed');
+        toast('Account selected: '+(list[idx].name||list[idx].id));
+        _gadsCache={}; _gadsPaint();
+      }catch(e){ toast((e&&e.message)||'Could not list accounts','warn'); }
+    });
+    // Load alerts async
+    var ac=document.getElementById('gads-alerts-card');
+    if(ac){
+      _gadsFetch('/api/google-ads/report?siteId='+encodeURIComponent(currentSiteId)+'&days='+_gadsDays+'&view=alerts').then(function(rep){
+        var alerts=rep.alerts||[];
+        if(!alerts.length){ ac.innerHTML='<h2 style="margin:0 0 8px">Insights</h2><p class="hint" style="margin:0">No alerts for this period.</p>'; return; }
+        var html='<h2 style="margin:0 0 10px">Insights</h2>';
+        alerts.forEach(function(a){
+          html+='<div style="border-left:3px solid '+(a.severity==='critical'?'#b91c1c':a.severity==='warn'?'#b45309':'#2563eb')+';padding:8px 12px;margin:0 0 10px;background:rgba(0,0,0,.03)">'
+            +'<div style="font-weight:700;font-size:13.5px">'+esc(a.title)+'</div>'
+            +'<div style="font-size:13px;color:var(--ink-soft);margin-top:2px">'+esc(a.body)+'</div></div>';
+        });
+        ac.innerHTML=html;
+      }).catch(function(){ ac.innerHTML=''; });
+    }
+  }
+
+  function _gadsWireTables(){
+    document.querySelectorAll('[data-gads-edit-page]').forEach(function(b){
+      b.addEventListener('click',function(){
+        var id=b.getAttribute('data-gads-edit-page');
+        try{ showView('landing'); if(typeof lpOpen==='function') lpOpen(id); }catch(e){}
+      });
+    });
+    function csvFromTable(sel, filename){
+      var table=document.querySelector(sel); if(!table) return;
+      var lines=[];
+      table.querySelectorAll('tr').forEach(function(tr){
+        var cells=[];
+        tr.querySelectorAll('th,td').forEach(function(td){ cells.push('"'+String(td.innerText||'').replace(/"/g,'""')+'"'); });
+        lines.push(cells.join(','));
+      });
+      var blob=new Blob([lines.join('\n')],{type:'text/csv'});
+      var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click();
+    }
+    var c1=document.getElementById('gads-csv-campaigns');
+    if(c1) c1.addEventListener('click',function(){ csvFromTable('#gads-body table','campaigns.csv'); });
+    var c2=document.getElementById('gads-csv-landing');
+    if(c2) c2.addEventListener('click',function(){ csvFromTable('#gads-body table','landing-pages.csv'); });
+  }
+
+  // Deep-link after OAuth return
+  (function(){
+    try{
+      var u=new URL(location.href);
+      if(u.searchParams.get('gads')==='connected'){
+        toast('Google Ads connected — select an account in Advertising');
+        setTimeout(function(){ try{ showView('advertising'); _gadsTab='health'; }catch(e){} }, 400);
+      }
+    }catch(e){}
+  })();
 
   /* ═══════════════════════════════════════════════════════════
      renderDashboard — per-site dashboard for tradie builder

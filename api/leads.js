@@ -18,6 +18,13 @@
 const { createClient } = require('@supabase/supabase-js');
 const { limited } = require('./_rate-limit');
 const { assessLeadSpam } = require('../lib/lead-spam');
+const {
+  pickAttribution,
+  upsertVisitorSession,
+  attributionForLeadInsert,
+  deriveTrafficSource
+} = require('../lib/attribution');
+const { deliverConversion } = require('../lib/google-ads/conversions');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -186,27 +193,73 @@ module.exports = async (req, res) => {
 
     const siteRow = await resolveSite({ siteId: body.siteId, slug: body.slug, site: body.site });
 
+    // Session attribution (gclid / UTMs) — first-party truth before any Google upload.
+    const attr = pickAttribution(Object.assign({}, body, body.attribution || {}, details.attribution || {}));
+    if (!attr.traffic_source) attr.traffic_source = deriveTrafficSource(attr);
+    if (siteRow && attr.session_id && attr.visitor_id) {
+      try { await upsertVisitorSession(supabase, siteRow.id, attr); } catch (e) { /* ignore */ }
+    }
+    // Keep attribution inside details for CRM display without exposing raw gclid in UI lists.
+    if (attr.session_id || attr.gclid || attr.utm_source || attr.traffic_source) {
+      details.attribution = {
+        trafficSource: attr.traffic_source || null,
+        utmSource: attr.utm_source || null,
+        utmMedium: attr.utm_medium || null,
+        utmCampaign: attr.utm_campaign || null,
+        landingPageUrl: attr.landing_page_url || null,
+        pageId: attr.page_id || null,
+        hasGclid: !!(attr.gclid || attr.gbraid || attr.wbraid),
+        sessionId: attr.session_id || null
+      };
+    }
+
+    const trafficLabel = attr.traffic_source === 'google_ads'
+      ? 'Google Ads'
+      : (attr.utm_source || clean(body.site, 160) || (siteRow ? siteRow.business_name : null));
+
     // Store the lead. If we somehow can't resolve the site we still record it
     // with a null site_id and the raw business name, so it's never lost.
-    let stored = false, storeError = null;
+    let stored = false, storeError = null, leadId = null;
+    const baseLead = {
+      site_id: siteRow ? siteRow.id : null,
+      owner_user_id: siteRow ? (siteRow.owner_user_id || null) : null,
+      name: lead.name || null,
+      email: lead.email,
+      phone: lead.phone || null,
+      kind: lead.kind,
+      details,
+      message,
+      status: 'new',
+      site: clean(body.site, 160) || (siteRow ? siteRow.business_name : null),   // legacy text column
+      source: trafficLabel
+    };
     try {
-      const ins = await supabase.from('leads').insert({
-        site_id: siteRow ? siteRow.id : null,
-        owner_user_id: siteRow ? (siteRow.owner_user_id || null) : null,
-        name: lead.name || null,
-        email: lead.email,
-        phone: lead.phone || null,
-        kind: lead.kind,
-        details,
-        message,
-        status: 'new',
-        site: clean(body.site, 160) || (siteRow ? siteRow.business_name : null),   // legacy text column
-        source: clean(body.site, 160) || (siteRow ? siteRow.business_name : null)
-      });
+      let ins = await supabase.from('leads').insert(Object.assign({}, baseLead, attributionForLeadInsert(attr))).select('id').maybeSingle();
+      // If attribution columns are not migrated yet, retry without them (details.attribution still kept).
+      if (ins.error && /column|schema cache/i.test(ins.error.message || '')) {
+        ins = await supabase.from('leads').insert(baseLead).select('id').maybeSingle();
+      }
       stored = !ins.error;
       if (ins.error) storeError = ins.error.message;
+      else leadId = ins.data && ins.data.id;
     } catch (e) {
       storeError = (e && e.message) || 'insert_failed';
+    }
+
+    // Form submission conversion — only after successful DB save.
+    if (stored && siteRow) {
+      try {
+        await deliverConversion(supabase, {
+          siteId: siteRow.id,
+          eventKey: 'form_submission',
+          internalEvent: 'lead_submit',
+          leadId,
+          attr,
+          occurredAt: new Date().toISOString()
+        });
+      } catch (e) {
+        console.error('form conversion:', e && e.message);
+      }
     }
 
     // Email the business — best effort, never blocks the lead being stored.
