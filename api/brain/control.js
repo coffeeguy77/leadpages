@@ -12,8 +12,10 @@ const { requireSuper, readBody, json } = require('../billing/_admin-auth');
 const {
   getPlatformBrain,
   resetPlatformBrain,
+  ensureBrainSettings,
   getLandingDraftProvider,
-  setLandingDraftProvider
+  setLandingDraftProvider,
+  getBrainSettingsStatus
 } = require('../../lib/brain/platform');
 const { getDefaultUsageStore } = require('../../lib/brain/usage-store');
 const {
@@ -149,6 +151,7 @@ module.exports = async function brainControl(req, res) {
         keyHint;
     }
 
+    const settingsStatus = await ensureBrainSettings(brain);
     const landingProvider = getLandingDraftProvider(brain);
 
     return json(res, 200, {
@@ -157,6 +160,9 @@ module.exports = async function brainControl(req, res) {
       brainProviderEnv: process.env.BRAIN_PROVIDER || 'mock',
       landingDraftProvider: landingProvider,
       landingDraftProviderEnv: process.env.BRAIN_LANDING_PROVIDER || '',
+      landingDraftProviderSource: settingsStatus.source || null,
+      landingDraftProviderPersisted: settingsStatus.source === 'durable' && !!settingsStatus.landingDraftProvider,
+      brainSettings: settingsStatus,
       flags: Object.assign({}, brain.config.flags || {}, {
         landingDraftEnv: process.env.BRAIN_LANDING_DRAFT || '',
         igEnrichEnv: process.env.BRAIN_IG_ENRICH || '',
@@ -271,16 +277,13 @@ module.exports = async function brainControl(req, res) {
   if (action === 'set_landing_provider') {
     const provider = String(body.provider || '').toLowerCase().trim();
     try {
-      const set = setLandingDraftProvider(provider, brain);
+      const set = await setLandingDraftProvider(provider, brain, { userId: user.id });
       return json(res, 200, {
         ok: true,
-        landingDraftProvider: set,
-        notice:
-          'Landing drafts on this isolate now use ' +
-          set +
-          '. For durability across cold starts set BRAIN_LANDING_PROVIDER=' +
-          set +
-          ' in Vercel.'
+        landingDraftProvider: set.provider,
+        persisted: set.persisted,
+        brainSettings: getBrainSettingsStatus(),
+        notice: set.notice
       });
     } catch (err) {
       return json(res, 400, {

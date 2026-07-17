@@ -45,7 +45,7 @@ Landing draft prompt **v3** returns a full SEO package (~900–1100 words): `pri
 
 - Editor modes: **SEO keyword page** (primary keyword, location, negative keywords, extra info) or freeform.
 - Negatives are a hard ban; homepage services that collide are filtered out of prompt context.
-- Control Centre can set **Landing draft provider** (e.g. OpenAI). Persist with `BRAIN_LANDING_PROVIDER=openai`.
+- Control Centre can set **Landing draft provider** (e.g. OpenAI). Click **Save provider** — stored in Supabase `brain_settings` (run `db/brain_settings.sql` once). No Vercel env var required.
 
 ---
 
