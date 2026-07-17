@@ -849,7 +849,25 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       <div class="apgroup-h">Write with AI</div>
       <div class="ai-box">
         <div class="ai-presets" id="lp-ai-presets"></div>
-        <textarea id="lp-ai-prompt" class="tin" rows="2" placeholder="Ask AI to write or improve this page — or pick a local-SEO preset above."></textarea>
+        <div class="lp-row" style="gap:12px;margin:0 0 10px;">
+          <div class="f" style="margin:0;flex:1;min-width:160px;"><label>AI mode</label>
+            <select id="lp-ai-mode" class="apsel">
+              <option value="seo">SEO keyword page</option>
+              <option value="freeform">Freeform brief</option>
+            </select>
+          </div>
+        </div>
+        <div id="lp-ai-seo-fields">
+          <div class="lp-row" style="gap:12px;">
+            <div class="f" style="margin:0;flex:1;min-width:180px;"><label>Primary keyword <span class="seo-tip">Main Google phrase to rank for.</span></label><input type="text" id="lp-ai-keyword" class="tin" placeholder="corporate catering Canberra"></div>
+            <div class="f" style="margin:0;flex:1;min-width:140px;"><label>Location</label><input type="text" id="lp-ai-location" class="tin" placeholder="Canberra"></div>
+          </div>
+          <div class="f"><label>Negative keywords <span class="seo-tip">Hard ban — never mention these (comma-separated). Use for adjacent intents the brand is known for.</span></label><input type="text" id="lp-ai-negatives" class="tin" placeholder="coffee, barista, wedding, cart hire, mobile barista"></div>
+          <div class="f"><label>Extra information</label><textarea id="lp-ai-extra" class="tin" rows="2" placeholder="Offices only — delivered corporate catering / office lunches. No weddings, no remote events."></textarea></div>
+        </div>
+        <div id="lp-ai-freeform-fields" hidden>
+          <textarea id="lp-ai-prompt" class="tin" rows="3" placeholder="Ask AI to write or improve this page — or pick a preset above."></textarea>
+        </div>
         <div class="ai-row"><button class="btn" id="lp-ai-go">Generate draft</button><span class="hint" id="lp-ai-note"></span></div>
       </div>
 
@@ -1820,13 +1838,38 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     ['Investment loans','Write an SEO landing page for property investors about structuring investment lending, borrowing power and offset, ending with a contact call to action.']
   ];
   const AI_PRESETS_TRADE=[
-    ['Local SEO keyword','Recommend the best primary Google search term for our main service + city, then write a full ~1000-word SEO landing page with FAQ and CTA. Target buyers of the service, not the wrong adjacent intent.'],
-    ['Local service page','Write an SEO landing page targeting people searching for our trade in our local area. Emphasise local knowledge, fast response, being fully licensed and insured, and a clear call to get a free quote.'],
-    ['Emergency / same-day','Write an SEO landing page for urgent same-day callouts: availability, fast response times, what to do in an emergency, and a prominent call-now action.'],
-    ['A specific service','Write an SEO landing page about one specific service we offer \u2014 explain the process, what is included, typical timeframes, and end with a free-quote call to action.'],
-    ['Suburb page','Write an SEO landing page targeting a specific suburb we service, with genuine local relevance and a call to get a free quote.']
+    ['Local SEO keyword',{mode:'seo', keyword:'', location:'', negatives:'', extra:'Recommend the best primary Google search term for this service + city, then write a full ~1000-word SEO page with FAQ and CTA. Target buyers of the service only — not adjacent intents.'}],
+    ['Local service page',{mode:'seo', keyword:'', location:'', negatives:'', extra:'Local trade service page: local knowledge, fast response, licensed/insured, clear free-quote CTA.'}],
+    ['Emergency / same-day',{mode:'seo', keyword:'', location:'', negatives:'', extra:'Urgent same-day callouts: availability, response times, what to do in an emergency, call-now CTA.'}],
+    ['A specific service',{mode:'seo', keyword:'', location:'', negatives:'', extra:'One specific service — process, inclusions, typical timeframes, free-quote CTA.'}],
+    ['Suburb page',{mode:'seo', keyword:'', location:'', negatives:'', extra:'Target a specific suburb we service with genuine local relevance and a free-quote CTA.'}],
+    ['Freeform',{mode:'freeform', prompt:'Write an SEO landing page for our primary local service.'}]
   ];
   function aiPresets(){ return (currentSiteTemplate==='trade')?AI_PRESETS_TRADE:AI_PRESETS_BROKER; }
+  function lpAiSetMode(mode){
+    var m=mode==='freeform'?'freeform':'seo';
+    var sel=$('lp-ai-mode'); if(sel) sel.value=m;
+    var seo=$('lp-ai-seo-fields'), ff=$('lp-ai-freeform-fields');
+    if(seo) seo.hidden=(m!=='seo');
+    if(ff) ff.hidden=(m!=='freeform');
+  }
+  function lpAiApplyPreset(pr){
+    var payload=pr[1];
+    if(typeof payload==='string'){
+      lpAiSetMode('freeform');
+      if($('lp-ai-prompt')) $('lp-ai-prompt').value=payload;
+      return;
+    }
+    lpAiSetMode(payload.mode||'seo');
+    if((payload.mode||'seo')==='freeform'){
+      if($('lp-ai-prompt')) $('lp-ai-prompt').value=payload.prompt||'';
+    } else {
+      if($('lp-ai-keyword') && payload.keyword!=null) $('lp-ai-keyword').value=payload.keyword;
+      if($('lp-ai-location') && payload.location!=null) $('lp-ai-location').value=payload.location;
+      if($('lp-ai-negatives') && payload.negatives!=null) $('lp-ai-negatives').value=payload.negatives;
+      if($('lp-ai-extra') && payload.extra!=null) $('lp-ai-extra').value=payload.extra;
+    }
+  }
   let lpCur=null, lpHist=[], lpHi=-1, lpWired=false, lpEdTab='content', lpPageEditKey=null;
   var LP_PAGE_APP_SKIP=['details','seoTokens','branding','logo','sectionOrder','mobileBar','lpFooter','lpAccessibility','footer'];
   var LP_PAGE_APP_FIELDS={
@@ -2195,7 +2238,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var n=(p.pageApps&&p.pageApps.length)?(' <span class="lp-app-badge">'+p.pageApps.length+' app'+(p.pageApps.length===1?'':'s')+'</span>'):'';
       return '<div class="lp-item"><span class="lp-meta"><span class="lp-t">'+esc(p.title||'Untitled')+n+'</span> <span class="lp-s">/'+esc(p.slug||'')+'</span></span><span style="display:flex;gap:10px;align-items:center"><span class="lp-badge '+(p.status==='published'?'pub':'draft')+'">'+(p.status==='published'?'Live':'Draft')+'</span><button class="btn ghost sm" data-edit="'+p.id+'">Edit</button></span></div>';
     }).join('') : '<p class="hint">No pages yet. Create one to build an SEO-optimised page that matches your theme.</p>';
-    const ap=$('lp-ai-presets'); if(ap && !ap.children.length){ aiPresets().forEach(function(pr,i){ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=pr[0]; b.addEventListener('click',function(){ $('lp-ai-prompt').value=pr[1]; }); ap.appendChild(b); }); }
+    const ap=$('lp-ai-presets'); if(ap && !ap.children.length){ aiPresets().forEach(function(pr){ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=pr[0]; b.addEventListener('click',function(){ lpAiApplyPreset(pr); }); ap.appendChild(b); }); }
+    if($('lp-ai-mode')){ $('lp-ai-mode').addEventListener('change',function(){ lpAiSetMode(this.value); }); lpAiSetMode($('lp-ai-mode').value||'seo'); }
     if(lpWired) return; lpWired=true;
     $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
     list.addEventListener('click',function(e){ const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit')); });
@@ -2306,7 +2350,21 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     return s.replace(/\n{2,}/g,'</p><p>').replace(/^(?!<[hud])(.+)$/gm,'$1');
   }
   async function aiGenerate(){
-    const note=$('lp-ai-note'); const prompt=$('lp-ai-prompt').value.trim() || aiPresets()[0][1];
+    const note=$('lp-ai-note');
+    var mode=(($('lp-ai-mode')&&$('lp-ai-mode').value)||'seo');
+    var payload={ siteId: currentSiteId, template: currentSiteTemplate||'trade', mode: mode };
+    if(mode==='freeform'){
+      payload.brief=(($('lp-ai-prompt')&&$('lp-ai-prompt').value)||'').trim() || 'Write an SEO landing page for our primary local service.';
+    } else {
+      payload.primaryKeyword=(($('lp-ai-keyword')&&$('lp-ai-keyword').value)||'').trim();
+      payload.location=(($('lp-ai-location')&&$('lp-ai-location').value)||'').trim();
+      payload.negativeKeywords=(($('lp-ai-negatives')&&$('lp-ai-negatives').value)||'').trim();
+      payload.extraInfo=(($('lp-ai-extra')&&$('lp-ai-extra').value)||'').trim();
+      if(!payload.primaryKeyword && !payload.extraInfo){
+        note.textContent='Add a primary keyword (and negatives if the brand is known for something else).';
+        return;
+      }
+    }
     note.textContent='Writing full SEO page\u2026';
     if(!currentSiteId){ note.textContent='Select a site first.'; return; }
     try{
@@ -2316,11 +2374,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var res=await fetch('/api/brain/landing-draft',{
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
-        body:JSON.stringify({ siteId: currentSiteId, brief: prompt, template: currentSiteTemplate||'trade' })
+        body:JSON.stringify(payload)
       });
       var d=await res.json().catch(function(){ return {}; });
       if(res.status===503 && d.error==='landing_draft_disabled'){
         note.textContent='AI drafts are not enabled yet (BRAIN_LANDING_DRAFT). Ask a super-admin to turn the flag on.';
+        return;
+      }
+      if(res.status===422 && d.error==='negative_keyword_violation'){
+        note.textContent=d.message||'Draft mentioned banned topics — tighten negatives or switch provider in AI Control Centre.';
         return;
       }
       if(!res.ok || !d.ok){

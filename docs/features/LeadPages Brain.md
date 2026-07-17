@@ -41,6 +41,12 @@ Landing draft prompt **v3** returns a full SEO package (~900–1100 words): `pri
 - Control Centre (`/brain-admin`) shows durable totals by provider when the table exists; otherwise the process-local buffer.
 - Estimates are an ops forecast — provider invoices remain the billing source of truth.
 
+## Landing draft SEO brief
+
+- Editor modes: **SEO keyword page** (primary keyword, location, negative keywords, extra info) or freeform.
+- Negatives are a hard ban; homepage services that collide are filtered out of prompt context.
+- Control Centre can set **Landing draft provider** (e.g. OpenAI). Persist with `BRAIN_LANDING_PROVIDER=openai`.
+
 ---
 
 ## Related feature manuals
