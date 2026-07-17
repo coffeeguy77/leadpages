@@ -98,6 +98,18 @@ const LANDING_SCHEMA = {
   additionalProperties: false
 };
 
+/** Strip emojis / decorative symbols that hurt SEO copy and editor preview. */
+function stripDecorativeIcons(text) {
+  return String(text || '')
+    .replace(/[\u{1F300}-\u{1FAFF}]/gu, '')
+    .replace(/[\u{2600}-\u{27BF}]/gu, '')
+    .replace(/[\u{FE0F}\u{200D}]/gu, '')
+    .replace(/^[ \t]*[✅✔☑☕🏢🎂🎪🌅🎯🔥⭐✨]+[ \t]*/gmu, '')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 module.exports = async function landingDraft(req, res) {
   if (req.method !== 'POST') {
     return json(res, 405, { ok: false, error: 'POST only' });
@@ -124,12 +136,16 @@ module.exports = async function landingDraft(req, res) {
 
   const site = access.site;
   const brief = String(body.brief || '').trim() ||
-    'Write a conversion-focused landing page for this Australian business.';
+    'Write an SEO landing page for our primary local service keyword.';
   const template = String(body.template || site.template || 'trade');
+  const audienceHint = template === 'trade' || template === 'broker-app'
+    ? 'Australian local-service / trade customers searching Google for hire or book-now intent'
+    : 'Australian mortgage broker clients searching Google for local lending help';
 
   const result = await brain.generateStructured({
     taskId: 'content.landing_draft',
     promptId: 'content.landing_draft',
+    // Active registry version is SEO-first v2
     siteId: site.id,
     site,
     actor: {
@@ -137,13 +153,11 @@ module.exports = async function landingDraft(req, res) {
       role: access.role,
       partnerId: access.partnerId
     },
-    contextSlices: ['site.identity', 'site.brand', 'site.services'],
+    contextSlices: ['site.identity', 'site.brand', 'site.services', 'site.areas'],
     input: {
       brief,
       template,
-      audienceHint: template === 'trade'
-        ? 'Australian trade / home-services customers'
-        : 'Australian mortgage broker clients'
+      audienceHint
     },
     responseSchema: LANDING_SCHEMA
   });
@@ -157,9 +171,9 @@ module.exports = async function landingDraft(req, res) {
     });
   }
 
-  // Compose markdown the approve UI expects (title + body).
-  const title = String(result.output.title || '').trim();
-  const bodyMd = String(result.output.bodyMarkdown || '').trim();
+  // Compose markdown the approve UI expects (title + body). Strip icons as a safety net.
+  const title = stripDecorativeIcons(String(result.output.title || '').trim());
+  const bodyMd = stripDecorativeIcons(String(result.output.bodyMarkdown || '').trim());
   const markdown = title
     ? (bodyMd.startsWith('#') ? bodyMd : ('# ' + title + '\n\n' + bodyMd))
     : bodyMd;

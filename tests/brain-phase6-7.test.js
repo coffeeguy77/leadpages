@@ -110,5 +110,17 @@ describe('Phase 7 — landing draft flag', () => {
     assert.equal(res.output.title, 'Roofing Canberra');
     assert.match(res.output.bodyMarkdown, /Local roofers/);
     assert.equal(res.prompt.promptId, 'content.landing_draft');
+    assert.equal(res.prompt.version, 2);
+  });
+
+  it('active landing draft prompt is SEO-first and bans emoji', () => {
+    const { createPromptRegistry } = require('../lib/brain');
+    const registry = createPromptRegistry();
+    const def = registry.get('content.landing_draft');
+    assert.equal(def.version, 2);
+    assert.equal(def.status, 'active');
+    assert.match(def.system, /SEO is the #1 goal/i);
+    assert.match(def.system, /NEVER use emojis/i);
+    assert.match(def.system, /1–2% density|1-2% density/i);
   });
 });
