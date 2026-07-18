@@ -10,59 +10,68 @@
 | Site attach | `site_apps` ↔ `section_key` | Enable apps on a site |
 | Demos | `marketplace/demos/*` | Playground previews |
 
-**Critical gap:** Categories describe **section type**, not industry fitness, visual style, or conversion style. Website Studio cannot rely on category alone to pick jewellery vs plumbing apps.
+Categories alone do not encode industry fitness. Website Composer uses **foundations + recipes**.
 
 ---
 
-## What Website Studio needs (Marketplace Intelligence)
+## Marketplace Intelligence (Phase 2 — file-based)
 
-A queryable layer that answers:
+Implemented inside Website Composer:
 
-1. Which **foundations** fit this industry/style?  
-2. Which **apps** (`section_key`) are compatible?  
-3. Which **page recipe** should seed section order + layout?  
-4. What is **incompatible** (e.g. emerg strip on boutique retail)?  
+| Concern | Module |
+|---------|--------|
+| Foundation scoring | `lib/website-composer/foundations.js` |
+| Recipe scoring | `lib/website-composer/recipes.js` |
+| Recipe catalog | `lib/website-composer/recipes-data.js` |
+| Classification hints | `lib/website-composer/classify.js` |
 
-### Inputs (V1 data sources)
-
-- Curated foundation registry (`lib/theme-studio/foundations-data.js`) — keep as seed  
-- Verified layout IDs from `manage.html` `LAYOUTS`  
-- Verified section keys from `DEFAULT_TRADE_SECTIONS`  
-- Marketplace `section_key` catalog  
-
-### Outputs
+### Outputs used by Composer
 
 ```json
 {
-  "foundationId": "hospitality-cafe",
-  "layoutId": "photo-proof",
-  "sectionOrder": ["hero", "featuredProjects", "services", "..."],
-  "requiredApps": ["featuredProjects", "instaGallery"],
-  "optionalApps": ["onlineQuote"],
-  "incompatibleApps": ["emerg", "jobsFeed"],
-  "score": 0.92,
-  "rationale": "…"
+  "foundationId": "hospitality",
+  "recipeId": "recipe-coffee-event",
+  "layoutId": "premium-showcase",
+  "sectionOrder": ["hero", "featuredProjects", "services", "why", "reviews", "specialOffer", "quote", "footer"],
+  "apps": ["featuredProjects", "instaGallery", "onlineQuote"],
+  "conversionStyle": "book-event"
 }
+```
+
+### Recipe independence
+
+Foundations do not own recipes. Example:
+
+```text
+Hospitality foundation
+  → recipe-coffee-event
+  → recipe-cafe
+  → recipe-restaurant
+  → recipe-coffee-roaster
 ```
 
 ---
 
 ## Relationship to Website Composer
 
-Composer **must not** invent section keys.  
-Composer asks Marketplace Intelligence for a recipe, then fills content.
+```text
+Foundation → Recipe → Apps → Layouts → Content → Renderer
+```
+
+Composer never invents section keys. Apps are selected from verified `section_key`s. Installing into `site_apps` is still a later apply concern; Phase 2 records the plan on the concept (`sourceAppIds` / diagnostics.appsSelected).
 
 ---
 
-## Implementation stance (this phase)
+## Coverage
 
-- **Audit only** — no Marketplace Intelligence code  
-- Do not invent template/app IDs  
-- Foundations file remains the interim intelligence source  
-- Future: optional `theme_studio_foundations` / marketplace metadata tables (names TBD; prefer `website_studio_*` for new tables)  
+Foundations: trades, professional, hospitality, retail, health, beauty, events, construction, creative, education, technology, non-profit, travel, manufacturing, industrial, automotive.
+
+Recipes include field trade, commercial legal, coffee event, café, restaurant, coffee roaster, luxury jewellery, hair salon, wedding photographer, SME advisory, event hire, wellness, builder showcase, generic local.
 
 ---
 
-## Coverage targets for later phases
+## Later
 
-Trade / field services, professional, retail/boutique, hospitality/café, events/hire, health/wellness, creative/agency, property/construction — already sketched in the foundation registry; Intelligence should score and extend without schema breaks.
+- Optional DB-backed foundation/recipe tables (`website_studio_*`)  
+- Stronger app install + reconcile on apply  
+- Broader marketplace coverage tests (Phase 5)  

@@ -33,27 +33,27 @@ const {
 } = require('../fixtures/theme-studio/concepts');
 const { makeProtectedSource } = require('../fixtures/theme-studio/source-configs');
 
-describe('Theme Studio Phase 1 — foundation registry', () => {
-  it('registers eight curated foundations covering trade and non-trade', () => {
+describe('Theme Studio Phase 1 — foundation registry (via Website Composer)', () => {
+  it('registers structural foundations covering trade and non-trade categories', () => {
     const list = listFoundations();
-    assert.equal(list.length, 8);
-    assert.equal(FOUNDATIONS.length, 8);
+    assert.ok(list.length >= 16);
+    assert.equal(FOUNDATIONS.length, list.length);
     const categories = new Set(list.map((f) => f.category));
     for (const cat of [
-      'trade',
+      'trades',
       'professional',
       'retail',
       'hospitality',
       'events',
       'health',
       'creative',
-      'property'
+      'construction'
     ]) {
       assert.ok(categories.has(cat), 'missing category ' + cat);
     }
   });
 
-  it('includes required metadata fields on each foundation', () => {
+  it('includes required structural metadata and no trade template inheritance', () => {
     const required = [
       'id',
       'name',
@@ -72,11 +72,9 @@ describe('Theme Studio Phase 1 — foundation registry', () => {
       'supportedFooterVariants',
       'supportedHeroVariants',
       'typographyProfile',
-      'imageDirectionProfile',
       'mobileProfile',
       'incompatibilities',
-      'sourceTemplateId',
-      'sourceAppIds',
+      'rendererShellId',
       'status',
       'version'
     ];
@@ -84,7 +82,7 @@ describe('Theme Studio Phase 1 — foundation registry', () => {
       for (const key of required) {
         assert.ok(foundation[key] != null, foundation.id + ' missing ' + key);
       }
-      assert.equal(foundation.sourceTemplateId, 'trade');
+      assert.equal(foundation.sourceTemplateId, null);
       assert.ok(LAYOUT_IDS.includes(foundation.defaultLayoutId));
       for (const sectionKey of foundation.supportedSectionKeys) {
         assert.ok(
@@ -95,21 +93,21 @@ describe('Theme Studio Phase 1 — foundation registry', () => {
     }
   });
 
-  it('selects retail-boutique for Pink Diamond Vault jewellery brief', () => {
+  it('selects retail for Pink Diamond Vault jewellery brief', () => {
     const candidates = selectFoundationCandidates(briefs.PINK_DIAMOND_VAULT, { minScore: 0 });
     assert.ok(candidates.length > 0);
-    assert.equal(candidates[0].foundationId, 'retail-boutique');
-    assert.ok(!candidates.some((c) => c.foundationId === 'trade-field-services' && c.score > candidates[0].score));
+    assert.equal(candidates[0].foundationId, 'retail');
+    assert.ok(!candidates.some((c) => c.foundationId === 'trades' && c.score > candidates[0].score));
   });
 
-  it('selects trade-field-services for Luke security brief', () => {
+  it('selects trades for Luke security brief', () => {
     const candidates = selectFoundationCandidates(briefs.LUKES_SECURITY_CO, { minScore: 0 });
-    assert.equal(candidates[0].foundationId, 'trade-field-services');
+    assert.equal(candidates[0].foundationId, 'trades');
   });
 
-  it('selects hospitality-cafe for café brief', () => {
+  it('selects hospitality for café brief', () => {
     const candidates = selectFoundationCandidates(briefs.RIVERSONG_CAFE, { minScore: 0 });
-    assert.equal(candidates[0].foundationId, 'hospitality-cafe');
+    assert.equal(candidates[0].foundationId, 'hospitality');
   });
 
   it('selects professional-services for accounting brief', () => {
@@ -117,9 +115,9 @@ describe('Theme Studio Phase 1 — foundation registry', () => {
     assert.equal(candidates[0].foundationId, 'professional-services');
   });
 
-  it('selects events-hire for event hire brief', () => {
+  it('selects events for event hire brief', () => {
     const candidates = selectFoundationCandidates(briefs.CANBERRA_EVENT_HIRE, { minScore: 0 });
-    assert.equal(candidates[0].foundationId, 'events-hire');
+    assert.equal(candidates[0].foundationId, 'events');
   });
 
   it('rejects incompatible retail + emergency layout / trade sections', () => {
