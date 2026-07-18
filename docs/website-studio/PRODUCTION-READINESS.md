@@ -9,7 +9,7 @@ Statuses: **pass** · **pass-with-warning** · **fail**
 |------|--------|-------|
 | Security | pass | Server authz; forged approval rejected; publish fields rejected; secrets not logged |
 | Permissions | pass | `WEBSITE_STUDIO_PILOT_SUPERUSER_ONLY`; partners/clients denied; AI images superuser-only |
-| Persistence | pass | `website_studio_application_audits` + `_idempotency` SQL; memory fallback for tests |
+| Persistence | pass | `website_studio_application_audits` + `_idempotency` SQL; memory fallback for tests; `theme_studio_versions_kind_expand.sql` required on older pilot DBs |
 | Idempotency | pass | Survives simulated process restart; duplicate create prevented |
 | Image licensing metadata | pass | Attribution retained on import plan/result |
 | Cloudinary import | pass-with-warning | Server-side import implemented; live credentials required in pilot env |

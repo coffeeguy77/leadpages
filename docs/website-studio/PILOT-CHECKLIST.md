@@ -17,7 +17,11 @@ WEBSITE_STUDIO_APPLICATION_AUDIENCE=superuser
 THEME_STUDIO_ALLOW_LIVE_APPLY=0
 ```
 
-Apply SQL: `db/website_studio_application.sql`  
+Apply SQL:
+
+- `db/website_studio_application.sql`
+- `db/theme_studio_versions_kind_expand.sql` (expands `theme_studio_versions.kind` for `images` / `approve` / `restore` / edit kinds)
+
 Require: Supabase service role, `CLOUDINARY_*`, `PEXELS_API_KEY` (server).
 
 Brief template: `fixtures/website-composer/bean-culture-pilot-brief.js` (enter via UI — do not inject config).

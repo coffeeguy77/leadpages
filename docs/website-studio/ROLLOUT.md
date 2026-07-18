@@ -19,7 +19,10 @@
 
 See `describePilotFlagConfiguration()` / [PILOT-CHECKLIST.md](PILOT-CHECKLIST.md).
 
-SQL required: `db/website_studio_application.sql`
+SQL required:
+
+- `db/website_studio_application.sql`
+- `db/theme_studio_versions_kind_expand.sql` — **required** if the pilot DB was created before Website Studio image/approve/restore kinds. Without it, Approve selection fails with `theme_studio_versions_kind_check`. Safe to re-run.
 
 ## Audience stages (future)
 

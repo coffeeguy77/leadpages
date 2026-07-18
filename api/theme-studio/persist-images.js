@@ -85,7 +85,14 @@ module.exports = async function themeStudioPersistImages(req, res) {
     quality_report: quality,
     created_by: gate.actor.userId
   });
-  if (!created.ok) return json(res, 500, { ok: false, error: created.error });
+  if (!created.ok) {
+    return json(res, 500, {
+      ok: false,
+      error: created.error,
+      code: created.code || null,
+      migration: created.migration || null
+    });
+  }
 
   await updateDraft(draftId, {
     selected_version_id: created.version.id,
@@ -99,6 +106,11 @@ module.exports = async function themeStudioPersistImages(req, res) {
   return json(res, 200, {
     ok: true,
     version: created.version,
-    notice: 'Image decisions saved as a new draft version. Not published.'
+    notice:
+      created.notice === 'kind_constraint_legacy_fallback'
+        ? `Image decisions saved (legacy kind fallback). Apply ${created.migration} in Supabase when convenient.`
+        : 'Image decisions saved as a new draft version. Not published.',
+    intendedKind: created.intendedKind || null,
+    migration: created.migration || null
   });
 };
