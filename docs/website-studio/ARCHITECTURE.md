@@ -16,18 +16,18 @@
          │ composition request
          ▼
 ┌──────────────────┐
-│ Website Composer │  brief → foundation → recipe → apps → content → draft
+│ Website Composer │  brief → foundation → recipe → content → draft
 └────────┬─────────┘
-         │
+         │ queries (file-based Phase 2)
          ▼
 ┌──────────────────┐
-│ Marketplace      │  catalogue + AI metadata + deterministic adapters
-│ Intelligence     │  install/activate supported apps only
+│ Marketplace      │  foundations + recipes + app packing
+│ Intelligence     │  (lib/website-composer foundations/recipes)
 └────────┬─────────┘
-         │ structured image briefs
+         │ asset needs (placeholders in Phase 2)
          ▼
 ┌──────────────────┐
-│ Image Service    │  Cloudinary → Pexels → AI(super) → placeholder
+│ Image Service    │  Phase 3 — Cloudinary + Pexels
 └────────┬─────────┘
          │ draft config + stored selections
          ▼
@@ -58,48 +58,90 @@ Foundation → Recipe → Supported Apps (adapters) → Layouts → Content
   → Structured image briefs → Image Service → Explicit draft
 ```
 
+### Composer internal chain
+
+```text
+Foundation → Recipe → Apps → Layouts → Content → Renderer draft
+```
+
 ---
 
 ## Component responsibilities
 
 ### Website Studio (user feature)
 
-- Intake, generate, compare, preview, refine  
-- Image panel (search / approve / Cloudinary import plan)  
-- Quality report; apply scopes remain draft/demo gated  
+- Intake (mode, brief, optional source site)  
+- Show foundation / recipe candidates  
+- Generate and compare concepts  
+- Desktop/mobile preview  
+- Refinement  
+- Quality report  
+- Approve apply / save template  
 
-**UI:** `/theme-studio-v2` (legacy path)
+**Today:** UI at `/theme-studio-v2` (legacy path); generation wired to Website Composer.
 
-### Website Composer
+### Website Composer (internal engine) — Phase 2 ✅
 
-- Classification → foundation → recipe → app selection → content → images → draft  
-- `contentInheritance: "none"`, `sourceTemplateId: null`  
+- Classification → foundation → recipe → layout → content → image briefs  
+- Explicit draft composition (`contentInheritance: none`)  
 - Section provenance + diagnostics  
+- Never writes live sites  
 
 **Code:** `lib/website-composer/`  
-**Entry:** `composeWebsiteConcepts` (async; via `lib/theme-studio/generate.js`)
+**Entry:** `composeWebsiteConcepts` (also via `lib/theme-studio/generate.js`)
 
-### Marketplace Intelligence
+### Marketplace Intelligence — Phase 2 (file-based) ✅
 
-- Verified catalogue (`catalogue-data.json`)  
-- AI selection metadata (`app-metadata.js`)  
-- Deterministic adapters (`adapters/registry.js`)  
-- Install/activate (`install-apps.js`)  
+- Foundation scoring + recipe scoring  
+- Incompatibilities enforced  
+- Apps listed on recipe (install to `site_apps` still later)
 
-### Image Service
+### Image Service — Phase 3 (not started)
 
-- `lib/image-service/` + `api/image-service/*`  
-- Server-only provider calls; role-gated AI  
+- Cloudinary + Pexels providers  
+- Phase 2 emits placeholder image briefs only  
 
-### Renderer shell
+### Renderer / Preview / Approval / Publish
 
-- Technical asset: `trade.template.json` mapped as `landing-shell-v1`  
-- Website Studio drafts: unused sections `on: false` + preview neutralize script  
-- Production publish behaviour unchanged  
+- Preview still injects `trade.template.json` as **landing-shell-v1** technical asset  
+- This is **not** content inheritance — unused sections are explicitly `on: false`  
+- Publish unchanged  
 
 ---
 
-## Non-goals (Phase 3)
+## Data contracts
+
+| Contract | Purpose | Artifact |
+|----------|---------|----------|
+| Business brief | Intake | Draft `brief` JSON |
+| Classification profile | Industry routing | `classifyBusiness` output |
+| Foundation | Structure | `lib/website-composer/foundations-data.js` |
+| Recipe | Packaging | `lib/website-composer/recipes-data.js` |
+| Concept | Composer output | `theme_studio.concept.v1` (legacy id) + `recipeId` |
+| Draft site config | Explicit compose | `draft_config_json` + `__websiteComposer` |
+| Diagnostics | Audit | `concept.diagnostics` |
+| Preview token | Short-lived render | HMAC token |
+
+---
+
+## Security principles
+
+1. Generation is draft-only  
+2. Preview must not index, publish, or pollute analytics/leads  
+3. Protected operational fields never written by Composer  
+4. Access via roles (super + partner in V1)  
+5. Live apply requires explicit flag + confirm  
+6. No shallow merge of source site marketing content  
+
+---
+
+## Parallel product: AI Colour Assistant
+
+| Item | Value |
+|------|-------|
+| URL (legacy) | `/theme-studio`, `/theme-studio/colours` |
+| APIs | `/api/brain/theme-generate\|refine\|approve` |
+| Scope | Five hex tokens into `sites.config.theme` |
 
 - Live site application / publish pipeline changes  
 - Marketplace template publishing  

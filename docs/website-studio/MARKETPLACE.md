@@ -9,76 +9,72 @@
 | Categories | `lib/marketplace-categories.js` | Section taxonomy |
 | Sell / demo content | `marketplace/*.json`, `marketplace/demos/*` | Marketing + playground |
 | Catalog seed | `lib/marketplace-catalog-seed.js` | Features/apps by `section_key` |
-| Site attach | `site_apps` ↔ `section_key` | Enable apps on a live site |
-| Website Studio catalogue | `lib/website-composer/marketplace/catalogue-data.json` | Verified Composer inventory |
+| Admin | `marketplace-admin.html`, `apps-admin` | Ops editing |
+| Site attach | `site_apps` ↔ `section_key` | Enable apps on a site |
+| Demos | `marketplace/demos/*` | Playground previews |
+
+Categories alone do not encode industry fitness. Website Composer uses **foundations + recipes**.
 
 Website Studio **does not** auto-select apps by name alone. Selection requires:
 
-1. Catalogue `websiteStudioSupport === "supported"`
-2. Curated AI metadata in `app-metadata.js`
-3. A deterministic adapter in `adapters/registry.js`
-4. Foundation compatibility (supported / not incompatible)
+## Marketplace Intelligence (Phase 2 — file-based)
 
----
-
-## Website Studio support statuses
-
-| Status | Meaning | Auto-selected? |
-|--------|---------|----------------|
-| `supported` | Metadata + adapter + renderer path verified | Yes |
-| `supported-with-limitations` | Usable with caveats (e.g. nav/header shell) | No |
-| `requires-adapter` | Known section; no Composer adapter yet | No |
-| `requires-metadata` | Shell/chrome fields, not page apps | No |
-| `incompatible` | Not suitable for Composer | No |
-| `deprecated` | Do not use | No |
-
-See **[MARKETPLACE-CATALOGUE.md](./MARKETPLACE-CATALOGUE.md)** for the full inventory.
-
----
-
-## Marketplace Intelligence (Phase 3)
+Implemented inside Website Composer:
 
 | Concern | Module |
 |---------|--------|
-| Verified catalogue | `lib/website-composer/marketplace/catalogue.js` |
-| AI selection metadata | `lib/website-composer/marketplace/app-metadata.js` |
-| Deterministic adapters | `lib/website-composer/adapters/registry.js` |
-| Install / activate | `lib/website-composer/install-apps.js` |
 | Foundation scoring | `lib/website-composer/foundations.js` |
 | Recipe scoring | `lib/website-composer/recipes.js` |
+| Recipe catalog | `lib/website-composer/recipes-data.js` |
+| Classification hints | `lib/website-composer/classify.js` |
 
-### Selection flow
+### Outputs used by Composer
 
-```text
-Recipe / foundation section order
-  → slot diversity (hero / trust)
-  → assertSupportedApp
-  → hasAdapter
-  → scoreAppForContext
-  → installAppsIntoDraft (adaptApp per section)
-  → unused KNOWN_SECTION_KEYS → on: false
+```json
+{
+  "foundationId": "hospitality",
+  "recipeId": "recipe-coffee-event",
+  "layoutId": "premium-showcase",
+  "sectionOrder": ["hero", "featuredProjects", "services", "why", "reviews", "specialOffer", "quote", "footer"],
+  "apps": ["featuredProjects", "instaGallery", "onlineQuote"],
+  "conversionStyle": "book-event"
+}
 ```
 
-The Brain never writes arbitrary app config. Adapters own field mapping and validation.
+### Recipe independence
+
+Foundations do not own recipes. Example:
+
+```text
+Hospitality foundation
+  → recipe-coffee-event
+  → recipe-cafe
+  → recipe-restaurant
+  → recipe-coffee-roaster
+```
 
 ---
 
 ## Relationship to Website Composer
 
 ```text
-Brief → Classification → Foundation → Recipe
-  → App selection (supported only)
-  → Layout + variants
-  → Content (adapter-shaped)
-  → Image Service
-  → Explicit draft
+Foundation → Recipe → Apps → Layouts → Content → Renderer
 ```
 
-`contentInheritance: "none"` and `sourceTemplateId: null` are preserved.
+Composer never invents section keys. Apps are selected from verified `section_key`s. Installing into `site_apps` is still a later apply concern; Phase 2 records the plan on the concept (`sourceAppIds` / diagnostics.appsSelected).
 
 ---
 
-## Gaps
+## Coverage
 
-Honest coverage gaps are listed in **[MARKETPLACE-GAPS.md](./MARKETPLACE-GAPS.md)**.
-Adapter contract details: **[APP-ADAPTERS.md](./APP-ADAPTERS.md)**.
+Foundations: trades, professional, hospitality, retail, health, beauty, events, construction, creative, education, technology, non-profit, travel, manufacturing, industrial, automotive.
+
+Recipes include field trade, commercial legal, coffee event, café, restaurant, coffee roaster, luxury jewellery, hair salon, wedding photographer, SME advisory, event hire, wellness, builder showcase, generic local.
+
+---
+
+## Later
+
+- Optional DB-backed foundation/recipe tables (`website_studio_*`)  
+- Stronger app install + reconcile on apply  
+- Broader marketplace coverage tests (Phase 5)  

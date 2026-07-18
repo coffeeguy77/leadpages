@@ -1,25 +1,34 @@
 # Website Studio — Implementation Roadmap
 
-**Rule:** Feature coding waits for approval after each phase stop.
+**Rule:** Phase 3+ feature coding waits for approval after each phase stop.
 
 ---
 
 ## Phase 1 — Architecture reset ✅
 
-Docs, archive, safe UI renames. No feature behaviour change.
+| Work | Detail |
+|------|--------|
+| Audit | Current Theme Studio / V2 / colour assistant / marketplace / renderer / images |
+| Docs | `docs/website-studio/*` |
+| Archive | Theme Studio docs → `docs/archive/theme-studio/` |
+| Naming | Safe UI/doc renames to Website Studio + AI Colour Assistant |
+| Legacy | Keep URLs, APIs, tables, env vars documented in MIGRATION.md |
 
 ---
 
-## Phase 2 — Website Composer ✅
+## Phase 2 — Website Composer + Marketplace Intelligence + page recipes ✅
 
 | Work | Detail |
 |------|--------|
-| Composer | `lib/website-composer/` pipeline |
-| Foundations | Structural-only; `sourceTemplateId` removed |
-| Recipes | Independent marketplace recipes |
-| Explicit compose | No trade shallow merge |
-| Image briefs | Placeholders only |
-| Fixtures / tests | Six businesses |
+| Composer | `lib/website-composer/` — brief → classify → foundation → recipe → content → draft |
+| Foundations | Structural-only registry; `sourceTemplateId` removed |
+| Recipes | Independent marketplace recipes (`recipes-data.js`) |
+| Explicit compose | `buildDraftConfig` — no trade shallow merge; unused sections off |
+| Provenance + diagnostics | Per-section ownership + composition diagnostics |
+| Image briefs | Placeholder descriptors only (no Image Service) |
+| Tests / fixtures | Six businesses in `tests/website-composer.test.js` |
+
+**Stop:** Wait for approval before Phase 3 (Image Service). Do not change publish.
 
 ---
 
@@ -27,19 +36,11 @@ Docs, archive, safe UI renames. No feature behaviour change.
 
 | Work | Detail |
 |------|--------|
-| Marketplace audit | Verified catalogue (43 apps) + support statuses |
-| AI metadata | Curated selection metadata for supported apps |
-| Deterministic adapters | `adapters/registry.js` |
-| Install / activate | `install-apps.js` into draft |
-| Layout / concept diversity | Hero, order, trust strategy |
-| Marketplace gaps | Documented (not all apps built) |
-| Image Service | Cloudinary + Pexels + permissions |
-| Structured image briefs | Direction profiles + ranking |
-| Draft image UI | Prepared on `/theme-studio-v2` |
-| Renderer shell | Investigation + preview neutralize |
-| Tests | Composer + Image Service + Phase 3 suites |
-
-**Stop:** Do not begin Phase 4 until approved. Do not change publish.
+| Image Service module | Provider interface |
+| Cloudinary | Reuse sign/upload; attach to draft slots |
+| Pexels | Server-side search (new) |
+| Permissions | Super/partner quotas; client later |
+| Composer hook | Resolve image briefs after content generation |
 
 ---
 
@@ -59,10 +60,11 @@ Docs, archive, safe UI renames. No feature behaviour change.
 
 | Work | Detail |
 |------|--------|
-| Quality gates | Hard fail on leakage / missing apps |
-| More adapters | Close high-priority gaps |
-| Regression | Expand fixtures |
-| Docs soak | Keep CURRENT-STATE accurate |
+| Quality gates | Hard fail on leakage, missing required sections, bad apps |
+| Fixtures | Expand beyond the six Composer fixtures |
+| Regression suite | No plumber defaults for non-trade; no jewellery leakage into trade |
+| Marketplace coverage | Every foundation has recipe + app set + preview smoke |
+| Docs soak | Update CURRENT-STATE when behaviour matches vision |
 
 ---
 
@@ -73,4 +75,13 @@ Docs, archive, safe UI renames. No feature behaviour change.
 - Publish pipeline changes  
 - Absorbing AI Colour Assistant into Website Studio  
 - Client audience enablement without flag  
-- New paid AI image provider  
+
+---
+
+## Suggested approval gates
+
+1. Approve Phase 1 docs/naming ✅  
+2. Approve Phase 2 Composer/Intelligence ✅ (implemented — awaiting soak approval)  
+3. Approve Phase 3 Image Service providers + budget  
+4. Approve Phase 4 UX cutover  
+5. Approve Phase 5 exit criteria for “V1 complete”  

@@ -1,6 +1,6 @@
 # Website Studio
 
-**Status:** Phase 3 complete — Marketplace Intelligence + Image Service.  
+**Status:** Phase 2 complete — Website Composer implemented (`lib/website-composer/`).  
 **Audience:** Product, engineering, AI agents  
 **Last updated:** 2026-07-18
 
@@ -47,5 +47,5 @@ Technical identifiers (`/theme-studio*`, `api/theme-studio/*`, `theme_studio_*`)
 
 ## Stop rule
 
-Phase 3 is implemented.  
-Do **not** begin Phase 4 generation UX polish, live application, Marketplace publishing, or production rollout until explicitly approved.
+Phase 2 (Website Composer) is implemented.  
+Do **not** begin Image Service / Pexels / publish changes until Phase 3 is approved — see [ROADMAP.md](ROADMAP.md).
