@@ -1,6 +1,6 @@
 # Website Studio
 
-**Status:** Phase 6 — superuser pilot ready (partners/clients still OFF).  
+**Status:** Phase 2 complete — Website Composer implemented (`lib/website-composer/`).  
 **Audience:** Product, engineering, AI agents  
 **Last updated:** 2026-07-18
 
@@ -45,5 +45,5 @@
 
 ## Stop rule
 
-Phase 6 supports a **superuser-only pilot**.  
-Do **not** begin partner rollout, client enablement, public Marketplace publishing, or automatic live-site replacement until explicitly approved.
+Phase 2 (Website Composer) is implemented.  
+Do **not** begin Image Service / Pexels / publish changes until Phase 3 is approved — see [ROADMAP.md](ROADMAP.md).
