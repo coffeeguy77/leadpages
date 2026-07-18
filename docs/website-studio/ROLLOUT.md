@@ -1,33 +1,36 @@
 # Website Studio rollout flags
 
-**Updated:** 2026-07-18 (Phase 5)
+**Updated:** 2026-07-18 (Phase 6 superuser pilot)
 
 ## Access vs application
 
-| Flag | Default | Purpose |
-|------|---------|---------|
-| `THEME_STUDIO_V2` | ON | Website Studio UI/API access |
-| `THEME_STUDIO_ALLOW_LIVE_APPLY` | OFF | Legacy live config overwrite (not used by Phase 5 replacement drafts) |
-| `WEBSITE_STUDIO_APPLICATION` | OFF | Master switch for Phase 5 application |
-| `WEBSITE_STUDIO_CREATE_SITE` | OFF | Mode: create new draft site |
-| `WEBSITE_STUDIO_REPLACEMENT_DRAFT` | OFF | Mode: replacement draft |
-| `WEBSITE_STUDIO_PRIVATE_TEMPLATE` | OFF | Mode: private template save |
-| `WEBSITE_STUDIO_APPLICATION_AUDIENCE` | `superuser` | Staged audience |
+| Flag | Default | Pilot | Purpose |
+|------|---------|-------|---------|
+| `THEME_STUDIO_V2` | ON | ON | Website Studio UI/API |
+| `WEBSITE_STUDIO_PILOT_SUPERUSER_ONLY` | OFF | **ON** | Deny partners/clients at Studio gate |
+| `THEME_STUDIO_ALLOW_LIVE_APPLY` | OFF | OFF | Legacy live overwrite (unused by Phase 5/6 create) |
+| `WEBSITE_STUDIO_APPLICATION` | OFF | **ON** (pilot env only) | Master application switch |
+| `WEBSITE_STUDIO_CREATE_SITE` | OFF | **ON** (pilot) | New draft site mode |
+| `WEBSITE_STUDIO_REPLACEMENT_DRAFT` | OFF | OFF | Replacement drafts |
+| `WEBSITE_STUDIO_PRIVATE_TEMPLATE` | OFF | OFF | Private templates |
+| `WEBSITE_STUDIO_APPLICATION_AUDIENCE` | `superuser` | `superuser` | Audience stage |
 
-## Audience stages
+## Pilot environment
 
-Set `WEBSITE_STUDIO_APPLICATION_AUDIENCE` to:
+See `describePilotFlagConfiguration()` / [PILOT-CHECKLIST.md](PILOT-CHECKLIST.md).
 
-1. `superuser` (default)
-2. `selected_partners` / `partners`
-3. `selected_clients` / `wider`
+SQL required: `db/website_studio_application.sql`
 
-Studio access (`THEME_STUDIO_V2` + role policy) remains separate. Clients are still denied Studio UI in V1 unless product policy changes.
+## Audience stages (future)
+
+1. superuser (current pilot)  
+2. selected_partners / partners — **not enabled**  
+3. selected_clients / wider — **not enabled**
 
 ## AI images
 
-Unchanged: superuser-only via Image Service. No rollout flag enables partner/client AI images.
+Unchanged: superuser-only. No flag enables partner/client AI images.
 
-## Phase 5 rule
+## Rule
 
-Do **not** enable application flags globally as part of shipping the code. Ops enables them per stage.
+Do not enable application flags globally. Do not enable partners/clients until Phase 6 pilot sign-off and explicit approval.

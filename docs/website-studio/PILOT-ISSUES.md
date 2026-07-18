@@ -1,0 +1,97 @@
+# Website Studio — Pilot Issues Register
+
+**Pilot:** Bean Culture Coffee Roastery (new draft site only)  
+**Updated:** 2026-07-18 (Phase 6)
+
+Severity: critical · high · medium · low  
+All critical/high must be resolved before partner rollout recommendation.
+
+---
+
+## PILOT-001 — Memory-only application audit / idempotency
+
+| Field | Value |
+|-------|-------|
+| Severity | critical |
+| Stage | Application |
+| Description | Phase 5 audit + idempotency lived in process memory and would not survive serverless restarts |
+| Reproduction | Create site → cold start → retry same idempotency key → duplicate risk |
+| Expected | Durable audit + idempotency across invocations |
+| Actual (before) | Memory Maps only |
+| Root cause | Phase 5 deferred persistence |
+| Fix | `db/website_studio_application.sql` + persistent `audit.js` with durable-memory/Supabase |
+| Test | `tests/website-studio-phase6.test.js` restart simulation |
+| Status | **resolved** |
+
+---
+
+## PILOT-002 — Mock-only Cloudinary import path
+
+| Field | Value |
+|-------|-------|
+| Severity | critical |
+| Stage | Images / Application |
+| Description | Application could leave Pexels delivery URLs or rely on mockImport |
+| Reproduction | Approve Pexels image → create site without execute import |
+| Expected | Server-side import to `leadpages/{site}/website-studio/…` with attribution |
+| Actual (before) | Plan-only / mock |
+| Root cause | Phase 5 deferred binary upload |
+| Fix | `importRemoteAsset` + `execute:true` on `/api/image-service/import-cloudinary` + application `executeImport` |
+| Test | Phase 6 Cloudinary mapping tests |
+| Status | **resolved** (requires Cloudinary credentials in pilot env for live upload) |
+
+---
+
+## PILOT-003 — Partner access still open on Studio while pilot is superuser-only
+
+| Field | Value |
+|-------|-------|
+| Severity | high |
+| Stage | Permissions |
+| Description | V1 ROLE_POLICY allowed partners into Website Studio |
+| Expected | Superuser-only pilot |
+| Actual (before) | Partners allowed when Studio enabled |
+| Fix | `WEBSITE_STUDIO_PILOT_SUPERUSER_ONLY=1` → `effectiveRolePolicy()` |
+| Test | Phase 6 pilot flags suite |
+| Status | **resolved** |
+
+---
+
+## PILOT-004 — Live interactive Bean Culture browser session
+
+| Field | Value |
+|-------|-------|
+| Severity | high |
+| Stage | End-to-end pilot |
+| Description | Full Chrome desktop/mobile/tablet session against production Supabase + Cloudinary must be run by an authenticated superuser in the pilot environment |
+| Expected | Manual checklist completion in PILOT-CHECKLIST.md |
+| Actual | Automated orchestration + composition coverage in CI; live browser session is environment-bound |
+| Root cause | Cloud agent has no production superuser session / Cloudinary secrets |
+| Fix | Checklist + brief template + automated path; ops completes live UI pass |
+| Test | Automated path green; checklist pending human sign-off |
+| Status | **open** (ops) — blocks “partner pilot ready”, not “superuser pilot ready” |
+
+---
+
+## PILOT-005 — Form notification live send
+
+| Field | Value |
+|-------|-------|
+| Severity | high |
+| Stage | Forms |
+| Description | Live lead notification to designated test recipient requires deployed site + mail pipeline |
+| Expected | Test lead created + notification via existing system |
+| Actual | Application asserts explicit recipient on draft config; live submit verified in checklist |
+| Fix | Documented in PILOT-CHECKLIST; config asserts `notifyEmail` |
+| Test | Phase 6 create-site asserts recipient |
+| Status | **open** (ops live submit) |
+
+---
+
+## Summary
+
+| Status | Count |
+|--------|------:|
+| resolved | 3 |
+| open (ops) | 2 |
+| critical open (code) | 0 |

@@ -12,7 +12,7 @@
 6. Import plan → Cloudinary only for selected/approved assets  
 7. Preserve original provider attribution after import  
 
-Live publishing remains out of scope. Phase 5 application finalises approved images into Cloudinary-scoped references before creating a **draft** site or replacement draft; it does not publish.
+Live publishing remains out of scope. Phase 6 performs **server-side** Cloudinary import (`importRemoteAsset` / API `execute:true`) into `leadpages/{siteId}/website-studio/…` before draft-site creation. Pexels temporary delivery URLs must not remain in applied site config. Browser never receives Cloudinary secrets.
 
 ---
 

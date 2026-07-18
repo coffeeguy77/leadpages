@@ -5,9 +5,9 @@
 
 ---
 
-## 1. What currently works
+## Status
 
-### Website Studio (`/theme-studio-v2`)
+Phase 6 implements durable application persistence, real Cloudinary import, superuser-only pilot gating, observability, Bean Culture pilot materials, and readiness docs.
 
 | Capability | Status |
 |------------|--------|
@@ -118,6 +118,6 @@ Legacy `adaptConceptToSiteConfig` remains for older fixture concepts without `re
 
 ---
 
-## 4. Tests
+## Tests
 
 Phase 2 delivers a real **Website Composer**: foundations are structural, recipes are independent, drafts are explicitly composed with provenance and diagnostics, and trade content inheritance is removed from the generation path. Preview still uses a technical landing HTML shell. Image Service and publishing changes remain out of scope until approved.

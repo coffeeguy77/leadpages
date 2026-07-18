@@ -2,7 +2,7 @@
 
 **Rule:** Phase 3+ feature coding waits for approval after each phase stop.
 
----
+Architecture → Composer → Marketplace/Images → Generation UX → Controlled application (flagged).
 
 ## Phases 1–4 ✅
 
@@ -66,9 +66,9 @@
 | Marketplace coverage | Every foundation has recipe + app set + preview smoke |
 | Docs soak | Update CURRENT-STATE when behaviour matches vision |
 
----
+**Stop:** No partner/client enablement. No publish. No live Bean Culture replacement.
 
-## Explicit non-goals until approved
+## Next (not started)
 
 - Blind rename of `api/theme-studio` or `theme_studio_*` tables  
 - Full production renderer rewrite  
