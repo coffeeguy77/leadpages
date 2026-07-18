@@ -4,7 +4,7 @@
 
 ---
 
-## Phase 1 — Architecture reset ✅
+## Phases 1–4 ✅
 
 | Work | Detail |
 |------|--------|
@@ -56,7 +56,7 @@
 
 ---
 
-## Phase 5 — Quality validation + regression + marketplace coverage
+## Phase 6+ (not started)
 
 | Work | Detail |
 |------|--------|

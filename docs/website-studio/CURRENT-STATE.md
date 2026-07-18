@@ -7,14 +7,7 @@
 
 ## 1. What currently works
 
-### AI Colour Assistant (`/theme-studio`)
-
-| Capability | Status |
-|------------|--------|
-| Generate / refine / approve colour tokens | Works |
-| Separate from Website Studio | Yes |
-
-### Website Studio UI (`/theme-studio-v2`, legacy path)
+### Website Studio (`/theme-studio-v2`)
 
 | Capability | Status |
 |------------|--------|
@@ -125,6 +118,6 @@ Legacy `adaptConceptToSiteConfig` remains for older fixture concepts without `re
 
 ---
 
-## Verdict
+## 4. Tests
 
 Phase 2 delivers a real **Website Composer**: foundations are structural, recipes are independent, drafts are explicitly composed with provenance and diagnostics, and trade content inheritance is removed from the generation path. Preview still uses a technical landing HTML shell. Image Service and publishing changes remain out of scope until approved.

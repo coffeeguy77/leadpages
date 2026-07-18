@@ -51,7 +51,18 @@ Rename the **product** safely. Preserve **technical identifiers** until a dedica
 | Brain tasks | `theme_studio.*` | Full product contracts |
 | Meta | `source: 'theme_studio'` on theme approve | Keep |
 | Config flag | `__themeStudioPreview` | Keep |
-| Renderer shell | `landing-shell-v1` → `trade.template.json` | Technical HTML asset only — **not** content inheritance |
+| Renderer shell | `landing-shell-v1` → `trade.template.json` | Live trade sites only — **not** Website Studio content source |
+| Renderer shell | `landing-shell-neutral-v1` → `landing-shell-neutral-v1.template.json` | Website Studio draft preview shell (Phase 4) |
+| Module dir | `lib/website-studio-application/` | Phase 5 application layer |
+| API | `/api/theme-studio/application-plan` | Plan only |
+| API | `/api/theme-studio/apply-concept` | Controlled application commit |
+| Env | `WEBSITE_STUDIO_APPLICATION` | Master application flag (default OFF) |
+| Env | `WEBSITE_STUDIO_CREATE_SITE` | New-site mode (default OFF) |
+| Env | `WEBSITE_STUDIO_REPLACEMENT_DRAFT` | Replacement mode (default OFF) |
+| Env | `WEBSITE_STUDIO_PRIVATE_TEMPLATE` | Private template mode (default OFF) |
+| Env | `WEBSITE_STUDIO_APPLICATION_AUDIENCE` | Rollout audience (default `superuser`) |
+
+**AI Colour Assistant** (`/theme-studio`) must not gain Website Studio application permissions.
 | Foundation aliases | `retail-boutique` → `retail`, `trade-field-services` → `trades`, … | Compatibility |
 | Draft meta | `__websiteComposer` | Composer diagnostics on draft configs |
 

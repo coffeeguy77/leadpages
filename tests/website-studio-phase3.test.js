@@ -64,7 +64,7 @@ describe('Website Studio Phase 3 — fixture app selections', () => {
     });
     assert.equal(result.ok, true);
     const order = result.concepts[0].draftConfig.sectionOrder;
-    for (const need of ['services', 'featuredProjects', 'specialOffer', 'serviceProcess', 'faq', 'quote']) {
+    for (const need of ['services', 'featuredProjects', 'packageCompare', 'serviceProcess', 'faq', 'quote']) {
       assert.ok(order.includes(need), 'missing ' + need);
     }
     assert.ok(!order.includes('emerg'));
@@ -101,7 +101,7 @@ describe('Website Studio Phase 3 — fixture app selections', () => {
 });
 
 describe('Website Studio Phase 3 — renderer shell neutralization', () => {
-  it('Bean Culture and Pink Diamond preview inject shell neutralize and keep drafts inheritance-none', async () => {
+  it('Bean Culture and Pink Diamond preview use neutral shell with inheritance-none', async () => {
     for (const brief of [briefs.BEAN_CULTURE, briefs.PINK_DIAMOND_VAULT]) {
       const result = await composeWebsiteConcepts(brief, {
         count: 1,
@@ -111,13 +111,13 @@ describe('Website Studio Phase 3 — renderer shell neutralization', () => {
       assert.equal(result.ok, true);
       const draft = result.concepts[0].draftConfig;
       assert.equal(draft.__websiteComposer.contentInheritance, 'none');
-      assert.equal(draft.__websiteComposer.neutralizeShellDefaults, true);
+      assert.equal(draft.__websiteComposer.rendererShellId, 'landing-shell-neutral-v1');
       const html = renderDraftPreviewHtml(draft, { mode: 'desktop' });
-      assert.match(html, /ws-shell-neutralize/);
       assert.match(html, /Website Studio preview/);
-      // Diagnostics retain shell limitation note
+      assert.match(html, /landing-shell-neutral-v1|data-ws-shell/);
       const warnings = result.concepts[0].diagnostics.rendererWarnings || [];
-      assert.ok(warnings.some((w) => /shell|landing-shell|trade\.template/i.test(JSON.stringify(w))));
+      assert.ok(warnings.some((w) => /shell|landing-shell|neutral/i.test(JSON.stringify(w))));
+      assert.doesNotMatch(html, /plumber|blocked\s*drain/i);
     }
   });
 

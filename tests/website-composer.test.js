@@ -59,7 +59,7 @@ describe('Website Composer — foundations (structural only)', () => {
     }
     for (const f of list) {
       assert.equal(f.sourceTemplateId, null, f.id + ' must not set sourceTemplateId');
-      assert.equal(f.rendererShellId, RENDERER_SHELL_LANDING_V1);
+      assert.equal(f.rendererShellId, RENDERER_SHELL_NEUTRAL_V1);
       assert.ok(Array.isArray(f.sectionPlaceholders));
       assert.ok(Array.isArray(f.navigationDefaults));
       assert.ok(f.spacingProfile);

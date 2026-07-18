@@ -1,6 +1,6 @@
 # Image Service
 
-**Status:** Implemented (Phase 3) — draft resolution only; live publish unchanged.
+**Status:** Implemented (Phase 3–4) — draft resolution + persistent approval; live publish unchanged.
 
 ---
 

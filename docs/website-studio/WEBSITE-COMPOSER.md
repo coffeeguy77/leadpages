@@ -75,7 +75,7 @@ Renderer shell landing-shell-v1 (technical HTML only)
 
 ---
 
-## Foundations (structural only)
+## Draft invariants
 
 A foundation defines:
 

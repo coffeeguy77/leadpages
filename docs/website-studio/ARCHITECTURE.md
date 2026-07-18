@@ -1,6 +1,6 @@
 # Website Studio — Architecture
 
-**Updated:** 2026-07-18 (Phase 3)
+**Updated:** 2026-07-18 (Phase 4)
 
 ## High-level chain
 
@@ -32,22 +32,29 @@
          │ draft config + stored selections
          ▼
 ┌──────────────────┐
-│ Renderer         │  landing-shell-v1 HTML (legacy trade.template.json asset)
+│ Renderer         │  Website Studio drafts → landing-shell-neutral-v1
+│                  │  Live trade sites → landing-shell-v1 (trade.template.json)
 └────────┬─────────┘
          │
          ▼
 ┌──────────────────┐
-│ Draft Preview    │  signed, noindex, forms/tracking sandboxed + shell neutralize
+│ Draft Preview    │  signed, noindex, sandboxed; neutral shell (no trade content)
 └────────┬─────────┘
-         │ human approve
+         │ human approve draft
          ▼
 ┌──────────────────┐
-│ Approval         │  scope + confirm; never silent live write
+│ Approval         │  approved-for-application
 └────────┬─────────┘
-         │
+         │ flagged application (Phase 5)
          ▼
 ┌──────────────────┐
-│ Publish          │  existing editor / site publish paths only (unchanged)
+│ Application      │  create draft site / replacement draft / private template
+│ (flagged OFF)    │  never auto-publish; never live overwrite
+└────────┬─────────┘
+         │ separate product action
+         ▼
+┌──────────────────┐
+│ Publish          │  existing publish paths only — unchanged
 └──────────────────┘
 ```
 
@@ -56,6 +63,7 @@
 ```text
 Foundation → Recipe → Supported Apps (adapters) → Layouts → Content
   → Structured image briefs → Image Service → Explicit draft
+  → Quality gate → Neutral-shell preview
 ```
 
 ### Composer internal chain
@@ -107,6 +115,8 @@ Foundation → Recipe → Apps → Layouts → Content → Renderer draft
 - This is **not** content inheritance — unused sections are explicitly `on: false`  
 - Publish unchanged  
 
+See [NEUTRAL-RENDERER.md](NEUTRAL-RENDERER.md).
+
 ---
 
 ## Data contracts
@@ -147,4 +157,4 @@ Foundation → Recipe → Apps → Layouts → Content → Renderer draft
 - Marketplace template publishing  
 - Reintroducing trade shallow merge / `sourceTemplateId: "trade"`  
 - Client-side Pexels or Cloudinary secrets  
-- New paid AI image provider  
+- Partner/client AI image generation  

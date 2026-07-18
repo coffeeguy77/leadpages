@@ -10,38 +10,34 @@
 
 | Name | Role |
 |------|------|
-| **Website Studio** | User-facing product for generating complete website concepts |
+| **Website Studio** | User-facing product for generating and applying website concepts |
 | **Website Composer** | Internal composition engine (`lib/website-composer/`) |
-| **AI Colour Assistant** | Separate colour-token tool (former colour-only Theme Studio) |
+| **AI Colour Assistant** | Separate colour-token tool (no application permissions) |
 | **LeadPages Brain** | Central AI gateway |
 | **Image Service** | Shared image provider abstraction (`lib/image-service/`) |
-| **Marketplace Intelligence** | Catalogue + metadata + adapters over Marketplace apps |
+| **Marketplace Intelligence** | Catalogue + metadata + adapters |
+| **Application layer** | Controlled create / replacement / private template (`lib/website-studio-application/`) |
 
 ---
 
 ## Read order
 
-1. [VISION.md](VISION.md) — product intent  
-2. [CURRENT-STATE.md](CURRENT-STATE.md) — what exists today  
-3. [ARCHITECTURE.md](ARCHITECTURE.md) — architecture  
-4. [WEBSITE-COMPOSER.md](WEBSITE-COMPOSER.md) — composition engine  
-5. [MARKETPLACE.md](MARKETPLACE.md) — marketplace role  
-6. [MARKETPLACE-CATALOGUE.md](MARKETPLACE-CATALOGUE.md) — verified inventory  
-7. [APP-ADAPTERS.md](APP-ADAPTERS.md) — deterministic adapters  
-8. [MARKETPLACE-GAPS.md](MARKETPLACE-GAPS.md) — honest gaps  
-9. [IMAGE-SERVICE.md](IMAGE-SERVICE.md) — image abstraction  
-10. [IMAGE-PROVIDERS.md](IMAGE-PROVIDERS.md) — Cloudinary / Pexels / AI  
-11. [IMAGE-APPROVAL.md](IMAGE-APPROVAL.md) — draft import / approval  
-12. [ROLE-PERMISSIONS.md](ROLE-PERMISSIONS.md) — server gates  
-13. [ROADMAP.md](ROADMAP.md) — phased plan  
-14. [MIGRATION.md](MIGRATION.md) — Theme Studio → Website Studio  
-
----
-
-## Legacy Theme Studio docs (archived)
-
-Preserved under [`docs/archive/theme-studio/`](../archive/theme-studio/).  
-Technical identifiers (`/theme-studio*`, `api/theme-studio/*`, `theme_studio_*`) remain until an approved migration. See [MIGRATION.md](MIGRATION.md).
+1. [VISION.md](VISION.md)  
+2. [CURRENT-STATE.md](CURRENT-STATE.md)  
+3. [ARCHITECTURE.md](ARCHITECTURE.md)  
+4. [APPLICATION.md](APPLICATION.md) — Phase 5  
+5. [NEW-SITE-CREATION.md](NEW-SITE-CREATION.md)  
+6. [REPLACEMENT-DRAFTS.md](REPLACEMENT-DRAFTS.md)  
+7. [PRIVATE-TEMPLATES.md](PRIVATE-TEMPLATES.md)  
+8. [ROLLOUT.md](ROLLOUT.md)  
+9. [APPLICATION-SECURITY.md](APPLICATION-SECURITY.md)  
+10. [FAILURE-RECOVERY.md](FAILURE-RECOVERY.md)  
+11. [WEBSITE-COMPOSER.md](WEBSITE-COMPOSER.md)  
+12. [NEUTRAL-RENDERER.md](NEUTRAL-RENDERER.md)  
+13. [MARKETPLACE.md](MARKETPLACE.md) / [MARKETPLACE-CATALOGUE.md](MARKETPLACE-CATALOGUE.md)  
+14. [GENERATION-UX.md](GENERATION-UX.md) / [APPROVAL-WORKFLOW.md](APPROVAL-WORKFLOW.md)  
+15. [ROLE-PERMISSIONS.md](ROLE-PERMISSIONS.md)  
+16. [ROADMAP.md](ROADMAP.md) / [MIGRATION.md](MIGRATION.md)  
 
 ---
 
