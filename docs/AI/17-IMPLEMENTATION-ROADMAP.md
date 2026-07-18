@@ -107,15 +107,16 @@
 
 ## Phase 8 — Website Studio (was Theme Studio)
 
-**Status: Architecture reset complete (docs/naming). V0 prototype at `/theme-studio-v2`. Feature phases gated on approval — see [website-studio/ROADMAP](../website-studio/ROADMAP.md).**
+**Status: Phase 2 Website Composer shipped. Feature Phase 3+ gated on approval — see [website-studio/ROADMAP](../website-studio/ROADMAP.md).**
 
 | Item | Detail |
 |------|--------|
 | AI Colour Assistant | Colour-only; `theme.generate` / `theme.refine` → `/theme-studio` — [21 stub](21-THEME-STUDIO.md) |
-| Website Studio V0 | Legacy Theme Studio V2 UI/APIs at `/theme-studio-v2` + `api/theme-studio/*` — not full Composer yet |
+| Website Studio UI | Legacy paths `/theme-studio-v2` + `api/theme-studio/*` |
+| Website Composer | `lib/website-composer/` — foundations, recipes, explicit drafts, diagnostics |
 | Canonical docs | [docs/website-studio/](../website-studio/README.md) |
 | Archive | [docs/archive/theme-studio/](../archive/theme-studio/README.md) |
-| Next (not started) | Website Composer, Marketplace Intelligence, Image Service |
+| Next (not started) | Image Service (Cloudinary + Pexels) |
 
 ---
 

@@ -12,7 +12,7 @@
 
 ## One-line summary
 
-**Phases 0–9 are shipped.** Brain runtime (`lib/brain/`), Control Centre, landing drafts, Marketing Hub, and flag-gated migrations for IG / suburb / assist / packs. **Website Studio** is the user-facing full-site product (legacy routes `/theme-studio-v2`); **AI Colour Assistant** remains separate at `/theme-studio`. Architecture reset: `docs/website-studio/`. Legacy paths remain when migration flags are off.
+**Phases 0–9 are shipped.** Brain runtime (`lib/brain/`), Control Centre, landing drafts, Marketing Hub, and flag-gated migrations for IG / suburb / assist / packs. **Website Studio** (legacy `/theme-studio-v2`) uses **Website Composer** (`lib/website-composer/`, Phase 2). **AI Colour Assistant** remains separate at `/theme-studio`. Docs: `docs/website-studio/`. Legacy paths remain when migration flags are off.
 
 ---
 
@@ -29,8 +29,9 @@
 | Durable Brain settings | `db/brain_settings.sql` + `lib/brain/settings-store.js` | Landing provider saved from Control Centre (no env var) |
 | Landing draft API | `api/brain/landing-draft.js` | Flag `BRAIN_LANDING_DRAFT`; loads saved provider |
 | AI Colour Assistant | `/theme-studio` + `api/brain/theme-*.js` | Colour tokens only |
-| Website Studio (legacy paths) | `/theme-studio-v2` + `api/theme-studio/*` + `lib/theme-studio/` | Prototype full-site concepts; product docs → [website-studio](../website-studio/README.md) |
-| Website Studio architecture | `docs/website-studio/` | **Phase 1 reset** — docs/naming only; stop before feature code |
+| Website Studio (legacy paths) | `/theme-studio-v2` + `api/theme-studio/*` + `lib/theme-studio/` | UI/API; generation delegates to Website Composer |
+| Website Composer | `lib/website-composer/` | **Phase 2** — foundations, recipes, explicit drafts, diagnostics |
+| Website Studio docs | `docs/website-studio/` | Vision / architecture / roadmap |
 | Marketing Hub | `marketing-hub.html` + `api/brain/ads-*.js` | Phase 9 — suggest only; approve stores, no Ads mutate |
 | Tests | `tests/brain-*.test.js` | No live network; injected `fetch` / mock |
 
@@ -48,7 +49,7 @@
 | 5 | OpenAI + Gemini | Done |
 | 6 | Control Centre | Done (+ durable `ai_requests` when SQL applied) |
 | 7 | Landing draft migration | Done — **flag default OFF** |
-| 8 | Website Studio / Colour Assistant | Colour = AI Colour Assistant; full site = Website Studio (architecture reset in progress) — [website-studio](../website-studio/README.md) |
+| 8 | Website Studio / Colour Assistant | Colour = AI Colour Assistant; Composer Phase 2 shipped — [website-studio](../website-studio/README.md) |
 | 9 | Marketing Hub product | **Done** — [22](22-MARKETING-HUB.md) |
 
 Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
@@ -104,7 +105,7 @@ Order / rollback: [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md).
 5. **Usage ledger** — prefer durable `ai_requests` (run `db/ai_requests.sql`).  
 6. **Prefer `getPlatformBrain()`** in API routes.  
 7. AI Colour Assistant writes **trade theme tokens only** (`pipe`, `hivis`, `steel`, `safety`, `lightBg`) — not freeform HTML/CSS.  
-8. **Website Studio feature work** requires roadmap approval — [ROADMAP](../website-studio/ROADMAP.md). Do not implement Composer / Image Service / Marketplace Intelligence without approval.
+8. **Website Studio Phase 3+** (Image Service / Pexels / publish changes) requires roadmap approval — [ROADMAP](../website-studio/ROADMAP.md). Composer lives in `lib/website-composer/`.
 
 ---
 

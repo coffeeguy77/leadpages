@@ -1,10 +1,10 @@
 # Website Studio — Implementation Roadmap
 
-**Rule:** No feature coding until this plan is approved after Phase 1.
+**Rule:** Phase 3+ feature coding waits for approval after each phase stop.
 
 ---
 
-## Phase 1 — Architecture reset ✅ (this delivery)
+## Phase 1 — Architecture reset ✅
 
 | Work | Detail |
 |------|--------|
@@ -14,21 +14,21 @@
 | Naming | Safe UI/doc renames to Website Studio + AI Colour Assistant |
 | Legacy | Keep URLs, APIs, tables, env vars documented in MIGRATION.md |
 
-**Stop:** Wait for approval before Phase 2 code.
-
 ---
 
-## Phase 2 — Website Composer + Marketplace Intelligence + page recipes
+## Phase 2 — Website Composer + Marketplace Intelligence + page recipes ✅
 
 | Work | Detail |
 |------|--------|
-| Composer facade | Orchestrate brief → recipe → concept → validate → adapt |
-| Page recipes | Data-driven section/layout/app packs per foundation |
-| Marketplace Intelligence | Scoring API over foundations + apps (file-based first) |
-| Concept completeness | Map navigation/mobile/imagery slots; attach app install plan |
-| Tests | Recipe selection, no leakage, adapter immutability |
+| Composer | `lib/website-composer/` — brief → classify → foundation → recipe → content → draft |
+| Foundations | Structural-only registry; `sourceTemplateId` removed |
+| Recipes | Independent marketplace recipes (`recipes-data.js`) |
+| Explicit compose | `buildDraftConfig` — no trade shallow merge; unused sections off |
+| Provenance + diagnostics | Per-section ownership + composition diagnostics |
+| Image briefs | Placeholder descriptors only (no Image Service) |
+| Tests / fixtures | Six businesses in `tests/website-composer.test.js` |
 
-**Do not:** change publish, live apply defaults, or colour assistant write path.
+**Stop:** Wait for approval before Phase 3 (Image Service). Do not change publish.
 
 ---
 
@@ -40,7 +40,7 @@
 | Cloudinary | Reuse sign/upload; attach to draft slots |
 | Pexels | Server-side search (new) |
 | Permissions | Super/partner quotas; client later |
-| Composer hook | Fill imagery slots after content generation |
+| Composer hook | Resolve image briefs after content generation |
 
 ---
 
@@ -61,7 +61,7 @@
 | Work | Detail |
 |------|--------|
 | Quality gates | Hard fail on leakage, missing required sections, bad apps |
-| Fixtures | Jewellery, trade, café, professional, events (+ more) |
+| Fixtures | Expand beyond the six Composer fixtures |
 | Regression suite | No plumber defaults for non-trade; no jewellery leakage into trade |
 | Marketplace coverage | Every foundation has recipe + app set + preview smoke |
 | Docs soak | Update CURRENT-STATE when behaviour matches vision |
@@ -80,8 +80,8 @@
 
 ## Suggested approval gates
 
-1. Approve Phase 1 docs/naming (now)  
-2. Approve Phase 2 Composer/Intelligence scope  
+1. Approve Phase 1 docs/naming ✅  
+2. Approve Phase 2 Composer/Intelligence ✅ (implemented — awaiting soak approval)  
 3. Approve Phase 3 Image Service providers + budget  
-4. Approve Phase 4 UX cutover (when `/theme-studio-v2` becomes Website Studio for users)  
+4. Approve Phase 4 UX cutover  
 5. Approve Phase 5 exit criteria for “V1 complete”  

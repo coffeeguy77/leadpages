@@ -45,6 +45,9 @@ Rename the **product** safely. Preserve **technical identifiers** until a dedica
 | Brain tasks | `theme_studio.*` | Full product contracts |
 | Meta | `source: 'theme_studio'` on theme approve | Keep |
 | Config flag | `__themeStudioPreview` | Keep |
+| Renderer shell | `landing-shell-v1` → `trade.template.json` | Technical HTML asset only — **not** content inheritance |
+| Foundation aliases | `retail-boutique` → `retail`, `trade-field-services` → `trades`, … | Compatibility |
+| Draft meta | `__websiteComposer` | Composer diagnostics on draft configs |
 
 **Do not** create parallel production routes that silently diverge. Prefer aliases later (`/website-studio` → same HTML) after approval.
 

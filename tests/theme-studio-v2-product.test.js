@@ -38,7 +38,8 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
   it('builds three deterministic concepts for jewellery without trade leakage', () => {
     const result = buildDeterministicConcepts(briefs.PINK_DIAMOND_VAULT);
     assert.equal(result.ok, true, JSON.stringify(result.errors, null, 2));
-    assert.equal(result.foundationId, 'retail-boutique');
+    assert.equal(result.foundationId, 'retail');
+    assert.equal(result.recipeId, 'recipe-luxury-jewellery');
     assert.ok(result.concepts.length >= 1);
     for (const item of result.concepts) {
       const text = JSON.stringify(item.draftConfig);
@@ -47,13 +48,14 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
       assert.match(text, /Pink Diamond Vault/);
       assert.ok(item.draftConfig.layout);
       assert.ok(item.draftConfig.theme);
+      assert.equal(item.draftConfig.__websiteComposer.contentInheritance, 'none');
     }
   });
 
   it('builds trade concepts for Luke security', () => {
     const result = buildDeterministicConcepts(briefs.LUKES_SECURITY_CO);
     assert.equal(result.ok, true);
-    assert.equal(result.foundationId, 'trade-field-services');
+    assert.equal(result.foundationId, 'trades');
     assert.ok(result.concepts.length >= 1);
     const text = JSON.stringify(result.concepts[0].draftConfig);
     assert.doesNotMatch(text, /pink diamond/i);
@@ -179,7 +181,7 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
   });
 
   it('foundation candidates remain stable for fixtures', () => {
-    assert.equal(selectFoundationCandidates(briefs.PINK_DIAMOND_VAULT)[0].foundationId, 'retail-boutique');
-    assert.equal(selectFoundationCandidates(briefs.LUKES_SECURITY_CO)[0].foundationId, 'trade-field-services');
+    assert.equal(selectFoundationCandidates(briefs.PINK_DIAMOND_VAULT)[0].foundationId, 'retail');
+    assert.equal(selectFoundationCandidates(briefs.LUKES_SECURITY_CO)[0].foundationId, 'trades');
   });
 });

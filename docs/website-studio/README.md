@@ -1,6 +1,6 @@
 # Website Studio
 
-**Status:** Architecture reset (Phase 1) — documentation and naming only. No new feature code.  
+**Status:** Phase 2 complete — Website Composer implemented (`lib/website-composer/`).  
 **Audience:** Product, engineering, AI agents  
 **Last updated:** 2026-07-18
 
@@ -46,5 +46,5 @@ Technical identifiers (`/theme-studio*`, `api/theme-studio/*`, `theme_studio_*` 
 
 ## Stop rule
 
-Phase 1 of this reset is **documentation, architecture, and safe naming only**.  
-Do not implement Website Composer, Marketplace Intelligence, Image Service, or change renderer/publish behaviour until the plan in [ROADMAP.md](ROADMAP.md) is approved.
+Phase 2 (Website Composer) is implemented.  
+Do **not** begin Image Service / Pexels / publish changes until Phase 3 is approved — see [ROADMAP.md](ROADMAP.md).
