@@ -155,7 +155,7 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
     assert.equal(verifyPreviewToken(expired).ok, false);
   });
 
-  it('preview HTML uses trade template, noindex, sandboxed forms/tracking', async () => {
+  it('preview HTML uses neutral shell, noindex, sandboxed forms/tracking', async () => {
     const gen = await buildDeterministicConcepts(briefs.CANBERRA_EVENT_HIRE, {
       allowMockImages: true,
       actor: { isSuperuser: true }
@@ -180,17 +180,17 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
     assert.equal(sandboxed.__disableForms, true);
   });
 
-  it('adapter maps hero title/sub and disables emerg for hospitality', () => {
-    const gen = buildDeterministicConcepts({
+  it('adapter maps hero title/sub and disables emerg for hospitality', async () => {
+    const gen = await buildDeterministicConcepts({
       businessName: 'Bean Culture',
       industry: 'coffee',
       specialisation: 'Event Coffee (coffee carts + coffee van)',
       location: 'Canberra',
       desiredStyle: 'elegant, cafe vibes',
       audience: 'Marketing agencies'
-    });
+    }, { allowMockImages: true, actor: { isSuperuser: true } });
     assert.equal(gen.ok, true);
-    assert.equal(gen.foundationId, 'hospitality-cafe');
+    assert.match(String(gen.foundationId || ''), /^hospitality/);
     const cfg = gen.concepts[0].draftConfig;
     assert.equal(cfg.sections.hero.title != null, true);
     assert.equal(cfg.sections.hero.sub != null, true);

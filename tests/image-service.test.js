@@ -222,6 +222,96 @@ describe('Image Service — resolve + cache', () => {
     assert.ok(s.approvalStatus);
   });
 
+  it('times out hung Pexels fetches instead of hanging forever', async () => {
+    const prev = process.env.PEXELS_API_KEY;
+    process.env.PEXELS_API_KEY = 'test-key';
+    clearCache();
+    const fetchImpl = (_url, init) =>
+      new Promise((_resolve, reject) => {
+        const signal = init && init.signal;
+        if (!signal) return; // hang only if no signal — race timeout still covers this
+        if (signal.aborted) {
+          const err = new Error('aborted');
+          err.name = 'AbortError';
+          reject(err);
+          return;
+        }
+        signal.addEventListener('abort', () => {
+          const err = new Error('aborted');
+          err.name = 'AbortError';
+          reject(err);
+        });
+      });
+    const started = Date.now();
+    const result = await pexels.searchPexels({
+      query: 'coffee cart event',
+      orientation: 'landscape',
+      fetchImpl,
+      timeoutMs: 80
+    });
+    const elapsed = Date.now() - started;
+    assert.equal(result.ok, false);
+    assert.equal(result.error, 'pexels_timeout');
+    assert.ok(elapsed < 2000, 'expected AbortSignal timeout, elapsed=' + elapsed);
+    if (prev) process.env.PEXELS_API_KEY = prev;
+    else delete process.env.PEXELS_API_KEY;
+  });
+
+  it('stops Pexels queries once enough stock results are available', async () => {
+    const prev = process.env.PEXELS_API_KEY;
+    process.env.PEXELS_API_KEY = 'test-key';
+    clearCache();
+    let calls = 0;
+    const fetchImpl = async () => {
+      calls += 1;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          page: 1,
+          per_page: 15,
+          total_results: 100,
+          photos: Array.from({ length: 12 }, (_, i) => ({
+            id: 1000 + i + calls * 100,
+            width: 2400,
+            height: 1600,
+            url: 'https://www.pexels.com/photo/' + (1000 + i),
+            photographer: 'Test',
+            photographer_url: 'https://www.pexels.com/@test',
+            alt: 'coffee',
+            src: {
+              original: 'https://images.pexels.com/photos/' + (1000 + i) + '/o.jpg',
+              large2x: 'https://images.pexels.com/photos/' + (1000 + i) + '/l2.jpg',
+              large: 'https://images.pexels.com/photos/' + (1000 + i) + '/l.jpg',
+              medium: 'https://images.pexels.com/photos/' + (1000 + i) + '/m.jpg',
+              small: 'https://images.pexels.com/photos/' + (1000 + i) + '/s.jpg',
+              tiny: 'https://images.pexels.com/photos/' + (1000 + i) + '/t.jpg'
+            }
+          }))
+        })
+      };
+    };
+    const resolved = await resolveImageBrief(
+      {
+        purpose: 'hero',
+        subject: 'mobile coffee cart serving guests',
+        setting: 'stylish outdoor corporate event',
+        industry: 'coffee-event',
+        photographyStyle: 'warm editorial hospitality photography',
+        humanPresence: 'professional barista and guests',
+        orientation: 'landscape',
+        minimumWidth: 1200,
+        minimumHeight: 800
+      },
+      { allowMock: false, fetchImpl, actor: { isSuperuser: true }, minStockResults: 8 }
+    );
+    assert.equal(resolved.ok, true);
+    assert.ok(calls >= 1);
+    assert.ok(calls < 4, 'should not exhaust all query variants when first page is enough, calls=' + calls);
+    if (prev) process.env.PEXELS_API_KEY = prev;
+    else delete process.env.PEXELS_API_KEY;
+  });
+
   it('builds Cloudinary import plan without exposing secrets', () => {
     const plan = buildCloudinaryImportPlan(
       {

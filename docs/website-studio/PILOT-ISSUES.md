@@ -57,6 +57,23 @@ All critical/high must be resolved before partner rollout recommendation.
 
 ---
 
+## PILOT-006 — Generate / Regenerate concepts returns HTTP 500
+
+| Field | Value |
+|-------|-------|
+| Severity | critical |
+| Stage | Compare concepts |
+| Description | "Generate 3 concepts" and "Regenerate all" showed bare `HTTP 500` (empty/non-JSON error body) |
+| Reproduction | Brief → Compare → Generate 3 concepts (or Regenerate all) — e.g. Pink Diamond Vault |
+| Expected | Three draft concepts with clear JSON errors on failure |
+| Actual (before) | Uncaught `ReferenceError: RENDERER_SHELL_LANDING_V1 is not defined` (and related merge regressions) → platform/empty 500 |
+| Root cause | Merging `main` into Phase 6 overwrote Website Composer with an older sync compose path that referenced an unimported shell id and reintroduced trade content leakage / broken preview helpers. Separate gaps: no API try/catch, Pexels latency, Brain on critical path. |
+| Fix | Restore Phase 4/6 Composer + preview stack (`compose.js`, `content.js`, foundations/recipes, `render-preview.js`, etc.); keep generate-concepts try/catch + Composer-only path + Pexels timeouts; UI surfaces details |
+| Test | `tests/theme-studio-generate-concepts.test.js`, `tests/website-composer.test.js`, `tests/website-studio-phase4.test.js` |
+| Status | **resolved** (code) — re-verify on deployed pilot after this restore |
+
+---
+
 ## PILOT-004 — Live interactive Bean Culture browser session
 
 | Field | Value |
@@ -92,6 +109,6 @@ All critical/high must be resolved before partner rollout recommendation.
 
 | Status | Count |
 |--------|------:|
-| resolved | 3 |
+| resolved | 4 |
 | open (ops) | 2 |
 | critical open (code) | 0 |
