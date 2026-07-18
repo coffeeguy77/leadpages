@@ -283,9 +283,13 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     };
   }
 
-  function apiErrorMessage(j, res){
+  function apiErrorMessage(j, res, rawText){
     j = j || {};
-    var msg = j.message || j.error || ('HTTP '+res.status);
+    var msg = j.message || j.error || '';
+    if (!msg) {
+      var snippet = String(rawText || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+      msg = 'HTTP ' + res.status + (snippet && snippet.charAt(0) !== '{' ? ' (non-JSON server error)' : '');
+    }
     if (j.details && j.details.length) {
       var first = j.details[0];
       var detail = (first && (first.message || first.code)) || '';
@@ -306,8 +310,10 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       ),
       body: opts.body != null ? JSON.stringify(opts.body) : (opts.method === 'GET' ? undefined : '{}')
     });
-    var j = await res.json().catch(function(){ return {}; });
-    if(!res.ok) throw new Error(apiErrorMessage(j, res));
+    var raw = await res.text();
+    var j = {};
+    try { j = raw ? JSON.parse(raw) : {}; } catch (_e) { j = {}; }
+    if(!res.ok) throw new Error(apiErrorMessage(j, res, raw));
     return j;
   }
 
