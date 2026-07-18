@@ -259,6 +259,10 @@
     },
     "api/theme-studio/refine.js": {
       "maxDuration": 60
+    },
+    "api/theme-studio/preview.js": {
+      "maxDuration": 30,
+      "includeFiles": "landing-shell-neutral-v1.template.json,trade.template.json"
     }
   }
 }

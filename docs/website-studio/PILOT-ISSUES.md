@@ -74,6 +74,23 @@ All critical/high must be resolved before partner rollout recommendation.
 
 ---
 
+## PILOT-007 — Preview iframe FUNCTION_INVOCATION_FAILED
+
+| Field | Value |
+|-------|-------|
+| Severity | critical |
+| Stage | Preview |
+| Description | After concepts generate, Desktop/Mobile preview iframe shows Vercel `FUNCTION_INVOCATION_FAILED` |
+| Reproduction | Generate concepts → open Preview → iframe `/api/theme-studio/preview?token=…` |
+| Expected | Neutral-shell HTML preview |
+| Actual | Serverless crash (empty/HTML error page) |
+| Root cause | `render-preview.loadShellHtml` used dynamic `require(path.join(...))`; Vercel NFT did not bundle `landing-shell-neutral-v1.template.json` / `trade.template.json` |
+| Fix | Static `require()` of both shells (same pattern as `api/render.js`); preview try/catch + `includeFiles` |
+| Test | product/preview render suite + explicit shell loader assertion |
+| Status | **resolved** (code) — needs production deploy |
+
+---
+
 ## PILOT-004 — Live interactive Bean Culture browser session
 
 | Field | Value |
@@ -109,6 +126,6 @@ All critical/high must be resolved before partner rollout recommendation.
 
 | Status | Count |
 |--------|------:|
-| resolved | 4 |
+| resolved | 5 |
 | open (ops) | 2 |
 | critical open (code) | 0 |
