@@ -105,15 +105,17 @@
 
 ---
 
-## Phase 8 — AI Theme Studio
+## Phase 8 — Website Studio (was Theme Studio)
 
-**Status: V2 product shipped at `/theme-studio-v2`; colour MVP retargeted as AI Colour Assistant.**
+**Status: Architecture reset complete (docs/naming). V0 prototype at `/theme-studio-v2`. Feature phases gated on approval — see [website-studio/ROADMAP](../website-studio/ROADMAP.md).**
 
 | Item | Detail |
 |------|--------|
-| AI Colour Assistant | `theme.generate` / `theme.refine` → `/theme-studio` |
-| Theme Studio V2 | `/theme-studio-v2` + `api/theme-studio/*` — [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md) |
-| Canonical plan | [THEME-STUDIO-IMPLEMENTATION-AUDIT](THEME-STUDIO-IMPLEMENTATION-AUDIT.md) |
+| AI Colour Assistant | Colour-only; `theme.generate` / `theme.refine` → `/theme-studio` — [21 stub](21-THEME-STUDIO.md) |
+| Website Studio V0 | Legacy Theme Studio V2 UI/APIs at `/theme-studio-v2` + `api/theme-studio/*` — not full Composer yet |
+| Canonical docs | [docs/website-studio/](../website-studio/README.md) |
+| Archive | [docs/archive/theme-studio/](../archive/theme-studio/README.md) |
+| Next (not started) | Website Composer, Marketplace Intelligence, Image Service |
 
 ---
 

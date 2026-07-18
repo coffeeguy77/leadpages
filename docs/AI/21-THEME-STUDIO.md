@@ -1,41 +1,17 @@
-# 21 — AI Theme Studio
+# 21 — AI Colour Assistant (archived Theme Studio colour MVP)
 
-**Document:** `AI/21-THEME-STUDIO`  
-**Status:** Colour-token MVP shipped; **full product is Theme Studio V2**  
-**Canonical rebuild plan:** [THEME-STUDIO-IMPLEMENTATION-AUDIT](THEME-STUDIO-IMPLEMENTATION-AUDIT.md)  
-**V2 foundations (Phases 1–2):** [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md)
+**Status:** Superseded for product naming.  
+**Canonical colour product name:** **AI Colour Assistant**  
+**Canonical full-website product docs:** [Website Studio](../website-studio/README.md)
 
----
+This file previously documented the colour-token Theme Studio. The full archived text is at:
 
-## Important correction (2026-07-17)
+→ [docs/archive/theme-studio/21-THEME-STUDIO.md](../archive/theme-studio/21-THEME-STUDIO.md)
 
-The implementation at `/theme-studio` is an **AI colour-token generator** (five trade theme hexes + miniature preview). That is **not** the approved LeadPages Theme Studio product.
+### Live paths (unchanged)
 
-| Product | Status |
-|---------|--------|
-| **Theme Studio V2** (full design system) | Phases 1–2 library foundations shipped — [23](23-THEME-STUDIO-V2.md). **Do not extend this colour screen into V2.** |
-| **AI Colour Assistant** | Intended home for the current colour generate/refine/approve flow (Editor → Appearance) |
-
-Do not wire V2 UI onto `theme-studio.html`. Keep colour MVP isolated until relocated.
-
----
-
-## What shipped (colour MVP — to be retargeted)
-
-| Piece | Path |
-|-------|------|
-| UI | `/theme-studio` → `theme-studio.html` |
-| Tasks | `theme.generate`, `theme.refine` |
-| Approve | `POST /api/brain/theme-approve` → `sites.config.theme` |
-| Tokens | `pipe`, `hivis`, `steel`, `safety`, `lightBg` |
-
-Flag: `BRAIN_THEME_STUDIO` (default on).
-
----
-
-## Related
-
-- V2 Phases 1–2: [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md)  
-- Rebuild audit & phases: [THEME-STUDIO-IMPLEMENTATION-AUDIT](THEME-STUDIO-IMPLEMENTATION-AUDIT.md)  
-- Roadmap: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md)  
-- Status: [00-STATUS](00-STATUS.md)
+| Item | Path |
+|------|------|
+| UI | `/theme-studio`, `/theme-studio/colours` |
+| APIs | `/api/brain/theme-generate`, `theme-refine`, `theme-approve` |
+| Flag | `BRAIN_THEME_STUDIO` |

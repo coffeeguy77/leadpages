@@ -10,7 +10,8 @@
 
 | Surface | Brain needs | Notes |
 |---------|-------------|-------|
-| AI Theme Studio | Context, vision/logo, structured theme tokens, refine, a11y review, preview/approve | Output must match theme engine / `api/render.js` — not uncontrolled HTML |
+| Website Studio | Full-site concepts via Composer + Marketplace Intelligence + Image Service | Canonical: [docs/website-studio](../website-studio/README.md). Legacy paths `/theme-studio-v2` |
+| AI Colour Assistant | Structured theme tokens only | Separate from Website Studio; `/theme-studio` |
 | AI Marketing Hub | Site analysis, keywords, negatives, campaign/ad-group plans, RSA copy, budgets, LP analysis, optimisation suggestions | LeadPages-managed campaigns distinct from customer’s other properties (e.g. WordPress). **No mutate without approval** initially |
 | AI SEO Studio | Recommendations, meta, suburb/landing assist | Builds on `lib/seo/*` |
 | AI Content Studio | Long-form page/service copy | Extends landing draft |
@@ -27,15 +28,20 @@
 
 ---
 
-## Theme Studio dependency (high level)
+## Website Studio dependency (high level)
 
-Business context → brand/logo analysis → theme-token generation → layout hints → structured config → validate against theme engine → version history → **user preview/approve** → merge into `sites.config`.
+Brief → Marketplace Intelligence → Website Composer → Image Service → draft config → renderer preview → **user approve** → publish via existing editor paths.  
+Detail: [docs/website-studio/ARCHITECTURE](../website-studio/ARCHITECTURE.md).
+
+## AI Colour Assistant dependency (high level)
+
+Business context → theme-token generation → validate → **user preview/approve** → merge theme tokens into `sites.config` only.
 
 ## Marketing Hub dependency (high level)
 
 Business + site analysis → plan structured campaigns → RSA copy → recommendations → **explicit user approval** → Google Ads API writes via existing `lib/google-ads/*` (not Brain talking to Ads directly for auth — Brain plans; Ads client executes after approval).
 
-Detailed Theme Studio and Marketing Hub specs are **separate future projects**.
+Website Studio, Colour Assistant, and Marketing Hub remain separate product surfaces.
 
 ---
 
