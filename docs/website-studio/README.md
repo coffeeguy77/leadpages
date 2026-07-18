@@ -1,6 +1,6 @@
 # Website Studio
 
-**Status:** Phase 5 complete — controlled application (flagged OFF by default).  
+**Status:** Phase 6 — superuser pilot ready (partners/clients still OFF).  
 **Audience:** Product, engineering, AI agents  
 **Last updated:** 2026-07-18
 
@@ -26,12 +26,14 @@
 2. [CURRENT-STATE.md](CURRENT-STATE.md)  
 3. [ARCHITECTURE.md](ARCHITECTURE.md)  
 4. [APPLICATION.md](APPLICATION.md) — Phase 5  
-5. [NEW-SITE-CREATION.md](NEW-SITE-CREATION.md)  
-6. [REPLACEMENT-DRAFTS.md](REPLACEMENT-DRAFTS.md)  
-7. [PRIVATE-TEMPLATES.md](PRIVATE-TEMPLATES.md)  
-8. [ROLLOUT.md](ROLLOUT.md)  
-9. [APPLICATION-SECURITY.md](APPLICATION-SECURITY.md)  
-10. [FAILURE-RECOVERY.md](FAILURE-RECOVERY.md)  
+5. [PILOT-CHECKLIST.md](PILOT-CHECKLIST.md) / [PILOT-BEAN-CULTURE.md](PILOT-BEAN-CULTURE.md)  
+6. [PILOT-ISSUES.md](PILOT-ISSUES.md) / [PRODUCTION-READINESS.md](PRODUCTION-READINESS.md)  
+7. [NEW-SITE-CREATION.md](NEW-SITE-CREATION.md)  
+8. [REPLACEMENT-DRAFTS.md](REPLACEMENT-DRAFTS.md)  
+9. [PRIVATE-TEMPLATES.md](PRIVATE-TEMPLATES.md)  
+10. [ROLLOUT.md](ROLLOUT.md)  
+11. [APPLICATION-SECURITY.md](APPLICATION-SECURITY.md)  
+12. [FAILURE-RECOVERY.md](FAILURE-RECOVERY.md)  
 11. [WEBSITE-COMPOSER.md](WEBSITE-COMPOSER.md)  
 12. [NEUTRAL-RENDERER.md](NEUTRAL-RENDERER.md)  
 13. [MARKETPLACE.md](MARKETPLACE.md) / [MARKETPLACE-CATALOGUE.md](MARKETPLACE-CATALOGUE.md)  
@@ -43,5 +45,5 @@
 
 ## Stop rule
 
-Phase 5 is implemented with **application flags default OFF**.  
-Do **not** begin global production rollout, public Marketplace publishing, or automatic live-site replacement until explicitly approved.
+Phase 6 supports a **superuser-only pilot**.  
+Do **not** begin partner rollout, client enablement, public Marketplace publishing, or automatic live-site replacement until explicitly approved.

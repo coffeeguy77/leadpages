@@ -45,17 +45,15 @@ Composer accepts an `actor` object. Partners compose with Pexels/mock; they cann
 | Apply draft to live site | No (gated) | No | No |
 | Publish Marketplace templates | No | No | No |
 
-## Application (Phase 5 — flags default OFF)
+## Application (Phase 5/6)
 
 | Capability | Superuser | Partner | Client |
 |------------|-----------|---------|--------|
-| Create new draft site | Yes (when flagged) | Own accounts (when flagged) | Denied in current stage |
-| Replacement draft | Yes | Authorised sites only | Denied unless audience widens |
-| Private template | Yes | Partner-private only | Denied |
-| Platform / Marketplace template | Yes (review eligibility only) | No | No |
-| Override critical validation | No | No | No |
-| Acknowledge warnings | Yes | Yes | — |
+| Studio access (pilot) | Yes | **Denied** when `WEBSITE_STUDIO_PILOT_SUPERUSER_ONLY=1` | **Denied** |
+| Create new draft site | Yes (when flagged) | Denied in pilot | Denied |
+| Replacement draft | Flagged OFF in pilot | Denied | Denied |
+| Private template | Flagged OFF in pilot | Denied | Denied |
 | Publish / set live | No | No | No |
 
 Partner/client AI image generation remains blocked.  
-See [ROLLOUT.md](ROLLOUT.md) and [APPLICATION-SECURITY.md](APPLICATION-SECURITY.md).
+See [ROLLOUT.md](ROLLOUT.md), [PILOT-CHECKLIST.md](PILOT-CHECKLIST.md), [APPLICATION-SECURITY.md](APPLICATION-SECURITY.md).

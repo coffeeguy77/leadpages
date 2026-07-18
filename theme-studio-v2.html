@@ -783,6 +783,12 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
         if (j.replacementDraft) line += ' · replacement ' + j.replacementDraft.id;
         if (j.template) line += ' · template ' + j.template.name;
         if (j.liveSiteChanged) line += ' · WARNING live changed';
+        if (j.published) line += ' · WARNING published';
+        var editorLink = '';
+        if (j.site && j.site.id) {
+          editorLink = '/manage.html?site=' + encodeURIComponent(j.site.id);
+          line += ' · Open editor: ' + editorLink;
+        }
         $('apply-plan').textContent = JSON.stringify({
           mode: j.mode,
           site: j.site,
@@ -790,10 +796,20 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
           template: j.template,
           published: j.published,
           liveSiteChanged: j.liveSiteChanged,
-          nextActions: j.nextActions
+          nextActions: j.nextActions,
+          editorHandoff: editorLink || null,
+          diagnosticId: j.audit && j.audit.diagnosticId
         }, null, 2);
         msg.className = 'msg ok';
         msg.textContent = line;
+        if (editorLink) {
+          var a = document.createElement('a');
+          a.href = editorLink;
+          a.className = 'btn solid';
+          a.style.marginTop = '10px';
+          a.textContent = 'Open generated site in editor';
+          msg.parentNode.appendChild(a);
+        }
       }catch(e){
         msg.className = 'msg bad';
         msg.textContent = e.message || String(e);

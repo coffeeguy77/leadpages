@@ -58,4 +58,14 @@ UI: `/theme-studio-v2` step **Create website from this design**.
 
 ## Flags
 
-See [ROLLOUT.md](ROLLOUT.md). All application flags default **off**.
+See [ROLLOUT.md](ROLLOUT.md). All application flags default **off** in code.  
+Phase 6 pilot enables create-site for superusers only in the pilot environment.
+
+## Persistence (Phase 6)
+
+Application audits and idempotency keys persist in:
+
+- `website_studio_application_audits`
+- `website_studio_application_idempotency`
+
+SQL: `db/website_studio_application.sql`. Retention: successes ≥ 365 days; failures ≥ 90 days.
