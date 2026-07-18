@@ -30,9 +30,15 @@ Foundations and `build-draft.js` stamp `rendererShellId: landing-shell-neutral-v
 ## What the neutral shell contains
 
 - Document structure, section mounts (`data-sec`), theme CSS variables, shared scripts  
-- Phase 4 app mounts + apply hook for new apps  
+- Phase 4 app mounts + `ws-new-apps-apply` hydrate for Marketplace apps  
+- Empty JS fallback arrays (`_hd`, `_spfd`, …) — never trade suburb/job stubs  
+- Static why/quote/footer/services bodies blanked; footer selectable via `footer.site`  
 - **No** plumbing/suburb/cert/JSON-LD Plumber defaults  
 - Theme tokens such as `hivis` are **preserved** (they are CSS/JS identifiers, not trade copy)
+
+Composer content (`lib/website-composer/content.js` + adapters) must supply industry-aware
+`why.items`, quote labels/points/`jobOptions`, `reviewHighlights.items`, and footer blurb/legal
+so the shell never falls through to trade leftovers.
 
 Rebuild from trade without touching the live shell:
 
