@@ -57,6 +57,23 @@ All critical/high must be resolved before partner rollout recommendation.
 
 ---
 
+## PILOT-006 — Generate / Regenerate concepts returns HTTP 500
+
+| Field | Value |
+|-------|-------|
+| Severity | critical |
+| Stage | Compare concepts |
+| Description | "Generate 3 concepts" and "Regenerate all" showed bare `HTTP 500` (empty/non-JSON error body) |
+| Reproduction | Brief → Compare → Generate 3 concepts (or Regenerate all) |
+| Expected | Three draft concepts with clear JSON errors on failure |
+| Actual (before) | Uncaught exceptions / platform timeouts → empty 500; UI had no `message`/`error` |
+| Root cause | No top-level try/catch; Pexels multi-query latency without timeout; Brain advisory awaited on critical path |
+| Fix | try/catch + diagnosticId; Composer-only generate (`useBrain:false`); Pexels AbortSignal timeout; early query exit; `maxDuration:60`; UI sends brief + surfaces details |
+| Test | `tests/theme-studio-generate-concepts.test.js` |
+| Status | **resolved** (code) — re-verify on deployed pilot |
+
+---
+
 ## PILOT-004 — Live interactive Bean Culture browser session
 
 | Field | Value |
@@ -92,6 +109,6 @@ All critical/high must be resolved before partner rollout recommendation.
 
 | Status | Count |
 |--------|------:|
-| resolved | 3 |
+| resolved | 4 |
 | open (ops) | 2 |
 | critical open (code) | 0 |

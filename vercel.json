@@ -252,5 +252,13 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/theme-studio/generate-concepts.js": {
+      "maxDuration": 60
+    },
+    "api/theme-studio/refine.js": {
+      "maxDuration": 60
+    }
+  }
 }

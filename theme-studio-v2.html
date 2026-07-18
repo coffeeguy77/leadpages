@@ -263,6 +263,38 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     return (r && r.data && r.data.session && r.data.session.access_token) || null;
   }
 
+  function collectBrief(){
+    return {
+      businessName: $('businessName').value,
+      industry: $('industry').value,
+      businessType: $('businessType') && $('businessType').value,
+      yearsOperating: $('yearsOperating') && $('yearsOperating').value,
+      serviceAreas: $('serviceAreas') && $('serviceAreas').value,
+      conversionGoal: $('conversionGoal') && $('conversionGoal').value,
+      secondaryConversionGoal: $('secondaryConversionGoal') && $('secondaryConversionGoal').value,
+      phoneCta: $('phoneCta') && $('phoneCta').value,
+      mainServices: $('mainServices') && $('mainServices').value,
+      differentiators: $('differentiators') && $('differentiators').value,
+      specialisation: $('specialisation').value,
+      location: $('location').value,
+      audience: $('audience').value,
+      desiredStyle: $('desiredStyle').value,
+      notes: $('notes').value
+    };
+  }
+
+  function apiErrorMessage(j, res){
+    j = j || {};
+    var msg = j.message || j.error || ('HTTP '+res.status);
+    if (j.details && j.details.length) {
+      var first = j.details[0];
+      var detail = (first && (first.message || first.code)) || '';
+      if (detail) msg += ' — ' + detail;
+    }
+    if (j.diagnosticId) msg += ' [' + j.diagnosticId + ']';
+    return msg;
+  }
+
   async function api(path, opts){
     opts = opts || {};
     var t = await token();
@@ -275,7 +307,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       body: opts.body != null ? JSON.stringify(opts.body) : (opts.method === 'GET' ? undefined : '{}')
     });
     var j = await res.json().catch(function(){ return {}; });
-    if(!res.ok) throw new Error(j.message || j.error || ('HTTP '+res.status));
+    if(!res.ok) throw new Error(apiErrorMessage(j, res));
     return j;
   }
 
@@ -481,23 +513,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
           mode: $('mode').value,
           sourceSiteId: $('source-site').value || null,
           foundationId: $('foundation').value || null,
-          brief: {
-            businessName: $('businessName').value,
-            industry: $('industry').value,
-            businessType: $('businessType') && $('businessType').value,
-            yearsOperating: $('yearsOperating') && $('yearsOperating').value,
-            serviceAreas: $('serviceAreas') && $('serviceAreas').value,
-            conversionGoal: $('conversionGoal') && $('conversionGoal').value,
-            secondaryConversionGoal: $('secondaryConversionGoal') && $('secondaryConversionGoal').value,
-            phoneCta: $('phoneCta') && $('phoneCta').value,
-            mainServices: $('mainServices') && $('mainServices').value,
-            differentiators: $('differentiators') && $('differentiators').value,
-            specialisation: $('specialisation').value,
-            location: $('location').value,
-            audience: $('audience').value,
-            desiredStyle: $('desiredStyle').value,
-            notes: $('notes').value
-          }
+          brief: collectBrief()
         }
       });
       state.draftId = j.draft.id;
@@ -514,10 +530,14 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     var msg = $('gen-msg');
     msg.className = 'msg'; msg.textContent = 'Generating…';
     try{
+      if(!state.draftId){
+        throw new Error('Create a draft from the brief step before generating concepts.');
+      }
       var j = await api('/api/theme-studio/generate-concepts', {
         body: {
           draftId: state.draftId,
-          foundationId: $('foundation').value || null
+          foundationId: $('foundation').value || null,
+          brief: collectBrief()
         }
       });
       msg.className = 'msg ok';
