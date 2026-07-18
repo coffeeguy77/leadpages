@@ -15,14 +15,16 @@
 
   var STYLE_CHIPS = ['Luxury', 'Editorial', 'Minimal', 'Premium', 'Industrial', 'Warm', 'Bold', 'Playful'];
   var SERVICE_CHIPS = [
+    'Garden Design & Construction',
+    'Retaining Walls & Hardscaping',
+    'Outdoor Living & Entertaining',
+    'Turf, Irrigation & Maintenance',
     'Wedding Rings',
     'Private Consultations',
     'Luxury Jewellery',
-    'Argyle Pink Diamonds',
     'Coffee Cart',
     'Corporate Events',
-    'Bespoke Design',
-    'Repairs & Aftercare'
+    'Bespoke Design'
   ];
   var GOALS = [
     { id: 'appointment', label: 'Appointment', desc: 'Book private or in-person sessions', cta: 'Book an appointment' },
