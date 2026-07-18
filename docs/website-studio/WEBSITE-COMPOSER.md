@@ -1,21 +1,22 @@
 # Website Composer
 
 **Role:** Internal composition engine behind Website Studio.  
-**Status:** Phase 2 implemented — `lib/website-composer/`  
-**Legacy API path:** Website Studio calls Composer via `lib/theme-studio/generate.js` → `composeWebsiteConcepts`.
+**Status:** Phase 3 — Marketplace adapters + Image Service wired.  
+**Legacy API path:** `lib/theme-studio/generate.js` → `composeWebsiteConcepts` (async).
 
 ---
 
 ## Purpose
 
-Assemble a **complete draft website** from verified structural components and industry-aware content.
+Assemble a **complete draft website** from verified structural components, supported Marketplace apps, matched content, and resolved imagery.
 
 Composer must **not**:
 
 - Clone an existing trade website and patch over it  
 - Shallow-merge plumber / landscaping / jewellery content from a source site  
 - Treat `sourceTemplateId: "trade"` as a content foundation  
-- Emit colour-only or partial section patches  
+- Let the Brain write arbitrary app config  
+- Auto-select unsupported Marketplace apps  
 
 ---
 
@@ -32,29 +33,19 @@ Foundation (structural only)     foundations-data.js
     ↓
 Marketplace Recipe               recipes-data.js
     ↓
-Layout Selection
+App selection + install          install-apps.js + adapters/
     ↓
-Content Generation               content.js  (provenance per section)
+Layout Selection (concept slots diversify)
     ↓
-Image Briefs (placeholders)      Phase 3 resolves via Image Service
+Content Generation               content.js
     ↓
-Renderer Configuration           build-draft.js  (explicit compose)
+Structured image briefs          image-direction.js
     ↓
-Draft Preview ready              diagnostics attached
-```
-
-### Composition layers
-
-```text
-Foundation (skeleton)
+Image Service resolve            lib/image-service/
     ↓
-Recipe (packaging) ──→ Apps (section_key)
+Explicit draft                   build-draft.js
     ↓
-Layouts (layoutId) + Content (AI / brief)
-    ↓
-Draft config (explicit compose, no trade merge)
-    ↓
-Renderer shell landing-shell-v1 (technical HTML only)
+Draft Preview ready              diagnostics + shell neutralize
 ```
 
 ---
@@ -63,133 +54,60 @@ Renderer shell landing-shell-v1 (technical HTML only)
 
 | Concern | Module |
 |---------|--------|
-| Entry | `lib/website-composer/compose.js` `composeWebsiteConcepts` |
-| Classification | `lib/website-composer/classify.js` |
-| Foundations | `lib/website-composer/foundations*.js` |
-| Recipes | `lib/website-composer/recipes*.js` |
-| Content + image briefs | `lib/website-composer/content.js` |
-| Explicit draft build | `lib/website-composer/build-draft.js` |
-| Diagnostics | `lib/website-composer/diagnostics.js` |
-| Public exports | `lib/website-composer/index.js` |
-| Studio wiring | `lib/theme-studio/generate.js` (delegates) |
+| Entry | `compose.js` `composeWebsiteConcepts` |
+| Classification | `classify.js` |
+| Foundations | `foundations*.js` |
+| Recipes | `recipes*.js` |
+| Content | `content.js` |
+| App select/install | `install-apps.js` |
+| Catalogue | `marketplace/catalogue*.js` |
+| AI metadata | `marketplace/app-metadata.js` |
+| Adapters | `adapters/registry.js` |
+| Image direction | `image-direction.js` |
+| Explicit draft | `build-draft.js` |
+| Diagnostics | `diagnostics.js` |
+| Studio wiring | `lib/theme-studio/generate.js` |
 
 ---
 
 ## Foundations (structural only)
 
-A foundation defines:
-
-- page skeleton  
-- navigation defaults  
-- spacing profile  
-- recommended app regions  
-- layout rules  
-- conversion style  
-- section placeholders / supported / required / optional keys  
-- incompatibilities  
-
-A foundation must **not** define business copy, services lists, FAQs, testimonials, or imagery.
-
-`sourceTemplateId` is **null**. Preview uses `rendererShellId: landing-shell-v1` (technical HTML asset mapping only — see MIGRATION.md).
-
-Categories include: Trades, Professional Services, Hospitality, Retail, Health, Beauty, Events, Construction, Creative, Education, Technology, Non-profit, Travel, Manufacturing, Industrial, Automotive.
-
-Legacy IDs (`retail-boutique`, `trade-field-services`, …) resolve via aliases.
+- `sourceTemplateId: null`  
+- `rendererShellId: landing-shell-v1` (technical HTML only)  
+- Supported / required / optional section keys  
+- Incompatibilities (e.g. hospitality excludes `emerg`, `beforeAfter`)  
+- No embedded business copy  
 
 ---
 
-## Marketplace recipes
+## Marketplace apps
 
-Recipes are **independent of foundations** (compatibility list only).
+Only apps with `websiteStudioSupport: "supported"` plus metadata + adapter are auto-selected.  
+See [MARKETPLACE.md](MARKETPLACE.md), [APP-ADAPTERS.md](APP-ADAPTERS.md).
 
-A recipe decides:
-
-- apps (`section_key`s)  
-- section order  
-- layouts / variants  
-- CTAs / conversion style  
-- content hints (tone / service shape — not copy)
-
-Example: Hospitality foundation → Coffee Event **or** Café **or** Restaurant **or** Coffee Roaster recipes.
+Concept slots diversify hero (`hero` / `heroSlider` / `splitHero`), trust strategy, and section order. Reasons are recorded in diagnostics.
 
 ---
 
-## Explicit draft composition
+## Explicit draft rules
 
-`buildDraftConfig`:
-
-1. Starts from an **empty** skeleton (never trade defaults)  
-2. Writes every active section fully  
-3. Sets every other known section to `{ on: false }` so plumber HTML defaults cannot bleed  
-4. Maps hero `heading`/`subheading` → `title`/`sub` for the landing shell  
-5. Records `contentInheritance: 'none'`  
-
-Redesign `sourceConfig` is **ignored for section content** in Phase 2.
-
----
-
-## Provenance
-
-Every active section declares ownership:
-
-| Value | Meaning |
-|-------|---------|
-| Foundation | Structural choice only |
-| Marketplace Recipe | App/order/CTA packaging |
-| AI Generated | Composer content fill |
-| Business Profile | Name / location / identity |
-| Manual Edit | Future editor edits |
-| Imported | Future import path |
-| Legacy | Pre-composer artefacts |
-
-Available on `concept.provenance.sectionProvenance` and `draft.__websiteComposer.provenance`.
-
----
-
-## Diagnostics
-
-Each composed concept includes diagnostics:
-
-- Foundation / recipe / apps / layout selected  
-- Content sources per section  
-- Sections skipped (disabled)  
-- Validation + draft warnings  
-- Renderer note (shell is technical only)  
-
----
-
-## Image briefs (Phase 2)
-
-Placeholder descriptors only, e.g.:
-
-```json
-{
-  "heroImage": "Corporate coffee cart at outdoor event",
-  "galleryImage1": "Wedding coffee service"
-}
-```
-
-No Pexels. No Image Service. Phase 3.
+- Start from empty skeleton  
+- Write every active section via adapters  
+- Disable every other known section (`on: false`)  
+- `contentInheritance: "none"`  
+- Store `installedApps`, `imageSelections`, `imageDirection`  
+- Ignore `sourceConfig` shallow merge  
 
 ---
 
 ## Fixtures
 
-`fixtures/website-composer/briefs.js` + `tests/website-composer.test.js`:
+`fixtures/website-composer/briefs.js` — Bean Culture, Pink Diamond Vault, Canberra Electrician, Commercial Lawyer, Hair Salon, Wedding Photographer.
 
-- Bean Culture  
-- Pink Diamond Vault  
-- Canberra Electrician  
-- Commercial Lawyer  
-- Hair Salon  
-- Wedding Photographer  
+Tests: `tests/website-composer.test.js`, `tests/website-studio-phase3.test.js`, `tests/image-service.test.js`.
 
 ---
 
-## Non-responsibilities
+## Renderer shell note
 
-- Image Service / Pexels  
-- Live publish  
-- Colour Assistant  
-- Auth UI  
-- Blind rename of `api/theme-studio/*` or `theme_studio_*` tables  
+Preview uses `trade.template.json` as HTML. Composer drafts neutralize trade fallback strings in `render-preview.js` when `contentInheritance === 'none'`. Production `api/render.js` is unchanged. Remaining shell limitations are documented in diagnostics (`shell_technical_only`).

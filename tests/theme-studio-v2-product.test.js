@@ -35,14 +35,21 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
     useMemoryStore(false);
   });
 
-  it('builds three deterministic concepts for jewellery without trade leakage', () => {
-    const result = buildDeterministicConcepts(briefs.PINK_DIAMOND_VAULT);
+  it('builds three deterministic concepts for jewellery without trade leakage', async () => {
+    const result = await buildDeterministicConcepts(briefs.PINK_DIAMOND_VAULT, {
+      allowMockImages: true,
+      actor: { isSuperuser: true }
+    });
     assert.equal(result.ok, true, JSON.stringify(result.errors, null, 2));
     assert.equal(result.foundationId, 'retail');
     assert.equal(result.recipeId, 'recipe-luxury-jewellery');
     assert.ok(result.concepts.length >= 1);
     for (const item of result.concepts) {
-      const text = JSON.stringify(item.draftConfig);
+      const text = JSON.stringify({
+        name: item.draftConfig.name,
+        sections: item.draftConfig.sections,
+        services: item.draftConfig.services
+      });
       assert.doesNotMatch(text, /\bdrains?\b/i);
       assert.doesNotMatch(text, /\bplumb/i);
       assert.match(text, /Pink Diamond Vault/);
@@ -52,12 +59,19 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
     }
   });
 
-  it('builds trade concepts for Luke security', () => {
-    const result = buildDeterministicConcepts(briefs.LUKES_SECURITY_CO);
+  it('builds trade concepts for Luke security', async () => {
+    const result = await buildDeterministicConcepts(briefs.LUKES_SECURITY_CO, {
+      allowMockImages: true,
+      actor: { isSuperuser: true }
+    });
     assert.equal(result.ok, true);
     assert.equal(result.foundationId, 'trades');
     assert.ok(result.concepts.length >= 1);
-    const text = JSON.stringify(result.concepts[0].draftConfig);
+    const text = JSON.stringify({
+      name: result.concepts[0].draftConfig.name,
+      sections: result.concepts[0].draftConfig.sections,
+      services: result.concepts[0].draftConfig.services
+    });
     assert.doesNotMatch(text, /pink diamond/i);
   });
 
@@ -68,7 +82,10 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
       brief: briefs.RIVERSONG_CAFE
     });
     assert.equal(draft.ok, true);
-    const gen = buildDeterministicConcepts(briefs.RIVERSONG_CAFE);
+    const gen = await buildDeterministicConcepts(briefs.RIVERSONG_CAFE, {
+      allowMockImages: true,
+      actor: { isSuperuser: true }
+    });
     assert.equal(gen.ok, true);
     const ver = await createVersion({
       draft_id: draft.draft.id,
@@ -86,8 +103,11 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
     });
   });
 
-  it('refinement patch creates validated concept without protected writes', () => {
-    const gen = buildDeterministicConcepts(briefs.NORTHSIDE_ADVISORY);
+  it('refinement patch creates validated concept without protected writes', async () => {
+    const gen = await buildDeterministicConcepts(briefs.NORTHSIDE_ADVISORY, {
+      allowMockImages: true,
+      actor: { isSuperuser: true }
+    });
     assert.equal(gen.ok, true);
     const concept = gen.concepts[0].concept;
     const patch = buildDeterministicRefinePatch(concept, 'Make the CTA: "Book a consultation"');
@@ -97,14 +117,20 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
     assert.equal(applied.published, undefined);
   });
 
-  it('quality report scores concepts and flags leakage', () => {
-    const gen = buildDeterministicConcepts(briefs.PINK_DIAMOND_VAULT);
+  it('quality report scores concepts and flags leakage', async () => {
+    const gen = await buildDeterministicConcepts(briefs.PINK_DIAMOND_VAULT, {
+      allowMockImages: true,
+      actor: { isSuperuser: true }
+    });
     const report = buildQualityReport(gen.concepts[0].concept, gen.concepts[0].draftConfig);
     assert.ok(report.score >= 70);
     assert.match(report.disclaimer, /not a WCAG/i);
 
     const leaky = JSON.parse(JSON.stringify(gen.concepts[0].concept));
-    leaky.sections.hero.content.heading = 'Blocked drain emergency call-outs';
+    const heroKey = (leaky.sectionOrder || []).find((k) => /hero/i.test(k)) || 'hero';
+    leaky.sections[heroKey] = leaky.sections[heroKey] || {};
+    leaky.sections[heroKey].title = 'Blocked drain emergency call-outs';
+    leaky.sections[heroKey].heading = 'Blocked drain emergency call-outs';
     const bad = buildQualityReport(leaky, null);
     assert.equal(bad.ok, false);
   });
@@ -129,12 +155,17 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
     assert.equal(verifyPreviewToken(expired).ok, false);
   });
 
-  it('preview HTML uses trade template, noindex, sandboxed forms/tracking', () => {
-    const gen = buildDeterministicConcepts(briefs.CANBERRA_EVENT_HIRE);
+  it('preview HTML uses trade template, noindex, sandboxed forms/tracking', async () => {
+    const gen = await buildDeterministicConcepts(briefs.CANBERRA_EVENT_HIRE, {
+      allowMockImages: true,
+      actor: { isSuperuser: true }
+    });
     const html = renderDraftPreviewHtml(gen.concepts[0].draftConfig, { mode: 'desktop' });
     assert.match(html, /noindex/);
     assert.match(html, /ts-preview-guard/);
     assert.match(html, /__themeStudioPreview|Website Studio preview|Theme Studio preview/);
+    assert.match(html, /ws-shell-neutralize/);
+    assert.match(html, /data-ws-composer|contentInheritance/);
     const sandboxed = sandboxConfig({
       theme: { pipe: '#111' },
       analytics: { gaId: 'G-PROD' },

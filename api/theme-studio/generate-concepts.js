@@ -38,7 +38,9 @@ module.exports = async function themeStudioGenerateConcepts(req, res) {
   const generated = await generateConceptsWithBrain(brain, brief, {
     foundationId,
     sourceConfig,
-    count: 3
+    count: 3,
+    actor: gate.actor,
+    allowMockImages: true
   });
 
   if (!generated.ok) {
@@ -93,7 +95,26 @@ module.exports = async function themeStudioGenerateConcepts(req, res) {
       layoutId: v.concept_json && v.concept_json.layoutId,
       rationale: v.concept_json && v.concept_json.rationale,
       theme: v.concept_json && v.concept_json.theme,
-      quality: v.quality_report
+      quality: v.quality_report,
+      // Draft image selections for Website Studio image panel (no secrets)
+      draftConfig: v.draft_config_json
+        ? {
+            __websiteComposer: {
+              imageSelections:
+                (v.draft_config_json.__websiteComposer &&
+                  v.draft_config_json.__websiteComposer.imageSelections) ||
+                [],
+              imageDirection:
+                (v.draft_config_json.__websiteComposer &&
+                  v.draft_config_json.__websiteComposer.imageDirection) ||
+                null,
+              contentInheritance:
+                (v.draft_config_json.__websiteComposer &&
+                  v.draft_config_json.__websiteComposer.contentInheritance) ||
+                null
+            }
+          }
+        : null
     })),
     notice: 'Draft-only. Nothing written to live sites.'
   });

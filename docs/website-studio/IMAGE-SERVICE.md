@@ -1,70 +1,110 @@
 # Image Service
 
-**Status:** Design only. Do not implement in the architecture-reset phase.
+**Status:** Implemented (Phase 3) — draft resolution only; live publish unchanged.
 
 ---
 
 ## Purpose
 
-Shared abstraction for website imagery used by Website Studio / Composer (and later Editor).
-
-Responsibilities:
-
-1. Accept an **image slot** (section, subject, mood, constraints)  
-2. Resolve an asset via a provider  
-3. Return a stable URL / public id + attribution metadata  
-4. Respect role permissions (who may search/upload)  
-5. Never embed provider API keys in the browser  
-
----
-
-## Providers (planned)
-
-| Provider | Use | Existing code |
-|----------|-----|---------------|
-| **Cloudinary** | Upload, transform, host | `api/cloudinary/sign.js`, `delete.js`, manage.html uploads |
-| **Pexels** | Stock search for concept fills | **Not present** |
-| Later | Unsplash / others | — |
-
----
-
-## Current Theme Studio behaviour
-
-- Concepts include `imagery[]` direction notes only  
-- Adapter **ignores** imagery (records `concept_field_not_mapped`)  
-- No automatic stock fetch  
-- No Cloudinary upload from Theme Studio APIs  
-
----
-
-## Proposed interface (sketch — not implemented)
+Shared server-side imagery for Website Studio / Website Composer (reusable by other LeadPages features later).
 
 ```text
-imageService.resolveSlot({
-  siteId?,
-  actor,
-  slot: { sectionKey, subject, composition, avoid[] },
-  providerPreference: ['cloudinary-library', 'pexels'],
-  licenseConstraints
-}) → { ok, asset: { url, width, height, provider, attribution }, warnings }
+Website Composer
+  → Image Service
+    → Provider Router (resolve.js)
+      → Cloudinary (owned / library assets)
+      → Pexels (stock)
+      → AI images (superuser only; interface stub)
+      → Safe placeholder
 ```
 
-Browser calls LeadPages APIs only; server calls providers.
+Browser code must call LeadPages APIs only. Provider API keys never ship to the client.
+
+---
+
+## Module layout
+
+```text
+lib/image-service/
+  index.js
+  constants.js
+  permissions.js
+  cache.js
+  image-brief.js
+  ranking.js
+  resolve.js
+  providers/
+    cloudinary.js
+    pexels.js
+    ai-images.js
+    mock.js
+
+api/image-service/
+  search.js
+  import-cloudinary.js
+```
+
+---
+
+## Environment variables
+
+| Variable | Role |
+|----------|------|
+| `PEXELS_API_KEY` | Server-only Pexels auth |
+| `IMAGE_PROVIDER_DEFAULT` | Preferred stock provider (expected: `pexels`) |
+| `CLOUDINARY_CLOUD_NAME` | Existing Cloudinary cloud |
+| `CLOUDINARY_API_KEY` | Existing |
+| `CLOUDINARY_API_SECRET` | Existing (never returned) |
+| `CLOUDINARY_URL` | Optional `cloudinary://…` form |
+
+Missing `PEXELS_API_KEY` fails gracefully → mock results in Composer (`allowMockImages`) or placeholder.
+
+---
+
+## Provider priority
+
+1. Relevant owned Cloudinary assets (folder/tag relevance; optional site scope)
+2. Pexels stock search (cached)
+3. AI generation — **superuser only**, and only if a provider is implemented
+4. Safe placeholder
+
+Relevance beats provider order: an irrelevant Cloudinary asset is not selected merely because Cloudinary is first.
+
+---
+
+## Structured image briefs
+
+Created by `lib/website-composer/image-direction.js` + `createImageBrief`.
+
+Fields include: `sectionId`, `appId`, `purpose`, `subject`, `setting`, `industry`, `visualStyle`, `photographyStyle`, `lighting`, `orientation`, `targetAspectRatio`, `minimumWidth`/`Height`, `humanPresence`, `textOverlaySafeArea`, `avoidTerms`, `altTextIntent`.
+
+Each concept shares one **image direction** profile (warm hospitality, dark luxury, trades documentary, etc.).
+
+---
+
+## Caching & re-render
+
+Search results are cached in-memory (`cache.js`, 30 min TTL).  
+Selections are stored on the draft (`__websiteComposer.imageSelections`).  
+Preview re-renders must reuse stored selections — Composer does not re-search on every HTML preview.
+
+---
+
+## Attribution metadata
+
+Each selection stores provider, asset id, photographer, source URLs, dimensions, search query, brief id, section/app ids, approval/import status, timestamps.
+
+---
+
+## Cloudinary draft import
+
+`buildCloudinaryImportPlan` + `POST /api/image-service/import-cloudinary` produce a signed-upload plan under `leadpages/{siteId}/website-studio/...`.  
+Actual binary upload uses existing `/api/cloudinary/sign`.  
+**Does not publish** or hotlink production sites to temporary Pexels URLs.
 
 ---
 
 ## Permissions
 
-| Actor | Search stock | Upload to Cloudinary | Attach to draft concept |
-|-------|--------------|----------------------|-------------------------|
-| Superuser | yes | yes | yes |
-| Partner | yes (quota TBD) | yes (tenant folder) | yes |
-| Client (later) | limited | own site only | yes |
-
----
-
-## Non-goals
-
-- Replacing the Editor media library UX in Phase 3  
-- Training custom diffusion models  
-- Storing binary images inside `theme_studio_versions` JSON (store URLs/ids only)  
+See **[ROLE-PERMISSIONS.md](./ROLE-PERMISSIONS.md)** and **[IMAGE-APPROVAL.md](./IMAGE-APPROVAL.md)**.  
+Provider details: **[IMAGE-PROVIDERS.md](./IMAGE-PROVIDERS.md)**.
