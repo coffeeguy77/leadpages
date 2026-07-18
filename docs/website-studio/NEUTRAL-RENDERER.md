@@ -32,8 +32,17 @@ Foundations and `build-draft.js` stamp `rendererShellId: landing-shell-neutral-v
 - Document structure, section mounts (`data-sec`), theme CSS variables, shared scripts  
 - Phase 4 app mounts + apply hook for new apps  
 - **No** plumbing/suburb/cert/JSON-LD Plumber defaults  
+- Theme tokens such as `hivis` are **preserved** (they are CSS/JS identifiers, not trade copy)
 
-Belt-and-suspenders `ws-shell-neutralize` remains only if a Composer draft is somehow previewed on a non-neutral shell.
+Rebuild from trade without touching the live shell:
+
+```bash
+node scripts/rebuild-landing-shell-neutral.js
+```
+
+Preview injects `SITE_CONFIG` with a lookbehind-safe replace so `window.__SITE_CONFIG__` reads stay intact. Missing hero content returns a validation page instead of trade defaults.
+
+Belt-and-suspenders `ws-shell-neutralize` also runs for Composer drafts on the neutral shell.
 
 ## Production boundary
 
