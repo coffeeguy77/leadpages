@@ -123,6 +123,22 @@ All critical/high must be resolved before partner rollout recommendation.
 
 ---
 
+## PILOT-010 — Create site shows opaque “Pre-application validation failed”
+
+| Field | Value |
+|-------|-------|
+| Severity | high |
+| Stage | Application |
+| Description | Create website failed with only `Pre-application validation failed`; operators could not see blockers (often `not_approved` while UI showed `ready-for-review`, or invalid emails like `a@.com`) |
+| Reproduction | Approve step with ready-for-review → Create website from this design |
+| Expected | Blocking issue list in the plan panel + first issue in the error line |
+| Actual (before) | Generic red message; approval defaulted to ready-for-review |
+| Fix | Surface `validation.critical` in UI; default approval to `approved-for-application`; client preflight; stricter email shape; SAVE-OPTIONS.md |
+| Test | `tests/website-studio-application-validation-ux.test.js` |
+| Status | **resolved** (code) |
+
+---
+
 ## PILOT-004 — Live interactive Bean Culture browser session
 
 | Field | Value |
@@ -158,6 +174,6 @@ All critical/high must be resolved before partner rollout recommendation.
 
 | Status | Count |
 |--------|------:|
-| resolved | 7 |
+| resolved | 8 |
 | open (ops) | 2 |
 | critical open (code) | 0 |

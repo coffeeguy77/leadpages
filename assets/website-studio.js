@@ -62,6 +62,7 @@
     draftId: null,
     versions: [],
     selectedVersionId: null,
+    approvalState: null,
     previewMode: 'desktop',
     wizardStep: 1,
     phase: 'wizard',
@@ -70,7 +71,8 @@
     secondaryGoal: 'email',
     styleChips: [],
     serviceChips: [],
-    generating: false
+    generating: false,
+    activeImageSelection: null
   };
 
   function esc(s) {
@@ -94,7 +96,13 @@
         .slice(0, 120);
       msg = 'HTTP ' + res.status + (snippet && snippet.charAt(0) !== '{' ? ' (non-JSON server error)' : '');
     }
-    if (j.details && j.details.length) {
+    var critical = (j.validation && j.validation.critical) || j.blocking || [];
+    if (critical.length) {
+      var firstCrit = critical[0];
+      var critDetail = (firstCrit && (firstCrit.message || firstCrit.code)) || '';
+      if (critDetail) msg += ' — ' + critDetail;
+      if (critical.length > 1) msg += ' (+' + (critical.length - 1) + ' more)';
+    } else if (j.details && j.details.length) {
       var first = j.details[0];
       var detail = (first && (first.message || first.code)) || '';
       if (detail) msg += ' — ' + detail;
@@ -118,8 +126,96 @@
     } catch (_e) {
       j = {};
     }
-    if (!res.ok) throw new Error(apiErrorMessage(j, res, raw));
+    if (!res.ok) {
+      var err = new Error(apiErrorMessage(j, res, raw));
+      err.payload = j;
+      err.status = res.status;
+      throw err;
+    }
     return j;
+  }
+
+  function looksLikeEmailClient(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+  }
+
+  function formatIssueLines(issues) {
+    return (issues || [])
+      .map(function (i, idx) {
+        return idx + 1 + '. [' + (i.code || 'issue') + '] ' + (i.message || '');
+      })
+      .join('\n');
+  }
+
+  function paintApplicationValidation(payload, plan) {
+    payload = payload || {};
+    var validation = payload.validation || {};
+    var critical = validation.critical || [];
+    var warnings = validation.warnings || [];
+    var lines = [];
+    if (critical.length) {
+      lines.push('Blocking issues (' + critical.length + '):');
+      lines.push(formatIssueLines(critical));
+    }
+    if (warnings.length) {
+      lines.push('');
+      lines.push('Warnings (' + warnings.length + ') — tick “Acknowledge non-critical warnings” if acceptable:');
+      lines.push(formatIssueLines(warnings.slice(0, 12)));
+    }
+    if (!critical.length && !warnings.length && payload.message) {
+      lines.push(payload.message);
+    }
+    if (plan && plan.humanSummary && plan.humanSummary.length) {
+      lines.push('');
+      lines.push(plan.humanSummary.join('\n'));
+    }
+    if ($('apply-plan')) $('apply-plan').textContent = lines.join('\n') || JSON.stringify(payload, null, 2);
+  }
+
+  function clientApplicationPreflight() {
+    var issues = [];
+    if (!state.draftId || !state.selectedVersionId) {
+      issues.push({
+        code: 'draft_incomplete',
+        message: 'Select a concept and keep a draft version active before creating a site.'
+      });
+    }
+    if (state.approvalState !== 'approved-for-application') {
+      issues.push({
+        code: 'not_approved',
+        message:
+          'Set Approval state to “approved-for-application” and click Save approval state before creating a site.'
+      });
+    }
+    var businessEmail = ($('apply-business-email') && $('apply-business-email').value) || '';
+    var leadEmail = ($('apply-lead-email') && $('apply-lead-email').value) || '';
+    if (!looksLikeEmailClient(businessEmail)) {
+      issues.push({
+        code: 'business_email_required',
+        message: 'Enter a valid business email (e.g. hello@business.com).'
+      });
+    }
+    if (!looksLikeEmailClient(leadEmail)) {
+      issues.push({
+        code: 'lead_recipient_required',
+        message: 'Enter a valid lead recipient email.'
+      });
+    }
+    if (!($('apply-contact-confirm') && $('apply-contact-confirm').checked)) {
+      issues.push({
+        code: 'contact_not_confirmed',
+        message: 'Tick “I confirm these contact details are correct.”'
+      });
+    }
+    var siteName = ($('apply-site-name') && $('apply-site-name').value) || '';
+    var slug = ($('apply-slug') && $('apply-slug').value) || '';
+    if (!String(siteName).trim()) {
+      issues.push({ code: 'site_name_required', message: 'Enter a site name.' });
+    }
+    if (!String(slug).trim()) {
+      issues.push({ code: 'slug_required', message: 'Enter a site slug.' });
+    }
+    return issues;
   }
 
   function syncStyleField() {
@@ -1076,9 +1172,35 @@
             }
           });
           state.selectedVersionId = j.version.id;
-          setMsg('approve-msg', j.notice + ' · state ' + j.approvalState, 'ok');
+          state.approvalState = j.approvalState || ($('approval-state') && $('approval-state').value) || null;
+          setMsg(
+            'approve-msg',
+            j.notice +
+              ' · state ' +
+              state.approvalState +
+              (state.approvalState === 'approved-for-application'
+                ? ' — you can create a draft site below.'
+                : ' — switch to approved-for-application to create a site.'),
+            'ok'
+          );
         } catch (e) {
-          setMsg('approve-msg', e.message || String(e), 'bad');
+          var qg = e.payload && e.payload.qualityGate;
+          if (qg && qg.issues && qg.issues.length && $('approve-msg')) {
+            setMsg(
+              'approve-msg',
+              (e.message || 'Approval blocked') +
+                ' — ' +
+                qg.issues
+                  .slice(0, 3)
+                  .map(function (i) {
+                    return i.message || i.code;
+                  })
+                  .join('; '),
+              'bad'
+            );
+          } else {
+            setMsg('approve-msg', e.message || String(e), 'bad');
+          }
         }
       };
     }
@@ -1100,29 +1222,52 @@
     if ($('btn-application-plan')) {
       $('btn-application-plan').onclick = async function () {
         try {
+          var localIssues = clientApplicationPreflight().filter(function (i) {
+            return i.code !== 'not_approved';
+          });
+          if (state.approvalState !== 'approved-for-application') {
+            localIssues.unshift({
+              code: 'not_approved',
+              message:
+                'Save approval state as approved-for-application first (server will also block create without it).'
+            });
+          }
+          if (localIssues.length) {
+            paintApplicationValidation({ validation: { critical: localIssues, warnings: [] } });
+            setMsg('apply-msg', 'Fix the listed issues, then review the plan again.', 'bad');
+          }
           var body = applicationPayload();
           delete body.confirmPlan;
           var j = await api('/api/theme-studio/application-plan', { body: body });
-          $('apply-plan').textContent =
-            (j.plan && j.plan.humanSummary ? j.plan.humanSummary.join('\n') : '') +
-            '\n\n' +
-            JSON.stringify(
-              {
-                mode: j.plan && j.plan.applicationMode,
-                apps: j.plan && j.plan.marketplaceAppsInstalling,
-                warnings: j.validation && j.validation.warnings,
-                blocking: j.validation && j.validation.critical,
-                canCommit: j.canCommit
-              },
-              null,
-              2
-            );
+          paintApplicationValidation(
+            {
+              validation: j.validation || {},
+              message: j.notice
+            },
+            j.plan
+          );
+          if ($('apply-plan') && j.canCommit) {
+            $('apply-plan').textContent +=
+              '\n\n' +
+              JSON.stringify(
+                {
+                  mode: j.plan && j.plan.applicationMode,
+                  apps: j.plan && j.plan.marketplaceAppsInstalling,
+                  canCommit: j.canCommit
+                },
+                null,
+                2
+              );
+          }
           setMsg(
             'apply-msg',
-            j.canCommit ? 'Plan ready — nothing was published.' : 'Plan blocked — resolve critical issues.',
+            j.canCommit
+              ? 'Plan ready — nothing was published. You can create the draft site.'
+              : 'Plan blocked — resolve the blocking issues listed below.',
             j.canCommit ? 'ok' : 'bad'
           );
         } catch (e) {
+          paintApplicationValidation(e.payload || { message: e.message }, e.payload && e.payload.plan);
           setMsg('apply-msg', e.message || String(e), 'bad');
         }
       };
@@ -1131,6 +1276,12 @@
     if ($('btn-apply-concept')) {
       $('btn-apply-concept').onclick = async function () {
         try {
+          var localIssues = clientApplicationPreflight();
+          if (localIssues.length) {
+            paintApplicationValidation({ validation: { critical: localIssues, warnings: [] } });
+            setMsg('apply-msg', localIssues[0].message, 'bad');
+            return;
+          }
           var j = await api('/api/theme-studio/apply-concept', { body: applicationPayload() });
           var line = j.notice || 'Done';
           if (j.site) line += ' · draft site ' + (j.site.slug || j.site.id);
@@ -1141,6 +1292,7 @@
             2
           );
         } catch (e) {
+          paintApplicationValidation(e.payload || { message: e.message }, e.payload && e.payload.plan);
           setMsg('apply-msg', e.message || String(e), 'bad');
         }
       };

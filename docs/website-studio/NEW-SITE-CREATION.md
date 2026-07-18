@@ -5,13 +5,15 @@
 
 ## Workflow
 
-1. Concept marked `approved-for-application`
+1. Concept marked `approved-for-application` via **Save approval state** (not just “ready-for-review”)
 2. User chooses **Create new website (draft)**
 3. Confirm site name, slug, owner/account
-4. Confirm business email, lead recipient, phone
-5. Review application plan (apps, images, SEO)
+4. Confirm **valid** business email + lead recipient + phone (e.g. `hello@business.com`)
+5. Review application plan (apps, images, SEO) — read any blocking issues listed
 6. Acknowledge warnings if any
 7. `confirmPlan: true` → create site
+
+Button meanings: [SAVE-OPTIONS.md](SAVE-OPTIONS.md).
 
 ## Site record
 

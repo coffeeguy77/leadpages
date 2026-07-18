@@ -212,12 +212,15 @@
   <!-- Approve -->
   <section class="ws-panel ws-hidden" id="panel-approve">
     <h2>Approve website draft</h2>
-    <p class="ws-sub">Mark the selected concept ready for review. This does <strong>not</strong> publish.</p>
+    <p class="ws-sub">
+      Creating a site requires <strong>approved-for-application</strong>.
+      Choose that state, then click <strong>Save approval state</strong> (creates a new draft version). This does <strong>not</strong> publish.
+    </p>
     <div class="ws-field"><label for="approval-state">Approval state</label>
       <select id="approval-state">
-        <option value="selected">selected</option>
+        <option value="approved-for-application" selected>approved-for-application</option>
         <option value="ready-for-review">ready-for-review</option>
-        <option value="approved-for-application">approved-for-application</option>
+        <option value="selected">selected</option>
         <option value="draft">draft</option>
       </select>
     </div>
@@ -231,7 +234,21 @@
   <!-- Apply -->
   <section class="ws-panel ws-hidden" id="panel-apply">
     <h2>Create website from this design</h2>
-    <p class="ws-sub">Apply an approved concept as a new draft site, replacement draft, or private template. Live sites are never overwritten here.</p>
+    <p class="ws-sub">
+      Apply an <strong>approved-for-application</strong> concept as a new draft site, replacement draft, or private template.
+      Live sites are never overwritten here. Use <strong>Review application plan</strong> first if create is blocked — blocking issues appear below.
+    </p>
+    <details class="ws-sub" id="ws-save-options-help" style="margin:10px 0 14px">
+      <summary style="cursor:pointer;font-weight:600">What do the save / create buttons do?</summary>
+      <ul style="margin:8px 0 0 1.1em;padding:0;line-height:1.55">
+        <li><strong>Save Draft</strong> (bottom bar) — saves the creative brief only. Not a website.</li>
+        <li><strong>Approve selection</strong> (Images) — saves image choices as a new draft version.</li>
+        <li><strong>Save approval state</strong> — marks the concept ready to become a site. Required before create.</li>
+        <li><strong>Review application plan</strong> — dry-run validation; shows blockers; creates nothing.</li>
+        <li><strong>Create website from this design</strong> — creates a <em>draft</em> LeadPages site (or template / replacement draft). Not published.</li>
+        <li><strong>Save as My Template</strong> / legacy apply — older demo scopes; prefer the create button above.</li>
+      </ul>
+    </details>
     <div class="ws-field"><label for="apply-mode">Application mode</label>
       <select id="apply-mode">
         <option value="create_site">Create new website (draft)</option>
