@@ -1,0 +1,35 @@
+/**
+ * Optional "Built with LeadPages" footer badge for customer sites.
+ * Enable via plan/settings — never forced into generated websites.
+ */
+.lp-built-with {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  text-decoration: none;
+  color: inherit;
+  font: 500 13px/1.2 "DM Sans", system-ui, sans-serif;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+}
+
+.lp-built-with:hover {
+  opacity: 1;
+}
+
+.lp-built-with__mark {
+  --lp-logo-height: 22px;
+  display: inline-flex;
+  line-height: 0;
+}
+
+.lp-built-with__label {
+  letter-spacing: 0.02em;
+}
+
+.lp-built-with--footer {
+  margin-top: 20px;
+  justify-content: center;
+  width: 100%;
+}

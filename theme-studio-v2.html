@@ -12,170 +12,208 @@
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css">
 <link rel="stylesheet" href="/assets/lp-super-admin.css">
+<link rel="stylesheet" href="/assets/lp-logo.css">
+<link rel="stylesheet" href="/assets/lp-ai-icons.css">
+<link rel="stylesheet" href="/assets/lp-built-with.css">
+<link rel="stylesheet" href="/assets/website-studio.css">
 <script src="/assets/lp-workspace-appearance.js"></script>
 <script src="/assets/lp-hub-embed.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
-<style>
-:root{--font-display:'Fraunces',Georgia,serif;--font-ui:'DM Sans',system-ui,sans-serif}
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-ui)}
-.wrap{padding:22px 20px 48px;max-width:1180px;margin:0 auto}
-.login-card{max-width:420px;margin:12vh auto;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
-.hidden{display:none!important}
-.field{margin:0 0 12px}
-.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
-.field input,.field select,.field textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit}
-.field textarea{min-height:72px;resize:vertical}
-.btn{appearance:none;border:1px solid var(--accent);background:transparent;color:var(--accent);font:600 13px/1 var(--font-ui);padding:10px 14px;border-radius:10px;cursor:pointer;margin:0 6px 6px 0}
-.btn.solid{background:var(--accent);color:var(--accent-text,#fff)}
-.btn.ghost{border-color:var(--line-strong);color:var(--ink-soft)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:16px}
-.card h2{margin:0 0 4px;font-family:var(--font-display);font-size:1.25rem}
-.sub{margin:0 0 14px;color:var(--ink-soft);font-size:13px;line-height:1.45}
-.msg{font-size:13px;margin:8px 0 0}
-.msg.bad{color:#b91c1c}
-.msg.ok{color:#15803d}
-.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.steps{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
-.step{padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--ink-soft)}
-.step.on{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
-.step.done{color:var(--ink)}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:960px){.grid3,.grid2{grid-template-columns:1fr}}
-.concept{padding:14px;border:1px solid var(--line);border-radius:12px;cursor:pointer;background:transparent}
-.concept.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.concept h3{margin:0 0 6px;font-family:var(--font-display);font-size:1.05rem}
-.swatch-row{display:flex;gap:6px;margin:8px 0}
-.swatch{width:28px;height:28px;border-radius:6px;border:1px solid var(--line)}
-.preview-frame{width:100%;min-height:620px;border:1px solid var(--line);border-radius:12px;background:#fff}
-.preview-frame.mobile{max-width:412px;margin:0 auto;display:block}
-.pill{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;background:color-mix(in srgb,var(--ink) 8%,transparent)}
-.pill.warn{background:color-mix(in srgb,#d97706 18%,transparent);color:#b45309}
-</style>
 </head>
-<body class="lp-super-admin">
-<div id="gate" class="login-card">
+<body class="lp-super-admin ws-body">
+
+<div id="gate" class="ws-gate">
+  <div class="ws-logo leadpages-logo" data-lp-logo data-lp-logo-pulse="true" aria-hidden="true"></div>
   <h1>Website Studio</h1>
-  <p class="sub">Full-site concepts from a business brief. Draft-only — never writes live sites during generate/preview/refine.</p>
-  <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
-  <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
-  <button class="btn solid" id="login-btn" type="button">Sign in</button>
-  <p class="msg bad hidden" id="gate-msg"></p>
+  <p class="ws-sub">Brief a creative studio. We compose three website concepts — draft only, never published from here.</p>
+  <div class="ws-field"><label for="email">Email</label><input id="email" type="email" autocomplete="username"></div>
+  <div class="ws-field" style="margin-top:12px"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password"></div>
+  <button class="ws-btn solid" id="login-btn" type="button" style="margin-top:18px;width:100%">Sign in</button>
+  <p class="ws-msg bad ws-hidden" id="gate-msg" role="alert"></p>
 </div>
 
-<main id="app" class="wrap hidden">
-  <div class="top">
-    <div>
-      <h1 style="margin:0;font-family:var(--font-display)">Website Studio</h1>
-      <p class="sub" style="margin:6px 0 0">Trade and non-trade foundations · real renderer preview · <span class="pill warn">draft only</span></p>
+<main id="app" class="ws-shell ws-hidden">
+  <header class="ws-top">
+    <div class="ws-brand">
+      <div class="ws-logo leadpages-logo" data-lp-logo data-lp-logo-pulse="true" aria-hidden="true"></div>
+      <div>
+        <h1>Website Studio</h1>
+        <p class="ws-eyebrow">Creative brief · <span class="ws-pill warn">draft only</span></p>
+      </div>
     </div>
-    <div>
-      <a class="btn ghost" href="/theme-studio" target="_blank" rel="noopener">AI Colour Assistant</a>
-      <button class="btn ghost" id="signout" type="button">Sign out</button>
+    <div class="ws-top-actions">
+      <a class="ws-btn ghost" href="/theme-studio" target="_blank" rel="noopener">AI Colour Assistant</a>
+      <button class="ws-btn ghost" id="signout" type="button">Sign out</button>
     </div>
+  </header>
+
+  <nav class="ws-progress" id="ws-progress" aria-label="Website Studio progress"></nav>
+  <p class="ws-msg" id="ws-autosave-msg" aria-live="polite"></p>
+
+  <!-- Hidden compatibility fields / selects used by API payload helpers -->
+  <div class="ws-hidden" aria-hidden="true">
+    <select id="mode"><option value="new" selected>New site concept</option><option value="demo">Demo</option><option value="redesign">Redesign</option><option value="restyle">Restyle</option></select>
+    <select id="source-site"><option value="">— none —</option></select>
+    <select id="foundation"><option value="">Auto-select</option></select>
+    <input id="desiredStyle" type="hidden">
+    <input id="conversionGoal" type="hidden">
+    <input id="secondaryConversionGoal" type="hidden">
+    <input id="logoName" type="hidden">
+    <button id="btn-create" type="button">Save brief</button>
+    <button id="btn-generate" type="button">Generate</button>
+    <button id="btn-regen-all" type="button">Regenerate</button>
+    <button id="btn-desktop" type="button">Desktop</button>
+    <button id="btn-mobile" type="button">Mobile</button>
   </div>
 
-  <div class="steps" id="steps"></div>
-
-  <section class="card" id="panel-brief">
-    <h2>1. Business brief</h2>
-    <p class="sub">Start a draft workspace. Generation never touches live sites.</p>
-    <div class="grid2">
-      <div class="field"><label>Mode</label>
-        <select id="mode">
-          <option value="new">New site concept</option>
-          <option value="demo">Demo / mockup</option>
-          <option value="redesign">Redesign existing (snapshot only)</option>
-          <option value="restyle">Restyle</option>
+  <!-- STEP 1 Business -->
+  <section class="ws-stage" id="ws-step-1" aria-labelledby="ws-t1">
+    <h2 class="ws-stage__title" id="ws-t1">Tell us about your business</h2>
+    <p class="ws-stage__sub">We'll use this to understand what you're building.</p>
+    <div class="ws-fields">
+      <div class="ws-field"><label for="businessName">Business Name</label><input id="businessName" placeholder="Pink Diamond Vault" autocomplete="organization"></div>
+      <div class="ws-field"><label for="industry">Industry</label><input id="industry" placeholder="Luxury Jewellery"></div>
+      <div class="ws-field"><label for="businessType">Business Type</label><input id="businessType" placeholder="Luxury retail jewellery boutique"></div>
+      <div class="ws-field"><label for="yearsOperating">Years Operating</label><input id="yearsOperating" inputmode="numeric" placeholder="8"></div>
+      <div class="ws-field"><label for="location">Location</label><input id="location" placeholder="Canberra ACT"></div>
+      <div class="ws-field"><label for="serviceAreas">Service Areas</label><input id="serviceAreas" placeholder="Canberra, Queanbeyan, Southern NSW"></div>
+      <div class="ws-field ws-field--full"><label for="existingWebsite">Existing Website <span style="font-weight:500;text-transform:none;letter-spacing:0">(optional)</span></label><input id="existingWebsite" type="url" placeholder="https://"></div>
+      <div class="ws-field ws-field--full">
+        <label for="redesignToggle">Redesign Existing Site</label>
+        <select id="redesignToggle" onchange="document.getElementById('mode').value=this.value==='yes'?'redesign':'new'">
+          <option value="no" selected>No — new site concept</option>
+          <option value="yes">Yes — redesign (snapshot only, not analysed yet)</option>
         </select>
+        <p class="ws-hint">We won't analyse existing websites in this phase.</p>
       </div>
-      <div class="field"><label>Source site (optional for redesign)</label><select id="source-site"><option value="">— none —</option></select></div>
     </div>
-    <div class="grid2">
-      <div class="field"><label>Business name</label><input id="businessName" placeholder="Pink Diamond Vault"></div>
-      <div class="field"><label>Industry</label><input id="industry" placeholder="jewellery"></div>
-    </div>
-    <div class="grid2">
-      <div class="field"><label>Business type</label><input id="businessType" placeholder="luxury-retail / event-hospitality / trade…"></div>
-      <div class="field"><label>Years operating</label><input id="yearsOperating" placeholder="8"></div>
-    </div>
-    <div class="field"><label>Specialisation / primary offer</label><input id="specialisation" placeholder="Pink diamonds, engagement rings…"></div>
-    <div class="grid2">
-      <div class="field"><label>Location</label><input id="location" placeholder="Canberra"></div>
-      <div class="field"><label>Service areas</label><input id="serviceAreas" placeholder="Canberra, Queanbeyan…"></div>
-    </div>
-    <div class="grid2">
-      <div class="field"><label>Desired style</label><input id="desiredStyle" placeholder="Luxury, elegant, editorial…"></div>
-      <div class="field"><label>Primary conversion goal</label><input id="conversionGoal" placeholder="book-private-appointment"></div>
-    </div>
-    <div class="grid2">
-      <div class="field"><label>Secondary conversion</label><input id="secondaryConversionGoal" placeholder="enquire"></div>
-      <div class="field"><label>Phone CTA</label><input id="phoneCta" placeholder="Call 02…"></div>
-    </div>
-    <div class="field"><label>Target audience</label><input id="audience" placeholder="Affluent couples…"></div>
-    <div class="field"><label>Main services / products (comma or newline)</label><textarea id="mainServices" placeholder="Coffee cart, Coffee van, Corporate activations…"></textarea></div>
-    <div class="field"><label>Differentiators</label><textarea id="differentiators" placeholder="What makes you different…"></textarea></div>
-    <div class="field"><label>Short description / notes</label><textarea id="notes" placeholder="Anything else for the concept…"></textarea></div>
-    <div class="field"><label>Foundation (optional)</label><select id="foundation"><option value="">Auto-select</option></select></div>
-    <button class="btn solid" id="btn-create" type="button">Save brief &amp; continue</button>
-    <p class="msg" id="brief-msg"></p>
   </section>
 
-  <section class="card hidden" id="panel-concepts">
-    <h2>2. Compare concepts</h2>
-    <p class="sub">Three structurally different concepts — hero, apps, order, and visual direction. Draft versions only.</p>
-    <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-      <button class="btn solid" id="btn-generate" type="button">Generate 3 concepts</button>
-      <button class="btn ghost" id="btn-regen-all" type="button">Regenerate all</button>
+  <!-- STEP 2 Services -->
+  <section class="ws-stage ws-hidden" id="ws-step-2" aria-labelledby="ws-t2">
+    <h2 class="ws-stage__title" id="ws-t2">What do you offer?</h2>
+    <p class="ws-stage__sub">Describe the offer in plain language — chips help us shape the right Marketplace apps.</p>
+    <div class="ws-fields ws-fields--1">
+      <div class="ws-field"><label for="specialisation">Primary Offer</label><input id="specialisation" placeholder="Rare Argyle pink diamonds, bespoke engagement rings…"></div>
+      <div class="ws-field">
+        <label>Services</label>
+        <div class="ws-chips" id="ws-service-chips" role="group" aria-label="Service chips"></div>
+        <textarea id="mainServices" style="margin-top:12px" placeholder="Add or refine services…"></textarea>
+      </div>
+      <div class="ws-field"><label for="audience">Target Audience</label><input id="audience" placeholder="Affluent couples, collectors…"></div>
+      <div class="ws-field"><label for="differentiators">Differentiators</label><textarea id="differentiators" placeholder="What makes the experience distinctive…"></textarea></div>
+      <div class="ws-field"><label for="notes">Short Description</label><textarea id="notes" placeholder="A short story of the business…"></textarea></div>
     </div>
-    <p class="msg" id="gen-msg"></p>
-    <div class="grid3" id="concept-grid"></div>
-    <details class="sub" style="margin-top:12px"><summary>Superuser diagnostics</summary><pre id="compare-diag" style="white-space:pre-wrap"></pre></details>
   </section>
 
-  <section class="card hidden" id="panel-preview">
-    <h2>3. Preview &amp; select</h2>
-    <p class="sub">Real trade renderer with draft config. Forms and tracking disabled. Signed short-lived URL.</p>
-    <div>
-      <button class="btn ghost" id="btn-desktop" type="button">Desktop</button>
-      <button class="btn ghost" id="btn-mobile" type="button">Mobile</button>
-      <button class="btn solid" id="btn-select" type="button" disabled>Select this concept</button>
+  <!-- STEP 3 Brand -->
+  <section class="ws-stage ws-hidden" id="ws-step-3" aria-labelledby="ws-t3">
+    <h2 class="ws-stage__title" id="ws-t3">How should your business feel?</h2>
+    <p class="ws-stage__sub">Choose a visual direction — we'll translate it into colour, type, and imagery.</p>
+    <div class="ws-fields ws-fields--1">
+      <div class="ws-field">
+        <label>Visual Style</label>
+        <div class="ws-chips" id="ws-style-chips" role="group" aria-label="Style chips"></div>
+      </div>
+      <div class="ws-field"><label for="preferredMood">Preferred Mood</label><input id="preferredMood" placeholder="Quiet confidence, editorial restraint…"></div>
+      <div class="ws-field"><label for="preferredColours">Preferred Colours</label><input id="preferredColours" placeholder="Burgundy, cream, charcoal…"></div>
+      <div class="ws-color-row">
+        <div class="ws-field"><label for="primaryColour">Primary</label><input id="primaryColour" type="color" value="#3a1f2b"></div>
+        <div class="ws-field"><label for="secondaryColour">Secondary</label><input id="secondaryColour" type="color" value="#f4efe8"></div>
+        <div class="ws-field"><label for="accentColour">Accent</label><input id="accentColour" type="color" value="#c4a484"></div>
+      </div>
+      <div class="ws-field"><label for="logoFile">Logo <span style="font-weight:500;text-transform:none;letter-spacing:0">(optional)</span></label><input id="logoFile" type="file" accept="image/*,.svg"></div>
+      <div class="ws-field"><label for="existingImages">Existing Images <span style="font-weight:500;text-transform:none;letter-spacing:0">(optional)</span></label><input id="existingImages" placeholder="Links or notes about photography you already have"></div>
+      <div class="ws-field"><label for="phoneCta">Phone CTA <span style="font-weight:500;text-transform:none;letter-spacing:0">(optional)</span></label><input id="phoneCta" placeholder="Call (02) …"></div>
     </div>
-    <p class="msg" id="preview-msg"></p>
-    <iframe id="preview" class="preview-frame" title="Website Studio preview"></iframe>
   </section>
 
-  <section class="card hidden" id="panel-refine">
-    <h2>4. Refine</h2>
-    <p class="sub">Natural-language refinement creates a new version. Undo by selecting a prior concept version after regenerate.</p>
-    <div class="field"><label>Feedback</label><textarea id="feedback" placeholder="Make the CTA softer… change heading to…"></textarea></div>
-    <button class="btn solid" id="btn-refine" type="button">Apply refinement</button>
-    <button class="btn ghost" id="btn-quality" type="button">Run quality check</button>
-    <p class="msg" id="refine-msg"></p>
-    <pre id="quality-out" class="sub" style="white-space:pre-wrap"></pre>
+  <!-- STEP 4 Goals -->
+  <section class="ws-stage ws-hidden" id="ws-step-4" aria-labelledby="ws-t4">
+    <h2 class="ws-stage__title" id="ws-t4">What should your website achieve?</h2>
+    <p class="ws-stage__sub">Pick a primary goal and a secondary path. We'll tune CTAs and page structure around them.</p>
+    <label class="ws-field" style="margin-bottom:10px">Primary Goal</label>
+    <div class="ws-goal-grid" id="ws-goal-primary" role="radiogroup" aria-label="Primary goal"></div>
+    <label class="ws-field" style="margin:22px 0 10px">Secondary Goal / Contact Preference</label>
+    <div class="ws-goal-grid" id="ws-goal-secondary" role="radiogroup" aria-label="Secondary goal"></div>
   </section>
 
-  <section class="card hidden" id="panel-images">
-    <h2>4b. Images</h2>
-    <p class="sub">Review Composer image selections. Search uses the server Image Service (Cloudinary library → Pexels). API keys never leave the server. AI generation is superuser-only and hidden here for partners.</p>
-    <div id="image-slots" class="sub" style="display:grid;gap:12px"></div>
-    <div class="field" style="margin-top:12px"><label>Search phrase</label><input id="image-query" placeholder="mobile coffee cart corporate event barista"></div>
-    <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-      <button class="btn solid" id="btn-image-search" type="button">Search again</button>
-      <button class="btn ghost" id="btn-image-approve" type="button">Approve selection</button>
-      <button class="btn ghost" id="btn-image-import" type="button">Plan Cloudinary import</button>
+  <!-- STEP 5 Generate -->
+  <section class="ws-stage ws-hidden" id="ws-step-5" aria-labelledby="ws-t5">
+    <h2 class="ws-stage__title" id="ws-t5">Ready when you are</h2>
+    <p class="ws-stage__sub">A quick summary of the brief — then we compose three distinct website concepts.</p>
+    <div class="ws-summary">
+      <div class="ws-summary-card">
+        <dl id="ws-summary-list"></dl>
+      </div>
+      <div class="ws-generate-cta">
+        <div id="ws-gen-cta-icon" class="ws-gen-icon" aria-hidden="true"></div>
+        <button type="button" class="ws-btn-hero" id="btn-generate-hero">✨ Generate 3 Website Concepts</button>
+        <p class="ws-hint">Draft only · about 10–20 seconds · nothing publishes</p>
+        <p class="ws-msg" id="gen-msg" aria-live="polite"></p>
+      </div>
     </div>
-    <p class="msg" id="image-msg"></p>
-    <pre id="image-alts" class="sub" style="white-space:pre-wrap;max-height:220px;overflow:auto"></pre>
   </section>
 
-  <section class="card hidden" id="panel-approve">
-    <h2>5. Approve website draft</h2>
-    <p class="sub">Mark the selected concept ready for review or approved for a future application phase. This does <strong>not</strong> publish or change live sites.</p>
-    <div class="field"><label>Approval state</label>
+  <!-- Concepts -->
+  <section class="ws-panel ws-hidden" id="panel-concepts">
+    <h2>Choose a direction</h2>
+    <p class="ws-sub">Three concepts from different creative strategies — not just colour swaps.</p>
+    <div class="ws-concepts" id="concept-grid"></div>
+    <details class="ws-sub" style="margin-top:14px"><summary>Superuser diagnostics</summary><pre id="compare-diag" style="white-space:pre-wrap"></pre></details>
+  </section>
+
+  <!-- Preview -->
+  <section class="ws-panel ws-hidden" id="panel-preview">
+    <h2>Preview</h2>
+    <p class="ws-sub">Real renderer preview · draft only · forms &amp; tracking disabled.</p>
+    <div class="ws-preview-layout">
+      <div class="ws-device-toggle" id="ws-device-toggle" role="group" aria-label="Preview device">
+        <button type="button" data-mode="desktop" class="on">Desktop</button>
+        <button type="button" data-mode="tablet">Tablet</button>
+        <button type="button" data-mode="mobile">Mobile</button>
+      </div>
+      <p class="ws-msg" id="preview-msg"></p>
+      <div class="ws-preview-shell" id="ws-preview-shell">
+        <iframe id="preview" class="ws-preview-frame" title="Website Studio preview"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- Refine -->
+  <section class="ws-panel ws-hidden" id="panel-refine">
+    <h2>Refine</h2>
+    <p class="ws-sub">Natural-language refinement creates a new draft version.</p>
+    <div class="ws-field"><label for="feedback">Feedback</label><textarea id="feedback" placeholder="Make the CTA softer… change heading to…"></textarea></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="ws-btn solid" id="btn-refine" type="button">Apply refinement</button>
+      <button class="ws-btn ghost" id="btn-quality" type="button">Run quality check</button>
+    </div>
+    <p class="ws-msg" id="refine-msg"></p>
+    <pre id="quality-out" class="ws-sub" style="white-space:pre-wrap"></pre>
+  </section>
+
+  <!-- Images -->
+  <section class="ws-panel ws-hidden" id="panel-images">
+    <h2>Images</h2>
+    <p class="ws-sub">Review Composer image selections. Search uses the server Image Service.</p>
+    <div id="image-slots" class="ws-sub" style="display:grid;gap:12px"></div>
+    <div class="ws-field" style="margin-top:12px"><label for="image-query">Search phrase</label><input id="image-query" placeholder="private jewellery showroom editorial"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button class="ws-btn solid" id="btn-image-search" type="button">Search again</button>
+      <button class="ws-btn ghost" id="btn-image-approve" type="button">Approve selection</button>
+      <button class="ws-btn ghost" id="btn-image-import" type="button">Plan Cloudinary import</button>
+    </div>
+    <p class="ws-msg" id="image-msg"></p>
+    <pre id="image-alts" class="ws-sub" style="white-space:pre-wrap;max-height:220px;overflow:auto"></pre>
+  </section>
+
+  <!-- Approve -->
+  <section class="ws-panel ws-hidden" id="panel-approve">
+    <h2>Approve website draft</h2>
+    <p class="ws-sub">Mark the selected concept ready for review. This does <strong>not</strong> publish.</p>
+    <div class="ws-field"><label for="approval-state">Approval state</label>
       <select id="approval-state">
         <option value="selected">selected</option>
         <option value="ready-for-review">ready-for-review</option>
@@ -183,41 +221,44 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
         <option value="draft">draft</option>
       </select>
     </div>
-    <button class="btn solid" id="btn-approve-draft" type="button">Save approval state</button>
-    <button class="btn ghost" id="btn-restore-version" type="button">Restore selected version (new snapshot)</button>
-    <p class="msg" id="approve-msg"></p>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="ws-btn solid" id="btn-approve-draft" type="button">Save approval state</button>
+      <button class="ws-btn ghost" id="btn-restore-version" type="button">Restore selected version</button>
+    </div>
+    <p class="ws-msg" id="approve-msg"></p>
   </section>
 
-  <section class="card hidden" id="panel-apply">
-    <h2>6. Create website from this design</h2>
-    <p class="sub">Apply an <strong>approved-for-application</strong> concept as a new draft site, a replacement draft, or a private template. This does <strong>not</strong> publish. Live sites are never overwritten here.</p>
-    <div class="field"><label>Application mode</label>
+  <!-- Apply -->
+  <section class="ws-panel ws-hidden" id="panel-apply">
+    <h2>Create website from this design</h2>
+    <p class="ws-sub">Apply an approved concept as a new draft site, replacement draft, or private template. Live sites are never overwritten here.</p>
+    <div class="ws-field"><label for="apply-mode">Application mode</label>
       <select id="apply-mode">
         <option value="create_site">Create new website (draft)</option>
         <option value="replacement_draft">Create replacement draft (live unchanged)</option>
         <option value="private_template">Save as private template</option>
       </select>
     </div>
-    <div class="field"><label>Site name</label><input id="apply-site-name" placeholder="Business name"></div>
-    <div class="field"><label>Site slug</label><input id="apply-slug" placeholder="my-business"></div>
-    <div class="field"><label>Target site (replacement mode)</label>
+    <div class="ws-field"><label for="apply-site-name">Site name</label><input id="apply-site-name" placeholder="Business name"></div>
+    <div class="ws-field"><label for="apply-slug">Site slug</label><input id="apply-slug" placeholder="my-business"></div>
+    <div class="ws-field"><label for="apply-target-site">Target site (replacement mode)</label>
       <select id="apply-target-site"><option value="">— select site —</option></select>
     </div>
-    <div class="field"><label>Business email</label><input id="apply-business-email" type="email" placeholder="hello@business.com"></div>
-    <div class="field"><label>Lead recipient email</label><input id="apply-lead-email" type="email" placeholder="leads@business.com"></div>
-    <div class="field"><label>Phone</label><input id="apply-phone" placeholder="+61…"></div>
-    <label class="sub"><input type="checkbox" id="apply-contact-confirm"> I confirm these contact and form details are correct for the client (not a partner default unless intentional).</label>
-    <label class="sub"><input type="checkbox" id="apply-ack-warnings"> Acknowledge non-critical warnings</label>
-    <div class="field"><label>Template name (private template mode)</label><input id="template-name" placeholder="Pink Diamond Vault — Editorial"></div>
-    <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:10px">
-      <button class="btn ghost" id="btn-application-plan" type="button">Review application plan</button>
-      <button class="btn solid" id="btn-apply-concept" type="button">Create website from this design</button>
+    <div class="ws-field"><label for="apply-business-email">Business email</label><input id="apply-business-email" type="email"></div>
+    <div class="ws-field"><label for="apply-lead-email">Lead recipient email</label><input id="apply-lead-email" type="email"></div>
+    <div class="ws-field"><label for="apply-phone">Phone</label><input id="apply-phone"></div>
+    <label class="ws-sub"><input type="checkbox" id="apply-contact-confirm"> I confirm these contact details are correct.</label>
+    <label class="ws-sub"><input type="checkbox" id="apply-ack-warnings"> Acknowledge non-critical warnings</label>
+    <div class="ws-field"><label for="template-name">Template name</label><input id="template-name"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+      <button class="ws-btn ghost" id="btn-application-plan" type="button">Review application plan</button>
+      <button class="ws-btn solid" id="btn-apply-concept" type="button">Create website from this design</button>
     </div>
-    <pre id="apply-plan" class="sub" style="white-space:pre-wrap;max-height:260px;overflow:auto;margin-top:10px"></pre>
-    <p class="msg" id="apply-msg"></p>
-    <hr style="margin:16px 0;border:none;border-top:1px solid #ddd">
-    <p class="sub">Legacy demo scopes (non-live only) remain available for compatibility:</p>
-    <div class="field"><label>Legacy scope</label>
+    <pre id="apply-plan" class="ws-sub" style="white-space:pre-wrap;max-height:260px;overflow:auto;margin-top:10px"></pre>
+    <p class="ws-msg" id="apply-msg"></p>
+    <hr style="margin:16px 0;border:none;border-top:1px solid var(--line)">
+    <p class="ws-sub">Legacy demo scopes remain available:</p>
+    <div class="ws-field"><label for="scope">Legacy scope</label>
       <select id="scope">
         <option value="demo">Create demo / mockup site (non-live)</option>
         <option value="new_site">Create draft site (non-live)</option>
@@ -225,688 +266,51 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
         <option value="my_template">Save as My Template</option>
       </select>
     </div>
-    <button class="btn" id="btn-apply" type="button">Legacy confirm apply</button>
-    <button class="btn" id="btn-template" type="button">Save as My Template</button>
+    <button class="ws-btn" id="btn-apply" type="button">Legacy confirm apply</button>
+    <button class="ws-btn" id="btn-template" type="button">Save as My Template</button>
   </section>
+
+  <footer class="ws-footer-brand">
+    <div class="ws-logo leadpages-logo" data-lp-logo data-lp-logo-pulse="true" aria-hidden="true"></div>
+    <div>Website Studio · LeadPages</div>
+  </footer>
 </main>
 
+<!-- Sticky action bar -->
+<div class="ws-actionbar ws-hidden" id="ws-actionbar">
+  <div class="ws-actionbar__left">
+    <button type="button" class="ws-btn ghost" id="btn-prev">Previous</button>
+    <button type="button" class="ws-btn ghost" id="btn-save-draft">Save Draft</button>
+  </div>
+  <div class="ws-actionbar__right">
+    <button type="button" class="ws-btn ghost ws-hidden" id="btn-gen-again">Generate Again</button>
+    <button type="button" class="ws-btn ghost ws-hidden" id="btn-select" disabled>Select Concept</button>
+    <button type="button" class="ws-btn solid" id="btn-next">Next</button>
+    <button type="button" class="ws-btn solid ws-hidden" id="btn-continue">Continue</button>
+  </div>
+</div>
+
+<!-- Generation theatre -->
+<div class="ws-gen-overlay ws-hidden" id="ws-gen-overlay" role="status" aria-live="polite" aria-hidden="true">
+  <div class="ws-gen-panel">
+    <div class="ws-logo leadpages-logo" data-lp-logo data-lp-logo-pulse="true" aria-hidden="true"></div>
+    <div class="ws-gen-icon" id="ws-gen-icon"></div>
+    <p class="ws-gen-stage" id="ws-gen-stage">Understanding your business…</p>
+    <p class="ws-gen-hint">Composing concepts · nothing is published</p>
+    <div class="ws-gen-dots" id="ws-gen-dots" aria-hidden="true"></div>
+  </div>
+</div>
+
+<script src="/assets/lp-logo.js"></script>
+<script src="/assets/lp-ai-icons.js"></script>
+<script src="/assets/lp-built-with.js"></script>
+<script src="/assets/website-studio.js"></script>
 <script>
-(function(){
-  var sb = window.supabase.createClient(window.__LP.url, window.__LP.anon);
-  var $ = function(id){ return document.getElementById(id); };
-  var state = {
-    draftId: null,
-    versions: [],
-    selectedVersionId: null,
-    previewMode: 'desktop',
-    step: 1
-  };
-
-  var STEP_LABELS = ['Brief','Compare','Preview','Refine','Approve'];
-
-  function esc(s){
-    return String(s==null?'':s).replace(/[&<>"']/g,function(c){
-      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
-    });
-  }
-
-  function paintSteps(){
-    $('steps').innerHTML = STEP_LABELS.map(function(label, i){
-      var n = i+1;
-      var cls = 'step'+(n===state.step?' on':'')+(n<state.step?' done':'');
-      return '<span class="'+cls+'">'+n+'. '+esc(label)+'</span>';
-    }).join('');
-  }
-
-  async function token(){
-    var r = await sb.auth.getSession();
-    return (r && r.data && r.data.session && r.data.session.access_token) || null;
-  }
-
-  function collectBrief(){
-    return {
-      businessName: $('businessName').value,
-      industry: $('industry').value,
-      businessType: $('businessType') && $('businessType').value,
-      yearsOperating: $('yearsOperating') && $('yearsOperating').value,
-      serviceAreas: $('serviceAreas') && $('serviceAreas').value,
-      conversionGoal: $('conversionGoal') && $('conversionGoal').value,
-      secondaryConversionGoal: $('secondaryConversionGoal') && $('secondaryConversionGoal').value,
-      phoneCta: $('phoneCta') && $('phoneCta').value,
-      mainServices: $('mainServices') && $('mainServices').value,
-      differentiators: $('differentiators') && $('differentiators').value,
-      specialisation: $('specialisation').value,
-      location: $('location').value,
-      audience: $('audience').value,
-      desiredStyle: $('desiredStyle').value,
-      notes: $('notes').value
-    };
-  }
-
-  function apiErrorMessage(j, res, rawText){
-    j = j || {};
-    var msg = j.message || j.error || '';
-    if (!msg) {
-      var snippet = String(rawText || '').replace(/\s+/g, ' ').trim().slice(0, 120);
-      msg = 'HTTP ' + res.status + (snippet && snippet.charAt(0) !== '{' ? ' (non-JSON server error)' : '');
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.LPAiIcons && document.getElementById('ws-gen-cta-icon')) {
+      document.getElementById('ws-gen-cta-icon').innerHTML = window.LPAiIcons.svg('sparkles', { size: 56, anim: 'pulse' });
     }
-    if (j.details && j.details.length) {
-      var first = j.details[0];
-      var detail = (first && (first.message || first.code)) || '';
-      if (detail) msg += ' — ' + detail;
-    }
-    if (j.diagnosticId) msg += ' [' + j.diagnosticId + ']';
-    return msg;
-  }
-
-  async function api(path, opts){
-    opts = opts || {};
-    var t = await token();
-    var res = await fetch(path, {
-      method: opts.method || 'POST',
-      headers: Object.assign(
-        {'content-type':'application/json'},
-        t ? {Authorization:'Bearer '+t} : {}
-      ),
-      body: opts.body != null ? JSON.stringify(opts.body) : (opts.method === 'GET' ? undefined : '{}')
-    });
-    var raw = await res.text();
-    var j = {};
-    try { j = raw ? JSON.parse(raw) : {}; } catch (_e) { j = {}; }
-    if(!res.ok) throw new Error(apiErrorMessage(j, res, raw));
-    return j;
-  }
-
-  async function canUseThemeStudio(){
-    var sess = await sb.auth.getSession();
-    var user = sess && sess.data && sess.data.session && sess.data.session.user;
-    if(!user) return false;
-    var { data: prof } = await sb.from('profiles').select('is_super_admin').eq('id', user.id).maybeSingle();
-    if(prof && prof.is_super_admin) return true;
-    var { data: partner } = await sb.from('partners').select('id,status').eq('user_id', user.id).maybeSingle();
-    return !!(partner && partner.status === 'active');
-  }
-
-  async function loadFoundations(){
-    var j = await api('/api/theme-studio/foundations', { method: 'GET', body: null });
-    var sel = $('foundation');
-    (j.foundations||[]).forEach(function(f){
-      var opt = document.createElement('option');
-      opt.value = f.id;
-      opt.textContent = f.name + ' (' + f.category + ')';
-      sel.appendChild(opt);
-    });
-  }
-
-  async function loadSites(){
-    var { data } = await sb.from('sites').select('id,slug,business_name').order('business_name').limit(500);
-    var opts = '<option value="">— none —</option>' + (data||[]).map(function(s){
-      return '<option value="'+esc(s.id)+'">'+esc(s.business_name||s.slug)+'</option>';
-    }).join('');
-    $('source-site').innerHTML = opts;
-    if ($('apply-target-site')) {
-      $('apply-target-site').innerHTML = '<option value="">— select site —</option>' + (data||[]).map(function(s){
-        return '<option value="'+esc(s.id)+'">'+esc(s.business_name||s.slug)+'</option>';
-      }).join('');
-    }
-  }
-
-  function applicationPayload(){
-    return {
-      draftId: state.draftId,
-      versionId: state.selectedVersionId,
-      mode: $('apply-mode').value,
-      confirmPlan: true,
-      acknowledgeWarnings: !!($('apply-ack-warnings') && $('apply-ack-warnings').checked),
-      mockImages: true,
-      contactConfirmation: {
-        businessEmail: ($('apply-business-email') && $('apply-business-email').value) || '',
-        leadRecipientEmail: ($('apply-lead-email') && $('apply-lead-email').value) || '',
-        phone: ($('apply-phone') && $('apply-phone').value) || '',
-        businessName: ($('apply-site-name') && $('apply-site-name').value) || ($('businessName') && $('businessName').value) || '',
-        confirmed: !!($('apply-contact-confirm') && $('apply-contact-confirm').checked)
-      },
-      siteIdentity: {
-        siteName: ($('apply-site-name') && $('apply-site-name').value) || ($('businessName') && $('businessName').value) || '',
-        slug: ($('apply-slug') && $('apply-slug').value) || '',
-        targetSiteId: ($('apply-target-site') && $('apply-target-site').value) || '',
-        templateName: ($('template-name') && $('template-name').value) || '',
-        templateVisibility: 'private'
-      },
-      targetSiteId: ($('apply-target-site') && $('apply-target-site').value) || '',
-      templateName: ($('template-name') && $('template-name').value) || '',
-      idempotencyKey: 'ws-apply-' + state.draftId + '-' + state.selectedVersionId + '-' + ($('apply-mode') && $('apply-mode').value)
-    };
-  }
-
-  function showFrom(step){
-    state.step = step;
-    paintSteps();
-    $('panel-brief').classList.toggle('hidden', step < 1);
-    $('panel-concepts').classList.toggle('hidden', step < 2);
-    $('panel-preview').classList.toggle('hidden', step < 3);
-    $('panel-refine').classList.toggle('hidden', step < 4);
-    $('panel-images').classList.toggle('hidden', step < 4);
-    $('panel-approve').classList.toggle('hidden', step < 5);
-    $('panel-apply').classList.toggle('hidden', step < 5);
-    if (step >= 4) paintImageSlots();
-  }
-
-  function currentDraftConfig(){
-    var v = state.versions.find(function(x){ return x.id === state.selectedVersionId; });
-    return (v && (v.draftConfig || v.draft_config_json)) || null;
-  }
-
-  function paintImageSlots(){
-    var cfg = currentDraftConfig();
-    var wrap = $('image-slots');
-    if (!wrap) return;
-    var selections = (cfg && cfg.__websiteComposer && cfg.__websiteComposer.imageSelections) || [];
-    if (!selections.length) {
-      wrap.innerHTML = '<p>No stored image selections on this draft yet. Generate a concept first.</p>';
-      return;
-    }
-    wrap.innerHTML = selections.map(function(s, idx){
-      var url = s.selectedVariantUrl || s.sourceImageUrl || '';
-      return '<div style="display:flex;gap:12px;align-items:flex-start;border-top:1px solid rgba(0,0,0,.08);padding-top:10px">'
-        + (url ? '<img src="'+esc(url)+'" alt="" style="width:120px;height:72px;object-fit:cover;border-radius:4px">' : '<div style="width:120px;height:72px;background:#eee"></div>')
-        + '<div><strong>'+esc(s.sectionId || s.appId || ('slot '+idx))+'</strong>'
-        + '<div class="sub">'+esc(s.provider || '')+' · '+esc(s.providerAssetId || '')+'</div>'
-        + '<div class="sub">'+esc(s.photographerName || 'Attribution pending')+'</div>'
-        + '<div class="sub">'+esc(s.altText || '')+'</div>'
-        + '<button class="btn ghost btn-pick-image" type="button" data-idx="'+idx+'">Use for search</button>'
-        + '</div></div>';
-    }).join('');
-    wrap.querySelectorAll('.btn-pick-image').forEach(function(btn){
-      btn.onclick = function(){
-        var s = selections[Number(btn.getAttribute('data-idx'))];
-        state.activeImageSelection = s;
-        $('image-query').value = s.searchQuery || s.altText || s.subject || '';
-        $('image-msg').textContent = 'Active slot: ' + (s.sectionId || s.appId || '');
-      };
-    });
-  }
-
-  function paintConcepts(versions){
-    state.versions = versions || [];
-    $('concept-grid').innerHTML = state.versions.map(function(v){
-      var theme = v.theme || {};
-      var q = v.quality && (v.quality.status || v.quality.score);
-      var apps = (v.draftConfig && v.draftConfig.__websiteComposer && v.draftConfig.__websiteComposer.installedApps) || [];
-      var appIds = apps.map(function(a){ return a.appId || a; }).slice(0,8).join(', ');
-      var direction = v.draftConfig && v.draftConfig.__websiteComposer && v.draftConfig.__websiteComposer.imageDirection;
-      return '<article class="concept" data-id="'+esc(v.id)+'">'
-        + '<h3>'+esc(v.conceptName||v.conceptId)+'</h3>'
-        + '<p class="sub" style="margin:0 0 8px">'+esc(v.layoutId||'')+' · '+esc(q||'—')+'</p>'
-        + '<div class="swatch-row">'
-        + ['pipe','hivis','steel','safety','lightBg'].map(function(k){
-          return '<span class="swatch" title="'+k+'" style="background:'+esc(theme[k]||'#ccc')+'"></span>';
-        }).join('')
-        + '</div>'
-        + '<p class="sub" style="margin:8px 0 0"><strong>Apps</strong> '+esc(appIds||'—')+'</p>'
-        + '<p class="sub" style="margin:4px 0 0"><strong>Imagery</strong> '+esc((direction && (direction.label||direction.id))||'—')+'</p>'
-        + '<p class="sub" style="margin:4px 0 0">'+esc((v.rationale||'').slice(0,160))+'</p>'
-        + '</article>';
-    }).join('') || '<p class="sub">No concepts yet.</p>';
-    try {
-      $('compare-diag').textContent = JSON.stringify(state.versions.map(function(v){
-        return {
-          id: v.id,
-          layoutId: v.layoutId,
-          quality: v.quality && { score: v.quality.score, status: v.quality.status },
-          shell: v.draftConfig && v.draftConfig.__websiteComposer && v.draftConfig.__websiteComposer.rendererShellId
-        };
-      }), null, 2);
-    } catch (_e) {}
-
-    Array.prototype.forEach.call(document.querySelectorAll('.concept'), function(el){
-      el.onclick = function(){
-        state.selectedVersionId = el.getAttribute('data-id');
-        Array.prototype.forEach.call(document.querySelectorAll('.concept'), function(c){
-          c.classList.toggle('selected', c === el);
-        });
-        $('btn-select').disabled = false;
-        loadPreview();
-      };
-    });
-  }
-
-  async function loadPreview(){
-    if(!state.draftId || !state.selectedVersionId) return;
-    $('preview-msg').className = 'msg';
-    $('preview-msg').textContent = 'Minting signed preview…';
-    try{
-      var j = await api('/api/theme-studio/preview', {
-        body: {
-          draftId: state.draftId,
-          versionId: state.selectedVersionId,
-          mode: state.previewMode
-        }
-      });
-      $('preview').className = 'preview-frame'+(state.previewMode==='mobile'?' mobile':'');
-      $('preview').src = j.url;
-      $('preview-msg').className = 'msg ok';
-      $('preview-msg').textContent = 'Preview loaded (expires ~15 min). Forms & tracking disabled.';
-      showFrom(Math.max(state.step, 3));
-    }catch(e){
-      $('preview-msg').className = 'msg bad';
-      $('preview-msg').textContent = e.message || String(e);
-    }
-  }
-
-  $('login-btn').onclick = async function(){
-    $('gate-msg').classList.add('hidden');
-    var { error } = await sb.auth.signInWithPassword({ email: $('email').value, password: $('password').value });
-    if(error){
-      $('gate-msg').textContent = error.message;
-      $('gate-msg').classList.remove('hidden');
-      return;
-    }
-    boot();
-  };
-
-  $('signout').onclick = async function(){
-    await sb.auth.signOut();
-    location.reload();
-  };
-
-  $('btn-create').onclick = async function(){
-    var msg = $('brief-msg');
-    msg.className = 'msg'; msg.textContent = 'Creating draft…';
-    try{
-      var j = await api('/api/theme-studio/drafts', {
-        body: {
-          mode: $('mode').value,
-          sourceSiteId: $('source-site').value || null,
-          foundationId: $('foundation').value || null,
-          brief: collectBrief()
-        }
-      });
-      state.draftId = j.draft.id;
-      msg.className = 'msg ok';
-      msg.textContent = 'Draft '+j.draft.id+(j.notice ? ' · '+j.notice : '');
-      showFrom(2);
-    }catch(e){
-      msg.className = 'msg bad';
-      msg.textContent = e.message || String(e);
-    }
-  };
-
-  $('btn-generate').onclick = async function(){
-    var msg = $('gen-msg');
-    msg.className = 'msg'; msg.textContent = 'Generating…';
-    try{
-      if(!state.draftId){
-        throw new Error('Create a draft from the brief step before generating concepts.');
-      }
-      var j = await api('/api/theme-studio/generate-concepts', {
-        body: {
-          draftId: state.draftId,
-          foundationId: $('foundation').value || null,
-          brief: collectBrief()
-        }
-      });
-      msg.className = 'msg ok';
-      msg.textContent = 'Generated via '+j.source+' · foundation '+j.foundationName;
-      paintConcepts(j.versions);
-      showFrom(2);
-    }catch(e){
-      msg.className = 'msg bad';
-      msg.textContent = e.message || String(e);
-    }
-  };
-
-  $('btn-desktop').onclick = function(){ state.previewMode = 'desktop'; loadPreview(); };
-  $('btn-mobile').onclick = function(){ state.previewMode = 'mobile'; loadPreview(); };
-
-  $('btn-select').onclick = async function(){
-    var msg = $('preview-msg');
-    try{
-      await api('/api/theme-studio/select-concept', {
-        body: { draftId: state.draftId, versionId: state.selectedVersionId }
-      });
-      msg.className = 'msg ok';
-      msg.textContent = 'Concept selected. Continue to refine or apply.';
-      showFrom(4);
-    }catch(e){
-      msg.className = 'msg bad';
-      msg.textContent = e.message || String(e);
-    }
-  };
-
-  $('btn-refine').onclick = async function(){
-    var msg = $('refine-msg');
-    msg.className = 'msg'; msg.textContent = 'Refining…';
-    try{
-      var j = await api('/api/theme-studio/refine', {
-        body: {
-          draftId: state.draftId,
-          versionId: state.selectedVersionId,
-          feedback: $('feedback').value
-        }
-      });
-      state.selectedVersionId = j.version.id;
-      state.versions = state.versions.concat([j.version]);
-      paintConcepts(state.versions);
-      msg.className = 'msg ok';
-      msg.textContent = 'New version '+j.version.versionNumber+' stored.';
-      loadPreview();
-      showFrom(5);
-    }catch(e){
-      msg.className = 'msg bad';
-      msg.textContent = e.message || String(e);
-    }
-  };
-
-  $('btn-quality').onclick = async function(){
-    try{
-      var j = await api('/api/theme-studio/quality', {
-        body: { draftId: state.draftId, versionId: state.selectedVersionId }
-      });
-      $('quality-out').textContent = JSON.stringify(j.report, null, 2);
-    }catch(e){
-      $('quality-out').textContent = e.message || String(e);
-    }
-  };
-
-  $('btn-image-search').onclick = async function(){
-    var msg = $('image-msg');
-    msg.className = 'msg';
-    msg.textContent = 'Searching via Image Service…';
-    try{
-      var active = state.activeImageSelection || {};
-      var j = await api('/api/image-service/search', {
-        body: {
-          query: $('image-query').value || active.searchQuery || '',
-          brief: {
-            purpose: active.sectionId === 'hero' ? 'hero' : 'gallery',
-            subject: $('image-query').value || active.altText || '',
-            sectionId: active.sectionId || null,
-            appId: active.appId || null,
-            orientation: active.orientation || 'landscape',
-            altTextIntent: active.altText || ''
-          }
-        }
-      });
-      state.activeImageSelection = j.selection || state.activeImageSelection;
-      $('image-alts').textContent = JSON.stringify({
-        selection: {
-          provider: j.selection && j.selection.provider,
-          providerAssetId: j.selection && j.selection.providerAssetId,
-          photographerName: j.selection && j.selection.photographerName,
-          sourcePageUrl: j.selection && j.selection.sourcePageUrl,
-          altText: j.selection && j.selection.altText
-        },
-        alternates: (j.alternates || []).slice(0, 6).map(function(a){
-          return {
-            provider: a.provider,
-            providerAssetId: a.providerAssetId,
-            photographerName: a.photographerName,
-            selectedVariantUrl: a.selectedVariantUrl
-          };
-        }),
-        diagnostics: j.diagnostics
-      }, null, 2);
-      msg.className = 'msg ok';
-      msg.textContent = j.placeholder ? 'No suitable stock result — placeholder returned.' : 'Search complete. Review alternates below.';
-    }catch(e){
-      msg.className = 'msg bad';
-      msg.textContent = e.message || String(e);
-    }
-  };
-
-  $('btn-image-approve').onclick = async function(){
-    var msg = $('image-msg');
-    if (!state.activeImageSelection) {
-      msg.className = 'msg bad';
-      msg.textContent = 'Select an image slot first.';
-      return;
-    }
-    state.activeImageSelection.approvalStatus = 'approved';
-    msg.className = 'msg';
-    msg.textContent = 'Saving image approval to a new version…';
-    try{
-      var cfg = currentDraftConfig() || { __websiteComposer: { imageSelections: [] } };
-      var selections = (cfg.__websiteComposer && cfg.__websiteComposer.imageSelections) || [];
-      var next = selections.map(function(s){
-        if (s.providerAssetId === state.activeImageSelection.providerAssetId && s.sectionId === state.activeImageSelection.sectionId) {
-          return Object.assign({}, s, state.activeImageSelection, { approvalStatus: 'approved' });
-        }
-        return s;
-      });
-      if (!next.length) next = [Object.assign({}, state.activeImageSelection, { approvalStatus: 'approved' })];
-      var j = await api('/api/theme-studio/persist-images', {
-        body: {
-          draftId: state.draftId,
-          versionId: state.selectedVersionId,
-          imageSelections: next,
-          summary: 'Approved image selection'
-        }
-      });
-      state.selectedVersionId = j.version.id;
-      state.versions = state.versions.concat([{
-        id: j.version.id,
-        conceptId: j.version.concept_id,
-        draftConfig: j.version.draft_config_json,
-        conceptName: (j.version.concept_json && j.version.concept_json.conceptName) || 'Images',
-        theme: j.version.concept_json && j.version.concept_json.theme,
-        quality: j.version.quality_report
-      }]);
-      paintConcepts(state.versions);
-      paintImageSlots();
-      msg.className = 'msg ok';
-      msg.textContent = 'Image approval saved as version ' + j.version.version_number + '.';
-    }catch(e){
-      msg.className = 'msg bad';
-      msg.textContent = e.message || String(e);
-    }
-  };
-
-  if ($('btn-regen-all')) {
-    $('btn-regen-all').onclick = function(){ $('btn-generate').click(); };
-  }
-
-  if ($('btn-approve-draft')) {
-    $('btn-approve-draft').onclick = async function(){
-      var msg = $('approve-msg');
-      msg.className = 'msg'; msg.textContent = 'Saving approval state…';
-      try{
-        var j = await api('/api/theme-studio/approve-draft', {
-          body: {
-            draftId: state.draftId,
-            versionId: state.selectedVersionId,
-            approvalState: $('approval-state').value
-          }
-        });
-        state.selectedVersionId = j.version.id;
-        msg.className = 'msg ok';
-        msg.textContent = j.notice + ' · state ' + j.approvalState;
-      }catch(e){
-        msg.className = 'msg bad';
-        msg.textContent = e.message || String(e);
-      }
-    };
-  }
-
-  if ($('btn-restore-version')) {
-    $('btn-restore-version').onclick = async function(){
-      var msg = $('approve-msg');
-      msg.className = 'msg'; msg.textContent = 'Restoring as new version…';
-      try{
-        var j = await api('/api/theme-studio/restore-version', {
-          body: { draftId: state.draftId, versionId: state.selectedVersionId }
-        });
-        state.selectedVersionId = j.version.id;
-        msg.className = 'msg ok';
-        msg.textContent = j.notice;
-      }catch(e){
-        msg.className = 'msg bad';
-        msg.textContent = e.message || String(e);
-      }
-    };
-  }
-
-  $('btn-image-import').onclick = async function(){
-    var msg = $('image-msg');
-    if (!state.activeImageSelection) {
-      msg.className = 'msg bad';
-      msg.textContent = 'Select an image slot first.';
-      return;
-    }
-    msg.className = 'msg';
-    msg.textContent = 'Building Cloudinary import plan…';
-    try{
-      var j = await api('/api/image-service/import-cloudinary', {
-        body: {
-          selection: state.activeImageSelection,
-          draftId: state.draftId || 'draft'
-        }
-      });
-      $('image-alts').textContent = JSON.stringify(j.importPlan, null, 2);
-      msg.className = 'msg ok';
-      msg.textContent = 'Import plan ready. Live publish remains gated.';
-    }catch(e){
-      msg.className = 'msg bad';
-      msg.textContent = e.message || String(e);
-    }
-  };
-
-  if ($('btn-application-plan')) {
-    $('btn-application-plan').onclick = async function(){
-      var msg = $('apply-msg');
-      msg.className = 'msg'; msg.textContent = 'Building plan…';
-      try{
-        var body = applicationPayload();
-        delete body.confirmPlan;
-        var j = await api('/api/theme-studio/application-plan', { body: body });
-        $('apply-plan').textContent = (j.plan && j.plan.humanSummary ? j.plan.humanSummary.join('\n') : '') +
-          '\n\n' + JSON.stringify({
-            mode: j.plan && j.plan.applicationMode,
-            apps: j.plan && j.plan.marketplaceAppsInstalling,
-            warnings: j.validation && j.validation.warnings,
-            blocking: j.validation && j.validation.critical,
-            canCommit: j.canCommit
-          }, null, 2);
-        msg.className = j.canCommit ? 'msg ok' : 'msg bad';
-        msg.textContent = j.canCommit
-          ? 'Plan ready — review details, then create. Nothing was published.'
-          : 'Plan blocked — resolve critical issues before creating a site.';
-      }catch(e){
-        msg.className = 'msg bad';
-        msg.textContent = e.message || String(e);
-      }
-    };
-  }
-
-  if ($('btn-apply-concept')) {
-    $('btn-apply-concept').onclick = async function(){
-      var msg = $('apply-msg');
-      msg.className = 'msg'; msg.textContent = 'Creating…';
-      try{
-        var j = await api('/api/theme-studio/apply-concept', { body: applicationPayload() });
-        var line = j.notice || 'Done';
-        if (j.site) line += ' · draft site ' + (j.site.slug || j.site.id);
-        if (j.replacementDraft) line += ' · replacement ' + j.replacementDraft.id;
-        if (j.template) line += ' · template ' + j.template.name;
-        if (j.liveSiteChanged) line += ' · WARNING live changed';
-        if (j.published) line += ' · WARNING published';
-        var editorLink = '';
-        if (j.site && j.site.id) {
-          editorLink = '/manage.html?site=' + encodeURIComponent(j.site.id);
-          line += ' · Open editor: ' + editorLink;
-        }
-        $('apply-plan').textContent = JSON.stringify({
-          mode: j.mode,
-          site: j.site,
-          replacementDraft: j.replacementDraft,
-          template: j.template,
-          published: j.published,
-          liveSiteChanged: j.liveSiteChanged,
-          nextActions: j.nextActions,
-          editorHandoff: editorLink || null,
-          diagnosticId: j.audit && j.audit.diagnosticId
-        }, null, 2);
-        msg.className = 'msg ok';
-        msg.textContent = line;
-        if (editorLink) {
-          var a = document.createElement('a');
-          a.href = editorLink;
-          a.className = 'btn solid';
-          a.style.marginTop = '10px';
-          a.textContent = 'Open generated site in editor';
-          msg.parentNode.appendChild(a);
-        }
-      }catch(e){
-        msg.className = 'msg bad';
-        msg.textContent = e.message || String(e);
-      }
-    };
-  }
-
-  $('btn-apply').onclick = async function(){
-    var msg = $('apply-msg');
-    msg.className = 'msg'; msg.textContent = 'Applying…';
-    try{
-      var scope = $('scope').value;
-      if(scope === 'my_template'){
-        $('btn-template').click();
-        return;
-      }
-      var j = await api('/api/theme-studio/apply', {
-        body: {
-          draftId: state.draftId,
-          versionId: state.selectedVersionId,
-          scope: scope,
-          confirm: true
-        }
-      });
-      msg.className = 'msg ok';
-      msg.textContent = j.notice + (j.targetSite ? (' · site '+j.targetSite.slug) : '');
-    }catch(e){
-      msg.className = 'msg bad';
-      msg.textContent = e.message || String(e);
-    }
-  };
-
-  $('btn-template').onclick = async function(){
-    var msg = $('apply-msg');
-    try{
-      var j = await api('/api/theme-studio/save-template', {
-        body: {
-          draftId: state.draftId,
-          versionId: state.selectedVersionId,
-          name: $('template-name').value || ($('businessName').value + ' template')
-        }
-      });
-      msg.className = 'msg ok';
-      msg.textContent = j.notice;
-      showFrom(5);
-    }catch(e){
-      msg.className = 'msg bad';
-      msg.textContent = e.message || String(e);
-    }
-  };
-
-  async function boot(){
-    var ok = await canUseThemeStudio();
-    if(!ok){
-      $('gate-msg').textContent = 'Website Studio is limited to superusers and partners.';
-      $('gate-msg').classList.remove('hidden');
-      await sb.auth.signOut();
-      return;
-    }
-    $('gate').classList.add('hidden');
-    $('app').classList.remove('hidden');
-    paintSteps();
-    await loadFoundations();
-    await loadSites();
-    showFrom(1);
-  }
-
-  sb.auth.getSession().then(function(r){
-    if(r && r.data && r.data.session) boot();
   });
-})();
 </script>
 </body>
 </html>
