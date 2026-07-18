@@ -133,6 +133,10 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
     assert.match(html, /noindex/);
     assert.match(html, /ts-preview-guard/);
     assert.match(html, /__themeStudioPreview|Theme Studio preview/);
+    assert.match(html, /Capital Marquee Hire/);
+    assert.doesNotMatch(html, /\{\{businessName\}\}/);
+    // SITE_CONFIG must carry event hire identity (static template FAQ may still mention trade defaults)
+    assert.match(html, /"name":"Capital Marquee Hire"|"business":"Capital Marquee Hire"/);
     const sandboxed = sandboxConfig({
       theme: { pipe: '#111' },
       analytics: { gaId: 'G-PROD' },
@@ -143,6 +147,30 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
     assert.equal(sandboxed.gtmId, undefined);
     assert.equal(sandboxed.formDestinations, undefined);
     assert.equal(sandboxed.__disableForms, true);
+  });
+
+  it('adapter maps hero title/sub and disables emerg for hospitality', () => {
+    const gen = buildDeterministicConcepts({
+      businessName: 'Bean Culture',
+      industry: 'coffee',
+      specialisation: 'Event Coffee (coffee carts + coffee van)',
+      location: 'Canberra',
+      desiredStyle: 'elegant, cafe vibes',
+      audience: 'Marketing agencies'
+    });
+    assert.equal(gen.ok, true);
+    assert.equal(gen.foundationId, 'hospitality-cafe');
+    const cfg = gen.concepts[0].draftConfig;
+    assert.equal(cfg.sections.hero.title != null, true);
+    assert.equal(cfg.sections.hero.sub != null, true);
+    assert.equal(cfg.sections.emerg && cfg.sections.emerg.on, false);
+    assert.match(JSON.stringify(cfg.services), /body/);
+    const html = renderDraftPreviewHtml(cfg);
+    assert.match(html, /Bean Culture/);
+    assert.match(html, /Event Coffee/);
+    assert.doesNotMatch(html, /24\/7 Emergency Plumber/i);
+    assert.match(html, /"title":"Bean Culture/);
+    assert.match(html, /display:none/);
   });
 
   it('access policy still denies clients', () => {
