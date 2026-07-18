@@ -38,7 +38,18 @@ create table if not exists public.theme_studio_versions (
   concept_id text not null,
   version_number int not null,
   kind text not null default 'generate'
-    check (kind in ('generate', 'refine', 'select', 'apply', 'template')),
+    check (kind in (
+      'generate',
+      'refine',
+      'select',
+      'apply',
+      'template',
+      'direct_edit',
+      'manual_edit',
+      'restore',
+      'approve',
+      'images'
+    )),
   concept_json jsonb not null,
   draft_config_json jsonb,
   adapter_warnings jsonb not null default '[]'::jsonb,
