@@ -1,6 +1,6 @@
 # Website Composer App Adapters
 
-**Updated:** 2026-07-18 (Phase 3)
+**Updated:** 2026-07-18 (Phase 4)
 
 ## Purpose
 
@@ -22,15 +22,13 @@ Each adapter returns:
   ok: boolean,
   sectionKey: string,
   config: { on: true, provenance, ...fields },
-  services?: array,          // optional top-level services mirror
+  services?: array,
   writtenPaths: string[],
   install: { sectionKey, position_slot },
   errors?: [{ code, message, path }],
   diagnostics?: { adapter }
 }
 ```
-
-Responsibilities:
 
 | Concern | Behaviour |
 |---------|-----------|
@@ -43,12 +41,23 @@ Responsibilities:
 
 ---
 
-## Implemented adapters (Phase 3)
+## Implemented adapters
+
+### Core (Phase 3+)
 
 `hero`, `heroSlider`, `splitHero`, `services`, `featuredProjects`, `why`, `trustBar`, `reviews`, `reviewHighlights`, `faq`, `quote`, `onlineQuote`, `specialOffer`, `crew`, `serviceProcess`, `area`, `emerg`, `certifications`, `beforeAfter`, `instaGallery`, `footer`
 
+### Promoted in Phase 4
+
+`textBox`, `featureStrip`, `customerReactions`, `jobsFeed`, `projectFeed`, `projectStats`, `serviceAreas`, `beforeAfterFeed`, `navMenu` (limited), `heroBeforeAfter` (limited)
+
+### New Phase 4 Marketplace apps
+
+`productCollection`, `clientLogos`, `bookingCta`, `brandStory`, `packageCompare`
+
 Unknown app IDs → rejected.  
-Unsupported catalogue status → not auto-selected in `install-apps.js`.
+`supported-with-limitations` without adapter → not auto-selected.  
+`incompatible` (`seoTokens`) → never selected as a section app.
 
 ---
 
@@ -56,27 +65,10 @@ Unsupported catalogue status → not auto-selected in `install-apps.js`.
 
 `installAppsIntoDraft`:
 
-1. Flatten Composer section content
-2. Attach image selections by `sectionId`
-3. Call `adaptApp`
-4. Collect `installedApps[]` with `status: 'activated'`
-5. Surface adapter errors to Composer (concept discarded if required apps fail)
+1. Flatten Composer section content  
+2. Attach image selections by `sectionId`  
+3. Run adapter per app  
+4. Write `sections[sectionKey]` + `installedApps`  
+5. Keep unused mounts off  
 
-Draft metadata:
-
-```json
-{
-  "__websiteComposer": {
-    "installedApps": [{ "appId": "services", "sectionKey": "services", "status": "activated" }],
-    "contentInheritance": "none"
-  }
-}
-```
-
----
-
-## Validation
-
-- Adapter-level field / item validation
-- Concept-level `validateConcept` + industry leakage scan
-- Draft forces unused `KNOWN_SECTION_KEYS` to `{ on: false }`
+Refinement that adds apps uses the same adapter path (`apply-patch.js` / refine planner).

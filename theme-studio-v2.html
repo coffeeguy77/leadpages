@@ -98,24 +98,42 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       <div class="field"><label>Business name</label><input id="businessName" placeholder="Pink Diamond Vault"></div>
       <div class="field"><label>Industry</label><input id="industry" placeholder="jewellery"></div>
     </div>
-    <div class="field"><label>Specialisation</label><input id="specialisation" placeholder="Pink diamonds, engagement rings…"></div>
+    <div class="grid2">
+      <div class="field"><label>Business type</label><input id="businessType" placeholder="luxury-retail / event-hospitality / trade…"></div>
+      <div class="field"><label>Years operating</label><input id="yearsOperating" placeholder="8"></div>
+    </div>
+    <div class="field"><label>Specialisation / primary offer</label><input id="specialisation" placeholder="Pink diamonds, engagement rings…"></div>
     <div class="grid2">
       <div class="field"><label>Location</label><input id="location" placeholder="Canberra"></div>
+      <div class="field"><label>Service areas</label><input id="serviceAreas" placeholder="Canberra, Queanbeyan…"></div>
+    </div>
+    <div class="grid2">
       <div class="field"><label>Desired style</label><input id="desiredStyle" placeholder="Luxury, elegant, editorial…"></div>
+      <div class="field"><label>Primary conversion goal</label><input id="conversionGoal" placeholder="book-private-appointment"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Secondary conversion</label><input id="secondaryConversionGoal" placeholder="enquire"></div>
+      <div class="field"><label>Phone CTA</label><input id="phoneCta" placeholder="Call 02…"></div>
     </div>
     <div class="field"><label>Target audience</label><input id="audience" placeholder="Affluent couples…"></div>
-    <div class="field"><label>Notes</label><textarea id="notes" placeholder="Anything else for the concept…"></textarea></div>
+    <div class="field"><label>Main services / products (comma or newline)</label><textarea id="mainServices" placeholder="Coffee cart, Coffee van, Corporate activations…"></textarea></div>
+    <div class="field"><label>Differentiators</label><textarea id="differentiators" placeholder="What makes you different…"></textarea></div>
+    <div class="field"><label>Short description / notes</label><textarea id="notes" placeholder="Anything else for the concept…"></textarea></div>
     <div class="field"><label>Foundation (optional)</label><select id="foundation"><option value="">Auto-select</option></select></div>
-    <button class="btn solid" id="btn-create" type="button">Create draft &amp; continue</button>
+    <button class="btn solid" id="btn-create" type="button">Save brief &amp; continue</button>
     <p class="msg" id="brief-msg"></p>
   </section>
 
   <section class="card hidden" id="panel-concepts">
-    <h2>2. Generate concepts</h2>
-    <p class="sub">Three distinct concepts via foundation registry + deterministic adapter (Brain when available). Draft versions only.</p>
-    <button class="btn solid" id="btn-generate" type="button">Generate 3 concepts</button>
+    <h2>2. Compare concepts</h2>
+    <p class="sub">Three structurally different concepts — hero, apps, order, and visual direction. Draft versions only.</p>
+    <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="btn solid" id="btn-generate" type="button">Generate 3 concepts</button>
+      <button class="btn ghost" id="btn-regen-all" type="button">Regenerate all</button>
+    </div>
     <p class="msg" id="gen-msg"></p>
     <div class="grid3" id="concept-grid"></div>
+    <details class="sub" style="margin-top:12px"><summary>Superuser diagnostics</summary><pre id="compare-diag" style="white-space:pre-wrap"></pre></details>
   </section>
 
   <section class="card hidden" id="panel-preview">
@@ -154,8 +172,24 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     <pre id="image-alts" class="sub" style="white-space:pre-wrap;max-height:220px;overflow:auto"></pre>
   </section>
 
+  <section class="card hidden" id="panel-approve">
+    <h2>5. Approve website draft</h2>
+    <p class="sub">Mark the selected concept ready for review or approved for a future application phase. This does <strong>not</strong> publish or change live sites.</p>
+    <div class="field"><label>Approval state</label>
+      <select id="approval-state">
+        <option value="selected">selected</option>
+        <option value="ready-for-review">ready-for-review</option>
+        <option value="approved-for-application">approved-for-application</option>
+        <option value="draft">draft</option>
+      </select>
+    </div>
+    <button class="btn solid" id="btn-approve-draft" type="button">Save approval state</button>
+    <button class="btn ghost" id="btn-restore-version" type="button">Restore selected version (new snapshot)</button>
+    <p class="msg" id="approve-msg"></p>
+  </section>
+
   <section class="card hidden" id="panel-apply">
-    <h2>5. Apply / save</h2>
+    <h2>6. Demo / template save (still not live publish)</h2>
     <p class="sub">Default apply creates a non-live demo site or stores on the draft workspace. Live production writes stay disabled unless ops enables them.</p>
     <div class="field"><label>Scope</label>
       <select id="scope">
@@ -185,7 +219,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     step: 1
   };
 
-  var STEP_LABELS = ['Brief','Generate','Preview','Refine','Apply'];
+  var STEP_LABELS = ['Brief','Compare','Preview','Refine','Approve'];
 
   function esc(s){
     return String(s==null?'':s).replace(/[&<>"']/g,function(c){
@@ -258,6 +292,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     $('panel-preview').classList.toggle('hidden', step < 3);
     $('panel-refine').classList.toggle('hidden', step < 4);
     $('panel-images').classList.toggle('hidden', step < 4);
+    $('panel-approve').classList.toggle('hidden', step < 5);
     $('panel-apply').classList.toggle('hidden', step < 5);
     if (step >= 4) paintImageSlots();
   }
@@ -301,18 +336,33 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     state.versions = versions || [];
     $('concept-grid').innerHTML = state.versions.map(function(v){
       var theme = v.theme || {};
-      var q = v.quality && v.quality.score != null ? v.quality.score : '—';
+      var q = v.quality && (v.quality.status || v.quality.score);
+      var apps = (v.draftConfig && v.draftConfig.__websiteComposer && v.draftConfig.__websiteComposer.installedApps) || [];
+      var appIds = apps.map(function(a){ return a.appId || a; }).slice(0,8).join(', ');
+      var direction = v.draftConfig && v.draftConfig.__websiteComposer && v.draftConfig.__websiteComposer.imageDirection;
       return '<article class="concept" data-id="'+esc(v.id)+'">'
         + '<h3>'+esc(v.conceptName||v.conceptId)+'</h3>'
-        + '<p class="sub" style="margin:0 0 8px">'+esc(v.layoutId||'')+' · quality '+esc(q)+'</p>'
+        + '<p class="sub" style="margin:0 0 8px">'+esc(v.layoutId||'')+' · '+esc(q||'—')+'</p>'
         + '<div class="swatch-row">'
         + ['pipe','hivis','steel','safety','lightBg'].map(function(k){
           return '<span class="swatch" title="'+k+'" style="background:'+esc(theme[k]||'#ccc')+'"></span>';
         }).join('')
         + '</div>'
-        + '<p class="sub" style="margin:0">'+esc((v.rationale||'').slice(0,140))+'</p>'
+        + '<p class="sub" style="margin:8px 0 0"><strong>Apps</strong> '+esc(appIds||'—')+'</p>'
+        + '<p class="sub" style="margin:4px 0 0"><strong>Imagery</strong> '+esc((direction && (direction.label||direction.id))||'—')+'</p>'
+        + '<p class="sub" style="margin:4px 0 0">'+esc((v.rationale||'').slice(0,160))+'</p>'
         + '</article>';
     }).join('') || '<p class="sub">No concepts yet.</p>';
+    try {
+      $('compare-diag').textContent = JSON.stringify(state.versions.map(function(v){
+        return {
+          id: v.id,
+          layoutId: v.layoutId,
+          quality: v.quality && { score: v.quality.score, status: v.quality.status },
+          shell: v.draftConfig && v.draftConfig.__websiteComposer && v.draftConfig.__websiteComposer.rendererShellId
+        };
+      }), null, 2);
+    } catch (_e) {}
 
     Array.prototype.forEach.call(document.querySelectorAll('.concept'), function(el){
       el.onclick = function(){
@@ -377,6 +427,14 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
           brief: {
             businessName: $('businessName').value,
             industry: $('industry').value,
+            businessType: $('businessType') && $('businessType').value,
+            yearsOperating: $('yearsOperating') && $('yearsOperating').value,
+            serviceAreas: $('serviceAreas') && $('serviceAreas').value,
+            conversionGoal: $('conversionGoal') && $('conversionGoal').value,
+            secondaryConversionGoal: $('secondaryConversionGoal') && $('secondaryConversionGoal').value,
+            phoneCta: $('phoneCta') && $('phoneCta').value,
+            mainServices: $('mainServices') && $('mainServices').value,
+            differentiators: $('differentiators') && $('differentiators').value,
             specialisation: $('specialisation').value,
             location: $('location').value,
             audience: $('audience').value,
@@ -514,7 +572,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     }
   };
 
-  $('btn-image-approve').onclick = function(){
+  $('btn-image-approve').onclick = async function(){
     var msg = $('image-msg');
     if (!state.activeImageSelection) {
       msg.className = 'msg bad';
@@ -522,9 +580,88 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       return;
     }
     state.activeImageSelection.approvalStatus = 'approved';
-    msg.className = 'msg ok';
-    msg.textContent = 'Selection marked approved on this session (draft persist in Phase 4).';
+    msg.className = 'msg';
+    msg.textContent = 'Saving image approval to a new version…';
+    try{
+      var cfg = currentDraftConfig() || { __websiteComposer: { imageSelections: [] } };
+      var selections = (cfg.__websiteComposer && cfg.__websiteComposer.imageSelections) || [];
+      var next = selections.map(function(s){
+        if (s.providerAssetId === state.activeImageSelection.providerAssetId && s.sectionId === state.activeImageSelection.sectionId) {
+          return Object.assign({}, s, state.activeImageSelection, { approvalStatus: 'approved' });
+        }
+        return s;
+      });
+      if (!next.length) next = [Object.assign({}, state.activeImageSelection, { approvalStatus: 'approved' })];
+      var j = await api('/api/theme-studio/persist-images', {
+        body: {
+          draftId: state.draftId,
+          versionId: state.selectedVersionId,
+          imageSelections: next,
+          summary: 'Approved image selection'
+        }
+      });
+      state.selectedVersionId = j.version.id;
+      state.versions = state.versions.concat([{
+        id: j.version.id,
+        conceptId: j.version.concept_id,
+        draftConfig: j.version.draft_config_json,
+        conceptName: (j.version.concept_json && j.version.concept_json.conceptName) || 'Images',
+        theme: j.version.concept_json && j.version.concept_json.theme,
+        quality: j.version.quality_report
+      }]);
+      paintConcepts(state.versions);
+      paintImageSlots();
+      msg.className = 'msg ok';
+      msg.textContent = 'Image approval saved as version ' + j.version.version_number + '.';
+    }catch(e){
+      msg.className = 'msg bad';
+      msg.textContent = e.message || String(e);
+    }
   };
+
+  if ($('btn-regen-all')) {
+    $('btn-regen-all').onclick = function(){ $('btn-generate').click(); };
+  }
+
+  if ($('btn-approve-draft')) {
+    $('btn-approve-draft').onclick = async function(){
+      var msg = $('approve-msg');
+      msg.className = 'msg'; msg.textContent = 'Saving approval state…';
+      try{
+        var j = await api('/api/theme-studio/approve-draft', {
+          body: {
+            draftId: state.draftId,
+            versionId: state.selectedVersionId,
+            approvalState: $('approval-state').value
+          }
+        });
+        state.selectedVersionId = j.version.id;
+        msg.className = 'msg ok';
+        msg.textContent = j.notice + ' · state ' + j.approvalState;
+      }catch(e){
+        msg.className = 'msg bad';
+        msg.textContent = e.message || String(e);
+      }
+    };
+  }
+
+  if ($('btn-restore-version')) {
+    $('btn-restore-version').onclick = async function(){
+      var msg = $('approve-msg');
+      msg.className = 'msg'; msg.textContent = 'Restoring as new version…';
+      try{
+        var j = await api('/api/theme-studio/restore-version', {
+          body: { draftId: state.draftId, versionId: state.selectedVersionId }
+        });
+        state.selectedVersionId = j.version.id;
+        msg.className = 'msg ok';
+        msg.textContent = j.notice;
+      }catch(e){
+        msg.className = 'msg bad';
+        msg.textContent = e.message || String(e);
+      }
+    };
+  }
 
   $('btn-image-import').onclick = async function(){
     var msg = $('image-msg');

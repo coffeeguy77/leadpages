@@ -1,6 +1,6 @@
 # Image Providers
 
-**Updated:** 2026-07-18 (Phase 3)
+**Updated:** 2026-07-18 (Phase 4)
 
 ## Cloudinary
 

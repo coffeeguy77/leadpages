@@ -1,6 +1,6 @@
 # Website Studio Role Permissions (Images & Studio)
 
-**Updated:** 2026-07-18 (Phase 3)
+**Updated:** 2026-07-18 (Phase 4)
 
 Enforcement is **server-side**. Hiding UI is not sufficient.
 
@@ -36,3 +36,13 @@ Tenant isolation: owned Cloudinary ranking can require `leadpages/{siteId}` pref
 ## Composer generation
 
 Composer accepts an `actor` object. Partners compose with Pexels/mock; they cannot force AI image paths.
+
+## Draft approval (Phase 4)
+
+| Capability | Superuser | Partner | Client |
+|------------|-----------|---------|--------|
+| Mark draft ready / approved-for-application | Yes | Yes (Studio access) | No |
+| Apply draft to live site | No (gated) | No | No |
+| Publish Marketplace templates | No | No | No |
+
+Partner/client AI image generation remains blocked.

@@ -99,6 +99,7 @@ module.exports = async function themeStudioGenerateConcepts(req, res) {
       // Draft image selections for Website Studio image panel (no secrets)
       draftConfig: v.draft_config_json
         ? {
+            sectionOrder: v.draft_config_json.sectionOrder || [],
             __websiteComposer: {
               imageSelections:
                 (v.draft_config_json.__websiteComposer &&
@@ -111,7 +112,19 @@ module.exports = async function themeStudioGenerateConcepts(req, res) {
               contentInheritance:
                 (v.draft_config_json.__websiteComposer &&
                   v.draft_config_json.__websiteComposer.contentInheritance) ||
-                null
+                null,
+              rendererShellId:
+                (v.draft_config_json.__websiteComposer &&
+                  v.draft_config_json.__websiteComposer.rendererShellId) ||
+                null,
+              installedApps:
+                (v.draft_config_json.__websiteComposer &&
+                  v.draft_config_json.__websiteComposer.installedApps) ||
+                [],
+              approvalState:
+                (v.draft_config_json.__websiteComposer &&
+                  v.draft_config_json.__websiteComposer.approvalState) ||
+                'draft'
             }
           }
         : null

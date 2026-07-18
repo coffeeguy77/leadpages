@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": "2",
   "generatedAt": "2026-07-18T01:19:07.589Z",
   "apps": [
     {
@@ -76,14 +76,15 @@
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
       "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "websiteStudioSupport": "supported-with-limitations",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": "Trade social-proof counters; opt-in for trades only"
     },
     {
       "appId": "activityTimeline",
@@ -156,14 +157,15 @@
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
       "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "websiteStudioSupport": "supported-with-limitations",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": "Trade job timeline; opt-in for trades only"
     },
     {
       "appId": "area",
@@ -387,15 +389,16 @@
         "priority": "normal"
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
-      "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": ""
     },
     {
       "appId": "certifications",
@@ -623,15 +626,16 @@
         "priority": "normal"
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
-      "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": ""
     },
     {
       "appId": "emerg",
@@ -780,14 +784,15 @@
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
       "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "websiteStudioSupport": "supported-with-limitations",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": "Emergency schedule niche"
     },
     {
       "appId": "estimateBuilder",
@@ -859,14 +864,15 @@
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
       "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "websiteStudioSupport": "supported-with-limitations",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": "Interactive quote wizard with large config surface; not auto-selected"
     },
     {
       "appId": "faq",
@@ -1013,8 +1019,8 @@
         "priority": "normal"
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
-      "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-metadata",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
@@ -1022,7 +1028,8 @@
         "trade.template.json",
         "manage.html",
         "(not in app-content.json)"
-      ]
+      ],
+      "finalDecisionReason": ""
     },
     {
       "appId": "featuredProjects",
@@ -1175,14 +1182,15 @@
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
       "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "websiteStudioSupport": "supported-with-limitations",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": "Finance callout niche"
     },
     {
       "appId": "footer",
@@ -1242,8 +1250,8 @@
         "priority": "normal"
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
-      "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-metadata",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
@@ -1251,7 +1259,8 @@
         "trade.template.json",
         "manage.html",
         "(not in app-content.json)"
-      ]
+      ],
+      "finalDecisionReason": ""
     },
     {
       "appId": "header",
@@ -1312,7 +1321,7 @@
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
       "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-metadata",
+      "websiteStudioSupport": "supported-with-limitations",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
@@ -1320,7 +1329,8 @@
         "trade.template.json",
         "manage.html",
         "(not in app-content.json)"
-      ]
+      ],
+      "finalDecisionReason": "Shell chrome via concept.header, not a section app"
     },
     {
       "appId": "hero",
@@ -1481,7 +1491,8 @@
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": "Playground omits before/after image fields; keep limited"
     },
     {
       "appId": "heroSlider",
@@ -1627,14 +1638,15 @@
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
       "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "websiteStudioSupport": "supported-with-limitations",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": "Overlaps supported instaGallery; IG token plumbing external"
     },
     {
       "appId": "instaGallery",
@@ -1782,15 +1794,16 @@
         "priority": "normal"
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
-      "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": ""
     },
     {
       "appId": "navMenu",
@@ -1863,7 +1876,8 @@
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": "Special header/nav render path; use navigation defaults"
     },
     {
       "appId": "onlineQuote",
@@ -1999,15 +2013,16 @@
         "priority": "normal"
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
-      "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": ""
     },
     {
       "appId": "projectStats",
@@ -2077,15 +2092,16 @@
         "priority": "normal"
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
-      "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": ""
     },
     {
       "appId": "proofStream",
@@ -2158,14 +2174,15 @@
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
       "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "websiteStudioSupport": "supported-with-limitations",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": "Mixed typed cards need richer validation before auto-select"
     },
     {
       "appId": "quote",
@@ -2317,14 +2334,15 @@
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
       "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "websiteStudioSupport": "supported-with-limitations",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": "Urgency cards trade-only"
     },
     {
       "appId": "reviewHighlights",
@@ -2533,8 +2551,8 @@
         "priority": "normal"
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
-      "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-metadata",
+      "adapterStatus": "none",
+      "websiteStudioSupport": "incompatible",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
@@ -2542,7 +2560,8 @@
         "trade.template.json",
         "manage.html",
         "(not in app-content.json)"
-      ]
+      ],
+      "finalDecisionReason": "SEO config object, not a page section — managed via draft SEO fields"
     },
     {
       "appId": "serviceAreaMap",
@@ -2615,14 +2634,15 @@
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
       "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "websiteStudioSupport": "supported-with-limitations",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": "Depends on map + serviceAreas data wiring"
     },
     {
       "appId": "serviceAreas",
@@ -2693,15 +2713,16 @@
         "priority": "normal"
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
-      "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": ""
     },
     {
       "appId": "serviceProcess",
@@ -3087,14 +3108,15 @@
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
       "adapterStatus": "implemented",
-      "websiteStudioSupport": "supported-with-limitations",
+      "websiteStudioSupport": "supported",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": ""
     },
     {
       "appId": "trustBar",
@@ -3235,14 +3257,15 @@
       },
       "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
       "adapterStatus": "missing",
-      "websiteStudioSupport": "requires-adapter",
+      "websiteStudioSupport": "supported-with-limitations",
       "sourceFilesInspected": [
         "marketplace/app-content.json",
         "marketplace/playground-field-defs.json",
         "lib/marketplace-categories.js",
         "trade.template.json",
         "manage.html"
-      ]
+      ],
+      "finalDecisionReason": "Requires hosted video assets; Image Service stock path insufficient"
     },
     {
       "appId": "why",
@@ -3326,6 +3349,371 @@
         "trade.template.json",
         "manage.html"
       ]
+    },
+    {
+      "appId": "productCollection",
+      "slug": "product-collection",
+      "name": "Product Collection",
+      "category": "retail-content",
+      "sectionKey": "productCollection",
+      "rendererIdentifier": "landing-shell-neutral-v1#productCollection",
+      "configPath": "sections.productCollection",
+      "purpose": "Editorial product / collection shelf for retail and jewellery",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "product",
+        "retail"
+      ],
+      "suitableIndustries": [
+        "jewellery",
+        "retail",
+        "fashion",
+        "beauty"
+      ],
+      "unsuitableIndustries": [
+        "plumbing",
+        "electrical"
+      ],
+      "conversionGoals": [
+        "book",
+        "enquire",
+        "visit"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "items"
+      ],
+      "optionalContentFields": [],
+      "imageFields": [
+        "items[].image"
+      ],
+      "iconFields": [],
+      "ctaFields": [
+        "cta"
+      ],
+      "itemCountConstraints": {
+        "min": 2,
+        "max": 12
+      },
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "landing-shell-neutral-v1.template.json",
+        "trade.template.json",
+        "lib/website-composer/adapters/registry.js",
+        "marketplace/app-content.json"
+      ],
+      "phaseAdded": 4
+    },
+    {
+      "appId": "clientLogos",
+      "slug": "client-logos",
+      "name": "Client Logos",
+      "category": "trust-conversion",
+      "sectionKey": "clientLogos",
+      "rendererIdentifier": "landing-shell-neutral-v1#clientLogos",
+      "configPath": "sections.clientLogos",
+      "purpose": "Logo trust strip for corporate and event clients",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "events",
+        "hospitality",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "trust"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "logos"
+      ],
+      "optionalContentFields": [],
+      "imageFields": [
+        "logos[].image"
+      ],
+      "iconFields": [],
+      "ctaFields": [
+        "cta"
+      ],
+      "itemCountConstraints": {
+        "min": 3,
+        "max": 12
+      },
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "landing-shell-neutral-v1.template.json",
+        "trade.template.json",
+        "lib/website-composer/adapters/registry.js",
+        "marketplace/app-content.json"
+      ],
+      "phaseAdded": 4
+    },
+    {
+      "appId": "bookingCta",
+      "slug": "booking-cta",
+      "name": "Booking CTA",
+      "category": "trust-conversion",
+      "sectionKey": "bookingCta",
+      "rendererIdentifier": "landing-shell-neutral-v1#bookingCta",
+      "configPath": "sections.bookingCta",
+      "purpose": "Appointment / booking conversion band",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "retail",
+        "hospitality",
+        "beauty",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "book",
+        "appoint"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "cta"
+      ],
+      "optionalContentFields": [
+        "intro",
+        "finePrint"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "landing-shell-neutral-v1.template.json",
+        "trade.template.json",
+        "lib/website-composer/adapters/registry.js",
+        "marketplace/app-content.json"
+      ],
+      "phaseAdded": 4
+    },
+    {
+      "appId": "brandStory",
+      "slug": "brand-story",
+      "name": "Brand Story",
+      "category": "core-content",
+      "sectionKey": "brandStory",
+      "rendererIdentifier": "landing-shell-neutral-v1#brandStory",
+      "configPath": "sections.brandStory",
+      "purpose": "Long-form brand / provenance narrative",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "product",
+        "retail",
+        "hospitality",
+        "creative"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "trust",
+        "enquire"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "body"
+      ],
+      "optionalContentFields": [
+        "eyebrow",
+        "cta"
+      ],
+      "imageFields": [
+        "image"
+      ],
+      "iconFields": [],
+      "ctaFields": [
+        "cta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "landing-shell-neutral-v1.template.json",
+        "trade.template.json",
+        "lib/website-composer/adapters/registry.js",
+        "marketplace/app-content.json"
+      ],
+      "phaseAdded": 4
+    },
+    {
+      "appId": "packageCompare",
+      "slug": "package-compare",
+      "name": "Package Compare",
+      "category": "core-content",
+      "sectionKey": "packageCompare",
+      "rendererIdentifier": "landing-shell-neutral-v1#packageCompare",
+      "configPath": "sections.packageCompare",
+      "purpose": "Side-by-side package / vehicle / tier comparison",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "events",
+        "hospitality",
+        "product"
+      ],
+      "suitableIndustries": [
+        "coffee-event",
+        "events",
+        "hospitality",
+        "retail"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "book",
+        "enquire"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "packages"
+      ],
+      "optionalContentFields": [
+        "intro",
+        "cta"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta"
+      ],
+      "itemCountConstraints": {
+        "min": 2,
+        "max": 4
+      },
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "landing-shell-neutral-v1.template.json",
+        "trade.template.json",
+        "lib/website-composer/adapters/registry.js",
+        "marketplace/app-content.json"
+      ],
+      "phaseAdded": 4
     }
-  ]
+  ],
+  "updatedAt": "2026-07-18T01:43:32.091Z",
+  "phase": 4,
+  "notes": "Phase 4 final statuses. New apps render via landing-shell-neutral-v1; empty mounts also exist in trade.template.json (hidden)."
 }

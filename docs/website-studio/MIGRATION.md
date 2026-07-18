@@ -51,7 +51,8 @@ Rename the **product** safely. Preserve **technical identifiers** until a dedica
 | Brain tasks | `theme_studio.*` | Full product contracts |
 | Meta | `source: 'theme_studio'` on theme approve | Keep |
 | Config flag | `__themeStudioPreview` | Keep |
-| Renderer shell | `landing-shell-v1` → `trade.template.json` | Technical HTML asset only — **not** content inheritance |
+| Renderer shell | `landing-shell-v1` → `trade.template.json` | Live trade sites only — **not** Website Studio content source |
+| Renderer shell | `landing-shell-neutral-v1` → `landing-shell-neutral-v1.template.json` | Website Studio draft preview shell (Phase 4) |
 | Foundation aliases | `retail-boutique` → `retail`, `trade-field-services` → `trades`, … | Compatibility |
 | Draft meta | `__websiteComposer` | Composer diagnostics on draft configs |
 

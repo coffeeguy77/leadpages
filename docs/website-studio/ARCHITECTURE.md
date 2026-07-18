@@ -1,6 +1,6 @@
 # Website Studio — Architecture
 
-**Updated:** 2026-07-18 (Phase 3)
+**Updated:** 2026-07-18 (Phase 4)
 
 ## High-level chain
 
@@ -32,22 +32,23 @@
          │ draft config + stored selections
          ▼
 ┌──────────────────┐
-│ Renderer         │  landing-shell-v1 HTML (legacy trade.template.json asset)
+│ Renderer         │  Website Studio drafts → landing-shell-neutral-v1
+│                  │  Live trade sites → landing-shell-v1 (trade.template.json)
 └────────┬─────────┘
          │
          ▼
 ┌──────────────────┐
-│ Draft Preview    │  signed, noindex, forms/tracking sandboxed + shell neutralize
+│ Draft Preview    │  signed, noindex, sandboxed; neutral shell (no trade content)
 └────────┬─────────┘
-         │ human approve
+         │ human approve draft
          ▼
 ┌──────────────────┐
-│ Approval         │  scope + confirm; never silent live write
+│ Approval         │  approved-for-application; never silent live write
 └────────┬─────────┘
-         │
+         │ (future phase)
          ▼
 ┌──────────────────┐
-│ Publish          │  existing editor / site publish paths only (unchanged)
+│ Publish / Apply  │  unchanged in Phase 4 — not invoked by Website Studio
 └──────────────────┘
 ```
 
@@ -56,6 +57,7 @@
 ```text
 Foundation → Recipe → Supported Apps (adapters) → Layouts → Content
   → Structured image briefs → Image Service → Explicit draft
+  → Quality gate → Neutral-shell preview
 ```
 
 ---
@@ -64,9 +66,9 @@ Foundation → Recipe → Supported Apps (adapters) → Layouts → Content
 
 ### Website Studio (user feature)
 
-- Intake, generate, compare, preview, refine  
-- Image panel (search / approve / Cloudinary import plan)  
-- Quality report; apply scopes remain draft/demo gated  
+- Brief → generate → compare → preview → refine / direct edit → approve draft  
+- Image panel (search / approve / persist / Cloudinary import plan)  
+- Quality gate; live apply remains gated off  
 
 **UI:** `/theme-studio-v2` (legacy path)
 
@@ -74,7 +76,8 @@ Foundation → Recipe → Supported Apps (adapters) → Layouts → Content
 
 - Classification → foundation → recipe → app selection → content → images → draft  
 - `contentInheritance: "none"`, `sourceTemplateId: null`  
-- Section provenance + diagnostics  
+- `rendererShellId: landing-shell-neutral-v1`  
+- Section provenance + diagnostics + quality gate + refinement planner  
 
 **Code:** `lib/website-composer/`  
 **Entry:** `composeWebsiteConcepts` (async; via `lib/theme-studio/generate.js`)
@@ -93,16 +96,19 @@ Foundation → Recipe → Supported Apps (adapters) → Layouts → Content
 
 ### Renderer shell
 
-- Technical asset: `trade.template.json` mapped as `landing-shell-v1`  
-- Website Studio drafts: unused sections `on: false` + preview neutralize script  
+- Live trade: `trade.template.json` → `landing-shell-v1` (unchanged)  
+- Website Studio drafts: `landing-shell-neutral-v1.template.json` → `landing-shell-neutral-v1`  
+- Preview resolution in `lib/theme-studio/render-preview.js`  
 - Production publish behaviour unchanged  
+
+See [NEUTRAL-RENDERER.md](NEUTRAL-RENDERER.md).
 
 ---
 
-## Non-goals (Phase 3)
+## Non-goals (Phase 4 stop)
 
 - Live site application / publish pipeline changes  
 - Marketplace template publishing  
 - Reintroducing trade shallow merge / `sourceTemplateId: "trade"`  
 - Client-side Pexels or Cloudinary secrets  
-- New paid AI image provider  
+- Partner/client AI image generation  

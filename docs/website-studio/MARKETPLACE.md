@@ -1,6 +1,6 @@
 # Marketplace & Marketplace Intelligence
 
-**Updated:** 2026-07-18 (Phase 3)
+**Updated:** 2026-07-18 (Phase 4)
 
 ## What Marketplace is today
 
@@ -21,22 +21,36 @@ Website Studio **does not** auto-select apps by name alone. Selection requires:
 
 ---
 
-## Website Studio support statuses
+## Website Studio support statuses (Phase 4 finals)
 
 | Status | Meaning | Auto-selected? |
 |--------|---------|----------------|
 | `supported` | Metadata + adapter + renderer path verified | Yes |
-| `supported-with-limitations` | Usable with caveats (e.g. nav/header shell) | No |
-| `requires-adapter` | Known section; no Composer adapter yet | No |
-| `requires-metadata` | Shell/chrome fields, not page apps | No |
-| `incompatible` | Not suitable for Composer | No |
+| `supported-with-limitations` | Usable with caveats; not auto-selected | No |
+| `incompatible` | Not suitable as a Composer section app | No |
 | `deprecated` | Do not use | No |
 
-See **[MARKETPLACE-CATALOGUE.md](./MARKETPLACE-CATALOGUE.md)** for the full inventory.
+Phase 4 completed investigation of all deferred apps. Statuses `requires-adapter` and `requires-metadata` are no longer used for open investigation debt.
+
+See **[MARKETPLACE-CATALOGUE.md](./MARKETPLACE-CATALOGUE.md)** — **48 apps** (43 prior + 5 new).
 
 ---
 
-## Marketplace Intelligence (Phase 3)
+## Phase 4 Marketplace apps
+
+Added as normal Marketplace apps (categories, mounts, adapters, editor-usable):
+
+| appId | Purpose |
+|-------|---------|
+| `productCollection` | Product shelf / collections |
+| `clientLogos` | Client logo trust strip |
+| `bookingCta` | Booking / appointment CTA band |
+| `brandStory` | Brand / provenance story |
+| `packageCompare` | Package / vehicle / tier comparison |
+
+---
+
+## Marketplace Intelligence
 
 | Concern | Module |
 |---------|--------|
@@ -44,41 +58,13 @@ See **[MARKETPLACE-CATALOGUE.md](./MARKETPLACE-CATALOGUE.md)** for the full inve
 | AI selection metadata | `lib/website-composer/marketplace/app-metadata.js` |
 | Deterministic adapters | `lib/website-composer/adapters/registry.js` |
 | Install / activate | `lib/website-composer/install-apps.js` |
-| Foundation scoring | `lib/website-composer/foundations.js` |
-| Recipe scoring | `lib/website-composer/recipes.js` |
+| Finalize script | `scripts/website-studio-finalize-catalogue.js` |
 
 ### Selection flow
 
 ```text
-Recipe / foundation section order
-  → slot diversity (hero / trust)
-  → assertSupportedApp
-  → hasAdapter
-  → scoreAppForContext
-  → installAppsIntoDraft (adaptApp per section)
-  → unused KNOWN_SECTION_KEYS → on: false
+Recipe preferred apps → filter supported + adapter → score metadata
+  → install into draft sections → content adapt → validate
 ```
 
-The Brain never writes arbitrary app config. Adapters own field mapping and validation.
-
----
-
-## Relationship to Website Composer
-
-```text
-Brief → Classification → Foundation → Recipe
-  → App selection (supported only)
-  → Layout + variants
-  → Content (adapter-shaped)
-  → Image Service
-  → Explicit draft
-```
-
-`contentInheritance: "none"` and `sourceTemplateId: null` are preserved.
-
----
-
-## Gaps
-
-Honest coverage gaps are listed in **[MARKETPLACE-GAPS.md](./MARKETPLACE-GAPS.md)**.
-Adapter contract details: **[APP-ADAPTERS.md](./APP-ADAPTERS.md)**.
+Unsupported / limited / incompatible apps are never auto-selected.

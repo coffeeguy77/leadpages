@@ -11,7 +11,7 @@ const {
   classifyBusiness,
   selectRecipeCandidates,
   KNOWN_SECTION_KEYS,
-  RENDERER_SHELL_LANDING_V1,
+  RENDERER_SHELL_NEUTRAL_V1,
   listSupportedApps,
   listAppMetadataIds,
   listAdapterIds,
@@ -65,7 +65,7 @@ describe('Website Composer — foundations (structural only)', () => {
     }
     for (const f of list) {
       assert.equal(f.sourceTemplateId, null, f.id + ' must not set sourceTemplateId');
-      assert.equal(f.rendererShellId, RENDERER_SHELL_LANDING_V1);
+      assert.equal(f.rendererShellId, RENDERER_SHELL_NEUTRAL_V1);
       assert.ok(Array.isArray(f.sectionPlaceholders));
       assert.ok(Array.isArray(f.navigationDefaults));
       assert.ok(f.spacingProfile);
@@ -143,7 +143,7 @@ describe('Website Composer — six business fixtures', () => {
       recipeId: 'recipe-coffee-event',
       mustMatch: /Bean Culture/i,
       mustNot: TRADE_LEAK,
-      mustIncludeApps: ['services', 'serviceProcess', 'featuredProjects', 'quote']
+      mustIncludeApps: ['services', 'packageCompare', 'featuredProjects', 'quote']
     },
     {
       brief: briefs.PINK_DIAMOND_VAULT,
@@ -151,7 +151,7 @@ describe('Website Composer — six business fixtures', () => {
       recipeId: 'recipe-luxury-jewellery',
       mustMatch: /Pink Diamond Vault/i,
       mustNot: TRADE_LEAK,
-      mustIncludeApps: ['featuredProjects', 'quote']
+      mustIncludeApps: ['productCollection', 'brandStory', 'bookingCta', 'quote']
     },
     {
       brief: briefs.CANBERRA_ELECTRICIAN,

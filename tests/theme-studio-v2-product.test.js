@@ -164,8 +164,8 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
     assert.match(html, /noindex/);
     assert.match(html, /ts-preview-guard/);
     assert.match(html, /__themeStudioPreview|Website Studio preview|Theme Studio preview/);
-    assert.match(html, /ws-shell-neutralize/);
-    assert.match(html, /data-ws-composer|contentInheritance/);
+    assert.match(html, /landing-shell-neutral-v1|data-ws-shell|ws-shell-neutralize/);
+    assert.match(html, /contentInheritance|data-ws-composer|Website Studio preview/);
     const sandboxed = sandboxConfig({
       theme: { pipe: '#111' },
       analytics: { gaId: 'G-PROD' },

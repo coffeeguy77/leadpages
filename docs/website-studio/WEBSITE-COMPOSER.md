@@ -1,7 +1,7 @@
 # Website Composer
 
 **Role:** Internal composition engine behind Website Studio.  
-**Status:** Phase 3 — Marketplace adapters + Image Service wired.  
+**Status:** Phase 4 — complete composition, neutral shell, quality gate, refinement.  
 **Legacy API path:** `lib/theme-studio/generate.js` → `composeWebsiteConcepts` (async).
 
 ---
@@ -15,6 +15,7 @@ Composer must **not**:
 - Clone an existing trade website and patch over it  
 - Shallow-merge plumber / landscaping / jewellery content from a source site  
 - Treat `sourceTemplateId: "trade"` as a content foundation  
+- Preview through trade defaults as the content source  
 - Let the Brain write arbitrary app config  
 - Auto-select unsupported Marketplace apps  
 
@@ -45,7 +46,9 @@ Image Service resolve            lib/image-service/
     ↓
 Explicit draft                   build-draft.js
     ↓
-Draft Preview ready              diagnostics + shell neutralize
+Quality gate                     quality-gate.js
+    ↓
+Draft Preview                    landing-shell-neutral-v1
 ```
 
 ---
@@ -58,56 +61,35 @@ Draft Preview ready              diagnostics + shell neutralize
 | Classification | `classify.js` |
 | Foundations | `foundations*.js` |
 | Recipes | `recipes*.js` |
-| Content | `content.js` |
-| App select/install | `install-apps.js` |
-| Catalogue | `marketplace/catalogue*.js` |
-| AI metadata | `marketplace/app-metadata.js` |
+| Marketplace catalogue | `marketplace/` |
 | Adapters | `adapters/registry.js` |
+| Install | `install-apps.js` |
+| Content | `content.js` |
 | Image direction | `image-direction.js` |
-| Explicit draft | `build-draft.js` |
+| Draft build | `build-draft.js` |
 | Diagnostics | `diagnostics.js` |
-| Studio wiring | `lib/theme-studio/generate.js` |
+| Quality gate | `quality-gate.js` |
+| Refinement planner | `refine.js` |
+| Constants / shells | `constants.js` |
 
 ---
 
-## Foundations (structural only)
+## Draft invariants
 
-- `sourceTemplateId: null`  
-- `rendererShellId: landing-shell-v1` (technical HTML only)  
-- Supported / required / optional section keys  
-- Incompatibilities (e.g. hospitality excludes `emerg`, `beforeAfter`)  
-- No embedded business copy  
-
----
-
-## Marketplace apps
-
-Only apps with `websiteStudioSupport: "supported"` plus metadata + adapter are auto-selected.  
-See [MARKETPLACE.md](MARKETPLACE.md), [APP-ADAPTERS.md](APP-ADAPTERS.md).
-
-Concept slots diversify hero (`hero` / `heroSlider` / `splitHero`), trust strategy, and section order. Reasons are recorded in diagnostics.
+| Field | Value |
+|-------|-------|
+| `contentInheritance` | `"none"` |
+| `sourceTemplateId` | `null` |
+| `rendererShellId` | `landing-shell-neutral-v1` |
 
 ---
 
-## Explicit draft rules
+## Concept differentiation
 
-- Start from empty skeleton  
-- Write every active section via adapters  
-- Disable every other known section (`on: false`)  
-- `contentInheritance: "none"`  
-- Store `installedApps`, `imageSelections`, `imageDirection`  
-- Ignore `sourceConfig` shallow merge  
+Three concepts from one brief differ via meaningful choices: foundation candidates, hero type, app selection, section order, density, trust/CTA strategy, gallery style, typography, theme, image direction — not recolour-only variants.
 
 ---
 
 ## Fixtures
 
-`fixtures/website-composer/briefs.js` — Bean Culture, Pink Diamond Vault, Canberra Electrician, Commercial Lawyer, Hair Salon, Wedding Photographer.
-
-Tests: `tests/website-composer.test.js`, `tests/website-studio-phase3.test.js`, `tests/image-service.test.js`.
-
----
-
-## Renderer shell note
-
-Preview uses `trade.template.json` as HTML. Composer drafts neutralize trade fallback strings in `render-preview.js` when `contentInheritance === 'none'`. Production `api/render.js` is unchanged. Remaining shell limitations are documented in diagnostics (`shell_technical_only`).
+Ten businesses under `fixtures/website-composer/briefs.js` (Bean Culture, Pink Diamond Vault, Electrician, Lawyer, Hair Salon, Wedding Photographer, Café, Landscaping, Consultant, Automotive).

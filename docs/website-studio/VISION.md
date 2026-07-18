@@ -62,3 +62,7 @@ Normal client accounts stay out until a later enablement flag. Access must be ro
 - Mutating Google Ads or live analytics during preview  
 - Building temporary production sites for every concept  
 - Blindly renaming all technical identifiers overnight  
+- Applying drafts to live sites before an approved application phase  
+- Partner/client AI image generation  
+
+Phase 4 delivers end-to-end draft building through **Approve website draft**. Publish/apply remains a later phase.
