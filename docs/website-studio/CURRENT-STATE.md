@@ -72,7 +72,13 @@ Brief → classify → foundation → recipe → layout
 
 ---
 
-## 4. What should be kept
+```text
+Brief → classify → foundation → recipe
+      → select supported apps → adapt/install
+      → content → structured image briefs
+      → Image Service → validate → explicit draft
+      → diagnostics
+```
 
 - AI Colour Assistant as a separate product  
 - Draft-only generation rule  

@@ -1,10 +1,13 @@
 # Marketplace & Marketplace Intelligence
 
+**Updated:** 2026-07-18 (Phase 3)
+
 ## What Marketplace is today
 
 | Piece | Path | Role |
 |-------|------|------|
 | Categories | `lib/marketplace-categories.js` | Section taxonomy |
+| Sell / demo content | `marketplace/*.json`, `marketplace/demos/*` | Marketing + playground |
 | Catalog seed | `lib/marketplace-catalog-seed.js` | Features/apps by `section_key` |
 | Admin | `marketplace-admin.html`, `apps-admin` | Ops editing |
 | Site attach | `site_apps` ↔ `section_key` | Enable apps on a site |
@@ -12,7 +15,7 @@
 
 Categories alone do not encode industry fitness. Website Composer uses **foundations + recipes**.
 
----
+Website Studio **does not** auto-select apps by name alone. Selection requires:
 
 ## Marketplace Intelligence (Phase 2 — file-based)
 

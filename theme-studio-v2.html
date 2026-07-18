@@ -140,6 +140,20 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     <pre id="quality-out" class="sub" style="white-space:pre-wrap"></pre>
   </section>
 
+  <section class="card hidden" id="panel-images">
+    <h2>4b. Images</h2>
+    <p class="sub">Review Composer image selections. Search uses the server Image Service (Cloudinary library → Pexels). API keys never leave the server. AI generation is superuser-only and hidden here for partners.</p>
+    <div id="image-slots" class="sub" style="display:grid;gap:12px"></div>
+    <div class="field" style="margin-top:12px"><label>Search phrase</label><input id="image-query" placeholder="mobile coffee cart corporate event barista"></div>
+    <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn solid" id="btn-image-search" type="button">Search again</button>
+      <button class="btn ghost" id="btn-image-approve" type="button">Approve selection</button>
+      <button class="btn ghost" id="btn-image-import" type="button">Plan Cloudinary import</button>
+    </div>
+    <p class="msg" id="image-msg"></p>
+    <pre id="image-alts" class="sub" style="white-space:pre-wrap;max-height:220px;overflow:auto"></pre>
+  </section>
+
   <section class="card hidden" id="panel-apply">
     <h2>5. Apply / save</h2>
     <p class="sub">Default apply creates a non-live demo site or stores on the draft workspace. Live production writes stay disabled unless ops enables them.</p>
@@ -243,7 +257,44 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     $('panel-concepts').classList.toggle('hidden', step < 2);
     $('panel-preview').classList.toggle('hidden', step < 3);
     $('panel-refine').classList.toggle('hidden', step < 4);
+    $('panel-images').classList.toggle('hidden', step < 4);
     $('panel-apply').classList.toggle('hidden', step < 5);
+    if (step >= 4) paintImageSlots();
+  }
+
+  function currentDraftConfig(){
+    var v = state.versions.find(function(x){ return x.id === state.selectedVersionId; });
+    return (v && (v.draftConfig || v.draft_config_json)) || null;
+  }
+
+  function paintImageSlots(){
+    var cfg = currentDraftConfig();
+    var wrap = $('image-slots');
+    if (!wrap) return;
+    var selections = (cfg && cfg.__websiteComposer && cfg.__websiteComposer.imageSelections) || [];
+    if (!selections.length) {
+      wrap.innerHTML = '<p>No stored image selections on this draft yet. Generate a concept first.</p>';
+      return;
+    }
+    wrap.innerHTML = selections.map(function(s, idx){
+      var url = s.selectedVariantUrl || s.sourceImageUrl || '';
+      return '<div style="display:flex;gap:12px;align-items:flex-start;border-top:1px solid rgba(0,0,0,.08);padding-top:10px">'
+        + (url ? '<img src="'+esc(url)+'" alt="" style="width:120px;height:72px;object-fit:cover;border-radius:4px">' : '<div style="width:120px;height:72px;background:#eee"></div>')
+        + '<div><strong>'+esc(s.sectionId || s.appId || ('slot '+idx))+'</strong>'
+        + '<div class="sub">'+esc(s.provider || '')+' · '+esc(s.providerAssetId || '')+'</div>'
+        + '<div class="sub">'+esc(s.photographerName || 'Attribution pending')+'</div>'
+        + '<div class="sub">'+esc(s.altText || '')+'</div>'
+        + '<button class="btn ghost btn-pick-image" type="button" data-idx="'+idx+'">Use for search</button>'
+        + '</div></div>';
+    }).join('');
+    wrap.querySelectorAll('.btn-pick-image').forEach(function(btn){
+      btn.onclick = function(){
+        var s = selections[Number(btn.getAttribute('data-idx'))];
+        state.activeImageSelection = s;
+        $('image-query').value = s.searchQuery || s.altText || s.subject || '';
+        $('image-msg').textContent = 'Active slot: ' + (s.sectionId || s.appId || '');
+      };
+    });
   }
 
   function paintConcepts(versions){
@@ -414,6 +465,89 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       $('quality-out').textContent = JSON.stringify(j.report, null, 2);
     }catch(e){
       $('quality-out').textContent = e.message || String(e);
+    }
+  };
+
+  $('btn-image-search').onclick = async function(){
+    var msg = $('image-msg');
+    msg.className = 'msg';
+    msg.textContent = 'Searching via Image Service…';
+    try{
+      var active = state.activeImageSelection || {};
+      var j = await api('/api/image-service/search', {
+        body: {
+          query: $('image-query').value || active.searchQuery || '',
+          brief: {
+            purpose: active.sectionId === 'hero' ? 'hero' : 'gallery',
+            subject: $('image-query').value || active.altText || '',
+            sectionId: active.sectionId || null,
+            appId: active.appId || null,
+            orientation: active.orientation || 'landscape',
+            altTextIntent: active.altText || ''
+          }
+        }
+      });
+      state.activeImageSelection = j.selection || state.activeImageSelection;
+      $('image-alts').textContent = JSON.stringify({
+        selection: {
+          provider: j.selection && j.selection.provider,
+          providerAssetId: j.selection && j.selection.providerAssetId,
+          photographerName: j.selection && j.selection.photographerName,
+          sourcePageUrl: j.selection && j.selection.sourcePageUrl,
+          altText: j.selection && j.selection.altText
+        },
+        alternates: (j.alternates || []).slice(0, 6).map(function(a){
+          return {
+            provider: a.provider,
+            providerAssetId: a.providerAssetId,
+            photographerName: a.photographerName,
+            selectedVariantUrl: a.selectedVariantUrl
+          };
+        }),
+        diagnostics: j.diagnostics
+      }, null, 2);
+      msg.className = 'msg ok';
+      msg.textContent = j.placeholder ? 'No suitable stock result — placeholder returned.' : 'Search complete. Review alternates below.';
+    }catch(e){
+      msg.className = 'msg bad';
+      msg.textContent = e.message || String(e);
+    }
+  };
+
+  $('btn-image-approve').onclick = function(){
+    var msg = $('image-msg');
+    if (!state.activeImageSelection) {
+      msg.className = 'msg bad';
+      msg.textContent = 'Select an image slot first.';
+      return;
+    }
+    state.activeImageSelection.approvalStatus = 'approved';
+    msg.className = 'msg ok';
+    msg.textContent = 'Selection marked approved on this session (draft persist in Phase 4).';
+  };
+
+  $('btn-image-import').onclick = async function(){
+    var msg = $('image-msg');
+    if (!state.activeImageSelection) {
+      msg.className = 'msg bad';
+      msg.textContent = 'Select an image slot first.';
+      return;
+    }
+    msg.className = 'msg';
+    msg.textContent = 'Building Cloudinary import plan…';
+    try{
+      var j = await api('/api/image-service/import-cloudinary', {
+        body: {
+          selection: state.activeImageSelection,
+          draftId: state.draftId || 'draft'
+        }
+      });
+      $('image-alts').textContent = JSON.stringify(j.importPlan, null, 2);
+      msg.className = 'msg ok';
+      msg.textContent = 'Import plan ready. Live publish remains gated.';
+    }catch(e){
+      msg.className = 'msg bad';
+      msg.textContent = e.message || String(e);
     }
   };
 

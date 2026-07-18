@@ -11,11 +11,11 @@
 | Name | Role |
 |------|------|
 | **Website Studio** | User-facing product for generating complete website concepts |
-| **Website Composer** | Internal composition engine (planned; not yet built as a named module) |
+| **Website Composer** | Internal composition engine (`lib/website-composer/`) |
 | **AI Colour Assistant** | Separate colour-token tool (former colour-only Theme Studio) |
 | **LeadPages Brain** | Central AI gateway |
-| **Image Service** | Planned shared image provider abstraction |
-| **Marketplace Intelligence** | Planned foundation/app selection layer over Marketplace |
+| **Image Service** | Shared image provider abstraction (`lib/image-service/`) |
+| **Marketplace Intelligence** | Catalogue + metadata + adapters over Marketplace apps |
 
 ---
 
@@ -23,24 +23,25 @@
 
 1. [VISION.md](VISION.md) — product intent  
 2. [CURRENT-STATE.md](CURRENT-STATE.md) — what exists today  
-3. [ARCHITECTURE.md](ARCHITECTURE.md) — target architecture  
-4. [WEBSITE-COMPOSER.md](WEBSITE-COMPOSER.md) — internal engine design  
+3. [ARCHITECTURE.md](ARCHITECTURE.md) — architecture  
+4. [WEBSITE-COMPOSER.md](WEBSITE-COMPOSER.md) — composition engine  
 5. [MARKETPLACE.md](MARKETPLACE.md) — marketplace role  
-6. [IMAGE-SERVICE.md](IMAGE-SERVICE.md) — image abstraction  
-7. [ROADMAP.md](ROADMAP.md) — phased plan  
-8. [MIGRATION.md](MIGRATION.md) — Theme Studio → Website Studio migration  
+6. [MARKETPLACE-CATALOGUE.md](MARKETPLACE-CATALOGUE.md) — verified inventory  
+7. [APP-ADAPTERS.md](APP-ADAPTERS.md) — deterministic adapters  
+8. [MARKETPLACE-GAPS.md](MARKETPLACE-GAPS.md) — honest gaps  
+9. [IMAGE-SERVICE.md](IMAGE-SERVICE.md) — image abstraction  
+10. [IMAGE-PROVIDERS.md](IMAGE-PROVIDERS.md) — Cloudinary / Pexels / AI  
+11. [IMAGE-APPROVAL.md](IMAGE-APPROVAL.md) — draft import / approval  
+12. [ROLE-PERMISSIONS.md](ROLE-PERMISSIONS.md) — server gates  
+13. [ROADMAP.md](ROADMAP.md) — phased plan  
+14. [MIGRATION.md](MIGRATION.md) — Theme Studio → Website Studio  
 
 ---
 
 ## Legacy Theme Studio docs (archived)
 
-Do not delete. Preserved under [`docs/archive/theme-studio/`](../archive/theme-studio/):
-
-- `THEME-STUDIO-IMPLEMENTATION-AUDIT.md`
-- `21-THEME-STUDIO.md`
-- `23-THEME-STUDIO-V2.md`
-
-Technical identifiers (`/theme-studio*`, `api/theme-studio/*`, `theme_studio_*` tables, `lib/theme-studio/`) remain until an approved migration phase. See [MIGRATION.md](MIGRATION.md).
+Preserved under [`docs/archive/theme-studio/`](../archive/theme-studio/).  
+Technical identifiers (`/theme-studio*`, `api/theme-studio/*`, `theme_studio_*`) remain until an approved migration. See [MIGRATION.md](MIGRATION.md).
 
 ---
 

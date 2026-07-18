@@ -1,0 +1,3331 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-18T01:19:07.589Z",
+  "apps": [
+    {
+      "appId": "activityCounter",
+      "slug": "activity-counter",
+      "name": "Activity Counter",
+      "category": "social-proof",
+      "sectionKey": "activityCounter",
+      "rendererIdentifier": "trade.template.json#activityCounter",
+      "configPath": "sections.activityCounter",
+      "purpose": "Live-style numeric counters",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "electrical",
+        "plumbing",
+        "security",
+        "hvac",
+        "trade"
+      ],
+      "unsuitableIndustries": [
+        "jewellery",
+        "cafe",
+        "coffee",
+        "legal",
+        "hair-salon",
+        "wedding-photography"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.activityCounter.stats.0.value",
+        "sections.activityCounter.stats.0.label",
+        "sections.activityCounter.stats.1.value",
+        "sections.activityCounter.stats.1.label",
+        "sections.activityCounter.stats.2.value",
+        "sections.activityCounter.stats.2.label",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "activityTimeline",
+      "slug": "activity-timeline",
+      "name": "Activity Timeline",
+      "category": "social-proof",
+      "sectionKey": "activityTimeline",
+      "rendererIdentifier": "trade.template.json#activityTimeline",
+      "configPath": "sections.activityTimeline",
+      "purpose": "Chronological \"what we are working on\" feed",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "electrical",
+        "plumbing",
+        "security",
+        "hvac",
+        "trade"
+      ],
+      "unsuitableIndustries": [
+        "jewellery",
+        "cafe",
+        "coffee",
+        "legal",
+        "hair-salon",
+        "wedding-photography"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.activityTimeline.eyebrow",
+        "sections.activityTimeline.heading",
+        "sections.activityTimeline.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "area",
+      "slug": "area",
+      "name": "Service Area Copy",
+      "category": "core-content",
+      "sectionKey": "area",
+      "rendererIdentifier": "trade.template.json#area",
+      "configPath": "sections.area",
+      "purpose": "Paragraph plus suburb list for local SEO",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "electrical",
+        "plumbing",
+        "security",
+        "hvac",
+        "trade"
+      ],
+      "unsuitableIndustries": [
+        "jewellery",
+        "cafe",
+        "coffee",
+        "legal",
+        "hair-salon",
+        "wedding-photography"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.area.eyebrow",
+        "sections.area.heading",
+        "sections.area.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "beforeAfter",
+      "slug": "before-after",
+      "name": "Before & After Gallery",
+      "category": "social-proof",
+      "sectionKey": "beforeAfter",
+      "rendererIdentifier": "trade.template.json#beforeAfter",
+      "configPath": "sections.beforeAfter",
+      "purpose": "Side-by-side or stacked transformation gallery",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.beforeAfter.items.0.title",
+        "sections.beforeAfter.items.0.beforeImage",
+        "sections.beforeAfter.items.0.afterImage",
+        "sections.beforeAfter.items.1.title",
+        "sections.beforeAfter.items.1.beforeImage",
+        "sections.beforeAfter.items.1.afterImage",
+        "theme.pipe"
+      ],
+      "imageFields": [
+        "items[].beforeImage",
+        "items[].afterImage"
+      ],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "beforeAfterFeed",
+      "slug": "before-after-feed",
+      "name": "Before/After Feed",
+      "category": "social-proof",
+      "sectionKey": "beforeAfterFeed",
+      "rendererIdentifier": "trade.template.json#beforeAfterFeed",
+      "configPath": "sections.beforeAfterFeed",
+      "purpose": "Scrolling feed of transformation pairs",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.beforeAfterFeed.eyebrow",
+        "sections.beforeAfterFeed.heading",
+        "sections.beforeAfterFeed.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "certifications",
+      "slug": "certifications",
+      "name": "Certifications",
+      "category": "trust-conversion",
+      "sectionKey": "certifications",
+      "rendererIdentifier": "trade.template.json#certifications",
+      "configPath": "sections.certifications",
+      "purpose": "License and accreditation cards",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "electrical",
+        "plumbing",
+        "security",
+        "hvac",
+        "trade"
+      ],
+      "unsuitableIndustries": [
+        "jewellery",
+        "cafe",
+        "coffee",
+        "legal",
+        "hair-salon",
+        "wedding-photography"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.certifications.items.0.name",
+        "sections.certifications.items.0.body",
+        "sections.certifications.items.1.name",
+        "sections.certifications.items.1.body",
+        "sections.certifications.items.2.name",
+        "sections.certifications.items.2.body",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "crew",
+      "slug": "crew",
+      "name": "Meet the Team",
+      "category": "social-proof",
+      "sectionKey": "crew",
+      "rendererIdentifier": "trade.template.json#crew",
+      "configPath": "sections.crew",
+      "purpose": "Team member cards with photo and role",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.crew.members.0.name",
+        "sections.crew.members.0.role",
+        "sections.crew.members.0.detail",
+        "sections.crew.members.0.photo",
+        "sections.crew.members.1.name",
+        "sections.crew.members.1.role",
+        "sections.crew.members.1.detail",
+        "sections.crew.members.1.photo",
+        "theme.pipe"
+      ],
+      "imageFields": [
+        "members[].photo"
+      ],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "customerReactions",
+      "slug": "customer-reactions",
+      "name": "Customer Reactions",
+      "category": "social-proof",
+      "sectionKey": "customerReactions",
+      "rendererIdentifier": "trade.template.json#customerReactions",
+      "configPath": "sections.customerReactions",
+      "purpose": "Short reaction quotes in a feed format",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.customerReactions.eyebrow",
+        "sections.customerReactions.heading",
+        "sections.customerReactions.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "emerg",
+      "slug": "emerg",
+      "name": "emerg",
+      "category": "content",
+      "sectionKey": "emerg",
+      "rendererIdentifier": "trade.template.json#emerg",
+      "configPath": "sections.emerg",
+      "purpose": "emerg",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "electrical",
+        "plumbing",
+        "security",
+        "hvac",
+        "trade"
+      ],
+      "unsuitableIndustries": [
+        "jewellery",
+        "cafe",
+        "coffee",
+        "legal",
+        "hair-salon",
+        "wedding-photography"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "text"
+      ],
+      "optionalContentFields": [],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html",
+        "(not in app-content.json)"
+      ]
+    },
+    {
+      "appId": "emergencyAvailability",
+      "slug": "emergency-availability",
+      "name": "Emergency Availability",
+      "category": "trust-conversion",
+      "sectionKey": "emergencyAvailability",
+      "rendererIdentifier": "trade.template.json#emergencyAvailability",
+      "configPath": "sections.emergencyAvailability",
+      "purpose": "After-hours status and schedule display",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "electrical",
+        "plumbing",
+        "security",
+        "hvac",
+        "trade"
+      ],
+      "unsuitableIndustries": [
+        "jewellery",
+        "cafe",
+        "coffee",
+        "legal",
+        "hair-salon",
+        "wedding-photography"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.emergencyAvailability.eyebrow",
+        "sections.emergencyAvailability.heading",
+        "sections.emergencyAvailability.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "estimateBuilder",
+      "slug": "estimate-builder",
+      "name": "Estimate Builder",
+      "category": "trust-conversion",
+      "sectionKey": "estimateBuilder",
+      "rendererIdentifier": "trade.template.json#estimateBuilder",
+      "configPath": "sections.estimateBuilder",
+      "purpose": "Interactive ballpark pricing wizard",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.estimateBuilder.heading",
+        "sections.estimateBuilder.options.0.label",
+        "sections.estimateBuilder.options.0.min",
+        "sections.estimateBuilder.options.1.label",
+        "sections.estimateBuilder.options.1.min",
+        "sections.estimateBuilder.options.2.label",
+        "sections.estimateBuilder.options.2.min",
+        "sections.estimateBuilder.options.3.label",
+        "sections.estimateBuilder.options.3.min",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "faq",
+      "slug": "faq",
+      "name": "FAQ Accordion",
+      "category": "core-content",
+      "sectionKey": "faq",
+      "rendererIdentifier": "trade.template.json#faq",
+      "configPath": "sections.faq",
+      "purpose": "Collapsible questions that cut support calls",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "items"
+      ],
+      "optionalContentFields": [
+        "sections.faq.items.0.q",
+        "sections.faq.items.0.a",
+        "sections.faq.items.1.q",
+        "sections.faq.items.1.a",
+        "sections.faq.items.2.q",
+        "sections.faq.items.2.a",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": {
+        "min": 2,
+        "max": 8
+      },
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "featureStrip",
+      "slug": "feature-strip",
+      "name": "featureStrip",
+      "category": "content",
+      "sectionKey": "featureStrip",
+      "rendererIdentifier": "trade.template.json#featureStrip",
+      "configPath": "sections.featureStrip",
+      "purpose": "featureStrip",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "electrical",
+        "plumbing",
+        "security",
+        "hvac",
+        "trade"
+      ],
+      "unsuitableIndustries": [
+        "jewellery",
+        "cafe",
+        "coffee",
+        "legal",
+        "hair-salon",
+        "wedding-photography"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-metadata",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html",
+        "(not in app-content.json)"
+      ]
+    },
+    {
+      "appId": "featuredProjects",
+      "slug": "featured-projects",
+      "name": "Project Portfolio",
+      "category": "social-proof",
+      "sectionKey": "featuredProjects",
+      "rendererIdentifier": "trade.template.json#featuredProjects",
+      "configPath": "sections.featuredProjects",
+      "purpose": "Large image cards for premium project showcase",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "projects"
+      ],
+      "optionalContentFields": [
+        "sections.featuredProjects.heading",
+        "sections.featuredProjects.eyebrow",
+        "sections.featuredProjects.cardBg",
+        "sections.featuredProjects.projects.0.title",
+        "sections.featuredProjects.projects.0.tag",
+        "sections.featuredProjects.projects.0.location",
+        "sections.featuredProjects.projects.0.image",
+        "sections.featuredProjects.projects.1.title",
+        "sections.featuredProjects.projects.1.image",
+        "sections.featuredProjects.projects.2.title",
+        "sections.featuredProjects.projects.2.image"
+      ],
+      "imageFields": [
+        "projects[].image"
+      ],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": {
+        "min": 2,
+        "max": 9
+      },
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "finance",
+      "slug": "finance",
+      "name": "Finance Options",
+      "category": "trust-conversion",
+      "sectionKey": "finance",
+      "rendererIdentifier": "trade.template.json#finance",
+      "configPath": "sections.finance",
+      "purpose": "Weekly payment callout for larger jobs",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.finance.heading",
+        "sections.finance.amount",
+        "sections.finance.period",
+        "sections.finance.description",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "footer",
+      "slug": "footer",
+      "name": "footer",
+      "category": "content",
+      "sectionKey": "footer",
+      "rendererIdentifier": "trade.template.json#footer",
+      "configPath": "sections.footer",
+      "purpose": "footer",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-metadata",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html",
+        "(not in app-content.json)"
+      ]
+    },
+    {
+      "appId": "header",
+      "slug": "header",
+      "name": "header",
+      "category": "content",
+      "sectionKey": "header",
+      "rendererIdentifier": "trade.template.json#header",
+      "configPath": "sections.header",
+      "purpose": "header",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-metadata",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html",
+        "(not in app-content.json)"
+      ]
+    },
+    {
+      "appId": "hero",
+      "slug": "hero",
+      "name": "Hero Banner",
+      "category": "heroes-layout",
+      "sectionKey": "hero",
+      "rendererIdentifier": "trade.template.json#hero",
+      "configPath": "sections.hero",
+      "purpose": "First impression above the fold",
+      "supportedPagePositions": [
+        "hero"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "hero"
+      ],
+      "requiredContentFields": [
+        "title",
+        "sub",
+        "cta"
+      ],
+      "optionalContentFields": [
+        "sections.hero.eyebrow",
+        "sections.hero.title",
+        "sections.hero.titleHl",
+        "sections.hero.sub",
+        "theme.pipe"
+      ],
+      "imageFields": [
+        "image",
+        "bgImage",
+        "imageUrl"
+      ],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [
+        "heroSlider",
+        "heroBeforeAfter",
+        "splitHero"
+      ],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "high"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "heroBeforeAfter",
+      "slug": "hero-before-after",
+      "name": "Hero Before/After",
+      "category": "heroes-layout",
+      "sectionKey": "heroBeforeAfter",
+      "rendererIdentifier": "trade.template.json#heroBeforeAfter",
+      "configPath": "sections.heroBeforeAfter",
+      "purpose": "Interactive drag-to-reveal hero transformation",
+      "supportedPagePositions": [
+        "hero"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "heroBeforeAfter"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.heroBeforeAfter.eyebrow",
+        "sections.heroBeforeAfter.heading",
+        "sections.heroBeforeAfter.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [
+        "hero",
+        "heroSlider",
+        "splitHero"
+      ],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "high"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported-with-limitations",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "heroSlider",
+      "slug": "hero-slider",
+      "name": "Hero Image Slider",
+      "category": "heroes-layout",
+      "sectionKey": "heroSlider",
+      "rendererIdentifier": "trade.template.json#heroSlider",
+      "configPath": "sections.heroSlider",
+      "purpose": "Rotating image hero with overlay copy and CTAs",
+      "supportedPagePositions": [
+        "hero"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "heroSlider"
+      ],
+      "requiredContentFields": [
+        "slides"
+      ],
+      "optionalContentFields": [
+        "sections.heroSlider.slides.0.heading",
+        "sections.heroSlider.slides.0.subText",
+        "sections.heroSlider.slides.1.heading",
+        "sections.heroSlider.slides.1.subText",
+        "theme.pipe"
+      ],
+      "imageFields": [
+        "slides[].imageUrl"
+      ],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [
+        "hero",
+        "heroBeforeAfter",
+        "splitHero"
+      ],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "high"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "igProjectFeed",
+      "slug": "ig-project-feed",
+      "name": "Instagram Project Feed",
+      "category": "social-instagram",
+      "sectionKey": "igProjectFeed",
+      "rendererIdentifier": "trade.template.json#igProjectFeed",
+      "configPath": "sections.igProjectFeed",
+      "purpose": "Instagram grid styled as project cards",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.igProjectFeed.eyebrow",
+        "sections.igProjectFeed.heading",
+        "sections.igProjectFeed.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "instaGallery",
+      "slug": "insta-gallery",
+      "name": "Instagram Gallery",
+      "category": "social-instagram",
+      "sectionKey": "instaGallery",
+      "rendererIdentifier": "trade.template.json#instaGallery",
+      "configPath": "sections.instaGallery",
+      "purpose": "Grid of Instagram posts on your site",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.instaGallery.eyebrow",
+        "sections.instaGallery.heading",
+        "sections.instaGallery.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [
+        "images[]",
+        "posts[].image"
+      ],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "jobsFeed",
+      "slug": "jobs-feed",
+      "name": "Jobs Feed",
+      "category": "social-proof",
+      "sectionKey": "jobsFeed",
+      "rendererIdentifier": "trade.template.json#jobsFeed",
+      "configPath": "sections.jobsFeed",
+      "purpose": "Compact \"fresh off the tools\" job list",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "electrical",
+        "plumbing",
+        "security",
+        "hvac",
+        "trade"
+      ],
+      "unsuitableIndustries": [
+        "jewellery",
+        "cafe",
+        "coffee",
+        "legal",
+        "hair-salon",
+        "wedding-photography"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.jobsFeed.eyebrow",
+        "sections.jobsFeed.heading",
+        "sections.jobsFeed.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "navMenu",
+      "slug": "nav-menu",
+      "name": "Navigation Menu",
+      "category": "heroes-layout",
+      "sectionKey": "navMenu",
+      "rendererIdentifier": "trade.template.json#navMenu",
+      "configPath": "sections.navMenu",
+      "purpose": "Custom nav links — pills or underline style",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "items"
+      ],
+      "optionalContentFields": [
+        "sections.navMenu.eyebrow",
+        "sections.navMenu.heading",
+        "sections.navMenu.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported-with-limitations",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "onlineQuote",
+      "slug": "online-quote",
+      "name": "onlineQuote",
+      "category": "core-content",
+      "sectionKey": "onlineQuote",
+      "rendererIdentifier": "trade.template.json#onlineQuote",
+      "configPath": "sections.onlineQuote",
+      "purpose": "onlineQuote",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "enquire",
+        "book",
+        "quote"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html",
+        "(not in app-content.json)"
+      ]
+    },
+    {
+      "appId": "projectFeed",
+      "slug": "project-feed",
+      "name": "Project Feed",
+      "category": "social-proof",
+      "sectionKey": "projectFeed",
+      "rendererIdentifier": "trade.template.json#projectFeed",
+      "configPath": "sections.projectFeed",
+      "purpose": "Card feed of latest completed jobs",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.projectFeed.eyebrow",
+        "sections.projectFeed.heading",
+        "sections.projectFeed.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "projectStats",
+      "slug": "project-stats",
+      "name": "Project Stats",
+      "category": "trust-conversion",
+      "sectionKey": "projectStats",
+      "rendererIdentifier": "trade.template.json#projectStats",
+      "configPath": "sections.projectStats",
+      "purpose": "Big-number credibility bar",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.projectStats.stats.0.value",
+        "sections.projectStats.stats.0.label",
+        "sections.projectStats.stats.1.value",
+        "sections.projectStats.stats.1.label",
+        "sections.projectStats.stats.2.value",
+        "sections.projectStats.stats.2.label",
+        "sections.projectStats.stats.3.value",
+        "sections.projectStats.stats.3.label",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "proofStream",
+      "slug": "proof-stream",
+      "name": "Proof Stream",
+      "category": "social-proof",
+      "sectionKey": "proofStream",
+      "rendererIdentifier": "trade.template.json#proofStream",
+      "configPath": "sections.proofStream",
+      "purpose": "Mixed proof cards — jobs, reviews, video, before/after",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "electrical",
+        "plumbing",
+        "security",
+        "hvac",
+        "trade"
+      ],
+      "unsuitableIndustries": [
+        "jewellery",
+        "cafe",
+        "coffee",
+        "legal",
+        "hair-salon",
+        "wedding-photography"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.proofStream.eyebrow",
+        "sections.proofStream.heading",
+        "sections.proofStream.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "quote",
+      "slug": "quote",
+      "name": "Quote Form",
+      "category": "core-content",
+      "sectionKey": "quote",
+      "rendererIdentifier": "trade.template.json#quote",
+      "configPath": "sections.quote",
+      "purpose": "Lead capture form with configurable fields",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "enquire",
+        "book",
+        "quote"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "buttonText"
+      ],
+      "optionalContentFields": [
+        "sections.quote.eyebrow",
+        "sections.quote.heading",
+        "sections.quote.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "responseCards",
+      "slug": "response-cards",
+      "name": "Response Cards",
+      "category": "trust-conversion",
+      "sectionKey": "responseCards",
+      "rendererIdentifier": "trade.template.json#responseCards",
+      "configPath": "sections.responseCards",
+      "purpose": "Urgency cards for emergency trades",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "electrical",
+        "plumbing",
+        "security",
+        "hvac",
+        "trade"
+      ],
+      "unsuitableIndustries": [
+        "jewellery",
+        "cafe",
+        "coffee",
+        "legal",
+        "hair-salon",
+        "wedding-photography"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.responseCards.cards.0.title",
+        "sections.responseCards.cards.0.text",
+        "sections.responseCards.cards.1.title",
+        "sections.responseCards.cards.1.text",
+        "sections.responseCards.cards.2.title",
+        "sections.responseCards.cards.2.text",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "reviewHighlights",
+      "slug": "review-highlights",
+      "name": "Review Highlights",
+      "category": "core-content",
+      "sectionKey": "reviewHighlights",
+      "rendererIdentifier": "trade.template.json#reviewHighlights",
+      "configPath": "sections.reviewHighlights",
+      "purpose": "Star-rated snippets directly under the hero",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.reviewHighlights.eyebrow",
+        "sections.reviewHighlights.heading",
+        "sections.reviewHighlights.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "reviews",
+      "slug": "reviews",
+      "name": "Reviews Wall",
+      "category": "core-content",
+      "sectionKey": "reviews",
+      "rendererIdentifier": "trade.template.json#reviews",
+      "configPath": "sections.reviews",
+      "purpose": "Full review cards with source attribution",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "items"
+      ],
+      "optionalContentFields": [
+        "sections.reviews.items.0.who",
+        "sections.reviews.items.0.text",
+        "sections.reviews.items.1.who",
+        "sections.reviews.items.1.text",
+        "sections.reviews.items.2.who",
+        "sections.reviews.items.2.text"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "seoTokens",
+      "slug": "seo-tokens",
+      "name": "seoTokens",
+      "category": "content",
+      "sectionKey": "seoTokens",
+      "rendererIdentifier": "trade.template.json#seoTokens",
+      "configPath": "sections.seoTokens",
+      "purpose": "seoTokens",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-metadata",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html",
+        "(not in app-content.json)"
+      ]
+    },
+    {
+      "appId": "serviceAreaMap",
+      "slug": "service-area-map",
+      "name": "Service Area Map",
+      "category": "trust-conversion",
+      "sectionKey": "serviceAreaMap",
+      "rendererIdentifier": "trade.template.json#serviceAreaMap",
+      "configPath": "sections.serviceAreaMap",
+      "purpose": "Map section with coverage intro",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "electrical",
+        "plumbing",
+        "security",
+        "hvac",
+        "trade"
+      ],
+      "unsuitableIndustries": [
+        "jewellery",
+        "cafe",
+        "coffee",
+        "legal",
+        "hair-salon",
+        "wedding-photography"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.serviceAreaMap.eyebrow",
+        "sections.serviceAreaMap.heading",
+        "sections.serviceAreaMap.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "serviceAreas",
+      "slug": "service-areas",
+      "name": "Service Areas Grid",
+      "category": "trust-conversion",
+      "sectionKey": "serviceAreas",
+      "rendererIdentifier": "trade.template.json#serviceAreas",
+      "configPath": "sections.serviceAreas",
+      "purpose": "Suburb grid for geographic dominance",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "electrical",
+        "plumbing",
+        "security",
+        "hvac",
+        "trade"
+      ],
+      "unsuitableIndustries": [
+        "jewellery",
+        "cafe",
+        "coffee",
+        "legal",
+        "hair-salon",
+        "wedding-photography"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.serviceAreas.heading",
+        "sections.serviceAreas.areas",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "serviceProcess",
+      "slug": "service-process",
+      "name": "How It Works",
+      "category": "trust-conversion",
+      "sectionKey": "serviceProcess",
+      "rendererIdentifier": "trade.template.json#serviceProcess",
+      "configPath": "sections.serviceProcess",
+      "purpose": "Step-by-step process / booking journey",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "hospitality",
+        "events",
+        "trades",
+        "field-services"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [
+        "jewellery"
+      ],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.serviceProcess.heading",
+        "sections.serviceProcess.steps.0.title",
+        "sections.serviceProcess.steps.0.text",
+        "sections.serviceProcess.steps.1.title",
+        "sections.serviceProcess.steps.1.text",
+        "sections.serviceProcess.steps.2.title",
+        "sections.serviceProcess.steps.2.text",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "services",
+      "slug": "services",
+      "name": "Services Grid",
+      "category": "core-content",
+      "sectionKey": "services",
+      "rendererIdentifier": "trade.template.json#services",
+      "configPath": "sections.services",
+      "purpose": "Icon cards for every service you offer",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "items"
+      ],
+      "optionalContentFields": [
+        "services.0.title",
+        "services.0.body",
+        "services.1.title",
+        "services.1.body",
+        "services.2.title",
+        "services.2.body",
+        "services.3.title",
+        "services.3.body",
+        "theme.pipe"
+      ],
+      "imageFields": [
+        "items[].image"
+      ],
+      "iconFields": [
+        "items[].icon"
+      ],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": {
+        "min": 3,
+        "max": 8
+      },
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "specialOffer",
+      "slug": "special-offer",
+      "name": "Special Offer Banner",
+      "category": "trust-conversion",
+      "sectionKey": "specialOffer",
+      "rendererIdentifier": "trade.template.json#specialOffer",
+      "configPath": "sections.specialOffer",
+      "purpose": "Limited-time offer strip for ad landing pages",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "text"
+      ],
+      "optionalContentFields": [
+        "sections.specialOffer.heading",
+        "sections.specialOffer.ctaText",
+        "sections.specialOffer.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "splitHero",
+      "slug": "split-hero",
+      "name": "Split Hero",
+      "category": "heroes-layout",
+      "sectionKey": "splitHero",
+      "rendererIdentifier": "trade.template.json#splitHero",
+      "configPath": "sections.splitHero",
+      "purpose": "Two-column hero with live activity feed",
+      "supportedPagePositions": [
+        "hero"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "splitHero"
+      ],
+      "requiredContentFields": [
+        "title",
+        "sub"
+      ],
+      "optionalContentFields": [
+        "sections.splitHero.eyebrow",
+        "sections.splitHero.heading",
+        "sections.splitHero.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [
+        "image",
+        "imageUrl"
+      ],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [
+        "hero",
+        "heroSlider",
+        "heroBeforeAfter"
+      ],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "high"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "textBox",
+      "slug": "text-box",
+      "name": "Text Box",
+      "category": "heroes-layout",
+      "sectionKey": "textBox",
+      "rendererIdentifier": "trade.template.json#textBox",
+      "configPath": "sections.textBox",
+      "purpose": "Flexible text block with optional side image",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "body"
+      ],
+      "optionalContentFields": [
+        "sections.textBox.eyebrow",
+        "sections.textBox.heading",
+        "sections.textBox.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported-with-limitations",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "trustBar",
+      "slug": "trust-bar",
+      "name": "Trust Bar",
+      "category": "heroes-layout",
+      "sectionKey": "trustBar",
+      "rendererIdentifier": "trade.template.json#trustBar",
+      "configPath": "sections.trustBar",
+      "purpose": "Scrolling badge strip under the hero",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "badges"
+      ],
+      "optionalContentFields": [
+        "sections.trustBar.badges.0.label",
+        "sections.trustBar.badges.1.label",
+        "sections.trustBar.badges.2.label",
+        "sections.trustBar.badges.3.label",
+        "sections.trustBar.badges.4.label",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "videoReels",
+      "slug": "video-reels",
+      "name": "Video Reels",
+      "category": "social-proof",
+      "sectionKey": "videoReels",
+      "rendererIdentifier": "trade.template.json#videoReels",
+      "configPath": "sections.videoReels",
+      "purpose": "Short-form video cards from the job site",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading"
+      ],
+      "optionalContentFields": [
+        "sections.videoReels.eyebrow",
+        "sections.videoReels.heading",
+        "sections.videoReels.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "missing",
+      "websiteStudioSupport": "requires-adapter",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    },
+    {
+      "appId": "why",
+      "slug": "why",
+      "name": "Why Choose Us",
+      "category": "core-content",
+      "sectionKey": "why",
+      "rendererIdentifier": "trade.template.json#why",
+      "configPath": "sections.why",
+      "purpose": "Numbered reasons or icon points that build trust",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "intro"
+      ],
+      "optionalContentFields": [
+        "sections.why.items.0.title",
+        "sections.why.items.0.body",
+        "sections.why.items.1.title",
+        "sections.why.items.1.body",
+        "sections.why.items.2.title",
+        "sections.why.items.2.body",
+        "sections.why.items.3.title",
+        "sections.why.items.3.body",
+        "theme.pipe"
+      ],
+      "imageFields": [
+        "image"
+      ],
+      "iconFields": [
+        "items[].icon"
+      ],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ]
+    }
+  ]
+}

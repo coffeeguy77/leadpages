@@ -186,7 +186,7 @@ No Pexels. No Image Service. Phase 3.
 
 ---
 
-## Non-responsibilities
+## Renderer shell note
 
 - Image Service / Pexels  
 - Live publish  

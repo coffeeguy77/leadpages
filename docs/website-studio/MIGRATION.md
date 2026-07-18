@@ -28,6 +28,7 @@ Rename the **product** safely. Preserve **technical identifiers** until a dedica
 | URL | `/theme-studio/colours` | Alias → colour assistant |
 | URL | `/theme-studio-v2` | Website Studio UI (legacy path) |
 | API | `/api/theme-studio/*` | Website Studio APIs |
+| API | `/api/image-service/*` | Image Service (Phase 3; product-facing name) |
 | API | `/api/brain/theme-*` | Colour assistant |
 | Module dir | `lib/theme-studio/` | Composer seed |
 | Fixtures | `fixtures/theme-studio/` | Keep |
@@ -40,6 +41,11 @@ Rename the **product** safely. Preserve **technical identifiers** until a dedica
 | Env | `THEME_STUDIO_ALLOW_LIVE_APPLY` | Live apply gate |
 | Env | `THEME_STUDIO_MEMORY_STORE` | Test/dev store |
 | Env | `THEME_STUDIO_PREVIEW_SECRET` | Preview HMAC |
+| Env | `PEXELS_API_KEY` | Image Service — server-only |
+| Env | `IMAGE_PROVIDER_DEFAULT` | Expected `pexels` |
+| Env | `CLOUDINARY_*` / `CLOUDINARY_URL` | Existing; reused by Image Service |
+| Module dir | `lib/image-service/` | Image Service |
+| Module dir | `lib/website-composer/marketplace/` | Marketplace Intelligence catalogue |
 | Schema | `theme_studio.concept.v1` | Concept schema id |
 | Brain tasks | `theme.generate`, `theme.refine` | Colour |
 | Brain tasks | `theme_studio.*` | Full product contracts |
@@ -91,9 +97,11 @@ When approved as its own phase:
 
 ## Compatibility promise
 
-Phase 1 of this reset **does not**:
+Phases 1–3 **do not**:
 
-- Change API request/response contracts  
-- Change DB schema  
-- Change renderer or publish  
+- Change live publish behaviour  
+- Enable live apply by default  
 - Break existing bookmarks to `/theme-studio*`  
+- Remove `theme_studio_*` tables or Brain task ids  
+
+Phase 3 **adds** Image Service APIs and Composer marketplace modules without replacing legacy Theme Studio identifiers.

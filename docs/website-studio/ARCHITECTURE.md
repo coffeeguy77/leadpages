@@ -1,4 +1,6 @@
-# Website Studio — Target Architecture
+# Website Studio — Architecture
+
+**Updated:** 2026-07-18 (Phase 3)
 
 ## High-level chain
 
@@ -9,7 +11,7 @@
          │ structured tasks (optional)
          ▼
 ┌──────────────────┐
-│ Website Studio   │  user UI + APIs (intake, compare, refine, approve)
+│ Website Studio   │  user UI + APIs (intake, compare, refine, images)
 └────────┬─────────┘
          │ composition request
          ▼
@@ -27,7 +29,7 @@
 ┌──────────────────┐
 │ Image Service    │  Phase 3 — Cloudinary + Pexels
 └────────┬─────────┘
-         │ draft config + assets
+         │ draft config + stored selections
          ▼
 ┌──────────────────┐
 │ Renderer         │  landing-shell-v1 HTML (legacy trade.template.json asset)
@@ -35,7 +37,7 @@
          │
          ▼
 ┌──────────────────┐
-│ Draft Preview    │  signed, noindex, forms/tracking sandboxed
+│ Draft Preview    │  signed, noindex, forms/tracking sandboxed + shell neutralize
 └────────┬─────────┘
          │ human approve
          ▼
@@ -45,14 +47,15 @@
          │
          ▼
 ┌──────────────────┐
-│ Publish          │  existing editor / site publish paths only
+│ Publish          │  existing editor / site publish paths only (unchanged)
 └──────────────────┘
+```
 
-Parallel:
-┌──────────────────┐
-│ AI Colour        │  theme.generate / theme.refine / theme-approve
-│ Assistant        │  Editor → Appearance (target home)
-└──────────────────┘
+### Composer internal chain
+
+```text
+Foundation → Recipe → Supported Apps (adapters) → Layouts → Content
+  → Structured image briefs → Image Service → Explicit draft
 ```
 
 ### Composer internal chain
@@ -140,4 +143,8 @@ Foundation → Recipe → Apps → Layouts → Content → Renderer draft
 | APIs | `/api/brain/theme-generate\|refine\|approve` |
 | Scope | Five hex tokens into `sites.config.theme` |
 
-Website Studio must not absorb this UI.
+- Live site application / publish pipeline changes  
+- Marketplace template publishing  
+- Reintroducing trade shallow merge / `sourceTemplateId: "trade"`  
+- Client-side Pexels or Cloudinary secrets  
+- New paid AI image provider  

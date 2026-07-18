@@ -32,7 +32,7 @@
 
 ---
 
-## Phase 3 — Image Service + Cloudinary + Pexels + roles
+## Phase 3 — Marketplace coverage + Image Service ✅
 
 | Work | Detail |
 |------|--------|
@@ -48,11 +48,11 @@
 
 | Work | Detail |
 |------|--------|
-| Website Studio UI | Multi-step intake → 3 concepts → compare (evolve current V2 UI) |
-| Preview | Signed draft via real renderer path; desktop/mobile |
-| Refinement | Patch → new version → preview |
-| Approval | Explicit scopes; demo/draft site; live apply still gated |
-| Brain tasks | Wire `theme_studio.*` / future `website_studio.*` with deterministic fallback |
+| UX polish | Multi-step intake → compare → refine |
+| Image panel | Persist approvals onto draft versions |
+| Preview | Closer production parity where safe |
+| Approval | Explicit scopes; live apply still gated |
+| Brain tasks | Wire with deterministic fallback |
 
 ---
 
@@ -71,7 +71,7 @@
 ## Explicit non-goals until approved
 
 - Blind rename of `api/theme-studio` or `theme_studio_*` tables  
-- Renderer rewrites  
+- Full production renderer rewrite  
 - Publish pipeline changes  
 - Absorbing AI Colour Assistant into Website Studio  
 - Client audience enablement without flag  
