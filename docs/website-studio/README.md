@@ -1,6 +1,6 @@
 # Website Studio
 
-**Status:** Phase 4 complete — composition, neutral renderer, generation UX.  
+**Status:** Phase 5 complete — controlled application (flagged OFF by default).  
 **Audience:** Product, engineering, AI agents  
 **Last updated:** 2026-07-18
 
@@ -10,48 +10,38 @@
 
 | Name | Role |
 |------|------|
-| **Website Studio** | User-facing product for generating complete website concepts |
+| **Website Studio** | User-facing product for generating and applying website concepts |
 | **Website Composer** | Internal composition engine (`lib/website-composer/`) |
-| **AI Colour Assistant** | Separate colour-token tool (former colour-only Theme Studio) |
+| **AI Colour Assistant** | Separate colour-token tool (no application permissions) |
 | **LeadPages Brain** | Central AI gateway |
 | **Image Service** | Shared image provider abstraction (`lib/image-service/`) |
-| **Marketplace Intelligence** | Catalogue + metadata + adapters over Marketplace apps |
+| **Marketplace Intelligence** | Catalogue + metadata + adapters |
+| **Application layer** | Controlled create / replacement / private template (`lib/website-studio-application/`) |
 
 ---
 
 ## Read order
 
-1. [VISION.md](VISION.md) — product intent  
-2. [CURRENT-STATE.md](CURRENT-STATE.md) — what exists today  
-3. [ARCHITECTURE.md](ARCHITECTURE.md) — architecture  
-4. [WEBSITE-COMPOSER.md](WEBSITE-COMPOSER.md) — composition engine  
-5. [NEUTRAL-RENDERER.md](NEUTRAL-RENDERER.md) — content-neutral preview shell  
-6. [MARKETPLACE.md](MARKETPLACE.md) — marketplace role  
-7. [MARKETPLACE-CATALOGUE.md](MARKETPLACE-CATALOGUE.md) — verified inventory (48 apps)  
-8. [APP-ADAPTERS.md](APP-ADAPTERS.md) — deterministic adapters  
-9. [MARKETPLACE-GAPS.md](MARKETPLACE-GAPS.md) — deferred gaps  
-10. [IMAGE-SERVICE.md](IMAGE-SERVICE.md) — image abstraction  
-11. [IMAGE-PROVIDERS.md](IMAGE-PROVIDERS.md) — Cloudinary / Pexels / AI  
-12. [IMAGE-APPROVAL.md](IMAGE-APPROVAL.md) — draft import / approval  
-13. [GENERATION-UX.md](GENERATION-UX.md) — brief → compare → preview → refine → approve  
-14. [REFINEMENT.md](REFINEMENT.md) — NL refinement + direct edit  
-15. [VERSIONING.md](VERSIONING.md) — draft versions  
-16. [QUALITY-GATES.md](QUALITY-GATES.md) — deterministic quality  
-17. [APPROVAL-WORKFLOW.md](APPROVAL-WORKFLOW.md) — draft approval (not publish)  
-18. [ROLE-PERMISSIONS.md](ROLE-PERMISSIONS.md) — server gates  
-19. [ROADMAP.md](ROADMAP.md) — phased plan  
-20. [MIGRATION.md](MIGRATION.md) — Theme Studio → Website Studio  
-
----
-
-## Legacy Theme Studio docs (archived)
-
-Preserved under [`docs/archive/theme-studio/`](../archive/theme-studio/).  
-Technical identifiers (`/theme-studio*`, `api/theme-studio/*`, `theme_studio_*`) remain until an approved migration. See [MIGRATION.md](MIGRATION.md).
+1. [VISION.md](VISION.md)  
+2. [CURRENT-STATE.md](CURRENT-STATE.md)  
+3. [ARCHITECTURE.md](ARCHITECTURE.md)  
+4. [APPLICATION.md](APPLICATION.md) — Phase 5  
+5. [NEW-SITE-CREATION.md](NEW-SITE-CREATION.md)  
+6. [REPLACEMENT-DRAFTS.md](REPLACEMENT-DRAFTS.md)  
+7. [PRIVATE-TEMPLATES.md](PRIVATE-TEMPLATES.md)  
+8. [ROLLOUT.md](ROLLOUT.md)  
+9. [APPLICATION-SECURITY.md](APPLICATION-SECURITY.md)  
+10. [FAILURE-RECOVERY.md](FAILURE-RECOVERY.md)  
+11. [WEBSITE-COMPOSER.md](WEBSITE-COMPOSER.md)  
+12. [NEUTRAL-RENDERER.md](NEUTRAL-RENDERER.md)  
+13. [MARKETPLACE.md](MARKETPLACE.md) / [MARKETPLACE-CATALOGUE.md](MARKETPLACE-CATALOGUE.md)  
+14. [GENERATION-UX.md](GENERATION-UX.md) / [APPROVAL-WORKFLOW.md](APPROVAL-WORKFLOW.md)  
+15. [ROLE-PERMISSIONS.md](ROLE-PERMISSIONS.md)  
+16. [ROADMAP.md](ROADMAP.md) / [MIGRATION.md](MIGRATION.md)  
 
 ---
 
 ## Stop rule
 
-Phase 4 is implemented.  
-Do **not** begin live application, Marketplace publishing, or production rollout until explicitly approved.
+Phase 5 is implemented with **application flags default OFF**.  
+Do **not** begin global production rollout, public Marketplace publishing, or automatic live-site replacement until explicitly approved.

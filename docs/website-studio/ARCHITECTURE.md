@@ -43,12 +43,18 @@
          │ human approve draft
          ▼
 ┌──────────────────┐
-│ Approval         │  approved-for-application; never silent live write
+│ Approval         │  approved-for-application
 └────────┬─────────┘
-         │ (future phase)
+         │ flagged application (Phase 5)
          ▼
 ┌──────────────────┐
-│ Publish / Apply  │  unchanged in Phase 4 — not invoked by Website Studio
+│ Application      │  create draft site / replacement draft / private template
+│ (flagged OFF)    │  never auto-publish; never live overwrite
+└────────┬─────────┘
+         │ separate product action
+         ▼
+┌──────────────────┐
+│ Publish          │  existing publish paths only — unchanged
 └──────────────────┘
 ```
 

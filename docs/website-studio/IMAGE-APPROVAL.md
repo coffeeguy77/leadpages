@@ -12,7 +12,7 @@
 6. Import plan → Cloudinary only for selected/approved assets  
 7. Preserve original provider attribution after import  
 
-Live publishing / applying images to production sites is **out of scope for Phase 4**.
+Live publishing remains out of scope. Phase 5 application finalises approved images into Cloudinary-scoped references before creating a **draft** site or replacement draft; it does not publish.
 
 ---
 

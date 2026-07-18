@@ -189,21 +189,44 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   </section>
 
   <section class="card hidden" id="panel-apply">
-    <h2>6. Demo / template save (still not live publish)</h2>
-    <p class="sub">Default apply creates a non-live demo site or stores on the draft workspace. Live production writes stay disabled unless ops enables them.</p>
-    <div class="field"><label>Scope</label>
+    <h2>6. Create website from this design</h2>
+    <p class="sub">Apply an <strong>approved-for-application</strong> concept as a new draft site, a replacement draft, or a private template. This does <strong>not</strong> publish. Live sites are never overwritten here.</p>
+    <div class="field"><label>Application mode</label>
+      <select id="apply-mode">
+        <option value="create_site">Create new website (draft)</option>
+        <option value="replacement_draft">Create replacement draft (live unchanged)</option>
+        <option value="private_template">Save as private template</option>
+      </select>
+    </div>
+    <div class="field"><label>Site name</label><input id="apply-site-name" placeholder="Business name"></div>
+    <div class="field"><label>Site slug</label><input id="apply-slug" placeholder="my-business"></div>
+    <div class="field"><label>Target site (replacement mode)</label>
+      <select id="apply-target-site"><option value="">— select site —</option></select>
+    </div>
+    <div class="field"><label>Business email</label><input id="apply-business-email" type="email" placeholder="hello@business.com"></div>
+    <div class="field"><label>Lead recipient email</label><input id="apply-lead-email" type="email" placeholder="leads@business.com"></div>
+    <div class="field"><label>Phone</label><input id="apply-phone" placeholder="+61…"></div>
+    <label class="sub"><input type="checkbox" id="apply-contact-confirm"> I confirm these contact and form details are correct for the client (not a partner default unless intentional).</label>
+    <label class="sub"><input type="checkbox" id="apply-ack-warnings"> Acknowledge non-critical warnings</label>
+    <div class="field"><label>Template name (private template mode)</label><input id="template-name" placeholder="Pink Diamond Vault — Editorial"></div>
+    <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:10px">
+      <button class="btn ghost" id="btn-application-plan" type="button">Review application plan</button>
+      <button class="btn solid" id="btn-apply-concept" type="button">Create website from this design</button>
+    </div>
+    <pre id="apply-plan" class="sub" style="white-space:pre-wrap;max-height:260px;overflow:auto;margin-top:10px"></pre>
+    <p class="msg" id="apply-msg"></p>
+    <hr style="margin:16px 0;border:none;border-top:1px solid #ddd">
+    <p class="sub">Legacy demo scopes (non-live only) remain available for compatibility:</p>
+    <div class="field"><label>Legacy scope</label>
       <select id="scope">
         <option value="demo">Create demo / mockup site (non-live)</option>
         <option value="new_site">Create draft site (non-live)</option>
         <option value="complete">Store complete config on draft only</option>
-        <option value="colours">Colours only (draft store)</option>
         <option value="my_template">Save as My Template</option>
       </select>
     </div>
-    <div class="field"><label>Template name (if saving)</label><input id="template-name" placeholder="Pink Diamond Vault — Editorial"></div>
-    <button class="btn solid" id="btn-apply" type="button">Confirm apply</button>
+    <button class="btn" id="btn-apply" type="button">Legacy confirm apply</button>
     <button class="btn" id="btn-template" type="button">Save as My Template</button>
-    <p class="msg" id="apply-msg"></p>
   </section>
 </main>
 
@@ -279,9 +302,43 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
 
   async function loadSites(){
     var { data } = await sb.from('sites').select('id,slug,business_name').order('business_name').limit(500);
-    $('source-site').innerHTML = '<option value="">— none —</option>' + (data||[]).map(function(s){
+    var opts = '<option value="">— none —</option>' + (data||[]).map(function(s){
       return '<option value="'+esc(s.id)+'">'+esc(s.business_name||s.slug)+'</option>';
     }).join('');
+    $('source-site').innerHTML = opts;
+    if ($('apply-target-site')) {
+      $('apply-target-site').innerHTML = '<option value="">— select site —</option>' + (data||[]).map(function(s){
+        return '<option value="'+esc(s.id)+'">'+esc(s.business_name||s.slug)+'</option>';
+      }).join('');
+    }
+  }
+
+  function applicationPayload(){
+    return {
+      draftId: state.draftId,
+      versionId: state.selectedVersionId,
+      mode: $('apply-mode').value,
+      confirmPlan: true,
+      acknowledgeWarnings: !!($('apply-ack-warnings') && $('apply-ack-warnings').checked),
+      mockImages: true,
+      contactConfirmation: {
+        businessEmail: ($('apply-business-email') && $('apply-business-email').value) || '',
+        leadRecipientEmail: ($('apply-lead-email') && $('apply-lead-email').value) || '',
+        phone: ($('apply-phone') && $('apply-phone').value) || '',
+        businessName: ($('apply-site-name') && $('apply-site-name').value) || ($('businessName') && $('businessName').value) || '',
+        confirmed: !!($('apply-contact-confirm') && $('apply-contact-confirm').checked)
+      },
+      siteIdentity: {
+        siteName: ($('apply-site-name') && $('apply-site-name').value) || ($('businessName') && $('businessName').value) || '',
+        slug: ($('apply-slug') && $('apply-slug').value) || '',
+        targetSiteId: ($('apply-target-site') && $('apply-target-site').value) || '',
+        templateName: ($('template-name') && $('template-name').value) || '',
+        templateVisibility: 'private'
+      },
+      targetSiteId: ($('apply-target-site') && $('apply-target-site').value) || '',
+      templateName: ($('template-name') && $('template-name').value) || '',
+      idempotencyKey: 'ws-apply-' + state.draftId + '-' + state.selectedVersionId + '-' + ($('apply-mode') && $('apply-mode').value)
+    };
   }
 
   function showFrom(step){
@@ -687,6 +744,62 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       msg.textContent = e.message || String(e);
     }
   };
+
+  if ($('btn-application-plan')) {
+    $('btn-application-plan').onclick = async function(){
+      var msg = $('apply-msg');
+      msg.className = 'msg'; msg.textContent = 'Building plan…';
+      try{
+        var body = applicationPayload();
+        delete body.confirmPlan;
+        var j = await api('/api/theme-studio/application-plan', { body: body });
+        $('apply-plan').textContent = (j.plan && j.plan.humanSummary ? j.plan.humanSummary.join('\n') : '') +
+          '\n\n' + JSON.stringify({
+            mode: j.plan && j.plan.applicationMode,
+            apps: j.plan && j.plan.marketplaceAppsInstalling,
+            warnings: j.validation && j.validation.warnings,
+            blocking: j.validation && j.validation.critical,
+            canCommit: j.canCommit
+          }, null, 2);
+        msg.className = j.canCommit ? 'msg ok' : 'msg bad';
+        msg.textContent = j.canCommit
+          ? 'Plan ready — review details, then create. Nothing was published.'
+          : 'Plan blocked — resolve critical issues before creating a site.';
+      }catch(e){
+        msg.className = 'msg bad';
+        msg.textContent = e.message || String(e);
+      }
+    };
+  }
+
+  if ($('btn-apply-concept')) {
+    $('btn-apply-concept').onclick = async function(){
+      var msg = $('apply-msg');
+      msg.className = 'msg'; msg.textContent = 'Creating…';
+      try{
+        var j = await api('/api/theme-studio/apply-concept', { body: applicationPayload() });
+        var line = j.notice || 'Done';
+        if (j.site) line += ' · draft site ' + (j.site.slug || j.site.id);
+        if (j.replacementDraft) line += ' · replacement ' + j.replacementDraft.id;
+        if (j.template) line += ' · template ' + j.template.name;
+        if (j.liveSiteChanged) line += ' · WARNING live changed';
+        $('apply-plan').textContent = JSON.stringify({
+          mode: j.mode,
+          site: j.site,
+          replacementDraft: j.replacementDraft,
+          template: j.template,
+          published: j.published,
+          liveSiteChanged: j.liveSiteChanged,
+          nextActions: j.nextActions
+        }, null, 2);
+        msg.className = 'msg ok';
+        msg.textContent = line;
+      }catch(e){
+        msg.className = 'msg bad';
+        msg.textContent = e.message || String(e);
+      }
+    };
+  }
 
   $('btn-apply').onclick = async function(){
     var msg = $('apply-msg');

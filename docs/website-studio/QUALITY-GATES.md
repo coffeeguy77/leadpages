@@ -30,3 +30,7 @@ Quality is **not** reduced to a single unexplained number. Issues are actionable
 ## Leakage detector
 
 Cross-industry detector inspects rendered text, draft config, SEO, JSON-LD, navigation, alt text, image search terms, and hidden/disabled section data that might still render. Studio drafts fail closed on plumbing/landscaping/emergency-trade leakage for non-trade industries.
+
+## Pre-application gate (Phase 5)
+
+`validateForApplication` re-runs quality, permissions, contact confirmation, image finalisation, and render smoke checks before any site/template write. Critical failures cannot be overridden — including by superusers.

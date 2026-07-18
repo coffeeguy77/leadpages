@@ -26,4 +26,6 @@ Phase 4 approval does **not**:
 
 Final Phase 4 action label: **Approve website draft** — not Publish website.
 
-Approved drafts remain available for a future controlled migration/diff phase.
+Phase 5 continues from `approved-for-application` into controlled application modes
+(`create_site`, `replacement_draft`, `private_template`) behind flags — still **not** publish.
+See [APPLICATION.md](APPLICATION.md).
