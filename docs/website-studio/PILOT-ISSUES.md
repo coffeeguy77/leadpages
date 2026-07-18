@@ -91,6 +91,21 @@ All critical/high must be resolved before partner rollout recommendation.
 
 ---
 
+## PILOT-008 — Preview shows plumbing hero for non-trade drafts
+
+| Field | Value |
+|-------|-------|
+| Severity | critical |
+| Stage | Preview renderer / content mapping |
+| Description | Pink Diamond Vault (and other non-trade briefs) preview showed “WE'LL CLEAR IT TODAY” / burst pipes |
+| Trace | Brief → Composer (correct) → draftConfig hero title/sub (correct) → adapter (correct) → **neutral shell** → Preview HTML |
+| Where plumbing entered | `landing-shell-neutral-v1.template.json` static hero mount + broken `applyCfg` (`hivis` theme token over-stripped → `setv(th.,…)` SyntaxError) so draft hero never replaced defaults; `replaceAll('__SITE_CONFIG__')` also corrupted `window.__SITE_CONFIG__` boot scripts |
+| Fix | Rebuild neutral shell preserving `hivis`; scrub plumbing residual; safe SITE_CONFIG inject; hide inactive sections; validation page if hero missing — **Website Studio preview only**; `trade.template.json` / live `api/render.js` untouched |
+| Test | `tests/website-studio-preview-no-trade-leak.test.js` (jewellery, coffee, lawyer, hair salon + Chrome dump-dom) |
+| Status | **resolved** (code) — needs production deploy |
+
+---
+
 ## PILOT-004 — Live interactive Bean Culture browser session
 
 | Field | Value |
@@ -126,6 +141,6 @@ All critical/high must be resolved before partner rollout recommendation.
 
 | Status | Count |
 |--------|------:|
-| resolved | 5 |
+| resolved | 6 |
 | open (ops) | 2 |
 | critical open (code) | 0 |
