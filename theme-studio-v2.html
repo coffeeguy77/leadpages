@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Theme Studio — LeadPages</title>
+<title>Website Studio — LeadPages</title>
 <link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
 <meta name="theme-color" content="#12151a">
@@ -58,7 +58,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
 </head>
 <body class="lp-super-admin">
 <div id="gate" class="login-card">
-  <h1>Theme Studio</h1>
+  <h1>Website Studio</h1>
   <p class="sub">Full-site concepts from a business brief. Draft-only — never writes live sites during generate/preview/refine.</p>
   <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username"></div>
   <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
@@ -69,7 +69,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
 <main id="app" class="wrap hidden">
   <div class="top">
     <div>
-      <h1 style="margin:0;font-family:var(--font-display)">Theme Studio</h1>
+      <h1 style="margin:0;font-family:var(--font-display)">Website Studio</h1>
       <p class="sub" style="margin:6px 0 0">Trade and non-trade foundations · real renderer preview · <span class="pill warn">draft only</span></p>
     </div>
     <div>
@@ -127,7 +127,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       <button class="btn solid" id="btn-select" type="button" disabled>Select this concept</button>
     </div>
     <p class="msg" id="preview-msg"></p>
-    <iframe id="preview" class="preview-frame" title="Theme Studio preview"></iframe>
+    <iframe id="preview" class="preview-frame" title="Website Studio preview"></iframe>
   </section>
 
   <section class="card hidden" id="panel-refine">
@@ -464,7 +464,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   async function boot(){
     var ok = await canUseThemeStudio();
     if(!ok){
-      $('gate-msg').textContent = 'Theme Studio V2 is limited to superusers and partners.';
+      $('gate-msg').textContent = 'Website Studio is limited to superusers and partners.';
       $('gate-msg').classList.remove('hidden');
       await sb.auth.signOut();
       return;

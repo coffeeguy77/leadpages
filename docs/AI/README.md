@@ -45,9 +45,9 @@ Legacy callers (assist, suburb intros, trade packs, IG enrich) still hit Anthrop
 | OpenAI + Gemini adapters | **Phase 5 complete** — raw `fetch`; `BRAIN_PROVIDER=openai\|gemini\|anthropic\|mock` |
 | AI Control Centre | **Phase 6 complete** — `/brain-admin` + `GET/POST /api/brain/control` (super-admin) |
 | Landing draft migration | **Phase 7 complete** — `POST /api/brain/landing-draft`; manage.html calls server; flag `BRAIN_LANDING_DRAFT=1` |
-| Theme Studio / Marketing Hub | Colour MVP [21](21-THEME-STUDIO.md); **V2 Phases 1–2** [23](23-THEME-STUDIO-V2.md); Marketing Hub [22](22-MARKETING-HUB.md) |
+| Website Studio / Colour / Marketing | [Website Studio](../website-studio/README.md); Colour [21](21-THEME-STUDIO.md); Marketing Hub [22](22-MARKETING-HUB.md) |
 
-**Phase:** Phases 0–7 shipped in code. Theme Studio / Marketing Hub remain separate product builds.
+**Phase:** Phases 0–9 shipped in code. Website Studio architecture reset: [docs/website-studio](../website-studio/README.md). Marketing Hub shipped.
 
 ---
 
@@ -90,10 +90,11 @@ Full principles: [02-VISION-AND-PRINCIPLES](02-VISION-AND-PRINCIPLES.md).
 | [18-RISKS-AND-DECISIONS](18-RISKS-AND-DECISIONS.md) | Risks, ADRs, open questions |
 | [19-DEVELOPER-GUIDE](19-DEVELOPER-GUIDE.md) | How features will call Brain |
 | [20-FUTURE-CAPABILITIES](20-FUTURE-CAPABILITIES.md) | Beyond V1 |
-| [21-THEME-STUDIO](21-THEME-STUDIO.md) | Colour MVP (future AI Colour Assistant) |
+| [21-THEME-STUDIO](21-THEME-STUDIO.md) | Stub → AI Colour Assistant / archive |
 | [22-MARKETING-HUB](22-MARKETING-HUB.md) | Phase 9 Marketing Hub |
-| [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md) | Theme Studio V2 Phases 1–2 foundations |
-| [THEME-STUDIO-IMPLEMENTATION-AUDIT](THEME-STUDIO-IMPLEMENTATION-AUDIT.md) | Rebuild audit + phased plan |
+| [23-THEME-STUDIO-V2](23-THEME-STUDIO-V2.md) | Stub → Website Studio / archive |
+| [THEME-STUDIO-IMPLEMENTATION-AUDIT](THEME-STUDIO-IMPLEMENTATION-AUDIT.md) | Stub → archive |
+| [Website Studio](../website-studio/README.md) | **Canonical** full-site product architecture |
 
 ---
 
@@ -109,7 +110,7 @@ Full principles: [02-VISION-AND-PRINCIPLES](02-VISION-AND-PRINCIPLES.md).
 | **5** | Additional providers |
 | **6** | AI Control Centre (superuser) |
 | **7** | First migration of smallest existing feature |
-| **8+** | Theme Studio / Marketing Hub (separate specs) |
+| **8+** | Website Studio ([docs/website-studio](../website-studio/README.md)) / Marketing Hub |
 
 Detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 

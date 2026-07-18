@@ -160,11 +160,14 @@ Short summary of every engineering document in `docs/`.
 | [AI/15-TESTING-STRATEGY](AI/15-TESTING-STRATEGY.md) | Test pyramid |
 | [AI/16-MIGRATION-PLAN](AI/16-MIGRATION-PLAN.md) | Safe migration order |
 | [AI/17-IMPLEMENTATION-ROADMAP](AI/17-IMPLEMENTATION-ROADMAP.md) | Phases 0–9 |
-| [AI/21-THEME-STUDIO](AI/21-THEME-STUDIO.md) | Phase 8 product spec stub |
-| [AI/22-MARKETING-HUB](AI/22-MARKETING-HUB.md) | Phase 9 product spec stub |
+| [website-studio/](website-studio/) | **Website Studio** — vision, architecture, roadmap (canonical) |
+| [AI/21-THEME-STUDIO](AI/21-THEME-STUDIO.md) | Stub → AI Colour Assistant / archive |
+| [AI/22-MARKETING-HUB](AI/22-MARKETING-HUB.md) | Phase 9 Marketing Hub |
+| [AI/23-THEME-STUDIO-V2](AI/23-THEME-STUDIO-V2.md) | Stub → Website Studio / archive |
+| [archive/theme-studio/](archive/theme-studio/) | Archived Theme Studio docs (preserved) |
 | [AI/18-RISKS-AND-DECISIONS](AI/18-RISKS-AND-DECISIONS.md) | Risks, ADRs, open questions |
 | [AI/19-DEVELOPER-GUIDE](AI/19-DEVELOPER-GUIDE.md) | How features will call Brain |
-| [AI/20-FUTURE-CAPABILITIES](AI/20-FUTURE-CAPABILITIES.md) | Theme Studio, Marketing Hub, beyond V1 |
+| [AI/20-FUTURE-CAPABILITIES](AI/20-FUTURE-CAPABILITIES.md) | Beyond V1 (see website-studio for full-site product) |
 
 ---
 
