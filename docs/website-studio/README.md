@@ -1,6 +1,6 @@
 # Website Studio
 
-**Status:** Phase 5 complete — controlled application (flagged OFF by default).  
+**Status:** Phase 2 complete — Website Composer implemented (`lib/website-composer/`).  
 **Audience:** Product, engineering, AI agents  
 **Last updated:** 2026-07-18
 
@@ -43,5 +43,5 @@
 
 ## Stop rule
 
-Phase 5 is implemented with **application flags default OFF**.  
-Do **not** begin global production rollout, public Marketplace publishing, or automatic live-site replacement until explicitly approved.
+Phase 2 (Website Composer) is implemented.  
+Do **not** begin Image Service / Pexels / publish changes until Phase 3 is approved — see [ROADMAP.md](ROADMAP.md).

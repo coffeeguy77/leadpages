@@ -1,7 +1,7 @@
 # Website Studio — Current State Report
 
-**Updated:** 2026-07-18 (Phase 5 — controlled application)  
-**Scope:** Website Studio + Composer + Image Service + Application layer.
+**Updated:** 2026-07-18 (Phase 2 Website Composer)  
+**Scope:** Website Studio + AI Colour Assistant + Composer.
 
 ---
 
@@ -11,54 +11,113 @@
 
 | Capability | Status |
 |------------|--------|
-| Brief → 3 concepts → compare → preview → refine → approve | Works (Phase 4) |
-| Neutral-shell preview | Works |
-| Create website from approved design | Works behind flags (Phase 5) |
-| Replacement draft (live unchanged) | Works behind flags |
-| Private template save | Works behind flags |
-| Live publish / live overwrite | Not enabled by Phase 5 |
+| Draft workspace + versions | Works |
+| Generate → preview → refine → approve | Works (generation via Composer) |
+| Signed draft preview | Works (landing shell HTML) |
+| Live apply | Gated off by default |
 
-### Application layer (`lib/website-studio-application/`)
+### Website Composer (`lib/website-composer/`) — Phase 2 ✅
 
 | Capability | Status |
 |------------|--------|
-| Pre-application validation | Works |
-| Application plan + human diff | Works |
-| Safe config assembler | Works |
-| Image finalisation (import plan / mock) | Works |
-| Audit + idempotency (memory + API) | Works |
-| Feature flags default OFF | Works |
-
-### AI Colour Assistant (`/theme-studio`)
-
-Independent colour tool — **no** Website Studio application permissions.
-
----
-
-## 2. Flags (default)
-
-| Flag | Default |
-|------|---------|
-| `WEBSITE_STUDIO_APPLICATION` | OFF |
-| `WEBSITE_STUDIO_CREATE_SITE` | OFF |
-| `WEBSITE_STUDIO_REPLACEMENT_DRAFT` | OFF |
-| `WEBSITE_STUDIO_PRIVATE_TEMPLATE` | OFF |
-| `THEME_STUDIO_ALLOW_LIVE_APPLY` | OFF |
+| Business classification | Works |
+| Structural foundations (16 categories) | Works — **no** `sourceTemplateId: trade` |
+| Marketplace recipes (independent) | Works |
+| Explicit draft composition | Works — `contentInheritance: none` |
+| Full section population + disable unused | Works |
+| Section provenance | Works |
+| Diagnostics | Works |
+| Image briefs (placeholders only) | Works |
+| Six business fixtures + tests | Works |
 
 ---
 
-## 3. Explicitly not done
+## 2. Composition behaviour (Phase 2)
 
-- Automatic publish of generated sites  
-- Automatic replacement of live sites  
-- Public Marketplace template publishing  
-- Global rollout enablement  
-- Partner/client AI image generation  
+```text
+Brief → classify → foundation → recipe → layout
+      → content + image briefs → validate
+      → explicit draft (no trade shallow merge)
+      → diagnostics
+```
+
+### Trade dependency removed from composition
+
+| Before | After |
+|--------|-------|
+| Every foundation `sourceTemplateId: "trade"` | `sourceTemplateId: null` |
+| Shallow merge over source / defaults | Empty skeleton + explicit sections |
+| Missing fields → plumber `DEFAULT_TRADE_SECTIONS` bleed | Unused sections forced `on: false` |
+| Recipe = foundation bag | Recipes independent (`recipes-data.js`) |
+
+**Still technical:** preview HTML asset remains `trade.template.json`, documented as `landing-shell-v1`. This is a renderer shell, not content inheritance.
+
+---
+
+## 3. What is reusable
+
+- LeadPages Brain gateway  
+- Concept validator + leakage detectors  
+- Draft/version store (`theme_studio_*` legacy tables)  
+- Preview token + sandboxed HTML preview  
+- Marketplace `section_key` catalog  
+- Cloudinary upload APIs (for Phase 3 Image Service)  
+
+---
+
+```text
+Brief → classify → foundation → recipe
+      → select supported apps → adapt/install
+      → content → structured image briefs
+      → Image Service → validate → explicit draft
+      → diagnostics
+```
+
+- AI Colour Assistant as a separate product  
+- Draft-only generation rule  
+- Protected-field policy  
+- Superuser + partner V1 audience  
+- Legacy URLs/APIs/tables until a dedicated migration  
+
+---
+
+## 5. What should be rewritten / next
+
+| Area | Status |
+|------|--------|
+| Website Composer | **Done (Phase 2)** |
+| Marketplace Intelligence (file-based) | **Done (Phase 2)** — deepen later |
+| Image Service | Phase 3 |
+| Full generation UX polish | Phase 4 |
+| App install onto `site_apps` | Later (plan emitted on recipe) |
+| Non-shell renderer diversity | Later |
+
+---
+
+## 6. Deprecated
+
+| Item | Disposition |
+|------|-------------|
+| Product name “Theme Studio” for full site | Deprecated in UI/docs |
+| Trade template as content foundation | Deprecated in Composer |
+| Shallow merge generation path | Replaced by `buildDraftConfig` for Composer concepts |
+
+Legacy `adaptConceptToSiteConfig` remains for older fixture concepts without `recipeId`.
+
+---
+
+## 7. Unchanged this phase
+
+- Public URLs `/theme-studio*`  
+- API routes `/api/theme-studio/*`  
+- DB tables `theme_studio_*`  
+- Publish pipeline  
+- Live apply defaults  
+- Colour Assistant write path  
+- No Pexels / Image Service  
 
 ---
 
 ## 4. Tests
 
-| Suite | Result |
-|-------|--------|
-| Full `npm test` | 334 pass / 0 fail (Phase 5 landing) |
+Phase 2 delivers a real **Website Composer**: foundations are structural, recipes are independent, drafts are explicitly composed with provenance and diagnostics, and trade content inheritance is removed from the generation path. Preview still uses a technical landing HTML shell. Image Service and publishing changes remain out of scope until approved.

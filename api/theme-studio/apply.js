@@ -128,6 +128,7 @@ module.exports = async function themeStudioApply(req, res) {
       slug,
       business_name: bp.businessName || scoped.name || 'Theme Studio Draft',
       template: 'trade',
+      vertical: 'trade',
       status: 'draft',
       is_demo: scope === 'demo',
       is_mockup: true,
