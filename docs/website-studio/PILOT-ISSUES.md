@@ -106,6 +106,23 @@ All critical/high must be resolved before partner rollout recommendation.
 
 ---
 
+## PILOT-009 — Image approve hits `theme_studio_versions_kind_check`
+
+| Field | Value |
+|-------|-------|
+| Severity | critical |
+| Stage | Images (Approve selection) |
+| Description | Approving an image (or other newer version kinds) failed with `new row for relation "theme_studio_versions" violates check constraint "theme_studio_versions_kind_check"` |
+| Reproduction | Pink Diamond Vault draft → Images → Approve selection |
+| Expected | New draft version with `kind: images` persisted |
+| Actual | Postgres check rejected `images` (and similarly `approve` / `restore` / edit kinds on older DBs) |
+| Root cause | Live table still had the original check (`generate`/`refine`/`select`/`apply`/`template`). Repo `CREATE TABLE IF NOT EXISTS` does not alter existing constraints; expand SQL was not applied. |
+| Fix | Apply `db/theme_studio_versions_kind_expand.sql`. Code also retries once with a legacy-compatible kind (`images`→`refine`, etc.) and surfaces the migration path if both fail. |
+| Test | `tests/theme-studio-kind-check.test.js` |
+| Status | **resolved** (code + ops: run expand SQL on pilot Supabase) |
+
+---
+
 ## PILOT-004 — Live interactive Bean Culture browser session
 
 | Field | Value |
@@ -141,6 +158,6 @@ All critical/high must be resolved before partner rollout recommendation.
 
 | Status | Count |
 |--------|------:|
-| resolved | 6 |
+| resolved | 7 |
 | open (ops) | 2 |
 | critical open (code) | 0 |

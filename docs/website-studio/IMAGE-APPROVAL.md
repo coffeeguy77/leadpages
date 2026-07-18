@@ -8,7 +8,7 @@
 2. Selections stored on draft: `__websiteComposer.imageSelections[]`  
 3. Preview reuses stored URLs / metadata (no re-search on ordinary preview)  
 4. User may search again / pick alternate via Image Service APIs  
-5. User marks approval state; persisted via `POST /api/theme-studio/persist-images`  
+5. User marks approval state; persisted via `POST /api/theme-studio/persist-images` (writes `theme_studio_versions.kind = images` — requires `db/theme_studio_versions_kind_expand.sql` on databases created with the original kind check)  
 6. Import plan → Cloudinary only for selected/approved assets  
 7. Preserve original provider attribution after import  
 
