@@ -1,0 +1,107 @@
+/**
+ * LeadPages AI stroke-icon system — CSS-only motion.
+ * Monochrome via currentColor; theme-aware; CSS-only (no external motion libs).
+ */
+:root {
+  --lp-ai-icon-stroke: 1.5;
+  --lp-ai-icon-size: 48px;
+  --lp-ai-icon-color: var(--ink, #13161b);
+  --lp-ai-icon-muted: var(--ink-soft, #5b6878);
+}
+
+.lp-ai-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--lp-ai-icon-size);
+  height: var(--lp-ai-icon-size);
+  color: var(--lp-ai-icon-color);
+  line-height: 0;
+}
+
+.lp-ai-icon svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: var(--lp-ai-icon-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lp-ai-icon--lg { --lp-ai-icon-size: 72px; }
+.lp-ai-icon--xl { --lp-ai-icon-size: 96px; }
+.lp-ai-icon--sm { --lp-ai-icon-size: 28px; }
+.lp-ai-icon--muted { color: var(--lp-ai-icon-muted); }
+
+/* Path draw */
+.lp-ai-icon[data-anim='draw'] .lp-ai-stroke {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: lp-ai-draw 1.6s ease forwards;
+}
+.lp-ai-icon[data-anim='draw'].is-active .lp-ai-stroke,
+.lp-ai-icon.is-playing[data-anim='draw'] .lp-ai-stroke {
+  animation: lp-ai-draw 1.6s ease forwards;
+}
+
+@keyframes lp-ai-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Soft pulse (opacity + scale) */
+.lp-ai-icon[data-anim='pulse'] svg {
+  animation: lp-ai-pulse 2.4s ease-in-out infinite;
+}
+@keyframes lp-ai-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* Slow rotate (search / sparkles) */
+.lp-ai-icon[data-anim='spin'] svg {
+  animation: lp-ai-spin 8s linear infinite;
+}
+@keyframes lp-ai-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Gentle float */
+.lp-ai-icon[data-anim='float'] svg {
+  animation: lp-ai-float 3.2s ease-in-out infinite;
+}
+@keyframes lp-ai-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Fade cycle for stage icons */
+.lp-ai-icon[data-anim='fade'] svg {
+  animation: lp-ai-fade 2s ease-in-out infinite;
+}
+@keyframes lp-ai-fade {
+  0%, 100% { opacity: 0.35; }
+  40%, 60% { opacity: 1; }
+}
+
+/* Wand spark trail */
+.lp-ai-icon[data-anim='wand'] .lp-ai-wand-star {
+  transform-origin: center;
+  animation: lp-ai-twinkle 1.8s ease-in-out infinite;
+}
+@keyframes lp-ai-twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-ai-icon svg,
+  .lp-ai-icon .lp-ai-stroke,
+  .lp-ai-icon .lp-ai-wand-star {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

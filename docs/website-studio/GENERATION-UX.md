@@ -1,51 +1,75 @@
 # Website Studio — Generation UX
 
-**Updated:** 2026-07-18 (Phase 4)  
-**UI surface:** `/theme-studio-v2` (legacy technical path)
+**Updated:** 2026-07-18 (Phase 7)  
+**UI surface:** `/theme-studio-v2`
+
+## Phase 7 intent
+
+Presentation-only refinement. Website Studio should feel like briefing a creative agency — not filling a CMS form.
+
+**Unchanged in Phase 7:** Website Composer, Brain, Marketplace, Image Service, Application, Publishing, Permissions, Renderer.
+
+---
 
 ## Workflow
 
 ```text
-Brief → Generate → Compare → Preview → Refine / Edit → Approve draft
+Business → Services → Brand → Goals → Generate Concepts
+        → Compare → Preview → Refine / Images → Approve → Apply (gated)
 ```
 
-Live publish / apply is not available in this phase.
+Live publish is never performed from generate/preview/refine.
 
-### 1. Business brief
+### Wizard steps (one viewport each)
 
-Supports identity, offer, audience, conversion, brand, and trust fields.  
-Industry-aware classification avoids forcing trade-only questions onto retail/hospitality/professional briefs.  
-Briefs can be saved on the draft and resumed. Validation runs before generation.
+1. **Business** — name, industry, type, years, location, service areas; optional existing website / redesign flag (no analysis yet)
+2. **Services** — primary offer, services (chips + free text), audience, differentiators, short description
+3. **Brand** — style chips, mood, colours, optional logo file name, existing images notes
+4. **Goals** — primary + secondary goals as large selectable cards (appointment, quote, booking, phone, email, visit, newsletter)
+5. **Generate** — summary (business, industry, services, brand, goal, estimated apps/pages/images) + hero CTA **Generate 3 Website Concepts**
 
-### 2. Generate three concepts
+Progress pills stay sticky at the top. Previous / Next + **Save Draft** autosave via draft create/PATCH after each step.
 
-`POST api/theme-studio/generate-concepts` → `composeWebsiteConcepts`.
+### AI generation theatre
 
-Each concept includes:
+No spinner. Immersive sequence (~12s minimum) with monochrome stroke SVG icons and stage copy:
 
-- Concise name (Signature / Contrast / Clarity · recipe)
-- Foundation, recipe, layout, hero treatment
-- Installed Marketplace apps + section order
-- Theme / typography / image direction
-- Diagnostics + quality status
+Understanding your business → foundation → Marketplace apps → layouts → content → imagery → concepts → almost ready.
 
-Concepts differ by foundation interpretation where candidates exist, hero type, app selection, section order, density, trust/CTA strategy, and theme — not cosmetic recolour alone.
+Animated LeadPages logo appears in the overlay. `prefers-reduced-motion` disables motion.
 
-### 3. Compare
+### Concept cards (human language)
 
-Comparison cards show preview thumbnails, style, conversion strategy, foundation/recipe, apps, hero, image direction, quality status, and warnings.  
-Actions: open, select, regenerate one/all, return to brief. Prior generations remain as versions.
+Cards show concept name, one-line summary, best suited for, conversion focus, design personality, colour swatches, and friendly feature labels (e.g. Product Showcase, Appointment Booking) — not raw app ids.
 
-### 4. Preview
+Personalities differentiate concepts:
 
-Full renderer preview on `landing-shell-neutral-v1` with desktop and mobile viewports, refresh, and section identification for editing. Draft preview is signed / not for public indexing.
+- **Luxury Editorial** — large imagery, magazine pacing
+- **Premium Conversion** — offer / booking-led
+- **Boutique Experience** — reviews-first trust
 
-### 5. Refine / edit
+### Preview
 
-Natural-language refinement via LeadPages Brain with deterministic planner fallback (`lib/website-composer/refine.js`).  
-Direct edits via `api/theme-studio/direct-edit` using writable config paths only.
+~70% width desktop frame; Desktop / Tablet / Mobile toggles; iframe scroll isolated from the wizard (`overscroll-behavior`). Sticky bottom action bar: Previous, Save Draft, Generate Again, Select Concept, Continue.
 
-### 6. Approve draft
+---
 
-`api/theme-studio/approve-draft` sets approval state (`draft` → `selected` → `ready-for-review` → `approved-for-application`).  
-Does **not** mutate live site configuration or publish.
+## SVG architecture
+
+| Asset | Role |
+|-------|------|
+| `/assets/lp-ai-icons.js` + `.css` | Reusable AI stroke icons (`currentColor`, CSS anim: draw/pulse/float/spin/fade/wand) |
+| `/assets/lp-logo.js` + `.css` + `leadpages-logo.svg` | Themed animated LeadPages logo |
+| `/assets/lp-built-with.js` + `.css` | Optional customer-site “Built with LeadPages” badge (opt-in; never forced by Composer) |
+| `/assets/website-studio.css` + `.js` | Phase 7 studio chrome |
+
+Future AI tools should reuse `LPAiIcons` and `LPLogo`.
+
+---
+
+## API surface (unchanged)
+
+- `POST /api/theme-studio/drafts` · `PATCH /api/theme-studio/drafts?id=`
+- `POST /api/theme-studio/generate-concepts`
+- `POST /api/theme-studio/preview`
+- refine / images / approve / apply endpoints unchanged
