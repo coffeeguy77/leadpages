@@ -23,7 +23,7 @@ Live publish is never performed from generate/preview/refine.
 ### Wizard steps (one viewport each)
 
 1. **Business** — name, industry, type, years, location, service areas; optional existing website / redesign flag (no analysis yet)
-2. **Services** — primary offer, services (chips + free text), audience, differentiators, short description
+2. **Services** — primary offer, **Main Services / Products**, audience, differentiators, short description / notes (these feed homepage services, image trust tiles, project cards, and brand story — not optional fluff)
 3. **Brand** — style chips, mood, colours, optional logo file name, existing images notes
 4. **Goals** — primary + secondary goals as large selectable cards (appointment, quote, booking, phone, email, visit, newsletter)
 5. **Generate** — summary (business, industry, services, brand, goal, estimated apps/pages/images) + hero CTA **Generate 3 Website Concepts**
