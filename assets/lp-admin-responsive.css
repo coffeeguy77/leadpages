@@ -1735,7 +1735,14 @@ body.lp-hub-embed.lp-partner-page #view-loading .center-card {
 body.lp-hub-embed #lp-visitor-a11y,
 body.lp-hub-embed .lp-visitor-a11y,
 body.lp-hub-embed button.lp-a11y-fab,
-body.lp-hub-embed [data-lp-a11y-fab] {
+body.lp-hub-embed [data-lp-a11y-fab],
+body.lp-hub-embed #lpa-root {
+  display: none !important;
+}
+
+/* Website Studio / super-admin: visitor FAB must not cover sticky footers */
+body.ws-body #lpa-root,
+body.lp-super-admin #lpa-root {
   display: none !important;
 }
 
