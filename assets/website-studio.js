@@ -24,7 +24,11 @@
     'Luxury Jewellery',
     'Coffee Cart',
     'Corporate Events',
-    'Bespoke Design'
+    'Bespoke Design',
+    'RC Cars & Ready-to-Run',
+    'Parts & Hop-ups',
+    'Servicing & Tuning',
+    'Track Days'
   ];
   var GOALS = [
     { id: 'appointment', label: 'Appointment', desc: 'Book private or in-person sessions', cta: 'Book an appointment' },
@@ -74,7 +78,9 @@
     styleChips: [],
     serviceChips: [],
     generating: false,
-    activeImageSelection: null
+    activeImageSelection: null,
+    logoDataUrl: null,
+    logoFileName: ''
   };
 
   function esc(s) {
@@ -267,15 +273,28 @@
     syncStyleField();
     syncServicesField();
     syncGoals();
-    var logoNote = ($('logoName') && $('logoName').value) || '';
+    var logoNote = ($('logoName') && $('logoName').value) || state.logoFileName || '';
     var existing = ($('existingWebsite') && $('existingWebsite').value) || '';
+    var existingImages = ($('existingImages') && $('existingImages').value) || '';
     var notes = ($('notes') && $('notes').value) || '';
     var extras = [];
     if (logoNote) extras.push('Logo on file: ' + logoNote);
     if (existing) extras.push('Existing website: ' + existing);
+    if (existingImages) extras.push('Existing images: ' + existingImages);
     var preferred = ($('preferredColours') && $('preferredColours').value) || '';
     if (preferred) extras.push('Preferred colours: ' + preferred);
     var combinedNotes = [notes].concat(extras).filter(Boolean).join('\n');
+    var preferredColours = [];
+    ['primaryColour', 'secondaryColour', 'accentColour'].forEach(function (id) {
+      var el = $(id);
+      if (el && el.value) preferredColours.push(el.value);
+    });
+    if (preferred) {
+      preferred.split(/[,;/]+/).forEach(function (c) {
+        var t = String(c || '').trim();
+        if (t && preferredColours.indexOf(t) < 0) preferredColours.push(t);
+      });
+    }
     return {
       businessName: $('businessName').value,
       industry: $('industry').value,
@@ -291,6 +310,9 @@
       location: $('location').value,
       audience: $('audience').value,
       desiredStyle: $('desiredStyle').value,
+      preferredColours: preferredColours,
+      logoImageUrl: state.logoDataUrl || '',
+      existingImages: existingImages,
       notes: combinedNotes
     };
   }
@@ -955,7 +977,29 @@
     if ($('logoFile')) {
       $('logoFile').onchange = function () {
         var f = $('logoFile').files && $('logoFile').files[0];
-        if ($('logoName')) $('logoName').value = f ? f.name : '';
+        if (!f) {
+          state.logoDataUrl = null;
+          state.logoFileName = '';
+          if ($('logoName')) $('logoName').value = '';
+          return;
+        }
+        if (f.size > 2500000) {
+          setMsg('ws-autosave-msg', 'Logo too large (max ~2.5 MB). Use a smaller PNG/SVG/JPG.', 'bad');
+          $('logoFile').value = '';
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function () {
+          state.logoDataUrl = String(reader.result || '');
+          state.logoFileName = f.name;
+          if ($('logoName')) $('logoName').value = f.name;
+          setMsg('ws-autosave-msg', 'Logo ready — will apply as image on generate.', 'ok');
+        };
+        reader.onerror = function () {
+          state.logoDataUrl = null;
+          setMsg('ws-autosave-msg', 'Could not read logo file.', 'bad');
+        };
+        reader.readAsDataURL(f);
       };
     }
 
