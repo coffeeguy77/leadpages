@@ -1,6 +1,7 @@
-// api/marketing-html.js — serve marketing .html with platform Google verification meta
-// Used only for the marketing homepage rewrite. Reads static HTML from disk or fetches
-// the deployed static asset (Vercel serverless cannot see repo-root .html by default).
+// api/marketing-html.js — serve marketing .html with platform SEO head tags
+// Rewrites on the marketing host inject Google verification, canonical, and og:url.
+// Reads static HTML from disk or fetches the deployed static asset (Vercel serverless
+// cannot see repo-root .html by default).
 
 const fs = require('fs');
 const path = require('path');
@@ -46,7 +47,10 @@ module.exports = async (req, res) => {
 
     try {
       const cfg = await platformSeo.loadPlatformSeoConfig();
-      html = platformSeo.injectGoogleMeta(html, cfg);
+      html = platformSeo.injectMarketingHead(html, cfg, {
+        file: file,
+        path: url.searchParams.get('path') || '',
+      });
     } catch (seoErr) {
       console.error('marketing-html seo inject skipped:', seoErr && seoErr.message);
     }
