@@ -300,10 +300,16 @@
     var path = (global.location && global.location.pathname) || '';
     if (!/^(www\.)?leadpages\.(com\.au|webculture\.au)$/i.test(host)) return false;
     if (global.document && global.document.body) {
-      if (global.document.body.getAttribute('data-lp-admin-page')) return false;
-      if (global.document.body.classList.contains('lp-cmd-on')) return false;
+      var body = global.document.body;
+      if (body.getAttribute('data-lp-admin-page')) return false;
+      if (body.classList.contains('lp-cmd-on')) return false;
+      // Super-admin / Website Studio tools — never show the visitor a11y FAB
+      // (it covers sticky action bars like Theme Studio "Next").
+      if (body.classList.contains('lp-super-admin') || body.classList.contains('ws-body')) return false;
     }
-    if (/^\/(manage|partner|partners-admin|apps-admin|marketplace-admin)(\/|$)/.test(path)) return false;
+    if (/^\/(manage|partner|partners-admin|apps-admin|marketplace-admin|theme-studio|theme-studio-v2|command|admin)(\/|$)/.test(path)) {
+      return false;
+    }
     return true;
   }
 

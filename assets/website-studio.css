@@ -392,6 +392,14 @@ html, body.ws-body {
 .ws-actionbar__left,
 .ws-actionbar__right { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
+/* Visitor a11y FAB must not cover Studio Next / action bar controls */
+body.ws-body #lpa-root,
+body.lp-super-admin #lpa-root,
+body.ws-body #lp-visitor-a11y,
+body.lp-super-admin #lp-visitor-a11y {
+  display: none !important;
+}
+
 /* —— Generation overlay —— */
 .ws-gen-overlay:not(.ws-hidden) ~ .ws-actionbar,
 body:has(#ws-gen-overlay:not(.ws-hidden)) .ws-actionbar {
