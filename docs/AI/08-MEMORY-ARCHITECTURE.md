@@ -13,7 +13,7 @@
 | Request memory | Single call messages | Implicit |
 | Conversation memory | Multi-turn assist | Optional short window (assist already caps history client-side) |
 | Feature-session memory | Wizard state (Theme Studio) | Later |
-| Site memory | Approved decisions / brand notes | Later |
+| Site memory | Approved decisions / brand notes | **Site Brain Phase 1** — see [docs/ai-team/SITE-BRAIN](../ai-team/SITE-BRAIN.md) |
 | Business memory | Cross-site account memory | Later / careful |
 | Partner memory | Partner-level preferences | Later |
 | User preferences | Model/verbosity prefs | Later |
@@ -58,7 +58,14 @@
 
 ---
 
+## Site Brain (shipped Phase 1)
+
+Per-site durable snapshot in `site_brains` with provenance facts, agent memory namespaces, recommendations, and audit events. Deployed environments use the database adapter only (`SITE_BRAIN_STORAGE`); missing migrations fail closed with `site_brain_storage_unavailable`.
+
+Canonical docs: [ai-team/SITE-BRAIN](../ai-team/SITE-BRAIN.md), [ai-team/SITE-BRAIN-SCHEMA](../ai-team/SITE-BRAIN-SCHEMA.md).
+
 ## Related
 
 - Observability: [10-OBSERVABILITY-AND-COSTS](10-OBSERVABILITY-AND-COSTS.md)  
-- Data model: [12-DATA-MODEL](12-DATA-MODEL.md)
+- Data model: [12-DATA-MODEL](12-DATA-MODEL.md)  
+- AI Website Team: [docs/ai-team](../ai-team/README.md)

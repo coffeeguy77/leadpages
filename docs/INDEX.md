@@ -160,7 +160,8 @@ Short summary of every engineering document in `docs/`.
 | [AI/15-TESTING-STRATEGY](AI/15-TESTING-STRATEGY.md) | Test pyramid |
 | [AI/16-MIGRATION-PLAN](AI/16-MIGRATION-PLAN.md) | Safe migration order |
 | [AI/17-IMPLEMENTATION-ROADMAP](AI/17-IMPLEMENTATION-ROADMAP.md) | Phases 0–9 |
-| [website-studio/](website-studio/) | **Website Studio** — vision, architecture, roadmap (canonical) |
+| [ai-team/](ai-team/) | **AI Website Team + Site Brain** — Phase 1 advisory (canonical) |
+| [website-studio/](website-studio/) | **Website Studio** — Experimental / On Ice (superuser only) |
 | [AI/21-THEME-STUDIO](AI/21-THEME-STUDIO.md) | Stub → AI Colour Assistant / archive |
 | [AI/22-MARKETING-HUB](AI/22-MARKETING-HUB.md) | Phase 9 Marketing Hub |
 | [AI/23-THEME-STUDIO-V2](AI/23-THEME-STUDIO-V2.md) | Stub → Website Studio / archive |
@@ -192,6 +193,7 @@ Short summary of every engineering document in `docs/`.
 | **Images / Cloudinary** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | [10-EDITOR](10-EDITOR.md) | `api/cloudinary/*` |
 | **Instagram feed** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | [02-DATABASE](02-DATABASE.md) `ig_connections` | `api/instagram/*`, `lib/ig/*` |
 | **AI / LeadPages Brain** | [AI/README](AI/README.md) | [AI/01-CURRENT-STATE-AUDIT](AI/01-CURRENT-STATE-AUDIT.md), [AI/16-MIGRATION-PLAN](AI/16-MIGRATION-PLAN.md) | Runtime: `lib/brain/`, `/api/brain/*`, `/brain-admin`; legacy direct Anthropic still in assist/packs/suburb/IG |
+| **AI Website Team / Site Brain** | [ai-team/README](ai-team/README.md) | [ai-team/SITE-BRAIN](ai-team/SITE-BRAIN.md), [ai-team/CAPABILITY-REGISTRY](ai-team/CAPABILITY-REGISTRY.md), [AI/00-STATUS](AI/00-STATUS.md) | `lib/site-brain/`, `lib/ai-team/`, `api/site-brain/*`, `api/ai-team/*`, `assets/ai-website-team.js`, `db/site_brain.sql` |
 | **Database migration** | [02-DATABASE](02-DATABASE.md) | [12-CODING-STANDARDS](12-CODING-STANDARDS.md) | `db/*.sql` |
 | **UI / visual polish** | [11-DESIGN-SYSTEM](11-DESIGN-SYSTEM.md) | [10-EDITOR](10-EDITOR.md) | `manage.html` CSS |
 | **Tech debt / planning** | [13-ROADMAP](13-ROADMAP.md) | [01-ARCHITECTURE](01-ARCHITECTURE.md) §22 | — |

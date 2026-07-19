@@ -206,7 +206,7 @@ describe('Theme Studio V2 product (phases 3–10)', () => {
 
   it('access policy still denies clients', () => {
     assert.equal(canAccessThemeStudio({ isClient: true }).allowed, false);
-    assert.equal(canAccessThemeStudio({ isPartner: true }).allowed, true);
+    assert.equal(canAccessThemeStudio({ isPartner: true }).allowed, false);
   });
 
   it('foundation candidates remain stable for fixtures', () => {

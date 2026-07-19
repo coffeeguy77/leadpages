@@ -894,13 +894,12 @@
   }
 
   async function canUseThemeStudio() {
+    // Website Studio is Experimental / On Ice — superuser pilot only.
     var sess = await sb.auth.getSession();
     var user = sess && sess.data && sess.data.session && sess.data.session.user;
     if (!user) return false;
     var profRes = await sb.from('profiles').select('is_super_admin').eq('id', user.id).maybeSingle();
-    if (profRes.data && profRes.data.is_super_admin) return true;
-    var partnerRes = await sb.from('partners').select('id,status').eq('user_id', user.id).maybeSingle();
-    return !!(partnerRes.data && partnerRes.data.status === 'active');
+    return !!(profRes.data && profRes.data.is_super_admin);
   }
 
   async function loadFoundations() {
@@ -1377,7 +1376,8 @@
   async function boot() {
     var ok = await canUseThemeStudio();
     if (!ok) {
-      $('gate-msg').textContent = 'Website Studio is limited to superusers and partners.';
+      $('gate-msg').textContent =
+        'Website Studio is Experimental / On Ice — superuser pilot only. Partners and clients cannot access it.';
       $('gate-msg').classList.remove('ws-hidden');
       await sb.auth.signOut();
       return;

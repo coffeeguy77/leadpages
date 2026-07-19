@@ -352,12 +352,13 @@ describe('Theme Studio Phase 2 — config adapter', () => {
 });
 
 describe('Theme Studio Phase 2 — access + brain contracts', () => {
-  it('allows superusers and partners; denies clients in V1', () => {
+  it('allows superusers only; denies partners and clients (On Ice)', () => {
     assert.equal(canAccessThemeStudio({ isSuperuser: true }).allowed, true);
-    assert.equal(canAccessThemeStudio({ isPartner: true }).allowed, true);
+    assert.equal(canAccessThemeStudio({ isPartner: true }).allowed, false);
     assert.equal(canAccessThemeStudio({ isClient: true }).allowed, false);
-    assert.equal(canAccessThemeStudio({ role: 'client' }).reason, 'client_disabled_in_v1');
+    assert.equal(canAccessThemeStudio({ role: 'client' }).allowed, false);
     assert.equal(ROLE_POLICY.client, false);
+    assert.equal(ROLE_POLICY.partner, false);
   });
 
   it('documents brain task contracts without provider wiring', () => {
