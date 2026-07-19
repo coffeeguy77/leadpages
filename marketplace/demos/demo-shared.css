@@ -953,6 +953,8 @@ section[data-sec="featureStrip"] .section-head{text-align:var(--fstr-head-align,
 section[data-sec="serviceProcess"] .eyebrow{color:var(--sp-eyebrow,inherit)}
 section[data-sec="serviceProcess"] .section-head h2{color:var(--sp-heading,inherit)}
 section[data-sec="serviceProcess"] .section-head p{color:var(--sp-intro,inherit)}
+section[data-sec="serviceProcess"].sp-sec-stroke-on{border-top:4px solid var(--sp-sec-stroke,var(--pipe,#1f7bb8))}
+section[data-sec="serviceProcess"]:not(.sp-sec-stroke-on){border-top:0}
 @media(max-width:900px){
   .sp-steps{flex-wrap:wrap;gap:22px 0}
   .sp-step{flex:1 1 100%}
