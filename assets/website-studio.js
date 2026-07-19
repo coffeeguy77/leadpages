@@ -321,6 +321,7 @@
   function showWizard(step) {
     state.phase = 'wizard';
     state.wizardStep = step;
+    unloadPreviewFrame();
     paintProgress();
     [1, 2, 3, 4, 5].forEach(function (n) {
       var el = $('ws-step-' + n);
@@ -349,6 +350,7 @@
     $('panel-images').classList.toggle('ws-hidden', step < 3);
     $('panel-approve').classList.toggle('ws-hidden', step < 4);
     $('panel-apply').classList.toggle('ws-hidden', step < 4);
+    if (step < 2) unloadPreviewFrame();
     if (step >= 3) paintImageSlots();
     updateActionBar();
   }
@@ -713,6 +715,7 @@
   async function loadPreview() {
     if (!state.draftId || !state.selectedVersionId) return;
     setMsg('preview-msg', 'Opening preview…', '');
+    var frame = $('preview');
     try {
       var j = await api('/api/theme-studio/preview', {
         body: {
@@ -727,15 +730,39 @@
           'ws-preview-shell' +
           (state.previewMode === 'mobile' ? ' mobile' : state.previewMode === 'tablet' ? ' tablet' : '');
       }
-      $('preview').src = j.url;
-      setMsg('preview-msg', 'Preview ready · draft only · forms & tracking disabled', 'ok');
+      if (frame) {
+        // Reset to about:blank first so a prior hung navigation cannot keep the tab spinning.
+        frame.onload = function () {
+          setMsg('preview-msg', 'Preview ready · draft only · forms & tracking disabled', 'ok');
+          frame.onload = null;
+        };
+        frame.onerror = function () {
+          setMsg('preview-msg', 'Preview frame failed to load', 'bad');
+          frame.onerror = null;
+        };
+        frame.src = 'about:blank';
+        setTimeout(function () {
+          frame.src = j.url;
+        }, 0);
+      }
       showStudio(Math.max(state.studioStep, 2));
       document.querySelectorAll('#ws-device-toggle button').forEach(function (b) {
         b.classList.toggle('on', b.getAttribute('data-mode') === state.previewMode);
       });
     } catch (e) {
+      if (frame) frame.src = 'about:blank';
       setMsg('preview-msg', e.message || String(e), 'bad');
     }
+  }
+
+  function unloadPreviewFrame() {
+    var frame = $('preview');
+    if (!frame) return;
+    try {
+      frame.onload = null;
+      frame.onerror = null;
+      frame.src = 'about:blank';
+    } catch (_e) { /* ignore */ }
   }
 
   var GEN_STAGES = [
