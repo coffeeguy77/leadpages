@@ -1,7 +1,13 @@
+# LeadPages marketing + platform host (www.leadpages.com.au)
+# Admin consoles are intentionally disallowed — "Blocked by robots.txt" in
+# Search Console for /manage*, /marketplace-admin, /partners-admin is expected.
 User-agent: *
 Allow: /
 Disallow: /manage
 Disallow: /marketplace-admin
 Disallow: /partners-admin
+
+# Marketing pages
 Sitemap: https://www.leadpages.com.au/marketing-sitemap.xml
+# Live tenant index (/{slug}/sitemap.xml children)
 Sitemap: https://www.leadpages.com.au/seo-sitemap.xml

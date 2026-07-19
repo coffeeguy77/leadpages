@@ -4,6 +4,17 @@
       "source": "/partner-dashboard",
       "destination": "/partner",
       "permanent": true
+    },
+    {
+      "source": "/home.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "^(www\\.)?leadpages\\.(webculture\\.au|com\\.au)$"
+        }
+      ],
+      "destination": "/",
+      "permanent": true
     }
   ],
   "crons": [
@@ -32,6 +43,14 @@
     {
       "source": "/marketing-sitemap.xml",
       "destination": "/api/marketing-sitemap.xml"
+    },
+    {
+      "source": "/seo-sitemap.xml",
+      "destination": "/api/seo-sitemap.xml"
+    },
+    {
+      "source": "/seo-sitemaps/:page",
+      "destination": "/api/seo-sitemaps/:page"
     },
     {
       "source": "/manage",
@@ -121,19 +140,19 @@
     },
     {
       "source": "/domains",
-      "destination": "/domains.html"
+      "destination": "/api/marketing-html?file=domains.html&path=/domains"
     },
     {
       "source": "/showcase",
-      "destination": "/showcase.html"
+      "destination": "/api/marketing-html?file=showcase.html&path=/showcase"
     },
     {
       "source": "/marketplace",
-      "destination": "/marketplace.html"
+      "destination": "/api/marketing-html?file=marketplace.html&path=/marketplace"
     },
     {
       "source": "/marketplace/:slug",
-      "destination": "/marketplace-feature.html"
+      "destination": "/api/marketing-html?file=marketplace-feature.html&path=/marketplace/:slug"
     },
     {
       "source": "/marketplace-admin",
@@ -145,23 +164,23 @@
     },
     {
       "source": "/start-your-business",
-      "destination": "/start-your-business.html"
+      "destination": "/api/marketing-html?file=start-your-business.html&path=/start-your-business"
     },
     {
       "source": "/resources",
-      "destination": "/resources.html"
+      "destination": "/api/marketing-html?file=resources.html&path=/resources"
     },
     {
       "source": "/resources/:slug",
-      "destination": "/resource-:slug.html"
+      "destination": "/api/marketing-html?file=resource-:slug.html&path=/resources/:slug"
     },
     {
       "source": "/find-a-partner",
-      "destination": "/find-a-partner.html"
+      "destination": "/api/marketing-html?file=find-a-partner.html&path=/find-a-partner"
     },
     {
       "source": "/partners",
-      "destination": "/partners.html"
+      "destination": "/api/marketing-html?file=partners.html&path=/partners"
     },
     {
       "source": "/partner",

@@ -308,23 +308,123 @@ module.exports = async (req, res) => {
   }
 };
 
+const MARKETING_FILE_PATHS = {
+  'home.html': '/',
+  'start-your-business.html': '/start-your-business',
+  'showcase.html': '/showcase',
+  'marketplace.html': '/marketplace',
+  'find-a-partner.html': '/find-a-partner',
+  'partners.html': '/partners',
+  'domains.html': '/domains',
+  'resources.html': '/resources',
+  'tradies.html': '/tradies',
+};
+
+function escAttr(v) {
+  return String(v || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;');
+}
+
+function sanitizePublicPath(raw) {
+  let p = String(raw || '').trim();
+  if (!p) return '';
+  try {
+    if (/^https?:\/\//i.test(p)) p = new URL(p).pathname || '/';
+  } catch {
+    return '';
+  }
+  p = p.split('?')[0].split('#')[0];
+  if (!p.startsWith('/')) p = '/' + p;
+  p = p.replace(/\/{2,}/g, '/');
+  if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+  if (!/^\/[a-z0-9/_-]*$/i.test(p)) return '';
+  return p || '/';
+}
+
+/** Map a marketing HTML file (or explicit path) to the public clean URL path. */
+function marketingPublicPath(file, explicitPath) {
+  const fromQuery = sanitizePublicPath(explicitPath);
+  if (fromQuery) return fromQuery;
+  const base = String(file || '').split('/').pop() || '';
+  if (MARKETING_FILE_PATHS[base]) return MARKETING_FILE_PATHS[base];
+  const resource = /^resource-(.+)\.html$/i.exec(base);
+  if (resource) return '/resources/' + resource[1];
+  const market = /^marketplace-(.+)\.html$/i.exec(base);
+  if (market && market[1] !== 'feature' && market[1] !== 'admin') {
+    return '/marketplace/' + market[1];
+  }
+  if (/^[a-z0-9][a-z0-9-]*\.html$/i.test(base)) {
+    return '/' + base.replace(/\.html$/i, '');
+  }
+  return '/';
+}
+
+function marketingCanonicalUrl(file, explicitPath) {
+  const pathPart = marketingPublicPath(file, explicitPath);
+  return pathPart === '/' ? PLATFORM_ORIGIN + '/' : PLATFORM_ORIGIN + pathPart;
+}
+
+function injectHeadSnippet(html, snippet, alreadyPresent) {
+  if (!html || !snippet) return html;
+  if (typeof alreadyPresent === 'function' && alreadyPresent(html)) {
+    return html;
+  }
+  if (!/<head(\s[^>]*)?>/i.test(html)) return html;
+  return html.replace(/<head(\s[^>]*)?>/i, (m) => m + '\n' + snippet);
+}
+
+function injectGoogleMeta(html, cfg) {
+  const method = (cfg && cfg.googleVerificationMethod) || 'meta';
+  if (method !== 'meta') return html;
+  const token = tokenFrom(cfg && cfg.googleSiteVerification);
+  if (!token) return html;
+  const meta = '<meta name="google-site-verification" content="' + escAttr(token) + '">';
+  if (/<meta[^>]*name=["']google-site-verification["']/i.test(html)) {
+    return html.replace(/<meta[^>]*name=["']google-site-verification["'][^>]*>/i, meta);
+  }
+  return injectHeadSnippet(html, meta);
+}
+
+function injectMarketingCanonical(html, canonicalUrl) {
+  const href = String(canonicalUrl || '').trim();
+  if (!href || !/^https:\/\//i.test(href)) return html;
+  const link = '<link rel="canonical" href="' + escAttr(href) + '">';
+  let out = html;
+  if (/<link[^>]*rel=["']canonical["']/i.test(out)) {
+    out = out.replace(/<link[^>]*rel=["']canonical["'][^>]*>/i, link);
+  } else {
+    out = injectHeadSnippet(out, link);
+  }
+  const og = '<meta property="og:url" content="' + escAttr(href) + '">';
+  if (/<meta[^>]*property=["']og:url["']/i.test(out)) {
+    out = out.replace(/<meta[^>]*property=["']og:url["'][^>]*>/i, og);
+  } else {
+    out = injectHeadSnippet(out, og);
+  }
+  return out;
+}
+
+/** Google verification + canonical/og:url for marketing HTML pages. */
+function injectMarketingHead(html, cfg, opts) {
+  opts = opts || {};
+  let out = injectGoogleMeta(html, cfg);
+  const canonical = marketingCanonicalUrl(opts.file, opts.path);
+  return injectMarketingCanonical(out, canonical);
+}
+
 module.exports.PLATFORM_KEY = PLATFORM_KEY;
 module.exports.PLATFORM_DOMAIN = PLATFORM_DOMAIN;
 module.exports.PLATFORM_ORIGIN = PLATFORM_ORIGIN;
 module.exports.SITEMAP_PATH = SITEMAP_PATH;
 module.exports.DEFAULT_SITEMAP_URLS = DEFAULT_SITEMAP_URLS;
+module.exports.MARKETING_FILE_PATHS = MARKETING_FILE_PATHS;
 module.exports.loadPlatformSeoConfig = loadConfig;
 module.exports.tokenFrom = tokenFrom;
 module.exports.buildMarketingSitemapXml = buildSitemapXml;
-module.exports.injectGoogleMeta = function injectGoogleMeta(html, cfg) {
-  const method = (cfg && cfg.googleVerificationMethod) || 'meta';
-  if (method !== 'meta') return html;
-  const token = tokenFrom(cfg && cfg.googleSiteVerification);
-  if (!token) return html;
-  const esc = token.replace(/"/g, '&quot;');
-  const meta = '<meta name="google-site-verification" content="' + esc + '">';
-  if (/<meta[^>]*name=["']google-site-verification["']/i.test(html)) {
-    return html.replace(/<meta[^>]*name=["']google-site-verification["'][^>]*>/i, meta);
-  }
-  return html.replace(/<head(\s[^>]*)?>/i, (m) => m + '\n' + meta);
-};
+module.exports.marketingPublicPath = marketingPublicPath;
+module.exports.marketingCanonicalUrl = marketingCanonicalUrl;
+module.exports.injectGoogleMeta = injectGoogleMeta;
+module.exports.injectMarketingCanonical = injectMarketingCanonical;
+module.exports.injectMarketingHead = injectMarketingHead;

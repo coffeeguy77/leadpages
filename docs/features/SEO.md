@@ -6,7 +6,7 @@
 **Prerequisites:** [00-VISION](../00-VISION.md), [01-ARCHITECTURE](../01-ARCHITECTURE.md), [03-TEMPLATE-SYSTEM](../03-TEMPLATE-SYSTEM.md), [08-SEO](../08-SEO.md), [10-EDITOR](../10-EDITOR.md)  
 **AI status:** Suburb intros still direct Anthropic; landing drafts via Brain — [AI/00-STATUS](../AI/00-STATUS.md)
 
-> **Scope note:** This document covers **tenant SEO surfaces** — `api/render.js` double-brace tokens, `config.pages` landing pages, `sections.seoTokens` local SEO, App Router suburb routes (`app/[site]/[suburb]`), and the dynamic sitemap (`app/seo-sitemap.xml`). It is **not** marketing-site SEO (`home.html`, `tradies.html`), partner showcase pages, or broker-app calculator sub-pages beyond shared `config.pages` mechanics.
+> **Scope note:** This document covers **tenant SEO surfaces** — `api/render.js` double-brace tokens, `config.pages` landing pages, `sections.seoTokens` local SEO, App Router suburb routes (`app/[site]/[suburb]`), and the live-tenant sitemap index (`/seo-sitemap.xml` → `api/seo-sitemap.xml.js`). Marketing host SEO (`home.html`, canonical injection via `api/marketing-html.js`, `/marketing-sitemap.xml`) is summarised where it touches Search Console discovery.
 
 ---
 
@@ -19,7 +19,7 @@ LeadPages is **strongly SEO-focused**. Two parallel server pipelines plus one cl
 | Tenant homepage | `api/render.js` + `{{pageTitle}}` / `{{pageDesc}}` | 30s CDN (`s-maxage=30`) |
 | Suburb pages | `app/[site]/[suburb]/route.js` + `lib/seo/*` | 24h CDN (`s-maxage=86400`) |
 | Landing pages (`config.pages`) | `api/render.js` sub-page routing + client `_lpRenderPage` | 30s CDN (HTML shell); title/meta updated client-side |
-| Dynamic sitemap | `app/seo-sitemap.xml/route.js` | 24h CDN |
+| Dynamic sitemap | `api/seo-sitemap.xml.js` (rewrite `/seo-sitemap.xml`; App Router mirror kept in `app/`) | 1h CDN |
 
 | Fact | Detail |
 |------|--------|
@@ -127,7 +127,7 @@ Super-admins can edit any site. Site owners see editor tabs allowed by role ∩ 
 │  Body: #top replaced with article layout (Markdown → HTML)                │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  SITEMAP  https://{platform}/seo-sitemap.xml                            │
-│  Pipeline: app/seo-sitemap.xml/route.js → all site × suburb URLs        │
+│  Pipeline: api/seo-sitemap.xml.js → live /{slug}/sitemap.xml indexes    │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -176,7 +176,8 @@ const TRADE_SUBTABS = [
 | `/:slug` | `/api/render?slug=:slug` | Tenant homepage on platform host |
 | `/:slug/:page` | `/api/render?slug=:slug&page=:page` | Published landing page |
 | `/:site/:suburb` | `app/[site]/[suburb]/route.js` | App Router — typically **precedence** over rewrite |
-| `/seo-sitemap.xml` | `app/seo-sitemap.xml/route.js` | Dynamic sitemap |
+| `/seo-sitemap.xml` | `api/seo-sitemap.xml.js` | Dynamic live-tenant sitemap index |
+| `/marketing-sitemap.xml` | `api/marketing-sitemap.xml.js` | Marketing pages for www.leadpages.com.au |
 
 **Collision rule:** `/{site}/{segment}` matches both App Router (suburb) and `render.js` (landing page). If Belconnen ∈ service areas, `/joes-plumbing/belconnen` → suburb route. If `refinancing` ∈ published `pages`, `/joes-plumbing/refinancing` → render.js. **Keep slugs disjoint.**
 
@@ -417,7 +418,7 @@ RLS enabled, no public policies — service role only.
 | **`trade.template.json`** | Token template `<head>` SEO block; `__SITE_CONFIG__` embed |
 | **`marketplace/demos/demo-shared.js`** | Client `applyCfg`, seoTokens hydration, `_lpRenderPage`, `_lpActivePage` |
 | **`app/[site]/[suburb]/route.js`** | Suburb SSR entry point |
-| **`app/seo-sitemap.xml/route.js`** | Dynamic XML sitemap |
+| **`api/seo-sitemap.xml.js`** | Dynamic live-tenant sitemap index (App Router mirror in `app/`) |
 | **`lib/seo/store.js`** | Supabase REST — `getSiteConfig`, `listSites`, intro CRUD |
 | **`lib/seo/tokens.js`** | `findSuburb`, `buildTokens`, `mergeStr`, `deepMergeConfig`, `slugify` |
 | **`lib/seo/suburbIntro.js`** | `getOrCreateIntro` — Claude + cache |
