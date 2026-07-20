@@ -203,7 +203,7 @@
     var c = this.config;
     var tabs = [
       ['overview', 'Overview'],
-      ['wizard', 'Wizard flow'],
+      ['wizard', 'Styling'],
       ['questions', 'Questions'],
       ['products', 'Products'],
       ['labour', 'Labour'],
@@ -1294,7 +1294,7 @@
         + '</div>';
       return self._itemCard(z.label || 'New zone', i, 'travel.zones', fields, i > 0, i < list.length - 1);
     }).join('');
-    return '<p class="oqb-hint">Distance or region fees shown as equipment-style cards. Upload a map image per zone — customers can enlarge it to check if their venue is inside the radius. Add the <strong>Travel zone</strong> step in Wizard flow so customers pick a zone. Card colours follow Equipment card styling (or Travel card styling if set).</p>'
+    return '<p class="oqb-hint">Distance or region fees shown as equipment-style cards. Upload a map image per zone — customers can enlarge it to check if their venue is inside the radius. Add the <strong>Travel zone</strong> step in Styling so customers pick a zone. Card colours follow Equipment card styling (or Travel card styling if set).</p>'
       + '<div class="oqb-items">' + (cards || '<p class="oqb-empty">No travel zones — all areas free.</p>') + '</div>'
       + '<button type="button" class="btn ghost" data-oqb-add="travel">+ Add travel zone</button>';
   };

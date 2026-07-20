@@ -13,6 +13,7 @@ const css = fs.readFileSync(path.join(root, 'assets/lp-quote-builder.css'), 'utf
 const manage = fs.readFileSync(path.join(root, 'manage.html'), 'utf8');
 const render = fs.readFileSync(path.join(root, 'api/render.js'), 'utf8');
 
+assert.ok(builder.includes("['wizard', 'Styling']"), 'Wizard flow tab renamed to Styling');
 assert.ok(builder.includes('_previewNeedsTravel'), 'travel preview helper exists');
 assert.ok(builder.includes('_ensurePreviewTravelStep'), 'travel preview jump helper');
 assert.ok(builder.includes("self.tab === 'travel'"), 'Travel tab switches preview step');
@@ -34,7 +35,7 @@ assert.ok(online.includes('width:100%'), 'textarea full width rule present');
 assert.ok(css.includes('.oqb-preview-mock .lp-oq-field textarea'), 'preview styles textarea');
 assert.ok(css.includes('background: transparent'), 'preview textarea transparent bg');
 
-assert.ok(manage.includes('oq-tz-notes-1'), 'manage cache-bust');
-assert.ok(render.includes('oq-tz-notes-1'), 'render cache-bust');
+assert.ok(manage.includes('oq-styling-tab-1'), 'manage cache-bust');
+assert.ok(render.includes('oq-styling-tab-1'), 'render cache-bust');
 
 console.log('quote-travel-preview-notes.test.js: ok');
