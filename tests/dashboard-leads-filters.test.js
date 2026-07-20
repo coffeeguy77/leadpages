@@ -28,6 +28,8 @@ var inbox = addBlock({}, 'domain', '*.Evil.COM');
 assert.ok(inbox.blockedDomains.indexOf('evil.com') >= 0);
 inbox = removeBlock(inbox, 'domain', 'evil.com');
 assert.ok(inbox.blockedDomains.indexOf('evil.com') < 0);
+assert.deepStrictEqual(addBlock({}, 'country', 'Australia').blockedCountries, ['au']);
+assert.ok(addBlock({}, 'country', 'Indian').blockedCountries.indexOf('in') >= 0);
 
 // Manage UI
 assert.ok(manage.includes('dash-leads-filters'), 'filter toolbar host');

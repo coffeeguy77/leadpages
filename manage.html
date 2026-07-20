@@ -640,6 +640,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-trade-picker.js"></script>
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
 <script src="/icons.js"></script>
+<script src="/assets/lp-country-codes.js?v=dash-country-1"></script>
 <script src="/assets/lp-quote-wizard-logic.js?v=oq-event-date-1"></script>
 <script src="/assets/lp-quote-display.js?v=oq-event-date-1"></script>
 <script src="/assets/lp-quote-planning.js?v=oq-event-date-1"></script>
@@ -9525,11 +9526,29 @@ function heroCtaCard(c){
         _dashLeadInboxRemove(kind,val);
         return;
       }
+      var spamPick=e.target.closest('[data-dash-country-pick]');
+      if(spamPick){
+        var pickCode=spamPick.getAttribute('data-dash-country-pick');
+        var countryInp=document.getElementById('dash-block-input-country');
+        if(countryInp&&pickCode){
+          countryInp.value=pickCode.toUpperCase();
+          countryInp.dataset.resolvedCode=pickCode.toLowerCase();
+        }
+        _dashLeadCountryHideSuggest();
+        return;
+      }
       var spamAdd=e.target.closest('[data-dash-block-add]');
       if(spamAdd){
         var addKind=spamAdd.getAttribute('data-dash-block-add');
         var inp=document.getElementById('dash-block-input-'+addKind);
-        if(inp&&inp.value.trim()){ _dashLeadInboxAdd(addKind,inp.value.trim()); inp.value=''; }
+        if(inp&&inp.value.trim()){
+          var addVal=inp.value.trim();
+          if(addKind==='country'&&inp.dataset.resolvedCode) addVal=inp.dataset.resolvedCode;
+          _dashLeadInboxAdd(addKind, addVal);
+          inp.value='';
+          delete inp.dataset.resolvedCode;
+          _dashLeadCountryHideSuggest();
+        }
         return;
       }
       var delBtn=e.target.closest('[data-dash-lead-del]');
@@ -9649,13 +9668,103 @@ function heroCtaCard(c){
     if(typeof lpSaveDB==='function') try{ lpSaveDB(); }catch(_e){}
   }
   function _dashLeadNorm(v){ return String(v==null?'':v).trim().toLowerCase(); }
+  function _dashLeadResolveCountry(value){
+    var CC=window.LPCountryCodes;
+    if(CC&&typeof CC.resolveCountryCode==='function'){
+      var code=CC.resolveCountryCode(value);
+      if(code) return code;
+    }
+    return _dashLeadNorm(value).slice(0,8);
+  }
+  function _dashLeadCountryLabel(code){
+    var CC=window.LPCountryCodes;
+    if(CC&&typeof CC.countryLabel==='function') return CC.countryLabel(code);
+    return String(code||'').toUpperCase();
+  }
+  function _dashLeadCountryHideSuggest(){
+    var box=document.getElementById('dash-block-country-suggest');
+    if(box){ box.hidden=true; box.innerHTML=''; }
+  }
+  function _dashLeadCountryShowSuggest(query){
+    var box=document.getElementById('dash-block-country-suggest');
+    var CC=window.LPCountryCodes;
+    if(!box||!CC||typeof CC.searchCountries!=='function') return;
+    var q=String(query||'').trim();
+    if(!q){ _dashLeadCountryHideSuggest(); return; }
+    var rows=CC.searchCountries(q, 8);
+    if(!rows.length){ _dashLeadCountryHideSuggest(); return; }
+    box.innerHTML=rows.map(function(r,i){
+      return '<li><button type="button" class="'+(i===0?'is-active':'')+'" data-dash-country-pick="'+esc(r.code)+'">'
+        +'<span class="dash-cc-name">'+esc(r.name)+'</span>'
+        +'<span class="dash-cc-code">'+esc(String(r.code).toUpperCase())+'</span></button></li>';
+    }).join('');
+    box.hidden=false;
+  }
+  function _dashLeadWireCountryAutocomplete(){
+    var inp=document.getElementById('dash-block-input-country');
+    if(!inp||inp.__dashCountryWired) return;
+    inp.__dashCountryWired=true;
+    inp.setAttribute('autocomplete','off');
+    inp.setAttribute('autocapitalize','off');
+    inp.setAttribute('spellcheck','false');
+    inp.addEventListener('input',function(){
+      delete inp.dataset.resolvedCode;
+      _dashLeadCountryShowSuggest(inp.value);
+      var resolved=_dashLeadResolveCountry(inp.value);
+      if(resolved&&String(inp.value).trim().length>=2){
+        // Keep typed text; store resolved code for Add
+        if(/^[a-z]{2}$/i.test(String(inp.value).trim())||resolved===_dashLeadNorm(inp.value)){
+          inp.dataset.resolvedCode=resolved;
+        } else {
+          inp.dataset.resolvedCode=resolved;
+        }
+      }
+    });
+    inp.addEventListener('keydown',function(e){
+      var box=document.getElementById('dash-block-country-suggest');
+      if(e.key==='Escape'){ _dashLeadCountryHideSuggest(); return; }
+      if(e.key==='Enter'){
+        var active=box&&!box.hidden?box.querySelector('button.is-active,button'):null;
+        if(active){
+          e.preventDefault();
+          active.click();
+          return;
+        }
+        if(inp.value.trim()){
+          e.preventDefault();
+          _dashLeadInboxAdd('country', inp.dataset.resolvedCode||inp.value.trim());
+          inp.value='';
+          delete inp.dataset.resolvedCode;
+          _dashLeadCountryHideSuggest();
+        }
+      }
+      if((e.key==='ArrowDown'||e.key==='ArrowUp')&&box&&!box.hidden){
+        e.preventDefault();
+        var btns=[].slice.call(box.querySelectorAll('button'));
+        if(!btns.length) return;
+        var idx=btns.findIndex(function(b){ return b.classList.contains('is-active'); });
+        if(idx<0) idx=0;
+        else idx=e.key==='ArrowDown'?Math.min(btns.length-1,idx+1):Math.max(0,idx-1);
+        btns.forEach(function(b){ b.classList.remove('is-active'); });
+        btns[idx].classList.add('is-active');
+        btns[idx].scrollIntoView({ block:'nearest' });
+      }
+    });
+    inp.addEventListener('blur',function(){
+      setTimeout(_dashLeadCountryHideSuggest, 150);
+    });
+  }
   function _dashLeadInboxAdd(type, value){
     var inbox=_dashLeadInbox();
     var v=_dashLeadNorm(value);
     if(!v) return;
     if(type==='email'){ if(inbox.blockedEmails.indexOf(v)<0) inbox.blockedEmails.push(v); }
     else if(type==='domain'){ v=v.replace(/^@/,'').replace(/^\*\./,''); if(inbox.blockedDomains.indexOf(v)<0) inbox.blockedDomains.push(v); }
-    else if(type==='country'){ v=v.slice(0,8); if(inbox.blockedCountries.indexOf(v)<0) inbox.blockedCountries.push(v); }
+    else if(type==='country'){
+      v=_dashLeadResolveCountry(value);
+      if(!v){ if(typeof toast==='function') toast('Pick a country from the list (e.g. Australia → AU)'); return; }
+      if(inbox.blockedCountries.indexOf(v)<0) inbox.blockedCountries.push(v);
+    }
     _dashLeadInboxPersist();
     _dashLeadsPaint();
     if(typeof toast==='function') toast('Block filter saved');
@@ -9756,11 +9865,17 @@ function heroCtaCard(c){
   function _dashLeadsSpamPanelHtml(){
     var inbox=_dashLeadInbox();
     function list(title, key, items, ph){
+      var isCountry=key==='country';
+      var field=isCountry
+        ? ('<div class="dash-block-country"><input type="text" class="tin" id="dash-block-input-country" placeholder="'+esc(ph)+'" aria-autocomplete="list" aria-controls="dash-block-country-suggest">'
+          +'<ul class="dash-block-suggest" id="dash-block-country-suggest" role="listbox" hidden></ul></div>')
+        : ('<input type="text" class="tin" id="dash-block-input-'+key+'" placeholder="'+esc(ph)+'">');
       return '<div class="dash-block-group"><div class="dash-block-h">'+esc(title)+'</div>'
-        +'<div class="dash-block-add"><input type="text" class="tin" id="dash-block-input-'+key+'" placeholder="'+esc(ph)+'">'
+        +'<div class="dash-block-add">'+field
         +'<button type="button" class="btn ghost sm" data-dash-block-add="'+key+'">Add</button></div>'
         +(items.length?'<ul class="dash-block-list">'+items.map(function(v){
-          return '<li><code>'+esc(v)+'</code><button type="button" class="btn ghost sm" data-dash-block-rm="'+key+'" data-val="'+esc(v)+'">Remove</button></li>';
+          var label=isCountry?_dashLeadCountryLabel(v):v;
+          return '<li><code title="'+esc(String(v).toUpperCase())+'">'+esc(label)+'</code><button type="button" class="btn ghost sm" data-dash-block-rm="'+key+'" data-val="'+esc(v)+'">Remove</button></li>';
         }).join('')+'</ul>':'<p class="dash-leads-empty" style="margin:6px 0 0">None yet.</p>')
         +'</div>';
     }
@@ -9769,7 +9884,7 @@ function heroCtaCard(c){
       +'<div class="dash-block-grid">'
       +list('Blocked emails','email',inbox.blockedEmails,'name@example.com')
       +list('Blocked domains','domain',inbox.blockedDomains,'spamdomain.com or *.spamdomain.com')
-      +list('Blocked countries','country',inbox.blockedCountries,'au, us, … (ISO code)')
+      +list('Blocked countries','country',inbox.blockedCountries,'Type a country — e.g. Australia')
       +'</div></div>';
   }
   function _dashLeadRowHtml(l){
@@ -9811,6 +9926,7 @@ function heroCtaCard(c){
     _dashLeadsUpdateDot();
     if(DASH_LEADS.filter==='spam'){
       if(panel){ panel.hidden=false; panel.innerHTML=_dashLeadsSpamPanelHtml(); }
+      _dashLeadWireCountryAutocomplete();
     } else if(panel){ panel.hidden=true; panel.innerHTML=''; }
     var rows=_dashLeadsFiltered();
     if(!rows.length){
