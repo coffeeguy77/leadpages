@@ -197,11 +197,12 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .ps-dots i{width:18px;height:18px;border-radius:5px;display:inline-block;border:1px solid rgba(0,0,0,.08);}
 .ps-name{font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--ink);}
 .ad-panel{margin-top:16px;border-radius:12px;padding:16px 18px;background:linear-gradient(170deg,var(--panel-bg),var(--panel-bg2));color:var(--panel-ink);}
-.adp-label{font-family:var(--font-ui);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--panel-soft);}
+.adp-label{font-family:var(--font-ui);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ad-panel-soft,var(--panel-ink));}
 .adp-fig{font-family:var(--font-display);font-size:28px;line-height:1.1;margin:2px 0 10px;}
-.adp-line{display:flex;justify-content:space-between;font-family:var(--font-ui);font-size:13px;color:var(--panel-soft);border-top:1px solid var(--panel-line);padding-top:9px;}
+.adp-line{display:flex;justify-content:space-between;font-family:var(--font-ui);font-size:13px;color:var(--ad-panel-soft,var(--panel-ink));border-top:1px solid var(--ad-panel-line,var(--panel-line));padding-top:9px;}
 .adp-amber{color:var(--panel-accent);font-weight:600;}
 .adp-graph{height:4px;border-radius:3px;margin-top:12px;background:linear-gradient(90deg,var(--graph-line),transparent);}
+.anav-btn .lme-nav-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:7px;vertical-align:middle;flex-shrink:0;}
 /* shared admin form controls */
 .tin{width:100%;font-family:var(--font-ui);font-size:14px;padding:9px 11px;border:1px solid var(--line-strong);border-radius:8px;background:var(--input-bg);color:var(--text);box-sizing:border-box;}
 .mlr-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
@@ -1492,7 +1493,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
        text unreadable on dark themes. Brand/accent/panel/graph/fonts still preview here;
        the full look previews on the live site. */
     if(a.panelBg){ S('--panel-bg',a.panelBg); S('--panel-bg2',apprShade(a.panelBg,.18)); }
-    if(a.panelInk){ S('--panel-ink',a.panelInk); S('--panel-soft',apprMix(a.panelInk,a.panelBg||'#1d3a33',.42)); S('--panel-line',apprRgba(a.panelInk,.13)); }
+    /* Ad-dashboard soft ink must NOT overwrite workspace --panel-soft (that broke dark Support UI). */
+    if(a.panelInk){ S('--panel-ink',a.panelInk); S('--ad-panel-soft',apprMix(a.panelInk,a.panelBg||'#1d3a33',.42)); S('--ad-panel-line',apprRgba(a.panelInk,.13)); }
     if(a.panelAccent) S('--panel-accent',a.panelAccent);
     if(a.graphLine) S('--graph-line',a.graphLine);
     if(a.fontDisplay&&APPR_FONTS[a.fontDisplay]){ apprLoadFont(a.fontDisplay); S('--font-display',APPR_FONTS[a.fontDisplay].css); }
@@ -3128,6 +3130,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     // Close any open landing-page editor from the previous site and cancel pending autosaves
     // so Bean Culture pages never appear (or save) under Lukes etc.
     lpResetLandingEditor();
+    if(manageMsgEmbed&&manageMsgEmbed.destroy){ try{ manageMsgEmbed.destroy(); }catch(_e){} manageMsgEmbed=null; }
+    updateSupportNavBadge(0);
     currentSiteId=site.id; currentSiteSlug=site.slug; currentSiteTemplate=site.template||'broker-app'; currentIsPartnerHome=!!site.is_partner_home;
     currentSiteStatus=String(site.status||'').toLowerCase();
     currentReferringPartnerId=site.referring_partner_id||null;
@@ -7459,6 +7463,47 @@ function heroCtaCard(c){
     if(!role){ $('li-err').style.color=''; $('li-err').textContent='That username or password doesn\u2019t match. (Demo: demo / demo)'; return; }
     authed=true; currentRole=role; const m=$('login-mask'); if(m) m.style.display='none'; applyRoleGating();
   }
+  function supportNavAllowed(){
+    if(currentRole==='super'||currentRole==='broker') return true;
+    if(currentRole!=='client') return false;
+    // Customers only see Support when the site has a customer admin login enabled
+    var site=(allSites||[]).find(function(s){ return s.id===currentSiteId; });
+    return !!(site && site.owner_user_id);
+  }
+  function updateSupportNavBadge(n){
+    var btn=$('nav-messages'); if(!btn) return;
+    var old=btn.querySelector('.lme-nav-dot'); if(old) old.remove();
+    if(n>0){
+      var dot=document.createElement('span');
+      dot.className='lme-nav-dot';
+      dot.setAttribute('aria-label', n===1?'1 unread support message':(n+' unread support messages'));
+      btn.appendChild(dot);
+    }
+  }
+  async function refreshSupportUnreadBadge(){
+    var btn=$('nav-messages'); if(!btn||btn.style.display==='none'){ updateSupportNavBadge(0); return; }
+    if(manageMsgEmbed&&manageMsgEmbed.getUnreadCount){ updateSupportNavBadge(manageMsgEmbed.getUnreadCount()); return; }
+    try{
+      var sess=(await sb.auth.getSession()).data.session;
+      if(!sess||!sess.user||!currentSiteId){ updateSupportNavBadge(0); return; }
+      var uid=sess.user.id;
+      var cr=await sb.from('conversations').select('id,kind,client_site_id,client_user_id,last_message_at');
+      var list=(cr.data||[]).filter(function(c){
+        if(c.client_site_id&&String(c.client_site_id)===String(currentSiteId)) return true;
+        var site=(allSites||[]).find(function(s){ return s.id===currentSiteId; });
+        if(c.kind==='client_support'&&site&&site.owner_user_id&&c.client_user_id===site.owner_user_id) return true;
+        return false;
+      });
+      if(!list.length){ updateSupportNavBadge(0); return; }
+      var rd=await sb.from('conversation_reads').select('conversation_id,last_read_at').eq('user_id',uid);
+      var reads={}; (rd.data||[]).forEach(function(x){ reads[x.conversation_id]=x.last_read_at; });
+      var unread=list.filter(function(c){
+        var lr=reads[c.id]; if(!lr) return true;
+        return new Date(c.last_message_at)>new Date(lr);
+      }).length;
+      updateSupportNavBadge(unread);
+    }catch(_e){ /* ignore */ }
+  }
   function applyRoleGating(){
     const roleAllow=ALLOWED[currentRole]||ALLOWED.super;
     const tnav=tplNav();
@@ -7469,16 +7514,23 @@ function heroCtaCard(c){
       const v=$(it[1]); if(v){ v.hidden=true; }
       const nb=$('nav-'+it[0]); if(nb) nb.setAttribute('aria-selected','false');
     });
+    // Clients without a customer admin login do not get Support
+    var msgBtn=$('nav-messages');
+    if(msgBtn && allow.indexOf('messages')>=0 && !supportNavAllowed()){
+      msgBtn.style.display='none';
+      if(activeView==='messages') activeView=null;
+    }
     const leads=(currentRole==='leads');
     document.body.classList.toggle('role-leads', leads);
     const av=$('av-rates'); if(av){ Array.prototype.forEach.call(av.children,function(c){ if(c.classList.contains('leads-card')) return; c.style.display = leads ? 'none' : ''; }); }
-    if(allow.indexOf(activeView)<0) activeView=(allow.indexOf(tnav[0])>=0?tnav[0]:allow[0]);
+    if(allow.indexOf(activeView)<0 || (activeView==='messages' && !supportNavAllowed())) activeView=(allow.indexOf(tnav[0])>=0?tnav[0]:allow[0]);
     if(document.body.classList.contains('lp-landing-on') && !currentSiteId){
       return;
     }
     document.body.classList.remove('lp-cmd-loading');
     if(activeView) showView(activeView);
     if(window.LPAdminShell&&LPAdminShell.moveChrome) LPAdminShell.moveChrome();
+    try{ refreshSupportUnreadBadge(); }catch(_e){}
   }
   function gate(){ if(!authed){ const av=document.getElementById('admin-view'); if(av && av.hidden) return; showLogin(); } }
 
@@ -7609,9 +7661,18 @@ function heroCtaCard(c){
   async function renderMessages(){
     var box=$('av-messages'); if(!box) return;
     if(!currentSiteId){ box.innerHTML='<div class="card"><p class="lede">Select a site first.</p></div>'; return; }
+    if(!supportNavAllowed()){
+      box.innerHTML='<div class="card"><p class="lede">Support messaging is available when this site has a customer admin login enabled.</p></div>';
+      return;
+    }
+    var lede=(currentRole==='super')
+      ? 'Review this site’s provider conversation and any escalations to LeadPages. You are the last point of contact — not the first.'
+      : (currentRole==='broker')
+        ? 'Message this client or LeadPages about this site.'
+        : 'Message your provider about this site. LeadPages support is available via escalate if you still need help.';
     box.innerHTML='<div class="card lp-support-panel" style="margin-bottom:22px;padding-bottom:18px;">'
       +'<h2 style="margin:0 0 4px;">Support</h2>'
-      +'<p class="lede" style="margin:0 0 16px;">Message your LeadPages provider or contact support about this site.</p>'
+      +'<p class="lede" style="margin:0 0 16px;">'+lede+'</p>'
       +'<div id="manage-messages-root"></div></div>';
     var root=document.getElementById('manage-messages-root');
     if(!root||!window.LPMessagesEmbed) return;
@@ -7620,18 +7681,29 @@ function heroCtaCard(c){
     var uid=sess.user.id;
     var role='client';
     var partnerId=null;
-    try{
-      var pr=await sb.rpc('my_partner_id');
-      if(pr&&pr.data){ partnerId=pr.data; role='partner'; }
-    }catch(_e){}
-    var site=(allSites||[]).find(function(s){ return s.id===currentSiteId; });
-    if(site&&site.owner_user_id===uid) role='client';
-    else if(site&&partnerId&&site.servicing_partner_id===partnerId) role='partner';
+    if(currentRole==='super'){
+      role='super';
+    }else{
+      try{
+        var pr=await sb.rpc('my_partner_id');
+        if(pr&&pr.data){ partnerId=pr.data; role='partner'; }
+      }catch(_e){}
+      var site=(allSites||[]).find(function(s){ return s.id===currentSiteId; });
+      if(site&&site.owner_user_id===uid) role='client';
+      else if(site&&partnerId&&site.servicing_partner_id===partnerId) role='partner';
+    }
     if(manageMsgEmbed&&manageMsgEmbed.destroy) manageMsgEmbed.destroy();
     manageMsgEmbed=window.LPMessagesEmbed.mount({
-      container:root, sb:sb, uid:uid, role:role, partnerId:partnerId, idPrefix:'mgm-'
+      container:root, sb:sb, uid:uid, role:role, partnerId:partnerId,
+      siteId: currentSiteId, idPrefix:'mgm-',
+      onUnread: updateSupportNavBadge
     });
   }
+  try{
+    window.addEventListener('lp-messages-unread', function(e){
+      if(e.detail&&typeof e.detail.count==='number') updateSupportNavBadge(e.detail.count);
+    });
+  }catch(_e){}
 
   /* ---------- nav switcher (six tabs) ---------- */
   function renderAiTeamPanel(){

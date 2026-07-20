@@ -1,9 +1,15 @@
 /**
  * Embedded messages UI — theme-aware styles for partner + manage.
+ * Prefer --bg-soft / --panel / --input-bg. Do not rely on --panel-soft alone:
+ * site appearance preview historically overwrote that token for ad panels.
  */
 .lp-messages-embed {
   --lme-radius: var(--radius, 14px);
+  --lme-filter-bg: var(--bg-soft, var(--panel));
+  --lme-bubble-them: color-mix(in srgb, var(--bg-soft, var(--panel)) 85%, var(--text) 8%);
+  --lme-conv-on: color-mix(in srgb, var(--accent-soft, transparent) 80%, var(--panel));
   min-height: 420px;
+  color: var(--text);
 }
 
 .lp-messages-embed .hidden {
@@ -50,6 +56,7 @@
   margin: 0;
   font-size: 15px;
   font-family: var(--font-display, Georgia, serif);
+  color: var(--text);
 }
 
 .lp-messages-embed .lme-list-filters {
@@ -57,7 +64,7 @@
   border-bottom: 1px solid var(--border);
   display: grid;
   gap: 10px;
-  background: var(--panel-soft, var(--bg-soft));
+  background: var(--lme-filter-bg);
 }
 
 .lp-messages-embed .lme-list-filters input {
@@ -65,15 +72,23 @@
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--border-strong);
-  background: var(--input-bg);
+  background: var(--input-bg, var(--panel));
   color: var(--text);
   font: inherit;
+}
+
+.lp-messages-embed .lme-list-filters input::placeholder {
+  color: var(--muted, var(--text-soft));
 }
 
 .lp-messages-embed .lme-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.lp-messages-embed .lme-chips:empty {
+  display: none;
 }
 
 .lp-messages-embed .lme-chip {
@@ -102,12 +117,13 @@
 .lp-messages-embed .lme-newbox {
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
-  background: var(--panel-soft, var(--bg-soft));
+  background: var(--lme-filter-bg);
 }
 
 .lp-messages-embed .lme-newbox h4 {
   margin: 0 0 8px;
   font-size: 13px;
+  color: var(--text);
 }
 
 .lp-messages-embed .lme-convs {
@@ -125,6 +141,7 @@
   padding: 12px 14px;
   border: 0;
   border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent;
   background: transparent;
   color: var(--text);
   cursor: pointer;
@@ -136,7 +153,8 @@
 }
 
 .lp-messages-embed .lme-conv.on {
-  background: var(--accent-soft);
+  background: var(--lme-conv-on);
+  border-left-color: var(--accent);
 }
 
 .lp-messages-embed .lme-conv-body {
@@ -148,6 +166,7 @@
   display: block;
   font-weight: 600;
   font-size: 14px;
+  color: var(--text);
 }
 
 .lp-messages-embed .lme-conv.unread .lme-conv-name {
@@ -207,6 +226,7 @@
   font-weight: 600;
   font-size: 15px;
   font-family: var(--font-display, Georgia, serif);
+  color: var(--text);
 }
 
 .lp-messages-embed .lme-thread-sub {
@@ -235,6 +255,7 @@
   flex-direction: column;
   gap: 10px;
   -webkit-overflow-scrolling: touch;
+  background: var(--panel);
 }
 
 .lp-messages-embed .lme-b {
@@ -264,7 +285,7 @@
 }
 
 .lp-messages-embed .lme-b.them .lme-bub {
-  background: var(--panel-soft, var(--bg-soft));
+  background: var(--lme-bubble-them);
   border: 1px solid var(--border);
   border-top-left-radius: 5px;
   color: var(--text);
@@ -276,12 +297,40 @@
   border-top-right-radius: 5px;
 }
 
+.lp-messages-embed .lme-escalate {
+  padding: 10px 14px 4px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--text-soft);
+  text-align: center;
+  background: var(--lme-filter-bg);
+}
+
+.lp-messages-embed .lme-escalate-link {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.lp-messages-embed .lme-escalate-link:hover {
+  color: var(--accent-hover, var(--accent));
+}
+
 .lp-messages-embed .lme-composer {
   display: flex;
   gap: 10px;
   align-items: flex-end;
   padding: 12px;
   border-top: 1px solid var(--border);
+  background: var(--panel);
 }
 
 .lp-messages-embed .muted {
