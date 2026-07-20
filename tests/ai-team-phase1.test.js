@@ -192,8 +192,11 @@ describe('AI Team Phase 1', () => {
       return change.outcome === 'plan_seo_landing';
     });
     assert.ok(landing, 'landing recommendation present');
-    assert.match(String(landing.problem || ''), /focused page|landing/i);
+    assert.match(String(landing.problem || ''), /focused page|landing|how-we-will-do-it/i);
     assert.match(String(landing.reason || ''), /wedding coffee events/i);
     assert.match(String(landing.title || ''), /landing page/i);
+    const outline =
+      (landing.proposedChange || landing.proposed_change || {}).planOutline || [];
+    assert.ok(outline.length >= 4, 'landing rec includes how-we-will-do-it checklist');
   });
 });

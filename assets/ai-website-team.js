@@ -11,6 +11,8 @@
   var lastState = null;
   /** @type {object|null} */
   var chatSession = null;
+  /** @type {object|null} */
+  var discussSession = null;
 
   var FIELDS = [
     {
@@ -167,8 +169,12 @@
       '.ai-rec-issue{margin:0;font-size:14px;line-height:1.45}' +
       '.ai-rec-suggestion{margin:0;font-size:15px;font-weight:600;line-height:1.35}' +
       '.ai-rec-reason{margin:0;font-size:13px;line-height:1.45;opacity:.88}' +
+      '.ai-rec-outline{margin:4px 0 0;padding-left:1.2em;font-size:13px;line-height:1.45}' +
+      '.ai-rec-outline li{margin:0 0 4px}' +
       '.ai-rec-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}' +
       '.ai-rec-hint{margin:8px 0 0;font-size:12px;opacity:.8}' +
+      '.ai-discuss-context{font-size:13px;line-height:1.45;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}' +
+      '.ai-discuss-context p{margin:0 0 6px}.ai-discuss-context p:last-child{margin:0}' +
       '.ai-chat-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px}' +
       '.ai-chat-modal{width:min(560px,100%);max-height:min(88vh,720px);overflow:auto;border-radius:14px;background:var(--panel,#12141c);color:var(--ink,#f4f4f6);border:1px solid var(--line,rgba(255,255,255,.12));box-shadow:0 18px 50px rgba(0,0,0,.45);padding:18px 18px 16px}' +
       '.ai-chat-log{display:flex;flex-direction:column;gap:10px;margin:12px 0 14px}' +
@@ -364,8 +370,33 @@
   function isForgeOutcome(rec) {
     var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
     if (change.type === 'forge_draft') return true;
-    if (change.outcome === 'strengthen_primary_cta' || change.outcome === 'enable_faq_for_objections') return true;
+    if (
+      change.outcome === 'strengthen_primary_cta' ||
+      change.outcome === 'enable_faq_for_objections' ||
+      change.outcome === 'plan_seo_landing'
+    ) {
+      return true;
+    }
     return !!(rec && rec.interactive === 'execution_plan');
+  }
+
+  function planOutlineOf(rec) {
+    var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
+    return Array.isArray(change.planOutline) ? change.planOutline : [];
+  }
+
+  function renderPlanOutline(steps) {
+    if (!steps || !steps.length) return '';
+    return (
+      '<div class="ai-rec-block"><span class="ai-rec-label">How we will do it</span>' +
+      '<ol class="ai-rec-outline">' +
+      steps
+        .map(function (s) {
+          return '<li>' + esc(s) + '</li>';
+        })
+        .join('') +
+      '</ol></div>'
+    );
   }
 
   function renderRec(r) {
@@ -376,6 +407,7 @@
     var issue = r.problem || r.issue || '';
     var reason = r.reason || '';
     var suggestion = r.title || '';
+    var outline = planOutlineOf(r);
     var answerBtn = fieldKey
       ? '<button type="button" class="btn sm ai-rec-answer" data-id="' +
         esc(r.id) +
@@ -392,6 +424,7 @@
           (forgeable ? ' data-forge="1"' : '') +
           '> Select</label>'
         : '';
+    var draftLabel = forgeable ? 'Draft in Forge' : 'Approve';
     return (
       '<article class="card ai-rec-card" data-rec-id="' +
       esc(r.id) +
@@ -416,20 +449,23 @@
           esc(reason) +
           '</p></div>'
         : '') +
+      renderPlanOutline(outline) +
       '<div class="ai-rec-actions">' +
       check +
       answerBtn +
       '<button type="button" class="btn sm ai-rec-approve" data-id="' +
       esc(r.id) +
-      '">Approve</button>' +
-      '<button type="button" class="btn ghost sm ai-rec-reject" data-id="' +
-      esc(r.id) +
-      '">Reject</button>' +
+      '">' +
+      esc(draftLabel) +
+      '</button>' +
       '<button type="button" class="btn ghost sm ai-rec-discuss" data-id="' +
       esc(r.id) +
       '">Discuss</button>' +
+      '<button type="button" class="btn ghost sm ai-rec-reject" data-id="' +
+      esc(r.id) +
+      '">Reject</button>' +
       '</div>' +
-      '<p class="lede ai-rec-hint">Approve builds a Forge plan for preview. Discuss expands this with Atlas. Reject dismisses it. AI never publishes.</p></article>'
+      '<p class="lede ai-rec-hint">Discuss stays on this card. Draft in Forge builds the exact steps for preview. AI never publishes.</p></article>'
     );
   }
 
@@ -480,6 +516,7 @@
   function renderPlanCard(plan) {
     if (!plan) return '';
     var status = plan.status || '';
+    var steps = plan.steps || [];
     var previewBtn =
       status === 'preview_ready' || status === 'guardian_validated' || status === 'draft'
         ? '<button type="button" class="btn sm ai-plan-preview" data-plan="' +
@@ -492,18 +529,29 @@
           esc(plan.id) +
           '">Rollback</button>'
         : '';
+    var stepList = steps.length
+      ? '<ol class="ai-rec-outline" style="margin-top:8px">' +
+        steps
+          .slice(0, 12)
+          .map(function (s) {
+            return '<li>' + esc(s.label || s.title || 'Step') + '</li>';
+          })
+          .join('') +
+        '</ol>'
+      : '';
     return (
       '<article class="card" style="margin:0 0 10px;padding:12px 14px">' +
       '<strong style="display:block">' +
       esc(plan.title || 'Execution Plan') +
       '</strong>' +
       '<p class="lede" style="margin:6px 0 0;font-size:12.5px">' +
-      esc(String((plan.steps || []).length)) +
+      esc(String(steps.length)) +
       ' step(s) · ' +
       esc(status) +
       ' · risk ' +
       esc(plan.risk || 'low') +
       '</p>' +
+      stepList +
       '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
       previewBtn +
       rollbackBtn +
@@ -631,6 +679,7 @@
     var el = $('ai-chat-backdrop');
     if (el) el.remove();
     chatSession = null;
+    discussSession = null;
   }
 
   function appendChatBubble(who, text) {
@@ -641,6 +690,173 @@
     div.textContent = text;
     log.appendChild(div);
     log.scrollTop = log.scrollHeight;
+  }
+
+  function renderDiscussOutline(outline) {
+    var box = $('ai-discuss-outline');
+    if (!box) return;
+    if (!outline || !outline.length) {
+      box.innerHTML = '';
+      return;
+    }
+    box.innerHTML =
+      '<span class="ai-rec-label">How we will do it</span><ol class="ai-rec-outline">' +
+      outline
+        .map(function (s) {
+          return '<li>' + esc(s) + '</li>';
+        })
+        .join('') +
+      '</ol>';
+  }
+
+  function paintDiscussMessages(messages) {
+    var log = $('ai-chat-log');
+    if (!log) return;
+    log.innerHTML = '';
+    (messages || []).forEach(function (m) {
+      appendChatBubble(m.role === 'user' ? 'you' : 'atlas', m.body || '');
+    });
+  }
+
+  async function openDiscussChat(rec) {
+    ensureStyles();
+    closeChat();
+    if (!rec || !rec.id) return;
+    discussSession = { recommendationId: rec.id, recommendation: rec };
+    var issue = rec.problem || '';
+    var suggestion = rec.title || '';
+    var outline = planOutlineOf(rec);
+    var forgeable = isForgeOutcome(rec);
+    var backdrop = document.createElement('div');
+    backdrop.className = 'ai-chat-backdrop';
+    backdrop.id = 'ai-chat-backdrop';
+    backdrop.innerHTML =
+      '<div class="ai-chat-modal" role="dialog" aria-modal="true" aria-label="Discuss recommendation with Atlas">' +
+      '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">' +
+      '<div><h2 style="margin:0 0 4px">Discuss with Atlas</h2>' +
+      '<p class="lede" style="margin:0;font-size:13px">Same suggestion — refine the plan here. Ask the Team will not create a duplicate.</p></div>' +
+      '<button type="button" class="btn ghost sm" id="ai-chat-x">✕</button></div>' +
+      '<div class="ai-discuss-context">' +
+      (issue ? '<p><strong>Issue:</strong> ' + esc(issue) + '</p>' : '') +
+      '<p><strong>Suggestion:</strong> ' +
+      esc(suggestion) +
+      '</p>' +
+      '<div id="ai-discuss-outline"></div></div>' +
+      '<div class="ai-chat-log" id="ai-chat-log"></div>' +
+      '<textarea id="ai-discuss-input" rows="3" style="width:100%" placeholder="Ask a question or refine the plan…"></textarea>' +
+      '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+      '<button type="button" class="btn" id="ai-discuss-send">Send</button>' +
+      (forgeable
+        ? '<button type="button" class="btn" id="ai-discuss-draft">Draft in Forge</button>'
+        : '') +
+      '<button type="button" class="btn ghost" id="ai-discuss-close">Close</button>' +
+      '<span id="ai-chat-msg" class="ai-team-msg"></span></div>' +
+      '<p class="lede" style="margin:10px 0 0;font-size:12px">When you agree, Draft in Forge builds the exact steps for Change Preview. AI never publishes.</p></div>';
+    document.body.appendChild(backdrop);
+    renderDiscussOutline(outline);
+    backdrop.addEventListener('click', function (ev) {
+      if (ev.target === backdrop) {
+        closeChat();
+        softRefresh(panelCtx);
+      }
+    });
+    $('ai-chat-x').onclick = function () {
+      closeChat();
+      softRefresh(panelCtx);
+    };
+    $('ai-discuss-close').onclick = function () {
+      closeChat();
+      softRefresh(panelCtx);
+    };
+
+    async function loadThread() {
+      try {
+        var j = await api('/api/ai-team/recommendations', {
+          siteId: activeSiteId(),
+          action: 'discuss',
+          recommendationId: rec.id,
+          message: ''
+        });
+        if (j.recommendation) {
+          discussSession.recommendation = j.recommendation;
+          if (lastState && lastState.recommendations) {
+            lastState.recommendations = lastState.recommendations.map(function (r) {
+              return String(r.id) === String(j.recommendation.id) ? j.recommendation : r;
+            });
+          }
+        }
+        paintDiscussMessages(j.messages || []);
+        renderDiscussOutline(j.planOutline || planOutlineOf(j.recommendation || rec));
+      } catch (e) {
+        appendChatBubble(
+          'atlas',
+          'Here is the current plan. Tell me what to change.\n\n' +
+            outline.map(function (s, i) {
+              return i + 1 + '. ' + s;
+            }).join('\n')
+        );
+      }
+    }
+
+    $('ai-discuss-send').onclick = async function () {
+      var input = $('ai-discuss-input');
+      var msg = $('ai-chat-msg');
+      var text = input ? String(input.value || '').trim() : '';
+      if (!text) {
+        setMsg(msg, 'Type a message first.', 'bad');
+        return;
+      }
+      try {
+        setMsg(msg, 'Atlas is thinking…', '');
+        var j = await api('/api/ai-team/recommendations', {
+          siteId: activeSiteId(),
+          action: 'discuss',
+          recommendationId: discussSession.recommendationId,
+          message: text
+        });
+        if (input) input.value = '';
+        if (j.recommendation) {
+          discussSession.recommendation = j.recommendation;
+          if (lastState && lastState.recommendations) {
+            lastState.recommendations = lastState.recommendations.map(function (r) {
+              return String(r.id) === String(j.recommendation.id) ? j.recommendation : r;
+            });
+          }
+        }
+        paintDiscussMessages(j.messages || []);
+        renderDiscussOutline(j.planOutline || []);
+        setMsg(msg, 'Plan updated on this same suggestion.', 'ok');
+      } catch (e) {
+        setMsg(msg, e.message || String(e), 'bad');
+      }
+    };
+
+    var draftBtn = $('ai-discuss-draft');
+    if (draftBtn) {
+      draftBtn.onclick = async function () {
+        var msg = $('ai-chat-msg');
+        try {
+          setMsg(msg, 'Drafting in Forge…', '');
+          var j = await api('/api/ai-team/execution-plan', {
+            siteId: activeSiteId(),
+            action: 'create',
+            recommendationIds: [discussSession.recommendationId],
+            editorContext: editorContext()
+          });
+          closeChat();
+          notify(j.nextStep || 'Execution Plan ready — open Change Preview.');
+          if (j.preview && j.plan && j.plan.id) {
+            showChangePreview(j.preview, j.plan.id);
+          } else {
+            softRefresh(panelCtx);
+          }
+        } catch (e) {
+          setMsg(msg, e.message || String(e), 'bad');
+        }
+      };
+    }
+
+    await loadThread();
   }
 
   function renderChatQuestion() {
@@ -971,7 +1187,7 @@
     html +=
       '<div class="card" style="margin-bottom:16px">' +
       '<h3 style="margin:0 0 8px">Atlas — Website Strategist</h3>' +
-      '<p class="lede" style="margin:0 0 12px">Ask a business question. Atlas replies with Issue → Suggestion → Why cards you can Approve, Reject, or Discuss. Asking does not create landing pages or edit the site by itself.</p>' +
+      '<p class="lede" style="margin:0 0 12px">Ask a business question for new recommendations. To refine an existing card, use Discuss on that card — not Ask again.</p>' +
       '<textarea id="ai-ask" rows="3" style="width:100%" placeholder="e.g. I need a landing page for wedding coffee cart hires"></textarea>' +
       '<div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
       '<button type="button" class="btn" id="ai-ask-go">Ask the Team</button>' +
@@ -1190,26 +1406,7 @@
         var rec = ((lastState && lastState.recommendations) || []).find(function (r) {
           return String(r.id) === String(id);
         });
-        var askEl = $('ai-ask');
-        if (!askEl || !rec) return;
-        var issue = rec.problem || rec.issue || '';
-        var reason = rec.reason || '';
-        askEl.value =
-          'Discuss this suggestion: "' +
-          (rec.title || 'Untitled') +
-          '".\n' +
-          (issue ? 'Issue: ' + issue + '\n' : '') +
-          (reason ? 'Why it was suggested: ' + reason + '\n' : '') +
-          '\nPlease expand — what would you change next, and what do you need from me?';
-        try {
-          askEl.focus();
-          askEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } catch (_e) {}
-        setMsg(
-          $('ai-ask-msg'),
-          'Edit if you like, then Ask the Team to expand — or Answer with Atlas if this needs Site Knowledge.',
-          ''
-        );
+        if (rec) openDiscussChat(rec);
       };
     });
 
