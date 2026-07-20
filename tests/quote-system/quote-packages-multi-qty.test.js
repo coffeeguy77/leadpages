@@ -53,7 +53,7 @@ assert.ok(builder.includes("value=\"catering\""), 'catering group option');
 
 assert.ok(display.includes('lp-oq-bev-grid'), 'bev grid CSS');
 assert.ok(
-  display.includes('grid-template-columns:repeat(2,minmax(0,1fr))'),
+  display.includes('grid-template-columns:repeat(2,minmax(0,1fr))!important'),
   'packages/catering forced 2-up grid'
 );
 assert.ok(
@@ -65,7 +65,8 @@ assert.ok(
   'generic auto-fit skips beverage grids'
 );
 assert.ok(planning.includes('lp-oq-choices lp-oq-bev-grid'), 'each group uses bev-grid');
-assert.ok(manage.includes('oq-bev-2up-1'), 'manage cache-bust');
-assert.ok(render.includes('oq-bev-2up-1'), 'render cache-bust');
+assert.ok(planning.includes("equipmentCardVars(shell, 'packageCards')"), 'packageCards style vars applied');
+assert.ok(manage.includes('oq-pkg-style-1'), 'manage cache-bust');
+assert.ok(render.includes('oq-pkg-style-1'), 'render cache-bust');
 
 console.log('quote-packages-multi-qty.test.js: ok');

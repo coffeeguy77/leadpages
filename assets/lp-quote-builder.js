@@ -79,6 +79,7 @@
     if (!cfg.wizard.stepLabels) cfg.wizard.stepLabels = {};
     if (!Array.isArray(cfg.wizard.conditions)) cfg.wizard.conditions = [];
     if (!cfg.wizard.equipmentCards) cfg.wizard.equipmentCards = {};
+    if (!cfg.wizard.packageCards) cfg.wizard.packageCards = {};
     if (!cfg.wizard.ui) cfg.wizard.ui = {};
     if (cfg.wizard.allowMultiCart == null) cfg.wizard.allowMultiCart = false;
     var Wnorm = wl();
@@ -153,6 +154,7 @@
       if (!z.imageSize) z.imageSize = 'standard';
     });
     if (!cfg.wizard.travelCards) cfg.wizard.travelCards = {};
+    if (!cfg.wizard.packageCards) cfg.wizard.packageCards = {};
     return cfg;
   }
 
@@ -309,9 +311,20 @@
     fill(tc, 'featureColor', tc.featureColor || ec.featureColor || accent);
     fill(tc, 'strokeColor', tc.strokeColor || ec.strokeColor || accent);
     if (tc.strokeWidth == null || tc.strokeWidth === '') tc.strokeWidth = ec.strokeWidth != null ? ec.strokeWidth : 1;
+    var pc = Object.assign({}, w.packageCards || {});
+    fill(pc, 'cardBg', pc.cardBg || ec.cardBg || panel);
+    fill(pc, 'titleColor', pc.titleColor || ec.titleColor || accent);
+    fill(pc, 'descColor', pc.descColor || ec.descColor || accent);
+    fill(pc, 'qtyColor', pc.qtyColor || ec.qtyColor || accent);
+    fill(pc, 'qtyStroke', pc.qtyStroke || ec.qtyStroke || accent);
+    fill(pc, 'qtyBg', pc.qtyBg || ec.qtyBg || '#ffffff');
+    fill(pc, 'featureColor', pc.featureColor || ec.featureColor || accent);
+    fill(pc, 'strokeColor', pc.strokeColor || ec.strokeColor || accent);
+    if (pc.strokeWidth == null || pc.strokeWidth === '') pc.strokeWidth = ec.strokeWidth != null ? ec.strokeWidth : 1;
     w.ui = ui;
     w.equipmentCards = ec;
     w.travelCards = tc;
+    w.packageCards = pc;
     shell.wizard = w;
     return shell;
   };
@@ -353,6 +366,14 @@
       return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|imageAxis|displayMode|imageSize|imageScale|icon)$/.test(path);
     }
     return false;
+  };
+
+  QuoteBuilder.prototype._previewNeedsPackages = function(path) {
+    return !!(path && path.indexOf('wizard.packageCards') === 0);
+  };
+
+  QuoteBuilder.prototype._ensurePreviewPackagesStep = function() {
+    this._jumpPreviewToStep('beverages') || this._jumpPreviewToStep('packages');
   };
 
   QuoteBuilder.prototype._normHex = function(v) {
@@ -1086,6 +1107,7 @@
     var layout = w.layout || 'cards';
     var ec = w.equipmentCards || {};
     var tc = w.travelCards || {};
+    var pc = w.packageCards || {};
     var accent = this._accent();
     var panel = (w.ui && w.ui.panelBg) || '#2e282a';
 
@@ -1113,6 +1135,19 @@
       + this._colorField('wizard.travelCards.featureColor', 'Badge &amp; accent colour', tc.featureColor, ec.featureColor || accent)
       + this._colorField('wizard.travelCards.strokeColor', 'Card stroke colour', tc.strokeColor, ec.strokeColor || accent)
       + this._field('Stroke width (px)', '<input type="number" min="0" max="8" data-oqb-path="wizard.travelCards.strokeWidth" value="' + esc(tc.strokeWidth != null ? tc.strokeWidth : (ec.strokeWidth != null ? ec.strokeWidth : 1)) + '">')
+      + '</div></div>'
+      + '<div class="oqb-section"><h4>Package card styling</h4>'
+      + '<p class="oqb-hint" style="margin-top:0">Drinks and catering quantity cards on the Packages step. Leave blank to inherit Equipment card styling. Stroke colour controls the box border and quantity stepper outline.</p>'
+      + '<div class="oqb-grid">'
+      + this._colorField('wizard.packageCards.cardBg', 'Card background', pc.cardBg, ec.cardBg || panel)
+      + this._colorField('wizard.packageCards.titleColor', 'Package name colour', pc.titleColor || pc.cardText, ec.titleColor || accent)
+      + this._colorField('wizard.packageCards.descColor', 'Description colour', pc.descColor || pc.cardText, ec.descColor || accent)
+      + this._colorField('wizard.packageCards.qtyColor', 'Quantity number colour', pc.qtyColor || pc.featureColor, ec.qtyColor || accent)
+      + this._colorField('wizard.packageCards.qtyStroke', 'Quantity stroke colour', pc.qtyStroke || pc.featureColor, ec.qtyStroke || accent)
+      + this._colorField('wizard.packageCards.qtyBg', 'Quantity fill colour', pc.qtyBg, ec.qtyBg || '#ffffff')
+      + this._colorField('wizard.packageCards.featureColor', 'Selected accent colour', pc.featureColor, ec.featureColor || accent)
+      + this._colorField('wizard.packageCards.strokeColor', 'Card stroke colour', pc.strokeColor, ec.strokeColor || accent)
+      + this._field('Stroke width (px)', '<input type="number" min="0" max="8" data-oqb-path="wizard.packageCards.strokeWidth" value="' + esc(pc.strokeWidth != null ? pc.strokeWidth : (ec.strokeWidth != null ? ec.strokeWidth : 1)) + '">')
       + '</div></div>'
       + this._renderWizardUiColors(w)
       + this._renderSectionStyle()
@@ -1464,6 +1499,7 @@
             self._ensurePreviewEquipmentStep();
             if (path.indexOf('wizard.ui') === 0) self.previewPinEquipment = false;
           }
+          if (self._previewNeedsPackages(path)) self._ensurePreviewPackagesStep();
           self._refreshPreview();
         });
         return;
@@ -1479,6 +1515,7 @@
             self._ensurePreviewEquipmentStep();
             if (path.indexOf('wizard.ui') === 0) self.previewPinEquipment = false;
           }
+          if (self._previewNeedsPackages(path)) self._ensurePreviewPackagesStep();
           self._refreshPreview();
         }
       });
@@ -1503,6 +1540,7 @@
           self.previewPinEquipment = true;
           self._ensurePreviewEquipmentStep();
         }
+        if (self._previewNeedsPackages(path)) self._ensurePreviewPackagesStep();
         self._refreshPreview();
       });
     });
@@ -1523,6 +1561,7 @@
           self.previewPinEquipment = true;
           self._ensurePreviewEquipmentStep();
         }
+        if (self._previewNeedsPackages(path)) self._ensurePreviewPackagesStep();
         self._refreshPreview();
       });
     });
