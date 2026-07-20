@@ -1,8 +1,8 @@
 # AI Website Team
 
-**Status:** Phase 1 shipped (advisory)  
+**Status:** Phase 2 architecture lock (Execution Plans)  
 **Audience:** Engineers and AI agents  
-**Related:** [Site Brain](SITE-BRAIN.md) · [Specialists](SPECIALISTS.md) · [Capability Registry](CAPABILITY-REGISTRY.md)
+**Related:** [Site Brain](SITE-BRAIN.md) · [Execution](EXECUTION.md) · [Specialists](SPECIALISTS.md)
 
 ---
 
@@ -10,27 +10,31 @@
 
 The **AI Website Team** helps authorised users improve **existing** LeadPages websites inside `manage.html`. It is not Website Studio and does not generate new sites.
 
-Phase 1 is **advisory only**: Atlas reviews Site Brain + editor context and proposes recommendations. Nothing publishes or mutates live `sites.config` through AI Team APIs.
+Canonical pipeline (every future AI action):
 
-## Phase 1 scope
+**Recommendation → Execution Plan (Forge) → Guardian → Change Preview → Apply → Editor → User Publish**
+
+AI never publishes automatically. Only **Forge** writes `sites.config`.
+
+## Scope
 
 | Included | Excluded |
 |----------|----------|
-| Website Studio On Ice (superuser only) | Scout SEO execution |
-| Persistent Site Brain + bootstrap review | Forge / editor mutation |
-| Specialist registry (Atlas interactive) | Account Brain |
-| Real Marketplace capability registry | Publish via AI Team |
-| Atlas advisory + Guardian validation | Nine “coming soon” primary cards |
-| Editor panel + permissions + audit + tests | Silent memory fallback in deployed envs |
+| Site Brain + Site Knowledge (business truth) | Auto-publish |
+| Atlas outcome recommendations | Atlas knowing config paths |
+| Forge Execution Plans + batch Apply | Other specialists writing config |
+| Guardian validation of plans | Treating Echo copy as Site Knowledge |
+| Change Preview + rollback | Broader specialist execution before this pipeline |
+| Editor page/section context | |
 
 ## Entry points
 
 | Surface | Path |
 |---------|------|
-| Editor nav | `manage.html` → **AI Website Team** (`#av-ai-team`) |
-| Client script | `assets/ai-website-team.js` |
+| Editor nav | `manage.html` → **AI Website Team** |
+| Client | `assets/ai-website-team.js` |
 | Site Brain APIs | `api/site-brain/*` |
-| AI Team APIs | `api/ai-team/*` |
+| AI Team APIs | `api/ai-team/*` (incl. `execution-plan`) |
 | Libraries | `lib/site-brain/`, `lib/ai-team/` |
 | SQL | `db/site_brain.sql` |
 
@@ -38,6 +42,6 @@ Phase 1 is **advisory only**: Atlas reviews Site Brain + editor context and prop
 
 1. [VISION](VISION.md)  
 2. [ARCHITECTURE](ARCHITECTURE.md)  
-3. [SITE-BRAIN](SITE-BRAIN.md)  
-4. [CAPABILITY-REGISTRY](CAPABILITY-REGISTRY.md)  
+3. [EXECUTION](EXECUTION.md)  
+4. [SITE-BRAIN](SITE-BRAIN.md)  
 5. [ROADMAP](ROADMAP.md)

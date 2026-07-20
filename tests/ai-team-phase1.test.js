@@ -158,13 +158,18 @@ describe('AI Team Phase 1', () => {
     assert.equal(result.ok, true);
     const knowledge = result.recommendations.filter((r) => {
       const change = r.proposedChange || r.proposed_change || {};
-      return change.type === 'site_brain_update' && change.fieldKey;
+      return change.fieldKey || change.type === 'site_brain_update' || change.type === 'outcome';
     });
     assert.ok(knowledge.length >= 1);
     assert.ok(
       knowledge.some((r) => {
         const change = r.proposedChange || r.proposed_change || {};
-        return change.fieldKey === 'preferredCta' || change.fieldKey === 'primaryGoal';
+        return (
+          change.fieldKey === 'preferredCta' ||
+          change.fieldKey === 'primaryGoal' ||
+          change.outcome === 'clarify_preferred_cta' ||
+          change.outcome === 'confirm_business_goal'
+        );
       })
     );
   });

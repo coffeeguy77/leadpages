@@ -14,6 +14,10 @@
 - Domains: `business`, `offers`, `audience`, `goals`, `brand`, `marketplace`, `seo`, …
 - `agentMemory.{atlas,nova,scout,…}` — namespaced; no cross-agent overwrite
 - `openTasks`, `decisions`, `evidence`
+- `executionPlans[]` — Forge Execution Plans (Recommendation → Preview → Apply)
+- `configRollbackSnapshots[]` — pre-apply `sites.config` for one-shot rollback
+
+Site Knowledge facts are **business truth** (`kind: business_fact` in the field guide). Generated copy belongs to Echo, not permanent Site Knowledge.
 
 ## Fact statuses
 

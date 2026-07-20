@@ -2,16 +2,18 @@
 
 All specialists are registered in `lib/ai-team/specialists.js`.
 
-| Id | Role | Phase 1 UI |
-|----|------|------------|
-| atlas | Website Strategist | Interactive primary |
-| nova | Design | Registered only |
-| scout | SEO | Registered only |
-| pulse | Conversion | Registered only |
-| forge | Website Builder | Registered only |
-| lens | Image | Registered only |
-| echo | Content | Registered only |
-| guardian | Quality | Validation helpers active |
-| beacon | Marketing | Registered only |
+| Id | Responsibility | Writes config? |
+|----|----------------|----------------|
+| atlas | Business strategy → Recommendations | No |
+| echo | Copywriting | No (proposes; Forge applies) |
+| scout | SEO strategy | No |
+| pulse | Conversion strategy | No |
+| nova | Design recommendations | No |
+| lens | Images | No |
+| guardian | Validation | No |
+| forge | Execution Plans + Apply + Rollback | **Yes — sole writer** |
+| beacon | Marketing | No |
 
-Phase 1 panel shows Atlas plus a compact note that other specialists unlock as workflows ship. Do not render nine inactive primary cards.
+## Rule
+
+Even if another specialist proposes a change to sections, apps, forms, layouts, CTA text, SEO metadata, images, navigation, or page structure, **only Forge** may mutate `sites.config` — via a Guardian-validated Execution Plan and user-confirmed Change Preview.

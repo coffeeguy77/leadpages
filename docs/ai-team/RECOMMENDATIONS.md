@@ -1,22 +1,22 @@
 # Recommendations
 
-Structured proposals from specialists (Phase 1: Atlas).
-
-## Lifecycle
-
-`proposed` → `approved` | `rejected` (status only in Phase 1)
-
-Approve/reject does **not** apply changes to the live site.
+Recommendations are **business outcomes**, not configuration instructions.
 
 ## Shape
 
-- title, problem, evidence, proposedChange, reason
-- estimatedEffort, affectedAreas, requiredPermissions, risk
-- `executable: false` in Phase 1
-- `capabilityGap` when the need is unsupported by the real registry
-- `guardian` validation result
+- `title` / `problem` / `reason` — plain language
+- `proposedChange.type`: `outcome` | `site_brain_update` (legacy) | advisory types
+- `proposedChange.outcome` — e.g. `strengthen_primary_cta`, `enable_faq_for_objections`
+- Never include config paths, section ids, layout keys, or renderer details
 
-## APIs
+Forge maps outcomes → Execution Plan steps → config paths.
 
-- `POST /api/ai-team/atlas-review` — generate + persist recommendations
-- `GET|POST /api/ai-team/recommendations` — list / approve / reject
+## Lifecycle
+
+`awaiting-review` → `approved` / `rejected`
+
+Approval (single or batch) creates a Forge **Execution Plan**, not a direct config write.
+
+## Pipeline
+
+Recommendation → Execution Plan → Guardian → Change Preview → Apply → Editor → User Publish
