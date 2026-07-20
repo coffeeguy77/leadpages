@@ -11,7 +11,7 @@ const css = fs.readFileSync(path.join(root, 'assets/lp-admin-responsive.css'), '
 
 assert.ok(manage.includes('overflow-x:auto'), 'adminnav can scroll horizontally when visible');
 assert.ok(manage.includes('flex-wrap:nowrap') || manage.includes('flex-wrap: nowrap'), 'adminnav nowrap for scroll');
-assert.ok(manage.includes('.adminnav .anav-btn{flex:0 0 auto') || manage.includes('flex:0 0 auto'), 'tabs do not shrink away');
+assert.ok(manage.includes('.adminnav .anav-btn{flex:1 1 0') || manage.includes('flex:1 1 0'), 'tabs share full width');
 assert.ok(manage.includes('lp-admin-responsive.css?v='), 'responsive CSS cache-busted');
 
 assert.ok(css.includes('display: none !important'), 'mobile hide forced with !important');

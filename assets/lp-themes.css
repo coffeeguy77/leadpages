@@ -318,8 +318,8 @@ html[data-lp-density="compact"] .btn {
   font-size: 13px;
 }
 html[data-lp-density="compact"] .anav-btn {
-  padding: 5px 7px;
-  font-size: 12px;
+  padding: 7px 10px;
+  font-size: 13px;
 }
 
 /* Text size */
@@ -1637,9 +1637,9 @@ input[type="checkbox"] {
 }
 .anav-btn[aria-selected="true"],
 .lsub-extra .anav-btn[aria-selected="true"] {
-  color: var(--accent-hover) !important;
-  border-bottom-color: var(--accent) !important;
-  background: transparent !important;
+  color: var(--accent-text, #fff) !important;
+  background: var(--button-bg, var(--accent)) !important;
+  border-color: var(--button-border, var(--accent)) !important;
   box-shadow: none !important;
   outline: none !important;
 }
