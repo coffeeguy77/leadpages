@@ -8,7 +8,8 @@
     equipment: 'equipment', products: 'equipment',
     event: 'event',
     beverages: 'beverages', packages: 'beverages',
-    addons: 'addons', travel: 'travel', contact: 'contact'
+    addons: 'addons', travel: 'travel', contact: 'contact',
+    custom: 'custom', questions: 'custom'
   };
 
   var STEP_CATALOG = [
@@ -17,8 +18,62 @@
     { id: 'beverages', label: 'Packages / per-head', icon: 'users' },
     { id: 'travel', label: 'Travel zone', icon: 'map-pin' },
     { id: 'addons', label: 'Add-ons & extras', icon: 'plus-circle' },
+    { id: 'custom', label: 'Custom questions', icon: 'sparkles' },
     { id: 'contact', label: 'Contact details', icon: 'mail' }
   ];
+
+  var CUSTOM_FIELD_TYPES = ['text', 'textarea', 'email', 'tel', 'number', 'select', 'checkbox', 'date'];
+  var CUSTOM_ATTACH_TO = ['custom', 'event', 'contact'];
+
+  function slugifyFieldId(text) {
+    return String(text || '').toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'field';
+  }
+
+  function normalizeCustomField(raw, index) {
+    if (!raw || typeof raw !== 'object') return null;
+    var type = CUSTOM_FIELD_TYPES.indexOf(raw.type) >= 0 ? raw.type : 'text';
+    var attachTo = CUSTOM_ATTACH_TO.indexOf(raw.attachTo) >= 0 ? raw.attachTo : 'custom';
+    var options = [];
+    if (Array.isArray(raw.options)) {
+      options = raw.options.map(function(o) { return String(o == null ? '' : o).trim(); }).filter(Boolean);
+    } else if (typeof raw.options === 'string') {
+      options = raw.options.split(/\n|,/).map(function(o) { return o.trim(); }).filter(Boolean);
+    }
+    var id = String(raw.id || '').trim() || (slugifyFieldId(raw.label) + '-' + (index || 0));
+    return {
+      id: id,
+      type: type,
+      label: String(raw.label || 'Question').trim() || 'Question',
+      placeholder: String(raw.placeholder || '').trim(),
+      helpText: String(raw.helpText || '').trim(),
+      required: !!raw.required,
+      options: type === 'select' ? options : [],
+      attachTo: attachTo
+    };
+  }
+
+  function normalizeCustomFields(list) {
+    var out = [];
+    var seen = {};
+    (Array.isArray(list) ? list : []).forEach(function(raw, i) {
+      var field = normalizeCustomField(raw, i);
+      if (!field) return;
+      var id = field.id;
+      if (seen[id]) id = id + '-' + i;
+      seen[id] = true;
+      field.id = id;
+      out.push(field);
+    });
+    return out;
+  }
+
+  function customFieldsFor(wizard, attachTo) {
+    var target = CUSTOM_ATTACH_TO.indexOf(attachTo) >= 0 ? attachTo : 'custom';
+    return normalizeCustomFields(wizard && wizard.customFields).filter(function(f) {
+      return f.attachTo === target;
+    });
+  }
 
   function normalizeStepId(stepId) {
     return STEP_ALIASES[String(stepId || '').trim()] || String(stepId || '').trim();
@@ -51,6 +106,9 @@
   function stepVisible(stepId, wizard, progress, travelZoneCount) {
     var norm = normalizeStepId(stepId);
     if (norm === 'contact') return true;
+    if (norm === 'custom') {
+      if (!customFieldsFor(wizard, 'custom').length) return false;
+    }
     if (norm === 'travel') {
       var n = travelZoneCount != null ? travelZoneCount : ((wizard && wizard.travelZones) || []).length;
       if (!n) return false;
@@ -71,8 +129,26 @@
     return out;
   }
 
+  function ensureCustomStepInSteps(steps, customFields) {
+    var fields = normalizeCustomFields(customFields);
+    var needsCustom = fields.some(function(f) { return f.attachTo === 'custom'; });
+    var editable = [];
+    (steps || []).forEach(function(s) {
+      var id = normalizeStepId(s);
+      if (!id || id === 'contact') return;
+      if (!needsCustom && id === 'custom') return;
+      if (editable.indexOf(id) < 0) editable.push(id);
+    });
+    if (needsCustom && editable.indexOf('custom') < 0) editable.push('custom');
+    editable.push('contact');
+    return editable;
+  }
+
   function resolveWizardSteps(wizard, progress, travelZoneCount) {
-    var configured = normalizeWizardSteps((wizard && wizard.steps) || []);
+    var configured = ensureCustomStepInSteps(
+      (wizard && wizard.steps) || [],
+      (wizard && wizard.customFields) || []
+    );
     var resolved = [];
     var tz = travelZoneCount != null ? travelZoneCount : ((wizard && wizard.travelZones) || []).length;
     configured.forEach(function(stepId) {
@@ -105,12 +181,18 @@
 
   global.LPQuoteWizardLogic = {
     STEP_CATALOG: STEP_CATALOG,
+    CUSTOM_FIELD_TYPES: CUSTOM_FIELD_TYPES,
+    CUSTOM_ATTACH_TO: CUSTOM_ATTACH_TO,
     normalizeStepId: normalizeStepId,
     matchesWhen: matchesWhen,
     normalizeWizardSteps: normalizeWizardSteps,
+    ensureCustomStepInSteps: ensureCustomStepInSteps,
     resolveWizardSteps: resolveWizardSteps,
     filterByShowWhen: filterByShowWhen,
     catalogLabel: catalogLabel,
-    stepVisible: stepVisible
+    stepVisible: stepVisible,
+    normalizeCustomField: normalizeCustomField,
+    normalizeCustomFields: normalizeCustomFields,
+    customFieldsFor: customFieldsFor
   };
 })(window);

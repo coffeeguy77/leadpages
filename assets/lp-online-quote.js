@@ -105,6 +105,7 @@
       beverageId: '',
       addonIds: [],
       travelZoneId: '',
+      customAnswers: {},
       contact: { name: '', email: '', phone: '' },
       quote: null,
       session: null,
@@ -221,6 +222,25 @@
     this.wire(stepKey);
   };
 
+  OnlineQuoteWidget.prototype.customFieldsFor = function(attachTo) {
+    var P = this.planning();
+    var wizard = (this.shell && this.shell.wizard) || {};
+    if (P && P.customFieldsFor) return P.customFieldsFor(wizard, attachTo);
+    var W = wl();
+    if (W.customFieldsFor) return W.customFieldsFor(wizard, attachTo);
+    return [];
+  };
+
+  OnlineQuoteWidget.prototype.renderCustomFields = function(attachTo) {
+    var P = this.planning();
+    var fields = this.customFieldsFor(attachTo);
+    if (!fields.length) return '';
+    if (P && P.renderCustomFieldsHtml) {
+      return P.renderCustomFieldsHtml(fields, this.state.customAnswers || {}, { esc: esc, attr: 'data-custom-field' });
+    }
+    return '';
+  };
+
   OnlineQuoteWidget.prototype.renderStep = function(key) {
     var s = this.state;
     var P = this.planning();
@@ -237,7 +257,16 @@
         : '';
       return wrap({
         intro: '<p class="lp-oq-intro">When is your event, and how many baristas do you need?</p>',
-        fields: fields + staffing
+        fields: fields + staffing + this.renderCustomFields('event')
+      });
+    }
+
+    if (key === 'custom' || key === 'questions') {
+      var customHtml = this.renderCustomFields('custom');
+      if (!customHtml) return '<p class="lp-oq-muted">No questions configured.</p>';
+      return wrap({
+        intro: '<p class="lp-oq-intro">A few more details about your event.</p>',
+        fields: customHtml
       });
     }
 
@@ -314,7 +343,8 @@
       intro: '<p class="lp-oq-intro">Your details to receive the quote.</p>',
       fields: '<label class="lp-oq-field"><span>Name</span><input data-field="contact.name" value="' + esc(s.contact.name) + '"></label>' +
         '<label class="lp-oq-field"><span>Email</span><input type="email" data-field="contact.email" value="' + esc(s.contact.email) + '"></label>' +
-        '<label class="lp-oq-field"><span>Mobile</span><input type="tel" data-field="contact.phone" placeholder="0414 631 463" value="' + esc(s.contact.phone) + '"></label>'
+        '<label class="lp-oq-field"><span>Mobile</span><input type="tel" data-field="contact.phone" placeholder="0414 631 463" value="' + esc(s.contact.phone) + '"></label>' +
+        this.renderCustomFields('contact')
     });
   };
 
@@ -391,6 +421,7 @@
     if (P && P.wireStaffing) P.wireStaffing(this.el, this.state, this.shell, products, function() { self.render(); });
     if (P && P.wireCartRows) P.wireCartRows(this.el, this.state, this.shell, products, function() { self.reconcileState(); self.render(); });
     if (P && P.wireTravelZoneRows) P.wireTravelZoneRows(this.el, this.state, function() { self.render(); });
+    if (P && P.wireCustomFields) P.wireCustomFields(this.el, this.state, 'data-custom-field');
     this.el.querySelectorAll('[data-addon]').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var id = btn.getAttribute('data-addon');
@@ -417,8 +448,19 @@
     this.el.querySelectorAll('[data-act]').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var act = btn.getAttribute('data-act');
-        if (act === 'back') { self.state.step--; self.reconcileState(); self.render(); }
-        else if (act === 'next') { self.state.step++; self.reconcileState(); self.render(); }
+        if (act === 'back') {
+          self.syncCustomFromDom();
+          self.state.step--;
+          self.reconcileState();
+          self.render();
+        } else if (act === 'next') {
+          self.syncCustomFromDom();
+          var err = self.validateStepCustomFields(stepKey);
+          if (err) { alert(err); return; }
+          self.state.step++;
+          self.reconcileState();
+          self.render();
+        }
         else if (act === 'calculate') self.calculate();
         else if (act === 'send-email') self.sendEmail();
         else if (act === 'confirm-email') self.confirmEmail();
@@ -428,6 +470,25 @@
     });
   };
 
+  OnlineQuoteWidget.prototype.syncCustomFromDom = function() {
+    var P = this.planning();
+    if (P && P.syncCustomAnswersFromDom) {
+      P.syncCustomAnswersFromDom(this.el, this.state, 'data-custom-field');
+    }
+  };
+
+  OnlineQuoteWidget.prototype.validateStepCustomFields = function(stepKey) {
+    var P = this.planning();
+    var attach = stepKey === 'event' ? 'event'
+      : (stepKey === 'custom' || stepKey === 'questions') ? 'custom'
+      : stepKey === 'contact' ? 'contact'
+      : null;
+    if (!attach) return null;
+    var fields = this.customFieldsFor(attach);
+    if (P && P.validateCustomFields) return P.validateCustomFields(fields, this.state.customAnswers || {});
+    return null;
+  };
+
   OnlineQuoteWidget.prototype.syncContactFromDom = function() {
     this.el.querySelectorAll('[data-field^="contact."]').forEach(function(inp) {
       var key = inp.getAttribute('data-field').slice(8);
@@ -435,6 +496,7 @@
       if (key === 'phone') this.state.contact.phone = normaliseAuPhone(v);
       else this.state.contact[key] = v;
     }, this);
+    this.syncCustomFromDom();
   };
 
   OnlineQuoteWidget.prototype.ensureSession = function() {
@@ -466,6 +528,12 @@
       alert('Enter a valid email address to receive your quote.');
       return;
     }
+    var contactErr = this.validateStepCustomFields('contact');
+    if (contactErr) { alert(contactErr); return; }
+    var customErr = this.validateStepCustomFields('custom');
+    if (customErr) { alert(customErr); return; }
+    var eventErr = this.validateStepCustomFields('event');
+    if (eventErr) { alert(eventErr); return; }
     this.el.querySelector('.lp-oq-body').innerHTML = '<p class="lp-oq-muted">Calculating…</p>';
     this.ensureSession().then(function() {
       return post('/calculate', {
