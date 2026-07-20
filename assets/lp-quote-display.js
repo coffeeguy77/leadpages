@@ -76,6 +76,37 @@
     return parts.length ? parts.join(';') : '';
   }
 
+  /** Wizard chrome colours — panel, progress chips, Continue/Back buttons. */
+  function wizardUiVars(shell) {
+    var ui = (shell && shell.wizard && shell.wizard.ui) || {};
+    var map = [
+      ['panelBg', '--lp-oq-panel-bg'],
+      ['panelBorder', '--lp-oq-panel-border'],
+      ['titleColor', '--lp-oq-panel-title'],
+      ['introColor', '--lp-oq-intro'],
+      ['mutedColor', '--lp-oq-muted'],
+      ['progressBg', '--lp-oq-step-bg'],
+      ['progressText', '--lp-oq-step-text'],
+      ['progressBorder', '--lp-oq-step-border'],
+      ['progressActiveBg', '--lp-oq-step-active-bg'],
+      ['progressActiveText', '--lp-oq-step-active-text'],
+      ['progressActiveBorder', '--lp-oq-step-active-border'],
+      ['progressDoneText', '--lp-oq-step-done-text'],
+      ['progressDoneBorder', '--lp-oq-step-done-border'],
+      ['btnBg', '--lp-oq-btn-bg'],
+      ['btnText', '--lp-oq-btn-text'],
+      ['btnGhostBg', '--lp-oq-btn-ghost-bg'],
+      ['btnGhostText', '--lp-oq-btn-ghost-text'],
+      ['btnGhostBorder', '--lp-oq-btn-ghost-border']
+    ];
+    var parts = [];
+    map.forEach(function(pair) {
+      var v = ui[pair[0]];
+      if (v && /^#[0-9a-fA-F]{3,8}$/.test(String(v))) parts.push(pair[1] + ':' + v);
+    });
+    return parts.length ? parts.join(';') : '';
+  }
+
   function equipmentCardHtml(item, helpers, opts) {
     var h = helpers || {};
     var o = opts || {};
@@ -200,6 +231,7 @@
     choiceVisualHtml: choiceVisualHtml,
     equipmentCardHtml: equipmentCardHtml,
     equipmentCardVars: equipmentCardVars,
+    wizardUiVars: wizardUiVars,
     wizardLayout: wizardLayout,
     layoutClass: layoutClass,
     wrapStepBody: wrapStepBody,
