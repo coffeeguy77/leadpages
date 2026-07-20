@@ -6,6 +6,10 @@
   min-height: 420px;
 }
 
+.lp-messages-embed .hidden {
+  display: none !important;
+}
+
 .lp-messages-embed .lme-layout {
   display: flex;
   gap: 14px;
@@ -280,18 +284,27 @@
   border-top: 1px solid var(--border);
 }
 
+.lp-messages-embed .muted {
+  color: var(--text-soft);
+}
+
 .lp-messages-embed .lme-composer textarea {
   flex: 1;
   resize: none;
   min-height: 44px;
   max-height: 140px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 18px;
+  border: 1px solid var(--border-strong);
+  background: var(--input-bg, var(--panel));
+  color: var(--text);
+  font: inherit;
+  line-height: 1.4;
 }
 
-.lp-messages-embed .lme-support-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 14px;
+.lp-support-panel .lp-messages-embed {
+  margin-top: 4px;
 }
 
 @media (max-width: 760px) {
@@ -312,5 +325,9 @@
 
   .lp-messages-embed .lme-thread {
     min-height: 46vh;
+  }
+
+  .lp-messages-embed .lme-b {
+    max-width: 88%;
   }
 }

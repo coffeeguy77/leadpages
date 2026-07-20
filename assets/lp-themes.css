@@ -1639,6 +1639,9 @@ input[type="checkbox"] {
 .lsub-extra .anav-btn[aria-selected="true"] {
   color: var(--accent-hover) !important;
   border-bottom-color: var(--accent) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 #ord-list .ord-row.drop-before,
 #lp-ord-list .ord-row.drop-before {
