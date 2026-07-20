@@ -173,4 +173,27 @@ describe('AI Team Phase 1', () => {
       })
     );
   });
+
+  it('Atlas landing-page asks cite the user request as the reason', () => {
+    const recs = aiTeam.buildDeterministicRecommendations(
+      {
+        goals: {
+          primary: { value: 'Get more coffee cart hires' },
+          preferredCta: { value: 'Get a free quote' }
+        },
+        offers: { mainServices: { value: ['Coffee cart', 'Weddings', 'Corporate'] } },
+        marketplace: { activeSections: { value: ['hero', 'faq', 'quote'] } },
+        editorContext: { editorTab: 'ai-team', selectedSection: 'hero', userRole: 'client' }
+      },
+      'I need a landing page on wedding coffee events'
+    );
+    const landing = recs.find((r) => {
+      const change = r.proposedChange || r.proposed_change || {};
+      return change.outcome === 'plan_seo_landing';
+    });
+    assert.ok(landing, 'landing recommendation present');
+    assert.match(String(landing.problem || ''), /focused page|landing/i);
+    assert.match(String(landing.reason || ''), /wedding coffee events/i);
+    assert.match(String(landing.title || ''), /landing page/i);
+  });
 });
