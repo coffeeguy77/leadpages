@@ -77,6 +77,21 @@
     var convFilter = '';
     var pendingOpen = opts.open || null;
     var chipsWired = false;
+    var lastCreateError = '';
+    var creating = false;
+
+    // Prefer manage's known site row — client RLS often cannot re-fetch servicing_partner_id.
+    var siteContext = opts.siteContext || null;
+    if (siteContext && siteContext.id) {
+      sitesById[String(siteContext.id)] = {
+        id: siteContext.id,
+        business_name: siteContext.business_name || '',
+        owner_user_id: siteContext.owner_user_id || null,
+        servicing_partner_id: siteContext.servicing_partner_id || null,
+        referring_partner_id: siteContext.referring_partner_id || null,
+        status: siteContext.status || ''
+      };
+    }
 
     root.classList.add('lp-messages-embed');
     root.innerHTML =
@@ -240,9 +255,44 @@
       var ps = await sb.from('partners').select('id,display_name').limit(1000);
       partnersById = {};
       (ps.data || []).forEach(function (p) { partnersById[p.id] = p; });
-      var ss = await sb.from('sites').select('id,business_name,owner_user_id,servicing_partner_id,status').limit(2000);
-      sitesById = {};
-      (ss.data || []).forEach(function (s) { sitesById[s.id] = s; });
+      var ss = await sb.from('sites').select('id,business_name,owner_user_id,servicing_partner_id,referring_partner_id,status').limit(2000);
+      var fetched = {};
+      (ss.data || []).forEach(function (s) { fetched[s.id] = s; });
+      // Keep manage-provided site context (may include partner ids clients cannot SELECT).
+      if (siteContext && siteContext.id) {
+        var sid = String(siteContext.id);
+        fetched[sid] = Object.assign({}, fetched[sid] || {}, {
+          id: siteContext.id,
+          business_name: siteContext.business_name || (fetched[sid] && fetched[sid].business_name) || '',
+          owner_user_id: siteContext.owner_user_id || (fetched[sid] && fetched[sid].owner_user_id) || null,
+          servicing_partner_id: siteContext.servicing_partner_id || (fetched[sid] && fetched[sid].servicing_partner_id) || null,
+          referring_partner_id: siteContext.referring_partner_id || (fetched[sid] && fetched[sid].referring_partner_id) || null,
+          status: siteContext.status || (fetched[sid] && fetched[sid].status) || ''
+        });
+      }
+      sitesById = fetched;
+    }
+
+    function providerPartnerId(site) {
+      if (!site) return null;
+      return site.servicing_partner_id || site.referring_partner_id || null;
+    }
+
+    function showNewMessage(title, body) {
+      var box = $('newbox');
+      if (!box) return;
+      box.classList.remove('hidden');
+      box.innerHTML = '<h4>' + esc(title || 'Start a conversation') + '</h4>'
+        + '<p class="muted" style="font-size:13px;margin:0;line-height:1.45">' + esc(body) + '</p>';
+    }
+
+    function setNewBusy(on) {
+      creating = !!on;
+      var btn = $('new');
+      if (btn) {
+        btn.disabled = !!on;
+        btn.textContent = on ? 'Starting…' : 'New';
+      }
     }
 
     async function loadConvos() {
@@ -443,6 +493,7 @@
     }
 
     async function findOrCreate(kind, match, insertRow) {
+      lastCreateError = '';
       var qy = sb.from('conversations').select('*').eq('kind', kind);
       Object.keys(match).forEach(function (k) { qy = qy.eq(k, match[k]); });
       var ex = await qy.limit(1);
@@ -452,7 +503,12 @@
         created_by: me.uid,
         last_message_at: new Date().toISOString()
       }, insertRow)).select('*').single();
-      return ins.error ? null : ins.data;
+      if (!ins.error) return ins.data;
+      lastCreateError = (ins.error && ins.error.message) || 'Could not create conversation';
+      // Race / unique: another row may already exist
+      var retry = await qy.limit(1);
+      if (retry.data && retry.data.length) return retry.data[0];
+      return null;
     }
 
     async function startConv(conv, prefill) {
@@ -466,13 +522,20 @@
     }
 
     function openNewBox() {
+      if (creating) return;
       // Client / site-scoped super: New simply opens the provider chat.
       if (me.role === 'client') {
-        openProvider();
+        openProvider().catch(function (err) {
+          showNewMessage('Could not start conversation', (err && err.message) || 'Please try again.');
+          setNewBusy(false);
+        });
         return;
       }
       if (me.role === 'super' && siteId) {
-        openSiteProvider();
+        openSiteProvider().catch(function (err) {
+          showNewMessage('Could not start conversation', (err && err.message) || 'Please try again.');
+          setNewBusy(false);
+        });
         return;
       }
 
@@ -508,42 +571,84 @@
         client_site_id: siteIdArg,
         client_user_id: s.owner_user_id
       });
+      if (!conv) {
+        showNewMessage('Could not start conversation', lastCreateError || 'Please try again.');
+        return;
+      }
       await startConv(conv, prefill);
     }
 
     async function openLeadPages(prefill) {
       if (!me.partnerId) return;
       var conv = await findOrCreate('partner_lp', { partner_id: me.partnerId }, { partner_id: me.partnerId });
+      if (!conv) {
+        showNewMessage('Could not start conversation', lastCreateError || 'Please try again.');
+        return;
+      }
       await startConv(conv, prefill);
     }
 
     async function openProvider() {
-      var site = siteId ? sitesById[siteId] : Object.keys(sitesById).map(function (k) { return sitesById[k]; })
-        .find(function (s) { return s.owner_user_id === me.uid; });
-      if (!site || !site.servicing_partner_id) return;
-      var conv = await findOrCreate('partner_client', {
-        partner_id: site.servicing_partner_id,
-        client_site_id: site.id
-      }, {
-        partner_id: site.servicing_partner_id,
-        client_site_id: site.id,
-        client_user_id: site.owner_user_id || me.uid
-      });
-      await startConv(conv);
+      setNewBusy(true);
+      try {
+        var site = siteId ? sitesById[siteId] : Object.keys(sitesById).map(function (k) { return sitesById[k]; })
+          .find(function (s) { return s.owner_user_id === me.uid; });
+        if (!site) {
+          showNewMessage('Start a conversation', 'Could not load this site. Refresh the page and try again.');
+          return;
+        }
+        var pid = providerPartnerId(site);
+        if (!pid) {
+          showNewMessage('Start a conversation', 'No provider is linked to this site yet. Ask LeadPages or your agency to assign a servicing partner, then try again.');
+          return;
+        }
+        var conv = await findOrCreate('partner_client', {
+          partner_id: pid,
+          client_site_id: site.id
+        }, {
+          partner_id: pid,
+          client_site_id: site.id,
+          client_user_id: site.owner_user_id || me.uid
+        });
+        if (!conv) {
+          showNewMessage('Could not start conversation', lastCreateError || 'Please try again or contact support.');
+          return;
+        }
+        await startConv(conv);
+      } finally {
+        setNewBusy(false);
+      }
     }
 
     async function openSiteProvider() {
-      var site = scopedSite();
-      if (!site || !site.servicing_partner_id) return;
-      var conv = await findOrCreate('partner_client', {
-        partner_id: site.servicing_partner_id,
-        client_site_id: site.id
-      }, {
-        partner_id: site.servicing_partner_id,
-        client_site_id: site.id,
-        client_user_id: site.owner_user_id || null
-      });
-      await startConv(conv);
+      setNewBusy(true);
+      try {
+        var site = scopedSite();
+        if (!site) {
+          showNewMessage('Start a conversation', 'Could not load this site. Refresh the page and try again.');
+          return;
+        }
+        var pid = providerPartnerId(site);
+        if (!pid) {
+          showNewMessage('Start a conversation', 'No provider is linked to this site yet. Assign a servicing partner in Ops / partner settings, then try again.');
+          return;
+        }
+        var conv = await findOrCreate('partner_client', {
+          partner_id: pid,
+          client_site_id: site.id
+        }, {
+          partner_id: pid,
+          client_site_id: site.id,
+          client_user_id: site.owner_user_id || null
+        });
+        if (!conv) {
+          showNewMessage('Could not start conversation', lastCreateError || 'Please try again or contact support.');
+          return;
+        }
+        await startConv(conv);
+      } finally {
+        setNewBusy(false);
+      }
     }
 
     async function openClientSupport() {

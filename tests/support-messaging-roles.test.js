@@ -35,12 +35,20 @@ assert.ok(embedJs.includes('filterBySiteScope'), 'site scoping for manage embed'
 assert.ok(embedJs.includes("role === 'super'") || embedJs.includes("me.role === 'super'"), 'super role supported');
 assert.ok(embedJs.includes('<p>No conversations yet.</p>'), 'empty state uses stacked paragraphs');
 assert.ok(!embedJs.includes('No conversations yet.<br>'), 'empty state no longer uses br in flex row');
+assert.ok(embedJs.includes('siteContext'), 'embed accepts siteContext from manage');
+assert.ok(embedJs.includes('showNewMessage') || embedJs.includes('No provider is linked'), 'client New surfaces missing-provider errors');
+assert.ok(embedJs.includes('lastCreateError'), 'create errors are retained for UI');
+assert.ok(embedJs.includes('providerPartnerId'), 'falls back to referring partner when needed');
+assert.ok(embedJs.includes('setNewBusy') || embedJs.includes('Starting…'), 'New button shows busy state');
 
 // manage wiring
 assert.ok(manage.includes('updateSupportNavBadge'), 'Support nav badge helper');
 assert.ok(manage.includes('supportNavAllowed'), 'Support tab gated for customer admin');
 assert.ok(manage.includes("role='super'") || manage.includes("role='super'"), 'renderMessages passes super role');
 assert.ok(manage.includes('siteId: currentSiteId'), 'embed receives siteId');
+assert.ok(manage.includes('siteContext:'), 'manage passes siteContext into embed');
+assert.ok(manage.includes('servicing_partner_id: _siteRow.servicing_partner_id') || manage.includes('servicing_partner_id:'), 'siteContext includes servicing partner');
+assert.ok(manage.includes('lp-messages-embed.js?v=support-new-1'), 'cache-busted messages embed');
 assert.ok(manage.includes('onUnread: updateSupportNavBadge'), 'unread wired to nav');
 assert.ok(manage.includes('.lme-nav-dot'), 'nav unread dot CSS');
 assert.ok(manage.includes('add LeadPages Team to the chat') || manage.includes('You can add LeadPages Team'), 'support lede updated');

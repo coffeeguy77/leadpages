@@ -634,7 +634,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js"></script>
 <script src="/assets/lp-admin-shell.js"></script>
-<script src="/assets/lp-messages-embed.js"></script>
+<script src="/assets/lp-messages-embed.js?v=support-new-1"></script>
 <script src="/assets/lp-mobile-menu-builder.js?v=quote-builder-nav-1"></script>
 <script src="/assets/lp-trade-picker.js"></script>
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
@@ -7800,9 +7800,18 @@ function heroCtaCard(c){
       else if(site&&partnerId&&site.servicing_partner_id===partnerId) role='partner';
     }
     if(manageMsgEmbed&&manageMsgEmbed.destroy) manageMsgEmbed.destroy();
+    var _siteRow=(allSites||[]).find(function(s){ return s.id===currentSiteId; })||null;
     manageMsgEmbed=window.LPMessagesEmbed.mount({
       container:root, sb:sb, uid:uid, role:role, partnerId:partnerId,
       siteId: currentSiteId, idPrefix:'mgm-',
+      siteContext: _siteRow ? {
+        id: _siteRow.id,
+        business_name: _siteRow.business_name || currentBusinessName || '',
+        owner_user_id: _siteRow.owner_user_id || null,
+        servicing_partner_id: _siteRow.servicing_partner_id || currentServicingPartnerId || null,
+        referring_partner_id: _siteRow.referring_partner_id || null,
+        status: _siteRow.status || ''
+      } : null,
       onUnread: updateSupportNavBadge
     });
   }
