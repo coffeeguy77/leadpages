@@ -136,6 +136,11 @@
   function QuoteBuilder(root, options) {
     this.root = root;
     this.previewRoot = (options && options.previewRoot) || null;
+    this.headRoot = (options && options.headRoot) || null;
+    this.sectionRoot = (options && options.sectionRoot) || null;
+    this.section = (options && options.section) || {};
+    this.onSectionChange = (options && options.onSectionChange) || null;
+    this.themeAccent = (options && options.themeAccent) || '';
     this.media = (options && options.media) || null;
     this.config = normalizeConfig(options && options.config);
     this.tab = (options && options.initialTab) || 'wizard';
@@ -175,20 +180,29 @@
       ['travel', 'Travel'],
       ['rules', 'Rules']
     ];
-    var html = '<div class="oqb">'
-      + '<div class="oqb-head"><div><h3 class="oqb-title">Quote builder</h3>'
+    var headHtml = '<div class="oqb-head"><div><h3 class="oqb-title">Quote builder</h3>'
       + '<p class="oqb-lede">Design your quote wizard — steps, icons, prices and scenarios. Saving creates a new live config version.</p></div>'
       + '<div class="oqb-head-actions">'
       + '<button type="button" class="btn ghost oqb-btn-sm" data-oqb="toggle-json">' + (this.showJson ? 'Visual builder' : 'Advanced JSON') + '</button>'
       + '</div></div>';
 
+    if (this.headRoot) {
+      this.headRoot.innerHTML = '<div class="oqb">' + headHtml + '</div>';
+    }
+
+    var html = '<div class="oqb">';
+    if (!this.headRoot) html += headHtml;
+
     if (this.showJson) {
       html += '<textarea class="oqb-json" data-oqb="json">' + esc(JSON.stringify(c, null, 2)) + '</textarea>';
+      if (this.sectionRoot) this.sectionRoot.innerHTML = '';
+      if (this.previewRoot) this.previewRoot.innerHTML = '';
     } else {
       html += '<div class="oqb-tabs">' + tabs.map(function(t) {
         return '<button type="button" class="oqb-tab' + (self.tab === t[0] ? ' is-on' : '') + '" data-oqb-tab="' + t[0] + '">' + t[1] + '</button>';
       }).join('') + '</div>';
       html += '<div class="oqb-body">' + this._renderTab() + '</div>';
+      if (this.sectionRoot) this.sectionRoot.innerHTML = this._renderSectionStyle();
     }
     html += '</div>';
     this.root.innerHTML = html;
@@ -207,6 +221,51 @@
       wizard: c.wizard || {},
       labour: c.labour || {}
     };
+  };
+
+  /** Preview-only shell: fill empty colour overrides with design defaults so swatches match the mock. */
+  QuoteBuilder.prototype._previewShell = function() {
+    var shell = this._toShell();
+    var accent = this._accent();
+    var w = Object.assign({}, shell.wizard || {});
+    var uiIn = w.ui || {};
+    var ecIn = w.equipmentCards || {};
+    var ui = Object.assign({}, uiIn);
+    var ec = Object.assign({}, ecIn);
+    var panel = ui.panelBg || '#2e282a';
+    function fill(obj, key, fb) { if (!obj[key]) obj[key] = fb; }
+    fill(ui, 'panelBg', panel);
+    fill(ui, 'panelBorder', accent);
+    fill(ui, 'titleColor', accent);
+    fill(ui, 'introColor', accent);
+    fill(ui, 'mutedColor', '#a8989e');
+    fill(ui, 'progressBg', '#ffffff');
+    fill(ui, 'progressText', accent);
+    fill(ui, 'progressBorder', accent);
+    fill(ui, 'progressActiveBg', accent);
+    fill(ui, 'progressActiveText', '#ffffff');
+    fill(ui, 'progressActiveBorder', accent);
+    fill(ui, 'progressDoneText', accent);
+    fill(ui, 'progressDoneBorder', accent);
+    fill(ui, 'btnBg', accent);
+    fill(ui, 'btnText', '#ffffff');
+    fill(ui, 'btnGhostBg', '#ffffff');
+    fill(ui, 'btnGhostText', accent);
+    fill(ui, 'btnGhostBorder', accent);
+    fill(ec, 'cardBg', panel);
+    fill(ec, 'imageBg', '#524b4f');
+    fill(ec, 'titleColor', accent);
+    fill(ec, 'descColor', accent);
+    fill(ec, 'qtyColor', accent);
+    fill(ec, 'qtyStroke', accent);
+    fill(ec, 'qtyBg', '#ffffff');
+    fill(ec, 'featureColor', accent);
+    fill(ec, 'strokeColor', accent);
+    if (ec.strokeWidth == null || ec.strokeWidth === '') ec.strokeWidth = 1;
+    w.ui = ui;
+    w.equipmentCards = ec;
+    shell.wizard = w;
+    return shell;
   };
 
   QuoteBuilder.prototype._ensurePreviewEquipmentStep = function() {
@@ -230,6 +289,152 @@
       return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|imageAxis|displayMode|imageSize|imageScale|icon)$/.test(path);
     }
     return false;
+  };
+
+  QuoteBuilder.prototype._normHex = function(v) {
+    v = String(v == null ? '' : v).trim();
+    if (!v) return '';
+    if (v.charAt(0) !== '#') v = '#' + v;
+    if (/^#[0-9a-fA-F]{3}$/.test(v)) {
+      return ('#' + v[1] + v[1] + v[2] + v[2] + v[3] + v[3]).toLowerCase();
+    }
+    return /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : '';
+  };
+
+  QuoteBuilder.prototype._accent = function() {
+    var a = this._normHex(this.themeAccent);
+    if (a) return a;
+    try {
+      var raw = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      a = this._normHex(raw);
+      if (a) return a;
+      var m = raw.match(/^rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+      if (m) {
+        function hx(n) { return ('0' + Number(n).toString(16)).slice(-2); }
+        return '#' + hx(m[1]) + hx(m[2]) + hx(m[3]);
+      }
+    } catch (e) {}
+    return '#1f7a63';
+  };
+
+  /** Swatch opens the native picker; hex text is editable; Default clears override. */
+  QuoteBuilder.prototype._colorField = function(path, label, stored, fallback) {
+    var fb = this._normHex(fallback) || '#1a2230';
+    var st = this._normHex(stored);
+    var shown = st || fb;
+    return this._field(label,
+      '<div class="oqb-color">'
+      + '<input type="color" class="oqb-color-swatch" data-oqb-path="' + esc(path) + '" value="' + esc(shown) + '" title="Pick colour" aria-label="' + esc(label) + ' swatch">'
+      + '<input type="text" class="oqb-color-hex" data-oqb-color-hex="' + esc(path) + '" value="' + esc(st) + '" placeholder="' + esc(fb) + '" spellcheck="false" autocomplete="off">'
+      + '<button type="button" class="btn ghost oqb-btn-sm oqb-color-def" data-oqb-color-def="' + esc(path) + '">Default</button>'
+      + '</div>');
+  };
+
+  QuoteBuilder.prototype._notifySection = function() {
+    if (typeof this.onSectionChange === 'function') this.onSectionChange(this.section);
+  };
+
+  QuoteBuilder.prototype._renderSectionStyle = function() {
+    var sec = this.section || {};
+    var ap = sec.appearance || {};
+    var custom = ap.custom === true;
+    var sw = ap.strokeWidth != null ? ap.strokeWidth : 2;
+    var accent = this._accent();
+    var DEF = {
+      bg: '#f7f0f2',
+      eyebrowColor: accent,
+      headingColor: '#1a2230',
+      introColor: '#46535f',
+      containerBg: '#f7f0f2',
+      strokeColor: accent
+    };
+    function hexRow(key, label, ph) {
+      var st = sec[key] || '';
+      var shown = (/^#[0-9a-fA-F]{6}$/i.test(st) ? st : '') || DEF[key];
+      return '<div class="oqb-field"><span>' + esc(label) + '</span>'
+        + '<div class="oqb-color">'
+        + '<input type="color" class="oqb-color-swatch" data-oq-sec-clr="' + esc(key) + '" value="' + esc(shown) + '" title="Pick colour">'
+        + '<input type="text" class="oqb-color-hex" data-oq-sec-hex="' + esc(key) + '" value="' + esc(/^#[0-9a-fA-F]{6}$/i.test(st) ? st : '') + '" placeholder="' + esc(DEF[key]) + '">'
+        + '<button type="button" class="btn ghost oqb-btn-sm" data-oq-sec-def="' + esc(key) + '">Default</button>'
+        + '</div></div>';
+    }
+    var tOpts = [['none', 'None (flat edge)'], ['fade', 'Fade blend'], ['wave', 'Wave'], ['angle', 'Diagonal'], ['curve', 'Soft curve']];
+    function tSel(cur) {
+      return tOpts.map(function(o) {
+        return '<option value="' + o[0] + '"' + ((cur || 'none') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+      }).join('');
+    }
+    return '<div class="oqb oqb-section-style">'
+      + '<div class="oqb-section"><h4>Page section (above the wizard)</h4>'
+      + '<p class="oqb-hint" style="margin-top:0">Eyebrow, heading and intro shown above the live preview — same copy as the published Online Quote band.</p>'
+      + '<div class="oqb-grid">'
+      + this._field('Eyebrow', '<input type="text" data-oq-sec-text="eyebrow" value="' + esc(sec.eyebrow || '') + '" placeholder="Online quote">')
+      + this._field('Heading', '<input type="text" data-oq-sec-text="heading" value="' + esc(sec.heading || '') + '" placeholder="Get your verified quote">')
+      + '</div>'
+      + this._field('Intro', '<textarea rows="2" data-oq-sec-text="intro" placeholder="Answer a few questions…">' + esc(sec.intro || '') + '</textarea>')
+      + '<h4 class="oqb-sub">Section colours</h4><div class="oqb-grid">'
+      + hexRow('bg', 'Section background', DEF.bg)
+      + hexRow('eyebrowColor', 'Eyebrow colour', DEF.eyebrowColor)
+      + hexRow('headingColor', 'Heading colour', DEF.headingColor)
+      + hexRow('introColor', 'Intro text colour', DEF.introColor)
+      + '</div></div>'
+      + '<details class="oqb-sec-appearance"' + (custom ? ' open' : '') + '>'
+      + '<summary>Section container style</summary>'
+      + '<p class="oqb-hint">Full-width background colour, coloured stroke, and transitions — same controls as Page editor.</p>'
+      + '<label class="oqb-check"><input type="checkbox" data-oq-sec-app="custom"' + (custom ? ' checked' : '') + '> Custom section style (otherwise theme default)</label>'
+      + '<div class="oqb-sec-app-fields"' + (custom ? '' : ' hidden') + '>'
+      + '<div class="oqb-grid">'
+      + '<div class="oqb-field"><span>Full-width background</span><div class="oqb-color">'
+      + '<input type="color" class="oqb-color-swatch" data-oq-sec-app-clr="containerBg" value="' + esc(ap.containerBg || DEF.containerBg) + '">'
+      + '<input type="text" class="oqb-color-hex" data-oq-sec-app-hex="containerBg" value="' + esc(ap.containerBg || '') + '" placeholder="Theme default">'
+      + '<button type="button" class="btn ghost oqb-btn-sm" data-oq-sec-app-def="containerBg">Default</button></div></div>'
+      + '<div class="oqb-field"><span>Stroke colour</span><div class="oqb-color">'
+      + '<input type="color" class="oqb-color-swatch" data-oq-sec-app-clr="strokeColor" value="' + esc(ap.strokeColor || DEF.strokeColor) + '">'
+      + '<input type="text" class="oqb-color-hex" data-oq-sec-app-hex="strokeColor" value="' + esc(ap.strokeColor || '') + '" placeholder="None">'
+      + '<button type="button" class="btn ghost oqb-btn-sm" data-oq-sec-app-def="strokeColor">Default</button></div></div>'
+      + '<div class="oqb-field"><span>Stroke width</span><input type="range" min="0" max="8" step="1" data-oq-sec-app="strokeWidth" value="' + esc(sw) + '"><span class="oqb-hint" data-oq-sec-app-sw-label>' + esc(sw) + 'px</span></div>'
+      + '<div class="oqb-field"><span>Stroke sides</span><select data-oq-sec-app="strokeSides">'
+      + '<option value="both"' + (!ap.strokeSides || ap.strokeSides === 'both' ? ' selected' : '') + '>Top &amp; bottom</option>'
+      + '<option value="top"' + (ap.strokeSides === 'top' ? ' selected' : '') + '>Top only</option>'
+      + '<option value="bottom"' + (ap.strokeSides === 'bottom' ? ' selected' : '') + '>Bottom only</option>'
+      + '<option value="all"' + (ap.strokeSides === 'all' ? ' selected' : '') + '>All sides</option>'
+      + '</select></div>'
+      + '<div class="oqb-field"><span>Transition into section (top)</span><select data-oq-sec-app="transitionTop">' + tSel(ap.transitionTop) + '</select></div>'
+      + '<div class="oqb-field"><span>Transition out (bottom)</span><select data-oq-sec-app="transitionBottom">' + tSel(ap.transitionBottom) + '</select></div>'
+      + '</div></div></details></div>';
+  };
+
+  QuoteBuilder.prototype._sectionBandHtml = function() {
+    var sec = this.section || {};
+    var ap = sec.appearance || {};
+    var accent = this._accent();
+    var ey = sec.eyebrow || 'Online quote';
+    var hd = sec.heading || 'Get your verified quote';
+    var intro = sec.intro || 'Answer a few questions — verify your email to see your total, then SMS for the full breakdown.';
+    var styles = [];
+    var bandBg = '';
+    if (ap.custom && ap.containerBg) bandBg = ap.containerBg;
+    else if (sec.bg) bandBg = sec.bg;
+    if (bandBg) styles.push('background:' + bandBg);
+    if (ap.custom && ap.strokeColor && (ap.strokeWidth > 0 || ap.strokeWidth === 0)) {
+      var sw = Math.max(0, parseInt(ap.strokeWidth, 10) || 0);
+      if (sw > 0) {
+        var sides = ap.strokeSides || 'both';
+        if (sides === 'all') styles.push('border:' + sw + 'px solid ' + ap.strokeColor);
+        else {
+          if (sides === 'both' || sides === 'top') styles.push('border-top:' + sw + 'px solid ' + ap.strokeColor);
+          if (sides === 'both' || sides === 'bottom') styles.push('border-bottom:' + sw + 'px solid ' + ap.strokeColor);
+        }
+      }
+    }
+    var eySt = sec.eyebrowColor ? (' style="color:' + esc(sec.eyebrowColor) + '"') : (' style="color:' + esc(accent) + '"');
+    var hdSt = sec.headingColor ? (' style="color:' + esc(sec.headingColor) + '"') : '';
+    var inSt = sec.introColor ? (' style="color:' + esc(sec.introColor) + '"') : '';
+    return '<div class="oqb-oq-band"' + (styles.length ? (' style="' + styles.join(';') + '"') : '') + '>'
+      + '<p class="oqb-oq-ey"' + eySt + '>' + esc(ey) + '</p>'
+      + '<h2 class="oqb-oq-heading"' + hdSt + '>' + esc(hd) + '</h2>'
+      + (intro ? ('<p class="oqb-oq-intro"' + inSt + '>' + esc(intro) + '</p>') : '')
+      + '</div>';
   };
 
   QuoteBuilder.prototype._previewStyleHtml = function() {
@@ -265,7 +470,7 @@
       + '<button type="button" class="oqb-preview-zoom-btn" data-oqb-zoom="in" title="Zoom in">+</button>'
       + '<button type="button" class="oqb-preview-zoom-btn oqb-preview-zoom-reset" data-oqb-zoom="reset" title="Reset zoom">100%</button>'
       + '</div></div>'
-      + '<p class="oqb-preview-sub">Full-width preview above the builder. Layout: <strong>' + esc(layoutLabel) + '</strong>' + esc(pinHint) + '. Card styling updates as you edit — no publish needed.</p>'
+      + '<p class="oqb-preview-sub">Matches the published section: title above, then the wizard. Layout: <strong>' + esc(layoutLabel) + '</strong>' + esc(pinHint) + '. Styling updates live — no publish needed.</p>'
       + '<div class="oqb-preview-tools">'
       + '<label class="oqb-preview-focus"><input type="checkbox" data-oqb-preview-focus' + (this.previewFocusCard ? ' checked' : '') + '> Focus one equipment card</label>'
       + '<button type="button" class="oqb-preview-jump" data-oqb-preview-jump="equipment">Show equipment step</button>'
@@ -281,7 +486,7 @@
 
   QuoteBuilder.prototype._renderPreview = function() {
     var self = this;
-    var shell = this._toShell();
+    var shell = this._previewShell();
     var W = wl();
     var tz = shell.travelZones.length;
     var steps = W.resolveWizardSteps
@@ -383,6 +588,7 @@
     return self._renderPreviewToolbar(shell)
       + self._previewStyleHtml()
       + '<div class="oqb-preview-body oqb-preview-mock"><div class="oqb-preview-zoom-outer"><div class="oqb-preview-zoom-inner">'
+      + self._sectionBandHtml()
       + '<div class="lp-oq-card' + layoutCls + '"' + (uiStyle ? (' style="' + uiStyle + '"') : '') + '>' +
       '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc((shell.business && shell.business.name) || 'Your business') + '</h2>' +
       '<div class="lp-oq-steps">' + steps.map(function(s, i) {
@@ -675,36 +881,35 @@
   QuoteBuilder.prototype._renderWizardUiColors = function(w) {
     var ui = (w && w.ui) || {};
     var self = this;
+    var accent = this._accent();
     function col(path, label, fallback) {
-      var v = ui[path] || '';
-      var shown = v || fallback;
-      return self._field(label, '<input type="color" data-oqb-path="wizard.ui.' + path + '" value="' + esc(shown) + '">');
+      return self._colorField('wizard.ui.' + path, label, ui[path] || '', fallback);
     }
     return '<div class="oqb-section"><h4>Wizard colours</h4>'
-      + '<p class="oqb-hint" style="margin-top:0">Panel, progress steps (Equipment, Event details\u2026), and Continue / Back buttons. Progress chips use the same 8px radius as Continue — not pills.</p>'
+      + '<p class="oqb-hint" style="margin-top:0">Panel, progress steps (Equipment, Event details\u2026), and Continue / Back. Swatch opens the picker; hex field edits the value. Defaults follow your site accent (' + esc(accent) + ').</p>'
       + '<div class="oqb-grid">'
-      + col('panelBg', 'Panel background', '#ffffff')
-      + col('panelBorder', 'Panel border', '#d8dde6')
-      + col('titleColor', 'Business name colour', '#1a2230')
-      + col('introColor', 'Step intro text colour', '#46535f')
-      + col('mutedColor', 'Muted / hint text', '#667788')
+      + col('panelBg', 'Panel background', '#2e282a')
+      + col('panelBorder', 'Panel border', accent)
+      + col('titleColor', 'Business name colour', accent)
+      + col('introColor', 'Step intro text colour', accent)
+      + col('mutedColor', 'Muted / hint text', '#a8989e')
       + '</div>'
       + '<h4 class="oqb-sub">Progress buttons</h4><div class="oqb-grid">'
-      + col('progressBg', 'Progress background', '#f4f6f8')
-      + col('progressText', 'Progress text', '#1a2230')
-      + col('progressBorder', 'Progress border', '#d8dde6')
-      + col('progressActiveBg', 'Active progress background', '#1f7a63')
+      + col('progressBg', 'Progress background', '#ffffff')
+      + col('progressText', 'Progress text', accent)
+      + col('progressBorder', 'Progress border', accent)
+      + col('progressActiveBg', 'Active progress background', accent)
       + col('progressActiveText', 'Active progress text', '#ffffff')
-      + col('progressActiveBorder', 'Active progress border', '#1f7a63')
-      + col('progressDoneText', 'Completed progress text', '#1f7a63')
-      + col('progressDoneBorder', 'Completed progress border', '#1f7a63')
+      + col('progressActiveBorder', 'Active progress border', accent)
+      + col('progressDoneText', 'Completed progress text', accent)
+      + col('progressDoneBorder', 'Completed progress border', accent)
       + '</div>'
       + '<h4 class="oqb-sub">Navigation buttons (Continue / Back)</h4><div class="oqb-grid">'
-      + col('btnBg', 'Continue background', '#1f7a63')
+      + col('btnBg', 'Continue background', accent)
       + col('btnText', 'Continue text', '#ffffff')
       + col('btnGhostBg', 'Back background', '#ffffff')
-      + col('btnGhostText', 'Back text', '#1f7a63')
-      + col('btnGhostBorder', 'Back border', '#1f7a63')
+      + col('btnGhostText', 'Back text', accent)
+      + col('btnGhostBorder', 'Back border', accent)
       + '</div></div>';
   };
 
@@ -712,28 +917,32 @@
     var w = this.config.wizard || {};
     var layout = w.layout || 'cards';
     var ec = w.equipmentCards || {};
+    var accent = this._accent();
+    var panel = (w.ui && w.ui.panelBg) || '#2e282a';
 
-    return '<div class="oqb-section"><h4>Layout style</h4><div class="oqb-layouts">'
+    return '<div class="oqb-section"><h4>Equipment card styling</h4>'
+      + '<p class="oqb-hint" style="margin-top:0">Applies to all equipment cards. Swatch opens the colour picker; type a hex next to it. Defaults match a dark wizard panel with your site accent.</p>'
+      + '<div class="oqb-grid">'
+      + this._colorField('wizard.equipmentCards.cardBg', 'Card background (behind text)', ec.cardBg, panel)
+      + this._colorField('wizard.equipmentCards.imageBg', 'Image area background', ec.imageBg, '#524b4f')
+      + this._colorField('wizard.equipmentCards.titleColor', 'Equipment name colour', ec.titleColor || ec.cardText, accent)
+      + this._colorField('wizard.equipmentCards.descColor', 'Description colour', ec.descColor || ec.cardText, accent)
+      + this._colorField('wizard.equipmentCards.qtyColor', 'Quantity number colour', ec.qtyColor || ec.featureColor, accent)
+      + this._colorField('wizard.equipmentCards.qtyStroke', 'Quantity stroke colour', ec.qtyStroke || ec.featureColor, accent)
+      + this._colorField('wizard.equipmentCards.qtyBg', 'Quantity fill colour', ec.qtyBg, '#ffffff')
+      + this._colorField('wizard.equipmentCards.featureColor', 'Feature colour (badge &amp; accent)', ec.featureColor, accent)
+      + this._colorField('wizard.equipmentCards.strokeColor', 'Card stroke colour', ec.strokeColor, accent)
+      + this._field('Stroke width (px)', '<input type="number" min="0" max="8" data-oqb-path="wizard.equipmentCards.strokeWidth" value="' + esc(ec.strokeWidth != null ? ec.strokeWidth : 1) + '">')
+      + '</div></div>'
+      + this._renderWizardUiColors(w)
+      + '<div class="oqb-section"><h4>Layout style</h4>'
+      + '<p class="oqb-hint" style="margin-top:0">Choice grid shows equipment in a horizontal row (up to 4 across) — use that for the Bean Culture-style preview.</p>'
+      + '<div class="oqb-layouts">'
       + LAYOUTS.map(function(l) {
         return '<label class="oqb-layout' + (layout === l.id ? ' is-on' : '') + '">'
           + '<input type="radio" name="oqb-layout" value="' + l.id + '"' + (layout === l.id ? ' checked' : '') + '>'
           + '<strong>' + esc(l.label) + '</strong><span>' + esc(l.hint) + '</span></label>';
       }).join('') + '</div></div>'
-      + '<div class="oqb-section"><h4>Equipment card styling</h4>'
-      + '<p class="oqb-hint" style="margin-top:0">Applies to all equipment cards on the customer wizard (grid, list, and card layouts).</p>'
-      + '<div class="oqb-grid">'
-      + this._field('Card background (behind text)', '<input type="color" data-oqb-path="wizard.equipmentCards.cardBg" value="' + esc(ec.cardBg || '#ffffff') + '">')
-      + this._field('Image area background', '<input type="color" data-oqb-path="wizard.equipmentCards.imageBg" value="' + esc(ec.imageBg || '#ffffff') + '">')
-      + this._field('Equipment name colour', '<input type="color" data-oqb-path="wizard.equipmentCards.titleColor" value="' + esc(ec.titleColor || ec.cardText || '#1a2230') + '">')
-      + this._field('Description colour', '<input type="color" data-oqb-path="wizard.equipmentCards.descColor" value="' + esc(ec.descColor || ec.cardText || '#1a2230') + '">')
-      + this._field('Quantity number colour', '<input type="color" data-oqb-path="wizard.equipmentCards.qtyColor" value="' + esc(ec.qtyColor || ec.featureColor || '#1f7a63') + '">')
-      + this._field('Quantity stroke colour', '<input type="color" data-oqb-path="wizard.equipmentCards.qtyStroke" value="' + esc(ec.qtyStroke || ec.featureColor || '#1f7a63') + '">')
-      + this._field('Quantity fill colour', '<input type="color" data-oqb-path="wizard.equipmentCards.qtyBg" value="' + esc(ec.qtyBg || '#ffffff') + '">')
-      + this._field('Feature colour (badge &amp; accent)', '<input type="color" data-oqb-path="wizard.equipmentCards.featureColor" value="' + esc(ec.featureColor || '#1f7a63') + '">')
-      + this._field('Card stroke colour', '<input type="color" data-oqb-path="wizard.equipmentCards.strokeColor" value="' + esc(ec.strokeColor || '#d8dde6') + '">')
-      + this._field('Stroke width (px)', '<input type="number" min="0" max="8" data-oqb-path="wizard.equipmentCards.strokeWidth" value="' + esc(ec.strokeWidth != null ? ec.strokeWidth : 1) + '">')
-      + '</div></div>'
-      + this._renderWizardUiColors(w)
       + '<div class="oqb-section"><h4>Multi-line equipment</h4>'
       + this._field('Allow multiple equipment lines', '<label class="oqb-check"><input type="checkbox" data-oqb-path="wizard.allowMultiCart"' + (w.allowMultiCart ? ' checked' : '') + '> Show &ldquo;+ Add another equipment line&rdquo; on the customer wizard (for hiring multiple carts at once)</label>')
       + '</div>'
@@ -967,6 +1176,14 @@
 
   QuoteBuilder.prototype._wire = function() {
     var self = this;
+    var hosts = [this.headRoot, this.sectionRoot, this.root].filter(Boolean);
+    function qsAll(sel) {
+      var out = [];
+      hosts.forEach(function(h) {
+        h.querySelectorAll(sel).forEach(function(el) { out.push(el); });
+      });
+      return out;
+    }
 
     this.root.querySelectorAll('[data-oqb-tab]').forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -975,7 +1192,7 @@
         if (self.tab === 'wizard' || self.tab === 'products') {
           self.previewPinEquipment = true;
           self._ensurePreviewEquipmentStep();
-          if (self.tab === 'wizard') self.previewFocusCard = true;
+          // Keep full equipment grid visible while styling (opt-in via Focus checkbox)
         }
         self._render();
       });
@@ -1014,27 +1231,37 @@
       });
     });
 
-    var tj = this.root.querySelector('[data-oqb="toggle-json"]');
-    if (tj) tj.addEventListener('click', function() {
-      if (self.showJson) {
-        var ta = self.root.querySelector('[data-oqb="json"]');
-        try { self.config = normalizeConfig(JSON.parse(ta.value)); } catch (e) { alert('Invalid JSON — fix before switching back.'); return; }
-      } else {
-        self._syncFromDom();
-      }
-      self.showJson = !self.showJson;
-      self._render();
+    qsAll('[data-oqb="toggle-json"]').forEach(function(tj) {
+      tj.addEventListener('click', function() {
+        if (self.showJson) {
+          var ta = self.root.querySelector('[data-oqb="json"]');
+          try { self.config = normalizeConfig(JSON.parse(ta.value)); } catch (e) { alert('Invalid JSON — fix before switching back.'); return; }
+        } else {
+          self._syncFromDom();
+        }
+        self.showJson = !self.showJson;
+        self._render();
+      });
     });
+
+    function syncHexForPath(path, val) {
+      qsAll('[data-oqb-color-hex="' + path + '"]').forEach(function(hx) {
+        hx.value = val || '';
+      });
+      qsAll('[data-oqb-path="' + path + '"]').forEach(function(sw) {
+        if (sw.type === 'color' && val) sw.value = val;
+      });
+    }
 
     this.root.querySelectorAll('[data-oqb-path]').forEach(function(el) {
       if (el.type === 'color') {
         el.addEventListener('input', function() {
           var path = el.getAttribute('data-oqb-path');
           self._setPath(path, el.value);
+          syncHexForPath(path, el.value);
           if (self._previewNeedsEquipment(path)) {
             self.previewPinEquipment = true;
             self._ensurePreviewEquipmentStep();
-            if (path.indexOf('wizard.equipmentCards') === 0) self.previewFocusCard = true;
             if (path.indexOf('wizard.ui') === 0) self.previewPinEquipment = false;
           }
           self._refreshPreview();
@@ -1050,13 +1277,147 @@
           if (self._previewNeedsEquipment(path)) {
             self.previewPinEquipment = true;
             self._ensurePreviewEquipmentStep();
-            if (path.indexOf('wizard.equipmentCards') === 0) self.previewFocusCard = true;
             if (path.indexOf('wizard.ui') === 0) self.previewPinEquipment = false;
           }
           self._refreshPreview();
         }
       });
     });
+
+    qsAll('[data-oqb-color-hex]').forEach(function(hx) {
+      hx.addEventListener('input', function() {
+        var path = hx.getAttribute('data-oqb-color-hex');
+        var raw = hx.value.trim();
+        if (raw === '') {
+          self._setPath(path, '');
+          self._refreshPreview();
+          return;
+        }
+        var v = self._normHex(raw);
+        if (!v) return;
+        self._setPath(path, v);
+        qsAll('[data-oqb-path="' + path + '"]').forEach(function(sw) {
+          if (sw.type === 'color') sw.value = v;
+        });
+        if (self._previewNeedsEquipment(path)) {
+          self.previewPinEquipment = true;
+          self._ensurePreviewEquipmentStep();
+        }
+        self._refreshPreview();
+      });
+    });
+
+    qsAll('[data-oqb-color-def]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var path = btn.getAttribute('data-oqb-color-def');
+        self._setPath(path, '');
+        syncHexForPath(path, '');
+        var wrap = btn.closest('.oqb-color');
+        var sw = wrap && wrap.querySelector('input[type=color]');
+        if (sw) {
+          var ph = wrap.querySelector('.oqb-color-hex');
+          var fb = self._normHex(ph && ph.getAttribute('placeholder'));
+          if (fb) sw.value = fb;
+        }
+        if (self._previewNeedsEquipment(path)) {
+          self.previewPinEquipment = true;
+          self._ensurePreviewEquipmentStep();
+        }
+        self._refreshPreview();
+      });
+    });
+
+    // Page section (eyebrow / heading / colours / container style)
+    if (this.sectionRoot) {
+      qsAll('[data-oq-sec-text]').forEach(function(el) {
+        var ev = el.tagName === 'TEXTAREA' ? 'input' : 'input';
+        el.addEventListener(ev, function() {
+          var key = el.getAttribute('data-oq-sec-text');
+          self.section[key] = el.value;
+          self._notifySection();
+          self._refreshPreview();
+        });
+      });
+      function setSecColor(key, v) {
+        v = self._normHex(v);
+        self.section[key] = v;
+        qsAll('[data-oq-sec-hex="' + key + '"]').forEach(function(hx) { hx.value = v || ''; });
+        if (v) qsAll('[data-oq-sec-clr="' + key + '"]').forEach(function(sw) { sw.value = v; });
+        self._notifySection();
+        self._refreshPreview();
+      }
+      qsAll('[data-oq-sec-clr]').forEach(function(sw) {
+        sw.addEventListener('input', function() {
+          setSecColor(sw.getAttribute('data-oq-sec-clr'), sw.value);
+        });
+      });
+      qsAll('[data-oq-sec-hex]').forEach(function(hx) {
+        hx.addEventListener('input', function() {
+          var key = hx.getAttribute('data-oq-sec-hex');
+          var raw = hx.value.trim();
+          if (raw === '') { setSecColor(key, ''); return; }
+          var v = self._normHex(raw);
+          if (v) setSecColor(key, v);
+        });
+      });
+      qsAll('[data-oq-sec-def]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          setSecColor(btn.getAttribute('data-oq-sec-def'), '');
+        });
+      });
+      function ensureApp() {
+        if (!self.section.appearance) self.section.appearance = {};
+        return self.section.appearance;
+      }
+      qsAll('[data-oq-sec-app]').forEach(function(el) {
+        var key = el.getAttribute('data-oq-sec-app');
+        var ev = el.type === 'checkbox' || el.type === 'range' || el.tagName === 'SELECT' ? 'change' : 'input';
+        if (el.type === 'range') ev = 'input';
+        el.addEventListener(ev, function() {
+          var app = ensureApp();
+          if (key === 'custom') {
+            app.custom = !!el.checked;
+            var fields = self.sectionRoot.querySelector('.oqb-sec-app-fields');
+            if (fields) fields.hidden = !el.checked;
+          } else if (key === 'strokeWidth') {
+            app.strokeWidth = +el.value;
+            var lab = self.sectionRoot.querySelector('[data-oq-sec-app-sw-label]');
+            if (lab) lab.textContent = el.value + 'px';
+          } else {
+            app[key] = el.value;
+          }
+          self._notifySection();
+          self._refreshPreview();
+        });
+      });
+      function setAppColor(key, v) {
+        v = self._normHex(v);
+        ensureApp()[key] = v;
+        qsAll('[data-oq-sec-app-hex="' + key + '"]').forEach(function(hx) { hx.value = v || ''; });
+        if (v) qsAll('[data-oq-sec-app-clr="' + key + '"]').forEach(function(sw) { sw.value = v; });
+        self._notifySection();
+        self._refreshPreview();
+      }
+      qsAll('[data-oq-sec-app-clr]').forEach(function(sw) {
+        sw.addEventListener('input', function() {
+          setAppColor(sw.getAttribute('data-oq-sec-app-clr'), sw.value);
+        });
+      });
+      qsAll('[data-oq-sec-app-hex]').forEach(function(hx) {
+        hx.addEventListener('input', function() {
+          var key = hx.getAttribute('data-oq-sec-app-hex');
+          var raw = hx.value.trim();
+          if (raw === '') { setAppColor(key, ''); return; }
+          var v = self._normHex(raw);
+          if (v) setAppColor(key, v);
+        });
+      });
+      qsAll('[data-oq-sec-app-def]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          setAppColor(btn.getAttribute('data-oq-sec-app-def'), '');
+        });
+      });
+    }
 
     this.root.querySelectorAll('[data-oqb-step-cond]').forEach(function(sel) {
       sel.addEventListener('change', function() {

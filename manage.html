@@ -40,7 +40,7 @@
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=anav-btn-match-1">
-<link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-preview-full-1">
+<link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-preview-style-1">
 <style>
 :root{
   --radius:14px; --radius-sm:10px;
@@ -639,10 +639,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-trade-picker.js"></script>
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
 <script src="/icons.js"></script>
-<script src="/assets/lp-quote-wizard-logic.js?v=eq-qty-1"></script>
-<script src="/assets/lp-quote-display.js?v=oq-preview-full-1"></script>
-<script src="/assets/lp-quote-planning.js?v=oq-preview-full-1"></script>
-<script src="/assets/lp-quote-builder.js?v=oq-preview-full-1"></script>
+<script src="/assets/lp-quote-wizard-logic.js?v=oq-preview-style-1"></script>
+<script src="/assets/lp-quote-display.js?v=oq-preview-style-1"></script>
+<script src="/assets/lp-quote-planning.js?v=oq-preview-style-1"></script>
+<script src="/assets/lp-quote-builder.js?v=oq-preview-style-1"></script>
 </head>
 <body data-lp-admin-page="manage">
 <script>
@@ -7874,7 +7874,9 @@ function heroCtaCard(c){
     var cfgJson='';
     try{ cfgJson=JSON.stringify(admin.activeVersion.config,null,2); }catch(e){ cfgJson='{}'; }
     return '<div class="oqb-card-wrap" id="oq-builder-card">'
+      +'<div id="oq-builder-head-root" class="oqb-head-host"></div>'
       +'<div id="oq-preview-root" class="oqb-preview-host oqb-preview-full"></div>'
+      +'<div id="oq-section-style-root" class="oqb-section-style-host"></div>'
       +'<div id="oq-builder-root" class="oqb-editor-host"></div>'
       +'<details class="oqb-json-override" style="margin:14px 0;padding:12px;border:1px solid var(--line);border-radius:12px;">'
       +'<summary style="cursor:pointer;font-weight:600;">Override config (JSON)</summary>'
@@ -8004,15 +8006,27 @@ function heroCtaCard(c){
       if(admin&&admin.activeVersion&&admin.activeVersion.config&&window.LPQuoteBuilder){
         var broot=$('oq-builder-root');
         var proot=$('oq-preview-root');
-        if(broot) LPONLINEQUOTE.builder=LPQuoteBuilder.mount(broot,{
-          config:admin.activeVersion.config,
-          previewRoot:proot,
-          media:{
-            upload:function(file,segment){ return cwUpload(file,['onlineQuote'].concat(segment)); },
-            delete:cwDelete,
-            pick:cwPick
-          }
-        });
+        var hroot=$('oq-builder-head-root');
+        var sroot=$('oq-section-style-root');
+        if(broot){
+          if(!data.sections) data.sections={};
+          if(!data.sections.onlineQuote) data.sections.onlineQuote=Object.assign({}, (DEFAULT_TRADE_SECTIONS&&DEFAULT_TRADE_SECTIONS.onlineQuote)||{eyebrow:'Online quote',heading:'Get your verified quote',intro:'Answer a few questions — verify your email to see your total, then SMS for the full breakdown.'});
+          var _th=data.theme||{};
+          LPONLINEQUOTE.builder=LPQuoteBuilder.mount(broot,{
+            config:admin.activeVersion.config,
+            previewRoot:proot,
+            headRoot:hroot,
+            sectionRoot:sroot,
+            section:data.sections.onlineQuote,
+            onSectionChange:function(){ persist(); previewApply(); },
+            themeAccent:(_th.pipe||_th.accent||_th.hivis||''),
+            media:{
+              upload:function(file,segment){ return cwUpload(file,['onlineQuote'].concat(segment)); },
+              delete:cwDelete,
+              pick:cwPick
+            }
+          });
+        }
       }
       var ref=$('oq-refresh'); if(ref) ref.addEventListener('click',renderOnlineQuoteAdmin);
       var ed=$('oq-goto-editor'); if(ed) ed.addEventListener('click',function(){ showView('details'); landingSub='onlineQuote'; renderDetails(); });
