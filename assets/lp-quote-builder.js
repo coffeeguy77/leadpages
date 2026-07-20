@@ -343,16 +343,25 @@
   QuoteBuilder.prototype._previewNeedsEquipment = function(path) {
     if (!path) return false;
     if (path.indexOf('wizard.equipmentCards') === 0) return true;
-    if (path.indexOf('wizard.travelCards') === 0) return true;
     if (path.indexOf('wizard.ui') === 0) return true;
     if (path.indexOf('wizard.layout') === 0) return true;
     if (path.indexOf('products.') === 0) {
       return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|imageAxis|displayMode|imageSize|imageScale|icon)$/.test(path);
     }
+    return false;
+  };
+
+  QuoteBuilder.prototype._previewNeedsTravel = function(path) {
+    if (!path) return false;
+    if (path.indexOf('wizard.travelCards') === 0) return true;
     if (path.indexOf('travel.zones.') === 0) {
-      return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|imageAxis|displayMode|imageSize|imageScale|icon)$/.test(path);
+      return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|imageAxis|displayMode|imageSize|imageScale|icon|feeCents)$/.test(path);
     }
     return false;
+  };
+
+  QuoteBuilder.prototype._ensurePreviewTravelStep = function() {
+    this._jumpPreviewToStep('travel');
   };
 
   QuoteBuilder.prototype._normHex = function(v) {
@@ -538,6 +547,7 @@
       + '<div class="oqb-preview-tools">'
       + '<label class="oqb-preview-focus"><input type="checkbox" data-oqb-preview-focus' + (this.previewFocusCard ? ' checked' : '') + '> Focus one equipment card</label>'
       + '<button type="button" class="oqb-preview-jump" data-oqb-preview-jump="equipment">Show equipment step</button>'
+      + '<button type="button" class="oqb-preview-jump" data-oqb-preview-jump="travel">Show travel step</button>'
       + '</div></div>';
   };
 
@@ -1391,6 +1401,10 @@
           self._ensurePreviewEquipmentStep();
           // Keep full equipment grid visible while styling (opt-in via Focus checkbox)
         }
+        if (self.tab === 'travel') {
+          self.previewPinEquipment = false;
+          self._ensurePreviewTravelStep();
+        }
         if (self.tab === 'questions') {
           self._jumpPreviewToStep('custom');
         }
@@ -1464,6 +1478,10 @@
             self._ensurePreviewEquipmentStep();
             if (path.indexOf('wizard.ui') === 0) self.previewPinEquipment = false;
           }
+          if (self._previewNeedsTravel(path)) {
+            self.previewPinEquipment = false;
+            self._ensurePreviewTravelStep();
+          }
           self._refreshPreview();
         });
         return;
@@ -1478,6 +1496,10 @@
             self.previewPinEquipment = true;
             self._ensurePreviewEquipmentStep();
             if (path.indexOf('wizard.ui') === 0) self.previewPinEquipment = false;
+          }
+          if (self._previewNeedsTravel(path)) {
+            self.previewPinEquipment = false;
+            self._ensurePreviewTravelStep();
           }
           self._refreshPreview();
         }
@@ -1503,6 +1525,10 @@
           self.previewPinEquipment = true;
           self._ensurePreviewEquipmentStep();
         }
+        if (self._previewNeedsTravel(path)) {
+          self.previewPinEquipment = false;
+          self._ensurePreviewTravelStep();
+        }
         self._refreshPreview();
       });
     });
@@ -1522,6 +1548,10 @@
         if (self._previewNeedsEquipment(path)) {
           self.previewPinEquipment = true;
           self._ensurePreviewEquipmentStep();
+        }
+        if (self._previewNeedsTravel(path)) {
+          self.previewPinEquipment = false;
+          self._ensurePreviewTravelStep();
         }
         self._refreshPreview();
       });
@@ -2020,8 +2050,14 @@
 
     root.querySelectorAll('[data-oqb-preview-jump]').forEach(function(btn) {
       btn.addEventListener('click', function() {
-        self.previewPinEquipment = true;
-        self._ensurePreviewEquipmentStep();
+        var step = btn.getAttribute('data-oqb-preview-jump');
+        if (step === 'travel') {
+          self.previewPinEquipment = false;
+          self._ensurePreviewTravelStep();
+        } else {
+          self.previewPinEquipment = true;
+          self._ensurePreviewEquipmentStep();
+        }
         self._refreshPreview();
       });
     });
