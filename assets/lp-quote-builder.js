@@ -121,6 +121,12 @@
       if (!Array.isArray(b.tiers)) b.tiers = [];
       if (b.group == null && b.category) b.group = b.category;
       if (b.group == null) b.group = '';
+      if (b.minQuantity != null && b.minQuantity !== '') {
+        var bmin = parseInt(b.minQuantity, 10);
+        b.minQuantity = (!isNaN(bmin) && bmin > 0) ? Math.min(50000, bmin) : null;
+      } else {
+        b.minQuantity = null;
+      }
     });
     cfg.addons.forEach(function(a) { if (!a.id) a.id = slugify(a.label) || uid('addon'); });
     cfg.travel.zones.forEach(function(z) {
@@ -1224,6 +1230,7 @@
           '<option value="drinks"' + (b.group === 'drinks' ? ' selected' : '') + '>Drinks</option>' +
           '<option value="catering"' + (b.group === 'catering' ? ' selected' : '') + '>Catering</option>' +
           '<option value="other"' + (b.group === 'other' ? ' selected' : '') + '>Other</option></select>')
+        + self._field('Min quantity (optional)', '<input type="number" min="0" max="50000" data-oqb-path="beverages.' + i + '.minQuantity" value="' + esc(b.minQuantity != null ? b.minQuantity : '') + '" placeholder="e.g. 20 for catering">')
         + (mode === 'tiered'
           ? self._field('Unit label', '<input type="text" data-oqb-path="beverages.' + i + '.unitLabel" value="' + esc(b.unitLabel || 'units') + '" placeholder="e.g. coffees">') + tierBlock
           : (mode === 'flat'
@@ -1238,7 +1245,7 @@
         + '</div>';
       return self._itemCard(b.label || 'New option', i, 'beverages', fields, i > 0, i < list.length - 1);
     }).join('');
-    return '<p class="oqb-hint">Customers set a quantity on each option (e.g. 200 hot coffees + 50 iced + catering). Use <strong>Group</strong> to show Drinks vs Catering headings on the same Packages step. Qty 0 = not selected.</p>'
+    return '<p class="oqb-hint">Customers set a quantity on each option (e.g. 200 hot coffees + 50 iced + catering). Use <strong>Group</strong> for Drinks vs Catering headings. Optional <strong>Min quantity</strong> is ideal for catering trays — selecting the option starts at that minimum. Qty 0 = not selected.</p>'
       + '<div class="oqb-items">' + (cards || '<p class="oqb-empty">No packages yet.</p>') + '</div>'
       + '<button type="button" class="btn ghost" data-oqb-add="packages">+ Add package / option</button>';
   };
@@ -1304,11 +1311,11 @@
       obj[last] = cents(value);
     } else if (last === 'minimumHours' || last === 'includedHeads' || last === 'quoteValidityDays' || last === 'minimumNoticeDays' || last === 'minQty' || last === 'baristasIncluded' || last === 'minimumHoursPerShift' || last === 'strokeWidth') {
       obj[last] = parseInt(value, 10) || 0;
-    } else if (last === 'maxQuantity') {
+    } else if (last === 'maxQuantity' || last === 'minQuantity') {
       if (value === '' || value == null) obj[last] = null;
       else {
         var mq = parseInt(value, 10);
-        obj[last] = (!isNaN(mq) && mq > 0) ? mq : null;
+        obj[last] = (!isNaN(mq) && mq > 0) ? Math.min(50000, mq) : null;
       }
     } else if (last === 'allowShiftPlanner' || last === 'allowQuantity' || last === 'allowExtraBarista' || last === 'enabled' || last === 'allowMultiCart' || last === 'required') {
       obj[last] = !!value;

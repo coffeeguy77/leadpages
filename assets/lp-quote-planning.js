@@ -539,9 +539,42 @@
     }
   }
 
-  function setBeverageLineQty(state, id, qty) {
+  function findBeverage(state, id) {
+    var list = (state && state._bevList) ||
+      (state && state._shell && state._shell.beverages) ||
+      (state && state._wireShell && state._wireShell.beverages) ||
+      [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].id === id) return list[i];
+    }
+    return null;
+  }
+
+  function beverageMinQty(beverage) {
+    var n = parseInt(beverage && beverage.minQuantity, 10);
+    return (!isNaN(n) && n > 0) ? Math.min(50000, n) : 0;
+  }
+
+  function defaultBeverageStartQty(beverage) {
+    var min = beverageMinQty(beverage);
+    return min > 0 ? min : 50;
+  }
+
+  /**
+   * @param {object} [opts]
+   * @param {boolean} [opts.fromDelta] stepper change — dropping below min deselects
+   */
+  function setBeverageLineQty(state, id, qty, opts) {
+    opts = opts || {};
     ensureBeverageLines(state);
+    var bev = findBeverage(state, id);
+    var min = beverageMinQty(bev);
+    var cur = beverageLineQty(state, id);
     qty = Math.max(0, Math.min(50000, parseInt(qty, 10) || 0));
+    if (qty > 0 && min > 0 && qty < min) {
+      if (opts.fromDelta && cur >= min) qty = 0;
+      else qty = min;
+    }
     var idx = -1;
     for (var i = 0; i < state.beverageLines.length; i++) {
       if (state.beverageLines[i].beverageId === id) { idx = i; break; }
@@ -554,6 +587,7 @@
       state.beverageLines.push({ beverageId: id, quantity: qty });
     }
     syncBeverageLegacy(state);
+    return qty;
   }
 
   function beverageGroupLabel(group) {
@@ -568,6 +602,8 @@
     var list = beverages || [];
     if (!list.length) return '<p class="lp-oq-muted">No packages for this selection.</p>';
     ensureBeverageLines(state);
+    state._shell = shell;
+    state._bevList = list;
     var h = helpers || {};
     var D = global.LPQuoteDisplay;
     var groups = [];
@@ -588,20 +624,25 @@
       html += '<div class="lp-oq-choices lp-oq-bev-grid">';
       byGroup[g].forEach(function(b) {
         var qty = beverageLineQty(state, b.id);
+        var min = beverageMinQty(b);
         var on = qty > 0 ? ' is-selected' : '';
         var unit = packageQtyLabel(shell, b.id);
+        var minHint = min > 0
+          ? '<span class="lp-oq-bev-min">Min ' + esc(min) + '</span>'
+          : '';
         var visual = (D && D.choiceVisualHtml)
           ? D.choiceVisualHtml(b, { esc: esc, iconHtml: h.iconHtml })
           : ('<strong>' + esc(b.label || '') + '</strong>' +
             (b.description ? '<span>' + esc(b.description) + '</span>' : ''));
-        html += '<div class="lp-oq-choice lp-oq-bev-card' + on + '" data-bev-card="' + esc(b.id) + '">' +
+        html += '<div class="lp-oq-choice lp-oq-bev-card' + on + '" data-bev-card="' + esc(b.id) + '"' +
+          (min > 0 ? ' data-bev-min="' + esc(min) + '"' : '') + '>' +
           '<div class="lp-oq-bev-main">' + visual + '</div>' +
           '<div class="lp-oq-bev-qty-row">' +
-          '<span class="lp-oq-bev-unit">' + esc(unit) + '</span>' +
+          '<span class="lp-oq-bev-unit">' + esc(unit) + (minHint ? ' · ' + minHint : '') + '</span>' +
           '<div class="lp-oq-eq-qty lp-oq-bev-qty" data-bev-qty-wrap="' + esc(b.id) + '">' +
           '<button type="button" class="lp-oq-eq-qty-btn lp-oq-bev-qty-btn" data-bev-qty-delta="-10" data-bev-id="' + esc(b.id) + '" aria-label="Decrease by 10">−10</button>' +
           '<button type="button" class="lp-oq-eq-qty-btn lp-oq-bev-qty-btn" data-bev-qty-delta="-1" data-bev-id="' + esc(b.id) + '" aria-label="Decrease">−</button>' +
-          '<input type="number" class="lp-oq-bev-qty-input" min="0" max="50000" data-bev-qty-input="' + esc(b.id) + '" value="' + esc(qty) + '" aria-label="' + esc((b.label || 'Package') + ' quantity') + '">' +
+          '<input type="number" class="lp-oq-bev-qty-input" min="0" max="50000" data-bev-qty-input="' + esc(b.id) + '" value="' + esc(qty) + '" aria-label="' + esc((b.label || 'Package') + ' quantity') + (min > 0 ? (' (minimum ' + min + ')') : '') + '">' +
           '<button type="button" class="lp-oq-eq-qty-btn lp-oq-bev-qty-btn" data-bev-qty-delta="1" data-bev-id="' + esc(b.id) + '" aria-label="Increase">+</button>' +
           '<button type="button" class="lp-oq-eq-qty-btn lp-oq-bev-qty-btn" data-bev-qty-delta="10" data-bev-id="' + esc(b.id) + '" aria-label="Increase by 10">+10</button>' +
           '</div></div></div>';
@@ -633,8 +674,13 @@
       var id = btn.getAttribute('data-bev-id');
       var delta = parseInt(btn.getAttribute('data-bev-qty-delta'), 10) || 0;
       if (!id || !delta) return;
-      var next = beverageLineQty(state, id) + delta;
-      setBeverageLineQty(state, id, next);
+      var cur = beverageLineQty(state, id);
+      var next = cur + delta;
+      // From 0, + steppers jump to the package start qty (min or 50)
+      if (cur <= 0 && delta > 0) {
+        next = defaultBeverageStartQty(findBeverage(state, id));
+      }
+      setBeverageLineQty(state, id, next, { fromDelta: true });
       if (typeof rerender === 'function') rerender();
     });
     root.addEventListener('change', function(e) {
@@ -644,12 +690,11 @@
       // Update state only — do not re-render. Re-rendering here destroys the
       // Continue button mid-click (blur→change before click), so Packages→Travel
       // appears to pause, then a second Continue can skip Travel.
-      setBeverageLineQty(state, inp.getAttribute('data-bev-qty-input'), inp.value);
+      var id = inp.getAttribute('data-bev-qty-input');
+      var qty = setBeverageLineQty(state, id, inp.value);
+      if (String(inp.value) !== String(qty)) inp.value = qty;
       var card = inp.closest('[data-bev-card]');
-      if (card) {
-        var qty = beverageLineQty(state, inp.getAttribute('data-bev-qty-input'));
-        card.classList.toggle('is-selected', qty > 0);
-      }
+      if (card) card.classList.toggle('is-selected', qty > 0);
     });
     root.addEventListener('click', function(e) {
       if (e.target.closest('[data-bev-qty-delta]') || e.target.closest('[data-bev-qty-input]') || e.target.closest('.lp-oq-bev-qty')) return;
@@ -658,8 +703,8 @@
       e.preventDefault();
       var id = card.getAttribute('data-bev-card');
       var cur = beverageLineQty(state, id);
-      // Tap card: if zero, start at 50; if already selected, leave qty (use steppers to change)
-      if (cur <= 0) setBeverageLineQty(state, id, 50);
+      // Tap card: if zero, start at min quantity (or 50); if selected, leave qty
+      if (cur <= 0) setBeverageLineQty(state, id, defaultBeverageStartQty(findBeverage(state, id)));
       if (typeof rerender === 'function') rerender();
     });
   }
@@ -1006,6 +1051,8 @@
     renderBeverageQtyCards: renderBeverageQtyCards,
     wireBeverageQty: wireBeverageQty,
     syncBeverageQtyFromDom: syncBeverageQtyFromDom,
+    beverageMinQty: beverageMinQty,
+    defaultBeverageStartQty: defaultBeverageStartQty,
     setBeverageLineQty: setBeverageLineQty,
     beverageLineQty: beverageLineQty,
     wireLabourPlanning: wireLabourPlanning,
