@@ -196,11 +196,13 @@ describe('AI Team Phase 1', () => {
     assert.ok(!/Strengthen your primary call to action/i.test(String(landing.title || '')));
     assert.match(String(landing.title || ''), /cold coffee options/i);
     const steps = change.planSteps || [];
-    assert.equal(steps.length, 5, 'landing rec includes numbered suggestion steps');
+    assert.equal(steps.length, 4, 'landing rec includes Write with AI suggestion steps');
     assert.match(String(steps[0].label || ''), /Focus this landing page on:\s*[“"]cold coffee options[”"]/i);
+    assert.equal(steps[1].id, 'seo_inputs');
     assert.equal(steps[1].status, 'needs_answer');
-    assert.equal(steps[2].status, 'needs_answer');
+    assert.ok(steps[1].fields.some((f) => f.key === 'primaryKeyword'));
+    assert.ok(!steps.some((s) => s.id === 'brief'));
     const outline = change.planOutline || [];
-    assert.ok(outline.length >= 4, 'landing rec includes planOutline mirror');
+    assert.ok(outline.length >= 3, 'landing rec includes planOutline mirror');
   });
 });
