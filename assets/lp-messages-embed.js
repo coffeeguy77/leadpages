@@ -1,5 +1,10 @@
 /**
  * Embeddable messaging UI — partner console + site manage.
+ *
+ * Roles:
+ * - client: primary contact is servicing partner; LeadPages only via escalate link
+ * - partner: clients + LeadPages account manager
+ * - super: when siteId is set, only that site's provider thread + escalations
  */
 (function (global) {
   'use strict';
@@ -36,6 +41,7 @@
       partnerId: opts.partnerId || null,
       name: opts.name || 'Partner'
     };
+    var siteId = opts.siteId || null;
     var prefix = opts.idPrefix || 'lme-';
     var convos = [];
     var reads = {};
@@ -46,6 +52,7 @@
     var poll = null;
     var convFilter = '';
     var pendingOpen = opts.open || null;
+    var chipsWired = false;
 
     root.classList.add('lp-messages-embed');
     root.innerHTML =
@@ -68,12 +75,21 @@
       + '<button type="button" class="btn btn-sm" id="' + prefix + 'refresh">Refresh</button>'
       + '</div>'
       + '<div class="lme-bubbles" id="' + prefix + 'bubbles"></div>'
+      + '<div class="lme-escalate hidden" id="' + prefix + 'escalate">'
+      + 'Need more help? '
+      + '<button type="button" class="lme-escalate-link" id="' + prefix + 'escalate-btn">Escalate to LeadPages support</button>'
+      + '</div>'
       + '<div class="lme-composer">'
       + '<textarea id="' + prefix + 'text" placeholder="Write a message…" rows="1"></textarea>'
       + '<button type="button" class="btn btn-brand" id="' + prefix + 'send">Send</button>'
       + '</div></div></div></div>';
 
     function $(id) { return document.getElementById(prefix + id); }
+
+    function scopedSite() {
+      if (!siteId) return null;
+      return sitesById[siteId] || null;
+    }
 
     function convLabel(c) {
       if (me.role === 'client') {
@@ -88,14 +104,18 @@
         var p = partnersById[c.partner_id];
         return 'Partner: ' + ((p && p.display_name) || 'Partner');
       }
+      if (c.kind === 'client_support') {
+        var sEsc = sitesById[c.client_site_id];
+        return 'Escalated: ' + ((sEsc && sEsc.business_name) || 'Client');
+      }
       var s2 = sitesById[c.client_site_id];
-      return 'Client: ' + ((s2 && s2.business_name) || 'Client');
+      return 'Provider ↔ ' + ((s2 && s2.business_name) || 'client');
     }
 
     function convKindText(c) {
       if (c.kind === 'partner_lp') return 'Partner ↔ LeadPages';
       if (c.kind === 'partner_client') return 'Provider ↔ client';
-      return 'Client support';
+      return 'Client ↔ LeadPages';
     }
 
     function convKindGroup(c) {
@@ -108,6 +128,76 @@
       var lr = reads[c.id];
       if (!lr) return true;
       return new Date(c.last_message_at) > new Date(lr);
+    }
+
+    function chipDefs() {
+      if (me.role === 'client') {
+        var defs = [{ k: '', label: 'All' }, { k: 'clients', label: 'My provider' }];
+        if (convos.some(function (c) { return c.kind === 'client_support'; })) {
+          defs.push({ k: 'support', label: 'LeadPages' });
+        }
+        return defs;
+      }
+      if (me.role === 'partner') {
+        return [
+          { k: '', label: 'All' },
+          { k: 'clients', label: 'Clients' },
+          { k: 'lp', label: 'LeadPages' }
+        ];
+      }
+      // super
+      if (siteId) {
+        return [
+          { k: '', label: 'All' },
+          { k: 'clients', label: 'Provider' },
+          { k: 'support', label: 'Escalated' }
+        ];
+      }
+      return [
+        { k: '', label: 'All' },
+        { k: 'clients', label: 'Clients' },
+        { k: 'lp', label: 'LeadPages' },
+        { k: 'support', label: 'Support' }
+      ];
+    }
+
+    function renderChips() {
+      var chips = $('chips');
+      if (!chips) return;
+      var prev = '';
+      try {
+        var on = chips.querySelector('.lme-chip.on');
+        if (on) prev = on.getAttribute('data-kind') || '';
+      } catch (_e) {}
+      var defs = chipDefs();
+      var valid = defs.some(function (d) { return d.k === prev; });
+      if (!valid) prev = '';
+      chips.innerHTML = defs.map(function (d) {
+        return '<button type="button" class="lme-chip' + (d.k === prev ? ' on' : '') + '" data-kind="' + esc(d.k) + '">' + esc(d.label) + '</button>';
+      }).join('');
+      if (!chipsWired) {
+        chipsWired = true;
+        chips.addEventListener('click', function (e) {
+          var b = e.target.closest('.lme-chip');
+          if (!b) return;
+          chips.querySelectorAll('.lme-chip').forEach(function (x) { x.classList.toggle('on', x === b); });
+          renderConvos();
+        });
+      }
+    }
+
+    function filterBySiteScope(list) {
+      if (!siteId) return list;
+      var site = scopedSite();
+      var ownerId = site && site.owner_user_id;
+      return list.filter(function (c) {
+        if (c.client_site_id && String(c.client_site_id) === String(siteId)) return true;
+        if (c.kind === 'client_support' && ownerId && c.client_user_id === ownerId) return true;
+        // Partner ↔ LeadPages is account-level — keep for partners in manage
+        if (me.role === 'partner' && c.kind === 'partner_lp' && me.partnerId && c.partner_id === me.partnerId) return true;
+        // Super on a customer site: provider + escalations only (not every partner_lp thread)
+        return false;
+      });
     }
 
     async function loadLookups() {
@@ -125,10 +215,11 @@
         $('convs').innerHTML = '<div class="lme-empty">Could not load messages.</div>';
         return;
       }
-      convos = r.data || [];
+      convos = filterBySiteScope(r.data || []);
       var rd = await sb.from('conversation_reads').select('conversation_id,last_read_at').eq('user_id', me.uid);
       reads = {};
       (rd.data || []).forEach(function (x) { reads[x.conversation_id] = x.last_read_at; });
+      renderChips();
       renderConvos();
       notifyUnread();
     }
@@ -136,14 +227,17 @@
     function renderConvos() {
       var box = $('convs');
       if (!convos.length) {
-        box.innerHTML = '<div class="lme-empty">No conversations yet.<br>Tap <strong>New</strong> to start one.</div>';
+        var hint = me.role === 'client'
+          ? 'No conversations yet.<br>Tap <strong>New</strong> to message your provider.'
+          : 'No conversations yet.<br>Tap <strong>New</strong> to start one.';
+        box.innerHTML = '<div class="lme-empty">' + hint + '</div>';
         return;
       }
       var list = convos;
-      var kind = (opts.defaultKind || '');
+      var kind = '';
       try {
         var chip = $('chips') && $('chips').querySelector('.lme-chip.on');
-        kind = chip ? chip.getAttribute('data-kind') : kind;
+        kind = chip ? chip.getAttribute('data-kind') : '';
       } catch (_e) {}
 
       if (convFilter) {
@@ -152,6 +246,10 @@
       }
       if (kind) {
         list = list.filter(function (c) { return convKindGroup(c) === kind; });
+      }
+      if (!list.length) {
+        box.innerHTML = '<div class="lme-empty">No conversations match.</div>';
+        return;
       }
       box.innerHTML = list.map(function (c) {
         return '<button type="button" class="lme-conv' + (c.id === activeId ? ' on' : '') + (isUnread(c) ? ' unread' : '') + '" data-id="' + c.id + '">'
@@ -197,6 +295,14 @@
       box.scrollTop = box.scrollHeight;
     }
 
+    function updateEscalateUi(c) {
+      var el = $('escalate');
+      if (!el) return;
+      // Clients escalate from the provider thread only — LeadPages is last resort.
+      var show = !!(c && me.role === 'client' && c.kind === 'partner_client');
+      el.classList.toggle('hidden', !show);
+    }
+
     async function loadMsgs(id) {
       var r = await sb.from('messages').select('*').eq('conversation_id', id).order('created_at', { ascending: true });
       activeMsgs = r.data || [];
@@ -226,7 +332,6 @@
       $('on').classList.remove('hidden');
       $('title').textContent = convLabel(c);
       $('sub').textContent = convKindText(c);
-      // Context line (site status, when available)
       var meta = '';
       if (c.client_site_id && sitesById[c.client_site_id]) {
         var s = sitesById[c.client_site_id];
@@ -234,6 +339,7 @@
       }
       var metaEl = $('meta');
       if (metaEl) metaEl.textContent = meta;
+      updateEscalateUi(c);
       if (global.matchMedia('(max-width:760px)').matches) {
         $('list').classList.add('collapsed');
         $('back').classList.remove('hidden');
@@ -297,6 +403,7 @@
       if (!conv) return;
       $('newbox').classList.add('hidden');
       if (!convos.find(function (x) { return x.id === conv.id; })) convos.unshift(conv);
+      renderChips();
       renderConvos();
       await selectConv(conv.id);
       if (prefill) await sendMsg(prefill);
@@ -319,25 +426,34 @@
             }).join('') + '</select>';
         }
       } else if (me.role === 'client') {
-        var site = Object.keys(sitesById).map(function (k) { return sitesById[k]; })
+        var site = siteId ? sitesById[siteId] : Object.keys(sitesById).map(function (k) { return sitesById[k]; })
           .find(function (s) { return s.owner_user_id === me.uid; });
         if (site && site.servicing_partner_id) {
           html += '<button type="button" class="btn btn-sm" data-new="provider" style="width:100%;margin-bottom:8px">Message my provider</button>';
+          html += '<p class="muted" style="font-size:12px;margin:8px 0 0;line-height:1.4">Your provider is your first point of contact. LeadPages support is available from an escalate link inside that chat if you still need help.</p>';
+        } else {
+          html += '<p class="muted" style="font-size:13px;margin:0">No provider is assigned to this site yet.</p>';
         }
-        html += '<button type="button" class="btn btn-sm" data-new="support" style="width:100%">Contact LeadPages support</button>';
+      } else if (me.role === 'super') {
+        if (siteId) {
+          html += '<button type="button" class="btn btn-sm" data-new="site-provider" style="width:100%;margin-bottom:8px">Open provider ↔ client thread</button>';
+          html += '<p class="muted" style="font-size:12px;margin:8px 0 0;line-height:1.4">LeadPages is the last resort. Escalated threads appear when a client uses Escalate to LeadPages support.</p>';
+        } else {
+          html += '<p class="muted" style="font-size:13px;margin:0">Select a site in manage to open that customer’s support threads.</p>';
+        }
       }
       box.innerHTML = html;
     }
 
-    async function openClient(siteId, prefill) {
-      var s = sitesById[siteId];
+    async function openClient(siteIdArg, prefill) {
+      var s = sitesById[siteIdArg];
       if (!s || !me.partnerId) return;
       var conv = await findOrCreate('partner_client', {
         partner_id: me.partnerId,
-        client_site_id: siteId
+        client_site_id: siteIdArg
       }, {
         partner_id: me.partnerId,
-        client_site_id: siteId,
+        client_site_id: siteIdArg,
         client_user_id: s.owner_user_id
       });
       await startConv(conv, prefill);
@@ -350,7 +466,7 @@
     }
 
     async function openProvider() {
-      var site = Object.keys(sitesById).map(function (k) { return sitesById[k]; })
+      var site = siteId ? sitesById[siteId] : Object.keys(sitesById).map(function (k) { return sitesById[k]; })
         .find(function (s) { return s.owner_user_id === me.uid; });
       if (!site || !site.servicing_partner_id) return;
       var conv = await findOrCreate('partner_client', {
@@ -359,16 +475,31 @@
       }, {
         partner_id: site.servicing_partner_id,
         client_site_id: site.id,
-        client_user_id: me.uid
+        client_user_id: site.owner_user_id || me.uid
+      });
+      await startConv(conv);
+    }
+
+    async function openSiteProvider() {
+      var site = scopedSite();
+      if (!site || !site.servicing_partner_id) return;
+      var conv = await findOrCreate('partner_client', {
+        partner_id: site.servicing_partner_id,
+        client_site_id: site.id
+      }, {
+        partner_id: site.servicing_partner_id,
+        client_site_id: site.id,
+        client_user_id: site.owner_user_id || null
       });
       await startConv(conv);
     }
 
     async function openClientSupport() {
-      var site = Object.keys(sitesById).map(function (k) { return sitesById[k]; })
+      var site = siteId ? sitesById[siteId] : Object.keys(sitesById).map(function (k) { return sitesById[k]; })
         .find(function (s) { return s.owner_user_id === me.uid; });
-      var conv = await findOrCreate('client_support', { client_user_id: me.uid }, {
-        client_user_id: me.uid,
+      var ownerId = (site && site.owner_user_id) || me.uid;
+      var conv = await findOrCreate('client_support', { client_user_id: ownerId }, {
+        client_user_id: ownerId,
         client_site_id: site ? site.id : null
       });
       await startConv(conv);
@@ -383,33 +514,17 @@
       });
     }
 
-    // Kind chips
-    (function () {
-      var chips = $('chips');
-      if (!chips) return;
-      var defs = [
-        { k: '', label: 'All' },
-        { k: 'clients', label: 'Clients' },
-        { k: 'lp', label: 'LeadPages' },
-        { k: 'support', label: 'Support' }
-      ];
-      chips.innerHTML = defs.map(function (d) {
-        return '<button type="button" class="lme-chip' + (d.k === '' ? ' on' : '') + '" data-kind="' + esc(d.k) + '">' + esc(d.label) + '</button>';
-      }).join('');
-      chips.addEventListener('click', function (e) {
-        var b = e.target.closest('.lme-chip');
-        if (!b) return;
-        chips.querySelectorAll('.lme-chip').forEach(function (x) { x.classList.toggle('on', x === b); });
-        renderConvos();
-      });
-    })();
+    renderChips();
+
     $('newbox').addEventListener('click', async function (e) {
       var b = e.target.closest('[data-new]');
       if (!b) return;
       var kind = b.getAttribute('data-new');
       if (kind === 'lp') await openLeadPages();
       if (kind === 'provider') await openProvider();
-      if (kind === 'support') await openClientSupport();
+      if (kind === 'site-provider') await openSiteProvider();
+      // 'support' is escalate-only for clients — not offered in New
+      if (kind === 'support' && me.role !== 'client') await openClientSupport();
     });
     $('newbox').addEventListener('change', async function (e) {
       if (e.target.id === prefix + 'new-client') {
@@ -421,6 +536,10 @@
       var c = e.target.closest('.lme-conv');
       if (c) selectConv(c.getAttribute('data-id'));
     });
+    var escBtn = $('escalate-btn');
+    if (escBtn) {
+      escBtn.addEventListener('click', function () { openClientSupport(); });
+    }
     $('send').addEventListener('click', function () { sendMsg(); });
     $('text').addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
@@ -434,6 +553,7 @@
       $('list').classList.remove('collapsed');
       stopPoll();
       activeId = null;
+      updateEscalateUi(null);
       renderConvos();
       $('on').classList.add('hidden');
       $('empty').classList.remove('hidden');
@@ -448,8 +568,13 @@
         if (o.kind === 'client' && o.siteId) await openClient(o.siteId, o.prefill);
         else if (o.kind === 'lp') await openLeadPages(o.prefill);
         else if (o.kind === 'provider') await openProvider();
-        else if (o.kind === 'support') await openClientSupport();
+        else if (o.kind === 'support' && me.role !== 'client') await openClientSupport();
+        else if (o.kind === 'support' && me.role === 'client') await openClientSupport();
         else if (o.convId) await selectConv(o.convId);
+      } else if (me.role === 'client' || (me.role === 'super' && siteId)) {
+        // Prefer the provider thread so LeadPages is never the first view
+        var provider = convos.find(function (c) { return c.kind === 'partner_client'; });
+        if (provider) await selectConv(provider.id);
       }
     }
 

@@ -135,6 +135,9 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
     <div id="thread-on" class="hidden" style="display:flex;flex-direction:column;min-height:0;flex:1">
       <div class="thead"><button class="btn btn-sm hidden" id="back-btn" style="margin-right:2px">&larr;</button><div><h2 id="t-title">—</h2><div class="sub" id="t-sub"></div></div><button class="btn btn-sm" id="refresh-btn" style="margin-left:auto">Refresh</button></div>
       <div class="bubbles" id="bubbles"></div>
+      <div id="escalate-bar" class="hidden" style="padding:10px 14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-faint);text-align:center;background:var(--surface-2)">
+        Need more help? <button type="button" id="escalate-btn" style="appearance:none;border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--brand);cursor:pointer;text-decoration:underline;text-underline-offset:2px">Escalate to LeadPages support</button>
+      </div>
       <div class="composer">
         <textarea id="composer-text" placeholder="Write a message…" rows="1"></textarea>
         <button class="btn btn-brand" id="send-btn">Send</button>
@@ -264,6 +267,8 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
     var c=convos.find(function(x){return x.id===id;}); if(!c) return;
     $('thread-empty').classList.add('hidden'); $('thread-on').classList.remove('hidden');
     $('t-title').textContent=convLabel(c); $('t-sub').textContent=convKindText(c);
+    var esc=$('escalate-bar');
+    if(esc) esc.classList.toggle('hidden', !(me.role==='client' && c.kind==='partner_client'));
     if(window.matchMedia('(max-width:760px)').matches){ $('listpane').classList.add('collapsed'); $('back-btn').classList.remove('hidden'); }
     await loadMsgs(id);
     await markRead(id);
@@ -324,8 +329,10 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
     var html='<h3>Start a conversation</h3>';
     if(me.role==='client'){
       var site=mySites[0];
-      if(site && site.servicing_partner_id) html+='<div class="opt"><button class="btn btn-sm" data-new="provider" style="width:100%">Message my provider</button></div>';
-      html+='<div class="opt"><button class="btn btn-sm" data-new="support" style="width:100%">Contact LeadPages support</button></div>';
+      if(site && site.servicing_partner_id){
+        html+='<div class="opt"><button class="btn btn-sm" data-new="provider" style="width:100%">Message my provider</button></div>';
+        html+='<p style="font-size:12.5px;color:var(--ink-faint);margin:8px 0 0;line-height:1.4">Your provider is your first point of contact. LeadPages support is available from an escalate link inside that chat if you still need help.</p>';
+      }
       if(!site) html='<h3>Start a conversation</h3><p style="font-size:13px;color:var(--ink-faint);margin:0">No site is linked to your account yet. Please contact your provider directly.</p>';
     } else if(me.role==='partner'){
       html+='<div class="opt"><button class="btn btn-sm" data-new="lp" style="width:100%">Message LeadPages</button></div>';
@@ -369,9 +376,13 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
     $('newbox').addEventListener('click', async function(e){
       var b=e.target.closest('[data-new]'); if(!b) return;
       var kind=b.getAttribute('data-new');
-      if(kind==='support'){ var site=mySites[0]; startConv(await findOrCreate('client_support',{client_user_id:me.uid},{client_user_id:me.uid,client_site_id:site?site.id:null})); }
       if(kind==='provider'){ var s=mySites[0]; if(s&&s.servicing_partner_id) startConv(await findOrCreate('partner_client',{partner_id:s.servicing_partner_id,client_site_id:s.id},{partner_id:s.servicing_partner_id,client_site_id:s.id,client_user_id:me.uid})); }
       if(kind==='lp'){ startConv(await findOrCreate('partner_lp',{partner_id:me.partnerId},{partner_id:me.partnerId})); }
+    });
+    var escBtn=$('escalate-btn');
+    if(escBtn) escBtn.addEventListener('click', async function(){
+      var site=mySites[0];
+      startConv(await findOrCreate('client_support',{client_user_id:me.uid},{client_user_id:me.uid,client_site_id:site?site.id:null}));
     });
     $('newbox').addEventListener('change', async function(e){
       if(e.target.id==='new-client'){ var sid=e.target.value; if(!sid) return; var s=sitesById[sid];
@@ -390,7 +401,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
     $('composer-text').addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } });
     $('composer-text').addEventListener('input', function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,140)+'px'; });
     $('refresh-btn').addEventListener('click', function(){ if(activeId) loadMsgs(activeId); });
-    $('back-btn').addEventListener('click', function(){ $('listpane').classList.remove('collapsed'); stopPoll(); activeId=null; renderConvos(); $('thread-on').classList.add('hidden'); $('thread-empty').classList.remove('hidden'); });
+    $('back-btn').addEventListener('click', function(){ $('listpane').classList.remove('collapsed'); stopPoll(); activeId=null; renderConvos(); var esc=$('escalate-bar'); if(esc) esc.classList.add('hidden'); $('thread-on').classList.add('hidden'); $('thread-empty').classList.remove('hidden'); });
   }
 
   /* ---------- INIT ---------- */
