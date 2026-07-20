@@ -1,17 +1,25 @@
 # Roadmap
 
-## Phase 1 (this release) — advisory
+## Phase 1 (shipped) — advisory
 
 Site Brain, bootstrap review, Atlas panel, real capability registry, Guardian, permissions, audit, docs, tests. Website Studio On Ice.
 
-## Phase 2 (not started)
+## Phase 2 (in progress) — Forge drafts
 
-- Scout SEO drafting via existing landing tools  
-- Limited Forge draft mutations through allowlisted editor capabilities  
-- Still no auto-publish  
+- **Approve → open task** with clear next step
+- **Forge** applies limited drafts to `sites.config` (merge only):
+  - Hero button text from Site Knowledge preferred CTA
+  - Enable FAQ section with starter headings
+- **Apply draft** API — saves config, does **not** publish
+- User reviews in **Page editor**, then **Publish Live Site**
+- Scout SEO landing drafts (existing `landing-draft` tool) — next slice
 
-## Later
+Still **no auto-publish**.
 
-- Additional interactive specialists (Nova, Pulse, Echo, …)  
-- Account Brain  
-- Richer evidence and campaign hooks (Beacon)
+## Phase 3+
+
+- More Forge capabilities (services copy, page metadata, install apps)
+- Scout execution for SEO pages
+- Additional interactive specialists (Nova, Pulse, Echo, …)
+- Account Brain
+- Beacon campaign hooks
