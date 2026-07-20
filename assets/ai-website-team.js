@@ -155,9 +155,12 @@
   }
 
   function ensureStyles() {
-    if ($('ai-team-styles')) return;
-    var st = document.createElement('style');
-    st.id = 'ai-team-styles';
+    var st = $('ai-team-styles');
+    if (!st) {
+      st = document.createElement('style');
+      st.id = 'ai-team-styles';
+      document.head.appendChild(st);
+    }
     st.textContent =
       '.ai-team-msg.ok{color:#0a7d33}.ai-team-msg.bad{color:#b42318}' +
       '.ai-field-help{display:block;margin:4px 0 6px;font-size:12.5px;line-height:1.45;opacity:.82}' +
@@ -179,6 +182,12 @@
       '.ai-step-answer{margin-top:6px}' +
       '.ai-rec-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}' +
       '.ai-rec-hint{margin:8px 0 0;font-size:12px;opacity:.8}' +
+      /* Mobile-first: stack plans/tasks under recommendations; side-by-side on wide screens */
+      '.ai-team-layout{display:grid;grid-template-columns:1fr;gap:18px;align-items:start}' +
+      '@media(min-width:900px){.ai-team-layout{grid-template-columns:1.2fr .8fr;gap:14px}}' +
+      '.ai-team-layout-main,.ai-team-layout-side{min-width:0}' +
+      '.ai-preview-diff{display:grid;grid-template-columns:1fr;gap:10px;font-size:13px}' +
+      '@media(min-width:520px){.ai-preview-diff{grid-template-columns:1fr 1fr}}' +
       '.ai-discuss-context{font-size:13px;line-height:1.45;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}' +
       '.ai-discuss-context p{margin:0 0 6px}.ai-discuss-context p:last-child{margin:0}' +
       '.ai-step-field{display:block;margin:0 0 10px}' +
@@ -193,7 +202,6 @@
       '.ai-chat-examples button{font-size:12.5px}' +
       '.ai-sk-summary{font-size:13px;line-height:1.5;margin:0 0 10px}' +
       '.ai-sk-summary dt{font-weight:600;margin-top:8px}.ai-sk-summary dd{margin:2px 0 0;opacity:.88}';
-    document.head.appendChild(st);
   }
 
   async function token() {
@@ -611,7 +619,7 @@
           '<div style="font-weight:700;margin-bottom:6px">✓ ' +
           esc(c.label || c.operation || 'Change') +
           '</div>' +
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">' +
+          '<div class="ai-preview-diff">' +
           '<div><div style="opacity:.7;font-size:11px;text-transform:uppercase;letter-spacing:.04em">Before</div>' +
           esc(c.before == null ? '—' : String(c.before)) +
           '</div>' +
@@ -1346,9 +1354,9 @@
       return p && p.status !== 'cancelled';
     });
 
-    html += '<div style="display:grid;grid-template-columns:1.2fr .8fr;gap:14px">';
+    html += '<div class="ai-team-layout">';
     html +=
-      '<div><h3 style="margin:0 0 6px">Recommended next actions</h3>' +
+      '<div class="ai-team-layout-main"><h3 style="margin:0 0 6px">Recommended next actions</h3>' +
       '<p class="lede" style="margin:0 0 10px;font-size:12.5px;opacity:.85">Each card shows a Summary and numbered Suggestion steps. Answer steps that need your input, or Discuss to refine.</p>';
     if (!pendingRecs.length) {
       html += '<p class="lede">No pending recommendations — ask Atlas for a review.</p>';
@@ -1382,7 +1390,7 @@
     }
     html += '</div>';
 
-    html += '<div><h3 style="margin:0 0 10px">Execution Plans</h3>';
+    html += '<div class="ai-team-layout-side"><h3 style="margin:0 0 10px">Execution Plans</h3>';
     if (!plans.length) {
       html +=
         '<p class="lede">No plans yet — select recommendations and build an Execution Plan.</p>';
