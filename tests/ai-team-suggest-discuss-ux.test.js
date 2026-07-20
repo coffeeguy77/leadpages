@@ -93,6 +93,21 @@ siteBrain.resetMemoryStore();
   assert.ok(discussed.messages.length >= 2, 'conversation messages present');
   assert.match(String(discussed.planOutline[0] || ''), /Canberra wedding/i);
 
+  const asked = await aiTeam.discussRecommendation({
+    siteId: 'discuss-1',
+    recommendationId: landing.id,
+    message: 'What is the primary search phrase?',
+    actorUserId: 'u1',
+    actorRole: 'client'
+  });
+  assert.equal(asked.ok, true);
+  assert.equal(asked.intent, 'question');
+  assert.match(String(asked.planOutline[0] || ''), /Canberra wedding/i, 'question must not overwrite plan focus');
+  assert.ok(!/What is the primary search phrase/i.test(String(asked.planOutline[0] || '')));
+  const lastAtlas = (asked.messages || []).filter((m) => m.role === 'atlas').pop();
+  assert.match(String(lastAtlas && lastAtlas.body) || '', /primary search phrase|Recommended/i);
+  assert.ok(!/I updated the plan/i.test(String(lastAtlas && lastAtlas.body) || ''));
+
   const listed = await siteBrain.listRecommendations('discuss-1');
   const pending = (listed.recommendations || []).filter((r) => r.status === 'awaiting-review');
   assert.equal(

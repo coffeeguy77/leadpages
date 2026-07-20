@@ -825,7 +825,10 @@
         }
         paintDiscussMessages(j.messages || []);
         renderDiscussOutline(j.planOutline || []);
-        setMsg(msg, 'Plan updated on this same suggestion.', 'ok');
+        var intent = j.intent || '';
+        if (intent === 'question') setMsg(msg, 'Answered — plan unchanged until you give an edit.', 'ok');
+        else if (intent === 'edit') setMsg(msg, 'Plan updated on this same suggestion.', 'ok');
+        else setMsg(msg, 'Noted.', 'ok');
       } catch (e) {
         setMsg(msg, e.message || String(e), 'bad');
       }
