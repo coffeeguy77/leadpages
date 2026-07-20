@@ -105,6 +105,8 @@
       if (!b.id) b.id = slugify(b.label) || uid('bev');
       if (!b.pricingMode) b.pricingMode = (b.tiers && b.tiers.length) ? 'tiered' : (b.packageCents && !b.perHeadCents ? 'flat' : 'per_head');
       if (!Array.isArray(b.tiers)) b.tiers = [];
+      if (b.group == null && b.category) b.group = b.category;
+      if (b.group == null) b.group = '';
     });
     cfg.addons.forEach(function(a) { if (!a.id) a.id = slugify(a.label) || uid('addon'); });
     cfg.travel.zones.forEach(function(z) {
