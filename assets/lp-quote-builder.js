@@ -265,7 +265,7 @@
       + '<button type="button" class="oqb-preview-zoom-btn" data-oqb-zoom="in" title="Zoom in">+</button>'
       + '<button type="button" class="oqb-preview-zoom-btn oqb-preview-zoom-reset" data-oqb-zoom="reset" title="Reset zoom">100%</button>'
       + '</div></div>'
-      + '<p class="oqb-preview-sub">Layout: <strong>' + esc(layoutLabel) + '</strong>' + esc(pinHint) + '. Card styling updates as you edit — no publish needed.</p>'
+      + '<p class="oqb-preview-sub">Full-width preview above the builder. Layout: <strong>' + esc(layoutLabel) + '</strong>' + esc(pinHint) + '. Card styling updates as you edit — no publish needed.</p>'
       + '<div class="oqb-preview-tools">'
       + '<label class="oqb-preview-focus"><input type="checkbox" data-oqb-preview-focus' + (this.previewFocusCard ? ' checked' : '') + '> Focus one equipment card</label>'
       + '<button type="button" class="oqb-preview-jump" data-oqb-preview-jump="equipment">Show equipment step</button>'
@@ -723,6 +723,7 @@
       + '<p class="oqb-hint" style="margin-top:0">Applies to all equipment cards on the customer wizard (grid, list, and card layouts).</p>'
       + '<div class="oqb-grid">'
       + this._field('Card background (behind text)', '<input type="color" data-oqb-path="wizard.equipmentCards.cardBg" value="' + esc(ec.cardBg || '#ffffff') + '">')
+      + this._field('Image area background', '<input type="color" data-oqb-path="wizard.equipmentCards.imageBg" value="' + esc(ec.imageBg || '#ffffff') + '">')
       + this._field('Equipment name colour', '<input type="color" data-oqb-path="wizard.equipmentCards.titleColor" value="' + esc(ec.titleColor || ec.cardText || '#1a2230') + '">')
       + this._field('Description colour', '<input type="color" data-oqb-path="wizard.equipmentCards.descColor" value="' + esc(ec.descColor || ec.cardText || '#1a2230') + '">')
       + this._field('Quantity number colour', '<input type="color" data-oqb-path="wizard.equipmentCards.qtyColor" value="' + esc(ec.qtyColor || ec.featureColor || '#1f7a63') + '">')
