@@ -13,6 +13,89 @@
   var chatSession = null;
   /** @type {object|null} */
   var discussSession = null;
+  /** @type {object|null} */
+  var askSession = null;
+
+  /** Topic pills — mirrors lib/ai-team/ask-topics.js (browser cannot require). */
+  var ASK_TOPICS = [
+    {
+      id: 'landing',
+      label: 'Landing Page',
+      specialist: 'atlas',
+      specialistName: 'Atlas',
+      specialistRole: 'Website Strategist',
+      question: 'What would you like a landing page on?',
+      placeholder: 'e.g. cold coffee options',
+      hint: 'Builds one live suggestion card — Answer, Discuss, or Draft in Forge.',
+      prefix: 'landing page'
+    },
+    {
+      id: 'seo',
+      label: 'SEO',
+      specialist: 'scout',
+      specialistName: 'Scout',
+      specialistRole: 'SEO Specialist',
+      question: 'What service or area should we target in search?',
+      placeholder: 'e.g. coffee cart hire Canberra',
+      hint: 'Atlas coordinates; Scout owns the SEO angle on the card.',
+      prefix: 'seo'
+    },
+    {
+      id: 'cta',
+      label: 'CTA',
+      specialist: 'pulse',
+      specialistName: 'Pulse',
+      specialistRole: 'Conversion Specialist',
+      question: 'What should the main button ask visitors to do?',
+      placeholder: 'e.g. Get a free quote',
+      hint: 'Conversion card — Draft in Forge can apply the CTA.',
+      prefix: 'cta'
+    },
+    {
+      id: 'quote',
+      label: 'Quote Form',
+      specialist: 'pulse',
+      specialistName: 'Pulse',
+      specialistRole: 'Conversion Specialist',
+      question: 'What should people request when they contact you?',
+      placeholder: 'e.g. a coffee cart quote for weddings',
+      hint: 'Pulse conversion brief. Discuss now; Forge quote ops expand later.',
+      prefix: 'quote form'
+    },
+    {
+      id: 'slider',
+      label: 'Slider',
+      specialist: 'nova',
+      specialistName: 'Nova',
+      specialistRole: 'Design Specialist',
+      question: 'What should the hero slider showcase?',
+      placeholder: 'e.g. wedding setups, corporate carts, iced drinks',
+      hint: 'Nova design brief. Discuss now; Forge slider ops expand later.',
+      prefix: 'slider'
+    },
+    {
+      id: 'faq',
+      label: 'FAQ',
+      specialist: 'echo',
+      specialistName: 'Echo',
+      specialistRole: 'Content Specialist',
+      question: 'What objections do customers raise before they enquire?',
+      placeholder: 'e.g. price, travel fees, weather backup',
+      hint: 'Echo content angle — Draft in Forge can enable FAQ.',
+      prefix: 'faq'
+    },
+    {
+      id: 'services',
+      label: 'Services',
+      specialist: 'echo',
+      specialistName: 'Echo',
+      specialistRole: 'Content Specialist',
+      question: 'What are the main services you sell?',
+      placeholder: 'e.g. Weddings, Corporate, Private parties',
+      hint: 'Saved as Site Knowledge — Echo can write public copy later.',
+      prefix: 'services'
+    }
+  ];
 
   var FIELDS = [
     {
@@ -179,6 +262,28 @@
       '.ai-step-answer{margin-top:6px}' +
       '.ai-rec-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}' +
       '.ai-rec-hint{margin:8px 0 0;font-size:12px;opacity:.8}' +
+      '.ai-ask-shell{margin-bottom:16px;padding:0;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,.02));box-shadow:0 18px 40px rgba(0,0,0,.22)}' +
+      '.ai-ask-head{display:flex;gap:12px;align-items:flex-start;padding:16px 16px 12px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.18)}' +
+      '.ai-ask-avatar{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;letter-spacing:.02em;color:#fff;background:linear-gradient(135deg,var(--accent,#ec4899),#fb7185);box-shadow:0 8px 20px rgba(236,72,153,.28);flex:0 0 auto}' +
+      '.ai-ask-avatar.scout{background:linear-gradient(135deg,#0ea5e9,#38bdf8)}' +
+      '.ai-ask-avatar.nova{background:linear-gradient(135deg,#a855f7,#c084fc)}' +
+      '.ai-ask-avatar.pulse{background:linear-gradient(135deg,#f59e0b,#fb923c)}' +
+      '.ai-ask-avatar.echo{background:linear-gradient(135deg,#14b8a6,#2dd4bf)}' +
+      '.ai-ask-head h3{margin:0 0 4px;font-size:17px}' +
+      '.ai-ask-head .lede{margin:0;font-size:13px;opacity:.84;line-height:1.45}' +
+      '.ai-ask-pills{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06)}' +
+      '.ai-ask-pill{appearance:none;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:inherit;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:650;cursor:pointer;line-height:1.2}' +
+      '.ai-ask-pill:hover{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.07)}' +
+      '.ai-ask-pill.active{border-color:var(--accent,#ec4899);background:rgba(236,72,153,.16);color:var(--accent,#ec4899)}' +
+      '.ai-ask-pill small{display:block;font-size:10px;font-weight:600;opacity:.7;margin-top:2px;letter-spacing:.02em;text-transform:uppercase}' +
+      '.ai-ask-thread{min-height:168px;max-height:280px;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;background:rgba(0,0,0,.14)}' +
+      '.ai-ask-bubble{max-width:92%;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.45;white-space:pre-wrap}' +
+      '.ai-ask-bubble.team{align-self:flex-start;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-bottom-left-radius:6px}' +
+      '.ai-ask-bubble.you{align-self:flex-end;background:rgba(236,72,153,.16);border:1px solid rgba(236,72,153,.4);border-bottom-right-radius:6px}' +
+      '.ai-ask-bubble .who{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.7;margin:0 0 4px}' +
+      '.ai-ask-composer{padding:12px 16px 14px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.12)}' +
+      '.ai-ask-composer textarea{width:100%;min-height:74px;resize:vertical;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:inherit;padding:10px 12px;font:inherit}' +
+      '.ai-ask-composer-actions{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}' +
       '.ai-discuss-context{font-size:13px;line-height:1.45;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}' +
       '.ai-discuss-context p{margin:0 0 6px}.ai-discuss-context p:last-child{margin:0}' +
       '.ai-step-field{display:block;margin:0 0 10px}' +
@@ -378,14 +483,30 @@
   function isForgeOutcome(rec) {
     var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
     if (change.type === 'forge_draft') return true;
-    if (
+    return (
       change.outcome === 'strengthen_primary_cta' ||
       change.outcome === 'enable_faq_for_objections' ||
       change.outcome === 'plan_seo_landing'
-    ) {
-      return true;
-    }
-    return !!(rec && rec.interactive === 'execution_plan');
+    );
+  }
+
+  function withSpecialistOf(rec) {
+    var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
+    return change.withSpecialist || change.with_specialist || '';
+  }
+
+  function specialistLabel(id) {
+    var map = {
+      atlas: 'Atlas',
+      scout: 'Scout',
+      nova: 'Nova',
+      pulse: 'Pulse',
+      echo: 'Echo',
+      lens: 'Lens',
+      forge: 'Forge',
+      guardian: 'Guardian'
+    };
+    return map[id] || id;
   }
 
   function planOutlineOf(rec) {
@@ -455,6 +576,9 @@
     var fieldKey = knowledgeFieldKey(r);
     var forgeable = isForgeOutcome(r);
     var summary = promptSummaryOf(r);
+    var withSpec = withSpecialistOf(r);
+    var metaExtra =
+      withSpec && withSpec !== 'atlas' ? ' · with ' + specialistLabel(withSpec) : '';
     var answerBtn = fieldKey
       ? '<button type="button" class="btn sm ai-rec-answer" data-id="' +
         esc(r.id) +
@@ -478,6 +602,7 @@
       '">' +
       '<div class="ai-rec-meta"><span>' +
       esc(r.specialist || 'atlas') +
+      esc(metaExtra) +
       ' · ' +
       esc(r.status || '') +
       esc(exec) +
@@ -1155,6 +1280,128 @@
     renderChatQuestion();
   }
 
+  function findAskTopic(id) {
+    for (var i = 0; i < ASK_TOPICS.length; i++) {
+      if (ASK_TOPICS[i].id === id) return ASK_TOPICS[i];
+    }
+    return null;
+  }
+
+  function appendAskBubble(role, who, text) {
+    var thread = $('ai-ask-thread');
+    if (!thread) return;
+    var div = document.createElement('div');
+    div.className = 'ai-ask-bubble ' + (role === 'you' ? 'you' : 'team');
+    div.innerHTML =
+      '<span class="who">' +
+      esc(who || (role === 'you' ? 'You' : 'Atlas')) +
+      '</span>' +
+      esc(text || '');
+    thread.appendChild(div);
+    thread.scrollTop = thread.scrollHeight;
+    if (!askSession) askSession = { topicId: null, topic: null, messages: [] };
+    askSession.messages = askSession.messages || [];
+    askSession.messages.push({ role: role, who: who, body: text });
+  }
+
+  function paintAskThread() {
+    var thread = $('ai-ask-thread');
+    if (!thread) return;
+    thread.innerHTML = '';
+    var msgs =
+      askSession && askSession.messages && askSession.messages.length
+        ? askSession.messages
+        : [
+            {
+              role: 'team',
+              who: 'Atlas',
+              body:
+                'Pick a topic pill to start a guided ask — or type freely below. Each Send builds a live suggestion card you can Answer, Discuss, or Draft in Forge.'
+            }
+          ];
+    msgs.forEach(function (m) {
+      var div = document.createElement('div');
+      div.className = 'ai-ask-bubble ' + (m.role === 'you' ? 'you' : 'team');
+      div.innerHTML =
+        '<span class="who">' +
+        esc(m.who || (m.role === 'you' ? 'You' : 'Atlas')) +
+        '</span>' +
+        esc(m.body || '');
+      thread.appendChild(div);
+    });
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function setAskSpecialist(topic) {
+    var avatar = $('ai-ask-avatar');
+    var title = $('ai-ask-title');
+    var sub = $('ai-ask-sub');
+    var input = $('ai-ask');
+    var spec = topic || {
+      specialist: 'atlas',
+      specialistName: 'Atlas',
+      specialistRole: 'Website Strategist',
+      placeholder: 'Type freely, or pick a topic above…',
+      hint:
+        'Pick a popular topic or type freely. Atlas coordinates — specialists advise on their cards.'
+    };
+    if (avatar) {
+      avatar.className = 'ai-ask-avatar ' + (spec.specialist || 'atlas');
+      avatar.textContent = String(spec.specialistName || 'A').charAt(0);
+    }
+    if (title) {
+      title.textContent = topic
+        ? spec.specialistName + ' — ' + spec.specialistRole
+        : 'Ask the Team';
+    }
+    if (sub) {
+      sub.textContent = topic
+        ? spec.hint ||
+          'Atlas coordinates this card with ' + spec.specialistName + '.'
+        : 'Pick a popular topic or type freely. Atlas coordinates — Scout, Nova, Pulse, and Echo advise on their cards. Builds a live suggestion you can save, Discuss, or Draft in Forge.';
+    }
+    if (input && spec.placeholder) input.placeholder = spec.placeholder;
+    document.querySelectorAll('.ai-ask-pill').forEach(function (btn) {
+      var active = topic && btn.getAttribute('data-topic') === topic.id;
+      btn.classList.toggle('active', !!active);
+    });
+  }
+
+  function selectAskTopic(topicId) {
+    var topic = findAskTopic(topicId);
+    if (!topic) return;
+    askSession = {
+      topicId: topic.id,
+      topic: topic,
+      messages: askSession && askSession.messages ? askSession.messages.slice() : []
+    };
+    setAskSpecialist(topic);
+    appendAskBubble(
+      'team',
+      topic.specialistName,
+      topic.question + (topic.hint ? '\n\n' + topic.hint : '')
+    );
+    var input = $('ai-ask');
+    if (input) {
+      input.value = '';
+      try {
+        input.focus();
+      } catch (_e) {}
+    }
+    setMsg($('ai-ask-msg'), 'Answer in the chat box, then Send.', 'ok');
+  }
+
+  function composeAskRequestText(raw) {
+    var text = String(raw || '').trim();
+    if (!text) return '';
+    if (askSession && askSession.topic && askSession.topic.prefix) {
+      var prefix = askSession.topic.prefix;
+      var re = new RegExp('^' + prefix.replace(/\s+/g, '\\s*') + '\\s*[:\\-–]', 'i');
+      if (!re.test(text)) return prefix + ': ' + text;
+    }
+    return text;
+  }
+
   async function softRefresh(opts) {
     opts = opts || {};
     mergeOpts(opts);
@@ -1165,6 +1412,7 @@
 
     var askEl = $('ai-ask');
     var preservedAsk = askEl ? askEl.value : '';
+    var preservedSession = askSession;
     var scrollY = box.scrollTop || 0;
     var statusEl = $('ai-ask-msg');
     var statusText = statusEl ? statusEl.textContent : '';
@@ -1190,7 +1438,10 @@
       return loadPanel(opts);
     }
 
+    askSession = preservedSession;
     paint(lastState);
+    paintAskThread();
+    setAskSpecialist(askSession && askSession.topic ? askSession.topic : null);
     var ask2 = $('ai-ask');
     if (ask2 && preservedAsk != null) ask2.value = preservedAsk;
     if (opts.focusAsk && ask2) {
@@ -1318,12 +1569,31 @@
     });
 
     html +=
-      '<div class="card" style="margin-bottom:16px">' +
-      '<h3 style="margin:0 0 8px">Atlas — Website Strategist</h3>' +
-      '<p class="lede" style="margin:0 0 12px">Ask a business question for new recommendations. To refine an existing card, use Discuss on that card — not Ask again.</p>' +
-      '<textarea id="ai-ask" rows="3" style="width:100%" placeholder="e.g. I need a landing page for wedding coffee cart hires"></textarea>' +
-      '<div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
-      '<button type="button" class="btn" id="ai-ask-go">Ask the Team</button>' +
+      '<div class="card ai-ask-shell" id="ai-ask-shell">' +
+      '<div class="ai-ask-head">' +
+      '<div class="ai-ask-avatar" id="ai-ask-avatar">A</div>' +
+      '<div><h3 id="ai-ask-title">Ask the Team</h3>' +
+      '<p class="lede" id="ai-ask-sub">Pick a popular topic or type freely. Atlas coordinates — Scout, Nova, Pulse, and Echo advise on their cards. Builds a live suggestion you can save, Discuss, or Draft in Forge.</p></div></div>' +
+      '<div class="ai-ask-pills" id="ai-ask-pills">' +
+      ASK_TOPICS.map(function (t) {
+        return (
+          '<button type="button" class="ai-ask-pill" data-topic="' +
+          esc(t.id) +
+          '" title="' +
+          esc(t.hint || '') +
+          '">' +
+          esc(t.label) +
+          '<small>' +
+          esc(t.specialistName) +
+          '</small></button>'
+        );
+      }).join('') +
+      '</div>' +
+      '<div class="ai-ask-thread" id="ai-ask-thread" aria-live="polite"></div>' +
+      '<div class="ai-ask-composer">' +
+      '<textarea id="ai-ask" rows="3" placeholder="Type freely, or pick a topic above…"></textarea>' +
+      '<div class="ai-ask-composer-actions">' +
+      '<button type="button" class="btn" id="ai-ask-go">Send</button>' +
       '<button type="button" class="btn ghost" id="ai-ask-chat">Fill gaps with Atlas</button>' +
       '<button type="button" class="btn ghost" id="ai-resync">Refresh from website</button>' +
       '<span id="ai-ask-msg" class="ai-team-msg"></span></div>' +
@@ -1331,12 +1601,12 @@
       esc((ctx.editorTab || 'details') + '') +
       '</code>' +
       (ctx.selectedSection ? ' · section <code>' + esc(ctx.selectedSection) + '</code>' : '') +
-      '</p></div>';
+      ' · refine an existing card with Discuss, not Ask again.</p></div></div>';
 
     html +=
       '<div class="card" style="margin-bottom:16px;padding:14px 16px">' +
       '<strong>Specialist Team</strong>' +
-      '<p class="lede" style="margin:6px 0 0;font-size:13px">Atlas (strategy) · Echo (copy) · Scout (SEO) · Pulse (conversion) · Nova (design) · Lens (images) · Guardian (validation) · Forge (execution — sole config writer). Only Forge mutates website configuration.</p></div>';
+      '<p class="lede" style="margin:6px 0 0;font-size:13px">Atlas (strategy) · Echo (copy) · Scout (SEO) · Pulse (conversion) · Nova (design) · Lens (images) · Guardian (validation) · Forge (execution — sole config writer). Topic pills route the conversation to the right advisor; Atlas still coordinates every card. Only Forge mutates website configuration.</p></div>';
 
     var pendingRecs = recs.filter(isPendingRecommendation);
     var doneRecs = recs.filter(function (r) {
@@ -1489,27 +1759,65 @@
       ask.onclick = async function () {
         var msg = $('ai-ask-msg');
         var askBtn = ask;
+        var input = $('ai-ask');
+        var raw = input ? String(input.value || '').trim() : '';
+        if (!raw) {
+          setMsg(msg, askSession && askSession.topic ? 'Answer the question first.' : 'Type a question or pick a topic.', 'bad');
+          return;
+        }
+        var requestText = composeAskRequestText(raw);
+        var who =
+          (askSession && askSession.topic && askSession.topic.specialistName) || 'Atlas';
         try {
           askBtn.disabled = true;
-          setMsg(msg, 'Atlas is reviewing…', '');
+          appendAskBubble('you', 'You', raw);
+          if (input) input.value = '';
+          appendAskBubble(
+            'team',
+            who,
+            'Building a live suggestion card… Atlas coordinates; nothing is published yet.'
+          );
+          setMsg(msg, who + ' is reviewing…', '');
           var j = await api('/api/ai-team/atlas-review', {
             siteId: siteId,
-            requestText: ($('ai-ask') && $('ai-ask').value) || '',
+            requestText: requestText,
             editorContext: editorContext()
           });
           if (!j.persisted) throw new Error('Recommendations were not persisted');
+          var count = (j.recommendations || []).length;
+          appendAskBubble(
+            'team',
+            who,
+            count
+              ? 'Done — ' +
+                  count +
+                  ' live card' +
+                  (count === 1 ? '' : 's') +
+                  ' below. Use Answer / Discuss / Draft in Forge on the card.'
+              : 'Review finished — check Recommended next actions below.'
+          );
           await softRefresh({
             statusText:
-              'Suggestions updated — Summary plus numbered steps. Nothing was published.',
+              'Live card ready — Summary plus numbered steps. Nothing was published.',
             statusCls: 'ok'
           });
         } catch (e) {
+          appendAskBubble('team', 'Atlas', 'Could not build the card: ' + (e.message || String(e)));
           setMsg(msg, e.message || String(e), 'bad');
         } finally {
           askBtn.disabled = false;
         }
       };
     }
+
+    document.querySelectorAll('.ai-ask-pill').forEach(function (btn) {
+      btn.onclick = function () {
+        selectAskTopic(btn.getAttribute('data-topic'));
+      };
+    });
+
+    paintAskThread();
+    setAskSpecialist(askSession && askSession.topic ? askSession.topic : null);
 
     var resync = $('ai-resync');
     if (resync) {
