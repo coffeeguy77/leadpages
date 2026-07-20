@@ -666,10 +666,10 @@ function injectOnlineQuote(html, slug, cfg) {
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
   const QUOTE_SCRIPTS = [
-    '/assets/lp-quote-wizard-logic.js?v=oq-eq-grid-2',
-    '/assets/lp-quote-display.js?v=oq-eq-grid-2',
-    '/assets/lp-quote-planning.js?v=oq-eq-grid-2',
-    '/assets/lp-online-quote.js?v=oq-eq-grid-2'
+    '/assets/lp-quote-wizard-logic.js?v=oq-travel-cards-1',
+    '/assets/lp-quote-display.js?v=oq-travel-cards-1',
+    '/assets/lp-quote-planning.js?v=oq-travel-cards-1',
+    '/assets/lp-online-quote.js?v=oq-travel-cards-1'
   ];
 
   function ensureQuoteScripts(doc) {
@@ -716,15 +716,17 @@ function injectOnlineQuote(html, slug, cfg) {
   const block =
     '<section data-sec="onlineQuote" class="sec online-quote" id="onlineQuote"' + sectionStyleAttr() + '>' +
     '<div class="in">' +
-    (eyebrow ? '<p class="ey"' + eyStyle + '>' + eyebrow + '</p>' : '') +
+    '<div class="section-head">' +
+    (eyebrow ? '<p class="eyebrow ey"' + eyStyle + '>' + eyebrow + '</p>' : '') +
     '<h2' + hStyle + '>' + heading + '</h2>' +
     (intro ? '<p class="intro"' + iStyle + '>' + intro + '</p>' : '') +
+    '</div>' +
     '<div id="lp-online-quote" data-slug="' + esc(slug) + '"></div>' +
     '</div></section>' +
-    '<script src="/assets/lp-quote-wizard-logic.js?v=oq-eq-grid-2" defer></script>' +
-    '<script src="/assets/lp-quote-display.js?v=oq-eq-grid-2" defer></script>' +
-    '<script src="/assets/lp-quote-planning.js?v=oq-eq-grid-2" defer></script>' +
-    '<script src="/assets/lp-online-quote.js?v=oq-eq-grid-2" defer></script>';
+    '<script src="/assets/lp-quote-wizard-logic.js?v=oq-travel-cards-1" defer></script>' +
+    '<script src="/assets/lp-quote-display.js?v=oq-travel-cards-1" defer></script>' +
+    '<script src="/assets/lp-quote-planning.js?v=oq-travel-cards-1" defer></script>' +
+    '<script src="/assets/lp-online-quote.js?v=oq-travel-cards-1" defer></script>';
   if (html.includes('<section data-sec="quote"')) {
     return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');
   }

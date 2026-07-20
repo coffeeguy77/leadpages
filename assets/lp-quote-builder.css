@@ -273,7 +273,7 @@
 }
 .oqb-sec-app-fields[hidden] { display: none !important; }
 
-/* Published-style band above the wizard panel */
+/* Published-style band above the wizard panel — match trade .eyebrow / .section-head */
 .oqb-oq-band {
   margin: 0 0 16px;
   padding: 18px 18px 4px;
@@ -281,25 +281,28 @@
   box-sizing: border-box;
 }
 .oqb-oq-ey {
-  margin: 0 0 6px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .12em;
+  margin: 0;
+  font-family: "Barlow", system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .16em;
   text-transform: uppercase;
 }
 .oqb-oq-heading {
-  margin: 0 0 8px;
-  font-size: clamp(22px, 3.2vw, 32px);
+  margin: 10px 0 0;
+  font-family: "Barlow Condensed", "Barlow", system-ui, sans-serif;
+  font-size: clamp(32px, 4.4vw, 52px);
   font-weight: 800;
   letter-spacing: -.01em;
   text-transform: uppercase;
   color: var(--ink);
-  line-height: 1.15;
+  line-height: 1.1;
 }
 .oqb-oq-intro {
-  margin: 0 0 14px;
-  font-size: 14px;
-  line-height: 1.5;
+  margin: 13px 0 14px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.45;
   color: var(--ink-soft);
   max-width: 62ch;
 }
@@ -822,7 +825,7 @@
   border-radius: 12px;
   border: 1px solid var(--lp-oq-panel-border, color-mix(in srgb, var(--accent) 28%, var(--line)));
   background: var(--lp-oq-panel-bg, transparent);
-  color: var(--ink);
+  color: var(--lp-oq-body, var(--ink));
   font-family: var(--font-ui, system-ui, sans-serif);
 }
 
@@ -835,19 +838,24 @@
 .oqb-preview-mock .lp-oq-steps {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 14px;
 }
 
 .oqb-preview-mock .lp-oq-step {
-  font-size: 11px;
-  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: inherit;
+  line-height: 1.2;
+  padding: 9px 16px;
   border-radius: 8px;
   border: 1px solid var(--lp-oq-step-border, color-mix(in srgb, var(--accent) 20%, var(--line)));
   background: var(--lp-oq-step-bg, transparent);
   color: var(--lp-oq-step-text, var(--ink-soft));
   text-transform: capitalize;
   font-weight: 600;
+  box-sizing: border-box;
 }
 
 .oqb-preview-mock .lp-oq-step.is-active {
@@ -873,12 +881,20 @@
   border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
   border-radius: 10px;
   background: transparent;
-  color: var(--ink);
+  color: var(--lp-oq-choice-text, var(--ink));
   cursor: pointer;
   font: inherit;
+  box-sizing: border-box;
 }
 
-.oqb-preview-mock .lp-oq-choice strong { color: var(--ink); }
+.oqb-preview-mock .lp-oq-choice strong { color: inherit; }
+
+.oqb-preview-mock .lp-oq-choice span {
+  display: block;
+  font-size: 12px;
+  color: var(--lp-oq-choice-desc, var(--ink-soft));
+  margin-top: 3px;
+}
 
 .oqb-preview-mock .lp-oq-choice .oqb-ic,
 .oqb-preview-mock .lp-oq-choice .lp-oq-ic { color: var(--accent); }
@@ -889,6 +905,21 @@
   border-radius: 8px;
   object-fit: contain;
   max-width: 100%;
+}
+
+/* Packages / add-ons horizontal in preview (cards + grid) */
+.oqb-preview-mock .lp-oq-layout-cards .lp-oq-choices:not(.lp-oq-fp-grid),
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+.oqb-preview-mock .lp-oq-layout-cards .lp-oq-choices:not(.lp-oq-fp-grid) .lp-oq-choice,
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid) .lp-oq-choice {
+  width: auto;
+  margin: 0;
+  height: 100%;
 }
 
 /* Display mode — text / icon / image */
@@ -1013,22 +1044,41 @@
   min-height: 64px;
 }
 
-/* Choice chips in grid layout — do not apply to equipment photo cards (.lp-oq-fp-grid) */
-.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid),
-.oqb-preview-mock .lp-oq-layout-grid .lp-oq-stack {
+/* Choice chips in grid layout ONLY — never the step body (.lp-oq-stack).
+   Applying the chip grid to .lp-oq-stack squeezed .lp-oq-carts to ~140px and
+   forced equipment photo cards into a single stacked column. */
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
+}
+
+/* Step body is a normal block stack (intro, then full-width equipment row) */
+.oqb-preview-mock .lp-oq-stack {
+  display: block;
+  width: 100%;
+}
+.oqb-preview-mock .lp-oq-carts {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Equipment photo cards: always side-by-side in the live preview */
 .oqb-preview-mock .lp-oq-fp-grid.fp-grid,
 .oqb-preview-mock .lp-oq-choices.lp-oq-fp-grid {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)) !important;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
   gap: 16px;
-  width: 100%;
+  width: 100% !important;
+  max-width: 100%;
   align-items: stretch;
+  box-sizing: border-box;
+}
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-fp-grid.fp-grid,
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choices.lp-oq-fp-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
 }
 .oqb-preview-mock .lp-oq-layout-list .lp-oq-fp-grid.fp-grid,
 .oqb-preview-mock .lp-oq-layout-list .lp-oq-choices.lp-oq-fp-grid {
@@ -1106,7 +1156,7 @@
   margin-bottom: 10px;
 }
 
-.oqb-preview-mock .lp-oq-layout-split .lp-oq-choices {
+.oqb-preview-mock .lp-oq-layout-split .lp-oq-choices:not(.lp-oq-fp-grid) {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1121,7 +1171,7 @@
 .oqb-preview-mock .lp-oq-field span {
   display: block;
   font-size: 12px;
-  color: var(--ink-soft);
+  color: var(--lp-oq-label, var(--ink-soft));
   margin-bottom: 4px;
 }
 
@@ -1131,8 +1181,8 @@
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   font: inherit;
-  background: var(--input-bg);
-  color: var(--ink);
+  background: var(--lp-oq-field-bg, var(--input-bg));
+  color: var(--lp-oq-field-text, var(--ink));
   box-sizing: border-box;
 }
 
@@ -1140,9 +1190,13 @@
   display: flex;
   gap: 8px;
   margin-top: 14px;
+  flex-wrap: wrap;
 }
 
 .oqb-preview-mock .lp-oq-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 9px 16px;
   border: none;
   border-radius: 8px;
@@ -1150,7 +1204,9 @@
   color: var(--lp-oq-btn-text, var(--accent-text));
   font: inherit;
   font-weight: 600;
+  line-height: 1.2;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .oqb-preview-mock .lp-oq-btn-ghost {
@@ -1160,6 +1216,21 @@
 }
 
 .oqb-preview-mock .lp-oq-muted { color: var(--lp-oq-muted, var(--ink-soft)); }
+
+.oqb-preview-mock .lp-oq-plan,
+.oqb-preview-mock .lp-oq-shift,
+.oqb-preview-mock .lp-oq-staff-row,
+.oqb-preview-mock .lp-oq-cart-head,
+.oqb-preview-mock .lp-oq-staff-label {
+  color: var(--lp-oq-body, var(--ink));
+}
+.oqb-preview-mock .lp-oq-plan legend {
+  color: var(--lp-oq-label, var(--ink-soft));
+}
+.oqb-preview-mock .lp-oq-radio,
+.oqb-preview-mock .lp-oq-check {
+  color: var(--lp-oq-body, var(--ink));
+}
 
 @media (max-width: 960px) {
   .oqb-step-row { flex-direction: column; align-items: stretch; }
