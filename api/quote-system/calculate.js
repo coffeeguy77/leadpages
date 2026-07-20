@@ -112,13 +112,13 @@ module.exports = async function handler(req, res) {
     if (!updatedSession.lead_id && updatedSession.contact_email && level !== RESPONSE_LEVEL.PUBLIC_PROGRESS) {
       const admin = require('../../lib/quote-system/supabase').getAdmin();
       const { data: siteRow } = await admin.from('sites')
-        .select('id,business_name,owner_user_id')
+        .select('id,business_name,owner_user_id,config')
         .eq('id', session.site_id)
         .maybeSingle();
       if (siteRow) {
         try {
           const leadId = await createQuoteLead(siteRow, updatedSession, calc, configVersion.config);
-          await linkLeadToSession(updatedSession, leadId);
+          if (leadId) await linkLeadToSession(updatedSession, leadId);
         } catch (leadErr) {
           console.error('quote lead create:', leadErr && leadErr.message);
         }

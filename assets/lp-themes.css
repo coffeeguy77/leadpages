@@ -728,6 +728,221 @@ html[data-lp-site-theme="electric-blue"] #site-label .lp-sitepick-sel{
   border-radius: 999px;
 }
 
+/* Captured Leads — app-ready inbox */
+.dash-leads-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+}
+.dash-leads-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.dash-leads-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--ink-soft);
+}
+.dash-leads-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
+  flex: 0 0 auto;
+}
+.dash-leads-toolbar {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.dash-leads-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dash-leads-chip,
+.dash-leads-spam-btn,
+#dash-leads-refresh {
+  font-size: 12px !important;
+  padding: 6px 12px !important;
+}
+.dash-leads-chip.is-on,
+.dash-leads-spam-btn.is-on {
+  background: var(--button-bg, var(--accent)) !important;
+  color: var(--accent-text, #fff) !important;
+  border-color: var(--button-border, var(--accent)) !important;
+}
+.dash-leads-body { min-height: 48px; }
+.dash-leads-empty {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.dash-leads-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dash-leads-list.is-scroll {
+  max-height: calc(10 * 88px);
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+.dash-lead-row {
+  padding: 0;
+  overflow: hidden;
+}
+.lp-lead-card-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 14px 16px;
+}
+.lp-lead-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  min-width: 0;
+  flex: 1 1 220px;
+}
+.lp-lead-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-left: auto;
+}
+.dash-lead-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+}
+.dash-lead-src {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+  color: var(--accent-hover);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.dash-lead-src.is-quote {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.dash-lead-phone {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+.dash-lead-when {
+  font-size: 12px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+.dash-lead-view {
+  margin-left: 0 !important;
+  flex: 0 0 auto;
+}
+.dash-lead-detail[hidden] {
+  display: none !important;
+}
+.dash-lead-detail:not([hidden]) {
+  display: block;
+  padding: 0 16px 14px;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.dash-lead-detail .lp-lead-detail-text {
+  padding: 12px 0 8px;
+  color: var(--ink);
+  font-size: 13.5px;
+  line-height: 1.55;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.dash-lead-email {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+}
+.dash-lead-email a { color: var(--accent); }
+.dash-lead-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 4px;
+}
+.dash-lead-del { color: var(--danger, #c0392b) !important; }
+.dash-lead-spam-badge {
+  background: color-mix(in srgb, var(--danger, #c0392b) 18%, transparent) !important;
+  color: var(--danger, #c0392b) !important;
+}
+.dash-leads-spam-panel {
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.dash-block-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+.dash-block-h {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+}
+.dash-block-add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.dash-block-add .tin { flex: 1; min-width: 0; }
+.dash-block-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dash-block-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--line));
+}
+.dash-block-list code {
+  font-size: 12px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Floating backup / scope panels */
 #lp-bk-panel,
 #lp-scope-panel {

@@ -563,7 +563,8 @@ body.lp-standard-mode .lp-standard-banner { display:inline-block; }
   #lp-leads .ll-head h2{font-size:19px;}
   #lp-leads .ll-item{padding:13px 15px;}
   #dash-leads-card{padding:18px 20px;}
-  #dash-leads-card .lp-dash-row{padding:12px 14px;}
+  #dash-leads-card .lp-dash-row{padding:0;}
+  #dash-leads-card .lp-lead-card-inner{padding:14px 16px;}
 }
 .ll-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px 18px;}
 .ll-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
@@ -9366,12 +9367,18 @@ function heroCtaCard(c){
 
       // ── Captured Leads — full width ──
       +'<div id="dash-leads-card" class="lp-dash-card" style="margin-bottom:20px">'
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">'
-      +'<h3 style="margin:0;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)">Captured Leads</h3>'
-      +'<span style="flex:1"></span>'
-      +'<button class="btn ghost" id="dash-leads-refresh" style="font-size:12px;padding:4px 10px">Refresh</button>'
+      +'<div class="dash-leads-head">'
+      +'<div class="dash-leads-title-wrap">'
+      +'<h3 class="dash-leads-title">Captured Leads</h3>'
+      +'<span id="dash-leads-dot" class="dash-leads-dot" hidden aria-label="New leads"></span>'
       +'</div>'
-      +'<div id="dash-leads-body"><p style="color:var(--ink-soft);font-size:13px">Loading\u2026</p></div>'
+      +'<div class="dash-leads-toolbar" id="dash-leads-toolbar">'
+      +'<div class="dash-leads-filters" id="dash-leads-filters" role="tablist" aria-label="Lead filters"></div>'
+      +'<button type="button" class="btn ghost dash-leads-spam-btn" id="dash-leads-spam" data-dash-filter="spam">Spam</button>'
+      +'<button type="button" class="btn ghost" id="dash-leads-refresh">Refresh</button>'
+      +'</div></div>'
+      +'<div id="dash-leads-spam-panel" class="dash-leads-spam-panel" hidden></div>'
+      +'<div id="dash-leads-body" class="dash-leads-body"><p class="dash-leads-empty">Loading\u2026</p></div>'
       +'</div>'
 
       // ── Backups + Scope side by side ──
@@ -9452,18 +9459,49 @@ function heroCtaCard(c){
       }
     })(0);
 
-    // Wire leads refresh
+    // Wire leads refresh + filters
     var dlRefresh=document.getElementById('dash-leads-refresh');
-    if(dlRefresh) dlRefresh.addEventListener('click',function(){ _dashLoadLeads(siteId); });
-    // Wire View message expand (delegated)
+    if(dlRefresh) dlRefresh.addEventListener('click',function(){ _dashLoadLeads(siteId,true); });
+    var dlFilters=document.getElementById('dash-leads-filters');
+    if(dlFilters) dlFilters.addEventListener('click',function(e){
+      var btn=e.target.closest('[data-dash-filter]'); if(!btn) return;
+      _dashLeadsSetFilter(btn.getAttribute('data-dash-filter'));
+    });
+    var dlSpam=document.getElementById('dash-leads-spam');
+    if(dlSpam) dlSpam.addEventListener('click',function(){ _dashLeadsSetFilter('spam'); });
+    // Wire View message / delete / spam (delegated)
     box.addEventListener('click',function(e){
+      var spamEdit=e.target.closest('[data-dash-block-rm]');
+      if(spamEdit){
+        var kind=spamEdit.getAttribute('data-dash-block-rm');
+        var val=spamEdit.getAttribute('data-val');
+        _dashLeadInboxRemove(kind,val);
+        return;
+      }
+      var spamAdd=e.target.closest('[data-dash-block-add]');
+      if(spamAdd){
+        var addKind=spamAdd.getAttribute('data-dash-block-add');
+        var inp=document.getElementById('dash-block-input-'+addKind);
+        if(inp&&inp.value.trim()){ _dashLeadInboxAdd(addKind,inp.value.trim()); inp.value=''; }
+        return;
+      }
+      var delBtn=e.target.closest('[data-dash-lead-del]');
+      if(delBtn){ _dashLeadDelete(delBtn.getAttribute('data-dash-lead-del')); return; }
+      var spamBtn=e.target.closest('[data-dash-lead-spam]');
+      if(spamBtn){ _dashLeadMarkSpam(spamBtn.getAttribute('data-dash-lead-spam')); return; }
       var btn=e.target.closest('[data-dash-lead]'); if(!btn) return;
       var lid=btn.getAttribute('data-dash-lead');
       var detail=document.getElementById('dash-lead-detail-'+lid);
       if(!detail) return;
-      var open=detail.style.display==='block';
-      detail.style.display=open?'none':'block';
-      btn.textContent=open?'View message':'Hide message';
+      var isOpen=!detail.hasAttribute('hidden');
+      if(isOpen){
+        detail.setAttribute('hidden','');
+        btn.textContent='View message';
+      } else {
+        detail.removeAttribute('hidden');
+        btn.textContent='Hide message';
+        _dashLeadsMarkSeen();
+      }
     });
 
     // Wire backup buttons
@@ -9548,56 +9586,242 @@ function heroCtaCard(c){
     }
   }
 
-  function _dashLoadLeads(siteId){
+  var DASH_LEADS={ siteId:null, rows:[], filter:'all', quoteEnabled:false, loading:false };
+
+  function _dashLeadInbox(){
+    if(!data||typeof data!=='object') return { blockedEmails:[], blockedDomains:[], blockedCountries:[] };
+    if(!data.leadInbox||typeof data.leadInbox!=='object') data.leadInbox={ blockedEmails:[], blockedDomains:[], blockedCountries:[] };
+    ['blockedEmails','blockedDomains','blockedCountries'].forEach(function(k){
+      if(!Array.isArray(data.leadInbox[k])) data.leadInbox[k]=[];
+    });
+    return data.leadInbox;
+  }
+  function _dashLeadInboxPersist(){
+    persist();
+    if(typeof lpAutosave==='function') try{ lpAutosave(); }catch(_e){}
+    if(typeof lpSaveDB==='function') try{ lpSaveDB(); }catch(_e){}
+  }
+  function _dashLeadNorm(v){ return String(v==null?'':v).trim().toLowerCase(); }
+  function _dashLeadInboxAdd(type, value){
+    var inbox=_dashLeadInbox();
+    var v=_dashLeadNorm(value);
+    if(!v) return;
+    if(type==='email'){ if(inbox.blockedEmails.indexOf(v)<0) inbox.blockedEmails.push(v); }
+    else if(type==='domain'){ v=v.replace(/^@/,'').replace(/^\*\./,''); if(inbox.blockedDomains.indexOf(v)<0) inbox.blockedDomains.push(v); }
+    else if(type==='country'){ v=v.slice(0,8); if(inbox.blockedCountries.indexOf(v)<0) inbox.blockedCountries.push(v); }
+    _dashLeadInboxPersist();
+    _dashLeadsPaint();
+    if(typeof toast==='function') toast('Block filter saved');
+  }
+  function _dashLeadInboxRemove(type, value){
+    var inbox=_dashLeadInbox();
+    var v=_dashLeadNorm(value);
+    function drop(arr){ return arr.filter(function(x){ return x!==v; }); }
+    if(type==='email') inbox.blockedEmails=drop(inbox.blockedEmails);
+    else if(type==='domain') inbox.blockedDomains=drop(inbox.blockedDomains);
+    else if(type==='country') inbox.blockedCountries=drop(inbox.blockedCountries);
+    _dashLeadInboxPersist();
+    _dashLeadsPaint();
+  }
+  function _dashLeadsSeenKey(siteId){ return 'lp_dash_leads_seen_'+String(siteId||''); }
+  function _dashLeadsMarkSeen(){
+    if(!DASH_LEADS.siteId) return;
+    var newest=(DASH_LEADS.rows||[]).reduce(function(m,l){
+      var t=l&&l.created_at?new Date(l.created_at).getTime():0;
+      return t>m?t:m;
+    },0);
+    try{ localStorage.setItem(_dashLeadsSeenKey(DASH_LEADS.siteId), String(newest||Date.now())); }catch(_e){}
+    _dashLeadsUpdateDot();
+  }
+  function _dashLeadsUpdateDot(){
+    var dot=document.getElementById('dash-leads-dot');
+    if(!dot) return;
+    var seen=0;
+    try{ seen=parseInt(localStorage.getItem(_dashLeadsSeenKey(DASH_LEADS.siteId))||'0',10)||0; }catch(_e){}
+    var hasNew=(DASH_LEADS.rows||[]).some(function(l){
+      if((l.status||'')==='spam') return false;
+      var t=l.created_at?new Date(l.created_at).getTime():0;
+      return t>seen && (l.status||'new')==='new';
+    });
+    dot.hidden=!hasNew;
+  }
+  function _dashLeadIsQuote(l){ return (l&&l.kind)==='quote' || (l&&l.source)==='online_quote'; }
+  function _dashLeadSourceLabel(l){
+    if(_dashLeadIsQuote(l)) return 'Quote System';
+    return 'Website enquiry';
+  }
+  function _dashLeadsFiltered(){
+    var f=DASH_LEADS.filter||'all';
+    return (DASH_LEADS.rows||[]).filter(function(l){
+      var spam=(l.status||'')==='spam';
+      if(f==='spam') return spam;
+      if(spam) return false;
+      if(f==='quote') return _dashLeadIsQuote(l);
+      if(f==='website') return !_dashLeadIsQuote(l);
+      return true;
+    });
+  }
+  function _dashLeadsSetFilter(f){
+    DASH_LEADS.filter=f||'all';
+    _dashLeadsPaint();
+  }
+  async function _dashLeadsDetectQuote(siteId){
+    DASH_LEADS.quoteEnabled=false;
+    if(window.LPONLINEQUOTE&&LPONLINEQUOTE.siteId===siteId&&LPONLINEQUOTE.config&&LPONLINEQUOTE.config.admin){
+      DASH_LEADS.quoteEnabled=!!LPONLINEQUOTE.config.admin.enabled;
+      return;
+    }
+    try{
+      var se=await sb.auth.getSession();
+      var tk=se&&se.data&&se.data.session&&se.data.session.access_token;
+      var hdr=tk?{Authorization:'Bearer '+tk}:{};
+      var r=await fetch('/api/quote-system/admin/config?site_id='+encodeURIComponent(siteId),{headers:hdr});
+      var j=await r.json();
+      DASH_LEADS.quoteEnabled=!!(j&&j.admin&&j.admin.enabled);
+    }catch(_e){ DASH_LEADS.quoteEnabled=false; }
+  }
+  function _dashLeadsRenderFilters(){
+    var host=document.getElementById('dash-leads-filters');
+    if(!host) return;
+    var chips=[{id:'all',label:'All'},{id:'website',label:'Website Enquiries'}];
+    if(DASH_LEADS.quoteEnabled) chips.push({id:'quote',label:'Quote System'});
+    host.innerHTML=chips.map(function(c){
+      return '<button type="button" class="btn ghost dash-leads-chip'+(DASH_LEADS.filter===c.id?' is-on':'')+'" data-dash-filter="'+c.id+'">'+esc(c.label)+'</button>';
+    }).join('');
+    var spamBtn=document.getElementById('dash-leads-spam');
+    if(spamBtn) spamBtn.classList.toggle('is-on', DASH_LEADS.filter==='spam');
+  }
+  function _dashLeadsSpamPanelHtml(){
+    var inbox=_dashLeadInbox();
+    function list(title, key, items, ph){
+      return '<div class="dash-block-group"><div class="dash-block-h">'+esc(title)+'</div>'
+        +'<div class="dash-block-add"><input type="text" class="tin" id="dash-block-input-'+key+'" placeholder="'+esc(ph)+'">'
+        +'<button type="button" class="btn ghost sm" data-dash-block-add="'+key+'">Add</button></div>'
+        +(items.length?'<ul class="dash-block-list">'+items.map(function(v){
+          return '<li><code>'+esc(v)+'</code><button type="button" class="btn ghost sm" data-dash-block-rm="'+key+'" data-val="'+esc(v)+'">Remove</button></li>';
+        }).join('')+'</ul>':'<p class="dash-leads-empty" style="margin:6px 0 0">None yet.</p>')
+        +'</div>';
+    }
+    return '<div class="dash-spam-manage">'
+      +'<p class="dash-leads-empty" style="margin:0 0 12px">Spam leads are hidden from All / Website / Quote. Blocking an email (or domain / country) drops future submissions at ingest and removes the lead from this inbox.</p>'
+      +'<div class="dash-block-grid">'
+      +list('Blocked emails','email',inbox.blockedEmails,'name@example.com')
+      +list('Blocked domains','domain',inbox.blockedDomains,'spamdomain.com or *.spamdomain.com')
+      +list('Blocked countries','country',inbox.blockedCountries,'au, us, … (ISO code)')
+      +'</div></div>';
+  }
+  function _dashLeadRowHtml(l){
+    var name=esc(l.name||l.fname||'Anonymous');
+    var isQuote=_dashLeadIsQuote(l);
+    var isSpam=(l.status||'')==='spam';
+    var detObj=(l.details&&typeof l.details==='object')?l.details:{};
+    var phone=esc(l.phone||'');
+    var date=l.created_at?new Date(l.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}):'';
+    var isNew=!isSpam&&(l.status||'new')==='new';
+    var detail=isQuote?lpQuoteLeadHtml(l):esc(l.detail||l.other||l.message||'');
+    var email=esc(l.email||'');
+    var src=_dashLeadSourceLabel(l);
+    return '<div class="lp-dash-row dash-lead-row'+(isSpam?' is-spam':'')+'" id="dash-lead-'+esc(l.id)+'">'
+      +'<div class="lp-lead-card-inner">'
+      +'<div class="lp-lead-card-meta">'
+      +'<span class="dash-lead-name">'+name+'</span>'
+      +'<span class="dash-lead-src'+(isQuote?' is-quote':'')+'">'+esc(src)+'</span>'
+      +(isNew?'<span class="lp-badge-new">NEW</span>':'')
+      +(isSpam?'<span class="lp-badge-new dash-lead-spam-badge">SPAM</span>':'')
+      +'</div>'
+      +'<div class="lp-lead-card-actions">'
+      +(phone?'<a class="dash-lead-phone" href="tel:'+phone+'">'+phone+'</a>':'')
+      +'<span class="dash-lead-when">'+date+'</span>'
+      +'<button type="button" data-dash-lead="'+esc(l.id)+'" class="ll-view lp-btn-stroke dash-lead-view">View message</button>'
+      +'</div></div>'
+      +'<div id="dash-lead-detail-'+esc(l.id)+'" class="dash-lead-detail" hidden>'
+      +(detail?'<div class="lp-lead-detail-text">'+detail+'</div>':'<p class="dash-leads-empty">No additional message.</p>')
+      +(email?'<div class="dash-lead-email">Email: <a href="mailto:'+email+'">'+email+'</a></div>':'')
+      +'<div class="dash-lead-tools">'
+      +(!isSpam?'<button type="button" class="btn ghost sm" data-dash-lead-spam="'+esc(l.id)+'">Mark spam</button>':'')
+      +'<button type="button" class="btn ghost sm dash-lead-del" data-dash-lead-del="'+esc(l.id)+'">Delete</button>'
+      +'</div></div></div>';
+  }
+  function _dashLeadsPaint(){
+    var el=document.getElementById('dash-leads-body'); if(!el) return;
+    var panel=document.getElementById('dash-leads-spam-panel');
+    _dashLeadsRenderFilters();
+    _dashLeadsUpdateDot();
+    if(DASH_LEADS.filter==='spam'){
+      if(panel){ panel.hidden=false; panel.innerHTML=_dashLeadsSpamPanelHtml(); }
+    } else if(panel){ panel.hidden=true; panel.innerHTML=''; }
+    var rows=_dashLeadsFiltered();
+    if(!rows.length){
+      var empty=DASH_LEADS.filter==='spam'
+        ? 'No spam leads. Add email, domain or country blocks below to stop junk at the door.'
+        : (DASH_LEADS.filter==='quote'
+          ? 'No Quote System leads yet.'
+          : (DASH_LEADS.filter==='website'
+            ? 'No website enquiries yet.'
+            : 'No enquiries yet. When someone submits a form or quote, they\u2019ll appear here.'));
+      el.innerHTML='<p class="dash-leads-empty">'+empty+'</p>';
+      return;
+    }
+    el.innerHTML='<div class="dash-leads-list'+(rows.length>10?' is-scroll':'')+'">'+rows.map(_dashLeadRowHtml).join('')+'</div>';
+  }
+  async function _dashLeadDelete(id){
+    if(!id||!confirm('Permanently delete this lead? This cannot be undone.')) return;
+    try{
+      var r=await sb.from('leads').delete().eq('id',id);
+      if(r.error) throw r.error;
+      DASH_LEADS.rows=(DASH_LEADS.rows||[]).filter(function(l){ return String(l.id)!==String(id); });
+      _dashLeadsPaint();
+      if(typeof toast==='function') toast('Lead deleted');
+    }catch(e){ if(typeof toast==='function') toast('Could not delete: '+((e&&e.message)||e)); }
+  }
+  async function _dashLeadMarkSpam(id){
+    var lead=(DASH_LEADS.rows||[]).find(function(l){ return String(l.id)===String(id); });
+    if(!lead) return;
+    try{
+      var r=await sb.from('leads').update({ status:'spam' }).eq('id',id);
+      if(r.error) throw r.error;
+      lead.status='spam';
+      if(lead.email){
+        var inbox=_dashLeadInbox();
+        var em=_dashLeadNorm(lead.email);
+        if(em && inbox.blockedEmails.indexOf(em)<0){
+          inbox.blockedEmails.push(em);
+          _dashLeadInboxPersist();
+        }
+      }
+      DASH_LEADS.filter='spam';
+      _dashLeadsPaint();
+      if(typeof toast==='function') toast(lead.email?'Moved to Spam — email blocked':'Moved to Spam');
+    }catch(e){ if(typeof toast==='function') toast('Could not mark spam: '+((e&&e.message)||e)); }
+  }
+
+  function _dashLoadLeads(siteId, force){
     if(!siteId) return;
     var el=document.getElementById('dash-leads-body'); if(!el) return;
-    el.innerHTML='<p style="color:var(--ink-soft);font-size:13px">Loading\u2026</p>';
-    // Query leads directly from Supabase
-    sb.from('leads').select('*').eq('site_id',siteId).order('created_at',{ascending:false}).limit(20)
-      .then(function(r){
-        var rows=r.data||[];
-        // Also update leads stat card
-        var lds=document.getElementById('dash-s-leads');
-        if(lds) lds.textContent=rows.length||'0';
-        if(!rows.length){
-          el.innerHTML='<p style="color:var(--ink-soft);font-size:13px">No enquiries yet. When someone submits the quote form, they\u2019ll appear here.</p>';
-          return;
-        }
-        el.innerHTML='<div style="display:flex;flex-direction:column;gap:8px">'+rows.map(function(l){
-          var name=esc(l.name||l.fname||'Anonymous');
-          var isQuote=(l.kind||'')==='quote';
-          var detObj=(l.details&&typeof l.details==='object')?l.details:{};
-          var phone=esc(l.phone||'');
-          var job=esc(isQuote?(detObj.totalFormatted?('Quote '+detObj.totalFormatted):(l.message||'Online quote')):(l.job||l.message||l.detail||l.service||''));
-          var sub=esc(l.suburb||l.postcode||'');
-          var date=l.created_at?new Date(l.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
-          var isNew=l.created_at&&(Date.now()-new Date(l.created_at).getTime())<86400000*3;
-          var detail=isQuote?lpQuoteLeadHtml(l):esc(l.detail||l.other||l.message||'');
-          var email=esc(l.email||'');
-          var rowId='dash-lead-'+l.id;
-          return '<div class="lp-dash-row" style="overflow:hidden" id="'+rowId+'">'
-            +'<div class="lp-lead-card-inner">'
-            +'<div class="lp-lead-card-meta">'
-            +'<span style="font-weight:700;font-size:14px">'+name+'</span>'
-            +(sub?'<span style="font-size:12px;color:var(--ink-soft)">'+sub+'</span>':'')
-            +(isNew?'<span class="lp-badge-new">NEW</span>':'')
-            +(isQuote?'<span class="lp-badge-new" style="background:var(--accent-soft);color:var(--accent)">QUOTE</span>':'')
-            +'</div>'
-            +'<div class="lp-lead-card-actions">'
-            +(phone?'<a href="tel:'+phone+'" style="font-size:13px;font-weight:600;color:var(--accent);text-decoration:none">'+phone+'</a>':'')
-            +'<span style="font-size:11px;color:var(--ink-faint);white-space:nowrap">'+date+'</span>'
-            +'<button type="button" data-dash-lead="'+esc(l.id)+'" class="ll-view lp-btn-stroke" style="margin-left:auto">View message</button>'
-            +'</div>'
-            +'</div>'
-            +'<div id="dash-lead-detail-'+esc(l.id)+'" style="display:none;padding:0 14px 12px;border-top:1px solid color-mix(in srgb, var(--accent) 20%, transparent)">'
-            +(detail?'<div class="lp-lead-detail-text" style="padding:10px 0;color:var(--ink)">'+detail+'</div>':'<p style="font-size:13px;color:var(--ink-soft);padding:10px 0">No additional message.</p>')
-            +(email?'<div style="font-size:12px;color:var(--ink-soft)">Email: <a href="mailto:'+email+'" style="color:var(--accent)">'+email+'</a></div>':'')
-            +'</div>'
-            +'</div>';
-        }).join('')+'</div>';
-      }).catch(function(e){
-        el.innerHTML='<p style="color:var(--ink-soft);font-size:13px">Could not load leads: '+esc(String(e&&e.message||e))+'</p>';
-      });
+    if(!force && DASH_LEADS.siteId===siteId && DASH_LEADS.rows && DASH_LEADS.rows.length){
+      _dashLeadsPaint();
+      return;
+    }
+    DASH_LEADS.siteId=siteId;
+    DASH_LEADS.loading=true;
+    el.innerHTML='<p class="dash-leads-empty">Loading\u2026</p>';
+    Promise.all([
+      sb.from('leads').select('*').eq('site_id',siteId).order('created_at',{ascending:false}).limit(100),
+      _dashLeadsDetectQuote(siteId)
+    ]).then(function(res){
+      var r=res[0];
+      DASH_LEADS.loading=false;
+      DASH_LEADS.rows=r.data||[];
+      if(r.error) throw r.error;
+      var lds=document.getElementById('dash-s-leads');
+      if(lds && typeof ANA!=='undefined' && ANA.leadsCount!=null) lds.textContent=String(ANA.leadsCount);
+      else if(lds) lds.textContent=String((DASH_LEADS.rows||[]).filter(function(l){ return (l.status||'')!=='spam'; }).length);
+      if(DASH_LEADS.filter==='quote' && !DASH_LEADS.quoteEnabled) DASH_LEADS.filter='all';
+      _dashLeadsPaint();
+    }).catch(function(e){
+      DASH_LEADS.loading=false;
+      el.innerHTML='<p class="dash-leads-empty">Could not load leads: '+esc(String(e&&e.message||e))+'</p>';
+    });
   }
 
   function _dashLoadBk(){

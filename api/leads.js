@@ -18,6 +18,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const { limited } = require('./_rate-limit');
 const { assessLeadSpam } = require('../lib/lead-spam');
+const { isLeadBlocked } = require('../lib/lead-blocklist');
 const {
   pickAttribution,
   upsertVisitorSession,
@@ -192,6 +193,16 @@ module.exports = async (req, res) => {
     const message = dets.map(([k, v]) => k + ': ' + v).join(' · ');
 
     const siteRow = await resolveSite({ siteId: body.siteId, slug: body.slug, site: body.site });
+
+    if (siteRow) {
+      const blocked = isLeadBlocked({
+        email: lead.email,
+        country: details.country || details.countryCode || body.country || body.countryCode
+      }, (siteRow.config && siteRow.config.leadInbox) || {});
+      if (blocked.blocked) {
+        return ok({ stored: false, skipped: 'blocked', reason: blocked.reason, match: blocked.match });
+      }
+    }
 
     // Session attribution (gclid / UTMs) — first-party truth before any Google upload.
     const attr = pickAttribution(Object.assign({}, body, body.attribution || {}, details.attribution || {}));
