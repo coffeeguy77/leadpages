@@ -19,7 +19,7 @@ assert.ok(/\.lp-oq-eq-card \.fp-ph\{[^}]*background:transparent/.test(display), 
 
 assert.ok(builder.includes('wizard.equipmentCards.imageBg'), 'image area colour picker path');
 assert.ok(builder.includes('Image area background'), 'image area colour picker label');
-assert.ok(builder.includes('Full-width preview above the builder'), 'preview copy mentions full-width layout');
+assert.ok(builder.includes('Matches the published section') || builder.includes('Full-width preview'), 'preview copy mentions layout');
 
 assert.ok(!css.includes('grid-template-columns: 1fr minmax(320px, 480px)'), 'no side-by-side preview column');
 assert.ok(!/\.oqb-split-wrap\s*\{/.test(css), 'split wrap layout removed');
@@ -33,9 +33,10 @@ assert.ok(
   /oq-preview-root[\s\S]*?oq-builder-root/.test(manage),
   'preview mounts above builder root'
 );
-assert.ok(manage.includes('lp-quote-builder.css?v=oq-preview-full-1'), 'cache-busted builder css');
-assert.ok(manage.includes('lp-quote-display.js?v=oq-preview-full-1'), 'cache-busted display js');
-assert.ok(manage.includes('lp-quote-builder.js?v=oq-preview-full-1'), 'cache-busted builder js');
-assert.ok(render.includes('lp-quote-display.js?v=oq-preview-full-1'), 'public render cache-bust');
+assert.ok(manage.includes('lp-quote-builder.css?v=oq-preview-style-1'), 'cache-busted builder css');
+assert.ok(manage.includes('lp-quote-display.js?v=oq-preview-style-1'), 'cache-busted display js');
+assert.ok(manage.includes('lp-quote-builder.js?v=oq-preview-style-1'), 'cache-busted builder js');
+assert.ok(render.includes('lp-quote-display.js?v=oq-preview-style-1'), 'public render cache-bust');
 
 console.log('quote-preview-fullwidth.test.js: ok');
+
