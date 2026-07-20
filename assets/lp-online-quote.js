@@ -285,13 +285,17 @@
     }
     if (key === 'travel') {
       var zones = this.shell.travelZones || [];
-      return wrap({
-        intro: '<p class="lp-oq-intro">Where is your event?</p>',
-        choices: zones.map(function(z) {
+      var Pt = global.LPQuotePlanning;
+      var travelChoices = (Pt && Pt.renderTravelZoneRows)
+        ? Pt.renderTravelZoneRows(this.state, this.shell, zones, { esc: esc, iconHtml: iconHtml })
+        : zones.map(function(z) {
           var sel = s.travelZoneId === z.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="travelZoneId" data-val="' + esc(z.id) + '">' +
             choiceHtml(z) + '</button>';
-        }).join('')
+        }).join('');
+      return wrap({
+        intro: '<p class="lp-oq-intro">Where is your event?</p>',
+        choices: travelChoices
       });
     }
     if (key === 'addons') {
@@ -386,6 +390,7 @@
     if (P && P.wireLabourPlanning) P.wireLabourPlanning(this.el, this.state, this.shell, function() { self.render(); }, products);
     if (P && P.wireStaffing) P.wireStaffing(this.el, this.state, this.shell, products, function() { self.render(); });
     if (P && P.wireCartRows) P.wireCartRows(this.el, this.state, this.shell, products, function() { self.reconcileState(); self.render(); });
+    if (P && P.wireTravelZoneRows) P.wireTravelZoneRows(this.el, this.state, function() { self.render(); });
     this.el.querySelectorAll('[data-addon]').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var id = btn.getAttribute('data-addon');

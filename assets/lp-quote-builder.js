@@ -107,7 +107,15 @@
       if (!Array.isArray(b.tiers)) b.tiers = [];
     });
     cfg.addons.forEach(function(a) { if (!a.id) a.id = slugify(a.label) || uid('addon'); });
-    cfg.travel.zones.forEach(function(z) { if (!z.id) z.id = slugify(z.label) || uid('zone'); });
+    cfg.travel.zones.forEach(function(z) {
+      if (!z.id) z.id = slugify(z.label) || uid('zone');
+      if (z.badge == null) z.badge = '';
+      if (z.subtitle == null) z.subtitle = '';
+      if (z.description == null) z.description = '';
+      if (!z.imageFit) z.imageFit = 'cover';
+      if (!z.imagePos) z.imagePos = 'center';
+      if (z.imageAxis !== 'height' && z.imageAxis !== 'width' && z.imageAxis !== 'frame') z.imageAxis = 'frame';
+    });
     ['products', 'beverages', 'addons'].forEach(function(key) {
       (cfg[key] || []).forEach(function(item) {
         if (!item.displayMode) {
@@ -122,6 +130,7 @@
       if (z.imageScale == null) z.imageScale = 100;
       if (!z.imageSize) z.imageSize = 'standard';
     });
+    if (!cfg.wizard.travelCards) cfg.wizard.travelCards = {};
     return cfg;
   }
 
@@ -269,8 +278,17 @@
     fill(ec, 'featureColor', accent);
     fill(ec, 'strokeColor', accent);
     if (ec.strokeWidth == null || ec.strokeWidth === '') ec.strokeWidth = 1;
+    var tc = Object.assign({}, w.travelCards || {});
+    fill(tc, 'cardBg', tc.cardBg || ec.cardBg || panel);
+    fill(tc, 'imageBg', tc.imageBg || ec.imageBg || '#524b4f');
+    fill(tc, 'titleColor', tc.titleColor || ec.titleColor || accent);
+    fill(tc, 'descColor', tc.descColor || ec.descColor || accent);
+    fill(tc, 'featureColor', tc.featureColor || ec.featureColor || accent);
+    fill(tc, 'strokeColor', tc.strokeColor || ec.strokeColor || accent);
+    if (tc.strokeWidth == null || tc.strokeWidth === '') tc.strokeWidth = ec.strokeWidth != null ? ec.strokeWidth : 1;
     w.ui = ui;
     w.equipmentCards = ec;
+    w.travelCards = tc;
     shell.wizard = w;
     return shell;
   };
@@ -290,9 +308,13 @@
   QuoteBuilder.prototype._previewNeedsEquipment = function(path) {
     if (!path) return false;
     if (path.indexOf('wizard.equipmentCards') === 0) return true;
+    if (path.indexOf('wizard.travelCards') === 0) return true;
     if (path.indexOf('wizard.ui') === 0) return true;
     if (path.indexOf('wizard.layout') === 0) return true;
     if (path.indexOf('products.') === 0) {
+      return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|imageAxis|displayMode|imageSize|imageScale|icon)$/.test(path);
+    }
+    if (path.indexOf('travel.zones.') === 0) {
       return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|imageAxis|displayMode|imageSize|imageScale|icon)$/.test(path);
     }
     return false;
@@ -564,13 +586,18 @@
         }).join('')
       });
     } else if (stepKey === 'travel') {
-      body = wrap({
-        intro: '<p class="lp-oq-intro">Where is your event?</p>',
-        choices: shell.travelZones.map(function(z) {
+      var Pt = global.LPQuotePlanning;
+      var travelZones = shell.travelZones || [];
+      var travelChoices = (Pt && Pt.renderTravelZoneRows)
+        ? Pt.renderTravelZoneRows(progress, shell, travelZones, { esc: esc, iconHtml: iconSvg })
+        : travelZones.map(function(z) {
           var sel = progress.travelZoneId === z.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="travelZoneId" data-val="' + esc(z.id) + '">' +
             self._choiceHtml(z) + '</button>';
-        }).join('')
+        }).join('');
+      body = wrap({
+        intro: '<p class="lp-oq-intro">Where is your event?</p>',
+        choices: travelChoices
       });
     } else if (stepKey === 'addons') {
       body = wrap({
@@ -675,7 +702,7 @@
         return '<option value="' + s.id + '"' + (size === s.id ? ' selected' : '') + '>' + esc(s.label) + '</option>';
       }).join('');
       var cardImgRow = '';
-      if (uploadKind === 'products') {
+      if (uploadKind === 'products' || uploadKind === 'travel') {
         var fit = item.imageFit || 'cover';
         var pos = item.imagePos || 'center';
         var axis = item.imageAxis === 'height' || item.imageAxis === 'width' ? item.imageAxis : 'frame';
@@ -708,8 +735,10 @@
         '</div>' +
         '<input type="hidden" data-oqb-path="' + esc(path) + '.imageUrl" value="' + esc(item.imageUrl || '') + '">' +
         '<input type="hidden" data-oqb-path="' + esc(path) + '.imagePid" value="' + esc(item.imagePid || '') + '">' +
-        (uploadKind === 'products'
-          ? '<p class="oqb-hint">Use size mode + zoom to fit each equipment image in the card. Zoom is per product.</p>'
+        (uploadKind === 'products' || uploadKind === 'travel'
+          ? '<p class="oqb-hint">' + (uploadKind === 'travel'
+            ? 'Upload a zone map (e.g. radius from Canberra). Customers can enlarge the image on the card to check if their venue is inside the zone.'
+            : 'Use size mode + zoom to fit each equipment image in the card. Zoom is per product.') + '</p>'
           : '<div class="oqb-img-size-row">' +
             this._field('Base size', '<select data-oqb-path="' + esc(path) + '.imageSize">' + sizeOpts + '</select>') +
             this._field('Scale', '<div class="oqb-scale-wrap"><input type="range" min="50" max="250" step="5" data-oqb-path="' + esc(path) + '.imageScale" value="' + esc(scale) + '">' +
@@ -934,6 +963,7 @@
     var w = this.config.wizard || {};
     var layout = w.layout || 'cards';
     var ec = w.equipmentCards || {};
+    var tc = w.travelCards || {};
     var accent = this._accent();
     var panel = (w.ui && w.ui.panelBg) || '#2e282a';
 
@@ -951,10 +981,21 @@
       + this._colorField('wizard.equipmentCards.strokeColor', 'Card stroke colour', ec.strokeColor, accent)
       + this._field('Stroke width (px)', '<input type="number" min="0" max="8" data-oqb-path="wizard.equipmentCards.strokeWidth" value="' + esc(ec.strokeWidth != null ? ec.strokeWidth : 1) + '">')
       + '</div></div>'
+      + '<div class="oqb-section"><h4>Travel zone card styling</h4>'
+      + '<p class="oqb-hint" style="margin-top:0">Same card look as equipment. Leave blank to inherit Equipment card styling. Map images include an enlarge control so customers can check their venue against the radius.</p>'
+      + '<div class="oqb-grid">'
+      + this._colorField('wizard.travelCards.cardBg', 'Card background', tc.cardBg, ec.cardBg || panel)
+      + this._colorField('wizard.travelCards.imageBg', 'Map image background', tc.imageBg, ec.imageBg || '#524b4f')
+      + this._colorField('wizard.travelCards.titleColor', 'Zone name colour', tc.titleColor || tc.cardText, ec.titleColor || accent)
+      + this._colorField('wizard.travelCards.descColor', 'Description colour', tc.descColor || tc.cardText, ec.descColor || accent)
+      + this._colorField('wizard.travelCards.featureColor', 'Badge &amp; accent colour', tc.featureColor, ec.featureColor || accent)
+      + this._colorField('wizard.travelCards.strokeColor', 'Card stroke colour', tc.strokeColor, ec.strokeColor || accent)
+      + this._field('Stroke width (px)', '<input type="number" min="0" max="8" data-oqb-path="wizard.travelCards.strokeWidth" value="' + esc(tc.strokeWidth != null ? tc.strokeWidth : (ec.strokeWidth != null ? ec.strokeWidth : 1)) + '">')
+      + '</div></div>'
       + this._renderWizardUiColors(w)
       + this._renderSectionStyle()
       + '<div class="oqb-section"><h4>Layout style</h4>'
-      + '<p class="oqb-hint" style="margin-top:0">Choice grid uses up to four columns for equipment. Choice cards and grid both show equipment side-by-side; compact list stacks them.</p>'
+      + '<p class="oqb-hint" style="margin-top:0">Equipment and travel zone cards sit in a horizontal row. Compact list stacks them.</p>'
       + '<div class="oqb-layouts">'
       + LAYOUTS.map(function(l) {
         return '<label class="oqb-layout' + (layout === l.id ? ' is-on' : '') + '">'
@@ -1106,11 +1147,14 @@
         + self._field('Zone name', '<input type="text" data-oqb-path="travel.zones.' + i + '.label" value="' + esc(z.label || '') + '">')
         + self._displayBlock('travel.zones.' + i, z, 'travel')
         + self._field('Travel fee', self._money('travel.zones.' + i + '.feeCents', z.feeCents))
+        + self._field('Badge (on map)', '<input type="text" data-oqb-path="travel.zones.' + i + '.badge" value="' + esc(z.badge || '') + '" placeholder="e.g. 20KM">')
+        + self._field('Sub-text (under title)', '<input type="text" data-oqb-path="travel.zones.' + i + '.subtitle" value="' + esc(z.subtitle || '') + '" placeholder="e.g. Inner Canberra radius">')
+        + self._field('Description', '<textarea rows="2" data-oqb-path="travel.zones.' + i + '.description" placeholder="Help customers pick the right zone…">' + esc(z.description || '') + '</textarea>')
         + '<input type="hidden" data-oqb-path="travel.zones.' + i + '.id" value="' + esc(z.id || '') + '">'
         + '</div>';
       return self._itemCard(z.label || 'New zone', i, 'travel.zones', fields, i > 0, i < list.length - 1);
     }).join('');
-    return '<p class="oqb-hint">Distance or region fees. Add the <strong>Travel zone</strong> step in Wizard flow so customers pick a zone.</p>'
+    return '<p class="oqb-hint">Distance or region fees shown as equipment-style cards. Upload a map image per zone — customers can enlarge it to check if their venue is inside the radius. Add the <strong>Travel zone</strong> step in Wizard flow so customers pick a zone. Card colours follow Equipment card styling (or Travel card styling if set).</p>'
       + '<div class="oqb-items">' + (cards || '<p class="oqb-empty">No travel zones — all areas free.</p>') + '</div>'
       + '<button type="button" class="btn ghost" data-oqb-add="travel">+ Add travel zone</button>';
   };
@@ -1567,7 +1611,20 @@
         if (kind === 'addons') self.config.addons.push({ id: uid('addon'), label: 'New add-on', fixedCents: 0, icon: 'plus-circle', displayMode: 'icon' });
         if (kind === 'travel') {
           if (!self.config.travel) self.config.travel = { zones: [] };
-          self.config.travel.zones.push({ id: uid('zone'), label: 'New zone', feeCents: 0, icon: 'map-pin', displayMode: 'icon' });
+          self.config.travel.zones.push({
+            id: uid('zone'),
+            label: 'New zone',
+            feeCents: 0,
+            icon: 'map-pin',
+            displayMode: 'image',
+            badge: '',
+            subtitle: '',
+            description: '',
+            imageFit: 'cover',
+            imagePos: 'center',
+            imageAxis: 'frame',
+            imageScale: 100
+          });
           var wsteps = (self.config.wizard.steps || []).slice();
           if (wsteps.indexOf('travel') < 0) {
             if (wsteps.indexOf('contact') >= 0) wsteps.splice(wsteps.indexOf('contact'), 0, 'travel');
@@ -1806,6 +1863,12 @@
     }
     if (P && P.wireCartRows) {
       P.wireCartRows(root, this.previewProgress, shell, products, function() {
+        self._reconcilePreviewSelections();
+        self._refreshPreview();
+      });
+    }
+    if (P && P.wireTravelZoneRows) {
+      P.wireTravelZoneRows(root, this.previewProgress, function() {
         self._reconcilePreviewSelections();
         self._refreshPreview();
       });

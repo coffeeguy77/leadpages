@@ -442,6 +442,60 @@
     return html;
   }
 
+  function renderTravelZoneCard(z, selectedId, helpers) {
+    var isSel = selectedId && z && z.id === selectedId;
+    var D = global.LPQuoteDisplay;
+    var h = helpers || { esc: esc };
+    var inner = (D && D.equipmentCardHtml)
+      ? D.equipmentCardHtml(z, h, { zoomable: true, placeholderLabel: 'Travel zone' })
+      : '<div class="fp-body"><div class="fp-title-row"><h3 class="fp-title">' + esc(z.label) + '</h3></div></div>';
+    return '<div class="fp-card lp-oq-eq-card lp-oq-tz-card' + (isSel ? ' is-selected' : '') + '" role="button" tabindex="0"' +
+      ' data-travel-pick="' + esc(z.id) + '" data-val="' + esc(z.id) + '">' +
+      inner + '</div>';
+  }
+
+  function renderTravelZoneRows(state, shell, zones, helpers) {
+    if (!zones || !zones.length) return '<p class="lp-oq-muted">No travel zones configured.</p>';
+    var D = global.LPQuoteDisplay;
+    var cardVars = (D && D.equipmentCardVars)
+      ? (D.equipmentCardVars(shell, 'travelCards') || D.equipmentCardVars(shell))
+      : '';
+    var selected = (state && state.travelZoneId) || '';
+    var html = '<div class="lp-oq-carts lp-oq-travel-cards" data-lp-oq-travel' + (cardVars ? ' style="' + cardVars + '"' : '') + '>' +
+      '<div class="lp-oq-choices fp-grid lp-oq-fp-grid">';
+    zones.forEach(function(z) {
+      html += renderTravelZoneCard(z, selected, helpers);
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  function wireTravelZoneRows(root, state, rerender) {
+    if (!root) return;
+    var D = global.LPQuoteDisplay;
+    if (D && D.wireImageZoom) D.wireImageZoom(root);
+    if (root.__lpOqTravelWired) return;
+    root.__lpOqTravelWired = true;
+    root.addEventListener('click', function(e) {
+      if (e.target.closest('[data-oq-zoom-src]')) return;
+      var card = e.target.closest('[data-travel-pick]');
+      if (!card || !root.contains(card)) return;
+      e.preventDefault();
+      var id = card.getAttribute('data-travel-pick') || card.getAttribute('data-val');
+      if (!id) return;
+      state.travelZoneId = id;
+      if (typeof rerender === 'function') rerender();
+    });
+    root.addEventListener('keydown', function(e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      if (e.target.closest('[data-oq-zoom-src]')) return;
+      var card = e.target.closest('[data-travel-pick]');
+      if (!card || !root.contains(card)) return;
+      e.preventDefault();
+      card.click();
+    });
+  }
+
   function packageQtyLabel(shell, beverageId) {
     var bev = (shell.beverages || []).find(function(b) { return b.id === beverageId; });
     if (bev && (bev.pricingMode === 'tiered' || (bev.tiers && bev.tiers.length))) {
@@ -560,6 +614,8 @@
   function wireCartRows(root, state, shell, products, rerender) {
     state._shell = shell;
     ensureCarts(state, products);
+    var D = global.LPQuoteDisplay;
+    if (D && D.wireImageZoom) D.wireImageZoom(root);
 
     if (!root.__lpOqCartWired) {
       root.__lpOqCartWired = true;
@@ -589,6 +645,7 @@
         if (e.target.closest('[data-qty-wrap]')) return;
         if (e.target.closest('[data-cart-add]')) return;
         if (e.target.closest('[data-cart-remove]')) return;
+        if (e.target.closest('[data-oq-zoom-src]')) return;
         var card = e.target.closest('[data-equipment-pick]');
         if (!card || !root.contains(card)) return;
         e.preventDefault();
@@ -703,6 +760,8 @@
     wireLabourPlanning: wireLabourPlanning,
     wireStaffing: wireStaffing,
     wireCartRows: wireCartRows,
+    renderTravelZoneRows: renderTravelZoneRows,
+    wireTravelZoneRows: wireTravelZoneRows,
     progressPayload: progressPayload,
     packageQtyLabel: packageQtyLabel
   };
