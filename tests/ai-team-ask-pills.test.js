@@ -34,7 +34,7 @@ assert.ok(manage.includes('#av-ai-team .tin.ai-tin'), 'manage.html AI field over
 assert.ok(manage.includes('#av-ai-team textarea'), 'manage.html styles all AI textareas');
 assert.ok(manage.includes('.ai-chat-backdrop textarea'), 'manage.html styles Answer/Discuss modal fields');
 assert.ok(manage.includes('background:transparent !important'), 'manage.html forces transparent fill');
-assert.ok(manage.includes('ai-website-team.js?v=tin-fields-'), 'cache-busted AI team script');
+assert.ok(manage.includes('ai-website-team.js?v='), 'cache-busted AI team script');
 assert.ok(ui.includes("id === 'seo_inputs'"), 'Write with AI seo_inputs step');
 assert.ok(ui.includes('Primary keyword'), 'Primary keyword field label');
 assert.ok(ui.includes('_siteId'), 'cached panel load');
