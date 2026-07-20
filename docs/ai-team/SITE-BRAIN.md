@@ -15,12 +15,15 @@ Apply `db/site_brain.sql` before using Site Brain in preview/production.
 
 1. First open syncs from `sites.config` (`api/site-brain/sync`).  
 2. Interpretive fields are `needs-confirmation` / inferred.  
-3. User completes **Site Knowledge review** (not raw JSON).  
+3. User completes **Site Knowledge** (form and/or Atlas guided chat) — not raw JSON.  
 4. Confirmed fields become `verified` via `api/site-brain/bootstrap-review`.
+5. Site Knowledge stays editable; Atlas can interview missing fields in plain English (with “What does this mean?” help and examples).
 
 ## Review fields
 
 Business name, industry, main services, target audience, primary goal, service areas, preferred CTA, brand tone, content restrictions.
+
+Field guide (labels, explanations, examples): `lib/ai-team/site-knowledge-fields.js`.
 
 ## APIs
 

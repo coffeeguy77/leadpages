@@ -128,4 +128,44 @@ describe('AI Team Phase 1', () => {
     assert.equal(canAccessThemeStudio({ isPartner: true }).allowed, false);
     assert.equal(canAccessThemeStudio({ isClient: true }).allowed, false);
   });
+
+  it('Site Knowledge field guide covers CTA with plain-language explain', () => {
+    const cta = aiTeam.getSiteKnowledgeField('preferredCta');
+    assert.ok(cta);
+    assert.match(cta.explain, /call to action/i);
+    assert.ok(cta.examples.length >= 1);
+    assert.equal(aiTeam.SITE_KNOWLEDGE_FIELDS.length >= 8, true);
+  });
+
+  it('Atlas knowledge gaps point at Site Knowledge chat field keys', async () => {
+    await siteBrain.syncSiteBrainFromSite({
+      id: 'atlas-cta',
+      business_name: 'Bean Culture',
+      config: {
+        name: 'Bean Culture',
+        services: [{ title: 'Coffee' }],
+        sections: { hero: { on: true, cta: 'Contact us' }, quote: { on: true } },
+        sectionOrder: ['hero', 'quote']
+      }
+    });
+    const result = await aiTeam.runAtlasReview({
+      siteId: 'atlas-cta',
+      requestText: 'Help me convert more visitors',
+      editorContext: { editorTab: 'ai-team', userRole: 'client' },
+      actorUserId: 'u1',
+      actorRole: 'client'
+    });
+    assert.equal(result.ok, true);
+    const knowledge = result.recommendations.filter((r) => {
+      const change = r.proposedChange || r.proposed_change || {};
+      return change.type === 'site_brain_update' && change.fieldKey;
+    });
+    assert.ok(knowledge.length >= 1);
+    assert.ok(
+      knowledge.some((r) => {
+        const change = r.proposedChange || r.proposed_change || {};
+        return change.fieldKey === 'preferredCta' || change.fieldKey === 'primaryGoal';
+      })
+    );
+  });
 });
