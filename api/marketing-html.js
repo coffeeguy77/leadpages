@@ -1,7 +1,7 @@
 // api/marketing-html.js — serve marketing .html with platform SEO head tags
 // Rewrites on the marketing host inject Google verification, canonical, and og:url.
-// Reads static HTML from disk or fetches the deployed static asset (Vercel serverless
-// cannot see repo-root .html by default).
+// Marketing HTML must be bundled via vercel.json includeFiles — do not fetch
+// /home.html from the public URL (that path redirects to / and loops).
 
 const fs = require('fs');
 const path = require('path');
@@ -13,19 +13,20 @@ function safeHtmlFile(file) {
   return base;
 }
 
-async function loadHtmlFile(file, req) {
-  const filePath = path.join(process.cwd(), file);
-  if (fs.existsSync(filePath)) {
-    return fs.readFileSync(filePath, 'utf8');
+function readBundledHtml(file) {
+  const candidates = [
+    path.join(process.cwd(), file),
+    path.join(__dirname, '..', file),
+    path.join(__dirname, file)
+  ];
+  for (let i = 0; i < candidates.length; i++) {
+    try {
+      if (fs.existsSync(candidates[i])) {
+        return fs.readFileSync(candidates[i], 'utf8');
+      }
+    } catch (_e) {}
   }
-
-  const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
-  if (!host) return null;
-  const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
-  const staticUrl = proto + '://' + host + '/' + file;
-  const res = await fetch(staticUrl, { headers: { accept: 'text/html' } });
-  if (!res.ok) return null;
-  return res.text();
+  return null;
 }
 
 module.exports = async (req, res) => {
@@ -38,11 +39,13 @@ module.exports = async (req, res) => {
       return res.end('bad file');
     }
 
-    let html = await loadHtmlFile(file, req);
+    let html = readBundledHtml(file);
     if (!html) {
-      res.statusCode = 302;
-      res.setHeader('location', '/' + file);
-      return res.end();
+      console.error('marketing-html missing bundled file:', file);
+      res.statusCode = 503;
+      res.setHeader('content-type', 'text/plain; charset=utf-8');
+      res.setHeader('cache-control', 'no-store');
+      return res.end('Marketing page temporarily unavailable');
     }
 
     try {

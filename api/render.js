@@ -7,8 +7,9 @@
 //   • If a ?slug is present, look the site up by slug (unchanged behaviour).
 //   • Otherwise this is a custom-domain hit at "/"; look the site up by its
 //     `custom_domain` (the request Host header, lower-cased, www. stripped).
-//   • The primary marketing host never serves a tenant page from "/", so it's
-//     bounced to the static homepage — the homepage is never touched by this fn.
+//   • The primary marketing host never serves a tenant page from "/"; vercel
+//     rewrites / → /api/marketing-html. If render still receives "/", it serves
+//     bundled home.html (never redirects to /home.html — that loops with /).
 //
 // Routing is by the site's `template`:
 //   • 'broker-app'   → the full calculator mini-site.
@@ -17,6 +18,8 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 const { effectiveDemoSalePrice } = require('../lib/partner-demo-pricing');
 const { buildPartnerLandingHtml, resolveLandingTheme, normalizeTemplateKey } = require('../lib/partner-templates');
 const { extractLogoValue } = require('../lib/partner-website/logo');
@@ -822,11 +825,29 @@ module.exports = async (req, res) => {
     if (_sc) return renderShowcase(req, res, _sc.slug, _sc.base);
 
     // A "/" hit on the primary host (or with no host) is the marketing homepage,
-    // not a tenant page. Bounce to the static index so we never shadow it.
+    // not a tenant page. Prefer vercel rewrite → /api/marketing-html. If we still
+    // land here, serve home.html from disk — never redirect to /home.html (that
+    // permanently redirects back to / and takes the site down).
     if (!slug && (!host || PRIMARY_HOSTS.includes(host))) {
-      res.statusCode = 302;
-      res.setHeader('location', '/home.html');
-      return res.end();
+      const candidates = [
+        path.join(process.cwd(), 'home.html'),
+        path.join(__dirname, '..', 'home.html')
+      ];
+      for (let i = 0; i < candidates.length; i++) {
+        try {
+          if (fs.existsSync(candidates[i])) {
+            const html = fs.readFileSync(candidates[i], 'utf8');
+            res.statusCode = 200;
+            res.setHeader('content-type', 'text/html; charset=utf-8');
+            res.setHeader('cache-control', 'public, s-maxage=60, stale-while-revalidate=300');
+            return res.end(html);
+          }
+        } catch (_e) {}
+      }
+      res.statusCode = 503;
+      res.setHeader('content-type', 'text/plain; charset=utf-8');
+      res.setHeader('cache-control', 'no-store');
+      return res.end('Homepage temporarily unavailable');
     }
 
     // Resolve the tenant:
