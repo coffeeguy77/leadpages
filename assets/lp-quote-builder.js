@@ -14,7 +14,7 @@
   ];
 
   var LAYOUTS = [
-    { id: 'cards', label: 'Choice cards', hint: 'Large tappable cards — best for 2–6 options' },
+    { id: 'cards', label: 'Choice cards', hint: 'Large tappable cards in a row — best for 2–6 options' },
     { id: 'grid', label: 'Choice grid', hint: 'Multi-column cards with images — great for equipment' },
     { id: 'list', label: 'Compact list', hint: 'Stacked rows — good for many options' },
     { id: 'split', label: 'Split panel', hint: 'Label left, choices right — desktop-friendly' }
@@ -202,7 +202,8 @@
         return '<button type="button" class="oqb-tab' + (self.tab === t[0] ? ' is-on' : '') + '" data-oqb-tab="' + t[0] + '">' + t[1] + '</button>';
       }).join('') + '</div>';
       html += '<div class="oqb-body">' + this._renderTab() + '</div>';
-      if (this.sectionRoot) this.sectionRoot.innerHTML = this._renderSectionStyle();
+      // Page section / colours / container style live under Wizard colours (see _renderWizard)
+      if (this.sectionRoot) this.sectionRoot.innerHTML = '';
     }
     html += '</div>';
     this.root.innerHTML = html;
@@ -364,7 +365,7 @@
         return '<option value="' + o[0] + '"' + ((cur || 'none') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
       }).join('');
     }
-    return '<div class="oqb oqb-section-style">'
+    return '<div class="oqb-section-style">'
       + '<div class="oqb-section"><h4>Page section (above the wizard)</h4>'
       + '<p class="oqb-hint" style="margin-top:0">Eyebrow, heading and intro shown above the live preview — same copy as the published Online Quote band.</p>'
       + '<div class="oqb-grid">'
@@ -935,8 +936,9 @@
       + this._field('Stroke width (px)', '<input type="number" min="0" max="8" data-oqb-path="wizard.equipmentCards.strokeWidth" value="' + esc(ec.strokeWidth != null ? ec.strokeWidth : 1) + '">')
       + '</div></div>'
       + this._renderWizardUiColors(w)
+      + this._renderSectionStyle()
       + '<div class="oqb-section"><h4>Layout style</h4>'
-      + '<p class="oqb-hint" style="margin-top:0">Choice grid shows equipment in a horizontal row (up to 4 across) — use that for the Bean Culture-style preview.</p>'
+      + '<p class="oqb-hint" style="margin-top:0">Choice grid uses up to four columns for equipment. Choice cards and grid both show equipment side-by-side; compact list stacks them.</p>'
       + '<div class="oqb-layouts">'
       + LAYOUTS.map(function(l) {
         return '<label class="oqb-layout' + (layout === l.id ? ' is-on' : '') + '">'
@@ -1327,97 +1329,97 @@
       });
     });
 
-    // Page section (eyebrow / heading / colours / container style)
-    if (this.sectionRoot) {
-      qsAll('[data-oq-sec-text]').forEach(function(el) {
-        var ev = el.tagName === 'TEXTAREA' ? 'input' : 'input';
-        el.addEventListener(ev, function() {
-          var key = el.getAttribute('data-oq-sec-text');
-          self.section[key] = el.value;
-          self._notifySection();
-          self._refreshPreview();
-        });
-      });
-      function setSecColor(key, v) {
-        v = self._normHex(v);
-        self.section[key] = v;
-        qsAll('[data-oq-sec-hex="' + key + '"]').forEach(function(hx) { hx.value = v || ''; });
-        if (v) qsAll('[data-oq-sec-clr="' + key + '"]').forEach(function(sw) { sw.value = v; });
+    // Page section (eyebrow / heading / colours / container style) — lives under Wizard tab
+    qsAll('[data-oq-sec-text]').forEach(function(el) {
+      var ev = el.tagName === 'TEXTAREA' ? 'input' : 'input';
+      el.addEventListener(ev, function() {
+        var key = el.getAttribute('data-oq-sec-text');
+        self.section[key] = el.value;
         self._notifySection();
         self._refreshPreview();
-      }
-      qsAll('[data-oq-sec-clr]').forEach(function(sw) {
-        sw.addEventListener('input', function() {
-          setSecColor(sw.getAttribute('data-oq-sec-clr'), sw.value);
-        });
       });
-      qsAll('[data-oq-sec-hex]').forEach(function(hx) {
-        hx.addEventListener('input', function() {
-          var key = hx.getAttribute('data-oq-sec-hex');
-          var raw = hx.value.trim();
-          if (raw === '') { setSecColor(key, ''); return; }
-          var v = self._normHex(raw);
-          if (v) setSecColor(key, v);
-        });
-      });
-      qsAll('[data-oq-sec-def]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          setSecColor(btn.getAttribute('data-oq-sec-def'), '');
-        });
-      });
-      function ensureApp() {
-        if (!self.section.appearance) self.section.appearance = {};
-        return self.section.appearance;
-      }
-      qsAll('[data-oq-sec-app]').forEach(function(el) {
-        var key = el.getAttribute('data-oq-sec-app');
-        var ev = el.type === 'checkbox' || el.type === 'range' || el.tagName === 'SELECT' ? 'change' : 'input';
-        if (el.type === 'range') ev = 'input';
-        el.addEventListener(ev, function() {
-          var app = ensureApp();
-          if (key === 'custom') {
-            app.custom = !!el.checked;
-            var fields = self.sectionRoot.querySelector('.oqb-sec-app-fields');
-            if (fields) fields.hidden = !el.checked;
-          } else if (key === 'strokeWidth') {
-            app.strokeWidth = +el.value;
-            var lab = self.sectionRoot.querySelector('[data-oq-sec-app-sw-label]');
-            if (lab) lab.textContent = el.value + 'px';
-          } else {
-            app[key] = el.value;
-          }
-          self._notifySection();
-          self._refreshPreview();
-        });
-      });
-      function setAppColor(key, v) {
-        v = self._normHex(v);
-        ensureApp()[key] = v;
-        qsAll('[data-oq-sec-app-hex="' + key + '"]').forEach(function(hx) { hx.value = v || ''; });
-        if (v) qsAll('[data-oq-sec-app-clr="' + key + '"]').forEach(function(sw) { sw.value = v; });
-        self._notifySection();
-        self._refreshPreview();
-      }
-      qsAll('[data-oq-sec-app-clr]').forEach(function(sw) {
-        sw.addEventListener('input', function() {
-          setAppColor(sw.getAttribute('data-oq-sec-app-clr'), sw.value);
-        });
-      });
-      qsAll('[data-oq-sec-app-hex]').forEach(function(hx) {
-        hx.addEventListener('input', function() {
-          var key = hx.getAttribute('data-oq-sec-app-hex');
-          var raw = hx.value.trim();
-          if (raw === '') { setAppColor(key, ''); return; }
-          var v = self._normHex(raw);
-          if (v) setAppColor(key, v);
-        });
-      });
-      qsAll('[data-oq-sec-app-def]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          setAppColor(btn.getAttribute('data-oq-sec-app-def'), '');
-        });
-      });
+    });
+    function setSecColor(key, v) {
+      v = self._normHex(v);
+      self.section[key] = v;
+      qsAll('[data-oq-sec-hex="' + key + '"]').forEach(function(hx) { hx.value = v || ''; });
+      if (v) qsAll('[data-oq-sec-clr="' + key + '"]').forEach(function(sw) { sw.value = v; });
+      self._notifySection();
+      self._refreshPreview();
     }
+    qsAll('[data-oq-sec-clr]').forEach(function(sw) {
+      sw.addEventListener('input', function() {
+        setSecColor(sw.getAttribute('data-oq-sec-clr'), sw.value);
+      });
+    });
+    qsAll('[data-oq-sec-hex]').forEach(function(hx) {
+      hx.addEventListener('input', function() {
+        var key = hx.getAttribute('data-oq-sec-hex');
+        var raw = hx.value.trim();
+        if (raw === '') { setSecColor(key, ''); return; }
+        var v = self._normHex(raw);
+        if (v) setSecColor(key, v);
+      });
+    });
+    qsAll('[data-oq-sec-def]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        setSecColor(btn.getAttribute('data-oq-sec-def'), '');
+      });
+    });
+    function ensureApp() {
+      if (!self.section.appearance) self.section.appearance = {};
+      return self.section.appearance;
+    }
+    qsAll('[data-oq-sec-app]').forEach(function(el) {
+      var key = el.getAttribute('data-oq-sec-app');
+      var ev = el.type === 'checkbox' || el.type === 'range' || el.tagName === 'SELECT' ? 'change' : 'input';
+      if (el.type === 'range') ev = 'input';
+      el.addEventListener(ev, function() {
+        var app = ensureApp();
+        if (key === 'custom') {
+          app.custom = !!el.checked;
+          var wrap = el.closest('.oqb-sec-appearance') || el.closest('.oqb-section-style');
+          var fields = wrap && wrap.querySelector('.oqb-sec-app-fields');
+          if (fields) fields.hidden = !el.checked;
+        } else if (key === 'strokeWidth') {
+          app.strokeWidth = +el.value;
+          var host = el.closest('.oqb-field') || el.parentElement;
+          var lab = host && host.querySelector('[data-oq-sec-app-sw-label]');
+          if (lab) lab.textContent = el.value + 'px';
+        } else {
+          app[key] = el.value;
+        }
+        self._notifySection();
+        self._refreshPreview();
+      });
+    });
+    function setAppColor(key, v) {
+      v = self._normHex(v);
+      ensureApp()[key] = v;
+      qsAll('[data-oq-sec-app-hex="' + key + '"]').forEach(function(hx) { hx.value = v || ''; });
+      if (v) qsAll('[data-oq-sec-app-clr="' + key + '"]').forEach(function(sw) { sw.value = v; });
+      self._notifySection();
+      self._refreshPreview();
+    }
+    qsAll('[data-oq-sec-app-clr]').forEach(function(sw) {
+      sw.addEventListener('input', function() {
+        setAppColor(sw.getAttribute('data-oq-sec-app-clr'), sw.value);
+      });
+    });
+    qsAll('[data-oq-sec-app-hex]').forEach(function(hx) {
+      hx.addEventListener('input', function() {
+        var key = hx.getAttribute('data-oq-sec-app-hex');
+        var raw = hx.value.trim();
+        if (raw === '') { setAppColor(key, ''); return; }
+        var v = self._normHex(raw);
+        if (v) setAppColor(key, v);
+      });
+    });
+    qsAll('[data-oq-sec-app-def]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        setAppColor(btn.getAttribute('data-oq-sec-app-def'), '');
+      });
+    });
 
     this.root.querySelectorAll('[data-oqb-step-cond]').forEach(function(sel) {
       sel.addEventListener('change', function() {
