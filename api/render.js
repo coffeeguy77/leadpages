@@ -663,16 +663,22 @@ function injectOnlineQuote(html, slug, cfg) {
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
   const QUOTE_SCRIPTS = [
-    '/assets/lp-quote-wizard-logic.js',
-    '/assets/lp-quote-display.js',
-    '/assets/lp-quote-planning.js',
-    '/assets/lp-online-quote.js'
+    '/assets/lp-quote-wizard-logic.js?v=eq-qty-1',
+    '/assets/lp-quote-display.js?v=eq-qty-1',
+    '/assets/lp-quote-planning.js?v=eq-qty-1',
+    '/assets/lp-online-quote.js?v=eq-qty-1'
   ];
 
   function ensureQuoteScripts(doc) {
     let out = doc;
     QUOTE_SCRIPTS.forEach(function(src) {
-      if (!out.includes(src)) {
+      var base = src.split('?')[0];
+      if (out.indexOf(base) >= 0) {
+        out = out.replace(
+          new RegExp(base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:\\?[^"\']*)?', 'g'),
+          src
+        );
+      } else {
         out = out.replace('</body>', '<script src="' + src + '" defer></script>\n</body>');
       }
     });
@@ -697,10 +703,10 @@ function injectOnlineQuote(html, slug, cfg) {
     (intro ? '<p class="intro">' + intro + '</p>' : '') +
     '<div id="lp-online-quote" data-slug="' + esc(slug) + '"></div>' +
     '</div></section>' +
-    '<script src="/assets/lp-quote-wizard-logic.js" defer></script>' +
-    '<script src="/assets/lp-quote-display.js" defer></script>' +
-    '<script src="/assets/lp-quote-planning.js" defer></script>' +
-    '<script src="/assets/lp-online-quote.js" defer></script>';
+    '<script src="/assets/lp-quote-wizard-logic.js?v=eq-qty-1" defer></script>' +
+    '<script src="/assets/lp-quote-display.js?v=eq-qty-1" defer></script>' +
+    '<script src="/assets/lp-quote-planning.js?v=eq-qty-1" defer></script>' +
+    '<script src="/assets/lp-online-quote.js?v=eq-qty-1" defer></script>';
   if (html.includes('<section data-sec="quote"')) {
     return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');
   }

@@ -97,6 +97,8 @@
       }
       if (!p.imageFit) p.imageFit = 'cover';
       if (!p.imagePos) p.imagePos = 'center';
+      if (p.imageAxis !== 'height' && p.imageAxis !== 'width' && p.imageAxis !== 'frame') p.imageAxis = 'frame';
+      if (p.imageScale == null) p.imageScale = 100;
     });
     cfg.beverages.forEach(function(b) {
       if (!b.id) b.id = slugify(b.label) || uid('bev');
@@ -223,7 +225,7 @@
     if (path.indexOf('wizard.equipmentCards') === 0) return true;
     if (path.indexOf('wizard.layout') === 0) return true;
     if (path.indexOf('products.') === 0) {
-      return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|displayMode|imageSize|imageScale|icon)$/.test(path);
+      return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|imageAxis|displayMode|imageSize|imageScale|icon)$/.test(path);
     }
     return false;
   };
@@ -460,15 +462,22 @@
       if (uploadKind === 'products') {
         var fit = item.imageFit || 'cover';
         var pos = item.imagePos || 'center';
+        var axis = item.imageAxis === 'height' || item.imageAxis === 'width' ? item.imageAxis : 'frame';
         var fitOpts = [['cover', 'Cover (crop to fill)'], ['contain', 'Contain (fit inside)'], ['fill', 'Stretch (fill frame)']].map(function(pair) {
           return '<option value="' + pair[0] + '"' + (fit === pair[0] ? ' selected' : '') + '>' + esc(pair[1]) + '</option>';
         }).join('');
         var posOpts = [['center', 'Centre'], ['left', 'Left'], ['right', 'Right'], ['top', 'Top'], ['bottom', 'Bottom']].map(function(pair) {
           return '<option value="' + pair[0] + '"' + (pos === pair[0] ? ' selected' : '') + '>' + esc(pair[1]) + '</option>';
         }).join('');
+        var axisOpts = [['frame', 'Fill frame (use fit below)'], ['height', 'Lock to height'], ['width', 'Lock to width']].map(function(pair) {
+          return '<option value="' + pair[0] + '"' + (axis === pair[0] ? ' selected' : '') + '>' + esc(pair[1]) + '</option>';
+        }).join('');
         cardImgRow = '<div class="oqb-img-card-row oqb-grid">' +
-          self._field('Card image fit', '<select data-oqb-path="' + esc(path) + '.imageFit">' + fitOpts + '</select>') +
+          self._field('Image size mode', '<select data-oqb-path="' + esc(path) + '.imageAxis">' + axisOpts + '</select>') +
+          self._field('Card image fit', '<select data-oqb-path="' + esc(path) + '.imageFit"' + (axis === 'frame' ? '' : ' disabled') + '>' + fitOpts + '</select>') +
           self._field('Card image position', '<select data-oqb-path="' + esc(path) + '.imagePos">' + posOpts + '</select>') +
+          self._field('Image zoom', '<div class="oqb-scale-wrap"><input type="range" min="50" max="250" step="5" data-oqb-path="' + esc(path) + '.imageScale" value="' + esc(scale) + '">' +
+          '<span class="oqb-scale-val" data-oqb-scale-for="' + esc(path) + '">' + esc(scale) + '%</span></div>') +
           '</div>';
       }
       imgPanel = '<div class="oqb-display-panel oqb-img-panel" data-oqb-img-panel="' + esc(path) + '">' +
@@ -483,13 +492,15 @@
         '</div>' +
         '<input type="hidden" data-oqb-path="' + esc(path) + '.imageUrl" value="' + esc(item.imageUrl || '') + '">' +
         '<input type="hidden" data-oqb-path="' + esc(path) + '.imagePid" value="' + esc(item.imagePid || '') + '">' +
-        '<div class="oqb-img-size-row">' +
-        this._field('Base size', '<select data-oqb-path="' + esc(path) + '.imageSize">' + sizeOpts + '</select>') +
-        this._field('Scale', '<div class="oqb-scale-wrap"><input type="range" min="50" max="250" step="5" data-oqb-path="' + esc(path) + '.imageScale" value="' + esc(scale) + '">' +
-        '<span class="oqb-scale-val" data-oqb-scale-for="' + esc(path) + '">' + esc(scale) + '%</span></div>') +
-        '</div>' +
+        (uploadKind === 'products'
+          ? '<p class="oqb-hint">Use size mode + zoom to fit each equipment image in the card. Zoom is per product.</p>'
+          : '<div class="oqb-img-size-row">' +
+            this._field('Base size', '<select data-oqb-path="' + esc(path) + '.imageSize">' + sizeOpts + '</select>') +
+            this._field('Scale', '<div class="oqb-scale-wrap"><input type="range" min="50" max="250" step="5" data-oqb-path="' + esc(path) + '.imageScale" value="' + esc(scale) + '">' +
+            '<span class="oqb-scale-val" data-oqb-scale-for="' + esc(path) + '">' + esc(scale) + '%</span></div>') +
+            '</div>' +
+            '<p class="oqb-hint">Displayed at ~' + px + 'px tall. Stored in your site Cloudinary folder.</p>') +
         cardImgRow +
-        '<p class="oqb-hint">Displayed at ~' + px + 'px tall. Stored in your site Cloudinary folder.</p>' +
         '</div>';
     }
 
@@ -672,7 +683,11 @@
       + '<p class="oqb-hint" style="margin-top:0">Applies to all equipment cards on the customer wizard (grid, list, and card layouts).</p>'
       + '<div class="oqb-grid">'
       + this._field('Card background (behind text)', '<input type="color" data-oqb-path="wizard.equipmentCards.cardBg" value="' + esc(ec.cardBg || '#ffffff') + '">')
-      + this._field('Card text colour', '<input type="color" data-oqb-path="wizard.equipmentCards.cardText" value="' + esc(ec.cardText || '#1a2230') + '">')
+      + this._field('Equipment name colour', '<input type="color" data-oqb-path="wizard.equipmentCards.titleColor" value="' + esc(ec.titleColor || ec.cardText || '#1a2230') + '">')
+      + this._field('Description colour', '<input type="color" data-oqb-path="wizard.equipmentCards.descColor" value="' + esc(ec.descColor || ec.cardText || '#1a2230') + '">')
+      + this._field('Quantity number colour', '<input type="color" data-oqb-path="wizard.equipmentCards.qtyColor" value="' + esc(ec.qtyColor || ec.featureColor || '#1f7a63') + '">')
+      + this._field('Quantity stroke colour', '<input type="color" data-oqb-path="wizard.equipmentCards.qtyStroke" value="' + esc(ec.qtyStroke || ec.featureColor || '#1f7a63') + '">')
+      + this._field('Quantity fill colour', '<input type="color" data-oqb-path="wizard.equipmentCards.qtyBg" value="' + esc(ec.qtyBg || '#ffffff') + '">')
       + this._field('Feature colour (badge &amp; accent)', '<input type="color" data-oqb-path="wizard.equipmentCards.featureColor" value="' + esc(ec.featureColor || '#1f7a63') + '">')
       + this._field('Card stroke colour', '<input type="color" data-oqb-path="wizard.equipmentCards.strokeColor" value="' + esc(ec.strokeColor || '#d8dde6') + '">')
       + this._field('Stroke width (px)', '<input type="number" min="0" max="8" data-oqb-path="wizard.equipmentCards.strokeWidth" value="' + esc(ec.strokeWidth != null ? ec.strokeWidth : 1) + '">')
@@ -864,7 +879,7 @@
     } else if (last === 'imageScale') {
       var sc = parseInt(value, 10);
       obj[last] = isNaN(sc) ? 100 : Math.min(250, Math.max(50, sc));
-    } else if (last === 'displayMode' || last === 'imageSize' || last === 'imageUrl' || last === 'imagePid' || last === 'imageFit' || last === 'imagePos') {
+    } else if (last === 'displayMode' || last === 'imageSize' || last === 'imageUrl' || last === 'imagePid' || last === 'imageFit' || last === 'imagePos' || last === 'imageAxis') {
       obj[last] = value;
     } else {
       obj[last] = value;
