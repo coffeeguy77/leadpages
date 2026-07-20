@@ -174,7 +174,7 @@ describe('AI Team Phase 1', () => {
     );
   });
 
-  it('Atlas landing-page asks cite the user request as the reason', () => {
+  it('Atlas landing-page asks return one focused card with prompt Summary + steps', () => {
     const recs = aiTeam.buildDeterministicRecommendations(
       {
         goals: {
@@ -185,18 +185,22 @@ describe('AI Team Phase 1', () => {
         marketplace: { activeSections: { value: ['hero', 'faq', 'quote'] } },
         editorContext: { editorTab: 'ai-team', selectedSection: 'hero', userRole: 'client' }
       },
-      'I need a landing page on wedding coffee events'
+      'landing page: cold coffee options'
     );
-    const landing = recs.find((r) => {
-      const change = r.proposedChange || r.proposed_change || {};
-      return change.outcome === 'plan_seo_landing';
-    });
-    assert.ok(landing, 'landing recommendation present');
-    assert.match(String(landing.problem || ''), /focused page|landing|how-we-will-do-it/i);
-    assert.match(String(landing.reason || ''), /wedding coffee events/i);
-    assert.match(String(landing.title || ''), /landing page/i);
-    const outline =
-      (landing.proposedChange || landing.proposed_change || {}).planOutline || [];
-    assert.ok(outline.length >= 4, 'landing rec includes how-we-will-do-it checklist');
+    assert.equal(recs.length, 1, 'focused landing ask returns a single recommendation');
+    const landing = recs[0];
+    const change = landing.proposedChange || landing.proposed_change || {};
+    assert.equal(change.outcome, 'plan_seo_landing');
+    assert.equal(change.promptSummary, 'landing page: cold coffee options');
+    assert.match(String(landing.problem || ''), /^landing page:\s*cold coffee options$/i);
+    assert.ok(!/Strengthen your primary call to action/i.test(String(landing.title || '')));
+    assert.match(String(landing.title || ''), /cold coffee options/i);
+    const steps = change.planSteps || [];
+    assert.equal(steps.length, 5, 'landing rec includes numbered suggestion steps');
+    assert.match(String(steps[0].label || ''), /Focus this landing page on:\s*[“"]cold coffee options[”"]/i);
+    assert.equal(steps[1].status, 'needs_answer');
+    assert.equal(steps[2].status, 'needs_answer');
+    const outline = change.planOutline || [];
+    assert.ok(outline.length >= 4, 'landing rec includes planOutline mirror');
   });
 });

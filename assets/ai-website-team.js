@@ -170,11 +170,19 @@
       '.ai-rec-suggestion{margin:0;font-size:15px;font-weight:600;line-height:1.35}' +
       '.ai-rec-reason{margin:0;font-size:13px;line-height:1.45;opacity:.88}' +
       '.ai-rec-outline{margin:4px 0 0;padding-left:1.2em;font-size:13px;line-height:1.45}' +
-      '.ai-rec-outline li{margin:0 0 4px}' +
+      '.ai-rec-outline li{margin:0 0 8px}' +
+      '.ai-rec-suggestion-steps .ai-step-label{font-weight:600}' +
+      '.ai-step-badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}' +
+      '.ai-step-badge.ask{background:rgba(236,72,153,.18);color:var(--accent,#ec4899)}' +
+      '.ai-step-badge.done{background:rgba(10,125,51,.18);color:#3ecf8e}' +
+      '.ai-step-badge.ready{background:rgba(56,189,248,.16);color:#38bdf8}' +
+      '.ai-step-answer{margin-top:6px}' +
       '.ai-rec-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}' +
       '.ai-rec-hint{margin:8px 0 0;font-size:12px;opacity:.8}' +
       '.ai-discuss-context{font-size:13px;line-height:1.45;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}' +
       '.ai-discuss-context p{margin:0 0 6px}.ai-discuss-context p:last-child{margin:0}' +
+      '.ai-step-field{display:block;margin:0 0 10px}' +
+      '.ai-step-field span{display:block;font-size:12.5px;font-weight:700;margin:0 0 4px}' +
       '.ai-chat-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px}' +
       '.ai-chat-modal{width:min(560px,100%);max-height:min(88vh,720px);overflow:auto;border-radius:14px;background:var(--panel,#12141c);color:var(--ink,#f4f4f6);border:1px solid var(--line,rgba(255,255,255,.12));box-shadow:0 18px 50px rgba(0,0,0,.45);padding:18px 18px 16px}' +
       '.ai-chat-log{display:flex;flex-direction:column;gap:10px;margin:12px 0 14px}' +
@@ -385,17 +393,59 @@
     return Array.isArray(change.planOutline) ? change.planOutline : [];
   }
 
-  function renderPlanOutline(steps) {
-    if (!steps || !steps.length) return '';
+  function planStepsOf(rec) {
+    var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
+    return Array.isArray(change.planSteps) ? change.planSteps : [];
+  }
+
+  function promptSummaryOf(rec) {
+    var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
+    if (change.promptSummary) return change.promptSummary;
+    return rec.problem || rec.issue || rec.title || '';
+  }
+
+  function renderSuggestionSteps(rec) {
+    var steps = planStepsOf(rec);
+    var outline = planOutlineOf(rec);
+    if (!steps.length && outline.length) {
+      steps = outline.map(function (label, i) {
+        return { id: 's' + i, label: label, status: 'pending', fields: [] };
+      });
+    }
+    if (!steps.length) return '<p class="ai-rec-suggestion">' + esc(rec.title || '') + '</p>';
     return (
-      '<div class="ai-rec-block"><span class="ai-rec-label">How we will do it</span>' +
-      '<ol class="ai-rec-outline">' +
+      '<ol class="ai-rec-outline ai-rec-suggestion-steps">' +
       steps
-        .map(function (s) {
-          return '<li>' + esc(s) + '</li>';
+        .map(function (s, i) {
+          var needs = s.status === 'needs_answer' && s.fields && s.fields.length;
+          var badge =
+            s.status === 'done'
+              ? ' <span class="ai-step-badge done">done</span>'
+              : needs
+                ? ' <span class="ai-step-badge ask">needs answer</span>'
+                : s.status === 'ready'
+                  ? ' <span class="ai-step-badge ready">ready</span>'
+                  : '';
+          var btn = needs
+            ? '<button type="button" class="btn sm ai-step-answer" data-id="' +
+              esc(rec.id) +
+              '" data-step="' +
+              esc(s.id) +
+              '">Answer</button>'
+            : '';
+          return (
+            '<li data-step="' +
+            esc(s.id || '') +
+            '"><span class="ai-step-label">' +
+            esc(s.label || 'Step ' + (i + 1)) +
+            '</span>' +
+            badge +
+            (btn ? ' ' + btn : '') +
+            '</li>'
+          );
         })
         .join('') +
-      '</ol></div>'
+      '</ol>'
     );
   }
 
@@ -404,10 +454,7 @@
     var exec = r.executable ? '' : ' · advisory';
     var fieldKey = knowledgeFieldKey(r);
     var forgeable = isForgeOutcome(r);
-    var issue = r.problem || r.issue || '';
-    var reason = r.reason || '';
-    var suggestion = r.title || '';
-    var outline = planOutlineOf(r);
+    var summary = promptSummaryOf(r);
     var answerBtn = fieldKey
       ? '<button type="button" class="btn sm ai-rec-answer" data-id="' +
         esc(r.id) +
@@ -436,20 +483,14 @@
       esc(exec) +
       esc(gap) +
       '</span></div>' +
-      (issue
-        ? '<div class="ai-rec-block"><span class="ai-rec-label">Issue</span><p class="ai-rec-issue">' +
-          esc(issue) +
+      (summary
+        ? '<div class="ai-rec-block"><span class="ai-rec-label">Summary</span><p class="ai-rec-issue">' +
+          esc(summary) +
           '</p></div>'
         : '') +
-      '<div class="ai-rec-block"><span class="ai-rec-label">Suggestion</span><p class="ai-rec-suggestion">' +
-      esc(suggestion) +
-      '</p></div>' +
-      (reason
-        ? '<div class="ai-rec-block"><span class="ai-rec-label">Why this was suggested</span><p class="ai-rec-reason">' +
-          esc(reason) +
-          '</p></div>'
-        : '') +
-      renderPlanOutline(outline) +
+      '<div class="ai-rec-block"><span class="ai-rec-label">Suggestion</span>' +
+      renderSuggestionSteps(r) +
+      '</div>' +
       '<div class="ai-rec-actions">' +
       check +
       answerBtn +
@@ -465,7 +506,7 @@
       esc(r.id) +
       '">Reject</button>' +
       '</div>' +
-      '<p class="lede ai-rec-hint">Discuss stays on this card. Draft in Forge builds the exact steps for preview. AI never publishes.</p></article>'
+      '<p class="lede ai-rec-hint">Answer steps that need your input. Discuss stays on this card. Draft in Forge builds the preview. AI never publishes.</p></article>'
     );
   }
 
@@ -700,7 +741,7 @@
       return;
     }
     box.innerHTML =
-      '<span class="ai-rec-label">How we will do it</span><ol class="ai-rec-outline">' +
+      '<span class="ai-rec-label">Suggestion</span><ol class="ai-rec-outline">' +
       outline
         .map(function (s) {
           return '<li>' + esc(s) + '</li>';
@@ -723,8 +764,7 @@
     closeChat();
     if (!rec || !rec.id) return;
     discussSession = { recommendationId: rec.id, recommendation: rec };
-    var issue = rec.problem || '';
-    var suggestion = rec.title || '';
+    var summary = promptSummaryOf(rec);
     var outline = planOutlineOf(rec);
     var forgeable = isForgeOutcome(rec);
     var backdrop = document.createElement('div');
@@ -737,10 +777,7 @@
       '<p class="lede" style="margin:0;font-size:13px">Same suggestion — refine the plan here. Ask the Team will not create a duplicate.</p></div>' +
       '<button type="button" class="btn ghost sm" id="ai-chat-x">✕</button></div>' +
       '<div class="ai-discuss-context">' +
-      (issue ? '<p><strong>Issue:</strong> ' + esc(issue) + '</p>' : '') +
-      '<p><strong>Suggestion:</strong> ' +
-      esc(suggestion) +
-      '</p>' +
+      (summary ? '<p><strong>Summary:</strong> ' + esc(summary) + '</p>' : '') +
       '<div id="ai-discuss-outline"></div></div>' +
       '<div class="ai-chat-log" id="ai-chat-log"></div>' +
       '<textarea id="ai-discuss-input" rows="3" style="width:100%" placeholder="Ask a question or refine the plan…"></textarea>' +
@@ -860,6 +897,99 @@
     }
 
     await loadThread();
+  }
+
+  function openStepAnswer(rec, stepId) {
+    ensureStyles();
+    closeChat();
+    if (!rec || !stepId) return;
+    var steps = planStepsOf(rec);
+    var step = steps.find(function (s) {
+      return String(s.id) === String(stepId);
+    });
+    if (!step || !step.fields || !step.fields.length) {
+      notify('This step does not need an answer right now.', 'warn');
+      return;
+    }
+    var fieldsHtml = step.fields
+      .map(function (f) {
+        var multiline = f.key === 'proofPoints' || f.key === 'objections';
+        return (
+          '<label class="ai-step-field"><span>' +
+          esc(f.label || f.key) +
+          '</span>' +
+          (multiline
+            ? '<textarea id="ai-step-' +
+              esc(f.key) +
+              '" rows="3" style="width:100%" placeholder="' +
+              esc(f.placeholder || '') +
+              '"></textarea>'
+            : '<input id="ai-step-' +
+              esc(f.key) +
+              '" type="text" style="width:100%" placeholder="' +
+              esc(f.placeholder || '') +
+              '">') +
+          '</label>'
+        );
+      })
+      .join('');
+    var backdrop = document.createElement('div');
+    backdrop.className = 'ai-chat-backdrop';
+    backdrop.id = 'ai-chat-backdrop';
+    backdrop.innerHTML =
+      '<div class="ai-chat-modal" role="dialog" aria-modal="true" aria-label="Answer plan step">' +
+      '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">' +
+      '<div><h2 style="margin:0 0 4px">Answer this step</h2>' +
+      '<p class="lede" style="margin:0;font-size:13px">' +
+      esc(step.label || 'Step') +
+      '</p></div>' +
+      '<button type="button" class="btn ghost sm" id="ai-chat-x">✕</button></div>' +
+      '<div style="margin-top:14px">' +
+      fieldsHtml +
+      '</div>' +
+      '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+      '<button type="button" class="btn" id="ai-step-save">Save &amp; update plan</button>' +
+      '<button type="button" class="btn ghost" id="ai-step-cancel">Cancel</button>' +
+      '<span id="ai-chat-msg" class="ai-team-msg"></span></div>' +
+      '<p class="lede" style="margin:10px 0 0;font-size:12px">Saves onto this same suggestion — does not publish.</p></div>';
+    document.body.appendChild(backdrop);
+    function shut() {
+      closeChat();
+    }
+    backdrop.addEventListener('click', function (ev) {
+      if (ev.target === backdrop) shut();
+    });
+    $('ai-chat-x').onclick = shut;
+    $('ai-step-cancel').onclick = shut;
+    $('ai-step-save').onclick = async function () {
+      var msg = $('ai-chat-msg');
+      var answers = {};
+      step.fields.forEach(function (f) {
+        var el = $('ai-step-' + f.key);
+        answers[f.key] = el ? el.value : '';
+      });
+      try {
+        setMsg(msg, 'Saving…', '');
+        var j = await api('/api/ai-team/recommendations', {
+          siteId: activeSiteId(),
+          action: 'answer_step',
+          recommendationId: rec.id,
+          stepId: stepId,
+          answers: answers
+        });
+        if (!j.persisted) throw new Error('Not persisted');
+        if (j.recommendation && lastState && lastState.recommendations) {
+          lastState.recommendations = lastState.recommendations.map(function (r) {
+            return String(r.id) === String(j.recommendation.id) ? j.recommendation : r;
+          });
+        }
+        closeChat();
+        notify('Step answered — checklist updated.');
+        softRefresh(panelCtx);
+      } catch (e) {
+        setMsg(msg, e.message || String(e), 'bad');
+      }
+    };
   }
 
   function renderChatQuestion() {
@@ -1219,7 +1349,7 @@
     html += '<div style="display:grid;grid-template-columns:1.2fr .8fr;gap:14px">';
     html +=
       '<div><h3 style="margin:0 0 6px">Recommended next actions</h3>' +
-      '<p class="lede" style="margin:0 0 10px;font-size:12.5px;opacity:.85">Each card shows the Issue, the Suggestion, and why Atlas generated it.</p>';
+      '<p class="lede" style="margin:0 0 10px;font-size:12.5px;opacity:.85">Each card shows a Summary and numbered Suggestion steps. Answer steps that need your input, or Discuss to refine.</p>';
     if (!pendingRecs.length) {
       html += '<p class="lede">No pending recommendations — ask Atlas for a review.</p>';
     } else {
@@ -1370,7 +1500,7 @@
           if (!j.persisted) throw new Error('Recommendations were not persisted');
           await softRefresh({
             statusText:
-              'Suggestions updated — each card shows Issue, Suggestion, and why. Nothing was published.',
+              'Suggestions updated — Summary plus numbered steps. Nothing was published.',
             statusCls: 'ok'
           });
         } catch (e) {
@@ -1410,6 +1540,17 @@
           return String(r.id) === String(id);
         });
         if (rec) openDiscussChat(rec);
+      };
+    });
+
+    document.querySelectorAll('.ai-step-answer').forEach(function (btn) {
+      btn.onclick = function () {
+        var id = btn.getAttribute('data-id');
+        var stepId = btn.getAttribute('data-step');
+        var rec = ((lastState && lastState.recommendations) || []).find(function (r) {
+          return String(r.id) === String(id);
+        });
+        if (rec) openStepAnswer(rec, stepId);
       };
     });
 
