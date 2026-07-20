@@ -87,6 +87,31 @@ module.exports = async (req, res) => {
         actorRole: access.role,
         source: access.role === 'super' ? 'superuser' : access.role
       });
+    } else if (action === 'discuss') {
+      const permDiscuss = assertAction(access.role, 'atlas_review');
+      if (!permDiscuss.ok) return http.json(res, 403, { error: permDiscuss.error });
+      const { discussRecommendation } = require('../../lib/ai-team/atlas');
+      const discussed = await discussRecommendation({
+        siteId,
+        recommendationId,
+        message: (body && body.message) || '',
+        actorUserId: user.id,
+        actorRole: access.role
+      });
+      if (!discussed.ok) {
+        return http.json(res, discussed.error === 'site_brain_storage_unavailable' ? 503 : 400, {
+          error: discussed.error,
+          message: discussed.message || null,
+          persisted: false
+        });
+      }
+      return http.json(res, 200, {
+        ok: true,
+        persisted: true,
+        recommendation: discussed.recommendation,
+        messages: discussed.messages || [],
+        planOutline: discussed.planOutline || []
+      });
     } else {
       return http.json(res, 400, { error: 'unknown_action' });
     }
