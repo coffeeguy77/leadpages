@@ -240,6 +240,12 @@
     fill(ui, 'titleColor', accent);
     fill(ui, 'introColor', accent);
     fill(ui, 'mutedColor', '#a8989e');
+    fill(ui, 'labelColor', accent);
+    fill(ui, 'fieldText', '#ffffff');
+    fill(ui, 'fieldBg', '#3a3436');
+    fill(ui, 'choiceText', accent);
+    fill(ui, 'choiceDesc', '#c4b4ba');
+    fill(ui, 'bodyText', '#ffffff');
     fill(ui, 'progressBg', '#ffffff');
     fill(ui, 'progressText', accent);
     fill(ui, 'progressBorder', accent);
@@ -887,13 +893,23 @@
       return self._colorField('wizard.ui.' + path, label, ui[path] || '', fallback);
     }
     return '<div class="oqb-section"><h4>Wizard colours</h4>'
-      + '<p class="oqb-hint" style="margin-top:0">Panel, progress steps (Equipment, Event details\u2026), and Continue / Back. Swatch opens the picker; hex field edits the value. Defaults follow your site accent (' + esc(accent) + ').</p>'
+      + '<p class="oqb-hint" style="margin-top:0">Panel, progress steps (Equipment, Event details\u2026), form labels, choice cards, and Continue / Back. Swatch opens the picker; hex field edits the value. Defaults follow your site accent (' + esc(accent) + ').</p>'
       + '<div class="oqb-grid">'
       + col('panelBg', 'Panel background', '#2e282a')
       + col('panelBorder', 'Panel border', accent)
       + col('titleColor', 'Business name colour', accent)
       + col('introColor', 'Step intro text colour', accent)
       + col('mutedColor', 'Muted / hint text', '#a8989e')
+      + '</div>'
+      + '<h4 class="oqb-sub">Form &amp; choice text</h4>'
+      + '<p class="oqb-hint" style="margin-top:0">Fixes dark-on-dark readability for labels, package/add-on cards, radios, and inputs. Set these for dark wizard panels.</p>'
+      + '<div class="oqb-grid">'
+      + col('labelColor', 'Field labels (Name, Email\u2026)', accent)
+      + col('fieldText', 'Input text colour', '#ffffff')
+      + col('fieldBg', 'Input background', '#3a3436')
+      + col('choiceText', 'Choice card title', accent)
+      + col('choiceDesc', 'Choice card description', '#c4b4ba')
+      + col('bodyText', 'Radios / plan body text', '#ffffff')
       + '</div>'
       + '<h4 class="oqb-sub">Progress buttons</h4><div class="oqb-grid">'
       + col('progressBg', 'Progress background', '#ffffff')
