@@ -345,17 +345,25 @@
   function knowledgeFieldKey(rec) {
     var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
     if (change.fieldKey) return change.fieldKey;
-    if (change.path === 'goals.primary') return 'primaryGoal';
-    if (change.path === 'goals.preferredCta') return 'preferredCta';
-    if (change.path === 'offers.mainServices') return 'mainServices';
+    if (change.outcome === 'confirm_business_goal' || change.path === 'goals.primary') return 'primaryGoal';
+    if (change.outcome === 'clarify_preferred_cta' || change.path === 'goals.preferredCta') return 'preferredCta';
+    if (change.outcome === 'expand_main_services' || change.path === 'offers.mainServices') return 'mainServices';
     if (rec && rec.interactive === 'site_knowledge_chat') return change.fieldKey || null;
     return null;
+  }
+
+  function isForgeOutcome(rec) {
+    var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
+    if (change.type === 'forge_draft') return true;
+    if (change.outcome === 'strengthen_primary_cta' || change.outcome === 'enable_faq_for_objections') return true;
+    return !!(rec && rec.interactive === 'execution_plan');
   }
 
   function renderRec(r) {
     var gap = r.capability_gap || r.capabilityGap ? ' · capability gap' : '';
     var exec = r.executable ? '' : ' · advisory';
     var fieldKey = knowledgeFieldKey(r);
+    var forgeable = isForgeOutcome(r);
     var answerBtn = fieldKey
       ? '<button type="button" class="btn sm ai-rec-answer" data-id="' +
         esc(r.id) +
@@ -363,6 +371,15 @@
         esc(fieldKey) +
         '">Answer with Atlas</button>'
       : '';
+    var check =
+      forgeable || fieldKey
+        ? '<label style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;margin-right:8px">' +
+          '<input type="checkbox" class="ai-rec-pick" data-id="' +
+          esc(r.id) +
+          '"' +
+          (forgeable ? ' data-forge="1"' : '') +
+          '> Select</label>'
+        : '';
     return (
       '<article class="card" style="margin:0 0 10px;padding:14px 16px">' +
       '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">' +
@@ -382,7 +399,8 @@
       '<p style="margin:6px 0 0;font-size:13px;opacity:.85">' +
       esc(r.reason || '') +
       '</p>' +
-      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+      check +
       answerBtn +
       '<button type="button" class="btn ghost sm ai-rec-approve" data-id="' +
       esc(r.id) +
@@ -391,16 +409,18 @@
       esc(r.id) +
       '">Reject</button>' +
       '</div>' +
-      '<p class="lede" style="margin:8px 0 0;font-size:12px;opacity:.8">Approve creates an open task. Forge tasks can Apply draft to site config — then Publish Live Site yourself.</p></article>'
+      '<p class="lede" style="margin:8px 0 0;font-size:12px;opacity:.8">Approve → Forge Execution Plan → Change Preview → Apply Changes. AI never publishes.</p></article>'
     );
   }
 
   function renderTask(t) {
-    var applyBtn =
-      t.kind === 'forge_draft' && t.patch
-        ? '<button type="button" class="btn sm ai-task-apply" data-id="' +
+    var previewBtn =
+      (t.kind === 'execution_plan' || t.kind === 'forge_draft') && (t.planId || t.executionPlanId || t.patch)
+        ? '<button type="button" class="btn sm ai-task-preview" data-id="' +
           esc(t.id) +
-          '">Apply draft</button>'
+          '" data-plan="' +
+          esc(t.planId || t.executionPlanId || '') +
+          '">Preview changes</button>'
         : '';
     var openBtn =
       t.editorTab || t.editorSection
@@ -416,6 +436,10 @@
           esc(t.fieldKey) +
           '">Answer with Atlas</button>'
         : '';
+    var rollbackBtn =
+      t.kind === 'execution_plan' && t.status === 'applied'
+        ? ''
+        : '';
     return (
       '<article class="card" style="margin:0 0 10px;padding:12px 14px">' +
       '<strong style="display:block">' +
@@ -425,11 +449,142 @@
         ? '<p class="lede" style="margin:6px 0 0;font-size:13px">' + esc(t.message) + '</p>'
         : '') +
       '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
-      applyBtn +
+      previewBtn +
       openBtn +
       chatBtn +
+      rollbackBtn +
       '</div></article>'
     );
+  }
+
+  function renderPlanCard(plan) {
+    if (!plan) return '';
+    var status = plan.status || '';
+    var previewBtn =
+      status === 'preview_ready' || status === 'guardian_validated' || status === 'draft'
+        ? '<button type="button" class="btn sm ai-plan-preview" data-plan="' +
+          esc(plan.id) +
+          '">Change Preview</button>'
+        : '';
+    var rollbackBtn =
+      status === 'applied'
+        ? '<button type="button" class="btn ghost sm ai-plan-rollback" data-plan="' +
+          esc(plan.id) +
+          '">Rollback</button>'
+        : '';
+    return (
+      '<article class="card" style="margin:0 0 10px;padding:12px 14px">' +
+      '<strong style="display:block">' +
+      esc(plan.title || 'Execution Plan') +
+      '</strong>' +
+      '<p class="lede" style="margin:6px 0 0;font-size:12.5px">' +
+      esc(String((plan.steps || []).length)) +
+      ' step(s) · ' +
+      esc(status) +
+      ' · risk ' +
+      esc(plan.risk || 'low') +
+      '</p>' +
+      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+      previewBtn +
+      rollbackBtn +
+      '</div></article>'
+    );
+  }
+
+  function showChangePreview(preview, planId) {
+    closeChat();
+    var p = preview || {};
+    var changes = p.changes || [];
+    var rows = changes
+      .map(function (c) {
+        return (
+          '<div style="border-top:1px solid var(--line,var(--border));padding:12px 0">' +
+          '<div style="font-weight:700;margin-bottom:6px">✓ ' +
+          esc(c.label || c.operation || 'Change') +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">' +
+          '<div><div style="opacity:.7;font-size:11px;text-transform:uppercase;letter-spacing:.04em">Before</div>' +
+          esc(c.before == null ? '—' : String(c.before)) +
+          '</div>' +
+          '<div><div style="opacity:.7;font-size:11px;text-transform:uppercase;letter-spacing:.04em">After</div>' +
+          esc(c.after == null ? '—' : String(c.after)) +
+          '</div></div></div>'
+        );
+      })
+      .join('');
+    var backdrop = document.createElement('div');
+    backdrop.id = 'ai-preview-backdrop';
+    backdrop.style.cssText =
+      'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+    backdrop.innerHTML =
+      '<div class="card" style="max-width:520px;width:100%;max-height:85vh;overflow:auto;padding:20px 22px">' +
+      '<h3 style="margin:0 0 4px">' +
+      esc(p.title || 'Changes Ready') +
+      '</h3>' +
+      '<p class="lede" style="margin:0 0 12px;font-size:13px">Confidence checkpoint before Forge writes site config. AI never publishes.</p>' +
+      (rows || '<p class="lede">No configuration steps in this plan.</p>') +
+      '<div style="margin-top:14px;font-size:13px;opacity:.9">' +
+      '<div><strong>Affected pages</strong> · ' +
+      esc((p.affectedPages || ['Home']).join(', ')) +
+      '</div>' +
+      '<div><strong>Risk</strong> · ' +
+      esc(p.risk || 'Low') +
+      '</div>' +
+      '<div><strong>Estimated time</strong> · ' +
+      esc(p.estimatedTime || 'Instant') +
+      '</div></div>' +
+      '<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">' +
+      '<button type="button" class="btn" id="ai-preview-apply" data-plan="' +
+      esc(planId || p.planId || '') +
+      '">Apply Changes</button>' +
+      '<button type="button" class="btn ghost" id="ai-preview-cancel" data-plan="' +
+      esc(planId || p.planId || '') +
+      '">Cancel</button>' +
+      '</div></div>';
+    document.body.appendChild(backdrop);
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) backdrop.remove();
+    });
+    var apply = backdrop.querySelector('#ai-preview-apply');
+    var cancel = backdrop.querySelector('#ai-preview-cancel');
+    if (apply) {
+      apply.onclick = async function () {
+        apply.disabled = true;
+        try {
+          var j = await api('/api/ai-team/execution-plan', {
+            siteId: activeSiteId(),
+            action: 'apply',
+            planId: apply.getAttribute('data-plan')
+          });
+          backdrop.remove();
+          notify(j.notice || j.summary || 'Changes applied to site config.');
+          if (j.editorSection && typeof window.lpOpenEditorSection === 'function') {
+            window.lpOpenEditorSection(j.editorTab || 'details', j.editorSection);
+          }
+          loadPanel(panelCtx);
+        } catch (e) {
+          notify(e.message || String(e), 'warn');
+          apply.disabled = false;
+        }
+      };
+    }
+    if (cancel) {
+      cancel.onclick = async function () {
+        try {
+          await api('/api/ai-team/execution-plan', {
+            siteId: activeSiteId(),
+            action: 'cancel',
+            planId: cancel.getAttribute('data-plan')
+          });
+          backdrop.remove();
+          notify('Execution Plan cancelled.');
+          loadPanel(panelCtx);
+        } catch (e) {
+          backdrop.remove();
+          notify(e.message || String(e), 'warn');
+        }
+      };
+    }
   }
 
   function mergeOpts(opts) {
@@ -718,7 +873,7 @@
       '<div><h2 style="margin:0 0 6px">AI Website Team</h2>' +
       '<p class="lede" style="margin:0">Practical advice for <strong>' +
       esc(summaryName) +
-      '</strong> — Forge can draft editor changes; you review and publish.</p></div>' +
+      '</strong>. Atlas recommends outcomes; Forge plans and applies config; you publish.</p></div>' +
       '<div style="font-size:12.5px;text-align:right">' +
       '<div>Site Brain: <strong>' +
       esc(bootstrap) +
@@ -763,11 +918,14 @@
     html +=
       '<div class="card" style="margin-bottom:16px;padding:14px 16px">' +
       '<strong>Specialist Team</strong>' +
-      '<p class="lede" style="margin:6px 0 0;font-size:13px">Nova, Scout, Pulse, Forge, Lens, Echo, Guardian and Beacon are registered. Phase 2 enables Forge drafts for hero CTA and FAQ.</p></div>';
+      '<p class="lede" style="margin:6px 0 0;font-size:13px">Atlas (strategy) · Echo (copy) · Scout (SEO) · Pulse (conversion) · Nova (design) · Lens (images) · Guardian (validation) · Forge (execution — sole config writer). Only Forge mutates website configuration.</p></div>';
 
     var pendingRecs = recs.filter(isPendingRecommendation);
     var doneRecs = recs.filter(function (r) {
       return !isPendingRecommendation(r);
+    });
+    var plans = (snap.executionPlans || []).filter(function (p) {
+      return p && p.status !== 'cancelled';
     });
 
     html += '<div style="display:grid;grid-template-columns:1.2fr .8fr;gap:14px">';
@@ -775,6 +933,10 @@
     if (!pendingRecs.length) {
       html += '<p class="lede">No pending recommendations — ask Atlas for a review.</p>';
     } else {
+      html +=
+        '<div style="margin:0 0 10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+        '<button type="button" class="btn sm" id="ai-batch-plan">Build Execution Plan from selected</button>' +
+        '<span class="lede" style="margin:0;font-size:12px;opacity:.8">Batch into one plan, one preview, one apply, one rollback.</span></div>';
       html += pendingRecs
         .slice(0, 12)
         .map(renderRec)
@@ -800,10 +962,21 @@
     }
     html += '</div>';
 
-    html += '<div><h3 style="margin:0 0 10px">Open tasks</h3>';
+    html += '<div><h3 style="margin:0 0 10px">Execution Plans</h3>';
+    if (!plans.length) {
+      html +=
+        '<p class="lede">No plans yet — select recommendations and build an Execution Plan.</p>';
+    } else {
+      html += plans
+        .slice(0, 6)
+        .map(renderPlanCard)
+        .join('');
+    }
+
+    html += '<h3 style="margin:16px 0 10px">Open tasks</h3>';
     if (!openTasks.length) {
       html +=
-        '<p class="lede">No open tasks — approve a recommendation to create one.</p>';
+        '<p class="lede">No open tasks.</p>';
     } else {
       html += openTasks
         .slice(0, 8)
@@ -811,7 +984,7 @@
         .join('');
     }
     html +=
-      '<p class="lede" style="margin:14px 0 0;font-size:12px;opacity:.85">Apply draft updates site config only. Always review in Page editor, then <strong>Publish Live Site</strong>.</p></div>';
+      '<p class="lede" style="margin:14px 0 0;font-size:12px;opacity:.85">Pipeline: Recommendation → Execution Plan → Guardian → Preview → Apply → Editor → <strong>you</strong> Publish Live Site.</p></div>';
 
     html += '</div>';
     box.innerHTML = html;
@@ -936,13 +1109,18 @@
     document.querySelectorAll('.ai-rec-approve').forEach(function (btn) {
       btn.onclick = async function () {
         try {
-          var j = await api('/api/ai-team/recommendations', {
+          var j = await api('/api/ai-team/execution-plan', {
             siteId: siteId,
-            action: 'approve',
-            recommendationId: btn.getAttribute('data-id')
+            action: 'create',
+            recommendationIds: [btn.getAttribute('data-id')],
+            editorContext: editorContext()
           });
-          notify(j.nextStep || 'Approved — see Open tasks for the next step.');
-          loadPanel(panelCtx);
+          notify(j.nextStep || 'Execution Plan ready — open Change Preview.');
+          if (j.preview && j.plan && j.plan.id) {
+            showChangePreview(j.preview, j.plan.id);
+          } else {
+            loadPanel(panelCtx);
+          }
         } catch (e) {
           notify(e.message || String(e), 'warn');
         }
@@ -964,22 +1142,79 @@
       };
     });
 
-    document.querySelectorAll('.ai-task-apply').forEach(function (btn) {
-      btn.onclick = async function () {
-        btn.disabled = true;
+    var batch = $('ai-batch-plan');
+    if (batch) {
+      batch.onclick = async function () {
+        var ids = [];
+        document.querySelectorAll('.ai-rec-pick:checked').forEach(function (el) {
+          ids.push(el.getAttribute('data-id'));
+        });
+        if (!ids.length) {
+          notify('Select one or more recommendations first.', 'warn');
+          return;
+        }
+        batch.disabled = true;
         try {
-          var j = await api('/api/ai-team/forge-apply', {
+          var j = await api('/api/ai-team/execution-plan', {
             siteId: siteId,
-            taskId: btn.getAttribute('data-id')
+            action: 'create',
+            recommendationIds: ids,
+            editorContext: editorContext()
           });
-          notify(j.notice || j.summary || 'Draft applied to site config.');
-          if (j.editorSection && typeof window.lpOpenEditorSection === 'function') {
-            window.lpOpenEditorSection(j.editorTab || 'details', j.editorSection);
+          notify(j.nextStep || 'Batched Execution Plan ready.');
+          if (j.preview && j.plan && j.plan.id) showChangePreview(j.preview, j.plan.id);
+          else loadPanel(panelCtx);
+        } catch (e) {
+          notify(e.message || String(e), 'warn');
+          batch.disabled = false;
+        }
+      };
+    }
+
+    async function openPreviewForPlan(planId) {
+      var j = await api('/api/ai-team/execution-plan', {
+        siteId: siteId,
+        action: 'preview',
+        planId: planId,
+        editorContext: editorContext()
+      });
+      showChangePreview(j.preview || (j.plan && j.plan.preview), planId);
+    }
+
+    document.querySelectorAll('.ai-task-preview, .ai-plan-preview').forEach(function (btn) {
+      btn.onclick = async function () {
+        try {
+          var planId = btn.getAttribute('data-plan');
+          if (!planId) {
+            // Legacy forge_draft task — apply path still works via forge-apply
+            var j = await api('/api/ai-team/forge-apply', {
+              siteId: siteId,
+              taskId: btn.getAttribute('data-id')
+            });
+            notify(j.notice || j.summary || 'Draft applied.');
+            loadPanel(panelCtx);
+            return;
           }
+          await openPreviewForPlan(planId);
+        } catch (e) {
+          notify(e.message || String(e), 'warn');
+        }
+      };
+    });
+
+    document.querySelectorAll('.ai-plan-rollback').forEach(function (btn) {
+      btn.onclick = async function () {
+        if (!window.confirm('Roll back this Execution Plan to the pre-apply config snapshot?')) return;
+        try {
+          var j = await api('/api/ai-team/execution-plan', {
+            siteId: siteId,
+            action: 'rollback',
+            planId: btn.getAttribute('data-plan')
+          });
+          notify(j.notice || 'Rolled back.');
           loadPanel(panelCtx);
         } catch (e) {
           notify(e.message || String(e), 'warn');
-          btn.disabled = false;
         }
       };
     });

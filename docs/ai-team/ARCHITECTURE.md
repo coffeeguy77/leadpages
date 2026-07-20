@@ -2,24 +2,28 @@
 
 ```mermaid
 flowchart TD
-  Editor[manage.html editor]
+  Editor[manage.html editor + page context]
   Panel[AI Website Team panel]
   SiteBrainAPI[api/site-brain]
   AiTeamAPI[api/ai-team]
   SiteBrain[lib/site-brain]
-  Atlas[Atlas advisory]
+  Atlas[Atlas outcomes]
+  Forge[Forge Execution Plans]
   Guardian[Guardian]
   Caps[Capability registry]
-  DB[(site_brains / events / recommendations)]
+  Config[(sites.config)]
+  DB[(site_brains / recommendations / plans)]
 
   Editor --> Panel
   Panel --> SiteBrainAPI
   Panel --> AiTeamAPI
   SiteBrainAPI --> SiteBrain
   AiTeamAPI --> Atlas
+  AiTeamAPI --> Forge
   Atlas --> SiteBrain
   Atlas --> Guardian
-  Atlas --> Caps
+  Forge --> Guardian
+  Forge --> Config
   SiteBrain --> DB
 ```
 
@@ -27,18 +31,27 @@ flowchart TD
 
 | Layer | Responsibility |
 |-------|----------------|
-| Editor panel | Atlas-first UI, bootstrap review, Ask the Team, recommendation status |
-| HTTP APIs | Auth, site access, permissions, `persisted` flags |
-| Site Brain service | Schema, sync, review, recommendations, audit events |
-| Storage adapters | `database` (default deployed) or `memory` (tests/local only) |
-| AI Team | Specialists, context selectors, Atlas, Guardian, capability registry |
+| Editor panel | Atlas outcomes, Site Knowledge, batch Execution Plans, Change Preview |
+| HTTP APIs | Auth, site access, permissions, `persisted` / `published: false` |
+| Site Brain | Approved business truth + specialist memory + plan/task audit |
+| AI Team | Specialists, context, Atlas, **Forge (sole config writer)**, Guardian |
+| Capability registry | Real Marketplace allowlist for Forge targets |
 
-## Storage policy
+## Mutation boundary
 
-- `SITE_BRAIN_STORAGE=database` — default for preview/staging/production  
-- `SITE_BRAIN_STORAGE=memory` — local/tests only; **ignored in deployed envs**  
-- Missing tables → `site_brain_storage_unavailable`, `persisted: false`
+| Who | May write |
+|-----|-----------|
+| Atlas / Scout / Pulse / Nova / Lens / Echo | Recommendations + Site Knowledge proposals only |
+| Forge | `sites.config` via Execution Plan Apply only |
+| Guardian | Validation only — no mutations |
+| User | Publish Live Site |
 
-## Mutation boundary (Phase 1)
+## Site Knowledge vs copy
 
-AI Team may update **Site Brain** and recommendation **status**. It must not write `sites.config`, install apps, or publish.
+- **Site Knowledge** = approved business facts (goal, CTA intent, services, tone, restrictions)
+- **Echo** = generated website copy (not permanent Site Knowledge)
+- **Forge** = configuration implementation
+
+## Editor context
+
+Passed into Atlas and Forge: `siteId`, `pageId` / `pageSlug` / `pageTitle` / `pagePurpose`, `editorTab`, `selectedSection`, `selectedApp`, `userRole`.
