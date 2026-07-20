@@ -729,12 +729,16 @@ html[data-lp-site-theme="electric-blue"] #site-label .lp-sitepick-sel{
 }
 
 /* Captured Leads — app-ready inbox */
+.dash-leads-card {
+  padding: 18px 20px;
+}
 .dash-leads-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px 16px;
   margin-bottom: 16px;
+  padding: 2px 0 4px;
 }
 .dash-leads-title-wrap {
   display: inline-flex;
@@ -760,6 +764,26 @@ html[data-lp-site-theme="electric-blue"] #site-label .lp-sitepick-sel{
 }
 .dash-leads-toolbar {
   margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+.dash-leads-cog {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+}
+.dash-leads-cog-ic {
+  display: block;
+  flex: 0 0 auto;
+}
+.dash-leads-menu {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
