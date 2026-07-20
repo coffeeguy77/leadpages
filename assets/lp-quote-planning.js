@@ -384,13 +384,20 @@
     var qtyHtml = '';
     if (p.allowQuantity) {
       var maxQ = productMaxQty(p);
-      qtyHtml = '<label class="lp-oq-eq-qty" data-qty-wrap="' + cartIdx + '"><span>Quantity</span>' +
-        '<input type="number" min="1" max="' + maxQ + '" data-product-qty="' + cartIdx + '" data-val="' + esc(p.id) + '" value="' + esc(qty) + '"' +
-        (isSel ? '' : ' disabled tabindex="-1"') + '></label>';
+      var disabled = isSel ? '' : ' aria-disabled="true"';
+      qtyHtml =
+        '<div class="lp-oq-eq-qty" data-qty-wrap="' + cartIdx + '"' + disabled + '>' +
+        '<span class="lp-oq-eq-qty-num" data-product-qty-display="' + cartIdx + '">' + esc(qty) + '</span>' +
+        '<div class="lp-oq-eq-qty-btns">' +
+        '<button type="button" class="lp-oq-eq-qty-btn" data-qty-delta="1" data-product-qty-btn="' + cartIdx + '" data-val="' + esc(p.id) + '" aria-label="Increase quantity"' + (isSel ? '' : ' tabindex="-1"') + '>▲</button>' +
+        '<button type="button" class="lp-oq-eq-qty-btn" data-qty-delta="-1" data-product-qty-btn="' + cartIdx + '" data-val="' + esc(p.id) + '" aria-label="Decrease quantity"' + (isSel ? '' : ' tabindex="-1"') + '>▼</button>' +
+        '</div>' +
+        '<input type="hidden" min="1" max="' + maxQ + '" data-product-qty="' + cartIdx + '" data-val="' + esc(p.id) + '" value="' + esc(qty) + '">' +
+        '</div>';
     }
     var inner = (D && D.equipmentCardHtml)
       ? D.equipmentCardHtml(p, helpers || { esc: esc }, { qtyHtml: qtyHtml })
-      : '<div class="fp-body"><h3 class="fp-title">' + esc(p.label) + '</h3>' + qtyHtml + '</div>';
+      : '<div class="fp-body"><div class="fp-title-row"><h3 class="fp-title">' + esc(p.label) + '</h3>' + qtyHtml + '</div></div>';
     return '<div class="fp-card lp-oq-eq-card' + (isSel ? ' is-selected' : '') + '" role="button" tabindex="0"' +
       ' data-equipment-pick="' + cartIdx + '" data-val="' + esc(p.id) + '" data-product-card="' + esc(p.id) + '">' +
       inner + '</div>';
@@ -556,18 +563,40 @@
     if (!root.__lpOqCartWired) {
       root.__lpOqCartWired = true;
       root.addEventListener('click', function(e) {
+        var qtyBtn = e.target.closest('[data-product-qty-btn]');
+        if (qtyBtn && root.contains(qtyBtn)) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (qtyBtn.closest('.lp-oq-eq-qty[aria-disabled="true"]')) return;
+          var idx = parseInt(qtyBtn.getAttribute('data-product-qty-btn'), 10);
+          var delta = parseInt(qtyBtn.getAttribute('data-qty-delta'), 10) || 0;
+          var prods = state._wireProducts || products;
+          var sh = state._wireShell || shell;
+          ensureCarts(state, prods);
+          if (!state.carts[idx]) return;
+          var pid = qtyBtn.getAttribute('data-val');
+          if (pid && state.carts[idx].productId !== pid) {
+            pickEquipment(state, sh, prods, idx, pid);
+          }
+          var prod = prods.find(function(p) { return p.id === state.carts[idx].productId; }) || {};
+          state.carts[idx].quantity = Math.max(1, (parseInt(state.carts[idx].quantity, 10) || 1) + delta);
+          clampCartQuantity(state.carts[idx], prod);
+          rerender();
+          return;
+        }
         if (e.target.closest('[data-product-qty]')) return;
+        if (e.target.closest('[data-qty-wrap]')) return;
         if (e.target.closest('[data-cart-add]')) return;
         if (e.target.closest('[data-cart-remove]')) return;
         var card = e.target.closest('[data-equipment-pick]');
         if (!card || !root.contains(card)) return;
         e.preventDefault();
-        var idx = parseInt(card.getAttribute('data-equipment-pick'), 10);
-        var pid = card.getAttribute('data-val');
-        if (!pid || isNaN(idx)) return;
-        var prods = state._wireProducts || products;
-        var sh = state._wireShell || shell;
-        pickEquipment(state, sh, prods, idx, pid);
+        var pickIdx = parseInt(card.getAttribute('data-equipment-pick'), 10);
+        var pickPid = card.getAttribute('data-val');
+        if (!pickPid || isNaN(pickIdx)) return;
+        var pickProds = state._wireProducts || products;
+        var pickShell = state._wireShell || shell;
+        pickEquipment(state, pickShell, pickProds, pickIdx, pickPid);
         rerender();
       });
       root.addEventListener('keydown', function(e) {
