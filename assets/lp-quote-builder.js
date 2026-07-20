@@ -177,7 +177,7 @@
     this.tab = (options && options.initialTab) || 'wizard';
     this.showJson = false;
     this.previewProgress = {
-      productId: '', hours: 3, guestCount: 50, unitCount: null,
+      productId: '', hours: 3, eventDate: '', guestCount: 50, unitCount: null,
       labourPlanning: 'hours', eventConfigMode: 'same', shifts: [], carts: [],
       beverageId: '', beverageLines: [], addonIds: [], travelZoneId: '', customAnswers: {}
     };
@@ -2099,6 +2099,7 @@
       });
       btn.addEventListener('click', function() {
         var act = btn.getAttribute('data-prev-act');
+        if (P && P.syncEventFieldsFromDom) P.syncEventFieldsFromDom(root, self.previewProgress);
         if (P && P.syncBeverageQtyFromDom) P.syncBeverageQtyFromDom(root, self.previewProgress);
         if (P && P.syncCustomAnswersFromDom) {
           P.syncCustomAnswersFromDom(root, self.previewProgress, 'data-prev-custom');

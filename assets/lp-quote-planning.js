@@ -139,6 +139,24 @@
       '<input type="number" min="1" max="48"' + attrs + ' value="' + esc(val) + '"></label>' + hint;
   }
 
+  function renderEventDateField(state, opts) {
+    opts = opts || {};
+    var hint = opts.hint
+      ? '<p class="lp-oq-muted" style="font-size:12px;margin:4px 0 0">' + esc(opts.hint) + '</p>'
+      : '<p class="lp-oq-muted" style="font-size:12px;margin:4px 0 0">When is the event?</p>';
+    return '<label class="lp-oq-field"><span>Event date</span>' +
+      '<input type="date" data-field="eventDate" value="' + esc((state && state.eventDate) || '') + '"></label>' + hint;
+  }
+
+  function syncEventFieldsFromDom(root, state) {
+    if (!root || !state) return;
+    root.querySelectorAll('[data-field="eventDate"]').forEach(function(inp) {
+      state.eventDate = inp.value || '';
+    });
+    var hoursInp = root.querySelector('[data-field="hours"]');
+    if (hoursInp) setGlobalBarista1Hours(state, hoursInp.value);
+  }
+
   function renderEventConfigMode(state, carts) {
     if (!isMultiCart(carts)) return '';
     var mode = state.eventConfigMode === 'custom' ? 'custom' : 'same';
@@ -293,16 +311,19 @@
     var configBlock = multi ? renderEventConfigMode(state, carts) : '';
 
     if (!allowsShiftPlanner(shell)) {
-      return configBlock + (state.labourPlanning !== 'shifts' && !custom
-        ? renderBarista1HoursField(state, { hint: 'How long Barista 1 is on site for this event.' })
-        : '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
-          '<input type="number" min="1" max="48" data-field="hours" value="' + esc(state.hours != null ? state.hours : 3) + '"></label>');
+      return configBlock +
+        renderEventDateField(state) +
+        (state.labourPlanning !== 'shifts' && !custom
+          ? renderBarista1HoursField(state, { hint: 'How long Barista 1 is on site for this event.' })
+          : '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
+            '<input type="number" min="1" max="48" data-field="hours" value="' + esc(state.hours != null ? state.hours : 3) + '"></label>');
     }
     var mode = state.labourPlanning === 'shifts' ? 'shifts' : 'hours';
     var html = configBlock + '<fieldset class="lp-oq-plan"><legend>Event scheduling</legend>' +
       '<label class="lp-oq-radio"><input type="radio" name="lp-oq-labour" value="hours"' + (mode === 'hours' ? ' checked' : '') + '> Simple hours</label>' +
       '<label class="lp-oq-radio"><input type="radio" name="lp-oq-labour" value="shifts"' + (mode === 'shifts' ? ' checked' : '') + '> Multi-day shift planner</label>';
     if (mode === 'hours') {
+      html += renderEventDateField(state);
       if (!custom) {
         html += renderBarista1HoursField(state, {
           hint: multi
@@ -744,6 +765,11 @@
         rerender();
       });
     });
+    root.querySelectorAll('[data-field="eventDate"]').forEach(function(inp) {
+      inp.addEventListener('change', function() {
+        state.eventDate = inp.value || '';
+      });
+    });
     root.querySelectorAll('[data-shift-field]').forEach(function(inp) {
       inp.addEventListener('change', function() {
         var row = inp.closest('[data-shift-idx]');
@@ -995,6 +1021,7 @@
     var p = {
       productId: state.productId,
       hours: state.hours,
+      eventDate: state.eventDate || '',
       eventConfigMode: state.eventConfigMode || 'same',
       guestCount: state.guestCount,
       unitCount: state.unitCount,
@@ -1021,11 +1048,16 @@
         };
       })
     };
-    if (p.labourPlanning !== 'shifts') delete p.shifts;
-    else if (Array.isArray(p.shifts)) {
-      p.shifts = p.shifts.map(function(sh) {
-        return { date: sh.date, startTime: sh.startTime, endTime: sh.endTime };
-      });
+    if (p.labourPlanning !== 'shifts') {
+      delete p.shifts;
+      if (!p.eventDate) delete p.eventDate;
+    } else {
+      delete p.eventDate;
+      if (Array.isArray(p.shifts)) {
+        p.shifts = p.shifts.map(function(sh) {
+          return { date: sh.date, startTime: sh.startTime, endTime: sh.endTime };
+        });
+      }
     }
     if (p.carts && p.carts.length === 1) {
       p.extraBaristas = p.carts[0].extraBaristas;
@@ -1045,6 +1077,8 @@
     ensureShifts: ensureShifts,
     setGlobalBarista1Hours: setGlobalBarista1Hours,
     renderLabourPlanning: renderLabourPlanning,
+    renderEventDateField: renderEventDateField,
+    syncEventFieldsFromDom: syncEventFieldsFromDom,
     renderStaffing: renderStaffing,
     renderCartRows: renderCartRows,
     renderPackageQty: renderPackageQty,
