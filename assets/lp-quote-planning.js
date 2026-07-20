@@ -612,6 +612,15 @@
     return html;
   }
 
+  function syncBeverageQtyFromDom(root, state) {
+    if (!root || !state) return;
+    root.querySelectorAll('[data-bev-qty-input]').forEach(function(inp) {
+      var id = inp.getAttribute('data-bev-qty-input');
+      if (!id) return;
+      setBeverageLineQty(state, id, inp.value);
+    });
+  }
+
   function wireBeverageQty(root, state, rerender) {
     if (!root) return;
     if (root.__lpOqBevWired) return;
@@ -632,8 +641,15 @@
       var inp = e.target.closest('[data-bev-qty-input]');
       if (!inp || !root.contains(inp)) return;
       e.stopPropagation();
+      // Update state only — do not re-render. Re-rendering here destroys the
+      // Continue button mid-click (blur→change before click), so Packages→Travel
+      // appears to pause, then a second Continue can skip Travel.
       setBeverageLineQty(state, inp.getAttribute('data-bev-qty-input'), inp.value);
-      if (typeof rerender === 'function') rerender();
+      var card = inp.closest('[data-bev-card]');
+      if (card) {
+        var qty = beverageLineQty(state, inp.getAttribute('data-bev-qty-input'));
+        card.classList.toggle('is-selected', qty > 0);
+      }
     });
     root.addEventListener('click', function(e) {
       if (e.target.closest('[data-bev-qty-delta]') || e.target.closest('[data-bev-qty-input]') || e.target.closest('.lp-oq-bev-qty')) return;
@@ -839,6 +855,94 @@
     });
   }
 
+  function customFieldsFor(wizard, attachTo) {
+    var W = global.LPQuoteWizardLogic;
+    if (W && W.customFieldsFor) return W.customFieldsFor(wizard, attachTo);
+    return [];
+  }
+
+  function renderCustomFieldsHtml(fields, answers, opts) {
+    opts = opts || {};
+    var attr = opts.attr || 'data-custom-field';
+    var escFn = opts.esc || esc;
+    answers = answers || {};
+    return (fields || []).map(function(f) {
+      var val = answers[f.id];
+      if (val == null) val = '';
+      var req = f.required ? ' <span aria-hidden="true">*</span>' : '';
+      var help = f.helpText
+        ? '<small class="lp-oq-muted">' + escFn(f.helpText) + '</small>'
+        : '';
+      var label = '<span>' + escFn(f.label || 'Question') + req + '</span>';
+      if (f.type === 'textarea') {
+        return '<label class="lp-oq-field">' + label +
+          '<textarea rows="3" ' + attr + '="' + escFn(f.id) + '" placeholder="' + escFn(f.placeholder || '') + '">' +
+          escFn(val) + '</textarea>' + help + '</label>';
+      }
+      if (f.type === 'checkbox') {
+        return '<label class="lp-oq-check lp-oq-field"><input type="checkbox" ' + attr + '="' + escFn(f.id) + '"' +
+          (val ? ' checked' : '') + '> <span>' + escFn(f.label || 'Yes') + req + '</span></label>' + help;
+      }
+      if (f.type === 'select') {
+        var optsHtml = '<option value="">' + escFn(f.placeholder || 'Select…') + '</option>' +
+          (f.options || []).map(function(o) {
+            return '<option value="' + escFn(o) + '"' + (String(val) === String(o) ? ' selected' : '') + '>' +
+              escFn(o) + '</option>';
+          }).join('');
+        return '<label class="lp-oq-field">' + label +
+          '<select ' + attr + '="' + escFn(f.id) + '">' + optsHtml + '</select>' + help + '</label>';
+      }
+      var type = (f.type === 'email' || f.type === 'tel' || f.type === 'number' || f.type === 'date')
+        ? f.type
+        : 'text';
+      return '<label class="lp-oq-field">' + label +
+        '<input type="' + type + '" ' + attr + '="' + escFn(f.id) + '" placeholder="' + escFn(f.placeholder || '') +
+        '" value="' + escFn(val) + '">' + help + '</label>';
+    }).join('');
+  }
+
+  function syncCustomAnswersFromDom(root, state, attr) {
+    if (!root || !state) return;
+    attr = attr || 'data-custom-field';
+    if (!state.customAnswers || typeof state.customAnswers !== 'object') state.customAnswers = {};
+    root.querySelectorAll('[' + attr + ']').forEach(function(el) {
+      var id = el.getAttribute(attr);
+      if (!id) return;
+      if (el.type === 'checkbox') state.customAnswers[id] = !!el.checked;
+      else state.customAnswers[id] = el.value;
+    });
+  }
+
+  function wireCustomFields(root, state, attr) {
+    if (!root || !state) return;
+    attr = attr || 'data-custom-field';
+    if (!state.customAnswers || typeof state.customAnswers !== 'object') state.customAnswers = {};
+    root.querySelectorAll('[' + attr + ']').forEach(function(el) {
+      var evt = el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input';
+      el.addEventListener(evt, function() {
+        var id = el.getAttribute(attr);
+        if (!id) return;
+        if (el.type === 'checkbox') state.customAnswers[id] = !!el.checked;
+        else state.customAnswers[id] = el.value;
+      });
+    });
+  }
+
+  function validateCustomFields(fields, answers) {
+    answers = answers || {};
+    for (var i = 0; i < (fields || []).length; i++) {
+      var f = fields[i];
+      if (!f || !f.required) continue;
+      var v = answers[f.id];
+      if (f.type === 'checkbox') {
+        if (!v) return 'Please confirm: ' + (f.label || 'required field');
+      } else if (v == null || String(v).trim() === '') {
+        return 'Please fill in: ' + (f.label || 'required field');
+      }
+    }
+    return null;
+  }
+
   function progressPayload(state) {
     if (!Array.isArray(state.carts)) state.carts = [];
     ensureBeverageLines(state);
@@ -857,6 +961,9 @@
       travelZoneId: state.travelZoneId,
       labourPlanning: state.labourPlanning || 'hours',
       shifts: state.shifts,
+      customAnswers: state.customAnswers && typeof state.customAnswers === 'object'
+        ? state.customAnswers
+        : {},
       carts: state.carts.map(function(c) {
         return {
           productId: c.productId,
@@ -898,6 +1005,7 @@
     renderPackageQty: renderPackageQty,
     renderBeverageQtyCards: renderBeverageQtyCards,
     wireBeverageQty: wireBeverageQty,
+    syncBeverageQtyFromDom: syncBeverageQtyFromDom,
     setBeverageLineQty: setBeverageLineQty,
     beverageLineQty: beverageLineQty,
     wireLabourPlanning: wireLabourPlanning,
@@ -906,6 +1014,11 @@
     renderTravelZoneRows: renderTravelZoneRows,
     wireTravelZoneRows: wireTravelZoneRows,
     progressPayload: progressPayload,
-    packageQtyLabel: packageQtyLabel
+    packageQtyLabel: packageQtyLabel,
+    customFieldsFor: customFieldsFor,
+    renderCustomFieldsHtml: renderCustomFieldsHtml,
+    syncCustomAnswersFromDom: syncCustomAnswersFromDom,
+    wireCustomFields: wireCustomFields,
+    validateCustomFields: validateCustomFields
   };
 })(typeof window !== 'undefined' ? window : global);

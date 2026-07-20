@@ -10,7 +10,12 @@
     { id: 'beverages', label: 'Packages / catering', icon: 'users' },
     { id: 'travel', label: 'Travel zone', icon: 'map-pin' },
     { id: 'addons', label: 'Add-ons & extras', icon: 'plus-circle' },
+    { id: 'custom', label: 'Custom questions', icon: 'sparkles' },
     { id: 'contact', label: 'Contact details', icon: 'mail' }
+  ];
+
+  var CUSTOM_FIELD_TYPES = (global.LPQuoteWizardLogic && global.LPQuoteWizardLogic.CUSTOM_FIELD_TYPES) || [
+    'text', 'textarea', 'email', 'tel', 'number', 'select', 'checkbox', 'date'
   ];
 
   var LAYOUTS = [
@@ -76,6 +81,15 @@
     if (!cfg.wizard.equipmentCards) cfg.wizard.equipmentCards = {};
     if (!cfg.wizard.ui) cfg.wizard.ui = {};
     if (cfg.wizard.allowMultiCart == null) cfg.wizard.allowMultiCart = false;
+    var Wnorm = wl();
+    if (Wnorm.normalizeCustomFields) {
+      cfg.wizard.customFields = Wnorm.normalizeCustomFields(cfg.wizard.customFields);
+    } else if (!Array.isArray(cfg.wizard.customFields)) {
+      cfg.wizard.customFields = [];
+    }
+    if (Wnorm.ensureCustomStepInSteps) {
+      cfg.wizard.steps = Wnorm.ensureCustomStepInSteps(cfg.wizard.steps, cfg.wizard.customFields);
+    }
     cfg.products = Array.isArray(cfg.products) ? cfg.products : [];
     cfg.beverages = Array.isArray(cfg.beverages) ? cfg.beverages : [];
     cfg.addons = Array.isArray(cfg.addons) ? cfg.addons : [];
@@ -159,7 +173,7 @@
     this.previewProgress = {
       productId: '', hours: 3, guestCount: 50, unitCount: null,
       labourPlanning: 'hours', eventConfigMode: 'same', shifts: [], carts: [],
-      beverageId: '', beverageLines: [], addonIds: [], travelZoneId: ''
+      beverageId: '', beverageLines: [], addonIds: [], travelZoneId: '', customAnswers: {}
     };
     this.previewStep = 0;
     this.previewZoom = 100;
@@ -184,6 +198,7 @@
     var tabs = [
       ['overview', 'Overview'],
       ['wizard', 'Wizard flow'],
+      ['questions', 'Questions'],
       ['products', 'Products'],
       ['labour', 'Labour'],
       ['packages', 'Packages'],
@@ -296,15 +311,27 @@
   };
 
   QuoteBuilder.prototype._ensurePreviewEquipmentStep = function() {
+    this._jumpPreviewToStep('equipment') || this._jumpPreviewToStep('products');
+  };
+
+  QuoteBuilder.prototype._jumpPreviewToStep = function(stepId) {
     var shell = this._toShell();
     var W = wl();
     var tz = (shell.travelZones || []).length;
     var steps = W.resolveWizardSteps
       ? W.resolveWizardSteps(shell.wizard, this.previewProgress, tz)
       : (shell.wizard.steps || ['equipment', 'contact']);
-    var idx = steps.indexOf('equipment');
-    if (idx < 0) idx = steps.indexOf('products');
-    if (idx >= 0) this.previewStep = idx;
+    var idx = steps.indexOf(stepId);
+    if (idx < 0 && stepId === 'custom') {
+      // Fall back to event/contact if custom fields are attached there
+      idx = steps.indexOf('event');
+      if (idx < 0) idx = steps.indexOf('contact');
+    }
+    if (idx >= 0) {
+      this.previewStep = idx;
+      return true;
+    }
+    return false;
   };
 
   QuoteBuilder.prototype._previewNeedsEquipment = function(path) {
@@ -544,9 +571,26 @@
       var eventStaffing = (Pe && Pe.renderStaffing)
         ? Pe.renderStaffing(progress, shell, eventProds)
         : '';
+      var eventExtra = (Pe && Pe.renderCustomFieldsHtml)
+        ? Pe.renderCustomFieldsHtml(
+          (W.customFieldsFor ? W.customFieldsFor(shell.wizard, 'event') : []),
+          progress.customAnswers || {},
+          { esc: esc, attr: 'data-prev-custom' }
+        )
+        : '';
       body = wrap({
         intro: '<p class="lp-oq-intro">When is your event, and how many baristas do you need?</p>',
-        fields: eventFields + eventStaffing
+        fields: eventFields + eventStaffing + eventExtra
+      });
+    } else if (stepKey === 'custom' || stepKey === 'questions') {
+      var Pc = global.LPQuotePlanning;
+      var customFields = W.customFieldsFor ? W.customFieldsFor(shell.wizard, 'custom') : [];
+      var customHtml = (Pc && Pc.renderCustomFieldsHtml)
+        ? Pc.renderCustomFieldsHtml(customFields, progress.customAnswers || {}, { esc: esc, attr: 'data-prev-custom' })
+        : '';
+      body = wrap({
+        intro: '<p class="lp-oq-intro">A few more details about your event.</p>',
+        fields: customHtml || '<p class="lp-oq-muted">No custom questions yet — add some in the Questions tab.</p>'
       });
     } else if (stepKey === 'equipment' || stepKey === 'products') {
       var P = global.LPQuotePlanning;
@@ -613,9 +657,17 @@
         }).join('')
       });
     } else {
+      var Pcontact = global.LPQuotePlanning;
+      var contactExtra = (Pcontact && Pcontact.renderCustomFieldsHtml)
+        ? Pcontact.renderCustomFieldsHtml(
+          (W.customFieldsFor ? W.customFieldsFor(shell.wizard, 'contact') : []),
+          progress.customAnswers || {},
+          { esc: esc, attr: 'data-prev-custom' }
+        )
+        : '';
       body = wrap({
         intro: '<p class="lp-oq-intro">Contact details (preview).</p>',
-        fields: '<label class="lp-oq-field"><span>Name</span><input disabled placeholder="Customer name"></label>'
+        fields: '<label class="lp-oq-field"><span>Name</span><input disabled placeholder="Customer name"></label>' + contactExtra
       });
     }
 
@@ -642,6 +694,7 @@
   QuoteBuilder.prototype._renderTab = function() {
     switch (this.tab) {
       case 'wizard': return this._renderWizard();
+      case 'questions': return this._renderQuestions();
       case 'products': return this._renderProducts();
       case 'labour': return this._renderLabour();
       case 'packages': return this._renderPackages();
@@ -650,6 +703,65 @@
       case 'rules': return this._renderRules();
       default: return this._renderOverview();
     }
+  };
+
+  QuoteBuilder.prototype._ensureCustomStep = function() {
+    var W = wl();
+    if (!this.config.wizard) this.config.wizard = {};
+    if (W.ensureCustomStepInSteps) {
+      this.config.wizard.steps = W.ensureCustomStepInSteps(
+        this.config.wizard.steps || [],
+        this.config.wizard.customFields || []
+      );
+    }
+  };
+
+  QuoteBuilder.prototype._renderQuestions = function() {
+    var self = this;
+    var list = (this.config.wizard && this.config.wizard.customFields) || [];
+    var typeOpts = CUSTOM_FIELD_TYPES.map(function(t) {
+      var labels = {
+        text: 'Short text',
+        textarea: 'Long text / text box',
+        email: 'Email',
+        tel: 'Phone',
+        number: 'Number',
+        select: 'Dropdown',
+        checkbox: 'Checkbox',
+        date: 'Date'
+      };
+      return { id: t, label: labels[t] || t };
+    });
+    var cards = list.map(function(f, i) {
+      var typeSelect = '<select data-oqb-path="wizard.customFields.' + i + '.type">' +
+        typeOpts.map(function(t) {
+          return '<option value="' + t.id + '"' + (f.type === t.id ? ' selected' : '') + '>' + esc(t.label) + '</option>';
+        }).join('') + '</select>';
+      var attachSelect = '<select data-oqb-path="wizard.customFields.' + i + '.attachTo">' +
+        '<option value="custom"' + (f.attachTo === 'custom' || !f.attachTo ? ' selected' : '') + '>Own step (Custom questions)</option>' +
+        '<option value="event"' + (f.attachTo === 'event' ? ' selected' : '') + '>Event details step</option>' +
+        '<option value="contact"' + (f.attachTo === 'contact' ? ' selected' : '') + '>Contact / Your details step</option>' +
+        '</select>';
+      var optionsField = f.type === 'select'
+        ? self._field('Dropdown options (one per line)',
+          '<textarea rows="3" data-oqb-path="wizard.customFields.' + i + '.options" placeholder="Wedding&#10;Corporate&#10;Private party">' +
+          esc((f.options || []).join('\n')) + '</textarea>')
+        : '';
+      var fields = '<div class="oqb-grid">'
+        + self._field('Question / label', '<input type="text" data-oqb-path="wizard.customFields.' + i + '.label" value="' + esc(f.label || '') + '" placeholder="e.g. Venue name">')
+        + self._field('Field type', typeSelect)
+        + self._field('Show on', attachSelect)
+        + self._field('Placeholder', '<input type="text" data-oqb-path="wizard.customFields.' + i + '.placeholder" value="' + esc(f.placeholder || '') + '" placeholder="Hint text inside the field">')
+        + self._field('Help text', '<input type="text" data-oqb-path="wizard.customFields.' + i + '.helpText" value="' + esc(f.helpText || '') + '" placeholder="Optional note under the field">')
+        + self._field('Required', '<label class="oqb-check"><input type="checkbox" data-oqb-path="wizard.customFields.' + i + '.required"' + (f.required ? ' checked' : '') + '> Customer must answer before continuing</label>')
+        + optionsField
+        + '<input type="hidden" data-oqb-path="wizard.customFields.' + i + '.id" value="' + esc(f.id || '') + '">'
+        + '</div>';
+      return self._itemCard(f.label || 'New question', i, 'wizard.customFields', fields, i > 0, i < list.length - 1);
+    }).join('');
+    return '<p class="oqb-hint">Ask anything you need — venue name, event type, parking notes, dietary requirements. Fields can sit on a dedicated <strong>Custom questions</strong> step, or append to Event details / Your details.</p>'
+      + '<div class="oqb-items">' + (cards || '<p class="oqb-empty">No custom questions yet.</p>') + '</div>'
+      + '<button type="button" class="btn ghost" data-oqb-add="customFields">+ Add question</button>';
   };
 
   QuoteBuilder.prototype._choiceHtml = function(item) {
@@ -1198,8 +1310,12 @@
         var mq = parseInt(value, 10);
         obj[last] = (!isNaN(mq) && mq > 0) ? mq : null;
       }
-    } else if (last === 'allowShiftPlanner' || last === 'allowQuantity' || last === 'allowExtraBarista' || last === 'enabled' || last === 'allowMultiCart') {
+    } else if (last === 'allowShiftPlanner' || last === 'allowQuantity' || last === 'allowExtraBarista' || last === 'enabled' || last === 'allowMultiCart' || last === 'required') {
       obj[last] = !!value;
+    } else if (last === 'options') {
+      obj[last] = String(value || '').split(/\n/).map(function(s) { return s.trim(); }).filter(Boolean);
+    } else if (last === 'attachTo') {
+      obj[last] = (value === 'event' || value === 'contact') ? value : 'custom';
     } else if (last === 'imageScale') {
       var sc = parseInt(value, 10);
       obj[last] = isNaN(sc) ? 100 : Math.min(250, Math.max(50, sc));
@@ -1245,6 +1361,7 @@
     });
     var layout = this.root.querySelector('input[name="oqb-layout"]:checked');
     if (layout) this.config.wizard.layout = layout.value;
+    this._ensureCustomStep();
   };
 
   QuoteBuilder.prototype._wire = function() {
@@ -1266,6 +1383,9 @@
           self.previewPinEquipment = true;
           self._ensurePreviewEquipmentStep();
           // Keep full equipment grid visible while styling (opt-in via Focus checkbox)
+        }
+        if (self.tab === 'questions') {
+          self._jumpPreviewToStep('custom');
         }
         self._render();
       });
@@ -1620,6 +1740,21 @@
           unitLabel: 'units', icon: 'users', displayMode: 'icon'
         });
         if (kind === 'addons') self.config.addons.push({ id: uid('addon'), label: 'New add-on', fixedCents: 0, icon: 'plus-circle', displayMode: 'icon' });
+        if (kind === 'customFields') {
+          if (!self.config.wizard) self.config.wizard = {};
+          if (!Array.isArray(self.config.wizard.customFields)) self.config.wizard.customFields = [];
+          self.config.wizard.customFields.push({
+            id: uid('field'),
+            type: 'text',
+            label: 'New question',
+            placeholder: '',
+            helpText: '',
+            required: false,
+            options: [],
+            attachTo: 'custom'
+          });
+          self._ensureCustomStep();
+        }
         if (kind === 'travel') {
           if (!self.config.travel) self.config.travel = { zones: [] };
           self.config.travel.zones.push({
@@ -1659,6 +1794,11 @@
         else if (path === 'beverages') { removed = self.config.beverages[idx]; self.config.beverages.splice(idx, 1); }
         else if (path === 'addons') { removed = self.config.addons[idx]; self.config.addons.splice(idx, 1); }
         else if (path === 'travel.zones') { removed = self.config.travel.zones[idx]; self.config.travel.zones.splice(idx, 1); }
+        else if (path === 'wizard.customFields') {
+          removed = self.config.wizard.customFields[idx];
+          self.config.wizard.customFields.splice(idx, 1);
+          self._ensureCustomStep();
+        }
         if (removed) self._deleteItemImage(removed);
         self._render();
       });
@@ -1677,6 +1817,7 @@
         else if (path === 'beverages') list = self.config.beverages;
         else if (path === 'addons') list = self.config.addons;
         else if (path === 'travel.zones') list = self.config.travel.zones;
+        else if (path === 'wizard.customFields') list = self.config.wizard.customFields;
         if (!list) return;
         var j = dir === 'up' ? idx - 1 : idx + 1;
         if (j < 0 || j >= list.length) return;
@@ -1792,6 +1933,13 @@
             if (!bev.unitLabel) bev.unitLabel = 'units';
           }
         }
+        self._render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-oqb-path*="wizard.customFields."][data-oqb-path$=".type"], [data-oqb-path*="wizard.customFields."][data-oqb-path$=".attachTo"]').forEach(function(sel) {
+      sel.addEventListener('change', function() {
+        self._syncFromDom();
         self._render();
       });
     });
@@ -1933,16 +2081,37 @@
       });
     });
 
+    if (P && P.wireCustomFields) {
+      P.wireCustomFields(root, this.previewProgress, 'data-prev-custom');
+    }
+
     root.querySelectorAll('[data-prev-act]').forEach(function(btn) {
+      btn.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+      });
       btn.addEventListener('click', function() {
         var act = btn.getAttribute('data-prev-act');
+        if (P && P.syncBeverageQtyFromDom) P.syncBeverageQtyFromDom(root, self.previewProgress);
+        if (P && P.syncCustomAnswersFromDom) {
+          P.syncCustomAnswersFromDom(root, self.previewProgress, 'data-prev-custom');
+        }
         var shell = self._toShell();
         var W = wl();
-        var steps = W.resolveWizardSteps
+        var before = W.resolveWizardSteps
           ? W.resolveWizardSteps(shell.wizard, self.previewProgress, shell.travelZones.length)
           : (shell.wizard.steps || ['contact']);
-        if (act === 'back') self.previewStep = Math.max(0, self.previewStep - 1);
-        else if (act === 'next') self.previewStep = Math.min(steps.length - 1, self.previewStep + 1);
+        var idx = self.previewStep;
+        self._reconcilePreviewSelections();
+        var after = W.resolveWizardSteps
+          ? W.resolveWizardSteps(shell.wizard, self.previewProgress, shell.travelZones.length)
+          : before;
+        var delta = act === 'back' ? -1 : 1;
+        if (W.stepIndexAfterMove) {
+          self.previewStep = W.stepIndexAfterMove(before, idx, delta, after);
+        } else {
+          self.previewStep = Math.max(0, Math.min(after.length - 1, idx + delta));
+        }
         self._refreshPreview();
       });
     });

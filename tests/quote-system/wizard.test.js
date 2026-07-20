@@ -4,7 +4,8 @@ const {
   resolveWizardSteps,
   filterByShowWhen,
   matchesWhen,
-  normalizeWizardSteps
+  normalizeWizardSteps,
+  stepIndexAfterMove
 } = require('../../lib/quote-system/wizard');
 
 test('resolveWizardSteps — skips travel when no zones', function() {
@@ -59,4 +60,20 @@ test('normalizeWizardSteps — event and equipment stay separate', function() {
 
 test('matchesWhen — wildcard', function() {
   assert.equal(matchesWhen({ field: 'productId', values: ['*'] }, {}), true);
+});
+
+test('stepIndexAfterMove — packages to travel stays on travel when list shifts', function() {
+  const before = ['equipment', 'event', 'beverages', 'travel', 'addons', 'contact'];
+  // travel temporarily drops out of the resolved list after reconcile
+  const afterMissingTravel = ['equipment', 'event', 'beverages', 'addons', 'contact'];
+  assert.equal(stepIndexAfterMove(before, 2, 1, before), 3); // beverages → travel
+  assert.equal(stepIndexAfterMove(before, 2, 1, afterMissingTravel), 3); // land on addons (next available after beverages)
+  assert.equal(afterMissingTravel[stepIndexAfterMove(before, 2, 1, afterMissingTravel)], 'addons');
+});
+
+test('stepIndexAfterMove — does not skip travel when steps unchanged', function() {
+  const steps = ['equipment', 'event', 'beverages', 'travel', 'addons', 'contact'];
+  assert.equal(steps[stepIndexAfterMove(steps, 2, 1, steps)], 'travel');
+  assert.equal(steps[stepIndexAfterMove(steps, 3, 1, steps)], 'addons');
+  assert.equal(steps[stepIndexAfterMove(steps, 3, -1, steps)], 'beverages');
 });

@@ -52,7 +52,7 @@ assert.ok(builder.includes('Group on Packages step'), 'builder group field');
 assert.ok(builder.includes("value=\"catering\""), 'catering group option');
 
 assert.ok(display.includes('lp-oq-bev-grid'), 'bev grid CSS');
-assert.ok(manage.includes('oq-pkg-multi-1'), 'manage cache-bust');
-assert.ok(render.includes('oq-pkg-multi-1'), 'render cache-bust');
+assert.ok(manage.includes('oq-step-nav-1'), 'manage cache-bust');
+assert.ok(render.includes('oq-step-nav-1'), 'render cache-bust');
 
 console.log('quote-packages-multi-qty.test.js: ok');
