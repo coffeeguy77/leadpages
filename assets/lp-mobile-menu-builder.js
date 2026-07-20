@@ -68,7 +68,7 @@
     'nav-landing': 'Landing pages',
     'nav-ai-team': 'AI Website Team',
     'nav-apps': 'App Marketplace',
-    'nav-onlinequotes': 'Online quotes',
+    'nav-onlinequotes': 'Quote Builder',
     'nav-mailer': 'Newsletter',
     'nav-messages': 'Support',
     'nav-appearance': 'Appearance',
@@ -469,7 +469,11 @@
 
   function itemDisplayLabel(id) {
     var el = document.getElementById(id);
-    if (el && (el.textContent || '').trim()) return (el.textContent || '').trim();
+    if (el) {
+      var aria = el.getAttribute('aria-label');
+      if (aria && aria.trim()) return aria.trim();
+      if ((el.textContent || '').trim()) return (el.textContent || '').replace(/\s+/g, ' ').trim();
+    }
     return itemLabel(id);
   }
 
@@ -584,7 +588,7 @@
     return collectNavButtons(null).map(function (btn) {
       return {
         id: btn.id || '',
-        label: (btn.textContent || '').trim() || btn.id || 'Menu',
+        label: (btn.getAttribute('aria-label') || btn.textContent || '').replace(/\s+/g, ' ').trim() || btn.id || 'Menu',
         el: btn
       };
     });
@@ -748,14 +752,14 @@
     if (typeof global.lpGetDrawerNavButtons === 'function') {
       try {
         return global.lpGetDrawerNavButtons().map(function (btn) {
-          return { id: btn.id || '', label: (btn.textContent || '').trim() || btn.id };
+          return { id: btn.id || '', label: (btn.getAttribute('aria-label') || btn.textContent || '').replace(/\s+/g, ' ').trim() || btn.id };
         });
       } catch (e) { /* ignore */ }
     }
     var nav = getNavHome();
     if (!nav) return [];
     return Array.prototype.filter.call(nav.querySelectorAll('.anav-btn'), navButtonShown).map(function (btn) {
-      return { id: btn.id || '', label: (btn.textContent || '').trim() || btn.id };
+      return { id: btn.id || '', label: (btn.getAttribute('aria-label') || btn.textContent || '').replace(/\s+/g, ' ').trim() || btn.id };
     });
   }
 

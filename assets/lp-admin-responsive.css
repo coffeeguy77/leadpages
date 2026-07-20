@@ -281,9 +281,26 @@ body.lp-drawer-open .lp-admin-drawer {
   padding: 11px 14px;
   margin: 0;
   display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  align-items: baseline !important;
+  justify-content: flex-start !important;
+  min-height: 0;
   visibility: visible !important;
   background: transparent;
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent) !important;
+}
+.lp-drawer-body .anav-btn .anav-l1,
+.lp-drawer-body .anav-btn .anav-l2 {
+  display: inline;
+}
+.lp-drawer-body .anav-btn .anav-gap {
+  font-size: inherit;
+  line-height: inherit;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  display: inline;
 }
 .lp-drawer-body .anav-btn[aria-selected="true"] {
   background: color-mix(in srgb, var(--accent) 16%, transparent);
