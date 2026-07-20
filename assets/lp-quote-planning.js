@@ -410,8 +410,9 @@
     var previewFocus = !!h.previewFocusSingle;
     var displayProducts = previewFocus ? products.slice(0, 1) : products;
     var carts = ensureCarts(state, products);
-    var layout = (shell && shell.wizard && shell.wizard.layout) || 'cards';
-    var gridCls = layout === 'grid' ? 'lp-oq-choices fp-grid lp-oq-fp-grid' : 'lp-oq-choices';
+    // Always attach the equipment grid class so photo cards sit in a row
+    // (list layout CSS on the shell still stacks them vertically).
+    var gridCls = 'lp-oq-choices fp-grid lp-oq-fp-grid';
     if (previewFocus) gridCls += ' lp-oq-preview-focus-single';
     var D = global.LPQuoteDisplay;
     var cardVars = (D && D.equipmentCardVars) ? D.equipmentCardVars(shell) : '';

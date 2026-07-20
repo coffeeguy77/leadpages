@@ -1013,11 +1013,28 @@
   min-height: 64px;
 }
 
-.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choices,
+/* Choice chips in grid layout — do not apply to equipment photo cards (.lp-oq-fp-grid) */
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid),
 .oqb-preview-mock .lp-oq-layout-grid .lp-oq-stack {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
+}
+
+/* Equipment photo cards: always side-by-side in the live preview */
+.oqb-preview-mock .lp-oq-fp-grid.fp-grid,
+.oqb-preview-mock .lp-oq-choices.lp-oq-fp-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)) !important;
+  gap: 16px;
+  width: 100%;
+  align-items: stretch;
+}
+.oqb-preview-mock .lp-oq-layout-list .lp-oq-fp-grid.fp-grid,
+.oqb-preview-mock .lp-oq-layout-list .lp-oq-choices.lp-oq-fp-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px;
 }
 
 .oqb-preview-mock .lp-oq-layout-grid .lp-oq-choice {
