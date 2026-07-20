@@ -24,7 +24,11 @@ assert.ok(ui.includes("specialist: 'scout'"), 'seo routes to Scout label');
 assert.ok(ui.includes("specialist: 'nova'"), 'slider routes to Nova label');
 assert.ok(ui.includes("specialist: 'pulse'"), 'quote/cta routes to Pulse');
 assert.ok(ui.includes('withSpecialist'), 'cards show withSpecialist');
-assert.ok(ui.includes('Building a live suggestion card'), 'conversion to live card copy');
+assert.ok(ui.includes('ai-step-help'), 'field help copy in Answer modal');
+assert.ok(ui.includes('background:transparent'), 'transparent input fields');
+assert.ok(ui.includes('border-radius:12px'), 'rounded inputs');
+assert.ok(ui.includes('forceReload') || ui.includes('_siteId'), 'cached panel load');
+assert.ok(ui.includes('Opening…') || ui.includes('quiet: true'), 'no blank Loading Site Brain gate on revisit');
 
 assert.equal(askTopics.listAskTopics().length >= 6, true);
 assert.equal(askTopics.composeTopicRequest('landing', 'cold coffee options'), 'landing page: cold coffee options');

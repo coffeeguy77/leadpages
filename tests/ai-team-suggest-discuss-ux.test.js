@@ -47,13 +47,24 @@ assert.ok(landingOutline.some((s) => /Landing pages/i.test(s)), 'mentions Landin
 const coldSteps = outline.buildPlanSteps('plan_seo_landing', {
   topic: 'landing page: cold coffee options'
 });
-assert.ok(coldSteps && coldSteps.length === 5, 'five structured landing steps');
+assert.ok(coldSteps && coldSteps.length === 4, 'four structured landing steps');
 assert.match(coldSteps[0].label, /cold coffee options/i);
 assert.ok(!/Plan a landing page for:\s*landing page:/i.test(coldSteps[0].label));
+assert.equal(coldSteps[1].id, 'seo_inputs');
 assert.equal(coldSteps[1].status, 'needs_answer');
-assert.equal(coldSteps[2].status, 'needs_answer');
-assert.ok(coldSteps[1].fields && coldSteps[1].fields.length >= 2, 'keywords fields');
-assert.ok(coldSteps[2].fields && coldSteps[2].fields.length >= 4, 'brief fields');
+assert.ok(coldSteps[1].fields && coldSteps[1].fields.length >= 4, 'Write with AI fields');
+assert.ok(
+  coldSteps[1].fields.some((f) => f.key === 'primaryKeyword'),
+  'primaryKeyword field'
+);
+assert.ok(coldSteps[1].fields.some((f) => f.key === 'location'), 'location field');
+assert.ok(coldSteps[1].fields.some((f) => f.key === 'extraInfo'), 'extraInfo field');
+assert.ok(
+  coldSteps[1].fields.some((f) => f.key === 'negativeKeywords'),
+  'negativeKeywords field'
+);
+assert.ok(!coldSteps.some((s) => s.id === 'brief'), 'no legacy brief step');
+assert.ok(!/proof point|main promise|top objections/i.test(JSON.stringify(coldSteps)));
 
 siteBrain.useMemoryForTests(true);
 siteBrain.resetMemoryStore();
@@ -99,41 +110,31 @@ siteBrain.resetMemoryStore();
   assert.match(String(cold.problem || ''), /^landing page:\s*cold coffee options$/i);
   assert.ok(!/Strengthen your primary call to action/i.test(String(cold.title || '')));
   const coldPlanSteps = coldChange.planSteps || [];
-  assert.equal(coldPlanSteps.length, 5);
+  assert.equal(coldPlanSteps.length, 4);
   assert.match(String(coldPlanSteps[0].label || ''), /Focus this landing page on:\s*[“"]cold coffee options[”"]/i);
+  assert.equal(coldPlanSteps[1].id, 'seo_inputs');
   assert.equal(coldPlanSteps[1].status, 'needs_answer');
-  assert.equal(coldPlanSteps[2].status, 'needs_answer');
+  assert.ok(!coldPlanSteps.some((s) => s.id === 'brief'));
 
   const answered = await aiTeam.answerStepRecommendation({
     siteId: 'discuss-1',
     recommendationId: cold.id,
-    stepId: 'keywords',
-    answers: { searchPhrase: 'cold coffee options', location: 'Canberra' },
-    actorUserId: 'u1',
-    actorRole: 'client'
-  });
-  assert.equal(answered.ok, true);
-  const kwStep = (answered.planSteps || []).find((s) => s.id === 'keywords');
-  assert.equal(kwStep.status, 'done');
-  assert.match(String(kwStep.label || ''), /Canberra/i);
-
-  const brief = await aiTeam.answerStepRecommendation({
-    siteId: 'discuss-1',
-    recommendationId: cold.id,
-    stepId: 'brief',
+    stepId: 'seo_inputs',
     answers: {
-      headline: 'Iced options that sell',
-      proofPoints: 'Fresh\nLocal\nFast',
-      objections: 'Too expensive',
-      cta: 'Book a tasting'
+      primaryKeyword: 'cold coffee options',
+      location: 'Canberra',
+      extraInfo: 'Iced drinks menu focus',
+      negativeKeywords: 'wedding, barista cart'
     },
     actorUserId: 'u1',
     actorRole: 'client'
   });
-  assert.equal(brief.ok, true);
-  const briefStep = (brief.planSteps || []).find((s) => s.id === 'brief');
-  assert.equal(briefStep.status, 'done');
-  const draftStep = (brief.planSteps || []).find((s) => s.id === 'draft');
+  assert.equal(answered.ok, true);
+  const seoStep = (answered.planSteps || []).find((s) => s.id === 'seo_inputs');
+  assert.equal(seoStep.status, 'done');
+  assert.match(String(seoStep.label || ''), /Canberra/i);
+  assert.ok((answered.recommendation.proposed_change || {}).landingAiInputs);
+  const draftStep = (answered.planSteps || []).find((s) => s.id === 'draft');
   assert.equal(draftStep.status, 'ready');
 
   siteBrain.resetMemoryStore();
@@ -207,7 +208,7 @@ siteBrain.resetMemoryStore();
   assert.match(String(asked.planOutline[0] || ''), /Canberra wedding/i, 'question must not overwrite plan focus');
   assert.ok(!/What is the primary search phrase/i.test(String(asked.planOutline[0] || '')));
   const lastAtlas = (asked.messages || []).filter((m) => m.role === 'atlas').pop();
-  assert.match(String(lastAtlas && lastAtlas.body) || '', /primary search phrase|Recommended/i);
+  assert.match(String(lastAtlas && lastAtlas.body) || '', /Primary keyword|Write with AI/i);
   assert.ok(!/I updated the plan/i.test(String(lastAtlas && lastAtlas.body) || ''));
 
   const listed = await siteBrain.listRecommendations('discuss-1');
