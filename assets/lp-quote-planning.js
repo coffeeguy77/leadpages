@@ -501,7 +501,8 @@
     if (bev && (bev.pricingMode === 'tiered' || (bev.tiers && bev.tiers.length))) {
       return bev.unitLabel || 'Units';
     }
-    return 'Expected guests';
+    if (bev && bev.unitLabel) return bev.unitLabel;
+    return 'Quantity';
   }
 
   function packageQtyValue(state) {
@@ -509,14 +510,163 @@
     return state.guestCount != null ? state.guestCount : 50;
   }
 
+  function ensureBeverageLines(state) {
+    if (!Array.isArray(state.beverageLines)) state.beverageLines = [];
+    if (!state.beverageLines.length && state.beverageId) {
+      var q = Math.max(1, Number(packageQtyValue(state)) || 50);
+      state.beverageLines = [{ beverageId: state.beverageId, quantity: q }];
+    }
+    return state.beverageLines;
+  }
+
+  function beverageLineQty(state, id) {
+    ensureBeverageLines(state);
+    var line = state.beverageLines.find(function(l) { return l.beverageId === id; });
+    return line ? Math.max(0, Number(line.quantity) || 0) : 0;
+  }
+
+  function syncBeverageLegacy(state) {
+    var lines = (state.beverageLines || []).filter(function(l) {
+      return l && l.beverageId && (Number(l.quantity) || 0) > 0;
+    });
+    state.beverageLines = lines;
+    if (lines.length) {
+      state.beverageId = lines[0].beverageId;
+      state.guestCount = lines[0].quantity;
+      state.unitCount = lines[0].quantity;
+    } else {
+      state.beverageId = '';
+    }
+  }
+
+  function setBeverageLineQty(state, id, qty) {
+    ensureBeverageLines(state);
+    qty = Math.max(0, Math.min(50000, parseInt(qty, 10) || 0));
+    var idx = -1;
+    for (var i = 0; i < state.beverageLines.length; i++) {
+      if (state.beverageLines[i].beverageId === id) { idx = i; break; }
+    }
+    if (qty <= 0) {
+      if (idx >= 0) state.beverageLines.splice(idx, 1);
+    } else if (idx >= 0) {
+      state.beverageLines[idx].quantity = qty;
+    } else {
+      state.beverageLines.push({ beverageId: id, quantity: qty });
+    }
+    syncBeverageLegacy(state);
+  }
+
+  function beverageGroupLabel(group) {
+    var g = String(group || '').toLowerCase();
+    if (g === 'catering') return 'Catering';
+    if (g === 'drinks' || g === 'beverage' || g === 'beverages') return 'Drinks';
+    if (g === 'other') return 'Other';
+    return '';
+  }
+
+  function renderBeverageQtyCards(state, shell, beverages, helpers) {
+    var list = beverages || [];
+    if (!list.length) return '<p class="lp-oq-muted">No packages for this selection.</p>';
+    ensureBeverageLines(state);
+    var h = helpers || {};
+    var D = global.LPQuoteDisplay;
+    var groups = [];
+    var byGroup = {};
+    list.forEach(function(b) {
+      var g = String(b.group || b.category || '').trim().toLowerCase() || '_default';
+      if (!byGroup[g]) {
+        byGroup[g] = [];
+        groups.push(g);
+      }
+      byGroup[g].push(b);
+    });
+
+    var html = '<div class="lp-oq-bev-wrap" data-lp-oq-beverages>';
+    groups.forEach(function(g) {
+      var heading = beverageGroupLabel(g);
+      if (heading) html += '<h4 class="lp-oq-bev-group">' + esc(heading) + '</h4>';
+      html += '<div class="lp-oq-choices lp-oq-bev-grid">';
+      byGroup[g].forEach(function(b) {
+        var qty = beverageLineQty(state, b.id);
+        var on = qty > 0 ? ' is-selected' : '';
+        var unit = packageQtyLabel(shell, b.id);
+        var visual = (D && D.choiceVisualHtml)
+          ? D.choiceVisualHtml(b, { esc: esc, iconHtml: h.iconHtml })
+          : ('<strong>' + esc(b.label || '') + '</strong>' +
+            (b.description ? '<span>' + esc(b.description) + '</span>' : ''));
+        html += '<div class="lp-oq-choice lp-oq-bev-card' + on + '" data-bev-card="' + esc(b.id) + '">' +
+          '<div class="lp-oq-bev-main">' + visual + '</div>' +
+          '<div class="lp-oq-bev-qty-row">' +
+          '<span class="lp-oq-bev-unit">' + esc(unit) + '</span>' +
+          '<div class="lp-oq-eq-qty lp-oq-bev-qty" data-bev-qty-wrap="' + esc(b.id) + '">' +
+          '<button type="button" class="lp-oq-eq-qty-btn lp-oq-bev-qty-btn" data-bev-qty-delta="-10" data-bev-id="' + esc(b.id) + '" aria-label="Decrease by 10">−10</button>' +
+          '<button type="button" class="lp-oq-eq-qty-btn lp-oq-bev-qty-btn" data-bev-qty-delta="-1" data-bev-id="' + esc(b.id) + '" aria-label="Decrease">−</button>' +
+          '<input type="number" class="lp-oq-bev-qty-input" min="0" max="50000" data-bev-qty-input="' + esc(b.id) + '" value="' + esc(qty) + '" aria-label="' + esc((b.label || 'Package') + ' quantity') + '">' +
+          '<button type="button" class="lp-oq-eq-qty-btn lp-oq-bev-qty-btn" data-bev-qty-delta="1" data-bev-id="' + esc(b.id) + '" aria-label="Increase">+</button>' +
+          '<button type="button" class="lp-oq-eq-qty-btn lp-oq-bev-qty-btn" data-bev-qty-delta="10" data-bev-id="' + esc(b.id) + '" aria-label="Increase by 10">+10</button>' +
+          '</div></div></div>';
+      });
+      html += '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function syncBeverageQtyFromDom(root, state) {
+    if (!root || !state) return;
+    root.querySelectorAll('[data-bev-qty-input]').forEach(function(inp) {
+      var id = inp.getAttribute('data-bev-qty-input');
+      if (!id) return;
+      setBeverageLineQty(state, id, inp.value);
+    });
+  }
+
+  function wireBeverageQty(root, state, rerender) {
+    if (!root) return;
+    if (root.__lpOqBevWired) return;
+    root.__lpOqBevWired = true;
+    root.addEventListener('click', function(e) {
+      var btn = e.target.closest('[data-bev-qty-delta]');
+      if (!btn || !root.contains(btn)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var id = btn.getAttribute('data-bev-id');
+      var delta = parseInt(btn.getAttribute('data-bev-qty-delta'), 10) || 0;
+      if (!id || !delta) return;
+      var next = beverageLineQty(state, id) + delta;
+      setBeverageLineQty(state, id, next);
+      if (typeof rerender === 'function') rerender();
+    });
+    root.addEventListener('change', function(e) {
+      var inp = e.target.closest('[data-bev-qty-input]');
+      if (!inp || !root.contains(inp)) return;
+      e.stopPropagation();
+      // Update state only — do not re-render. Re-rendering here destroys the
+      // Continue button mid-click (blur→change before click), so Packages→Travel
+      // appears to pause, then a second Continue can skip Travel.
+      setBeverageLineQty(state, inp.getAttribute('data-bev-qty-input'), inp.value);
+      var card = inp.closest('[data-bev-card]');
+      if (card) {
+        var qty = beverageLineQty(state, inp.getAttribute('data-bev-qty-input'));
+        card.classList.toggle('is-selected', qty > 0);
+      }
+    });
+    root.addEventListener('click', function(e) {
+      if (e.target.closest('[data-bev-qty-delta]') || e.target.closest('[data-bev-qty-input]') || e.target.closest('.lp-oq-bev-qty')) return;
+      var card = e.target.closest('[data-bev-card]');
+      if (!card || !root.contains(card)) return;
+      e.preventDefault();
+      var id = card.getAttribute('data-bev-card');
+      var cur = beverageLineQty(state, id);
+      // Tap card: if zero, start at 50; if already selected, leave qty (use steppers to change)
+      if (cur <= 0) setBeverageLineQty(state, id, 50);
+      if (typeof rerender === 'function') rerender();
+    });
+  }
+
+  /** @deprecated Prefer renderBeverageQtyCards — kept for back-compat */
   function renderPackageQty(state, shell) {
-    var field = state.beverageId ? packageQtyLabel(shell, state.beverageId) : 'Expected guests';
-    var val = packageQtyValue(state);
-    var dataField = (shell.beverages || []).some(function(b) {
-      return b.id === state.beverageId && (b.pricingMode === 'tiered' || (b.tiers && b.tiers.length));
-    }) ? 'unitCount' : 'guestCount';
-    return '<label class="lp-oq-field"><span>' + esc(field) + '</span>' +
-      '<input type="number" min="1" max="50000" data-field="' + dataField + '" value="' + esc(val) + '"></label>';
+    return renderBeverageQtyCards(state, shell, (shell && shell.beverages) || [], {});
   }
 
   function wireLabourPlanning(root, state, shell, rerender, products) {
@@ -795,6 +945,8 @@
 
   function progressPayload(state) {
     if (!Array.isArray(state.carts)) state.carts = [];
+    ensureBeverageLines(state);
+    syncBeverageLegacy(state);
     var p = {
       productId: state.productId,
       hours: state.hours,
@@ -802,6 +954,9 @@
       guestCount: state.guestCount,
       unitCount: state.unitCount,
       beverageId: state.beverageId,
+      beverageLines: (state.beverageLines || []).map(function(l) {
+        return { beverageId: l.beverageId, quantity: Math.max(0, Number(l.quantity) || 0) };
+      }).filter(function(l) { return l.beverageId && l.quantity > 0; }),
       addonIds: state.addonIds,
       travelZoneId: state.travelZoneId,
       labourPlanning: state.labourPlanning || 'hours',
@@ -848,6 +1003,11 @@
     renderStaffing: renderStaffing,
     renderCartRows: renderCartRows,
     renderPackageQty: renderPackageQty,
+    renderBeverageQtyCards: renderBeverageQtyCards,
+    wireBeverageQty: wireBeverageQty,
+    syncBeverageQtyFromDom: syncBeverageQtyFromDom,
+    setBeverageLineQty: setBeverageLineQty,
+    beverageLineQty: beverageLineQty,
     wireLabourPlanning: wireLabourPlanning,
     wireStaffing: wireStaffing,
     wireCartRows: wireCartRows,

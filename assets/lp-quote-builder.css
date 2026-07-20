@@ -1217,6 +1217,72 @@
 
 .oqb-preview-mock .lp-oq-muted { color: var(--lp-oq-muted, var(--ink-soft)); }
 
+.oqb-preview-mock .lp-oq-bev-group {
+  margin: 14px 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--lp-oq-intro, var(--lp-oq-label, var(--accent)));
+}
+.oqb-preview-mock .lp-oq-bev-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+.oqb-preview-mock .lp-oq-bev-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 !important;
+  width: auto;
+  height: 100%;
+}
+.oqb-preview-mock .lp-oq-bev-qty-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.oqb-preview-mock .lp-oq-bev-unit {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--lp-oq-label, var(--ink-soft));
+}
+.oqb-preview-mock .lp-oq-bev-qty {
+  display: inline-flex;
+  align-items: stretch;
+  border: 2px solid var(--lp-oq-qty-stroke, var(--accent));
+  border-radius: 10px;
+  color: var(--lp-oq-qty-color, var(--accent));
+  overflow: hidden;
+}
+.oqb-preview-mock .lp-oq-bev-qty-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 5px 7px;
+  font-size: 10px;
+  font-weight: 800;
+}
+.oqb-preview-mock .lp-oq-bev-qty-input {
+  width: 3.6em;
+  border: 0;
+  border-left: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  font-size: 16px;
+  text-align: center;
+  padding: 3px 2px;
+}
+
 .oqb-preview-mock .lp-oq-plan,
 .oqb-preview-mock .lp-oq-shift,
 .oqb-preview-mock .lp-oq-staff-row,

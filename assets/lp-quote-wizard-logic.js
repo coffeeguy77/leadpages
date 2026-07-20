@@ -179,6 +179,29 @@
     return stepId;
   }
 
+  function stepIndexAfterMove(stepsBefore, currentIndex, delta, stepsAfter) {
+    var before = Array.isArray(stepsBefore) ? stepsBefore : [];
+    var after = Array.isArray(stepsAfter) ? stepsAfter : before;
+    var curIdx = Math.max(0, Math.min(before.length - 1, Number(currentIndex) || 0));
+    var curKey = before[curIdx];
+    var targetIdx = curIdx + (delta < 0 ? -1 : 1);
+    var targetKey = before[targetIdx];
+
+    if (targetKey) {
+      var mapped = after.indexOf(targetKey);
+      if (mapped >= 0) return mapped;
+    }
+
+    var curAfter = after.indexOf(curKey);
+    if (curAfter >= 0) {
+      if (delta < 0) return Math.max(0, curAfter - 1);
+      return Math.min(after.length - 1, curAfter + 1);
+    }
+
+    if (delta < 0) return Math.max(0, Math.min(after.length - 1, curIdx - 1));
+    return Math.max(0, Math.min(after.length - 1, curIdx + 1));
+  }
+
   global.LPQuoteWizardLogic = {
     STEP_CATALOG: STEP_CATALOG,
     CUSTOM_FIELD_TYPES: CUSTOM_FIELD_TYPES,
@@ -193,6 +216,7 @@
     stepVisible: stepVisible,
     normalizeCustomField: normalizeCustomField,
     normalizeCustomFields: normalizeCustomFields,
-    customFieldsFor: customFieldsFor
+    customFieldsFor: customFieldsFor,
+    stepIndexAfterMove: stepIndexAfterMove
   };
 })(window);

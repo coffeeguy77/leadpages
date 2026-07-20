@@ -7,7 +7,7 @@
   var STEP_CATALOG = (global.LPQuoteWizardLogic && global.LPQuoteWizardLogic.STEP_CATALOG) || [
     { id: 'equipment', label: 'Equipment / products', icon: 'package' },
     { id: 'event', label: 'Event details', icon: 'calendar' },
-    { id: 'beverages', label: 'Packages / per-head', icon: 'users' },
+    { id: 'beverages', label: 'Packages / catering', icon: 'users' },
     { id: 'travel', label: 'Travel zone', icon: 'map-pin' },
     { id: 'addons', label: 'Add-ons & extras', icon: 'plus-circle' },
     { id: 'custom', label: 'Custom questions', icon: 'sparkles' },
@@ -119,6 +119,8 @@
       if (!b.id) b.id = slugify(b.label) || uid('bev');
       if (!b.pricingMode) b.pricingMode = (b.tiers && b.tiers.length) ? 'tiered' : (b.packageCents && !b.perHeadCents ? 'flat' : 'per_head');
       if (!Array.isArray(b.tiers)) b.tiers = [];
+      if (b.group == null && b.category) b.group = b.category;
+      if (b.group == null) b.group = '';
     });
     cfg.addons.forEach(function(a) { if (!a.id) a.id = slugify(a.label) || uid('addon'); });
     cfg.travel.zones.forEach(function(z) {
@@ -171,7 +173,7 @@
     this.previewProgress = {
       productId: '', hours: 3, guestCount: 50, unitCount: null,
       labourPlanning: 'hours', eventConfigMode: 'same', shifts: [], carts: [],
-      beverageId: '', addonIds: [], travelZoneId: '', customAnswers: {}
+      beverageId: '', beverageLines: [], addonIds: [], travelZoneId: '', customAnswers: {}
     };
     this.previewStep = 0;
     this.previewZoom = 100;
@@ -619,15 +621,17 @@
       body = wrap({ intro: '<p class="lp-oq-intro">What equipment would you like to hire?</p>', choices: choices });
     } else if (stepKey === 'beverages') {
       var Pq = global.LPQuotePlanning;
-      body = wrap({
-        intro: '<p class="lp-oq-intro">Guest count &amp; package.</p>',
-        fields: (Pq && Pq.renderPackageQty ? Pq.renderPackageQty(progress, shell) :
-          '<label class="lp-oq-field"><span>Guests</span><input type="number" data-prev-field="guestCount" value="' + esc(progress.guestCount) + '"></label>'),
-        choices: filter(shell.beverages, progress).map(function(b) {
+      var bevs = filter(shell.beverages, progress);
+      var bevChoices = (Pq && Pq.renderBeverageQtyCards)
+        ? Pq.renderBeverageQtyCards(progress, shell, bevs, { esc: esc, iconHtml: iconSvg })
+        : bevs.map(function(b) {
           var sel = progress.beverageId === b.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-prev-pick="beverageId" data-val="' + esc(b.id) + '">' +
             self._choiceHtml(b) + '</button>';
-        }).join('')
+        }).join('');
+      body = wrap({
+        intro: '<p class="lp-oq-intro">Set a quantity for each package or catering option you want. Leave others at 0.</p>',
+        choices: bevChoices
       });
     } else if (stepKey === 'travel') {
       var Pt = global.LPQuotePlanning;
@@ -1209,27 +1213,34 @@
           '<button type="button" class="btn ghost" data-oqb-add-tier="' + i + '">+ Add pricing tier</button></div>'
         : '';
       var fields = '<div class="oqb-grid">'
-        + self._field('Package name', '<input type="text" data-oqb-path="beverages.' + i + '.label" value="' + esc(b.label || '') + '">')
+        + self._field('Option name', '<input type="text" data-oqb-path="beverages.' + i + '.label" value="' + esc(b.label || '') + '">')
         + self._displayBlock('beverages.' + i, b, 'packages')
         + self._field('Pricing mode', '<select data-oqb-path="beverages.' + i + '.pricingMode">' +
-          '<option value="per_head"' + (mode === 'per_head' ? ' selected' : '') + '>Per guest (over included)</option>' +
+          '<option value="per_head"' + (mode === 'per_head' ? ' selected' : '') + '>Per unit (over included)</option>' +
           '<option value="tiered"' + (mode === 'tiered' ? ' selected' : '') + '>Volume tiers (per unit)</option>' +
           '<option value="flat"' + (mode === 'flat' ? ' selected' : '') + '>Flat package price</option></select>')
+        + self._field('Group on Packages step', '<select data-oqb-path="beverages.' + i + '.group">' +
+          '<option value=""' + (!b.group ? ' selected' : '') + '>Ungrouped</option>' +
+          '<option value="drinks"' + (b.group === 'drinks' ? ' selected' : '') + '>Drinks</option>' +
+          '<option value="catering"' + (b.group === 'catering' ? ' selected' : '') + '>Catering</option>' +
+          '<option value="other"' + (b.group === 'other' ? ' selected' : '') + '>Other</option></select>')
         + (mode === 'tiered'
           ? self._field('Unit label', '<input type="text" data-oqb-path="beverages.' + i + '.unitLabel" value="' + esc(b.unitLabel || 'units') + '" placeholder="e.g. coffees">') + tierBlock
           : (mode === 'flat'
             ? self._field('Flat package price', self._money('beverages.' + i + '.packageCents', b.packageCents))
-            : self._field('Per guest over included ($)', self._money('beverages.' + i + '.perHeadCents', b.perHeadCents))
-              + self._field('Guests included free', '<input type="number" min="0" data-oqb-path="beverages.' + i + '.includedHeads" value="' + esc(b.includedHeads != null ? b.includedHeads : 0) + '">')))
+              + self._field('Unit label', '<input type="text" data-oqb-path="beverages.' + i + '.unitLabel" value="' + esc(b.unitLabel || '') + '" placeholder="optional">')
+            : self._field('Per unit ($)', self._money('beverages.' + i + '.perHeadCents', b.perHeadCents))
+              + self._field('Units included free', '<input type="number" min="0" data-oqb-path="beverages.' + i + '.includedHeads" value="' + esc(b.includedHeads != null ? b.includedHeads : 0) + '">')
+              + self._field('Unit label', '<input type="text" data-oqb-path="beverages.' + i + '.unitLabel" value="' + esc(b.unitLabel || '') + '" placeholder="e.g. coffees, trays">')))
         + self._field('Description', '<textarea rows="2" data-oqb-path="beverages.' + i + '.description">' + esc(b.description || '') + '</textarea>')
         + self._showWhenChips('beverages.' + i, b)
         + '<input type="hidden" data-oqb-path="beverages.' + i + '.id" value="' + esc(b.id || '') + '">'
         + '</div>';
-      return self._itemCard(b.label || 'New package', i, 'beverages', fields, i > 0, i < list.length - 1);
+      return self._itemCard(b.label || 'New option', i, 'beverages', fields, i > 0, i < list.length - 1);
     }).join('');
-    return '<p class="oqb-hint">Per-head, volume-tiered (e.g. 100 coffees @ $3), or flat packages.</p>'
+    return '<p class="oqb-hint">Customers set a quantity on each option (e.g. 200 hot coffees + 50 iced + catering). Use <strong>Group</strong> to show Drinks vs Catering headings on the same Packages step. Qty 0 = not selected.</p>'
       + '<div class="oqb-items">' + (cards || '<p class="oqb-empty">No packages yet.</p>') + '</div>'
-      + '<button type="button" class="btn ghost" data-oqb-add="packages">+ Add package</button>';
+      + '<button type="button" class="btn ghost" data-oqb-add="packages">+ Add package / option</button>';
   };
 
   QuoteBuilder.prototype._renderAddons = function() {
@@ -1948,7 +1959,18 @@
     var p = this.previewProgress;
     var W = wl();
     var bevs = W.filterByShowWhen ? W.filterByShowWhen(shell.beverages, p) : shell.beverages;
-    if (p.beverageId && !bevs.some(function(b) { return b.id === p.beverageId; })) p.beverageId = '';
+    var bevIds = (bevs || []).map(function(b) { return b.id; });
+    if (!Array.isArray(p.beverageLines)) p.beverageLines = [];
+    p.beverageLines = p.beverageLines.filter(function(l) {
+      return l && l.beverageId && bevIds.indexOf(l.beverageId) >= 0 && (Number(l.quantity) || 0) > 0;
+    });
+    if (p.beverageLines.length) {
+      p.beverageId = p.beverageLines[0].beverageId;
+      p.guestCount = p.beverageLines[0].quantity;
+      p.unitCount = p.beverageLines[0].quantity;
+    } else if (p.beverageId && bevIds.indexOf(p.beverageId) < 0) {
+      p.beverageId = '';
+    }
     var addons = W.filterByShowWhen ? W.filterByShowWhen(shell.addons, p) : shell.addons;
     var ids = addons.map(function(a) { return a.id; });
     p.addonIds = (p.addonIds || []).filter(function(id) { return ids.indexOf(id) >= 0; });
@@ -2021,6 +2043,12 @@
         self._refreshPreview();
       });
     }
+    if (P && P.wireBeverageQty) {
+      P.wireBeverageQty(root, this.previewProgress, function() {
+        self._reconcilePreviewSelections();
+        self._refreshPreview();
+      });
+    }
 
     root.querySelectorAll('[data-prev-pick]').forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -2058,15 +2086,32 @@
     }
 
     root.querySelectorAll('[data-prev-act]').forEach(function(btn) {
+      btn.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+      });
       btn.addEventListener('click', function() {
         var act = btn.getAttribute('data-prev-act');
+        if (P && P.syncBeverageQtyFromDom) P.syncBeverageQtyFromDom(root, self.previewProgress);
+        if (P && P.syncCustomAnswersFromDom) {
+          P.syncCustomAnswersFromDom(root, self.previewProgress, 'data-prev-custom');
+        }
         var shell = self._toShell();
         var W = wl();
-        var steps = W.resolveWizardSteps
+        var before = W.resolveWizardSteps
           ? W.resolveWizardSteps(shell.wizard, self.previewProgress, shell.travelZones.length)
           : (shell.wizard.steps || ['contact']);
-        if (act === 'back') self.previewStep = Math.max(0, self.previewStep - 1);
-        else if (act === 'next') self.previewStep = Math.min(steps.length - 1, self.previewStep + 1);
+        var idx = self.previewStep;
+        self._reconcilePreviewSelections();
+        var after = W.resolveWizardSteps
+          ? W.resolveWizardSteps(shell.wizard, self.previewProgress, shell.travelZones.length)
+          : before;
+        var delta = act === 'back' ? -1 : 1;
+        if (W.stepIndexAfterMove) {
+          self.previewStep = W.stepIndexAfterMove(before, idx, delta, after);
+        } else {
+          self.previewStep = Math.max(0, Math.min(after.length - 1, idx + delta));
+        }
         self._refreshPreview();
       });
     });

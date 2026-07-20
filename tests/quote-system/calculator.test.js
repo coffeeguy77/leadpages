@@ -39,6 +39,28 @@ test('calculateQuote — no product yields labour-only if hours set', function()
   assert.equal(result.breakdown[0].totalCents, 37500);
 });
 
+test('calculateQuote — multi beverageLines priced independently', function() {
+  const result = calculateQuote(BEAN_CULTURE_QUOTE_CONFIG, {
+    productId: 'coffee-cart',
+    hours: 3,
+    beverageLines: [
+      { beverageId: 'espresso-package', quantity: 200 },
+      { beverageId: 'premium-package', quantity: 80 }
+    ]
+  });
+  const espresso = result.breakdown.find(function(r) { return r.id === 'espresso-package'; });
+  const premium = result.breakdown.find(function(r) { return r.id === 'premium-package'; });
+  assert.ok(espresso, 'espresso line present');
+  assert.ok(premium, 'premium line present');
+  assert.equal(espresso.quantity, 150); // 200 - 50 included
+  assert.equal(espresso.totalCents, 150 * 350);
+  assert.equal(premium.quantity, 30); // 80 - 50 included
+  assert.equal(premium.totalCents, 30 * 450);
+  assert.ok(Array.isArray(result.inputs.beverageLines));
+  assert.equal(result.inputs.beverageLines.length, 2);
+  assert.equal(result.inputs.beverageId, 'espresso-package');
+});
+
 test('serializeQuoteResult — public hides totals', function() {
   const calc = { totalCents: 111650, subtotalCents: 101500, gstCents: 10150, breakdown: [] };
   const pub = serializeQuoteResult(calc, RESPONSE_LEVEL.PUBLIC_PROGRESS);
