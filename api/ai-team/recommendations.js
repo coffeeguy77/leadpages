@@ -113,6 +113,33 @@ module.exports = async (req, res) => {
         planOutline: discussed.planOutline || [],
         intent: discussed.intent || null
       });
+    } else if (action === 'answer_step') {
+      const permStep = assertAction(access.role, 'atlas_review');
+      if (!permStep.ok) return http.json(res, 403, { error: permStep.error });
+      const { answerStepRecommendation } = require('../../lib/ai-team/atlas');
+      const answered = await answerStepRecommendation({
+        siteId,
+        recommendationId,
+        stepId: (body && body.stepId) || '',
+        answers: (body && body.answers) || {},
+        actorUserId: user.id,
+        actorRole: access.role
+      });
+      if (!answered.ok) {
+        return http.json(res, answered.error === 'site_brain_storage_unavailable' ? 503 : 400, {
+          error: answered.error,
+          message: answered.message || null,
+          persisted: false
+        });
+      }
+      return http.json(res, 200, {
+        ok: true,
+        persisted: true,
+        recommendation: answered.recommendation,
+        planSteps: answered.planSteps || [],
+        planOutline: answered.planOutline || [],
+        messages: answered.messages || []
+      });
     } else {
       return http.json(res, 400, { error: 'unknown_action' });
     }
