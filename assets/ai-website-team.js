@@ -1,9 +1,15 @@
 /**
  * AI Website Team — Phase 1 Atlas advisory panel for manage.html.
  * Advisory only. Never publishes or mutates live config from this panel.
+ *
+ * manage.html keeps currentSiteId in a local script scope, so this panel
+ * must receive site context via renderAiWebsiteTeam(opts) (or window mirrors).
  */
 (function () {
   'use strict';
+
+  /** @type {object} */
+  var panelCtx = {};
 
   function $(id) {
     return document.getElementById(id);
@@ -15,10 +21,35 @@
     });
   }
 
+  function activeSiteId() {
+    return (
+      (panelCtx && panelCtx.siteId) ||
+      window.currentSiteId ||
+      null
+    );
+  }
+
   async function token() {
-    if (!window.sb) return null;
-    var r = await window.sb.auth.getSession();
-    return (r && r.data && r.data.session && r.data.session.access_token) || null;
+    try {
+      if (typeof window.cwToken === 'function') {
+        var t = await window.cwToken();
+        if (t) return t;
+      }
+    } catch (_e) {}
+    try {
+      if (window.sb && window.sb.auth) {
+        var r = await window.sb.auth.getSession();
+        return (r && r.data && r.data.session && r.data.session.access_token) || null;
+      }
+    } catch (_e2) {}
+    try {
+      if (window.supabase && window.__LP && window.__LP.url && window.__LP.anon) {
+        var client = window.supabase.createClient(window.__LP.url, window.__LP.anon);
+        var r2 = await client.auth.getSession();
+        return (r2 && r2.data && r2.data.session && r2.data.session.access_token) || null;
+      }
+    } catch (_e3) {}
+    return null;
   }
 
   async function api(path, body) {
@@ -50,14 +81,22 @@
 
   function editorContext() {
     return {
-      siteId: window.currentSiteId || null,
-      pageId: window.lpCur && (window.lpCur.id || window.lpCur.slug) || null,
-      pageSlug: window.lpCur && window.lpCur.slug || null,
-      pageTitle: window.lpCur && (window.lpCur.title || window.lpCur.h1) || null,
-      pagePurpose: window.activeView === 'landing' ? 'landing' : 'homepage',
-      editorTab: window.activeView || null,
-      selectedSection: window.landingSub || null,
-      selectedApp: null
+      siteId: activeSiteId(),
+      pageId: panelCtx.pageId || (window.lpCur && (window.lpCur.id || window.lpCur.slug)) || null,
+      pageSlug: panelCtx.pageSlug || (window.lpCur && window.lpCur.slug) || null,
+      pageTitle:
+        panelCtx.pageTitle ||
+        (window.lpCur && (window.lpCur.title || window.lpCur.h1)) ||
+        null,
+      pagePurpose:
+        panelCtx.pagePurpose ||
+        (window.activeView === 'landing' || panelCtx.editorTab === 'landing'
+          ? 'landing'
+          : 'homepage'),
+      editorTab: panelCtx.editorTab || window.activeView || null,
+      selectedSection: panelCtx.selectedSection || window.landingSub || null,
+      selectedApp: panelCtx.selectedApp || null,
+      userRole: panelCtx.userRole || null
     };
   }
 
@@ -151,11 +190,34 @@
     );
   }
 
-  async function loadPanel() {
+  function mergeOpts(opts) {
+    var o = opts && typeof opts === 'object' ? opts : {};
+    panelCtx = {
+      siteId: o.siteId || window.currentSiteId || null,
+      siteName: o.siteName || window.currentSiteName || null,
+      editorTab: o.editorTab || window.activeView || null,
+      selectedSection: o.selectedSection || window.landingSub || null,
+      selectedApp: o.selectedApp || null,
+      pageId: o.pageId || null,
+      pageSlug: o.pageSlug || null,
+      pageTitle: o.pageTitle || null,
+      pagePurpose: o.pagePurpose || null,
+      userRole: o.userRole || null
+    };
+    if (panelCtx.siteId) {
+      window.currentSiteId = panelCtx.siteId;
+      if (panelCtx.siteName) window.currentSiteName = panelCtx.siteName;
+    }
+  }
+
+  async function loadPanel(opts) {
+    mergeOpts(opts);
     var box = $('av-ai-team');
     if (!box) return;
-    if (!window.currentSiteId) {
-      box.innerHTML = '<div class="card"><p class="lede">Select a site to open the AI Website Team.</p></div>';
+    var siteId = activeSiteId();
+    if (!siteId) {
+      box.innerHTML =
+        '<div class="card"><p class="lede">Select a site to open the AI Website Team.</p></div>';
       return;
     }
 
@@ -165,14 +227,14 @@
     var state = { brain: null, review: null, needsReview: false, recommendations: [] };
 
     try {
-      var got = await api('/api/site-brain/get', { siteId: window.currentSiteId });
+      var got = await api('/api/site-brain/get', { siteId: siteId });
       state.brain = got.brain;
       state.review = got.review;
       state.needsReview = !!got.needsBootstrapReview;
     } catch (e) {
       if (e.status === 404 || (e.payload && e.payload.error === 'not_found')) {
         try {
-          var synced = await api('/api/site-brain/sync', { siteId: window.currentSiteId });
+          var synced = await api('/api/site-brain/sync', { siteId: siteId });
           state.brain = synced.brain;
           state.review = synced.review;
           state.needsReview = !!synced.needsBootstrapReview;
@@ -194,7 +256,7 @@
 
     try {
       var listed = await api('/api/ai-team/recommendations', {
-        siteId: window.currentSiteId,
+        siteId: siteId,
         action: 'list'
       });
       state.recommendations = listed.recommendations || [];
@@ -211,6 +273,7 @@
     var snap = (state.brain && state.brain.snapshot) || {};
     var summaryName =
       (snap.business && snap.business.name && snap.business.name.value) ||
+      panelCtx.siteName ||
       window.currentSiteName ||
       'This website';
     var goal =
@@ -220,6 +283,7 @@
       return t && t.status !== 'completed';
     });
     var recs = state.recommendations || [];
+    var ctx = editorContext();
 
     var html = '';
     html +=
@@ -251,9 +315,9 @@
       '<button type="button" class="btn ghost" id="ai-resync">Refresh from website</button>' +
       '<span id="ai-ask-msg" class="ai-team-msg"></span></div>' +
       '<p class="lede" style="margin:10px 0 0;font-size:12.5px">Context: tab <code>' +
-      esc((window.activeView || 'details') + '') +
+      esc((ctx.editorTab || 'details') + '') +
       '</code>' +
-      (window.landingSub ? ' · section <code>' + esc(window.landingSub) + '</code>' : '') +
+      (ctx.selectedSection ? ' · section <code>' + esc(ctx.selectedSection) + '</code>' : '') +
       '</p></div>';
 
     html +=
@@ -296,6 +360,7 @@
   }
 
   function bind(state) {
+    var siteId = activeSiteId();
     var saveBtn = $('ai-br-save');
     if (saveBtn) {
       saveBtn.onclick = async function () {
@@ -314,13 +379,13 @@
             contentRestrictions: $('ai-br-restrict') && $('ai-br-restrict').value
           };
           var j = await api('/api/site-brain/bootstrap-review', {
-            siteId: window.currentSiteId,
+            siteId: siteId,
             answers: answers
           });
           if (!j.persisted) throw new Error('Save was not persisted');
           setMsg(msg, 'Saved', 'ok');
           if (window.toast) window.toast('Site Knowledge saved');
-          loadPanel();
+          loadPanel(panelCtx);
         } catch (e) {
           setMsg(msg, e.message || String(e), 'bad');
         }
@@ -334,13 +399,13 @@
         try {
           setMsg(msg, 'Atlas is reviewing…', '');
           var j = await api('/api/ai-team/atlas-review', {
-            siteId: window.currentSiteId,
+            siteId: siteId,
             requestText: ($('ai-ask') && $('ai-ask').value) || '',
             editorContext: editorContext()
           });
           if (!j.persisted) throw new Error('Recommendations were not persisted');
           setMsg(msg, 'Review ready', 'ok');
-          loadPanel();
+          loadPanel(panelCtx);
         } catch (e) {
           setMsg(msg, e.message || String(e), 'bad');
         }
@@ -352,11 +417,11 @@
       resync.onclick = async function () {
         try {
           await api('/api/site-brain/sync', {
-            siteId: window.currentSiteId,
+            siteId: siteId,
             forceResync: true
           });
           if (window.toast) window.toast('Site Brain refreshed from website');
-          loadPanel();
+          loadPanel(panelCtx);
         } catch (e) {
           if (window.toast) window.toast(e.message || String(e));
         }
@@ -367,11 +432,11 @@
       btn.onclick = async function () {
         try {
           await api('/api/ai-team/recommendations', {
-            siteId: window.currentSiteId,
+            siteId: siteId,
             action: 'approve',
             recommendationId: btn.getAttribute('data-id')
           });
-          loadPanel();
+          loadPanel(panelCtx);
         } catch (e) {
           if (window.toast) window.toast(e.message || String(e));
         }
@@ -381,11 +446,11 @@
       btn.onclick = async function () {
         try {
           await api('/api/ai-team/recommendations', {
-            siteId: window.currentSiteId,
+            siteId: siteId,
             action: 'reject',
             recommendationId: btn.getAttribute('data-id')
           });
-          loadPanel();
+          loadPanel(panelCtx);
         } catch (e) {
           if (window.toast) window.toast(e.message || String(e));
         }
