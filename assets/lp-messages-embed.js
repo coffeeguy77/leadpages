@@ -2,16 +2,40 @@
  * Embeddable messaging UI — partner console + site manage.
  *
  * Roles:
- * - client: primary contact is servicing partner; LeadPages only via escalate link
- * - partner: clients + LeadPages account manager
- * - super: when siteId is set, only that site's provider thread + escalations
+ * - client: primary chat with provider; can add LeadPages Team to that chat,
+ *   or open a private LeadPages thread after the first provider chat exists.
+ * - partner: clients + LeadPages account manager; can add LeadPages Team.
+ * - super: when siteId is set, mirrors that site's provider thread.
+ *
+ * New simply starts the partner/client chat — no escalation discussion.
  */
 (function (global) {
   'use strict';
 
+  var LP_JOIN_MARKER = '[lp-team-joined]';
+
   function esc(t) {
     return String(t == null ? '' : t)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function actorLabel(role) {
+    if (role === 'client') return 'Client';
+    if (role === 'partner') return 'Partner';
+    if (role === 'super' || role === 'leadpages') return 'LeadPages Team';
+    return 'Someone';
+  }
+
+  function isJoinMessage(body) {
+    var raw = String(body || '');
+    return raw.indexOf(LP_JOIN_MARKER) !== -1 || /added LeadPages Team to the chat/i.test(raw);
+  }
+
+  function joinMessageText(body) {
+    var raw = String(body || '');
+    var idx = raw.indexOf(LP_JOIN_MARKER);
+    var text = (idx >= 0 ? raw.slice(idx + LP_JOIN_MARKER.length) : raw).trim();
+    return text || 'LeadPages Team joined the chat.';
   }
 
   function fmt(ts) {
@@ -75,10 +99,7 @@
       + '<button type="button" class="btn btn-sm" id="' + prefix + 'refresh">Refresh</button>'
       + '</div>'
       + '<div class="lme-bubbles" id="' + prefix + 'bubbles"></div>'
-      + '<div class="lme-escalate hidden" id="' + prefix + 'escalate">'
-      + 'Need more help? '
-      + '<button type="button" class="lme-escalate-link" id="' + prefix + 'escalate-btn">Escalate to LeadPages support</button>'
-      + '</div>'
+      + '<div class="lme-footer-actions hidden" id="' + prefix + 'footer"></div>'
       + '<div class="lme-composer">'
       + '<textarea id="' + prefix + 'text" placeholder="Write a message…" rows="1"></textarea>'
       + '<button type="button" class="btn btn-brand" id="' + prefix + 'send">Send</button>'
@@ -93,7 +114,7 @@
 
     function convLabel(c) {
       if (me.role === 'client') {
-        return c.kind === 'partner_client' ? 'My provider' : 'LeadPages support';
+        return c.kind === 'partner_client' ? 'My provider' : 'LeadPages (private)';
       }
       if (me.role === 'partner') {
         if (c.kind === 'partner_lp') return 'LeadPages account manager';
@@ -105,8 +126,8 @@
         return 'Partner: ' + ((p && p.display_name) || 'Partner');
       }
       if (c.kind === 'client_support') {
-        var sEsc = sitesById[c.client_site_id];
-        return 'Escalated: ' + ((sEsc && sEsc.business_name) || 'Client');
+        var sPriv = sitesById[c.client_site_id];
+        return 'LeadPages (private): ' + ((sPriv && sPriv.business_name) || 'Client');
       }
       var s2 = sitesById[c.client_site_id];
       return 'Provider ↔ ' + ((s2 && s2.business_name) || 'client');
@@ -114,8 +135,23 @@
 
     function convKindText(c) {
       if (c.kind === 'partner_lp') return 'Partner ↔ LeadPages';
-      if (c.kind === 'partner_client') return 'Provider ↔ client';
-      return 'Client ↔ LeadPages';
+      if (c.kind === 'partner_client') {
+        return isLpJoined(c) ? 'Provider ↔ client · LeadPages Team' : 'Provider ↔ client';
+      }
+      return 'Client ↔ LeadPages (private)';
+    }
+
+    function hasProviderChat() {
+      return convos.some(function (c) { return c && c.kind === 'partner_client'; });
+    }
+
+    function isLpJoined(c) {
+      if (!c) return false;
+      if (c.leadpages_joined || c.leadpages_joined_at) return true;
+      if (c.id === activeId) {
+        return activeMsgs.some(function (m) { return isJoinMessage(m && m.body); });
+      }
+      return false;
     }
 
     function convKindGroup(c) {
@@ -134,7 +170,7 @@
       if (me.role === 'client') {
         var defs = [{ k: '', label: 'All' }, { k: 'clients', label: 'My provider' }];
         if (convos.some(function (c) { return c.kind === 'client_support'; })) {
-          defs.push({ k: 'support', label: 'LeadPages' });
+          defs.push({ k: 'support', label: 'Private LeadPages' });
         }
         return defs;
       }
@@ -147,11 +183,11 @@
       }
       // super
       if (siteId) {
-        return [
-          { k: '', label: 'All' },
-          { k: 'clients', label: 'Provider' },
-          { k: 'support', label: 'Escalated' }
-        ];
+        var siteDefs = [{ k: '', label: 'All' }, { k: 'clients', label: 'Provider' }];
+        if (convos.some(function (c) { return c.kind === 'client_support'; })) {
+          siteDefs.push({ k: 'support', label: 'Private LeadPages' });
+        }
+        return siteDefs;
       }
       return [
         { k: '', label: 'All' },
@@ -195,7 +231,7 @@
         if (c.kind === 'client_support' && ownerId && c.client_user_id === ownerId) return true;
         // Partner ↔ LeadPages is account-level — keep for partners in manage
         if (me.role === 'partner' && c.kind === 'partner_lp' && me.partnerId && c.partner_id === me.partnerId) return true;
-        // Super on a customer site: provider + escalations only (not every partner_lp thread)
+        // Super on a customer site: provider + private LeadPages only (not every partner_lp thread)
         return false;
       });
     }
@@ -228,8 +264,8 @@
       var box = $('convs');
       if (!convos.length) {
         var hint = me.role === 'client'
-          ? 'No conversations yet.<br>Tap <strong>New</strong> to message your provider.'
-          : 'No conversations yet.<br>Tap <strong>New</strong> to start one.';
+          ? '<p>No conversations yet.</p><p>Tap <strong>New</strong> to message your provider.</p>'
+          : '<p>No conversations yet.</p><p>Tap <strong>New</strong> to start one.</p>';
         box.innerHTML = '<div class="lme-empty">' + hint + '</div>';
         return;
       }
@@ -286,6 +322,11 @@
         return;
       }
       box.innerHTML = activeMsgs.map(function (m) {
+        if (isJoinMessage(m.body) || m.sender_role === 'system') {
+          return '<div class="lme-b system" role="status">'
+            + '<div class="lme-bub">' + esc(joinMessageText(m.body)) + '</div>'
+            + '<div class="lme-meta muted">' + fmt(m.created_at) + '</div></div>';
+        }
         var mine = m.sender_id === me.uid;
         var who = mine ? 'You' : (m.sender_role === 'super' ? 'LeadPages' : (m.sender_role === 'partner' ? 'Partner' : 'Client'));
         return '<div class="lme-b ' + (mine ? 'me' : 'them') + '">'
@@ -295,12 +336,27 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    function updateEscalateUi(c) {
-      var el = $('escalate');
+    function updateFooterActions(c) {
+      var el = $('footer');
       if (!el) return;
-      // Clients escalate from the provider thread only — LeadPages is last resort.
-      var show = !!(c && me.role === 'client' && c.kind === 'partner_client');
-      el.classList.toggle('hidden', !show);
+      if (!c || c.kind !== 'partner_client') {
+        el.classList.add('hidden');
+        el.innerHTML = '';
+        return;
+      }
+      var joined = isLpJoined(c);
+      var parts = [];
+      if (!joined) {
+        parts.push('<button type="button" class="lme-footer-link" data-act="add-lp">Add LeadPages Team to this chat</button>');
+      } else {
+        parts.push('<p class="lme-footer-note">LeadPages Team is in this chat.</p>');
+      }
+      if (me.role === 'client' && hasProviderChat()) {
+        parts.push('<button type="button" class="lme-footer-link" data-act="private-lp">Contact LeadPages team privately</button>');
+        parts.push('<p class="lme-footer-note">Report a partner or client issue directly with the LeadPages team for a private conversation.</p>');
+      }
+      el.innerHTML = parts.join('');
+      el.classList.toggle('hidden', !parts.length);
     }
 
     async function loadMsgs(id) {
@@ -339,12 +395,12 @@
       }
       var metaEl = $('meta');
       if (metaEl) metaEl.textContent = meta;
-      updateEscalateUi(c);
       if (global.matchMedia('(max-width:760px)').matches) {
         $('list').classList.add('collapsed');
         $('back').classList.remove('hidden');
       }
       await loadMsgs(id);
+      updateFooterActions(c);
       await markRead(id);
       startPoll(id);
     }
@@ -410,6 +466,16 @@
     }
 
     function openNewBox() {
+      // Client / site-scoped super: New simply opens the provider chat.
+      if (me.role === 'client') {
+        openProvider();
+        return;
+      }
+      if (me.role === 'super' && siteId) {
+        openSiteProvider();
+        return;
+      }
+
       var box = $('newbox');
       box.classList.toggle('hidden');
       if (box.classList.contains('hidden')) return;
@@ -425,22 +491,8 @@
               return '<option value="' + s.id + '">' + esc(s.business_name || 'Client') + '</option>';
             }).join('') + '</select>';
         }
-      } else if (me.role === 'client') {
-        var site = siteId ? sitesById[siteId] : Object.keys(sitesById).map(function (k) { return sitesById[k]; })
-          .find(function (s) { return s.owner_user_id === me.uid; });
-        if (site && site.servicing_partner_id) {
-          html += '<button type="button" class="btn btn-sm" data-new="provider" style="width:100%;margin-bottom:8px">Message my provider</button>';
-          html += '<p class="muted" style="font-size:12px;margin:8px 0 0;line-height:1.4">Your provider is your first point of contact. LeadPages support is available from an escalate link inside that chat if you still need help.</p>';
-        } else {
-          html += '<p class="muted" style="font-size:13px;margin:0">No provider is assigned to this site yet.</p>';
-        }
       } else if (me.role === 'super') {
-        if (siteId) {
-          html += '<button type="button" class="btn btn-sm" data-new="site-provider" style="width:100%;margin-bottom:8px">Open provider ↔ client thread</button>';
-          html += '<p class="muted" style="font-size:12px;margin:8px 0 0;line-height:1.4">LeadPages is the last resort. Escalated threads appear when a client uses Escalate to LeadPages support.</p>';
-        } else {
-          html += '<p class="muted" style="font-size:13px;margin:0">Select a site in manage to open that customer’s support threads.</p>';
-        }
+        html += '<p class="muted" style="font-size:13px;margin:0">Select a site in manage to open that customer’s support threads.</p>';
       }
       box.innerHTML = html;
     }
@@ -505,6 +557,39 @@
       await startConv(conv);
     }
 
+    async function addLeadpagesToChat() {
+      var c = convos.find(function (x) { return x.id === activeId; });
+      if (!c || c.kind !== 'partner_client' || isLpJoined(c)) return;
+      var label = actorLabel(me.role) + ' added LeadPages Team to the chat';
+      var body = LP_JOIN_MARKER + ' ' + label;
+      var btn = $('footer') && $('footer').querySelector('[data-act="add-lp"]');
+      if (btn) btn.disabled = true;
+      try {
+        await sb.from('conversations').update({
+          leadpages_joined: true,
+          leadpages_joined_by: me.role,
+          leadpages_joined_at: new Date().toISOString()
+        }).eq('id', activeId);
+      } catch (_e) { /* columns may not exist yet */ }
+      var r = await sb.from('messages').insert({
+        conversation_id: activeId,
+        sender_id: me.uid,
+        sender_role: me.role,
+        body: body
+      }).select('*').single();
+      if (btn) btn.disabled = false;
+      if (r.error) {
+        alert(r.error.message || 'Could not add LeadPages Team');
+        return;
+      }
+      c.leadpages_joined = true;
+      activeMsgs.push(r.data);
+      renderMsgs();
+      updateFooterActions(c);
+      notifyApi(activeId);
+      await loadConvos();
+    }
+
     $('new').addEventListener('click', openNewBox);
     var filterEl = $('filter');
     if (filterEl) {
@@ -523,7 +608,6 @@
       if (kind === 'lp') await openLeadPages();
       if (kind === 'provider') await openProvider();
       if (kind === 'site-provider') await openSiteProvider();
-      // 'support' is escalate-only for clients — not offered in New
       if (kind === 'support' && me.role !== 'client') await openClientSupport();
     });
     $('newbox').addEventListener('change', async function (e) {
@@ -536,9 +620,15 @@
       var c = e.target.closest('.lme-conv');
       if (c) selectConv(c.getAttribute('data-id'));
     });
-    var escBtn = $('escalate-btn');
-    if (escBtn) {
-      escBtn.addEventListener('click', function () { openClientSupport(); });
+    var footerEl = $('footer');
+    if (footerEl) {
+      footerEl.addEventListener('click', function (e) {
+        var a = e.target.closest('[data-act]');
+        if (!a) return;
+        var act = a.getAttribute('data-act');
+        if (act === 'add-lp') addLeadpagesToChat();
+        if (act === 'private-lp') openClientSupport();
+      });
     }
     $('send').addEventListener('click', function () { sendMsg(); });
     $('text').addEventListener('keydown', function (e) {
@@ -553,7 +643,7 @@
       $('list').classList.remove('collapsed');
       stopPoll();
       activeId = null;
-      updateEscalateUi(null);
+      updateFooterActions(null);
       renderConvos();
       $('on').classList.add('hidden');
       $('empty').classList.remove('hidden');

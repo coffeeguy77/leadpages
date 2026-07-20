@@ -199,12 +199,79 @@
 .lp-messages-embed .lme-empty {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 24px;
+  padding: 24px 18px;
   color: var(--text-soft);
   font-size: 14px;
+  line-height: 1.45;
+  gap: 4px;
+}
+
+.lp-messages-embed .lme-empty p,
+.lp-messages-embed .lme-thread-empty p {
+  margin: 0;
+  max-width: 220px;
+}
+
+.lp-messages-embed .lme-b.system {
+  align-self: center;
+  max-width: 92%;
+}
+
+.lp-messages-embed .lme-b.system .lme-bub {
+  background: transparent;
+  border: 0;
+  color: var(--text-soft);
+  font-size: 12.5px;
+  font-style: italic;
+  text-align: center;
+  padding: 4px 8px;
+}
+
+.lp-messages-embed .lme-footer-actions {
+  padding: 8px 14px 10px;
+  border-top: 1px solid var(--border);
+  background: var(--lme-filter-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.lp-messages-embed .lme-footer-actions.hidden {
+  display: none !important;
+}
+
+.lp-messages-embed .lme-footer-link {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-align: center;
+}
+
+.lp-messages-embed .lme-footer-link:hover {
+  color: var(--accent-hover, var(--accent));
+}
+
+.lp-messages-embed .lme-footer-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-soft);
+  text-align: center;
+  line-height: 1.4;
+  max-width: 36em;
 }
 
 .lp-messages-embed .lme-thread-on {
@@ -295,33 +362,6 @@
   background: var(--accent);
   color: var(--accent-text, #fff);
   border-top-right-radius: 5px;
-}
-
-.lp-messages-embed .lme-escalate {
-  padding: 10px 14px 4px;
-  border-top: 1px solid var(--border);
-  font-size: 12.5px;
-  color: var(--text-soft);
-  text-align: center;
-  background: var(--lme-filter-bg);
-}
-
-.lp-messages-embed .lme-escalate-link {
-  appearance: none;
-  border: 0;
-  background: none;
-  padding: 0;
-  margin: 0;
-  font: inherit;
-  font-weight: 700;
-  color: var(--accent);
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.lp-messages-embed .lme-escalate-link:hover {
-  color: var(--accent-hover, var(--accent));
 }
 
 .lp-messages-embed .lme-composer {

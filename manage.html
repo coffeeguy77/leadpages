@@ -205,13 +205,17 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .anav-btn .lme-nav-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:7px;vertical-align:middle;flex-shrink:0;}
 /* shared admin form controls */
 .tin{width:100%;font-family:var(--font-ui);font-size:14px;padding:9px 11px;border:1px solid var(--line-strong);border-radius:8px;background:var(--input-bg);color:var(--text);box-sizing:border-box;}
-.mlr-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
-@media(max-width:820px){.mlr-grid{grid-template-columns:1fr;}}
+.mlr-grid{display:flex;flex-direction:column;gap:18px;}
+.mlr-compose{display:flex;flex-direction:column;gap:0;}
+.mlr-compose #mlr-subject{font-size:16px;padding:12px 14px;}
+.mlr-compose #mlr-body{min-height:160px;font-size:15px;line-height:1.55;padding:12px 14px;}
 .mlr-lbl{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 6px;}
 .mlr-segrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
 .mlr-seg.on,.mlr-when.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-hover);}
-.mlr-picklist{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px;}
+.mlr-picklist{max-height:calc(10 * 2.65em + 12px);overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px;}
+.mlr-search{margin-bottom:8px;}
 .mlr-crow{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;font-size:13px;cursor:pointer;}
+.mlr-crow.hidden{display:none;}
 .mlr-crow:hover{background:var(--surface-2);}
 .mlr-crow.out{opacity:.6;}
 .mlr-crow input[type=checkbox]{accent-color:var(--accent);}
@@ -7545,7 +7549,7 @@ function heroCtaCard(c){
   function _mlrTimeOpts(){ var sel=MAILER.time||'09:00'; var out=''; for(var h=0;h<24;h++){ for(var m=0;m<60;m+=15){ var v=(h<10?'0':'')+h+':'+(m<10?'0':'')+m; var hh=h%12; if(hh===0)hh=12; var lbl=hh+':'+(m<10?'0':'')+m+' '+(h<12?'AM':'PM'); out+='<option value="'+v+'"'+(v===sel?' selected':'')+'>'+lbl+'</option>'; } } return out; }
   function mailerCapture(){ var su=$('mlr-subject'); if(su)MAILER.subject=su.value; var bo=$('mlr-body'); if(bo)MAILER.body=bo.value; var dt=$('mlr-date'); if(dt)MAILER.date=dt.value; var tm=$('mlr-time'); if(tm)MAILER.time=tm.value; var tz=$('mlr-tz'); if(tz)MAILER.tz=tz.value; }
   function _mlrHtmlToText(h){ if(!h)return ''; var t=String(h); t=t.replace(/<\/p>\s*<p>/gi,'\n\n').replace(/<br\s*\/?>/gi,'\n').replace(/<\/?p[^>]*>/gi,''); t=t.replace(/<[^>]+>/g,''); t=t.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,String.fromCharCode(39)).replace(/&nbsp;/g,' '); return t.trim(); }
-  function mailerUseAgain(id){ var c=(MAILER.campaigns||[]).find(function(x){ return String(x.id)===String(id); }); if(!c)return; MAILER.subject=c.subject||''; MAILER.body=_mlrHtmlToText(c.body_html||''); MAILER.imageUrl=c.image_url||''; MAILER.imgPid=''; MAILER.mode=c.recipient_mode||'all'; MAILER.selected={}; MAILER.schedule=false; MAILER.date=''; MAILER.time=''; var box=$('av-mailer'); if(box){ mailerBuild(box); try{ box.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_e){} } if(typeof toast==='function') toast('Loaded \u2014 edit and send'); }
+  function mailerUseAgain(id){ var c=(MAILER.campaigns||[]).find(function(x){ return String(x.id)===String(id); }); if(!c)return; MAILER.subject=c.subject||''; MAILER.body=_mlrHtmlToText(c.body_html||''); MAILER.imageUrl=c.image_url||''; MAILER.imgPid=''; MAILER.mode=(c.recipient_mode==='individual'?'selected':(c.recipient_mode||'all')); MAILER.selected={}; MAILER.schedule=false; MAILER.date=''; MAILER.time=''; var box=$('av-mailer'); if(box){ mailerBuild(box); try{ box.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_e){} } if(typeof toast==='function') toast('Loaded \u2014 edit and send'); }
   async function mailerRunNow(id){ try{ var se=await sb.auth.getSession(); var tk=se&&se.data&&se.data.session&&se.data.session.access_token; var r=await fetch('/api/send-campaign',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(tk||'')},body:JSON.stringify({campaignId:id,action:'deliver'})}); var j=await r.json().catch(function(){return{};}); if(r.ok&&j.ok){ if(typeof toast==='function') toast('Sent to '+(j.sent||0)+' \u2713'); renderMailer(); } else { if(typeof toast==='function') toast('Send failed \u2014 HTTP '+r.status+(j.error?(' '+j.error):'')); } }catch(e){ if(typeof toast==='function') toast('Network error'); } }
   async function renderMailer(){
     var box=$('av-mailer'); if(!box) return;
@@ -7556,13 +7560,15 @@ function heroCtaCard(c){
     mailerBuild(box);
   }
   function mailerBuild(box){
+    if(MAILER.mode==='individual') MAILER.mode='selected';
     var active=MAILER.clients.filter(function(c){ return !c.email_opt_out; });
     var opted=MAILER.clients.filter(function(c){ return c.email_opt_out; });
     var seg=function(v,l){ return '<button type="button" class="btn ghost mlr-seg'+(MAILER.mode===v?' on':'')+'" data-mode="'+v+'">'+l+'</button>'; };
     var tzopts=MAILER_TZ.map(function(z){ return '<option value="'+z[1]+'"'+(z[1]===MAILER.tz?' selected':'')+'>'+z[0]+'</option>'; }).join('');
     var clientRows=MAILER.clients.map(function(c){
       var checked=MAILER.selected[c.id]?' checked':'';
-      return '<label class="mlr-crow'+(c.email_opt_out?' out':'')+'">'
+      var hayRaw=((c.name||'')+' '+(c.email||'')).toLowerCase();
+      return '<label class="mlr-crow'+(c.email_opt_out?' out':'')+'" data-hay="'+_mesc(hayRaw)+'">'
         +'<input type="checkbox" class="mlr-pick" data-id="'+c.id+'" '+(c.email_opt_out?'disabled':checked)+'>'
         +'<span class="mlr-cname">'+_mesc(c.name||'(no name)')+'</span>'
         +'<span class="mlr-cmail">'+_mesc(c.email)+'</span>'
@@ -7582,16 +7588,19 @@ function heroCtaCard(c){
     +   '<h2 style="margin:0 0 4px;">Newsletter</h2>'
     +   '<p class="lede" style="margin:0 0 16px;">Send a one-off update or offer to the customers who\u2019ve enquired through your site. <strong>'+active.length+'</strong> contactable \u00b7 '+opted.length+' opted out.</p>'
     +   '<div class="mlr-grid">'
-    +     '<div class="mlr-col">'
-    +       '<label class="mlr-lbl">Who gets this?</label>'
-    +       '<div class="mlr-segrow">'+seg('all','All contacts ('+active.length+')')+seg('selected','Selected')+seg('individual','One person')+'</div>'
-    +       '<div id="mlr-picklist" class="mlr-picklist"'+(MAILER.mode==='all'?' style="display:none"':'')+'>'+(clientRows||'<p class="hint" style="color:var(--ink-faint);padding:8px;">No contacts with an email address yet. New enquiries that include an email will appear here.</p>')+'</div>'
-    +     '</div>'
-    +     '<div class="mlr-col">'
-    +       '<label class="mlr-lbl">Subject</label><input id="mlr-subject" class="tin" value="'+_mesc(MAILER.subject||'')+'" placeholder="A quick update from your team\u2026">'
-    +       '<label class="mlr-lbl" style="margin-top:12px;">Message</label><textarea id="mlr-body" class="tin" rows="7" placeholder="Write your update or offer here\u2026">'+_mesc(MAILER.body||'')+'</textarea>'
+    +     '<div class="mlr-compose">'
+    +       '<label class="mlr-lbl" for="mlr-subject">Subject</label><input id="mlr-subject" class="tin" value="'+_mesc(MAILER.subject||'')+'" placeholder="A quick update from your team\u2026">'
+    +       '<label class="mlr-lbl" style="margin-top:14px;" for="mlr-body">Message</label><textarea id="mlr-body" class="tin" rows="8" placeholder="Write your update or offer here\u2026">'+_mesc(MAILER.body||'')+'</textarea>'
     +       '<div class="mlr-imgrow"><button type="button" class="btn ghost" id="mlr-imgbtn">Insert image</button><span id="mlr-imgname" class="hint" style="color:var(--ink-faint);"></span><input type="file" id="mlr-imgfile" accept="image/*" style="display:none"></div>'
     +       '<div id="mlr-imgprev">'+(MAILER.imageUrl?'<img src="'+_mesc(MAILER.imageUrl)+'" style="max-width:220px;border-radius:10px;margin-top:8px;">':'')+'</div>'
+    +     '</div>'
+    +     '<div class="mlr-col">'
+    +       '<label class="mlr-lbl">Who gets this?</label>'
+    +       '<div class="mlr-segrow">'+seg('all','All contacts ('+active.length+')')+seg('selected','Selected')+'</div>'
+    +       '<div id="mlr-pickwrap"'+(MAILER.mode==='all'?' style="display:none"':'')+'>'
+    +         '<input type="search" id="mlr-search" class="tin mlr-search" placeholder="Search contacts\u2026" autocomplete="off">'
+    +         '<div id="mlr-picklist" class="mlr-picklist">'+(clientRows||'<p class="hint" style="color:var(--ink-faint);padding:8px;">No contacts with an email address yet. New enquiries that include an email will appear here.</p>')+'</div>'
+    +       '</div>'
     +       '<label class="mlr-lbl" style="margin-top:14px;">When</label>'
     +       '<div class="mlr-segrow"><button type="button" class="btn ghost mlr-when'+(!MAILER.schedule?' on':'')+'" data-when="now">Send now</button><button type="button" class="btn ghost mlr-when'+(MAILER.schedule?' on':'')+'" data-when="later">Schedule</button></div>'
     +       '<div id="mlr-sched"'+(MAILER.schedule?'':' style="display:none"')+' class="mlr-sched"><input type="date" id="mlr-date" class="tin" value="'+_mesc(MAILER.date||_mlrToday())+'"><select id="mlr-time" class="tin">'+_mlrTimeOpts()+'</select><select id="mlr-tz" class="tin">'+tzopts+'</select></div>'
@@ -7610,6 +7619,16 @@ function heroCtaCard(c){
     box.querySelectorAll('.mlr-opt').forEach(function(b){ b.onclick=function(e){ e.preventDefault(); mailerOptOut(b.getAttribute('data-id'), b.getAttribute('data-email'), b.getAttribute('data-out')==='1'); }; });
     box.querySelectorAll('[data-again]').forEach(function(b){ b.onclick=function(){ mailerUseAgain(b.getAttribute('data-again')); }; });
     box.querySelectorAll('[data-runnow]').forEach(function(b){ b.onclick=function(){ mailerRunNow(b.getAttribute('data-runnow')); }; });
+    var search=$('mlr-search');
+    if(search){
+      search.oninput=function(){
+        var q=(search.value||'').trim().toLowerCase();
+        box.querySelectorAll('.mlr-crow').forEach(function(row){
+          var hay=row.getAttribute('data-hay')||'';
+          row.classList.toggle('hidden', !!(q && hay.indexOf(q)===-1));
+        });
+      };
+    }
     var ib=$('mlr-imgbtn'), ifl=$('mlr-imgfile');
     if(ib&&ifl){ ib.onclick=function(){ ifl.click(); }; ifl.onchange=async function(){ var f=ifl.files&&ifl.files[0]; if(!f) return; var nm=$('mlr-imgname'); if(nm) nm.textContent='Uploading\u2026'; try{ var up=await cwUpload(f,['mailer']); MAILER.imageUrl=(up&&up.url)||''; MAILER.imgPid=(up&&up.publicId)||''; if(nm) nm.textContent=f.name; var pv=$('mlr-imgprev'); if(pv) pv.innerHTML=MAILER.imageUrl?'<img src="'+_mesc(MAILER.imageUrl)+'" style="max-width:220px;border-radius:10px;margin-top:8px;">':''; }catch(e){ if(nm) nm.textContent=(e&&e.message)||'Upload failed'; } }; }
     var su=$('mlr-subject'); if(su) su.oninput=function(){ MAILER.subject=su.value; }; var bo=$('mlr-body'); if(bo) bo.oninput=function(){ MAILER.body=bo.value; }; var dt=$('mlr-date'); if(dt) dt.onchange=function(){ MAILER.date=dt.value; }; var tm=$('mlr-time'); if(tm) tm.onchange=function(){ MAILER.time=tm.value; }; var tzs=$('mlr-tz'); if(tzs) tzs.onchange=function(){ MAILER.tz=tzs.value; };
@@ -7631,7 +7650,6 @@ function heroCtaCard(c){
     var recipients=[];
     if(MAILER.mode!=='all'){
       recipients=MAILER.clients.filter(function(c){ return MAILER.selected[c.id] && !c.email_opt_out; }).map(function(c){ return c.email; });
-      if(MAILER.mode==='individual') recipients=recipients.slice(0,1);
       if(!recipients.length){ setErr('Pick at least one client.'); return; }
     }
     var sendAt=null;
@@ -7666,10 +7684,10 @@ function heroCtaCard(c){
       return;
     }
     var lede=(currentRole==='super')
-      ? 'Review this site’s provider conversation and any escalations to LeadPages. You are the last point of contact — not the first.'
+      ? 'Review this site’s provider conversation. You can join the thread when invited, or help via a private client chat.'
       : (currentRole==='broker')
         ? 'Message this client or LeadPages about this site.'
-        : 'Message your provider about this site. LeadPages support is available via escalate if you still need help.';
+        : 'Message your provider about this site. You can add LeadPages Team to the chat when you need them.';
     box.innerHTML='<div class="card lp-support-panel" style="margin-bottom:22px;padding-bottom:18px;">'
       +'<h2 style="margin:0 0 4px;">Support</h2>'
       +'<p class="lede" style="margin:0 0 16px;">'+lede+'</p>'
