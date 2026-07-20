@@ -85,5 +85,5 @@ test('builder + planning include min quantity UX', function() {
   assert.match(planning, /defaultBeverageStartQty/);
   assert.match(planning, /data-bev-min/);
   assert.match(planning, /Min /);
-  assert.match(manage, /oq-event-date-1/);
+  assert.match(manage, /oq-bev-2up-1/);
 });

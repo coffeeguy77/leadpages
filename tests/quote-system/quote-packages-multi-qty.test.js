@@ -52,7 +52,20 @@ assert.ok(builder.includes('Group on Packages step'), 'builder group field');
 assert.ok(builder.includes("value=\"catering\""), 'catering group option');
 
 assert.ok(display.includes('lp-oq-bev-grid'), 'bev grid CSS');
-assert.ok(manage.includes('oq-event-date-1'), 'manage cache-bust');
-assert.ok(render.includes('oq-event-date-1'), 'render cache-bust');
+assert.ok(
+  display.includes('grid-template-columns:repeat(2,minmax(0,1fr))'),
+  'packages/catering forced 2-up grid'
+);
+assert.ok(
+  display.includes('.lp-oq-layout-split .lp-oq-choices:not(.lp-oq-fp-grid):not(.lp-oq-bev-grid)'),
+  'split layout does not force catering into a column stack'
+);
+assert.ok(
+  online.includes('.lp-oq-choices:not(.lp-oq-fp-grid):not(.lp-oq-bev-grid)'),
+  'generic auto-fit skips beverage grids'
+);
+assert.ok(planning.includes('lp-oq-choices lp-oq-bev-grid'), 'each group uses bev-grid');
+assert.ok(manage.includes('oq-bev-2up-1'), 'manage cache-bust');
+assert.ok(render.includes('oq-bev-2up-1'), 'render cache-bust');
 
 console.log('quote-packages-multi-qty.test.js: ok');
