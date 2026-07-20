@@ -12,7 +12,7 @@ const manage = fs.readFileSync(path.join(root, 'manage.html'), 'utf8');
 
 assert.ok(mm.includes("'nav-ai-team': 'AI Website Team'"), 'AI Website Team in NAV_TAB_CATALOG');
 assert.ok(mm.includes("'nav-advertising': 'Advertising'"), 'Advertising in catalog');
-assert.ok(mm.includes("'nav-onlinequotes': 'Online quotes'"), 'Online quotes in catalog');
+assert.ok(mm.includes("'nav-onlinequotes': 'Quote Builder'"), 'Quote Builder in catalog');
 assert.ok(mm.includes("'nav-mailer': 'Newsletter'"), 'Newsletter in catalog');
 assert.ok(mm.includes("'nav-messages': 'Support'"), 'Support in catalog');
 assert.ok(mm.includes("{ id: 'nav-ai-team'"), 'AI Website Team in DEFAULT_BUILDER_ITEMS');

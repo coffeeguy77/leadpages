@@ -39,7 +39,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
-<link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=nav-mobile-1">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=nav-twoline-1">
 <link rel="stylesheet" href="/assets/lp-quote-builder.css">
 <style>
 :root{
@@ -161,7 +161,7 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .savednote{font-size:12px;color:var(--accent-hover);font-weight:600;}
 .adminnav{
   display:flex;
-  gap:6px;
+  gap:2px;
   margin:0 0 22px;
   border-bottom:1px solid var(--line);
   max-width:100%;
@@ -171,10 +171,12 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
   flex-wrap:nowrap;
   scrollbar-width:thin;
 }
-.adminnav .anav-btn{flex:0 0 auto;white-space:nowrap;}
+.adminnav .anav-btn{flex:0 0 auto;white-space:normal;}
 #lp-nav-slot{max-width:100%;min-width:0;}
 .lp-cmd-loading .adminnav,.lp-cmd-loading [id^="av-"]{visibility:hidden;transition:none;}
-.anav-btn{appearance:none;background:transparent;border:none;border-radius:0;cursor:pointer;font-family:var(--font-ui);font-size:14.5px;font-weight:600;color:var(--ink-soft);padding:10px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;box-shadow:none;outline:none;}
+.anav-btn{appearance:none;background:transparent;border:none;border-radius:0;cursor:pointer;font-family:var(--font-ui);font-size:12.5px;font-weight:600;color:var(--ink-soft);padding:6px 9px;border-bottom:2px solid transparent;margin-bottom:-1px;box-shadow:none;outline:none;line-height:1.15;text-align:center;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-height:2.55em;}
+.anav-btn .anav-l1,.anav-btn .anav-l2{display:block;line-height:1.15;}
+.anav-btn .anav-gap{font-size:0;line-height:0;width:0;height:0;overflow:hidden;display:inline-block;}
 .anav-btn:hover{color:var(--ink);}
 .anav-btn:focus,.anav-btn:focus-visible{outline:none;box-shadow:none;border-color:transparent;border-bottom-color:transparent;}
 .anav-btn[aria-selected="true"]{color:var(--accent-hover);background:transparent;border:none;border-bottom:2px solid var(--accent);box-shadow:none;}
@@ -183,7 +185,10 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .lsub-extra{margin:-8px 0 22px;padding:11px 14px 4px;background:var(--panel-soft);border:1px solid var(--line);border-radius:12px;}
 .lsub-extra-label{display:block;font-family:var(--font-ui);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 2px 2px;}
 .lsub-extra-nav{border-bottom:none;margin:0;gap:2px 4px;}
-.lsub-extra .anav-btn{padding:8px 11px;font-size:13.5px;}
+.lsub-extra .anav-btn{padding:6px 8px;font-size:12.5px;min-height:0;}
+.lsub-extra .anav-btn .anav-l1,.lsub-extra .anav-btn .anav-l2{display:inline;}
+.lsub-extra .anav-btn .anav-gap{font-size:inherit;line-height:inherit;width:auto;height:auto;overflow:visible;display:inline;}
+.lsub-extra .anav-btn{flex-direction:row;align-items:baseline;}
 .appr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px 20px;margin-top:6px;}
 @media(max-width:620px){.appr-grid{grid-template-columns:1fr;}}
 .aphint{font-weight:400;color:var(--ink-faint);font-size:12px;}
@@ -627,7 +632,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-logo.js"></script>
 <script src="/assets/lp-admin-shell.js"></script>
 <script src="/assets/lp-messages-embed.js"></script>
-<script src="/assets/lp-mobile-menu-builder.js?v=ai-team-nav-1"></script>
+<script src="/assets/lp-mobile-menu-builder.js?v=quote-builder-nav-1"></script>
 <script src="/assets/lp-trade-picker.js"></script>
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
 <script src="/icons.js"></script>
@@ -706,19 +711,19 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <div class="adminnav" role="tablist">
     <button class="anav-btn" id="nav-dashboard" aria-selected="false" style="display:none">Dashboard</button>
     <button class="anav-btn" id="nav-advertising" aria-selected="false" style="display:none">Advertising</button>
-    <button class="anav-btn" id="nav-details" aria-selected="false" style="display:none">Details</button>
-    <button class="anav-btn" id="nav-rates" aria-selected="false" style="display:none">Rates &amp; leads</button>
-    <button class="anav-btn" id="nav-landing" aria-selected="false">Landing pages</button>
-    <button class="anav-btn" id="nav-ai-team" aria-selected="false" style="display:none">AI Website Team</button>
-    <button class="anav-btn" id="nav-apps" aria-selected="false">App Marketplace</button>
-    <button class="anav-btn" id="nav-onlinequotes" aria-selected="false" style="display:none">Online quotes</button>
+    <button class="anav-btn" id="nav-details" aria-selected="false" style="display:none" aria-label="Details">Details</button>
+    <button class="anav-btn" id="nav-rates" aria-selected="false" style="display:none" aria-label="Rates &amp; leads"><span class="anav-l1">Rates &amp;</span><span class="anav-gap"> </span><span class="anav-l2">leads</span></button>
+    <button class="anav-btn" id="nav-landing" aria-selected="false" aria-label="Landing pages"><span class="anav-l1">Landing</span><span class="anav-gap"> </span><span class="anav-l2">pages</span></button>
+    <button class="anav-btn" id="nav-ai-team" aria-selected="false" style="display:none" aria-label="AI Website Team"><span class="anav-l1">AI Website</span><span class="anav-gap"> </span><span class="anav-l2">Team</span></button>
+    <button class="anav-btn" id="nav-apps" aria-selected="false" aria-label="App Marketplace"><span class="anav-l1">App</span><span class="anav-gap"> </span><span class="anav-l2">Marketplace</span></button>
+    <button class="anav-btn" id="nav-onlinequotes" aria-selected="false" style="display:none" aria-label="Quote Builder"><span class="anav-l1">Quote</span><span class="anav-gap"> </span><span class="anav-l2">Builder</span></button>
     <button class="anav-btn" id="nav-mailer" aria-selected="false">Newsletter</button>
     <button class="anav-btn" id="nav-messages" aria-selected="false">Support</button>
     <button class="anav-btn" id="nav-appearance" aria-selected="false">Appearance</button>
     <button class="anav-btn" id="nav-contact" aria-selected="false">Contact</button>
     <button class="anav-btn" id="nav-logo" aria-selected="false">Logo</button>
     <button class="anav-btn" id="nav-users" aria-selected="false" style="display:none">Users</button>
-    <button class="anav-btn" id="nav-demothemes" aria-selected="false" style="display:none">Demo themes</button>
+    <button class="anav-btn" id="nav-demothemes" aria-selected="false" style="display:none" aria-label="Demo themes"><span class="anav-l1">Demo</span><span class="anav-gap"> </span><span class="anav-l2">themes</span></button>
   </div>
 
   <div id="av-dashboard" hidden></div>
@@ -3260,7 +3265,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     document.body.classList.toggle('lp-cmd-on', !isApp);
     var __bar=document.querySelector('.bar:not(#lp-cmd)'); if(__bar) __bar.style.display=isApp?'':'none';
     var __cmd=document.getElementById('lp-cmd'); if(__cmd) __cmd.style.display=isApp?'none':'flex';
-    var ond=$('nav-details'); if(ond&&ond.parentNode) ond.parentNode.style.display=((currentSiteTemplate==='trade')&&tplNav().length<=1)?'none':''; if(ond&&currentSiteTemplate==='trade') ond.textContent='Page editor';
+    var ond=$('nav-details'); if(ond&&ond.parentNode) ond.parentNode.style.display=((currentSiteTemplate==='trade')&&tplNav().length<=1)?'none':''; if(ond&&currentSiteTemplate==='trade'){ ond.setAttribute('aria-label','Page editor'); ond.innerHTML='<span class="anav-l1">Page</span><span class="anav-gap"> </span><span class="anav-l2">editor</span>'; }
     ['btn-import','btn-snippet','btn-copy','btn-download'].forEach(function(id){ var b=$(id); if(b) b.style.display=isApp?'':'none'; });
     var ge=$('g-effective'), gu=$('g-updated');
     if(ge&&ge.closest('.f')) ge.closest('.f').style.display=isApp?'':'none';
@@ -6518,7 +6523,7 @@ function heroCtaCard(c){
     } else if(sub==='onlineQuote'){
       body.innerHTML=secCard(c,'onlineQuote','Online Quote wizard',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])
         +'<div class="card" style="margin-bottom:22px;"><h2>How it works</h2><p class="lede">Visitors complete the wizard on your live site. Prices are calculated server-side — email verification reveals the total inc GST; SMS unlocks the itemised breakdown. Quote submissions appear in <strong>Dashboard → Captured leads</strong> with kind <code>quote</code>.</p>'
-        +'<p class="hint" style="margin:0;">Turn this section on, publish, then manage sessions under the <strong>Online quotes</strong> tab. Embed slug: <code>'+esc(currentSiteSlug||'your-slug')+'</code></p></div>';
+        +'<p class="hint" style="margin:0;">Turn this section on, publish, then manage sessions under the <strong>Quote Builder</strong> tab. Embed slug: <code>'+esc(currentSiteSlug||'your-slug')+'</code></p></div>';
       wireSec(c,'onlineQuote',true,[['eyebrow'],['heading'],['intro']]);
     } else if(sub==='estimateBuilder'){
       body.innerHTML=secCard(c,'estimateBuilder','Estimate Builder',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta'],['currency','Currency symbol'],['disclaimer','Disclaimer','ta'],['ctaText','Button text']])
