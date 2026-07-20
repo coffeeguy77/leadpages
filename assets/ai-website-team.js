@@ -316,6 +316,12 @@
       'border-color:var(--accent,#ec4899) !important;outline:2px solid var(--focus,var(--accent,#ec4899));outline-offset:-1px}' +
       '#av-ai-team .ai-tin::placeholder,.ai-chat-backdrop .ai-tin::placeholder,' +
       '#av-ai-team textarea::placeholder,.ai-chat-backdrop textarea::placeholder{opacity:.55}' +
+      '#ai-team-busy{position:fixed;inset:0;z-index:10050;background:rgba(6,10,18,.62);display:flex;align-items:center;justify-content:center;padding:16px}' +
+      '#ai-team-busy .ai-busy-card{max-width:360px;width:100%;padding:22px 20px;border-radius:14px;background:var(--panel,#12141c);border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 50px rgba(0,0,0,.45);text-align:center;color:var(--ink,#f4f4f6)}' +
+      '#ai-team-busy .ai-busy-spin{width:36px;height:36px;margin:0 auto 14px;border-radius:50%;border:3px solid rgba(255,255,255,.14);border-top-color:var(--accent,#3b82f6);animation:ai-busy-spin .7s linear infinite}' +
+      '@keyframes ai-busy-spin{to{transform:rotate(360deg)}}' +
+      '#ai-team-busy .ai-busy-msg{font-size:15px;font-weight:700;margin:0 0 6px}' +
+      '#ai-team-busy .ai-busy-sub{font-size:12.5px;opacity:.78;line-height:1.45;margin:0}' +
       '.ai-chat-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px}' +
       '.ai-chat-modal{width:min(560px,100%);max-height:min(88vh,720px);overflow:auto;border-radius:14px;background:var(--panel,#12141c);color:var(--ink,#f4f4f6);border:1px solid var(--line,rgba(255,255,255,.12));box-shadow:0 18px 50px rgba(0,0,0,.45);padding:18px 18px 16px}' +
       '.ai-chat-log{display:flex;flex-direction:column;gap:10px;margin:12px 0 14px}' +
@@ -729,6 +735,11 @@
           '> Select</label>'
         : '';
     var draftLabel = forgeable ? 'Draft in Forge' : 'Approve';
+    var landingBlocked = forgeable && !landingReadyForForge(r);
+    var draftDisabled = landingBlocked ? ' disabled aria-disabled="true"' : '';
+    var draftTitle = landingBlocked
+      ? ' title="Answer Primary keyword + Location first"'
+      : '';
     return (
       '<article class="card ai-rec-card" data-rec-id="' +
       esc(r.id) +
@@ -754,7 +765,10 @@
       answerBtn +
       '<button type="button" class="btn sm ai-rec-approve" data-id="' +
       esc(r.id) +
-      '">' +
+      '"' +
+      draftDisabled +
+      draftTitle +
+      '>' +
       esc(draftLabel) +
       '</button>' +
       '<button type="button" class="btn ghost sm ai-rec-discuss" data-id="' +
@@ -917,21 +931,24 @@
     if (apply) {
       apply.onclick = async function () {
         apply.disabled = true;
+        if (cancel) cancel.disabled = true;
+        showBusy('Applying changes…');
         try {
           var j = await api('/api/ai-team/execution-plan', {
             siteId: activeSiteId(),
             action: 'apply',
             planId: apply.getAttribute('data-plan')
           });
+          closeBusy();
           backdrop.remove();
           notify(j.notice || j.summary || 'Changes applied to site config.');
-          if (j.editorSection && typeof window.lpOpenEditorSection === 'function') {
-            window.lpOpenEditorSection(j.editorTab || 'details', j.editorSection);
-          }
+          openAppliedResult(j);
           loadPanel(panelCtx);
         } catch (e) {
+          closeBusy();
           notify(e.message || String(e), 'warn');
           apply.disabled = false;
+          if (cancel) cancel.disabled = false;
         }
       };
     }
@@ -971,6 +988,71 @@
     if (panelCtx.siteId) {
       window.currentSiteId = panelCtx.siteId;
       if (panelCtx.siteName) window.currentSiteName = panelCtx.siteName;
+    }
+  }
+
+  function closeBusy() {
+    var el = $('ai-team-busy');
+    if (el) el.remove();
+  }
+
+  /** Instant busy overlay — call synchronously on click before any await. */
+  function showBusy(message) {
+    closeBusy();
+    ensureStyles();
+    var el = document.createElement('div');
+    el.id = 'ai-team-busy';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
+    el.innerHTML =
+      '<div class="ai-busy-card">' +
+      '<div class="ai-busy-spin" aria-hidden="true"></div>' +
+      '<div class="ai-busy-msg">' +
+      esc(message || 'Working…') +
+      '</div>' +
+      '<div class="ai-busy-sub">Please wait — Forge is updating site config. AI never publishes.</div>' +
+      '</div>';
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function landingReadyForForge(rec) {
+    var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
+    if (change.outcome !== 'plan_seo_landing') return true;
+    var inputs = change.landingAiInputs || change.landing_ai_inputs;
+    if (inputs && String(inputs.primaryKeyword || '').trim() && String(inputs.location || '').trim()) {
+      return true;
+    }
+    var steps = planStepsOf(rec);
+    return steps.some(function (s) {
+      return (
+        s &&
+        (s.id === 'seo_inputs' || s.id === 'keywords') &&
+        s.status === 'done' &&
+        s.answers &&
+        String(s.answers.primaryKeyword || s.answers.phrase || '').trim() &&
+        String(s.answers.location || '').trim()
+      );
+    });
+  }
+
+  function forgeBlockReason(rec) {
+    if (!rec) return 'Recommendation not found.';
+    if (!isForgeOutcome(rec)) return null;
+    var change = (rec.proposed_change || rec.proposedChange) || {};
+    if (change.outcome === 'plan_seo_landing' && !landingReadyForForge(rec)) {
+      return 'Answer Primary keyword + Location first (Write with AI fields), then Draft in Forge.';
+    }
+    return null;
+  }
+
+  function openAppliedResult(j) {
+    if (j && j.pageId && typeof window.lpOpenLandingPage === 'function') {
+      window.lpOpenLandingPage(j.pageId);
+      return;
+    }
+    if (j && j.editorSection && typeof window.lpOpenEditorSection === 'function') {
+      window.lpOpenEditorSection(j.editorTab || 'details', j.editorSection);
     }
   }
 
@@ -1133,6 +1215,13 @@
     if (draftBtn) {
       draftBtn.onclick = async function () {
         var msg = $('ai-chat-msg');
+        var block = forgeBlockReason(discussSession && discussSession.recommendation);
+        if (block) {
+          setMsg(msg, block, 'bad');
+          return;
+        }
+        draftBtn.disabled = true;
+        showBusy('Building Change Preview…');
         try {
           setMsg(msg, 'Drafting in Forge…', '');
           var j = await api('/api/ai-team/execution-plan', {
@@ -1141,6 +1230,7 @@
             recommendationIds: [discussSession.recommendationId],
             editorContext: editorContext()
           });
+          closeBusy();
           closeChat();
           notify(j.nextStep || 'Execution Plan ready — open Change Preview.');
           if (j.preview && j.plan && j.plan.id) {
@@ -1149,6 +1239,8 @@
             softRefresh(panelCtx);
           }
         } catch (e) {
+          closeBusy();
+          draftBtn.disabled = false;
           setMsg(msg, e.message || String(e), 'bad');
         }
       };
@@ -2039,13 +2131,26 @@
 
     document.querySelectorAll('.ai-rec-approve').forEach(function (btn) {
       btn.onclick = async function () {
+        if (btn.disabled) return;
+        var id = btn.getAttribute('data-id');
+        var rec = ((lastState && lastState.recommendations) || []).find(function (r) {
+          return String(r.id) === String(id);
+        });
+        var block = forgeBlockReason(rec);
+        if (block) {
+          notify(block, 'warn');
+          return;
+        }
+        btn.disabled = true;
+        showBusy('Building Change Preview…');
         try {
           var j = await api('/api/ai-team/execution-plan', {
             siteId: siteId,
             action: 'create',
-            recommendationIds: [btn.getAttribute('data-id')],
+            recommendationIds: [id],
             editorContext: editorContext()
           });
+          closeBusy();
           notify(j.nextStep || 'Execution Plan ready — open Change Preview.');
           if (j.preview && j.plan && j.plan.id) {
             showChangePreview(j.preview, j.plan.id);
@@ -2053,6 +2158,8 @@
             softRefresh(panelCtx);
           }
         } catch (e) {
+          closeBusy();
+          btn.disabled = false;
           notify(e.message || String(e), 'warn');
         }
       };
@@ -2085,6 +2192,7 @@
           return;
         }
         batch.disabled = true;
+        showBusy('Building Change Preview…');
         try {
           var j = await api('/api/ai-team/execution-plan', {
             siteId: siteId,
@@ -2092,10 +2200,12 @@
             recommendationIds: ids,
             editorContext: editorContext()
           });
+          closeBusy();
           notify(j.nextStep || 'Batched Execution Plan ready.');
           if (j.preview && j.plan && j.plan.id) showChangePreview(j.preview, j.plan.id);
           else softRefresh(panelCtx);
         } catch (e) {
+          closeBusy();
           notify(e.message || String(e), 'warn');
           batch.disabled = false;
         }

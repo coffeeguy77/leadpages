@@ -629,7 +629,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-messages-embed.js"></script>
 <script src="/assets/lp-mobile-menu-builder.js?v=ai-team-nav-1"></script>
 <script src="/assets/lp-trade-picker.js"></script>
-<script src="/assets/ai-website-team.js?v=tin-fields-1"></script>
+<script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
 <script src="/icons.js"></script>
 <script src="/assets/lp-quote-wizard-logic.js"></script>
 <script src="/assets/lp-quote-display.js"></script>
@@ -7785,6 +7785,16 @@ function heroCtaCard(c){
     if(section){ landingSub = section; if(typeof renderDetails === 'function') renderDetails(); }
     else if(typeof renderDetails === 'function') renderDetails();
     toast('Opened Page editor' + (section ? ' → ' + _secLabel(section) : ''));
+  };
+  window.lpOpenLandingPage = function(pageId){
+    showView('landing');
+    try{
+      if(typeof renderSeoPages === 'function') renderSeoPages();
+      if(pageId && typeof lpOpen === 'function') lpOpen(pageId);
+      toast('Opened landing page draft');
+    }catch(_e){
+      toast('Opened Landing pages');
+    }
   };
   const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['ai-team','av-ai-team',renderAiTeamPanel],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
   let activeView=null;
