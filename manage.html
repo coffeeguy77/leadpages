@@ -218,6 +218,35 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .anav-btn .lme-nav-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:7px;vertical-align:middle;flex-shrink:0;}
 /* shared admin form controls */
 .tin{width:100%;font-family:var(--font-ui);font-size:14px;padding:9px 11px;border:1px solid var(--line-strong);border-radius:8px;background:var(--input-bg);color:var(--text);box-sizing:border-box;}
+/* AI Website Team — same 8px radius as Newsletter (.tin), transparent fill (no grey wash) */
+#av-ai-team .tin.ai-tin,
+.ai-chat-backdrop .tin.ai-tin,
+#av-ai-team textarea.ai-tin,
+#av-ai-team input.ai-tin,
+.ai-chat-backdrop textarea.ai-tin,
+.ai-chat-backdrop input.ai-tin,
+#av-ai-team textarea,
+#av-ai-team input[type=text],
+.ai-chat-backdrop textarea,
+.ai-chat-backdrop input[type=text]{
+  border-radius:8px !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  box-shadow:none !important;
+  color:var(--text,var(--ink));
+  border:1px solid var(--line-strong,rgba(255,255,255,.16));
+  padding:10px 12px;
+}
+#av-ai-team .tin.ai-tin:focus,
+.ai-chat-backdrop .tin.ai-tin:focus,
+#av-ai-team textarea:focus,
+#av-ai-team input[type=text]:focus,
+.ai-chat-backdrop textarea:focus,
+.ai-chat-backdrop input[type=text]:focus{
+  outline:2px solid var(--focus,var(--accent));
+  outline-offset:-1px;
+  border-color:var(--accent);
+}
 .mlr-grid{display:flex;flex-direction:column;gap:18px;}
 .mlr-compose{display:flex;flex-direction:column;gap:0;}
 .mlr-compose #mlr-subject{font-size:16px;padding:12px 14px;}
@@ -600,7 +629,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-messages-embed.js"></script>
 <script src="/assets/lp-mobile-menu-builder.js?v=ai-team-nav-1"></script>
 <script src="/assets/lp-trade-picker.js"></script>
-<script src="/assets/ai-website-team.js?v=mobile-stack-1"></script>
+<script src="/assets/ai-website-team.js?v=tin-fields-1"></script>
 <script src="/icons.js"></script>
 <script src="/assets/lp-quote-wizard-logic.js"></script>
 <script src="/assets/lp-quote-display.js"></script>

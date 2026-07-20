@@ -13,6 +13,89 @@
   var chatSession = null;
   /** @type {object|null} */
   var discussSession = null;
+  /** @type {object|null} */
+  var askSession = null;
+
+  /** Topic pills — mirrors lib/ai-team/ask-topics.js (browser cannot require). */
+  var ASK_TOPICS = [
+    {
+      id: 'landing',
+      label: 'Landing Page',
+      specialist: 'atlas',
+      specialistName: 'Atlas',
+      specialistRole: 'Website Strategist',
+      question: 'What would you like a landing page on?',
+      placeholder: 'e.g. cold coffee options',
+      hint: 'Builds one live suggestion card — Answer, Discuss, or Draft in Forge.',
+      prefix: 'landing page'
+    },
+    {
+      id: 'seo',
+      label: 'SEO',
+      specialist: 'scout',
+      specialistName: 'Scout',
+      specialistRole: 'SEO Specialist',
+      question: 'What service or area should we target in search?',
+      placeholder: 'e.g. coffee cart hire Canberra',
+      hint: 'Atlas coordinates; Scout owns the SEO angle on the card.',
+      prefix: 'seo'
+    },
+    {
+      id: 'cta',
+      label: 'CTA',
+      specialist: 'pulse',
+      specialistName: 'Pulse',
+      specialistRole: 'Conversion Specialist',
+      question: 'What should the main button ask visitors to do?',
+      placeholder: 'e.g. Get a free quote',
+      hint: 'Conversion card — Draft in Forge can apply the CTA.',
+      prefix: 'cta'
+    },
+    {
+      id: 'quote',
+      label: 'Quote Form',
+      specialist: 'pulse',
+      specialistName: 'Pulse',
+      specialistRole: 'Conversion Specialist',
+      question: 'What should people request when they contact you?',
+      placeholder: 'e.g. a coffee cart quote for weddings',
+      hint: 'Pulse conversion brief. Discuss now; Forge quote ops expand later.',
+      prefix: 'quote form'
+    },
+    {
+      id: 'slider',
+      label: 'Slider',
+      specialist: 'nova',
+      specialistName: 'Nova',
+      specialistRole: 'Design Specialist',
+      question: 'What should the hero slider showcase?',
+      placeholder: 'e.g. wedding setups, corporate carts, iced drinks',
+      hint: 'Nova design brief. Discuss now; Forge slider ops expand later.',
+      prefix: 'slider'
+    },
+    {
+      id: 'faq',
+      label: 'FAQ',
+      specialist: 'echo',
+      specialistName: 'Echo',
+      specialistRole: 'Content Specialist',
+      question: 'What objections do customers raise before they enquire?',
+      placeholder: 'e.g. price, travel fees, weather backup',
+      hint: 'Echo content angle — Draft in Forge can enable FAQ.',
+      prefix: 'faq'
+    },
+    {
+      id: 'services',
+      label: 'Services',
+      specialist: 'echo',
+      specialistName: 'Echo',
+      specialistRole: 'Content Specialist',
+      question: 'What are the main services you sell?',
+      placeholder: 'e.g. Weddings, Corporate, Private parties',
+      hint: 'Saved as Site Knowledge — Echo can write public copy later.',
+      prefix: 'services'
+    }
+  ];
 
   var FIELDS = [
     {
@@ -188,10 +271,51 @@
       '.ai-team-layout-main,.ai-team-layout-side{min-width:0}' +
       '.ai-preview-diff{display:grid;grid-template-columns:1fr;gap:10px;font-size:13px}' +
       '@media(min-width:520px){.ai-preview-diff{grid-template-columns:1fr 1fr}}' +
+      '.ai-ask-shell{margin-bottom:16px;padding:0;overflow:hidden;border:1px solid var(--line,rgba(255,255,255,.1));background:linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,.02));box-shadow:0 18px 40px rgba(0,0,0,.22);border-radius:var(--radius,12px)}' +
+      '.ai-ask-head{display:flex;gap:12px;align-items:flex-start;padding:16px 16px 12px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.18)}' +
+      '.ai-ask-avatar{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;letter-spacing:.02em;color:#fff;background:linear-gradient(135deg,var(--accent,#ec4899),#fb7185);box-shadow:0 8px 20px rgba(236,72,153,.28);flex:0 0 auto}' +
+      '.ai-ask-avatar.scout{background:linear-gradient(135deg,#0ea5e9,#38bdf8)}' +
+      '.ai-ask-avatar.nova{background:linear-gradient(135deg,#a855f7,#c084fc)}' +
+      '.ai-ask-avatar.pulse{background:linear-gradient(135deg,#f59e0b,#fb923c)}' +
+      '.ai-ask-avatar.echo{background:linear-gradient(135deg,#14b8a6,#2dd4bf)}' +
+      '.ai-ask-head h3{margin:0 0 4px;font-size:17px}' +
+      '.ai-ask-head .lede{margin:0;font-size:13px;opacity:.84;line-height:1.45}' +
+      '.ai-ask-pills{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06)}' +
+      '.ai-ask-pill{appearance:none;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:inherit;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:650;cursor:pointer;line-height:1.2}' +
+      '.ai-ask-pill:hover{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.07)}' +
+      '.ai-ask-pill.active{border-color:var(--accent,#ec4899);background:rgba(236,72,153,.16);color:var(--accent,#ec4899)}' +
+      '.ai-ask-pill small{display:block;font-size:10px;font-weight:600;opacity:.7;margin-top:2px;letter-spacing:.02em;text-transform:uppercase}' +
+      '.ai-ask-thread{min-height:168px;max-height:280px;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;background:rgba(0,0,0,.14)}' +
+      '.ai-ask-bubble{max-width:92%;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.45;white-space:pre-wrap}' +
+      '.ai-ask-bubble.team{align-self:flex-start;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-bottom-left-radius:6px}' +
+      '.ai-ask-bubble.you{align-self:flex-end;background:rgba(236,72,153,.16);border:1px solid rgba(236,72,153,.4);border-bottom-right-radius:6px}' +
+      '.ai-ask-bubble .who{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.7;margin:0 0 4px}' +
+      '.ai-ask-composer{padding:12px 16px 14px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.12)}' +
+      '.ai-ask-composer textarea{min-height:74px;resize:vertical}' +
+      '.ai-ask-composer-actions{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}' +
       '.ai-discuss-context{font-size:13px;line-height:1.45;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}' +
       '.ai-discuss-context p{margin:0 0 6px}.ai-discuss-context p:last-child{margin:0}' +
-      '.ai-step-field{display:block;margin:0 0 10px}' +
-      '.ai-step-field span{display:block;font-size:12.5px;font-weight:700;margin:0 0 4px}' +
+      '.ai-step-field{display:block;margin:0 0 12px}' +
+      '.ai-step-field > span{display:block;font-size:13px;font-weight:700;margin:0 0 3px}' +
+      '.ai-step-help{display:block;font-size:12.5px;line-height:1.4;opacity:.78;margin:0 0 6px;font-weight:400}' +
+      '.ai-step-example{display:block;font-size:12px;opacity:.62;margin:4px 0 0}' +
+      /* Newsletter-matching controls: 8px radius, no filled wash — all AI inputs/modals */
+      '#av-ai-team .ai-tin,.ai-chat-backdrop .ai-tin,' +
+      '#av-ai-team input.ai-tin,#av-ai-team textarea.ai-tin,' +
+      '.ai-chat-backdrop input.ai-tin,.ai-chat-backdrop textarea.ai-tin,' +
+      '#av-ai-team textarea,#av-ai-team input[type=text],' +
+      '.ai-chat-backdrop textarea,.ai-chat-backdrop input[type=text]{' +
+      'width:100%;box-sizing:border-box;border-radius:8px !important;' +
+      'border:1px solid var(--line-strong,rgba(255,255,255,.18)) !important;' +
+      'background:transparent !important;background-color:transparent !important;' +
+      'color:var(--text,var(--ink,#f4f4f6)) !important;padding:10px 12px;font:inherit;outline:none;' +
+      'box-shadow:none !important;-webkit-appearance:none;appearance:none}' +
+      '#av-ai-team .ai-tin:focus,.ai-chat-backdrop .ai-tin:focus,' +
+      '#av-ai-team textarea:focus,#av-ai-team input[type=text]:focus,' +
+      '.ai-chat-backdrop textarea:focus,.ai-chat-backdrop input[type=text]:focus{' +
+      'border-color:var(--accent,#ec4899) !important;outline:2px solid var(--focus,var(--accent,#ec4899));outline-offset:-1px}' +
+      '#av-ai-team .ai-tin::placeholder,.ai-chat-backdrop .ai-tin::placeholder,' +
+      '#av-ai-team textarea::placeholder,.ai-chat-backdrop textarea::placeholder{opacity:.55}' +
       '.ai-chat-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px}' +
       '.ai-chat-modal{width:min(560px,100%);max-height:min(88vh,720px);overflow:auto;border-radius:14px;background:var(--panel,#12141c);color:var(--ink,#f4f4f6);border:1px solid var(--line,rgba(255,255,255,.12));box-shadow:0 18px 50px rgba(0,0,0,.45);padding:18px 18px 16px}' +
       '.ai-chat-log{display:flex;flex-direction:column;gap:10px;margin:12px 0 14px}' +
@@ -309,14 +433,14 @@
     var input = def.multiline
       ? '<textarea id="' +
         id +
-        '" rows="3" style="width:100%" placeholder="' +
+        '" class="tin ai-tin" rows="3" placeholder="' +
         esc(def.examples[0] || '') +
         '">' +
         esc(value || '') +
         '</textarea>'
       : '<input id="' +
         id +
-        '" type="text" style="width:100%" value="' +
+        '" class="tin ai-tin" type="text" value="' +
         esc(value || '') +
         '" placeholder="' +
         esc(def.examples[0] || '') +
@@ -386,14 +510,30 @@
   function isForgeOutcome(rec) {
     var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
     if (change.type === 'forge_draft') return true;
-    if (
+    return (
       change.outcome === 'strengthen_primary_cta' ||
       change.outcome === 'enable_faq_for_objections' ||
       change.outcome === 'plan_seo_landing'
-    ) {
-      return true;
-    }
-    return !!(rec && rec.interactive === 'execution_plan');
+    );
+  }
+
+  function withSpecialistOf(rec) {
+    var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
+    return change.withSpecialist || change.with_specialist || '';
+  }
+
+  function specialistLabel(id) {
+    var map = {
+      atlas: 'Atlas',
+      scout: 'Scout',
+      nova: 'Nova',
+      pulse: 'Pulse',
+      echo: 'Echo',
+      lens: 'Lens',
+      forge: 'Forge',
+      guardian: 'Guardian'
+    };
+    return map[id] || id;
   }
 
   function planOutlineOf(rec) {
@@ -403,7 +543,113 @@
 
   function planStepsOf(rec) {
     var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
-    return Array.isArray(change.planSteps) ? change.planSteps : [];
+    var steps = Array.isArray(change.planSteps) ? change.planSteps.slice() : [];
+    var outcome = change.outcome || '';
+    // Migrate legacy landing cards (brief / keywords jargon) → Write with AI fields.
+    if (
+      outcome === 'plan_seo_landing' &&
+      steps.some(function (s) {
+        return s && (s.id === 'brief' || s.id === 'keywords');
+      })
+    ) {
+      var focusStep = steps.find(function (s) {
+        return s && s.id === 'focus';
+      });
+      var topic =
+        (focusStep && focusStep.value) ||
+        parseLandingFocusClient(change.promptSummary || rec.problem || '') ||
+        '';
+      var seoDone = steps.some(function (s) {
+        return s && (s.id === 'seo_inputs' || s.id === 'keywords') && s.status === 'done';
+      });
+      var draft = steps.find(function (s) {
+        return s && s.id === 'draft';
+      });
+      var publish = steps.find(function (s) {
+        return s && s.id === 'publish';
+      });
+      steps = [
+        focusStep || {
+          id: 'focus',
+          status: topic ? 'done' : 'needs_answer',
+          label: topic
+            ? 'Focus this landing page on: “' + topic.slice(0, 100) + '”.'
+            : 'Confirm what this landing page is about.',
+          value: topic || '',
+          fields: []
+        },
+        {
+          id: 'seo_inputs',
+          status: seoDone ? 'done' : 'needs_answer',
+          label:
+            'Fill the same fields as Landing pages → Write with AI: Primary keyword, Location, plus optional Extra information and Negative keywords.',
+          value: '',
+          fields: seoDone
+            ? []
+            : [
+                {
+                  key: 'primaryKeyword',
+                  label: 'Primary keyword',
+                  help: 'Main Google phrase to rank for — same field as Write with AI.',
+                  placeholder: topic ? topic.slice(0, 80) : 'e.g. pumpkin carving Canberra',
+                  example: 'pumpkin carving Canberra',
+                  required: true
+                },
+                {
+                  key: 'location',
+                  label: 'Location',
+                  help: 'Suburb or city this page targets — same field as Write with AI.',
+                  placeholder: 'e.g. Canberra',
+                  example: 'Canberra',
+                  required: true
+                },
+                {
+                  key: 'extraInfo',
+                  label: 'Extra information',
+                  help: 'Optional — anything else Write with AI should know.',
+                  placeholder: 'e.g. Family workshops only — no corporate events.',
+                  example: 'Family workshops only — no corporate events.',
+                  optional: true,
+                  multiline: true
+                },
+                {
+                  key: 'negativeKeywords',
+                  label: 'Negative keywords',
+                  help: 'Optional — hard ban words (comma-separated).',
+                  placeholder: 'e.g. coffee, barista, wedding',
+                  example: 'coffee, barista, wedding',
+                  optional: true
+                }
+              ]
+        },
+        draft || {
+          id: 'draft',
+          status: seoDone ? 'ready' : 'pending',
+          label:
+            'Open Landing pages → Write with AI (SEO mode), paste those fields, then Generate draft.',
+          value: '',
+          fields: []
+        },
+        publish || {
+          id: 'publish',
+          status: 'pending',
+          label: 'Review the draft, refine copy, then you Publish Live Site yourself.',
+          value: '',
+          fields: []
+        }
+      ];
+    }
+    return steps;
+  }
+
+  function parseLandingFocusClient(raw) {
+    var t = String(raw || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!t) return '';
+    t = t.replace(/^landing\s*pages?\s*[:\-–]\s*/i, '');
+    t = t.replace(/^plan a landing page for:\s*/i, '');
+    return t.trim();
   }
 
   function promptSummaryOf(rec) {
@@ -463,6 +709,9 @@
     var fieldKey = knowledgeFieldKey(r);
     var forgeable = isForgeOutcome(r);
     var summary = promptSummaryOf(r);
+    var withSpec = withSpecialistOf(r);
+    var metaExtra =
+      withSpec && withSpec !== 'atlas' ? ' · with ' + specialistLabel(withSpec) : '';
     var answerBtn = fieldKey
       ? '<button type="button" class="btn sm ai-rec-answer" data-id="' +
         esc(r.id) +
@@ -486,6 +735,7 @@
       '">' +
       '<div class="ai-rec-meta"><span>' +
       esc(r.specialist || 'atlas') +
+      esc(metaExtra) +
       ' · ' +
       esc(r.status || '') +
       esc(exec) +
@@ -788,7 +1038,7 @@
       (summary ? '<p><strong>Summary:</strong> ' + esc(summary) + '</p>' : '') +
       '<div id="ai-discuss-outline"></div></div>' +
       '<div class="ai-chat-log" id="ai-chat-log"></div>' +
-      '<textarea id="ai-discuss-input" rows="3" style="width:100%" placeholder="Ask a question or refine the plan…"></textarea>' +
+      '<textarea id="ai-discuss-input" class="tin ai-tin" rows="3" placeholder="Ask a question or refine the plan…"></textarea>' +
       '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
       '<button type="button" class="btn" id="ai-discuss-send">Send</button>' +
       (forgeable
@@ -921,22 +1171,28 @@
     }
     var fieldsHtml = step.fields
       .map(function (f) {
-        var multiline = f.key === 'proofPoints' || f.key === 'objections';
+        var multiline = !!(f.multiline || f.key === 'proofPoints' || f.key === 'objections' || f.key === 'extraInfo' || f.key === 'slides');
+        var opt = f.optional ? ' <em style="font-weight:500;opacity:.7">(optional)</em>' : '';
         return (
           '<label class="ai-step-field"><span>' +
           esc(f.label || f.key) +
+          opt +
           '</span>' +
+          (f.help ? '<span class="ai-step-help">' + esc(f.help) + '</span>' : '') +
           (multiline
             ? '<textarea id="ai-step-' +
               esc(f.key) +
-              '" rows="3" style="width:100%" placeholder="' +
+              '" class="tin ai-tin" rows="3" placeholder="' +
               esc(f.placeholder || '') +
               '"></textarea>'
             : '<input id="ai-step-' +
               esc(f.key) +
-              '" type="text" style="width:100%" placeholder="' +
+              '" class="tin ai-tin" type="text" placeholder="' +
               esc(f.placeholder || '') +
               '">') +
+          (f.example
+            ? '<span class="ai-step-example">Example: ' + esc(f.example) + '</span>'
+            : '') +
           '</label>'
         );
       })
@@ -959,7 +1215,7 @@
       '<button type="button" class="btn" id="ai-step-save">Save &amp; update plan</button>' +
       '<button type="button" class="btn ghost" id="ai-step-cancel">Cancel</button>' +
       '<span id="ai-chat-msg" class="ai-team-msg"></span></div>' +
-      '<p class="lede" style="margin:10px 0 0;font-size:12px">Saves onto this same suggestion — does not publish.</p></div>';
+      '<p class="lede" style="margin:10px 0 0;font-size:12px">Same fields as Landing pages → Write with AI. Saves on this card — does not publish.</p></div>';
     document.body.appendChild(backdrop);
     function shut() {
       closeChat();
@@ -972,10 +1228,16 @@
     $('ai-step-save').onclick = async function () {
       var msg = $('ai-chat-msg');
       var answers = {};
+      var missing = [];
       step.fields.forEach(function (f) {
         var el = $('ai-step-' + f.key);
         answers[f.key] = el ? el.value : '';
+        if (f.required && !String(answers[f.key] || '').trim()) missing.push(f.label || f.key);
       });
+      if (missing.length) {
+        setMsg(msg, 'Please fill: ' + missing.join(', '), 'bad');
+        return;
+      }
       try {
         setMsg(msg, 'Saving…', '');
         var j = await api('/api/ai-team/recommendations', {
@@ -1026,12 +1288,12 @@
       esc(def.help) +
       '</p>' +
       (def.multiline
-        ? '<textarea id="ai-chat-input" rows="4" style="width:100%" placeholder="' +
+        ? '<textarea id="ai-chat-input" class="tin ai-tin" rows="4" placeholder="' +
           esc(def.examples[0] || '') +
           '">' +
           esc(cur) +
           '</textarea>'
-        : '<input id="ai-chat-input" type="text" style="width:100%" value="' +
+        : '<input id="ai-chat-input" class="tin ai-tin" type="text" value="' +
           esc(cur) +
           '" placeholder="' +
           esc(def.examples[0] || '') +
@@ -1163,6 +1425,128 @@
     renderChatQuestion();
   }
 
+  function findAskTopic(id) {
+    for (var i = 0; i < ASK_TOPICS.length; i++) {
+      if (ASK_TOPICS[i].id === id) return ASK_TOPICS[i];
+    }
+    return null;
+  }
+
+  function appendAskBubble(role, who, text) {
+    var thread = $('ai-ask-thread');
+    if (!thread) return;
+    var div = document.createElement('div');
+    div.className = 'ai-ask-bubble ' + (role === 'you' ? 'you' : 'team');
+    div.innerHTML =
+      '<span class="who">' +
+      esc(who || (role === 'you' ? 'You' : 'Atlas')) +
+      '</span>' +
+      esc(text || '');
+    thread.appendChild(div);
+    thread.scrollTop = thread.scrollHeight;
+    if (!askSession) askSession = { topicId: null, topic: null, messages: [] };
+    askSession.messages = askSession.messages || [];
+    askSession.messages.push({ role: role, who: who, body: text });
+  }
+
+  function paintAskThread() {
+    var thread = $('ai-ask-thread');
+    if (!thread) return;
+    thread.innerHTML = '';
+    var msgs =
+      askSession && askSession.messages && askSession.messages.length
+        ? askSession.messages
+        : [
+            {
+              role: 'team',
+              who: 'Atlas',
+              body:
+                'Pick a topic pill to start a guided ask — or type freely below. Each Send builds a live suggestion card you can Answer, Discuss, or Draft in Forge.'
+            }
+          ];
+    msgs.forEach(function (m) {
+      var div = document.createElement('div');
+      div.className = 'ai-ask-bubble ' + (m.role === 'you' ? 'you' : 'team');
+      div.innerHTML =
+        '<span class="who">' +
+        esc(m.who || (m.role === 'you' ? 'You' : 'Atlas')) +
+        '</span>' +
+        esc(m.body || '');
+      thread.appendChild(div);
+    });
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function setAskSpecialist(topic) {
+    var avatar = $('ai-ask-avatar');
+    var title = $('ai-ask-title');
+    var sub = $('ai-ask-sub');
+    var input = $('ai-ask');
+    var spec = topic || {
+      specialist: 'atlas',
+      specialistName: 'Atlas',
+      specialistRole: 'Website Strategist',
+      placeholder: 'Type freely, or pick a topic above…',
+      hint:
+        'Pick a popular topic or type freely. Atlas coordinates — specialists advise on their cards.'
+    };
+    if (avatar) {
+      avatar.className = 'ai-ask-avatar ' + (spec.specialist || 'atlas');
+      avatar.textContent = String(spec.specialistName || 'A').charAt(0);
+    }
+    if (title) {
+      title.textContent = topic
+        ? spec.specialistName + ' — ' + spec.specialistRole
+        : 'Ask the Team';
+    }
+    if (sub) {
+      sub.textContent = topic
+        ? spec.hint ||
+          'Atlas coordinates this card with ' + spec.specialistName + '.'
+        : 'Pick a popular topic or type freely. Atlas coordinates — Scout, Nova, Pulse, and Echo advise on their cards. Builds a live suggestion you can save, Discuss, or Draft in Forge.';
+    }
+    if (input && spec.placeholder) input.placeholder = spec.placeholder;
+    document.querySelectorAll('.ai-ask-pill').forEach(function (btn) {
+      var active = topic && btn.getAttribute('data-topic') === topic.id;
+      btn.classList.toggle('active', !!active);
+    });
+  }
+
+  function selectAskTopic(topicId) {
+    var topic = findAskTopic(topicId);
+    if (!topic) return;
+    askSession = {
+      topicId: topic.id,
+      topic: topic,
+      messages: askSession && askSession.messages ? askSession.messages.slice() : []
+    };
+    setAskSpecialist(topic);
+    appendAskBubble(
+      'team',
+      topic.specialistName,
+      topic.question + (topic.hint ? '\n\n' + topic.hint : '')
+    );
+    var input = $('ai-ask');
+    if (input) {
+      input.value = '';
+      try {
+        input.focus();
+      } catch (_e) {}
+    }
+    setMsg($('ai-ask-msg'), 'Answer in the chat box, then Send.', 'ok');
+  }
+
+  function composeAskRequestText(raw) {
+    var text = String(raw || '').trim();
+    if (!text) return '';
+    if (askSession && askSession.topic && askSession.topic.prefix) {
+      var prefix = askSession.topic.prefix;
+      var re = new RegExp('^' + prefix.replace(/\s+/g, '\\s*') + '\\s*[:\\-–]', 'i');
+      if (!re.test(text)) return prefix + ': ' + text;
+    }
+    return text;
+  }
+
   async function softRefresh(opts) {
     opts = opts || {};
     mergeOpts(opts);
@@ -1173,6 +1557,7 @@
 
     var askEl = $('ai-ask');
     var preservedAsk = askEl ? askEl.value : '';
+    var preservedSession = askSession;
     var scrollY = box.scrollTop || 0;
     var statusEl = $('ai-ask-msg');
     var statusText = statusEl ? statusEl.textContent : '';
@@ -1198,7 +1583,11 @@
       return loadPanel(opts);
     }
 
+    askSession = preservedSession;
+    if (lastState) lastState._siteId = siteId;
     paint(lastState);
+    paintAskThread();
+    setAskSpecialist(askSession && askSession.topic ? askSession.topic : null);
     var ask2 = $('ai-ask');
     if (ask2 && preservedAsk != null) ask2.value = preservedAsk;
     if (opts.focusAsk && ask2) {
@@ -1208,6 +1597,7 @@
       } catch (_e2) {}
     }
     box.scrollTop = scrollY;
+    if (opts.quiet) return;
     if (opts.statusText) setMsg($('ai-ask-msg'), opts.statusText, opts.statusCls || 'ok');
     else if (statusText) setMsg($('ai-ask-msg'), statusText, statusCls);
   }
@@ -1224,17 +1614,48 @@
       return;
     }
 
+    // Instant paint from cache for this site — refresh in background (no blank "Loading…").
+    var cached =
+      lastState &&
+      lastState.brain &&
+      String(lastState._siteId || '') === String(siteId) &&
+      !opts.forceReload;
+    if (cached) {
+      paint(lastState);
+      paintAskThread();
+      setAskSpecialist(askSession && askSession.topic ? askSession.topic : null);
+      softRefresh({ quiet: true });
+      return;
+    }
+
+    // Lightweight shell while first fetch runs (parallel brain + recommendations).
     box.innerHTML =
-      '<div class="card"><p class="lede">Loading Site Brain…</p><span id="ai-team-load-msg"></span></div>';
+      '<div class="card" style="margin-bottom:16px"><h2 style="margin:0 0 6px">AI Website Team</h2>' +
+      '<p class="lede" style="margin:0">Opening…</p></div>' +
+      '<div class="card ai-ask-shell"><div class="ai-ask-head"><div class="ai-ask-avatar">A</div>' +
+      '<div><h3>Ask the Team</h3><p class="lede">Loading your Site Brain and suggestions…</p></div></div></div>';
 
-    var state = { brain: null, review: null, needsReview: false, recommendations: [] };
+    var state = {
+      brain: null,
+      review: null,
+      needsReview: false,
+      recommendations: [],
+      _siteId: siteId
+    };
 
-    try {
-      var got = await api('/api/site-brain/get', { siteId: siteId });
-      state.brain = got.brain;
-      state.review = got.review;
-      state.needsReview = !!got.needsBootstrapReview;
-    } catch (e) {
+    var brainPromise = api('/api/site-brain/get', { siteId: siteId }).catch(function (e) {
+      return { __err: e };
+    });
+    var listPromise = api('/api/ai-team/recommendations', {
+      siteId: siteId,
+      action: 'list'
+    }).catch(function () {
+      return { recommendations: [] };
+    });
+
+    var gotWrap = await brainPromise;
+    if (gotWrap && gotWrap.__err) {
+      var e = gotWrap.__err;
       if (e.status === 404 || (e.payload && e.payload.error === 'not_found')) {
         try {
           var synced = await api('/api/site-brain/sync', { siteId: siteId });
@@ -1255,17 +1676,14 @@
           '</p><p class="lede">Nothing was saved.</p></div>';
         return;
       }
+    } else {
+      state.brain = gotWrap.brain;
+      state.review = gotWrap.review;
+      state.needsReview = !!gotWrap.needsBootstrapReview;
     }
 
-    try {
-      var listed = await api('/api/ai-team/recommendations', {
-        siteId: siteId,
-        action: 'list'
-      });
-      state.recommendations = listed.recommendations || [];
-    } catch (_e) {
-      state.recommendations = [];
-    }
+    var listed = await listPromise;
+    state.recommendations = (listed && listed.recommendations) || [];
 
     lastState = state;
     paint(state);
@@ -1326,12 +1744,31 @@
     });
 
     html +=
-      '<div class="card" style="margin-bottom:16px">' +
-      '<h3 style="margin:0 0 8px">Atlas — Website Strategist</h3>' +
-      '<p class="lede" style="margin:0 0 12px">Ask a business question for new recommendations. To refine an existing card, use Discuss on that card — not Ask again.</p>' +
-      '<textarea id="ai-ask" rows="3" style="width:100%" placeholder="e.g. I need a landing page for wedding coffee cart hires"></textarea>' +
-      '<div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
-      '<button type="button" class="btn" id="ai-ask-go">Ask the Team</button>' +
+      '<div class="card ai-ask-shell" id="ai-ask-shell">' +
+      '<div class="ai-ask-head">' +
+      '<div class="ai-ask-avatar" id="ai-ask-avatar">A</div>' +
+      '<div><h3 id="ai-ask-title">Ask the Team</h3>' +
+      '<p class="lede" id="ai-ask-sub">Pick a popular topic or type freely. Atlas coordinates — Scout, Nova, Pulse, and Echo advise on their cards. Builds a live suggestion you can save, Discuss, or Draft in Forge.</p></div></div>' +
+      '<div class="ai-ask-pills" id="ai-ask-pills">' +
+      ASK_TOPICS.map(function (t) {
+        return (
+          '<button type="button" class="ai-ask-pill" data-topic="' +
+          esc(t.id) +
+          '" title="' +
+          esc(t.hint || '') +
+          '">' +
+          esc(t.label) +
+          '<small>' +
+          esc(t.specialistName) +
+          '</small></button>'
+        );
+      }).join('') +
+      '</div>' +
+      '<div class="ai-ask-thread" id="ai-ask-thread" aria-live="polite"></div>' +
+      '<div class="ai-ask-composer">' +
+      '<textarea id="ai-ask" class="tin ai-tin" rows="3" placeholder="Type freely, or pick a topic above…"></textarea>' +
+      '<div class="ai-ask-composer-actions">' +
+      '<button type="button" class="btn" id="ai-ask-go">Send</button>' +
       '<button type="button" class="btn ghost" id="ai-ask-chat">Fill gaps with Atlas</button>' +
       '<button type="button" class="btn ghost" id="ai-resync">Refresh from website</button>' +
       '<span id="ai-ask-msg" class="ai-team-msg"></span></div>' +
@@ -1339,12 +1776,12 @@
       esc((ctx.editorTab || 'details') + '') +
       '</code>' +
       (ctx.selectedSection ? ' · section <code>' + esc(ctx.selectedSection) + '</code>' : '') +
-      '</p></div>';
+      ' · refine an existing card with Discuss, not Ask again.</p></div></div>';
 
     html +=
       '<div class="card" style="margin-bottom:16px;padding:14px 16px">' +
       '<strong>Specialist Team</strong>' +
-      '<p class="lede" style="margin:6px 0 0;font-size:13px">Atlas (strategy) · Echo (copy) · Scout (SEO) · Pulse (conversion) · Nova (design) · Lens (images) · Guardian (validation) · Forge (execution — sole config writer). Only Forge mutates website configuration.</p></div>';
+      '<p class="lede" style="margin:6px 0 0;font-size:13px">Atlas (strategy) · Echo (copy) · Scout (SEO) · Pulse (conversion) · Nova (design) · Lens (images) · Guardian (validation) · Forge (execution — sole config writer). Topic pills route the conversation to the right advisor; Atlas still coordinates every card. Only Forge mutates website configuration.</p></div>';
 
     var pendingRecs = recs.filter(isPendingRecommendation);
     var doneRecs = recs.filter(function (r) {
@@ -1497,27 +1934,65 @@
       ask.onclick = async function () {
         var msg = $('ai-ask-msg');
         var askBtn = ask;
+        var input = $('ai-ask');
+        var raw = input ? String(input.value || '').trim() : '';
+        if (!raw) {
+          setMsg(msg, askSession && askSession.topic ? 'Answer the question first.' : 'Type a question or pick a topic.', 'bad');
+          return;
+        }
+        var requestText = composeAskRequestText(raw);
+        var who =
+          (askSession && askSession.topic && askSession.topic.specialistName) || 'Atlas';
         try {
           askBtn.disabled = true;
-          setMsg(msg, 'Atlas is reviewing…', '');
+          appendAskBubble('you', 'You', raw);
+          if (input) input.value = '';
+          appendAskBubble(
+            'team',
+            who,
+            'Building a live suggestion card… Atlas coordinates; nothing is published yet.'
+          );
+          setMsg(msg, who + ' is reviewing…', '');
           var j = await api('/api/ai-team/atlas-review', {
             siteId: siteId,
-            requestText: ($('ai-ask') && $('ai-ask').value) || '',
+            requestText: requestText,
             editorContext: editorContext()
           });
           if (!j.persisted) throw new Error('Recommendations were not persisted');
+          var count = (j.recommendations || []).length;
+          appendAskBubble(
+            'team',
+            who,
+            count
+              ? 'Done — ' +
+                  count +
+                  ' live card' +
+                  (count === 1 ? '' : 's') +
+                  ' below. Use Answer / Discuss / Draft in Forge on the card.'
+              : 'Review finished — check Recommended next actions below.'
+          );
           await softRefresh({
             statusText:
-              'Suggestions updated — Summary plus numbered steps. Nothing was published.',
+              'Live card ready — Summary plus numbered steps. Nothing was published.',
             statusCls: 'ok'
           });
         } catch (e) {
+          appendAskBubble('team', 'Atlas', 'Could not build the card: ' + (e.message || String(e)));
           setMsg(msg, e.message || String(e), 'bad');
         } finally {
           askBtn.disabled = false;
         }
       };
     }
+
+    document.querySelectorAll('.ai-ask-pill').forEach(function (btn) {
+      btn.onclick = function () {
+        selectAskTopic(btn.getAttribute('data-topic'));
+      };
+    });
+
+    paintAskThread();
+    setAskSpecialist(askSession && askSession.topic ? askSession.topic : null);
 
     var resync = $('ai-resync');
     if (resync) {
