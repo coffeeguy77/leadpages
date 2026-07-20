@@ -106,7 +106,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
 <div id="view-login" class="hidden">
   <div class="login">
     <h1>Messages</h1>
-    <p>Sign in to message your provider or LeadPages support.</p>
+    <p>Sign in to message your provider or LeadPages.</p>
     <div id="login-feedback"></div>
     <div id="login-email-step">
       <div class="row"><input id="li-email" type="email" placeholder="you@email.com" autocomplete="email"></div>
@@ -135,9 +135,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
     <div id="thread-on" class="hidden" style="display:flex;flex-direction:column;min-height:0;flex:1">
       <div class="thead"><button class="btn btn-sm hidden" id="back-btn" style="margin-right:2px">&larr;</button><div><h2 id="t-title">—</h2><div class="sub" id="t-sub"></div></div><button class="btn btn-sm" id="refresh-btn" style="margin-left:auto">Refresh</button></div>
       <div class="bubbles" id="bubbles"></div>
-      <div id="escalate-bar" class="hidden" style="padding:10px 14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-faint);text-align:center;background:var(--surface-2)">
-        Need more help? <button type="button" id="escalate-btn" style="appearance:none;border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--brand);cursor:pointer;text-decoration:underline;text-underline-offset:2px">Escalate to LeadPages support</button>
-      </div>
+      <div id="footer-actions" class="hidden" style="padding:8px 14px 10px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-faint);text-align:center;background:var(--surface-2);display:flex;flex-direction:column;gap:6px;align-items:center"></div>
       <div class="composer">
         <textarea id="composer-text" placeholder="Write a message…" rows="1"></textarea>
         <button class="btn btn-brand" id="send-btn">Send</button>
@@ -222,19 +220,31 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
 
   /* ---------- CONVERSATIONS ---------- */
   function convLabel(c){
-    if(me.role==='client') return c.kind==='partner_client' ? 'My provider' : 'LeadPages support';
+    if(me.role==='client') return c.kind==='partner_client' ? 'My provider' : 'LeadPages (private)';
     if(me.role==='partner'){
       if(c.kind==='partner_lp') return 'LeadPages support';
       var s=sitesById[c.client_site_id]; return 'Client: '+((s&&s.business_name)||'Client');
     }
     if(c.kind==='partner_lp'){ var p=partnersById[c.partner_id]; return 'Partner: '+((p&&p.display_name)||'Partner'); }
+    if(c.kind==='client_support'){ var sP=sitesById[c.client_site_id]; return 'LeadPages (private): '+((sP&&sP.business_name)||'Client'); }
     var s2=sitesById[c.client_site_id]; return 'Client: '+((s2&&s2.business_name)||'Client');
   }
   function convKindText(c){
     if(c.kind==='partner_lp') return 'Partner ↔ LeadPages';
     if(c.kind==='partner_client') return 'Provider ↔ client';
-    return 'Client support';
+    return 'Client ↔ LeadPages (private)';
   }
+  var LP_JOIN_MARKER='[lp-team-joined]';
+  function isJoinMessage(body){ var raw=String(body||''); return raw.indexOf(LP_JOIN_MARKER)!==-1 || /added LeadPages Team to the chat/i.test(raw); }
+  function joinMessageText(body){ var raw=String(body||''); var idx=raw.indexOf(LP_JOIN_MARKER); var text=(idx>=0?raw.slice(idx+LP_JOIN_MARKER.length):raw).trim(); return text||'LeadPages Team joined the chat.'; }
+  function isLpJoined(c){
+    if(!c) return false;
+    if(c.leadpages_joined||c.leadpages_joined_at) return true;
+    if(c.id===activeId) return activeMsgs.some(function(m){ return isJoinMessage(m&&m.body); });
+    return false;
+  }
+  function hasProviderChat(){ return convos.some(function(c){ return c&&c.kind==='partner_client'; }); }
+  function actorLabel(role){ if(role==='client') return 'Client'; if(role==='partner') return 'Partner'; if(role==='super') return 'LeadPages Team'; return 'Someone'; }
   function isUnread(c){
     var lr=reads[c.id]; if(!lr) return true;
     return new Date(c.last_message_at) > new Date(lr);
@@ -249,7 +259,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
   }
   function renderConvos(){
     var box=$('convs');
-    if(!convos.length){ box.innerHTML='<div class="empty" style="padding:26px">No conversations yet.<br>Tap <strong>New</strong> to start one.</div>'; return; }
+    if(!convos.length){ box.innerHTML='<div class="empty" style="padding:26px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;line-height:1.45"><p style="margin:0">No conversations yet.</p><p style="margin:0">Tap <strong>New</strong> to start one.</p></div>'; return; }
     var list=convos;
     if(convFilter){ var qf=convFilter.toLowerCase(); list=convos.filter(function(c){ return convLabel(c).toLowerCase().indexOf(qf)>=0; }); }
     if(!list.length){ box.innerHTML='<div class="empty" style="padding:26px">No conversations match.</div>'; return; }
@@ -267,10 +277,9 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
     var c=convos.find(function(x){return x.id===id;}); if(!c) return;
     $('thread-empty').classList.add('hidden'); $('thread-on').classList.remove('hidden');
     $('t-title').textContent=convLabel(c); $('t-sub').textContent=convKindText(c);
-    var esc=$('escalate-bar');
-    if(esc) esc.classList.toggle('hidden', !(me.role==='client' && c.kind==='partner_client'));
     if(window.matchMedia('(max-width:760px)').matches){ $('listpane').classList.add('collapsed'); $('back-btn').classList.remove('hidden'); }
     await loadMsgs(id);
+    updateFooterActions(c);
     await markRead(id);
     startPoll(id);
   }
@@ -289,11 +298,29 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
     var box=$('bubbles');
     if(!activeMsgs.length){ box.innerHTML='<div class="empty">No messages yet — say hello.</div>'; return; }
     box.innerHTML=activeMsgs.map(function(m){
+      if(isJoinMessage(m.body)||m.sender_role==='system'){
+        return '<div class="b" style="align-self:center;max-width:92%"><div class="bub" style="background:transparent;border:0;color:var(--ink-faint);font-size:12.5px;font-style:italic;text-align:center;padding:4px 8px">'+esc(joinMessageText(m.body))+'</div>'
+          +'<div class="meta" style="text-align:center">'+fmt(m.created_at)+'</div></div>';
+      }
       var mine=m.sender_id===me.uid;
       return '<div class="b '+(mine?'me':'them')+'"><div class="meta">'+esc(senderLabel(m))+' · '+fmt(m.created_at)+'</div>'
         +'<div class="bub">'+esc(m.body)+'</div></div>';
     }).join('');
     box.scrollTop=box.scrollHeight;
+  }
+  function updateFooterActions(c){
+    var el=$('footer-actions'); if(!el) return;
+    if(!c||c.kind!=='partner_client'){ el.classList.add('hidden'); el.innerHTML=''; return; }
+    var joined=isLpJoined(c);
+    var parts=[];
+    if(!joined) parts.push('<button type="button" data-act="add-lp" style="appearance:none;border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--brand);cursor:pointer;text-decoration:underline;text-underline-offset:2px">Add LeadPages Team to this chat</button>');
+    else parts.push('<p style="margin:0;font-size:12px;line-height:1.4">LeadPages Team is in this chat.</p>');
+    if(me.role==='client'&&hasProviderChat()){
+      parts.push('<button type="button" data-act="private-lp" style="appearance:none;border:0;background:none;padding:0;font:inherit;font-weight:700;color:var(--brand);cursor:pointer;text-decoration:underline;text-underline-offset:2px">Contact LeadPages team privately</button>');
+      parts.push('<p style="margin:0;font-size:12px;line-height:1.4;max-width:36em">Report a partner or client issue directly with the LeadPages team for a private conversation.</p>');
+    }
+    el.innerHTML=parts.join('');
+    el.classList.toggle('hidden', !parts.length);
   }
   async function markRead(id){
     await sb.from('conversation_reads').upsert({ conversation_id:id, user_id:me.uid, last_read_at:new Date().toISOString() }, { onConflict:'conversation_id,user_id' });
@@ -324,17 +351,22 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
 
   /* ---------- NEW CONVERSATION ---------- */
   function openNewBox(){
-    var box=$('newbox'); box.classList.toggle('hidden');
-    if(box.classList.contains('hidden')) return;
-    var html='<h3>Start a conversation</h3>';
     if(me.role==='client'){
       var site=mySites[0];
       if(site && site.servicing_partner_id){
-        html+='<div class="opt"><button class="btn btn-sm" data-new="provider" style="width:100%">Message my provider</button></div>';
-        html+='<p style="font-size:12.5px;color:var(--ink-faint);margin:8px 0 0;line-height:1.4">Your provider is your first point of contact. LeadPages support is available from an escalate link inside that chat if you still need help.</p>';
+        (async function(){
+          startConv(await findOrCreate('partner_client',{partner_id:site.servicing_partner_id,client_site_id:site.id},{partner_id:site.servicing_partner_id,client_site_id:site.id,client_user_id:me.uid}));
+        })();
+        return;
       }
-      if(!site) html='<h3>Start a conversation</h3><p style="font-size:13px;color:var(--ink-faint);margin:0">No site is linked to your account yet. Please contact your provider directly.</p>';
-    } else if(me.role==='partner'){
+      var emptyBox=$('newbox'); emptyBox.classList.remove('hidden');
+      emptyBox.innerHTML='<h3>Start a conversation</h3><p style="font-size:13px;color:var(--ink-faint);margin:0">No site is linked to your account yet. Please contact your provider directly.</p>';
+      return;
+    }
+    var box=$('newbox'); box.classList.toggle('hidden');
+    if(box.classList.contains('hidden')) return;
+    var html='<h3>Start a conversation</h3>';
+    if(me.role==='partner'){
       html+='<div class="opt"><button class="btn btn-sm" data-new="lp" style="width:100%">Message LeadPages</button></div>';
       var clients=Object.keys(sitesById).map(function(k){return sitesById[k];}).filter(function(s){ return s.servicing_partner_id===me.partnerId && s.owner_user_id; });
       if(clients.length){
@@ -379,10 +411,29 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
       if(kind==='provider'){ var s=mySites[0]; if(s&&s.servicing_partner_id) startConv(await findOrCreate('partner_client',{partner_id:s.servicing_partner_id,client_site_id:s.id},{partner_id:s.servicing_partner_id,client_site_id:s.id,client_user_id:me.uid})); }
       if(kind==='lp'){ startConv(await findOrCreate('partner_lp',{partner_id:me.partnerId},{partner_id:me.partnerId})); }
     });
-    var escBtn=$('escalate-btn');
-    if(escBtn) escBtn.addEventListener('click', async function(){
-      var site=mySites[0];
-      startConv(await findOrCreate('client_support',{client_user_id:me.uid},{client_user_id:me.uid,client_site_id:site?site.id:null}));
+    var footer=$('footer-actions');
+    if(footer) footer.addEventListener('click', async function(e){
+      var a=e.target.closest('[data-act]'); if(!a) return;
+      var act=a.getAttribute('data-act');
+      if(act==='private-lp'){
+        var site=mySites[0];
+        startConv(await findOrCreate('client_support',{client_user_id:me.uid},{client_user_id:me.uid,client_site_id:site?site.id:null}));
+      }
+      if(act==='add-lp'){
+        var c=convos.find(function(x){return x.id===activeId;});
+        if(!c||c.kind!=='partner_client'||isLpJoined(c)) return;
+        var label=actorLabel(me.role)+' added LeadPages Team to the chat';
+        var body=LP_JOIN_MARKER+' '+label;
+        a.disabled=true;
+        try{ await sb.from('conversations').update({ leadpages_joined:true, leadpages_joined_by:me.role, leadpages_joined_at:new Date().toISOString() }).eq('id',activeId); }catch(_e){}
+        var r=await sb.from('messages').insert({ conversation_id:activeId, sender_id:me.uid, sender_role:me.role, body:body }).select('*').single();
+        a.disabled=false;
+        if(r.error){ alert(r.error.message||'Could not add LeadPages Team'); return; }
+        c.leadpages_joined=true;
+        activeMsgs.push(r.data); renderMsgs(); updateFooterActions(c);
+        try{ var _t=(await sb.auth.getSession()).data.session; _t=_t&&_t.access_token; fetch('/api/notify-message',{method:'POST',headers:Object.assign({'content-type':'application/json'},_t?{Authorization:'Bearer '+_t}:{}),body:JSON.stringify({conversationId:activeId})}); }catch(_e){}
+        await loadConvos();
+      }
     });
     $('newbox').addEventListener('change', async function(e){
       if(e.target.id==='new-client'){ var sid=e.target.value; if(!sid) return; var s=sitesById[sid];
@@ -401,7 +452,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
     $('composer-text').addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } });
     $('composer-text').addEventListener('input', function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,140)+'px'; });
     $('refresh-btn').addEventListener('click', function(){ if(activeId) loadMsgs(activeId); });
-    $('back-btn').addEventListener('click', function(){ $('listpane').classList.remove('collapsed'); stopPoll(); activeId=null; renderConvos(); var esc=$('escalate-bar'); if(esc) esc.classList.add('hidden'); $('thread-on').classList.add('hidden'); $('thread-empty').classList.remove('hidden'); });
+    $('back-btn').addEventListener('click', function(){ $('listpane').classList.remove('collapsed'); stopPoll(); activeId=null; renderConvos(); var fa=$('footer-actions'); if(fa){ fa.classList.add('hidden'); fa.innerHTML=''; } $('thread-on').classList.add('hidden'); $('thread-empty').classList.remove('hidden'); });
   }
 
   /* ---------- INIT ---------- */
