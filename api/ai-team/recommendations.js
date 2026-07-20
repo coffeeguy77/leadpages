@@ -110,7 +110,8 @@ module.exports = async (req, res) => {
         persisted: true,
         recommendation: discussed.recommendation,
         messages: discussed.messages || [],
-        planOutline: discussed.planOutline || []
+        planOutline: discussed.planOutline || [],
+        intent: discussed.intent || null
       });
     } else {
       return http.json(res, 400, { error: 'unknown_action' });
