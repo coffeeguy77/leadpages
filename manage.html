@@ -39,7 +39,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
-<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=nav-mobile-1">
 <link rel="stylesheet" href="/assets/lp-quote-builder.css">
 <style>
 :root{
@@ -159,7 +159,20 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .toast.warn{background:var(--warning-soft);color:var(--warning);border-color:var(--warning);}
 .lp-app-warn{margin:0 0 12px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--warning-soft);color:var(--warning);font-size:13px;font-weight:600;border:1px solid var(--warning);}
 .savednote{font-size:12px;color:var(--accent-hover);font-weight:600;}
-.adminnav{display:flex;gap:6px;margin:0 0 22px;border-bottom:1px solid var(--line);}
+.adminnav{
+  display:flex;
+  gap:6px;
+  margin:0 0 22px;
+  border-bottom:1px solid var(--line);
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  flex-wrap:nowrap;
+  scrollbar-width:thin;
+}
+.adminnav .anav-btn{flex:0 0 auto;white-space:nowrap;}
+#lp-nav-slot{max-width:100%;min-width:0;}
 .lp-cmd-loading .adminnav,.lp-cmd-loading [id^="av-"]{visibility:hidden;transition:none;}
 .anav-btn{appearance:none;background:transparent;border:none;border-radius:0;cursor:pointer;font-family:var(--font-ui);font-size:14.5px;font-weight:600;color:var(--ink-soft);padding:10px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;box-shadow:none;outline:none;}
 .anav-btn:hover{color:var(--ink);}

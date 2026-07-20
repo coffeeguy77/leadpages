@@ -698,8 +698,12 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
   #lp-shell-ratio {
     display: none !important;
   }
-  .adminnav {
-    display: none;
+  .adminnav,
+  #lp-nav-slot,
+  #lp-nav-slot .adminnav,
+  body.lp-compact-chrome #lp-nav-slot,
+  body.lp-compact-chrome .adminnav {
+    display: none !important;
   }
   /* Hide cmd bar in page chrome only — not when pieces live in the drawer */
   #lp-cmd-slot #lp-cmd.bar {
@@ -1532,8 +1536,8 @@ body.lp-admin-nav-open {
   flex-direction: column;
   gap: 8px;
 }
-.lp-mm-layout-tabs .adminnav,
-.lp-mm-layout-tabs .lp-mm-nav {
+.lp-drawer-body .lp-mm-layout-tabs .adminnav,
+.lp-drawer-body .lp-mm-layout-tabs .lp-mm-nav {
   display: flex !important;
   flex-direction: column;
   border-bottom: none;
@@ -1563,8 +1567,8 @@ body.lp-admin-nav-open {
   padding: 6px 10px;
   font-size: 12.5px;
 }
-.lp-mm-style-nav .adminnav,
-.lp-mm-style-nav .lp-mm-nav {
+.lp-drawer-body .lp-mm-style-nav .adminnav,
+.lp-drawer-body .lp-mm-style-nav .lp-mm-nav {
   display: flex !important;
   flex-direction: column;
   gap: 6px;
