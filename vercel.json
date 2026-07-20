@@ -273,6 +273,12 @@
     }
   ],
   "functions": {
+    "api/marketing-html.js": {
+      "includeFiles": "{home,domains,showcase,marketplace,marketplace-feature,start-your-business,resources,find-a-partner,partners,privacy-policy,terms-of-use,instagram-data-policy,resource-*}.html"
+    },
+    "api/render.js": {
+      "includeFiles": "home.html"
+    },
     "api/theme-studio/generate-concepts.js": {
       "maxDuration": 60
     },
