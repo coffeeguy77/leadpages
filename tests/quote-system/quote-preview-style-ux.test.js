@@ -47,7 +47,8 @@ assert.ok(css.includes('.lp-oq-choices:not(.lp-oq-fp-grid)'), 'chip grid rule ex
 // Equipment always gets fp-grid class; cards layout must not force column stack
 assert.ok(planning.includes("gridCls = 'lp-oq-choices fp-grid lp-oq-fp-grid'"), 'equipment always uses fp-grid');
 assert.ok(!display.includes(".lp-oq-layout-cards .lp-oq-fp-grid{display:flex;flex-direction:column"), 'cards layout no longer stacks equipment');
-assert.ok(display.includes('auto-fit,minmax(min(100%,240px),1fr)'), 'equipment row uses auto-fit columns');
+assert.ok(display.includes('auto-fit,minmax(200px,1fr)'), 'equipment row uses auto-fit columns');
+assert.ok(!/layout-grid \.lp-oq-stack[\s\S]{0,160}minmax\(140px/.test(css), 'stack must never get chip 140px grid');
 
 assert.ok(manage.includes('oq-builder-head-root'), 'head host above preview');
 assert.ok(manage.includes('oq-section-style-root'), 'section style host (kept empty)');
@@ -56,7 +57,7 @@ assert.ok(
   'order: head → preview → section style → builder'
 );
 assert.ok(manage.includes('themeAccent'), 'passes site theme accent into builder');
-assert.ok(manage.includes('lp-quote-builder.css?v=oq-eq-grid-2'), 'cache-busted css');
-assert.ok(render.includes('oq-eq-grid-2'), 'public render cache-bust');
+assert.ok(manage.includes('lp-quote-builder.css?v=oq-eq-grid-3'), 'cache-busted css');
+assert.ok(render.includes('oq-eq-grid-3'), 'public render cache-bust');
 
 console.log('quote-preview-style-ux.test.js: ok');
