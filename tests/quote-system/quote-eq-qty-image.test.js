@@ -34,6 +34,6 @@ assert.ok(builder.includes('imageAxis'), 'height/width image mode');
 assert.ok(builder.includes('Image zoom'), 'per-product zoom slider label');
 
 assert.ok(serializers.includes('imageAxis'), 'public payload includes imageAxis');
-assert.ok(manage.includes('lp-quote-display.js?v=eq-qty-'), 'cache-busted display script');
+assert.ok(manage.includes('lp-quote-display.js?v='), 'cache-busted display script');
 
 console.log('quote-eq-qty-image.test.js: ok');

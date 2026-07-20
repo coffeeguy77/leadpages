@@ -74,6 +74,7 @@
     if (!cfg.wizard.stepLabels) cfg.wizard.stepLabels = {};
     if (!Array.isArray(cfg.wizard.conditions)) cfg.wizard.conditions = [];
     if (!cfg.wizard.equipmentCards) cfg.wizard.equipmentCards = {};
+    if (!cfg.wizard.ui) cfg.wizard.ui = {};
     if (cfg.wizard.allowMultiCart == null) cfg.wizard.allowMultiCart = false;
     cfg.products = Array.isArray(cfg.products) ? cfg.products : [];
     cfg.beverages = Array.isArray(cfg.beverages) ? cfg.beverages : [];
@@ -223,6 +224,7 @@
   QuoteBuilder.prototype._previewNeedsEquipment = function(path) {
     if (!path) return false;
     if (path.indexOf('wizard.equipmentCards') === 0) return true;
+    if (path.indexOf('wizard.ui') === 0) return true;
     if (path.indexOf('wizard.layout') === 0) return true;
     if (path.indexOf('products.') === 0) {
       return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|imageAxis|displayMode|imageSize|imageScale|icon)$/.test(path);
@@ -377,10 +379,11 @@
     var layoutCls = displayApi().layoutClass
       ? displayApi().layoutClass(shell)
       : (' lp-oq-layout-' + (shell.wizard.layout || 'cards'));
+    var uiStyle = displayApi().wizardUiVars ? displayApi().wizardUiVars(shell) : '';
     return self._renderPreviewToolbar(shell)
       + self._previewStyleHtml()
       + '<div class="oqb-preview-body oqb-preview-mock"><div class="oqb-preview-zoom-outer"><div class="oqb-preview-zoom-inner">'
-      + '<div class="lp-oq-card' + layoutCls + '">' +
+      + '<div class="lp-oq-card' + layoutCls + '"' + (uiStyle ? (' style="' + uiStyle + '"') : '') + '>' +
       '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc((shell.business && shell.business.name) || 'Your business') + '</h2>' +
       '<div class="lp-oq-steps">' + steps.map(function(s, i) {
         return '<span class="lp-oq-step' + (i === self.previewStep ? ' is-active' : (i < self.previewStep ? ' is-done' : '')) + '">' + esc(label(s)) + '</span>';
@@ -668,6 +671,43 @@
       }).join('') + '</div></div>';
   };
 
+
+  QuoteBuilder.prototype._renderWizardUiColors = function(w) {
+    var ui = (w && w.ui) || {};
+    var self = this;
+    function col(path, label, fallback) {
+      var v = ui[path] || '';
+      var shown = v || fallback;
+      return self._field(label, '<input type="color" data-oqb-path="wizard.ui.' + path + '" value="' + esc(shown) + '">');
+    }
+    return '<div class="oqb-section"><h4>Wizard colours</h4>'
+      + '<p class="oqb-hint" style="margin-top:0">Panel, progress steps (Equipment, Event details\u2026), and Continue / Back buttons. Progress chips use the same 8px radius as Continue — not pills.</p>'
+      + '<div class="oqb-grid">'
+      + col('panelBg', 'Panel background', '#ffffff')
+      + col('panelBorder', 'Panel border', '#d8dde6')
+      + col('titleColor', 'Business name colour', '#1a2230')
+      + col('introColor', 'Step intro text colour', '#46535f')
+      + col('mutedColor', 'Muted / hint text', '#667788')
+      + '</div>'
+      + '<h4 class="oqb-sub">Progress buttons</h4><div class="oqb-grid">'
+      + col('progressBg', 'Progress background', '#f4f6f8')
+      + col('progressText', 'Progress text', '#1a2230')
+      + col('progressBorder', 'Progress border', '#d8dde6')
+      + col('progressActiveBg', 'Active progress background', '#1f7a63')
+      + col('progressActiveText', 'Active progress text', '#ffffff')
+      + col('progressActiveBorder', 'Active progress border', '#1f7a63')
+      + col('progressDoneText', 'Completed progress text', '#1f7a63')
+      + col('progressDoneBorder', 'Completed progress border', '#1f7a63')
+      + '</div>'
+      + '<h4 class="oqb-sub">Navigation buttons (Continue / Back)</h4><div class="oqb-grid">'
+      + col('btnBg', 'Continue background', '#1f7a63')
+      + col('btnText', 'Continue text', '#ffffff')
+      + col('btnGhostBg', 'Back background', '#ffffff')
+      + col('btnGhostText', 'Back text', '#1f7a63')
+      + col('btnGhostBorder', 'Back border', '#1f7a63')
+      + '</div></div>';
+  };
+
   QuoteBuilder.prototype._renderWizard = function() {
     var w = this.config.wizard || {};
     var layout = w.layout || 'cards';
@@ -692,6 +732,7 @@
       + this._field('Card stroke colour', '<input type="color" data-oqb-path="wizard.equipmentCards.strokeColor" value="' + esc(ec.strokeColor || '#d8dde6') + '">')
       + this._field('Stroke width (px)', '<input type="number" min="0" max="8" data-oqb-path="wizard.equipmentCards.strokeWidth" value="' + esc(ec.strokeWidth != null ? ec.strokeWidth : 1) + '">')
       + '</div></div>'
+      + this._renderWizardUiColors(w)
       + '<div class="oqb-section"><h4>Multi-line equipment</h4>'
       + this._field('Allow multiple equipment lines', '<label class="oqb-check"><input type="checkbox" data-oqb-path="wizard.allowMultiCart"' + (w.allowMultiCart ? ' checked' : '') + '> Show &ldquo;+ Add another equipment line&rdquo; on the customer wizard (for hiring multiple carts at once)</label>')
       + '</div>'
@@ -993,6 +1034,7 @@
             self.previewPinEquipment = true;
             self._ensurePreviewEquipmentStep();
             if (path.indexOf('wizard.equipmentCards') === 0) self.previewFocusCard = true;
+            if (path.indexOf('wizard.ui') === 0) self.previewPinEquipment = false;
           }
           self._refreshPreview();
         });
@@ -1008,6 +1050,7 @@
             self.previewPinEquipment = true;
             self._ensurePreviewEquipmentStep();
             if (path.indexOf('wizard.equipmentCards') === 0) self.previewFocusCard = true;
+            if (path.indexOf('wizard.ui') === 0) self.previewPinEquipment = false;
           }
           self._refreshPreview();
         }

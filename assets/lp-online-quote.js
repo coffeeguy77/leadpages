@@ -206,7 +206,9 @@
     var steps = this.steps();
     var stepKey = steps[this.state.step] || 'contact';
     var biz = (this.shell.business && this.shell.business.name) || 'Get your quote';
-    var html = '<div class="lp-oq-card' + layoutClass(this.shell) + '">' +
+    var uiStyle = (window.LPQuoteDisplay && window.LPQuoteDisplay.wizardUiVars)
+      ? window.LPQuoteDisplay.wizardUiVars(this.shell) : '';
+    var html = '<div class="lp-oq-card' + layoutClass(this.shell) + '"' + (uiStyle ? (' style="' + uiStyle + '"') : '') + '>' +
       '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc(biz) + '</h2>' +
       '<div class="lp-oq-steps">' + steps.map(function(s, i) {
         return '<span class="lp-oq-step' + (i === this.state.step ? ' is-active' : (i < this.state.step ? ' is-done' : '')) + '">' + esc(this.stepLabel(s)) + '</span>';
@@ -589,12 +591,13 @@
     var layoutRules = (window.LPQuoteDisplay && window.LPQuoteDisplay.layoutCss)
       ? window.LPQuoteDisplay.layoutCss(brand) : '';
     css.textContent = [
-      '.lp-oq-card{font-family:system-ui,-apple-system,Segoe UI,sans-serif;width:100%;max-width:100%;box-sizing:border-box;border:1px solid color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor)));border-radius:16px;padding:20px;background:transparent;color:var(--ink, var(--text, inherit))}',
-      '.lp-oq-title{margin:0 0 8px;font-size:1.35rem;color:var(--ink, var(--text, inherit))}',
+      '.lp-oq-card{font-family:system-ui,-apple-system,Segoe UI,sans-serif;width:100%;max-width:100%;box-sizing:border-box;border:1px solid var(--lp-oq-panel-border,color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor))));border-radius:16px;padding:20px;background:var(--lp-oq-panel-bg,transparent);color:var(--ink, var(--text, inherit))}',
+      '.lp-oq-title{margin:0 0 8px;font-size:1.35rem;color:var(--lp-oq-panel-title,var(--ink, var(--text, inherit)))}',
+      '.lp-oq-intro{color:var(--lp-oq-intro,var(--ink-soft, var(--text-soft, inherit)));margin:0 0 10px}',
       '.lp-oq-steps{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}',
-      '.lp-oq-step{font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));background:transparent;color:var(--ink-soft, var(--text-soft, inherit));text-transform:capitalize}',
-      '.lp-oq-step.is-active{background:' + brand + ';border-color:' + brand + ';color:var(--accent-text, var(--on-pipe, var(--ink)))}',
-      '.lp-oq-step.is-done{background:transparent;border-color:color-mix(in srgb,' + brand + ' 40%, var(--line, var(--border, currentColor)));color:' + brand + '}',
+      '.lp-oq-step{font-size:11px;padding:6px 12px;border-radius:8px;border:1px solid var(--lp-oq-step-border,color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor))));background:var(--lp-oq-step-bg,transparent);color:var(--lp-oq-step-text,var(--ink-soft, var(--text-soft, inherit)));text-transform:capitalize;font-weight:600}',
+      '.lp-oq-step.is-active{background:var(--lp-oq-step-active-bg,' + brand + ');border-color:var(--lp-oq-step-active-border,var(--lp-oq-step-active-bg,' + brand + '));color:var(--lp-oq-step-active-text,var(--accent-text, var(--on-pipe, var(--ink))))}',
+      '.lp-oq-step.is-done{background:transparent;border-color:var(--lp-oq-step-done-border,color-mix(in srgb,' + brand + ' 40%, var(--line, var(--border, currentColor))));color:var(--lp-oq-step-done-text,' + brand + ')}',
       '.lp-oq-choice{display:block;width:100%;text-align:left;margin:0 0 8px;padding:12px 14px;border:1px solid color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));border-radius:12px;background:transparent;color:var(--ink, var(--text, inherit));cursor:pointer;font:inherit}',
       '.lp-oq-choice .lp-oq-ic{display:inline-flex;vertical-align:middle;margin-right:8px;color:' + brand + '}',
       '.lp-oq-choice .lp-oq-ic svg{width:18px;height:18px}',
@@ -606,13 +609,13 @@
       '.lp-oq-field span{display:block;font-size:12px;color:var(--ink-soft, var(--text-soft, inherit));margin-bottom:4px}',
       '.lp-oq-field input{width:100%;padding:10px 12px;border:1px solid var(--line-strong, var(--border-strong, currentColor));border-radius:10px;font:inherit;background:var(--input-bg, var(--panel, transparent));color:var(--ink, var(--text, inherit));box-sizing:border-box}',
       '.lp-oq-foot{display:flex;gap:8px;margin-top:16px}',
-      '.lp-oq-btn{padding:10px 18px;border:none;border-radius:10px;background:' + brand + ';color:var(--accent-text, var(--on-pipe, var(--ink)));font-weight:600;cursor:pointer;font:inherit}',
-      '.lp-oq-btn-ghost{background:transparent;color:' + brand + ';border:1px solid color-mix(in srgb,' + brand + ' 40%, var(--line, var(--border, currentColor)))}',
+      '.lp-oq-btn{padding:10px 18px;border:none;border-radius:8px;background:var(--lp-oq-btn-bg,' + brand + ');color:var(--lp-oq-btn-text,var(--accent-text, var(--on-pipe, var(--ink))));font-weight:600;cursor:pointer;font:inherit}',
+      '.lp-oq-btn-ghost{background:var(--lp-oq-btn-ghost-bg,transparent);color:var(--lp-oq-btn-ghost-text,' + brand + ');border:1px solid var(--lp-oq-btn-ghost-border,color-mix(in srgb,' + brand + ' 40%, var(--line, var(--border, currentColor))))}',
       '.lp-oq-quote{margin-top:18px;padding-top:18px;border-top:1px solid color-mix(in srgb,' + brand + ' 18%, var(--line, var(--border, currentColor)))}',
       '.lp-oq-total{font-size:1.6rem;font-weight:800;margin:0 0 8px;color:var(--ink, var(--text, inherit))}',
       '.lp-oq-lines{list-style:none;padding:0;margin:12px 0 0}',
       '.lp-oq-lines li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid color-mix(in srgb, var(--ink-soft, var(--text-soft, currentColor)) 25%, transparent);font-size:14px;color:var(--ink, var(--text, inherit))}',
-      '.lp-oq-muted{color:var(--ink-soft, var(--text-soft, inherit))}',
+      '.lp-oq-muted{color:var(--lp-oq-muted,var(--ink-soft, var(--text-soft, inherit)))}',
       '.lp-oq-error{color:var(--danger, #b42318)}',
       '.lp-oq-loading{color:var(--ink-soft, var(--text-soft, inherit))}',
       '.lp-oq-plan{border:1px solid color-mix(in srgb,' + brand + ' 18%, var(--line, var(--border, currentColor)));border-radius:12px;padding:12px;margin-top:12px}',

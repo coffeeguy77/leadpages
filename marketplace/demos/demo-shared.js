@@ -538,9 +538,10 @@
       })();
       ;(function(){ var OQ=SEC.onlineQuote||{}; var node=document.querySelector('[data-sec="onlineQuote"]'); if(!node) return;
         if(OQ.on!==true){ node.style.display='none'; return; } node.style.display='';
-        var _eh=node.querySelector('.ey'); if(_eh) _eh.textContent=(OQ.eyebrow||'');
-        var _hh=node.querySelector('h2'); if(_hh) _hh.textContent=(OQ.heading||'');
-        var _pp=node.querySelector('.intro'); if(_pp){ var _pv=(OQ.intro||''); _pp.textContent=_pv; _pp.style.display=_pv?'':'none'; }
+        var _eh=node.querySelector('.ey'); if(_eh){ _eh.textContent=(OQ.eyebrow||''); if(OQ.eyebrowColor&&/^#[0-9a-fA-F]{6}$/.test(OQ.eyebrowColor)) _eh.style.color=OQ.eyebrowColor; else _eh.style.color=''; }
+        var _hh=node.querySelector('h2'); if(_hh){ _hh.textContent=(OQ.heading||''); if(OQ.headingColor&&/^#[0-9a-fA-F]{6}$/.test(OQ.headingColor)) _hh.style.color=OQ.headingColor; else _hh.style.color=''; }
+        var _pp=node.querySelector('.intro'); if(_pp){ var _pv=(OQ.intro||''); _pp.textContent=_pv; _pp.style.display=_pv?'':'none'; if(OQ.introColor&&/^#[0-9a-fA-F]{6}$/.test(OQ.introColor)) _pp.style.color=OQ.introColor; else _pp.style.color=''; }
+        if(OQ.bg&&/^#[0-9a-fA-F]{6}$/.test(OQ.bg)) node.style.background=OQ.bg; else node.style.background='';
         var _oqEl=node.querySelector('#lp-online-quote');
         if(_oqEl){
           var _slug=(C.slug||'').trim().toLowerCase();
