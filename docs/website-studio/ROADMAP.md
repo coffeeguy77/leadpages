@@ -1,6 +1,9 @@
 # Website Studio — Implementation Roadmap
 
-**Rule:** Phase 3+ feature coding waits for approval after each phase stop.
+**Status:** Experimental / On Ice (2026-07-19).  
+**Rule:** No new Website Studio / Composer feature work without explicit product approval. Active roadmap: [`docs/ai-team/ROADMAP.md`](../ai-team/ROADMAP.md).
+
+Historical phases below are preserved for context.
 
 Architecture → Composer → Marketplace/Images → Generation UX → Controlled application (flagged).
 

@@ -1,8 +1,10 @@
 # Website Studio
 
-**Status:** Phase 2 complete — Website Composer implemented (`lib/website-composer/`).  
+**Status:** Experimental / On Ice — superuser pilot only.  
 **Audience:** Product, engineering, AI agents  
-**Last updated:** 2026-07-18
+**Last updated:** 2026-07-19
+
+> **Product freeze:** Partner and client rollout is deferred. No new Website Studio generation / Composer feature work without explicit approval. Active AI product work is in [`docs/ai-team/`](../ai-team/README.md). See [ON-ICE.md](ON-ICE.md).
 
 ---
 

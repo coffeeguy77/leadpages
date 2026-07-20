@@ -1,13 +1,16 @@
 # Website Studio — Current State Report
 
-**Updated:** 2026-07-18 (Phase 2 Website Composer)  
-**Scope:** Website Studio + AI Colour Assistant + Composer.
+**Updated:** 2026-07-19  
+**Scope:** Website Studio + AI Colour Assistant + Composer.  
+**Product status:** **Experimental / On Ice** — see [ON-ICE.md](ON-ICE.md).
 
 ---
 
 ## Status
 
-Phase 6 implements durable application persistence, real Cloudinary import, superuser-only pilot gating, observability, Bean Culture pilot materials, and readiness docs.
+Website Studio generation work is **frozen**. Access is **superuser only** (`ROLE_POLICY.partner = false`). Partners and clients cannot use Studio. Application / live apply flags remain OFF.
+
+Prior Phase 6 work (durable application persistence, Cloudinary import, pilot materials) remains in the repo but is not an active roadmap.
 
 | Capability | Status |
 |------------|--------|

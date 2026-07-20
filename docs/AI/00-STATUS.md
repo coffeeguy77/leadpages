@@ -3,16 +3,16 @@
 **Document:** `AI/00-STATUS`  
 **Status:** Canonical — update this when Brain phases or migration flags change  
 **Audience:** AI coding agents and engineers  
-**Last updated:** 2026-07-18  
+**Last updated:** 2026-07-19  
 
-> **Read this first** for any AI / Brain / Anthropic / OpenAI / Gemini / assist / landing-draft work.  
-> Detail lives in the rest of `docs/AI/*`. Feature manuals under `docs/features/` may lag — trust this file + source when they conflict.
+> **Read this first** for any AI / Brain / Anthropic / OpenAI / Gemini / assist / landing-draft / Site Brain / AI Website Team work.  
+> Detail lives in the rest of `docs/AI/*` and `docs/ai-team/*`. Feature manuals under `docs/features/` may lag — trust this file + source when they conflict.
 
 ---
 
 ## One-line summary
 
-**Phases 0–9 are shipped.** Brain runtime (`lib/brain/`), Control Centre, landing drafts, Marketing Hub, and flag-gated migrations for IG / suburb / assist / packs. **Website Studio** (legacy `/theme-studio-v2`) uses **Website Composer** (`lib/website-composer/`, Phase 2). **AI Colour Assistant** remains separate at `/theme-studio`. Docs: `docs/website-studio/`. Legacy paths remain when migration flags are off.
+**Phases 0–9 are shipped.** Brain runtime (`lib/brain/`), Control Centre, landing drafts, Marketing Hub, and flag-gated migrations for IG / suburb / assist / packs. **AI Website Team + Site Brain Phase 1** (advisory) ships in `manage.html` — see `docs/ai-team/`. **Website Studio** is **Experimental / On Ice** (superuser only; partners/clients denied). **AI Colour Assistant** remains separate at `/theme-studio`.
 
 ---
 
@@ -29,9 +29,12 @@
 | Durable Brain settings | `db/brain_settings.sql` + `lib/brain/settings-store.js` | Landing provider saved from Control Centre (no env var) |
 | Landing draft API | `api/brain/landing-draft.js` | Flag `BRAIN_LANDING_DRAFT`; loads saved provider |
 | AI Colour Assistant | `/theme-studio` + `api/brain/theme-*.js` | Colour tokens only |
-| Website Studio (legacy paths) | `/theme-studio-v2` + `api/theme-studio/*` + `lib/theme-studio/` | UI/API; generation delegates to Website Composer |
-| Website Composer | `lib/website-composer/` | **Phase 2** — foundations, recipes, explicit drafts, diagnostics |
-| Website Studio docs | `docs/website-studio/` | Vision / architecture / roadmap |
+| Site Brain | `lib/site-brain/` + `db/site_brain.sql` + `api/site-brain/*` | Per-site knowledge; fail-closed DB in deployed envs |
+| AI Website Team | `lib/ai-team/` + `api/ai-team/*` + `assets/ai-website-team.js` | Phase 1 Atlas advisory in `manage.html` |
+| AI Team docs | `docs/ai-team/` | Vision / architecture / Site Brain / capability registry |
+| Website Studio (On Ice) | `/theme-studio-v2` + `api/theme-studio/*` + `lib/theme-studio/` | Superuser only; partners/clients denied |
+| Website Composer | `lib/website-composer/` | Studio generation stack — not active product path |
+| Website Studio docs | `docs/website-studio/` | Includes [ON-ICE](../website-studio/ON-ICE.md) |
 | Marketing Hub | `marketing-hub.html` + `api/brain/ads-*.js` | Phase 9 — suggest only; approve stores, no Ads mutate |
 | Tests | `tests/brain-*.test.js` | No live network; injected `fetch` / mock |
 
@@ -67,7 +70,10 @@ Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 | `BRAIN_HELP_ASSIST` | unset (off) | `1` → `/api/assist` via Brain |
 | `BRAIN_TRADE_PACK` | unset (off) | `1` → trade packs via Brain |
 | `BRAIN_THEME_STUDIO` | on (`1`) | `0` disables AI Colour Assistant APIs |
-| `THEME_STUDIO_V2` | on (`1`) | `0` disables Website Studio APIs (legacy env name) |
+| `THEME_STUDIO_V2` | on (`1`) | `0` disables Website Studio APIs (legacy env name); product access still On Ice (superuser only) |
+| `SITE_BRAIN_STORAGE` | unset → database (deployed) | `memory` allowed for local/tests only; ignored in preview/production |
+| `SITE_BRAIN_TEST` | unset | `1` forces test harness behaviour for Site Brain |
+| `SITE_BRAIN_ENV` | unset | Optional `staging`/`preview`/`production` marker to force database mode |
 | `BRAIN_MARKETING_HUB` | on (`1`) | `0` disables Marketing Hub APIs |
 | `BRAIN_LANDING_PROVIDER` | — | Optional env override; prefer **AI Control Centre → Save provider** (durable `brain_settings`) |
 | `ANTHROPIC_API_KEY` | — | Anthropic adapter / legacy callers |
@@ -89,7 +95,8 @@ Roadmap detail: [17-IMPLEMENTATION-ROADMAP](17-IMPLEMENTATION-ROADMAP.md).
 | Trade packs | `lib/trade-pack-utils.js` `callClaude` | **Yes** when `BRAIN_TRADE_PACK=1` (else Anthropic) |
 | IG caption enrich | `lib/ig/enrich.mjs` | **Yes** when `BRAIN_IG_ENRICH=1` (else Anthropic) |
 | AI Colour Assistant | `/theme-studio` → `theme.*` tasks | **Yes** (product default on) |
-| Website Studio | `/theme-studio-v2` → `api/theme-studio/*` | **Yes** (legacy paths; flag `THEME_STUDIO_V2`) |
+| Website Studio | `/theme-studio-v2` → `api/theme-studio/*` | **Yes** (On Ice; superuser only; flag `THEME_STUDIO_V2`) |
+| AI Website Team / Site Brain | `manage.html` → `api/site-brain/*`, `api/ai-team/*` | Site Brain persistence + Atlas advisory (Phase 1; no live config mutation) |
 | Marketing Hub | `/marketing-hub` → `ads.*` tasks | **Yes** (product default on; no Ads mutate) |
 
 Order / rollback: [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md).
@@ -105,7 +112,9 @@ Order / rollback: [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md).
 5. **Usage ledger** — prefer durable `ai_requests` (run `db/ai_requests.sql`).  
 6. **Prefer `getPlatformBrain()`** in API routes.  
 7. AI Colour Assistant writes **trade theme tokens only** (`pipe`, `hivis`, `steel`, `safety`, `lightBg`) — not freeform HTML/CSS.  
-8. **Website Studio Phase 3+** (Image Service / Pexels / publish changes) requires roadmap approval — [ROADMAP](../website-studio/ROADMAP.md). Composer lives in `lib/website-composer/`.
+8. **Website Studio is On Ice** — do not expand Composer/Studio generation as the active product path. Active AI product work is Site Brain + AI Website Team — [docs/ai-team](../ai-team/README.md).  
+9. **Site Brain storage fails closed** in deployed environments — never silent process-memory fallback.  
+10. **AI Website Team Phase 1 is advisory** — no Scout execution, Forge apply, or publish via AI Team.
 
 ---
 
@@ -114,7 +123,8 @@ Order / rollback: [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md).
 | Need | Doc |
 |------|-----|
 | Overview | [README](README.md) |
-| Website Studio (canonical) | [docs/website-studio](../website-studio/README.md) |
+| AI Website Team / Site Brain | [docs/ai-team](../ai-team/README.md) |
+| Website Studio (On Ice) | [docs/website-studio](../website-studio/README.md) · [ON-ICE](../website-studio/ON-ICE.md) |
 | AI Colour Assistant (stub) | [21-THEME-STUDIO](21-THEME-STUDIO.md) |
 | Archived Theme Studio docs | [archive/theme-studio](../archive/theme-studio/README.md) |
 | Marketing Hub | [22-MARKETING-HUB](22-MARKETING-HUB.md) |

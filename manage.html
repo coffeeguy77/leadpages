@@ -578,6 +578,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-messages-embed.js"></script>
 <script src="/assets/lp-mobile-menu-builder.js"></script>
 <script src="/assets/lp-trade-picker.js"></script>
+<script src="/assets/ai-website-team.js"></script>
 <script src="/icons.js"></script>
 <script src="/assets/lp-quote-wizard-logic.js"></script>
 <script src="/assets/lp-quote-display.js"></script>
@@ -657,6 +658,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     <button class="anav-btn" id="nav-details" aria-selected="false" style="display:none">Details</button>
     <button class="anav-btn" id="nav-rates" aria-selected="false" style="display:none">Rates &amp; leads</button>
     <button class="anav-btn" id="nav-landing" aria-selected="false">Landing pages</button>
+    <button class="anav-btn" id="nav-ai-team" aria-selected="false" style="display:none">AI Website Team</button>
     <button class="anav-btn" id="nav-apps" aria-selected="false">App Marketplace</button>
     <button class="anav-btn" id="nav-onlinequotes" aria-selected="false" style="display:none">Online quotes</button>
     <button class="anav-btn" id="nav-mailer" aria-selected="false">Email clients</button>
@@ -671,6 +673,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <div id="av-dashboard" hidden></div>
   <div id="av-advertising" hidden></div>
   <div id="av-details" hidden></div>
+
+  <!-- ===================== AI WEBSITE TEAM ===================== -->
+  <div id="av-ai-team" hidden></div>
 
   <!-- ===================== APP MARKETPLACE ===================== -->
   <div id="av-apps" hidden></div>
@@ -7347,8 +7352,8 @@ function heroCtaCard(c){
     toast('Removed “'+name+'”'); renderSharedThemes();
   }
   /* ===== end leadpages integration ===== */
-  const ALLOWED={ super:['rates','landing','appearance','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], broker:['appearance','contact','logo','landing','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], client:['appearance','contact','logo','landing','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], leads:['rates'] };
-  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','details','landing','apps','onlinequotes','mailer','messages'] };
+  const ALLOWED={ super:['rates','landing','ai-team','appearance','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], broker:['appearance','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], client:['appearance','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], leads:['rates'] };
+  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','details','landing','ai-team','apps','onlinequotes','mailer','messages'] };
   function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
     if($('login-mask')) return;
@@ -7621,7 +7626,7 @@ function heroCtaCard(c){
   }
 
   /* ---------- nav switcher (six tabs) ---------- */
-  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
+  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['ai-team','av-ai-team',function(){ if(window.renderAiWebsiteTeam) window.renderAiWebsiteTeam(); }],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
   let activeView=null;
   function showView(which){
     activeView=which;
