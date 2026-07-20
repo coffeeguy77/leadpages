@@ -114,7 +114,7 @@ Order / rollback: [16-MIGRATION-PLAN](16-MIGRATION-PLAN.md).
 7. AI Colour Assistant writes **trade theme tokens only** (`pipe`, `hivis`, `steel`, `safety`, `lightBg`) — not freeform HTML/CSS.  
 8. **Website Studio is On Ice** — do not expand Composer/Studio generation as the active product path. Active AI product work is Site Brain + AI Website Team — [docs/ai-team](../ai-team/README.md).  
 9. **Site Brain storage fails closed** in deployed environments — never silent process-memory fallback.  
-10. **AI Website Team Phase 1 is advisory** — no Scout execution, Forge apply, or publish via AI Team.
+10. **AI Website Team Phase 2 (Forge)** — approve creates tasks; limited hero CTA + FAQ enable drafts to `sites.config`; user must publish. Scout SEO execution still pending.
 
 ---
 

@@ -120,6 +120,29 @@
     });
   }
 
+  function notify(msg, kind) {
+    if (typeof window.toast === 'function') {
+      window.toast(msg, kind);
+      return;
+    }
+    var el = $('toast');
+    if (el) {
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(function () {
+        el.classList.remove('show');
+      }, 2200);
+      return;
+    }
+    if (kind === 'warn') console.warn(msg);
+    else console.log(msg);
+  }
+
+  function isPendingRecommendation(r) {
+    var s = String((r && r.status) || '').toLowerCase();
+    return !s || s === 'proposed' || s === 'awaiting-review' || s === 'awaiting_review';
+  }
+
   function fieldDef(key) {
     for (var i = 0; i < FIELDS.length; i++) if (FIELDS[i].key === key) return FIELDS[i];
     return null;
@@ -367,6 +390,44 @@
       '<button type="button" class="btn ghost sm ai-rec-reject" data-id="' +
       esc(r.id) +
       '">Reject</button>' +
+      '</div>' +
+      '<p class="lede" style="margin:8px 0 0;font-size:12px;opacity:.8">Approve creates an open task. Forge tasks can Apply draft to site config — then Publish Live Site yourself.</p></article>'
+    );
+  }
+
+  function renderTask(t) {
+    var applyBtn =
+      t.kind === 'forge_draft' && t.patch
+        ? '<button type="button" class="btn sm ai-task-apply" data-id="' +
+          esc(t.id) +
+          '">Apply draft</button>'
+        : '';
+    var openBtn =
+      t.editorTab || t.editorSection
+        ? '<button type="button" class="btn ghost sm ai-task-open" data-tab="' +
+          esc(t.editorTab || 'details') +
+          '" data-section="' +
+          esc(t.editorSection || '') +
+          '">Open in editor</button>'
+        : '';
+    var chatBtn =
+      t.kind === 'site_knowledge' && t.fieldKey
+        ? '<button type="button" class="btn ghost sm ai-task-chat" data-field="' +
+          esc(t.fieldKey) +
+          '">Answer with Atlas</button>'
+        : '';
+    return (
+      '<article class="card" style="margin:0 0 10px;padding:12px 14px">' +
+      '<strong style="display:block">' +
+      esc(t.title || 'Task') +
+      '</strong>' +
+      (t.message
+        ? '<p class="lede" style="margin:6px 0 0;font-size:13px">' + esc(t.message) + '</p>'
+        : '') +
+      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+      applyBtn +
+      openBtn +
+      chatBtn +
       '</div></article>'
     );
   }
@@ -657,7 +718,7 @@
       '<div><h2 style="margin:0 0 6px">AI Website Team</h2>' +
       '<p class="lede" style="margin:0">Practical advice for <strong>' +
       esc(summaryName) +
-      '</strong> — advisory only. Nothing publishes automatically.</p></div>' +
+      '</strong> — Forge can draft editor changes; you review and publish.</p></div>' +
       '<div style="font-size:12.5px;text-align:right">' +
       '<div>Site Brain: <strong>' +
       esc(bootstrap) +
@@ -702,36 +763,55 @@
     html +=
       '<div class="card" style="margin-bottom:16px;padding:14px 16px">' +
       '<strong>Specialist Team</strong>' +
-      '<p class="lede" style="margin:6px 0 0;font-size:13px">Nova, Scout, Pulse, Forge, Lens, Echo, Guardian and Beacon are registered and will appear here as their workflows are enabled. Phase 1 focuses on Atlas.</p></div>';
+      '<p class="lede" style="margin:6px 0 0;font-size:13px">Nova, Scout, Pulse, Forge, Lens, Echo, Guardian and Beacon are registered. Phase 2 enables Forge drafts for hero CTA and FAQ.</p></div>';
+
+    var pendingRecs = recs.filter(isPendingRecommendation);
+    var doneRecs = recs.filter(function (r) {
+      return !isPendingRecommendation(r);
+    });
 
     html += '<div style="display:grid;grid-template-columns:1.2fr .8fr;gap:14px">';
     html += '<div><h3 style="margin:0 0 10px">Recommended next actions</h3>';
-    if (!recs.length) {
-      html += '<p class="lede">No recommendations yet — ask Atlas for a review.</p>';
+    if (!pendingRecs.length) {
+      html += '<p class="lede">No pending recommendations — ask Atlas for a review.</p>';
     } else {
-      html += recs
+      html += pendingRecs
         .slice(0, 12)
         .map(renderRec)
         .join('');
     }
+    if (doneRecs.length) {
+      html +=
+        '<p class="lede" style="margin:14px 0 6px;font-size:12.5px;opacity:.85">Completed decisions (' +
+        esc(String(doneRecs.length)) +
+        ')</p>';
+      html += doneRecs
+        .slice(0, 6)
+        .map(function (r) {
+          return (
+            '<p class="lede" style="margin:0 0 6px;font-size:13px"><strong>' +
+            esc(r.title) +
+            '</strong> · ' +
+            esc(r.status) +
+            '</p>'
+          );
+        })
+        .join('');
+    }
     html += '</div>';
 
+    html += '<div><h3 style="margin:0 0 10px">Open tasks</h3>';
+    if (!openTasks.length) {
+      html +=
+        '<p class="lede">No open tasks — approve a recommendation to create one.</p>';
+    } else {
+      html += openTasks
+        .slice(0, 8)
+        .map(renderTask)
+        .join('');
+    }
     html +=
-      '<div><h3 style="margin:0 0 10px">Open tasks</h3>' +
-      (openTasks.length
-        ? '<ul style="margin:0;padding-left:18px">' +
-          openTasks
-            .slice(0, 8)
-            .map(function (t) {
-              return '<li>' + esc(t.title || t.label || 'Task') + '</li>';
-            })
-            .join('') +
-          '</ul>'
-        : '<p class="lede">No open tasks.</p>') +
-      '<h3 style="margin:18px 0 10px">Recent recommendations</h3>' +
-      '<p class="lede" style="font-size:13px">' +
-      esc(String(recs.length)) +
-      ' on file · “Answer with Atlas” saves Site Knowledge; Approve/Reject only updates status.</p></div>';
+      '<p class="lede" style="margin:14px 0 0;font-size:12px;opacity:.85">Apply draft updates site config only. Always review in Page editor, then <strong>Publish Live Site</strong>.</p></div>';
 
     html += '</div>';
     box.innerHTML = html;
@@ -770,8 +850,7 @@
           (def.examples && def.examples.length
             ? '\n\nExamples: ' + def.examples.join(' · ')
             : '');
-        if (window.toast) window.toast(def.label + ': ' + def.explain);
-        else window.alert(tip);
+        notify(def.label + ': ' + def.explain);
       };
     });
 
@@ -787,7 +866,7 @@
           });
           if (!j.persisted) throw new Error('Save was not persisted');
           setMsg(msg, 'Saved', 'ok');
-          if (window.toast) window.toast('Site Knowledge saved');
+          notify('Site Knowledge saved');
           loadPanel(panelCtx);
         } catch (e) {
           setMsg(msg, e.message || String(e), 'bad');
@@ -840,10 +919,10 @@
             siteId: siteId,
             forceResync: true
           });
-          if (window.toast) window.toast('Site Brain refreshed from website');
+          notify('Site Brain refreshed from website');
           loadPanel(panelCtx);
         } catch (e) {
-          if (window.toast) window.toast(e.message || String(e));
+          notify(e.message || String(e), 'warn');
         }
       };
     }
@@ -857,14 +936,15 @@
     document.querySelectorAll('.ai-rec-approve').forEach(function (btn) {
       btn.onclick = async function () {
         try {
-          await api('/api/ai-team/recommendations', {
+          var j = await api('/api/ai-team/recommendations', {
             siteId: siteId,
             action: 'approve',
             recommendationId: btn.getAttribute('data-id')
           });
+          notify(j.nextStep || 'Approved — see Open tasks for the next step.');
           loadPanel(panelCtx);
         } catch (e) {
-          if (window.toast) window.toast(e.message || String(e));
+          notify(e.message || String(e), 'warn');
         }
       };
     });
@@ -876,10 +956,51 @@
             action: 'reject',
             recommendationId: btn.getAttribute('data-id')
           });
+          notify('Recommendation rejected.');
           loadPanel(panelCtx);
         } catch (e) {
-          if (window.toast) window.toast(e.message || String(e));
+          notify(e.message || String(e), 'warn');
         }
+      };
+    });
+
+    document.querySelectorAll('.ai-task-apply').forEach(function (btn) {
+      btn.onclick = async function () {
+        btn.disabled = true;
+        try {
+          var j = await api('/api/ai-team/forge-apply', {
+            siteId: siteId,
+            taskId: btn.getAttribute('data-id')
+          });
+          notify(j.notice || j.summary || 'Draft applied to site config.');
+          if (j.editorSection && typeof window.lpOpenEditorSection === 'function') {
+            window.lpOpenEditorSection(j.editorTab || 'details', j.editorSection);
+          }
+          loadPanel(panelCtx);
+        } catch (e) {
+          notify(e.message || String(e), 'warn');
+          btn.disabled = false;
+        }
+      };
+    });
+
+    document.querySelectorAll('.ai-task-open').forEach(function (btn) {
+      btn.onclick = function () {
+        if (typeof window.lpOpenEditorSection === 'function') {
+          window.lpOpenEditorSection(
+            btn.getAttribute('data-tab') || 'details',
+            btn.getAttribute('data-section') || null
+          );
+        } else {
+          var nav = $('nav-details');
+          if (nav) nav.click();
+        }
+      };
+    });
+
+    document.querySelectorAll('.ai-task-chat').forEach(function (btn) {
+      btn.onclick = function () {
+        startChat([btn.getAttribute('data-field')], null);
       };
     });
   }

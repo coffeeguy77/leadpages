@@ -2,12 +2,18 @@
 
 /**
  * GET/POST /api/ai-team/recommendations
- * list | approve | reject — status only (no execution).
+ * list | approve | reject
+ *
+ * Phase 2: approve also creates an open task (Forge draft when supported).
  */
 
 const http = require('../../lib/brain/http');
 const siteBrain = require('../../lib/site-brain');
 const { assertAction } = require('../../lib/ai-team/permissions');
+const {
+  createTaskForApprovedRecommendation,
+  recommendationFromRow
+} = require('../../lib/ai-team/execution');
 
 module.exports = async (req, res) => {
   try {
@@ -60,6 +66,21 @@ module.exports = async (req, res) => {
         actorRole: access.role,
         source: access.role === 'super' ? 'superuser' : access.role
       });
+      if (result.ok) {
+        const rec = recommendationFromRow(result.recommendation);
+        const taskResult = await createTaskForApprovedRecommendation(siteId, rec, {
+          actorUserId: user.id,
+          actorRole: access.role,
+          source: access.role === 'super' ? 'superuser' : access.role
+        });
+        result.task = taskResult.ok ? taskResult.task : null;
+        result.plan = taskResult.ok ? taskResult.plan : null;
+        result.nextStep = taskResult.ok
+          ? taskResult.plan.message || 'Check Open tasks for the next step.'
+          : taskResult.message || null;
+        result.executed = false;
+        result.published = false;
+      }
     } else if (action === 'reject') {
       result = await siteBrain.rejectRecommendation(siteId, recommendationId, {
         actorUserId: user.id,
@@ -82,6 +103,9 @@ module.exports = async (req, res) => {
       ok: true,
       persisted: true,
       recommendation: result.recommendation,
+      task: result.task || null,
+      plan: result.plan || null,
+      nextStep: result.nextStep || null,
       executed: false,
       published: false
     });
