@@ -1013,22 +1013,41 @@
   min-height: 64px;
 }
 
-/* Choice chips in grid layout — do not apply to equipment photo cards (.lp-oq-fp-grid) */
-.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid),
-.oqb-preview-mock .lp-oq-layout-grid .lp-oq-stack {
+/* Choice chips in grid layout ONLY — never the step body (.lp-oq-stack).
+   Applying the chip grid to .lp-oq-stack squeezed .lp-oq-carts to ~140px and
+   forced equipment photo cards into a single stacked column. */
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
+}
+
+/* Step body is a normal block stack (intro, then full-width equipment row) */
+.oqb-preview-mock .lp-oq-stack {
+  display: block;
+  width: 100%;
+}
+.oqb-preview-mock .lp-oq-carts {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Equipment photo cards: always side-by-side in the live preview */
 .oqb-preview-mock .lp-oq-fp-grid.fp-grid,
 .oqb-preview-mock .lp-oq-choices.lp-oq-fp-grid {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)) !important;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
   gap: 16px;
-  width: 100%;
+  width: 100% !important;
+  max-width: 100%;
   align-items: stretch;
+  box-sizing: border-box;
+}
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-fp-grid.fp-grid,
+.oqb-preview-mock .lp-oq-layout-grid .lp-oq-choices.lp-oq-fp-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
 }
 .oqb-preview-mock .lp-oq-layout-list .lp-oq-fp-grid.fp-grid,
 .oqb-preview-mock .lp-oq-layout-list .lp-oq-choices.lp-oq-fp-grid {
@@ -1106,7 +1125,7 @@
   margin-bottom: 10px;
 }
 
-.oqb-preview-mock .lp-oq-layout-split .lp-oq-choices {
+.oqb-preview-mock .lp-oq-layout-split .lp-oq-choices:not(.lp-oq-fp-grid) {
   display: flex;
   flex-direction: column;
   gap: 8px;
