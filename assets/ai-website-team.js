@@ -160,6 +160,15 @@
       '.ai-team-msg.ok{color:#0a7d33}.ai-team-msg.bad{color:#b42318}' +
       '.ai-field-help{display:block;margin:4px 0 6px;font-size:12.5px;line-height:1.45;opacity:.82}' +
       '.ai-field-eg{margin-top:2px;font-size:12px;opacity:.7}' +
+      '.ai-rec-card{margin:0 0 12px;padding:14px 16px}' +
+      '.ai-rec-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;opacity:.75;margin:0 0 10px}' +
+      '.ai-rec-block{margin:0 0 8px}' +
+      '.ai-rec-label{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.7;margin:0 0 3px}' +
+      '.ai-rec-issue{margin:0;font-size:14px;line-height:1.45}' +
+      '.ai-rec-suggestion{margin:0;font-size:15px;font-weight:600;line-height:1.35}' +
+      '.ai-rec-reason{margin:0;font-size:13px;line-height:1.45;opacity:.88}' +
+      '.ai-rec-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}' +
+      '.ai-rec-hint{margin:8px 0 0;font-size:12px;opacity:.8}' +
       '.ai-chat-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px}' +
       '.ai-chat-modal{width:min(560px,100%);max-height:min(88vh,720px);overflow:auto;border-radius:14px;background:var(--panel,#12141c);color:var(--ink,#f4f4f6);border:1px solid var(--line,rgba(255,255,255,.12));box-shadow:0 18px 50px rgba(0,0,0,.45);padding:18px 18px 16px}' +
       '.ai-chat-log{display:flex;flex-direction:column;gap:10px;margin:12px 0 14px}' +
@@ -364,6 +373,9 @@
     var exec = r.executable ? '' : ' · advisory';
     var fieldKey = knowledgeFieldKey(r);
     var forgeable = isForgeOutcome(r);
+    var issue = r.problem || r.issue || '';
+    var reason = r.reason || '';
+    var suggestion = r.title || '';
     var answerBtn = fieldKey
       ? '<button type="button" class="btn sm ai-rec-answer" data-id="' +
         esc(r.id) +
@@ -381,35 +393,43 @@
           '> Select</label>'
         : '';
     return (
-      '<article class="card" style="margin:0 0 10px;padding:14px 16px">' +
-      '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">' +
-      '<strong>' +
-      esc(r.title) +
-      '</strong>' +
-      '<span style="font-size:12px;opacity:.75">' +
+      '<article class="card ai-rec-card" data-rec-id="' +
+      esc(r.id) +
+      '">' +
+      '<div class="ai-rec-meta"><span>' +
       esc(r.specialist || 'atlas') +
       ' · ' +
       esc(r.status || '') +
       esc(exec) +
       esc(gap) +
       '</span></div>' +
-      '<p style="margin:8px 0 0;font-size:14px">' +
-      esc(r.problem || '') +
-      '</p>' +
-      '<p style="margin:6px 0 0;font-size:13px;opacity:.85">' +
-      esc(r.reason || '') +
-      '</p>' +
-      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+      (issue
+        ? '<div class="ai-rec-block"><span class="ai-rec-label">Issue</span><p class="ai-rec-issue">' +
+          esc(issue) +
+          '</p></div>'
+        : '') +
+      '<div class="ai-rec-block"><span class="ai-rec-label">Suggestion</span><p class="ai-rec-suggestion">' +
+      esc(suggestion) +
+      '</p></div>' +
+      (reason
+        ? '<div class="ai-rec-block"><span class="ai-rec-label">Why this was suggested</span><p class="ai-rec-reason">' +
+          esc(reason) +
+          '</p></div>'
+        : '') +
+      '<div class="ai-rec-actions">' +
       check +
       answerBtn +
-      '<button type="button" class="btn ghost sm ai-rec-approve" data-id="' +
+      '<button type="button" class="btn sm ai-rec-approve" data-id="' +
       esc(r.id) +
       '">Approve</button>' +
       '<button type="button" class="btn ghost sm ai-rec-reject" data-id="' +
       esc(r.id) +
       '">Reject</button>' +
+      '<button type="button" class="btn ghost sm ai-rec-discuss" data-id="' +
+      esc(r.id) +
+      '">Discuss</button>' +
       '</div>' +
-      '<p class="lede" style="margin:8px 0 0;font-size:12px;opacity:.8">Approve → Forge Execution Plan → Change Preview → Apply Changes. AI never publishes.</p></article>'
+      '<p class="lede ai-rec-hint">Approve builds a Forge plan for preview. Discuss expands this with Atlas. Reject dismisses it. AI never publishes.</p></article>'
     );
   }
 
@@ -781,9 +801,58 @@
     });
     $('ai-chat-x').onclick = function () {
       closeChat();
-      loadPanel(panelCtx);
+      softRefresh(panelCtx);
     };
     renderChatQuestion();
+  }
+
+  async function softRefresh(opts) {
+    opts = opts || {};
+    mergeOpts(opts);
+    var box = $('av-ai-team');
+    if (!box || !lastState) return loadPanel(opts);
+    var siteId = activeSiteId();
+    if (!siteId) return loadPanel(opts);
+
+    var askEl = $('ai-ask');
+    var preservedAsk = askEl ? askEl.value : '';
+    var scrollY = box.scrollTop || 0;
+    var statusEl = $('ai-ask-msg');
+    var statusText = statusEl ? statusEl.textContent : '';
+    var statusCls = statusEl && statusEl.classList.contains('ok') ? 'ok' : statusEl && statusEl.classList.contains('bad') ? 'bad' : '';
+
+    try {
+      if (!opts.skipBrain) {
+        var got = await api('/api/site-brain/get', { siteId: siteId });
+        lastState.brain = got.brain;
+        lastState.review = got.review;
+        lastState.needsReview = !!got.needsBootstrapReview;
+      }
+      if (opts.recommendations) {
+        lastState.recommendations = opts.recommendations;
+      } else {
+        var listed = await api('/api/ai-team/recommendations', {
+          siteId: siteId,
+          action: 'list'
+        });
+        lastState.recommendations = listed.recommendations || [];
+      }
+    } catch (_e) {
+      return loadPanel(opts);
+    }
+
+    paint(lastState);
+    var ask2 = $('ai-ask');
+    if (ask2 && preservedAsk != null) ask2.value = preservedAsk;
+    if (opts.focusAsk && ask2) {
+      try {
+        ask2.focus();
+        ask2.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (_e2) {}
+    }
+    box.scrollTop = scrollY;
+    if (opts.statusText) setMsg($('ai-ask-msg'), opts.statusText, opts.statusCls || 'ok');
+    else if (statusText) setMsg($('ai-ask-msg'), statusText, statusCls);
   }
 
   async function loadPanel(opts) {
@@ -873,7 +942,7 @@
       '<div><h2 style="margin:0 0 6px">AI Website Team</h2>' +
       '<p class="lede" style="margin:0">Practical advice for <strong>' +
       esc(summaryName) +
-      '</strong>. Atlas recommends outcomes; Forge plans and applies config; you publish.</p></div>' +
+      '</strong>. Ask Atlas for recommendations — it does <em>not</em> build pages or change the live site until you Approve → Forge → Apply → you Publish.</p></div>' +
       '<div style="font-size:12.5px;text-align:right">' +
       '<div>Site Brain: <strong>' +
       esc(bootstrap) +
@@ -902,8 +971,8 @@
     html +=
       '<div class="card" style="margin-bottom:16px">' +
       '<h3 style="margin:0 0 8px">Atlas — Website Strategist</h3>' +
-      '<p class="lede" style="margin:0 0 12px">Ask for a coordinated review, or let Atlas interview you about missing details in plain English.</p>' +
-      '<textarea id="ai-ask" rows="3" style="width:100%" placeholder="e.g. Help me get more coffee customers at lunchtime"></textarea>' +
+      '<p class="lede" style="margin:0 0 12px">Ask a business question. Atlas replies with Issue → Suggestion → Why cards you can Approve, Reject, or Discuss. Asking does not create landing pages or edit the site by itself.</p>' +
+      '<textarea id="ai-ask" rows="3" style="width:100%" placeholder="e.g. I need a landing page for wedding coffee cart hires"></textarea>' +
       '<div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
       '<button type="button" class="btn" id="ai-ask-go">Ask the Team</button>' +
       '<button type="button" class="btn ghost" id="ai-ask-chat">Fill gaps with Atlas</button>' +
@@ -929,7 +998,9 @@
     });
 
     html += '<div style="display:grid;grid-template-columns:1.2fr .8fr;gap:14px">';
-    html += '<div><h3 style="margin:0 0 10px">Recommended next actions</h3>';
+    html +=
+      '<div><h3 style="margin:0 0 6px">Recommended next actions</h3>' +
+      '<p class="lede" style="margin:0 0 10px;font-size:12.5px;opacity:.85">Each card shows the Issue, the Suggestion, and why Atlas generated it.</p>';
     if (!pendingRecs.length) {
       html += '<p class="lede">No pending recommendations — ask Atlas for a review.</p>';
     } else {
@@ -1040,7 +1111,7 @@
           if (!j.persisted) throw new Error('Save was not persisted');
           setMsg(msg, 'Saved', 'ok');
           notify('Site Knowledge saved');
-          loadPanel(panelCtx);
+          softRefresh(panelCtx);
         } catch (e) {
           setMsg(msg, e.message || String(e), 'bad');
         }
@@ -1068,7 +1139,9 @@
     if (ask) {
       ask.onclick = async function () {
         var msg = $('ai-ask-msg');
+        var askBtn = ask;
         try {
+          askBtn.disabled = true;
           setMsg(msg, 'Atlas is reviewing…', '');
           var j = await api('/api/ai-team/atlas-review', {
             siteId: siteId,
@@ -1076,10 +1149,15 @@
             editorContext: editorContext()
           });
           if (!j.persisted) throw new Error('Recommendations were not persisted');
-          setMsg(msg, 'Review ready', 'ok');
-          loadPanel(panelCtx);
+          await softRefresh({
+            statusText:
+              'Suggestions updated — each card shows Issue, Suggestion, and why. Nothing was published.',
+            statusCls: 'ok'
+          });
         } catch (e) {
           setMsg(msg, e.message || String(e), 'bad');
+        } finally {
+          askBtn.disabled = false;
         }
       };
     }
@@ -1106,6 +1184,35 @@
       };
     });
 
+    document.querySelectorAll('.ai-rec-discuss').forEach(function (btn) {
+      btn.onclick = function () {
+        var id = btn.getAttribute('data-id');
+        var rec = ((lastState && lastState.recommendations) || []).find(function (r) {
+          return String(r.id) === String(id);
+        });
+        var askEl = $('ai-ask');
+        if (!askEl || !rec) return;
+        var issue = rec.problem || rec.issue || '';
+        var reason = rec.reason || '';
+        askEl.value =
+          'Discuss this suggestion: "' +
+          (rec.title || 'Untitled') +
+          '".\n' +
+          (issue ? 'Issue: ' + issue + '\n' : '') +
+          (reason ? 'Why it was suggested: ' + reason + '\n' : '') +
+          '\nPlease expand — what would you change next, and what do you need from me?';
+        try {
+          askEl.focus();
+          askEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (_e) {}
+        setMsg(
+          $('ai-ask-msg'),
+          'Edit if you like, then Ask the Team to expand — or Answer with Atlas if this needs Site Knowledge.',
+          ''
+        );
+      };
+    });
+
     document.querySelectorAll('.ai-rec-approve').forEach(function (btn) {
       btn.onclick = async function () {
         try {
@@ -1119,7 +1226,7 @@
           if (j.preview && j.plan && j.plan.id) {
             showChangePreview(j.preview, j.plan.id);
           } else {
-            loadPanel(panelCtx);
+            softRefresh(panelCtx);
           }
         } catch (e) {
           notify(e.message || String(e), 'warn');
@@ -1135,7 +1242,7 @@
             recommendationId: btn.getAttribute('data-id')
           });
           notify('Recommendation rejected.');
-          loadPanel(panelCtx);
+          softRefresh(panelCtx);
         } catch (e) {
           notify(e.message || String(e), 'warn');
         }
@@ -1163,7 +1270,7 @@
           });
           notify(j.nextStep || 'Batched Execution Plan ready.');
           if (j.preview && j.plan && j.plan.id) showChangePreview(j.preview, j.plan.id);
-          else loadPanel(panelCtx);
+          else softRefresh(panelCtx);
         } catch (e) {
           notify(e.message || String(e), 'warn');
           batch.disabled = false;
