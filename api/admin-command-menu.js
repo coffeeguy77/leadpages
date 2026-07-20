@@ -41,9 +41,12 @@ const DEFAULT_MENU_MANAGE = {
       slot: 'adminnav',
       items: [
         { id: 'nav-dashboard', roles: ['super', 'partner', 'client'] },
+        { id: 'nav-advertising', roles: ['super', 'partner', 'client'] },
         { id: 'nav-details', roles: ['super', 'partner', 'client'] },
         { id: 'nav-landing', roles: ['super', 'partner', 'client'] },
+        { id: 'nav-ai-team', roles: ['super', 'partner', 'client'] },
         { id: 'nav-apps', roles: ['super', 'partner', 'client'] },
+        { id: 'nav-onlinequotes', roles: ['super', 'partner', 'client'] },
         { id: 'nav-mailer', roles: ['super', 'partner', 'client'] },
         { id: 'nav-messages', roles: ['super', 'partner', 'client'] }
       ]
