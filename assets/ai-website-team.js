@@ -238,9 +238,12 @@
   }
 
   function ensureStyles() {
-    if ($('ai-team-styles')) return;
-    var st = document.createElement('style');
-    st.id = 'ai-team-styles';
+    var st = $('ai-team-styles');
+    if (!st) {
+      st = document.createElement('style');
+      st.id = 'ai-team-styles';
+      document.head.appendChild(st);
+    }
     st.textContent =
       '.ai-team-msg.ok{color:#0a7d33}.ai-team-msg.bad{color:#b42318}' +
       '.ai-field-help{display:block;margin:4px 0 6px;font-size:12.5px;line-height:1.45;opacity:.82}' +
@@ -262,7 +265,7 @@
       '.ai-step-answer{margin-top:6px}' +
       '.ai-rec-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}' +
       '.ai-rec-hint{margin:8px 0 0;font-size:12px;opacity:.8}' +
-      '.ai-ask-shell{margin-bottom:16px;padding:0;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,.02));box-shadow:0 18px 40px rgba(0,0,0,.22)}' +
+      '.ai-ask-shell{margin-bottom:16px;padding:0;overflow:hidden;border:1px solid var(--line,rgba(255,255,255,.1));background:linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,.02));box-shadow:0 18px 40px rgba(0,0,0,.22);border-radius:var(--radius,12px)}' +
       '.ai-ask-head{display:flex;gap:12px;align-items:flex-start;padding:16px 16px 12px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.18)}' +
       '.ai-ask-avatar{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;letter-spacing:.02em;color:#fff;background:linear-gradient(135deg,var(--accent,#ec4899),#fb7185);box-shadow:0 8px 20px rgba(236,72,153,.28);flex:0 0 auto}' +
       '.ai-ask-avatar.scout{background:linear-gradient(135deg,#0ea5e9,#38bdf8)}' +
@@ -290,12 +293,18 @@
       '.ai-step-field > span{display:block;font-size:13px;font-weight:700;margin:0 0 3px}' +
       '.ai-step-help{display:block;font-size:12.5px;line-height:1.4;opacity:.78;margin:0 0 6px;font-weight:400}' +
       '.ai-step-example{display:block;font-size:12px;opacity:.62;margin:4px 0 0}' +
-      '.ai-step-field input,.ai-step-field textarea,.ai-ask-composer textarea,.ai-chat-modal input[type=text],.ai-chat-modal textarea{' +
-      'width:100%;box-sizing:border-box;border-radius:12px;border:1px solid rgba(255,255,255,.16);' +
-      'background:transparent !important;color:inherit;padding:10px 12px;font:inherit;outline:none}' +
-      '.ai-step-field input:focus,.ai-step-field textarea:focus,.ai-ask-composer textarea:focus,.ai-chat-modal input[type=text]:focus,.ai-chat-modal textarea:focus{' +
-      'border-color:var(--accent,#ec4899)}' +
-      '.ai-step-field input::placeholder,.ai-step-field textarea::placeholder{opacity:.55}' +
+      /* Newsletter-matching controls: 8px radius, no filled wash */
+      '#av-ai-team .ai-tin,.ai-chat-backdrop .ai-tin,' +
+      '#av-ai-team input.ai-tin,#av-ai-team textarea.ai-tin,' +
+      '.ai-chat-backdrop input.ai-tin,.ai-chat-backdrop textarea.ai-tin{' +
+      'width:100%;box-sizing:border-box;border-radius:8px !important;' +
+      'border:1px solid var(--line-strong,rgba(255,255,255,.18)) !important;' +
+      'background:transparent !important;background-color:transparent !important;' +
+      'color:var(--text,var(--ink,#f4f4f6)) !important;padding:10px 12px;font:inherit;outline:none;' +
+      'box-shadow:none !important;-webkit-appearance:none;appearance:none}' +
+      '#av-ai-team .ai-tin:focus,.ai-chat-backdrop .ai-tin:focus{' +
+      'border-color:var(--accent,#ec4899) !important;outline:2px solid var(--focus,var(--accent,#ec4899));outline-offset:-1px}' +
+      '#av-ai-team .ai-tin::placeholder,.ai-chat-backdrop .ai-tin::placeholder{opacity:.55}' +
       '.ai-chat-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px}' +
       '.ai-chat-modal{width:min(560px,100%);max-height:min(88vh,720px);overflow:auto;border-radius:14px;background:var(--panel,#12141c);color:var(--ink,#f4f4f6);border:1px solid var(--line,rgba(255,255,255,.12));box-shadow:0 18px 50px rgba(0,0,0,.45);padding:18px 18px 16px}' +
       '.ai-chat-log{display:flex;flex-direction:column;gap:10px;margin:12px 0 14px}' +
@@ -306,7 +315,6 @@
       '.ai-chat-examples button{font-size:12.5px}' +
       '.ai-sk-summary{font-size:13px;line-height:1.5;margin:0 0 10px}' +
       '.ai-sk-summary dt{font-weight:600;margin-top:8px}.ai-sk-summary dd{margin:2px 0 0;opacity:.88}';
-    document.head.appendChild(st);
   }
 
   async function token() {
@@ -414,14 +422,14 @@
     var input = def.multiline
       ? '<textarea id="' +
         id +
-        '" rows="3" style="width:100%" placeholder="' +
+        '" class="tin ai-tin" rows="3" placeholder="' +
         esc(def.examples[0] || '') +
         '">' +
         esc(value || '') +
         '</textarea>'
       : '<input id="' +
         id +
-        '" type="text" style="width:100%" value="' +
+        '" class="tin ai-tin" type="text" value="' +
         esc(value || '') +
         '" placeholder="' +
         esc(def.examples[0] || '') +
@@ -524,7 +532,113 @@
 
   function planStepsOf(rec) {
     var change = (rec && (rec.proposed_change || rec.proposedChange)) || {};
-    return Array.isArray(change.planSteps) ? change.planSteps : [];
+    var steps = Array.isArray(change.planSteps) ? change.planSteps.slice() : [];
+    var outcome = change.outcome || '';
+    // Migrate legacy landing cards (brief / keywords jargon) → Write with AI fields.
+    if (
+      outcome === 'plan_seo_landing' &&
+      steps.some(function (s) {
+        return s && (s.id === 'brief' || s.id === 'keywords');
+      })
+    ) {
+      var focusStep = steps.find(function (s) {
+        return s && s.id === 'focus';
+      });
+      var topic =
+        (focusStep && focusStep.value) ||
+        parseLandingFocusClient(change.promptSummary || rec.problem || '') ||
+        '';
+      var seoDone = steps.some(function (s) {
+        return s && (s.id === 'seo_inputs' || s.id === 'keywords') && s.status === 'done';
+      });
+      var draft = steps.find(function (s) {
+        return s && s.id === 'draft';
+      });
+      var publish = steps.find(function (s) {
+        return s && s.id === 'publish';
+      });
+      steps = [
+        focusStep || {
+          id: 'focus',
+          status: topic ? 'done' : 'needs_answer',
+          label: topic
+            ? 'Focus this landing page on: “' + topic.slice(0, 100) + '”.'
+            : 'Confirm what this landing page is about.',
+          value: topic || '',
+          fields: []
+        },
+        {
+          id: 'seo_inputs',
+          status: seoDone ? 'done' : 'needs_answer',
+          label:
+            'Fill the same fields as Landing pages → Write with AI: Primary keyword, Location, plus optional Extra information and Negative keywords.',
+          value: '',
+          fields: seoDone
+            ? []
+            : [
+                {
+                  key: 'primaryKeyword',
+                  label: 'Primary keyword',
+                  help: 'Main Google phrase to rank for — same field as Write with AI.',
+                  placeholder: topic ? topic.slice(0, 80) : 'e.g. pumpkin carving Canberra',
+                  example: 'pumpkin carving Canberra',
+                  required: true
+                },
+                {
+                  key: 'location',
+                  label: 'Location',
+                  help: 'Suburb or city this page targets — same field as Write with AI.',
+                  placeholder: 'e.g. Canberra',
+                  example: 'Canberra',
+                  required: true
+                },
+                {
+                  key: 'extraInfo',
+                  label: 'Extra information',
+                  help: 'Optional — anything else Write with AI should know.',
+                  placeholder: 'e.g. Family workshops only — no corporate events.',
+                  example: 'Family workshops only — no corporate events.',
+                  optional: true,
+                  multiline: true
+                },
+                {
+                  key: 'negativeKeywords',
+                  label: 'Negative keywords',
+                  help: 'Optional — hard ban words (comma-separated).',
+                  placeholder: 'e.g. coffee, barista, wedding',
+                  example: 'coffee, barista, wedding',
+                  optional: true
+                }
+              ]
+        },
+        draft || {
+          id: 'draft',
+          status: seoDone ? 'ready' : 'pending',
+          label:
+            'Open Landing pages → Write with AI (SEO mode), paste those fields, then Generate draft.',
+          value: '',
+          fields: []
+        },
+        publish || {
+          id: 'publish',
+          status: 'pending',
+          label: 'Review the draft, refine copy, then you Publish Live Site yourself.',
+          value: '',
+          fields: []
+        }
+      ];
+    }
+    return steps;
+  }
+
+  function parseLandingFocusClient(raw) {
+    var t = String(raw || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!t) return '';
+    t = t.replace(/^landing\s*pages?\s*[:\-–]\s*/i, '');
+    t = t.replace(/^plan a landing page for:\s*/i, '');
+    return t.trim();
   }
 
   function promptSummaryOf(rec) {
@@ -913,7 +1027,7 @@
       (summary ? '<p><strong>Summary:</strong> ' + esc(summary) + '</p>' : '') +
       '<div id="ai-discuss-outline"></div></div>' +
       '<div class="ai-chat-log" id="ai-chat-log"></div>' +
-      '<textarea id="ai-discuss-input" rows="3" style="width:100%" placeholder="Ask a question or refine the plan…"></textarea>' +
+      '<textarea id="ai-discuss-input" class="tin ai-tin" rows="3" placeholder="Ask a question or refine the plan…"></textarea>' +
       '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
       '<button type="button" class="btn" id="ai-discuss-send">Send</button>' +
       (forgeable
@@ -1057,12 +1171,12 @@
           (multiline
             ? '<textarea id="ai-step-' +
               esc(f.key) +
-              '" rows="3" placeholder="' +
+              '" class="tin ai-tin" rows="3" placeholder="' +
               esc(f.placeholder || '') +
               '"></textarea>'
             : '<input id="ai-step-' +
               esc(f.key) +
-              '" type="text" placeholder="' +
+              '" class="tin ai-tin" type="text" placeholder="' +
               esc(f.placeholder || '') +
               '">') +
           (f.example
@@ -1163,12 +1277,12 @@
       esc(def.help) +
       '</p>' +
       (def.multiline
-        ? '<textarea id="ai-chat-input" rows="4" style="width:100%" placeholder="' +
+        ? '<textarea id="ai-chat-input" class="tin ai-tin" rows="4" placeholder="' +
           esc(def.examples[0] || '') +
           '">' +
           esc(cur) +
           '</textarea>'
-        : '<input id="ai-chat-input" type="text" style="width:100%" value="' +
+        : '<input id="ai-chat-input" class="tin ai-tin" type="text" value="' +
           esc(cur) +
           '" placeholder="' +
           esc(def.examples[0] || '') +
@@ -1641,7 +1755,7 @@
       '</div>' +
       '<div class="ai-ask-thread" id="ai-ask-thread" aria-live="polite"></div>' +
       '<div class="ai-ask-composer">' +
-      '<textarea id="ai-ask" rows="3" placeholder="Type freely, or pick a topic above…"></textarea>' +
+      '<textarea id="ai-ask" class="tin ai-tin" rows="3" placeholder="Type freely, or pick a topic above…"></textarea>' +
       '<div class="ai-ask-composer-actions">' +
       '<button type="button" class="btn" id="ai-ask-go">Send</button>' +
       '<button type="button" class="btn ghost" id="ai-ask-chat">Fill gaps with Atlas</button>' +
