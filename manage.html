@@ -40,7 +40,7 @@
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=nav-twoline-1">
-<link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-ui-colours-1">
+<link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-preview-full-1">
 <style>
 :root{
   --radius:14px; --radius-sm:10px;
@@ -637,9 +637,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
 <script src="/icons.js"></script>
 <script src="/assets/lp-quote-wizard-logic.js?v=eq-qty-1"></script>
-<script src="/assets/lp-quote-display.js?v=oq-ui-colours-1"></script>
-<script src="/assets/lp-quote-planning.js?v=oq-ui-colours-1"></script>
-<script src="/assets/lp-quote-builder.js?v=oq-ui-colours-1"></script>
+<script src="/assets/lp-quote-display.js?v=oq-preview-full-1"></script>
+<script src="/assets/lp-quote-planning.js?v=oq-preview-full-1"></script>
+<script src="/assets/lp-quote-builder.js?v=oq-preview-full-1"></script>
 </head>
 <body data-lp-admin-page="manage">
 <script>
@@ -7871,8 +7871,8 @@ function heroCtaCard(c){
     var cfgJson='';
     try{ cfgJson=JSON.stringify(admin.activeVersion.config,null,2); }catch(e){ cfgJson='{}'; }
     return '<div class="oqb-card-wrap" id="oq-builder-card">'
-      +'<div class="oqb-split-wrap"><div id="oq-builder-root" class="oqb-editor-host"></div>'
-      +'<div id="oq-preview-root" class="oqb-preview-host"></div></div>'
+      +'<div id="oq-preview-root" class="oqb-preview-host oqb-preview-full"></div>'
+      +'<div id="oq-builder-root" class="oqb-editor-host"></div>'
       +'<details class="oqb-json-override" style="margin:14px 0;padding:12px;border:1px solid var(--line);border-radius:12px;">'
       +'<summary style="cursor:pointer;font-weight:600;">Override config (JSON)</summary>'
       +'<p class="hint" style="margin:10px 0 8px;">Paste a full config JSON to replace the builder, or edit prices here then load. Saving writes your version — it will <strong>not</strong> auto-reset to the Bean Culture seed file.</p>'

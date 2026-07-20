@@ -41,7 +41,7 @@ assert.ok(manage.includes('oq-heading'), 'heading colour picker');
 
 assert.ok(serializers.includes('ui: wizard.ui'), 'public shell includes ui');
 assert.ok(normalize.includes('cfg.wizard.ui'), 'normalize ensures ui object');
-assert.ok(render.includes('oq-ui-colours-1'), 'render cache-bust');
+assert.ok(render.includes('oq-preview-full-1'), 'render cache-bust');
 assert.ok(render.includes('eyebrowColor'), 'render applies section eyebrow colour');
 
 console.log('quote-nav-progress-colours.test.js: ok');
