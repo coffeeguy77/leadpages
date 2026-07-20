@@ -38,6 +38,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css">
 <link rel="stylesheet" href="/assets/lp-quote-builder.css">
 <style>
@@ -160,8 +161,11 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .savednote{font-size:12px;color:var(--accent-hover);font-weight:600;}
 .adminnav{display:flex;gap:6px;margin:0 0 22px;border-bottom:1px solid var(--line);}
 .lp-cmd-loading .adminnav,.lp-cmd-loading [id^="av-"]{visibility:hidden;transition:none;}
-.anav-btn{appearance:none;background:none;border:none;cursor:pointer;font-family:var(--font-ui);font-size:14.5px;font-weight:600;color:var(--ink-soft);padding:10px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;}
-.anav-btn[aria-selected="true"]{color:var(--accent-hover);border-bottom-color:var(--accent);}
+.anav-btn{appearance:none;background:transparent;border:none;border-radius:0;cursor:pointer;font-family:var(--font-ui);font-size:14.5px;font-weight:600;color:var(--ink-soft);padding:10px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;box-shadow:none;outline:none;}
+.anav-btn:hover{color:var(--ink);}
+.anav-btn:focus,.anav-btn:focus-visible{outline:none;box-shadow:none;border-color:transparent;border-bottom-color:transparent;}
+.anav-btn[aria-selected="true"]{color:var(--accent-hover);background:transparent;border:none;border-bottom:2px solid var(--accent);box-shadow:none;}
+.anav-btn[aria-selected="true"]:focus,.anav-btn[aria-selected="true"]:focus-visible{border-bottom-color:var(--accent);}
 .lsub-row{flex-wrap:wrap;}
 .lsub-extra{margin:-8px 0 22px;padding:11px 14px 4px;background:var(--panel-soft);border:1px solid var(--line);border-radius:12px;}
 .lsub-extra-label{display:block;font-family:var(--font-ui);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 2px 2px;}
@@ -661,8 +665,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     <button class="anav-btn" id="nav-ai-team" aria-selected="false" style="display:none">AI Website Team</button>
     <button class="anav-btn" id="nav-apps" aria-selected="false">App Marketplace</button>
     <button class="anav-btn" id="nav-onlinequotes" aria-selected="false" style="display:none">Online quotes</button>
-    <button class="anav-btn" id="nav-mailer" aria-selected="false">Email clients</button>
-    <button class="anav-btn" id="nav-messages" aria-selected="false">Messages</button>
+    <button class="anav-btn" id="nav-mailer" aria-selected="false">Newsletter</button>
+    <button class="anav-btn" id="nav-messages" aria-selected="false">Support</button>
     <button class="anav-btn" id="nav-appearance" aria-selected="false">Appearance</button>
     <button class="anav-btn" id="nav-contact" aria-selected="false">Contact</button>
     <button class="anav-btn" id="nav-logo" aria-selected="false">Logo</button>
@@ -7519,22 +7523,22 @@ function heroCtaCard(c){
       var meta=(c.status==='scheduled'&&c.send_at)?('for '+new Date(c.send_at).toLocaleString()):((c.sent_count||0)+' sent'+(c.failed_count?(', '+c.failed_count+' failed'):''));
       var acts=(st==='scheduled'?'<button type="button" class="mlr-mini" data-runnow="'+c.id+'">Send now</button>':'')+'<button type="button" class="mlr-mini" data-again="'+c.id+'">Use again</button>';
       return '<div class="mlr-hrow"><span class="mlr-hsub">'+_mesc(c.subject||'(no subject)')+'</span><span class="lpl-badge '+badge+'">'+_mesc(st)+'</span><span class="mlr-hmeta">'+meta+'</span><span class="mlr-hact">'+acts+'</span></div>';
-    }).join('')+'</div>'):'<p class="hint" style="color:#999;">No campaigns yet.</p>';
+    }).join('')+'</div>'):'<p class="hint" style="color:var(--ink-faint);">No campaigns yet.</p>';
 
     box.innerHTML=''
     + '<div class="card" style="margin-bottom:22px;">'
-    +   '<h2 style="margin:0 0 4px;">Email your clients</h2>'
+    +   '<h2 style="margin:0 0 4px;">Newsletter</h2>'
     +   '<p class="lede" style="margin:0 0 16px;">Send a one-off update or offer to the customers who\u2019ve enquired through your site. <strong>'+active.length+'</strong> contactable \u00b7 '+opted.length+' opted out.</p>'
     +   '<div class="mlr-grid">'
     +     '<div class="mlr-col">'
     +       '<label class="mlr-lbl">Who gets this?</label>'
-    +       '<div class="mlr-segrow">'+seg('all','All clients ('+active.length+')')+seg('selected','Selected')+seg('individual','One person')+'</div>'
-    +       '<div id="mlr-picklist" class="mlr-picklist"'+(MAILER.mode==='all'?' style="display:none"':'')+'>'+(clientRows||'<p class="hint" style="color:#999;padding:8px;">No clients with an email address yet. New enquiries that include an email will appear here.</p>')+'</div>'
+    +       '<div class="mlr-segrow">'+seg('all','All contacts ('+active.length+')')+seg('selected','Selected')+seg('individual','One person')+'</div>'
+    +       '<div id="mlr-picklist" class="mlr-picklist"'+(MAILER.mode==='all'?' style="display:none"':'')+'>'+(clientRows||'<p class="hint" style="color:var(--ink-faint);padding:8px;">No contacts with an email address yet. New enquiries that include an email will appear here.</p>')+'</div>'
     +     '</div>'
     +     '<div class="mlr-col">'
     +       '<label class="mlr-lbl">Subject</label><input id="mlr-subject" class="tin" value="'+_mesc(MAILER.subject||'')+'" placeholder="A quick update from your team\u2026">'
     +       '<label class="mlr-lbl" style="margin-top:12px;">Message</label><textarea id="mlr-body" class="tin" rows="7" placeholder="Write your update or offer here\u2026">'+_mesc(MAILER.body||'')+'</textarea>'
-    +       '<div class="mlr-imgrow"><button type="button" class="btn ghost" id="mlr-imgbtn">Insert image</button><span id="mlr-imgname" class="hint" style="color:#999;"></span><input type="file" id="mlr-imgfile" accept="image/*" style="display:none"></div>'
+    +       '<div class="mlr-imgrow"><button type="button" class="btn ghost" id="mlr-imgbtn">Insert image</button><span id="mlr-imgname" class="hint" style="color:var(--ink-faint);"></span><input type="file" id="mlr-imgfile" accept="image/*" style="display:none"></div>'
     +       '<div id="mlr-imgprev">'+(MAILER.imageUrl?'<img src="'+_mesc(MAILER.imageUrl)+'" style="max-width:220px;border-radius:10px;margin-top:8px;">':'')+'</div>'
     +       '<label class="mlr-lbl" style="margin-top:14px;">When</label>'
     +       '<div class="mlr-segrow"><button type="button" class="btn ghost mlr-when'+(!MAILER.schedule?' on':'')+'" data-when="now">Send now</button><button type="button" class="btn ghost mlr-when'+(MAILER.schedule?' on':'')+'" data-when="later">Schedule</button></div>'
@@ -7605,7 +7609,8 @@ function heroCtaCard(c){
   async function renderMessages(){
     var box=$('av-messages'); if(!box) return;
     if(!currentSiteId){ box.innerHTML='<div class="card"><p class="lede">Select a site first.</p></div>'; return; }
-    box.innerHTML='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Messages</h2>'
+    box.innerHTML='<div class="card lp-support-panel" style="margin-bottom:22px;padding-bottom:18px;">'
+      +'<h2 style="margin:0 0 4px;">Support</h2>'
       +'<p class="lede" style="margin:0 0 16px;">Message your LeadPages provider or contact support about this site.</p>'
       +'<div id="manage-messages-root"></div></div>';
     var root=document.getElementById('manage-messages-root');
@@ -7727,9 +7732,9 @@ function heroCtaCard(c){
       var notConfigured=!admin||cfgJ.message==='not_configured';
       var html='<div class="card"><h2>Online Quote System</h2>'
         +'<p class="lede">Verified quote wizard with email and SMS gating. Pricing is calculated server-side — never in page source until verification.</p>'
-        +'<div class="hint" style="margin:12px 0;padding:14px;border-radius:12px;background:var(--panel-soft);">'
+        +'<p class="hint" style="margin:12px 0 0;line-height:1.55;">'
         +'<strong>Customer journey:</strong> (1) Complete wizard → (2) <em>Email code auto-sent</em> unlocks total (returning emails skip re-verify) → (3) <em>SMS code</em> unlocks full breakdown → (4) <strong>Portal link + PDF attached</strong> emailed after SMS.'
-        +'</div>';
+        +'</p>';
       if(notConfigured){
         html+='<div class="hint" style="margin:12px 0;padding:14px;border-radius:12px;background:var(--panel-soft);">No quote system binding yet. '
           +(isSuper?'Enable below or run <code>node scripts/seed-bean-culture-quote.js</code> for Bean Culture.':'Contact your platform administrator to provision pricing.')
@@ -7748,7 +7753,7 @@ function heroCtaCard(c){
           var qc=admin.activeVersion.config;
           html+='<p class="hint">'+(qc.products||[]).length+' products · labour min '+((qc.labour&&qc.labour.minimumHours)||3)+' hr @ '+_oqMoney(qc.labour&&qc.labour.hourlyCents)+'/hr</p>';
         } else if(isSuper&&admin&&(admin.classification==='blank'||!admin.activeVersion)){
-          html+='<div class="hint" style="margin:12px 0;padding:14px;border-radius:12px;background:#fff8e6;border:1px solid #f5d78e;">'
+          html+='<div class="hint" style="margin:12px 0;padding:14px;border-radius:12px;background:var(--warning-soft);border:1px solid color-mix(in srgb, var(--warning) 45%, var(--border));color:var(--text);">'
             +'<strong>Pricing not provisioned.</strong> Enabled alone only sets classification to <code>blank</code> — the public wizard stays unavailable until pricing is loaded.'
             +(slug==='beanculture'?' Use <strong>Provision Bean Culture pricing</strong> below.':' Send config via API or run a seed script.')
             +'</div>';
