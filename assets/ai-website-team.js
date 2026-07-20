@@ -282,12 +282,20 @@
       '.ai-ask-bubble.you{align-self:flex-end;background:rgba(236,72,153,.16);border:1px solid rgba(236,72,153,.4);border-bottom-right-radius:6px}' +
       '.ai-ask-bubble .who{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.7;margin:0 0 4px}' +
       '.ai-ask-composer{padding:12px 16px 14px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.12)}' +
-      '.ai-ask-composer textarea{width:100%;min-height:74px;resize:vertical;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:inherit;padding:10px 12px;font:inherit}' +
+      '.ai-ask-composer textarea{min-height:74px;resize:vertical}' +
       '.ai-ask-composer-actions{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}' +
       '.ai-discuss-context{font-size:13px;line-height:1.45;margin:0 0 12px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}' +
       '.ai-discuss-context p{margin:0 0 6px}.ai-discuss-context p:last-child{margin:0}' +
-      '.ai-step-field{display:block;margin:0 0 10px}' +
-      '.ai-step-field span{display:block;font-size:12.5px;font-weight:700;margin:0 0 4px}' +
+      '.ai-step-field{display:block;margin:0 0 12px}' +
+      '.ai-step-field > span{display:block;font-size:13px;font-weight:700;margin:0 0 3px}' +
+      '.ai-step-help{display:block;font-size:12.5px;line-height:1.4;opacity:.78;margin:0 0 6px;font-weight:400}' +
+      '.ai-step-example{display:block;font-size:12px;opacity:.62;margin:4px 0 0}' +
+      '.ai-step-field input,.ai-step-field textarea,.ai-ask-composer textarea,.ai-chat-modal input[type=text],.ai-chat-modal textarea{' +
+      'width:100%;box-sizing:border-box;border-radius:12px;border:1px solid rgba(255,255,255,.16);' +
+      'background:transparent !important;color:inherit;padding:10px 12px;font:inherit;outline:none}' +
+      '.ai-step-field input:focus,.ai-step-field textarea:focus,.ai-ask-composer textarea:focus,.ai-chat-modal input[type=text]:focus,.ai-chat-modal textarea:focus{' +
+      'border-color:var(--accent,#ec4899)}' +
+      '.ai-step-field input::placeholder,.ai-step-field textarea::placeholder{opacity:.55}' +
       '.ai-chat-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px}' +
       '.ai-chat-modal{width:min(560px,100%);max-height:min(88vh,720px);overflow:auto;border-radius:14px;background:var(--panel,#12141c);color:var(--ink,#f4f4f6);border:1px solid var(--line,rgba(255,255,255,.12));box-shadow:0 18px 50px rgba(0,0,0,.45);padding:18px 18px 16px}' +
       '.ai-chat-log{display:flex;flex-direction:column;gap:10px;margin:12px 0 14px}' +
@@ -1038,22 +1046,28 @@
     }
     var fieldsHtml = step.fields
       .map(function (f) {
-        var multiline = f.key === 'proofPoints' || f.key === 'objections';
+        var multiline = !!(f.multiline || f.key === 'proofPoints' || f.key === 'objections' || f.key === 'extraInfo' || f.key === 'slides');
+        var opt = f.optional ? ' <em style="font-weight:500;opacity:.7">(optional)</em>' : '';
         return (
           '<label class="ai-step-field"><span>' +
           esc(f.label || f.key) +
+          opt +
           '</span>' +
+          (f.help ? '<span class="ai-step-help">' + esc(f.help) + '</span>' : '') +
           (multiline
             ? '<textarea id="ai-step-' +
               esc(f.key) +
-              '" rows="3" style="width:100%" placeholder="' +
+              '" rows="3" placeholder="' +
               esc(f.placeholder || '') +
               '"></textarea>'
             : '<input id="ai-step-' +
               esc(f.key) +
-              '" type="text" style="width:100%" placeholder="' +
+              '" type="text" placeholder="' +
               esc(f.placeholder || '') +
               '">') +
+          (f.example
+            ? '<span class="ai-step-example">Example: ' + esc(f.example) + '</span>'
+            : '') +
           '</label>'
         );
       })
@@ -1076,7 +1090,7 @@
       '<button type="button" class="btn" id="ai-step-save">Save &amp; update plan</button>' +
       '<button type="button" class="btn ghost" id="ai-step-cancel">Cancel</button>' +
       '<span id="ai-chat-msg" class="ai-team-msg"></span></div>' +
-      '<p class="lede" style="margin:10px 0 0;font-size:12px">Saves onto this same suggestion — does not publish.</p></div>';
+      '<p class="lede" style="margin:10px 0 0;font-size:12px">Same fields as Landing pages → Write with AI. Saves on this card — does not publish.</p></div>';
     document.body.appendChild(backdrop);
     function shut() {
       closeChat();
@@ -1089,10 +1103,16 @@
     $('ai-step-save').onclick = async function () {
       var msg = $('ai-chat-msg');
       var answers = {};
+      var missing = [];
       step.fields.forEach(function (f) {
         var el = $('ai-step-' + f.key);
         answers[f.key] = el ? el.value : '';
+        if (f.required && !String(answers[f.key] || '').trim()) missing.push(f.label || f.key);
       });
+      if (missing.length) {
+        setMsg(msg, 'Please fill: ' + missing.join(', '), 'bad');
+        return;
+      }
       try {
         setMsg(msg, 'Saving…', '');
         var j = await api('/api/ai-team/recommendations', {
@@ -1439,6 +1459,7 @@
     }
 
     askSession = preservedSession;
+    if (lastState) lastState._siteId = siteId;
     paint(lastState);
     paintAskThread();
     setAskSpecialist(askSession && askSession.topic ? askSession.topic : null);
@@ -1451,6 +1472,7 @@
       } catch (_e2) {}
     }
     box.scrollTop = scrollY;
+    if (opts.quiet) return;
     if (opts.statusText) setMsg($('ai-ask-msg'), opts.statusText, opts.statusCls || 'ok');
     else if (statusText) setMsg($('ai-ask-msg'), statusText, statusCls);
   }
@@ -1467,17 +1489,48 @@
       return;
     }
 
+    // Instant paint from cache for this site — refresh in background (no blank "Loading…").
+    var cached =
+      lastState &&
+      lastState.brain &&
+      String(lastState._siteId || '') === String(siteId) &&
+      !opts.forceReload;
+    if (cached) {
+      paint(lastState);
+      paintAskThread();
+      setAskSpecialist(askSession && askSession.topic ? askSession.topic : null);
+      softRefresh({ quiet: true });
+      return;
+    }
+
+    // Lightweight shell while first fetch runs (parallel brain + recommendations).
     box.innerHTML =
-      '<div class="card"><p class="lede">Loading Site Brain…</p><span id="ai-team-load-msg"></span></div>';
+      '<div class="card" style="margin-bottom:16px"><h2 style="margin:0 0 6px">AI Website Team</h2>' +
+      '<p class="lede" style="margin:0">Opening…</p></div>' +
+      '<div class="card ai-ask-shell"><div class="ai-ask-head"><div class="ai-ask-avatar">A</div>' +
+      '<div><h3>Ask the Team</h3><p class="lede">Loading your Site Brain and suggestions…</p></div></div></div>';
 
-    var state = { brain: null, review: null, needsReview: false, recommendations: [] };
+    var state = {
+      brain: null,
+      review: null,
+      needsReview: false,
+      recommendations: [],
+      _siteId: siteId
+    };
 
-    try {
-      var got = await api('/api/site-brain/get', { siteId: siteId });
-      state.brain = got.brain;
-      state.review = got.review;
-      state.needsReview = !!got.needsBootstrapReview;
-    } catch (e) {
+    var brainPromise = api('/api/site-brain/get', { siteId: siteId }).catch(function (e) {
+      return { __err: e };
+    });
+    var listPromise = api('/api/ai-team/recommendations', {
+      siteId: siteId,
+      action: 'list'
+    }).catch(function () {
+      return { recommendations: [] };
+    });
+
+    var gotWrap = await brainPromise;
+    if (gotWrap && gotWrap.__err) {
+      var e = gotWrap.__err;
       if (e.status === 404 || (e.payload && e.payload.error === 'not_found')) {
         try {
           var synced = await api('/api/site-brain/sync', { siteId: siteId });
@@ -1498,17 +1551,14 @@
           '</p><p class="lede">Nothing was saved.</p></div>';
         return;
       }
+    } else {
+      state.brain = gotWrap.brain;
+      state.review = gotWrap.review;
+      state.needsReview = !!gotWrap.needsBootstrapReview;
     }
 
-    try {
-      var listed = await api('/api/ai-team/recommendations', {
-        siteId: siteId,
-        action: 'list'
-      });
-      state.recommendations = listed.recommendations || [];
-    } catch (_e) {
-      state.recommendations = [];
-    }
+    var listed = await listPromise;
+    state.recommendations = (listed && listed.recommendations) || [];
 
     lastState = state;
     paint(state);
