@@ -10,9 +10,8 @@
   box-shadow: none;
 }
 
-.oqb-card-wrap > .oqb-split-wrap {
-  padding: 0;
-  gap: 24px;
+.oqb-card-wrap > .oqb-preview-host {
+  padding: 18px 0 0;
 }
 
 .oqb-editor-host .oqb {
@@ -30,15 +29,19 @@
   gap: 10px;
 }
 
-.oqb-split-wrap {
-  display: grid;
-  grid-template-columns: 1fr minmax(320px, 480px);
-  gap: 24px;
-  align-items: start;
+/* Full-width live preview stacked above the builder (no side panel) */
+.oqb-preview-host,
+.oqb-preview-full {
+  position: static;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
 }
 
-.oqb-editor-host { min-width: 0; }
-.oqb-preview-host { position: sticky; top: 16px; }
+.oqb-editor-host {
+  min-width: 0;
+  width: 100%;
+}
 
 /* Shell */
 .oqb {
@@ -690,6 +693,11 @@
   background: color-mix(in srgb, var(--accent) 4%, var(--panel, #f4f6f8));
 }
 
+.oqb-preview-full .oqb-preview-body {
+  max-height: min(85vh, 980px);
+  padding: 18px 20px;
+}
+
 .oqb-preview-zoom-outer {
   overflow: visible;
   min-height: 200px;
@@ -719,13 +727,17 @@
 .oqb-preview-mock .lp-oq-card {
   padding: 14px;
   border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
-  background: transparent;
+  border: 1px solid var(--lp-oq-panel-border, color-mix(in srgb, var(--accent) 28%, var(--line)));
+  background: var(--lp-oq-panel-bg, transparent);
   color: var(--ink);
   font-family: var(--font-ui, system-ui, sans-serif);
 }
 
-.oqb-preview-mock .lp-oq-title { margin: 0 0 8px; font-size: 1.2rem; color: var(--ink); }
+.oqb-preview-mock .lp-oq-title {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+  color: var(--lp-oq-panel-title, var(--ink));
+}
 
 .oqb-preview-mock .lp-oq-steps {
   display: flex;
@@ -736,27 +748,28 @@
 
 .oqb-preview-mock .lp-oq-step {
   font-size: 11px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
-  background: transparent;
-  color: var(--ink-soft);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--lp-oq-step-border, color-mix(in srgb, var(--accent) 20%, var(--line)));
+  background: var(--lp-oq-step-bg, transparent);
+  color: var(--lp-oq-step-text, var(--ink-soft));
   text-transform: capitalize;
+  font-weight: 600;
 }
 
 .oqb-preview-mock .lp-oq-step.is-active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-text);
+  background: var(--lp-oq-step-active-bg, var(--accent));
+  border-color: var(--lp-oq-step-active-border, var(--lp-oq-step-active-bg, var(--accent)));
+  color: var(--lp-oq-step-active-text, var(--accent-text));
 }
 
 .oqb-preview-mock .lp-oq-step.is-done {
   background: transparent;
-  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
-  color: var(--accent-hover);
+  border-color: var(--lp-oq-step-done-border, color-mix(in srgb, var(--accent) 40%, var(--line)));
+  color: var(--lp-oq-step-done-text, var(--accent-hover));
 }
 
-.oqb-preview-mock .lp-oq-intro { color: var(--ink-soft); margin: 0 0 10px; }
+.oqb-preview-mock .lp-oq-intro { color: var(--lp-oq-intro, var(--ink-soft)); margin: 0 0 10px; }
 
 .oqb-preview-mock .lp-oq-choice {
   display: block;
@@ -1022,25 +1035,23 @@
 .oqb-preview-mock .lp-oq-btn {
   padding: 9px 16px;
   border: none;
-  border-radius: 9px;
-  background: var(--accent);
-  color: var(--accent-text);
+  border-radius: 8px;
+  background: var(--lp-oq-btn-bg, var(--accent));
+  color: var(--lp-oq-btn-text, var(--accent-text));
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
 
 .oqb-preview-mock .lp-oq-btn-ghost {
-  background: transparent;
-  color: var(--accent-hover);
-  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+  background: var(--lp-oq-btn-ghost-bg, transparent);
+  color: var(--lp-oq-btn-ghost-text, var(--accent-hover));
+  border: 1px solid var(--lp-oq-btn-ghost-border, color-mix(in srgb, var(--accent) 40%, var(--line)));
 }
 
-.oqb-preview-mock .lp-oq-muted { color: var(--ink-soft); }
+.oqb-preview-mock .lp-oq-muted { color: var(--lp-oq-muted, var(--ink-soft)); }
 
 @media (max-width: 960px) {
-  .oqb-split-wrap { grid-template-columns: 1fr; }
-  .oqb-preview-host { position: static; }
   .oqb-step-row { flex-direction: column; align-items: stretch; }
   .oqb-step-tools { margin-left: 0; justify-content: flex-end; }
 }

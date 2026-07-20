@@ -666,10 +666,10 @@ function injectOnlineQuote(html, slug, cfg) {
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
   const QUOTE_SCRIPTS = [
-    '/assets/lp-quote-wizard-logic.js?v=eq-qty-1',
-    '/assets/lp-quote-display.js?v=eq-qty-1',
-    '/assets/lp-quote-planning.js?v=eq-qty-1',
-    '/assets/lp-online-quote.js?v=eq-qty-1'
+    '/assets/lp-quote-wizard-logic.js?v=oq-preview-full-1',
+    '/assets/lp-quote-display.js?v=oq-preview-full-1',
+    '/assets/lp-quote-planning.js?v=oq-preview-full-1',
+    '/assets/lp-online-quote.js?v=oq-preview-full-1'
   ];
 
   function ensureQuoteScripts(doc) {
@@ -688,6 +688,18 @@ function injectOnlineQuote(html, slug, cfg) {
     return out;
   }
 
+  function hexOk(v) {
+    return typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v);
+  }
+  function sectionStyleAttr() {
+    const parts = [];
+    if (hexOk(sec.bg)) parts.push('background:' + sec.bg);
+    if (hexOk(sec.eyebrowColor)) parts.push('--oq-eyebrow:' + sec.eyebrowColor);
+    if (hexOk(sec.headingColor)) parts.push('--oq-heading:' + sec.headingColor);
+    if (hexOk(sec.introColor)) parts.push('--oq-intro:' + sec.introColor);
+    return parts.length ? (' style="' + parts.join(';') + '"') : '';
+  }
+
   if (html.includes('data-sec="onlineQuote"')) {
     html = html.replace(
       /(<div\s+id="lp-online-quote")(?:\s+data-slug="[^"]*")?/,
@@ -698,18 +710,21 @@ function injectOnlineQuote(html, slug, cfg) {
   const eyebrow = esc(sec.eyebrow || 'Online quote');
   const heading = esc(sec.heading || 'Get your quote');
   const intro = esc(sec.intro || '');
+  const eyStyle = hexOk(sec.eyebrowColor) ? (' style="color:' + sec.eyebrowColor + '"') : '';
+  const hStyle = hexOk(sec.headingColor) ? (' style="color:' + sec.headingColor + '"') : '';
+  const iStyle = hexOk(sec.introColor) ? (' style="color:' + sec.introColor + '"') : '';
   const block =
-    '<section data-sec="onlineQuote" class="sec online-quote" id="onlineQuote">' +
+    '<section data-sec="onlineQuote" class="sec online-quote" id="onlineQuote"' + sectionStyleAttr() + '>' +
     '<div class="in">' +
-    (eyebrow ? '<p class="ey">' + eyebrow + '</p>' : '') +
-    '<h2>' + heading + '</h2>' +
-    (intro ? '<p class="intro">' + intro + '</p>' : '') +
+    (eyebrow ? '<p class="ey"' + eyStyle + '>' + eyebrow + '</p>' : '') +
+    '<h2' + hStyle + '>' + heading + '</h2>' +
+    (intro ? '<p class="intro"' + iStyle + '>' + intro + '</p>' : '') +
     '<div id="lp-online-quote" data-slug="' + esc(slug) + '"></div>' +
     '</div></section>' +
-    '<script src="/assets/lp-quote-wizard-logic.js?v=eq-qty-1" defer></script>' +
-    '<script src="/assets/lp-quote-display.js?v=eq-qty-1" defer></script>' +
-    '<script src="/assets/lp-quote-planning.js?v=eq-qty-1" defer></script>' +
-    '<script src="/assets/lp-online-quote.js?v=eq-qty-1" defer></script>';
+    '<script src="/assets/lp-quote-wizard-logic.js?v=oq-preview-full-1" defer></script>' +
+    '<script src="/assets/lp-quote-display.js?v=oq-preview-full-1" defer></script>' +
+    '<script src="/assets/lp-quote-planning.js?v=oq-preview-full-1" defer></script>' +
+    '<script src="/assets/lp-online-quote.js?v=oq-preview-full-1" defer></script>';
   if (html.includes('<section data-sec="quote"')) {
     return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');
   }

@@ -40,7 +40,7 @@
 <link rel="stylesheet" href="/assets/lp-themes.css">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=anav-btn-match-1">
-<link rel="stylesheet" href="/assets/lp-quote-builder.css">
+<link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-preview-full-1">
 <style>
 :root{
   --radius:14px; --radius-sm:10px;
@@ -640,9 +640,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
 <script src="/icons.js"></script>
 <script src="/assets/lp-quote-wizard-logic.js?v=eq-qty-1"></script>
-<script src="/assets/lp-quote-display.js?v=eq-qty-1"></script>
-<script src="/assets/lp-quote-planning.js?v=eq-qty-1"></script>
-<script src="/assets/lp-quote-builder.js?v=eq-qty-1"></script>
+<script src="/assets/lp-quote-display.js?v=oq-preview-full-1"></script>
+<script src="/assets/lp-quote-planning.js?v=oq-preview-full-1"></script>
+<script src="/assets/lp-quote-builder.js?v=oq-preview-full-1"></script>
 </head>
 <body data-lp-admin-page="manage">
 <script>
@@ -2801,7 +2801,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     seoTokens:{trade:'',location:'Canberra',city:'Canberra',region:'ACT',suburb:'Canberra',enableUrlSuburb:false,updateTitle:false,titleTemplate:'{trade} in {location} | {business}'},
     emergencyAvailability:{on:false,heading:'After-hours & emergencies',intro:'We keep the phone on outside business hours for genuine emergencies \u2014 leave your details and we\u2019ll call you straight back.',mode:'schedule',available:true,weekdayOpen:'07:00',weekdayClose:'17:00',satOpen:'08:00',satClose:'14:00',sunOpen:'',sunClose:'',availableLabel:'Available now',responseText:'Fast response — usually within the hour',afterHoursLabel:'After hours',afterHoursText:'Leave your details and we’ll call you first thing.',emergencyText:'Genuine emergency? Call anyway — we run after-hours callouts.',cta:{text:'',action:'call'}},
     serviceAreaMap:{on:false,eyebrow:'Service area',heading:'Suburbs we cover across the ACT',intro:'Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch.'},
-    onlineQuote:{on:false,eyebrow:'Online quote',heading:'Get your verified quote',intro:'Answer a few questions — verify your email to see your total, then SMS for the full breakdown.'},
+    onlineQuote:{on:false,eyebrow:'Online quote',heading:'Get your verified quote',intro:'Answer a few questions — verify your email to see your total, then SMS for the full breakdown.',bg:'',eyebrowColor:'',headingColor:'',introColor:''},
     estimateBuilder:{on:false,eyebrow:'Instant estimate',heading:'Get a ballpark price in 30 seconds',intro:'Answer a few quick questions for an indicative range. For an exact price, send the details through and we’ll confirm.',currency:'$',disclaimer:'This is a guide only — your final price is confirmed after a quick on-site inspection.',ctaText:'Get my exact quote'},
     certifications:{eyebrow:'Accredited & insured',heading:'Licensed, insured & accredited',intro:'Fully qualified and backed by recognised industry accreditations — so you know the job is done right.'},
     finance:{eyebrow:'Flexible payments',heading:'Finance options available',amount:'38',period:'week',description:'Spread the cost of larger jobs with approved finance — get the work done now and pay it off over time.',disclaimer:'Finance is subject to approval. Terms and conditions apply.',cta:{text:'Ask about finance',action:'quote'}},
@@ -3569,6 +3569,26 @@ function reqFieldsCard(c){
     w('q-req-name','reqName'); w('q-req-phone','reqPhone'); w('q-req-job','reqJob'); w('q-req-suburb','reqSuburb'); w('q-req-detail','reqDetail');
   }
   
+
+function onlineQuoteStyleCard(c){
+    var OQ=(c.sections&&c.sections.onlineQuote)||{}; var th=c.theme||{};
+    var DEF={ bg:'#ffffff', eyebrowColor:(th.pipe||'#1f7bb8'), headingColor:'#1a2230', introColor:'#46535f' };
+    var col=function(id,key,label,help){ var dv=DEF[key]||'#1a2230'; var v=(OQ[key]&&/^#[0-9a-fA-F]{6}$/.test(OQ[key]))?OQ[key]:''; return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:230px;"><label style="font-weight:600;">'+label+'</label><p class="hint" style="margin:2px 0 6px;font-size:12px;">'+help+'</p><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(v||dv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" value="'+v+'" placeholder="'+dv+' (default)" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>'; };
+    var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Section colours</h2><p class="lede" style="margin:0 0 6px;">Background and fonts for the Online Quote band (eyebrow, heading, intro) so text stays readable on your theme.</p><p class="hint" style="margin:0 0 16px;">Progress steps and Continue / Back colours are edited in the <strong>Quote Builder</strong> tab under Layout → Wizard colours.</p>';
+    h+='<div style="display:flex;flex-wrap:wrap;gap:14px;">';
+    h+=col('oq-bg','bg','Section background','Band behind the eyebrow, heading and wizard.');
+    h+=col('oq-eyebrow','eyebrowColor','Eyebrow colour','Small label above the heading.');
+    h+=col('oq-heading','headingColor','Heading colour','“Get your verified quote” etc.');
+    h+=col('oq-intro','introColor','Intro text colour','Supporting sentence under the heading.');
+    h+='</div></div>';
+    return h;
+  }
+  function wireOnlineQuoteStyle(c){
+    function OQ(){ if(!c.sections)c.sections={}; if(!c.sections.onlineQuote)c.sections.onlineQuote={}; return c.sections.onlineQuote; }
+    function colWire(id,key){ var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def'); if(clr) clr.addEventListener('input',function(){ OQ()[key]=clr.value; if(tx)tx.value=clr.value; persist(); previewApply(); }); if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ OQ()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ OQ()[key]=v; if(clr)clr.value=v; } } persist(); previewApply(); }); if(df) df.addEventListener('click',function(){ OQ()[key]=''; if(tx)tx.value=''; persist(); previewApply(); }); }
+    colWire('oq-bg','bg'); colWire('oq-eyebrow','eyebrowColor'); colWire('oq-heading','headingColor'); colWire('oq-intro','introColor');
+  }
+
 function quoteStyleCard(c){
     var Q=(c.sections&&c.sections.quote)||{}; var th=c.theme||{};
     function shade(hex,pct){ if(!hex||hex.charAt(0)!=='#'||hex.length<7) return hex; function cl(n){return Math.max(0,Math.min(255,Math.round(n)));} var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16),f=pct/100; r=cl(r+(pct<0?r:255-r)*f); g=cl(g+(pct<0?g:255-g)*f); b=cl(b+(pct<0?b:255-b)*f); function hx(n){return ('0'+n.toString(16)).slice(-2);} return '#'+hx(r)+hx(g)+hx(b); }
@@ -6525,9 +6545,11 @@ function heroCtaCard(c){
       (function(){ var ct=$('fin-ctatext'); if(ct){ ct.value=(c.sections.finance.cta&&c.sections.finance.cta.text)||''; ct.addEventListener('input',function(){ if(!c.sections.finance.cta)c.sections.finance.cta={}; c.sections.finance.cta.text=ct.value; persist(); previewApply(); }); } var ca=$('fin-ctaaction'); if(ca){ ca.addEventListener('change',function(){ if(!c.sections.finance.cta)c.sections.finance.cta={}; c.sections.finance.cta.action=ca.value; persist(); previewApply(); }); } })();
     } else if(sub==='onlineQuote'){
       body.innerHTML=secCard(c,'onlineQuote','Online Quote wizard',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])
+        +onlineQuoteStyleCard(c)
         +'<div class="card" style="margin-bottom:22px;"><h2>How it works</h2><p class="lede">Visitors complete the wizard on your live site. Prices are calculated server-side — email verification reveals the total inc GST; SMS unlocks the itemised breakdown. Quote submissions appear in <strong>Dashboard → Captured leads</strong> with kind <code>quote</code>.</p>'
-        +'<p class="hint" style="margin:0;">Turn this section on, publish, then manage sessions under the <strong>Quote Builder</strong> tab. Embed slug: <code>'+esc(currentSiteSlug||'your-slug')+'</code></p></div>';
+        +'<p class="hint" style="margin:0;">Turn this section on, publish, then manage sessions under the <strong>Quote Builder</strong> tab. Progress and Continue button colours are set in Quote Builder → Layout. Embed slug: <code>'+esc(currentSiteSlug||'your-slug')+'</code></p></div>';
       wireSec(c,'onlineQuote',true,[['eyebrow'],['heading'],['intro']]);
+      wireOnlineQuoteStyle(c);
     } else if(sub==='estimateBuilder'){
       body.innerHTML=secCard(c,'estimateBuilder','Estimate Builder',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta'],['currency','Currency symbol'],['disclaimer','Disclaimer','ta'],['ctaText','Button text']])
         +listCard('estimateBuilder','Questions & options','Build a multi-step estimate. Group options under the same Question to make a step — visitors pick one option per step and the price ranges add up. Set From/To to 0 for no-cost options. The result hands off to your existing quote form.');
@@ -7852,8 +7874,8 @@ function heroCtaCard(c){
     var cfgJson='';
     try{ cfgJson=JSON.stringify(admin.activeVersion.config,null,2); }catch(e){ cfgJson='{}'; }
     return '<div class="oqb-card-wrap" id="oq-builder-card">'
-      +'<div class="oqb-split-wrap"><div id="oq-builder-root" class="oqb-editor-host"></div>'
-      +'<div id="oq-preview-root" class="oqb-preview-host"></div></div>'
+      +'<div id="oq-preview-root" class="oqb-preview-host oqb-preview-full"></div>'
+      +'<div id="oq-builder-root" class="oqb-editor-host"></div>'
       +'<details class="oqb-json-override" style="margin:14px 0;padding:12px;border:1px solid var(--line);border-radius:12px;">'
       +'<summary style="cursor:pointer;font-weight:600;">Override config (JSON)</summary>'
       +'<p class="hint" style="margin:10px 0 8px;">Paste a full config JSON to replace the builder, or edit prices here then load. Saving writes your version — it will <strong>not</strong> auto-reset to the Bean Culture seed file.</p>'
