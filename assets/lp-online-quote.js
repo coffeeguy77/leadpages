@@ -103,6 +103,7 @@
       shifts: [],
       carts: [],
       beverageId: '',
+      beverageLines: [],
       addonIds: [],
       travelZoneId: '',
       contact: { name: '', email: '', phone: '' },
@@ -148,6 +149,7 @@
       guestCount: this.state.guestCount,
       unitCount: this.state.unitCount,
       beverageId: this.state.beverageId,
+      beverageLines: this.state.beverageLines,
       addonIds: this.state.addonIds,
       travelZoneId: this.state.travelZoneId
     };
@@ -179,7 +181,16 @@
     var P = this.planning();
     if (P && P.ensureCarts) P.ensureCarts(this.state, shell.products || []);
     var bevs = this.filterItems(shell.beverages);
-    if (this.state.beverageId && !bevs.some(function(b) { return b.id === this.state.beverageId; }, this)) {
+    var bevIds = bevs.map(function(b) { return b.id; });
+    if (!Array.isArray(this.state.beverageLines)) this.state.beverageLines = [];
+    this.state.beverageLines = this.state.beverageLines.filter(function(l) {
+      return l && l.beverageId && bevIds.indexOf(l.beverageId) >= 0 && (Number(l.quantity) || 0) > 0;
+    });
+    if (this.state.beverageLines.length) {
+      this.state.beverageId = this.state.beverageLines[0].beverageId;
+      this.state.guestCount = this.state.beverageLines[0].quantity;
+      this.state.unitCount = this.state.beverageLines[0].quantity;
+    } else if (this.state.beverageId && bevIds.indexOf(this.state.beverageId) < 0) {
       this.state.beverageId = '';
     }
     var addons = this.filterItems(shell.addons);
@@ -269,18 +280,16 @@
     if (key === 'beverages') {
       var bevs = this.filterItems(this.shell.beverages || []);
       if (!bevs.length) return '<p class="lp-oq-muted">No packages for this selection.</p>';
-      var qtyField = (P && P.renderPackageQty)
-        ? P.renderPackageQty(s, this.shell)
-        : '<label class="lp-oq-field"><span>Expected guests</span>' +
-          '<input type="number" min="1" max="5000" data-field="guestCount" value="' + esc(s.guestCount) + '"></label>';
-      return wrap({
-        intro: '<p class="lp-oq-intro">Guest count and beverage package.</p>',
-        fields: qtyField,
-        choices: bevs.map(function(b) {
+      var bevCards = (P && P.renderBeverageQtyCards)
+        ? P.renderBeverageQtyCards(s, this.shell, bevs, { esc: esc, iconHtml: iconHtml })
+        : bevs.map(function(b) {
           var sel = s.beverageId === b.id ? ' is-selected' : '';
           return '<button type="button" class="lp-oq-choice' + sel + '" data-pick="beverageId" data-val="' + esc(b.id) + '">' +
             choiceHtml(b) + '</button>';
-        }).join('')
+        }).join('');
+      return wrap({
+        intro: '<p class="lp-oq-intro">Set a quantity for each package or catering option you want. Leave others at 0.</p>',
+        choices: bevCards
       });
     }
     if (key === 'travel') {
@@ -391,6 +400,7 @@
     if (P && P.wireStaffing) P.wireStaffing(this.el, this.state, this.shell, products, function() { self.render(); });
     if (P && P.wireCartRows) P.wireCartRows(this.el, this.state, this.shell, products, function() { self.reconcileState(); self.render(); });
     if (P && P.wireTravelZoneRows) P.wireTravelZoneRows(this.el, this.state, function() { self.render(); });
+    if (P && P.wireBeverageQty) P.wireBeverageQty(this.el, this.state, function() { self.render(); });
     this.el.querySelectorAll('[data-addon]').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var id = btn.getAttribute('data-addon');
