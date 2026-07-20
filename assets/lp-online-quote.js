@@ -96,6 +96,7 @@
       step: 0,
       productId: '',
       hours: 3,
+      eventDate: '',
       guestCount: 50,
       unitCount: null,
       labourPlanning: 'hours',
@@ -298,11 +299,14 @@
       if (this.steps().indexOf('event') < 0) {
         fields = (P && P.renderLabourPlanning)
           ? P.renderLabourPlanning(s, this.shell, products)
-          : '<label class="lp-oq-field"><span>Barista 1 — event duration (hours)</span>' +
+          : '<label class="lp-oq-field"><span>Event date</span>' +
+            '<input type="date" data-field="eventDate" value="' + esc(s.eventDate || '') + '"></label>' +
+            '<label class="lp-oq-field"><span>Barista 1 — event duration (hours)</span>' +
             '<input type="number" min="1" max="48" data-field="hours" value="' + esc(s.hours) + '"></label>';
       }
       return wrap({
         intro: '<p class="lp-oq-intro">What equipment would you like to hire?</p>',
+        fields: fields,
         choices: choices
       });
     }
@@ -469,6 +473,12 @@
           self.moveStep(-1);
         } else if (act === 'next') {
           self.syncWizardDom();
+          var needsEventDate = stepKey === 'event' ||
+            ((stepKey === 'equipment' || stepKey === 'products') && self.steps().indexOf('event') < 0);
+          if (needsEventDate) {
+            var eventErr = self.validateEventStep();
+            if (eventErr) { alert(eventErr); return; }
+          }
           var err = self.validateStepCustomFields(stepKey);
           if (err) { alert(err); return; }
           self.moveStep(1);
@@ -484,8 +494,17 @@
 
   OnlineQuoteWidget.prototype.syncWizardDom = function() {
     var P = this.planning();
+    if (P && P.syncEventFieldsFromDom) P.syncEventFieldsFromDom(this.el, this.state);
     if (P && P.syncBeverageQtyFromDom) P.syncBeverageQtyFromDom(this.el, this.state);
     this.syncCustomFromDom();
+  };
+
+  OnlineQuoteWidget.prototype.validateEventStep = function() {
+    if ((this.state.labourPlanning || 'hours') === 'shifts') return null;
+    if (!(this.state.eventDate || '').trim()) {
+      return 'Please choose an event date.';
+    }
+    return null;
   };
 
   OnlineQuoteWidget.prototype.moveStep = function(delta) {

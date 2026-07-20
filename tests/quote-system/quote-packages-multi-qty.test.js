@@ -35,7 +35,7 @@ assert.deepEqual(
 );
 
 assert.ok(pricing.includes('function resolveBeverageLines'), 'pricing resolves lines');
-assert.ok(calc.includes('resolveBeverageLines(inp)'), 'calculator loops beverage lines');
+assert.ok(calc.includes('resolveBeverageLines(inp'), 'calculator loops beverage lines');
 
 assert.ok(planning.includes('renderBeverageQtyCards'), 'planning renders qty cards');
 assert.ok(planning.includes('wireBeverageQty'), 'planning wires qty');
@@ -52,7 +52,7 @@ assert.ok(builder.includes('Group on Packages step'), 'builder group field');
 assert.ok(builder.includes("value=\"catering\""), 'catering group option');
 
 assert.ok(display.includes('lp-oq-bev-grid'), 'bev grid CSS');
-assert.ok(manage.includes('oq-step-nav-1'), 'manage cache-bust');
-assert.ok(render.includes('oq-step-nav-1'), 'render cache-bust');
+assert.ok(manage.includes('oq-event-date-1'), 'manage cache-bust');
+assert.ok(render.includes('oq-event-date-1'), 'render cache-bust');
 
 console.log('quote-packages-multi-qty.test.js: ok');
