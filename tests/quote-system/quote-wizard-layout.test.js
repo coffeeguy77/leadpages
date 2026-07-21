@@ -33,10 +33,12 @@ test('event step splits schedule and staffing columns', function() {
 
 test('wizard card locks body height so Continue stays put', function() {
   assert.match(online, /--lp-oq-card-min:640px/);
-  assert.match(online, /height:var\(--lp-oq-card-min\)/);
+  assert.match(online, /min-height:var\(--lp-oq-card-min\)/);
+  assert.match(online, /overflow:visible/);
+  assert.doesNotMatch(online, /height:var\(--lp-oq-card-min\)/);
   assert.match(online, /margin-top:auto/);
   assert.match(css, /min-height: 640px/);
-  assert.match(css, /height: 640px/);
+  assert.doesNotMatch(css, /height: 640px/);
 });
 
 test('theme calendar is a compact popup date picker', function() {
@@ -46,7 +48,7 @@ test('theme calendar is a compact popup date picker', function() {
   assert.match(planning, /lp-oq-datepick-trigger/);
   assert.match(planning, /lp-oq-cal-pop/);
   assert.match(planning, /lp-oq-shift-row/);
-  assert.match(online, /max-height:calc\(3 \*/);
+  assert.doesNotMatch(online, /max-height:calc\(3 \*/);
   assert.match(online, /lp-oq-cal-day/);
   assert.match(online, /--lp-oq-cal-icon/);
   assert.match(online, /lp-oq-datepick/);
@@ -77,6 +79,6 @@ test('theme calendar is a compact popup date picker', function() {
 });
 
 test('cache bust for layout + calendar', function() {
-  assert.match(manage, /oq-event-cal-live-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-event-cal-live-1/);
+  assert.match(manage, /oq-no-scroll-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-no-scroll-1/);
 });

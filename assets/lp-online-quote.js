@@ -913,7 +913,7 @@
       '.online-quote .section-head h2,.online-quote>.in>h2,.online-quote .in>.section-head>h2{font-family:"Barlow Condensed","Barlow",system-ui,sans-serif;font-size:clamp(32px,4.4vw,52px);font-weight:800;letter-spacing:-.01em;text-transform:uppercase;margin:10px 0 0;line-height:1.1;color:var(--oq-heading,inherit)}',
       '.online-quote .section-head p,.online-quote .intro{margin:13px 0 0;font-size:18px;font-weight:500;line-height:1.45;color:var(--oq-intro,var(--muted,var(--ink-soft,inherit)));max-width:62ch}',
       /* Global readable type scale for the whole quote wizard */
-      '.lp-oq-card{--lp-oq-fs:16px;--lp-oq-fs-lead:16px;--lp-oq-fs-label:14px;--lp-oq-fs-muted:15px;--lp-oq-cal-icon:#000000;--lp-oq-card-min:640px;--lp-oq-body-min:520px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:var(--lp-oq-fs);line-height:1.45;width:100%;max-width:100%;box-sizing:border-box;border:1px solid var(--lp-oq-panel-border,color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor))));border-radius:16px;padding:22px;background:var(--lp-oq-panel-bg,transparent);color:var(--lp-oq-body,var(--ink, var(--text, inherit)));display:flex;flex-direction:column;min-height:var(--lp-oq-card-min);height:var(--lp-oq-card-min);max-height:none}',
+      '.lp-oq-card{--lp-oq-fs:16px;--lp-oq-fs-lead:16px;--lp-oq-fs-label:14px;--lp-oq-fs-muted:15px;--lp-oq-cal-icon:#000000;--lp-oq-card-min:640px;--lp-oq-body-min:520px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:var(--lp-oq-fs);line-height:1.45;width:100%;max-width:100%;box-sizing:border-box;border:1px solid var(--lp-oq-panel-border,color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor))));border-radius:16px;padding:22px;background:var(--lp-oq-panel-bg,transparent);color:var(--lp-oq-body,var(--ink, var(--text, inherit)));display:flex;flex-direction:column;min-height:var(--lp-oq-card-min)}',
       '.lp-oq-title{margin:0 0 8px;font-size:1.35rem;color:var(--lp-oq-panel-title,var(--ink, var(--text, inherit)))}',
       '.lp-oq-intro,.lp-oq-lead,.lp-oq-plan p,.lp-oq-staff-row p,.lp-oq-muted,.lp-oq-cal-hint,.lp-oq-quote p{font-size:var(--lp-oq-fs-lead)!important;line-height:1.5;color:var(--lp-oq-intro,var(--ink-soft, var(--text-soft, inherit)));margin:0 0 10px}',
       '.lp-oq-muted{color:var(--lp-oq-muted,var(--ink-soft, var(--text-soft, inherit)))}',
@@ -929,7 +929,7 @@
       '.lp-oq-choice-img{display:block;margin:0 0 8px;border-radius:8px;object-fit:contain;max-width:100%}',
       layoutRules,
       /* Stable body height keeps Continue from jumping between steps */
-      '.lp-oq-body{flex:1 1 auto;min-height:0;height:100%;overflow:auto;width:100%;box-sizing:border-box}',
+      '.lp-oq-body{flex:1 1 auto;min-height:var(--lp-oq-body-min);overflow:visible;width:100%;box-sizing:border-box}',
       '.lp-oq-head{flex:0 0 auto}',
       /* Two-column contact + event layouts */
       '.lp-oq-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start;width:100%;box-sizing:border-box}',
@@ -947,7 +947,7 @@
       '.lp-oq-access-msg{color:var(--lp-oq-body,inherit)}',
       '.lp-oq-cols-event .lp-oq-plan{margin-top:0}',
       '.lp-oq-event-extra{margin-top:14px}',
-      '@media (max-width:720px){.lp-oq-cols{grid-template-columns:1fr}.lp-oq-card{min-height:0;height:auto}.lp-oq-hours-row,.lp-oq-shift-row{grid-template-columns:1fr}}',
+      '@media (max-width:720px){.lp-oq-cols{grid-template-columns:1fr}.lp-oq-card{min-height:0}.lp-oq-hours-row,.lp-oq-shift-row{grid-template-columns:1fr}}',
       /* Compact date picker + themed popup calendar */
       '.lp-oq-cal-ic{display:block;color:var(--lp-oq-cal-icon,#000);flex-shrink:0}',
       '.lp-oq-datepick{position:relative;min-width:0;flex:1 1 auto}',
@@ -977,7 +977,7 @@
       '.lp-oq-hours-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(110px,.7fr);gap:10px;align-items:end;margin-top:8px}',
       '.lp-oq-hours-field{margin:0}',
       /* Multi-day compact rows — ~3 visible, then scroll */
-      '.lp-oq-shifts{display:flex;flex-direction:column;gap:8px;margin-top:4px;max-height:calc(3 * 58px + 16px);overflow-y:auto;padding-right:2px;scrollbar-width:thin}',
+      '.lp-oq-shifts{display:flex;flex-direction:column;gap:8px;margin-top:4px}',
       '.lp-oq-shift-row{display:grid;grid-template-columns:44px minmax(0,1.35fr) minmax(0,.9fr) minmax(0,.9fr) 36px;gap:8px;align-items:center;margin:0;padding:6px 8px;border:1px solid color-mix(in srgb,' + brand + ' 18%, var(--line, var(--border, currentColor)));border-radius:12px;border-style:solid;background:color-mix(in srgb,' + brand + ' 4%, transparent)}',
       '.lp-oq-shift-day{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--lp-oq-label,inherit)}',
       '.lp-oq-shift-row .lp-oq-datepick-trigger{padding:6px 8px;gap:8px}',
