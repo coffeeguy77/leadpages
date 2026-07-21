@@ -241,31 +241,32 @@
       '<div class="lp-oq-steps">' + steps.map(function(s, i) {
         return '<span class="lp-oq-step' + (i === this.state.step ? ' is-active' : (i < this.state.step ? ' is-done' : '')) + '">' + esc(this.stepLabel(s)) + '</span>';
       }, this).join('') + '</div>' +
-      '<button type="button" class="lp-oq-btn lp-oq-btn-ghost lp-oq-access-toggle" data-act="portal-access-toggle">Already quoted? Access my portal</button>' +
+      '<button type="button" class="lp-oq-btn lp-oq-access-toggle" data-act="portal-access-toggle">Already quoted? Access my portal</button>' +
       '</div></div>' +
       '<div class="lp-oq-body">' + bodyHtml + '</div>' +
       '<div class="lp-oq-foot">' + this.renderFooter(stepKey, steps) + '</div>' +
       '</div>' +
-      this.renderPortalAccessPopup();
+      this.renderPortalAccessPopup(uiStyle);
     this.el.innerHTML = html;
     this.wire(stepKey);
   };
 
-  OnlineQuoteWidget.prototype.renderPortalAccessPopup = function() {
+  OnlineQuoteWidget.prototype.renderPortalAccessPopup = function(uiStyle) {
     var s = this.state;
     if (!s.showPortalAccess) return '';
+    var styleAttr = uiStyle ? (' style="' + uiStyle + '"') : '';
     var html = '<div class="lp-oq-access-backdrop" role="presentation">' +
-      '<div class="lp-oq-access-dialog" role="dialog" aria-modal="true" aria-labelledby="lp-oq-access-title" data-lp-oq-access-dialog>' +
+      '<div class="lp-oq-access-dialog" role="dialog" aria-modal="true" aria-labelledby="lp-oq-access-title" data-lp-oq-access-dialog' + styleAttr + '>' +
       '<h3 id="lp-oq-access-title" class="lp-oq-access-title">Access my portal</h3>' +
-      '<p class="lp-oq-lead" style="margin:0 0 12px">Enter the email from your quote. We\'ll send a private link to your portal.</p>' +
-      '<label class="lp-oq-field"><span>Email</span>' +
+      '<p class="lp-oq-access-lead">Enter the email from your quote. We\'ll send a private link to your portal.</p>' +
+      '<label class="lp-oq-field lp-oq-access-field"><span>Email</span>' +
       '<input type="email" data-field="portalAccessEmail" autocomplete="email" value="' + esc(s.portalAccessEmail || s.contact.email || '') + '" placeholder="you@example.com"></label>' +
       '<div class="lp-oq-access-actions">' +
-      '<button type="button" class="lp-oq-btn" data-act="portal-access-send">Email me a link</button>' +
-      '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-act="portal-access-toggle">Cancel</button>' +
+      '<button type="button" class="lp-oq-btn lp-oq-access-send" data-act="portal-access-send">Email me a link</button>' +
+      '<button type="button" class="lp-oq-btn lp-oq-access-cancel" data-act="portal-access-toggle">Cancel</button>' +
       '</div>';
     if (s.portalAccessMsg) {
-      html += '<p class="lp-oq-lead lp-oq-access-msg" style="margin:12px 0 0">' + esc(s.portalAccessMsg) + '</p>';
+      html += '<p class="lp-oq-access-msg">' + esc(s.portalAccessMsg) + '</p>';
     }
     html += '</div></div>';
     return html;
@@ -951,12 +952,18 @@
       '.lp-oq-step{display:inline-flex;align-items:center;justify-content:center;font-size:inherit;line-height:1.2;padding:10px 18px;border-radius:8px;border:1px solid var(--lp-oq-step-border,color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor))));background:var(--lp-oq-step-bg,transparent);color:var(--lp-oq-step-text,var(--ink-soft, var(--text-soft, inherit)));text-transform:capitalize;font-weight:600;box-sizing:border-box}',
       '.lp-oq-step.is-active{background:var(--lp-oq-step-active-bg,' + brand + ');border-color:var(--lp-oq-step-active-border,var(--lp-oq-step-active-bg,' + brand + '));color:var(--lp-oq-step-active-text,var(--accent-text, var(--on-pipe, var(--ink))))}',
       '.lp-oq-step.is-done{background:transparent;border-color:var(--lp-oq-step-done-border,color-mix(in srgb,' + brand + ' 40%, var(--line, var(--border, currentColor))));color:var(--lp-oq-step-done-text,' + brand + ')}',
-      '.lp-oq-access-toggle{margin-left:auto;flex:0 0 auto;white-space:nowrap;font-size:var(--lp-oq-fs-lead)!important}',
+      '.lp-oq-access-toggle{margin-left:auto;flex:0 0 auto;white-space:nowrap;font-size:var(--lp-oq-fs-lead)!important;background:var(--lp-oq-access-btn-bg,var(--lp-oq-btn-bg,' + brand + '));color:var(--lp-oq-access-btn-text,var(--lp-oq-btn-text,var(--accent-text, var(--on-pipe, #fff))));border:1px solid var(--lp-oq-access-btn-border,var(--lp-oq-access-btn-bg,var(--lp-oq-btn-bg,' + brand + ')))}',
       '.lp-oq-access-backdrop{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(8,10,14,.62);box-sizing:border-box}',
-      '.lp-oq-access-dialog{width:min(420px,100%);padding:20px 22px;border-radius:16px;border:1px solid color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor)));background:var(--lp-oq-panel-bg,var(--panel,#1c181c));color:var(--lp-oq-body,var(--ink, var(--text, inherit)));box-shadow:0 22px 60px rgba(0,0,0,.45);box-sizing:border-box}',
-      '.lp-oq-access-title{margin:0 0 8px;font-size:1.2rem;font-weight:800;color:var(--lp-oq-panel-title,var(--ink, var(--text, inherit)))}',
+      '.lp-oq-access-dialog{width:min(420px,100%);padding:20px 22px;border-radius:16px;border:1px solid var(--lp-oq-access-pop-border,color-mix(in srgb,' + brand + ' 35%, var(--line, var(--border, currentColor))));background:var(--lp-oq-access-pop-bg,var(--lp-oq-panel-bg,var(--panel,#1c181c)));color:var(--lp-oq-access-pop-text,#ffffff);box-shadow:0 22px 60px rgba(0,0,0,.45);box-sizing:border-box}',
+      '.lp-oq-access-title{margin:0 0 8px;font-size:1.2rem;font-weight:800;color:var(--lp-oq-access-pop-title,var(--lp-oq-access-pop-text,#ffffff))}',
+      '.lp-oq-access-lead,.lp-oq-access-msg{margin:0 0 12px;font-size:var(--lp-oq-fs-lead)!important;line-height:1.5;color:var(--lp-oq-access-pop-text,#ffffff)}',
+      '.lp-oq-access-msg{margin:12px 0 0}',
+      '.lp-oq-access-field{margin-top:4px}',
+      '.lp-oq-access-field>span{color:var(--lp-oq-access-pop-label,var(--lp-oq-label,' + brand + '))}',
+      '.lp-oq-access-field input{background:var(--lp-oq-access-pop-field-bg,var(--lp-oq-field-bg,var(--input-bg,transparent)));color:var(--lp-oq-access-pop-field-text,var(--lp-oq-field-text,var(--ink,inherit)));border-color:var(--lp-oq-access-pop-field-border,var(--line-strong, var(--border-strong, currentColor)))}',
       '.lp-oq-access-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}',
-      '.lp-oq-access-msg{color:var(--lp-oq-body,inherit)}',
+      '.lp-oq-access-send{background:var(--lp-oq-access-pop-btn-bg,var(--lp-oq-btn-bg,' + brand + '));color:var(--lp-oq-access-pop-btn-text,var(--lp-oq-btn-text,var(--accent-text, var(--on-pipe, #fff))));border:1px solid var(--lp-oq-access-pop-btn-bg,var(--lp-oq-btn-bg,' + brand + '))}',
+      '.lp-oq-access-cancel{background:var(--lp-oq-access-pop-cancel-bg,transparent);color:var(--lp-oq-access-pop-cancel-text,var(--lp-oq-access-pop-text,#ffffff));border:1px solid var(--lp-oq-access-pop-cancel-border,color-mix(in srgb,' + brand + ' 40%, var(--line, var(--border, currentColor))))}',
       '@media (max-width:720px){.lp-oq-access-toggle{margin-left:0;width:100%;justify-content:center}}',
       '.lp-oq-choice{display:block;width:100%;text-align:left;margin:0 0 8px;padding:12px 14px;border:1px solid color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));border-radius:12px;background:transparent;color:var(--lp-oq-choice-text,var(--ink, var(--text, inherit)));cursor:pointer;font:inherit;box-sizing:border-box}',
       '.lp-oq-choice strong{color:inherit}',

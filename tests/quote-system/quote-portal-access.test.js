@@ -35,6 +35,8 @@ test('wizard exposes Access my portal email popup on nav row', function() {
   assert.match(online, /lp-oq-nav/);
   assert.match(online, /lp-oq-access-backdrop/);
   assert.match(online, /lp-oq-access-dialog/);
+  assert.match(online, /lp-oq-access-send/);
+  assert.match(online, /lp-oq-access-cancel/);
   assert.doesNotMatch(online, /renderPortalAccessBar/);
   assert.doesNotMatch(online, /lp-oq-access-panel/);
 });
@@ -43,10 +45,10 @@ test('quote-portal empty state offers email access form', function() {
   assert.match(portalJs, /renderAccessForm/);
   assert.match(portalJs, /qp-access-send/);
   assert.match(portalJs, /portal-access/);
-  assert.match(portalHtml, /oq-builder-panel-1/);
+  assert.match(portalHtml, /oq-portal-style-1/);
 });
 
 test('cache-bust for portal access', function() {
-  assert.match(manage, /oq-builder-panel-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-builder-panel-1/);
+  assert.match(manage, /oq-portal-style-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-portal-style-1/);
 });

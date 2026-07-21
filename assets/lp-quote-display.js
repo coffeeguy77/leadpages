@@ -108,7 +108,23 @@
       ['btnGhostBorder', '--lp-oq-btn-ghost-border'],
       ['calendarIconColor', '--lp-oq-cal-icon'],
       ['calendarPopBg', '--lp-oq-cal-pop-bg'],
-      ['calendarPopBorder', '--lp-oq-cal-pop-border']
+      ['calendarPopBorder', '--lp-oq-cal-pop-border'],
+      ['accessBtnBg', '--lp-oq-access-btn-bg'],
+      ['accessBtnText', '--lp-oq-access-btn-text'],
+      ['accessBtnBorder', '--lp-oq-access-btn-border'],
+      ['accessPopBg', '--lp-oq-access-pop-bg'],
+      ['accessPopBorder', '--lp-oq-access-pop-border'],
+      ['accessPopTitle', '--lp-oq-access-pop-title'],
+      ['accessPopText', '--lp-oq-access-pop-text'],
+      ['accessPopLabel', '--lp-oq-access-pop-label'],
+      ['accessPopFieldBg', '--lp-oq-access-pop-field-bg'],
+      ['accessPopFieldText', '--lp-oq-access-pop-field-text'],
+      ['accessPopFieldBorder', '--lp-oq-access-pop-field-border'],
+      ['accessPopBtnBg', '--lp-oq-access-pop-btn-bg'],
+      ['accessPopBtnText', '--lp-oq-access-pop-btn-text'],
+      ['accessPopCancelBg', '--lp-oq-access-pop-cancel-bg'],
+      ['accessPopCancelText', '--lp-oq-access-pop-cancel-text'],
+      ['accessPopCancelBorder', '--lp-oq-access-pop-cancel-border']
     ];
     var parts = [];
     map.forEach(function(pair) {
