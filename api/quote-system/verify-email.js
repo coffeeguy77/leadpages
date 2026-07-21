@@ -81,6 +81,14 @@ module.exports = async function handler(req, res) {
         });
       }
 
+      if (body.email) {
+        const email = normalizeEmail(clean(body.email, 160));
+        if (email && email.indexOf('@') >= 3) {
+          await updateSession(session.id, { contact_email: email });
+          session.contact_email = email;
+        }
+      }
+
       const verified = await verifyEmailCode(session.id, code);
       if (!verified.ok) {
         return json(res, 400, {
@@ -95,7 +103,10 @@ module.exports = async function handler(req, res) {
       let whitelisted = false;
       if (session.contact_email) {
         try {
-          await whitelistEmail(session.site_id, session.contact_email);
+          await whitelistEmail(session.site_id, session.contact_email, {
+            name: session.contact_name,
+            phone: session.contact_phone
+          });
           whitelisted = true;
         } catch (wlErr) {
           // Never fail a successful OTP because whitelist upsert failed (missing

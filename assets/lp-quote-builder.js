@@ -717,9 +717,9 @@
           '<label class="lp-oq-field"><span>Email</span><input disabled placeholder="you@email.com"></label>' +
           '<label class="lp-oq-field"><span>Mobile</span><input disabled placeholder="0414 631 463"></label>' +
           leftExtra + '</div>' +
-          '<div class="lp-oq-col lp-oq-col-quote">' + rightExtra +
+          '<div class="lp-oq-col lp-oq-col-aside">' + rightExtra +
           '<div class="lp-oq-quote-slot"><p class="lp-oq-col-title">Your quote</p>' +
-          '<p class="lp-oq-muted" style="margin:0;font-size:13px">Verification and total appear here after Get my quote.</p></div>' +
+          '<p class="lp-oq-muted" style="margin:0">Verification and total appear here after Get my quote.</p></div>' +
           '</div></div>'
       });
     }

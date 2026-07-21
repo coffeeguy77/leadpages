@@ -15,10 +15,13 @@ const manage = fs.readFileSync(path.join(root, 'manage.html'), 'utf8');
 test('contact step uses two-column layout with quote slot', function() {
   assert.match(online, /lp-oq-cols-contact/);
   assert.match(online, /lp-oq-col-contact/);
-  assert.match(online, /lp-oq-col-quote/);
+  assert.match(online, /lp-oq-col-aside/);
   assert.match(online, /partitionCustomFields/);
-  assert.match(online, /stepKey !== 'contact'/);
+  // Quote verification UI must stay on Your Details only (not every step).
+  assert.doesNotMatch(online, /stepKey !== 'contact'/);
+  assert.match(online, /contactSelf\.renderQuotePanel\(\)/);
   assert.match(builder, /lp-oq-cols-contact/);
+  assert.match(builder, /lp-oq-col-aside/);
 });
 
 test('event step splits schedule and staffing columns', function() {
@@ -63,6 +66,6 @@ test('theme calendar replaces native event date input', function() {
 });
 
 test('cache bust for layout + calendar', function() {
-  assert.match(manage, /oq-verify-portal-3/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-verify-portal-3/);
+  assert.match(manage, /oq-ux-whitelist-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-ux-whitelist-1/);
 });

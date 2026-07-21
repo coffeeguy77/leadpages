@@ -66,6 +66,18 @@ module.exports = async function handler(req, res) {
 
       await updateSession(session.id, { sms_verified_at: new Date().toISOString() });
 
+      try {
+        if (session.contact_email) {
+          const { whitelistEmail } = require('../../lib/quote-system/email-whitelist');
+          await whitelistEmail(session.site_id, session.contact_email, {
+            name: session.contact_name,
+            phone: phone
+          });
+        }
+      } catch (wlErr) {
+        console.warn('quote-system verify-sms whitelist phone:', wlErr && wlErr.message);
+      }
+
       const refreshed = await getSessionByToken(token);
       const finalized = await finalizeVerifiedPortal(refreshed.session, req);
 

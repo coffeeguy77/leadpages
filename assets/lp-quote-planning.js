@@ -134,7 +134,7 @@
       ? ' data-cart-hours="' + opts.cartIdx + '"'
       : ' data-field="hours"';
     var hint = opts.hint
-      ? '<p class="lp-oq-muted" style="font-size:12px;margin:4px 0 0">' + esc(opts.hint) + '</p>' : '';
+      ? '<p class="lp-oq-muted" style="margin:4px 0 0">' + esc(opts.hint) + '</p>' : '';
     return '<label class="lp-oq-field"><span>Barista 1 — event duration (hours)</span>' +
       '<input type="number" min="1" max="48"' + attrs + ' value="' + esc(val) + '"></label>' + hint;
   }
@@ -357,7 +357,7 @@
           var splitH = cart.splitHours || splitCfg.defaultHours || 4;
           html += '<label class="lp-oq-field"><span>Barista 2 — peak hours (hours)</span>' +
             '<input type="number" min="3" max="12" data-staff-field="splitHours" data-staff-idx="' + staffIdx + '" value="' + esc(splitH) + '"></label>' +
-            '<p class="lp-oq-muted" style="font-size:12px;margin:4px 0 0">Barista 1 works ' + esc(b1h) + ' hrs; Barista 2 covers the busy period for ' + esc(splitH) + ' hrs. Billed at $' +
+            '<p class="lp-oq-muted" style="margin:4px 0 0">Barista 1 works ' + esc(b1h) + ' hrs; Barista 2 covers the busy period for ' + esc(splitH) + ' hrs. Billed at $' +
             (splitRate / 100).toFixed(0) + '/hr (min ' + splitMin + ' hrs).</p>';
         }
       }
@@ -576,7 +576,7 @@
     var D = global.LPQuoteDisplay;
     var cardVars = (D && D.equipmentCardVars) ? D.equipmentCardVars(shell) : '';
     var html = (previewFocus
-      ? '<p class="lp-oq-muted oqb-preview-focus-note" style="margin:0 0 10px;font-size:12px">Focus mode — all equipment cards share this styling.</p>'
+      ? '<p class="lp-oq-muted oqb-preview-focus-note" style="margin:0 0 10px">Focus mode — all equipment cards share this styling.</p>'
       : '') +
       '<div class="lp-oq-carts" data-lp-oq-carts' + (cardVars ? ' style="' + cardVars + '"' : '') + '>';
 
