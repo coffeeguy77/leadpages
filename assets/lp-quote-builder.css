@@ -830,12 +830,14 @@
   display: flex;
   flex-direction: column;
   min-height: 640px;
+  height: 640px;
+  --lp-oq-cal-icon: #000000;
   box-sizing: border-box;
 }
 
 .oqb-preview-mock .lp-oq-body {
   flex: 1 1 auto;
-  min-height: 460px;
+  min-height: 0;
   overflow: auto;
 }
 
@@ -1389,40 +1391,58 @@
   background: transparent;
   border-radius: 0;
 }
-.oqb-preview-mock .lp-oq-cal {
-  margin-top: 8px;
-  padding: 8px;
-  max-width: 220px;
+.oqb-preview-mock .lp-oq-cal-ic { color: var(--lp-oq-cal-icon, #000); display: block; }
+.oqb-preview-mock .lp-oq-datepick { position: relative; min-width: 0; }
+.oqb-preview-mock .lp-oq-datepick-trigger {
+  appearance: none;
   width: 100%;
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
-  background: color-mix(in srgb, var(--accent) 4%, transparent);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--lp-oq-field-bg, transparent);
+  color: var(--lp-oq-field-text, var(--ink));
+  font: inherit;
   box-sizing: border-box;
 }
-.oqb-preview-mock .lp-oq-cal-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-.oqb-preview-mock .lp-oq-cal-label {
-  font-size: 14px;
+.oqb-preview-mock .lp-oq-datepick-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.oqb-preview-mock .lp-oq-datepick-label {
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--lp-oq-label, var(--ink-soft));
+}
+.oqb-preview-mock .lp-oq-datepick-value { font-weight: 600; }
+.oqb-preview-mock .lp-oq-cal-pop {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(280px, 92vw);
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--lp-oq-cal-pop-border, color-mix(in srgb, var(--accent) 35%, var(--line)));
+  background: var(--lp-oq-cal-pop-bg, var(--lp-oq-panel-bg, var(--panel)));
+  color: var(--lp-oq-body, var(--ink));
+  box-shadow: 0 18px 48px rgba(0,0,0,.35);
+  box-sizing: border-box;
 }
 .oqb-preview-mock .lp-oq-cal-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
-.oqb-preview-mock .lp-oq-cal-month { font-weight: 700; font-size: 13px; }
+.oqb-preview-mock .lp-oq-cal-month { font-weight: 700; font-size: 14px; }
 .oqb-preview-mock .lp-oq-cal-nav-btn {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
   border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
   background: transparent;
@@ -1442,23 +1462,23 @@
   letter-spacing: .04em;
   text-transform: uppercase;
   color: var(--lp-oq-muted, var(--ink-soft));
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 .oqb-preview-mock .lp-oq-cal-day {
   appearance: none;
   border: 0;
-  border-radius: 7px;
+  border-radius: 8px;
   min-height: 0;
   aspect-ratio: 1;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   background: transparent;
   color: var(--lp-oq-body, var(--ink));
   padding: 0;
 }
-.oqb-preview-mock .lp-oq-cal-day.is-muted { opacity: .38; }
+.oqb-preview-mock .lp-oq-cal-day.is-muted { opacity: .35; }
 .oqb-preview-mock .lp-oq-cal-day.is-today {
   box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent);
 }
@@ -1467,9 +1487,66 @@
   color: var(--lp-oq-btn-text, var(--accent-text));
   box-shadow: none;
 }
+.oqb-preview-mock .lp-oq-hours-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(110px, .7fr);
+  gap: 10px;
+  align-items: end;
+  margin-top: 8px;
+}
+.oqb-preview-mock .lp-oq-shifts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: calc(3 * 58px + 16px);
+  overflow-y: auto;
+}
+.oqb-preview-mock .lp-oq-shift-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1.35fr) minmax(0, .9fr) minmax(0, .9fr) 36px;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+.oqb-preview-mock .lp-oq-time {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.oqb-preview-mock .lp-oq-time-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--lp-oq-label, var(--ink-soft));
+}
+.oqb-preview-mock .lp-oq-time-ic {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  pointer-events: none;
+}
+.oqb-preview-mock .lp-oq-time input[type=time] {
+  width: 100%;
+  padding: 8px 8px 8px 32px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font: inherit;
+  background: var(--lp-oq-field-bg, transparent);
+  color: var(--lp-oq-field-text, var(--ink));
+  box-sizing: border-box;
+}
 @media (max-width: 720px) {
   .oqb-preview-mock .lp-oq-cols { grid-template-columns: 1fr; }
-  .oqb-preview-mock .lp-oq-card { min-height: 0; }
+  .oqb-preview-mock .lp-oq-card { min-height: 0; height: auto; }
+  .oqb-preview-mock .lp-oq-hours-row,
+  .oqb-preview-mock .lp-oq-shift-row { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 960px) {

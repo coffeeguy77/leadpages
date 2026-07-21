@@ -610,6 +610,7 @@
       : Math.max(0, Math.min(after.length - 1, idx + (delta < 0 ? -1 : 1)));
     var prevIdx = this.state.step;
     this.state.step = nextIdx;
+    this.state._calOpen = null;
     try {
       this.render();
     } catch (err) {
@@ -912,7 +913,7 @@
       '.online-quote .section-head h2,.online-quote>.in>h2,.online-quote .in>.section-head>h2{font-family:"Barlow Condensed","Barlow",system-ui,sans-serif;font-size:clamp(32px,4.4vw,52px);font-weight:800;letter-spacing:-.01em;text-transform:uppercase;margin:10px 0 0;line-height:1.1;color:var(--oq-heading,inherit)}',
       '.online-quote .section-head p,.online-quote .intro{margin:13px 0 0;font-size:18px;font-weight:500;line-height:1.45;color:var(--oq-intro,var(--muted,var(--ink-soft,inherit)));max-width:62ch}',
       /* Global readable type scale for the whole quote wizard */
-      '.lp-oq-card{--lp-oq-fs:16px;--lp-oq-fs-lead:16px;--lp-oq-fs-label:14px;--lp-oq-fs-muted:15px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:var(--lp-oq-fs);line-height:1.45;width:100%;max-width:100%;box-sizing:border-box;border:1px solid var(--lp-oq-panel-border,color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor))));border-radius:16px;padding:22px;background:var(--lp-oq-panel-bg,transparent);color:var(--lp-oq-body,var(--ink, var(--text, inherit)));display:flex;flex-direction:column;min-height:var(--lp-oq-card-min,560px)}',
+      '.lp-oq-card{--lp-oq-fs:16px;--lp-oq-fs-lead:16px;--lp-oq-fs-label:14px;--lp-oq-fs-muted:15px;--lp-oq-cal-icon:#000000;--lp-oq-card-min:640px;--lp-oq-body-min:520px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:var(--lp-oq-fs);line-height:1.45;width:100%;max-width:100%;box-sizing:border-box;border:1px solid var(--lp-oq-panel-border,color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor))));border-radius:16px;padding:22px;background:var(--lp-oq-panel-bg,transparent);color:var(--lp-oq-body,var(--ink, var(--text, inherit)));display:flex;flex-direction:column;min-height:var(--lp-oq-card-min);height:var(--lp-oq-card-min);max-height:none}',
       '.lp-oq-title{margin:0 0 8px;font-size:1.35rem;color:var(--lp-oq-panel-title,var(--ink, var(--text, inherit)))}',
       '.lp-oq-intro,.lp-oq-lead,.lp-oq-plan p,.lp-oq-staff-row p,.lp-oq-muted,.lp-oq-cal-hint,.lp-oq-quote p{font-size:var(--lp-oq-fs-lead)!important;line-height:1.5;color:var(--lp-oq-intro,var(--ink-soft, var(--text-soft, inherit)));margin:0 0 10px}',
       '.lp-oq-muted{color:var(--lp-oq-muted,var(--ink-soft, var(--text-soft, inherit)))}',
@@ -928,7 +929,7 @@
       '.lp-oq-choice-img{display:block;margin:0 0 8px;border-radius:8px;object-fit:contain;max-width:100%}',
       layoutRules,
       /* Stable body height keeps Continue from jumping between steps */
-      '.lp-oq-body{flex:1 1 auto;min-height:var(--lp-oq-body-min,460px);overflow:auto;width:100%;box-sizing:border-box}',
+      '.lp-oq-body{flex:1 1 auto;min-height:0;height:100%;overflow:auto;width:100%;box-sizing:border-box}',
       '.lp-oq-head{flex:0 0 auto}',
       /* Two-column contact + event layouts */
       '.lp-oq-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start;width:100%;box-sizing:border-box}',
@@ -946,26 +947,48 @@
       '.lp-oq-access-msg{color:var(--lp-oq-body,inherit)}',
       '.lp-oq-cols-event .lp-oq-plan{margin-top:0}',
       '.lp-oq-event-extra{margin-top:14px}',
-      '@media (max-width:720px){.lp-oq-cols{grid-template-columns:1fr}.lp-oq-card{min-height:0}}',
-      /* Compact theme calendar (~50% of previous footprint) */
-      '.lp-oq-cal{margin-top:8px;padding:8px;max-width:220px;width:100%;border-radius:12px;border:1px solid color-mix(in srgb,' + brand + ' 20%, var(--line, var(--border, currentColor)));background:color-mix(in srgb,' + brand + ' 4%, transparent);box-sizing:border-box}',
-      '.lp-oq-cal-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}',
-      '.lp-oq-cal-label{font-size:var(--lp-oq-fs-label);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--lp-oq-label,var(--ink-soft,inherit))}',
-      '.lp-oq-cal-selected{font-size:13px;font-weight:600;color:var(--lp-oq-body,inherit)}',
-      '.lp-oq-cal-selected.is-empty{color:var(--lp-oq-muted,var(--ink-soft,inherit));font-weight:500}',
-      '.lp-oq-cal-nav{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:4px}',
-      '.lp-oq-cal-month{font-weight:700;font-size:13px;color:var(--lp-oq-body,inherit)}',
-      '.lp-oq-cal-nav-btn{appearance:none;border:1px solid color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor)));background:transparent;color:var(--lp-oq-body,inherit);width:28px;height:28px;border-radius:8px;font-size:16px;line-height:1;cursor:pointer}',
+      '@media (max-width:720px){.lp-oq-cols{grid-template-columns:1fr}.lp-oq-card{min-height:0;height:auto}.lp-oq-hours-row,.lp-oq-shift-row{grid-template-columns:1fr}}',
+      /* Compact date picker + themed popup calendar */
+      '.lp-oq-cal-ic{display:block;color:var(--lp-oq-cal-icon,#000);flex-shrink:0}',
+      '.lp-oq-datepick{position:relative;min-width:0;flex:1 1 auto}',
+      '.lp-oq-datepick-trigger{appearance:none;width:100%;display:flex;align-items:center;gap:10px;text-align:left;cursor:pointer;padding:8px 12px;border-radius:10px;border:1px solid var(--line-strong, var(--border-strong, currentColor));background:var(--lp-oq-field-bg,var(--input-bg,transparent));color:var(--lp-oq-field-text,var(--ink,inherit));font:inherit;box-sizing:border-box}',
+      '.lp-oq-datepick-trigger:hover{border-color:' + brand + '}',
+      '.lp-oq-datepick.is-open .lp-oq-datepick-trigger{border-color:' + brand + ';box-shadow:0 0 0 2px color-mix(in srgb,' + brand + ' 28%,transparent)}',
+      '.lp-oq-datepick-ic{display:flex;align-items:center;justify-content:center}',
+      '.lp-oq-datepick-meta{display:flex;flex-direction:column;gap:1px;min-width:0}',
+      '.lp-oq-datepick-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--lp-oq-label,var(--ink-soft,inherit))}',
+      '.lp-oq-datepick-value{font-size:var(--lp-oq-fs);font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.lp-oq-datepick-value.is-empty{font-weight:500;opacity:.72}',
+      '.lp-oq-cal-pop{position:absolute;z-index:40;top:calc(100% + 6px);left:0;width:min(280px,92vw);padding:12px;border-radius:14px;border:1px solid var(--lp-oq-cal-pop-border,color-mix(in srgb,' + brand + ' 35%, var(--line, var(--border, currentColor))));background:var(--lp-oq-cal-pop-bg,var(--lp-oq-panel-bg,var(--panel,#1c181c)));color:var(--lp-oq-body,inherit);box-shadow:0 18px 48px rgba(0,0,0,.45);box-sizing:border-box}',
+      '.lp-oq-cal-nav{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:8px}',
+      '.lp-oq-cal-month{font-weight:700;font-size:14px;color:var(--lp-oq-body,inherit)}',
+      '.lp-oq-cal-nav-btn{appearance:none;border:1px solid color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor)));background:transparent;color:var(--lp-oq-body,inherit);width:30px;height:30px;border-radius:8px;font-size:16px;line-height:1;cursor:pointer}',
       '.lp-oq-cal-nav-btn:hover{border-color:' + brand + ';color:' + brand + '}',
-      '.lp-oq-cal-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;margin-bottom:2px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--lp-oq-muted,var(--ink-soft,inherit))}',
+      '.lp-oq-cal-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;margin-bottom:4px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--lp-oq-muted,var(--ink-soft,inherit))}',
       '.lp-oq-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}',
-      '.lp-oq-cal-day{appearance:none;border:0;border-radius:7px;aspect-ratio:1;min-height:0;height:auto;font:inherit;font-size:11px;font-weight:600;cursor:pointer;background:transparent;color:var(--lp-oq-body,inherit);padding:0}',
-      '.lp-oq-cal-day:hover{background:color-mix(in srgb,' + brand + ' 14%, transparent)}',
-      '.lp-oq-cal-day.is-muted{opacity:.38;font-weight:500}',
+      '.lp-oq-cal-day{appearance:none;border:0;border-radius:8px;aspect-ratio:1;min-height:0;height:auto;font:inherit;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:var(--lp-oq-body,inherit);padding:0}',
+      '.lp-oq-cal-day:hover{background:color-mix(in srgb,' + brand + ' 16%, transparent)}',
+      '.lp-oq-cal-day.is-muted{opacity:.35;font-weight:500}',
       '.lp-oq-cal-day.is-today{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,' + brand + ' 55%, transparent)}',
       '.lp-oq-cal-day.is-selected{background:var(--lp-oq-btn-bg,' + brand + ');color:var(--lp-oq-btn-text,var(--accent-text, var(--on-pipe, #fff)));box-shadow:none}',
       '.lp-oq-cal-day.is-selected.is-today{box-shadow:none}',
       '.lp-oq-cal-hint{margin:6px 0 0}',
+      /* Simple hours: date + duration on one row */
+      '.lp-oq-hours-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(110px,.7fr);gap:10px;align-items:end;margin-top:8px}',
+      '.lp-oq-hours-field{margin:0}',
+      /* Multi-day compact rows — ~3 visible, then scroll */
+      '.lp-oq-shifts{display:flex;flex-direction:column;gap:8px;margin-top:4px;max-height:calc(3 * 58px + 16px);overflow-y:auto;padding-right:2px;scrollbar-width:thin}',
+      '.lp-oq-shift-row{display:grid;grid-template-columns:44px minmax(0,1.35fr) minmax(0,.9fr) minmax(0,.9fr) 36px;gap:8px;align-items:center;margin:0;padding:6px 8px;border:1px solid color-mix(in srgb,' + brand + ' 18%, var(--line, var(--border, currentColor)));border-radius:12px;border-style:solid;background:color-mix(in srgb,' + brand + ' 4%, transparent)}',
+      '.lp-oq-shift-day{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--lp-oq-label,inherit)}',
+      '.lp-oq-shift-row .lp-oq-datepick-trigger{padding:6px 8px;gap:8px}',
+      '.lp-oq-shift-row .lp-oq-datepick-label{display:none}',
+      '.lp-oq-time{position:relative;display:flex;flex-direction:column;gap:2px;min-width:0;margin:0}',
+      '.lp-oq-time-label{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--lp-oq-label,var(--ink-soft,inherit))}',
+      '.lp-oq-time-ic{position:absolute;left:8px;bottom:8px;pointer-events:none;display:flex}',
+      '.lp-oq-time input[type=time]{width:100%;padding:8px 8px 8px 32px;border:1px solid var(--line-strong, var(--border-strong, currentColor));border-radius:10px;font:inherit;font-size:14px;background:var(--lp-oq-field-bg,var(--input-bg,transparent));color:var(--lp-oq-field-text,var(--ink,inherit));box-sizing:border-box;color-scheme:dark}',
+      '.lp-oq-shift-remove{min-width:36px;width:36px;height:36px;padding:0;border-radius:10px;font-size:18px;line-height:1}',
+      '.lp-oq-shift-spacer{width:36px;height:36px}',
+      '.lp-oq-shift-add{margin-top:8px}',
       /* Packages / add-ons / travel: horizontal row for cards + grid layouts */
       '.lp-oq-layout-cards .lp-oq-choices:not(.lp-oq-fp-grid):not(.lp-oq-bev-grid),.lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid):not(.lp-oq-bev-grid){display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;width:100%}',
       '.lp-oq-layout-cards .lp-oq-choices:not(.lp-oq-fp-grid) .lp-oq-choice,.lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid) .lp-oq-choice{width:auto;margin:0;height:100%}',
@@ -994,6 +1017,7 @@
       '.lp-oq-error{color:var(--danger, #b42318)}',
       '.lp-oq-loading{color:var(--lp-oq-muted,var(--ink-soft, var(--text-soft, inherit)))}',
       '.lp-oq-shift,.lp-oq-cart,.lp-oq-staff-row{border:1px dashed color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));border-radius:10px;padding:10px;margin:10px 0;color:var(--lp-oq-body,inherit)}',
+      '.lp-oq-shift.lp-oq-shift-row{border-style:solid;margin:0}',
       '.lp-oq-cart-head,.lp-oq-staff-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:var(--lp-oq-body,inherit);font-size:var(--lp-oq-fs-lead)}',
       '.lp-oq-product-qty{margin-top:8px}',
       '.lp-oq-product-qty input:disabled{opacity:.45}',
