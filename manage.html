@@ -37,9 +37,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-themes.css?v=dash-leads-compact-1">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
-<link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=dash-leads-cog-1">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=dash-leads-compact-1">
 <link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-pkg-style-1">
 <style>
 :root{
@@ -562,9 +562,9 @@ body.lp-standard-mode .lp-standard-banner { display:inline-block; }
   #lp-leads .ll-card{padding:20px 22px;margin-bottom:24px;}
   #lp-leads .ll-head h2{font-size:19px;}
   #lp-leads .ll-item{padding:13px 15px;}
-  #dash-leads-card{padding:18px 20px;}
+  #dash-leads-card{padding:14px 16px;}
   #dash-leads-card .lp-dash-row{padding:0;}
-  #dash-leads-card .lp-lead-card-inner{padding:14px 16px;}
+  #dash-leads-card .lp-lead-card-inner{padding:10px 12px;}
 }
 .ll-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px 18px;}
 .ll-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
@@ -5993,7 +5993,58 @@ function heroCtaCard(c){
   }
 
   function lpQuoteLeadHtml(l){
-    return esc(lpQuoteLeadText(l)).replace(/\n/g,'<br>');
+    var det=(l&&l.details&&typeof l.details==='object')?l.details:null;
+    if(!det||(!det.totalFormatted&&!det.productLabel&&!det.cartsSummary&&!(det.breakdown&&det.breakdown.length))){
+      return '<div class="lp-quote-lead lp-quote-lead--plain">'+esc(lpQuoteLeadText(l)).replace(/\n/g,'<br>')+'</div>';
+    }
+    function add(rows, label, val){
+      if(val==null||val==='') return;
+      if(Array.isArray(val)){
+        val=val.filter(function(x){ return x!=null&&x!==''; }).join(', ');
+        if(!val) return;
+      }
+      if(typeof val==='boolean') val=val?'Yes':'No';
+      rows.push([label, String(val)]);
+    }
+    var rows=[];
+    add(rows,'Equipment',det.cartsSummary||det.productLabel||det.productId);
+    if(det.labourPlanning==='shifts'&&det.shifts&&det.shifts.length){
+      add(rows,'Shifts',det.shifts.map(function(sh,i){
+        var p=['Day '+(i+1)];
+        if(sh&&sh.date) p.push(sh.date);
+        if(sh&&sh.startTime&&sh.endTime) p.push(sh.startTime+'\u2013'+sh.endTime);
+        return p.join(' ');
+      }).join(' \u00b7 ')+(det.hours!=null?' ('+det.hours+' hrs)':''));
+    } else {
+      add(rows,'Event date',det.eventDate);
+      if(det.hours!=null) add(rows,'Duration',det.hours+' hrs');
+    }
+    if(det.beverageLineLabels&&det.beverageLineLabels.length){
+      add(rows,det.beverageLineLabels.length>1?'Packages':'Package',det.beverageLineLabels);
+    } else {
+      if(det.unitCount!=null&&det.unitCount!==det.guestCount) add(rows,'Units',det.unitCount);
+      else if(det.guestCount!=null) add(rows,'Guests',det.guestCount);
+      add(rows,'Beverage',det.beverageLabel||det.beverageId);
+    }
+    add(rows,'Add-ons',det.addonLabels&&det.addonLabels.length?det.addonLabels:null);
+    add(rows,'Travel',det.travelLabel||det.travelZoneId);
+    add(rows,'Questions',det.customFieldsSummary&&det.customFieldsSummary.length?det.customFieldsSummary:null);
+    var html='<div class="lp-quote-lead">';
+    if(det.totalFormatted){
+      html+='<div class="lp-quote-lead-total"><span class="lp-quote-lead-total-lbl">Quote</span><span class="lp-quote-lead-total-val">'+esc(det.totalFormatted)+'</span></div>';
+    }
+    if(rows.length){
+      html+='<dl class="lp-quote-kv">'+rows.map(function(r){
+        return '<div class="lp-quote-kv-row"><dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd></div>';
+      }).join('')+'</dl>';
+    }
+    if(det.breakdown&&det.breakdown.length){
+      html+='<ul class="lp-quote-break">'+det.breakdown.map(function(b){
+        return '<li><span class="lp-quote-break-lbl">'+esc(b.label||'')+'</span><span class="lp-quote-break-val">'+esc(b.total||'')+'</span></li>';
+      }).join('')+'</ul>';
+    }
+    html+='</div>';
+    return html;
   }
 
   async function renderLeadsCRM(){
@@ -9893,7 +9944,7 @@ function heroCtaCard(c){
     var isSpam=(l.status||'')==='spam';
     var detObj=(l.details&&typeof l.details==='object')?l.details:{};
     var phone=esc(l.phone||'');
-    var date=l.created_at?new Date(l.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}):'';
+    var date=l.created_at?new Date(l.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):'';
     var isNew=!isSpam&&(l.status||'new')==='new';
     var detail=isQuote?lpQuoteLeadHtml(l):esc(l.detail||l.other||l.message||'');
     var email=esc(l.email||'');
