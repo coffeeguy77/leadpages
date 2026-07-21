@@ -80,6 +80,6 @@ test('theme calendar is a compact popup date picker', function() {
 });
 
 test('cache bust for layout + calendar', function() {
-  assert.match(manage, /oq-no-scroll-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-no-scroll-1/);
+  assert.match(manage, /oq-align-fields-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-align-fields-1/);
 });

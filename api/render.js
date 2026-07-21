@@ -666,10 +666,10 @@ function injectOnlineQuote(html, slug, cfg) {
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
   const QUOTE_SCRIPTS = [
-    '/assets/lp-quote-wizard-logic.js?v=oq-no-scroll-1',
-    '/assets/lp-quote-display.js?v=oq-no-scroll-1',
-    '/assets/lp-quote-planning.js?v=oq-no-scroll-1',
-    '/assets/lp-online-quote.js?v=oq-no-scroll-1'
+    '/assets/lp-quote-wizard-logic.js?v=oq-align-fields-1',
+    '/assets/lp-quote-display.js?v=oq-align-fields-1',
+    '/assets/lp-quote-planning.js?v=oq-align-fields-1',
+    '/assets/lp-online-quote.js?v=oq-align-fields-1'
   ];
 
   function ensureQuoteScripts(doc) {
@@ -723,10 +723,10 @@ function injectOnlineQuote(html, slug, cfg) {
     '</div>' +
     '<div id="lp-online-quote" data-slug="' + esc(slug) + '"></div>' +
     '</div></section>' +
-    '<script src="/assets/lp-quote-wizard-logic.js?v=oq-no-scroll-1" defer></script>' +
-    '<script src="/assets/lp-quote-display.js?v=oq-no-scroll-1" defer></script>' +
-    '<script src="/assets/lp-quote-planning.js?v=oq-no-scroll-1" defer></script>' +
-    '<script src="/assets/lp-online-quote.js?v=oq-no-scroll-1" defer></script>';
+    '<script src="/assets/lp-quote-wizard-logic.js?v=oq-align-fields-1" defer></script>' +
+    '<script src="/assets/lp-quote-display.js?v=oq-align-fields-1" defer></script>' +
+    '<script src="/assets/lp-quote-planning.js?v=oq-align-fields-1" defer></script>' +
+    '<script src="/assets/lp-online-quote.js?v=oq-align-fields-1" defer></script>';
   if (html.includes('<section data-sec="quote"')) {
     return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');
   }

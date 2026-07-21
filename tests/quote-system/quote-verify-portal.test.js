@@ -54,5 +54,5 @@ test('portal UI supports jobs list, edit, accept, email', function() {
   assert.match(portalJs, /portal-update/);
   assert.match(portalJs, /portal-email/);
   assert.match(portalJs, /qp-accept/);
-  assert.match(portalHtml, /oq-no-scroll-1/);
+  assert.match(portalHtml, /oq-align-fields-1/);
 });
