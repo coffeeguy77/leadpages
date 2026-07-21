@@ -638,7 +638,11 @@
       byGroup[g].push(b);
     });
 
-    var html = '<div class="lp-oq-bev-wrap" data-lp-oq-beverages>';
+    var cardVars = (D && D.equipmentCardVars)
+      ? (D.equipmentCardVars(shell, 'packageCards') || D.equipmentCardVars(shell))
+      : '';
+    var html = '<div class="lp-oq-bev-wrap" data-lp-oq-beverages' +
+      (cardVars ? ' style="' + cardVars + '"' : '') + '>';
     groups.forEach(function(g) {
       var heading = beverageGroupLabel(g);
       if (heading) html += '<h4 class="lp-oq-bev-group">' + esc(heading) + '</h4>';

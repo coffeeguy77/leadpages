@@ -735,8 +735,11 @@
       '.lp-oq-choice-img{display:block;margin:0 0 8px;border-radius:8px;object-fit:contain;max-width:100%}',
       layoutRules,
       /* Packages / add-ons / travel: horizontal row for cards + grid layouts */
-      '.lp-oq-layout-cards .lp-oq-choices:not(.lp-oq-fp-grid),.lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid){display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;width:100%}',
+      '.lp-oq-layout-cards .lp-oq-choices:not(.lp-oq-fp-grid):not(.lp-oq-bev-grid),.lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid):not(.lp-oq-bev-grid){display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;width:100%}',
       '.lp-oq-layout-cards .lp-oq-choices:not(.lp-oq-fp-grid) .lp-oq-choice,.lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid) .lp-oq-choice{width:auto;margin:0;height:100%}',
+      /* Drinks + catering package groups always share a 2-up grid */
+      '.lp-oq-layout-cards .lp-oq-choices.lp-oq-bev-grid,.lp-oq-layout-grid .lp-oq-choices.lp-oq-bev-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%}',
+      '@media (max-width:640px){.lp-oq-layout-cards .lp-oq-choices.lp-oq-bev-grid,.lp-oq-layout-grid .lp-oq-choices.lp-oq-bev-grid{grid-template-columns:1fr}}',
       '.lp-oq-choice.is-selected{border-color:' + brand + ';box-shadow:0 0 0 2px color-mix(in srgb,' + brand + ' 30%, transparent)}',
       '.lp-oq-choice span{display:block;font-size:13px;color:var(--lp-oq-choice-desc,var(--ink-soft, var(--text-soft, inherit)));margin-top:4px}',
       '.lp-oq-field{display:block;margin:10px 0 0}',
