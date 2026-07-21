@@ -950,8 +950,8 @@
         : '';
       var label = '<span>' + escFn(f.label || 'Question') + req + '</span>';
       if (f.type === 'textarea') {
-        return '<label class="lp-oq-field">' + label +
-          '<textarea rows="3" ' + attr + '="' + escFn(f.id) + '" placeholder="' + escFn(f.placeholder || '') + '">' +
+        return '<label class="lp-oq-field lp-oq-field-textarea">' + label +
+          '<textarea rows="4" ' + attr + '="' + escFn(f.id) + '" placeholder="' + escFn(f.placeholder || '') + '">' +
           escFn(val) + '</textarea>' + help + '</label>';
       }
       if (f.type === 'checkbox') {

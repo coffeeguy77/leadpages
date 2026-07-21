@@ -1186,6 +1186,24 @@
   box-sizing: border-box;
 }
 
+.oqb-preview-mock .lp-oq-field textarea,
+.oqb-preview-mock .lp-oq-field-textarea textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 6.5em;
+  padding: 9px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  font: inherit;
+  line-height: 1.45;
+  background: transparent;
+  color: var(--lp-oq-field-text, var(--ink));
+  box-sizing: border-box;
+  resize: vertical;
+}
+
 .oqb-preview-mock .lp-oq-foot {
   display: flex;
   gap: 8px;

@@ -205,7 +205,7 @@
     var c = this.config;
     var tabs = [
       ['overview', 'Overview'],
-      ['wizard', 'Wizard flow'],
+      ['wizard', 'Styling'],
       ['questions', 'Questions'],
       ['products', 'Products'],
       ['labour', 'Labour'],
@@ -356,14 +356,19 @@
   QuoteBuilder.prototype._previewNeedsEquipment = function(path) {
     if (!path) return false;
     if (path.indexOf('wizard.equipmentCards') === 0) return true;
-    if (path.indexOf('wizard.travelCards') === 0) return true;
     if (path.indexOf('wizard.ui') === 0) return true;
     if (path.indexOf('wizard.layout') === 0) return true;
     if (path.indexOf('products.') === 0) {
       return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|imageAxis|displayMode|imageSize|imageScale|icon)$/.test(path);
     }
+    return false;
+  };
+
+  QuoteBuilder.prototype._previewNeedsTravel = function(path) {
+    if (!path) return false;
+    if (path.indexOf('wizard.travelCards') === 0) return true;
     if (path.indexOf('travel.zones.') === 0) {
-      return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|imageAxis|displayMode|imageSize|imageScale|icon)$/.test(path);
+      return /\.(label|badge|subtitle|description|imageUrl|imageFit|imagePos|imageAxis|displayMode|imageSize|imageScale|icon|feeCents)$/.test(path);
     }
     return false;
   };
@@ -374,6 +379,10 @@
 
   QuoteBuilder.prototype._ensurePreviewPackagesStep = function() {
     this._jumpPreviewToStep('beverages') || this._jumpPreviewToStep('packages');
+  };
+
+  QuoteBuilder.prototype._ensurePreviewTravelStep = function() {
+    this._jumpPreviewToStep('travel');
   };
 
   QuoteBuilder.prototype._normHex = function(v) {
@@ -559,6 +568,7 @@
       + '<div class="oqb-preview-tools">'
       + '<label class="oqb-preview-focus"><input type="checkbox" data-oqb-preview-focus' + (this.previewFocusCard ? ' checked' : '') + '> Focus one equipment card</label>'
       + '<button type="button" class="oqb-preview-jump" data-oqb-preview-jump="equipment">Show equipment step</button>'
+      + '<button type="button" class="oqb-preview-jump" data-oqb-preview-jump="travel">Show travel step</button>'
       + '</div></div>';
   };
 
@@ -1319,7 +1329,7 @@
         + '</div>';
       return self._itemCard(z.label || 'New zone', i, 'travel.zones', fields, i > 0, i < list.length - 1);
     }).join('');
-    return '<p class="oqb-hint">Distance or region fees shown as equipment-style cards. Upload a map image per zone — customers can enlarge it to check if their venue is inside the radius. Add the <strong>Travel zone</strong> step in Wizard flow so customers pick a zone. Card colours follow Equipment card styling (or Travel card styling if set).</p>'
+    return '<p class="oqb-hint">Distance or region fees shown as equipment-style cards. Upload a map image per zone — customers can enlarge it to check if their venue is inside the radius. Add the <strong>Travel zone</strong> step in Styling so customers pick a zone. Card colours follow Equipment card styling (or Travel card styling if set).</p>'
       + '<div class="oqb-items">' + (cards || '<p class="oqb-empty">No travel zones — all areas free.</p>') + '</div>'
       + '<button type="button" class="btn ghost" data-oqb-add="travel">+ Add travel zone</button>';
   };
@@ -1426,6 +1436,10 @@
           self._ensurePreviewEquipmentStep();
           // Keep full equipment grid visible while styling (opt-in via Focus checkbox)
         }
+        if (self.tab === 'travel') {
+          self.previewPinEquipment = false;
+          self._ensurePreviewTravelStep();
+        }
         if (self.tab === 'questions') {
           self._jumpPreviewToStep('custom');
         }
@@ -1500,6 +1514,10 @@
             if (path.indexOf('wizard.ui') === 0) self.previewPinEquipment = false;
           }
           if (self._previewNeedsPackages(path)) self._ensurePreviewPackagesStep();
+          if (self._previewNeedsTravel(path)) {
+            self.previewPinEquipment = false;
+            self._ensurePreviewTravelStep();
+          }
           self._refreshPreview();
         });
         return;
@@ -1516,6 +1534,10 @@
             if (path.indexOf('wizard.ui') === 0) self.previewPinEquipment = false;
           }
           if (self._previewNeedsPackages(path)) self._ensurePreviewPackagesStep();
+          if (self._previewNeedsTravel(path)) {
+            self.previewPinEquipment = false;
+            self._ensurePreviewTravelStep();
+          }
           self._refreshPreview();
         }
       });
@@ -1541,6 +1563,10 @@
           self._ensurePreviewEquipmentStep();
         }
         if (self._previewNeedsPackages(path)) self._ensurePreviewPackagesStep();
+        if (self._previewNeedsTravel(path)) {
+          self.previewPinEquipment = false;
+          self._ensurePreviewTravelStep();
+        }
         self._refreshPreview();
       });
     });
@@ -1562,6 +1588,10 @@
           self._ensurePreviewEquipmentStep();
         }
         if (self._previewNeedsPackages(path)) self._ensurePreviewPackagesStep();
+        if (self._previewNeedsTravel(path)) {
+          self.previewPinEquipment = false;
+          self._ensurePreviewTravelStep();
+        }
         self._refreshPreview();
       });
     });
@@ -2059,8 +2089,14 @@
 
     root.querySelectorAll('[data-oqb-preview-jump]').forEach(function(btn) {
       btn.addEventListener('click', function() {
-        self.previewPinEquipment = true;
-        self._ensurePreviewEquipmentStep();
+        var step = btn.getAttribute('data-oqb-preview-jump');
+        if (step === 'travel') {
+          self.previewPinEquipment = false;
+          self._ensurePreviewTravelStep();
+        } else {
+          self.previewPinEquipment = true;
+          self._ensurePreviewEquipmentStep();
+        }
         self._refreshPreview();
       });
     });
