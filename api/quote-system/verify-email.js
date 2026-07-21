@@ -61,13 +61,19 @@ module.exports = async function handler(req, res) {
         configVersion.config.business.name;
 
       const mail = await ensureEmailVerificationSent(session.id, email, businessName, {
-        force: !!body.force
+        // Explicit send/resend must always attempt delivery.
+        force: body.force !== false
       });
       return json(res, 200, {
         ok: true,
-        sent: mail.sent,
+        sent: !!mail.sent,
         reason: mail.reason || null,
-        alreadyPending: !!mail.alreadyPending
+        alreadyPending: !!mail.alreadyPending,
+        message: mail.sent
+          ? 'Verification code sent.'
+          : (mail.reason === 'no_key'
+            ? 'Email verification is not configured (missing RESEND_API_KEY).'
+            : 'Could not send verification email. Try again shortly.')
       });
     }
 
