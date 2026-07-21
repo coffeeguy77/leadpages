@@ -38,8 +38,8 @@ test('wizard card locks body height so Continue stays put', function() {
   // Shared min-height only — no fixed height that forces an inner scroller.
   assert.doesNotMatch(online, /;height:var\(--lp-oq-card-min\)/);
   assert.match(online, /margin-top:auto/);
-  assert.match(css, /min-height: 640px/);
-  assert.doesNotMatch(css, /^\s*height:\s*640px/m);
+  assert.match(css, /\.oqb-preview-body[\s\S]*overflow:\s*visible/);
+  assert.doesNotMatch(css, /\.oqb-preview-body[\s\S]*overflow:\s*auto/);
 });
 
 test('theme calendar is a compact popup date picker', function() {
@@ -80,6 +80,19 @@ test('theme calendar is a compact popup date picker', function() {
 });
 
 test('cache bust for layout + calendar', function() {
-  assert.match(manage, /oq-align-fields-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-align-fields-1/);
+  assert.match(manage, /oq-portal-nav-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-portal-nav-1/);
+});
+
+test('portal access sits on nav row and opens a popup', function() {
+  assert.match(online, /lp-oq-nav/);
+  assert.match(online, /lp-oq-access-toggle/);
+  assert.match(online, /lp-oq-access-backdrop/);
+  assert.match(online, /lp-oq-access-dialog/);
+  assert.doesNotMatch(online, /lp-oq-access-panel/);
+});
+
+test('preview body does not force an inner scrollbar', function() {
+  assert.match(css, /\.oqb-preview-body\s*\{[^}]*overflow:\s*visible/s);
+  assert.doesNotMatch(css, /\.oqb-preview-body\s*\{[^}]*overflow:\s*auto/s);
 });

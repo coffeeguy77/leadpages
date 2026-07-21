@@ -25,23 +25,28 @@ test('portal-access API emails a magic link without leaking account existence', 
   assert.match(emailLib, /Open my quotes portal/);
 });
 
-test('wizard exposes Access my portal email form', function() {
+test('wizard exposes Access my portal email popup on nav row', function() {
   assert.match(online, /portal-access-toggle/);
   assert.match(online, /portal-access-send/);
   assert.match(online, /sendPortalAccess/);
   assert.match(online, /\/portal-access/);
   assert.match(online, /Already quoted\? Access my portal/);
-  assert.match(online, /renderPortalAccessBar/);
+  assert.match(online, /renderPortalAccessPopup/);
+  assert.match(online, /lp-oq-nav/);
+  assert.match(online, /lp-oq-access-backdrop/);
+  assert.match(online, /lp-oq-access-dialog/);
+  assert.doesNotMatch(online, /renderPortalAccessBar/);
+  assert.doesNotMatch(online, /lp-oq-access-panel/);
 });
 
 test('quote-portal empty state offers email access form', function() {
   assert.match(portalJs, /renderAccessForm/);
   assert.match(portalJs, /qp-access-send/);
   assert.match(portalJs, /portal-access/);
-  assert.match(portalHtml, /oq-align-fields-1/);
+  assert.match(portalHtml, /oq-portal-nav-1/);
 });
 
 test('cache-bust for portal access', function() {
-  assert.match(manage, /oq-align-fields-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-align-fields-1/);
+  assert.match(manage, /oq-portal-nav-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-portal-nav-1/);
 });

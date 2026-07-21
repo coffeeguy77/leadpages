@@ -237,36 +237,35 @@
     }
     var html = '<div class="lp-oq-card' + layoutClass(this.shell) + '"' + (uiStyle ? (' style="' + uiStyle + '"') : '') + '>' +
       '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc(biz) + '</h2>' +
+      '<div class="lp-oq-nav">' +
       '<div class="lp-oq-steps">' + steps.map(function(s, i) {
         return '<span class="lp-oq-step' + (i === this.state.step ? ' is-active' : (i < this.state.step ? ' is-done' : '')) + '">' + esc(this.stepLabel(s)) + '</span>';
       }, this).join('') + '</div>' +
-      this.renderPortalAccessBar() +
-      '</div>' +
+      '<button type="button" class="lp-oq-btn lp-oq-btn-ghost lp-oq-access-toggle" data-act="portal-access-toggle">Already quoted? Access my portal</button>' +
+      '</div></div>' +
       '<div class="lp-oq-body">' + bodyHtml + '</div>' +
       '<div class="lp-oq-foot">' + this.renderFooter(stepKey, steps) + '</div>' +
-      '</div>';
+      '</div>' +
+      this.renderPortalAccessPopup();
     this.el.innerHTML = html;
     this.wire(stepKey);
   };
 
-  OnlineQuoteWidget.prototype.renderPortalAccessBar = function() {
+  OnlineQuoteWidget.prototype.renderPortalAccessPopup = function() {
     var s = this.state;
-    var html = '<div class="lp-oq-access">';
-    if (!s.showPortalAccess) {
-      html += '<button type="button" class="lp-oq-btn lp-oq-btn-ghost lp-oq-access-toggle" data-act="portal-access-toggle">Already quoted? Access my portal</button>';
-      html += '</div>';
-      return html;
-    }
-    html += '<div class="lp-oq-access-panel">';
-    html += '<p class="lp-oq-lead" style="margin:0 0 8px">Enter the email from your quote. We\'ll send a private link to your portal.</p>';
-    html += '<label class="lp-oq-field"><span>Email</span>' +
-      '<input type="email" data-field="portalAccessEmail" autocomplete="email" value="' + esc(s.portalAccessEmail || s.contact.email || '') + '" placeholder="you@example.com"></label>';
-    html += '<div class="lp-oq-access-actions">' +
+    if (!s.showPortalAccess) return '';
+    var html = '<div class="lp-oq-access-backdrop" role="presentation">' +
+      '<div class="lp-oq-access-dialog" role="dialog" aria-modal="true" aria-labelledby="lp-oq-access-title" data-lp-oq-access-dialog>' +
+      '<h3 id="lp-oq-access-title" class="lp-oq-access-title">Access my portal</h3>' +
+      '<p class="lp-oq-lead" style="margin:0 0 12px">Enter the email from your quote. We\'ll send a private link to your portal.</p>' +
+      '<label class="lp-oq-field"><span>Email</span>' +
+      '<input type="email" data-field="portalAccessEmail" autocomplete="email" value="' + esc(s.portalAccessEmail || s.contact.email || '') + '" placeholder="you@example.com"></label>' +
+      '<div class="lp-oq-access-actions">' +
       '<button type="button" class="lp-oq-btn" data-act="portal-access-send">Email me a link</button>' +
       '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-act="portal-access-toggle">Cancel</button>' +
       '</div>';
     if (s.portalAccessMsg) {
-      html += '<p class="lp-oq-lead lp-oq-access-msg" style="margin:10px 0 0">' + esc(s.portalAccessMsg) + '</p>';
+      html += '<p class="lp-oq-lead lp-oq-access-msg" style="margin:12px 0 0">' + esc(s.portalAccessMsg) + '</p>';
     }
     html += '</div></div>';
     return html;
@@ -564,16 +563,21 @@
         else if (act === 'send-sms') self.sendSms();
         else if (act === 'confirm-sms') self.confirmSms();
         else if (act === 'portal-access-toggle') {
-          self.state.showPortalAccess = !self.state.showPortalAccess;
-          self.state.portalAccessMsg = '';
-          if (self.state.showPortalAccess && !self.state.portalAccessEmail) {
-            self.state.portalAccessEmail = (self.state.contact && self.state.contact.email) || '';
-          }
-          self.render();
+          self.togglePortalAccess();
         }
         else if (act === 'portal-access-send') self.sendPortalAccess();
       });
     });
+    var backdrop = this.el.querySelector('.lp-oq-access-backdrop');
+    if (backdrop) {
+      backdrop.addEventListener('click', function(e) {
+        if (e.target === backdrop) self.togglePortalAccess(false);
+      });
+      var dialog = backdrop.querySelector('[data-lp-oq-access-dialog]');
+      if (dialog) {
+        dialog.addEventListener('click', function(e) { e.stopPropagation(); });
+      }
+    }
     this.el.querySelectorAll('[data-field="portalAccessEmail"]').forEach(function(inp) {
       inp.addEventListener('change', function() {
         self.state.portalAccessEmail = inp.value || '';
@@ -581,7 +585,30 @@
       inp.addEventListener('input', function() {
         self.state.portalAccessEmail = inp.value || '';
       });
+      if (self.state.showPortalAccess) {
+        try { inp.focus(); } catch (err) { /* ignore */ }
+      }
     });
+    if (self._portalEscBound) {
+      document.removeEventListener('keydown', self._portalEscBound);
+      self._portalEscBound = null;
+    }
+    if (self.state.showPortalAccess) {
+      self._portalEscBound = function(e) {
+        if (e.key === 'Escape') self.togglePortalAccess(false);
+      };
+      document.addEventListener('keydown', self._portalEscBound);
+    }
+  };
+
+  OnlineQuoteWidget.prototype.togglePortalAccess = function(force) {
+    var open = (typeof force === 'boolean') ? force : !this.state.showPortalAccess;
+    this.state.showPortalAccess = open;
+    if (!open) this.state.portalAccessMsg = '';
+    if (open && !this.state.portalAccessEmail) {
+      this.state.portalAccessEmail = (this.state.contact && this.state.contact.email) || '';
+    }
+    this.render();
   };
 
   OnlineQuoteWidget.prototype.syncWizardDom = function() {
@@ -918,11 +945,19 @@
       '.lp-oq-intro,.lp-oq-lead,.lp-oq-plan p,.lp-oq-staff-row>p,.lp-oq-cal-hint,.lp-oq-quote p{font-size:var(--lp-oq-fs-lead)!important;line-height:1.5;color:var(--lp-oq-intro,var(--ink-soft, var(--text-soft, inherit)));margin:0 0 10px}',
       '.lp-oq-muted{font-size:var(--lp-oq-fs-lead)!important;line-height:1.5;color:var(--lp-oq-muted,var(--ink-soft, var(--text-soft, inherit)))}',
       '.lp-oq-plan p.lp-oq-muted,.lp-oq-staff-row>p.lp-oq-muted{margin:0 0 10px}',
-      '.lp-oq-steps{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}',
+      '.lp-oq-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:16px;width:100%;box-sizing:border-box}',
+      '.lp-oq-steps{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 auto;min-width:0;margin:0}',
       /* Progress chips match Back / Continue / Get my quote size */
       '.lp-oq-step{display:inline-flex;align-items:center;justify-content:center;font-size:inherit;line-height:1.2;padding:10px 18px;border-radius:8px;border:1px solid var(--lp-oq-step-border,color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor))));background:var(--lp-oq-step-bg,transparent);color:var(--lp-oq-step-text,var(--ink-soft, var(--text-soft, inherit)));text-transform:capitalize;font-weight:600;box-sizing:border-box}',
       '.lp-oq-step.is-active{background:var(--lp-oq-step-active-bg,' + brand + ');border-color:var(--lp-oq-step-active-border,var(--lp-oq-step-active-bg,' + brand + '));color:var(--lp-oq-step-active-text,var(--accent-text, var(--on-pipe, var(--ink))))}',
       '.lp-oq-step.is-done{background:transparent;border-color:var(--lp-oq-step-done-border,color-mix(in srgb,' + brand + ' 40%, var(--line, var(--border, currentColor))));color:var(--lp-oq-step-done-text,' + brand + ')}',
+      '.lp-oq-access-toggle{margin-left:auto;flex:0 0 auto;white-space:nowrap;font-size:var(--lp-oq-fs-lead)!important}',
+      '.lp-oq-access-backdrop{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(8,10,14,.62);box-sizing:border-box}',
+      '.lp-oq-access-dialog{width:min(420px,100%);padding:20px 22px;border-radius:16px;border:1px solid color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor)));background:var(--lp-oq-panel-bg,var(--panel,#1c181c));color:var(--lp-oq-body,var(--ink, var(--text, inherit)));box-shadow:0 22px 60px rgba(0,0,0,.45);box-sizing:border-box}',
+      '.lp-oq-access-title{margin:0 0 8px;font-size:1.2rem;font-weight:800;color:var(--lp-oq-panel-title,var(--ink, var(--text, inherit)))}',
+      '.lp-oq-access-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}',
+      '.lp-oq-access-msg{color:var(--lp-oq-body,inherit)}',
+      '@media (max-width:720px){.lp-oq-access-toggle{margin-left:0;width:100%;justify-content:center}}',
       '.lp-oq-choice{display:block;width:100%;text-align:left;margin:0 0 8px;padding:12px 14px;border:1px solid color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));border-radius:12px;background:transparent;color:var(--lp-oq-choice-text,var(--ink, var(--text, inherit)));cursor:pointer;font:inherit;box-sizing:border-box}',
       '.lp-oq-choice strong{color:inherit}',
       '.lp-oq-choice .lp-oq-ic{display:inline-flex;vertical-align:middle;margin-right:8px;color:' + brand + '}',
@@ -941,11 +976,6 @@
       '.lp-oq-cols-contact .lp-oq-col-aside{padding:0;border:none;background:transparent;border-radius:0}',
       '.lp-oq-cols-contact .lp-oq-quote{margin-top:14px;padding-top:14px;border-top:1px solid color-mix(in srgb,' + brand + ' 18%, var(--line, var(--border, currentColor)))}',
       '.lp-oq-quote-slot{min-height:80px}',
-      '.lp-oq-access{margin:4px 0 12px}',
-      '.lp-oq-access-toggle{font-size:var(--lp-oq-fs-lead)!important}',
-      '.lp-oq-access-panel{margin-top:8px;padding:12px;border-radius:12px;border:1px solid color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));background:color-mix(in srgb,' + brand + ' 5%, transparent)}',
-      '.lp-oq-access-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}',
-      '.lp-oq-access-msg{color:var(--lp-oq-body,inherit)}',
       '.lp-oq-cols-event .lp-oq-plan{margin-top:0}',
       '.lp-oq-event-extra{margin-top:14px}',
       '@media (max-width:720px){.lp-oq-cols{grid-template-columns:1fr}.lp-oq-card{min-height:0}.lp-oq-hours-row,.lp-oq-shift-row{grid-template-columns:1fr}}',
