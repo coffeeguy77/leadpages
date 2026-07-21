@@ -1019,6 +1019,53 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     padding: 14px !important;
     box-shadow: none !important;
   }
+  .dash-leads-card.lp-dash-card {
+    padding: 16px 16px 18px !important;
+  }
+  .dash-leads-head {
+    gap: 10px 12px;
+    margin-bottom: 14px;
+    padding: 4px 2px 6px;
+  }
+  .dash-leads-toolbar {
+    margin-left: auto;
+    flex: 0 0 auto;
+  }
+  /* Mobile: collapse All / Website / Quote / Spam / Refresh into a cog popup */
+  .dash-leads-cog {
+    display: inline-flex !important;
+  }
+  .dash-leads-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    z-index: 40;
+    min-width: min(260px, calc(100vw - 48px));
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    background: color-mix(in srgb, var(--panel, #121820) 92%, #0a1018);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  }
+  .dash-leads-menu.is-open {
+    display: flex;
+  }
+  .dash-leads-filters {
+    flex-direction: column;
+    width: 100%;
+    gap: 6px;
+  }
+  .dash-leads-chip,
+  .dash-leads-spam-btn,
+  #dash-leads-refresh {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
   .lp-dash-row {
     background: transparent !important;
     border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent) !important;
