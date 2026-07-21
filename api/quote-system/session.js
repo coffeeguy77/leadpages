@@ -14,7 +14,6 @@ const {
 } = require('../../lib/quote-system/auth');
 const { createSession, updateSession } = require('../../lib/quote-system/session');
 const { serializeSession } = require('../../lib/quote-system/serializers');
-const { RESPONSE_LEVEL } = require('../../lib/quote-system/constants');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
 const { normalizeEmail, isEmailWhitelisted } = require('../../lib/quote-system/email-whitelist');
 const { normaliseAuPhone } = require('../../lib/quote-system/phone');
@@ -55,7 +54,15 @@ module.exports = async function handler(req, res) {
         return json(res, 403, { ok: false, error: entitled.error });
       }
 
-      const token = clean(body.token, 128);
+      const contact = body.contact || {};
+      const contactName = contact.name ? clean(contact.name, 120) : '';
+      const contactEmail = contact.email
+        ? normalizeEmail(clean(contact.email, 160))
+        : '';
+      const contactPhone = contact.phone
+        ? clean(normaliseAuPhone(contact.phone), 60)
+        : '';
+
       if (token) {
         const existing = await getSessionByToken(token);
         if (!existing || existing.expired) {
@@ -68,16 +75,14 @@ module.exports = async function handler(req, res) {
         if (body.progress && typeof body.progress === 'object') {
           patch.progress = Object.assign({}, existing.session.progress || {}, body.progress);
         }
-        const contact = body.contact || {};
-        if (contact.name) patch.contact_name = clean(contact.name, 120);
-        if (contact.email) {
-          const email = normalizeEmail(clean(contact.email, 160));
-          patch.contact_email = email;
-          if (!existing.session.email_verified_at && await isEmailWhitelisted(existing.session.site_id, email)) {
+        if (contactName) patch.contact_name = contactName;
+        if (contactEmail) {
+          patch.contact_email = contactEmail;
+          if (!existing.session.email_verified_at && await isEmailWhitelisted(existing.session.site_id, contactEmail)) {
             patch.email_verified_at = new Date().toISOString();
           }
         }
-        if (contact.phone) patch.contact_phone = clean(normaliseAuPhone(contact.phone), 60);
+        if (contactPhone) patch.contact_phone = contactPhone;
 
         const updated = await updateSession(existing.session.id, patch);
         const level = verificationLevelForSession(updated);
@@ -88,15 +93,30 @@ module.exports = async function handler(req, res) {
         });
       }
 
-      const session = await createSession(
+      let session = await createSession(
         site.id,
         quoteSystem.id,
         body.progress && typeof body.progress === 'object' ? body.progress : {}
       );
+
+      // First create used to drop contact — calculate then skipped email OTP entirely.
+      const createPatch = {};
+      if (contactName) createPatch.contact_name = contactName;
+      if (contactEmail) {
+        createPatch.contact_email = contactEmail;
+        if (await isEmailWhitelisted(site.id, contactEmail)) {
+          createPatch.email_verified_at = new Date().toISOString();
+        }
+      }
+      if (contactPhone) createPatch.contact_phone = contactPhone;
+      if (Object.keys(createPatch).length) {
+        session = await updateSession(session.id, createPatch);
+      }
+
       return json(res, 201, {
         ok: true,
         token: session.session_token,
-        session: serializeSession(session, RESPONSE_LEVEL.PUBLIC_PROGRESS)
+        session: serializeSession(session, verificationLevelForSession(session))
       });
     }
 

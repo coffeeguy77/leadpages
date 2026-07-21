@@ -32,31 +32,42 @@ test('event step splits schedule and staffing columns', function() {
 });
 
 test('wizard card locks body height so Continue stays put', function() {
-  assert.match(online, /--lp-oq-body-min/);
-  assert.match(online, /min-height:var\(--lp-oq-card-min/);
+  assert.match(online, /--lp-oq-card-min:640px/);
+  assert.match(online, /height:var\(--lp-oq-card-min\)/);
   assert.match(online, /margin-top:auto/);
   assert.match(css, /min-height: 640px/);
-  assert.match(css, /min-height: 460px/);
+  assert.match(css, /height: 640px/);
 });
 
-test('theme calendar replaces native event date input', function() {
+test('theme calendar is a compact popup date picker', function() {
   assert.match(planning, /renderEventCalendar/);
   assert.match(planning, /data-lp-oq-cal/);
   assert.match(planning, /wireEventCalendar/);
+  assert.match(planning, /lp-oq-datepick-trigger/);
+  assert.match(planning, /lp-oq-cal-pop/);
+  assert.match(planning, /lp-oq-shift-row/);
+  assert.match(online, /max-height:calc\(3 \*/);
   assert.match(online, /lp-oq-cal-day/);
+  assert.match(online, /--lp-oq-cal-icon/);
+  assert.match(online, /lp-oq-datepick/);
   assert.match(css, /lp-oq-cal-day/);
+  assert.match(builder, /calendarIconColor/);
 
   const windowObj = { LPQuoteDisplay: null, LPQuoteWizardLogic: {} };
   windowObj.window = windowObj;
-  const sandbox = { window: windowObj, console: console };
+  const sandbox = { window: windowObj, console: console, document: { addEventListener: function() {} } };
   vm.createContext(sandbox);
   vm.runInContext(planning, sandbox);
   const P = sandbox.window.LPQuotePlanning;
-  const html = P.renderEventCalendar({ eventDate: '2026-07-21', _calView: '2026-07' });
-  assert.match(html, /data-lp-oq-cal/);
-  assert.match(html, /data-field="eventDate"/);
-  assert.match(html, /data-cal-day="2026-07-21"/);
-  assert.match(html, /is-selected/);
+  const closed = P.renderEventCalendar({ eventDate: '2026-07-21', _calView: '2026-07' });
+  assert.match(closed, /data-lp-oq-cal/);
+  assert.match(closed, /data-field="eventDate"/);
+  assert.match(closed, /lp-oq-datepick-trigger/);
+  assert.doesNotMatch(closed, /lp-oq-cal-pop/);
+  const open = P.renderEventCalendar({ eventDate: '2026-07-21', _calView: '2026-07', _calOpen: 'event' });
+  assert.match(open, /lp-oq-cal-pop/);
+  assert.match(open, /data-cal-day="2026-07-21"/);
+  assert.match(open, /is-selected/);
   const parts = P.partitionCustomFields([
     { id: 'loc', type: 'text', label: 'Event location' },
     { id: 'info', type: 'textarea', label: 'Event information' }
@@ -66,6 +77,6 @@ test('theme calendar replaces native event date input', function() {
 });
 
 test('cache bust for layout + calendar', function() {
-  assert.match(manage, /oq-ux-whitelist-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-ux-whitelist-1/);
+  assert.match(manage, /oq-event-cal-live-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-event-cal-live-1/);
 });

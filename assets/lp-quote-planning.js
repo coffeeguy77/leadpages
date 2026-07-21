@@ -160,36 +160,44 @@
     }
   }
 
-  /**
-   * Theme-styled month calendar (replaces native date input for event date).
-   * Keeps a hidden input[data-field=eventDate] for existing sync helpers.
-   */
-  function renderEventCalendar(state, opts) {
-    opts = opts || {};
-    var selected = (state && state.eventDate) || '';
-    var selectedDate = parseIsoDate(selected);
+  function formatAuDate(iso) {
+    var d = parseIsoDate(iso);
+    if (!d) return '';
+    try {
+      return d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    } catch (e) {
+      return iso;
+    }
+  }
+
+  function calendarIconSvg() {
+    return '<svg class="lp-oq-cal-ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">' +
+      '<rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.75"/>' +
+      '<path d="M3 10h18M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>' +
+      '</svg>';
+  }
+
+  function clockIconSvg() {
+    return '<svg class="lp-oq-cal-ic" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">' +
+      '<circle cx="12" cy="12" r="8.25" fill="none" stroke="currentColor" stroke-width="1.75"/>' +
+      '<path d="M12 8v4.5l3 1.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+  }
+
+  function renderMonthGrid(state, selectedIso) {
     var view = (state && state._calView) || '';
+    var selectedDate = parseIsoDate(selectedIso);
     var viewDate = parseIsoDate(view + '-01') || selectedDate || new Date();
     var year = viewDate.getFullYear();
     var month = viewDate.getMonth();
     if (state) state._calView = year + '-' + pad2(month + 1);
 
     var todayIso = toIsoDate(new Date());
-    var firstDow = new Date(year, month, 1).getDay(); // 0=Sun
+    var firstDow = new Date(year, month, 1).getDay();
     var daysInMonth = new Date(year, month + 1, 0).getDate();
     var prevDays = new Date(year, month, 0).getDate();
 
-    var html = '<div class="lp-oq-cal" data-lp-oq-cal>' +
-      '<input type="hidden" data-field="eventDate" value="' + esc(selected) + '">' +
-      '<div class="lp-oq-cal-head">' +
-      '<span class="lp-oq-cal-label">Event date</span>' +
-      (selected
-        ? '<span class="lp-oq-cal-selected">' + esc(selectedDate
-          ? selectedDate.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
-          : selected) + '</span>'
-        : '<span class="lp-oq-cal-selected is-empty">Pick a day</span>') +
-      '</div>' +
-      '<div class="lp-oq-cal-nav">' +
+    var html = '<div class="lp-oq-cal-nav">' +
       '<button type="button" class="lp-oq-cal-nav-btn" data-cal-nav="-1" aria-label="Previous month">‹</button>' +
       '<div class="lp-oq-cal-month" data-cal-month="' + year + '-' + pad2(month + 1) + '">' +
       esc(monthLabel(year, month)) + '</div>' +
@@ -225,19 +233,63 @@
     cells.forEach(function(cell) {
       var cls = 'lp-oq-cal-day';
       if (cell.muted) cls += ' is-muted';
-      if (cell.iso === selected) cls += ' is-selected';
+      if (cell.iso === selectedIso) cls += ' is-selected';
       if (cell.iso === todayIso) cls += ' is-today';
       html += '<button type="button" class="' + cls + '" data-cal-day="' + esc(cell.iso) + '"' +
         (cell.muted ? ' tabindex="-1"' : '') + '>' + cell.day + '</button>';
     });
-
     html += '</div>';
-    if (opts.hint !== false) {
-      html += opts.hint
-        ? '<p class="lp-oq-muted lp-oq-cal-hint">' + esc(opts.hint) + '</p>'
-        : '<p class="lp-oq-muted lp-oq-cal-hint">When is the event?</p>';
+    return html;
+  }
+
+  /**
+   * Compact date trigger + themed popup calendar (no native white chrome).
+   * opts: { value, openKey, shiftIdx, label, fieldAttr, placeholder }
+   */
+  function renderDatePicker(state, opts) {
+    opts = opts || {};
+    var value = opts.value != null ? opts.value : ((state && state.eventDate) || '');
+    var openKey = opts.openKey || 'event';
+    var isOpen = !!(state && state._calOpen === openKey);
+    var label = opts.label || 'Event date';
+    var placeholder = opts.placeholder || 'Pick a date';
+    var fieldAttr = opts.fieldAttr || 'data-field="eventDate"';
+    var shiftAttr = opts.shiftIdx != null ? (' data-cal-shift-idx="' + opts.shiftIdx + '"') : '';
+
+    var html = '<div class="lp-oq-datepick' + (isOpen ? ' is-open' : '') + '" data-lp-oq-cal data-cal-key="' + esc(openKey) + '"' + shiftAttr + '>' +
+      '<input type="hidden" ' + fieldAttr + ' value="' + esc(value) + '">' +
+      '<button type="button" class="lp-oq-datepick-trigger" data-cal-toggle aria-expanded="' + (isOpen ? 'true' : 'false') + '" aria-haspopup="dialog">' +
+      '<span class="lp-oq-datepick-ic">' + calendarIconSvg() + '</span>' +
+      '<span class="lp-oq-datepick-meta">' +
+      '<span class="lp-oq-datepick-label">' + esc(label) + '</span>' +
+      '<span class="lp-oq-datepick-value' + (value ? '' : ' is-empty') + '">' +
+      esc(value ? formatAuDate(value) : placeholder) + '</span></span>' +
+      '</button>';
+    if (isOpen) {
+      html += '<div class="lp-oq-cal-pop" role="dialog" aria-label="' + esc(label) + '">' +
+        renderMonthGrid(state, value) +
+        '</div>';
     }
     html += '</div>';
+    return html;
+  }
+
+  /**
+   * Theme-styled popup calendar for the event date (compact trigger — not an
+   * inline month grid that blows out the Event Details column).
+   */
+  function renderEventCalendar(state, opts) {
+    opts = opts || {};
+    var html = renderDatePicker(state, {
+      value: (state && state.eventDate) || '',
+      openKey: 'event',
+      label: opts.label || 'Event date',
+      fieldAttr: 'data-field="eventDate"',
+      placeholder: 'Pick a date'
+    });
+    if (opts.hint !== false && opts.hint) {
+      html += '<p class="lp-oq-muted lp-oq-cal-hint">' + esc(opts.hint) + '</p>';
+    }
     return html;
   }
 
@@ -245,15 +297,41 @@
     return renderEventCalendar(state, opts);
   }
 
+  function renderTimeField(opts) {
+    opts = opts || {};
+    return '<label class="lp-oq-time">' +
+      '<span class="lp-oq-time-ic">' + clockIconSvg() + '</span>' +
+      '<span class="lp-oq-time-label">' + esc(opts.label || 'Time') + '</span>' +
+      '<input type="time" ' + (opts.attrs || '') + ' value="' + esc(opts.value || '09:00') + '">' +
+      '</label>';
+  }
+
   function wireEventCalendar(root, state, rerender) {
     if (!root || !state) return;
+
+    function closeCal() {
+      if (!state._calOpen) return;
+      state._calOpen = null;
+      if (typeof rerender === 'function') rerender();
+    }
+
     root.querySelectorAll('[data-lp-oq-cal]').forEach(function(cal) {
       if (cal.__lpOqCalWired) return;
       cal.__lpOqCalWired = true;
       cal.addEventListener('click', function(e) {
+        var toggle = e.target.closest('[data-cal-toggle]');
+        if (toggle && cal.contains(toggle)) {
+          e.preventDefault();
+          e.stopPropagation();
+          var key = cal.getAttribute('data-cal-key') || 'event';
+          state._calOpen = state._calOpen === key ? null : key;
+          if (typeof rerender === 'function') rerender();
+          return;
+        }
         var nav = e.target.closest('[data-cal-nav]');
         if (nav && cal.contains(nav)) {
           e.preventDefault();
+          e.stopPropagation();
           var dir = parseInt(nav.getAttribute('data-cal-nav'), 10) || 0;
           var base = parseIsoDate((state._calView || '') + '-01') || parseIsoDate(state.eventDate) || new Date();
           var next = new Date(base.getFullYear(), base.getMonth() + dir, 1);
@@ -264,14 +342,35 @@
         var day = e.target.closest('[data-cal-day]');
         if (day && cal.contains(day)) {
           e.preventDefault();
+          e.stopPropagation();
           var iso = day.getAttribute('data-cal-day') || '';
           if (!iso) return;
-          state.eventDate = iso;
+          var shiftIdx = cal.getAttribute('data-cal-shift-idx');
+          if (shiftIdx != null && shiftIdx !== '') {
+            ensureShifts(state);
+            var si = parseInt(shiftIdx, 10);
+            if (state.shifts[si]) state.shifts[si].date = iso;
+          } else {
+            state.eventDate = iso;
+          }
           state._calView = iso.slice(0, 7);
+          state._calOpen = null;
           if (typeof rerender === 'function') rerender();
         }
       });
     });
+
+    if (!root.__lpOqCalDocClose) {
+      root.__lpOqCalDocClose = true;
+      document.addEventListener('click', function(e) {
+        if (!state._calOpen) return;
+        if (e.target.closest && e.target.closest('[data-lp-oq-cal]')) return;
+        closeCal();
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeCal();
+      });
+    }
   }
 
   /** Split custom fields: compact (left) vs textarea/notes (right). */
@@ -450,40 +549,70 @@
 
     if (!allowsShiftPlanner(shell)) {
       return configBlock +
-        renderEventDateField(state) +
+        '<div class="lp-oq-hours-row">' +
+        renderEventDateField(state, { hint: false }) +
         (state.labourPlanning !== 'shifts' && !custom
-          ? renderBarista1HoursField(state, { hint: 'How long Barista 1 is on site for this event.' })
-          : '<label class="lp-oq-field"><span>Event duration (hours)</span>' +
-            '<input type="number" min="1" max="48" data-field="hours" value="' + esc(state.hours != null ? state.hours : 3) + '"></label>');
+          ? '<label class="lp-oq-field lp-oq-hours-field"><span>Barista 1 hours</span>' +
+            '<input type="number" min="1" max="48" data-field="hours" value="' +
+            esc(state.hours != null ? state.hours : 3) + '"></label>'
+          : '<label class="lp-oq-field lp-oq-hours-field"><span>Event duration (hours)</span>' +
+            '<input type="number" min="1" max="48" data-field="hours" value="' + esc(state.hours != null ? state.hours : 3) + '"></label>') +
+        '</div>' +
+        '<p class="lp-oq-muted lp-oq-cal-hint">How long Barista 1 is on site for this event.</p>';
     }
     var mode = state.labourPlanning === 'shifts' ? 'shifts' : 'hours';
     var html = configBlock + '<fieldset class="lp-oq-plan"><legend>Event scheduling</legend>' +
       '<label class="lp-oq-radio"><input type="radio" name="lp-oq-labour" value="hours"' + (mode === 'hours' ? ' checked' : '') + '> Simple hours</label>' +
       '<label class="lp-oq-radio"><input type="radio" name="lp-oq-labour" value="shifts"' + (mode === 'shifts' ? ' checked' : '') + '> Multi-day shift planner</label>';
     if (mode === 'hours') {
-      html += renderEventDateField(state);
-      if (!custom) {
-        html += renderBarista1HoursField(state, {
-          hint: multi
-            ? 'Barista 1 works this many hours on every equipment line (unless you choose custom per line below).'
-            : 'How long Barista 1 is on site. If you add Barista 2 on full shift, they work the same hours.'
-        });
-      } else {
+      html += '<div class="lp-oq-hours-row">' +
+        renderEventDateField(state, { hint: false }) +
+        (custom
+          ? ''
+          : '<label class="lp-oq-field lp-oq-hours-field"><span>Barista 1 hours</span>' +
+            '<input type="number" min="1" max="48" data-field="hours" value="' +
+            esc(state.hours != null ? state.hours : 3) + '"></label>') +
+        '</div>';
+      if (custom) {
         html += '<p class="lp-oq-muted" style="margin:8px 0 0">Set Barista 1 hours and staffing for each equipment line below.</p>';
+      } else {
+        html += '<p class="lp-oq-muted lp-oq-cal-hint">' +
+          esc(multi
+            ? 'Barista 1 works this many hours on every equipment line (unless you choose custom per line below).'
+            : 'How long Barista 1 is on site. If you add Barista 2 on full shift, they work the same hours.') +
+          '</p>';
       }
     } else {
       ensureShifts(state);
-      html += '<p class="lp-oq-muted" style="margin:8px 0 0">Barista 1 is scheduled for each day below. Configure baristas per equipment line in the staffing section.</p>' +
+      html += '<p class="lp-oq-muted" style="margin:6px 0 8px">One row per day — date, start, end. Scroll if you add more than three days.</p>' +
         '<div class="lp-oq-shifts" data-lp-oq-shifts>';
       state.shifts.forEach(function(sh, i) {
-        html += '<div class="lp-oq-shift" data-shift-idx="' + i + '">' +
-          '<label class="lp-oq-field"><span>Day ' + (i + 1) + ' date</span><input type="date" data-shift-field="date" value="' + esc(sh.date || '') + '"></label>' +
-          '<label class="lp-oq-field"><span>Start</span><input type="time" data-shift-field="startTime" value="' + esc(sh.startTime || '09:00') + '"></label>' +
-          '<label class="lp-oq-field"><span>End</span><input type="time" data-shift-field="endTime" value="' + esc(sh.endTime || '17:00') + '"></label>' +
-          (state.shifts.length > 1 ? '<button type="button" class="lp-oq-btn lp-oq-btn-ghost lp-oq-shift-remove" data-shift-remove="' + i + '">Remove day</button>' : '') +
+        html += '<div class="lp-oq-shift lp-oq-shift-row" data-shift-idx="' + i + '">' +
+          '<span class="lp-oq-shift-day">Day ' + (i + 1) + '</span>' +
+          renderDatePicker(state, {
+            value: sh.date || '',
+            openKey: 'shift-' + i,
+            shiftIdx: i,
+            label: 'Date',
+            fieldAttr: 'data-shift-field="date"',
+            placeholder: 'Date'
+          }) +
+          renderTimeField({
+            label: 'Start',
+            value: sh.startTime || '09:00',
+            attrs: 'data-shift-field="startTime"'
+          }) +
+          renderTimeField({
+            label: 'End',
+            value: sh.endTime || '17:00',
+            attrs: 'data-shift-field="endTime"'
+          }) +
+          (state.shifts.length > 1
+            ? '<button type="button" class="lp-oq-btn lp-oq-btn-ghost lp-oq-shift-remove" data-shift-remove="' + i + '" aria-label="Remove day ' + (i + 1) + '">×</button>'
+            : '<span class="lp-oq-shift-spacer" aria-hidden="true"></span>') +
           '</div>';
       });
-      html += '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-shift-add>+ Add day</button></div>';
+      html += '</div><button type="button" class="lp-oq-btn lp-oq-btn-ghost lp-oq-shift-add" data-shift-add>+ Add day</button>';
     }
     html += '</fieldset>';
     return html;
@@ -904,6 +1033,7 @@
     root.querySelectorAll('input[name="lp-oq-labour"]').forEach(function(radio) {
       radio.addEventListener('change', function() {
         state.labourPlanning = radio.value;
+        state._calOpen = null;
         if (state.labourPlanning === 'shifts') ensureShifts(state);
         rerender();
       });

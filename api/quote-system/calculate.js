@@ -55,15 +55,29 @@ module.exports = async function handler(req, res) {
     }
 
     const progress = Object.assign({}, session.progress || {}, body.inputs || {});
-    let workingSession = await updateSession(session.id, {
+    const contactPatch = {};
+    const bodyContact = body.contact && typeof body.contact === 'object' ? body.contact : {};
+    if (bodyContact.name) contactPatch.contact_name = String(bodyContact.name).trim().slice(0, 120);
+    if (bodyContact.email) contactPatch.contact_email = normalizeEmail(bodyContact.email);
+    if (bodyContact.phone) contactPatch.contact_phone = String(bodyContact.phone).trim().slice(0, 60);
+    // Also accept email nested in progress.contact for older clients.
+    const progressContact = progress.contact && typeof progress.contact === 'object' ? progress.contact : null;
+    if (!contactPatch.contact_email && progressContact && progressContact.email) {
+      contactPatch.contact_email = normalizeEmail(progressContact.email);
+    }
+    if (!contactPatch.contact_name && progressContact && progressContact.name) {
+      contactPatch.contact_name = String(progressContact.name).trim().slice(0, 120);
+    }
+
+    let workingSession = await updateSession(session.id, Object.assign({
       progress: progress,
       status: SESSION_STATUS.SUBMITTED
-    });
+    }, contactPatch));
 
-    let emailVerification = { required: false, sent: false, whitelisted: false };
+    let emailVerification = { required: false, sent: false, whitelisted: false, reason: null };
 
-    if (workingSession.contact_email && !workingSession.email_verified_at) {
-      const email = normalizeEmail(workingSession.contact_email);
+    const email = normalizeEmail(workingSession.contact_email || contactPatch.contact_email || '');
+    if (email && !workingSession.email_verified_at) {
       emailVerification.required = true;
 
       if (await isEmailWhitelisted(workingSession.site_id, email)) {
@@ -78,16 +92,24 @@ module.exports = async function handler(req, res) {
           console.warn('quote-system calculate whitelisted summary:', mailErr && mailErr.message);
         }
       } else {
-        const quoteSystemForMail = await getQuoteSystemForSite(workingSession.site_id);
-        const configForMail = quoteSystemForMail ? await getActiveConfig(quoteSystemForMail) : null;
-        const businessName = configForMail &&
-          configForMail.config &&
-          configForMail.config.business &&
-          configForMail.config.business.name;
-        const mail = await ensureEmailVerificationSent(workingSession.id, email, businessName);
+        const businessName = configVersion.config &&
+          configVersion.config.business &&
+          configVersion.config.business.name;
+        // Always force a fresh email on calculate so "Get my quote" actually delivers a code.
+        const mail = await ensureEmailVerificationSent(workingSession.id, email, businessName, {
+          force: true
+        });
         emailVerification.sent = !!mail.sent;
         emailVerification.reason = mail.reason || null;
+        emailVerification.alreadyPending = !!mail.alreadyPending;
+        if (!mail.sent) {
+          console.warn('quote-system calculate email OTP not sent:', mail.reason || 'unknown');
+        }
       }
+    } else if (!email) {
+      emailVerification.required = true;
+      emailVerification.reason = 'no_email';
+      console.warn('quote-system calculate: no contact_email on session — OTP skipped');
     }
 
     const level = verificationLevelForSession(workingSession);

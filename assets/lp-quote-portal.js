@@ -255,10 +255,74 @@
     }
   }
 
+  function renderAccessForm(opts) {
+    opts = opts || {};
+    var slug = opts.slug || '';
+    var msg = opts.msg || '';
+    var email = opts.email || '';
+    var html = '<div class="card">';
+    html += '<span class="badge">Quote portal</span>';
+    html += '<h1>Access your quotes</h1>';
+    html += '<p class="sub">Enter the email you used when you requested a quote. We\'ll send a private link to open your jobs portal.</p>';
+    html += '<label class="field"><span>Email</span>' +
+      '<input type="email" id="qp-access-email" autocomplete="email" value="' + esc(email) + '" placeholder="you@example.com"></label>';
+    if (!slug) {
+      html += '<label class="field"><span>Site (slug)</span>' +
+        '<input type="text" id="qp-access-slug" placeholder="beanculture" value=""></label>';
+    } else {
+      html += '<input type="hidden" id="qp-access-slug" value="' + esc(slug) + '">';
+    }
+    html += '<div class="actions"><button type="button" class="btn btn-primary" id="qp-access-send">Email me a link</button></div>';
+    html += '<p class="msg' + (opts.err ? ' err' : '') + '" id="qp-access-msg">' + esc(msg) + '</p>';
+    html += '</div>';
+    setRoot(html);
+    var send = $('qp-access-send');
+    if (send) {
+      send.addEventListener('click', function() {
+        var emailEl = $('qp-access-email');
+        var slugEl = $('qp-access-slug');
+        var emailVal = ((emailEl && emailEl.value) || '').trim().toLowerCase();
+        var slugVal = ((slugEl && slugEl.value) || slug || '').trim().toLowerCase();
+        if (!emailVal || emailVal.indexOf('@') < 3) {
+          renderAccessForm({ slug: slugVal, email: emailVal, msg: 'Enter a valid email address.', err: true });
+          return;
+        }
+        if (!slugVal) {
+          renderAccessForm({ slug: '', email: emailVal, msg: 'Enter the site slug (e.g. beanculture).', err: true });
+          return;
+        }
+        send.disabled = true;
+        var msgEl = $('qp-access-msg');
+        if (msgEl) msgEl.textContent = 'Sending link…';
+        fetch(API + '/portal-access', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug: slugVal, email: emailVal })
+        }).then(function(r) { return r.json(); }).then(function(res) {
+          renderAccessForm({
+            slug: slugVal,
+            email: emailVal,
+            msg: (res && res.message) || 'If we have quotes for that email, we just sent a private access link.',
+            err: !!(res && res.ok === false)
+          });
+        }).catch(function() {
+          renderAccessForm({
+            slug: slugVal,
+            email: emailVal,
+            msg: 'Could not send a link. Try again shortly.',
+            err: true
+          });
+        });
+      });
+    }
+  }
+
   function boot() {
     var c = tokenC();
     var t = tokenT();
     var job = jobId();
+    var access = (params().get('access') || '').trim() === '1';
+    var slug = (params().get('slug') || '').trim().toLowerCase();
 
     if (c) {
       var url = API + '/portal-jobs?c=' + encodeURIComponent(c);
@@ -275,7 +339,7 @@
     }
 
     if (!t) {
-      renderError('Missing quote link.');
+      renderAccessForm({ slug: slug, msg: access ? '' : 'Missing quote link? Request a portal access email below.' });
       return;
     }
 
