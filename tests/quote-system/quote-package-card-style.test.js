@@ -34,14 +34,14 @@ assert.ok(
   'preview auto-fit excludes beverage grids'
 );
 assert.ok(
-  css.includes('grid-template-columns: repeat(2, minmax(0, 1fr)) !important'),
-  'preview forces 2-up for drinks + catering'
+  css.includes('grid-column: 1 / -1') || css.includes('grid-column:1/-1'),
+  'preview group headers span full width'
 );
 
 assert.ok(serializers.includes('packageCards'), 'public shell exposes packageCards');
 assert.ok(normalize.includes('packageCards'), 'normalize ensures packageCards');
 
-assert.ok(manage.includes('oq-verify-portal-2'), 'manage cache-bust');
-assert.ok(render.includes('oq-verify-portal-2'), 'render cache-bust');
+assert.ok(manage.includes('oq-verify-portal-3'), 'manage cache-bust');
+assert.ok(render.includes('oq-verify-portal-3'), 'render cache-bust');
 
 console.log('quote-package-card-style.test.js: ok');

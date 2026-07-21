@@ -63,6 +63,6 @@ test('theme calendar replaces native event date input', function() {
 });
 
 test('cache bust for layout + calendar', function() {
-  assert.match(manage, /oq-verify-portal-2/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-verify-portal-2/);
+  assert.match(manage, /oq-verify-portal-3/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-verify-portal-3/);
 });

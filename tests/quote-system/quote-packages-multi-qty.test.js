@@ -64,9 +64,18 @@ assert.ok(
   online.includes('.lp-oq-choices:not(.lp-oq-fp-grid):not(.lp-oq-bev-grid)'),
   'generic auto-fit skips beverage grids'
 );
-assert.ok(planning.includes('lp-oq-choices lp-oq-bev-grid'), 'each group uses bev-grid');
+assert.ok(planning.includes('lp-oq-choices lp-oq-bev-grid'), 'packages use shared bev-grid');
+assert.ok(
+  planning.includes('One shared 2-up grid') || planning.includes('shared 2-up grid'),
+  'drinks + catering share one grid'
+);
+assert.ok(display.includes('grid-column:1/-1'), 'group headers span full grid width');
+assert.ok(
+  display.includes('grid-template-columns:repeat(2,minmax(0,1fr))!important'),
+  'forced 2-up with even wrap for 3rd/4th cards'
+);
 assert.ok(planning.includes("equipmentCardVars(shell, 'packageCards')"), 'packageCards style vars applied');
-assert.ok(manage.includes('oq-verify-portal-2'), 'manage cache-bust');
-assert.ok(render.includes('oq-verify-portal-2'), 'render cache-bust');
+assert.ok(manage.includes('oq-verify-portal-3'), 'manage cache-bust');
+assert.ok(render.includes('oq-verify-portal-3'), 'render cache-bust');
 
 console.log('quote-packages-multi-qty.test.js: ok');
