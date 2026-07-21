@@ -49,8 +49,8 @@ assert.ok(online.includes('font-size:18px') && online.includes('.online-quote .i
 assert.ok(render.includes('class="section-head"'), 'render wraps in section-head');
 assert.ok(render.includes('class="eyebrow ey"') || render.includes("class=\"eyebrow ey\""), 'render uses eyebrow class');
 assert.ok(render.includes('--oq-eyebrow'), 'section colour CSS vars');
-assert.ok(render.includes('oq-verify-portal-1'), 'render cache-bust');
-assert.ok(manage.includes('oq-verify-portal-1'), 'manage cache-bust');
+assert.ok(render.includes('oq-verify-portal-2'), 'render cache-bust');
+assert.ok(manage.includes('oq-verify-portal-2'), 'manage cache-bust');
 
 // Choice cards horizontal for packages/addons
 assert.ok(online.includes('.lp-oq-layout-cards .lp-oq-choices:not(.lp-oq-fp-grid)'), 'cards layout choice grid');

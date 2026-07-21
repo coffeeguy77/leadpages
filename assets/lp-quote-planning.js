@@ -139,13 +139,151 @@
       '<input type="number" min="1" max="48"' + attrs + ' value="' + esc(val) + '"></label>' + hint;
   }
 
-  function renderEventDateField(state, opts) {
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  function toIsoDate(d) {
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+
+  function parseIsoDate(str) {
+    var m = String(str || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return null;
+    var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function monthLabel(year, monthIndex) {
+    try {
+      return new Date(year, monthIndex, 1).toLocaleString('en-AU', { month: 'long', year: 'numeric' });
+    } catch (e) {
+      return (monthIndex + 1) + '/' + year;
+    }
+  }
+
+  /**
+   * Theme-styled month calendar (replaces native date input for event date).
+   * Keeps a hidden input[data-field=eventDate] for existing sync helpers.
+   */
+  function renderEventCalendar(state, opts) {
     opts = opts || {};
-    var hint = opts.hint
-      ? '<p class="lp-oq-muted" style="font-size:12px;margin:4px 0 0">' + esc(opts.hint) + '</p>'
-      : '<p class="lp-oq-muted" style="font-size:12px;margin:4px 0 0">When is the event?</p>';
-    return '<label class="lp-oq-field"><span>Event date</span>' +
-      '<input type="date" data-field="eventDate" value="' + esc((state && state.eventDate) || '') + '"></label>' + hint;
+    var selected = (state && state.eventDate) || '';
+    var selectedDate = parseIsoDate(selected);
+    var view = (state && state._calView) || '';
+    var viewDate = parseIsoDate(view + '-01') || selectedDate || new Date();
+    var year = viewDate.getFullYear();
+    var month = viewDate.getMonth();
+    if (state) state._calView = year + '-' + pad2(month + 1);
+
+    var todayIso = toIsoDate(new Date());
+    var firstDow = new Date(year, month, 1).getDay(); // 0=Sun
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
+    var prevDays = new Date(year, month, 0).getDate();
+
+    var html = '<div class="lp-oq-cal" data-lp-oq-cal>' +
+      '<input type="hidden" data-field="eventDate" value="' + esc(selected) + '">' +
+      '<div class="lp-oq-cal-head">' +
+      '<span class="lp-oq-cal-label">Event date</span>' +
+      (selected
+        ? '<span class="lp-oq-cal-selected">' + esc(selectedDate
+          ? selectedDate.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+          : selected) + '</span>'
+        : '<span class="lp-oq-cal-selected is-empty">Pick a day</span>') +
+      '</div>' +
+      '<div class="lp-oq-cal-nav">' +
+      '<button type="button" class="lp-oq-cal-nav-btn" data-cal-nav="-1" aria-label="Previous month">‹</button>' +
+      '<div class="lp-oq-cal-month" data-cal-month="' + year + '-' + pad2(month + 1) + '">' +
+      esc(monthLabel(year, month)) + '</div>' +
+      '<button type="button" class="lp-oq-cal-nav-btn" data-cal-nav="1" aria-label="Next month">›</button>' +
+      '</div>' +
+      '<div class="lp-oq-cal-weekdays" aria-hidden="true">' +
+      '<span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>' +
+      '</div><div class="lp-oq-cal-grid" role="grid">';
+
+    var cells = [];
+    var i;
+    for (i = 0; i < firstDow; i++) {
+      var pd = prevDays - firstDow + i + 1;
+      var pMonth = month === 0 ? 11 : month - 1;
+      var pYear = month === 0 ? year - 1 : year;
+      cells.push({ day: pd, iso: pYear + '-' + pad2(pMonth + 1) + '-' + pad2(pd), muted: true });
+    }
+    for (i = 1; i <= daysInMonth; i++) {
+      cells.push({ day: i, iso: year + '-' + pad2(month + 1) + '-' + pad2(i), muted: false });
+    }
+    var nextDay = 1;
+    var nMonth = month === 11 ? 0 : month + 1;
+    var nYear = month === 11 ? year + 1 : year;
+    while (cells.length % 7 !== 0) {
+      cells.push({
+        day: nextDay,
+        iso: nYear + '-' + pad2(nMonth + 1) + '-' + pad2(nextDay),
+        muted: true
+      });
+      nextDay += 1;
+    }
+
+    cells.forEach(function(cell) {
+      var cls = 'lp-oq-cal-day';
+      if (cell.muted) cls += ' is-muted';
+      if (cell.iso === selected) cls += ' is-selected';
+      if (cell.iso === todayIso) cls += ' is-today';
+      html += '<button type="button" class="' + cls + '" data-cal-day="' + esc(cell.iso) + '"' +
+        (cell.muted ? ' tabindex="-1"' : '') + '>' + cell.day + '</button>';
+    });
+
+    html += '</div>';
+    if (opts.hint !== false) {
+      html += opts.hint
+        ? '<p class="lp-oq-muted lp-oq-cal-hint">' + esc(opts.hint) + '</p>'
+        : '<p class="lp-oq-muted lp-oq-cal-hint">When is the event?</p>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function renderEventDateField(state, opts) {
+    return renderEventCalendar(state, opts);
+  }
+
+  function wireEventCalendar(root, state, rerender) {
+    if (!root || !state) return;
+    root.querySelectorAll('[data-lp-oq-cal]').forEach(function(cal) {
+      if (cal.__lpOqCalWired) return;
+      cal.__lpOqCalWired = true;
+      cal.addEventListener('click', function(e) {
+        var nav = e.target.closest('[data-cal-nav]');
+        if (nav && cal.contains(nav)) {
+          e.preventDefault();
+          var dir = parseInt(nav.getAttribute('data-cal-nav'), 10) || 0;
+          var base = parseIsoDate((state._calView || '') + '-01') || parseIsoDate(state.eventDate) || new Date();
+          var next = new Date(base.getFullYear(), base.getMonth() + dir, 1);
+          state._calView = next.getFullYear() + '-' + pad2(next.getMonth() + 1);
+          if (typeof rerender === 'function') rerender();
+          return;
+        }
+        var day = e.target.closest('[data-cal-day]');
+        if (day && cal.contains(day)) {
+          e.preventDefault();
+          var iso = day.getAttribute('data-cal-day') || '';
+          if (!iso) return;
+          state.eventDate = iso;
+          state._calView = iso.slice(0, 7);
+          if (typeof rerender === 'function') rerender();
+        }
+      });
+    });
+  }
+
+  /** Split custom fields: compact (left) vs textarea/notes (right). */
+  function partitionCustomFields(fields) {
+    var left = [];
+    var right = [];
+    (fields || []).forEach(function(f) {
+      if (!f) return;
+      if (f.type === 'textarea') right.push(f);
+      else left.push(f);
+    });
+    return { left: left, right: right };
   }
 
   function syncEventFieldsFromDom(root, state) {
@@ -774,6 +912,7 @@
         state.eventDate = inp.value || '';
       });
     });
+    wireEventCalendar(root, state, rerender);
     root.querySelectorAll('[data-shift-field]').forEach(function(inp) {
       inp.addEventListener('change', function() {
         var row = inp.closest('[data-shift-idx]');
@@ -1082,6 +1221,9 @@
     setGlobalBarista1Hours: setGlobalBarista1Hours,
     renderLabourPlanning: renderLabourPlanning,
     renderEventDateField: renderEventDateField,
+    renderEventCalendar: renderEventCalendar,
+    wireEventCalendar: wireEventCalendar,
+    partitionCustomFields: partitionCustomFields,
     syncEventFieldsFromDom: syncEventFieldsFromDom,
     renderStaffing: renderStaffing,
     renderCartRows: renderCartRows,
