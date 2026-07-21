@@ -66,6 +66,6 @@ test('theme calendar replaces native event date input', function() {
 });
 
 test('cache bust for layout + calendar', function() {
-  assert.match(manage, /oq-ux-whitelist-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-ux-whitelist-1/);
+  assert.match(manage, /oq-portal-access-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-portal-access-1/);
 });

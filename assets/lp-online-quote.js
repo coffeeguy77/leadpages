@@ -116,7 +116,10 @@
       pdfUrl: null,
       emailCodeSent: false,
       emailWhitelisted: false,
-      emailSummarySent: false
+      emailSummarySent: false,
+      showPortalAccess: false,
+      portalAccessEmail: '',
+      portalAccessMsg: ''
     };
   };
 
@@ -235,12 +238,37 @@
       '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc(biz) + '</h2>' +
       '<div class="lp-oq-steps">' + steps.map(function(s, i) {
         return '<span class="lp-oq-step' + (i === this.state.step ? ' is-active' : (i < this.state.step ? ' is-done' : '')) + '">' + esc(this.stepLabel(s)) + '</span>';
-      }, this).join('') + '</div></div>' +
+      }, this).join('') + '</div>' +
+      this.renderPortalAccessBar() +
+      '</div>' +
       '<div class="lp-oq-body">' + bodyHtml + '</div>' +
       '<div class="lp-oq-foot">' + this.renderFooter(stepKey, steps) + '</div>' +
       '</div>';
     this.el.innerHTML = html;
     this.wire(stepKey);
+  };
+
+  OnlineQuoteWidget.prototype.renderPortalAccessBar = function() {
+    var s = this.state;
+    var html = '<div class="lp-oq-access">';
+    if (!s.showPortalAccess) {
+      html += '<button type="button" class="lp-oq-btn lp-oq-btn-ghost lp-oq-access-toggle" data-act="portal-access-toggle">Already quoted? Access my portal</button>';
+      html += '</div>';
+      return html;
+    }
+    html += '<div class="lp-oq-access-panel">';
+    html += '<p class="lp-oq-lead" style="margin:0 0 8px">Enter the email from your quote. We\'ll send a private link to your portal.</p>';
+    html += '<label class="lp-oq-field"><span>Email</span>' +
+      '<input type="email" data-field="portalAccessEmail" autocomplete="email" value="' + esc(s.portalAccessEmail || s.contact.email || '') + '" placeholder="you@example.com"></label>';
+    html += '<div class="lp-oq-access-actions">' +
+      '<button type="button" class="lp-oq-btn" data-act="portal-access-send">Email me a link</button>' +
+      '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-act="portal-access-toggle">Cancel</button>' +
+      '</div>';
+    if (s.portalAccessMsg) {
+      html += '<p class="lp-oq-lead lp-oq-access-msg" style="margin:10px 0 0">' + esc(s.portalAccessMsg) + '</p>';
+    }
+    html += '</div></div>';
+    return html;
   };
 
   OnlineQuoteWidget.prototype.customFieldsFor = function(attachTo) {
@@ -530,6 +558,23 @@
         else if (act === 'confirm-email') self.confirmEmail();
         else if (act === 'send-sms') self.sendSms();
         else if (act === 'confirm-sms') self.confirmSms();
+        else if (act === 'portal-access-toggle') {
+          self.state.showPortalAccess = !self.state.showPortalAccess;
+          self.state.portalAccessMsg = '';
+          if (self.state.showPortalAccess && !self.state.portalAccessEmail) {
+            self.state.portalAccessEmail = (self.state.contact && self.state.contact.email) || '';
+          }
+          self.render();
+        }
+        else if (act === 'portal-access-send') self.sendPortalAccess();
+      });
+    });
+    this.el.querySelectorAll('[data-field="portalAccessEmail"]').forEach(function(inp) {
+      inp.addEventListener('change', function() {
+        self.state.portalAccessEmail = inp.value || '';
+      });
+      inp.addEventListener('input', function() {
+        self.state.portalAccessEmail = inp.value || '';
       });
     });
   };
@@ -742,6 +787,32 @@
     });
   };
 
+  OnlineQuoteWidget.prototype.sendPortalAccess = function() {
+    var self = this;
+    var emailInp = this.el.querySelector('[data-field="portalAccessEmail"]');
+    var email = ((emailInp && emailInp.value) || this.state.portalAccessEmail || '').trim().toLowerCase();
+    if (!email || email.indexOf('@') < 3) {
+      this.state.portalAccessMsg = 'Enter a valid email address.';
+      this.render();
+      return;
+    }
+    this.state.portalAccessEmail = email;
+    this.state.portalAccessMsg = 'Sending link…';
+    this.render();
+    post('/portal-access', { slug: this.slug, email: email }).then(function(res) {
+      if (!res || res.ok === false) {
+        self.state.portalAccessMsg = (res && res.message) || 'Could not send a link. Try again shortly.';
+      } else {
+        self.state.portalAccessMsg = (res && res.message) ||
+          'If we have quotes for that email, we just sent a private access link. Check your inbox (and spam).';
+      }
+      self.render();
+    }).catch(function() {
+      self.state.portalAccessMsg = 'Could not send a link. Try again shortly.';
+      self.render();
+    });
+  };
+
   OnlineQuoteWidget.prototype.sendSms = function() {
     var self = this;
     var phone = contactPhone.call(this);
@@ -831,6 +902,11 @@
       '.lp-oq-cols-contact .lp-oq-col-aside{padding:0;border:none;background:transparent;border-radius:0}',
       '.lp-oq-cols-contact .lp-oq-quote{margin-top:14px;padding-top:14px;border-top:1px solid color-mix(in srgb,' + brand + ' 18%, var(--line, var(--border, currentColor)))}',
       '.lp-oq-quote-slot{min-height:80px}',
+      '.lp-oq-access{margin:4px 0 12px}',
+      '.lp-oq-access-toggle{font-size:var(--lp-oq-fs-lead)!important}',
+      '.lp-oq-access-panel{margin-top:8px;padding:12px;border-radius:12px;border:1px solid color-mix(in srgb,' + brand + ' 22%, var(--line, var(--border, currentColor)));background:color-mix(in srgb,' + brand + ' 5%, transparent)}',
+      '.lp-oq-access-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}',
+      '.lp-oq-access-msg{color:var(--lp-oq-body,inherit)}',
       '.lp-oq-cols-event .lp-oq-plan{margin-top:0}',
       '.lp-oq-event-extra{margin-top:14px}',
       '@media (max-width:720px){.lp-oq-cols{grid-template-columns:1fr}.lp-oq-card{min-height:0}}',
