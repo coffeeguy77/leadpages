@@ -483,6 +483,11 @@ function buildTradeHtml(site, host) {
   const tpl = TOKEN_TEMPLATES[template] || TOKEN_TEMPLATES['broker-leads'];
   const cfg = Object.assign({ business: site.business_name, slug: site.slug, siteId: site.id }, site.config || {});
   if (template === 'trade' && !cfg.trade) cfg.trade = '';
+  try {
+    const { resolveSectionOrder } = require('../lib/section-order');
+    // Keep Position order; append any on sections missing from an incomplete saved list.
+    cfg.sectionOrder = resolveSectionOrder(cfg);
+  } catch (_ordErr) { /* keep cfg.sectionOrder as-is */ }
   const _biz = (cfg.business || site.business_name || '').trim();
   const _trade = (cfg.trade || '').trim();
   const pageTitle = (cfg.seoTitle || '').trim() || (_trade ? (_biz + ' \u2014 ' + _trade + ' in Canberra & the ACT') : (_biz + ' \u2014 Canberra & the ACT'));
@@ -988,6 +993,12 @@ module.exports = async (req, res) => {
       site.config || {}
     );
     if (template === 'trade' && !cfg.trade) cfg.trade = '';
+    if (template === 'trade' || template === 'landing-shell-neutral-v1') {
+      try {
+        const { resolveSectionOrder } = require('../lib/section-order');
+        cfg.sectionOrder = resolveSectionOrder(cfg);
+      } catch (_ordErr) { /* keep existing sectionOrder */ }
+    }
 
     // Sub-page routing: /:site/:page (or /:page on a custom domain) must resolve to a
     // published landing page in the config; draft pages work in ?preview= only.
