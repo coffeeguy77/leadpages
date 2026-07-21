@@ -75,7 +75,7 @@ assert.ok(
   'forced 2-up with even wrap for 3rd/4th cards'
 );
 assert.ok(planning.includes("equipmentCardVars(shell, 'packageCards')"), 'packageCards style vars applied');
-assert.ok(manage.includes('oq-bev-unified-1'), 'manage cache-bust');
-assert.ok(render.includes('oq-bev-unified-1'), 'render cache-bust');
+assert.ok(manage.includes('oq-catering-even-1'), 'manage cache-bust');
+assert.ok(render.includes('oq-catering-even-1'), 'render cache-bust');
 
 console.log('quote-packages-multi-qty.test.js: ok');

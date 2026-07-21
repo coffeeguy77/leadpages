@@ -617,7 +617,10 @@
         : '';
       body = wrap({
         intro: '<p class="lp-oq-intro">When is your event, and how many baristas do you need?</p>',
-        fields: eventFields + eventStaffing + eventExtra
+        fields: '<div class="lp-oq-cols lp-oq-cols-event">' +
+          '<div class="lp-oq-col lp-oq-col-schedule"><p class="lp-oq-col-title">Event schedule</p>' + eventFields + '</div>' +
+          '<div class="lp-oq-col lp-oq-col-staff"><p class="lp-oq-col-title">Barista staffing</p>' + eventStaffing + '</div></div>' +
+          (eventExtra ? '<div class="lp-oq-event-extra">' + eventExtra + '</div>' : '')
       });
     } else if (stepKey === 'custom' || stepKey === 'questions') {
       var Pc = global.LPQuotePlanning;
@@ -695,16 +698,29 @@
       });
     } else {
       var Pcontact = global.LPQuotePlanning;
-      var contactExtra = (Pcontact && Pcontact.renderCustomFieldsHtml)
-        ? Pcontact.renderCustomFieldsHtml(
-          (W.customFieldsFor ? W.customFieldsFor(shell.wizard, 'contact') : []),
-          progress.customAnswers || {},
-          { esc: esc, attr: 'data-prev-custom' }
-        )
+      var contactFields = W.customFieldsFor ? W.customFieldsFor(shell.wizard, 'contact') : [];
+      var contactParts = (Pcontact && Pcontact.partitionCustomFields)
+        ? Pcontact.partitionCustomFields(contactFields)
+        : { left: contactFields.filter(function(f) { return f.type !== 'textarea'; }),
+            right: contactFields.filter(function(f) { return f.type === 'textarea'; }) };
+      var leftExtra = (Pcontact && Pcontact.renderCustomFieldsHtml)
+        ? Pcontact.renderCustomFieldsHtml(contactParts.left, progress.customAnswers || {}, { esc: esc, attr: 'data-prev-custom' })
+        : '';
+      var rightExtra = (Pcontact && Pcontact.renderCustomFieldsHtml)
+        ? Pcontact.renderCustomFieldsHtml(contactParts.right, progress.customAnswers || {}, { esc: esc, attr: 'data-prev-custom' })
         : '';
       body = wrap({
-        intro: '<p class="lp-oq-intro">Contact details (preview).</p>',
-        fields: '<label class="lp-oq-field"><span>Name</span><input disabled placeholder="Customer name"></label>' + contactExtra
+        intro: '<p class="lp-oq-intro">Your details to receive the quote.</p>',
+        fields: '<div class="lp-oq-cols lp-oq-cols-contact">' +
+          '<div class="lp-oq-col lp-oq-col-contact">' +
+          '<label class="lp-oq-field"><span>Name</span><input disabled placeholder="Customer name"></label>' +
+          '<label class="lp-oq-field"><span>Email</span><input disabled placeholder="you@email.com"></label>' +
+          '<label class="lp-oq-field"><span>Mobile</span><input disabled placeholder="0414 631 463"></label>' +
+          leftExtra + '</div>' +
+          '<div class="lp-oq-col lp-oq-col-quote">' + rightExtra +
+          '<div class="lp-oq-quote-slot"><p class="lp-oq-col-title">Your quote</p>' +
+          '<p class="lp-oq-muted" style="margin:0;font-size:13px">Verification and total appear here after Get my quote.</p></div>' +
+          '</div></div>'
       });
     }
 
