@@ -584,7 +584,7 @@
       }
     } else {
       ensureShifts(state);
-      html += '<p class="lp-oq-muted" style="margin:6px 0 8px">One row per day — date, start, end. Scroll if you add more than three days.</p>' +
+      html += '<p class="lp-oq-muted" style="margin:6px 0 8px">One row per day — date, start, end. Extra days stretch the quote card.</p>' +
         '<div class="lp-oq-shifts" data-lp-oq-shifts>';
       state.shifts.forEach(function(sh, i) {
         html += '<div class="lp-oq-shift lp-oq-shift-row" data-shift-idx="' + i + '">' +
