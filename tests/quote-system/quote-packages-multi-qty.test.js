@@ -66,7 +66,7 @@ assert.ok(
 );
 assert.ok(planning.includes('lp-oq-choices lp-oq-bev-grid'), 'each group uses bev-grid');
 assert.ok(planning.includes("equipmentCardVars(shell, 'packageCards')"), 'packageCards style vars applied');
-assert.ok(manage.includes('oq-pkg-style-2'), 'manage cache-bust');
-assert.ok(render.includes('oq-pkg-style-2'), 'render cache-bust');
+assert.ok(manage.includes('oq-travel-live-1'), 'manage cache-bust');
+assert.ok(render.includes('oq-travel-live-1'), 'render cache-bust');
 
 console.log('quote-packages-multi-qty.test.js: ok');
