@@ -57,7 +57,7 @@ assert.ok(
   'order: head → preview → section style → builder'
 );
 assert.ok(manage.includes('themeAccent'), 'passes site theme accent into builder');
-assert.ok(manage.includes('lp-quote-builder.css?v=oq-event-date-1'), 'cache-busted css');
-assert.ok(render.includes('oq-event-date-1'), 'public render cache-bust');
+assert.ok(manage.includes('lp-quote-builder.css?v=oq-styling-tab-1'), 'cache-busted css');
+assert.ok(render.includes('oq-styling-tab-1'), 'public render cache-bust');
 
 console.log('quote-preview-style-ux.test.js: ok');
