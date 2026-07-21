@@ -51,7 +51,10 @@ assert.ok(manage.includes('dash-leads-cog'), 'mobile filter cog');
 assert.ok(manage.includes('dash-leads-menu'), 'filter popup menu');
 assert.ok(manage.includes('_dashLeadsToggleMenu'), 'cog toggles menu');
 assert.ok(manage.includes("DASH_LEADS.filter='all'"), 'defaults to All messages');
-assert.ok(manage.includes('dash-leads-cog-1') || manage.includes('lp-admin-responsive.css?v=dash-leads-cog-1'), 'responsive cache-bust');
+assert.ok(manage.includes('dash-leads-compact-1') || manage.includes('lp-admin-responsive.css?v=dash-leads-compact-1'), 'responsive cache-bust');
+assert.ok(manage.includes('lp-quote-lead'), 'structured quote lead markup');
+assert.ok(manage.includes('lp-quote-kv'), 'quote key/value rows');
+assert.ok(manage.includes('lp-quote-break'), 'quote breakdown list');
 
 // CSS polish
 assert.ok(themes.includes('.dash-leads-head'), 'leads header layout');
@@ -60,11 +63,15 @@ assert.ok(themes.includes('.dash-leads-menu'), 'menu styles');
 assert.ok(themes.includes('.lp-lead-card-inner'), 'desktop card flex');
 assert.ok(themes.includes('.dash-leads-list.is-scroll'), 'scroll after many items');
 assert.ok(themes.includes('.dash-lead-view'), 'view message spacing');
-assert.ok(themes.includes('gap: 10px 14px') || themes.includes('.lp-lead-card-actions'), 'action gap');
+assert.ok(themes.includes('gap: 6px 10px') || themes.includes('.lp-lead-card-actions'), 'action gap');
+assert.ok(themes.includes('.lp-quote-lead'), 'quote lead compact styles');
+assert.ok(themes.includes('.lp-quote-kv-row'), 'quote kv row styles');
 
 const responsive = fs.readFileSync(path.join(root, 'assets/lp-admin-responsive.css'), 'utf8');
 assert.ok(responsive.includes('.dash-leads-menu.is-open'), 'mobile menu open state');
 assert.ok(responsive.includes('.dash-leads-cog'), 'mobile shows cog');
+assert.ok(responsive.includes('padding: 8px 10px') || responsive.includes('.lp-lead-card-inner'), 'mobile compact card padding');
+assert.ok(responsive.includes('.lp-quote-kv-row'), 'mobile quote kv tweaks');
 
 // Ingest respects blocklist
 assert.ok(leadsApi.includes('isLeadBlocked'), 'website leads check blocklist');
