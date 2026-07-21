@@ -17,6 +17,15 @@ test('session create persists contact email (root cause of missing OTP mail)', f
   assert.match(sessionApi, /updateSession\(session\.id, createPatch\)/);
 });
 
+test('session POST still reads body.token before update-vs-create branch', function() {
+  // Regression: OTP contact patch dropped `const token = clean(body.token, …)`
+  // so `if (token)` threw ReferenceError → every Get my quote failed.
+  assert.match(sessionApi, /const token = clean\(body\.token/);
+  const tokenDecl = sessionApi.indexOf('const token = clean(body.token');
+  const tokenBranch = sessionApi.indexOf('if (token)');
+  assert.ok(tokenDecl > 0 && tokenBranch > tokenDecl, 'body.token must be bound before if (token)');
+});
+
 test('calculate force-sends OTP and accepts contact on the request', function() {
   assert.match(calculateApi, /body\.contact/);
   assert.match(calculateApi, /force:\s*true/);
@@ -41,5 +50,5 @@ test('wizard always offers Send\/Resend code and passes contact on calculate', f
 
 test('cache-bust for email OTP fix', function() {
   assert.match(manage, /oq-portal-style-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-portal-style-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-session-token-1/);
 });

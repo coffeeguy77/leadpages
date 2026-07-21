@@ -17,7 +17,7 @@ const verifySms = fs.readFileSync(path.join(root, 'api/quote-system/verify-sms.j
 
 test('cache-bust bumped for ux + whitelist', function() {
   assert.match(manage, /oq-portal-style-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-portal-style-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-session-token-1/);
   assert.doesNotMatch(manage, /oq-verify-portal-3/);
 });
 
