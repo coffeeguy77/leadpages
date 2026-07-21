@@ -293,6 +293,21 @@
     fill(ui, 'btnGhostBg', '#ffffff');
     fill(ui, 'btnGhostText', accent);
     fill(ui, 'btnGhostBorder', accent);
+    fill(ui, 'accessBtnBg', accent);
+    fill(ui, 'accessBtnText', '#ffffff');
+    fill(ui, 'accessBtnBorder', accent);
+    fill(ui, 'accessPopBg', panel);
+    fill(ui, 'accessPopBorder', accent);
+    fill(ui, 'accessPopTitle', '#ffffff');
+    fill(ui, 'accessPopText', '#ffffff');
+    fill(ui, 'accessPopLabel', accent);
+    fill(ui, 'accessPopFieldBg', ui.fieldBg || '#3a3436');
+    fill(ui, 'accessPopFieldText', ui.fieldText || '#ffffff');
+    fill(ui, 'accessPopFieldBorder', accent);
+    fill(ui, 'accessPopBtnBg', accent);
+    fill(ui, 'accessPopBtnText', '#ffffff');
+    fill(ui, 'accessPopCancelText', '#ffffff');
+    fill(ui, 'accessPopCancelBorder', accent);
     fill(ec, 'cardBg', panel);
     fill(ec, 'imageBg', '#524b4f');
     fill(ec, 'titleColor', accent);
@@ -1133,6 +1148,26 @@
       + col('calendarIconColor', 'Calendar / clock icon colour', '#000000')
       + col('calendarPopBg', 'Popup calendar background', panel)
       + col('calendarPopBorder', 'Popup calendar border', accent)
+      + '</div>'
+      + '<h4 class="oqb-sub">Access my portal</h4>'
+      + '<p class="oqb-hint" style="margin-top:0">Styles the <strong>Already quoted?</strong> button on the step nav and the email popup it opens. Defaults use your accent on a dark panel so title and body stay readable.</p>'
+      + '<div class="oqb-grid">'
+      + col('accessBtnBg', 'Already quoted — background', accent)
+      + col('accessBtnText', 'Already quoted — text', '#ffffff')
+      + col('accessBtnBorder', 'Already quoted — stroke', accent)
+      + col('accessPopBg', 'Popup background', panel)
+      + col('accessPopBorder', 'Popup stroke', accent)
+      + col('accessPopTitle', 'Popup title text', '#ffffff')
+      + col('accessPopText', 'Popup body text', '#ffffff')
+      + col('accessPopLabel', 'Popup field label', accent)
+      + col('accessPopFieldBg', 'Popup input background', ui.fieldBg || '#3a3436')
+      + col('accessPopFieldText', 'Popup input text', ui.fieldText || '#ffffff')
+      + col('accessPopFieldBorder', 'Popup input stroke', accent)
+      + col('accessPopBtnBg', 'Email me a link — background', accent)
+      + col('accessPopBtnText', 'Email me a link — text', '#ffffff')
+      + col('accessPopCancelBg', 'Cancel — background', panel)
+      + col('accessPopCancelText', 'Cancel — text', '#ffffff')
+      + col('accessPopCancelBorder', 'Cancel — stroke', accent)
       + '</div></div>';
   };
 

@@ -48,6 +48,6 @@ test('_renderWizardUiColors runs without ReferenceError', function() {
 });
 
 test('cache-bust for builder panel fix', function() {
-  assert.match(manage, /oq-builder-panel-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-builder-panel-1/);
+  assert.match(manage, /oq-portal-style-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-portal-style-1/);
 });
