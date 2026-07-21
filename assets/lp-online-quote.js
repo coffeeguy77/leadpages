@@ -112,12 +112,13 @@
       quote: null,
       session: null,
       portalUrl: null,
+      jobsPortalUrl: null,
       pdfUrl: null,
       emailCodeSent: false,
       emailWhitelisted: false,
       emailSummarySent: false
     };
-  }
+  };
 
   OnlineQuoteWidget.prototype.init = function() {
     var self = this;
@@ -344,6 +345,7 @@
     }
     if (key === 'travel') {
       var zones = this.shell.travelZones || [];
+      // Must use this.planning() — live script is a plain IIFE (no `global` binding).
       var Pt = this.planning();
       var travelChoices = (Pt && Pt.renderTravelZoneRows)
         ? Pt.renderTravelZoneRows(this.state, this.shell, zones, { esc: esc, iconHtml: iconHtml })
@@ -441,11 +443,13 @@
         html += '<li><span>' + esc(row.label) + '</span><span>' + esc(formatMoney(row.totalCents)) + '</span></li>';
       });
       html += '</ul>';
-      if (this.state.portalUrl) {
+      var portalHref = this.state.jobsPortalUrl || this.state.portalUrl;
+      if (portalHref) {
         html += '<div class="lp-oq-verify" style="margin-top:14px">' +
-          '<a class="lp-oq-btn" href="' + esc(this.state.portalUrl) + '" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">Open quote portal</a>' +
+          '<a class="lp-oq-btn" href="' + esc(portalHref) + '" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">' +
+          (this.state.jobsPortalUrl ? 'Open your quotes portal' : 'Open quote portal') + '</a>' +
           (this.state.pdfUrl ? ' <a class="lp-oq-btn lp-oq-btn-ghost" href="' + esc(this.state.pdfUrl) + '" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;margin-left:8px">Download PDF</a>' : '') +
-          '</div><p class="lp-oq-muted" style="font-size:12px;margin-top:8px">Check your email for the portal link and PDF attachment.</p>';
+          '</div><p class="lp-oq-muted" style="font-size:12px;margin-top:8px">Check your email for the portal link and PDF. Returning visits only need SMS — your email stays verified.</p>';
       }
     }
     html += '</div>';
@@ -667,7 +671,8 @@
       return post('/verify-email', {
         token: self.token,
         action: 'send',
-        email: email
+        email: email,
+        force: true
       });
     }).then(function(res) {
       if (!res || !res.ok) {
@@ -676,7 +681,11 @@
       }
       if (res.sent) {
         self.state.emailCodeSent = true;
+        self.state.emailCode = '';
         self.render();
+        alert(res.alreadyPending
+          ? 'A code is already on its way — check your inbox (and spam).'
+          : 'We sent a new 6-digit code to your email.');
       } else if (res.reason === 'no_key') {
         alert('Email verification is not configured yet. Please contact the business directly.');
       } else {
@@ -689,24 +698,36 @@
 
   OnlineQuoteWidget.prototype.confirmEmail = function() {
     var self = this;
+    if (!this.token) {
+      alert('Session expired. Please tap Get my quote again.');
+      return;
+    }
     var codeInp = this.el.querySelector('[data-field="emailCode"]');
-    var code = ((codeInp && codeInp.value) || this.state.emailCode || '').trim();
-    if (!code) {
+    var raw = ((codeInp && codeInp.value) || this.state.emailCode || '').trim();
+    var code = String(raw).replace(/\D/g, '');
+    if (!code || code.length < 4) {
       alert('Enter the 6-digit code from your email.');
       return;
     }
     post('/verify-email', { token: this.token, action: 'confirm', code: code }).then(function(res) {
-      if (!res.ok) { alert('Invalid or expired code.'); return; }
-      if (res.summaryEmailSent) {
-        self.state.emailSummarySent = true;
+      if (!res || !res.ok) {
+        alert((res && res.message) || 'Invalid or expired code. Tap Resend code and use the newest email.');
+        return null;
       }
-      return post('/calculate', { token: self.token });
+      if (res.summaryEmailSent) self.state.emailSummarySent = true;
+      if (res.whitelisted || res.emailVerified) self.state.emailWhitelisted = true;
+      return post('/calculate', { token: self.token, inputs: self.progress() });
     }).then(function(res) {
       if (res && res.ok) {
         self.state.quote = res.quote;
         self.state.session = res.session;
+        if (res.emailVerification && res.emailVerification.whitelisted) {
+          self.state.emailWhitelisted = true;
+        }
         self.render();
       }
+    }).catch(function() {
+      alert('Could not verify that code. Please try again.');
     });
   };
 
@@ -741,6 +762,7 @@
       if (!res.ok) { alert('Invalid or expired SMS code.'); return; }
       self.state.portalUrl = res.portalUrl || null;
       self.state.pdfUrl = res.pdfUrl || null;
+      self.state.jobsPortalUrl = res.jobsPortalUrl || null;
       if (res.quote) self.state.quote = res.quote;
       return post('/calculate', { token: self.token });
     }).then(function(res) {

@@ -10,6 +10,10 @@ const { updateSession } = require('../../lib/quote-system/session');
 const { sendSmsCode, checkSmsCode } = require('../../lib/quote-system/verify');
 const { finalizeVerifiedPortal } = require('../../lib/quote-system/portal');
 const { sendPortalLinkEmail } = require('../../lib/quote-system/portal-email');
+const {
+  ensureCustomerPortal,
+  jobsPortalUrl
+} = require('../../lib/quote-system/customer-portal');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
 const { normaliseAuPhone } = require('../../lib/quote-system/phone');
 
@@ -73,7 +77,22 @@ module.exports = async function handler(req, res) {
           .eq('id', refreshed.session.site_id)
           .maybeSingle();
         const businessName = (site && site.business_name) || 'Your provider';
+
+        let jobsUrl = null;
         if (refreshed.session.contact_email) {
+          try {
+            const customer = await ensureCustomerPortal(
+              refreshed.session.site_id,
+              refreshed.session.contact_email,
+              refreshed.session.contact_phone
+            );
+            if (customer.ok && customer.portal) {
+              jobsUrl = jobsPortalUrl(req, customer.portal.access_token);
+            }
+          } catch (cpErr) {
+            console.warn('quote-system verify-sms customer portal:', cpErr && cpErr.message);
+          }
+
           const { buildQuotePdfBuffer } = require('../../lib/quote-system/pdf');
           let pdfBuffer = null;
           try {
@@ -89,7 +108,7 @@ module.exports = async function handler(req, res) {
           await sendPortalLinkEmail({
             to: refreshed.session.contact_email,
             businessName,
-            portalUrl: finalized.portalUrl,
+            portalUrl: jobsUrl || finalized.portalUrl,
             totalFormatted: finalized.quote && finalized.quote.totalFormatted,
             pdfBuffer
           });
@@ -97,6 +116,7 @@ module.exports = async function handler(req, res) {
         portalPayload = {
           portalUrl: finalized.portalUrl,
           pdfUrl: finalized.pdfUrl,
+          jobsPortalUrl: jobsUrl,
           quote: finalized.quote
         };
       }

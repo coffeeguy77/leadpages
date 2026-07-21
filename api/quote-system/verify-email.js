@@ -1,6 +1,6 @@
 /**
  * POST /api/quote-system/verify-email
- *   { token, action: 'send'|'confirm', email?, code? }
+ *   { token, action: 'send'|'confirm', email?, code?, force? }
  */
 
 const { readBody, json, clean } = require('../../lib/quote-system/http');
@@ -12,11 +12,20 @@ const {
 const { updateSession } = require('../../lib/quote-system/session');
 const {
   ensureEmailVerificationSent,
-  verifyEmailCode
+  verifyEmailCode,
+  normalizeOtpCode
 } = require('../../lib/quote-system/verify');
 const { sendQuoteSummaryEmail } = require('../../lib/quote-system/email-verify-flow');
 const { assertQuoteAppEntitled } = require('../../lib/quote-system/billing');
 const { normalizeEmail, whitelistEmail } = require('../../lib/quote-system/email-whitelist');
+
+const VERIFY_ERROR_MESSAGES = {
+  no_pending: 'No verification code is pending. Tap Resend code and try again.',
+  expired: 'That code has expired. Tap Resend code for a new one.',
+  invalid_code: 'That code does not match. Check the latest email and try again.',
+  too_many_attempts: 'Too many attempts. Tap Resend code for a new one.',
+  code_required: 'Enter the 6-digit code from your email.'
+};
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'method_not_allowed' });
@@ -51,7 +60,9 @@ module.exports = async function handler(req, res) {
         configVersion.config.business &&
         configVersion.config.business.name;
 
-      const mail = await ensureEmailVerificationSent(session.id, email, businessName);
+      const mail = await ensureEmailVerificationSent(session.id, email, businessName, {
+        force: !!body.force
+      });
       return json(res, 200, {
         ok: true,
         sent: mail.sent,
@@ -61,16 +72,36 @@ module.exports = async function handler(req, res) {
     }
 
     if (action === 'confirm') {
-      const code = clean(body.code, 12);
-      if (!code) return json(res, 400, { ok: false, error: 'code_required' });
+      const code = normalizeOtpCode(body.code || clean(body.code, 12));
+      if (!code) {
+        return json(res, 400, {
+          ok: false,
+          error: 'code_required',
+          message: VERIFY_ERROR_MESSAGES.code_required
+        });
+      }
 
       const verified = await verifyEmailCode(session.id, code);
-      if (!verified.ok) return json(res, 400, { ok: false, error: verified.error });
+      if (!verified.ok) {
+        return json(res, 400, {
+          ok: false,
+          error: verified.error,
+          message: VERIFY_ERROR_MESSAGES[verified.error] || 'Could not verify that code.'
+        });
+      }
 
       await updateSession(session.id, { email_verified_at: new Date().toISOString() });
 
+      let whitelisted = false;
       if (session.contact_email) {
-        await whitelistEmail(session.site_id, session.contact_email);
+        try {
+          await whitelistEmail(session.site_id, session.contact_email);
+          whitelisted = true;
+        } catch (wlErr) {
+          // Never fail a successful OTP because whitelist upsert failed (missing
+          // migration, RLS, etc). Verification itself already succeeded.
+          console.warn('quote-system verify-email whitelist:', wlErr && wlErr.message);
+        }
       }
 
       let emailSummary = null;
@@ -83,6 +114,7 @@ module.exports = async function handler(req, res) {
       return json(res, 200, {
         ok: true,
         emailVerified: true,
+        whitelisted: whitelisted,
         summaryEmailSent: !!(emailSummary && emailSummary.sent)
       });
     }
