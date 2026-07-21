@@ -181,6 +181,6 @@ test('wizard keeps travel in resolved steps when zones exist after coffee-van pi
 });
 
 test('cache bust covers travel frontend fix', function() {
-  assert.match(manage, /oq-no-scroll-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-no-scroll-1/);
+  assert.match(manage, /oq-align-fields-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-align-fields-1/);
 });
