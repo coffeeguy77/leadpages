@@ -1383,27 +1383,30 @@
   text-transform: uppercase;
   color: var(--lp-oq-label, var(--ink-soft));
 }
-.oqb-preview-mock .lp-oq-cols-contact .lp-oq-col-quote {
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
-  background: color-mix(in srgb, var(--accent) 5%, transparent);
+.oqb-preview-mock .lp-oq-cols-contact .lp-oq-col-aside {
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
 }
 .oqb-preview-mock .lp-oq-cal {
   margin-top: 8px;
-  padding: 10px;
+  padding: 8px;
+  max-width: 220px;
+  width: 100%;
   border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
   background: color-mix(in srgb, var(--accent) 4%, transparent);
+  box-sizing: border-box;
 }
 .oqb-preview-mock .lp-oq-cal-head {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .oqb-preview-mock .lp-oq-cal-label {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -1413,13 +1416,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: 4px;
+  margin-bottom: 4px;
 }
 .oqb-preview-mock .lp-oq-cal-month { font-weight: 700; font-size: 13px; }
 .oqb-preview-mock .lp-oq-cal-nav-btn {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 8px;
   border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
   background: transparent;
@@ -1430,7 +1433,7 @@
 .oqb-preview-mock .lp-oq-cal-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 3px;
+  gap: 2px;
   text-align: center;
 }
 .oqb-preview-mock .lp-oq-cal-weekdays {
@@ -1439,20 +1442,21 @@
   letter-spacing: .04em;
   text-transform: uppercase;
   color: var(--lp-oq-muted, var(--ink-soft));
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
 .oqb-preview-mock .lp-oq-cal-day {
   appearance: none;
   border: 0;
-  border-radius: 8px;
-  min-height: 30px;
+  border-radius: 7px;
+  min-height: 0;
   aspect-ratio: 1;
   font: inherit;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   background: transparent;
   color: var(--lp-oq-body, var(--ink));
+  padding: 0;
 }
 .oqb-preview-mock .lp-oq-cal-day.is-muted { opacity: .38; }
 .oqb-preview-mock .lp-oq-cal-day.is-today {

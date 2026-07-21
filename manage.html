@@ -40,7 +40,7 @@
 <link rel="stylesheet" href="/assets/lp-themes.css?v=dash-leads-compact-1">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=dash-leads-compact-1">
-<link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-verify-portal-3">
+<link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-ux-whitelist-1">
 <style>
 :root{
   --radius:14px; --radius-sm:10px;
@@ -641,10 +641,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
 <script src="/icons.js"></script>
 <script src="/assets/lp-country-codes.js?v=dash-country-1"></script>
-<script src="/assets/lp-quote-wizard-logic.js?v=oq-verify-portal-3"></script>
-<script src="/assets/lp-quote-display.js?v=oq-verify-portal-3"></script>
-<script src="/assets/lp-quote-planning.js?v=oq-verify-portal-3"></script>
-<script src="/assets/lp-quote-builder.js?v=oq-verify-portal-3"></script>
+<script src="/assets/lp-quote-wizard-logic.js?v=oq-ux-whitelist-1"></script>
+<script src="/assets/lp-quote-display.js?v=oq-ux-whitelist-1"></script>
+<script src="/assets/lp-quote-planning.js?v=oq-ux-whitelist-1"></script>
+<script src="/assets/lp-quote-builder.js?v=oq-ux-whitelist-1"></script>
 </head>
 <body data-lp-admin-page="manage">
 <script>
@@ -7920,7 +7920,7 @@ function heroCtaCard(c){
 
 
   /* ============================ ONLINE QUOTE ADMIN ============================ */
-  var LPONLINEQUOTE={ siteId:null, config:null, sessions:[], draftConfig:null };
+  var LPONLINEQUOTE={ siteId:null, config:null, sessions:[], whitelist:[], draftConfig:null };
   function _oqCanEditConfig(admin, isSuper){
     if(!admin||!admin.activeVersion||!admin.activeVersion.config) return false;
     if(admin.classification==='private_superuser') return !!isSuper;
@@ -7976,8 +7976,11 @@ function heroCtaCard(c){
       var cfgJ=await cfgR.json();
       var sesR=await fetch('/api/quote-system/admin/sessions?site_id='+encodeURIComponent(currentSiteId)+'&limit=30',{headers:hdr});
       var sesJ=await sesR.json();
+      var wlR=await fetch('/api/quote-system/admin/whitelist?site_id='+encodeURIComponent(currentSiteId),{headers:hdr});
+      var wlJ=await wlR.json().catch(function(){ return { ok:false, emails:[] }; });
       LPONLINEQUOTE.config=cfgJ;
       LPONLINEQUOTE.sessions=(sesJ&&sesJ.sessions)||[];
+      LPONLINEQUOTE.whitelist=(wlJ&&wlJ.ok&&wlJ.emails)||[];
       var isSuper=currentRole==='super';
       var slug=currentSiteSlug||'';
       var admin=cfgJ.admin;
@@ -8042,6 +8045,36 @@ function heroCtaCard(c){
           +'<button type="button" class="btn" id="oq-enable">'+_oqBtnLabel+'</button>'
           +'<span id="oq-enable-msg" class="hint" style="margin-left:8px;"></span></div>';
       }
+      html+='<div class="card" style="margin-top:18px;" id="oq-whitelist-card"><h3 style="margin:0 0 8px;">Verified email whitelist</h3>'
+        +'<p class="lede" style="margin:0 0 12px;">Accounts are keyed by <strong>email</strong>. Returning customers skip email OTP. <strong>SMS is always required</strong> for each itemised quote — the mobile is stored on the email account. Different names (e.g. Rob / Robert) become aliases on the same email.</p>'
+        +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;align-items:end;margin-bottom:14px;">'
+        +'<label style="display:block;"><span style="font-size:11px;color:var(--ink-soft);display:block;margin-bottom:4px;">Email</span><input id="oq-wl-email" type="email" placeholder="name@example.com" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:var(--ink);box-sizing:border-box;"></label>'
+        +'<label style="display:block;"><span style="font-size:11px;color:var(--ink-soft);display:block;margin-bottom:4px;">Name</span><input id="oq-wl-name" type="text" placeholder="Primary name" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:var(--ink);box-sizing:border-box;"></label>'
+        +'<label style="display:block;"><span style="font-size:11px;color:var(--ink-soft);display:block;margin-bottom:4px;">Mobile (AU)</span><input id="oq-wl-phone" type="tel" placeholder="0414 631 463" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:var(--ink);box-sizing:border-box;"></label>'
+        +'<div><button type="button" class="btn" id="oq-wl-add">Add</button> <span id="oq-wl-msg" class="hint" style="margin-left:6px;"></span></div>'
+        +'</div>';
+      var wlRows=LPONLINEQUOTE.whitelist||[];
+      if(!wlRows.length){
+        html+='<p class="hint">No whitelisted emails yet. Add one above, or they appear automatically after a successful email verify.</p>';
+      } else {
+        html+='<div style="display:flex;flex-direction:column;gap:8px;">';
+        wlRows.forEach(function(row){
+          var aliases=Array.isArray(row.name_aliases)?row.name_aliases:[];
+          var aliasTxt=aliases.length?aliases.join(', '):'—';
+          html+='<div class="lp-dash-row" style="padding:12px 14px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">'
+            +'<div style="min-width:0;flex:1;">'
+            +'<div style="font-weight:600;">'+esc(row.email||'')+'</div>'
+            +'<div style="font-size:13px;color:var(--ink-soft);margin-top:4px;">'
+            +esc(row.primary_name||'—')+(row.phone?' · '+esc(row.phone):'')
+            +'</div>'
+            +'<div style="font-size:12px;color:var(--ink-soft);margin-top:4px;">Aliases: '+esc(aliasTxt)+'</div>'
+            +'</div>'
+            +'<button type="button" class="btn ghost oq-wl-remove" data-email="'+esc(row.email||'')+'" style="flex-shrink:0;">Remove</button>'
+            +'</div>';
+        });
+        html+='</div>';
+      }
+      html+='</div>';
       html+='<div class="card" style="margin-top:18px;"><h3 style="margin:0 0 8px;">Recent sessions</h3>';
       var sessions=LPONLINEQUOTE.sessions||[];
       if(!sessions.length){
@@ -8092,6 +8125,36 @@ function heroCtaCard(c){
       }
       var ref=$('oq-refresh'); if(ref) ref.addEventListener('click',renderOnlineQuoteAdmin);
       var ed=$('oq-goto-editor'); if(ed) ed.addEventListener('click',function(){ showView('details'); landingSub='onlineQuote'; renderDetails(); });
+      var wlAdd=$('oq-wl-add'); if(wlAdd) wlAdd.addEventListener('click',async function(){
+        var msg=$('oq-wl-msg');
+        var email=(($('oq-wl-email')&&$('oq-wl-email').value)||'').trim();
+        var name=(($('oq-wl-name')&&$('oq-wl-name').value)||'').trim();
+        var phone=(($('oq-wl-phone')&&$('oq-wl-phone').value)||'').trim();
+        if(!email||email.indexOf('@')<3){ if(msg){ msg.textContent='Valid email required'; msg.style.color='var(--danger)'; } return; }
+        try{
+          wlAdd.disabled=true; if(msg){ msg.textContent='Saving…'; msg.style.color=''; }
+          var h=await _oqAuthHeaders(); h['Content-Type']='application/json';
+          var r=await fetch('/api/quote-system/admin/whitelist',{method:'POST',headers:h,body:JSON.stringify({site_id:currentSiteId,email:email,name:name,phone:phone})});
+          var j=await r.json();
+          wlAdd.disabled=false;
+          if(j.ok){ if(typeof toast==='function') toast('Email whitelisted'); renderOnlineQuoteAdmin(); }
+          else { if(msg){ msg.textContent=(j.message||j.error||'Failed'); msg.style.color='var(--danger)'; } }
+        }catch(e){ wlAdd.disabled=false; if(msg){ msg.textContent='Network error'; msg.style.color='var(--danger)'; } }
+      });
+      box.querySelectorAll('.oq-wl-remove').forEach(function(btn){
+        btn.addEventListener('click',async function(){
+          var email=btn.getAttribute('data-email')||'';
+          if(!email||!confirm('Remove '+email+' from the whitelist?')) return;
+          try{
+            btn.disabled=true;
+            var h=await _oqAuthHeaders(); h['Content-Type']='application/json';
+            var r=await fetch('/api/quote-system/admin/whitelist',{method:'DELETE',headers:h,body:JSON.stringify({site_id:currentSiteId,email:email})});
+            var j=await r.json();
+            if(j.ok){ if(typeof toast==='function') toast('Removed'); renderOnlineQuoteAdmin(); }
+            else { btn.disabled=false; if(typeof toast==='function') toast(j.error||'Failed'); }
+          }catch(e){ btn.disabled=false; if(typeof toast==='function') toast('Network error'); }
+        });
+      });
       var sc=$('oq-save-config'); if(sc) sc.addEventListener('click',async function(){
         var sm=$('oq-save-msg');
         var cfg=null;
