@@ -33,10 +33,13 @@ test('event step splits schedule and staffing columns', function() {
 
 test('wizard card locks body height so Continue stays put', function() {
   assert.match(online, /--lp-oq-card-min:640px/);
-  assert.match(online, /height:var\(--lp-oq-card-min\)/);
+  assert.match(online, /min-height:var\(--lp-oq-card-min\)/);
+  assert.match(online, /overflow:visible/);
+  // Shared min-height only — no fixed height that forces an inner scroller.
+  assert.doesNotMatch(online, /;height:var\(--lp-oq-card-min\)/);
   assert.match(online, /margin-top:auto/);
-  assert.match(css, /min-height: 640px/);
-  assert.match(css, /height: 640px/);
+  assert.match(css, /\.oqb-preview-body[\s\S]*overflow:\s*visible/);
+  assert.doesNotMatch(css, /\.oqb-preview-body[\s\S]*overflow:\s*auto/);
 });
 
 test('theme calendar is a compact popup date picker', function() {
@@ -46,7 +49,7 @@ test('theme calendar is a compact popup date picker', function() {
   assert.match(planning, /lp-oq-datepick-trigger/);
   assert.match(planning, /lp-oq-cal-pop/);
   assert.match(planning, /lp-oq-shift-row/);
-  assert.match(online, /max-height:calc\(3 \*/);
+  assert.doesNotMatch(online, /max-height:calc\(3 \*/);
   assert.match(online, /lp-oq-cal-day/);
   assert.match(online, /--lp-oq-cal-icon/);
   assert.match(online, /lp-oq-datepick/);
@@ -77,6 +80,19 @@ test('theme calendar is a compact popup date picker', function() {
 });
 
 test('cache bust for layout + calendar', function() {
-  assert.match(manage, /oq-event-cal-live-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-event-cal-live-1/);
+  assert.match(manage, /oq-builder-panel-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-builder-panel-1/);
+});
+
+test('portal access sits on nav row and opens a popup', function() {
+  assert.match(online, /lp-oq-nav/);
+  assert.match(online, /lp-oq-access-toggle/);
+  assert.match(online, /lp-oq-access-backdrop/);
+  assert.match(online, /lp-oq-access-dialog/);
+  assert.doesNotMatch(online, /lp-oq-access-panel/);
+});
+
+test('preview body does not force an inner scrollbar', function() {
+  assert.match(css, /\.oqb-preview-body\s*\{[^}]*overflow:\s*visible/s);
+  assert.doesNotMatch(css, /\.oqb-preview-body\s*\{[^}]*overflow:\s*auto/s);
 });

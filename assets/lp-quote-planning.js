@@ -256,12 +256,17 @@
     var fieldAttr = opts.fieldAttr || 'data-field="eventDate"';
     var shiftAttr = opts.shiftIdx != null ? (' data-cal-shift-idx="' + opts.shiftIdx + '"') : '';
 
-    var html = '<div class="lp-oq-datepick' + (isOpen ? ' is-open' : '') + '" data-lp-oq-cal data-cal-key="' + esc(openKey) + '"' + shiftAttr + '>' +
+    var html = '<div class="lp-oq-datepick' + (isOpen ? ' is-open' : '') + (opts.row ? ' lp-oq-datepick-row' : '') + '" data-lp-oq-cal data-cal-key="' + esc(openKey) + '"' + shiftAttr + '>' +
       '<input type="hidden" ' + fieldAttr + ' value="' + esc(value) + '">' +
+      (opts.row
+        ? '<span class="lp-oq-datepick-label">' + esc(label) + '</span>'
+        : '') +
       '<button type="button" class="lp-oq-datepick-trigger" data-cal-toggle aria-expanded="' + (isOpen ? 'true' : 'false') + '" aria-haspopup="dialog">' +
       '<span class="lp-oq-datepick-ic">' + calendarIconSvg() + '</span>' +
       '<span class="lp-oq-datepick-meta">' +
-      '<span class="lp-oq-datepick-label">' + esc(label) + '</span>' +
+      (opts.row
+        ? ''
+        : '<span class="lp-oq-datepick-label">' + esc(label) + '</span>') +
       '<span class="lp-oq-datepick-value' + (value ? '' : ' is-empty') + '">' +
       esc(value ? formatAuDate(value) : placeholder) + '</span></span>' +
       '</button>';
@@ -437,7 +442,8 @@
     for (var n = included; n <= Math.min(included + 1, 4); n++) {
       html += '<label class="lp-oq-radio"><input type="radio" name="lp-oq-baristas-' + radioSuffix + '" value="' + n + '"' +
         (baristas === n ? ' checked' : '') + ' data-staff-field="baristas" data-staff-idx="' + staffIdx + '"> ' +
-        n + ' barista' + (n > 1 ? 's' : '') + ' <span class="lp-oq-muted">(Barista 1' + (n > included ? ' + Barista 2' : '') + ')</span></label>';
+        n + ' barista' + (n > 1 ? 's' : '') +
+        ' <span class="lp-oq-radio-hint">(Barista 1' + (n > included ? ' + Barista 2' : '') + ')</span></label>';
     }
     html += '</div>';
 
@@ -584,7 +590,7 @@
       }
     } else {
       ensureShifts(state);
-      html += '<p class="lp-oq-muted" style="margin:6px 0 8px">One row per day — date, start, end. Scroll if you add more than three days.</p>' +
+      html += '<p class="lp-oq-muted" style="margin:6px 0 8px">One row per day — date, start, end. Extra days stretch the quote card.</p>' +
         '<div class="lp-oq-shifts" data-lp-oq-shifts>';
       state.shifts.forEach(function(sh, i) {
         html += '<div class="lp-oq-shift lp-oq-shift-row" data-shift-idx="' + i + '">' +
@@ -595,7 +601,8 @@
             shiftIdx: i,
             label: 'Date',
             fieldAttr: 'data-shift-field="date"',
-            placeholder: 'Date'
+            placeholder: 'Pick a date',
+            row: true
           }) +
           renderTimeField({
             label: 'Start',
