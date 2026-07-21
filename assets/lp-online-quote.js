@@ -117,6 +117,7 @@
       emailCodeSent: false,
       emailWhitelisted: false,
       emailSummarySent: false,
+      emailSendReason: null,
       showPortalAccess: false,
       portalAccessEmail: '',
       portalAccessMsg: ''
@@ -448,13 +449,17 @@
       html += '<p class="lp-oq-lead">' + esc(q.message || 'Verify your email to see your total.') + '</p>';
       if (this.state.emailCodeSent) {
         html += '<p class="lp-oq-lead">We sent a 6-digit code to your email. Enter it below.</p>';
+      } else if (this.state.emailSendReason === 'no_key') {
+        html += '<p class="lp-oq-lead">Email sending is not configured on the server yet. Please contact the business.</p>';
+      } else {
+        html += '<p class="lp-oq-lead">Tap <strong>Send code</strong> if you have not received an email yet.</p>';
       }
       html += '<label class="lp-oq-field"><span>Email verification code</span>' +
         '<input data-field="emailCode" placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" value="' + esc(this.state.emailCode || '') + '"></label>' +
-        '<button type="button" class="lp-oq-btn" data-act="confirm-email" style="margin-top:10px">Confirm email code</button>';
-      if (this.state.emailCodeSent) {
-        html += '<p style="margin-top:10px"><button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-act="send-email">Resend code</button></p>';
-      }
+        '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">' +
+        '<button type="button" class="lp-oq-btn" data-act="confirm-email">Confirm email code</button>' +
+        '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-act="send-email">' +
+        (this.state.emailCodeSent ? 'Resend code' : 'Send code') + '</button></div>';
     } else if (q.level === 'email_verified_total') {
       html += '<p class="lp-oq-total">' + esc(q.totalFormatted || '') + ' <small>inc GST</small></p>' +
         (this.state.emailWhitelisted
@@ -685,7 +690,12 @@
     this.ensureSession().then(function() {
       return post('/calculate', {
         token: self.token,
-        inputs: self.progress()
+        inputs: self.progress(),
+        contact: {
+          name: self.state.contact.name,
+          email: self.state.contact.email,
+          phone: contactPhone.call(self)
+        }
       });
     }).then(function(res) {
       if (!res.ok) throw new Error(res.error || 'calculate');
@@ -697,21 +707,39 @@
           self.state.emailWhitelisted = true;
           self.state.emailSummarySent = true;
         }
+        self.state.emailSendReason = res.emailVerification.reason || null;
       }
       var steps = self.steps();
       var contactIdx = steps.indexOf('contact');
       if (contactIdx >= 0) self.state.step = contactIdx;
       self.render();
+      var ev = res.emailVerification || {};
+      if (ev.required && !ev.whitelisted && !ev.sent) {
+        if (ev.reason === 'no_key') {
+          alert('Email verification is not configured on the server (missing RESEND_API_KEY). Contact the site owner.');
+        } else if (ev.reason === 'no_email') {
+          alert('Your email did not save to the quote session. Please tap Get my quote again.');
+        } else if (ev.reason && String(ev.reason).indexOf('resend_') === 0) {
+          alert('We could not email your code (' + ev.reason + '). Tap Resend code, or check spam.');
+        } else {
+          // Attempt an explicit force-send so the customer still gets a code.
+          self.sendEmail({ quiet: true });
+        }
+      } else if (ev.sent) {
+        // Soft notice — do not block the UI.
+      }
     }).catch(function() {
       self.el.querySelector('.lp-oq-body').innerHTML = '<p class="lp-oq-error">Could not calculate quote. Please try again.</p>';
     });
   };
 
-  OnlineQuoteWidget.prototype.sendEmail = function() {
+  OnlineQuoteWidget.prototype.sendEmail = function(opts) {
     var self = this;
+    opts = opts || {};
+    this.syncContactFromDom();
     var email = (this.state.contact.email || '').trim();
     if (!email || email.indexOf('@') < 3) {
-      alert('Enter a valid email address first.');
+      if (!opts.quiet) alert('Enter a valid email address first.');
       return;
     }
     this.ensureSession().then(function() {
@@ -723,23 +751,32 @@
       });
     }).then(function(res) {
       if (!res || !res.ok) {
-        alert('Could not send code. ' + (res && res.error ? res.error : 'Try again shortly.'));
+        if (!opts.quiet) {
+          alert('Could not send code. ' + ((res && (res.message || res.error)) || 'Try again shortly.'));
+        }
         return;
       }
       if (res.sent) {
         self.state.emailCodeSent = true;
         self.state.emailCode = '';
+        self.state.emailSendReason = null;
         self.render();
-        alert(res.alreadyPending
-          ? 'A code is already on its way — check your inbox (and spam).'
-          : 'We sent a new 6-digit code to your email.');
+        if (!opts.quiet) {
+          alert('We sent a 6-digit code to your email. Check inbox and spam.');
+        }
       } else if (res.reason === 'no_key') {
-        alert('Email verification is not configured yet. Please contact the business directly.');
+        if (!opts.quiet) {
+          alert('Email verification is not configured yet. Please contact the business directly.');
+        }
       } else {
-        alert('Could not send code. Try again shortly.');
+        self.state.emailSendReason = res.reason || 'send_failed';
+        self.render();
+        if (!opts.quiet) {
+          alert('Could not send code' + (res.reason ? (' (' + res.reason + ')') : '') + '. Try Resend code again shortly.');
+        }
       }
     }).catch(function() {
-      alert('Could not send code. Try again shortly.');
+      if (!opts.quiet) alert('Could not send code. Try again shortly.');
     });
   };
 
