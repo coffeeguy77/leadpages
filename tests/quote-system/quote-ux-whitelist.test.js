@@ -16,8 +16,8 @@ const verifyEmail = fs.readFileSync(path.join(root, 'api/quote-system/verify-ema
 const verifySms = fs.readFileSync(path.join(root, 'api/quote-system/verify-sms.js'), 'utf8');
 
 test('cache-bust bumped for ux + whitelist', function() {
-  assert.match(manage, /oq-email-otp-fix-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-email-otp-fix-1/);
+  assert.match(manage, /oq-event-cal-compact-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-event-cal-compact-1/);
   assert.doesNotMatch(manage, /oq-verify-portal-3/);
 });
 
@@ -29,10 +29,12 @@ test('Your Quote panel only renders on contact step', function() {
   assert.match(online, /lp-oq-col-aside/);
 });
 
-test('calendar is compact (~50% smaller)', function() {
-  assert.match(online, /max-width:220px/);
-  assert.match(builderCss, /max-width:\s*220px/);
-  assert.match(online, /\.lp-oq-cal-day\{[^}]*font-size:11px/);
+test('calendar is compact popup (no inline month grid)', function() {
+  assert.match(online, /lp-oq-datepick/);
+  assert.match(online, /lp-oq-cal-pop/);
+  assert.match(online, /max-height:calc\(3 \*/);
+  assert.match(builderCss, /lp-oq-datepick/);
+  assert.doesNotMatch(online, /max-width:220px/);
 });
 
 test('global readable type scale for quote builder', function() {

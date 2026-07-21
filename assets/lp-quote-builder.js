@@ -1125,6 +1125,13 @@
       + col('btnGhostBg', 'Back background', '#ffffff')
       + col('btnGhostText', 'Back text', accent)
       + col('btnGhostBorder', 'Back border', accent)
+      + '</div>'
+      + '<h4 class="oqb-sub">Calendar &amp; date picker</h4>'
+      + '<p class="oqb-hint" style="margin-top:0">Popup calendar on Event Details (simple hours + multi-day). Icon colour defaults to black so calendar/clock glyphs stay crisp on dark panels — pick a colour to match your theme.</p>'
+      + '<div class="oqb-grid">'
+      + col('calendarIconColor', 'Calendar / clock icon colour', '#000000')
+      + col('calendarPopBg', 'Popup calendar background', panel)
+      + col('calendarPopBorder', 'Popup calendar border', accent)
       + '</div></div>';
   };
 

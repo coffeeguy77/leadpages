@@ -105,7 +105,10 @@
       ['btnText', '--lp-oq-btn-text'],
       ['btnGhostBg', '--lp-oq-btn-ghost-bg'],
       ['btnGhostText', '--lp-oq-btn-ghost-text'],
-      ['btnGhostBorder', '--lp-oq-btn-ghost-border']
+      ['btnGhostBorder', '--lp-oq-btn-ghost-border'],
+      ['calendarIconColor', '--lp-oq-cal-icon'],
+      ['calendarPopBg', '--lp-oq-cal-pop-bg'],
+      ['calendarPopBorder', '--lp-oq-cal-pop-border']
     ];
     var parts = [];
     map.forEach(function(pair) {
@@ -258,7 +261,7 @@
     var b = brandVar || 'var(--pipe, var(--accent, #1f7a63))';
     return [
       '.lp-oq-card,.lp-oq-body,.lp-oq-carts{width:100%;max-width:100%;box-sizing:border-box}',
-      '.lp-oq-body{min-height:var(--lp-oq-body-min,460px)}',
+      '.lp-oq-body{min-height:var(--lp-oq-body-min,520px)}',
       '.lp-oq-stack>.lp-oq-intro{margin:0 0 12px}',
       '.lp-oq-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start;width:100%;box-sizing:border-box}',
       '.lp-oq-col{min-width:0}',
