@@ -1087,6 +1087,7 @@
     var ui = (w && w.ui) || {};
     var self = this;
     var accent = this._accent();
+    var panel = ui.panelBg || '#2e282a';
     function col(path, label, fallback) {
       return self._colorField('wizard.ui.' + path, label, ui[path] || '', fallback);
     }

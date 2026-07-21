@@ -80,8 +80,8 @@ test('theme calendar is a compact popup date picker', function() {
 });
 
 test('cache bust for layout + calendar', function() {
-  assert.match(manage, /oq-portal-nav-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-portal-nav-1/);
+  assert.match(manage, /oq-builder-panel-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-builder-panel-1/);
 });
 
 test('portal access sits on nav row and opens a popup', function() {

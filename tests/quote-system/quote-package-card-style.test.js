@@ -41,7 +41,7 @@ assert.ok(
 assert.ok(serializers.includes('packageCards'), 'public shell exposes packageCards');
 assert.ok(normalize.includes('packageCards'), 'normalize ensures packageCards');
 
-assert.ok(manage.includes('oq-portal-nav-1'), 'manage cache-bust');
-assert.ok(render.includes('oq-portal-nav-1'), 'render cache-bust');
+assert.ok(manage.includes('oq-builder-panel-1'), 'manage cache-bust');
+assert.ok(render.includes('oq-builder-panel-1'), 'render cache-bust');
 
 console.log('quote-package-card-style.test.js: ok');

@@ -35,7 +35,7 @@ assert.ok(online.includes('width:100%'), 'textarea full width rule present');
 assert.ok(css.includes('.oqb-preview-mock .lp-oq-field textarea'), 'preview styles textarea');
 assert.ok(css.includes('background: transparent'), 'preview textarea transparent bg');
 
-assert.ok(manage.includes('oq-portal-nav-1'), 'manage cache-bust');
-assert.ok(render.includes('oq-portal-nav-1'), 'render cache-bust');
+assert.ok(manage.includes('oq-builder-panel-1'), 'manage cache-bust');
+assert.ok(render.includes('oq-builder-panel-1'), 'render cache-bust');
 
 console.log('quote-travel-preview-notes.test.js: ok');

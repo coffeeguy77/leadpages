@@ -43,10 +43,10 @@ test('quote-portal empty state offers email access form', function() {
   assert.match(portalJs, /renderAccessForm/);
   assert.match(portalJs, /qp-access-send/);
   assert.match(portalJs, /portal-access/);
-  assert.match(portalHtml, /oq-portal-nav-1/);
+  assert.match(portalHtml, /oq-builder-panel-1/);
 });
 
 test('cache-bust for portal access', function() {
-  assert.match(manage, /oq-portal-nav-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-portal-nav-1/);
+  assert.match(manage, /oq-builder-panel-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-builder-panel-1/);
 });

@@ -16,8 +16,8 @@ const verifyEmail = fs.readFileSync(path.join(root, 'api/quote-system/verify-ema
 const verifySms = fs.readFileSync(path.join(root, 'api/quote-system/verify-sms.js'), 'utf8');
 
 test('cache-bust bumped for ux + whitelist', function() {
-  assert.match(manage, /oq-portal-nav-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-portal-nav-1/);
+  assert.match(manage, /oq-builder-panel-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-builder-panel-1/);
   assert.doesNotMatch(manage, /oq-verify-portal-3/);
 });
 

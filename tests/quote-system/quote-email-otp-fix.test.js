@@ -40,6 +40,6 @@ test('wizard always offers Send\/Resend code and passes contact on calculate', f
 });
 
 test('cache-bust for email OTP fix', function() {
-  assert.match(manage, /oq-portal-nav-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-portal-nav-1/);
+  assert.match(manage, /oq-builder-panel-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-builder-panel-1/);
 });
