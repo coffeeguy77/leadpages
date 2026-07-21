@@ -40,7 +40,7 @@
 <link rel="stylesheet" href="/assets/lp-themes.css?v=dash-leads-compact-1">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
 <link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=dash-leads-compact-1">
-<link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-pkg-style-2">
+<link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-verify-portal-1">
 <style>
 :root{
   --radius:14px; --radius-sm:10px;
@@ -641,10 +641,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
 <script src="/icons.js"></script>
 <script src="/assets/lp-country-codes.js?v=dash-country-1"></script>
-<script src="/assets/lp-quote-wizard-logic.js?v=oq-pkg-style-2"></script>
-<script src="/assets/lp-quote-display.js?v=oq-pkg-style-2"></script>
-<script src="/assets/lp-quote-planning.js?v=oq-pkg-style-2"></script>
-<script src="/assets/lp-quote-builder.js?v=oq-pkg-style-2"></script>
+<script src="/assets/lp-quote-wizard-logic.js?v=oq-verify-portal-1"></script>
+<script src="/assets/lp-quote-display.js?v=oq-verify-portal-1"></script>
+<script src="/assets/lp-quote-planning.js?v=oq-verify-portal-1"></script>
+<script src="/assets/lp-quote-builder.js?v=oq-verify-portal-1"></script>
 </head>
 <body data-lp-admin-page="manage">
 <script>
@@ -7986,7 +7986,7 @@ function heroCtaCard(c){
       var html='<div class="card"><h2>Online Quote System</h2>'
         +'<p class="lede">Verified quote wizard with email and SMS gating. Pricing is calculated server-side — never in page source until verification.</p>'
         +'<p class="hint" style="margin:12px 0 0;line-height:1.55;">'
-        +'<strong>Customer journey:</strong> (1) Complete wizard → (2) <em>Email code auto-sent</em> unlocks total (returning emails skip re-verify) → (3) <em>SMS code</em> unlocks full breakdown → (4) <strong>Portal link + PDF attached</strong> emailed after SMS.'
+        +'<strong>Customer journey:</strong> (1) Complete wizard → (2) <em>Email code</em> unlocks total (email is whitelisted — returning customers skip re-verify) → (3) <em>SMS code</em> unlocks full breakdown → (4) <strong>Jobs portal + PDF</strong> emailed after SMS — customers can return anytime to view all quotes, edit quantities, accept, or re-email.'
         +'</p>';
       if(notConfigured){
         html+='<div class="hint" style="margin:12px 0;padding:14px;border-radius:12px;background:var(--panel-soft);">No quote system binding yet. '
