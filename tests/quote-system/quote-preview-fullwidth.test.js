@@ -33,10 +33,10 @@ assert.ok(
   /oq-preview-root[\s\S]*?oq-builder-root/.test(manage),
   'preview mounts above builder root'
 );
-assert.ok(manage.includes('lp-quote-builder.css?v=oq-event-cal-compact-1'), 'cache-busted builder css');
-assert.ok(manage.includes('lp-quote-display.js?v=oq-event-cal-compact-1'), 'cache-busted display js');
-assert.ok(manage.includes('lp-quote-builder.js?v=oq-event-cal-compact-1'), 'cache-busted builder js');
-assert.ok(render.includes('lp-quote-display.js?v=oq-event-cal-compact-1'), 'public render cache-bust');
+assert.ok(manage.includes('lp-quote-builder.css?v=oq-event-cal-live-1'), 'cache-busted builder css');
+assert.ok(manage.includes('lp-quote-display.js?v=oq-event-cal-live-1'), 'cache-busted display js');
+assert.ok(manage.includes('lp-quote-builder.js?v=oq-event-cal-live-1'), 'cache-busted builder js');
+assert.ok(render.includes('lp-quote-display.js?v=oq-event-cal-live-1'), 'public render cache-bust');
 
 console.log('quote-preview-fullwidth.test.js: ok');
 

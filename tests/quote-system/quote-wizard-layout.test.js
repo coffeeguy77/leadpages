@@ -77,6 +77,6 @@ test('theme calendar is a compact popup date picker', function() {
 });
 
 test('cache bust for layout + calendar', function() {
-  assert.match(manage, /oq-event-cal-compact-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-event-cal-compact-1/);
+  assert.match(manage, /oq-event-cal-live-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-event-cal-live-1/);
 });

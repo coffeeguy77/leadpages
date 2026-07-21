@@ -38,10 +38,10 @@ test('quote-portal empty state offers email access form', function() {
   assert.match(portalJs, /renderAccessForm/);
   assert.match(portalJs, /qp-access-send/);
   assert.match(portalJs, /portal-access/);
-  assert.match(portalHtml, /oq-event-cal-compact-1/);
+  assert.match(portalHtml, /oq-event-cal-live-1/);
 });
 
 test('cache-bust for portal access', function() {
-  assert.match(manage, /oq-event-cal-compact-1/);
-  assert.match(render, /lp-online-quote\.js\?v=oq-event-cal-compact-1/);
+  assert.match(manage, /oq-event-cal-live-1/);
+  assert.match(render, /lp-online-quote\.js\?v=oq-event-cal-live-1/);
 });
