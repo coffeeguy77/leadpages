@@ -54,6 +54,7 @@ module.exports = async function handler(req, res) {
         return json(res, 403, { ok: false, error: entitled.error });
       }
 
+      const token = clean(body.token, 128);
       const contact = body.contact || {};
       const contactName = contact.name ? clean(contact.name, 120) : '';
       const contactEmail = contact.email

@@ -674,7 +674,7 @@ function injectOnlineQuote(html, slug, cfg) {
     '/assets/lp-quote-wizard-logic.js?v=oq-portal-style-1',
     '/assets/lp-quote-display.js?v=oq-portal-style-1',
     '/assets/lp-quote-planning.js?v=oq-portal-style-1',
-    '/assets/lp-online-quote.js?v=oq-portal-style-1'
+    '/assets/lp-online-quote.js?v=oq-session-token-1'
   ];
 
   function ensureQuoteScripts(doc) {
@@ -731,7 +731,7 @@ function injectOnlineQuote(html, slug, cfg) {
     '<script src="/assets/lp-quote-wizard-logic.js?v=oq-portal-style-1" defer></script>' +
     '<script src="/assets/lp-quote-display.js?v=oq-portal-style-1" defer></script>' +
     '<script src="/assets/lp-quote-planning.js?v=oq-portal-style-1" defer></script>' +
-    '<script src="/assets/lp-online-quote.js?v=oq-portal-style-1" defer></script>';
+    '<script src="/assets/lp-online-quote.js?v=oq-session-token-1" defer></script>';
   if (html.includes('<section data-sec="quote"')) {
     return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');
   }

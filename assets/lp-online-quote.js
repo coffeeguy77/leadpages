@@ -757,8 +757,17 @@
       } else if (ev.sent) {
         // Soft notice — do not block the UI.
       }
-    }).catch(function() {
-      self.el.querySelector('.lp-oq-body').innerHTML = '<p class="lp-oq-error">Could not calculate quote. Please try again.</p>';
+    }).catch(function(err) {
+      var detail = (err && err.message) ? String(err.message) : '';
+      var hint = '';
+      if (detail === 'subscription_required') hint = ' Online quote is not active for this site.';
+      else if (detail === 'quote_not_enabled') hint = ' Online quote is turned off.';
+      else if (detail === 'session_expired') hint = ' Your session expired — refresh and try again.';
+      else if (detail === 'no_config') hint = ' Quote pricing is not configured yet.';
+      else if (detail && detail !== 'calculate' && detail !== 'session' && detail !== 'server_error') {
+        hint = ' (' + detail.replace(/_/g, ' ') + ')';
+      }
+      self.el.querySelector('.lp-oq-body').innerHTML = '<p class="lp-oq-error">Could not calculate quote. Please try again.' + hint + '</p>';
     });
   };
 
