@@ -725,6 +725,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     <button class="anav-btn" id="nav-mailer" aria-selected="false">Newsletter</button>
     <button class="anav-btn" id="nav-messages" aria-selected="false">Support</button>
     <button class="anav-btn" id="nav-appearance" aria-selected="false">Appearance</button>
+    <button class="anav-btn" id="nav-themes" aria-selected="false" aria-label="Themes"><span class="anav-l1">Positioning</span><span class="anav-gap"> </span><span class="anav-l2">themes</span></button>
     <button class="anav-btn" id="nav-contact" aria-selected="false">Contact</button>
     <button class="anav-btn" id="nav-logo" aria-selected="false">Logo</button>
     <button class="anav-btn" id="nav-users" aria-selected="false" style="display:none">Users</button>
@@ -1041,6 +1042,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       </div>
     </div>
   </div>
+
+  <div id="av-themes" hidden></div>
 
   <div id="av-demothemes" hidden>
     <div class="card">
@@ -3048,7 +3051,16 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     });
     var saved=Array.isArray(c.sectionOrder)?c.sectionOrder.filter(function(x){return base.indexOf(x)>=0;}):[];
     base.forEach(function(x){ if(saved.indexOf(x)<0) saved.push(x); });
-    return saved.filter(function(x){ return _secOn(c,x); });
+    var out=saved.filter(function(x){ return _secOn(c,x); });
+    // Trust Bar always sits under the first hero-like section.
+    if(out.indexOf('trustBar')>=0 || _secOn(c,'trustBar')){
+      if(out.indexOf('trustBar')<0) out.push('trustBar');
+      var _tb=out.indexOf('trustBar'); if(_tb>=0) out.splice(_tb,1);
+      var _heroes=['hero','heroSlider','heroBeforeAfter','splitHero'];
+      var _hi=-1; for(var _i=0;_i<out.length;_i++){ if(_heroes.indexOf(out[_i])>=0){ _hi=_i; break; } }
+      if(_hi>=0) out.splice(_hi+1,0,'trustBar'); else out.unshift('trustBar');
+    }
+    return out;
   }
   /** Persist the Position law onto config so preview/live use the same list. */
   function _syncSectionOrder(c){
@@ -3066,7 +3078,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     function flip(prev){ host.querySelectorAll('.ord-row').forEach(function(r){ var id=r.getAttribute('data-id'); if(prev[id]==null) return; var dy=prev[id]-r.getBoundingClientRect().top; if(dy){ r.style.transition='none'; r.style.transform='translateY('+dy+'px)'; requestAnimationFrame(function(){ r.style.transition=''; r.style.transform=''; }); } }); }
     function rowHtml(id,i,n){ return '<div class="ord-row" draggable="true" data-id="'+id+'"><span class="ord-grip">\u22ee\u22ee</span><span class="ord-label">'+esc(_secLabel(id))+'</span><span class="ord-actions"><button type="button" class="ord-mv ord-up" data-id="'+id+'" title="Move up"'+(i===0?' disabled':'')+'>\u2191</button><button type="button" class="ord-mv ord-down" data-id="'+id+'" title="Move down"'+(i===n-1?' disabled':'')+'>\u2193</button></span></div>'; }
     function draw(animate){ var prev=animate?rects():null; var ord=_syncSectionOrder(c); host.innerHTML=ord.map(function(id,i){ return rowHtml(id,i,ord.length); }).join(''); persist(); if(animate) flip(prev); }
-    function move(id,dir){ var ord=_orderList(c); var i=ord.indexOf(id); if(i<0) return; var j=i+dir; if(j<0||j>=ord.length) return; var prev=rects(); ord.splice(j,0,ord.splice(i,1)[0]); c.sectionOrder=ord; persist(); previewApply(); draw(false); flip(prev); }
+    function move(id,dir){ var ord=_orderList(c); var i=ord.indexOf(id); if(i<0) return; var j=i+dir; if(j<0||j>=ord.length) return; var prev=rects(); ord.splice(j,0,ord.splice(i,1)[0]); c.sectionOrder=ord; _syncSectionOrder(c); persist(); previewApply(); draw(false); flip(prev); }
     function clearDrop(){ host.querySelectorAll('.drop-before,.drop-after').forEach(function(r){ r.classList.remove('drop-before','drop-after'); }); }
     draw(false);
     if(!host.__ordBound){ host.__ordBound=true;
@@ -3074,7 +3086,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       host.addEventListener('dragstart',function(e){ var r=e.target.closest&&e.target.closest('.ord-row'); if(!r) return; dragId=r.getAttribute('data-id'); try{e.dataTransfer.effectAllowed='move';}catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} } setTimeout(function(){ r.classList.add('dragging'); },0); });
       host.addEventListener('dragend',function(){ dragId=null; clearDrop(); host.querySelectorAll('.dragging').forEach(function(r){r.classList.remove('dragging');}); });
       host.addEventListener('dragover',function(e){ e.preventDefault(); var r=e.target.closest&&e.target.closest('.ord-row'); if(!r||r.getAttribute('data-id')===dragId){ clearDrop(); return; } var rc=r.getBoundingClientRect(); var after=(e.clientY-rc.top)>rc.height/2; clearDrop(); r.classList.add(after?'drop-after':'drop-before'); });
-      host.addEventListener('drop',function(e){ e.preventDefault(); var r=e.target.closest&&e.target.closest('.ord-row'); if(!r||dragId==null){ clearDrop(); return; } var tid=r.getAttribute('data-id'); if(tid===dragId){ clearDrop(); return; } var rc=r.getBoundingClientRect(); var after=(e.clientY-rc.top)>rc.height/2; var prev=rects(); var ord=_orderList(c); var from=ord.indexOf(dragId); ord.splice(from,1); var to=ord.indexOf(tid); if(after) to+=1; ord.splice(to,0,dragId); c.sectionOrder=ord; clearDrop(); persist(); previewApply(); draw(false); flip(prev); });
+      host.addEventListener('drop',function(e){ e.preventDefault(); var r=e.target.closest&&e.target.closest('.ord-row'); if(!r||dragId==null){ clearDrop(); return; } var tid=r.getAttribute('data-id'); if(tid===dragId){ clearDrop(); return; } var rc=r.getBoundingClientRect(); var after=(e.clientY-rc.top)>rc.height/2; var prev=rects(); var ord=_orderList(c); var from=ord.indexOf(dragId); ord.splice(from,1); var to=ord.indexOf(tid); if(after) to+=1; ord.splice(to,0,dragId); c.sectionOrder=ord; _syncSectionOrder(c); clearDrop(); persist(); previewApply(); draw(false); flip(prev); });
     }
     var rb=$('ord-reset'); if(rb) rb.onclick=function(){ var prev=rects(); delete c.sectionOrder; persist(); previewApply(); draw(false); flip(prev); };
   }
@@ -7410,7 +7422,7 @@ function heroCtaCard(c){
   window.lpGetDrawerNavButtons=function(){
     var roleAllow=ALLOWED[currentRole]||ALLOWED.super;
     var allow=roleAllow.filter(function(k){ return tplNav().indexOf(k)>=0; });
-    var keys=['dashboard','details','rates','landing','apps','mailer','appearance','contact','logo','users','demothemes'];
+    var keys=['dashboard','details','rates','landing','apps','mailer','appearance','themes','contact','logo','users','demothemes'];
     var out=[];
     keys.forEach(function(k){
       if(allow.indexOf(k)<0) return;
@@ -7441,6 +7453,232 @@ function heroCtaCard(c){
     el.addEventListener('click',function(e){ e.preventDefault(); signOutLP(); });
     return el;
   };
+  /* ---- Positioning themes (layouts + optional demo packs) ---- */
+  async function _ptAuthHeaders(){
+    try{
+      var se=await sb.auth.getSession();
+      var tok=se&&se.data&&se.data.session&&se.data.session.access_token;
+      return tok?{'Content-Type':'application/json','Authorization':'Bearer '+tok}:{'Content-Type':'application/json'};
+    }catch(e){ return {'Content-Type':'application/json'}; }
+  }
+  function _ptEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function _ptImg(url, alt){
+    if(!url) return '<div class="pt-img-ph" aria-hidden="true">No image</div>';
+    return '<img class="pt-img" src="'+_ptEsc(url)+'" alt="'+_ptEsc(alt||'')+'" loading="lazy">';
+  }
+  async function renderPositioningThemes(){
+    var box=$('av-themes'); if(!box) return;
+    if(!currentSiteId){
+      box.innerHTML='<div class="card"><h2>Positioning themes</h2><p class="lede">Open a site first, then browse layouts here.</p></div>';
+      return;
+    }
+    box.innerHTML='<div class="card"><p class="lede">Loading themes\u2026</p></div>';
+    if(!document.getElementById('pt-themes-css')){
+      var st=document.createElement('style'); st.id='pt-themes-css';
+      st.textContent=[
+        '.pt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:14px}',
+        '.pt-card{border:1px solid var(--line);border-radius:12px;background:var(--panel,var(--surface));overflow:hidden;display:flex;flex-direction:column}',
+        '.pt-card-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}',
+        '.pt-card h3{margin:0;font-size:16px}',
+        '.pt-card .lede{margin:0;font-size:13px;color:var(--ink-soft)}',
+        '.pt-imgs{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--line);min-height:110px;background:var(--input-bg,#f3f1ec)}',
+        '.pt-img,.pt-img-ph{width:100%;height:120px;object-fit:cover;display:block}',
+        '.pt-img-ph{display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink-faint);border-right:1px solid var(--line)}',
+        '.pt-imgs .pt-img:first-child,.pt-imgs .pt-img-ph:first-child{border-right:1px solid var(--line)}',
+        '.pt-cap{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);padding:4px 8px 0}',
+        '.pt-apps{font-size:12px;color:var(--ink-soft);line-height:1.35}',
+        '.pt-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}',
+        '.pt-actions .btn{font-size:12.5px;padding:7px 10px}',
+        '.pt-admin{margin-top:18px}',
+        '.pt-admin .dt-add{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}',
+        '.pt-admin .tin{min-width:160px;flex:1}',
+        '.pt-mode-help{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;max-width:70ch;line-height:1.45}',
+        '.pt-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}'
+      ].join('');
+      document.head.appendChild(st);
+    }
+    var headers=await _ptAuthHeaders();
+    var layouts=[], setup=false, hint='';
+    try{
+      var url='/api/api-positioning-layouts'+(currentRole==='super'?'?all=1':'');
+      var r=await fetch(url,{headers:headers});
+      var j=await r.json().catch(function(){return{};});
+      layouts=j.layouts||[];
+      setup=!!j.setup_required;
+      hint=j.hint||'';
+    }catch(e){
+      box.innerHTML='<div class="card"><h2>Positioning themes</h2><p class="lede" style="color:#b4543c">Could not load themes: '+_ptEsc(e.message||e)+'</p></div>';
+      return;
+    }
+    var html='<div class="card"><h2>Positioning themes</h2>'
+      +'<p class="lede">Choose a prebuilt app stack and homepage order. Trust Bar always sits under the hero.</p>'
+      +'<p class="pt-mode-help"><strong>Structure</strong> changes which apps are on and their Position order only — your copy and images stay put. '
+      +'<strong>Fill empty</strong> also drops in demo content where a section is still blank (great for new demos). '
+      +'<strong>Replace demo content</strong> overwrites section content from the pack but never touches business name, phone, email, logo or address — and we take a backup first.</p>';
+    if(setup){
+      html+='<p class="hint" style="color:#b4543c;margin-top:12px">Database setup needed: run <code>db/positioning_layouts.sql</code> in Supabase'+(hint?(' — '+_ptEsc(hint)):'')+'.</p>';
+    }
+    if(!layouts.length && !setup){
+      html+='<p class="hint" style="margin-top:12px">No layouts published yet'+(currentRole==='super'?' — create one below.':'.')+'</p>';
+    } else if(layouts.length){
+      html+='<div class="pt-grid">';
+      layouts.forEach(function(L){
+        var apps=(L.apps||[]).filter(function(a){return a&&a.enabled!==false;}).map(function(a){return a.section_key||a.key;}).filter(Boolean);
+        var ord=Array.isArray(L.section_order)?L.section_order:[];
+        var packN=L.demo_packs?Object.keys(L.demo_packs).length:0;
+        html+='<article class="pt-card" data-pt-id="'+_ptEsc(L.id)+'">'
+          +'<div class="pt-imgs">'
+          +'<div><div class="pt-cap">Look</div>'+_ptImg(L.theme_image_url,'Theme look')+'</div>'
+          +'<div><div class="pt-cap">Position</div>'+_ptImg(L.layout_image_url,'Positioning layout')+'</div>'
+          +'</div>'
+          +'<div class="pt-card-body">'
+          +'<h3>'+_ptEsc(L.name)+(!L.enabled?' <span class="hint">(off)</span>':'')+'</h3>'
+          +(L.description?'<p class="lede">'+_ptEsc(L.description)+'</p>':'')
+          +'<p class="pt-apps">'+(apps.length?(_ptEsc(apps.slice(0,8).join(' · '))+(apps.length>8?' \u2026':'')):'No apps listed')
+          +(packN?(' · '+packN+' demo pack'+(packN===1?'':'s')):'')+'</p>'
+          +'<div class="pt-actions">'
+          +'<button type="button" class="btn" data-pt-apply="structure" data-id="'+_ptEsc(L.id)+'">Apply structure</button>'
+          +'<button type="button" class="btn ghost" data-pt-apply="fill_empty" data-id="'+_ptEsc(L.id)+'">Fill empty</button>'
+          +'<button type="button" class="btn ghost" data-pt-apply="demo_replace" data-id="'+_ptEsc(L.id)+'">Replace demo content</button>'
+          +'</div></div></article>';
+      });
+      html+='</div>';
+    }
+    html+='</div>';
+
+    if(currentRole==='super'){
+      html+='<div class="card pt-admin"><h2>Admin — layout builder</h2>'
+        +'<p class="lede">Capture the current site\u2019s Position list and enabled apps as a reusable theme. Optionally include section content as demo packs (e.g. surfing-school hero slider + Cloudinary banners).</p>'
+        +'<div class="dt-add">'
+        +'<input type="text" id="pt-name" class="tin" placeholder="Layout name, e.g. Trust-under-hero trade">'
+        +'<input type="text" id="pt-slug" class="tin" placeholder="slug-optional">'
+        +'</div>'
+        +'<div class="dt-add">'
+        +'<input type="text" id="pt-theme-img" class="tin" placeholder="Theme look image URL">'
+        +'<input type="text" id="pt-layout-img" class="tin" placeholder="Positioning diagram image URL">'
+        +'</div>'
+        +'<div class="dt-add">'
+        +'<input type="text" id="pt-desc" class="tin" placeholder="Short description" style="flex:2">'
+        +'<label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap"><input type="checkbox" id="pt-include-packs"> Include demo packs from this site</label>'
+        +'<button type="button" class="btn" id="pt-save-layout">Save layout from this site</button>'
+        +'</div>'
+        +'<p class="hint">Tip: set Position and turn apps on/off in Page editor first, design Appearance, screenshot both the live look and a Position diagram, then save here.</p>'
+        +'<div class="apgroup-h">Saved layouts</div><div id="pt-admin-list"></div></div>';
+    }
+    box.innerHTML=html;
+
+    box.querySelectorAll('[data-pt-apply]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        _ptApplyLayout(btn.getAttribute('data-id'), btn.getAttribute('data-pt-apply'));
+      });
+    });
+
+    if(currentRole==='super'){
+      _ptRenderAdminList(layouts);
+      var saveBtn=$('pt-save-layout');
+      if(saveBtn) saveBtn.onclick=function(){ _ptSaveFromSite(); };
+    }
+  }
+  function _ptRenderAdminList(layouts){
+    var host=$('pt-admin-list'); if(!host) return;
+    if(!layouts||!layouts.length){ host.innerHTML='<p class="hint" style="margin:0">None yet.</p>'; return; }
+    host.innerHTML=layouts.map(function(L){
+      return '<div class="pt-row" data-id="'+_ptEsc(L.id)+'">'
+        +'<div><strong>'+_ptEsc(L.name)+'</strong> <span class="hint">'+_ptEsc(L.slug||'')+'</span>'
+        +(!L.enabled?' <span class="hint">disabled</span>':'')
+        +'</div>'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+        +'<button type="button" class="btn ghost" data-pt-toggle="'+_ptEsc(L.id)+'" data-on="'+(L.enabled?'0':'1')+'">'+(L.enabled?'Disable':'Enable')+'</button>'
+        +'<button type="button" class="btn ghost" data-pt-del="'+_ptEsc(L.id)+'">Delete</button>'
+        +'</div></div>';
+    }).join('');
+    host.querySelectorAll('[data-pt-del]').forEach(function(b){
+      b.onclick=async function(){
+        if(!confirm('Delete this layout?')) return;
+        var headers=await _ptAuthHeaders();
+        var r=await fetch('/api/api-positioning-layouts',{method:'POST',headers:headers,body:JSON.stringify({action:'delete',id:b.getAttribute('data-pt-del')})});
+        var j=await r.json().catch(function(){return{};});
+        if(!r.ok||!j.ok){ toast('Delete failed: '+(j.error||r.status)); return; }
+        toast('Layout deleted'); renderPositioningThemes();
+      };
+    });
+    host.querySelectorAll('[data-pt-toggle]').forEach(function(b){
+      b.onclick=async function(){
+        var id=b.getAttribute('data-pt-toggle');
+        var headers=await _ptAuthHeaders();
+        var gr=await fetch('/api/api-positioning-layouts?id='+encodeURIComponent(id),{headers:headers});
+        var gj=await gr.json().catch(function(){return{};});
+        var row=gj.layout; if(!row){ toast('Layout not found'); return; }
+        row.enabled=b.getAttribute('data-on')==='1';
+        var r=await fetch('/api/api-positioning-layouts',{method:'POST',headers:headers,body:JSON.stringify(Object.assign({},row,{action:'save',id:row.id}))});
+        var j=await r.json().catch(function(){return{};});
+        if(!r.ok||!j.ok){ toast('Update failed: '+(j.error||r.status)); return; }
+        toast(row.enabled?'Enabled':'Disabled'); renderPositioningThemes();
+      };
+    });
+  }
+  async function _ptSaveFromSite(){
+    if(!currentSiteId||!data){ toast('Open a site first'); return; }
+    var name=(($('pt-name')&&$('pt-name').value)||'').trim();
+    if(!name){ toast('Name required'); return; }
+    var headers=await _ptAuthHeaders();
+    var include=!($('pt-include-packs')&&!$('pt-include-packs').checked);
+    // checkbox: include only when checked
+    include=!!($('pt-include-packs')&&$('pt-include-packs').checked);
+    try{
+      var cr=await fetch('/api/api-positioning-layouts',{method:'POST',headers:headers,body:JSON.stringify({
+        action:'capture', site_id:currentSiteId, name:name,
+        slug:(($('pt-slug')&&$('pt-slug').value)||'').trim(),
+        description:(($('pt-desc')&&$('pt-desc').value)||'').trim(),
+        theme_image_url:(($('pt-theme-img')&&$('pt-theme-img').value)||'').trim(),
+        layout_image_url:(($('pt-layout-img')&&$('pt-layout-img').value)||'').trim(),
+        include_demo_packs:include
+      })});
+      var cj=await cr.json().catch(function(){return{};});
+      if(!cr.ok||!cj.ok){ toast('Capture failed: '+(cj.error||cr.status)+(cj.hint?(' — '+cj.hint):'')); return; }
+      var draft=cj.draft||{};
+      draft.action='save';
+      draft.theme_image_url=(($('pt-theme-img')&&$('pt-theme-img').value)||'').trim()||draft.theme_image_url;
+      draft.layout_image_url=(($('pt-layout-img')&&$('pt-layout-img').value)||'').trim()||draft.layout_image_url;
+      var sr=await fetch('/api/api-positioning-layouts',{method:'POST',headers:headers,body:JSON.stringify(draft)});
+      var sj=await sr.json().catch(function(){return{};});
+      if(!sr.ok||!sj.ok){ toast('Save failed: '+(sj.error||sr.status)+(sj.hint?(' — '+sj.hint):'')); return; }
+      toast('Saved layout \u201c'+name+'\u201d');
+      if($('pt-name')) $('pt-name').value='';
+      renderPositioningThemes();
+    }catch(e){ toast('Save error: '+(e.message||e)); }
+  }
+  async function _ptApplyLayout(layoutId, mode){
+    if(!currentSiteId){ toast('Open a site first'); return; }
+    mode=mode||'structure';
+    if(mode==='demo_replace'){
+      if(!confirm('Replace section demo content from this theme?\n\nYour business name, phone, email, logo and address stay safe. A backup is created first.\n\nContinue?')) return;
+    } else if(mode==='fill_empty'){
+      if(!confirm('Apply structure and fill empty section fields with demo content?\n\nExisting copy and images will not be overwritten.')) return;
+    }
+    var headers=await _ptAuthHeaders();
+    try{
+      var r=await fetch('/api/api-positioning-layouts',{method:'POST',headers:headers,body:JSON.stringify({
+        action:'apply', id:layoutId, site_id:currentSiteId, mode:mode
+      })});
+      var j=await r.json().catch(function(){return{};});
+      if(!r.ok||!j.ok){ toast('Apply failed: '+(j.error||r.status)+(j.hint?(' — '+j.hint):'')); return; }
+      if(j.config && typeof j.config==='object'){
+        // Merge applied config into editor state
+        Object.keys(j.config).forEach(function(k){ data[k]=j.config[k]; });
+        if(typeof allSites!=='undefined'&&allSites){
+          var sref=allSites.find(function(x){return x.id===currentSiteId;});
+          if(sref) sref.config=JSON.parse(JSON.stringify(data));
+        }
+        persist();
+        if(typeof previewApply==='function') previewApply();
+        if(typeof renderDetails==='function' && activeView==='details') renderDetails();
+      }
+      var note=(j.notes&&j.notes[0])||('Applied ('+mode+')');
+      toast(note+(j.backupId?' · backup saved':''));
+    }catch(e){ toast('Apply error: '+(e.message||e)); }
+  }
+
   /* ---- demo themes (super-admin: manage looks shown on /demo) ---- */
   async function renderDemoThemes(){
     var box=$('dt-list'); if(!box) return;
@@ -7522,8 +7760,8 @@ function heroCtaCard(c){
     toast('Removed “'+name+'”'); renderSharedThemes();
   }
   /* ===== end leadpages integration ===== */
-  const ALLOWED={ super:['rates','landing','ai-team','appearance','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], broker:['appearance','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], client:['appearance','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], leads:['rates'] };
-  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','details','landing','ai-team','apps','onlinequotes','mailer','messages'] };
+  const ALLOWED={ super:['rates','landing','ai-team','appearance','themes','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], broker:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], client:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], leads:['rates'] };
+  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','themes','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','details','landing','ai-team','apps','themes','onlinequotes','mailer','messages'] };
   function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
     if($('login-mask')) return;
@@ -7918,7 +8156,7 @@ function heroCtaCard(c){
       toast('Opened Landing pages');
     }
   };
-  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['ai-team','av-ai-team',renderAiTeamPanel],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
+  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['ai-team','av-ai-team',renderAiTeamPanel],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['themes','av-themes',renderPositioningThemes],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
   let activeView=null;
   function showView(which){
     activeView=which;

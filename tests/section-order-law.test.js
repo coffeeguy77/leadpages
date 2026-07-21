@@ -25,6 +25,7 @@ test('resolveSectionOrder keeps Position keys and appends missing on sections', 
       quote: {},
       faq: {},
       footer: {},
+      trustBar: { on: false },
       serviceProcess: { on: true },
       featuredProjects: { on: true },
       onlineQuote: { on: true },
@@ -40,6 +41,15 @@ test('resolveSectionOrder keeps Position keys and appends missing on sections', 
   // Incomplete saved list must not drop hero below later appends.
   assert.ok(ord.indexOf('hero') < ord.indexOf('serviceProcess'));
   assert.ok(ord.indexOf('hero') < ord.indexOf('featuredProjects'));
+});
+
+test('resolveSectionOrder pins Trust Bar under Hero', function() {
+  const cfg = {
+    sectionOrder: ['emerg', 'hero', 'services', 'trustBar', 'faq'],
+    sections: { emerg: {}, hero: {}, services: {}, trustBar: {}, faq: {} }
+  };
+  const ord = resolveSectionOrder(cfg);
+  assert.equal(ord.indexOf('trustBar'), ord.indexOf('hero') + 1);
 });
 
 test('resolveSectionOrder respects custom Position with How It Works near end', function() {
@@ -61,6 +71,7 @@ test('resolveSectionOrder respects custom Position with How It Works near end', 
   assert.ok(ord.indexOf('serviceProcess') < ord.indexOf('featuredProjects'));
   assert.ok(ord.indexOf('onlineQuote') < ord.indexOf('featuredProjects'));
   assert.equal(ord.indexOf('hero'), 1);
+  assert.equal(ord.indexOf('trustBar'), 2);
 });
 
 test('applySectionOrderToDom clears order:0 trap', function() {
@@ -97,8 +108,23 @@ test('manage never overwrites Position from marketplace when sectionOrder exists
   assert.match(manage, /Position \(Page editor sectionOrder\) is the layout law/);
   assert.match(manage, /Only seed sectionOrder from marketplace slots when the site has none yet/);
   assert.match(manage, /function _syncSectionOrder/);
+  assert.match(manage, /Trust Bar always sits under/);
   assert.match(manage, /OPTIONAL_COMPONENTS\s*=\s*\[[^\]]*certifications/);
   assert.match(manage, /OPTIONAL_COMPONENTS\s*=\s*\[[^\]]*promotions/);
+  assert.match(manage, /renderPositioningThemes/);
+  assert.match(manage, /nav-themes/);
+});
+
+test('positioning layouts API and SQL exist', function() {
+  const api = fs.readFileSync(path.join(root, 'api/api-positioning-layouts.js'), 'utf8');
+  const sql = fs.readFileSync(path.join(root, 'db/positioning_layouts.sql'), 'utf8');
+  const lib = fs.readFileSync(path.join(root, 'lib/positioning-layouts.js'), 'utf8');
+  assert.match(api, /action === 'apply'/);
+  assert.match(api, /fill_empty/);
+  assert.match(api, /demo_replace/);
+  assert.match(sql, /create table if not exists public\.positioning_layouts/);
+  assert.match(lib, /IDENTITY_TOP_KEYS/);
+  assert.match(lib, /applyPositioningLayout/);
 });
 
 test('live applyCfg merges all data-sec nodes after Position list', function() {

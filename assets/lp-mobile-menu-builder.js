@@ -72,6 +72,7 @@
     'nav-mailer': 'Newsletter',
     'nav-messages': 'Support',
     'nav-appearance': 'Appearance',
+    'nav-themes': 'Positioning themes',
     'nav-contact': 'Contact',
     'nav-logo': 'Logo',
     'nav-users': 'Users',
