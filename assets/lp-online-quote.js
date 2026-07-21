@@ -221,12 +221,21 @@
     var biz = (this.shell.business && this.shell.business.name) || 'Get your quote';
     var uiStyle = (window.LPQuoteDisplay && window.LPQuoteDisplay.wizardUiVars)
       ? window.LPQuoteDisplay.wizardUiVars(this.shell) : '';
+    var bodyHtml;
+    try {
+      bodyHtml = this.renderStep(stepKey);
+    } catch (err) {
+      if (typeof console !== 'undefined' && console.error) {
+        console.error('[lp-online-quote] renderStep failed for', stepKey, err);
+      }
+      bodyHtml = '<p class="lp-oq-error">This step could not be loaded. Please go back and try again.</p>';
+    }
     var html = '<div class="lp-oq-card' + layoutClass(this.shell) + '"' + (uiStyle ? (' style="' + uiStyle + '"') : '') + '>' +
       '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc(biz) + '</h2>' +
       '<div class="lp-oq-steps">' + steps.map(function(s, i) {
         return '<span class="lp-oq-step' + (i === this.state.step ? ' is-active' : (i < this.state.step ? ' is-done' : '')) + '">' + esc(this.stepLabel(s)) + '</span>';
       }, this).join('') + '</div></div>' +
-      '<div class="lp-oq-body">' + this.renderStep(stepKey) + '</div>' +
+      '<div class="lp-oq-body">' + bodyHtml + '</div>' +
       '<div class="lp-oq-foot">' + this.renderFooter(stepKey, steps) + '</div>' +
       (this.state.quote ? this.renderQuotePanel() : '') +
       '</div>';
@@ -327,7 +336,7 @@
     }
     if (key === 'travel') {
       var zones = this.shell.travelZones || [];
-      var Pt = global.LPQuotePlanning;
+      var Pt = this.planning();
       var travelChoices = (Pt && Pt.renderTravelZoneRows)
         ? Pt.renderTravelZoneRows(this.state, this.shell, zones, { esc: esc, iconHtml: iconHtml })
         : zones.map(function(z) {
@@ -513,12 +522,21 @@
     var idx = this.state.step;
     this.reconcileState();
     var after = this.resolvedSteps();
-    if (W.stepIndexAfterMove) {
-      this.state.step = W.stepIndexAfterMove(before, idx, delta, after);
-    } else {
-      this.state.step = Math.max(0, Math.min(after.length - 1, idx + (delta < 0 ? -1 : 1)));
+    var nextIdx = W.stepIndexAfterMove
+      ? W.stepIndexAfterMove(before, idx, delta, after)
+      : Math.max(0, Math.min(after.length - 1, idx + (delta < 0 ? -1 : 1)));
+    var prevIdx = this.state.step;
+    this.state.step = nextIdx;
+    try {
+      this.render();
+    } catch (err) {
+      // Never leave state advanced while the previous step stays painted (causes skip).
+      this.state.step = prevIdx;
+      if (typeof console !== 'undefined' && console.error) {
+        console.error('[lp-online-quote] moveStep render failed; rolled back', err);
+      }
+      try { this.render(); } catch (err2) { /* keep prior DOM */ }
     }
-    this.render();
   };
 
   OnlineQuoteWidget.prototype.syncCustomFromDom = function() {
@@ -805,6 +823,7 @@
   }
 
   window.LPOnlineQuoteMount = mount;
+  window.LPOnlineQuoteWidget = OnlineQuoteWidget;
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
