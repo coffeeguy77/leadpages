@@ -827,6 +827,16 @@
   background: var(--lp-oq-panel-bg, transparent);
   color: var(--lp-oq-body, var(--ink));
   font-family: var(--font-ui, system-ui, sans-serif);
+  display: flex;
+  flex-direction: column;
+  min-height: 640px;
+  box-sizing: border-box;
+}
+
+.oqb-preview-mock .lp-oq-body {
+  flex: 1 1 auto;
+  min-height: 460px;
+  overflow: auto;
 }
 
 .oqb-preview-mock .lp-oq-title {
@@ -1207,8 +1217,10 @@
 .oqb-preview-mock .lp-oq-foot {
   display: flex;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: auto;
+  padding-top: 14px;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .oqb-preview-mock .lp-oq-btn {
@@ -1346,6 +1358,107 @@
 .oqb-preview-mock .lp-oq-radio,
 .oqb-preview-mock .lp-oq-check {
   color: var(--lp-oq-body, var(--ink));
+}
+
+.oqb-preview-mock .lp-oq-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  width: 100%;
+  box-sizing: border-box;
+}
+.oqb-preview-mock .lp-oq-col-title {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--lp-oq-label, var(--ink-soft));
+}
+.oqb-preview-mock .lp-oq-cols-contact .lp-oq-col-quote {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.oqb-preview-mock .lp-oq-cal {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+.oqb-preview-mock .lp-oq-cal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.oqb-preview-mock .lp-oq-cal-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--lp-oq-label, var(--ink-soft));
+}
+.oqb-preview-mock .lp-oq-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.oqb-preview-mock .lp-oq-cal-month { font-weight: 700; font-size: 13px; }
+.oqb-preview-mock .lp-oq-cal-nav-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+}
+.oqb-preview-mock .lp-oq-cal-weekdays,
+.oqb-preview-mock .lp-oq-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+  text-align: center;
+}
+.oqb-preview-mock .lp-oq-cal-weekdays {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--lp-oq-muted, var(--ink-soft));
+  margin-bottom: 3px;
+}
+.oqb-preview-mock .lp-oq-cal-day {
+  appearance: none;
+  border: 0;
+  border-radius: 8px;
+  min-height: 30px;
+  aspect-ratio: 1;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--lp-oq-body, var(--ink));
+}
+.oqb-preview-mock .lp-oq-cal-day.is-muted { opacity: .38; }
+.oqb-preview-mock .lp-oq-cal-day.is-today {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.oqb-preview-mock .lp-oq-cal-day.is-selected {
+  background: var(--lp-oq-btn-bg, var(--accent));
+  color: var(--lp-oq-btn-text, var(--accent-text));
+  box-shadow: none;
+}
+@media (max-width: 720px) {
+  .oqb-preview-mock .lp-oq-cols { grid-template-columns: 1fr; }
+  .oqb-preview-mock .lp-oq-card { min-height: 0; }
 }
 
 @media (max-width: 960px) {
