@@ -35,10 +35,11 @@ test('wizard card locks body height so Continue stays put', function() {
   assert.match(online, /--lp-oq-card-min:640px/);
   assert.match(online, /min-height:var\(--lp-oq-card-min\)/);
   assert.match(online, /overflow:visible/);
-  assert.doesNotMatch(online, /height:var\(--lp-oq-card-min\)/);
+  // Shared min-height only — no fixed height that forces an inner scroller.
+  assert.doesNotMatch(online, /;height:var\(--lp-oq-card-min\)/);
   assert.match(online, /margin-top:auto/);
   assert.match(css, /min-height: 640px/);
-  assert.doesNotMatch(css, /height: 640px/);
+  assert.doesNotMatch(css, /^\s*height:\s*640px/m);
 });
 
 test('theme calendar is a compact popup date picker', function() {
