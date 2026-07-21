@@ -237,7 +237,7 @@
       }, this).join('') + '</div></div>' +
       '<div class="lp-oq-body">' + bodyHtml + '</div>' +
       '<div class="lp-oq-foot">' + this.renderFooter(stepKey, steps) + '</div>' +
-      (this.state.quote ? this.renderQuotePanel() : '') +
+      (this.state.quote && stepKey !== 'contact' ? this.renderQuotePanel() : '') +
       '</div>';
     this.el.innerHTML = html;
     this.wire(stepKey);
@@ -276,9 +276,17 @@
       var staffing = (P && P.renderStaffing)
         ? P.renderStaffing(s, this.shell, products)
         : '';
+      var eventCustom = this.renderCustomFields('event');
       return wrap({
         intro: '<p class="lp-oq-intro">When is your event, and how many baristas do you need?</p>',
-        fields: fields + staffing + this.renderCustomFields('event')
+        fields: '<div class="lp-oq-cols lp-oq-cols-event">' +
+          '<div class="lp-oq-col lp-oq-col-schedule">' +
+          '<p class="lp-oq-col-title">Event schedule</p>' + fields +
+          '</div>' +
+          '<div class="lp-oq-col lp-oq-col-staff">' +
+          '<p class="lp-oq-col-title">Barista staffing</p>' + staffing +
+          '</div></div>' +
+          (eventCustom ? '<div class="lp-oq-event-extra">' + eventCustom + '</div>' : '')
       });
     }
 
@@ -361,12 +369,34 @@
         }).join('')
       });
     }
+    var contactSelf = this;
     return wrap({
       intro: '<p class="lp-oq-intro">Your details to receive the quote.</p>',
-      fields: '<label class="lp-oq-field"><span>Name</span><input data-field="contact.name" value="' + esc(s.contact.name) + '"></label>' +
-        '<label class="lp-oq-field"><span>Email</span><input type="email" data-field="contact.email" value="' + esc(s.contact.email) + '"></label>' +
-        '<label class="lp-oq-field"><span>Mobile</span><input type="tel" data-field="contact.phone" placeholder="0414 631 463" value="' + esc(s.contact.phone) + '"></label>' +
-        this.renderCustomFields('contact')
+      fields: (function() {
+        var allContact = contactSelf.customFieldsFor('contact');
+        var parts = (P && P.partitionCustomFields)
+          ? P.partitionCustomFields(allContact)
+          : { left: allContact.filter(function(f) { return f.type !== 'textarea'; }),
+              right: allContact.filter(function(f) { return f.type === 'textarea'; }) };
+        var leftExtra = (P && P.renderCustomFieldsHtml)
+          ? P.renderCustomFieldsHtml(parts.left, s.customAnswers || {}, { esc: esc, attr: 'data-custom-field' })
+          : '';
+        var rightExtra = (P && P.renderCustomFieldsHtml)
+          ? P.renderCustomFieldsHtml(parts.right, s.customAnswers || {}, { esc: esc, attr: 'data-custom-field' })
+          : '';
+        var left = '<label class="lp-oq-field"><span>Name</span><input data-field="contact.name" value="' + esc(s.contact.name) + '"></label>' +
+          '<label class="lp-oq-field"><span>Email</span><input type="email" data-field="contact.email" value="' + esc(s.contact.email) + '"></label>' +
+          '<label class="lp-oq-field"><span>Mobile</span><input type="tel" data-field="contact.phone" placeholder="0414 631 463" value="' + esc(s.contact.phone) + '"></label>' +
+          leftExtra;
+        var right = rightExtra +
+          (s.quote
+            ? contactSelf.renderQuotePanel()
+            : '<div class="lp-oq-quote-slot"><p class="lp-oq-col-title">Your quote</p>' +
+              '<p class="lp-oq-muted" style="margin:0;font-size:13px;line-height:1.45">Fill in your details, then tap <strong>Get my quote</strong>. Your total and verification will appear here.</p></div>');
+        return '<div class="lp-oq-cols lp-oq-cols-contact">' +
+          '<div class="lp-oq-col lp-oq-col-contact">' + left + '</div>' +
+          '<div class="lp-oq-col lp-oq-col-quote">' + right + '</div></div>';
+      })()
     });
   };
 
@@ -738,7 +768,7 @@
       '.online-quote .eyebrow,.online-quote .ey{font-family:"Barlow",system-ui,-apple-system,sans-serif;font-weight:700;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--oq-eyebrow,var(--pipe,var(--accent,inherit)));margin:0}',
       '.online-quote .section-head h2,.online-quote>.in>h2,.online-quote .in>.section-head>h2{font-family:"Barlow Condensed","Barlow",system-ui,sans-serif;font-size:clamp(32px,4.4vw,52px);font-weight:800;letter-spacing:-.01em;text-transform:uppercase;margin:10px 0 0;line-height:1.1;color:var(--oq-heading,inherit)}',
       '.online-quote .section-head p,.online-quote .intro{margin:13px 0 0;font-size:18px;font-weight:500;line-height:1.45;color:var(--oq-intro,var(--muted,var(--ink-soft,inherit)));max-width:62ch}',
-      '.lp-oq-card{font-family:system-ui,-apple-system,Segoe UI,sans-serif;width:100%;max-width:100%;box-sizing:border-box;border:1px solid var(--lp-oq-panel-border,color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor))));border-radius:16px;padding:20px;background:var(--lp-oq-panel-bg,transparent);color:var(--lp-oq-body,var(--ink, var(--text, inherit)))}',
+      '.lp-oq-card{font-family:system-ui,-apple-system,Segoe UI,sans-serif;width:100%;max-width:100%;box-sizing:border-box;border:1px solid var(--lp-oq-panel-border,color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor))));border-radius:16px;padding:20px;background:var(--lp-oq-panel-bg,transparent);color:var(--lp-oq-body,var(--ink, var(--text, inherit)));display:flex;flex-direction:column;min-height:var(--lp-oq-card-min,640px)}',
       '.lp-oq-title{margin:0 0 8px;font-size:1.35rem;color:var(--lp-oq-panel-title,var(--ink, var(--text, inherit)))}',
       '.lp-oq-intro{color:var(--lp-oq-intro,var(--ink-soft, var(--text-soft, inherit)));margin:0 0 10px}',
       '.lp-oq-steps{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}',
@@ -752,6 +782,39 @@
       '.lp-oq-choice .lp-oq-ic svg{width:18px;height:18px}',
       '.lp-oq-choice-img{display:block;margin:0 0 8px;border-radius:8px;object-fit:contain;max-width:100%}',
       layoutRules,
+      /* Stable body height keeps Continue from jumping between steps */
+      '.lp-oq-body{flex:1 1 auto;min-height:var(--lp-oq-body-min,460px);overflow:auto;width:100%;box-sizing:border-box}',
+      '.lp-oq-head{flex:0 0 auto}',
+      /* Two-column contact + event layouts */
+      '.lp-oq-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start;width:100%;box-sizing:border-box}',
+      '.lp-oq-col{min-width:0}',
+      '.lp-oq-col-title{margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--lp-oq-label,var(--ink-soft,inherit))}',
+      '.lp-oq-cols-contact .lp-oq-col-contact .lp-oq-field{margin-top:8px}',
+      '.lp-oq-cols-contact .lp-oq-col-quote{padding:14px;border-radius:14px;border:1px solid color-mix(in srgb,' + brand + ' 18%, var(--line, var(--border, currentColor)));background:color-mix(in srgb,' + brand + ' 5%, transparent)}',
+      '.lp-oq-cols-contact .lp-oq-quote{margin-top:0;padding-top:0;border-top:none}',
+      '.lp-oq-quote-slot{min-height:120px}',
+      '.lp-oq-cols-event .lp-oq-plan{margin-top:0}',
+      '.lp-oq-event-extra{margin-top:14px}',
+      '@media (max-width:720px){.lp-oq-cols{grid-template-columns:1fr}.lp-oq-card{min-height:0}}',
+      /* Theme calendar */
+      '.lp-oq-cal{margin-top:10px;padding:12px;border-radius:14px;border:1px solid color-mix(in srgb,' + brand + ' 20%, var(--line, var(--border, currentColor)));background:color-mix(in srgb,' + brand + ' 4%, transparent);box-sizing:border-box}',
+      '.lp-oq-cal-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}',
+      '.lp-oq-cal-label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--lp-oq-label,var(--ink-soft,inherit))}',
+      '.lp-oq-cal-selected{font-size:13px;font-weight:600;color:var(--lp-oq-body,inherit)}',
+      '.lp-oq-cal-selected.is-empty{color:var(--lp-oq-muted,var(--ink-soft,inherit));font-weight:500}',
+      '.lp-oq-cal-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}',
+      '.lp-oq-cal-month{font-weight:700;font-size:14px;color:var(--lp-oq-body,inherit)}',
+      '.lp-oq-cal-nav-btn{appearance:none;border:1px solid color-mix(in srgb,' + brand + ' 28%, var(--line, var(--border, currentColor)));background:transparent;color:var(--lp-oq-body,inherit);width:34px;height:34px;border-radius:10px;font-size:18px;line-height:1;cursor:pointer}',
+      '.lp-oq-cal-nav-btn:hover{border-color:' + brand + ';color:' + brand + '}',
+      '.lp-oq-cal-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-bottom:4px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--lp-oq-muted,var(--ink-soft,inherit))}',
+      '.lp-oq-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}',
+      '.lp-oq-cal-day{appearance:none;border:0;border-radius:10px;aspect-ratio:1;min-height:36px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:var(--lp-oq-body,inherit)}',
+      '.lp-oq-cal-day:hover{background:color-mix(in srgb,' + brand + ' 14%, transparent)}',
+      '.lp-oq-cal-day.is-muted{opacity:.38;font-weight:500}',
+      '.lp-oq-cal-day.is-today{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,' + brand + ' 55%, transparent)}',
+      '.lp-oq-cal-day.is-selected{background:var(--lp-oq-btn-bg,' + brand + ');color:var(--lp-oq-btn-text,var(--accent-text, var(--on-pipe, #fff)));box-shadow:none}',
+      '.lp-oq-cal-day.is-selected.is-today{box-shadow:none}',
+      '.lp-oq-cal-hint{margin:8px 0 0;font-size:12px}',
       /* Packages / add-ons / travel: horizontal row for cards + grid layouts */
       '.lp-oq-layout-cards .lp-oq-choices:not(.lp-oq-fp-grid):not(.lp-oq-bev-grid),.lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid):not(.lp-oq-bev-grid){display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;width:100%}',
       '.lp-oq-layout-cards .lp-oq-choices:not(.lp-oq-fp-grid) .lp-oq-choice,.lp-oq-layout-grid .lp-oq-choices:not(.lp-oq-fp-grid) .lp-oq-choice{width:auto;margin:0;height:100%}',
@@ -764,7 +827,7 @@
       '.lp-oq-field span{display:block;font-size:12px;color:var(--lp-oq-label,var(--ink-soft, var(--text-soft, inherit)));margin-bottom:4px}',
       '.lp-oq-field input{width:100%;padding:10px 12px;border:1px solid var(--line-strong, var(--border-strong, currentColor));border-radius:10px;font:inherit;background:var(--lp-oq-field-bg,var(--input-bg, var(--panel, transparent)));color:var(--lp-oq-field-text,var(--ink, var(--text, inherit)));box-sizing:border-box}',
       '.lp-oq-field textarea,.lp-oq-field-textarea textarea{display:block;width:100%;min-width:0;max-width:100%;min-height:6.5em;padding:10px 12px;border:1px solid var(--line-strong, var(--border-strong, currentColor));border-radius:10px;font:inherit;line-height:1.45;background:transparent;color:var(--lp-oq-field-text,var(--ink, var(--text, inherit)));box-sizing:border-box;resize:vertical}',
-      '.lp-oq-foot{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}',
+      '.lp-oq-foot{display:flex;gap:8px;margin-top:auto;padding-top:16px;flex-wrap:wrap;flex-shrink:0}',
       '.lp-oq-btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border:none;border-radius:8px;background:var(--lp-oq-btn-bg,' + brand + ');color:var(--lp-oq-btn-text,var(--accent-text, var(--on-pipe, var(--ink))));font-weight:600;cursor:pointer;font:inherit;line-height:1.2;box-sizing:border-box}',
       '.lp-oq-btn-ghost{background:var(--lp-oq-btn-ghost-bg,transparent);color:var(--lp-oq-btn-ghost-text,' + brand + ');border:1px solid var(--lp-oq-btn-ghost-border,color-mix(in srgb,' + brand + ' 40%, var(--line, var(--border, currentColor))))}',
       '.lp-oq-quote{margin-top:18px;padding-top:18px;border-top:1px solid color-mix(in srgb,' + brand + ' 18%, var(--line, var(--border, currentColor)))}',

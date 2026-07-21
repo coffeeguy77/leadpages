@@ -51,6 +51,6 @@ test('CRM includes eventDate for simple hours quotes', function() {
 test('cache bust includes event date revision', function() {
   const manage = fs.readFileSync(path.join(root, 'manage.html'), 'utf8');
   const render = fs.readFileSync(path.join(root, 'api/render.js'), 'utf8');
-  assert.match(manage, /oq-travel-live-1/);
-  assert.match(render, /oq-travel-live-1/);
+  assert.match(manage, /oq-layout-cal-1/);
+  assert.match(render, /oq-layout-cal-1/);
 });
