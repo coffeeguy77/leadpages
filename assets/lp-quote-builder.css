@@ -1235,14 +1235,6 @@
 
 .oqb-preview-mock .lp-oq-muted { color: var(--lp-oq-muted, var(--ink-soft)); }
 
-.oqb-preview-mock .lp-oq-bev-group {
-  margin: 14px 0 8px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--lp-oq-intro, var(--lp-oq-label, var(--accent)));
-}
 .oqb-preview-mock .lp-oq-bev-grid,
 .oqb-preview-mock .lp-oq-layout-cards .lp-oq-choices.lp-oq-bev-grid,
 .oqb-preview-mock .lp-oq-layout-grid .lp-oq-choices.lp-oq-bev-grid,
@@ -1251,6 +1243,21 @@
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 10px;
   width: 100%;
+  align-items: stretch;
+  box-sizing: border-box;
+}
+.oqb-preview-mock .lp-oq-bev-grid > .lp-oq-bev-group,
+.oqb-preview-mock .lp-oq-choices.lp-oq-bev-grid > .lp-oq-bev-group {
+  grid-column: 1 / -1;
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--lp-oq-intro, var(--lp-oq-label, var(--accent)));
+}
+.oqb-preview-mock .lp-oq-bev-grid > .lp-oq-bev-group:first-child {
+  margin-top: 0;
 }
 .oqb-preview-mock .lp-oq-bev-card,
 .oqb-preview-mock .lp-oq-choice.lp-oq-bev-card {

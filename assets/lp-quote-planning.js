@@ -641,12 +641,14 @@
     var cardVars = (D && D.equipmentCardVars)
       ? (D.equipmentCardVars(shell, 'packageCards') || D.equipmentCardVars(shell))
       : '';
+    /* One shared 2-up grid for every group (Drinks, Catering, …) so a 3rd/4th
+       card wraps with the same even gap as the first row. */
     var html = '<div class="lp-oq-bev-wrap" data-lp-oq-beverages' +
-      (cardVars ? ' style="' + cardVars + '"' : '') + '>';
+      (cardVars ? ' style="' + cardVars + '"' : '') + '>' +
+      '<div class="lp-oq-choices lp-oq-bev-grid">';
     groups.forEach(function(g) {
       var heading = beverageGroupLabel(g);
       if (heading) html += '<h4 class="lp-oq-bev-group">' + esc(heading) + '</h4>';
-      html += '<div class="lp-oq-choices lp-oq-bev-grid">';
       byGroup[g].forEach(function(b) {
         var qty = beverageLineQty(state, b.id);
         var min = beverageMinQty(b);
@@ -672,9 +674,8 @@
           '<button type="button" class="lp-oq-eq-qty-btn lp-oq-bev-qty-btn" data-bev-qty-delta="10" data-bev-id="' + esc(b.id) + '" aria-label="Increase by 10">+10</button>' +
           '</div></div></div>';
       });
-      html += '</div>';
     });
-    html += '</div>';
+    html += '</div></div>';
     return html;
   }
 

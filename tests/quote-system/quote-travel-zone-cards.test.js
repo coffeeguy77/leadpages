@@ -43,7 +43,7 @@ assert.ok(/travelZones:[\s\S]*imageFit:/.test(serializers), 'travel zones serial
 assert.ok(normalize.includes('travelCards'), 'normalize ensures travelCards');
 assert.ok(/zones\.forEach[\s\S]*imageFit/.test(normalize), 'normalize defaults zone imageFit');
 
-assert.ok(manage.includes('oq-pkg-style-2'), 'manage cache-bust');
-assert.ok(render.includes('oq-pkg-style-2'), 'render cache-bust');
+assert.ok(manage.includes('oq-bev-unified-1'), 'manage cache-bust');
+assert.ok(render.includes('oq-bev-unified-1'), 'render cache-bust');
 
 console.log('quote-travel-zone-cards.test.js: ok');
