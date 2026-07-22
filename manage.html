@@ -4030,7 +4030,10 @@ function heroCtaCard(c){
   function cwSeg(s){ return String(s||'x').toLowerCase().replace(/[^a-z0-9_\-]/g,'')||'x'; }
   function cwRand(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
   function cwPrepImage(file,maxDim,quality){
+    var opts={};
+    if(maxDim && typeof maxDim==='object'){ opts=maxDim; maxDim=opts.maxDim; quality=opts.quality; }
     maxDim=maxDim||2000; quality=(quality==null?0.8:quality);
+    var keepAlpha=!!opts.keepAlpha;
     /* Skip only when already compact (~Photoshop Save for Web). Always recompress ChatGPT-sized ~2MB files. */
     var SKIP_BYTES=800000;
     return new Promise(function(resolve){
@@ -4047,8 +4050,8 @@ function heroCtaCard(c){
             var cw=Math.max(1,Math.round(w*scale)),ch=Math.max(1,Math.round(hh*scale));
             var cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
             var ctx=cv.getContext('2d');
-            /* Large PNGs (AI exports / screenshots) → JPEG; small PNGs keep transparency */
-            var asJpeg=!/^image\/png$/i.test(file.type) || file.size>SKIP_BYTES;
+            /* keepAlpha (chroma logos): always PNG. Else large PNGs → JPEG. */
+            var asJpeg=keepAlpha?false:(!/^image\/png$/i.test(file.type) || file.size>SKIP_BYTES);
             if(asJpeg){ ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,cw,ch); }
             ctx.drawImage(img,0,0,cw,ch);
             URL.revokeObjectURL(url);
@@ -4066,9 +4069,50 @@ function heroCtaCard(c){
       }catch(_e){ resolve(file); }
     });
   }
-  async function cwUpload(file,parts){
+  /** Punch out a solid key colour to transparency. Returns a PNG Blob. SVG/GIF unchanged. */
+  function cwChromaKeyBlob(file,hex,tolerance){
+    return new Promise(function(resolve,reject){
+      try{
+        if(!file||!/^image\//.test(file.type||'')||/svg|gif/i.test(file.type||'')) return resolve(file);
+        var v=String(hex||'#ffffff').trim(); if(v.charAt(0)==='#') v=v.slice(1);
+        if(/^[0-9a-fA-F]{3}$/.test(v)) v=v[0]+v[0]+v[1]+v[1]+v[2]+v[2];
+        if(!/^[0-9a-fA-F]{6}$/.test(v)) return resolve(file);
+        var kr=parseInt(v.slice(0,2),16), kg=parseInt(v.slice(2,4),16), kb=parseInt(v.slice(4,6),16);
+        var tol=Math.max(0,Math.min(180,Number(tolerance))); if(isNaN(tol)) tol=38;
+        var soft=Math.max(1,tol*1.35);
+        var url=URL.createObjectURL(file);
+        var img=new Image();
+        img.onload=function(){
+          try{
+            var w=img.naturalWidth,hh=img.naturalHeight; if(!w||!hh){ URL.revokeObjectURL(url); return resolve(file); }
+            var scale=Math.min(1,2000/Math.max(w,hh));
+            var cw=Math.max(1,Math.round(w*scale)), ch=Math.max(1,Math.round(hh*scale));
+            var cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+            var ctx=cv.getContext('2d'); ctx.drawImage(img,0,0,cw,ch); URL.revokeObjectURL(url);
+            var id=ctx.getImageData(0,0,cw,ch), data=id.data;
+            for(var i=0;i<data.length;i+=4){
+              var dr=data[i]-kr, dg=data[i+1]-kg, db=data[i+2]-kb;
+              var d=Math.sqrt(dr*dr+dg*dg+db*db);
+              if(d<=tol) data[i+3]=0;
+              else if(d<soft){ var t=(d-tol)/(soft-tol); data[i+3]=Math.round(data[i+3]*t); }
+            }
+            ctx.putImageData(id,0,0);
+            cv.toBlob(function(b){
+              if(!b) return resolve(file);
+              try{ b.name=(file.name||'logo').replace(/\.[^.]+$/,'')+'-chromakey.png'; }catch(_n){}
+              resolve(b);
+            },'image/png');
+          }catch(e){ try{URL.revokeObjectURL(url);}catch(_x){} reject(e); }
+        };
+        img.onerror=function(){ try{URL.revokeObjectURL(url);}catch(_x){} reject(new Error('Could not read image')); };
+        img.src=url;
+      }catch(e){ reject(e); }
+    });
+  }
+  async function cwUpload(file,parts,opts){
+    opts=opts||{};
     var token=await cwToken(); if(!token) throw new Error('Please sign in again');
-    try{ file=await cwPrepImage(file); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
+    try{ file=await cwPrepImage(file, opts); }catch(_e){ try{console.error('[mm wiring]',_e&&_e.message);}catch(_x){} }
     var _folder='leadpages/'+cwSiteSeg()+'/'+parts.map(cwSeg).join('/');
     var pid=_folder+'/'+cwRand();
     var sr=await fetch('/api/cloudinary/sign',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({publicId:pid,assetFolder:_folder})});
@@ -6959,7 +7003,18 @@ function heroCtaCard(c){
       var L0=c.logo||{}; var _hd=Math.max(24,Math.min(320,(L0.heightPx?L0.heightPx:Math.round(40*(L0.scale||1)))||44)); var _hm=Math.max(20,Math.min(160,(L0.heightPxM?L0.heightPxM:Math.round(_hd*0.72)))); var _bgIsC=!!(L0.bg&&L0.bg!=='transparent'); var _bgC=_bgIsC?L0.bg:'#0f1115'; var _pad=(L0.pad!=null?L0.pad:8); var _rad=(L0.radius!=null?L0.radius:12); var _float=!!L0.float; var _hbgV=(L0.headerBg&&L0.headerBg!=='')?L0.headerBg:'#0b1220'; var _hopV=(L0.headerBgOpacity!=null&&L0.headerBgOpacity!=='')?Math.max(0,Math.min(100,+L0.headerBgOpacity||0)):100; var _hstTopOn=L0.headerStrokeTopOn===true; var _hstBotOn=L0.headerStrokeBottomOn===true; var _hstTopC=(L0.headerStrokeTopColor&&String(L0.headerStrokeTopColor).trim())||'#ffffff'; var _hstBotC=(L0.headerStrokeBottomColor&&String(L0.headerStrokeBottomColor).trim())||'#ffffff'; var _hstTopW=Math.max(0,Math.min(16,(L0.headerStrokeTopWidth!=null?+L0.headerStrokeTopWidth:2))); if(isNaN(_hstTopW))_hstTopW=2; var _hstBotW=Math.max(0,Math.min(16,(L0.headerStrokeBottomWidth!=null?+L0.headerStrokeBottomWidth:2))); if(isNaN(_hstBotW))_hstBotW=2; var _hbarH=Math.max(0,Math.min(280,(L0.headerBarHeight!=null?+L0.headerBarHeight:0))); if(isNaN(_hbarH))_hbarH=0; var _hHang=(L0.headerHang==='below'||L0.headerHang===true); var _hbarPad=Math.max(0,Math.min(48,(L0.headerBarPadding!=null?+L0.headerBarPadding:10))); if(isNaN(_hbarPad))_hbarPad=10; var _valign=(L0.headerLogoAlign==='start'||L0.headerLogoAlign==='top')?'top':((L0.headerLogoAlign==='end'||L0.headerLogoAlign==='bottom')?'bottom':'center'); var _offX=Math.max(-120,Math.min(120,(L0.offsetX!=null?+L0.offsetX:0))); if(isNaN(_offX))_offX=0; var _offY=Math.max(-120,Math.min(120,(L0.offsetY!=null?+L0.offsetY:0))); if(isNaN(_offY))_offY=0; 
       body.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Logo</h2><p class="lede">Show a clean text logo or upload an image \u2014 both replace the default initial badge.</p>'
         +'<div class="row"><div class="f"><label>Logo style</label><select id="lg-mode" class="tin"><option value="mark">Initial badge + name</option><option value="text">Text only</option><option value="image">Image</option></select></div>'+lpFld('Logo text','lg-text','defaults to business name')+'</div>'
-        +'<div id="lg-imgwrap" class="f" style="display:none;"><label>Logo image</label><input type="file" id="lg-file" accept="image/*"><div class="hint" style="margin-top:4px;">PNG, JPG or SVG \u2014 large images are optimised automatically on upload.</div><div id="lg-imgprev" style="margin-top:8px;"></div></div></div>'
+        +'<div id="lg-imgwrap" class="f" style="display:none;"><label>Logo image</label><input type="file" id="lg-file" accept="image/*"><div class="hint" style="margin-top:4px;">PNG, JPG or SVG \u2014 images over ~800 KB are compressed on upload.</div>'
+        +'<div id="lg-chroma" style="margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--input-bg,#f7f5f1);">'
+        +'<label style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0;"><input type="checkbox" id="lg-ck-on"> Remove background colour</label>'
+        +'<p class="hint" style="margin:6px 0 0;">Punch out a solid backdrop (white, black, green screen, etc.) so the logo sits transparent on the header.</p>'
+        +'<div id="lg-ck-opts" style="display:none;margin-top:10px;">'
+        +'<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">'
+        +'<div class="f" style="margin:0;"><label>Key colour</label><div style="display:flex;gap:6px;align-items:center;"><input type="color" id="lg-ck-color" value="#ffffff" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><button type="button" class="btn ghost" id="lg-ck-eyedrop" title="Pick a colour from anywhere on screen" style="padding:7px 10px;">Pick</button></div></div>'
+        +'<div class="f" style="margin:0;flex:1;min-width:180px;"><label>Tolerance <span id="lg-ck-tol-v" style="font-weight:700;color:var(--accent);">38</span></label><input type="range" id="lg-ck-tol" min="0" max="100" value="38" style="width:100%;"><span class="hint" style="display:block;margin-top:4px;">Higher = remove more near-matching colours</span></div>'
+        +'</div>'
+        +'<p class="hint" style="margin:8px 0 0;">Applied on the next upload. SVG files are left unchanged.</p>'
+        +'</div></div>'
+        +'<div id="lg-imgprev" style="margin-top:8px;"></div></div></div>'
         +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Size, position &amp; background</h2><p class="lede" style="margin:0 0 12px;">Set the logo height for desktop and mobile, choose where it sits, and add an optional background chip behind it. The header grows to fit \u2014 it won\u2019t clip the top any more.</p>'
           +'<div class="row"><div class="f"><label>Desktop height <span class="hint" id="lg-hd-val">'+_hd+'px</span></label><input type="range" id="lg-hd" min="24" max="320" step="1" value="'+_hd+'" style="width:100%;"></div>'
             +'<div class="f"><label>Mobile height <span class="hint" id="lg-hm-val">'+_hm+'px</span></label><input type="range" id="lg-hm" min="20" max="160" step="1" value="'+_hm+'" style="width:100%;"></div></div>'
@@ -7103,11 +7158,37 @@ function heroCtaCard(c){
   function wireTradeBranding(c){
     var L=c.logo||(c.logo={mode:'mark',text:'',imageUrl:''}); if(!L.mode) L.mode='mark';
     $('lg-mode').value=L.mode; $('lg-text').value=L.text||'';
-    function renderPrev(){ var p=$('lg-imgprev'); if(!p) return; p.innerHTML=L.imageUrl?'<img src="'+L.imageUrl+'" style="max-height:46px;border:1px solid var(--line);border-radius:8px;padding:5px;background:#1a2230;vertical-align:middle;"> <button class="btn ghost" id="lg-clear" type="button">Remove</button>':'<span class="hint">No image uploaded.</span>'; var cl=$('lg-clear'); if(cl) cl.addEventListener('click',function(){ if(L._pid){ cwDelete(L._pid); L._pid=''; } L.imageUrl=''; persist(); renderPrev(); previewApply(); }); }
+    function renderPrev(){ var p=$('lg-imgprev'); if(!p) return; p.innerHTML=L.imageUrl?'<img src="'+L.imageUrl+'" style="max-height:64px;border:1px solid var(--line);border-radius:8px;padding:8px;background:repeating-conic-gradient(#e8e8e8 0% 25%,#fff 0% 50%) 50%/12px 12px;vertical-align:middle;"> <button class="btn ghost" id="lg-clear" type="button">Remove</button>':'<span class="hint">No image uploaded.</span>'; var cl=$('lg-clear'); if(cl) cl.addEventListener('click',function(){ if(L._pid){ cwDelete(L._pid); L._pid=''; } L.imageUrl=''; persist(); renderPrev(); previewApply(); }); }
     function refresh(){ $('lg-imgwrap').style.display=($('lg-mode').value==='image')?'':'none'; renderPrev(); }
     $('lg-mode').addEventListener('change',function(){ L.mode=this.value; persist(); refresh(); previewApply(); });
     $('lg-text').addEventListener('input',function(){ L.text=this.value; persist(); previewApply(); });
-    var f=$('lg-file'); if(f) f.addEventListener('change',function(e){ var file=e.target.files[0]; if(!file) return; if(file.size>8000000){ toast('Image too large (max ~8 MB)'); e.target.value=''; return; } var prev=L._pid||''; toast('Uploading logo\u2026'); cwUpload(file,['logo']).then(function(r){ L.imageUrl=r.url; L._pid=r.publicId; persist(); renderPrev(); previewApply(); if(prev&&prev!==r.publicId) cwDelete(prev); toast('Logo uploaded'); }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); }); e.target.value=''; });
+    var ckOn=$('lg-ck-on'), ckOpts=$('lg-ck-opts'), ckTol=$('lg-ck-tol'), ckTolV=$('lg-ck-tol-v'), ckColor=$('lg-ck-color'), ckEye=$('lg-ck-eyedrop');
+    if(ckOn&&ckOpts) ckOn.addEventListener('change',function(){ ckOpts.style.display=ckOn.checked?'':'none'; });
+    if(ckTol&&ckTolV) ckTol.addEventListener('input',function(){ ckTolV.textContent=ckTol.value; });
+    if(ckEye) ckEye.addEventListener('click',function(){
+      if(!window.EyeDropper){ toast('Eyedropper not supported in this browser — pick a colour with the swatch'); return; }
+      try{ new EyeDropper().open().then(function(res){ if(ckColor&&res&&res.sRGBHex) ckColor.value=res.sRGBHex; }).catch(function(){}); }catch(_e){ toast('Eyedropper unavailable'); }
+    });
+    var f=$('lg-file'); if(f) f.addEventListener('change',function(e){
+      var file=e.target.files[0]; if(!file) return;
+      if(file.size>8000000){ toast('Image too large (max ~8 MB)'); e.target.value=''; return; }
+      var prev=L._pid||'';
+      var useCk=!!(ckOn&&ckOn.checked);
+      var run=Promise.resolve(file);
+      if(useCk && !/svg|gif/i.test(file.type||'')){
+        toast('Removing background\u2026');
+        run=cwChromaKeyBlob(file, (ckColor&&ckColor.value)||'#ffffff', ckTol?parseInt(ckTol.value,10):38);
+      }
+      run.then(function(out){
+        toast('Uploading logo\u2026');
+        return cwUpload(out,['logo'],{keepAlpha:useCk||/^image\/png$/i.test((out&&out.type)||'')});
+      }).then(function(r){
+        L.imageUrl=r.url; L._pid=r.publicId; persist(); renderPrev(); previewApply();
+        if(prev&&prev!==r.publicId) cwDelete(prev);
+        toast(useCk?'Logo uploaded (background removed)':'Logo uploaded');
+      }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); });
+      e.target.value='';
+    });
     refresh();
   }
   function wireTradeColours(c){

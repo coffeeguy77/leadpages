@@ -20,8 +20,8 @@ describe('cwPrepImage — tighter upload prep', () => {
   });
 
   it('converts large PNGs to JPEG and keeps small PNGs transparent', () => {
-    assert.match(manage, /Large PNGs \(AI exports \/ screenshots\) → JPEG/);
-    assert.match(manage, /asJpeg=!\/\^image\\\/png\$\/i\.test\(file\.type\) \|\| file\.size>SKIP_BYTES/);
+    assert.match(manage, /keepAlpha \(chroma logos\): always PNG/);
+    assert.match(manage, /asJpeg=keepAlpha\?false:\(!\/\^image\\\/png\$\/i\.test\(file\.type\) \|\| file\.size>SKIP_BYTES\)/);
     assert.match(manage, /fillStyle='#ffffff'/);
   });
 
@@ -37,5 +37,11 @@ describe('cwPrepImage — tighter upload prep', () => {
 
   it('upload hint mentions compression threshold', () => {
     assert.match(manage, /images over ~800 KB are compressed on upload/);
+  });
+
+  it('supports keepAlpha so chroma logos stay PNG', () => {
+    assert.match(manage, /var keepAlpha=!!opts\.keepAlpha/);
+    assert.match(manage, /keepAlpha\?false:/);
+    assert.match(manage, /cwPrepImage\(file, opts\)/);
   });
 });
