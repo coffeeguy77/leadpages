@@ -942,7 +942,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       <div class="f"><textarea id="lp-body" class="tin mono" rows="12" placeholder="Write your page content here. Simple Markdown supported: ## Subheading, **bold**, - bullet."></textarea></div>
 
       <div class="lp-approve" id="lp-approve" hidden>
-        <div class="lp-ap-h">AI draft ready — review before it fills SEO fields and attaches Marketplace FAQ (Unique)</div>
+        <div class="lp-ap-h">AI draft ready — review before it fills SEO fields, hero slider, quote form, and Marketplace FAQ (Unique)</div>
         <div class="lp-ap-preview" id="lp-ap-preview"></div>
         <div class="lp-ap-actions"><button class="btn" id="lp-ap-accept">Use this draft</button><button class="btn ghost" id="lp-ap-discard">Discard</button></div>
       </div>
@@ -953,9 +953,6 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         <div class="f"><label>Placement</label><select id="lp-img-mode" class="apsel"><option value="center">Centered — above text</option><option value="left">Left — above text</option><option value="right">Right — above text</option><option value="wrap-left">Wrap — image left, text flows right</option><option value="wrap-right">Wrap — image right, text flows left</option></select></div>
         <div class="f"><label>Padding around image (px)</label><input type="number" id="lp-img-pad" class="tin" min="0" max="96" step="2" placeholder="16"></div>
       </div>
-
-      <div class="apgroup-h">Call-to-action buttons</div>
-      <div class="f" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center"><label class="ck"><input type="checkbox" id="lp-cta-call"> Show the “Call” button</label><label class="ck"><input type="checkbox" id="lp-cta-quote"> Show the “Get a free quote” button</label></div>
 
       <div class="apgroup-h">Site menu</div>
       <div class="lp-menu-box" style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 14px;background:var(--input-bg,#f7f5f1);">
@@ -1998,16 +1995,75 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       ord=apps.slice();
       if(lpPageHasArticle(p)) ord.push('__lpArticle');
       p.pageLayoutOrder=ord;
-      return ord;
+      lpPinHeroArticleQuote(p);
+      return p.pageLayoutOrder;
     }
     var valid={};
     apps.forEach(function(k){ valid[k]=true; });
     if(lpPageHasArticle(p)) valid['__lpArticle']=true;
     ord=ord.filter(function(id){ return valid[id]; });
     apps.forEach(function(k){ if(ord.indexOf(k)<0) ord.push(k); });
-    if(lpPageHasArticle(p)&&ord.indexOf('__lpArticle')<0) ord.push('__lpArticle');
+    if(lpPageHasArticle(p)&&ord.indexOf('__lpArticle')<0){
+      var qi=ord.indexOf('quote');
+      var hi=ord.indexOf('heroSlider');
+      if(qi>=0) ord.splice(qi,0,'__lpArticle');
+      else if(hi>=0) ord.splice(hi+1,0,'__lpArticle');
+      else ord.push('__lpArticle');
+    }
     p.pageLayoutOrder=ord;
     return ord;
+  }
+  /** Keep marketplace hero above page content and quote form under it. */
+  function lpPinHeroArticleQuote(p){
+    if(!p) return [];
+    var ord=(Array.isArray(p.pageLayoutOrder)?p.pageLayoutOrder:[]).slice();
+    function take(id){ var i=ord.indexOf(id); if(i<0) return null; return ord.splice(i,1)[0]; }
+    var hero=take('heroSlider');
+    var art=take('__lpArticle');
+    var quote=take('quote');
+    var head=[];
+    if(hero) head.push(hero);
+    if(art) head.push(art);
+    if(quote) head.push(quote);
+    p.pageLayoutOrder=head.concat(ord);
+    return p.pageLayoutOrder;
+  }
+  /**
+   * Always attach Marketplace Hero Slider + Quote form on trade landing pages.
+   * Unique mode seeded from homepage so AI draft can customise per keyword.
+   */
+  function lpEnsureDefaultLandingApps(p){
+    if(!p||currentSiteTemplate!=='trade') return false;
+    var apps=lpEnsurePageApps(p);
+    var changed=false;
+    ['heroSlider','quote'].forEach(function(key){
+      var app=apps.find(function(a){ return (a.key||a.section_key)===key; });
+      if(!app){
+        apps.push({key:key, mode:'unique', homeCopied:true});
+        changed=true;
+        app=apps[apps.length-1];
+      }
+      var ps=p.pageSections&&p.pageSections[key];
+      var needsSeed=!ps||!Object.keys(ps).length||(app.mode==='unique'&&lpPageSectionLooksUninitialized(key, ps));
+      if(needsSeed&&app.mode==='unique'){
+        var home={};
+        try{ home=JSON.parse(JSON.stringify(lpPageHomeSection(key)||{})); }catch(e){ home={}; }
+        p.pageSections[key]=Object.assign({}, home, {on:true});
+        if(key==='heroSlider'){
+          var slides=p.pageSections[key].slides;
+          if(!Array.isArray(slides)||!slides.length){
+            p.pageSections[key].slides=(typeof slideFromHero==='function')?[slideFromHero(data)]:[{on:true,heading:'',subText:''}];
+          }
+        }
+        app.homeCopied=true;
+        changed=true;
+      } else if(p.pageSections[key]){
+        p.pageSections[key].on=true;
+      }
+    });
+    lpEnsurePageLayoutOrder(p);
+    if(changed) lpPinHeroArticleQuote(p);
+    return changed;
   }
   function lpPagePreviewReload(){ if(document.body.classList.contains('lp-prev-open')) previewLoad(); else previewApply(data); }
   function lpSetEdTab(tab){
@@ -2162,6 +2218,59 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       b+='\n\n## '+(cta.h||'Get in touch')+'\n\n'+(cta.b||'')+'\n';
     }
     return b.replace(/\n{3,}/g,'\n\n').trim();
+  }
+  /**
+   * Fill Unique hero slider slides + quote form (heading/sub/jobOptions) from AI draft.
+   * @returns {{slides:number, jobs:number}}
+   */
+  function lpApplyDraftHeroAndQuote(draft){
+    var out={slides:0, jobs:0};
+    if(!lpCur||currentSiteTemplate!=='trade'||!draft) return out;
+    lpEnsureDefaultLandingApps(lpCur);
+    var apps=lpEnsurePageApps(lpCur);
+    ['heroSlider','quote'].forEach(function(key){
+      var app=apps.find(function(a){ return (a.key||a.section_key)===key; });
+      if(app){ app.mode='unique'; app.homeCopied=true; }
+    });
+    var slidesIn=Array.isArray(draft.heroSlides)?draft.heroSlides:[];
+    if(slidesIn.length){
+      var hs=lpCur.pageSections.heroSlider||{};
+      var base=Array.isArray(hs.slides)?hs.slides:[];
+      var seed=(typeof slideFromHero==='function')?slideFromHero(data):{on:true};
+      var slides=slidesIn.map(function(s,i){
+        var row=s&&typeof s==='object'?s:{};
+        var prev=base[i]&&typeof base[i]==='object'?JSON.parse(JSON.stringify(base[i])):JSON.parse(JSON.stringify(seed));
+        prev.on=true;
+        if(row.eyebrow!=null) prev.eyebrow=String(row.eyebrow||'').trim();
+        if(row.heading!=null) prev.heading=String(row.heading||'').trim();
+        if(row.highlightText!=null) prev.highlightText=String(row.highlightText||'').trim();
+        if(row.subText!=null) prev.subText=String(row.subText||'').trim();
+        return prev;
+      }).filter(function(s){ return s&&(s.heading||s.subText||s.eyebrow); }).slice(0,4);
+      if(slides.length){
+        lpCur.pageSections.heroSlider=Object.assign({}, hs, {on:true, slides:slides});
+        out.slides=slides.length;
+      }
+    }
+    var q=lpCur.pageSections.quote||{};
+    var qPatch={on:true};
+    if(draft.quoteHeading&&String(draft.quoteHeading).trim()) qPatch.heading=String(draft.quoteHeading).trim();
+    if(draft.quoteSub&&String(draft.quoteSub).trim()) qPatch.sub=String(draft.quoteSub).trim();
+    var jobs=Array.isArray(draft.jobOptions)?draft.jobOptions:[];
+    if(jobs.length){
+      qPatch.jobOptions=jobs.map(function(o){
+        if(typeof o==='string') return {text:String(o).trim(), on:true};
+        var row=o&&typeof o==='object'?o:{};
+        return {text:String(row.text||row.label||row.value||'').trim(), on:row.on!==false};
+      }).filter(function(it){ return it.text; }).slice(0,10);
+      out.jobs=qPatch.jobOptions.length;
+    }
+    lpCur.pageSections.quote=Object.assign({}, q, qPatch);
+    lpPinHeroArticleQuote(lpCur);
+    persist(); lpAutosave();
+    try{ lpRenderAppsTab(); }catch(e){}
+    lpPagePreviewReload();
+    return out;
   }
   /**
    * Attach Marketplace FAQ as Unique on this landing page and fill items from AI draft.faqs.
@@ -2329,7 +2438,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     const ap=$('lp-ai-presets'); if(ap && !ap.children.length){ aiPresets().forEach(function(pr){ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=pr[0]; b.addEventListener('click',function(){ lpAiApplyPreset(pr); }); ap.appendChild(b); }); }
     if($('lp-ai-mode')){ $('lp-ai-mode').addEventListener('change',function(){ lpAiSetMode(this.value); }); lpAiSetMode($('lp-ai-mode').value||'seo'); }
     if(lpWired) return; lpWired=true;
-    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
+    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); try{ lpEnsureDefaultLandingApps(p); }catch(e){} persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
     list.addEventListener('click',function(e){ const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit')); });
     $('lp-tips').addEventListener('change',function(){ $('lp-editor').classList.toggle('show-tips', this.checked); });
     $('lp-slug').addEventListener('input',function(){ this.value=this.value.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+/,'').replace(/--+/g,'-'); lpField('slug',this.value); });
@@ -2371,8 +2480,6 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-img-clear').addEventListener('click',function(){ if(!lpCur) return; if(lpCur.img_pid){ cwDelete(lpCur.img_pid); lpCur.img_pid=''; } lpCur.img=''; $('lp-img').value=''; persist(); lpSaveDB(); lpImgPrev(); });
     $('lp-img-mode').addEventListener('change',function(){ lpField('imgMode',this.value); });
     $('lp-img-pad').addEventListener('input',function(){ var n=parseInt(this.value,10); lpField('imgPad', isNaN(n)?16:Math.max(0,Math.min(96,n))); });
-    $('lp-cta-call').addEventListener('change',function(){ lpField('showCall',this.checked); });
-    $('lp-cta-quote').addEventListener('change',function(){ lpField('showQuote',this.checked); });
     (function wireLpTextColors(){
       function hexOk(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; }
       function to6(h){ h=hexOk(h); if(!h) return ''; if(h.length===4) return '#'+h.charAt(1)+h.charAt(1)+h.charAt(2)+h.charAt(2)+h.charAt(3)+h.charAt(3); return h; }
@@ -2411,12 +2518,16 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(draft.meta){ $('lp-meta').value=draft.meta; lpField('meta',draft.meta); $('lp-meta-count').textContent=String(draft.meta).length+' characters'; }
       if(draft.h1){ $('lp-h1').value=draft.h1; lpField('h1',draft.h1); }
       $('lp-body').value=body; lpField('body',body); lpPush(body);
+      try{ lpEnsureDefaultLandingApps(lpCur); }catch(e){}
+      var hq=lpApplyDraftHeroAndQuote(draft);
       var faqN=lpApplyDraftFaqs(draft.faqs);
       $('lp-approve').hidden=true;
       if(lpCur) $('lp-ed-title').textContent=lpCur.title?('Edit: '+lpCur.title):'New page';
-      toast(faqN
-        ?('Draft applied — SEO fields filled + Marketplace FAQ (Unique) with '+faqN+' questions')
-        :'Draft applied — title, slug, meta, H1 and body filled');
+      var bits=['SEO fields filled'];
+      if(hq.slides) bits.push('Hero Slider ('+hq.slides+' slides)');
+      if(hq.jobs) bits.push('Quote form ('+hq.jobs+' options)');
+      if(faqN) bits.push('FAQ ('+faqN+' questions)');
+      toast('Draft applied — '+bits.join(' + '));
     });
     $('lp-ap-discard').addEventListener('click',function(){ $('lp-approve').hidden=true; });
     var lptc=$('lp-tab-content'), lpta=$('lp-tab-apps');
@@ -2529,12 +2640,12 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function lpOpen(id){
     lpCur=data.pages.find(x=>x.id===id); if(!lpCur) return;
     lpEnsurePageApps(lpCur);
-    lpEnsurePageLayoutOrder(lpCur);
+    try{ lpEnsureDefaultLandingApps(lpCur); }catch(e){ lpEnsurePageLayoutOrder(lpCur); }
     $('lp-editor').hidden=false;
     $('lp-ed-title').textContent=lpCur.title?('Edit: '+lpCur.title):'New page';
     $('lp-title').value=lpCur.title||''; $('lp-slug').value=lpCur.slug||''; $('lp-meta').value=lpCur.meta||''; $('lp-h1').value=lpCur.h1||''; $('lp-body').value=lpCur.body||'';
     $('lp-status').value=lpCur.status||'draft';
-    $('lp-img').value=lpCur.img||''; $('lp-img-mode').value=lpCur.imgMode||'center'; $('lp-img-pad').value=(lpCur.imgPad!=null?lpCur.imgPad:16); $('lp-cta-call').checked=(lpCur.showCall!==false); $('lp-cta-quote').checked=(lpCur.showQuote!==false); lpImgPrev();
+    $('lp-img').value=lpCur.img||''; $('lp-img-mode').value=lpCur.imgMode||'center'; $('lp-img-pad').value=(lpCur.imgPad!=null?lpCur.imgPad:16); lpImgPrev();
     lpFillMenuUi();
     if(typeof window.__lpFillTextColors==='function') window.__lpFillTextColors(lpCur);
     $('lp-meta-count').textContent=(lpCur.meta||'').length+' characters';

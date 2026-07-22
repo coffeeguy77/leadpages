@@ -9,7 +9,9 @@ const {
   LANDING_DRAFT_SCHEMA,
   stripDecorativeIcons,
   faqsToPageItems,
-  stripFaqBlocks
+  stripFaqBlocks,
+  normalizeHeroSlides,
+  normalizeJobOptions
 } = require('../lib/brain/landing-compose');
 const { validateAgainstSchema } = require('../lib/brain/schema');
 
@@ -141,6 +143,71 @@ describe('landing-compose', () => {
       faqs: [{ question: 'Q?', answer: 'A.' }],
       ctaHeadline: 'Get in touch',
       ctaBody: 'Call today.'
+    };
+    assert.equal(validateAgainstSchema(LANDING_DRAFT_SCHEMA, sample).ok, true);
+  });
+
+  it('falls back to keyword-matched hero slides and quote job options', () => {
+    const draft = normalizeLandingDraft(
+      {
+        primaryKeyword: 'Blocked drain clearing Canberra',
+        title: 'Blocked drain clearing Canberra',
+        slug: 'blocked-drain-clearing-canberra',
+        meta: 'Fast blocked drain clearing in Canberra.',
+        h1: 'Blocked drain clearing Canberra',
+        bodyMarkdown: 'We clear blocked drains across Canberra.',
+        faqs: [],
+        ctaHeadline: 'Get in touch',
+        ctaBody: 'Call today.'
+      },
+      { businessName: 'Pipe Pros', location: 'Canberra' }
+    );
+    assert.ok(draft.heroSlides.length >= 2);
+    assert.match(draft.heroSlides[0].heading, /Blocked drain/i);
+    assert.ok(draft.jobOptions.length >= 3);
+    assert.equal(draft.jobOptions[0].text, 'Blocked drain clearing Canberra');
+    assert.match(draft.quoteHeading, /Blocked drain/i);
+    assert.match(draft.quoteSub, /Canberra/);
+  });
+
+  it('normalizes model heroSlides and jobOptions when provided', () => {
+    const slides = normalizeHeroSlides(
+      [{ eyebrow: 'Local', heading: 'Hot water repairs', highlightText: 'same day', subText: 'Book today.' }],
+      { primaryKeyword: 'Hot water repairs' }
+    );
+    assert.equal(slides.length, 1);
+    assert.equal(slides[0].highlightText, 'same day');
+    const jobs = normalizeJobOptions(['Hot water system', { label: 'Leaking tap' }], {
+      primaryKeyword: 'Plumbing'
+    });
+    assert.deepEqual(
+      jobs.map((j) => j.text),
+      ['Hot water system', 'Leaking tap']
+    );
+  });
+
+  it('LANDING_DRAFT_SCHEMA accepts heroSlides and jobOptions', () => {
+    const sample = {
+      primaryKeyword: 'Coffee cart hire Canberra',
+      title: 'Coffee cart hire Canberra',
+      slug: 'coffee-cart-hire-canberra',
+      meta: 'Coffee cart hire for events in Canberra.',
+      h1: 'Coffee cart hire Canberra',
+      bodyMarkdown: 'Hire a coffee cart for your next event.',
+      faqs: [{ question: 'Q?', answer: 'A.' }],
+      ctaHeadline: 'Get a quote',
+      ctaBody: 'Tell us about your event.',
+      heroSlides: [
+        {
+          eyebrow: 'Events',
+          heading: 'Coffee cart hire Canberra',
+          highlightText: 'for your event',
+          subText: 'Baristas, machine and setup included.'
+        }
+      ],
+      jobOptions: ['Wedding coffee cart', { text: 'Corporate event' }],
+      quoteHeading: 'Get a quote for coffee cart hire',
+      quoteSub: 'Serving Canberra and nearby areas'
     };
     assert.equal(validateAgainstSchema(LANDING_DRAFT_SCHEMA, sample).ok, true);
   });
