@@ -393,7 +393,7 @@ sequenceDiagram
 | `cwSiteSegSlug()` | Slug-only segment (legacy folder cleanup) |
 | `cwSeg(s)` | Sanitise path segment |
 | `cwRand()` | Unique suffix `Date.now(36)+random` |
-| `cwPrepImage(file)` | Client-side downscale: max 2200 px, quality 0.85; skips SVG/GIF/small files |
+| `cwPrepImage(file)` | Client-side downscale/recompress: max 2000 px, JPEG quality 0.8; skips SVG/GIF and files already ≤ ~800 KB |
 | `cwUpload(file, parts)` | Sign + upload; returns `{url, publicId}` |
 | `cwDelete(publicId)` | Best-effort single asset delete |
 | `cwDeletePrefix(prefix)` | Batch delete under prefix (site teardown) |

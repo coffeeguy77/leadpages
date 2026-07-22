@@ -159,7 +159,7 @@ sequenceDiagram
   U->>U: cwPick(file) or input[type=file]
   U->>CT: getSession access_token
   CT-->>U: Bearer token
-  U->>PI: resize if raster > 2.6MB or > 2200px
+  U->>PI: recompress if raster > ~800KB or > 2000px
   PI-->>U: Blob or original file
   U->>Sign: { publicId, assetFolder } + Bearer
   Sign->>SB: GET /auth/v1/user
@@ -178,7 +178,7 @@ Defined in `manage.html` (~2525–2537). **`parts`** is an array of path segment
 | Step | Action |
 |------|--------|
 | 1 | `await cwToken()` — abort if missing |
-| 2 | `await cwPrepImage(file)` — max dimension 2200px, quality 0.85; skips SVG/GIF |
+| 2 | `await cwPrepImage(file)` — max dimension 2000px, JPEG quality 0.8; skips SVG/GIF; skips only if already ≤ ~800 KB |
 | 3 | Build `_folder` and `pid` |
 | 4 | `POST /api/cloudinary/sign` with `{ publicId: pid, assetFolder: _folder }` |
 | 5 | Assemble `FormData`: `file`, `api_key`, `timestamp`, `public_id`, `asset_folder`, `overwrite`, `signature` |
@@ -189,11 +189,13 @@ Errors surfaced to the user via `toast('Upload failed: …')` at call sites. Sig
 
 ### `cwPrepImage(file, maxDim, quality)`
 
-Client-side optimisation before upload:
+Client-side optimisation before upload (so editors do not need Photoshop “Save for Web”):
 
 - Skips non-images, SVG, and GIF (returns original file).
-- If already ≤ 2.6 MB and within max dimension, skips resize.
-- Otherwise draws to canvas and exports JPEG (or PNG if source was PNG).
+- If already ≤ **~800 KB** and within max dimension (**2000px**), skips recompress.
+- Otherwise draws to canvas and exports **JPEG at quality 0.8** (similar to Photoshop High).
+- Large PNGs (over the skip threshold) convert to JPEG with a white backdrop; small PNGs keep transparency.
+- Keeps the original when the compressed blob is not smaller.
 
 Reduces upload failures and Cloudinary storage; not a hard server-side limit.
 
