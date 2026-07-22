@@ -725,7 +725,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     <button class="anav-btn" id="nav-mailer" aria-selected="false">Newsletter</button>
     <button class="anav-btn" id="nav-messages" aria-selected="false">Support</button>
     <button class="anav-btn" id="nav-appearance" aria-selected="false">Appearance</button>
-    <button class="anav-btn" id="nav-themes" aria-selected="false" aria-label="Themes"><span class="anav-l1">Positioning</span><span class="anav-gap"> </span><span class="anav-l2">themes</span></button>
+    <button class="anav-btn" id="nav-themes" aria-selected="false" aria-label="Themes">Themes</button>
     <button class="anav-btn" id="nav-contact" aria-selected="false">Contact</button>
     <button class="anav-btn" id="nav-logo" aria-selected="false">Logo</button>
     <button class="anav-btn" id="nav-users" aria-selected="false" style="display:none">Users</button>
@@ -7564,7 +7564,7 @@ function heroCtaCard(c){
     el.addEventListener('click',function(e){ e.preventDefault(); signOutLP(); });
     return el;
   };
-  /* ---- Positioning themes (layouts + optional demo packs) ---- */
+  /* ---- Themes (layouts + optional demo packs) ---- */
   async function _ptAuthHeaders(){
     try{
       var se=await sb.auth.getSession();
@@ -7577,10 +7577,34 @@ function heroCtaCard(c){
     if(!url) return '<div class="pt-img-ph" aria-hidden="true">No image</div>';
     return '<img class="pt-img" src="'+_ptEsc(url)+'" alt="'+_ptEsc(alt||'')+'" loading="lazy">';
   }
+  /** Upload theme preview images into Cloudinary folder leadpages/themes/ */
+  async function cwUploadThemesFolder(file, kind){
+    var token=await cwToken(); if(!token) throw new Error('Please sign in again');
+    try{ file=await cwPrepImage(file); }catch(_e){}
+    var _folder='leadpages/themes';
+    var pid=_folder+'/'+cwSeg(kind||'look')+'-'+cwRand();
+    var sr=await fetch('/api/cloudinary/sign',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({publicId:pid,assetFolder:_folder})});
+    if(!sr.ok) throw new Error('Could not authorise upload'); var s=await sr.json();
+    var fd=new FormData(); fd.append('file',file,(file&&file.name)||'upload.jpg'); fd.append('api_key',s.apiKey); fd.append('timestamp',s.timestamp); fd.append('public_id',s.publicId); if(s.assetFolder) fd.append('asset_folder',s.assetFolder); if(s.overwrite) fd.append('overwrite',s.overwrite); fd.append('signature',s.signature);
+    var _cloud=(s.cloudName&&/^[a-zA-Z0-9_\-]+$/.test(s.cloudName))?s.cloudName:CW_CLOUD;
+    var ur; try{ ur=await fetch('https://api.cloudinary.com/v1_1/'+_cloud+'/image/upload',{method:'POST',body:fd}); }catch(_ne){ throw new Error('Network error reaching Cloudinary. Try a smaller image.'); }
+    var uj=await ur.json().catch(function(){return {};}); if(!ur.ok||!uj.secure_url) throw new Error((uj.error&&uj.error.message)||('Cloudinary rejected the upload ('+ur.status+')'));
+    return { url:uj.secure_url, publicId:uj.public_id };
+  }
+  function _ptTrashSvg(){
+    return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
+  }
+  /** Two-step delete confirm so a miss-press cannot wipe a theme. */
+  function _ptConfirmDelete(name){
+    var label=(name&&String(name).trim())?(' \u201c'+String(name).trim()+'\u201d'):' this theme';
+    if(!confirm('Delete'+label+'?\n\nThis removes it from the Themes library.')) return false;
+    if(!confirm('Confirm delete'+label+'?\n\nThis cannot be undone.')) return false;
+    return true;
+  }
   async function renderPositioningThemes(){
     var box=$('av-themes'); if(!box) return;
     if(!currentSiteId){
-      box.innerHTML='<div class="card"><h2>Positioning themes</h2><p class="lede">Open a site first, then browse layouts here.</p></div>';
+      box.innerHTML='<div class="card"><h2>Themes</h2><p class="lede">Open a site first, then browse layouts here.</p></div>';
       return;
     }
     box.innerHTML='<div class="card"><p class="lede">Loading themes\u2026</p></div>';
@@ -7588,9 +7612,9 @@ function heroCtaCard(c){
       var st=document.createElement('style'); st.id='pt-themes-css';
       st.textContent=[
         '.pt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:14px}',
-        '.pt-card{border:1px solid var(--line);border-radius:12px;background:var(--panel,var(--surface));overflow:hidden;display:flex;flex-direction:column}',
+        '.pt-card{border:1px solid var(--line);border-radius:12px;background:var(--panel,var(--surface));overflow:hidden;display:flex;flex-direction:column;position:relative}',
         '.pt-card-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}',
-        '.pt-card h3{margin:0;font-size:16px}',
+        '.pt-card h3{margin:0;font-size:16px;padding-right:36px}',
         '.pt-card .lede{margin:0;font-size:13px;color:var(--ink-soft)}',
         '.pt-imgs{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--line);min-height:110px;background:var(--input-bg,#f3f1ec)}',
         '.pt-img,.pt-img-ph{width:100%;height:120px;object-fit:cover;display:block}',
@@ -7600,11 +7624,16 @@ function heroCtaCard(c){
         '.pt-apps{font-size:12px;color:var(--ink-soft);line-height:1.35}',
         '.pt-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}',
         '.pt-actions .btn{font-size:12.5px;padding:7px 10px}',
+        '.pt-del{position:absolute;top:8px;right:8px;z-index:2;width:34px;height:34px;border-radius:9px;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.92);color:#b4543c;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.08)}',
+        '.pt-del:hover{background:#fff;border-color:#b4543c}',
         '.pt-admin{margin-top:18px}',
         '.pt-admin .dt-add{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}',
         '.pt-admin .tin{min-width:160px;flex:1}',
-        '.pt-mode-help{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;max-width:70ch;line-height:1.45}',
-        '.pt-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}'
+        '.pt-mode-help{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;max-width:78ch;line-height:1.5}',
+        '.pt-mode-help li{margin:4px 0}',
+        '.pt-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}',
+        '.pt-uprow{display:flex;gap:8px;align-items:center;flex:1;min-width:220px}',
+        '.pt-uprow .tin{flex:1;min-width:140px}'
       ].join('');
       document.head.appendChild(st);
     }
@@ -7618,14 +7647,17 @@ function heroCtaCard(c){
       setup=!!j.setup_required;
       hint=j.hint||'';
     }catch(e){
-      box.innerHTML='<div class="card"><h2>Positioning themes</h2><p class="lede" style="color:#b4543c">Could not load themes: '+_ptEsc(e.message||e)+'</p></div>';
+      box.innerHTML='<div class="card"><h2>Themes</h2><p class="lede" style="color:#b4543c">Could not load themes: '+_ptEsc(e.message||e)+'</p></div>';
       return;
     }
-    var html='<div class="card"><h2>Positioning themes</h2>'
+    var html='<div class="card"><h2>Themes</h2>'
       +'<p class="lede">Choose a prebuilt app stack and homepage order. Trust Bar always sits under the hero.</p>'
-      +'<p class="pt-mode-help"><strong>Structure</strong> changes which apps are on and their Position order only — your copy and images stay put. '
-      +'<strong>Fill empty</strong> also drops in demo content where a section is still blank (great for new demos). '
-      +'<strong>Replace demo content</strong> overwrites section content from the pack but never touches business name, phone, email, logo or address — and we take a backup first.</p>';
+      +'<div class="pt-mode-help"><p style="margin:0 0 6px"><strong>How apply modes work</strong> (pick the one that matches how much you want to change):</p><ul style="margin:0;padding-left:18px">'
+      +'<li><strong>Apply structure</strong> — turns apps on/off and reorders Position only. Your copy and images stay put. Safest way to switch layouts without losing content.</li>'
+      +'<li><strong>Fill empty</strong> — structure plus demo content only where a field is still blank. Existing text and images are never overwritten (skip-existing).</li>'
+      +'<li><strong>Images &amp; style</strong> — structure plus imagery, colours and style fields from the pack. Keeps your headlines, blurbs and FAQs.</li>'
+      +'<li><strong>Full demo install</strong> — replaces section demo content from the pack (hero slides, trust tiles, etc.). Business name, phone, email, logo and address stay protected, and a backup is saved first.</li>'
+      +'</ul></div>';
     if(setup){
       html+='<p class="hint" style="color:#b4543c;margin-top:12px">Database setup needed: run <code>db/positioning_layouts.sql</code> in Supabase'+(hint?(' — '+_ptEsc(hint)):'')+'.</p>';
     }
@@ -7635,12 +7667,12 @@ function heroCtaCard(c){
       html+='<div class="pt-grid">';
       layouts.forEach(function(L){
         var apps=(L.apps||[]).filter(function(a){return a&&a.enabled!==false;}).map(function(a){return a.section_key||a.key;}).filter(Boolean);
-        var ord=Array.isArray(L.section_order)?L.section_order:[];
-        var packN=L.demo_packs?Object.keys(L.demo_packs).length:0;
+        var packN=L.demo_packs?Object.keys(L.demo_packs).filter(function(k){return k!=='_theme'&&k!=='_site';}).length:0;
         html+='<article class="pt-card" data-pt-id="'+_ptEsc(L.id)+'">'
+          +(currentRole==='super'?('<button type="button" class="pt-del" data-pt-del="'+_ptEsc(L.id)+'" data-pt-name="'+_ptEsc(L.name||'')+'" title="Delete theme">'+_ptTrashSvg()+'</button>'):'')
           +'<div class="pt-imgs">'
           +'<div><div class="pt-cap">Look</div>'+_ptImg(L.theme_image_url,'Theme look')+'</div>'
-          +'<div><div class="pt-cap">Position</div>'+_ptImg(L.layout_image_url,'Positioning layout')+'</div>'
+          +'<div><div class="pt-cap">Position</div>'+_ptImg(L.layout_image_url,'Layout diagram')+'</div>'
           +'</div>'
           +'<div class="pt-card-body">'
           +'<h3>'+_ptEsc(L.name)+(!L.enabled?' <span class="hint">(off)</span>':'')+'</h3>'
@@ -7650,7 +7682,8 @@ function heroCtaCard(c){
           +'<div class="pt-actions">'
           +'<button type="button" class="btn" data-pt-apply="structure" data-id="'+_ptEsc(L.id)+'">Apply structure</button>'
           +'<button type="button" class="btn ghost" data-pt-apply="fill_empty" data-id="'+_ptEsc(L.id)+'">Fill empty</button>'
-          +'<button type="button" class="btn ghost" data-pt-apply="demo_replace" data-id="'+_ptEsc(L.id)+'">Replace demo content</button>'
+          +'<button type="button" class="btn ghost" data-pt-apply="visual" data-id="'+_ptEsc(L.id)+'">Images &amp; style</button>'
+          +'<button type="button" class="btn ghost" data-pt-apply="demo_replace" data-id="'+_ptEsc(L.id)+'">Full demo install</button>'
           +'</div></div></article>';
       });
       html+='</div>';
@@ -7658,23 +7691,23 @@ function heroCtaCard(c){
     html+='</div>';
 
     if(currentRole==='super'){
-      html+='<div class="card pt-admin"><h2>Admin — layout builder</h2>'
-        +'<p class="lede">Capture the current site\u2019s Position list and enabled apps as a reusable theme. Optionally include section content as demo packs (e.g. surfing-school hero slider + Cloudinary banners).</p>'
+      html+='<div class="card pt-admin"><h2>Admin — theme builder</h2>'
+        +'<p class="lede">Capture the current site\u2019s Position list and enabled apps as a reusable theme. Optionally include section content as demo packs. Preview images upload to <code>leadpages/themes/</code>.</p>'
         +'<div class="dt-add">'
-        +'<input type="text" id="pt-name" class="tin" placeholder="Layout name, e.g. Trust-under-hero trade">'
+        +'<input type="text" id="pt-name" class="tin" placeholder="Theme name, e.g. Trust-under-hero trade">'
         +'<input type="text" id="pt-slug" class="tin" placeholder="slug-optional">'
         +'</div>'
         +'<div class="dt-add">'
-        +'<input type="text" id="pt-theme-img" class="tin" placeholder="Theme look image URL">'
-        +'<input type="text" id="pt-layout-img" class="tin" placeholder="Positioning diagram image URL">'
+        +'<div class="pt-uprow"><input type="text" id="pt-theme-img" class="tin" placeholder="Look image URL"><button type="button" class="btn ghost" id="pt-theme-up">Upload</button></div>'
+        +'<div class="pt-uprow"><input type="text" id="pt-layout-img" class="tin" placeholder="Position diagram URL"><button type="button" class="btn ghost" id="pt-layout-up">Upload</button></div>'
         +'</div>'
         +'<div class="dt-add">'
         +'<input type="text" id="pt-desc" class="tin" placeholder="Short description" style="flex:2">'
         +'<label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap"><input type="checkbox" id="pt-include-packs"> Include demo packs from this site</label>'
-        +'<button type="button" class="btn" id="pt-save-layout">Save layout from this site</button>'
+        +'<button type="button" class="btn" id="pt-save-layout">Save theme from this site</button>'
         +'</div>'
-        +'<p class="hint">Tip: set Position and turn apps on/off in Page editor first, design Appearance, screenshot both the live look and a Position diagram, then save here.</p>'
-        +'<div class="apgroup-h">Saved layouts</div><div id="pt-admin-list"></div></div>';
+        +'<p class="hint">Tip: set Position and turn apps on/off in Page editor first, design Appearance, screenshot the live look and a Position diagram, upload both, then save here.</p>'
+        +'<div class="apgroup-h">Saved themes</div><div id="pt-admin-list"></div></div>';
     }
     box.innerHTML=html;
 
@@ -7683,12 +7716,41 @@ function heroCtaCard(c){
         _ptApplyLayout(btn.getAttribute('data-id'), btn.getAttribute('data-pt-apply'));
       });
     });
-
     if(currentRole==='super'){
+      box.querySelectorAll('.pt-card [data-pt-del]').forEach(function(b){
+        b.addEventListener('click',function(){ _ptDeleteLayout(b.getAttribute('data-pt-del'), b.getAttribute('data-pt-name')); });
+      });
       _ptRenderAdminList(layouts);
       var saveBtn=$('pt-save-layout');
       if(saveBtn) saveBtn.onclick=function(){ _ptSaveFromSite(); };
+      _ptWireUploads();
     }
+  }
+  function _ptWireUploads(){
+    function wire(btnId, inputId, kind){
+      var btn=$(btnId), inp=$(inputId); if(!btn||!inp) return;
+      btn.onclick=function(){
+        cwPick(function(file){
+          cwBusy(btn,true);
+          cwUploadThemesFolder(file, kind).then(function(r){
+            inp.value=r.url;
+            toast('Uploaded to leadpages/themes/');
+          }).catch(function(err){ toast('Upload failed: '+((err&&err.message)||err)); })
+          .then(function(){ cwBusy(btn,false); });
+        });
+      };
+    }
+    wire('pt-theme-up','pt-theme-img','look');
+    wire('pt-layout-up','pt-layout-img','position');
+  }
+  async function _ptDeleteLayout(id, name){
+    if(!id) return;
+    if(!_ptConfirmDelete(name)) return;
+    var headers=await _ptAuthHeaders();
+    var r=await fetch('/api/api-positioning-layouts',{method:'POST',headers:headers,body:JSON.stringify({action:'delete',id:id})});
+    var j=await r.json().catch(function(){return{};});
+    if(!r.ok||!j.ok){ toast('Delete failed: '+(j.error||r.status)); return; }
+    toast('Theme deleted'); renderPositioningThemes();
   }
   function _ptRenderAdminList(layouts){
     var host=$('pt-admin-list'); if(!host) return;
@@ -7698,20 +7760,13 @@ function heroCtaCard(c){
         +'<div><strong>'+_ptEsc(L.name)+'</strong> <span class="hint">'+_ptEsc(L.slug||'')+'</span>'
         +(!L.enabled?' <span class="hint">disabled</span>':'')
         +'</div>'
-        +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
         +'<button type="button" class="btn ghost" data-pt-toggle="'+_ptEsc(L.id)+'" data-on="'+(L.enabled?'0':'1')+'">'+(L.enabled?'Disable':'Enable')+'</button>'
-        +'<button type="button" class="btn ghost" data-pt-del="'+_ptEsc(L.id)+'">Delete</button>'
+        +'<button type="button" class="btn ghost pt-del-list" data-pt-del="'+_ptEsc(L.id)+'" data-pt-name="'+_ptEsc(L.name||'')+'" title="Delete theme" style="color:#b4543c">'+_ptTrashSvg()+' Delete</button>'
         +'</div></div>';
     }).join('');
     host.querySelectorAll('[data-pt-del]').forEach(function(b){
-      b.onclick=async function(){
-        if(!confirm('Delete this layout?')) return;
-        var headers=await _ptAuthHeaders();
-        var r=await fetch('/api/api-positioning-layouts',{method:'POST',headers:headers,body:JSON.stringify({action:'delete',id:b.getAttribute('data-pt-del')})});
-        var j=await r.json().catch(function(){return{};});
-        if(!r.ok||!j.ok){ toast('Delete failed: '+(j.error||r.status)); return; }
-        toast('Layout deleted'); renderPositioningThemes();
-      };
+      b.onclick=function(){ _ptDeleteLayout(b.getAttribute('data-pt-del'), b.getAttribute('data-pt-name')); };
     });
     host.querySelectorAll('[data-pt-toggle]').forEach(function(b){
       b.onclick=async function(){
@@ -7719,7 +7774,7 @@ function heroCtaCard(c){
         var headers=await _ptAuthHeaders();
         var gr=await fetch('/api/api-positioning-layouts?id='+encodeURIComponent(id),{headers:headers});
         var gj=await gr.json().catch(function(){return{};});
-        var row=gj.layout; if(!row){ toast('Layout not found'); return; }
+        var row=gj.layout; if(!row){ toast('Theme not found'); return; }
         row.enabled=b.getAttribute('data-on')==='1';
         var r=await fetch('/api/api-positioning-layouts',{method:'POST',headers:headers,body:JSON.stringify(Object.assign({},row,{action:'save',id:row.id}))});
         var j=await r.json().catch(function(){return{};});
@@ -7733,9 +7788,7 @@ function heroCtaCard(c){
     var name=(($('pt-name')&&$('pt-name').value)||'').trim();
     if(!name){ toast('Name required'); return; }
     var headers=await _ptAuthHeaders();
-    var include=!($('pt-include-packs')&&!$('pt-include-packs').checked);
-    // checkbox: include only when checked
-    include=!!($('pt-include-packs')&&$('pt-include-packs').checked);
+    var include=!!($('pt-include-packs')&&$('pt-include-packs').checked);
     try{
       var cr=await fetch('/api/api-positioning-layouts',{method:'POST',headers:headers,body:JSON.stringify({
         action:'capture', site_id:currentSiteId, name:name,
@@ -7754,7 +7807,7 @@ function heroCtaCard(c){
       var sr=await fetch('/api/api-positioning-layouts',{method:'POST',headers:headers,body:JSON.stringify(draft)});
       var sj=await sr.json().catch(function(){return{};});
       if(!sr.ok||!sj.ok){ toast('Save failed: '+(sj.error||sr.status)+(sj.hint?(' — '+sj.hint):'')); return; }
-      toast('Saved layout \u201c'+name+'\u201d');
+      toast('Saved theme \u201c'+name+'\u201d');
       if($('pt-name')) $('pt-name').value='';
       renderPositioningThemes();
     }catch(e){ toast('Save error: '+(e.message||e)); }
@@ -7763,9 +7816,11 @@ function heroCtaCard(c){
     if(!currentSiteId){ toast('Open a site first'); return; }
     mode=mode||'structure';
     if(mode==='demo_replace'){
-      if(!confirm('Replace section demo content from this theme?\n\nYour business name, phone, email, logo and address stay safe. A backup is created first.\n\nContinue?')) return;
+      if(!confirm('Full demo install from this theme?\n\nSection content is replaced from the pack. Your business name, phone, email, logo and address stay safe. A backup is created first.\n\nContinue?')) return;
     } else if(mode==='fill_empty'){
-      if(!confirm('Apply structure and fill empty section fields with demo content?\n\nExisting copy and images will not be overwritten.')) return;
+      if(!confirm('Apply structure and fill empty fields with demo content?\n\nExisting copy and images will not be overwritten.')) return;
+    } else if(mode==='visual'){
+      if(!confirm('Apply structure plus images & style colours from this theme?\n\nYour headlines and body copy stay. A backup is created first.')) return;
     }
     var headers=await _ptAuthHeaders();
     try{
@@ -7775,7 +7830,6 @@ function heroCtaCard(c){
       var j=await r.json().catch(function(){return{};});
       if(!r.ok||!j.ok){ toast('Apply failed: '+(j.error||r.status)+(j.hint?(' — '+j.hint):'')); return; }
       if(j.config && typeof j.config==='object'){
-        // Merge applied config into editor state
         Object.keys(j.config).forEach(function(k){ data[k]=j.config[k]; });
         if(typeof allSites!=='undefined'&&allSites){
           var sref=allSites.find(function(x){return x.id===currentSiteId;});
@@ -7785,8 +7839,8 @@ function heroCtaCard(c){
         if(typeof previewApply==='function') previewApply();
         if(typeof renderDetails==='function' && activeView==='details') renderDetails();
       }
-      var note=(j.notes&&j.notes[0])||('Applied ('+mode+')');
-      toast(note+(j.backupId?' · backup saved':''));
+      var note=(j.notes&&j.notes.length)?(' '+j.notes[0]):'';
+      toast('Theme applied.'+note+(j.backupId?' Backup saved.':''));
     }catch(e){ toast('Apply error: '+(e.message||e)); }
   }
 
