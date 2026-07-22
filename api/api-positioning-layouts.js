@@ -252,7 +252,7 @@ module.exports = async (req, res) => {
 
         // Auto-backup before any content-touching apply
         let backupId = null;
-        if (mode === 'demo_replace' || mode === 'fill_empty' || body.backup !== false) {
+        if (mode === 'demo_replace' || mode === 'fill_empty' || mode === 'visual' || body.backup !== false) {
           try {
             const label = 'Before theme: ' + (layout.name || 'layout').slice(0, 80);
             const cfg = access.site.config || {};

@@ -177,3 +177,52 @@ test('mergeSectionPack fill_empty skips non-empty', function() {
   assert.equal(out.title, 'Keep');
   assert.equal(out.body, 'Filled');
 });
+
+test('visual mode applies images and colours but keeps copy', function() {
+  const cfg = {
+    businessName: 'Acme',
+    theme: { pipe: '#111111' },
+    sections: {
+      heroSlider: {
+        on: true,
+        slides: [{ heading: 'Keep my headline', image: 'https://old.jpg', titleColor: '#fff' }]
+      },
+      why: { heading: 'Why us stays', eyebrowColor: '#000000' }
+    },
+    sectionOrder: ['heroSlider', 'why']
+  };
+  const layout = {
+    section_order: ['heroSlider', 'trustBar', 'why'],
+    apps: [
+      { section_key: 'heroSlider', enabled: true },
+      { section_key: 'trustBar', enabled: true },
+      { section_key: 'why', enabled: true }
+    ],
+    demo_packs: {
+      _theme: { pipe: '#1f7bb8', hivis: '#ff6a1f' },
+      heroSlider: {
+        slides: [{ heading: 'SHOULD NOT APPLY', image: 'https://new.jpg', titleColor: '#00ff00' }],
+        eyebrow: 'SHOULD NOT APPLY'
+      },
+      why: { heading: 'NO', eyebrowColor: '#ff0000' }
+    }
+  };
+  const r = applyPositioningLayout(cfg, layout, { mode: 'visual' });
+  assert.equal(r.config.businessName, 'Acme');
+  assert.equal(r.config.theme.pipe, '#1f7bb8');
+  assert.equal(r.config.theme.hivis, '#ff6a1f');
+  assert.equal(r.config.sections.heroSlider.slides[0].heading, 'Keep my headline');
+  assert.equal(r.config.sections.heroSlider.slides[0].image, 'https://new.jpg');
+  assert.equal(r.config.sections.heroSlider.slides[0].titleColor, '#00ff00');
+  assert.equal(r.config.sections.heroSlider.eyebrow, undefined);
+  assert.equal(r.config.sections.why.heading, 'Why us stays');
+  assert.equal(r.config.sections.why.eyebrowColor, '#ff0000');
+});
+
+test('captureLayoutFromConfig includes theme palette when packing', function() {
+  const draft = captureLayoutFromConfig(
+    { theme: { pipe: '#abcabc' }, sections: { hero: { heading: 'H' } }, sectionOrder: ['hero'] },
+    { name: 'T', includeDemoPacks: true }
+  );
+  assert.deepEqual(draft.demo_packs._theme, { pipe: '#abcabc' });
+});

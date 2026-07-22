@@ -37,7 +37,7 @@ comment on column public.positioning_layouts.apps is
   'Array of { section_key, enabled, label? } describing which homepage apps the layout uses.';
 
 comment on column public.positioning_layouts.demo_packs is
-  'Optional section_key -> config object. Applied only with fill_empty or demo_replace modes.';
+  'Optional section_key -> config object (+ optional _theme). Applied with fill_empty, visual, or demo_replace modes.';
 
 comment on column public.positioning_layouts.theme_image_url is
   'Marketing screenshot of the finished look (hero, colours, imagery).';
