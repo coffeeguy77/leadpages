@@ -7611,7 +7611,69 @@ function heroCtaCard(c){
   function _ptEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function _ptImg(url, alt){
     if(!url) return '<div class="pt-img-ph" aria-hidden="true">No image</div>';
-    return '<img class="pt-img" src="'+_ptEsc(url)+'" alt="'+_ptEsc(alt||'')+'" loading="lazy">';
+    var a=_ptEsc(alt||'Theme preview');
+    var u=_ptEsc(url);
+    return '<button type="button" class="pt-zoom" data-pt-zoom="'+u+'" data-pt-zoom-alt="'+a+'" title="Enlarge '+a+'" aria-label="Enlarge '+a+'">'
+      +'<img class="pt-img" src="'+u+'" alt="'+a+'" loading="lazy">'
+      +'<span class="pt-zoom-ico" aria-hidden="true">⤢</span>'
+      +'</button>';
+  }
+  function _ptEnsureLightbox(){
+    var lb=document.getElementById('pt-lightbox');
+    if(lb) return lb;
+    lb=document.createElement('div');
+    lb.id='pt-lightbox';
+    lb.className='pt-lightbox';
+    lb.hidden=true;
+    lb.setAttribute('role','dialog');
+    lb.setAttribute('aria-modal','true');
+    lb.setAttribute('aria-label','Enlarged theme image');
+    lb.innerHTML='<div class="pt-lb-back" data-pt-lb-close></div>'
+      +'<div class="pt-lb-dialog">'
+      +'<button type="button" class="pt-lb-close" data-pt-lb-close aria-label="Close">×</button>'
+      +'<img class="pt-lb-img" alt="">'
+      +'<p class="pt-lb-cap"></p>'
+      +'</div>';
+    document.body.appendChild(lb);
+    if(!lb.__ptWired){
+      lb.__ptWired=true;
+      lb.addEventListener('click',function(e){
+        if(e.target.closest('[data-pt-lb-close]')) _ptCloseLightbox();
+      });
+      document.addEventListener('keydown',function(e){
+        if(e.key==='Escape' && !lb.hidden) _ptCloseLightbox();
+      });
+    }
+    return lb;
+  }
+  function _ptOpenLightbox(src, alt){
+    if(!src) return;
+    var lb=_ptEnsureLightbox();
+    var img=lb.querySelector('.pt-lb-img');
+    var cap=lb.querySelector('.pt-lb-cap');
+    if(img){ img.src=src; img.alt=alt||''; }
+    if(cap) cap.textContent=alt||'';
+    lb.hidden=false;
+    document.documentElement.classList.add('pt-lb-open');
+  }
+  function _ptCloseLightbox(){
+    var lb=document.getElementById('pt-lightbox');
+    if(!lb) return;
+    lb.hidden=true;
+    var img=lb.querySelector('.pt-lb-img');
+    if(img) img.removeAttribute('src');
+    document.documentElement.classList.remove('pt-lb-open');
+  }
+  function _ptWireZoom(root){
+    if(!root||root.__ptZoomWired) return;
+    root.__ptZoomWired=true;
+    root.addEventListener('click',function(e){
+      var btn=e.target.closest('[data-pt-zoom]');
+      if(!btn||!root.contains(btn)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      _ptOpenLightbox(btn.getAttribute('data-pt-zoom'), btn.getAttribute('data-pt-zoom-alt')||'');
+    });
   }
   /** Upload theme preview images into Cloudinary folder leadpages/themes/ */
   async function cwUploadThemesFolder(file, kind){
@@ -7653,9 +7715,14 @@ function heroCtaCard(c){
         '.pt-card h3{margin:0;font-size:16px;padding-right:36px}',
         '.pt-card .lede{margin:0;font-size:13px;color:var(--ink-soft)}',
         '.pt-imgs{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--line);min-height:110px;background:var(--input-bg,#f3f1ec)}',
-        '.pt-img,.pt-img-ph{width:100%;height:120px;object-fit:cover;display:block}',
-        '.pt-img-ph{display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink-faint);border-right:1px solid var(--line)}',
-        '.pt-imgs .pt-img:first-child,.pt-imgs .pt-img-ph:first-child{border-right:1px solid var(--line)}',
+        '.pt-imgs>div{min-width:0;border-right:1px solid var(--line)}',
+        '.pt-imgs>div:last-child{border-right:0}',
+        '.pt-img,.pt-img-ph{width:100%;height:132px;object-fit:cover;display:block}',
+        '.pt-img-ph{display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink-faint)}',
+        '.pt-zoom{appearance:none;border:0;padding:0;margin:0;background:transparent;display:block;width:100%;position:relative;cursor:zoom-in;overflow:hidden}',
+        '.pt-zoom:focus-visible{outline:2px solid var(--accent,#2563eb);outline-offset:-2px}',
+        '.pt-zoom-ico{position:absolute;right:6px;bottom:6px;width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(15,23,42,.72);color:#fff;font-size:14px;line-height:1;pointer-events:none;opacity:.92}',
+        '.pt-zoom:hover .pt-zoom-ico{background:rgba(15,23,42,.88)}',
         '.pt-cap{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);padding:4px 8px 0}',
         '.pt-apps{font-size:12px;color:var(--ink-soft);line-height:1.35}',
         '.pt-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}',
@@ -7669,7 +7736,15 @@ function heroCtaCard(c){
         '.pt-mode-help li{margin:4px 0}',
         '.pt-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}',
         '.pt-uprow{display:flex;gap:8px;align-items:center;flex:1;min-width:220px}',
-        '.pt-uprow .tin{flex:1;min-width:140px}'
+        '.pt-uprow .tin{flex:1;min-width:140px}',
+        '.pt-lightbox{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;padding:18px}',
+        '.pt-lightbox[hidden]{display:none!important}',
+        '.pt-lb-back{position:absolute;inset:0;background:rgba(10,14,22,.78)}',
+        '.pt-lb-dialog{position:relative;z-index:1;max-width:min(1100px,96vw);max-height:92vh;display:flex;flex-direction:column;align-items:center;gap:10px}',
+        '.pt-lb-img{display:block;max-width:100%;max-height:calc(92vh - 48px);width:auto;height:auto;object-fit:contain;border-radius:10px;box-shadow:0 18px 48px rgba(0,0,0,.45);background:#0b1220}',
+        '.pt-lb-cap{margin:0;color:#e8eef7;font-size:13px;font-weight:600;text-align:center}',
+        '.pt-lb-close{position:absolute;top:-6px;right:-6px;width:36px;height:36px;border-radius:999px;border:0;background:#fff;color:#0b1220;font-size:22px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.28)}',
+        'html.pt-lb-open{overflow:hidden}'
       ].join('');
       document.head.appendChild(st);
     }
@@ -7746,6 +7821,7 @@ function heroCtaCard(c){
         +'<div class="apgroup-h">Saved themes</div><div id="pt-admin-list"></div></div>';
     }
     box.innerHTML=html;
+    _ptWireZoom(box);
 
     box.querySelectorAll('[data-pt-apply]').forEach(function(btn){
       btn.addEventListener('click',function(){
