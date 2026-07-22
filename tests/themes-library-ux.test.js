@@ -42,4 +42,13 @@ describe('Themes library UX', () => {
     assert.match(manage, /Images &amp; style/);
     assert.match(api, /mode === 'visual'/);
   });
+
+  it('Look and Position images open a zoom lightbox', () => {
+    assert.match(manage, /function _ptOpenLightbox/);
+    assert.match(manage, /function _ptWireZoom/);
+    assert.match(manage, /data-pt-zoom="/);
+    assert.match(manage, /class="pt-zoom"/);
+    assert.match(manage, /id='pt-lightbox'|id="pt-lightbox"/);
+    assert.match(manage, /cursor:zoom-in/);
+  });
 });
