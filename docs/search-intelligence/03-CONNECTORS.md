@@ -1,0 +1,214 @@
+# Search Intelligence — Connectors
+
+**Document:** `search-intelligence/03-CONNECTORS`  
+**Status:** GSC + GA4 OAuth, property select, GSC + GA4 landing sync + cron; keyword research gateway  
+**Prerequisites:** [01-ARCHITECTURE.md](01-ARCHITECTURE.md), [../features/Google Ads.md](../features/Google Ads.md)
+
+---
+
+## Pattern to copy
+
+Google Ads OAuth on `app.leadpages.com.au`:
+
+- Connect UI under `/settings/integrations/…`
+- Callback under `/api/integrations/…/callback`
+- Identical redirect URI for authorize and token exchange
+- Refresh tokens as `enc:v1:` AES-256-GCM
+- Nonce table for state replay protection
+
+See [`db/google_ads_schema.sql`](../../db/google_ads_schema.sql) and [`api/integrations/google-ads/`](../../api/integrations/google-ads/).
+
+Search Intelligence reuses the same pattern via [`lib/search-intelligence/google-oauth/`](../../lib/search-intelligence/google-oauth/).
+
+---
+
+## Reserved paths
+
+| Connector | Connect UI | Callback | Exchange |
+|-----------|------------|----------|----------|
+| Search Console | `/settings/integrations/search-console` | `/api/integrations/search-console/callback` | `/api/integrations/search-console/exchange` |
+| GA4 | `/settings/integrations/google-analytics` | `/api/integrations/google-analytics/callback` | `/api/integrations/google-analytics/exchange` |
+| GBP | `/settings/integrations/google-business` | Scaffold (OAuth) | Live sync when Google access approved |
+
+Ads remains at `/settings/integrations/google-ads`.
+
+Storage: `si_connections` + `si_oauth_states` (see [02-DATA-MODEL.md](02-DATA-MODEL.md)).  
+**Ops:** apply [`db/search_intelligence_schema.sql`](../../db/search_intelligence_schema.sql) before live Connect (do not apply wholesale without review).
+
+---
+
+## Phase 1 — Google Search Console
+
+**Purpose:** Organic clicks, impressions, CTR, average position, query/page mapping; sitemap submit/refresh coordination.
+
+**Env (platform):**
+- `GSC_CLIENT_ID`, `GSC_CLIENT_SECRET`
+- optional `GSC_REDIRECT_URI` (defaults to `APP_URL` + callback path)
+- `SI_OAUTH_ENCRYPTION_KEY` (Base64 32 bytes) **or** reuse `GOOGLE_ADS_OAUTH_ENCRYPTION_KEY`
+- optional `SI_OAUTH_STATE_SECRET` / `GOOGLE_ADS_STATE_SECRET`
+
+**Routes:**  
+- Settings UI: `/settings/integrations/search-console`  
+- `GET /api/integrations/search-console/status?siteId=`  
+- `POST /api/integrations/search-console/connect` → `{ ok, url }` Google authorize redirect  
+- `GET /api/integrations/search-console/callback` → HTML relay  
+- `POST /api/integrations/search-console/exchange` → encrypt + upsert `si_connections`  
+- `GET /api/integrations/search-console/properties?siteId=` → list GSC sites  
+- `POST /api/integrations/search-console/save-property` → `{ siteId, propertyId }`  
+- `POST /api/integrations/search-console/sync` → query×page → `si_query_page_stats`  
+- Cron: `/api/cron/sync-search-intelligence` every 6h (`vercel.json`)
+
+**Scopes:** Search Console read (`webmasters.readonly`) + OpenID email.
+
+**Property mapping:** `site_id` → GSC property URL (domain or URL-prefix) stored on `si_connections.property_id`.
+
+**Sync:** Manual + cron pull search analytics (query × page) into `si_query_page_stats` for the selected window (default 28d).
+
+**Note:** Existing GSC **verification** (meta / DNS TXT / CNAME) stays in Settings → Search & indexing. Command Centre owns **API insights**.
+
+---
+
+## Phase 1 — GA4
+
+**Purpose:** Sessions, engagement, landing-page conversions aligned with Leadpages form/call events.
+
+**Env:** `GA4_CLIENT_ID`, `GA4_CLIENT_SECRET`, optional `GA4_REDIRECT_URI` (+ same encryption / state secrets as GSC)
+
+**Routes:** `/settings/integrations/google-analytics`, `/api/integrations/google-analytics/{status,connect,callback,exchange,properties,save-property,sync}`
+
+**Mapping:** `site_id` → GA4 property id on `si_connections.property_id` (+ `property_meta.propertyResource`).
+
+**Sync:** Landing-page report (sessions, engaged sessions, conversions, bounce rate) → `si_ga4_landing_stats`. Included in `/api/cron/sync-search-intelligence`.
+
+---
+
+## Page performance (from GSC)
+
+`lib/search-intelligence/page-performance.js` aggregates `si_query_page_stats` by URL and emits:
+
+- High impressions / low CTR findings (`high_impr_low_ctr` recipe)  
+- Light cannibalisation when the same query tops multiple pages  
+
+Manage → SEO Command → **Pages** tab; findings also merge into Next Best Actions.
+
+---
+
+## Keyword research API
+
+`GET/POST /api/search-intelligence/keywords?siteId=&keyword=` uses the provider gateway (`mock` by default; live DataForSEO when credentials are set and `SI_PROVIDER` / `SI_KEYWORD_PROVIDER` are unset). Scores ideas with opportunity-value.
+
+### Tracked keywords
+
+`GET|POST|DELETE /api/search-intelligence/tracked-keywords` persists to `si_keywords` + `si_tracked_keywords`.
+
+- Limit: `SI_TRACKED_KEYWORD_LIMIT` (default **25**, hard cap **100**)  
+- Cadence: `daily` | `weekly` | `event`  
+- Manage → Keywords: research, Track, Remove, **Check ranks now**  
+- Rank jobs: `POST /api/search-intelligence/rank-check` (force/manual) + cron `/api/cron/search-intelligence-ranks` daily 08:15 UTC  
+- Writes `si_rank_observations`; position 4–20 feeds `pos_4_20_relevance` NBAs  
+- Provider: `SI_PROVIDER` / `SI_KEYWORD_PROVIDER` / gateway (auto-prefers DataForSEO when credentials exist; otherwise `mock`)  
+
+### Client summary
+
+`GET|POST /api/search-intelligence/summary` builds a plain-language weekly rollup. POST with `persist` (default) writes `si_report_snapshots`; POST with `email:true` / `sendEmail` emails the site owner via Resend (`RESEND_API_KEY`, `LEADS_FROM` / `CAMPAIGN_FROM`). Manage → Summary → **Email owner**. Cron: `/api/cron/search-intelligence-summaries` Mondays 07:00 UTC; set `SI_SUMMARY_EMAIL=1` to email owners on the cron run.
+
+### Partner portfolio
+
+`GET /api/search-intelligence/portfolio` — partners see serviced/referred sites with GSC/GA4 health, tracked counts, open/critical actions, organic-lead snapshot metrics, rank-drop risk, and at-risk sorting. Manage Portfolio filters + per-site Email summary.
+
+### Keyword clusters & Page Optimiser (Phase 2)
+
+- `GET|POST /api/search-intelligence/clusters` — list / rebuild deterministic clusters from tracked keywords (`si_keyword_clusters`)
+- `GET|POST /api/search-intelligence/page-optimiser` — modelled on-page brief (never publishes); writes `si_annotations` when POSTed; `handoff:true` records Brain landing handoff
+- Manage **Compose with Brain** prefills Landing pages AI draft fields from the brief (operator generates + approves)
+- Usage meters: `keyword_ideas`, `rank_check`, `cluster_rebuild`, `page_optimiser_brief`, `brain_landing_handoff` → `si_provider_usage`
+
+### Annotations & schema
+
+- `GET|POST /api/search-intelligence/annotations` — publish / draft / schema / handoff events
+- `GET|POST /api/search-intelligence/schema-patch` — preview/apply modelled JSON-LD to `config.seoJsonLd` (renderer emits ld+json)
+
+---
+
+## Organic attribution (first-party, live)
+
+`lib/search-intelligence/attribution-organic.js` rolls up `call_click` + `lead_submit` events for a site window:
+
+- Prefers `visitor_sessions.traffic_source = organic` when `session_id` is present  
+- Falls back to event props / UTM medium=organic (excludes Ads click ids)  
+- Surfaces on Command Centre **Search leads** card via overview API  
+
+---
+
+## First-party config audit (live now)
+
+`lib/search-intelligence/audit/config-audit.js` inspects `sites.config` and feeds Next Best Actions without crawling HTML:
+
+- Missing homepage title / meta  
+- Published landings missing title / meta  
+- Duplicate titles (cannibalisation)  
+- Service Areas on but empty  
+- No phone and no quote path  
+- Premium Gallery on without images  
+
+Command Centre overview loads site config and surfaces these as `status: open` actions.
+
+---
+
+## First-party HTML crawl (opt-in)
+
+`lib/search-intelligence/audit/html-crawl.js` fetches the public homepage when overview is called with `?crawl=1`:
+
+- Allowlisted origins only (custom domain or `SI_PUBLIC_SITE_ORIGIN` + slug) — SSRF-safe  
+- Compares live title / meta / canonical / robots to `sites.config`  
+- Findings merge into Next Best Actions (`evidence.source: html_crawl`)  
+- Manage → SEO Command → **Next Best Actions** tab requests crawl automatically  
+
+---
+
+## Ads bridge (Phase 4)
+
+Ads connection lives under Advertising. Search Intelligence imports:
+
+1. **`ads_keyword_daily`** — from Google Ads `keyword_view` during Advertising sync (apply `db/google_ads_schema.sql` for the new table)
+2. Fallbacks — `ads_metrics_daily` ad-group names + `utm_term` on sessions/leads
+
+Manage → **Authority** shows the SEO↔PPC universe and `seo_ads_mismatch` when paid/organic diverge. Shared keyword matrix + CPC source labels stay DataForSEO / Ads measured — **never Semrush**.
+
+---
+
+## Phase 3 — Google Business Profile
+
+OAuth scaffold ships at `/settings/integrations/google-business` (`GBP_CLIENT_ID` / `GBP_CLIENT_SECRET`). Encrypted tokens land in `si_connections` with `provider:'gbp'`.
+
+Subject to Google API access for live sync:
+
+- Locations, categories, hours, service areas
+- Posts, reviews (reply with human approval)
+- Performance: calls, website clicks, directions, search keyword impressions
+
+Until then: first-party NAP audit + DataForSEO Maps-grid on Manage → Local.
+
+---
+
+## Leadpages first-party (always on)
+
+| Signal | Source |
+|--------|--------|
+| Form submissions | Lead events |
+| Call clicks | Call-click events + `visitor_sessions` |
+| Quote requests | Quote / online quote events |
+| Page publish / config changes | Annotations (Phase 2) |
+
+No provisioned call-tracking numbers in Phase 1.
+
+---
+
+## Security checklist
+
+- [x] Tokens never in `NEXT_PUBLIC_*` or client HTML  
+- [x] Encrypt at rest (`enc:v1:` via SI or Ads encryption key)  
+- [x] Least-privilege scopes; re-consent on expansion (`prompt=consent`)  
+- [x] Tenant isolation on connector reads (every SI/manage integration route uses `assertSiteAccess` / site_id scoping)  
+- [x] Audit trail for sync failures (`si_annotations` type `connector_sync_error` via `markSync`)  
+- [x] One-time OAuth state nonce (`si_oauth_states`)  

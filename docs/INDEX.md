@@ -53,8 +53,9 @@ Full rules: [00-VISION](00-VISION.md), [12-CODING-STANDARDS](12-CODING-STANDARDS
 | **Backend / API** | [03-TEMPLATE-SYSTEM](03-TEMPLATE-SYSTEM.md) → [07-TRACKING](07-TRACKING.md) → [09-CRM](09-CRM.md) → [08-SEO](08-SEO.md) |
 | **Partner platform** | [05-PARTNERS](05-PARTNERS.md) → [04-SITE-BUILDER](04-SITE-BUILDER.md) → [06-DOMAINS](06-DOMAINS.md) |
 | **DevOps / ops** | [01-ARCHITECTURE](01-ARCHITECTURE.md) § Deployment → [06-DOMAINS](06-DOMAINS.md) → [13-ROADMAP](13-ROADMAP.md) |
-| **Product / planning** | [00-VISION](00-VISION.md) → [13-ROADMAP](13-ROADMAP.md) |
+| **Product / planning** | [00-VISION](00-VISION.md) → [13-ROADMAP](13-ROADMAP.md) → [search-intelligence/00-VISION](search-intelligence/00-VISION.md) |
 | **AI / LeadPages Brain** | [AI/00-STATUS](AI/00-STATUS.md) → [AI/README](AI/README.md) → [features/LeadPages Brain](features/LeadPages%20Brain.md) → [AI/19-DEVELOPER-GUIDE](AI/19-DEVELOPER-GUIDE.md) |
+| **Search Intelligence / SEO OS** | [search-intelligence/00-VISION](search-intelligence/00-VISION.md) → [search-intelligence/01-ARCHITECTURE](search-intelligence/01-ARCHITECTURE.md) → [search-intelligence/08-ROADMAP](search-intelligence/08-ROADMAP.md) |
 
 ### Numbered canon (complete set)
 
@@ -139,7 +140,8 @@ Short summary of every engineering document in `docs/`.
 | [features/Google Ads](features/Google%20Ads.md) | Google Ads (v1) | OAuth connect, session attribution (gclid/UTMs), conversion upload, Advertising dashboard, metrics sync. |
 | [features/LeadPages Brain](features/LeadPages%20Brain.md) | LeadPages Brain | AI gateway Phases 1–7; Control Centre; landing-draft migration. Canonical status: [AI/00-STATUS](AI/00-STATUS.md). |
 | [AI/README](AI/README.md) | LeadPages Brain | Provider-agnostic AI gateway — Phases 1–7 in `lib/brain` + Control Centre + landing-draft migration. |
-| [08-SEO](08-SEO.md) | SEO System | Suburb App Router pages, `lib/seo/*`, landing pages, `seoTokens`, sitemap, routing collision notes. |
+| [08-SEO](08-SEO.md) | SEO System (publish) | Suburb App Router pages, `lib/seo/*`, landing pages, `seoTokens`, sitemap, routing collision notes. |
+| [search-intelligence/00-VISION](search-intelligence/00-VISION.md) | Search Intelligence | Product OS: SEO Command Centre, connectors, provider gateway, NBA recipes — docs-first; see folder index below. |
 | [09-CRM](09-CRM.md) | CRM & Leads | Lead capture, `api/leads.js`, CRM strips, mailer, campaigns, opt-outs, lifecycle. |
 | [10-EDITOR](10-EDITOR.md) | Editor Manual | **Most important doc for editor work.** Complete `manage.html` reference: navigation, panels, flows, major functions, ~438-function index. |
 | [11-DESIGN-SYSTEM](11-DESIGN-SYSTEM.md) | Design System | Typography, colour tokens (editor + tenant), components, UX rules, accessibility. |
@@ -186,6 +188,7 @@ Short summary of every engineering document in `docs/`.
 | **Google Ads / Advertising** | [features/Google Ads](features/Google%20Ads.md) | [07-TRACKING](07-TRACKING.md), [features/Pages](features/Pages.md) | `api/google-ads/*`, `lib/google-ads/*`, `assets/lp-attribution.js` |
 | **Mailer / campaigns** | [09-CRM](09-CRM.md) | [02-DATABASE](02-DATABASE.md) | `api/send-campaign.js`, `manage.html` |
 | **SEO / suburb pages** | [08-SEO](08-SEO.md) | [03-TEMPLATE-SYSTEM](03-TEMPLATE-SYSTEM.md) | `lib/seo/*`, `app/[site]/[suburb]` |
+| **Search Intelligence / SEO Command Centre** | [search-intelligence/00-VISION](search-intelligence/00-VISION.md) | [search-intelligence/01-ARCHITECTURE](search-intelligence/01-ARCHITECTURE.md), [search-intelligence/08-ROADMAP](search-intelligence/08-ROADMAP.md) | `lib/search-intelligence/*`, `db/search_intelligence_schema.sql` (draft) |
 | **Partner features** | [05-PARTNERS](05-PARTNERS.md) | [00-VISION](00-VISION.md) § Partners | `api/partner/*`, `partner.html` |
 | **Billing / Stripe** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | [05-PARTNERS](05-PARTNERS.md) § Commissions | `api/billing/*` |
 | **Domains / DNS** | [06-DOMAINS](06-DOMAINS.md) | [01-ARCHITECTURE](01-ARCHITECTURE.md) §12 | `dreamscape.js`, `api/domains/*` |
@@ -210,6 +213,7 @@ Short summary of every engineering document in `docs/`.
 | **Site builder** | [04-SITE-BUILDER](04-SITE-BUILDER.md) | Create, trade packs, publish |
 | **Template rendering** | [03-TEMPLATE-SYSTEM](03-TEMPLATE-SYSTEM.md) | `api/render.js`, `*.template.json` |
 | **Suburb SEO** | [08-SEO](08-SEO.md) | `app/[site]/[suburb]`, `lib/seo/*` |
+| **Search Intelligence architecture** | [search-intelligence/](search-intelligence/00-VISION.md) | Docs + stubs; Command Centre UI not shipped yet |
 | **Authentication** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §9 | Supabase Auth, `profiles` |
 | **Partner program** | [05-PARTNERS](05-PARTNERS.md) | `api/partner/*`, showcase |
 | **Billing** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | `api/billing/*`, Stripe webhooks |

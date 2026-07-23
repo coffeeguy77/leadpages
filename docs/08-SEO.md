@@ -7,6 +7,8 @@
 
 > LeadPages is **strongly SEO-focused**. Two parallel pipelines serve SEO: **`api/render.js`** (homepage + landing pages) and **App Router suburb pages** (`app/[site]/[suburb]`).
 
+> **Search Intelligence (future product):** research, rank tracking, audit, Next Best Actions and search-to-lead attribution live under [search-intelligence/00-VISION.md](search-intelligence/00-VISION.md). This document remains the source of truth for **publish SEO** (titles, meta, suburbs, sitemaps, GSC verification).
+
 ---
 
 ## Executive Summary

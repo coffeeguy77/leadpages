@@ -26,6 +26,9 @@ describe('Site Brain', () => {
     assert.equal(created.brain.snapshot.schemaVersion, '1.0');
     assert.equal(created.brain.snapshot.siteId, 'site-a');
     assert.ok(created.brain.snapshot.agentMemory.atlas);
+    assert.ok(created.brain.snapshot.searchIntelligence);
+    assert.equal(created.brain.snapshot.searchIntelligence.schemaVersion, '1.0');
+    assert.ok(Array.isArray(created.brain.snapshot.searchIntelligence.clusters));
   });
 
   it('enforces tenant isolation by siteId', async () => {

@@ -117,6 +117,34 @@ create index if not exists ads_metrics_daily_page_idx
 
 alter table public.ads_metrics_daily enable row level security;
 
+-- ── Keyword-level Ads metrics (Phase 4 SI SEO↔PPC matrix) ───────────────────
+create table if not exists public.ads_keyword_daily (
+  id                bigserial primary key,
+  site_id           uuid not null references public.sites(id) on delete cascade,
+  customer_id       text not null,
+  day               date not null,
+  campaign_id       text,
+  campaign_name     text,
+  ad_group_id       text,
+  ad_group_name     text,
+  criterion_id      text,
+  keyword_text      text not null,
+  match_type        text,
+  impressions       bigint not null default 0,
+  clicks            bigint not null default 0,
+  cost_micros       bigint not null default 0,
+  conversions       numeric not null default 0,
+  updated_at        timestamptz not null default now(),
+  unique (site_id, day, campaign_id, ad_group_id, criterion_id, keyword_text)
+);
+
+create index if not exists ads_keyword_daily_site_day_idx
+  on public.ads_keyword_daily (site_id, day desc);
+create index if not exists ads_keyword_daily_kw_idx
+  on public.ads_keyword_daily (site_id, keyword_text);
+
+alter table public.ads_keyword_daily enable row level security;
+
 -- ── Conversion delivery log ────────────────────────────────────────────────
 create table if not exists public.ads_conversion_deliveries (
   id                uuid primary key default gen_random_uuid(),

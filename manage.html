@@ -716,6 +716,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <div class="adminnav" role="tablist">
     <button class="anav-btn" id="nav-dashboard" aria-selected="false" style="display:none">Dashboard</button>
     <button class="anav-btn" id="nav-advertising" aria-selected="false" style="display:none">Advertising</button>
+    <button class="anav-btn" id="nav-seo" aria-selected="false" style="display:none" aria-label="SEO Command Centre"><span class="anav-l1">SEO</span><span class="anav-gap"> </span><span class="anav-l2">Command</span></button>
     <button class="anav-btn" id="nav-details" aria-selected="false" style="display:none" aria-label="Details">Details</button>
     <button class="anav-btn" id="nav-rates" aria-selected="false" style="display:none" aria-label="Rates &amp; leads"><span class="anav-l1">Rates &amp;</span><span class="anav-gap"> </span><span class="anav-l2">leads</span></button>
     <button class="anav-btn" id="nav-landing" aria-selected="false" aria-label="Landing pages"><span class="anav-l1">Landing</span><span class="anav-gap"> </span><span class="anav-l2">pages</span></button>
@@ -734,6 +735,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 
   <div id="av-dashboard" hidden></div>
   <div id="av-advertising" hidden></div>
+  <div id="av-seo" hidden></div>
   <div id="av-details" hidden></div>
 
   <!-- ===================== AI WEBSITE TEAM ===================== -->
@@ -1937,6 +1939,32 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(seo) seo.hidden=(m!=='seo');
     if(ff) ff.hidden=(m!=='freeform');
   }
+  function lpConsumeSiHandoff(opts){
+    var o=opts||{};
+    var raw=null;
+    try{ raw=sessionStorage.getItem('si_landing_handoff'); }catch(_e){ return false; }
+    if(!raw) return false;
+    var handoff=null;
+    try{ handoff=JSON.parse(raw); }catch(_e){ return false; }
+    try{ sessionStorage.removeItem('si_landing_handoff'); }catch(_e2){}
+    if(!handoff||typeof handoff!=='object') return false;
+    lpAiSetMode(handoff.mode||'seo');
+    if($('lp-ai-keyword')) $('lp-ai-keyword').value=handoff.primaryKeyword||'';
+    if($('lp-ai-location')) $('lp-ai-location').value=handoff.location||'';
+    if($('lp-ai-negatives')) $('lp-ai-negatives').value=Array.isArray(handoff.negativeKeywords)?handoff.negativeKeywords.join(', '):(handoff.negativeKeywords||'');
+    if($('lp-ai-extra')) $('lp-ai-extra').value=handoff.extraInfo||'';
+    if($('lp-ai-prompt') && handoff.brief) $('lp-ai-prompt').value=handoff.brief;
+    if($('lp-ai-note')) $('lp-ai-note').textContent='Search Intelligence brief loaded — review and Generate draft (human approve before save).';
+    toast('SEO brief loaded from Search Intelligence');
+    try{
+      var box=$('lp-ai-go');
+      if(box&&box.scrollIntoView) box.scrollIntoView({behavior:'smooth',block:'center'});
+    }catch(_e3){}
+    if(o.autoGenerate){
+      setTimeout(function(){ try{ aiGenerate(); }catch(_e4){} }, 400);
+    }
+    return true;
+  }
   function lpAiApplyPreset(pr){
     var payload=pr[1];
     if(typeof payload==='string'){
@@ -2437,6 +2465,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     }).join('') : '<p class="hint">No pages yet. Create one to build an SEO-optimised page that matches your theme.</p>';
     const ap=$('lp-ai-presets'); if(ap && !ap.children.length){ aiPresets().forEach(function(pr){ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=pr[0]; b.addEventListener('click',function(){ lpAiApplyPreset(pr); }); ap.appendChild(b); }); }
     if($('lp-ai-mode')){ $('lp-ai-mode').addEventListener('change',function(){ lpAiSetMode(this.value); }); lpAiSetMode($('lp-ai-mode').value||'seo'); }
+    try{ lpConsumeSiHandoff({ autoGenerate: false }); }catch(_siH){}
     if(lpWired) return; lpWired=true;
     $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); try{ lpEnsureDefaultLandingApps(p); }catch(e){} persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
     list.addEventListener('click',function(e){ const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit')); });
@@ -2500,7 +2529,26 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       bind('h2Color','lp-h2-color','lp-h2-color-t','lp-h2-color-clr');
       bind('paragraphColor','lp-p-color','lp-p-color-t','lp-p-color-clr');
     })();
-    $('lp-save').addEventListener('click',function(){ if(lpCur) lpCur.updatedAt=new Date().toISOString(); persist(); lpSaveDB(); var pub=lpCur&&lpCur.status==='published'; renderSeoPages(); toast(pub?'Page saved — regenerate sitemap in Settings when you add or publish pages.':'Page saved'); });
+    $('lp-save').addEventListener('click',function(){
+      if(lpCur) lpCur.updatedAt=new Date().toISOString();
+      var prevStatus=lpCur&&lpCur._siPrevStatus;
+      persist(); lpSaveDB();
+      var pub=lpCur&&lpCur.status==='published';
+      if(lpCur){
+        if(pub && prevStatus!=='published'){
+          _siAnnotate('landing_publish','Published landing page /'+ (lpCur.slug||''),{
+            pageId:lpCur.id, slug:lpCur.slug, title:lpCur.title
+          });
+        } else if(!pub && prevStatus==='published'){
+          _siAnnotate('landing_unpublish','Unpublished landing page /'+ (lpCur.slug||''),{
+            pageId:lpCur.id, slug:lpCur.slug
+          });
+        }
+        lpCur._siPrevStatus=lpCur.status;
+      }
+      renderSeoPages();
+      toast(pub?'Page saved — regenerate sitemap in Settings when you add or publish pages.':'Page saved');
+    });
     $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; });
     $('lp-del').addEventListener('click',function(){ if(!lpCur) return; var slug=lpCur.slug; data.pages=data.pages.filter(x=>x.id!==lpCur.id); if(slug) lpSyncNavMenu({show:false, slug:slug}); persist(); lpSaveDB(); $('lp-editor').hidden=true; lpCur=null; renderSeoPages(); toast('Page deleted'); });
     $('lp-undo').addEventListener('click',function(){ if(lpHi>0){ lpHi--; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
@@ -2528,6 +2576,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(hq.jobs) bits.push('Quote form ('+hq.jobs+' options)');
       if(faqN) bits.push('FAQ ('+faqN+' questions)');
       toast('Draft applied — '+bits.join(' + '));
+      _siAnnotate('draft_applied','Brain landing draft applied to editor',{
+        pageId:lpCur&&lpCur.id, slug:lpCur&&lpCur.slug, title:draft.title||null,
+        primaryKeyword:draft.primaryKeyword||null
+      });
     });
     $('lp-ap-discard').addEventListener('click',function(){ $('lp-approve').hidden=true; });
     var lptc=$('lp-tab-content'), lpta=$('lp-tab-apps');
@@ -2646,6 +2698,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function lpPush(v){ lpHist=lpHist.slice(0,lpHi+1); lpHist.push(v); if(lpHist.length>50)lpHist.shift(); lpHi=lpHist.length-1; }
   function lpOpen(id){
     lpCur=data.pages.find(x=>x.id===id); if(!lpCur) return;
+    lpCur._siPrevStatus=lpCur.status||'draft';
     lpEnsurePageApps(lpCur);
     try{ lpEnsureDefaultLandingApps(lpCur); }catch(e){ lpEnsurePageLayoutOrder(lpCur); }
     $('lp-editor').hidden=false;
@@ -8746,8 +8799,8 @@ function heroCtaCard(c){
     toast('Removed “'+name+'”'); renderSharedThemes();
   }
   /* ===== end leadpages integration ===== */
-  const ALLOWED={ super:['rates','landing','ai-team','appearance','themes','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], broker:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], client:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], leads:['rates'] };
-  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','themes','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','details','landing','ai-team','apps','themes','onlinequotes','mailer','messages'] };
+  const ALLOWED={ super:['rates','landing','ai-team','appearance','themes','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard','advertising','seo'], broker:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising','seo'], client:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising','seo'], leads:['rates'] };
+  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','themes','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','seo','details','landing','ai-team','apps','themes','onlinequotes','mailer','messages'] };
   function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
     if($('login-mask')) return;
@@ -9148,7 +9201,7 @@ function heroCtaCard(c){
       toast('Opened Landing pages');
     }
   };
-  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['ai-team','av-ai-team',renderAiTeamPanel],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['themes','av-themes',renderPositioningThemes],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
+  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['seo','av-seo',renderSeoCommandCentre],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['ai-team','av-ai-team',renderAiTeamPanel],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['themes','av-themes',renderPositioningThemes],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
   let activeView=null;
   function showView(which){
     activeView=which;
@@ -10227,6 +10280,884 @@ function heroCtaCard(c){
       lpBkApplyConfig(cfg).then(function(ok){ if(ok){ var pn=document.getElementById('lp-bk-panel'); if(pn) pn.style.display='none'; } });
     };
     reader.readAsText(f); e.target.value='';
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     renderSeoCommandCentre — Search Intelligence Phase 1 scaffold
+  ══════════════════════════════════════════════════════════ */
+  var _siTab='home';
+  async function _siToken(){
+    try{
+      var r=await sb.auth.getSession();
+      return (r&&r.data&&r.data.session&&r.data.session.access_token)||null;
+    }catch(e){ return null; }
+  }
+  async function _siFetch(path){
+    var tok=await _siToken();
+    var r=await fetch(path,{ headers: tok?{Authorization:'Bearer '+tok}:{} });
+    var j=await r.json().catch(function(){ return {}; });
+    if(!r.ok) throw new Error(j.error||('http_'+r.status));
+    return j;
+  }
+  async function _siAnnotate(type, title, detail){
+    if(!currentSiteId||!type) return;
+    try{
+      var tok=await _siToken();
+      if(!tok) return;
+      await fetch('/api/search-intelligence/annotations',{
+        method:'POST',
+        headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+        body:JSON.stringify({
+          siteId:currentSiteId,
+          annotationType:type,
+          title:title||null,
+          detail:detail||{}
+        })
+      });
+    }catch(_e){ /* best-effort */ }
+  }
+  function renderSeoCommandCentre(){
+    var box=document.getElementById('av-seo'); if(!box) return;
+    if(!currentSiteId){
+      box.innerHTML='<div class="card"><h2>SEO Command Centre</h2><p class="lede">Select a site to view search visibility, leads and Next Best Actions.</p></div>';
+      return;
+    }
+    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['clusters','Clusters'],['local','Local'],['authority','Authority'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections']];
+    box.innerHTML=
+      '<div class="card" style="margin-bottom:14px">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
+      +'<div><h2 style="margin:0 0 4px">SEO Command Centre</h2>'
+      +'<p class="lede" style="margin:0">Find the opportunity, fix the page, prove the lead — Search Intelligence Phase 1 scaffold.</p></div>'
+      +'<button type="button" class="btn ghost sm" id="si-refresh">Refresh</button>'
+      +'</div>'
+      +'<div class="sec-modeseg" style="margin-top:14px" id="si-tabs">'
+      +tabs.map(function(t){ return '<button type="button" data-si-tab="'+t[0]+'" class="'+(_siTab===t[0]?'on':'')+'">'+t[1]+'</button>'; }).join('')
+      +'</div></div>'
+      +'<div id="si-body"><p class="hint">Loading…</p></div>';
+    var ref=document.getElementById('si-refresh');
+    if(ref) ref.addEventListener('click',function(){ _siPaint(); });
+    document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(b){
+      b.addEventListener('click',function(){
+        _siTab=b.getAttribute('data-si-tab');
+        document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(x){ x.classList.toggle('on', x===b); });
+        _siPaint();
+      });
+    });
+    _siPaint();
+  }
+  async function _siPaint(){
+    var body=document.getElementById('si-body'); if(!body) return;
+    body.innerHTML='<p class="hint">Loading…</p>';
+    try{
+      var crawlQ=_siTab==='actions'?'&crawl=1':'';
+      var ov=await _siFetch('/api/search-intelligence/overview?siteId='+encodeURIComponent(currentSiteId)+crawlQ);
+      if(_siTab==='connect'){ body.innerHTML=_siConnectHTML(ov); return; }
+      if(_siTab==='actions'){ body.innerHTML=_siActionsHTML(ov); _siWireActions(ov); return; }
+      if(_siTab==='pages'){ body.innerHTML=_siPagesHTML(ov); _siWireActions(ov); return; }
+      if(_siTab==='keywords'){ body.innerHTML=_siKeywordsHTML(ov); _siWireKeywords(); return; }
+      if(_siTab==='clusters'){ body.innerHTML='<p class="hint">Loading clusters…</p>'; _siLoadClusters(); return; }
+      if(_siTab==='local'){ body.innerHTML='<p class="hint">Loading local…</p>'; _siLoadLocal(); return; }
+      if(_siTab==='authority'){ body.innerHTML='<p class="hint">Loading authority…</p>'; _siLoadAuthority(); return; }
+      if(_siTab==='summary'){ body.innerHTML='<p class="hint">Loading summary…</p>'; _siLoadSummary(); return; }
+      if(_siTab==='portfolio'){ body.innerHTML='<p class="hint">Loading portfolio…</p>'; _siLoadPortfolio(); return; }
+      body.innerHTML=_siHomeHTML(ov);
+      _siWireActions(ov);
+    }catch(e){
+      body.innerHTML='<div class="card"><p class="lede">Could not load SEO Command Centre.</p><p class="hint">'+esc((e&&e.message)||'error')+'</p></div>';
+    }
+  }
+  function _siCard(c){
+    var val=c.value==null?'—':String(c.value);
+    return '<div class="lp-instrument-stat" style="padding:14px 12px"><div style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)">'+esc(c.label)+'</div>'
+      +'<div style="font-size:22px;font-weight:800;margin-top:4px">'+esc(val)+'</div>'
+      +(c.hint?'<div style="font-size:11px;color:var(--ink-faint);margin-top:4px">'+esc(c.hint)+'</div>':'')
+      +'</div>';
+  }
+  function _siHomeHTML(ov){
+    var h='';
+    if(ov&&ov.message){
+      h+='<div class="card" style="margin-bottom:14px"><p class="lede" style="margin:0">'+esc(ov.message)+'</p>'
+        +'<p class="hint" style="margin:8px 0 0">Settings → Search &amp; indexing still handles GSC verification and sitemap regen.</p></div>';
+    }
+    h+='<div class="lp-instrument-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:14px">'
+      +((ov&&ov.cards)||[]).map(_siCard).join('')
+      +'</div>';
+    var open=((ov&&ov.nextBestActions)||[]).filter(function(a){ return a.status==='open'; }).slice(0,5);
+    h+='<div class="card"><h2 style="margin:0 0 8px">Next Best Actions</h2>'
+      +'<p class="lede" style="margin:0 0 12px">'+(open.length?'Issues to fix first.':'No open issues — connect GSC when ready.')+'</p>'
+      +_siActionsList(open)
+      +'<p class="hint" style="margin-top:12px"><button type="button" class="btn ghost sm" id="si-goto-actions">View all actions</button></p></div>';
+    return h;
+  }
+  function _siPagesHTML(ov){
+    var pp=(ov&&ov.pagePerformance)||{};
+    var pages=pp.pages||[];
+    if(!pp.available||!pages.length){
+      return '<div class="card"><h2 style="margin:0 0 8px">Page performance</h2>'
+        +'<p class="lede">Sync Search Console to see clicks, impressions and CTR by page.</p>'
+        +'<p class="hint"><a href="/settings/integrations/search-console">Open Search Console settings</a></p></div>';
+    }
+    var rows=pages.slice(0,25).map(function(p){
+      var ctr=p.ctr!=null?((Number(p.ctr)*100).toFixed(1)+'%'):'—';
+      var pos=p.avgPosition!=null?Number(p.avgPosition).toFixed(1):'—';
+      return '<tr><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(p.pageUrl)+'">'+esc(p.pageUrl)+'</td>'
+        +'<td>'+esc(p.clicks)+'</td><td>'+esc(p.impressions)+'</td><td>'+esc(ctr)+'</td><td>'+esc(pos)+'</td></tr>';
+    }).join('');
+    return '<div class="card"><h2 style="margin:0 0 8px">Page performance</h2>'
+      +'<p class="lede" style="margin:0 0 12px">'+esc(pp.pageCount||pages.length)+' pages · '+esc(pp.startDate||'')+' → '+esc(pp.endDate||'')+'</p>'
+      +'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Page</th><th>Clicks</th><th>Impr.</th><th>CTR</th><th>Pos.</th></tr></thead><tbody>'
+      +rows+'</tbody></table></div></div>';
+  }
+  function _siKeywordsHTML(ov){
+    return '<div class="card"><h2 style="margin:0 0 8px">Keyword research &amp; tracking</h2>'
+      +'<p class="lede" style="margin:0 0 12px">Research ideas, then track terms for rank cadence (plan limit applies).</p>'
+      +'<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:12px">'
+      +'<input id="si-kw-input" type="text" placeholder="e.g. plumber canberra" style="flex:1;min-width:180px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--input-bg,var(--panel));color:var(--ink)">'
+      +'<button type="button" class="btn" id="si-kw-go">Research</button>'
+      +'<button type="button" class="btn ghost" id="si-kw-track">Track keyword</button>'
+      +'<button type="button" class="btn ghost" id="si-kw-ranks">Check ranks now</button></div>'
+      +'<div id="si-kw-tracked" style="margin-bottom:14px"><p class="hint">Loading tracked keywords…</p></div>'
+      +'<div id="si-kw-ranks" style="margin-bottom:14px"></div>'
+      +'<div id="si-kw-out"><p class="hint">Enter a seed keyword to research.</p></div></div>';
+  }
+  async function _siWireKeywords(){
+    var btn=document.getElementById('si-kw-go');
+    var trackBtn=document.getElementById('si-kw-track');
+    var ranksBtn=document.getElementById('si-kw-ranks');
+    var input=document.getElementById('si-kw-input');
+    var out=document.getElementById('si-kw-out');
+    var trackedBox=document.getElementById('si-kw-tracked');
+    var ranksBox=document.getElementById('si-kw-ranks');
+    if(!btn||!input||!out) return;
+
+    async function refreshRanks(){
+      if(!ranksBox) return;
+      try{
+        var j=await _siFetch('/api/search-intelligence/rank-check?siteId='+encodeURIComponent(currentSiteId));
+        var items=j.items||[];
+        if(!items.length){ ranksBox.innerHTML=''; return; }
+        ranksBox.innerHTML='<p class="hint" style="margin-bottom:8px">Latest positions</p>'
+          +'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Keyword</th><th>Pos</th><th>Δ</th><th>Checked</th></tr></thead><tbody>'
+          +items.map(function(it){
+            var d=it.delta==null?'—':(it.delta>0?'+'+it.delta:String(it.delta));
+            return '<tr><td>'+esc(it.keyword||'—')+'</td><td>'+esc(it.position!=null?it.position:'—')+'</td><td>'+esc(d)+'</td><td>'+esc(it.fetchedAt?String(it.fetchedAt).slice(0,10):'—')+'</td></tr>';
+          }).join('')+'</tbody></table></div>';
+      }catch(e){ ranksBox.innerHTML='<p class="hint">'+esc((e&&e.message)||e)+'</p>'; }
+    }
+
+    async function refreshTracked(){
+      if(!trackedBox) return;
+      try{
+        var j=await _siFetch('/api/search-intelligence/tracked-keywords?siteId='+encodeURIComponent(currentSiteId));
+        var items=j.items||[];
+        if(!items.length){
+          trackedBox.innerHTML='<p class="hint">No tracked keywords yet ('+esc(j.count||0)+' / '+esc(j.limit||25)+').</p>';
+          return;
+        }
+        trackedBox.innerHTML='<p class="hint" style="margin-bottom:8px">Tracked '+esc(j.count)+' / '+esc(j.limit)+'</p>'
+          +'<div style="display:flex;flex-direction:column;gap:6px">'
+          +items.map(function(it){
+            return '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:6px 0">'
+              +'<div><strong>'+esc(it.keyword||it.normalised)+'</strong>'
+              +'<div class="hint">'+esc(it.device||'mobile')+(it.geo?' · '+esc(it.geo):'')+' · '+esc(it.cadence||'weekly')+'</div></div>'
+              +'<button type="button" class="btn ghost sm" data-si-untrack="'+esc(it.id)+'">Remove</button></div>';
+          }).join('')+'</div>';
+        trackedBox.querySelectorAll('[data-si-untrack]').forEach(function(b){
+          b.addEventListener('click',async function(){
+            try{
+              var tok=await _siToken();
+              var r=await fetch('/api/search-intelligence/tracked-keywords?siteId='+encodeURIComponent(currentSiteId),{
+                method:'DELETE',
+                headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+                body:JSON.stringify({siteId:currentSiteId,id:b.getAttribute('data-si-untrack')})
+              });
+              var jj=await r.json().catch(function(){return {};});
+              if(!r.ok) throw new Error(jj.error||('http_'+r.status));
+              refreshTracked();
+              refreshRanks();
+            }catch(e){ toast(String(e.message||e)); }
+          });
+        });
+      }catch(e){
+        trackedBox.innerHTML='<p class="hint">'+esc((e&&e.message)||e)+'</p>';
+      }
+    }
+    refreshTracked();
+    refreshRanks();
+
+    if(ranksBtn) ranksBtn.addEventListener('click',async function(){
+      ranksBtn.disabled=true;
+      try{
+        var tok=await _siToken();
+        var r=await fetch('/api/search-intelligence/rank-check',{
+          method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+          body:JSON.stringify({siteId:currentSiteId,force:true})
+        });
+        var j=await r.json().catch(function(){return {};});
+        if(!r.ok) throw new Error(j.message||j.error||('http_'+r.status));
+        toast('Rank check: '+(j.ran||0)+' keywords');
+        refreshRanks();
+      }catch(e){ toast(String(e.message||e)); }
+      ranksBtn.disabled=false;
+    });
+
+    btn.addEventListener('click',async function(){
+      var kw=String(input.value||'').trim();
+      if(!kw){ out.innerHTML='<p class="hint">Enter a keyword.</p>'; return; }
+      out.innerHTML='<p class="hint">Loading…</p>';
+      try{
+        var j=await _siFetch('/api/search-intelligence/keywords?siteId='+encodeURIComponent(currentSiteId)+'&keyword='+encodeURIComponent(kw));
+        if(!j.ok){ out.innerHTML='<p class="hint">'+esc(j.message||j.error||'Failed')+'</p>'; return; }
+        var ideas=j.ideas||[];
+        if(!ideas.length){ out.innerHTML='<p class="hint">No ideas returned.</p>'; return; }
+        out.innerHTML='<p class="hint" style="margin-bottom:8px">Provider: '+esc(j.provider)+'</p>'
+          +'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Keyword</th><th>Vol.</th><th>CPC</th><th>Opp.</th><th></th></tr></thead><tbody>'
+          +ideas.map(function(i){
+            return '<tr><td>'+esc(i.keyword)+'</td><td>'+esc(i.volume!=null?i.volume:'—')+'</td><td>'+esc(i.cpc!=null?i.cpc:'—')+'</td><td>'+esc(i.opportunity!=null?Number(i.opportunity).toFixed(2):'—')+'</td>'
+              +'<td><button type="button" class="btn ghost sm" data-si-track-kw="'+esc(i.keyword)+'">Track</button></td></tr>';
+          }).join('')
+          +'</tbody></table></div>';
+        out.querySelectorAll('[data-si-track-kw]').forEach(function(b){
+          b.addEventListener('click',function(){ _siTrackKeyword(b.getAttribute('data-si-track-kw'), refreshTracked); });
+        });
+      }catch(e){
+        out.innerHTML='<p class="hint">'+esc((e&&e.message)||e)+'</p>';
+      }
+    });
+    if(trackBtn) trackBtn.addEventListener('click',function(){
+      _siTrackKeyword(String(input.value||'').trim(), refreshTracked);
+    });
+  }
+  async function _siTrackKeyword(kw, cb){
+    if(!kw){ toast('Enter a keyword to track'); return; }
+    try{
+      var tok=await _siToken();
+      var r=await fetch('/api/search-intelligence/tracked-keywords',{
+        method:'POST',
+        headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+        body:JSON.stringify({siteId:currentSiteId,keyword:kw,cadence:'weekly'})
+      });
+      var j=await r.json().catch(function(){return {};});
+      if(!r.ok){ toast(j.message||j.error||('HTTP '+r.status)); return; }
+      toast(j.alreadyTracked?'Already tracked':(j.reactivated?'Reactivated':'Tracked: '+kw));
+      if(typeof cb==='function') cb();
+    }catch(e){ toast(String(e.message||e)); }
+  }
+  async function _siLoadLocal(){
+    var body=document.getElementById('si-body'); if(!body) return;
+    try{
+      var j=await _siFetch('/api/search-intelligence/local?siteId='+encodeURIComponent(currentSiteId));
+      var L=j.listings||{};
+      var M=j.opportunityMap||{};
+      var gbp=j.gbp||{};
+      var findings=(L.findings||[]).map(function(f){
+        return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px"><strong>'+esc(f.title)+'</strong><div class="lede" style="margin:6px 0 0">'+esc(f.plainLanguage||'')+'</div></div>';
+      }).join('');
+      var pageFindings=(j.pageFindings||[]).map(function(f){
+        return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px"><strong>'+esc(f.title)+'</strong><div class="lede" style="margin:6px 0 0">'+esc(f.plainLanguage||'')+'</div></div>';
+      }).join('');
+      var gaps=(M.topGaps||[]).map(function(g,i){
+        return '<tr><td>'+esc(g.area)+'</td><td>'+esc(g.clusterName||g.primaryKeyword)+'</td><td>'+esc(g.opportunity)+'</td>'
+          +'<td><button type="button" class="btn sm si-suburb-brief" data-i="'+i+'" data-area="'+esc(g.area)+'" data-kw="'+esc(g.primaryKeyword||'')+'">Draft page</button></td></tr>';
+      }).join('');
+      body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Local listings</h2>'
+        +'<p class="lede" style="margin:0 0 12px">NAP readiness score: <strong>'+esc(L.listingsScore!=null?Math.round(L.listingsScore*100):'—')+'</strong> · GBP: <strong>'+esc(gbp.status||'not_connected')+'</strong></p>'
+        +(findings||'<p class="hint">No NAP issues from first-party site facts.</p>')
+        +'<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">'
+        +'<a class="btn sm ghost" href="/settings/integrations/google-business?siteId='+encodeURIComponent(currentSiteId)+'">Connect GBP</a>'
+        +'</div>'
+        +'<p class="hint" style="margin-top:10px">'+esc(gbp.note||gbp.hint||'')+'</p></div>'
+        +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Local opportunity map</h2>'
+        +'<p class="lede" style="margin:0 0 12px">'+esc(M.areaCount||0)+' areas · '+esc(M.clusterCount||0)+' clusters · '+esc(M.gapCount||0)+' gaps · Maps readiness '+esc(M.mapsVisibilityScore!=null?Math.round(M.mapsVisibilityScore*100):'—')+'</p>'
+        +(gaps?'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Area</th><th>Cluster</th><th>Opportunity</th><th></th></tr></thead><tbody>'+gaps+'</tbody></table></div>':'<p class="hint">Track keywords and set service areas to see gaps.</p>')
+        +'<p class="hint" style="margin-top:10px">'+esc((M.safeguards&&M.safeguards.note)||'')+' Draft page runs evidence gates — never silent publish.</p></div>'
+        +((j.crmOutcomes)?'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">CRM multi-location outcomes</h2>'
+          +'<p class="lede" style="margin:0 0 10px">'+(j.crmOutcomes.available?('Won <strong>'+esc(j.crmOutcomes.won)+'</strong> / '+esc(j.crmOutcomes.totalLeads)+' leads · ~$'+esc(j.crmOutcomes.totalValueDollars)+(j.crmOutcomes.winRate!=null?' · win rate '+esc(Math.round(j.crmOutcomes.winRate*100))+'%':'')):'No CRM leads in window.')+'</p>'
+          +'<p class="hint">'+esc(j.crmOutcomes.note||'')+'</p>'
+          +((j.crmOutcomes.byArea&&j.crmOutcomes.byArea.length)?'<div style="overflow:auto;margin-top:10px"><table class="ana-table"><thead><tr><th>Area</th><th>Leads</th><th>Won</th><th>Value</th></tr></thead><tbody>'
+            +j.crmOutcomes.byArea.filter(function(a){return a.leads>0;}).slice(0,12).map(function(a){
+              return '<tr><td>'+esc(a.area)+'</td><td>'+esc(a.leads)+'</td><td>'+esc(a.won)+'</td><td>$'+esc(a.valueDollars)+'</td></tr>';
+            }).join('')+'</tbody></table></div>':'')
+          +'</div>':'')
+        +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Maps grid</h2>'
+        +'<p class="lede" style="margin:0 0 10px">Sample Maps pack presence across a small geo grid (DataForSEO when configured, else mock).</p>'
+        +'<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">'
+        +'<input id="si-maps-kw" type="text" placeholder="Keyword (optional)" style="min-width:180px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--input-bg,var(--panel));color:var(--ink)">'
+        +'<select id="si-maps-size" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--input-bg,var(--panel));color:var(--ink)"><option value="1">1×1</option><option value="3" selected>3×3</option><option value="5">5×5</option></select>'
+        +'<button type="button" class="btn sm" id="si-maps-run">Sample Maps grid</button></div>'
+        +'<div id="si-maps-out" class="hint" style="margin-top:10px"></div></div>'
+        +(pageFindings?'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Local page issues</h2>'+pageFindings+'</div>':'');
+      try{
+        var u=await _siFetch('/api/search-intelligence/usage?siteId='+encodeURIComponent(currentSiteId)+'&days=30');
+        if(u&&u.available){
+          body.innerHTML+='<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Provider usage (30d)</h2>'
+            +'<p class="lede">'+esc(u.totalUnits||0)+' metered units</p>'
+            +'<pre style="font-size:12px;overflow:auto">'+esc(JSON.stringify(u.byMeter||{},null,2))+'</pre></div>';
+        }
+      }catch(_u){}
+      var runBtn=document.getElementById('si-maps-run');
+      if(runBtn){
+        runBtn.onclick=async function(){
+          var out=document.getElementById('si-maps-out');
+          out.textContent='Sampling…';
+          try{
+            var tok=await _siToken();
+            var r=await fetch('/api/search-intelligence/maps-grid',{
+              method:'POST',
+              headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},
+              body:JSON.stringify({
+                siteId:currentSiteId,
+                keyword:(document.getElementById('si-maps-kw').value||'').trim()||undefined,
+                gridSize:Number(document.getElementById('si-maps-size').value||3)
+              })
+            });
+            var s=await r.json().catch(function(){return {};});
+            if(!r.ok){ out.textContent=s.message||s.error||('HTTP '+r.status); return; }
+            out.innerHTML='Coverage <strong>'+esc(s.presentCount)+'/'+esc(s.pointCount)+'</strong> · score '+esc(s.mapsVisibilityScore!=null?Math.round(s.mapsVisibilityScore*100):'—')
+              +' · provider '+esc(s.provider||'—')
+              +((s.findings&&s.findings[0])?'<div class="lede" style="margin-top:8px">'+esc(s.findings[0].plainLanguage)+'</div>':'');
+          }catch(e){ out.textContent=String(e.message||e); }
+        };
+      }
+      Array.prototype.forEach.call(document.querySelectorAll('.si-suburb-brief'), function(btn){
+        btn.onclick=async function(){
+          var area=btn.getAttribute('data-area')||'';
+          var kw=btn.getAttribute('data-kw')||'';
+          try{
+            var tok=await _siToken();
+            var r=await fetch('/api/search-intelligence/local-pages',{
+              method:'POST',
+              headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},
+              body:JSON.stringify({siteId:currentSiteId,area:area,primaryKeyword:kw,handoff:false})
+            });
+            var brief=await r.json().catch(function(){return {};});
+            if(r.status===422){
+              toast((brief.gate&&brief.gate.reasons&&brief.gate.reasons.join(', '))||brief.message||'Gate blocked');
+              return;
+            }
+            if(!r.ok){ toast(brief.message||brief.error||('HTTP '+r.status)); return; }
+            var handoff=brief.landingDraftHandoff||{};
+            var q=new URLSearchParams();
+            q.set('siteId', currentSiteId);
+            if(handoff.primaryKeyword) q.set('primaryKeyword', handoff.primaryKeyword);
+            if(handoff.location) q.set('location', handoff.location);
+            if(handoff.brief) q.set('brief', handoff.brief.slice(0,1500));
+            toast('Brief ready — opening Landing pages (human approve only)');
+            location.href='/manage#landing?'+q.toString();
+          }catch(e){ toast(String(e.message||e)); }
+        };
+      });
+    }catch(e){
+      body.innerHTML='<div class="card"><p class="lede">Local view unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
+    }
+  }
+  async function _siLoadAuthority(){
+    var body=document.getElementById('si-body'); if(!body) return;
+    try{
+      var j=await _siFetch('/api/search-intelligence/authority?siteId='+encodeURIComponent(currentSiteId));
+      var U=j.universe||{};
+      var A=j.adsKeywords||{};
+      var shared=(U.shared||[]).slice(0,12).map(function(k){ return '<li>'+esc(k)+'</li>'; }).join('');
+      var orgOnly=(U.organicOnly||[]).slice(0,8).map(function(k){ return '<li>'+esc(k)+'</li>'; }).join('');
+      var adsOnly=(U.adsOnly||[]).slice(0,8).map(function(k){ return '<li>'+esc(k)+'</li>'; }).join('');
+      var findings=(U.findings||[]).map(function(f){
+        return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px"><strong>'+esc(f.title)+'</strong><div class="lede" style="margin:6px 0 0">'+esc(f.plainLanguage||'')+'</div></div>';
+      }).join('');
+      body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">SEO ↔ Ads keyword universe</h2>'
+        +'<p class="lede" style="margin:0 0 10px">Organic tracked: <strong>'+esc(U.organicCount||0)+'</strong> · Ads: <strong>'+esc(U.adsCount||0)+'</strong> · Shared: <strong>'+esc(U.sharedCount||0)+'</strong></p>'
+        +'<p class="hint">Ads status: '+esc(A.connectionStatus||'—')+' · '+esc(A.note||'')+'</p>'
+        +(findings||'')
+        +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px">'
+        +'<div><strong>Shared</strong><ul style="margin:6px 0 0;padding-left:18px">'+(shared||'<li class="hint">None yet</li>')+'</ul></div>'
+        +'<div><strong>Organic only</strong><ul style="margin:6px 0 0;padding-left:18px">'+(orgOnly||'<li class="hint">—</li>')+'</ul></div>'
+        +'<div><strong>Ads only</strong><ul style="margin:6px 0 0;padding-left:18px">'+(adsOnly||'<li class="hint">—</li>')+'</ul></div>'
+        +'</div></div>'
+        +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Authority &amp; AI</h2>'
+        +'<p class="lede" style="margin:0 0 10px">Backlink gap and AI/brand SERP probes use DataForSEO (or mock). Never Semrush.</p>'
+        +'<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:10px">'
+        +(j.aiPlatforms||[]).map(function(p){
+          return '<span class="hint" style="border:1px solid var(--line);border-radius:8px;padding:4px 8px">'+esc(p.label)+' · '+esc(p.status)+'</span>';
+        }).join('')
+        +'</div>'
+        +'<div class="row" style="gap:8px;flex-wrap:wrap">'
+        +'<button type="button" class="btn sm" id="si-auth-backlinks">Backlink gap</button>'
+        +'<button type="button" class="btn sm ghost" id="si-auth-brand">Brand SERP</button>'
+        +'<button type="button" class="btn sm ghost" id="si-auth-ai">AI citations</button>'
+        +'</div>'
+        +((j.crmOutcomes&&j.crmOutcomes.available)?'<p class="hint" style="margin-top:10px">CRM: '+esc(j.crmOutcomes.won)+' won / '+esc(j.crmOutcomes.totalLeads)+' leads · ~$'+esc(j.crmOutcomes.totalValueDollars)+'</p>':'')
+        +'<div id="si-auth-out" class="hint" style="margin-top:12px"></div></div>';
+      async function runAuth(action){
+        var out=document.getElementById('si-auth-out');
+        out.textContent='Running '+action+'…';
+        try{
+          var tok=await _siToken();
+          var r=await fetch('/api/search-intelligence/authority',{
+            method:'POST',
+            headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},
+            body:JSON.stringify({siteId:currentSiteId,action:action,forceAi:action==='probe_ai'?true:undefined})
+          });
+          var jj=await r.json().catch(function(){return {};});
+          if(!r.ok){ out.textContent=jj.message||jj.error||('HTTP '+r.status); return; }
+          var res=jj.result||{};
+          if(action==='backlink_gap'){
+            out.innerHTML='Domain <strong>'+esc(res.domain||'—')+'</strong> · referring domains '
+              +esc(res.own&&res.own.referringDomains!=null?res.own.referringDomains:'—')
+              +' · competitors checked '+esc((res.competitors||[]).length)
+              +((res.findings&&res.findings[0])?'<div class="lede" style="margin-top:8px">'+esc(res.findings[0].plainLanguage)+'</div>':'<div class="hint" style="margin-top:8px">'+(esc(res.note)||'No gap finding.')+'</div>');
+          } else if(action==='probe_ai'){
+            var cites=(res.citations||[]).slice(0,8).map(function(c){
+              return '<li>'+esc(c.domain||c.url||'—')+(c.owned?' <strong>(yours)</strong>':'')+'</li>';
+            }).join('');
+            out.innerHTML='State: <strong>'+esc(res.state||'—')+'</strong>'
+              +(res.keyword?' · '+esc(res.keyword):'')
+              +' · owned citations '+esc(res.citedOwnedCount||0)+' / competitors '+esc(res.citedCompetitorCount||0)
+              +(cites?'<ul style="margin:8px 0 0;padding-left:18px">'+cites+'</ul>':'')
+              +((res.findings&&res.findings[0])?'<div class="lede" style="margin-top:8px">'+esc(res.findings[0].plainLanguage)+'</div>':'')
+              +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+'</p>';
+          } else {
+            out.innerHTML='State: <strong>'+esc(res.state|| (res.owned?'owned':'checked'))+'</strong>'
+              +(res.keyword?' · '+esc(res.keyword):'')
+              +(res.topDomain?' · top: '+esc(res.topDomain):'')
+              +((res.findings&&res.findings[0])?'<div class="lede" style="margin-top:8px">'+esc(res.findings[0].plainLanguage)+'</div>':'<div class="hint" style="margin-top:8px">'+esc(res.note||'No issues flagged.')+'</div>');
+          }
+        }catch(e){ out.textContent=String(e.message||e); }
+      }
+      var b1=document.getElementById('si-auth-backlinks');
+      var b2=document.getElementById('si-auth-brand');
+      var b3=document.getElementById('si-auth-ai');
+      if(b1) b1.onclick=function(){ runAuth('backlink_gap'); };
+      if(b2) b2.onclick=function(){ runAuth('probe_brand'); };
+      if(b3) b3.onclick=function(){ runAuth('probe_ai'); };
+    }catch(e){
+      body.innerHTML='<div class="card"><p class="lede">Authority view unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
+    }
+  }
+  async function _siLoadClusters(){
+    var body=document.getElementById('si-body'); if(!body) return;
+    async function paint(){
+      try{
+        var j=await _siFetch('/api/search-intelligence/clusters?siteId='+encodeURIComponent(currentSiteId));
+        var clusters=j.clusters||[];
+        var cards=clusters.map(function(c){
+          return '<div style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 10px">'
+            +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start">'
+            +'<div><strong>'+esc(c.name||c.primaryKeyword)+'</strong>'
+            +'<div class="hint" style="margin-top:4px">'+esc(c.memberCount||0)+' keywords'
+            +(c.location?' · '+esc(c.location):'')
+            +(c.intent?' · '+esc(c.intent):'')+'</div>'
+            +'<div class="lede" style="margin:8px 0 0">Primary: '+esc(c.primaryKeyword||'—')+'</div>'
+            +((c.secondaryKeywords&&c.secondaryKeywords.length)?'<div class="hint" style="margin-top:4px">Also: '+esc(c.secondaryKeywords.slice(0,5).join(', '))+'</div>':'')
+            +'</div>'
+            +'<button type="button" class="btn ghost sm si-cluster-opt" data-cluster-id="'+esc(c.id||'')+'" data-kw="'+esc(c.primaryKeyword||'')+'">Page Optimiser</button>'
+            +'</div></div>';
+        }).join('');
+        body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Keyword clusters</h2>'
+          +'<p class="lede" style="margin:0 0 12px">Group tracked keywords by service intent (location stripped). Briefs are modelled drafts — never auto-published.</p>'
+          +'<button type="button" class="btn" id="si-cluster-rebuild">Rebuild clusters</button>'
+          +'<div id="si-cluster-list" style="margin-top:14px">'
+          +(cards||'<p class="hint">No clusters yet. Track keywords, then rebuild.</p>')
+          +'</div>'
+          +'<div id="si-cluster-brief" style="margin-top:16px"></div>'
+          +'<p class="hint" style="margin-top:12px">Page Optimiser builds a modelled brief. <strong>Compose with Brain</strong> opens Landing pages with the brief prefilled — generate and approve there (never auto-publishes).</p></div>';
+        var reb=document.getElementById('si-cluster-rebuild');
+        if(reb) reb.addEventListener('click',async function(){
+          reb.disabled=true;
+          try{
+            var tok=await _siToken();
+            var r=await fetch('/api/search-intelligence/clusters',{
+              method:'POST',
+              headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+              body:JSON.stringify({siteId:currentSiteId})
+            });
+            var jj=await r.json().catch(function(){return {};});
+            if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+            toast('Built '+(jj.count||0)+' clusters');
+            paint();
+          }catch(e){ toast(String(e.message||e)); reb.disabled=false; }
+        });
+        Array.prototype.forEach.call(body.querySelectorAll('.si-cluster-opt'),function(btn){
+          btn.addEventListener('click',async function(){
+            var briefBox=document.getElementById('si-cluster-brief');
+            if(briefBox) briefBox.innerHTML='<p class="hint">Building brief…</p>';
+            try{
+              var tok=await _siToken();
+              var r=await fetch('/api/search-intelligence/page-optimiser',{
+                method:'POST',
+                headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+                body:JSON.stringify({
+                  siteId:currentSiteId,
+                  clusterId:btn.getAttribute('data-cluster-id')||undefined,
+                  primaryKeyword:btn.getAttribute('data-kw')||undefined
+                })
+              });
+              var jj=await r.json().catch(function(){return {};});
+              if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+              if(!briefBox) return;
+              briefBox.innerHTML='<h3 style="margin:0 0 8px;font-size:15px">Page Optimiser brief</h3>'
+                +'<p class="hint" style="margin:0 0 8px">'+esc((jj.safeguards&&jj.safeguards.note)||'Draft only')+'</p>'
+                +'<div style="display:flex;flex-direction:column;gap:8px">'
+                +'<div><strong>Title</strong><div class="lede">'+esc(jj.suggestedTitle||'')+'</div></div>'
+                +'<div><strong>Meta</strong><div class="lede">'+esc(jj.suggestedMeta||'')+'</div></div>'
+                +'<div><strong>H1</strong><div class="lede">'+esc(jj.suggestedH1||'')+'</div></div>'
+                +((jj.outline&&jj.outline.length)?'<div><strong>Outline</strong><ul style="margin:6px 0 0;padding-left:1.2rem">'
+                  +jj.outline.map(function(o){ return '<li style="margin:0 0 4px"><strong>'+esc(o.heading)+'</strong> — '+esc(o.purpose||'')+'</li>'; }).join('')
+                  +'</ul></div>':'')
+                +((jj.internalLinks&&jj.internalLinks.length)?'<div><strong>Internal links</strong><ul style="margin:6px 0 0;padding-left:1.2rem">'
+                  +jj.internalLinks.map(function(l){ return '<li style="margin:0 0 4px"><code>'+esc(l.url)+'</code> — '+esc(l.label)+': '+esc(l.reason||'')+'</li>'; }).join('')
+                  +'</ul></div>':'')
+                +'</div>'
+                +'<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">'
+                +'<button type="button" class="btn sm" id="si-brief-brain">Compose with Brain</button>'
+                +'<button type="button" class="btn ghost sm" id="si-brief-copy">Copy brief</button>'
+                +'<button type="button" class="btn ghost sm" id="si-brief-editor">Open SEO editor</button>'
+                +'</div>';
+              var brainBtn=document.getElementById('si-brief-brain');
+              if(brainBtn) brainBtn.addEventListener('click',async function(){
+                var handoff=jj.landingDraftHandoff||{
+                  mode:'seo',
+                  primaryKeyword:jj.primaryKeyword,
+                  location:jj.location,
+                  brief:(jj.landingDraftHandoff&&jj.landingDraftHandoff.brief)||'',
+                  extraInfo:(jj.landingDraftHandoff&&jj.landingDraftHandoff.extraInfo)||'',
+                  negativeKeywords:[]
+                };
+                try{
+                  sessionStorage.setItem('si_landing_handoff', JSON.stringify(handoff));
+                }catch(_e){ toast('Could not store handoff'); return; }
+                try{
+                  var tok=await _siToken();
+                  await fetch('/api/search-intelligence/page-optimiser',{
+                    method:'POST',
+                    headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+                    body:JSON.stringify({
+                      siteId:currentSiteId,
+                      clusterId:jj.clusterId||undefined,
+                      primaryKeyword:jj.primaryKeyword,
+                      handoff:true,
+                      annotate:true
+                    })
+                  });
+                }catch(_e2){ /* annotation best-effort */ }
+                toast('Opening Landing pages with SI brief…');
+                try{
+                  if(typeof showView==='function') showView('landing');
+                  else window.location.hash='#landing';
+                }catch(_e3){ toast('Open Landing pages, then Generate draft'); }
+              });
+              var copy=document.getElementById('si-brief-copy');
+              if(copy) copy.addEventListener('click',function(){
+                var text=(jj.landingDraftHandoff&&jj.landingDraftHandoff.brief)||[jj.suggestedTitle,jj.suggestedMeta,jj.suggestedH1].join('\n');
+                if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function(){ toast('Brief copied'); }).catch(function(){ toast('Copy failed'); });
+                else toast('Clipboard unavailable');
+              });
+              var ed=document.getElementById('si-brief-editor');
+              if(ed) ed.addEventListener('click',function(){
+                try{
+                  if(typeof showView==='function') showView('details');
+                  var sec=(jj.editorHints&&jj.editorHints.section)||'seoTokens';
+                  setTimeout(function(){
+                    var el=document.getElementById(sec)||document.querySelector('[data-section="'+sec+'"]');
+                    if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'start'});
+                  },200);
+                }catch(_e){ toast('Open Details → SEO tokens to apply title/meta'); }
+              });
+            }catch(e){
+              if(briefBox) briefBox.innerHTML='<p class="hint">'+esc((e&&e.message)||e)+'</p>';
+              toast(String(e.message||e));
+            }
+          });
+        });
+      }catch(e){
+        body.innerHTML='<div class="card"><p class="lede">Clusters unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
+      }
+    }
+    paint();
+  }
+  async function _siLoadSummary(){
+    var body=document.getElementById('si-body'); if(!body) return;
+    try{
+      var j=await _siFetch('/api/search-intelligence/summary?siteId='+encodeURIComponent(currentSiteId)+'&persist=0');
+      var crmAreas=((j.metrics&&j.metrics.crmByArea)||(j.crmOutcomes&&j.crmOutcomes.byArea)||[]).filter(function(a){return a.leads>0;}).slice(0,8);
+      body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Client summary</h2>'
+        +'<p class="lede" style="margin:0 0 12px">'+esc(j.businessName||'')+' · '+esc(j.periodStart||'')+' → '+esc(j.periodEnd||'')+'</p>'
+        +'<ul style="margin:0 0 14px;padding-left:1.2rem">'+(j.bullets||[]).map(function(b){ return '<li style="margin:0 0 6px">'+esc(b)+'</li>'; }).join('')+'</ul>'
+        +((j.metrics&&(j.metrics.crmWon!=null||j.metrics.crmTotalLeads!=null))?'<h3 style="margin:0 0 8px;font-size:14px">CRM multi-location</h3>'
+          +'<p class="lede" style="margin:0 0 8px">Won <strong>'+esc(j.metrics.crmWon)+'</strong> / '+esc(j.metrics.crmTotalLeads)+' leads'
+          +(j.metrics.crmWinRate!=null?' · '+esc(Math.round(j.metrics.crmWinRate*100))+'% win rate':'')
+          +(j.metrics.crmValueDollars!=null?' · ~$'+esc(j.metrics.crmValueDollars):'')+'</p>'
+          +(crmAreas.length?'<div style="overflow:auto;margin:0 0 14px"><table class="ana-table"><thead><tr><th>Area</th><th>Leads</th><th>Won</th><th>Value</th></tr></thead><tbody>'
+            +crmAreas.map(function(a){ return '<tr><td>'+esc(a.area)+'</td><td>'+esc(a.leads)+'</td><td>'+esc(a.won)+'</td><td>$'+esc(a.valueDollars)+'</td></tr>'; }).join('')
+            +'</tbody></table></div>':'')
+          :'')
+        +((j.topActions&&j.topActions.length)?'<h3 style="margin:0 0 8px;font-size:14px">Top actions</h3><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">'
+          +j.topActions.map(function(a){ return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px"><strong>'+esc(a.title)+'</strong><div class="lede" style="margin:6px 0 0">'+esc(a.plainLanguage||'')+'</div></div>'; }).join('')
+          +'</div>':'')
+        +'<button type="button" class="btn" id="si-summary-save">Save snapshot</button>'
+        +'<button type="button" class="btn ghost" id="si-summary-email" style="margin-left:8px">Email owner</button>'
+        +'<p class="hint" style="margin-top:10px">Weekly cron also writes snapshots for connected sites. Set SI_SUMMARY_EMAIL=1 to email owners automatically.</p></div>';
+      var save=document.getElementById('si-summary-save');
+      if(save) save.addEventListener('click',async function(){
+        try{
+          var tok=await _siToken();
+          var r=await fetch('/api/search-intelligence/summary',{
+            method:'POST',
+            headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+            body:JSON.stringify({siteId:currentSiteId,persist:true})
+          });
+          var jj=await r.json().catch(function(){return {};});
+          if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+          toast(jj.saved&&jj.saved.id?'Snapshot saved':'Saved');
+        }catch(e){ toast(String(e.message||e)); }
+      });
+      var mail=document.getElementById('si-summary-email');
+      if(mail) mail.addEventListener('click',async function(){
+        try{
+          var tok=await _siToken();
+          var r=await fetch('/api/search-intelligence/summary',{
+            method:'POST',
+            headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+            body:JSON.stringify({siteId:currentSiteId,persist:true,email:true})
+          });
+          var jj=await r.json().catch(function(){return {};});
+          if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+          if(jj.email&&jj.email.ok) toast('Emailed '+jj.email.to);
+          else toast((jj.email&&(jj.email.message||jj.email.error))||'Email failed');
+        }catch(e){ toast(String(e.message||e)); }
+      });
+    }catch(e){
+      body.innerHTML='<div class="card"><p class="lede">Could not load summary.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
+    }
+  }
+  async function _siLoadPortfolio(){
+    var body=document.getElementById('si-body'); if(!body) return;
+    try{
+      var j=await _siFetch('/api/search-intelligence/portfolio');
+      if(j.hint&&!(j.sites&&j.sites.length)){
+        body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Partner portfolio</h2><p class="lede">'+esc(j.hint)+'</p><p class="hint">Partners see all sites they service or referred.</p></div>';
+        return;
+      }
+      var s=j.summary||{};
+      var allSites=j.sites||[];
+      function paint(filter){
+        var list=allSites;
+        if(filter==='at_risk') list=allSites.filter(function(x){ return x.atRisk; });
+        else if(filter==='needs_setup') list=allSites.filter(function(x){ return x.health==='needs_setup'; });
+        var rows=list.map(function(site){
+          var riskLabel=site.atRisk?(site.riskReasons||[]).slice(0,2).join(', ')||'at risk':'—';
+          return '<tr data-site-id="'+esc(site.siteId)+'">'
+            +'<td><strong>'+esc(site.businessName||site.slug)+'</strong>'
+            +'<div class="hint" style="margin-top:2px">'+esc(site.relationship||'')+'</div></td>'
+            +'<td>'+esc(site.health)+(site.atRisk?' <span class="hint">· risk</span>':'')+'</td>'
+            +'<td>'+esc(riskLabel)+'</td>'
+            +'<td>'+esc(site.openActions||0)+(site.criticalActions?' / '+esc(site.criticalActions)+' crit':'')+'</td>'
+            +'<td>'+(site.organicLeads!=null?esc(site.organicLeads):'—')+'</td>'
+            +'<td>'+esc(site.trackedKeywords||0)+(site.rankDrops?' · ↓'+esc(site.rankDrops):'')+'</td>'
+            +'<td>'+esc((site.gsc&&site.gsc.status)||'—')+'</td>'
+            +'<td><button type="button" class="btn ghost sm si-pf-email" data-site-id="'+esc(site.siteId)+'">Email</button></td>'
+            +'</tr>';
+        }).join('');
+        body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Partner portfolio</h2>'
+          +'<p class="lede" style="margin:0 0 10px">'+esc(s.total||0)+' sites · '+esc(s.atRisk||0)+' at risk · '+esc(s.good||0)+' good · '+esc(s.partial||0)+' partial · '+esc(s.needsSetup||0)+' need setup</p>'
+          +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px">'
+          +'<button type="button" class="btn '+(filter==='all'?'':'ghost')+' sm" data-si-pf="all">All</button>'
+          +'<button type="button" class="btn '+(filter==='at_risk'?'':'ghost')+' sm" data-si-pf="at_risk">At risk</button>'
+          +'<button type="button" class="btn '+(filter==='needs_setup'?'':'ghost')+' sm" data-si-pf="needs_setup">Needs setup</button>'
+          +'</div>'
+          +(rows?'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Site</th><th>Health</th><th>Risk</th><th>Open</th><th>Organic leads</th><th>Tracked</th><th>GSC</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<p class="hint">No sites match this filter.</p>')
+          +'<p class="hint" style="margin-top:12px">At risk = needs setup, sync errors, 3+ open actions, critical issues, or keyword rank drops (≥3 positions).</p></div>';
+        Array.prototype.forEach.call(body.querySelectorAll('[data-si-pf]'),function(btn){
+          btn.addEventListener('click',function(){ paint(btn.getAttribute('data-si-pf')||'all'); });
+        });
+        Array.prototype.forEach.call(body.querySelectorAll('.si-pf-email'),function(btn){
+          btn.addEventListener('click',async function(){
+            var sid=btn.getAttribute('data-site-id');
+            if(!sid) return;
+            try{
+              var tok=await _siToken();
+              var r=await fetch('/api/search-intelligence/summary',{
+                method:'POST',
+                headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+                body:JSON.stringify({siteId:sid,persist:true,email:true})
+              });
+              var jj=await r.json().catch(function(){return {};});
+              if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+              if(jj.email&&jj.email.ok) toast('Emailed '+jj.email.to);
+              else toast((jj.email&&(jj.email.message||jj.email.error))||'Email failed');
+            }catch(e){ toast(String(e.message||e)); }
+          });
+        });
+      }
+      paint('all');
+    }catch(e){
+      body.innerHTML='<div class="card"><p class="lede">Portfolio unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
+    }
+  }
+  function _siConnectHTML(ov){
+    var c=(ov&&ov.connections)||{};
+    function row(key,label){
+      var x=c[key]||{};
+      var st=x.status||'unknown';
+      var plat=x.oauthReady===true?' · OAuth ready':(x.platformConfigured===true?' · credentials set':(x.platformConfigured===false?' · platform not configured':''));
+      return '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)">'
+        +'<div><strong>'+esc(label)+'</strong><div class="hint" style="margin:4px 0 0">Status: '+esc(st)+esc(plat)
+        +(x.hint?' — '+esc(x.hint):'')
+        +'</div></div>'
+        +(x.connectPath?'<a class="btn ghost sm" href="'+esc(x.connectPath)+'" style="text-decoration:none">Open</a>':'')
+        +'</div>';
+    }
+    return '<div class="card"><h2 style="margin:0 0 6px">Connections</h2>'
+      +'<p class="lede">Connect Search Console, GA4 and GBP when platform credentials and encryption are configured. Tokens stay encrypted server-side.</p>'
+      +row('search_console','Google Search Console')
+      +row('ga4','Google Analytics 4')
+      +row('gbp','Google Business Profile')
+      +row('google_ads','Google Ads (Advertising tab)')
+      +'<p class="hint" style="margin-top:14px">Verification meta / DNS remains under Settings → Search &amp; indexing. Market SERP stays DataForSEO-only (no Semrush).</p></div>';
+  }
+  function _siActionsList(items){
+    if(!items||!items.length) return '<p class="hint">No actions yet.</p>';
+    return '<div style="display:flex;flex-direction:column;gap:10px">'+items.map(function(a){
+      var openSec=a.editorSection||'seoTokens';
+      var safeBtns=(a.safeFixes||[]).map(function(f){
+        return '<button type="button" class="btn sm" data-si-act="auto_fix_safe" data-si-fix="'+esc(f.id)+'" data-si-recipe="'+esc(a.recipeId||'')+'">'+esc(f.title||'Safe fix')+'</button>';
+      }).join('');
+      return '<div style="border:1px solid var(--line);border-radius:10px;padding:12px 14px">'
+        +'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+        +'<strong>'+esc(a.title||a.recipeId)+'</strong>'
+        +'<span class="hint">'+esc(a.severity||'medium')+' · '+esc(a.status||'open')+'</span></div>'
+        +'<p class="lede" style="margin:8px 0 10px">'+esc(a.plainLanguage||'')+'</p>'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+        +'<button type="button" class="btn sm" data-si-act="open_editor_seo" data-si-section="'+esc(openSec)+'" data-si-recipe="'+esc(a.recipeId||'')+'">Open in editor</button>'
+        +'<button type="button" class="btn ghost sm" data-si-act="create_task" data-si-recipe="'+esc(a.recipeId||'')+'">Create task</button>'
+        +safeBtns
+        +'</div></div>';
+    }).join('')+'</div>';
+  }
+  function _siActionsHTML(ov){
+    var open=((ov&&ov.nextBestActions)||[]).filter(function(a){ return a.status==='open'; });
+    var catalog=((ov&&ov.nextBestActions)||[]).filter(function(a){ return a.status!=='open'; });
+    return '<div class="card"><h2 style="margin:0 0 8px">Next Best Actions</h2>'
+      +'<p class="lede" style="margin:0 0 14px">Findings from saved configuration'
+      +(ov&&ov.audit?' ('+ov.audit.issueCount+' config)':'')
+      +(ov&&ov.crawl&&ov.crawl.issueCount!=null?' · '+(ov.crawl.skipped?'crawl skipped':'')+(ov.crawl.issueCount||0)+' crawl':'')
+      +'.</p>'
+      +_siActionsList(open.length?open:(ov&&ov.nextBestActions)||[])
+      +(catalog.length?'<p class="hint" style="margin-top:16px">Catalog recipes stay available after connectors land.</p>':'')
+      +'</div>'
+      +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Safe auto-fix</h2>'
+      +'<p class="lede" style="margin:0 0 12px">Allow-listed technical fixes only. Always asks for confirmation — never silent AI publish.</p>'
+      +'<div class="row" style="gap:8px;flex-wrap:wrap">'
+      +'<button type="button" class="btn sm" data-si-act="auto_fix_safe" data-si-fix="refresh_sitemap">Regenerate sitemap</button>'
+      +'<button type="button" class="btn sm ghost" data-si-act="auto_fix_safe" data-si-fix="apply_schema_local">Apply LocalBusiness schema</button>'
+      +'</div>'
+      +'<p class="hint" style="margin-top:10px">'+(esc((ov&&ov.safeAutoFix&&ov.safeAutoFix.note)||'confirm:true required'))+'</p></div>'
+      +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Schema.org patch</h2>'
+      +'<p class="lede" style="margin:0 0 12px">Modelled LocalBusiness / FAQ JSON-LD from your saved site facts. Apply only after review — never auto-publishes invented ratings.</p>'
+      +'<button type="button" class="btn" id="si-schema-preview">Preview schema</button>'
+      +'<button type="button" class="btn ghost" id="si-schema-apply" style="margin-left:8px" disabled>Apply to site</button>'
+      +'<div id="si-schema-out" style="margin-top:12px"><p class="hint">Preview to see blocks before applying.</p></div></div>'
+      +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Recent annotations</h2>'
+      +'<div id="si-ann-list"><p class="hint">Loading…</p></div></div>';
+  }
+  function _siWireActions(ov){
+    var go=document.getElementById('si-goto-actions');
+    if(go) go.addEventListener('click',function(){ _siTab='actions'; document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-si-tab')==='actions'); }); _siPaint(); });
+    document.querySelectorAll('#si-body [data-si-act]').forEach(function(b){
+      b.addEventListener('click',function(){
+        var act=b.getAttribute('data-si-act');
+        var sec=b.getAttribute('data-si-section')||'seoTokens';
+        if(act==='open_editor_seo'){
+          if(typeof window.lpOpenEditorSection==='function') window.lpOpenEditorSection('details',sec);
+          else showView('details');
+          return;
+        }
+        if(act==='create_task'){
+          var recipe=b.getAttribute('data-si-recipe')||'';
+          _siAnnotate('create_task','SEO task — '+(recipe||'action'),{
+            recipeId:recipe,
+            title:b.closest('div')&&b.closest('div').querySelector('strong')?b.closest('div').querySelector('strong').textContent:null
+          });
+          toast('Task noted in Search Intelligence annotations'+(recipe?' ('+recipe+')':''));
+        }
+        if(act==='schema_patch'){
+          _siTab='actions'; document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-si-tab')==='actions'); }); _siPaint();
+        }
+        if(act==='page_optimiser'){
+          _siTab='clusters'; document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-si-tab')==='clusters'); }); _siPaint();
+        }
+        if(act==='auto_fix_safe'){
+          var fixId=b.getAttribute('data-si-fix')||'';
+          var recipe=b.getAttribute('data-si-recipe')||'';
+          if(!fixId){ toast('No safe fix selected'); return; }
+          if(!confirm('Run safe auto-fix “'+fixId+'”? This only applies allow-listed technical changes — never publishes AI content.')) return;
+          (async function(){
+            try{
+              var tok=await _siToken();
+              var r=await fetch('/api/search-intelligence/auto-fix',{
+                method:'POST',
+                headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},
+                body:JSON.stringify({siteId:currentSiteId,fixId:fixId,confirm:true,recipeId:recipe||undefined})
+              });
+              var jj=await r.json().catch(function(){return {};});
+              if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+              toast('Safe fix applied: '+fixId);
+              _siLoadAnnotations();
+            }catch(e){ toast(String(e.message||e)); }
+          })();
+        }
+      });
+    });
+    var schemaPatch=null;
+    var prevBtn=document.getElementById('si-schema-preview');
+    var applyBtn=document.getElementById('si-schema-apply');
+    var out=document.getElementById('si-schema-out');
+    if(prevBtn) prevBtn.addEventListener('click',async function(){
+      try{
+        var j=await _siFetch('/api/search-intelligence/schema-patch?siteId='+encodeURIComponent(currentSiteId));
+        schemaPatch=j;
+        if(applyBtn) applyBtn.disabled=false;
+        if(out){
+          out.innerHTML=(j.blocks||[]).map(function(b){
+            return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px">'
+              +'<strong>'+esc(b.title)+'</strong>'
+              +'<div class="lede" style="margin:6px 0">'+esc(b.plainLanguage||'')+'</div>'
+              +'<pre style="margin:0;font-size:11px;overflow:auto;max-height:160px;white-space:pre-wrap">'+esc(JSON.stringify(b.jsonLd,null,2))+'</pre></div>';
+          }).join('')
+          +'<p class="hint">'+(j.existingCount||0)+' existing block(s) on site · missing: '+esc((j.missing||[]).join(', ')||'none')+'</p>';
+        }
+      }catch(e){ if(out) out.innerHTML='<p class="hint">'+esc((e&&e.message)||e)+'</p>'; }
+    });
+    if(applyBtn) applyBtn.addEventListener('click',async function(){
+      if(!schemaPatch){ toast('Preview schema first'); return; }
+      if(!confirm('Apply modelled JSON-LD to this site config? It will appear in the live HTML head on next render.')) return;
+      try{
+        var tok=await _siToken();
+        var r=await fetch('/api/search-intelligence/schema-patch',{
+          method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+          body:JSON.stringify({siteId:currentSiteId,apply:true})
+        });
+        var jj=await r.json().catch(function(){return {};});
+        if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+        toast('Schema applied to site config');
+        if(typeof loadSite==='function'){ /* refresh if available */ }
+        _siLoadAnnotations();
+      }catch(e){ toast(String(e.message||e)); }
+    });
+    _siLoadAnnotations();
+  }
+  async function _siLoadAnnotations(){
+    var box=document.getElementById('si-ann-list'); if(!box) return;
+    try{
+      var j=await _siFetch('/api/search-intelligence/annotations?siteId='+encodeURIComponent(currentSiteId)+'&limit=15');
+      var rows=j.annotations||[];
+      if(!rows.length){ box.innerHTML='<p class="hint">No annotations yet. Publishing a landing page or applying a schema patch will appear here.</p>'; return; }
+      box.innerHTML='<ul style="margin:0;padding-left:1.2rem">'
+        +rows.map(function(a){
+          return '<li style="margin:0 0 6px"><strong>'+esc(a.annotation_type)+'</strong> — '+esc(a.title||'')
+            +' <span class="hint">'+esc(String(a.occurred_at||'').slice(0,16))+'</span></li>';
+        }).join('')+'</ul>';
+    }catch(e){ box.innerHTML='<p class="hint">'+esc((e&&e.message)||e)+'</p>'; }
   }
 
   /* ═══════════════════════════════════════════════════════════

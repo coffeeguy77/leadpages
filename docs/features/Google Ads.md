@@ -102,11 +102,13 @@ Callbacks are integration-specific under the shared app domain:
 
 ```
 /api/integrations/google-ads/callback
-/api/integrations/google-analytics/callback   (future)
-/api/integrations/search-console/callback     (future)
+/api/integrations/google-analytics/callback   (future — Search Intelligence Phase 1)
+/api/integrations/search-console/callback     (future — Search Intelligence Phase 1)
 /api/integrations/meta/callback               (future)
 /api/integrations/xero/callback               (future)
 ```
+
+**Search Intelligence** will reuse this OAuth/encryption pattern for Search Console and GA4, and later share a keyword universe with Ads (Phase 4). See [../search-intelligence/03-CONNECTORS.md](../search-intelligence/03-CONNECTORS.md) and [../search-intelligence/00-VISION.md](../search-intelligence/00-VISION.md).
 
 Shared helpers live in [`lib/app-url.js`](../../lib/app-url.js) (not AdWords-named). Google Ads OAuth handlers:
 
