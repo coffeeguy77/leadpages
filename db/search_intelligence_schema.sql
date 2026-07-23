@@ -226,6 +226,29 @@ create index if not exists si_query_page_stats_site_period_idx
 
 alter table public.si_query_page_stats enable row level security;
 
+-- ── GA4 landing-page stats (P1) ────────────────────────────────────────────
+create table if not exists public.si_ga4_landing_stats (
+  id                  uuid primary key default gen_random_uuid(),
+  site_id             uuid not null references public.sites(id) on delete cascade,
+  landing_page        text not null,
+  period_start        date not null,
+  period_end          date not null,
+  sessions            integer not null default 0,
+  engaged_sessions    integer not null default 0,
+  conversions         numeric not null default 0,
+  bounce_rate         numeric,
+  label_class         text not null default 'measured',
+  fetched_at          timestamptz not null default now()
+);
+
+create unique index if not exists si_ga4_landing_stats_uniq
+  on public.si_ga4_landing_stats (site_id, landing_page, period_start, period_end);
+
+create index if not exists si_ga4_landing_stats_site_period_idx
+  on public.si_ga4_landing_stats (site_id, period_end desc);
+
+alter table public.si_ga4_landing_stats enable row level security;
+
 -- ── Crawl & issues (P1) ────────────────────────────────────────────────────
 create table if not exists public.si_crawl_runs (
   id              uuid primary key default gen_random_uuid(),

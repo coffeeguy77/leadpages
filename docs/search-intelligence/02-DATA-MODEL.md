@@ -57,6 +57,7 @@
 | `si_rank_observations` | Position by device/geo/date |
 | `si_pages` | Canonical page identity for a site |
 | `si_query_page_stats` | GSC query × page aggregates |
+| `si_ga4_landing_stats` | GA4 landing-page sessions / conversions |
 | `si_crawl_runs` | Crawl job records |
 | `si_issues` | Audit issues with severity + fix metadata |
 | `si_competitors` | Competitor domains |

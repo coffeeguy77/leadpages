@@ -8,8 +8,9 @@
 const http = require('../../lib/brain/http');
 const { createClient } = require('@supabase/supabase-js');
 const { buildOverview } = require('../../lib/search-intelligence/overview');
-const { loadGscTotals } = require('../../lib/search-intelligence/sync');
+const { loadGscTotals, loadGa4Totals } = require('../../lib/search-intelligence/sync');
 const { loadOrganicLeadSummary } = require('../../lib/search-intelligence/attribution-organic');
+const { loadPagePerformance } = require('../../lib/search-intelligence/page-performance');
 
 function admin() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
@@ -74,9 +75,11 @@ module.exports = async (req, res) => {
     );
 
     const sb = admin();
-    const [gscTotals, organicSummary] = await Promise.all([
+    const [gscTotals, ga4Totals, organicSummary, pagePerformance] = await Promise.all([
       loadGscTotals(sb, siteId, { days: days }),
-      loadOrganicLeadSummary(sb, siteId, { days: days })
+      loadGa4Totals(sb, siteId, { days: days }),
+      loadOrganicLeadSummary(sb, siteId, { days: days }),
+      loadPagePerformance(sb, siteId, { days: days })
     ]);
 
     const overview = await buildOverview({
@@ -97,7 +100,9 @@ module.exports = async (req, res) => {
       location: (body && body.location) || (req.query && req.query.location) || null,
       connectionRows: connectionRows,
       gscTotals: gscTotals,
-      organicSummary: organicSummary
+      ga4Totals: ga4Totals,
+      organicSummary: organicSummary,
+      pagePerformance: pagePerformance
     });
     overview.role = access.role;
     overview.siteSlug = (site && site.slug) || null;

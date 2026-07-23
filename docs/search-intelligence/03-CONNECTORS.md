@@ -1,7 +1,7 @@
 # Search Intelligence — Connectors
 
 **Document:** `search-intelligence/03-CONNECTORS`  
-**Status:** GSC + GA4 OAuth, property select, GSC sync + cron; GA4 metric sync next  
+**Status:** GSC + GA4 OAuth, property select, GSC + GA4 landing sync + cron; keyword research gateway  
 **Prerequisites:** [01-ARCHITECTURE.md](01-ARCHITECTURE.md), [../features/Google Ads.md](../features/Google Ads.md)
 
 ---
@@ -74,11 +74,28 @@ Storage: `si_connections` + `si_oauth_states` (see [02-DATA-MODEL.md](02-DATA-MO
 
 **Env:** `GA4_CLIENT_ID`, `GA4_CLIENT_SECRET`, optional `GA4_REDIRECT_URI` (+ same encryption / state secrets as GSC)
 
-**Routes:** `/settings/integrations/google-analytics`, `/api/integrations/google-analytics/{status,connect,callback,exchange,properties,save-property}`
+**Routes:** `/settings/integrations/google-analytics`, `/api/integrations/google-analytics/{status,connect,callback,exchange,properties,save-property,sync}`
 
 **Mapping:** `site_id` → GA4 property id on `si_connections.property_id` (+ `property_meta.propertyResource`).
 
-**Sync (next):** Landing-page and conversion aggregates; join to `visitor_sessions` / lead events where possible.
+**Sync:** Landing-page report (sessions, engaged sessions, conversions, bounce rate) → `si_ga4_landing_stats`. Included in `/api/cron/sync-search-intelligence`.
+
+---
+
+## Page performance (from GSC)
+
+`lib/search-intelligence/page-performance.js` aggregates `si_query_page_stats` by URL and emits:
+
+- High impressions / low CTR findings (`high_impr_low_ctr` recipe)  
+- Light cannibalisation when the same query tops multiple pages  
+
+Manage → SEO Command → **Pages** tab; findings also merge into Next Best Actions.
+
+---
+
+## Keyword research API
+
+`GET/POST /api/search-intelligence/keywords?siteId=&keyword=` uses the provider gateway (`mock` by default; set `SI_KEYWORD_PROVIDER=dataforseo` + credentials for live). Scores ideas with opportunity-value.
 
 ---
 

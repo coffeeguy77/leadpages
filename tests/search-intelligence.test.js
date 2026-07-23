@@ -79,6 +79,7 @@ describe('Search Intelligence stubs', () => {
     const sql = fs.readFileSync(path.join(root, 'db/search_intelligence_schema.sql'), 'utf8');
     assert.match(sql, /si_connections/);
     assert.match(sql, /si_recommendations/);
+    assert.match(sql, /si_ga4_landing_stats/);
     assert.match(sql, /DO NOT apply wholesale/);
   });
 
@@ -226,6 +227,32 @@ describe('Search Intelligence stubs', () => {
     assert.equal(ov.cards.find((c) => c.id === 'organic_clicks').value, 42);
     assert.equal(ov.cards.find((c) => c.id === 'search_leads').value, 5);
     assert.equal(ov.connections.search_console.propertyId, 'https://example.com.au/');
+  });
+
+  it('aggregates GSC page performance and emits low-CTR findings', () => {
+    const { aggregateByPage, buildPageFindings } = require('../lib/search-intelligence/page-performance');
+    const pages = aggregateByPage([
+      { query: 'plumber canberra', page_url: 'https://a.example/plumber', clicks: 2, impressions: 400, ctr: 0.005, position: 8 },
+      { query: 'plumber near me', page_url: 'https://a.example/plumber', clicks: 1, impressions: 200, ctr: 0.005, position: 9 },
+      { query: 'plumber canberra', page_url: 'https://a.example/services', clicks: 5, impressions: 120, ctr: 0.04, position: 5 }
+    ]);
+    assert.ok(pages.length >= 2);
+    assert.equal(pages[0].pageUrl, 'https://a.example/plumber');
+    assert.equal(pages[0].impressions, 600);
+    const findings = buildPageFindings(pages, { minImpressions: 100, maxCtr: 0.02 });
+    assert.ok(findings.some((f) => f.code === 'high_impr_low_ctr'));
+    assert.ok(findings.some((f) => f.code === 'cannibalisation'));
+  });
+
+  it('ships page performance, GA4 sync, and keywords API', () => {
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/page-performance.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/connectors/ga4-data.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/google-analytics/sync.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/keywords.js')));
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /_siPagesHTML/);
+    assert.match(manage, /_siKeywordsHTML/);
+    assert.match(manage, /\/api\/search-intelligence\/keywords/);
   });
 
   it('wires SEO Command Centre manage tab + APIs', () => {

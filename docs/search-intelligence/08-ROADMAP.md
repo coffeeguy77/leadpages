@@ -27,17 +27,17 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - [x] Site Brain `snapshot.searchIntelligence` twin shape
 - [x] GSC + GA4 settings pages + status/connect/callback/exchange (encrypted `si_connections`)
 - [x] First-party HTML crawl (homepage, `?crawl=1`; Actions tab)
-- [x] GSC / GA4 property selection + GSC query×page sync (+ cron)
+- [x] GSC / GA4 property selection + GSC/GA4 sync (+ cron)
 - [x] Forms / call-click organic attribution rollup (Command Centre card)
-- [ ] Keyword research via live provider
-- [ ] Tracked keywords (25–100 per plan)
-- [ ] Page-level performance views from synced GSC
+- [x] Page-level GSC performance view + high-impr/low-CTR / cannibalisation NBAs
+- [x] Keyword research API (provider gateway; mock until DataForSEO configured)
+- [ ] Tracked keywords persistence (25–100 per plan)
 - [ ] Partner portfolio basics
 - [ ] Scheduled client summary
 
 **Website actions (live):** Open in editor (section-aware); Create task toast.  
 
-**Scaffold note:** Command Centre tab, config + crawl NBAs, OAuth Connect when env + schema are ready. Apply `db/search_intelligence_schema.sql` before storing OAuth rows.
+**Scaffold note:** Command Centre tab, config + crawl + GSC recipe NBAs, OAuth Connect when env + schema are ready. Apply `db/search_intelligence_schema.sql` before storing OAuth/sync rows.
 
 ---
 
