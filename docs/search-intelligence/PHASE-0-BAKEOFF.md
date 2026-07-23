@@ -61,6 +61,22 @@ For each plan tier, estimate monthly:
 
 Cache shared non-PII market data where licensing allows.
 
+### Modelled DataForSEO cost bands (labelClass: modelled)
+
+Public list prices move; treat these as **planning placeholders** until a live bake-off sample is attached in the private ops note. Numbers below are USD order-of-magnitude for AU local SERP + Labs keyword ideas (not a quote).
+
+| Workload | Assumed usage / site / month | Modelled provider $ |
+|----------|------------------------------|---------------------|
+| Included (25 tracked, weekly SERP) | ~100 SERP + 50 keyword-idea calls | ~$2–6 |
+| SEO Growth (100 tracked, daily SERP) | ~3k SERP + 200 keyword ideas | ~$25–80 |
+| Local Growth add-on (Maps grid later) | Grid points dominate | Model separately in Phase 3 |
+
+**Exit for cost understanding:** run a 7-day live sample on 5 pilot sites with `SI_PROVIDER` unset (auto DataForSEO), export usage + invoice line items into the private ops note. Do **not** commit invoices or site domains here.
+
+### Failover
+
+Default live adapter: **DataForSEO**. Failover candidate: **Semrush** (`lib/search-intelligence/providers/semrush.js` stub). Do not enable Semrush in production until licensing/resale and live mapping pass bake-off.
+
 ---
 
 ## Pilot sites (process)

@@ -10528,17 +10528,57 @@ function heroCtaCard(c){
         return;
       }
       var s=j.summary||{};
-      var rows=(j.sites||[]).map(function(site){
-        return '<tr><td>'+esc(site.businessName||site.slug)+'</td>'
-          +'<td>'+esc(site.health)+'</td>'
-          +'<td>'+esc((site.gsc&&site.gsc.status)||'—')+'</td>'
-          +'<td>'+esc((site.ga4&&site.ga4.status)||'—')+'</td>'
-          +'<td>'+esc(site.trackedKeywords||0)+'</td></tr>';
-      }).join('');
-      body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Partner portfolio</h2>'
-        +'<p class="lede" style="margin:0 0 12px">'+esc(s.total||0)+' sites · '+esc(s.good||0)+' good · '+esc(s.partial||0)+' partial · '+esc(s.needsSetup||0)+' need setup</p>'
-        +(rows?'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Site</th><th>Health</th><th>GSC</th><th>GA4</th><th>Tracked</th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<p class="hint">No sites in this portfolio.</p>')
-        +'</div>';
+      var allSites=j.sites||[];
+      function paint(filter){
+        var list=allSites;
+        if(filter==='at_risk') list=allSites.filter(function(x){ return x.atRisk; });
+        else if(filter==='needs_setup') list=allSites.filter(function(x){ return x.health==='needs_setup'; });
+        var rows=list.map(function(site){
+          var riskLabel=site.atRisk?(site.riskReasons||[]).slice(0,2).join(', ')||'at risk':'—';
+          return '<tr data-site-id="'+esc(site.siteId)+'">'
+            +'<td><strong>'+esc(site.businessName||site.slug)+'</strong>'
+            +'<div class="hint" style="margin-top:2px">'+esc(site.relationship||'')+'</div></td>'
+            +'<td>'+esc(site.health)+(site.atRisk?' <span class="hint">· risk</span>':'')+'</td>'
+            +'<td>'+esc(riskLabel)+'</td>'
+            +'<td>'+esc(site.openActions||0)+(site.criticalActions?' / '+esc(site.criticalActions)+' crit':'')+'</td>'
+            +'<td>'+(site.organicLeads!=null?esc(site.organicLeads):'—')+'</td>'
+            +'<td>'+esc(site.trackedKeywords||0)+(site.rankDrops?' · ↓'+esc(site.rankDrops):'')+'</td>'
+            +'<td>'+esc((site.gsc&&site.gsc.status)||'—')+'</td>'
+            +'<td><button type="button" class="btn ghost sm si-pf-email" data-site-id="'+esc(site.siteId)+'">Email</button></td>'
+            +'</tr>';
+        }).join('');
+        body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Partner portfolio</h2>'
+          +'<p class="lede" style="margin:0 0 10px">'+esc(s.total||0)+' sites · '+esc(s.atRisk||0)+' at risk · '+esc(s.good||0)+' good · '+esc(s.partial||0)+' partial · '+esc(s.needsSetup||0)+' need setup</p>'
+          +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px">'
+          +'<button type="button" class="btn '+(filter==='all'?'':'ghost')+' sm" data-si-pf="all">All</button>'
+          +'<button type="button" class="btn '+(filter==='at_risk'?'':'ghost')+' sm" data-si-pf="at_risk">At risk</button>'
+          +'<button type="button" class="btn '+(filter==='needs_setup'?'':'ghost')+' sm" data-si-pf="needs_setup">Needs setup</button>'
+          +'</div>'
+          +(rows?'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Site</th><th>Health</th><th>Risk</th><th>Open</th><th>Organic leads</th><th>Tracked</th><th>GSC</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<p class="hint">No sites match this filter.</p>')
+          +'<p class="hint" style="margin-top:12px">At risk = needs setup, sync errors, 3+ open actions, critical issues, or keyword rank drops (≥3 positions).</p></div>';
+        Array.prototype.forEach.call(body.querySelectorAll('[data-si-pf]'),function(btn){
+          btn.addEventListener('click',function(){ paint(btn.getAttribute('data-si-pf')||'all'); });
+        });
+        Array.prototype.forEach.call(body.querySelectorAll('.si-pf-email'),function(btn){
+          btn.addEventListener('click',async function(){
+            var sid=btn.getAttribute('data-site-id');
+            if(!sid) return;
+            try{
+              var tok=await _siToken();
+              var r=await fetch('/api/search-intelligence/summary',{
+                method:'POST',
+                headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+                body:JSON.stringify({siteId:sid,persist:true,email:true})
+              });
+              var jj=await r.json().catch(function(){return {};});
+              if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+              if(jj.email&&jj.email.ok) toast('Emailed '+jj.email.to);
+              else toast((jj.email&&(jj.email.message||jj.email.error))||'Email failed');
+            }catch(e){ toast(String(e.message||e)); }
+          });
+        });
+      }
+      paint('all');
     }catch(e){
       body.innerHTML='<div class="card"><p class="lede">Portfolio unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
     }

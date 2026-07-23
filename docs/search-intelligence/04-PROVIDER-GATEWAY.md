@@ -28,10 +28,10 @@ flowchart LR
 | Provider | Role |
 |----------|------|
 | **DataForSEO** | First adapter target (AU local SERP / Maps support) |
-| Semrush API | Documented alternate after bake-off |
+| Semrush API | Failover stub (`semrush.js`); live HTTP after licensing bake-off |
 | Mock | Tests and docs examples |
 
-Phase 0 bake-off selects the **default** provider; gateway retains multi-adapter support.
+Phase 0 bake-off selects the **default** provider; gateway retains multi-adapter support. Set `SI_PROVIDER=semrush` only after the adapter is live — today it returns `not_configured` even with `SEMRUSH_API_KEY` set (key check reserved for ops readiness).
 
 ---
 

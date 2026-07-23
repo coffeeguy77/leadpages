@@ -114,7 +114,7 @@ Manage → SEO Command → **Pages** tab; findings also merge into Next Best Act
 
 ### Partner portfolio
 
-`GET /api/search-intelligence/portfolio` — partners see serviced/referred sites with GSC/GA4 health + tracked counts.
+`GET /api/search-intelligence/portfolio` — partners see serviced/referred sites with GSC/GA4 health, tracked counts, open/critical actions, organic-lead snapshot metrics, rank-drop risk, and at-risk sorting. Manage Portfolio filters + per-site Email summary.
 
 ---
 

@@ -33,7 +33,7 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - [x] Keyword research API (provider gateway; live DataForSEO when credentials set)
 - [x] Tracked keywords persistence (plan limit via `SI_TRACKED_KEYWORD_LIMIT`, default 25 / max 100)
 - [x] Rank checks (manual + daily cron; DataForSEO SERP when configured, else mock)
-- [x] Partner portfolio basics (connection health rollup)
+- [x] Partner portfolio (health, at-risk signals, open actions, rank drops, Email summary)
 - [x] Scheduled client summary (manual + Monday cron → `si_report_snapshots`)
 - [x] Owner summary email (Manage button + optional `SI_SUMMARY_EMAIL=1` cron via Resend)
 

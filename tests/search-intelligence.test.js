@@ -96,6 +96,39 @@ describe('Search Intelligence stubs', () => {
     assert.match(html, /Open SEO Command Centre/);
   });
 
+  it('classifies portfolio risk and rank drops', () => {
+    const {
+      classifyPortfolioRisk,
+      countRankDrops
+    } = require('../lib/search-intelligence/portfolio');
+    const risk = classifyPortfolioRisk({
+      health: 'partial',
+      openActions: 4,
+      criticalActions: 0,
+      rankDrops: 0
+    });
+    assert.equal(risk.atRisk, true);
+    assert.ok(risk.riskReasons.includes('open_actions'));
+    const ok = classifyPortfolioRisk({ health: 'good', openActions: 1 });
+    assert.equal(ok.atRisk, false);
+    const drops = countRankDrops([
+      { tracked_keyword_id: 'k1', position: 5, fetched_at: '2026-07-01' },
+      { tracked_keyword_id: 'k1', position: 12, fetched_at: '2026-07-10' },
+      { tracked_keyword_id: 'k2', position: 8, fetched_at: '2026-07-01' },
+      { tracked_keyword_id: 'k2', position: 9, fetched_at: '2026-07-10' }
+    ]);
+    assert.equal(drops, 1);
+  });
+
+  it('semrush adapter stays not_configured until live wiring', async () => {
+    const gw = createGateway({ provider: 'semrush' });
+    assert.ok(gw.adapters.includes('semrush'));
+    const res = await gw.keywordIdeas({ keyword: 'plumber' });
+    assert.equal(res.ok, false);
+    assert.equal(res.error, 'not_configured');
+    assert.equal(res.provider, 'semrush');
+  });
+
   it('opportunity value is modelled 0..1 with factor breakdown', () => {
     const out = computeOpportunityValue({
       volume: 720,
@@ -383,7 +416,10 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /tracked-keywords/);
     assert.match(manage, /si-summary-email/);
     assert.match(manage, /SI_SUMMARY_EMAIL/);
+    assert.match(manage, /data-si-pf/);
+    assert.match(manage, /si-pf-email/);
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/summary-email.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/providers/semrush.js')));
   });
 
   it('cadence due windows and mock rank positions are deterministic', async () => {

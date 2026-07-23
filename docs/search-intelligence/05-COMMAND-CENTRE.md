@@ -88,15 +88,18 @@ All material changes require audit logs (`si_approvals`, Site Brain decisions).
 
 ---
 
-## Partner portfolio (Phase 1 basics)
+## Partner portfolio (Phase 1)
 
-One screen across clients:
+Manage → SEO Command → **Portfolio** (partners + super with `partnerId=`):
 
-- Clients at risk / ranking drops  
-- Critical technical issues  
-- Unapproved recommendations  
-- Leads and estimated value  
-- Quick wins  
-- Connection / sync health  
+| Signal | Source |
+|--------|--------|
+| Connection / sync health | `si_connections` (GSC/GA4) |
+| Tracked keywords + rank drops | `si_tracked_keywords` + `si_rank_observations` (≥3 position worsen) |
+| Open / critical actions | `si_recommendations` + latest `si_report_snapshots` openActions |
+| Organic leads | Latest summary snapshot metrics |
+| At risk | Needs setup, sync error, 3+ open actions, critical severity, or rank drops |
 
-Deeper workflows (bulk, white-label PDF, margin controls) expand in later phases.
+UI filters: All / At risk / Needs setup. Per-row **Email** sends the client weekly summary (Resend) via `/api/search-intelligence/summary`.
+
+Deeper workflows (bulk email, white-label PDF, margin controls) expand in later phases.
