@@ -17,21 +17,19 @@ flowchart LR
   Jobs[Scheduler] --> GW
   GW --> Cache[CacheAndBudget]
   Cache --> DFS[DataForSEO]
-  Cache --> SM[SemrushAPI]
   Cache --> Mock[MockFixtures]
 ```
 
 ---
 
-## First adapter target
+## Adapters
 
 | Provider | Role |
 |----------|------|
-| **DataForSEO** | First adapter target (AU local SERP / Maps support) |
-| Semrush API | Failover stub (`semrush.js`); live HTTP after licensing bake-off |
+| **DataForSEO** | Sole live market-data provider (AU local SERP / Labs) |
 | Mock | Tests and docs examples |
 
-Phase 0 bake-off selects the **default** provider; gateway retains multi-adapter support. Set `SI_PROVIDER=semrush` only after the adapter is live — today it returns `not_configured` even with `SEMRUSH_API_KEY` set (key check reserved for ops readiness).
+**Semrush is out of scope permanently** — no license, no adapter, no failover path. Product code must not reference Semrush APIs.
 
 ---
 
@@ -44,7 +42,7 @@ Phase 0 bake-off selects the **default** provider; gateway retains multi-adapter
 | `SerpResult` | rank, url, domain, title, snippet, type (organic/maps/…) |
 | `RankObservation` | keywordId, url, position, device, geo, fetchedAt, features |
 | `CompetitorDomain` | domain, visibilityEstimate, overlapCount |
-| `BacklinkSummary` | referringDomains, newLost, topAnchors (Phase 4) |
+| `BacklinkSummary` | referringDomains, newLost, topAnchors (Phase 4 via DataForSEO) |
 
 Every response includes `provider`, `fetchedAt`, `labelClass` (`measured` \| `estimated` \| `modelled`).
 
@@ -57,7 +55,6 @@ Every response includes `provider`, `fetchedAt`, `labelClass` (`measured` \| `es
 3. Cache shared market data where licensing permits  
 4. Plan-based refresh frequency (not unlimited user triggers)  
 5. Fail soft with structured errors (`not_configured`, `budget_exceeded`, `provider_error`)  
-6. Optional failover when a second adapter is configured  
 
 ---
 
@@ -70,7 +67,7 @@ Every response includes `provider`, `fetchedAt`, `labelClass` (`measured` \| `es
 | `domainOverview` | Light competitor/domain snapshot |
 | `rankCheck` | Position for tracked keywords |
 
-Phase 4 adds `backlinks`, `backlinkGap`. AI visibility may be a separate hybrid provider.
+Phase 4 may add `backlinks` / `backlinkGap` on the **same DataForSEO adapter**. AI visibility may be a separate hybrid provider.
 
 ---
 
@@ -78,7 +75,7 @@ Phase 4 adds `backlinks`, `backlinkGap`. AI visibility may be a separate hybrid 
 
 - `dataforseo.js` returns `{ ok: false, error: 'not_configured' }` until `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` are set (aliases: `DATAFORSEO_EMAIL` / `DATAFORSEO_API_PASSWORD`, `DFS_LOGIN` / `DFS_PASSWORD`)
 - When credentials exist and `SI_PROVIDER` / `SI_KEYWORD_PROVIDER` are unset, the gateway **auto-prefers** DataForSEO
-- Explicit `SI_PROVIDER=mock` (or `dataforseo`) always wins over auto-prefer
+- Explicit `SI_PROVIDER=mock` always wins; any `semrush` preference is remapped to DataForSEO/mock
 - Live ops: `keywordIdeas` → Labs `google/keyword_ideas/live`; `serp` / `rankCheck` → `serp/google/organic/live/advanced`; `domainOverview` → Labs `google/domain_rank_overview/live`
 - Default geo: `DATAFORSEO_LOCATION_CODE` (default **2036** Australia)
 - `mock.js` returns deterministic fixtures for unit tests  

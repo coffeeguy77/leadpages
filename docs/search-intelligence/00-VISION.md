@@ -44,7 +44,7 @@ flowchart TD
 | Primary market | Local / service-area businesses; partners as operators |
 | External sites | Not in Phases 0–2; Phase 3+ partner tooling |
 | First Google connectors | Search Console + GA4; Ads in progress; GBP Phase 3 |
-| Market data | Provider gateway; first adapter **DataForSEO**; Semrush API alternate |
+| Market data | Provider gateway; **DataForSEO only** (Semrush permanently out of scope) |
 | Call attribution v1 | Call-clicks + `visitor_sessions` (no provisioned numbers yet) |
 | Autopilot default | Recommend / prepare draft only — **no silent publish** |
 | Launch scope | Leadpages-hosted trade/landing sites only |

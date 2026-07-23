@@ -43,7 +43,7 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 
 ---
 
-## Phase 2 research-to-page (started)
+## Phase 2 research-to-page (complete)
 
 - [x] Deterministic keyword clusters from tracked terms (`si_keyword_clusters`)
 - [x] Page Optimiser modelled briefs (title/meta/H1/outline) — **no silent publish**
@@ -53,6 +53,18 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - [x] Provider usage metering helper (`si_provider_usage` via keyword ideas, ranks, clusters, briefs)
 - [x] Annotations for publish events (landing publish/unpublish, draft applied, schema apply)
 - [x] Schema patch actions (preview + human apply → `config.seoJsonLd`; renderer emits ld+json)
+
+---
+
+## Phase 3 Local Growth (foundations started)
+
+- [x] First-party NAP / listings audit (no GBP required)
+- [x] Local opportunity map (service areas × keyword clusters)
+- [x] Manage → Local tab + usage rollup
+- [x] Overview Local / Maps readiness card
+- [ ] Google Business Profile OAuth (when Google access approved)
+- [ ] DataForSEO Maps-grid SERP sampling (optional paid)
+- [ ] Safe multi-suburb page generation with evidence gates
 
 ---
 
@@ -123,6 +135,7 @@ Cache shared market data where licensing permits. Prefer plan-based refresh over
 
 ## Non-goals (programme)
 
+- Licensing or integrating **Semrush** (permanently out of scope)  
 - Building Semrush’s data moat internally  
 - Silent AI publish  
 - Uncontrolled doorway/location spam  

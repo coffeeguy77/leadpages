@@ -120,13 +120,11 @@ describe('Search Intelligence stubs', () => {
     assert.equal(drops, 1);
   });
 
-  it('semrush adapter stays not_configured until live wiring', async () => {
+  it('semrush preference remaps away — Semrush permanently out of scope', async () => {
     const gw = createGateway({ provider: 'semrush' });
-    assert.ok(gw.adapters.includes('semrush'));
-    const res = await gw.keywordIdeas({ keyword: 'plumber' });
-    assert.equal(res.ok, false);
-    assert.equal(res.error, 'not_configured');
-    assert.equal(res.provider, 'semrush');
+    assert.equal(gw.adapters.includes('semrush'), false);
+    assert.ok(gw.adapters.includes('dataforseo'));
+    assert.ok(gw.adapters.includes('mock'));
   });
 
   it('clusters tracked keywords by service head without locations', () => {
@@ -228,16 +226,45 @@ describe('Search Intelligence stubs', () => {
   it('ships annotations and schema-patch APIs', () => {
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/annotations.js')));
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/schema-patch.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/local.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/usage.js')));
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/annotations.js')));
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/schema-patch.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/local-listings.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/local-opportunity.js')));
     const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
     assert.match(manage, /_siAnnotate/);
     assert.match(manage, /landing_publish/);
     assert.match(manage, /si-schema-preview/);
     assert.match(manage, /schema-patch/);
+    assert.match(manage, /_siLoadLocal/);
     const render = fs.readFileSync(path.join(__dirname, '..', 'api/render.js'), 'utf8');
     assert.match(render, /injectSeoJsonLd/);
     assert.match(render, /seoJsonLd/);
+  });
+
+  it('audits listings NAP and builds local opportunity gaps', () => {
+    const { auditListings } = require('../lib/search-intelligence/local-listings');
+    const { buildLocalOpportunityMap } = require('../lib/search-intelligence/local-opportunity');
+    const bad = auditListings({ business_name: '', config: {} });
+    assert.ok(bad.findings.length >= 1);
+    const good = auditListings({
+      business_name: 'Demo Plumbing',
+      config: { phone: '0400111222', phoneText: '0400 111 222', region: 'Canberra' }
+    });
+    assert.ok(good.listingsScore > 0.5);
+    const map = buildLocalOpportunityMap(
+      {
+        id: 's1',
+        config: {
+          sections: { serviceAreas: { areas: ['Canberra', 'Queanbeyan'] } }
+        }
+      },
+      [{ keyword: 'plumber canberra', keywordId: '1' }]
+    );
+    assert.equal(map.ok, true);
+    assert.ok(map.gapCount >= 1);
+    assert.equal(map.labelClass, 'modelled');
   });
 
   it('ships clusters and page-optimiser APIs', () => {
@@ -276,10 +303,12 @@ describe('Search Intelligence stubs', () => {
     assert.ok(out.explanation);
   });
 
-  it('registers the first ten recommendation recipes', () => {
-    assert.equal(RECIPES.length, 10);
+  it('registers twenty recommendation recipes', () => {
+    assert.equal(RECIPES.length, 20);
     assert.ok(getRecipe('high_impr_low_ctr'));
     assert.ok(getRecipe('keyword_no_page'));
+    assert.ok(getRecipe('listings_nap_gap'));
+    assert.ok(getRecipe('schema_missing_local'));
     assert.equal(listRecipes(1).length, 10);
   });
 
@@ -318,7 +347,8 @@ describe('Search Intelligence stubs', () => {
     });
     assert.equal(ov.ok, true);
     assert.ok(ov.audit.issueCount >= 2);
-    assert.equal(ov.cards.find((c) => c.id === 'technical_health').value, ov.audit.issueCount);
+    assert.ok(ov.cards.find((c) => c.id === 'technical_health').value >= ov.audit.issueCount);
+    assert.ok(ov.cards.find((c) => c.id === 'maps_visibility'));
     assert.ok(ov.nextBestActions.some((a) => a.status === 'open' && a.code === 'missing_site_title'));
     assert.equal(ov.connections.search_console.platformConfigured, false);
   });
@@ -550,7 +580,7 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /data-si-pf/);
     assert.match(manage, /si-pf-email/);
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/summary-email.js')));
-    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/providers/semrush.js')));
+    assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/providers/semrush.js')), false);
   });
 
   it('cadence due windows and mock rank positions are deterministic', async () => {

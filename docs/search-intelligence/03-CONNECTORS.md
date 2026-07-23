@@ -200,6 +200,6 @@ No provisioned call-tracking numbers in Phase 1.
 - [x] Tokens never in `NEXT_PUBLIC_*` or client HTML  
 - [x] Encrypt at rest (`enc:v1:` via SI or Ads encryption key)  
 - [x] Least-privilege scopes; re-consent on expansion (`prompt=consent`)  
-- [ ] Tenant isolation on all connector reads (status/connect already site-scoped; sync TBD)  
-- [ ] Audit log for connect/disconnect/sync failures  
+- [x] Tenant isolation on connector reads (every SI/manage integration route uses `assertSiteAccess` / site_id scoping)  
+- [x] Audit trail for sync failures (`si_annotations` type `connector_sync_error` via `markSync`)  
 - [x] One-time OAuth state nonce (`si_oauth_states`)  

@@ -58,6 +58,8 @@ module.exports = async (req, res) => {
       'schema_apply',
       'page_optimiser_brief',
       'brain_landing_handoff',
+      'connector_sync_error',
+      'create_task',
       'manual'
     ];
     if (allowed.indexOf(annotationType) < 0) {

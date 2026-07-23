@@ -15,7 +15,11 @@
 
 ---
 
-## First ten recipes (Phase 1 sellable set)
+## First twenty recipes
+
+Phase 1 sellable detectors (1–10) plus Phase 2–4 drafted types (11–20). See `lib/search-intelligence/recipes/registry.js`.
+
+### Live detectors (Phase 1)
 
 | Id | Name | Trigger | Primary action |
 |----|------|---------|----------------|
@@ -29,6 +33,10 @@
 | `slow_page` | Slow image/page | Lighthouse/PSI thresholds | Image/layout remediation task |
 | `traffic_no_convert` | Traffic without conversions | Sessions/clicks without form/call | CTA/form improvement |
 | `seo_ads_mismatch` | Organic and Ads mismatch | Shared keyword universe (Phase 4; light heuristic earlier) | Align LP / keyword |
+
+### Drafted (11–20)
+
+`listings_nap_gap`, `maps_pack_absent`, `review_velocity_low`, `service_area_page_thin`, `duplicate_local_intent`, `schema_missing_local`, `internal_link_local_gap`, `brand_serp_unowned`, `ai_overview_absent`, `backlink_gap_local` — metadata in registry; NAP gap also detected from first-party config on overview/Local.
 
 ---
 

@@ -10322,7 +10322,7 @@ function heroCtaCard(c){
       box.innerHTML='<div class="card"><h2>SEO Command Centre</h2><p class="lede">Select a site to view search visibility, leads and Next Best Actions.</p></div>';
       return;
     }
-    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['clusters','Clusters'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections']];
+    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['clusters','Clusters'],['local','Local'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections']];
     box.innerHTML=
       '<div class="card" style="margin-bottom:14px">'
       +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
@@ -10356,6 +10356,7 @@ function heroCtaCard(c){
       if(_siTab==='pages'){ body.innerHTML=_siPagesHTML(ov); _siWireActions(ov); return; }
       if(_siTab==='keywords'){ body.innerHTML=_siKeywordsHTML(ov); _siWireKeywords(); return; }
       if(_siTab==='clusters'){ body.innerHTML='<p class="hint">Loading clusters…</p>'; _siLoadClusters(); return; }
+      if(_siTab==='local'){ body.innerHTML='<p class="hint">Loading local…</p>'; _siLoadLocal(); return; }
       if(_siTab==='summary'){ body.innerHTML='<p class="hint">Loading summary…</p>'; _siLoadSummary(); return; }
       if(_siTab==='portfolio'){ body.innerHTML='<p class="hint">Loading portfolio…</p>'; _siLoadPortfolio(); return; }
       body.innerHTML=_siHomeHTML(ov);
@@ -10541,6 +10542,38 @@ function heroCtaCard(c){
       toast(j.alreadyTracked?'Already tracked':(j.reactivated?'Reactivated':'Tracked: '+kw));
       if(typeof cb==='function') cb();
     }catch(e){ toast(String(e.message||e)); }
+  }
+  async function _siLoadLocal(){
+    var body=document.getElementById('si-body'); if(!body) return;
+    try{
+      var j=await _siFetch('/api/search-intelligence/local?siteId='+encodeURIComponent(currentSiteId));
+      var L=j.listings||{};
+      var M=j.opportunityMap||{};
+      var findings=(L.findings||[]).map(function(f){
+        return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px"><strong>'+esc(f.title)+'</strong><div class="lede" style="margin:6px 0 0">'+esc(f.plainLanguage||'')+'</div></div>';
+      }).join('');
+      var gaps=(M.topGaps||[]).map(function(g){
+        return '<tr><td>'+esc(g.area)+'</td><td>'+esc(g.clusterName||g.primaryKeyword)+'</td><td>'+esc(g.opportunity)+'</td></tr>';
+      }).join('');
+      body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Local listings</h2>'
+        +'<p class="lede" style="margin:0 0 12px">NAP readiness score: <strong>'+esc(L.listingsScore!=null?Math.round(L.listingsScore*100):'—')+'</strong> · GBP: '+esc((j.gbp&&j.gbp.status)||'not_connected')+'</p>'
+        +(findings||'<p class="hint">No NAP issues from first-party site facts.</p>')
+        +'<p class="hint" style="margin-top:10px">'+esc((j.gbp&&j.gbp.note)||'')+'</p></div>'
+        +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Local opportunity map</h2>'
+        +'<p class="lede" style="margin:0 0 12px">'+esc(M.areaCount||0)+' areas · '+esc(M.clusterCount||0)+' clusters · '+esc(M.gapCount||0)+' gaps · Maps readiness '+esc(M.mapsVisibilityScore!=null?Math.round(M.mapsVisibilityScore*100):'—')+'</p>'
+        +(gaps?'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Area</th><th>Cluster</th><th>Opportunity</th></tr></thead><tbody>'+gaps+'</tbody></table></div>':'<p class="hint">Track keywords and set service areas to see gaps.</p>')
+        +'<p class="hint" style="margin-top:10px">'+esc((M.safeguards&&M.safeguards.note)||'')+'</p></div>';
+      try{
+        var u=await _siFetch('/api/search-intelligence/usage?siteId='+encodeURIComponent(currentSiteId)+'&days=30');
+        if(u&&u.available){
+          body.innerHTML+='<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Provider usage (30d)</h2>'
+            +'<p class="lede">'+esc(u.totalUnits||0)+' metered units</p>'
+            +'<pre style="font-size:12px;overflow:auto">'+esc(JSON.stringify(u.byMeter||{},null,2))+'</pre></div>';
+        }
+      }catch(_u){}
+    }catch(e){
+      body.innerHTML='<div class="card"><p class="lede">Local view unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
+    }
   }
   async function _siLoadClusters(){
     var body=document.getElementById('si-body'); if(!body) return;
@@ -10860,7 +10893,18 @@ function heroCtaCard(c){
           return;
         }
         if(act==='create_task'){
-          toast('Task creation will attach to Site Brain in Phase 1 — recipe noted: '+(b.getAttribute('data-si-recipe')||''));
+          var recipe=b.getAttribute('data-si-recipe')||'';
+          _siAnnotate('create_task','SEO task — '+(recipe||'action'),{
+            recipeId:recipe,
+            title:b.closest('div')&&b.closest('div').querySelector('strong')?b.closest('div').querySelector('strong').textContent:null
+          });
+          toast('Task noted in Search Intelligence annotations'+(recipe?' ('+recipe+')':''));
+        }
+        if(act==='schema_patch'){
+          _siTab='actions'; document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-si-tab')==='actions'); }); _siPaint();
+        }
+        if(act==='page_optimiser'){
+          _siTab='clusters'; document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-si-tab')==='clusters'); }); _siPaint();
         }
       });
     });
