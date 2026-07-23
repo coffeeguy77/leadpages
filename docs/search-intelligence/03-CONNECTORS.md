@@ -41,11 +41,13 @@ Storage: `si_connections` + `si_oauth_states` (see [02-DATA-MODEL.md](02-DATA-MO
 
 **Purpose:** Organic clicks, impressions, CTR, average position, query/page mapping; sitemap submit/refresh coordination.
 
-**Env (platform):**
-- `GSC_CLIENT_ID`, `GSC_CLIENT_SECRET`
-- optional `GSC_REDIRECT_URI` (defaults to `APP_URL` + callback path)
-- `SI_OAUTH_ENCRYPTION_KEY` (Base64 32 bytes) **or** reuse `GOOGLE_ADS_OAUTH_ENCRYPTION_KEY`
-- optional `SI_OAUTH_STATE_SECRET` / `GOOGLE_ADS_STATE_SECRET`
+**Env (platform) — Ads-first (recommended when Google Ads is already connected):**
+- `GOOGLE_ADS_CLIENT_ID` / `GOOGLE_ADS_CLIENT_SECRET` (reused for GSC)
+- `GOOGLE_ADS_OAUTH_ENCRYPTION_KEY` (reused for SI token encryption — **no** `SI_OAUTH_ENCRYPTION_KEY` required)
+- On that same Google Cloud OAuth client: add redirect URI `https://<app-host>/api/integrations/search-console/callback` and enable Search Console API / `webmasters.readonly`
+- Then **redeploy** so the alias code is live
+
+**Optional dedicated GSC env:** `GSC_CLIENT_ID` / `GSC_CLIENT_SECRET`, `GSC_REDIRECT_URI`, `SI_OAUTH_ENCRYPTION_KEY`, `SI_OAUTH_STATE_SECRET` / `GOOGLE_ADS_STATE_SECRET`
 
 **Routes:**  
 - Settings UI: `/settings/integrations/search-console`  
@@ -72,7 +74,7 @@ Storage: `si_connections` + `si_oauth_states` (see [02-DATA-MODEL.md](02-DATA-MO
 
 **Purpose:** Sessions, engagement, landing-page conversions aligned with Leadpages form/call events.
 
-**Env:** `GA4_CLIENT_ID`, `GA4_CLIENT_SECRET`, optional `GA4_REDIRECT_URI` (+ same encryption / state secrets as GSC)
+**Env:** Prefer `GA4_CLIENT_ID` / `GA4_CLIENT_SECRET`; aliases `GOOGLE_OAUTH_CLIENT_*` or `GOOGLE_ADS_CLIENT_*` (same pattern as GSC). Optional `GA4_REDIRECT_URI` (+ same encryption / state secrets as GSC).
 
 **Routes:** `/settings/integrations/google-analytics`, `/api/integrations/google-analytics/{status,connect,callback,exchange,properties,save-property,sync}`
 

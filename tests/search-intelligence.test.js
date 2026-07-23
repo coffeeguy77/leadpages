@@ -379,6 +379,55 @@ describe('Search Intelligence stubs', () => {
     assert.equal(oauth.connectionStatus('search_console').status, 'not_configured');
   });
 
+  it('GSC/GA4 OAuth can reuse Google Ads client env aliases', () => {
+    const oauth = require('../lib/search-intelligence/google-oauth/config');
+    const prev = {
+      GSC_CLIENT_ID: process.env.GSC_CLIENT_ID,
+      GSC_CLIENT_SECRET: process.env.GSC_CLIENT_SECRET,
+      GA4_CLIENT_ID: process.env.GA4_CLIENT_ID,
+      GA4_CLIENT_SECRET: process.env.GA4_CLIENT_SECRET,
+      GOOGLE_OAUTH_CLIENT_ID: process.env.GOOGLE_OAUTH_CLIENT_ID,
+      GOOGLE_OAUTH_CLIENT_SECRET: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+      GOOGLE_ADS_CLIENT_ID: process.env.GOOGLE_ADS_CLIENT_ID,
+      GOOGLE_ADS_CLIENT_SECRET: process.env.GOOGLE_ADS_CLIENT_SECRET,
+      GBP_CLIENT_ID: process.env.GBP_CLIENT_ID,
+      GBP_CLIENT_SECRET: process.env.GBP_CLIENT_SECRET
+    };
+    function clearAll() {
+      Object.keys(prev).forEach(function (k) {
+        delete process.env[k];
+      });
+    }
+    try {
+      clearAll();
+      assert.equal(oauth.configured('search_console'), false);
+      process.env.GOOGLE_ADS_CLIENT_ID = 'ads-cid';
+      process.env.GOOGLE_ADS_CLIENT_SECRET = 'ads-secret';
+      assert.equal(oauth.configured('search_console'), true);
+      assert.equal(oauth.clientId('search_console'), 'ads-cid');
+      assert.equal(oauth.configured('ga4'), true);
+      assert.equal(oauth.configured('gbp'), false, 'GBP must not inherit Ads client');
+
+      process.env.GSC_CLIENT_ID = 'gsc-cid';
+      process.env.GSC_CLIENT_SECRET = 'gsc-secret';
+      assert.equal(oauth.clientId('search_console'), 'gsc-cid');
+      assert.match(oauth.configHint('search_console'), /GOOGLE_ADS_CLIENT_ID/);
+      assert.equal(oauth.credentialSource('search_console'), 'GSC_CLIENT_ID');
+      delete process.env.GSC_CLIENT_ID;
+      delete process.env.GSC_CLIENT_SECRET;
+      assert.equal(oauth.credentialSource('search_console'), 'GOOGLE_ADS_CLIENT_ID');
+      process.env.GOOGLE_ADS_OAUTH_ENCRYPTION_KEY = Buffer.alloc(32, 1).toString('base64');
+      assert.equal(oauth.oauthReady('search_console'), true);
+      assert.equal(oauth.connectionStatus('search_console').status, 'ready_to_connect');
+      delete process.env.GOOGLE_ADS_OAUTH_ENCRYPTION_KEY;
+    } finally {
+      Object.keys(prev).forEach(function (k) {
+        if (prev[k] == null) delete process.env[k];
+        else process.env[k] = prev[k];
+      });
+    }
+  });
+
   it('parses HTML head and builds crawl findings without network', () => {
     const { parseHead } = require('../lib/search-intelligence/audit/html-crawl');
     const head = parseHead(
