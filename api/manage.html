@@ -748,8 +748,6 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       </div>
 
       <div class="apgroup-h">Call-to-action buttons</div>
-      <div class="f" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center"><label class="ck"><input type="checkbox" id="lp-cta-call"> Show the “Call” button</label><label class="ck"><input type="checkbox" id="lp-cta-quote"> Show the “Get a free quote” button</label></div>
-
       <div class="lp-row">
         <div class="f"><label>Add to <span class="seo-tip">Where the page link appears on your site.</span></label><select id="lp-menu" class="apsel"><option value="top">Top menu</option><option value="footer">Footer menu</option><option value="none">Don't link (direct URL only)</option></select></div>
         <div class="f"><label>Status</label><select id="lp-status" class="apsel"><option value="draft">Draft (hidden)</option><option value="published">Published (live)</option></select></div>
@@ -1556,8 +1554,6 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-img-clear').addEventListener('click',function(){ if(!lpCur) return; if(lpCur.img_pid){ cwDelete(lpCur.img_pid); lpCur.img_pid=''; } lpCur.img=''; $('lp-img').value=''; persist(); lpSaveDB(); lpImgPrev(); });
     $('lp-img-mode').addEventListener('change',function(){ lpField('imgMode',this.value); });
     $('lp-img-pad').addEventListener('input',function(){ var n=parseInt(this.value,10); lpField('imgPad', isNaN(n)?16:Math.max(0,Math.min(96,n))); });
-    $('lp-cta-call').addEventListener('change',function(){ lpField('showCall',this.checked); });
-    $('lp-cta-quote').addEventListener('change',function(){ lpField('showQuote',this.checked); });
     $('lp-save').addEventListener('click',function(){ persist(); lpSaveDB(); toast('Page saved'); renderSeoPages(); });
     $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; });
     $('lp-del').addEventListener('click',function(){ if(!lpCur) return; data.pages=data.pages.filter(x=>x.id!==lpCur.id); persist(); lpSaveDB(); $('lp-editor').hidden=true; lpCur=null; renderSeoPages(); toast('Page deleted'); });
@@ -1576,7 +1572,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-ed-title').textContent=lpCur.title?('Edit: '+lpCur.title):'New page';
     $('lp-title').value=lpCur.title||''; $('lp-slug').value=lpCur.slug||''; $('lp-meta').value=lpCur.meta||''; $('lp-h1').value=lpCur.h1||''; $('lp-body').value=lpCur.body||'';
     $('lp-menu').value=lpCur.menu||'top'; $('lp-status').value=lpCur.status||'draft';
-    $('lp-img').value=lpCur.img||''; $('lp-img-mode').value=lpCur.imgMode||'center'; $('lp-img-pad').value=(lpCur.imgPad!=null?lpCur.imgPad:16); $('lp-cta-call').checked=(lpCur.showCall!==false); $('lp-cta-quote').checked=(lpCur.showQuote!==false); lpImgPrev();
+    $('lp-img').value=lpCur.img||''; $('lp-img-mode').value=lpCur.imgMode||'center'; $('lp-img-pad').value=(lpCur.imgPad!=null?lpCur.imgPad:16); lpImgPrev();
     $('lp-meta-count').textContent=(lpCur.meta||'').length+' characters';
     $('lp-editor').classList.toggle('show-tips', $('lp-tips').checked);
     $('lp-approve').hidden=true;

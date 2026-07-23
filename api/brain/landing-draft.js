@@ -192,7 +192,8 @@ module.exports = async function landingDraft(req, res) {
   }
 
   let draft = normalizeLandingDraft(result.output, {
-    businessName: site.business_name || (site.config && site.config.businessName) || ''
+    businessName: site.business_name || (site.config && site.config.businessName) || '',
+    location: briefPack.location || ''
   });
 
   // If the model still mentioned banned topics, retry once with a harder ban.
@@ -218,7 +219,8 @@ module.exports = async function landingDraft(req, res) {
     if (retry.ok) {
       result = retry;
       draft = normalizeLandingDraft(retry.output, {
-        businessName: site.business_name || (site.config && site.config.businessName) || ''
+        businessName: site.business_name || (site.config && site.config.businessName) || '',
+        location: briefPack.location || ''
       });
       hits = findNegativeHits(draft, briefPack.negativeList);
     }
