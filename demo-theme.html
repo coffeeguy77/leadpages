@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<title>Theme demo — LeadPages</title>
+<meta name="description" content="Live LeadPages theme demo with features, benefits and marketplace apps.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#FAF5F2;--shell:#F1E5DF;--ink:#2E2A2B;--mut:#6E6265;--rose:#A84A5E;--rose-d:#7E3346;--gum:#2F413A;--line:#E4D5CD;--disp:'Young Serif',Georgia,serif;--body:'Figtree',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.65}
+a{color:inherit;text-decoration:none}img{max-width:100%;display:block}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.14}
+.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rose)}
+.lede{font-size:18px;color:var(--mut);max-width:62ch}
+.btn{display:inline-flex;justify-content:center;align-items:center;gap:8px;font-weight:700;padding:14px 28px;border-radius:999px;background:var(--rose);color:#fff;border:2px solid var(--rose);font-size:16px;cursor:pointer;font-family:var(--body)}
+.btn:hover{background:var(--rose-d);border-color:var(--rose-d)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+.sitenav{background:var(--gum);position:sticky;top:0;z-index:50}
+.sitenav .wrap{display:flex;align-items:center;justify-content:space-between;height:96px;max-width:1100px}
+.sitenav .leadpages-logo{height:var(--lp-logo-height,48px);width:auto;display:block}
+.sitenav .links{display:flex;align-items:center;gap:20px}
+.sitenav .links a{color:#E9EFEA;font-weight:600;font-size:15px}
+.sitenav .links a.cta{background:var(--rose);color:#fff;padding:9px 18px;border-radius:999px}
+.hero{padding:48px 0 28px}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center}
+@media(max-width:860px){.hero-grid{grid-template-columns:1fr}.sitenav .links a:not(.cta){display:none}}
+.look{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--shell);min-height:240px}
+.look img{width:100%;height:100%;object-fit:cover;aspect-ratio:16/10}
+.look .ph{aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;color:var(--mut);font-weight:600}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.sec{padding:28px 0 56px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin-bottom:16px}
+.panel h2{font-size:26px;margin:0 0 12px}
+.panel ul{margin:0;padding-left:18px}
+.panel li{margin:6px 0;color:var(--mut)}
+.apps{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--shell);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700}
+.muted{color:var(--mut);font-size:14px}
+footer{background:var(--gum);color:#C9D2CC;padding:36px 0;font-size:14px}
+footer a{color:#E9EFEA;font-weight:600}
+</style>
+<link rel="stylesheet" href="/assets/lp-logo.css">
+<script src="/assets/lp-logo.js" defer></script>
+</head><body>
+<nav class="sitenav"><div class="wrap">
+<a href="/"><span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span></a>
+<div class="links">
+<a href="/demos">All demos</a>
+<a href="/marketplace">Marketplace</a>
+<a class="cta" href="/partners">Become a partner</a>
+</div>
+</div></nav>
+
+<main id="main"><div class="wrap" style="padding:48px 24px"><p class="muted">Loading demo…</p></div></main>
+
+<footer><div class="wrap" style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap">
+<div>© LeadPages</div>
+<div><a href="/demos">Theme demos</a> · <a href="/partners">Partners</a></div>
+</div></footer>
+
+<script>
+(function(){
+  function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':s; return d.innerHTML; }
+  function slugFromPath(){
+    var parts=location.pathname.replace(/\/+$/,'').split('/');
+    return decodeURIComponent(parts[parts.length-1]||'');
+  }
+  function render(d){
+    document.title=esc(d.name)+' — LeadPages demo';
+    var img=d.theme_image_url
+      ? '<img src="'+esc(d.theme_image_url)+'" alt="'+esc(d.name)+'">'
+      : '<div class="ph">Theme look</div>';
+    var feats=(d.features||[]).map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('');
+    var bens=(d.benefits||[]).map(function(x){ return '<li>'+esc(x)+'</li>'; }).join('');
+    var apps=(d.apps||[]).map(function(a){ return '<span class="chip">'+esc(a.label||a.key)+'</span>'; }).join('');
+    var live=d.live_demo_url
+      ? '<a class="btn" href="'+esc(d.live_demo_url)+'" target="_blank" rel="noopener">Open live demo</a>'
+      : '<span class="muted">Live demo publishing soon</span>';
+    document.getElementById('main').innerHTML=
+      '<header class="hero"><div class="wrap"><div class="hero-grid">'
+      +'<div><span class="eyebrow">Theme demo</span>'
+      +'<h1 style="font-size:clamp(30px,4.5vw,46px);margin:10px 0 12px">'+esc(d.promo_headline||d.name)+'</h1>'
+      +'<p class="lede">'+esc(d.promo_body||d.description||'')+'</p>'
+      +'<div class="cta-row">'+live
+      +'<a class="btn ghost" href="/demos">Back to demos</a>'
+      +'<a class="btn ghost" href="/partners">Become a partner</a></div>'
+      +(d.demo_brand_name?'<p class="muted" style="margin-top:14px">Demo brand: <strong>'+esc(d.demo_brand_name)+'</strong> (generic — not a real client)</p>':'')
+      +'</div><div class="look">'+img+'</div></div></div></header>'
+      +'<section class="sec"><div class="wrap">'
+      +'<div class="panel"><h2>Features</h2><ul>'+(feats||'<li>Ready-to-apply theme layout</li>')+'</ul></div>'
+      +'<div class="panel"><h2>Benefits</h2><ul>'+(bens||'<li>Launch faster with a proven stack</li>')+'</ul></div>'
+      +'<div class="panel"><h2>Marketplace apps in this theme</h2>'
+      +'<div class="apps">'+(apps||'<span class="muted">App list coming soon</span>')+'</div></div>'
+      +'</div></section>';
+  }
+  var slug=slugFromPath();
+  if(!slug||slug==='demos'){
+    document.getElementById('main').innerHTML='<div class="wrap" style="padding:48px 24px"><p class="muted">Missing demo slug. <a href="/demos">Browse demos</a></p></div>';
+    return;
+  }
+  fetch('/api/public-demos?slug='+encodeURIComponent(slug)).then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); }).then(function(x){
+    if(!x.ok||!x.j||!x.j.demo){
+      document.getElementById('main').innerHTML='<div class="wrap" style="padding:48px 24px"><p class="muted">Demo not found. <a href="/demos">Browse demos</a></p></div>';
+      return;
+    }
+    render(x.j.demo);
+  }).catch(function(){
+    document.getElementById('main').innerHTML='<div class="wrap" style="padding:48px 24px"><p class="muted">Could not load this demo.</p></div>';
+  });
+})();
+</script>
+</body></html>

@@ -10,6 +10,14 @@ const {
   captureLayoutFromConfig
 } = require('../lib/positioning-layouts');
 const { pinTrustBarUnderHero } = require('../lib/section-order');
+const {
+  scrubDemoPacks,
+  aiRegenDemoPacks,
+  syncLiveDemoSite,
+  demoBrandFor,
+  defaultFeatures,
+  defaultBenefits
+} = require('../lib/theme-demos');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const admin = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -196,6 +204,20 @@ module.exports = async (req, res) => {
           created_by: user.id,
           updated_at: new Date().toISOString()
         };
+        if (Array.isArray(body.features)) row.features = body.features;
+        if (Array.isArray(body.benefits)) row.benefits = body.benefits;
+        if (body.promo_headline != null || body.promoHeadline != null) {
+          row.promo_headline = body.promo_headline || body.promoHeadline || null;
+        }
+        if (body.promo_body != null || body.promoBody != null) {
+          row.promo_body = body.promo_body || body.promoBody || null;
+        }
+        if (body.demo_brand_name != null || body.demoBrandName != null) {
+          row.demo_brand_name = body.demo_brand_name || body.demoBrandName || null;
+        }
+        if (body.demo_site_id != null || body.demoSiteId != null) {
+          row.demo_site_id = body.demo_site_id || body.demoSiteId || null;
+        }
 
         const layoutId = (body.id || body.layout_id || '').trim();
         let result;
@@ -213,9 +235,120 @@ module.exports = async (req, res) => {
               hint: 'Run db/positioning_layouts.sql in Supabase first.'
             });
           }
-          throw result.error;
+          // Retry without expansion columns if migration not applied yet
+          if (/features|benefits|promo_|demo_site|demo_brand/i.test(result.error.message || '')) {
+            delete row.features;
+            delete row.benefits;
+            delete row.promo_headline;
+            delete row.promo_body;
+            delete row.demo_brand_name;
+            delete row.demo_site_id;
+            if (layoutId) {
+              result = await admin.from('positioning_layouts').update(row).eq('id', layoutId).select('*').maybeSingle();
+            } else {
+              result = await admin.from('positioning_layouts').insert(row).select('*').maybeSingle();
+            }
+          }
+          if (result.error) throw result.error;
         }
-        return json(res, 200, { ok: true, layout: result.data });
+
+        let demoSync = null;
+        const wantLive = !!body.publish_live_demo || !!body.publishLiveDemo;
+        if (wantLive && result.data) {
+          demoSync = await syncLiveDemoSite(admin, result.data, {});
+          if (demoSync && demoSync.ok && demoSync.site) {
+            const { data: refreshed } = await admin
+              .from('positioning_layouts')
+              .select('*')
+              .eq('id', result.data.id)
+              .maybeSingle();
+            if (refreshed) result.data = refreshed;
+          }
+        }
+
+        return json(res, 200, { ok: true, layout: result.data, demo: demoSync });
+      }
+
+      if (action === 'publish_demo') {
+        if (!superAdmin) return json(res, 403, { ok: false, error: 'super_only' });
+        const layoutId = (body.id || body.layout_id || '').trim();
+        if (!layoutId) return json(res, 400, { ok: false, error: 'id_required' });
+        const { data: layout, error: le } = await admin.from('positioning_layouts').select('*').eq('id', layoutId).maybeSingle();
+        if (le) throw le;
+        if (!layout) return json(res, 404, { ok: false, error: 'not_found' });
+        const patch = {
+          visibility: body.visibility || 'public',
+          enabled: body.enabled !== false,
+          updated_at: new Date().toISOString()
+        };
+        if (!Array.isArray(layout.features) || !layout.features.length) patch.features = defaultFeatures(layout);
+        if (!Array.isArray(layout.benefits) || !layout.benefits.length) patch.benefits = defaultBenefits(layout);
+        if (!layout.demo_brand_name) patch.demo_brand_name = demoBrandFor(layout);
+        const { data: saved, error: se } = await admin
+          .from('positioning_layouts')
+          .update(patch)
+          .eq('id', layoutId)
+          .select('*')
+          .maybeSingle();
+        if (se && /features|benefits|demo_brand/i.test(se.message || '')) {
+          delete patch.features;
+          delete patch.benefits;
+          delete patch.demo_brand_name;
+          const retry = await admin.from('positioning_layouts').update(patch).eq('id', layoutId).select('*').maybeSingle();
+          if (retry.error) throw retry.error;
+          const demo = await syncLiveDemoSite(admin, retry.data || layout, {});
+          return json(res, 200, { ok: true, layout: retry.data, demo: demo, hint: 'Run db/theme_demos_expansion.sql for promo fields.' });
+        }
+        if (se) throw se;
+        const demo = await syncLiveDemoSite(admin, saved || layout, {});
+        return json(res, 200, { ok: true, layout: saved, demo: demo });
+      }
+
+      if (action === 'update_demo') {
+        if (!superAdmin) return json(res, 403, { ok: false, error: 'super_only' });
+        const layoutId = (body.id || body.layout_id || '').trim();
+        if (!layoutId) return json(res, 400, { ok: false, error: 'id_required' });
+        const { data: layout, error: le } = await admin.from('positioning_layouts').select('*').eq('id', layoutId).maybeSingle();
+        if (le) throw le;
+        if (!layout) return json(res, 404, { ok: false, error: 'not_found' });
+
+        const scrubbed = scrubDemoPacks(layout.demo_packs || {}, layout);
+        const regen = await aiRegenDemoPacks(scrubbed, layout);
+        const brand = body.demo_brand_name || body.demoBrandName || demoBrandFor(layout);
+        const patch = {
+          demo_packs: regen.packs,
+          demo_brand_name: brand,
+          updated_at: new Date().toISOString()
+        };
+        if (body.visibility) patch.visibility = body.visibility;
+        const { data: saved, error: se } = await admin
+          .from('positioning_layouts')
+          .update(patch)
+          .eq('id', layoutId)
+          .select('*')
+          .maybeSingle();
+        if (se && /demo_brand/i.test(se.message || '')) {
+          delete patch.demo_brand_name;
+          const retry = await admin.from('positioning_layouts').update(patch).eq('id', layoutId).select('*').maybeSingle();
+          if (retry.error) throw retry.error;
+          const demo = await syncLiveDemoSite(admin, Object.assign({}, retry.data || layout, { demo_brand_name: brand }), {});
+          return json(res, 200, {
+            ok: true,
+            layout: retry.data,
+            demo: demo,
+            regen_via: regen.via,
+            scrubbed: true
+          });
+        }
+        if (se) throw se;
+        const demo = await syncLiveDemoSite(admin, saved || layout, {});
+        return json(res, 200, {
+          ok: true,
+          layout: saved,
+          demo: demo,
+          regen_via: regen.via,
+          scrubbed: true
+        });
       }
 
       if (action === 'delete') {

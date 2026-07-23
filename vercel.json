@@ -147,6 +147,14 @@
       "destination": "/api/marketing-html?file=showcase.html&path=/showcase"
     },
     {
+      "source": "/demos",
+      "destination": "/api/marketing-html?file=demos.html&path=/demos"
+    },
+    {
+      "source": "/demos/:slug",
+      "destination": "/api/marketing-html?file=demo-theme.html&path=/demos/:slug"
+    },
+    {
       "source": "/marketplace",
       "destination": "/api/marketing-html?file=marketplace.html&path=/marketplace"
     },
@@ -274,7 +282,7 @@
   ],
   "functions": {
     "api/marketing-html.js": {
-      "includeFiles": "{home,domains,showcase,marketplace,marketplace-feature,start-your-business,resources,find-a-partner,partners,privacy-policy,terms-of-use,instagram-data-policy,resource-*}.html"
+      "includeFiles": "{home,domains,showcase,demos,demo-theme,marketplace,marketplace-feature,start-your-business,resources,find-a-partner,partners,privacy-policy,terms-of-use,instagram-data-policy,resource-*}.html"
     },
     "api/render.js": {
       "includeFiles": "home.html"
