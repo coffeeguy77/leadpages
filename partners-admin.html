@@ -1034,10 +1034,21 @@ label{font-weight:600;font-size:11.5px;color:var(--ink-soft);display:block;margi
       + '</div></div>';
   }
   function auditRow(a){
+    var detailHtml='';
+    var d=a.detail||null;
+    if(d && String(a.action||'').indexOf('support_contact_')===0){
+      var btn=d.button||String(a.action).replace(/^support_contact_/,'');
+      var who=a.actor_email||d.owner_email||'client';
+      var site=d.business_name||d.site_slug||a.site_id||'site';
+      detailHtml='<div class="muted" style="font-size:12px;margin-top:4px;">Client <strong>'+esc(who)+'</strong> clicked <strong>'+esc(btn)+'</strong> on support contact for <strong>'+esc(site)+'</strong>'
+        +(d.note?(' — '+esc(d.note)):'')+'</div>';
+    } else if(d){
+      detailHtml='<div class="muted" style="font-size:12px;margin-top:4px;white-space:pre-wrap">'+esc(JSON.stringify(d))+'</div>';
+    }
     return '<div class="card" style="padding:11px 15px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">'
       + '<div style="font-size:13.5px"><strong>'+esc(a.action||'')+'</strong> \u00b7 '+esc(a.actor_email||'system')+'</div>'
       + '<div class="muted" style="font-size:12px">'+fmtDate(a.created_at)+'</div></div>'
-      + (a.detail?('<div class="muted" style="font-size:12px;margin-top:4px;white-space:pre-wrap">'+esc(JSON.stringify(a.detail))+'</div>'):'')+'</div>';
+      + detailHtml+'</div>';
   }
   async function loadAudit(){
     var t=await sb.from('client_transfer_events').select('*').order('created_at',{ascending:false}).limit(100);

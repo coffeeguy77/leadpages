@@ -26,6 +26,7 @@ module.exports = async (req,res) => {
     const prof=(await admin.from('partner_profiles').select('support_name,support_email,support_phone,region,bio').eq('partner_id',site.servicing_partner_id).maybeSingle()).data || {};
 
     return res.status(200).json({ ok:true, partner:{
+      id: site.servicing_partner_id,
       name:  prof.support_name  || partner.display_name || null,
       email: prof.support_email || partner.email || null,
       phone: prof.support_phone || partner.phone || null,
