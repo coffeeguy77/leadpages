@@ -34,6 +34,68 @@ describe('Search Intelligence stubs', () => {
     assert.equal(res.provider, 'dataforseo');
   });
 
+  it('dataforseo.configured reflects env credentials', () => {
+    const dfs = require('../lib/search-intelligence/providers/dataforseo');
+    const prevLogin = process.env.DATAFORSEO_LOGIN;
+    const prevPass = process.env.DATAFORSEO_PASSWORD;
+    const prevEmail = process.env.DATAFORSEO_EMAIL;
+    const prevApiPass = process.env.DATAFORSEO_API_PASSWORD;
+    delete process.env.DATAFORSEO_LOGIN;
+    delete process.env.DATAFORSEO_PASSWORD;
+    delete process.env.DATAFORSEO_EMAIL;
+    delete process.env.DATAFORSEO_API_PASSWORD;
+    assert.equal(dfs.configured(), false);
+    process.env.DATAFORSEO_LOGIN = 'demo@example.com';
+    process.env.DATAFORSEO_PASSWORD = 'secret';
+    assert.equal(dfs.configured(), true);
+    if (prevLogin == null) delete process.env.DATAFORSEO_LOGIN;
+    else process.env.DATAFORSEO_LOGIN = prevLogin;
+    if (prevPass == null) delete process.env.DATAFORSEO_PASSWORD;
+    else process.env.DATAFORSEO_PASSWORD = prevPass;
+    if (prevEmail == null) delete process.env.DATAFORSEO_EMAIL;
+    else process.env.DATAFORSEO_EMAIL = prevEmail;
+    if (prevApiPass == null) delete process.env.DATAFORSEO_API_PASSWORD;
+    else process.env.DATAFORSEO_API_PASSWORD = prevApiPass;
+  });
+
+  it('gateway auto-prefers dataforseo when credentials set and SI_PROVIDER unset', () => {
+    const prevProv = process.env.SI_PROVIDER;
+    const prevKw = process.env.SI_KEYWORD_PROVIDER;
+    const prevLogin = process.env.DATAFORSEO_LOGIN;
+    const prevPass = process.env.DATAFORSEO_PASSWORD;
+    delete process.env.SI_PROVIDER;
+    delete process.env.SI_KEYWORD_PROVIDER;
+    process.env.DATAFORSEO_LOGIN = 'demo@example.com';
+    process.env.DATAFORSEO_PASSWORD = 'secret';
+    const gw = createGateway({});
+    assert.equal(gw.preferred, 'dataforseo');
+    const forced = createGateway({ provider: 'mock' });
+    assert.equal(forced.preferred, 'mock');
+    if (prevProv == null) delete process.env.SI_PROVIDER;
+    else process.env.SI_PROVIDER = prevProv;
+    if (prevKw == null) delete process.env.SI_KEYWORD_PROVIDER;
+    else process.env.SI_KEYWORD_PROVIDER = prevKw;
+    if (prevLogin == null) delete process.env.DATAFORSEO_LOGIN;
+    else process.env.DATAFORSEO_LOGIN = prevLogin;
+    if (prevPass == null) delete process.env.DATAFORSEO_PASSWORD;
+    else process.env.DATAFORSEO_PASSWORD = prevPass;
+  });
+
+  it('summary email HTML renders bullets and actions', () => {
+    const { renderSummaryHtml } = require('../lib/search-intelligence/summary-email');
+    const html = renderSummaryHtml({
+      businessName: 'Demo Plumbing',
+      periodStart: '2026-07-01',
+      periodEnd: '2026-07-28',
+      bullets: ['Organic search: 12 clicks.'],
+      topActions: [{ title: 'Fix title', plainLanguage: 'Add a clearer SEO title.' }]
+    });
+    assert.match(html, /Demo Plumbing/);
+    assert.match(html, /Organic search: 12 clicks/);
+    assert.match(html, /Fix title/);
+    assert.match(html, /Open SEO Command Centre/);
+  });
+
   it('opportunity value is modelled 0..1 with factor breakdown', () => {
     const out = computeOpportunityValue({
       volume: 720,
@@ -319,6 +381,9 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /_siLoadSummary/);
     assert.match(manage, /_siLoadPortfolio/);
     assert.match(manage, /tracked-keywords/);
+    assert.match(manage, /si-summary-email/);
+    assert.match(manage, /SI_SUMMARY_EMAIL/);
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/summary-email.js')));
   });
 
   it('cadence due windows and mock rank positions are deterministic', async () => {

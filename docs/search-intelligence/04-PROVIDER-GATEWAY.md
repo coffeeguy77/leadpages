@@ -74,11 +74,14 @@ Phase 4 adds `backlinks`, `backlinkGap`. AI visibility may be a separate hybrid 
 
 ---
 
-## Stub behaviour (this pass)
+## Live vs stub behaviour
 
-- `dataforseo.js` returns `{ ok: false, error: 'not_configured' }` until credentials exist  
+- `dataforseo.js` returns `{ ok: false, error: 'not_configured' }` until `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` are set (aliases: `DATAFORSEO_EMAIL` / `DATAFORSEO_API_PASSWORD`, `DFS_LOGIN` / `DFS_PASSWORD`)
+- When credentials exist and `SI_PROVIDER` / `SI_KEYWORD_PROVIDER` are unset, the gateway **auto-prefers** DataForSEO
+- Explicit `SI_PROVIDER=mock` (or `dataforseo`) always wins over auto-prefer
+- Live ops: `keywordIdeas` → Labs `google/keyword_ideas/live`; `serp` / `rankCheck` → `serp/google/organic/live/advanced`; `domainOverview` → Labs `google/domain_rank_overview/live`
+- Default geo: `DATAFORSEO_LOCATION_CODE` (default **2036** Australia)
 - `mock.js` returns deterministic fixtures for unit tests  
-- No live HTTP from stubs  
 
 ---
 

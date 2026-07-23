@@ -95,7 +95,7 @@ Manage → SEO Command → **Pages** tab; findings also merge into Next Best Act
 
 ## Keyword research API
 
-`GET/POST /api/search-intelligence/keywords?siteId=&keyword=` uses the provider gateway (`mock` by default; set `SI_KEYWORD_PROVIDER=dataforseo` + credentials for live). Scores ideas with opportunity-value.
+`GET/POST /api/search-intelligence/keywords?siteId=&keyword=` uses the provider gateway (`mock` by default; live DataForSEO when credentials are set and `SI_PROVIDER` / `SI_KEYWORD_PROVIDER` are unset). Scores ideas with opportunity-value.
 
 ### Tracked keywords
 
@@ -106,11 +106,11 @@ Manage → SEO Command → **Pages** tab; findings also merge into Next Best Act
 - Manage → Keywords: research, Track, Remove, **Check ranks now**  
 - Rank jobs: `POST /api/search-intelligence/rank-check` (force/manual) + cron `/api/cron/search-intelligence-ranks` daily 08:15 UTC  
 - Writes `si_rank_observations`; position 4–20 feeds `pos_4_20_relevance` NBAs  
-- Provider: `SI_PROVIDER` / gateway (`mock` until DataForSEO configured)  
+- Provider: `SI_PROVIDER` / `SI_KEYWORD_PROVIDER` / gateway (auto-prefers DataForSEO when credentials exist; otherwise `mock`)  
 
 ### Client summary
 
-`GET|POST /api/search-intelligence/summary` builds a plain-language weekly rollup; POST persists to `si_report_snapshots`. Cron: `/api/cron/search-intelligence-summaries` Mondays 07:00 UTC.
+`GET|POST /api/search-intelligence/summary` builds a plain-language weekly rollup. POST with `persist` (default) writes `si_report_snapshots`; POST with `email:true` / `sendEmail` emails the site owner via Resend (`RESEND_API_KEY`, `LEADS_FROM` / `CAMPAIGN_FROM`). Manage → Summary → **Email owner**. Cron: `/api/cron/search-intelligence-summaries` Mondays 07:00 UTC; set `SI_SUMMARY_EMAIL=1` to email owners on the cron run.
 
 ### Partner portfolio
 

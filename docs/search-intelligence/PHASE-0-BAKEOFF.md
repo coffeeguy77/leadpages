@@ -19,11 +19,11 @@
 
 | Provider | Why |
 |----------|-----|
-| **DataForSEO** | First adapter target; AU local SERP / Maps; flexible pricing |
-| **Semrush API** | Breadth; alternate if licensing/resale fits |
+| **DataForSEO** | First adapter target; AU local SERP / Maps; flexible pricing — **live adapter shipped** (`lib/search-intelligence/providers/dataforseo.js`) |
+| **Semrush API** | Breadth; alternate if licensing/resale fits (not wired yet) |
 | Others | Only if bake-off reveals AU/local gaps |
 
-Do not ship product code that assumes a single vendor schema.
+Do not ship product code that assumes a single vendor schema. Ops: set `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` (or email/password aliases); leave `SI_PROVIDER` unset to auto-prefer, or force `SI_PROVIDER=mock` in lower envs.
 
 ---
 

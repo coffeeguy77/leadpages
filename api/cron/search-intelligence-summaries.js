@@ -2,6 +2,7 @@
 
 /**
  * Cron: build weekly Search Intelligence client summaries for connected sites.
+ * Optional email when SI_SUMMARY_EMAIL=1 (or ?email=1) and RESEND_API_KEY is set.
  * Auth: Bearer CRON_SECRET
  */
 
@@ -10,6 +11,7 @@ const {
   buildClientSummary,
   saveReportSnapshot
 } = require('../../lib/search-intelligence/client-summary');
+const { emailClientSummary } = require('../../lib/search-intelligence/summary-email');
 
 module.exports = async (req, res) => {
   const json = (code, obj) => {
@@ -22,6 +24,13 @@ module.exports = async (req, res) => {
   if (secret && req.headers.authorization !== 'Bearer ' + secret) {
     return json(401, { error: 'unauthorized' });
   }
+
+  const q = req.query || {};
+  const emailOn =
+    process.env.SI_SUMMARY_EMAIL === '1' ||
+    process.env.SI_SUMMARY_EMAIL === 'true' ||
+    q.email === '1' ||
+    q.email === 'true';
 
   try {
     const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -46,7 +55,7 @@ module.exports = async (req, res) => {
     for (const siteId of siteIds) {
       const { data: site } = await admin
         .from('sites')
-        .select('id,slug,business_name,config,status')
+        .select('id,slug,business_name,config,status,owner_email,owner_user_id')
         .eq('id', siteId)
         .maybeSingle();
       if (!site) {
@@ -56,7 +65,17 @@ module.exports = async (req, res) => {
       try {
         const summary = await buildClientSummary(admin, site, { days: 28, reportKind: 'weekly' });
         const saved = await saveReportSnapshot(admin, summary);
-        results.push({ siteId: siteId, ok: true, snapshotId: saved.id });
+        let email = null;
+        if (emailOn) {
+          email = await emailClientSummary(admin, site, summary, {});
+        }
+        results.push({
+          siteId: siteId,
+          ok: true,
+          snapshotId: saved.id,
+          emailed: Boolean(email && email.ok),
+          emailError: email && !email.ok ? email.error || email.message : null
+        });
       } catch (e) {
         results.push({
           siteId: siteId,
@@ -66,7 +85,12 @@ module.exports = async (req, res) => {
       }
     }
 
-    return json(200, { ok: true, count: results.length, results: results });
+    return json(200, {
+      ok: true,
+      emailOn: emailOn,
+      count: results.length,
+      results: results
+    });
   } catch (e) {
     console.error('si summaries cron:', e && e.message);
     return json(500, { error: (e && e.message) || 'cron_failed' });

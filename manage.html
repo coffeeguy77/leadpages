@@ -10484,7 +10484,8 @@ function heroCtaCard(c){
           +j.topActions.map(function(a){ return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px"><strong>'+esc(a.title)+'</strong><div class="lede" style="margin:6px 0 0">'+esc(a.plainLanguage||'')+'</div></div>'; }).join('')
           +'</div>':'')
         +'<button type="button" class="btn" id="si-summary-save">Save snapshot</button>'
-        +'<p class="hint" style="margin-top:10px">Weekly cron also writes snapshots for connected sites.</p></div>';
+        +'<button type="button" class="btn ghost" id="si-summary-email" style="margin-left:8px">Email owner</button>'
+        +'<p class="hint" style="margin-top:10px">Weekly cron also writes snapshots for connected sites. Set SI_SUMMARY_EMAIL=1 to email owners automatically.</p></div>';
       var save=document.getElementById('si-summary-save');
       if(save) save.addEventListener('click',async function(){
         try{
@@ -10497,6 +10498,21 @@ function heroCtaCard(c){
           var jj=await r.json().catch(function(){return {};});
           if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
           toast(jj.saved&&jj.saved.id?'Snapshot saved':'Saved');
+        }catch(e){ toast(String(e.message||e)); }
+      });
+      var mail=document.getElementById('si-summary-email');
+      if(mail) mail.addEventListener('click',async function(){
+        try{
+          var tok=await _siToken();
+          var r=await fetch('/api/search-intelligence/summary',{
+            method:'POST',
+            headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+            body:JSON.stringify({siteId:currentSiteId,persist:true,email:true})
+          });
+          var jj=await r.json().catch(function(){return {};});
+          if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+          if(jj.email&&jj.email.ok) toast('Emailed '+jj.email.to);
+          else toast((jj.email&&(jj.email.message||jj.email.error))||'Email failed');
         }catch(e){ toast(String(e.message||e)); }
       });
     }catch(e){

@@ -2,7 +2,7 @@
 
 /**
  * GET|POST /api/search-intelligence/summary
- * Preview or persist a weekly client summary snapshot.
+ * Preview, persist, and optionally email a weekly client summary.
  */
 
 const http = require('../../lib/brain/http');
@@ -11,6 +11,7 @@ const {
   buildClientSummary,
   saveReportSnapshot
 } = require('../../lib/search-intelligence/client-summary');
+const { emailClientSummary } = require('../../lib/search-intelligence/summary-email');
 
 function admin() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
@@ -38,7 +39,7 @@ module.exports = async (req, res) => {
 
     const { data: site, error } = await db
       .from('sites')
-      .select('id,slug,business_name,config,status')
+      .select('id,slug,business_name,config,status,owner_email,owner_user_id')
       .eq('id', siteId)
       .maybeSingle();
     if (error || !site) return http.json(res, 404, { error: 'site_not_found' });
@@ -50,24 +51,42 @@ module.exports = async (req, res) => {
     });
     summary.role = access.role;
 
-    if (req.method === 'GET' || body.persist === false || String(q.persist || '') === '0') {
+    const wantPersist =
+      req.method === 'POST' &&
+      body.persist !== false &&
+      String(q.persist || '') !== '0';
+    const wantEmail =
+      req.method === 'POST' &&
+      (body.email === true || body.sendEmail === true || String(q.email || '') === '1');
+
+    if (req.method === 'GET' || (!wantPersist && !wantEmail)) {
       return http.json(res, 200, summary);
     }
 
-    try {
-      const saved = await saveReportSnapshot(db, summary);
-      summary.saved = saved;
-      return http.json(res, 200, summary);
-    } catch (e) {
-      if (e.code === 'schema_pending' || String(e.message) === 'schema_pending') {
-        return http.json(res, 503, {
-          error: 'schema_pending',
-          summary: summary,
-          message: 'Summary built but si_report_snapshots is not applied yet.'
-        });
+    if (wantPersist) {
+      try {
+        const saved = await saveReportSnapshot(db, summary);
+        summary.saved = saved;
+      } catch (e) {
+        if (e.code === 'schema_pending' || String(e.message) === 'schema_pending') {
+          return http.json(res, 503, {
+            error: 'schema_pending',
+            summary: summary,
+            message: 'Summary built but si_report_snapshots is not applied yet.'
+          });
+        }
+        throw e;
       }
-      throw e;
     }
+
+    if (wantEmail) {
+      const mailed = await emailClientSummary(db, site, summary, {
+        to: body.to || null
+      });
+      summary.email = mailed;
+    }
+
+    return http.json(res, 200, summary);
   } catch (e) {
     return http.json(res, 500, {
       error: 'server_error',

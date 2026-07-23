@@ -30,10 +30,12 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - [x] GSC / GA4 property selection + GSC/GA4 sync (+ cron)
 - [x] Forms / call-click organic attribution rollup (Command Centre card)
 - [x] Page-level GSC performance view + high-impr/low-CTR / cannibalisation NBAs
-- [x] Keyword research API (provider gateway; mock until DataForSEO configured)
+- [x] Keyword research API (provider gateway; live DataForSEO when credentials set)
 - [x] Tracked keywords persistence (plan limit via `SI_TRACKED_KEYWORD_LIMIT`, default 25 / max 100)
+- [x] Rank checks (manual + daily cron; DataForSEO SERP when configured, else mock)
 - [x] Partner portfolio basics (connection health rollup)
 - [x] Scheduled client summary (manual + Monday cron → `si_report_snapshots`)
+- [x] Owner summary email (Manage button + optional `SI_SUMMARY_EMAIL=1` cron via Resend)
 
 **Website actions (live):** Open in editor (section-aware); Create task toast; track/untrack keywords.  
 
