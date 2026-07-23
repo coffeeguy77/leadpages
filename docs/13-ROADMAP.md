@@ -118,11 +118,26 @@ Consolidated from architecture and topic docs. Fix opportunistically or schedule
 - Automated commission statements
 - Expanded Find-a-Partner matching
 
-### SEO
+### SEO (publish)
 
 - Sitemap quality (live-only, lastmod)
 - Explicit routing for suburb vs landing pages
 - Schema.org expansion per section type
+
+### Search Intelligence (programme)
+
+Docs-first architecture for **Leadpages Search Intelligence** / **SEO Command Centre** — see [search-intelligence/08-ROADMAP.md](search-intelligence/08-ROADMAP.md).
+
+| Phase | Focus |
+|-------|-------|
+| 0 | Provider bake-off, unit economics, pilot process ([PHASE-0-BAKEOFF](search-intelligence/PHASE-0-BAKEOFF.md)) |
+| 1 | Command Centre MVP: GSC + GA4, crawl, keywords, Next Best Actions |
+| 2 | Research-to-page (Composer drafts, Page Optimiser) |
+| 3 | Local Growth (GBP, Maps grid) |
+| 4 | Backlinks, AI visibility, Ads keyword universe |
+| 5 | Controlled autopilot |
+
+Scaffold: `lib/search-intelligence/*`, `db/search_intelligence_schema.sql` (draft — do not apply until Phase 1 build).
 
 ### Platform
 

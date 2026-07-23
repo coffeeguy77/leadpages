@@ -8,6 +8,8 @@
 
 > **Scope note:** This document covers **tenant SEO surfaces** — `api/render.js` double-brace tokens, `config.pages` landing pages, `sections.seoTokens` local SEO, App Router suburb routes (`app/[site]/[suburb]`), and the live-tenant sitemap index (`/seo-sitemap.xml` → `api/seo-sitemap.xml.js`). Marketing host SEO (`home.html`, canonical injection via `api/marketing-html.js`, `/marketing-sitemap.xml`) is summarised where it touches Search Console discovery.
 
+> **Search Intelligence / SEO Command Centre** (research → publish → attribute leads) is specified in [search-intelligence/00-VISION.md](../search-intelligence/00-VISION.md). Keep this manual as the publish-pipeline reference; do not conflate Command Centre warehouse tables (`si_*`) with renderer config.
+
 ---
 
 ## Executive Summary
