@@ -116,6 +116,12 @@ Manage → SEO Command → **Pages** tab; findings also merge into Next Best Act
 
 `GET /api/search-intelligence/portfolio` — partners see serviced/referred sites with GSC/GA4 health, tracked counts, open/critical actions, organic-lead snapshot metrics, rank-drop risk, and at-risk sorting. Manage Portfolio filters + per-site Email summary.
 
+### Keyword clusters & Page Optimiser (Phase 2)
+
+- `GET|POST /api/search-intelligence/clusters` — list / rebuild deterministic clusters from tracked keywords (`si_keyword_clusters`)
+- `GET|POST /api/search-intelligence/page-optimiser` — modelled on-page brief (never publishes); writes `si_annotations` when POSTed
+- Usage meters: `keyword_ideas`, `rank_check`, `cluster_rebuild`, `page_optimiser_brief` → `si_provider_usage`
+
 ---
 
 ## Organic attribution (first-party, live)

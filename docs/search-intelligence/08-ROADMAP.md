@@ -43,6 +43,18 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 
 ---
 
+## Phase 2 research-to-page (started)
+
+- [x] Deterministic keyword clusters from tracked terms (`si_keyword_clusters`)
+- [x] Page Optimiser modelled briefs (title/meta/H1/outline) — **no silent publish**
+- [x] Manage → Clusters tab + brief handoff copy / SEO editor
+- [x] Provider usage metering helper (`si_provider_usage` via keyword ideas, ranks, clusters, briefs)
+- [ ] Composer / Brain landing-draft auto-fill from brief
+- [ ] Annotations for publish events
+- [ ] Internal link / schema patch actions
+
+---
+
 ## Packaging
 
 ### Included with a normal site

@@ -6,8 +6,15 @@
  */
 
 const http = require('../../lib/brain/http');
+const { createClient } = require('@supabase/supabase-js');
 const { createGateway } = require('../../lib/search-intelligence/providers/gateway');
 const { computeOpportunityValue } = require('../../lib/search-intelligence/scoring/opportunity-value');
+const { meterUsage } = require('../../lib/search-intelligence/usage');
+
+function adminDb() {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
 
 module.exports = async (req, res) => {
   try {
@@ -60,6 +67,14 @@ module.exports = async (req, res) => {
         opportunityLabelClass: ov.labelClass
       });
     });
+
+    const db = adminDb();
+    if (db) {
+      await meterUsage(db, siteId, 'keyword_ideas', Math.max(1, scored.length), {
+        provider: ideas.provider || provider,
+        seed: keyword
+      });
+    }
 
     return http.json(res, 200, {
       ok: true,

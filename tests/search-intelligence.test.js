@@ -129,6 +129,63 @@ describe('Search Intelligence stubs', () => {
     assert.equal(res.provider, 'semrush');
   });
 
+  it('clusters tracked keywords by service head without locations', () => {
+    const { buildClustersFromKeywords } = require('../lib/search-intelligence/clusters');
+    const clusters = buildClustersFromKeywords([
+      { keyword: 'plumber canberra', keywordId: '1', trackedId: 't1' },
+      { keyword: 'emergency plumber canberra', keywordId: '2', trackedId: 't2' },
+      { keyword: 'hot water canberra', keywordId: '3', trackedId: 't3' },
+      { keyword: 'blocked drain sydney', keywordId: '4', trackedId: 't4' }
+    ]);
+    assert.ok(clusters.length >= 2);
+    const plumber = clusters.find(function (c) { return c.head === 'plumber' || c.key === 'plumber'; });
+    assert.ok(plumber);
+    assert.ok(plumber.memberCount >= 2);
+    assert.equal(plumber.labelClass, 'modelled');
+  });
+
+  it('page optimiser brief never allows silent publish', () => {
+    const { buildPageBrief } = require('../lib/search-intelligence/page-optimiser');
+    const brief = buildPageBrief(
+      {
+        id: 's1',
+        business_name: 'Demo Plumbing',
+        config: { region: 'Canberra', phone: '0400000000' }
+      },
+      {
+        id: 'c1',
+        name: 'Plumber · Canberra',
+        primaryKeyword: 'plumber canberra',
+        secondaryKeywords: ['emergency plumber canberra'],
+        location: 'canberra',
+        head: 'plumber'
+      }
+    );
+    assert.equal(brief.ok, true);
+    assert.equal(brief.safeguards.publishAllowed, false);
+    assert.equal(brief.safeguards.requiresHumanApproval, true);
+    assert.match(brief.suggestedTitle, /Demo Plumbing/);
+    assert.ok(brief.outline.length >= 4);
+    assert.ok(brief.landingDraftHandoff.primaryKeyword);
+    assert.equal(brief.labelClass, 'modelled');
+  });
+
+  it('ships clusters and page-optimiser APIs', () => {
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/clusters.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/page-optimiser.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/clusters.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/page-optimiser.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/usage.js')));
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /clusters/);
+    assert.match(manage, /_siLoadClusters/);
+    assert.match(manage, /page-optimiser/);
+    const sql = fs.readFileSync(path.join(__dirname, '..', 'db/search_intelligence_schema.sql'), 'utf8');
+    assert.match(sql, /si_keyword_clusters/);
+    assert.match(sql, /si_annotations/);
+    assert.match(sql, /si_provider_usage/);
+  });
+
   it('opportunity value is modelled 0..1 with factor breakdown', () => {
     const out = computeOpportunityValue({
       volume: 720,

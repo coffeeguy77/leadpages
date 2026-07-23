@@ -10254,7 +10254,7 @@ function heroCtaCard(c){
       box.innerHTML='<div class="card"><h2>SEO Command Centre</h2><p class="lede">Select a site to view search visibility, leads and Next Best Actions.</p></div>';
       return;
     }
-    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections']];
+    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['clusters','Clusters'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections']];
     box.innerHTML=
       '<div class="card" style="margin-bottom:14px">'
       +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
@@ -10287,6 +10287,7 @@ function heroCtaCard(c){
       if(_siTab==='actions'){ body.innerHTML=_siActionsHTML(ov); _siWireActions(ov); return; }
       if(_siTab==='pages'){ body.innerHTML=_siPagesHTML(ov); _siWireActions(ov); return; }
       if(_siTab==='keywords'){ body.innerHTML=_siKeywordsHTML(ov); _siWireKeywords(); return; }
+      if(_siTab==='clusters'){ body.innerHTML='<p class="hint">Loading clusters…</p>'; _siLoadClusters(); return; }
       if(_siTab==='summary'){ body.innerHTML='<p class="hint">Loading summary…</p>'; _siLoadSummary(); return; }
       if(_siTab==='portfolio'){ body.innerHTML='<p class="hint">Loading portfolio…</p>'; _siLoadPortfolio(); return; }
       body.innerHTML=_siHomeHTML(ov);
@@ -10472,6 +10473,110 @@ function heroCtaCard(c){
       toast(j.alreadyTracked?'Already tracked':(j.reactivated?'Reactivated':'Tracked: '+kw));
       if(typeof cb==='function') cb();
     }catch(e){ toast(String(e.message||e)); }
+  }
+  async function _siLoadClusters(){
+    var body=document.getElementById('si-body'); if(!body) return;
+    async function paint(){
+      try{
+        var j=await _siFetch('/api/search-intelligence/clusters?siteId='+encodeURIComponent(currentSiteId));
+        var clusters=j.clusters||[];
+        var cards=clusters.map(function(c){
+          return '<div style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 10px">'
+            +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start">'
+            +'<div><strong>'+esc(c.name||c.primaryKeyword)+'</strong>'
+            +'<div class="hint" style="margin-top:4px">'+esc(c.memberCount||0)+' keywords'
+            +(c.location?' · '+esc(c.location):'')
+            +(c.intent?' · '+esc(c.intent):'')+'</div>'
+            +'<div class="lede" style="margin:8px 0 0">Primary: '+esc(c.primaryKeyword||'—')+'</div>'
+            +((c.secondaryKeywords&&c.secondaryKeywords.length)?'<div class="hint" style="margin-top:4px">Also: '+esc(c.secondaryKeywords.slice(0,5).join(', '))+'</div>':'')
+            +'</div>'
+            +'<button type="button" class="btn ghost sm si-cluster-opt" data-cluster-id="'+esc(c.id||'')+'" data-kw="'+esc(c.primaryKeyword||'')+'">Page Optimiser</button>'
+            +'</div></div>';
+        }).join('');
+        body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Keyword clusters</h2>'
+          +'<p class="lede" style="margin:0 0 12px">Group tracked keywords by service intent (location stripped). Briefs are modelled drafts — never auto-published.</p>'
+          +'<button type="button" class="btn" id="si-cluster-rebuild">Rebuild clusters</button>'
+          +'<div id="si-cluster-list" style="margin-top:14px">'
+          +(cards||'<p class="hint">No clusters yet. Track keywords, then rebuild.</p>')
+          +'</div>'
+          +'<div id="si-cluster-brief" style="margin-top:16px"></div>'
+          +'<p class="hint" style="margin-top:12px">Page Optimiser opens a title / meta / outline brief. Use Brain landing draft separately to compose a full page (human approve).</p></div>';
+        var reb=document.getElementById('si-cluster-rebuild');
+        if(reb) reb.addEventListener('click',async function(){
+          reb.disabled=true;
+          try{
+            var tok=await _siToken();
+            var r=await fetch('/api/search-intelligence/clusters',{
+              method:'POST',
+              headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+              body:JSON.stringify({siteId:currentSiteId})
+            });
+            var jj=await r.json().catch(function(){return {};});
+            if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+            toast('Built '+(jj.count||0)+' clusters');
+            paint();
+          }catch(e){ toast(String(e.message||e)); reb.disabled=false; }
+        });
+        Array.prototype.forEach.call(body.querySelectorAll('.si-cluster-opt'),function(btn){
+          btn.addEventListener('click',async function(){
+            var briefBox=document.getElementById('si-cluster-brief');
+            if(briefBox) briefBox.innerHTML='<p class="hint">Building brief…</p>';
+            try{
+              var tok=await _siToken();
+              var r=await fetch('/api/search-intelligence/page-optimiser',{
+                method:'POST',
+                headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+                body:JSON.stringify({
+                  siteId:currentSiteId,
+                  clusterId:btn.getAttribute('data-cluster-id')||undefined,
+                  primaryKeyword:btn.getAttribute('data-kw')||undefined
+                })
+              });
+              var jj=await r.json().catch(function(){return {};});
+              if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+              if(!briefBox) return;
+              briefBox.innerHTML='<h3 style="margin:0 0 8px;font-size:15px">Page Optimiser brief</h3>'
+                +'<p class="hint" style="margin:0 0 8px">'+esc((jj.safeguards&&jj.safeguards.note)||'Draft only')+'</p>'
+                +'<div style="display:flex;flex-direction:column;gap:8px">'
+                +'<div><strong>Title</strong><div class="lede">'+esc(jj.suggestedTitle||'')+'</div></div>'
+                +'<div><strong>Meta</strong><div class="lede">'+esc(jj.suggestedMeta||'')+'</div></div>'
+                +'<div><strong>H1</strong><div class="lede">'+esc(jj.suggestedH1||'')+'</div></div>'
+                +((jj.outline&&jj.outline.length)?'<div><strong>Outline</strong><ul style="margin:6px 0 0;padding-left:1.2rem">'
+                  +jj.outline.map(function(o){ return '<li style="margin:0 0 4px"><strong>'+esc(o.heading)+'</strong> — '+esc(o.purpose||'')+'</li>'; }).join('')
+                  +'</ul></div>':'')
+                +'</div>'
+                +'<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">'
+                +'<button type="button" class="btn ghost sm" id="si-brief-copy">Copy brief</button>'
+                +'<button type="button" class="btn ghost sm" id="si-brief-editor">Open SEO editor</button>'
+                +'</div>';
+              var copy=document.getElementById('si-brief-copy');
+              if(copy) copy.addEventListener('click',function(){
+                var text=(jj.landingDraftHandoff&&jj.landingDraftHandoff.brief)||[jj.suggestedTitle,jj.suggestedMeta,jj.suggestedH1].join('\n');
+                if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function(){ toast('Brief copied'); }).catch(function(){ toast('Copy failed'); });
+                else toast('Clipboard unavailable');
+              });
+              var ed=document.getElementById('si-brief-editor');
+              if(ed) ed.addEventListener('click',function(){
+                try{
+                  if(typeof showView==='function') showView('details');
+                  var sec=(jj.editorHints&&jj.editorHints.section)||'seoTokens';
+                  setTimeout(function(){
+                    var el=document.getElementById(sec)||document.querySelector('[data-section="'+sec+'"]');
+                    if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'start'});
+                  },200);
+                }catch(_e){ toast('Open Details → SEO tokens to apply title/meta'); }
+              });
+            }catch(e){
+              if(briefBox) briefBox.innerHTML='<p class="hint">'+esc((e&&e.message)||e)+'</p>';
+              toast(String(e.message||e));
+            }
+          });
+        });
+      }catch(e){
+        body.innerHTML='<div class="card"><p class="lede">Clusters unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
+      }
+    }
+    paint();
   }
   async function _siLoadSummary(){
     var body=document.getElementById('si-body'); if(!body) return;

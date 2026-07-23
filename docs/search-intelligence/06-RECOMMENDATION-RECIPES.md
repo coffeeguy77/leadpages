@@ -20,7 +20,7 @@
 | Id | Name | Trigger | Primary action |
 |----|------|---------|----------------|
 | `high_impr_low_ctr` | High impressions, low CTR | GSC: high impressions, CTR below peer threshold | Edit title/meta; preview |
-| `pos_4_20_relevance` | Position 4–20, strong relevance | Rank 4–20 + business offers service | Open page; Page Optimiser (Phase 2) |
+| `pos_4_20_relevance` | Position 4–20, strong relevance | Rank 4–20 + business offers service | Open page; Page Optimiser |
 | `keyword_no_page` | Valuable keyword, no page | Opportunity Value high; no matching `si_pages` | Create landing draft |
 | `location_service_gap` | Location/service gap | Local demand + service area confirmed; no page | Propose evidence-backed local page |
 | `cannibalisation` | Multiple pages competing | Same primary intent across URLs | Consolidate / differentiate task |
@@ -61,8 +61,12 @@
 | `create_landing_draft` | `POST /api/brain/landing-draft` (human approve) |
 | `dismiss` / `snooze` | Recommendation state |
 
-Phase 2 adds `composer_draft`, `internal_link_patch`, `schema_patch`.  
+Phase 2 adds `page_optimiser`, `composer_draft`, `internal_link_patch`, `schema_patch`.  
 Phase 5 adds scoped `auto_fix_safe`.
+
+### Page Optimiser (Phase 2 scaffold)
+
+`POST /api/search-intelligence/page-optimiser` builds a **modelled** brief (title, meta, H1, outline, landing-draft handoff). Safeguards: `publishAllowed: false`, `requiresHumanApproval: true`. Manage → Clusters → Page Optimiser.
 
 ---
 
