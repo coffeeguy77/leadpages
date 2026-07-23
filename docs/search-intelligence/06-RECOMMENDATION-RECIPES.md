@@ -47,7 +47,9 @@ Phase 1 sellable detectors (1–10) plus Phase 2–4 drafted types (11–20). Se
 
 ### Needs GBP or deeper Phase 4
 
-`review_velocity_low` (GBP reviews). `brand_serp_unowned` / `ai_overview_absent` / `backlink_gap_local` have probe helpers in `phase4-foundations.js` (SERP / backlinkSummary).
+`review_velocity_low` (GBP reviews). `brand_serp_unowned` / `ai_overview_absent` / `backlink_gap_local` have probe helpers in `phase4-foundations.js` (SERP / backlinkSummary). AI citation ownership uses `ai-citations.js` (platform catalogue + owned vs competitor refs).
+
+CRM multi-location findings (`crm_area_no_wins`) reuse `location_service_gap` when a service area has leads but zero wins.
 
 ---
 

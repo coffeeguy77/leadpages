@@ -849,4 +849,83 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /auto_fix_safe/);
     assert.match(manage, /\/api\/search-intelligence\/auto-fix/);
   });
+
+  it('rolls CRM outcomes by service area with modelled or measured value', () => {
+    const { buildCrmOutcomes, matchArea } = require('../lib/search-intelligence/crm-outcomes');
+    assert.equal(matchArea('North Canberra', ['North Canberra', 'Belconnen']), 'North Canberra');
+    const site = {
+      id: 's1',
+      config: {
+        avgJobValueCents: 200000,
+        sections: {
+          serviceAreas: {
+            areas: ['Gungahlin', 'Belconnen']
+          }
+        }
+      }
+    };
+    const leads = [
+      { id: 'l1', status: 'won', details: { suburb: 'Gungahlin' } },
+      { id: 'l2', status: 'won', details: { suburb: 'Gungahlin' } },
+      { id: 'l3', status: 'lost', details: { suburb: 'Belconnen' } },
+      { id: 'l4', status: 'new', details: { suburb: 'Belconnen' } },
+      { id: 'l5', status: 'new', details: { suburb: 'Belconnen' } }
+    ];
+    const out = buildCrmOutcomes(site, leads, {
+      quoteValueByLeadId: { l1: 350000 }
+    });
+    assert.equal(out.available, true);
+    assert.equal(out.won, 2);
+    assert.equal(out.quoteWins, 1);
+    assert.equal(out.measuredValueCents, 350000);
+    assert.equal(out.modelledValueCents, 200000);
+    assert.ok(out.byArea.some((a) => a.area === 'Gungahlin' && a.won === 2));
+    assert.ok(out.findings.some((f) => f.code === 'crm_area_no_wins' && /Belconnen/.test(f.title)));
+  });
+
+  it('analyses multi-platform AI citations without Semrush', async () => {
+    const { analyseAiCitations, PLATFORM_CATALOGUE } = require('../lib/search-intelligence/ai-citations');
+    const { probeAiVisibility } = require('../lib/search-intelligence/phase4-foundations');
+    assert.ok(PLATFORM_CATALOGUE.some((p) => p.id === 'google_ai_overview' && p.status === 'live'));
+    assert.ok(PLATFORM_CATALOGUE.some((p) => p.id === 'chatgpt_answers' && p.status === 'unavailable'));
+    assert.ok(PLATFORM_CATALOGUE.some((p) => p.id === 'perplexity' && p.status === 'unavailable'));
+    const site = {
+      business_name: 'Example Plumber',
+      custom_domain: 'example-plumber.com.au',
+      config: { region: 'Australia' }
+    };
+    const snap = {
+      features: ['ai_overview'],
+      results: [
+        { type: 'ai_overview', domain: 'rival.example', url: 'https://rival.example/a', title: 'Rival' },
+        { type: 'ai_overview', domain: 'example-plumber.com.au', url: 'https://example-plumber.com.au/b', title: 'Ours' },
+        { type: 'organic', domain: 'example-plumber.com.au', url: 'https://example-plumber.com.au/' }
+      ],
+      labelClass: 'estimated'
+    };
+    const owned = analyseAiCitations(site, snap, { keyword: 'who is example plumber' });
+    assert.equal(owned.state, 'cited');
+    assert.equal(owned.citedOwnedCount, 1);
+    assert.equal(owned.citedCompetitorCount, 1);
+    assert.ok(owned.platforms.some((p) => p.id === 'google_ai_overview' && p.cited === true));
+
+    const rivalOnly = analyseAiCitations(site, {
+      features: ['ai_overview'],
+      results: [{ type: 'ai_overview', domain: 'rival.example', url: 'https://rival.example/a' }]
+    });
+    assert.equal(rivalOnly.state, 'ai_overview_competitor_risk');
+
+    const probe = await probeAiVisibility(site, { provider: 'mock', forceAi: true });
+    assert.equal(probe.available, true);
+    assert.ok(Array.isArray(probe.citations));
+    assert.ok(Array.isArray(probe.platforms));
+    assert.match(probe.note || '', /never Semrush/i);
+
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /CRM multi-location outcomes/);
+    assert.match(manage, /AI citations/);
+    assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/providers/semrush.js')), false);
+    assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/crm-outcomes.js')), true);
+    assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/ai-citations.js')), true);
+  });
 });

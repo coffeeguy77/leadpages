@@ -62,7 +62,7 @@ Reward:
 - Qualified visibility  
 - Calls / forms / quotes  
 - Lead quality  
-- Booked work / revenue (Phase 5 CRM)  
+- Booked work / revenue (Phase 5 CRM — `crm-outcomes.js` rolls won/lost leads by service area; accepted `quote_versions.total_cents` when present, else modelled avg job value)  
 - Profitable cost per lead  
 - Growth in target service areas  
 

@@ -9,9 +9,10 @@ const http = require('../../lib/brain/http');
 const { createClient } = require('@supabase/supabase-js');
 const { loadAdsKeywords } = require('../../lib/search-intelligence/ads-keywords');
 const { listTracked } = require('../../lib/search-intelligence/tracked-keywords');
-const { buildAdsKeywordUniverse, probeAiVisibility, probeBrandSerp } = require('../../lib/search-intelligence/phase4-foundations');
+const { buildAdsKeywordUniverse, probeAiVisibility, probeBrandSerp, PLATFORM_CATALOGUE } = require('../../lib/search-intelligence/phase4-foundations');
 const { runBacklinkGap } = require('../../lib/search-intelligence/backlink-gap');
 const { meterUsage } = require('../../lib/search-intelligence/usage');
+const { loadCrmOutcomes } = require('../../lib/search-intelligence/crm-outcomes');
 
 function admin() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
@@ -50,6 +51,7 @@ module.exports = async (req, res) => {
     });
     const ads = await loadAdsKeywords(db, siteId, { days: days });
     const universe = buildAdsKeywordUniverse(tracked.items || [], ads.items || []);
+    const crm = await loadCrmOutcomes(db, site, { days: days });
 
     if (req.method === 'GET') {
       return http.json(res, 200, {
@@ -66,8 +68,19 @@ module.exports = async (req, res) => {
           sample: (ads.items || []).slice(0, 25)
         },
         universe: universe,
+        crmOutcomes: {
+          available: !!crm.available,
+          won: crm.won,
+          totalLeads: crm.totalLeads,
+          winRate: crm.winRate,
+          totalValueDollars: crm.totalValueDollars,
+          byArea: (crm.byArea || []).slice(0, 12),
+          note: crm.note,
+          labelClass: crm.labelClass
+        },
+        aiPlatforms: PLATFORM_CATALOGUE,
         actions: ['probe_ai', 'probe_brand', 'backlink_gap'],
-        note: 'POST { action: probe_ai | probe_brand | backlink_gap } to run paid probes (DataForSEO / mock).'
+        note: 'POST { action: probe_ai | probe_brand | backlink_gap }. AI probes deepen Google AIO citations; ChatGPT/Perplexity stay unavailable without a licensed endpoint (never Semrush).'
       });
     }
 
@@ -75,7 +88,8 @@ module.exports = async (req, res) => {
     if (action === 'probe_ai') {
       const result = await probeAiVisibility(site, {
         keyword: body.keyword || undefined,
-        provider: body.provider || undefined
+        provider: body.provider || undefined,
+        forceAi: body.forceAi === true || body.forceAi === '1' || body.forceAi === 1
       });
       await meterUsage(db, siteId, 'ai_visibility_probe', 1, {
         provider: result.provider || 'serp',

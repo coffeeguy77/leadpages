@@ -15,6 +15,7 @@ const { listTracked, planLimit } = require('../../lib/search-intelligence/tracke
 const { loadLatestRanks } = require('../../lib/search-intelligence/rank-jobs');
 const { loadAdsKeywords } = require('../../lib/search-intelligence/ads-keywords');
 const { persistRecommendations } = require('../../lib/search-intelligence/recommendations-persist');
+const { loadCrmOutcomes } = require('../../lib/search-intelligence/crm-outcomes');
 
 function admin() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
@@ -79,7 +80,18 @@ module.exports = async (req, res) => {
     );
 
     const sb = admin();
-    const [gscTotals, ga4Totals, organicSummary, pagePerformance, tracked, ranks, adsKeywords] =
+    const siteForCrm = site
+      ? {
+          id: site.id,
+          slug: site.slug,
+          custom_domain: site.custom_domain,
+          status: site.status,
+          business_name: site.business_name,
+          config: cfg
+        }
+      : { id: siteId, config: cfg };
+
+    const [gscTotals, ga4Totals, organicSummary, pagePerformance, tracked, ranks, adsKeywords, crmOutcomes] =
       await Promise.all([
         loadGscTotals(sb, siteId, { days: days }),
         loadGa4Totals(sb, siteId, { days: days }),
@@ -87,7 +99,8 @@ module.exports = async (req, res) => {
         loadPagePerformance(sb, siteId, { days: days }),
         listTracked(sb, siteId),
         loadLatestRanks(sb, siteId),
-        loadAdsKeywords(sb, siteId, { days: days })
+        loadAdsKeywords(sb, siteId, { days: days }),
+        loadCrmOutcomes(sb, siteForCrm, { days: days })
       ]);
 
     const overview = await buildOverview({
@@ -117,7 +130,8 @@ module.exports = async (req, res) => {
       trackedKeywords: tracked.items || [],
       adsKeywords: (adsKeywords && adsKeywords.items) || [],
       adsKeywordMeta: adsKeywords || null,
-      ranks: ranks
+      ranks: ranks,
+      crmOutcomes: crmOutcomes
     });
     overview.role = access.role;
     overview.siteSlug = (site && site.slug) || null;

@@ -11,6 +11,7 @@ const { auditListings } = require('../../lib/search-intelligence/local-listings'
 const { buildLocalOpportunityMap } = require('../../lib/search-intelligence/local-opportunity');
 const { detectLocalPageIssues } = require('../../lib/search-intelligence/local-page-gates');
 const { listTracked } = require('../../lib/search-intelligence/tracked-keywords');
+const { loadCrmOutcomes } = require('../../lib/search-intelligence/crm-outcomes');
 const oauthCfg = require('../../lib/search-intelligence/google-oauth/config');
 
 function admin() {
@@ -54,6 +55,7 @@ module.exports = async (req, res) => {
     const listings = auditListings(site);
     const map = buildLocalOpportunityMap(site, kwRows);
     const pageIssues = detectLocalPageIssues(site);
+    const crm = await loadCrmOutcomes(db, site, { days: 28 });
 
     let gbpRow = null;
     try {
@@ -76,6 +78,17 @@ module.exports = async (req, res) => {
       listings: listings,
       opportunityMap: map,
       pageFindings: pageIssues.findings || [],
+      crmOutcomes: {
+        available: !!crm.available,
+        won: crm.won,
+        totalLeads: crm.totalLeads,
+        winRate: crm.winRate,
+        totalValueDollars: crm.totalValueDollars,
+        labelClass: crm.labelClass,
+        byArea: (crm.byArea || []).slice(0, 16),
+        findings: crm.findings || [],
+        note: crm.note
+      },
       gbp: {
         status: gbp.status,
         platformConfigured: gbp.platformConfigured,

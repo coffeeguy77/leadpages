@@ -10572,6 +10572,14 @@ function heroCtaCard(c){
         +'<p class="lede" style="margin:0 0 12px">'+esc(M.areaCount||0)+' areas · '+esc(M.clusterCount||0)+' clusters · '+esc(M.gapCount||0)+' gaps · Maps readiness '+esc(M.mapsVisibilityScore!=null?Math.round(M.mapsVisibilityScore*100):'—')+'</p>'
         +(gaps?'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Area</th><th>Cluster</th><th>Opportunity</th><th></th></tr></thead><tbody>'+gaps+'</tbody></table></div>':'<p class="hint">Track keywords and set service areas to see gaps.</p>')
         +'<p class="hint" style="margin-top:10px">'+esc((M.safeguards&&M.safeguards.note)||'')+' Draft page runs evidence gates — never silent publish.</p></div>'
+        +((j.crmOutcomes)?'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">CRM multi-location outcomes</h2>'
+          +'<p class="lede" style="margin:0 0 10px">'+(j.crmOutcomes.available?('Won <strong>'+esc(j.crmOutcomes.won)+'</strong> / '+esc(j.crmOutcomes.totalLeads)+' leads · ~$'+esc(j.crmOutcomes.totalValueDollars)+(j.crmOutcomes.winRate!=null?' · win rate '+esc(Math.round(j.crmOutcomes.winRate*100))+'%':'')):'No CRM leads in window.')+'</p>'
+          +'<p class="hint">'+esc(j.crmOutcomes.note||'')+'</p>'
+          +((j.crmOutcomes.byArea&&j.crmOutcomes.byArea.length)?'<div style="overflow:auto;margin-top:10px"><table class="ana-table"><thead><tr><th>Area</th><th>Leads</th><th>Won</th><th>Value</th></tr></thead><tbody>'
+            +j.crmOutcomes.byArea.filter(function(a){return a.leads>0;}).slice(0,12).map(function(a){
+              return '<tr><td>'+esc(a.area)+'</td><td>'+esc(a.leads)+'</td><td>'+esc(a.won)+'</td><td>$'+esc(a.valueDollars)+'</td></tr>';
+            }).join('')+'</tbody></table></div>':'')
+          +'</div>':'')
         +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Maps grid</h2>'
         +'<p class="lede" style="margin:0 0 10px">Sample Maps pack presence across a small geo grid (DataForSEO when configured, else mock).</p>'
         +'<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">'
@@ -10667,11 +10675,17 @@ function heroCtaCard(c){
         +'</div></div>'
         +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Authority &amp; AI</h2>'
         +'<p class="lede" style="margin:0 0 10px">Backlink gap and AI/brand SERP probes use DataForSEO (or mock). Never Semrush.</p>'
+        +'<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:10px">'
+        +(j.aiPlatforms||[]).map(function(p){
+          return '<span class="hint" style="border:1px solid var(--line);border-radius:8px;padding:4px 8px">'+esc(p.label)+' · '+esc(p.status)+'</span>';
+        }).join('')
+        +'</div>'
         +'<div class="row" style="gap:8px;flex-wrap:wrap">'
         +'<button type="button" class="btn sm" id="si-auth-backlinks">Backlink gap</button>'
         +'<button type="button" class="btn sm ghost" id="si-auth-brand">Brand SERP</button>'
-        +'<button type="button" class="btn sm ghost" id="si-auth-ai">AI overview</button>'
+        +'<button type="button" class="btn sm ghost" id="si-auth-ai">AI citations</button>'
         +'</div>'
+        +((j.crmOutcomes&&j.crmOutcomes.available)?'<p class="hint" style="margin-top:10px">CRM: '+esc(j.crmOutcomes.won)+' won / '+esc(j.crmOutcomes.totalLeads)+' leads · ~$'+esc(j.crmOutcomes.totalValueDollars)+'</p>':'')
         +'<div id="si-auth-out" class="hint" style="margin-top:12px"></div></div>';
       async function runAuth(action){
         var out=document.getElementById('si-auth-out');
@@ -10681,7 +10695,7 @@ function heroCtaCard(c){
           var r=await fetch('/api/search-intelligence/authority',{
             method:'POST',
             headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},
-            body:JSON.stringify({siteId:currentSiteId,action:action})
+            body:JSON.stringify({siteId:currentSiteId,action:action,forceAi:action==='probe_ai'?true:undefined})
           });
           var jj=await r.json().catch(function(){return {};});
           if(!r.ok){ out.textContent=jj.message||jj.error||('HTTP '+r.status); return; }
@@ -10691,6 +10705,16 @@ function heroCtaCard(c){
               +esc(res.own&&res.own.referringDomains!=null?res.own.referringDomains:'—')
               +' · competitors checked '+esc((res.competitors||[]).length)
               +((res.findings&&res.findings[0])?'<div class="lede" style="margin-top:8px">'+esc(res.findings[0].plainLanguage)+'</div>':'<div class="hint" style="margin-top:8px">'+(esc(res.note)||'No gap finding.')+'</div>');
+          } else if(action==='probe_ai'){
+            var cites=(res.citations||[]).slice(0,8).map(function(c){
+              return '<li>'+esc(c.domain||c.url||'—')+(c.owned?' <strong>(yours)</strong>':'')+'</li>';
+            }).join('');
+            out.innerHTML='State: <strong>'+esc(res.state||'—')+'</strong>'
+              +(res.keyword?' · '+esc(res.keyword):'')
+              +' · owned citations '+esc(res.citedOwnedCount||0)+' / competitors '+esc(res.citedCompetitorCount||0)
+              +(cites?'<ul style="margin:8px 0 0;padding-left:18px">'+cites+'</ul>':'')
+              +((res.findings&&res.findings[0])?'<div class="lede" style="margin-top:8px">'+esc(res.findings[0].plainLanguage)+'</div>':'')
+              +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+'</p>';
           } else {
             out.innerHTML='State: <strong>'+esc(res.state|| (res.owned?'owned':'checked'))+'</strong>'
               +(res.keyword?' · '+esc(res.keyword):'')
@@ -10854,9 +10878,18 @@ function heroCtaCard(c){
     var body=document.getElementById('si-body'); if(!body) return;
     try{
       var j=await _siFetch('/api/search-intelligence/summary?siteId='+encodeURIComponent(currentSiteId)+'&persist=0');
+      var crmAreas=((j.metrics&&j.metrics.crmByArea)||(j.crmOutcomes&&j.crmOutcomes.byArea)||[]).filter(function(a){return a.leads>0;}).slice(0,8);
       body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Client summary</h2>'
         +'<p class="lede" style="margin:0 0 12px">'+esc(j.businessName||'')+' · '+esc(j.periodStart||'')+' → '+esc(j.periodEnd||'')+'</p>'
         +'<ul style="margin:0 0 14px;padding-left:1.2rem">'+(j.bullets||[]).map(function(b){ return '<li style="margin:0 0 6px">'+esc(b)+'</li>'; }).join('')+'</ul>'
+        +((j.metrics&&(j.metrics.crmWon!=null||j.metrics.crmTotalLeads!=null))?'<h3 style="margin:0 0 8px;font-size:14px">CRM multi-location</h3>'
+          +'<p class="lede" style="margin:0 0 8px">Won <strong>'+esc(j.metrics.crmWon)+'</strong> / '+esc(j.metrics.crmTotalLeads)+' leads'
+          +(j.metrics.crmWinRate!=null?' · '+esc(Math.round(j.metrics.crmWinRate*100))+'% win rate':'')
+          +(j.metrics.crmValueDollars!=null?' · ~$'+esc(j.metrics.crmValueDollars):'')+'</p>'
+          +(crmAreas.length?'<div style="overflow:auto;margin:0 0 14px"><table class="ana-table"><thead><tr><th>Area</th><th>Leads</th><th>Won</th><th>Value</th></tr></thead><tbody>'
+            +crmAreas.map(function(a){ return '<tr><td>'+esc(a.area)+'</td><td>'+esc(a.leads)+'</td><td>'+esc(a.won)+'</td><td>$'+esc(a.valueDollars)+'</td></tr>'; }).join('')
+            +'</tbody></table></div>':'')
+          :'')
         +((j.topActions&&j.topActions.length)?'<h3 style="margin:0 0 8px;font-size:14px">Top actions</h3><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">'
           +j.topActions.map(function(a){ return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px"><strong>'+esc(a.title)+'</strong><div class="lede" style="margin:6px 0 0">'+esc(a.plainLanguage||'')+'</div></div>'; }).join('')
           +'</div>':'')

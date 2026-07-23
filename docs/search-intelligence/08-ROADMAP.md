@@ -76,7 +76,7 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - [x] Full Ads keyword import into SI matrix (`ads_keyword_daily` + keyword_view sync; fallbacks: ad-group names / utm_term)
 - [x] Competitor backlink gap reporting UI (Manage → Authority)
 - [x] AI citation / brand ownership probes on Authority tab
-- [ ] Deeper citation corpus / multi-platform AI answers (future)
+- [x] Deeper multi-platform AI citation model (Google AIO citation ownership live; ChatGPT Answers / Perplexity explicit `unavailable` until licensed — never Semrush)
 
 ---
 
@@ -86,7 +86,7 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - [x] Persist open NBAs into `si_recommendations` (soft-fail if schema pending)
 - [x] `keyword_no_page` detector from tracked keywords × published pages
 - [x] Modelled Search Visibility score from GSC + ranks
-- [ ] Multi-location CRM value outcomes (needs CRM booked-work data)
+- [x] Multi-location CRM value outcomes (first-party leads × service areas + accepted quote totals / modelled avg job value)
 
 ---
 

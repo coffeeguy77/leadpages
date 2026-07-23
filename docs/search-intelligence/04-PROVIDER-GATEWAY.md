@@ -69,7 +69,7 @@ Every response includes `provider`, `fetchedAt`, `labelClass` (`measured` \| `es
 | `rankCheck` | Position for tracked keywords |
 | `backlinkSummary` | Referring domains / backlinks (DataForSEO Backlinks API) |
 
-AI visibility probes reuse `serp` features (`ai_overview`). Semrush is never used.
+AI visibility probes reuse `serp` features (`ai_overview`) and extract nested citation refs when DataForSEO returns them. Platform catalogue: Google AI Overviews (live), ChatGPT SERP block (aliased), ChatGPT Answers / Perplexity (`unavailable` — not scraped). Semrush is never used.
 
 ---
 

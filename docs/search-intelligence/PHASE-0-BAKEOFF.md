@@ -63,4 +63,4 @@ Metered usage is available at `GET /api/search-intelligence/usage` and on Manage
 - [x] GSC + GA4 OAuth plan approved / implemented  
 - [x] Pilot roster process documented (private ops; no PII in repo)  
 
-Phase 1–5 programme track is complete for shippable Search Intelligence (GBP live sync still gated on Google access; CRM multi-location outcomes later). Semrush remains permanently out of scope.
+Phase 1–5 programme track is complete for shippable Search Intelligence (GBP live sync still gated on Google access). Multi-location CRM outcomes use first-party leads + optional quote accepts. Multi-platform AI citations deepen Google AIO ownership; ChatGPT/Perplexity stay unavailable without a licensed endpoint. Semrush remains permanently out of scope.
