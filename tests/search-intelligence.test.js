@@ -82,6 +82,16 @@ describe('Search Intelligence stubs', () => {
     assert.match(sql, /DO NOT apply wholesale/);
   });
 
+  it('builds Command Centre overview scaffold', async () => {
+    const { buildOverview } = require('../lib/search-intelligence/overview');
+    const ov = await buildOverview({ siteId: 'site-x', includeDemoRecipes: true });
+    assert.equal(ov.ok, true);
+    assert.equal(ov.scaffold, true);
+    assert.equal(ov.connections.search_console.status, 'not_connected');
+    assert.ok(ov.cards.length >= 4);
+    assert.equal(ov.nextBestActions.length, 10);
+  });
+
   it('wires SEO Command Centre manage tab + APIs', () => {
     const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
     assert.match(manage, /id="nav-seo"/);
