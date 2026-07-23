@@ -15,11 +15,31 @@ const { listTracked, planLimit } = require('../../lib/search-intelligence/tracke
 const { loadLatestRanks } = require('../../lib/search-intelligence/rank-jobs');
 const { loadAdsKeywords } = require('../../lib/search-intelligence/ads-keywords');
 const { persistRecommendations } = require('../../lib/search-intelligence/recommendations-persist');
-const { loadCrmOutcomes } = require('../../lib/search-intelligence/crm-outcomes');
+const { loadCrmOutcomes, buildCrmOutcomes } = require('../../lib/search-intelligence/crm-outcomes');
 
 function admin() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
   return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+function emptyTracked() {
+  return { ok: false, items: [], limit: planLimit(), count: 0 };
+}
+
+function emptyRanks() {
+  return { available: false, items: [], count: 0 };
+}
+
+function emptyAds() {
+  return {
+    ok: true,
+    available: false,
+    items: [],
+    count: 0,
+    sources: [],
+    connectionStatus: 'unknown',
+    note: 'Ads keywords unavailable.'
+  };
 }
 
 async function loadSite(siteId) {
@@ -91,16 +111,39 @@ module.exports = async (req, res) => {
         }
       : { id: siteId, config: cfg };
 
+    // Soft-fail each loader — one missing table/query must not 500 the Command Centre.
     const [gscTotals, ga4Totals, organicSummary, pagePerformance, tracked, ranks, adsKeywords, crmOutcomes] =
       await Promise.all([
-        loadGscTotals(sb, siteId, { days: days }),
-        loadGa4Totals(sb, siteId, { days: days }),
-        loadOrganicLeadSummary(sb, siteId, { days: days }),
-        loadPagePerformance(sb, siteId, { days: days }),
-        listTracked(sb, siteId),
-        loadLatestRanks(sb, siteId),
-        loadAdsKeywords(sb, siteId, { days: days }),
-        loadCrmOutcomes(sb, siteForCrm, { days: days })
+        loadGscTotals(sb, siteId, { days: days }).catch(function () {
+          return { clicks: 0, impressions: 0, rows: 0, available: false };
+        }),
+        loadGa4Totals(sb, siteId, { days: days }).catch(function () {
+          return {
+            sessions: 0,
+            engagedSessions: 0,
+            conversions: 0,
+            rows: 0,
+            available: false
+          };
+        }),
+        loadOrganicLeadSummary(sb, siteId, { days: days }).catch(function () {
+          return { available: false, organicLeads: 0, organicCallClicks: 0, organicForms: 0, days: days };
+        }),
+        loadPagePerformance(sb, siteId, { days: days }).catch(function () {
+          return { available: false, pages: [], findings: [], pageCount: 0 };
+        }),
+        listTracked(sb, siteId).catch(function () {
+          return emptyTracked();
+        }),
+        loadLatestRanks(sb, siteId).catch(function () {
+          return emptyRanks();
+        }),
+        loadAdsKeywords(sb, siteId, { days: days }).catch(function () {
+          return emptyAds();
+        }),
+        loadCrmOutcomes(sb, siteForCrm, { days: days }).catch(function () {
+          return buildCrmOutcomes(siteForCrm, [], { days: days });
+        })
       ]);
 
     const overview = await buildOverview({
@@ -146,13 +189,19 @@ module.exports = async (req, res) => {
       };
     }
     if (sb && overview.nextBestActions) {
-      overview.persisted = await persistRecommendations(sb, siteId, overview.nextBestActions);
+      try {
+        overview.persisted = await persistRecommendations(sb, siteId, overview.nextBestActions);
+      } catch (_e) {
+        overview.persisted = { ok: false, skipped: 'persist_failed' };
+      }
     }
     return http.json(res, 200, overview);
   } catch (e) {
+    const message = String((e && e.message) || e);
+    console.error('[si/overview]', message, e && e.stack);
     return http.json(res, 500, {
       error: 'server_error',
-      message: String(e && e.message || e)
+      message: message
     });
   }
 };
