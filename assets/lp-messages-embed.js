@@ -588,7 +588,7 @@
       await startConv(conv, prefill);
     }
 
-    async function openProvider() {
+    async function openProvider(prefill) {
       setNewBusy(true);
       try {
         var site = siteId ? sitesById[siteId] : Object.keys(sitesById).map(function (k) { return sitesById[k]; })
@@ -614,7 +614,7 @@
           showNewMessage('Could not start conversation', lastCreateError || 'Please try again or contact support.');
           return;
         }
-        await startConv(conv);
+        await startConv(conv, prefill);
       } finally {
         setNewBusy(false);
       }
@@ -762,7 +762,7 @@
         pendingOpen = null;
         if (o.kind === 'client' && o.siteId) await openClient(o.siteId, o.prefill);
         else if (o.kind === 'lp') await openLeadPages(o.prefill);
-        else if (o.kind === 'provider') await openProvider();
+        else if (o.kind === 'provider') await openProvider(o.prefill);
         else if (o.kind === 'support' && me.role !== 'client') await openClientSupport();
         else if (o.kind === 'support' && me.role === 'client') await openClientSupport();
         else if (o.convId) await selectConv(o.convId);

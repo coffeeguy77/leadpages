@@ -730,8 +730,8 @@
           </div>
 
           <div class="card" style="padding:20px">
-            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Support history</h3>
-            <p class="muted" style="margin:0 0 12px;font-size:13px">Past support conversations stay in Messages for your records.</p>
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Client contact activity</h3>
+            <p class="muted" style="margin:0 0 12px;font-size:13px">When a client clicks Message or Call on your support contact badge, it is logged here with their account.</p>
             <div id="support-history"></div>
           </div>
         </div>
@@ -740,15 +740,15 @@
       <!-- Profile (functional) -->
       <section class="panel lp-p-panel" data-panel="profile" data-w="form">
         <h2>My Profile</h2>
-        <p class="sub">The support contact details your clients see. This is live — changes save to your account.</p>
+        <p class="sub">The support contact details your clients see on their command centre badge (Message + Call). This is live — changes save to your account.</p>
         <div class="card" style="padding:24px;max-width:620px">
           <div class="row2">
             <div class="field"><label for="p-name">Support name (what clients see)</label><input id="p-name" type="text"></div>
             <div class="field"><label for="p-region">Region you cover</label><input id="p-region" type="text" placeholder="e.g. Canberra & ACT"></div>
           </div>
           <div class="row2">
-            <div class="field"><label for="p-email">Support email</label><input id="p-email" type="email"></div>
-            <div class="field"><label for="p-phone">Support phone</label><input id="p-phone" type="tel"></div>
+            <div class="field"><label for="p-email">Support email (routes Message notifications)</label><input id="p-email" type="email"></div>
+            <div class="field"><label for="p-phone">Support phone (click-to-call)</label><input id="p-phone" type="tel"></div>
           </div>
           <div class="field"><label for="p-bio">Short bio (optional)</label><textarea id="p-bio" rows="3" placeholder="A line or two about you that clients can see."></textarea></div>
           <div class="field"><label style="display:inline-flex;align-items:center;gap:8px;font-weight:600;cursor:pointer"><input type="checkbox" id="p-notify" style="width:auto"> Email me when I get a new message</label><div class="muted" style="font-size:12.5px;margin-top:4px">All client and LeadPages correspondence stays in the app for your records. We’ll email you a heads-up when there’s something new to read.</div></div>
@@ -915,13 +915,53 @@
   }
   function renderSupportHistory(){
     var box=document.getElementById('support-history'); if(!box) return;
-    box.innerHTML='<div class="card empty" style="padding:24px;margin:0;box-shadow:none;border-style:dashed">'
-      +emptyIco('messages')
-      +'<strong>No support tickets tracked yet</strong>'
-      +'<p class="muted" style="margin:6px auto 0;max-width:46ch">Support conversations with LeadPages and client-related requests are kept in <strong>Messages</strong>. Open Messages to review past threads.</p>'
-      +'<button type="button" class="btn" data-open-messages style="margin-top:12px">Open Messages</button>'
-      +'</div>';
-    try{ if(window.LPStrokeIcons) window.LPStrokeIcons.decorateAll(box); }catch(_e){}
+    box.innerHTML='<p class="muted" style="margin:0;">Loading client contact activity\u2026</p>';
+    authHeader().then(function(h){
+      return fetch('/api/partner/support-contact-activity',{headers:Object.assign({'content-type':'application/json'},h)});
+    }).then(function(r){ return r.json(); }).then(function(j){
+      if(!box) return;
+      var items=(j&&j.items)||[];
+      var counts=(j&&j.counts)||{};
+      if(!items.length){
+        box.innerHTML='<div class="card empty" style="padding:24px;margin:0;box-shadow:none;border-style:dashed">'
+          +emptyIco('messages')
+          +'<strong>No support contact clicks yet</strong>'
+          +'<p class="muted" style="margin:6px auto 0;max-width:46ch">When a client taps <strong>Message</strong> or <strong>Call</strong> on your support contact badge in their command centre, it shows up here with their account details.</p>'
+          +'<button type="button" class="btn" data-open-messages style="margin-top:12px">Open Messages</button>'
+          +'</div>';
+        try{ if(window.LPStrokeIcons) window.LPStrokeIcons.decorateAll(box); }catch(_e){}
+        return;
+      }
+      var summary='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">'
+        +'<span class="pill" style="background:var(--accent-soft);color:var(--accent);">Message '+(counts.message||0)+'</span>'
+        +'<span class="pill" style="background:var(--accent-soft);color:var(--accent);">Call '+(counts.call||0)+'</span>'
+        +'<span class="muted" style="font-size:12.5px;align-self:center;">'+(counts.total||items.length)+' recent</span></div>';
+      var rows=items.map(function(it){
+        var btn=it.button||'';
+        var label=btn==='message'?'Message':(btn==='call'?'Call':btn);
+        var who=it.actor_email||'client';
+        var site=it.business_name||it.site_slug||'Client site';
+        var when=it.created_at?new Date(it.created_at).toLocaleString():'';
+        return '<div class="card" style="padding:12px 14px;margin-bottom:8px;">'
+          +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">'
+          +'<div><strong>'+esc(label)+'</strong> \u00b7 '+esc(site)
+          +'<div class="muted" style="font-size:12.5px;margin-top:2px;">Client: '+esc(who)+'</div></div>'
+          +'<div class="muted" style="font-size:12px;">'+esc(when)+'</div></div>'
+          +(it.note?('<div class="muted" style="font-size:12.5px;margin-top:6px;">'+esc(it.note)+'</div>'):'')
+          +(it.site_id?('<div style="margin-top:8px;"><button type="button" class="btn btn-sm" data-msg-client="'+esc(it.site_id)+'">Open chat</button></div>'):'')
+          +'</div>';
+      }).join('');
+      box.innerHTML=summary+rows;
+      box.querySelectorAll('[data-msg-client]').forEach(function(b){
+        b.addEventListener('click',function(){ openClientMessage(b.getAttribute('data-msg-client')); });
+      });
+    }).catch(function(){
+      if(!box) return;
+      box.innerHTML='<div class="card empty" style="padding:24px;margin:0;box-shadow:none;border-style:dashed">'
+        +'<strong>Could not load contact activity</strong>'
+        +'<p class="muted" style="margin:6px auto 0;max-width:46ch">Try again shortly. Conversations still live in Messages.</p>'
+        +'<button type="button" class="btn" data-open-messages style="margin-top:12px">Open Messages</button></div>';
+    });
   }
   function openClientMessage(siteId, prefill){
     gotoPanel('messages');

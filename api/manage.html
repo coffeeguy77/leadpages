@@ -2104,19 +2104,23 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(currentRole==='super') return; if(!currentSiteId) return;
     sb.auth.getSession().then(function(r){
       var em=((r&&r.data&&r.data.session&&r.data.session.user&&r.data.session.user.email)||'').toLowerCase();
-      if(!em || !currentOwnerEmail || em!==String(currentOwnerEmail).toLowerCase()) return; // owner only
+      if(!em || !currentOwnerEmail || em!==String(currentOwnerEmail).toLowerCase()) return;
       fetch('/api/site/support-contact?siteId='+encodeURIComponent(currentSiteId)).then(function(x){return x.json();}).then(function(j){
-        if(!j||!j.ok||!j.partner) return; var p=j.partner; var rows=[];
-        if(p.email) rows.push('<a href="mailto:'+esc(p.email)+'" style="color:#1f7a63;text-decoration:none;">'+esc(p.email)+'</a>');
-        if(p.phone) rows.push('<a href="tel:'+esc(String(p.phone).replace(/[^+0-9]/g,''))+'" style="color:#1f7a63;text-decoration:none;">'+esc(p.phone)+'</a>');
-        var c=document.createElement('div'); c.id=ID;
-        c.style.cssText='position:fixed;left:16px;bottom:16px;z-index:9000;max-width:300px;background:#fff;border:1px solid #e3e7e3;border-radius:14px;box-shadow:0 10px 30px rgba(15,26,23,.18);padding:14px 16px;font-family:system-ui,-apple-system,sans-serif;';
-        c.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#86978f;font-weight:700;">Your support contact</div><button type="button" aria-label="Dismiss" style="border:0;background:none;cursor:pointer;color:#86978f;font-size:16px;line-height:1;">\u00d7</button></div>'
-          +'<div style="font-weight:700;margin-top:5px;color:#16241f;">'+esc(p.name||'Your LeadPages partner')+'</div>'
-          +(p.region?'<div style="font-size:12.5px;color:#5c6675;">'+esc(p.region)+'</div>':'')
-          +(rows.length?'<div style="font-size:13.5px;margin-top:7px;line-height:1.7;">'+rows.join('<br>')+'</div>':'')
-          +'<div style="font-size:11px;color:#929aa6;margin-top:8px;">Powered by LeadPages</div>';
-        c.querySelector('button').addEventListener('click',function(){ c.remove(); });
+        if(!j||!j.ok||!j.partner) return; var p=j.partner;
+        var tel=p.phone?String(p.phone).replace(/[^+0-9]/g,''):'';
+        var actions='';
+        if(p.email||p.name) actions+='<button type="button" class="lp-sc-btn lp-sc-btn-msg" id="lp-sc-msg">Message</button>';
+        if(tel) actions+='<a class="lp-sc-btn lp-sc-btn-call" id="lp-sc-call" href="tel:'+esc(tel)+'">Call '+esc(p.phone)+'</a>';
+        if(!actions) return;
+        var c=document.createElement('div'); c.id=ID; c.className='lp-support-card';
+        c.innerHTML='<div class="lp-sc-head"><div class="lp-sc-label">Your support contact</div><button type="button" class="lp-sc-x" aria-label="Dismiss">\u00d7</button></div>'
+          +'<div class="lp-sc-name">'+esc(p.name||'Your LeadPages partner')+'</div>'
+          +(p.region?'<div class="lp-sc-region">'+esc(p.region)+'</div>':'')
+          +'<div class="lp-sc-actions">'+actions+'</div>'
+          +'<div class="lp-sc-foot">Powered by LeadPages</div>';
+        c.querySelector('.lp-sc-x').addEventListener('click',function(){ c.remove(); });
+        var msgBtn=c.querySelector('#lp-sc-msg');
+        if(msgBtn) msgBtn.addEventListener('click',function(){ try{ if(typeof showView==='function') showView('messages'); }catch(_e){} });
         document.body.appendChild(c);
       }).catch(function(){});
     }).catch(function(){});
