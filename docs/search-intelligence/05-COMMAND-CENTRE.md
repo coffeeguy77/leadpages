@@ -68,6 +68,7 @@ Action buttons:
 | Create page | Hand off to Brain landing draft / Composer |
 | Page Optimiser | Modelled title/meta/outline brief (Clusters tab; human apply) |
 | Compose with Brain | Prefill Landing pages AI draft from SI brief; generate + approve there |
+| Schema patch | Preview/apply modelled JSON-LD (Actions tab; human apply) |
 | Preview changes | Diff before publish |
 | Assign to partner | Partner task |
 | Dismiss / snooze | With reason |

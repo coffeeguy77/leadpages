@@ -2529,7 +2529,26 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       bind('h2Color','lp-h2-color','lp-h2-color-t','lp-h2-color-clr');
       bind('paragraphColor','lp-p-color','lp-p-color-t','lp-p-color-clr');
     })();
-    $('lp-save').addEventListener('click',function(){ if(lpCur) lpCur.updatedAt=new Date().toISOString(); persist(); lpSaveDB(); var pub=lpCur&&lpCur.status==='published'; renderSeoPages(); toast(pub?'Page saved — regenerate sitemap in Settings when you add or publish pages.':'Page saved'); });
+    $('lp-save').addEventListener('click',function(){
+      if(lpCur) lpCur.updatedAt=new Date().toISOString();
+      var prevStatus=lpCur&&lpCur._siPrevStatus;
+      persist(); lpSaveDB();
+      var pub=lpCur&&lpCur.status==='published';
+      if(lpCur){
+        if(pub && prevStatus!=='published'){
+          _siAnnotate('landing_publish','Published landing page /'+ (lpCur.slug||''),{
+            pageId:lpCur.id, slug:lpCur.slug, title:lpCur.title
+          });
+        } else if(!pub && prevStatus==='published'){
+          _siAnnotate('landing_unpublish','Unpublished landing page /'+ (lpCur.slug||''),{
+            pageId:lpCur.id, slug:lpCur.slug
+          });
+        }
+        lpCur._siPrevStatus=lpCur.status;
+      }
+      renderSeoPages();
+      toast(pub?'Page saved — regenerate sitemap in Settings when you add or publish pages.':'Page saved');
+    });
     $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; });
     $('lp-del').addEventListener('click',function(){ if(!lpCur) return; var slug=lpCur.slug; data.pages=data.pages.filter(x=>x.id!==lpCur.id); if(slug) lpSyncNavMenu({show:false, slug:slug}); persist(); lpSaveDB(); $('lp-editor').hidden=true; lpCur=null; renderSeoPages(); toast('Page deleted'); });
     $('lp-undo').addEventListener('click',function(){ if(lpHi>0){ lpHi--; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
@@ -2557,6 +2576,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       if(hq.jobs) bits.push('Quote form ('+hq.jobs+' options)');
       if(faqN) bits.push('FAQ ('+faqN+' questions)');
       toast('Draft applied — '+bits.join(' + '));
+      _siAnnotate('draft_applied','Brain landing draft applied to editor',{
+        pageId:lpCur&&lpCur.id, slug:lpCur&&lpCur.slug, title:draft.title||null,
+        primaryKeyword:draft.primaryKeyword||null
+      });
     });
     $('lp-ap-discard').addEventListener('click',function(){ $('lp-approve').hidden=true; });
     var lptc=$('lp-tab-content'), lpta=$('lp-tab-apps');
@@ -2675,6 +2698,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function lpPush(v){ lpHist=lpHist.slice(0,lpHi+1); lpHist.push(v); if(lpHist.length>50)lpHist.shift(); lpHi=lpHist.length-1; }
   function lpOpen(id){
     lpCur=data.pages.find(x=>x.id===id); if(!lpCur) return;
+    lpCur._siPrevStatus=lpCur.status||'draft';
     lpEnsurePageApps(lpCur);
     try{ lpEnsureDefaultLandingApps(lpCur); }catch(e){ lpEnsurePageLayoutOrder(lpCur); }
     $('lp-editor').hidden=false;
@@ -10275,6 +10299,23 @@ function heroCtaCard(c){
     if(!r.ok) throw new Error(j.error||('http_'+r.status));
     return j;
   }
+  async function _siAnnotate(type, title, detail){
+    if(!currentSiteId||!type) return;
+    try{
+      var tok=await _siToken();
+      if(!tok) return;
+      await fetch('/api/search-intelligence/annotations',{
+        method:'POST',
+        headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+        body:JSON.stringify({
+          siteId:currentSiteId,
+          annotationType:type,
+          title:title||null,
+          detail:detail||{}
+        })
+      });
+    }catch(_e){ /* best-effort */ }
+  }
   function renderSeoCommandCentre(){
     var box=document.getElementById('av-seo'); if(!box) return;
     if(!currentSiteId){
@@ -10797,7 +10838,14 @@ function heroCtaCard(c){
       +'.</p>'
       +_siActionsList(open.length?open:(ov&&ov.nextBestActions)||[])
       +(catalog.length?'<p class="hint" style="margin-top:16px">Catalog recipes stay available after connectors land.</p>':'')
-      +'</div>';
+      +'</div>'
+      +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Schema.org patch</h2>'
+      +'<p class="lede" style="margin:0 0 12px">Modelled LocalBusiness / FAQ JSON-LD from your saved site facts. Apply only after review — never auto-publishes invented ratings.</p>'
+      +'<button type="button" class="btn" id="si-schema-preview">Preview schema</button>'
+      +'<button type="button" class="btn ghost" id="si-schema-apply" style="margin-left:8px" disabled>Apply to site</button>'
+      +'<div id="si-schema-out" style="margin-top:12px"><p class="hint">Preview to see blocks before applying.</p></div></div>'
+      +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Recent annotations</h2>'
+      +'<div id="si-ann-list"><p class="hint">Loading…</p></div></div>';
   }
   function _siWireActions(ov){
     var go=document.getElementById('si-goto-actions');
@@ -10816,6 +10864,57 @@ function heroCtaCard(c){
         }
       });
     });
+    var schemaPatch=null;
+    var prevBtn=document.getElementById('si-schema-preview');
+    var applyBtn=document.getElementById('si-schema-apply');
+    var out=document.getElementById('si-schema-out');
+    if(prevBtn) prevBtn.addEventListener('click',async function(){
+      try{
+        var j=await _siFetch('/api/search-intelligence/schema-patch?siteId='+encodeURIComponent(currentSiteId));
+        schemaPatch=j;
+        if(applyBtn) applyBtn.disabled=false;
+        if(out){
+          out.innerHTML=(j.blocks||[]).map(function(b){
+            return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px">'
+              +'<strong>'+esc(b.title)+'</strong>'
+              +'<div class="lede" style="margin:6px 0">'+esc(b.plainLanguage||'')+'</div>'
+              +'<pre style="margin:0;font-size:11px;overflow:auto;max-height:160px;white-space:pre-wrap">'+esc(JSON.stringify(b.jsonLd,null,2))+'</pre></div>';
+          }).join('')
+          +'<p class="hint">'+(j.existingCount||0)+' existing block(s) on site · missing: '+esc((j.missing||[]).join(', ')||'none')+'</p>';
+        }
+      }catch(e){ if(out) out.innerHTML='<p class="hint">'+esc((e&&e.message)||e)+'</p>'; }
+    });
+    if(applyBtn) applyBtn.addEventListener('click',async function(){
+      if(!schemaPatch){ toast('Preview schema first'); return; }
+      if(!confirm('Apply modelled JSON-LD to this site config? It will appear in the live HTML head on next render.')) return;
+      try{
+        var tok=await _siToken();
+        var r=await fetch('/api/search-intelligence/schema-patch',{
+          method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+          body:JSON.stringify({siteId:currentSiteId,apply:true})
+        });
+        var jj=await r.json().catch(function(){return {};});
+        if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+        toast('Schema applied to site config');
+        if(typeof loadSite==='function'){ /* refresh if available */ }
+        _siLoadAnnotations();
+      }catch(e){ toast(String(e.message||e)); }
+    });
+    _siLoadAnnotations();
+  }
+  async function _siLoadAnnotations(){
+    var box=document.getElementById('si-ann-list'); if(!box) return;
+    try{
+      var j=await _siFetch('/api/search-intelligence/annotations?siteId='+encodeURIComponent(currentSiteId)+'&limit=15');
+      var rows=j.annotations||[];
+      if(!rows.length){ box.innerHTML='<p class="hint">No annotations yet. Publishing a landing page or applying a schema patch will appear here.</p>'; return; }
+      box.innerHTML='<ul style="margin:0;padding-left:1.2rem">'
+        +rows.map(function(a){
+          return '<li style="margin:0 0 6px"><strong>'+esc(a.annotation_type)+'</strong> — '+esc(a.title||'')
+            +' <span class="hint">'+esc(String(a.occurred_at||'').slice(0,16))+'</span></li>';
+        }).join('')+'</ul>';
+    }catch(e){ box.innerHTML='<p class="hint">'+esc((e&&e.message)||e)+'</p>'; }
   }
 
   /* ═══════════════════════════════════════════════════════════

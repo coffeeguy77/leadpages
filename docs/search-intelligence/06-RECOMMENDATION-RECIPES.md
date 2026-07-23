@@ -70,6 +70,14 @@ Phase 5 adds scoped `auto_fix_safe`.
 
 Manage → Clusters → Page Optimiser → **Compose with Brain** stores the handoff, annotates `brain_landing_handoff`, and opens Landing pages with SEO fields prefilled. Operator still clicks **Generate draft** and **Approve** — nothing silent-publishes.
 
+### Schema patch
+
+`GET|POST /api/search-intelligence/schema-patch` previews modelled LocalBusiness/FAQ JSON-LD. POST with `apply:true` writes `sites.config.seoJsonLd` (human only). `api/render.js` injects those blocks as `application/ld+json`.
+
+### Annotations
+
+`GET|POST /api/search-intelligence/annotations` — publish / draft_applied / schema_apply / handoff events. Landing page Save records publish/unpublish transitions.
+
 ---
 
 ## Validation (Phase 0 exit)

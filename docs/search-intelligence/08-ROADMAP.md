@@ -51,8 +51,8 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - [x] Compose with Brain handoff → Landing pages AI draft (prefill; human generate + approve)
 - [x] Modelled internal-link suggestions on briefs
 - [x] Provider usage metering helper (`si_provider_usage` via keyword ideas, ranks, clusters, briefs)
-- [ ] Annotations for publish events (briefs + Brain handoff recorded; publish hooks TBD)
-- [ ] Schema patch actions
+- [x] Annotations for publish events (landing publish/unpublish, draft applied, schema apply)
+- [x] Schema patch actions (preview + human apply → `config.seoJsonLd`; renderer emits ld+json)
 
 ---
 

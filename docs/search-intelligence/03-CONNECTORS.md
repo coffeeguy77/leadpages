@@ -123,6 +123,11 @@ Manage → SEO Command → **Pages** tab; findings also merge into Next Best Act
 - Manage **Compose with Brain** prefills Landing pages AI draft fields from the brief (operator generates + approves)
 - Usage meters: `keyword_ideas`, `rank_check`, `cluster_rebuild`, `page_optimiser_brief`, `brain_landing_handoff` → `si_provider_usage`
 
+### Annotations & schema
+
+- `GET|POST /api/search-intelligence/annotations` — publish / draft / schema / handoff events
+- `GET|POST /api/search-intelligence/schema-patch` — preview/apply modelled JSON-LD to `config.seoJsonLd` (renderer emits ld+json)
+
 ---
 
 ## Organic attribution (first-party, live)

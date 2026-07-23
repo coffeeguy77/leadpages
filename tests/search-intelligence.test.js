@@ -194,6 +194,52 @@ describe('Search Intelligence stubs', () => {
     assert.equal(links[0].labelClass, 'modelled');
   });
 
+  it('builds schema patch without invented ratings and merges into config', () => {
+    const {
+      buildSchemaPatch,
+      applySchemaPatchToConfig,
+      tradeType
+    } = require('../lib/search-intelligence/schema-patch');
+    assert.equal(tradeType({ trade: 'Plumber' }), 'Plumber');
+    const patch = buildSchemaPatch({
+      id: 's1',
+      business_name: 'Demo Plumbing',
+      config: {
+        trade: 'Plumber',
+        region: 'Canberra',
+        phone: '0400000000',
+        sections: {
+          faq: {
+            items: [{ q: 'Same day?', a: 'Yes for emergencies.' }]
+          }
+        }
+      }
+    });
+    assert.equal(patch.ok, true);
+    assert.equal(patch.safeguards.publishAllowed, false);
+    assert.ok(patch.blocks.some(function (b) { return b.id === 'local_business'; }));
+    assert.ok(patch.blocks.some(function (b) { return b.id === 'faq_page'; }));
+    const blob = JSON.stringify(patch);
+    assert.equal(/AggregateRating|reviewCount|4\.9/.test(blob), false);
+    const cfg = applySchemaPatchToConfig({}, patch, {});
+    assert.ok(Array.isArray(cfg.seoJsonLd) && cfg.seoJsonLd.length >= 1);
+  });
+
+  it('ships annotations and schema-patch APIs', () => {
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/annotations.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/schema-patch.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/annotations.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/schema-patch.js')));
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /_siAnnotate/);
+    assert.match(manage, /landing_publish/);
+    assert.match(manage, /si-schema-preview/);
+    assert.match(manage, /schema-patch/);
+    const render = fs.readFileSync(path.join(__dirname, '..', 'api/render.js'), 'utf8');
+    assert.match(render, /injectSeoJsonLd/);
+    assert.match(render, /seoJsonLd/);
+  });
+
   it('ships clusters and page-optimiser APIs', () => {
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/clusters.js')));
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/page-optimiser.js')));

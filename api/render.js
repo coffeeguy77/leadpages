@@ -501,6 +501,7 @@ function buildTradeHtml(site, host) {
   };
   for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
   if (template === 'trade') html = injectTradeThemeVars(html, cfg);
+  html = injectSeoJsonLd(html, cfg);
   return html;
 }
 
@@ -780,6 +781,28 @@ function injectAttribution(html, cfg) {
   }
   if (html.includes('</head>')) return html.replace('</head>', block + '</head>');
   return block + html;
+}
+
+/**
+ * Emit Search Intelligence / human-applied schema.org blocks from cfg.seoJsonLd.
+ */
+function injectSeoJsonLd(html, cfg) {
+  if (!html || !cfg) return html;
+  const blocks = Array.isArray(cfg.seoJsonLd) ? cfg.seoJsonLd : [];
+  if (!blocks.length) return html;
+  if (html.includes('data-lp-seo-jsonld="1"')) return html;
+  const scripts = blocks
+    .filter(function (b) {
+      return b && typeof b === 'object';
+    })
+    .map(function (b) {
+      const raw = JSON.stringify(b).replace(/</g, '\\u003c');
+      return '<script type="application/ld+json" data-lp-seo-jsonld="1">' + raw + '</script>';
+    })
+    .join('\n');
+  if (!scripts) return html;
+  if (html.includes('</head>')) return html.replace('</head>', scripts + '\n</head>');
+  return scripts + html;
 }
 
 function injectVisitorAccessibility(html, cfg) {
@@ -1096,6 +1119,7 @@ module.exports = async (req, res) => {
 
     html = injectAttribution(html, cfg);
     html = injectVisitorAccessibility(html, cfg);
+    html = injectSeoJsonLd(html, cfg);
     if (template === 'trade') {
       html = injectTradeThemeVars(html, cfg);
       html = injectOnlineQuote(html, site.slug, cfg);
