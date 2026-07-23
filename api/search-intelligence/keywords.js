@@ -36,15 +36,18 @@ module.exports = async (req, res) => {
     if (!keyword) return http.json(res, 400, { error: 'keyword_required' });
 
     const location = String(body.location || q.location || 'Australia').trim();
-    const provider = String(body.provider || q.provider || process.env.SI_KEYWORD_PROVIDER || 'mock').trim();
-
-    const gw = createGateway({ provider: provider });
+    // Prefer gateway auto-select (DataForSEO when credentials exist). Only force when
+    // request or SI_KEYWORD_PROVIDER / SI_PROVIDER explicitly set — never hardcode mock.
+    const explicitProvider = String(
+      body.provider || q.provider || process.env.SI_KEYWORD_PROVIDER || process.env.SI_PROVIDER || ''
+    ).trim();
+    const gw = createGateway(explicitProvider ? { provider: explicitProvider } : {});
     const ideas = await gw.keywordIdeas({ keyword: keyword, location: location });
     if (!ideas || !ideas.ok) {
       return http.json(res, 200, {
         ok: false,
         siteId: siteId,
-        provider: provider,
+        provider: (ideas && ideas.provider) || gw.preferred || explicitProvider || 'mock',
         error: (ideas && ideas.error) || 'keyword_ideas_failed',
         message: (ideas && ideas.message) || null,
         ideas: []
@@ -71,7 +74,7 @@ module.exports = async (req, res) => {
     const db = adminDb();
     if (db) {
       await meterUsage(db, siteId, 'keyword_ideas', Math.max(1, scored.length), {
-        provider: ideas.provider || provider,
+        provider: ideas.provider || gw.preferred || 'mock',
         seed: keyword
       });
     }
@@ -79,10 +82,11 @@ module.exports = async (req, res) => {
     return http.json(res, 200, {
       ok: true,
       siteId: siteId,
-      provider: ideas.provider || provider,
+      provider: ideas.provider || gw.preferred || 'mock',
       keyword: keyword,
       location: location,
       ideas: scored,
+      note: ideas.note || null,
       labelClass: scored[0] && scored[0].labelClass ? scored[0].labelClass : 'estimated'
     });
   } catch (e) {
