@@ -65,6 +65,22 @@
       "destination": "/settings/integrations/google-ads.html"
     },
     {
+      "source": "/settings/integrations/search-console",
+      "destination": "/settings/integrations/search-console.html"
+    },
+    {
+      "source": "/settings/integrations/search-console/",
+      "destination": "/settings/integrations/search-console.html"
+    },
+    {
+      "source": "/settings/integrations/google-analytics",
+      "destination": "/settings/integrations/google-analytics.html"
+    },
+    {
+      "source": "/settings/integrations/google-analytics/",
+      "destination": "/settings/integrations/google-analytics.html"
+    },
+    {
       "source": "/",
       "has": [
         {

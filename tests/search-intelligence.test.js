@@ -82,14 +82,43 @@ describe('Search Intelligence stubs', () => {
     assert.match(sql, /DO NOT apply wholesale/);
   });
 
-  it('builds Command Centre overview scaffold', async () => {
+  it('builds Command Centre overview from config audit', async () => {
     const { buildOverview } = require('../lib/search-intelligence/overview');
-    const ov = await buildOverview({ siteId: 'site-x', includeDemoRecipes: true });
+    const ov = await buildOverview({
+      siteId: 'site-x',
+      config: { seoTitle: '', seoDescription: '', phone: '', sections: { quote: { on: false } } },
+      includeRecipeCatalog: false
+    });
     assert.equal(ov.ok, true);
-    assert.equal(ov.scaffold, true);
-    assert.equal(ov.connections.search_console.status, 'not_connected');
-    assert.ok(ov.cards.length >= 4);
-    assert.equal(ov.nextBestActions.length, 10);
+    assert.ok(ov.audit.issueCount >= 2);
+    assert.equal(ov.cards.find((c) => c.id === 'technical_health').value, ov.audit.issueCount);
+    assert.ok(ov.nextBestActions.some((a) => a.status === 'open' && a.code === 'missing_site_title'));
+    assert.equal(ov.connections.search_console.platformConfigured, false);
+  });
+
+  it('audits duplicate titles and empty premium gallery', () => {
+    const { auditSiteConfig } = require('../lib/search-intelligence/audit/config-audit');
+    const audit = auditSiteConfig({
+      seoTitle: 'Same',
+      seoDescription: 'Desc',
+      phone: '0400000000',
+      pages: [
+        { status: 'published', title: 'Same', slug: 'a', meta: 'm1' },
+        { status: 'published', title: 'Same', slug: 'b', meta: 'm2' }
+      ],
+      sections: {
+        quote: { on: true },
+        premiumGallery: { on: true, images: [] }
+      }
+    });
+    assert.ok(audit.findings.some((f) => f.code === 'duplicate_titles'));
+    assert.ok(audit.findings.some((f) => f.code === 'premium_gallery_empty'));
+  });
+
+  it('reports GSC connector not_configured without env', () => {
+    const oauth = require('../lib/search-intelligence/google-oauth/config');
+    assert.equal(oauth.configured('search_console'), false);
+    assert.equal(oauth.connectionStatus('search_console').status, 'not_configured');
   });
 
   it('wires SEO Command Centre manage tab + APIs', () => {
@@ -101,5 +130,9 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /'trade':\[[^\]]*seo/);
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/overview.js')));
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/recommendations.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/search-console/connect.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/google-analytics/status.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'settings/integrations/search-console.html')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'settings/integrations/google-analytics.html')));
   });
 });

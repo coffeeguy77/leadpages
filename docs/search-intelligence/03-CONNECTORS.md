@@ -38,15 +38,17 @@ Storage: `si_connections` + `si_oauth_states` (see [02-DATA-MODEL.md](02-DATA-MO
 
 **Purpose:** Organic clicks, impressions, CTR, average position, query/page mapping; sitemap submit/refresh coordination.
 
-**Scopes (indicative):** Search Console API read (and sitemap write if approved). Exact scopes locked during Phase 1 implementation.
+**Env (platform):** `GSC_CLIENT_ID`, `GSC_CLIENT_SECRET`, optional `GSC_REDIRECT_URI`  
+**Routes (scaffold):**  
+- Settings UI: `/settings/integrations/search-console`  
+- `GET/POST /api/integrations/search-console/status`  
+- `POST /api/integrations/search-console/connect` → `not_configured` or `oauth_exchange_pending`  
+
+**Scopes (indicative):** Search Console read (`webmasters.readonly`) + OpenID email.
 
 **Property mapping:** `site_id` → GSC property URL (domain or URL-prefix) → optional verified domain already stored via Settings → Search & indexing.
 
-**Sync jobs:**
-
-- Daily search analytics pull (last 3–16 months as API allows)
-- Page/query aggregates into `si_query_page_stats`
-- Sync health on `si_connections.last_sync_at` / `last_sync_error`
+**Sync jobs (next):** Daily search analytics → `si_query_page_stats`.
 
 **Note:** Existing GSC **verification** (meta / DNS TXT / CNAME) stays in Settings → Search & indexing. Command Centre owns **API insights**.
 
@@ -56,9 +58,27 @@ Storage: `si_connections` + `si_oauth_states` (see [02-DATA-MODEL.md](02-DATA-MO
 
 **Purpose:** Sessions, engagement, landing-page conversions aligned with Leadpages form/call events.
 
+**Env:** `GA4_CLIENT_ID`, `GA4_CLIENT_SECRET`, optional `GA4_REDIRECT_URI`  
+**Routes (scaffold):** `/settings/integrations/google-analytics`, `/api/integrations/google-analytics/{status,connect}`
+
 **Mapping:** `site_id` → GA4 property id (+ optional data stream).
 
-**Sync:** Landing-page and conversion aggregates; join to `visitor_sessions` / lead events where possible.
+**Sync (next):** Landing-page and conversion aggregates; join to `visitor_sessions` / lead events where possible.
+
+---
+
+## First-party config audit (live now)
+
+`lib/search-intelligence/audit/config-audit.js` inspects `sites.config` and feeds Next Best Actions without crawling HTML:
+
+- Missing homepage title / meta  
+- Published landings missing title / meta  
+- Duplicate titles (cannibalisation)  
+- Service Areas on but empty  
+- No phone and no quote path  
+- Premium Gallery on without images  
+
+Command Centre overview loads site config and surfaces these as `status: open` actions.
 
 ---
 

@@ -2,13 +2,15 @@
 
 /**
  * GET /api/search-intelligence/recommendations?siteId=
- * Returns recipe-backed NBA previews until si_recommendations is populated.
+ * Returns config-audit findings (open) plus optional recipe catalog.
  */
 
 const http = require('../../lib/brain/http');
+const { createClient } = require('@supabase/supabase-js');
 const {
   listRecommendationPreviews,
-  getRecipe
+  getRecipe,
+  auditSiteConfig
 } = require('../../lib/search-intelligence/overview');
 
 module.exports = async (req, res) => {
@@ -44,16 +46,30 @@ module.exports = async (req, res) => {
           plainLanguage: recipe.plainLanguage,
           severity: recipe.severityDefault,
           actions: recipe.actions,
-          status: 'preview'
+          status: 'catalog'
         }
       });
     }
+
+    let cfg = (body && body.config) || {};
+    try {
+      if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+        const { data } = await sb.from('sites').select('config').eq('id', siteId).maybeSingle();
+        if (data && data.config) cfg = data.config;
+      }
+    } catch (_e) { /* ignore */ }
+
+    const audit = auditSiteConfig(cfg, { siteId: siteId });
+    const includeCatalog =
+      String((body && body.includeCatalog) || (req.query && req.query.includeCatalog) || '') === '1';
 
     return http.json(res, 200, {
       ok: true,
       siteId: siteId,
       scaffold: true,
-      recommendations: listRecommendationPreviews(),
+      recommendations: audit.findings.concat(includeCatalog ? listRecommendationPreviews() : []),
+      audit: { issueCount: audit.issueCount, auditedAt: audit.auditedAt },
       role: access.role
     });
   } catch (e) {
