@@ -622,4 +622,147 @@ describe('Search Intelligence stubs', () => {
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'settings/integrations/search-console.html')));
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'settings/integrations/google-analytics.html')));
   });
+
+  it('maps-grid mock samples and detects pack absence', async () => {
+    const { sampleMapsGrid, buildGridPoints, centreForSite } = require('../lib/search-intelligence/maps-grid');
+    const pts = buildGridPoints({ lat: -35.28, lng: 149.13 }, 3, 0.04);
+    assert.equal(pts.length, 9);
+    const centre = centreForSite({ config: { region: 'Canberra' } });
+    assert.ok(centre.lat < 0);
+    const sample = await sampleMapsGrid(
+      {
+        id: 'site-maps',
+        business_name: 'Other Biz',
+        slug: 'other-biz',
+        custom_domain: 'other-biz.example',
+        config: { region: 'Canberra', trade: 'plumber' }
+      },
+      { provider: 'mock', gridSize: 3, keyword: 'plumber canberra' }
+    );
+    assert.equal(sample.ok, true);
+    assert.equal(sample.pointCount, 9);
+    assert.ok(Array.isArray(sample.cells) && sample.cells.length === 9);
+    assert.equal(sample.provider, 'mock');
+  });
+
+  it('evidence gates block doorway suburb pages and allow clean gaps', () => {
+    const {
+      evaluateSuburbPageGate,
+      buildGatedSuburbBrief,
+      detectLocalPageIssues
+    } = require('../lib/search-intelligence/local-page-gates');
+    const site = {
+      id: 'site-local',
+      business_name: 'Demo Plumbing',
+      config: {
+        phone: '0400111222',
+        region: 'Canberra',
+        sections: {
+          serviceAreas: { on: true, areas: ['Belconnen', 'Gungahlin'] },
+          faq: { items: [{ q: 'How fast?', a: 'Same day' }] }
+        },
+        pages: [
+          {
+            status: 'published',
+            slug: 'plumber-belconnen',
+            title: 'Plumber Belconnen',
+            seoTitle: 'Pl',
+            seoDescription: 'x',
+            body: 'short'
+          }
+        ]
+      }
+    };
+    const blocked = evaluateSuburbPageGate(site, {
+      area: 'Sydney',
+      primaryKeyword: 'plumber sydney'
+    });
+    assert.equal(blocked.allowed, false);
+    assert.ok(blocked.reasons.indexOf('suburb_not_in_service_areas') >= 0);
+
+    const dup = evaluateSuburbPageGate(site, {
+      area: 'Belconnen',
+      primaryKeyword: 'plumber belconnen'
+    });
+    assert.equal(dup.allowed, false);
+    assert.ok(dup.reasons.indexOf('duplicate_local_intent') >= 0);
+
+    const ok = evaluateSuburbPageGate(site, {
+      area: 'Gungahlin',
+      primaryKeyword: 'hot water gungahlin'
+    });
+    assert.equal(ok.allowed, true);
+    const brief = buildGatedSuburbBrief(site, {
+      area: 'Gungahlin',
+      primaryKeyword: 'hot water gungahlin'
+    });
+    assert.equal(brief.ok, true);
+    assert.equal(brief.safeguards.publishAllowed, false);
+    assert.equal(brief.pageKind, 'suburb');
+
+    const issues = detectLocalPageIssues(site);
+    assert.ok(issues.findings.some((f) => f.recipeId === 'service_area_page_thin'));
+    assert.ok(issues.findings.some((f) => f.recipeId === 'schema_missing_local'));
+  });
+
+  it('ships GBP OAuth scaffold, maps-grid and local-pages APIs', () => {
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/google-business/connect.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/google-business/status.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/google-business/callback.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/google-business/exchange.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'settings/integrations/google-business.html')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/maps-grid.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/local-pages.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/maps-grid.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/local-page-gates.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/phase4-foundations.js')));
+    const oauth = require('../lib/search-intelligence/google-oauth/config');
+    assert.ok(oauth.getProvider('gbp'));
+    assert.equal(oauth.connectionStatus('gbp').status, 'not_configured');
+    const vercel = fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8');
+    assert.match(vercel, /google-business/);
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /Sample Maps grid/);
+    assert.match(manage, /si-suburb-brief/);
+    assert.match(manage, /\/api\/search-intelligence\/maps-grid/);
+    assert.match(manage, /\/api\/search-intelligence\/local-pages/);
+  });
+
+  it('gateway mapsGrid and backlinkSummary mock ops work', async () => {
+    const gw = createGateway({ provider: 'mock' });
+    assert.ok(gw.ops.indexOf('mapsGrid') >= 0);
+    assert.ok(gw.ops.indexOf('backlinkSummary') >= 0);
+    const maps = await gw.mapsGrid({ keyword: 'plumber', lat: -35.28, lng: 149.13 });
+    assert.equal(maps.ok, true);
+    assert.ok(maps.snapshot.results.length >= 1);
+    const bl = await gw.backlinkSummary({ domain: 'example-plumber.com.au' });
+    assert.equal(bl.ok, true);
+    assert.equal(bl.summary.referringDomains, 42);
+  });
+
+  it('ads keyword universe detects mismatch and overview exposes phase 3', async () => {
+    const { buildAdsKeywordUniverse } = require('../lib/search-intelligence/phase4-foundations');
+    const uni = buildAdsKeywordUniverse(
+      [{ keyword: 'plumber canberra' }, { keyword: 'hot water canberra' }, { keyword: 'blocked drain canberra' }],
+      [{ keyword: 'ppc only one' }, { keyword: 'ppc only two' }]
+    );
+    assert.ok(uni.findings.some((f) => f.recipeId === 'seo_ads_mismatch'));
+    const { buildOverview } = require('../lib/search-intelligence/overview');
+    const ov = await buildOverview({
+      siteId: 'site-p3',
+      config: {
+        seoTitle: 'Demo Plumbing Canberra',
+        seoDescription: 'Local plumbers',
+        phone: '0400111222',
+        region: 'Canberra',
+        sections: { quote: { on: true }, serviceAreas: { on: true, areas: ['Belconnen'] } }
+      },
+      includeRecipeCatalog: false
+    });
+    assert.equal(ov.phase, 3);
+    assert.equal(ov.scaffold, false);
+    assert.ok(ov.cards.find((c) => c.id === 'ai_visibility'));
+    assert.ok(ov.connections.gbp);
+    assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/providers/semrush.js')), false);
+  });
 });

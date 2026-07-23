@@ -56,15 +56,33 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 
 ---
 
-## Phase 3 Local Growth (foundations started)
+## Phase 3 Local Growth (complete for DataForSEO path)
 
 - [x] First-party NAP / listings audit (no GBP required)
 - [x] Local opportunity map (service areas × keyword clusters)
 - [x] Manage → Local tab + usage rollup
 - [x] Overview Local / Maps readiness card
-- [ ] Google Business Profile OAuth (when Google access approved)
-- [ ] DataForSEO Maps-grid SERP sampling (optional paid)
-- [ ] Safe multi-suburb page generation with evidence gates
+- [x] Google Business Profile OAuth scaffold (status/connect/callback/exchange; live sync when Google access approved)
+- [x] DataForSEO Maps-grid SERP sampling (Manage → Local; meter `maps_grid`)
+- [x] Safe multi-suburb page generation with evidence gates (Draft page → brief / Landing handoff; never silent publish)
+
+---
+
+## Phase 4 foundations (started)
+
+- [x] Backlink summary DTO + gateway op (`backlinkSummary` via DataForSEO)
+- [x] SEO↔Ads keyword universe helper + `seo_ads_mismatch` when Ads keywords supplied
+- [x] AI Visibility overview card placeholder + SERP `ai_overview` / brand SERP probes
+- [ ] Full Ads keyword import into SI matrix
+- [ ] Competitor backlink gap reporting UI
+- [ ] AI citation ownership depth
+
+---
+
+## Phase 5 Autopilot (deferred)
+
+- [ ] Scoped `auto_fix_safe` allow-list only (never silent AI publish)
+- [ ] Multi-location CRM value outcomes
 
 ---
 

@@ -25,7 +25,7 @@ Ops: set `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` (or email/password aliases);
 |----------|------------------------------|---------------------|
 | Included (25 tracked, weekly SERP) | ~100 SERP + 50 keyword-idea calls | ~$2–6 |
 | SEO Growth (100 tracked, daily SERP) | ~3k SERP + 200 keyword ideas | ~$25–80 |
-| Local Growth (Maps grid later) | Grid points via DataForSEO only | Model in Phase 3 |
+| Local Growth (Maps grid) | Grid points via DataForSEO `mapsGrid` | Shipped — Manage → Local |
 
 Metered usage is available at `GET /api/search-intelligence/usage` and on Manage → Local.
 
@@ -50,7 +50,7 @@ Metered usage is available at `GET /api/search-intelligence/usage` and on Manage
 | Search Console | Shipped — OAuth + property + sync |
 | GA4 Data API | Shipped — OAuth + property + sync |
 | Ads | Existing Advertising tab — shared keyword universe Phase 4 |
-| GBP | Product Phase 3; first-party NAP / opportunity map ships without GBP |
+| GBP | OAuth scaffold shipped; live sync when Google access approved |
 
 ---
 
@@ -63,4 +63,4 @@ Metered usage is available at `GET /api/search-intelligence/usage` and on Manage
 - [x] GSC + GA4 OAuth plan approved / implemented  
 - [x] Pilot roster process documented (private ops; no PII in repo)  
 
-Phase 1–2 build is complete on this programme track. Phase 3 Local Growth continues with DataForSEO-only market data.
+Phase 1–3 build is complete on this programme track (GBP live sync still gated on Google access). Phase 4 foundations started — DataForSEO-only market data.

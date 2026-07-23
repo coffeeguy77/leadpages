@@ -10549,20 +10549,36 @@ function heroCtaCard(c){
       var j=await _siFetch('/api/search-intelligence/local?siteId='+encodeURIComponent(currentSiteId));
       var L=j.listings||{};
       var M=j.opportunityMap||{};
+      var gbp=j.gbp||{};
       var findings=(L.findings||[]).map(function(f){
         return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px"><strong>'+esc(f.title)+'</strong><div class="lede" style="margin:6px 0 0">'+esc(f.plainLanguage||'')+'</div></div>';
       }).join('');
-      var gaps=(M.topGaps||[]).map(function(g){
-        return '<tr><td>'+esc(g.area)+'</td><td>'+esc(g.clusterName||g.primaryKeyword)+'</td><td>'+esc(g.opportunity)+'</td></tr>';
+      var pageFindings=(j.pageFindings||[]).map(function(f){
+        return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px"><strong>'+esc(f.title)+'</strong><div class="lede" style="margin:6px 0 0">'+esc(f.plainLanguage||'')+'</div></div>';
+      }).join('');
+      var gaps=(M.topGaps||[]).map(function(g,i){
+        return '<tr><td>'+esc(g.area)+'</td><td>'+esc(g.clusterName||g.primaryKeyword)+'</td><td>'+esc(g.opportunity)+'</td>'
+          +'<td><button type="button" class="btn sm si-suburb-brief" data-i="'+i+'" data-area="'+esc(g.area)+'" data-kw="'+esc(g.primaryKeyword||'')+'">Draft page</button></td></tr>';
       }).join('');
       body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Local listings</h2>'
-        +'<p class="lede" style="margin:0 0 12px">NAP readiness score: <strong>'+esc(L.listingsScore!=null?Math.round(L.listingsScore*100):'—')+'</strong> · GBP: '+esc((j.gbp&&j.gbp.status)||'not_connected')+'</p>'
+        +'<p class="lede" style="margin:0 0 12px">NAP readiness score: <strong>'+esc(L.listingsScore!=null?Math.round(L.listingsScore*100):'—')+'</strong> · GBP: <strong>'+esc(gbp.status||'not_connected')+'</strong></p>'
         +(findings||'<p class="hint">No NAP issues from first-party site facts.</p>')
-        +'<p class="hint" style="margin-top:10px">'+esc((j.gbp&&j.gbp.note)||'')+'</p></div>'
+        +'<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">'
+        +'<a class="btn sm ghost" href="/settings/integrations/google-business?siteId='+encodeURIComponent(currentSiteId)+'">Connect GBP</a>'
+        +'</div>'
+        +'<p class="hint" style="margin-top:10px">'+esc(gbp.note||gbp.hint||'')+'</p></div>'
         +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Local opportunity map</h2>'
         +'<p class="lede" style="margin:0 0 12px">'+esc(M.areaCount||0)+' areas · '+esc(M.clusterCount||0)+' clusters · '+esc(M.gapCount||0)+' gaps · Maps readiness '+esc(M.mapsVisibilityScore!=null?Math.round(M.mapsVisibilityScore*100):'—')+'</p>'
-        +(gaps?'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Area</th><th>Cluster</th><th>Opportunity</th></tr></thead><tbody>'+gaps+'</tbody></table></div>':'<p class="hint">Track keywords and set service areas to see gaps.</p>')
-        +'<p class="hint" style="margin-top:10px">'+esc((M.safeguards&&M.safeguards.note)||'')+'</p></div>';
+        +(gaps?'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Area</th><th>Cluster</th><th>Opportunity</th><th></th></tr></thead><tbody>'+gaps+'</tbody></table></div>':'<p class="hint">Track keywords and set service areas to see gaps.</p>')
+        +'<p class="hint" style="margin-top:10px">'+esc((M.safeguards&&M.safeguards.note)||'')+' Draft page runs evidence gates — never silent publish.</p></div>'
+        +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Maps grid</h2>'
+        +'<p class="lede" style="margin:0 0 10px">Sample Maps pack presence across a small geo grid (DataForSEO when configured, else mock).</p>'
+        +'<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">'
+        +'<input id="si-maps-kw" type="text" placeholder="Keyword (optional)" style="min-width:180px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--input-bg,var(--panel));color:var(--ink)">'
+        +'<select id="si-maps-size" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--input-bg,var(--panel));color:var(--ink)"><option value="1">1×1</option><option value="3" selected>3×3</option><option value="5">5×5</option></select>'
+        +'<button type="button" class="btn sm" id="si-maps-run">Sample Maps grid</button></div>'
+        +'<div id="si-maps-out" class="hint" style="margin-top:10px"></div></div>'
+        +(pageFindings?'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Local page issues</h2>'+pageFindings+'</div>':'');
       try{
         var u=await _siFetch('/api/search-intelligence/usage?siteId='+encodeURIComponent(currentSiteId)+'&days=30');
         if(u&&u.available){
@@ -10571,6 +10587,58 @@ function heroCtaCard(c){
             +'<pre style="font-size:12px;overflow:auto">'+esc(JSON.stringify(u.byMeter||{},null,2))+'</pre></div>';
         }
       }catch(_u){}
+      var runBtn=document.getElementById('si-maps-run');
+      if(runBtn){
+        runBtn.onclick=async function(){
+          var out=document.getElementById('si-maps-out');
+          out.textContent='Sampling…';
+          try{
+            var tok=await _siToken();
+            var r=await fetch('/api/search-intelligence/maps-grid',{
+              method:'POST',
+              headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},
+              body:JSON.stringify({
+                siteId:currentSiteId,
+                keyword:(document.getElementById('si-maps-kw').value||'').trim()||undefined,
+                gridSize:Number(document.getElementById('si-maps-size').value||3)
+              })
+            });
+            var s=await r.json().catch(function(){return {};});
+            if(!r.ok){ out.textContent=s.message||s.error||('HTTP '+r.status); return; }
+            out.innerHTML='Coverage <strong>'+esc(s.presentCount)+'/'+esc(s.pointCount)+'</strong> · score '+esc(s.mapsVisibilityScore!=null?Math.round(s.mapsVisibilityScore*100):'—')
+              +' · provider '+esc(s.provider||'—')
+              +((s.findings&&s.findings[0])?'<div class="lede" style="margin-top:8px">'+esc(s.findings[0].plainLanguage)+'</div>':'');
+          }catch(e){ out.textContent=String(e.message||e); }
+        };
+      }
+      Array.prototype.forEach.call(document.querySelectorAll('.si-suburb-brief'), function(btn){
+        btn.onclick=async function(){
+          var area=btn.getAttribute('data-area')||'';
+          var kw=btn.getAttribute('data-kw')||'';
+          try{
+            var tok=await _siToken();
+            var r=await fetch('/api/search-intelligence/local-pages',{
+              method:'POST',
+              headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},
+              body:JSON.stringify({siteId:currentSiteId,area:area,primaryKeyword:kw,handoff:false})
+            });
+            var brief=await r.json().catch(function(){return {};});
+            if(r.status===422){
+              toast((brief.gate&&brief.gate.reasons&&brief.gate.reasons.join(', '))||brief.message||'Gate blocked');
+              return;
+            }
+            if(!r.ok){ toast(brief.message||brief.error||('HTTP '+r.status)); return; }
+            var handoff=brief.landingDraftHandoff||{};
+            var q=new URLSearchParams();
+            q.set('siteId', currentSiteId);
+            if(handoff.primaryKeyword) q.set('primaryKeyword', handoff.primaryKeyword);
+            if(handoff.location) q.set('location', handoff.location);
+            if(handoff.brief) q.set('brief', handoff.brief.slice(0,1500));
+            toast('Brief ready — opening Landing pages (human approve only)');
+            location.href='/manage#landing?'+q.toString();
+          }catch(e){ toast(String(e.message||e)); }
+        };
+      });
     }catch(e){
       body.innerHTML='<div class="card"><p class="lede">Local view unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
     }

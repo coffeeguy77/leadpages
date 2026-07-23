@@ -58,16 +58,18 @@ Every response includes `provider`, `fetchedAt`, `labelClass` (`measured` \| `es
 
 ---
 
-## Operations (Phase 1 surface)
+## Operations
 
 | Op | Description |
 |----|-------------|
 | `keywordIdeas` | Seed → related keywords + volume/CPC |
 | `serp` | Live SERP for keyword × geo × device |
+| `mapsGrid` | Google Maps SERP at lat/lng (Maps-grid cells) |
 | `domainOverview` | Light competitor/domain snapshot |
 | `rankCheck` | Position for tracked keywords |
+| `backlinkSummary` | Referring domains / backlinks (DataForSEO Backlinks API) |
 
-Phase 4 may add `backlinks` / `backlinkGap` on the **same DataForSEO adapter**. AI visibility may be a separate hybrid provider.
+AI visibility probes reuse `serp` features (`ai_overview`). Semrush is never used.
 
 ---
 
@@ -76,7 +78,7 @@ Phase 4 may add `backlinks` / `backlinkGap` on the **same DataForSEO adapter**. 
 - `dataforseo.js` returns `{ ok: false, error: 'not_configured' }` until `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` are set (aliases: `DATAFORSEO_EMAIL` / `DATAFORSEO_API_PASSWORD`, `DFS_LOGIN` / `DFS_PASSWORD`)
 - When credentials exist and `SI_PROVIDER` / `SI_KEYWORD_PROVIDER` are unset, the gateway **auto-prefers** DataForSEO
 - Explicit `SI_PROVIDER=mock` always wins; any `semrush` preference is remapped to DataForSEO/mock
-- Live ops: `keywordIdeas` → Labs `google/keyword_ideas/live`; `serp` / `rankCheck` → `serp/google/organic/live/advanced`; `domainOverview` → Labs `google/domain_rank_overview/live`
+- Live ops: `keywordIdeas` → Labs `google/keyword_ideas/live`; `serp` / `rankCheck` → `serp/google/organic/live/advanced`; `mapsGrid` → `serp/google/maps/live/advanced`; `domainOverview` → Labs `google/domain_rank_overview/live`; `backlinkSummary` → `backlinks/summary/live`
 - Default geo: `DATAFORSEO_LOCATION_CODE` (default **2036** Australia)
 - `mock.js` returns deterministic fixtures for unit tests  
 

@@ -34,9 +34,20 @@ Phase 1 sellable detectors (1–10) plus Phase 2–4 drafted types (11–20). Se
 | `traffic_no_convert` | Traffic without conversions | Sessions/clicks without form/call | CTA/form improvement |
 | `seo_ads_mismatch` | Organic and Ads mismatch | Shared keyword universe (Phase 4; light heuristic earlier) | Align LP / keyword |
 
-### Drafted (11–20)
+### Live detectors (Phase 2–3 local)
 
-`listings_nap_gap`, `maps_pack_absent`, `review_velocity_low`, `service_area_page_thin`, `duplicate_local_intent`, `schema_missing_local`, `internal_link_local_gap`, `brand_serp_unowned`, `ai_overview_absent`, `backlink_gap_local` — metadata in registry; NAP gap also detected from first-party config on overview/Local.
+| Id | Name | Trigger | Primary action |
+|----|------|---------|----------------|
+| `listings_nap_gap` | NAP / listings gap | Missing/mismatched name or phone on site | Edit SEO / create task |
+| `maps_pack_absent` | Missing from Maps pack | Maps-grid sample: absent on ≥ half of points | Task + Page Optimiser |
+| `service_area_page_thin` | Thin suburb page | Published page mentions area but weak SEO/body | Page Optimiser / draft |
+| `duplicate_local_intent` | Duplicate local landings | ≥2 published pages share an area | Consolidate task |
+| `schema_missing_local` | LocalBusiness schema missing | `seoJsonLd` lacks local type | Schema patch |
+| `internal_link_local_gap` | Weak links to local pages | Suburb page not in home/nav | Editor / task |
+
+### Needs GBP or deeper Phase 4
+
+`review_velocity_low` (GBP reviews). `brand_serp_unowned` / `ai_overview_absent` / `backlink_gap_local` have probe helpers in `phase4-foundations.js` (SERP / backlinkSummary).
 
 ---
 
@@ -70,6 +81,7 @@ Phase 1 sellable detectors (1–10) plus Phase 2–4 drafted types (11–20). Se
 | `dismiss` / `snooze` | Recommendation state |
 
 Phase 2 adds `page_optimiser`, `composer_draft` (Brain landing handoff), `internal_link_patch`, `schema_patch`.  
+Phase 3 adds evidence-gated `suburb_page_brief` via `POST /api/search-intelligence/local-pages` and Maps grid via `POST /api/search-intelligence/maps-grid`.  
 Phase 5 adds scoped `auto_fix_safe`.
 
 ### Page Optimiser (Phase 2 scaffold)

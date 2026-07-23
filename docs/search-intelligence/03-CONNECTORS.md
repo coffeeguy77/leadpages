@@ -28,7 +28,7 @@ Search Intelligence reuses the same pattern via [`lib/search-intelligence/google
 |-----------|------------|----------|----------|
 | Search Console | `/settings/integrations/search-console` | `/api/integrations/search-console/callback` | `/api/integrations/search-console/exchange` |
 | GA4 | `/settings/integrations/google-analytics` | `/api/integrations/google-analytics/callback` | `/api/integrations/google-analytics/exchange` |
-| GBP | `/settings/integrations/google-business` | Phase 3 | Phase 3 |
+| GBP | `/settings/integrations/google-business` | Scaffold (OAuth) | Live sync when Google access approved |
 
 Ads remains at `/settings/integrations/google-ads`.
 
@@ -174,11 +174,15 @@ Ads connection already exists. Shared keyword universe and SEO↔PPC matrix land
 
 ## Phase 3 — Google Business Profile
 
-Subject to Google API access:
+OAuth scaffold ships at `/settings/integrations/google-business` (`GBP_CLIENT_ID` / `GBP_CLIENT_SECRET`). Encrypted tokens land in `si_connections` with `provider:'gbp'`.
+
+Subject to Google API access for live sync:
 
 - Locations, categories, hours, service areas
 - Posts, reviews (reply with human approval)
 - Performance: calls, website clicks, directions, search keyword impressions
+
+Until then: first-party NAP audit + DataForSEO Maps-grid on Manage → Local.
 
 ---
 

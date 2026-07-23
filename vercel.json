@@ -93,6 +93,14 @@
       "destination": "/settings/integrations/google-analytics.html"
     },
     {
+      "source": "/settings/integrations/google-business",
+      "destination": "/settings/integrations/google-business.html"
+    },
+    {
+      "source": "/settings/integrations/google-business/",
+      "destination": "/settings/integrations/google-business.html"
+    },
+    {
       "source": "/",
       "has": [
         {
