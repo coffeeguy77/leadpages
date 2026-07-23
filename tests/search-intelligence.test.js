@@ -411,7 +411,15 @@ describe('Search Intelligence stubs', () => {
       process.env.GSC_CLIENT_ID = 'gsc-cid';
       process.env.GSC_CLIENT_SECRET = 'gsc-secret';
       assert.equal(oauth.clientId('search_console'), 'gsc-cid');
-      assert.match(oauth.configHint('search_console'), /GSC_CLIENT_ID/);
+      assert.match(oauth.configHint('search_console'), /GOOGLE_ADS_CLIENT_ID/);
+      assert.equal(oauth.credentialSource('search_console'), 'GSC_CLIENT_ID');
+      delete process.env.GSC_CLIENT_ID;
+      delete process.env.GSC_CLIENT_SECRET;
+      assert.equal(oauth.credentialSource('search_console'), 'GOOGLE_ADS_CLIENT_ID');
+      process.env.GOOGLE_ADS_OAUTH_ENCRYPTION_KEY = Buffer.alloc(32, 1).toString('base64');
+      assert.equal(oauth.oauthReady('search_console'), true);
+      assert.equal(oauth.connectionStatus('search_console').status, 'ready_to_connect');
+      delete process.env.GOOGLE_ADS_OAUTH_ENCRYPTION_KEY;
     } finally {
       Object.keys(prev).forEach(function (k) {
         if (prev[k] == null) delete process.env[k];

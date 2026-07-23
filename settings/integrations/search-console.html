@@ -54,7 +54,7 @@
     <div class="brand">LeadPages · Integrations</div>
     <div class="card">
       <h1>Google Search Console</h1>
-      <p class="lede">Connect Search Console so SEO Command Centre can import clicks, impressions and query–page data. Verification meta/DNS stays under Settings → Search &amp; indexing.</p>
+      <p class="lede">Connect Search Console so SEO Command Centre can import clicks, impressions and query–page data. Uses the platform Google Ads OAuth client when dedicated <code>GSC_CLIENT_*</code> are unset. Verification meta/DNS stays under Settings → Search &amp; indexing.</p>
       <div id="auth-box"><p class="hint">Checking sign-in…</p></div>
     </div>
     <div class="card" id="panel" hidden>
@@ -79,6 +79,7 @@
     <p class="foot">
       Application: <code>app.leadpages.com.au</code> ·
       Callback: <code>/api/integrations/search-console/callback</code>
+      · Credentials: <code>GSC_CLIENT_*</code> or reuse <code>GOOGLE_ADS_CLIENT_*</code> + <code>GOOGLE_ADS_OAUTH_ENCRYPTION_KEY</code>
     </p>
   </div>
   <script>
@@ -137,6 +138,7 @@
         st.innerHTML=
           '<div><span>Platform</span><strong>'+esc(j.platformConfigured?'configured':'not configured')+'</strong></div>'
           +'<div><span>OAuth ready</span><strong>'+esc(j.oauthReady?'yes':'no')+'</strong></div>'
+          +(j.credentialSource?'<div><span>Client env</span><strong>'+esc(j.credentialSource)+'</strong></div>':'')
           +'<div><span>Connection</span><strong>'+esc(j.status||'—')+'</strong></div>'
           +'<div><span>Account</span><strong>'+esc(j.googleAccountEmail||'—')+'</strong></div>'
           +'<div><span>Property</span><strong>'+esc(j.propertyId||'—')+'</strong></div>'
