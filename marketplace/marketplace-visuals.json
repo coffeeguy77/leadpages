@@ -108,6 +108,11 @@
       "url": "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=1200&h=720&fit=crop&q=80",
       "alt": "Emergency availability banner",
       "caption": "After-hours status and schedule — pairs with 24/7 ad campaigns."
+    },
+    "premiumGallery": {
+      "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=720&fit=crop&q=80",
+      "alt": "Premium gallery mosaic",
+      "caption": "Mixed portrait and landscape photography in a smart mosaic with lightbox zoom."
     }
   }
 }

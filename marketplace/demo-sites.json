@@ -4,13 +4,24 @@
       "name": "Bean Culture Landscaping",
       "url": "https://beanculture.com.au",
       "description": "Landscaping and decking — Instagram gallery connected for live social proof.",
-      "apps": ["instaGallery", "igProjectFeed", "featuredProjects", "projectFeed"]
+      "apps": [
+        "instaGallery",
+        "igProjectFeed",
+        "featuredProjects",
+        "projectFeed",
+        "premiumGallery"
+      ]
     },
     "aam1": {
       "name": "AAM1 Coating Services",
       "url": "https://aam1.com.au",
       "description": "Rendering and coatings — project portfolio showcase.",
-      "apps": ["featuredProjects", "projectFeed", "beforeAfter"]
+      "apps": [
+        "featuredProjects",
+        "projectFeed",
+        "beforeAfter",
+        "premiumGallery"
+      ]
     }
   }
 }

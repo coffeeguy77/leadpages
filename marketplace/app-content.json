@@ -1405,5 +1405,39 @@
     "presets": [
       "default"
     ]
+  },
+  "premiumGallery": {
+    "name": "Premium Gallery",
+    "tagline": "Design-led image galleries for large photo collections",
+    "summary": "Showcase mixed portrait and landscape photography with mosaic layouts, filters, categories and albums.",
+    "pitch": "A flexible photography-first gallery for builders, landscapers, renovators, architects, photographers and venues. Supports simple grids, tag filters, category browsing and album navigation without replacing Project Portfolio.",
+    "features": [
+      {
+        "title": "Structure modes",
+        "text": "Simple, filtered, categories, or categories → albums → images."
+      },
+      {
+        "title": "Premium layouts",
+        "text": "Smart mosaic, masonry, justified rows, filmstrip, slideshow and more."
+      },
+      {
+        "title": "Lightbox zoom",
+        "text": "Click to enlarge with captions, thumbnails and keyboard navigation."
+      },
+      {
+        "title": "Theme colours",
+        "text": "Inherits website colours with labelled swatch overrides."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Upper-zone visual proof",
+        "text": "Place a polished gallery under the hero for high-ticket visual trades."
+      },
+      {
+        "title": "Upload once",
+        "text": "Mixed folders look good without cropping every image to the same ratio."
+      }
+    ]
   }
 }

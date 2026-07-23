@@ -1105,5 +1105,68 @@
       "key": "theme.pipe",
       "label": "Brand colour"
     }
+  ],
+  "premiumGallery": [
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.heading",
+      "label": "Section heading"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.eyebrow",
+      "label": "Eyebrow text"
+    },
+    {
+      "type": "select",
+      "key": "sections.premiumGallery.layout",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "smart-mosaic",
+          "label": "Smart mosaic"
+        },
+        {
+          "value": "masonry",
+          "label": "Masonry"
+        },
+        {
+          "value": "grid",
+          "label": "Uniform grid"
+        },
+        {
+          "value": "filmstrip",
+          "label": "Filmstrip"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.premiumGallery.structureMode",
+      "label": "Structure",
+      "options": [
+        {
+          "value": "simple",
+          "label": "Simple"
+        },
+        {
+          "value": "filtered",
+          "label": "Filtered"
+        },
+        {
+          "value": "categories",
+          "label": "Categories"
+        },
+        {
+          "value": "categories-albums",
+          "label": "Categories + albums"
+        }
+      ]
+    },
+    {
+      "type": "color",
+      "key": "sections.premiumGallery.activeFilterColor",
+      "label": "Active filter colour"
+    }
   ]
 }
