@@ -53,7 +53,7 @@
   <div class="wrap">
     <div class="brand">LeadPages · Integrations</div>
     <div class="card">
-      <h1>Google Google Analytics 4</h1>
+      <h1>Google Analytics 4</h1>
       <p class="lede">Connect Google Analytics 4 so SEO Command Centre can import sessions, landing-page and conversion data for search-to-lead attribution.</p>
       <div id="auth-box"><p class="hint">Checking sign-in…</p></div>
     </div>
@@ -63,7 +63,15 @@
       <div class="status" id="status"></div>
       <div class="row" style="margin-top:14px">
         <button type="button" class="btn" id="connect">Connect Google Analytics 4</button>
+        <button type="button" class="btn ghost" id="load-props" disabled>Load properties</button>
         <a class="btn ghost" href="/manage" style="text-decoration:none">Back to manage</a>
+      </div>
+      <div id="prop-box" style="margin-top:16px" hidden>
+        <label for="property">GA4 property</label>
+        <select id="property"></select>
+        <div class="row" style="margin-top:10px">
+          <button type="button" class="btn" id="save-prop">Save property</button>
+        </div>
       </div>
       <p class="hint" style="margin-top:14px" id="hint"></p>
     </div>
@@ -104,12 +112,14 @@
       } else if(sites[0]) currentSiteId=sites[0].id;
       var flash=params.get('ga4');
       if(flash==='connected'){
-        document.getElementById('hint').textContent='Google Analytics connected. Property selection and sync come next.';
+        document.getElementById('hint').textContent='Google Analytics connected. Load and save a GA4 property.';
       } else if(flash==='error'){
         document.getElementById('hint').textContent='Connection did not complete. Try Connect again.';
       }
       sel.onchange=function(){ currentSiteId=sel.value; refresh(); };
       document.getElementById('connect').onclick=connect;
+      document.getElementById('load-props').onclick=loadProperties;
+      document.getElementById('save-prop').onclick=saveProperty;
       refresh();
     }
 
@@ -131,9 +141,62 @@
         if(!hint.textContent || hint.textContent.indexOf('connected')<0){
           hint.textContent=j.hint||j.message||'';
         }
+        var connected=j.status==='connected';
         document.getElementById('connect').disabled=!(j.oauthReady);
+        document.getElementById('load-props').disabled=!connected;
+        if(connected && !j.propertyId) loadProperties();
       }catch(e){
         st.innerHTML='<div><span>Error</span><strong>'+esc(e.message||e)+'</strong></div>';
+      }
+    }
+
+    async function loadProperties(){
+      var hint=document.getElementById('hint');
+      hint.textContent='Loading GA4 properties…';
+      try{
+        var r=await fetch('/api/integrations/google-analytics/properties?siteId='+encodeURIComponent(currentSiteId),{
+          headers:{Authorization:'Bearer '+session.access_token}
+        });
+        var j=await r.json();
+        if(!r.ok){ hint.textContent=j.message||j.error||('HTTP '+r.status); return; }
+        var box=document.getElementById('prop-box');
+        var sel=document.getElementById('property');
+        var props=j.properties||[];
+        window.__ga4Props=props;
+        sel.innerHTML=props.map(function(p){
+          var id=p.propertyId||'';
+          var selected=id===j.selectedPropertyId?' selected':'';
+          return '<option value="'+esc(id)+'"'+selected+'>'+esc(p.label||id)+'</option>';
+        }).join('')||'<option value="">No properties found</option>';
+        box.hidden=!props.length;
+        hint.textContent=props.length?('Found '+props.length+' properties.'):(j.message||'No GA4 properties on this Google account.');
+      }catch(e){
+        hint.textContent=String(e.message||e);
+      }
+    }
+
+    async function saveProperty(){
+      var hint=document.getElementById('hint');
+      var propertyId=document.getElementById('property').value;
+      if(!propertyId){ hint.textContent='Choose a property first.'; return; }
+      var match=(window.__ga4Props||[]).find(function(p){ return p.propertyId===propertyId; });
+      try{
+        var r=await fetch('/api/integrations/google-analytics/save-property',{
+          method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token},
+          body:JSON.stringify({
+            siteId:currentSiteId,
+            propertyId:propertyId,
+            label:document.getElementById('property').selectedOptions[0].textContent,
+            propertyResource:match&&match.propertyResource
+          })
+        });
+        var j=await r.json();
+        if(!r.ok){ hint.textContent=j.message||j.error||('HTTP '+r.status); return; }
+        hint.textContent='GA4 property saved. Metric sync lands in a follow-up.';
+        refresh();
+      }catch(e){
+        hint.textContent=String(e.message||e);
       }
     }
 

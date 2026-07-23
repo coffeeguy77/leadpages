@@ -174,6 +174,60 @@ describe('Search Intelligence stubs', () => {
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/google-oauth/crypto.js')));
   });
 
+  it('ships property select, sync, and organic attribution modules', () => {
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/search-console/properties.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/search-console/save-property.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/search-console/sync.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/google-analytics/properties.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/google-analytics/save-property.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/cron/sync-search-intelligence.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/sync.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/attribution-organic.js')));
+    const vercel = fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8');
+    assert.match(vercel, /sync-search-intelligence/);
+  });
+
+  it('classifies organic props and surfaces overview cards from totals', async () => {
+    const { isOrganicProps } = require('../lib/search-intelligence/attribution-organic');
+    assert.equal(isOrganicProps({ traffic_source: 'organic' }), true);
+    assert.equal(isOrganicProps({ gclid: 'x', traffic_source: 'organic' }), false);
+    assert.equal(isOrganicProps({ utm_medium: 'organic' }), true);
+
+    const { buildOverview } = require('../lib/search-intelligence/overview');
+    const ov = await buildOverview({
+      siteId: 'site-attr',
+      config: { seoTitle: 'T', seoDescription: 'D', phone: '0400000000', sections: { quote: { on: true } } },
+      connectionRows: {
+        search_console: {
+          connection_status: 'connected',
+          enabled: true,
+          property_id: 'https://example.com.au/',
+          last_sync_at: '2026-07-01T00:00:00.000Z'
+        }
+      },
+      gscTotals: {
+        available: true,
+        rows: 3,
+        clicks: 42,
+        impressions: 900,
+        startDate: '2026-06-01',
+        endDate: '2026-06-28'
+      },
+      organicSummary: {
+        available: true,
+        organicLeads: 5,
+        organicCallClicks: 2,
+        organicForms: 3,
+        days: 28,
+        labelClass: 'measured'
+      },
+      includeRecipeCatalog: false
+    });
+    assert.equal(ov.cards.find((c) => c.id === 'organic_clicks').value, 42);
+    assert.equal(ov.cards.find((c) => c.id === 'search_leads').value, 5);
+    assert.equal(ov.connections.search_console.propertyId, 'https://example.com.au/');
+  });
+
   it('wires SEO Command Centre manage tab + APIs', () => {
     const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
     assert.match(manage, /id="nav-seo"/);

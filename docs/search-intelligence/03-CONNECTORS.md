@@ -1,7 +1,7 @@
 # Search Intelligence — Connectors
 
 **Document:** `search-intelligence/03-CONNECTORS`  
-**Status:** GSC + GA4 OAuth authorize/exchange wired; property sync next  
+**Status:** GSC + GA4 OAuth, property select, GSC sync + cron; GA4 metric sync next  
 **Prerequisites:** [01-ARCHITECTURE.md](01-ARCHITECTURE.md), [../features/Google Ads.md](../features/Google Ads.md)
 
 ---
@@ -52,13 +52,17 @@ Storage: `si_connections` + `si_oauth_states` (see [02-DATA-MODEL.md](02-DATA-MO
 - `GET /api/integrations/search-console/status?siteId=`  
 - `POST /api/integrations/search-console/connect` → `{ ok, url }` Google authorize redirect  
 - `GET /api/integrations/search-console/callback` → HTML relay  
-- `POST /api/integrations/search-console/exchange` → encrypt + upsert `si_connections`
+- `POST /api/integrations/search-console/exchange` → encrypt + upsert `si_connections`  
+- `GET /api/integrations/search-console/properties?siteId=` → list GSC sites  
+- `POST /api/integrations/search-console/save-property` → `{ siteId, propertyId }`  
+- `POST /api/integrations/search-console/sync` → query×page → `si_query_page_stats`  
+- Cron: `/api/cron/sync-search-intelligence` every 6h (`vercel.json`)
 
 **Scopes:** Search Console read (`webmasters.readonly`) + OpenID email.
 
-**Property mapping (next):** `site_id` → GSC property URL (domain or URL-prefix).
+**Property mapping:** `site_id` → GSC property URL (domain or URL-prefix) stored on `si_connections.property_id`.
 
-**Sync jobs (next):** Daily search analytics → `si_query_page_stats`.
+**Sync:** Manual + cron pull search analytics (query × page) into `si_query_page_stats` for the selected window (default 28d).
 
 **Note:** Existing GSC **verification** (meta / DNS TXT / CNAME) stays in Settings → Search & indexing. Command Centre owns **API insights**.
 
@@ -70,11 +74,21 @@ Storage: `si_connections` + `si_oauth_states` (see [02-DATA-MODEL.md](02-DATA-MO
 
 **Env:** `GA4_CLIENT_ID`, `GA4_CLIENT_SECRET`, optional `GA4_REDIRECT_URI` (+ same encryption / state secrets as GSC)
 
-**Routes:** `/settings/integrations/google-analytics`, `/api/integrations/google-analytics/{status,connect,callback,exchange}`
+**Routes:** `/settings/integrations/google-analytics`, `/api/integrations/google-analytics/{status,connect,callback,exchange,properties,save-property}`
 
-**Mapping (next):** `site_id` → GA4 property id (+ optional data stream).
+**Mapping:** `site_id` → GA4 property id on `si_connections.property_id` (+ `property_meta.propertyResource`).
 
 **Sync (next):** Landing-page and conversion aggregates; join to `visitor_sessions` / lead events where possible.
+
+---
+
+## Organic attribution (first-party, live)
+
+`lib/search-intelligence/attribution-organic.js` rolls up `call_click` + `lead_submit` events for a site window:
+
+- Prefers `visitor_sessions.traffic_source = organic` when `session_id` is present  
+- Falls back to event props / UTM medium=organic (excludes Ads click ids)  
+- Surfaces on Command Centre **Search leads** card via overview API  
 
 ---
 

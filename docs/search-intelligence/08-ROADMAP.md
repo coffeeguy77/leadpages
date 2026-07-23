@@ -27,11 +27,11 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - [x] Site Brain `snapshot.searchIntelligence` twin shape
 - [x] GSC + GA4 settings pages + status/connect/callback/exchange (encrypted `si_connections`)
 - [x] First-party HTML crawl (homepage, `?crawl=1`; Actions tab)
-- [ ] GSC / GA4 property selection + scheduled sync
-- [ ] Forms / call-click attribution join
+- [x] GSC / GA4 property selection + GSC query×page sync (+ cron)
+- [x] Forms / call-click organic attribution rollup (Command Centre card)
 - [ ] Keyword research via live provider
 - [ ] Tracked keywords (25–100 per plan)
-- [ ] Page-level performance from GSC
+- [ ] Page-level performance views from synced GSC
 - [ ] Partner portfolio basics
 - [ ] Scheduled client summary
 

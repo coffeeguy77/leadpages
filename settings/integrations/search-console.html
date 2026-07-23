@@ -63,7 +63,16 @@
       <div class="status" id="status"></div>
       <div class="row" style="margin-top:14px">
         <button type="button" class="btn" id="connect">Connect Search Console</button>
+        <button type="button" class="btn ghost" id="load-props" disabled>Load properties</button>
+        <button type="button" class="btn ghost" id="sync" disabled>Sync now</button>
         <a class="btn ghost" href="/manage" style="text-decoration:none">Back to manage</a>
+      </div>
+      <div id="prop-box" style="margin-top:16px" hidden>
+        <label for="property">Search Console property</label>
+        <select id="property"></select>
+        <div class="row" style="margin-top:10px">
+          <button type="button" class="btn" id="save-prop">Save property</button>
+        </div>
       </div>
       <p class="hint" style="margin-top:14px" id="hint"></p>
     </div>
@@ -104,12 +113,15 @@
       } else if(sites[0]) currentSiteId=sites[0].id;
       var flash=params.get('gsc');
       if(flash==='connected'){
-        document.getElementById('hint').textContent='Search Console connected. Property selection and sync come next.';
+        document.getElementById('hint').textContent='Search Console connected. Load properties, then Sync.';
       } else if(flash==='error'){
         document.getElementById('hint').textContent='Connection did not complete. Try Connect again.';
       }
       sel.onchange=function(){ currentSiteId=sel.value; refresh(); };
       document.getElementById('connect').onclick=connect;
+      document.getElementById('load-props').onclick=loadProperties;
+      document.getElementById('save-prop').onclick=saveProperty;
+      document.getElementById('sync').onclick=syncNow;
       refresh();
     }
 
@@ -127,13 +139,81 @@
           +'<div><span>OAuth ready</span><strong>'+esc(j.oauthReady?'yes':'no')+'</strong></div>'
           +'<div><span>Connection</span><strong>'+esc(j.status||'—')+'</strong></div>'
           +'<div><span>Account</span><strong>'+esc(j.googleAccountEmail||'—')+'</strong></div>'
-          +'<div><span>Property</span><strong>'+esc(j.propertyId||'—')+'</strong></div>';
+          +'<div><span>Property</span><strong>'+esc(j.propertyId||'—')+'</strong></div>'
+          +'<div><span>Last sync</span><strong>'+esc(j.lastSyncAt||'—')+'</strong></div>';
         if(!hint.textContent || hint.textContent.indexOf('connected')<0){
           hint.textContent=j.hint||j.message||'';
         }
+        var connected=j.status==='connected';
         document.getElementById('connect').disabled=!(j.oauthReady);
+        document.getElementById('load-props').disabled=!connected;
+        document.getElementById('sync').disabled=!(connected && j.propertyId);
+        if(connected && !j.propertyId) loadProperties();
       }catch(e){
         st.innerHTML='<div><span>Error</span><strong>'+esc(e.message||e)+'</strong></div>';
+      }
+    }
+
+    async function loadProperties(){
+      var hint=document.getElementById('hint');
+      hint.textContent='Loading properties…';
+      try{
+        var r=await fetch('/api/integrations/search-console/properties?siteId='+encodeURIComponent(currentSiteId),{
+          headers:{Authorization:'Bearer '+session.access_token}
+        });
+        var j=await r.json();
+        if(!r.ok){ hint.textContent=j.message||j.error||('HTTP '+r.status); return; }
+        var box=document.getElementById('prop-box');
+        var sel=document.getElementById('property');
+        var props=j.properties||[];
+        sel.innerHTML=props.map(function(p){
+          var id=p.propertyId||p.siteUrl||'';
+          var selected=id===j.selectedPropertyId?' selected':'';
+          return '<option value="'+esc(id)+'"'+selected+'>'+esc(p.label||id)+'</option>';
+        }).join('')||'<option value="">No properties found</option>';
+        box.hidden=!props.length;
+        hint.textContent=props.length?('Found '+props.length+' properties.'):(j.message||'No properties on this Google account.');
+      }catch(e){
+        hint.textContent=String(e.message||e);
+      }
+    }
+
+    async function saveProperty(){
+      var hint=document.getElementById('hint');
+      var propertyId=document.getElementById('property').value;
+      if(!propertyId){ hint.textContent='Choose a property first.'; return; }
+      try{
+        var r=await fetch('/api/integrations/search-console/save-property',{
+          method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token},
+          body:JSON.stringify({siteId:currentSiteId,propertyId:propertyId,label:document.getElementById('property').selectedOptions[0].textContent})
+        });
+        var j=await r.json();
+        if(!r.ok){ hint.textContent=j.message||j.error||('HTTP '+r.status); return; }
+        hint.textContent='Property saved. You can Sync now.';
+        refresh();
+      }catch(e){
+        hint.textContent=String(e.message||e);
+      }
+    }
+
+    async function syncNow(){
+      var hint=document.getElementById('hint');
+      hint.textContent='Syncing Search Console…';
+      document.getElementById('sync').disabled=true;
+      try{
+        var r=await fetch('/api/integrations/search-console/sync',{
+          method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token},
+          body:JSON.stringify({siteId:currentSiteId,days:28})
+        });
+        var j=await r.json();
+        if(!r.ok||!j.ok){ hint.textContent=j.message||j.error||('HTTP '+r.status); }
+        else hint.textContent='Synced '+ (j.rows||0) +' query×page rows ('+j.startDate+' → '+j.endDate+').';
+        refresh();
+      }catch(e){
+        hint.textContent=String(e.message||e);
+        document.getElementById('sync').disabled=false;
       }
     }
 

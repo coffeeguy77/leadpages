@@ -8,6 +8,8 @@
 const http = require('../../lib/brain/http');
 const { createClient } = require('@supabase/supabase-js');
 const { buildOverview } = require('../../lib/search-intelligence/overview');
+const { loadGscTotals } = require('../../lib/search-intelligence/sync');
+const { loadOrganicLeadSummary } = require('../../lib/search-intelligence/attribution-organic');
 
 function admin() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
@@ -33,7 +35,7 @@ async function loadConnections(siteId) {
   try {
     const { data } = await sb
       .from('si_connections')
-      .select('provider,connection_status,enabled,property_id,last_sync_at')
+      .select('provider,connection_status,enabled,property_id,last_sync_at,last_sync_error,google_account_email')
       .eq('site_id', siteId);
     (data || []).forEach(function (row) {
       if (row && row.provider) out[row.provider] = row;
@@ -66,6 +68,16 @@ module.exports = async (req, res) => {
       String((body && body.includeCatalog) || (req.query && req.query.includeCatalog) || '') === '1';
     const doCrawl =
       String((body && body.crawl) || (req.query && req.query.crawl) || '') === '1';
+    const days = Math.max(
+      1,
+      Math.min(90, parseInt((body && body.days) || (req.query && req.query.days) || '28', 10) || 28)
+    );
+
+    const sb = admin();
+    const [gscTotals, organicSummary] = await Promise.all([
+      loadGscTotals(sb, siteId, { days: days }),
+      loadOrganicLeadSummary(sb, siteId, { days: days })
+    ]);
 
     const overview = await buildOverview({
       siteId: siteId,
@@ -83,7 +95,9 @@ module.exports = async (req, res) => {
       includeRecipeCatalog: includeCatalog,
       demoKeyword: (body && body.demoKeyword) || (req.query && req.query.demoKeyword) || null,
       location: (body && body.location) || (req.query && req.query.location) || null,
-      connectionRows: connectionRows
+      connectionRows: connectionRows,
+      gscTotals: gscTotals,
+      organicSummary: organicSummary
     });
     overview.role = access.role;
     overview.siteSlug = (site && site.slug) || null;
