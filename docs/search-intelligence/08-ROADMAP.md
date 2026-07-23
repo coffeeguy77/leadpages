@@ -80,10 +80,13 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 
 ---
 
-## Phase 5 Autopilot (deferred)
+## Phase 5 Autopilot (scoped safe fixes)
 
-- [ ] Scoped `auto_fix_safe` allow-list only (never silent AI publish)
-- [ ] Multi-location CRM value outcomes
+- [x] Scoped `auto_fix_safe` allow-list (sitemap regenerate + LocalBusiness schema apply; human `confirm:true` only — never silent AI publish)
+- [x] Persist open NBAs into `si_recommendations` (soft-fail if schema pending)
+- [x] `keyword_no_page` detector from tracked keywords × published pages
+- [x] Modelled Search Visibility score from GSC + ranks
+- [ ] Multi-location CRM value outcomes (needs CRM booked-work data)
 
 ---
 

@@ -64,7 +64,7 @@ Action buttons:
 
 | Action | Behaviour |
 |--------|-----------|
-| Fix automatically | Only allow-listed safe technical fixes (Phase 5; Phase 1 = rare) |
+| Fix automatically | Allow-listed technical fixes only (`auto_fix_safe`: sitemap + LocalBusiness schema) with human confirm — never silent AI publish |
 | Open in editor | Deep-link to manage editor section/page |
 | Create page | Hand off to Brain landing draft / Composer |
 | Page Optimiser | Modelled title/meta/outline brief (Clusters tab; human apply) |

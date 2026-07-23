@@ -14,6 +14,7 @@ const { loadPagePerformance } = require('../../lib/search-intelligence/page-perf
 const { listTracked, planLimit } = require('../../lib/search-intelligence/tracked-keywords');
 const { loadLatestRanks } = require('../../lib/search-intelligence/rank-jobs');
 const { loadAdsKeywords } = require('../../lib/search-intelligence/ads-keywords');
+const { persistRecommendations } = require('../../lib/search-intelligence/recommendations-persist');
 
 function admin() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
@@ -129,6 +130,9 @@ module.exports = async (req, res) => {
         note: adsKeywords.note || null,
         labelClass: adsKeywords.labelClass || 'modelled'
       };
+    }
+    if (sb && overview.nextBestActions) {
+      overview.persisted = await persistRecommendations(sb, siteId, overview.nextBestActions);
     }
     return http.json(res, 200, overview);
   } catch (e) {

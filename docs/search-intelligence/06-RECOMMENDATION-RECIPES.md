@@ -82,7 +82,7 @@ Phase 1 sellable detectors (1–10) plus Phase 2–4 drafted types (11–20). Se
 
 Phase 2 adds `page_optimiser`, `composer_draft` (Brain landing handoff), `internal_link_patch`, `schema_patch`.  
 Phase 3 adds evidence-gated `suburb_page_brief` via `POST /api/search-intelligence/local-pages` and Maps grid via `POST /api/search-intelligence/maps-grid`.  
-Phase 5 adds scoped `auto_fix_safe`.
+Phase 5 adds scoped `auto_fix_safe` via `POST /api/search-intelligence/auto-fix` with `confirm:true` (allow-list: `refresh_sitemap`, `apply_schema_local` only).
 
 ### Page Optimiser (Phase 2 scaffold)
 

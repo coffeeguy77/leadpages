@@ -10985,6 +10985,9 @@ function heroCtaCard(c){
     if(!items||!items.length) return '<p class="hint">No actions yet.</p>';
     return '<div style="display:flex;flex-direction:column;gap:10px">'+items.map(function(a){
       var openSec=a.editorSection||'seoTokens';
+      var safeBtns=(a.safeFixes||[]).map(function(f){
+        return '<button type="button" class="btn sm" data-si-act="auto_fix_safe" data-si-fix="'+esc(f.id)+'" data-si-recipe="'+esc(a.recipeId||'')+'">'+esc(f.title||'Safe fix')+'</button>';
+      }).join('');
       return '<div style="border:1px solid var(--line);border-radius:10px;padding:12px 14px">'
         +'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">'
         +'<strong>'+esc(a.title||a.recipeId)+'</strong>'
@@ -10993,6 +10996,7 @@ function heroCtaCard(c){
         +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
         +'<button type="button" class="btn sm" data-si-act="open_editor_seo" data-si-section="'+esc(openSec)+'" data-si-recipe="'+esc(a.recipeId||'')+'">Open in editor</button>'
         +'<button type="button" class="btn ghost sm" data-si-act="create_task" data-si-recipe="'+esc(a.recipeId||'')+'">Create task</button>'
+        +safeBtns
         +'</div></div>';
     }).join('')+'</div>';
   }
@@ -11007,6 +11011,13 @@ function heroCtaCard(c){
       +_siActionsList(open.length?open:(ov&&ov.nextBestActions)||[])
       +(catalog.length?'<p class="hint" style="margin-top:16px">Catalog recipes stay available after connectors land.</p>':'')
       +'</div>'
+      +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Safe auto-fix</h2>'
+      +'<p class="lede" style="margin:0 0 12px">Allow-listed technical fixes only. Always asks for confirmation — never silent AI publish.</p>'
+      +'<div class="row" style="gap:8px;flex-wrap:wrap">'
+      +'<button type="button" class="btn sm" data-si-act="auto_fix_safe" data-si-fix="refresh_sitemap">Regenerate sitemap</button>'
+      +'<button type="button" class="btn sm ghost" data-si-act="auto_fix_safe" data-si-fix="apply_schema_local">Apply LocalBusiness schema</button>'
+      +'</div>'
+      +'<p class="hint" style="margin-top:10px">'+(esc((ov&&ov.safeAutoFix&&ov.safeAutoFix.note)||'confirm:true required'))+'</p></div>'
       +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Schema.org patch</h2>'
       +'<p class="lede" style="margin:0 0 12px">Modelled LocalBusiness / FAQ JSON-LD from your saved site facts. Apply only after review — never auto-publishes invented ratings.</p>'
       +'<button type="button" class="btn" id="si-schema-preview">Preview schema</button>'
@@ -11040,6 +11051,26 @@ function heroCtaCard(c){
         }
         if(act==='page_optimiser'){
           _siTab='clusters'; document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-si-tab')==='clusters'); }); _siPaint();
+        }
+        if(act==='auto_fix_safe'){
+          var fixId=b.getAttribute('data-si-fix')||'';
+          var recipe=b.getAttribute('data-si-recipe')||'';
+          if(!fixId){ toast('No safe fix selected'); return; }
+          if(!confirm('Run safe auto-fix “'+fixId+'”? This only applies allow-listed technical changes — never publishes AI content.')) return;
+          (async function(){
+            try{
+              var tok=await _siToken();
+              var r=await fetch('/api/search-intelligence/auto-fix',{
+                method:'POST',
+                headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},
+                body:JSON.stringify({siteId:currentSiteId,fixId:fixId,confirm:true,recipeId:recipe||undefined})
+              });
+              var jj=await r.json().catch(function(){return {};});
+              if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+              toast('Safe fix applied: '+fixId);
+              _siLoadAnnotations();
+            }catch(e){ toast(String(e.message||e)); }
+          })();
         }
       });
     });

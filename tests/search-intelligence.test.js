@@ -740,7 +740,7 @@ describe('Search Intelligence stubs', () => {
     assert.equal(bl.summary.referringDomains, 42);
   });
 
-  it('ads keyword universe detects mismatch and overview exposes phase 4', async () => {
+  it('ads keyword universe detects mismatch and overview exposes phase 5', async () => {
     const { buildAdsKeywordUniverse } = require('../lib/search-intelligence/phase4-foundations');
     const uni = buildAdsKeywordUniverse(
       [{ keyword: 'plumber canberra' }, { keyword: 'hot water canberra' }, { keyword: 'blocked drain canberra' }],
@@ -759,9 +759,10 @@ describe('Search Intelligence stubs', () => {
       },
       includeRecipeCatalog: false
     });
-    assert.equal(ov.phase, 4);
+    assert.equal(ov.phase, 5);
     assert.equal(ov.scaffold, false);
     assert.ok(ov.cards.find((c) => c.id === 'ai_visibility'));
+    assert.ok(ov.safeAutoFix && ov.safeAutoFix.confirmRequired);
     assert.ok(ov.connections.gbp);
     assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/providers/semrush.js')), false);
   });
@@ -805,5 +806,47 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /_siLoadAuthority/);
     assert.match(manage, /\/api\/search-intelligence\/authority/);
     assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/providers/semrush.js')), false);
+  });
+
+  it('safe auto-fix requires confirm and only allow-lists fixes', async () => {
+    const { listSafeFixes, runSafeFix, suggestSafeFixes } = require('../lib/search-intelligence/auto-fix');
+    assert.ok(listSafeFixes().some((f) => f.id === 'refresh_sitemap'));
+    assert.ok(listSafeFixes().some((f) => f.id === 'apply_schema_local'));
+    const denied = await runSafeFix({}, { id: 'x', config: {} }, 'refresh_sitemap', { confirm: false });
+    assert.equal(denied.ok, false);
+    assert.equal(denied.error, 'confirm_required');
+    const bad = await runSafeFix({}, { id: 'x', config: {} }, 'publish_ai_page', { confirm: true });
+    assert.equal(bad.ok, false);
+    assert.equal(bad.error, 'fix_not_allowlisted');
+    const fixes = suggestSafeFixes({ recipeId: 'schema_missing_local' });
+    assert.ok(fixes.some((f) => f.id === 'apply_schema_local'));
+  });
+
+  it('detects keyword_no_page and models visibility score', () => {
+    const {
+      detectKeywordNoPage,
+      computeSearchVisibilityScore
+    } = require('../lib/search-intelligence/keyword-coverage');
+    const cov = detectKeywordNoPage(
+      {
+        id: 's1',
+        config: {
+          seoTitle: 'Home',
+          seoDescription: 'Plumbing',
+          pages: [{ status: 'published', title: 'About', slug: 'about', seoTitle: 'About us' }]
+        }
+      },
+      [{ keyword: 'emergency blocked drain gungahlin', trackedId: 't1' }]
+    );
+    assert.ok(cov.findings.some((f) => f.recipeId === 'keyword_no_page'));
+    const vis = computeSearchVisibilityScore({
+      gscTotals: { available: true, clicks: 40, impressions: 800 },
+      ranks: { items: [{ position: 3 }, { position: 12 }] }
+    });
+    assert.ok(vis.score != null && vis.score >= 5 && vis.score <= 95);
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/auto-fix.js')));
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /auto_fix_safe/);
+    assert.match(manage, /\/api\/search-intelligence\/auto-fix/);
   });
 });

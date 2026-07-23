@@ -63,4 +63,4 @@ Metered usage is available at `GET /api/search-intelligence/usage` and on Manage
 - [x] GSC + GA4 OAuth plan approved / implemented  
 - [x] Pilot roster process documented (private ops; no PII in repo)  
 
-Phase 1–4 build is complete on this programme track (GBP live sync still gated on Google access). Semrush remains permanently out of scope.
+Phase 1–5 programme track is complete for shippable Search Intelligence (GBP live sync still gated on Google access; CRM multi-location outcomes later). Semrush remains permanently out of scope.
