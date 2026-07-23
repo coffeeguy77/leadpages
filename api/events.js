@@ -21,7 +21,27 @@ const {
 const { deliverConversion } = require('../lib/google-ads/conversions');
 
 const clean = (s, n = 120) => (s == null ? '' : String(s)).trim().slice(0, n);
-const ALLOWED = ['page_view', 'call_click', 'lead_submit', 'quote_open', 'cta_click', 'email_click', 'directions_click'];
+const ALLOWED = [
+  'page_view',
+  'call_click',
+  'lead_submit',
+  'quote_open',
+  'cta_click',
+  'email_click',
+  'directions_click',
+  'gallery_impression',
+  'gallery_filter',
+  'gallery_category',
+  'gallery_album',
+  'gallery_image_click',
+  'gallery_lightbox',
+  'gallery_zoom',
+  'gallery_nav',
+  'gallery_load_more',
+  'gallery_slideshow',
+  'gallery_download',
+  'gallery_share'
+];
 
 function readBody(req) {
   return new Promise((resolve) => {

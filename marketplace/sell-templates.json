@@ -2663,5 +2663,57 @@
         }
       }
     ]
+  },
+  "premiumGallery": {
+    "name": "Premium Gallery",
+    "tagline": "Design-led image galleries for large photo collections",
+    "summary": "Showcase mixed portrait and landscape photography with mosaic layouts, filters, categories and albums.",
+    "hero_image_url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1400&h=560&fit=crop&q=80",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Premium Gallery",
+          "text": "Beautifully arrange mixed portrait and landscape images using premium responsive layouts, optional filtering, album navigation and controlled image expansion — without replacing Project Portfolio."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=720&fit=crop&q=80",
+          "alt": "Premium gallery mosaic",
+          "caption": "Smart mosaic with mixed orientations and lightbox zoom."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Key features",
+          "items": [
+            {
+              "title": "Structure modes",
+              "text": "Simple, filtered, categories, or categories → albums → images."
+            },
+            {
+              "title": "Premium layouts",
+              "text": "Smart mosaic, masonry, justified, filmstrip, slideshow and stacked."
+            },
+            {
+              "title": "Filters & lightbox",
+              "text": "Tag pills, category browsing and a cinematic lightbox."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "premiumGallery",
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
   }
 }

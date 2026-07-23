@@ -1105,5 +1105,137 @@
       "key": "theme.pipe",
       "label": "Brand colour"
     }
+  ],
+  "premiumGallery": [
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.heading",
+      "label": "Section heading"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.eyebrow",
+      "label": "Eyebrow text"
+    },
+    {
+      "type": "select",
+      "key": "sections.premiumGallery.layout",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "smart-mosaic",
+          "label": "Smart mosaic"
+        },
+        {
+          "value": "masonry",
+          "label": "Masonry"
+        },
+        {
+          "value": "grid",
+          "label": "Uniform grid"
+        },
+        {
+          "value": "filmstrip",
+          "label": "Filmstrip"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.premiumGallery.structureMode",
+      "label": "Structure",
+      "options": [
+        {
+          "value": "simple",
+          "label": "Simple"
+        },
+        {
+          "value": "filtered",
+          "label": "Filtered"
+        },
+        {
+          "value": "categories",
+          "label": "Categories"
+        },
+        {
+          "value": "categories-albums",
+          "label": "Categories + albums"
+        }
+      ]
+    },
+    {
+      "type": "color",
+      "key": "sections.premiumGallery.activeFilterColor",
+      "label": "Active filter colour"
+    },
+    {
+      "type": "select",
+      "key": "sections.premiumGallery.smartPreset",
+      "label": "Smart preset",
+      "options": [
+        {
+          "value": "clean",
+          "label": "Clean"
+        },
+        {
+          "value": "editorial",
+          "label": "Editorial"
+        },
+        {
+          "value": "dynamic",
+          "label": "Dynamic"
+        },
+        {
+          "value": "minimal",
+          "label": "Minimal"
+        },
+        {
+          "value": "cinematic",
+          "label": "Cinematic"
+        },
+        {
+          "value": "collage",
+          "label": "Collage"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.premiumGallery.urlMode",
+      "label": "URL mode",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "hash",
+          "label": "Hash"
+        },
+        {
+          "value": "query",
+          "label": "Query"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.premiumGallery.mosaicRandomize",
+      "label": "Mosaic randomise",
+      "options": [
+        {
+          "value": "locked",
+          "label": "Locked"
+        },
+        {
+          "value": "once",
+          "label": "Once"
+        },
+        {
+          "value": "every-load",
+          "label": "Every load"
+        }
+      ]
+    }
   ]
 }
