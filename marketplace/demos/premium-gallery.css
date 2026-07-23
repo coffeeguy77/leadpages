@@ -1,5 +1,6 @@
-/* Premium Gallery (premiumGallery) */
+/* Premium Gallery (premiumGallery) — hidden until sections.premiumGallery.on === true */
 section[data-sec="premiumGallery"]{
+  display:none;
   --pg-gap:12px;
   --pg-radius:12px;
   --pg-cols:4;

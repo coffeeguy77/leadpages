@@ -22,6 +22,22 @@ const LP_ACCESSIBILITY_APP = {
   updated_at: new Date().toISOString()
 };
 
+const PREMIUM_GALLERY_APP = {
+  name: 'Premium Gallery',
+  slug: 'premium-gallery',
+  section_key: 'premiumGallery',
+  tier: 'free',
+  tagline: 'Design-led image galleries for large photo collections',
+  description: 'Showcase mixed portrait and landscape photography with mosaic layouts, filters, categories and albums. Off by default — enable from App Marketplace.',
+  default_position: 'upper',
+  marketplace_status: 'live',
+  builder_visible: true,
+  can_reposition: true,
+  hero_exclusive: false,
+  sort_order: 88,
+  updated_at: new Date().toISOString()
+};
+
 async function ensureLpAccessibilityApp() {
   const { data: existing } = await sb.from('app_registry')
     .select('id')
@@ -29,6 +45,39 @@ async function ensureLpAccessibilityApp() {
     .maybeSingle();
   if (existing) return;
   await sb.from('app_registry').upsert(LP_ACCESSIBILITY_APP, { onConflict: 'slug' });
+}
+
+async function ensurePremiumGalleryApp() {
+  const row = Object.assign({}, PREMIUM_GALLERY_APP, { updated_at: new Date().toISOString() });
+  const { data: existing } = await sb.from('app_registry')
+    .select('id,marketplace_status,builder_visible,default_position')
+    .eq('section_key', 'premiumGallery')
+    .maybeSingle();
+  if (!existing) {
+    await sb.from('app_registry').upsert(row, { onConflict: 'slug' });
+    return;
+  }
+  // Heal draft / hidden / wrong-zone rows so the tile stays selectable in Mid/Upper.
+  if (
+    existing.marketplace_status !== 'live' ||
+    existing.builder_visible !== true ||
+    existing.default_position !== 'upper'
+  ) {
+    await sb.from('app_registry').update({
+      name: row.name,
+      slug: row.slug,
+      tagline: row.tagline,
+      description: row.description,
+      tier: row.tier,
+      default_position: row.default_position,
+      marketplace_status: 'live',
+      builder_visible: true,
+      can_reposition: true,
+      hero_exclusive: false,
+      sort_order: row.sort_order,
+      updated_at: row.updated_at
+    }).eq('id', existing.id);
+  }
 }
 
 module.exports = async (req, res) => {
@@ -69,7 +118,10 @@ module.exports = async (req, res) => {
       .select('id,slug,section_key,name,tagline,tier,price_monthly_aud,price_annual_aud,default_position,can_reposition,hero_exclusive,api_dependency,marketplace_status,builder_visible,sort_order')
       .order('sort_order',{ascending:true});
     if (!all) q = q.eq('marketplace_status','live');
-    if (all) await ensureLpAccessibilityApp();
+    if (all) {
+      await ensureLpAccessibilityApp();
+      await ensurePremiumGalleryApp();
+    }
     const {data:apps,error:ae} = await q;
     if (ae) return res.status(500).json({error:ae.message});
     return res.status(200).json({apps:apps||[]});

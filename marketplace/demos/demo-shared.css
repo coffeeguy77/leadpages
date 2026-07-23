@@ -1212,8 +1212,9 @@ section[data-sec="instaGallery"]{order:16;display:none}section[data-sec="instaGa
 section[data-sec]{display:block!important;visibility:visible!important}
 main#top{display:flex;flex-direction:column}
 
-/* Premium Gallery (premiumGallery) */
+/* Premium Gallery (premiumGallery) — hidden until sections.premiumGallery.on === true */
 section[data-sec="premiumGallery"]{
+  display:none;
   --pg-gap:12px;
   --pg-radius:12px;
   --pg-cols:4;

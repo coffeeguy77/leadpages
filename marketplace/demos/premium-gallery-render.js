@@ -181,9 +181,10 @@ function _pgApplySeo(PG, title, intro){
 }
 function _pgRenderPremiumGallery(PG, node){
   if(!node) return;
+  // Off-by-default marketplace app — only show when explicitly enabled.
+  if(!PG || PG.on!==true){ node.style.display='none'; return; }
   PG=_pgSeed(PG||{});
   PG=_pgApplySmartPreset(PG);
-  if(PG.on===false){ node.style.display='none'; return; }
   node.style.display='';
   var cats=(Array.isArray(PG.categories)?PG.categories:[]).filter(function(c){return c&&c.on!==false;});
   var albums=(Array.isArray(PG.albums)?PG.albums:[]).filter(function(a){return a&&a.on!==false;});
