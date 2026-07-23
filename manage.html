@@ -5337,6 +5337,7 @@ function heroCtaCard(c){
     var _gsvMethod=((_cfgSeo&&_cfgSeo.googleVerificationMethod)||'meta');
     var _cnameHost=((_cfgSeo&&_cfgSeo.googleVerificationCnameHost)||'').trim();
     var _cnameTarget=((_cfgSeo&&_cfgSeo.googleVerificationCnameTarget)||'').trim();
+    var _gaIdRaw=(((_cfgSeo&&_cfgSeo.analytics&&_cfgSeo.analytics.gaId)||(_cfgSeo&&_cfgSeo.gaId)||'')+'').trim();
     var _hasDom=!!((currentCustomDomain||'').trim());
     var _propUrl=lpLiveUrl({ publicOnly:true });
     var _mapUrl=lpSitemapUrl();
@@ -5347,7 +5348,7 @@ function heroCtaCard(c){
     var _gsiSiteLbl=esc((currentBusinessName||currentSiteSlug||'this site').trim());
     var _gsiSiteDom=(_hasDom?((currentCustomDomain||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'')):(currentSiteSlug||''));
     var _gsiSiteUrl=_hasDom?('https://'+esc(_gsiSiteDom)):(currentSiteSlug?('https://leadpages.com.au/'+esc(currentSiteSlug)+'/'):'');
-    var searchCard='<div class="card" style="margin-bottom:20px;" id="gsi-card"><h2 style="margin:0 0 4px;">Search &amp; indexing</h2><p class="gsi-site-banner"><strong>This site:</strong> '+_gsiSiteLbl+(_gsiSiteUrl?' — <code class="gsi-site-url">'+_gsiSiteUrl+'</code>':'')+'. <strong>Regenerate sitemap</strong> below updates this tenant only.</p><p class="lede" style="margin:0 0 14px;">Verify ownership in <a class="gsi-gsc-link" href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>, then submit your sitemap.</p>'
+    var searchCard='<div class="card" style="margin-bottom:0;" id="gsi-card"><h2 style="margin:0 0 4px;">Search &amp; indexing</h2><p class="gsi-site-banner"><strong>This site:</strong> '+_gsiSiteLbl+(_gsiSiteUrl?' — <code class="gsi-site-url">'+_gsiSiteUrl+'</code>':'')+'. <strong>Regenerate sitemap</strong> below updates this tenant only.</p><p class="lede" style="margin:0 0 14px;">Verify ownership in <a class="gsi-gsc-link" href="https://search.google.com/search-console" target="_blank" rel="noopener">Google Search Console</a>, then submit your sitemap.</p>'
       +'<p class="lede" style="margin:0 0 6px;font-weight:600;">Sitemap <span class="hint">(submit in Search Console)</span></p>'
       +'<div id="gsi-map-stats" class="hint" style="margin:0 0 10px;padding:10px 12px;background:transparent;border-radius:10px;border:1px solid var(--line);">Loading sitemap details\u2026</div>'
       +'<div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;"><code id="gsi-sitemap" style="'+_mono+'flex:1;min-width:200px;">sitemap.xml</code><button type="button" class="btn ghost sm" id="gsi-copy-map">Copy path</button><button type="button" class="btn ghost sm" id="gsi-copy-map-url">Copy URL</button></div>'
@@ -5388,6 +5389,14 @@ function heroCtaCard(c){
       +'<button type="button" class="btn ghost" id="gsi-push-vercel-cname">Add CNAME to Vercel DNS</button> <span id="gsi-vercel-cname-msg" class="hint"></span>'
       +'<p class="hint" style="margin:10px 0 0;">Or add the CNAME manually at your DNS host if not on Vercel nameservers.</p></div>'
       +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);"><button type="button" class="btn" id="gsi-save">Save &amp; publish</button><span id="gsi-saved" style="font-size:13px;color:#0a7d33;"></span></div></div>';
+    var gaCard='<div class="card" style="margin-bottom:0;" id="ga-card"><h2 style="margin:0 0 4px;">Google Analytics</h2>'
+      +'<p class="lede" style="margin:0 0 14px;">Add your GA4 measurement ID so the published site loads the Google tag. Paste a bare <code>G-…</code> id or the full gtag snippet — we extract the id.</p>'
+      +'<div class="f" style="margin-bottom:10px;"><label for="ga-measurement-id">Measurement ID <span class="hint">GA4 <code>G-XXXXXXXX</code></span></label>'
+      +'<input type="text" id="ga-measurement-id" class="tin" placeholder="G-XXXXXXXX or paste gtag snippet" value="'+esc(_gaIdRaw)+'" autocomplete="off" spellcheck="false"></div>'
+      +'<p class="hint" style="margin:0 0 12px;">Find this in Google Analytics → Admin → Data streams → your web stream. OAuth sync for SEO Command Centre is separate under <a href="/settings/integrations/google-analytics">Integrations → Google Analytics</a>.</p>'
+      +'<div id="ga-parsed-preview" class="hint" style="margin:0 0 14px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;">'+( _gaIdRaw ? ('Will publish as <strong id="ga-parsed-id">'+esc(_gaIdRaw)+'</strong>.') : 'No measurement ID saved yet.')+'</div>'
+      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--line);"><button type="button" class="btn" id="ga-save">Save &amp; publish</button><span id="ga-saved" style="font-size:13px;color:#0a7d33;"></span></div></div>';
+    var seoGaRow='<div class="lp-seo-ga-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-bottom:20px;align-items:start;">'+searchCard+gaCard+'</div>';
     var platformSeoCard=(currentRole==='super')?('<div class="card" style="margin-bottom:20px;border:1px solid var(--accent-soft);" id="psi-card"><h2 style="margin:0 0 4px;">LeadPages marketing site</h2><p class="lede" style="margin:0 0 14px;">Search &amp; indexing for <strong>leadpages.com.au</strong> only — homepage, marketplace, resources, and partner pages. Tenant sites (e.g. aam1.com.au) use <strong>Search &amp; indexing</strong> above.</p>'
       +'<p class="lede" style="margin:0 0 6px;font-weight:600;">Sitemap <span class="hint">(submit in Search Console)</span></p>'
       +'<div id="psi-map-stats" class="hint" style="margin:0 0 10px;padding:10px 12px;background:transparent;border-radius:10px;border:1px solid var(--line);">Loading marketing sitemap\u2026</div>'
@@ -5451,7 +5460,7 @@ function heroCtaCard(c){
       +'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Appearance &amp; Accessibility</h2><p class="lede" style="margin:0 0 12px;">Workspace theme for the command centre, plus published page visitor settings for this site.</p><button type="button" class="btn" id="open-aa-inline">Workspace appearance</button> <button type="button" class="btn ghost" id="open-aa-published">Published page settings</button></div>'
       +detailFields
       +assignPartnerCard
-      +searchCard
+      +seoGaRow
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Mobile command menu</h2><p class="lede" style="margin:0 0 12px;">Design the phone mega menu for the command centre — section order, layouts, separators, button styles, and which roles see each item (super admin, partner, client).</p><button type="button" class="btn" id="open-mobile-menu">Edit mobile menu</button></div>':'')
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced. The suspended page is what the public sees when a site is paused for non-payment.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button> <button type="button" class="btn ghost" id="open-susp">Edit suspended page</button></div>':'')
       +window.__tradeStarterCard()
@@ -5609,6 +5618,40 @@ function heroCtaCard(c){
           if(gok) gok.textContent=(m==='meta')?'Meta tag is live on published pages.':'Settings saved — complete verification in Search Console.';
         }catch(e){ gs.textContent='Save failed'; if(gok){ gok.style.color='#b42318'; gok.textContent='Could not save \u2014 try again.'; } }
         setTimeout(function(){ gs.disabled=false; gs.textContent=o; },1800);
+      }); }
+      function lpParseGaId(raw){
+        var v=String(raw||'').trim(); if(!v) return '';
+        var m=v.match(/\b(G-[A-Z0-9]+)\b/i)||v.match(/\b(GT-[A-Z0-9]+)\b/i)||v.match(/\b(UA-\d+-\d+)\b/i);
+        if(!m||!m[1]) return '';
+        var id=m[1];
+        if(/^g-/i.test(id)) return 'G-'+id.slice(2).toUpperCase();
+        if(/^gt-/i.test(id)) return 'GT-'+id.slice(3).toUpperCase();
+        return id;
+      }
+      function lpSyncGaPreview(){
+        var inp=$('ga-measurement-id'); var prev=$('ga-parsed-preview'); if(!prev) return;
+        var id=lpParseGaId(inp&&inp.value);
+        if(id) prev.innerHTML='Will publish as <strong id="ga-parsed-id">'+esc(id)+'</strong>.';
+        else if(inp&&String(inp.value||'').trim()) prev.innerHTML='Could not find a <code>G-…</code> measurement ID in that value.';
+        else prev.textContent='No measurement ID saved yet.';
+      }
+      var gaInp=$('ga-measurement-id'); if(gaInp){ gaInp.addEventListener('input',lpSyncGaPreview); lpSyncGaPreview(); }
+      var gaSave=$('ga-save'), gaOk=$('ga-saved');
+      if(gaSave){ gaSave.addEventListener('click',async function(){
+        gaSave.disabled=true; var o=gaSave.textContent; gaSave.textContent='Saving\u2026'; if(gaOk){ gaOk.style.color='#0a7d33'; gaOk.textContent=''; }
+        var id=lpParseGaId(gaInp&&gaInp.value);
+        var c=c0();
+        if(!c.analytics||typeof c.analytics!=='object') c.analytics={};
+        if(id){ c.analytics.gaId=id; if(gaInp) gaInp.value=id; }
+        else { delete c.analytics.gaId; if(c.analytics&&!Object.keys(c.analytics).length) delete c.analytics; }
+        delete c.gaId;
+        try{
+          await publishToDB();
+          gaSave.textContent='Saved \u2713';
+          if(gaOk) gaOk.textContent=id?'Google tag will load on published pages.':'Measurement ID cleared.';
+          lpSyncGaPreview();
+        }catch(e){ gaSave.textContent='Save failed'; if(gaOk){ gaOk.style.color='#b42318'; gaOk.textContent='Could not save \u2014 try again.'; } }
+        setTimeout(function(){ gaSave.disabled=false; gaSave.textContent=o; },1800);
       }); }
       if(_hasDom&&currentSiteId){
         cwToken().then(function(token){

@@ -768,17 +768,14 @@ function visitorWidgetEnabled(cfg) {
 
 function injectAttribution(html, cfg) {
   if (!html || html.includes('lp-attribution.js')) return html;
-  const tag = (cfg && (cfg.googleAdsTagId || cfg.google_ads_tag_id)) || '';
+  const { resolveGaMeasurementId, resolveAdsTagId, buildGtagHeadSnippet } = require('../lib/analytics-tags');
   let block = '<script src="/assets/lp-attribution.js"></script>\n';
-  if (tag) {
-    const aw = String(tag).replace(/[^\w-]/g, '');
-    if (aw) {
-      block +=
-        '<script async src="https://www.googletagmanager.com/gtag/js?id=' + aw + '"></script>\n' +
-        '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config",' +
-        JSON.stringify(aw) + ');</script>\n';
-    }
-  }
+  const ids = [];
+  const ga = resolveGaMeasurementId(cfg);
+  const aw = resolveAdsTagId(cfg);
+  if (ga) ids.push(ga);
+  if (aw) ids.push(aw);
+  block += buildGtagHeadSnippet(ids);
   if (html.includes('</head>')) return html.replace('</head>', block + '</head>');
   return block + html;
 }
