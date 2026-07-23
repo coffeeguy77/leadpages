@@ -84,6 +84,6 @@ See also [../ai-team/SEO-INTEGRATION.md](../ai-team/SEO-INTEGRATION.md).
 
 ---
 
-## Implementation note (this pass)
+## Implementation note
 
-Document only. Runtime `schema.js` still uses `seo: {}` without `searchIntelligence`. Phase 1 Brain work adds the key behind a schemaVersion bump when Command Centre ships.
+`emptySearchIntelligence()` is included on new Site Brain snapshots (`lib/site-brain/schema.js`) and soft-filled in `validateSnapshot` for older brains. Bootstrap sync seeds `services` / `serviceAreas` from site config. Warehouse tables (`si_*`) remain draft until applied.

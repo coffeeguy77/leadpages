@@ -81,4 +81,15 @@ describe('Search Intelligence stubs', () => {
     assert.match(sql, /si_recommendations/);
     assert.match(sql, /DO NOT apply wholesale/);
   });
+
+  it('wires SEO Command Centre manage tab + APIs', () => {
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /id="nav-seo"/);
+    assert.match(manage, /id="av-seo"/);
+    assert.match(manage, /function renderSeoCommandCentre/);
+    assert.match(manage, /\/api\/search-intelligence\/overview/);
+    assert.match(manage, /'trade':\[[^\]]*seo/);
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/overview.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/recommendations.js')));
+  });
 });

@@ -22,18 +22,22 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 
 ## Phase 1 MVP checklist
 
-- [ ] SEO Command Centre home  
-- [ ] GSC + GA4 connections  
-- [ ] Forms / call-click attribution  
-- [ ] Keyword research via provider gateway  
-- [ ] Tracked keywords (25–100 per plan)  
-- [ ] First-party crawl/audit of Leadpages sites  
-- [ ] Page-level performance  
-- [ ] Next Best Actions (first 10 recipes)  
-- [ ] Partner portfolio basics  
-- [ ] Scheduled client summary  
+- [x] SEO Command Centre home (**scaffold** in manage — preview cards + recipe NBA)
+- [x] Overview / recommendations API stubs (`/api/search-intelligence/*`)
+- [x] Site Brain `snapshot.searchIntelligence` twin shape
+- [ ] GSC + GA4 connections (OAuth)
+- [ ] Forms / call-click attribution join
+- [ ] Keyword research via live provider
+- [ ] Tracked keywords (25–100 per plan)
+- [ ] First-party crawl/audit of Leadpages sites
+- [ ] Page-level performance from GSC
+- [ ] Site-specific Next Best Actions (beyond recipe preview)
+- [ ] Partner portfolio basics
+- [ ] Scheduled client summary
 
-**Website actions:** open page, edit SEO title/meta, preview, refresh sitemap, create task. No Composer auto-draft yet.
+**Website actions (scaffold):** Open in editor → Local SEO; Create task toast. Full Brain task + sitemap actions follow with connectors.
+
+**Scaffold note (shipped):** Command Centre tab on trade sites, `lib/search-intelligence/overview.js`, API routes, Digital Twin on Site Brain. Apply `db/search_intelligence_schema.sql` when warehouse work starts.
 
 ---
 

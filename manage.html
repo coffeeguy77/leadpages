@@ -716,6 +716,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <div class="adminnav" role="tablist">
     <button class="anav-btn" id="nav-dashboard" aria-selected="false" style="display:none">Dashboard</button>
     <button class="anav-btn" id="nav-advertising" aria-selected="false" style="display:none">Advertising</button>
+    <button class="anav-btn" id="nav-seo" aria-selected="false" style="display:none" aria-label="SEO Command Centre"><span class="anav-l1">SEO</span><span class="anav-gap"> </span><span class="anav-l2">Command</span></button>
     <button class="anav-btn" id="nav-details" aria-selected="false" style="display:none" aria-label="Details">Details</button>
     <button class="anav-btn" id="nav-rates" aria-selected="false" style="display:none" aria-label="Rates &amp; leads"><span class="anav-l1">Rates &amp;</span><span class="anav-gap"> </span><span class="anav-l2">leads</span></button>
     <button class="anav-btn" id="nav-landing" aria-selected="false" aria-label="Landing pages"><span class="anav-l1">Landing</span><span class="anav-gap"> </span><span class="anav-l2">pages</span></button>
@@ -734,6 +735,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 
   <div id="av-dashboard" hidden></div>
   <div id="av-advertising" hidden></div>
+  <div id="av-seo" hidden></div>
   <div id="av-details" hidden></div>
 
   <!-- ===================== AI WEBSITE TEAM ===================== -->
@@ -8746,8 +8748,8 @@ function heroCtaCard(c){
     toast('Removed “'+name+'”'); renderSharedThemes();
   }
   /* ===== end leadpages integration ===== */
-  const ALLOWED={ super:['rates','landing','ai-team','appearance','themes','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], broker:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], client:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising'], leads:['rates'] };
-  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','themes','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','details','landing','ai-team','apps','themes','onlinequotes','mailer','messages'] };
+  const ALLOWED={ super:['rates','landing','ai-team','appearance','themes','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard','advertising','seo'], broker:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising','seo'], client:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising','seo'], leads:['rates'] };
+  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','themes','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','seo','details','landing','ai-team','apps','themes','onlinequotes','mailer','messages'] };
   function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
     if($('login-mask')) return;
@@ -9148,7 +9150,7 @@ function heroCtaCard(c){
       toast('Opened Landing pages');
     }
   };
-  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['ai-team','av-ai-team',renderAiTeamPanel],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['themes','av-themes',renderPositioningThemes],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
+  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['seo','av-seo',renderSeoCommandCentre],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['ai-team','av-ai-team',renderAiTeamPanel],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['themes','av-themes',renderPositioningThemes],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
   let activeView=null;
   function showView(which){
     activeView=which;
@@ -10227,6 +10229,141 @@ function heroCtaCard(c){
       lpBkApplyConfig(cfg).then(function(ok){ if(ok){ var pn=document.getElementById('lp-bk-panel'); if(pn) pn.style.display='none'; } });
     };
     reader.readAsText(f); e.target.value='';
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     renderSeoCommandCentre — Search Intelligence Phase 1 scaffold
+  ══════════════════════════════════════════════════════════ */
+  var _siTab='home';
+  async function _siToken(){
+    try{
+      var r=await sb.auth.getSession();
+      return (r&&r.data&&r.data.session&&r.data.session.access_token)||null;
+    }catch(e){ return null; }
+  }
+  async function _siFetch(path){
+    var tok=await _siToken();
+    var r=await fetch(path,{ headers: tok?{Authorization:'Bearer '+tok}:{} });
+    var j=await r.json().catch(function(){ return {}; });
+    if(!r.ok) throw new Error(j.error||('http_'+r.status));
+    return j;
+  }
+  function renderSeoCommandCentre(){
+    var box=document.getElementById('av-seo'); if(!box) return;
+    if(!currentSiteId){
+      box.innerHTML='<div class="card"><h2>SEO Command Centre</h2><p class="lede">Select a site to view search visibility, leads and Next Best Actions.</p></div>';
+      return;
+    }
+    var tabs=[['home','Home'],['actions','Next Best Actions'],['connect','Connections']];
+    box.innerHTML=
+      '<div class="card" style="margin-bottom:14px">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
+      +'<div><h2 style="margin:0 0 4px">SEO Command Centre</h2>'
+      +'<p class="lede" style="margin:0">Find the opportunity, fix the page, prove the lead — Search Intelligence Phase 1 scaffold.</p></div>'
+      +'<button type="button" class="btn ghost sm" id="si-refresh">Refresh</button>'
+      +'</div>'
+      +'<div class="sec-modeseg" style="margin-top:14px" id="si-tabs">'
+      +tabs.map(function(t){ return '<button type="button" data-si-tab="'+t[0]+'" class="'+(_siTab===t[0]?'on':'')+'">'+t[1]+'</button>'; }).join('')
+      +'</div></div>'
+      +'<div id="si-body"><p class="hint">Loading…</p></div>';
+    var ref=document.getElementById('si-refresh');
+    if(ref) ref.addEventListener('click',function(){ _siPaint(); });
+    document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(b){
+      b.addEventListener('click',function(){
+        _siTab=b.getAttribute('data-si-tab');
+        document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(x){ x.classList.toggle('on', x===b); });
+        _siPaint();
+      });
+    });
+    _siPaint();
+  }
+  async function _siPaint(){
+    var body=document.getElementById('si-body'); if(!body) return;
+    body.innerHTML='<p class="hint">Loading…</p>';
+    try{
+      var ov=await _siFetch('/api/search-intelligence/overview?siteId='+encodeURIComponent(currentSiteId));
+      if(_siTab==='connect'){ body.innerHTML=_siConnectHTML(ov); return; }
+      if(_siTab==='actions'){ body.innerHTML=_siActionsHTML(ov); _siWireActions(ov); return; }
+      body.innerHTML=_siHomeHTML(ov);
+      _siWireActions(ov);
+    }catch(e){
+      body.innerHTML='<div class="card"><p class="lede">Could not load SEO Command Centre.</p><p class="hint">'+esc((e&&e.message)||'error')+'</p></div>';
+    }
+  }
+  function _siCard(c){
+    var val=c.value==null?'—':String(c.value);
+    return '<div class="lp-instrument-stat" style="padding:14px 12px"><div style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)">'+esc(c.label)+'</div>'
+      +'<div style="font-size:22px;font-weight:800;margin-top:4px">'+esc(val)+'</div>'
+      +(c.hint?'<div style="font-size:11px;color:var(--ink-faint);margin-top:4px">'+esc(c.hint)+'</div>':'')
+      +'</div>';
+  }
+  function _siHomeHTML(ov){
+    var h='';
+    if(ov&&ov.scaffold){
+      h+='<div class="card" style="margin-bottom:14px"><p class="lede" style="margin:0">'+esc(ov.message||'Phase 1 scaffold')+'</p>'
+        +'<p class="hint" style="margin:8px 0 0">Settings → Search &amp; indexing still handles GSC verification and sitemap regen. Connectors for Search Console API and GA4 are reserved for Phase 1 build.</p></div>';
+    }
+    h+='<div class="lp-instrument-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:14px">'
+      +((ov&&ov.cards)||[]).map(_siCard).join('')
+      +'</div>';
+    h+='<div class="card"><h2 style="margin:0 0 8px">Next Best Actions</h2>'
+      +'<p class="lede" style="margin:0 0 12px">Recipe previews — site-specific detection starts after GSC sync and crawl.</p>'
+      +_siActionsList((ov&&ov.nextBestActions)||[].slice(0,5))
+      +'<p class="hint" style="margin-top:12px"><button type="button" class="btn ghost sm" id="si-goto-actions">View all actions</button></p></div>';
+    return h;
+  }
+  function _siConnectHTML(ov){
+    var c=(ov&&ov.connections)||{};
+    function row(key,label){
+      var x=c[key]||{};
+      return '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)">'
+        +'<div><strong>'+esc(label)+'</strong><div class="hint" style="margin:4px 0 0">Status: '+esc(x.status||'unknown')+'</div></div>'
+        +(x.connectPath?'<a class="btn ghost sm" href="'+esc(x.connectPath)+'" style="text-decoration:none">Open</a>':'')
+        +'</div>';
+    }
+    return '<div class="card"><h2 style="margin:0 0 6px">Connections</h2>'
+      +'<p class="lede">Google Search Console and GA4 OAuth land in Phase 1. Paths are reserved on app.leadpages.com.au.</p>'
+      +row('search_console','Google Search Console')
+      +row('ga4','Google Analytics 4')
+      +row('google_ads','Google Ads (Advertising tab)')
+      +'<p class="hint" style="margin-top:14px">Verification meta / DNS remains under Settings → Search &amp; indexing.</p></div>';
+  }
+  function _siActionsList(items){
+    if(!items||!items.length) return '<p class="hint">No actions yet.</p>';
+    return '<div style="display:flex;flex-direction:column;gap:10px">'+items.map(function(a){
+      return '<div style="border:1px solid var(--line);border-radius:10px;padding:12px 14px">'
+        +'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+        +'<strong>'+esc(a.title||a.recipeId)+'</strong>'
+        +'<span class="hint">'+esc(a.severity||'medium')+' · '+esc(a.status||'preview')+'</span></div>'
+        +'<p class="lede" style="margin:8px 0 10px">'+esc(a.plainLanguage||'')+'</p>'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+        +'<button type="button" class="btn sm" data-si-act="open_editor_seo" data-si-recipe="'+esc(a.recipeId||'')+'">Open in editor</button>'
+        +'<button type="button" class="btn ghost sm" data-si-act="create_task" data-si-recipe="'+esc(a.recipeId||'')+'">Create task</button>'
+        +'</div></div>';
+    }).join('')+'</div>';
+  }
+  function _siActionsHTML(ov){
+    return '<div class="card"><h2 style="margin:0 0 8px">Next Best Actions</h2>'
+      +'<p class="lede" style="margin:0 0 14px">First ten recipes from Search Intelligence. Detection is preview-only until connectors and crawl run.</p>'
+      +_siActionsList((ov&&ov.nextBestActions)||[])
+      +'</div>';
+  }
+  function _siWireActions(ov){
+    var go=document.getElementById('si-goto-actions');
+    if(go) go.addEventListener('click',function(){ _siTab='actions'; document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-si-tab')==='actions'); }); _siPaint(); });
+    document.querySelectorAll('#si-body [data-si-act]').forEach(function(b){
+      b.addEventListener('click',function(){
+        var act=b.getAttribute('data-si-act');
+        if(act==='open_editor_seo'){
+          if(typeof window.lpOpenEditorSection==='function') window.lpOpenEditorSection('details','seoTokens');
+          else showView('details');
+          return;
+        }
+        if(act==='create_task'){
+          toast('Task creation will attach to Site Brain in Phase 1 — recipe noted: '+(b.getAttribute('data-si-recipe')||''));
+        }
+      });
+    });
   }
 
   /* ═══════════════════════════════════════════════════════════
