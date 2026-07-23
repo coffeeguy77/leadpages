@@ -118,7 +118,60 @@ describe('Search Intelligence stubs', () => {
   it('reports GSC connector not_configured without env', () => {
     const oauth = require('../lib/search-intelligence/google-oauth/config');
     assert.equal(oauth.configured('search_console'), false);
+    assert.equal(oauth.oauthReady('search_console'), false);
     assert.equal(oauth.connectionStatus('search_console').status, 'not_configured');
+  });
+
+  it('parses HTML head and builds crawl findings without network', () => {
+    const { parseHead } = require('../lib/search-intelligence/audit/html-crawl');
+    const head = parseHead(
+      '<html><head><title>Plumber Canberra</title>' +
+        '<meta name="description" content="Local plumber">' +
+        '<link rel="canonical" href="https://example.com.au/">' +
+        '</head><body><h1>Hello</h1></body></html>'
+    );
+    assert.equal(head.title, 'Plumber Canberra');
+    assert.equal(head.description, 'Local plumber');
+    assert.ok(head.canonical.indexOf('example.com.au') >= 0);
+  });
+
+  it('merges crawl findings into overview when crawl result is supplied', async () => {
+    const { buildOverview } = require('../lib/search-intelligence/overview');
+    const origFetch = global.fetch;
+    global.fetch = async function () {
+      return {
+        ok: true,
+        status: 200,
+        url: 'https://demo.example.com.au/',
+        text: async function () {
+          return '<html><head></head><body></body></html>';
+        }
+      };
+    };
+    try {
+      const ov = await buildOverview({
+        siteId: 'site-crawl',
+        config: { seoTitle: 'Expected Title', seoDescription: 'Desc', phone: '0400000000', sections: { quote: { on: true } } },
+        site: { id: 'site-crawl', custom_domain: 'demo.example.com.au', status: 'live' },
+        crawl: true,
+        includeRecipeCatalog: false
+      });
+      assert.equal(ov.ok, true);
+      assert.ok(ov.crawl && ov.crawl.homeUrl);
+      assert.ok(ov.nextBestActions.some((a) => a.code === 'crawl_empty_title'));
+      assert.ok(ov.cards.find((c) => c.id === 'technical_health').value >= 1);
+    } finally {
+      global.fetch = origFetch;
+    }
+  });
+
+  it('ships OAuth exchange and callback routes', () => {
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/search-console/exchange.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/search-console/callback.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/google-analytics/exchange.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/integrations/google-analytics/callback.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/google-oauth/oauth.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/google-oauth/crypto.js')));
   });
 
   it('wires SEO Command Centre manage tab + APIs', () => {
@@ -127,6 +180,7 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /id="av-seo"/);
     assert.match(manage, /function renderSeoCommandCentre/);
     assert.match(manage, /\/api\/search-intelligence\/overview/);
+    assert.match(manage, /crawl=1/);
     assert.match(manage, /'trade':\[[^\]]*seo/);
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/overview.js')));
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/recommendations.js')));

@@ -25,19 +25,19 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - [x] SEO Command Centre home (**scaffold** + config audit NBAs)
 - [x] Overview / recommendations API (loads `sites.config`, first-party audit)
 - [x] Site Brain `snapshot.searchIntelligence` twin shape
-- [x] GSC + GA4 settings pages + status/connect scaffolds (`not_configured` / `oauth_exchange_pending`)
-- [ ] GSC + GA4 OAuth authorize + token exchange + `si_connections` persist
+- [x] GSC + GA4 settings pages + status/connect/callback/exchange (encrypted `si_connections`)
+- [x] First-party HTML crawl (homepage, `?crawl=1`; Actions tab)
+- [ ] GSC / GA4 property selection + scheduled sync
 - [ ] Forms / call-click attribution join
 - [ ] Keyword research via live provider
 - [ ] Tracked keywords (25–100 per plan)
-- [ ] First-party HTML crawl (beyond config audit)
 - [ ] Page-level performance from GSC
 - [ ] Partner portfolio basics
 - [ ] Scheduled client summary
 
 **Website actions (live):** Open in editor (section-aware); Create task toast.  
 
-**Scaffold note:** Command Centre tab, config audit NBAs, connector status pages. Apply `db/search_intelligence_schema.sql` before storing OAuth rows.
+**Scaffold note:** Command Centre tab, config + crawl NBAs, OAuth Connect when env + schema are ready. Apply `db/search_intelligence_schema.sql` before storing OAuth rows.
 
 ---
 

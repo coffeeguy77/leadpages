@@ -19,7 +19,7 @@ async function loadSite(siteId) {
   if (!sb) return null;
   const { data, error } = await sb
     .from('sites')
-    .select('id,business_name,slug,config')
+    .select('id,business_name,slug,config,custom_domain,status')
     .eq('id', siteId)
     .maybeSingle();
   if (error || !data) return null;
@@ -64,11 +64,22 @@ module.exports = async (req, res) => {
     const connectionRows = await loadConnections(siteId);
     const includeCatalog =
       String((body && body.includeCatalog) || (req.query && req.query.includeCatalog) || '') === '1';
+    const doCrawl =
+      String((body && body.crawl) || (req.query && req.query.crawl) || '') === '1';
 
     const overview = await buildOverview({
       siteId: siteId,
       config: cfg,
       businessName: (site && site.business_name) || null,
+      site: site
+        ? {
+            id: site.id,
+            slug: site.slug,
+            custom_domain: site.custom_domain,
+            status: site.status
+          }
+        : { id: siteId },
+      crawl: doCrawl,
       includeRecipeCatalog: includeCatalog,
       demoKeyword: (body && body.demoKeyword) || (req.query && req.query.demoKeyword) || null,
       location: (body && body.location) || (req.query && req.query.location) || null,

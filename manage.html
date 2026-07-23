@@ -10281,7 +10281,8 @@ function heroCtaCard(c){
     var body=document.getElementById('si-body'); if(!body) return;
     body.innerHTML='<p class="hint">Loading…</p>';
     try{
-      var ov=await _siFetch('/api/search-intelligence/overview?siteId='+encodeURIComponent(currentSiteId));
+      var crawlQ=_siTab==='actions'?'&crawl=1':'';
+      var ov=await _siFetch('/api/search-intelligence/overview?siteId='+encodeURIComponent(currentSiteId)+crawlQ);
       if(_siTab==='connect'){ body.innerHTML=_siConnectHTML(ov); return; }
       if(_siTab==='actions'){ body.innerHTML=_siActionsHTML(ov); _siWireActions(ov); return; }
       body.innerHTML=_siHomeHTML(ov);
@@ -10308,7 +10309,7 @@ function heroCtaCard(c){
       +'</div>';
     var open=((ov&&ov.nextBestActions)||[]).filter(function(a){ return a.status==='open'; }).slice(0,5);
     h+='<div class="card"><h2 style="margin:0 0 8px">Next Best Actions</h2>'
-      +'<p class="lede" style="margin:0 0 12px">'+(open.length?'Config issues to fix first.':'No open config issues — connect GSC when ready.')+'</p>'
+      +'<p class="lede" style="margin:0 0 12px">'+(open.length?'Issues to fix first.':'No open issues — connect GSC when ready.')+'</p>'
       +_siActionsList(open)
       +'<p class="hint" style="margin-top:12px"><button type="button" class="btn ghost sm" id="si-goto-actions">View all actions</button></p></div>';
     return h;
@@ -10318,7 +10319,7 @@ function heroCtaCard(c){
     function row(key,label){
       var x=c[key]||{};
       var st=x.status||'unknown';
-      var plat=x.platformConfigured===true?' · platform ready':(x.platformConfigured===false?' · platform not configured':'');
+      var plat=x.oauthReady===true?' · OAuth ready':(x.platformConfigured===true?' · credentials set':(x.platformConfigured===false?' · platform not configured':''));
       return '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)">'
         +'<div><strong>'+esc(label)+'</strong><div class="hint" style="margin:4px 0 0">Status: '+esc(st)+esc(plat)
         +(x.hint?' — '+esc(x.hint):'')
@@ -10327,7 +10328,7 @@ function heroCtaCard(c){
         +'</div>';
     }
     return '<div class="card"><h2 style="margin:0 0 6px">Connections</h2>'
-      +'<p class="lede">Search Console and GA4 OAuth paths are live for status/connect scaffolding. Full token exchange enables Connect when credentials are set.</p>'
+      +'<p class="lede">Connect Search Console and GA4 when platform credentials and encryption are configured. Tokens stay encrypted server-side.</p>'
       +row('search_console','Google Search Console')
       +row('ga4','Google Analytics 4')
       +row('google_ads','Google Ads (Advertising tab)')
@@ -10352,7 +10353,10 @@ function heroCtaCard(c){
     var open=((ov&&ov.nextBestActions)||[]).filter(function(a){ return a.status==='open'; });
     var catalog=((ov&&ov.nextBestActions)||[]).filter(function(a){ return a.status!=='open'; });
     return '<div class="card"><h2 style="margin:0 0 8px">Next Best Actions</h2>'
-      +'<p class="lede" style="margin:0 0 14px">Site-specific findings from your saved configuration'+(ov&&ov.audit?' ('+ov.audit.issueCount+' open)':'')+'.</p>'
+      +'<p class="lede" style="margin:0 0 14px">Findings from saved configuration'
+      +(ov&&ov.audit?' ('+ov.audit.issueCount+' config)':'')
+      +(ov&&ov.crawl&&ov.crawl.issueCount!=null?' · '+(ov.crawl.skipped?'crawl skipped':'')+(ov.crawl.issueCount||0)+' crawl':'')
+      +'.</p>'
       +_siActionsList(open.length?open:(ov&&ov.nextBestActions)||[])
       +(catalog.length?'<p class="hint" style="margin-top:16px">Catalog recipes stay available after connectors land.</p>':'')
       +'</div>';
