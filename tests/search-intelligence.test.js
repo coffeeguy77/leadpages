@@ -740,7 +740,7 @@ describe('Search Intelligence stubs', () => {
     assert.equal(bl.summary.referringDomains, 42);
   });
 
-  it('ads keyword universe detects mismatch and overview exposes phase 3', async () => {
+  it('ads keyword universe detects mismatch and overview exposes phase 4', async () => {
     const { buildAdsKeywordUniverse } = require('../lib/search-intelligence/phase4-foundations');
     const uni = buildAdsKeywordUniverse(
       [{ keyword: 'plumber canberra' }, { keyword: 'hot water canberra' }, { keyword: 'blocked drain canberra' }],
@@ -759,10 +759,51 @@ describe('Search Intelligence stubs', () => {
       },
       includeRecipeCatalog: false
     });
-    assert.equal(ov.phase, 3);
+    assert.equal(ov.phase, 4);
     assert.equal(ov.scaffold, false);
     assert.ok(ov.cards.find((c) => c.id === 'ai_visibility'));
     assert.ok(ov.connections.gbp);
+    assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/providers/semrush.js')), false);
+  });
+
+  it('loads ads keyword hints and detects universe mismatch', () => {
+    const { buildAdsKeywordUniverse } = require('../lib/search-intelligence/phase4-foundations');
+    const uni = buildAdsKeywordUniverse(
+      [{ keyword: 'a one' }, { keyword: 'a two' }, { keyword: 'a three' }],
+      [{ keyword: 'paid x' }, { keyword: 'paid y' }]
+    );
+    assert.ok(uni.findings.some((f) => f.recipeId === 'seo_ads_mismatch'));
+  });
+
+  it('backlink gap flags stronger competitors', async () => {
+    const { analyseBacklinkGap } = require('../lib/search-intelligence/backlink-gap');
+    const res = await analyseBacklinkGap(
+      {
+        id: 'site-bl',
+        slug: 'demo-plumber',
+        custom_domain: 'example-plumber.com.au',
+        config: { competitors: ['rival.example'] }
+      },
+      { provider: 'mock' }
+    );
+    assert.equal(res.ok, true);
+    assert.equal(res.domain, 'example-plumber.com.au');
+    assert.ok(Array.isArray(res.competitors));
+  });
+
+  it('ships Authority API and Manage tab', () => {
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/authority.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/ads-keywords.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/backlink-gap.js')));
+    const sql = fs.readFileSync(path.join(__dirname, '..', 'db/google_ads_schema.sql'), 'utf8');
+    assert.match(sql, /ads_keyword_daily/);
+    const sync = fs.readFileSync(path.join(__dirname, '..', 'lib/google-ads/sync.js'), 'utf8');
+    assert.match(sync, /keyword_view/);
+    assert.match(sync, /syncKeywordMetrics/);
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /\['authority','Authority'\]/);
+    assert.match(manage, /_siLoadAuthority/);
+    assert.match(manage, /\/api\/search-intelligence\/authority/);
     assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/providers/semrush.js')), false);
   });
 });

@@ -10322,7 +10322,7 @@ function heroCtaCard(c){
       box.innerHTML='<div class="card"><h2>SEO Command Centre</h2><p class="lede">Select a site to view search visibility, leads and Next Best Actions.</p></div>';
       return;
     }
-    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['clusters','Clusters'],['local','Local'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections']];
+    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['clusters','Clusters'],['local','Local'],['authority','Authority'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections']];
     box.innerHTML=
       '<div class="card" style="margin-bottom:14px">'
       +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
@@ -10357,6 +10357,7 @@ function heroCtaCard(c){
       if(_siTab==='keywords'){ body.innerHTML=_siKeywordsHTML(ov); _siWireKeywords(); return; }
       if(_siTab==='clusters'){ body.innerHTML='<p class="hint">Loading clusters…</p>'; _siLoadClusters(); return; }
       if(_siTab==='local'){ body.innerHTML='<p class="hint">Loading local…</p>'; _siLoadLocal(); return; }
+      if(_siTab==='authority'){ body.innerHTML='<p class="hint">Loading authority…</p>'; _siLoadAuthority(); return; }
       if(_siTab==='summary'){ body.innerHTML='<p class="hint">Loading summary…</p>'; _siLoadSummary(); return; }
       if(_siTab==='portfolio'){ body.innerHTML='<p class="hint">Loading portfolio…</p>'; _siLoadPortfolio(); return; }
       body.innerHTML=_siHomeHTML(ov);
@@ -10643,6 +10644,71 @@ function heroCtaCard(c){
       body.innerHTML='<div class="card"><p class="lede">Local view unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
     }
   }
+  async function _siLoadAuthority(){
+    var body=document.getElementById('si-body'); if(!body) return;
+    try{
+      var j=await _siFetch('/api/search-intelligence/authority?siteId='+encodeURIComponent(currentSiteId));
+      var U=j.universe||{};
+      var A=j.adsKeywords||{};
+      var shared=(U.shared||[]).slice(0,12).map(function(k){ return '<li>'+esc(k)+'</li>'; }).join('');
+      var orgOnly=(U.organicOnly||[]).slice(0,8).map(function(k){ return '<li>'+esc(k)+'</li>'; }).join('');
+      var adsOnly=(U.adsOnly||[]).slice(0,8).map(function(k){ return '<li>'+esc(k)+'</li>'; }).join('');
+      var findings=(U.findings||[]).map(function(f){
+        return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px"><strong>'+esc(f.title)+'</strong><div class="lede" style="margin:6px 0 0">'+esc(f.plainLanguage||'')+'</div></div>';
+      }).join('');
+      body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">SEO ↔ Ads keyword universe</h2>'
+        +'<p class="lede" style="margin:0 0 10px">Organic tracked: <strong>'+esc(U.organicCount||0)+'</strong> · Ads: <strong>'+esc(U.adsCount||0)+'</strong> · Shared: <strong>'+esc(U.sharedCount||0)+'</strong></p>'
+        +'<p class="hint">Ads status: '+esc(A.connectionStatus||'—')+' · '+esc(A.note||'')+'</p>'
+        +(findings||'')
+        +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px">'
+        +'<div><strong>Shared</strong><ul style="margin:6px 0 0;padding-left:18px">'+(shared||'<li class="hint">None yet</li>')+'</ul></div>'
+        +'<div><strong>Organic only</strong><ul style="margin:6px 0 0;padding-left:18px">'+(orgOnly||'<li class="hint">—</li>')+'</ul></div>'
+        +'<div><strong>Ads only</strong><ul style="margin:6px 0 0;padding-left:18px">'+(adsOnly||'<li class="hint">—</li>')+'</ul></div>'
+        +'</div></div>'
+        +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Authority &amp; AI</h2>'
+        +'<p class="lede" style="margin:0 0 10px">Backlink gap and AI/brand SERP probes use DataForSEO (or mock). Never Semrush.</p>'
+        +'<div class="row" style="gap:8px;flex-wrap:wrap">'
+        +'<button type="button" class="btn sm" id="si-auth-backlinks">Backlink gap</button>'
+        +'<button type="button" class="btn sm ghost" id="si-auth-brand">Brand SERP</button>'
+        +'<button type="button" class="btn sm ghost" id="si-auth-ai">AI overview</button>'
+        +'</div>'
+        +'<div id="si-auth-out" class="hint" style="margin-top:12px"></div></div>';
+      async function runAuth(action){
+        var out=document.getElementById('si-auth-out');
+        out.textContent='Running '+action+'…';
+        try{
+          var tok=await _siToken();
+          var r=await fetch('/api/search-intelligence/authority',{
+            method:'POST',
+            headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},
+            body:JSON.stringify({siteId:currentSiteId,action:action})
+          });
+          var jj=await r.json().catch(function(){return {};});
+          if(!r.ok){ out.textContent=jj.message||jj.error||('HTTP '+r.status); return; }
+          var res=jj.result||{};
+          if(action==='backlink_gap'){
+            out.innerHTML='Domain <strong>'+esc(res.domain||'—')+'</strong> · referring domains '
+              +esc(res.own&&res.own.referringDomains!=null?res.own.referringDomains:'—')
+              +' · competitors checked '+esc((res.competitors||[]).length)
+              +((res.findings&&res.findings[0])?'<div class="lede" style="margin-top:8px">'+esc(res.findings[0].plainLanguage)+'</div>':'<div class="hint" style="margin-top:8px">'+(esc(res.note)||'No gap finding.')+'</div>');
+          } else {
+            out.innerHTML='State: <strong>'+esc(res.state|| (res.owned?'owned':'checked'))+'</strong>'
+              +(res.keyword?' · '+esc(res.keyword):'')
+              +(res.topDomain?' · top: '+esc(res.topDomain):'')
+              +((res.findings&&res.findings[0])?'<div class="lede" style="margin-top:8px">'+esc(res.findings[0].plainLanguage)+'</div>':'<div class="hint" style="margin-top:8px">'+esc(res.note||'No issues flagged.')+'</div>');
+          }
+        }catch(e){ out.textContent=String(e.message||e); }
+      }
+      var b1=document.getElementById('si-auth-backlinks');
+      var b2=document.getElementById('si-auth-brand');
+      var b3=document.getElementById('si-auth-ai');
+      if(b1) b1.onclick=function(){ runAuth('backlink_gap'); };
+      if(b2) b2.onclick=function(){ runAuth('probe_brand'); };
+      if(b3) b3.onclick=function(){ runAuth('probe_ai'); };
+    }catch(e){
+      body.innerHTML='<div class="card"><p class="lede">Authority view unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
+    }
+  }
   async function _siLoadClusters(){
     var body=document.getElementById('si-body'); if(!body) return;
     async function paint(){
@@ -10908,11 +10974,12 @@ function heroCtaCard(c){
         +'</div>';
     }
     return '<div class="card"><h2 style="margin:0 0 6px">Connections</h2>'
-      +'<p class="lede">Connect Search Console and GA4 when platform credentials and encryption are configured. Tokens stay encrypted server-side.</p>'
+      +'<p class="lede">Connect Search Console, GA4 and GBP when platform credentials and encryption are configured. Tokens stay encrypted server-side.</p>'
       +row('search_console','Google Search Console')
       +row('ga4','Google Analytics 4')
+      +row('gbp','Google Business Profile')
       +row('google_ads','Google Ads (Advertising tab)')
-      +'<p class="hint" style="margin-top:14px">Verification meta / DNS remains under Settings → Search &amp; indexing.</p></div>';
+      +'<p class="hint" style="margin-top:14px">Verification meta / DNS remains under Settings → Search &amp; indexing. Market SERP stays DataForSEO-only (no Semrush).</p></div>';
   }
   function _siActionsList(items){
     if(!items||!items.length) return '<p class="hint">No actions yet.</p>';

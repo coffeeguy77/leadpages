@@ -166,9 +166,14 @@ Command Centre overview loads site config and surfaces these as `status: open` a
 
 ---
 
-## Ads bridge (Phase 4 full; light reuse earlier)
+## Ads bridge (Phase 4)
 
-Ads connection already exists. Shared keyword universe and SEO↔PPC matrix land in Phase 4. Phase 1 may read CPC from licensed provider or Ads Keyword Planner where permitted — document source on each metric.
+Ads connection lives under Advertising. Search Intelligence imports:
+
+1. **`ads_keyword_daily`** — from Google Ads `keyword_view` during Advertising sync (apply `db/google_ads_schema.sql` for the new table)
+2. Fallbacks — `ads_metrics_daily` ad-group names + `utm_term` on sessions/leads
+
+Manage → **Authority** shows the SEO↔PPC universe and `seo_ads_mismatch` when paid/organic diverge. Shared keyword matrix + CPC source labels stay DataForSEO / Ads measured — **never Semrush**.
 
 ---
 

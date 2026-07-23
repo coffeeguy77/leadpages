@@ -34,7 +34,8 @@ Not fifty disconnected tools.
 
 - Search Visibility score  
 - Local Maps Visibility score (Phase 3 foundations: NAP + opportunity map; GBP optional later)  
-- AI Visibility score (Phase 4; placeholder)  
+- AI Visibility score (Phase 4; run probes on Authority tab)  
+- Authority tab: SEO↔Ads universe, backlink gap, brand / AI SERP probes (DataForSEO only)  
 - Organic clicks and impressions (GSC)  
 - Calls, forms and quote requests from organic / modelled organic  
 - Estimated lead value (when available)  

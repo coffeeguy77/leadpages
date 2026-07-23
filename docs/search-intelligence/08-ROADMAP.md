@@ -68,14 +68,15 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 
 ---
 
-## Phase 4 foundations (started)
+## Phase 4 Authority / AI / Ads (complete for DataForSEO path)
 
 - [x] Backlink summary DTO + gateway op (`backlinkSummary` via DataForSEO)
 - [x] SEO↔Ads keyword universe helper + `seo_ads_mismatch` when Ads keywords supplied
-- [x] AI Visibility overview card placeholder + SERP `ai_overview` / brand SERP probes
-- [ ] Full Ads keyword import into SI matrix
-- [ ] Competitor backlink gap reporting UI
-- [ ] AI citation ownership depth
+- [x] AI Visibility overview card + SERP `ai_overview` / brand SERP probes
+- [x] Full Ads keyword import into SI matrix (`ads_keyword_daily` + keyword_view sync; fallbacks: ad-group names / utm_term)
+- [x] Competitor backlink gap reporting UI (Manage → Authority)
+- [x] AI citation / brand ownership probes on Authority tab
+- [ ] Deeper citation corpus / multi-platform AI answers (future)
 
 ---
 

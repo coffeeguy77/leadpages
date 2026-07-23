@@ -13,6 +13,7 @@ const { loadOrganicLeadSummary } = require('../../lib/search-intelligence/attrib
 const { loadPagePerformance } = require('../../lib/search-intelligence/page-performance');
 const { listTracked, planLimit } = require('../../lib/search-intelligence/tracked-keywords');
 const { loadLatestRanks } = require('../../lib/search-intelligence/rank-jobs');
+const { loadAdsKeywords } = require('../../lib/search-intelligence/ads-keywords');
 
 function admin() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
@@ -77,14 +78,16 @@ module.exports = async (req, res) => {
     );
 
     const sb = admin();
-    const [gscTotals, ga4Totals, organicSummary, pagePerformance, tracked, ranks] = await Promise.all([
-      loadGscTotals(sb, siteId, { days: days }),
-      loadGa4Totals(sb, siteId, { days: days }),
-      loadOrganicLeadSummary(sb, siteId, { days: days }),
-      loadPagePerformance(sb, siteId, { days: days }),
-      listTracked(sb, siteId),
-      loadLatestRanks(sb, siteId)
-    ]);
+    const [gscTotals, ga4Totals, organicSummary, pagePerformance, tracked, ranks, adsKeywords] =
+      await Promise.all([
+        loadGscTotals(sb, siteId, { days: days }),
+        loadGa4Totals(sb, siteId, { days: days }),
+        loadOrganicLeadSummary(sb, siteId, { days: days }),
+        loadPagePerformance(sb, siteId, { days: days }),
+        listTracked(sb, siteId),
+        loadLatestRanks(sb, siteId),
+        loadAdsKeywords(sb, siteId, { days: days })
+      ]);
 
     const overview = await buildOverview({
       siteId: siteId,
@@ -95,7 +98,8 @@ module.exports = async (req, res) => {
             id: site.id,
             slug: site.slug,
             custom_domain: site.custom_domain,
-            status: site.status
+            status: site.status,
+            business_name: site.business_name
           }
         : { id: siteId },
       crawl: doCrawl,
@@ -109,10 +113,23 @@ module.exports = async (req, res) => {
       pagePerformance: pagePerformance,
       trackedKeywordCount: tracked.count || 0,
       trackedKeywordLimit: tracked.limit || planLimit(),
+      trackedKeywords: tracked.items || [],
+      adsKeywords: (adsKeywords && adsKeywords.items) || [],
+      adsKeywordMeta: adsKeywords || null,
       ranks: ranks
     });
     overview.role = access.role;
     overview.siteSlug = (site && site.slug) || null;
+    if (adsKeywords) {
+      overview.adsKeywords = {
+        available: !!adsKeywords.available,
+        count: adsKeywords.count || 0,
+        connectionStatus: adsKeywords.connectionStatus,
+        sources: adsKeywords.sources || [],
+        note: adsKeywords.note || null,
+        labelClass: adsKeywords.labelClass || 'modelled'
+      };
+    }
     return http.json(res, 200, overview);
   } catch (e) {
     return http.json(res, 500, {
