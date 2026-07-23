@@ -928,4 +928,19 @@ describe('Search Intelligence stubs', () => {
     assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/crm-outcomes.js')), true);
     assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/ai-citations.js')), true);
   });
+
+  it('overview payload still builds when CRM outcomes are empty or partial', async () => {
+    const { buildOverview } = require('../lib/search-intelligence/overview');
+    const { buildCrmOutcomes } = require('../lib/search-intelligence/crm-outcomes');
+    const empty = buildCrmOutcomes({ id: 's1', config: {} }, []);
+    const ov = await buildOverview({
+      siteId: 's1',
+      config: { seoTitle: 'T', seoDescription: 'D', phone: '0400', sections: { quote: { on: true } } },
+      crmOutcomes: empty,
+      includeRecipeCatalog: false
+    });
+    assert.equal(ov.ok, true);
+    assert.ok(ov.cards.find((c) => c.id === 'crm_outcomes'));
+    assert.ok(ov.crmOutcomes);
+  });
 });
