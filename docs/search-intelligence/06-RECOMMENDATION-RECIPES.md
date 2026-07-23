@@ -61,12 +61,14 @@
 | `create_landing_draft` | `POST /api/brain/landing-draft` (human approve) |
 | `dismiss` / `snooze` | Recommendation state |
 
-Phase 2 adds `page_optimiser`, `composer_draft`, `internal_link_patch`, `schema_patch`.  
+Phase 2 adds `page_optimiser`, `composer_draft` (Brain landing handoff), `internal_link_patch`, `schema_patch`.  
 Phase 5 adds scoped `auto_fix_safe`.
 
 ### Page Optimiser (Phase 2 scaffold)
 
-`POST /api/search-intelligence/page-optimiser` builds a **modelled** brief (title, meta, H1, outline, landing-draft handoff). Safeguards: `publishAllowed: false`, `requiresHumanApproval: true`. Manage → Clusters → Page Optimiser.
+`POST /api/search-intelligence/page-optimiser` builds a **modelled** brief (title, meta, H1, outline, internal links, landing-draft handoff). Safeguards: `publishAllowed: false`, `requiresHumanApproval: true`.
+
+Manage → Clusters → Page Optimiser → **Compose with Brain** stores the handoff, annotates `brain_landing_handoff`, and opens Landing pages with SEO fields prefilled. Operator still clicks **Generate draft** and **Approve** — nothing silent-publishes.
 
 ---
 

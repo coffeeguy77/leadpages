@@ -92,9 +92,15 @@ module.exports = async (req, res) => {
     brief.role = access.role;
 
     if (req.method === 'POST' && body.annotate !== false) {
-      const ann = await recordBriefAnnotation(db, siteId, brief);
+      const ann = await recordBriefAnnotation(db, siteId, brief, {
+        annotationType: body.handoff ? 'brain_landing_handoff' : 'page_optimiser_brief',
+        title: body.handoff
+          ? 'Brain landing handoff — ' + (brief.primaryKeyword || 'keyword')
+          : undefined,
+        handoff: body.handoff ? true : null
+      });
       brief.annotation = ann;
-      await meterUsage(db, siteId, 'page_optimiser_brief', 1, {
+      await meterUsage(db, siteId, body.handoff ? 'brain_landing_handoff' : 'page_optimiser_brief', 1, {
         provider: 'internal',
         clusterId: brief.clusterId
       });

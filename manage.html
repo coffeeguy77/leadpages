@@ -1939,6 +1939,32 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(seo) seo.hidden=(m!=='seo');
     if(ff) ff.hidden=(m!=='freeform');
   }
+  function lpConsumeSiHandoff(opts){
+    var o=opts||{};
+    var raw=null;
+    try{ raw=sessionStorage.getItem('si_landing_handoff'); }catch(_e){ return false; }
+    if(!raw) return false;
+    var handoff=null;
+    try{ handoff=JSON.parse(raw); }catch(_e){ return false; }
+    try{ sessionStorage.removeItem('si_landing_handoff'); }catch(_e2){}
+    if(!handoff||typeof handoff!=='object') return false;
+    lpAiSetMode(handoff.mode||'seo');
+    if($('lp-ai-keyword')) $('lp-ai-keyword').value=handoff.primaryKeyword||'';
+    if($('lp-ai-location')) $('lp-ai-location').value=handoff.location||'';
+    if($('lp-ai-negatives')) $('lp-ai-negatives').value=Array.isArray(handoff.negativeKeywords)?handoff.negativeKeywords.join(', '):(handoff.negativeKeywords||'');
+    if($('lp-ai-extra')) $('lp-ai-extra').value=handoff.extraInfo||'';
+    if($('lp-ai-prompt') && handoff.brief) $('lp-ai-prompt').value=handoff.brief;
+    if($('lp-ai-note')) $('lp-ai-note').textContent='Search Intelligence brief loaded — review and Generate draft (human approve before save).';
+    toast('SEO brief loaded from Search Intelligence');
+    try{
+      var box=$('lp-ai-go');
+      if(box&&box.scrollIntoView) box.scrollIntoView({behavior:'smooth',block:'center'});
+    }catch(_e3){}
+    if(o.autoGenerate){
+      setTimeout(function(){ try{ aiGenerate(); }catch(_e4){} }, 400);
+    }
+    return true;
+  }
   function lpAiApplyPreset(pr){
     var payload=pr[1];
     if(typeof payload==='string'){
@@ -2439,6 +2465,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     }).join('') : '<p class="hint">No pages yet. Create one to build an SEO-optimised page that matches your theme.</p>';
     const ap=$('lp-ai-presets'); if(ap && !ap.children.length){ aiPresets().forEach(function(pr){ const b=document.createElement('button'); b.type='button'; b.className='ai-chip'; b.textContent=pr[0]; b.addEventListener('click',function(){ lpAiApplyPreset(pr); }); ap.appendChild(b); }); }
     if($('lp-ai-mode')){ $('lp-ai-mode').addEventListener('change',function(){ lpAiSetMode(this.value); }); lpAiSetMode($('lp-ai-mode').value||'seo'); }
+    try{ lpConsumeSiHandoff({ autoGenerate: false }); }catch(_siH){}
     if(lpWired) return; lpWired=true;
     $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); try{ lpEnsureDefaultLandingApps(p); }catch(e){} persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
     list.addEventListener('click',function(e){ const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit')); });
@@ -10500,7 +10527,7 @@ function heroCtaCard(c){
           +(cards||'<p class="hint">No clusters yet. Track keywords, then rebuild.</p>')
           +'</div>'
           +'<div id="si-cluster-brief" style="margin-top:16px"></div>'
-          +'<p class="hint" style="margin-top:12px">Page Optimiser opens a title / meta / outline brief. Use Brain landing draft separately to compose a full page (human approve).</p></div>';
+          +'<p class="hint" style="margin-top:12px">Page Optimiser builds a modelled brief. <strong>Compose with Brain</strong> opens Landing pages with the brief prefilled — generate and approve there (never auto-publishes).</p></div>';
         var reb=document.getElementById('si-cluster-rebuild');
         if(reb) reb.addEventListener('click',async function(){
           reb.disabled=true;
@@ -10544,11 +10571,48 @@ function heroCtaCard(c){
                 +((jj.outline&&jj.outline.length)?'<div><strong>Outline</strong><ul style="margin:6px 0 0;padding-left:1.2rem">'
                   +jj.outline.map(function(o){ return '<li style="margin:0 0 4px"><strong>'+esc(o.heading)+'</strong> — '+esc(o.purpose||'')+'</li>'; }).join('')
                   +'</ul></div>':'')
+                +((jj.internalLinks&&jj.internalLinks.length)?'<div><strong>Internal links</strong><ul style="margin:6px 0 0;padding-left:1.2rem">'
+                  +jj.internalLinks.map(function(l){ return '<li style="margin:0 0 4px"><code>'+esc(l.url)+'</code> — '+esc(l.label)+': '+esc(l.reason||'')+'</li>'; }).join('')
+                  +'</ul></div>':'')
                 +'</div>'
                 +'<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">'
+                +'<button type="button" class="btn sm" id="si-brief-brain">Compose with Brain</button>'
                 +'<button type="button" class="btn ghost sm" id="si-brief-copy">Copy brief</button>'
                 +'<button type="button" class="btn ghost sm" id="si-brief-editor">Open SEO editor</button>'
                 +'</div>';
+              var brainBtn=document.getElementById('si-brief-brain');
+              if(brainBtn) brainBtn.addEventListener('click',async function(){
+                var handoff=jj.landingDraftHandoff||{
+                  mode:'seo',
+                  primaryKeyword:jj.primaryKeyword,
+                  location:jj.location,
+                  brief:(jj.landingDraftHandoff&&jj.landingDraftHandoff.brief)||'',
+                  extraInfo:(jj.landingDraftHandoff&&jj.landingDraftHandoff.extraInfo)||'',
+                  negativeKeywords:[]
+                };
+                try{
+                  sessionStorage.setItem('si_landing_handoff', JSON.stringify(handoff));
+                }catch(_e){ toast('Could not store handoff'); return; }
+                try{
+                  var tok=await _siToken();
+                  await fetch('/api/search-intelligence/page-optimiser',{
+                    method:'POST',
+                    headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+                    body:JSON.stringify({
+                      siteId:currentSiteId,
+                      clusterId:jj.clusterId||undefined,
+                      primaryKeyword:jj.primaryKeyword,
+                      handoff:true,
+                      annotate:true
+                    })
+                  });
+                }catch(_e2){ /* annotation best-effort */ }
+                toast('Opening Landing pages with SI brief…');
+                try{
+                  if(typeof showView==='function') showView('landing');
+                  else window.location.hash='#landing';
+                }catch(_e3){ toast('Open Landing pages, then Generate draft'); }
+              });
               var copy=document.getElementById('si-brief-copy');
               if(copy) copy.addEventListener('click',function(){
                 var text=(jj.landingDraftHandoff&&jj.landingDraftHandoff.brief)||[jj.suggestedTitle,jj.suggestedMeta,jj.suggestedH1].join('\n');

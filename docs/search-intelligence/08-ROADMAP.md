@@ -48,10 +48,11 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - [x] Deterministic keyword clusters from tracked terms (`si_keyword_clusters`)
 - [x] Page Optimiser modelled briefs (title/meta/H1/outline) — **no silent publish**
 - [x] Manage → Clusters tab + brief handoff copy / SEO editor
+- [x] Compose with Brain handoff → Landing pages AI draft (prefill; human generate + approve)
+- [x] Modelled internal-link suggestions on briefs
 - [x] Provider usage metering helper (`si_provider_usage` via keyword ideas, ranks, clusters, briefs)
-- [ ] Composer / Brain landing-draft auto-fill from brief
-- [ ] Annotations for publish events
-- [ ] Internal link / schema patch actions
+- [ ] Annotations for publish events (briefs + Brain handoff recorded; publish hooks TBD)
+- [ ] Schema patch actions
 
 ---
 

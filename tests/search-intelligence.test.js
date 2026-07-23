@@ -150,7 +150,12 @@ describe('Search Intelligence stubs', () => {
       {
         id: 's1',
         business_name: 'Demo Plumbing',
-        config: { region: 'Canberra', phone: '0400000000' }
+        config: {
+          region: 'Canberra',
+          phone: '0400000000',
+          pages: [{ slug: 'emergency-plumber', title: 'Emergency plumber' }],
+          services: [{ title: 'Blocked drains' }]
+        }
       },
       {
         id: 'c1',
@@ -167,7 +172,26 @@ describe('Search Intelligence stubs', () => {
     assert.match(brief.suggestedTitle, /Demo Plumbing/);
     assert.ok(brief.outline.length >= 4);
     assert.ok(brief.landingDraftHandoff.primaryKeyword);
+    assert.ok(brief.landingDraftHandoff.extraInfo);
+    assert.ok(Array.isArray(brief.internalLinks) && brief.internalLinks.length >= 1);
     assert.equal(brief.labelClass, 'modelled');
+  });
+
+  it('suggests internal links from site config only', () => {
+    const { suggestInternalLinks } = require('../lib/search-intelligence/internal-links');
+    const links = suggestInternalLinks(
+      {
+        business_name: 'Demo',
+        config: {
+          pages: [{ slug: 'hot-water', title: 'Hot water' }],
+          services: [{ title: 'Plumbing' }]
+        }
+      },
+      { primaryKeyword: 'hot water canberra', secondaryKeywords: [] }
+    );
+    assert.ok(links.some(function (l) { return l.url === '/'; }));
+    assert.ok(links.some(function (l) { return l.url === '/hot-water'; }));
+    assert.equal(links[0].labelClass, 'modelled');
   });
 
   it('ships clusters and page-optimiser APIs', () => {
@@ -180,10 +204,14 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /clusters/);
     assert.match(manage, /_siLoadClusters/);
     assert.match(manage, /page-optimiser/);
+    assert.match(manage, /si-brief-brain/);
+    assert.match(manage, /si_landing_handoff/);
+    assert.match(manage, /lpConsumeSiHandoff/);
     const sql = fs.readFileSync(path.join(__dirname, '..', 'db/search_intelligence_schema.sql'), 'utf8');
     assert.match(sql, /si_keyword_clusters/);
     assert.match(sql, /si_annotations/);
     assert.match(sql, /si_provider_usage/);
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/internal-links.js')));
   });
 
   it('opportunity value is modelled 0..1 with factor breakdown', () => {

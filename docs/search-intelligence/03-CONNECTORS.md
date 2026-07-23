@@ -119,8 +119,9 @@ Manage → SEO Command → **Pages** tab; findings also merge into Next Best Act
 ### Keyword clusters & Page Optimiser (Phase 2)
 
 - `GET|POST /api/search-intelligence/clusters` — list / rebuild deterministic clusters from tracked keywords (`si_keyword_clusters`)
-- `GET|POST /api/search-intelligence/page-optimiser` — modelled on-page brief (never publishes); writes `si_annotations` when POSTed
-- Usage meters: `keyword_ideas`, `rank_check`, `cluster_rebuild`, `page_optimiser_brief` → `si_provider_usage`
+- `GET|POST /api/search-intelligence/page-optimiser` — modelled on-page brief (never publishes); writes `si_annotations` when POSTed; `handoff:true` records Brain landing handoff
+- Manage **Compose with Brain** prefills Landing pages AI draft fields from the brief (operator generates + approves)
+- Usage meters: `keyword_ideas`, `rank_check`, `cluster_rebuild`, `page_optimiser_brief`, `brain_landing_handoff` → `si_provider_usage`
 
 ---
 
