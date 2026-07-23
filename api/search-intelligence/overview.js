@@ -11,6 +11,7 @@ const { buildOverview } = require('../../lib/search-intelligence/overview');
 const { loadGscTotals, loadGa4Totals } = require('../../lib/search-intelligence/sync');
 const { loadOrganicLeadSummary } = require('../../lib/search-intelligence/attribution-organic');
 const { loadPagePerformance } = require('../../lib/search-intelligence/page-performance');
+const { listTracked, planLimit } = require('../../lib/search-intelligence/tracked-keywords');
 
 function admin() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
@@ -75,11 +76,12 @@ module.exports = async (req, res) => {
     );
 
     const sb = admin();
-    const [gscTotals, ga4Totals, organicSummary, pagePerformance] = await Promise.all([
+    const [gscTotals, ga4Totals, organicSummary, pagePerformance, tracked] = await Promise.all([
       loadGscTotals(sb, siteId, { days: days }),
       loadGa4Totals(sb, siteId, { days: days }),
       loadOrganicLeadSummary(sb, siteId, { days: days }),
-      loadPagePerformance(sb, siteId, { days: days })
+      loadPagePerformance(sb, siteId, { days: days }),
+      listTracked(sb, siteId)
     ]);
 
     const overview = await buildOverview({
@@ -102,7 +104,9 @@ module.exports = async (req, res) => {
       gscTotals: gscTotals,
       ga4Totals: ga4Totals,
       organicSummary: organicSummary,
-      pagePerformance: pagePerformance
+      pagePerformance: pagePerformance,
+      trackedKeywordCount: tracked.count || 0,
+      trackedKeywordLimit: tracked.limit || planLimit()
     });
     overview.role = access.role;
     overview.siteSlug = (site && site.slug) || null;

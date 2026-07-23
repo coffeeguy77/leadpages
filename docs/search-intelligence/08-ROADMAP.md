@@ -31,13 +31,13 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - [x] Forms / call-click organic attribution rollup (Command Centre card)
 - [x] Page-level GSC performance view + high-impr/low-CTR / cannibalisation NBAs
 - [x] Keyword research API (provider gateway; mock until DataForSEO configured)
-- [ ] Tracked keywords persistence (25–100 per plan)
-- [ ] Partner portfolio basics
-- [ ] Scheduled client summary
+- [x] Tracked keywords persistence (plan limit via `SI_TRACKED_KEYWORD_LIMIT`, default 25 / max 100)
+- [x] Partner portfolio basics (connection health rollup)
+- [x] Scheduled client summary (manual + Monday cron → `si_report_snapshots`)
 
-**Website actions (live):** Open in editor (section-aware); Create task toast.  
+**Website actions (live):** Open in editor (section-aware); Create task toast; track/untrack keywords.  
 
-**Scaffold note:** Command Centre tab, config + crawl + GSC recipe NBAs, OAuth Connect when env + schema are ready. Apply `db/search_intelligence_schema.sql` before storing OAuth/sync rows.
+**Scaffold note:** Apply `db/search_intelligence_schema.sql` before OAuth, sync, tracked keywords, or report snapshots. Rank observation jobs for tracked keywords land next.
 
 ---
 

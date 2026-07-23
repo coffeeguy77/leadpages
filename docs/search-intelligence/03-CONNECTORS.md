@@ -97,6 +97,22 @@ Manage → SEO Command → **Pages** tab; findings also merge into Next Best Act
 
 `GET/POST /api/search-intelligence/keywords?siteId=&keyword=` uses the provider gateway (`mock` by default; set `SI_KEYWORD_PROVIDER=dataforseo` + credentials for live). Scores ideas with opportunity-value.
 
+### Tracked keywords
+
+`GET|POST|DELETE /api/search-intelligence/tracked-keywords` persists to `si_keywords` + `si_tracked_keywords`.
+
+- Limit: `SI_TRACKED_KEYWORD_LIMIT` (default **25**, hard cap **100**)  
+- Cadence: `daily` | `weekly` | `event` (rank pull jobs next)  
+- Manage → Keywords: research, Track, Remove  
+
+### Client summary
+
+`GET|POST /api/search-intelligence/summary` builds a plain-language weekly rollup; POST persists to `si_report_snapshots`. Cron: `/api/cron/search-intelligence-summaries` Mondays 07:00 UTC.
+
+### Partner portfolio
+
+`GET /api/search-intelligence/portfolio` — partners see serviced/referred sites with GSC/GA4 health + tracked counts.
+
 ---
 
 ## Organic attribution (first-party, live)

@@ -10254,7 +10254,7 @@ function heroCtaCard(c){
       box.innerHTML='<div class="card"><h2>SEO Command Centre</h2><p class="lede">Select a site to view search visibility, leads and Next Best Actions.</p></div>';
       return;
     }
-    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['actions','Next Best Actions'],['connect','Connections']];
+    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections']];
     box.innerHTML=
       '<div class="card" style="margin-bottom:14px">'
       +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
@@ -10287,6 +10287,8 @@ function heroCtaCard(c){
       if(_siTab==='actions'){ body.innerHTML=_siActionsHTML(ov); _siWireActions(ov); return; }
       if(_siTab==='pages'){ body.innerHTML=_siPagesHTML(ov); _siWireActions(ov); return; }
       if(_siTab==='keywords'){ body.innerHTML=_siKeywordsHTML(ov); _siWireKeywords(); return; }
+      if(_siTab==='summary'){ body.innerHTML='<p class="hint">Loading summary…</p>'; _siLoadSummary(); return; }
+      if(_siTab==='portfolio'){ body.innerHTML='<p class="hint">Loading portfolio…</p>'; _siLoadPortfolio(); return; }
       body.innerHTML=_siHomeHTML(ov);
       _siWireActions(ov);
     }catch(e){
@@ -10336,18 +10338,61 @@ function heroCtaCard(c){
       +rows+'</tbody></table></div></div>';
   }
   function _siKeywordsHTML(ov){
-    return '<div class="card"><h2 style="margin:0 0 8px">Keyword research</h2>'
-      +'<p class="lede" style="margin:0 0 12px">Explore keyword ideas (mock provider until DataForSEO credentials are set).</p>'
+    return '<div class="card"><h2 style="margin:0 0 8px">Keyword research &amp; tracking</h2>'
+      +'<p class="lede" style="margin:0 0 12px">Research ideas, then track terms for rank cadence (plan limit applies).</p>'
       +'<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:12px">'
       +'<input id="si-kw-input" type="text" placeholder="e.g. plumber canberra" style="flex:1;min-width:180px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--input-bg,var(--panel));color:var(--ink)">'
-      +'<button type="button" class="btn" id="si-kw-go">Research</button></div>'
-      +'<div id="si-kw-out"><p class="hint">Enter a seed keyword to begin.</p></div></div>';
+      +'<button type="button" class="btn" id="si-kw-go">Research</button>'
+      +'<button type="button" class="btn ghost" id="si-kw-track">Track keyword</button></div>'
+      +'<div id="si-kw-tracked" style="margin-bottom:14px"><p class="hint">Loading tracked keywords…</p></div>'
+      +'<div id="si-kw-out"><p class="hint">Enter a seed keyword to research.</p></div></div>';
   }
   async function _siWireKeywords(){
     var btn=document.getElementById('si-kw-go');
+    var trackBtn=document.getElementById('si-kw-track');
     var input=document.getElementById('si-kw-input');
     var out=document.getElementById('si-kw-out');
+    var trackedBox=document.getElementById('si-kw-tracked');
     if(!btn||!input||!out) return;
+
+    async function refreshTracked(){
+      if(!trackedBox) return;
+      try{
+        var j=await _siFetch('/api/search-intelligence/tracked-keywords?siteId='+encodeURIComponent(currentSiteId));
+        var items=j.items||[];
+        if(!items.length){
+          trackedBox.innerHTML='<p class="hint">No tracked keywords yet ('+esc(j.count||0)+' / '+esc(j.limit||25)+').</p>';
+          return;
+        }
+        trackedBox.innerHTML='<p class="hint" style="margin-bottom:8px">Tracked '+esc(j.count)+' / '+esc(j.limit)+'</p>'
+          +'<div style="display:flex;flex-direction:column;gap:6px">'
+          +items.map(function(it){
+            return '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:6px 0">'
+              +'<div><strong>'+esc(it.keyword||it.normalised)+'</strong>'
+              +'<div class="hint">'+esc(it.device||'mobile')+(it.geo?' · '+esc(it.geo):'')+' · '+esc(it.cadence||'weekly')+'</div></div>'
+              +'<button type="button" class="btn ghost sm" data-si-untrack="'+esc(it.id)+'">Remove</button></div>';
+          }).join('')+'</div>';
+        trackedBox.querySelectorAll('[data-si-untrack]').forEach(function(b){
+          b.addEventListener('click',async function(){
+            try{
+              var tok=await _siToken();
+              var r=await fetch('/api/search-intelligence/tracked-keywords?siteId='+encodeURIComponent(currentSiteId),{
+                method:'DELETE',
+                headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+                body:JSON.stringify({siteId:currentSiteId,id:b.getAttribute('data-si-untrack')})
+              });
+              var jj=await r.json().catch(function(){return {};});
+              if(!r.ok) throw new Error(jj.error||('http_'+r.status));
+              refreshTracked();
+            }catch(e){ toast(String(e.message||e)); }
+          });
+        });
+      }catch(e){
+        trackedBox.innerHTML='<p class="hint">'+esc((e&&e.message)||e)+'</p>';
+      }
+    }
+    refreshTracked();
+
     btn.addEventListener('click',async function(){
       var kw=String(input.value||'').trim();
       if(!kw){ out.innerHTML='<p class="hint">Enter a keyword.</p>'; return; }
@@ -10358,15 +10403,91 @@ function heroCtaCard(c){
         var ideas=j.ideas||[];
         if(!ideas.length){ out.innerHTML='<p class="hint">No ideas returned.</p>'; return; }
         out.innerHTML='<p class="hint" style="margin-bottom:8px">Provider: '+esc(j.provider)+'</p>'
-          +'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Keyword</th><th>Vol.</th><th>CPC</th><th>Opp.</th></tr></thead><tbody>'
+          +'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Keyword</th><th>Vol.</th><th>CPC</th><th>Opp.</th><th></th></tr></thead><tbody>'
           +ideas.map(function(i){
-            return '<tr><td>'+esc(i.keyword)+'</td><td>'+esc(i.volume!=null?i.volume:'—')+'</td><td>'+esc(i.cpc!=null?i.cpc:'—')+'</td><td>'+esc(i.opportunity!=null?Number(i.opportunity).toFixed(2):'—')+'</td></tr>';
+            return '<tr><td>'+esc(i.keyword)+'</td><td>'+esc(i.volume!=null?i.volume:'—')+'</td><td>'+esc(i.cpc!=null?i.cpc:'—')+'</td><td>'+esc(i.opportunity!=null?Number(i.opportunity).toFixed(2):'—')+'</td>'
+              +'<td><button type="button" class="btn ghost sm" data-si-track-kw="'+esc(i.keyword)+'">Track</button></td></tr>';
           }).join('')
           +'</tbody></table></div>';
+        out.querySelectorAll('[data-si-track-kw]').forEach(function(b){
+          b.addEventListener('click',function(){ _siTrackKeyword(b.getAttribute('data-si-track-kw'), refreshTracked); });
+        });
       }catch(e){
         out.innerHTML='<p class="hint">'+esc((e&&e.message)||e)+'</p>';
       }
     });
+    if(trackBtn) trackBtn.addEventListener('click',function(){
+      _siTrackKeyword(String(input.value||'').trim(), refreshTracked);
+    });
+  }
+  async function _siTrackKeyword(kw, cb){
+    if(!kw){ toast('Enter a keyword to track'); return; }
+    try{
+      var tok=await _siToken();
+      var r=await fetch('/api/search-intelligence/tracked-keywords',{
+        method:'POST',
+        headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+        body:JSON.stringify({siteId:currentSiteId,keyword:kw,cadence:'weekly'})
+      });
+      var j=await r.json().catch(function(){return {};});
+      if(!r.ok){ toast(j.message||j.error||('HTTP '+r.status)); return; }
+      toast(j.alreadyTracked?'Already tracked':(j.reactivated?'Reactivated':'Tracked: '+kw));
+      if(typeof cb==='function') cb();
+    }catch(e){ toast(String(e.message||e)); }
+  }
+  async function _siLoadSummary(){
+    var body=document.getElementById('si-body'); if(!body) return;
+    try{
+      var j=await _siFetch('/api/search-intelligence/summary?siteId='+encodeURIComponent(currentSiteId)+'&persist=0');
+      body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Client summary</h2>'
+        +'<p class="lede" style="margin:0 0 12px">'+esc(j.businessName||'')+' · '+esc(j.periodStart||'')+' → '+esc(j.periodEnd||'')+'</p>'
+        +'<ul style="margin:0 0 14px;padding-left:1.2rem">'+(j.bullets||[]).map(function(b){ return '<li style="margin:0 0 6px">'+esc(b)+'</li>'; }).join('')+'</ul>'
+        +((j.topActions&&j.topActions.length)?'<h3 style="margin:0 0 8px;font-size:14px">Top actions</h3><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">'
+          +j.topActions.map(function(a){ return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px"><strong>'+esc(a.title)+'</strong><div class="lede" style="margin:6px 0 0">'+esc(a.plainLanguage||'')+'</div></div>'; }).join('')
+          +'</div>':'')
+        +'<button type="button" class="btn" id="si-summary-save">Save snapshot</button>'
+        +'<p class="hint" style="margin-top:10px">Weekly cron also writes snapshots for connected sites.</p></div>';
+      var save=document.getElementById('si-summary-save');
+      if(save) save.addEventListener('click',async function(){
+        try{
+          var tok=await _siToken();
+          var r=await fetch('/api/search-intelligence/summary',{
+            method:'POST',
+            headers:{'content-type':'application/json',Authorization:'Bearer '+tok},
+            body:JSON.stringify({siteId:currentSiteId,persist:true})
+          });
+          var jj=await r.json().catch(function(){return {};});
+          if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
+          toast(jj.saved&&jj.saved.id?'Snapshot saved':'Saved');
+        }catch(e){ toast(String(e.message||e)); }
+      });
+    }catch(e){
+      body.innerHTML='<div class="card"><p class="lede">Could not load summary.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
+    }
+  }
+  async function _siLoadPortfolio(){
+    var body=document.getElementById('si-body'); if(!body) return;
+    try{
+      var j=await _siFetch('/api/search-intelligence/portfolio');
+      if(j.hint&&!(j.sites&&j.sites.length)){
+        body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Partner portfolio</h2><p class="lede">'+esc(j.hint)+'</p><p class="hint">Partners see all sites they service or referred.</p></div>';
+        return;
+      }
+      var s=j.summary||{};
+      var rows=(j.sites||[]).map(function(site){
+        return '<tr><td>'+esc(site.businessName||site.slug)+'</td>'
+          +'<td>'+esc(site.health)+'</td>'
+          +'<td>'+esc((site.gsc&&site.gsc.status)||'—')+'</td>'
+          +'<td>'+esc((site.ga4&&site.ga4.status)||'—')+'</td>'
+          +'<td>'+esc(site.trackedKeywords||0)+'</td></tr>';
+      }).join('');
+      body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Partner portfolio</h2>'
+        +'<p class="lede" style="margin:0 0 12px">'+esc(s.total||0)+' sites · '+esc(s.good||0)+' good · '+esc(s.partial||0)+' partial · '+esc(s.needsSetup||0)+' need setup</p>'
+        +(rows?'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Site</th><th>Health</th><th>GSC</th><th>GA4</th><th>Tracked</th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<p class="hint">No sites in this portfolio.</p>')
+        +'</div>';
+    }catch(e){
+      body.innerHTML='<div class="card"><p class="lede">Portfolio unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
+    }
   }
   function _siConnectHTML(ov){
     var c=(ov&&ov.connections)||{};

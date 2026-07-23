@@ -255,6 +255,72 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /\/api\/search-intelligence\/keywords/);
   });
 
+  it('normalises keywords and enforces plan limit helper', () => {
+    const tk = require('../lib/search-intelligence/tracked-keywords');
+    assert.equal(tk.normalizeKeyword('  Plumber   Canberra '), 'plumber canberra');
+    assert.ok(tk.planLimit() >= 1 && tk.planLimit() <= 100);
+  });
+
+  it('builds client summary shape without database', async () => {
+    const { buildClientSummary } = require('../lib/search-intelligence/client-summary');
+    const fakeAdmin = {
+      from: function () {
+        return {
+          select: function () { return this; },
+          eq: function () { return this; },
+          in: function () { return this; },
+          is: function () { return this; },
+          order: function () { return this; },
+          gte: function () { return this; },
+          maybeSingle: async function () { return { data: null, error: null }; },
+          then: undefined
+        };
+      }
+    };
+    // Override chain to resolve as empty arrays for list queries
+    fakeAdmin.from = function () {
+      const chain = {
+        select: function () { return chain; },
+        eq: function () { return chain; },
+        in: function () { return chain; },
+        is: function () { return chain; },
+        order: function () { return chain; },
+        gte: function () { return chain; },
+        maybeSingle: async function () { return { data: null, error: null }; }
+      };
+      // Make awaitable for .select().eq()... without maybeSingle (supabase returns promise-like)
+      chain.then = function (resolve) {
+        return Promise.resolve({ data: [], error: null }).then(resolve);
+      };
+      return chain;
+    };
+    const summary = await buildClientSummary(fakeAdmin, {
+      id: 'site-sum',
+      business_name: 'Demo Plumbing',
+      slug: 'demo',
+      config: { seoTitle: 'Demo', seoDescription: 'x', phone: '0400000000', sections: { quote: { on: true } } }
+    }, { days: 28 });
+    assert.equal(summary.ok, true);
+    assert.ok(Array.isArray(summary.bullets) && summary.bullets.length >= 2);
+    assert.equal(summary.businessName, 'Demo Plumbing');
+  });
+
+  it('ships tracked keywords, summary, portfolio APIs', () => {
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/tracked-keywords.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/summary.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/portfolio.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/cron/search-intelligence-summaries.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/tracked-keywords.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/client-summary.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/portfolio.js')));
+    const vercel = fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8');
+    assert.match(vercel, /search-intelligence-summaries/);
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /_siLoadSummary/);
+    assert.match(manage, /_siLoadPortfolio/);
+    assert.match(manage, /tracked-keywords/);
+  });
+
   it('wires SEO Command Centre manage tab + APIs', () => {
     const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
     assert.match(manage, /id="nav-seo"/);
