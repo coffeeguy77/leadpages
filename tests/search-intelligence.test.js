@@ -321,6 +321,30 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /tracked-keywords/);
   });
 
+  it('cadence due windows and mock rank positions are deterministic', async () => {
+    const { cadenceDueSince } = require('../lib/search-intelligence/rank-jobs');
+    assert.ok(cadenceDueSince('daily'));
+    assert.ok(cadenceDueSince('weekly'));
+    assert.equal(cadenceDueSince('event'), null);
+    const mock = require('../lib/search-intelligence/providers/mock');
+    const a = await mock.rankCheck({ keyword: 'plumber canberra' });
+    const b = await mock.rankCheck({ keyword: 'plumber canberra' });
+    assert.equal(a.ok, true);
+    assert.equal(a.observation.position, b.observation.position);
+    assert.ok(a.observation.position >= 4 && a.observation.position <= 18);
+  });
+
+  it('ships rank-check API and cron', () => {
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/rank-jobs.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/rank-check.js')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/cron/search-intelligence-ranks.js')));
+    const vercel = fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8');
+    assert.match(vercel, /search-intelligence-ranks/);
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /Check ranks now/);
+    assert.match(manage, /\/api\/search-intelligence\/rank-check/);
+  });
+
   it('wires SEO Command Centre manage tab + APIs', () => {
     const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
     assert.match(manage, /id="nav-seo"/);

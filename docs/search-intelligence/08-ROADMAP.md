@@ -37,7 +37,7 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 
 **Website actions (live):** Open in editor (section-aware); Create task toast; track/untrack keywords.  
 
-**Scaffold note:** Apply `db/search_intelligence_schema.sql` before OAuth, sync, tracked keywords, or report snapshots. Rank observation jobs for tracked keywords land next.
+**Scaffold note:** Apply `db/search_intelligence_schema.sql` before OAuth, sync, tracked keywords, or report snapshots. Rank observations run via `/api/cron/search-intelligence-ranks` (daily) and Manage → Keywords → Check ranks now.
 
 ---
 

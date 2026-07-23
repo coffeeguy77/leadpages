@@ -37,6 +37,10 @@
     {
       "path": "/api/cron/search-intelligence-summaries",
       "schedule": "0 7 * * 1"
+    },
+    {
+      "path": "/api/cron/search-intelligence-ranks",
+      "schedule": "15 8 * * *"
     }
   ],
   "rewrites": [

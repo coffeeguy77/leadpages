@@ -102,8 +102,11 @@ Manage → SEO Command → **Pages** tab; findings also merge into Next Best Act
 `GET|POST|DELETE /api/search-intelligence/tracked-keywords` persists to `si_keywords` + `si_tracked_keywords`.
 
 - Limit: `SI_TRACKED_KEYWORD_LIMIT` (default **25**, hard cap **100**)  
-- Cadence: `daily` | `weekly` | `event` (rank pull jobs next)  
-- Manage → Keywords: research, Track, Remove  
+- Cadence: `daily` | `weekly` | `event`  
+- Manage → Keywords: research, Track, Remove, **Check ranks now**  
+- Rank jobs: `POST /api/search-intelligence/rank-check` (force/manual) + cron `/api/cron/search-intelligence-ranks` daily 08:15 UTC  
+- Writes `si_rank_observations`; position 4–20 feeds `pos_4_20_relevance` NBAs  
+- Provider: `SI_PROVIDER` / gateway (`mock` until DataForSEO configured)  
 
 ### Client summary
 
