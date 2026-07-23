@@ -196,9 +196,10 @@ function _pgApplySeo(PG, title, intro){
 }
 function _pgRenderPremiumGallery(PG, node){
   if(!node) return;
+  // Off-by-default marketplace app — only show when explicitly enabled.
+  if(!PG || PG.on!==true){ node.style.display='none'; return; }
   PG=_pgSeed(PG||{});
   PG=_pgApplySmartPreset(PG);
-  if(PG.on===false){ node.style.display='none'; return; }
   node.style.display='';
   var cats=(Array.isArray(PG.categories)?PG.categories:[]).filter(function(c){return c&&c.on!==false;});
   var albums=(Array.isArray(PG.albums)?PG.albums:[]).filter(function(a){return a&&a.on!==false;});
@@ -600,7 +601,7 @@ function applyCfg(C){
         var __tr=__tbn.querySelector('.tb-row'); var __ttx=__tbn.querySelector('.tb-text'); if(__tr&&__ttx&&__tm){ var __wrap=(__TB.imageLayout==='wrap'); if(__wrap){ __tbn.classList.add('tbx-wrap'); } else { __tbn.classList.remove('tbx-wrap'); } if(__TB.imageSide==='left'){ __tbn.classList.add('tbx-left'); } else { __tbn.classList.remove('tbx-left'); } if(__wrap){ if(__tr.firstElementChild!==__tm){ __tr.insertBefore(__tm,__tr.firstChild); } __tr.style.flexDirection=''; __tr.style.textAlign=''; } else { if(__tm.previousElementSibling!==__ttx){ __tr.appendChild(__tm); } __tr.style.flexDirection=(__TB.imageSide==='left'?'row-reverse':'row'); __tr.style.textAlign=(__TB.textAlign==='center'?'center':''); } }
       }
     }catch(e){}
-    try{ ['navMenu','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','featureStrip','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','onlineQuote'].forEach(function(__id){ var __n=document.querySelector('[data-sec="'+__id+'"]'); if(!__n) return; if(SEC[__id] && SEC[__id].on===true){ __n.style.display='block'; } }); }catch(e){}
+    try{ ['navMenu','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','featureStrip','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','onlineQuote'].forEach(function(__id){ var __n=document.querySelector('[data-sec="'+__id+'"]'); if(!__n) return; if(SEC[__id] && SEC[__id].on===true){ __n.style.display='block'; } else { __n.style.display='none'; } }); }catch(e){}
       (function(){ var SEC=C.sections||{}; function lpIcon(v){ if(v==null) return ''; v=String(v); if(/^[a-z0-9-]+$/.test(v)){ var _i=(window.LP_ICONS&&window.LP_ICONS[v]); if(_i) return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+_i+'</svg>'; } return esc(v); }
       function rlist(sel,items,fn){ var box=document.querySelector(sel); if(!box||!Array.isArray(items)) return; box.innerHTML=items.filter(function(it){return it&&it.on!==false;}).map(fn).join(''); }
       var nmEl=document.querySelector('a.brand .nm'); var _SCb=(typeof SITE_CONFIG!=='undefined'&&SITE_CONFIG)||{}; var BIZ=(_SCb.business||_SCb.name||_SCb.business_name||_SCb.businessName||(nmEl&&nmEl.textContent.trim())||'');
@@ -1519,7 +1520,7 @@ function applyCfg(C){
         if(SE.updateTitle){ var tt=mg(SE.titleTemplate||'{trade} in {suburb} | {business}').replace(/\s*\|\s*$/,'').replace(/^\s*\|\s*/,'').replace(/\s{2,}/g,' ').trim(); if(tt) document.title=tt; }
       })();
     })();
-    try{ var __OPTV=['navMenu','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','featureStrip','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox']; var __OS=C.sections||{}; __OPTV.forEach(function(__id){ var __n=document.querySelector('[data-sec="'+__id+'"]'); if(!__n) return; var __s=__OS[__id]; if(__s&&__s.on===true){ __n.style.setProperty('display','block','important'); } else if(__s&&__s.on===false){ __n.style.setProperty('display','none','important'); } }); }catch(e){}
+    try{ var __OPTV=['navMenu','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','featureStrip','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox']; var __OS=C.sections||{}; __OPTV.forEach(function(__id){ var __n=document.querySelector('[data-sec="'+__id+'"]'); if(!__n) return; var __s=__OS[__id]; if(__s&&__s.on===true){ __n.style.setProperty('display','block','important'); } else { __n.style.setProperty('display','none','important'); } }); }catch(e){}
     try{ applySectionAppearances(C); }catch(e){}
     /* preview-only section name labels (backend preview iframe carries ?preview=; never the live site) */
     try{

@@ -6957,9 +6957,11 @@ function heroCtaCard(c){
 
     
     } else if(sub==='premiumGallery'){
-      if(!c.sections) c.sections={}; if(!c.sections.premiumGallery) c.sections.premiumGallery={};
+      if(!c.sections) c.sections={};
+      if(!c.sections.premiumGallery) c.sections.premiumGallery={ on:false };
+      else if(c.sections.premiumGallery.on==null) c.sections.premiumGallery.on=false;
       var _pg=c.sections.premiumGallery;
-      function _pgEns(){ if(!c.sections)c.sections={}; if(!c.sections.premiumGallery)c.sections.premiumGallery={}; return c.sections.premiumGallery; }
+      function _pgEns(){ if(!c.sections)c.sections={}; if(!c.sections.premiumGallery)c.sections.premiumGallery={ on:false }; return c.sections.premiumGallery; }
       function _pgApplyPreset(id){
         var presets={
           clean:{layout:'grid',density:'airy',ratio:'square',hover:'none',radius:8,gap:18,headerLayout:'centred',mosaicLocked:true,mosaicRandomize:'locked'},

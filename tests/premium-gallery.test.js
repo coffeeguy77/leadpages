@@ -46,6 +46,39 @@ describe('Premium Gallery marketplace app', () => {
     assert.ok(OFF_BY_DEFAULT.includes('premiumGallery'));
   });
 
+  it('stays hidden unless sections.premiumGallery.on === true', () => {
+    const renderSrc = fs.readFileSync(
+      path.join(__dirname, '..', 'marketplace/demos/premium-gallery-render.js'),
+      'utf8'
+    );
+    assert.match(renderSrc, /PG\.on!==true/);
+    assert.doesNotMatch(renderSrc, /if\(PG\.on===false\)/);
+    assert.match(demoShared, /PG\.on!==true/);
+    assert.doesNotMatch(demoShared, /if\(PG\.on===false\)\{ node\.style\.display='none'; return; \}/);
+    const css = fs.readFileSync(
+      path.join(__dirname, '..', 'marketplace/demos/premium-gallery.css'),
+      'utf8'
+    );
+    assert.match(css, /section\[data-sec="premiumGallery"\]\{\s*display:none;/);
+    assert.equal(DEFAULT_PREMIUM_GALLERY.on, false);
+  });
+
+  it('auto-registers in app_registry via api-apps ensure', () => {
+    const apiApps = fs.readFileSync(path.join(__dirname, '..', 'api/api-apps.js'), 'utf8');
+    assert.match(apiApps, /ensurePremiumGalleryApp/);
+    assert.match(apiApps, /section_key:\s*'premiumGallery'/);
+    assert.match(apiApps, /slug:\s*'premium-gallery'/);
+    assert.match(apiApps, /default_position:\s*'upper'/);
+    assert.match(apiApps, /marketplace_status:\s*'live'/);
+    assert.match(apiApps, /builder_visible:\s*true/);
+    const sql = fs.readFileSync(
+      path.join(__dirname, '..', 'scripts/seed-premium-gallery-app.sql'),
+      'utf8'
+    );
+    assert.match(sql, /premium-gallery/);
+    assert.match(sql, /premiumGallery/);
+  });
+
   it('wires manage editor + bulk upload + mosaic lock', () => {
     assert.match(manage, /sub==='premiumGallery'/);
     assert.match(manage, /Smart preset/);
