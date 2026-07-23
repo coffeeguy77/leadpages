@@ -19,6 +19,24 @@ describe('Search Intelligence stubs', () => {
     assert.equal(res.ideas[0].labelClass, 'estimated');
   });
 
+  it('mock keyword ideas follow the seed instead of plumber fixtures', async () => {
+    const mock = require('../lib/search-intelligence/providers/mock');
+    const barista = await mock.keywordIdeas({
+      keyword: 'barista training canberra',
+      location: 'Australia'
+    });
+    assert.equal(barista.ok, true);
+    assert.ok(barista.ideas.length >= 1);
+    assert.ok(
+      barista.ideas.every((i) => /barista/i.test(i.keyword)),
+      'expected barista ideas, got ' + barista.ideas.map((i) => i.keyword).join(', ')
+    );
+    assert.ok(!barista.ideas.some((i) => /plumber/i.test(i.keyword)));
+
+    const plumber = await mock.keywordIdeas({ keyword: 'plumber canberra' });
+    assert.ok(plumber.ideas.some((i) => /plumber/i.test(i.keyword)));
+  });
+
   it('gateway reports budget_exceeded', async () => {
     const gw = createGateway({ provider: 'mock', budgetRemaining: 0 });
     const res = await gw.serp({ keyword: 'plumber canberra' });

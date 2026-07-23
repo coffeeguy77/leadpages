@@ -10558,7 +10558,9 @@ function heroCtaCard(c){
         if(!j.ok){ out.innerHTML='<p class="hint">'+esc(j.message||j.error||'Failed')+'</p>'; return; }
         var ideas=j.ideas||[];
         if(!ideas.length){ out.innerHTML='<p class="hint">No ideas returned.</p>'; return; }
-        out.innerHTML='<p class="hint" style="margin-bottom:8px">Provider: '+esc(j.provider)+'</p>'
+        out.innerHTML='<p class="hint" style="margin-bottom:8px">Provider: '+esc(j.provider)
+          +(j.provider==='mock'?' · estimated (set DATAFORSEO for live volumes)':'')
+          +(j.note?' · '+esc(j.note):'')+'</p>'
           +'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Keyword</th><th>Vol.</th><th>CPC</th><th>Opp.</th><th></th></tr></thead><tbody>'
           +ideas.map(function(i){
             return '<tr><td>'+esc(i.keyword)+'</td><td>'+esc(i.volume!=null?i.volume:'—')+'</td><td>'+esc(i.cpc!=null?i.cpc:'—')+'</td><td>'+esc(i.opportunity!=null?Number(i.opportunity).toFixed(2):'—')+'</td>'
