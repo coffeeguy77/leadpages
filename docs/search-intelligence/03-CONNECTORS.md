@@ -42,10 +42,13 @@ Storage: `si_connections` + `si_oauth_states` (see [02-DATA-MODEL.md](02-DATA-MO
 **Purpose:** Organic clicks, impressions, CTR, average position, query/page mapping; sitemap submit/refresh coordination.
 
 **Env (platform):**
-- `GSC_CLIENT_ID`, `GSC_CLIENT_SECRET`
+- Prefer `GSC_CLIENT_ID`, `GSC_CLIENT_SECRET`
+- **Aliases (same Google Cloud OAuth client):** `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET`, or reuse `GOOGLE_ADS_CLIENT_ID` / `GOOGLE_ADS_CLIENT_SECRET` when that client also allows the GSC callback URI + `webmasters.readonly`
 - optional `GSC_REDIRECT_URI` (defaults to `APP_URL` + callback path)
 - `SI_OAUTH_ENCRYPTION_KEY` (Base64 32 bytes) **or** reuse `GOOGLE_ADS_OAUTH_ENCRYPTION_KEY`
 - optional `SI_OAUTH_STATE_SECRET` / `GOOGLE_ADS_STATE_SECRET`
+
+**Ops — set on Vercel then redeploy:** Project → Settings → Environment Variables → add `GSC_CLIENT_ID` + `GSC_CLIENT_SECRET` (Production + Preview as needed) → Redeploy. In Google Cloud Console, add authorized redirect URI `https://<app-host>/api/integrations/search-console/callback` and enable the Search Console API.
 
 **Routes:**  
 - Settings UI: `/settings/integrations/search-console`  
@@ -72,7 +75,7 @@ Storage: `si_connections` + `si_oauth_states` (see [02-DATA-MODEL.md](02-DATA-MO
 
 **Purpose:** Sessions, engagement, landing-page conversions aligned with Leadpages form/call events.
 
-**Env:** `GA4_CLIENT_ID`, `GA4_CLIENT_SECRET`, optional `GA4_REDIRECT_URI` (+ same encryption / state secrets as GSC)
+**Env:** Prefer `GA4_CLIENT_ID` / `GA4_CLIENT_SECRET`; aliases `GOOGLE_OAUTH_CLIENT_*` or `GOOGLE_ADS_CLIENT_*` (same pattern as GSC). Optional `GA4_REDIRECT_URI` (+ same encryption / state secrets as GSC).
 
 **Routes:** `/settings/integrations/google-analytics`, `/api/integrations/google-analytics/{status,connect,callback,exchange,properties,save-property,sync}`
 
