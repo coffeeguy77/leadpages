@@ -1118,6 +1118,37 @@
       ]
     },
     {
+      "appId": "premiumGallery",
+      "slug": "premium-gallery",
+      "name": "Premium Gallery",
+      "category": "images-media",
+      "sectionKey": "premiumGallery",
+      "rendererIdentifier": "trade.template.json#premiumGallery",
+      "configPath": "sections.premiumGallery",
+      "purpose": "Design-led image galleries for large photo collections",
+      "supportedPagePositions": ["upper", "main"],
+      "suitableBusinessModels": ["service", "product", "hospitality", "retail", "events", "professional"],
+      "suitableIndustries": ["*"],
+      "unsuitableIndustries": [],
+      "conversionGoals": ["inform"],
+      "supportedLayouts": ["classic", "premium-showcase", "authority-builder", "photo-proof"],
+      "supportedVariants": ["default", "clean", "editorial", "dynamic", "minimal", "cinematic", "collage"],
+      "requiredContentFields": ["heading", "images"],
+      "optionalContentFields": [
+        "sections.premiumGallery.heading",
+        "sections.premiumGallery.eyebrow",
+        "sections.premiumGallery.smartPreset",
+        "sections.premiumGallery.layout",
+        "sections.premiumGallery.images.0.src"
+      ],
+      "imageFields": ["images[].src"],
+      "iconFields": [],
+      "ctaFields": ["ctaText"],
+      "itemCountConstraints": {"min": 4, "max": 48},
+      "websiteStudioSupport": "supported",
+      "defaultPosition": "upper"
+    },
+    {
       "appId": "finance",
       "slug": "finance",
       "name": "Finance Options",
