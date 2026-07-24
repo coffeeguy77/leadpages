@@ -149,6 +149,8 @@ module.exports = async (req, res) => {
         conversionActions: conn.conversion_actions,
         tagId: conn.tag_id,
         tagActive: !!conn.tag_id,
+        adsGa4LinkConfirmed: !!conn.ads_ga4_link_confirmed_at,
+        adsGa4LinkConfirmedAt: conn.ads_ga4_link_confirmed_at || null,
         lastSyncAt: conn.last_sync_at,
         lastSyncError: conn.last_sync_error,
         formTestAt: conn.form_test_at,
