@@ -809,10 +809,70 @@ describe('Search Intelligence stubs', () => {
     const vercel = fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8');
     assert.match(vercel, /google-business/);
     const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
-    assert.match(manage, /Sample Maps grid/);
+    assert.match(manage, /Check near me/);
     assert.match(manage, /si-suburb-brief/);
     assert.match(manage, /\/api\/search-intelligence\/maps-grid/);
     assert.match(manage, /\/api\/search-intelligence\/local-pages/);
+    assert.match(manage, /Homepage SEO/);
+    assert.match(manage, /_siWireHomepageSeo/);
+  });
+
+  it('hides provider usage from clients and styles partner update-job selects', () => {
+    const usage = fs.readFileSync(path.join(__dirname, '..', 'api/search-intelligence/usage.js'), 'utf8');
+    assert.match(usage, /role === 'client'/);
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /currentRole==='super'\|\|currentRole==='broker'\|\|currentRole==='partner'/);
+    const partner = fs.readFileSync(path.join(__dirname, '..', 'partner.html'), 'utf8');
+    assert.match(partner, /id="mj-site" class="tin lp-select"/);
+    assert.match(partner, /id="mj-pkg" class="tin lp-select"/);
+  });
+
+  it('rankCheck does not invent a position when the site host is missing from organic', async () => {
+    const dfs = require('../lib/search-intelligence/providers/dataforseo');
+    const prevLogin = process.env.DATAFORSEO_LOGIN;
+    const prevPass = process.env.DATAFORSEO_PASSWORD;
+    process.env.DATAFORSEO_LOGIN = 'demo@example.com';
+    process.env.DATAFORSEO_PASSWORD = 'secret';
+    const orig = dfs.serp;
+    dfs.serp = async function () {
+      return {
+        ok: true,
+        provider: 'dataforseo',
+        snapshot: {
+          results: [
+            { type: 'organic', rank: 1, url: 'https://rival.example/', domain: 'rival.example', title: 'Rival' },
+            { type: 'organic', rank: 2, url: 'https://other.example/', domain: 'other.example', title: 'Other' }
+          ],
+          features: []
+        }
+      };
+    };
+    try {
+      const res = await dfs.rankCheck({
+        keyword: 'coffee cart canberra',
+        url: 'https://beanculture.com.au/',
+        location: 'Canberra, ACT'
+      });
+      assert.equal(res.ok, true);
+      assert.equal(res.observation.position, null);
+    } finally {
+      dfs.serp = orig;
+      if (prevLogin == null) delete process.env.DATAFORSEO_LOGIN;
+      else process.env.DATAFORSEO_LOGIN = prevLogin;
+      if (prevPass == null) delete process.env.DATAFORSEO_PASSWORD;
+      else process.env.DATAFORSEO_PASSWORD = prevPass;
+    }
+  });
+
+  it('ships SEO Text section and renames Local tokens editor', () => {
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /seoText:\{on:false/);
+    assert.match(manage, /sub==='seoText'/);
+    assert.match(manage, /Local tokens/);
+    assert.doesNotMatch(manage, /\['seoTokens','Local SEO'\]/);
+    const trade = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'trade.template.json'), 'utf8')).html;
+    assert.match(trade, /data-sec="seoText"/);
+    assert.match(trade, /SEO Text — H1\/H2/);
   });
 
   it('gateway mapsGrid and backlinkSummary mock ops work', async () => {

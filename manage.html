@@ -3115,6 +3115,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   const DEFAULT_TRADE_SECTIONS={
     navMenu:{on:false,style:'pills',align:'left',placement:'header',icons:'both',items:[]},
     textBox:{on:false,eyebrow:'About us',heading:'Built for {{businessName}}',intro:'A short introduction that sets the scene for what follows.',content:'Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.',image:'',imageSide:'right',textAlign:'left'},
+    seoText:{on:false,eyebrow:'On this page',h1:'Your main service headline',h2:'What we offer',intro:'Short lead-in under the H1.',content:'Supporting paragraph for searchers — keep it clear and local.',image:'',imageSide:'right',textAlign:'left',faq:[{on:true,q:'How quickly can you help?',a:'We aim to respond the same day and book a time that suits you.'},{on:true,q:'Do you cover my suburb?',a:'Yes — tell us your suburb and we will confirm coverage.'}]},
     seoTokens:{trade:'',location:'Canberra',city:'Canberra',region:'ACT',suburb:'Canberra',enableUrlSuburb:false,updateTitle:false,titleTemplate:'{trade} in {location} | {business}'},
     emergencyAvailability:{on:false,heading:'After-hours & emergencies',intro:'We keep the phone on outside business hours for genuine emergencies \u2014 leave your details and we\u2019ll call you straight back.',mode:'schedule',available:true,weekdayOpen:'07:00',weekdayClose:'17:00',satOpen:'08:00',satClose:'14:00',sunOpen:'',sunClose:'',availableLabel:'Available now',responseText:'Fast response — usually within the hour',afterHoursLabel:'After hours',afterHoursText:'Leave your details and we’ll call you first thing.',emergencyText:'Genuine emergency? Call anyway — we run after-hours callouts.',cta:{text:'',action:'call'}},
     serviceAreaMap:{on:false,eyebrow:'Service area',heading:'Suburbs we cover across the ACT',intro:'Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch.'},
@@ -3291,8 +3292,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function themeFromPreset(tradeKey){ var p=getTradeColourPreset(tradeKey); return { pipe:p.brand, hivis:p.cta, steel:p.dark, safety:p.highlight, accent:p.accent, lightBg:p.lightBg, presetName:p.presetName, presetKey:tradeKey }; }
   const LAYOUTS = { classic: { id: "classic", name: "Classic Conversion", description: "Current tradie landing page.", sections: ["emerg","hero","services","serviceProcess","featureStrip","why","crew","area","reviews","quote","faq","footer"], features: [] }, "quote-first": { id: "quote-first", name: "Quote First", description: "Hero and quote form appear together above the fold for paid traffic.", sections: ["emerg","hero","quote","services","serviceProcess","featureStrip","why","crew","reviews","area","faq","footer"], features: ["heroQuote"] }, "photo-proof": { id: "photo-proof", name: "Photo Proof", description: "Shows project proof early with a before and after gallery.", sections: ["emerg","hero","services","serviceProcess","featureStrip","beforeAfter","reviews","why","crew","area","quote","faq","footer"], features: ["beforeAfter"] }, "emergency-response": { id: "emergency-response", name: "Emergency Response", description: "Urgency-first page: trust badges and quote form pushed high for emergency trades.", sections: ["emerg","hero","responseCards","quote","services","serviceProcess","featureStrip","reviews","why","crew","faq","area","footer"], features: ["responseCards"] }, "authority-builder": { id: "authority-builder", name: "Authority Builder", description: "Leads with big credibility numbers to establish an experienced, established business.", sections: ["emerg","hero","projectStats","services","serviceProcess","featureStrip","why","crew","area","reviews","quote","faq","footer"], features: ["projectStats"] }, "service-area-dominator": { id: "service-area-dominator", name: "Service Area Dominator", description: "Leads with a large suburb coverage grid under the hero to dominate local SEO and paid search.", sections: ["emerg","hero","serviceAreas","services","serviceProcess","featureStrip","why","crew","reviews","area","quote","faq","footer"], features: ["serviceAreas"] }, "reviews-first": { id: "reviews-first", name: "Reviews First", description: "Leads with star-rated review highlights under the hero so visitors hit social proof first.", sections: ["emerg","hero","reviewHighlights","quote","services","serviceProcess","featureStrip","reviews","faq","why","crew","area","footer"], features: ["reviewHighlights"] }, "premium-showcase": { id: "premium-showcase", name: "Premium Showcase", description: "A mini portfolio of large project image cards under the hero \u2014 for high-end visual trades.", sections: ["emerg","hero","featuredProjects","services","serviceProcess","featureStrip","reviews","why","crew","area","quote","faq","footer"], features: ["featuredProjects"] }, "offer-funnel": { id: "offer-funnel", name: "Offer Funnel", description: "AdWords lead-gen layout: a bold special-offer banner under the hero, straight into the quote form.", sections: ["emerg","hero","specialOffer","quote","services","serviceProcess","featureStrip","reviews","faq","why","crew","area","footer"], features: ["specialOffer"] }, "ba-hero-slider": { id: "ba-hero-slider", name: "Before / After Hero Slider", description: "A large interactive before/after wipe slider near the top of the page.", sections: ["emerg","hero","heroBeforeAfter","services","serviceProcess","featureStrip","reviews","why","crew","area","quote","faq","footer"], features: ["heroBeforeAfter"] }, "hero-image-slider": { id: "hero-image-slider", name: "Hero Image Slider", description: "Large image hero with editable slides, overlay text, CTA buttons and transitions.", sections: ["emerg","heroSlider","services","serviceProcess","featureStrip","why","crew","reviews","area","quote","faq","footer"], features: ["heroSlider"] }, "social-proof-feed": { id: "social-proof-feed", name: "Social Proof Feed", description: "A live, modern \u201cproof feed\u201d of jobs, reviews, videos and before/afters \u2014 every card links to a CTA.", sections: ["emerg","splitHero","activityCounter","activityTimeline","proofStream","projectFeed","jobsFeed","beforeAfterFeed","videoReels","services","serviceProcess","featureStrip","reviews","customerReactions","why","crew","area","quote","faq","footer"], features: ["proofStream","splitHero","activityCounter","crew","jobsFeed","beforeAfterFeed","videoReels","activityTimeline","customerReactions","projectFeed"] } };
   function getLayout(layoutId){ return (layoutId && LAYOUTS[layoutId]) ? LAYOUTS[layoutId] : LAYOUTS.classic; }
-  const OFF_BY_DEFAULT_SECTIONS=['featureStrip','instaGallery','igProjectFeed','lpAccessibility','navMenu','mobileBar','emergencyAvailability','onlineQuote','estimateBuilder','finance','serviceAreaMap','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox'];
-  const OPTIONAL_COMPONENTS=['featureStrip','instaGallery','igProjectFeed','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','onlineQuote','estimateBuilder','finance','serviceAreaMap','emergencyAvailability','certifications','promotions'];
+  const OFF_BY_DEFAULT_SECTIONS=['featureStrip','instaGallery','igProjectFeed','lpAccessibility','navMenu','mobileBar','emergencyAvailability','onlineQuote','estimateBuilder','finance','serviceAreaMap','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText'];
+  const OPTIONAL_COMPONENTS=['featureStrip','instaGallery','igProjectFeed','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText','onlineQuote','estimateBuilder','finance','serviceAreaMap','emergencyAvailability','certifications','promotions'];
   const PAGE_CONTENT_EDITONLY=['details','seoTokens','branding','logo','sectionOrder','lpFooter'];
   function layoutHasFeature(c,feat){ try{ var f=getLayout((c&&c.layout)||"classic").features||[]; return f.indexOf(feat)>=0; }catch(e){ return false; } }
   function wireLayout(c){ var el=$('layout-pick'); if(!el) return; el.value=getLayout(c.layout).id; el.onchange=function(){ c.layout=getLayout(el.value).id; persist(); previewApply(); renderDetails(); }; }
@@ -3402,7 +3403,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var rb=$('ord-reset'); if(rb) rb.onclick=function(){ var prev=rects(); delete c.sectionOrder; persist(); previewApply(); draw(false); flip(prev); };
   }
   function presetKeyForSite(c){ var t=(c&&c.trade)||'Plumber'; if(TRADE_COLOUR_PRESETS[t]) return t; for(var k in TRADE_PACKS){ if(TRADE_PACKS[k].tradeType===t && TRADE_COLOUR_PRESETS[TRADE_PACKS[k].label]) return TRADE_PACKS[k].label; } return 'Plumber'; }
-  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['trustBar','Trust Bar'],['services','Services'],['serviceProcess','How It Works Steps'],['featureStrip','Feature Strip'],['why','Why us'],['area','Where'],['reviews','Reviews'],['promotions','Promotions'],['certifications','Certifications'],['finance','Finance Options'],['estimateBuilder','Estimate Builder'],['serviceAreaMap','Service Area Map'],['emergencyAvailability','Emergency Availability'],['seoTokens','Local SEO'],['beforeAfter','Before & After'],['responseCards','Response Cards'],['projectStats','Project Stats'],['serviceAreas','Service Areas'],['reviewHighlights','Review Highlights'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['specialOffer','Special Offer'],['heroBeforeAfter','Hero B/A Slider'],['heroSlider','Hero Slider'],['splitHero','Split Hero'],['activityCounter','Activity Counter'],['proofStream','Proof Stream'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed'],['beforeAfterFeed','Before/After Feed'],['videoReels','Video Reels'],['activityTimeline','Activity Timeline'],['customerReactions','Customer Reactions'],['textBox','Text Box'],['crew','Team Members'],['onlineQuote','Online Quote'],['quote','Quote'],['faq','FAQ'],['mobileBar','Mobile'],['footer','Footer'],['branding','Branding'],['logo','Logo'],['navMenu','Menu'],['sectionOrder','Position'],['instaGallery','Instagram Gallery'],['igProjectFeed','Instagram Feed'],['lpFooter','LeadPages footer']];
+  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['trustBar','Trust Bar'],['services','Services'],['serviceProcess','How It Works Steps'],['featureStrip','Feature Strip'],['why','Why us'],['area','Where'],['reviews','Reviews'],['promotions','Promotions'],['certifications','Certifications'],['finance','Finance Options'],['estimateBuilder','Estimate Builder'],['serviceAreaMap','Service Area Map'],['emergencyAvailability','Emergency Availability'],['seoTokens','Local tokens'],['beforeAfter','Before & After'],['responseCards','Response Cards'],['projectStats','Project Stats'],['serviceAreas','Service Areas'],['reviewHighlights','Review Highlights'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['specialOffer','Special Offer'],['heroBeforeAfter','Hero B/A Slider'],['heroSlider','Hero Slider'],['splitHero','Split Hero'],['activityCounter','Activity Counter'],['proofStream','Proof Stream'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed'],['beforeAfterFeed','Before/After Feed'],['videoReels','Video Reels'],['activityTimeline','Activity Timeline'],['customerReactions','Customer Reactions'],['seoText','SEO Text'],['textBox','Text Box'],['crew','Team Members'],['onlineQuote','Online Quote'],['quote','Quote'],['faq','FAQ'],['mobileBar','Mobile'],['footer','Footer'],['branding','Branding'],['logo','Logo'],['navMenu','Menu'],['sectionOrder','Position'],['instaGallery','Instagram Gallery'],['igProjectFeed','Instagram Feed'],['lpFooter','LeadPages footer']];
   let landingSub='hero';
   const DEFAULT_TRADE_LISTS={'estimateBuilder.options':[
     {on:true,step:'What do you need?',label:'Tap or mixer repair',min:'150',max:'300'},
@@ -3508,6 +3509,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     why:{secId:'why',key:'items',addLabel:'Add reason',item:[{k:'icon',label:'Icon',type:'icon'},{k:'n',label:'Number (if no icon)',w:'120px',ph:'01'},{k:'title',label:'Heading'},{k:'body',label:'Text',type:'ta'}],defaultItem:{icon:'',n:'+',title:'New reason',body:''}},
     reviews:{secId:'reviews',key:'items',addLabel:'Add review',item:[{k:'who',label:'Name & suburb'},{k:'text',label:'Quote',type:'ta'},{k:'source',label:'Source',type:'select',opts:[['','—'],['google','Google'],['facebook','Facebook'],['hipages','hipages'],['productreview','ProductReview'],['word','Word of mouth']],w:'1 1 150px'}],defaultItem:{who:'',text:'',source:''}},
     faq:{secId:'faq',key:'items',addLabel:'Add question',item:[{k:'q',label:'Question'},{k:'a',label:'Answer',type:'ta'}],defaultItem:{q:'',a:''}},
+    seoText:{secId:'seoText',key:'faq',addLabel:'Add FAQ',item:[{k:'q',label:'Question'},{k:'a',label:'Answer',type:'ta'}],defaultItem:{q:'',a:''}},
     quotePoints:{secId:'quote',key:'points',addLabel:'Add point',item:[{k:'icon',label:'Icon',type:'icon',ph:'✓'},{k:'text',label:'Point'}],defaultItem:{text:''}},
     footerServices:{secId:'footer',key:'services',addLabel:'Add link',item:[{k:'label',label:'Label'},{k:'href',label:'Link',w:'170px',ph:'#quote'}],defaultItem:{label:'',href:'#quote'}},
     footerCall:{secId:'footer',key:'callItems',addLabel:'Add contact line',item:[{k:'label',label:'Label'},{k:'href',label:'Link',w:'170px',ph:'tel: or mailto:'}],defaultItem:{label:'',href:''}},
@@ -3775,7 +3777,7 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     var _grpL=function(heading,keys){ var real=keys.filter(function(k){return !!LAYOUTS[k];}); if(!real.length) return ''; return '<div class="pcf-sec" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);">'+_subhdr(heading)+'<div class="pcf" style="display:flex;flex-wrap:wrap;gap:8px;">'+real.map(_layChip).join('')+'</div></div>'; };
     var CORE_GROUPS=[
       ['Business Identity & Hero Area',['branding','logo','details','hero','splitHero','heroBeforeAfter','heroSlider','emerg','mobileBar','sectionOrder']],
-      ['Services & Selling Content',['services','serviceProcess','featureStrip','serviceAreas','serviceAreaMap','seoTokens','finance','textBox','videoReels']],
+      ['Services & Selling Content',['services','serviceProcess','featureStrip','serviceAreas','serviceAreaMap','seoTokens','finance','seoText','textBox','videoReels']],
       ['Lead Capture & Conversion',['quote','onlineQuote','promotions','faq','estimateBuilder','jobsFeed','emergencyAvailability','specialOffer','responseCards']],
       ['Trust, Proof & Authority',['trustBar','certifications','reviews','reviewHighlights','customerReactions','proofStream','activityCounter','activityTimeline']],
       ['Projects, Gallery & Before/After',['projectFeed','igProjectFeed','instaGallery','featuredProjects','premiumGallery','projectStats','beforeAfter','beforeAfterFeed']],
@@ -7499,7 +7501,7 @@ function heroCtaCard(c){
       var se=c.sections.seoTokens;
       var _Sis='width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;';
       var _toks=['{business}','{location}','{trade}','{suburb}','{suburbs}','{city}','{region}','{phone}','{year}'];
-      body.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Local SEO &amp; tokens</h2><p class="lede">Set your local details, then use tokens in any heading or intro across the page — they fill in automatically. Example: “{trade} in {suburb}” becomes “Plumber in Belconnen”.</p>'
+      body.innerHTML='<div class="card" style="margin-bottom:22px;"><h2>Local tokens</h2><p class="lede">Suburb / trade tokens for on-page copy (not your Google title/meta). Homepage SEO title and meta now live in <strong>SEO Command Centre → Home</strong>. Example: “{trade} in {suburb}” becomes “Plumber in Belconnen”.</p>'
         +'<div class="row">'+lpFld('Trade (noun)','seo-trade','e.g. Plumber')+lpFld('Primary suburb','seo-suburb','e.g. Canberra')+'</div>'
         +'<div class="row">'+lpFld('City','seo-city','Canberra')+lpFld('Region','seo-region','ACT')+'</div>'
         +'<p class="lede" style="margin-top:10px;"><strong>Available tokens:</strong> '+_toks.map(function(t){return '<code style="background:var(--soft,#f1f1ee);padding:2px 7px;border-radius:6px;margin:2px;display:inline-block;font-size:13px;">'+t+'</code>';}).join('')+'</p></div>'
@@ -7611,8 +7613,15 @@ function heroCtaCard(c){
         +listCard('footerCall','Call us column','Phone, email and other lines in the middle Call us column. Edit, hide or remove each.')
         +listCard('footerServices','Service links','The links in the footer’s Services column. Edit, hide or remove each.');
       wireSec(c,'footer',true,[['blurb'],['legal'],['callTitle']]); listEditor($('le-footerCall'),c,'footerCall'); listEditor($('le-footerServices'),c,'footerServices');
+    } else if(sub==='seoText'){
+      if(!c.sections) c.sections={}; if(!c.sections.seoText) c.sections.seoText=JSON.parse(JSON.stringify(DEFAULT_TRADE_SECTIONS.seoText||{}));
+      body.innerHTML=secCard(c,'seoText','SEO Text',true,[['eyebrow','Eyebrow'],['h1','H1 (main page heading)'],['h2','H2 (section heading)'],['intro','Intro under H1','ta'],['content','Supporting copy','ta'],['image','Image (optional)','image']])
+        +'<div class="card" style="margin-bottom:22px"><h2>FAQ blocks</h2><p class="lede">Split supporting questions so the page stays scannable for visitors and search.</p><div id="le-seoTextFaq"></div></div>'
+        +'<p class="hint">SEO Text is for on-page H1/H2/FAQ content. Homepage Google title &amp; meta are edited in SEO Command Centre → Home.</p>';
+      wireSec(c,'seoText',true,[['eyebrow'],['h1'],['h2'],['intro'],['content'],['image',null,'image']]);
+      listEditor($('le-seoTextFaq'),c,'seoText');
     } else if(sub==='textBox'){
-      body.innerHTML=secCard(c,'textBox','Text Box',true,[['eyebrow','Eyebrow (small label above heading)'],['heading','Heading'],['intro','Intro (short lead-in)','ta'],['content','Content (main paragraph/s)','ta'],['image','Image (optional)','image']])
+      body.innerHTML=secCard(c,'textBox','Text Box',true,[['eyebrow','Eyebrow (small label above heading)'],['heading','Heading'],['intro','Intro (short lead-in)','ta'],['content','Content (main paragraph/s)','ta'],['image','Image (optional)','image']]
         +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Image placement</h2><p class="lede" style="margin:0 0 12px;">Where the image sits beside the text. With no image, the text fills the full width.</p><div class="row"><div class="f"><label>Image layout</label><select id="tb-layout" class="tin"><option value="beside">Beside the text (columns)</option><option value="wrap">Wrap — text flows around it</option></select></div><div class="f"><label>Image side</label><select id="tb-side" class="tin"><option value="right">Right of text</option><option value="left">Left of text</option></select></div></div><div class="row"><div class="f"><label>Text alignment <span class="hint">columns layout only</span></label><select id="tb-align" class="tin"><option value="left">Left</option><option value="center">Centre</option></select></div><div class="f"></div></div></div>';
       wireSec(c,'textBox',true,[['eyebrow'],['heading'],['intro'],['content'],['image',null,'image']]);
       (function(){ var H=(c.sections&&c.sections.textBox)||{}; function ens(){ if(!c.sections)c.sections={}; if(!c.sections.textBox)c.sections.textBox={}; return c.sections.textBox; } var ly=$('tb-layout'); if(ly){ ly.value=H.imageLayout||'beside'; ly.addEventListener('change',function(){ ens().imageLayout=ly.value; persist(); previewApply(); }); } var sd=$('tb-side'); if(sd){ sd.value=H.imageSide||'right'; sd.addEventListener('change',function(){ ens().imageSide=sd.value; persist(); previewApply(); }); } var al=$('tb-align'); if(al){ al.value=H.textAlign||'left'; al.addEventListener('change',function(){ ens().textAlign=al.value; persist(); previewApply(); }); } })();
@@ -9802,7 +9811,7 @@ function heroCtaCard(c){
       'serviceProcess':'list','featureStrip':'panels-top-left','serviceAreaMap':'map','serviceAreas':'map-pin',
       'area':'map-pin','reviews':'star','reviewHighlights':'star',
       'trustBar':'shield','certifications':'award','proofStream':'activity',
-      'crew':'users','why':'check-circle','faq':'help-circle','textBox':'type',
+      'crew':'users','why':'check-circle','faq':'help-circle','textBox':'type','seoText':'search',
       'beforeAfter':'image','beforeAfterFeed':'layers','featuredProjects':'briefcase','premiumGallery':'image',
       'projectFeed':'layers','projectStats':'bar-chart-2','activityCounter':'trending-up',
       'activityTimeline':'clock','videoReels':'play-circle','jobsFeed':'rss',
@@ -10507,6 +10516,7 @@ function heroCtaCard(c){
       if(tab==='keywords'){ body.innerHTML=_siTabIntroHTML('keywords')+_siFreshnessHTML(ov)+_siKeywordsHTML(ov); _siWireKeywords(); return; }
       body.innerHTML=_siTabIntroHTML('home')+_siFreshnessHTML(ov)+_siHomeHTML(ov);
       _siWireActions(ov);
+      _siWireHomepageSeo();
     }catch(e){
       body.innerHTML='<div class="card"><p class="lede">Could not load SEO Command Centre.</p><p class="hint">'+esc((e&&e.message)||'error')+'</p></div>';
     }
@@ -10519,6 +10529,7 @@ function heroCtaCard(c){
       +'</div>';
   }
   function _siHomeHTML(ov){
+    var cfg=_siSiteConfig();
     var h='';
     if(ov&&ov.message){
       h+='<div class="card" style="margin-bottom:14px"><p class="lede" style="margin:0">'+esc(ov.message)+'</p>'
@@ -10527,12 +10538,62 @@ function heroCtaCard(c){
     h+='<div class="lp-instrument-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:14px">'
       +((ov&&ov.cards)||[]).map(_siCard).join('')
       +'</div>';
+    h+='<div class="card" style="margin-bottom:14px"><h2 style="margin:0 0 6px">Homepage SEO</h2>'
+      +'<p class="lede" style="margin:0 0 12px">Page title and meta description Google shows for your homepage. Edit manually, or draft with AI from a primary keyword (never auto-publishes).</p>'
+      +'<div class="f" style="margin:0 0 10px"><label for="si-home-title">SEO title</label>'
+      +'<input id="si-home-title" class="tin" type="text" maxlength="70" placeholder="e.g. Coffee Cart Hire Canberra | Bean Culture" value="'+esc(cfg.seoTitle||'')+'"></div>'
+      +'<div class="f" style="margin:0 0 10px"><label for="si-home-meta">Meta description</label>'
+      +'<textarea id="si-home-meta" class="tin" rows="3" maxlength="160" placeholder="One or two sentences that encourage a click from Google…">'+esc(cfg.seoDescription||'')+'</textarea></div>'
+      +'<div class="f" style="margin:0 0 10px"><label for="si-home-kw">Primary keyword (optional)</label>'
+      +'<input id="si-home-kw" class="tin" type="text" placeholder="e.g. coffee cart canberra" value="'+esc(cfg.primaryKeyword||'')+'"></div>'
+      +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="si-home-ai-long"> Include ~400 words of homepage content hints in the AI draft</label>'
+      +'<div class="row" style="gap:8px;flex-wrap:wrap">'
+      +'<button type="button" class="btn sm" id="si-home-save">Save homepage SEO</button>'
+      +'<button type="button" class="btn ghost sm" id="si-home-ai">AI draft title &amp; meta</button>'
+      +'<button type="button" class="btn ghost sm" id="si-home-clear">Clear AI fields only</button>'
+      +'</div>'
+      +'<p class="hint" style="margin-top:10px" id="si-home-seo-status">Saved on this site config · used as live &lt;title&gt; / meta description.</p></div>';
     var open=((ov&&ov.nextBestActions)||[]).filter(function(a){ return a.status==='open'; }).slice(0,5);
     h+='<div class="card"><h2 style="margin:0 0 8px">Next Best Actions</h2>'
       +'<p class="lede" style="margin:0 0 12px">'+(open.length?'Issues to fix first.':'No open issues — connect GSC when ready.')+'</p>'
       +_siActionsList(open)
       +'<p class="hint" style="margin-top:12px"><button type="button" class="btn ghost sm" id="si-goto-actions">View all actions</button></p></div>';
     return h;
+  }
+  function _siSiteConfig(){
+    try{
+      var s=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null;
+      return (s&&s.config)||(typeof data!=='undefined'&&data)||{};
+    }catch(_e){ return {}; }
+  }
+  async function _siSaveHomepageSeo(patch){
+    if(!currentSiteId) return false;
+    var cur=(await sb.from('sites').select('config').eq('id',currentSiteId).maybeSingle()).data;
+    var cfg=JSON.parse(JSON.stringify((cur&&cur.config)||{}));
+    Object.keys(patch||{}).forEach(function(k){ cfg[k]=patch[k]; });
+    var r=await sb.from('sites').update({config:cfg, updated_at:new Date().toISOString()}).eq('id',currentSiteId);
+    if(r.error) throw r.error;
+    var s=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null;
+    if(s) s.config=cfg;
+    if(typeof data!=='undefined'&&data){ data.seoTitle=cfg.seoTitle; data.seoDescription=cfg.seoDescription; data.primaryKeyword=cfg.primaryKeyword; }
+    return true;
+  }
+  function _siDraftHomepageSeo(biz, kw, longCopy){
+    var keyword=String(kw||'').trim()||'local services';
+    var name=String(biz||'Your business').trim();
+    var title=(name+' | '+keyword.replace(/\b\w/g,function(c){return c.toUpperCase();})).slice(0,70);
+    var meta=('Need '+keyword+'? '+name+' helps local customers with clear pricing and reliable service. Get a fast quote today.').slice(0,160);
+    var body='';
+    if(longCopy){
+      body='\n\nHomepage content outline (~400 words):\n'
+        +'1) Open with what you offer for "'+keyword+'".\n'
+        +'2) Explain who you help and the areas you cover.\n'
+        +'3) List 3–5 proof points (reviews, licences, response time).\n'
+        +'4) Answer common questions in plain language.\n'
+        +'5) End with a clear call to call or request a quote.\n'
+        +'Use the SEO Text marketplace section to place H1/H2/FAQ blocks on the page.';
+    }
+    return { seoTitle:title, seoDescription:meta, note:body };
   }
   function _siPagesHTML(ov){
     var pp=(ov&&ov.pagePerformance)||{};
@@ -10581,11 +10642,15 @@ function heroCtaCard(c){
         var j=await _siFetch('/api/search-intelligence/rank-check?siteId='+encodeURIComponent(currentSiteId));
         var items=j.items||[];
         if(!items.length){ ranksBox.innerHTML=''; return; }
-        ranksBox.innerHTML='<p class="hint" style="margin-bottom:8px">Latest positions</p>'
-          +'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Keyword</th><th>Pos</th><th>Δ</th><th>Checked</th></tr></thead><tbody>'
+        var anyMock=items.some(function(it){ return it.provider==='mock'||it.labelClass==='estimated'; });
+        ranksBox.innerHTML='<p class="hint" style="margin-bottom:8px">Latest positions'
+          +(anyMock?' · <strong>includes estimated/demo ranks</strong> (not live Google until DataForSEO is configured)':' · measured from live SERP')
+          +'</p>'
+          +'<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Keyword</th><th>Pos</th><th>Δ</th><th>Source</th><th>Checked</th></tr></thead><tbody>'
           +items.map(function(it){
             var d=it.delta==null?'—':(it.delta>0?'+'+it.delta:String(it.delta));
-            return '<tr><td>'+esc(it.keyword||'—')+'</td><td>'+esc(it.position!=null?it.position:'—')+'</td><td>'+esc(d)+'</td><td>'+esc(it.fetchedAt?String(it.fetchedAt).slice(0,10):'—')+'</td></tr>';
+            var src=(it.provider==='mock'||it.labelClass==='estimated')?'estimated':'measured';
+            return '<tr><td>'+esc(it.keyword||'—')+'</td><td>'+esc(it.position!=null?it.position:'—')+'</td><td>'+esc(d)+'</td><td>'+esc(src)+'</td><td>'+esc(it.fetchedAt?String(it.fetchedAt).slice(0,10):'—')+'</td></tr>';
           }).join('')+'</tbody></table></div>';
       }catch(e){ ranksBox.innerHTML='<p class="hint">'+esc((e&&e.message)||e)+'</p>'; }
     }
@@ -10713,7 +10778,9 @@ function heroCtaCard(c){
         +'<p class="lede" style="margin:0 0 12px">NAP readiness score: <strong>'+esc(L.listingsScore!=null?Math.round(L.listingsScore*100):'—')+'</strong> · GBP: <strong>'+esc(gbp.status||'not_connected')+'</strong></p>'
         +(findings||'<p class="hint">No NAP issues from first-party site facts.</p>')
         +'<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">'
-        +'<a class="btn sm ghost" href="/settings/integrations/google-business?siteId='+encodeURIComponent(currentSiteId)+'">Connect GBP</a>'
+        +'<a class="btn sm ghost" href="/settings/integrations/google-business?siteId='+encodeURIComponent(currentSiteId)+'">'
+        +((gbp.status==='connected'||gbp.status==='ready_to_connect')?(gbp.status==='connected'?'Manage Google Business Profile':'Connect Google Business Profile'):'Connect Google Business Profile')
+        +'</a>'
         +'</div>'
         +'<p class="hint" style="margin-top:10px">'+esc(gbp.note||gbp.hint||'')+'</p></div>'
         +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Local opportunity map</h2>'
@@ -10728,20 +10795,24 @@ function heroCtaCard(c){
               return '<tr><td>'+esc(a.area)+'</td><td>'+esc(a.leads)+'</td><td>'+esc(a.won)+'</td><td>$'+esc(a.valueDollars)+'</td></tr>';
             }).join('')+'</tbody></table></div>':'')
           +'</div>':'')
-        +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Maps grid</h2>'
-        +'<p class="lede" style="margin:0 0 10px">Sample Maps pack presence across a small geo grid (DataForSEO when configured, else mock).</p>'
+        +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Local “near me” / Maps pack</h2>'
+        +'<p class="lede" style="margin:0 0 10px">Checks whether your business shows in Google Maps / local pack around your city. Uses DataForSEO when configured — this is not the GBP login, and not an AI call.</p>'
         +'<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">'
-        +'<input id="si-maps-kw" type="text" placeholder="Keyword (optional)" style="min-width:180px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--input-bg,var(--panel));color:var(--ink)">'
-        +'<select id="si-maps-size" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--input-bg,var(--panel));color:var(--ink)"><option value="1">1×1</option><option value="3" selected>3×3</option><option value="5">5×5</option></select>'
-        +'<button type="button" class="btn sm" id="si-maps-run">Sample Maps grid</button></div>'
-        +'<div id="si-maps-out" class="hint" style="margin-top:10px"></div></div>'
+        +'<input id="si-maps-kw" type="text" placeholder="e.g. coffee cart canberra" style="min-width:180px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--input-bg,var(--panel));color:var(--ink)">'
+        +'<select id="si-maps-size" class="tin lp-select" style="padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--input-bg,var(--panel));color:var(--ink);width:auto;min-width:90px"><option value="1">1×1</option><option value="3" selected>3×3</option><option value="5">5×5</option></select>'
+        +'<button type="button" class="btn sm" id="si-maps-run">Check near me</button></div>'
+        +'<div id="si-maps-out" class="hint" style="margin-top:10px">Enter a local keyword (or leave blank to use your trade + suburb), then press Check near me.</div></div>'
         +(pageFindings?'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Local page issues</h2>'+pageFindings+'</div>':'');
       try{
-        var u=await _siFetch('/api/search-intelligence/usage?siteId='+encodeURIComponent(currentSiteId)+'&days=30');
-        if(u&&u.available){
-          body.innerHTML+='<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Provider usage (30d)</h2>'
-            +'<p class="lede">'+esc(u.totalUnits||0)+' metered units</p>'
-            +'<pre style="font-size:12px;overflow:auto">'+esc(JSON.stringify(u.byMeter||{},null,2))+'</pre></div>';
+        /* Cost telemetry — partners/super only. Clients must not see meter JSON. */
+        if(currentRole==='super'||currentRole==='broker'||currentRole==='partner'){
+          var u=await _siFetch('/api/search-intelligence/usage?siteId='+encodeURIComponent(currentSiteId)+'&days=30');
+          if(u&&u.available&&u.role!=='client'){
+            body.innerHTML+='<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Provider usage (30d)</h2>'
+              +'<p class="lede" style="margin:0 0 8px">Internal cost meter for DataForSEO / SI actions on this site. Not shown to clients.</p>'
+              +'<p class="lede">'+esc(u.totalUnits||0)+' metered units</p>'
+              +'<pre style="font-size:12px;overflow:auto">'+esc(JSON.stringify(u.byMeter||{},null,2))+'</pre></div>';
+          }
         }
       }catch(_u){}
       var runBtn=document.getElementById('si-maps-run');
@@ -10761,10 +10832,13 @@ function heroCtaCard(c){
               })
             });
             var s=await r.json().catch(function(){return {};});
-            if(!r.ok){ out.textContent=s.message||s.error||('HTTP '+r.status); return; }
-            out.innerHTML='Coverage <strong>'+esc(s.presentCount)+'/'+esc(s.pointCount)+'</strong> · score '+esc(s.mapsVisibilityScore!=null?Math.round(s.mapsVisibilityScore*100):'—')
-              +' · provider '+esc(s.provider||'—')
-              +((s.findings&&s.findings[0])?'<div class="lede" style="margin-top:8px">'+esc(s.findings[0].plainLanguage)+'</div>':'');
+            if(!r.ok){ out.innerHTML='<span style="color:var(--danger,#b33)">'+esc(s.message||s.error||('HTTP '+r.status))+'</span>'
+              +'<div class="hint" style="margin-top:6px">Tip: set a custom domain or business name that matches your Maps listing, and use a local keyword (suburb + service).</div>'; return; }
+            var mockNote=s.provider==='mock'?' · <strong>demo sample</strong> (set DATAFORSEO for live Maps checks)':' · live Maps check';
+            out.innerHTML='Coverage <strong>'+esc(s.presentCount)+'/'+esc(s.pointCount)+'</strong> pack cells · score '+esc(s.mapsVisibilityScore!=null?Math.round(s.mapsVisibilityScore*100):'—')
+              +' · keyword <strong>'+esc(s.keyword||'—')+'</strong>'+mockNote
+              +((s.findings&&s.findings[0])?'<div class="lede" style="margin-top:8px">'+esc(s.findings[0].plainLanguage)+'</div>':'')
+              +'<p class="hint" style="margin-top:8px">GBP connect is separate (listings/reviews). Near-me checks read the public Maps pack around your city.</p>';
           }catch(e){ out.textContent=String(e.message||e); }
         };
       }

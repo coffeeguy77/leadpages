@@ -1126,14 +1126,44 @@
       "rendererIdentifier": "trade.template.json#premiumGallery",
       "configPath": "sections.premiumGallery",
       "purpose": "Design-led image galleries for large photo collections",
-      "supportedPagePositions": ["upper", "main"],
-      "suitableBusinessModels": ["service", "product", "hospitality", "retail", "events", "professional"],
-      "suitableIndustries": ["*"],
+      "supportedPagePositions": [
+        "upper",
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
       "unsuitableIndustries": [],
-      "conversionGoals": ["inform"],
-      "supportedLayouts": ["classic", "premium-showcase", "authority-builder", "photo-proof"],
-      "supportedVariants": ["default", "clean", "editorial", "dynamic", "minimal", "cinematic", "collage"],
-      "requiredContentFields": ["heading", "images"],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default",
+        "clean",
+        "editorial",
+        "dynamic",
+        "minimal",
+        "cinematic",
+        "collage"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "images"
+      ],
       "optionalContentFields": [
         "sections.premiumGallery.heading",
         "sections.premiumGallery.eyebrow",
@@ -1141,10 +1171,17 @@
         "sections.premiumGallery.layout",
         "sections.premiumGallery.images.0.src"
       ],
-      "imageFields": ["images[].src"],
+      "imageFields": [
+        "images[].src"
+      ],
       "iconFields": [],
-      "ctaFields": ["ctaText"],
-      "itemCountConstraints": {"min": 4, "max": 48},
+      "ctaFields": [
+        "ctaText"
+      ],
+      "itemCountConstraints": {
+        "min": 4,
+        "max": 48
+      },
       "websiteStudioSupport": "supported",
       "defaultPosition": "upper"
     },
@@ -2527,12 +2564,12 @@
     {
       "appId": "seoTokens",
       "slug": "seo-tokens",
-      "name": "seoTokens",
+      "name": "Local tokens (legacy)",
       "category": "content",
       "sectionKey": "seoTokens",
       "rendererIdentifier": "trade.template.json#seoTokens",
       "configPath": "sections.seoTokens",
-      "purpose": "seoTokens",
+      "purpose": "Suburb/trade tokens for on-page copy. Homepage SEO title/meta live in SEO Command Centre → Home.",
       "supportedPagePositions": [
         "main"
       ],
@@ -2592,7 +2629,8 @@
         "manage.html",
         "(not in app-content.json)"
       ],
-      "finalDecisionReason": "SEO config object, not a page section — managed via draft SEO fields"
+      "finalDecisionReason": "SEO config object, not a page section — managed via draft SEO fields",
+      "status": "legacy"
     },
     {
       "appId": "serviceAreaMap",
@@ -3742,6 +3780,81 @@
         "marketplace/app-content.json"
       ],
       "phaseAdded": 4
+    },
+    {
+      "appId": "seoText",
+      "slug": "seo-text",
+      "name": "SEO Text",
+      "category": "content-proof",
+      "sectionKey": "seoText",
+      "rendererIdentifier": "trade.template.json#seoText",
+      "configPath": "sections.seoText",
+      "purpose": "SEO-focused H1, H2, supporting copy, optional image and FAQ blocks",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "product",
+        "hospitality",
+        "retail",
+        "events",
+        "professional"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof"
+      ],
+      "supportedVariants": [
+        "default"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "body"
+      ],
+      "optionalContentFields": [
+        "sections.textBox.eyebrow",
+        "sections.textBox.heading",
+        "sections.textBox.intro",
+        "theme.pipe"
+      ],
+      "imageFields": [],
+      "iconFields": [],
+      "ctaFields": [
+        "cta",
+        "buttonText",
+        "primaryCta"
+      ],
+      "itemCountConstraints": null,
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "marketplace/playground-field-defs.json",
+        "lib/marketplace-categories.js",
+        "trade.template.json",
+        "manage.html"
+      ],
+      "finalDecisionReason": ""
     }
   ],
   "updatedAt": "2026-07-18T01:43:32.091Z",
