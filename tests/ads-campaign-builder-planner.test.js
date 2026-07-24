@@ -47,6 +47,8 @@ assert.equal(plan.budgetDaily, 40);
 assert.ok(plan.adGroups && plan.adGroups[0]);
 assert.ok(String(plan.adGroups[0].finalUrl).includes('coffeeevents.com.au'));
 assert.equal(plan.statusOnCreate || 'PAUSED', 'PAUSED');
+assert.ok(plan.pageFit && plan.pageFit.grade);
+assert.ok(plan.adGroups[0].ads && plan.adGroups[0].ads[0].headlines.length >= 3);
 
 const sitePlan = planForSite(site, { budgetDaily: 5 });
 assert.equal(sitePlan.budgetDaily, 5);
