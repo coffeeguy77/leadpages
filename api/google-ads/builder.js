@@ -20,6 +20,8 @@ const { syncCampaignMaps } = require('../../lib/google-ads/campaign-sync');
 const { writeAudit } = require('../../lib/google-ads/audit');
 const { dailyToImpliedMonthly } = require('../../lib/google-ads/safety');
 const { enrichPlanWithKeywordMetrics } = require('../../lib/google-ads/keyword-metrics');
+const { analyzePageFit, applyFixesToPage, suggestRsaFromPage } = require('../../lib/google-ads/page-fit');
+const { normalizeRsaCopy } = require('../../lib/brain/ads-compose');
 const {
   campaignMutationsEnabled,
   statusMutationsEnabled,
@@ -73,13 +75,23 @@ module.exports = async (req, res) => {
         plans: plans || [],
         recommendations: recs || [],
         stats: stats,
-        pages: publishedPages(site).map((p) => ({
-          id: p.id,
-          slug: p.slug,
-          title: p.title,
-          status: p.status || 'published'
-        })),
-        note: 'Google Ads reporting may be delayed. Campaign creates are always PAUSED.'
+        pages: publishedPages(site).map((p) => {
+          const body = String((p && p.body) || '');
+          const words = body.replace(/[#>*_`~\-|]/g, ' ').split(/\s+/).filter(Boolean).length;
+          return {
+            id: p.id,
+            slug: p.slug,
+            title: p.title,
+            status: p.status || 'published',
+            h1: p.h1 || null,
+            meta: p.meta || p.metaDescription || null,
+            primaryKeyword: p.primaryKeyword || null,
+            wordCount: words,
+            hasH1: !!(p && p.h1),
+            hasMeta: !!(p && (p.meta || p.metaDescription))
+          };
+        }),
+        note: 'Google Ads reporting may be delayed. Campaign creates are always PAUSED. Pick a landing page first — we analyse fit before you spend.'
       });
     }
 
@@ -250,7 +262,8 @@ module.exports = async (req, res) => {
       if (!campaignMutationsEnabled()) {
         return http.json(res, 403, {
           error: 'mutations_disabled',
-          message: 'Set GOOGLE_ADS_CAMPAIGN_MUTATIONS=1 to create paused campaigns.',
+          message:
+            'Create is locked. On Vercel set GOOGLE_ADS_CAMPAIGN_MUTATIONS=1, redeploy, then create as PAUSED. To go live later also set GOOGLE_ADS_STATUS_MUTATIONS=1 and GOOGLE_ADS_CAMPAIGN_PUBLISH=1, run Tracking readiness, then Resume.',
           flags: flagSnapshot()
         });
       }
@@ -415,6 +428,185 @@ module.exports = async (req, res) => {
       return http.json(res, result.ok ? 200 : 400, { ok: !!result.ok, action, result });
     }
 
+    if (action === 'analyze_page') {
+      const ctx = await requireSite(req, res, { body, capability: 'draft', requireBuilder: true });
+      if (!ctx) return;
+      const { site } = ctx;
+      const pages = publishedPages(site);
+      const page =
+        pages.find((p) => String(p.id) === String(body.pageId || '')) ||
+        pages.find((p) => String(p.slug) === String(body.pageSlug || '')) ||
+        null;
+      if (!page) return http.json(res, 400, { error: 'page_required', message: 'Select a published landing page to analyse.' });
+      let plan = body.plan || null;
+      if (plan && plan.draftPlan) plan = plan.draftPlan;
+      const analysis = analyzePageFit(page, {
+        plan: plan,
+        geo: body.geo || (plan && plan.geoFocus),
+        brand: site.business_name
+      });
+      return http.json(res, 200, { ok: true, action, pageId: page.id, analysis });
+    }
+
+    if (action === 'suggest_rsa') {
+      const ctx = await requireSite(req, res, { body, capability: 'draft', requireBuilder: true });
+      if (!ctx) return;
+      const { site } = ctx;
+      const pages = publishedPages(site);
+      const page =
+        pages.find((p) => String(p.id) === String(body.pageId || '')) ||
+        pages.find((p) => String(p.slug) === String(body.pageSlug || '')) ||
+        null;
+      let plan = body.plan || null;
+      if (plan && plan.draftPlan) plan = plan.draftPlan;
+      const kws =
+        (plan && plan.adGroups && plan.adGroups[0] && plan.adGroups[0].keywords) ||
+        body.keywords ||
+        [];
+      let rsa = suggestRsaFromPage(
+        page || { title: site.business_name, h1: '', body: '', meta: '' },
+        kws,
+        (plan && plan.geoFocus) || body.geo,
+        site.business_name
+      );
+      // Optional Brain polish when Marketing Hub is on
+      try {
+        const { getPlatformBrain, isMarketingHubEnabled } = require('../../lib/brain/platform');
+        const brain = getPlatformBrain();
+        if (isMarketingHubEnabled(brain) && body.useAi !== false) {
+          const brief = [
+            page && page.title,
+            page && page.h1,
+            page && page.meta,
+            page && String(page.body || '').slice(0, 400)
+          ]
+            .filter(Boolean)
+            .join('\n');
+          const result = await brain.generateStructured({
+            taskId: 'ads.rsa_copy',
+            promptId: 'ads.rsa_copy',
+            siteId: site.id,
+            site,
+            actor: { userId: ctx.user && ctx.user.id, role: ctx.access && ctx.access.role },
+            contextSlices: ['site.identity', 'site.areas'],
+            temperature: 0.55,
+            input: {
+              offer: String((page && (page.primaryKeyword || page.h1 || page.title)) || 'local service').slice(0, 200),
+              location: String((plan && plan.geoFocus) || body.geo || '').slice(0, 120),
+              landingUrl: String((plan && plan.adGroups && plan.adGroups[0] && plan.adGroups[0].finalUrl) || '').slice(0, 200),
+              brief: brief.slice(0, 600)
+            },
+            responseSchema: {
+              type: 'object',
+              required: ['headlines', 'descriptions', 'path1', 'path2'],
+              properties: {
+                headlines: { type: 'array', items: { type: 'string' } },
+                descriptions: { type: 'array', items: { type: 'string' } },
+                path1: { type: 'string' },
+                path2: { type: 'string' },
+                finalUrlHint: { type: 'string' },
+                notes: { type: 'string' }
+              }
+            }
+          });
+          if (result && result.ok && result.output) {
+            rsa = Object.assign({}, normalizeRsaCopy(result.output), {
+              provenance: { source: 'brain_rsa', edited: false }
+            });
+          }
+        }
+      } catch (_e) {
+        /* deterministic RSA still returned */
+      }
+      if (plan && plan.adGroups && plan.adGroups[0]) {
+        plan.adGroups[0].ads = [Object.assign({}, rsa, { finalUrl: plan.adGroups[0].finalUrl })];
+        plan.pageFit = analyzePageFit(page, { plan: plan, brand: site.business_name, geo: plan.geoFocus });
+      }
+      return http.json(res, 200, { ok: true, action, rsa, plan });
+    }
+
+    if (action === 'apply_page_fixes') {
+      const ctx = await requireSite(req, res, { body, capability: 'draft', requireBuilder: true });
+      if (!ctx) return;
+      const { db, siteId, site } = ctx;
+      const cfg = Object.assign({}, site.config || {});
+      const pages = Array.isArray(cfg.pages) ? cfg.pages.slice() : [];
+      const idx = pages.findIndex(
+        (p) => p && (String(p.id) === String(body.pageId || '') || String(p.slug) === String(body.pageSlug || ''))
+      );
+      if (idx < 0) return http.json(res, 404, { error: 'page_not_found' });
+      let plan = body.plan || null;
+      if (plan && plan.draftPlan) plan = plan.draftPlan;
+      const fitCtx = { plan: plan, brand: site.business_name, geo: (plan && plan.geoFocus) || body.geo };
+      const preview = analyzePageFit(pages[idx], fitCtx);
+      const fixIds = Array.isArray(body.fixIds) ? body.fixIds : body.fixId ? [body.fixId] : preview.fixes.map((f) => f.id);
+      const merged = applyFixesToPage(pages[idx], fixIds, fitCtx);
+      pages[idx] = merged.page;
+      cfg.pages = pages;
+      const { error } = await db
+        .from('sites')
+        .update({ config: cfg, updated_at: new Date().toISOString() })
+        .eq('id', siteId);
+      if (error) return http.json(res, 500, { error: error.message });
+
+      let nextPlan = plan;
+      if (plan) {
+        nextPlan = planForPage(Object.assign({}, site, { config: cfg }), pages[idx], {
+          budgetDaily: plan.budgetDaily,
+          geo: plan.geoFocus,
+          campaignName: plan.campaignName
+        });
+        if (plan.adGroups && plan.adGroups[0] && plan.adGroups[0].keywords) {
+          nextPlan.adGroups[0].keywords = plan.adGroups[0].keywords;
+        }
+        if (plan.adGroups && plan.adGroups[0] && plan.adGroups[0].ads) {
+          nextPlan.adGroups[0].ads = plan.adGroups[0].ads;
+        }
+        nextPlan.pageFit = merged.analysis;
+        nextPlan.budgetDaily = plan.budgetDaily;
+      }
+      return http.json(res, 200, {
+        ok: true,
+        action,
+        applied: merged.applied,
+        page: {
+          id: pages[idx].id,
+          title: pages[idx].title,
+          h1: pages[idx].h1,
+          meta: pages[idx].meta,
+          slug: pages[idx].slug,
+          body: pages[idx].body
+        },
+        analysis: merged.analysis,
+        plan: nextPlan,
+        message: 'Landing page updated. Review RSA so ads still match the new copy.'
+      });
+    }
+
+    if (action === 'update_plan') {
+      const ctx = await requireSite(req, res, { body, capability: 'draft', requireBuilder: true });
+      if (!ctx) return;
+      let plan = body.plan;
+      if (!plan) return http.json(res, 400, { error: 'plan_required' });
+      if (plan.draftPlan) plan = plan.draftPlan;
+      // Normalize RSA if provided
+      if (plan.adGroups && plan.adGroups[0] && plan.adGroups[0].ads && plan.adGroups[0].ads[0]) {
+        const ad = plan.adGroups[0].ads[0];
+        const norm = normalizeRsaCopy(ad);
+        plan.adGroups[0].ads[0] = Object.assign({}, ad, norm, {
+          finalUrl: plan.adGroups[0].finalUrl,
+          provenance: Object.assign({}, ad.provenance || {}, { edited: true })
+        });
+      }
+      const pages = publishedPages(ctx.site);
+      const pageId = plan.provenance && plan.provenance.pageId;
+      const page = pages.find((p) => String(p.id) === String(pageId) || String(p.slug) === String(pageId));
+      if (page) {
+        plan.pageFit = analyzePageFit(page, { plan: plan, brand: ctx.site.business_name, geo: plan.geoFocus });
+      }
+      return http.json(res, 200, { ok: true, action, plan });
+    }
+
     return http.json(res, 400, {
       error: 'unknown_action',
       actions: [
@@ -428,7 +620,11 @@ module.exports = async (req, res) => {
         'create_paused',
         'pause',
         'resume',
-        'change_budget'
+        'change_budget',
+        'analyze_page',
+        'suggest_rsa',
+        'apply_page_fixes',
+        'update_plan'
       ]
     });
   } catch (e) {
