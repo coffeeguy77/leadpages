@@ -12008,7 +12008,8 @@ function heroCtaCard(c){
       +'</div></div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px">'
       +'<button type="button" class="btn" id="gads-sync-now">Sync now</button>'
-      +'<span class="hint" id="gads-sync-note" style="align-self:center">Pulls the last '+_gadsDays+' days from Google Ads</span>'
+      +'<button type="button" class="btn ghost sm" id="gads-clear-metrics">Clear old synced Ads data</button>'
+      +'<span class="hint" id="gads-sync-note" style="align-self:center">Pulls the last '+_gadsDays+' days from the <strong>selected</strong> Ads account only</span>'
       +'</div>';
 
     var roles=c.eventRoles||{};
@@ -12099,6 +12100,18 @@ function heroCtaCard(c){
     });
     var syncBtn=document.getElementById('gads-sync-now');
     if(syncBtn) syncBtn.addEventListener('click',function(){ _gadsRunSync(syncBtn); });
+    var clearMet=document.getElementById('gads-clear-metrics');
+    if(clearMet) clearMet.addEventListener('click',async function(){
+      if(!confirm('Delete all synced Google Ads spend/campaign rows for this LeadPages site? Use after switching to a new empty Ads account so Overview/Campaigns stop showing old Bean Culture data. You can Sync now afterwards.')) return;
+      try{
+        var tok=await _gadsToken();
+        var r=await fetch('/api/google-ads/save-settings',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId,clearSyncedMetrics:true})});
+        var j=await r.json().catch(function(){return {};});
+        if(!r.ok) throw new Error(j.message||j.error||'clear_failed');
+        toast('Old synced Ads data cleared');
+        _gadsCache={}; _gadsPaint();
+      }catch(e){ toast((e&&e.message)||'Clear failed','warn'); }
+    });
     var save=document.getElementById('gads-save-roles');
     if(save) save.addEventListener('click',async function(){
       var roles={};

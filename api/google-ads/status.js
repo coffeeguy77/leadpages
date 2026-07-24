@@ -1,6 +1,7 @@
 // GET /api/google-ads/status?siteId=&days=30 — connection health + overview metrics
 const { createClient } = require('@supabase/supabase-js');
 const cfg = require('../../lib/google-ads/config');
+const { digits } = require('../../lib/google-ads/metrics-scope');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -33,14 +34,18 @@ module.exports = async (req, res) => {
     const sinceDay = since.slice(0, 10);
 
     const { data: conn } = await admin.from('google_ads_connections').select('*').eq('site_id', siteId).maybeSingle();
+    const customerId = digits(conn && conn.customer_id);
 
-    // Ads metrics
+    // Ads metrics — only the currently selected Ads customer (never mix old accounts).
     let spendMicros = 0, adClicks = 0, impressions = 0, googleConversions = 0;
-    const { data: metrics } = await admin
+    let metricsQuery = admin
       .from('ads_metrics_daily')
-      .select('impressions,clicks,cost_micros,conversions,campaign_id,campaign_name,final_url,page_id,day')
+      .select('impressions,clicks,cost_micros,conversions,campaign_id,campaign_name,final_url,page_id,day,customer_id')
       .eq('site_id', siteId)
       .gte('day', sinceDay);
+    if (customerId) metricsQuery = metricsQuery.eq('customer_id', customerId);
+    else metricsQuery = metricsQuery.eq('customer_id', '__none__'); // no account → empty overview
+    const { data: metrics } = await metricsQuery;
 
     (metrics || []).forEach((m) => {
       spendMicros += Number(m.cost_micros || 0);
@@ -104,12 +109,15 @@ module.exports = async (req, res) => {
       .order('last_seen_at', { ascending: false })
       .limit(20);
 
-    const { count: matchedPages } = await admin
+    let matchedQ = admin
       .from('ads_metrics_daily')
       .select('id', { count: 'exact', head: true })
       .eq('site_id', siteId)
       .gte('day', sinceDay)
       .not('page_id', 'is', null);
+    if (customerId) matchedQ = matchedQ.eq('customer_id', customerId);
+    else matchedQ = matchedQ.eq('customer_id', '__none__');
+    const { count: matchedPages } = await matchedQ;
 
     return json(200, {
       ok: true,

@@ -1,6 +1,7 @@
 // GET /api/google-ads/report?siteId=&days=&view=campaigns|landing_pages|leads|alerts
 const { createClient } = require('@supabase/supabase-js');
 const { matchFinalUrl } = require('../../lib/google-ads/match-url');
+const { digits } = require('../../lib/google-ads/metrics-scope');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -14,6 +15,23 @@ function daysAgoIso(n) {
   const d = new Date();
   d.setUTCDate(d.getUTCDate() - n);
   return d.toISOString();
+}
+
+async function loadConnCustomerId(siteId) {
+  const { data: conn } = await admin
+    .from('google_ads_connections')
+    .select('customer_id')
+    .eq('site_id', siteId)
+    .maybeSingle();
+  return digits(conn && conn.customer_id);
+}
+
+async function loadSiteMetrics(siteId, sinceDay, customerId) {
+  let q = admin.from('ads_metrics_daily').select('*').eq('site_id', siteId).gte('day', sinceDay);
+  if (customerId) q = q.eq('customer_id', customerId);
+  else q = q.eq('customer_id', '__none__');
+  const { data } = await q;
+  return data || [];
 }
 
 module.exports = async (req, res) => {
@@ -37,12 +55,10 @@ module.exports = async (req, res) => {
     const { data: site } = await admin.from('sites').select('id,slug,business_name,config').eq('id', siteId).maybeSingle();
     if (!site) return json(404, { error: 'site_not_found' });
 
+    const customerId = await loadConnCustomerId(siteId);
+
     if (view === 'campaigns') {
-      const { data: metrics } = await admin
-        .from('ads_metrics_daily')
-        .select('*')
-        .eq('site_id', siteId)
-        .gte('day', sinceDay);
+      const metrics = await loadSiteMetrics(siteId, sinceDay, customerId);
 
       const byCamp = new Map();
       (metrics || []).forEach((m) => {
@@ -91,16 +107,23 @@ module.exports = async (req, res) => {
         });
       }).sort((a, b) => b.spend - a.spend);
 
-      return json(200, { ok: true, view, days, rows });
+      return json(200, {
+        ok: true,
+        view,
+        days,
+        customerId: customerId || null,
+        rows,
+        note: !customerId
+          ? 'Select a Google Ads account first.'
+          : rows.length
+            ? null
+            : 'No synced campaigns for this Ads account yet. Empty accounts show zero until you run ads and Sync now.'
+      });
     }
 
     if (view === 'landing_pages') {
       const pages = Array.isArray(site.config && site.config.pages) ? site.config.pages : [];
-      const { data: metrics } = await admin
-        .from('ads_metrics_daily')
-        .select('*')
-        .eq('site_id', siteId)
-        .gte('day', sinceDay);
+      const metrics = await loadSiteMetrics(siteId, sinceDay, customerId);
 
       const byPage = new Map();
       // Seed published pages
@@ -248,7 +271,7 @@ module.exports = async (req, res) => {
       })();
       void reportRes;
 
-      const { data: metrics } = await admin.from('ads_metrics_daily').select('*').eq('site_id', siteId).gte('day', sinceDay);
+      const metrics = await loadSiteMetrics(siteId, sinceDay, customerId);
       const spendByPage = new Map();
       (metrics || []).forEach((m) => {
         const key = m.page_id || '__main__';
