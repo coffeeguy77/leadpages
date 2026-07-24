@@ -11740,6 +11740,7 @@ function heroCtaCard(c){
     if(tab==='readiness'){
       body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Tracking readiness</h2>'
         +'<p class="lede">Automated checks before you enable a campaign. Critical failures block publish. Prefer LeadPages Native events; GTM is optional inspection.</p>'
+        +'<p class="hint" style="margin:0 0 10px">Fix fails here: <strong>Campaign Builder</strong> (pick a published page → Plan) for landing URL, and <strong>Connection &amp; Health</strong> (Primary conversions + Google tag AW-…). Unmatched Bean Culture URLs are leftover from the old Ads account — Change account / Sync now clears them.</p>'
         +'<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:10px">'
         +'<button type="button" class="btn sm" id="gads-run-ready">Run readiness audit</button>'
         +'<a class="btn ghost sm" href="/settings/integrations/tag-manager?siteId='+encodeURIComponent(currentSiteId)+'" style="text-decoration:none">Google Tag Manager</a>'
@@ -11990,7 +11991,7 @@ function heroCtaCard(c){
       +'<ul style="margin:0 0 14px;padding-left:18px;font-size:13.5px;line-height:1.7">'
       +'<li>Google Ads connected: <strong>Yes</strong></li>'
       +'<li>Account selected: <strong>'+(c.customerId?'Yes':'No')+'</strong></li>'
-      +'<li>Tag active: <strong>'+(c.tagActive?'Yes':'Not set')+'</strong></li>'
+      +'<li>Tag active: <strong>'+(c.tagActive?'Yes ('+esc(c.tagId||'')+')':'Not set')+'</strong></li>'
       +'<li>Form conversion tested: <strong>'+(c.formTestAt?new Date(c.formTestAt).toLocaleString():'Not yet')+'</strong></li>'
       +'<li>Call-click conversion tested: <strong>'+(c.callTestAt?new Date(c.callTestAt).toLocaleString():'Not yet')+'</strong></li>'
       +'<li>Click IDs captured ('+_gadsDays+'d): <strong>'+_gadsNum(health.clickIdsCaptured)+'</strong></li>'
@@ -11998,6 +11999,13 @@ function heroCtaCard(c){
       +(c.lastSyncError?'<li style="color:#b45309">Last sync error: <strong>'+esc(c.lastSyncError)+'</strong></li>':'')
       +'<li>Matched metric rows: <strong>'+_gadsNum(health.matchedMetricRows)+'</strong></li>'
       +'</ul>'
+      +'<div class="f" style="max-width:420px;margin:0 0 14px">'
+      +'<label for="gads-tag-id">Google tag (AW-…) for coffeeevents.com.au</label>'
+      +'<p class="hint" style="margin:0 0 6px">Injected on the LeadPages site so Ads can attribute visits. Find it in Google Ads → Goals → Settings → Google tag, or use Detect.</p>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+      +'<input id="gads-tag-id" class="tin" style="flex:1;min-width:180px" placeholder="AW-1234567890" value="'+esc(c.tagId||'')+'">'
+      +'<button type="button" class="btn ghost sm" id="gads-detect-tag">Detect from Ads</button>'
+      +'</div></div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px">'
       +'<button type="button" class="btn" id="gads-sync-now">Sync now</button>'
       +'<span class="hint" id="gads-sync-note" style="align-self:center">Pulls the last '+_gadsDays+' days from Google Ads</span>'
@@ -12093,14 +12101,31 @@ function heroCtaCard(c){
     if(save) save.addEventListener('click',async function(){
       var roles={};
       document.querySelectorAll('.gads-role').forEach(function(s){ roles[s.getAttribute('data-role')]=s.value; });
+      var tagEl=document.getElementById('gads-tag-id');
+      var tagId=tagEl?String(tagEl.value||'').trim():'';
       try{
         var tok=await _gadsToken();
-        var r=await fetch('/api/google-ads/save-settings',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId,eventRoles:roles})});
+        var r=await fetch('/api/google-ads/save-settings',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId,eventRoles:roles,tagId:tagId})});
         var j=await r.json();
         if(!r.ok) throw new Error(j.error||'save_failed');
         toast('Conversion settings saved');
         _gadsCache={}; _gadsPaint();
       }catch(e){ toast((e&&e.message)||'Save failed','warn'); }
+    });
+    var detectTag=document.getElementById('gads-detect-tag');
+    if(detectTag) detectTag.addEventListener('click',async function(){
+      detectTag.disabled=true; detectTag.textContent='Detecting…';
+      try{
+        var tok=await _gadsToken();
+        var r=await fetch('/api/google-ads/save-settings',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId,detectTag:true,forceTagDetect:true})});
+        var j=await r.json();
+        if(!r.ok) throw new Error(j.error||'detect_failed');
+        var tag=(j.connection&&j.connection.tagId)||'';
+        if(!tag) throw new Error('No conversion tracking ID on this Ads account yet — paste AW-… from Google Ads → Goals → Google tag');
+        toast('Tag set to '+tag);
+        _gadsCache={}; _gadsPaint();
+      }catch(e){ toast((e&&e.message)||'Detect failed','warn'); }
+      finally{ detectTag.disabled=false; detectTag.textContent='Detect from Ads'; }
     });
     async function runTest(type){
       try{
