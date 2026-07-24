@@ -965,9 +965,16 @@ section[data-sec="serviceProcess"] .section-head p{color:var(--sp-intro,inherit)
 section[data-sec="serviceProcess"].sp-sec-stroke-on{border-top:4px solid var(--sp-sec-stroke,var(--pipe,#1f7bb8))}
 section[data-sec="serviceProcess"]:not(.sp-sec-stroke-on){border-top:0}
 @media(max-width:900px){
-  .sp-steps{flex-wrap:wrap;gap:22px 0}
-  .sp-step{flex:1 1 100%}
-  .sp-arrow{width:100%;padding:2px 0;transform:rotate(90deg)}
+  /* Mobile How It Works: numbers + copy only — hide icons/arrows and tighten gaps */
+  .sp-steps{flex-wrap:wrap;gap:10px 0;margin-top:16px}
+  .sp-steps.sp-no-arrows{gap:10px 0}
+  .sp-step{flex:1 1 100%;gap:10px}
+  .sp-arrow{display:none!important}
+  .sp-ic{display:none!important}
+  .sp-media{gap:0}
+  .sp-num{width:min(var(--sp-num-size,48px),40px);height:min(var(--sp-num-size,48px),40px);font-size:calc(min(var(--sp-num-size,48px),40px) * .48);box-shadow:0 4px 12px rgba(20,30,45,.12)}
+  .sp-title{font-size:18px;line-height:1.1}
+  .sp-text{margin:4px 0 0;font-size:14px;line-height:1.4}
 }
 
 /* Promotions Engine \u2014 reusable (below-hero + inline), Phase 1 */
