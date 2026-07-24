@@ -69,6 +69,19 @@ Advertising tab → **Campaign Builder** and **Tracking readiness**.
 
 ---
 
+## Keyword volume / CPC (never invented)
+
+Plan keywords are enriched after draft generation via `lib/google-ads/keyword-metrics.js`:
+
+| Source | When | Fields |
+|--------|------|--------|
+| DataForSEO (SI gateway) | `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` set | estimated volume, CPC, competition |
+| `ads_keyword_daily` | Ads sync has keyword_view rows | measured CPC = cost÷clicks |
+
+Mock/demo SI data is **not** attached to Ads plans. If neither source is available, the plan note says volume/CPC are unavailable — figures stay blank.
+
+---
+
 ## Coffee Events pilot
 
 - Site: `coffeeevents.com.au`
@@ -100,6 +113,7 @@ Allowlist the GTM callback URI in Google Cloud OAuth.
 |------|------|
 | Flags / safety | `lib/google-ads/flags.js`, `safety.js` |
 | Planner / mutate | `lib/google-ads/planner.js`, `mutate.js` |
+| Keyword volume/CPC | `lib/google-ads/keyword-metrics.js` (DataForSEO + Ads measured) |
 | Readiness / recs / audit | `lib/google-ads/readiness.js`, `recommendations.js`, `audit.js` |
 | Campaign inventory sync | `lib/google-ads/campaign-sync.js` |
 | Builder HTTP | `api/google-ads/builder.js`, `lib/google-ads/builder-http.js` |
