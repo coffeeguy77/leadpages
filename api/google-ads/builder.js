@@ -19,6 +19,7 @@ const { createPausedSearchCampaign, setCampaignStatus, updateCampaignBudget } = 
 const { syncCampaignMaps } = require('../../lib/google-ads/campaign-sync');
 const { writeAudit } = require('../../lib/google-ads/audit');
 const { dailyToImpliedMonthly } = require('../../lib/google-ads/safety');
+const { enrichPlanWithKeywordMetrics } = require('../../lib/google-ads/keyword-metrics');
 const {
   campaignMutationsEnabled,
   statusMutationsEnabled,
@@ -114,6 +115,17 @@ module.exports = async (req, res) => {
           pages[0];
         if (!page) return http.json(res, 400, { error: 'no_published_pages' });
         plan = planForPage(site, page, body);
+      }
+
+      // Attach volume/CPC when DataForSEO or synced Ads keyword metrics exist — never invent.
+      try {
+        plan = await enrichPlanWithKeywordMetrics(db, siteId, plan, {
+          location: body.location || (plan.geoFocus || (plan.draftPlan && plan.draftPlan.geoFocus)),
+          seed: body.keywordSeed || body.service || undefined,
+          skipMarket: body.skipMarketMetrics === true
+        });
+      } catch (_e) {
+        /* planning still succeeds without metrics */
       }
 
       const { data: saved, error } = await db

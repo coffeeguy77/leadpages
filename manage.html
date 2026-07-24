@@ -11798,11 +11798,18 @@ function heroCtaCard(c){
       var p=plan.draftPlan||plan;
       var out=document.getElementById('gads-plan-out');
       var kws=((p.adGroups&&p.adGroups[0]&&p.adGroups[0].keywords)||[]).slice(0,12);
+      var metricsNote=p.metricsNote||(plan.keywordMetrics&&plan.keywordMetrics.note)||'';
       out.innerHTML='<h3 style="margin:0 0 8px">'+esc(p.campaignName||'Draft')+'</h3>'
         +'<p class="hint">Status on create: <strong>PAUSED</strong> · Domain: '+esc(p.primaryDomain||'—')+' · Geo: '+esc(p.geoFocus||'—')+'</p>'
         +'<p class="lede">'+(esc(p.budgetNote||('Daily budget: '+(p.budgetDaily!=null?p.budgetDaily:'not set'))))+'</p>'
-        +'<p class="hint">'+esc(p.metricsNote||'')+'</p>'
-        +'<ul style="padding-left:18px">'+kws.map(function(k){ return '<li>'+esc(k.keyword)+' · '+esc(k.matchType)+' · '+esc(k.intent)+'</li>'; }).join('')+'</ul>'
+        +'<p class="hint">'+esc(metricsNote)+'</p>'
+        +'<div style="overflow:auto;margin:8px 0"><table class="ana-table"><thead><tr><th>Keyword</th><th>Match</th><th>Intent</th><th>Vol</th><th>CPC</th><th>Source</th></tr></thead><tbody>'
+        +kws.map(function(k){
+          var vol=k.volume!=null?k.volume:'—';
+          var cpc=k.cpc!=null?k.cpc:'—';
+          var src=k.cpcSource||(k.volume!=null?'market':'—');
+          return '<tr><td>'+esc(k.keyword)+'</td><td>'+esc(k.matchType||'—')+'</td><td>'+esc(k.intent||'—')+'</td><td>'+esc(vol)+'</td><td>'+esc(cpc)+'</td><td>'+esc(src)+'</td></tr>';
+        }).join('')+'</tbody></table></div>'
         +((p.warnings&&p.warnings.length)?'<p class="hint" style="color:#b45309">'+esc(p.warnings.join(' · '))+'</p>':'')
         +'<button type="button" class="btn sm" id="gads-create-paused" style="margin-top:10px">Create campaign as PAUSED</button>';
       var cre=document.getElementById('gads-create-paused');
