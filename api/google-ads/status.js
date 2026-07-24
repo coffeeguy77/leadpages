@@ -119,6 +119,17 @@ module.exports = async (req, res) => {
     else matchedQ = matchedQ.eq('customer_id', '__none__');
     const { count: matchedPages } = await matchedQ;
 
+    // Rows from another Ads customer still in cache (hidden once filtered, but leftover until cleared).
+    let staleOtherCustomerRows = 0;
+    if (customerId) {
+      const { count: otherN } = await admin
+        .from('ads_metrics_daily')
+        .select('id', { count: 'exact', head: true })
+        .eq('site_id', siteId)
+        .neq('customer_id', customerId);
+      staleOtherCustomerRows = otherN || 0;
+    }
+
     return json(200, {
       ok: true,
       platformConfigured: cfg.configured(),
@@ -162,7 +173,8 @@ module.exports = async (req, res) => {
       health: {
         clickIdsCaptured: gclidCount || 0,
         matchedMetricRows: matchedPages || 0,
-        unmatchedUrls: unmatched || []
+        unmatchedUrls: unmatched || [],
+        staleOtherCustomerRows: staleOtherCustomerRows
       }
     });
   } catch (e) {
