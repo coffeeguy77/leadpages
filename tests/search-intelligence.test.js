@@ -818,6 +818,11 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /_siWireHomepageSeo\(\)/);
     assert.match(manage, /si-home-save/);
     assert.match(manage, /_siSaveHomepageSeo/);
+    assert.match(manage, /si-home-long-wrap/);
+    assert.match(manage, /si-home-long-body/);
+    assert.match(manage, /Apply to SEO Text section/);
+    assert.match(manage, /function _siDraftHomepageSeo\s*\(/);
+    assert.match(manage, /wordCount/);
   });
 
   it('hides provider usage from clients and styles partner update-job selects', () => {

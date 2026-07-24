@@ -10546,13 +10546,26 @@ function heroCtaCard(c){
       +'<textarea id="si-home-meta" class="tin" rows="3" maxlength="160" placeholder="One or two sentences that encourage a click from Google…">'+esc(cfg.seoDescription||'')+'</textarea></div>'
       +'<div class="f" style="margin:0 0 10px"><label for="si-home-kw">Primary keyword (optional)</label>'
       +'<input id="si-home-kw" class="tin" type="text" placeholder="e.g. coffee cart canberra" value="'+esc(cfg.primaryKeyword||'')+'"></div>'
-      +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="si-home-ai-long"> Include ~400 words of homepage content hints in the AI draft</label>'
+      +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="si-home-ai-long"> Also draft ~400 words of on-page copy (shown below — not published until you apply it)</label>'
       +'<div class="row" style="gap:8px;flex-wrap:wrap">'
       +'<button type="button" class="btn sm" id="si-home-save">Save homepage SEO</button>'
       +'<button type="button" class="btn ghost sm" id="si-home-ai">AI draft title &amp; meta</button>'
       +'<button type="button" class="btn ghost sm" id="si-home-clear">Clear AI fields only</button>'
       +'</div>'
-      +'<p class="hint" style="margin-top:10px" id="si-home-seo-status">Saved on this site config · used as live &lt;title&gt; / meta description.</p></div>';
+      +'<p class="hint" style="margin-top:10px" id="si-home-seo-status">Saved on this site config · used as live &lt;title&gt; / meta description.</p>'
+      +'<div id="si-home-long-wrap" hidden style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">'
+      +'<h3 style="margin:0 0 6px;font-size:15px">Homepage body draft (~400 words)</h3>'
+      +'<p class="lede" style="margin:0 0 10px">This is on-page copy for searchers — separate from the Google title/meta above. Copy it, or apply into the <strong>SEO Text</strong> marketplace section.</p>'
+      +'<div class="f" style="margin:0 0 8px"><label for="si-home-long-h1">H1</label><input id="si-home-long-h1" class="tin" type="text"></div>'
+      +'<div class="f" style="margin:0 0 8px"><label for="si-home-long-h2">H2</label><input id="si-home-long-h2" class="tin" type="text"></div>'
+      +'<div class="f" style="margin:0 0 8px"><label for="si-home-long-intro">Intro</label><textarea id="si-home-long-intro" class="tin" rows="2"></textarea></div>'
+      +'<div class="f" style="margin:0 0 8px"><label for="si-home-long-body">Supporting copy</label><textarea id="si-home-long-body" class="tin" rows="12"></textarea></div>'
+      +'<div class="f" style="margin:0 0 10px"><label for="si-home-long-faq">FAQ draft</label><textarea id="si-home-long-faq" class="tin" rows="6"></textarea></div>'
+      +'<p class="hint" style="margin:0 0 10px" id="si-home-long-count"></p>'
+      +'<div class="row" style="gap:8px;flex-wrap:wrap">'
+      +'<button type="button" class="btn ghost sm" id="si-home-long-copy">Copy full draft</button>'
+      +'<button type="button" class="btn ghost sm" id="si-home-long-apply">Apply to SEO Text section</button>'
+      +'</div></div></div>';
     var open=((ov&&ov.nextBestActions)||[]).filter(function(a){ return a.status==='open'; }).slice(0,5);
     h+='<div class="card"><h2 style="margin:0 0 8px">Next Best Actions</h2>'
       +'<p class="lede" style="margin:0 0 12px">'+(open.length?'Issues to fix first.':'No open issues — connect GSC when ready.')+'</p>'
@@ -10581,19 +10594,59 @@ function heroCtaCard(c){
   function _siDraftHomepageSeo(biz, kw, longCopy){
     var keyword=String(kw||'').trim()||'local services';
     var name=String(biz||'Your business').trim();
-    var title=(name+' | '+keyword.replace(/\b\w/g,function(c){return c.toUpperCase();})).slice(0,70);
+    var titleCase=keyword.replace(/\b\w/g,function(c){return c.toUpperCase();});
+    var title=(name+' | '+titleCase).slice(0,70);
     var meta=('Need '+keyword+'? '+name+' helps local customers with clear pricing and reliable service. Get a fast quote today.').slice(0,160);
-    var body='';
-    if(longCopy){
-      body='\n\nHomepage content outline (~400 words):\n'
-        +'1) Open with what you offer for "'+keyword+'".\n'
-        +'2) Explain who you help and the areas you cover.\n'
-        +'3) List 3–5 proof points (reviews, licences, response time).\n'
-        +'4) Answer common questions in plain language.\n'
-        +'5) End with a clear call to call or request a quote.\n'
-        +'Use the SEO Text marketplace section to place H1/H2/FAQ blocks on the page.';
-    }
-    return { seoTitle:title, seoDescription:meta, note:body };
+    var out={ seoTitle:title, seoDescription:meta, long:null };
+    if(!longCopy) return out;
+    var h1=titleCase+' with '+name;
+    var h2='Local '+keyword+' you can book with confidence';
+    var intro=name+' provides '+keyword+' for homes, workplaces and events nearby. Tell us what you need and we will confirm availability, pricing and the best next step.';
+    var p1='Looking for '+keyword+'? '+name+' focuses on practical help for local customers who want a clear answer, not a sales script. Whether you are planning ahead or need something sorted soon, we start by understanding the job, the location and the outcome you want.';
+    var p2='Our team keeps '+keyword+' straightforward. You get plain-language advice, realistic timing and a quote path that matches the work — so you can compare options without guessing. If you are comparing providers, ask about response time, inclusions and what happens if the scope changes on the day.';
+    var p3='We cover surrounding suburbs and nearby service areas. If you are outside our usual range, say so early — we will tell you honestly whether we can help or point you in a better direction. Local knowledge matters for parking, access, and getting the job done cleanly.';
+    var p4='People choose '+name+' for '+keyword+' because we communicate clearly, show up prepared, and leave the site tidy. Reviews, licences and proof of past work matter — check our homepage sections for recent jobs and customer feedback before you book.';
+    var p5='Common questions are simple: how soon can you start, what does a typical job cost, and do you cover my suburb? Send a short message with your suburb and what you need. We aim to reply the same day with availability and a clear next step — call or quote request.';
+    var p6='Ready to move forward? Use the quote form on this page, or call us with your suburb and preferred date. '+name+' is here for '+keyword+' done properly — local, reliable and easy to organise.';
+    var content=[p1,p2,p3,p4,p5,p6].join('\n\n');
+    var faqs=[
+      { q:'How quickly can you help with '+keyword+'?', a:'We aim to respond the same day. Share your suburb and timing and we will confirm the soonest available option.' },
+      { q:'Do you cover my suburb for '+keyword+'?', a:'Yes for most nearby areas. Tell us your suburb and we will confirm coverage before you book.' },
+      { q:'How do quotes work?', a:'Describe the job and location. We outline inclusions and next steps so you can decide without pressure.' }
+    ];
+    var faqText=faqs.map(function(f,i){ return (i+1)+') '+f.q+'\n'+f.a; }).join('\n\n');
+    var full=[h1,h2,intro,content,'FAQ:\n'+faqText].join('\n\n');
+    out.long={
+      h1:h1,
+      h2:h2,
+      intro:intro,
+      content:content,
+      faqs:faqs,
+      faqText:faqText,
+      full:full,
+      wordCount:String(full).trim().split(/\s+/).filter(Boolean).length
+    };
+    return out;
+  }
+  function _siApplyHomepageLongToSeoText(longDraft){
+    if(!longDraft||typeof data!=='object'||!data) throw new Error('No site config loaded');
+    if(!data.sections) data.sections={};
+    var cur=data.sections.seoText&&typeof data.sections.seoText==='object'
+      ? JSON.parse(JSON.stringify(data.sections.seoText))
+      : JSON.parse(JSON.stringify((DEFAULT_TRADE_SECTIONS&&DEFAULT_TRADE_SECTIONS.seoText)||{}));
+    cur.on=true;
+    cur.h1=longDraft.h1||cur.h1||'';
+    cur.h2=longDraft.h2||cur.h2||'';
+    cur.intro=longDraft.intro||cur.intro||'';
+    cur.content=longDraft.content||cur.content||'';
+    cur.faq=(longDraft.faqs||[]).map(function(f){ return { on:true, q:f.q||'', a:f.a||'' }; });
+    if(!cur.faq.length) cur.faq=[{on:true,q:'',a:''}];
+    data.sections.seoText=cur;
+    if(!Array.isArray(data.sectionOrder)) data.sectionOrder=[];
+    if(data.sectionOrder.indexOf('seoText')<0) data.sectionOrder.push('seoText');
+    if(typeof persist==='function') persist();
+    if(typeof lpSaveDB==='function') return lpSaveDB();
+    return Promise.resolve();
   }
   function _siWireHomepageSeo(){
     var titleEl=document.getElementById('si-home-title');
@@ -10604,6 +10657,16 @@ function heroCtaCard(c){
     var saveBtn=document.getElementById('si-home-save');
     var aiBtn=document.getElementById('si-home-ai');
     var clearBtn=document.getElementById('si-home-clear');
+    var longWrap=document.getElementById('si-home-long-wrap');
+    var longH1=document.getElementById('si-home-long-h1');
+    var longH2=document.getElementById('si-home-long-h2');
+    var longIntro=document.getElementById('si-home-long-intro');
+    var longBody=document.getElementById('si-home-long-body');
+    var longFaq=document.getElementById('si-home-long-faq');
+    var longCount=document.getElementById('si-home-long-count');
+    var copyBtn=document.getElementById('si-home-long-copy');
+    var applyBtn=document.getElementById('si-home-long-apply');
+    var lastLong=null;
     if(!titleEl&&!metaEl) return;
     function readFields(){
       return {
@@ -10616,6 +10679,36 @@ function heroCtaCard(c){
       if(!statusEl) return;
       statusEl.textContent=msg||'';
       statusEl.style.color=isErr?'var(--danger, #b91c1c)':'';
+    }
+    function fillLong(longDraft){
+      lastLong=longDraft||null;
+      if(!longWrap) return;
+      if(!longDraft){ longWrap.hidden=true; return; }
+      longWrap.hidden=false;
+      if(longH1) longH1.value=longDraft.h1||'';
+      if(longH2) longH2.value=longDraft.h2||'';
+      if(longIntro) longIntro.value=longDraft.intro||'';
+      if(longBody) longBody.value=longDraft.content||'';
+      if(longFaq) longFaq.value=longDraft.faqText||'';
+      if(longCount) longCount.textContent='About '+(longDraft.wordCount||0)+' words · edit before copying or applying.';
+    }
+    function readLongFromForm(){
+      if(!lastLong) lastLong={ faqs:[] };
+      return {
+        h1:longH1?String(longH1.value||'').trim():(lastLong.h1||''),
+        h2:longH2?String(longH2.value||'').trim():(lastLong.h2||''),
+        intro:longIntro?String(longIntro.value||'').trim():(lastLong.intro||''),
+        content:longBody?String(longBody.value||'').trim():(lastLong.content||''),
+        faqs:lastLong.faqs||[],
+        faqText:longFaq?String(longFaq.value||'').trim():(lastLong.faqText||''),
+        full:[
+          longH1&&longH1.value,
+          longH2&&longH2.value,
+          longIntro&&longIntro.value,
+          longBody&&longBody.value,
+          longFaq&&longFaq.value?'FAQ:\n'+longFaq.value:''
+        ].filter(Boolean).join('\n\n')
+      };
     }
     if(saveBtn) saveBtn.onclick=async function(){
       saveBtn.disabled=true;
@@ -10633,16 +10726,61 @@ function heroCtaCard(c){
     };
     if(aiBtn) aiBtn.onclick=function(){
       var fields=readFields();
-      var draft=_siDraftHomepageSeo(currentBusinessName||'', fields.primaryKeyword||fields.seoTitle, !!(longEl&&longEl.checked));
+      var wantLong=!!(longEl&&longEl.checked);
+      var draft=_siDraftHomepageSeo(currentBusinessName||'', fields.primaryKeyword||fields.seoTitle, wantLong);
       if(titleEl) titleEl.value=draft.seoTitle||'';
       if(metaEl) metaEl.value=draft.seoDescription||'';
-      setStatus('Draft filled — review, then Save.'+(draft.note||''));
-      toast('AI draft ready');
+      if(wantLong&&draft.long){
+        fillLong(draft.long);
+        setStatus('Title/meta filled. ~'+draft.long.wordCount+' word body draft is below — copy or apply to SEO Text.');
+        toast('Draft ready — body copy is below');
+      }else{
+        fillLong(null);
+        setStatus('Title/meta filled — review, then Save. Tick the ~400 words box for on-page copy.');
+        toast('AI draft ready');
+      }
     };
     if(clearBtn) clearBtn.onclick=function(){
       if(titleEl) titleEl.value='';
       if(metaEl) metaEl.value='';
+      fillLong(null);
       setStatus('Cleared title & meta in the form (not saved yet).');
+    };
+    if(copyBtn) copyBtn.onclick=async function(){
+      var draft=readLongFromForm();
+      if(!draft.full){ toast('Nothing to copy yet — run AI draft with the ~400 words box ticked'); return; }
+      try{
+        if(navigator.clipboard&&navigator.clipboard.writeText) await navigator.clipboard.writeText(draft.full);
+        else {
+          var ta=document.createElement('textarea'); ta.value=draft.full; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        }
+        toast('Homepage draft copied');
+      }catch(e){ toast('Clipboard unavailable'); }
+    };
+    if(applyBtn) applyBtn.onclick=async function(){
+      var draft=readLongFromForm();
+      if(!draft.content&&!draft.h1){ toast('Nothing to apply — run AI draft with the ~400 words box ticked'); return; }
+      // Re-parse FAQ textarea into Q/A pairs when possible
+      if(draft.faqText){
+        var blocks=String(draft.faqText).split(/\n\s*\n/).map(function(b){return b.trim();}).filter(Boolean);
+        var parsed=[];
+        blocks.forEach(function(b){
+          var lines=b.split('\n').map(function(l){return l.replace(/^\d+\)\s*/,'').trim();}).filter(Boolean);
+          if(lines.length>=2) parsed.push({ q:lines[0], a:lines.slice(1).join(' ') });
+        });
+        if(parsed.length) draft.faqs=parsed;
+      }
+      applyBtn.disabled=true;
+      try{
+        await _siApplyHomepageLongToSeoText(draft);
+        setStatus('Applied to SEO Text section (enabled on the page). Open Page editor → SEO Text to refine.');
+        toast('Applied to SEO Text');
+      }catch(e){
+        setStatus(String((e&&e.message)||e), true);
+        toast('Could not apply to SEO Text');
+      }finally{
+        applyBtn.disabled=false;
+      }
     };
   }
   function _siPagesHTML(ov){
