@@ -11784,6 +11784,38 @@ function heroCtaCard(c){
     var pageSel=document.getElementById('gads-plan-page');
     if(pageSel&&pageSel.value) _gadsSavedPageId=String(pageSel.value);
   }
+  function _gadsGoLiveHelp(flags, kind){
+    var f=flags||{};
+    var mut=!!f.GOOGLE_ADS_CAMPAIGN_MUTATIONS;
+    var status=!!f.GOOGLE_ADS_STATUS_MUTATIONS;
+    var pub=!!f.GOOGLE_ADS_CAMPAIGN_PUBLISH;
+    var lines=[
+      'How campaigns go live (safety-gated):',
+      '',
+      '1) Create as PAUSED — needs GOOGLE_ADS_CAMPAIGN_MUTATIONS=1  ['+(mut?'ON':'OFF')+']',
+      '2) Tracking readiness — Advertising → Tracking readiness → all critical checks pass',
+      '3) Resume (start spend) — needs BOTH:',
+      '   · GOOGLE_ADS_STATUS_MUTATIONS=1  ['+(status?'ON':'OFF')+']',
+      '   · GOOGLE_ADS_CAMPAIGN_PUBLISH=1   ['+(pub?'ON':'OFF')+']',
+      '   Then Mapped campaigns → Resume (confirms spend).',
+      '',
+      'Set these on Vercel for the LeadPages project, redeploy, then refresh this page.',
+      'Creates are always PAUSED first — nothing spends until you Resume with publish on.'
+    ];
+    if(kind==='create_blocked'){
+      lines.unshift('Create is locked: mutations are OFF.');
+      lines.unshift('');
+    }
+    if(kind==='created'){
+      lines.unshift('Campaign created as PAUSED in Google Ads.');
+      lines.unshift('');
+    }
+    if(kind==='resume_blocked'){
+      lines.unshift('Resume / go-live is locked until status + publish flags are ON.');
+      lines.unshift('');
+    }
+    window.alert(lines.join('\n'));
+  }
   function _gadsSyncKeywordApprovals(plan){
     var p=plan&&(plan.draftPlan||plan);
     if(!p||!p.adGroups) return p;
@@ -11851,10 +11883,11 @@ function heroCtaCard(c){
       +'<p class="lede">Plan a Search campaign from this site. Creates are always <strong>PAUSED</strong>. Tick keywords to include, set a daily budget, then create.</p>'
       +'<p class="hint">Flags: builder '+(flags.GOOGLE_ADS_CAMPAIGN_BUILDER?'on':'off')
       +' · create campaigns '+(flags.GOOGLE_ADS_CAMPAIGN_MUTATIONS?'on':'off')
-      +' · publish '+(flags.GOOGLE_ADS_CAMPAIGN_PUBLISH?'on':'off')
+      +' · publish (go live) '+(flags.GOOGLE_ADS_CAMPAIGN_PUBLISH?'on':'off')
       +' · edit live budgets '+(flags.GOOGLE_ADS_BUDGET_MUTATIONS?'on':'off')
       +' · pause/resume '+(flags.GOOGLE_ADS_STATUS_MUTATIONS?'on':'off')
-      +'<br><span style="opacity:.85">“Edit live budgets” is separate from the daily budget field below (that field is always used when creating a paused campaign).</span></p>'
+      +' · <button type="button" class="btn ghost sm" id="gads-golive-help" style="margin-left:4px">How to go live</button></p>'
+      +'<p class="hint" style="opacity:.9">Create is always <strong>PAUSED</strong>. Going live = Resume after readiness, with <code>GOOGLE_ADS_CAMPAIGN_PUBLISH=1</code> and <code>GOOGLE_ADS_STATUS_MUTATIONS=1</code>. The “edit live budgets” flag is separate from the daily budget field below.</p>'
       +'<div class="f" style="margin:10px 0"><label>Landing page <button type="button" class="btn ghost sm" id="gads-refresh-pages" style="margin-left:8px">Refresh list</button></label>'
       +'<select id="gads-plan-page" class="tin">'
       +pages.map(function(p){
@@ -11893,6 +11926,8 @@ function heroCtaCard(c){
     if(pageSelEl) pageSelEl.addEventListener('change',function(){ _gadsSavedPageId=String(pageSelEl.value||''); });
     var refPages=document.getElementById('gads-refresh-pages');
     if(refPages) refPages.onclick=function(){ _gadsRememberBuilderFields(); _gadsPaintBuilder('builder'); toast('Landing page list refreshed'); };
+    var goLiveHelp=document.getElementById('gads-golive-help');
+    if(goLiveHelp) goLiveHelp.onclick=function(){ _gadsGoLiveHelp(flags); };
 
     function showPlan(plan){
       _gadsBuilderPlan=plan;
@@ -11939,8 +11974,9 @@ function heroCtaCard(c){
         +((p.warnings&&p.warnings.length)?'<p class="hint" style="color:#b45309">'+esc(p.warnings.join(' · '))+'</p>':'')
         +(mutOn
           ?'<button type="button" class="btn sm" id="gads-create-paused" style="margin-top:10px">Create campaign as PAUSED</button>'
-          :'<p class="hint" style="margin-top:10px">Create is locked until <code>GOOGLE_ADS_CAMPAIGN_MUTATIONS=1</code> is set (flag “create campaigns” above). You can still plan and tick keywords.</p>'
-            +'<button type="button" class="btn sm" id="gads-create-paused" style="margin-top:8px" disabled title="Mutations flag off">Create campaign as PAUSED</button>');
+            +'<p class="hint" style="margin-top:8px">After create: run <strong>Tracking readiness</strong>, then <strong>Resume</strong> under Mapped campaigns (needs publish + pause/resume flags ON).</p>'
+          :'<p class="hint" style="margin-top:10px">Create needs <code>GOOGLE_ADS_CAMPAIGN_MUTATIONS=1</code> on Vercel (flag “create campaigns” above). Press the button for the full go-live checklist.</p>'
+            +'<button type="button" class="btn sm" id="gads-create-paused" style="margin-top:8px">Create campaign as PAUSED</button>');
       function refreshKwCount(){
         var n=document.querySelectorAll('#gads-plan-out .gads-kw-use:checked').length;
         var el=document.getElementById('gads-kw-count');
@@ -11960,7 +11996,11 @@ function heroCtaCard(c){
         refreshKwCount();
       };
       var cre=document.getElementById('gads-create-paused');
-      if(cre&&mutOn) cre.onclick=async function(){
+      if(cre) cre.onclick=async function(){
+        if(!mutOn){
+          _gadsGoLiveHelp(flags,'create_blocked');
+          return;
+        }
         _gadsRememberBuilderFields();
         var bEl=document.getElementById('gads-plan-budget');
         var budget=bEl?Number(bEl.value):NaN;
@@ -11969,14 +12009,21 @@ function heroCtaCard(c){
         var draft=plan.draftPlan||plan;
         var approved=((draft.adGroups&&draft.adGroups[0]&&draft.adGroups[0].keywords)||[]).filter(function(k){ return k&&k.approved!==false; });
         if(!approved.length){ toast('Select at least one keyword (Use column)'); return; }
+        if(!confirm('Create this Search campaign in Google Ads as PAUSED?\n\nDaily budget: $'+budget+'/day\nKeywords: '+approved.length+'\n\nNothing will spend until you Resume later (after tracking readiness + publish flags).')) return;
         draft.budgetDaily=budget;
         draft.budgetNote=null;
         cre.disabled=true; cre.textContent='Creating…';
         try{
           var rr=await _gadsBuilderPost('create_paused',{plan:draft,idempotencyKey:'ui_'+currentSiteId+'_'+Date.now()});
           toast((rr.result&&rr.result.message)||'Created paused');
+          _gadsGoLiveHelp(flags,'created');
           _gadsPaint();
-        }catch(e){ toast(String(e.message||e),'warn'); cre.disabled=false; cre.textContent='Create campaign as PAUSED'; }
+        }catch(e){
+          var msg=String(e.message||e);
+          if(/mutations_disabled|CAMPAIGN_MUTATIONS/i.test(msg)) _gadsGoLiveHelp(flags,'create_blocked');
+          else toast(msg,'warn');
+          cre.disabled=false; cre.textContent='Create campaign as PAUSED';
+        }
       };
     }
     async function runPlan(action){
@@ -12001,13 +12048,27 @@ function heroCtaCard(c){
     document.querySelectorAll('.gads-pause').forEach(function(btn){
       btn.onclick=async function(){
         if(!confirm('Pause this campaign? It will stop spending.')) return;
-        try{ await _gadsBuilderPost('pause',{campaignId:btn.getAttribute('data-id'),confirmExternal:true}); toast('Pause requested'); _gadsPaint(); }catch(e){ toast(String(e.message||e),'warn'); }
+        try{ await _gadsBuilderPost('pause',{campaignId:btn.getAttribute('data-id'),confirmExternal:true}); toast('Pause requested'); _gadsPaint(); }
+        catch(e){
+          var m=String(e.message||e);
+          if(/status_mutations|STATUS_MUTATIONS/i.test(m)) _gadsGoLiveHelp(flags,'resume_blocked');
+          else toast(m,'warn');
+        }
       };
     });
     document.querySelectorAll('.gads-resume').forEach(function(btn){
       btn.onclick=async function(){
-        if(!confirm('Resume this campaign? Spend may start immediately.')) return;
-        try{ await _gadsBuilderPost('resume',{campaignId:btn.getAttribute('data-id'),confirmResume:true,confirmExternal:true}); toast('Resume requested'); _gadsPaint(); }catch(e){ toast(String(e.message||e),'warn'); }
+        if(!flags.GOOGLE_ADS_CAMPAIGN_PUBLISH || !flags.GOOGLE_ADS_STATUS_MUTATIONS){
+          _gadsGoLiveHelp(flags,'resume_blocked');
+          return;
+        }
+        if(!confirm('Resume this campaign and allow spend?\n\nOnly continue after Tracking readiness passes and you accept the daily budget.')) return;
+        try{ await _gadsBuilderPost('resume',{campaignId:btn.getAttribute('data-id'),confirmResume:true,confirmExternal:true}); toast('Campaign ENABLED — spend may start'); _gadsPaint(); }
+        catch(e){
+          var m=String(e.message||e);
+          if(/publish_disabled|status_mutations|CAMPAIGN_PUBLISH|STATUS_MUTATIONS/i.test(m)) _gadsGoLiveHelp(flags,'resume_blocked');
+          else toast(m,'warn');
+        }
       };
     });
     if(_gadsBuilderPlan){

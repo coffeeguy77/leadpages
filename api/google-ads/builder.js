@@ -250,7 +250,8 @@ module.exports = async (req, res) => {
       if (!campaignMutationsEnabled()) {
         return http.json(res, 403, {
           error: 'mutations_disabled',
-          message: 'Set GOOGLE_ADS_CAMPAIGN_MUTATIONS=1 to create paused campaigns.',
+          message:
+            'Create is locked. On Vercel set GOOGLE_ADS_CAMPAIGN_MUTATIONS=1, redeploy, then create as PAUSED. To go live later also set GOOGLE_ADS_STATUS_MUTATIONS=1 and GOOGLE_ADS_CAMPAIGN_PUBLISH=1, run Tracking readiness, then Resume.',
           flags: flagSnapshot()
         });
       }
