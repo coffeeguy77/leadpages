@@ -91,6 +91,7 @@ module.exports = async (req, res) => {
             hasMeta: !!(p && (p.meta || p.metaDescription))
           };
         }),
+        dataforseoConfigured: require('../../lib/search-intelligence/providers/dataforseo').configured(),
         note: 'Google Ads reporting may be delayed. Campaign creates are always PAUSED. Pick a landing page first — we analyse fit before you spend.'
       });
     }
@@ -607,6 +608,34 @@ module.exports = async (req, res) => {
       return http.json(res, 200, { ok: true, action, plan });
     }
 
+    if (action === 'fetch_keyword_metrics') {
+      const ctx = await requireSite(req, res, { body, capability: 'draft', requireBuilder: true });
+      if (!ctx) return;
+      const { db, siteId } = ctx;
+      let plan = body.plan || null;
+      if (plan && plan.draftPlan) plan = plan.draftPlan;
+      if (!plan || !plan.adGroups) {
+        return http.json(res, 400, {
+          error: 'plan_required',
+          message: 'Build a plan first, then fetch Vol/CPC for its keywords.'
+        });
+      }
+      plan = await enrichPlanWithKeywordMetrics(db, siteId, plan, {
+        location: body.location || plan.geoFocus,
+        seed: body.keywordSeed || body.seed || undefined,
+        skipMarket: false
+      });
+      const km = plan.keywordMetrics || {};
+      return http.json(res, 200, {
+        ok: true,
+        action,
+        plan,
+        keywordMetrics: km,
+        dataforseoConfigured: !!km.configured,
+        message: km.note
+      });
+    }
+
     return http.json(res, 400, {
       error: 'unknown_action',
       actions: [
@@ -624,7 +653,8 @@ module.exports = async (req, res) => {
         'analyze_page',
         'suggest_rsa',
         'apply_page_fixes',
-        'update_plan'
+        'update_plan',
+        'fetch_keyword_metrics'
       ]
     });
   } catch (e) {

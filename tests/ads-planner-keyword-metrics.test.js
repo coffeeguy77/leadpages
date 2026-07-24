@@ -31,11 +31,12 @@ assert.deepEqual(collectKeywordTexts(plan), [
 ]);
 
 // No live market → do not invent; note explains gap
-applyKeywordMetrics(plan, { liveMarket: false, measured: {}, ideas: [] });
+applyKeywordMetrics(plan, { liveMarket: false, configured: false, measured: {}, ideas: [] });
 assert.equal(plan.adGroups[0].keywords[0].volume, null);
 assert.equal(plan.adGroups[0].keywords[0].cpc, null);
-assert.match(plan.metricsNote, /never invented/i);
+assert.match(plan.metricsNote, /DATAFORSEO_LOGIN/i);
 assert.equal(plan.keywordMetrics.liveMarket, false);
+assert.equal(plan.keywordMetrics.configured, false);
 
 // Measured Ads CPC wins for CPC; market fills volume
 applyKeywordMetrics(plan, {
@@ -78,7 +79,19 @@ assert.equal(k1.cpc, 2.8);
 assert.equal(k1.cpcSource, 'dataforseo');
 
 assert.match(plan.metricsNote, /measured Ads CPC/i);
-assert.match(plan.metricsNote, /dataforseo/i);
+assert.match(plan.metricsNote, /DataForSEO/i);
+
+// Configured but provider error surfaces actionable note
+const planErr = {
+  adGroups: [{ keywords: [{ keyword: 'coffee van hire canberra' }] }]
+};
+applyKeywordMetrics(planErr, {
+  liveMarket: false,
+  configured: true,
+  marketError: 'Payment Required',
+  ideas: []
+});
+assert.match(planErr.metricsNote, /DataForSEO error/i);
 
 // Mock ideas must not apply when liveMarket false even if ideas present
 const plan2 = {

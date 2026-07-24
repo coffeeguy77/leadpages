@@ -75,8 +75,11 @@ Plan keywords are enriched after draft generation via `lib/google-ads/keyword-me
 
 | Source | When | Fields |
 |--------|------|--------|
-| DataForSEO (SI gateway) | `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` set | estimated volume, CPC, competition |
+| DataForSEO Google Ads **search_volume** (exact keywords) | `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` | monthly volume, CPC (USD), competition |
+| DataForSEO keyword ideas (fallback soft-match) | same | related terms if search_volume fails |
 | `ads_keyword_daily` | Ads sync has keyword_view rows | measured CPC = cost÷clicks |
+
+Builder action `fetch_keyword_metrics` re-runs enrichment for the current plan. UI shows **Fetch Vol / CPC now** when columns are empty.
 
 Mock/demo SI data is **not** attached to Ads plans. If neither source is available, the plan note says volume/CPC are unavailable — figures stay blank.
 
