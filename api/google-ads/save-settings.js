@@ -86,8 +86,31 @@ module.exports = async (req, res) => {
       patch.tag_id = normalizeAdsTagId(body.tagId) || null;
     }
 
+    if (body.confirmAdsGa4Link === true) {
+      patch.ads_ga4_link_confirmed_at = new Date().toISOString();
+      // confirmed_by is best-effort; auth user id available via JWT decode is not here — leave null or set if header user known
+    }
+    if (body.clearAdsGa4LinkConfirm === true) {
+      patch.ads_ga4_link_confirmed_at = null;
+      patch.ads_ga4_link_confirmed_by = null;
+    }
+    // Switching Ads customer invalidates the previous GA4 link acknowledgement.
+    if (previousCustomerToClear) {
+      patch.ads_ga4_link_confirmed_at = null;
+      patch.ads_ga4_link_confirmed_by = null;
+    }
+
     const { error } = await admin.from('google_ads_connections').update(patch).eq('site_id', siteId);
-    if (error) return json(500, { error: error.message });
+    if (error) {
+      // Column may not exist until db/google_ads_ga4_link_confirm.sql is applied.
+      if (/ads_ga4_link_confirmed/i.test(String(error.message || '')) && (body.confirmAdsGa4Link || body.clearAdsGa4LinkConfirm)) {
+        return json(500, {
+          error: 'schema_pending',
+          message: 'Run db/google_ads_ga4_link_confirm.sql in Supabase, then try again.'
+        });
+      }
+      return json(500, { error: error.message });
+    }
 
     if (previousCustomerToClear || body.clearUnmatched === true) {
       try {
@@ -168,6 +191,8 @@ function publicConn(c) {
     conversionActions: c.conversion_actions,
     tagId: c.tag_id,
     tagActive: !!c.tag_id,
+    adsGa4LinkConfirmed: !!c.ads_ga4_link_confirmed_at,
+    adsGa4LinkConfirmedAt: c.ads_ga4_link_confirmed_at || null,
     enabled: c.enabled,
     lastSyncAt: c.last_sync_at,
     lastSyncError: c.last_sync_error,

@@ -60,6 +60,8 @@ create table if not exists public.google_ads_connections (
     "cta_click":"secondary"
   }'::jsonb,
   tag_id                  text,                   -- AW-XXXXXXXX
+  ads_ga4_link_confirmed_at timestamptz,          -- user confirmed Ads↔GA4 link in Google UI
+  ads_ga4_link_confirmed_by uuid,
   connection_status       text not null default 'connected', -- connected | disconnected | error
   disconnected_at         timestamptz,
   enabled                 boolean not null default true,
