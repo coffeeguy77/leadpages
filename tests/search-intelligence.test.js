@@ -138,7 +138,7 @@ describe('Search Intelligence stubs', () => {
     assert.equal(drops, 1);
   });
 
-  it('semrush preference remaps away — Semrush permanently out of scope', async () => {
+  it('unknown market-provider preference remaps to DataForSEO or mock', async () => {
     const gw = createGateway({ provider: 'semrush' });
     assert.equal(gw.adapters.includes('semrush'), false);
     assert.ok(gw.adapters.includes('dataforseo'));
@@ -1030,12 +1030,28 @@ describe('Search Intelligence stubs', () => {
     assert.ok(out.findings.some((f) => f.code === 'crm_area_no_wins' && /Belconnen/.test(f.title)));
   });
 
-  it('analyses multi-platform AI citations without Semrush', async () => {
-    const { analyseAiCitations, PLATFORM_CATALOGUE } = require('../lib/search-intelligence/ai-citations');
+  it('analyses multi-platform AI citations with ChatGPT/Perplexity catalogue', async () => {
+    const { analyseAiCitations, platformCatalogue } = require('../lib/search-intelligence/ai-citations');
     const { probeAiVisibility } = require('../lib/search-intelligence/phase4-foundations');
-    assert.ok(PLATFORM_CATALOGUE.some((p) => p.id === 'google_ai_overview' && p.status === 'live'));
-    assert.ok(PLATFORM_CATALOGUE.some((p) => p.id === 'chatgpt_answers' && p.status === 'unavailable'));
-    assert.ok(PLATFORM_CATALOGUE.some((p) => p.id === 'perplexity' && p.status === 'unavailable'));
+    const {
+      openaiConfigured,
+      perplexityConfigured,
+      probeChatGptAnswers,
+      probePerplexity
+    } = require('../lib/search-intelligence/ai-answer-probes');
+    const cat = platformCatalogue();
+    assert.ok(cat.some((p) => p.id === 'google_ai_overview' && p.status === 'live'));
+    assert.ok(cat.some((p) => p.id === 'chatgpt_answers'));
+    assert.ok(cat.some((p) => p.id === 'perplexity'));
+    assert.equal(
+      cat.find((p) => p.id === 'chatgpt_answers').status,
+      openaiConfigured() ? 'live' : 'unavailable'
+    );
+    assert.equal(
+      cat.find((p) => p.id === 'perplexity').status,
+      perplexityConfigured() ? 'live' : 'unavailable'
+    );
+
     const site = {
       business_name: 'Example Plumber',
       custom_domain: 'example-plumber.com.au',
@@ -1062,18 +1078,80 @@ describe('Search Intelligence stubs', () => {
     });
     assert.equal(rivalOnly.state, 'ai_overview_competitor_risk');
 
-    const probe = await probeAiVisibility(site, { provider: 'mock', forceAi: true });
+    const probe = await probeAiVisibility(site, { provider: 'mock', forceAi: true, skipAnswerProbes: true });
     assert.equal(probe.available, true);
     assert.ok(Array.isArray(probe.citations));
     assert.ok(Array.isArray(probe.platforms));
-    assert.match(probe.note || '', /never Semrush/i);
+    assert.match(probe.note || '', /Google AI Overviews/i);
+    assert.doesNotMatch(probe.note || '', /Semrush/i);
+
+    // Mocked OpenAI / Perplexity HTTP responses
+    async function fakeFetch(url) {
+      const u = String(url);
+      if (u.indexOf('api.openai.com') >= 0) {
+        return {
+          ok: true,
+          json: async function () {
+            return {
+              choices: [
+                {
+                  message: {
+                    content:
+                      'Try Example Plumber at https://example-plumber.com.au/ for local help.'
+                  }
+                }
+              ]
+            };
+          }
+        };
+      }
+      if (u.indexOf('perplexity.ai') >= 0) {
+        return {
+          ok: true,
+          json: async function () {
+            return {
+              choices: [{ message: { content: 'Example Plumber is a solid local option.' } }],
+              citations: ['https://example-plumber.com.au/services']
+            };
+          }
+        };
+      }
+      return { ok: false, json: async function () { return {}; } };
+    }
+    const prevO = process.env.OPENAI_API_KEY;
+    const prevP = process.env.PERPLEXITY_API_KEY;
+    process.env.OPENAI_API_KEY = 'sk-test';
+    process.env.PERPLEXITY_API_KEY = 'pplx-test';
+    try {
+      const chat = await probeChatGptAnswers(site, {
+        keyword: 'plumber canberra',
+        fetchImpl: fakeFetch
+      });
+      assert.equal(chat.available, true);
+      assert.equal(chat.cited, true);
+      const pplx = await probePerplexity(site, {
+        keyword: 'plumber canberra',
+        fetchImpl: fakeFetch
+      });
+      assert.equal(pplx.available, true);
+      assert.equal(pplx.cited, true);
+      assert.equal(platformCatalogue().find((p) => p.id === 'chatgpt_answers').status, 'live');
+      assert.equal(platformCatalogue().find((p) => p.id === 'perplexity').status, 'live');
+    } finally {
+      if (prevO == null) delete process.env.OPENAI_API_KEY;
+      else process.env.OPENAI_API_KEY = prevO;
+      if (prevP == null) delete process.env.PERPLEXITY_API_KEY;
+      else process.env.PERPLEXITY_API_KEY = prevP;
+    }
 
     const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
     assert.match(manage, /CRM multi-location outcomes/);
     assert.match(manage, /AI citations/);
+    assert.doesNotMatch(manage, /Semrush/i);
     assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/providers/semrush.js')), false);
     assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/crm-outcomes.js')), true);
     assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/ai-citations.js')), true);
+    assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/ai-answer-probes.js')), true);
   });
 
   it('overview payload still builds when CRM outcomes are empty or partial', async () => {

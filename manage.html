@@ -10897,12 +10897,13 @@ function heroCtaCard(c){
         +'<div><strong>Ads only</strong><ul style="margin:6px 0 0;padding-left:18px">'+(adsOnly||'<li class="hint">—</li>')+'</ul></div>'
         +'</div></div>'
         +'<div class="card" style="margin-top:16px"><h2 style="margin:0 0 8px">Authority &amp; AI</h2>'
-        +'<p class="lede" style="margin:0 0 10px">Backlink gap and AI/brand SERP probes use DataForSEO (or mock). Never Semrush.</p>'
+        +'<p class="lede" style="margin:0 0 10px">Backlink gap and AI/brand checks use DataForSEO (or demo data). ChatGPT and Perplexity run when their API keys are set.</p>'
         +'<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:10px">'
         +(j.aiPlatforms||[]).map(function(p){
-          return '<span class="hint" style="border:1px solid var(--line);border-radius:8px;padding:4px 8px">'+esc(p.label)+' · '+esc(p.status)+'</span>';
+          return '<span class="hint" style="border:1px solid var(--line);border-radius:8px;padding:4px 8px" title="'+esc(p.note||'')+'">'+esc(p.label)+' · '+esc(p.status)+'</span>';
         }).join('')
         +'</div>'
+        +'<p class="hint" style="margin:0 0 10px">Statuses update from your env keys: OPENAI_API_KEY (or OPEN_AI_KEY) and PERPLEXITY_API_KEY. Press AI citations to probe live answers.</p>'
         +'<div class="row" style="gap:8px;flex-wrap:wrap">'
         +'<button type="button" class="btn sm" id="si-auth-backlinks">Backlink gap</button>'
         +'<button type="button" class="btn sm ghost" id="si-auth-brand">Brand SERP</button>'
@@ -10932,10 +10933,14 @@ function heroCtaCard(c){
             var cites=(res.citations||[]).slice(0,8).map(function(c){
               return '<li>'+esc(c.domain||c.url||'—')+(c.owned?' <strong>(yours)</strong>':'')+'</li>';
             }).join('');
+            var plats=(res.platforms||[]).map(function(p){
+              return '<span class="hint" style="border:1px solid var(--line);border-radius:8px;padding:4px 8px;margin:0 6px 6px 0;display:inline-block">'+esc(p.label)+' · '+esc(p.status)+(p.cited?' · cited':(p.brandMentioned?' · mentioned':''))+'</span>';
+            }).join('');
             out.innerHTML='State: <strong>'+esc(res.state||'—')+'</strong>'
               +(res.keyword?' · '+esc(res.keyword):'')
               +' · owned citations '+esc(res.citedOwnedCount||0)+' / competitors '+esc(res.citedCompetitorCount||0)
               +(cites?'<ul style="margin:8px 0 0;padding-left:18px">'+cites+'</ul>':'')
+              +(plats?'<div style="margin-top:10px">'+plats+'</div>':'')
               +((res.findings&&res.findings[0])?'<div class="lede" style="margin-top:8px">'+esc(res.findings[0].plainLanguage)+'</div>':'')
               +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+'</p>';
           } else {
@@ -11243,7 +11248,7 @@ function heroCtaCard(c){
       +row('ga4','Google Analytics 4')
       +row('gbp','Google Business Profile')
       +row('google_ads','Google Ads (Advertising tab)')
-      +'<p class="hint" style="margin-top:14px">Verification meta / DNS remains under Settings → Search &amp; indexing. Market SERP stays DataForSEO-only (no Semrush).</p></div>';
+      +'<p class="hint" style="margin-top:14px">Verification meta / DNS remains under Settings → Search &amp; indexing. Market SERP uses DataForSEO when configured.</p></div>';
   }
   function _siActionsList(items){
     if(!items||!items.length) return '<p class="hint">No actions yet.</p>';
@@ -11318,6 +11323,13 @@ function heroCtaCard(c){
         var act=b.getAttribute('data-si-act');
         var sec=b.getAttribute('data-si-section')||'seoTokens';
         if(act==='open_editor_seo'){
+          if(sec==='seoHome'){
+            _siTab='home';
+            document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-si-tab')==='home'); });
+            _siPaint();
+            setTimeout(function(){ var el=document.getElementById('si-home-title'); if(el&&el.focus) el.focus(); },200);
+            return;
+          }
           if(typeof window.lpOpenEditorSection==='function') window.lpOpenEditorSection('details',sec);
           else showView('details');
           return;
