@@ -123,18 +123,21 @@ module.exports = async (req, res) => {
 
     if (view === 'landing_pages') {
       const pages = Array.isArray(site.config && site.config.pages) ? site.config.pages : [];
+      const pageIds = new Set(pages.filter((p) => p && p.id).map((p) => String(p.id)));
       const metrics = await loadSiteMetrics(siteId, sinceDay, customerId);
 
       const byPage = new Map();
-      // Seed published pages
+      // Seed current published pages only (deleted / draft pages must not linger as empty rows).
       pages.forEach((p) => {
         if (!p || !p.id) return;
+        if (p.status === 'draft' || (p.status && p.status !== 'published' && p.published !== true)) return;
+        if (!p.status && p.published !== true) return;
         byPage.set(p.id, {
           pageId: p.id,
           title: p.title || p.slug || p.id,
           slug: p.slug || '',
           url: '/' + (p.slug || ''),
-          status: p.status || 'draft',
+          status: 'published',
           spend: 0, adClicks: 0, impressions: 0,
           visitors: 0, callClicks: 0, forms: 0,
           sessions: new Set()
@@ -156,12 +159,15 @@ module.exports = async (req, res) => {
           } else key = '__main__';
         }
         if (!byPage.has(key)) {
+          const orphaned = key !== '__main__' && !pageIds.has(String(key));
           byPage.set(key, {
             pageId: key === '__main__' ? null : key,
-            title: m.final_url || key,
+            title: orphaned
+              ? ('Removed page · ' + (m.final_url || key))
+              : (m.final_url || key),
             slug: '',
             url: m.final_url || '',
-            status: 'unknown',
+            status: orphaned ? 'removed' : 'unknown',
             spend: 0, adClicks: 0, impressions: 0, visitors: 0, callClicks: 0, forms: 0, sessions: new Set()
           });
         }
