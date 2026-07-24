@@ -138,6 +138,7 @@ Short summary of every engineering document in `docs/`.
 | [06-DOMAINS](06-DOMAINS.md) | Domain System | Dreamscape integration, purchase flow, DNS, `custom_domain` routing, `manage-domains.html`. |
 | [07-TRACKING](07-TRACKING.md) | Tracking & Analytics | `trackEvent`, `events` table, `/api/stats`, dashboard `ANA` object, analytics UI in editor. |
 | [features/Google Ads](features/Google%20Ads.md) | Google Ads (v1) | OAuth connect, session attribution (gclid/UTMs), conversion upload, Advertising dashboard, metrics sync. |
+| [features/Ads Campaign Builder](features/Ads%20Campaign%20Builder.md) | Ads Smart Campaign Builder | Flag-gated plan → paused create, readiness, GTM inspect; extends Ads without replacing sync/conversions. |
 | [features/LeadPages Brain](features/LeadPages%20Brain.md) | LeadPages Brain | AI gateway Phases 1–7; Control Centre; landing-draft migration. Canonical status: [AI/00-STATUS](AI/00-STATUS.md). |
 | [AI/README](AI/README.md) | LeadPages Brain | Provider-agnostic AI gateway — Phases 1–7 in `lib/brain` + Control Centre + landing-draft migration. |
 | [08-SEO](08-SEO.md) | SEO System (publish) | Suburb App Router pages, `lib/seo/*`, landing pages, `seoTokens`, sitemap, routing collision notes. |
@@ -186,6 +187,7 @@ Short summary of every engineering document in `docs/`.
 | **Lead forms / CRM** | [09-CRM](09-CRM.md) | [07-TRACKING](07-TRACKING.md) | `api/leads.js`, templates |
 | **Analytics / events** | [07-TRACKING](07-TRACKING.md) | [10-EDITOR](10-EDITOR.md) § Analytics | `api/events.js`, `api/stats.js` |
 | **Google Ads / Advertising** | [features/Google Ads](features/Google%20Ads.md) | [07-TRACKING](07-TRACKING.md), [features/Pages](features/Pages.md) | `api/google-ads/*`, `lib/google-ads/*`, `assets/lp-attribution.js` |
+| **Ads Campaign Builder** | [features/Ads Campaign Builder](features/Ads%20Campaign%20Builder.md) | [features/Google Ads](features/Google%20Ads.md), [07-TRACKING](07-TRACKING.md) | `api/google-ads/builder.js`, `db/ads_campaign_builder_schema.sql`, `lib/gtm/*` |
 | **Mailer / campaigns** | [09-CRM](09-CRM.md) | [02-DATABASE](02-DATABASE.md) | `api/send-campaign.js`, `manage.html` |
 | **SEO / suburb pages** | [08-SEO](08-SEO.md) | [03-TEMPLATE-SYSTEM](03-TEMPLATE-SYSTEM.md) | `lib/seo/*`, `app/[site]/[suburb]` |
 | **Search Intelligence / SEO Command Centre** | [search-intelligence/00-VISION](search-intelligence/00-VISION.md) | [search-intelligence/01-ARCHITECTURE](search-intelligence/01-ARCHITECTURE.md), [search-intelligence/08-ROADMAP](search-intelligence/08-ROADMAP.md) | `lib/search-intelligence/*`, `db/search_intelligence_schema.sql` (draft) |

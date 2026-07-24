@@ -1,6 +1,8 @@
 // Cron: sync Google Ads metrics into ads_metrics_daily
 const { createClient } = require('@supabase/supabase-js');
 const { syncAllConnected, daysAgo } = require('../../lib/google-ads/sync');
+const { syncCampaignMaps } = require('../../lib/google-ads/campaign-sync');
+const { campaignBuilderEnabled } = require('../../lib/google-ads/flags');
 const cfg = require('../../lib/google-ads/config');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -29,7 +31,33 @@ module.exports = async (req, res) => {
       fromDay: daysAgo(days),
       toDay: daysAgo(0)
     });
-    return json(200, { ok: true, days, results });
+
+    let campaignMapResults = null;
+    if (campaignBuilderEnabled()) {
+      const { data: conns } = await admin
+        .from('google_ads_connections')
+        .select('*')
+        .eq('connection_status', 'connected')
+        .not('customer_id', 'is', null)
+        .limit(50);
+      campaignMapResults = [];
+      for (const conn of conns || []) {
+        try {
+          campaignMapResults.push({
+            siteId: conn.site_id,
+            ...(await syncCampaignMaps(admin, conn))
+          });
+        } catch (e) {
+          campaignMapResults.push({
+            siteId: conn.site_id,
+            ok: false,
+            error: (e && e.message) || 'map_sync_failed'
+          });
+        }
+      }
+    }
+
+    return json(200, { ok: true, days, results, campaignMapResults });
   } catch (e) {
     console.error('sync-google-ads cron:', e && e.message);
     return json(500, { error: (e && e.message) || 'cron_failed' });

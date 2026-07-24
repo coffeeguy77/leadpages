@@ -770,6 +770,9 @@ function injectAttribution(html, cfg) {
   if (!html || html.includes('lp-attribution.js')) return html;
   const { resolveGaMeasurementId, resolveAdsTagId, buildGtagHeadSnippet } = require('../lib/analytics-tags');
   let block = '<script src="/assets/lp-attribution.js"></script>\n';
+  if (!html.includes('lp-events.js')) {
+    block += '<script src="/assets/lp-events.js"></script>\n';
+  }
   const ids = [];
   const ga = resolveGaMeasurementId(cfg);
   const aw = resolveAdsTagId(cfg);

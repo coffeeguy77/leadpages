@@ -3,6 +3,8 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const { syncSiteMetrics, daysAgo } = require('../../lib/google-ads/sync');
+const { syncCampaignMaps } = require('../../lib/google-ads/campaign-sync');
+const { campaignBuilderEnabled } = require('../../lib/google-ads/flags');
 const cfg = require('../../lib/google-ads/config');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -103,6 +105,15 @@ module.exports = async (req, res) => {
       });
     }
 
+    let campaignMaps = null;
+    if (campaignBuilderEnabled()) {
+      try {
+        campaignMaps = await syncCampaignMaps(admin, conn);
+      } catch (e) {
+        campaignMaps = { ok: false, error: (e && e.message) || 'campaign_map_sync_failed' };
+      }
+    }
+
     return json(200, {
       ok: true,
       siteId,
@@ -112,7 +123,8 @@ module.exports = async (req, res) => {
       to: result.to,
       rows: result.rows,
       unmatched: result.unmatched,
-      apiVersion: cfg.apiVersion()
+      apiVersion: cfg.apiVersion(),
+      campaignMaps
     });
   } catch (e) {
     console.error('google-ads sync:', e && e.message);

@@ -192,11 +192,12 @@ See prior sections in git history / PR #328 for conversion roles, metrics, and A
 
 1. Run `db/google_ads_schema.sql` in Supabase (new installs)  
 2. For existing DBs, also run `db/google_ads_oauth_hardening.sql`  
-3. Attach domain `app.leadpages.com.au` to the Vercel production project  
-4. Set Production env vars listed above (encryption key required)  
-5. Configure Google Cloud origins/redirect exactly as listed  
-6. Connect via `/settings/integrations/google-ads`  
-7. Confirm callback hits `/api/integrations/google-ads/callback` (not Host-derived)  
-8. After enabling encryption, re-connect any site that previously stored plaintext tokens  
+3. For Smart Campaign Builder, also run `db/ads_campaign_builder_schema.sql` — see [Ads Campaign Builder](Ads%20Campaign%20Builder.md)  
+4. Attach domain `app.leadpages.com.au` to the Vercel production project  
+5. Set Production env vars listed above (encryption key required)  
+6. Configure Google Cloud origins/redirect exactly as listed  
+7. Connect via `/settings/integrations/google-ads`  
+8. Confirm callback hits `/api/integrations/google-ads/callback` (not Host-derived)  
+9. After enabling encryption, re-connect any site that previously stored plaintext tokens  
 
-*Last updated: July 2026 — OAuth hardening (scopes, nonce replay, mandatory encryption, revoke on disconnect).*
+*Last updated: July 2026 — OAuth hardening + Smart Campaign Builder (flag-gated).*

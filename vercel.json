@@ -101,6 +101,14 @@
       "destination": "/settings/integrations/google-business.html"
     },
     {
+      "source": "/settings/integrations/tag-manager",
+      "destination": "/settings/integrations/tag-manager.html"
+    },
+    {
+      "source": "/settings/integrations/tag-manager/",
+      "destination": "/settings/integrations/tag-manager.html"
+    },
+    {
       "source": "/",
       "has": [
         {
