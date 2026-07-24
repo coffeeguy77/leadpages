@@ -46,9 +46,11 @@ module.exports = async (req, res) => {
     if (!conn) return json(404, { error: 'not_connected' });
 
     const patch = { updated_at: new Date().toISOString(), enabled: true };
+    let previousCustomerToClear = null;
 
     if (body.customerId) {
       const cid = digits(body.customerId);
+      const prevCustomer = digits(conn.customer_id);
       patch.customer_id = cid;
       // MCC login-customer-id: body override → env platform MCC → existing connection.
       const mccLogin = digits(body.loginCustomerId || cfg.loginCustomerId() || conn.login_customer_id || '');
@@ -67,6 +69,8 @@ module.exports = async (req, res) => {
         patch.account_name = cid;
         if (mccLogin && mccLogin !== cid) patch.login_customer_id = mccLogin;
       }
+      // Stale unmatched URLs / metrics from a previous Ads customer must not linger.
+      if (prevCustomer && prevCustomer !== cid) previousCustomerToClear = prevCustomer;
     }
 
     if (body.eventRoles && typeof body.eventRoles === 'object') {
@@ -84,6 +88,25 @@ module.exports = async (req, res) => {
 
     const { error } = await admin.from('google_ads_connections').update(patch).eq('site_id', siteId);
     if (error) return json(500, { error: error.message });
+
+    if (previousCustomerToClear || body.clearUnmatched === true) {
+      try {
+        await admin.from('ads_unmatched_urls').delete().eq('site_id', siteId);
+      } catch (_e) {
+        /* table may not exist */
+      }
+    }
+    if (previousCustomerToClear) {
+      try {
+        await admin.from('ads_metrics_daily').delete().eq('site_id', siteId).eq('customer_id', previousCustomerToClear);
+      } catch (_e) {}
+      try {
+        await admin.from('ads_campaign_maps').delete().eq('site_id', siteId).eq('customer_id', previousCustomerToClear);
+      } catch (_e) {}
+      try {
+        await admin.from('ads_keyword_daily').delete().eq('site_id', siteId).eq('customer_id', previousCustomerToClear);
+      } catch (_e) {}
+    }
 
     let { data: updated } = await admin.from('google_ads_connections').select('*').eq('site_id', siteId).maybeSingle();
 

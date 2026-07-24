@@ -11740,6 +11740,7 @@ function heroCtaCard(c){
     if(tab==='readiness'){
       body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Tracking readiness</h2>'
         +'<p class="lede">Automated checks before you enable a campaign. Critical failures block publish. Prefer LeadPages Native events; GTM is optional inspection.</p>'
+        +'<p class="hint" style="margin:0 0 10px">Fix fails here: <strong>Campaign Builder</strong> (pick a published page → Plan) for landing URL, and <strong>Connection &amp; Health</strong> (Primary conversions + Google tag AW-…). Unmatched Bean Culture URLs are leftover from the old Ads account — Change account / Sync now clears them.</p>'
         +'<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:10px">'
         +'<button type="button" class="btn sm" id="gads-run-ready">Run readiness audit</button>'
         +'<a class="btn ghost sm" href="/settings/integrations/tag-manager?siteId='+encodeURIComponent(currentSiteId)+'" style="text-decoration:none">Google Tag Manager</a>'
@@ -12028,9 +12029,11 @@ function heroCtaCard(c){
 
     var unmatched=health.unmatchedUrls||[];
     if(unmatched.length){
-      h+='<h3 style="margin:0 0 8px;font-size:15px">Unmatched advertising URLs</h3><ul style="margin:0;padding-left:18px;font-size:13px">';
+      h+='<h3 style="margin:0 0 8px;font-size:15px">Unmatched advertising URLs</h3>'
+        +'<p class="hint" style="margin:0 0 8px">These are destinations Google Ads reported that do not match a LeadPages page. After switching to a new empty Ads account they can linger until cleared — Sync now on an empty account, or Clear list.</p>'
+        +'<ul style="margin:0 0 8px;padding-left:18px;font-size:13px">';
       unmatched.forEach(function(u){ h+='<li>'+esc(u.final_url)+' <span class="hint">('+_gadsNum(u.clicks)+' clicks)</span></li>'; });
-      h+='</ul>';
+      h+='</ul><button type="button" class="btn ghost sm" id="gads-clear-unmatched">Clear unmatched list</button>';
     }
     h+='</div>';
 
@@ -12125,6 +12128,18 @@ function heroCtaCard(c){
         _gadsCache={}; _gadsPaint();
       }catch(e){ toast((e&&e.message)||'Detect failed','warn'); }
       finally{ detectTag.disabled=false; detectTag.textContent='Detect from Ads'; }
+    });
+    var clearUn=document.getElementById('gads-clear-unmatched');
+    if(clearUn) clearUn.addEventListener('click',async function(){
+      if(!confirm('Clear unmatched URL list for this site? Use this after switching to a new Ads account.')) return;
+      try{
+        var tok=await _gadsToken();
+        var r=await fetch('/api/google-ads/save-settings',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId,clearUnmatched:true})});
+        var j=await r.json();
+        if(!r.ok) throw new Error(j.error||'clear_failed');
+        toast('Unmatched list cleared');
+        _gadsCache={}; _gadsPaint();
+      }catch(e){ toast((e&&e.message)||'Clear failed','warn'); }
     });
     async function runTest(type){
       try{
