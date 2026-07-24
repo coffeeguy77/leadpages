@@ -26,6 +26,16 @@ module.exports = async (req, res) => {
     const access = await http.assertSiteAccess(user, siteId);
     if (!access.ok) return http.json(res, access.code, { error: access.error });
 
+    // Metered provider usage is internal cost telemetry — not for client accounts.
+    const role = String(access.role || '');
+    if (role === 'client') {
+      return http.json(res, 200, {
+        available: false,
+        role: role,
+        message: 'Provider usage is only shown to partners and platform admins.'
+      });
+    }
+
     const db = admin();
     if (!db) return http.json(res, 503, { error: 'database_unavailable' });
 
