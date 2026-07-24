@@ -1436,8 +1436,29 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 
   /* ---------- persistence + export ---------- */
   function persist(){ try{ localStorage.setItem('linray_rates', JSON.stringify(data)); }catch(e){} }
-  async function lpSaveDB(){ if(!currentSiteId) return; try{ if(lpCur&&(!(data&&data.pages)||!data.pages.some(function(p){return p&&p.id===lpCur.id;}))){ lpResetLandingEditor(); } var sref=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null; var cfg; if(sref&&sref.config&&typeof sref.config==='object'){ cfg=JSON.parse(JSON.stringify(sref.config)); } else { cfg=JSON.parse(JSON.stringify(data||{})); delete cfg.savedThemes; delete cfg.users; } cfg.pages=JSON.parse(JSON.stringify((data&&data.pages)||[])); await sb.from('sites').update({ config:cfg, updated_at:new Date().toISOString() }).eq('id', currentSiteId); if(sref) sref.config=cfg; }catch(e){} }
+  var _lpSaveGen=0;
+  async function lpSaveDB(){
+    if(!currentSiteId) return { ok:false, error:'no_site' };
+    var gen=++_lpSaveGen;
+    try{
+      if(lpCur&&(!(data&&data.pages)||!data.pages.some(function(p){return p&&p.id===lpCur.id;}))){ lpResetLandingEditor(); }
+      var sref=(typeof allSites!=='undefined'&&allSites)?allSites.find(function(x){return x.id===currentSiteId;}):null;
+      var cfg;
+      if(sref&&sref.config&&typeof sref.config==='object'){ cfg=JSON.parse(JSON.stringify(sref.config)); }
+      else { cfg=JSON.parse(JSON.stringify(data||{})); delete cfg.savedThemes; delete cfg.users; }
+      cfg.pages=JSON.parse(JSON.stringify((data&&data.pages)||[]));
+      if(gen!==_lpSaveGen) return { ok:false, superseded:true };
+      var up=await sb.from('sites').update({ config:cfg, updated_at:new Date().toISOString() }).eq('id', currentSiteId);
+      if(gen!==_lpSaveGen) return { ok:false, superseded:true };
+      if(up&&up.error) throw new Error(up.error.message||'save_failed');
+      if(sref) sref.config=cfg;
+      return { ok:true };
+    }catch(e){
+      return { ok:false, error:(e&&e.message)||String(e) };
+    }
+  }
   var _lpAS=null; function lpAutosave(){ if(_lpAS) clearTimeout(_lpAS); _lpAS=setTimeout(function(){ lpSaveDB(); },1000); }
+  function lpCancelAutosave(){ if(_lpAS){ clearTimeout(_lpAS); _lpAS=null; } }
   function toast(msg, kind){ const t=$('toast'); if(!t) return; t.textContent=msg; t.classList.remove('warn'); if(kind==='warn') t.classList.add('warn'); t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, kind==='warn'?2400:1800); }
   window.toast = toast;
   function jsonOut(){ return JSON.stringify(data,null,2); }
@@ -2550,7 +2571,29 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       toast(pub?'Page saved — regenerate sitemap in Settings when you add or publish pages.':'Page saved');
     });
     $('lp-close').addEventListener('click',function(){ $('lp-editor').hidden=true; lpCur=null; });
-    $('lp-del').addEventListener('click',function(){ if(!lpCur) return; var slug=lpCur.slug; data.pages=data.pages.filter(x=>x.id!==lpCur.id); if(slug) lpSyncNavMenu({show:false, slug:slug}); persist(); lpSaveDB(); $('lp-editor').hidden=true; lpCur=null; renderSeoPages(); toast('Page deleted'); });
+    $('lp-del').addEventListener('click',async function(){
+      if(!lpCur) return;
+      if(!confirm('Delete this landing page? It will disappear from Campaign Builder after save.')) return;
+      var slug=lpCur.slug;
+      var title=lpCur.title||lpCur.slug||'Page';
+      lpCancelAutosave();
+      data.pages=data.pages.filter(function(x){ return x.id!==lpCur.id; });
+      if(slug) lpSyncNavMenu({show:false, slug:slug});
+      persist();
+      $('lp-editor').hidden=true;
+      lpCur=null;
+      renderSeoPages();
+      var saved=await lpSaveDB();
+      if(!saved||!saved.ok){
+        toast('Page removed locally but cloud save failed — try Save again or refresh','warn');
+      } else {
+        toast('Deleted “'+title+'”');
+      }
+      try{
+        if(typeof _gadsCache!=='undefined') _gadsCache={};
+        if(typeof _gadsPaint==='function') _gadsPaint();
+      }catch(_e){}
+    });
     $('lp-undo').addEventListener('click',function(){ if(lpHi>0){ lpHi--; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
     $('lp-redo').addEventListener('click',function(){ if(lpHi<lpHist.length-1){ lpHi++; $('lp-body').value=lpHist[lpHi]; lpField('body',lpHist[lpHi]); } });
     $('lp-ai-go').addEventListener('click',aiGenerate);
@@ -11722,6 +11765,8 @@ function heroCtaCard(c){
   }
 
   var _gadsBuilderPlan=null;
+  var _gadsSavedBudget='';
+  var _gadsSavedPageId='';
   async function _gadsBuilderPost(action, extra){
     var tok=await (typeof cwToken==='function'?cwToken():Promise.resolve(null));
     var r=await fetch('/api/google-ads/builder',{
@@ -11733,8 +11778,32 @@ function heroCtaCard(c){
     if(!r.ok) throw new Error(j.message||j.error||('HTTP '+r.status));
     return j;
   }
+  function _gadsRememberBuilderFields(){
+    var budgetEl=document.getElementById('gads-plan-budget');
+    if(budgetEl&&budgetEl.value!=='') _gadsSavedBudget=String(budgetEl.value);
+    var pageSel=document.getElementById('gads-plan-page');
+    if(pageSel&&pageSel.value) _gadsSavedPageId=String(pageSel.value);
+  }
+  function _gadsSyncKeywordApprovals(plan){
+    var p=plan&&(plan.draftPlan||plan);
+    if(!p||!p.adGroups) return p;
+    var boxes=document.querySelectorAll('#gads-plan-out .gads-kw-use');
+    if(!boxes.length) return p;
+    var byIdx={};
+    boxes.forEach(function(cb){
+      var i=parseInt(cb.getAttribute('data-i'),10);
+      if(!isNaN(i)) byIdx[i]=!!cb.checked;
+    });
+    p.adGroups.forEach(function(ag){
+      (ag.keywords||[]).forEach(function(k,i){
+        if(Object.prototype.hasOwnProperty.call(byIdx,i)) k.approved=byIdx[i];
+      });
+    });
+    return p;
+  }
   async function _gadsPaintBuilder(tab){
     var body=document.getElementById('gads-body'); if(!body) return;
+    _gadsRememberBuilderFields();
     var j=await _gadsFetch('/api/google-ads/builder?siteId='+encodeURIComponent(currentSiteId));
     var flags=j.flags||{};
     if(tab==='readiness'){
@@ -11777,19 +11846,28 @@ function heroCtaCard(c){
       return;
     }
     var pages=j.pages||[];
+    var budgetValAttr=_gadsSavedBudget?(' value="'+esc(_gadsSavedBudget)+'"'):'';
     body.innerHTML='<div class="card" style="margin-bottom:14px"><h2 style="margin:0 0 6px">Smart Campaign Builder</h2>'
-      +'<p class="lede">Plan a Search campaign from this site. Creates are always <strong>PAUSED</strong>. Mutations require feature flags.</p>'
+      +'<p class="lede">Plan a Search campaign from this site. Creates are always <strong>PAUSED</strong>. Tick keywords to include, set a daily budget, then create.</p>'
       +'<p class="hint">Flags: builder '+(flags.GOOGLE_ADS_CAMPAIGN_BUILDER?'on':'off')
-      +' · mutations '+(flags.GOOGLE_ADS_CAMPAIGN_MUTATIONS?'on':'off')
+      +' · create campaigns '+(flags.GOOGLE_ADS_CAMPAIGN_MUTATIONS?'on':'off')
       +' · publish '+(flags.GOOGLE_ADS_CAMPAIGN_PUBLISH?'on':'off')
-      +' · budget '+(flags.GOOGLE_ADS_BUDGET_MUTATIONS?'on':'off')
-      +' · status '+(flags.GOOGLE_ADS_STATUS_MUTATIONS?'on':'off')+'</p>'
-      +'<div class="f" style="margin:10px 0"><label>Landing page</label><select id="gads-plan-page" class="tin">'
-      +pages.map(function(p){ return '<option value="'+esc(p.id||p.slug)+'">'+esc(p.title||p.slug||'Page')+'</option>'; }).join('')
-      +(!pages.length?'<option value="">No published pages</option>':'')
-      +'</select></div>'
-      +'<div class="f" style="margin:10px 0"><label>Daily budget (required before create — we never invent this)</label>'
-      +'<input id="gads-plan-budget" class="tin" type="number" min="1" step="1" placeholder="e.g. 40"></div>'
+      +' · edit live budgets '+(flags.GOOGLE_ADS_BUDGET_MUTATIONS?'on':'off')
+      +' · pause/resume '+(flags.GOOGLE_ADS_STATUS_MUTATIONS?'on':'off')
+      +'<br><span style="opacity:.85">“Edit live budgets” is separate from the daily budget field below (that field is always used when creating a paused campaign).</span></p>'
+      +'<div class="f" style="margin:10px 0"><label>Landing page <button type="button" class="btn ghost sm" id="gads-refresh-pages" style="margin-left:8px">Refresh list</button></label>'
+      +'<select id="gads-plan-page" class="tin">'
+      +pages.map(function(p){
+        var id=String(p.id||p.slug||'');
+        var sel=_gadsSavedPageId&&_gadsSavedPageId===id?' selected':'';
+        return '<option value="'+esc(id)+'"'+sel+'>'+esc(p.title||p.slug||'Page')+'</option>';
+      }).join('')
+      +(!pages.length?'<option value="">No published pages — publish a page under Landing Pages first</option>':'')
+      +'</select>'
+      +'<p class="hint" style="margin:6px 0 0">Only <strong>published</strong> pages appear. After deleting a page, use Refresh list if it still shows.</p></div>'
+      +'<div class="f" style="margin:10px 0"><label>Daily budget (AUD / day — required before create)</label>'
+      +'<input id="gads-plan-budget" class="tin" type="number" min="1" step="1" placeholder="e.g. 40"'+budgetValAttr+'>'
+      +'<p class="hint" style="margin:6px 0 0">Enter your daily budget here (e.g. 5). We never invent a figure. It applies to Plan and Create.</p></div>'
       +'<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:10px">'
       +'<button type="button" class="btn sm" id="gads-plan-page-btn">Plan for page</button>'
       +'<button type="button" class="btn ghost sm" id="gads-plan-site-btn">Plan for whole site</button>'
@@ -11809,69 +11887,132 @@ function heroCtaCard(c){
         :'<p class="hint">No mapped campaigns yet. Sync from Google or create a paused campaign from a plan.</p>')
       +'</div>';
 
+    var budgetInput=document.getElementById('gads-plan-budget');
+    if(budgetInput) budgetInput.addEventListener('input',function(){ _gadsSavedBudget=String(budgetInput.value||''); });
+    var pageSelEl=document.getElementById('gads-plan-page');
+    if(pageSelEl) pageSelEl.addEventListener('change',function(){ _gadsSavedPageId=String(pageSelEl.value||''); });
+    var refPages=document.getElementById('gads-refresh-pages');
+    if(refPages) refPages.onclick=function(){ _gadsRememberBuilderFields(); _gadsPaintBuilder('builder'); toast('Landing page list refreshed'); };
+
     function showPlan(plan){
       _gadsBuilderPlan=plan;
       var p=plan.draftPlan||plan;
       var out=document.getElementById('gads-plan-out');
-      var kws=((p.adGroups&&p.adGroups[0]&&p.adGroups[0].keywords)||[]).slice(0,12);
+      var budgetEl=document.getElementById('gads-plan-budget');
+      var budgetNum=budgetEl&&budgetEl.value!==''?Number(budgetEl.value):NaN;
+      if(!(budgetNum>0) && p.budgetDaily!=null) budgetNum=Number(p.budgetDaily);
+      if(budgetNum>0){
+        p.budgetDaily=budgetNum;
+        p.budgetNote=null;
+        if(budgetEl&&!budgetEl.value) budgetEl.value=String(budgetNum);
+        _gadsSavedBudget=String(budgetNum);
+      }
+      var allKws=((p.adGroups&&p.adGroups[0]&&p.adGroups[0].keywords)||[]);
+      allKws.forEach(function(k){ if(k.approved==null) k.approved=k.matchType!=='BROAD'; });
       var metricsNote=p.metricsNote||(plan.keywordMetrics&&plan.keywordMetrics.note)||'';
+      var hasVol=allKws.some(function(k){ return k.volume!=null; });
+      var hasCpc=allKws.some(function(k){ return k.cpc!=null; });
+      var mutOn=!!flags.GOOGLE_ADS_CAMPAIGN_MUTATIONS;
+      var selectedN=allKws.filter(function(k){ return k.approved!==false; }).length;
       out.innerHTML='<h3 style="margin:0 0 8px">'+esc(p.campaignName||'Draft')+'</h3>'
         +'<p class="hint">Status on create: <strong>PAUSED</strong> · Domain: '+esc(p.primaryDomain||'—')+' · Geo: '+esc(p.geoFocus||'—')+'</p>'
-        +'<p class="lede">'+(esc(p.budgetNote||('Daily budget: '+(p.budgetDaily!=null?p.budgetDaily:'not set'))))+'</p>'
+        +'<p class="lede"><strong>Daily budget: '+(budgetNum>0?('$'+budgetNum+'/day'):'not set — enter above')+'</strong></p>'
         +'<p class="hint">'+esc(metricsNote)+'</p>'
-        +'<div style="overflow:auto;margin:8px 0"><table class="ana-table"><thead><tr><th>Keyword</th><th>Match</th><th>Intent</th><th>Vol</th><th>CPC</th><th>Source</th></tr></thead><tbody>'
-        +kws.map(function(k){
+        +(!hasVol&&!hasCpc
+          ?'<p class="hint" style="margin:0 0 8px;color:#b45309">Vol / CPC show “—” until DataForSEO is connected (SEO Command → market data) or you Sync Ads keywords with real clicks. LeadPages will not invent volume or CPC.</p>'
+          :'')
+        +'<div class="row" style="gap:8px;flex-wrap:wrap;margin:8px 0;align-items:center">'
+        +'<button type="button" class="btn ghost sm" id="gads-kw-all">Select all</button>'
+        +'<button type="button" class="btn ghost sm" id="gads-kw-none">Select none</button>'
+        +'<span class="hint" id="gads-kw-count">'+selectedN+' of '+allKws.length+' keywords selected</span></div>'
+        +'<div style="overflow:auto;margin:8px 0"><table class="ana-table"><thead><tr>'
+        +'<th style="width:48px">Use</th><th>Keyword</th><th>Match</th><th>Intent</th><th>Vol</th><th>CPC</th><th>Source</th></tr></thead><tbody>'
+        +allKws.map(function(k,i){
           var vol=k.volume!=null?k.volume:'—';
           var cpc=k.cpc!=null?k.cpc:'—';
           var src=k.cpcSource||(k.volume!=null?'market':'—');
-          return '<tr><td>'+esc(k.keyword)+'</td><td>'+esc(k.matchType||'—')+'</td><td>'+esc(k.intent||'—')+'</td><td>'+esc(vol)+'</td><td>'+esc(cpc)+'</td><td>'+esc(src)+'</td></tr>';
+          var checked=k.approved!==false?' checked':'';
+          return '<tr><td><input type="checkbox" class="gads-kw-use" data-i="'+i+'"'+checked+' aria-label="Use keyword"></td>'
+            +'<td>'+esc(k.keyword)+'</td><td>'+esc(k.matchType||'—')+'</td><td>'+esc(k.intent||'—')+'</td>'
+            +'<td>'+esc(vol)+'</td><td>'+esc(cpc)+'</td><td>'+esc(src)+'</td></tr>';
         }).join('')+'</tbody></table></div>'
         +((p.warnings&&p.warnings.length)?'<p class="hint" style="color:#b45309">'+esc(p.warnings.join(' · '))+'</p>':'')
-        +'<button type="button" class="btn sm" id="gads-create-paused" style="margin-top:10px">Create campaign as PAUSED</button>';
+        +(mutOn
+          ?'<button type="button" class="btn sm" id="gads-create-paused" style="margin-top:10px">Create campaign as PAUSED</button>'
+          :'<p class="hint" style="margin-top:10px">Create is locked until <code>GOOGLE_ADS_CAMPAIGN_MUTATIONS=1</code> is set (flag “create campaigns” above). You can still plan and tick keywords.</p>'
+            +'<button type="button" class="btn sm" id="gads-create-paused" style="margin-top:8px" disabled title="Mutations flag off">Create campaign as PAUSED</button>');
+      function refreshKwCount(){
+        var n=document.querySelectorAll('#gads-plan-out .gads-kw-use:checked').length;
+        var el=document.getElementById('gads-kw-count');
+        if(el) el.textContent=n+' of '+allKws.length+' keywords selected';
+      }
+      document.querySelectorAll('#gads-plan-out .gads-kw-use').forEach(function(cb){
+        cb.addEventListener('change',refreshKwCount);
+      });
+      var allBtn=document.getElementById('gads-kw-all');
+      if(allBtn) allBtn.onclick=function(){
+        document.querySelectorAll('#gads-plan-out .gads-kw-use').forEach(function(cb){ cb.checked=true; });
+        refreshKwCount();
+      };
+      var noneBtn=document.getElementById('gads-kw-none');
+      if(noneBtn) noneBtn.onclick=function(){
+        document.querySelectorAll('#gads-plan-out .gads-kw-use').forEach(function(cb){ cb.checked=false; });
+        refreshKwCount();
+      };
       var cre=document.getElementById('gads-create-paused');
-      if(cre) cre.onclick=async function(){
-        var budgetEl=document.getElementById('gads-plan-budget');
-        var budget=budgetEl?Number(budgetEl.value):NaN;
-        if(!(budget>0)){ toast('Enter a daily budget first'); return; }
-        p.budgetDaily=budget;
+      if(cre&&mutOn) cre.onclick=async function(){
+        _gadsRememberBuilderFields();
+        var bEl=document.getElementById('gads-plan-budget');
+        var budget=bEl?Number(bEl.value):NaN;
+        if(!(budget>0)){ toast('Enter a daily budget first (field above the plan buttons)'); return; }
+        _gadsSyncKeywordApprovals(plan);
+        var draft=plan.draftPlan||plan;
+        var approved=((draft.adGroups&&draft.adGroups[0]&&draft.adGroups[0].keywords)||[]).filter(function(k){ return k&&k.approved!==false; });
+        if(!approved.length){ toast('Select at least one keyword (Use column)'); return; }
+        draft.budgetDaily=budget;
+        draft.budgetNote=null;
         cre.disabled=true; cre.textContent='Creating…';
         try{
-          var rr=await _gadsBuilderPost('create_paused',{plan:p,idempotencyKey:'ui_'+currentSiteId+'_'+Date.now()});
+          var rr=await _gadsBuilderPost('create_paused',{plan:draft,idempotencyKey:'ui_'+currentSiteId+'_'+Date.now()});
           toast((rr.result&&rr.result.message)||'Created paused');
           _gadsPaint();
-        }catch(e){ toast(String(e.message||e)); cre.disabled=false; cre.textContent='Create campaign as PAUSED'; }
+        }catch(e){ toast(String(e.message||e),'warn'); cre.disabled=false; cre.textContent='Create campaign as PAUSED'; }
       };
     }
     async function runPlan(action){
+      _gadsRememberBuilderFields();
       var pageSel=document.getElementById('gads-plan-page');
       var budgetEl=document.getElementById('gads-plan-budget');
       var pageId=pageSel?pageSel.value:'';
-      var budget=budgetEl&&budgetEl.value?Number(budgetEl.value):undefined;
+      var budget=budgetEl&&budgetEl.value!==''?Number(budgetEl.value):undefined;
       try{
         var rr=await _gadsBuilderPost(action,{pageId:pageId,budgetDaily:budget});
         showPlan(rr.plan);
-        toast('Plan ready — review before create');
-      }catch(e){ toast(String(e.message||e)); }
+        toast(budget>0?'Plan ready — budget $'+budget+'/day · tick keywords to include':'Plan ready — enter daily budget, then tick keywords');
+      }catch(e){ toast(String(e.message||e),'warn'); }
     }
     var b1=document.getElementById('gads-plan-page-btn'); if(b1) b1.onclick=function(){ runPlan('plan_page'); };
     var b2=document.getElementById('gads-plan-site-btn'); if(b2) b2.onclick=function(){ runPlan('plan_site'); };
     var b3=document.getElementById('gads-plan-ai-btn'); if(b3) b3.onclick=function(){ runPlan('recommend'); };
     var b4=document.getElementById('gads-plan-pilot-btn'); if(b4) b4.onclick=function(){ runPlan('pilot_defaults'); };
     var b5=document.getElementById('gads-sync-maps'); if(b5) b5.onclick=async function(){
-      try{ await _gadsBuilderPost('sync_campaigns'); toast('Campaign sync requested'); _gadsPaint(); }catch(e){ toast(String(e.message||e)); }
+      try{ await _gadsBuilderPost('sync_campaigns'); toast('Campaign sync requested'); _gadsPaint(); }catch(e){ toast(String(e.message||e),'warn'); }
     };
     document.querySelectorAll('.gads-pause').forEach(function(btn){
       btn.onclick=async function(){
         if(!confirm('Pause this campaign? It will stop spending.')) return;
-        try{ await _gadsBuilderPost('pause',{campaignId:btn.getAttribute('data-id'),confirmExternal:true}); toast('Pause requested'); _gadsPaint(); }catch(e){ toast(String(e.message||e)); }
+        try{ await _gadsBuilderPost('pause',{campaignId:btn.getAttribute('data-id'),confirmExternal:true}); toast('Pause requested'); _gadsPaint(); }catch(e){ toast(String(e.message||e),'warn'); }
       };
     });
     document.querySelectorAll('.gads-resume').forEach(function(btn){
       btn.onclick=async function(){
         if(!confirm('Resume this campaign? Spend may start immediately.')) return;
-        try{ await _gadsBuilderPost('resume',{campaignId:btn.getAttribute('data-id'),confirmResume:true,confirmExternal:true}); toast('Resume requested'); _gadsPaint(); }catch(e){ toast(String(e.message||e)); }
+        try{ await _gadsBuilderPost('resume',{campaignId:btn.getAttribute('data-id'),confirmResume:true,confirmExternal:true}); toast('Resume requested'); _gadsPaint(); }catch(e){ toast(String(e.message||e),'warn'); }
       };
     });
+    if(_gadsBuilderPlan){
+      try{ showPlan(_gadsBuilderPlan); }catch(_e){}
+    }
   }
 
   function _gadsOverviewHTML(st){
@@ -11979,22 +12120,33 @@ function heroCtaCard(c){
     var rows=rep.rows||[];
     var h='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">'
       +'<h2 style="margin:0">Landing Pages</h2>'
-      +'<button type="button" class="btn ghost sm" id="gads-csv-landing">CSV export</button></div>';
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button type="button" class="btn ghost sm" id="gads-refresh-landing">Refresh</button>'
+      +'<button type="button" class="btn ghost sm" id="gads-csv-landing">CSV export</button></div></div>';
+    h+='<p class="hint" style="margin:0 0 12px">Published pages with Ads or on-site activity in this period. Deleted pages only appear if leftover Ads spend still maps to them (labelled Removed). Use Refresh after deleting a page.</p>';
     if(!rows.length){
       h+='<p class="hint">No landing-page traffic in this period yet.</p></div>';
+      setTimeout(function(){
+        var r=document.getElementById('gads-refresh-landing');
+        if(r&&!r._gadsBound){ r._gadsBound=true; r.addEventListener('click',function(){ _gadsCache={}; _gadsPaint(); }); }
+      },0);
       return h;
     }
     h+='<div style="overflow:auto"><table class="tbl" style="width:100%;font-size:13px"><thead><tr>'
       +'<th>Landing page</th><th>Spend</th><th>Ad clicks</th><th>Visitors</th><th>Call clicks</th><th>Forms</th><th>Unique</th><th>Cost/lead</th><th></th>'
       +'</tr></thead><tbody>';
     rows.forEach(function(r){
-      h+='<tr><td><div style="font-weight:600">'+esc(r.title||'—')+'</div><div class="hint" style="margin:0">'+esc(r.url||'')+'</div></td>'
+      h+='<tr><td><div style="font-weight:600">'+esc(r.title||'—')+'</div><div class="hint" style="margin:0">'+esc(r.url||'')+(r.status==='removed'?' · removed':'')+'</div></td>'
         +'<td>'+_gadsMoney(r.spend)+'</td><td>'+_gadsNum(r.adClicks)+'</td><td>'+_gadsNum(r.visitors)+'</td>'
         +'<td>'+_gadsNum(r.callClicks)+'</td><td>'+_gadsNum(r.forms)+'</td><td>'+_gadsNum(r.uniqueConversions)+'</td>'
         +'<td>'+(r.costPerLeadAction!=null?_gadsMoney(r.costPerLeadAction):'—')+'</td>'
-        +'<td>'+(r.pageId?'<button type="button" class="btn ghost sm" data-gads-edit-page="'+esc(r.pageId)+'">Edit</button>':'')+'</td></tr>';
+        +'<td>'+(r.pageId&&r.status!=='removed'?'<button type="button" class="btn ghost sm" data-gads-edit-page="'+esc(r.pageId)+'">Edit</button>':'')+'</td></tr>';
     });
     h+='</tbody></table></div></div>';
+    setTimeout(function(){
+      var r=document.getElementById('gads-refresh-landing');
+      if(r&&!r._gadsBound){ r._gadsBound=true; r.addEventListener('click',function(){ _gadsCache={}; _gadsPaint(); }); }
+    },0);
     return h;
   }
 

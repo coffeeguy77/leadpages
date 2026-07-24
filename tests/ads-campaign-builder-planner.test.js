@@ -4,6 +4,7 @@ const assert = require('assert');
 const {
   coffeeEventsPilotDefaults,
   planForPage,
+  planForSite,
   publishedPages
 } = require('../lib/google-ads/planner');
 const { normalizeEventName, isAllowedEvent } = require('../lib/tracking/events-contract');
@@ -28,12 +29,28 @@ const site = {
 const pages = publishedPages(site);
 assert.equal(pages.length, 1);
 
+const siteWithDraft = {
+  config: {
+    pages: [
+      { id: 'p1', slug: 'live', title: 'Live', status: 'published' },
+      { id: 'p2', slug: 'draft', title: 'Draft', status: 'draft' },
+      { id: 'p3', slug: 'nostatus', title: 'No status' }
+    ]
+  }
+};
+assert.equal(publishedPages(siteWithDraft).length, 1);
+assert.equal(publishedPages(siteWithDraft)[0].id, 'p1');
+
 const plan = planForPage(site, pages[0], { service: 'Coffee Cart Hire', geo: 'Canberra', budgetDaily: 40 });
 assert.ok(plan.campaignName);
 assert.equal(plan.budgetDaily, 40);
 assert.ok(plan.adGroups && plan.adGroups[0]);
 assert.ok(String(plan.adGroups[0].finalUrl).includes('coffeeevents.com.au'));
 assert.equal(plan.statusOnCreate || 'PAUSED', 'PAUSED');
+
+const sitePlan = planForSite(site, { budgetDaily: 5 });
+assert.equal(sitePlan.budgetDaily, 5);
+assert.ok(!sitePlan.budgetNote);
 
 const pilot = coffeeEventsPilotDefaults(site, pages[0], 55);
 assert.equal(pilot.pilot.siteHint, 'coffeeevents.com.au');
