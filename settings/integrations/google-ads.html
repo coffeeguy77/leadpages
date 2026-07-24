@@ -259,7 +259,7 @@
           var save=await fetch('/api/google-ads/save-settings',{
             method:'POST',
             headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token},
-            body:JSON.stringify({siteId:currentSiteId,customerId:list[idx].id})
+            body:JSON.stringify({siteId:currentSiteId,customerId:list[idx].id,loginCustomerId:(j.managerCustomerId||'')})
           });
           var out=await save.json().catch(function(){ return {}; });
           if(!save.ok){ alert(safeErr(out.error)||'Save failed'); return; }

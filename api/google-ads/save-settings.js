@@ -2,6 +2,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const { getCustomer, ensureAccessToken, digits } = require('../../lib/google-ads/client');
 const { ensureConversionActions } = require('../../lib/google-ads/conversions');
+const cfg = require('../../lib/google-ads/config');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -48,14 +49,22 @@ module.exports = async (req, res) => {
     if (body.customerId) {
       const cid = digits(body.customerId);
       patch.customer_id = cid;
+      // MCC login-customer-id: body override → env platform MCC → existing connection.
+      const mccLogin = digits(body.loginCustomerId || cfg.loginCustomerId() || conn.login_customer_id || '');
       try {
         const access = await ensureAccessToken(admin, conn);
-        const info = await getCustomer(access, cid, body.loginCustomerId || cid);
+        const info = await getCustomer(access, cid, mccLogin || cid);
         patch.account_name = info.name || cid;
-        if (info.manager) patch.login_customer_id = cid;
-        else if (body.loginCustomerId) patch.login_customer_id = digits(body.loginCustomerId);
+        if (info.manager) {
+          patch.login_customer_id = cid;
+        } else if (mccLogin && mccLogin !== cid) {
+          patch.login_customer_id = mccLogin;
+        } else if (body.loginCustomerId) {
+          patch.login_customer_id = digits(body.loginCustomerId);
+        }
       } catch (e) {
         patch.account_name = cid;
+        if (mccLogin && mccLogin !== cid) patch.login_customer_id = mccLogin;
       }
     }
 
@@ -105,6 +114,7 @@ function publicConn(c) {
     slug: c.slug,
     customerId: c.customer_id,
     accountName: c.account_name,
+    managerCustomerId: c.login_customer_id || null,
     eventRoles: c.event_roles,
     conversionActions: c.conversion_actions,
     tagId: c.tag_id,

@@ -44,10 +44,12 @@ GOOGLE_ADS_REDIRECT_URI=https://app.leadpages.com.au/api/integrations/google-ads
 GOOGLE_ADS_CLIENT_ID=
 GOOGLE_ADS_CLIENT_SECRET=
 GOOGLE_ADS_DEVELOPER_TOKEN=
-GOOGLE_ADS_LOGIN_CUSTOMER_ID=          # optional MCC
+GOOGLE_ADS_LOGIN_CUSTOMER_ID=          # required when Ads accounts live under an MCC — digits only, e.g. 3862420047
 GOOGLE_ADS_OAUTH_ENCRYPTION_KEY=       # required — Base64 of 32 random bytes (see below)
 GOOGLE_ADS_API_VERSION=v22             # optional; default v22 (v18 is sunset and returns HTML 404)
 ```
+
+When client accounts sit under a manager (MCC), sync and mutate calls must send `login-customer-id` = that MCC. LeadPages reads it from `google_ads_connections.login_customer_id`, falling back to `GOOGLE_ADS_LOGIN_CUSTOMER_ID`. After changing the developer token or MCC env var in Vercel, **redeploy Production** so serverless functions pick up the new values.
 
 Optional: `GOOGLE_ADS_STATE_SECRET` (defaults to encryption key / client secret).
 
@@ -120,7 +122,9 @@ Shared helpers live in [`lib/app-url.js`](../../lib/app-url.js) (not AdWords-nam
 
 Compatibility shims remain at `/api/google-ads/connect|callback|exchange` → integrations path. Reporting APIs stay at `/api/google-ads/{status,report,accounts,sync,…}`.
 
-Manual sync: `POST /api/google-ads/sync` with `{ siteId, days }` (auth required). Cron `/api/cron/sync-google-ads` still runs every 2 hours. If **Last sync = Never**, use **Sync now** in Advertising → Connection & Health. Test Access developer tokens cannot read production Ads accounts until Basic Access is approved.
+Manual sync: `POST /api/google-ads/sync` with `{ siteId, days }` (auth required). Cron `/api/cron/sync-google-ads` still runs every 2 hours. If **Last sync = Never**, use **Sync now** in Advertising → Connection & Health.
+
+**403 after Basic Access is approved** usually means missing MCC `login-customer-id`, not Test Access. Set `GOOGLE_ADS_LOGIN_CUSTOMER_ID` to the Leadpages manager ID (digits only), link the client Ads account under that MCC, redeploy Vercel, re-select the account, then Sync now.
 
 ---
 

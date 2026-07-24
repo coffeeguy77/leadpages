@@ -1,7 +1,7 @@
 // GET /api/google-ads/accounts?siteId= — list accessible Ads accounts for a connected site
 const { createClient } = require('@supabase/supabase-js');
 const cfg = require('../../lib/google-ads/config');
-const { ensureAccessToken, listAccessibleCustomers, getCustomer } = require('../../lib/google-ads/client');
+const { ensureAccessToken, listAccessibleCustomers, getCustomer, resolveLoginCustomerId } = require('../../lib/google-ads/client');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
 
     const access = await ensureAccessToken(admin, conn);
     const ids = await listAccessibleCustomers(access);
-    const mcc = cfg.loginCustomerId() || conn.login_customer_id || '';
+    const mcc = resolveLoginCustomerId(conn) || cfg.loginCustomerId() || '';
     const accounts = [];
     for (let i = 0; i < Math.min(ids.length, 40); i++) {
       try {
@@ -46,6 +46,7 @@ module.exports = async (req, res) => {
       ok: true,
       selected: conn.customer_id || null,
       accountName: conn.account_name || null,
+      managerCustomerId: conn.login_customer_id || cfg.loginCustomerId() || null,
       apiVersion: cfg.apiVersion(),
       accounts
     });
