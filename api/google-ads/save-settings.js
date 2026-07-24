@@ -3,6 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 const { getCustomer, ensureAccessToken, digits } = require('../../lib/google-ads/client');
 const { ensureConversionActions } = require('../../lib/google-ads/conversions');
 const { normalizeAdsTagId, ensureConnectionTagId } = require('../../lib/google-ads/tag-id');
+const { purgeStaleAdsMetrics } = require('../../lib/google-ads/metrics-scope');
 const cfg = require('../../lib/google-ads/config');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -98,13 +99,14 @@ module.exports = async (req, res) => {
     }
     if (previousCustomerToClear) {
       try {
-        await admin.from('ads_metrics_daily').delete().eq('site_id', siteId).eq('customer_id', previousCustomerToClear);
+        await purgeStaleAdsMetrics(admin, siteId, digits(body.customerId) || null);
       } catch (_e) {}
+    }
+    if (body.clearSyncedMetrics === true) {
+      // Wipe all synced Ads history for this site (old Bean Culture rows included).
+      await purgeStaleAdsMetrics(admin, siteId, null);
       try {
-        await admin.from('ads_campaign_maps').delete().eq('site_id', siteId).eq('customer_id', previousCustomerToClear);
-      } catch (_e) {}
-      try {
-        await admin.from('ads_keyword_daily').delete().eq('site_id', siteId).eq('customer_id', previousCustomerToClear);
+        await admin.from('ads_unmatched_urls').delete().eq('site_id', siteId);
       } catch (_e) {}
     }
 

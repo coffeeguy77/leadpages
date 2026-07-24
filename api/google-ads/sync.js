@@ -117,12 +117,14 @@ module.exports = async (req, res) => {
     return json(200, {
       ok: true,
       siteId,
-      customerId: conn.customer_id,
+      customerId: result.customerId || conn.customer_id,
       days,
       from: result.from,
       to: result.to,
       rows: result.rows,
       unmatched: result.unmatched,
+      clearedStaleCache: !!(result.purged && result.purged.ok) || !!(result.clearedWindow && result.clearedWindow.ok),
+      emptyAccount: result.rows === 0,
       apiVersion: cfg.apiVersion(),
       campaignMaps
     });

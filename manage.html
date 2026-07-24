@@ -11870,12 +11870,20 @@ function heroCtaCard(c){
         +(st&&st.platformConfigured===false?'<p class="hint" style="margin-top:10px">Platform Google Ads credentials are not configured yet (developer token / OAuth client).</p>':'')
         +'</div>';
     } else {
+      var cidDigits=String(st.connection.customerId||'').replace(/\D+/g,'');
+      var staleN=(st.health&&st.health.staleOtherCustomerRows)||0;
       h+='<div class="card" style="margin-bottom:14px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">'
         +'<p class="hint" style="margin:0">Connected: <strong>'+esc(st.connection.accountName||st.connection.customerId)+'</strong>'
+        +(cidDigits?' · Customer ID <code>'+esc(cidDigits)+'</code>':'')
         +(st.connection.lastSyncAt?' · Last sync '+esc(new Date(st.connection.lastSyncAt).toLocaleString()):' · <strong>Never synced</strong>')
         +(st.connection.lastSyncError?' · <span style="color:#b45309">'+esc(st.connection.lastSyncError)+'</span>':'')
         +'</p>'
-        +'<button type="button" class="btn ghost sm" id="gads-sync-now">Sync now</button></div>';
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+        +'<button type="button" class="btn ghost sm" id="gads-clear-metrics">Clear old synced Ads data</button>'
+        +'<button type="button" class="btn ghost sm" id="gads-sync-now">Sync now</button></div></div>';
+      if(staleN>0){
+        h+='<div class="card" style="margin-bottom:14px;border-color:#f59e0b"><p class="hint" style="margin:0">LeadPages still has <strong>'+esc(String(staleN))+'</strong> cached metric rows from a <em>different</em> Ads customer (e.g. Bean Culture). They are hidden from totals — use <strong>Clear old synced Ads data</strong> then <strong>Sync now</strong> to remove them.</p></div>';
+      }
     }
     function card(label,val,hint){
       return '<div class="lp-instrument-stat" style="padding:14px 12px"><div style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)">'+label+'</div>'
@@ -11912,6 +11920,8 @@ function heroCtaCard(c){
     setTimeout(function(){
       var b=document.getElementById('gads-sync-now');
       if(b && !b._gadsBound){ b._gadsBound=true; b.addEventListener('click',function(){ _gadsRunSync(b); }); }
+      var c=document.getElementById('gads-clear-metrics');
+      if(c && !c._gadsBound){ c._gadsBound=true; c.addEventListener('click',function(){ _gadsClearSyncedMetrics(); }); }
     },0);
     return h;
   }
@@ -11920,13 +11930,22 @@ function heroCtaCard(c){
     var rows=rep.rows||[];
     var h='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">'
       +'<h2 style="margin:0">Campaigns</h2>'
-      +'<button type="button" class="btn ghost sm" id="gads-csv-campaigns">CSV export</button></div>';
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button type="button" class="btn ghost sm" id="gads-clear-metrics">Clear old synced Ads data</button>'
+      +'<button type="button" class="btn ghost sm" id="gads-csv-campaigns">CSV export</button></div></div>';
     if(!rows.length){
-      h+='<p class="hint" style="margin:0 0 12px">No campaign metrics in this period yet. Metrics appear after a successful Google Ads sync.</p>'
+      h+='<p class="hint" style="margin:0 0 12px">No campaign metrics in this period for the <strong>selected</strong> Ads account. If you still see old Bean Culture names after switching accounts, use Clear old synced Ads data, then Sync now.</p>'
         +'<button type="button" class="btn" id="gads-sync-now">Sync now</button>'
-        +'<p class="hint" style="margin-top:10px">Automatic sync also runs about every 2 hours. If sync fails while your developer token is still in <strong>Test Access</strong>, production accounts cannot be read until <strong>Basic Access</strong> is approved.</p></div>';
+        +'<p class="hint" style="margin-top:10px">Automatic sync also runs about every 2 hours. Confirm Connection &amp; Health shows your <strong>new</strong> customer ID (not the Bean Culture one).</p></div>';
+      setTimeout(function(){
+        var b=document.getElementById('gads-sync-now');
+        if(b && !b._gadsBound){ b._gadsBound=true; b.addEventListener('click',function(){ _gadsRunSync(b); }); }
+        var c=document.getElementById('gads-clear-metrics');
+        if(c && !c._gadsBound){ c._gadsBound=true; c.addEventListener('click',function(){ _gadsClearSyncedMetrics(); }); }
+      },0);
       return h;
     }
+    h+='<p class="hint" style="margin:0 0 10px">Showing spend from the currently connected Ads customer only. Coffee Sales / Barista Training from an old account should disappear after Clear + Sync on the new empty account.</p>';
     h+='<div style="overflow:auto"><table class="tbl" style="width:100%;font-size:13px"><thead><tr>'
       +'<th>Campaign</th><th>Spend</th><th>Clicks</th><th>Visitors</th><th>Call clicks</th><th>Forms</th><th>Cost/conv</th>'
       +'</tr></thead><tbody>';
@@ -11934,6 +11953,10 @@ function heroCtaCard(c){
       h+='<tr><td>'+esc(r.campaignName||'—')+'</td><td>'+_gadsMoney(r.spend)+'</td><td>'+_gadsNum(r.clicks)+'</td><td>'+_gadsNum(r.visitors)+'</td><td>'+_gadsNum(r.callClicks)+'</td><td>'+_gadsNum(r.forms)+'</td><td>'+(r.costPerConversion!=null?_gadsMoney(r.costPerConversion):'—')+'</td></tr>';
     });
     h+='</tbody></table></div></div>';
+    setTimeout(function(){
+      var c=document.getElementById('gads-clear-metrics');
+      if(c && !c._gadsBound){ c._gadsBound=true; c.addEventListener('click',function(){ _gadsClearSyncedMetrics(); }); }
+    },0);
     return h;
   }
 
@@ -12008,7 +12031,8 @@ function heroCtaCard(c){
       +'</div></div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px">'
       +'<button type="button" class="btn" id="gads-sync-now">Sync now</button>'
-      +'<span class="hint" id="gads-sync-note" style="align-self:center">Pulls the last '+_gadsDays+' days from Google Ads</span>'
+      +'<button type="button" class="btn ghost sm" id="gads-clear-metrics">Clear old synced Ads data</button>'
+      +'<span class="hint" id="gads-sync-note" style="align-self:center">Pulls the last '+_gadsDays+' days from the <strong>selected</strong> Ads account only</span>'
       +'</div>';
 
     var roles=c.eventRoles||{};
@@ -12050,6 +12074,21 @@ function heroCtaCard(c){
       +'</select></label></div>';
   }
 
+  function _gadsClearSyncedMetrics(){
+    return (async function(){
+      if(!currentSiteId) return;
+      if(!confirm('Delete all synced Google Ads spend/campaign rows for this LeadPages site? Use after switching to a new empty Ads account so Overview/Campaigns stop showing old Bean Culture data. You can Sync now afterwards.')) return;
+      try{
+        var tok=await _gadsToken();
+        var r=await fetch('/api/google-ads/save-settings',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId,clearSyncedMetrics:true})});
+        var j=await r.json().catch(function(){return {};});
+        if(!r.ok) throw new Error(j.message||j.error||'clear_failed');
+        toast('Old synced Ads data cleared');
+        _gadsCache={}; _gadsPaint();
+      }catch(e){ toast((e&&e.message)||'Clear failed','warn'); }
+    })();
+  }
+
   async function _gadsRunSync(btn){
     if(!currentSiteId) return;
     var el=btn||document.getElementById('gads-sync-now');
@@ -12070,7 +12109,11 @@ function heroCtaCard(c){
         if(j.hint) msg+=' — '+j.hint;
         throw new Error(msg);
       }
-      toast('Synced '+(j.rows!=null?j.rows:0)+' metric rows ('+(j.from||'')+' → '+(j.to||'')+')');
+      if(j.emptyAccount || j.rows===0){
+        toast('Synced 0 rows from Ads account '+(j.customerId||'')+' — cleared cached spend for this period. Overview/Campaigns should match Google (empty until you run ads).');
+      } else {
+        toast('Synced '+(j.rows!=null?j.rows:0)+' metric rows ('+(j.from||'')+' → '+(j.to||'')+')');
+      }
       _gadsCache={}; _gadsPaint();
     }catch(e){
       toast(String((e&&e.message)||'Sync failed').slice(0,220),'warn');
@@ -12099,6 +12142,11 @@ function heroCtaCard(c){
     });
     var syncBtn=document.getElementById('gads-sync-now');
     if(syncBtn) syncBtn.addEventListener('click',function(){ _gadsRunSync(syncBtn); });
+    var clearMet=document.getElementById('gads-clear-metrics');
+    if(clearMet && !clearMet._gadsBound){
+      clearMet._gadsBound=true;
+      clearMet.addEventListener('click',function(){ _gadsClearSyncedMetrics(); });
+    }
     var save=document.getElementById('gads-save-roles');
     if(save) save.addEventListener('click',async function(){
       var roles={};
