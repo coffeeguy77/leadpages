@@ -99,8 +99,8 @@ module.exports = async (req, res) => {
       return json(502, {
         error: 'sync_failed',
         message: err,
-        hint: /403|Test Access|Basic Access|DEVELOPER_TOKEN|production account/i.test(err)
-          ? 'OAuth is fine. Sync needs a Basic Access (or higher) developer token to read production Ads account 1382251570.'
+        hint: /403|Test Access|Basic Access|DEVELOPER_TOKEN|production account|login-customer|AUTHORIZATION/i.test(err)
+          ? 'OAuth is fine. Confirm Basic Access on the Leadpages MCC, set GOOGLE_ADS_LOGIN_CUSTOMER_ID to that MCC (digits only, e.g. 3862420047), link this Ads account under the MCC, redeploy Vercel, then Sync now.'
           : undefined
       });
     }

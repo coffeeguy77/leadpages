@@ -12139,7 +12139,7 @@ function heroCtaCard(c){
         var idx=parseInt(choice||'0',10)-1;
         if(!(idx>=0&&idx<list.length)) return;
         var tok=await _gadsToken();
-        var r=await fetch('/api/google-ads/save-settings',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId,customerId:list[idx].id})});
+        var r=await fetch('/api/google-ads/save-settings',{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},body:JSON.stringify({siteId:currentSiteId,customerId:list[idx].id,loginCustomerId:(j.managerCustomerId||'')})});
         var out=await r.json();
         if(!r.ok) throw new Error(out.error||'save_failed');
         toast('Account selected: '+(list[idx].name||list[idx].id)+' — starting sync…');
