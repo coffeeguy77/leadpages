@@ -9,7 +9,7 @@ const http = require('../../lib/brain/http');
 const { createClient } = require('@supabase/supabase-js');
 const { loadAdsKeywords } = require('../../lib/search-intelligence/ads-keywords');
 const { listTracked } = require('../../lib/search-intelligence/tracked-keywords');
-const { buildAdsKeywordUniverse, probeAiVisibility, probeBrandSerp, PLATFORM_CATALOGUE } = require('../../lib/search-intelligence/phase4-foundations');
+const { buildAdsKeywordUniverse, probeAiVisibility, probeBrandSerp, platformCatalogue } = require('../../lib/search-intelligence/phase4-foundations');
 const { runBacklinkGap } = require('../../lib/search-intelligence/backlink-gap');
 const { meterUsage } = require('../../lib/search-intelligence/usage');
 const { loadCrmOutcomes } = require('../../lib/search-intelligence/crm-outcomes');
@@ -78,9 +78,9 @@ module.exports = async (req, res) => {
           note: crm.note,
           labelClass: crm.labelClass
         },
-        aiPlatforms: PLATFORM_CATALOGUE,
+        aiPlatforms: platformCatalogue(),
         actions: ['probe_ai', 'probe_brand', 'backlink_gap'],
-        note: 'POST { action: probe_ai | probe_brand | backlink_gap }. AI probes deepen Google AIO citations; ChatGPT/Perplexity stay unavailable without a licensed endpoint (never Semrush).'
+        note: 'POST { action: probe_ai | probe_brand | backlink_gap }. AI probes use Google SERP plus ChatGPT (OPENAI_API_KEY) and Perplexity (PERPLEXITY_API_KEY) when configured.'
       });
     }
 
