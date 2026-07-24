@@ -10595,6 +10595,56 @@ function heroCtaCard(c){
     }
     return { seoTitle:title, seoDescription:meta, note:body };
   }
+  function _siWireHomepageSeo(){
+    var titleEl=document.getElementById('si-home-title');
+    var metaEl=document.getElementById('si-home-meta');
+    var kwEl=document.getElementById('si-home-kw');
+    var longEl=document.getElementById('si-home-ai-long');
+    var statusEl=document.getElementById('si-home-seo-status');
+    var saveBtn=document.getElementById('si-home-save');
+    var aiBtn=document.getElementById('si-home-ai');
+    var clearBtn=document.getElementById('si-home-clear');
+    if(!titleEl&&!metaEl) return;
+    function readFields(){
+      return {
+        seoTitle:titleEl?String(titleEl.value||'').trim():'',
+        seoDescription:metaEl?String(metaEl.value||'').trim():'',
+        primaryKeyword:kwEl?String(kwEl.value||'').trim():''
+      };
+    }
+    function setStatus(msg, isErr){
+      if(!statusEl) return;
+      statusEl.textContent=msg||'';
+      statusEl.style.color=isErr?'var(--danger, #b91c1c)':'';
+    }
+    if(saveBtn) saveBtn.onclick=async function(){
+      saveBtn.disabled=true;
+      setStatus('Saving…');
+      try{
+        await _siSaveHomepageSeo(readFields());
+        setStatus('Saved. Live homepage title/meta update on next publish or cache refresh.');
+        toast('Homepage SEO saved');
+      }catch(e){
+        setStatus(String((e&&e.message)||e), true);
+        toast('Could not save homepage SEO');
+      }finally{
+        saveBtn.disabled=false;
+      }
+    };
+    if(aiBtn) aiBtn.onclick=function(){
+      var fields=readFields();
+      var draft=_siDraftHomepageSeo(currentBusinessName||'', fields.primaryKeyword||fields.seoTitle, !!(longEl&&longEl.checked));
+      if(titleEl) titleEl.value=draft.seoTitle||'';
+      if(metaEl) metaEl.value=draft.seoDescription||'';
+      setStatus('Draft filled — review, then Save.'+(draft.note||''));
+      toast('AI draft ready');
+    };
+    if(clearBtn) clearBtn.onclick=function(){
+      if(titleEl) titleEl.value='';
+      if(metaEl) metaEl.value='';
+      setStatus('Cleared title & meta in the form (not saved yet).');
+    };
+  }
   function _siPagesHTML(ov){
     var pp=(ov&&ov.pagePerformance)||{};
     var pages=pp.pages||[];

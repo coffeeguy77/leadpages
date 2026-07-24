@@ -814,7 +814,10 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /\/api\/search-intelligence\/maps-grid/);
     assert.match(manage, /\/api\/search-intelligence\/local-pages/);
     assert.match(manage, /Homepage SEO/);
-    assert.match(manage, /_siWireHomepageSeo/);
+    assert.match(manage, /function _siWireHomepageSeo\s*\(/);
+    assert.match(manage, /_siWireHomepageSeo\(\)/);
+    assert.match(manage, /si-home-save/);
+    assert.match(manage, /_siSaveHomepageSeo/);
   });
 
   it('hides provider usage from clients and styles partner update-job selects', () => {
