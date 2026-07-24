@@ -690,6 +690,26 @@ describe('Search Intelligence stubs', () => {
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'settings/integrations/google-analytics.html')));
   });
 
+  it('SEO tabs cache saved data and explain each area in plain language', () => {
+    const manage = fs.readFileSync(path.join(__dirname, '..', 'manage.html'), 'utf8');
+    assert.match(manage, /var _siCache=/);
+    assert.match(manage, /function _siGetOverview/);
+    assert.match(manage, /function _siGetTab/);
+    assert.match(manage, /var _siTabMeta=/);
+    assert.match(manage, /function _siTabIntroHTML/);
+    assert.match(manage, /function _siFreshnessHTML/);
+    assert.match(manage, /Tab switches use saved data \(not AI\)/);
+    assert.match(manage, /id="si-recheck-home"/);
+    assert.match(manage, /Last synced/);
+    // Homepage crawl is opt-in — not fired on every Actions tab visit
+    assert.doesNotMatch(
+      manage,
+      /var crawlQ=_siTab==='actions'\?'&crawl=1':''/
+    );
+    assert.match(manage, /not a live AI call/);
+    assert.match(manage, /Maps and .near me. visibility/);
+  });
+
   it('maps-grid mock samples and detects pack absence', async () => {
     const { sampleMapsGrid, buildGridPoints, centreForSite } = require('../lib/search-intelligence/maps-grid');
     const pts = buildGridPoints({ lat: -35.28, lng: 149.13 }, 3, 0.04);

@@ -10329,6 +10329,55 @@ function heroCtaCard(c){
      renderSeoCommandCentre — Search Intelligence Phase 1 scaffold
   ══════════════════════════════════════════════════════════ */
   var _siTab='home';
+  /* Client cache: tab switches were refetching overview (8 DB queries) every time — not AI. */
+  var _siCache={ siteId:null, overview:null, overviewAt:0, overviewCrawl:false, tabs:{}, inflight:{} };
+  var _siOverviewTtlMs=5*60*1000;
+  var _siTabMeta={
+    home:{ title:'Home', blurb:'Your search snapshot for this site — how you show in Google, and whether search is turning into leads. Numbers come from your last Google sync and saved CRM outcomes, not a live AI call.' },
+    pages:{ title:'Pages', blurb:'Which URLs Google sends people to, and which ones convert into leads. Use this to decide which pages deserve the next fix or content update.' },
+    keywords:{ title:'Keywords', blurb:'Queries people type in Google that relate to your business. Research pulls market demand on demand (DataForSEO or demo data) — that is a paid/live check, not an AI chat.' },
+    clusters:{ title:'Clusters', blurb:'Groups related keywords into topic buckets so you can plan pages that cover a whole theme, not one word at a time.' },
+    local:{ title:'Local', blurb:'Maps and “near me” visibility — how you show next to nearby competitors. Live map checks run only when you click Check maps.' },
+    authority:{ title:'Authority', blurb:'How often trusted sites and AI answer tools mention your brand. Helps you see reputation beyond classic blue-link rankings.' },
+    summary:{ title:'Summary', blurb:'Plain-language scorecard for partners and owners — what improved, what to do next, without SEO jargon.' },
+    portfolio:{ title:'Portfolio', blurb:'Compare every site you manage in one view. Best for agencies and multi-location operators.' },
+    actions:{ title:'Next Best Actions', blurb:'Prioritised to-dos ranked by impact. Optional “Re-check homepage” crawls your live site once; everyday browsing uses the last saved check.' },
+    connect:{ title:'Connections', blurb:'Link Google Search Console and Analytics, and see when data was last synced. Sync pulls Google’s history into LeadPages — it is not an AI call.' }
+  };
+  function _siCacheResetIfSiteChanged(){
+    if(_siCache.siteId===currentSiteId) return;
+    _siCache={ siteId:currentSiteId, overview:null, overviewAt:0, overviewCrawl:false, tabs:{}, inflight:{} };
+  }
+  function _siRelTime(iso){
+    if(!iso) return null;
+    var t=Date.parse(iso); if(!isFinite(t)) return null;
+    var sec=Math.round((Date.now()-t)/1000);
+    if(sec<45) return 'just now';
+    if(sec<3600) return Math.max(1,Math.round(sec/60))+' min ago';
+    if(sec<86400) return Math.max(1,Math.round(sec/3600))+' hr ago';
+    return Math.max(1,Math.round(sec/86400))+' day'+(sec>=172800?'s':'')+' ago';
+  }
+  function _siFreshnessHTML(ov){
+    var gsc=(ov&&ov.connections&&ov.connections.search_console)||{};
+    var ga4=(ov&&ov.connections&&ov.connections.ga4)||{};
+    var gscOk=gsc.status==='connected';
+    var ga4Ok=ga4.status==='connected';
+    var parts=[];
+    if(gscOk&&gsc.lastSyncAt) parts.push('Google Search last synced '+(_siRelTime(gsc.lastSyncAt)||gsc.lastSyncAt));
+    else if(gscOk) parts.push('Google Search connected — run Sync for fresh numbers');
+    else parts.push('Google Search not connected yet');
+    if(ga4Ok&&ga4.lastSyncAt) parts.push('Analytics last synced '+(_siRelTime(ga4.lastSyncAt)||ga4.lastSyncAt));
+    else if(ga4Ok) parts.push('Analytics connected — run Sync for fresh numbers');
+    if(_siCache.overviewAt) parts.push('Dashboard cached '+(_siRelTime(new Date(_siCache.overviewAt).toISOString())||'just now'));
+    return '<p class="hint" style="margin:0 0 12px;font-size:12px">'+esc(parts.join(' · '))
+      +' · Tab switches use saved data (not AI). Live market checks only when you press Research / Check.</p>';
+  }
+  function _siTabIntroHTML(key){
+    var m=_siTabMeta[key]; if(!m) return '';
+    return '<div class="card" style="margin-bottom:12px;padding:14px 16px;border-left:3px solid var(--accent,#c45c26)">'
+      +'<div style="font-size:13px;font-weight:700;margin-bottom:4px">'+esc(m.title)+'</div>'
+      +'<p class="lede" style="margin:0;font-size:13px;line-height:1.45">'+esc(m.blurb)+'</p></div>';
+  }
   async function _siToken(){
     try{
       var r=await sb.auth.getSession();
@@ -10345,6 +10394,48 @@ function heroCtaCard(c){
       throw new Error(detail);
     }
     return j;
+  }
+  async function _siGetOverview(opts){
+    opts=opts||{};
+    _siCacheResetIfSiteChanged();
+    var force=!!opts.force;
+    var wantCrawl=!!opts.crawl;
+    var fresh=_siCache.overview && (Date.now()-_siCache.overviewAt)<_siOverviewTtlMs;
+    var crawlOk=!wantCrawl||_siCache.overviewCrawl;
+    if(!force && fresh && crawlOk) return _siCache.overview;
+    var key='ov:'+(wantCrawl?'1':'0');
+    if(_siCache.inflight[key]) return _siCache.inflight[key];
+    var q='/api/search-intelligence/overview?siteId='+encodeURIComponent(currentSiteId)+(wantCrawl?'&crawl=1':'');
+    _siCache.inflight[key]=_siFetch(q).then(function(ov){
+      _siCache.overview=ov;
+      _siCache.overviewAt=Date.now();
+      if(wantCrawl) _siCache.overviewCrawl=true;
+      delete _siCache.inflight[key];
+      return ov;
+    }, function(err){
+      delete _siCache.inflight[key];
+      throw err;
+    });
+    return _siCache.inflight[key];
+  }
+  async function _siGetTab(name, path, opts){
+    opts=opts||{};
+    _siCacheResetIfSiteChanged();
+    if(!opts.force && _siCache.tabs[name]) return _siCache.tabs[name];
+    var key='tab:'+name;
+    if(_siCache.inflight[key]) return _siCache.inflight[key];
+    _siCache.inflight[key]=_siFetch(path).then(function(data){
+      _siCache.tabs[name]=data;
+      delete _siCache.inflight[key];
+      return data;
+    }, function(err){
+      delete _siCache.inflight[key];
+      throw err;
+    });
+    return _siCache.inflight[key];
+  }
+  function _siInvalidateCache(){
+    _siCache.overview=null; _siCache.overviewAt=0; _siCache.overviewCrawl=false; _siCache.tabs={}; _siCache.inflight={};
   }
   async function _siAnnotate(type, title, detail){
     if(!currentSiteId||!type) return;
@@ -10369,20 +10460,21 @@ function heroCtaCard(c){
       box.innerHTML='<div class="card"><h2>SEO Command Centre</h2><p class="lede">Select a site to view search visibility, leads and Next Best Actions.</p></div>';
       return;
     }
+    _siCacheResetIfSiteChanged();
     var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['clusters','Clusters'],['local','Local'],['authority','Authority'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections']];
     box.innerHTML=
       '<div class="card" style="margin-bottom:14px">'
       +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
       +'<div><h2 style="margin:0 0 4px">SEO Command Centre</h2>'
-      +'<p class="lede" style="margin:0">Find the opportunity, fix the page, prove the lead — Search Intelligence Phase 1 scaffold.</p></div>'
-      +'<button type="button" class="btn ghost sm" id="si-refresh">Refresh</button>'
+      +'<p class="lede" style="margin:0">Find the opportunity, fix the page, prove the lead. Tabs use saved data — live Google/market checks only when you sync or research.</p></div>'
+      +'<button type="button" class="btn ghost sm" id="si-refresh" title="Clear cache and reload">Refresh</button>'
       +'</div>'
       +'<div class="sec-modeseg" style="margin-top:14px" id="si-tabs">'
-      +tabs.map(function(t){ return '<button type="button" data-si-tab="'+t[0]+'" class="'+(_siTab===t[0]?'on':'')+'">'+t[1]+'</button>'; }).join('')
+      +tabs.map(function(t){ return '<button type="button" data-si-tab="'+t[0]+'" class="'+(_siTab===t[0]?'on':'')+'" title="'+esc((_siTabMeta[t[0]]&&_siTabMeta[t[0]].blurb)||'')+'">'+t[1]+'</button>'; }).join('')
       +'</div></div>'
       +'<div id="si-body"><p class="hint">Loading…</p></div>';
     var ref=document.getElementById('si-refresh');
-    if(ref) ref.addEventListener('click',function(){ _siPaint(); });
+    if(ref) ref.addEventListener('click',function(){ _siInvalidateCache(); _siPaint({force:true}); });
     document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(b){
       b.addEventListener('click',function(){
         _siTab=b.getAttribute('data-si-tab');
@@ -10392,22 +10484,28 @@ function heroCtaCard(c){
     });
     _siPaint();
   }
-  async function _siPaint(){
+  async function _siPaint(opts){
+    opts=opts||{};
     var body=document.getElementById('si-body'); if(!body) return;
-    body.innerHTML='<p class="hint">Loading…</p>';
+    var tab=_siTab;
+    var needsOverview=tab==='home'||tab==='pages'||tab==='keywords'||tab==='actions'||tab==='connect';
+    var canInstant=needsOverview && _siCache.overview && _siCache.siteId===currentSiteId && !opts.force
+      && (Date.now()-_siCache.overviewAt)<_siOverviewTtlMs;
+    var tabCached=!needsOverview && _siCache.tabs[tab] && _siCache.siteId===currentSiteId && !opts.force;
+    if(!canInstant && !tabCached) body.innerHTML='<p class="hint">Loading…</p>';
     try{
-      var crawlQ=_siTab==='actions'?'&crawl=1':'';
-      var ov=await _siFetch('/api/search-intelligence/overview?siteId='+encodeURIComponent(currentSiteId)+crawlQ);
-      if(_siTab==='connect'){ body.innerHTML=_siConnectHTML(ov); return; }
-      if(_siTab==='actions'){ body.innerHTML=_siActionsHTML(ov); _siWireActions(ov); return; }
-      if(_siTab==='pages'){ body.innerHTML=_siPagesHTML(ov); _siWireActions(ov); return; }
-      if(_siTab==='keywords'){ body.innerHTML=_siKeywordsHTML(ov); _siWireKeywords(); return; }
-      if(_siTab==='clusters'){ body.innerHTML='<p class="hint">Loading clusters…</p>'; _siLoadClusters(); return; }
-      if(_siTab==='local'){ body.innerHTML='<p class="hint">Loading local…</p>'; _siLoadLocal(); return; }
-      if(_siTab==='authority'){ body.innerHTML='<p class="hint">Loading authority…</p>'; _siLoadAuthority(); return; }
-      if(_siTab==='summary'){ body.innerHTML='<p class="hint">Loading summary…</p>'; _siLoadSummary(); return; }
-      if(_siTab==='portfolio'){ body.innerHTML='<p class="hint">Loading portfolio…</p>'; _siLoadPortfolio(); return; }
-      body.innerHTML=_siHomeHTML(ov);
+      if(tab==='clusters'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('clusters')+'<p class="hint">Loading topic groups…</p>'; await _siLoadClusters(opts); return; }
+      if(tab==='local'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('local')+'<p class="hint">Loading local visibility…</p>'; await _siLoadLocal(opts); return; }
+      if(tab==='authority'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('authority')+'<p class="hint">Loading brand mentions…</p>'; await _siLoadAuthority(opts); return; }
+      if(tab==='summary'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('summary')+'<p class="hint">Loading scorecard…</p>'; await _siLoadSummary(opts); return; }
+      if(tab==='portfolio'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('portfolio')+'<p class="hint">Loading portfolio…</p>'; await _siLoadPortfolio(opts); return; }
+      var ov=await _siGetOverview({ force:!!opts.force, crawl:false });
+      if(tab!==_siTab) return;
+      if(tab==='connect'){ body.innerHTML=_siTabIntroHTML('connect')+_siFreshnessHTML(ov)+_siConnectHTML(ov); return; }
+      if(tab==='actions'){ body.innerHTML=_siTabIntroHTML('actions')+_siFreshnessHTML(ov)+_siActionsHTML(ov); _siWireActions(ov); return; }
+      if(tab==='pages'){ body.innerHTML=_siTabIntroHTML('pages')+_siFreshnessHTML(ov)+_siPagesHTML(ov); _siWireActions(ov); return; }
+      if(tab==='keywords'){ body.innerHTML=_siTabIntroHTML('keywords')+_siFreshnessHTML(ov)+_siKeywordsHTML(ov); _siWireKeywords(); return; }
+      body.innerHTML=_siTabIntroHTML('home')+_siFreshnessHTML(ov)+_siHomeHTML(ov);
       _siWireActions(ov);
     }catch(e){
       body.innerHTML='<div class="card"><p class="lede">Could not load SEO Command Centre.</p><p class="hint">'+esc((e&&e.message)||'error')+'</p></div>';
@@ -10593,10 +10691,11 @@ function heroCtaCard(c){
       if(typeof cb==='function') cb();
     }catch(e){ toast(String(e.message||e)); }
   }
-  async function _siLoadLocal(){
+  async function _siLoadLocal(opts){
+    opts=opts||{};
     var body=document.getElementById('si-body'); if(!body) return;
     try{
-      var j=await _siFetch('/api/search-intelligence/local?siteId='+encodeURIComponent(currentSiteId));
+      var j=await _siGetTab('local','/api/search-intelligence/local?siteId='+encodeURIComponent(currentSiteId),opts);
       var L=j.listings||{};
       var M=j.opportunityMap||{};
       var gbp=j.gbp||{};
@@ -10610,7 +10709,7 @@ function heroCtaCard(c){
         return '<tr><td>'+esc(g.area)+'</td><td>'+esc(g.clusterName||g.primaryKeyword)+'</td><td>'+esc(g.opportunity)+'</td>'
           +'<td><button type="button" class="btn sm si-suburb-brief" data-i="'+i+'" data-area="'+esc(g.area)+'" data-kw="'+esc(g.primaryKeyword||'')+'">Draft page</button></td></tr>';
       }).join('');
-      body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Local listings</h2>'
+      body.innerHTML=_siTabIntroHTML('local')+'<div class="card"><h2 style="margin:0 0 8px">Local listings</h2>'
         +'<p class="lede" style="margin:0 0 12px">NAP readiness score: <strong>'+esc(L.listingsScore!=null?Math.round(L.listingsScore*100):'—')+'</strong> · GBP: <strong>'+esc(gbp.status||'not_connected')+'</strong></p>'
         +(findings||'<p class="hint">No NAP issues from first-party site facts.</p>')
         +'<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">'
@@ -10701,10 +10800,11 @@ function heroCtaCard(c){
       body.innerHTML='<div class="card"><p class="lede">Local view unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
     }
   }
-  async function _siLoadAuthority(){
+  async function _siLoadAuthority(opts){
+    opts=opts||{};
     var body=document.getElementById('si-body'); if(!body) return;
     try{
-      var j=await _siFetch('/api/search-intelligence/authority?siteId='+encodeURIComponent(currentSiteId));
+      var j=await _siGetTab('authority','/api/search-intelligence/authority?siteId='+encodeURIComponent(currentSiteId),opts);
       var U=j.universe||{};
       var A=j.adsKeywords||{};
       var shared=(U.shared||[]).slice(0,12).map(function(k){ return '<li>'+esc(k)+'</li>'; }).join('');
@@ -10713,7 +10813,7 @@ function heroCtaCard(c){
       var findings=(U.findings||[]).map(function(f){
         return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px"><strong>'+esc(f.title)+'</strong><div class="lede" style="margin:6px 0 0">'+esc(f.plainLanguage||'')+'</div></div>';
       }).join('');
-      body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">SEO ↔ Ads keyword universe</h2>'
+      body.innerHTML=_siTabIntroHTML('authority')+'<div class="card"><h2 style="margin:0 0 8px">SEO ↔ Ads keyword universe</h2>'
         +'<p class="lede" style="margin:0 0 10px">Organic tracked: <strong>'+esc(U.organicCount||0)+'</strong> · Ads: <strong>'+esc(U.adsCount||0)+'</strong> · Shared: <strong>'+esc(U.sharedCount||0)+'</strong></p>'
         +'<p class="hint">Ads status: '+esc(A.connectionStatus||'—')+' · '+esc(A.note||'')+'</p>'
         +(findings||'')
@@ -10782,11 +10882,12 @@ function heroCtaCard(c){
       body.innerHTML='<div class="card"><p class="lede">Authority view unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
     }
   }
-  async function _siLoadClusters(){
+  async function _siLoadClusters(opts){
+    opts=opts||{};
     var body=document.getElementById('si-body'); if(!body) return;
-    async function paint(){
+    async function paint(force){
       try{
-        var j=await _siFetch('/api/search-intelligence/clusters?siteId='+encodeURIComponent(currentSiteId));
+        var j=await _siGetTab('clusters','/api/search-intelligence/clusters?siteId='+encodeURIComponent(currentSiteId),{force:!!force||!!opts.force});
         var clusters=j.clusters||[];
         var cards=clusters.map(function(c){
           return '<div style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 10px">'
@@ -10801,7 +10902,7 @@ function heroCtaCard(c){
             +'<button type="button" class="btn ghost sm si-cluster-opt" data-cluster-id="'+esc(c.id||'')+'" data-kw="'+esc(c.primaryKeyword||'')+'">Page Optimiser</button>'
             +'</div></div>';
         }).join('');
-        body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Keyword clusters</h2>'
+        body.innerHTML=_siTabIntroHTML('clusters')+'<div class="card"><h2 style="margin:0 0 8px">Keyword clusters</h2>'
           +'<p class="lede" style="margin:0 0 12px">Group tracked keywords by service intent (location stripped). Briefs are modelled drafts — never auto-published.</p>'
           +'<button type="button" class="btn" id="si-cluster-rebuild">Rebuild clusters</button>'
           +'<div id="si-cluster-list" style="margin-top:14px">'
@@ -10822,7 +10923,8 @@ function heroCtaCard(c){
             var jj=await r.json().catch(function(){return {};});
             if(!r.ok) throw new Error(jj.message||jj.error||('http_'+r.status));
             toast('Built '+(jj.count||0)+' clusters');
-            paint();
+            delete _siCache.tabs.clusters;
+            paint(true);
           }catch(e){ toast(String(e.message||e)); reb.disabled=false; }
         });
         Array.prototype.forEach.call(body.querySelectorAll('.si-cluster-opt'),function(btn){
@@ -10923,12 +11025,13 @@ function heroCtaCard(c){
     }
     paint();
   }
-  async function _siLoadSummary(){
+  async function _siLoadSummary(opts){
+    opts=opts||{};
     var body=document.getElementById('si-body'); if(!body) return;
     try{
-      var j=await _siFetch('/api/search-intelligence/summary?siteId='+encodeURIComponent(currentSiteId)+'&persist=0');
+      var j=await _siGetTab('summary','/api/search-intelligence/summary?siteId='+encodeURIComponent(currentSiteId)+'&persist=0',opts);
       var crmAreas=((j.metrics&&j.metrics.crmByArea)||(j.crmOutcomes&&j.crmOutcomes.byArea)||[]).filter(function(a){return a.leads>0;}).slice(0,8);
-      body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Client summary</h2>'
+      body.innerHTML=_siTabIntroHTML('summary')+'<div class="card"><h2 style="margin:0 0 8px">Client summary</h2>'
         +'<p class="lede" style="margin:0 0 12px">'+esc(j.businessName||'')+' · '+esc(j.periodStart||'')+' → '+esc(j.periodEnd||'')+'</p>'
         +'<ul style="margin:0 0 14px;padding-left:1.2rem">'+(j.bullets||[]).map(function(b){ return '<li style="margin:0 0 6px">'+esc(b)+'</li>'; }).join('')+'</ul>'
         +((j.metrics&&(j.metrics.crmWon!=null||j.metrics.crmTotalLeads!=null))?'<h3 style="margin:0 0 8px;font-size:14px">CRM multi-location</h3>'
@@ -10978,12 +11081,13 @@ function heroCtaCard(c){
       body.innerHTML='<div class="card"><p class="lede">Could not load summary.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
     }
   }
-  async function _siLoadPortfolio(){
+  async function _siLoadPortfolio(opts){
+    opts=opts||{};
     var body=document.getElementById('si-body'); if(!body) return;
     try{
-      var j=await _siFetch('/api/search-intelligence/portfolio');
+      var j=await _siGetTab('portfolio','/api/search-intelligence/portfolio',opts);
       if(j.hint&&!(j.sites&&j.sites.length)){
-        body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Partner portfolio</h2><p class="lede">'+esc(j.hint)+'</p><p class="hint">Partners see all sites they service or referred.</p></div>';
+        body.innerHTML=_siTabIntroHTML('portfolio')+'<div class="card"><h2 style="margin:0 0 8px">Partner portfolio</h2><p class="lede">'+esc(j.hint)+'</p><p class="hint">Partners see all sites they service or referred.</p></div>';
         return;
       }
       var s=j.summary||{};
@@ -11006,7 +11110,7 @@ function heroCtaCard(c){
             +'<td><button type="button" class="btn ghost sm si-pf-email" data-site-id="'+esc(site.siteId)+'">Email</button></td>'
             +'</tr>';
         }).join('');
-        body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Partner portfolio</h2>'
+        body.innerHTML=_siTabIntroHTML('portfolio')+'<div class="card"><h2 style="margin:0 0 8px">Partner portfolio</h2>'
           +'<p class="lede" style="margin:0 0 10px">'+esc(s.total||0)+' sites · '+esc(s.atRisk||0)+' at risk · '+esc(s.good||0)+' good · '+esc(s.partial||0)+' partial · '+esc(s.needsSetup||0)+' need setup</p>'
           +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px">'
           +'<button type="button" class="btn '+(filter==='all'?'':'ghost')+' sm" data-si-pf="all">All</button>'
@@ -11048,15 +11152,19 @@ function heroCtaCard(c){
       var x=c[key]||{};
       var st=x.status||'unknown';
       var plat=x.oauthReady===true?' · OAuth ready':(x.platformConfigured===true?' · credentials set':(x.platformConfigured===false?' · platform not configured':''));
+      var syncBit='';
+      if(x.lastSyncAt) syncBit=' · Last synced '+(_siRelTime(x.lastSyncAt)||x.lastSyncAt);
+      else if(st==='connected') syncBit=' · Never synced yet — open settings and press Sync';
+      var errBit=x.lastSyncError?' · Sync error: '+x.lastSyncError:'';
       return '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)">'
-        +'<div><strong>'+esc(label)+'</strong><div class="hint" style="margin:4px 0 0">Status: '+esc(st)+esc(plat)
+        +'<div><strong>'+esc(label)+'</strong><div class="hint" style="margin:4px 0 0">Status: '+esc(st)+esc(plat)+esc(syncBit)+esc(errBit)
         +(x.hint?' — '+esc(x.hint):'')
         +'</div></div>'
         +(x.connectPath?'<a class="btn ghost sm" href="'+esc(x.connectPath)+'" style="text-decoration:none">Open</a>':'')
         +'</div>';
     }
     return '<div class="card"><h2 style="margin:0 0 6px">Connections</h2>'
-      +'<p class="lede">Connect Search Console, GA4 and GBP when platform credentials and encryption are configured. Tokens stay encrypted server-side.</p>'
+      +'<p class="lede">Connect Google so LeadPages can store your search and traffic history on file. Sync pulls Google data into this dashboard — it is not an AI call. After syncing, every tab reads that saved data.</p>'
       +row('search_console','Google Search Console')
       +row('ga4','Google Analytics 4')
       +row('gbp','Google Business Profile')
@@ -11085,11 +11193,21 @@ function heroCtaCard(c){
   function _siActionsHTML(ov){
     var open=((ov&&ov.nextBestActions)||[]).filter(function(a){ return a.status==='open'; });
     var catalog=((ov&&ov.nextBestActions)||[]).filter(function(a){ return a.status!=='open'; });
+    var crawlHint='Saved config checks only — homepage crawl runs when you press Re-check.';
+    if(ov&&ov.crawl&&!ov.crawl.skipped&&ov.crawl.crawledAt){
+      crawlHint='Homepage last checked '+(_siRelTime(ov.crawl.crawledAt)||ov.crawl.crawledAt)
+        +(ov.crawl.issueCount!=null?' · '+ov.crawl.issueCount+' crawl finding(s)':'');
+    } else if(ov&&ov.crawl&&ov.crawl.skipped){
+      crawlHint='Homepage crawl not run yet (or skipped). Press Re-check homepage to fetch live HTML once.';
+    }
     return '<div class="card"><h2 style="margin:0 0 8px">Next Best Actions</h2>'
-      +'<p class="lede" style="margin:0 0 14px">Findings from saved configuration'
+      +'<p class="lede" style="margin:0 0 10px">Findings from saved configuration'
       +(ov&&ov.audit?' ('+ov.audit.issueCount+' config)':'')
-      +(ov&&ov.crawl&&ov.crawl.issueCount!=null?' · '+(ov.crawl.skipped?'crawl skipped':'')+(ov.crawl.issueCount||0)+' crawl':'')
       +'.</p>'
+      +'<p class="hint" style="margin:0 0 12px">'+esc(crawlHint)+'</p>'
+      +'<div class="row" style="gap:8px;flex-wrap:wrap;margin:0 0 14px">'
+      +'<button type="button" class="btn sm ghost" id="si-recheck-home">Re-check homepage</button>'
+      +'</div>'
       +_siActionsList(open.length?open:(ov&&ov.nextBestActions)||[])
       +(catalog.length?'<p class="hint" style="margin-top:16px">Catalog recipes stay available after connectors land.</p>':'')
       +'</div>'
@@ -11111,6 +11229,16 @@ function heroCtaCard(c){
   function _siWireActions(ov){
     var go=document.getElementById('si-goto-actions');
     if(go) go.addEventListener('click',function(){ _siTab='actions'; document.querySelectorAll('#si-tabs [data-si-tab]').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-si-tab')==='actions'); }); _siPaint(); });
+    var recheck=document.getElementById('si-recheck-home');
+    if(recheck) recheck.addEventListener('click',async function(){
+      recheck.disabled=true; recheck.textContent='Checking…';
+      try{
+        _siCache.overviewCrawl=false;
+        await _siGetOverview({ force:true, crawl:true });
+        toast('Homepage re-checked');
+        _siPaint({ force:true });
+      }catch(e){ toast(String((e&&e.message)||e)); recheck.disabled=false; recheck.textContent='Re-check homepage'; }
+    });
     document.querySelectorAll('#si-body [data-si-act]').forEach(function(b){
       b.addEventListener('click',function(){
         var act=b.getAttribute('data-si-act');
