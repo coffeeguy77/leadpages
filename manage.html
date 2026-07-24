@@ -11654,6 +11654,8 @@ function heroCtaCard(c){
     var tabs=[
       ['overview','Overview'],
       ['campaigns','Campaigns'],
+      ['builder','Campaign Builder'],
+      ['readiness','Tracking readiness'],
       ['landing_pages','Landing Pages'],
       ['leads','Leads'],
       ['health','Connection & Health']
@@ -11662,7 +11664,7 @@ function heroCtaCard(c){
       '<div class="card" style="margin-bottom:14px">'
       +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
       +'<div><h2 style="margin:0 0 4px">Advertising</h2>'
-      +'<p class="lede" style="margin:0">Google Ads spend, visitors, call clicks and form submissions — joined to your LeadPages landing pages.</p></div>'
+      +'<p class="lede" style="margin:0">Google Ads performance, Smart Campaign Builder, and tracking readiness. New campaigns are always created <strong>paused</strong>.</p></div>'
       +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
       +'<select id="gads-days" class="tin" style="width:auto">'
       +[7,14,30,90].map(function(d){ return '<option value="'+d+'"'+(_gadsDays===d?' selected':'')+'>'+d+' days</option>'; }).join('')
@@ -11692,6 +11694,10 @@ function heroCtaCard(c){
     var body=document.getElementById('gads-body'); if(!body) return;
     body.innerHTML='<p class="hint">Loading…</p>';
     try{
+      if(_gadsTab==='builder' || _gadsTab==='readiness'){
+        await _gadsPaintBuilder(_gadsTab);
+        return;
+      }
       if(_gadsTab==='overview' || _gadsTab==='health'){
         var st=await _gadsFetch('/api/google-ads/status?siteId='+encodeURIComponent(currentSiteId)+'&days='+_gadsDays);
         _gadsCache.status=st;
@@ -11713,6 +11719,136 @@ function heroCtaCard(c){
       body.innerHTML='<div class="card"><p class="lede">Could not load Advertising data.</p><p class="hint">'+(esc((e&&e.message)||'error'))+'</p>'
         +'<p class="hint">If you have not applied <code>db/google_ads_schema.sql</code> yet, run it in Supabase first. Platform Google Ads OAuth env vars are also required to connect an account.</p></div>';
     }
+  }
+
+  var _gadsBuilderPlan=null;
+  async function _gadsBuilderPost(action, extra){
+    var tok=await (typeof cwToken==='function'?cwToken():Promise.resolve(null));
+    var r=await fetch('/api/google-ads/builder',{
+      method:'POST',
+      headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},
+      body:JSON.stringify(Object.assign({siteId:currentSiteId,action:action},extra||{}))
+    });
+    var j=await r.json().catch(function(){return {};});
+    if(!r.ok) throw new Error(j.message||j.error||('HTTP '+r.status));
+    return j;
+  }
+  async function _gadsPaintBuilder(tab){
+    var body=document.getElementById('gads-body'); if(!body) return;
+    var j=await _gadsFetch('/api/google-ads/builder?siteId='+encodeURIComponent(currentSiteId));
+    var flags=j.flags||{};
+    if(tab==='readiness'){
+      body.innerHTML='<div class="card"><h2 style="margin:0 0 8px">Tracking readiness</h2>'
+        +'<p class="lede">Automated checks before you enable a campaign. Critical failures block publish. Prefer LeadPages Native events; GTM is optional inspection.</p>'
+        +'<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:10px">'
+        +'<button type="button" class="btn sm" id="gads-run-ready">Run readiness audit</button>'
+        +'<a class="btn ghost sm" href="/settings/integrations/tag-manager?siteId='+encodeURIComponent(currentSiteId)+'" style="text-decoration:none">Google Tag Manager</a>'
+        +'</div>'
+        +'<div id="gads-ready-out" class="hint" style="margin-top:12px"></div></div>';
+      var btn=document.getElementById('gads-run-ready');
+      if(btn) btn.onclick=async function(){
+        var out=document.getElementById('gads-ready-out');
+        out.textContent='Running…';
+        try{
+          var rr=await _gadsBuilderPost('readiness',{plan:_gadsBuilderPlan});
+          var res=rr.result||{};
+          out.innerHTML='<p><strong>Overall: '+esc(res.overall)+'</strong> — '+esc(res.message||'')+'</p>'
+            +'<ul style="padding-left:18px">'+(res.checks||[]).map(function(c){
+              return '<li><strong>'+esc(c.status)+'</strong> · '+esc(c.label)+(c.detail?' — '+esc(c.detail):'')+'</li>';
+            }).join('')+'</ul>';
+        }catch(e){ out.textContent=String(e.message||e); }
+      };
+      return;
+    }
+    var pages=j.pages||[];
+    body.innerHTML='<div class="card" style="margin-bottom:14px"><h2 style="margin:0 0 6px">Smart Campaign Builder</h2>'
+      +'<p class="lede">Plan a Search campaign from this site. Creates are always <strong>PAUSED</strong>. Mutations require feature flags.</p>'
+      +'<p class="hint">Flags: builder '+(flags.GOOGLE_ADS_CAMPAIGN_BUILDER?'on':'off')
+      +' · mutations '+(flags.GOOGLE_ADS_CAMPAIGN_MUTATIONS?'on':'off')
+      +' · publish '+(flags.GOOGLE_ADS_CAMPAIGN_PUBLISH?'on':'off')
+      +' · budget '+(flags.GOOGLE_ADS_BUDGET_MUTATIONS?'on':'off')
+      +' · status '+(flags.GOOGLE_ADS_STATUS_MUTATIONS?'on':'off')+'</p>'
+      +'<div class="f" style="margin:10px 0"><label>Landing page</label><select id="gads-plan-page" class="tin">'
+      +pages.map(function(p){ return '<option value="'+esc(p.id||p.slug)+'">'+esc(p.title||p.slug||'Page')+'</option>'; }).join('')
+      +(!pages.length?'<option value="">No published pages</option>':'')
+      +'</select></div>'
+      +'<div class="f" style="margin:10px 0"><label>Daily budget (required before create — we never invent this)</label>'
+      +'<input id="gads-plan-budget" class="tin" type="number" min="1" step="1" placeholder="e.g. 40"></div>'
+      +'<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:10px">'
+      +'<button type="button" class="btn sm" id="gads-plan-page-btn">Plan for page</button>'
+      +'<button type="button" class="btn ghost sm" id="gads-plan-site-btn">Plan for whole site</button>'
+      +'<button type="button" class="btn ghost sm" id="gads-plan-ai-btn">AI recommendation</button>'
+      +'<button type="button" class="btn ghost sm" id="gads-plan-pilot-btn">Coffee Events pilot defaults</button>'
+      +'<button type="button" class="btn ghost sm" id="gads-sync-maps">Sync campaigns from Google</button>'
+      +'</div>'
+      +'<div id="gads-plan-out" style="margin-top:14px"></div></div>'
+      +'<div class="card"><h2 style="margin:0 0 8px">Mapped campaigns</h2>'
+      +((j.campaigns&&j.campaigns.length)?('<div style="overflow:auto"><table class="ana-table"><thead><tr><th>Campaign</th><th>Domain</th><th>Status</th><th>Ownership</th><th>Daily budget</th><th></th></tr></thead><tbody>'
+        +j.campaigns.map(function(c){
+          var daily=c.daily_budget_micros!=null?(Number(c.daily_budget_micros)/1e6).toFixed(2):'—';
+          return '<tr><td>'+esc(c.campaign_name||c.campaign_id)+'</td><td>'+esc(c.primary_domain||'—')+'</td><td>'+esc(c.status||'—')+'</td><td>'+esc(c.ownership||'—')+'</td><td>'+esc(daily)+'</td>'
+            +'<td><button type="button" class="btn ghost sm gads-pause" data-id="'+esc(c.campaign_id)+'">Pause</button> '
+            +'<button type="button" class="btn ghost sm gads-resume" data-id="'+esc(c.campaign_id)+'">Resume</button></td></tr>';
+        }).join('')+'</tbody></table></div>')
+        :'<p class="hint">No mapped campaigns yet. Sync from Google or create a paused campaign from a plan.</p>')
+      +'</div>';
+
+    function showPlan(plan){
+      _gadsBuilderPlan=plan;
+      var p=plan.draftPlan||plan;
+      var out=document.getElementById('gads-plan-out');
+      var kws=((p.adGroups&&p.adGroups[0]&&p.adGroups[0].keywords)||[]).slice(0,12);
+      out.innerHTML='<h3 style="margin:0 0 8px">'+esc(p.campaignName||'Draft')+'</h3>'
+        +'<p class="hint">Status on create: <strong>PAUSED</strong> · Domain: '+esc(p.primaryDomain||'—')+' · Geo: '+esc(p.geoFocus||'—')+'</p>'
+        +'<p class="lede">'+(esc(p.budgetNote||('Daily budget: '+(p.budgetDaily!=null?p.budgetDaily:'not set'))))+'</p>'
+        +'<p class="hint">'+esc(p.metricsNote||'')+'</p>'
+        +'<ul style="padding-left:18px">'+kws.map(function(k){ return '<li>'+esc(k.keyword)+' · '+esc(k.matchType)+' · '+esc(k.intent)+'</li>'; }).join('')+'</ul>'
+        +((p.warnings&&p.warnings.length)?'<p class="hint" style="color:#b45309">'+esc(p.warnings.join(' · '))+'</p>':'')
+        +'<button type="button" class="btn sm" id="gads-create-paused" style="margin-top:10px">Create campaign as PAUSED</button>';
+      var cre=document.getElementById('gads-create-paused');
+      if(cre) cre.onclick=async function(){
+        var budgetEl=document.getElementById('gads-plan-budget');
+        var budget=budgetEl?Number(budgetEl.value):NaN;
+        if(!(budget>0)){ toast('Enter a daily budget first'); return; }
+        p.budgetDaily=budget;
+        cre.disabled=true; cre.textContent='Creating…';
+        try{
+          var rr=await _gadsBuilderPost('create_paused',{plan:p,idempotencyKey:'ui_'+currentSiteId+'_'+Date.now()});
+          toast((rr.result&&rr.result.message)||'Created paused');
+          _gadsPaint();
+        }catch(e){ toast(String(e.message||e)); cre.disabled=false; cre.textContent='Create campaign as PAUSED'; }
+      };
+    }
+    async function runPlan(action){
+      var pageSel=document.getElementById('gads-plan-page');
+      var budgetEl=document.getElementById('gads-plan-budget');
+      var pageId=pageSel?pageSel.value:'';
+      var budget=budgetEl&&budgetEl.value?Number(budgetEl.value):undefined;
+      try{
+        var rr=await _gadsBuilderPost(action,{pageId:pageId,budgetDaily:budget});
+        showPlan(rr.plan);
+        toast('Plan ready — review before create');
+      }catch(e){ toast(String(e.message||e)); }
+    }
+    var b1=document.getElementById('gads-plan-page-btn'); if(b1) b1.onclick=function(){ runPlan('plan_page'); };
+    var b2=document.getElementById('gads-plan-site-btn'); if(b2) b2.onclick=function(){ runPlan('plan_site'); };
+    var b3=document.getElementById('gads-plan-ai-btn'); if(b3) b3.onclick=function(){ runPlan('recommend'); };
+    var b4=document.getElementById('gads-plan-pilot-btn'); if(b4) b4.onclick=function(){ runPlan('pilot_defaults'); };
+    var b5=document.getElementById('gads-sync-maps'); if(b5) b5.onclick=async function(){
+      try{ await _gadsBuilderPost('sync_campaigns'); toast('Campaign sync requested'); _gadsPaint(); }catch(e){ toast(String(e.message||e)); }
+    };
+    document.querySelectorAll('.gads-pause').forEach(function(btn){
+      btn.onclick=async function(){
+        if(!confirm('Pause this campaign? It will stop spending.')) return;
+        try{ await _gadsBuilderPost('pause',{campaignId:btn.getAttribute('data-id'),confirmExternal:true}); toast('Pause requested'); _gadsPaint(); }catch(e){ toast(String(e.message||e)); }
+      };
+    });
+    document.querySelectorAll('.gads-resume').forEach(function(btn){
+      btn.onclick=async function(){
+        if(!confirm('Resume this campaign? Spend may start immediately.')) return;
+        try{ await _gadsBuilderPost('resume',{campaignId:btn.getAttribute('data-id'),confirmResume:true,confirmExternal:true}); toast('Resume requested'); _gadsPaint(); }catch(e){ toast(String(e.message||e)); }
+      };
+    });
   }
 
   function _gadsOverviewHTML(st){

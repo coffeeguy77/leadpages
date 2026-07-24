@@ -19,29 +19,14 @@ const {
   mergeAttributionIntoProps
 } = require('../lib/attribution');
 const { deliverConversion } = require('../lib/google-ads/conversions');
+const {
+  STANDARD_EVENTS,
+  normalizeEventName,
+  isAllowedEvent
+} = require('../lib/tracking/events-contract');
 
 const clean = (s, n = 120) => (s == null ? '' : String(s)).trim().slice(0, n);
-const ALLOWED = [
-  'page_view',
-  'call_click',
-  'lead_submit',
-  'quote_open',
-  'cta_click',
-  'email_click',
-  'directions_click',
-  'gallery_impression',
-  'gallery_filter',
-  'gallery_category',
-  'gallery_album',
-  'gallery_image_click',
-  'gallery_lightbox',
-  'gallery_zoom',
-  'gallery_nav',
-  'gallery_load_more',
-  'gallery_slideshow',
-  'gallery_download',
-  'gallery_share'
-];
+const ALLOWED = STANDARD_EVENTS;
 
 function readBody(req) {
   return new Promise((resolve) => {
@@ -72,8 +57,10 @@ module.exports = async (req, res) => {
 
   try {
     const b = await readBody(req);
-    const event = clean(b.event, 40);
-    if (!event || ALLOWED.indexOf(event) < 0) return ok(); // ignore unknown/empty events quietly
+    const rawEvent = clean(b.event, 40);
+    const event = normalizeEventName(rawEvent) || rawEvent;
+    if (!event || !isAllowedEvent(rawEvent)) return ok(); // ignore unknown/empty events quietly
+    const isTest = !!(b.test || (b.props && b.props.test) || (b.props && b.props.isTest));
 
     const site_id = await resolveSiteId({ siteId: clean(b.siteId, 64), slug: clean(b.slug, 120), site: clean(b.site, 160) });
 
@@ -82,6 +69,8 @@ module.exports = async (req, res) => {
     if (b.props && typeof b.props === 'object') {
       try { props = JSON.parse(JSON.stringify(b.props)); } catch { props = {}; }
     }
+    if (isTest) props.isTest = true;
+    if (b.eventId || props.eventId) props.eventId = clean(b.eventId || props.eventId, 80);
 
     // Attribution may arrive in props or top-level body fields
     const attr = pickAttribution(Object.assign({}, b, props));
@@ -97,20 +86,45 @@ module.exports = async (req, res) => {
       props,
       site: clean(b.site, 160) || null
     });
+    // Also store legacy alias for dashboards that still query call_click / lead_submit
+    if (rawEvent && rawEvent !== event && ALLOWED.indexOf(rawEvent) >= 0) {
+      try {
+        await admin.from('events').insert({
+          site_id: site_id || null,
+          event: rawEvent,
+          props: Object.assign({}, props, { aliasedTo: event }),
+          site: clean(b.site, 160) || null
+        });
+      } catch (_e) { /* ignore */ }
+    }
 
-    // Call-click → Google Ads conversion (after internal success). Never blocks response.
-    if (event === 'call_click' && site_id) {
+    if (isTest) return ok(); // test conversions never upload to Google Ads
+
+    // Call-click / phone_click → Google Ads conversion
+    if ((event === 'call_click' || event === 'phone_click') && site_id) {
       try {
         await deliverConversion(admin, {
           siteId: site_id,
           eventKey: 'call_click',
-          internalEvent: 'call_click',
+          internalEvent: event,
           attr,
           occurredAt: new Date().toISOString()
         });
       } catch (e) {
         console.error('call_click conversion:', e && e.message);
       }
+    }
+
+    if ((event === 'form_submit' || event === 'lead_submit' || event === 'generate_lead') && site_id) {
+      try {
+        await deliverConversion(admin, {
+          siteId: site_id,
+          eventKey: 'form_submission',
+          internalEvent: event,
+          attr,
+          occurredAt: new Date().toISOString()
+        });
+      } catch (_e) { /* ignore */ }
     }
 
     // Secondary CTA conversions when roles allow

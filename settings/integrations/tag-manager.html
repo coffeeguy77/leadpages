@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Google Tag Manager — LeadPages Integrations</title>
+  <link rel="icon" href="/favicon.ico">
+  <meta name="theme-color" content="#1f7a63">
+  <script>
+  (function(){
+    try{
+      var raw=localStorage.getItem('leadpages_workspace_appearance');
+      var prefs=raw?JSON.parse(raw):null;
+      var theme=(prefs&&prefs.theme)||'classic-light';
+      if(theme==='system'){
+        theme=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'command-dark':'classic-light';
+      }
+      var allowed=['classic-light','command-dark','neon-pink','electric-blue','blush','blueprint'];
+      if(allowed.indexOf(theme)<0) theme='classic-light';
+      document.documentElement.dataset.theme=theme;
+      var dark=(theme==='command-dark'||theme==='neon-pink'||theme==='electric-blue');
+      document.documentElement.style.colorScheme=dark?'dark':'light';
+    }catch(e){}
+  })();
+  </script>
+  <link rel="stylesheet" href="/assets/lp-themes.css">
+  <script src="/assets/lp-workspace-appearance.js"></script>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+    .wrap{max-width:720px;margin:0 auto;padding:32px 18px 64px}
+    .brand{font-weight:800;letter-spacing:-.02em;font-size:18px;margin-bottom:18px;color:var(--ink)}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 20px;box-shadow:var(--shadow);margin-bottom:14px}
+    h1{font-size:22px;margin:0 0 6px;color:var(--ink)}
+    .lede{color:var(--ink-soft);margin:0 0 16px}
+    .hint{color:var(--ink-soft);font-size:13px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    label{display:block;font-weight:600;font-size:13px;margin:0 0 6px;color:var(--ink)}
+    select,button,.btn{font:inherit}
+    select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--input-bg,var(--panel));color:var(--ink)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:10px;border:1px solid transparent;background:var(--button-bg,var(--accent));color:var(--accent-text,#fff);font-weight:700;cursor:pointer;text-decoration:none}
+    .btn.ghost{background:var(--panel);color:var(--ink);border-color:var(--line)}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .ok{color:var(--accent);font-weight:700}
+    .warn{color:var(--warning,#b45309);font-weight:600}
+    .foot{margin-top:22px;font-size:12.5px;color:var(--muted)}
+    .foot a{color:var(--ink-soft)}
+    .status{display:grid;gap:8px;margin:14px 0;font-size:14px}
+    .status div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:8px 0;color:var(--ink)}
+    code{font-size:12px;background:var(--accent-soft);padding:2px 6px;border-radius:6px;color:var(--ink)}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">LeadPages · Integrations</div>
+    <div class="card">
+      <h1>Google Tag Manager</h1>
+      <p class="lede">Connect GTM for container inspection. LeadPages Native tracking is recommended. Managed publish stays off until <code>GTM_MANAGED_PUBLISH=1</code>.</p>
+      <div id="auth-box"><p class="hint">Checking sign-in…</p></div>
+    </div>
+    <div class="card" id="panel" hidden>
+      <label for="site">Site</label>
+      <select id="site"></select>
+      <div class="status" id="status"></div>
+      <div class="row" style="margin-top:14px">
+        <button type="button" class="btn" id="connect">Connect Google Tag Manager</button>
+        <button type="button" class="btn ghost" id="inspect" hidden>Inspect container</button>
+        <button type="button" class="btn ghost" id="disconnect" hidden>Disconnect</button>
+        <a class="btn ghost" id="open-ready" href="/manage?view=advertising&amp;gadsTab=readiness" style="text-decoration:none">Tracking readiness</a>
+      </div>
+      <p class="hint" style="margin-top:14px">Callback URI (allowlist in Google Cloud): <code id="redir">—</code></p>
+    </div>
+    <p class="foot">
+      Application: <code>app.leadpages.com.au</code> ·
+      <a href="/manage">Back to Command Centre</a>
+    </p>
+  </div>
+  <script>
+  (function(){
+    if(window.LPWorkspaceAppearance){ try{ LPWorkspaceAppearance.init(); }catch(e){} }
+    var SUPABASE_URL = (window.__LP&&window.__LP.url)||'';
+    var SUPABASE_ANON = (window.__LP&&window.__LP.anon)||'';
+    var sb=null, session=null, sites=[], currentSiteId=null;
+    function $(id){ return document.getElementById(id); }
+    function qs(name){ try{ return new URLSearchParams(location.search).get(name); }catch(e){ return null; } }
+    function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]); }); }
+
+    async function boot(){
+      if(!SUPABASE_URL||!SUPABASE_ANON){
+        $('auth-box').innerHTML='<p class="hint">Open from Command Centre after sign-in.</p>';
+        return;
+      }
+      sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+      var s=await sb.auth.getSession();
+      session=s&&s.data&&s.data.session;
+      if(!session){
+        $('auth-box').innerHTML='<p class="warn">Sign in required.</p><div class="row" style="margin-top:12px"><a class="btn" href="/manage">Sign in</a></div>';
+        return;
+      }
+      $('auth-box').innerHTML='<p class="ok">Signed in as '+esc(session.user.email||session.user.id)+'</p>';
+      if(qs('gtm')==='connected') $('auth-box').innerHTML+='<p class="ok">GTM connected.</p>';
+      if(qs('gtm_error')) $('auth-box').innerHTML+='<p class="warn">Error: '+esc(qs('gtm_error'))+'</p>';
+      $('panel').hidden=false;
+      await loadSites();
+      wire();
+      await refreshStatus();
+    }
+
+    async function loadSites(){
+      var r=await sb.from('sites').select('id,slug,business_name').order('business_name');
+      sites=r.data||[];
+      var sel=$('site');
+      sel.innerHTML=sites.map(function(s){
+        return '<option value="'+esc(s.id)+'">'+esc(s.business_name||s.slug)+' ('+esc(s.slug)+')</option>';
+      }).join('')||'<option value="">No sites</option>';
+      var prefer=qs('siteId')||qs('site');
+      if(prefer){
+        var match=sites.find(function(s){ return s.id===prefer||s.slug===prefer; });
+        if(match) sel.value=match.id;
+      }
+      currentSiteId=sel.value||null;
+    }
+
+    async function refreshStatus(){
+      currentSiteId=$('site').value||null;
+      if(!currentSiteId){ $('status').innerHTML=''; return; }
+      try{
+        var r=await fetch('/api/integrations/tag-manager/status?siteId='+encodeURIComponent(currentSiteId),{
+          headers:{Authorization:'Bearer '+session.access_token}
+        });
+        var j=await r.json().catch(function(){ return {}; });
+        if(!r.ok) throw new Error(j.error||'status_failed');
+        if(j.redirectUri) $('redir').textContent=j.redirectUri;
+        $('status').innerHTML=
+          '<div><span>Feature flag</span><strong>'+(j.enabled?'on':'off')+'</strong></div>'
+          +'<div><span>OAuth configured</span><strong>'+(j.configured?'Yes':'No')+'</strong></div>'
+          +'<div><span>Connected</span><strong>'+(j.connected?'Yes':'No')+'</strong></div>'
+          +'<div><span>Account / container</span><strong>'+esc((j.accountId||'—')+' / '+(j.containerId||j.containerPublicId||'—'))+'</strong></div>'
+          +'<div><span>Managed publish</span><strong>'+(j.publishAllowed?'allowed':'blocked')+'</strong></div>';
+        $('disconnect').hidden=!j.connected;
+        $('inspect').hidden=!(j.connected&&j.containerId);
+        $('connect').textContent=j.connected?'Reconnect GTM':'Connect Google Tag Manager';
+        var site=sites.find(function(s){ return s.id===currentSiteId; });
+        $('open-ready').href='/manage?view=advertising&gadsTab=readiness'+(site&&site.slug?('&site='+encodeURIComponent(site.slug)):'');
+      }catch(e){
+        $('status').innerHTML='<div><span class="warn">'+esc(e.message||'Could not load status')+'</span></div>';
+      }
+    }
+
+    function wire(){
+      $('site').addEventListener('change', refreshStatus);
+      $('connect').addEventListener('click', async function(){
+        if(!currentSiteId) return;
+        try{
+          var r=await fetch('/api/integrations/tag-manager/connect?format=json',{
+            method:'POST',
+            headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token,Accept:'application/json'},
+            body:JSON.stringify({siteId:currentSiteId,returnPath:'/settings/integrations/tag-manager',mode:'read'})
+          });
+          var j=await r.json().catch(function(){ return {}; });
+          if(!r.ok||!(j.authorizeUrl||j.url)) throw new Error(j.message||j.error||'connect_failed');
+          location.href=j.authorizeUrl||j.url;
+        }catch(e){ alert(e.message||'Could not start GTM connect'); }
+      });
+      $('inspect').addEventListener('click', async function(){
+        try{
+          var r=await fetch('/api/integrations/tag-manager/status',{
+            method:'POST',
+            headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token},
+            body:JSON.stringify({siteId:currentSiteId,action:'inspect'})
+          });
+          var j=await r.json().catch(function(){ return {}; });
+          if(!r.ok) throw new Error(j.message||j.error||'inspect_failed');
+          alert('Workspaces: '+((j.health&&j.health.workspaces)||[]).map(function(w){ return w.name||w.id; }).join(', ')||'none');
+        }catch(e){ alert(e.message||'Inspect failed'); }
+      });
+      $('disconnect').addEventListener('click', async function(){
+        if(!confirm('Disconnect Google Tag Manager for this site?')) return;
+        var r=await fetch('/api/integrations/tag-manager/disconnect',{
+          method:'POST',
+          headers:{'content-type':'application/json',Authorization:'Bearer '+session.access_token},
+          body:JSON.stringify({siteId:currentSiteId})
+        });
+        var j=await r.json().catch(function(){ return {}; });
+        if(!r.ok){ alert(j.error||'Disconnect failed'); return; }
+        await refreshStatus();
+      });
+    }
+
+    boot();
+  })();
+  </script>
+</body>
+</html>

@@ -1244,6 +1244,12 @@ LeadPages persistence is built around **`sites`** with **`sites.config` JSONB** 
 4. **Assume service role on server** — enforce caller auth in API handlers.
 5. **Test backwards compatibility** — live customer sites must survive the change.
 
+### Ads Smart Campaign Builder (July 2026)
+
+Versioned SQL: [`db/ads_campaign_builder_schema.sql`](../db/ads_campaign_builder_schema.sql).  
+Tables: `ads_accessible_customers`, `ads_campaign_maps`, `ads_campaign_plans`, `ads_campaign_builds`, `ads_campaign_resources`, `ads_conversion_goal_maps`, `tracking_readiness_checks`, `ads_recommendations`, `ads_audit_log`, `ads_sync_state`, `gtm_connections`, `gtm_oauth_states`, `gtm_containers`.  
+Feature docs: [features/Ads Campaign Builder](features/Ads%20Campaign%20Builder.md).
+
 ---
 
 *Document maintained as part of the LeadPages engineering canon. Update when schema or access patterns change.*
