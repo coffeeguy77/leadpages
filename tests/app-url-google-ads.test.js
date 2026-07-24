@@ -77,5 +77,6 @@ describe('app-url + google-ads redirect URI', () => {
     assert.equal(appUrl.safeReturnPath('https://evil.com'), '/settings/integrations/google-ads');
     assert.equal(appUrl.safeReturnPath('//evil.com'), '/settings/integrations/google-ads');
     assert.equal(appUrl.safeReturnPath('/settings/integrations/google-ads'), '/settings/integrations/google-ads');
+    assert.equal(appUrl.safeReturnPath('/settings/integrations/google-business'), '/settings/integrations/google-business');
   });
 });
