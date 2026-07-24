@@ -12053,9 +12053,10 @@ function heroCtaCard(c){
         +rsaHtml
         +'<p class="hint">'+esc(metricsNote)+'</p>'
         +(!hasVol&&!hasCpc
-          ?'<p class="hint" style="margin:0 0 8px;color:#b45309">Vol / CPC show “—” until DataForSEO or Ads keyword sync — never invented.</p>'
+          ?'<p class="hint" style="margin:0 0 8px;color:#b45309">Vol / CPC show “—” until Google Ads Keyword Planner returns data (or you sync measured keyword CPC) — never invented. No DataForSEO charge.</p>'
           :'')
         +'<div class="row" style="gap:8px;flex-wrap:wrap;margin:8px 0;align-items:center">'
+        +'<button type="button" class="btn ghost sm" id="gads-fetch-vol">Fetch Vol / CPC from Ads</button>'
         +'<button type="button" class="btn ghost sm" id="gads-kw-all">Select all</button>'
         +'<button type="button" class="btn ghost sm" id="gads-kw-none">Select none</button>'
         +'<span class="hint" id="gads-kw-count">'+selectedN+' of '+allKws.length+' keywords selected</span></div>'
@@ -12085,6 +12086,19 @@ function heroCtaCard(c){
         if(el) el.textContent=n+' of '+allKws.length+' keywords selected';
       }
       document.querySelectorAll('#gads-plan-out .gads-kw-use').forEach(function(cb){ cb.addEventListener('change',refreshKwCount); });
+      var fetchVol=document.getElementById('gads-fetch-vol');
+      if(fetchVol) fetchVol.onclick=async function(){
+        fetchVol.disabled=true; fetchVol.textContent='Fetching…';
+        try{
+          _gadsSyncKeywordApprovals(plan);
+          var draft=plan.draftPlan||plan;
+          _gadsCollectRsaIntoPlan(draft);
+          var rr=await _gadsBuilderPost('fetch_keyword_metrics',{plan:plan});
+          if(rr.plan) showPlan(rr.plan);
+          var note=(rr.keywordMetrics&&rr.keywordMetrics.note)||(rr.plan&&rr.plan.metricsNote)||'Updated';
+          toast(note);
+        }catch(e){ toast(String(e.message||e),'warn'); fetchVol.disabled=false; fetchVol.textContent='Fetch Vol / CPC from Ads'; }
+      };
       var allBtn=document.getElementById('gads-kw-all');
       if(allBtn) allBtn.onclick=function(){ document.querySelectorAll('#gads-plan-out .gads-kw-use').forEach(function(cb){ cb.checked=true; }); refreshKwCount(); };
       var noneBtn=document.getElementById('gads-kw-none');
