@@ -644,7 +644,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 <script src="/assets/lp-logo.js"></script>
 <script src="/assets/lp-admin-shell.js"></script>
 <script src="/assets/lp-messages-embed.js?v=support-new-1"></script>
-<script src="/assets/lp-mobile-menu-builder.js?v=quote-builder-nav-1"></script>
+<script src="/assets/lp-mobile-menu-builder.js?v=seo-nav-1"></script>
 <script src="/assets/lp-trade-picker.js"></script>
 <script src="/assets/ai-website-team.js?v=forge-landing-1"></script>
 <script src="/icons.js"></script>
@@ -8388,7 +8388,7 @@ function heroCtaCard(c){
   window.lpGetDrawerNavButtons=function(){
     var roleAllow=ALLOWED[currentRole]||ALLOWED.super;
     var allow=roleAllow.filter(function(k){ return tplNav().indexOf(k)>=0; });
-    var keys=['dashboard','details','rates','landing','apps','mailer','appearance','themes','contact','logo','users','demothemes'];
+    var keys=['dashboard','advertising','seo','details','rates','landing','ai-team','apps','onlinequotes','mailer','messages','appearance','themes','contact','logo','users','demothemes'];
     var out=[];
     keys.forEach(function(k){
       if(allow.indexOf(k)<0) return;

@@ -12,6 +12,7 @@ const manage = fs.readFileSync(path.join(root, 'manage.html'), 'utf8');
 
 assert.ok(mm.includes("'nav-ai-team': 'AI Website Team'"), 'AI Website Team in NAV_TAB_CATALOG');
 assert.ok(mm.includes("'nav-advertising': 'Advertising'"), 'Advertising in catalog');
+assert.ok(mm.includes("'nav-seo': 'SEO Command Centre'"), 'SEO Command Centre in catalog');
 assert.ok(mm.includes("'nav-onlinequotes': 'Quote Builder'"), 'Quote Builder in catalog');
 assert.ok(mm.includes("'nav-mailer': 'Newsletter'"), 'Newsletter in catalog');
 assert.ok(mm.includes("'nav-messages': 'Support'"), 'Support in catalog');
@@ -26,5 +27,10 @@ assert.ok(api.includes("'nav-mailer'"), 'API default includes Newsletter');
 
 assert.ok(manage.includes('lp-mobile-menu-builder.js?v='), 'mobile menu script cache-busted');
 assert.ok(manage.includes('id="nav-ai-team"'), 'manage.html has AI Website Team tab button');
+assert.ok(manage.includes('id="nav-seo"'), 'manage.html has SEO tab button');
+assert.ok(
+  /keys=\[[^\]]*seo/.test(manage) || manage.includes("'seo'") && manage.includes('lpGetDrawerNavButtons'),
+  'drawer nav fallback includes seo'
+);
 
 console.log('mobile-menu-ai-team-nav.test.js: ok');
