@@ -11331,7 +11331,18 @@ function heroCtaCard(c){
             toast(jj.message||'Premium SEO required','warn');
             return;
           }
-          if(!r.ok){ out.textContent=jj.message||jj.error||('HTTP '+r.status); toast(jj.message||jj.error||'Failed','warn'); return; }
+          if(!r.ok){
+            var errMsg=jj.message||jj.error||('HTTP '+r.status);
+            var errRes=jj.result||{};
+            out.innerHTML='<p class="lede" style="color:#b45309">'+esc(errMsg)+'</p>'
+              +'<p class="hint">Keyword lookup needs a successful DataForSEO SERP. '
+              +(errRes.locationUsed?'Tried location: '+esc(errRes.locationUsed)+'. ':'')
+              +(errRes.rawItemCount!=null?'Raw elements: '+esc(errRes.rawItemCount)+'. ':'')
+              +(errRes.rawTypes&&errRes.rawTypes.length?'Types: '+esc(errRes.rawTypes.join(', '))+'. ':'')
+              +'Confirm DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD (API password) and account balance.</p>';
+            toast(errMsg,'warn');
+            return;
+          }
           var res=jj.result||{};
           delete _siCache.tabs.competition;
 
@@ -11347,7 +11358,11 @@ function heroCtaCard(c){
             out.innerHTML='<p class="lede"><strong>'+esc(res.keyword||'')+'</strong> · Your position: <strong>'+esc(pos)+'</strong>'
               +(res.ownUrl?' · <span class="hint">'+esc(res.ownUrl)+'</span>':'')
               +'</p>'
-              +'<p class="hint" style="margin:0 0 10px">'+esc(res.note||'')+' · Provider: '+esc(res.provider||'—')+'</p>'
+              +'<p class="hint" style="margin:0 0 10px">'+esc(res.note||'')
+              +' · Provider: '+esc(res.provider||'—')
+              +(res.locationUsed?' · SERP location: '+esc(res.locationUsed):'')
+              +'</p>'
+              +(serpRows.length?'':'<p class="hint" style="color:#b45309">No website rows in this SERP response. If Google shows rivals but we don’t, the market-data location/API call failed — check DataForSEO balance and credentials.</p>')
               +'<h4 style="margin:10px 0 6px">Who ranks for this keyword</h4>'
               +kwTable(serpRows,[
                 {label:'Pos',get:function(r){return r.rank;}},

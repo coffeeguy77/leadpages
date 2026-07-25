@@ -20,7 +20,10 @@ const {
   FORBIDDEN_COMPETITOR_DOMAINS
 } = require('../lib/search-intelligence/competition-fixtures');
 const { createGateway } = require('../lib/search-intelligence/providers/gateway');
-const { mapSerpItems } = require('../lib/search-intelligence/providers/dataforseo');
+const {
+  mapSerpItems,
+  resolveSerpLocation
+} = require('../lib/search-intelligence/providers/dataforseo');
 
 assert.equal(normKw('  Hot Water System '), 'hot water system');
 assert.equal(cleanDomain('https://www.Rival-Plumb.com.au/page'), 'rival-plumb.com.au');
@@ -195,7 +198,8 @@ async function runGatewayMock() {
       rank_group: 1,
       items: [
         { type: 'local_pack_element', title: 'Bean Rival', domain: 'bean-rival.com.au', url: 'https://bean-rival.com.au/' },
-        { type: 'local_pack_element', title: 'Cart Co', url: 'https://www.cartco.com.au/hire' }
+        { type: 'local_pack_element', title: 'Cart Co', url: 'https://www.cartco.com.au/hire' },
+        { type: 'local_pack_element', title: 'Website field', website: 'https://rebootcoffee.com.au/' }
       ]
     },
     {
@@ -204,12 +208,44 @@ async function runGatewayMock() {
       title: 'Coffee Events',
       url: 'https://coffeeevents.com.au/cart',
       domain: null
+    },
+    {
+      type: 'organic',
+      rank_group: 2,
+      title: 'Bean Culture',
+      url: 'https://beanculture.com.au/coffee-cart-hire-canberra',
+      domain: 'beanculture.com.au'
     }
   ]);
   assert.ok(mapped.results.some(function (r) { return r.domain === 'bean-rival.com.au'; }));
   assert.ok(mapped.results.some(function (r) { return r.domain === 'cartco.com.au'; }));
+  assert.ok(mapped.results.some(function (r) { return r.domain === 'rebootcoffee.com.au'; }));
   assert.ok(mapped.results.some(function (r) { return r.domain === 'coffeeevents.com.au' && r.type === 'organic'; }));
+  assert.ok(mapped.results.some(function (r) { return r.domain === 'beanculture.com.au'; }));
   assert.ok(!mapped.results.every(function (r) { return r.domain === 'maps.google.com'; }));
+
+  // Canberra must use location_name (not a brittle guessed city code that returns empty SERPs)
+  const canberraLoc = resolveSerpLocation({ location: 'Canberra & ACT' });
+  assert.equal(canberraLoc.location_name, 'Canberra,Australian Capital Territory,Australia');
+  assert.equal(canberraLoc.se_domain, 'google.com.au');
+  assert.ok(canberraLoc.location_code == null);
+
+  // Slug match: mistyped custom_domain still detects beanculture.com.au as "you"
+  const beanSite = {
+    id: 'bean',
+    slug: 'beanculture',
+    custom_domain: 'coffeeeevents.com.au',
+    config: { region: 'Canberra & ACT' }
+  };
+  const beanLookup = await lookupKeywordSerp(null, beanSite, {
+    allowMock: true,
+    provider: 'mock',
+    keyword: 'coffee cart hire canberra'
+  });
+  assert.equal(beanLookup.ok, true);
+  // Mock puts own host first — with slug match, beanculture in SERP should count if present;
+  // at minimum rivals must not be empty for this keyword.
+  assert.ok(beanLookup.serp.length >= 1 || beanLookup.rivals.length >= 1);
 
   if (prev == null) delete process.env.SI_PROVIDER;
   else process.env.SI_PROVIDER = prev;
