@@ -14,7 +14,9 @@ const {
   runKeywordGap,
   runBacklinkStrategy,
   runPaidResearch,
-  saveCompetitors
+  saveCompetitors,
+  clearCompetitors,
+  purgeForbiddenCompetitors
 } = require('../../lib/search-intelligence/competition-analysis');
 
 function admin() {
@@ -153,8 +155,22 @@ module.exports = async (req, res) => {
     if (action === 'save_competitors') {
       const result = await saveCompetitors(db, site, body.competitors || body.domains);
       if (!result.ok) {
-        return http.json(res, 400, { error: result.error || 'save_failed', result: result });
+        return http.json(res, 400, {
+          error: result.error || 'save_failed',
+          message: result.message,
+          result: result
+        });
       }
+      return http.json(res, 200, { ok: true, action: action, result: result });
+    }
+
+    if (action === 'clear_competitors') {
+      const result = await clearCompetitors(db, site);
+      return http.json(res, 200, { ok: true, action: action, result: result });
+    }
+
+    if (action === 'purge_fixtures') {
+      const result = await purgeForbiddenCompetitors(db, site);
       return http.json(res, 200, { ok: true, action: action, result: result });
     }
 
@@ -166,7 +182,9 @@ module.exports = async (req, res) => {
         'keyword_gap',
         'backlink_strategy',
         'paid_research',
-        'save_competitors'
+        'save_competitors',
+        'clear_competitors',
+        'purge_fixtures'
       ]
     });
   } catch (e) {
