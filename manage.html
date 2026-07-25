@@ -39,7 +39,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/lp-themes.css?v=support-contact-theme-1">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
-<link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=anav-split-stack-1">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=seo-ads-wrap-ai-1">
 <link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-portal-style-1">
 <style>
 :root{
@@ -7666,11 +7666,51 @@ function heroCtaCard(c){
       wireSec(c,'footer',true,[['blurb'],['legal'],['callTitle']]); listEditor($('le-footerCall'),c,'footerCall'); listEditor($('le-footerServices'),c,'footerServices');
     } else if(sub==='seoText'){
       if(!c.sections) c.sections={}; if(!c.sections.seoText) c.sections.seoText=JSON.parse(JSON.stringify(DEFAULT_TRADE_SECTIONS.seoText||{}));
+      var _stKw=esc((c.primaryKeyword||c.seoTitle||'')+'');
       body.innerHTML=secCard(c,'seoText','SEO Text',true,[['eyebrow','Eyebrow'],['h1','H1 (main page heading)'],['h2','H2 (section heading)'],['intro','Intro under H1','ta'],['content','Supporting copy','ta'],['image','Image (optional)','image']])
+        +'<div class="card" style="margin-bottom:22px"><h2 style="margin:0 0 6px">AI regenerate (LeadPages Brain)</h2>'
+        +'<p class="lede" style="margin:0 0 12px">Same landing-page AI as Landing pages. Add context, then regenerate — review in the fields above before publish. Optionally refresh the homepage FAQ app too.</p>'
+        +'<div class="row" style="gap:10px;flex-wrap:wrap;margin:0 0 10px">'
+        +'<div class="f" style="margin:0;flex:1;min-width:160px"><label for="st-ai-kw">Primary keyword</label><input id="st-ai-kw" class="tin" type="text" value="'+_stKw+'" placeholder="e.g. coffee cart hire canberra"></div>'
+        +'<div class="f" style="margin:0;flex:1;min-width:140px"><label for="st-ai-loc">Location</label><input id="st-ai-loc" class="tin" type="text" placeholder="e.g. Canberra"></div>'
+        +'</div>'
+        +'<div class="f" style="margin:0 0 10px"><label for="st-ai-extra">Context for AI</label>'
+        +'<textarea id="st-ai-extra" class="tin" rows="3" placeholder="What should the copy emphasise? Audience, offer, tone, must-include facts…"></textarea></div>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="st-ai-faq" checked> Also update homepage FAQ app from generated FAQs</label>'
+        +'<div class="row" style="gap:8px;flex-wrap:wrap">'
+        +'<button type="button" class="btn sm" id="st-ai-regen">Regenerate SEO Text</button>'
+        +'<span class="hint" id="st-ai-note"></span></div></div>'
         +'<div class="card" style="margin-bottom:22px"><h2>FAQ blocks</h2><p class="lede">Split supporting questions so the page stays scannable for visitors and search.</p><div id="le-seoTextFaq"></div></div>'
         +'<p class="hint">SEO Text is for on-page H1/H2/FAQ content. Homepage Google title &amp; meta are edited in SEO Command Centre → Home.</p>';
       wireSec(c,'seoText',true,[['eyebrow'],['h1'],['h2'],['intro'],['content'],['image',null,'image']]);
       listEditor($('le-seoTextFaq'),c,'seoText');
+      (function(){
+        var btn=$('st-ai-regen'), note=$('st-ai-note');
+        if(!btn) return;
+        btn.onclick=async function(){
+          var kw=(($('st-ai-kw')&&$('st-ai-kw').value)||'').trim();
+          var loc=(($('st-ai-loc')&&$('st-ai-loc').value)||'').trim();
+          var extra=(($('st-ai-extra')&&$('st-ai-extra').value)||'').trim();
+          var wantFaq=!!($('st-ai-faq')&&$('st-ai-faq').checked);
+          if(!kw&&!extra){ if(note) note.textContent='Add a primary keyword or some context.'; return; }
+          btn.disabled=true;
+          if(note) note.textContent='Writing with LeadPages Brain…';
+          try{
+            var draft=await _siCallLandingDraft({ primaryKeyword:kw, location:loc, extraInfo:extra });
+            var long=_siLongFromLandingDraft(draft);
+            await _siApplyHomepageLongToSeoText(long);
+            if(wantFaq&&long.faqs&&long.faqs.length) await _siApplyFaqsToHomepageFaq(long.faqs);
+            if(note) note.textContent='Applied — edit fields above if needed, then publish.';
+            toast('SEO Text regenerated');
+            try{ landingSub='seoText'; renderDetails(); }catch(_e){}
+          }catch(e){
+            if(note) note.textContent=String((e&&e.message)||e);
+            toast('Could not regenerate SEO Text');
+          }finally{
+            btn.disabled=false;
+          }
+        };
+      })();
     } else if(sub==='textBox'){
       body.innerHTML=secCard(c,'textBox','Text Box',true,[['eyebrow','Eyebrow (small label above heading)'],['heading','Heading'],['intro','Intro (short lead-in)','ta'],['content','Content (main paragraph/s)','ta'],['image','Image (optional)','image']])
         +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Image placement</h2><p class="lede" style="margin:0 0 12px;">Where the image sits beside the text. With no image, the text fills the full width.</p><div class="row"><div class="f"><label>Image layout</label><select id="tb-layout" class="tin"><option value="beside">Beside the text (columns)</option><option value="wrap">Wrap — text flows around it</option></select></div><div class="f"><label>Image side</label><select id="tb-side" class="tin"><option value="right">Right of text</option><option value="left">Left of text</option></select></div></div><div class="row"><div class="f"><label>Text alignment <span class="hint">columns layout only</span></label><select id="tb-align" class="tin"><option value="left">Left</option><option value="center">Centre</option></select></div><div class="f"></div></div></div>';
@@ -10685,23 +10725,31 @@ function heroCtaCard(c){
       +((ov&&ov.cards)||[]).map(_siCard).join('')
       +'</div>';
     h+='<div class="card" style="margin-bottom:14px"><h2 style="margin:0 0 6px">Homepage SEO</h2>'
-      +'<p class="lede" style="margin:0 0 12px">Page title and meta description Google shows for your homepage. Edit manually, or draft with AI from a primary keyword (never auto-publishes).</p>'
+      +'<p class="lede" style="margin:0 0 12px">Page title and meta description Google shows for your homepage. Draft with the same LeadPages Brain AI as Landing pages (OpenAI when selected in AI Control Centre). Never auto-publishes — review, then save or apply.</p>'
       +'<div class="f" style="margin:0 0 10px"><label for="si-home-title">SEO title</label>'
       +'<input id="si-home-title" class="tin" type="text" maxlength="70" placeholder="e.g. Coffee Cart Hire Canberra | Bean Culture" value="'+esc(cfg.seoTitle||'')+'"></div>'
       +'<div class="f" style="margin:0 0 10px"><label for="si-home-meta">Meta description</label>'
       +'<textarea id="si-home-meta" class="tin" rows="3" maxlength="160" placeholder="One or two sentences that encourage a click from Google…">'+esc(cfg.seoDescription||'')+'</textarea></div>'
-      +'<div class="f" style="margin:0 0 10px"><label for="si-home-kw">Primary keyword (optional)</label>'
-      +'<input id="si-home-kw" class="tin" type="text" placeholder="e.g. coffee cart canberra" value="'+esc(cfg.primaryKeyword||'')+'"></div>'
-      +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="si-home-ai-long"> Also draft ~400 words of on-page copy (shown below — not published until you apply it)</label>'
+      +'<div class="row" style="gap:10px;flex-wrap:wrap;margin:0 0 10px">'
+      +'<div class="f" style="margin:0;flex:1;min-width:160px"><label for="si-home-kw">Primary keyword</label>'
+      +'<input id="si-home-kw" class="tin" type="text" placeholder="e.g. coffee cart hire canberra" value="'+esc(cfg.primaryKeyword||'')+'"></div>'
+      +'<div class="f" style="margin:0;flex:1;min-width:140px"><label for="si-home-loc">Location</label>'
+      +'<input id="si-home-loc" class="tin" type="text" placeholder="e.g. Canberra"></div>'
+      +'</div>'
+      +'<div class="f" style="margin:0 0 10px"><label for="si-home-extra">Context for AI <span class="hint">(what to consider — tone, audience, must-include facts)</span></label>'
+      +'<textarea id="si-home-extra" class="tin" rows="3" placeholder="e.g. Wedding &amp; corporate coffee cart hire across Canberra. Licensed baristas, espresso machines, no obligation quotes. Avoid generic filler — sound local and practical."></textarea></div>'
+      +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px"><input type="checkbox" id="si-home-ai-long" checked> Also draft on-page SEO Text + FAQ copy (shown below — not published until you apply)</label>'
+      +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="si-home-ai-faq" checked> When applying, also update homepage FAQ app</label>'
       +'<div class="row" style="gap:8px;flex-wrap:wrap">'
       +'<button type="button" class="btn sm" id="si-home-save">Save homepage SEO</button>'
-      +'<button type="button" class="btn ghost sm" id="si-home-ai">AI draft title &amp; meta</button>'
+      +'<button type="button" class="btn ghost sm" id="si-home-ai">AI draft</button>'
+      +'<button type="button" class="btn ghost sm" id="si-home-regen" hidden>Regenerate</button>'
       +'<button type="button" class="btn ghost sm" id="si-home-clear">Clear AI fields only</button>'
       +'</div>'
-      +'<p class="hint" style="margin-top:10px" id="si-home-seo-status">Saved on this site config · used as live &lt;title&gt; / meta description.</p>'
+      +'<p class="hint" style="margin-top:10px" id="si-home-seo-status">Saved on this site config · used as live &lt;title&gt; / meta description. AI uses POST /api/brain/landing-draft (same as Landing pages).</p>'
       +'<div id="si-home-long-wrap" hidden style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">'
-      +'<h3 style="margin:0 0 6px;font-size:15px">Homepage body draft (~400 words)</h3>'
-      +'<p class="lede" style="margin:0 0 10px">This is on-page copy for searchers — separate from the Google title/meta above. Copy it, or apply into the <strong>SEO Text</strong> marketplace section.</p>'
+      +'<h3 style="margin:0 0 6px;font-size:15px">Homepage body draft</h3>'
+      +'<p class="lede" style="margin:0 0 10px">On-page copy for searchers — separate from the Google title/meta above. Edit, regenerate with more context, then apply into <strong>SEO Text</strong> (and optional homepage FAQ).</p>'
       +'<div class="f" style="margin:0 0 8px"><label for="si-home-long-h1">H1</label><input id="si-home-long-h1" class="tin" type="text"></div>'
       +'<div class="f" style="margin:0 0 8px"><label for="si-home-long-h2">H2</label><input id="si-home-long-h2" class="tin" type="text"></div>'
       +'<div class="f" style="margin:0 0 8px"><label for="si-home-long-intro">Intro</label><textarea id="si-home-long-intro" class="tin" rows="2"></textarea></div>'
@@ -10711,6 +10759,7 @@ function heroCtaCard(c){
       +'<div class="row" style="gap:8px;flex-wrap:wrap">'
       +'<button type="button" class="btn ghost sm" id="si-home-long-copy">Copy full draft</button>'
       +'<button type="button" class="btn ghost sm" id="si-home-long-apply">Apply to SEO Text section</button>'
+      +'<button type="button" class="btn ghost sm" id="si-home-long-regen">Regenerate with context</button>'
       +'</div></div></div>';
     var open=((ov&&ov.nextBestActions)||[]).filter(function(a){ return a.status==='open'; }).slice(0,5);
     h+='<div class="card"><h2 style="margin:0 0 8px">Next Best Actions</h2>'
@@ -10737,6 +10786,7 @@ function heroCtaCard(c){
     if(typeof data!=='undefined'&&data){ data.seoTitle=cfg.seoTitle; data.seoDescription=cfg.seoDescription; data.primaryKeyword=cfg.primaryKeyword; }
     return true;
   }
+  /** Offline/template fallback only — live SEO AI uses /api/brain/landing-draft. */
   function _siDraftHomepageSeo(biz, kw, longCopy){
     var keyword=String(kw||'').trim()||'local services';
     var name=String(biz||'Your business').trim();
@@ -10747,22 +10797,58 @@ function heroCtaCard(c){
     if(!longCopy) return out;
     var h1=titleCase+' with '+name;
     var h2='Local '+keyword+' you can book with confidence';
-    var intro=name+' provides '+keyword+' for homes, workplaces and events nearby. Tell us what you need and we will confirm availability, pricing and the best next step.';
-    var p1='Looking for '+keyword+'? '+name+' focuses on practical help for local customers who want a clear answer, not a sales script. Whether you are planning ahead or need something sorted soon, we start by understanding the job, the location and the outcome you want.';
-    var p2='Our team keeps '+keyword+' straightforward. You get plain-language advice, realistic timing and a quote path that matches the work — so you can compare options without guessing. If you are comparing providers, ask about response time, inclusions and what happens if the scope changes on the day.';
-    var p3='We cover surrounding suburbs and nearby service areas. If you are outside our usual range, say so early — we will tell you honestly whether we can help or point you in a better direction. Local knowledge matters for parking, access, and getting the job done cleanly.';
-    var p4='People choose '+name+' for '+keyword+' because we communicate clearly, show up prepared, and leave the site tidy. Reviews, licences and proof of past work matter — check our homepage sections for recent jobs and customer feedback before you book.';
-    var p5='Common questions are simple: how soon can you start, what does a typical job cost, and do you cover my suburb? Send a short message with your suburb and what you need. We aim to reply the same day with availability and a clear next step — call or quote request.';
-    var p6='Ready to move forward? Use the quote form on this page, or call us with your suburb and preferred date. '+name+' is here for '+keyword+' done properly — local, reliable and easy to organise.';
-    var content=[p1,p2,p3,p4,p5,p6].join('\n\n');
+    var intro=name+' provides '+keyword+' for homes, workplaces and events nearby.';
+    var content='Looking for '+keyword+'? '+name+' focuses on practical local help with clear next steps.';
     var faqs=[
       { q:'How quickly can you help with '+keyword+'?', a:'We aim to respond the same day. Share your suburb and timing and we will confirm the soonest available option.' },
-      { q:'Do you cover my suburb for '+keyword+'?', a:'Yes for most nearby areas. Tell us your suburb and we will confirm coverage before you book.' },
-      { q:'How do quotes work?', a:'Describe the job and location. We outline inclusions and next steps so you can decide without pressure.' }
+      { q:'Do you cover my suburb for '+keyword+'?', a:'Yes for most nearby areas. Tell us your suburb and we will confirm coverage before you book.' }
     ];
     var faqText=faqs.map(function(f,i){ return (i+1)+') '+f.q+'\n'+f.a; }).join('\n\n');
     var full=[h1,h2,intro,content,'FAQ:\n'+faqText].join('\n\n');
-    out.long={
+    out.long={ h1:h1, h2:h2, intro:intro, content:content, faqs:faqs, faqText:faqText, full:full,
+      wordCount:String(full).trim().split(/\s+/).filter(Boolean).length };
+    return out;
+  }
+  function _siMdToPlain(md){
+    return String(md||'')
+      .replace(/\r\n/g,'\n')
+      .replace(/^#{1,6}\s+/gm,'')
+      .replace(/\*\*([^*]+)\*\*/g,'$1')
+      .replace(/\*([^*]+)\*/g,'$1')
+      .replace(/`([^`]+)`/g,'$1')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g,'$1')
+      .replace(/^[-\*]\s+/gm,'')
+      .replace(/\n{3,}/g,'\n\n')
+      .trim();
+  }
+  function _siLongFromLandingDraft(draft){
+    var d=draft&&typeof draft==='object'?draft:{};
+    var body=_siMdToPlain(d.bodyMarkdown||d.markdown||'');
+    var h2='';
+    var h2m=String(d.bodyMarkdown||d.markdown||'').match(/^##\s+(.+)$/m);
+    if(h2m) h2=String(h2m[1]||'').trim();
+    var paras=body.split(/\n\s*\n/).map(function(p){ return p.replace(/\n/g,' ').trim(); }).filter(Boolean);
+    // Drop CTA-ish trailing paras from landing drafts
+    while(paras.length>2){
+      var last=paras[paras.length-1].toLowerCase();
+      if(/^(get in touch|contact|ready to|call |book |request )/i.test(paras[paras.length-1]) || last.indexOf('get in touch')===0){
+        paras.pop(); continue;
+      }
+      break;
+    }
+    var intro=paras[0]||'';
+    var content=paras.slice(1).join('\n\n');
+    if(!h2 && d.secondaryKeywords && d.secondaryKeywords[0]){
+      h2=String(d.secondaryKeywords[0]);
+    }
+    if(!h2) h2='Why locals choose us';
+    var faqs=(Array.isArray(d.faqs)?d.faqs:[]).map(function(f){
+      return { q:String((f&&(f.question||f.q))||'').trim(), a:String((f&&(f.answer||f.a))||'').trim() };
+    }).filter(function(f){ return f.q&&f.a; }).slice(0,8);
+    var faqText=faqs.map(function(f,i){ return (i+1)+') '+f.q+'\n'+f.a; }).join('\n\n');
+    var h1=String(d.h1||d.primaryKeyword||'').trim();
+    var full=[h1,h2,intro,content,faqText?'FAQ:\n'+faqText:''].filter(Boolean).join('\n\n');
+    return {
       h1:h1,
       h2:h2,
       intro:intro,
@@ -10770,9 +10856,55 @@ function heroCtaCard(c){
       faqs:faqs,
       faqText:faqText,
       full:full,
-      wordCount:String(full).trim().split(/\s+/).filter(Boolean).length
+      wordCount:String(full).trim().split(/\s+/).filter(Boolean).length,
+      seoTitle:String(d.title||'').trim(),
+      seoDescription:String(d.meta||'').trim(),
+      primaryKeyword:String(d.primaryKeyword||'').trim()
     };
-    return out;
+  }
+  async function _siCallLandingDraft(opts){
+    opts=opts||{};
+    if(!currentSiteId) throw new Error('Select a site first');
+    var se=await sb.auth.getSession();
+    var tok=se&&se.data&&se.data.session&&se.data.session.access_token;
+    if(!tok) throw new Error('Sign in to generate AI drafts');
+    var payload={
+      siteId:currentSiteId,
+      template:currentSiteTemplate||'trade',
+      mode:'seo',
+      primaryKeyword:String(opts.primaryKeyword||'').trim(),
+      location:String(opts.location||'').trim(),
+      extraInfo:String(opts.extraInfo||'').trim(),
+      negativeKeywords:String(opts.negativeKeywords||'').trim(),
+      uniquenessSeed:String(opts.uniquenessSeed||'')|| (Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8))
+    };
+    if(!payload.primaryKeyword && !payload.extraInfo){
+      throw new Error('Add a primary keyword or some context for the AI');
+    }
+    // Nudge homepage SEO tone (same Brain task as landing pages)
+    if(payload.extraInfo){
+      payload.extraInfo='Homepage SEO / on-page SEO Text draft. Write natural Australian local-service copy — specific, useful, not repetitive keyword stuffing.\n'+payload.extraInfo;
+    } else {
+      payload.extraInfo='Homepage SEO / on-page SEO Text draft. Write natural Australian local-service copy — specific, useful, not repetitive keyword stuffing.';
+    }
+    var res=await fetch('/api/brain/landing-draft',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+      body:JSON.stringify(payload)
+    });
+    var j=await res.json().catch(function(){ return {}; });
+    if(res.status===503 && j.error==='landing_draft_disabled'){
+      var err=new Error('AI drafts are not enabled yet (BRAIN_LANDING_DRAFT). Ask a super-admin to turn the flag on in AI Control Centre.');
+      err.code='landing_draft_disabled';
+      throw err;
+    }
+    if(res.status===422 && j.error==='negative_keyword_violation'){
+      throw new Error(j.message||'Draft mentioned banned topics — tighten negatives or switch provider in AI Control Centre.');
+    }
+    if(!res.ok || !j.ok){
+      throw new Error(j.message||j.error||('Draft failed (HTTP '+res.status+')'));
+    }
+    return j.draft||{};
   }
   function _siApplyHomepageLongToSeoText(longDraft){
     if(!longDraft||typeof data!=='object'||!data) throw new Error('No site config loaded');
@@ -10794,14 +10926,39 @@ function heroCtaCard(c){
     if(typeof lpSaveDB==='function') return lpSaveDB();
     return Promise.resolve();
   }
+  function _siApplyFaqsToHomepageFaq(faqs){
+    if(typeof data!=='object'||!data) throw new Error('No site config loaded');
+    var items=(Array.isArray(faqs)?faqs:[]).map(function(f){
+      return { on:true, q:String((f&&(f.q||f.question))||'').trim(), a:String((f&&(f.a||f.answer))||'').trim() };
+    }).filter(function(it){ return it.q&&it.a; }).slice(0,8);
+    if(!items.length) return Promise.resolve(0);
+    if(!data.sections) data.sections={};
+    var cur=data.sections.faq&&typeof data.sections.faq==='object'
+      ? JSON.parse(JSON.stringify(data.sections.faq))
+      : {};
+    cur.on=true;
+    if(!cur.eyebrow) cur.eyebrow='Good to know';
+    if(!cur.heading) cur.heading='Frequently Asked Questions';
+    cur.items=items;
+    data.sections.faq=cur;
+    if(!Array.isArray(data.sectionOrder)) data.sectionOrder=[];
+    if(data.sectionOrder.indexOf('faq')<0) data.sectionOrder.push('faq');
+    if(typeof persist==='function') persist();
+    if(typeof lpSaveDB==='function') return lpSaveDB().then(function(){ return items.length; });
+    return Promise.resolve(items.length);
+  }
   function _siWireHomepageSeo(){
     var titleEl=document.getElementById('si-home-title');
     var metaEl=document.getElementById('si-home-meta');
     var kwEl=document.getElementById('si-home-kw');
+    var locEl=document.getElementById('si-home-loc');
+    var extraEl=document.getElementById('si-home-extra');
     var longEl=document.getElementById('si-home-ai-long');
+    var faqEl=document.getElementById('si-home-ai-faq');
     var statusEl=document.getElementById('si-home-seo-status');
     var saveBtn=document.getElementById('si-home-save');
     var aiBtn=document.getElementById('si-home-ai');
+    var regenBtn=document.getElementById('si-home-regen');
     var clearBtn=document.getElementById('si-home-clear');
     var longWrap=document.getElementById('si-home-long-wrap');
     var longH1=document.getElementById('si-home-long-h1');
@@ -10812,6 +10969,7 @@ function heroCtaCard(c){
     var longCount=document.getElementById('si-home-long-count');
     var copyBtn=document.getElementById('si-home-long-copy');
     var applyBtn=document.getElementById('si-home-long-apply');
+    var longRegenBtn=document.getElementById('si-home-long-regen');
     var lastLong=null;
     if(!titleEl&&!metaEl) return;
     function readFields(){
@@ -10819,6 +10977,14 @@ function heroCtaCard(c){
         seoTitle:titleEl?String(titleEl.value||'').trim():'',
         seoDescription:metaEl?String(metaEl.value||'').trim():'',
         primaryKeyword:kwEl?String(kwEl.value||'').trim():''
+      };
+    }
+    function readAiOpts(){
+      var fields=readFields();
+      return {
+        primaryKeyword:fields.primaryKeyword||fields.seoTitle||'',
+        location:locEl?String(locEl.value||'').trim():'',
+        extraInfo:extraEl?String(extraEl.value||'').trim():''
       };
     }
     function setStatus(msg, isErr){
@@ -10829,14 +10995,15 @@ function heroCtaCard(c){
     function fillLong(longDraft){
       lastLong=longDraft||null;
       if(!longWrap) return;
-      if(!longDraft){ longWrap.hidden=true; return; }
+      if(!longDraft){ longWrap.hidden=true; if(regenBtn) regenBtn.hidden=true; return; }
       longWrap.hidden=false;
+      if(regenBtn) regenBtn.hidden=false;
       if(longH1) longH1.value=longDraft.h1||'';
       if(longH2) longH2.value=longDraft.h2||'';
       if(longIntro) longIntro.value=longDraft.intro||'';
       if(longBody) longBody.value=longDraft.content||'';
       if(longFaq) longFaq.value=longDraft.faqText||'';
-      if(longCount) longCount.textContent='About '+(longDraft.wordCount||0)+' words · edit before copying or applying.';
+      if(longCount) longCount.textContent='About '+(longDraft.wordCount||0)+' words · edit, regenerate with more context, then copy or apply.';
     }
     function readLongFromForm(){
       if(!lastLong) lastLong={ faqs:[] };
@@ -10856,6 +11023,47 @@ function heroCtaCard(c){
         ].filter(Boolean).join('\n\n')
       };
     }
+    function parseFaqTextarea(faqText, fallback){
+      var blocks=String(faqText||'').split(/\n\s*\n/).map(function(b){return b.trim();}).filter(Boolean);
+      var parsed=[];
+      blocks.forEach(function(b){
+        var lines=b.split('\n').map(function(l){return l.replace(/^\d+\)\s*/,'').trim();}).filter(Boolean);
+        if(lines.length>=2) parsed.push({ q:lines[0], a:lines.slice(1).join(' ') });
+      });
+      return parsed.length?parsed:(fallback||[]);
+    }
+    async function runAiDraft(){
+      var wantLong=!!(longEl&&longEl.checked);
+      var opts=readAiOpts();
+      setStatus('Writing with LeadPages Brain (same AI as Landing pages)…');
+      if(aiBtn) aiBtn.disabled=true;
+      if(regenBtn) regenBtn.disabled=true;
+      if(longRegenBtn) longRegenBtn.disabled=true;
+      try{
+        var draft=await _siCallLandingDraft(opts);
+        var long=_siLongFromLandingDraft(draft);
+        if(titleEl && long.seoTitle) titleEl.value=long.seoTitle;
+        if(metaEl && long.seoDescription) metaEl.value=long.seoDescription;
+        if(kwEl && long.primaryKeyword && !String(kwEl.value||'').trim()) kwEl.value=long.primaryKeyword;
+        if(wantLong){
+          fillLong(long);
+          setStatus('Brain draft ready (~'+long.wordCount+' words). Review below, regenerate if needed, then Save title/meta and/or Apply to SEO Text.');
+          toast('AI draft ready — review below');
+        }else{
+          fillLong(null);
+          if(regenBtn) regenBtn.hidden=false;
+          setStatus('Title/meta filled from Brain — review, then Save. Tick on-page copy to also draft SEO Text + FAQ.');
+          toast('AI title & meta ready');
+        }
+      }catch(e){
+        setStatus(String((e&&e.message)||e), true);
+        toast('AI draft failed');
+      }finally{
+        if(aiBtn) aiBtn.disabled=false;
+        if(regenBtn) regenBtn.disabled=false;
+        if(longRegenBtn) longRegenBtn.disabled=false;
+      }
+    }
     if(saveBtn) saveBtn.onclick=async function(){
       saveBtn.disabled=true;
       setStatus('Saving…');
@@ -10870,22 +11078,9 @@ function heroCtaCard(c){
         saveBtn.disabled=false;
       }
     };
-    if(aiBtn) aiBtn.onclick=function(){
-      var fields=readFields();
-      var wantLong=!!(longEl&&longEl.checked);
-      var draft=_siDraftHomepageSeo(currentBusinessName||'', fields.primaryKeyword||fields.seoTitle, wantLong);
-      if(titleEl) titleEl.value=draft.seoTitle||'';
-      if(metaEl) metaEl.value=draft.seoDescription||'';
-      if(wantLong&&draft.long){
-        fillLong(draft.long);
-        setStatus('Title/meta filled. ~'+draft.long.wordCount+' word body draft is below — copy or apply to SEO Text.');
-        toast('Draft ready — body copy is below');
-      }else{
-        fillLong(null);
-        setStatus('Title/meta filled — review, then Save. Tick the ~400 words box for on-page copy.');
-        toast('AI draft ready');
-      }
-    };
+    if(aiBtn) aiBtn.onclick=function(){ runAiDraft(); };
+    if(regenBtn) regenBtn.onclick=function(){ runAiDraft(); };
+    if(longRegenBtn) longRegenBtn.onclick=function(){ runAiDraft(); };
     if(clearBtn) clearBtn.onclick=function(){
       if(titleEl) titleEl.value='';
       if(metaEl) metaEl.value='';
@@ -10894,7 +11089,7 @@ function heroCtaCard(c){
     };
     if(copyBtn) copyBtn.onclick=async function(){
       var draft=readLongFromForm();
-      if(!draft.full){ toast('Nothing to copy yet — run AI draft with the ~400 words box ticked'); return; }
+      if(!draft.full){ toast('Nothing to copy yet — run AI draft with on-page copy ticked'); return; }
       try{
         if(navigator.clipboard&&navigator.clipboard.writeText) await navigator.clipboard.writeText(draft.full);
         else {
@@ -10905,22 +11100,18 @@ function heroCtaCard(c){
     };
     if(applyBtn) applyBtn.onclick=async function(){
       var draft=readLongFromForm();
-      if(!draft.content&&!draft.h1){ toast('Nothing to apply — run AI draft with the ~400 words box ticked'); return; }
-      // Re-parse FAQ textarea into Q/A pairs when possible
-      if(draft.faqText){
-        var blocks=String(draft.faqText).split(/\n\s*\n/).map(function(b){return b.trim();}).filter(Boolean);
-        var parsed=[];
-        blocks.forEach(function(b){
-          var lines=b.split('\n').map(function(l){return l.replace(/^\d+\)\s*/,'').trim();}).filter(Boolean);
-          if(lines.length>=2) parsed.push({ q:lines[0], a:lines.slice(1).join(' ') });
-        });
-        if(parsed.length) draft.faqs=parsed;
-      }
+      if(!draft.content&&!draft.h1){ toast('Nothing to apply — run AI draft with on-page copy ticked'); return; }
+      draft.faqs=parseFaqTextarea(draft.faqText, draft.faqs);
       applyBtn.disabled=true;
       try{
         await _siApplyHomepageLongToSeoText(draft);
-        setStatus('Applied to SEO Text section (enabled on the page). Open Page editor → SEO Text to refine.');
-        toast('Applied to SEO Text');
+        var faqNote='';
+        if(faqEl&&faqEl.checked&&draft.faqs&&draft.faqs.length){
+          var n=await _siApplyFaqsToHomepageFaq(draft.faqs);
+          faqNote=n?' · homepage FAQ updated ('+n+')':'';
+        }
+        setStatus('Applied to SEO Text section (enabled)'+faqNote+'. Open Page editor → SEO Text (or FAQ) to refine, then publish.');
+        toast('Applied to SEO Text'+(faqNote?' + FAQ':''));
       }catch(e){
         setStatus(String((e&&e.message)||e), true);
         toast('Could not apply to SEO Text');

@@ -823,6 +823,15 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /Apply to SEO Text section/);
     assert.match(manage, /function _siDraftHomepageSeo\s*\(/);
     assert.match(manage, /wordCount/);
+    assert.match(manage, /si-home-extra/);
+    assert.match(manage, /si-home-regen/);
+    assert.match(manage, /si-home-long-regen/);
+    assert.match(manage, /function _siCallLandingDraft\s*\(/);
+    assert.match(manage, /\/api\/brain\/landing-draft/);
+    assert.match(manage, /function _siLongFromLandingDraft\s*\(/);
+    assert.match(manage, /function _siApplyFaqsToHomepageFaq\s*\(/);
+    assert.match(manage, /st-ai-regen/);
+    assert.match(manage, /Regenerate SEO Text/);
   });
 
   it('hides provider usage from clients and styles partner update-job selects', () => {
