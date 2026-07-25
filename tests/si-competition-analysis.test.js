@@ -182,6 +182,9 @@ runGatewayMock().then(function () {
   assert.ok(manage.indexOf('coffee cart hire canberra') >= 0);
   assert.ok(manage.indexOf('clear_competitors') >= 0);
   assert.ok(manage.indexOf('marketProviderReady') >= 0);
+  assert.ok(manage.indexOf('si-premium-box') >= 0);
+  assert.ok(manage.indexOf('si-free-box') >= 0);
+  assert.ok(manage.indexOf('premiumSeo') >= 0 || manage.indexOf('premium-seo') >= 0);
   assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/competition.js')));
   assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/competition-analysis.js')));
   assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/competition-fixtures.js')));

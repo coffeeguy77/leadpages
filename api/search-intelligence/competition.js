@@ -2,7 +2,7 @@
 
 /**
  * GET|POST /api/search-intelligence/competition
- * Semrush-style Competition Analysis via DataForSEO Labs / Backlinks.
+ * Free: manual competitor list. Premium SEO: DataForSEO Labs / Backlinks research.
  */
 
 const http = require('../../lib/brain/http');
@@ -18,10 +18,25 @@ const {
   clearCompetitors,
   purgeForbiddenCompetitors
 } = require('../../lib/search-intelligence/competition-analysis');
+const {
+  assertPremiumSeoEntitled,
+  isPremiumCompetitionAction
+} = require('../../lib/search-intelligence/billing');
 
 function admin() {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
   return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+async function requirePremium(res, siteId, role) {
+  const gate = await assertPremiumSeoEntitled(siteId, { role: role });
+  if (gate.ok) return null;
+  return http.json(res, 402, {
+    error: gate.error || 'subscription_required',
+    message: gate.message,
+    product: gate.product,
+    app: gate.app
+  });
 }
 
 module.exports = async (req, res) => {
@@ -52,7 +67,8 @@ module.exports = async (req, res) => {
 
     if (req.method === 'GET') {
       const snap = await loadCompetitionSnapshot(db, site, {
-        location: q.location || body.location
+        location: q.location || body.location,
+        role: access.role
       });
       return http.json(res, 200, Object.assign({ role: access.role }, snap));
     }
@@ -60,6 +76,11 @@ module.exports = async (req, res) => {
     const action = String(body.action || '').trim();
     const provider = body.provider || undefined;
     const location = body.location || undefined;
+
+    if (isPremiumCompetitionAction(action)) {
+      const blocked = await requirePremium(res, siteId, access.role);
+      if (blocked) return blocked;
+    }
 
     if (action === 'discover_competitors') {
       const result = await discoverCompetitors(db, site, {

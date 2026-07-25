@@ -102,11 +102,16 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - Monthly report  
 - Lead attribution  
 
-### SEO Growth add-on
+### SEO Growth add-on / Premium SEO
+
+Shipped purchase SKU: marketplace app **Premium SEO** (`premium-seo`, $49/mo or $490/yr).  
+Locks live Competition Analysis (DataForSEO discovery, keyword gap, backlinks, paid research). Manual competitor lists stay free. Register with `node scripts/register-premium-seo-app.js`.
+
+Planned / expanding under the same packaging:
 
 - Larger keyword allowance  
 - Daily/weekly rank tracking  
-- Competitor research  
+- Competitor research (**live — Premium SEO**)  
 - Clustering, Page Optimiser, content plan  
 - Advanced reporting  
 - Research-to-page drafts  

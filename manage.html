@@ -497,6 +497,14 @@ body.lp-dock-bottom.lp-prev-open .wrap{margin-bottom:60vh;}
 /* App ghost mode — section placed but subscription inactive */
 [data-ghost="true"]{pointer-events:none;user-select:none;filter:grayscale(.4) opacity(.65);position:relative;}
 [data-ghost="true"]::after{content:"";position:absolute;inset:0;z-index:9;cursor:not-allowed;}
+/* Premium SEO — shaded locked research panel */
+.si-premium-box{position:relative;border:1px solid color-mix(in srgb, var(--accent,#3b82f6) 35%, var(--line,#d0d5dd));border-radius:14px;padding:16px 16px 14px;margin:0 0 14px;background:linear-gradient(165deg, color-mix(in srgb, var(--accent,#3b82f6) 10%, var(--panel,#fff)) 0%, var(--panel-soft,#f3f4f6) 55%, var(--panel,#fff) 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.35);}
+.si-premium-box[data-locked="true"]{filter:saturate(.85);}
+.si-premium-box .si-premium-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--accent,#2563eb);background:color-mix(in srgb, var(--accent,#3b82f6) 14%, transparent);border:1px solid color-mix(in srgb, var(--accent,#3b82f6) 28%, var(--line));border-radius:999px;padding:4px 10px;margin:0 0 10px;}
+.si-premium-lock{margin:12px 0 0;padding:14px 14px 12px;border-radius:12px;background:color-mix(in srgb, var(--panel,#fff) 88%, #0f172a);border:1px solid color-mix(in srgb, var(--warning,#b45309) 40%, var(--line));}
+.si-premium-lock .si-premium-lock-title{font-weight:700;margin:0 0 6px;color:var(--text,#1b2430);}
+.si-free-box{border:1px solid var(--line,#d0d5dd);border-radius:14px;padding:16px;margin:0 0 14px;background:var(--panel,#fff);}
+.si-free-box .si-free-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft,#64748b);background:var(--panel-soft,#f3f4f6);border:1px solid var(--line);border-radius:999px;padding:4px 10px;margin:0 0 10px;}
 /* App Marketplace tile grid */
 .amp-tile-grid {
   display: grid;
@@ -10391,7 +10399,7 @@ function heroCtaCard(c){
     clusters:{ title:'Clusters', blurb:'Groups related keywords into topic buckets so you can plan pages that cover a whole theme, not one word at a time.' },
     local:{ title:'Local', blurb:'Maps and “near me” visibility — how you show next to nearby competitors. Live map checks run only when you click Check maps.' },
     authority:{ title:'Authority', blurb:'How often trusted sites and AI answer tools mention your brand. Helps you see reputation beyond classic blue-link rankings.' },
-    competition:{ title:'Competition', blurb:'Rival analysis: who overlaps your keywords, keyword gaps, their backlinks, and paid ads — via DataForSEO (live checks cost SI usage).' },
+    competition:{ title:'Competition', blurb:'Free: save rival domains manually. Premium SEO unlocks live discovery, keyword gap, backlinks, and paid ads research.' },
     summary:{ title:'Summary', blurb:'Plain-language scorecard for partners and owners — what improved, what to do next, without SEO jargon.' },
     portfolio:{ title:'Portfolio', blurb:'Compare every site you manage in one view. Best for agencies and multi-location operators.' },
     actions:{ title:'Next Best Actions', blurb:'Prioritised to-dos ranked by impact. Optional “Re-check homepage” crawls your live site once; everyday browsing uses the last saved check.' },
@@ -11200,34 +11208,64 @@ function heroCtaCard(c){
     try{
       var j=await _siGetTab('competition','/api/search-intelligence/competition?siteId='+encodeURIComponent(currentSiteId),opts);
       var comps=(j.competitors||[]).slice();
-      var liveReady=j.marketProviderReady!==false;
+      var liveReady=!!j.marketProviderReady;
       var purged=(j.purgedFixtures||[]);
+      var prem=j.premiumSeo||{};
+      var entitled=!!prem.entitled;
+      var priceMo=prem.priceMonthlyAud!=null?prem.priceMonthlyAud:49;
+      var priceYr=prem.priceAnnualAud!=null?prem.priceAnnualAud:490;
       function compsInputVal(){ return comps.join('\n'); }
-      body.innerHTML=_siTabIntroHTML('competition')
-        +'<div class="card"><h2 style="margin:0 0 8px">Competition Analysis</h2>'
-        +'<p class="lede" style="margin:0 0 10px">Find organic rivals for <strong>this site only</strong> → keyword gap → backlinks → paid research. Live market data is <strong>DataForSEO</strong>. Demo/mock rivals are never saved as your competitors.</p>'
-        +'<p class="hint" style="margin:0 0 10px">Your domain: <code>'+esc(j.domain||'—')+'</code> · Location: '+esc(j.location||'Australia')
-        +(liveReady?' · Market data: ready':' · <span style="color:#b45309">Market data: set DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD</span>')
-        +'</p>'
-        +(purged.length?'<p class="hint" style="margin:0 0 10px;color:#b45309">Removed leaked demo domains from this site: '+esc(purged.join(', '))+'</p>':'')
-        +(!liveReady?'<p class="hint" style="margin:0 0 10px;color:#b45309">'+esc(j.note||'Configure DataForSEO before discovering competitors.')+'</p>':'')
-        +'<label class="hint" style="display:block;margin:0 0 6px">Competitor domains (one per line, up to 4 used for gap/PPC)</label>'
-        +'<textarea id="si-comp-domains" class="tin" rows="4" style="width:100%;font-family:inherit" placeholder="Leave blank, then Find organic competitors for this domain">'+esc(compsInputVal())+'</textarea>'
-        +'<div class="row" style="gap:8px;flex-wrap:wrap;margin:10px 0">'
+
+      var freeHtml='<div class="si-free-box">'
+        +'<div class="si-free-badge">Included · free</div>'
+        +'<h2 style="margin:0 0 8px">Your competitors</h2>'
+        +'<p class="lede" style="margin:0 0 10px">Paste rival domains you already know. Saved on this site — no paid market data required.</p>'
+        +'<p class="hint" style="margin:0 0 10px">Your domain: <code>'+esc(j.domain||'—')+'</code> · Location: '+esc(j.location||'Australia')+'</p>'
+        +(purged.length?'<p class="hint" style="margin:0 0 10px;color:#b45309">Removed leaked demo domains: '+esc(purged.join(', '))+'</p>':'')
+        +'<label class="hint" style="display:block;margin:0 0 6px">Competitor domains (one per line)</label>'
+        +'<textarea id="si-comp-domains" class="tin" rows="4" style="width:100%;font-family:inherit" placeholder="e.g. rival-coffee.com.au&#10;act-espresso.com.au">'+esc(compsInputVal())+'</textarea>'
+        +'<div class="row" style="gap:8px;flex-wrap:wrap;margin:10px 0 0">'
         +'<button type="button" class="btn sm" id="si-comp-save">Save competitors</button>'
         +'<button type="button" class="btn ghost sm" id="si-comp-clear">Clear list</button>'
-        +'<button type="button" class="btn sm" id="si-comp-discover">1 · Find organic competitors</button>'
-        +'<button type="button" class="btn sm ghost" id="si-comp-gap">2 · Keyword gap</button>'
-        +'<button type="button" class="btn sm ghost" id="si-comp-links">3 · Backlink strategy</button>'
-        +'<button type="button" class="btn sm ghost" id="si-comp-paid">4 · Paid ads research</button>'
+        +'</div></div>';
+
+      var premiumToolsHtml=''
+        +'<p class="lede" style="margin:0 0 10px">'+esc(prem.tagline||'Live competitor research for this domain via DataForSEO.')+'</p>'
+        +(entitled?(liveReady?'<p class="hint" style="margin:0 0 10px">Market data ready · Premium SEO active'+(prem.exempt?' (platform access)':'')+'</p>':'<p class="hint" style="margin:0 0 10px;color:#b45309">Premium SEO active — server needs DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD for live runs.</p>'):'')
+        +'<div class="row" style="gap:8px;flex-wrap:wrap;margin:0 0 10px">'
+        +'<button type="button" class="btn sm" id="si-comp-discover"'+(entitled?'':' disabled')+'>1 · Find organic competitors</button>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-gap"'+(entitled?'':' disabled')+'>2 · Keyword gap</button>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-links"'+(entitled?'':' disabled')+'>3 · Backlink strategy</button>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-paid"'+(entitled?'':' disabled')+'>4 · Paid ads research</button>'
         +'</div>'
-        +'<div style="border-top:1px solid var(--line);padding-top:12px;margin-top:8px">'
-        +'<p class="hint" style="margin:0 0 6px">Discover rivals from <strong>your</strong> industry keywords (top Google results for those queries only).</p>'
+        +'<div style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px">'
+        +'<p class="hint" style="margin:0 0 6px">Discover rivals from <strong>your</strong> industry keywords (live Google results).</p>'
         +'<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">'
-        +'<input id="si-comp-seeds" class="tin" placeholder="e.g. coffee cart hire canberra, barista hire act" style="flex:1;min-width:220px">'
-        +'<button type="button" class="btn sm ghost" id="si-comp-serp">Discover from keywords</button>'
-        +'</div></div>'
-        +'<div id="si-comp-out" class="hint" style="margin-top:14px"></div></div>';
+        +'<input id="si-comp-seeds" class="tin" placeholder="e.g. coffee cart hire canberra, barista hire act" style="flex:1;min-width:220px"'+(entitled?'':' disabled')+'>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-serp"'+(entitled?'':' disabled')+'>Discover from keywords</button>'
+        +'</div></div>';
+
+      var lockHtml=!entitled
+        ?('<div class="si-premium-lock">'
+          +'<p class="si-premium-lock-title">Premium SEO required</p>'
+          +'<p class="hint" style="margin:0 0 12px">'+esc(prem.lockedMessage||'Unlock live rival discovery, keyword gap, backlinks, and paid ads research.')+'</p>'
+          +'<p class="hint" style="margin:0 0 12px"><strong>$'+esc(priceMo)+'/mo</strong> or <strong>$'+esc(priceYr)+'/yr</strong> · uses live market data (metered SI usage)</p>'
+          +'<button type="button" class="btn" id="si-comp-buy">'+esc(prem.ctaLabel||'Get Premium SEO')+'</button>'
+          +'</div>')
+        :'';
+
+      body.innerHTML=_siTabIntroHTML('competition')
+        +'<div class="card" style="padding:16px 16px 8px">'
+        +'<h2 style="margin:0 0 6px">Competition Analysis</h2>'
+        +'<p class="lede" style="margin:0 0 14px">'+esc(j.note||'Free tools for everyone. Live market research is Premium SEO.')+'</p>'
+        +freeHtml
+        +'<div class="si-premium-box" data-locked="'+(entitled?'false':'true')+'">'
+        +'<div class="si-premium-badge">Premium SEO</div>'
+        +'<h3 style="margin:0 0 8px">Live market research</h3>'
+        +premiumToolsHtml
+        +lockHtml
+        +'</div>'
+        +'<div id="si-comp-out" class="hint" style="margin-top:8px"></div></div>';
 
       function readComps(){
         var ta=document.getElementById('si-comp-domains');
@@ -11249,7 +11287,33 @@ function heroCtaCard(c){
         }).join('');
         return '<div style="overflow:auto"><table class="ana-table"><thead>'+head+'</thead><tbody>'+bodyRows+'</tbody></table></div>';
       }
+      async function buyPremiumSeo(){
+        try{
+          if(typeof _aaEnsureAppsList==='function') await _aaEnsureAppsList();
+          var appId=prem.appId;
+          var appMeta=null;
+          if(appId) appMeta=(_appsList||[]).find(function(a){ return a.id===appId; });
+          if(!appMeta) appMeta=(_appsList||[]).find(function(a){ return a.slug==='premium-seo'||a.section_key==='premiumSeo'; });
+          if(!appMeta||!appMeta.id){
+            toast('Premium SEO is not in the marketplace yet. Ask a super admin to run scripts/register-premium-seo-app.js','warn');
+            return;
+          }
+          var siteCfg=(typeof data!=='undefined'&&data)||(typeof _siSiteConfig==='function'?_siSiteConfig():{})||{};
+          await _toggleApp(siteCfg, currentSiteId, appMeta.section_key||'premiumSeo', appMeta.id, true);
+          delete _siCache.tabs.competition;
+          await _siLoadCompetition({force:true});
+        }catch(e){
+          toast(String((e&&e.message)||e||'Checkout failed'),'warn');
+        }
+      }
       async function runComp(action, extra){
+        var premiumActs={discover_competitors:1,discover_from_serp:1,keyword_gap:1,backlink_strategy:1,paid_research:1};
+        if(premiumActs[action]&&!entitled){
+          toast('Premium SEO required for live research','warn');
+          var buy=document.getElementById('si-comp-buy');
+          if(buy) buy.focus();
+          return;
+        }
         var out=document.getElementById('si-comp-out');
         out.textContent='Running '+action.replace(/_/g,' ')+'…';
         try{
@@ -11261,6 +11325,11 @@ function heroCtaCard(c){
             body:JSON.stringify(payload)
           });
           var jj=await r.json().catch(function(){return {};});
+          if(r.status===402||jj.error==='subscription_required'){
+            out.innerHTML='<p class="lede">Premium SEO required for this action.</p><p class="hint">'+esc(jj.message||'')+'</p>';
+            toast(jj.message||'Premium SEO required','warn');
+            return;
+          }
           if(!r.ok){ out.textContent=jj.message||jj.error||('HTTP '+r.status); toast(jj.message||jj.error||'Failed','warn'); return; }
           var res=jj.result||{};
           delete _siCache.tabs.competition;
@@ -11273,7 +11342,7 @@ function heroCtaCard(c){
           }
           if(action==='save_competitors'||action==='discover_competitors'||action==='discover_from_serp'){
             if(String(res.provider||'')==='mock'){
-              out.innerHTML='<p class="lede" style="color:#b45309">Blocked mock/demo rivals — configure DataForSEO for live competitors for <strong>'+esc(j.domain||'this site')+'</strong>.</p><p class="hint">'+esc(res.note||'')+'</p>';
+              out.innerHTML='<p class="lede" style="color:#b45309">Blocked mock/demo rivals — live market data only for Premium SEO.</p><p class="hint">'+esc(res.note||'')+'</p>';
               toast('Mock competitors blocked','warn');
               return;
             }
@@ -11396,6 +11465,7 @@ function heroCtaCard(c){
       var bLinks=document.getElementById('si-comp-links');
       var bPaid=document.getElementById('si-comp-paid');
       var bSerp=document.getElementById('si-comp-serp');
+      var bBuy=document.getElementById('si-comp-buy');
       if(bSave) bSave.onclick=function(){ runComp('save_competitors'); };
       if(bClear) bClear.onclick=function(){ runComp('clear_competitors'); };
       if(bDisc) bDisc.onclick=function(){ runComp('discover_competitors'); };
@@ -11411,6 +11481,7 @@ function heroCtaCard(c){
         if(!seeds){ toast('Enter industry keywords for THIS business first','warn'); return; }
         runComp('discover_from_serp',{seeds:seeds});
       };
+      if(bBuy) bBuy.onclick=function(){ buyPremiumSeo(); };
     }catch(e){
       body.innerHTML='<div class="card"><p class="lede">Competition view unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
     }
