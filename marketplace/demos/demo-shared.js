@@ -608,7 +608,12 @@ function applyCfg(C){
         var __h1=__stn.querySelector('.seotxt-h1'); if(__h1) __h1.textContent=(__ST.h1!=null?__ST.h1:'');
         var __si=__stn.querySelector('.seotxt-intro'); if(__si){ __si.textContent=(__ST.intro!=null?__ST.intro:''); __si.style.display=(__ST.intro!=null&&String(__ST.intro).trim()!=='')?'':'none'; }
         var __h2=__stn.querySelector('.seotxt-h2'); if(__h2){ __h2.textContent=(__ST.h2!=null?__ST.h2:''); __h2.style.display=(__ST.h2!=null&&String(__ST.h2).trim()!=='')?'':'none'; }
-        var __sc=__stn.querySelector('.seotxt-content'); if(__sc) __sc.textContent=(__ST.content!=null?__ST.content:'');
+        var __sc=__stn.querySelector('.seotxt-content'); if(__sc){
+          var __raw=(__ST.content!=null?String(__ST.content):'');
+          var __paras=__raw.replace(/\r\n/g,'\n').split(/\n\s*\n/).map(function(p){return p.replace(/\n/g,' ').trim();}).filter(Boolean);
+          if(!__paras.length && __raw.trim()) __paras=[__raw.trim()];
+          __sc.innerHTML=__paras.map(function(p){ return '<p class="seotxt-p">'+esc(p)+'</p>'; }).join('');
+        }
         var __sf=__stn.querySelector('.seotxt-faq');
         if(__sf){
           var __faqs=(Array.isArray(__ST.faq)?__ST.faq:[]).filter(function(it){return it&&it.on!==false&&((it.q&&String(it.q).trim())||(it.a&&String(it.a).trim()));});

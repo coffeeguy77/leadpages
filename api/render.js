@@ -500,7 +500,13 @@ function buildTradeHtml(site, host) {
     '{{favicon}}': esc(cfg.favicon || DEFAULT_FAVICON)
   };
   for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
-  if (template === 'trade') html = injectTradeThemeVars(html, cfg);
+  if (template === 'trade') {
+    html = injectTradeThemeVars(html, cfg);
+    try {
+      const { prepareTradeLiveHtml } = require('../lib/trade-render-guard');
+      html = prepareTradeLiveHtml(html, cfg);
+    } catch (_guardErr) { /* never break live render */ }
+  }
   html = injectSeoJsonLd(html, cfg);
   return html;
 }
@@ -1122,6 +1128,10 @@ module.exports = async (req, res) => {
     html = injectSeoJsonLd(html, cfg);
     if (template === 'trade') {
       html = injectTradeThemeVars(html, cfg);
+      try {
+        const { prepareTradeLiveHtml } = require('../lib/trade-render-guard');
+        html = prepareTradeLiveHtml(html, cfg);
+      } catch (_guardErr) { /* never break live render */ }
       html = injectOnlineQuote(html, site.slug, cfg);
     }
 
