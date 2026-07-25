@@ -6,8 +6,44 @@ const {
   collectKeywordTexts,
   normKw
 } = require('../lib/google-ads/keyword-metrics');
+const {
+  resolveGeoTargetConstants,
+  microsToDollars,
+  resultToIdea,
+  expandIdeasWithVariants,
+  GEO
+} = require('../lib/google-ads/keyword-planner-metrics');
 
 assert.equal(normKw('  Coffee Cart Hire '), 'coffee cart hire');
+
+assert.deepEqual(resolveGeoTargetConstants('Canberra & ACT'), [
+  'geoTargetConstants/' + GEO.CANBERRA
+]);
+assert.deepEqual(resolveGeoTargetConstants('Australia'), [
+  'geoTargetConstants/' + GEO.AUSTRALIA
+]);
+assert.equal(microsToDollars(2_500_000), 2.5);
+assert.equal(microsToDollars(null), null);
+
+const ideaFromAds = resultToIdea({
+  text: 'coffee cart hire canberra',
+  closeVariants: ['coffee cart hire canberra act'],
+  keywordMetrics: {
+    avgMonthlySearches: '210',
+    competitionIndex: '40',
+    lowTopOfPageBidMicros: '1500000',
+    highTopOfPageBidMicros: '3500000',
+    averageCpcMicros: '2200000'
+  }
+});
+assert.equal(ideaFromAds.volume, 210);
+assert.equal(ideaFromAds.cpc, 2.2);
+assert.equal(ideaFromAds.competition, 0.4);
+assert.equal(ideaFromAds.source, 'google_ads_keyword_planner');
+
+const expanded = expandIdeasWithVariants([ideaFromAds]);
+assert.equal(expanded.length, 2);
+assert.ok(expanded.some((x) => x.keyword === 'coffee cart hire canberra act'));
 
 const plan = {
   geoFocus: 'Canberra',
@@ -31,17 +67,16 @@ assert.deepEqual(collectKeywordTexts(plan), [
 ]);
 
 // No live market → do not invent; note explains gap
-applyKeywordMetrics(plan, { liveMarket: false, configured: false, measured: {}, ideas: [] });
+applyKeywordMetrics(plan, { liveMarket: false, measured: {}, ideas: [] });
 assert.equal(plan.adGroups[0].keywords[0].volume, null);
 assert.equal(plan.adGroups[0].keywords[0].cpc, null);
-assert.match(plan.metricsNote, /DATAFORSEO_LOGIN/i);
+assert.match(plan.metricsNote, /never invented/i);
 assert.equal(plan.keywordMetrics.liveMarket, false);
-assert.equal(plan.keywordMetrics.configured, false);
 
-// Measured Ads CPC wins for CPC; market fills volume
+// Measured Ads CPC wins for CPC; Keyword Planner fills volume
 applyKeywordMetrics(plan, {
   liveMarket: true,
-  provider: 'dataforseo',
+  provider: 'google_ads_keyword_planner',
   measured: {
     'coffee cart hire canberra': {
       cpc: 4.25,
@@ -76,22 +111,21 @@ assert.equal(k0.metricsLabelClass, 'measured');
 const k1 = plan.adGroups[0].keywords[1];
 assert.equal(k1.volume, 480);
 assert.equal(k1.cpc, 2.8);
-assert.equal(k1.cpcSource, 'dataforseo');
+assert.equal(k1.cpcSource, 'google_ads_keyword_planner');
 
 assert.match(plan.metricsNote, /measured Ads CPC/i);
-assert.match(plan.metricsNote, /DataForSEO/i);
+assert.match(plan.metricsNote, /Keyword Planner/i);
 
-// Configured but provider error surfaces actionable note
+// Provider error surfaces actionable note
 const planErr = {
   adGroups: [{ keywords: [{ keyword: 'coffee van hire canberra' }] }]
 };
 applyKeywordMetrics(planErr, {
   liveMarket: false,
-  configured: true,
-  marketError: 'Payment Required',
+  marketError: 'Keyword Planner: ads_not_connected',
   ideas: []
 });
-assert.match(planErr.metricsNote, /DataForSEO error/i);
+assert.match(planErr.metricsNote, /unavailable|ads_not_connected/i);
 
 // Mock ideas must not apply when liveMarket false even if ideas present
 const plan2 = {

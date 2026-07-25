@@ -960,6 +960,11 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /\['authority','Authority'\]/);
     assert.match(manage, /_siLoadAuthority/);
     assert.match(manage, /\/api\/search-intelligence\/authority/);
+    assert.match(manage, /competition','Competition/);
+    assert.match(manage, /_siLoadCompetition/);
+    assert.match(manage, /\/api\/search-intelligence\/competition/);
+    assert.equal(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/competition.js')), true);
+    assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/competition-analysis.js')), true);
     assert.equal(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/providers/semrush.js')), false);
   });
 

@@ -10391,6 +10391,7 @@ function heroCtaCard(c){
     clusters:{ title:'Clusters', blurb:'Groups related keywords into topic buckets so you can plan pages that cover a whole theme, not one word at a time.' },
     local:{ title:'Local', blurb:'Maps and “near me” visibility — how you show next to nearby competitors. Live map checks run only when you click Check maps.' },
     authority:{ title:'Authority', blurb:'How often trusted sites and AI answer tools mention your brand. Helps you see reputation beyond classic blue-link rankings.' },
+    competition:{ title:'Competition', blurb:'Rival analysis: who overlaps your keywords, keyword gaps, their backlinks, and paid ads — via DataForSEO (live checks cost SI usage).' },
     summary:{ title:'Summary', blurb:'Plain-language scorecard for partners and owners — what improved, what to do next, without SEO jargon.' },
     portfolio:{ title:'Portfolio', blurb:'Compare every site you manage in one view. Best for agencies and multi-location operators.' },
     actions:{ title:'Next Best Actions', blurb:'Prioritised to-dos ranked by impact. Optional “Re-check homepage” crawls your live site once; everyday browsing uses the last saved check.' },
@@ -10513,7 +10514,7 @@ function heroCtaCard(c){
       return;
     }
     _siCacheResetIfSiteChanged();
-    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['clusters','Clusters'],['local','Local'],['authority','Authority'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections']];
+    var tabs=[['home','Home'],['pages','Pages'],['keywords','Keywords'],['clusters','Clusters'],['local','Local'],['authority','Authority'],['competition','Competition'],['summary','Summary'],['portfolio','Portfolio'],['actions','Next Best Actions'],['connect','Connections']];
     box.innerHTML=
       '<div class="card" style="margin-bottom:14px">'
       +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
@@ -10549,6 +10550,7 @@ function heroCtaCard(c){
       if(tab==='clusters'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('clusters')+'<p class="hint">Loading topic groups…</p>'; await _siLoadClusters(opts); return; }
       if(tab==='local'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('local')+'<p class="hint">Loading local visibility…</p>'; await _siLoadLocal(opts); return; }
       if(tab==='authority'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('authority')+'<p class="hint">Loading brand mentions…</p>'; await _siLoadAuthority(opts); return; }
+      if(tab==='competition'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('competition')+'<p class="hint">Loading competition workspace…</p>'; await _siLoadCompetition(opts); return; }
       if(tab==='summary'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('summary')+'<p class="hint">Loading scorecard…</p>'; await _siLoadSummary(opts); return; }
       if(tab==='portfolio'){ if(!tabCached) body.innerHTML=_siTabIntroHTML('portfolio')+'<p class="hint">Loading portfolio…</p>'; await _siLoadPortfolio(opts); return; }
       var ov=await _siGetOverview({ force:!!opts.force, crawl:false });
@@ -11190,6 +11192,204 @@ function heroCtaCard(c){
       if(b3) b3.onclick=function(){ runAuth('probe_ai'); };
     }catch(e){
       body.innerHTML='<div class="card"><p class="lede">Authority view unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
+    }
+  }
+  async function _siLoadCompetition(opts){
+    opts=opts||{};
+    var body=document.getElementById('si-body'); if(!body) return;
+    try{
+      var j=await _siGetTab('competition','/api/search-intelligence/competition?siteId='+encodeURIComponent(currentSiteId),opts);
+      var comps=(j.competitors||[]).slice();
+      function compsInputVal(){ return comps.join('\n'); }
+      body.innerHTML=_siTabIntroHTML('competition')
+        +'<div class="card"><h2 style="margin:0 0 8px">Competition Analysis</h2>'
+        +'<p class="lede" style="margin:0 0 10px">Find organic rivals → keyword gap (Missing / Weak) → backlink referring domains → paid keyword research. Market data is <strong>DataForSEO</strong>. Live buttons meter SI usage.</p>'
+        +'<p class="hint" style="margin:0 0 10px">Your domain: <code>'+esc(j.domain||'—')+'</code> · Location: '+esc(j.location||'Australia')+'</p>'
+        +'<label class="hint" style="display:block;margin:0 0 6px">Competitor domains (one per line, up to 4 used for gap/PPC)</label>'
+        +'<textarea id="si-comp-domains" class="tin" rows="4" style="width:100%;font-family:inherit">'+esc(compsInputVal())+'</textarea>'
+        +'<div class="row" style="gap:8px;flex-wrap:wrap;margin:10px 0">'
+        +'<button type="button" class="btn sm" id="si-comp-save">Save competitors</button>'
+        +'<button type="button" class="btn sm" id="si-comp-discover">1 · Find organic competitors</button>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-gap">2 · Keyword gap</button>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-links">3 · Backlink strategy</button>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-paid">4 · Paid ads research</button>'
+        +'</div>'
+        +'<div style="border-top:1px solid var(--line);padding-top:12px;margin-top:8px">'
+        +'<p class="hint" style="margin:0 0 6px">No live domain yet? Discover rivals from industry keywords (top Google results).</p>'
+        +'<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">'
+        +'<input id="si-comp-seeds" class="tin" placeholder="e.g. coffee cart hire canberra, barista hire act" style="flex:1;min-width:220px">'
+        +'<button type="button" class="btn sm ghost" id="si-comp-serp">Discover from keywords</button>'
+        +'</div></div>'
+        +'<div id="si-comp-out" class="hint" style="margin-top:14px"></div></div>';
+
+      function readComps(){
+        var ta=document.getElementById('si-comp-domains');
+        var lines=String(ta&&ta.value||'').split(/\n/).map(function(s){ return s.trim(); }).filter(Boolean);
+        return lines.slice(0,12);
+      }
+      function writeComps(list){
+        comps=list||[];
+        var ta=document.getElementById('si-comp-domains');
+        if(ta) ta.value=comps.join('\n');
+      }
+      function kwTable(rows, cols){
+        if(!rows||!rows.length) return '<p class="hint">No rows.</p>';
+        var head='<tr>'+cols.map(function(c){ return '<th>'+esc(c.label)+'</th>'; }).join('')+'</tr>';
+        var bodyRows=rows.slice(0,30).map(function(r){
+          return '<tr>'+cols.map(function(c){
+            var v=c.get(r); return '<td>'+esc(v==null?'—':v)+'</td>';
+          }).join('')+'</tr>';
+        }).join('');
+        return '<div style="overflow:auto"><table class="ana-table"><thead>'+head+'</thead><tbody>'+bodyRows+'</tbody></table></div>';
+      }
+      async function runComp(action, extra){
+        var out=document.getElementById('si-comp-out');
+        out.textContent='Running '+action.replace(/_/g,' ')+'…';
+        try{
+          var tok=await _siToken();
+          var payload=Object.assign({siteId:currentSiteId,action:action,competitors:readComps()},extra||{});
+          var r=await fetch('/api/search-intelligence/competition',{
+            method:'POST',
+            headers:{'content-type':'application/json',Authorization:'Bearer '+(tok||'')},
+            body:JSON.stringify(payload)
+          });
+          var jj=await r.json().catch(function(){return {};});
+          if(!r.ok){ out.textContent=jj.message||jj.error||('HTTP '+r.status); toast(jj.message||jj.error||'Failed','warn'); return; }
+          var res=jj.result||{};
+          delete _siCache.tabs.competition;
+
+          if(action==='save_competitors'||action==='discover_competitors'||action==='discover_from_serp'){
+            var list=(res.competitors||[]).map(function(c){ return typeof c==='string'?c:(c&&c.domain)||''; }).filter(Boolean);
+            if(list.length) writeComps(list);
+            if(action==='save_competitors'){
+              out.innerHTML='<p class="lede">Saved '+esc(list.length)+' competitor domain(s).</p>';
+              toast('Competitors saved');
+              return;
+            }
+            if(action==='discover_from_serp'){
+              out.innerHTML='<p class="lede">Found '+esc(list.length)+' domains from seed keywords.</p>'
+                +kwTable(res.competitors||[],[
+                  {label:'Domain',get:function(c){return c.domain;}},
+                  {label:'SERP hits',get:function(c){return c.overlapCount;}}
+                ])
+                +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+'</p>';
+              toast('SERP rivals loaded');
+              return;
+            }
+            out.innerHTML='<p class="lede">Main organic competitors for <strong>'+esc(res.domain||'—')+'</strong> (by keyword overlap).</p>'
+              +kwTable(res.competitors||[],[
+                {label:'Domain',get:function(c){return c.domain;}},
+                {label:'Competition level',get:function(c){return c.competitionLevel!=null?c.competitionLevel:c.overlapCount;}},
+                {label:'Organic KW',get:function(c){return c.organicKeywords;}},
+                {label:'Est. traffic',get:function(c){return c.organicTraffic!=null?Math.round(c.organicTraffic):null;}},
+                {label:'Paid KW',get:function(c){return c.paidKeywords;}}
+              ])
+              +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+' · Provider: '+esc(res.provider||'—')+'</p>';
+            toast('Competitors discovered');
+            return;
+          }
+
+          if(action==='keyword_gap'){
+            var g=res.gap||{};
+            var counts=g.counts||{};
+            out.innerHTML='<p class="lede">Keyword gap · Missing <strong>'+esc(counts.missing||0)+'</strong> · Weak <strong>'+esc(counts.weak||0)+'</strong> · Shared <strong>'+esc(counts.shared||0)+'</strong></p>'
+              +'<p class="hint">Vs '+esc((res.competitors||[]).join(', '))+' · Your ranked sample: '+esc(res.ownKeywordCount||0)+'</p>'
+              +'<h4 style="margin:14px 0 6px">Missing (rivals rank, you don’t)</h4>'
+              +kwTable(g.missing||[],[
+                {label:'Keyword',get:function(r){return r.keyword;}},
+                {label:'Vol',get:function(r){return r.volume;}},
+                {label:'CPC',get:function(r){return r.cpc;}},
+                {label:'Rivals',get:function(r){return r.rivalCount;}},
+                {label:'Best rival pos',get:function(r){return r.bestRivalPosition;}}
+              ])
+              +'<h4 style="margin:14px 0 6px">Weak (rivals outrank you — quick wins)</h4>'
+              +kwTable(g.weak||[],[
+                {label:'Keyword',get:function(r){return r.keyword;}},
+                {label:'Vol',get:function(r){return r.volume;}},
+                {label:'Your pos',get:function(r){return r.ownPosition;}},
+                {label:'Best rival',get:function(r){return r.bestRivalPosition;}},
+                {label:'CPC',get:function(r){return r.cpc;}}
+              ])
+              +'<h4 style="margin:14px 0 6px">Shared</h4>'
+              +kwTable(g.shared||[],[
+                {label:'Keyword',get:function(r){return r.keyword;}},
+                {label:'Vol',get:function(r){return r.volume;}},
+                {label:'Your pos',get:function(r){return r.ownPosition;}},
+                {label:'Best rival',get:function(r){return r.bestRivalPosition;}}
+              ])
+              +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+'</p>';
+            toast('Keyword gap ready');
+            return;
+          }
+
+          if(action==='backlink_strategy'){
+            out.innerHTML='<p class="lede">Backlinks for <strong>'+esc(res.domain||'—')+'</strong>'
+              +(res.summary?' · '+esc(res.summary.referringDomains)+' referring domains · '+esc(res.summary.backlinks)+' backlinks':'')
+              +(res.own?' · Your RD: '+esc(res.own.referringDomains):'')
+              +'</p>'
+              +'<h4 style="margin:12px 0 6px">Referring domains'+(res.dofollowOnly?' (Follow)':'')+'</h4>'
+              +kwTable(res.referringDomains||[],[
+                {label:'Domain',get:function(r){return r.domain;}},
+                {label:'Rank',get:function(r){return r.rank;}},
+                {label:'Backlinks',get:function(r){return r.backlinks;}},
+                {label:'Dofollow',get:function(r){return r.dofollow;}}
+              ])
+              +'<h4 style="margin:14px 0 6px">Top linked pages</h4>'
+              +kwTable(res.topPages||[],[
+                {label:'URL',get:function(r){return r.url;}},
+                {label:'Backlinks',get:function(r){return r.backlinks;}},
+                {label:'Ref. domains',get:function(r){return r.referringDomains;}}
+              ])
+              +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+'</p>';
+            toast('Backlink strategy loaded');
+            return;
+          }
+
+          if(action==='paid_research'){
+            var blocks=(res.competitors||[]).map(function(c){
+              return '<div style="margin:0 0 14px"><strong>'+esc(c.domain)+'</strong>'
+                +' · paid KW '+esc(c.paidKeywords!=null?c.paidKeywords:(c.keywords||[]).length)
+                +(c.paidTraffic!=null?' · est. paid traffic '+esc(Math.round(c.paidTraffic)):'')
+                +kwTable(c.keywords||[],[
+                  {label:'Keyword',get:function(k){return k.keyword;}},
+                  {label:'Pos',get:function(k){return k.position;}},
+                  {label:'Vol',get:function(k){return k.volume;}},
+                  {label:'CPC',get:function(k){return k.cpc;}},
+                  {label:'Landing',get:function(k){return k.url;}}
+                ])
+                +'</div>';
+            }).join('');
+            out.innerHTML='<p class="lede">Competitor paid keywords (Advertising Research equivalent).</p>'
+              +(blocks||'<p class="hint">No paid keywords found for these domains.</p>')
+              +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+'</p>';
+            toast('Paid research ready');
+            return;
+          }
+
+          out.textContent=JSON.stringify(res).slice(0,400);
+        }catch(e){ out.textContent=String(e.message||e); toast(String(e.message||e),'warn'); }
+      }
+
+      var bSave=document.getElementById('si-comp-save');
+      var bDisc=document.getElementById('si-comp-discover');
+      var bGap=document.getElementById('si-comp-gap');
+      var bLinks=document.getElementById('si-comp-links');
+      var bPaid=document.getElementById('si-comp-paid');
+      var bSerp=document.getElementById('si-comp-serp');
+      if(bSave) bSave.onclick=function(){ runComp('save_competitors'); };
+      if(bDisc) bDisc.onclick=function(){ runComp('discover_competitors'); };
+      if(bGap) bGap.onclick=function(){ runComp('keyword_gap'); };
+      if(bLinks) bLinks.onclick=function(){
+        var list=readComps();
+        runComp('backlink_strategy',{competitor:list[0]});
+      };
+      if(bPaid) bPaid.onclick=function(){ runComp('paid_research'); };
+      if(bSerp) bSerp.onclick=function(){
+        var seedsEl=document.getElementById('si-comp-seeds');
+        runComp('discover_from_serp',{seeds:seedsEl?seedsEl.value:''});
+      };
+    }catch(e){
+      body.innerHTML='<div class="card"><p class="lede">Competition view unavailable.</p><p class="hint">'+esc((e&&e.message)||e)+'</p></div>';
     }
   }
   async function _siLoadClusters(opts){
@@ -12008,17 +12208,15 @@ function heroCtaCard(c){
       var metricsBanner='';
       if(hasVol||hasCpc){
         metricsBanner='<div class="card" style="margin:10px 0;padding:10px 12px;border-color:#0a7d33">'
-          +'<p class="hint" style="margin:0">'+esc(metricsNote)+' · CPC from DataForSEO is <strong>USD estimates</strong> (Google Ads Keyword Planner).'
+          +'<p class="hint" style="margin:0">'+esc(metricsNote)+' · Estimates from <strong>Google Ads Keyword Planner</strong> (connected account); measured CPC when synced.'
           +' <button type="button" class="btn ghost sm" id="gads-fetch-metrics" style="margin-left:6px">Refresh Vol / CPC</button></p></div>';
       } else {
         metricsBanner='<div class="card" style="margin:10px 0;padding:12px;border-color:#b45309">'
           +'<p style="margin:0 0 6px;font-weight:700;color:#b45309">Search volume &amp; CPC are empty</p>'
           +'<p class="hint" style="margin:0 0 8px">'+esc(metricsNote||'No market data yet.')+'</p>'
-          +(km.envHint||(!dfsConfigured&&!km.configured)
-            ?('<p class="hint" style="margin:0 0 8px"><strong>Ops:</strong> '+esc(km.envHint||'Add DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD on Vercel, redeploy this app, then Fetch.')+'</p>')
-            :'')
-          +'<button type="button" class="btn sm" id="gads-fetch-metrics">Fetch Vol / CPC now</button>'
-          +'<p class="hint" style="margin:8px 0 0">Looks up each keyword in Google Ads Keyword Planner via DataForSEO (exact match). We never invent figures.</p></div>';
+          +'<p class="hint" style="margin:0 0 8px"><strong>Ops:</strong> Connect Google Ads for this site, then Fetch. No DataForSEO charge on the default path.</p>'
+          +'<button type="button" class="btn sm" id="gads-fetch-metrics">Fetch Vol / CPC from Ads</button>'
+          +'<p class="hint" style="margin:8px 0 0">Uses Keyword Planner on your connected Ads account. We never invent figures.</p></div>';
       }
 
       var fitHtml='';
@@ -12176,12 +12374,12 @@ function heroCtaCard(c){
         try{
           _gadsSyncKeywordApprovals(plan);
           _gadsCollectRsaIntoPlan(p);
-          var rr=await _gadsBuilderPost('fetch_keyword_metrics',{plan:p,location:p.geoFocus});
+          var rr=await _gadsBuilderPost('fetch_keyword_metrics',{plan:plan,location:p.geoFocus});
           if(rr.plan) showPlan(rr.plan);
           var matched=(rr.keywordMetrics&&rr.keywordMetrics.matchedMarket)||0;
           if(matched) toast('Loaded Vol/CPC for '+matched+' keyword(s)');
-          else toast(rr.message||'Still no Vol/CPC — check DataForSEO env on Vercel','warn');
-        }catch(e){ toast(String(e.message||e),'warn'); fetchMet.disabled=false; fetchMet.textContent='Fetch Vol / CPC now'; }
+          else toast(rr.message||'Still no Vol/CPC — connect Google Ads / check Keyword Planner access','warn');
+        }catch(e){ toast(String(e.message||e),'warn'); fetchMet.disabled=false; fetchMet.textContent='Fetch Vol / CPC from Ads'; }
       };
 
       var cre=document.getElementById('gads-create-paused');

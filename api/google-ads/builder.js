@@ -130,12 +130,15 @@ module.exports = async (req, res) => {
         plan = planForPage(site, page, body);
       }
 
-      // Attach volume/CPC when DataForSEO or synced Ads keyword metrics exist — never invent.
+      // Attach volume/CPC from Google Ads Keyword Planner (primary) + measured CPC — never invent.
       try {
+        const adsConn = await loadAdsConn(db, siteId);
         plan = await enrichPlanWithKeywordMetrics(db, siteId, plan, {
           location: body.location || (plan.geoFocus || (plan.draftPlan && plan.draftPlan.geoFocus)),
           seed: body.keywordSeed || body.service || undefined,
-          skipMarket: body.skipMarketMetrics === true
+          skipMarket: body.skipMarketMetrics === true,
+          adsConn: adsConn,
+          useDataForSeoFallback: body.useDataForSeoFallback === true
         });
       } catch (_e) {
         /* planning still succeeds without metrics */
@@ -613,26 +616,35 @@ module.exports = async (req, res) => {
       if (!ctx) return;
       const { db, siteId } = ctx;
       let plan = body.plan || null;
-      if (plan && plan.draftPlan) plan = plan.draftPlan;
-      if (!plan || !plan.adGroups) {
+      if (plan && plan.draftPlan && !plan.adGroups) plan = plan.draftPlan;
+      if (!plan) return http.json(res, 400, { error: 'plan_required' });
+      const adsConn = await loadAdsConn(db, siteId);
+      if (!adsConn || !adsConn.customer_id || adsConn.connection_status === 'disconnected') {
         return http.json(res, 400, {
-          error: 'plan_required',
-          message: 'Build a plan first, then fetch Vol/CPC for its keywords.'
+          error: 'ads_not_connected',
+          message:
+            'Connect Google Ads for this site first — volume/CPC comes from Keyword Planner on your Ads account (no DataForSEO charge).'
         });
       }
-      plan = await enrichPlanWithKeywordMetrics(db, siteId, plan, {
-        location: body.location || plan.geoFocus,
-        seed: body.keywordSeed || body.seed || undefined,
-        skipMarket: false
-      });
-      const km = plan.keywordMetrics || {};
+      try {
+        plan = await enrichPlanWithKeywordMetrics(db, siteId, plan, {
+          location: body.location || (plan.geoFocus || (plan.draftPlan && plan.draftPlan.geoFocus)),
+          seed: body.keywordSeed || body.service || body.seed || undefined,
+          adsConn: adsConn,
+          useDataForSeoFallback: body.useDataForSeoFallback === true
+        });
+      } catch (e) {
+        return http.json(res, 502, {
+          error: 'keyword_metrics_failed',
+          message: e && e.message ? e.message : String(e)
+        });
+      }
       return http.json(res, 200, {
         ok: true,
         action,
         plan,
-        keywordMetrics: km,
-        dataforseoConfigured: !!km.configured,
-        message: km.note
+        keywordMetrics: plan.keywordMetrics || null,
+        message: (plan.keywordMetrics && plan.keywordMetrics.note) || null
       });
     }
 
