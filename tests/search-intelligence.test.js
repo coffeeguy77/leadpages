@@ -832,6 +832,13 @@ describe('Search Intelligence stubs', () => {
     assert.match(manage, /function _siApplyFaqsToHomepageFaq\s*\(/);
     assert.match(manage, /st-ai-regen/);
     assert.match(manage, /Regenerate SEO Text/);
+    assert.match(manage, /id="st-layout"/);
+    assert.match(manage, /function _siEnsureSeoTextAboveFaq\s*\(/);
+    assert.match(manage, /cur\.faq=\[\]/);
+    assert.match(manage, /imageLayout:'beside'/);
+    const trade = fs.readFileSync(path.join(__dirname, '..', 'trade.template.json'), 'utf8');
+    assert.match(trade, /__ST\.imageLayout/);
+    assert.match(trade, /tbx-wrap/);
   });
 
   it('hides provider usage from clients and styles partner update-job selects', () => {
