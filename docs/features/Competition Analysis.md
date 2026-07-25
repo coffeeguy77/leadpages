@@ -2,23 +2,23 @@
 
 Competitor research inside Manage → **SEO → Competition**.
 
-**Market data:** DataForSEO Labs + Backlinks API only.  
-**Mock/demo data is never shown or saved as a customer’s competitors.**
+Split into **free** tools (every site) and **Premium SEO** (paid marketplace app).
 
 ---
 
-## Hard rules
+## Free (included)
 
-1. Discovery uses the **site’s own domain** (`custom_domain` / slug) — never a hard-coded trade list.
-2. Keyword discovery uses **only the seeds the operator types** (e.g. `coffee cart hire canberra`).
-3. If DataForSEO credentials are missing, actions return `market_provider_required` — they do **not** fall back to plumber (or any trade) fixtures.
-4. Known demo fixture domains (`rival-plumb.com.au`, `canberra-pipes.com.au`, `act-drainmasters.com.au`, `queanbeyan-plumbing.com.au`, `example-plumber.com.au`, `*.example`) are **purged** from `site.config.competitors` and `si_competitors` on tab load.
-5. Mock adapter (tests only) synthesises rivals from the **requested domain / keyword seed** — it must not inject unrelated industries.
-6. Local SERPs expand **local_pack** business websites (not just `maps.google.com`) so local keywords return real rivals.
+- Paste competitor domains and **Save** / **Clear**
+- Fixture purge of leaked demo domains on tab load
+- No DataForSEO calls
 
 ---
 
-## Workflow
+## Premium SEO (paid)
+
+Marketplace app: slug `premium-seo`, section key `premiumSeo`, **$49/mo** or **$490/yr**.
+
+Unlocks live DataForSEO research:
 
 | Step | UI action | Backend |
 |------|-----------|---------|
@@ -30,7 +30,24 @@ Competitor research inside Manage → **SEO → Competition**.
 | 3. Backlinks | **Backlink strategy** | Referring domains + top linked pages |
 | 4. PPC | **Paid ads research** | Paid `ranked_keywords` |
 
-Live rivals (DataForSEO only) may save to `site.config.competitors` and `si_competitors`.
+**Hard rules**
+
+1. Discovery uses the **site’s own domain** — never a hard-coded trade list.
+2. Keyword discovery uses **only the seeds the operator types**.
+3. Missing DataForSEO credentials → `market_provider_required` (no mock rivals).
+4. Missing Premium SEO subscription → `subscription_required` (HTTP 402), even if DataForSEO is configured.
+5. Demo fixture domains are purged from site config on tab load.
+6. Super users are platform-exempt for support; ops may set `SI_PREMIUM_SEO_UNLOCK=1` in trusted envs only.
+7. Local SERPs expand **local_pack** business websites (not just `maps.google.com`) so local keywords return real rivals.
+
+---
+
+## UI
+
+| Box | Contents |
+|-----|----------|
+| **Included · free** | Competitor domain textarea, Save, Clear |
+| **Premium SEO** (shaded) | Keyword lookup, live research buttons, SERP rival save. Locked sites see message + **Get Premium SEO** checkout CTA |
 
 ---
 
@@ -38,18 +55,12 @@ Live rivals (DataForSEO only) may save to `site.config.competitors` and `si_comp
 
 `GET|POST /api/search-intelligence/competition`
 
-| Action | Purpose |
-|--------|---------|
-| `lookup_keyword` | Your position + rivals for one keyword (organic + local) |
-| `competitor_keywords` | Organic keywords a rival domain ranks for |
-| `discover_competitors` | Labs competitors for your domain |
-| `discover_from_serp` | SERP-based rival discovery from operator seeds |
-| `keyword_gap` | Missing / Weak / Shared |
-| `backlink_strategy` | Referring domains + top pages |
-| `paid_research` | Competitor paid keywords |
-| `save_competitors` | Persist cleaned domain list (fixtures rejected) |
-| `clear_competitors` | Wipe saved rivals |
-| `purge_fixtures` | Remove leaked demo domains |
+| Action | Tier |
+|--------|------|
+| `save_competitors` / `clear_competitors` / `purge_fixtures` | Free |
+| `lookup_keyword` / `competitor_keywords` / `discover_competitors` / `discover_from_serp` / `keyword_gap` / `backlink_strategy` / `paid_research` | Premium SEO |
+
+Register the app: `node scripts/register-premium-seo-app.js`
 
 ---
 
@@ -57,10 +68,11 @@ Live rivals (DataForSEO only) may save to `site.config.competitors` and `si_comp
 
 | Area | Path |
 |------|------|
+| Entitlement | `lib/search-intelligence/billing.js` |
 | Orchestration | `lib/search-intelligence/competition-analysis.js` |
 | Fixture denylist | `lib/search-intelligence/competition-fixtures.js` |
-| Provider ops | `lib/search-intelligence/providers/dataforseo.js` (+ seed-derived mock for tests) |
 | API | `api/search-intelligence/competition.js` |
+| Register SKU | `scripts/register-premium-seo-app.js` |
 | UI | `manage.html` → `_siLoadCompetition` |
 
 ---
@@ -68,4 +80,6 @@ Live rivals (DataForSEO only) may save to `site.config.competitors` and `si_comp
 ## Related
 
 - [Provider gateway](../search-intelligence/04-PROVIDER-GATEWAY.md)
-- [SEO Command Centre](../search-intelligence/05-COMMAND-CENTRE.md)
+- [SEO packaging / SEO Growth](../search-intelligence/08-ROADMAP.md)
+- [Marketplace](./Marketplace.md)
+- [Billing](./Billing.md)

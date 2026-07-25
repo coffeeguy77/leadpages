@@ -58,6 +58,7 @@ The Marketplace is the upsell and differentiation surface: partners configure a 
 | **Site owner (tradie)** | Add premium sections (reviews feed, finance widget) without developer |
 | **Partner / broker** | Package layouts; upsell paid apps; faster client onboarding via templates |
 | **LeadPages (platform)** | Recurring revenue via `site_app_subscriptions` + Stripe on paid/metered tiers |
+| **Premium SEO** (`premium-seo`) | Paid SI add-on ($49/mo) — locks live Competition Analysis; register via `scripts/register-premium-seo-app.js`; checkout from SEO → Competition CTA |
 | **Super-admin** | Registry control in `apps-admin.html`; draft apps testable via `?all=1` |
 
 The Marketplace connects product catalog (`app_registry`) to tenant installs (`site_apps`) and hosting config (`sites.config`), enabling monetization without forking templates.

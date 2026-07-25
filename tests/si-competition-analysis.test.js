@@ -229,6 +229,9 @@ runGatewayMock().then(function () {
   assert.ok(manage.indexOf('coffee cart hire canberra') >= 0);
   assert.ok(manage.indexOf('clear_competitors') >= 0);
   assert.ok(manage.indexOf('marketProviderReady') >= 0);
+  assert.ok(manage.indexOf('si-premium-box') >= 0);
+  assert.ok(manage.indexOf('si-free-box') >= 0);
+  assert.ok(manage.indexOf('premiumSeo') >= 0 || manage.indexOf('premium-seo') >= 0);
   assert.ok(manage.indexOf('lookup_keyword') >= 0);
   assert.ok(manage.indexOf('si-comp-lookup') >= 0);
   assert.ok(manage.indexOf('competitor_keywords') >= 0);
