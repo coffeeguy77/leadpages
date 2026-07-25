@@ -3166,7 +3166,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   const DEFAULT_TRADE_SECTIONS={
     navMenu:{on:false,style:'pills',align:'left',placement:'header',icons:'both',items:[]},
     textBox:{on:false,eyebrow:'About us',heading:'Built for {{businessName}}',intro:'A short introduction that sets the scene for what follows.',content:'Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.',image:'',imageSide:'right',textAlign:'left'},
-    seoText:{on:false,eyebrow:'On this page',h1:'Your main service headline',h2:'What we offer',intro:'Short lead-in under the H1.',content:'Supporting paragraph for searchers — keep it clear and local.',image:'',imageSide:'right',imageLayout:'beside',textAlign:'left',faq:[]},
+    seoText:{on:false,eyebrow:'On this page',h1:'Your main service headline',h2:'What we offer',intro:'Short lead-in under the H1.',content:'Supporting paragraph for searchers — keep it clear and local.',image:'',imageSide:'right',imageLayout:'beside',textAlign:'left',faq:[],eyebrowColor:'',h1Color:'',h2Color:'',headingColor:'',textColor:''},
     seoTokens:{trade:'',location:'Canberra',city:'Canberra',region:'ACT',suburb:'Canberra',enableUrlSuburb:false,updateTitle:false,titleTemplate:'{trade} in {location} | {business}'},
     emergencyAvailability:{on:false,heading:'After-hours & emergencies',intro:'We keep the phone on outside business hours for genuine emergencies \u2014 leave your details and we\u2019ll call you straight back.',mode:'schedule',available:true,weekdayOpen:'07:00',weekdayClose:'17:00',satOpen:'08:00',satClose:'14:00',sunOpen:'',sunClose:'',availableLabel:'Available now',responseText:'Fast response — usually within the hour',afterHoursLabel:'After hours',afterHoursText:'Leave your details and we’ll call you first thing.',emergencyText:'Genuine emergency? Call anyway — we run after-hours callouts.',cta:{text:'',action:'call'}},
     serviceAreaMap:{on:false,eyebrow:'Service area',heading:'Suburbs we cover across the ACT',intro:'Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch.'},
@@ -7682,8 +7682,24 @@ function heroCtaCard(c){
     } else if(sub==='seoText'){
       if(!c.sections) c.sections={}; if(!c.sections.seoText) c.sections.seoText=JSON.parse(JSON.stringify(DEFAULT_TRADE_SECTIONS.seoText||{}));
       var _stKw=esc((c.primaryKeyword||c.seoTitle||'')+'');
-      body.innerHTML=secCard(c,'seoText','SEO Text',true,[['eyebrow','Eyebrow'],['h1','H1 — one main page heading'],['h2','H2 — supporting section heading'],['intro','Intro under H1','ta',5],['content','Supporting copy — blank line = paragraph; short title lines = H3; ## / ### headings; **bold**','ta',16],['image','Article image (optional)','image']])
-        +'<p class="hint" style="margin:-8px 0 16px">SEO structure: one <strong>H1</strong> for the page topic, then an <strong>H2</strong> for the next idea. In supporting copy: blank line starts a new paragraph; a short line on its own (or before a longer paragraph) becomes an <strong>H3</strong>; use <code>## Heading</code> / <code>### Heading</code> for explicit H2/H3; wrap words in <code>**bold**</code>.</p>'
+      var _stCol=function(id,label,help){ return '<div class="f" style="margin:0;flex:1 1 calc(50% - 6px);min-width:190px;"><label>'+label+'</label><p class="hint" style="margin:2px 0 6px;font-size:12px;">'+help+'</p>'
+        +'<div style="display:flex;gap:8px;align-items:center;"><input type="color" id="'+id+'-clr" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;">'
+        +'<input type="text" class="tin" id="'+id+'" placeholder="Theme default" style="flex:1;min-width:0;">'
+        +'<button type="button" class="btn ghost sm" id="'+id+'-def">Default</button></div></div>'; };
+      body.innerHTML=secCard(c,'seoText','SEO Text',true,[['eyebrow','Eyebrow'],['h1','H1 — one main page heading'],['h2','H2 — supporting section heading'],['intro','Intro under H1','ta',5],['content','Supporting copy','ta',16],['image','Article image (optional)','image']])
+        +'<p class="hint" style="margin:-8px 0 12px">One <strong>H1</strong> for the page topic. Optional <strong>H2</strong> field for a secondary SEO heading. In supporting copy, short title lines (and <code>## Heading</code>) all render as equal bold section titles — same size. Select text in Supporting copy and use <strong>Bold</strong> or press <kbd>Ctrl/⌘ B</kbd>.</p>'
+        +'<div id="st-fmt-toolbar" style="display:none;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 8px">'
+        +'<button type="button" class="btn ghost sm" id="st-fmt-bold" title="Bold selection (Ctrl/⌘ B)"><strong>B</strong> Bold</button>'
+        +'<button type="button" class="btn ghost sm" id="st-fmt-heading" title="Turn line into a section heading">Heading</button>'
+        +'<span class="hint" style="margin:0">Select text first · blank line = paragraph</span></div>'
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Text colours</h2><p class="lede" style="margin:0 0 12px;">Match copy to your section container / brand. Leave blank for theme defaults.</p>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:12px;">'
+        +_stCol('st-col-eyebrow','Eyebrow colour','Small label above the H1.')
+        +_stCol('st-col-h1','H1 colour','Main page heading.')
+        +_stCol('st-col-h2','H2 colour','Supporting H2 field.')
+        +_stCol('st-col-heading','Bold heading colour','In-body section titles (and **bold**).')
+        +_stCol('st-col-text','Paragraph colour','Intro and body paragraphs.')
+        +'</div></div>'
         +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Image placement</h2><p class="lede" style="margin:0 0 12px;">Where the article image sits beside the SEO copy. With no image, the text fills the full width.</p><div class="row"><div class="f"><label>Image layout</label><select id="st-layout" class="tin"><option value="beside">Beside the text (columns)</option><option value="wrap">Wrap — text flows around it</option></select></div><div class="f"><label>Image side</label><select id="st-side" class="tin"><option value="right">Right of text</option><option value="left">Left of text</option></select></div></div><div class="row"><div class="f"><label>Text alignment <span class="hint">columns layout only</span></label><select id="st-align" class="tin"><option value="left">Left</option><option value="center">Centre</option></select></div><div class="f"></div></div></div>'
         +'<div class="card" style="margin-bottom:22px"><h2 style="margin:0 0 6px">AI regenerate (LeadPages Brain)</h2>'
         +'<p class="lede" style="margin:0 0 12px">Same landing-page AI as Landing pages. Fills H1/H2/body above. Generated questions go to the <strong>homepage FAQ</strong> section — not into this SEO Text block.</p>'
@@ -7707,6 +7723,69 @@ function heroCtaCard(c){
         var ly=$('st-layout'); if(ly){ ly.value=H.imageLayout||'beside'; ly.addEventListener('change',function(){ ens().imageLayout=ly.value; persist(); previewApply(); }); }
         var sd=$('st-side'); if(sd){ sd.value=H.imageSide||'right'; sd.addEventListener('change',function(){ ens().imageSide=sd.value; persist(); previewApply(); }); }
         var al=$('st-align'); if(al){ al.value=H.textAlign||'left'; al.addEventListener('change',function(){ ens().textAlign=al.value; persist(); previewApply(); }); }
+        // Text colours
+        var colMap=[['st-col-eyebrow','eyebrowColor'],['st-col-h1','h1Color'],['st-col-h2','h2Color'],['st-col-heading','headingColor'],['st-col-text','textColor']];
+        colMap.forEach(function(pair){
+          var prefix=pair[0], key=pair[1];
+          var tx=$(prefix), clr=$(prefix+'-clr'), def=$(prefix+'-def');
+          var cur=H[key]||'';
+          if(tx) tx.value=cur;
+          if(clr&&/^#[0-9a-fA-F]{6}$/.test(cur)) clr.value=cur;
+          else if(clr) clr.value='#1a2230';
+          wireSecColorPair(prefix, function(v){ ens()[key]=v||''; });
+        });
+        // Bold / Heading toolbar on supporting copy
+        var ta=$('sec-seoText-content');
+        var tb=$('st-fmt-toolbar');
+        if(ta&&tb&&ta.parentNode){ ta.parentNode.insertBefore(tb, ta); tb.style.display='flex'; }
+        function wrapSelection(before, after){
+          if(!ta) return;
+          var start=ta.selectionStart|0, end=ta.selectionEnd|0;
+          var val=ta.value||'';
+          if(start===end){
+            var ins=before+'text'+after;
+            ta.value=val.slice(0,start)+ins+val.slice(end);
+            ta.focus(); ta.setSelectionRange(start+before.length, start+before.length+4);
+          } else {
+            var sel=val.slice(start,end);
+            // toggle off if already wrapped
+            if(sel.length>=before.length+after.length && sel.slice(0,before.length)===before && sel.slice(-after.length)===after){
+              var inner=sel.slice(before.length, sel.length-after.length);
+              ta.value=val.slice(0,start)+inner+val.slice(end);
+              ta.focus(); ta.setSelectionRange(start, start+inner.length);
+            } else {
+              ta.value=val.slice(0,start)+before+sel+after+val.slice(end);
+              ta.focus(); ta.setSelectionRange(start, start+before.length+sel.length+after.length);
+            }
+          }
+          ta.dispatchEvent(new Event('input',{bubbles:true}));
+        }
+        function makeHeadingLine(){
+          if(!ta) return;
+          var start=ta.selectionStart|0, end=ta.selectionEnd|0;
+          var val=ta.value||'';
+          var lineStart=val.lastIndexOf('\n', Math.max(0,start-1))+1;
+          var lineEnd=val.indexOf('\n', end); if(lineEnd<0) lineEnd=val.length;
+          var line=val.slice(lineStart, lineEnd);
+          var trimmed=line.replace(/^\s+/, '');
+          var lead=line.slice(0, line.length-trimmed.length);
+          var next;
+          if(/^###?\s+/.test(trimmed)) next=lead+trimmed.replace(/^###?\s+/, '');
+          else next=lead+'## '+trimmed.replace(/^\*\*(.+)\*\*$/, '$1');
+          ta.value=val.slice(0,lineStart)+next+val.slice(lineEnd);
+          ta.focus();
+          ta.setSelectionRange(lineStart, lineStart+next.length);
+          ta.dispatchEvent(new Event('input',{bubbles:true}));
+        }
+        var boldBtn=$('st-fmt-bold'), headBtn=$('st-fmt-heading');
+        if(boldBtn) boldBtn.addEventListener('click', function(){ wrapSelection('**','**'); });
+        if(headBtn) headBtn.addEventListener('click', makeHeadingLine);
+        if(ta) ta.addEventListener('keydown', function(ev){
+          if((ev.metaKey||ev.ctrlKey) && (ev.key==='b'||ev.key==='B')){
+            ev.preventDefault();
+            wrapSelection('**','**');
+          }
+        });
       })();
       (function(){
         var btn=$('st-ai-regen'), note=$('st-ai-note');

@@ -125,8 +125,16 @@ describe('live trade render — no plumbing placeholder leak', () => {
     assert.match(manage, /hero:\{eyebrow:'', title:'', titleHl:'', sub:''\}/);
     assert.match(manage, /emerg:\{text:''\}/);
     assert.match(manage, /Never fall back to plumbing placeholder defaults/);
-    assert.match(manage, /Supporting copy — blank line = paragraph/);
-    assert.match(manage, /\*\*bold\*\*/);
+    assert.match(manage, /st-fmt-bold/);
+    assert.match(manage, /st-col-heading/);
+    assert.match(manage, /headingColor/);
     assert.match(manage, /resize:vertical/);
+  });
+
+  it('SEO Text H1 matches section title scale and equal bold headings', () => {
+    assert.match(trade, /seotxt-h1\{[^}]*clamp\(32px,4\.4vw,52px\)/);
+    assert.match(trade, /seotxt-h1\{[^}]*margin:10px/);
+    assert.match(trade, /--seotxt-heading/);
+    assert.match(trade, /seotxt-content \.seotxt-h3,\.seotxt-section \.seotxt-content \.seotxt-subh\{[^}]*clamp\(22px,2\.6vw,30px\)/);
   });
 });
