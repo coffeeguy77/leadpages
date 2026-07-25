@@ -102,34 +102,6 @@
 
 .lp-p-shell-spacer { flex: 1; }
 
-.lp-p-text-size {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  overflow: hidden;
-}
-
-.lp-p-text-size .lp-p-icon-btn {
-  width: 34px;
-  height: 34px;
-  border: 0;
-  border-radius: 0;
-}
-
-.lp-p-text-size .lp-p-icon-btn + .lp-p-icon-btn {
-  border-left: 1px solid var(--border);
-}
-
-.lp-p-text-size-label {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 0 8px;
-  color: var(--text-soft);
-  min-width: 28px;
-  text-align: center;
-}
-
 .lp-p-who {
   font-size: 12px;
   color: var(--text-soft);
@@ -1677,13 +1649,11 @@ body.lp-busy-active { overflow: hidden; }
 @media (min-width: 1024px) {
   .lp-p-menu-btn { display: none; }
   .lp-p-shell-title { display: none; }
-  .lp-p-text-size { margin-left: auto; }
 }
 
 /* Login views use shell header hidden */
 .lp-partner-page:not(.lp-p-authed) .lp-p-shell-title { display: none; }
-.lp-partner-page:not(.lp-p-authed) .lp-p-menu-btn,
-.lp-partner-page:not(.lp-p-authed) .lp-p-text-size { display: none; }
+.lp-partner-page:not(.lp-p-authed) .lp-p-menu-btn { display: none; }
 
 html[data-lp-reduced-motion="true"] .lp-p-panel,
 html[data-lp-reduced-motion="true"] .lp-p-drawer,
