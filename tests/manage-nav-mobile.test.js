@@ -23,10 +23,14 @@ assert.ok(!/^[^/]*\.lp-mm-layout-tabs \.adminnav[\s\S]*display:\s*flex\s*!import
   css.replace(/\.lp-drawer-body \.lp-mm-layout-tabs \.adminnav[\s\S]*?visibility:\s*visible\s*!important;/g, '')
 ) || css.indexOf('.lp-drawer-body .lp-mm-layout-tabs .adminnav') >= 0, 'no unscoped layout-tabs adminnav flex');
 assert.ok(css.includes('@container lp-editor'), 'narrow editor uses container query for adminnav');
+assert.ok(css.includes('max-width: 1100px') || css.includes('max-width:1100px'), 'container query covers desktop 50/50 panes');
 assert.ok(css.includes('grid-template-columns: repeat(2, minmax(0, 1fr))'), 'multi-column stack has 2-col grid');
 assert.ok(
   css.includes('body.lp-dock-side.lp-prev-open .adminnav') || css.includes('lp-dock-side.lp-prev-open .adminnav'),
   'side-preview fallback stacks adminnav'
 );
+assert.ok(css.includes('#si-tabs.sec-modeseg'), 'SEO Command tabs wrap');
+assert.ok(css.includes('#gads-tabs.sec-modeseg'), 'Advertising tabs wrap');
+assert.ok(css.includes('flex-wrap: wrap') || css.includes('flex-wrap:wrap'), 'tab bars allow wrap');
 
 console.log('manage-nav-mobile.test.js: ok');
