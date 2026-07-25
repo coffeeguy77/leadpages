@@ -75,10 +75,13 @@ Plan keywords are enriched after draft generation via `lib/google-ads/keyword-me
 
 | Source | When | Fields |
 |--------|------|--------|
-| DataForSEO (SI gateway) | `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` set | estimated volume, CPC, competition |
-| `ads_keyword_daily` | Ads sync has keyword_view rows | measured CPC = cost÷clicks |
+| Google Ads Keyword Planner | Site has a connected Ads `customer_id` | estimated avg monthly searches, CPC (avg or mid top-of-page bid), competition index |
+| `ads_keyword_daily` | Ads sync has keyword_view rows | measured CPC = cost÷clicks (wins over Planner for CPC) |
+| DataForSEO (optional fallback) | Explicit `useDataForSeoFallback: true` on the request **or** `ADS_KEYWORD_METRICS_DATAFORSEO_FALLBACK=1` | estimated volume/CPC — **off by default** (costs money) |
 
-Mock/demo SI data is **not** attached to Ads plans. If neither source is available, the plan note says volume/CPC are unavailable — figures stay blank.
+Primary path uses `KeywordPlanIdeaService.GenerateKeywordHistoricalMetrics` on the connected customer (`lib/google-ads/keyword-planner-metrics.js`). UI **Fetch Vol / CPC from Ads** calls builder action `fetch_keyword_metrics`.
+
+Mock/demo SI data is **not** attached to Ads plans. If Ads is not connected and fallback is off, the plan note says volume/CPC are unavailable — figures stay blank.
 
 ---
 
@@ -114,7 +117,7 @@ Allowlist the GTM callback URI in Google Cloud OAuth.
 | Flags / safety | `lib/google-ads/flags.js`, `safety.js` |
 | Planner / mutate | `lib/google-ads/planner.js`, `mutate.js` |
 | Landing page fit / RSA from page | `lib/google-ads/page-fit.js` |
-| Keyword volume/CPC | `lib/google-ads/keyword-metrics.js` (DataForSEO + Ads measured) |
+| Keyword volume/CPC | `lib/google-ads/keyword-metrics.js` + `keyword-planner-metrics.js` (Ads Keyword Planner primary; DataForSEO optional) |
 | Readiness / recs / audit | `lib/google-ads/readiness.js`, `recommendations.js`, `audit.js` |
 | Campaign inventory sync | `lib/google-ads/campaign-sync.js` |
 | Builder HTTP | `api/google-ads/builder.js`, `lib/google-ads/builder-http.js` |
@@ -129,6 +132,7 @@ Allowlist the GTM callback URI in Google Cloud OAuth.
 | `suggest_rsa` | Rewrite RSA from page (optional Brain Marketing Hub polish) |
 | `apply_page_fixes` | Apply H1/meta/intro/CTA fixes to `sites.config.pages` |
 | `update_plan` | Persist edited RSA/keywords in session plan |
+| `fetch_keyword_metrics` | Refresh Vol/CPC from Ads Keyword Planner for the current plan |
 | `create_paused` | Budget + Search campaign + keywords + RSA + campaign negatives (always PAUSED) |
 
 **UI:** Choose a published landing page card → Analyse & build plan → review fit grade / fix page → edit RSA headlines → tick keywords → Create PAUSED → readiness → Resume (publish flags).

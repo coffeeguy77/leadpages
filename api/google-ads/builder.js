@@ -129,12 +129,15 @@ module.exports = async (req, res) => {
         plan = planForPage(site, page, body);
       }
 
-      // Attach volume/CPC when DataForSEO or synced Ads keyword metrics exist — never invent.
+      // Attach volume/CPC from Google Ads Keyword Planner (primary) + measured CPC — never invent.
       try {
+        const adsConn = await loadAdsConn(db, siteId);
         plan = await enrichPlanWithKeywordMetrics(db, siteId, plan, {
           location: body.location || (plan.geoFocus || (plan.draftPlan && plan.draftPlan.geoFocus)),
           seed: body.keywordSeed || body.service || undefined,
-          skipMarket: body.skipMarketMetrics === true
+          skipMarket: body.skipMarketMetrics === true,
+          adsConn: adsConn,
+          useDataForSeoFallback: body.useDataForSeoFallback === true
         });
       } catch (_e) {
         /* planning still succeeds without metrics */
@@ -607,6 +610,41 @@ module.exports = async (req, res) => {
       return http.json(res, 200, { ok: true, action, plan });
     }
 
+    if (action === 'fetch_keyword_metrics') {
+      const ctx = await requireSite(req, res, { body, capability: 'draft', requireBuilder: true });
+      if (!ctx) return;
+      const { db, siteId } = ctx;
+      let plan = body.plan;
+      if (!plan) return http.json(res, 400, { error: 'plan_required' });
+      const adsConn = await loadAdsConn(db, siteId);
+      if (!adsConn || !adsConn.customer_id || adsConn.connection_status === 'disconnected') {
+        return http.json(res, 400, {
+          error: 'ads_not_connected',
+          message:
+            'Connect Google Ads for this site first — volume/CPC comes from Keyword Planner on your Ads account (no DataForSEO charge).'
+        });
+      }
+      try {
+        plan = await enrichPlanWithKeywordMetrics(db, siteId, plan, {
+          location: body.location || (plan.geoFocus || (plan.draftPlan && plan.draftPlan.geoFocus)),
+          seed: body.keywordSeed || body.service || undefined,
+          adsConn: adsConn,
+          useDataForSeoFallback: body.useDataForSeoFallback === true
+        });
+      } catch (e) {
+        return http.json(res, 502, {
+          error: 'keyword_metrics_failed',
+          message: e && e.message ? e.message : String(e)
+        });
+      }
+      return http.json(res, 200, {
+        ok: true,
+        action,
+        plan,
+        keywordMetrics: plan.keywordMetrics || null
+      });
+    }
+
     return http.json(res, 400, {
       error: 'unknown_action',
       actions: [
@@ -624,7 +662,8 @@ module.exports = async (req, res) => {
         'analyze_page',
         'suggest_rsa',
         'apply_page_fixes',
-        'update_plan'
+        'update_plan',
+        'fetch_keyword_metrics'
       ]
     });
   } catch (e) {
