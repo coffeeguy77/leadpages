@@ -68,6 +68,11 @@ Every response includes `provider`, `fetchedAt`, `labelClass` (`measured` \| `es
 | `domainOverview` | Light competitor/domain snapshot |
 | `rankCheck` | Position for tracked keywords |
 | `backlinkSummary` | Referring domains / backlinks (DataForSEO Backlinks API) |
+| `competitorsDomain` | Main organic rivals by keyword overlap (Labs) |
+| `rankedKeywords` | Keywords a domain ranks for (organic or paid) |
+| `domainIntersection` | Shared / gap keywords between two domains |
+| `referringDomains` | Referring-domain list for outreach |
+| `domainPages` | Pages earning the most backlinks |
 
 AI visibility probes reuse `serp` features (`ai_overview`) and extract nested citation refs when DataForSEO returns them. Platform catalogue: Google AI Overviews (live), ChatGPT SERP block (aliased), ChatGPT Answers / Perplexity (`unavailable` — not scraped). Semrush is never used.
 

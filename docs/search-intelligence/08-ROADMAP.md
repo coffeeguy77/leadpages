@@ -77,6 +77,7 @@ Calendar-week estimates from the original scope are **indicative only**; deliver
 - [x] Competitor backlink gap reporting UI (Manage → Authority)
 - [x] AI citation / brand ownership probes on Authority tab
 - [x] Deeper multi-platform AI citation model (Google AIO citation ownership live; ChatGPT Answers / Perplexity explicit `unavailable` until licensed — never Semrush)
+- [x] Competition Analysis tab (organic rivals, keyword gap Missing/Weak, backlink referring domains, paid keywords — DataForSEO Labs; never Semrush)
 
 ---
 
