@@ -1,8 +1,18 @@
-// api/site-backups.js — site config snapshots for /manage backups panel.
-// Browser JWT auth + service role DB access (same pattern as /api/stats).
+// api/site-backups.js — smart site config backups for /manage.
+// Browser JWT auth + service-role DB. Resilient to partial schemas.
 
 const { createClient } = require('@supabase/supabase-js');
-const { sanitizeSiteConfig } = require('../lib/quote-system/sanitize');
+const {
+  assertSiteAccess,
+  assertBackupAccess,
+  listBackups,
+  createBackup,
+  restoreBackup,
+  applyConfig,
+  deleteBackup,
+  getBackupRow,
+  publicBackup
+} = require('../lib/site-backups/service');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const admin = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -27,66 +37,29 @@ async function requireUser(req) {
   const token = h.startsWith('Bearer ') ? h.slice(7) : '';
   if (!token) return null;
   try {
-    const userClient = createClient(SUPABASE_URL, process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY, {
-      global: { headers: { Authorization: 'Bearer ' + token } }
-    });
+    const userClient = createClient(
+      SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
+      { global: { headers: { Authorization: 'Bearer ' + token } } }
+    );
     const { data, error } = await userClient.auth.getUser(token);
     if (error || !data || !data.user) return null;
     return data.user;
-  } catch { return null; }
-}
-
-async function isSuperAdmin(userId) {
-  const { data } = await admin.from('profiles').select('is_super_admin').eq('id', userId).maybeSingle();
-  return !!(data && data.is_super_admin);
-}
-
-async function partnerIdForUser(userId) {
-  const { data } = await admin.from('partners').select('id,status').eq('user_id', userId).maybeSingle();
-  if (!data || data.status !== 'active') return null;
-  return data.id;
-}
-
-async function assertSiteAccess(user, siteId) {
-  if (!siteId) return { ok: false, code: 400, error: 'no_site' };
-  const { data: site, error } = await admin.from('sites')
-    .select('id,owner_user_id,servicing_partner_id,referring_partner_id')
-    .eq('id', siteId)
-    .maybeSingle();
-  if (error || !site) return { ok: false, code: 404, error: 'site_not_found' };
-  const adminUser = await isSuperAdmin(user.id);
-  if (adminUser) return { ok: true, site };
-  if (site.owner_user_id && site.owner_user_id === user.id) return { ok: true, site };
-  const partnerId = await partnerIdForUser(user.id);
-  if (partnerId && (site.servicing_partner_id === partnerId || site.referring_partner_id === partnerId)) {
-    return { ok: true, site };
+  } catch {
+    return null;
   }
-  if (!site.owner_user_id) return { ok: true, site };
-  return { ok: false, code: 403, error: 'not_your_site' };
 }
 
-async function assertBackupAccess(user, backupId) {
-  if (!backupId) return { ok: false, code: 400, error: 'no_backup' };
-  const { data: bk, error } = await admin.from('site_backups').select('id,site_id,config,label,created_at,size_bytes').eq('id', backupId).maybeSingle();
-  if (error || !bk) return { ok: false, code: 404, error: 'backup_not_found' };
-  const access = await assertSiteAccess(user, bk.site_id);
-  if (!access.ok) return access;
-  return { ok: true, backup: bk, site: access.site };
-}
-
-function jsonSize(cfg) {
-  try { return JSON.stringify(cfg || {}).length; } catch { return 0; }
+function send(res, code, obj) {
+  res.statusCode = code;
+  res.setHeader('content-type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.end(JSON.stringify(obj));
 }
 
 module.exports = async (req, res) => {
-  const json = (code, obj) => {
-    res.statusCode = code;
-    res.setHeader('content-type', 'application/json');
-    res.end(JSON.stringify(obj));
-  };
-
   const user = await requireUser(req);
-  if (!user) return json(401, { error: 'auth' });
+  if (!user) return send(res, 401, { error: 'auth', message: 'Sign in to manage backups.' });
 
   try {
     const url = new URL(req.url, 'https://x');
@@ -94,94 +67,95 @@ module.exports = async (req, res) => {
     if (req.method === 'GET') {
       const backupId = (url.searchParams.get('id') || '').trim();
       if (backupId) {
-        const access = await assertBackupAccess(user, backupId);
-        if (!access.ok) return json(access.code, { error: access.error });
-        return json(200, { backup: access.backup });
+        const access = await assertBackupAccess(admin, user, backupId);
+        if (!access.ok) return send(res, access.code, { error: access.error, message: access.message });
+        return send(res, 200, { backup: access.backup });
       }
 
       const siteId = (url.searchParams.get('siteId') || '').trim();
-      const access = await assertSiteAccess(user, siteId);
-      if (!access.ok) return json(access.code, { error: access.error });
+      const access = await assertSiteAccess(admin, user, siteId);
+      if (!access.ok) return send(res, access.code, { error: access.error, message: access.message });
 
-      const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 100);
-      const { data, error, count } = await admin
-        .from('site_backups')
-        .select('id,label,created_at,size_bytes', { count: 'exact' })
-        .eq('site_id', siteId)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-      if (error) throw error;
-      return json(200, { backups: data || [], count: count != null ? count : (data || []).length });
+      const listed = await listBackups(admin, siteId, url.searchParams.get('limit'));
+      if (!listed.ok) return send(res, listed.code, { error: listed.error, message: listed.message });
+      return send(res, 200, { backups: listed.backups, count: listed.count });
     }
 
     if (req.method === 'POST') {
       const body = await readBody(req);
-      const action = (body.action || 'save').trim();
+      const action = String(body.action || 'save').trim();
 
       if (action === 'restore') {
-        const access = await assertBackupAccess(user, body.id || body.backupId);
-        if (!access.ok) return json(access.code, { error: access.error });
-        const cfg = sanitizeSiteConfig(access.backup.config);
-        if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) {
-          return json(400, { error: 'invalid_config' });
-        }
-        const { error } = await admin.from('sites').update({
-          config: cfg,
-          updated_at: new Date().toISOString()
-        }).eq('id', access.backup.site_id);
-        if (error) throw error;
-        return json(200, { ok: true, siteId: access.backup.site_id, config: cfg });
+        const access = await assertBackupAccess(admin, user, body.id || body.backupId);
+        if (!access.ok) return send(res, access.code, { error: access.error, message: access.message });
+        const result = await restoreBackup(admin, {
+          backup: access.backup,
+          actorUserId: user.id
+        });
+        if (!result.ok) return send(res, result.code, { error: result.error, message: result.message });
+        return send(res, 200, result);
       }
 
       if (action === 'apply') {
-        const siteId = (body.siteId || '').trim();
-        const access = await assertSiteAccess(user, siteId);
-        if (!access.ok) return json(access.code, { error: access.error });
-        const cfg = sanitizeSiteConfig(body.config);
-        if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) {
-          return json(400, { error: 'invalid_config' });
-        }
-        const { error } = await admin.from('sites').update({
-          config: cfg,
-          updated_at: new Date().toISOString()
-        }).eq('id', siteId);
-        if (error) throw error;
-        return json(200, { ok: true, siteId, config: cfg });
+        const siteId = String(body.siteId || '').trim();
+        const access = await assertSiteAccess(admin, user, siteId);
+        if (!access.ok) return send(res, access.code, { error: access.error, message: access.message });
+        const result = await applyConfig(admin, {
+          siteId,
+          config: body.config,
+          actorUserId: user.id,
+          safetySource: body.safetySource || null,
+          safetyLabel: body.safetyLabel || null
+        });
+        if (!result.ok) return send(res, result.code, { error: result.error, message: result.message });
+        return send(res, 200, result);
       }
 
-      const siteId = (body.siteId || '').trim();
-      const access = await assertSiteAccess(user, siteId);
-      if (!access.ok) return json(access.code, { error: access.error });
+      // Default: save / create backup
+      const siteId = String(body.siteId || '').trim();
+      const access = await assertSiteAccess(admin, user, siteId);
+      if (!access.ok) return send(res, access.code, { error: access.error, message: access.message });
 
-      let cfg = body.config;
-      if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) {
-        const cur = await admin.from('sites').select('config').eq('id', siteId).maybeSingle();
-        cfg = (cur.data && cur.data.config) || {};
-      }
-      const label = String(body.label || 'Backup').trim().slice(0, 120) || 'Backup';
-      const sizeBytes = jsonSize(cfg);
-      const { data, error } = await admin.from('site_backups').insert({
-        site_id: siteId,
-        label,
-        config: cfg,
-        size_bytes: sizeBytes
-      }).select('id,label,created_at,size_bytes').maybeSingle();
-      if (error) throw error;
-      return json(200, { ok: true, backup: data });
+      const result = await createBackup(admin, {
+        siteId,
+        config: body.config,
+        label: body.label,
+        source: body.source || 'manual',
+        actorUserId: user.id,
+        force: !!body.force
+      });
+      if (!result.ok) return send(res, result.code || 500, { error: result.error, message: result.message });
+      return send(res, 200, {
+        ok: true,
+        backup: result.backup,
+        deduped: !!result.deduped,
+        message: result.message || null
+      });
     }
 
     if (req.method === 'DELETE') {
       const backupId = (url.searchParams.get('id') || '').trim();
-      const access = await assertBackupAccess(user, backupId);
-      if (!access.ok) return json(access.code, { error: access.error });
-      const { error } = await admin.from('site_backups').delete().eq('id', backupId);
-      if (error) throw error;
-      return json(200, { ok: true });
+      const access = await assertBackupAccess(admin, user, backupId);
+      if (!access.ok) return send(res, access.code, { error: access.error, message: access.message });
+      const result = await deleteBackup(admin, backupId);
+      if (!result.ok) return send(res, result.code, { error: result.error, message: result.message });
+      return send(res, 200, { ok: true });
     }
 
-    return json(405, { error: 'method' });
+    return send(res, 405, { error: 'method', message: 'Method not allowed.' });
   } catch (e) {
-    console.error('site-backups error:', e && e.message);
-    return json(500, { error: 'server', message: (e && e.message) || 'error' });
+    console.error('site-backups error:', e && e.message, e);
+    return send(res, 500, {
+      error: 'server',
+      message: (e && e.message) || 'Backup service error. Check Vercel logs for site-backups.'
+    });
   }
+};
+
+// Exported for tests / internal callers
+module.exports._internals = {
+  publicBackup,
+  getBackupRow,
+  createBackup,
+  listBackups
 };

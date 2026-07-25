@@ -11,19 +11,21 @@
 
 ## Executive Summary
 
-LeadPages backups are **point-in-time snapshots of a site's full design and content config** (`sites.config` JSONB). They exist because the editor has **no global undo/redo** for trade sections — backups are the intentional recovery path when a design is damaged, overwritten, or needs rollback.
+LeadPages backups are **smart, site-scoped version history** for a site's full design and content config (`sites.config` JSONB). They exist because the editor has **no global undo/redo** for trade sections — backups are the intentional recovery path when a design is damaged, overwritten, or needs rollback.
 
-Implementation is **100% client-side** in `manage.html`: nine `lpBk*` functions talk directly to Supabase (`site_backups` + `sites.update`). There is no dedicated backup API, cron job, or automatic snapshot schedule.
+Implementation is **API-owned**: `manage.html` `lpBk*` talks to `/api/site-backups`, which uses the service role via `lib/site-backups/service.js`. Snapshots are created manually and automatically before publish, restore, import, and theme apply. Schema: `db/site_backups.sql`.
 
 | Fact | Detail |
 |------|--------|
-| **Storage** | Supabase table `site_backups` |
+| **Storage** | Supabase table `site_backups` (`db/site_backups.sql`) |
+| **API** | `/api/site-backups` + `lib/site-backups/service.js` |
 | **Payload** | Full `sites.config` JSONB copy per row |
+| **Sources** | `manual`, `pre_publish`, `pre_restore`, `pre_import`, `theme_apply`, `website_studio`, `auto` |
 | **Primary UI (broker / non-trade)** | Floating `#lp-bk-btn` + `#lp-bk-panel` |
 | **Primary UI (trade)** | Dashboard card `#dash-backups` — FAB hidden |
 | **Command bar** | `#lpc-backups` → `lpBkOpen()` on all templates |
 | **Shared handlers** | `lpBkSave`, `lpBkImport`, `lpBkListClick`, `lpBkApplyConfig` |
-| **Auth** | Supabase JWT in browser; RLS on `site_backups` |
+| **Auth** | Browser JWT → API validates access; service role writes |
 
 ---
 
@@ -419,7 +421,7 @@ flowchart TD
 | **Download** | Exports full site content including PII in config (phone, email in sections) — treat files as sensitive |
 | **Import** | No schema validation — malformed config may break editor until valid restore |
 | **Confirm dialogs** | Only client-side guard against accidental restore/delete |
-| **Service role** | Backups never use service role — user JWT only |
+| **Service role** | `/api/site-backups` validates the user JWT then writes with the service role |
 
 Backups do **not** capture auth tokens or Supabase keys.
 
@@ -437,8 +439,8 @@ Backups do **not** capture auth tokens or Supabase keys.
 | TD-B6 | **Import doesn't create backup row** | `lpBkImport` | Pre-import state not auto-snapshotted |
 | TD-B7 | **Command bar vs Dashboard** | Trade sites | `#lpc-backups` opens FAB while card is canonical — confusing dual UI |
 | TD-B8 | **`api/manage.html` drift** | Legacy copy | No Dashboard; FAB always shown — wrong if deployed |
-| TD-B9 | **No backup on publish** | Publish flow | Publish doesn't auto-save restore point |
-| TD-B10 | **Unbounded row growth** | No retention | Storage cost; cluttered lists |
+| TD-B9 | ~~No backup on publish~~ | Publish flow | **Fixed** — `pre_publish` via `lpBkSave` |
+| TD-B10 | ~~Unbounded row growth~~ | Retention | **Fixed** — keep last ~40 (prefer manuals) |
 
 Cross-reference: Dashboard doc TD-D6 (same Dashboard subset issue).
 

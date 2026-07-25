@@ -810,11 +810,13 @@ No separate analytics warehouse — all queries hit `events` and `leads` directl
 
 | Attribute | Value |
 |-----------|-------|
-| **Purpose** | Point-in-time `config` snapshots |
+| **Purpose** | Smart point-in-time `config` restore points |
+| **Schema** | [`db/site_backups.sql`](../db/site_backups.sql) |
 | **Foreign keys** | `site_id` → `sites.id` |
-| **Columns:** `label`, `config` (JSONB copy), `created_at`, `size_bytes` |
-| **HTML:** `manage.html` (save, restore, download, delete) |
-| **Auth:** JWT in browser; no dedicated API |
+| **Columns:** `label`, `config` (JSONB), `created_at`, `size_bytes`, `source`, `actor_user_id`, `config_hash`, `restored_from_id` |
+| **API:** `/api/site-backups` + `lib/site-backups/service.js` |
+| **HTML:** `manage.html` (save, restore, download, delete; auto before publish) |
+| **Auth:** Browser JWT → API site-access check; service role DB writes |
 
 ---
 
