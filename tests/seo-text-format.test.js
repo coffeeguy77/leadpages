@@ -13,20 +13,20 @@ describe('seo-text-format', () => {
     assert.match(html, /<p class="seotxt-p">This second block is a full paragraph/);
   });
 
-  it('promotes short title lines to H3 with spacing from body', () => {
+  it('promotes short title lines to equal bold section headings', () => {
     const html = formatSeoTextHtml(
       'Our Coffee Offerings\nWe boast a diverse range of specialty coffee for every event.\n\nCustom Branding Options\nAdd your logo to cups and banners.'
     );
-    assert.match(html, /<h3 class="seotxt-h3">Our Coffee Offerings<\/h3>/);
+    assert.match(html, /<h3 class="seotxt-subh">Our Coffee Offerings<\/h3>/);
     assert.match(html, /<p class="seotxt-p">We boast a diverse range/);
-    assert.match(html, /<h3 class="seotxt-h3">Custom Branding Options<\/h3>/);
+    assert.match(html, /<h3 class="seotxt-subh">Custom Branding Options<\/h3>/);
   });
 
-  it('supports ## / ### and **bold**', () => {
+  it('supports ## / ### and **bold** with equal heading weight', () => {
     const html = formatSeoTextHtml('## Why us\n\nWe are **local** experts.\n\n### More detail\n\nBody here.');
-    assert.match(html, /<h2 class="seotxt-subh">Why us<\/h2>/);
+    assert.match(html, /<h3 class="seotxt-subh">Why us<\/h3>/);
     assert.match(html, /<strong class="seotxt-strong">local<\/strong>/);
-    assert.match(html, /<h3 class="seotxt-h3">More detail<\/h3>/);
+    assert.match(html, /<h3 class="seotxt-subh">More detail<\/h3>/);
   });
 
   it('escapes HTML in user content', () => {
