@@ -51,7 +51,7 @@ assert.ok(manage.includes('dash-leads-cog'), 'mobile filter cog');
 assert.ok(manage.includes('dash-leads-menu'), 'filter popup menu');
 assert.ok(manage.includes('_dashLeadsToggleMenu'), 'cog toggles menu');
 assert.ok(manage.includes("DASH_LEADS.filter='all'"), 'defaults to All messages');
-assert.ok(manage.includes('dash-leads-compact-1') || manage.includes('lp-admin-responsive.css?v=dash-leads-compact-1'), 'responsive cache-bust');
+assert.ok(manage.includes('dash-leads-compact-2') || manage.includes('lp-admin-responsive.css?v=dash-leads-compact-2'), 'responsive cache-bust');
 assert.ok(manage.includes('lp-quote-lead'), 'structured quote lead markup');
 assert.ok(manage.includes('lp-quote-kv'), 'quote key/value rows');
 assert.ok(manage.includes('lp-quote-break'), 'quote breakdown list');
@@ -71,6 +71,8 @@ const responsive = fs.readFileSync(path.join(root, 'assets/lp-admin-responsive.c
 assert.ok(responsive.includes('.dash-leads-menu.is-open'), 'mobile menu open state');
 assert.ok(responsive.includes('.dash-leads-cog'), 'mobile shows cog');
 assert.ok(responsive.includes('padding: 8px 10px') || responsive.includes('.lp-lead-card-inner'), 'mobile compact card padding');
+assert.ok(responsive.includes('flex: 0 0 auto') && responsive.includes('.lp-lead-card-meta'), 'mobile resets desktop flex-basis on meta');
+assert.ok(responsive.includes('flex-direction: column') && responsive.includes('.lp-lead-card-inner'), 'mobile stacks lead cards');
 assert.ok(responsive.includes('.lp-quote-kv-row'), 'mobile quote kv tweaks');
 
 // Ingest respects blocklist
