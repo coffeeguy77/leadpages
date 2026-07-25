@@ -90,6 +90,30 @@ describe('live trade render — no plumbing placeholder leak', () => {
     assert.match(html, TRADE_RESIDUAL); // pattern export sanity
   });
 
+  it('hides inactive Services (and other off sections) before first paint', () => {
+    const cfg = {
+      business: 'Bean Culture',
+      trade: 'Coffee cart hire',
+      sections: {
+        heroSlider: { on: true, slides: [{ heading: 'Coffee' }] },
+        hero: { on: false },
+        services: { on: false },
+        seoText: { on: true, h1: 'Premium Event Coffee', content: 'Our Coffee Offerings\nGreat beans for events.' },
+        faq: {},
+        emerg: { on: false }
+      },
+      sectionOrder: ['heroSlider', 'seoText', 'faq', 'footer']
+    };
+    const html = prepareTradeLiveHtml(trade, cfg);
+    assert.match(html, /data-sec="services"[^>]*hidden/i);
+    assert.match(html, /id="lp-section-order"/);
+    assert.match(html, /\[data-sec="seoText"\]\{order:\d+!important\}/);
+    assert.match(html, /function __lpFormatSeoText/);
+    assert.match(html, /seotxt-h3/);
+    const withoutScripts = html.replace(/<script[\s\S]*?<\/script>/gi, ' ');
+    assert.doesNotMatch(withoutScripts, /Blocked Drains/i);
+  });
+
   it('api/render.js wires prepareTradeLiveHtml', () => {
     const render = fs.readFileSync(path.join(__dirname, '..', 'api/render.js'), 'utf8');
     assert.match(render, /trade-render-guard/);
@@ -101,7 +125,8 @@ describe('live trade render — no plumbing placeholder leak', () => {
     assert.match(manage, /hero:\{eyebrow:'', title:'', titleHl:'', sub:''\}/);
     assert.match(manage, /emerg:\{text:''\}/);
     assert.match(manage, /Never fall back to plumbing placeholder defaults/);
-    assert.match(manage, /Supporting copy \(blank line = new paragraph\)/);
+    assert.match(manage, /Supporting copy — blank line = paragraph/);
+    assert.match(manage, /\*\*bold\*\*/);
     assert.match(manage, /resize:vertical/);
   });
 });
