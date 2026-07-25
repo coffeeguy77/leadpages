@@ -80,7 +80,7 @@ AI visibility probes reuse `serp` features (`ai_overview`) and extract nested ci
 
 ## Live vs stub behaviour
 
-- `dataforseo.js` returns `{ ok: false, error: 'not_configured' }` until `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` are set (aliases: `DATAFORSEO_EMAIL` / `DATAFORSEO_API_PASSWORD`, `DFS_LOGIN` / `DFS_PASSWORD`)
+- `dataforseo.js` returns `{ ok: false, error: 'not_configured' }` until login + password are set. Login: `DATAFORSEO_LOGIN` / `DATAFORSEO_EMAIL` / `DFS_LOGIN`. Password: `DATAFORSEO_PASSWORD` / `DATAFORSEO_API_PASSWORD` / `DATAFORSEO_API_KEY` / `DFS_PASSWORD`. DataForSEO uses HTTP Basic Auth (email + API password), not a single bearer token.
 - When credentials exist and `SI_PROVIDER` / `SI_KEYWORD_PROVIDER` are unset, the gateway **auto-prefers** DataForSEO
 - Explicit `SI_PROVIDER=mock` always wins; any `semrush` preference is remapped to DataForSEO/mock
 - Live ops: `keywordIdeas` → Labs `google/keyword_ideas/live`; `serp` / `rankCheck` → `serp/google/organic/live/advanced`; `mapsGrid` → `serp/google/maps/live/advanced`; `domainOverview` → Labs `google/domain_rank_overview/live`; `backlinkSummary` → `backlinks/summary/live`

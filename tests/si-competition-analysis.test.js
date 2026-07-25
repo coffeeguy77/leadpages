@@ -9,7 +9,9 @@ const {
   normKw,
   competitionGateway,
   discoverCompetitors,
-  discoverFromSerpSeeds
+  discoverFromSerpSeeds,
+  lookupKeywordSerp,
+  competitorOrganicKeywords
 } = require('../lib/search-intelligence/competition-analysis');
 const {
   isForbiddenCompetitorDomain,
@@ -18,6 +20,7 @@ const {
   FORBIDDEN_COMPETITOR_DOMAINS
 } = require('../lib/search-intelligence/competition-fixtures');
 const { createGateway } = require('../lib/search-intelligence/providers/gateway');
+const { mapSerpItems } = require('../lib/search-intelligence/providers/dataforseo');
 
 assert.equal(normKw('  Hot Water System '), 'hot water system');
 assert.equal(cleanDomain('https://www.Rival-Plumb.com.au/page'), 'rival-plumb.com.au');
@@ -159,10 +162,54 @@ async function runGatewayMock() {
     saveToConfig: false
   });
   assert.equal(fromSeeds.ok, true);
-  assert.ok(fromSeeds.competitors.length >= 1);
+  assert.ok(fromSeeds.competitors.length >= 1, 'expected SERP rivals for coffee keyword');
   fromSeeds.competitors.forEach(function (c) {
     assert.ok(!/plumb|drain|pipe/i.test(c.domain), 'SERP seed discovery leaked plumber: ' + c.domain);
   });
+
+  const lookup = await lookupKeywordSerp(null, site, {
+    allowMock: true,
+    provider: 'mock',
+    keyword: 'coffee cart hire canberra'
+  });
+  assert.equal(lookup.ok, true);
+  assert.equal(lookup.keyword, 'coffee cart hire canberra');
+  assert.ok(lookup.ownPosition != null, 'expected own SERP position for coffeeevents.com.au');
+  assert.ok(lookup.rivals.length >= 1, 'expected rival rows');
+  lookup.rivals.forEach(function (r) {
+    assert.ok(!/plumb|drain|pipe/i.test(r.domain), r.domain);
+  });
+
+  const rivalKw = await competitorOrganicKeywords(null, site, {
+    allowMock: true,
+    provider: 'mock',
+    domain: lookup.rivals[0].domain
+  });
+  assert.equal(rivalKw.ok, true);
+  assert.ok(rivalKw.keywords.length >= 1);
+
+  // Nested local_pack must yield real websites (not only maps.google.com)
+  const mapped = mapSerpItems([
+    {
+      type: 'local_pack',
+      rank_group: 1,
+      items: [
+        { type: 'local_pack_element', title: 'Bean Rival', domain: 'bean-rival.com.au', url: 'https://bean-rival.com.au/' },
+        { type: 'local_pack_element', title: 'Cart Co', url: 'https://www.cartco.com.au/hire' }
+      ]
+    },
+    {
+      type: 'organic',
+      rank_group: 1,
+      title: 'Coffee Events',
+      url: 'https://coffeeevents.com.au/cart',
+      domain: null
+    }
+  ]);
+  assert.ok(mapped.results.some(function (r) { return r.domain === 'bean-rival.com.au'; }));
+  assert.ok(mapped.results.some(function (r) { return r.domain === 'cartco.com.au'; }));
+  assert.ok(mapped.results.some(function (r) { return r.domain === 'coffeeevents.com.au' && r.type === 'organic'; }));
+  assert.ok(!mapped.results.every(function (r) { return r.domain === 'maps.google.com'; }));
 
   if (prev == null) delete process.env.SI_PROVIDER;
   else process.env.SI_PROVIDER = prev;
@@ -185,6 +232,9 @@ runGatewayMock().then(function () {
   assert.ok(manage.indexOf('si-premium-box') >= 0);
   assert.ok(manage.indexOf('si-free-box') >= 0);
   assert.ok(manage.indexOf('premiumSeo') >= 0 || manage.indexOf('premium-seo') >= 0);
+  assert.ok(manage.indexOf('lookup_keyword') >= 0);
+  assert.ok(manage.indexOf('si-comp-lookup') >= 0);
+  assert.ok(manage.indexOf('competitor_keywords') >= 0);
   assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/competition.js')));
   assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/competition-analysis.js')));
   assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/competition-fixtures.js')));

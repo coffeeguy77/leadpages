@@ -20,11 +20,15 @@ Marketplace app: slug `premium-seo`, section key `premiumSeo`, **$49/mo** or **$
 
 Unlocks live DataForSEO research:
 
-1. Find organic competitors (Labs `competitors_domain`)
-2. Discover from industry keywords (live SERP)
-3. Keyword gap (Missing / Weak / Shared)
-4. Backlink strategy
-5. Paid ads research
+| Step | UI action | Backend |
+|------|-----------|---------|
+| 0. Keyword lookup | **Look up keyword** | Live SERP → your position + rivals (organic + local) |
+| 0b. Rival drill-down | **Keywords: {domain}** | Labs `ranked_keywords` for that rival |
+| 1. Core competitors | **Find organic competitors** | Labs `competitors_domain` for **this** domain |
+| 1b. Seed → list | **Save rivals from SERP** | Live SERP domains saved to competitor list |
+| 2. Keyword gap | **Keyword gap** | Ranked keywords for you + up to 4 saved rivals |
+| 3. Backlinks | **Backlink strategy** | Referring domains + top linked pages |
+| 4. PPC | **Paid ads research** | Paid `ranked_keywords` |
 
 **Hard rules**
 
@@ -34,6 +38,7 @@ Unlocks live DataForSEO research:
 4. Missing Premium SEO subscription → `subscription_required` (HTTP 402), even if DataForSEO is configured.
 5. Demo fixture domains are purged from site config on tab load.
 6. Super users are platform-exempt for support; ops may set `SI_PREMIUM_SEO_UNLOCK=1` in trusted envs only.
+7. Local SERPs expand **local_pack** business websites (not just `maps.google.com`) so local keywords return real rivals.
 
 ---
 
@@ -42,7 +47,7 @@ Unlocks live DataForSEO research:
 | Box | Contents |
 |-----|----------|
 | **Included · free** | Competitor domain textarea, Save, Clear |
-| **Premium SEO** (shaded) | Live research buttons + seed discovery. Locked sites see message + **Get Premium SEO** checkout CTA |
+| **Premium SEO** (shaded) | Keyword lookup, live research buttons, SERP rival save. Locked sites see message + **Get Premium SEO** checkout CTA |
 
 ---
 
@@ -53,7 +58,7 @@ Unlocks live DataForSEO research:
 | Action | Tier |
 |--------|------|
 | `save_competitors` / `clear_competitors` / `purge_fixtures` | Free |
-| `discover_competitors` / `discover_from_serp` / `keyword_gap` / `backlink_strategy` / `paid_research` | Premium SEO |
+| `lookup_keyword` / `competitor_keywords` / `discover_competitors` / `discover_from_serp` / `keyword_gap` / `backlink_strategy` / `paid_research` | Premium SEO |
 
 Register the app: `node scripts/register-premium-seo-app.js`
 

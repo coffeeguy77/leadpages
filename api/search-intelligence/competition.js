@@ -11,6 +11,8 @@ const {
   loadCompetitionSnapshot,
   discoverCompetitors,
   discoverFromSerpSeeds,
+  lookupKeywordSerp,
+  competitorOrganicKeywords,
   runKeywordGap,
   runBacklinkStrategy,
   runPaidResearch,
@@ -119,6 +121,42 @@ module.exports = async (req, res) => {
       return http.json(res, 200, { ok: true, action: action, result: result });
     }
 
+    if (action === 'lookup_keyword' || action === 'keyword_lookup') {
+      const result = await lookupKeywordSerp(db, site, {
+        provider: provider,
+        location: location,
+        keyword: body.keyword || body.seeds || body.keywords,
+        domain: body.domain,
+        device: body.device
+      });
+      if (!result.ok) {
+        return http.json(res, 400, {
+          error: result.error,
+          message: result.message,
+          result: result
+        });
+      }
+      return http.json(res, 200, { ok: true, action: 'lookup_keyword', result: result });
+    }
+
+    if (action === 'competitor_keywords') {
+      const result = await competitorOrganicKeywords(db, site, {
+        provider: provider,
+        location: location,
+        domain: body.domain || body.competitor,
+        competitor: body.competitor,
+        limit: body.limit
+      });
+      if (!result.ok) {
+        return http.json(res, 400, {
+          error: result.error,
+          message: result.message,
+          result: result
+        });
+      }
+      return http.json(res, 200, { ok: true, action: action, result: result });
+    }
+
     if (action === 'keyword_gap') {
       const result = await runKeywordGap(db, site, {
         provider: provider,
@@ -200,6 +238,8 @@ module.exports = async (req, res) => {
       actions: [
         'discover_competitors',
         'discover_from_serp',
+        'lookup_keyword',
+        'competitor_keywords',
         'keyword_gap',
         'backlink_strategy',
         'paid_research',
