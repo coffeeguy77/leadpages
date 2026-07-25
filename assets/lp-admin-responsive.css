@@ -591,6 +591,81 @@ body.lp-dock-split.lp-prev-open .lp-prev {
     right: auto !important;
   }
 }
+
+/*
+ * Narrow editor pane (iPad 50/50 split, side preview, etc.):
+ * stack builder tabs into a multi-column grid so labels stay tappable.
+ * Uses container queries on .wrap (container-name: lp-editor).
+ */
+@container lp-editor (max-width: 820px) {
+  .adminnav:not(.lsub-extra-nav),
+  #lp-nav-slot .adminnav:not(.lsub-extra-nav) {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    overflow: visible;
+    align-items: stretch;
+    width: 100%;
+  }
+  .adminnav:not(.lsub-extra-nav) .anav-btn,
+  #lp-nav-slot .adminnav:not(.lsub-extra-nav) .anav-btn {
+    flex: none !important;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    white-space: normal;
+  }
+}
+@container lp-editor (min-width: 540px) and (max-width: 820px) {
+  .adminnav:not(.lsub-extra-nav),
+  #lp-nav-slot .adminnav:not(.lsub-extra-nav) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@container lp-editor (min-width: 700px) and (max-width: 820px) {
+  .adminnav:not(.lsub-extra-nav),
+  #lp-nav-slot .adminnav:not(.lsub-extra-nav) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/*
+ * Fallback when container queries are unavailable (tablet/iPad side or split).
+ * Keep desktop-wide side docks on the default equal-flex row.
+ */
+@media (max-width: 1199px) {
+  body.lp-dock-side.lp-prev-open .adminnav:not(.lsub-extra-nav),
+  body.lp-dock-split.lp-prev-open .adminnav:not(.lsub-extra-nav),
+  body.lp-dock-side.lp-prev-open #lp-nav-slot .adminnav:not(.lsub-extra-nav),
+  body.lp-dock-split.lp-prev-open #lp-nav-slot .adminnav:not(.lsub-extra-nav) {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    overflow: visible;
+    align-items: stretch;
+    width: 100%;
+  }
+  body.lp-dock-side.lp-prev-open .adminnav:not(.lsub-extra-nav) .anav-btn,
+  body.lp-dock-split.lp-prev-open .adminnav:not(.lsub-extra-nav) .anav-btn,
+  body.lp-dock-side.lp-prev-open #lp-nav-slot .adminnav:not(.lsub-extra-nav) .anav-btn,
+  body.lp-dock-split.lp-prev-open #lp-nav-slot .adminnav:not(.lsub-extra-nav) .anav-btn {
+    flex: none !important;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    white-space: normal;
+  }
+}
+@media (min-width: 900px) and (max-width: 1199px) {
+  body.lp-dock-side.lp-prev-open .adminnav:not(.lsub-extra-nav),
+  body.lp-dock-side.lp-prev-open #lp-nav-slot .adminnav:not(.lsub-extra-nav) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
 body.lp-dock-split.lp-prev-open .lp-prev-body {
   min-height: 0;
 }

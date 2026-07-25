@@ -13,6 +13,7 @@ assert.ok(manage.includes('overflow-x:auto'), 'adminnav can scroll horizontally 
 assert.ok(manage.includes('flex-wrap:nowrap') || manage.includes('flex-wrap: nowrap'), 'adminnav nowrap for scroll');
 assert.ok(manage.includes('.adminnav .anav-btn{flex:1 1 0') || manage.includes('flex:1 1 0'), 'tabs share full width');
 assert.ok(manage.includes('lp-admin-responsive.css?v='), 'responsive CSS cache-busted');
+assert.ok(manage.includes('container-name:lp-editor') || manage.includes('container-name: lp-editor'), 'editor wrap is a size container');
 
 assert.ok(css.includes('display: none !important'), 'mobile hide forced with !important');
 assert.ok(css.includes('body.lp-compact-chrome #lp-nav-slot') || css.includes('#lp-nav-slot'), 'hides nav slot on compact chrome');
@@ -21,5 +22,11 @@ assert.ok(css.includes('.lp-drawer-body .lp-mm-style-nav .adminnav'), 'nav style
 assert.ok(!/^[^/]*\.lp-mm-layout-tabs \.adminnav[\s\S]*display:\s*flex\s*!important/m.test(
   css.replace(/\.lp-drawer-body \.lp-mm-layout-tabs \.adminnav[\s\S]*?visibility:\s*visible\s*!important;/g, '')
 ) || css.indexOf('.lp-drawer-body .lp-mm-layout-tabs .adminnav') >= 0, 'no unscoped layout-tabs adminnav flex');
+assert.ok(css.includes('@container lp-editor'), 'narrow editor uses container query for adminnav');
+assert.ok(css.includes('grid-template-columns: repeat(2, minmax(0, 1fr))'), 'multi-column stack has 2-col grid');
+assert.ok(
+  css.includes('body.lp-dock-side.lp-prev-open .adminnav') || css.includes('lp-dock-side.lp-prev-open .adminnav'),
+  'side-preview fallback stacks adminnav'
+);
 
 console.log('manage-nav-mobile.test.js: ok');

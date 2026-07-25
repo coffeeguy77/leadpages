@@ -51,7 +51,7 @@ assert.ok(manage.includes('dash-leads-cog'), 'mobile filter cog');
 assert.ok(manage.includes('dash-leads-menu'), 'filter popup menu');
 assert.ok(manage.includes('_dashLeadsToggleMenu'), 'cog toggles menu');
 assert.ok(manage.includes("DASH_LEADS.filter='all'"), 'defaults to All messages');
-assert.ok(manage.includes('dash-leads-compact-2') || manage.includes('lp-admin-responsive.css?v=dash-leads-compact-2'), 'responsive cache-bust');
+assert.ok(manage.includes('lp-admin-responsive.css?v='), 'responsive cache-bust');
 assert.ok(manage.includes('lp-quote-lead'), 'structured quote lead markup');
 assert.ok(manage.includes('lp-quote-kv'), 'quote key/value rows');
 assert.ok(manage.includes('lp-quote-break'), 'quote breakdown list');
