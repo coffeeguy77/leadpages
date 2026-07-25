@@ -85,7 +85,7 @@ AI visibility probes reuse `serp` features (`ai_overview`) and extract nested ci
 - Explicit `SI_PROVIDER=mock` always wins; any `semrush` preference is remapped to DataForSEO/mock
 - Live ops: `keywordIdeas` → Labs `google/keyword_ideas/live`; `serp` / `rankCheck` → `serp/google/organic/live/advanced`; `mapsGrid` → `serp/google/maps/live/advanced`; `domainOverview` → Labs `google/domain_rank_overview/live`; `backlinkSummary` → `backlinks/summary/live`
 - Default geo: `DATAFORSEO_LOCATION_CODE` (default **2036** Australia)
-- `mock.js` returns deterministic fixtures for unit tests  
+- `mock.js` returns deterministic fixtures for unit tests — Competition Analysis **never** uses mock for customer sites (requires DataForSEO; see `competitionGateway` / `docs/features/Competition Analysis.md`). Seed-derived mock rivals must never inject unrelated trades (e.g. plumber domains for a coffee site).
 
 ---
 
