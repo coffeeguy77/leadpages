@@ -3166,7 +3166,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   const DEFAULT_TRADE_SECTIONS={
     navMenu:{on:false,style:'pills',align:'left',placement:'header',icons:'both',items:[]},
     textBox:{on:false,eyebrow:'About us',heading:'Built for {{businessName}}',intro:'A short introduction that sets the scene for what follows.',content:'Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.',image:'',imageSide:'right',textAlign:'left'},
-    seoText:{on:false,eyebrow:'On this page',h1:'Your main service headline',h2:'What we offer',intro:'Short lead-in under the H1.',content:'Supporting paragraph for searchers — keep it clear and local.',image:'',imageSide:'right',textAlign:'left',faq:[{on:true,q:'How quickly can you help?',a:'We aim to respond the same day and book a time that suits you.'},{on:true,q:'Do you cover my suburb?',a:'Yes — tell us your suburb and we will confirm coverage.'}]},
+    seoText:{on:false,eyebrow:'On this page',h1:'Your main service headline',h2:'What we offer',intro:'Short lead-in under the H1.',content:'Supporting paragraph for searchers — keep it clear and local.',image:'',imageSide:'right',imageLayout:'beside',textAlign:'left',faq:[]},
     seoTokens:{trade:'',location:'Canberra',city:'Canberra',region:'ACT',suburb:'Canberra',enableUrlSuburb:false,updateTitle:false,titleTemplate:'{trade} in {location} | {business}'},
     emergencyAvailability:{on:false,heading:'After-hours & emergencies',intro:'We keep the phone on outside business hours for genuine emergencies \u2014 leave your details and we\u2019ll call you straight back.',mode:'schedule',available:true,weekdayOpen:'07:00',weekdayClose:'17:00',satOpen:'08:00',satClose:'14:00',sunOpen:'',sunClose:'',availableLabel:'Available now',responseText:'Fast response — usually within the hour',afterHoursLabel:'After hours',afterHoursText:'Leave your details and we’ll call you first thing.',emergencyText:'Genuine emergency? Call anyway — we run after-hours callouts.',cta:{text:'',action:'call'}},
     serviceAreaMap:{on:false,eyebrow:'Service area',heading:'Suburbs we cover across the ACT',intro:'Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch.'},
@@ -3409,9 +3409,21 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
           var qi=base.indexOf('quote');
           if(qi>=0){ base.splice(qi,0,id); return; }
         }
+        // SEO Text sits above the homepage FAQ by default (article → questions).
+        if(id==='seoText'){
+          var sfi=base.indexOf('faq');
+          if(sfi>=0){ base.splice(sfi,0,id); return; }
+          var sri=base.indexOf('reviews');
+          if(sri>=0){ base.splice(sri,0,id); return; }
+        }
         base.push(id);
       }
     });
+    // If both are on but order was never set, keep SEO Text above FAQ.
+    if(base.indexOf('seoText')>=0 && base.indexOf('faq')>=0 && base.indexOf('seoText')>base.indexOf('faq') && !(Array.isArray(c.sectionOrder)&&c.sectionOrder.length)){
+      var _sx=base.indexOf('seoText'); base.splice(_sx,1);
+      var _sf=base.indexOf('faq'); base.splice(_sf,0,'seoText');
+    }
     var saved=Array.isArray(c.sectionOrder)?c.sectionOrder.filter(function(x){return base.indexOf(x)>=0;}):[];
     base.forEach(function(x){ if(saved.indexOf(x)<0) saved.push(x); });
     var out=saved.filter(function(x){ return _secOn(c,x); });
@@ -7667,23 +7679,31 @@ function heroCtaCard(c){
     } else if(sub==='seoText'){
       if(!c.sections) c.sections={}; if(!c.sections.seoText) c.sections.seoText=JSON.parse(JSON.stringify(DEFAULT_TRADE_SECTIONS.seoText||{}));
       var _stKw=esc((c.primaryKeyword||c.seoTitle||'')+'');
-      body.innerHTML=secCard(c,'seoText','SEO Text',true,[['eyebrow','Eyebrow'],['h1','H1 (main page heading)'],['h2','H2 (section heading)'],['intro','Intro under H1','ta'],['content','Supporting copy','ta'],['image','Image (optional)','image']])
+      body.innerHTML=secCard(c,'seoText','SEO Text',true,[['eyebrow','Eyebrow'],['h1','H1 (main page heading)'],['h2','H2 (section heading)'],['intro','Intro under H1','ta'],['content','Supporting copy','ta'],['image','Article image (optional)','image']])
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Image placement</h2><p class="lede" style="margin:0 0 12px;">Where the article image sits beside the SEO copy. With no image, the text fills the full width.</p><div class="row"><div class="f"><label>Image layout</label><select id="st-layout" class="tin"><option value="beside">Beside the text (columns)</option><option value="wrap">Wrap — text flows around it</option></select></div><div class="f"><label>Image side</label><select id="st-side" class="tin"><option value="right">Right of text</option><option value="left">Left of text</option></select></div></div><div class="row"><div class="f"><label>Text alignment <span class="hint">columns layout only</span></label><select id="st-align" class="tin"><option value="left">Left</option><option value="center">Centre</option></select></div><div class="f"></div></div></div>'
         +'<div class="card" style="margin-bottom:22px"><h2 style="margin:0 0 6px">AI regenerate (LeadPages Brain)</h2>'
-        +'<p class="lede" style="margin:0 0 12px">Same landing-page AI as Landing pages. Add context, then regenerate — review in the fields above before publish. Optionally refresh the homepage FAQ app too.</p>'
+        +'<p class="lede" style="margin:0 0 12px">Same landing-page AI as Landing pages. Fills H1/H2/body above. Generated questions go to the <strong>homepage FAQ</strong> section — not into this SEO Text block.</p>'
         +'<div class="row" style="gap:10px;flex-wrap:wrap;margin:0 0 10px">'
         +'<div class="f" style="margin:0;flex:1;min-width:160px"><label for="st-ai-kw">Primary keyword</label><input id="st-ai-kw" class="tin" type="text" value="'+_stKw+'" placeholder="e.g. coffee cart hire canberra"></div>'
         +'<div class="f" style="margin:0;flex:1;min-width:140px"><label for="st-ai-loc">Location</label><input id="st-ai-loc" class="tin" type="text" placeholder="e.g. Canberra"></div>'
         +'</div>'
         +'<div class="f" style="margin:0 0 10px"><label for="st-ai-extra">Context for AI</label>'
         +'<textarea id="st-ai-extra" class="tin" rows="3" placeholder="What should the copy emphasise? Audience, offer, tone, must-include facts…"></textarea></div>'
-        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="st-ai-faq" checked> Also update homepage FAQ app from generated FAQs</label>'
+        +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="st-ai-faq" checked> Update homepage FAQ app from generated questions</label>'
         +'<div class="row" style="gap:8px;flex-wrap:wrap">'
         +'<button type="button" class="btn sm" id="st-ai-regen">Regenerate SEO Text</button>'
         +'<span class="hint" id="st-ai-note"></span></div></div>'
-        +'<div class="card" style="margin-bottom:22px"><h2>FAQ blocks</h2><p class="lede">Split supporting questions so the page stays scannable for visitors and search.</p><div id="le-seoTextFaq"></div></div>'
-        +'<p class="hint">SEO Text is for on-page H1/H2/FAQ content. Homepage Google title &amp; meta are edited in SEO Command Centre → Home.</p>';
+        +'<div class="card" style="margin-bottom:22px"><h2>Extra FAQ rows (optional)</h2><p class="lede">Usually leave empty — use Page editor → <strong>FAQ</strong> for questions. These rows only appear inside SEO Text if you add them manually.</p><div id="le-seoTextFaq"></div></div>'
+        +'<p class="hint">SEO Text is on-page article copy (H1/H2/body + optional image). Homepage Google title &amp; meta are edited in SEO Command Centre → Home.</p>';
       wireSec(c,'seoText',true,[['eyebrow'],['h1'],['h2'],['intro'],['content'],['image',null,'image']]);
       listEditor($('le-seoTextFaq'),c,'seoText');
+      (function(){
+        var H=(c.sections&&c.sections.seoText)||{};
+        function ens(){ if(!c.sections)c.sections={}; if(!c.sections.seoText)c.sections.seoText={}; return c.sections.seoText; }
+        var ly=$('st-layout'); if(ly){ ly.value=H.imageLayout||'beside'; ly.addEventListener('change',function(){ ens().imageLayout=ly.value; persist(); previewApply(); }); }
+        var sd=$('st-side'); if(sd){ sd.value=H.imageSide||'right'; sd.addEventListener('change',function(){ ens().imageSide=sd.value; persist(); previewApply(); }); }
+        var al=$('st-align'); if(al){ al.value=H.textAlign||'left'; al.addEventListener('change',function(){ ens().textAlign=al.value; persist(); previewApply(); }); }
+      })();
       (function(){
         var btn=$('st-ai-regen'), note=$('st-ai-note');
         if(!btn) return;
@@ -7700,7 +7720,7 @@ function heroCtaCard(c){
             var long=_siLongFromLandingDraft(draft);
             await _siApplyHomepageLongToSeoText(long);
             if(wantFaq&&long.faqs&&long.faqs.length) await _siApplyFaqsToHomepageFaq(long.faqs);
-            if(note) note.textContent='Applied — edit fields above if needed, then publish.';
+            if(note) note.textContent='Applied — SEO Text body only; FAQs go to the FAQ section'+(wantFaq?'':' (unchecked)')+'.';
             toast('SEO Text regenerated');
             try{ landingSub='seoText'; renderDetails(); }catch(_e){}
           }catch(e){
@@ -10738,8 +10758,8 @@ function heroCtaCard(c){
       +'</div>'
       +'<div class="f" style="margin:0 0 10px"><label for="si-home-extra">Context for AI <span class="hint">(what to consider — tone, audience, must-include facts)</span></label>'
       +'<textarea id="si-home-extra" class="tin" rows="3" placeholder="e.g. Wedding &amp; corporate coffee cart hire across Canberra. Licensed baristas, espresso machines, no obligation quotes. Avoid generic filler — sound local and practical."></textarea></div>'
-      +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px"><input type="checkbox" id="si-home-ai-long" checked> Also draft on-page SEO Text + FAQ copy (shown below — not published until you apply)</label>'
-      +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="si-home-ai-faq" checked> When applying, also update homepage FAQ app</label>'
+      +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 8px"><input type="checkbox" id="si-home-ai-long" checked> Also draft on-page SEO Text body (shown below — not published until you apply)</label>'
+      +'<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="si-home-ai-faq" checked> When applying, put generated questions in the homepage FAQ section (not inside SEO Text)</label>'
       +'<div class="row" style="gap:8px;flex-wrap:wrap">'
       +'<button type="button" class="btn sm" id="si-home-save">Save homepage SEO</button>'
       +'<button type="button" class="btn ghost sm" id="si-home-ai">AI draft</button>'
@@ -10749,12 +10769,12 @@ function heroCtaCard(c){
       +'<p class="hint" style="margin-top:10px" id="si-home-seo-status">Saved on this site config · used as live &lt;title&gt; / meta description. AI uses POST /api/brain/landing-draft (same as Landing pages).</p>'
       +'<div id="si-home-long-wrap" hidden style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">'
       +'<h3 style="margin:0 0 6px;font-size:15px">Homepage body draft</h3>'
-      +'<p class="lede" style="margin:0 0 10px">On-page copy for searchers — separate from the Google title/meta above. Edit, regenerate with more context, then apply into <strong>SEO Text</strong> (and optional homepage FAQ).</p>'
+      +'<p class="lede" style="margin:0 0 10px">On-page article copy for searchers. Apply puts body into <strong>SEO Text</strong> and questions into the <strong>FAQ</strong> section (not duplicated inside SEO Text).</p>'
       +'<div class="f" style="margin:0 0 8px"><label for="si-home-long-h1">H1</label><input id="si-home-long-h1" class="tin" type="text"></div>'
       +'<div class="f" style="margin:0 0 8px"><label for="si-home-long-h2">H2</label><input id="si-home-long-h2" class="tin" type="text"></div>'
       +'<div class="f" style="margin:0 0 8px"><label for="si-home-long-intro">Intro</label><textarea id="si-home-long-intro" class="tin" rows="2"></textarea></div>'
       +'<div class="f" style="margin:0 0 8px"><label for="si-home-long-body">Supporting copy</label><textarea id="si-home-long-body" class="tin" rows="12"></textarea></div>'
-      +'<div class="f" style="margin:0 0 10px"><label for="si-home-long-faq">FAQ draft</label><textarea id="si-home-long-faq" class="tin" rows="6"></textarea></div>'
+      +'<div class="f" style="margin:0 0 10px"><label for="si-home-long-faq">FAQ draft <span class="hint">(homepage FAQ section only)</span></label><textarea id="si-home-long-faq" class="tin" rows="6"></textarea></div>'
       +'<p class="hint" style="margin:0 0 10px" id="si-home-long-count"></p>'
       +'<div class="row" style="gap:8px;flex-wrap:wrap">'
       +'<button type="button" class="btn ghost sm" id="si-home-long-copy">Copy full draft</button>'
@@ -10906,6 +10926,28 @@ function heroCtaCard(c){
     }
     return j.draft||{};
   }
+  function _siStripEmbeddedFaqs(text){
+    var t=String(text||'').replace(/\r\n/g,'\n').trim();
+    if(!t) return '';
+    // Drop trailing FAQ blocks that sometimes leak into body copy.
+    t=t.replace(/\n*(?:FAQ|Frequently Asked Questions)\s*:?\s*\n[\s\S]*$/i,'');
+    t=t.replace(/(?:^|\n)\s*\d+\)\s+.+\?\s*\n[\s\S]*$/m, function(m, off, whole){
+      // Only strip if it looks like a numbered Q&A tail
+      return /\?\s*\n/.test(m) ? '' : m;
+    });
+    return t.replace(/\n{3,}/g,'\n\n').trim();
+  }
+  function _siEnsureSeoTextAboveFaq(){
+    if(typeof data!=='object'||!data) return;
+    if(!Array.isArray(data.sectionOrder)) data.sectionOrder=[];
+    var ord=data.sectionOrder;
+    var si=ord.indexOf('seoText');
+    var fi=ord.indexOf('faq');
+    if(si>=0) ord.splice(si,1);
+    fi=ord.indexOf('faq');
+    if(fi>=0) ord.splice(fi,0,'seoText');
+    else ord.push('seoText');
+  }
   function _siApplyHomepageLongToSeoText(longDraft){
     if(!longDraft||typeof data!=='object'||!data) throw new Error('No site config loaded');
     if(!data.sections) data.sections={};
@@ -10916,12 +10958,14 @@ function heroCtaCard(c){
     cur.h1=longDraft.h1||cur.h1||'';
     cur.h2=longDraft.h2||cur.h2||'';
     cur.intro=longDraft.intro||cur.intro||'';
-    cur.content=longDraft.content||cur.content||'';
-    cur.faq=(longDraft.faqs||[]).map(function(f){ return { on:true, q:f.q||'', a:f.a||'' }; });
-    if(!cur.faq.length) cur.faq=[{on:true,q:'',a:''}];
+    cur.content=_siStripEmbeddedFaqs(longDraft.content||cur.content||'');
+    // FAQs belong in the homepage FAQ app — never duplicate into SEO Text.
+    cur.faq=[];
+    if(cur.imageLayout==null) cur.imageLayout='beside';
+    if(cur.imageSide==null) cur.imageSide='right';
+    if(cur.textAlign==null) cur.textAlign='left';
     data.sections.seoText=cur;
-    if(!Array.isArray(data.sectionOrder)) data.sectionOrder=[];
-    if(data.sectionOrder.indexOf('seoText')<0) data.sectionOrder.push('seoText');
+    _siEnsureSeoTextAboveFaq();
     if(typeof persist==='function') persist();
     if(typeof lpSaveDB==='function') return lpSaveDB();
     return Promise.resolve();
@@ -10943,6 +10987,7 @@ function heroCtaCard(c){
     data.sections.faq=cur;
     if(!Array.isArray(data.sectionOrder)) data.sectionOrder=[];
     if(data.sectionOrder.indexOf('faq')<0) data.sectionOrder.push('faq');
+    _siEnsureSeoTextAboveFaq();
     if(typeof persist==='function') persist();
     if(typeof lpSaveDB==='function') return lpSaveDB().then(function(){ return items.length; });
     return Promise.resolve(items.length);
@@ -11109,9 +11154,11 @@ function heroCtaCard(c){
         if(faqEl&&faqEl.checked&&draft.faqs&&draft.faqs.length){
           var n=await _siApplyFaqsToHomepageFaq(draft.faqs);
           faqNote=n?' · homepage FAQ updated ('+n+')':'';
+        }else{
+          faqNote=' · SEO Text FAQs cleared (questions stay in FAQ section only when ticked)';
         }
-        setStatus('Applied to SEO Text section (enabled)'+faqNote+'. Open Page editor → SEO Text (or FAQ) to refine, then publish.');
-        toast('Applied to SEO Text'+(faqNote?' + FAQ':''));
+        setStatus('Applied body to SEO Text (above FAQ)'+faqNote+'. Refine in Page editor, then publish.');
+        toast('Applied to SEO Text'+(faqEl&&faqEl.checked?' + FAQ':''));
       }catch(e){
         setStatus(String((e&&e.message)||e), true);
         toast('Could not apply to SEO Text');
