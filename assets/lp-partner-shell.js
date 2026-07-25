@@ -6,7 +6,6 @@
 
   var BP_MOBILE = 1024;
   var MENU_API = '/api/admin-command-menu';
-  var TEXT_SIZES = ['standard', 'large', 'extra-large'];
 
   var NAV_META = {
     overview: { icon: 'overview', label: 'Dashboard' },
@@ -64,24 +63,6 @@
     if (el) el.classList.toggle('on', appearOpen);
   }
 
-  function bumpTextSize(delta) {
-    if (!global.LPWorkspaceAppearance) return;
-    var prefs = global.LPWorkspaceAppearance.load();
-    var idx = TEXT_SIZES.indexOf(prefs.textSize || 'standard');
-    if (idx < 0) idx = 0;
-    idx = Math.max(0, Math.min(TEXT_SIZES.length - 1, idx + delta));
-    global.LPWorkspaceAppearance.set({ textSize: TEXT_SIZES[idx] });
-    syncTextSizeLabel();
-  }
-
-  function syncTextSizeLabel() {
-    var el = $('lp-p-text-label');
-    if (!el || !global.LPWorkspaceAppearance) return;
-    var sz = global.LPWorkspaceAppearance.load().textSize || 'standard';
-    el.textContent = sz === 'extra-large' ? 'XL' : sz === 'large' ? 'L' : 'A';
-    el.title = 'Text size: ' + sz.replace('-', ' ');
-  }
-
   function buildShell() {
     if ($('lp-p-shell')) return;
 
@@ -97,11 +78,6 @@
       + '<a href="/" class="lp-p-logo-link"><span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse role="img" aria-label="LeadPages"></span></a>'
       + '<span class="lp-p-shell-title" id="lp-p-shell-title">Partner</span>'
       + '<span class="lp-p-shell-spacer"></span>'
-      + '<div class="lp-p-text-size" title="Text size">'
-      + '<button type="button" class="lp-p-icon-btn" id="lp-p-text-minus" aria-label="Decrease text size">' + icon('minus', 18) + '</button>'
-      + '<span class="lp-p-text-size-label" id="lp-p-text-label">A</span>'
-      + '<button type="button" class="lp-p-icon-btn" id="lp-p-text-plus" aria-label="Increase text size">' + icon('plus', 18) + '</button>'
-      + '</div>'
       + '<span class="lp-p-who" id="who"></span>'
       + '</div>';
 
@@ -148,8 +124,6 @@
     $('lp-p-menu-btn').addEventListener('click', function () { setDrawer(!drawerOpen); });
     $('lp-p-drawer-close').addEventListener('click', function () { setDrawer(false); });
     $('lp-p-scrim').addEventListener('click', function () { setDrawer(false); });
-    $('lp-p-text-minus').addEventListener('click', function () { bumpTextSize(-1); });
-    $('lp-p-text-plus').addEventListener('click', function () { bumpTextSize(1); });
     $('lp-p-appear-scrim').addEventListener('click', function () { setAppear(false); });
     $('lp-p-appear-close').addEventListener('click', function () { setAppear(false); });
 
@@ -158,8 +132,6 @@
       renderBottomTabs();
     });
 
-    global.addEventListener('lp-workspace-appearance-change', syncTextSizeLabel);
-    syncTextSizeLabel();
     renderThemeGrid();
   }
 
