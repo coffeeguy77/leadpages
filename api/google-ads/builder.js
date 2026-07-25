@@ -91,6 +91,7 @@ module.exports = async (req, res) => {
             hasMeta: !!(p && (p.meta || p.metaDescription))
           };
         }),
+        dataforseoConfigured: require('../../lib/search-intelligence/providers/dataforseo').configured(),
         note: 'Google Ads reporting may be delayed. Campaign creates are always PAUSED. Pick a landing page first — we analyse fit before you spend.'
       });
     }
@@ -614,7 +615,8 @@ module.exports = async (req, res) => {
       const ctx = await requireSite(req, res, { body, capability: 'draft', requireBuilder: true });
       if (!ctx) return;
       const { db, siteId } = ctx;
-      let plan = body.plan;
+      let plan = body.plan || null;
+      if (plan && plan.draftPlan && !plan.adGroups) plan = plan.draftPlan;
       if (!plan) return http.json(res, 400, { error: 'plan_required' });
       const adsConn = await loadAdsConn(db, siteId);
       if (!adsConn || !adsConn.customer_id || adsConn.connection_status === 'disconnected') {
@@ -627,7 +629,7 @@ module.exports = async (req, res) => {
       try {
         plan = await enrichPlanWithKeywordMetrics(db, siteId, plan, {
           location: body.location || (plan.geoFocus || (plan.draftPlan && plan.draftPlan.geoFocus)),
-          seed: body.keywordSeed || body.service || undefined,
+          seed: body.keywordSeed || body.service || body.seed || undefined,
           adsConn: adsConn,
           useDataForSeoFallback: body.useDataForSeoFallback === true
         });
@@ -641,7 +643,8 @@ module.exports = async (req, res) => {
         ok: true,
         action,
         plan,
-        keywordMetrics: plan.keywordMetrics || null
+        keywordMetrics: plan.keywordMetrics || null,
+        message: (plan.keywordMetrics && plan.keywordMetrics.note) || null
       });
     }
 

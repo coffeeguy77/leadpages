@@ -77,7 +77,8 @@ Plan keywords are enriched after draft generation via `lib/google-ads/keyword-me
 |--------|------|--------|
 | Google Ads Keyword Planner | Site has a connected Ads `customer_id` | estimated avg monthly searches, CPC (avg or mid top-of-page bid), competition index |
 | `ads_keyword_daily` | Ads sync has keyword_view rows | measured CPC = cost÷clicks (wins over Planner for CPC) |
-| DataForSEO (optional fallback) | Explicit `useDataForSeoFallback: true` on the request **or** `ADS_KEYWORD_METRICS_DATAFORSEO_FALLBACK=1` | estimated volume/CPC — **off by default** (costs money) |
+| DataForSEO `search_volume` (optional fallback) | `useDataForSeoFallback: true` **or** `ADS_KEYWORD_METRICS_DATAFORSEO_FALLBACK=1` | exact-keyword monthly volume + CPC — **off by default** (costs money) |
+| DataForSEO keyword ideas (last resort) | same fallback flag, if search_volume empty | related terms with soft match |
 
 Primary path uses `KeywordPlanIdeaService.GenerateKeywordHistoricalMetrics` on the connected customer (`lib/google-ads/keyword-planner-metrics.js`). UI **Fetch Vol / CPC from Ads** calls builder action `fetch_keyword_metrics`.
 

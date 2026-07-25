@@ -116,6 +116,17 @@ assert.equal(k1.cpcSource, 'google_ads_keyword_planner');
 assert.match(plan.metricsNote, /measured Ads CPC/i);
 assert.match(plan.metricsNote, /Keyword Planner/i);
 
+// Provider error surfaces actionable note
+const planErr = {
+  adGroups: [{ keywords: [{ keyword: 'coffee van hire canberra' }] }]
+};
+applyKeywordMetrics(planErr, {
+  liveMarket: false,
+  marketError: 'Keyword Planner: ads_not_connected',
+  ideas: []
+});
+assert.match(planErr.metricsNote, /unavailable|ads_not_connected/i);
+
 // Mock ideas must not apply when liveMarket false even if ideas present
 const plan2 = {
   adGroups: [{ keywords: [{ keyword: 'plumber canberra' }] }]

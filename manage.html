@@ -12078,6 +12078,7 @@ function heroCtaCard(c){
       return;
     }
     var pages=j.pages||[];
+    var dfsConfigured=!!j.dataforseoConfigured;
     var budgetValAttr=_gadsSavedBudget?(' value="'+esc(_gadsSavedBudget)+'"'):'';
     body.innerHTML='<div class="card" style="margin-bottom:14px"><h2 style="margin:0 0 6px">Smart Campaign Builder</h2>'
       +'<p class="lede">Plan a Search campaign from this site. Creates are always <strong>PAUSED</strong>. Tick keywords to include, set a daily budget, then create.</p>'
@@ -12196,12 +12197,27 @@ function heroCtaCard(c){
       var rsa=((p.adGroups&&p.adGroups[0]&&p.adGroups[0].ads&&p.adGroups[0].ads[0])||{});
       var fit=p.pageFit||plan.pageFit||null;
       var metricsNote=p.metricsNote||(plan.keywordMetrics&&plan.keywordMetrics.note)||'';
+      var km=p.keywordMetrics||plan.keywordMetrics||{};
       var hasVol=allKws.some(function(k){ return k.volume!=null; });
       var hasCpc=allKws.some(function(k){ return k.cpc!=null; });
       var mutOn=!!flags.GOOGLE_ADS_CAMPAIGN_MUTATIONS;
       var selectedN=allKws.filter(function(k){ return k.approved!==false; }).length;
       var negs=[];
       (p.negatives||[]).forEach(function(cat){ (cat.terms||[]).forEach(function(t){ if(t) negs.push(t); }); });
+
+      var metricsBanner='';
+      if(hasVol||hasCpc){
+        metricsBanner='<div class="card" style="margin:10px 0;padding:10px 12px;border-color:#0a7d33">'
+          +'<p class="hint" style="margin:0">'+esc(metricsNote)+' · Estimates from <strong>Google Ads Keyword Planner</strong> (connected account); measured CPC when synced.'
+          +' <button type="button" class="btn ghost sm" id="gads-fetch-metrics" style="margin-left:6px">Refresh Vol / CPC</button></p></div>';
+      } else {
+        metricsBanner='<div class="card" style="margin:10px 0;padding:12px;border-color:#b45309">'
+          +'<p style="margin:0 0 6px;font-weight:700;color:#b45309">Search volume &amp; CPC are empty</p>'
+          +'<p class="hint" style="margin:0 0 8px">'+esc(metricsNote||'No market data yet.')+'</p>'
+          +'<p class="hint" style="margin:0 0 8px"><strong>Ops:</strong> Connect Google Ads for this site, then Fetch. No DataForSEO charge on the default path.</p>'
+          +'<button type="button" class="btn sm" id="gads-fetch-metrics">Fetch Vol / CPC from Ads</button>'
+          +'<p class="hint" style="margin:8px 0 0">Uses Keyword Planner on your connected Ads account. We never invent figures.</p></div>';
+      }
 
       var fitHtml='';
       if(fit&&fit.ok!==false){
@@ -12251,20 +12267,16 @@ function heroCtaCard(c){
         +'<p class="lede"><strong>Daily budget: '+(budgetNum>0?('$'+budgetNum+'/day'):'not set — enter above')+'</strong></p>'
         +fitHtml
         +rsaHtml
-        +'<p class="hint">'+esc(metricsNote)+'</p>'
-        +(!hasVol&&!hasCpc
-          ?'<p class="hint" style="margin:0 0 8px;color:#b45309">Vol / CPC show “—” until Google Ads Keyword Planner returns data (or you sync measured keyword CPC) — never invented. No DataForSEO charge.</p>'
-          :'')
+        +metricsBanner
         +'<div class="row" style="gap:8px;flex-wrap:wrap;margin:8px 0;align-items:center">'
-        +'<button type="button" class="btn ghost sm" id="gads-fetch-vol">Fetch Vol / CPC from Ads</button>'
         +'<button type="button" class="btn ghost sm" id="gads-kw-all">Select all</button>'
         +'<button type="button" class="btn ghost sm" id="gads-kw-none">Select none</button>'
         +'<span class="hint" id="gads-kw-count">'+selectedN+' of '+allKws.length+' keywords selected</span></div>'
         +'<div style="overflow:auto;margin:8px 0"><table class="ana-table"><thead><tr>'
-        +'<th style="width:48px">Use</th><th>Keyword</th><th>Match</th><th>Page fit</th><th>Vol</th><th>CPC</th></tr></thead><tbody>'
+        +'<th style="width:48px">Use</th><th>Keyword</th><th>Match</th><th>Page fit</th><th>Vol</th><th>CPC (USD)</th></tr></thead><tbody>'
         +allKws.map(function(k,i){
           var vol=k.volume!=null?k.volume:'—';
-          var cpc=k.cpc!=null?k.cpc:'—';
+          var cpc=k.cpc!=null?('$'+Number(k.cpc).toFixed(2)):'—';
           var checked=k.approved!==false?' checked':'';
           var ks=(fit&&fit.keywordScores||[]).find(function(x){ return String(x.keyword).toLowerCase()===String(k.keyword||'').toLowerCase(); });
           var fitCell=ks?('<span style="color:'+(ks.verdict==='strong'?'#0a7d33':(ks.verdict==='ok'?'#b45309':'#b42318'))+'">'+esc(ks.verdict)+' ('+ks.score+')</span>'):'—';
@@ -12286,19 +12298,6 @@ function heroCtaCard(c){
         if(el) el.textContent=n+' of '+allKws.length+' keywords selected';
       }
       document.querySelectorAll('#gads-plan-out .gads-kw-use').forEach(function(cb){ cb.addEventListener('change',refreshKwCount); });
-      var fetchVol=document.getElementById('gads-fetch-vol');
-      if(fetchVol) fetchVol.onclick=async function(){
-        fetchVol.disabled=true; fetchVol.textContent='Fetching…';
-        try{
-          _gadsSyncKeywordApprovals(plan);
-          var draft=plan.draftPlan||plan;
-          _gadsCollectRsaIntoPlan(draft);
-          var rr=await _gadsBuilderPost('fetch_keyword_metrics',{plan:plan});
-          if(rr.plan) showPlan(rr.plan);
-          var note=(rr.keywordMetrics&&rr.keywordMetrics.note)||(rr.plan&&rr.plan.metricsNote)||'Updated';
-          toast(note);
-        }catch(e){ toast(String(e.message||e),'warn'); fetchVol.disabled=false; fetchVol.textContent='Fetch Vol / CPC from Ads'; }
-      };
       var allBtn=document.getElementById('gads-kw-all');
       if(allBtn) allBtn.onclick=function(){ document.querySelectorAll('#gads-plan-out .gads-kw-use').forEach(function(cb){ cb.checked=true; }); refreshKwCount(); };
       var noneBtn=document.getElementById('gads-kw-none');
@@ -12368,6 +12367,19 @@ function heroCtaCard(c){
           }
           toast('Ad copy updated from landing page');
         }catch(e){ toast(String(e.message||e),'warn'); sugRsa.disabled=false; sugRsa.textContent='Rewrite ads from page / AI'; }
+      };
+      var fetchMet=document.getElementById('gads-fetch-metrics');
+      if(fetchMet) fetchMet.onclick=async function(){
+        fetchMet.disabled=true; fetchMet.textContent='Fetching Vol / CPC…';
+        try{
+          _gadsSyncKeywordApprovals(plan);
+          _gadsCollectRsaIntoPlan(p);
+          var rr=await _gadsBuilderPost('fetch_keyword_metrics',{plan:plan,location:p.geoFocus});
+          if(rr.plan) showPlan(rr.plan);
+          var matched=(rr.keywordMetrics&&rr.keywordMetrics.matchedMarket)||0;
+          if(matched) toast('Loaded Vol/CPC for '+matched+' keyword(s)');
+          else toast(rr.message||'Still no Vol/CPC — connect Google Ads / check Keyword Planner access','warn');
+        }catch(e){ toast(String(e.message||e),'warn'); fetchMet.disabled=false; fetchMet.textContent='Fetch Vol / CPC from Ads'; }
       };
 
       var cre=document.getElementById('gads-create-paused');
