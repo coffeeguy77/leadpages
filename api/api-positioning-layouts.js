@@ -383,20 +383,19 @@ module.exports = async (req, res) => {
           return json(res, 403, { ok: false, error: 'forbidden' });
         }
 
-        // Auto-backup before any content-touching apply
+        // Smart auto-backup before any content-touching apply
         let backupId = null;
         if (mode === 'demo_replace' || mode === 'fill_empty' || mode === 'visual' || body.backup !== false) {
           try {
-            const label = 'Before theme: ' + (layout.name || 'layout').slice(0, 80);
-            const cfg = access.site.config || {};
-            const sizeBytes = JSON.stringify(cfg).length;
-            const { data: bk } = await admin.from('site_backups').insert({
-              site_id: siteId,
-              label,
-              config: cfg,
-              size_bytes: sizeBytes
-            }).select('id').maybeSingle();
-            backupId = bk && bk.id;
+            const { createBackup } = require('../lib/site-backups/service');
+            const bk = await createBackup(admin, {
+              siteId,
+              config: access.site.config || {},
+              source: 'theme_apply',
+              actorUserId: user.id,
+              label: 'Before theme: ' + (layout.name || 'layout').slice(0, 80)
+            });
+            backupId = bk && bk.backup && bk.backup.id;
           } catch (be) {
             console.warn('positioning-layouts backup failed:', be && be.message);
           }

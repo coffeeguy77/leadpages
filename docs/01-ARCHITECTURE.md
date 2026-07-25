@@ -359,7 +359,7 @@ Preview iframe loads `/{slug}?preview={timestamp}` — the **same render path** 
 | Analytics | `events`, `leads` | `/api/stats` (Bearer) |
 | Domains | `domains`, `custom_domain` | Links to `/manage-domains.html` |
 | Mailer | `leads`, `email_campaigns` | `/api/send-campaign` |
-| Backups | `site_backups` | Direct Supabase |
+| Backups | `site_backups` | `/api/site-backups` (smart restore points) |
 | Billing | `sites.billing_status` | `/api/billing/*` |
 | Marketplace apps | `site_apps`, `app_registry` | `/api/api-apps`, `/api/api-site-apps` |
 | Images | Cloudinary | `/api/cloudinary/sign` |
