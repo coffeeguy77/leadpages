@@ -1,0 +1,65 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-landscaper-badges",
+ "label": "Landscaper — Text and Icons",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Landscaping",
+ "businessType": "",
+ "mode": "badges",
+ "pairedPresetId": "trustbar-landscaper-images",
+ "relationshipType": "alternate-mode",
+ "sellingPoint": "",
+ "description": "",
+ "isFeatured": false,
+ "isDefaultPlaygroundPreset": false,
+ "site_config": {
+  "business": "Greenline Landscapes",
+  "trade": "landscaper",
+  "theme": {
+   "pipe": "#3d6b4f"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "badges",
+    "sep": "none",
+    "lineOn": true,
+    "badges": [
+     {
+      "on": true,
+      "label": "Garden Design",
+      "icon": "flower-2",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Retaining Walls",
+      "icon": "brick-wall",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Paving",
+      "icon": "grid-3x3",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Outdoor Living",
+      "icon": "trees",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,69 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-landscaper-images",
+ "label": "Landscaper — Image Tiles",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Landscaping",
+ "businessType": "",
+ "mode": "images",
+ "pairedPresetId": "trustbar-landscaper-badges",
+ "relationshipType": "alternate-mode",
+ "sellingPoint": "",
+ "description": "",
+ "isFeatured": false,
+ "isDefaultPlaygroundPreset": false,
+ "site_config": {
+  "business": "Greenline Landscapes",
+  "trade": "landscaper",
+  "theme": {
+   "pipe": "#3d6b4f"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "images",
+    "imageHeight": 280,
+    "strokeOn": true,
+    "strokeColour": "#ffffff",
+    "edgeOn": true,
+    "edgeColour": "#ffffff",
+    "fg": "#ffffff",
+    "badges": [
+     {
+      "on": true,
+      "label": "Garden Design",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1558904541-efa843a96f01?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Retaining Walls",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1416879595882-3373bec893bc?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Paving",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Outdoor Living",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ]
+   }
+  }
+ }
+}

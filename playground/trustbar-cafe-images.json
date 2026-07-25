@@ -1,0 +1,69 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-cafe-images",
+ "label": "Café — Image Tiles",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Café",
+ "businessType": "",
+ "mode": "images",
+ "pairedPresetId": "trustbar-cafe-badges",
+ "relationshipType": "alternate-mode",
+ "sellingPoint": "",
+ "description": "",
+ "isFeatured": false,
+ "isDefaultPlaygroundPreset": false,
+ "site_config": {
+  "business": "Corner Cup Café",
+  "trade": "cafe",
+  "theme": {
+   "pipe": "#8B5E3C"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "images",
+    "imageHeight": 280,
+    "strokeOn": true,
+    "strokeColour": "#ffffff",
+    "edgeOn": true,
+    "edgeColour": "#ffffff",
+    "fg": "#ffffff",
+    "badges": [
+     {
+      "on": true,
+      "label": "Breakfast",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Coffee",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Lunch",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Catering",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1555244162-803834f70033?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ]
+   }
+  }
+ }
+}

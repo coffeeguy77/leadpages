@@ -1194,46 +1194,44 @@
     }
   },
   "trustBar": {
-    "business": "Ace Plumbing Co.",
-    "trade": "plumber",
+    "business": "AAM1 Coating Services",
+    "trade": "renderer",
     "phone": "0261000000",
     "theme": {
-      "pipe": "#1f7bb8"
+      "pipe": "#032D15"
     },
     "trustBar": {
       "on": true,
+      "mode": "badges",
+      "sep": "none",
+      "lineOn": true,
+      "bg": "#fbfaf7",
+      "fg": "#1a2230",
       "badges": [
         {
           "on": true,
-          "label": "Licensed"
+          "label": "Acrylic Rendering",
+          "icon": "paintbrush"
         },
         {
           "on": true,
-          "label": "Insured"
+          "label": "Cement Rendering",
+          "icon": "brick-wall"
         },
         {
           "on": true,
-          "label": "Fixed Pricing"
+          "label": "Textured Coating",
+          "icon": "layers"
         },
         {
           "on": true,
-          "label": "Work Guaranteed"
+          "label": "Repairs and Patching",
+          "icon": "wrench"
         },
         {
           "on": true,
-          "label": "5 Star Rated"
-        },
-        {
-          "on": true,
-          "label": "Local Business"
-        },
-        {
-          "on": false,
-          "label": "24/7 Emergency"
-        },
-        {
-          "on": false,
-          "label": "Family Owned"
+          "label": "Venetian Plastering",
+          "icon": "sparkles"
         }
       ]
     }

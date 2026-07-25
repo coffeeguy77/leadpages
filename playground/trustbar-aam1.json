@@ -1,0 +1,75 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-aam1",
+ "label": "AAM1 — Text and Icons",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Rendering",
+ "businessType": "",
+ "mode": "badges",
+ "pairedPresetId": null,
+ "relationshipType": null,
+ "sellingPoint": "Keep important services visible under the hero.",
+ "description": "Real AAM1-style text-and-icon Trust Bar.",
+ "isFeatured": true,
+ "isDefaultPlaygroundPreset": true,
+ "site_config": {
+  "business": "AAM1 Coating Services",
+  "trade": "renderer",
+  "theme": {
+   "pipe": "#032D15"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "badges",
+    "sep": "none",
+    "lineOn": true,
+    "badges": [
+     {
+      "on": true,
+      "label": "Acrylic Rendering",
+      "icon": "paintbrush",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Cement Rendering",
+      "icon": "brick-wall",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Textured Coating",
+      "icon": "layers",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Repairs and Patching",
+      "icon": "wrench",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Venetian Plastering",
+      "icon": "sparkles",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ],
+    "bg": "#fbfaf7",
+    "fg": "#1a2230"
+   }
+  }
+ }
+}

@@ -1,0 +1,69 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-event-hire",
+ "label": "Event Hire — Image Tiles",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Event hire",
+ "businessType": "",
+ "mode": "images",
+ "pairedPresetId": null,
+ "relationshipType": null,
+ "sellingPoint": "",
+ "description": "",
+ "isFeatured": false,
+ "isDefaultPlaygroundPreset": false,
+ "site_config": {
+  "business": "Gather Event Hire",
+  "trade": "events",
+  "theme": {
+   "pipe": "#5a3d6b"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "images",
+    "imageHeight": 280,
+    "strokeOn": true,
+    "strokeColour": "#ffffff",
+    "edgeOn": true,
+    "edgeColour": "#ffffff",
+    "fg": "#ffffff",
+    "badges": [
+     {
+      "on": true,
+      "label": "Marquees",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Furniture",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Styling",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1478144592103-25e218a04891?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Party Packages",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,69 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-beauty",
+ "label": "Beauty Salon — Image Tiles",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Beauty",
+ "businessType": "",
+ "mode": "images",
+ "pairedPresetId": null,
+ "relationshipType": null,
+ "sellingPoint": "",
+ "description": "",
+ "isFeatured": false,
+ "isDefaultPlaygroundPreset": false,
+ "site_config": {
+  "business": "Bloom Beauty",
+  "trade": "beauty",
+  "theme": {
+   "pipe": "#9b4d6c"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "images",
+    "imageHeight": 280,
+    "strokeOn": true,
+    "strokeColour": "#ffffff",
+    "edgeOn": true,
+    "edgeColour": "#ffffff",
+    "fg": "#ffffff",
+    "badges": [
+     {
+      "on": true,
+      "label": "Hair",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Beauty",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Brows",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Packages",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1519415510236-718bdfcd521f?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ]
+   }
+  }
+ }
+}

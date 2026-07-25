@@ -1,0 +1,177 @@
+/* Trust Bar editor chrome — marketplace playground / demo builder.
+   Uses marketplace theme tokens; does not restyle the app preview theme. */
+
+.tb-ed-root {
+  font-family: var(--theme-body-font, var(--body, system-ui, sans-serif));
+  color: var(--theme-text, var(--ink, #2e2a2b));
+}
+
+.tb-ed-banner {
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: var(--theme-radius-small, 10px);
+  background: var(--theme-accent-soft, rgba(168, 74, 94, 0.12));
+  color: var(--theme-text, var(--ink));
+  margin-bottom: 14px;
+  border: 1px solid var(--theme-border, var(--line));
+}
+
+.tb-ed-banner-safe {
+  background: var(--theme-surface-alt, var(--shell, #f1e5df));
+}
+
+.tb-ed-card {
+  background: var(--theme-surface, #fff);
+  border: 1px solid var(--theme-border, var(--line));
+  border-radius: var(--theme-radius-medium, 16px);
+  padding: 18px 18px 16px;
+  margin-bottom: 14px;
+}
+
+.tb-ed-card h2 {
+  font-family: var(--theme-heading-font, var(--disp, Georgia, serif));
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin: 0 0 6px;
+}
+
+.tb-ed-card .lede {
+  color: var(--theme-text-muted, var(--mut));
+  font-size: 14px;
+  margin: 0 0 14px;
+}
+
+.tb-ed-card .row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 720px) {
+  .tb-ed-card .row { grid-template-columns: 1fr; }
+}
+
+.tb-ed-card .f label,
+.tb-ed-f label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.tb-ed-card .tin,
+.tb-ed-card input[type="text"],
+.tb-ed-card input[type="url"],
+.tb-ed-card textarea,
+.tb-ed-card select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--theme-border, var(--line));
+  border-radius: 8px;
+  font: inherit;
+  background: var(--theme-surface, #fff);
+  color: inherit;
+}
+
+.tb-ed-card input[type="range"] { width: 100%; }
+
+.tb-ed-color {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tb-ed-color input[type="color"] {
+  width: 46px;
+  height: 38px;
+  padding: 2px;
+  border: 1px solid var(--theme-border, var(--line));
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+}
+
+.tb-ed-card .ck {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-weight: 600;
+  margin: 8px 0 0;
+}
+
+.tb-ed-card .btn.ghost.sm {
+  appearance: none;
+  border: 1px solid var(--theme-border, var(--line));
+  background: transparent;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--theme-text-muted, var(--mut));
+}
+
+.tb-ed-card .btn.ghost.sm:hover {
+  border-color: var(--theme-primary, var(--rose));
+  color: var(--theme-primary-hover, var(--rose-d));
+}
+
+.tb-ed-item {
+  border: 1px solid var(--theme-border, var(--line));
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: var(--theme-surface-alt, var(--shell, #fbfaf7));
+}
+
+.tb-ed-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.tb-ed-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tb-ed-item-actions button {
+  appearance: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  color: var(--theme-text-muted, var(--mut));
+  padding: 4px 6px;
+}
+
+.tb-ed-item-actions button.danger { color: var(--theme-danger, #b42318); }
+
+.tb-ed-add {
+  appearance: none;
+  border: 1px dashed var(--theme-border-strong, var(--line));
+  background: var(--theme-surface, #fff);
+  border-radius: 9px;
+  padding: 10px 15px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--theme-text, var(--ink));
+}
+
+.tb-ed-add:hover {
+  border-color: var(--theme-primary, var(--rose));
+  color: var(--theme-primary-hover, var(--rose-d));
+}
+
+.tb-ed-card :focus-visible,
+.tb-ed-item :focus-visible,
+.tb-ed-add:focus-visible {
+  outline: 3px solid var(--theme-focus, var(--rose));
+  outline-offset: 2px;
+}

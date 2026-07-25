@@ -1,0 +1,90 @@
+{
+  "appKey": "trustBar",
+  "slug": "trust-bar",
+  "category": "Reviews and Trust",
+  "categoryEyebrow": "Trust and credibility",
+  "publicHeading": "Give visitors a reason to trust you immediately.",
+  "shortDescription": "Keep important services, promises or credentials visible without distracting from the rest of your page.",
+  "longDescription": "Show your services, guarantees, credentials or visual options in a clear strip that supports the rest of your page. Start from a real business example, then edit with the same controls you will use inside LeadPages.",
+  "accessType": "included",
+  "featureLabels": [
+    "Included with LeadPages",
+    "Mobile responsive",
+    "Multiple layouts"
+  ],
+  "modes": [
+    {
+      "id": "badges",
+      "name": "Text and Icons",
+      "description": "A compact row of icons and short labels under your hero — ideal for services, promises and credentials."
+    },
+    {
+      "id": "images",
+      "name": "Image Tiles",
+      "description": "Full-width image tiles with captions — great when visitors need to recognise options at a glance."
+    }
+  ],
+  "examples": [
+    {
+      "id": "aam1-coating",
+      "businessName": "AAM1 Coating Services",
+      "industry": "Rendering",
+      "title": "Keep important services visible",
+      "description": "A compact icon-and-text strip helps visitors understand the services available without competing with the main hero.",
+      "mode": "badges",
+      "presetSlug": "trustbar-aam1",
+      "isFeatured": true,
+      "visibleItems": [
+        "Acrylic Rendering",
+        "Cement Rendering",
+        "Textured Coating",
+        "Repairs and Patching",
+        "Venetian Plastering"
+      ]
+    },
+    {
+      "id": "bean-culture",
+      "businessName": "Bean Culture Coffee Events",
+      "industry": "Coffee events",
+      "title": "Turn navigation into visual inspiration",
+      "description": "Image tiles make the service range immediately understandable and invite visitors to explore the option that suits their event.",
+      "mode": "images",
+      "presetSlug": "trustbar-bean-culture",
+      "isFeatured": true,
+      "visibleItems": [
+        "Coffee Carts",
+        "Coffee Van",
+        "Retro Caravan",
+        "Food Trailer",
+        "Coffee Roastery",
+        "Automatic Self Serve"
+      ]
+    }
+  ],
+  "collections": [
+    "Perfect for First-Time Website Builders",
+    "Build Trust Quickly",
+    "Popular with Trades",
+    "Easy Wins for Existing Websites"
+  ],
+  "defaultPlaygroundPreset": "trustbar-aam1",
+  "presetOrder": [
+    "trustbar-aam1",
+    "trustbar-bean-culture",
+    "trustbar-carpenter-badges",
+    "trustbar-carpenter-images",
+    "trustbar-plumber",
+    "trustbar-electrician",
+    "trustbar-landscaper-badges",
+    "trustbar-landscaper-images",
+    "trustbar-rendering",
+    "trustbar-accountant",
+    "trustbar-medical",
+    "trustbar-cafe-badges",
+    "trustbar-cafe-images",
+    "trustbar-restaurant",
+    "trustbar-beauty",
+    "trustbar-builder",
+    "trustbar-event-hire"
+  ]
+}

@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const platformSeo = require('./platform-seo');
+const mpFlags = require('../lib/marketplace-v2-flags');
 
 function safeHtmlFile(file) {
   const base = path.basename(String(file || ''));
@@ -56,6 +57,22 @@ module.exports = async (req, res) => {
       });
     } catch (seoErr) {
       console.error('marketing-html seo inject skipped:', seoErr && seoErr.message);
+    }
+
+    // Marketplace V2 flags for public pages (env + client override via ?v2=1)
+    if (file === 'marketplace.html' || file === 'marketplace-feature.html') {
+      try {
+        const flagHtml = mpFlags.flagsScriptTag(mpFlags.getFlags());
+        if (html.indexOf('__LP_MARKETPLACE_FLAGS__') < 0) {
+          if (html.indexOf('</head>') >= 0) {
+            html = html.replace('</head>', flagHtml + '\n</head>');
+          } else {
+            html = flagHtml + html;
+          }
+        }
+      } catch (flagErr) {
+        console.error('marketing-html marketplace flags skipped:', flagErr && flagErr.message);
+      }
     }
 
     res.statusCode = 200;

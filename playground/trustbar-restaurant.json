@@ -1,0 +1,69 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-restaurant",
+ "label": "Restaurant — Image Tiles",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Restaurant",
+ "businessType": "",
+ "mode": "images",
+ "pairedPresetId": null,
+ "relationshipType": null,
+ "sellingPoint": "",
+ "description": "",
+ "isFeatured": false,
+ "isDefaultPlaygroundPreset": false,
+ "site_config": {
+  "business": "Harbour Table",
+  "trade": "restaurant",
+  "theme": {
+   "pipe": "#7a2e2e"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "images",
+    "imageHeight": 280,
+    "strokeOn": true,
+    "strokeColour": "#ffffff",
+    "edgeOn": true,
+    "edgeColour": "#ffffff",
+    "fg": "#ffffff",
+    "badges": [
+     {
+      "on": true,
+      "label": "Dinner Menu",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Wine List",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Private Events",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Seasonal Specials",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1555244162-803834f70033?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ]
+   }
+  }
+ }
+}

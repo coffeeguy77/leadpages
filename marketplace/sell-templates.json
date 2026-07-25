@@ -2450,23 +2450,23 @@
   },
   "trustBar": {
     "name": "Trust Bar",
-    "tagline": "Scrolling badge strip under the hero",
-    "summary": "Licensed, insured, fixed pricing — instant credibility strip.",
+    "tagline": "Give visitors a reason to trust you immediately",
+    "summary": "Keep important services, promises or credentials visible without distracting from the rest of your page.",
     "hero_image_url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Trust Bar",
-          "text": "Thin badge row that sits directly under the hero on most layouts. Toggle badges on/off — licensed, insured, 5-star, 24/7, family owned."
+          "text": "Show your services, guarantees, credentials or visual options in a clear strip that supports the rest of your page. Included with LeadPages — try real business examples, then edit with the same controls used in the platform."
         }
       },
       {
         "block_type": "image",
         "payload": {
           "url": "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&h=720&fit=crop&q=80",
-          "alt": "Hero and layout sections",
-          "caption": "Above-the-fold hero and layout blocks on a live LeadPages trade site."
+          "alt": "Trust Bar on a live trade website",
+          "caption": "A finished Trust Bar on a live LeadPages trade site — before you open the editor."
         }
       },
       {
@@ -2475,16 +2475,16 @@
           "heading": "Key features",
           "items": [
             {
-              "title": "Eight badge slots",
-              "text": "Enable the badges that apply; hide the rest."
+              "title": "Text and icons",
+              "text": "Compact badge strip for services, promises and credentials."
             },
             {
-              "title": "Icon-free labels",
-              "text": "Text badges load fast — no image assets required."
+              "title": "Image tiles",
+              "text": "Full-width visual tiles when visitors need to recognise options at a glance."
             },
             {
-              "title": "Auto-inserted",
-              "text": "Inserts after hero in layout order when enabled."
+              "title": "Same editor as LeadPages",
+              "text": "Layout, colours, uploads and item list match the App Command Centre."
             }
           ]
         }
@@ -2495,16 +2495,16 @@
           "heading": "Why partners sell it",
           "items": [
             {
-              "title": "Universal trust",
-              "text": "Every trade benefits from license and insurance proof."
+              "title": "Instant credibility",
+              "text": "Trades, cafés and clinics all need trust above the fold."
             },
             {
-              "title": "One-minute setup",
-              "text": "Toggle defaults on and publish."
+              "title": "Industry presets",
+              "text": "Start from carpenter, plumber, café, beauty and more."
             },
             {
-              "title": "Works with all layouts",
-              "text": "Compatible with classic and premium presets."
+              "title": "Included with LeadPages",
+              "text": "No extra subscription for the Trust Bar itself."
             }
           ]
         }
@@ -2514,6 +2514,15 @@
         "payload": {
           "section_key": "trustBar",
           "presets": [
+            "trustbar-aam1",
+            "trustbar-bean-culture",
+            "trustbar-carpenter-badges",
+            "trustbar-carpenter-images",
+            "trustbar-plumber",
+            "trustbar-electrician",
+            "trustbar-landscaper-images",
+            "trustbar-cafe-images",
+            "trustbar-beauty",
             "default"
           ]
         }

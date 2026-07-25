@@ -266,28 +266,118 @@
   "trustBar": [
     {
       "type": "text",
+      "key": "sections.trustBar.mode",
+      "label": "Style (badges or images)"
+    },
+    {
+      "type": "text",
+      "key": "sections.trustBar.sep",
+      "label": "Separator (none or pipe)"
+    },
+    {
+      "type": "color",
+      "key": "sections.trustBar.bg",
+      "label": "Background colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.trustBar.fg",
+      "label": "Font / caption colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.trustBar.line",
+      "label": "Line colour"
+    },
+    {
+      "type": "number",
+      "key": "sections.trustBar.imageHeight",
+      "label": "Image height (px)"
+    },
+    {
+      "type": "color",
+      "key": "sections.trustBar.strokeColour",
+      "label": "Stroke colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.trustBar.edgeColour",
+      "label": "Edge stroke colour"
+    },
+    {
+      "type": "text",
       "key": "sections.trustBar.badges.0.label",
-      "label": "Badge 1"
+      "label": "Item 1 text"
+    },
+    {
+      "type": "text",
+      "key": "sections.trustBar.badges.0.icon",
+      "label": "Item 1 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.trustBar.badges.0.image",
+      "label": "Item 1 image URL"
     },
     {
       "type": "text",
       "key": "sections.trustBar.badges.1.label",
-      "label": "Badge 2"
+      "label": "Item 2 text"
+    },
+    {
+      "type": "text",
+      "key": "sections.trustBar.badges.1.icon",
+      "label": "Item 2 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.trustBar.badges.1.image",
+      "label": "Item 2 image URL"
     },
     {
       "type": "text",
       "key": "sections.trustBar.badges.2.label",
-      "label": "Badge 3"
+      "label": "Item 3 text"
+    },
+    {
+      "type": "text",
+      "key": "sections.trustBar.badges.2.icon",
+      "label": "Item 3 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.trustBar.badges.2.image",
+      "label": "Item 3 image URL"
     },
     {
       "type": "text",
       "key": "sections.trustBar.badges.3.label",
-      "label": "Badge 4"
+      "label": "Item 4 text"
+    },
+    {
+      "type": "text",
+      "key": "sections.trustBar.badges.3.icon",
+      "label": "Item 4 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.trustBar.badges.3.image",
+      "label": "Item 4 image URL"
     },
     {
       "type": "text",
       "key": "sections.trustBar.badges.4.label",
-      "label": "Badge 5"
+      "label": "Item 5 text"
+    },
+    {
+      "type": "text",
+      "key": "sections.trustBar.badges.4.icon",
+      "label": "Item 5 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.trustBar.badges.4.image",
+      "label": "Item 5 image URL"
     },
     {
       "type": "color",

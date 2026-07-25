@@ -1,0 +1,67 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-medical",
+ "label": "Medical Practice — Text and Icons",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Medical",
+ "businessType": "",
+ "mode": "badges",
+ "pairedPresetId": null,
+ "relationshipType": null,
+ "sellingPoint": "",
+ "description": "",
+ "isFeatured": false,
+ "isDefaultPlaygroundPreset": false,
+ "site_config": {
+  "business": "Harbour Family Clinic",
+  "trade": "medical",
+  "theme": {
+   "pipe": "#2a6f7a"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "badges",
+    "sep": "none",
+    "lineOn": true,
+    "badges": [
+     {
+      "on": true,
+      "label": "Bulk Billing",
+      "icon": "heart-pulse",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Same-day Appointments",
+      "icon": "calendar-check",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Family Care",
+      "icon": "users",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Care Plans",
+      "icon": "clipboard-check",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ],
+    "bg": "#f4f7f8",
+    "fg": "#1a2230"
+   }
+  }
+ }
+}

@@ -1,0 +1,65 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-carpenter-badges",
+ "label": "Carpenter — Text and Icons",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Carpentry",
+ "businessType": "",
+ "mode": "badges",
+ "pairedPresetId": "trustbar-carpenter-images",
+ "relationshipType": "alternate-mode",
+ "sellingPoint": "Same carpenter services in a compact badge strip.",
+ "description": "",
+ "isFeatured": false,
+ "isDefaultPlaygroundPreset": false,
+ "site_config": {
+  "business": "Harbour Timber Works",
+  "trade": "carpenter",
+  "theme": {
+   "pipe": "#5C4033"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "badges",
+    "sep": "none",
+    "lineOn": true,
+    "badges": [
+     {
+      "on": true,
+      "label": "Decks",
+      "icon": "tree-pine",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Pergolas",
+      "icon": "home",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Handrails",
+      "icon": "grip",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Outdoor Stairs",
+      "icon": "stairs",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,69 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-builder",
+ "label": "Builder — Image Tiles",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Building",
+ "businessType": "",
+ "mode": "images",
+ "pairedPresetId": null,
+ "relationshipType": null,
+ "sellingPoint": "",
+ "description": "",
+ "isFeatured": false,
+ "isDefaultPlaygroundPreset": false,
+ "site_config": {
+  "business": "Northside Builders",
+  "trade": "builder",
+  "theme": {
+   "pipe": "#2F413A"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "images",
+    "imageHeight": 280,
+    "strokeOn": true,
+    "strokeColour": "#ffffff",
+    "edgeOn": true,
+    "edgeColour": "#ffffff",
+    "fg": "#ffffff",
+    "badges": [
+     {
+      "on": true,
+      "label": "New Homes",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Renovations",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Extensions",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Custom Builds",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ]
+   }
+  }
+ }
+}

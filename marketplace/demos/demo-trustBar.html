@@ -13,7 +13,24 @@
 </section>
 </main>
 <script>
-var SITE_CONFIG={"trustBar": {"items": [{"icon": "shield-check", "text": "Fully licensed"}, {"icon": "award", "text": "Master Plumbers member"}, {"icon": "star", "text": "5-star Google rating"}, {"icon": "clock", "text": "24/7 emergency"}, {"icon": "dollar-sign", "text": "Fixed-price quotes"}]}};
+var SITE_CONFIG = {
+  theme: { pipe: "#2F413A" },
+  sections: {
+    trustBar: {
+      on: true,
+      mode: "badges",
+      sep: "none",
+      lineOn: true,
+      badges: [
+        { on: true, label: "Acrylic Rendering", icon: "paintbrush" },
+        { on: true, label: "Cement Rendering", icon: "brick-wall" },
+        { on: true, label: "Textured Coating", icon: "layers" },
+        { on: true, label: "Repairs and Patching", icon: "wrench" },
+        { on: true, label: "Venetian Plastering", icon: "sparkles" }
+      ]
+    }
+  }
+};
 </script>
 <script src="./demo-shared.js"></script>
 </body>

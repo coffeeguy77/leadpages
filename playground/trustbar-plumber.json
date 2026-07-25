@@ -1,0 +1,65 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-plumber",
+ "label": "Plumber — Text and Icons",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Plumbing",
+ "businessType": "",
+ "mode": "badges",
+ "pairedPresetId": null,
+ "relationshipType": null,
+ "sellingPoint": "",
+ "description": "",
+ "isFeatured": false,
+ "isDefaultPlaygroundPreset": false,
+ "site_config": {
+  "business": "Ace Plumbing Co.",
+  "trade": "plumber",
+  "theme": {
+   "pipe": "#1f7bb8"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "badges",
+    "sep": "none",
+    "lineOn": true,
+    "badges": [
+     {
+      "on": true,
+      "label": "Emergency Plumbing",
+      "icon": "siren",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Blocked Drains",
+      "icon": "droplets",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Hot Water",
+      "icon": "flame",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Gas Fitting",
+      "icon": "flame-kindling",
+      "image": "",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ]
+   }
+  }
+ }
+}

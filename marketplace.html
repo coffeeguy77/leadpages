@@ -4,74 +4,73 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
-<title>Marketplace — everything a LeadPages site can do</title>
-<meta name="description" content="Browse every LeadPages feature — live Instagram feeds, project portfolios, lead capture, email campaigns and more. All built in, no plugins.">
+<title>Marketplace — see what your website could do</title>
+<meta name="description" content="Explore LeadPages features with real business examples. Many apps are included; premium and usage-based tools are clearly marked.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/marketplace-theme.css">
 <style>
-:root{
-  --paper:#FAF5F2; --shell:#F1E5DF; --ink:#2E2A2B; --mut:#6E6265;
-  --rose:#A84A5E; --rose-d:#7E3346; --gum:#2F413A; --gum-l:#43584F;
-  --line:#E4D5CD;
-  --disp:'Young Serif',Georgia,serif; --body:'Figtree',system-ui,sans-serif;
-}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.6}
+body{font-family:var(--theme-body-font,var(--body));background:var(--theme-page-background,var(--paper));color:var(--theme-text,var(--ink));line-height:1.6}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block}
-.wrap{max-width:1440px;margin:0 auto;padding:0 24px}
-h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.12}
-.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#D9A0AC}
-.sitenav{background:var(--gum)}
+.wrap{max-width:var(--theme-content-width,1440px);margin:0 auto;padding:0 24px}
+h1,h2,h3{font-family:var(--theme-heading-font,var(--disp));font-weight:400;line-height:1.12}
+.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--theme-accent,#D9A0AC)}
+.sitenav{background:var(--theme-secondary,var(--gum))}
 .sitenav .wrap{display:flex;align-items:center;justify-content:space-between;height:116px}
 .sitenav .leadpages-logo{height:var(--lp-logo-height,52px);width:auto;display:block}
 .sitenav .links{display:flex;align-items:center;gap:24px}
-.sitenav .links a{color:#E9EFEA;font-weight:600;font-size:15px}
-.sitenav .links a:hover{color:#D9A0AC}
-.sitenav .links a.cta{background:var(--rose);color:#fff;padding:9px 18px;border-radius:999px}
-.sitenav .links a.cta:hover{background:var(--rose-d)}
+.sitenav .links a{color:var(--theme-secondary-contrast,#E9EFEA);font-weight:600;font-size:15px}
+.sitenav .links a:hover{color:var(--theme-accent,#D9A0AC)}
+.sitenav .links a.cta{background:var(--theme-primary,var(--rose));color:var(--theme-primary-contrast,#fff);padding:9px 18px;border-radius:999px}
+.sitenav .links a.cta:hover{background:var(--theme-primary-hover,var(--rose-d))}
 @media(max-width:640px){.sitenav .links a:not(.cta){display:none}}
-.hero{background:var(--gum);color:#F3EFEA;padding:64px 0 72px;text-align:center}
+.hero{background:var(--theme-secondary,var(--gum));color:var(--theme-text-inverse,#F3EFEA);padding:64px 0 72px;text-align:center}
 .hero h1{font-size:clamp(30px,4.6vw,46px);margin:12px 0 14px}
 .hero p{color:#C9D2CC;font-size:18px;max-width:58ch;margin:0 auto}
 .pills{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:34px 0 8px}
-.pill{padding:10px 20px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:700;font-size:14.5px;cursor:pointer;color:var(--mut);font-family:var(--body)}
-.pill:hover{border-color:var(--rose);color:var(--rose-d)}
-.pill.on{background:var(--rose);border-color:var(--rose);color:#fff}
-.pill:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
+.pill{padding:10px 20px;border-radius:999px;border:1px solid var(--theme-border,var(--line));background:var(--theme-surface,#fff);font-weight:700;font-size:14.5px;cursor:pointer;color:var(--theme-text-muted,var(--mut));font-family:var(--theme-body-font,var(--body))}
+.pill:hover{border-color:var(--theme-primary,var(--rose));color:var(--theme-primary-hover,var(--rose-d))}
+.pill.on{background:var(--theme-primary,var(--rose));border-color:var(--theme-primary,var(--rose));color:var(--theme-primary-contrast,#fff)}
+.pill:focus-visible{outline:3px solid var(--theme-focus,var(--rose));outline-offset:2px}
 main{padding:26px 0 96px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:26px}
 @media(max-width:960px){.grid{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
-.fcard{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .18s ease,box-shadow .18s ease}
+.fcard{background:var(--theme-surface,#fff);border:1px solid var(--theme-border,var(--line));border-radius:var(--theme-radius-medium,16px);overflow:hidden;display:flex;flex-direction:column;transition:transform .18s ease,box-shadow .18s ease}
 .fcard:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(46,42,43,.10)}
-.fthumb{height:150px;background:linear-gradient(135deg,var(--shell),#E6D2C8);position:relative}
+.fthumb{height:150px;background:linear-gradient(135deg,var(--theme-surface-alt,var(--shell)),var(--theme-border,var(--line)));position:relative}
 .fthumb img{width:100%;height:100%;object-fit:cover}
-.fbadge{position:absolute;top:12px;left:12px;background:var(--rose);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px}
+.fbadge{position:absolute;top:12px;left:12px;background:var(--theme-primary,var(--rose));color:var(--theme-primary-contrast,#fff);font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px}
 .fbody{padding:20px 22px 22px;display:flex;flex-direction:column;gap:8px;flex:1}
-.fcat{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--rose)}
+.fcat{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--theme-primary,var(--rose))}
 .fbody h3{font-size:20px}
-.ftag{color:var(--ink);font-weight:600;font-size:15px}
-.fsum{color:var(--mut);font-size:14.5px;flex:1}
-.fdemo{align-self:flex-start;margin-top:6px;font-weight:700;color:var(--rose-d);font-size:14.5px;border-bottom:2px solid var(--rose);padding-bottom:1px}
-.status{color:var(--mut);text-align:center;padding:48px 0;font-size:16px}
-.band{background:var(--shell);text-align:center;padding:72px 24px}
+.ftag{color:var(--theme-text,var(--ink));font-weight:600;font-size:15px}
+.fsum{color:var(--theme-text-muted,var(--mut));font-size:14.5px;flex:1}
+.fdemo{align-self:flex-start;margin-top:6px;font-weight:700;color:var(--theme-primary-hover,var(--rose-d));font-size:14.5px;border-bottom:2px solid var(--theme-primary,var(--rose));padding-bottom:1px}
+.status{color:var(--theme-text-muted,var(--mut));text-align:center;padding:48px 0;font-size:16px}
+.band{background:var(--theme-surface-alt,var(--shell));text-align:center;padding:var(--theme-section-spacing,72px) 24px}
 .band h2{font-size:clamp(26px,3.6vw,36px);margin-bottom:12px}
-.band p{color:var(--mut);max-width:52ch;margin:0 auto 26px}
-.btn{display:inline-flex;font-weight:700;padding:14px 28px;border-radius:999px;background:var(--rose);color:#fff}
-.btn:hover{background:var(--rose-d)}
-footer{background:var(--gum);color:#C9D2CC;padding:44px 0 36px;font-size:14px}
+.band p{color:var(--theme-text-muted,var(--mut));max-width:52ch;margin:0 auto 26px}
+.btn{display:inline-flex;font-weight:700;padding:14px 28px;border-radius:999px;background:var(--theme-primary,var(--rose));color:var(--theme-primary-contrast,#fff)}
+.btn:hover{background:var(--theme-primary-hover,var(--rose-d))}
+.btn:focus-visible{outline:3px solid var(--theme-focus,var(--rose));outline-offset:2px}
+footer{background:var(--theme-secondary,var(--gum));color:#C9D2CC;padding:44px 0 36px;font-size:14px}
 footer .wrap{display:flex;justify-content:space-between;gap:26px;flex-wrap:wrap}
 footer .leadpages-logo{height:var(--lp-logo-height,52px);width:auto;margin-bottom:12px;display:block}
-footer a{color:#E9EFEA;font-weight:600;margin-right:22px}
-footer a:hover{color:#D9A0AC}
+footer a{color:var(--theme-secondary-contrast,#E9EFEA);font-weight:600;margin-right:22px}
+footer a:hover{color:var(--theme-accent,#D9A0AC)}
 .abn{margin-top:14px;color:#8FA096;font-size:12.5px}
 </style>
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js" defer></script>
+<script src="/lib/marketplace-v2-flags.js"></script>
+<script src="/lib/marketplace-access.js"></script>
+<script src="/assets/js/marketplace/marketplace-v2.js" defer></script>
 </head>
 <body>
 
@@ -88,9 +87,10 @@ footer a:hover{color:#D9A0AC}
 
 <header class="hero">
   <div class="wrap">
-    <span class="eyebrow">The marketplace</span>
-    <h1>Everything a LeadPages site can do</h1>
-    <p>Every feature below is built into the platform — no plugins, no extra subscriptions. Browse by category to see what you can offer your clients.</p>
+    <span class="eyebrow">The LeadPages Marketplace</span>
+    <h1>See what your website could do.</h1>
+    <p>Explore the features available inside LeadPages. Start with real business examples, try the same editor used in the platform and see how easily each section can become your own.</p>
+    <p style="color:var(--theme-accent,#D9A0AC);font-size:15px;max-width:56ch;margin:16px auto 0">Many apps are included with your website. Premium and usage-based tools are clearly marked before you add them.</p>
   </div>
 </header>
 
@@ -103,9 +103,10 @@ footer a:hover{color:#D9A0AC}
 </main>
 
 <section class="band">
-  <h2>Want these on your clients&rsquo; sites?</h2>
-  <p>Every marketplace feature comes standard with the platform. Become a LeadPages partner and offer them all from day one.</p>
-  <a class="btn" href="/partners">Become a partner</a>
+  <h2>Imagine these already built into your website.</h2>
+  <p>LeadPages gives you practical website features, real business examples and an editor designed for people who want to build attractive websites without learning code.</p>
+  <p style="color:var(--theme-text-muted,var(--mut));font-size:14.5px;max-width:52ch;margin:-10px auto 22px">Many apps are included. Premium and usage-based tools are clearly marked before you use them.</p>
+  <a class="btn" href="/partners">Become a LeadPages partner</a>
 </section>
 
 <footer>
@@ -166,10 +167,16 @@ footer a:hover{color:#D9A0AC}
     active=b.getAttribute('data-c'); renderPills(); renderGrid();
   });
 
+  var __mpV2Home = (window.LPMarketplaceFlags && window.LPMarketplaceFlags.isV2 && window.LPMarketplaceFlags.isV2())
+    || !!(window.__LP_MARKETPLACE_FLAGS__ && window.__LP_MARKETPLACE_FLAGS__.APP_MARKETPLACE_V2);
+  if(__mpV2Home){
+    /* marketplace-v2.js owns catalog rendering when V2 is on */
+  } else {
   fetch('/api/catalog').then(function(r){return r.json();}).then(function(j){
     if(j&&j.categories){CATS=j.categories;FEATS=j.features||[];renderPills();renderGrid();}
     else{status.textContent='The marketplace could not load. Please refresh to try again.';}
   }).catch(function(){status.textContent='The marketplace could not load. Please refresh to try again.';});
+  }
 })();
 </script>
 </body>
