@@ -52,6 +52,40 @@ test('resolveSectionOrder pins Trust Bar under Hero', function() {
   assert.equal(ord.indexOf('trustBar'), ord.indexOf('hero') + 1);
 });
 
+test('resolveSectionOrder keeps seoText above FAQ when saved in Position', function() {
+  const cfg = {
+    sectionOrder: ['hero', 'services', 'seoText', 'faq', 'footer'],
+    sections: {
+      hero: {},
+      services: {},
+      seoText: { on: true, h1: 'Premium Event Coffee' },
+      faq: {},
+      footer: {},
+      trustBar: { on: false }
+    }
+  };
+  const ord = resolveSectionOrder(cfg);
+  assert.ok(ord.indexOf('seoText') >= 0, 'seoText must stay in resolved order');
+  assert.ok(ord.indexOf('seoText') < ord.indexOf('faq'));
+});
+
+test('resolveSectionOrder inserts missing seoText above FAQ', function() {
+  const cfg = {
+    sectionOrder: ['hero', 'services', 'faq', 'footer'],
+    sections: {
+      hero: {},
+      services: {},
+      seoText: { on: true },
+      faq: {},
+      footer: {},
+      trustBar: { on: false }
+    }
+  };
+  const ord = resolveSectionOrder(cfg);
+  assert.ok(ord.indexOf('seoText') >= 0);
+  assert.ok(ord.indexOf('seoText') < ord.indexOf('faq'));
+});
+
 test('resolveSectionOrder respects custom Position with How It Works near end', function() {
   const cfg = {
     sectionOrder: [
