@@ -1020,12 +1020,12 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     box-shadow: none !important;
   }
   .dash-leads-card.lp-dash-card {
-    padding: 12px 12px 14px !important;
+    padding: 10px 10px 12px !important;
   }
   .dash-leads-head {
     gap: 8px 10px;
-    margin-bottom: 10px;
-    padding: 2px 0 4px;
+    margin-bottom: 8px;
+    padding: 0;
   }
   .dash-leads-toolbar {
     margin-left: auto;
@@ -1066,37 +1066,70 @@ body.lp-dock-full.lp-prev-open .lp-shell-menu {
     justify-content: flex-start !important;
     text-align: left !important;
   }
+  .dash-leads-body {
+    min-height: 0;
+  }
   .dash-leads-list {
     gap: 6px;
   }
-  .lp-dash-row {
+  .dash-leads-list.is-scroll {
+    max-height: calc(10 * 56px);
+  }
+  .lp-dash-row,
+  .dash-lead-row {
     background: transparent !important;
     border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent) !important;
     border-radius: 10px !important;
+    min-height: 0 !important;
   }
   .lp-dash-row-muted {
     background: color-mix(in srgb, var(--accent) 6%, transparent) !important;
     border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent) !important;
   }
+  /* Column stack: kill desktop flex-basis (220px) that blew out card height */
   .lp-lead-card-inner {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 4px;
     padding: 8px 10px !important;
+    min-height: 0 !important;
   }
   .lp-lead-card-meta {
     display: flex;
+    flex: 0 0 auto;
     flex-wrap: wrap;
     align-items: center;
-    gap: 5px 6px;
+    gap: 4px 6px;
     width: 100%;
+    min-width: 0;
+    min-height: 0;
   }
   .lp-lead-card-actions {
     display: flex;
+    flex: 0 0 auto;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px 8px;
+    gap: 4px 8px;
     width: 100%;
+    margin-left: 0;
+    min-height: 0;
+  }
+  .dash-lead-name {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+  .dash-lead-phone,
+  .dash-lead-when {
+    font-size: 12px;
+    line-height: 1.25;
+  }
+  .dash-lead-view {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
   }
   .dash-lead-detail:not([hidden]) {
     padding: 0 10px 8px;
