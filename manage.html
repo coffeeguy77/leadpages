@@ -8382,7 +8382,7 @@ function heroCtaCard(c){
   window.lpGetDrawerNavButtons=function(){
     var roleAllow=ALLOWED[currentRole]||ALLOWED.super;
     var allow=roleAllow.filter(function(k){ return tplNav().indexOf(k)>=0; });
-    var keys=['dashboard','details','rates','landing','apps','mailer','appearance','themes','contact','logo','users','demothemes'];
+    var keys=['dashboard','advertising','seo','details','rates','landing','ai-team','apps','onlinequotes','mailer','messages','appearance','themes','contact','logo','users','demothemes'];
     var out=[];
     keys.forEach(function(k){
       if(allow.indexOf(k)<0) return;

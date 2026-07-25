@@ -63,6 +63,7 @@
   var NAV_TAB_CATALOG = {
     'nav-dashboard': 'Dashboard',
     'nav-advertising': 'Advertising',
+    'nav-seo': 'SEO Command Centre',
     'nav-details': 'Page editor',
     'nav-rates': 'Rates & leads',
     'nav-landing': 'Landing pages',
