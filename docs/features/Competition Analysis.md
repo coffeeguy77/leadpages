@@ -14,6 +14,7 @@ Competitor research inside Manage → **SEO → Competition**.
 3. If DataForSEO credentials are missing, actions return `market_provider_required` — they do **not** fall back to plumber (or any trade) fixtures.
 4. Known demo fixture domains (`rival-plumb.com.au`, `canberra-pipes.com.au`, `act-drainmasters.com.au`, `queanbeyan-plumbing.com.au`, `example-plumber.com.au`, `*.example`) are **purged** from `site.config.competitors` and `si_competitors` on tab load.
 5. Mock adapter (tests only) synthesises rivals from the **requested domain / keyword seed** — it must not inject unrelated industries.
+6. Local SERPs expand **local_pack** business websites (not just `maps.google.com`) so local keywords return real rivals.
 
 ---
 
@@ -21,8 +22,10 @@ Competitor research inside Manage → **SEO → Competition**.
 
 | Step | UI action | Backend |
 |------|-----------|---------|
+| 0. Keyword lookup | **Look up keyword** | Live SERP → your position + rivals (organic + local) |
+| 0b. Rival drill-down | **Keywords: {domain}** | Labs `ranked_keywords` for that rival |
 | 1. Core competitors | **Find organic competitors** | Labs `competitors_domain` for **this** domain |
-| 1b. Seed discovery | **Discover from keywords** | Live SERP for the typed seeds only |
+| 1b. Seed → list | **Save rivals from SERP** | Live SERP domains saved to competitor list |
 | 2. Keyword gap | **Keyword gap** | Ranked keywords for you + up to 4 saved rivals |
 | 3. Backlinks | **Backlink strategy** | Referring domains + top linked pages |
 | 4. PPC | **Paid ads research** | Paid `ranked_keywords` |
@@ -37,6 +40,8 @@ Live rivals (DataForSEO only) may save to `site.config.competitors` and `si_comp
 
 | Action | Purpose |
 |--------|---------|
+| `lookup_keyword` | Your position + rivals for one keyword (organic + local) |
+| `competitor_keywords` | Organic keywords a rival domain ranks for |
 | `discover_competitors` | Labs competitors for your domain |
 | `discover_from_serp` | SERP-based rival discovery from operator seeds |
 | `keyword_gap` | Missing / Weak / Shared |

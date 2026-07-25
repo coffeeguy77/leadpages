@@ -11222,10 +11222,11 @@ function heroCtaCard(c){
         +'<button type="button" class="btn sm ghost" id="si-comp-paid">4 · Paid ads research</button>'
         +'</div>'
         +'<div style="border-top:1px solid var(--line);padding-top:12px;margin-top:8px">'
-        +'<p class="hint" style="margin:0 0 6px">Discover rivals from <strong>your</strong> industry keywords (top Google results for those queries only).</p>'
+        +'<p class="hint" style="margin:0 0 6px"><strong>Keyword lookup</strong> — your position + rivals ranking for that keyword (organic + local). Click a rival to see keywords they rank for.</p>'
         +'<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">'
-        +'<input id="si-comp-seeds" class="tin" placeholder="e.g. coffee cart hire canberra, barista hire act" style="flex:1;min-width:220px">'
-        +'<button type="button" class="btn sm ghost" id="si-comp-serp">Discover from keywords</button>'
+        +'<input id="si-comp-seeds" class="tin" placeholder="e.g. coffee cart hire canberra" style="flex:1;min-width:220px">'
+        +'<button type="button" class="btn sm" id="si-comp-lookup">Look up keyword</button>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-serp">Save rivals from SERP</button>'
         +'</div></div>'
         +'<div id="si-comp-out" class="hint" style="margin-top:14px"></div></div>';
 
@@ -11271,6 +11272,59 @@ function heroCtaCard(c){
             toast('Competitors cleared');
             return;
           }
+          if(action==='lookup_keyword'){
+            var pos=res.ownPosition!=null?('#'+res.ownPosition):'not in top results';
+            var serpRows=res.serp&&res.serp.length?res.serp:(res.rivals||[]);
+            out.innerHTML='<p class="lede"><strong>'+esc(res.keyword||'')+'</strong> · Your position: <strong>'+esc(pos)+'</strong>'
+              +(res.ownUrl?' · <span class="hint">'+esc(res.ownUrl)+'</span>':'')
+              +'</p>'
+              +'<p class="hint" style="margin:0 0 10px">'+esc(res.note||'')+' · Provider: '+esc(res.provider||'—')+'</p>'
+              +'<h4 style="margin:10px 0 6px">Who ranks for this keyword</h4>'
+              +kwTable(serpRows,[
+                {label:'Pos',get:function(r){return r.rank;}},
+                {label:'Domain',get:function(r){return (r.isYou?'★ ':'')+(r.domain||'—');}},
+                {label:'Type',get:function(r){return r.type;}},
+                {label:'Title',get:function(r){return r.title;}}
+              ])
+              +'<div id="si-comp-rival-actions" class="row" style="gap:8px;flex-wrap:wrap;margin:12px 0 0"></div>'
+              +'<div id="si-comp-rival-kw" style="margin-top:12px"></div>';
+            var act=document.getElementById('si-comp-rival-actions');
+            if(act){
+              (res.rivals||[]).slice(0,8).forEach(function(rv){
+                if(!rv||!rv.domain) return;
+                var add=document.createElement('button');
+                add.type='button'; add.className='btn ghost sm';
+                add.textContent='Add '+rv.domain;
+                add.onclick=function(){
+                  var cur=readComps();
+                  if(cur.indexOf(rv.domain)<0){ cur.push(rv.domain); writeComps(cur.slice(0,12)); toast('Added '+rv.domain); }
+                };
+                var kw=document.createElement('button');
+                kw.type='button'; kw.className='btn sm';
+                kw.textContent='Keywords: '+rv.domain;
+                kw.onclick=function(){ runComp('competitor_keywords',{competitor:rv.domain,domain:rv.domain}); };
+                act.appendChild(add);
+                act.appendChild(kw);
+              });
+            }
+            toast(res.ownPosition!=null?('You rank #'+res.ownPosition):'Keyword SERP loaded');
+            return;
+          }
+
+          if(action==='competitor_keywords'){
+            out.innerHTML='<p class="lede">Keywords ranked by <strong>'+esc(res.domain||'—')+'</strong> · '+esc(res.totalCount||(res.keywords||[]).length)+' shown</p>'
+              +kwTable(res.keywords||[],[
+                {label:'Keyword',get:function(k){return k.keyword;}},
+                {label:'Pos',get:function(k){return k.position;}},
+                {label:'Vol',get:function(k){return k.volume;}},
+                {label:'CPC',get:function(k){return k.cpc;}},
+                {label:'URL',get:function(k){return k.url;}}
+              ])
+              +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+' · Provider: '+esc(res.provider||'—')+'</p>';
+            toast('Competitor keywords loaded');
+            return;
+          }
+
           if(action==='save_competitors'||action==='discover_competitors'||action==='discover_from_serp'){
             if(String(res.provider||'')==='mock'){
               out.innerHTML='<p class="lede" style="color:#b45309">Blocked mock/demo rivals — configure DataForSEO for live competitors for <strong>'+esc(j.domain||'this site')+'</strong>.</p><p class="hint">'+esc(res.note||'')+'</p>';
@@ -11286,13 +11340,16 @@ function heroCtaCard(c){
               return;
             }
             if(action==='discover_from_serp'){
-              out.innerHTML='<p class="lede">Found '+esc(list.length)+' domains from <strong>your</strong> seed keywords.</p>'
+              out.innerHTML='<p class="lede">Found '+esc(list.length)+' domains from <strong>your</strong> seed keywords'
+                +(res.rawResultCount!=null?' <span class="hint">(SERP rows: '+esc(res.rawResultCount)+')</span>':'')
+                +'.</p>'
                 +kwTable((res.competitors||[]).filter(function(c){ return list.indexOf(c.domain)>=0; }),[
                   {label:'Domain',get:function(c){return c.domain;}},
                   {label:'SERP hits',get:function(c){return c.overlapCount;}}
                 ])
                 +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+'</p>';
-              toast('SERP rivals loaded');
+              if(list.length) toast('SERP rivals loaded');
+              else toast('No rival domains found','warn');
               return;
             }
             out.innerHTML='<p class="lede">Main organic competitors for <strong>'+esc(res.domain||'—')+'</strong> (by keyword overlap).</p>'
@@ -11396,6 +11453,11 @@ function heroCtaCard(c){
       var bLinks=document.getElementById('si-comp-links');
       var bPaid=document.getElementById('si-comp-paid');
       var bSerp=document.getElementById('si-comp-serp');
+      var bLookup=document.getElementById('si-comp-lookup');
+      function seedKeyword(){
+        var seedsEl=document.getElementById('si-comp-seeds');
+        return seedsEl?String(seedsEl.value||'').trim():'';
+      }
       if(bSave) bSave.onclick=function(){ runComp('save_competitors'); };
       if(bClear) bClear.onclick=function(){ runComp('clear_competitors'); };
       if(bDisc) bDisc.onclick=function(){ runComp('discover_competitors'); };
@@ -11405,9 +11467,13 @@ function heroCtaCard(c){
         runComp('backlink_strategy',{competitor:list[0]});
       };
       if(bPaid) bPaid.onclick=function(){ runComp('paid_research'); };
+      if(bLookup) bLookup.onclick=function(){
+        var seeds=seedKeyword();
+        if(!seeds){ toast('Enter a keyword first (e.g. coffee cart hire canberra)','warn'); return; }
+        runComp('lookup_keyword',{keyword:seeds});
+      };
       if(bSerp) bSerp.onclick=function(){
-        var seedsEl=document.getElementById('si-comp-seeds');
-        var seeds=seedsEl?String(seedsEl.value||'').trim():'';
+        var seeds=seedKeyword();
         if(!seeds){ toast('Enter industry keywords for THIS business first','warn'); return; }
         runComp('discover_from_serp',{seeds:seeds});
       };
