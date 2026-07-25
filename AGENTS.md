@@ -20,7 +20,8 @@ Minimum topic docs for common work:
 - Architecture: `docs/01-ARCHITECTURE.md`
 - Database / config: `docs/02-DATABASE.md`
 - Editor: `docs/10-EDITOR.md`
-- Standards: `docs/12-CODING-STANDARDS.md`
+- Standards: `docs/12-CODING-STANDARDS.md` (includes theme-default colour picker rule for new apps)
+- Theme / Branding colours: `docs/features/Theme Engine.md`
 - **AI / Brain:** `docs/AI/00-STATUS.md` then `docs/features/LeadPages Brain.md`
 
 Use `docs/INDEX.md` § **Which document to read by task** to pick the right topic docs before step 7.

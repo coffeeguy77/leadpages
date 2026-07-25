@@ -163,9 +163,36 @@ None direct — theme is config JSON only. Images in theme use [Cloudinary](Clou
 | File | Role |
 |------|------|
 | `manage.html` | All theme UI + constants |
+| `lib/color-overrides.js` | Site-wide hex remap (`config.colorOverrides`) |
 | `trade.template.json` | Consumes theme in hydration |
 | `brokerapp.template.json` | `__applyAppearance` |
 | [11-DESIGN-SYSTEM](../11-DESIGN-SYSTEM.md) | Token semantics |
+
+---
+
+## Colour picker defaults (required for new apps)
+
+Every section/app colour control in `manage.html` must:
+
+1. Resolve the empty/default swatch from **`siteThemeColors(c)`** (falls back to `DEFAULT_TRADE_THEME`: `pipe`, `hivis`, `steel`, `safety`, `lightBg`).
+2. Persist **`''`** when the user clicks Default/Reset — never bake the theme hex into config as if it were a custom override.
+3. Prefer helpers **`secHexField`**, **`wireSecColorPair`**, and list-editor **`listColorDefault`**.
+4. Never treat a literal `#1f7bb8` / `#1a2230` as the product default when a theme token exists.
+
+Hardcoded hex is only OK for true non-theme neutrals (e.g. pure white text on a dark bar) that are not meant to follow Branding.
+
+## Colour override (site-wide remap)
+
+Branding → **Colour override** stores `config.colorOverrides = [{ id, from, to }, …]`.
+
+| Step | Behaviour |
+|------|-----------|
+| Editor | Unlimited source → replacement rows; live preview via `__applyTradeConfig` |
+| Preview | `demo-shared.js` remaps hex in a cloned config before hydrate |
+| Public render | `injectTradeThemeVars` remaps theme CSS + HTML hex via `lib/color-overrides.js` |
+| Precedence | Overrides win over theme tokens, presets, and matching per-section hex |
+
+Warn operators: a remap replaces that hex **everywhere** it appears on the site.
 
 ---
 
@@ -175,6 +202,8 @@ None direct — theme is config JSON only. Images in theme use [Cloudinary](Clou
 |----------|---------|
 | `syncColourInputs(c)` | Pickers ← `c.theme` |
 | `wireTradeColours(c)` | Picker change → theme |
+| `wireColorOverrides(c)` | Branding colour override rows |
+| `siteThemeColors(c)` | Live theme (+ defaults) for empty pickers |
 | `applyColourPreset(c, name)` | Apply `TRADE_COLOUR_PRESETS` entry |
 | `getTradeColourPreset(name)` | Lookup preset |
 | `renderColourLibrary(c)` | Library grid HTML |

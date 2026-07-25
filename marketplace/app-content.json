@@ -1439,5 +1439,192 @@
         "text": "Mixed folders look good without cropping every image to the same ratio."
       }
     ]
+  },
+  "seoCommand": {
+    "name": "SEO Command Centre",
+    "tagline": "Local SEO workflows inside Manage",
+    "summary": "Plan titles, local pages, keywords and next actions from one Command Centre — not a page section you toggle on.",
+    "pitch": "SEO Command Centre answers how visible a trade site is, what search is creating, what is broken, and what to do next. Partners sell SEO setup without leaving LeadPages.",
+    "features": [
+      {
+        "title": "Home dashboard",
+        "text": "Visibility scores, organic clicks, lead value and technical health in plain language."
+      },
+      {
+        "title": "Next Best Actions",
+        "text": "Prioritised queue — optimise pages, fix titles, create location pages, or hand off to Brain drafts."
+      },
+      {
+        "title": "Competition & Local",
+        "text": "Keyword gaps, NAP checks, Maps opportunities and Authority tools (DataForSEO-backed)."
+      },
+      {
+        "title": "Human-in-the-loop",
+        "text": "No silent AI publish — preview, confirm, then apply."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Sell SEO retainers",
+        "text": "Show clients a clear workspace instead of a spreadsheet of tips."
+      },
+      {
+        "title": "Deep-links to editor",
+        "text": "Open the right page or section when an action needs a content change."
+      },
+      {
+        "title": "Works with Landing pages",
+        "text": "Compose location/service pages with LeadPages Brain from SI briefs."
+      }
+    ],
+    "platformFeature": true,
+    "presets": []
+  },
+  "advertising": {
+    "name": "Advertising",
+    "tagline": "Google Ads performance in Manage",
+    "summary": "Connect Google Ads, sync campaigns, check tracking health and oversee paid traffic for client sites.",
+    "pitch": "Advertising lives on the app domain with secure OAuth. Partners connect an Ads account, monitor campaigns and keep conversion tracking healthy without leaving LeadPages.",
+    "features": [
+      {
+        "title": "Google Ads OAuth",
+        "text": "Connect on app.leadpages.com.au with encrypted refresh tokens and MCC support."
+      },
+      {
+        "title": "Campaign oversight",
+        "text": "Overview, campaigns and builder tabs for day-to-day paid media checks."
+      },
+      {
+        "title": "Tracking readiness",
+        "text": "Align Ads with LeadPages conversion and event tracking."
+      },
+      {
+        "title": "Partner-safe secrets",
+        "text": "Developer token and encryption keys stay server-side — never in the browser."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "One login for Ads + sites",
+        "text": "Clients see Ads status beside their website tools."
+      },
+      {
+        "title": "Health diagnostics",
+        "text": "Encryption and connection checks for support without exposing keys."
+      },
+      {
+        "title": "Roadmap-ready",
+        "text": "Same integration surface for future Analytics / Search Console connectors."
+      }
+    ],
+    "platformFeature": true,
+    "presets": []
+  },
+  "seoText": {
+    "name": "SEO Text",
+    "tagline": "On-page article copy with H1/H2 structure",
+    "summary": "Long-form SEO article block with eyebrow, H1, optional H2, supporting copy, image and colours — sits above FAQ by default.",
+    "pitch": "Give every trade homepage a proper SEO article: one H1, clear section headings, paragraphs that keep line breaks, and colours that match the brand container.",
+    "features": [
+      {
+        "title": "Proper heading structure",
+        "text": "H1 + optional H2 field; short title lines in the body become equal bold headings."
+      },
+      {
+        "title": "Bold toolbar",
+        "text": "Select text and Bold (Ctrl/⌘B) or mark a Heading line in the editor."
+      },
+      {
+        "title": "Colour controls",
+        "text": "Eyebrow, H1, H2, heading and paragraph colours for dark or light containers."
+      },
+      {
+        "title": "Image placement",
+        "text": "Beside or wrap layouts with left/right image side."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Ranks and reads",
+        "text": "Clients get searchable copy without a developer."
+      },
+      {
+        "title": "AI regenerate",
+        "text": "LeadPages Brain can draft the SEO Text body; FAQs go to the FAQ app."
+      },
+      {
+        "title": "Position-aware",
+        "text": "Defaults above FAQ and respects Page editor Position."
+      }
+    ],
+    "presets": [
+      "default"
+    ]
+  },
+  "featureStrip": {
+    "name": "Feature Strip",
+    "tagline": "Icon highlights under the hero",
+    "summary": "A compact strip of icon + title + detail cards for what sets the business apart.",
+    "pitch": "Feature Strip turns three to six selling points into a scannable row — ideal under heroes and trust bars.",
+    "features": [
+      {
+        "title": "Icon + copy cards",
+        "text": "Each item has icon, title and supporting text."
+      },
+      {
+        "title": "Header optional",
+        "text": "Eyebrow, heading and intro above the grid."
+      },
+      {
+        "title": "Theme-aware colours",
+        "text": "Section colours fall back to Branding theme tokens."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Fast pack add-on",
+        "text": "Trade packs can seed a ready strip of differentiators."
+      },
+      {
+        "title": "Off by default",
+        "text": "Enable only when the layout needs it."
+      }
+    ],
+    "presets": [
+      "default"
+    ]
+  },
+  "onlineQuote": {
+    "name": "Online Quote",
+    "tagline": "Verified quote flow on the site",
+    "summary": "Guided online quote with eyebrow, heading and intro — email verify before totals.",
+    "pitch": "Online Quote captures structured job details and verifies the lead before showing a price path.",
+    "features": [
+      {
+        "title": "Verified lead path",
+        "text": "Email verification before revealing quote totals."
+      },
+      {
+        "title": "Brand colours",
+        "text": "Eyebrow, heading and intro colours with theme defaults."
+      },
+      {
+        "title": "Position flexible",
+        "text": "Place near the classic quote form or higher on the page."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Higher intent leads",
+        "text": "Clients get quotes that are verified, not spam."
+      },
+      {
+        "title": "Works with Quote Builder",
+        "text": "Pairs with estimate and finance apps when enabled."
+      }
+    ],
+    "presets": [
+      "default"
+    ]
   }
 }

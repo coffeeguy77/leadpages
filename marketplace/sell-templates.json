@@ -2715,5 +2715,251 @@
         }
       }
     ]
+  },
+  "seoCommand": {
+    "name": "SEO Command Centre",
+    "tagline": "Local SEO workflows inside Manage",
+    "summary": "Plan titles, local pages, keywords and next actions from one Command Centre — not a page section you toggle on.",
+    "hero_image_url": null,
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "What it is",
+          "text": "Plan titles, local pages, keywords and next actions from one Command Centre — not a page section you toggle on."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Key features",
+          "items": [
+            {
+              "title": "Home dashboard",
+              "text": "Visibility scores, organic clicks, lead value and technical health in plain language."
+            },
+            {
+              "title": "Next Best Actions",
+              "text": "Prioritised queue — optimise pages, fix titles, create location pages, or hand off to Brain drafts."
+            },
+            {
+              "title": "Competition & Local",
+              "text": "Keyword gaps, NAP checks, Maps opportunities and Authority tools (DataForSEO-backed)."
+            },
+            {
+              "title": "Human-in-the-loop",
+              "text": "No silent AI publish — preview, confirm, then apply."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Where to find it",
+          "text": "Open **Manage → SEO Command**. Home shows visibility and Next Best Actions; use Pages, Keywords, Competition, Local and Authority tabs for deeper work. Homepage Google title/meta stay in SEO Command → Home; on-page article copy uses the SEO Text app."
+        }
+      },
+      {
+        "block_type": "cta",
+        "payload": {
+          "heading": "Ready to offer SEO Command Centre?",
+          "text": "Open a trade site in the App Command Centre.",
+          "button_label": "Become a partner",
+          "button_url": "/partners"
+        }
+      }
+    ]
+  },
+  "advertising": {
+    "name": "Advertising",
+    "tagline": "Google Ads performance in Manage",
+    "summary": "Connect Google Ads, sync campaigns, check tracking health and oversee paid traffic for client sites.",
+    "hero_image_url": null,
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "What it is",
+          "text": "Connect Google Ads, sync campaigns, check tracking health and oversee paid traffic for client sites."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Key features",
+          "items": [
+            {
+              "title": "Google Ads OAuth",
+              "text": "Connect on app.leadpages.com.au with encrypted refresh tokens and MCC support."
+            },
+            {
+              "title": "Campaign oversight",
+              "text": "Overview, campaigns and builder tabs for day-to-day paid media checks."
+            },
+            {
+              "title": "Tracking readiness",
+              "text": "Align Ads with LeadPages conversion and event tracking."
+            },
+            {
+              "title": "Partner-safe secrets",
+              "text": "Developer token and encryption keys stay server-side — never in the browser."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Where to find it",
+          "text": "Open **Manage → Advertising** (or Settings → Integrations → Google Ads on app.leadpages.com.au). Connect with Google OAuth, then use Overview / Campaigns / health tools. Secrets never ship to the browser."
+        }
+      },
+      {
+        "block_type": "cta",
+        "payload": {
+          "heading": "Ready to offer Advertising?",
+          "text": "Open a trade site in the App Command Centre.",
+          "button_label": "Become a partner",
+          "button_url": "/partners"
+        }
+      }
+    ]
+  },
+  "seoText": {
+    "name": "SEO Text",
+    "tagline": "On-page article copy with H1/H2 structure",
+    "summary": "Long-form SEO article block with eyebrow, H1, optional H2, supporting copy, image and colours — sits above FAQ by default.",
+    "hero_image_url": null,
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "On-page SEO article",
+          "text": "Give every trade homepage a proper SEO article: one H1, clear section headings, paragraphs that keep line breaks, and colours that match the brand container."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "What you can configure",
+          "items": [
+            {
+              "title": "Proper heading structure",
+              "text": "H1 + optional H2 field; short title lines in the body become equal bold headings."
+            },
+            {
+              "title": "Bold toolbar",
+              "text": "Select text and Bold (Ctrl/⌘B) or mark a Heading line in the editor."
+            },
+            {
+              "title": "Colour controls",
+              "text": "Eyebrow, H1, H2, heading and paragraph colours for dark or light containers."
+            },
+            {
+              "title": "Image placement",
+              "text": "Beside or wrap layouts with left/right image side."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "seoText",
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "featureStrip": {
+    "name": "Feature Strip",
+    "tagline": "Icon highlights under the hero",
+    "summary": "A compact strip of icon + title + detail cards for what sets the business apart.",
+    "hero_image_url": null,
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Highlight differentiators",
+          "text": "Feature Strip turns three to six selling points into a scannable row — ideal under heroes and trust bars."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Highlights",
+          "items": [
+            {
+              "title": "Icon + copy cards",
+              "text": "Each item has icon, title and supporting text."
+            },
+            {
+              "title": "Header optional",
+              "text": "Eyebrow, heading and intro above the grid."
+            },
+            {
+              "title": "Theme-aware colours",
+              "text": "Section colours fall back to Branding theme tokens."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "featureStrip",
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "onlineQuote": {
+    "name": "Online Quote",
+    "tagline": "Verified quote flow on the site",
+    "summary": "Guided online quote with eyebrow, heading and intro — email verify before totals.",
+    "hero_image_url": null,
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Verified quotes",
+          "text": "Online Quote captures structured job details and verifies the lead before showing a price path."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Highlights",
+          "items": [
+            {
+              "title": "Verified lead path",
+              "text": "Email verification before revealing quote totals."
+            },
+            {
+              "title": "Brand colours",
+              "text": "Eyebrow, heading and intro colours with theme defaults."
+            },
+            {
+              "title": "Position flexible",
+              "text": "Place near the classic quote form or higher on the page."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "onlineQuote",
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
   }
 }

@@ -1237,5 +1237,91 @@
         }
       ]
     }
+  ],
+  "seoText": [
+    {
+      "type": "text",
+      "key": "sections.seoText.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.seoText.h1",
+      "label": "H1"
+    },
+    {
+      "type": "text",
+      "key": "sections.seoText.h2",
+      "label": "H2"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.seoText.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.seoText.content",
+      "label": "Supporting copy"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "featureStrip": [
+    {
+      "type": "text",
+      "key": "sections.featureStrip.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.featureStrip.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.featureStrip.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "text",
+      "key": "sections.featureStrip.items.0.title",
+      "label": "Feature 1 title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.featureStrip.items.0.text",
+      "label": "Feature 1 text"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
+  ],
+  "onlineQuote": [
+    {
+      "type": "text",
+      "key": "sections.onlineQuote.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.onlineQuote.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.onlineQuote.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    }
   ]
 }
