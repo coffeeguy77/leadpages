@@ -168,10 +168,25 @@ describe('public marketplace theme + copy safety', () => {
     assert.match(html, /mp-demo-article/);
     assert.match(html, /mp-info-list/);
     assert.match(html, /Try the demo/);
+    assert.match(html, /feat-hero-grid/);
+    assert.match(html, /feat-hero-media/);
+    assert.match(html, /class="himg"/);
+    assert.doesNotMatch(html, /mp-demo-cta|Ready to use this on your website/);
+    assert.doesNotMatch(html, /Try it in the editor/);
     assert.doesNotMatch(html, /mk-modes/);
     assert.doesNotMatch(html, /mk-industry/);
     assert.doesNotMatch(html, /mk-same-editor/);
     assert.doesNotMatch(html, /In context/);
+  });
+
+  it('classic feature page shows hero image and hides editor upsell', () => {
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /feat-hero-grid/);
+    assert.match(feat, /heroImg=safeUrl\(f\.hero_image_url\)/);
+    assert.doesNotMatch(feat, /Ready to use /);
+    assert.doesNotMatch(feat, /Try it in the editor/);
+    assert.doesNotMatch(feat, /data-r="pg-footer"/);
+    assert.doesNotMatch(feat, /\.feat-hero \.himg.*display:\s*none/);
   });
 
   it('marketplace demos use the shared icon picker', () => {
@@ -210,8 +225,12 @@ describe('public marketplace theme + copy safety', () => {
     assert.doesNotMatch(css, /\.tb-ed-mode-preview/);
   });
 
-  it('demo trust bar quotes CSS url so local data URLs work on preset tiles', () => {
+  it('demo trust bar applies tile images via DOM so local data URLs work', () => {
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
-    assert.match(demo, /background-image:url\(\\''/);
+    assert.match(demo, /data-tb-bg/);
+    assert.match(demo, /style\.backgroundImage\s*=\s*'url\('\s*\+\s*JSON\.stringify/);
+    const tb = demo.slice(demo.indexOf('var TB=SEC.trustBar||{}'));
+    const tbChunk = tb.slice(0, 5000);
+    assert.doesNotMatch(tbChunk, /background-image:url\(/);
   });
 });

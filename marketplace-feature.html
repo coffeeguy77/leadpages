@@ -53,9 +53,13 @@ h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.12}
 .btn:hover{background:var(--rose-d);border-color:var(--rose-d)}
 .btn.ghost{background:transparent;color:#F3EFEA;border-color:rgba(255,255,255,.45)}
 .btn.ghost:hover{background:rgba(255,255,255,.1);border-color:#fff;color:#fff}
-.himg{border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 28px 64px rgba(0,0,0,.28);margin-top:40px}
-.himg img{width:100%}
-.himg-placeholder{height:220px;margin-top:40px;border-radius:18px;background:linear-gradient(135deg,rgba(168,74,94,.35),rgba(47,65,58,.8));border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+.himg{border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 28px 64px rgba(0,0,0,.28);margin:0;height:100%;min-height:260px;background:rgba(0,0,0,.15)}
+.himg img{width:100%;height:100%;min-height:260px;max-height:420px;object-fit:cover;display:block}
+.himg-placeholder{min-height:260px;border-radius:18px;background:linear-gradient(135deg,rgba(168,74,94,.35),rgba(47,65,58,.8));border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);padding:24px;text-align:center}
+.feat-hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(240px,0.95fr);gap:clamp(22px,4vw,40px);align-items:center}
+.feat-hero-copy{min-width:0}
+.feat-hero-media{min-width:0}
+@media(max-width:900px){.feat-hero-grid{grid-template-columns:1fr}.feat-hero-media{order:-1}.himg img{max-height:280px;min-height:200px}}
 article{padding:20px 0 88px}
 .blk{margin:52px 0}
 .blk-eyebrow{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--rose);margin-bottom:10px}
@@ -224,7 +228,6 @@ footer a:hover{color:#D9A0AC}
 .mp-demo-article .wrap{max-width:var(--theme-content-width,1440px)}
 .mp-demo-article .blk{margin:0 0 18px}
 .mp-demo-article .blk.pg{background:#fff;border:1px solid var(--theme-border,var(--line));border-radius:18px;padding:18px 16px}
-.feat-hero .himg,.feat-hero .himg-placeholder{display:none!important}
 section.back{display:none}
 .mp-labels{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 8px}
 .mp-label{display:inline-flex;padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.25);font-size:13px;font-weight:700;color:#F3EFEA}
@@ -384,7 +387,6 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           +'<button data-d="phone">Phone</button>'
           +'</div></div>'
           +'<div class="pg-panel pg-panel-compact"><div data-r="ctl"></div></div>'
-          +'<div class="pg-panel-bottom" data-r="pg-footer"></div>'
           +'</div>';
       case 'quote':
         return '<div class="blk"><div class="qt"><p>&ldquo;'+esc(p.text)+'&rdquo;</p>'
@@ -422,6 +424,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     _renderFeature=f;
     document.title=f.name+' — LeadPages Marketplace';
     var demoUrl=safeUrl(f.demo_url);
+    var heroImg=safeUrl(f.hero_image_url);
     var hasPlay=(blocks||[]).some(function(b){ return b&&b.block_type==='playground'; });
     var points=collectInfoPoints(f, blocks);
     var pointsHtml=points.map(function(p,i){
@@ -432,7 +435,12 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var demoBlocks=(blocks||[]).filter(function(b){
       return b && (b.block_type==='playground' || b.block_type==='demo_embed' || b.block_type==='faq');
     });
-    var html='<header class="feat-hero"><div class="feat-hero-inner wrap">'
+    var mediaHtml=heroImg
+      ? '<div class="himg"><img src="'+esc(heroImg)+'" alt="" loading="eager"></div>'
+      : '<div class="himg-placeholder">App preview</div>';
+    var html='<header class="feat-hero"><div class="feat-hero-inner wrap-wide">'
+      +'<div class="feat-hero-grid">'
+      +'<div class="feat-hero-copy">'
       +'<div class="crumb"><a href="/marketplace">&larr; Marketplace</a></div>'
       +(f.badge?'<span class="hbadge">'+esc(f.badge)+'</span>':'')
       +'<h1>'+esc(f.name)+'</h1>'
@@ -446,13 +454,12 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       +(hasPlay?'<a class="btn" href="#live-demo">Try the demo ↓</a>':'')
       +(demoUrl?'<a class="btn ghost" href="'+esc(demoUrl)+'" target="_blank" rel="noopener">See a live site</a>':'')
       +'<a class="btn ghost" href="/partners">Become a partner</a></div>'
-      +'</div></header>'
+      +'</div>'
+      +'<div class="feat-hero-media">'+mediaHtml+'</div>'
+      +'</div></div></header>'
       +'<article class="mp-demo-article"><div class="wrap">';
     if(demoBlocks.length){ html+=demoBlocks.map(block).join(''); }
     else { html+='<div class="blk"><p class="mp-lede">A live demo for this app is coming soon.</p></div>'; }
-    html+='<div class="blk" style="text-align:center;padding:18px 0 0"><h2 style="font-family:var(--disp);font-weight:400;margin:0 0 10px">Ready to use '+esc(f.name)+'?</h2>'
-      +'<p style="color:var(--mut);max-width:48ch;margin:0 auto 16px">Many apps are included. Premium and usage-based tools are clearly marked before you use them.</p>'
-      +'<a class="btn" href="/partners">Become a partner</a></div>';
     html+='</div></article>';
     page.innerHTML=html;
   }
@@ -920,16 +927,11 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 
     function renderCtl() {
       var ctl = root.querySelector('[data-r="ctl"]');
-      var footer = root.querySelector('[data-r="pg-footer"]');
       if (ctl) {
         ctl.innerHTML = '<div class="pg-ctl-head"><h4>Customise the preview</h4>'
           + '<p class="hint">Add, remove or edit items — updates instantly</p></div>'
           + '<div data-r="live" class="pg-live-host"></div>';
         renderLiveControls();
-      }
-      if (footer) {
-        footer.innerHTML = '<p>Open the App Command Centre to try the full editor on a real site — same controls, full save and publish.</p>'
-          + (secKey ? '<a class="btn" href="/manage" target="_blank" rel="noopener">Try it in the editor →</a>' : '');
       }
     }
 
