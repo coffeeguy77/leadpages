@@ -1170,8 +1170,9 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
                 if (!local || !local.length) return;
                 var localHasItems = local.some(function(f) { return /\.\d+\./.test(f.key || ''); });
                 var curHasItems = fieldDefs.some(function(f) { return /\.\d+\./.test(f.key || ''); });
+                /* Prefer local defs when API/DB copy is empty, thinner, or missing item rows */
                 if (localHasItems && !curHasItems) fieldDefs = local;
-                else if (!fieldDefs.length) fieldDefs = local;
+                else if (!fieldDefs.length || local.length > fieldDefs.length) fieldDefs = local;
               })
               .catch(function() {});
           })

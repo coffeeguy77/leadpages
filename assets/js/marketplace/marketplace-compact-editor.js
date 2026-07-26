@@ -82,6 +82,15 @@
     return raw.length > 18 ? raw.slice(0, 18) + '…' : raw;
   }
 
+  /** Rewrite "Point 1 title" → "Point 5 title" when editing via the shared template. */
+  function labelForItemIndex(label, idx) {
+    var n = (parseInt(idx, 10) || 0) + 1;
+    return String(label || '').replace(
+      /^(Step|Card|Item|Feature|Stat|Slide|Badge|Review|Event|Member|Service|Project|Reel|Point)\s+\d+/i,
+      function (_, word) { return word + ' ' + n; }
+    );
+  }
+
   function splitDefs(sectionKey, listKey, fieldDefs) {
     var itemFieldsByIndex = {};
     var styleFields = [];
@@ -101,7 +110,12 @@
         itemFieldsByIndex[idx].push(Object.assign({}, f, { _prop: prop, _index: idx }));
         if (!seenTemplate[prop]) {
           seenTemplate[prop] = true;
-          itemFieldTemplate.push({ type: f.type, label: f.label, prop: prop, options: f.options });
+          itemFieldTemplate.push({
+            type: f.type,
+            label: labelForItemIndex(f.label, 0),
+            prop: prop,
+            options: f.options
+          });
         }
         return;
       }
@@ -189,12 +203,21 @@
       if (f.prop === 'on') return;
       if (f.type === 'icon') it[f.prop] = 'circle-check';
       else if (f.type === 'image') it[f.prop] = '';
+      else if (f.type === 'number') {
+        if (f.prop === 'bgOpacity' || f.prop === 'mediaScale' || f.prop === 'iconScale') it[f.prop] = 100;
+        else it[f.prop] = '';
+      } else if (f.type === 'select' && Array.isArray(f.options) && f.options.length) {
+        var o0 = f.options[0];
+        it[f.prop] = typeof o0 === 'string' ? o0 : o0.value;
+      } else if (f.prop === 'n') it[f.prop] = '+';
+      else if (f.type === 'color') it[f.prop] = '';
       else it[f.prop] = f.prop === 'label' || f.prop === 'name' || f.prop === 'title' ? 'New item' : '';
     });
     if (!template || !template.length) {
       it.label = 'New item';
       it.name = 'New item';
       it.title = 'New item';
+      it.icon = 'circle-check';
     }
     return it;
   }
@@ -318,6 +341,7 @@
           { type: 'text', label: 'Text', prop: 'body' }
         ]).map(function (t) {
           return Object.assign({}, t, {
+            label: labelForItemIndex(t.label, activeIdx),
             key: list.listKey === '__servicesRoot'
               ? ('services.' + activeIdx + '.' + t.prop)
               : ('sections.' + sectionKey + '.' + list.listKey + '.' + activeIdx + '.' + t.prop)
@@ -337,7 +361,10 @@
       fields.forEach(function (f) {
         var prop = f._prop || f.prop || String(f.key || '').split('.').pop();
         var val = it[prop];
-        panel += renderField(Object.assign({}, f, { key: prop }), val, 'data-mp-item');
+        panel += renderField(Object.assign({}, f, {
+          key: prop,
+          label: labelForItemIndex(f.label, activeIdx)
+        }), val, 'data-mp-item');
       });
       panel += '</div></div>';
 

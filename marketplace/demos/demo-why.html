@@ -6,9 +6,17 @@
 <link rel="stylesheet" href="./demo-shared.css">
 <script src="https://www.leadpages.com.au/icons.js"></script>
 <style>
-html.mp-demo-embed, html.mp-demo-embed body{margin:0;padding:0;min-height:0!important;height:auto!important;background:transparent;overflow:hidden}
+html.mp-demo-embed, html.mp-demo-embed body{
+  margin:0;padding:0;min-height:0!important;height:auto!important;
+  background:transparent;overflow:hidden;
+}
 html.mp-demo-embed main#top{margin:0;padding:0;min-height:0}
-html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:none!important}
+html.mp-demo-embed .lp-a11y-root,
+html.mp-demo-embed #lp-visitor-a11y{display:none!important}
+html.mp-demo-embed section[data-sec="why"]{
+  display:block!important;
+  padding:28px 0 36px;
+}
 </style>
 </head>
 <body>
@@ -17,17 +25,57 @@ html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:non
 <div class="wrap">
       <span class="eyebrow">Why {{businessName}}</span>
       <h2>No call-out games. No surprise bills.</h2>
-      <div class="why-grid">
-        <div class="why-item"><div class="n">01</div><h3>Upfront pricing</h3><p>A fixed price agreed before we start. The number we quote is the number you pay.</p></div>
-        <div class="why-item"><div class="n">24/7</div><h3>Real emergencies</h3><p>Burst pipe at midnight? We answer the phone and get someone moving, day or night.</p></div>
-        <div class="why-item"><div class="n">★</div><h3>Properly licensed</h3><p>Fully licensed ACT plumbers, fully insured. Licence details on every invoice.</p></div>
-        <div class="why-item"><div class="n">⌂</div><h3>Local &amp; trusted</h3><p>Canberra-based, Canberra-owned. We know the suburbs, the soil and the old pipework.</p></div>
-      </div>
+      <div class="why-grid"></div>
     </div>
 </section>
 </main>
 <script>
-var SITE_CONFIG = {"theme":{"pipe":"#1f7bb8"},"business":"Ace Plumbing Co.","trade":"plumber","phone":"0261000000","sections":{"why":{"on":true,"eyebrow":"Why {{businessName}}","heading":"No call-out games. No surprise bills.","items":[{"icon":"shield-check","title":"Upfront pricing","body":"Fixed quotes before we start — no hidden charges, ever."},{"icon":"clock","title":"On time, every time","body":"We respect your schedule and always call ahead if running late."},{"icon":"star","title":"5-star rated","body":"Over 200 Google reviews from happy customers across the ACT."},{"icon":"award","title":"15+ years experience","body":"Trusted by Canberra homeowners and businesses since 2009."}]}}};
+var SITE_CONFIG = {
+  "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+  "business": "Ace Plumbing Co.",
+  "trade": "plumber",
+  "phone": "0261000000",
+  "sections": {
+    "why": {
+      "on": true,
+      "eyebrow": "Why {{businessName}}",
+      "heading": "No call-out games. No surprise bills.",
+      "iconAlign": "left",
+      "iconSize": "standard",
+      "iconColor": "#ff6a1f",
+      "items": [
+        {
+          "on": true,
+          "icon": "dollar-sign",
+          "n": "01",
+          "title": "Upfront pricing",
+          "body": "A fixed price agreed before we start. The number we quote is the number you pay."
+        },
+        {
+          "on": true,
+          "icon": "clock",
+          "n": "24/7",
+          "title": "Real emergencies",
+          "body": "Burst pipe at midnight? We answer the phone and get someone moving, day or night."
+        },
+        {
+          "on": true,
+          "icon": "shield-check",
+          "n": "★",
+          "title": "Properly licensed",
+          "body": "Fully licensed ACT plumbers, fully insured. Licence details on every invoice."
+        },
+        {
+          "on": true,
+          "icon": "home",
+          "n": "⌂",
+          "title": "Local & trusted",
+          "body": "Canberra-based, Canberra-owned. We know the suburbs, the soil and the old pipework."
+        }
+      ]
+    }
+  }
+};
 </script>
 <script src="./demo-shared.js"></script>
 </body>

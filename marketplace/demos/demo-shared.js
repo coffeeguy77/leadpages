@@ -653,19 +653,31 @@ function applyCfg(C){
     try{ ['navMenu','beforeAfter','responseCards','projectStats','serviceAreas','reviewHighlights','featuredProjects','premiumGallery','featureStrip','specialOffer','heroBeforeAfter','heroSlider','splitHero','activityCounter','proofStream','projectFeed','jobsFeed','beforeAfterFeed','videoReels','activityTimeline','customerReactions','textBox','seoText','onlineQuote'].forEach(function(__id){ var __n=document.querySelector('[data-sec="'+__id+'"]'); if(!__n) return; if(SEC[__id] && SEC[__id].on===true){ __n.style.display='block'; } else { __n.style.display='none'; } }); }catch(e){}
       (function(){ var SEC=C.sections||{}; function lpIcon(v){ if(v==null) return ''; v=String(v); if(/^[a-z0-9-]+$/.test(v)){ var _i=(window.LP_ICONS&&window.LP_ICONS[v]); if(_i) return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+_i+'</svg>'; } return esc(v); }
       function rlist(sel,items,fn){ var box=document.querySelector(sel); if(!box||!Array.isArray(items)) return; box.innerHTML=items.filter(function(it){return it&&it.on!==false;}).map(fn).join(''); }
-      var nmEl=document.querySelector('a.brand .nm'); var _SCb=(typeof SITE_CONFIG!=='undefined'&&SITE_CONFIG)||{}; var BIZ=(_SCb.business||_SCb.name||_SCb.business_name||_SCb.businessName||(nmEl&&nmEl.textContent.trim())||'');
+      var nmEl=document.querySelector('a.brand .nm'); var _SCb=(typeof SITE_CONFIG!=='undefined'&&SITE_CONFIG)||{}; var BIZ=(C.business||C.name||C.business_name||C.businessName||_SCb.business||_SCb.name||_SCb.business_name||_SCb.businessName||(nmEl&&nmEl.textContent.trim())||'');
       function tok(s){ return String(s==null?'':s).replace(/\{\{\s*businessName\s*\}\}/g,BIZ); }
       if(SEC.hero&&Array.isArray(SEC.hero.badges)) rlist('.badges',SEC.hero.badges,function(b){return '<div class="badge"><span class="b-ic">'+lpIcon(b.icon)+'</span>'+esc(b.text||'')+'</div>';});
       if(SEC.why&&Array.isArray(SEC.why.items)){
         var _whyAl=((SEC.why.iconAlign==='center'||SEC.why.iconAlign==='right')?SEC.why.iconAlign:'left');
-        rlist('.why-grid',SEC.why.items,function(w){return '<div class="why-item align-'+_whyAl+'">'+(w.icon?'<div class="wic">'+lpIcon(w.icon)+'</div>':'<div class="n">'+esc(w.n||'')+'</div>')+'<h3>'+esc(w.title||'')+'</h3><p>'+esc(w.body||'')+'</p></div>';});
+        rlist('.why-grid',SEC.why.items,function(w){
+          var _ic=(w.icon!=null?String(w.icon).trim():'');
+          var _media=_ic?('<div class="wic">'+lpIcon(_ic)+'</div>'):('<div class="n">'+esc(w.n||'')+'</div>');
+          return '<div class="why-item align-'+_whyAl+'">'+_media+'<h3>'+esc(w.title||'')+'</h3><p>'+esc(w.body||'')+'</p></div>';
+        });
       }
       (function(){
         var WY=SEC.why||{}; var whyNode=document.querySelector('[data-sec="why"]'); if(!whyNode) return;
         function _whyHex(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; }
         function _whySet(name,val){ if(val) whyNode.style.setProperty(name,val); else whyNode.style.removeProperty(name); }
         var bg=_whyHex(WY.bg); if(bg){ _whySet('--why-bg',bg); whyNode.style.background=bg; } else { whyNode.style.removeProperty('--why-bg'); whyNode.style.background=''; }
-        _whySet('--why-eyebrow', _whyHex(WY.eyebrowColor)); try{ var _wyEb=whyNode.querySelector('.eyebrow'); if(_wyEb){ var _wyEc=_whyHex(WY.eyebrowColor); if(_wyEc){ _wyEb.style.color=_wyEc; } else { _wyEb.style.removeProperty('color'); } } }catch(_e){}
+        _whySet('--why-eyebrow', _whyHex(WY.eyebrowColor));
+        try{
+          var _wyEb=whyNode.querySelector('.eyebrow');
+          if(_wyEb){
+            if(WY.eyebrow!=null) _wyEb.textContent=tok(WY.eyebrow);
+            var _wyEc=_whyHex(WY.eyebrowColor); if(_wyEc){ _wyEb.style.color=_wyEc; } else { _wyEb.style.removeProperty('color'); }
+          }
+          var _wyH=whyNode.querySelector('h2'); if(_wyH&&WY.heading!=null) _wyH.textContent=tok(WY.heading);
+        }catch(_e){}
         _whySet('--why-headline', _whyHex(WY.titleColor));
         _whySet('--why-heading', _whyHex(WY.headingColor));
         _whySet('--why-text', _whyHex(WY.textColor));
