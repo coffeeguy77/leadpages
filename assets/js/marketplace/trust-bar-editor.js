@@ -274,9 +274,21 @@
         md.value = tb().mode === 'images' ? 'images' : 'badges';
         md.addEventListener('change', function () {
           tb().mode = md.value;
+          if (md.value === 'images') {
+            // Make sure each tile has fit/pos defaults when switching from badges.
+            (tb().badges || []).forEach(function (b) {
+              if (!b || typeof b !== 'object') return;
+              if (!b.imageFit) b.imageFit = 'cover';
+              if (!b.imagePos) b.imagePos = 'center';
+              if (b.image == null) b.image = '';
+            });
+          }
           syncModeUi();
           drawItems();
-          emit('Layout changed to ' + (md.value === 'images' ? 'image tiles' : 'text and icons'));
+          var msg = md.value === 'images'
+            ? 'Image tiles — pick an image for each item'
+            : 'Layout changed to text and icons';
+          emit(msg);
         });
       }
 

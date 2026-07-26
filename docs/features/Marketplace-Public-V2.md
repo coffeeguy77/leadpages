@@ -20,7 +20,7 @@ Trust Bar V2 (`?v2=1`) follows the same pattern via `marketplace-feature-v2.js`.
 
 ### Local image override (no upload)
 
-In marketplace playground mode, image tiles can use **Choose image** to override a sample with a file from the visitor’s device. The file is read as a data URL in the browser only — nothing is uploaded, stored, or visible to anyone else. **Restore sample** returns the preset image. Resetting the example also restores the published sample.
+In marketplace playground mode, image tiles can use **Choose image** / **Replace image** to override a sample with a file from the visitor’s device. The control uses a native `<label for>` → file input (not a programmatic click on a hidden input) so it works on iOS Safari / iPad. Large photos are shrunk in-browser to a data URL — nothing is uploaded, stored, or visible to anyone else. **Restore sample** returns the preset image. Resetting the example also restores the published sample.
 
 ## Feature flags
 

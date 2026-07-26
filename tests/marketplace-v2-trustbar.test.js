@@ -201,9 +201,17 @@ describe('public marketplace theme + copy safety', () => {
 
   it('playground supports local image override without upload', () => {
     const loc = fs.readFileSync(path.join(root, 'assets/js/marketplace/lp-local-image.js'), 'utf8');
-    assert.match(loc, /readAsDataURL/);
-    assert.match(loc, /Local only|Only on your screen/);
+    assert.match(loc, /readAsDataURL|toDataURL/);
+    assert.match(loc, /On your screen only|Local only|Only on your screen/);
+    // Native label→file input (required for iOS / iPad). Never rely on
+    // programmatic .click() of a [hidden] file input.
+    assert.match(loc, /<label class="btn ghost sm lp-locimg-choose" for="/);
+    assert.match(loc, /<label class="lp-locimg-prev/);
+    assert.doesNotMatch(loc, /fileInp\.click\(|openFilePicker/);
     assert.doesNotMatch(loc, /cloudinary|cwUpload|FormData/i);
+    const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/lp-local-image.css'), 'utf8');
+    assert.match(css, /clip-path:\s*inset\(50%\)/);
+    assert.doesNotMatch(css, /\.lp-locimg-file[^{]*\{[^}]*display:\s*none/i);
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /lp-local-image\.js/);
     const editor = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.js'), 'utf8');
