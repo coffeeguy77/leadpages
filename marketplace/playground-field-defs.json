@@ -1653,6 +1653,21 @@
       "label": "Intro"
     },
     {
+      "type": "number",
+      "key": "sections.instaGallery.count",
+      "label": "Posts to show"
+    },
+    {
+      "type": "number",
+      "key": "sections.instaGallery.columns",
+      "label": "Columns (2–5)"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.instaGallery.openInstagram",
+      "label": "Tiles open Instagram"
+    },
+    {
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"

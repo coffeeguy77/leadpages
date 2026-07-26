@@ -3,28 +3,211 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Instagram Gallery — Bean Culture demo</title>
 <link rel="stylesheet" href="./demo-shared.css">
 <script src="https://www.leadpages.com.au/icons.js"></script>
 <style>
 html.mp-demo-embed, html.mp-demo-embed body{margin:0;padding:0;min-height:0!important;height:auto!important;background:transparent;overflow:hidden}
 html.mp-demo-embed main#top{margin:0;padding:0;min-height:0}
 html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:none!important}
+/* Marketplace playground forces section visible while media loads */
+html.mp-demo-embed section[data-sec="instaGallery"]{display:block!important;padding:28px 0 36px}
+html.mp-demo-embed .mp-ig-demo-note{margin:10px 0 0;font-size:12px;color:#5b6878;font-family:"Barlow",system-ui,sans-serif}
 </style>
 </head>
 <body>
 <main id="top">
 <section data-sec="instaGallery" class="section">
 <div class="wrap">
-      <div class="section-head"><span class="eyebrow">Instagram</span><h2 class="ig-title">Follow us on Instagram</h2><p class="ig-sub"></p></div>
-      <div class="ig-grid" role="list"></div>
-      <div class="ig-follow"></div>
-    </div>
+  <div class="section-head">
+    <span class="eyebrow">Instagram</span>
+    <h2 class="ig-title">Follow us on Instagram</h2>
+    <p class="ig-sub">Live grid from Bean Culture’s connected Instagram — same connection used on beanculture.com.au.</p>
+  </div>
+  <div class="ig-grid" role="list"></div>
+  <div class="ig-follow"></div>
+  <p class="mp-ig-demo-note" data-ig-note hidden></p>
+</div>
 </section>
 </main>
 
 <script>
-var SITE_CONFIG = {"theme":{"pipe":"#1f7bb8"},"business":"Ace Plumbing Co.","trade":"plumber","phone":"0261000000","sections":{"instaGallery":{"on":true,"eyebrow":"Instagram","heading":"Follow us on Instagram","intro":"","count":8,"columns":4}}};
+var SITE_CONFIG = {
+  "slug": "beanculture",
+  "theme": { "pipe": "#1f7bb8", "hivis": "#c45c26" },
+  "business": "Bean Culture",
+  "trade": "coffee",
+  "phone": "0261000000",
+  "sections": {
+    "instaGallery": {
+      "on": true,
+      "eyebrow": "Instagram",
+      "heading": "Follow us on Instagram",
+      "intro": "Live grid from Bean Culture’s connected Instagram — same connection used on beanculture.com.au.",
+      "count": 8,
+      "columns": 4,
+      "openInstagram": true
+    }
+  }
+};
 </script>
 <script src="./demo-shared.js"></script>
+<script>
+/* Marketplace Instagram Gallery — uses Bean Culture ig_connections via /api/ig-media */
+(function () {
+  var MEDIA = null;
+  var USER = null;
+  var FETCHING = false;
+  var BOUND = false;
+  var USING_FALLBACK = false;
+  var SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.17 15.74 2.16 15.36 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16zm0-2.16C8.74 0 8.333.01 7.052.07 5.775.13 4.904.33 4.14.63c-.806.313-1.49.73-2.17 1.41C1.3 2.72.883 3.404.57 4.21c-.3.764-.5 1.635-.56 2.912C-.01 8.333 0 8.74 0 12c0 3.26.01 3.667.07 4.948.06 1.277.26 2.148.56 2.912.313.806.73 1.49 1.4 2.16.67.67 1.354 1.087 2.16 1.4.764.3 1.635.5 2.912.56C8.333 23.99 8.74 24 12 24s3.667-.01 4.948-.07c1.277-.06 2.148-.26 2.912-.56.806-.313 1.49-.73 2.16-1.4.67-.67 1.087-1.354 1.4-2.16.3-.764.5-1.635.56-2.912C23.99 15.667 24 15.26 24 12s-.01-3.667-.07-4.948c-.06-1.277-.26-2.148-.56-2.912-.313-.806-.73-1.49-1.4-2.16-.67-.67-1.354-1.087-2.16-1.4-.764-.3-1.635-.5-2.912-.56C15.667.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.41-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>';
+
+  /* Sample tiles if Bean Culture connection is unavailable in this environment */
+  var FALLBACK = [
+    { image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=600&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Fresh pour' },
+    { image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&h=600&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Morning brew' },
+    { image: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=600&h=600&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Cafe counter' },
+    { image: 'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=600&h=600&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Latte art' },
+    { image: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?w=600&h=600&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Beans' },
+    { image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&h=600&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Espresso' },
+    { image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&h=600&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Iced coffee' },
+    { image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&h=600&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Coffee cart' }
+  ];
+
+  function _e(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function paint(node, sec) {
+    if (!node || !MEDIA || !MEDIA.length) return;
+    var count = parseInt(sec.count, 10);
+    count = isNaN(count) ? 8 : Math.max(3, Math.min(24, count));
+    var cols = parseInt(sec.columns, 10);
+    cols = isNaN(cols) ? 4 : Math.max(2, Math.min(5, cols));
+    node.style.setProperty('--ig-cols', String(cols));
+    var eb = node.querySelector('.eyebrow');
+    if (eb && sec.eyebrow != null) eb.textContent = sec.eyebrow;
+    var h2 = node.querySelector('.ig-title') || node.querySelector('h2');
+    if (h2 && sec.heading != null) h2.textContent = sec.heading;
+    var sub = node.querySelector('.ig-sub') || node.querySelector('.section-head p');
+    if (sub && sec.intro != null) sub.textContent = sec.intro;
+    var grid = node.querySelector('.ig-grid');
+    var out = '';
+    var slice = MEDIA.slice(0, count);
+    for (var i = 0; i < slice.length; i++) {
+      var m = slice[i] || {};
+      var img = m.image || '';
+      var link = m.link || '#';
+      var cap = m.caption || 'Instagram post';
+      if (!img) continue;
+      var _lk = sec.openInstagram === true;
+      out += (_lk
+        ? ('<a class="ig-tile" role="listitem" href="' + _e(link) + '" target="_blank" rel="noopener noreferrer" aria-label="' + _e(cap) + '">')
+        : ('<div class="ig-tile ig-tile--static" role="listitem" aria-label="' + _e(cap) + '">'))
+        + '<img loading="lazy" src="' + _e(img) + '" alt="' + _e(cap) + '">'
+        + (_lk ? '</a>' : '</div>');
+    }
+    if (grid) grid.innerHTML = out;
+    var follow = node.querySelector('.ig-follow');
+    if (follow) {
+      var href = USER
+        ? ('https://www.instagram.com/' + encodeURIComponent(USER))
+        : ((MEDIA[0] && MEDIA[0].link) ? MEDIA[0].link : 'https://www.instagram.com/');
+      follow.innerHTML = '<a class="ig-follow-btn" href="' + _e(href) + '" target="_blank" rel="noopener noreferrer">' + SVG + 'View on Instagram</a>';
+    }
+    var note = node.querySelector('[data-ig-note]');
+    if (note) {
+      if (USING_FALLBACK) {
+        note.hidden = false;
+        note.textContent = 'Demo preview — Bean Culture connection unavailable here, showing sample cafe photos.';
+      } else {
+        note.hidden = true;
+        note.textContent = '';
+      }
+    }
+    node.style.setProperty('display', 'block', 'important');
+  }
+
+  function useFallback(node, sec) {
+    MEDIA = FALLBACK.slice();
+    USER = null;
+    USING_FALLBACK = true;
+    paint(node, sec);
+  }
+
+  function run(cfg) {
+    try {
+      cfg = cfg || (typeof SITE_CONFIG !== 'undefined' ? SITE_CONFIG : {});
+      var node = document.querySelector('[data-sec="instaGallery"]');
+      if (!node) return;
+      var sec = (cfg.sections && cfg.sections.instaGallery) || {};
+      if (sec.on === false) {
+        node.style.setProperty('display', 'none', 'important');
+        return;
+      }
+      /* Always prefer Bean Culture’s connected Instagram for this marketplace demo */
+      var slug = cfg.slug || (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.slug) || 'beanculture';
+      if (!slug) slug = 'beanculture';
+      if (MEDIA) {
+        paint(node, sec);
+        return;
+      }
+      if (FETCHING) return;
+      FETCHING = true;
+      fetch('/api/ig-media?slug=' + encodeURIComponent(slug) + '&limit=24')
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          FETCHING = false;
+          if (j && j.connected && j.media && j.media.length) {
+            MEDIA = j.media;
+            USER = j.username || null;
+            USING_FALLBACK = false;
+            paint(node, sec);
+          } else {
+            useFallback(node, sec);
+          }
+        })
+        .catch(function () {
+          FETCHING = false;
+          useFallback(node, sec);
+        });
+    } catch (e) {}
+  }
+
+  function bind() {
+    if (BOUND) return;
+    try {
+      var o = window.__applyTradeConfig;
+      if (typeof o === 'function' && !o.__igWrapped) {
+        var w = function (cfg) {
+          var r;
+          try { r = o.apply(this, arguments); } catch (e) {}
+          try { run(cfg); } catch (e2) {}
+          return r;
+        };
+        w.__igWrapped = true;
+        window.__applyTradeConfig = w;
+        BOUND = true;
+      }
+    } catch (e) {}
+  }
+
+  if (document.readyState !== 'loading') {
+    run();
+    bind();
+  } else {
+    document.addEventListener('DOMContentLoaded', function () {
+      run();
+      bind();
+    });
+  }
+  setTimeout(bind, 0);
+  setTimeout(bind, 600);
+})();
+</script>
 </body>
 </html>

@@ -1277,21 +1277,21 @@
     "name": "Instagram Gallery",
     "tagline": "Grid of Instagram posts on your site",
     "summary": "Embed your Instagram grid without manual image uploads.",
-    "hero_image_url": "https://images.unsplash.com/photo-1611162617474-5b21e939e113?w=1400&h=560&fit=crop&q=80",
+    "hero_image_url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Instagram Gallery",
-          "text": "Pulls from connected Instagram or manual grid — eyebrow, heading, post count and column layout. Keeps the site fresh with social content."
+          "text": "Pulls from a connected Instagram account — the marketplace demo uses Bean Culture’s live connection (beanculture.com.au). Eyebrow, heading, post count and column layout keep the site fresh with social content."
         }
       },
       {
         "block_type": "image",
         "payload": {
-          "url": "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=1200&h=720&fit=crop&q=80",
-          "alt": "Instagram gallery grid",
-          "caption": "Live Instagram grid embedded on the trade site."
+          "url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1200&h=720&fit=crop&q=80",
+          "alt": "Bean Culture style Instagram gallery",
+          "caption": "Live Instagram grid — marketplace demo powered by Bean Culture’s connection."
         }
       },
       {

@@ -344,6 +344,35 @@ describe('marketplace catalog resolve', () => {
     assert.match(resolved.feature.hero_image_url, /photo-1495474472287-4d71bcdd2085/);
   });
 
+  it('instaGallery marketplace demo uses Bean Culture Instagram connection', () => {
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-instaGallery.html'), 'utf8');
+    assert.match(demo, /"slug"\s*:\s*"beanculture"/);
+    assert.match(demo, /\/api\/ig-media\?slug=/);
+    assert.match(demo, /beanculture/);
+    assert.match(demo, /FALLBACK|useFallback/);
+    assert.match(demo, /Follow us on Instagram/);
+    assert.match(demo, /__igWrapped|__applyTradeConfig/);
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    assert.equal(defaults.instaGallery.slug, 'beanculture');
+    assert.equal(defaults.instaGallery.business, 'Bean Culture');
+    assert.match(defaults.instaGallery.instaGallery.intro || '', /Bean Culture/i);
+
+    const sell = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/sell-templates.json'), 'utf8'));
+    assert.ok(sell.instaGallery.hero_image_url);
+    assert.match(sell.instaGallery.hero_image_url, /^https:\/\//);
+
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.instaGallery.some((f) => f.key === 'sections.instaGallery.count'));
+    assert.ok(defs.instaGallery.some((f) => f.key === 'sections.instaGallery.columns'));
+
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /flat\.slug && !cfg\.slug/);
+
+    const sites = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/demo-sites.json'), 'utf8'));
+    assert.ok(sites.sites.beanculture.apps.includes('instaGallery'));
+  });
+
   it('catalog API uses resolve helper', () => {
     const api = fs.readFileSync(path.join(root, 'api/catalog.js'), 'utf8');
     assert.match(api, /marketplace-catalog-resolve/);
