@@ -74,6 +74,43 @@ describe('marketplace compact editor parity', () => {
     assert.match(compact, /withAppearanceDefs/);
   });
 
+  it('quote demo restores steel gradient and form editing fields', () => {
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-quote.html'), 'utf8');
+    assert.match(demo, /class="quote"/);
+    assert.match(demo, /data-sec="quote"/);
+    assert.match(demo, /"formTitle"\s*:\s*"Get my quote"/);
+    assert.match(demo, /"jobOptions"\s*:\s*\[/);
+    assert.match(demo, /"formStyle"\s*:\s*"default"/);
+
+    const css = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.css'), 'utf8');
+    assert.match(css, /\.quote\{[^}]*linear-gradient/);
+
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    const keys = (defs.quote || []).map((f) => f.key);
+    [
+      'sections.quote.eyebrow',
+      'sections.quote.heading',
+      'sections.quote.sub',
+      'sections.quote.formTitle',
+      'sections.quote.button',
+      'sections.quote.formStyle',
+      'sections.quote.lblName',
+      'sections.quote.lblJob',
+      'sections.quote.jobOptions.0.text',
+      'sections.quote.points.0.text',
+      'sections.quote.btnBg'
+    ].forEach((k) => assert.ok(keys.includes(k), 'missing ' + k));
+    assert.ok(!keys.includes('sections.quote.intro'));
+
+    const shared = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+    assert.match(shared, /Q\.eyebrow\s*!=\s*null/);
+    assert.match(shared, /Q\.heading\s*!=\s*null/);
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    assert.equal(defaults.quote.quote.formStyle, 'default');
+    assert.ok(defaults.quote.quote.jobOptions.length >= 3);
+  });
+
   it('activityTimeline demo and editor cover timeline events', () => {
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-activityTimeline.html'), 'utf8');
     assert.match(demo, /"events"\s*:\s*\[/);
