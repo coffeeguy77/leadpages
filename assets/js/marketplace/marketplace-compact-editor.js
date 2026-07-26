@@ -87,11 +87,6 @@
     var n = (parseInt(idx, 10) || 0) + 1;
     return String(label || '').replace(
       /^(Step|Card|Item|Feature|Stat|Slide|Badge|Review|Event|Member|Service|Project|Reel|Point)\s+\d+/i,
-  /** Rewrite "Step 1 title" → "Step 6 title" when editing item N via the shared template. */
-  function labelForItemIndex(label, idx) {
-    var n = (parseInt(idx, 10) || 0) + 1;
-    return String(label || '').replace(
-      /^(Step|Card|Item|Feature|Stat|Slide|Badge|Review|Event|Member|Service|Project|Reel)\s+\d+/i,
       function (_, word) { return word + ' ' + n; }
     );
   }
@@ -115,8 +110,6 @@
         itemFieldsByIndex[idx].push(Object.assign({}, f, { _prop: prop, _index: idx }));
         if (!seenTemplate[prop]) {
           seenTemplate[prop] = true;
-
-          // Store a neutral label pattern so fallbacks can renumber per active item.
           itemFieldTemplate.push({
             type: f.type,
             label: labelForItemIndex(f.label, 0),
