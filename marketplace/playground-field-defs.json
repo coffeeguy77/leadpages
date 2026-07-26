@@ -243,13 +243,138 @@
   "services": [
     {
       "type": "text",
+      "key": "sections.services.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.services.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.services.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "icon",
+      "key": "services.0.icon",
+      "label": "Service 1 icon"
+    },
+    {
+      "type": "text",
       "key": "services.0.title",
       "label": "Service 1 title"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "services.0.body",
       "label": "Service 1 description"
+    },
+    {
+      "type": "image",
+      "key": "services.0.image",
+      "label": "Service 1 image"
+    },
+    {
+      "type": "color",
+      "key": "services.0.bg",
+      "label": "Service 1 card background"
+    },
+    {
+      "type": "color",
+      "key": "services.0.stroke",
+      "label": "Service 1 stroke"
+    },
+    {
+      "type": "color",
+      "key": "services.0.titleColor",
+      "label": "Service 1 title colour"
+    },
+    {
+      "type": "color",
+      "key": "services.0.color",
+      "label": "Service 1 font colour"
+    },
+    {
+      "type": "select",
+      "key": "services.0.mediaAlign",
+      "label": "Service 1 icon position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Centre"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "services.0.imageFit",
+      "label": "Service 1 image fit",
+      "options": [
+        {
+          "value": "contain",
+          "label": "Contain (fit, no crop)"
+        },
+        {
+          "value": "cover",
+          "label": "Cover (fill & crop)"
+        },
+        {
+          "value": "fill",
+          "label": "Fill (stretch)"
+        },
+        {
+          "value": "stretch",
+          "label": "Stretch"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "services.0.mediaSize",
+      "label": "Service 1 icon size",
+      "options": [
+        {
+          "value": "compact",
+          "label": "Compact 56"
+        },
+        {
+          "value": "standard",
+          "label": "Standard 80"
+        },
+        {
+          "value": "large",
+          "label": "Large 120"
+        },
+        {
+          "value": "hero",
+          "label": "Hero 180"
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "services.0.mediaScale",
+      "label": "Service 1 icon scale %"
+    },
+    {
+      "type": "number",
+      "key": "services.0.bgOpacity",
+      "label": "Service 1 background opacity %"
+    },
+    {
+      "type": "icon",
+      "key": "services.1.icon",
+      "label": "Service 2 icon"
     },
     {
       "type": "text",
@@ -257,9 +382,114 @@
       "label": "Service 2 title"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "services.1.body",
       "label": "Service 2 description"
+    },
+    {
+      "type": "image",
+      "key": "services.1.image",
+      "label": "Service 2 image"
+    },
+    {
+      "type": "color",
+      "key": "services.1.bg",
+      "label": "Service 2 card background"
+    },
+    {
+      "type": "color",
+      "key": "services.1.stroke",
+      "label": "Service 2 stroke"
+    },
+    {
+      "type": "color",
+      "key": "services.1.titleColor",
+      "label": "Service 2 title colour"
+    },
+    {
+      "type": "color",
+      "key": "services.1.color",
+      "label": "Service 2 font colour"
+    },
+    {
+      "type": "select",
+      "key": "services.1.mediaAlign",
+      "label": "Service 2 icon position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Centre"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "services.1.imageFit",
+      "label": "Service 2 image fit",
+      "options": [
+        {
+          "value": "contain",
+          "label": "Contain (fit, no crop)"
+        },
+        {
+          "value": "cover",
+          "label": "Cover (fill & crop)"
+        },
+        {
+          "value": "fill",
+          "label": "Fill (stretch)"
+        },
+        {
+          "value": "stretch",
+          "label": "Stretch"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "services.1.mediaSize",
+      "label": "Service 2 icon size",
+      "options": [
+        {
+          "value": "compact",
+          "label": "Compact 56"
+        },
+        {
+          "value": "standard",
+          "label": "Standard 80"
+        },
+        {
+          "value": "large",
+          "label": "Large 120"
+        },
+        {
+          "value": "hero",
+          "label": "Hero 180"
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "services.1.mediaScale",
+      "label": "Service 2 icon scale %"
+    },
+    {
+      "type": "number",
+      "key": "services.1.bgOpacity",
+      "label": "Service 2 background opacity %"
+    },
+    {
+      "type": "icon",
+      "key": "services.2.icon",
+      "label": "Service 3 icon"
     },
     {
       "type": "text",
@@ -267,9 +497,114 @@
       "label": "Service 3 title"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "services.2.body",
       "label": "Service 3 description"
+    },
+    {
+      "type": "image",
+      "key": "services.2.image",
+      "label": "Service 3 image"
+    },
+    {
+      "type": "color",
+      "key": "services.2.bg",
+      "label": "Service 3 card background"
+    },
+    {
+      "type": "color",
+      "key": "services.2.stroke",
+      "label": "Service 3 stroke"
+    },
+    {
+      "type": "color",
+      "key": "services.2.titleColor",
+      "label": "Service 3 title colour"
+    },
+    {
+      "type": "color",
+      "key": "services.2.color",
+      "label": "Service 3 font colour"
+    },
+    {
+      "type": "select",
+      "key": "services.2.mediaAlign",
+      "label": "Service 3 icon position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Centre"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "services.2.imageFit",
+      "label": "Service 3 image fit",
+      "options": [
+        {
+          "value": "contain",
+          "label": "Contain (fit, no crop)"
+        },
+        {
+          "value": "cover",
+          "label": "Cover (fill & crop)"
+        },
+        {
+          "value": "fill",
+          "label": "Fill (stretch)"
+        },
+        {
+          "value": "stretch",
+          "label": "Stretch"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "services.2.mediaSize",
+      "label": "Service 3 icon size",
+      "options": [
+        {
+          "value": "compact",
+          "label": "Compact 56"
+        },
+        {
+          "value": "standard",
+          "label": "Standard 80"
+        },
+        {
+          "value": "large",
+          "label": "Large 120"
+        },
+        {
+          "value": "hero",
+          "label": "Hero 180"
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "services.2.mediaScale",
+      "label": "Service 3 icon scale %"
+    },
+    {
+      "type": "number",
+      "key": "services.2.bgOpacity",
+      "label": "Service 3 background opacity %"
+    },
+    {
+      "type": "icon",
+      "key": "services.3.icon",
+      "label": "Service 4 icon"
     },
     {
       "type": "text",
@@ -277,9 +612,124 @@
       "label": "Service 4 title"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "services.3.body",
       "label": "Service 4 description"
+    },
+    {
+      "type": "image",
+      "key": "services.3.image",
+      "label": "Service 4 image"
+    },
+    {
+      "type": "color",
+      "key": "services.3.bg",
+      "label": "Service 4 card background"
+    },
+    {
+      "type": "color",
+      "key": "services.3.stroke",
+      "label": "Service 4 stroke"
+    },
+    {
+      "type": "color",
+      "key": "services.3.titleColor",
+      "label": "Service 4 title colour"
+    },
+    {
+      "type": "color",
+      "key": "services.3.color",
+      "label": "Service 4 font colour"
+    },
+    {
+      "type": "select",
+      "key": "services.3.mediaAlign",
+      "label": "Service 4 icon position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Centre"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "services.3.imageFit",
+      "label": "Service 4 image fit",
+      "options": [
+        {
+          "value": "contain",
+          "label": "Contain (fit, no crop)"
+        },
+        {
+          "value": "cover",
+          "label": "Cover (fill & crop)"
+        },
+        {
+          "value": "fill",
+          "label": "Fill (stretch)"
+        },
+        {
+          "value": "stretch",
+          "label": "Stretch"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "services.3.mediaSize",
+      "label": "Service 4 icon size",
+      "options": [
+        {
+          "value": "compact",
+          "label": "Compact 56"
+        },
+        {
+          "value": "standard",
+          "label": "Standard 80"
+        },
+        {
+          "value": "large",
+          "label": "Large 120"
+        },
+        {
+          "value": "hero",
+          "label": "Hero 180"
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "services.3.mediaScale",
+      "label": "Service 4 icon scale %"
+    },
+    {
+      "type": "number",
+      "key": "services.3.bgOpacity",
+      "label": "Service 4 background opacity %"
+    },
+    {
+      "type": "color",
+      "key": "sections.services.eyebrowColor",
+      "label": "Eyebrow colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.services.titleColor",
+      "label": "Heading colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.services.introColor",
+      "label": "Intro colour"
     },
     {
       "type": "color",
