@@ -45,6 +45,9 @@ describe('marketplace catalog resolve', () => {
     assert.match(feat, /premiumShowcase\s*:\s*true/);
     assert.match(feat, /demo-beanCultureQuote/);
     assert.match(feat, /Talk to LeadPages/);
+    /* Relative /marketplace/demos/… URLs must pass safeUrl or the iframe never renders */
+    assert.match(feat, /u\.charAt\(0\)==='\/'/);
+    assert.match(feat, /case 'demo_embed':[\s\S]*?safeUrl\(p\.url\)/);
     assert.ok(fs.existsSync(path.join(root, 'marketplace/demos/demo-beanCultureQuote.html')));
     assert.ok(fs.existsSync(path.join(root, 'marketplace/bean-culture-quote-shell.json')));
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-beanCultureQuote.html'), 'utf8');
@@ -53,6 +56,19 @@ describe('marketplace catalog resolve', () => {
     const oq = fs.readFileSync(path.join(root, 'assets/lp-online-quote.js'), 'utf8');
     assert.match(oq, /blockSpend/);
     assert.match(oq, /loadShowcaseShell/);
+
+    /* Simulate the client safeUrl used by demo_embed rendering */
+    function safeUrl(u) {
+      u = String(u || '').trim();
+      if (!u) return '';
+      if (/^https?:\/\//i.test(u)) return u;
+      if (u.charAt(0) === '/' && u.charAt(1) !== '/' && u.indexOf('\\') < 0) return u;
+      return '';
+    }
+    assert.equal(safeUrl('/marketplace/demos/demo-beanCultureQuote.html'), '/marketplace/demos/demo-beanCultureQuote.html');
+    assert.equal(safeUrl('https://images.unsplash.com/x.jpg'), 'https://images.unsplash.com/x.jpg');
+    assert.equal(safeUrl('//evil.example/x'), '');
+    assert.equal(safeUrl('javascript:alert(1)'), '');
   });
 
   it('email-campaigns is a platform explainer with interactive demo embed', () => {
