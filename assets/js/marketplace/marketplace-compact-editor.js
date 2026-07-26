@@ -87,11 +87,6 @@
     var n = (parseInt(idx, 10) || 0) + 1;
     return String(label || '').replace(
       /^(Step|Card|Item|Feature|Stat|Slide|Badge|Review|Event|Member|Service|Project|Reel|Point)\s+\d+/i,
-  /** Rewrite "Service 1 title" → "Service 4 title" when editing via the shared template. */
-  function labelForItemIndex(label, idx) {
-    var n = (parseInt(idx, 10) || 0) + 1;
-    return String(label || '').replace(
-      /^(Step|Card|Item|Feature|Stat|Slide|Badge|Review|Event|Member|Service|Project|Reel)\s+\d+/i,
       function (_, word) { return word + ' ' + n; }
     );
   }
@@ -206,18 +201,16 @@
     var it = { on: true };
     (template || []).forEach(function (f) {
       if (f.prop === 'on') return;
-      if (f.type === 'icon') it[f.prop] = 'wrench';
+      if (f.type === 'icon') it[f.prop] = 'circle-check';
       else if (f.type === 'image') it[f.prop] = '';
       else if (f.type === 'number') {
         if (f.prop === 'bgOpacity' || f.prop === 'mediaScale' || f.prop === 'iconScale') it[f.prop] = 100;
-        if (f.prop === 'bgOpacity' || f.prop === 'mediaScale') it[f.prop] = 100;
         else it[f.prop] = '';
       } else if (f.type === 'select' && Array.isArray(f.options) && f.options.length) {
         var o0 = f.options[0];
         it[f.prop] = typeof o0 === 'string' ? o0 : o0.value;
       } else if (f.prop === 'n') it[f.prop] = '+';
       else if (f.type === 'color') it[f.prop] = '';
-      } else if (f.type === 'color') it[f.prop] = '';
       else it[f.prop] = f.prop === 'label' || f.prop === 'name' || f.prop === 'title' ? 'New item' : '';
     });
     if (!template || !template.length) {
@@ -225,7 +218,6 @@
       it.name = 'New item';
       it.title = 'New item';
       it.icon = 'circle-check';
-      it.icon = 'wrench';
     }
     return it;
   }
