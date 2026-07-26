@@ -96,6 +96,31 @@
   "reviews": [
     {
       "type": "text",
+      "key": "sections.reviews.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.reviews.heading",
+      "label": "Title"
+    },
+    {
+      "type": "color",
+      "key": "sections.reviews.starColor",
+      "label": "Star colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.reviews.cardBg",
+      "label": "Review background"
+    },
+    {
+      "type": "color",
+      "key": "sections.reviews.textColor",
+      "label": "Quote text colour"
+    },
+    {
+      "type": "text",
       "key": "sections.reviews.items.0.who",
       "label": "Reviewer 1 name"
     },
