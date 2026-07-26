@@ -183,4 +183,16 @@ describe('public marketplace theme + copy safety', () => {
     assert.match(editor, /LPIconPicker\.controlHtml/);
     assert.ok(fs.existsSync(path.join(root, 'assets/js/marketplace/lp-icon-picker.js')));
   });
+
+  it('playground supports local image override without upload', () => {
+    const loc = fs.readFileSync(path.join(root, 'assets/js/marketplace/lp-local-image.js'), 'utf8');
+    assert.match(loc, /readAsDataURL/);
+    assert.match(loc, /Only on your screen/);
+    assert.doesNotMatch(loc, /cloudinary|cwUpload|FormData/i);
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /lp-local-image\.js/);
+    const editor = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.js'), 'utf8');
+    assert.match(editor, /LPLocalImage\.controlHtml/);
+    assert.match(editor, /marketplace-playground/);
+  });
 });

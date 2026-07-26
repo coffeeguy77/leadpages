@@ -18,6 +18,10 @@ Every marketplace feature page uses a short two-part layout:
 
 Trust Bar V2 (`?v2=1`) follows the same pattern via `marketplace-feature-v2.js`. Playground icon fields use the shared LeadPages icon picker (`assets/js/marketplace/lp-icon-picker.js`).
 
+### Local image override (no upload)
+
+In marketplace playground mode, image tiles can use **Choose image** to override a sample with a file from the visitor’s device. The file is read as a data URL in the browser only — nothing is uploaded, stored, or visible to anyone else. **Restore sample** returns the preset image. Resetting the example also restores the published sample.
+
 ## Feature flags
 
 | Flag | Purpose |
