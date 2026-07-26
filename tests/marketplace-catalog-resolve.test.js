@@ -289,6 +289,13 @@ describe('marketplace catalog resolve', () => {
     assert.match(demo, /"type"\s*:\s*"seasonal"/);
     assert.match(demo, /Winter hot water special/);
     assert.match(demo, /spotsRemaining/);
+    assert.doesNotMatch(demo, /mp-promo-demo-chrome/);
+    assert.doesNotMatch(demo, />\s*Ace Plumbing Co\.\s*</);
+    const demoHero = fs.readFileSync(path.join(root, 'marketplace/demos/demo-promotionsHero.html'), 'utf8');
+    assert.doesNotMatch(demoHero, /mp-promo-demo-chrome/);
+    const demoInline = fs.readFileSync(path.join(root, 'marketplace/demos/demo-promotionsInline.html'), 'utf8');
+    assert.doesNotMatch(demoInline, /mp-promo-demo-chrome/);
+    assert.doesNotMatch(demoInline, />\s*Ace Plumbing Co\.\s*</);
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /promotions-editor\.js/);
     assert.match(feat, /LPPromotionsEditor\.mount/);
