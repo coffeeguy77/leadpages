@@ -2452,12 +2452,12 @@
           "heading": "Key features",
           "items": [
             {
-              "title": "Image optional",
-              "text": "Right or left image — or text-only full width."
+              "title": "Live Customise editor",
+              "text": "Edit eyebrow, heading, intro, body copy and optional image in the marketplace preview."
             },
             {
-              "title": "Alignment control",
-              "text": "Left or centre text alignment."
+              "title": "Image placement",
+              "text": "Beside or wrap layout, left/right side, left or centre text."
             },
             {
               "title": "Token support",

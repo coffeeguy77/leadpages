@@ -1887,6 +1887,61 @@
       "label": "Intro"
     },
     {
+      "type": "textarea",
+      "key": "sections.textBox.content",
+      "label": "Content"
+    },
+    {
+      "type": "image",
+      "key": "sections.textBox.image",
+      "label": "Image"
+    },
+    {
+      "type": "select",
+      "key": "sections.textBox.imageLayout",
+      "label": "Image layout",
+      "options": [
+        {
+          "value": "beside",
+          "label": "Beside the text (columns)"
+        },
+        {
+          "value": "wrap",
+          "label": "Wrap — text flows around it"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.textBox.imageSide",
+      "label": "Image side",
+      "options": [
+        {
+          "value": "right",
+          "label": "Right of text"
+        },
+        {
+          "value": "left",
+          "label": "Left of text"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.textBox.textAlign",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Centre"
+        }
+      ]
+    },
+    {
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"

@@ -6,9 +6,23 @@
 <link rel="stylesheet" href="./demo-shared.css">
 <script src="https://www.leadpages.com.au/icons.js"></script>
 <style>
-html.mp-demo-embed, html.mp-demo-embed body{margin:0;padding:0;min-height:0!important;height:auto!important;background:transparent;overflow:hidden}
-html.mp-demo-embed main#top{margin:0;padding:0;min-height:0}
-html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:none!important}
+html.mp-demo-embed, html.mp-demo-embed body{
+  margin:0;padding:0;min-height:0!important;height:auto!important;
+  background:var(--light,#eef2f6)!important;overflow:hidden;
+}
+html.mp-demo-embed main#top{margin:0;padding:0;min-height:0;background:var(--light,#eef2f6)}
+html.mp-demo-embed .lp-a11y-root,
+html.mp-demo-embed #lp-visitor-a11y{display:none!important}
+html.mp-demo-embed section[data-sec="textBox"]{
+  display:block!important;
+  background:var(--light,#eef2f6);
+  padding:28px 0 36px;
+  color:var(--ink,#1a2230);
+}
+html.mp-demo-embed section[data-sec="textBox"] h2{color:var(--ink,#1a2230)}
+html.mp-demo-embed section[data-sec="textBox"] .tb-intro,
+html.mp-demo-embed section[data-sec="textBox"] .tb-content{color:var(--muted,#5b6878)}
+html.mp-demo-embed section[data-sec="textBox"] .eyebrow{color:var(--pipe,#1f7bb8)}
 </style>
 </head>
 <body>
@@ -29,7 +43,25 @@ html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:non
 </main>
 
 <script>
-var SITE_CONFIG = {"theme":{"pipe":"#1f7bb8"},"business":"Ace Plumbing Co.","trade":"plumber","phone":"0261000000","sections":{"textBox":{"on":true,"eyebrow":"About us","heading":"Built for {{businessName}}","intro":"A short introduction that sets the scene for what follows.","content":"Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.","image":"","imageSide":"right","textAlign":"left"}}};
+var SITE_CONFIG = {
+  "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+  "business": "Ace Plumbing Co.",
+  "trade": "plumber",
+  "phone": "0261000000",
+  "sections": {
+    "textBox": {
+      "on": true,
+      "eyebrow": "About us",
+      "heading": "Built for {{businessName}}",
+      "intro": "A short introduction that sets the scene for what follows.",
+      "content": "Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.",
+      "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop",
+      "imageLayout": "beside",
+      "imageSide": "right",
+      "textAlign": "left"
+    }
+  }
+};
 </script>
 <script src="./demo-shared.js"></script>
 </body>

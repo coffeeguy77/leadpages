@@ -302,7 +302,7 @@
       }
 
       html += '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-style" aria-label="Style">'
-        + '<div class="tb-ed-zone-label">' + (hasItems ? 'Style' : 'Controls') + '</div>'
+        + '<div class="tb-ed-zone-label">' + (hasItems ? 'Style' : 'Content') + '</div>'
         + '<div class="tb-ed-color-grid" data-mp-style></div>'
         + '</div></div>';
 

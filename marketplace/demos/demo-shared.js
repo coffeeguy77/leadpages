@@ -603,10 +603,15 @@ function applyCfg(C){
     }catch(e){}
     /* Text Box content */
     try{ var __TB=(C.sections&&C.sections.textBox)||{}; var __tbn=document.querySelector('[data-sec="textBox"]');
-      if(__tbn){ var __ti=__tbn.querySelector('.tb-intro'); if(__ti){ __ti.textContent=(__TB.intro!=null?__TB.intro:''); __ti.style.display=(__TB.intro!=null&&__TB.intro!=='')?'':'none'; }
-        var __tc=__tbn.querySelector('.tb-content'); if(__tc){ __tc.textContent=(__TB.content!=null?__TB.content:''); }
+      if(__tbn){
+        var __tbBiz=(C.business||C.name||C.business_name||C.businessName||'');
+        var __tbTok=function(s){ return String(s==null?'':s).replace(/\{\{\s*businessName\s*\}\}/g,__tbBiz); };
+        var __teb=__tbn.querySelector('.tb-eyebrow, .eyebrow'); if(__teb){ var __tebV=__tbTok(__TB.eyebrow!=null?__TB.eyebrow:''); __teb.textContent=__tebV; __teb.style.display=__tebV?'':'none'; }
+        var __th=__tbn.querySelector('.tb-h, h2'); if(__th) __th.textContent=__tbTok(__TB.heading!=null?__TB.heading:'');
+        var __ti=__tbn.querySelector('.tb-intro'); if(__ti){ var __tiV=__tbTok(__TB.intro!=null?__TB.intro:''); __ti.textContent=__tiV; __ti.style.display=__tiV?'':'none'; }
+        var __tc=__tbn.querySelector('.tb-content'); if(__tc){ __tc.textContent=__tbTok(__TB.content!=null?__TB.content:''); }
         var __tm=__tbn.querySelector('.tb-media'), __tg=__tbn.querySelector('.tb-img'); var __iu=(__TB.image!=null?String(__TB.image).trim():'');
-        if(__tm){ if(__iu){ if(__tg) __tg.setAttribute('src',__iu); __tm.style.display=''; } else { __tm.style.display='none'; } }
+        if(__tm){ if(__iu){ if(__tg){ __tg.setAttribute('src',__iu); __tg.style.display=''; } __tm.style.display=''; } else { __tm.style.display='none'; } }
         var __tr=__tbn.querySelector('.tb-row'); var __ttx=__tbn.querySelector('.tb-text'); if(__tr&&__ttx&&__tm){ var __wrap=(__TB.imageLayout==='wrap'); if(__wrap){ __tbn.classList.add('tbx-wrap'); } else { __tbn.classList.remove('tbx-wrap'); } if(__TB.imageSide==='left'){ __tbn.classList.add('tbx-left'); } else { __tbn.classList.remove('tbx-left'); } if(__wrap){ if(__tr.firstElementChild!==__tm){ __tr.insertBefore(__tm,__tr.firstChild); } __tr.style.flexDirection=''; __tr.style.textAlign=''; } else { if(__tm.previousElementSibling!==__ttx){ __tr.appendChild(__tm); } __tr.style.flexDirection=(__TB.imageSide==='left'?'row-reverse':'row'); __tr.style.textAlign=(__TB.textAlign==='center'?'center':''); } }
       }
     }catch(e){}
