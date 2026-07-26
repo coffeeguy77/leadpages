@@ -1326,7 +1326,8 @@
     "trade": "plumber",
     "phone": "0261000000",
     "theme": {
-      "pipe": "#1f7bb8"
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
     },
     "textBox": {
       "on": true,
@@ -1335,6 +1336,7 @@
       "intro": "A short introduction that sets the scene for what follows.",
       "content": "Use this space for a longer paragraph of text — your story, your approach, what makes you different. Add an image to the side, or leave it text-only for a clean full-width block.",
       "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop",
+      "imageLayout": "beside",
       "imageSide": "right",
       "textAlign": "left"
     }

@@ -328,4 +328,36 @@ describe('marketplace compact editor parity', () => {
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /local\.length > fieldDefs\.length/);
   });
+
+  it('textBox editor covers copy, image, layout and side controls', () => {
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.textBox.some((f) => f.key === 'sections.textBox.eyebrow'));
+    assert.ok(defs.textBox.some((f) => f.key === 'sections.textBox.content' && f.type === 'textarea'));
+    assert.ok(defs.textBox.some((f) => f.key === 'sections.textBox.image' && f.type === 'image'));
+    assert.ok(defs.textBox.some((f) => f.key === 'sections.textBox.imageLayout' && f.type === 'select'));
+    assert.ok(defs.textBox.some((f) => f.key === 'sections.textBox.imageSide'));
+    assert.ok(defs.textBox.some((f) => f.key === 'sections.textBox.textAlign'));
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    const tb = defaults.textBox.textBox;
+    assert.equal(tb.on, true);
+    assert.match(tb.image, /^https:\/\//);
+    assert.equal(tb.imageLayout, 'beside');
+
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-textBox.html'), 'utf8');
+    assert.match(demo, /"textBox"\s*:\s*\{[\s\S]*"on"\s*:\s*true/);
+    assert.match(demo, /photo-1503387762-592deb58ef4e/);
+    assert.match(demo, /background:var\(--light,#eef2f6\)!important/);
+
+    const apply = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+    assert.match(apply, /businessName/);
+    assert.match(apply, /\.tb-content/);
+    assert.match(apply, /imageLayout/);
+
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /local\.length > fieldDefs\.length/);
+
+    const js = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
+    assert.match(js, /hasItems \? 'Style' : 'Content'/);
+  });
 });
