@@ -160,7 +160,10 @@
   line-height: 1.25;
 }
 
-.tb-ed-card input[type="range"] { width: 100%; }
+.tb-ed-card input[type="range"] {
+  width: 100%;
+  touch-action: none;
+}
 
 .tb-ed-color {
   display: flex;

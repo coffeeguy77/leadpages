@@ -30,7 +30,7 @@ img{max-width:100%;display:block}
 h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.12}
 .sitenav{background:var(--gum)}
 .sitenav .wrap{max-width:1440px;display:flex;align-items:center;justify-content:space-between;height:116px}
-.sitenav .leadpages-logo{height:var(--lp-logo-height,52px);width:auto;display:block}
+.sitenav .leadpages-logo{height:78px;width:auto;display:block}
 .sitenav .links{display:flex;align-items:center;gap:24px}
 .sitenav .links a{color:#E9EFEA;font-weight:600;font-size:15px}
 .sitenav .links a:hover{color:#D9A0AC}
@@ -115,7 +115,8 @@ article{padding:20px 0 88px}
 .pg-presets button,.pg-devbtns button{border:1.5px solid var(--line);background:#fff;color:var(--mut);border-radius:999px;padding:6px 12px;font-weight:800;font-size:12.5px;cursor:pointer;font-family:var(--body)}
 .pg-presets button.on,.pg-devbtns button.on{background:var(--rose);border-color:var(--rose);color:#fff}
 /* Device wrapper — desktop=native, tablet/phone=framed+scaled */
-.pg-devicewrap{overflow:visible;margin:0 0 8px;line-height:0}.pg-iframe{display:block;width:100%;border:0;min-height:0!important}
+.pg-devicewrap{overflow:visible;margin:0 0 8px;line-height:0;overflow-anchor:none}.pg-iframe{display:block;width:100%;border:0;min-height:0!important;overflow-anchor:none}
+#tb-h,.tb-ed-zone-style input[type="range"]{touch-action:none}
 .pg-devicewrap.framed{background:#E8E4E0;border:1px solid var(--line);border-radius:18px;padding:24px;overflow:hidden}
 .pg-viewport{width:100%;transform-origin:top center}
 .pg-devicewrap.framed .pg-viewport{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 14px 44px rgba(46,42,43,.18)}
@@ -211,7 +212,7 @@ article{padding:20px 0 88px}
 .back p{color:var(--mut);margin-bottom:22px}
 footer{background:var(--gum);color:#C9D2CC;padding:44px 0 36px;font-size:14px}
 footer .wrap{max-width:1440px;display:flex;justify-content:space-between;gap:26px;flex-wrap:wrap}
-footer .leadpages-logo{height:var(--lp-logo-height,52px);width:auto;margin-bottom:12px;display:block}
+footer .leadpages-logo{height:var(--lp-logo-height,52px);width:auto;margin-bottom:12px;display:block;--lp-logo-ink:#ffffff}
 footer a{color:#E9EFEA;font-weight:600;margin-right:22px}
 footer a:hover{color:#D9A0AC}
 .abn{margin-top:14px;color:#8FA096;font-size:12.5px}
@@ -292,7 +293,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 <footer>
   <div class="wrap">
     <div>
-      <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse role="img" aria-label="LeadPages"></span>
+      <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span>
       <div>Smart sites. More leads. Built in Canberra, Australia.</div>
       <div class="abn">Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div>
     </div>
@@ -843,6 +844,15 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
             var fr = getIframe();
             if (!fr) return;
             var px = Math.max(120, Math.min(640, +h || 280));
+            function pin() {
+              var a = document.getElementById('tb-h') || host;
+              var y0 = a.getBoundingClientRect().top;
+              return function() {
+                var dy = a.getBoundingClientRect().top - y0;
+                if (dy) window.scrollBy(0, dy);
+              };
+            }
+            var restore = pin();
             try {
               var doc = fr.contentDocument;
               var tbNode = doc && doc.querySelector('[data-sec="trustBar"]');
@@ -851,8 +861,11 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
             if (host.__tbHRaf) cancelAnimationFrame(host.__tbHRaf);
             host.__tbHRaf = requestAnimationFrame(function() {
               host.__tbHRaf = 0;
+              var restore2 = pin();
               fitPreviewFrame();
               applyDevice();
+              restore2();
+              restore();
             });
           }
         });
