@@ -55,11 +55,21 @@ describe('marketplace catalog resolve', () => {
     assert.match(oq, /loadShowcaseShell/);
   });
 
-  it('email-campaigns is a platform explainer without fake playground', () => {
+  it('email-campaigns is a platform explainer with interactive demo embed', () => {
     const email = resolve.resolveFromStatic('email-campaigns');
     assert.equal(email.feature.section_key, null);
     assert.equal(resolve.hasPlayground(email.blocks), false);
     assert.ok(email.blocks.some((b) => b.block_type === 'benefits'));
+    const embed = email.blocks.find((b) => b.block_type === 'demo_embed');
+    assert.ok(embed);
+    assert.match(embed.payload.url, /demo-emailCampaigns\.html/);
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-emailCampaigns.html'), 'utf8');
+    assert.match(demo, /Demo only/);
+    assert.match(demo, /Unsubscribed/);
+    assert.match(demo, /SAMPLE_IMAGES|sample — no upload/i);
+    assert.match(demo, /marcus\.t@example\.com/i);
+    assert.doesNotMatch(demo, /type="file"/);
+    assert.doesNotMatch(demo, /\/api\/send-campaign/);
   });
 
   it('enriches thin DB rows with playground + section_key', () => {
@@ -77,6 +87,7 @@ describe('marketplace catalog resolve', () => {
     assert.match(feat, /quote-lead-capture/);
     assert.match(feat, /reviews-trust/);
     assert.match(feat, /email-campaigns/);
+    assert.match(feat, /demo-emailCampaigns\.html/);
     assert.match(feat, /loadFeature/);
     assert.match(feat, /ensurePlaygroundBlock/);
     assert.match(feat, /sell-templates\.json/);
