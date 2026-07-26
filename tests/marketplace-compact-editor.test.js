@@ -418,4 +418,27 @@ describe('marketplace compact editor parity', () => {
     assert.match(js, /function labelForItemIndex/);
     assert.match(js, /mediaScale/);
   });
+
+  it('serviceProcess field defs expose icons and editor renumbers step labels', () => {
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.serviceProcess.some((f) => f.type === 'icon' && f.key === 'sections.serviceProcess.steps.0.icon'));
+    assert.ok(defs.serviceProcess.some((f) => f.type === 'icon' && f.key === 'sections.serviceProcess.steps.5.icon'));
+    assert.ok(defs.serviceProcess.some((f) => f.key === 'sections.serviceProcess.steps.5.title'));
+    assert.ok(defs.serviceProcess.some((f) => f.key === 'sections.serviceProcess.eyebrow'));
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    const steps = defaults.serviceProcess.serviceProcess.steps;
+    assert.ok(steps.length >= 5);
+    assert.equal(steps[0].icon, 'phone-call');
+    assert.ok(steps.every((s) => s.icon && /^[a-z0-9-]+$/.test(s.icon)));
+
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-serviceProcess.html'), 'utf8');
+    assert.match(demo, /"icon"\s*:\s*"phone-call"/);
+    assert.match(demo, /"serviceProcess"\s*:\s*\{[\s\S]*"on"\s*:\s*true/);
+
+    const js = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
+    assert.match(js, /function labelForItemIndex/);
+    assert.match(js, /labelForItemIndex\(f\.label, activeIdx\)/);
+    assert.match(js, /f\.type === 'icon'.*circle-check|type === 'icon'\) it\[f\.prop\] = 'circle-check'/);
+  });
 });
