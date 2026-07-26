@@ -1,0 +1,140 @@
+[
+  {
+    "slug": "urgent",
+    "label": "24/7 urgent",
+    "section_key": "emerg",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "emerg": {
+          "on": true,
+          "text": "24/7 emergency plumber — call now",
+          "callOn": true,
+          "sticky": true,
+          "bgTransparent": false,
+          "bg": "#ff6a1f",
+          "fg": "#ffffff"
+        }
+      }
+    }
+  },
+  {
+    "slug": "afterHours",
+    "label": "After hours",
+    "section_key": "emerg",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "emerg": {
+          "on": true,
+          "text": "After-hours emergency line open",
+          "callOn": true,
+          "sticky": true,
+          "bgTransparent": false,
+          "bg": "#1a2230",
+          "fg": "#ffffff"
+        }
+      }
+    }
+  },
+  {
+    "slug": "burstPipe",
+    "label": "Burst pipe",
+    "section_key": "emerg",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#dc2626" },
+      "sections": {
+        "emerg": {
+          "on": true,
+          "text": "Burst pipe? Call now — we’re on the way",
+          "callOn": true,
+          "sticky": false,
+          "bgTransparent": false,
+          "bg": "#dc2626",
+          "fg": "#ffffff"
+        }
+      }
+    }
+  },
+  {
+    "slug": "stickyBrand",
+    "label": "Brand sticky",
+    "section_key": "emerg",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "emerg": {
+          "on": true,
+          "text": "Licensed Canberra plumbers — speak to us today",
+          "callOn": true,
+          "sticky": true,
+          "bgTransparent": false,
+          "bg": "#1f7bb8",
+          "fg": "#ffffff"
+        }
+      }
+    }
+  },
+  {
+    "slug": "messageOnly",
+    "label": "Message only",
+    "section_key": "emerg",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "emerg": {
+          "on": true,
+          "text": "Same-day emergency callouts across the ACT",
+          "callOn": false,
+          "sticky": false,
+          "bgTransparent": false,
+          "bg": "#ff6a1f",
+          "fg": "#ffffff"
+        }
+      }
+    }
+  },
+  {
+    "slug": "transparent",
+    "label": "Transparent",
+    "section_key": "emerg",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "emerg": {
+          "on": true,
+          "text": "Urgent? Tap to call — 24/7",
+          "callOn": true,
+          "sticky": true,
+          "bgTransparent": true,
+          "bg": "",
+          "fg": "#ffffff"
+        }
+      }
+    }
+  }
+]

@@ -575,6 +575,55 @@
       }
     ]
   },
+  "emerg": {
+    "name": "Emergency CTA",
+    "tagline": "24/7 urgent call-to-action bar",
+    "summary": "A sticky top bar that puts your emergency phone line front and centre — message, colours and call link match the App Command Centre Top bar.",
+    "hero_image_url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1400&h=560&fit=crop&q=80",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Emergency CTA",
+          "text": "The top emergency bar used on trade landing pages — urgent message, optional call link, sticky layout and brand colours. Same Top bar controls as the App Command Centre."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Key features",
+          "items": [
+            {
+              "title": "Urgent message",
+              "text": "Lead with burst pipes, after-hours or 24/7 availability in one line."
+            },
+            {
+              "title": "Call link",
+              "text": "Optional dial link that uses the business phone from site details."
+            },
+            {
+              "title": "Sticky + colours",
+              "text": "Pin with the logo header, go transparent over a hero, or match CTA / brand colours."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "emerg",
+          "presets": [
+            "urgent",
+            "afterHours",
+            "burstPipe",
+            "stickyBrand",
+            "messageOnly",
+            "transparent"
+          ]
+        }
+      }
+    ]
+  },
   "emergencyAvailability": {
     "name": "Emergency Availability",
     "tagline": "After-hours status and schedule display",

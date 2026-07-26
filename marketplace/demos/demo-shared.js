@@ -1422,8 +1422,14 @@ function applyCfg(C){
       function tok(s){ return String(s==null?'':s).replace(/\{\{\s*businessName\s*\}\}/g,BIZ); }
       var E=S.emerg||{}; var em=document.querySelector('.emerg');
       if(em){
+        if(E.on===false){ em.style.display='none'; }
+        else { em.style.display=''; }
         var ea=em.querySelector('a')||em.__lpEmergA||document.getElementById('emergCall');
-        if(ea) em.__lpEmergA=ea;
+        if(ea){
+          em.__lpEmergA=ea;
+          var _emPh=(C.phone||((typeof SITE_CONFIG!=='undefined'&&SITE_CONFIG.phone)||'')||'');
+          if(_emPh) ea.setAttribute('href','tel:'+String(_emPh).replace(/\s+/g,''));
+        }
         var _emCallOn=(E.callOn!==false);
         if(E.text!=null){
           var _emMsg=String(E.text);

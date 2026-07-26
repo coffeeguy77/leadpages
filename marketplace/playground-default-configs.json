@@ -307,6 +307,24 @@
       ]
     }
   },
+  "emerg": {
+    "business": "Ace Plumbing Co.",
+    "trade": "plumber",
+    "phone": "0261000000",
+    "theme": {
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
+    },
+    "emerg": {
+      "on": true,
+      "text": "24/7 emergency plumber — call now",
+      "callOn": true,
+      "sticky": true,
+      "bgTransparent": false,
+      "bg": "#ff6a1f",
+      "fg": "#ffffff"
+    }
+  },
   "emergencyAvailability": {
     "business": "Ace Plumbing Co.",
     "trade": "plumber",

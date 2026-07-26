@@ -469,6 +469,8 @@
   function withAppearanceDefs(sectionKey, fieldDefs) {
     var defs = Array.isArray(fieldDefs) ? fieldDefs.slice() : [];
     if (!sectionKey) return defs;
+    /* Top emergency bar is not a full-width section container */
+    if (sectionKey === 'emerg') return defs;
     var prefix = 'sections.' + sectionKey + '.appearance.';
     if (defs.some(function (d) { return String(d.key || '').indexOf(prefix) === 0; })) return defs;
     return defs.concat([
