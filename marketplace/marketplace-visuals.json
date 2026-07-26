@@ -79,6 +79,11 @@
       "alt": "Project portfolio grid",
       "caption": "Large project cards with gallery lightbox — from a real builder site (AAM1)."
     },
+    "projectFeed": {
+      "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=720&fit=crop&q=80",
+      "alt": "Project feed job cards",
+      "caption": "Photo cards with service tags, location and lightbox call/quote actions."
+    },
     "proofStream": {
       "url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&h=720&fit=crop&q=80",
       "alt": "Proof stream feed",
