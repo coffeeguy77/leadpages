@@ -150,6 +150,29 @@
         return;
       }
       box.innerHTML = items.map(function (it, i) {
+        if (images && window.LPLocalImage) window.LPLocalImage.rememberSample(it, 'image');
+        var sample = (it && it._pgSample) || '';
+        var localImg = images && mode === 'marketplace-playground' && window.LPLocalImage;
+        var imageField = '';
+        if (images) {
+          if (localImg) {
+            imageField = '<div class="f"><label>Tile image</label>'
+              + window.LPLocalImage.controlHtml(it.image || '', {
+                sample: sample,
+                inputAttrs: 'data-k="image"'
+              })
+              + '</div>';
+          } else {
+            imageField = '<div class="f"><label>Tile image URL</label><input type="url" data-k="image" value="' + esc(it.image || '') + '" placeholder="https://…"></div>';
+          }
+          imageField += '<div class="row"><div class="f"><label>Image fit</label><select data-k="imageFit">'
+            + [['cover', 'Cover (fill & crop)'], ['contain', 'Contain (fit, no crop)'], ['fill', 'Fill'], ['stretch', 'Stretch (distort)']]
+              .map(function (o) { return '<option value="' + o[0] + '"' + ((it.imageFit || 'cover') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('')
+            + '</select></div><div class="f"><label>Image position</label><select data-k="imagePos">'
+            + [['center', 'Centre'], ['top', 'Top'], ['bottom', 'Bottom'], ['left', 'Left'], ['right', 'Right']]
+              .map(function (o) { return '<option value="' + o[0] + '"' + ((it.imagePos || 'center') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('')
+            + '</select></div></div>';
+        }
         return '<div class="tb-ed-item" data-i="' + i + '">'
           + '<div class="tb-ed-item-head">'
           + '<label class="ck"><input type="checkbox" data-k="on"' + (it.on !== false ? ' checked' : '') + '> Item ' + (i + 1) + '</label>'
@@ -158,16 +181,7 @@
           + '<button type="button" data-act="dn" aria-label="Move down">↓</button>'
           + '<button type="button" data-act="rm" class="danger" aria-label="Remove">Remove</button>'
           + '</span></div>'
-          + (images
-            ? '<div class="f"><label>Tile image URL</label><input type="url" data-k="image" value="' + esc(it.image || '') + '" placeholder="https://…"></div>'
-              + '<div class="row"><div class="f"><label>Image fit</label><select data-k="imageFit">'
-              + [['cover', 'Cover (fill & crop)'], ['contain', 'Contain (fit, no crop)'], ['fill', 'Fill'], ['stretch', 'Stretch (distort)']]
-                .map(function (o) { return '<option value="' + o[0] + '"' + ((it.imageFit || 'cover') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('')
-              + '</select></div><div class="f"><label>Image position</label><select data-k="imagePos">'
-              + [['center', 'Centre'], ['top', 'Top'], ['bottom', 'Bottom'], ['left', 'Left'], ['right', 'Right']]
-                .map(function (o) { return '<option value="' + o[0] + '"' + ((it.imagePos || 'center') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('')
-              + '</select></div></div>'
-            : '')
+          + imageField
           + '<div class="f"><label>Icon</label>'
           + (window.LPIconPicker
             ? window.LPIconPicker.controlHtml(it.icon || '', { inputAttrs: 'data-k="icon"' })
@@ -177,6 +191,7 @@
           + '</div>';
       }).join('');
       if (window.LPIconPicker) window.LPIconPicker.refresh(box);
+      if (window.LPLocalImage) window.LPLocalImage.refresh(box);
     }
 
     function syncModeUi() {
@@ -190,7 +205,9 @@
       if (h) h.textContent = images ? 'Image tiles' : 'Trust badges';
       if (p) {
         p.textContent = images
-          ? 'Each tile is an image with caption text overlaid at the bottom. Toggle, reorder, or add tiles — they share the full width evenly.'
+          ? (mode === 'marketplace-playground'
+            ? 'Each tile is an image with caption text. Choose your own photo to override the sample on this screen only — nothing is uploaded or saved.'
+            : 'Each tile is an image with caption text overlaid at the bottom. Toggle, reorder, or add tiles — they share the full width evenly.')
           : 'The row of badges shown directly under your hero — on every layout. Toggle off any that don’t apply, edit the wording, reorder, or add your own.';
       }
     }
@@ -318,6 +335,10 @@
             drawItems();
             emit('Item reordered');
           }
+        });
+        box.addEventListener('lp-locimg-error', function (e) {
+          var msg = (e.detail && e.detail.message) || 'Could not use that image';
+          announce(msg);
         });
       }
     }
