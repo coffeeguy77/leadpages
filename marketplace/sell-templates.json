@@ -1154,23 +1154,23 @@
   },
   "igProjectFeed": {
     "name": "Instagram Project Feed",
-    "tagline": "Instagram grid styled as project cards",
+    "tagline": "Instagram posts rendered as project cards",
     "summary": "Instagram posts rendered as project cards with CTAs.",
-    "hero_image_url": "https://images.unsplash.com/photo-1611162617474-5b21e939e113?w=1400&h=560&fit=crop&q=80",
+    "hero_image_url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Instagram Project Feed",
-          "text": "Like Project Feed but sourced from Instagram — title from caption, tag label, call and quote buttons with custom colours."
+          "text": "Like Project Feed but sourced from Instagram — the marketplace demo uses Bean Culture’s live connection (beanculture.com.au). Title from caption, tag label, call and quote buttons with custom colours."
         }
       },
       {
         "block_type": "image",
         "payload": {
-          "url": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=720&fit=crop&q=80",
-          "alt": "Instagram integration",
-          "caption": "Instagram grids and project feeds pulled into the site automatically."
+          "url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1200&h=720&fit=crop&q=80",
+          "alt": "Bean Culture Instagram project feed",
+          "caption": "Instagram posts as project cards — marketplace demo powered by Bean Culture’s connection."
         }
       },
       {
