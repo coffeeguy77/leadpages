@@ -202,7 +202,9 @@ describe('public marketplace theme + copy safety', () => {
     assert.match(editor, /tb-ed-tab/);
     assert.match(editor, /data-tab/);
     assert.match(editor, /trustBar\.on = true/);
+    assert.match(editor, /modePreviewHtml|tb-ed-mode-preview/);
     const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.css'), 'utf8');
     assert.match(css, /\.tb-ed-tabs/);
+    assert.match(css, /\.tb-ed-mode-preview/);
   });
 });

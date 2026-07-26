@@ -76,6 +76,40 @@
     return short;
   }
 
+  function iconSvg(name) {
+    var n = String(name || '').trim();
+    if (n && global.LP_ICONS && global.LP_ICONS[n]) {
+      return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + global.LP_ICONS[n] + '</svg>';
+    }
+    return '';
+  }
+
+  function modePreviewHtml(TB) {
+    var images = TB.mode === 'images';
+    var items = (TB.badges || []).filter(function (b) { return b && b.on !== false; }).slice(0, 4);
+    if (!items.length) items = (TB.badges || []).slice(0, 4);
+    if (!items.length) {
+      return '<div class="tb-ed-mode-preview empty" aria-hidden="true"><span>Preview</span></div>';
+    }
+    if (images) {
+      var tiles = items.map(function (it) {
+        var src = it.image || '';
+        var lab = esc(String(it.label || '').split(/\n/)[0].slice(0, 22));
+        if (src) {
+          return '<div class="tb-ed-mp-tile"><img src="' + esc(src) + '" alt=""><span>' + lab + '</span></div>';
+        }
+        return '<div class="tb-ed-mp-tile ph"><span>' + lab + '</span></div>';
+      }).join('');
+      return '<div class="tb-ed-mode-preview images" aria-label="Image tiles preview" title="Image tiles preview">' + tiles + '</div>';
+    }
+    var chips = items.map(function (it) {
+      var ic = iconSvg(it.icon);
+      var lab = esc(String(it.label || '').split(/\n/)[0].slice(0, 16));
+      return '<div class="tb-ed-mp-chip">' + (ic || '<span class="tb-ed-mp-dot"></span>') + '<span>' + lab + '</span></div>';
+    }).join('');
+    return '<div class="tb-ed-mode-preview badges" aria-label="Classic badges preview" title="Classic badges preview">' + chips + '</div>';
+  }
+
   function mount(host, options) {
     options = options || {};
     var mode = options.mode || 'marketplace-playground';
@@ -113,6 +147,7 @@
 
       html += '<div class="card tb-ed-card tb-ed-card-tight">'
         + '<div class="tb-ed-toolbar">'
+        + '<div class="tb-ed-toolbar-left">'
         + '<div class="f tb-ed-style"><label for="tb-mode">Style</label>'
         + '<select id="tb-mode" class="tin">'
         + '<option value="badges"' + (tbMode === 'badges' ? ' selected' : '') + '>Classic badges</option>'
@@ -126,6 +161,8 @@
         + '<label for="tb-h">Height <span id="tb-h-v">' + esc(h) + 'px</span></label>'
         + '<input type="range" id="tb-h" min="160" max="520" step="10" value="' + esc(h) + '">'
         + '</div></div>'
+        + '<div class="tb-ed-toolbar-right" id="tb-mode-preview">' + modePreviewHtml(TB) + '</div>'
+        + '</div>'
 
         + '<div id="tb-classic-colors"' + (tbMode === 'images' ? ' style="display:none"' : '') + '>'
         + '<div class="row">' + colorRow('tb-bg', 'Background', TB.bg, 'Theme default')
@@ -224,6 +261,11 @@
       if (window.LPLocalImage) window.LPLocalImage.refresh(box);
     }
 
+    function refreshModePreview() {
+      var box = host.querySelector('#tb-mode-preview');
+      if (box) box.innerHTML = modePreviewHtml(tb());
+    }
+
     function syncModeUi() {
       var images = tb().mode === 'images';
       var co = host.querySelector('#tb-classic-opts');
@@ -236,6 +278,7 @@
       if (hw) hw.style.display = images ? '' : 'none';
       var h = host.querySelector('#tb-list-title');
       if (h) h.textContent = 'Items';
+      refreshModePreview();
     }
 
     function wireColor(id, apply, clearVal) {
@@ -336,6 +379,7 @@
               tab.title = tabLabel(tb().badges[i], i);
             }
           }
+          if (k === 'label' || k === 'on' || k === 'icon' || k === 'image') refreshModePreview();
           emit('Preview updated');
         });
         box.addEventListener('change', function (e) {
@@ -350,6 +394,7 @@
             var tab = box.querySelector('.tb-ed-tab[data-tab="' + i + '"]');
             if (tab) tab.classList.toggle('off', tb().badges[i].on === false);
           }
+          if (k === 'on' || k === 'icon' || k === 'image') refreshModePreview();
           emit('Preview updated');
         });
         box.addEventListener('click', function (e) {
