@@ -633,9 +633,43 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       return { sections: {}, theme: {} };
     }
 
+    function ensureSectionOn(cfg, sk) {
+      if (!cfg || !sk) return cfg;
+      if (!cfg.sections) cfg.sections = {};
+      if (!cfg.sections[sk] || typeof cfg.sections[sk] !== 'object') cfg.sections[sk] = {};
+      cfg.sections[sk].on = true;
+      return cfg;
+    }
+
+    /** Merge sample defaults when a preset is missing list content (events/items/…). */
+    function seedFromDefaultConfigs(cfg, sk) {
+      if (!cfg || !sk || !window.__LP_PG_DEFAULTS) return cfg;
+      var flat = window.__LP_PG_DEFAULTS[sk];
+      if (!flat) return cfg;
+      var sample = flat[sk] || flat.sections && flat.sections[sk];
+      if (!sample || typeof sample !== 'object') return cfg;
+      if (!cfg.sections) cfg.sections = {};
+      var cur = cfg.sections[sk] || {};
+      var listKeys = ['events','items','badges','steps','projects','stats','members','options','images','reels','feed','points','cards','areas','slides'];
+      var merged = Object.assign({}, sample, cur);
+      listKeys.forEach(function(lk) {
+        var has = Array.isArray(cur[lk]) && cur[lk].length;
+        if (!has && Array.isArray(sample[lk]) && sample[lk].length) merged[lk] = JSON.parse(JSON.stringify(sample[lk]));
+      });
+      ['eyebrow','heading','intro','title','sub'].forEach(function(k) {
+        if ((cur[k] == null || cur[k] === '') && sample[k] != null && sample[k] !== '') merged[k] = sample[k];
+      });
+      merged.on = true;
+      cfg.sections[sk] = merged;
+      if (!cfg.theme && flat.theme) cfg.theme = Object.assign({}, flat.theme);
+      else if (flat.theme) cfg.theme = Object.assign({}, flat.theme, cfg.theme || {});
+      return cfg;
+    }
+
     function applyLiveConfig() {
       var fr = getIframe();
       if (!fr) return;
+      ensureSectionOn(liveSiteCfg, secKey);
       try {
         if (fr.contentWindow && fr.contentWindow.__applyTradeConfig) {
           fr.contentWindow.__applyTradeConfig(liveSiteCfg);
@@ -645,6 +679,11 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         fitPreviewFrame();
         applyDevice();
       }, 80);
+      /* Second fit after layout paints — avoids empty-looking 40px frames on first load */
+      setTimeout(function() {
+        fitPreviewFrame();
+        applyDevice();
+      }, 320);
     }
 
     function applyPreset(preset) {
@@ -661,6 +700,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       if (!sk) return;
       secKey = sk;
       liveSiteCfg = deepMerge({ sections: {}, theme: {} }, presetToSiteConfig(p));
+      seedFromDefaultConfigs(liveSiteCfg, secKey);
+      ensureSectionOn(liveSiteCfg, secKey);
       demoCfg = p;
       applyLiveConfig();
       renderLiveControls();
@@ -686,35 +727,65 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         });
     }
 
-    function loadPlaygroundMeta() {
-      if (!secKey || pgMetaLoaded) return Promise.resolve();
-      return fetch('/api/marketplace-playground?section_key=' + encodeURIComponent(secKey))
+    function loadDefaultConfigs() {
+      if (window.__LP_PG_DEFAULTS) return Promise.resolve(window.__LP_PG_DEFAULTS);
+      return fetch('/marketplace/playground-default-configs.json')
         .then(function(r) { return r.ok ? r.json() : {}; })
-        .then(function(meta) {
-          pgMetaLoaded = true;
-          if (meta.field_defs && meta.field_defs.length) fieldDefs = meta.field_defs;
-          if (meta.presets && meta.presets.length) {
-            meta.presets.forEach(function(p) {
-              var preset = p;
-              if (window.LPPlaygroundPreset) {
-                preset = window.LPPlaygroundPreset.normalizePreset(p, {
-                  slug: p.slug,
-                  source: p.source,
-                  section_key: p.section_key || secKey,
-                  label: p.label
-                });
-              }
-              presetCache[p.slug] = preset;
-              if (presets.indexOf(p.slug) < 0) presets.push(p.slug);
-            });
-          }
+        .then(function(all) {
+          window.__LP_PG_DEFAULTS = all || {};
+          return window.__LP_PG_DEFAULTS;
         })
         .catch(function() {
-          return fetch('/marketplace/playground-field-defs.json')
-            .then(function(r) { return r.json(); })
-            .then(function(all) { if (all[secKey]) fieldDefs = all[secKey]; })
-            .catch(function() {});
+          window.__LP_PG_DEFAULTS = window.__LP_PG_DEFAULTS || {};
+          return window.__LP_PG_DEFAULTS;
         });
+    }
+
+    function loadPlaygroundMeta() {
+      if (!secKey || pgMetaLoaded) return Promise.resolve();
+      return loadDefaultConfigs().then(function() {
+        return fetch('/api/marketplace-playground?section_key=' + encodeURIComponent(secKey))
+          .then(function(r) { return r.ok ? r.json() : {}; })
+          .then(function(meta) {
+            pgMetaLoaded = true;
+            if (meta.field_defs && meta.field_defs.length) fieldDefs = meta.field_defs;
+            if (meta.presets && meta.presets.length) {
+              meta.presets.forEach(function(p) {
+                var preset = p;
+                if (window.LPPlaygroundPreset) {
+                  preset = window.LPPlaygroundPreset.normalizePreset(p, {
+                    slug: p.slug,
+                    source: p.source,
+                    section_key: p.section_key || secKey,
+                    label: p.label
+                  });
+                }
+                presetCache[p.slug] = preset;
+                if (presets.indexOf(p.slug) < 0) presets.push(p.slug);
+              });
+            }
+          })
+          .catch(function() {
+            return fetch('/marketplace/playground-field-defs.json')
+              .then(function(r) { return r.json(); })
+              .then(function(all) { if (all[secKey]) fieldDefs = all[secKey]; })
+              .catch(function() {});
+          })
+          .then(function() {
+            /* Always prefer local field defs when they include item rows (events/items/…) */
+            return fetch('/marketplace/playground-field-defs.json')
+              .then(function(r) { return r.json(); })
+              .then(function(all) {
+                var local = all && all[secKey];
+                if (!local || !local.length) return;
+                var localHasItems = local.some(function(f) { return /\.\d+\./.test(f.key || ''); });
+                var curHasItems = fieldDefs.some(function(f) { return /\.\d+\./.test(f.key || ''); });
+                if (localHasItems && !curHasItems) fieldDefs = local;
+                else if (!fieldDefs.length) fieldDefs = local;
+              })
+              .catch(function() {});
+          });
+      });
     }
 
     function showNoDemo(msg) {
@@ -732,12 +803,17 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       fr.className = 'pg-iframe';
       fr.setAttribute('data-r', 'iframe');
       fr.src = src;
-      fr.style.cssText = 'width:100%;border:0;display:block;min-height:0;height:auto;vertical-align:top';
+      fr.style.cssText = 'width:100%;border:0;display:block;min-height:180px;height:180px;vertical-align:top';
       fr.setAttribute('scrolling', 'no');
       fr.addEventListener('load', function onLoad() {
         fr.removeEventListener('load', onLoad);
+        /* Seed immediately so first paint never waits for a keystroke */
+        if (!liveSiteCfg.sections || !liveSiteCfg.sections[sk]) {
+          liveSiteCfg = seedFromDefaultConfigs({ sections: {}, theme: {} }, sk) || liveSiteCfg;
+        }
+        ensureSectionOn(liveSiteCfg, sk);
         if (demoCfg) applyPreset(demoCfg);
-        else if (liveSiteCfg && liveSiteCfg.sections && Object.keys(liveSiteCfg.sections).length) applyLiveConfig();
+        else applyLiveConfig();
         fitPreviewFrame();
         applyDevice();
       });
@@ -968,6 +1044,19 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           });
         });
       }).catch(function() {
+        /* Still show a working sample preview + editor when preset fetch fails */
+        if (secKey) {
+          activePreset = name;
+          return loadDefaultConfigs().then(function() {
+            liveSiteCfg = seedFromDefaultConfigs({ sections: {}, theme: {} }, secKey);
+            ensureSectionOn(liveSiteCfg, secKey);
+            return ensureDemoLoaded(secKey).then(function() {
+              applyLiveConfig();
+              renderCtl();
+              renderPresets();
+            });
+          });
+        }
         var box = root.querySelector('[data-r="presets"]');
         if (box && !box.querySelector('.hint')) {
           var err = document.createElement('span');
@@ -1004,7 +1093,9 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       applyDevice();
     });
 
-    loadPlaygroundMeta().then(function() {
+    loadDefaultConfigs().then(function() {
+      return loadPlaygroundMeta();
+    }).then(function() {
       renderPresets();
       if (secKey) return selectPreset(presets[0]);
       var first = presetCache[presets[0]];
@@ -1021,6 +1112,17 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         renderCtl();
       });
     }).catch(function() {
+      /* Offline / API down — still mount demo + sample config so preview is visible */
+      if (secKey) {
+        liveSiteCfg = seedFromDefaultConfigs({ sections: {}, theme: {} }, secKey);
+        ensureSectionOn(liveSiteCfg, secKey);
+        ensureDemoLoaded(secKey).then(function() {
+          applyLiveConfig();
+          renderCtl();
+          renderPresets();
+        });
+        return;
+      }
       showNoDemo('Could not load playground presets.');
       renderCtl();
     });
