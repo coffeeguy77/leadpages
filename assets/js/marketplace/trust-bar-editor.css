@@ -21,19 +21,39 @@
   background: var(--theme-surface-alt, var(--shell, #f1e5df));
 }
 
-/* Items (left) | Style / styler (right) — tinted Style zone separates the columns */
+/* Left (Items + Content) | Style — tinted Style zone separates the columns */
 .tb-ed-zones {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.85fr);
   gap: 12px;
-  align-items: stretch;
+  align-items: start;
+}
+
+.tb-ed-zones-single {
+  grid-template-columns: 1fr;
+}
+
+.tb-ed-zone-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tb-ed-zone-items,
+.tb-ed-zone-content,
+.tb-ed-zone-style {
+  margin-bottom: 0;
+  min-width: 0;
 }
 
 .tb-ed-zone-items,
 .tb-ed-zone-style {
-  margin-bottom: 0;
-  min-width: 0;
-  height: 100%;
+  height: auto;
+}
+
+.tb-ed-zone-content .tb-ed-color-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .tb-ed-zone-style {
