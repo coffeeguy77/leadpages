@@ -1675,6 +1675,41 @@
       "label": "Intro"
     },
     {
+      "type": "number",
+      "key": "sections.igProjectFeed.count",
+      "label": "Posts to show"
+    },
+    {
+      "type": "number",
+      "key": "sections.igProjectFeed.columns",
+      "label": "Columns (2–5)"
+    },
+    {
+      "type": "text",
+      "key": "sections.igProjectFeed.titleSource",
+      "label": "Title source (none / caption / date)"
+    },
+    {
+      "type": "text",
+      "key": "sections.igProjectFeed.tagLabel",
+      "label": "Tag label"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.igProjectFeed.showTag",
+      "label": "Show tag"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.igProjectFeed.showDate",
+      "label": "Show date"
+    },
+    {
+      "type": "color",
+      "key": "sections.igProjectFeed.btnBg",
+      "label": "Button colour"
+    },
+    {
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"

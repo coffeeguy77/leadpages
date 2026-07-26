@@ -264,6 +264,44 @@ describe('marketplace catalog resolve', () => {
     assert.match(demo, /"stats"\s*:\s*\[/);
   });
 
+  it('igProjectFeed marketplace demo uses Bean Culture Instagram connection', () => {
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-igProjectFeed.html'), 'utf8');
+    assert.match(demo, /"slug"\s*:\s*"beanculture"/);
+    assert.match(demo, /\/api\/ig-media\?slug=/);
+    assert.match(demo, /beanculture/);
+    assert.match(demo, /FALLBACK|useFallback/);
+    assert.match(demo, /igProjectFeed/);
+    assert.match(demo, /__igpfW|__applyTradeConfig/);
+    assert.match(demo, /pf-lightbox/);
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    assert.equal(defaults.igProjectFeed.slug, 'beanculture');
+    assert.equal(defaults.igProjectFeed.business, 'Bean Culture');
+    assert.match(defaults.igProjectFeed.igProjectFeed.intro || '', /Bean Culture/i);
+
+    const sell = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/sell-templates.json'), 'utf8'));
+    assert.ok(sell.igProjectFeed.hero_image_url);
+    assert.match(sell.igProjectFeed.hero_image_url, /^https:\/\//);
+    assert.match(sell.igProjectFeed.hero_image_url, /photo-1495474472287-4d71bcdd2085/);
+    assert.doesNotMatch(sell.igProjectFeed.hero_image_url, /photo-1611162617474-5b21e939e113/);
+
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.igProjectFeed.some((f) => f.key === 'sections.igProjectFeed.count'));
+    assert.ok(defs.igProjectFeed.some((f) => f.key === 'sections.igProjectFeed.columns'));
+    assert.ok(defs.igProjectFeed.some((f) => f.key === 'sections.igProjectFeed.titleSource'));
+
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /flat\.slug && !cfg\.slug/);
+
+    const sites = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/demo-sites.json'), 'utf8'));
+    assert.ok(sites.sites.beanculture.apps.includes('igProjectFeed'));
+
+    const resolved = resolve.resolveFromStatic('igProjectFeed');
+    assert.equal(resolved.feature.section_key, 'igProjectFeed');
+    assert.ok(resolved.feature.hero_image_url);
+    assert.match(resolved.feature.hero_image_url, /photo-1495474472287-4d71bcdd2085/);
+  });
+
   it('catalog API uses resolve helper', () => {
     const api = fs.readFileSync(path.join(root, 'api/catalog.js'), 'utf8');
     assert.match(api, /marketplace-catalog-resolve/);

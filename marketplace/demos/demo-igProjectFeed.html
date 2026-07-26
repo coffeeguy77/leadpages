@@ -3,27 +3,287 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Instagram Project Feed — Bean Culture demo</title>
 <link rel="stylesheet" href="./demo-shared.css">
 <script src="https://www.leadpages.com.au/icons.js"></script>
 <style>
 html.mp-demo-embed, html.mp-demo-embed body{margin:0;padding:0;min-height:0!important;height:auto!important;background:transparent;overflow:hidden}
 html.mp-demo-embed main#top{margin:0;padding:0;min-height:0}
 html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:none!important}
+html.mp-demo-embed section[data-sec="igProjectFeed"]{display:block!important;padding:28px 0 36px}
+html.mp-demo-embed .mp-ig-demo-note{margin:12px 0 0;font-size:12px;color:#5b6878;font-family:"Barlow",system-ui,sans-serif}
 </style>
 </head>
 <body>
 <main id="top">
 <section data-sec="igProjectFeed" class="section">
-<div class="wrap">
-      <div class="section-head"><span class="eyebrow">Instagram</span><h2>From the grid</h2><p></p></div>
-      <div class="pf-grid igpf-grid"></div>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Instagram</span>
+      <h2>From the grid</h2>
+      <p>Live project cards from Bean Culture’s connected Instagram — same connection as beanculture.com.au.</p>
     </div>
+    <div class="pf-grid igpf-grid"></div>
+    <p class="mp-ig-demo-note" data-ig-note hidden></p>
+  </div>
 </section>
 </main>
 
+<div id="pf-lightbox" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="pf-lb-backdrop"></div>
+  <div class="pf-lb-panel">
+    <button type="button" class="pf-lb-close" aria-label="Close">×</button>
+    <div class="pf-lb-media"></div>
+    <div class="pf-lb-side"><div class="pf-lb-body"></div><div class="pf-lb-actions"></div></div>
+  </div>
+</div>
+
 <script>
-var SITE_CONFIG = {"theme":{"pipe":"#1f7bb8"},"business":"Ace Plumbing Co.","trade":"plumber","phone":"0261000000","sections":{"igProjectFeed":{"on":true,"eyebrow":"Instagram","heading":"From the grid","intro":"","count":9,"columns":3,"titleSource":"none","tagLabel":"","showTag":true,"showDate":false,"textColor":"#1a2230","textBg":"#ffffff","btnBg":"#ff7a00","btnText":"#ffffff","callLabel":"Call now","quoteLabel":"Get a quote","linkLabel":"View on Instagram"}}};
+var SITE_CONFIG = {
+  "slug": "beanculture",
+  "theme": { "pipe": "#1f7bb8", "hivis": "#c45c26" },
+  "business": "Bean Culture",
+  "trade": "coffee",
+  "phone": "0261000000",
+  "sections": {
+    "igProjectFeed": {
+      "on": true,
+      "eyebrow": "Instagram",
+      "heading": "From the grid",
+      "intro": "Live project cards from Bean Culture’s connected Instagram — same connection as beanculture.com.au.",
+      "count": 9,
+      "columns": 3,
+      "titleSource": "caption",
+      "tagLabel": "Cafe",
+      "showTag": true,
+      "showDate": true,
+      "textColor": "#1a2230",
+      "textBg": "#ffffff",
+      "btnBg": "#c45c26",
+      "btnText": "#ffffff",
+      "callLabel": "Call now",
+      "quoteLabel": "Get a quote",
+      "linkLabel": "View on Instagram",
+      "showCall": true,
+      "showQuote": true,
+      "showLink": true
+    }
+  }
+};
 </script>
 <script src="./demo-shared.js"></script>
+<script>
+/* Marketplace Instagram Project Feed — Bean Culture ig_connections via /api/ig-media */
+(function () {
+  var MED = null;
+  var USR = null;
+  var FETCHING = false;
+  var BOUND = false;
+  var LAST = null;
+  var ITEMS = [];
+  var OPTS = {};
+  var USING_FALLBACK = false;
+
+  var FALLBACK = [
+    { image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&h=1000&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Fresh pour at the cart', timestamp: '2026-07-20T08:00:00Z' },
+    { image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&h=1000&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Morning brew setup', timestamp: '2026-07-18T07:30:00Z' },
+    { image: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800&h=1000&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Counter service', timestamp: '2026-07-15T09:15:00Z' },
+    { image: 'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=800&h=1000&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Latte art practice', timestamp: '2026-07-12T10:00:00Z' },
+    { image: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?w=800&h=1000&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Single origin beans', timestamp: '2026-07-10T11:20:00Z' },
+    { image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&h=1000&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Espresso shot', timestamp: '2026-07-08T08:45:00Z' },
+    { image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=800&h=1000&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Iced coffee season', timestamp: '2026-07-05T14:00:00Z' },
+    { image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=1000&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Coffee cart ready', timestamp: '2026-07-02T06:50:00Z' },
+    { image: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=800&h=1000&fit=crop&q=80', link: 'https://www.instagram.com/', caption: 'Weekend markets', timestamp: '2026-06-28T09:00:00Z' }
+  ];
+
+  function _e(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+  function _fl(s) {
+    s = String(s || '').replace(/\s+/g, ' ').trim();
+    return s.length > 70 ? s.slice(0, 70) + '\u2026' : s;
+  }
+  function _fd(ts) {
+    if (!ts) return '';
+    var d = new Date(ts);
+    return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function cfgOf() { return LAST || ((typeof SITE_CONFIG !== 'undefined') ? SITE_CONFIG : null); }
+  function slugOf(cfg) {
+    return (cfg && cfg.slug) || ((typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.slug) || 'beanculture');
+  }
+  function _opts(C) {
+    return {
+      showCall: (C.showCall !== false),
+      showQuote: (C.showQuote !== false),
+      showLink: (C.showLink !== false),
+      callLabel: (C.callLabel || 'Call now'),
+      quoteLabel: (C.quoteLabel || 'Get a quote'),
+      linkLabel: (C.linkLabel || 'View on Instagram'),
+      textColor: (C.textColor || '#1a2230'),
+      textBg: (C.textBg || '#ffffff'),
+      btnBg: (C.btnBg || '#ff7a00'),
+      btnText: (C.btnText || '#ffffff')
+    };
+  }
+  function _map(C) {
+    var cnt = parseInt(C.count, 10);
+    cnt = isNaN(cnt) ? 9 : Math.max(3, Math.min(24, cnt));
+    var src = (C.titleSource || 'none');
+    return MED.slice(0, cnt).map(function (m) {
+      var cap = (m.caption != null ? String(m.caption) : '');
+      var ttl = (src === 'caption') ? _fl(cap) : ((src === 'date') ? _fd(m.timestamp) : '');
+      return {
+        image: (m.image != null ? String(m.image) : ''),
+        title: ttl,
+        location: '',
+        service: (C.tagLabel || ''),
+        date: _fd(m.timestamp),
+        caption: cap,
+        permalink: (m.link != null ? String(m.link) : ''),
+        on: true
+      };
+    });
+  }
+
+  function paint(node, C) {
+    var grid = node.querySelector('.pf-grid');
+    var ey = node.querySelector('.eyebrow');
+    var hd = node.querySelector('h2');
+    var sb = node.querySelector('.section-head p');
+    var cols = parseInt(C.columns, 10);
+    cols = isNaN(cols) ? 3 : Math.max(2, Math.min(5, cols));
+    if (C.eyebrow != null && ey) ey.textContent = C.eyebrow;
+    if (C.heading != null && hd) hd.textContent = C.heading;
+    if (C.intro != null && sb) sb.textContent = C.intro;
+    node.style.setProperty('--pf-tc', (C.textColor || '#1a2230'));
+    node.style.setProperty('--pf-bg', (C.textBg || '#ffffff'));
+    if (grid) grid.style.setProperty('--igpf-cols', cols);
+    if (!MED || !MED.length) {
+      node.style.setProperty('display', 'none', 'important');
+      return;
+    }
+    ITEMS = _map(C);
+    OPTS = _opts(C);
+    var showTag = (C.showTag !== false);
+    var showTitle = (C.titleSource && C.titleSource !== 'none');
+    var showDate = (C.showDate === true);
+    var out = '';
+    for (var i = 0; i < ITEMS.length; i++) {
+      var it = ITEMS[i];
+      if (!it.image) continue;
+      var tag = (showTag && it.service) ? ('<span class="pf-tag">' + _e(it.service) + '</span>') : '';
+      var ttl = (showTitle && it.title) ? ('<h3 class="pf-title">' + _e(it.title) + '</h3>') : '';
+      var mt = (showDate && it.date) ? ('<div class="pf-meta">' + _e(it.date) + '</div>') : '';
+      var ov = (ttl || mt) ? ('<div class="pf-overlay">' + ttl + mt + '</div>') : '';
+      out += '<button type="button" class="pf-card pf-card--overlay igpf-card" data-igpf="' + i + '"><div class="pf-shot"><img class="pf-img" loading="lazy" src="' + _e(it.image) + '" alt="' + _e(it.title || '') + '">' + tag + ov + '<span class="pf-zoom">View</span></div></button>';
+    }
+    if (grid) grid.innerHTML = out;
+    node.style.setProperty('display', 'block', 'important');
+    var note = node.querySelector('[data-ig-note]');
+    if (note) {
+      if (USING_FALLBACK) {
+        note.hidden = false;
+        note.textContent = 'Demo preview — Bean Culture connection unavailable here, showing sample cafe photos.';
+      } else {
+        note.hidden = true;
+        note.textContent = '';
+      }
+    }
+    if (grid && !grid.__igpfDeleg) {
+      grid.__igpfDeleg = true;
+      grid.addEventListener('click', function (e) {
+        var b = e.target && e.target.closest ? e.target.closest('.igpf-card') : null;
+        if (!b) return;
+        var idx = parseInt(b.getAttribute('data-igpf'), 10);
+        if (isNaN(idx)) return;
+        try {
+          window.__PF_ITEMS = ITEMS;
+          window.__PF_OPTS = OPTS;
+          if (window.__pfOpenLightbox) window.__pfOpenLightbox(idx);
+        } catch (err) {}
+      });
+    }
+  }
+
+  function useFallback(node, C) {
+    MED = FALLBACK.slice();
+    USR = null;
+    USING_FALLBACK = true;
+    paint(node, C);
+  }
+
+  function run(cfg) {
+    try {
+      cfg = cfg || cfgOf();
+      var node = document.querySelector('[data-sec="igProjectFeed"]');
+      if (!node) return;
+      var C = (cfg && cfg.sections && cfg.sections.igProjectFeed) || {};
+      if (C.on !== true) {
+        node.style.setProperty('display', 'none', 'important');
+        return;
+      }
+      if (MED) {
+        paint(node, C);
+        return;
+      }
+      if (FETCHING) return;
+      var slug = slugOf(cfg) || 'beanculture';
+      FETCHING = true;
+      fetch('/api/ig-media?slug=' + encodeURIComponent(slug) + '&limit=24')
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          FETCHING = false;
+          if (j && j.connected && j.media && j.media.length) {
+            MED = j.media;
+            USR = j.username || null;
+            USING_FALLBACK = false;
+            paint(node, C);
+          } else {
+            useFallback(node, C);
+          }
+        })
+        .catch(function () {
+          FETCHING = false;
+          useFallback(node, C);
+        });
+    } catch (e) {}
+  }
+
+  function onApply(cfg) {
+    if (cfg) LAST = cfg;
+    run(cfg);
+  }
+
+  function bind() {
+    if (BOUND) return;
+    var o = window.__applyTradeConfig;
+    if (typeof o === 'function' && !o.__igpfW) {
+      var w = function (cfg) {
+        var r;
+        try { r = o.apply(this, arguments); } catch (e) {}
+        try { onApply(cfg); } catch (e2) {}
+        return r;
+      };
+      w.__igpfW = true;
+      window.__applyTradeConfig = w;
+      BOUND = true;
+    }
+  }
+
+  function init() {
+    bind();
+    onApply(cfgOf());
+  }
+  if (document.readyState !== 'loading') init();
+  else document.addEventListener('DOMContentLoaded', init);
+  setTimeout(bind, 0);
+  setTimeout(function () { onApply(cfgOf()); }, 700);
+})();
+</script>
 </body>
 </html>

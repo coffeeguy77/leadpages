@@ -986,6 +986,10 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       cfg.sections[sk] = merged;
       if (!cfg.theme && flat.theme) cfg.theme = Object.assign({}, flat.theme);
       else if (flat.theme) cfg.theme = Object.assign({}, flat.theme, cfg.theme || {});
+      /* Instagram demos use Bean Culture’s connected slug */
+      if (flat.slug && !cfg.slug) cfg.slug = flat.slug;
+      if (flat.business && !cfg.business) cfg.business = flat.business;
+      if (flat.phone && !cfg.phone) cfg.phone = flat.phone;
       return cfg;
     }
 

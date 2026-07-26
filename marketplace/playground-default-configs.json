@@ -583,30 +583,35 @@
     }
   },
   "igProjectFeed": {
-    "business": "Ace Plumbing Co.",
-    "trade": "plumber",
+    "business": "Bean Culture",
+    "trade": "coffee",
     "phone": "0261000000",
+    "slug": "beanculture",
     "theme": {
-      "pipe": "#1f7bb8"
+      "pipe": "#1f7bb8",
+      "hivis": "#c45c26"
     },
     "igProjectFeed": {
       "on": true,
       "eyebrow": "Instagram",
       "heading": "From the grid",
-      "intro": "",
+      "intro": "Live project cards from Bean Culture’s connected Instagram — same connection as beanculture.com.au.",
       "count": 9,
       "columns": 3,
-      "titleSource": "none",
-      "tagLabel": "",
+      "titleSource": "caption",
+      "tagLabel": "Cafe",
       "showTag": true,
-      "showDate": false,
+      "showDate": true,
       "textColor": "#1a2230",
       "textBg": "#ffffff",
-      "btnBg": "#ff7a00",
+      "btnBg": "#c45c26",
       "btnText": "#ffffff",
       "callLabel": "Call now",
       "quoteLabel": "Get a quote",
-      "linkLabel": "View on Instagram"
+      "linkLabel": "View on Instagram",
+      "showCall": true,
+      "showQuote": true,
+      "showLink": true
     }
   },
   "instaGallery": {
