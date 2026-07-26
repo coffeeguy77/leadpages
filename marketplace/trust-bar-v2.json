@@ -24,6 +24,20 @@
       "description": "Full-width image tiles with captions — great when visitors need to recognise options at a glance."
     }
   ],
+  "benefits": [
+    {
+      "title": "Visible without clutter",
+      "text": "Keeps key services or credentials in view while the rest of the page stays focused on your offer."
+    },
+    {
+      "title": "Real business examples",
+      "text": "Start from industry presets, then swap icons, wording and colours with the same editor controls as your live site."
+    },
+    {
+      "title": "Works on every device",
+      "text": "Desktop, tablet and phone layouts stay clear — preview sizes in the demo before you publish."
+    }
+  ],
   "examples": [
     {
       "id": "aam1-coating",

@@ -1,6 +1,7 @@
 /**
- * Marketplace feature page V2 — sell-first Trust Bar reference implementation.
- * Uses real playground iframe + LPTrustBarEditor (same control set as manage).
+ * Marketplace feature page V2 — compact Trust Bar reference.
+ * Coloured top = app info. White section = demo + examples.
+ * Uses real playground iframe + LPTrustBarEditor + LPIconPicker.
  */
 (function () {
   'use strict';
@@ -36,9 +37,7 @@
   var announceEl = null;
 
   function announce(msg) {
-    if (!announceEl) {
-      announceEl = document.getElementById('mp-live-status');
-    }
+    if (!announceEl) announceEl = document.getElementById('mp-live-status');
     if (announceEl) announceEl.textContent = msg || '';
   }
 
@@ -77,16 +76,6 @@
     if (window.LPPlaygroundPreset) return window.LPPlaygroundPreset.presetToSiteConfig(preset);
     if (preset && preset.site_config) return deepClone(preset.site_config);
     return { sections: {}, theme: {} };
-  }
-
-  function applyLiveConfig() {
-    if (!iframe) return;
-    try {
-      if (iframe.contentWindow && iframe.contentWindow.__applyTradeConfig) {
-        iframe.contentWindow.__applyTradeConfig(liveSiteCfg);
-      }
-    } catch (_e) {}
-    sizeIframe();
   }
 
   function measurePreviewHeight() {
@@ -129,6 +118,16 @@
     iframe.style.height = h + 'px';
     iframe.style.marginBottom = ((h * s) - h) + 'px';
     if (wrap) wrap.style.height = (h * s + 16) + 'px';
+  }
+
+  function applyLiveConfig() {
+    if (!iframe) return;
+    try {
+      if (iframe.contentWindow && iframe.contentWindow.__applyTradeConfig) {
+        iframe.contentWindow.__applyTradeConfig(liveSiteCfg);
+      }
+    } catch (_e) {}
+    sizeIframe();
   }
 
   function mountEditor() {
@@ -177,9 +176,6 @@
         var pg = document.getElementById('playground');
         if (pg) pg.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-      // highlight paired preset if any
-      var paired = preset.pairedPresetId || (preset.site_config && preset.pairedPresetId);
-      void paired;
     });
   }
 
@@ -194,95 +190,80 @@
     }).join('');
   }
 
+  function infoPoints(feature) {
+    var points = [];
+    var short = ((meta && meta.shortDescription) || feature.summary || '').trim();
+    var overview = ((meta && meta.longDescription) || feature.summary || feature.tagline || '').trim();
+    if (overview && overview !== short) {
+      points.push({ title: 'What it does', text: overview });
+    }
+    ((meta && meta.modes) || []).forEach(function (m) {
+      if (!m || !m.name) return;
+      points.push({ title: m.name, text: m.description || '' });
+    });
+    ((meta && meta.benefits) || []).forEach(function (b) {
+      if (!b || !b.title) return;
+      points.push({ title: b.title, text: b.text || b.description || '' });
+    });
+    points.push({
+      title: 'Included with LeadPages',
+      text: 'No extra subscription for the Trust Bar itself. Premium and usage-based tools on other apps are marked clearly.'
+    });
+    points.push({
+      title: 'Same editor as your website',
+      text: 'Layout, colours, icons and items use the real LeadPages controls — nothing here is saved until you join and edit your own site.'
+    });
+    return points;
+  }
+
   function renderExamples(root, feature) {
     var examples = (meta && meta.examples) || [];
     var Acc = window.LPMarketplaceAccess;
     var accessType = (meta && meta.accessType) || 'included';
     var accessLong = Acc ? Acc.publicLabel(accessType, 'long') : 'Included with your LeadPages website';
+    var points = infoPoints(feature);
 
-    var modesHtml = ((meta && meta.modes) || []).map(function (m) {
-      return '<article class="mp-mode-card"><h3>' + esc(m.name) + '</h3><p>' + esc(m.description) + '</p></article>';
+    var pointsHtml = points.map(function (p, i) {
+      return '<details class="mp-info-point"' + (i === 0 ? ' open' : '') + '>'
+        + '<summary><span class="mp-info-title">' + esc(p.title) + '</span></summary>'
+        + '<p class="mp-info-text">' + esc(p.text) + '</p>'
+        + '</details>';
     }).join('');
 
     var examplesHtml = examples.map(function (ex, idx) {
-      var items = (ex.visibleItems || []).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
-      return '<article class="mp-example-card">'
-        + '<div class="mp-example-copy">'
-        + '<span class="eyebrow">Example ' + (idx + 1) + ' — ' + esc(ex.businessName) + '</span>'
-        + '<h3>' + esc(ex.title) + '</h3>'
-        + '<p>' + esc(ex.description) + '</p>'
-        + '<p class="mp-example-meta"><strong>Industry:</strong> ' + esc(ex.industry)
-        + ' · <strong>Mode:</strong> ' + esc(ex.mode === 'images' ? 'Image Tiles' : 'Text and Icons') + '</p>'
-        + '<ul class="mp-example-items">' + items + '</ul>'
-        + '<button type="button" class="btn" data-try-preset="' + esc(ex.presetSlug) + '">Try this example</button>'
-        + '</div>'
-        + '<div class="mp-example-preview" data-example-preview="' + esc(ex.presetSlug) + '" aria-label="' + esc(ex.businessName) + ' Trust Bar preview"></div>'
-        + '</article>';
+      return '<button type="button" class="mp-ex-chip" data-try-preset="' + esc(ex.presetSlug) + '">'
+        + '<strong>' + esc(ex.businessName) + '</strong>'
+        + '<span>' + esc(ex.mode === 'images' ? 'Image tiles' : 'Text and icons') + ' · ' + esc(ex.industry) + '</span>'
+        + '</button>';
     }).join('');
 
-    var industry = (meta.presetOrder || []).filter(function (s) {
-      return s.indexOf('carpenter') >= 0 || s.indexOf('plumber') >= 0 || s.indexOf('electrician') >= 0
-        || s.indexOf('landscaper') >= 0 || s.indexOf('cafe') >= 0 || s.indexOf('accountant') >= 0
-        || s.indexOf('medical') >= 0 || s.indexOf('rendering') >= 0 || s.indexOf('beauty') >= 0
-        || s.indexOf('builder') >= 0 || s.indexOf('restaurant') >= 0 || s.indexOf('event') >= 0
-        || s.indexOf('bean') >= 0 || s.indexOf('aam1') >= 0;
-    });
-
     root.innerHTML = ''
-      + '<header class="feat-hero mp-v2-hero"><div class="feat-hero-inner wrap-wide">'
+      + '<header class="feat-hero mp-v2-hero mp-info-hero"><div class="feat-hero-inner wrap">'
       + '<div class="crumb"><a href="/marketplace?v2=1">← Marketplace</a></div>'
       + '<span class="eyebrow">' + esc((meta && meta.categoryEyebrow) || 'Trust and credibility') + '</span>'
-      + '<h1>' + esc((meta && meta.publicHeading) || feature.name) + '</h1>'
-      + '<p class="hsum">' + esc((meta && meta.longDescription) || feature.summary || '') + '</p>'
+      + '<h1>' + esc(feature.name || 'Trust Bar') + '</h1>'
+      + '<p class="hsum">' + esc((meta && meta.shortDescription) || feature.summary || '') + '</p>'
       + '<div class="mp-labels">'
-      + ((meta && meta.featureLabels) || []).map(function (l) { return '<span class="mp-label">' + esc(l) + '</span>'; }).join('')
+      + ((meta && meta.featureLabels) || []).map(function (l) {
+        return '<span class="mp-label">' + esc(l) + '</span>';
+      }).join('')
       + '<span class="mp-label">' + esc(accessLong) + '</span>'
       + '</div>'
+      + '<div class="mp-info-list" aria-label="App details">' + pointsHtml + '</div>'
       + '<div class="hcta">'
-      + '<a class="btn" href="#examples">View examples</a>'
-      + '<a class="btn ghost" href="#playground">Try the playground</a>'
+      + '<a class="btn" href="#playground">Try the demo ↓</a>'
+      + '<a class="btn ghost" href="/partners">Become a partner</a>'
       + '</div>'
-      + '<div class="mp-hero-live" id="mp-hero-preview" aria-label="Featured Trust Bar example"></div>'
       + '</div></header>'
 
-      + '<article class="mp-v2-article"><div class="wrap">'
-      + '<section class="blk" id="examples">'
-      + '<div class="blk-eyebrow">Real website examples</div>'
-      + '<h2>See how different businesses use it.</h2>'
-      + '<p class="mp-lede">Finished results first — then try the same layout in the playground.</p>'
-      + examplesHtml
-      + '</section>'
-
-      + '<section class="blk" id="modes">'
-      + '<div class="blk-eyebrow">Layouts and possibilities</div>'
-      + '<h2>Two clear ways to present the same idea.</h2>'
-      + '<div class="mp-modes">' + modesHtml + '</div>'
-      + '</section>'
-
-      + '<section class="blk" id="presets">'
-      + '<div class="blk-eyebrow">Industry inspiration</div>'
-      + '<h2>Start with an idea for your industry.</h2>'
-      + '<p class="mp-lede">Choose an example, then change the wording, icons, images and colours using the same editor available inside LeadPages.</p>'
-      + '<div class="mp-industry-grid" id="mp-industry">'
-      + industry.map(function (slug) {
-        var label = slug.replace(/^trustbar-/, '').replace(/-/g, ' ');
-        return '<button type="button" class="mp-industry-card" data-try-preset="' + esc(slug) + '"><span>' + esc(label) + '</span></button>';
-      }).join('')
-      + '</div></section>'
-
-      + '<section class="blk" id="access">'
-      + '<div class="blk-eyebrow">Access</div>'
-      + '<h2>Included with your LeadPages website.</h2>'
-      + '<p class="mp-lede">The Trust Bar is included. Other marketplace apps may be free with limits, premium, usage-based, or require an external connection — those are marked clearly on each page.</p>'
-      + '</section>'
-
-      + '<section class="blk pg pg-full mp-pg" id="playground">'
-      + '<div class="pg-band">'
-      + '<div class="blk-eyebrow">Try it yourself</div>'
-      + '<h2>It really is this simple.</h2>'
-      + '<p>Choose a preset and make a few changes. This is the same editor used inside LeadPages, so what you try here is exactly what you will use when editing your own website.</p>'
-      + '<p class="mp-note">Have a play. Nothing here will be saved.</p>'
+      + '<article class="mp-demo-article"><div class="wrap">'
+      + '<section class="mp-demo-block" id="playground">'
+      + '<div class="mp-demo-head">'
+      + '<div class="blk-eyebrow">Live demo</div>'
+      + '<h2>Try it with real business examples</h2>'
+      + '<p class="mp-lede">Pick an example, edit icons and wording, and watch the preview update. Nothing here is saved.</p>'
       + '</div>'
+      + (examplesHtml ? '<div class="mp-ex-row" aria-label="Real examples">' + examplesHtml + '</div>' : '')
       + '<div class="mp-pg-preview">'
       + '<div class="pg-devicewrap" data-r="wrap"><div class="pg-viewport" data-r="vp"><div class="pg-canvas" data-r="canvas"></div></div></div>'
       + '</div>'
@@ -297,32 +278,19 @@
       + '<button type="button" class="btn ghost" id="mp-reset">Reset example</button>'
       + '</div></div>'
       + '<div class="mp-pg-editor mp-pg-editor-compact">'
-      + '<button type="button" class="btn mp-edit-mobile" id="mp-edit-mobile">Edit this example</button>'
       + '<div id="mp-tb-editor" class="tb-ed-root tb-ed-compact"></div>'
       + '</div>'
       + '<p class="sr-only" id="mp-live-status" aria-live="polite"></p>'
       + '</section>'
 
-      + '<section class="blk" id="same-editor">'
-      + '<div class="blk-eyebrow">The real editor</div>'
-      + '<h2>No hidden builder to learn later.</h2>'
-      + '<p class="mp-lede">The controls above are the real LeadPages controls. Upload your images, change your wording, choose a layout and publish when you are ready.</p>'
-      + '<ol class="mp-steps">'
-      + '<li><strong>Choose an idea.</strong> Start from a practical business preset.</li>'
-      + '<li><strong>Make it yours.</strong> Replace the wording, icons and images.</li>'
-      + '<li><strong>See every change.</strong> The website preview updates instantly.</li>'
-      + '<li><strong>Publish confidently.</strong> The same controls continue inside your LeadPages account.</li>'
-      + '</ol></section>'
-
-      + '<section class="blk"><div class="ctab">'
-      + '<h2>Imagine this already built into your website.</h2>'
-      + '<p>LeadPages gives you practical website features, real business examples and an editor designed for people who want to build attractive websites without learning code.</p>'
+      + '<section class="mp-demo-cta">'
+      + '<h2>Ready to use this on your website?</h2>'
+      + '<p>Many apps are included. Premium and usage-based tools are clearly marked before you use them.</p>'
       + '<div class="mp-hero-cta">'
-      + '<a class="btn" style="background:var(--theme-page-background,var(--paper));color:var(--theme-secondary,var(--gum))" href="/start-your-business">Build my LeadPages website</a>'
+      + '<a class="btn" href="/start-your-business">Build my LeadPages website</a>'
       + '<a class="btn ghost" href="/partners">Become a LeadPages partner</a>'
       + '</div>'
-      + '<p class="mp-note" style="margin-top:16px">Many apps are included. Premium and usage-based tools are clearly marked before you use them.</p>'
-      + '</div></section>'
+      + '</section>'
       + '</div></article>';
   }
 
@@ -359,66 +327,6 @@
         announce('Example reset');
       });
     }
-
-    var editMobile = document.getElementById('mp-edit-mobile');
-    if (editMobile) {
-      editMobile.addEventListener('click', function () {
-        var ed = document.getElementById('mp-tb-editor');
-        if (ed) {
-          ed.hidden = false;
-          ed.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          announce('Editor opened');
-        }
-      });
-    }
-  }
-
-  function mountHeroPreview(slug) {
-    var host = document.getElementById('mp-hero-preview');
-    if (!host) return;
-    var fr = document.createElement('iframe');
-    fr.src = '/marketplace/demos/demo-trustBar.html';
-    fr.title = 'Featured Trust Bar example';
-    fr.style.cssText = 'width:100%;border:0;display:block;min-height:0;border-radius:12px;background:transparent';
-    fr.addEventListener('load', function () {
-      fetchPreset(slug).then(function (preset) {
-        try {
-          fr.contentWindow.__applyTradeConfig(presetToSiteConfig(preset));
-          setTimeout(function () {
-            try {
-              var sec = fr.contentDocument.querySelector('[data-sec="trustBar"]') || fr.contentDocument.body;
-              fr.style.height = (Math.ceil(sec.getBoundingClientRect().height) + 8) + 'px';
-            } catch (_e) {}
-          }, 120);
-        } catch (_e2) {}
-      });
-    });
-    host.appendChild(fr);
-  }
-
-  function mountExamplePreviews() {
-    document.querySelectorAll('[data-example-preview]').forEach(function (host) {
-      var slug = host.getAttribute('data-example-preview');
-      var fr = document.createElement('iframe');
-      fr.src = '/marketplace/demos/demo-trustBar.html';
-      fr.title = 'Example preview';
-      fr.loading = 'lazy';
-      fr.style.cssText = 'width:100%;border:0;display:block;min-height:0;border-radius:12px;background:transparent';
-      fr.addEventListener('load', function () {
-        fetchPreset(slug).then(function (preset) {
-          try {
-            fr.contentWindow.__applyTradeConfig(presetToSiteConfig(preset));
-            setTimeout(function () {
-              try {
-                var sec = fr.contentDocument.querySelector('[data-sec="trustBar"]') || fr.contentDocument.body;
-                fr.style.height = (Math.ceil(sec.getBoundingClientRect().height) + 8) + 'px';
-              } catch (_e) {}
-            }, 120);
-          } catch (_e2) {}
-        });
-      });
-      host.appendChild(fr);
-    });
   }
 
   function addStyles() {
@@ -426,50 +334,42 @@
     var s = document.createElement('style');
     s.id = 'mp-feature-v2-style';
     s.textContent = [
-      '.mp-v2-hero .hsum{max-width:60ch}',
-      '.mp-labels{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 8px}',
+      '.mp-info-hero .hsum{max-width:60ch;margin:0 0 14px}',
+      '.mp-info-hero .feat-hero-inner{padding-bottom:36px}',
+      '.mp-labels{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px}',
       '.mp-label{display:inline-flex;padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.25);font-size:13px;font-weight:700;color:#F3EFEA}',
-      '.mp-hero-live{margin-top:28px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:10px;overflow:hidden}',
-      '.mp-lede{color:var(--theme-text-muted,var(--mut));max-width:60ch;margin:0 0 22px}',
-      '.mp-note{font-size:14px;color:var(--theme-text-muted,var(--mut));margin-top:10px}',
-      '.mp-example-card{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:start;margin:0 0 36px;padding:24px;border:1px solid var(--theme-border,var(--line));border-radius:var(--theme-radius-large,22px);background:var(--theme-surface,#fff)}',
-      '@media(max-width:900px){.mp-example-card{grid-template-columns:1fr}}',
-      '.mp-example-items{margin:12px 0 18px;padding-left:18px;color:var(--theme-text,var(--ink))}',
-      '.mp-example-meta{font-size:14px;color:var(--theme-text-muted,var(--mut))}',
-      '.mp-modes{display:grid;grid-template-columns:1fr 1fr;gap:16px}',
-      '@media(max-width:700px){.mp-modes{grid-template-columns:1fr}}',
-      '.mp-mode-card{padding:20px;border:1px solid var(--theme-border,var(--line));border-radius:16px;background:var(--theme-surface-alt,var(--shell))}',
-      '.mp-mode-card h3{font-family:var(--theme-heading-font,var(--disp));margin-bottom:8px}',
-      '.mp-industry-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}',
-      '@media(max-width:900px){.mp-industry-grid{grid-template-columns:repeat(2,1fr)}}',
-      '.mp-industry-card{appearance:none;border:1px solid var(--theme-border,var(--line));background:var(--theme-surface,#fff);border-radius:14px;padding:16px;text-align:left;font:inherit;font-weight:700;cursor:pointer;text-transform:capitalize}',
-      '.mp-industry-card:hover,.mp-industry-card:focus-visible{border-color:var(--theme-primary,var(--rose));outline:3px solid var(--theme-focus,var(--rose));outline-offset:2px}',
+      '.mp-info-list{max-width:720px;margin:0 0 22px;display:grid;gap:8px}',
+      '.mp-info-point{border:1px solid rgba(255,255,255,.18);border-radius:12px;background:rgba(255,255,255,.06);padding:0;overflow:hidden}',
+      '.mp-info-point summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:12px}',
+      '.mp-info-point summary::-webkit-details-marker{display:none}',
+      '.mp-info-point summary::after{content:"+";font-weight:800;opacity:.8}',
+      '.mp-info-point[open] summary::after{content:"–"}',
+      '.mp-info-point .mp-info-text{margin:0;padding:0 14px 14px;color:#C9D2CC;font-size:15px;line-height:1.5;max-width:62ch}',
+      '.mp-demo-article{background:var(--theme-page-background,var(--paper,#FAF5F2));padding:36px 0 72px}',
+      '.mp-demo-block{background:var(--theme-surface,#fff);border:1px solid var(--theme-border,var(--line));border-radius:18px;padding:22px 20px 18px;margin-bottom:22px}',
+      '.mp-demo-head{margin:0 0 16px}',
+      '.mp-demo-head h2{font-family:var(--theme-heading-font,var(--disp));font-size:clamp(24px,3vw,32px);margin:6px 0 8px}',
+      '.mp-lede{color:var(--theme-text-muted,var(--mut));max-width:60ch;margin:0}',
+      '.mp-ex-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}',
+      '.mp-ex-chip{appearance:none;border:1px solid var(--theme-border,var(--line));background:var(--theme-surface-alt,var(--shell));border-radius:12px;padding:10px 12px;text-align:left;cursor:pointer;font:inherit;display:flex;flex-direction:column;gap:2px;min-width:180px}',
+      '.mp-ex-chip strong{font-size:14px}',
+      '.mp-ex-chip span{font-size:12.5px;color:var(--theme-text-muted,var(--mut))}',
+      '.mp-ex-chip:hover,.mp-ex-chip:focus-visible{border-color:var(--theme-primary,var(--rose));outline:3px solid var(--theme-focus,var(--rose));outline-offset:2px}',
       '.mp-pg-preview{margin:0 0 8px;line-height:0}',
       '.mp-pg-preview .pg-iframe,.mp-pg-preview iframe{display:block;min-height:0!important}',
       '.mp-pg-editor-compact{margin-top:4px}',
-      '@media(max-width:960px){.mp-edit-mobile{display:inline-flex!important}}',
-      '.mp-edit-mobile{display:none;margin-bottom:10px}',
       '.mp-pg-actions{display:flex;gap:8px;flex-wrap:wrap}',
-      '.mp-pg .pg-topbar{flex-wrap:wrap;gap:10px;padding:4px 0 10px}',
-      '.mp-steps{margin:0;padding-left:22px;max-width:64ch}',
-      '.mp-steps li{margin:0 0 12px}',
-      '.mp-hero-cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:18px}',
+      '.mp-pg .pg-topbar,.mp-demo-block .pg-topbar{flex-wrap:wrap;gap:10px;padding:4px 0 10px}',
+      '.mp-demo-cta{text-align:center;padding:28px 18px 8px}',
+      '.mp-demo-cta h2{font-family:var(--theme-heading-font,var(--disp));font-size:clamp(24px,3vw,32px);margin:0 0 10px}',
+      '.mp-demo-cta p{color:var(--theme-text-muted,var(--mut));max-width:48ch;margin:0 auto 18px}',
+      '.mp-hero-cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}',
+      '.mp-hero-cta .btn,.hcta .btn{display:inline-flex;font-weight:700;padding:12px 22px;border-radius:999px;background:var(--theme-primary,var(--rose));color:#fff;border:2px solid transparent}',
+      '.mp-hero-cta .btn.ghost,.hcta .btn.ghost{background:transparent;border-color:currentColor;color:inherit}',
       '.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}',
-      'section.back p{max-width:52ch;margin:0 auto 18px}'
+      'section.back{display:none}'
     ].join('\n');
     document.head.appendChild(s);
-  }
-
-  function patchBackBand() {
-    var back = document.querySelector('section.back');
-    if (!back) return;
-    back.innerHTML = '<h2>Imagine this already built into your website.</h2>'
-      + '<p>LeadPages gives you practical website features, real business examples and an editor designed for people who want to build attractive websites without learning code.</p>'
-      + '<p class="mp-note">Many apps are included. Premium and usage-based tools are clearly marked before you use them.</p>'
-      + '<div class="mp-hero-cta">'
-      + '<a class="btn" href="/start-your-business">Build my LeadPages website</a>'
-      + '<a class="btn" href="/partners" style="background:transparent;border:2px solid currentColor">Become a LeadPages partner</a>'
-      + '</div>';
   }
 
   function bootFeatureV2(feature) {
@@ -478,13 +378,13 @@
     if (!page) return false;
     addStyles();
     document.documentElement.setAttribute('data-mp-v2', '1');
-    patchBackBand();
 
     loadMeta().then(function (m) {
       meta = m || {
         publicHeading: 'Give visitors a reason to trust you immediately.',
-        categoryEyebrow: 'Trust and credibility',
+        shortDescription: feature.summary || '',
         longDescription: feature.summary || '',
+        categoryEyebrow: 'Trust and credibility',
         accessType: 'included',
         featureLabels: ['Included with LeadPages', 'Mobile responsive', 'Multiple layouts'],
         modes: [
@@ -498,16 +398,11 @@
       renderExamples(page, feature);
       wirePage();
       var def = meta.defaultPlaygroundPreset || 'trustbar-aam1';
-      // Prefetch labels then select
       var order = meta.presetOrder || [def];
       Promise.all(order.map(function (s) { return fetchPreset(s).catch(function () { return null; }); }))
         .then(function () {
           renderPresetButtons();
           return selectPreset(def);
-        })
-        .then(function () {
-          mountHeroPreview(def);
-          mountExamplePreviews();
         });
     });
     return true;
@@ -524,7 +419,7 @@
     if (!v2On() || slug !== 'trust-bar') return;
     var page = document.getElementById('page');
     if (!page) return;
-    page.innerHTML = '<div class="status">Loading Trust Bar showcase…</div>';
+    page.innerHTML = '<div class="status">Loading Trust Bar…</div>';
     var fallback = {
       name: 'Trust Bar',
       slug: 'trust-bar',
