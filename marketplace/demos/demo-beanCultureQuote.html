@@ -9,29 +9,19 @@
 <style>
 html.mp-demo-embed, html.mp-demo-embed body{
   margin:0;padding:0;min-height:0!important;height:auto!important;
-  background:#F7F4EF;overflow:auto
+  background:#F7F4EF;
+  /* Parent page scrolls — avoid nested iframe scroll trap */
+  overflow:hidden!important
 }
-html.mp-demo-embed main#top{margin:0;padding:20px 16px 28px;min-height:0}
+html.mp-demo-embed main#top{margin:0;padding:12px 12px 16px;min-height:0}
 html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:none!important}
 .oq-showcase-wrap{max-width:920px;margin:0 auto}
-.oq-showcase-kicker{
-  font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
-  color:#A84A5E;margin:0 0 8px
-}
-.oq-showcase-title{
-  font-family:Georgia,"Times New Roman",serif;font-size:clamp(22px,3vw,30px);
-  margin:0 0 8px;color:#2E2A2B
-}
-.oq-showcase-lede{margin:0 0 18px;color:#5A5248;font-size:15px;line-height:1.5;max-width:52ch}
-#lp-online-quote{min-height:420px}
+#lp-online-quote{min-height:0}
 </style>
 </head>
 <body>
 <main id="top">
   <div class="oq-showcase-wrap">
-    <p class="oq-showcase-kicker">Premium example · Bean Culture</p>
-    <h1 class="oq-showcase-title">Verified quote flow — end result</h1>
-    <p class="oq-showcase-lede">Browse the steps to see how a finished quote looks. Nothing here submits, verifies, texts or bills — LeadPages configures this with you.</p>
     <div id="lp-online-quote"
       data-showcase="1"
       data-slug="beanculture-showcase"
@@ -42,5 +32,43 @@ html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:non
 <script src="/assets/lp-quote-display.js"></script>
 <script src="/assets/lp-quote-planning.js"></script>
 <script src="/assets/lp-online-quote.js"></script>
+<script>
+(function () {
+  'use strict';
+  var last = 0;
+  function measure() {
+    var root = document.documentElement;
+    var body = document.body;
+    var h = Math.max(
+      root ? root.scrollHeight : 0,
+      body ? body.scrollHeight : 0,
+      root ? root.offsetHeight : 0,
+      body ? body.offsetHeight : 0
+    );
+    var q = document.getElementById('lp-online-quote');
+    if (q) h = Math.max(h, q.offsetTop + q.offsetHeight + 20);
+    h = Math.ceil(h);
+    if (h < 240) h = 240;
+    if (h === last) return;
+    last = h;
+    try {
+      parent.postMessage({ type: 'lp-mp-embed-height', height: h }, '*');
+    } catch (_e) {}
+  }
+  function tick() {
+    measure();
+    requestAnimationFrame(measure);
+  }
+  window.addEventListener('load', tick);
+  window.addEventListener('resize', measure);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tick);
+  else tick();
+  try {
+    var mo = new MutationObserver(function () { measure(); });
+    mo.observe(document.documentElement, { childList: true, subtree: true, attributes: true, characterData: true });
+  } catch (_e) {}
+  setInterval(measure, 800);
+})();
+</script>
 </body>
 </html>

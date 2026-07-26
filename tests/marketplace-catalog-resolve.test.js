@@ -30,21 +30,30 @@ describe('marketplace catalog resolve', () => {
     const embed = quote.blocks.find((b) => b.block_type === 'demo_embed');
     assert.ok(embed);
     assert.equal(embed.payload.url, '/marketplace/demos/demo-beanCultureQuote.html');
+    assert.equal(embed.payload.autosize, true);
     assert.ok(quote.blocks.some((b) => b.block_type === 'cta'));
+    assert.ok(!quote.blocks.some((b) => b.block_type === 'benefits'), 'no Premium quote flow process cards');
 
     const stale = resolve.enrichCatalogPayload(
       { id: '1', slug: 'quote-lead-capture', name: 'Quote', status: 'live', section_key: 'onlineQuote' },
-      [{ block_type: 'playground', payload: { section_key: 'onlineQuote', presets: ['default'] } }],
+      [
+        { block_type: 'playground', payload: { section_key: 'onlineQuote', presets: ['default'] } },
+        { block_type: 'benefits', payload: { heading: 'Premium quote flow', items: [{ title: 'x', text: 'y' }] } }
+      ],
       'quote-lead-capture'
     );
     assert.equal(stale.feature.section_key, null);
     assert.equal(resolve.hasPlayground(stale.blocks), false);
     assert.ok(stale.blocks.some((b) => b.block_type === 'demo_embed'));
+    assert.ok(!stale.blocks.some((b) => b.block_type === 'benefits'));
 
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /premiumShowcase\s*:\s*true/);
     assert.match(feat, /demo-beanCultureQuote/);
     assert.match(feat, /Talk to LeadPages/);
+    assert.match(feat, /wireEmbedAutosize|lp-mp-embed-height/);
+    assert.match(feat, /data-lp-embed-resize/);
+    assert.doesNotMatch(feat, /Premium quote flow/);
     /* Relative /marketplace/demos/… URLs must pass safeUrl or the iframe never renders */
     assert.match(feat, /u\.charAt\(0\)==='\/'/);
     assert.match(feat, /case 'demo_embed':[\s\S]*?safeUrl\(p\.url\)/);
@@ -53,6 +62,9 @@ describe('marketplace catalog resolve', () => {
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-beanCultureQuote.html'), 'utf8');
     assert.match(demo, /data-showcase="1"/);
     assert.match(demo, /bean-culture-quote-shell\.json/);
+    assert.match(demo, /lp-mp-embed-height/);
+    assert.match(demo, /overflow:hidden/);
+    assert.doesNotMatch(demo, /Verified quote flow — end result/);
     const oq = fs.readFileSync(path.join(root, 'assets/lp-online-quote.js'), 'utf8');
     assert.match(oq, /blockSpend/);
     assert.match(oq, /loadShowcaseShell/);
