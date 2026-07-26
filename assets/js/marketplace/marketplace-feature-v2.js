@@ -89,43 +89,46 @@
     sizeIframe();
   }
 
+  function measurePreviewHeight() {
+    if (!iframe) return 0;
+    try {
+      var doc = iframe.contentDocument;
+      if (!doc) return 0;
+      var sec = doc.querySelector('[data-sec="trustBar"]') || doc.querySelector('main') || doc.body;
+      var h = sec ? Math.ceil(sec.getBoundingClientRect().height || sec.scrollHeight || 0) : 0;
+      if (!h) h = Math.ceil(doc.body.scrollHeight || 0);
+      if (h < 40) h = 40;
+      if (h > 720) h = 720;
+      return h + 8;
+    } catch (_e) {
+      return 0;
+    }
+  }
+
   function sizeIframe() {
     if (!iframe) return;
-    var wrap = document.querySelector('.mp-pg-devicewrap');
+    var wrap = document.querySelector('[data-r="wrap"]');
     var wmap = { desktop: null, tablet: 768, phone: 390 };
     var w = wmap[device];
+    var h = measurePreviewHeight() || 120;
+    iframe.style.minHeight = '0';
     if (!w) {
       iframe.style.width = '100%';
       iframe.style.transform = 'none';
       iframe.style.marginBottom = '';
+      iframe.style.height = h + 'px';
       if (wrap) { wrap.style.height = ''; wrap.classList.remove('framed'); }
-    } else if (wrap) {
-      wrap.classList.add('framed');
-      iframe.style.width = w + 'px';
-      var avail = wrap.clientWidth - 48;
-      var s = Math.min(1, avail / w);
-      iframe.style.transform = 'scale(' + s + ')';
-      iframe.style.transformOrigin = 'top center';
-      setTimeout(function () {
-        try {
-          var h = iframe.contentDocument.body.scrollHeight || 420;
-          iframe.style.height = (h + 32) + 'px';
-          iframe.style.marginBottom = ((h * s) - h) + 'px';
-          wrap.style.height = (h * s + 48) + 'px';
-        } catch (_e) {
-          iframe.style.height = '420px';
-        }
-      }, 200);
       return;
     }
-    setTimeout(function () {
-      try {
-        var h2 = iframe.contentDocument.body.scrollHeight;
-        iframe.style.height = (h2 + 32) + 'px';
-      } catch (_e2) {
-        iframe.style.height = '420px';
-      }
-    }, 120);
+    if (wrap) wrap.classList.add('framed');
+    iframe.style.width = w + 'px';
+    var avail = (wrap ? wrap.clientWidth : window.innerWidth) - 48;
+    var s = Math.min(1, avail / w);
+    iframe.style.transform = 'scale(' + s + ')';
+    iframe.style.transformOrigin = 'top center';
+    iframe.style.height = h + 'px';
+    iframe.style.marginBottom = ((h * s) - h) + 'px';
+    if (wrap) wrap.style.height = (h * s + 16) + 'px';
   }
 
   function mountEditor() {
@@ -154,11 +157,11 @@
           iframe = document.createElement('iframe');
           iframe.className = 'pg-iframe';
           iframe.src = '/marketplace/demos/demo-trustBar.html';
-          iframe.style.cssText = 'width:100%;border:0;display:block;min-height:320px';
+          iframe.style.cssText = 'width:100%;border:0;display:block;min-height:0;height:auto;vertical-align:top';
           iframe.setAttribute('title', 'Trust Bar live preview');
           iframe.addEventListener('load', function () {
             applyLiveConfig();
-            sizeIframe();
+            setTimeout(sizeIframe, 60);
           });
           canvas.innerHTML = '';
           canvas.appendChild(iframe);
@@ -376,14 +379,17 @@
     var fr = document.createElement('iframe');
     fr.src = '/marketplace/demos/demo-trustBar.html';
     fr.title = 'Featured Trust Bar example';
-    fr.style.cssText = 'width:100%;border:0;display:block;min-height:200px;border-radius:14px;background:#fff';
+    fr.style.cssText = 'width:100%;border:0;display:block;min-height:0;border-radius:12px;background:transparent';
     fr.addEventListener('load', function () {
       fetchPreset(slug).then(function (preset) {
         try {
           fr.contentWindow.__applyTradeConfig(presetToSiteConfig(preset));
           setTimeout(function () {
-            try { fr.style.height = (fr.contentDocument.body.scrollHeight + 16) + 'px'; } catch (_e) {}
-          }, 200);
+            try {
+              var sec = fr.contentDocument.querySelector('[data-sec="trustBar"]') || fr.contentDocument.body;
+              fr.style.height = (Math.ceil(sec.getBoundingClientRect().height) + 8) + 'px';
+            } catch (_e) {}
+          }, 120);
         } catch (_e2) {}
       });
     });
@@ -397,14 +403,17 @@
       fr.src = '/marketplace/demos/demo-trustBar.html';
       fr.title = 'Example preview';
       fr.loading = 'lazy';
-      fr.style.cssText = 'width:100%;border:0;display:block;min-height:180px;border-radius:12px;background:#fff';
+      fr.style.cssText = 'width:100%;border:0;display:block;min-height:0;border-radius:12px;background:transparent';
       fr.addEventListener('load', function () {
         fetchPreset(slug).then(function (preset) {
           try {
             fr.contentWindow.__applyTradeConfig(presetToSiteConfig(preset));
             setTimeout(function () {
-              try { fr.style.height = (fr.contentDocument.body.scrollHeight + 12) + 'px'; } catch (_e) {}
-            }, 220);
+              try {
+                var sec = fr.contentDocument.querySelector('[data-sec="trustBar"]') || fr.contentDocument.body;
+                fr.style.height = (Math.ceil(sec.getBoundingClientRect().height) + 8) + 'px';
+              } catch (_e) {}
+            }, 120);
           } catch (_e2) {}
         });
       });
@@ -435,7 +444,8 @@
       '@media(max-width:900px){.mp-industry-grid{grid-template-columns:repeat(2,1fr)}}',
       '.mp-industry-card{appearance:none;border:1px solid var(--theme-border,var(--line));background:var(--theme-surface,#fff);border-radius:14px;padding:16px;text-align:left;font:inherit;font-weight:700;cursor:pointer;text-transform:capitalize}',
       '.mp-industry-card:hover,.mp-industry-card:focus-visible{border-color:var(--theme-primary,var(--rose));outline:3px solid var(--theme-focus,var(--rose));outline-offset:2px}',
-      '.mp-pg-preview{margin:0 0 12px}',
+      '.mp-pg-preview{margin:0 0 8px;line-height:0}',
+      '.mp-pg-preview .pg-iframe,.mp-pg-preview iframe{display:block;min-height:0!important}',
       '.mp-pg-editor-compact{margin-top:4px}',
       '@media(max-width:960px){.mp-edit-mobile{display:inline-flex!important}}',
       '.mp-edit-mobile{display:none;margin-bottom:10px}',

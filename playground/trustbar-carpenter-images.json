@@ -23,7 +23,7 @@
    "trustBar": {
     "on": true,
     "mode": "images",
-    "imageHeight": 280,
+    "imageHeight": 220,
     "strokeOn": true,
     "strokeColour": "#ffffff",
     "edgeOn": true,
@@ -50,7 +50,7 @@
       "on": true,
       "label": "Custom Handrails",
       "icon": "",
-      "image": "https://images.unsplash.com/photo-1600047509807-ba8f99d2cd1a?w=900&h=600&fit=crop&q=80",
+      "image": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=900&h=600&fit=crop&q=80",
       "imageFit": "cover",
       "imagePos": "center"
      },
@@ -58,7 +58,7 @@
       "on": true,
       "label": "Outdoor Living",
       "icon": "",
-      "image": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=900&h=600&fit=crop&q=80",
+      "image": "https://images.unsplash.com/photo-1600585153490-76fb20a32601?w=900&h=600&fit=crop&q=80",
       "imageFit": "cover",
       "imagePos": "center"
      }

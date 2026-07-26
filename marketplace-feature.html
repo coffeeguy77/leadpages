@@ -111,7 +111,7 @@ article{padding:20px 0 88px}
 .pg-presets button,.pg-devbtns button{border:1.5px solid var(--line);background:#fff;color:var(--mut);border-radius:999px;padding:6px 12px;font-weight:800;font-size:12.5px;cursor:pointer;font-family:var(--body)}
 .pg-presets button.on,.pg-devbtns button.on{background:var(--rose);border-color:var(--rose);color:#fff}
 /* Device wrapper — desktop=native, tablet/phone=framed+scaled */
-.pg-devicewrap{overflow:visible;margin:0 0 14px}
+.pg-devicewrap{overflow:visible;margin:0 0 8px;line-height:0}.pg-iframe{display:block;width:100%;border:0;min-height:0!important}
 .pg-devicewrap.framed{background:#E8E4E0;border:1px solid var(--line);border-radius:18px;padding:24px;overflow:hidden}
 .pg-viewport{width:100%;transform-origin:top center}
 .pg-devicewrap.framed .pg-viewport{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 14px 44px rgba(46,42,43,.18)}
@@ -503,6 +503,39 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       return iframe || root.querySelector('iframe.pg-iframe');
     }
 
+    function measurePreviewHeight(fr) {
+      try {
+        var doc = fr.contentDocument;
+        if (!doc) return 0;
+        var sec = doc.querySelector('[data-sec]') || doc.querySelector('main') || doc.body;
+        var h = 0;
+        if (sec) {
+          var r = sec.getBoundingClientRect();
+          h = Math.ceil(r.height || sec.scrollHeight || 0);
+        }
+        if (!h) h = Math.ceil(doc.body.scrollHeight || 0);
+        // Clamp empty/oversized frames so badge strips do not leave a huge white gap
+        if (h < 40) h = 40;
+        if (h > 720) h = 720;
+        return h + 8;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    function fitPreviewFrame() {
+      var fr = getIframe();
+      if (!fr) return;
+      var h = measurePreviewHeight(fr);
+      if (!h) h = 120;
+      fr.style.minHeight = '0';
+      fr.style.height = h + 'px';
+      if (wrap && !wrap.classList.contains('framed')) {
+        wrap.style.height = '';
+        fr.style.marginBottom = '';
+      }
+    }
+
     function applyDevice() {
       var fr = getIframe();
       if (!fr || !wrap) return;
@@ -521,16 +554,11 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         fr.style.transform = 'scale(' + s + ')';
         fr.style.transformOrigin = 'top center';
         setTimeout(function() {
-          try {
-            var h = fr.contentDocument.body.scrollHeight || 600;
-            fr.style.height = (h + 32) + 'px';
-            fr.style.marginBottom = ((h * s) - h) + 'px';
-            wrap.style.height = (h * s + 48) + 'px';
-          } catch(e) {
-            fr.style.height = '600px';
-            wrap.style.height = (600 * s + 48) + 'px';
-          }
-        }, 400);
+          var h = measurePreviewHeight(fr) || 220;
+          fr.style.height = h + 'px';
+          fr.style.marginBottom = ((h * s) - h) + 'px';
+          wrap.style.height = (h * s + 24) + 'px';
+        }, 120);
       }
     }
     window.addEventListener('resize', function() { applyDevice(); });
@@ -553,12 +581,9 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         }
       } catch(e) {}
       setTimeout(function() {
-        try {
-          var h = fr.contentDocument.body.scrollHeight;
-          fr.style.height = (h + 32) + 'px';
-        } catch(e2) {}
+        fitPreviewFrame();
         applyDevice();
-      }, 120);
+      }, 80);
     }
 
     function applyPreset(preset) {
@@ -646,16 +671,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       fr.className = 'pg-iframe';
       fr.setAttribute('data-r', 'iframe');
       fr.src = src;
-      fr.style.cssText = 'width:100%;border:0;display:block;min-height:400px';
+      fr.style.cssText = 'width:100%;border:0;display:block;min-height:0;height:auto;vertical-align:top';
       fr.setAttribute('scrolling', 'no');
       fr.addEventListener('load', function onLoad() {
         fr.removeEventListener('load', onLoad);
         if (demoCfg) applyPreset(demoCfg);
         else if (liveSiteCfg && liveSiteCfg.sections && Object.keys(liveSiteCfg.sections).length) applyLiveConfig();
-        try {
-          var h = fr.contentDocument.body.scrollHeight;
-          fr.style.height = (h + 32) + 'px';
-        } catch(e) { fr.style.height = '600px'; }
+        fitPreviewFrame();
         applyDevice();
       });
       var canvas = root.querySelector('[data-r="canvas"]');
@@ -732,6 +754,19 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     function renderLiveControls() {
       var host = root.querySelector('[data-r="live"]');
       if (!host) return;
+      if (secKey === 'trustBar' && window.LPTrustBarEditor) {
+        host.classList.add('tb-ed-root', 'tb-ed-compact');
+        host.__tbEditor = window.LPTrustBarEditor.mount(host, {
+          mode: 'marketplace-playground',
+          value: liveSiteCfg,
+          onChange: function(cfg) {
+            liveSiteCfg = cfg;
+            applyLiveConfig();
+          }
+        });
+        return;
+      }
+      host.classList.remove('tb-ed-root', 'tb-ed-compact');
       if (!fieldDefs.length) {
         host.innerHTML = '<p class="hint" style="margin:0">No live controls for this section yet.</p>';
         return;
@@ -818,8 +853,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       var footer = root.querySelector('[data-r="pg-footer"]');
       if (ctl) {
         ctl.innerHTML = '<div class="pg-ctl-head"><h4>Customise the preview</h4>'
-          + '<p class="hint">Edit fields — updates instantly</p></div>'
-          + '<div data-r="live"></div>';
+          + '<p class="hint">Add, remove or edit items — updates instantly</p></div>'
+          + '<div data-r="live" class="pg-live-host"></div>';
         renderLiveControls();
       }
       if (footer) {
