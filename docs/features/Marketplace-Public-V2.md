@@ -69,9 +69,10 @@ marketplace-playground → public page (temporary state, no save)
 
 ## Roll-out
 
-1. Trust Bar complete (this phase).  
-2. Apply the same App Demo + presets + sell-first page pattern to every `app_registry` section.  
-3. New registry apps should show **Demo setup required** until published.
+1. Trust Bar complete (Phase 1) — manage-parity compact editor + V2 sell-first page + App Demo.  
+2. **In progress:** every other section app uses the shared compact editor (`assets/js/marketplace/marketplace-compact-editor.js`) on the public playground — same Items | Style layout, safety banner, icon/image controls. Live demos must render with `sections.{key}.on = true` and sample content.  
+3. Follow-on: per-app App Demo screens, rich industry presets, and manage-field parity where the shared editor is still thinner than `manage.html`.  
+4. New registry apps should show **Demo setup required** until a demo + field defs ship.
 
 ## Safety
 

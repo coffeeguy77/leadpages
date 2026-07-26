@@ -266,6 +266,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 <script src="/assets/js/marketplace/lp-icon-picker.js"></script>
 <script src="/assets/js/marketplace/lp-local-image.js"></script>
 <script src="/assets/js/marketplace/trust-bar-editor.js"></script>
+<script src="/assets/js/marketplace/marketplace-compact-editor.js"></script>
 <script src="/assets/js/marketplace/marketplace-feature-v2.js"></script>
 </head>
 <body>
@@ -867,6 +868,29 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
               restore2();
               restore();
             });
+          }
+        });
+        return;
+      }
+      /* Compact Trust-Bar-style editor for every other marketplace app */
+      if (window.LPMarketplaceCompactEditor && fieldDefs.length) {
+        host.__pgBound = false;
+        host.__mpCompact = window.LPMarketplaceCompactEditor.mount(host, {
+          mode: 'marketplace-playground',
+          sectionKey: secKey,
+          fieldDefs: fieldDefs,
+          value: liveSiteCfg,
+          onChange: function(cfg) {
+            liveSiteCfg = cfg;
+            if (liveSiteCfg.sections && liveSiteCfg.sections[secKey]) {
+              liveSiteCfg.sections[secKey].on = true;
+            }
+            /* serviceAreaMap preview needs areas from serviceAreas */
+            if (secKey === 'serviceAreaMap' && liveSiteCfg.sections) {
+              if (!liveSiteCfg.sections.serviceAreas) liveSiteCfg.sections.serviceAreas = { on: true, areas: [] };
+              liveSiteCfg.sections.serviceAreas.on = true;
+            }
+            applyLiveConfig();
           }
         });
         return;
