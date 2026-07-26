@@ -463,6 +463,11 @@
     },
     {
       "type": "text",
+      "key": "sections.certifications.items.0.image",
+      "label": "Cert 1 logo URL"
+    },
+    {
+      "type": "text",
       "key": "sections.certifications.items.1.name",
       "label": "Cert 2 name"
     },
@@ -473,6 +478,11 @@
     },
     {
       "type": "text",
+      "key": "sections.certifications.items.1.image",
+      "label": "Cert 2 logo URL"
+    },
+    {
+      "type": "text",
       "key": "sections.certifications.items.2.name",
       "label": "Cert 3 name"
     },
@@ -480,6 +490,11 @@
       "type": "text",
       "key": "sections.certifications.items.2.body",
       "label": "Cert 3 sub"
+    },
+    {
+      "type": "text",
+      "key": "sections.certifications.items.2.image",
+      "label": "Cert 3 logo URL"
     },
     {
       "type": "color",
