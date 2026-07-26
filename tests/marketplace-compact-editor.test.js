@@ -40,6 +40,27 @@ describe('marketplace compact editor parity', () => {
     assert.ok(defs.serviceAreaMap.some((f) => f.key === 'sections.serviceAreas.areas'));
   });
 
+  it('area field defs include chip suburb list (add / remove)', () => {
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    const suburbs = defs.area.find((f) => f.key === 'sections.area.suburbs');
+    assert.ok(suburbs, 'suburbs field');
+    assert.equal(suburbs.type, 'textarea');
+    assert.equal(suburbs.join, '\n');
+    assert.equal(suburbs.listUi, 'chips');
+    assert.match(suburbs.label || '', /suburb/i);
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-area.html'), 'utf8');
+    assert.match(demo, /"suburbs"\s*:\s*\[/);
+    assert.match(demo, /Gungahlin/);
+    const compact = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
+    assert.match(compact, /f\.join && Array\.isArray\(val\)/);
+    assert.match(compact, /data-mp-chip-add/);
+    assert.match(compact, /data-mp-chip-rm/);
+    assert.match(compact, /listUi === 'chips'/);
+    const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.css'), 'utf8');
+    assert.match(css, /\.tb-ed-chip\b/);
+    assert.match(css, /\.tb-ed-chiplist\b/);
+  });
+
   it('reviews field defs cover eyebrow, title, star colour, card background, quote text', () => {
     const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
     assert.ok(defs.reviews.some((f) => f.key === 'sections.reviews.eyebrow'));
