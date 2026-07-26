@@ -837,6 +837,23 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           onChange: function(cfg) {
             liveSiteCfg = cfg;
             applyLiveConfig();
+          },
+          onHeight: function(h, cfg) {
+            if (cfg) liveSiteCfg = cfg;
+            var fr = getIframe();
+            if (!fr) return;
+            var px = Math.max(120, Math.min(640, +h || 280));
+            try {
+              var doc = fr.contentDocument;
+              var tbNode = doc && doc.querySelector('[data-sec="trustBar"]');
+              if (tbNode) tbNode.style.setProperty('--tb-img-h', px + 'px');
+            } catch (_e) {}
+            if (host.__tbHRaf) cancelAnimationFrame(host.__tbHRaf);
+            host.__tbHRaf = requestAnimationFrame(function() {
+              host.__tbHRaf = 0;
+              fitPreviewFrame();
+              applyDevice();
+            });
           }
         });
         return;
