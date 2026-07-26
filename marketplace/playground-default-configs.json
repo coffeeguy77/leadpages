@@ -861,7 +861,8 @@
     "trade": "plumber",
     "phone": "0261000000",
     "theme": {
-      "pipe": "#1f7bb8"
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
     },
     "quote": {
       "on": true,
@@ -870,39 +871,29 @@
       "sub": "Two minutes now saves you a flooded weekend. Send the details and a plumber calls you — usually within the hour during the day.",
       "button": "Send & get my call back",
       "formTitle": "Get my quote",
+      "formStyle": "default",
       "lblName": "Name",
       "lblPhone": "Phone",
       "lblJob": "What's the problem?",
       "lblSuburb": "Suburb",
       "lblDetail": "Anything else? (optional)",
+      "suburbPh": "e.g. Gungahlin",
+      "detailPh": "A quick description helps us bring the right gear.",
+      "fineText": "Genuine emergency? Don't wait —",
+      "callText": "call us now",
+      "callOn": true,
       "successTitle": "Got it — sit tight. ✓",
       "points": [
-        {
-          "text": "Upfront fixed price, no call-out surprises"
-        },
-        {
-          "text": "Same-day where we can get to you"
-        },
-        {
-          "text": "Licensed, insured, local"
-        }
+        { "on": true, "text": "Upfront fixed price, no call-out surprises" },
+        { "on": true, "text": "Same-day where we can get to you" },
+        { "on": true, "text": "Licensed, insured, local" }
       ],
       "jobOptions": [
-        {
-          "text": "Blocked drain"
-        },
-        {
-          "text": "Burst or leaking pipe"
-        },
-        {
-          "text": "No hot water"
-        },
-        {
-          "text": "Hidden leak / high water bill"
-        },
-        {
-          "text": "General plumbing / other"
-        }
+        { "on": true, "text": "Blocked drain" },
+        { "on": true, "text": "Burst or leaking pipe" },
+        { "on": true, "text": "No hot water" },
+        { "on": true, "text": "Hidden leak / high water bill" },
+        { "on": true, "text": "General plumbing / other" }
       ]
     }
   },

@@ -1365,6 +1365,21 @@
   "quote": [
     {
       "type": "text",
+      "key": "sections.quote.points.0.text",
+      "label": "Trust point"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.points.1.text",
+      "label": "Trust point"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.points.2.text",
+      "label": "Trust point"
+    },
+    {
+      "type": "text",
       "key": "sections.quote.eyebrow",
       "label": "Eyebrow"
     },
@@ -1375,8 +1390,122 @@
     },
     {
       "type": "textarea",
-      "key": "sections.quote.intro",
-      "label": "Intro"
+      "key": "sections.quote.sub",
+      "label": "Sub-text"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.formTitle",
+      "label": "Form heading"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.button",
+      "label": "Button text"
+    },
+    {
+      "type": "select",
+      "key": "sections.quote.formStyle",
+      "label": "Form style",
+      "options": [
+        { "value": "default", "label": "Button highlight (white form)" },
+        { "value": "feature", "label": "Coloured form (brand form)" }
+      ]
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.lblName",
+      "label": "Name field label"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.lblPhone",
+      "label": "Phone field label"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.lblJob",
+      "label": "Problem field label"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.lblSuburb",
+      "label": "Suburb field label"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.lblDetail",
+      "label": "Details field label"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.suburbPh",
+      "label": "Suburb placeholder"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.quote.detailPh",
+      "label": "Details placeholder"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.successTitle",
+      "label": "Success message heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.quote.fineText",
+      "label": "Under-button line"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.callText",
+      "label": "Call-link wording"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.quote.callOn",
+      "label": "Make under-button phone link clickable"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.jobOptions.0.text",
+      "label": "Problem option 1"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.jobOptions.1.text",
+      "label": "Problem option 2"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.jobOptions.2.text",
+      "label": "Problem option 3"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.jobOptions.3.text",
+      "label": "Problem option 4"
+    },
+    {
+      "type": "text",
+      "key": "sections.quote.jobOptions.4.text",
+      "label": "Problem option 5"
+    },
+    {
+      "type": "color",
+      "key": "sections.quote.btnBg",
+      "label": "Button background"
+    },
+    {
+      "type": "color",
+      "key": "sections.quote.btnText",
+      "label": "Button text colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.quote.bg",
+      "label": "Form card background"
     },
     {
       "type": "color",
@@ -1384,19 +1513,9 @@
       "label": "Brand colour"
     },
     {
-      "type": "textarea",
-      "key": "sections.quote.points.0.text",
-      "label": "Item 1 Text"
-    },
-    {
-      "type": "textarea",
-      "key": "sections.quote.points.1.text",
-      "label": "Item 2 Text"
-    },
-    {
-      "type": "textarea",
-      "key": "sections.quote.points.2.text",
-      "label": "Item 3 Text"
+      "type": "color",
+      "key": "theme.hivis",
+      "label": "CTA colour"
     }
   ],
   "textBox": [
