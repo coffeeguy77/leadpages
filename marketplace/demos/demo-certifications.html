@@ -1,22 +1,46 @@
 <!DOCTYPE html>
-<html lang="en-AU">
+<html lang="en-AU" class="mp-demo-embed">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="./demo-shared.css">
 <script src="https://www.leadpages.com.au/icons.js"></script>
+<style>
+html.mp-demo-embed, html.mp-demo-embed body {
+  margin: 0; padding: 0; min-height: 0 !important; height: auto !important;
+  background: transparent; overflow: hidden;
+}
+html.mp-demo-embed main#top { margin: 0; padding: 0; min-height: 0; }
+html.mp-demo-embed .lp-a11y-root,
+html.mp-demo-embed #lp-visitor-a11y { display: none !important; }
+</style>
 </head>
 <body>
 <main id="top">
 <section data-sec="certifications" class="section">
 <div class="wrap">
-      <div class="section-head"><span class="eyebrow"></span><h2></h2><p></p></div>
-      <div class="cert-grid"></div>
-    </div>
+  <div class="section-head"><span class="eyebrow"></span><h2></h2><p></p></div>
+  <div class="cert-grid"></div>
+</div>
 </section>
 </main>
 <script>
-var SITE_CONFIG={"certifications": {"items": [{"label": "Master Plumbers", "sub": "Member since 2010", "icon": "award"}, {"label": "Licensed Plumber", "sub": "ACT licence #12345", "icon": "shield-check"}, {"label": "Public Liability", "sub": "$20M insured", "icon": "umbrella"}]}};
+var SITE_CONFIG = {
+  theme: { pipe: "#1f7bb8" },
+  sections: {
+    certifications: {
+      on: true,
+      eyebrow: "Accredited & insured",
+      heading: "Licensed, insured & accredited",
+      intro: "Fully qualified and backed by recognised industry accreditations — so you know the job is done right.",
+      items: [
+        { on: true, name: "Licensed", body: "ACT plumbing & drainage licence", number: "", expiry: "", image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400&h=300&fit=crop" },
+        { on: true, name: "Master Plumbers", body: "Master Plumbers Association member", number: "", expiry: "", image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop" },
+        { on: true, name: "Public Liability", body: "$20M insured", number: "", expiry: "", image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&h=300&fit=crop" }
+      ]
+    }
+  }
+};
 </script>
 <script src="./demo-shared.js"></script>
 </body>

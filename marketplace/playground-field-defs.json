@@ -1015,6 +1015,14 @@
       "label": "Intro"
     },
     {
+      "type": "textarea",
+      "key": "sections.serviceAreas.areas",
+      "label": "Areas (one per line)",
+      "getTransform": "areaNames",
+      "setTransform": "areaNames",
+      "join": "\n"
+    },
+    {
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
@@ -1176,19 +1184,97 @@
   ],
   "navMenu": [
     {
-      "type": "text",
-      "key": "sections.navMenu.eyebrow",
-      "label": "Eyebrow"
+      "type": "select",
+      "key": "sections.navMenu.placement",
+      "label": "Placement",
+      "options": [
+        {
+          "value": "section",
+          "label": "In section (demo)"
+        },
+        {
+          "value": "header",
+          "label": "Site header"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.navMenu.style",
+      "label": "Style",
+      "options": [
+        {
+          "value": "pills",
+          "label": "Pills"
+        },
+        {
+          "value": "links",
+          "label": "Text links"
+        },
+        {
+          "value": "buttons",
+          "label": "Buttons"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.navMenu.align",
+      "label": "Align",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Centre"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
     },
     {
       "type": "text",
-      "key": "sections.navMenu.heading",
-      "label": "Heading"
+      "key": "sections.navMenu.items.0.label",
+      "label": "Link 1 label"
     },
     {
-      "type": "textarea",
-      "key": "sections.navMenu.intro",
-      "label": "Intro"
+      "type": "text",
+      "key": "sections.navMenu.items.0.href",
+      "label": "Link 1 URL"
+    },
+    {
+      "type": "icon",
+      "key": "sections.navMenu.items.0.icon",
+      "label": "Link 1 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.navMenu.items.1.label",
+      "label": "Link 2 label"
+    },
+    {
+      "type": "text",
+      "key": "sections.navMenu.items.1.href",
+      "label": "Link 2 URL"
+    },
+    {
+      "type": "icon",
+      "key": "sections.navMenu.items.1.icon",
+      "label": "Link 2 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.navMenu.items.2.label",
+      "label": "Link 3 label"
+    },
+    {
+      "type": "text",
+      "key": "sections.navMenu.items.2.href",
+      "label": "Link 3 URL"
     },
     {
       "type": "color",

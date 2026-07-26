@@ -658,7 +658,34 @@
       "on": true,
       "style": "pills",
       "align": "left",
-      "items": []
+      "items": [
+        {
+          "on": true,
+          "label": "Services",
+          "href": "#services",
+          "icon": "wrench"
+        },
+        {
+          "on": true,
+          "label": "Our work",
+          "href": "#projects",
+          "icon": "images"
+        },
+        {
+          "on": true,
+          "label": "Reviews",
+          "href": "#reviews",
+          "icon": "star"
+        },
+        {
+          "on": true,
+          "label": "Get a quote",
+          "href": "#quote",
+          "icon": "message-square"
+        }
+      ],
+      "placement": "section",
+      "icons": "both"
     }
   },
   "projectFeed": {
@@ -1004,6 +1031,43 @@
       "eyebrow": "Service area",
       "heading": "Suburbs we cover across the ACT",
       "intro": "Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch."
+    },
+    "serviceAreas": {
+      "on": true,
+      "areas": [
+        {
+          "on": true,
+          "name": "Belconnen"
+        },
+        {
+          "on": true,
+          "name": "Gungahlin"
+        },
+        {
+          "on": true,
+          "name": "Woden"
+        },
+        {
+          "on": true,
+          "name": "Tuggeranong"
+        },
+        {
+          "on": true,
+          "name": "Queanbeyan"
+        },
+        {
+          "on": true,
+          "name": "Molonglo"
+        },
+        {
+          "on": true,
+          "name": "North Canberra"
+        },
+        {
+          "on": true,
+          "name": "South Canberra"
+        }
+      ]
     }
   },
   "serviceAreas": {
