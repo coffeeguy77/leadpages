@@ -1404,29 +1404,41 @@
     "trade": "plumber",
     "phone": "0261000000",
     "theme": {
-      "pipe": "#1f7bb8"
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
     },
     "why": {
       "on": true,
       "eyebrow": "Why {{businessName}}",
       "heading": "No call-out games. No surprise bills.",
+      "iconAlign": "left",
+      "iconSize": "standard",
+      "iconColor": "#ff6a1f",
       "items": [
         {
+          "on": true,
+          "icon": "dollar-sign",
           "n": "01",
           "title": "Upfront pricing",
           "body": "A fixed price agreed before we start. The number we quote is the number you pay."
         },
         {
+          "on": true,
+          "icon": "clock",
           "n": "24/7",
           "title": "Real emergencies",
           "body": "Burst pipe at midnight? We answer the phone and get someone moving, day or night."
         },
         {
+          "on": true,
+          "icon": "shield-check",
           "n": "★",
           "title": "Properly licensed",
           "body": "Fully licensed ACT plumbers, fully insured. Licence details on every invoice."
         },
         {
+          "on": true,
+          "icon": "home",
           "n": "⌂",
           "title": "Local & trusted",
           "body": "Canberra-based, Canberra-owned. We know the suburbs, the soil and the old pipework."

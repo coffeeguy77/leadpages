@@ -327,13 +327,43 @@
   "why": [
     {
       "type": "text",
+      "key": "sections.why.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.why.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "icon",
+      "key": "sections.why.items.0.icon",
+      "label": "Point 1 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.why.items.0.n",
+      "label": "Point 1 number (if no icon)"
+    },
+    {
+      "type": "text",
       "key": "sections.why.items.0.title",
       "label": "Point 1 title"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "sections.why.items.0.body",
       "label": "Point 1 description"
+    },
+    {
+      "type": "icon",
+      "key": "sections.why.items.1.icon",
+      "label": "Point 2 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.why.items.1.n",
+      "label": "Point 2 number (if no icon)"
     },
     {
       "type": "text",
@@ -341,9 +371,19 @@
       "label": "Point 2 title"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "sections.why.items.1.body",
       "label": "Point 2 description"
+    },
+    {
+      "type": "icon",
+      "key": "sections.why.items.2.icon",
+      "label": "Point 3 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.why.items.2.n",
+      "label": "Point 3 number (if no icon)"
     },
     {
       "type": "text",
@@ -351,9 +391,19 @@
       "label": "Point 3 title"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "sections.why.items.2.body",
       "label": "Point 3 description"
+    },
+    {
+      "type": "icon",
+      "key": "sections.why.items.3.icon",
+      "label": "Point 4 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.why.items.3.n",
+      "label": "Point 4 number (if no icon)"
     },
     {
       "type": "text",
@@ -361,14 +411,116 @@
       "label": "Point 4 title"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "sections.why.items.3.body",
       "label": "Point 4 description"
     },
     {
       "type": "color",
+      "key": "sections.why.eyebrowColor",
+      "label": "Eyebrow colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.why.titleColor",
+      "label": "Headline colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.why.bg",
+      "label": "Background colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.why.headingColor",
+      "label": "Point heading colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.why.textColor",
+      "label": "Point text colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.why.iconColor",
+      "label": "Icon colour"
+    },
+    {
+      "type": "select",
+      "key": "sections.why.iconAlign",
+      "label": "Icon position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Centre"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.why.iconSize",
+      "label": "Icon size",
+      "options": [
+        {
+          "value": "compact",
+          "label": "Compact 32"
+        },
+        {
+          "value": "standard",
+          "label": "Standard 42"
+        },
+        {
+          "value": "large",
+          "label": "Large 56"
+        },
+        {
+          "value": "hero",
+          "label": "Hero 72"
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "sections.why.iconScale",
+      "label": "Icon scale %"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.why.strokeOn",
+      "label": "Item stroke"
+    },
+    {
+      "type": "color",
+      "key": "sections.why.stroke",
+      "label": "Item stroke colour"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.why.sectionStrokeOn",
+      "label": "Section stroke"
+    },
+    {
+      "type": "color",
+      "key": "sections.why.sectionStroke",
+      "label": "Section stroke colour"
+    },
+    {
+      "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "color",
+      "key": "theme.hivis",
+      "label": "Accent colour"
     }
   ],
   "crew": [

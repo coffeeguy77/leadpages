@@ -263,4 +263,39 @@ describe('marketplace compact editor parity', () => {
     assert.match(demo, /"mode"\s*:\s*"schedule"/);
     assert.match(demo, /afterHoursLabel/);
   });
+
+  it('why Choose Us editor exposes icons, numbers and style controls', () => {
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.why.some((f) => f.type === 'icon' && f.key === 'sections.why.items.0.icon'));
+    assert.ok(defs.why.some((f) => f.key === 'sections.why.items.0.n'));
+    assert.ok(defs.why.some((f) => f.key === 'sections.why.items.3.icon'));
+    assert.ok(defs.why.some((f) => f.key === 'sections.why.iconAlign'));
+    assert.ok(defs.why.some((f) => f.key === 'sections.why.iconSize'));
+    assert.ok(defs.why.some((f) => f.key === 'sections.why.iconColor'));
+    assert.ok(defs.why.some((f) => f.key === 'sections.why.eyebrow'));
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    const items = defaults.why.why.items;
+    assert.equal(items.length, 4);
+    assert.ok(items.every((it) => it.icon && /^[a-z0-9-]+$/.test(it.icon)));
+    assert.equal(items[0].icon, 'dollar-sign');
+    assert.equal(items[2].icon, 'shield-check');
+
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-why.html'), 'utf8');
+    assert.match(demo, /"icon"\s*:\s*"dollar-sign"/);
+    assert.match(demo, /"icon"\s*:\s*"home"/);
+    assert.match(demo, /why-grid/);
+
+    const apply = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+    assert.match(apply, /w\.icon/);
+    assert.match(apply, /iconAlign/);
+    assert.match(apply, /tok\(WY\.eyebrow\)/);
+
+    const js = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
+    assert.match(js, /function labelForItemIndex/);
+    assert.match(js, /Point/);
+
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /local\.length > fieldDefs\.length/);
+  });
 });
