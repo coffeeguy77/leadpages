@@ -127,7 +127,25 @@
         + esc(f.label) + '</label></div>';
     }
     if (f.type === 'textarea') {
-      return '<div class="f"><label>' + esc(f.label) + '</label><textarea ' + keyAttr + ' rows="2">' + esc(String(val || '')) + '</textarea></div>';
+      /* Chip list for newline-joined string arrays (e.g. area suburbs) — add / remove without a raw dump */
+      if (f.join && (f.listUi === 'chips' || /\.suburbs$/i.test(f.key || ''))) {
+        var chips = String(val || '').split(f.join).map(function (s) { return s.trim(); }).filter(Boolean);
+        var chipHtml = chips.map(function (name, i) {
+          return '<span class="tb-ed-chip">' + esc(name)
+            + '<button type="button" class="tb-ed-chip-x" data-mp-chip-rm="' + i + '" data-pgk="' + esc(f.key) + '" aria-label="Remove ' + esc(name) + '">×</button></span>';
+        }).join('');
+        return '<div class="f tb-ed-chiplist" data-mp-chiplist="' + esc(f.key) + '">'
+          + '<label>' + esc(f.label) + '</label>'
+          + '<div class="tb-ed-chips">' + (chipHtml || '<span class="tb-ed-empty" style="margin:0">No suburbs yet</span>') + '</div>'
+          + '<div class="tb-ed-chip-add">'
+          + '<input type="text" class="tin" data-mp-chip-in="' + esc(f.key) + '" placeholder="Add a suburb" maxlength="80">'
+          + '<button type="button" class="tb-ed-add" data-mp-chip-add="' + esc(f.key) + '">+ Add</button>'
+          + '</div>'
+          + '<textarea ' + keyAttr + ' hidden rows="2">' + esc(String(val || '')) + '</textarea>'
+          + '</div>';
+      }
+      var rows = f.join ? '6' : '2';
+      return '<div class="f"><label>' + esc(f.label) + '</label><textarea ' + keyAttr + ' rows="' + rows + '">' + esc(String(val || '')) + '</textarea></div>';
     }
     if (f.type === 'color') {
       var col = hexOk(val) || '#cccccc';
@@ -346,11 +364,61 @@
       if (host.__mpCompactBound) return;
       host.__mpCompactBound = true;
 
+      function refreshStyle() {
+        var list = getList();
+        var split = splitDefs(sectionKey, list.listKey || 'items', fieldDefs);
+        drawStyle(split.styleFields);
+      }
+
+      function chipNames(def) {
+        return String(readVal(def) || '')
+          .split(def.join || '\n')
+          .map(function (s) { return s.trim(); })
+          .filter(Boolean);
+      }
+
       host.addEventListener('click', function (e) {
         var tab = e.target.closest('[data-mp-tab]');
         if (tab) {
           activeIdx = parseInt(tab.getAttribute('data-mp-tab'), 10) || 0;
           drawItems();
+          return;
+        }
+        var chipRm = e.target.closest('[data-mp-chip-rm]');
+        if (chipRm) {
+          var rmKey = chipRm.getAttribute('data-pgk');
+          var rmDef = fieldDefs.find(function (d) { return d.key === rmKey; });
+          if (rmDef) {
+            var rmIdx = parseInt(chipRm.getAttribute('data-mp-chip-rm'), 10);
+            var rmList = chipNames(rmDef);
+            if (rmIdx >= 0 && rmIdx < rmList.length) {
+              rmList.splice(rmIdx, 1);
+              writeVal(rmDef, rmList.join(rmDef.join || '\n'));
+              emit();
+              refreshStyle();
+            }
+          }
+          return;
+        }
+        var chipAdd = e.target.closest('[data-mp-chip-add]');
+        if (chipAdd) {
+          var addKey = chipAdd.getAttribute('data-mp-chip-add');
+          var addDef = fieldDefs.find(function (d) { return d.key === addKey; });
+          var addIn = host.querySelector('[data-mp-chip-in="' + addKey + '"]');
+          if (addDef && addIn) {
+            var name = String(addIn.value || '').trim();
+            if (name) {
+              var addList = chipNames(addDef);
+              var exists = addList.some(function (s) { return s.toLowerCase() === name.toLowerCase(); });
+              if (!exists) addList.push(name);
+              writeVal(addDef, addList.join(addDef.join || '\n'));
+              addIn.value = '';
+              emit();
+              refreshStyle();
+              var focusIn = host.querySelector('[data-mp-chip-in="' + addKey + '"]');
+              if (focusIn) focusIn.focus();
+            }
+          }
           return;
         }
         var add = e.target.closest('[data-mp-add]');
@@ -382,6 +450,16 @@
           emit();
           drawItems();
         }
+      });
+
+      host.addEventListener('keydown', function (e) {
+        var t = e.target;
+        if (!t || !t.hasAttribute('data-mp-chip-in')) return;
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        var key = t.getAttribute('data-mp-chip-in');
+        var btn = host.querySelector('[data-mp-chip-add="' + key + '"]');
+        if (btn) btn.click();
       });
 
       host.addEventListener('input', function (e) {

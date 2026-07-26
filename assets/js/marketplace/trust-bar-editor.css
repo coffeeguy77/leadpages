@@ -362,6 +362,66 @@
   color: var(--theme-text-muted, var(--mut));
 }
 
+/* Chip list — suburbs / newline-joined string arrays in compact playground */
+.tb-ed-chiplist {
+  grid-column: 1 / -1;
+}
+
+.tb-ed-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 8px;
+  min-height: 28px;
+}
+
+.tb-ed-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 10px;
+  border: 1px solid var(--theme-border, var(--line));
+  border-radius: 999px;
+  background: var(--theme-surface, #fff);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--theme-text, var(--ink));
+  line-height: 1.3;
+}
+
+.tb-ed-chip-x {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--theme-text-muted, var(--mut));
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 6px 0 2px;
+  border-radius: 999px;
+}
+
+.tb-ed-chip-x:hover {
+  color: var(--theme-primary, var(--rose));
+  background: var(--theme-accent-soft, rgba(168, 74, 94, 0.12));
+}
+
+.tb-ed-chip-add {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.tb-ed-chip-add .tin {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tb-ed-chip-add .tb-ed-add {
+  flex: 0 0 auto;
+}
+
 .tb-ed-add {
   appearance: none;
   border: 1px dashed var(--theme-border-strong, var(--line));

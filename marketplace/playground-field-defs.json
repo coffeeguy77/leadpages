@@ -1357,6 +1357,13 @@
       "label": "Intro"
     },
     {
+      "type": "textarea",
+      "key": "sections.area.suburbs",
+      "label": "Suburbs",
+      "join": "\n",
+      "listUi": "chips"
+    },
+    {
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
