@@ -119,10 +119,10 @@
         + '</div>'
         + '<div id="tb-items"></div></div>'
 
-        + '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-style">'
+        + '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-style" aria-label="Style">'
         + '<div class="tb-ed-zone-label">Style</div>'
         + '<div class="tb-ed-toolbar">'
-        + '<div class="f tb-ed-style"><label for="tb-mode">Layout</label>'
+        + '<div class="f tb-ed-style"><label for="tb-mode">Style</label>'
         + '<select id="tb-mode" class="tin">'
         + '<option value="badges"' + (tbMode === 'badges' ? ' selected' : '') + '>Classic badges</option>'
         + '<option value="images"' + (tbMode === 'images' ? ' selected' : '') + '>Image tiles</option>'

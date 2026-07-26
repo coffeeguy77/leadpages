@@ -236,6 +236,7 @@ describe('public marketplace theme + copy safety', () => {
     assert.match(css, /\.tb-ed-zones/);
     assert.match(css, /\.tb-ed-zone-style/);
     assert.match(css, /color-mix\(in srgb, var\(--theme-primary/);
+    assert.match(css, /max-width:\s*640px/);
     assert.doesNotMatch(css, /\.tb-ed-mode-preview/);
   });
 
