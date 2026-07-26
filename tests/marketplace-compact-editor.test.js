@@ -18,19 +18,19 @@ describe('marketplace compact editor parity', () => {
 
   it('certifications / navMenu / serviceAreaMap demos include working content', () => {
     const cert = fs.readFileSync(path.join(root, 'marketplace/demos/demo-certifications.html'), 'utf8');
-    assert.match(cert, /sections:\s*\{[\s\S]*certifications:\s*\{[\s\S]*on:\s*true/);
-    assert.match(cert, /name:\s*"Licensed"/);
+    assert.match(cert, /"sections"\s*:\s*\{[\s\S]*"certifications"\s*:\s*\{[\s\S]*"on"\s*:\s*true/);
+    assert.match(cert, /"name"\s*:\s*"Licensed"/);
 
     const nav = fs.readFileSync(path.join(root, 'marketplace/demos/demo-navMenu.html'), 'utf8');
-    assert.match(nav, /navMenu:\s*\{[\s\S]*on:\s*true/);
-    assert.match(nav, /placement:\s*"section"/);
-    assert.match(nav, /label:\s*"Services"/);
-    assert.doesNotMatch(nav, /items:\s*\[\s*\]/);
+    assert.match(nav, /"navMenu"\s*:\s*\{[\s\S]*"on"\s*:\s*true/);
+    assert.match(nav, /"placement"\s*:\s*"section"/);
+    assert.match(nav, /"label"\s*:\s*"Services"/);
+    assert.doesNotMatch(nav, /"items"\s*:\s*\[\s*\]/);
 
     const map = fs.readFileSync(path.join(root, 'marketplace/demos/demo-serviceAreaMap.html'), 'utf8');
-    assert.match(map, /serviceAreaMap:\s*\{[\s\S]*on:\s*true/);
-    assert.match(map, /serviceAreas:\s*\{[\s\S]*areas:\s*\[/);
-    assert.match(map, /name:\s*"Belconnen"/);
+    assert.match(map, /"serviceAreaMap"\s*:\s*\{[\s\S]*"on"\s*:\s*true/);
+    assert.match(map, /"serviceAreas"\s*:\s*\{[\s\S]*"areas"\s*:\s*\[/);
+    assert.match(map, /"name"\s*:\s*"Belconnen"/);
   });
 
   it('navMenu and serviceAreaMap field defs cover items / areas', () => {
@@ -42,9 +42,9 @@ describe('marketplace compact editor parity', () => {
 
   it('activityTimeline demo and editor cover timeline events', () => {
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-activityTimeline.html'), 'utf8');
-    assert.match(demo, /events:\s*\[/);
+    assert.match(demo, /"events"\s*:\s*\[/);
     assert.match(demo, /Hot water system replacement/);
-    assert.match(demo, /on:\s*true/);
+    assert.match(demo, /"on"\s*:\s*true/);
     const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
     assert.ok(defs.activityTimeline.some((f) => /activityTimeline\.events\.\d+\.task/.test(f.key)));
     assert.ok(defs.activityTimeline.some((f) => /activityTimeline\.events\.\d+\.status/.test(f.key)));

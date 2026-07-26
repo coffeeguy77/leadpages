@@ -152,7 +152,7 @@ describe('public marketplace theme + copy safety', () => {
 
   it('demo-trustBar uses sections.trustBar contract', () => {
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-trustBar.html'), 'utf8');
-    assert.match(demo, /sections:\s*\{[\s\S]*trustBar/);
+    assert.match(demo, /"sections"\s*:\s*\{[\s\S]*"trustBar"/);
     assert.doesNotMatch(demo, /"items":\s*\[\s*\{\s*"icon"/);
   });
 

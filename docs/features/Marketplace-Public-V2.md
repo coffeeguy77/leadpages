@@ -78,6 +78,10 @@ marketplace-playground → public page (temporary state, no save)
 
 Anonymous playgrounds must not submit enquiries, send SMS, process payments, create bookings, trigger webhooks, or call paid providers. Premium data demos use stored examples only.
 
+## Marketing hub slugs
+
+Home / SEO links sometimes use marketing URLs that are not sell-template keys (`quote-lead-capture`, `reviews-trust`, `promotions`, `email-campaigns`). `lib/marketplace-catalog-resolve.js` (used by `api/catalog.js`) and client fallbacks in `marketplace-feature.html` map those to real section demos (or a dashboard explainer for Email Campaigns). Thin Supabase rows without a playground get one injected with `section_key`. Feature heroes prefer a live `demo-{sectionKey}.html` iframe over stock photos / “APP PREVIEW”.
+
 ## Tests
 
-`tests/marketplace-v2-trustbar.test.js`
+`tests/marketplace-v2-trustbar.test.js` · `tests/marketplace-compact-editor.test.js` · `tests/marketplace-catalog-resolve.test.js`
