@@ -1493,7 +1493,7 @@
     "name": "Project Feed",
     "tagline": "Card feed of latest completed jobs",
     "summary": "Social-style feed of recent projects with photos.",
-    "hero_image_url": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1400&h=560&fit=crop&q=80",
+    "hero_image_url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
@@ -1505,9 +1505,9 @@
       {
         "block_type": "image",
         "payload": {
-          "url": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=720&fit=crop&q=80",
-          "alt": "Social proof sections",
-          "caption": "Portfolio, team and live job feeds — the proof stack partners sell."
+          "url": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=720&fit=crop&q=80",
+          "alt": "Project feed job cards",
+          "caption": "Photo cards with service tags, location and lightbox call/quote actions."
         }
       },
       {

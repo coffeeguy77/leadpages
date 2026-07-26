@@ -176,6 +176,36 @@ describe('marketplace compact editor parity', () => {
     assert.match(sell.heroSlider.hero_image_url, /photo-1509391366360-2e959784a276/);
   });
 
+  it('projectFeed demo uses light background and manage-parity controls', () => {
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-projectFeed.html'), 'utf8');
+    assert.match(demo, /background:var\(--light/);
+    assert.match(demo, /data-sec="projectFeed"/);
+    assert.match(demo, /"image"\s*:\s*"https:\/\//);
+    assert.match(demo, /"cardStyle"\s*:\s*"overlay"/);
+    assert.match(demo, /Merbau Deck/);
+    assert.match(demo, /photo-1600585154340-be6161a56a0c/);
+    assert.doesNotMatch(demo, /background:transparent/);
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    const pf = defaults.projectFeed.projectFeed;
+    assert.equal(pf.cardStyle, 'overlay');
+    assert.ok(Array.isArray(pf.items) && pf.items.length >= 3);
+    const imgs = pf.items.map((it) => it.image);
+    assert.ok(imgs.every((u) => /^https:\/\//.test(u || '')));
+    assert.equal(new Set(imgs).size, imgs.length);
+
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.projectFeed.some((f) => f.key === 'sections.projectFeed.items.0.title'));
+    assert.ok(defs.projectFeed.some((f) => f.key === 'sections.projectFeed.items.0.image'));
+    assert.ok(defs.projectFeed.some((f) => f.key === 'sections.projectFeed.cardStyle'));
+    assert.ok(defs.projectFeed.some((f) => f.key === 'sections.projectFeed.showTag'));
+    assert.ok(defs.projectFeed.some((f) => f.key === 'sections.projectFeed.source'));
+    assert.ok(defs.projectFeed.some((f) => f.key === 'sections.projectFeed.textBg'));
+
+    const sell = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/sell-templates.json'), 'utf8'));
+    assert.match(sell.projectFeed.hero_image_url, /photo-1600585154340-be6161a56a0c/);
+  });
+
   it('activityTimeline demo and editor cover timeline events', () => {
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-activityTimeline.html'), 'utf8');
     assert.match(demo, /"events"\s*:\s*\[/);

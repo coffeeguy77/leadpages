@@ -1008,6 +1008,111 @@
   "projectFeed": [
     {
       "type": "text",
+      "key": "sections.projectFeed.items.0.title",
+      "label": "Project / title"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.0.location",
+      "label": "Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.0.service",
+      "label": "Service (tag)"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.0.date",
+      "label": "Date / completed"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.projectFeed.items.0.caption",
+      "label": "Description"
+    },
+    {
+      "type": "image",
+      "key": "sections.projectFeed.items.0.image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.0.permalink",
+      "label": "Source link"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.1.title",
+      "label": "Project / title"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.1.location",
+      "label": "Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.1.service",
+      "label": "Service (tag)"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.1.date",
+      "label": "Date / completed"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.projectFeed.items.1.caption",
+      "label": "Description"
+    },
+    {
+      "type": "image",
+      "key": "sections.projectFeed.items.1.image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.1.permalink",
+      "label": "Source link"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.2.title",
+      "label": "Project / title"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.2.location",
+      "label": "Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.2.service",
+      "label": "Service (tag)"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.2.date",
+      "label": "Date / completed"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.projectFeed.items.2.caption",
+      "label": "Description"
+    },
+    {
+      "type": "image",
+      "key": "sections.projectFeed.items.2.image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.2.permalink",
+      "label": "Source link"
+    },
+    {
+      "type": "text",
       "key": "sections.projectFeed.eyebrow",
       "label": "Eyebrow"
     },
@@ -1022,114 +1127,97 @@
       "label": "Intro"
     },
     {
+      "type": "select",
+      "key": "sections.projectFeed.source",
+      "label": "Source",
+      "options": [
+        { "value": "manual", "label": "Manual" },
+        { "value": "instagram", "label": "Instagram" },
+        { "value": "facebook", "label": "Facebook" }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "sections.projectFeed.postsToShow",
+      "label": "Posts to show"
+    },
+    {
+      "type": "select",
+      "key": "sections.projectFeed.sortOrder",
+      "label": "Sort",
+      "options": [
+        { "value": "newest", "label": "Newest first" },
+        { "value": "oldest", "label": "Oldest first" }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.projectFeed.cardStyle",
+      "label": "Card style",
+      "options": [
+        { "value": "overlay", "label": "Overlay on photo" },
+        { "value": "below", "label": "Below photo" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.projectFeed.showTag",
+      "label": "Service tag over the photo"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.projectFeed.showTitle",
+      "label": "Job name"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.projectFeed.showLocation",
+      "label": "Location"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.projectFeed.showDate",
+      "label": "Date"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.projectFeed.showDesc",
+      "label": "Short description line"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.projectFeed.showCall",
+      "label": "Lightbox: Call button"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.projectFeed.showQuote",
+      "label": "Lightbox: Quote button"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.projectFeed.showLink",
+      "label": "Lightbox: View original link"
+    },
+    {
+      "type": "color",
+      "key": "sections.projectFeed.textColor",
+      "label": "Card text colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.projectFeed.textBg",
+      "label": "Card text background"
+    },
+    {
+      "type": "color",
+      "key": "sections.projectFeed.btnBg",
+      "label": "Button colour"
+    },
+    {
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.0.location",
-      "label": "Item 1 Location"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.0.title",
-      "label": "Item 1 Title"
-    },
-    {
-      "type": "image",
-      "key": "sections.projectFeed.items.0.image",
-      "label": "Item 1 Image"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.0.service",
-      "label": "Item 1 Service"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.0.date",
-      "label": "Item 1 Date"
-    },
-    {
-      "type": "textarea",
-      "key": "sections.projectFeed.items.0.caption",
-      "label": "Item 1 Caption"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.0.permalink",
-      "label": "Item 1 permalink"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.1.location",
-      "label": "Item 2 Location"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.1.title",
-      "label": "Item 2 Title"
-    },
-    {
-      "type": "image",
-      "key": "sections.projectFeed.items.1.image",
-      "label": "Item 2 Image"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.1.service",
-      "label": "Item 2 Service"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.1.date",
-      "label": "Item 2 Date"
-    },
-    {
-      "type": "textarea",
-      "key": "sections.projectFeed.items.1.caption",
-      "label": "Item 2 Caption"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.1.permalink",
-      "label": "Item 2 permalink"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.2.location",
-      "label": "Item 3 Location"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.2.title",
-      "label": "Item 3 Title"
-    },
-    {
-      "type": "image",
-      "key": "sections.projectFeed.items.2.image",
-      "label": "Item 3 Image"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.2.service",
-      "label": "Item 3 Service"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.2.date",
-      "label": "Item 3 Date"
-    },
-    {
-      "type": "textarea",
-      "key": "sections.projectFeed.items.2.caption",
-      "label": "Item 3 Caption"
-    },
-    {
-      "type": "text",
-      "key": "sections.projectFeed.items.2.permalink",
-      "label": "Item 3 permalink"
     }
   ],
   "proofStream": [

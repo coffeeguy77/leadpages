@@ -6,16 +6,28 @@
 <link rel="stylesheet" href="./demo-shared.css">
 <script src="https://www.leadpages.com.au/icons.js"></script>
 <style>
-html.mp-demo-embed, html.mp-demo-embed body{margin:0;padding:0;min-height:0!important;height:auto!important;background:transparent;overflow:hidden}
-html.mp-demo-embed main#top{margin:0;padding:0;min-height:0}
-html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:none!important}
+html.mp-demo-embed, html.mp-demo-embed body{
+  margin:0;padding:0;min-height:0!important;height:auto!important;
+  background:var(--light,#eef2f6)!important;overflow:hidden;
+}
+html.mp-demo-embed main#top{margin:0;padding:0;min-height:0;background:var(--light,#eef2f6)}
+html.mp-demo-embed .lp-a11y-root,
+html.mp-demo-embed #lp-visitor-a11y{display:none!important}
+html.mp-demo-embed section[data-sec="projectFeed"]{
+  display:block!important;
+  background:var(--light,#eef2f6);
+  padding:28px 0 36px;
+  color:var(--ink,#1a2230);
+}
+html.mp-demo-embed section[data-sec="projectFeed"] h2{color:var(--ink,#1a2230)}
+html.mp-demo-embed section[data-sec="projectFeed"] .section-head p{color:var(--muted,#5b6878)}
 </style>
 </head>
 <body>
 <main id="top">
 <section data-sec="projectFeed" class="section">
 <div class="wrap">
-      <div class="section-head"><span class="eyebrow">Latest work</span><h2>Latest Work</h2><p></p></div>
+      <div class="section-head"><span class="eyebrow">Latest work</span><h2>Latest Work</h2><p>Recent jobs with photos — tap a card for details, call or quote.</p></div>
       <div class="pf-grid"></div>
     </div>
 </section>
@@ -29,7 +41,71 @@ html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:non
   </div>
 </div>
 <script>
-var SITE_CONFIG = {"theme":{"pipe":"#1f7bb8"},"business":"Ace Plumbing Co.","trade":"plumber","phone":"0261000000","sections":{"projectFeed":{"on":true,"eyebrow":"Latest work","heading":"Latest Work","intro":"","source":"manual","postsToShow":12,"sortOrder":"newest","items":[{"on":true,"title":"Merbau Deck","location":"Gungahlin, ACT","service":"Deck building","date":"2 days ago","caption":"Installed a new Merbau deck in Gungahlin — ready for summer."},{"on":true,"title":"Composite Deck","location":"Belconnen, ACT","service":"Deck building","date":"4 days ago","caption":"Low-maintenance composite deck, built to last."},{"on":true,"title":"Pergola Build","location":"Canberra, ACT","service":"Pergola","date":"1 week ago","caption":"Custom pergola built to match the home."}],"cardStyle":"overlay"}}};
+var SITE_CONFIG = {
+  "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+  "business": "Ace Plumbing Co.",
+  "trade": "plumber",
+  "phone": "0261000000",
+  "sections": {
+    "projectFeed": {
+      "on": true,
+      "eyebrow": "Latest work",
+      "heading": "Latest Work",
+      "intro": "Recent jobs with photos — tap a card for details, call or quote.",
+      "source": "manual",
+      "postsToShow": 12,
+      "sortOrder": "newest",
+      "cardStyle": "overlay",
+      "showTag": true,
+      "showTitle": true,
+      "showLocation": true,
+      "showDate": false,
+      "showDesc": false,
+      "showCall": true,
+      "showQuote": true,
+      "showLink": true,
+      "textColor": "#1a2230",
+      "textBg": "#ffffff",
+      "btnBg": "#ff7a00",
+      "btnText": "#ffffff",
+      "callLabel": "Call now",
+      "quoteLabel": "Get a quote",
+      "linkLabel": "View original",
+      "items": [
+        {
+          "on": true,
+          "title": "Merbau Deck",
+          "location": "Gungahlin, ACT",
+          "service": "Deck building",
+          "date": "2 days ago",
+          "caption": "Installed a new Merbau deck in Gungahlin — ready for summer.",
+          "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=1200&fit=crop&q=80",
+          "permalink": ""
+        },
+        {
+          "on": true,
+          "title": "Composite Deck",
+          "location": "Belconnen, ACT",
+          "service": "Deck building",
+          "date": "4 days ago",
+          "caption": "Low-maintenance composite deck, built to last.",
+          "image": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&h=1200&fit=crop&q=80",
+          "permalink": ""
+        },
+        {
+          "on": true,
+          "title": "Pergola Build",
+          "location": "Canberra, ACT",
+          "service": "Pergola",
+          "date": "1 week ago",
+          "caption": "Custom pergola built to match the home.",
+          "image": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=1200&fit=crop&q=80",
+          "permalink": ""
+        }
+      ]
+    }
+  }
+};
 </script>
 <script src="./demo-shared.js"></script>
 </body>
