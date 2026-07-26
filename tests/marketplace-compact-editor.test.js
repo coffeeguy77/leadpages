@@ -132,6 +132,35 @@ describe('marketplace compact editor parity', () => {
     assert.ok(defaults.quote.quote.jobOptions.length >= 3);
   });
 
+  it('heroSlider demo seeds slide images and hero copy', () => {
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-heroSlider.html'), 'utf8');
+    assert.match(demo, /"slides"\s*:\s*\[/);
+    assert.match(demo, /"imageUrl"\s*:\s*"https:\/\//);
+    assert.match(demo, /"heading"\s*:\s*"Solar that pays for itself"/);
+    assert.match(demo, /"highlightText"/);
+    assert.match(demo, /"primaryCtaText"/);
+    assert.match(demo, /photo-1509391366360-2e959784a276/);
+    assert.doesNotMatch(demo, /"img"\s*:/);
+    assert.doesNotMatch(demo, /"headline"\s*:/);
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    const slides = defaults.heroSlider.heroSlider.slides;
+    assert.ok(Array.isArray(slides) && slides.length >= 2);
+    slides.forEach((s, i) => {
+      assert.match(s.imageUrl || '', /^https:\/\//, 'slide ' + i + ' imageUrl');
+      assert.ok(s.heading, 'slide ' + i + ' heading');
+      assert.ok(s.subText, 'slide ' + i + ' subText');
+    });
+
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.heroSlider.some((f) => f.key === 'sections.heroSlider.slides.0.imageUrl'));
+    assert.ok(defs.heroSlider.some((f) => f.key === 'sections.heroSlider.slides.0.heading'));
+    assert.ok(defs.heroSlider.some((f) => f.key === 'sections.heroSlider.transitionEffect'));
+
+    const sell = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/sell-templates.json'), 'utf8'));
+    assert.match(sell.heroSlider.hero_image_url, /photo-1509391366360-2e959784a276/);
+  });
+
   it('activityTimeline demo and editor cover timeline events', () => {
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-activityTimeline.html'), 'utf8');
     assert.match(demo, /"events"\s*:\s*\[/);

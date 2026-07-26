@@ -9,6 +9,7 @@
 html.mp-demo-embed, html.mp-demo-embed body{margin:0;padding:0;min-height:0!important;height:auto!important;background:transparent;overflow:hidden}
 html.mp-demo-embed main#top{margin:0;padding:0;min-height:0}
 html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:none!important}
+html.mp-demo-embed section[data-sec="heroSlider"]{display:block!important}
 </style>
 </head>
 <body>
@@ -23,7 +24,68 @@ html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:non
 </section>
 </main>
 <script>
-var SITE_CONFIG = {"theme":{"pipe":"#f59e0b"},"business":"Prestige Solar","trade":"solar","phone":"0261000000","sections":{"heroSlider":{"on":true,"transitionEffect":"fade","autoplay":true,"autoplaySeconds":5,"overlayStrength":65,"textAlign":"left","minHeightDesktop":680,"minHeightMobile":560,"slides":[{"headline":"Solar that pays for itself","sub":"Government rebates available now","img":""},{"headline":"Battery storage solutions","sub":"Store your energy, cut your bill","img":""}]}}};
+var SITE_CONFIG = {
+  "theme": { "pipe": "#f59e0b" },
+  "business": "Prestige Solar",
+  "trade": "solar",
+  "phone": "0261000000",
+  "sections": {
+    "heroSlider": {
+      "on": true,
+      "transitionEffect": "fade",
+      "autoplay": true,
+      "autoplaySeconds": 5,
+      "overlayStrength": 65,
+      "textAlign": "left",
+      "minHeightDesktop": 680,
+      "minHeightMobile": 560,
+      "slides": [
+        {
+          "on": true,
+          "imageUrl": "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1920&h=1080&fit=crop&q=80",
+          "imageFit": "cover",
+          "imagePos": "center",
+          "eyebrow": "Canberra solar specialists",
+          "heading": "Solar that pays for itself",
+          "highlightText": "pays for itself",
+          "subText": "Government rebates available now — fixed pricing and a clean install from a local crew.",
+          "primaryCtaText": "Call Now",
+          "primaryCtaAction": "call",
+          "secondaryCtaText": "Get A Fast Quote",
+          "secondaryCtaAction": "quote"
+        },
+        {
+          "on": true,
+          "imageUrl": "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=1920&h=1080&fit=crop&q=80",
+          "imageFit": "cover",
+          "imagePos": "center",
+          "eyebrow": "Battery storage",
+          "heading": "Store your energy, cut your bill",
+          "highlightText": "cut your bill",
+          "subText": "Pair panels with home battery storage so you use more of what you generate.",
+          "primaryCtaText": "Call Now",
+          "primaryCtaAction": "call",
+          "secondaryCtaText": "Get A Fast Quote",
+          "secondaryCtaAction": "quote"
+        },
+        {
+          "on": true,
+          "imageUrl": "https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=1920&h=1080&fit=crop&q=80",
+          "imageFit": "cover",
+          "imagePos": "center",
+          "eyebrow": "Local installers",
+          "heading": "Installed right the first time",
+          "highlightText": "first time",
+          "subText": "Licensed electricians, tidy roofs, and a handover that makes sense for the household.",
+          "primaryCtaText": "Call Now",
+          "primaryCtaAction": "call",
+          "secondaryCtaText": "Get A Fast Quote",
+          "secondaryCtaAction": "quote"
+        }
+      ]
+    }
+  }
+};
 </script>
 <script src="./demo-shared.js"></script>
 </body>

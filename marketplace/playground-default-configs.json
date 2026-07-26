@@ -579,7 +579,51 @@
       "overlayStrength": 65,
       "textAlign": "left",
       "minHeightDesktop": 680,
-      "minHeightMobile": 560
+      "minHeightMobile": 560,
+      "slides": [
+        {
+          "on": true,
+          "imageUrl": "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1920&h=1080&fit=crop&q=80",
+          "imageFit": "cover",
+          "imagePos": "center",
+          "eyebrow": "Canberra solar specialists",
+          "heading": "Solar that pays for itself",
+          "highlightText": "pays for itself",
+          "subText": "Government rebates available now — fixed pricing and a clean install from a local crew.",
+          "primaryCtaText": "Call Now",
+          "primaryCtaAction": "call",
+          "secondaryCtaText": "Get A Fast Quote",
+          "secondaryCtaAction": "quote"
+        },
+        {
+          "on": true,
+          "imageUrl": "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=1920&h=1080&fit=crop&q=80",
+          "imageFit": "cover",
+          "imagePos": "center",
+          "eyebrow": "Battery storage",
+          "heading": "Store your energy, cut your bill",
+          "highlightText": "cut your bill",
+          "subText": "Pair panels with home battery storage so you use more of what you generate.",
+          "primaryCtaText": "Call Now",
+          "primaryCtaAction": "call",
+          "secondaryCtaText": "Get A Fast Quote",
+          "secondaryCtaAction": "quote"
+        },
+        {
+          "on": true,
+          "imageUrl": "https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?w=1920&h=1080&fit=crop&q=80",
+          "imageFit": "cover",
+          "imagePos": "center",
+          "eyebrow": "Local installers",
+          "heading": "Installed right the first time",
+          "highlightText": "first time",
+          "subText": "Licensed electricians, tidy roofs, and a handover that makes sense for the household.",
+          "primaryCtaText": "Call Now",
+          "primaryCtaAction": "call",
+          "secondaryCtaText": "Get A Fast Quote",
+          "secondaryCtaAction": "quote"
+        }
+      ]
     }
   },
   "igProjectFeed": {

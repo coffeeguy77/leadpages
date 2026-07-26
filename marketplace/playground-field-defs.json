@@ -68,14 +68,44 @@
   ],
   "heroSlider": [
     {
+      "type": "image",
+      "key": "sections.heroSlider.slides.0.imageUrl",
+      "label": "Slide 1 image"
+    },
+    {
+      "type": "text",
+      "key": "sections.heroSlider.slides.0.eyebrow",
+      "label": "Slide 1 eyebrow"
+    },
+    {
       "type": "text",
       "key": "sections.heroSlider.slides.0.heading",
       "label": "Slide 1 headline"
     },
     {
       "type": "text",
+      "key": "sections.heroSlider.slides.0.highlightText",
+      "label": "Slide 1 highlight"
+    },
+    {
+      "type": "textarea",
       "key": "sections.heroSlider.slides.0.subText",
       "label": "Slide 1 sub"
+    },
+    {
+      "type": "text",
+      "key": "sections.heroSlider.slides.0.primaryCtaText",
+      "label": "Slide 1 primary CTA"
+    },
+    {
+      "type": "image",
+      "key": "sections.heroSlider.slides.1.imageUrl",
+      "label": "Slide 2 image"
+    },
+    {
+      "type": "text",
+      "key": "sections.heroSlider.slides.1.eyebrow",
+      "label": "Slide 2 eyebrow"
     },
     {
       "type": "text",
@@ -84,8 +114,68 @@
     },
     {
       "type": "text",
+      "key": "sections.heroSlider.slides.1.highlightText",
+      "label": "Slide 2 highlight"
+    },
+    {
+      "type": "textarea",
       "key": "sections.heroSlider.slides.1.subText",
       "label": "Slide 2 sub"
+    },
+    {
+      "type": "text",
+      "key": "sections.heroSlider.slides.1.primaryCtaText",
+      "label": "Slide 2 primary CTA"
+    },
+    {
+      "type": "image",
+      "key": "sections.heroSlider.slides.2.imageUrl",
+      "label": "Slide 3 image"
+    },
+    {
+      "type": "text",
+      "key": "sections.heroSlider.slides.2.eyebrow",
+      "label": "Slide 3 eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.heroSlider.slides.2.heading",
+      "label": "Slide 3 headline"
+    },
+    {
+      "type": "text",
+      "key": "sections.heroSlider.slides.2.highlightText",
+      "label": "Slide 3 highlight"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.heroSlider.slides.2.subText",
+      "label": "Slide 3 sub"
+    },
+    {
+      "type": "select",
+      "key": "sections.heroSlider.transitionEffect",
+      "label": "Transition",
+      "options": [
+        { "value": "fade", "label": "Fade" },
+        { "value": "slide", "label": "Slide" },
+        { "value": "zoom", "label": "Zoom" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.heroSlider.autoplay",
+      "label": "Autoplay"
+    },
+    {
+      "type": "number",
+      "key": "sections.heroSlider.autoplaySeconds",
+      "label": "Autoplay seconds"
+    },
+    {
+      "type": "number",
+      "key": "sections.heroSlider.overlayStrength",
+      "label": "Overlay darkness (0–100)"
     },
     {
       "type": "color",
