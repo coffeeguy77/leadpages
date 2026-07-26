@@ -130,7 +130,9 @@
 
       html += '<div class="card tb-ed-card"><h2 id="tb-list-title">' + (tbMode === 'images' ? 'Image tiles' : 'Trust badges') + '</h2>'
         + '<p class="lede" id="tb-list-lede">' + (tbMode === 'images'
-          ? 'Each tile is an image with caption text overlaid at the bottom. Toggle, reorder, or add tiles — they share the full width evenly.'
+          ? (mode === 'marketplace-playground'
+            ? 'Each tile is an image with caption text. Choose your own photo to override the sample on this screen only — nothing is uploaded or saved.'
+            : 'Each tile is an image with caption text overlaid at the bottom. Toggle, reorder, or add tiles — they share the full width evenly.')
           : 'The row of badges shown directly under your hero — on every layout. Toggle off any that don’t apply, edit the wording, reorder, or add your own.')
         + '</p><div id="tb-items"></div>'
         + '<button type="button" class="tb-ed-add" id="tb-add">+ Add item</button></div>';
