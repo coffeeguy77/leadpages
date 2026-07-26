@@ -4,7 +4,7 @@
  * Modes: production (unused here), demo-builder, marketplace-playground.
  *
  * marketplace-playground: temporary state only — never saves.
- * Compact UI: section visibility is always on; items edited via tabs in one card.
+ * Compact UI: section always on; tabbed items; no mini preview in the editor.
  */
 (function (global) {
   'use strict';
@@ -45,7 +45,6 @@
     if (!Array.isArray(cfg.sections.trustBar.badges) || !cfg.sections.trustBar.badges.length) {
       cfg.sections.trustBar.badges = DEFAULT_FOUR.map(function (b) { return Object.assign({}, b); });
     }
-    /* Playground always shows the bar — section toggle removed from UI */
     cfg.sections.trustBar.on = true;
     return cfg.sections.trustBar;
   }
@@ -60,11 +59,11 @@
   function colorRow(id, label, value, placeholder) {
     var v = value || '';
     var pick = hexOk(v) || '#cccccc';
-    return '<div class="f tb-ed-f"><label for="' + id + 't">' + esc(label) + '</label>'
+    return '<div class="f tb-ed-f tb-ed-color-f"><label for="' + id + 't">' + esc(label) + '</label>'
       + '<div class="tb-ed-color">'
       + '<input type="color" id="' + id + '" value="' + esc(pick) + '" aria-label="' + esc(label) + ' colour">'
-      + '<input type="text" id="' + id + 't" class="tin" placeholder="' + esc(placeholder || 'Theme default') + '" value="' + esc(v) + '">'
-      + '<button type="button" class="btn ghost sm" data-tb-clr="' + id + '">Default</button>'
+      + '<input type="text" id="' + id + 't" class="tin tb-ed-hex" maxlength="7" placeholder="' + esc(placeholder || '#…') + '" value="' + esc(v) + '">'
+      + '<button type="button" class="btn ghost sm tb-ed-clr" data-tb-clr="' + id + '" title="Default">↺</button>'
       + '</div></div>';
   }
 
@@ -74,40 +73,6 @@
     if (!short) return String(i + 1);
     if (raw.length > 18) short += '…';
     return short;
-  }
-
-  function iconSvg(name) {
-    var n = String(name || '').trim();
-    if (n && global.LP_ICONS && global.LP_ICONS[n]) {
-      return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + global.LP_ICONS[n] + '</svg>';
-    }
-    return '';
-  }
-
-  function modePreviewHtml(TB) {
-    var images = TB.mode === 'images';
-    var items = (TB.badges || []).filter(function (b) { return b && b.on !== false; }).slice(0, 4);
-    if (!items.length) items = (TB.badges || []).slice(0, 4);
-    if (!items.length) {
-      return '<div class="tb-ed-mode-preview empty" aria-hidden="true"><span>Preview</span></div>';
-    }
-    if (images) {
-      var tiles = items.map(function (it) {
-        var src = it.image || '';
-        var lab = esc(String(it.label || '').split(/\n/)[0].slice(0, 22));
-        if (src) {
-          return '<div class="tb-ed-mp-tile"><img src="' + esc(src) + '" alt=""><span>' + lab + '</span></div>';
-        }
-        return '<div class="tb-ed-mp-tile ph"><span>' + lab + '</span></div>';
-      }).join('');
-      return '<div class="tb-ed-mode-preview images" aria-label="Image tiles preview" title="Image tiles preview">' + tiles + '</div>';
-    }
-    var chips = items.map(function (it) {
-      var ic = iconSvg(it.icon);
-      var lab = esc(String(it.label || '').split(/\n/)[0].slice(0, 16));
-      return '<div class="tb-ed-mp-chip">' + (ic || '<span class="tb-ed-mp-dot"></span>') + '<span>' + lab + '</span></div>';
-    }).join('');
-    return '<div class="tb-ed-mode-preview badges" aria-label="Classic badges preview" title="Classic badges preview">' + chips + '</div>';
   }
 
   function mount(host, options) {
@@ -147,7 +112,6 @@
 
       html += '<div class="card tb-ed-card tb-ed-card-tight">'
         + '<div class="tb-ed-toolbar">'
-        + '<div class="tb-ed-toolbar-left">'
         + '<div class="f tb-ed-style"><label for="tb-mode">Style</label>'
         + '<select id="tb-mode" class="tin">'
         + '<option value="badges"' + (tbMode === 'badges' ? ' selected' : '') + '>Classic badges</option>'
@@ -161,27 +125,25 @@
         + '<label for="tb-h">Height <span id="tb-h-v">' + esc(h) + 'px</span></label>'
         + '<input type="range" id="tb-h" min="160" max="520" step="10" value="' + esc(h) + '">'
         + '</div></div>'
-        + '<div class="tb-ed-toolbar-right" id="tb-mode-preview">' + modePreviewHtml(TB) + '</div>'
+
+        + '<div id="tb-classic-colors" class="tb-ed-color-grid"' + (tbMode === 'images' ? ' style="display:none"' : '') + '>'
+        + colorRow('tb-bg', 'Background', TB.bg, '')
+        + colorRow('tb-fg', 'Font', TB.fg, '')
+        + '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" id="tb-lineon"' + (TB.lineOn !== false ? ' checked' : '') + '> Divider lines</label></div>'
+        + colorRow('tb-line', 'Line', TB.line, '')
         + '</div>'
 
-        + '<div id="tb-classic-colors"' + (tbMode === 'images' ? ' style="display:none"' : '') + '>'
-        + '<div class="row">' + colorRow('tb-bg', 'Background', TB.bg, 'Theme default')
-        + colorRow('tb-fg', 'Font', TB.fg, 'Theme default') + '</div>'
-        + '<div class="row"><div class="f"><label class="ck"><input type="checkbox" id="tb-lineon"' + (TB.lineOn !== false ? ' checked' : '') + '> Divider lines</label></div>'
-        + colorRow('tb-line', 'Line colour', TB.line, 'Theme default') + '</div>'
-        + '</div>'
-
-        + '<div id="tb-image-opts"' + (tbMode === 'images' ? '' : ' style="display:none"') + '>'
-        + '<div class="row"><div class="f"><label class="ck"><input type="checkbox" id="tb-strokeon"' + (TB.strokeOn !== false ? ' checked' : '') + '> Stroke between tiles</label></div>'
-        + colorRow('tb-stroke', 'Stroke', TB.strokeColour || TB.stroke || '#ffffff', '#ffffff') + '</div>'
-        + '<div class="row"><div class="f"><label class="ck"><input type="checkbox" id="tb-edgeon"' + (TB.edgeOn !== false ? ' checked' : '') + '> Top &amp; bottom stroke</label></div>'
-        + colorRow('tb-edge', 'Edge', TB.edgeColour || TB.edge || '#ffffff', '#ffffff') + '</div>'
-        + '<div class="row">' + colorRow('tb-img-fg', 'Caption colour', TB.fg || '#ffffff', '#ffffff') + '</div>'
+        + '<div id="tb-image-opts" class="tb-ed-color-grid"' + (tbMode === 'images' ? '' : ' style="display:none"') + '>'
+        + '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" id="tb-strokeon"' + (TB.strokeOn !== false ? ' checked' : '') + '> Tile stroke</label></div>'
+        + colorRow('tb-stroke', 'Stroke', TB.strokeColour || TB.stroke || '#ffffff', '#ffffff')
+        + '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" id="tb-edgeon"' + (TB.edgeOn !== false ? ' checked' : '') + '> Edge stroke</label></div>'
+        + colorRow('tb-edge', 'Edge', TB.edgeColour || TB.edge || '#ffffff', '#ffffff')
+        + colorRow('tb-img-fg', 'Caption', TB.fg || '#ffffff', '#ffffff')
         + '</div></div>';
 
       html += '<div class="card tb-ed-card tb-ed-card-items">'
         + '<div class="tb-ed-items-head">'
-        + '<h2 id="tb-list-title">' + (tbMode === 'images' ? 'Items' : 'Items') + '</h2>'
+        + '<h2 id="tb-list-title">Items</h2>'
         + '<button type="button" class="tb-ed-add" id="tb-add">+ Add</button>'
         + '</div>'
         + '<div id="tb-items"></div></div>';
@@ -198,16 +160,16 @@
       var imageField = '';
       if (images) {
         if (localImg) {
-          imageField = '<div class="f"><label>Tile image</label>'
+          imageField = '<div class="f tb-ed-img-f"><label>Tile image</label>'
             + window.LPLocalImage.controlHtml(it.image || '', {
-              sample: sample,
+              sample: sample || ((window.LPLocalImage.isRemote(it.image) ? it.image : '') || ''),
               inputAttrs: 'data-k="image"'
             })
             + '</div>';
         } else {
           imageField = '<div class="f"><label>Tile image URL</label><input type="url" data-k="image" value="' + esc(it.image || '') + '" placeholder="https://…"></div>';
         }
-        imageField += '<div class="row"><div class="f"><label>Fit</label><select data-k="imageFit">'
+        imageField += '<div class="row tb-ed-fit-row"><div class="f"><label>Fit</label><select data-k="imageFit">'
           + [['cover', 'Cover'], ['contain', 'Contain'], ['fill', 'Fill'], ['stretch', 'Stretch']]
             .map(function (o) { return '<option value="' + o[0] + '"' + ((it.imageFit || 'cover') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('')
           + '</select></div><div class="f"><label>Position</label><select data-k="imagePos">'
@@ -225,13 +187,14 @@
         + '<button type="button" data-act="rm" class="danger" aria-label="Remove">Remove</button>'
         + '</span></div>'
         + imageField
+        + '<div class="row tb-ed-item-main">'
         + '<div class="f"><label>Icon</label>'
         + (window.LPIconPicker
           ? window.LPIconPicker.controlHtml(it.icon || '', { inputAttrs: 'data-k="icon"' })
           : '<input type="text" data-k="icon" value="' + esc(it.icon || '') + '" placeholder="e.g. shield-check">')
         + '</div>'
-        + '<div class="f"><label>Text</label><textarea data-k="label" rows="2">' + esc(it.label || '') + '</textarea></div>'
-        + '</div>';
+        + '<div class="f tb-ed-text-f"><label>Text</label><textarea data-k="label" rows="2">' + esc(it.label || '') + '</textarea></div>'
+        + '</div></div>';
     }
 
     function drawItems() {
@@ -258,12 +221,13 @@
         + itemPanelHtml(items[activeIdx], activeIdx, images);
 
       if (window.LPIconPicker) window.LPIconPicker.refresh(box);
-      if (window.LPLocalImage) window.LPLocalImage.refresh(box);
-    }
-
-    function refreshModePreview() {
-      var box = host.querySelector('#tb-mode-preview');
-      if (box) box.innerHTML = modePreviewHtml(tb());
+      if (window.LPLocalImage) {
+        var it = items[activeIdx];
+        var sample = (it && it._pgSample) || '';
+        var ctl = box.querySelector('[data-lp-locimg]');
+        if (ctl) window.LPLocalImage.applyValues(ctl, (it && it.image) || '', sample);
+        else window.LPLocalImage.refresh(box);
+      }
     }
 
     function syncModeUi() {
@@ -276,9 +240,6 @@
       if (cc) cc.style.display = images ? 'none' : '';
       if (io) io.style.display = images ? '' : 'none';
       if (hw) hw.style.display = images ? '' : 'none';
-      var h = host.querySelector('#tb-list-title');
-      if (h) h.textContent = 'Items';
-      refreshModePreview();
     }
 
     function wireColor(id, apply, clearVal) {
@@ -379,7 +340,6 @@
               tab.title = tabLabel(tb().badges[i], i);
             }
           }
-          if (k === 'label' || k === 'on' || k === 'icon' || k === 'image') refreshModePreview();
           emit('Preview updated');
         });
         box.addEventListener('change', function (e) {
@@ -394,7 +354,6 @@
             var tab = box.querySelector('.tb-ed-tab[data-tab="' + i + '"]');
             if (tab) tab.classList.toggle('off', tb().badges[i].on === false);
           }
-          if (k === 'on' || k === 'icon' || k === 'image') refreshModePreview();
           emit('Preview updated');
         });
         box.addEventListener('click', function (e) {
