@@ -74,6 +74,8 @@ describe('marketplace catalog resolve', () => {
     assert.match(demo, /data-sec="emerg"/);
     assert.match(demo, /24\/7 emergency plumber/);
     assert.match(demo, /"sticky"\s*:\s*true/);
+    assert.doesNotMatch(demo, />\s*Ace Plumbing Co\.\s*</);
+    assert.match(demo, /Demo Business/);
 
     const presets = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/emerg-type-presets.json'), 'utf8'));
     assert.equal(presets.length, 6);
