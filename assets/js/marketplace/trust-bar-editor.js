@@ -168,10 +168,15 @@
                 .map(function (o) { return '<option value="' + o[0] + '"' + ((it.imagePos || 'center') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('')
               + '</select></div></div>'
             : '')
-          + '<div class="f"><label>Icon key (optional)</label><input type="text" data-k="icon" value="' + esc(it.icon || '') + '" placeholder="e.g. shield-check"></div>'
+          + '<div class="f"><label>Icon</label>'
+          + (window.LPIconPicker
+            ? window.LPIconPicker.controlHtml(it.icon || '', { inputAttrs: 'data-k="icon"' })
+            : '<input type="text" data-k="icon" value="' + esc(it.icon || '') + '" placeholder="e.g. shield-check">')
+          + '</div>'
           + '<div class="f"><label>Text (press Enter for a new line)</label><textarea data-k="label" rows="2">' + esc(it.label || '') + '</textarea></div>'
           + '</div>';
       }).join('');
+      if (window.LPIconPicker) window.LPIconPicker.refresh(box);
     }
 
     function syncModeUi() {

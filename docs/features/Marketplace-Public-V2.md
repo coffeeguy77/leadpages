@@ -9,6 +9,15 @@
 
 Warm, sell-first public marketplace that shows finished results, industry presets, and the **same Trust Bar controls** used in `manage.html`. Public playground changes are temporary and never save.
 
+## Compact app page layout
+
+Every marketplace feature page uses a short two-part layout:
+
+1. **Coloured top (app info)** — name, short summary, access labels, and an expandable list of overview / features / benefits.
+2. **White section (demo)** — real examples, live preview, presets, and the playground editor. No “In context” images or long marketing sections.
+
+Trust Bar V2 (`?v2=1`) follows the same pattern via `marketplace-feature-v2.js`. Playground icon fields use the shared LeadPages icon picker (`assets/js/marketplace/lp-icon-picker.js`).
+
 ## Feature flags
 
 | Flag | Purpose |

@@ -161,4 +161,26 @@ describe('public marketplace theme + copy safety', () => {
     assert.ok(fs.existsSync(path.join(root, 'assets/js/marketplace/marketplace-feature-v2.js')));
     assert.ok(fs.existsSync(path.join(root, 'app-demo-trust-bar.html')));
   });
+
+  it('Trust Bar V2 page is compact: coloured info + white demo', () => {
+    const html = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-feature-v2.js'), 'utf8');
+    assert.match(html, /mp-info-hero/);
+    assert.match(html, /mp-demo-article/);
+    assert.match(html, /mp-info-list/);
+    assert.match(html, /Try the demo/);
+    assert.doesNotMatch(html, /mk-modes/);
+    assert.doesNotMatch(html, /mk-industry/);
+    assert.doesNotMatch(html, /mk-same-editor/);
+    assert.doesNotMatch(html, /In context/);
+  });
+
+  it('marketplace demos use the shared icon picker', () => {
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /lp-icon-picker\.js/);
+    assert.match(feat, /LPIconPicker/);
+    assert.match(feat, /case 'image':\s*\n\s*return '';/);
+    const editor = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.js'), 'utf8');
+    assert.match(editor, /LPIconPicker\.controlHtml/);
+    assert.ok(fs.existsSync(path.join(root, 'assets/js/marketplace/lp-icon-picker.js')));
+  });
 });
