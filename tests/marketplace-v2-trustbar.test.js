@@ -227,10 +227,27 @@ describe('public marketplace theme + copy safety', () => {
     assert.match(editor, /data-tab/);
     assert.match(editor, /trustBar\.on = true/);
     assert.match(editor, /tb-ed-color-grid|tb-ed-hex/);
+    assert.match(editor, /tb-ed-zones/);
+    assert.match(editor, /tb-ed-zone-items/);
+    assert.match(editor, /tb-ed-zone-style/);
     const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.css'), 'utf8');
     assert.match(css, /\.tb-ed-tabs/);
     assert.match(css, /\.tb-ed-hex/);
+    assert.match(css, /\.tb-ed-zones/);
+    assert.match(css, /\.tb-ed-zone-style/);
+    assert.match(css, /color-mix\(in srgb, var\(--theme-primary/);
+    assert.match(css, /max-width:\s*640px/);
     assert.doesNotMatch(css, /\.tb-ed-mode-preview/);
+  });
+
+  it('hero image fills its side column beside the copy', () => {
+    const v2 = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-feature-v2.js'), 'utf8');
+    assert.match(v2, /align-items:stretch/);
+    assert.match(v2, /\.mp-info-hero \.himg img\{[^}]*position:absolute/);
+    assert.match(v2, /max-height:none/);
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /align-items:stretch/);
+    assert.match(feat, /\.himg img\{[^}]*position:absolute/);
   });
 
   it('demo trust bar applies tile images via DOM so local data URLs work', () => {

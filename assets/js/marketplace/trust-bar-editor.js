@@ -110,7 +110,17 @@
         html += '<div class="tb-ed-banner tb-ed-banner-safe">Have a play. Nothing here will be saved.</div>';
       }
 
-      html += '<div class="card tb-ed-card tb-ed-card-tight">'
+      // Items left, Style right — style sits on a light theme wash to separate the zones.
+      html += '<div class="tb-ed-zones">'
+        + '<div class="card tb-ed-card tb-ed-card-items tb-ed-zone-items">'
+        + '<div class="tb-ed-items-head">'
+        + '<h2 id="tb-list-title">Items</h2>'
+        + '<button type="button" class="tb-ed-add" id="tb-add">+ Add</button>'
+        + '</div>'
+        + '<div id="tb-items"></div></div>'
+
+        + '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-style" aria-label="Style">'
+        + '<div class="tb-ed-zone-label">Style</div>'
         + '<div class="tb-ed-toolbar">'
         + '<div class="f tb-ed-style"><label for="tb-mode">Style</label>'
         + '<select id="tb-mode" class="tin">'
@@ -139,14 +149,8 @@
         + '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" id="tb-edgeon"' + (TB.edgeOn !== false ? ' checked' : '') + '> Edge stroke</label></div>'
         + colorRow('tb-edge', 'Edge', TB.edgeColour || TB.edge || '#ffffff', '#ffffff')
         + colorRow('tb-img-fg', 'Caption', TB.fg || '#ffffff', '#ffffff')
-        + '</div></div>';
-
-      html += '<div class="card tb-ed-card tb-ed-card-items">'
-        + '<div class="tb-ed-items-head">'
-        + '<h2 id="tb-list-title">Items</h2>'
-        + '<button type="button" class="tb-ed-add" id="tb-add">+ Add</button>'
-        + '</div>'
-        + '<div id="tb-items"></div></div>';
+        + '</div></div>'
+        + '</div>';
 
       host.innerHTML = html;
       wire();
