@@ -75,10 +75,14 @@ describe('marketplace catalog resolve', () => {
     const email = resolve.resolveFromStatic('email-campaigns');
     assert.equal(email.feature.section_key, null);
     assert.equal(resolve.hasPlayground(email.blocks), false);
-    assert.ok(email.blocks.some((b) => b.block_type === 'benefits'));
+    assert.ok(!email.blocks.some((b) => b.block_type === 'benefits'), 'no How it works cards');
     const embed = email.blocks.find((b) => b.block_type === 'demo_embed');
     assert.ok(embed);
     assert.match(embed.payload.url, /demo-emailCampaigns\.html/);
+    assert.ok(email.blocks.some((b) => b.block_type === 'cta'));
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.doesNotMatch(feat, /heading:'How it works'/);
+    assert.doesNotMatch(feat, /heading:"How it works"/);
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-emailCampaigns.html'), 'utf8');
     assert.match(demo, /Demo only/);
     assert.match(demo, /Unsubscribed/);

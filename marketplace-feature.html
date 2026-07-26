@@ -413,14 +413,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       };
     }
     if(alias&&alias.platform){
-      var platBlocks=[
-        {block_type:'benefits',payload:{heading:'How it works',items:[
-          {title:'What it does',text:'Compose a subject and message, pick leads from your inbox, and send or schedule — opt-outs are honoured automatically.'},
-          {title:'Try the demo',text:'Play with fake clients, sample campaign messages, preset hero images (no upload), and unsubscribed contacts. Nothing is emailed or saved.'},
-          {title:'Where you find it',text:'Open any site in the App Command Centre → Email clients / Newsletter tab. This is a dashboard tool, not a public page widget.'},
-          {title:'Safety',text:'This marketplace demo never calls the campaign API — real sends stay in your site dashboard.'}
-        ]}}
-      ];
+      var platBlocks=[];
       if(alias.showcaseDemoUrl){
         platBlocks.push({block_type:'demo_embed',payload:{url:alias.showcaseDemoUrl,height:alias.demoHeight||900}});
       }
@@ -472,7 +465,12 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         if(alias.hero_image_url&&!feature.hero_image_url) feature.hero_image_url=alias.hero_image_url;
         if(alias.premiumShowcase) feature.access_type='premium_subscription';
       }
-      blocks=(blocks||[]).filter(function(b){ return b&&b.block_type!=='playground'; });
+      blocks=(blocks||[]).filter(function(b){
+        if(!b || b.block_type==='playground') return false;
+        /* Platform / premium showcase: strip benefits process cards — demo (+ CTA) only */
+        if(b.block_type==='benefits') return false;
+        return true;
+      });
       if(alias.premiumShowcase||alias.showcaseDemoUrl){
         var hasEmbed=(blocks||[]).some(function(b){ return b&&b.block_type==='demo_embed'; });
         if(!hasEmbed&&builtHub) blocks=builtHub.blocks;
@@ -675,7 +673,11 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     /* Premium / platform pages never get a Customise playground */
     if(hubAlias&&(hubAlias.premiumShowcase||hubAlias.platform)){
       f.section_key=null;
-      blocks=(blocks||[]).filter(function(b){ return b&&b.block_type!=='playground'; });
+      blocks=(blocks||[]).filter(function(b){
+        if(!b || b.block_type==='playground') return false;
+        if(b.block_type==='benefits') return false;
+        return true;
+      });
       if(hubAlias.hero_image_url&&!f.hero_image_url) f.hero_image_url=hubAlias.hero_image_url;
       if(hubAlias.badge) f.badge=hubAlias.badge;
     } else if(f.section_key){
