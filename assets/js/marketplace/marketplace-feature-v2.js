@@ -31,7 +31,6 @@
   var editorApi = null;
   var iframe = null;
   var device = 'desktop';
-  var layoutMode = 'side'; // side | stacked
   var activePreset = '';
   var presetCache = {};
   var announceEl = null;
@@ -281,6 +280,9 @@
       + '<p>Choose a preset and make a few changes. This is the same editor used inside LeadPages, so what you try here is exactly what you will use when editing your own website.</p>'
       + '<p class="mp-note">Have a play. Nothing here will be saved.</p>'
       + '</div>'
+      + '<div class="mp-pg-preview">'
+      + '<div class="pg-devicewrap" data-r="wrap"><div class="pg-viewport" data-r="vp"><div class="pg-canvas" data-r="canvas"></div></div></div>'
+      + '</div>'
       + '<div class="pg-topbar">'
       + '<div class="pg-presets" data-r="presets" role="toolbar" aria-label="Industry presets"></div>'
       + '<div class="pg-devbtns" role="group" aria-label="Preview size">'
@@ -289,17 +291,12 @@
       + '<button type="button" data-d="phone">Phone</button>'
       + '</div>'
       + '<div class="mp-pg-actions">'
-      + '<button type="button" class="btn ghost" id="mp-layout-toggle">Editor below</button>'
       + '<button type="button" class="btn ghost" id="mp-reset">Reset example</button>'
       + '</div></div>'
-      + '<div class="mp-pg-grid" id="mp-pg-grid" data-layout="side">'
-      + '<div class="mp-pg-preview">'
-      + '<div class="pg-devicewrap" data-r="wrap"><div class="pg-viewport" data-r="vp"><div class="pg-canvas" data-r="canvas"></div></div></div>'
-      + '</div>'
-      + '<div class="mp-pg-editor">'
+      + '<div class="mp-pg-editor mp-pg-editor-compact">'
       + '<button type="button" class="btn mp-edit-mobile" id="mp-edit-mobile">Edit this example</button>'
-      + '<div id="mp-tb-editor" class="tb-ed-root"></div>'
-      + '</div></div>'
+      + '<div id="mp-tb-editor" class="tb-ed-root tb-ed-compact"></div>'
+      + '</div>'
       + '<p class="sr-only" id="mp-live-status" aria-live="polite"></p>'
       + '</section>'
 
@@ -358,22 +355,6 @@
         applyLiveConfig();
         announce('Example reset');
       });
-    }
-
-    var layoutToggle = document.getElementById('mp-layout-toggle');
-    var grid = document.getElementById('mp-pg-grid');
-    if (layoutToggle && grid) {
-      function applyLayout() {
-        var stacked = layoutMode === 'stacked' || window.innerWidth < 960;
-        grid.setAttribute('data-layout', stacked ? 'stacked' : 'side');
-        layoutToggle.textContent = stacked ? 'Side by side' : 'Editor below';
-      }
-      layoutToggle.addEventListener('click', function () {
-        layoutMode = layoutMode === 'side' ? 'stacked' : 'side';
-        applyLayout();
-      });
-      window.addEventListener('resize', applyLayout);
-      applyLayout();
     }
 
     var editMobile = document.getElementById('mp-edit-mobile');
@@ -454,12 +435,12 @@
       '@media(max-width:900px){.mp-industry-grid{grid-template-columns:repeat(2,1fr)}}',
       '.mp-industry-card{appearance:none;border:1px solid var(--theme-border,var(--line));background:var(--theme-surface,#fff);border-radius:14px;padding:16px;text-align:left;font:inherit;font-weight:700;cursor:pointer;text-transform:capitalize}',
       '.mp-industry-card:hover,.mp-industry-card:focus-visible{border-color:var(--theme-primary,var(--rose));outline:3px solid var(--theme-focus,var(--rose));outline-offset:2px}',
-      '.mp-pg-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:start}',
-      '.mp-pg-grid[data-layout="stacked"]{grid-template-columns:1fr}',
-      '@media(max-width:960px){.mp-pg-grid{grid-template-columns:1fr}.mp-edit-mobile{display:inline-flex!important}}',
-      '.mp-edit-mobile{display:none;margin-bottom:12px}',
+      '.mp-pg-preview{margin:0 0 12px}',
+      '.mp-pg-editor-compact{margin-top:4px}',
+      '@media(max-width:960px){.mp-edit-mobile{display:inline-flex!important}}',
+      '.mp-edit-mobile{display:none;margin-bottom:10px}',
       '.mp-pg-actions{display:flex;gap:8px;flex-wrap:wrap}',
-      '.mp-pg .pg-topbar{flex-wrap:wrap;gap:12px}',
+      '.mp-pg .pg-topbar{flex-wrap:wrap;gap:10px;padding:4px 0 10px}',
       '.mp-steps{margin:0;padding-left:22px;max-width:64ch}',
       '.mp-steps li{margin:0 0 12px}',
       '.mp-hero-cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:18px}',

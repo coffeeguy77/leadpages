@@ -7,13 +7,13 @@
 }
 
 .tb-ed-banner {
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 600;
-  padding: 10px 14px;
+  padding: 7px 10px;
   border-radius: var(--theme-radius-small, 10px);
   background: var(--theme-accent-soft, rgba(168, 74, 94, 0.12));
   color: var(--theme-text, var(--ink));
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   border: 1px solid var(--theme-border, var(--line));
 }
 
@@ -24,29 +24,30 @@
 .tb-ed-card {
   background: var(--theme-surface, #fff);
   border: 1px solid var(--theme-border, var(--line));
-  border-radius: var(--theme-radius-medium, 16px);
-  padding: 18px 18px 16px;
-  margin-bottom: 14px;
+  border-radius: 12px;
+  padding: 12px 12px 10px;
+  margin-bottom: 10px;
 }
 
 .tb-ed-card h2 {
   font-family: var(--theme-heading-font, var(--disp, Georgia, serif));
-  font-size: 1.25rem;
+  font-size: 1.05rem;
   font-weight: 400;
-  margin: 0 0 6px;
+  margin: 0 0 4px;
 }
 
 .tb-ed-card .lede {
   color: var(--theme-text-muted, var(--mut));
-  font-size: 14px;
-  margin: 0 0 14px;
+  font-size: 12.5px;
+  margin: 0 0 10px;
+  line-height: 1.4;
 }
 
 .tb-ed-card .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 8px 10px;
+  margin-bottom: 8px;
 }
 
 @media (max-width: 720px) {
@@ -56,9 +57,9 @@
 .tb-ed-card .f label,
 .tb-ed-f label {
   display: block;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .tb-ed-card .tin,
@@ -67,47 +68,51 @@
 .tb-ed-card textarea,
 .tb-ed-card select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 6px 8px;
   border: 1px solid var(--theme-border, var(--line));
-  border-radius: 8px;
+  border-radius: 7px;
   font: inherit;
+  font-size: 13px;
   background: var(--theme-surface, #fff);
   color: inherit;
+  line-height: 1.3;
 }
 
 .tb-ed-card input[type="range"] { width: 100%; }
 
 .tb-ed-color {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
 }
 
 .tb-ed-color input[type="color"] {
-  width: 46px;
-  height: 38px;
-  padding: 2px;
+  width: 36px;
+  height: 30px;
+  padding: 1px;
   border: 1px solid var(--theme-border, var(--line));
-  border-radius: 8px;
+  border-radius: 7px;
   cursor: pointer;
   background: transparent;
 }
 
 .tb-ed-card .ck {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
   font-weight: 600;
-  margin: 8px 0 0;
+  font-size: 13px;
+  margin: 4px 0 0;
 }
 
 .tb-ed-card .btn.ghost.sm {
   appearance: none;
   border: 1px solid var(--theme-border, var(--line));
   background: transparent;
-  border-radius: 8px;
-  padding: 8px 10px;
+  border-radius: 7px;
+  padding: 5px 8px;
   font: inherit;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   color: var(--theme-text-muted, var(--mut));
@@ -120,9 +125,9 @@
 
 .tb-ed-item {
   border: 1px solid var(--theme-border, var(--line));
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 8px;
   background: var(--theme-surface-alt, var(--shell, #fbfaf7));
 }
 
@@ -130,13 +135,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .tb-ed-item-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .tb-ed-item-actions button {
@@ -146,8 +151,9 @@
   cursor: pointer;
   font: inherit;
   font-weight: 700;
+  font-size: 13px;
   color: var(--theme-text-muted, var(--mut));
-  padding: 4px 6px;
+  padding: 2px 4px;
 }
 
 .tb-ed-item-actions button.danger { color: var(--theme-danger, #b42318); }
@@ -156,9 +162,10 @@
   appearance: none;
   border: 1px dashed var(--theme-border-strong, var(--line));
   background: var(--theme-surface, #fff);
-  border-radius: 9px;
-  padding: 10px 15px;
+  border-radius: 8px;
+  padding: 7px 12px;
   font: inherit;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   color: var(--theme-text, var(--ink));
@@ -174,4 +181,24 @@
 .tb-ed-add:focus-visible {
   outline: 3px solid var(--theme-focus, var(--rose));
   outline-offset: 2px;
+}
+
+/* Extra-tight playground density */
+.tb-ed-compact .tb-ed-card {
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.tb-ed-compact .tb-ed-card .lede {
+  display: none;
+}
+
+.tb-ed-compact .tb-ed-card h2 {
+  font-size: 0.98rem;
+  margin-bottom: 8px;
+}
+
+.tb-ed-compact .tb-ed-item textarea {
+  min-height: 44px;
+  rows: 2;
 }
