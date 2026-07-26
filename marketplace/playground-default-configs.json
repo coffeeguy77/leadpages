@@ -1301,33 +1301,34 @@
     "trade": "plumber",
     "phone": "0261000000",
     "theme": {
-      "pipe": "#1f7bb8"
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
     },
     "videoReels": {
       "on": true,
       "eyebrow": "Watch",
       "heading": "Reels from the job",
-      "intro": "",
+      "intro": "Short clips from real jobs — tap a card to watch.",
       "reels": [
         {
           "on": true,
           "title": "Inside a full bathroom reno",
-          "tag": "Reel",
-          "thumbnail": "",
+          "tag": "0:42",
+          "thumbnail": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=900&h=1600&fit=crop&q=80",
           "videoUrl": ""
         },
         {
           "on": true,
           "title": "How we clear a blocked drain",
-          "tag": "Reel",
-          "thumbnail": "",
+          "tag": "0:28",
+          "thumbnail": "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=900&h=1600&fit=crop&q=80",
           "videoUrl": ""
         },
         {
           "on": true,
           "title": "Hot water swap in under an hour",
-          "tag": "Reel",
-          "thumbnail": "",
+          "tag": "0:35",
+          "thumbnail": "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=900&h=1600&fit=crop&q=80",
           "videoUrl": ""
         }
       ]

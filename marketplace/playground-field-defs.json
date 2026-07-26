@@ -1850,69 +1850,69 @@
       "label": "Intro"
     },
     {
-      "type": "color",
-      "key": "theme.pipe",
-      "label": "Brand colour"
-    },
-    {
       "type": "text",
       "key": "sections.videoReels.reels.0.title",
-      "label": "Item 1 Title"
+      "label": "Reel 1 title"
     },
     {
       "type": "text",
       "key": "sections.videoReels.reels.0.tag",
-      "label": "Item 1 Tag"
+      "label": "Reel 1 tag / duration"
     },
     {
-      "type": "text",
+      "type": "image",
       "key": "sections.videoReels.reels.0.thumbnail",
-      "label": "Item 1 thumbnail"
+      "label": "Reel 1 thumbnail"
     },
     {
       "type": "text",
       "key": "sections.videoReels.reels.0.videoUrl",
-      "label": "Item 1 videoUrl"
+      "label": "Reel 1 video link"
     },
     {
       "type": "text",
       "key": "sections.videoReels.reels.1.title",
-      "label": "Item 2 Title"
+      "label": "Reel 2 title"
     },
     {
       "type": "text",
       "key": "sections.videoReels.reels.1.tag",
-      "label": "Item 2 Tag"
+      "label": "Reel 2 tag / duration"
     },
     {
-      "type": "text",
+      "type": "image",
       "key": "sections.videoReels.reels.1.thumbnail",
-      "label": "Item 2 thumbnail"
+      "label": "Reel 2 thumbnail"
     },
     {
       "type": "text",
       "key": "sections.videoReels.reels.1.videoUrl",
-      "label": "Item 2 videoUrl"
+      "label": "Reel 2 video link"
     },
     {
       "type": "text",
       "key": "sections.videoReels.reels.2.title",
-      "label": "Item 3 Title"
+      "label": "Reel 3 title"
     },
     {
       "type": "text",
       "key": "sections.videoReels.reels.2.tag",
-      "label": "Item 3 Tag"
+      "label": "Reel 3 tag / duration"
     },
     {
-      "type": "text",
+      "type": "image",
       "key": "sections.videoReels.reels.2.thumbnail",
-      "label": "Item 3 thumbnail"
+      "label": "Reel 3 thumbnail"
     },
     {
       "type": "text",
       "key": "sections.videoReels.reels.2.videoUrl",
-      "label": "Item 3 videoUrl"
+      "label": "Reel 3 video link"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
     }
   ],
   "jobsFeed": [
