@@ -206,6 +206,27 @@ describe('marketplace compact editor parity', () => {
     assert.match(sell.projectFeed.hero_image_url, /photo-1600585154340-be6161a56a0c/);
   });
 
+  it('heroBeforeAfter demo seeds before/after images and editor fields', () => {
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-heroBeforeAfter.html'), 'utf8');
+    assert.match(demo, /"beforeImage"\s*:\s*"https:\/\//);
+    assert.match(demo, /"afterImage"\s*:\s*"https:\/\//);
+    assert.match(demo, /photo-1503387762-592deb58ef4e/);
+    assert.match(demo, /photo-1584622650111-993a426fbf0a/);
+    assert.doesNotMatch(demo, /"beforeImage"\s*:\s*""/);
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    const hb = defaults.heroBeforeAfter.heroBeforeAfter;
+    assert.match(hb.beforeImage, /^https:\/\//);
+    assert.match(hb.afterImage, /^https:\/\//);
+    assert.notEqual(hb.beforeImage, hb.afterImage);
+
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.heroBeforeAfter.some((f) => f.key === 'sections.heroBeforeAfter.beforeImage'));
+    assert.ok(defs.heroBeforeAfter.some((f) => f.key === 'sections.heroBeforeAfter.afterImage'));
+    assert.ok(defs.heroBeforeAfter.some((f) => f.key === 'sections.heroBeforeAfter.title'));
+    assert.ok(defs.heroBeforeAfter.some((f) => f.key === 'sections.heroBeforeAfter.caption'));
+  });
+
   it('activityTimeline demo and editor cover timeline events', () => {
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-activityTimeline.html'), 'utf8');
     assert.match(demo, /"events"\s*:\s*\[/);

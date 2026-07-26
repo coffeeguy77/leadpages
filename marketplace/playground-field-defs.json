@@ -1613,6 +1613,36 @@
       "label": "Intro"
     },
     {
+      "type": "image",
+      "key": "sections.heroBeforeAfter.beforeImage",
+      "label": "Before image"
+    },
+    {
+      "type": "image",
+      "key": "sections.heroBeforeAfter.afterImage",
+      "label": "After image"
+    },
+    {
+      "type": "text",
+      "key": "sections.heroBeforeAfter.beforeLabel",
+      "label": "Before label"
+    },
+    {
+      "type": "text",
+      "key": "sections.heroBeforeAfter.afterLabel",
+      "label": "After label"
+    },
+    {
+      "type": "text",
+      "key": "sections.heroBeforeAfter.title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.heroBeforeAfter.caption",
+      "label": "Caption"
+    },
+    {
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"

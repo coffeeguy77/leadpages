@@ -9,6 +9,7 @@
 html.mp-demo-embed, html.mp-demo-embed body{margin:0;padding:0;min-height:0!important;height:auto!important;background:transparent;overflow:hidden}
 html.mp-demo-embed main#top{margin:0;padding:0;min-height:0}
 html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:none!important}
+html.mp-demo-embed section[data-sec="heroBeforeAfter"]{display:block!important;padding:28px 0 36px}
 </style>
 </head>
 <body>
@@ -32,7 +33,26 @@ html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:non
 </main>
 
 <script>
-var SITE_CONFIG = {"theme":{"pipe":"#1f7bb8"},"business":"Ace Plumbing Co.","trade":"plumber","phone":"0261000000","sections":{"heroBeforeAfter":{"on":true,"eyebrow":"See The Difference","heading":"Drag To Reveal The Result","intro":"Show customers the transformation in one simple swipe.","beforeLabel":"Before","afterLabel":"After","title":"Real local transformation","caption":"A clear look at the problem before and the finished result after the job was completed."}}};
+var SITE_CONFIG = {
+  "theme": { "pipe": "#1f7bb8" },
+  "business": "Ace Plumbing Co.",
+  "trade": "plumber",
+  "phone": "0261000000",
+  "sections": {
+    "heroBeforeAfter": {
+      "on": true,
+      "eyebrow": "See The Difference",
+      "heading": "Drag To Reveal The Result",
+      "intro": "Show customers the transformation in one simple swipe.",
+      "beforeLabel": "Before",
+      "afterLabel": "After",
+      "beforeImage": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1400&h=900&fit=crop&q=80",
+      "afterImage": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1400&h=900&fit=crop&q=80",
+      "title": "Real local transformation",
+      "caption": "A clear look at the problem before and the finished result after the job was completed."
+    }
+  }
+};
 </script>
 <script src="./demo-shared.js"></script>
 </body>
