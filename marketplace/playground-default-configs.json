@@ -197,7 +197,7 @@
           "body": "ACT plumbing & drainage licence",
           "number": "",
           "expiry": "",
-          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
+          "image": "/marketplace/demos/media/certs/licensed.svg"
         },
         {
           "on": true,
@@ -205,7 +205,7 @@
           "body": "Master Plumbers Association member",
           "number": "",
           "expiry": "",
-          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
+          "image": "/marketplace/demos/media/certs/master-plumbers.svg"
         },
         {
           "on": true,
@@ -213,7 +213,7 @@
           "body": "$20M public liability cover",
           "number": "",
           "expiry": "",
-          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=800&fit=crop"
+          "image": "/marketplace/demos/media/certs/fully-insured.svg"
         }
       ]
     }

@@ -13,6 +13,7 @@ html.mp-demo-embed, html.mp-demo-embed body {
 html.mp-demo-embed main#top { margin: 0; padding: 0; min-height: 0; }
 html.mp-demo-embed .lp-a11y-root,
 html.mp-demo-embed #lp-visitor-a11y { display: none !important; }
+html.mp-demo-embed section[data-sec="certifications"]{display:block!important;padding:28px 0 36px}
 </style>
 </head>
 <body>
@@ -25,7 +26,46 @@ html.mp-demo-embed #lp-visitor-a11y { display: none !important; }
 </section>
 </main>
 <script>
-var SITE_CONFIG = {"theme":{"pipe":"#1f7bb8"},"business":"Ace Plumbing Co.","trade":"plumber","phone":"0261000000","sections":{"certifications":{"on":true,"eyebrow":"Accredited & insured","heading":"Licensed, insured & accredited","intro":"Fully qualified and backed by recognised industry accreditations — so you know the job is done right.","items":[{"on":true,"name":"Licensed","body":"ACT plumbing & drainage licence","number":"","expiry":"","image":"https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400&h=300&fit=crop"},{"on":true,"name":"Master Plumbers","body":"Master Plumbers Association member","number":"","expiry":"","image":"https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=300&fit=crop"},{"on":true,"name":"Public Liability","body":"$20M insured","number":"","expiry":"","image":"https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&h=300&fit=crop"}]}}};
+var SITE_CONFIG = {
+  "theme": { "pipe": "#1f7bb8" },
+  "business": "Ace Plumbing Co.",
+  "trade": "plumber",
+  "phone": "0261000000",
+  "sections": {
+    "certifications": {
+      "on": true,
+      "eyebrow": "Accredited & insured",
+      "heading": "Licensed, insured & accredited",
+      "intro": "Fully qualified and backed by recognised industry accreditations — so you know the job is done right.",
+      "items": [
+        {
+          "on": true,
+          "name": "Licensed",
+          "body": "ACT plumbing & drainage licence",
+          "number": "",
+          "expiry": "",
+          "image": "/marketplace/demos/media/certs/licensed.svg"
+        },
+        {
+          "on": true,
+          "name": "Master Plumbers",
+          "body": "Master Plumbers Association member",
+          "number": "",
+          "expiry": "",
+          "image": "/marketplace/demos/media/certs/master-plumbers.svg"
+        },
+        {
+          "on": true,
+          "name": "Fully Insured",
+          "body": "$20M public liability cover",
+          "number": "",
+          "expiry": "",
+          "image": "/marketplace/demos/media/certs/fully-insured.svg"
+        }
+      ]
+    }
+  }
+};
 </script>
 <script src="./demo-shared.js"></script>
 </body>

@@ -20,6 +20,21 @@ describe('marketplace compact editor parity', () => {
     const cert = fs.readFileSync(path.join(root, 'marketplace/demos/demo-certifications.html'), 'utf8');
     assert.match(cert, /"sections"\s*:\s*\{[\s\S]*"certifications"\s*:\s*\{[\s\S]*"on"\s*:\s*true/);
     assert.match(cert, /"name"\s*:\s*"Licensed"/);
+    assert.match(cert, /\/marketplace\/demos\/media\/certs\/licensed\.svg/);
+    assert.match(cert, /\/marketplace\/demos\/media\/certs\/master-plumbers\.svg/);
+    assert.match(cert, /\/marketplace\/demos\/media\/certs\/fully-insured\.svg/);
+    assert.doesNotMatch(cert, /images\.unsplash\.com/);
+    ['licensed.svg', 'master-plumbers.svg', 'fully-insured.svg'].forEach((f) => {
+      assert.ok(fs.existsSync(path.join(root, 'marketplace/demos/media/certs', f)), 'missing ' + f);
+    });
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    assert.match(defaults.certifications.certifications.items[0].image, /licensed\.svg$/);
+    assert.match(defaults.certifications.certifications.items[1].image, /master-plumbers\.svg$/);
+    assert.match(defaults.certifications.certifications.items[2].image, /fully-insured\.svg$/);
+    const shared = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+    assert.match(shared, /cert-ph/);
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.certifications.some((f) => f.key === 'sections.certifications.items.0.image'));
 
     const nav = fs.readFileSync(path.join(root, 'marketplace/demos/demo-navMenu.html'), 'utf8');
     assert.match(nav, /"navMenu"\s*:\s*\{[\s\S]*"on"\s*:\s*true/);
