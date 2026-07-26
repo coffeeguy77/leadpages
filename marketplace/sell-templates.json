@@ -1133,7 +1133,7 @@
     "name": "Hero Image Slider",
     "tagline": "Rotating image hero with overlay copy and CTAs",
     "summary": "A full-width slider for visual trades — roofing, landscaping, building.",
-    "hero_image_url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80",
+    "hero_image_url": "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
@@ -1145,9 +1145,9 @@
       {
         "block_type": "image",
         "payload": {
-          "url": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&h=720&fit=crop&q=80",
-          "alt": "Image slider hero",
-          "caption": "Rotating slides with overlay copy — ideal for visual trades."
+          "url": "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1200&h=720&fit=crop&q=80",
+          "alt": "Solar rooftop hero slider demo",
+          "caption": "Rotating slides with overlay copy — marketplace demo uses Prestige Solar imagery."
         }
       },
       {
