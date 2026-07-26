@@ -348,7 +348,11 @@
       "responseText": "Fast response — usually within the hour",
       "afterHoursLabel": "After hours",
       "afterHoursText": "Leave your details and we’ll call you first thing.",
-      "emergencyText": "Genuine emergency? Call anyway — we run after-hours callouts."
+      "emergencyText": "Genuine emergency? Call anyway — we run after-hours callouts.",
+      "cta": {
+        "text": "",
+        "action": "call"
+      }
     }
   },
   "estimateBuilder": {

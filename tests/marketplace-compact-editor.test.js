@@ -191,4 +191,47 @@ describe('marketplace compact editor parity', () => {
     assert.match(feat, /h > 1100/);
     assert.match(feat, /900/);
   });
+
+  it('emergencyAvailability editor covers manage-parity availability controls', () => {
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    const ea = defs.emergencyAvailability || [];
+    const keys = ea.map((f) => f.key);
+    [
+      'sections.emergencyAvailability.heading',
+      'sections.emergencyAvailability.intro',
+      'sections.emergencyAvailability.availableLabel',
+      'sections.emergencyAvailability.responseText',
+      'sections.emergencyAvailability.afterHoursLabel',
+      'sections.emergencyAvailability.afterHoursText',
+      'sections.emergencyAvailability.emergencyText',
+      'sections.emergencyAvailability.mode',
+      'sections.emergencyAvailability.available',
+      'sections.emergencyAvailability.weekdayOpen',
+      'sections.emergencyAvailability.weekdayClose',
+      'sections.emergencyAvailability.satOpen',
+      'sections.emergencyAvailability.satClose',
+      'sections.emergencyAvailability.sunOpen',
+      'sections.emergencyAvailability.sunClose',
+      'sections.emergencyAvailability.cta.text',
+      'sections.emergencyAvailability.cta.action'
+    ].forEach((k) => assert.ok(keys.includes(k), 'missing field ' + k));
+    const mode = ea.find((f) => f.key === 'sections.emergencyAvailability.mode');
+    assert.equal(mode.type, 'select');
+    assert.ok(mode.options.some((o) => o.value === 'schedule'));
+    assert.ok(mode.options.some((o) => o.value === 'manual'));
+    const action = ea.find((f) => f.key === 'sections.emergencyAvailability.cta.action');
+    assert.equal(action.type, 'select');
+    assert.ok(action.options.some((o) => o.value === 'call'));
+    assert.ok(!keys.includes('sections.emergencyAvailability.eyebrow'));
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    assert.equal(defaults.emergencyAvailability.emergencyAvailability.mode, 'schedule');
+    assert.ok(defaults.emergencyAvailability.emergencyAvailability.cta);
+    assert.equal(defaults.emergencyAvailability.emergencyAvailability.cta.action, 'call');
+
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-emergencyAvailability.html'), 'utf8');
+    assert.match(demo, /"emergencyAvailability"\s*:\s*\{[\s\S]*"on"\s*:\s*true/);
+    assert.match(demo, /"mode"\s*:\s*"schedule"/);
+    assert.match(demo, /afterHoursLabel/);
+  });
 });
