@@ -55,7 +55,10 @@ h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.12}
 .btn.ghost:hover{background:rgba(255,255,255,.1);border-color:#fff;color:#fff}
 .himg{border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 28px 64px rgba(0,0,0,.28);margin:0;background:rgba(0,0,0,.15);position:relative;flex:1 1 auto;width:100%;height:100%;min-height:100%;align-self:stretch}
 .himg img{position:absolute;inset:0;width:100%;height:100%;max-height:none;min-height:0;object-fit:cover;object-position:center;display:block}
+.himg-demo{background:#F3EFEA;border-color:rgba(255,255,255,.18)}
+.himg-demo-frame{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#F3EFEA}
 .himg-placeholder{flex:1 1 auto;width:100%;height:100%;min-height:100%;border-radius:18px;background:linear-gradient(135deg,rgba(168,74,94,.35),rgba(47,65,58,.8));border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);padding:24px;text-align:center}
+@media(max-width:900px){.himg-demo{min-height:280px}}
 .feat-hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,1fr);gap:clamp(22px,4vw,40px);align-items:stretch}
 .feat-hero-copy{min-width:0}
 .feat-hero-media{min-width:0;display:flex;align-self:stretch;min-height:100%}
@@ -326,12 +329,147 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     if (window.LPMarketplaceFlags && window.LPMarketplaceFlags.isV2) return !!window.LPMarketplaceFlags.isV2();
     return !!(window.__LP_MARKETPLACE_FLAGS__ && window.__LP_MARKETPLACE_FLAGS__.APP_MARKETPLACE_V2);
   })();
+  /* Marketing hub URLs (home.html / SEO) → real section demos */
+  var HUB_ALIASES={
+    'quote-lead-capture':{sectionKey:'onlineQuote',name:'Quote & Lead Capture',tagline:'Enquiries that never get lost',summary:'Quote forms and click-to-call wired into a lead inbox, so every enquiry lands where your client will see it.',badge:'Popular'},
+    'reviews-trust':{sectionKey:'reviews',name:'Reviews & Trust',tagline:'Look established from day one',summary:'Testimonials, badges and certifications laid out to make small businesses look credible and safe to hire.'},
+    'promotions':{sectionKey:'specialOffer',name:'Promotions & Offers',tagline:'Seasonal offers, front and centre',summary:'Highlight timed deals and specials so visitors act now — without a separate marketing tool.'},
+    'email-campaigns':{platform:true,name:'Email Campaigns',tagline:'Stay in touch, win repeat work',summary:'Send offers and updates to captured leads from the same dashboard — no third-party email tools.'}
+  };
+
+  function kebabToCamel(s){
+    return String(s||'').split('-').map(function(p,i){ return i? p.charAt(0).toUpperCase()+p.slice(1):p; }).join('');
+  }
+
+  function hasPlayground(blocks){
+    return (blocks||[]).some(function(b){ return b&&b.block_type==='playground'; });
+  }
+
+  function ensurePlaygroundBlock(blocks, sectionKey){
+    var list=(blocks||[]).slice();
+    if(!sectionKey) return list;
+    var found=false;
+    list=list.map(function(b){
+      if(b.block_type!=='playground') return b;
+      found=true;
+      var payload=Object.assign({},b.payload||{});
+      if(!payload.section_key) payload.section_key=sectionKey;
+      if(!payload.presets||!payload.presets.length) payload.presets=['default'];
+      return Object.assign({},b,{payload:payload});
+    });
+    if(!found){
+      list.push({block_type:'playground',payload:{section_key:sectionKey,presets:['default']}});
+    }
+    return list;
+  }
+
+  function buildFromSellTemplates(sellAll, aliasSlug){
+    var alias=HUB_ALIASES[aliasSlug]||null;
+    if(alias&&alias.platform){
+      return {
+        feature:{
+          slug:aliasSlug,name:alias.name,tagline:alias.tagline,summary:alias.summary,
+          hero_image_url:null,section_key:null,badge:null,status:'live'
+        },
+        blocks:[
+          {block_type:'benefits',payload:{heading:'How it works',items:[
+            {title:'What it does',text:'Compose a subject and message, pick leads from your inbox, and send or schedule — opt-outs are honoured automatically.'},
+            {title:'Where you find it',text:'Open any site in the App Command Centre → Email clients tab. This is a dashboard tool, not a public page widget.'},
+            {title:'Safety',text:'Nothing on this marketplace page sends mail — it’s an explainer only.'}
+          ]}},
+          {block_type:'cta',payload:{heading:'Open it in your dashboard',text:'Email campaigns live under Email clients for each site.',button_label:'Become a partner',button_url:'/partners'}}
+        ]
+      };
+    }
+    var sectionKey=(alias&&alias.sectionKey)||kebabToCamel(aliasSlug);
+    var sell=(sellAll&&sellAll[sectionKey])||null;
+    if(!sell) return null;
+    var blocks=(sell.blocks||[]).map(function(b){ return {block_type:b.block_type,payload:Object.assign({},b.payload||{})}; });
+    blocks=ensurePlaygroundBlock(blocks, sectionKey);
+    return {
+      feature:{
+        slug:aliasSlug,
+        name:(alias&&alias.name)||sell.name||sectionKey,
+        tagline:(alias&&alias.tagline)||sell.tagline||'',
+        summary:(alias&&alias.summary)||sell.summary||'',
+        hero_image_url:sell.hero_image_url||null,
+        badge:(alias&&alias.badge)||sell.badge||null,
+        section_key:sectionKey,
+        status:'live'
+      },
+      blocks:blocks
+    };
+  }
+
+  function enrichPayload(j){
+    j=j||{};
+    var feature=j.feature||null;
+    var blocks=j.blocks||[];
+    var alias=HUB_ALIASES[slug];
+    var sectionKey=(feature&&feature.section_key)||(alias&&alias.sectionKey)||null;
+    if(!sectionKey){
+      var camel=kebabToCamel(slug);
+      sectionKey=camel;
+    }
+    if(feature&&!feature.section_key&&alias&&alias.sectionKey) feature.section_key=alias.sectionKey;
+    if(feature&&alias){
+      if(alias.name) feature.name=alias.name;
+      if(alias.tagline) feature.tagline=alias.tagline;
+      if(alias.summary) feature.summary=alias.summary;
+      if(alias.badge) feature.badge=alias.badge;
+    }
+    if(feature&&feature.section_key){
+      blocks=ensurePlaygroundBlock(blocks, feature.section_key);
+    } else if(!alias||!alias.platform){
+      /* will try sell-templates fallback */
+    }
+    return {feature:feature,blocks:blocks,sectionKey:sectionKey};
+  }
+
+  function loadFeature(){
+    var catalogUrl='/api/catalog?slug='+encodeURIComponent(slug)+(location.search.indexOf('fresh')>=0?'&_='+Date.now():'');
+    return fetch(catalogUrl)
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(j){
+        var enriched=enrichPayload(j);
+        if(enriched.feature && (hasPlayground(enriched.blocks) || (HUB_ALIASES[slug]&&HUB_ALIASES[slug].platform))){
+          return {feature:enriched.feature, blocks:enriched.blocks};
+        }
+        /* Thin DB row — merge sell-templates playground */
+        return fetch('/marketplace/sell-templates.json')
+          .then(function(r){ return r.ok?r.json():{}; })
+          .then(function(sellAll){
+            var built=buildFromSellTemplates(sellAll, slug);
+            if(!built) return {feature:enriched.feature, blocks:enriched.blocks};
+            if(enriched.feature){
+              built.feature=Object.assign({}, built.feature, {
+                id:enriched.feature.id,
+                hero_image_url:enriched.feature.hero_image_url||built.feature.hero_image_url
+              });
+              /* Keep DB copy blocks but guarantee playground */
+              var merged=(enriched.blocks||[]).filter(function(b){ return b.block_type!=='playground'; })
+                .concat((built.blocks||[]).filter(function(b){ return b.block_type==='playground'; }));
+              if(!merged.length) merged=built.blocks;
+              built.blocks=ensurePlaygroundBlock(merged, built.feature.section_key);
+            }
+            return built;
+          });
+      })
+      .catch(function(){
+        return fetch('/marketplace/sell-templates.json')
+          .then(function(r){ return r.ok?r.json():{}; })
+          .then(function(sellAll){
+            var built=buildFromSellTemplates(sellAll, slug);
+            if(!built) throw 0;
+            return built;
+          });
+      });
+  }
+
   if(__mpV2 && slug === 'trust-bar'){
     /* V2 sell-first Trust Bar page owns rendering (marketplace-feature-v2.js) */
   } else {
-  fetch('/api/catalog?slug='+encodeURIComponent(slug)+(location.search.indexOf('fresh')>=0?'&_='+Date.now():''))
-    .then(function(r){if(!r.ok)throw 0;return r.json();})
-    .then(render).catch(notFound);
+    loadFeature().then(render).catch(notFound);
   }
 
   function notFound(){
@@ -423,11 +561,14 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   }
   function render(j){
     var f=j.feature, blocks=j.blocks||[];
+    if(!f){ notFound(); return; }
+    /* Final harden — never mount a playground without section_key */
+    if(f.section_key) blocks=ensurePlaygroundBlock(blocks, f.section_key);
     _renderFeature=f;
     document.title=f.name+' — LeadPages Marketplace';
     var demoUrl=safeUrl(f.demo_url);
     var heroImg=safeUrl(f.hero_image_url);
-    var hasPlay=(blocks||[]).some(function(b){ return b&&b.block_type==='playground'; });
+    var hasPlay=hasPlayground(blocks);
     var points=collectInfoPoints(f, blocks);
     var pointsHtml=points.map(function(p,i){
       return '<details class="mp-info-point"'+(i===0?' open':'')+'>'
@@ -435,11 +576,18 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         +'<p class="mp-info-text">'+esc(p.text)+'</p></details>';
     }).join('');
     var demoBlocks=(blocks||[]).filter(function(b){
-      return b && (b.block_type==='playground' || b.block_type==='demo_embed' || b.block_type==='faq');
+      return b && (b.block_type==='playground' || b.block_type==='demo_embed' || b.block_type==='faq' || b.block_type==='benefits' || b.block_type==='cta' || b.block_type==='rich_text');
     });
-    var mediaHtml=heroImg
-      ? '<div class="himg"><img src="'+esc(heroImg)+'" alt="" loading="eager"></div>'
-      : '<div class="himg-placeholder">App preview</div>';
+    /* Prefer live demo iframe in the hero over stock photo / APP PREVIEW */
+    var mediaHtml='';
+    if(hasPlay && f.section_key){
+      mediaHtml='<div class="himg himg-demo"><iframe class="himg-demo-frame" src="/marketplace/demos/demo-'
+        +esc(f.section_key)+'.html" title="'+esc(f.name)+' preview" loading="eager"></iframe></div>';
+    } else if(heroImg){
+      mediaHtml='<div class="himg"><img src="'+esc(heroImg)+'" alt="" loading="eager"></div>';
+    } else {
+      mediaHtml='<div class="himg-placeholder">App preview</div>';
+    }
     var html='<header class="feat-hero"><div class="feat-hero-inner wrap-wide">'
       +'<div class="feat-hero-grid">'
       +'<div class="feat-hero-copy">'
@@ -460,8 +608,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       +'<div class="feat-hero-media">'+mediaHtml+'</div>'
       +'</div></div></header>'
       +'<article class="mp-demo-article"><div class="wrap">';
-    if(demoBlocks.length){ html+=demoBlocks.map(block).join(''); }
-    else { html+='<div class="blk"><p class="mp-lede">A live demo for this app is coming soon.</p></div>'; }
+    if(hasPlay){
+      html+=demoBlocks.filter(function(b){ return b.block_type==='playground'||b.block_type==='demo_embed'||b.block_type==='faq'; }).map(block).join('');
+    } else if(demoBlocks.length){
+      html+=demoBlocks.map(block).join('');
+    } else {
+      html+='<div class="blk"><p class="mp-lede">A live demo for this app is coming soon.</p></div>';
+    }
     html+='</div></article>';
     page.innerHTML=html;
   }
