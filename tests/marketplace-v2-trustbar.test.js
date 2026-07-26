@@ -201,7 +201,7 @@ describe('public marketplace theme + copy safety', () => {
     assert.doesNotMatch(editor, /Show on page|Show Trust Bar on the page/);
     assert.match(editor, /tb-ed-tab/);
     assert.match(editor, /data-tab/);
-    assert.match(editor, /tb\(\)\.on = true/);
+    assert.match(editor, /trustBar\.on = true/);
     const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.css'), 'utf8');
     assert.match(css, /\.tb-ed-tabs/);
   });
