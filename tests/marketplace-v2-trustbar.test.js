@@ -187,7 +187,7 @@ describe('public marketplace theme + copy safety', () => {
   it('playground supports local image override without upload', () => {
     const loc = fs.readFileSync(path.join(root, 'assets/js/marketplace/lp-local-image.js'), 'utf8');
     assert.match(loc, /readAsDataURL/);
-    assert.match(loc, /Only on your screen/);
+    assert.match(loc, /Local only|Only on your screen/);
     assert.doesNotMatch(loc, /cloudinary|cwUpload|FormData/i);
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /lp-local-image\.js/);
@@ -199,12 +199,19 @@ describe('public marketplace theme + copy safety', () => {
   it('Trust Bar editor is compact with tabbed items and no Show on page', () => {
     const editor = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.js'), 'utf8');
     assert.doesNotMatch(editor, /Show on page|Show Trust Bar on the page/);
+    assert.doesNotMatch(editor, /modePreviewHtml|tb-ed-mode-preview|tb-mode-preview/);
     assert.match(editor, /tb-ed-tab/);
     assert.match(editor, /data-tab/);
     assert.match(editor, /trustBar\.on = true/);
-    assert.match(editor, /modePreviewHtml|tb-ed-mode-preview/);
+    assert.match(editor, /tb-ed-color-grid|tb-ed-hex/);
     const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.css'), 'utf8');
     assert.match(css, /\.tb-ed-tabs/);
-    assert.match(css, /\.tb-ed-mode-preview/);
+    assert.match(css, /\.tb-ed-hex/);
+    assert.doesNotMatch(css, /\.tb-ed-mode-preview/);
+  });
+
+  it('demo trust bar quotes CSS url so local data URLs work on preset tiles', () => {
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+    assert.match(demo, /background-image:url\(\\''/);
   });
 });
