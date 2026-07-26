@@ -977,8 +977,25 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       if (!cfg || !sk || !window.__LP_PG_DEFAULTS) return cfg;
       var flat = window.__LP_PG_DEFAULTS[sk];
       if (!flat) return cfg;
-      var sample = flat[sk] || flat.sections && flat.sections[sk];
-      if (!sample || typeof sample !== 'object') return cfg;
+      /* Trade Services Grid stores cards on cfg.services (root), not sections.services */
+      if (sk === 'services' && Array.isArray(flat.services) && flat.services.length) {
+        if (!Array.isArray(cfg.services) || !cfg.services.length) {
+          cfg.services = JSON.parse(JSON.stringify(flat.services));
+        }
+      }
+      var sample = null;
+      if (sk === 'services' && flat.servicesMeta && typeof flat.servicesMeta === 'object') {
+        sample = flat.servicesMeta;
+      } else if (flat[sk] && typeof flat[sk] === 'object' && !Array.isArray(flat[sk])) {
+        sample = flat[sk];
+      } else if (flat.sections && flat.sections[sk]) {
+        sample = flat.sections[sk];
+      }
+      if (!sample || typeof sample !== 'object' || Array.isArray(sample)) {
+        if (!cfg.theme && flat.theme) cfg.theme = Object.assign({}, flat.theme);
+        else if (flat.theme) cfg.theme = Object.assign({}, flat.theme, cfg.theme || {});
+        return cfg;
+      }
       if (!cfg.sections) cfg.sections = {};
       var cur = cfg.sections[sk] || {};
       var listKeys = ['events','items','badges','steps','projects','stats','members','options','images','reels','feed','points','cards','areas','slides'];

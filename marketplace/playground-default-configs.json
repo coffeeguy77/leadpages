@@ -1245,14 +1245,41 @@
     "trade": "plumber",
     "phone": "0261000000",
     "theme": {
-      "pipe": "#1f7bb8"
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
     },
-    "services": {
+    "servicesMeta": {
       "on": true,
       "eyebrow": "What we fix",
       "heading": "One call sorts the lot.",
       "intro": "From a slow kitchen sink to a flooded laundry at 2am — we handle the everyday and the emergencies."
-    }
+    },
+    "services": [
+      {
+        "on": true,
+        "icon": "droplet",
+        "title": "Blocked Drains",
+        "body": "Same-day drain clearing for blocked sinks, toilets and outdoor drains."
+      },
+      {
+        "on": true,
+        "icon": "flame",
+        "title": "Hot Water Systems",
+        "body": "Supply and install gas, electric and heat pump hot water systems."
+      },
+      {
+        "on": true,
+        "icon": "wrench",
+        "title": "Leak Repairs",
+        "body": "Fast leak detection and repair — no damage, no mess."
+      },
+      {
+        "on": true,
+        "icon": "home",
+        "title": "Bathroom Renovations",
+        "body": "Complete bathroom fit-outs from design to final fixture."
+      }
+    ]
   },
   "specialOffer": {
     "business": "Ace Plumbing Co.",

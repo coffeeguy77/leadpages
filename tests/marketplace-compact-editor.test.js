@@ -381,4 +381,41 @@ describe('marketplace compact editor parity', () => {
     const js = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
     assert.match(js, /hasItems \? 'Style' : 'Content'/);
   });
+
+  it('services grid seeds root cards and exposes icon/size/card style editors', () => {
+    const pp = require('../lib/playground-preset');
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    assert.ok(Array.isArray(defaults.services.services));
+    assert.equal(defaults.services.services.length, 4);
+    assert.equal(defaults.services.services[0].icon, 'droplet');
+    assert.ok(defaults.services.servicesMeta && defaults.services.servicesMeta.heading);
+
+    const site = pp.flatDemoToSiteConfig(defaults.services, 'services');
+    assert.ok(Array.isArray(site.services));
+    assert.equal(site.services.length, 4);
+    assert.equal(site.sections.services.heading, 'One call sorts the lot.');
+    const flatBack = pp.siteConfigToFlatDemo(site);
+    assert.ok(Array.isArray(flatBack.services));
+    assert.equal(flatBack.services[0].icon, 'droplet');
+    assert.ok(flatBack.servicesMeta && flatBack.servicesMeta.heading);
+
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.services.some((f) => f.type === 'icon' && f.key === 'services.0.icon'));
+    assert.ok(defs.services.some((f) => f.key === 'services.0.mediaSize'));
+    assert.ok(defs.services.some((f) => f.key === 'services.0.bg'));
+    assert.ok(defs.services.some((f) => f.key === 'services.0.image'));
+    assert.ok(defs.services.some((f) => f.key === 'sections.services.eyebrowColor'));
+
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-services.html'), 'utf8');
+    assert.match(demo, /"services"\s*:\s*\[[\s\S]*"icon"\s*:\s*"droplet"/);
+    assert.match(demo, /background:var\(--light,#eef2f6\)!important/);
+
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /servicesMeta/);
+    assert.match(feat, /cfg\.services = JSON\.parse/);
+
+    const js = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
+    assert.match(js, /function labelForItemIndex/);
+    assert.match(js, /mediaScale/);
+  });
 });
