@@ -18,8 +18,11 @@ describe('marketplace catalog resolve', () => {
     assert.ok(resolve.hasPlayground(reviews.blocks));
 
     const promo = resolve.resolveFromStatic('promotions');
-    assert.equal(promo.feature.section_key, 'specialOffer');
+    assert.equal(promo.feature.section_key, 'promotions');
     assert.ok(resolve.hasPlayground(promo.blocks));
+    const pg = promo.blocks.find((b) => b.block_type === 'playground');
+    assert.ok(pg.payload.presets && pg.payload.presets.includes('weekly'));
+    assert.ok(pg.payload.presets.includes('mystery'));
   });
 
   it('email-campaigns is a platform explainer without fake playground', () => {
@@ -60,9 +63,29 @@ describe('marketplace catalog resolve', () => {
       [],
       'promotions'
     );
-    assert.equal(thin.feature.section_key, 'specialOffer');
+    assert.equal(thin.feature.section_key, 'promotions');
     assert.ok(thin.feature.hero_image_url);
     assert.match(thin.feature.hero_image_url, /^https:\/\//);
+  });
+
+  it('promotions ships type demos + manage-parity editor wiring', () => {
+    const presets = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/promotions-type-presets.json'), 'utf8'));
+    assert.equal(presets.length, 10);
+    const types = presets.map((p) => p.slug);
+    ['weekly', 'deadline', 'spots', 'seasonal', 'suburb', 'finance', 'firstTime', 'priority', 'socialProof', 'mystery']
+      .forEach((t) => assert.ok(types.includes(t), 'missing type demo ' + t));
+    assert.ok(fs.existsSync(path.join(root, 'marketplace/demos/demo-promotions.html')));
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-promotions.html'), 'utf8');
+    assert.match(demo, /promotions-hero/);
+    assert.match(demo, /"type"\s*:\s*"weekly"/);
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /promotions-editor\.js/);
+    assert.match(feat, /LPPromotionsEditor\.mount/);
+    assert.match(feat, /loadPromotionsTypePresets/);
+    const ed = fs.readFileSync(path.join(root, 'assets/js/marketplace/promotions-editor.js'), 'utf8');
+    assert.match(ed, /Weekly booking window/);
+    assert.match(ed, /Mystery offer/);
+    assert.match(ed, /Placement/);
   });
 
   it('activityCounter demo forces sections.on and shows stats', () => {

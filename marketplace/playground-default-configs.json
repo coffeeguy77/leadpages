@@ -1857,5 +1857,34 @@
       "headingColor": "",
       "introColor": ""
     }
+  },
+  "promotions": {
+    "business": "Ace Plumbing Co.",
+    "trade": "plumber",
+    "phone": "0261000000",
+    "theme": {
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
+    },
+    "promotions": {
+      "on": true,
+      "items": [
+        {
+          "id": "demo-weekly",
+          "on": true,
+          "type": "weekly",
+          "placement": "belowHero",
+          "style": "banner",
+          "title": "Booking for next week",
+          "description": "Secure your spot in next week’s schedule — book before the cut-off.",
+          "weeklyDay": 4,
+          "weeklyCutoff": "16:00",
+          "cta": {
+            "text": "Book now",
+            "action": "quote"
+          }
+        }
+      ]
+    }
   }
 }

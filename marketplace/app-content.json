@@ -1630,5 +1630,47 @@
     "presets": [
       "default"
     ]
+  },
+  "promotions": {
+    "name": "Promotions & Offers",
+    "tagline": "Seasonal offers, front and centre",
+    "summary": "Urgency offers with types, placements and styles — weekly windows, deadlines, limited spots, finance, suburb specials and more.",
+    "pitch": "Create urgency and offers with the same Promotions Engine used in the App Command Centre.",
+    "features": [
+      {
+        "title": "Ten offer types",
+        "text": "Weekly, deadline, spots, seasonal, suburb, finance, first-time, priority, social proof and mystery."
+      },
+      {
+        "title": "Placements",
+        "text": "Below hero, inline, floating bar, sticky strip or popup."
+      },
+      {
+        "title": "Banner or card",
+        "text": "Match the offer style to the campaign."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Manage parity",
+        "text": "Same options clients already configure in the App Command Centre."
+      },
+      {
+        "title": "Fast demos",
+        "text": "Partners can flip through every type in the marketplace playground."
+      }
+    ],
+    "presets": [
+      "weekly",
+      "deadline",
+      "spots",
+      "seasonal",
+      "suburb",
+      "finance",
+      "firstTime",
+      "priority",
+      "socialProof",
+      "mystery"
+    ]
   }
 }

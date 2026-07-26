@@ -267,6 +267,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 <script src="/assets/js/marketplace/lp-local-image.js"></script>
 <script src="/assets/js/marketplace/trust-bar-editor.js"></script>
 <script src="/assets/js/marketplace/special-offer-editor.js"></script>
+<script src="/assets/js/marketplace/promotions-editor.js"></script>
 <script src="/assets/js/marketplace/marketplace-compact-editor.js"></script>
 <script src="/assets/js/marketplace/marketplace-feature-v2.js"></script>
 <style>
@@ -337,7 +338,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   var HUB_ALIASES={
     'quote-lead-capture':{sectionKey:'onlineQuote',name:'Quote & Lead Capture',tagline:'Enquiries that never get lost',summary:'Quote forms and click-to-call wired into a lead inbox, so every enquiry lands where your client will see it.',badge:'Popular'},
     'reviews-trust':{sectionKey:'reviews',name:'Reviews & Trust',tagline:'Look established from day one',summary:'Testimonials, badges and certifications laid out to make small businesses look credible and safe to hire.'},
-    'promotions':{sectionKey:'specialOffer',name:'Promotions & Offers',tagline:'Seasonal offers, front and centre',summary:'Highlight timed deals and specials so visitors act now — without a separate marketing tool.'},
+    'promotions':{sectionKey:'promotions',name:'Promotions & Offers',tagline:'Seasonal offers, front and centre',summary:'Urgency offers with types, placements and styles — weekly windows, deadlines, limited spots, finance, suburb specials and more.'},
     'email-campaigns':{platform:true,name:'Email Campaigns',tagline:'Stay in touch, win repeat work',summary:'Send offers and updates to captured leads from the same dashboard — no third-party email tools.'}
   };
 
@@ -410,12 +411,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var feature=j.feature||null;
     var blocks=j.blocks||[];
     var alias=HUB_ALIASES[slug];
-    var sectionKey=(feature&&feature.section_key)||(alias&&alias.sectionKey)||null;
+    var sectionKey=(alias&&alias.sectionKey)||(feature&&feature.section_key)||null;
     if(!sectionKey){
       var camel=kebabToCamel(slug);
       sectionKey=camel;
     }
-    if(feature&&!feature.section_key&&alias&&alias.sectionKey) feature.section_key=alias.sectionKey;
+    if(feature&&alias&&alias.sectionKey) feature.section_key=alias.sectionKey;
+    else if(feature&&!feature.section_key&&sectionKey&&!(alias&&alias.platform)) feature.section_key=sectionKey;
     if(feature&&alias){
       if(alias.name) feature.name=alias.name;
       if(alias.tagline) feature.tagline=alias.tagline;
@@ -908,6 +910,31 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         });
     }
 
+    function loadPromotionsTypePresets() {
+      if (secKey !== 'promotions') return Promise.resolve();
+      return fetch('/marketplace/promotions-type-presets.json')
+        .then(function(r) { return r.ok ? r.json() : []; })
+        .then(function(list) {
+          if (!Array.isArray(list) || !list.length) return;
+          presets = [];
+          list.forEach(function(p) {
+            var preset = p;
+            if (window.LPPlaygroundPreset) {
+              preset = window.LPPlaygroundPreset.normalizePreset(p, {
+                slug: p.slug,
+                source: 'promotions-type-presets',
+                section_key: 'promotions',
+                label: p.label
+              });
+            }
+            presetCache[p.slug] = preset;
+            if (presets.indexOf(p.slug) < 0) presets.push(p.slug);
+          });
+          if (!activePreset && presets.length) activePreset = presets[0];
+        })
+        .catch(function() {});
+    }
+
     function loadPlaygroundMeta() {
       if (!secKey || pgMetaLoaded) return Promise.resolve();
       return loadDefaultConfigs().then(function() {
@@ -951,7 +978,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
                 else if (!fieldDefs.length) fieldDefs = local;
               })
               .catch(function() {});
-          });
+          })
+          .then(function() { return loadPromotionsTypePresets(); });
       });
     }
 
@@ -1074,6 +1102,22 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     function renderLiveControls() {
       var host = root.querySelector('[data-r="live"]');
       if (!host) return;
+      if (secKey === 'promotions' && window.LPPromotionsEditor) {
+        host.classList.add('tb-ed-root', 'tb-ed-compact');
+        host.__prEditor = window.LPPromotionsEditor.mount(host, {
+          mode: 'marketplace-playground',
+          value: liveSiteCfg,
+          onChange: function(cfg) {
+            liveSiteCfg = cfg;
+            if (liveSiteCfg.sections && liveSiteCfg.sections.promotions) {
+              liveSiteCfg.sections.promotions.on = true;
+            }
+            applyLiveConfig();
+          },
+          onAnnounce: function() {}
+        });
+        return;
+      }
       if (secKey === 'specialOffer' && window.LPSpecialOfferEditor) {
         host.classList.add('tb-ed-root', 'tb-ed-compact');
         host.__soEditor = window.LPSpecialOfferEditor.mount(host, {

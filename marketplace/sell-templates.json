@@ -2970,5 +2970,79 @@
         }
       }
     ]
+  },
+  "promotions": {
+    "name": "Promotions & Offers",
+    "tagline": "Seasonal offers, front and centre",
+    "summary": "Urgency offers with types, placements and styles — weekly windows, deadlines, limited spots, finance, suburb specials and more.",
+    "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
+    "badge": null,
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Promotions Engine",
+          "text": "Create urgency and offers with the same Promotions Engine used in the App Command Centre. Pick a type, placement and style — Call / Quote buttons reuse existing actions."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Offer types",
+          "items": [
+            {
+              "title": "Weekly & deadline",
+              "text": "Booking windows and countdown deadlines that create real urgency."
+            },
+            {
+              "title": "Spots, seasonal, suburb",
+              "text": "Limited capacity, date ranges and suburb-targeted offers."
+            },
+            {
+              "title": "Finance, proof & mystery",
+              "text": "Payment prompts, social proof numbers and reveal-on-click surprises."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Why partners sell it",
+          "items": [
+            {
+              "title": "Same controls as manage",
+              "text": "Type, placement, style and type-specific fields match the editor clients already use."
+            },
+            {
+              "title": "Quick demos",
+              "text": "Jump between every offer type with one tap, then tweak copy live."
+            },
+            {
+              "title": "No new forms",
+              "text": "Buttons reuse quote / call actions already on the site."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "promotions",
+          "presets": [
+            "weekly",
+            "deadline",
+            "spots",
+            "seasonal",
+            "suburb",
+            "finance",
+            "firstTime",
+            "priority",
+            "socialProof",
+            "mystery"
+          ]
+        }
+      }
+    ]
   }
 }

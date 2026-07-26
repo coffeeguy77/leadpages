@@ -2636,5 +2636,111 @@
       "key": "theme.pipe",
       "label": "Brand colour"
     }
+  ],
+  "promotions": [
+    {
+      "type": "select",
+      "key": "sections.promotions.items.0.type",
+      "label": "Type",
+      "options": [
+        {
+          "value": "weekly",
+          "label": "Weekly booking window"
+        },
+        {
+          "value": "deadline",
+          "label": "Deadline offer"
+        },
+        {
+          "value": "spots",
+          "label": "Limited spots"
+        },
+        {
+          "value": "seasonal",
+          "label": "Seasonal promotion"
+        },
+        {
+          "value": "suburb",
+          "label": "Suburb promotion"
+        },
+        {
+          "value": "finance",
+          "label": "Finance promotion"
+        },
+        {
+          "value": "firstTime",
+          "label": "First-time customer"
+        },
+        {
+          "value": "priority",
+          "label": "Emergency priority"
+        },
+        {
+          "value": "socialProof",
+          "label": "Social proof"
+        },
+        {
+          "value": "mystery",
+          "label": "Mystery offer"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.promotions.items.0.placement",
+      "label": "Placement",
+      "options": [
+        {
+          "value": "belowHero",
+          "label": "Below hero"
+        },
+        {
+          "value": "inline",
+          "label": "Inline section"
+        },
+        {
+          "value": "floatingBar",
+          "label": "Floating bar (top)"
+        },
+        {
+          "value": "stickyStrip",
+          "label": "Sticky strip (bottom)"
+        },
+        {
+          "value": "popup",
+          "label": "Popup"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "key": "sections.promotions.items.0.style",
+      "label": "Style",
+      "options": [
+        {
+          "value": "banner",
+          "label": "Banner"
+        },
+        {
+          "value": "card",
+          "label": "Card"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "key": "sections.promotions.items.0.title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.promotions.items.0.description",
+      "label": "Description"
+    },
+    {
+      "type": "text",
+      "key": "sections.promotions.items.0.cta.text",
+      "label": "Button text"
+    }
   ]
 }
