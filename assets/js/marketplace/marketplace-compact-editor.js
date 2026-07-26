@@ -8,7 +8,8 @@
 
   var ITEM_LIST_KEYS = [
     'badges', 'items', 'steps', 'projects', 'slides', 'areas', 'sources',
-    'headBadges', 'cards', 'services'
+    'headBadges', 'cards', 'services', 'events', 'stats', 'members', 'options',
+    'images', 'albums', 'reels', 'feed', 'points', 'jobOptions'
   ];
 
   function esc(s) {

@@ -39,4 +39,19 @@ describe('marketplace compact editor parity', () => {
     assert.ok(defs.navMenu.some((f) => f.key === 'sections.navMenu.style'));
     assert.ok(defs.serviceAreaMap.some((f) => f.key === 'sections.serviceAreas.areas'));
   });
+
+  it('activityTimeline demo and editor cover timeline events', () => {
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-activityTimeline.html'), 'utf8');
+    assert.match(demo, /events:\s*\[/);
+    assert.match(demo, /Hot water system replacement/);
+    assert.match(demo, /on:\s*true/);
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.activityTimeline.some((f) => /activityTimeline\.events\.\d+\.task/.test(f.key)));
+    assert.ok(defs.activityTimeline.some((f) => /activityTimeline\.events\.\d+\.status/.test(f.key)));
+    const js = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
+    assert.match(js, /'events'/);
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /seedFromDefaultConfigs/);
+    assert.match(feat, /ensureSectionOn/);
+  });
 });

@@ -24,6 +24,46 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.hero.badges.0.text",
+      "label": "Item 1 Text"
+    },
+    {
+      "type": "icon",
+      "key": "sections.hero.badges.0.icon",
+      "label": "Item 1 Icon"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.hero.badges.1.text",
+      "label": "Item 2 Text"
+    },
+    {
+      "type": "icon",
+      "key": "sections.hero.badges.1.icon",
+      "label": "Item 2 Icon"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.hero.badges.2.text",
+      "label": "Item 3 Text"
+    },
+    {
+      "type": "icon",
+      "key": "sections.hero.badges.2.icon",
+      "label": "Item 3 Icon"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.hero.badges.3.text",
+      "label": "Item 4 Text"
+    },
+    {
+      "type": "icon",
+      "key": "sections.hero.badges.3.icon",
+      "label": "Item 4 Icon"
     }
   ],
   "heroSlider": [
@@ -440,6 +480,26 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.serviceAreas.areas.0.name",
+      "label": "Item 1 Name"
+    },
+    {
+      "type": "text",
+      "key": "sections.serviceAreas.areas.1.name",
+      "label": "Item 2 Name"
+    },
+    {
+      "type": "text",
+      "key": "sections.serviceAreas.areas.2.name",
+      "label": "Item 3 Name"
+    },
+    {
+      "type": "text",
+      "key": "sections.serviceAreas.areas.3.name",
+      "label": "Item 4 Name"
     }
   ],
   "beforeAfter": [
@@ -583,6 +643,21 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.specialOffer.points.0.text",
+      "label": "Item 1 Text"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.specialOffer.points.1.text",
+      "label": "Item 2 Text"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.specialOffer.points.2.text",
+      "label": "Item 3 Text"
     }
   ],
   "serviceProcess": [
@@ -820,6 +895,111 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.0.location",
+      "label": "Item 1 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.0.title",
+      "label": "Item 1 Title"
+    },
+    {
+      "type": "image",
+      "key": "sections.projectFeed.items.0.image",
+      "label": "Item 1 Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.0.service",
+      "label": "Item 1 Service"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.0.date",
+      "label": "Item 1 Date"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.projectFeed.items.0.caption",
+      "label": "Item 1 Caption"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.0.permalink",
+      "label": "Item 1 permalink"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.1.location",
+      "label": "Item 2 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.1.title",
+      "label": "Item 2 Title"
+    },
+    {
+      "type": "image",
+      "key": "sections.projectFeed.items.1.image",
+      "label": "Item 2 Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.1.service",
+      "label": "Item 2 Service"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.1.date",
+      "label": "Item 2 Date"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.projectFeed.items.1.caption",
+      "label": "Item 2 Caption"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.1.permalink",
+      "label": "Item 2 permalink"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.2.location",
+      "label": "Item 3 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.2.title",
+      "label": "Item 3 Title"
+    },
+    {
+      "type": "image",
+      "key": "sections.projectFeed.items.2.image",
+      "label": "Item 3 Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.2.service",
+      "label": "Item 3 Service"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.2.date",
+      "label": "Item 3 Date"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.projectFeed.items.2.caption",
+      "label": "Item 3 Caption"
+    },
+    {
+      "type": "text",
+      "key": "sections.projectFeed.items.2.permalink",
+      "label": "Item 3 permalink"
     }
   ],
   "proofStream": [
@@ -842,6 +1022,146 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.0.time",
+      "label": "Item 1 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.0.location",
+      "label": "Item 1 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.0.title",
+      "label": "Item 1 Title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.proofStream.items.0.text",
+      "label": "Item 1 Text"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.0.type",
+      "label": "Item 1 type"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.0.ctaText",
+      "label": "Item 1 ctaText"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.0.ctaAction",
+      "label": "Item 1 ctaAction"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.1.time",
+      "label": "Item 2 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.1.location",
+      "label": "Item 2 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.1.title",
+      "label": "Item 2 Title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.proofStream.items.1.text",
+      "label": "Item 2 Text"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.1.type",
+      "label": "Item 2 type"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.1.ctaText",
+      "label": "Item 2 ctaText"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.1.ctaAction",
+      "label": "Item 2 ctaAction"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.2.time",
+      "label": "Item 3 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.2.location",
+      "label": "Item 3 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.2.title",
+      "label": "Item 3 Title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.proofStream.items.2.text",
+      "label": "Item 3 Text"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.2.type",
+      "label": "Item 3 type"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.2.ctaText",
+      "label": "Item 3 ctaText"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.2.ctaAction",
+      "label": "Item 3 ctaAction"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.3.time",
+      "label": "Item 4 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.3.location",
+      "label": "Item 4 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.3.title",
+      "label": "Item 4 Title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.proofStream.items.3.text",
+      "label": "Item 4 Text"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.3.type",
+      "label": "Item 4 type"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.3.ctaText",
+      "label": "Item 4 ctaText"
+    },
+    {
+      "type": "text",
+      "key": "sections.proofStream.items.3.ctaAction",
+      "label": "Item 4 ctaAction"
     }
   ],
   "splitHero": [
@@ -864,6 +1184,46 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.splitHero.feed.0.time",
+      "label": "Item 1 Time"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.splitHero.feed.0.text",
+      "label": "Item 1 Text"
+    },
+    {
+      "type": "text",
+      "key": "sections.splitHero.feed.1.time",
+      "label": "Item 2 Time"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.splitHero.feed.1.text",
+      "label": "Item 2 Text"
+    },
+    {
+      "type": "text",
+      "key": "sections.splitHero.feed.2.time",
+      "label": "Item 3 Time"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.splitHero.feed.2.text",
+      "label": "Item 3 Text"
+    },
+    {
+      "type": "text",
+      "key": "sections.splitHero.feed.3.time",
+      "label": "Item 4 Time"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.splitHero.feed.3.text",
+      "label": "Item 4 Text"
     }
   ],
   "heroBeforeAfter": [
@@ -908,6 +1268,51 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.reviewHighlights.items.0.who",
+      "label": "Item 1 Name"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.reviewHighlights.items.0.text",
+      "label": "Item 1 Text"
+    },
+    {
+      "type": "text",
+      "key": "sections.reviewHighlights.items.0.stars",
+      "label": "Item 1 Stars"
+    },
+    {
+      "type": "text",
+      "key": "sections.reviewHighlights.items.1.who",
+      "label": "Item 2 Name"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.reviewHighlights.items.1.text",
+      "label": "Item 2 Text"
+    },
+    {
+      "type": "text",
+      "key": "sections.reviewHighlights.items.1.stars",
+      "label": "Item 2 Stars"
+    },
+    {
+      "type": "text",
+      "key": "sections.reviewHighlights.items.2.who",
+      "label": "Item 3 Name"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.reviewHighlights.items.2.text",
+      "label": "Item 3 Text"
+    },
+    {
+      "type": "text",
+      "key": "sections.reviewHighlights.items.2.stars",
+      "label": "Item 3 Stars"
     }
   ],
   "area": [
@@ -952,6 +1357,21 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.quote.points.0.text",
+      "label": "Item 1 Text"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.quote.points.1.text",
+      "label": "Item 2 Text"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.quote.points.2.text",
+      "label": "Item 3 Text"
     }
   ],
   "textBox": [
@@ -1092,6 +1512,158 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.events.0.time",
+      "label": "Item 1 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.events.0.task",
+      "label": "Item 1 Task"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.events.0.location",
+      "label": "Item 1 Location"
+    },
+    {
+      "type": "select",
+      "key": "sections.activityTimeline.events.0.status",
+      "label": "Item 1 Status",
+      "options": [
+        {
+          "value": "completed",
+          "label": "Completed"
+        },
+        {
+          "value": "active",
+          "label": "On the job"
+        },
+        {
+          "value": "enroute",
+          "label": "On the way"
+        },
+        {
+          "value": "booked",
+          "label": "Booked"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.events.1.time",
+      "label": "Item 2 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.events.1.task",
+      "label": "Item 2 Task"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.events.1.location",
+      "label": "Item 2 Location"
+    },
+    {
+      "type": "select",
+      "key": "sections.activityTimeline.events.1.status",
+      "label": "Item 2 Status",
+      "options": [
+        {
+          "value": "completed",
+          "label": "Completed"
+        },
+        {
+          "value": "active",
+          "label": "On the job"
+        },
+        {
+          "value": "enroute",
+          "label": "On the way"
+        },
+        {
+          "value": "booked",
+          "label": "Booked"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.events.2.time",
+      "label": "Item 3 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.events.2.task",
+      "label": "Item 3 Task"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.events.2.location",
+      "label": "Item 3 Location"
+    },
+    {
+      "type": "select",
+      "key": "sections.activityTimeline.events.2.status",
+      "label": "Item 3 Status",
+      "options": [
+        {
+          "value": "completed",
+          "label": "Completed"
+        },
+        {
+          "value": "active",
+          "label": "On the job"
+        },
+        {
+          "value": "enroute",
+          "label": "On the way"
+        },
+        {
+          "value": "booked",
+          "label": "Booked"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.events.3.time",
+      "label": "Item 4 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.events.3.task",
+      "label": "Item 4 Task"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityTimeline.events.3.location",
+      "label": "Item 4 Location"
+    },
+    {
+      "type": "select",
+      "key": "sections.activityTimeline.events.3.status",
+      "label": "Item 4 Status",
+      "options": [
+        {
+          "value": "completed",
+          "label": "Completed"
+        },
+        {
+          "value": "active",
+          "label": "On the job"
+        },
+        {
+          "value": "enroute",
+          "label": "On the way"
+        },
+        {
+          "value": "booked",
+          "label": "Booked"
+        }
+      ]
     }
   ],
   "customerReactions": [
@@ -1114,6 +1686,126 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.0.time",
+      "label": "Item 1 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.0.name",
+      "label": "Item 1 Name"
+    },
+    {
+      "type": "image",
+      "key": "sections.customerReactions.items.0.image",
+      "label": "Item 1 Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.0.style",
+      "label": "Item 1 style"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.0.message",
+      "label": "Item 1 message"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.0.rating",
+      "label": "Item 1 rating"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.1.time",
+      "label": "Item 2 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.1.name",
+      "label": "Item 2 Name"
+    },
+    {
+      "type": "image",
+      "key": "sections.customerReactions.items.1.image",
+      "label": "Item 2 Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.1.style",
+      "label": "Item 2 style"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.1.message",
+      "label": "Item 2 message"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.1.rating",
+      "label": "Item 2 rating"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.2.time",
+      "label": "Item 3 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.2.name",
+      "label": "Item 3 Name"
+    },
+    {
+      "type": "image",
+      "key": "sections.customerReactions.items.2.image",
+      "label": "Item 3 Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.2.style",
+      "label": "Item 3 style"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.2.message",
+      "label": "Item 3 message"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.2.rating",
+      "label": "Item 3 rating"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.3.time",
+      "label": "Item 4 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.3.name",
+      "label": "Item 4 Name"
+    },
+    {
+      "type": "image",
+      "key": "sections.customerReactions.items.3.image",
+      "label": "Item 4 Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.3.style",
+      "label": "Item 4 style"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.3.message",
+      "label": "Item 4 message"
+    },
+    {
+      "type": "text",
+      "key": "sections.customerReactions.items.3.rating",
+      "label": "Item 4 rating"
     }
   ],
   "videoReels": [
@@ -1136,6 +1828,66 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.reels.0.title",
+      "label": "Item 1 Title"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.reels.0.tag",
+      "label": "Item 1 Tag"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.reels.0.thumbnail",
+      "label": "Item 1 thumbnail"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.reels.0.videoUrl",
+      "label": "Item 1 videoUrl"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.reels.1.title",
+      "label": "Item 2 Title"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.reels.1.tag",
+      "label": "Item 2 Tag"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.reels.1.thumbnail",
+      "label": "Item 2 thumbnail"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.reels.1.videoUrl",
+      "label": "Item 2 videoUrl"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.reels.2.title",
+      "label": "Item 3 Title"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.reels.2.tag",
+      "label": "Item 3 Tag"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.reels.2.thumbnail",
+      "label": "Item 3 thumbnail"
+    },
+    {
+      "type": "text",
+      "key": "sections.videoReels.reels.2.videoUrl",
+      "label": "Item 3 videoUrl"
     }
   ],
   "jobsFeed": [
@@ -1158,6 +1910,81 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.items.0.time",
+      "label": "Item 1 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.items.0.location",
+      "label": "Item 1 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.items.0.title",
+      "label": "Item 1 Title"
+    },
+    {
+      "type": "image",
+      "key": "sections.jobsFeed.items.0.image",
+      "label": "Item 1 Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.items.0.result",
+      "label": "Item 1 result"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.items.1.time",
+      "label": "Item 2 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.items.1.location",
+      "label": "Item 2 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.items.1.title",
+      "label": "Item 2 Title"
+    },
+    {
+      "type": "image",
+      "key": "sections.jobsFeed.items.1.image",
+      "label": "Item 2 Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.items.1.result",
+      "label": "Item 2 result"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.items.2.time",
+      "label": "Item 3 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.items.2.location",
+      "label": "Item 3 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.items.2.title",
+      "label": "Item 3 Title"
+    },
+    {
+      "type": "image",
+      "key": "sections.jobsFeed.items.2.image",
+      "label": "Item 3 Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.jobsFeed.items.2.result",
+      "label": "Item 3 result"
     }
   ],
   "beforeAfterFeed": [
@@ -1180,6 +2007,96 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.0.time",
+      "label": "Item 1 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.0.location",
+      "label": "Item 1 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.0.title",
+      "label": "Item 1 Title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.beforeAfterFeed.items.0.caption",
+      "label": "Item 1 Caption"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.0.beforeImage",
+      "label": "Item 1 beforeImage"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.0.afterImage",
+      "label": "Item 1 afterImage"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.1.time",
+      "label": "Item 2 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.1.location",
+      "label": "Item 2 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.1.title",
+      "label": "Item 2 Title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.beforeAfterFeed.items.1.caption",
+      "label": "Item 2 Caption"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.1.beforeImage",
+      "label": "Item 2 beforeImage"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.1.afterImage",
+      "label": "Item 2 afterImage"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.2.time",
+      "label": "Item 3 Time"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.2.location",
+      "label": "Item 3 Location"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.2.title",
+      "label": "Item 3 Title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.beforeAfterFeed.items.2.caption",
+      "label": "Item 3 Caption"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.2.beforeImage",
+      "label": "Item 3 beforeImage"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfterFeed.items.2.afterImage",
+      "label": "Item 3 afterImage"
     }
   ],
   "navMenu": [
@@ -1412,6 +2329,226 @@
           "label": "Every load"
         }
       ]
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.0.title",
+      "label": "Item 1 Title"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.0.id",
+      "label": "Item 1 id"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.0.src",
+      "label": "Item 1 src"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.0.alt",
+      "label": "Item 1 alt"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.premiumGallery.images.0.caption",
+      "label": "Item 1 Caption"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.0.orientation",
+      "label": "Item 1 orientation"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.0.ratio",
+      "label": "Item 1 ratio"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.0.categoryId",
+      "label": "Item 1 categoryId"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.0.albumId",
+      "label": "Item 1 albumId"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.0.featured",
+      "label": "Item 1 featured"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.0.size",
+      "label": "Item 1 size"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.1.title",
+      "label": "Item 2 Title"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.1.id",
+      "label": "Item 2 id"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.1.src",
+      "label": "Item 2 src"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.1.alt",
+      "label": "Item 2 alt"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.premiumGallery.images.1.caption",
+      "label": "Item 2 Caption"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.1.orientation",
+      "label": "Item 2 orientation"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.1.ratio",
+      "label": "Item 2 ratio"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.1.categoryId",
+      "label": "Item 2 categoryId"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.1.albumId",
+      "label": "Item 2 albumId"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.1.featured",
+      "label": "Item 2 featured"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.1.size",
+      "label": "Item 2 size"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.2.title",
+      "label": "Item 3 Title"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.2.id",
+      "label": "Item 3 id"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.2.src",
+      "label": "Item 3 src"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.2.alt",
+      "label": "Item 3 alt"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.premiumGallery.images.2.caption",
+      "label": "Item 3 Caption"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.2.orientation",
+      "label": "Item 3 orientation"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.2.ratio",
+      "label": "Item 3 ratio"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.2.categoryId",
+      "label": "Item 3 categoryId"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.2.albumId",
+      "label": "Item 3 albumId"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.2.featured",
+      "label": "Item 3 featured"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.2.size",
+      "label": "Item 3 size"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.3.title",
+      "label": "Item 4 Title"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.3.id",
+      "label": "Item 4 id"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.3.src",
+      "label": "Item 4 src"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.3.alt",
+      "label": "Item 4 alt"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.premiumGallery.images.3.caption",
+      "label": "Item 4 Caption"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.3.orientation",
+      "label": "Item 4 orientation"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.3.ratio",
+      "label": "Item 4 ratio"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.3.categoryId",
+      "label": "Item 4 categoryId"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.3.albumId",
+      "label": "Item 4 albumId"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.3.featured",
+      "label": "Item 4 featured"
+    },
+    {
+      "type": "text",
+      "key": "sections.premiumGallery.images.3.size",
+      "label": "Item 4 size"
     }
   ],
   "seoText": [
