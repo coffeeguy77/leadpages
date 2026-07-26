@@ -615,19 +615,22 @@
     }
   },
   "instaGallery": {
-    "business": "Ace Plumbing Co.",
-    "trade": "plumber",
+    "business": "Bean Culture",
+    "trade": "coffee",
     "phone": "0261000000",
+    "slug": "beanculture",
     "theme": {
-      "pipe": "#1f7bb8"
+      "pipe": "#1f7bb8",
+      "hivis": "#c45c26"
     },
     "instaGallery": {
       "on": true,
       "eyebrow": "Instagram",
       "heading": "Follow us on Instagram",
-      "intro": "",
+      "intro": "Live grid from Bean Culture’s connected Instagram — same connection used on beanculture.com.au.",
       "count": 8,
-      "columns": 4
+      "columns": 4,
+      "openInstagram": true
     }
   },
   "jobsFeed": {
