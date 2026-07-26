@@ -1540,6 +1540,43 @@
       "label": "Brand colour"
     }
   ],
+  "emerg": [
+    {
+      "type": "textarea",
+      "key": "sections.emerg.text",
+      "label": "Message"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.emerg.callOn",
+      "label": "Show phone call link"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.emerg.sticky",
+      "label": "Sticky with logo header"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.emerg.bgTransparent",
+      "label": "Transparent background"
+    },
+    {
+      "type": "color",
+      "key": "sections.emerg.bg",
+      "label": "Background colour"
+    },
+    {
+      "type": "color",
+      "key": "sections.emerg.fg",
+      "label": "Text colour"
+    },
+    {
+      "type": "color",
+      "key": "theme.hivis",
+      "label": "Theme CTA colour"
+    }
+  ],
   "emergencyAvailability": [
     {
       "type": "text",

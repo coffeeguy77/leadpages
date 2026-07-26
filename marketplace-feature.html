@@ -366,6 +366,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       summary:'Put urgency offers under the hero — weekly windows, deadlines, limited spots and more. Same Promotions Engine as the App Command Centre.',
       hero_image_url:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80'
     },
+    'emergency-cta':{
+      sectionKey:'emerg',
+      name:'Emergency CTA',
+      tagline:'24/7 urgent call-to-action bar',
+      summary:'A sticky top bar that puts your emergency phone line front and centre — message, colours and call link match the App Command Centre Top bar.',
+      hero_image_url:'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1400&h=560&fit=crop&q=80'
+    },
     'email-campaigns':{
       platform:true,
       name:'Email Campaigns',
@@ -790,9 +797,12 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var root = document.getElementById(id); if (!root) return;
     feature = feature || {};
     var secKey = (payload && payload.section_key) || feature.section_key || '';
-    /* Stale DB keys → real section + demo file (demo-promotions.html) */
+    /* Stale DB / marketing keys → real section config keys */
     if (secKey === 'promotions-hero' || secKey === 'promotionsHero' || secKey === 'promotions-inline') {
       secKey = 'promotions';
+    }
+    if (secKey === 'emergency-cta' || secKey === 'emergencyCta' || secKey === 'emergencyCTA') {
+      secKey = 'emerg';
     }
     var presets = (payload && payload.presets && payload.presets.length) ? payload.presets.slice() : ['default'];
     var activePreset = null;
@@ -1084,6 +1094,31 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         .catch(function() {});
     }
 
+    function loadEmergTypePresets() {
+      if (secKey !== 'emerg') return Promise.resolve();
+      return fetch('/marketplace/emerg-type-presets.json')
+        .then(function(r) { return r.ok ? r.json() : []; })
+        .then(function(list) {
+          if (!Array.isArray(list) || !list.length) return;
+          presets = [];
+          list.forEach(function(p) {
+            var preset = p;
+            if (window.LPPlaygroundPreset) {
+              preset = window.LPPlaygroundPreset.normalizePreset(p, {
+                slug: p.slug,
+                source: 'emerg-type-presets',
+                section_key: 'emerg',
+                label: p.label
+              });
+            }
+            presetCache[p.slug] = preset;
+            if (presets.indexOf(p.slug) < 0) presets.push(p.slug);
+          });
+          if (!activePreset && presets.length) activePreset = presets[0];
+        })
+        .catch(function() {});
+    }
+
     function loadPlaygroundMeta() {
       if (!secKey || pgMetaLoaded) return Promise.resolve();
       return loadDefaultConfigs().then(function() {
@@ -1128,7 +1163,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
               })
               .catch(function() {});
           })
-          .then(function() { return loadPromotionsTypePresets(); });
+          .then(function() { return loadPromotionsTypePresets(); })
+          .then(function() { return loadEmergTypePresets(); });
       });
     }
 
@@ -1143,6 +1179,9 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       var demoFile = sk;
       if (demoFile === 'promotions-hero' || demoFile === 'promotionsHero' || demoFile === 'promotions-inline') {
         demoFile = 'promotions';
+      }
+      if (slug === 'emergency-cta' || demoFile === 'emergency-cta' || demoFile === 'emergencyCta' || demoFile === 'emergencyCTA') {
+        demoFile = 'emerg';
       }
       var src = '/marketplace/demos/demo-' + demoFile + '.html';
       var old = root.querySelector('iframe.pg-iframe');

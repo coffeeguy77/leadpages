@@ -29,6 +29,63 @@ describe('marketplace catalog resolve', () => {
     assert.ok(pgHero.payload.presets.includes('weekly'));
   });
 
+  it('emergency-cta remaps to emerg demo + editor presets', () => {
+    const emerg = resolve.resolveFromStatic('emergency-cta');
+    assert.ok(emerg);
+    assert.equal(emerg.feature.section_key, 'emerg');
+    assert.equal(emerg.feature.name, 'Emergency CTA');
+    assert.ok(emerg.feature.hero_image_url);
+    assert.ok(resolve.hasPlayground(emerg.blocks));
+    const pg = emerg.blocks.find((b) => b.block_type === 'playground');
+    assert.equal(pg.payload.section_key, 'emerg');
+    assert.ok(pg.payload.presets.includes('urgent'));
+    assert.ok(pg.payload.presets.includes('transparent'));
+
+    const stale = resolve.enrichCatalogPayload(
+      {
+        id: '4',
+        slug: 'emergency-cta',
+        name: 'Emergency CTA',
+        tagline: '24/7 urgent call-to-action bar',
+        status: 'live',
+        section_key: 'emergency-cta',
+        hero_image_url: null
+      },
+      [{ block_type: 'playground', payload: { section_key: 'emergencyCta', presets: ['default'] } }],
+      'emergency-cta'
+    );
+    assert.equal(stale.feature.section_key, 'emerg');
+    assert.ok(stale.feature.hero_image_url);
+    const pg2 = stale.blocks.find((b) => b.block_type === 'playground');
+    assert.equal(pg2.payload.section_key, 'emerg');
+
+    assert.ok(fs.existsSync(path.join(root, 'marketplace/demos/demo-emerg.html')));
+    assert.ok(fs.existsSync(path.join(root, 'marketplace/demos/demo-emergencyCta.html')));
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-emerg.html'), 'utf8');
+    assert.match(demo, /data-sec="emerg"/);
+    assert.match(demo, /24\/7 emergency plumber/);
+    assert.match(demo, /"sticky"\s*:\s*true/);
+
+    const presets = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/emerg-type-presets.json'), 'utf8'));
+    assert.equal(presets.length, 6);
+    ['urgent', 'afterHours', 'burstPipe', 'stickyBrand', 'messageOnly', 'transparent']
+      .forEach((t) => assert.ok(presets.some((p) => p.slug === t), 'missing emerg preset ' + t));
+
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.emerg.some((f) => f.key === 'sections.emerg.text'));
+    assert.ok(defs.emerg.some((f) => f.key === 'sections.emerg.callOn' && f.type === 'checkbox'));
+    assert.ok(defs.emerg.some((f) => f.key === 'sections.emerg.sticky'));
+
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /'emergency-cta'\s*:\s*\{/);
+    assert.match(feat, /loadEmergTypePresets/);
+    assert.match(feat, /demoFile = 'emerg'/);
+    assert.match(feat, /secKey === 'emergencyCta'/);
+
+    const compact = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
+    assert.match(compact, /sectionKey === 'emerg'/);
+  });
+
   it('promotions-hero remaps stale DB section_key to promotions demo', () => {
     const stale = resolve.enrichCatalogPayload(
       {
