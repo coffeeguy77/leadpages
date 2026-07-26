@@ -196,7 +196,16 @@
       editor = window.LPTrustBarEditor.mount(document.getElementById('demo-editor'), {
         mode: 'demo-builder',
         value: liveCfg,
-        onChange: function(cfg){ liveCfg=cfg; applyPreview(); }
+        onChange: function(cfg){ liveCfg=cfg; applyPreview(); },
+        onHeight: function(h, cfg){
+          if(cfg) liveCfg=cfg;
+          var fr=document.getElementById('demo-preview');
+          var px=Math.max(120, Math.min(640, +h||280));
+          try{
+            var tb=fr && fr.contentDocument && fr.contentDocument.querySelector('[data-sec="trustBar"]');
+            if(tb) tb.style.setProperty('--tb-img-h', px+'px');
+          }catch(e){}
+        }
       });
     }
     applyPreview();
