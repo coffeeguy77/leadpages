@@ -39,15 +39,30 @@ describe('marketplace catalog resolve', () => {
     assert.ok(resolve.hasPlayground(thin.blocks));
   });
 
-  it('feature page client falls back for hub slugs and hero demo iframe', () => {
+  it('feature page client falls back for hub slugs and keeps hero as image', () => {
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /quote-lead-capture/);
     assert.match(feat, /reviews-trust/);
     assert.match(feat, /email-campaigns/);
     assert.match(feat, /loadFeature/);
-    assert.match(feat, /himg-demo-frame/);
     assert.match(feat, /ensurePlaygroundBlock/);
     assert.match(feat, /sell-templates\.json/);
+    assert.match(feat, /fillHeroFromSell/);
+    assert.match(feat, /Green hero media is always a still image/);
+    assert.doesNotMatch(feat, /himg-demo-frame/);
+    assert.match(feat, /special-offer-editor\.js/);
+    assert.match(feat, /LPSpecialOfferEditor\.mount/);
+  });
+
+  it('fills missing hero_image_url from sell-templates', () => {
+    const thin = resolve.enrichCatalogPayload(
+      { id: '9', slug: 'promotions', name: 'Promotions', status: 'live', section_key: null, hero_image_url: null },
+      [],
+      'promotions'
+    );
+    assert.equal(thin.feature.section_key, 'specialOffer');
+    assert.ok(thin.feature.hero_image_url);
+    assert.match(thin.feature.hero_image_url, /^https:\/\//);
   });
 
   it('activityCounter demo forces sections.on and shows stats', () => {

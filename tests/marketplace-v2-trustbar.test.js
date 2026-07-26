@@ -183,6 +183,8 @@ describe('public marketplace theme + copy safety', () => {
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /feat-hero-grid/);
     assert.match(feat, /heroImg=safeUrl\(f\.hero_image_url\)/);
+    assert.match(feat, /Green hero media is always a still image/);
+    assert.doesNotMatch(feat, /himg-demo-frame/);
     assert.doesNotMatch(feat, /Ready to use /);
     assert.doesNotMatch(feat, /Try it in the editor/);
     assert.doesNotMatch(feat, /data-r="pg-footer"/);
