@@ -311,6 +311,8 @@ describe('marketplace catalog resolve', () => {
     assert.match(demo, /"activityCounter"\s*:\s*\{/);
     assert.match(demo, /"on"\s*:\s*true/);
     assert.match(demo, /"stats"\s*:\s*\[/);
+    assert.match(demo, /"eyebrow"/);
+    assert.match(demo, /"icon"\s*:\s*"star"/);
   });
 
   it('igProjectFeed marketplace demo uses Bean Culture Instagram connection', () => {

@@ -441,4 +441,43 @@ describe('marketplace compact editor parity', () => {
     assert.match(js, /labelForItemIndex\(f\.label, activeIdx\)/);
     assert.match(js, /f\.type === 'icon'.*circle-check|type === 'icon'\) it\[f\.prop\] = 'circle-check'/);
   });
+
+  it('activityCounter editor exposes eyebrow, heading and per-stat icons', () => {
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.activityCounter.some((f) => f.key === 'sections.activityCounter.eyebrow'));
+    assert.ok(defs.activityCounter.some((f) => f.key === 'sections.activityCounter.heading'));
+    assert.ok(defs.activityCounter.some((f) => f.key === 'sections.activityCounter.intro'));
+    assert.ok(defs.activityCounter.some((f) => f.type === 'icon' && f.key === 'sections.activityCounter.stats.0.icon'));
+    assert.ok(defs.activityCounter.some((f) => f.type === 'icon' && f.key === 'sections.activityCounter.stats.3.icon'));
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    const stats = defaults.activityCounter.activityCounter.stats;
+    assert.equal(stats.length, 4);
+    assert.equal(defaults.activityCounter.activityCounter.eyebrow, "Today's activity");
+    assert.ok(stats.every((it) => it.icon && /^[a-z0-9-]+$/.test(it.icon)));
+    assert.equal(stats[0].icon, 'wrench');
+    assert.equal(stats[3].icon, 'star');
+    assert.equal(stats[3].value, '4.9');
+
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-activityCounter.html'), 'utf8');
+    assert.match(demo, /"icon"\s*:\s*"wrench"/);
+    assert.match(demo, /"icon"\s*:\s*"star"/);
+    assert.match(demo, /"eyebrow"\s*:\s*"Today's activity"/);
+
+    const apply = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+    assert.match(apply, /ac-value-row/);
+    assert.match(apply, /ac-ic/);
+    assert.match(apply, /it\.icon/);
+
+    const css = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.css'), 'utf8');
+    assert.match(css, /\.ac-value-row/);
+    assert.match(css, /\.ac-ic/);
+
+    const manage = fs.readFileSync(path.join(root, 'manage.html'), 'utf8');
+    assert.match(manage, /activityStats:\{[^}]*k:'icon',label:'Icon',type:'icon'/);
+
+    const trade = fs.readFileSync(path.join(root, 'trade.template.json'), 'utf8');
+    assert.match(trade, /ac-value-row/);
+    assert.match(trade, /ac-ic/);
+  });
 });

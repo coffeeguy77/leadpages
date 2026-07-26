@@ -14,22 +14,26 @@
       "stats": [
         {
           "on": true,
+          "icon": "wrench",
           "value": "7",
           "label": "Jobs completed today"
         },
         {
           "on": true,
+          "icon": "phone",
           "value": "24",
           "label": "Calls answered this week"
         },
         {
           "on": true,
+          "icon": "smile",
           "value": "387",
           "label": "Happy customers this year"
         },
         {
           "on": true,
-          "value": "4.9★",
+          "icon": "star",
+          "value": "4.9",
           "label": "Google Rating"
         }
       ]
