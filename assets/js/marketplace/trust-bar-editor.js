@@ -80,6 +80,7 @@
     var mode = options.mode || 'marketplace-playground';
     var cfg = options.value || { sections: { trustBar: { on: true, badges: [] } } };
     var onChange = typeof options.onChange === 'function' ? options.onChange : function () {};
+    var onHeight = typeof options.onHeight === 'function' ? options.onHeight : null;
     var announce = typeof options.onAnnounce === 'function' ? options.onAnnounce : function () {};
     var activeIdx = 0;
 
@@ -133,7 +134,7 @@
         + '</div>'
         + '<div class="f" id="tb-h-wrap"' + (tbMode === 'images' ? '' : ' style="display:none"') + '>'
         + '<label for="tb-h">Height <span id="tb-h-v">' + esc(h) + 'px</span></label>'
-        + '<input type="range" id="tb-h" min="160" max="520" step="10" value="' + esc(h) + '">'
+        + '<input type="range" id="tb-h" min="160" max="520" step="1" value="' + esc(h) + '">'
         + '</div></div>'
 
         + '<div id="tb-classic-colors" class="tb-ed-color-grid"' + (tbMode === 'images' ? ' style="display:none"' : '') + '>'
@@ -319,10 +320,22 @@
       var hh = host.querySelector('#tb-h');
       var hv = host.querySelector('#tb-h-v');
       if (hh) {
+        // Drag: update label + CSS height directly (no full iframe rebuild).
+        // change/mouseup: sync via emit for callers without onHeight.
         hh.addEventListener('input', function () {
-          tb().imageHeight = +hh.value;
-          if (hv) hv.textContent = hh.value + 'px';
-          emit('Preview updated');
+          var val = +hh.value;
+          if (isNaN(val)) return;
+          tb().imageHeight = val;
+          if (hv) hv.textContent = val + 'px';
+          if (onHeight) onHeight(val, cfg);
+          else emit();
+        });
+        hh.addEventListener('change', function () {
+          var val = +hh.value;
+          if (isNaN(val)) return;
+          tb().imageHeight = val;
+          if (hv) hv.textContent = val + 'px';
+          emit(onHeight ? 'Height updated' : '');
         });
       }
 

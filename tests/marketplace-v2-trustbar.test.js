@@ -240,6 +240,16 @@ describe('public marketplace theme + copy safety', () => {
     assert.doesNotMatch(css, /\.tb-ed-mode-preview/);
   });
 
+  it('height slider uses lightweight onHeight scrub path', () => {
+    const editor = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.js'), 'utf8');
+    assert.match(editor, /onHeight/);
+    assert.match(editor, /step="1"/);
+    const v2 = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-feature-v2.js'), 'utf8');
+    assert.match(v2, /applyTileHeight/);
+    assert.match(v2, /--tb-img-h/);
+    assert.match(v2, /onHeight:\s*function/);
+  });
+
   it('hero image fills its side column beside the copy', () => {
     const v2 = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-feature-v2.js'), 'utf8');
     assert.match(v2, /align-items:stretch/);

@@ -130,6 +130,24 @@
     sizeIframe();
   }
 
+  var __heightRaf = 0;
+
+  /** Lightweight height scrub — set CSS var only, no full demo rebuild. */
+  function applyTileHeight(h) {
+    if (!iframe) return;
+    var px = Math.max(120, Math.min(640, +h || 280));
+    try {
+      var doc = iframe.contentDocument;
+      var tbNode = doc && doc.querySelector('[data-sec="trustBar"]');
+      if (tbNode) tbNode.style.setProperty('--tb-img-h', px + 'px');
+    } catch (_e) {}
+    if (__heightRaf) cancelAnimationFrame(__heightRaf);
+    __heightRaf = requestAnimationFrame(function () {
+      __heightRaf = 0;
+      sizeIframe();
+    });
+  }
+
   function mountEditor() {
     var host = document.getElementById('mp-tb-editor');
     if (!host || !window.LPTrustBarEditor) return;
@@ -139,6 +157,10 @@
       onChange: function (cfg) {
         liveSiteCfg = cfg;
         applyLiveConfig();
+      },
+      onHeight: function (h, cfg) {
+        if (cfg) liveSiteCfg = cfg;
+        applyTileHeight(h);
       },
       onAnnounce: announce
     });
