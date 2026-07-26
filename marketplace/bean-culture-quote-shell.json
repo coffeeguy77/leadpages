@@ -1,0 +1,247 @@
+{
+  "ok": true,
+  "enabled": true,
+  "showcase": true,
+  "shell": {
+    "products": [
+      {
+        "id": "coffee-cart",
+        "label": "Coffee Cart",
+        "description": "Compact cart setup — ideal for foyers, offices and boutique events.",
+        "showWhen": null,
+        "displayMode": "icon",
+        "icon": "coffee",
+        "imageUrl": null,
+        "imageSize": null,
+        "imageScale": null,
+        "type": "equipment",
+        "baristasIncluded": 1,
+        "allowExtraBarista": true,
+        "allowQuantity": true,
+        "maxQuantity": null,
+        "badge": "Compact",
+        "subtitle": "Indoor & boutique events",
+        "imageFit": "cover",
+        "imagePos": "center",
+        "imageAxis": "frame"
+      },
+      {
+        "id": "coffee-van",
+        "label": "Coffee Van",
+        "description": "Full mobile van with dual-group machine and onboard power.",
+        "showWhen": null,
+        "displayMode": "icon",
+        "icon": "truck",
+        "imageUrl": null,
+        "imageSize": null,
+        "imageScale": null,
+        "type": "equipment",
+        "baristasIncluded": 1,
+        "allowExtraBarista": true,
+        "allowQuantity": true,
+        "maxQuantity": null,
+        "badge": "Mobile van",
+        "subtitle": "Dual-group & onboard power",
+        "imageFit": "cover",
+        "imagePos": "center",
+        "imageAxis": "frame"
+      },
+      {
+        "id": "coffee-caravan",
+        "label": "Coffee Caravan",
+        "description": "Large-format caravan bar — festivals, weddings and corporate days.",
+        "showWhen": null,
+        "displayMode": "icon",
+        "icon": "package",
+        "imageUrl": null,
+        "imageSize": null,
+        "imageScale": null,
+        "type": "equipment",
+        "baristasIncluded": 1,
+        "allowExtraBarista": true,
+        "allowQuantity": true,
+        "maxQuantity": null,
+        "badge": "Large format",
+        "subtitle": "Festivals & corporate days",
+        "imageFit": "cover",
+        "imagePos": "center",
+        "imageAxis": "frame"
+      }
+    ],
+    "addons": [
+      {
+        "id": "cup-branding",
+        "label": "Custom cup branding",
+        "description": "Your logo on compostable cups (artwork supplied 14 days prior).",
+        "showWhen": null,
+        "displayMode": "icon",
+        "icon": "gift",
+        "imageUrl": null,
+        "imageSize": null,
+        "imageScale": null
+      },
+      {
+        "id": "extra-barista",
+        "label": "Additional barista",
+        "description": "Second barista for high-volume events (3 hr minimum).",
+        "showWhen": null,
+        "displayMode": "icon",
+        "icon": "users",
+        "imageUrl": null,
+        "imageSize": null,
+        "imageScale": null
+      },
+      {
+        "id": "nitro-cold-brew",
+        "label": "Nitro cold brew station",
+        "description": null,
+        "showWhen": null,
+        "displayMode": "icon",
+        "icon": "cup-soda",
+        "imageUrl": null,
+        "imageSize": null,
+        "imageScale": null
+      },
+      {
+        "id": "decaf-option",
+        "label": "Decaf bean upgrade",
+        "description": null,
+        "showWhen": null,
+        "displayMode": "icon",
+        "icon": "coffee",
+        "imageUrl": null,
+        "imageSize": null,
+        "imageScale": null
+      }
+    ],
+    "beverages": [
+      {
+        "id": "espresso-package",
+        "label": "Espresso-based drinks package",
+        "description": "Cappuccino, latte, flat white, long black.",
+        "showWhen": null,
+        "displayMode": "icon",
+        "icon": "coffee",
+        "imageUrl": null,
+        "imageSize": null,
+        "imageScale": null,
+        "pricingMode": "per_head",
+        "unitLabel": "coffees",
+        "group": "drinks",
+        "minQuantity": null
+      },
+      {
+        "id": "premium-package",
+        "label": "Premium drinks package",
+        "description": "Espresso drinks plus cold brew and iced options.",
+        "showWhen": null,
+        "displayMode": "icon",
+        "icon": "star",
+        "imageUrl": null,
+        "imageSize": null,
+        "imageScale": null,
+        "pricingMode": "per_head",
+        "unitLabel": "coffees",
+        "group": "drinks",
+        "minQuantity": null
+      }
+    ],
+    "travelZones": [
+      {
+        "id": "inner-sydney",
+        "label": "Inner Sydney (0–15 km)",
+        "description": null,
+        "showWhen": null,
+        "displayMode": "icon",
+        "icon": "map-pin",
+        "imageUrl": null,
+        "imageSize": null,
+        "imageScale": null,
+        "badge": null,
+        "subtitle": null,
+        "imageFit": "cover",
+        "imagePos": "center",
+        "imageAxis": "frame"
+      },
+      {
+        "id": "greater-sydney",
+        "label": "Greater Sydney (15–40 km)",
+        "description": null,
+        "showWhen": null,
+        "displayMode": "icon",
+        "icon": "map-pin",
+        "imageUrl": null,
+        "imageSize": null,
+        "imageScale": null,
+        "badge": null,
+        "subtitle": null,
+        "imageFit": "cover",
+        "imagePos": "center",
+        "imageAxis": "frame"
+      },
+      {
+        "id": "regional",
+        "label": "Regional NSW (40+ km)",
+        "description": null,
+        "showWhen": null,
+        "displayMode": "icon",
+        "icon": "map-pin",
+        "imageUrl": null,
+        "imageSize": null,
+        "imageScale": null,
+        "badge": null,
+        "subtitle": null,
+        "imageFit": "cover",
+        "imagePos": "center",
+        "imageAxis": "frame"
+      }
+    ],
+    "wizard": {
+      "steps": [
+        "equipment",
+        "event",
+        "beverages",
+        "travel",
+        "addons",
+        "contact"
+      ],
+      "layout": "grid",
+      "stepLabels": {
+        "event": "Event & staffing",
+        "equipment": "Equipment",
+        "beverages": "Packages",
+        "travel": "Travel zone",
+        "addons": "Add-ons",
+        "contact": "Your details"
+      },
+      "conditions": [],
+      "equipmentCards": {},
+      "travelCards": {},
+      "packageCards": {},
+      "ui": {},
+      "allowMultiCart": false,
+      "customFields": []
+    },
+    "business": {
+      "name": "Bean Culture Coffee Cart Hire",
+      "tagline": "Premium mobile coffee for events across Sydney"
+    },
+    "labour": {
+      "label": "Barista & setup labour",
+      "minimumHours": 3,
+      "allowShiftPlanner": true,
+      "minimumHoursPerShift": 3,
+      "extraBarista": {
+        "enabled": true,
+        "label": "Additional barista",
+        "splitShift": {
+          "enabled": true,
+          "label": "Split-shift barista (peak)",
+          "hourlyCents": 10000,
+          "minimumHours": 3,
+          "defaultHours": 4
+        }
+      }
+    }
+  }
+}

@@ -336,7 +336,15 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   })();
   /* Marketing hub URLs (home.html / SEO) → real section demos */
   var HUB_ALIASES={
-    'quote-lead-capture':{sectionKey:'onlineQuote',name:'Quote & Lead Capture',tagline:'Enquiries that never get lost',summary:'Quote forms and click-to-call wired into a lead inbox, so every enquiry lands where your client will see it.',badge:'Popular'},
+    'quote-lead-capture':{
+      premiumShowcase:true,
+      name:'Quote & Lead Capture',
+      tagline:'Enquiries that never get lost',
+      summary:'A guided, verified quote flow — like the Bean Culture example below. Premium setup with the LeadPages team; not a self-serve playground.',
+      badge:'Premium',
+      hero_image_url:'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1400&h=560&fit=crop&q=80',
+      showcaseDemoUrl:'/marketplace/demos/demo-beanCultureQuote.html'
+    },
     'reviews-trust':{sectionKey:'reviews',name:'Reviews & Trust',tagline:'Look established from day one',summary:'Testimonials, badges and certifications laid out to make small businesses look credible and safe to hire.'},
     'promotions':{sectionKey:'promotions',name:'Promotions & Offers',tagline:'Seasonal offers, front and centre',summary:'Urgency offers with types, placements and styles — weekly windows, deadlines, limited spots, finance, suburb specials and more.'},
     'email-campaigns':{platform:true,name:'Email Campaigns',tagline:'Stay in touch, win repeat work',summary:'Send offers and updates to captured leads from the same dashboard — no third-party email tools.'}
@@ -370,6 +378,24 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 
   function buildFromSellTemplates(sellAll, aliasSlug){
     var alias=HUB_ALIASES[aliasSlug]||null;
+    if(alias&&alias.premiumShowcase){
+      return {
+        feature:{
+          slug:aliasSlug,name:alias.name,tagline:alias.tagline,summary:alias.summary,
+          hero_image_url:alias.hero_image_url||null,section_key:null,badge:alias.badge||'Premium',status:'live',
+          access_type:'premium_subscription'
+        },
+        blocks:[
+          {block_type:'benefits',payload:{heading:'Premium quote flow',items:[
+            {title:'What you see',text:'A finished Bean Culture coffee-cart quote — the end result customers walk through. Browse the steps; nothing here submits, verifies, texts or bills.'},
+            {title:'Premium setup',text:'Configured with the LeadPages team for your products, travel zones, verification and branding. Not a self-serve marketplace editor.'},
+            {title:'Safety',text:'Showcase only — no OTP, SMS, PDF or spendable quote session is created from this page.'}
+          ]}},
+          {block_type:'demo_embed',payload:{url:alias.showcaseDemoUrl||'/marketplace/demos/demo-beanCultureQuote.html',height:820}},
+          {block_type:'cta',payload:{heading:'Set up with LeadPages',text:'We’ll configure products, pricing rules, verification and branding for your site.',button_label:'Talk to LeadPages',button_url:'/partners'}}
+        ]
+      };
+    }
     if(alias&&alias.platform){
       return {
         feature:{
@@ -411,13 +437,33 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var feature=j.feature||null;
     var blocks=j.blocks||[];
     var alias=HUB_ALIASES[slug];
+    /* Premium showcase / platform explainers — never inject a playground editor */
+    if(alias&&(alias.premiumShowcase||alias.platform)){
+      var builtHub=buildFromSellTemplates({}, slug);
+      if(!feature&&builtHub) feature=builtHub.feature;
+      if(feature&&alias){
+        feature.section_key=null;
+        if(alias.name) feature.name=alias.name;
+        if(alias.tagline) feature.tagline=alias.tagline;
+        if(alias.summary) feature.summary=alias.summary;
+        if(alias.badge) feature.badge=alias.badge;
+        if(alias.hero_image_url&&!feature.hero_image_url) feature.hero_image_url=alias.hero_image_url;
+        if(alias.premiumShowcase) feature.access_type='premium_subscription';
+      }
+      blocks=(blocks||[]).filter(function(b){ return b&&b.block_type!=='playground'; });
+      if(alias.premiumShowcase){
+        var hasEmbed=(blocks||[]).some(function(b){ return b&&b.block_type==='demo_embed'; });
+        if(!hasEmbed&&builtHub) blocks=builtHub.blocks;
+      }
+      return {feature:feature,blocks:blocks,sectionKey:null};
+    }
     var sectionKey=(alias&&alias.sectionKey)||(feature&&feature.section_key)||null;
     if(!sectionKey){
       var camel=kebabToCamel(slug);
       sectionKey=camel;
     }
     if(feature&&alias&&alias.sectionKey) feature.section_key=alias.sectionKey;
-    else if(feature&&!feature.section_key&&sectionKey&&!(alias&&alias.platform)) feature.section_key=sectionKey;
+    else if(feature&&!feature.section_key&&sectionKey) feature.section_key=sectionKey;
     if(feature&&alias){
       if(alias.name) feature.name=alias.name;
       if(alias.tagline) feature.tagline=alias.tagline;
@@ -426,8 +472,6 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     }
     if(feature&&feature.section_key){
       blocks=ensurePlaygroundBlock(blocks, feature.section_key);
-    } else if(!alias||!alias.platform){
-      /* will try sell-templates fallback */
     }
     return {feature:feature,blocks:blocks,sectionKey:sectionKey};
   }
@@ -446,7 +490,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       .then(function(r){ if(!r.ok) throw 0; return r.json(); })
       .then(function(j){
         var enriched=enrichPayload(j);
-        var ready=enriched.feature && (hasPlayground(enriched.blocks) || (HUB_ALIASES[slug]&&HUB_ALIASES[slug].platform));
+        var hub=HUB_ALIASES[slug];
+        var ready=enriched.feature && (hasPlayground(enriched.blocks) || (hub&&(hub.platform||hub.premiumShowcase)));
         if(ready && enriched.feature.hero_image_url){
           return {feature:enriched.feature, blocks:enriched.blocks};
         }
@@ -454,6 +499,16 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         return fetch('/marketplace/sell-templates.json')
           .then(function(r){ return r.ok?r.json():{}; })
           .then(function(sellAll){
+            if(hub&&hub.premiumShowcase){
+              var prem=buildFromSellTemplates(sellAll, slug)||{feature:enriched.feature,blocks:enriched.blocks};
+              if(enriched.feature){
+                prem.feature=Object.assign({}, prem.feature, {
+                  id:enriched.feature.id,
+                  hero_image_url:enriched.feature.hero_image_url||prem.feature.hero_image_url||(hub.hero_image_url||null)
+                });
+              }
+              return prem;
+            }
             if(ready){
               fillHeroFromSell(enriched.feature, sellAll);
               return {feature:enriched.feature, blocks:enriched.blocks};
@@ -519,8 +574,11 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       case 'demo_embed':
         var du=safeUrl(p.url); if(!du)return '';
         var h=Math.min(Math.max(parseInt(p.height,10)||560,240),1200);
-        return '<div class="blk"><div class="demo"><iframe src="'+esc(du)+'" style="height:'+h+'px" loading="lazy" title="Live demo"></iframe></div>'
-          +'<div class="cap"><a href="'+esc(du)+'" target="_blank" rel="noopener" style="color:var(--rose-d);font-weight:700">Open the live demo in a new tab &rarr;</a></div></div>';
+        var isShowcase=/demo-beanCultureQuote|showcase/i.test(du);
+        return '<div class="blk" id="example-demo"><div class="blk-eyebrow">'+(isShowcase?'Premium example':'Live example')+'</div>'
+          +(isShowcase?'<h2>Bean Culture quote — end result</h2><p class="mp-lede">Browse the steps. Nothing submits, verifies, texts or bills from this page.</p>':'')
+          +'<div class="demo"><iframe src="'+esc(du)+'" style="height:'+h+'px" loading="lazy" title="'+(isShowcase?'Bean Culture quote showcase':'Live demo')+'"></iframe></div>'
+          +'<div class="cap"><a href="'+esc(du)+'" target="_blank" rel="noopener" style="color:var(--rose-d);font-weight:700">Open example in a new tab &rarr;</a></div></div>';
       case 'faq':
         var qs=(p.items||[]).map(function(it){
           return '<details><summary>'+esc(it.q)+'</summary><div class="a">'+esc(it.a)+'</div></details>';}).join('');
@@ -584,13 +642,24 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   function render(j){
     var f=j.feature, blocks=j.blocks||[];
     if(!f){ notFound(); return; }
-    /* Final harden — never mount a playground without section_key */
-    if(f.section_key) blocks=ensurePlaygroundBlock(blocks, f.section_key);
+    var hubAlias=HUB_ALIASES[slug];
+    /* Premium / platform pages never get a Customise playground */
+    if(hubAlias&&(hubAlias.premiumShowcase||hubAlias.platform)){
+      f.section_key=null;
+      blocks=(blocks||[]).filter(function(b){ return b&&b.block_type!=='playground'; });
+      if(hubAlias.hero_image_url&&!f.hero_image_url) f.hero_image_url=hubAlias.hero_image_url;
+      if(hubAlias.badge) f.badge=hubAlias.badge;
+    } else if(f.section_key){
+      /* Final harden — never mount a playground without section_key */
+      blocks=ensurePlaygroundBlock(blocks, f.section_key);
+    }
     _renderFeature=f;
     document.title=f.name+' — LeadPages Marketplace';
     var demoUrl=safeUrl(f.demo_url);
     var heroImg=safeUrl(f.hero_image_url);
     var hasPlay=hasPlayground(blocks);
+    var hasDemoEmbed=(blocks||[]).some(function(b){ return b&&b.block_type==='demo_embed'; });
+    var isPremiumShowcase=!hasPlay && !!hasDemoEmbed && /premium/i.test(String(f.badge||f.access_type||''));
     var points=collectInfoPoints(f, blocks);
     var pointsHtml=points.map(function(p,i){
       return '<details class="mp-info-point"'+(i===0?' open':'')+'>'
@@ -618,8 +687,10 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       +'<div class="mp-info-list" aria-label="App details">'+pointsHtml+'</div>'
       +'<div class="hcta">'
       +(hasPlay?'<a class="btn" href="#live-demo">Try the demo ↓</a>':'')
+      +(isPremiumShowcase?'<a class="btn" href="#example-demo">See the example ↓</a>':'')
+      +(isPremiumShowcase?'<a class="btn ghost" href="/partners">Talk to LeadPages</a>':'')
       +(demoUrl?'<a class="btn ghost" href="'+esc(demoUrl)+'" target="_blank" rel="noopener">See a live site</a>':'')
-      +'<a class="btn ghost" href="/partners">Become a partner</a></div>'
+      +(!isPremiumShowcase?'<a class="btn ghost" href="/partners">Become a partner</a>':'')+'</div>'
       +'</div>'
       +'<div class="feat-hero-media">'+mediaHtml+'</div>'
       +'</div></div></header>'

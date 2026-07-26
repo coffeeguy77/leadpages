@@ -82,7 +82,7 @@ Anonymous playgrounds must not submit enquiries, send SMS, process payments, cre
 
 ## Marketing hub slugs
 
-Home / SEO links sometimes use marketing URLs that are not sell-template keys (`quote-lead-capture`, `reviews-trust`, `promotions`, `email-campaigns`). `lib/marketplace-catalog-resolve.js` (used by `api/catalog.js`) and client fallbacks in `marketplace-feature.html` map those to real section demos (or a dashboard explainer for Email Campaigns). Thin Supabase rows without a playground get one injected with `section_key`. Feature heroes prefer a live `demo-{sectionKey}.html` iframe over stock photos / “APP PREVIEW”.
+Home / SEO links sometimes use marketing URLs that are not sell-template keys (`quote-lead-capture`, `reviews-trust`, `promotions`, `email-campaigns`). `lib/marketplace-catalog-resolve.js` (used by `api/catalog.js`) and client fallbacks in `marketplace-feature.html` map those to real section demos (or a dashboard explainer for Email Campaigns). Thin Supabase rows without a playground get one injected with `section_key`. Feature heroes are always still images (never live iframes in the green hero). **Quote & Lead Capture** is a premium showcase: Bean Culture end-result embed, no Customise playground — setup with the LeadPages team.
 
 ## Tests
 
