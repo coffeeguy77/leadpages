@@ -1587,11 +1587,6 @@
   "emergencyAvailability": [
     {
       "type": "text",
-      "key": "sections.emergencyAvailability.eyebrow",
-      "label": "Eyebrow"
-    },
-    {
-      "type": "text",
       "key": "sections.emergencyAvailability.heading",
       "label": "Heading"
     },
@@ -1599,6 +1594,91 @@
       "type": "textarea",
       "key": "sections.emergencyAvailability.intro",
       "label": "Intro"
+    },
+    {
+      "type": "text",
+      "key": "sections.emergencyAvailability.availableLabel",
+      "label": "“Available” label"
+    },
+    {
+      "type": "text",
+      "key": "sections.emergencyAvailability.responseText",
+      "label": "Response time text"
+    },
+    {
+      "type": "text",
+      "key": "sections.emergencyAvailability.afterHoursLabel",
+      "label": "“After hours” label"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.emergencyAvailability.afterHoursText",
+      "label": "After-hours message"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.emergencyAvailability.emergencyText",
+      "label": "After-hours emergency note"
+    },
+    {
+      "type": "select",
+      "key": "sections.emergencyAvailability.mode",
+      "label": "Availability mode",
+      "options": [
+        { "value": "schedule", "label": "By business hours" },
+        { "value": "manual", "label": "Manual switch" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.emergencyAvailability.available",
+      "label": "Available right now (manual mode)"
+    },
+    {
+      "type": "text",
+      "key": "sections.emergencyAvailability.weekdayOpen",
+      "label": "Weekdays open (HH:MM)"
+    },
+    {
+      "type": "text",
+      "key": "sections.emergencyAvailability.weekdayClose",
+      "label": "Weekdays close (HH:MM)"
+    },
+    {
+      "type": "text",
+      "key": "sections.emergencyAvailability.satOpen",
+      "label": "Saturday open (HH:MM)"
+    },
+    {
+      "type": "text",
+      "key": "sections.emergencyAvailability.satClose",
+      "label": "Saturday close (HH:MM)"
+    },
+    {
+      "type": "text",
+      "key": "sections.emergencyAvailability.sunOpen",
+      "label": "Sunday open (HH:MM)"
+    },
+    {
+      "type": "text",
+      "key": "sections.emergencyAvailability.sunClose",
+      "label": "Sunday close (HH:MM)"
+    },
+    {
+      "type": "text",
+      "key": "sections.emergencyAvailability.cta.text",
+      "label": "Button text"
+    },
+    {
+      "type": "select",
+      "key": "sections.emergencyAvailability.cta.action",
+      "label": "Button action",
+      "options": [
+        { "value": "call", "label": "Call" },
+        { "value": "quote", "label": "Quote form" },
+        { "value": "scroll", "label": "Scroll to form" },
+        { "value": "none", "label": "No button" }
+      ]
     },
     {
       "type": "color",
