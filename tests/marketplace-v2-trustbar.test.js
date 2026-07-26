@@ -183,4 +183,28 @@ describe('public marketplace theme + copy safety', () => {
     assert.match(editor, /LPIconPicker\.controlHtml/);
     assert.ok(fs.existsSync(path.join(root, 'assets/js/marketplace/lp-icon-picker.js')));
   });
+
+  it('playground supports local image override without upload', () => {
+    const loc = fs.readFileSync(path.join(root, 'assets/js/marketplace/lp-local-image.js'), 'utf8');
+    assert.match(loc, /readAsDataURL/);
+    assert.match(loc, /Only on your screen/);
+    assert.doesNotMatch(loc, /cloudinary|cwUpload|FormData/i);
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /lp-local-image\.js/);
+    const editor = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.js'), 'utf8');
+    assert.match(editor, /LPLocalImage\.controlHtml/);
+    assert.match(editor, /marketplace-playground/);
+  });
+
+  it('Trust Bar editor is compact with tabbed items and no Show on page', () => {
+    const editor = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.js'), 'utf8');
+    assert.doesNotMatch(editor, /Show on page|Show Trust Bar on the page/);
+    assert.match(editor, /tb-ed-tab/);
+    assert.match(editor, /data-tab/);
+    assert.match(editor, /trustBar\.on = true/);
+    assert.match(editor, /modePreviewHtml|tb-ed-mode-preview/);
+    const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.css'), 'utf8');
+    assert.match(css, /\.tb-ed-tabs/);
+    assert.match(css, /\.tb-ed-mode-preview/);
+  });
 });

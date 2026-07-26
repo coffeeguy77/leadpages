@@ -252,6 +252,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 <link rel="stylesheet" href="/assets/marketplace-theme.css">
 <link rel="stylesheet" href="/assets/js/marketplace/trust-bar-editor.css">
 <link rel="stylesheet" href="/assets/js/marketplace/lp-icon-picker.css">
+<link rel="stylesheet" href="/assets/js/marketplace/lp-local-image.css">
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <script src="/assets/lp-logo.js" defer></script>
 <script src="/lib/marketplace-v2-flags.js"></script>
@@ -259,6 +260,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 <script src="/lib/playground-preset.js"></script>
 <script src="/lib/playground-field-paths.js"></script>
 <script src="/assets/js/marketplace/lp-icon-picker.js"></script>
+<script src="/assets/js/marketplace/lp-local-image.js"></script>
 <script src="/assets/js/marketplace/trust-bar-editor.js"></script>
 <script src="/assets/js/marketplace/marketplace-feature-v2.js"></script>
 </head>
@@ -803,6 +805,16 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           + window.LPIconPicker.controlHtml(val || '', { inputAttrs: 'data-pgk="' + esc(f.key) + '"' })
           + '</div>';
       }
+      var isImage = f.type === 'image' || /\.image$/i.test(f.key || '') || /image url/i.test(f.label || '');
+      if (isImage && window.LPLocalImage) {
+        var sample = (window.LPLocalImage.isRemote(val) ? val : '') || '';
+        return '<div class="pg-field"><label>' + esc(f.label) + '</label>'
+          + window.LPLocalImage.controlHtml(val || '', {
+              sample: sample,
+              inputAttrs: 'data-pgk="' + esc(f.key) + '"'
+            })
+          + '</div>';
+      }
       var inputType = f.type === 'number' ? 'number' : 'text';
       return '<div class="pg-field"><label>' + esc(f.label) + '</label><input type="' + inputType + '" data-pgk="' + esc(f.key) + '" value="' + esc(String(val == null ? '' : val)) + '"></div>';
     }
@@ -849,6 +861,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       html += '</div><p class="pg-fnote">Same controls as the App Command Centre. Nothing saves — play freely.</p>';
       host.innerHTML = html;
       if (window.LPIconPicker) window.LPIconPicker.refresh(host);
+      if (window.LPLocalImage) window.LPLocalImage.refresh(host);
 
       if (host.__pgBound) return;
       host.__pgBound = true;
