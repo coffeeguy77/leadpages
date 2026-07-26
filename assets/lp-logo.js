@@ -277,12 +277,31 @@
   function applyWorkspaceTheme() {
     if (!global.document) return;
     var theme = resolvedWorkspaceTheme();
-    var tokens = logoTokens({ theme: theme, inkMode: isAdminWorkspace() ? 'workspace' : null });
+    var admin = isAdminWorkspace();
+    var tokens = logoTokens({ theme: theme, inkMode: admin ? 'workspace' : null });
     var root = global.document.documentElement;
     root.style.setProperty('--lp-logo-accent', tokens.accent);
     root.style.setProperty('--lp-logo-ink', tokens.ink);
     global.document.querySelectorAll('.lp-logo-wrap.leadpages-logo, [data-lp-logo].lp-logo-wrap').forEach(function (wrap) {
       if (wrap.getAttribute('data-lp-logo-accent') || wrap.classList.contains('lp-foot-logo')) return;
+      /* Never stomp explicit light/dark ink (marketplace sitenav, footers, etc.) */
+      var inkAttr = wrap.getAttribute('data-lp-logo-ink');
+      if (inkAttr === 'light' || inkAttr === 'dark') {
+        applyTokens(wrap, logoTokens({
+          theme: theme,
+          inkMode: inkAttr,
+          accent: wrap.style.getPropertyValue('--lp-logo-accent').trim() || undefined
+        }));
+        return;
+      }
+      /* Public / marketing pages keep mountLogo contrast (white on dark chrome) */
+      if (!admin) {
+        var mode = resolveInkMode(wrap);
+        if (mode === 'light' || mode === 'dark') {
+          applyTokens(wrap, logoTokens({ theme: theme, inkMode: mode }));
+          return;
+        }
+      }
       applyTokens(wrap, tokens);
     });
   }
