@@ -10,7 +10,9 @@
 html.mp-demo-embed, html.mp-demo-embed body{margin:0;padding:0;min-height:0!important;height:auto!important;background:transparent;overflow:hidden}
 html.mp-demo-embed main#top{margin:0;padding:0;min-height:0}
 html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:none!important}
-html.mp-demo-embed section[data-sec="igProjectFeed"]{display:block!important;padding:28px 0 36px}
+html.mp-demo-embed section[data-sec="igProjectFeed"]{display:block!important;padding:28px 0 36px;background:transparent}
+/* Keep project lightbox closed until opened — backdrop must not veil the preview */
+html.mp-demo-embed #pf-lightbox:not(.open){display:none!important}
 html.mp-demo-embed .mp-ig-demo-note{margin:12px 0 0;font-size:12px;color:#5b6878;font-family:"Barlow",system-ui,sans-serif}
 </style>
 </head>
@@ -29,7 +31,7 @@ html.mp-demo-embed .mp-ig-demo-note{margin:12px 0 0;font-size:12px;color:#5b6878
 </section>
 </main>
 
-<div id="pf-lightbox" role="dialog" aria-modal="true" aria-hidden="true">
+<div class="pf-lb" id="pf-lightbox" role="dialog" aria-modal="true" aria-hidden="true">
   <div class="pf-lb-backdrop"></div>
   <div class="pf-lb-panel">
     <button type="button" class="pf-lb-close" aria-label="Close">×</button>

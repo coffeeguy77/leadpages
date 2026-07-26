@@ -329,7 +329,10 @@ describe('marketplace catalog resolve', () => {
     assert.match(demo, /FALLBACK|useFallback/);
     assert.match(demo, /igProjectFeed/);
     assert.match(demo, /__igpfW|__applyTradeConfig/);
-    assert.match(demo, /pf-lightbox/);
+    assert.match(demo, /class="pf-lb"[^>]*id="pf-lightbox"|id="pf-lightbox"[^>]*class="pf-lb"/);
+    const css = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.css'), 'utf8');
+    assert.match(css, /#pf-lightbox/);
+    assert.match(css, /\.pf-lb,#pf-lightbox\{[^}]*display:none/);
 
     const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
     assert.equal(defaults.igProjectFeed.slug, 'beanculture');
@@ -367,6 +370,10 @@ describe('marketplace catalog resolve', () => {
     assert.match(demo, /FALLBACK|useFallback/);
     assert.match(demo, /Follow us on Instagram/);
     assert.match(demo, /__igWrapped|__applyTradeConfig/);
+    /* Immediate fallback + delayed re-apply so playground DOM reset does not leave a blank grid */
+    assert.match(demo, /useFallback\(sec\)/);
+    assert.match(demo, /setTimeout\(function\s*\(\)\s*\{\s*onApply\(cfgOf\(\)\)/);
+    assert.match(demo, /nodeOf\s*=|function nodeOf/);
 
     const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
     assert.equal(defaults.instaGallery.slug, 'beanculture');
