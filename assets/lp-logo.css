@@ -39,16 +39,27 @@
   height: var(--lp-logo-height);
 }
 
-/* Marketing site — light ink on dark chrome */
+/* Marketing site — white ink on dark chrome (nav / sitenav / footer) */
 .nav .lp-logo-wrap,
 .nav .leadpages-logo,
+.sitenav .lp-logo-wrap,
+.sitenav .leadpages-logo,
 footer .lp-logo-wrap,
 footer .leadpages-logo {
   width: auto !important;
   max-width: none !important;
   height: var(--lp-logo-height) !important;
-  --lp-logo-ink: #f3f6fa;
+  --lp-logo-ink: #ffffff;
   --lp-logo-pulse-bg: transparent;
+}
+
+/* Header / sitenav logo — 50% larger than the default 52px mark */
+.sitenav .lp-logo-wrap,
+.sitenav .leadpages-logo,
+.nav .lp-logo-wrap,
+.nav .leadpages-logo {
+  --lp-logo-height: 78px;
+  height: 78px !important;
 }
 
 /* Ring pulse — 7-phase ripple with glow phasing inner → outer, unified fade-out */
@@ -299,7 +310,7 @@ body[data-pt-template] .pt-lp-disclosure-logo.lp-logo-pulse #outer-circle {
 
 /* Marketing / dark header variants */
 .lp-logo-wrap[data-lp-logo-ink="light"] {
-  --lp-logo-ink: #f3f6fa;
+  --lp-logo-ink: #ffffff;
 }
 
 .lp-logo-wrap[data-lp-logo-ink="dark"] {

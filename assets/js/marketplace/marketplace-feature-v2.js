@@ -132,10 +132,25 @@
 
   var __heightRaf = 0;
 
+  /** Keep the height slider under the pointer/finger while the preview reflows. */
+  function pinScrollToHeightControl() {
+    var anchor = document.getElementById('tb-h')
+      || document.querySelector('#mp-tb-editor .tb-ed-zone-style')
+      || document.getElementById('mp-tb-editor');
+    if (!anchor) return function () {};
+    var y0 = anchor.getBoundingClientRect().top;
+    return function () {
+      var y1 = anchor.getBoundingClientRect().top;
+      var dy = y1 - y0;
+      if (dy) window.scrollBy(0, dy);
+    };
+  }
+
   /** Lightweight height scrub — set CSS var only, no full demo rebuild. */
   function applyTileHeight(h) {
     if (!iframe) return;
     var px = Math.max(120, Math.min(640, +h || 280));
+    var restoreScroll = pinScrollToHeightControl();
     try {
       var doc = iframe.contentDocument;
       var tbNode = doc && doc.querySelector('[data-sec="trustBar"]');
@@ -144,7 +159,10 @@
     if (__heightRaf) cancelAnimationFrame(__heightRaf);
     __heightRaf = requestAnimationFrame(function () {
       __heightRaf = 0;
+      var restore2 = pinScrollToHeightControl();
       sizeIframe();
+      restore2();
+      restoreScroll();
     });
   }
 
@@ -388,9 +406,11 @@
       '.mp-ex-chip strong{font-size:14px}',
       '.mp-ex-chip span{font-size:12.5px;color:var(--theme-text-muted,var(--mut))}',
       '.mp-ex-chip:hover,.mp-ex-chip:focus-visible{border-color:var(--theme-primary,var(--rose));outline:3px solid var(--theme-focus,var(--rose));outline-offset:2px}',
-      '.mp-pg-preview{margin:0 0 8px;line-height:0}',
-      '.mp-pg-preview .pg-iframe,.mp-pg-preview iframe{display:block;min-height:0!important}',
+      '.mp-pg-preview{margin:0 0 8px;line-height:0;overflow-anchor:none}',
+      '.mp-pg-preview .pg-devicewrap,.mp-pg-preview .pg-viewport,.mp-pg-preview .pg-canvas{overflow-anchor:none}',
+      '.mp-pg-preview .pg-iframe,.mp-pg-preview iframe{display:block;min-height:0!important;overflow-anchor:none}',
       '.mp-pg-editor-compact{margin-top:4px}',
+      '#tb-h, .tb-ed-zone-style input[type="range"]{touch-action:none}',
       '.mp-pg-actions{display:flex;gap:8px;flex-wrap:wrap}',
       '.mp-pg .pg-topbar,.mp-demo-block .pg-topbar{flex-wrap:wrap;gap:10px;padding:4px 0 10px}',
       '.hcta .btn{display:inline-flex;font-weight:700;padding:12px 22px;border-radius:999px;background:var(--theme-primary,var(--rose));color:#fff;border:2px solid transparent}',

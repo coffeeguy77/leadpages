@@ -73,7 +73,7 @@
     if (opts.inkMode === 'light') {
       return {
         accent: opts.accent || (fromTheme && fromTheme.accent) || '#2ecc8f',
-        ink: opts.ink || '#f3f6fa'
+        ink: opts.ink || '#ffffff'
       };
     }
     if (opts.inkMode === 'dark') {
@@ -165,7 +165,7 @@
       var theme = node.getAttribute && (node.getAttribute('data-lp-site-theme') || node.getAttribute('data-theme'));
       if (theme === 'command-dark' || theme === 'neon-pink' || theme === 'electric-blue') return true;
       if (node.classList) {
-        if (node.classList.contains('nav') || node.classList.contains('sec-gum') || node.tagName === 'FOOTER') return true;
+        if (node.classList.contains('nav') || node.classList.contains('sitenav') || node.classList.contains('sec-gum') || node.tagName === 'FOOTER') return true;
         if (node.classList.contains('pt-footer') || node.classList.contains('ch-contact') || node.classList.contains('pt-contact')) {
           var bg2 = (cs.backgroundColor || '').trim();
           var rgb2 = parseRgb(bg2);
@@ -220,7 +220,7 @@
       var inkMode = resolveInkMode(el);
       var tokens = logoTokens({
         accent: opts.accent || el.getAttribute('data-lp-logo-accent'),
-        ink: opts.ink || (inkMode === 'light' ? '#f3f6fa' : inkMode === 'dark' ? '#13161b' : null),
+        ink: opts.ink || (inkMode === 'light' ? '#ffffff' : inkMode === 'dark' ? '#13161b' : null),
         inkMode: inkMode,
         theme: opts.theme,
         pulse: opts.pulse
@@ -242,11 +242,11 @@
 
       if (isPartnerTemplatePage()) {
         var pAccent = partnerAccent() || tokens.accent;
-        var pInk = resolveInkMode(wrap) === 'light' ? '#f5f0e8' : '#1a1612';
+        var pInk = resolveInkMode(wrap) === 'light' ? '#ffffff' : '#1a1612';
         applyTokens(wrap, { accent: pAccent, ink: pInk });
       } else if (isMarketingHost()) {
-        if (!el.getAttribute('data-lp-logo-ink') || el.getAttribute('data-lp-logo-ink') === 'auto') {
-          applyTokens(wrap, { accent: tokens.accent, ink: '#f3f6fa' });
+        if (!el.getAttribute('data-lp-logo-ink') || el.getAttribute('data-lp-logo-ink') === 'auto' || el.getAttribute('data-lp-logo-ink') === 'light') {
+          applyTokens(wrap, { accent: tokens.accent, ink: '#ffffff' });
         }
       } else if (isAdminWorkspace()) {
         if (opts.accent || opts.ink || el.getAttribute('data-lp-logo-accent')) {

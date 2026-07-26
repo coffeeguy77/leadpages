@@ -248,6 +248,18 @@ describe('public marketplace theme + copy safety', () => {
     assert.match(v2, /applyTileHeight/);
     assert.match(v2, /--tb-img-h/);
     assert.match(v2, /onHeight:\s*function/);
+    assert.match(v2, /pinScrollToHeightControl|scrollBy/);
+    assert.match(v2, /overflow-anchor:none/);
+  });
+
+  it('marketplace header uses white logo at 50% larger size', () => {
+    const css = fs.readFileSync(path.join(root, 'assets/lp-logo.css'), 'utf8');
+    assert.match(css, /\.sitenav \.lp-logo-wrap/);
+    assert.match(css, /--lp-logo-ink:\s*#ffffff/);
+    assert.match(css, /height:\s*78px\s*!important/);
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /data-lp-logo-ink="light"/);
+    assert.match(feat, /\.sitenav \.leadpages-logo\{height:78px/);
   });
 
   it('hero image fills its side column beside the copy', () => {
