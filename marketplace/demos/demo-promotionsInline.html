@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en-AU" class="mp-demo-embed">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Promotions Inline demo</title>
+<link rel="stylesheet" href="./demo-shared.css">
+<script src="https://www.leadpages.com.au/icons.js"></script>
+<style>
+html.mp-demo-embed, html.mp-demo-embed body{margin:0;padding:0;min-height:0!important;height:auto!important;background:transparent;overflow:hidden}
+html.mp-demo-embed main#top{margin:0;padding:0;min-height:0}
+html.mp-demo-embed .lp-a11y-root,html.mp-demo-embed #lp-visitor-a11y{display:none!important}
+html.mp-demo-embed .promo-float.shown{position:relative;top:auto;z-index:1}
+html.mp-demo-embed .promo-sticky.shown{position:relative;bottom:auto;z-index:1}
+html.mp-demo-embed body{padding-top:0!important;padding-bottom:0!important}
+html.mp-demo-embed .mp-promo-demo-chrome{padding:22px 20px 14px;background:linear-gradient(165deg,#243142 0%,#1a2230 60%,#155d8c 130%);color:#fff;font-family:"Barlow",system-ui,sans-serif}
+html.mp-demo-embed .mp-promo-demo-chrome .biz{font-weight:700;font-size:1.1rem;letter-spacing:.02em}
+html.mp-demo-embed .mp-promo-demo-chrome .tag{margin-top:4px;font-size:.86rem;opacity:.85}
+html.mp-demo-embed .mp-promo-demo-filler{padding:18px 20px;font-family:"Barlow",system-ui,sans-serif;color:#1a2230;background:#eef2f6}
+html.mp-demo-embed .mp-promo-demo-filler h2{margin:0 0 6px;font-size:1.05rem}
+html.mp-demo-embed .mp-promo-demo-filler p{margin:0;font-size:.9rem;color:#5b6878;line-height:1.45;max-width:42rem}
+html.mp-demo-embed [data-sec="promotions-inline"]{padding:12px 0!important;background:#fff}
+</style>
+</head>
+<body>
+<main id="top">
+  <div class="mp-promo-demo-chrome" aria-hidden="true">
+    <div class="biz">Ace Plumbing Co.</div>
+    <div class="tag">Licensed · Canberra &amp; surrounds</div>
+  </div>
+  <div class="mp-promo-demo-filler" aria-hidden="true">
+    <h2>Trusted local plumbers</h2>
+    <p>Same-day jobs where we can — blocked drains, hot water and emergency repairs across the ACT.</p>
+  </div>
+  <section data-sec="promotions-hero" class="section promo-sec"><div class="wrap"><div class="promo-host"></div></div></section>
+  <section data-sec="promotions-inline" class="section promo-sec"><div class="wrap"><div class="promo-host"></div></div></section>
+  <div class="mp-promo-demo-filler" aria-hidden="true">
+    <h2>Ready when you are</h2>
+    <p>Scroll past the offer above — inline promotions sit in the page flow so they feel like part of the site, not a pop-up.</p>
+  </div>
+</main>
+<div class="promo-fixed promo-float" id="promo-float"><div class="wrap promo-fixed-inner"><div class="promo-fixed-body"></div><button type="button" class="promo-close" aria-label="Close">×</button></div></div>
+<div class="promo-fixed promo-sticky" id="promo-sticky"><div class="wrap promo-fixed-inner"><div class="promo-fixed-body"></div><button type="button" class="promo-close" aria-label="Close">×</button></div></div>
+<div class="promo-pop" id="promo-popup"><div class="promo-pop-backdrop"></div><div class="promo-pop-panel"><button type="button" class="promo-close" aria-label="Close">×</button><div class="promo-pop-body"></div></div></div>
+<script>
+var SITE_CONFIG = {
+  "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+  "business": "Ace Plumbing Co.",
+  "trade": "plumber",
+  "phone": "0261000000",
+  "sections": {
+    "promotions": {
+      "on": true,
+      "items": [
+        {
+          "id": "demo-inline-spots",
+          "on": true,
+          "type": "spots",
+          "placement": "inline",
+          "style": "card",
+          "title": "Only a few spots left this week",
+          "description": "Priority booking slots for blocked drains and urgent repairs across Canberra.",
+          "spotsTotal": 8,
+          "spotsRemaining": 3,
+          "cta": { "text": "Book a slot", "action": "quote" }
+        },
+        {
+          "id": "demo-inline-mystery",
+          "on": true,
+          "type": "mystery",
+          "placement": "inline",
+          "style": "card",
+          "title": "Tap to reveal this week’s special",
+          "description": "A surprise offer for homeowners who book online today.",
+          "revealText": "Free call-out on hot water quotes booked before Friday.",
+          "cta": { "text": "Claim offer", "action": "quote" }
+        },
+        {
+          "id": "demo-inline-deadline",
+          "on": true,
+          "type": "deadline",
+          "placement": "inline",
+          "style": "banner",
+          "title": "Gas compliance check ends soon",
+          "description": "Book before the deadline and lock in this month’s fixed price.",
+          "expiry": "2027-08-15T17:00",
+          "cta": { "text": "Book check", "action": "quote" }
+        }
+      ]
+    }
+  }
+};
+</script>
+<script src="./demo-shared.js"></script>
+</body>
+</html>

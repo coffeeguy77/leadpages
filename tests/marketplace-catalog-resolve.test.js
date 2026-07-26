@@ -27,6 +27,15 @@ describe('marketplace catalog resolve', () => {
     const pgHero = promoHero.blocks.find((b) => b.block_type === 'playground');
     assert.equal(pgHero.payload.section_key, 'promotions');
     assert.ok(pgHero.payload.presets.includes('weekly'));
+
+    const promoInline = resolve.resolveFromStatic('promotions-inline');
+    assert.equal(promoInline.feature.section_key, 'promotions');
+    assert.equal(promoInline.feature.name, 'Promotions Inline');
+    assert.ok(promoInline.feature.hero_image_url);
+    assert.ok(resolve.hasPlayground(promoInline.blocks));
+    const pgInline = promoInline.blocks.find((b) => b.block_type === 'playground');
+    assert.equal(pgInline.payload.section_key, 'promotions');
+    assert.ok(pgInline.payload.presets.includes('inlineCard'));
   });
 
   it('emergency-cta remaps to emerg demo + editor presets', () => {
@@ -111,7 +120,38 @@ describe('marketplace catalog resolve', () => {
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /'promotions-hero'\s*:\s*\{/);
     assert.match(feat, /secKey === 'promotions-hero'/);
-    assert.match(feat, /demoFile = 'promotions'/);
+    assert.match(feat, /demoFile = 'promotionsHero'/);
+  });
+
+  it('promotions-inline remaps stale DB section_key and mounts inline demos', () => {
+    const stale = resolve.enrichCatalogPayload(
+      {
+        id: '3',
+        slug: 'promotions-inline',
+        name: 'Promotions Inline',
+        tagline: 'In-page promotional content block',
+        status: 'live',
+        section_key: 'promotions-inline',
+        hero_image_url: null
+      },
+      [{ block_type: 'playground', payload: { section_key: 'promotionsInline', presets: ['default'] } }],
+      'promotions-inline'
+    );
+    assert.equal(stale.feature.section_key, 'promotions');
+    assert.equal(stale.feature.name, 'Promotions Inline');
+    assert.ok(stale.feature.hero_image_url);
+    const pg = stale.blocks.find((b) => b.block_type === 'playground');
+    assert.equal(pg.payload.section_key, 'promotions');
+    assert.ok(pg.payload.presets.includes('inlineBanner'));
+    assert.ok(fs.existsSync(path.join(root, 'marketplace/demos/demo-promotionsInline.html')));
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-promotionsInline.html'), 'utf8');
+    assert.match(demo, /"placement"\s*:\s*"inline"/);
+    assert.match(demo, /Only a few spots left/);
+    assert.match(demo, /revealText/);
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /'promotions-inline'\s*:\s*\{/);
+    assert.match(feat, /demoFile = 'promotionsInline'/);
+    assert.match(feat, /secKey === 'promotionsInline'/);
   });
 
   it('quote-lead-capture is a premium Bean Culture showcase (no playground)', () => {
@@ -237,10 +277,12 @@ describe('marketplace catalog resolve', () => {
 
   it('promotions ships type demos + manage-parity editor wiring', () => {
     const presets = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/promotions-type-presets.json'), 'utf8'));
-    assert.equal(presets.length, 10);
+    assert.equal(presets.length, 14);
     const types = presets.map((p) => p.slug);
-    ['weekly', 'deadline', 'spots', 'seasonal', 'suburb', 'finance', 'firstTime', 'priority', 'socialProof', 'mystery']
+    ['weekly', 'deadline', 'spots', 'seasonal', 'suburb', 'finance', 'firstTime', 'priority', 'socialProof', 'mystery',
+      'inlineCard', 'inlineBanner', 'inlineMystery', 'inlineFinance']
       .forEach((t) => assert.ok(types.includes(t), 'missing type demo ' + t));
+    assert.ok(presets.some((p) => p.slug === 'inlineCard' && /"placement"\s*:\s*"inline"/.test(JSON.stringify(p))));
     assert.ok(fs.existsSync(path.join(root, 'marketplace/demos/demo-promotions.html')));
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-promotions.html'), 'utf8');
     assert.match(demo, /promotions-hero/);
