@@ -255,11 +255,14 @@ describe('public marketplace theme + copy safety', () => {
   it('marketplace header uses white logo at 50% larger size', () => {
     const css = fs.readFileSync(path.join(root, 'assets/lp-logo.css'), 'utf8');
     assert.match(css, /\.sitenav \.lp-logo-wrap/);
-    assert.match(css, /--lp-logo-ink:\s*#ffffff/);
+    assert.match(css, /--lp-logo-ink:\s*#ffffff\s*!important/);
     assert.match(css, /height:\s*78px\s*!important/);
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /data-lp-logo-ink="light"/);
     assert.match(feat, /\.sitenav \.leadpages-logo\{height:78px/);
+    const logoJs = fs.readFileSync(path.join(root, 'assets/lp-logo.js'), 'utf8');
+    assert.match(logoJs, /Never stomp explicit light\/dark ink/);
+    assert.match(logoJs, /inkAttr === 'light' \|\| inkAttr === 'dark'/);
   });
 
   it('hero image fills its side column beside the copy', () => {
