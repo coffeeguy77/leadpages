@@ -2,11 +2,16 @@
  * Local image override for marketplace playground demos.
  * Reads a file into a data URL in the browser — never uploads.
  * Only the visitor sees the override; resetting the example restores the sample.
+ *
+ * Uses a native <label for="file"> control (not programmatic .click() on a
+ * hidden input) so Choose / Replace works on iOS Safari / iPad.
  */
 (function (global) {
   'use strict';
 
   var MAX_BYTES = 2.5 * 1024 * 1024;
+  var MAX_EDGE = 1600;
+  var JPEG_QUALITY = 0.82;
 
   function esc(s) {
     var d = document.createElement('div');
@@ -29,20 +34,119 @@
     if (!item._pgSample && isRemote(cur)) item._pgSample = cur;
   }
 
+  function loadImageFromFile(file) {
+    return new Promise(function (resolve, reject) {
+      var url = '';
+      try { url = URL.createObjectURL(file); } catch (_e) {}
+      if (!url) return reject(new Error('Could not read that image'));
+      var img = new Image();
+      img.onload = function () {
+        try { URL.revokeObjectURL(url); } catch (_r) {}
+        resolve(img);
+      };
+      img.onerror = function () {
+        try { URL.revokeObjectURL(url); } catch (_r2) {}
+        reject(new Error('That image format is not supported here. Try a JPG or PNG.'));
+      };
+      img.src = url;
+    });
+  }
+
+  function canvasToDataUrl(canvas, type, quality) {
+    try {
+      if (type === 'image/jpeg' || type === 'image/webp') {
+        return canvas.toDataURL(type, quality);
+      }
+      return canvas.toDataURL('image/png');
+    } catch (_e) {
+      return canvas.toDataURL('image/png');
+    }
+  }
+
+  function resizeToDataUrl(file) {
+    return loadImageFromFile(file).then(function (img) {
+      var w = img.naturalWidth || img.width || 0;
+      var h = img.naturalHeight || img.height || 0;
+      if (!w || !h) throw new Error('Could not read that image');
+
+      var scale = 1;
+      var longEdge = Math.max(w, h);
+      if (longEdge > MAX_EDGE) scale = MAX_EDGE / longEdge;
+
+      var tw = Math.max(1, Math.round(w * scale));
+      var th = Math.max(1, Math.round(h * scale));
+      var canvas = document.createElement('canvas');
+      canvas.width = tw;
+      canvas.height = th;
+      var ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Could not process that image');
+      ctx.drawImage(img, 0, 0, tw, th);
+
+      var srcType = String(file.type || '').toLowerCase();
+      var outType = (srcType === 'image/png' || srcType === 'image/gif' || srcType === 'image/webp')
+        ? srcType
+        : 'image/jpeg';
+      // Prefer JPEG for camera photos — much smaller data URLs for the live preview.
+      if (srcType === 'image/heic' || srcType === 'image/heif' || srcType === 'image/jpeg' || srcType === 'image/jpg') {
+        outType = 'image/jpeg';
+      }
+
+      var dataUrl = canvasToDataUrl(canvas, outType, JPEG_QUALITY);
+      if (!dataUrl || dataUrl.length < 32) throw new Error('Could not process that image');
+
+      // Rough byte estimate from base64 payload; recompress harder if still huge.
+      var approxBytes = Math.ceil((dataUrl.length - (dataUrl.indexOf(',') + 1)) * 0.75);
+      if (approxBytes > MAX_BYTES && outType !== 'image/jpeg') {
+        dataUrl = canvasToDataUrl(canvas, 'image/jpeg', JPEG_QUALITY);
+        approxBytes = Math.ceil((dataUrl.length - (dataUrl.indexOf(',') + 1)) * 0.75);
+      }
+      if (approxBytes > MAX_BYTES) {
+        var scale2 = Math.sqrt(MAX_BYTES / approxBytes) * 0.92;
+        var tw2 = Math.max(1, Math.round(tw * scale2));
+        var th2 = Math.max(1, Math.round(th * scale2));
+        canvas.width = tw2;
+        canvas.height = th2;
+        ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, tw2, th2);
+        dataUrl = canvasToDataUrl(canvas, 'image/jpeg', 0.72);
+        approxBytes = Math.ceil((dataUrl.length - (dataUrl.indexOf(',') + 1)) * 0.75);
+      }
+      if (approxBytes > MAX_BYTES) {
+        throw new Error('Image too large even after shrinking (max about 2.5 MB)');
+      }
+      return dataUrl;
+    });
+  }
+
   function readFileAsDataUrl(file) {
     return new Promise(function (resolve, reject) {
       if (!file) return reject(new Error('No file selected'));
-      if (!/^image\//i.test(file.type || '')) return reject(new Error('Please choose an image file'));
+      var type = String(file.type || '');
+      if (type && !/^image\//i.test(type)) {
+        return reject(new Error('Please choose an image file'));
+      }
+      // Always go through canvas when possible so large iPad photos and HEIC
+      // (when the browser can decode them) become a usable preview data URL.
+      if (typeof document !== 'undefined' && document.createElement) {
+        return resizeToDataUrl(file).then(resolve, function (err) {
+          // Fall back to raw FileReader for tiny / odd files if canvas path fails.
+          if (file.size > MAX_BYTES) return reject(err || new Error('Image too large (max about 2.5 MB)'));
+          var r = new FileReader();
+          r.onload = function () { resolve(String(r.result || '')); };
+          r.onerror = function () { reject(new Error('Could not read that image')); };
+          r.readAsDataURL(file);
+        });
+      }
       if (file.size > MAX_BYTES) return reject(new Error('Image too large (max about 2.5 MB)'));
-      var r = new FileReader();
-      r.onload = function () { resolve(String(r.result || '')); };
-      r.onerror = function () { reject(new Error('Could not read that image')); };
-      r.readAsDataURL(file);
+      var r2 = new FileReader();
+      r2.onload = function () { resolve(String(r2.result || '')); };
+      r2.onerror = function () { reject(new Error('Could not read that image')); };
+      r2.readAsDataURL(file);
     });
   }
 
   /**
-   * Markup only — call hydrate() / refresh() after insert so long URLs
+   * Markup only — call hydrate() / applyValues() after insert so long URLs
    * are applied via DOM properties (safe for data URLs + query strings).
    */
   function controlHtml(value, opts) {
@@ -55,18 +159,33 @@
 
     return '<div class="lp-locimg" data-lp-locimg data-has-img="' + (v ? '1' : '0') + '">'
       + '<div class="lp-locimg-row">'
-      + '<button type="button" class="lp-locimg-prev' + (v ? '' : ' empty') + '" title="Choose image" aria-label="Choose image">'
+      + '<label class="lp-locimg-prev' + (v ? '' : ' empty') + '" for="' + esc(id) + '" title="Choose image">'
       + (v ? '<img alt="">' : '<span>No image</span>')
-      + '</button>'
+      + '</label>'
       + '<div class="lp-locimg-actions">'
-      + '<button type="button" class="btn ghost sm lp-locimg-choose">' + esc(btnLabel) + '</button>'
-      + '<input type="file" id="' + esc(id) + '" class="lp-locimg-file" accept="image/*" hidden>'
+      + '<label class="btn ghost sm lp-locimg-choose" for="' + esc(id) + '">' + esc(btnLabel) + '</label>'
+      // Visually hidden (not [hidden]/display:none) — required for iOS Safari label activation.
+      + '<input type="file" id="' + esc(id) + '" class="lp-locimg-file" accept="image/*" tabindex="-1">'
       + '<button type="button" class="btn ghost sm lp-locimg-restore"' + (sample && sample !== v ? '' : ' hidden') + '>Restore sample</button>'
-      + '<p class="lp-locimg-hint">Local only — nothing uploads.</p>'
+      + '<p class="lp-locimg-hint">On your screen only — nothing is uploaded.</p>'
+      + '<p class="lp-locimg-err" hidden></p>'
       + '</div></div>'
       + '<input type="hidden" class="lp-locimg-input" value="" ' + extra + '>'
       + '<input type="hidden" class="lp-locimg-sample" value="">'
       + '</div>';
+  }
+
+  function showError(ctl, msg) {
+    if (!ctl) return;
+    var err = ctl.querySelector('.lp-locimg-err');
+    if (!err) return;
+    if (msg) {
+      err.textContent = msg;
+      err.hidden = false;
+    } else {
+      err.textContent = '';
+      err.hidden = true;
+    }
   }
 
   function applyValues(ctl, value, sample) {
@@ -79,6 +198,7 @@
       : String(sample || '');
     if (inp) inp.value = v;
     if (sampleInp) sampleInp.value = s;
+    showError(ctl, '');
     refreshPreview(ctl);
   }
 
@@ -110,14 +230,10 @@
     if (restore) restore.hidden = !(sample && sample !== v);
   }
 
-  function openFilePicker(ctl) {
-    var fileInp = ctl && ctl.querySelector('.lp-locimg-file');
-    if (fileInp) fileInp.click();
-  }
-
   function setFromFile(ctl, file) {
     var hidden = ctl && ctl.querySelector('.lp-locimg-input');
     if (!ctl || !hidden || !file) return Promise.resolve();
+    showError(ctl, '');
     return readFileAsDataUrl(file).then(function (dataUrl) {
       hidden.value = dataUrl;
       refreshPreview(ctl);
@@ -126,6 +242,7 @@
     }).catch(function (err) {
       var msg = (err && err.message) || 'Could not use that image';
       if (global.console && console.warn) console.warn('[LPLocalImage]', msg);
+      showError(ctl, msg);
       hidden.dispatchEvent(new CustomEvent('lp-locimg-error', { bubbles: true, detail: { message: msg } }));
     });
   }
@@ -137,14 +254,6 @@
     __bound = true;
 
     document.addEventListener('click', function (e) {
-      var choose = e.target.closest && e.target.closest('.lp-locimg-choose, .lp-locimg-prev');
-      if (choose) {
-        var ctl = choose.closest('[data-lp-locimg]');
-        if (!ctl) return;
-        e.preventDefault();
-        openFilePicker(ctl);
-        return;
-      }
       var restore = e.target.closest && e.target.closest('.lp-locimg-restore');
       if (!restore) return;
       e.preventDefault();
@@ -153,6 +262,7 @@
       var sampleInp = ctl2 && ctl2.querySelector('.lp-locimg-sample');
       if (!hidden || !sampleInp) return;
       hidden.value = sampleInp.value || '';
+      showError(ctl2, '');
       refreshPreview(ctl2);
       hidden.dispatchEvent(new Event('input', { bubbles: true }));
       hidden.dispatchEvent(new Event('change', { bubbles: true }));
@@ -189,8 +299,10 @@
 
   global.LPLocalImage = {
     MAX_BYTES: MAX_BYTES,
+    MAX_EDGE: MAX_EDGE,
     controlHtml: controlHtml,
     readFileAsDataUrl: readFileAsDataUrl,
+    setFromFile: setFromFile,
     rememberSample: rememberSample,
     isRemote: isRemote,
     isLocalData: isLocalData,
