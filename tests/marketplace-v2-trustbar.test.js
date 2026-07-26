@@ -195,4 +195,14 @@ describe('public marketplace theme + copy safety', () => {
     assert.match(editor, /LPLocalImage\.controlHtml/);
     assert.match(editor, /marketplace-playground/);
   });
+
+  it('Trust Bar editor is compact with tabbed items and no Show on page', () => {
+    const editor = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.js'), 'utf8');
+    assert.doesNotMatch(editor, /Show on page|Show Trust Bar on the page/);
+    assert.match(editor, /tb-ed-tab/);
+    assert.match(editor, /data-tab/);
+    assert.match(editor, /tb\(\)\.on = true/);
+    const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.css'), 'utf8');
+    assert.match(css, /\.tb-ed-tabs/);
+  });
 });
