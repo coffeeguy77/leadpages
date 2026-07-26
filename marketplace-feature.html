@@ -863,9 +863,10 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           h = Math.ceil(r.height || sec.scrollHeight || 0);
         }
         if (!h) h = Math.ceil(doc.body.scrollHeight || 0);
-        // Clamp empty/oversized frames so badge strips do not leave a huge white gap
+        // Clamp empty/oversized frames so badge strips do not leave a huge white gap.
+        // Tall apps (e.g. Video Reels 9:16 cards) need more than 720px.
         if (h < 40) h = 40;
-        if (h > 720) h = 720;
+        if (h > 1100) h = 1100;
         return h + 8;
       } catch (e) {
         return 0;
@@ -972,6 +973,11 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         fitPreviewFrame();
         applyDevice();
       }, 320);
+      /* Third fit after demo images (reels/thumbnails) finish loading */
+      setTimeout(function() {
+        fitPreviewFrame();
+        applyDevice();
+      }, 900);
     }
 
     function applyPreset(preset) {

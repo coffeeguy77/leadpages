@@ -88,4 +88,34 @@ describe('marketplace compact editor parity', () => {
     assert.match(feat, /seedFromDefaultConfigs/);
     assert.match(feat, /ensureSectionOn/);
   });
+
+  it('videoReels demo seeds thumbnails and keeps cards inside the iframe', () => {
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-videoReels.html'), 'utf8');
+    assert.match(demo, /"videoReels"\s*:\s*\{[\s\S]*"on"\s*:\s*true/);
+    assert.match(demo, /"thumbnail"\s*:\s*"https:\/\/images\.unsplash\.com\//);
+    assert.match(demo, /photo-1584622650111-993a426fbf0a/);
+    assert.match(demo, /photo-1504328345606-18bbc8c9d7d1/);
+    assert.match(demo, /photo-1621905252507-b35492cc74b4/);
+    assert.match(demo, /max-width:560px/);
+    assert.match(demo, /background:var\(--light,#eef2f6\)!important/);
+    assert.doesNotMatch(demo, /"thumbnail"\s*:\s*""/);
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    const reels = defaults.videoReels.videoReels.reels;
+    assert.equal(reels.length, 3);
+    assert.ok(reels.every((r) => r.thumbnail && /^https:\/\//.test(r.thumbnail)));
+    assert.ok(reels.every((r) => r.title && r.tag));
+
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.videoReels.some((f) => f.type === 'image' && /reels\.0\.thumbnail/.test(f.key)));
+    assert.ok(defs.videoReels.some((f) => /reels\.0\.title/.test(f.key)));
+    assert.ok(defs.videoReels.some((f) => f.key === 'sections.videoReels.intro'));
+
+    const apply = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+    assert.match(apply, /photo-1584622650111-993a426fbf0a/);
+
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /h > 1100/);
+    assert.match(feat, /900/);
+  });
 });
