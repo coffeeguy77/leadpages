@@ -721,6 +721,9 @@ section[data-sec="activityCounter"]{border-top:1px solid var(--line,#e7e7e7);bor
 .ac-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:26px}
 .ac-stat{text-align:center;padding:14px}
 .ac-stat+.ac-stat{box-shadow:inset 1px 0 0 var(--line,#e7e7e7)}
+.ac-value-row{display:inline-flex;align-items:center;justify-content:center;gap:10px}
+.ac-ic{display:inline-flex;color:var(--pipe,#1f7bb8);line-height:0}
+.ac-ic .lp-ic,.ac-ic svg{width:1.15em;height:1.15em;width:clamp(28px,4.2vw,42px);height:clamp(28px,4.2vw,42px)}
 .ac-value{font-family:"Barlow Condensed",sans-serif;font-weight:800;line-height:.9;font-size:clamp(46px,7vw,76px);color:var(--pipe,#1f7bb8)}
 .ac-label{font-family:"Barlow",sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:13px;color:#55606e;margin-top:10px}
 @media(max-width:560px){.ac-stat+.ac-stat{box-shadow:none}}

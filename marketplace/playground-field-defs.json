@@ -157,9 +157,18 @@
       "key": "sections.heroSlider.transitionEffect",
       "label": "Transition",
       "options": [
-        { "value": "fade", "label": "Fade" },
-        { "value": "slide", "label": "Slide" },
-        { "value": "zoom", "label": "Zoom" }
+        {
+          "value": "fade",
+          "label": "Fade"
+        },
+        {
+          "value": "slide",
+          "label": "Slide"
+        },
+        {
+          "value": "zoom",
+          "label": "Zoom"
+        }
       ]
     },
     {
@@ -175,7 +184,7 @@
     {
       "type": "number",
       "key": "sections.heroSlider.overlayStrength",
-      "label": "Overlay darkness (0–100)"
+      "label": "Overlay darkness (0\u2013100)"
     },
     {
       "type": "color",
@@ -1534,6 +1543,26 @@
   "activityCounter": [
     {
       "type": "text",
+      "key": "sections.activityCounter.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityCounter.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.activityCounter.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "icon",
+      "key": "sections.activityCounter.stats.0.icon",
+      "label": "Stat 1 icon"
+    },
+    {
+      "type": "text",
       "key": "sections.activityCounter.stats.0.value",
       "label": "Stat 1 value"
     },
@@ -1541,6 +1570,11 @@
       "type": "text",
       "key": "sections.activityCounter.stats.0.label",
       "label": "Stat 1 label"
+    },
+    {
+      "type": "icon",
+      "key": "sections.activityCounter.stats.1.icon",
+      "label": "Stat 2 icon"
     },
     {
       "type": "text",
@@ -1553,6 +1587,11 @@
       "label": "Stat 2 label"
     },
     {
+      "type": "icon",
+      "key": "sections.activityCounter.stats.2.icon",
+      "label": "Stat 3 icon"
+    },
+    {
       "type": "text",
       "key": "sections.activityCounter.stats.2.value",
       "label": "Stat 3 value"
@@ -1561,6 +1600,21 @@
       "type": "text",
       "key": "sections.activityCounter.stats.2.label",
       "label": "Stat 3 label"
+    },
+    {
+      "type": "icon",
+      "key": "sections.activityCounter.stats.3.icon",
+      "label": "Stat 4 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityCounter.stats.3.value",
+      "label": "Stat 4 value"
+    },
+    {
+      "type": "text",
+      "key": "sections.activityCounter.stats.3.label",
+      "label": "Stat 4 label"
     },
     {
       "type": "color",
@@ -1803,9 +1857,18 @@
       "key": "sections.projectFeed.source",
       "label": "Source",
       "options": [
-        { "value": "manual", "label": "Manual" },
-        { "value": "instagram", "label": "Instagram" },
-        { "value": "facebook", "label": "Facebook" }
+        {
+          "value": "manual",
+          "label": "Manual"
+        },
+        {
+          "value": "instagram",
+          "label": "Instagram"
+        },
+        {
+          "value": "facebook",
+          "label": "Facebook"
+        }
       ]
     },
     {
@@ -1818,8 +1881,14 @@
       "key": "sections.projectFeed.sortOrder",
       "label": "Sort",
       "options": [
-        { "value": "newest", "label": "Newest first" },
-        { "value": "oldest", "label": "Oldest first" }
+        {
+          "value": "newest",
+          "label": "Newest first"
+        },
+        {
+          "value": "oldest",
+          "label": "Oldest first"
+        }
       ]
     },
     {
@@ -1827,8 +1896,14 @@
       "key": "sections.projectFeed.cardStyle",
       "label": "Card style",
       "options": [
-        { "value": "overlay", "label": "Overlay on photo" },
-        { "value": "below", "label": "Below photo" }
+        {
+          "value": "overlay",
+          "label": "Overlay on photo"
+        },
+        {
+          "value": "below",
+          "label": "Below photo"
+        }
       ]
     },
     {
@@ -2310,8 +2385,14 @@
       "key": "sections.quote.formStyle",
       "label": "Form style",
       "options": [
-        { "value": "default", "label": "Button highlight (white form)" },
-        { "value": "feature", "label": "Coloured form (brand form)" }
+        {
+          "value": "default",
+          "label": "Button highlight (white form)"
+        },
+        {
+          "value": "feature",
+          "label": "Coloured form (brand form)"
+        }
       ]
     },
     {
@@ -2457,7 +2538,7 @@
         },
         {
           "value": "wrap",
-          "label": "Wrap — text flows around it"
+          "label": "Wrap \u2014 text flows around it"
         }
       ]
     },
@@ -2548,7 +2629,7 @@
     {
       "type": "text",
       "key": "sections.emergencyAvailability.availableLabel",
-      "label": "“Available” label"
+      "label": "\u201cAvailable\u201d label"
     },
     {
       "type": "text",
@@ -2558,7 +2639,7 @@
     {
       "type": "text",
       "key": "sections.emergencyAvailability.afterHoursLabel",
-      "label": "“After hours” label"
+      "label": "\u201cAfter hours\u201d label"
     },
     {
       "type": "textarea",
@@ -2575,8 +2656,14 @@
       "key": "sections.emergencyAvailability.mode",
       "label": "Availability mode",
       "options": [
-        { "value": "schedule", "label": "By business hours" },
-        { "value": "manual", "label": "Manual switch" }
+        {
+          "value": "schedule",
+          "label": "By business hours"
+        },
+        {
+          "value": "manual",
+          "label": "Manual switch"
+        }
       ]
     },
     {
@@ -2624,10 +2711,22 @@
       "key": "sections.emergencyAvailability.cta.action",
       "label": "Button action",
       "options": [
-        { "value": "call", "label": "Call" },
-        { "value": "quote", "label": "Quote form" },
-        { "value": "scroll", "label": "Scroll to form" },
-        { "value": "none", "label": "No button" }
+        {
+          "value": "call",
+          "label": "Call"
+        },
+        {
+          "value": "quote",
+          "label": "Quote form"
+        },
+        {
+          "value": "scroll",
+          "label": "Scroll to form"
+        },
+        {
+          "value": "none",
+          "label": "No button"
+        }
       ]
     },
     {
@@ -2690,7 +2789,7 @@
     {
       "type": "number",
       "key": "sections.instaGallery.columns",
-      "label": "Columns (2–5)"
+      "label": "Columns (2\u20135)"
     },
     {
       "type": "checkbox",
@@ -2727,7 +2826,7 @@
     {
       "type": "number",
       "key": "sections.igProjectFeed.columns",
-      "label": "Columns (2–5)"
+      "label": "Columns (2\u20135)"
     },
     {
       "type": "text",
