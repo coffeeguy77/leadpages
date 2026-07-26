@@ -297,7 +297,11 @@ describe('marketplace catalog resolve', () => {
     assert.doesNotMatch(demoHero, /mp-promo-demo-chrome/);
     const demoInline = fs.readFileSync(path.join(root, 'marketplace/demos/demo-promotionsInline.html'), 'utf8');
     assert.doesNotMatch(demoInline, /mp-promo-demo-chrome/);
+    assert.doesNotMatch(demoInline, /mp-promo-demo-filler/);
     assert.doesNotMatch(demoInline, />\s*Ace Plumbing Co\.\s*</);
+    assert.doesNotMatch(demoInline, /Trusted local plumbers/i);
+    assert.doesNotMatch(demoInline, /Ready when you are/i);
+    assert.doesNotMatch(demoInline, /Page content above/i);
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /promotions-editor\.js/);
     assert.match(feat, /LPPromotionsEditor\.mount/);

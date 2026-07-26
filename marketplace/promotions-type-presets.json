@@ -5,10 +5,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -20,10 +23,13 @@
               "placement": "belowHero",
               "style": "banner",
               "title": "Booking for next week",
-              "description": "Secure your spot in next week’s schedule — book before the cut-off.",
+              "description": "Secure your spot in next week\u2019s schedule \u2014 book before the cut-off.",
               "weeklyDay": 4,
               "weeklyCutoff": "16:00",
-              "cta": { "text": "Book now", "action": "quote" }
+              "cta": {
+                "text": "Book now",
+                "action": "quote"
+              }
             }
           ]
         }
@@ -36,10 +42,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -53,7 +62,10 @@
               "title": "Hot water special ends soon",
               "description": "Book a hot water replacement this month and save on call-out.",
               "expiry": "2027-08-15T17:00",
-              "cta": { "text": "Claim offer", "action": "quote" }
+              "cta": {
+                "text": "Claim offer",
+                "action": "quote"
+              }
             }
           ]
         }
@@ -66,10 +78,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -84,7 +99,10 @@
               "description": "We keep a short list so every job gets proper time on site.",
               "spotsTotal": 10,
               "spotsRemaining": 3,
-              "cta": { "text": "Grab a spot", "action": "quote" }
+              "cta": {
+                "text": "Grab a spot",
+                "action": "quote"
+              }
             }
           ]
         }
@@ -97,10 +115,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -115,7 +136,10 @@
               "description": "Seasonal maintenance special for Canberra homes before the freeze.",
               "startDate": "2026-06-01",
               "endDate": "2026-08-31",
-              "cta": { "text": "Book winter check", "action": "quote" }
+              "cta": {
+                "text": "Book winter check",
+                "action": "quote"
+              }
             }
           ]
         }
@@ -128,10 +152,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -143,9 +170,12 @@
               "placement": "belowHero",
               "style": "banner",
               "title": "Local Belconnen special",
-              "description": "This week we’re focusing on Belconnen and surrounds — faster booking windows.",
+              "description": "This week we\u2019re focusing on Belconnen and surrounds \u2014 faster booking windows.",
               "suburbs": "Belconnen, Bruce, Macquarie",
-              "cta": { "text": "Book locally", "action": "quote" }
+              "cta": {
+                "text": "Book locally",
+                "action": "quote"
+              }
             }
           ]
         }
@@ -158,10 +188,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -176,7 +209,10 @@
               "description": "Get the job done now and pay it off weekly on approved finance.",
               "amount": "$28",
               "disclaimer": "Finance subject to approval. Terms and conditions apply.",
-              "cta": { "text": "Check options", "action": "quote" }
+              "cta": {
+                "text": "Check options",
+                "action": "quote"
+              }
             }
           ]
         }
@@ -189,10 +225,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -206,7 +245,10 @@
               "title": "Welcome offer for new customers",
               "description": "Trying us for the first time? Mention this offer when you book.",
               "discountText": "10% off first job",
-              "cta": { "text": "Get started", "action": "quote" }
+              "cta": {
+                "text": "Get started",
+                "action": "quote"
+              }
             }
           ]
         }
@@ -219,10 +261,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -235,7 +280,10 @@
               "style": "banner",
               "title": "Emergency call-outs prioritised",
               "description": "Burst pipe or no hot water? We bump genuine emergencies to the front of the queue.",
-              "cta": { "text": "Call now", "action": "call" }
+              "cta": {
+                "text": "Call now",
+                "action": "call"
+              }
             }
           ]
         }
@@ -248,10 +296,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -263,9 +314,12 @@
               "placement": "belowHero",
               "style": "banner",
               "title": "Booked by locals this week",
-              "description": "Neighbours are already locking in jobs — join them while the diary is open.",
+              "description": "Neighbours are already locking in jobs \u2014 join them while the diary is open.",
               "number": "17",
-              "cta": { "text": "Book yours", "action": "quote" }
+              "cta": {
+                "text": "Book yours",
+                "action": "quote"
+              }
             }
           ]
         }
@@ -278,10 +332,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -292,10 +349,13 @@
               "type": "mystery",
               "placement": "belowHero",
               "style": "card",
-              "title": "Tap to reveal this week’s surprise",
+              "title": "Tap to reveal this week\u2019s surprise",
               "description": "A little extra for customers who book online today.",
               "revealText": "Free pressure check valued at $120 with any booked service.",
-              "cta": { "text": "Book & claim", "action": "quote" }
+              "cta": {
+                "text": "Book & claim",
+                "action": "quote"
+              }
             }
           ]
         }
@@ -308,10 +368,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -326,7 +389,10 @@
               "description": "Priority booking slots for blocked drains and urgent repairs across Canberra.",
               "spotsTotal": 8,
               "spotsRemaining": 3,
-              "cta": { "text": "Book a slot", "action": "quote" }
+              "cta": {
+                "text": "Book a slot",
+                "action": "quote"
+              }
             }
           ]
         }
@@ -339,10 +405,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -354,9 +423,12 @@
               "placement": "inline",
               "style": "banner",
               "title": "Gas compliance check ends soon",
-              "description": "Book before the deadline and lock in this month’s fixed price.",
+              "description": "Book before the deadline and lock in this month\u2019s fixed price.",
               "expiry": "2027-08-15T17:00",
-              "cta": { "text": "Book check", "action": "quote" }
+              "cta": {
+                "text": "Book check",
+                "action": "quote"
+              }
             }
           ]
         }
@@ -369,10 +441,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -383,10 +458,13 @@
               "type": "mystery",
               "placement": "inline",
               "style": "card",
-              "title": "Tap to reveal this week’s special",
+              "title": "Tap to reveal this week\u2019s special",
               "description": "A surprise offer for homeowners who book online today.",
               "revealText": "Free call-out on hot water quotes booked before Friday.",
-              "cta": { "text": "Claim offer", "action": "quote" }
+              "cta": {
+                "text": "Claim offer",
+                "action": "quote"
+              }
             }
           ]
         }
@@ -399,10 +477,13 @@
     "section_key": "promotions",
     "contract_version": 1,
     "site_config": {
-      "business": "Ace Plumbing Co.",
+      "business": "Demo Business",
       "trade": "plumber",
       "phone": "0261000000",
-      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "theme": {
+        "pipe": "#1f7bb8",
+        "hivis": "#ff6a1f"
+      },
       "sections": {
         "promotions": {
           "on": true,
@@ -414,10 +495,13 @@
               "placement": "inline",
               "style": "card",
               "title": "Spread the cost of a new hot water system",
-              "description": "Keep cash flow easy — talk to us about weekly payments on qualifying jobs.",
+              "description": "Keep cash flow easy \u2014 talk to us about weekly payments on qualifying jobs.",
               "amount": "$38",
-              "disclaimer": "Example only. Subject to approval. Demo content — nothing is submitted.",
-              "cta": { "text": "Ask about finance", "action": "quote" }
+              "disclaimer": "Example only. Subject to approval. Demo content \u2014 nothing is submitted.",
+              "cta": {
+                "text": "Ask about finance",
+                "action": "quote"
+              }
             }
           ]
         }
