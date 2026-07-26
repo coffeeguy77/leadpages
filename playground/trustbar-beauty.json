@@ -23,7 +23,7 @@
    "trustBar": {
     "on": true,
     "mode": "images",
-    "imageHeight": 280,
+    "imageHeight": 220,
     "strokeOn": true,
     "strokeColour": "#ffffff",
     "edgeOn": true,
@@ -58,7 +58,7 @@
       "on": true,
       "label": "Packages",
       "icon": "",
-      "image": "https://images.unsplash.com/photo-1519415510236-718bdfcd521f?w=900&h=600&fit=crop&q=80",
+      "image": "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=900&h=600&fit=crop&q=80",
       "imageFit": "cover",
       "imagePos": "center"
      }

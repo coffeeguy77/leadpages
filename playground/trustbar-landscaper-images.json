@@ -23,7 +23,7 @@
    "trustBar": {
     "on": true,
     "mode": "images",
-    "imageHeight": 280,
+    "imageHeight": 220,
     "strokeOn": true,
     "strokeColour": "#ffffff",
     "edgeOn": true,
@@ -42,7 +42,7 @@
       "on": true,
       "label": "Retaining Walls",
       "icon": "",
-      "image": "https://images.unsplash.com/photo-1416879595882-3373bec893bc?w=900&h=600&fit=crop&q=80",
+      "image": "https://images.unsplash.com/photo-1590725140246-20acdee442be?w=900&h=600&fit=crop&q=80",
       "imageFit": "cover",
       "imagePos": "center"
      },
@@ -50,7 +50,7 @@
       "on": true,
       "label": "Paving",
       "icon": "",
-      "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&h=600&fit=crop&q=80",
+      "image": "https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=900&h=600&fit=crop&q=80",
       "imageFit": "cover",
       "imagePos": "center"
      },
@@ -58,7 +58,7 @@
       "on": true,
       "label": "Outdoor Living",
       "icon": "",
-      "image": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=900&h=600&fit=crop&q=80",
+      "image": "https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=900&h=600&fit=crop&q=80",
       "imageFit": "cover",
       "imagePos": "center"
      }

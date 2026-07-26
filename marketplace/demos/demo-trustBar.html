@@ -1,10 +1,38 @@
 <!DOCTYPE html>
-<html lang="en-AU">
+<html lang="en-AU" class="mp-demo-embed">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="./demo-shared.css">
 <script src="https://www.leadpages.com.au/icons.js"></script>
+<style>
+/* Compact marketplace embed — no empty page chrome around the Trust Bar */
+html.mp-demo-embed, html.mp-demo-embed body {
+  margin: 0;
+  padding: 0;
+  min-height: 0 !important;
+  height: auto !important;
+  background: transparent;
+  overflow: hidden;
+}
+html.mp-demo-embed main#top {
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+}
+html.mp-demo-embed section[data-sec="trustBar"] {
+  margin: 0;
+  padding: 0;
+}
+html.mp-demo-embed [data-sec="trustBar"].tb-images .tb-tile {
+  height: var(--tb-img-h, 220px);
+}
+html.mp-demo-embed .lp-a11y-root,
+html.mp-demo-embed #lp-visitor-a11y,
+html.mp-demo-embed .lp-visitor-a11y {
+  display: none !important;
+}
+</style>
 </head>
 <body>
 <main id="top">
@@ -14,7 +42,7 @@
 </main>
 <script>
 var SITE_CONFIG = {
-  theme: { pipe: "#2F413A" },
+  theme: { pipe: "#3d6b4f" },
   sections: {
     trustBar: {
       on: true,
@@ -22,11 +50,10 @@ var SITE_CONFIG = {
       sep: "none",
       lineOn: true,
       badges: [
-        { on: true, label: "Acrylic Rendering", icon: "paintbrush" },
-        { on: true, label: "Cement Rendering", icon: "brick-wall" },
-        { on: true, label: "Textured Coating", icon: "layers" },
-        { on: true, label: "Repairs and Patching", icon: "wrench" },
-        { on: true, label: "Venetian Plastering", icon: "sparkles" }
+        { on: true, label: "Garden Design", icon: "flower-2" },
+        { on: true, label: "Retaining Walls", icon: "brick-wall" },
+        { on: true, label: "Paving", icon: "grid-3x3" },
+        { on: true, label: "Outdoor Living", icon: "trees" }
       ]
     }
   }

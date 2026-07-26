@@ -103,7 +103,24 @@ describe('Trust Bar presets', () => {
     assert.ok(aam1.badges.some((b) => /Acrylic Rendering/i.test(b.label)));
     assert.equal(bean.mode, 'images');
     assert.ok(bean.badges.some((b) => /Coffee Carts/i.test(b.label)));
+    assert.equal(bean.badges.length, 4);
     assert.ok(bean.badges.every((b) => b.image));
+  });
+
+  it('defaults image presets to four items with working image URLs', async () => {
+    const landscaper = md.filePresets['trustbar-landscaper-images'].site_config.sections.trustBar;
+    assert.equal(landscaper.badges.length, 4);
+    assert.equal(landscaper.imageHeight, 220);
+    for (const b of landscaper.badges) {
+      assert.ok(b.image, 'missing image for ' + b.label);
+      const res = await fetch(b.image, { method: 'HEAD' });
+      assert.equal(res.status, 200, b.label + ' image should return 200');
+    }
+  });
+
+  it('default trustBar playground config has four items', () => {
+    const tb = md.defaultConfigs.trustBar.trustBar;
+    assert.equal(tb.badges.length, 4);
   });
 
   it('trust-bar-v2 metadata lists featured examples', () => {

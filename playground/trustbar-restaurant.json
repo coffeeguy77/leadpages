@@ -23,7 +23,7 @@
    "trustBar": {
     "on": true,
     "mode": "images",
-    "imageHeight": 280,
+    "imageHeight": 220,
     "strokeOn": true,
     "strokeColour": "#ffffff",
     "edgeOn": true,
