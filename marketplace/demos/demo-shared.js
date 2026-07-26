@@ -1720,8 +1720,30 @@ function applyCfg(C){
     function _lpSecAppearanceCss(){
       if(document.getElementById('lp-sec-appearance-css')) return;
       var st=document.createElement('style'); st.id='lp-sec-appearance-css';
+      /* Edges are absolute overlays (52px). Sections with edges get matching padding so
+         titles / content sit below the wave instead of under it. */
       st.textContent='[data-sec].lp-sec-has-edge{position:relative;overflow:visible}[data-sec]>.lp-sec-edge{position:absolute;left:0;right:0;height:52px;pointer-events:none;z-index:3;line-height:0}[data-sec]>.lp-sec-edge-top{top:0;margin-top:-1px}[data-sec]>.lp-sec-edge-bottom{bottom:0;margin-bottom:-1px}[data-sec]>.lp-sec-edge svg{width:100%;height:100%;display:block}[data-sec]>.lp-sec-edge-fade.lp-sec-edge-top{background:linear-gradient(to bottom,var(--lp-edge-from),var(--lp-edge-to))}[data-sec]>.lp-sec-edge-fade.lp-sec-edge-bottom{background:linear-gradient(to bottom,var(--lp-edge-from),var(--lp-edge-to))}[data-sec]>.lp-sec-edge-angle.lp-sec-edge-top{background:var(--lp-edge-to);clip-path:polygon(0 100%,100% 0,100% 100%)}[data-sec]>.lp-sec-edge-angle.lp-sec-edge-bottom{background:var(--lp-edge-from);clip-path:polygon(0 0,100% 100%,100% 0)}[data-sec]>.lp-sec-edge-curve.lp-sec-edge-top{background:var(--lp-edge-to);clip-path:ellipse(120% 100% at 50% 100%)}[data-sec]>.lp-sec-edge-curve.lp-sec-edge-bottom{background:var(--lp-edge-from);clip-path:ellipse(120% 100% at 50% 0)}';
       document.head.appendChild(st);
+    }
+    var LP_SEC_EDGE_H=52;
+    function _secAppRememberPad(node){
+      if(node.hasAttribute('data-lp-edge-pad0')) return;
+      try{
+        var cs=getComputedStyle(node);
+        node.setAttribute('data-lp-edge-pad0', JSON.stringify({
+          t: parseFloat(cs.paddingTop)||0,
+          b: parseFloat(cs.paddingBottom)||0
+        }));
+      }catch(e){ node.setAttribute('data-lp-edge-pad0','{"t":0,"b":0}'); }
+    }
+    function _secAppApplyEdgePad(node, topOn, botOn){
+      _secAppRememberPad(node);
+      var base={t:0,b:0};
+      try{ base=JSON.parse(node.getAttribute('data-lp-edge-pad0')||'{}')||base; }catch(e){}
+      if(topOn) node.style.paddingTop=((+base.t||0)+LP_SEC_EDGE_H)+'px';
+      else node.style.removeProperty('padding-top');
+      if(botOn) node.style.paddingBottom=((+base.b||0)+LP_SEC_EDGE_H)+'px';
+      else node.style.removeProperty('padding-bottom');
     }
     function _secAppHex(v){ v=String(v||'').trim(); if(!v) return ''; if(/^#[0-9a-fA-F]{3}$/.test(v)) return '#'+v[1]+v[1]+v[2]+v[2]+v[3]+v[3]; return /^#[0-9a-fA-F]{6}$/.test(v)?v:''; }
     function _secAppRgb(node){
@@ -1755,6 +1777,7 @@ function applyCfg(C){
       ordered.forEach(function(it){ bgs[it.id]=_secAppRgb(it.node); });
       ordered.forEach(function(it,idx){
         var n=it.node, id=it.id, ap=(SEC[id]&&SEC[id].appearance)||{};
+        _secAppRememberPad(n);
         n.classList.remove('lp-sec-has-edge');
         n.style.removeProperty('background');
         n.style.removeProperty('border');
@@ -1765,7 +1788,11 @@ function applyCfg(C){
         n.removeAttribute('data-lp-sec-bg');
         var edges=n.querySelectorAll(':scope > .lp-sec-edge');
         for(var ei=edges.length-1;ei>=0;ei--) edges[ei].remove();
-        if(!ap.custom){ bgs[id]=_secAppRgb(n); return; }
+        if(!ap.custom){
+          _secAppApplyEdgePad(n, false, false);
+          bgs[id]=_secAppRgb(n);
+          return;
+        }
         var bg=_secAppHex(ap.containerBg);
         if(bg){ n.style.setProperty('background',bg,'important'); n.setAttribute('data-lp-sec-bg',bg); bgs[id]=bg; }
         else bgs[id]=_secAppRgb(n);
@@ -1782,8 +1809,11 @@ function applyCfg(C){
         var prevBg=idx>0?bgs[ordered[idx-1].id]:_secAppRgb(document.body);
         var nextBg=idx<ordered.length-1?bgs[ordered[idx+1].id]:_secAppRgb(document.body);
         var curBg=bgs[id];
-        _secAppEdge(n,'top',ap.transitionTop||'none',prevBg,curBg);
-        _secAppEdge(n,'bottom',ap.transitionBottom||'none',curBg,nextBg);
+        var tTop=ap.transitionTop||'none';
+        var tBot=ap.transitionBottom||'none';
+        _secAppEdge(n,'top',tTop,prevBg,curBg);
+        _secAppEdge(n,'bottom',tBot,curBg,nextBg);
+        _secAppApplyEdgePad(n, !!(tTop&&tTop!=='none'), !!(tBot&&tBot!=='none'));
       });
     }
     function applyVisitorAppearance(C){

@@ -40,6 +40,23 @@ describe('marketplace compact editor parity', () => {
     assert.ok(defs.serviceAreaMap.some((f) => f.key === 'sections.serviceAreas.areas'));
   });
 
+  it('reviews field defs cover eyebrow, title, star colour, card background, quote text', () => {
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.reviews.some((f) => f.key === 'sections.reviews.eyebrow'));
+    assert.ok(defs.reviews.some((f) => f.key === 'sections.reviews.heading' && f.label === 'Title'));
+    assert.ok(defs.reviews.some((f) => f.key === 'sections.reviews.starColor'));
+    assert.ok(defs.reviews.some((f) => f.key === 'sections.reviews.cardBg'));
+    assert.ok(defs.reviews.some((f) => f.key === 'sections.reviews.textColor'));
+    assert.ok(defs.reviews.some((f) => /reviews\.items\.\d+\.text/.test(f.key)));
+  });
+
+  it('section appearance edges reserve padding so transitions do not cover text', () => {
+    const js = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+    assert.match(js, /_secAppApplyEdgePad/);
+    assert.match(js, /LP_SEC_EDGE_H\s*=\s*52/);
+    assert.match(js, /data-lp-edge-pad0/);
+  });
+
   it('specialOffer editor mirrors manage copy + appearance controls', () => {
     const js = fs.readFileSync(path.join(root, 'assets/js/marketplace/special-offer-editor.js'), 'utf8');
     assert.match(js, /LPSpecialOfferEditor/);
