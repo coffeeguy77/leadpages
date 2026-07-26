@@ -441,4 +441,36 @@ describe('marketplace compact editor parity', () => {
     assert.match(js, /labelForItemIndex\(f\.label, activeIdx\)/);
     assert.match(js, /f\.type === 'icon'.*circle-check|type === 'icon'\) it\[f\.prop\] = 'circle-check'/);
   });
+
+  it('responseCards demo uses LP icons, wraps titles, and exposes icon editors', () => {
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-responseCards.html'), 'utf8');
+    assert.match(demo, /"responseCards"\s*:\s*\{[\s\S]*"on"\s*:\s*true/);
+    assert.match(demo, /"icon"\s*:\s*"clock"/);
+    assert.match(demo, /"icon"\s*:\s*"zap"/);
+    assert.match(demo, /"icon"\s*:\s*"headset"/);
+    assert.match(demo, /background:var\(--light,#eef2f6\)!important/);
+    assert.doesNotMatch(demo, /"icon"\s*:\s*"⏱"/);
+
+    const css = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.css'), 'utf8');
+    assert.match(css, /\.rcards\{[^}]*minmax\(0,1fr\)/);
+    assert.match(css, /\.rc-tx\{[^}]*min-width:0/);
+    assert.match(css, /\.rc-tx h3\{[^}]*overflow-wrap:anywhere/);
+
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.responseCards.some((f) => f.key === 'sections.responseCards.eyebrow'));
+    assert.ok(defs.responseCards.some((f) => f.key === 'sections.responseCards.heading'));
+    assert.ok(defs.responseCards.some((f) => f.type === 'icon' && /cards\.0\.icon/.test(f.key)));
+    assert.ok(defs.responseCards.some((f) => f.type === 'icon' && /cards\.5\.icon/.test(f.key)));
+    assert.ok(defs.responseCards.some((f) => /cards\.5\.title/.test(f.key)));
+
+    const defaults = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-default-configs.json'), 'utf8'));
+    const cards = defaults.responseCards.responseCards.cards;
+    assert.equal(cards.length, 6);
+    assert.equal(cards[0].icon, 'clock');
+    assert.equal(cards[5].icon, 'headset');
+
+    const apply = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+    assert.match(apply, /icon:'clock'/);
+    assert.match(apply, /icon:'headset'/);
+  });
 });
