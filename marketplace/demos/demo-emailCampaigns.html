@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en-AU" class="mp-demo-embed">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Email Campaigns — marketplace demo</title>
+<style>
+  :root{
+    --ink:#1a2230; --ink-soft:#46535f; --ink-faint:#8a93a0;
+    --line:#e2e7ee; --surface:#fff; --surface-2:#f4f6f8;
+    --accent:#1f7bb8; --accent-soft:#e8f3fa; --accent-hover:#155d8c;
+    --warn-bg:#fff6e8; --warn-ink:#9a5b00; --ok-bg:#e8f6ee; --ok-ink:#0a7d33;
+    --paper:#f7f8fa; --radius:12px;
+    --font-ui:"Barlow",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html.mp-demo-embed, html.mp-demo-embed body{
+    margin:0;padding:0;min-height:0!important;height:auto!important;
+    background:var(--paper);color:var(--ink);
+    font-family:var(--font-ui);overflow:auto
+  }
+  body{padding:16px 14px 28px}
+  .ec-wrap{max-width:980px;margin:0 auto}
+  .ec-banner{
+    background:#eef6fb;border:1px solid #c8dfef;border-radius:10px;
+    padding:10px 14px;font-size:13px;color:#1a4a66;margin:0 0 14px;line-height:1.45
+  }
+  .ec-banner strong{font-weight:700}
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 18px 16px;margin-bottom:14px;box-shadow:0 1px 0 rgba(20,26,36,.03)
+  }
+  h1{margin:0 0 4px;font-size:20px;letter-spacing:-.01em}
+  h2{margin:0 0 10px;font-size:16px}
+  .lede{margin:0 0 16px;color:var(--ink-soft);font-size:14px;line-height:1.5}
+  .mlr-grid{display:grid;grid-template-columns:1.15fr .95fr;gap:20px}
+  @media(max-width:820px){.mlr-grid{grid-template-columns:1fr}}
+  .mlr-lbl{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:0 0 6px}
+  .tin{
+    width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+    font:inherit;font-size:14.5px;background:#fff;color:var(--ink)
+  }
+  textarea.tin{min-height:140px;line-height:1.55;resize:vertical}
+  .btn{
+    appearance:none;border:1px solid var(--accent);background:var(--accent);color:#fff;
+    border-radius:10px;padding:9px 16px;font:700 13.5px var(--font-ui);cursor:pointer
+  }
+  .btn:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .btn.ghost{
+    background:#fff;color:var(--ink-soft);border-color:var(--line)
+  }
+  .btn.ghost:hover{border-color:var(--accent);color:var(--accent-hover);background:var(--accent-soft)}
+  .btn.ghost.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-hover)}
+  .mlr-segrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .mlr-picklist{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px;background:#fff}
+  .mlr-search{margin-bottom:8px}
+  .mlr-crow{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;font-size:13px;cursor:pointer}
+  .mlr-crow.hidden{display:none}
+  .mlr-crow:hover{background:var(--surface-2)}
+  .mlr-crow.out{opacity:.62}
+  .mlr-cname{font-weight:600;white-space:nowrap}
+  .mlr-cmail{color:var(--ink-faint);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mlr-opt{
+    margin-left:auto;background:none;border:1px solid var(--line);border-radius:8px;
+    padding:3px 9px;font-size:11.5px;color:var(--ink-soft);cursor:pointer;white-space:nowrap
+  }
+  .mlr-opt:hover{border-color:var(--accent);color:var(--accent-hover)}
+  .badge{
+    display:inline-flex;align-items:center;border-radius:999px;padding:2px 8px;
+    font-size:11px;font-weight:700;letter-spacing:.02em
+  }
+  .badge.warn{background:var(--warn-bg);color:var(--warn-ink)}
+  .badge.ok{background:var(--ok-bg);color:var(--ok-ink)}
+  .badge.muted{background:var(--surface-2);color:var(--ink-soft)}
+  .mlr-imgrow{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .mlr-samples{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .mlr-sample{
+    width:88px;height:64px;border-radius:8px;border:2px solid transparent;padding:0;
+    overflow:hidden;cursor:pointer;background:#ddd;position:relative
+  }
+  .mlr-sample img{width:100%;height:100%;object-fit:cover;display:block}
+  .mlr-sample.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+  .mlr-sample span{
+    position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);
+    color:#fff;font-size:10px;font-weight:700;padding:2px 4px;text-align:center
+  }
+  #mlr-imgprev img{max-width:220px;border-radius:10px;margin-top:8px;display:block}
+  .mlr-sched{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .mlr-sched .tin{flex:1;min-width:120px}
+  .hint{font-size:12.5px;color:var(--ink-faint)}
+  .mlr-hrow{
+    display:flex;align-items:center;gap:10px;padding:10px 0;
+    border-bottom:1px solid var(--line);font-size:13px;flex-wrap:wrap
+  }
+  .mlr-hrow:last-child{border-bottom:0}
+  .mlr-hsub{font-weight:600;flex:1;min-width:140px}
+  .mlr-hmeta{color:var(--ink-faint);font-size:12px}
+  .mlr-hact{display:inline-flex;gap:6px;margin-left:auto}
+  .mlr-mini{
+    background:none;border:1px solid var(--line);border-radius:8px;padding:3px 10px;
+    font:600 11.5px var(--font-ui);color:var(--accent-hover);cursor:pointer
+  }
+  .mlr-mini:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .ec-preview{
+    margin-top:14px;border:1px dashed var(--line);border-radius:10px;padding:14px;
+    background:var(--surface-2)
+  }
+  .ec-preview h3{margin:0 0 8px;font-size:14px}
+  .ec-mail{
+    background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden
+  }
+  .ec-mail-sub{padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px}
+  .ec-mail-body{padding:14px;font-size:14px;line-height:1.55;color:var(--ink-soft);white-space:pre-wrap}
+  .ec-mail-body img{max-width:100%;border-radius:8px;margin:0 0 12px;display:block}
+  .ec-toast{
+    position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+    background:#1a2230;color:#fff;padding:10px 16px;border-radius:999px;
+    font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20
+  }
+  .ec-toast.show{opacity:1}
+</style>
+</head>
+<body>
+  <div class="ec-wrap">
+    <p class="ec-banner"><strong>Demo only.</strong> Fake clients and campaigns — nothing is emailed, uploaded, or saved. Sample images are presets (no upload).</p>
+    <div id="av-mailer"></div>
+  </div>
+  <div class="ec-toast" id="ec-toast" role="status" aria-live="polite"></div>
+<script>
+(function () {
+  'use strict';
+
+  var SAMPLE_IMAGES = [
+    { id: 'offer', label: 'Offer', url: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=420&fit=crop&q=80' },
+    { id: 'van', label: 'Van', url: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&h=420&fit=crop&q=80' },
+    { id: 'crew', label: 'Crew', url: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=420&fit=crop&q=80' }
+  ];
+
+  var MAILER = {
+    mode: 'all',
+    selected: {},
+    schedule: false,
+    imageUrl: SAMPLE_IMAGES[0].url,
+    subject: 'Autumn maintenance special — book this week',
+    body: 'Hi {{name}},\n\nHope the place is holding up. We have a few openings next week for drain checks and hot-water services — fixed price before we start.\n\nReply to this email or call us if you want a time locked in.\n\nCheers,\nAce Plumbing Co.',
+    date: '',
+    time: '09:00',
+    tz: 'Australia/Sydney',
+    clients: [
+      { id: 'c1', name: 'Marcus T.', email: 'marcus.t@example.com', email_opt_out: false },
+      { id: 'c2', name: 'Jenny K.', email: 'jenny.k@example.com', email_opt_out: false },
+      { id: 'c3', name: 'Dave R.', email: 'dave.r@example.com', email_opt_out: true },
+      { id: 'c4', name: 'Priya S.', email: 'priya.s@example.com', email_opt_out: false },
+      { id: 'c5', name: 'Tom W.', email: 'tom.w@example.com', email_opt_out: true },
+      { id: 'c6', name: 'Sarah M.', email: 'sarah.m@example.com', email_opt_out: false },
+      { id: 'c7', name: 'Liam H.', email: 'liam.h@example.com', email_opt_out: false }
+    ],
+    campaigns: [
+      {
+        id: 'camp1',
+        subject: 'Spring drain special — 15% off camera inspections',
+        body: 'Quick heads-up: this month we are running 15% off drain camera inspections for past customers.\n\nBook online or reply to this email.',
+        image_url: SAMPLE_IMAGES[0].url,
+        status: 'sent',
+        sent_count: 5,
+        failed_count: 0,
+        recipient_mode: 'all'
+      },
+      {
+        id: 'camp2',
+        subject: 'Thanks for your enquiry — we are ready when you are',
+        body: 'Thanks for getting in touch. If the job is still on your list, we can usually offer a same-week visit across the ACT.',
+        image_url: '',
+        status: 'sent',
+        sent_count: 4,
+        failed_count: 1,
+        recipient_mode: 'selected'
+      },
+      {
+        id: 'camp3',
+        subject: 'Weekend emergency availability',
+        body: 'We have a plumber on call this Saturday for genuine emergencies — burst pipes, blocked sewer, no hot water.',
+        image_url: SAMPLE_IMAGES[1].url,
+        status: 'scheduled',
+        send_at: new Date(Date.now() + 3 * 86400000).toISOString(),
+        sent_count: 0,
+        failed_count: 0,
+        recipient_mode: 'all'
+      }
+    ]
+  };
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function $(id) { return document.getElementById(id); }
+
+  function toast(msg) {
+    var el = $('ec-toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { el.classList.remove('show'); }, 2600);
+  }
+
+  function todayStr() {
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+
+  function timeOpts() {
+    var out = [];
+    for (var h = 7; h <= 18; h++) {
+      ['00', '30'].forEach(function (mm) {
+        var v = String(h).padStart(2, '0') + ':' + mm;
+        out.push('<option value="' + v + '"' + (MAILER.time === v ? ' selected' : '') + '>' + v + '</option>');
+      });
+    }
+    return out.join('');
+  }
+
+  function capture() {
+    var su = $('mlr-subject'); if (su) MAILER.subject = su.value;
+    var bo = $('mlr-body'); if (bo) MAILER.body = bo.value;
+    var dt = $('mlr-date'); if (dt) MAILER.date = dt.value;
+    var tm = $('mlr-time'); if (tm) MAILER.time = tm.value;
+  }
+
+  function activeClients() { return MAILER.clients.filter(function (c) { return !c.email_opt_out; }); }
+  function optedClients() { return MAILER.clients.filter(function (c) { return c.email_opt_out; }); }
+
+  function previewHtml() {
+    var sub = MAILER.subject || '(no subject)';
+    var body = MAILER.body || '';
+    var img = MAILER.imageUrl
+      ? '<img src="' + esc(MAILER.imageUrl) + '" alt="">'
+      : '';
+    return '<div class="ec-preview"><h3>Message preview</h3><div class="ec-mail">'
+      + '<div class="ec-mail-sub">' + esc(sub) + '</div>'
+      + '<div class="ec-mail-body">' + img + esc(body) + '</div>'
+      + '</div><p class="hint" style="margin:8px 0 0">Footer on real sends includes an unsubscribe link.</p></div>';
+  }
+
+  function build(box) {
+    var active = activeClients();
+    var opted = optedClients();
+    var seg = function (v, l) {
+      return '<button type="button" class="btn ghost mlr-seg' + (MAILER.mode === v ? ' on' : '') + '" data-mode="' + v + '">' + l + '</button>';
+    };
+    var rows = MAILER.clients.map(function (c) {
+      var checked = MAILER.selected[c.id] ? ' checked' : '';
+      var hay = ((c.name || '') + ' ' + (c.email || '')).toLowerCase();
+      return '<label class="mlr-crow' + (c.email_opt_out ? ' out' : '') + '" data-hay="' + esc(hay) + '">'
+        + '<input type="checkbox" class="mlr-pick" data-id="' + esc(c.id) + '" ' + (c.email_opt_out ? 'disabled' : checked) + '>'
+        + '<span class="mlr-cname">' + esc(c.name || '(no name)') + '</span>'
+        + '<span class="mlr-cmail">' + esc(c.email) + '</span>'
+        + (c.email_opt_out ? '<span class="badge warn">Unsubscribed</span>' : '')
+        + '<button type="button" class="mlr-opt" data-id="' + esc(c.id) + '" data-out="' + (c.email_opt_out ? '0' : '1') + '">'
+        + (c.email_opt_out ? 'Allow' : 'Opt out') + '</button>'
+        + '</label>';
+    }).join('');
+
+    var samples = SAMPLE_IMAGES.map(function (img) {
+      var on = MAILER.imageUrl === img.url ? ' on' : '';
+      return '<button type="button" class="mlr-sample' + on + '" data-img="' + esc(img.url) + '" title="' + esc(img.label) + '">'
+        + '<img src="' + esc(img.url) + '" alt="' + esc(img.label) + '" loading="lazy">'
+        + '<span>' + esc(img.label) + '</span></button>';
+    }).join('');
+
+    var hist = MAILER.campaigns.length
+      ? MAILER.campaigns.map(function (c) {
+          var st = c.status || '';
+          var badge = st === 'sent' ? 'ok' : (st === 'scheduled' ? 'muted' : 'warn');
+          var meta = (st === 'scheduled' && c.send_at)
+            ? ('for ' + new Date(c.send_at).toLocaleString())
+            : ((c.sent_count || 0) + ' sent' + (c.failed_count ? (', ' + c.failed_count + ' failed') : ''));
+          var acts = (st === 'scheduled' ? '<button type="button" class="mlr-mini" data-runnow="' + esc(c.id) + '">Send now</button>' : '')
+            + '<button type="button" class="mlr-mini" data-again="' + esc(c.id) + '">Use again</button>';
+          return '<div class="mlr-hrow"><span class="mlr-hsub">' + esc(c.subject || '(no subject)') + '</span>'
+            + '<span class="badge ' + badge + '">' + esc(st) + '</span>'
+            + '<span class="mlr-hmeta">' + esc(meta) + '</span>'
+            + '<span class="mlr-hact">' + acts + '</span></div>';
+        }).join('')
+      : '<p class="hint">No campaigns yet.</p>';
+
+    box.innerHTML = ''
+      + '<div class="card">'
+      +   '<h1>Newsletter</h1>'
+      +   '<p class="lede">Send a one-off update or offer to customers who enquired through your site. <strong>'
+      +   active.length + '</strong> contactable · ' + opted.length + ' unsubscribed.</p>'
+      +   '<div class="mlr-grid">'
+      +     '<div class="mlr-compose">'
+      +       '<label class="mlr-lbl" for="mlr-subject">Subject</label>'
+      +       '<input id="mlr-subject" class="tin" value="' + esc(MAILER.subject || '') + '" placeholder="A quick update from your team…">'
+      +       '<label class="mlr-lbl" style="margin-top:14px" for="mlr-body">Message</label>'
+      +       '<textarea id="mlr-body" class="tin" rows="8" placeholder="Write your update or offer here…">' + esc(MAILER.body || '') + '</textarea>'
+      +       '<div class="mlr-imgrow">'
+      +         '<span class="mlr-lbl" style="margin:0">Hero image (sample — no upload)</span>'
+      +         '<button type="button" class="btn ghost" id="mlr-imgclr">Clear image</button>'
+      +       '</div>'
+      +       '<div class="mlr-samples">' + samples + '</div>'
+      +       '<div id="mlr-imgprev">' + (MAILER.imageUrl ? '<img src="' + esc(MAILER.imageUrl) + '" alt="Selected hero">' : '') + '</div>'
+      +       previewHtml()
+      +     '</div>'
+      +     '<div class="mlr-col">'
+      +       '<label class="mlr-lbl">Who gets this?</label>'
+      +       '<div class="mlr-segrow">' + seg('all', 'All contacts (' + active.length + ')') + seg('selected', 'Selected') + '</div>'
+      +       '<div id="mlr-pickwrap"' + (MAILER.mode === 'all' ? ' style="display:none"' : '') + '>'
+      +         '<input type="search" id="mlr-search" class="tin mlr-search" placeholder="Search contacts…" autocomplete="off">'
+      +         '<div class="mlr-picklist">' + (rows || '<p class="hint">No contacts.</p>') + '</div>'
+      +       '</div>'
+      +       '<label class="mlr-lbl" style="margin-top:14px">When</label>'
+      +       '<div class="mlr-segrow">'
+      +         '<button type="button" class="btn ghost mlr-when' + (!MAILER.schedule ? ' on' : '') + '" data-when="now">Send now</button>'
+      +         '<button type="button" class="btn ghost mlr-when' + (MAILER.schedule ? ' on' : '') + '" data-when="later">Schedule</button>'
+      +       '</div>'
+      +       '<div id="mlr-sched" class="mlr-sched"' + (MAILER.schedule ? '' : ' style="display:none"') + '>'
+      +         '<input type="date" id="mlr-date" class="tin" value="' + esc(MAILER.date || todayStr()) + '">'
+      +         '<select id="mlr-time" class="tin">' + timeOpts() + '</select>'
+      +       '</div>'
+      +       '<div style="margin-top:16px"><button class="btn" id="mlr-send">Send (demo)</button> <span id="mlr-status" class="hint" style="margin-left:8px"></span></div>'
+      +     '</div>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="card"><h2>Recent campaigns</h2>' + hist + '</div>';
+
+    wire(box);
+  }
+
+  function wire(box) {
+    box.querySelectorAll('.mlr-seg').forEach(function (b) {
+      b.onclick = function () { capture(); MAILER.mode = b.getAttribute('data-mode'); build(box); };
+    });
+    box.querySelectorAll('.mlr-when').forEach(function (b) {
+      b.onclick = function () {
+        capture();
+        MAILER.schedule = b.getAttribute('data-when') === 'later';
+        if (MAILER.schedule) {
+          if (!MAILER.date) MAILER.date = todayStr();
+          if (!MAILER.time) MAILER.time = '09:00';
+        }
+        build(box);
+      };
+    });
+    box.querySelectorAll('.mlr-pick').forEach(function (b) {
+      b.onchange = function () { MAILER.selected[b.getAttribute('data-id')] = b.checked; };
+    });
+    box.querySelectorAll('.mlr-opt').forEach(function (b) {
+      b.onclick = function (e) {
+        e.preventDefault();
+        var id = b.getAttribute('data-id');
+        var out = b.getAttribute('data-out') === '1';
+        var c = MAILER.clients.find(function (x) { return x.id === id; });
+        if (c) c.email_opt_out = out;
+        build(box);
+        toast(out ? 'Marked unsubscribed (demo)' : 'Re-subscribed (demo)');
+      };
+    });
+    box.querySelectorAll('[data-again]').forEach(function (b) {
+      b.onclick = function () {
+        var id = b.getAttribute('data-again');
+        var c = MAILER.campaigns.find(function (x) { return String(x.id) === String(id); });
+        if (!c) return;
+        MAILER.subject = c.subject || '';
+        MAILER.body = c.body || '';
+        MAILER.imageUrl = c.image_url || '';
+        MAILER.mode = c.recipient_mode === 'selected' ? 'selected' : 'all';
+        MAILER.schedule = false;
+        build(box);
+        toast('Loaded into composer — edit and try Send (demo)');
+      };
+    });
+    box.querySelectorAll('[data-runnow]').forEach(function (b) {
+      b.onclick = function () {
+        var id = b.getAttribute('data-runnow');
+        var c = MAILER.campaigns.find(function (x) { return String(x.id) === String(id); });
+        if (!c) return;
+        c.status = 'sent';
+        c.sent_count = activeClients().length;
+        c.failed_count = 0;
+        c.send_at = null;
+        build(box);
+        toast('Demo send — ' + c.sent_count + ' fake recipients');
+      };
+    });
+    box.querySelectorAll('.mlr-sample').forEach(function (b) {
+      b.onclick = function () {
+        capture();
+        MAILER.imageUrl = b.getAttribute('data-img') || '';
+        build(box);
+      };
+    });
+    var clr = $('mlr-imgclr');
+    if (clr) clr.onclick = function () { capture(); MAILER.imageUrl = ''; build(box); };
+
+    var search = $('mlr-search');
+    if (search) {
+      search.oninput = function () {
+        var q = (search.value || '').trim().toLowerCase();
+        box.querySelectorAll('.mlr-crow').forEach(function (row) {
+          var hay = row.getAttribute('data-hay') || '';
+          row.classList.toggle('hidden', !!(q && hay.indexOf(q) === -1));
+        });
+      };
+    }
+
+    var su = $('mlr-subject');
+    if (su) su.oninput = function () { MAILER.subject = su.value; refreshPreview(); };
+    var bo = $('mlr-body');
+    if (bo) bo.oninput = function () { MAILER.body = bo.value; refreshPreview(); };
+
+    var snd = $('mlr-send');
+    if (snd) snd.onclick = function () { fakeSend(box); };
+  }
+
+  function refreshPreview() {
+    var host = document.querySelector('.ec-preview');
+    if (!host) return;
+    var tmp = document.createElement('div');
+    tmp.innerHTML = previewHtml();
+    host.replaceWith(tmp.firstChild);
+  }
+
+  function fakeSend(box) {
+    capture();
+    var st = $('mlr-status');
+    var subject = (MAILER.subject || '').trim();
+    var bodyTxt = MAILER.body || '';
+    if (!subject && !bodyTxt.trim()) {
+      if (st) { st.style.color = '#b42318'; st.textContent = 'Add a subject or a message.'; }
+      return;
+    }
+    var recipients = [];
+    if (MAILER.mode === 'all') {
+      recipients = activeClients();
+    } else {
+      recipients = MAILER.clients.filter(function (c) { return MAILER.selected[c.id] && !c.email_opt_out; });
+      if (!recipients.length) {
+        if (st) { st.style.color = '#b42318'; st.textContent = 'Pick at least one client.'; }
+        return;
+      }
+    }
+    var id = 'camp' + Date.now();
+    var row = {
+      id: id,
+      subject: subject || '(no subject)',
+      body: bodyTxt,
+      image_url: MAILER.imageUrl || '',
+      status: MAILER.schedule ? 'scheduled' : 'sent',
+      send_at: MAILER.schedule ? new Date((MAILER.date || todayStr()) + 'T' + (MAILER.time || '09:00') + ':00').toISOString() : null,
+      sent_count: MAILER.schedule ? 0 : recipients.length,
+      failed_count: 0,
+      recipient_mode: MAILER.mode
+    };
+    MAILER.campaigns.unshift(row);
+    build(box);
+    toast(MAILER.schedule
+      ? 'Scheduled in demo — no real email queued'
+      : ('Demo send to ' + recipients.length + ' fake contacts — nothing left this browser'));
+  }
+
+  build($('av-mailer'));
+})();
+</script>
+</body>
+</html>
