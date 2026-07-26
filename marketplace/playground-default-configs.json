@@ -564,6 +564,8 @@
       "intro": "Show customers the transformation in one simple swipe.",
       "beforeLabel": "Before",
       "afterLabel": "After",
+      "beforeImage": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1400&h=900&fit=crop&q=80",
+      "afterImage": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1400&h=900&fit=crop&q=80",
       "title": "Real local transformation",
       "caption": "A clear look at the problem before and the finished result after the job was completed."
     }
