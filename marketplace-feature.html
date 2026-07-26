@@ -357,10 +357,10 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       +(f.summary?'<div class="hsum">'+esc(f.summary)+'</div>':'')
       +'<div class="hcta">'
       +(demoUrl?'<a class="btn" href="'+esc(demoUrl)+'" target="_blank" rel="noopener">See it on a live site</a>':'')
-      +'<a class="btn" href="#live-demo">Try the demo ↓</a>'
+      +((blocks||[]).some(function(b){ return b&&b.block_type==='playground'; })?'<a class="btn" href="#live-demo">Try the demo ↓</a>':'')
       +'<a class="btn ghost" href="/partners">Become a partner</a></div>'
       +(heroImg?'<div class="himg"><img src="'+esc(heroImg)+'" alt=""></div>'
-        :'<div class="himg-placeholder">Live component preview below</div>')
+        :((blocks||[]).some(function(b){ return b&&b.block_type==='playground'; })?'<div class="himg-placeholder">Live component preview below</div>':''))
       +'</div></header>'
       +'<article><div class="wrap">';
     if(blocks.length){ html+=blocks.map(block).join(''); }

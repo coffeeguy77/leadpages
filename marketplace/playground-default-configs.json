@@ -1722,5 +1722,82 @@
         }
       ]
     }
+  },
+  "seoText": {
+    "business": "Bean Culture",
+    "trade": "Coffee cart hire",
+    "phone": "0262232200",
+    "theme": {
+      "pipe": "#e91e8c",
+      "hivis": "#e91e8c",
+      "steel": "#1a2230",
+      "safety": "#ffc400"
+    },
+    "seoText": {
+      "on": true,
+      "eyebrow": "On this page",
+      "h1": "Premium Event Coffee in Canberra",
+      "h2": "Why Choose Our Mobile Barista Services?",
+      "intro": "Bean Culture brings specialty coffee carts and vans to weddings, corporate days and private parties across Canberra.",
+      "content": "Our Coffee Offerings\nWe boast a diverse range of specialty coffee for every event.\n\nTypes of Events We Cater To\nWeddings, corporate events, birthdays and festivals across the ACT.\n\nOur Experience\nWith hundreds of events completed, our baristas keep the queue moving and the coffee consistent.",
+      "image": "",
+      "imageSide": "right",
+      "imageLayout": "beside",
+      "textAlign": "left",
+      "faq": []
+    }
+  },
+  "featureStrip": {
+    "business": "Ace Plumbing Co.",
+    "trade": "plumber",
+    "phone": "0261000000",
+    "theme": {
+      "pipe": "#1f7bb8"
+    },
+    "featureStrip": {
+      "on": true,
+      "eyebrow": "Why choose us",
+      "heading": "What sets us apart",
+      "intro": "Clear promises local customers care about.",
+      "items": [
+        {
+          "on": true,
+          "icon": "clock",
+          "title": "Same-day response",
+          "text": "Call before lunch and we aim to be there the same day."
+        },
+        {
+          "on": true,
+          "icon": "shield-check",
+          "title": "Licensed & insured",
+          "text": "Fully licensed ACT plumbers with public liability cover."
+        },
+        {
+          "on": true,
+          "icon": "wallet",
+          "title": "Fixed-price quotes",
+          "text": "Know the number before we start — no surprise extras."
+        }
+      ]
+    }
+  },
+  "onlineQuote": {
+    "business": "Ace Plumbing Co.",
+    "trade": "plumber",
+    "phone": "0261000000",
+    "theme": {
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
+    },
+    "onlineQuote": {
+      "on": true,
+      "eyebrow": "Online quote",
+      "heading": "Get your verified quote",
+      "intro": "Answer a few questions — verify your email to see your total, then SMS for the full breakdown.",
+      "bg": "",
+      "eyebrowColor": "",
+      "headingColor": "",
+      "introColor": ""
+    }
   }
 }

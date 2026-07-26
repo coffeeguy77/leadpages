@@ -857,6 +857,20 @@ stateDiagram-v2
 
 ---
 
+## Public marketing catalog — parity backlog
+
+The public `/marketplace` catalog uses compact playgrounds (`playground-field-defs.json`) plus `demo-shared.js` — **not** a full embed of every `manage.html` section editor. Full field parity with the backend editor is a multi-week programme.
+
+**Shipped in the first tranche (this cycle):**
+
+- SEO Command + Advertising **explainer** pages (no playground; `platformFeature: true`)
+- Working demos for `seoText`, `premiumGallery`, `featureStrip`, `onlineQuote`
+- Hide “Try the demo” when a feature has no playground block
+
+**Follow-on backlog:** remaining catalogue apps without demos, playground field coverage vs manage editors, and Composer adapter gaps (see website-studio marketplace docs).
+
+---
+
 ## Glossary
 
 | Term | Meaning |

@@ -226,6 +226,11 @@ When working on LeadPages as an AI agent:
 5. Explain database changes before implementing
 6. Documentation-only tasks: **never modify application code**
 7. Prefer editing canonical files (`api/`, not root duplicates)
+8. **Theme-default colour pickers** — every new (or edited) app colour control must:
+   - Show the current Branding theme swatch via `siteThemeColors(c)` / `DEFAULT_TRADE_THEME` (not a hardcoded `#1f7bb8` / `#1a2230` as the conceptual default)
+   - Store `''` when the user chooses Default / Reset so the live site inherits theme CSS vars (`--pipe`, `--hivis`, `--steel`, `--safety`)
+   - Prefer shared helpers: `secHexField`, `wireSecColorPair`, `siteThemeColors`
+   - See [Theme Engine](features/Theme Engine.md) § Colour picker defaults
 
 ---
 

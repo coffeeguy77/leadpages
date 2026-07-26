@@ -397,8 +397,13 @@ function tradeThemeRootCss(theme) {
 /** Inject brand theme CSS vars into <head> before body paints (trade FOUC fix). */
 function injectTradeThemeVars(html, cfg) {
   if (!html || !cfg) return html;
-  const css = tradeThemeRootCss(cfg.theme);
+  let css = tradeThemeRootCss(cfg.theme);
   if (!css) return html;
+  try {
+    const { applyColorOverridesToCssText, applyColorOverridesToHtml } = require('../lib/color-overrides');
+    css = applyColorOverridesToCssText(css, cfg.colorOverrides);
+    html = applyColorOverridesToHtml(html, cfg.colorOverrides);
+  } catch (_e) { /* never break live render */ }
   const block = '<style id="lp-theme-vars">' + css + '</style>\n';
   if (html.includes('id="lp-theme-vars"')) {
     return html.replace(/<style id="lp-theme-vars">[\s\S]*?<\/style>\n?/, block);
