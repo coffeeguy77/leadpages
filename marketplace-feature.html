@@ -319,7 +319,15 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   var page=document.getElementById('page');
   function esc(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML;}
   function paras(t){return String(t||'').split(/\n\s*\n/).filter(Boolean).map(function(p){return '<p>'+esc(p).replace(/\n/g,'<br>')+'</p>';}).join('');}
-  function safeUrl(u){u=String(u||'').trim();return /^https?:\/\//i.test(u)?u:'';}
+  /* Allow https URLs and same-origin absolute paths (e.g. /marketplace/demos/…).
+     Reject protocol-relative //… and backslash tricks. */
+  function safeUrl(u){
+    u=String(u||'').trim();
+    if(!u) return '';
+    if(/^https?:\/\//i.test(u)) return u;
+    if(u.charAt(0)==='/' && u.charAt(1)!=='/' && u.indexOf('\\')<0) return u;
+    return '';
+  }
 
   var slug=(location.pathname.split('/').filter(Boolean)[1]||'').toLowerCase();
   if(!slug){notFound();return;}
