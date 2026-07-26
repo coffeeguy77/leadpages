@@ -1226,14 +1226,30 @@ function applyCfg(C){
           var _tbIc=function(v){ if(!v) return ''; v=String(v); var _i=(window.LP_ICONS&&window.LP_ICONS[v]); if(!_i) return ''; return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+_i+'</svg>'; };
           var _tiles=_tbit.filter(function(b){ return b&&b.on!==false&&((b.image&&String(b.image).trim())||(b.label&&String(b.label).trim())); });
           if(!_tiles.length) _tiles=_tbd;
-          if(_tbr){
-            _tbr.innerHTML=_tiles.map(function(b){
+                    if(_tbr){
+            var _tbBgUrls=[];
+            _tbr.innerHTML=_tiles.map(function(b,ti){
               var img=(b.image!=null?String(b.image).trim():'');
               var lab=(b.label!=null?String(b.label):'');
               var ic=_tbIc(b.icon);
-              var _iu=img.replace(/[\s"'<>\\]/g,''); var _fit=(b.imageFit==='contain'||b.imageFit==='fill'||b.imageFit==='stretch'||b.imageFit==='cover')?b.imageFit:'cover'; if(_fit==='stretch') _fit='100% 100%'; else if(_fit==='fill') _fit='100% 100%'; var _pm={left:'left center',right:'right center',top:'center top',bottom:'center bottom',center:'center'}; var _pos=_pm[b.imagePos||'center']||'center'; var bg=_iu?('<div class="tb-tile-bg" style="background-image:url(\''+_iu.replace(/'/g,'%27')+'\');background-size:'+_fit+';background-position:'+_pos+'"></div>'):'<div class="tb-tile-bg tb-tile-ph"></div>';;
+              var _fit=(b.imageFit==='contain'||b.imageFit==='fill'||b.imageFit==='stretch'||b.imageFit==='cover')?b.imageFit:'cover'; if(_fit==='stretch') _fit='100% 100%'; else if(_fit==='fill') _fit='100% 100%'; var _pm={left:'left center',right:'right center',top:'center top',bottom:'center bottom',center:'center'}; var _pos=_pm[b.imagePos||'center']||'center';
+              var bg;
+              if(img){
+                _tbBgUrls.push({i:ti,url:img,fit:_fit,pos:_pos});
+                bg='<div class="tb-tile-bg" data-tb-bg="'+ti+'"></div>';
+              } else {
+                bg='<div class="tb-tile-bg tb-tile-ph"></div>';
+              }
               return '<div class="tb-tile">'+bg+'<div class="tb-tile-grad" aria-hidden="true"></div><div class="tb-tile-cap">'+(ic?'<span class="tb-tile-ic">'+ic+'</span>':'')+(lab?'<span class="tb-tile-txt">'+esc(lab)+'</span>':'')+'</div></div>';
             }).join('');
+            _tbBgUrls.forEach(function(t){
+              var el=_tbr.querySelector('[data-tb-bg="'+t.i+'"]');
+              if(!el) return;
+              el.style.backgroundImage='url('+JSON.stringify(String(t.url))+')';
+              el.style.backgroundSize=t.fit;
+              el.style.backgroundPosition=t.pos;
+              el.style.backgroundRepeat='no-repeat';
+            });
           }
           tbNode.classList.add('tb-noline');
           tbNode.style.removeProperty('--tb-bg');

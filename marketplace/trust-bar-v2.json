@@ -6,6 +6,10 @@
   "publicHeading": "Give visitors a reason to trust you immediately.",
   "shortDescription": "Keep important services, promises or credentials visible without distracting from the rest of your page.",
   "longDescription": "Show your services, guarantees, credentials or visual options in a clear strip that supports the rest of your page. Start from a real business example, then edit with the same controls you will use inside LeadPages.",
+  "heroImage": {
+    "url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80",
+    "alt": "Trade site hero with Trust Bar under the fold"
+  },
   "accessType": "included",
   "featureLabels": [
     "Included with LeadPages",

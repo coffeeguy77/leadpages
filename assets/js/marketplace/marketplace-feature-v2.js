@@ -216,12 +216,17 @@
     return points;
   }
 
+  var HERO_FALLBACK = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80';
+
   function renderExamples(root, feature) {
     var examples = (meta && meta.examples) || [];
     var Acc = window.LPMarketplaceAccess;
     var accessType = (meta && meta.accessType) || 'included';
     var accessLong = Acc ? Acc.publicLabel(accessType, 'long') : 'Included with your LeadPages website';
     var points = infoPoints(feature);
+    var heroImg = (feature && feature.hero_image_url)
+      || (meta && meta.heroImage && meta.heroImage.url)
+      || HERO_FALLBACK;
 
     var pointsHtml = points.map(function (p, i) {
       return '<details class="mp-info-point"' + (i === 0 ? ' open' : '') + '>'
@@ -237,8 +242,14 @@
         + '</button>';
     }).join('');
 
+    var mediaHtml = heroImg
+      ? '<div class="himg"><img src="' + esc(heroImg) + '" alt="' + esc((feature && feature.name) || 'Trust Bar') + ' preview" loading="eager"></div>'
+      : '<div class="himg-placeholder">App preview</div>';
+
     root.innerHTML = ''
-      + '<header class="feat-hero mp-v2-hero mp-info-hero"><div class="feat-hero-inner wrap">'
+      + '<header class="feat-hero mp-v2-hero mp-info-hero"><div class="feat-hero-inner wrap-wide">'
+      + '<div class="feat-hero-grid">'
+      + '<div class="feat-hero-copy">'
       + '<div class="crumb"><a href="/marketplace?v2=1">← Marketplace</a></div>'
       + '<span class="eyebrow">' + esc((meta && meta.categoryEyebrow) || 'Trust and credibility') + '</span>'
       + '<h1>' + esc(feature.name || 'Trust Bar') + '</h1>'
@@ -254,7 +265,9 @@
       + '<a class="btn" href="#playground">Try the demo ↓</a>'
       + '<a class="btn ghost" href="/partners">Become a partner</a>'
       + '</div>'
-      + '</div></header>'
+      + '</div>'
+      + '<div class="feat-hero-media">' + mediaHtml + '</div>'
+      + '</div></div></header>'
 
       + '<article class="mp-demo-article"><div class="wrap">'
       + '<section class="mp-demo-block" id="playground">'
@@ -281,15 +294,6 @@
       + '<div id="mp-tb-editor" class="tb-ed-root tb-ed-compact"></div>'
       + '</div>'
       + '<p class="sr-only" id="mp-live-status" aria-live="polite"></p>'
-      + '</section>'
-
-      + '<section class="mp-demo-cta">'
-      + '<h2>Ready to use this on your website?</h2>'
-      + '<p>Many apps are included. Premium and usage-based tools are clearly marked before you use them.</p>'
-      + '<div class="mp-hero-cta">'
-      + '<a class="btn" href="/start-your-business">Build my LeadPages website</a>'
-      + '<a class="btn ghost" href="/partners">Become a LeadPages partner</a>'
-      + '</div>'
       + '</section>'
       + '</div></article>';
   }
@@ -336,6 +340,13 @@
     s.textContent = [
       '.mp-info-hero .hsum{max-width:60ch;margin:0 0 14px}',
       '.mp-info-hero .feat-hero-inner{padding-bottom:36px}',
+      '.mp-info-hero .feat-hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(240px,0.95fr);gap:clamp(22px,4vw,40px);align-items:center}',
+      '.mp-info-hero .feat-hero-copy{min-width:0}',
+      '.mp-info-hero .feat-hero-media{min-width:0}',
+      '.mp-info-hero .himg{margin:0;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 28px 64px rgba(0,0,0,.28);min-height:260px;background:rgba(0,0,0,.15)}',
+      '.mp-info-hero .himg img{width:100%;height:100%;min-height:260px;max-height:420px;object-fit:cover;display:block}',
+      '.mp-info-hero .himg-placeholder{min-height:260px;border-radius:18px;background:linear-gradient(135deg,rgba(168,74,94,.35),rgba(47,65,58,.8));border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);padding:24px;text-align:center}',
+      '@media(max-width:900px){.mp-info-hero .feat-hero-grid{grid-template-columns:1fr}.mp-info-hero .feat-hero-media{order:-1}.mp-info-hero .himg img{max-height:280px;min-height:200px}}',
       '.mp-labels{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px}',
       '.mp-label{display:inline-flex;padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.25);font-size:13px;font-weight:700;color:#F3EFEA}',
       '.mp-info-list{max-width:720px;margin:0 0 22px;display:grid;gap:8px}',
@@ -346,7 +357,7 @@
       '.mp-info-point[open] summary::after{content:"–"}',
       '.mp-info-point .mp-info-text{margin:0;padding:0 14px 14px;color:#C9D2CC;font-size:15px;line-height:1.5;max-width:62ch}',
       '.mp-demo-article{background:var(--theme-page-background,var(--paper,#FAF5F2));padding:36px 0 72px}',
-      '.mp-demo-block{background:var(--theme-surface,#fff);border:1px solid var(--theme-border,var(--line));border-radius:18px;padding:22px 20px 18px;margin-bottom:22px}',
+      '.mp-demo-block{background:var(--theme-surface,#fff);border:1px solid var(--theme-border,var(--line));border-radius:18px;padding:22px 20px 18px;margin-bottom:0}',
       '.mp-demo-head{margin:0 0 16px}',
       '.mp-demo-head h2{font-family:var(--theme-heading-font,var(--disp));font-size:clamp(24px,3vw,32px);margin:6px 0 8px}',
       '.mp-lede{color:var(--theme-text-muted,var(--mut));max-width:60ch;margin:0}',
@@ -360,12 +371,8 @@
       '.mp-pg-editor-compact{margin-top:4px}',
       '.mp-pg-actions{display:flex;gap:8px;flex-wrap:wrap}',
       '.mp-pg .pg-topbar,.mp-demo-block .pg-topbar{flex-wrap:wrap;gap:10px;padding:4px 0 10px}',
-      '.mp-demo-cta{text-align:center;padding:28px 18px 8px}',
-      '.mp-demo-cta h2{font-family:var(--theme-heading-font,var(--disp));font-size:clamp(24px,3vw,32px);margin:0 0 10px}',
-      '.mp-demo-cta p{color:var(--theme-text-muted,var(--mut));max-width:48ch;margin:0 auto 18px}',
-      '.mp-hero-cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}',
-      '.mp-hero-cta .btn,.hcta .btn{display:inline-flex;font-weight:700;padding:12px 22px;border-radius:999px;background:var(--theme-primary,var(--rose));color:#fff;border:2px solid transparent}',
-      '.mp-hero-cta .btn.ghost,.hcta .btn.ghost{background:transparent;border-color:currentColor;color:inherit}',
+      '.hcta .btn{display:inline-flex;font-weight:700;padding:12px 22px;border-radius:999px;background:var(--theme-primary,var(--rose));color:#fff;border:2px solid transparent}',
+      '.hcta .btn.ghost{background:transparent;border-color:currentColor;color:inherit}',
       '.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}',
       'section.back{display:none}'
     ].join('\n');
@@ -424,7 +431,8 @@
       name: 'Trust Bar',
       slug: 'trust-bar',
       section_key: 'trustBar',
-      summary: 'Keep important services, promises or credentials visible without distracting from the rest of your page.'
+      summary: 'Keep important services, promises or credentials visible without distracting from the rest of your page.',
+      hero_image_url: HERO_FALLBACK
     };
     fetch('/api/catalog?slug=' + encodeURIComponent(slug))
       .then(function (r) { if (!r.ok) throw 0; return r.json(); })
