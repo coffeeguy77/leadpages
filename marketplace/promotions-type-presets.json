@@ -1,0 +1,305 @@
+[
+  {
+    "slug": "weekly",
+    "label": "Weekly booking",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-weekly",
+              "on": true,
+              "type": "weekly",
+              "placement": "belowHero",
+              "style": "banner",
+              "title": "Booking for next week",
+              "description": "Secure your spot in next week’s schedule — book before the cut-off.",
+              "weeklyDay": 4,
+              "weeklyCutoff": "16:00",
+              "cta": { "text": "Book now", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "slug": "deadline",
+    "label": "Deadline offer",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-deadline",
+              "on": true,
+              "type": "deadline",
+              "placement": "belowHero",
+              "style": "banner",
+              "title": "Hot water special ends soon",
+              "description": "Book a hot water replacement this month and save on call-out.",
+              "expiry": "2027-08-15T17:00",
+              "cta": { "text": "Claim offer", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "slug": "spots",
+    "label": "Limited spots",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-spots",
+              "on": true,
+              "type": "spots",
+              "placement": "belowHero",
+              "style": "banner",
+              "title": "Only a few jobs left this week",
+              "description": "We keep a short list so every job gets proper time on site.",
+              "spotsTotal": 10,
+              "spotsRemaining": 3,
+              "cta": { "text": "Grab a spot", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "slug": "seasonal",
+    "label": "Seasonal",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-seasonal",
+              "on": true,
+              "type": "seasonal",
+              "placement": "belowHero",
+              "style": "banner",
+              "title": "Winter pipe check",
+              "description": "Seasonal maintenance special for Canberra homes before the freeze.",
+              "startDate": "2026-06-01",
+              "endDate": "2026-08-31",
+              "cta": { "text": "Book winter check", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "slug": "suburb",
+    "label": "Suburb promo",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-suburb",
+              "on": true,
+              "type": "suburb",
+              "placement": "belowHero",
+              "style": "banner",
+              "title": "Local Belconnen special",
+              "description": "This week we’re focusing on Belconnen and surrounds — faster booking windows.",
+              "suburbs": "Belconnen, Bruce, Macquarie",
+              "cta": { "text": "Book locally", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "slug": "finance",
+    "label": "Finance",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-finance",
+              "on": true,
+              "type": "finance",
+              "placement": "belowHero",
+              "style": "card",
+              "title": "Spread the cost",
+              "description": "Get the job done now and pay it off weekly on approved finance.",
+              "amount": "$28",
+              "disclaimer": "Finance subject to approval. Terms and conditions apply.",
+              "cta": { "text": "Check options", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "slug": "firstTime",
+    "label": "First-time",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-first",
+              "on": true,
+              "type": "firstTime",
+              "placement": "belowHero",
+              "style": "banner",
+              "title": "Welcome offer for new customers",
+              "description": "Trying us for the first time? Mention this offer when you book.",
+              "discountText": "10% off first job",
+              "cta": { "text": "Get started", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "slug": "priority",
+    "label": "Emergency priority",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-priority",
+              "on": true,
+              "type": "priority",
+              "placement": "belowHero",
+              "style": "banner",
+              "title": "Emergency call-outs prioritised",
+              "description": "Burst pipe or no hot water? We bump genuine emergencies to the front of the queue.",
+              "cta": { "text": "Call now", "action": "call" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "slug": "socialProof",
+    "label": "Social proof",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-social",
+              "on": true,
+              "type": "socialProof",
+              "placement": "belowHero",
+              "style": "banner",
+              "title": "Booked by locals this week",
+              "description": "Neighbours are already locking in jobs — join them while the diary is open.",
+              "number": "17",
+              "cta": { "text": "Book yours", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "slug": "mystery",
+    "label": "Mystery offer",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-mystery",
+              "on": true,
+              "type": "mystery",
+              "placement": "belowHero",
+              "style": "card",
+              "title": "Tap to reveal this week’s surprise",
+              "description": "A little extra for customers who book online today.",
+              "revealText": "Free pressure check valued at $120 with any booked service.",
+              "cta": { "text": "Book & claim", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
+  }
+]
