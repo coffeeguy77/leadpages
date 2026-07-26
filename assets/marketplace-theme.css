@@ -1,0 +1,82 @@
+/**
+ * LeadPages public marketplace theme bridge.
+ * Maps the public marketing palette to semantic --theme-* tokens.
+ * Marketplace chrome uses these tokens; app previews keep their own demo-site theme.
+ *
+ * Source of truth for public marketing colours remains the LeadPages homepage
+ * tokens (--paper, --shell, --ink, --mut, --rose, --gum, --line, fonts).
+ * When those change, marketplace surfaces update automatically via this alias layer.
+ */
+
+:root {
+  /* Public marketing base (shared with home.html) */
+  --paper: #faf5f2;
+  --shell: #f1e5df;
+  --ink: #2e2a2b;
+  --mut: #6e6265;
+  --rose: #a84a5e;
+  --rose-d: #7e3346;
+  --gum: #2f413a;
+  --gum-l: #43584f;
+  --line: #e4d5cd;
+  --disp: "Young Serif", Georgia, serif;
+  --body: "Figtree", system-ui, sans-serif;
+  --r: 16px;
+
+  /* Semantic marketplace theme tokens */
+  --theme-page-background: var(--paper);
+  --theme-surface: #ffffff;
+  --theme-surface-alt: var(--shell);
+  --theme-text: var(--ink);
+  --theme-text-muted: var(--mut);
+  --theme-text-inverse: #f3efea;
+  --theme-primary: var(--rose);
+  --theme-primary-hover: var(--rose-d);
+  --theme-primary-contrast: #ffffff;
+  --theme-secondary: var(--gum);
+  --theme-secondary-hover: var(--gum-l);
+  --theme-secondary-contrast: #e9efea;
+  --theme-accent: #d9a0ac;
+  --theme-accent-soft: rgba(168, 74, 94, 0.12);
+  --theme-border: var(--line);
+  --theme-border-strong: #d2bfb4;
+  --theme-success: #2f413a;
+  --theme-warning: #b9852b;
+  --theme-danger: #b42318;
+  --theme-radius-small: 10px;
+  --theme-radius-medium: var(--r);
+  --theme-radius-large: 22px;
+  --theme-heading-font: var(--disp);
+  --theme-body-font: var(--body);
+  --theme-content-width: 1440px;
+  --theme-section-spacing: 72px;
+  --theme-focus: var(--rose);
+}
+
+html[data-appearance="dark"] {
+  --paper: #1a2220;
+  --shell: #24302c;
+  --ink: #f3efea;
+  --mut: #b7c0bb;
+  --rose: #d48a9a;
+  --rose-d: #e4a8b4;
+  --gum: #15201c;
+  --gum-l: #2a3a34;
+  --line: #3a4842;
+  --theme-surface: #24302c;
+  --theme-surface-alt: #1f2a26;
+  --theme-text-inverse: #f3efea;
+  --theme-primary-contrast: #1a1516;
+  --theme-accent: #e4b4be;
+  --theme-accent-soft: rgba(212, 138, 154, 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-motion,
+  .fcard,
+  .mp-card,
+  .mp-example-card {
+    transition: none !important;
+    animation: none !important;
+  }
+}

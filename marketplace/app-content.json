@@ -641,38 +641,42 @@
   },
   "trustBar": {
     "name": "Trust Bar",
-    "tagline": "Scrolling badge strip under the hero",
-    "summary": "Licensed, insured, fixed pricing — instant credibility strip.",
-    "pitch": "Thin badge row that sits directly under the hero on most layouts. Toggle badges on/off — licensed, insured, 5-star, 24/7, family owned.",
+    "tagline": "Give visitors a reason to trust you immediately",
+    "summary": "Keep important services, promises or credentials visible without distracting from the rest of your page.",
+    "pitch": "Show services, guarantees or visual options in a clear strip under the hero. Text-and-icon or image-tile layouts, industry presets, and the same editor used inside LeadPages.",
     "features": [
       {
-        "title": "Eight badge slots",
-        "text": "Enable the badges that apply; hide the rest."
+        "title": "Text and icons",
+        "text": "Compact badge strip for services, promises and credentials."
       },
       {
-        "title": "Icon-free labels",
-        "text": "Text badges load fast — no image assets required."
+        "title": "Image tiles",
+        "text": "Full-width visual tiles when visitors need to recognise options quickly."
       },
       {
-        "title": "Auto-inserted",
-        "text": "Inserts after hero in layout order when enabled."
+        "title": "Industry presets",
+        "text": "Start from trades, cafés, clinics and more — then make it yours."
       }
     ],
     "partnerBenefits": [
       {
-        "title": "Universal trust",
-        "text": "Every trade benefits from license and insurance proof."
+        "title": "Instant credibility",
+        "text": "Every local business benefits from clear trust above the fold."
       },
       {
-        "title": "One-minute setup",
-        "text": "Toggle defaults on and publish."
+        "title": "Same editor as production",
+        "text": "Partners configure with the real Trust Bar controls."
       },
       {
-        "title": "Works with all layouts",
-        "text": "Compatible with classic and premium presets."
+        "title": "Included with LeadPages",
+        "text": "No extra subscription for the Trust Bar itself."
       }
     ],
     "presets": [
+      "trustbar-aam1",
+      "trustbar-bean-culture",
+      "trustbar-carpenter-badges",
+      "trustbar-carpenter-images",
       "default"
     ]
   },

@@ -1,0 +1,69 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-carpenter-images",
+ "label": "Carpenter — Image Tiles",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Carpentry",
+ "businessType": "",
+ "mode": "images",
+ "pairedPresetId": "trustbar-carpenter-badges",
+ "relationshipType": "alternate-mode",
+ "sellingPoint": "Same carpenter content as visual tiles.",
+ "description": "",
+ "isFeatured": false,
+ "isDefaultPlaygroundPreset": false,
+ "site_config": {
+  "business": "Harbour Timber Works",
+  "trade": "carpenter",
+  "theme": {
+   "pipe": "#5C4033"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "images",
+    "imageHeight": 280,
+    "strokeOn": true,
+    "strokeColour": "#ffffff",
+    "edgeOn": true,
+    "edgeColour": "#ffffff",
+    "fg": "#ffffff",
+    "badges": [
+     {
+      "on": true,
+      "label": "Timber Decks",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Pergolas",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Custom Handrails",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1600047509807-ba8f99d2cd1a?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Outdoor Living",
+      "icon": "",
+      "image": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ]
+   }
+  }
+ }
+}

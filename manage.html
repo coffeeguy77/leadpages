@@ -3100,8 +3100,25 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     items=_lplSort(items);
     var cnt=document.getElementById('lpl-listcount'); if(cnt) cnt.textContent=items.length+' site'+(items.length===1?'':'s');
     var html='';
-    if(LPL.grp==='appdemo'&&!items.length){
-      html='<p class="hint" style="color:#888;">No app demos yet.</p>';
+    if(LPL.grp==='appdemo'){
+      html+='<div class="card" style="margin:0 0 16px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);">'
+        +'<div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;">Marketplace App Demos</div>'
+        +'<h3 style="margin:0 0 8px;font-size:18px;">Trust Bar</h3>'
+        +'<p class="hint" style="margin:0 0 12px;">Public page, real examples, industry presets, playground safety and access labels. Reference implementation for marketplace V2.</p>'
+        +'<div style="display:flex;gap:10px;flex-wrap:wrap;">'
+        +'<a class="btn" href="/app-demo/trust-bar" target="_blank" rel="noopener">Open Trust Bar App Demo</a>'
+        +'<a class="btn ghost" href="/marketplace/trust-bar?v2=1" target="_blank" rel="noopener">View public page</a>'
+        +'</div>'
+        +'<p class="hint" style="margin:12px 0 0;">New registry apps should appear here with <strong>Demo setup required</strong> until presets and examples are published.</p>'
+        +'</div>';
+      if(!items.length){
+        html+='<p class="hint" style="color:#888;">No broker-app demos in this group yet.</p>';
+      } else {
+        items.forEach(function(s){ html+=_lplCard(s); });
+      }
+      list.innerHTML=html;
+      _lplWire(list);
+      return;
     } else if(LPL.grp==='listing'){
       html=items.length?items.map(function(s){return _lplCard(s);}).join(''):'<p class="hint" style="color:#888;">No listing yet. Create a partner listing to appear in the partner directory.</p>';
     } else if(!items.length){

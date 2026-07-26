@@ -1,0 +1,85 @@
+{
+ "contract_version": 1,
+ "slug": "trustbar-bean-culture",
+ "label": "Bean Culture — Image Tiles",
+ "section_key": "trustBar",
+ "source": "file",
+ "industry": "Coffee events",
+ "businessType": "",
+ "mode": "images",
+ "pairedPresetId": null,
+ "relationshipType": null,
+ "sellingPoint": "Turn your service range into visual inspiration.",
+ "description": "Bean Culture-style image-tile Trust Bar.",
+ "isFeatured": true,
+ "isDefaultPlaygroundPreset": false,
+ "site_config": {
+  "business": "Bean Culture Coffee Events",
+  "trade": "coffee",
+  "theme": {
+   "pipe": "#6F4E37"
+  },
+  "sections": {
+   "trustBar": {
+    "on": true,
+    "mode": "images",
+    "imageHeight": 300,
+    "strokeOn": true,
+    "strokeColour": "#ffffff",
+    "edgeOn": true,
+    "edgeColour": "#ffffff",
+    "fg": "#ffffff",
+    "badges": [
+     {
+      "on": true,
+      "label": "Coffee Carts",
+      "icon": "coffee",
+      "image": "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Coffee Van",
+      "icon": "truck",
+      "image": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Retro Caravan",
+      "icon": "caravan",
+      "image": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Food Trailer",
+      "icon": "utensils",
+      "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Coffee Roastery",
+      "icon": "flame",
+      "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     },
+     {
+      "on": true,
+      "label": "Automatic Self Serve",
+      "icon": "coffee",
+      "image": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=900&h=600&fit=crop&q=80",
+      "imageFit": "cover",
+      "imagePos": "center"
+     }
+    ]
+   }
+  }
+ }
+}

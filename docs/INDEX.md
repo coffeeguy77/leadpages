@@ -195,6 +195,7 @@ Short summary of every engineering document in `docs/`.
 | **Billing / Stripe** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | [05-PARTNERS](05-PARTNERS.md) § Commissions | `api/billing/*` |
 | **Domains / DNS** | [06-DOMAINS](06-DOMAINS.md) | [01-ARCHITECTURE](01-ARCHITECTURE.md) §12 | `dreamscape.js`, `api/domains/*` |
 | **Marketplace apps** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | [10-EDITOR](10-EDITOR.md) § Marketplace | `api/api-apps.js`, `api-site-apps.js` |
+| **Public marketplace V2** | [features/Marketplace-Public-V2](features/Marketplace-Public-V2.md) | [features/Marketplace](features/Marketplace.md) | `marketplace.html`, `marketplace-feature.html`, `assets/js/marketplace/*`, `playground/trustbar-*.json` |
 | **Images / Cloudinary** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | [10-EDITOR](10-EDITOR.md) | `api/cloudinary/*` |
 | **Instagram feed** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | [02-DATABASE](02-DATABASE.md) `ig_connections` | `api/instagram/*`, `lib/ig/*` |
 | **AI / LeadPages Brain** | [AI/README](AI/README.md) | [AI/01-CURRENT-STATE-AUDIT](AI/01-CURRENT-STATE-AUDIT.md), [AI/16-MIGRATION-PLAN](AI/16-MIGRATION-PLAN.md) | Runtime: `lib/brain/`, `/api/brain/*`, `/brain-admin`; legacy direct Anthropic still in assist/packs/suburb/IG |

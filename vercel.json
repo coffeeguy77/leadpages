@@ -211,6 +211,14 @@
       "destination": "/marketplace-admin.html"
     },
     {
+      "source": "/app-demo/trust-bar",
+      "destination": "/app-demo-trust-bar.html"
+    },
+    {
+      "source": "/app-demo/trustBar",
+      "destination": "/app-demo-trust-bar.html"
+    },
+    {
       "source": "/apps-admin",
       "destination": "/apps-admin.html"
     },

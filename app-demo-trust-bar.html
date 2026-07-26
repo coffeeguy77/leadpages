@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en-AU" data-theme="classic-light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App Demo — Trust Bar · LeadPages</title>
+<link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/marketplace-theme.css">
+<link rel="stylesheet" href="/assets/js/marketplace/trust-bar-editor.css">
+<link rel="stylesheet" href="/assets/lp-logo.css">
+<style>
+  body{margin:0;font-family:var(--body,system-ui,sans-serif);background:var(--bg,#f6f4ef);color:var(--text,#1b2430)}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px}
+  header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+  h1{font-family:var(--disp,Georgia,serif);font-weight:400;font-size:clamp(28px,3vw,36px);margin:0}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}
+  .tabs button{appearance:none;border:1px solid var(--border,#e7e2d8);background:var(--panel,#fff);border-radius:999px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer}
+  .tabs button.on{background:var(--accent,#1f7a63);border-color:var(--accent,#1f7a63);color:var(--accent-text,#fff)}
+  .panel{display:none;background:var(--panel,#fff);border:1px solid var(--border,#e7e2d8);border-radius:16px;padding:22px}
+  .panel.on{display:block}
+  .grid2{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+  @media(max-width:900px){.grid2{grid-template-columns:1fr}}
+  label{display:block;font-weight:700;font-size:13px;margin:0 0 6px}
+  input,textarea,select{width:100%;padding:10px 12px;border:1px solid var(--border,#e7e2d8);border-radius:8px;font:inherit;margin-bottom:12px;background:#fff}
+  .hint{color:var(--text-soft,#5c6675);font-size:14px}
+  .btn{appearance:none;border:0;border-radius:999px;padding:11px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent,#1f7a63);color:#fff}
+  .btn.ghost{background:transparent;border:1px solid var(--border,#e7e2d8);color:inherit}
+  .list{display:grid;gap:10px}
+  .card{border:1px solid var(--border,#e7e2d8);border-radius:12px;padding:14px;background:var(--panel-soft,#fbfaf7)}
+  .status{font-size:13px;font-weight:700;color:var(--accent,#1f7a63)}
+  iframe{width:100%;border:1px solid var(--border,#e7e2d8);border-radius:12px;min-height:220px;background:#fff}
+  .warn{background:#fff6e8;border:1px solid #e7c98a;padding:12px 14px;border-radius:10px;margin-bottom:14px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <div class="hint">App Demos · Superuser</div>
+        <h1>Trust Bar</h1>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn ghost" href="/marketplace/trust-bar?v2=1" target="_blank" rel="noopener">Public page</a>
+        <a class="btn ghost" href="/manage">Back to manage</a>
+      </div>
+    </header>
+
+    <div class="warn">
+      <strong>Demo builder stub.</strong> Preset content is loaded from published playground files.
+      Saving to the database still uses Marketplace Admin / <code>app_presets</code>.
+      Public playground changes never save.
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Trust Bar demo sections">
+      <button type="button" class="on" data-tab="public">Public Page</button>
+      <button type="button" data-tab="examples">Real Examples</button>
+      <button type="button" data-tab="presets">Presets</button>
+      <button type="button" data-tab="playground">Playground</button>
+      <button type="button" data-tab="access">Access and Pricing</button>
+      <button type="button" data-tab="card">Marketplace Card</button>
+      <button type="button" data-tab="publish">Publishing</button>
+    </div>
+
+    <section class="panel on" id="tab-public">
+      <div class="grid2">
+        <div>
+          <label for="pub-name">App name</label>
+          <input id="pub-name" value="Trust Bar">
+          <label for="pub-heading">Public heading</label>
+          <input id="pub-heading">
+          <label for="pub-cat">Category</label>
+          <input id="pub-cat" value="Reviews and Trust">
+          <label for="pub-short">Short description</label>
+          <textarea id="pub-short" rows="3"></textarea>
+          <label for="pub-long">Long description</label>
+          <textarea id="pub-long" rows="5"></textarea>
+        </div>
+        <div>
+          <p class="hint">Loaded from <code>marketplace/trust-bar-v2.json</code>. Edit the file or Marketplace Admin to publish copy changes.</p>
+          <div class="status" id="pub-status">Draft metadata</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-examples">
+      <p class="hint">Featured real-website examples linked to presets.</p>
+      <div class="list" id="ex-list"></div>
+    </section>
+
+    <section class="panel" id="tab-presets">
+      <p class="hint">Industry presets. Edit with the real Trust Bar editor below, then export via playground API (superuser).</p>
+      <div class="list" id="preset-list"></div>
+      <div class="grid2" style="margin-top:18px">
+        <div>
+          <h2 style="font-family:var(--disp);font-weight:400">Edit selected preset</h2>
+          <div id="demo-editor" class="tb-ed-root"></div>
+        </div>
+        <div>
+          <h2 style="font-family:var(--disp);font-weight:400">Preview</h2>
+          <iframe id="demo-preview" title="Trust Bar preset preview" src="/marketplace/demos/demo-trustBar.html"></iframe>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn" id="btn-apply">Apply to preview</button>
+            <a class="btn ghost" id="btn-public-pg" href="/marketplace/trust-bar?v2=1#playground" target="_blank" rel="noopener">Open public playground</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-playground">
+      <p class="hint">Safety checklist for anonymous playground users.</p>
+      <ul>
+        <li>No save / publish controls</li>
+        <li>No enquiry, SMS, call, payment or booking side effects</li>
+        <li>No paid provider APIs (e.g. DataForSEO)</li>
+        <li>Preset switch resets temporary browser state</li>
+      </ul>
+      <p class="status">Playground safety: file-based presets + temporary client state</p>
+    </section>
+
+    <section class="panel" id="tab-access">
+      <label for="access-type">Access type</label>
+      <select id="access-type">
+        <option value="included">Included</option>
+        <option value="free">Free</option>
+        <option value="free_limited">Free with limits</option>
+        <option value="premium_subscription">Premium subscription</option>
+        <option value="usage_based">Usage-based</option>
+        <option value="premium_plus_usage">Premium + usage</option>
+        <option value="requires_connection">Requires connection</option>
+        <option value="third_party_subscription">Third-party subscription</option>
+        <option value="coming_soon">Coming soon</option>
+      </select>
+      <label for="access-notes">Public access explanation</label>
+      <textarea id="access-notes" rows="4">Included with your LeadPages website. No extra subscription for the Trust Bar itself.</textarea>
+      <p class="hint">Currency for premium apps: AUD. Do not show internal entitlement keys on the public page.</p>
+    </section>
+
+    <section class="panel" id="tab-card">
+      <label for="card-heading">Card heading</label>
+      <input id="card-heading" value="Trust Bar">
+      <label for="card-benefit">Short benefit</label>
+      <textarea id="card-benefit" rows="3"></textarea>
+      <label for="card-access">Access label</label>
+      <input id="card-access" value="Included">
+      <p class="hint">Card image should show the finished Trust Bar result, not editor settings.</p>
+    </section>
+
+    <section class="panel" id="tab-publish">
+      <div class="list">
+        <div class="card"><strong>Public status</strong><div class="hint" id="pub-check">Checking…</div></div>
+        <div class="card"><strong>Presets</strong><div class="hint" id="preset-check">Checking…</div></div>
+        <div class="card"><strong>Renderer</strong><div class="hint">demo-trustBar.html uses sections.trustBar (badges / images).</div></div>
+        <div class="card"><strong>Playground safety</strong><div class="hint">marketplace-playground mode — temporary state only.</div></div>
+      </div>
+    </section>
+  </div>
+
+<script src="/lib/playground-preset.js"></script>
+<script src="/assets/js/marketplace/trust-bar-editor.js"></script>
+<script>
+(function(){
+  var meta=null, presets=[], selected=null, liveCfg={sections:{}}, editor=null;
+
+  document.querySelectorAll('.tabs button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.tabs button').forEach(function(b){b.classList.toggle('on', b===btn);});
+      document.querySelectorAll('.panel').forEach(function(p){p.classList.toggle('on', p.id==='tab-'+btn.getAttribute('data-tab'));});
+    });
+  });
+
+  function esc(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML;}
+
+  function applyPreview(){
+    var fr=document.getElementById('demo-preview');
+    try{
+      if(fr && fr.contentWindow && fr.contentWindow.__applyTradeConfig){
+        fr.contentWindow.__applyTradeConfig(liveCfg);
+      }
+    }catch(e){}
+  }
+
+  function selectPreset(slug){
+    selected=slug;
+    var p=presets.find(function(x){return x.slug===slug;});
+    if(!p) return;
+    liveCfg = window.LPPlaygroundPreset
+      ? window.LPPlaygroundPreset.presetToSiteConfig(p)
+      : (p.site_config||{sections:{}});
+    if(editor) editor.setValue(liveCfg);
+    else {
+      editor = window.LPTrustBarEditor.mount(document.getElementById('demo-editor'), {
+        mode: 'demo-builder',
+        value: liveCfg,
+        onChange: function(cfg){ liveCfg=cfg; applyPreview(); }
+      });
+    }
+    applyPreview();
+    renderPresetList();
+  }
+
+  function renderPresetList(){
+    var box=document.getElementById('preset-list');
+    box.innerHTML = presets.map(function(p){
+      return '<button type="button" class="card" data-slug="'+esc(p.slug)+'" style="text-align:left;cursor:pointer;width:100%;font:inherit;'+(selected===p.slug?'border-color:var(--accent);':'')+'">'
+        +'<strong>'+esc(p.label||p.slug)+'</strong>'
+        +'<div class="hint">'+esc(p.industry||'')+' · '+(p.mode==='images'?'Image tiles':'Text and icons')+'</div></button>';
+    }).join('');
+    box.querySelectorAll('[data-slug]').forEach(function(b){
+      b.addEventListener('click', function(){ selectPreset(b.getAttribute('data-slug')); });
+    });
+  }
+
+  document.getElementById('btn-apply').addEventListener('click', applyPreview);
+  document.getElementById('demo-preview').addEventListener('load', applyPreview);
+
+  Promise.all([
+    fetch('/marketplace/trust-bar-v2.json').then(function(r){return r.json();}),
+    fetch('/api/marketplace-playground?section_key=trustBar').then(function(r){return r.json();})
+  ]).then(function(res){
+    meta=res[0]||{};
+    presets=(res[1]&&res[1].presets)||[];
+    document.getElementById('pub-heading').value=meta.publicHeading||'';
+    document.getElementById('pub-short').value=meta.shortDescription||'';
+    document.getElementById('pub-long').value=meta.longDescription||'';
+    document.getElementById('card-benefit').value=meta.shortDescription||'';
+    document.getElementById('access-type').value=meta.accessType||'included';
+    document.getElementById('ex-list').innerHTML=(meta.examples||[]).map(function(ex){
+      return '<div class="card"><strong>'+esc(ex.businessName)+'</strong><div class="hint">'+esc(ex.title)+' · preset '+esc(ex.presetSlug)+'</div></div>';
+    }).join('')||'<p class="hint">No examples configured.</p>';
+    document.getElementById('pub-check').textContent='Metadata file present · '+(meta.examples||[]).length+' examples';
+    document.getElementById('preset-check').textContent=presets.length+' presets available via playground API';
+    renderPresetList();
+    var def=meta.defaultPlaygroundPreset|| (presets[0]&&presets[0].slug);
+    if(def) selectPreset(def);
+  }).catch(function(){
+    document.getElementById('pub-check').textContent='Could not load Trust Bar demo metadata.';
+  });
+})();
+</script>
+</body>
+</html>
