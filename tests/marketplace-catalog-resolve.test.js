@@ -8,11 +8,6 @@ const root = path.join(__dirname, '..');
 
 describe('marketplace catalog resolve', () => {
   it('maps marketing hub slugs to section demos', () => {
-    const quote = resolve.resolveFromStatic('quote-lead-capture');
-    assert.equal(quote.feature.section_key, 'onlineQuote');
-    assert.ok(resolve.hasPlayground(quote.blocks));
-    assert.match(quote.blocks.find((b) => b.block_type === 'playground').payload.section_key, /onlineQuote/);
-
     const reviews = resolve.resolveFromStatic('reviews-trust');
     assert.equal(reviews.feature.section_key, 'reviews');
     assert.ok(resolve.hasPlayground(reviews.blocks));
@@ -23,6 +18,41 @@ describe('marketplace catalog resolve', () => {
     const pg = promo.blocks.find((b) => b.block_type === 'playground');
     assert.ok(pg.payload.presets && pg.payload.presets.includes('weekly'));
     assert.ok(pg.payload.presets.includes('mystery'));
+  });
+
+  it('quote-lead-capture is a premium Bean Culture showcase (no playground)', () => {
+    const quote = resolve.resolveFromStatic('quote-lead-capture');
+    assert.equal(quote.feature.section_key, null);
+    assert.equal(quote.feature.badge, 'Premium');
+    assert.equal(quote.feature.access_type, 'premium_subscription');
+    assert.ok(quote.feature.hero_image_url);
+    assert.equal(resolve.hasPlayground(quote.blocks), false);
+    const embed = quote.blocks.find((b) => b.block_type === 'demo_embed');
+    assert.ok(embed);
+    assert.equal(embed.payload.url, '/marketplace/demos/demo-beanCultureQuote.html');
+    assert.ok(quote.blocks.some((b) => b.block_type === 'cta'));
+
+    const stale = resolve.enrichCatalogPayload(
+      { id: '1', slug: 'quote-lead-capture', name: 'Quote', status: 'live', section_key: 'onlineQuote' },
+      [{ block_type: 'playground', payload: { section_key: 'onlineQuote', presets: ['default'] } }],
+      'quote-lead-capture'
+    );
+    assert.equal(stale.feature.section_key, null);
+    assert.equal(resolve.hasPlayground(stale.blocks), false);
+    assert.ok(stale.blocks.some((b) => b.block_type === 'demo_embed'));
+
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /premiumShowcase\s*:\s*true/);
+    assert.match(feat, /demo-beanCultureQuote/);
+    assert.match(feat, /Talk to LeadPages/);
+    assert.ok(fs.existsSync(path.join(root, 'marketplace/demos/demo-beanCultureQuote.html')));
+    assert.ok(fs.existsSync(path.join(root, 'marketplace/bean-culture-quote-shell.json')));
+    const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-beanCultureQuote.html'), 'utf8');
+    assert.match(demo, /data-showcase="1"/);
+    assert.match(demo, /bean-culture-quote-shell\.json/);
+    const oq = fs.readFileSync(path.join(root, 'assets/lp-online-quote.js'), 'utf8');
+    assert.match(oq, /blockSpend/);
+    assert.match(oq, /loadShowcaseShell/);
   });
 
   it('email-campaigns is a platform explainer without fake playground', () => {

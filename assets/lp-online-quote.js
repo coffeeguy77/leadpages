@@ -90,6 +90,8 @@
   function OnlineQuoteWidget(el) {
     this.el = el;
     this.slug = (el.getAttribute('data-slug') || '').trim().toLowerCase();
+    this.showcase = el.getAttribute('data-showcase') === '1' || el.getAttribute('data-showcase') === 'true';
+    this.shellUrl = (el.getAttribute('data-shell-url') || '').trim();
     this.token = null;
     this.shell = null;
     this.state = {
@@ -126,11 +128,24 @@
 
   OnlineQuoteWidget.prototype.init = function() {
     var self = this;
-    if (!this.slug) {
+    if (!this.slug && !this.showcase) {
       this.el.innerHTML = '<p class="lp-oq-error">Quote wizard: missing data-slug.</p>';
       return;
     }
     this.el.innerHTML = '<div class="lp-oq-loading">Loading quote wizard…</div>';
+    if (this.showcase) {
+      this.loadShowcaseShell().then(function(shell) {
+        if (!shell) {
+          self.el.innerHTML = '<p class="lp-oq-error">Could not load showcase quote.</p>';
+          return;
+        }
+        self.shell = shell;
+        self.render();
+      }).catch(function() {
+        self.el.innerHTML = '<p class="lp-oq-error">Could not load showcase quote.</p>';
+      });
+      return;
+    }
     get('/public-config?slug=' + encodeURIComponent(this.slug)).then(function(res) {
       if (!res.ok || !res.enabled) {
         self.el.innerHTML = '<p class="lp-oq-muted">Online quotes are not available for this site yet.</p>';
@@ -141,6 +156,28 @@
     }).catch(function() {
       self.el.innerHTML = '<p class="lp-oq-error">Could not load quote wizard.</p>';
     });
+  };
+
+  /** Marketplace / sales showcase — static shell, no sessions, OTP, SMS or spend. */
+  OnlineQuoteWidget.prototype.loadShowcaseShell = function() {
+    if (window.__LP_QUOTE_SHOWCASE_SHELL && window.__LP_QUOTE_SHOWCASE_SHELL.shell) {
+      return Promise.resolve(window.__LP_QUOTE_SHOWCASE_SHELL.shell);
+    }
+    if (!this.shellUrl) return Promise.resolve(null);
+    return fetch(this.shellUrl).then(function(r) {
+      if (!r.ok) throw 0;
+      return r.json();
+    }).then(function(data) {
+      return (data && data.shell) || null;
+    });
+  };
+
+  OnlineQuoteWidget.prototype.blockSpend = function(action) {
+    if (!this.showcase) return false;
+    try {
+      console.info('[lp-online-quote] showcase blocked:', action);
+    } catch (_e) {}
+    return true;
   };
 
   OnlineQuoteWidget.prototype.planning = function() {
@@ -235,18 +272,25 @@
       }
       bodyHtml = '<p class="lp-oq-error">This step could not be loaded. Please go back and try again.</p>';
     }
-    var html = '<div class="lp-oq-card' + layoutClass(this.shell) + '"' + (uiStyle ? (' style="' + uiStyle + '"') : '') + '>' +
+    var accessBtn = this.showcase
+      ? ''
+      : '<button type="button" class="lp-oq-btn lp-oq-access-toggle" data-act="portal-access-toggle">Already quoted? Access my portal</button>';
+    var showcaseBanner = this.showcase
+      ? '<div class="lp-oq-showcase-banner">Example only — Bean Culture coffee cart quote. Not editable or billable here. LeadPages sets this up with you.</div>'
+      : '';
+    var html = '<div class="lp-oq-card' + layoutClass(this.shell) + (this.showcase ? ' lp-oq-showcase' : '') + '"' + (uiStyle ? (' style="' + uiStyle + '"') : '') + '>' +
+      showcaseBanner +
       '<div class="lp-oq-head"><h2 class="lp-oq-title">' + esc(biz) + '</h2>' +
       '<div class="lp-oq-nav">' +
       '<div class="lp-oq-steps">' + steps.map(function(s, i) {
         return '<span class="lp-oq-step' + (i === this.state.step ? ' is-active' : (i < this.state.step ? ' is-done' : '')) + '">' + esc(this.stepLabel(s)) + '</span>';
       }, this).join('') + '</div>' +
-      '<button type="button" class="lp-oq-btn lp-oq-access-toggle" data-act="portal-access-toggle">Already quoted? Access my portal</button>' +
+      accessBtn +
       '</div></div>' +
       '<div class="lp-oq-body">' + bodyHtml + '</div>' +
       '<div class="lp-oq-foot">' + this.renderFooter(stepKey, steps) + '</div>' +
       '</div>' +
-      this.renderPortalAccessPopup(uiStyle);
+      (this.showcase ? '' : this.renderPortalAccessPopup(uiStyle));
     this.el.innerHTML = html;
     this.wire(stepKey);
   };
@@ -422,7 +466,11 @@
           (s.quote
             ? contactSelf.renderQuotePanel()
             : '<div class="lp-oq-quote-slot"><p class="lp-oq-col-title">Your quote</p>' +
-              '<p class="lp-oq-muted" style="margin:0;line-height:1.45">Fill in your details, then tap <strong>Get my quote</strong>. Your total and verification will appear here.</p></div>');
+              '<p class="lp-oq-muted" style="margin:0;line-height:1.45">' +
+              (contactSelf.showcase
+                ? 'This marketplace example does not calculate or send quotes. LeadPages configures a live quote flow for your business.'
+                : 'Fill in your details, then tap <strong>Get my quote</strong>. Your total and verification will appear here.') +
+              '</p></div>');
         return '<div class="lp-oq-cols lp-oq-cols-contact">' +
           '<div class="lp-oq-col lp-oq-col-contact">' + left + '</div>' +
           '<div class="lp-oq-col lp-oq-col-aside">' + right + '</div></div>';
@@ -435,6 +483,9 @@
       ? '<button type="button" class="lp-oq-btn lp-oq-btn-ghost" data-act="back">Back</button>'
       : '';
     var isLast = this.state.step >= steps.length - 1;
+    if (this.showcase && isLast) {
+      return back + '<span class="lp-oq-showcase-done">Showcase only — LeadPages sets this up for you</span>';
+    }
     var next = isLast
       ? '<button type="button" class="lp-oq-btn" data-act="calculate">Get my quote</button>'
       : '<button type="button" class="lp-oq-btn" data-act="next">Continue</button>';
@@ -681,6 +732,8 @@
   };
 
   OnlineQuoteWidget.prototype.ensureSession = function() {
+    if (this.blockSpend('session')) return Promise.reject(new Error('showcase'));
+
     var self = this;
     var inputs = this.progress();
     var body = {
@@ -702,6 +755,7 @@
   };
 
   OnlineQuoteWidget.prototype.calculate = function() {
+    if (this.blockSpend('calculate')) return;
     var self = this;
     this.syncContactFromDom();
     var email = (this.state.contact.email || '').trim();
@@ -772,6 +826,8 @@
   };
 
   OnlineQuoteWidget.prototype.sendEmail = function(opts) {
+    if (this.blockSpend('verify-email')) return;
+
     var self = this;
     opts = opts || {};
     this.syncContactFromDom();
@@ -819,6 +875,8 @@
   };
 
   OnlineQuoteWidget.prototype.confirmEmail = function() {
+    if (this.blockSpend('confirm-email')) return;
+
     var self = this;
     this.syncContactFromDom();
     var codeInp = this.el.querySelector('[data-field="emailCode"]');
@@ -863,6 +921,7 @@
   };
 
   OnlineQuoteWidget.prototype.sendPortalAccess = function() {
+    if (this.blockSpend('portal-access')) return;
     var self = this;
     var emailInp = this.el.querySelector('[data-field="portalAccessEmail"]');
     var email = ((emailInp && emailInp.value) || this.state.portalAccessEmail || '').trim().toLowerCase();
@@ -889,6 +948,8 @@
   };
 
   OnlineQuoteWidget.prototype.sendSms = function() {
+    if (this.blockSpend('verify-sms')) return;
+
     var self = this;
     var phone = contactPhone.call(this);
     if (!phone || phone.length < 11) {
@@ -907,6 +968,8 @@
   };
 
   OnlineQuoteWidget.prototype.confirmSms = function() {
+    if (this.blockSpend('confirm-sms')) return;
+
     var self = this;
     var codeInp = this.el.querySelector('[data-field="smsCode"]');
     var code = codeInp ? codeInp.value : '';
@@ -1061,7 +1124,9 @@
       '.lp-oq-plan legend{font-size:var(--lp-oq-fs-label);font-weight:700;padding:0 4px;color:var(--lp-oq-label,inherit)}',
       '.lp-oq-quote h3{margin:0 0 8px;font-size:1.1rem}',
       '.lp-oq-choice span{display:block;font-size:var(--lp-oq-fs-muted);color:var(--lp-oq-choice-desc,var(--ink-soft, var(--text-soft, inherit)));margin-top:4px}',
-      '.lp-oq-foot{display:flex;gap:8px;margin-top:auto;padding-top:16px;flex-wrap:wrap;flex-shrink:0}',
+      '.lp-oq-foot{display:flex;gap:8px;margin-top:auto;padding-top:16px;flex-wrap:wrap;flex-shrink:0;align-items:center}',
+      '.lp-oq-showcase-banner{margin:0 0 12px;padding:10px 14px;border-radius:10px;background:rgba(168,74,94,.12);border:1px solid rgba(168,74,94,.28);color:#5a3038;font-size:13px;font-weight:600;line-height:1.4}',
+      '.lp-oq-showcase-done{display:inline-flex;align-items:center;padding:10px 14px;border-radius:8px;background:#f3efe8;color:#5a5248;font-size:13px;font-weight:600}',
       '.lp-oq-btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border:none;border-radius:8px;background:var(--lp-oq-btn-bg,' + brand + ');color:var(--lp-oq-btn-text,var(--accent-text, var(--on-pipe, var(--ink))));font-weight:600;cursor:pointer;font:inherit;line-height:1.2;box-sizing:border-box}',
       '.lp-oq-btn-ghost{background:var(--lp-oq-btn-ghost-bg,transparent);color:var(--lp-oq-btn-ghost-text,' + brand + ');border:1px solid var(--lp-oq-btn-ghost-border,color-mix(in srgb,' + brand + ' 40%, var(--line, var(--border, currentColor))))}',
       '.lp-oq-quote{margin-top:18px;padding-top:18px;border-top:1px solid color-mix(in srgb,' + brand + ' 18%, var(--line, var(--border, currentColor)))}',
@@ -1094,12 +1159,14 @@
 
   function mount(el) {
     if (!el) return;
-    var slug = resolveSlug(el);
-    if (!slug) return;
-    el.setAttribute('data-slug', slug);
-    if (el.__lpOqMounted && el.__lpOqSlug === slug) return;
+    var showcase = el.getAttribute('data-showcase') === '1' || el.getAttribute('data-showcase') === 'true';
+    var slug = resolveSlug(el) || (showcase ? 'showcase' : '');
+    if (!slug && !showcase) return;
+    if (slug) el.setAttribute('data-slug', slug);
+    var mountKey = (showcase ? 'sc:' : '') + slug + ':' + (el.getAttribute('data-shell-url') || '');
+    if (el.__lpOqMounted && el.__lpOqSlug === mountKey) return;
     el.__lpOqMounted = true;
-    el.__lpOqSlug = slug;
+    el.__lpOqSlug = mountKey;
     injectStyles();
     var w = new OnlineQuoteWidget(el);
     w.init();
