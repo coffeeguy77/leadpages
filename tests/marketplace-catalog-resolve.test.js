@@ -18,6 +18,43 @@ describe('marketplace catalog resolve', () => {
     const pg = promo.blocks.find((b) => b.block_type === 'playground');
     assert.ok(pg.payload.presets && pg.payload.presets.includes('weekly'));
     assert.ok(pg.payload.presets.includes('mystery'));
+
+    const promoHero = resolve.resolveFromStatic('promotions-hero');
+    assert.equal(promoHero.feature.section_key, 'promotions');
+    assert.equal(promoHero.feature.name, 'Promotions Hero');
+    assert.ok(promoHero.feature.hero_image_url);
+    assert.ok(resolve.hasPlayground(promoHero.blocks));
+    const pgHero = promoHero.blocks.find((b) => b.block_type === 'playground');
+    assert.equal(pgHero.payload.section_key, 'promotions');
+    assert.ok(pgHero.payload.presets.includes('weekly'));
+  });
+
+  it('promotions-hero remaps stale DB section_key to promotions demo', () => {
+    const stale = resolve.enrichCatalogPayload(
+      {
+        id: '2',
+        slug: 'promotions-hero',
+        name: 'Promotions Hero',
+        tagline: 'Full-width promotional hero band',
+        status: 'live',
+        section_key: 'promotions-hero',
+        hero_image_url: null
+      },
+      [{ block_type: 'playground', payload: { section_key: 'promotions-hero', presets: ['default'] } }],
+      'promotions-hero'
+    );
+    assert.equal(stale.feature.section_key, 'promotions');
+    assert.equal(stale.feature.name, 'Promotions Hero');
+    assert.ok(stale.feature.hero_image_url);
+    const pg = stale.blocks.find((b) => b.block_type === 'playground');
+    assert.equal(pg.payload.section_key, 'promotions');
+    assert.ok(pg.payload.presets.includes('mystery'));
+    assert.ok(fs.existsSync(path.join(root, 'marketplace/demos/demo-promotions.html')));
+    assert.ok(fs.existsSync(path.join(root, 'marketplace/demos/demo-promotionsHero.html')));
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /'promotions-hero'\s*:\s*\{/);
+    assert.match(feat, /secKey === 'promotions-hero'/);
+    assert.match(feat, /demoFile = 'promotions'/);
   });
 
   it('quote-lead-capture is a premium Bean Culture showcase (no playground)', () => {
@@ -87,10 +124,14 @@ describe('marketplace catalog resolve', () => {
     const email = resolve.resolveFromStatic('email-campaigns');
     assert.equal(email.feature.section_key, null);
     assert.equal(resolve.hasPlayground(email.blocks), false);
-    assert.ok(email.blocks.some((b) => b.block_type === 'benefits'));
+    assert.ok(!email.blocks.some((b) => b.block_type === 'benefits'), 'no How it works cards');
     const embed = email.blocks.find((b) => b.block_type === 'demo_embed');
     assert.ok(embed);
     assert.match(embed.payload.url, /demo-emailCampaigns\.html/);
+    assert.ok(email.blocks.some((b) => b.block_type === 'cta'));
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.doesNotMatch(feat, /heading:'How it works'/);
+    assert.doesNotMatch(feat, /heading:"How it works"/);
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-emailCampaigns.html'), 'utf8');
     assert.match(demo, /Demo only/);
     assert.match(demo, /Unsubscribed/);
@@ -146,7 +187,9 @@ describe('marketplace catalog resolve', () => {
     assert.ok(fs.existsSync(path.join(root, 'marketplace/demos/demo-promotions.html')));
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-promotions.html'), 'utf8');
     assert.match(demo, /promotions-hero/);
-    assert.match(demo, /"type"\s*:\s*"weekly"/);
+    assert.match(demo, /"type"\s*:\s*"seasonal"/);
+    assert.match(demo, /Winter hot water special/);
+    assert.match(demo, /spotsRemaining/);
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /promotions-editor\.js/);
     assert.match(feat, /LPPromotionsEditor\.mount/);

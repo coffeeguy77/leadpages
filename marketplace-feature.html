@@ -359,6 +359,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     },
     'reviews-trust':{sectionKey:'reviews',name:'Reviews & Trust',tagline:'Look established from day one',summary:'Testimonials, badges and certifications laid out to make small businesses look credible and safe to hire.'},
     'promotions':{sectionKey:'promotions',name:'Promotions & Offers',tagline:'Seasonal offers, front and centre',summary:'Urgency offers with types, placements and styles — weekly windows, deadlines, limited spots, finance, suburb specials and more.'},
+    'promotions-hero':{
+      sectionKey:'promotions',
+      name:'Promotions Hero',
+      tagline:'Full-width promotional hero band',
+      summary:'Put urgency offers under the hero — weekly windows, deadlines, limited spots and more. Same Promotions Engine as the App Command Centre.',
+      hero_image_url:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80'
+    },
     'email-campaigns':{
       platform:true,
       name:'Email Campaigns',
@@ -381,17 +388,22 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   function ensurePlaygroundBlock(blocks, sectionKey){
     var list=(blocks||[]).slice();
     if(!sectionKey) return list;
+    var PROMO_PRESETS=['weekly','deadline','spots','seasonal','suburb','finance','firstTime','priority','socialProof','mystery'];
     var found=false;
     list=list.map(function(b){
       if(b.block_type!=='playground') return b;
       found=true;
       var payload=Object.assign({},b.payload||{});
-      if(!payload.section_key) payload.section_key=sectionKey;
-      if(!payload.presets||!payload.presets.length) payload.presets=['default'];
+      /* Always rewrite — hub aliases must beat stale DB keys (e.g. promotions-hero) */
+      payload.section_key=sectionKey;
+      var cur=payload.presets||[];
+      var thin=!cur.length||(cur.length===1&&cur[0]==='default');
+      if(sectionKey==='promotions'&&thin) payload.presets=PROMO_PRESETS.slice();
+      else if(!cur.length) payload.presets=['default'];
       return Object.assign({},b,{payload:payload});
     });
     if(!found){
-      list.push({block_type:'playground',payload:{section_key:sectionKey,presets:['default']}});
+      list.push({block_type:'playground',payload:{section_key:sectionKey,presets:sectionKey==='promotions'?PROMO_PRESETS.slice():['default']}});
     }
     return list;
   }
@@ -412,14 +424,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       };
     }
     if(alias&&alias.platform){
-      var platBlocks=[
-        {block_type:'benefits',payload:{heading:'How it works',items:[
-          {title:'What it does',text:'Compose a subject and message, pick leads from your inbox, and send or schedule — opt-outs are honoured automatically.'},
-          {title:'Try the demo',text:'Play with fake clients, sample campaign messages, preset hero images (no upload), and unsubscribed contacts. Nothing is emailed or saved.'},
-          {title:'Where you find it',text:'Open any site in the App Command Centre → Email clients / Newsletter tab. This is a dashboard tool, not a public page widget.'},
-          {title:'Safety',text:'This marketplace demo never calls the campaign API — real sends stay in your site dashboard.'}
-        ]}}
-      ];
+      var platBlocks=[];
       if(alias.showcaseDemoUrl){
         platBlocks.push({block_type:'demo_embed',payload:{url:alias.showcaseDemoUrl,height:alias.demoHeight||900}});
       }
@@ -471,7 +476,12 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         if(alias.hero_image_url&&!feature.hero_image_url) feature.hero_image_url=alias.hero_image_url;
         if(alias.premiumShowcase) feature.access_type='premium_subscription';
       }
-      blocks=(blocks||[]).filter(function(b){ return b&&b.block_type!=='playground'; });
+      blocks=(blocks||[]).filter(function(b){
+        if(!b || b.block_type==='playground') return false;
+        /* Platform / premium showcase: strip benefits process cards — demo (+ CTA) only */
+        if(b.block_type==='benefits') return false;
+        return true;
+      });
       if(alias.premiumShowcase||alias.showcaseDemoUrl){
         var hasEmbed=(blocks||[]).some(function(b){ return b&&b.block_type==='demo_embed'; });
         if(!hasEmbed&&builtHub) blocks=builtHub.blocks;
@@ -490,6 +500,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       if(alias.tagline) feature.tagline=alias.tagline;
       if(alias.summary) feature.summary=alias.summary;
       if(alias.badge) feature.badge=alias.badge;
+      if(alias.hero_image_url&&!feature.hero_image_url) feature.hero_image_url=alias.hero_image_url;
     }
     if(feature&&feature.section_key){
       blocks=ensurePlaygroundBlock(blocks, feature.section_key);
@@ -679,10 +690,9 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     if(hubAlias&&(hubAlias.premiumShowcase||hubAlias.platform)){
       f.section_key=null;
       blocks=(blocks||[]).filter(function(b){
-        if(!b) return false;
-        if(b.block_type==='playground') return false;
-        /* Quote showcase: drop process/benefits cards — example + CTA only */
-        if(hubAlias.premiumShowcase && b.block_type==='benefits') return false;
+        if(!b || b.block_type==='playground') return false;
+        /* Premium / platform: demo + CTA only — no process/benefits cards */
+        if(b.block_type==='benefits') return false;
         return true;
       });
       if(hubAlias.hero_image_url&&!f.hero_image_url) f.hero_image_url=hubAlias.hero_image_url;
@@ -780,6 +790,10 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var root = document.getElementById(id); if (!root) return;
     feature = feature || {};
     var secKey = (payload && payload.section_key) || feature.section_key || '';
+    /* Stale DB keys → real section + demo file (demo-promotions.html) */
+    if (secKey === 'promotions-hero' || secKey === 'promotionsHero' || secKey === 'promotions-inline') {
+      secKey = 'promotions';
+    }
     var presets = (payload && payload.presets && payload.presets.length) ? payload.presets.slice() : ['default'];
     var activePreset = null;
     var demoCfg = null;
@@ -1120,7 +1134,11 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     }
 
     function mountIframe(sk) {
-      var src = '/marketplace/demos/demo-' + sk + '.html';
+      var demoFile = sk;
+      if (demoFile === 'promotions-hero' || demoFile === 'promotionsHero' || demoFile === 'promotions-inline') {
+        demoFile = 'promotions';
+      }
+      var src = '/marketplace/demos/demo-' + demoFile + '.html';
       var old = root.querySelector('iframe.pg-iframe');
       if (old) old.remove();
       var fr = document.createElement('iframe');

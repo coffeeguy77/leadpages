@@ -1870,17 +1870,32 @@
       "on": true,
       "items": [
         {
-          "id": "demo-weekly",
+          "id": "demo-hero-seasonal",
           "on": true,
-          "type": "weekly",
+          "type": "seasonal",
           "placement": "belowHero",
           "style": "banner",
-          "title": "Booking for next week",
-          "description": "Secure your spot in next week’s schedule — book before the cut-off.",
-          "weeklyDay": 4,
-          "weeklyCutoff": "16:00",
+          "title": "Winter hot water special",
+          "description": "Book a system replacement this season — free call-out for Canberra homeowners.",
+          "startDate": "2026-06-01",
+          "endDate": "2026-08-31",
           "cta": {
-            "text": "Book now",
+            "text": "Get a quote",
+            "action": "quote"
+          }
+        },
+        {
+          "id": "demo-inline-spots",
+          "on": true,
+          "type": "spots",
+          "placement": "inline",
+          "style": "card",
+          "title": "Only a few spots left this week",
+          "description": "Priority booking slots for blocked drains and urgent repairs.",
+          "spotsTotal": 8,
+          "spotsRemaining": 3,
+          "cta": {
+            "text": "Book a slot",
             "action": "quote"
           }
         }
