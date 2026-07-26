@@ -166,6 +166,29 @@
       : '';
   }
 
+  function isMainCopyTextarea(f) {
+    var key = String((f && f.key) || (f && f.prop) || '');
+    var label = String((f && f.label) || '');
+    return /\.(content|body|html|copy|mainText)$/i.test(key)
+      || /^(Content|Body|Main text|Copy|Long text)$/i.test(label);
+  }
+
+  function textareaRows(f) {
+    if (f && f.rows != null && f.rows !== '') {
+      var n = parseInt(f.rows, 10);
+      if (!isNaN(n)) return String(Math.max(2, Math.min(24, n)));
+    }
+    if (f && f.join) return '6';
+    var key = String((f && f.key) || '');
+    var label = String((f && f.label) || '');
+    if (isMainCopyTextarea(f)) return '12';
+    if (/\.(intro|sub|description|detailPh|fineText|summary)$/i.test(key)
+      || /^(Intro|Sub-text|Description|Summary)$/i.test(label)) {
+      return '5';
+    }
+    return '3';
+  }
+
   function renderField(f, val, attrName) {
     attrName = attrName || 'data-pgk';
     var keyAttr = attrName + '="' + esc(f.key || f.prop || '') + '"';
@@ -182,7 +205,7 @@
           return '<span class="tb-ed-chip">' + esc(name)
             + '<button type="button" class="tb-ed-chip-x" data-mp-chip-rm="' + i + '" data-pgk="' + esc(f.key) + '" aria-label="Remove ' + esc(name) + '">×</button></span>';
         }).join('');
-        return '<div class="f tb-ed-chiplist" data-mp-chiplist="' + esc(f.key) + '">'
+        return '<div class="f tb-ed-chiplist tb-ed-span-2" data-mp-chiplist="' + esc(f.key) + '">'
           + '<label>' + esc(f.label) + '</label>'
           + '<div class="tb-ed-chips">' + (chipHtml || '<span class="tb-ed-empty" style="margin:0">No suburbs yet</span>') + '</div>'
           + '<div class="tb-ed-chip-add">'
@@ -192,8 +215,11 @@
           + '<textarea ' + keyAttr + ' hidden rows="2">' + esc(String(val || '')) + '</textarea>'
           + '</div>';
       }
-      var rows = f.join ? '6' : '2';
-      return '<div class="f"><label>' + esc(f.label) + '</label><textarea ' + keyAttr + ' rows="' + rows + '">' + esc(String(val || '')) + '</textarea></div>';
+      var rows = textareaRows(f);
+      var mainCopy = isMainCopyTextarea(f);
+      return '<div class="f tb-ed-span-2 tb-ed-textarea-f' + (mainCopy ? ' tb-ed-textarea-main' : '') + '">'
+        + '<label>' + esc(f.label) + '</label>'
+        + '<textarea ' + keyAttr + ' rows="' + rows + '">' + esc(String(val || '')) + '</textarea></div>';
     }
     if (f.type === 'color') {
       var col = hexOk(val) || '#cccccc';
@@ -220,7 +246,7 @@
     }
     var isImage = f.type === 'image' || /\.image$/i.test(f.key || f.prop || '') || /image/i.test(f.label || '');
     if (isImage && global.LPLocalImage) {
-      return '<div class="f"><label>' + esc(f.label) + '</label>'
+      return '<div class="f tb-ed-span-2"><label>' + esc(f.label) + '</label>'
         + global.LPLocalImage.controlHtml(val || '', {
           sample: global.LPLocalImage.isRemote(val) ? val : '',
           inputAttrs: keyAttr
@@ -360,7 +386,13 @@
       html += '</div>';
 
       host.innerHTML = html;
+      host.className = host.className
+        .split(/\s+/)
+        .filter(function (c) { return c && c.indexOf('tb-ed-sec-') !== 0 && c !== 'tb-ed-root' && c !== 'tb-ed-compact'; })
+        .join(' ');
       host.classList.add('tb-ed-root', 'tb-ed-compact');
+      if (sectionKey) host.classList.add('tb-ed-sec-' + sectionKey);
+      if (hasContent && hasStyle && !hasItems) host.classList.add('tb-ed-copyheavy');
       drawItems();
       drawContent(split.contentFields);
       drawStyle(split.styleFields);
