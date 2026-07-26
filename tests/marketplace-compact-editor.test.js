@@ -40,6 +40,23 @@ describe('marketplace compact editor parity', () => {
     assert.ok(defs.serviceAreaMap.some((f) => f.key === 'sections.serviceAreas.areas'));
   });
 
+  it('specialOffer editor mirrors manage copy + appearance controls', () => {
+    const js = fs.readFileSync(path.join(root, 'assets/js/marketplace/special-offer-editor.js'), 'utf8');
+    assert.match(js, /LPSpecialOfferEditor/);
+    assert.match(js, /Small label/);
+    assert.match(js, /Offer headline/);
+    assert.match(js, /Deadline \/ subline/);
+    assert.match(js, /Button text/);
+    assert.match(js, /Section container style/);
+    assert.match(js, /Offer points/);
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    assert.ok(defs.specialOffer.some((f) => f.key === 'sections.specialOffer.eyebrow'));
+    assert.ok(defs.specialOffer.some((f) => f.key === 'sections.specialOffer.cta'));
+    assert.ok(!defs.specialOffer.some((f) => f.key === 'sections.specialOffer.ctaText'));
+    const compact = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
+    assert.match(compact, /withAppearanceDefs/);
+  });
+
   it('activityTimeline demo and editor cover timeline events', () => {
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-activityTimeline.html'), 'utf8');
     assert.match(demo, /"events"\s*:\s*\[/);

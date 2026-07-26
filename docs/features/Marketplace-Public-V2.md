@@ -13,8 +13,10 @@ Warm, sell-first public marketplace that shows finished results, industry preset
 
 Every marketplace feature page uses a short two-part layout:
 
-1. **Coloured top (app info)** — name, short summary, access labels, expandable overview / features / benefits, and a **hero image** beside the copy in the green section.
+1. **Coloured top (app info)** — name, short summary, access labels, expandable overview / features / benefits, and a **still hero image** beside the copy in the green section (never a live section preview / iframe).
 2. **White section (demo)** — real examples, live preview, presets, and the playground editor. No “In context” images, “Ready to use” upsells, or “try the editor” footers — the page is a demo, not a pitch to open manage.
+
+Special Offer / Promotions uses `assets/js/marketplace/special-offer-editor.js` — the same copy fields and section-container appearance controls as `manage.html`. Other apps use the compact editor plus manage’s appearance panel fields.
 
 Trust Bar V2 (`?v2=1`) follows the same pattern via `marketplace-feature-v2.js`. Playground icon fields use the shared LeadPages icon picker (`assets/js/marketplace/lp-icon-picker.js`).
 

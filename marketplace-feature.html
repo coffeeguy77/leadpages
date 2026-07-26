@@ -55,10 +55,7 @@ h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.12}
 .btn.ghost:hover{background:rgba(255,255,255,.1);border-color:#fff;color:#fff}
 .himg{border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.12);box-shadow:0 28px 64px rgba(0,0,0,.28);margin:0;background:rgba(0,0,0,.15);position:relative;flex:1 1 auto;width:100%;height:100%;min-height:100%;align-self:stretch}
 .himg img{position:absolute;inset:0;width:100%;height:100%;max-height:none;min-height:0;object-fit:cover;object-position:center;display:block}
-.himg-demo{background:#F3EFEA;border-color:rgba(255,255,255,.18)}
-.himg-demo-frame{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#F3EFEA}
 .himg-placeholder{flex:1 1 auto;width:100%;height:100%;min-height:100%;border-radius:18px;background:linear-gradient(135deg,rgba(168,74,94,.35),rgba(47,65,58,.8));border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);padding:24px;text-align:center}
-@media(max-width:900px){.himg-demo{min-height:280px}}
 .feat-hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,1fr);gap:clamp(22px,4vw,40px);align-items:stretch}
 .feat-hero-copy{min-width:0}
 .feat-hero-media{min-width:0;display:flex;align-self:stretch;min-height:100%}
@@ -269,8 +266,15 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 <script src="/assets/js/marketplace/lp-icon-picker.js"></script>
 <script src="/assets/js/marketplace/lp-local-image.js"></script>
 <script src="/assets/js/marketplace/trust-bar-editor.js"></script>
+<script src="/assets/js/marketplace/special-offer-editor.js"></script>
 <script src="/assets/js/marketplace/marketplace-compact-editor.js"></script>
 <script src="/assets/js/marketplace/marketplace-feature-v2.js"></script>
+<style>
+.so-ed-appearance{margin-top:14px;border-top:1px solid var(--theme-border,var(--line,#e6ddd6));padding-top:12px}
+.so-ed-appearance>summary{cursor:pointer;font-weight:700;font-size:14px;list-style:none}
+.so-ed-appearance>summary::-webkit-details-marker{display:none}
+.so-ed-appearance .hint{font-size:12.5px;opacity:.8;line-height:1.45}
+</style>
 </head>
 <body>
 
@@ -426,21 +430,37 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     return {feature:feature,blocks:blocks,sectionKey:sectionKey};
   }
 
+  function fillHeroFromSell(feature, sellAll){
+    if(!feature || feature.hero_image_url) return feature;
+    var sk=feature.section_key;
+    if(!sk || !sellAll || !sellAll[sk] || !sellAll[sk].hero_image_url) return feature;
+    feature.hero_image_url=sellAll[sk].hero_image_url;
+    return feature;
+  }
+
   function loadFeature(){
     var catalogUrl='/api/catalog?slug='+encodeURIComponent(slug)+(location.search.indexOf('fresh')>=0?'&_='+Date.now():'');
     return fetch(catalogUrl)
       .then(function(r){ if(!r.ok) throw 0; return r.json(); })
       .then(function(j){
         var enriched=enrichPayload(j);
-        if(enriched.feature && (hasPlayground(enriched.blocks) || (HUB_ALIASES[slug]&&HUB_ALIASES[slug].platform))){
+        var ready=enriched.feature && (hasPlayground(enriched.blocks) || (HUB_ALIASES[slug]&&HUB_ALIASES[slug].platform));
+        if(ready && enriched.feature.hero_image_url){
           return {feature:enriched.feature, blocks:enriched.blocks};
         }
-        /* Thin DB row — merge sell-templates playground */
+        /* Thin DB row / missing hero — merge sell-templates */
         return fetch('/marketplace/sell-templates.json')
           .then(function(r){ return r.ok?r.json():{}; })
           .then(function(sellAll){
+            if(ready){
+              fillHeroFromSell(enriched.feature, sellAll);
+              return {feature:enriched.feature, blocks:enriched.blocks};
+            }
             var built=buildFromSellTemplates(sellAll, slug);
-            if(!built) return {feature:enriched.feature, blocks:enriched.blocks};
+            if(!built){
+              fillHeroFromSell(enriched.feature, sellAll);
+              return {feature:enriched.feature, blocks:enriched.blocks};
+            }
             if(enriched.feature){
               built.feature=Object.assign({}, built.feature, {
                 id:enriched.feature.id,
@@ -578,16 +598,10 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var demoBlocks=(blocks||[]).filter(function(b){
       return b && (b.block_type==='playground' || b.block_type==='demo_embed' || b.block_type==='faq' || b.block_type==='benefits' || b.block_type==='cta' || b.block_type==='rich_text');
     });
-    /* Prefer live demo iframe in the hero over stock photo / APP PREVIEW */
-    var mediaHtml='';
-    if(hasPlay && f.section_key){
-      mediaHtml='<div class="himg himg-demo"><iframe class="himg-demo-frame" src="/marketplace/demos/demo-'
-        +esc(f.section_key)+'.html" title="'+esc(f.name)+' preview" loading="eager"></iframe></div>';
-    } else if(heroImg){
-      mediaHtml='<div class="himg"><img src="'+esc(heroImg)+'" alt="" loading="eager"></div>';
-    } else {
-      mediaHtml='<div class="himg-placeholder">App preview</div>';
-    }
+    /* Green hero media is always a still image — live demos live in the white section below */
+    var mediaHtml=heroImg
+      ? '<div class="himg"><img src="'+esc(heroImg)+'" alt="" loading="eager"></div>'
+      : '<div class="himg-placeholder">App preview</div>';
     var html='<header class="feat-hero"><div class="feat-hero-inner wrap-wide">'
       +'<div class="feat-hero-grid">'
       +'<div class="feat-hero-copy">'
@@ -1060,6 +1074,22 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     function renderLiveControls() {
       var host = root.querySelector('[data-r="live"]');
       if (!host) return;
+      if (secKey === 'specialOffer' && window.LPSpecialOfferEditor) {
+        host.classList.add('tb-ed-root', 'tb-ed-compact');
+        host.__soEditor = window.LPSpecialOfferEditor.mount(host, {
+          mode: 'marketplace-playground',
+          value: liveSiteCfg,
+          onChange: function(cfg) {
+            liveSiteCfg = cfg;
+            if (liveSiteCfg.sections && liveSiteCfg.sections.specialOffer) {
+              liveSiteCfg.sections.specialOffer.on = true;
+            }
+            applyLiveConfig();
+          },
+          onAnnounce: function() {}
+        });
+        return;
+      }
       if (secKey === 'trustBar' && window.LPTrustBarEditor) {
         host.classList.add('tb-ed-root', 'tb-ed-compact');
         host.__tbEditor = window.LPTrustBarEditor.mount(host, {
@@ -1104,10 +1134,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       /* Compact Trust-Bar-style editor for every other marketplace app */
       if (window.LPMarketplaceCompactEditor && fieldDefs.length) {
         host.__pgBound = false;
+        var compactDefs = window.LPMarketplaceCompactEditor.withAppearanceDefs
+          ? window.LPMarketplaceCompactEditor.withAppearanceDefs(secKey, fieldDefs)
+          : fieldDefs;
         host.__mpCompact = window.LPMarketplaceCompactEditor.mount(host, {
           mode: 'marketplace-playground',
           sectionKey: secKey,
-          fieldDefs: fieldDefs,
+          fieldDefs: compactDefs,
           value: liveSiteCfg,
           onChange: function(cfg) {
             liveSiteCfg = cfg;

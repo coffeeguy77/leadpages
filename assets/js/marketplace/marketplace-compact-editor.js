@@ -121,6 +121,11 @@
   function renderField(f, val, attrName) {
     attrName = attrName || 'data-pgk';
     var keyAttr = attrName + '="' + esc(f.key || f.prop || '') + '"';
+    if (f.type === 'checkbox' || f.type === 'check') {
+      var on = val === true || val === 'true' || val === 1 || val === '1';
+      return '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" ' + keyAttr + (on ? ' checked' : '') + '> '
+        + esc(f.label) + '</label></div>';
+    }
     if (f.type === 'textarea') {
       return '<div class="f"><label>' + esc(f.label) + '</label><textarea ' + keyAttr + ' rows="2">' + esc(String(val || '')) + '</textarea></div>';
     }
@@ -401,6 +406,11 @@
         if (!key) return;
         var def = fieldDefs.find(function (d) { return d.key === key; });
         if (!def) return;
+        if (t.type === 'checkbox') {
+          writeVal(def, !!t.checked);
+          emit();
+          return;
+        }
         writeVal(def, t.value);
         if (t.dataset.pgct === 'cp') {
           var tx = host.querySelector('[data-pgk="' + key + '"][data-pgct="ct"]');
@@ -447,8 +457,44 @@
     };
   }
 
+  var APPEARANCE_TRANSITIONS = [
+    { value: 'none', label: 'None (flat edge)' },
+    { value: 'fade', label: 'Fade blend' },
+    { value: 'wave', label: 'Wave' },
+    { value: 'angle', label: 'Diagonal' },
+    { value: 'curve', label: 'Soft curve' }
+  ];
+
+  /** Same section-container controls as manage.html secAppearancePanel */
+  function withAppearanceDefs(sectionKey, fieldDefs) {
+    var defs = Array.isArray(fieldDefs) ? fieldDefs.slice() : [];
+    if (!sectionKey) return defs;
+    var prefix = 'sections.' + sectionKey + '.appearance.';
+    if (defs.some(function (d) { return String(d.key || '').indexOf(prefix) === 0; })) return defs;
+    return defs.concat([
+      { type: 'checkbox', key: prefix + 'custom', label: 'Custom section style' },
+      { type: 'color', key: prefix + 'containerBg', label: 'Full-width background' },
+      { type: 'color', key: prefix + 'strokeColor', label: 'Stroke colour' },
+      { type: 'number', key: prefix + 'strokeWidth', label: 'Stroke width (0–8)' },
+      {
+        type: 'select',
+        key: prefix + 'strokeSides',
+        label: 'Stroke sides',
+        options: [
+          { value: 'both', label: 'Top & bottom' },
+          { value: 'top', label: 'Top only' },
+          { value: 'bottom', label: 'Bottom only' },
+          { value: 'all', label: 'All sides' }
+        ]
+      },
+      { type: 'select', key: prefix + 'transitionTop', label: 'Transition into section (top)', options: APPEARANCE_TRANSITIONS },
+      { type: 'select', key: prefix + 'transitionBottom', label: 'Transition out (bottom)', options: APPEARANCE_TRANSITIONS }
+    ]);
+  }
+
   global.LPMarketplaceCompactEditor = {
     mount: mount,
-    detectListKey: detectListKey
+    detectListKey: detectListKey,
+    withAppearanceDefs: withAppearanceDefs
   };
 })(typeof window !== 'undefined' ? window : globalThis);

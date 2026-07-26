@@ -626,38 +626,38 @@
   "specialOffer": [
     {
       "type": "text",
-      "key": "sections.specialOffer.heading",
-      "label": "Offer heading"
+      "key": "sections.specialOffer.eyebrow",
+      "label": "Small label"
     },
     {
       "type": "text",
-      "key": "sections.specialOffer.ctaText",
-      "label": "CTA button"
+      "key": "sections.specialOffer.heading",
+      "label": "Offer headline"
     },
     {
       "type": "text",
       "key": "sections.specialOffer.intro",
-      "label": "Deadline text"
+      "label": "Deadline / subline"
     },
     {
-      "type": "color",
-      "key": "theme.pipe",
-      "label": "Brand colour"
+      "type": "text",
+      "key": "sections.specialOffer.cta",
+      "label": "Button text"
     },
     {
-      "type": "textarea",
+      "type": "text",
       "key": "sections.specialOffer.points.0.text",
-      "label": "Item 1 Text"
+      "label": "Point"
     },
     {
-      "type": "textarea",
+      "type": "text",
       "key": "sections.specialOffer.points.1.text",
-      "label": "Item 2 Text"
+      "label": "Point"
     },
     {
-      "type": "textarea",
+      "type": "text",
       "key": "sections.specialOffer.points.2.text",
-      "label": "Item 3 Text"
+      "label": "Point"
     }
   ],
   "serviceProcess": [
