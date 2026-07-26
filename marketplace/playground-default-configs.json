@@ -1194,11 +1194,11 @@
     }
   },
   "trustBar": {
-    "business": "AAM1 Coating Services",
-    "trade": "renderer",
+    "business": "Greenline Landscapes",
+    "trade": "landscaper",
     "phone": "0261000000",
     "theme": {
-      "pipe": "#032D15"
+      "pipe": "#3d6b4f"
     },
     "trustBar": {
       "on": true,
@@ -1207,31 +1207,27 @@
       "lineOn": true,
       "bg": "#fbfaf7",
       "fg": "#1a2230",
+      "imageHeight": 220,
       "badges": [
         {
           "on": true,
-          "label": "Acrylic Rendering",
-          "icon": "paintbrush"
+          "label": "Garden Design",
+          "icon": "flower-2"
         },
         {
           "on": true,
-          "label": "Cement Rendering",
+          "label": "Retaining Walls",
           "icon": "brick-wall"
         },
         {
           "on": true,
-          "label": "Textured Coating",
-          "icon": "layers"
+          "label": "Paving",
+          "icon": "grid-3x3"
         },
         {
           "on": true,
-          "label": "Repairs and Patching",
-          "icon": "wrench"
-        },
-        {
-          "on": true,
-          "label": "Venetian Plastering",
-          "icon": "sparkles"
+          "label": "Outdoor Living",
+          "icon": "trees"
         }
       ]
     }

@@ -14,8 +14,15 @@
     image: '',
     imageFit: 'cover',
     imagePos: 'center',
-    icon: ''
+    icon: 'circle-check'
   };
+
+  var DEFAULT_FOUR = [
+    { on: true, label: 'Garden Design', icon: 'flower-2', image: '', imageFit: 'cover', imagePos: 'center' },
+    { on: true, label: 'Retaining Walls', icon: 'brick-wall', image: '', imageFit: 'cover', imagePos: 'center' },
+    { on: true, label: 'Paving', icon: 'grid-3x3', image: '', imageFit: 'cover', imagePos: 'center' },
+    { on: true, label: 'Outdoor Living', icon: 'trees', image: '', imageFit: 'cover', imagePos: 'center' }
+  ];
 
   function esc(s) {
     var d = document.createElement('div');
@@ -25,8 +32,18 @@
 
   function ens(cfg) {
     if (!cfg.sections) cfg.sections = {};
-    if (!cfg.sections.trustBar) cfg.sections.trustBar = { on: true, badges: [] };
-    if (!Array.isArray(cfg.sections.trustBar.badges)) cfg.sections.trustBar.badges = [];
+    if (!cfg.sections.trustBar) {
+      cfg.sections.trustBar = {
+        on: true,
+        mode: 'badges',
+        sep: 'none',
+        lineOn: true,
+        badges: DEFAULT_FOUR.map(function (b) { return Object.assign({}, b); })
+      };
+    }
+    if (!Array.isArray(cfg.sections.trustBar.badges) || !cfg.sections.trustBar.badges.length) {
+      cfg.sections.trustBar.badges = DEFAULT_FOUR.map(function (b) { return Object.assign({}, b); });
+    }
     return cfg.sections.trustBar;
   }
 
