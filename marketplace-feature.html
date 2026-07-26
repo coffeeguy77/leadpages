@@ -95,6 +95,9 @@ article{padding:20px 0 88px}
 .lb img{max-width:94vw;max-height:90vh;border-radius:12px;height:auto;object-fit:contain}
 .demo{border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 18px 46px rgba(46,42,43,.1)}
 .demo iframe{display:block;width:100%;border:0}
+/* Autosized embeds: height matches form — no nested scroll trap */
+.demo.demo-autosize{overflow:hidden}
+.demo.demo-autosize iframe{overflow:hidden;vertical-align:top}
 .faq details{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
 .faq summary{padding:15px 18px;font-weight:700;cursor:pointer;list-style:none;position:relative}
 .faq summary::after{content:"+";position:absolute;right:18px;color:var(--rose);font-weight:800}
@@ -351,7 +354,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       summary:'A guided, verified quote flow — like the Bean Culture example below. Premium setup with the LeadPages team; not a self-serve playground.',
       badge:'Premium',
       hero_image_url:'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1400&h=560&fit=crop&q=80',
-      showcaseDemoUrl:'/marketplace/demos/demo-beanCultureQuote.html'
+      showcaseDemoUrl:'/marketplace/demos/demo-beanCultureQuote.html',
+      demoHeight:560
     },
     'reviews-trust':{sectionKey:'reviews',name:'Reviews & Trust',tagline:'Look established from day one',summary:'Testimonials, badges and certifications laid out to make small businesses look credible and safe to hire.'},
     'promotions':{sectionKey:'promotions',name:'Promotions & Offers',tagline:'Seasonal offers, front and centre',summary:'Urgency offers with types, placements and styles — weekly windows, deadlines, limited spots, finance, suburb specials and more.'},
@@ -414,12 +418,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           access_type:'premium_subscription'
         },
         blocks:[
-          {block_type:'benefits',payload:{heading:'Premium quote flow',items:[
-            {title:'What you see',text:'A finished Bean Culture coffee-cart quote — the end result customers walk through. Browse the steps; nothing here submits, verifies, texts or bills.'},
-            {title:'Premium setup',text:'Configured with the LeadPages team for your products, travel zones, verification and branding. Not a self-serve marketplace editor.'},
-            {title:'Safety',text:'Showcase only — no OTP, SMS, PDF or spendable quote session is created from this page.'}
-          ]}},
-          {block_type:'demo_embed',payload:{url:alias.showcaseDemoUrl||'/marketplace/demos/demo-beanCultureQuote.html',height:820}},
+          {block_type:'demo_embed',payload:{url:alias.showcaseDemoUrl||'/marketplace/demos/demo-beanCultureQuote.html',height:alias.demoHeight||560,autosize:true}},
           {block_type:'cta',payload:{heading:'Set up with LeadPages',text:'We’ll configure products, pricing rules, verification and branding for your site.',button_label:'Talk to LeadPages',button_url:'/partners'}}
         ]
       };
@@ -606,9 +605,11 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         return '';
       case 'demo_embed':
         var du=safeUrl(p.url); if(!du)return '';
-        var h=Math.min(Math.max(parseInt(p.height,10)||560,240),1200);
         var isShowcase=/demo-beanCultureQuote|showcase/i.test(du);
         var isEmailDemo=/demo-emailCampaigns/i.test(du);
+        var autosize=p.autosize!==false && (isShowcase || p.autosize===true);
+        var hDef=isShowcase?560:(parseInt(p.height,10)||560);
+        var h=Math.min(Math.max(hDef,240),1200);
         var eyebrow=isShowcase?'Premium example':(isEmailDemo?'Interactive demo':'Live example');
         var title=isShowcase?'Bean Culture quote — end result':(isEmailDemo?'Email clients — try a fake campaign':'');
         var lede=isShowcase?'Browse the steps. Nothing submits, verifies, texts or bills from this page.'
@@ -617,7 +618,9 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         return '<div class="blk" id="example-demo"><div class="blk-eyebrow">'+esc(eyebrow)+'</div>'
           +(title?'<h2>'+esc(title)+'</h2>':'')
           +(lede?'<p class="mp-lede">'+esc(lede)+'</p>':'')
-          +'<div class="demo"><iframe src="'+esc(du)+'" style="height:'+h+'px" loading="lazy" title="'+esc(iframeTitle)+'"></iframe></div>'
+          +'<div class="demo'+(autosize?' demo-autosize':'')+'"><iframe src="'+esc(du)+'" style="height:'+h+'px"'
+          +(autosize?' data-lp-embed-resize="1" scrolling="no"':'')
+          +' loading="lazy" title="'+esc(iframeTitle)+'"></iframe></div>'
           +'<div class="cap"><a href="'+esc(du)+'" target="_blank" rel="noopener" style="color:var(--rose-d);font-weight:700">Open example in a new tab &rarr;</a></div></div>';
       case 'faq':
         var qs=(p.items||[]).map(function(it){
@@ -688,6 +691,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       f.section_key=null;
       blocks=(blocks||[]).filter(function(b){
         if(!b || b.block_type==='playground') return false;
+        /* Premium / platform: demo + CTA only — no process/benefits cards */
         if(b.block_type==='benefits') return false;
         return true;
       });
@@ -748,6 +752,26 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     }
     html+='</div></article>';
     page.innerHTML=html;
+    wireEmbedAutosize();
+  }
+
+  /** Grow marketplace demo iframes to content height so the page scrolls, not the iframe. */
+  function wireEmbedAutosize(){
+    if(wireEmbedAutosize._bound) return;
+    wireEmbedAutosize._bound=true;
+    window.addEventListener('message', function(e){
+      var d=e&&e.data;
+      if(!d || d.type!=='lp-mp-embed-height') return;
+      var h=Math.round(+d.height||0);
+      if(!(h>=200 && h<=1600)) return;
+      var frames=document.querySelectorAll('iframe[data-lp-embed-resize="1"]');
+      for(var i=0;i<frames.length;i++){
+        if(frames[i].contentWindow===e.source){
+          frames[i].style.height=h+'px';
+          break;
+        }
+      }
+    });
   }
 
 
