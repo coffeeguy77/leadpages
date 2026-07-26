@@ -3088,7 +3088,11 @@
             "firstTime",
             "priority",
             "socialProof",
-            "mystery"
+            "mystery",
+            "inlineCard",
+            "inlineBanner",
+            "inlineMystery",
+            "inlineFinance"
           ]
         }
       }

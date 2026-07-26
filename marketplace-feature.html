@@ -373,6 +373,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       summary:'A sticky top bar that puts your emergency phone line front and centre — message, colours and call link match the App Command Centre Top bar.',
       hero_image_url:'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1400&h=560&fit=crop&q=80'
     },
+    'promotions-inline':{
+      sectionKey:'promotions',
+      name:'Promotions Inline',
+      tagline:'In-page promotional content block',
+      summary:'Drop urgency offers into the page body — cards or banners with weekly windows, limited spots, mystery reveals and more. Same Promotions Engine as the App Command Centre.',
+      hero_image_url:'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1400&h=560&fit=crop&q=80'
+    },
     'email-campaigns':{
       platform:true,
       name:'Email Campaigns',
@@ -395,7 +402,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   function ensurePlaygroundBlock(blocks, sectionKey){
     var list=(blocks||[]).slice();
     if(!sectionKey) return list;
-    var PROMO_PRESETS=['weekly','deadline','spots','seasonal','suburb','finance','firstTime','priority','socialProof','mystery'];
+    var PROMO_PRESETS=['weekly','deadline','spots','seasonal','suburb','finance','firstTime','priority','socialProof','mystery','inlineCard','inlineBanner','inlineMystery','inlineFinance'];
     var found=false;
     list=list.map(function(b){
       if(b.block_type!=='playground') return b;
@@ -798,7 +805,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     feature = feature || {};
     var secKey = (payload && payload.section_key) || feature.section_key || '';
     /* Stale DB / marketing keys → real section config keys */
-    if (secKey === 'promotions-hero' || secKey === 'promotionsHero' || secKey === 'promotions-inline') {
+    if (secKey === 'promotions-hero' || secKey === 'promotionsHero'
+      || secKey === 'promotions-inline' || secKey === 'promotionsInline') {
       secKey = 'promotions';
     }
     if (secKey === 'emergency-cta' || secKey === 'emergencyCta' || secKey === 'emergencyCTA') {
@@ -1181,8 +1189,11 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 
     function mountIframe(sk) {
       var demoFile = sk;
-      if (demoFile === 'promotions-hero' || demoFile === 'promotionsHero' || demoFile === 'promotions-inline') {
-        demoFile = 'promotions';
+      /* Prefer placement-specific demo shells; always use sections.promotions config */
+      if (slug === 'promotions-inline' || sk === 'promotions-inline' || sk === 'promotionsInline') {
+        demoFile = 'promotionsInline';
+      } else if (slug === 'promotions-hero' || sk === 'promotions-hero' || sk === 'promotionsHero') {
+        demoFile = 'promotionsHero';
       }
       if (slug === 'emergency-cta' || demoFile === 'emergency-cta' || demoFile === 'emergencyCta' || demoFile === 'emergencyCTA') {
         demoFile = 'emerg';

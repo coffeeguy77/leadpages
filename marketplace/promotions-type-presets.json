@@ -301,5 +301,127 @@
         }
       }
     }
+  },
+  {
+    "slug": "inlineCard",
+    "label": "Inline card",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-inline-card",
+              "on": true,
+              "type": "spots",
+              "placement": "inline",
+              "style": "card",
+              "title": "Only a few spots left this week",
+              "description": "Priority booking slots for blocked drains and urgent repairs across Canberra.",
+              "spotsTotal": 8,
+              "spotsRemaining": 3,
+              "cta": { "text": "Book a slot", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "slug": "inlineBanner",
+    "label": "Inline banner",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-inline-banner",
+              "on": true,
+              "type": "deadline",
+              "placement": "inline",
+              "style": "banner",
+              "title": "Gas compliance check ends soon",
+              "description": "Book before the deadline and lock in this month’s fixed price.",
+              "expiry": "2027-08-15T17:00",
+              "cta": { "text": "Book check", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "slug": "inlineMystery",
+    "label": "Inline mystery",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-inline-mystery",
+              "on": true,
+              "type": "mystery",
+              "placement": "inline",
+              "style": "card",
+              "title": "Tap to reveal this week’s special",
+              "description": "A surprise offer for homeowners who book online today.",
+              "revealText": "Free call-out on hot water quotes booked before Friday.",
+              "cta": { "text": "Claim offer", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "slug": "inlineFinance",
+    "label": "Inline finance",
+    "section_key": "promotions",
+    "contract_version": 1,
+    "site_config": {
+      "business": "Ace Plumbing Co.",
+      "trade": "plumber",
+      "phone": "0261000000",
+      "theme": { "pipe": "#1f7bb8", "hivis": "#ff6a1f" },
+      "sections": {
+        "promotions": {
+          "on": true,
+          "items": [
+            {
+              "id": "demo-inline-finance",
+              "on": true,
+              "type": "finance",
+              "placement": "inline",
+              "style": "card",
+              "title": "Spread the cost of a new hot water system",
+              "description": "Keep cash flow easy — talk to us about weekly payments on qualifying jobs.",
+              "amount": "$38",
+              "disclaimer": "Example only. Subject to approval. Demo content — nothing is submitted.",
+              "cta": { "text": "Ask about finance", "action": "quote" }
+            }
+          ]
+        }
+      }
+    }
   }
 ]
