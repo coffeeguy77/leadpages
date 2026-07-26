@@ -999,7 +999,8 @@
     "trade": "plumber",
     "phone": "0261000000",
     "theme": {
-      "pipe": "#1f7bb8"
+      "pipe": "#1f7bb8",
+      "hivis": "#ff6a1f"
     },
     "responseCards": {
       "on": true,
@@ -1009,37 +1010,37 @@
       "cards": [
         {
           "on": true,
-          "icon": "⏱",
+          "icon": "clock",
           "title": "24/7 Emergency",
           "text": "Call any hour, day or night — someone answers."
         },
         {
           "on": true,
-          "icon": "⚡",
+          "icon": "zap",
           "title": "Same Day Service",
           "text": "Most jobs sorted the same day you call."
         },
         {
           "on": true,
-          "icon": "$",
+          "icon": "dollar-sign",
           "title": "Upfront Pricing",
           "text": "A fixed price agreed before any work starts."
         },
         {
           "on": true,
-          "icon": "✓",
+          "icon": "shield-check",
           "title": "Fully Licensed",
           "text": "Licensed and insured — details on every invoice."
         },
         {
           "on": true,
-          "icon": "➔",
+          "icon": "timer",
           "title": "Rapid Response",
           "text": "We dispatch fast and head straight to you."
         },
         {
           "on": true,
-          "icon": "☎",
+          "icon": "headset",
           "title": "No Call Centre",
           "text": "Talk to a local tradie, never a script."
         }

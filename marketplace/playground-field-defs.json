@@ -1283,13 +1283,38 @@
   "responseCards": [
     {
       "type": "text",
+      "key": "sections.responseCards.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.responseCards.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.responseCards.intro",
+      "label": "Intro"
+    },
+    {
+      "type": "icon",
+      "key": "sections.responseCards.cards.0.icon",
+      "label": "Card 1 icon"
+    },
+    {
+      "type": "text",
       "key": "sections.responseCards.cards.0.title",
       "label": "Card 1 title"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "sections.responseCards.cards.0.text",
       "label": "Card 1 body"
+    },
+    {
+      "type": "icon",
+      "key": "sections.responseCards.cards.1.icon",
+      "label": "Card 2 icon"
     },
     {
       "type": "text",
@@ -1297,9 +1322,14 @@
       "label": "Card 2 title"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "sections.responseCards.cards.1.text",
       "label": "Card 2 body"
+    },
+    {
+      "type": "icon",
+      "key": "sections.responseCards.cards.2.icon",
+      "label": "Card 3 icon"
     },
     {
       "type": "text",
@@ -1307,14 +1337,64 @@
       "label": "Card 3 title"
     },
     {
-      "type": "text",
+      "type": "textarea",
       "key": "sections.responseCards.cards.2.text",
       "label": "Card 3 body"
+    },
+    {
+      "type": "icon",
+      "key": "sections.responseCards.cards.3.icon",
+      "label": "Card 4 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.responseCards.cards.3.title",
+      "label": "Card 4 title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.responseCards.cards.3.text",
+      "label": "Card 4 body"
+    },
+    {
+      "type": "icon",
+      "key": "sections.responseCards.cards.4.icon",
+      "label": "Card 5 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.responseCards.cards.4.title",
+      "label": "Card 5 title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.responseCards.cards.4.text",
+      "label": "Card 5 body"
+    },
+    {
+      "type": "icon",
+      "key": "sections.responseCards.cards.5.icon",
+      "label": "Card 6 icon"
+    },
+    {
+      "type": "text",
+      "key": "sections.responseCards.cards.5.title",
+      "label": "Card 6 title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.responseCards.cards.5.text",
+      "label": "Card 6 body"
     },
     {
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "color",
+      "key": "theme.hivis",
+      "label": "Accent colour"
     }
   ],
   "projectStats": [

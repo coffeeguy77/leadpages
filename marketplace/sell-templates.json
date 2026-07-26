@@ -1780,14 +1780,14 @@
   "responseCards": {
     "name": "Response Cards",
     "tagline": "Urgency cards for emergency trades",
-    "summary": "Three bold cards that answer \"what happens when I call?\"",
+    "summary": "Six bold trust cards that answer \"what happens when I call?\"",
     "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
     "blocks": [
       {
         "block_type": "rich_text",
         "payload": {
           "heading": "Response Cards",
-          "text": "Emergency Response layout feature. Cards like \"60-min response\", \"Answer every call\" and \"Quote before we start\" — reduces anxiety on urgent searches."
+          "text": "Emergency Response layout feature. Icon cards like \"24/7 Emergency\", \"Same Day Service\" and \"Upfront Pricing\" — reduces anxiety on urgent searches."
         }
       },
       {
@@ -1804,12 +1804,12 @@
           "heading": "Key features",
           "items": [
             {
-              "title": "Icon cards",
-              "text": "Each card has icon, title and supporting line."
+              "title": "Editable icons",
+              "text": "Pick an LP icon for each card in Customise — title and body wrap cleanly."
             },
             {
               "title": "Six default cards",
-              "text": "Seed six; enable three for a tight row."
+              "text": "Seed six urgency promises in a tidy 3×2 grid."
             },
             {
               "title": "Emergency layout",
@@ -1833,7 +1833,7 @@
             },
             {
               "title": "Simple copy",
-              "text": "Partners edit three lines — no design work."
+              "text": "Partners edit icons and lines — no design work."
             }
           ]
         }
