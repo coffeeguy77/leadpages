@@ -165,7 +165,7 @@ body.rs a.link-orange { color: var(--orange); }
   font-weight: 800;
   letter-spacing: .16em;
   text-transform: uppercase;
-  color: rgba(249,247,242,.72);
+  color: var(--orange);
 }
 .nav { display: flex; gap: 24px; align-items: center; }
 .nav a {
@@ -248,7 +248,7 @@ body.rs .drawer .btn-orange { color: #fff; text-align: center; margin-top: 8px; 
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
   gap: 28px;
   align-items: center;
 }
@@ -277,6 +277,10 @@ body.rs .drawer .btn-orange { color: #fff; text-align: center; margin-top: 8px; 
   margin-top: 16px;
   font-size: 14px;
   color: rgba(249,247,242,.85);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 2px;
+  align-items: center;
 }
 .popular a {
   color: #fff;
@@ -287,10 +291,11 @@ body.rs .drawer .btn-orange { color: #fff; text-align: center; margin-top: 8px; 
 }
 body.rs .popular a { color: #fff; }
 
-.feat-stack { display: grid; gap: 10px; }
+.feat-stack { display: grid; gap: 10px; align-self: center; }
 .feat {
   background: rgba(255,255,255,.96);
   color: var(--ink);
+  border: 1px solid rgba(255,255,255,.7);
   border-radius: 12px;
   padding: 14px 14px;
   display: grid;
@@ -301,12 +306,12 @@ body.rs .popular a { color: #fff; }
 }
 .feat .ico {
   width: 36px; height: 36px; border-radius: 10px;
-  background: rgba(135,155,137,.18);
-  color: var(--green);
+  background: rgba(135,155,137,.22);
+  color: #6f8573;
   display: grid; place-items: center;
 }
-.feat .ico svg { display: block; }
-.feat h3 { font-size: .95rem; }
+.feat .ico svg { display: block; stroke: currentColor; }
+.feat h3 { font-size: .95rem; color: var(--ink); }
 .feat p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
 
 /* Need grid */
@@ -328,12 +333,12 @@ body.rs .popular a { color: #fff; }
 }
 .need-card .ico {
   width: 40px; height: 40px; border-radius: 10px;
-  background: rgba(135,155,137,.16);
-  color: var(--green);
+  background: rgba(135,155,137,.18);
+  color: #6f8573;
   display: grid; place-items: center;
   margin-bottom: 10px;
 }
-.need-card .ico svg { display: block; }
+.need-card .ico svg { display: block; stroke: currentColor; }
 .need-thumb {
   aspect-ratio: 16/10;
   border-radius: 10px;
@@ -688,12 +693,12 @@ body.rs .popular a { color: #fff; }
 }
 .support-card .ico {
   width: 44px; height: 44px; border-radius: 50%;
-  background: rgba(135,155,137,.16);
-  color: var(--green);
+  background: rgba(135,155,137,.18);
+  color: #6f8573;
   display: grid; place-items: center;
   margin: 0 auto 12px;
 }
-.support-card .ico svg { display: block; }
+.support-card .ico svg { display: block; stroke: currentColor; }
 .support-card p { margin: 10px 0 16px; font-size: 14px; color: var(--muted); }
 .support-card .avatar {
   width: 64px; height: 64px; border-radius: 50%;
