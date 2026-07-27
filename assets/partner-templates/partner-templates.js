@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initWebcultureColourLab();
   initWebcultureReviewSlider();
   initWebcultureDemoFaq();
+  initLocalWebsiteCoDemoFilters();
 });
 
 // Avoid bfcache showing a previously visited trade demo when returning to a partner theme page.
@@ -133,7 +134,7 @@ function initLeadForms() {
 
 function initMobileMenu() {
   var btn = document.querySelector('[data-pt-menu]');
-  var nav = document.querySelector('.ch-nav-links, .ch-nav, .wc-nav-links, .wc-nav, .sg-nav, .at-mast-nav, .hz-nav nav, .pl-nav, .vt-nav');
+  var nav = document.querySelector('.ch-nav-links, .ch-nav, .wc-nav-links, .wc-nav, .lwc-nav-links, .lwc-nav, .sg-nav, .at-mast-nav, .hz-nav nav, .pl-nav, .vt-nav');
   if (!btn || !nav) return;
   btn.addEventListener('click', function () {
     var open = nav.classList.toggle('is-open');
@@ -168,7 +169,7 @@ function initGlitch() {
 
 function initScrollReveal() {
   if (!('IntersectionObserver' in window)) return;
-  var els = document.querySelectorAll('.pt-demo-card, .pt-reveal, .ch-demo-card, .ch-card-hard, .sg-demo, .hz-card, .pl-demo, .vt-project, [data-prm-lift]');
+  var els = document.querySelectorAll('.pt-demo-card, .pt-reveal, .ch-demo-card, .ch-card-hard, .lwc-industry-card, .lwc-demo-card, .lwc-process-step, .lwc-price-card, .lwc-quote, .sg-demo, .hz-card, .pl-demo, .vt-project, [data-prm-lift]');
   var obs = new IntersectionObserver(function (entries) {
     entries.forEach(function (en) {
       if (en.isIntersecting) {
@@ -208,6 +209,23 @@ function initCausehouseStagedForm() {
       toggle.textContent = open ? 'Hide extra details' : toggle.getAttribute('data-label-default') || toggle.textContent;
     });
     toggle.setAttribute('data-label-default', toggle.textContent);
+  });
+}
+
+function initLocalWebsiteCoDemoFilters() {
+  var tabs = document.querySelectorAll('[data-lwc-filter]');
+  if (!tabs.length) return;
+  var cards = document.querySelectorAll('[data-lwc-demo-industry]');
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var filter = String(tab.getAttribute('data-lwc-filter') || 'all').toLowerCase();
+      tabs.forEach(function (t) { t.classList.toggle('is-active', t === tab); });
+      cards.forEach(function (card) {
+        var industry = String(card.getAttribute('data-lwc-demo-industry') || '').toLowerCase();
+        var show = filter === 'all' || industry.indexOf(filter) >= 0 || filter.indexOf(industry) >= 0;
+        card.hidden = !show;
+      });
+    });
   });
 }
 

@@ -328,18 +328,29 @@
           </div>
 
           <div class="card" style="padding:20px">
-            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Culture page colours</h3>
-            <p class="muted" style="margin:0 0 14px;font-size:13px">Pick a Culture colour way, or override with your own custom theme. Colours apply to your live partner page immediately after you save.</p>
-            <div id="sc-culture-presets" class="lp-sc-culture-presets" role="radiogroup" aria-label="Culture colour theme"></div>
-            <div id="sc-culture-custom" class="lp-sc-culture-custom" hidden>
-              <p class="muted" style="margin:0 0 10px;font-size:12.5px">Custom theme — saved for this partner only.</p>
-              <div class="row2">
-                <div class="field"><label for="sc-c-primary">Accent</label><input id="sc-c-primary" class="tin" type="color" value="#C5E13F"></div>
-                <div class="field"><label for="sc-c-ink">Ink</label><input id="sc-c-ink" class="tin" type="color" value="#0B2114"></div>
-              </div>
-              <div class="row2">
-                <div class="field"><label for="sc-c-bg">Background</label><input id="sc-c-bg" class="tin" type="color" value="#FDFCF0"></div>
-                <div class="field"><label for="sc-c-surface">Surface</label><input id="sc-c-surface" class="tin" type="color" value="#F5F2E6"></div>
+            <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Page template</h3>
+            <p class="muted" style="margin:0 0 14px;font-size:13px">Choose the public partner page design. Culture remains the default.</p>
+            <div class="field" style="max-width:360px">
+              <label for="sc-template">Template</label>
+              <select id="sc-template">
+                <option value="webculture">Culture</option>
+                <option value="localwebsiteco">Local Website Co.</option>
+              </select>
+            </div>
+            <div id="sc-culture-colour-ui" style="margin-top:18px">
+              <h3 style="font-family:var(--font-display);font-size:16px;margin:0 0 6px">Culture page colours</h3>
+              <p class="muted" style="margin:0 0 14px;font-size:13px">Pick a Culture colour way, or override with your own custom theme. Colours apply to your live partner page immediately after you save.</p>
+              <div id="sc-culture-presets" class="lp-sc-culture-presets" role="radiogroup" aria-label="Culture colour theme"></div>
+              <div id="sc-culture-custom" class="lp-sc-culture-custom" hidden>
+                <p class="muted" style="margin:0 0 10px;font-size:12.5px">Custom theme — saved for this partner only.</p>
+                <div class="row2">
+                  <div class="field"><label for="sc-c-primary">Accent</label><input id="sc-c-primary" class="tin" type="color" value="#C5E13F"></div>
+                  <div class="field"><label for="sc-c-ink">Ink</label><input id="sc-c-ink" class="tin" type="color" value="#0B2114"></div>
+                </div>
+                <div class="row2">
+                  <div class="field"><label for="sc-c-bg">Background</label><input id="sc-c-bg" class="tin" type="color" value="#FDFCF0"></div>
+                  <div class="field"><label for="sc-c-surface">Surface</label><input id="sc-c-surface" class="tin" type="color" value="#F5F2E6"></div>
+                </div>
               </div>
             </div>
             <div class="row2" style="margin-top:14px">
@@ -1828,6 +1839,8 @@
       var card=e.target.closest('[data-sc-cpreset]'); if(!card) return;
       setCultureColorPreset(card.getAttribute('data-sc-cpreset'));
     });
+    var _scTemplate=document.getElementById('sc-template');
+    if(_scTemplate) _scTemplate.addEventListener('change', updateScTemplateUi);
     ['sc-c-primary','sc-c-ink','sc-c-bg','sc-c-surface'].forEach(function(id){
       var el=document.getElementById(id);
       if(el) el.addEventListener('input', function(){ setCultureColorPreset('custom'); });
@@ -1843,7 +1856,7 @@
       try{
       var dom=(document.getElementById('sc-domain').value||'').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/\s+/g,'');
       var branding=scBrandingPayload();
-      var payload={ slug:slug, domain:dom, enabled:document.getElementById('sc-enabled').checked, headline:(document.getElementById('sc-headline').value||'').trim(), config:{ logo:scLogo?String(scLogo):null, logoSize:scLogoSizeValue(), intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:branding.accent, theme:branding.theme, themeId:null, templateKey:'webculture', cultureColorPreset:branding.cultureColorPreset } };
+      var payload={ slug:slug, domain:dom, enabled:document.getElementById('sc-enabled').checked, headline:(document.getElementById('sc-headline').value||'').trim(), config:{ logo:scLogo?String(scLogo):null, logoSize:scLogoSizeValue(), intro:(document.getElementById('sc-intro').value||'').trim()||null, accent:branding.accent, theme:branding.theme, themeId:null, templateKey:scTemplateValue(), cultureColorPreset:branding.cultureColorPreset } };
       if(state.partner&&state.partner.id) payload.partner_id=state.partner.id;
       var res;
       var saveUrl='/api/partner/save-showcase';
@@ -2365,6 +2378,40 @@
   }
   var scCulturePresets=[];
   var scCulturePreset='culture';
+  var scTemplates=[
+    { id:'webculture', label:'Culture' },
+    { id:'localwebsiteco', label:'Local Website Co.' }
+  ];
+  function normalizeScTemplateKey(v){
+    v=String(v||'webculture').trim().toLowerCase();
+    return v==='localwebsiteco'?'localwebsiteco':'webculture';
+  }
+  function scTemplateValue(){
+    var el=document.getElementById('sc-template');
+    return normalizeScTemplateKey(el&&el.value);
+  }
+  function renderScTemplateOptions(){
+    var sel=document.getElementById('sc-template'); if(!sel) return;
+    var current=normalizeScTemplateKey(sel.value||((state.profile&&state.profile.showcase_config&&state.profile.showcase_config.templateKey)||'webculture'));
+    sel.innerHTML=(scTemplates||[]).map(function(t){
+      var id=normalizeScTemplateKey(t.id);
+      var label=t.label || (id==='localwebsiteco'?'Local Website Co.':'Culture');
+      return '<option value="'+esc(id)+'">'+esc(label)+'</option>';
+    }).join('');
+    sel.value=current;
+    updateScTemplateUi();
+  }
+  function updateScTemplateUi(){
+    var isCulture=scTemplateValue()==='webculture';
+    var panel=document.getElementById('sc-culture-colour-ui');
+    if(panel) panel.hidden=!isCulture;
+    ['sc-c-primary','sc-c-ink','sc-c-bg','sc-c-surface'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el) el.disabled=!isCulture;
+    });
+    var presets=document.getElementById('sc-culture-presets');
+    if(presets) presets.setAttribute('aria-disabled', isCulture?'false':'true');
+  }
   function scCulturePresetCard(p){
     var sel=p.id===scCulturePreset?' is-selected':'';
     return '<button type="button" class="lp-sc-cpreset'+sel+'" data-sc-cpreset="'+esc(p.id)+'" role="radio" aria-checked="'+(sel?'true':'false')+'">'
@@ -2393,6 +2440,7 @@
     try{
       var r=await fetch('/api/partner/template-registry');
       var j=await r.json();
+      if(j&&j.ok&&j.templates&&j.templates.length) scTemplates=j.templates;
       if(j&&j.ok&&j.cultureColorPresets) scCulturePresets=j.cultureColorPresets;
     }catch(_e){
       scCulturePresets=[
@@ -2406,6 +2454,7 @@
         {id:'dune',name:'Dune',blurb:'Warm sand and terracotta.',primary:'#C47A4A',ink:'#2B2118',bg:'#FBF6EF'}
       ];
     }
+    renderScTemplateOptions();
     renderCulturePresets();
   }
   function scLogoSizeValue(){
@@ -2452,6 +2501,8 @@
     var pf=state.profile||{}; var cfg=pf.showcase_config||{}; var g=function(id){return document.getElementById(id);};
     g('sc-slug').value=pf.showcase_slug||''; g('sc-domain').value=pf.showcase_domain||''; g('sc-enabled').checked=!!pf.showcase_enabled;
     g('sc-headline').value=pf.showcase_headline||''; g('sc-intro').value=cfg.intro||'';
+    if(g('sc-template')) g('sc-template').value=normalizeScTemplateKey(cfg.templateKey||'webculture');
+    updateScTemplateUi();
     if(g('sc-accent')) g('sc-accent').value=cfg.accent||'';
     var preset=cfg.cultureColorPreset||'culture';
     setCultureColorPreset(preset);
