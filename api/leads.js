@@ -27,6 +27,7 @@ const {
 } = require('../lib/attribution');
 const { deliverConversion } = require('../lib/google-ads/conversions');
 const { detailLines, buildLeadNotifyEmail } = require('../lib/lead-notify-email');
+const { resolveLeadNotifyStyle } = require('../lib/lead-notify-style');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -82,11 +83,11 @@ function contactEmailFor(siteRow) {
   return clean(cfg.email) || clean(siteRow && siteRow.owner_email) || '';
 }
 
-async function sendEmail({ to, business, lead, dets, slug }) {
+async function sendEmail({ to, business, lead, dets, slug, siteId, style }) {
   const key = process.env.RESEND_API_KEY;
   if (!key || !to) return { sent: false, reason: !key ? 'no_key' : 'no_recipient' };
 
-  const mail = buildLeadNotifyEmail({ business, lead, dets, slug });
+  const mail = buildLeadNotifyEmail({ business, lead, dets, slug, style });
 
   try {
     const r = await fetch('https://api.resend.com/emails', {
@@ -229,12 +230,23 @@ module.exports = async (req, res) => {
     // Email the business — best effort, never blocks the lead being stored.
     const to = contactEmailFor(siteRow);
     const business = (siteRow && siteRow.business_name) || clean(body.site, 160);
+    let notifyStyle = null;
+    if (siteRow) {
+      try {
+        const resolved = await resolveLeadNotifyStyle(supabase, siteRow.id);
+        notifyStyle = resolved && resolved.style;
+      } catch (e) {
+        /* style table optional until migration applied */
+      }
+    }
     const mail = await sendEmail({
       to,
       business,
       lead,
       dets,
-      slug: (siteRow && siteRow.slug) || clean(body.slug, 80) || ''
+      slug: (siteRow && siteRow.slug) || clean(body.slug, 80) || '',
+      siteId: siteRow && siteRow.id,
+      style: notifyStyle
     });
 
     return ok({ stored, emailed: mail.sent, mail: mail.reason, store_error: storeError });

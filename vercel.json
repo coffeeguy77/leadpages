@@ -159,6 +159,10 @@
       "destination": "/brain-admin.html"
     },
     {
+      "source": "/lead-notify-style",
+      "destination": "/lead-notify-style-admin.html"
+    },
+    {
       "source": "/ai-control",
       "destination": "/brain-admin.html"
     },
