@@ -42,7 +42,7 @@ const mail = buildLeadNotifyEmail({
 assert.ok(mail.subject.includes('Bean Culture'));
 assert.ok(mail.subject.includes('Sam'));
 assert.ok(!mail.html.includes(LOGO_ANIMATED), 'animated GIF off by default');
-assert.ok(mail.html.includes(LOGO_WORDMARK), 'uses LeadPages wordmark');
+assert.ok(mail.html.includes('/api/lead-notify-logo?'), 'default uses dual-tint brand lockup API');
 assert.ok(/height="84"/.test(mail.html), 'wordmark ~3× original (84px)');
 assert.ok(mail.html.includes('Need two carts please'), 'message body in HTML');
 assert.ok(mail.html.includes('Event hire'), 'problem/job in HTML');
@@ -53,11 +53,11 @@ assert.ok(mail.html.includes('mailto:sam@example.com'), 'email CTA');
 assert.ok(mail.html.includes('/manage?site=beanculture'), 'manage deep link');
 assert.ok(mail.text.includes('Message: Need two carts please'));
 
-// Animated mark opt-in still works at large size
+// Animated mark opt-in still works at large size (custom mode)
 const withGif = buildLeadNotifyEmail({
   business: 'Bean Culture',
   lead: { name: 'Sam' },
-  style: { showAnimatedLogo: true, logoMarkWidth: 132 }
+  style: { logoUseBrandLockup: false, showAnimatedLogo: true, logoMarkWidth: 132 }
 });
 assert.ok(withGif.html.includes(LOGO_ANIMATED), 'animated mark when enabled');
 assert.ok(/width="132"/.test(withGif.html), 'animated mark 3× size');
@@ -74,6 +74,7 @@ const pinkMail = buildLeadNotifyEmail({
     headerGradientStart: '#5c4033',
     headerGradientMid: '#4a3328',
     headerGradientEnd: '#36313b',
+    logoUseBrandLockup: false,
     logoWordmark: 'https://example.com/custom-wordmark.png',
     showAnimatedLogo: false,
     logoWordmarkHeight: 84
@@ -84,11 +85,12 @@ assert.ok(pinkMail.html.includes('https://example.com/custom-wordmark.png'), 'cu
 assert.ok(!pinkMail.html.includes(LOGO_ANIMATED), 'pink style hides animated mark');
 assert.ok(/height="84"/.test(pinkMail.html), 'pink style large wordmark');
 
-// Cloudinary logo tint
+// Cloudinary logo tint (custom mode)
 const tintedMail = buildLeadNotifyEmail({
   business: 'Bean Culture',
   lead: { name: 'Sam', phone: '0400000000' },
   style: {
+    logoUseBrandLockup: false,
     logoTint: '#ffffff',
     showAnimatedLogo: false,
     logoWordmarkHeight: 84
@@ -100,6 +102,21 @@ assert.ok(
 );
 assert.ok(!tintedMail.html.includes(LOGO_ANIMATED), 'tint style hides animated mark');
 
+// Dual-tint brand lockup
+const dualMail = buildLeadNotifyEmail({
+  business: 'Bean Culture',
+  lead: { name: 'Sam', phone: '0400000000' },
+  style: {
+    logoUseBrandLockup: true,
+    logoTint: '#ffffff',
+    logoTint2: '#5c4033',
+    logoWordmarkHeight: 84
+  }
+});
+assert.ok(dualMail.html.includes('/api/lead-notify-logo?'), 'dual tint uses logo API');
+assert.ok(dualMail.html.includes('accent=%23ffffff'), 'tint1 accent in URL');
+assert.ok(dualMail.html.includes('ink=%235c4033'), 'tint2 ink in URL');
+
 const noLogo = buildLeadNotifyEmail({
   business: 'Test',
   lead: { name: 'A' },
@@ -107,6 +124,7 @@ const noLogo = buildLeadNotifyEmail({
 });
 assert.ok(!noLogo.html.includes(LOGO_ANIMATED), 'logo hidden when showLogo false');
 assert.ok(!noLogo.html.includes(LOGO_WORDMARK), 'wordmark hidden when showLogo false');
+assert.ok(!noLogo.html.includes('/api/lead-notify-logo'), 'brand API hidden when showLogo false');
 
 assert.ok(leadsApi.includes("require('../lib/lead-notify-email')"), 'api/leads uses shared builder');
 assert.ok(leadsApi.includes('buildLeadNotifyEmail'), 'api/leads builds branded mail');
