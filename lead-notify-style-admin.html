@@ -76,7 +76,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   </div>
 
   <div class="notice" id="logo-notice">
-    <strong>Logo note:</strong> Header/button colours are CSS. Logo tint uses a Cloudinary transform on <strong>PNG wordmarks</strong> (best on white/mono logos). GIFs and non-Cloudinary URLs cannot be tinted — upload a PNG or paste a Cloudinary URL instead.
+    <strong>Logo note:</strong> Dual tint uses the LeadPages brand lockup (circles + wordmark + tagline). Tint&nbsp;1 colours the circles and “more leads”; Tint&nbsp;2 colours “leadpages” and “smart sites”. Custom URL upload is still available when dual-tint lockup is turned off.
   </div>
   <div class="notice hidden" id="resolve-status"></div>
 
@@ -91,25 +91,41 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       <div class="colors" id="color-fields"></div>
 
       <div class="field" style="margin-top:12px">
-        <label>Logo tint (Cloudinary PNG)</label>
-        <div class="color-row">
-          <input type="color" id="logo-tint-pick" value="#ffffff">
-          <input type="text" id="logo-tint" value="" placeholder="empty = no tint" spellcheck="false">
-          <button class="btn ghost" id="btn-clear-tint" type="button" style="margin:0">Clear tint</button>
+        <label style="display:flex;gap:8px;align-items:center;font-weight:700">
+          <input type="checkbox" id="logo-use-brand" checked style="width:auto"> Use LeadPages dual-tint lockup
+        </label>
+        <p class="sub" style="margin:6px 0 10px">Brand SVG: Tint&nbsp;1 = circles + “more leads”. Tint&nbsp;2 = “leadpages” + “smart sites”. Turn off to use custom uploaded URLs instead.</p>
+        <div class="colors">
+          <div class="field">
+            <label>Tint 1 — circles + more leads</label>
+            <div class="color-row">
+              <input type="color" id="logo-tint-pick" value="#ffffff">
+              <input type="text" id="logo-tint" value="#ffffff" spellcheck="false">
+            </div>
+          </div>
+          <div class="field">
+            <label>Tint 2 — leadpages + smart sites</label>
+            <div class="color-row">
+              <input type="color" id="logo-tint2-pick" value="#ffffff">
+              <input type="text" id="logo-tint2" value="#ffffff" spellcheck="false">
+            </div>
+          </div>
         </div>
-        <p class="sub" style="margin:6px 0 0">Works on the wordmark when it is a Cloudinary PNG (e.g. white LeadPages mark → pink/brown/white).</p>
+        <div style="margin-top:8px">
+          <button class="btn ghost" id="btn-clear-tint" type="button">Reset tints to white</button>
+        </div>
         <div id="logo-tint-preview" style="margin-top:8px;min-height:40px"></div>
       </div>
 
       <div class="field" style="margin-top:10px">
-        <label>Animated logo URL (GIF — not tintable)</label>
+        <label>Custom animated mark URL (only when dual-tint lockup is off)</label>
         <div class="color-row">
           <input id="logo-animated" type="url" placeholder="https://…" style="flex:1">
           <button class="btn ghost" id="btn-up-animated" type="button" style="margin:0">Upload</button>
         </div>
       </div>
       <div class="field">
-        <label>Wordmark logo URL (PNG — upload or paste)</label>
+        <label>Custom wordmark URL (only when dual-tint lockup is off)</label>
         <div class="color-row">
           <input id="logo-wordmark" type="url" placeholder="https://…" style="flex:1">
           <button class="btn ghost" id="btn-up-wordmark" type="button" style="margin:0">Upload</button>
@@ -245,12 +261,23 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     $('show-logo').checked = !!draft.showLogo;
     $('show-animated-logo').checked = !!draft.showAnimatedLogo;
     $('show-wordmark-logo').checked = draft.showWordmarkLogo !== false;
+    $('logo-use-brand').checked = draft.logoUseBrandLockup !== false;
     $('logo-mark-width').value = draft.logoMarkWidth || 132;
     $('logo-wordmark-height').value = draft.logoWordmarkHeight || 84;
-    var tint = draft.logoTint || '';
+    var tint = draft.logoTint || '#ffffff';
+    var tint2 = draft.logoTint2 || '#ffffff';
     $('logo-tint').value = tint;
+    $('logo-tint2').value = tint2;
     $('logo-tint-pick').value = /^#[0-9a-fA-F]{6}$/.test(tint) ? tint : '#ffffff';
+    $('logo-tint2-pick').value = /^#[0-9a-fA-F]{6}$/.test(tint2) ? tint2 : '#ffffff';
     paintTintPreview();
+  }
+
+  function readHexField(id, fallback){
+    var tint = ($(id).value || '').trim();
+    if(!tint) return fallback || '';
+    if(tint.charAt(0) !== '#') tint = '#'+tint;
+    return /^#[0-9a-fA-F]{3,6}$/i.test(tint) ? tint.toLowerCase() : (fallback || '');
   }
 
   function readLogoFields(){
@@ -259,15 +286,12 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     draft.showLogo = $('show-logo').checked;
     draft.showAnimatedLogo = $('show-animated-logo').checked;
     draft.showWordmarkLogo = $('show-wordmark-logo').checked;
+    draft.logoUseBrandLockup = $('logo-use-brand').checked;
     draft.logoMarkWidth = Math.max(16, Math.min(240, parseInt($('logo-mark-width').value || draft.logoMarkWidth || 132, 10) || 132));
     draft.logoMarkHeight = draft.logoMarkWidth;
     draft.logoWordmarkHeight = Math.max(16, Math.min(240, parseInt($('logo-wordmark-height').value || draft.logoWordmarkHeight || 84, 10) || 84));
-    var tint = ($('logo-tint').value || '').trim();
-    if(!tint) draft.logoTint = '';
-    else {
-      if(tint.charAt(0) !== '#') tint = '#'+tint;
-      draft.logoTint = /^#[0-9a-fA-F]{3,6}$/i.test(tint) ? tint.toLowerCase() : '';
-    }
+    draft.logoTint = readHexField('logo-tint', '#ffffff');
+    draft.logoTint2 = readHexField('logo-tint2', '#ffffff');
   }
 
   function clientTintUrl(url, tint){
@@ -286,12 +310,21 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
 
   function paintTintPreview(){
     var host = $('logo-tint-preview');
-    var src = clientTintUrl(draft.logoWordmark || '', draft.logoTint || '');
-    if(!draft.showWordmarkLogo || !src){
-      host.innerHTML = '<span class="sub">Wordmark hidden or no URL.</span>';
+    var h = draft.logoWordmarkHeight || 84;
+    if(draft.logoUseBrandLockup !== false){
+      var src = '/api/lead-notify-logo?accent=' + encodeURIComponent(draft.logoTint || '#ffffff')
+        + '&ink=' + encodeURIComponent(draft.logoTint2 || draft.logoTint || '#ffffff')
+        + '&h=' + h
+        + '&_=' + Date.now();
+      host.innerHTML = '<img src="'+esc(src)+'" alt="Dual-tint lockup preview" style="height:48px;width:auto;display:block;background:rgba(0,0,0,.35);padding:10px 14px;border-radius:10px">';
       return;
     }
-    host.innerHTML = '<img src="'+esc(src)+'" alt="Tinted wordmark preview" style="height:42px;width:auto;display:block;background:rgba(0,0,0,.35);padding:10px 14px;border-radius:10px">';
+    var custom = clientTintUrl(draft.logoWordmark || '', draft.logoTint || '');
+    if(!draft.showWordmarkLogo || !custom){
+      host.innerHTML = '<span class="sub">Custom wordmark hidden or no URL.</span>';
+      return;
+    }
+    host.innerHTML = '<img src="'+esc(custom)+'" alt="Tinted wordmark preview" style="height:42px;width:auto;display:block;background:rgba(0,0,0,.35);padding:10px 14px;border-radius:10px">';
   }
 
   function pickFile(cb){
@@ -521,15 +554,36 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     paintTintPreview();
     debouncedPreview();
   });
+  $('logo-tint2-pick').addEventListener('input', function(){
+    draft.logoTint2 = $('logo-tint2-pick').value;
+    $('logo-tint2').value = draft.logoTint2;
+    paintTintPreview();
+    debouncedPreview();
+  });
   $('logo-tint').addEventListener('change', function(){
     readLogoFields();
     if(draft.logoTint && /^#[0-9a-fA-F]{6}$/.test(draft.logoTint)) $('logo-tint-pick').value = draft.logoTint;
     paintTintPreview();
     debouncedPreview();
   });
+  $('logo-tint2').addEventListener('change', function(){
+    readLogoFields();
+    if(draft.logoTint2 && /^#[0-9a-fA-F]{6}$/.test(draft.logoTint2)) $('logo-tint2-pick').value = draft.logoTint2;
+    paintTintPreview();
+    debouncedPreview();
+  });
+  $('logo-use-brand').addEventListener('change', function(){
+    draft.logoUseBrandLockup = $('logo-use-brand').checked;
+    paintTintPreview();
+    debouncedPreview();
+  });
   $('btn-clear-tint').onclick = function(){
-    draft.logoTint = '';
-    $('logo-tint').value = '';
+    draft.logoTint = '#ffffff';
+    draft.logoTint2 = '#ffffff';
+    $('logo-tint').value = '#ffffff';
+    $('logo-tint2').value = '#ffffff';
+    $('logo-tint-pick').value = '#ffffff';
+    $('logo-tint2-pick').value = '#ffffff';
     paintTintPreview();
     debouncedPreview();
   };
