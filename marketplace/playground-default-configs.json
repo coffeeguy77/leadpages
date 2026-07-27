@@ -965,7 +965,7 @@
       "on": true,
       "eyebrow": "Fast quote",
       "heading": "Tell us the problem. We'll call you straight back.",
-      "sub": "Two minutes now saves you a flooded weekend. Send the details and a plumber calls you — usually within the hour during the day.",
+      "sub": "Two minutes now saves you a flooded weekend. Send the details and a team member calls you — usually within the hour during the day.",
       "button": "Send & get my call back",
       "formTitle": "Get my quote",
       "formStyle": "default",
@@ -980,6 +980,7 @@
       "callText": "call us now",
       "callOn": true,
       "successTitle": "Got it — sit tight. ✓",
+      "successSub": "A team member from {{businessName}} will call you on the number you gave us. If it's an emergency, please call {{phoneText}} so we can get moving now.",
       "points": [
         { "on": true, "text": "Upfront fixed price, no call-out surprises" },
         { "on": true, "text": "Same-day where we can get to you" },

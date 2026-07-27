@@ -2517,6 +2517,11 @@
     },
     {
       "type": "textarea",
+      "key": "sections.quote.successSub",
+      "label": "Success message body"
+    },
+    {
+      "type": "textarea",
       "key": "sections.quote.fineText",
       "label": "Under-button line"
     },
