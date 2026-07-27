@@ -770,6 +770,9 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   }
 
   function benefitsFromBlocks(blocks, f){
+    var isOnlineQuote=/online.?quote/i.test(String((f&&(f.section_key||f.slug||f.name))||''));
+    /* Online Quotes marketing mockup uses the four fixed benefit cards */
+    if(isOnlineQuote) return defaultBenefits(f);
     var items=[];
     (blocks||[]).forEach(function(b){
       if(b&&b.block_type==='benefits'){
@@ -783,9 +786,9 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   function howStepsHtml(f){
     var isQuote=/quote/i.test(String((f&&(f.section_key||f.slug||f.name))||''));
     var step3=isQuote?'Follow up and quote':'Follow up with confidence';
-    var step3Sub=isQuote?'Respond faster with the right information':'Respond faster with the right information';
+    var step3Sub='Respond faster with the right information';
     return '<section class="mf-how" aria-label="How it works">'
-      +'<div class="wrap"><p class="blk-eyebrow">How it works</p><h2>How it works</h2>'
+      +'<div class="wrap"><h2>How it works</h2>'
       +'<div class="mf-how-steps">'
       +'<article class="mf-how-step"><div class="mf-how-ico" aria-hidden="true">1</div><h3>Customer completes the form</h3><p>Optional verification</p></article>'
       +'<div class="mf-how-arrow" aria-hidden="true">→</div>'
@@ -940,7 +943,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       +'<div class="mp-labels">'+accessBadgeHtml(f)+'</div>'
       +'<div class="hcta">'
       +(hasPlay?'<a class="btn" href="#live-demo">Add '+esc(f.name)+'</a>':'')
-      +(hasPlay?'<a class="btn ghost" href="#live-demo">See it in action</a>':'')
+      +(hasPlay?'<a class="btn ghost btn-play" href="#live-demo">See it in action</a>':'')
       +(isPremiumShowcase?'<a class="btn" href="#example-demo">See the example ↓</a>':'')
       +(isPremiumShowcase?'<a class="btn ghost" href="/partners">Talk to LeadPages</a>':'')
       +(!hasPlay&&!isPremiumShowcase?'<a class="btn" href="/find-a-partner">Build my website</a>':'')

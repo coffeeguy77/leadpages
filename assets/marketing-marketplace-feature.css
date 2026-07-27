@@ -568,6 +568,17 @@ body.mf-app .btn.ghost:hover {
   color: #fff;
 }
 
+body.mf-app .btn.btn-play::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 6px 0 6px 10px;
+  border-color: transparent transparent transparent currentColor;
+  margin-right: 10px;
+  display: inline-block;
+}
+
 @media (max-width: 900px) {
   body.mf-app .feat-hero-grid {
     grid-template-columns: 1fr;
@@ -686,11 +697,28 @@ body.mf-app .mp-lede {
 }
 
 /* —— Benefits —— */
+body.mf-app .mf-benefits h2,
+body.mf-app .blk.mf-benefits h2 {
+  text-align: center;
+  max-width: 28ch;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 28px;
+}
+
 body.mf-app .bene {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   margin-top: 16px;
+}
+
+body.mf-app .bene:has(.bn:nth-child(3):last-child) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.mf-app .bene:has(.bn:nth-child(2):last-child) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 body.mf-app .bn {
