@@ -243,6 +243,10 @@
       "destination": "/api/marketing-html?file=find-a-partner.html&path=/find-a-partner"
     },
     {
+      "source": "/pricing",
+      "destination": "/api/marketing-html?file=pricing.html&path=/pricing"
+    },
+    {
       "source": "/partners",
       "destination": "/api/marketing-html?file=partners.html&path=/partners"
     },
@@ -338,7 +342,7 @@
   ],
   "functions": {
     "api/marketing-html.js": {
-      "includeFiles": "{home,domains,showcase,demos,demo-theme,marketplace,marketplace-feature,start-your-business,resources,find-a-partner,partners,privacy-policy,terms-of-use,instagram-data-policy,resource-*}.html"
+      "includeFiles": "{home,domains,showcase,demos,demo-theme,marketplace,marketplace-feature,start-your-business,resources,find-a-partner,partners,pricing,privacy-policy,terms-of-use,instagram-data-policy,resource-*}.html"
     },
     "api/render.js": {
       "includeFiles": "home.html"
