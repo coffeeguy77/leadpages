@@ -41,8 +41,9 @@ const mail = buildLeadNotifyEmail({
 
 assert.ok(mail.subject.includes('Bean Culture'));
 assert.ok(mail.subject.includes('Sam'));
-assert.ok(mail.html.includes(LOGO_ANIMATED), 'uses animated LeadPages logo');
+assert.ok(!mail.html.includes(LOGO_ANIMATED), 'animated GIF off by default');
 assert.ok(mail.html.includes(LOGO_WORDMARK), 'uses LeadPages wordmark');
+assert.ok(/height="84"/.test(mail.html), 'wordmark ~3× original (84px)');
 assert.ok(mail.html.includes('Need two carts please'), 'message body in HTML');
 assert.ok(mail.html.includes('Event hire'), 'problem/job in HTML');
 assert.ok(!/Region|Canberra|ignored/i.test(mail.html.split('Need two')[0] + mail.html.split('carts please')[1] || ''), 'region not featured');
@@ -51,6 +52,15 @@ assert.ok(mail.html.includes('Call Sam back'), 'call CTA');
 assert.ok(mail.html.includes('mailto:sam@example.com'), 'email CTA');
 assert.ok(mail.html.includes('/manage?site=beanculture'), 'manage deep link');
 assert.ok(mail.text.includes('Message: Need two carts please'));
+
+// Animated mark opt-in still works at large size
+const withGif = buildLeadNotifyEmail({
+  business: 'Bean Culture',
+  lead: { name: 'Sam' },
+  style: { showAnimatedLogo: true, logoMarkWidth: 132 }
+});
+assert.ok(withGif.html.includes(LOGO_ANIMATED), 'animated mark when enabled');
+assert.ok(/width="132"/.test(withGif.html), 'animated mark 3× size');
 
 // Style overrides (Bean Culture pink / custom header)
 const pinkMail = buildLeadNotifyEmail({
@@ -64,11 +74,15 @@ const pinkMail = buildLeadNotifyEmail({
     headerGradientStart: '#5c4033',
     headerGradientMid: '#4a3328',
     headerGradientEnd: '#36313b',
-    logoWordmark: 'https://example.com/custom-wordmark.png'
+    logoWordmark: 'https://example.com/custom-wordmark.png',
+    showAnimatedLogo: false,
+    logoWordmarkHeight: 84
   }
 });
 assert.ok(pinkMail.html.includes('background:#e071a2'), 'custom button fill in HTML');
 assert.ok(pinkMail.html.includes('https://example.com/custom-wordmark.png'), 'custom wordmark URL');
+assert.ok(!pinkMail.html.includes(LOGO_ANIMATED), 'pink style hides animated mark');
+assert.ok(/height="84"/.test(pinkMail.html), 'pink style large wordmark');
 
 const noLogo = buildLeadNotifyEmail({
   business: 'Test',
@@ -76,6 +90,7 @@ const noLogo = buildLeadNotifyEmail({
   style: { showLogo: false }
 });
 assert.ok(!noLogo.html.includes(LOGO_ANIMATED), 'logo hidden when showLogo false');
+assert.ok(!noLogo.html.includes(LOGO_WORDMARK), 'wordmark hidden when showLogo false');
 
 assert.ok(leadsApi.includes("require('../lib/lead-notify-email')"), 'api/leads uses shared builder');
 assert.ok(leadsApi.includes('buildLeadNotifyEmail'), 'api/leads builds branded mail');

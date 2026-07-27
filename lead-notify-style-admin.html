@@ -111,7 +111,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
         <input type="checkbox" id="show-logo" checked style="width:auto"> Show logo row
       </label>
       <label style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600;color:var(--ink-soft)">
-        <input type="checkbox" id="show-animated-logo" checked style="width:auto"> Show animated mark
+        <input type="checkbox" id="show-animated-logo" style="width:auto"> Show animated mark (GIF — often frozen in inbox)
       </label>
       <label style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600;color:var(--ink-soft)">
         <input type="checkbox" id="show-wordmark-logo" checked style="width:auto"> Show wordmark
@@ -225,10 +225,10 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     $('logo-animated').value = draft.logoAnimated || '';
     $('logo-wordmark').value = draft.logoWordmark || '';
     $('show-logo').checked = !!draft.showLogo;
-    $('show-animated-logo').checked = draft.showAnimatedLogo !== false;
+    $('show-animated-logo').checked = !!draft.showAnimatedLogo;
     $('show-wordmark-logo').checked = draft.showWordmarkLogo !== false;
-    $('logo-mark-width').value = draft.logoMarkWidth || 56;
-    $('logo-wordmark-height').value = draft.logoWordmarkHeight || 34;
+    $('logo-mark-width').value = draft.logoMarkWidth || 132;
+    $('logo-wordmark-height').value = draft.logoWordmarkHeight || 84;
   }
 
   function readLogoFields(){
@@ -237,9 +237,9 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     draft.showLogo = $('show-logo').checked;
     draft.showAnimatedLogo = $('show-animated-logo').checked;
     draft.showWordmarkLogo = $('show-wordmark-logo').checked;
-    draft.logoMarkWidth = Math.max(16, Math.min(240, parseInt($('logo-mark-width').value || draft.logoMarkWidth || 56, 10) || 56));
+    draft.logoMarkWidth = Math.max(16, Math.min(240, parseInt($('logo-mark-width').value || draft.logoMarkWidth || 132, 10) || 132));
     draft.logoMarkHeight = draft.logoMarkWidth;
-    draft.logoWordmarkHeight = Math.max(16, Math.min(240, parseInt($('logo-wordmark-height').value || draft.logoWordmarkHeight || 34, 10) || 34));
+    draft.logoWordmarkHeight = Math.max(16, Math.min(240, parseInt($('logo-wordmark-height').value || draft.logoWordmarkHeight || 84, 10) || 84));
   }
 
   function applyDraftFromStyle(style){
