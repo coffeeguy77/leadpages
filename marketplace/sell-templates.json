@@ -2977,9 +2977,11 @@
     ]
   },
   "onlineQuote": {
-    "name": "Online Quote",
-    "tagline": "Verified quote flow on the site",
-    "summary": "Guided online quote with eyebrow, heading and intro — email verify before totals.",
+    "name": "Online Quotes",
+    "tagline": "Turn website visitors into quote-ready customers.",
+    "summary": "A guided quote form that matches your website, captures the right details, and sends structured enquiries to email and your CRM.",
+    "category": "Sales & Quotes",
+    "badge": "Included",
     "hero_image_url": null,
     "blocks": [
       {

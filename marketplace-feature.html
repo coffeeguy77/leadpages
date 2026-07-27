@@ -261,6 +261,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 <link rel="stylesheet" href="/assets/js/marketplace/lp-icon-picker.css">
 <link rel="stylesheet" href="/assets/js/marketplace/lp-local-image.css">
 <link rel="stylesheet" href="/assets/lp-logo.css">
+<link rel="stylesheet" href="/assets/marketing-marketplace-feature.css">
 <script src="/assets/lp-logo.js" defer></script>
 <script src="/lib/marketplace-v2-flags.js"></script>
 <script src="/lib/marketplace-access.js"></script>
@@ -280,15 +281,22 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 .so-ed-appearance .hint{font-size:12.5px;opacity:.8;line-height:1.45}
 </style>
 </head>
-<body>
+<body class="mf-app">
 
-<nav class="sitenav">
+<nav class="sitenav" aria-label="Primary">
   <div class="wrap">
-    <a href="/"><span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span></a>
+    <a class="brand" href="/" aria-label="LeadPages Australia home">
+      <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span>
+      <span class="brand-au">Australia</span>
+    </a>
     <div class="links">
-      <a href="/marketplace">Marketplace</a>
-      <a href="/domains">Domains</a>
-      <a class="cta" href="/partners">Become a partner</a>
+      <a href="/showcase">Websites</a>
+      <a class="is-active" href="/marketplace" aria-current="page">Apps</a>
+      <a href="/partners">Partners</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/resources">Resources</a>
+      <a class="login" href="/manage">Log in</a>
+      <a class="cta" href="/find-a-partner">Build my website</a>
     </div>
   </div>
 </nav>
@@ -303,14 +311,35 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 </section>
 
 <footer>
-  <div class="wrap">
+  <div class="wrap footer-grid">
     <div>
       <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span>
-      <div>Smart sites. More leads. Built in Canberra, Australia.</div>
-      <div class="abn">Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div>
+      <p>Websites made simple. Businesses made stronger.</p>
+      <div class="abn">© LeadPages Australia · Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div>
     </div>
     <div>
-      <a href="/">Home</a><a href="/marketplace">Marketplace</a><a href="/partners">Become a partner</a><a href="/privacy-policy">Privacy</a>
+      <h4>Product</h4>
+      <a href="/showcase">Websites</a>
+      <a href="/marketplace">Apps</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/demos">Demos</a>
+    </div>
+    <div>
+      <h4>Partners</h4>
+      <a href="/partners">Become a partner</a>
+      <a href="/find-a-partner">Find a partner</a>
+    </div>
+    <div>
+      <h4>Resources</h4>
+      <a href="/resources">Resource hub</a>
+      <a href="/domains">Domains</a>
+    </div>
+    <div>
+      <h4>Company</h4>
+      <a href="/manage">Log in</a>
+      <a href="/privacy-policy">Privacy</a>
+      <a href="/terms-of-use">Terms</a>
+      <div class="footer-help"><strong>Need help?</strong><a href="mailto:support@leadpages.com.au">Contact Australian Support</a></div>
     </div>
   </div>
 </footer>
@@ -388,6 +417,22 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       hero_image_url:'https://images.unsplash.com/photo-1557200134-90327ee9fafa?w=1400&h=560&fit=crop&q=80',
       showcaseDemoUrl:'/marketplace/demos/demo-emailCampaigns.html',
       demoHeight:920
+    },
+    'online-quote':{
+      sectionKey:'onlineQuote',
+      name:'Online Quotes',
+      tagline:'Turn website visitors into quote-ready customers.',
+      summary:'A guided quote form that matches your website, captures the right details, and sends structured enquiries to email and your CRM.',
+      category:'Sales & Quotes',
+      badge:'Included'
+    },
+    'online-quotes':{
+      sectionKey:'onlineQuote',
+      name:'Online Quotes',
+      tagline:'Turn website visitors into quote-ready customers.',
+      summary:'A guided quote form that matches your website, captures the right details, and sends structured enquiries to email and your CRM.',
+      category:'Sales & Quotes',
+      badge:'Included'
     }
   };
 
@@ -465,8 +510,10 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         summary:(alias&&alias.summary)||sell.summary||'',
         hero_image_url:sell.hero_image_url||null,
         badge:(alias&&alias.badge)||sell.badge||null,
+        category_name:(alias&&alias.category)||sell.category||sell.category_name||null,
         section_key:sectionKey,
-        status:'live'
+        status:'live',
+        access_type:(alias&&alias.badge&&String(alias.badge).toLowerCase().indexOf('included')>=0)?'included':null
       },
       blocks:blocks
     };
@@ -608,11 +655,10 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         return '<div class="blk lead-callout">'+(p.heading?'<div class="blk-eyebrow">Overview</div><h2>'+esc(p.heading)+'</h2>':'')+paras(p.text)+'</div>';
       case 'benefits':
         var items=(p.items||[]).map(function(it,i){
-          return '<div class="bn"><span class="ic">'+(i+1)+'</span><div><b>'+esc(it.title)+'</b>'
+          return '<div class="bn"><span class="ic ic-'+(i%4)+'" aria-hidden="true"></span><div><b>'+esc(it.title)+'</b>'
             +(it.text?'<span>'+esc(it.text)+'</span>':'')+'</div></div>';}).join('');
-        var eyebrow=p.heading==='Key features'?'Capabilities':(p.heading==='Why partners sell it'?'For partners':'Benefits');
-        return '<div class="blk"><div class="blk-eyebrow">'+esc(eyebrow)+'</div>'
-          +(p.heading?'<h2>'+esc(p.heading)+'</h2>':'')+'<div class="bene">'+items+'</div></div>';
+        var bHead=p.heading||'Better information in. Better conversations out.';
+        return '<div class="blk mf-benefits"><h2>'+esc(bHead)+'</h2><div class="bene">'+items+'</div></div>';
       case 'image':
         return '';
       case 'gallery':
@@ -648,14 +694,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 
       case 'playground':
         setTimeout(function(){initPlayground('live-demo',p,_renderFeature);},0);
-        return '<div class="blk pg pg-full" id="live-demo">'
-          +'<div class="pg-band" style="text-align:left;max-width:none;padding:0 0 12px"><div class="blk-eyebrow">Live demo</div>'
-          +'<h2>Try it with real examples</h2>'
-          +'<p>Switch presets or edit fields underneath — every change updates instantly. Nothing is saved.</p></div>'
-          +'<div class="pg-devicewrap" data-r="wrap">'
-          +'<div class="pg-viewport" data-r="vp">'
-          +'<div class="pg-canvas" data-r="canvas"></div>'
-          +'</div></div>'
+        return '<div class="blk pg pg-full pg-studio" id="live-demo">'
+          +'<div class="pg-band"><div class="blk-eyebrow">Live playground</div>'
+          +'<h2>Make it yours. See it live.</h2>'
+          +'<p>Edit the fields on the left — the preview updates instantly. Nothing is saved on this page.</p></div>'
+          +'<div class="pg-studio-grid">'
+          +'<div class="pg-panel pg-panel-compact"><div data-r="ctl"></div></div>'
+          +'<div class="pg-preview-col">'
           +'<div class="pg-topbar">'
           +'<div class="pg-presets" data-r="presets"></div>'
           +'<div class="pg-devbtns">'
@@ -663,7 +708,16 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           +'<button data-d="tablet">Tablet</button>'
           +'<button data-d="phone">Phone</button>'
           +'</div></div>'
-          +'<div class="pg-panel pg-panel-compact"><div data-r="ctl"></div></div>'
+          +'<div class="pg-devicewrap" data-r="wrap">'
+          +'<div class="pg-viewport" data-r="vp">'
+          +'<div class="pg-canvas" data-r="canvas"></div>'
+          +'</div></div>'
+          +'</div>'
+          +'</div>'
+          +'<div class="pg-status-bar" aria-hidden="true">'
+          +'<span class="pg-status-msg">Matches your website theme</span>'
+          +'<span class="pg-status-publish">Publish when ready</span>'
+          +'</div>'
           +'</div>';
       case 'quote':
         return '<div class="blk"><div class="qt"><p>&ldquo;'+esc(p.text)+'&rdquo;</p>'
@@ -673,6 +727,121 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   }
 
   var _renderFeature=null;
+
+  function accessBadgeHtml(f){
+    var type = (f && (f.access_type || f.accessType)) || '';
+    var Acc = window.LPMarketplaceAccess;
+    if (!type && Acc && Acc.accessForSection && f && f.section_key) {
+      try { type = Acc.accessForSection(f.section_key) || ''; } catch(_e){}
+    }
+    if (!type && f && f.badge) {
+      var b = String(f.badge).toLowerCase();
+      if (b.indexOf('premium')>=0) type='premium_subscription';
+      else if (b.indexOf('free')>=0) type='free';
+      else if (b.indexOf('included')>=0 || b.indexOf('platform')>=0) type='included';
+    }
+    var short = 'Included';
+    var cls = 'mf-badge-inc';
+    if (Acc && Acc.publicLabel) {
+      try {
+        var lab = Acc.publicLabel(type || 'included');
+        if (lab && lab.short) short = lab.short;
+      } catch(_e2){}
+    } else if (type) {
+      if (type.indexOf('premium')>=0) short='Premium';
+      else if (type.indexOf('free')>=0) short='Free';
+      else if (type.indexOf('usage')>=0) short='Usage-based';
+    }
+    var sl = short.toLowerCase();
+    if (sl.indexOf('premium')>=0) cls='mf-badge-prem';
+    else if (sl.indexOf('free')>=0) cls='mf-badge-free';
+    else cls='mf-badge-inc';
+    return '<span class="mf-access '+cls+'">'+esc(short)+'</span>';
+  }
+
+  function defaultBenefits(f){
+    var n=(f&&f.name)||'This app';
+    return [
+      {title:'More useful enquiries', text:n+' captures the details you need before you pick up the phone.'},
+      {title:'Faster follow-up', text:'Get structured information so you can respond with confidence.'},
+      {title:'Fewer repetitive questions', text:'Customers answer once — you stop chasing missing details.'},
+      {title:'Everything saved together', text:'Keep the enquiry, context and next step in one place.'}
+    ];
+  }
+
+  function benefitsFromBlocks(blocks, f){
+    var items=[];
+    (blocks||[]).forEach(function(b){
+      if(b&&b.block_type==='benefits'){
+        (b.payload&&b.payload.items||[]).forEach(function(it){ if(it&&it.title) items.push(it); });
+      }
+    });
+    if(items.length>=2) return items.slice(0,4);
+    return defaultBenefits(f);
+  }
+
+  function howStepsHtml(f){
+    var isQuote=/quote/i.test(String((f&&(f.section_key||f.slug||f.name))||''));
+    var step3=isQuote?'Follow up and quote':'Follow up with confidence';
+    var step3Sub=isQuote?'Respond faster with the right information':'Respond faster with the right information';
+    return '<section class="mf-how" aria-label="How it works">'
+      +'<div class="wrap"><p class="blk-eyebrow">How it works</p><h2>How it works</h2>'
+      +'<div class="mf-how-steps">'
+      +'<article class="mf-how-step"><div class="mf-how-ico" aria-hidden="true">1</div><h3>Customer completes the form</h3><p>Optional verification</p></article>'
+      +'<div class="mf-how-arrow" aria-hidden="true">→</div>'
+      +'<article class="mf-how-step"><div class="mf-how-ico" aria-hidden="true">2</div><h3>You receive a detailed enquiry</h3><p>Sent to email and CRM</p></article>'
+      +'<div class="mf-how-arrow" aria-hidden="true">→</div>'
+      +'<article class="mf-how-step"><div class="mf-how-ico" aria-hidden="true">3</div><h3>'+esc(step3)+'</h3><p>'+esc(step3Sub)+'</p></article>'
+      +'</div></div></section>';
+  }
+
+  function twinCtaHtml(f, hasPlay){
+    var name=esc((f&&f.name)||'this app');
+    var addHref=hasPlay?'#live-demo':'/find-a-partner';
+    return '<section class="mf-cta-pair" aria-label="Next steps">'
+      +'<div class="wrap mf-cta-grid">'
+      +'<article class="mf-cta-card">'
+      +'<h2>Ready when your website is.</h2>'
+      +accessBadgeHtml(f)
+      +'<p>Add '+name+' to a LeadPages site when you are logged in. Your account will show any cost before you add the app.</p>'
+      +'<a class="btn" href="'+addHref+'">Add to my website →</a>'
+      +'</article>'
+      +'<article class="mf-cta-card">'
+      +'<h2>New to LeadPages?</h2>'
+      +'<p>Build a professional website with '+name+' designed to match your brand from day one.</p>'
+      +'<a class="btn ghost-ink" href="/find-a-partner">Build a website with '+name+' →</a>'
+      +'</article>'
+      +'</div>'
+      +'<p class="mf-cta-note">Your account will show any cost before you add the app.</p>'
+      +'</section>';
+  }
+
+  function crossSellHtml(){
+    var apps=[
+      {name:'Project Portfolio', slug:'featured-projects', text:'Large project portfolio cards', badge:'Included', cls:'mf-badge-inc'},
+      {name:'Reviews Wall', slug:'reviews', text:'Customer quotes with source badges', badge:'Included', cls:'mf-badge-inc'},
+      {name:'Trust Bar', slug:'trust-bar', text:'Credentials and promises strip', badge:'Included', cls:'mf-badge-inc'},
+      {name:'Review Highlights', slug:'review-highlights', text:'Star snippets under the hero', badge:'Included', cls:'mf-badge-inc'}
+    ];
+    return '<div class="mf-xsell"><h2>Works even better with…</h2><div class="mf-xsell-grid">'
+      +apps.map(function(a){
+        return '<a class="mf-xsell-card" href="/marketplace/'+a.slug+'"><strong>'+esc(a.name)+'</strong>'
+          +'<span class="mf-access '+a.cls+'">'+esc(a.badge)+'</span>'
+          +'<span class="desc">'+esc(a.text)+'</span></a>';
+      }).join('')
+      +'</div></div>';
+  }
+
+  function finalBannerHtml(f, hasPlay){
+    var name=esc((f&&f.name)||'this app');
+    return '<section class="mf-final"><div class="wrap mf-final-inner">'
+      +'<h2>Turn more website visits into real opportunities.</h2>'
+      +'<div class="mf-final-actions">'
+      +(hasPlay?'<a class="btn" href="#live-demo">Add '+name+'</a>':'')
+      +'<a class="btn ghost" href="/find-a-partner">Build my website</a>'
+      +'</div></div></section>';
+  }
+
   function collectInfoPoints(f, blocks){
     var points=[];
     var overview='';
@@ -734,37 +903,86 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     /* Green hero media is always a still image — live demos live in the white section below */
     var mediaHtml=heroImg
       ? '<div class="himg"><img src="'+esc(heroImg)+'" alt="" loading="eager"></div>'
-      : '<div class="himg-placeholder">App preview</div>';
+      : '<div class="himg"><img src="/assets/marketing-marketplace-feature/mf-hero-devices.jpg" alt="" loading="eager"></div>';
+    var catLabel=(f.category_name||f.category||f.badge||'Marketplace app');
+    var headline=(f.tagline||f.name||'Marketplace app');
+    var sub=(f.summary||'');
+    var benefitsItems=benefitsFromBlocks(blocks, f);
+    var isOnlineQuote=/online.?quote/i.test(String(f.section_key||f.slug||'')+' '+String(f.name||''));
+    var benefitsHeading=isOnlineQuote
+      ? 'Better information in. Better conversations out.'
+      : ((blocks||[]).reduce(function(h,b){
+          if(h) return h;
+          if(b&&b.block_type==='benefits'&&b.payload&&b.payload.heading) return b.payload.heading;
+          return '';
+        },'') || ('Why businesses use '+((f&&f.name)||'this app')));
+    var benefitsHtml='<div class="blk mf-benefits"><h2>'+esc(benefitsHeading)+'</h2><div class="bene">'
+      +benefitsItems.map(function(it,i){
+        return '<div class="bn"><span class="ic ic-'+(i%4)+'" aria-hidden="true"></span><div><b>'+esc(it.title)+'</b>'
+          +(it.text?'<span>'+esc(it.text)+'</span>':'')+'</div></div>';
+      }).join('')
+      +'</div></div>';
+    var faqBlock=(demoBlocks||[]).filter(function(b){ return b.block_type==='faq'; })[0];
+    var faqHtml=faqBlock?block(faqBlock):'<div class="blk faq"><h2>Questions about '+esc(f.name)+'?</h2>'
+      +'<details><summary>Is this included in my plan?</summary><div class="a">Access depends on your LeadPages plan. Labels on this page show Included, Free or Premium — your account confirms any cost before you add the app.</div></details>'
+      +'<details><summary>Will it match my website?</summary><div class="a">Yes. Apps inherit your theme colours, fonts and spacing so they feel native — not bolted on.</div></details>'
+      +'<details><summary>Can I try it here first?</summary><div class="a">Use the live playground on this page. Changes are temporary and nothing is saved.</div></details>'
+      +'<details><summary>Does this work on mobile?</summary><div class="a">Yes. Previews include desktop, tablet and phone so you can check the experience on every device.</div></details>'
+      +'</div>';
+
     var html='<header class="feat-hero"><div class="feat-hero-inner wrap-wide">'
       +'<div class="feat-hero-grid">'
       +'<div class="feat-hero-copy">'
-      +'<div class="crumb"><a href="/marketplace">&larr; Marketplace</a></div>'
-      +(f.badge?'<span class="hbadge">'+esc(f.badge)+'</span>':'')
-      +'<h1>'+esc(f.name)+'</h1>'
-      +(f.tagline?'<div class="htag">'+esc(f.tagline)+'</div>':'')
-      +(f.summary?'<div class="hsum">'+esc(f.summary)+'</div>':'')
-      +'<div class="mp-labels">'
-      +(f.badge?'<span class="mp-label">'+esc(f.badge)+'</span>':'')
-      +'<span class="mp-label">LeadPages marketplace</span></div>'
-      +'<div class="mp-info-list" aria-label="App details">'+pointsHtml+'</div>'
+      +'<div class="crumb"><a href="/marketplace">Apps</a> / <span>'+esc(catLabel)+'</span> / <span>'+esc(f.name)+'</span></div>'
+      +'<span class="hbadge">'+esc(String(catLabel).toUpperCase())+'</span>'
+      +'<h1>'+esc(headline)+'</h1>'
+      +(sub?'<div class="hsum">'+esc(sub)+'</div>':'')
+      +'<div class="mp-labels">'+accessBadgeHtml(f)+'</div>'
       +'<div class="hcta">'
-      +(hasPlay?'<a class="btn" href="#live-demo">Try the demo ↓</a>':'')
+      +(hasPlay?'<a class="btn" href="#live-demo">Add '+esc(f.name)+'</a>':'')
+      +(hasPlay?'<a class="btn ghost" href="#live-demo">See it in action</a>':'')
       +(isPremiumShowcase?'<a class="btn" href="#example-demo">See the example ↓</a>':'')
       +(isPremiumShowcase?'<a class="btn ghost" href="/partners">Talk to LeadPages</a>':'')
-      +(demoUrl?'<a class="btn ghost" href="'+esc(demoUrl)+'" target="_blank" rel="noopener">See a live site</a>':'')
-      +(!isPremiumShowcase?'<a class="btn ghost" href="/partners">Become a partner</a>':'')+'</div>'
+      +(!hasPlay&&!isPremiumShowcase?'<a class="btn" href="/find-a-partner">Build my website</a>':'')
       +'</div>'
-      +'<div class="feat-hero-media">'+mediaHtml+'</div>'
+      +'<div class="mf-trust" aria-label="Trust">'
+      +'<span>✓ Easy to configure</span>'
+      +'<span>✓ Matches your website</span>'
+      +'<span>✓ Works on every device</span>'
+      +'</div>'
+      +'</div>'
+      +'<div class="feat-hero-media">'
+      +mediaHtml
+      +(isOnlineQuote
+        ? '<div class="mf-float-chip chip-1" aria-hidden="true"><strong>New quote request</strong><span>Just now</span></div>'
+          +'<div class="mf-float-chip chip-2" aria-hidden="true"><strong>Photos attached</strong><span>Optional</span></div>'
+          +'<div class="mf-float-chip chip-3" aria-hidden="true"><strong>Lead added to CRM</strong><span>Ready to follow up</span></div>'
+        : '<div class="mf-float-chip chip-1" aria-hidden="true"><strong>New enquiry</strong><span>Just now</span></div>'
+          +'<div class="mf-float-chip chip-2" aria-hidden="true"><strong>Photos attached</strong><span>Optional</span></div>'
+          +'<div class="mf-float-chip chip-3" aria-hidden="true"><strong>Lead captured</strong><span>Ready to follow up</span></div>')
+      +'</div>'
       +'</div></div></header>'
-      +'<article class="mp-demo-article"><div class="wrap">';
+      +'<article class="mp-demo-article">';
+
     if(hasPlay){
-      html+=demoBlocks.filter(function(b){ return b.block_type==='playground'||b.block_type==='demo_embed'||b.block_type==='faq'; }).map(block).join('');
+      html+='<div class="wrap">'+benefitsHtml+'</div>';
+      html+='<div class="wrap">';
+      html+=demoBlocks.filter(function(b){ return b.block_type==='playground'||b.block_type==='demo_embed'; }).map(block).join('');
+      html+='</div>';
+      html+=howStepsHtml(f);
+      html+=twinCtaHtml(f, true);
+      html+='<section class="mf-xsell-row"><div class="wrap mf-xsell-layout">'+crossSellHtml()+faqHtml+'</div></section>';
+      html+=finalBannerHtml(f, true);
     } else if(demoBlocks.length){
+      html+='<div class="wrap">';
       html+=demoBlocks.map(block).join('');
+      html+='</div>';
+      html+=twinCtaHtml(f, false);
+      html+=finalBannerHtml(f, false);
     } else {
-      html+='<div class="blk"><p class="mp-lede">A live demo for this app is coming soon.</p></div>';
+      html+='<div class="wrap"><div class="blk"><p class="mp-lede">A live demo for this app is coming soon.</p></div></div>';
     }
-    html+='</div></article>';
+    html+='</article>';
     page.innerHTML=html;
     wireEmbedAutosize();
   }
