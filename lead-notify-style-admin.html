@@ -76,7 +76,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   </div>
 
   <div class="notice" id="logo-notice">
-    <strong>Logo note:</strong> Button and header colours update instantly in preview. The animated LeadPages mark is a <strong>GIF</strong> — CSS cannot recolour it. To match your palette, paste a different logo URL below (PNG/GIF on Cloudinary works well), or hide the animated mark.
+    <strong>Logo note:</strong> Header/button colours are CSS. Logo tint uses a Cloudinary transform on <strong>PNG wordmarks</strong> (best on white/mono logos). GIFs and non-Cloudinary URLs cannot be tinted — upload a PNG or paste a Cloudinary URL instead.
   </div>
   <div class="notice hidden" id="resolve-status"></div>
 
@@ -89,13 +89,31 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
         <input id="preview-business" value="Bean Culture">
       </div>
       <div class="colors" id="color-fields"></div>
+
+      <div class="field" style="margin-top:12px">
+        <label>Logo tint (Cloudinary PNG)</label>
+        <div class="color-row">
+          <input type="color" id="logo-tint-pick" value="#ffffff">
+          <input type="text" id="logo-tint" value="" placeholder="empty = no tint" spellcheck="false">
+          <button class="btn ghost" id="btn-clear-tint" type="button" style="margin:0">Clear tint</button>
+        </div>
+        <p class="sub" style="margin:6px 0 0">Works on the wordmark when it is a Cloudinary PNG (e.g. white LeadPages mark → pink/brown/white).</p>
+        <div id="logo-tint-preview" style="margin-top:8px;min-height:40px"></div>
+      </div>
+
       <div class="field" style="margin-top:10px">
-        <label>Animated logo URL (GIF)</label>
-        <input id="logo-animated" type="url" placeholder="https://…">
+        <label>Animated logo URL (GIF — not tintable)</label>
+        <div class="color-row">
+          <input id="logo-animated" type="url" placeholder="https://…" style="flex:1">
+          <button class="btn ghost" id="btn-up-animated" type="button" style="margin:0">Upload</button>
+        </div>
       </div>
       <div class="field">
-        <label>Wordmark logo URL (PNG)</label>
-        <input id="logo-wordmark" type="url" placeholder="https://…">
+        <label>Wordmark logo URL (PNG — upload or paste)</label>
+        <div class="color-row">
+          <input id="logo-wordmark" type="url" placeholder="https://…" style="flex:1">
+          <button class="btn ghost" id="btn-up-wordmark" type="button" style="margin:0">Upload</button>
+        </div>
       </div>
       <div class="colors" style="margin-top:6px">
         <div class="field">
@@ -229,6 +247,10 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     $('show-wordmark-logo').checked = draft.showWordmarkLogo !== false;
     $('logo-mark-width').value = draft.logoMarkWidth || 132;
     $('logo-wordmark-height').value = draft.logoWordmarkHeight || 84;
+    var tint = draft.logoTint || '';
+    $('logo-tint').value = tint;
+    $('logo-tint-pick').value = /^#[0-9a-fA-F]{6}$/.test(tint) ? tint : '#ffffff';
+    paintTintPreview();
   }
 
   function readLogoFields(){
@@ -240,6 +262,81 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     draft.logoMarkWidth = Math.max(16, Math.min(240, parseInt($('logo-mark-width').value || draft.logoMarkWidth || 132, 10) || 132));
     draft.logoMarkHeight = draft.logoMarkWidth;
     draft.logoWordmarkHeight = Math.max(16, Math.min(240, parseInt($('logo-wordmark-height').value || draft.logoWordmarkHeight || 84, 10) || 84));
+    var tint = ($('logo-tint').value || '').trim();
+    if(!tint) draft.logoTint = '';
+    else {
+      if(tint.charAt(0) !== '#') tint = '#'+tint;
+      draft.logoTint = /^#[0-9a-fA-F]{3,6}$/i.test(tint) ? tint.toLowerCase() : '';
+    }
+  }
+
+  function clientTintUrl(url, tint){
+    url = String(url || '');
+    if(!tint || !/^https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\//i.test(url)) return url;
+    var m = url.match(/^(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.+)$/i);
+    if(!m) return url;
+    var parts = m[2].split('/').filter(Boolean).filter(function(p){
+      if(/^e_colorize/i.test(p) || /^co_rgb:/i.test(p) || /^e_replace_color/i.test(p)) return false;
+      if(/,/.test(p) && /e_colorize|co_rgb:/i.test(p)) return false;
+      return true;
+    });
+    var hex = tint.charAt(0) === '#' ? tint.slice(1) : tint;
+    return m[1] + 'e_colorize:100,co_rgb:' + hex + '/' + parts.join('/');
+  }
+
+  function paintTintPreview(){
+    var host = $('logo-tint-preview');
+    var src = clientTintUrl(draft.logoWordmark || '', draft.logoTint || '');
+    if(!draft.showWordmarkLogo || !src){
+      host.innerHTML = '<span class="sub">Wordmark hidden or no URL.</span>';
+      return;
+    }
+    host.innerHTML = '<img src="'+esc(src)+'" alt="Tinted wordmark preview" style="height:42px;width:auto;display:block;background:rgba(0,0,0,.35);padding:10px 14px;border-radius:10px">';
+  }
+
+  function pickFile(cb){
+    var inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'image/png,image/jpeg,image/webp,image/gif,.png,.jpg,.jpeg,.webp,.gif';
+    inp.style.display = 'none';
+    document.body.appendChild(inp);
+    inp.onchange = function(){
+      var f = inp.files && inp.files[0];
+      if(inp.parentNode) inp.parentNode.removeChild(inp);
+      if(f) cb(f);
+    };
+    inp.click();
+  }
+
+  function randId(){
+    return Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+  }
+
+  async function uploadLogo(file, kind){
+    var t = await token();
+    if(!t) throw new Error('Sign in again');
+    var folder = 'leadpages/email-styles/' + kind;
+    var publicId = folder + '/' + randId();
+    var sr = await fetch('/api/cloudinary/sign', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + t },
+      body: JSON.stringify({ publicId: publicId, assetFolder: folder })
+    });
+    var s = await sr.json().catch(function(){ return {}; });
+    if(!sr.ok) throw new Error(s.error || 'Could not authorise upload');
+    var fd = new FormData();
+    fd.append('file', file, file.name || 'logo.png');
+    fd.append('api_key', s.apiKey);
+    fd.append('timestamp', s.timestamp);
+    fd.append('public_id', s.publicId);
+    if(s.assetFolder) fd.append('asset_folder', s.assetFolder);
+    if(s.overwrite) fd.append('overwrite', s.overwrite);
+    fd.append('signature', s.signature);
+    var cloud = (s.cloudName && /^[a-zA-Z0-9_\-]+$/.test(s.cloudName)) ? s.cloudName : 'dzx6x1hou';
+    var ur = await fetch('https://api.cloudinary.com/v1_1/' + cloud + '/image/upload', { method: 'POST', body: fd });
+    var uj = await ur.json().catch(function(){ return {}; });
+    if(!ur.ok || !uj.secure_url) throw new Error((uj.error && uj.error.message) || ('Upload failed (' + ur.status + ')'));
+    return uj.secure_url;
   }
 
   function applyDraftFromStyle(style){
@@ -410,13 +507,58 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     runPreview();
   };
   $('logo-animated').addEventListener('change', debouncedPreview);
-  $('logo-wordmark').addEventListener('change', debouncedPreview);
+  $('logo-wordmark').addEventListener('change', function(){ paintTintPreview(); debouncedPreview(); });
   $('show-logo').addEventListener('change', debouncedPreview);
   $('show-animated-logo').addEventListener('change', debouncedPreview);
-  $('show-wordmark-logo').addEventListener('change', debouncedPreview);
+  $('show-wordmark-logo').addEventListener('change', function(){ paintTintPreview(); debouncedPreview(); });
   $('logo-mark-width').addEventListener('change', debouncedPreview);
   $('logo-wordmark-height').addEventListener('change', debouncedPreview);
   $('preview-business').addEventListener('change', debouncedPreview);
+
+  $('logo-tint-pick').addEventListener('input', function(){
+    draft.logoTint = $('logo-tint-pick').value;
+    $('logo-tint').value = draft.logoTint;
+    paintTintPreview();
+    debouncedPreview();
+  });
+  $('logo-tint').addEventListener('change', function(){
+    readLogoFields();
+    if(draft.logoTint && /^#[0-9a-fA-F]{6}$/.test(draft.logoTint)) $('logo-tint-pick').value = draft.logoTint;
+    paintTintPreview();
+    debouncedPreview();
+  });
+  $('btn-clear-tint').onclick = function(){
+    draft.logoTint = '';
+    $('logo-tint').value = '';
+    paintTintPreview();
+    debouncedPreview();
+  };
+
+  $('btn-up-wordmark').onclick = function(){
+    pickFile(async function(file){
+      var msg = $('edit-msg'); msg.className = 'msg'; msg.textContent = 'Uploading wordmark…';
+      try{
+        var url = await uploadLogo(file, 'wordmark');
+        draft.logoWordmark = url;
+        $('logo-wordmark').value = url;
+        paintTintPreview();
+        msg.className = 'msg ok'; msg.textContent = 'Wordmark uploaded.';
+        runPreview();
+      }catch(e){ msg.className = 'msg bad'; msg.textContent = e.message || String(e); }
+    });
+  };
+  $('btn-up-animated').onclick = function(){
+    pickFile(async function(file){
+      var msg = $('edit-msg'); msg.className = 'msg'; msg.textContent = 'Uploading mark…';
+      try{
+        var url = await uploadLogo(file, 'mark');
+        draft.logoAnimated = url;
+        $('logo-animated').value = url;
+        msg.className = 'msg ok'; msg.textContent = 'Mark uploaded. (Tint only applies if this is a Cloudinary PNG.)';
+        runPreview();
+      }catch(e){ msg.className = 'msg bad'; msg.textContent = e.message || String(e); }
+    });
+  };
 
   $('btn-save-global').onclick = async function(){
     readLogoFields();

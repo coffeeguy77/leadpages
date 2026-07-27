@@ -84,6 +84,22 @@ assert.ok(pinkMail.html.includes('https://example.com/custom-wordmark.png'), 'cu
 assert.ok(!pinkMail.html.includes(LOGO_ANIMATED), 'pink style hides animated mark');
 assert.ok(/height="84"/.test(pinkMail.html), 'pink style large wordmark');
 
+// Cloudinary logo tint
+const tintedMail = buildLeadNotifyEmail({
+  business: 'Bean Culture',
+  lead: { name: 'Sam', phone: '0400000000' },
+  style: {
+    logoTint: '#ffffff',
+    showAnimatedLogo: false,
+    logoWordmarkHeight: 84
+  }
+});
+assert.ok(
+  tintedMail.html.includes('e_colorize:100,co_rgb:ffffff'),
+  'tinted Cloudinary wordmark in HTML'
+);
+assert.ok(!tintedMail.html.includes(LOGO_ANIMATED), 'tint style hides animated mark');
+
 const noLogo = buildLeadNotifyEmail({
   business: 'Test',
   lead: { name: 'A' },
