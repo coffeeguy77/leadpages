@@ -4,179 +4,912 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
-<title>Marketplace — see what your website could do</title>
-<meta name="description" content="Explore LeadPages features with real business examples. Many apps are included; premium and usage-based tools are clearly marked.">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="LeadPages">
+<meta name="theme-color" content="#001529">
+<title>App Marketplace — LeadPages Australia</title>
+<meta name="description" content="Add quotes, bookings, galleries, reviews and marketing tools to your LeadPages website. Browse included and premium apps designed to match your brand.">
+<link rel="canonical" href="https://www.leadpages.com.au/marketplace">
+<meta property="og:title" content="App Marketplace — LeadPages Australia">
+<meta property="og:description" content="Add quotes, bookings, galleries, reviews and marketing tools to your LeadPages website.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://www.leadpages.com.au/marketplace">
 <meta property="og:image" content="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png">
+<meta property="og:locale" content="en_AU">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/marketplace-theme.css">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--theme-body-font,var(--body));background:var(--theme-page-background,var(--paper));color:var(--theme-text,var(--ink));line-height:1.6}
-a{color:inherit;text-decoration:none}
-img{max-width:100%;display:block}
-.wrap{max-width:var(--theme-content-width,1440px);margin:0 auto;padding:0 24px}
-h1,h2,h3{font-family:var(--theme-heading-font,var(--disp));font-weight:400;line-height:1.12}
-.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--theme-accent,#D9A0AC)}
-.sitenav{background:var(--theme-secondary,var(--gum))}
-.sitenav .wrap{display:flex;align-items:center;justify-content:space-between;height:116px}
-.sitenav .leadpages-logo{height:78px;width:auto;display:block}
-.sitenav .links{display:flex;align-items:center;gap:24px}
-.sitenav .links a{color:var(--theme-secondary-contrast,#E9EFEA);font-weight:600;font-size:15px}
-.sitenav .links a:hover{color:var(--theme-accent,#D9A0AC)}
-.sitenav .links a.cta{background:var(--theme-primary,var(--rose));color:var(--theme-primary-contrast,#fff);padding:9px 18px;border-radius:999px}
-.sitenav .links a.cta:hover{background:var(--theme-primary-hover,var(--rose-d))}
-@media(max-width:640px){.sitenav .links a:not(.cta){display:none}}
-.hero{background:var(--theme-secondary,var(--gum));color:var(--theme-text-inverse,#F3EFEA);padding:64px 0 72px;text-align:center}
-.hero h1{font-size:clamp(30px,4.6vw,46px);margin:12px 0 14px}
-.hero p{color:#C9D2CC;font-size:18px;max-width:58ch;margin:0 auto}
-.pills{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:34px 0 8px}
-.pill{padding:10px 20px;border-radius:999px;border:1px solid var(--theme-border,var(--line));background:var(--theme-surface,#fff);font-weight:700;font-size:14.5px;cursor:pointer;color:var(--theme-text-muted,var(--mut));font-family:var(--theme-body-font,var(--body))}
-.pill:hover{border-color:var(--theme-primary,var(--rose));color:var(--theme-primary-hover,var(--rose-d))}
-.pill.on{background:var(--theme-primary,var(--rose));border-color:var(--theme-primary,var(--rose));color:var(--theme-primary-contrast,#fff)}
-.pill:focus-visible{outline:3px solid var(--theme-focus,var(--rose));outline-offset:2px}
-main{padding:26px 0 96px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:26px}
-@media(max-width:960px){.grid{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.grid{grid-template-columns:1fr}}
-.fcard{background:var(--theme-surface,#fff);border:1px solid var(--theme-border,var(--line));border-radius:var(--theme-radius-medium,16px);overflow:hidden;display:flex;flex-direction:column;transition:transform .18s ease,box-shadow .18s ease}
-.fcard:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(46,42,43,.10)}
-.fthumb{height:150px;background:linear-gradient(135deg,var(--theme-surface-alt,var(--shell)),var(--theme-border,var(--line)));position:relative}
-.fthumb img{width:100%;height:100%;object-fit:cover}
-.fbadge{position:absolute;top:12px;left:12px;background:var(--theme-primary,var(--rose));color:var(--theme-primary-contrast,#fff);font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px}
-.fbody{padding:20px 22px 22px;display:flex;flex-direction:column;gap:8px;flex:1}
-.fcat{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--theme-primary,var(--rose))}
-.fbody h3{font-size:20px}
-.ftag{color:var(--theme-text,var(--ink));font-weight:600;font-size:15px}
-.fsum{color:var(--theme-text-muted,var(--mut));font-size:14.5px;flex:1}
-.fdemo{align-self:flex-start;margin-top:6px;font-weight:700;color:var(--theme-primary-hover,var(--rose-d));font-size:14.5px;border-bottom:2px solid var(--theme-primary,var(--rose));padding-bottom:1px}
-.status{color:var(--theme-text-muted,var(--mut));text-align:center;padding:48px 0;font-size:16px}
-.band{background:var(--theme-surface-alt,var(--shell));text-align:center;padding:var(--theme-section-spacing,72px) 24px}
-.band h2{font-size:clamp(26px,3.6vw,36px);margin-bottom:12px}
-.band p{color:var(--theme-text-muted,var(--mut));max-width:52ch;margin:0 auto 26px}
-.btn{display:inline-flex;font-weight:700;padding:14px 28px;border-radius:999px;background:var(--theme-primary,var(--rose));color:var(--theme-primary-contrast,#fff)}
-.btn:hover{background:var(--theme-primary-hover,var(--rose-d))}
-.btn:focus-visible{outline:3px solid var(--theme-focus,var(--rose));outline-offset:2px}
-footer{background:var(--theme-secondary,var(--gum));color:#C9D2CC;padding:44px 0 36px;font-size:14px}
-footer .wrap{display:flex;justify-content:space-between;gap:26px;flex-wrap:wrap}
-footer .leadpages-logo{height:var(--lp-logo-height,52px);width:auto;margin-bottom:12px;display:block}
-footer a{color:var(--theme-secondary-contrast,#E9EFEA);font-weight:600;margin-right:22px}
-footer a:hover{color:var(--theme-accent,#D9A0AC)}
-.abn{margin-top:14px;color:#8FA096;font-size:12.5px}
-</style>
 <link rel="stylesheet" href="/assets/lp-logo.css">
-<script src="/assets/lp-logo.js" defer></script>
-<script src="/lib/marketplace-v2-flags.js"></script>
-<script src="/lib/marketplace-access.js"></script>
-<script src="/assets/js/marketplace/marketplace-v2.js" defer></script>
+<link rel="stylesheet" href="/assets/marketing-marketplace.css">
 </head>
-<body>
-
-<nav class="sitenav">
-  <div class="wrap">
-    <a href="/"><span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span></a>
-    <div class="links">
-      <a href="/#how">How it works</a>
-      <a href="/domains">Domains</a>
-      <a class="cta" href="/partners">Become a partner</a>
+<body class="mp">
+<header class="header" id="mp-header">
+  <div class="wrap-wide">
+    <a class="brand" href="/" aria-label="LeadPages Australia home">
+      <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span>
+      <span class="brand-au">Australia</span>
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="/showcase">Websites<span aria-hidden="true">▾</span></a>
+      <a href="/marketplace" class="is-active" aria-current="page">Apps</a>
+      <a href="/partners">Partners<span aria-hidden="true">▾</span></a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/resources">Resources<span aria-hidden="true">▾</span></a>
+    </nav>
+    <div class="header-actions">
+      <a class="login" href="/manage" data-mp-track="header_login">Log in</a>
+      <a class="btn btn-orange" href="/find-a-partner" data-mp-track="header_build">Build my website</a>
+      <button type="button" class="menu-btn" id="mp-menu-btn" aria-expanded="false" aria-controls="mp-drawer" aria-label="Open menu">☰</button>
     </div>
-  </div>
-</nav>
-
-<header class="hero">
-  <div class="wrap">
-    <span class="eyebrow">The LeadPages Marketplace</span>
-    <h1>See what your website could do.</h1>
-    <p>Explore the features available inside LeadPages. Start with real business examples, try the same editor used in the platform and see how easily each section can become your own.</p>
-    <p style="color:var(--theme-accent,#D9A0AC);font-size:15px;max-width:56ch;margin:16px auto 0">Many apps are included with your website. Premium and usage-based tools are clearly marked before you add them.</p>
   </div>
 </header>
 
-<main>
-  <div class="wrap">
-    <div class="pills" id="pills" role="tablist" aria-label="Filter by category"></div>
-    <div class="grid" id="grid"></div>
-    <div class="status" id="status">Loading the marketplace…</div>
-  </div>
+<div class="drawer" id="mp-drawer" hidden>
+  <nav aria-label="Mobile">
+    <a href="/showcase">Websites</a>
+    <a href="/demos">Live demos</a>
+    <a href="/marketplace" class="is-active">Apps</a>
+    <a href="/partners">Partners</a>
+    <a href="/find-a-partner">Find a partner</a>
+    <a href="/#pricing">Pricing</a>
+    <a href="/resources">Resources</a>
+    <a href="/domains">Domains</a>
+    <a href="/manage" data-mp-track="mobile_login">Log in</a>
+    <a class="btn btn-orange" href="/find-a-partner" data-mp-track="mobile_build">Build my website</a>
+  </nav>
+</div>
+
+<main id="main">
+
+  <!-- 1. Hero -->
+  <section class="mp-hero" aria-labelledby="hero-title">
+    <div class="wrap-wide mp-hero-grid">
+      <div class="mp-hero-copy reveal">
+        <p class="eyebrow">THE LEADPAGES APP MARKETPLACE</p>
+        <h1 class="h1" id="hero-title">Add more to your website. Get more from your business.</h1>
+        <p class="lede">Choose practical apps for quotes, bookings, galleries, reviews, marketing and more — all designed to work beautifully with your LeadPages website.</p>
+        <div class="btn-row">
+          <a class="btn btn-orange" href="#explore" data-mp-track="hero_explore">Explore all apps</a>
+          <a class="btn btn-ghost-w" href="#popular" data-mp-track="hero_popular">See popular apps</a>
+        </div>
+        <div class="mp-hero-trust" aria-label="Marketplace benefits">
+          <span><span class="ck" aria-hidden="true">✓</span> Easy to add</span>
+          <span><span class="ck" aria-hidden="true">✓</span> Designed to match your website</span>
+          <span><span class="ck" aria-hidden="true">✓</span> Free &amp; premium options</span>
+        </div>
+      </div>
+      <div class="mp-hero-visual reveal">
+        <div class="mp-hero-collage" aria-hidden="true">
+          <div class="mp-hero-collage-main">
+            <img src="/assets/marketing-marketplace/mp-hero-devices.jpg" width="900" height="620" alt="" decoding="async" fetchpriority="high">
+          </div>
+          <div class="mp-hero-widget">
+            <img src="/assets/marketing-marketplace/mp-widget-quote.jpg" width="88" height="88" alt="" loading="lazy" decoding="async">
+            <div>
+              <div class="wlab">Quote</div>
+              <div class="wval">Online quotes</div>
+            </div>
+          </div>
+          <div class="mp-hero-widget">
+            <img src="/assets/marketing-marketplace/mp-widget-book.jpg" width="88" height="88" alt="" loading="lazy" decoding="async">
+            <div>
+              <div class="wlab">Book</div>
+              <div class="wval">Take bookings</div>
+            </div>
+          </div>
+          <div class="mp-hero-widget">
+            <img src="/assets/marketing-marketplace/mp-widget-call.jpg" width="88" height="88" alt="" loading="lazy" decoding="async">
+            <div>
+              <div class="wlab">Call</div>
+              <div class="wval">Click to call</div>
+            </div>
+          </div>
+          <div class="mp-hero-widget">
+            <img src="/assets/marketing-marketplace/mp-widget-review.jpg" width="88" height="88" alt="" loading="lazy" decoding="async">
+            <div>
+              <div class="wlab">Reviews</div>
+              <div class="wval">★★★★★ 4.9</div>
+            </div>
+          </div>
+          <img class="mp-hero-leaf" src="/assets/marketing-marketplace/eucalyptus-leaf.svg" width="140" height="160" alt="" loading="lazy" decoding="async">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Search -->
+  <section class="sec sec-cream mp-search" id="need" aria-labelledby="need-title">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="h2" id="need-title">What would you like your website to do?</h2>
+      </div>
+      <div class="mp-search-box reveal">
+        <svg class="mp-search-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <label class="sr-only" for="mp-search">Search apps</label>
+        <input type="search" id="mp-search" placeholder="Search apps by name or what you want to achieve…" autocomplete="off">
+      </div>
+      <div class="mp-pills reveal" id="mp-filters" role="group" aria-label="Filter apps by category">
+        <button type="button" class="pill is-on" data-filter="all" aria-pressed="true">All Apps</button>
+        <button type="button" class="pill" data-filter="leads" aria-pressed="false">Leads &amp; Enquiries</button>
+        <button type="button" class="pill" data-filter="bookings" aria-pressed="false">Bookings</button>
+        <button type="button" class="pill" data-filter="galleries" aria-pressed="false">Galleries</button>
+        <button type="button" class="pill" data-filter="reviews" aria-pressed="false">Reviews</button>
+        <button type="button" class="pill" data-filter="marketing" aria-pressed="false">Marketing</button>
+        <button type="button" class="pill" data-filter="trust" aria-pressed="false">Trust</button>
+        <button type="button" class="pill" data-filter="premium" aria-pressed="false">Premium</button>
+      </div>
+      <div class="mp-goal-grid reveal" aria-label="Common business goals">
+        <button type="button" class="mp-goal" data-filter="leads" data-mp-track="goal_leads">
+          <span class="ico" aria-hidden="true">◎</span>
+          <span class="name">Win more leads</span>
+        </button>
+        <button type="button" class="mp-goal" data-filter="bookings" data-mp-track="goal_bookings">
+          <span class="ico" aria-hidden="true">▣</span>
+          <span class="name">Take bookings</span>
+        </button>
+        <button type="button" class="mp-goal" data-filter="trust" data-mp-track="goal_trust">
+          <span class="ico" aria-hidden="true">✓</span>
+          <span class="name">Build trust</span>
+        </button>
+        <button type="button" class="mp-goal" data-filter="galleries" data-mp-track="goal_galleries">
+          <span class="ico" aria-hidden="true">▤</span>
+          <span class="name">Show your work</span>
+        </button>
+        <button type="button" class="mp-goal" data-filter="reviews" data-mp-track="goal_reviews">
+          <span class="ico" aria-hidden="true">★</span>
+          <span class="name">Capture reviews</span>
+        </button>
+        <button type="button" class="mp-goal" data-filter="marketing" data-mp-track="goal_seo">
+          <span class="ico" aria-hidden="true">↗</span>
+          <span class="name">Local SEO</span>
+        </button>
+        <button type="button" class="mp-goal" data-filter="marketing" data-mp-track="goal_offers">
+          <span class="ico" aria-hidden="true">%</span>
+          <span class="name">Run offers</span>
+        </button>
+        <button type="button" class="mp-goal" data-filter="leads" data-mp-track="goal_clients">
+          <span class="ico" aria-hidden="true">+</span>
+          <span class="name">Manage clients</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Popular -->
+  <section class="sec mp-popular" id="popular" aria-labelledby="popular-title">
+    <div class="wrap">
+      <div class="sec-head-row reveal">
+        <div class="sec-head">
+          <h2 class="h2" id="popular-title">Popular with local businesses.</h2>
+        </div>
+        <a class="text-link" href="#explore" data-mp-track="popular_view_all">View all apps →</a>
+      </div>
+      <div class="mp-app-grid">
+        <a class="mp-app-card reveal" href="/marketplace/online-quote" data-app="online-quote" data-cats="leads premium" data-search="online quote quotes enquiries leads premium">
+          <div class="mp-app-media">
+            <img src="/assets/marketing-marketplace/mp-app-quotes.jpg" width="480" height="300" alt="" loading="lazy" decoding="async">
+          </div>
+          <div class="mp-app-body">
+            <div class="mp-app-head">
+              <div class="mp-app-title">
+                <h3 class="h3">Online Quotes</h3>
+                <span class="badge badge-prem">Premium</span>
+              </div>
+            </div>
+            <p class="mp-app-desc">Guided quote flow with verified leads before you share pricing.</p>
+            <span class="btn btn-outline">View app</span>
+          </div>
+        </a>
+        <a class="mp-app-card reveal" href="/marketplace/booking-cta" data-app="booking-cta" data-cats="bookings" data-search="booking bookings appointments schedule">
+          <div class="mp-app-media">
+            <img src="/assets/marketing-marketplace/mp-app-booking.jpg" width="480" height="300" alt="" loading="lazy" decoding="async">
+          </div>
+          <div class="mp-app-body">
+            <div class="mp-app-head">
+              <div class="mp-app-title">
+                <h3 class="h3">Bookings</h3>
+                <span class="badge badge-inc">Included</span>
+              </div>
+            </div>
+            <p class="mp-app-desc">Appointment and booking call-to-action band that drives visitors to act.</p>
+            <span class="btn btn-outline">View app</span>
+          </div>
+        </a>
+        <a class="mp-app-card reveal" href="/marketplace/premium-gallery" data-app="premium-gallery" data-cats="galleries premium" data-search="gallery galleries photos portfolio premium">
+          <div class="mp-app-media">
+            <img src="/assets/marketing-marketplace/mp-app-gallery.jpg" width="480" height="300" alt="" loading="lazy" decoding="async">
+          </div>
+          <div class="mp-app-body">
+            <div class="mp-app-head">
+              <div class="mp-app-title">
+                <h3 class="h3">Premium Gallery</h3>
+                <span class="badge badge-prem">Premium</span>
+              </div>
+            </div>
+            <p class="mp-app-desc">Design-led galleries with mosaic layouts, filters and albums.</p>
+            <span class="btn btn-outline">View app</span>
+          </div>
+        </a>
+        <a class="mp-app-card reveal" href="/marketplace/review-highlights" data-app="review-highlights" data-cats="reviews" data-search="review reviews highlights stars social proof">
+          <div class="mp-app-media">
+            <img src="/assets/marketing-marketplace/mp-widget-review.jpg" width="480" height="300" alt="" loading="lazy" decoding="async">
+          </div>
+          <div class="mp-app-body">
+            <div class="mp-app-head">
+              <div class="mp-app-title">
+                <h3 class="h3">Review Highlights</h3>
+                <span class="badge badge-inc">Included</span>
+              </div>
+            </div>
+            <p class="mp-app-desc">Star-rated snippets directly under the hero for instant social proof.</p>
+            <span class="btn btn-outline">View app</span>
+          </div>
+        </a>
+        <a class="mp-app-card reveal" href="/marketplace/trust-bar" data-app="trust-bar" data-cats="trust" data-search="trust bar credentials services promises">
+          <div class="mp-app-media">
+            <img src="/assets/marketing-marketplace/mp-widget-call.jpg" width="480" height="300" alt="" loading="lazy" decoding="async">
+          </div>
+          <div class="mp-app-body">
+            <div class="mp-app-head">
+              <div class="mp-app-title">
+                <h3 class="h3">Trust Bar</h3>
+                <span class="badge badge-inc">Included</span>
+              </div>
+            </div>
+            <p class="mp-app-desc">Services, guarantees and credentials in a clear strip under the hero.</p>
+            <span class="btn btn-outline">View app</span>
+          </div>
+        </a>
+        <a class="mp-app-card reveal" href="/marketplace/special-offer" data-app="special-offer" data-cats="marketing" data-search="special offer promo deal funnel marketing free">
+          <div class="mp-app-media">
+            <img src="/assets/marketing-marketplace/mp-app-gallery.jpg" width="480" height="300" alt="" loading="lazy" decoding="async">
+          </div>
+          <div class="mp-app-body">
+            <div class="mp-app-head">
+              <div class="mp-app-title">
+                <h3 class="h3">Special Offers</h3>
+                <span class="badge badge-free">Free</span>
+              </div>
+            </div>
+            <p class="mp-app-desc">Limited-time offer strip designed for ad landing pages and promos.</p>
+            <span class="btn btn-outline">View app</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Match -->
+  <section class="sec sec-navy mp-match" id="match" aria-labelledby="match-title">
+    <div class="wrap mp-match-layout">
+      <div class="mp-match-benefits reveal">
+        <h2 class="h2" id="match-title">Apps that feel like part of your website</h2>
+        <ul class="mp-benefit-list">
+          <li><span class="ck" aria-hidden="true">✓</span> Uses your theme colours and typography</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Matches spacing, buttons and section rhythm</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Looks native on mobile — not a bolt-on widget</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Preview before you publish changes</li>
+          <li><span class="ck" aria-hidden="true">✓</span> Turn sections on or off without breaking layout</li>
+        </ul>
+      </div>
+      <div class="mp-match-phone reveal">
+        <img src="/assets/marketing-marketplace/mp-theme-phone.jpg" width="520" height="640" alt="Phone preview showing apps matching a website theme" loading="lazy" decoding="async">
+      </div>
+      <div class="mp-theme-panel reveal">
+        <h3 class="h3">Your theme. Your colours.</h3>
+        <p class="note">Apps inherit your brand palette — adjust once and every section stays consistent.</p>
+        <div class="mp-theme-swatches" aria-label="Example theme colours">
+          <button type="button" class="mp-theme-swatch is-on" style="background:#001529" title="Navy" aria-label="Navy"></button>
+          <button type="button" class="mp-theme-swatch" style="background:#e36b21" title="Orange accent" aria-label="Orange accent"></button>
+          <button type="button" class="mp-theme-swatch" style="background:#879b89" title="Green" aria-label="Green"></button>
+          <button type="button" class="mp-theme-swatch" style="background:#f9f7f2" title="Cream" aria-label="Cream"></button>
+        </div>
+        <p class="note"><strong>Fonts:</strong> Young Serif headings · Figtree body — or your theme pack fonts.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Grow -->
+  <section class="sec mp-grow" id="grow" aria-labelledby="grow-title">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="h2" id="grow-title">Start simple. Add what you need as you grow.</h2>
+      </div>
+      <div class="mp-grow-steps">
+        <article class="mp-grow-step reveal">
+          <span class="num">1</span>
+          <h3 class="h3">Launch</h3>
+          <p>Start with a professional site — Trust Bar, services, reviews and a quote or contact form.</p>
+        </article>
+        <article class="mp-grow-step reveal">
+          <span class="num">2</span>
+          <h3 class="h3">Grow</h3>
+          <p>Add bookings, galleries and review highlights when you want more enquiries and proof.</p>
+        </article>
+        <article class="mp-grow-step reveal">
+          <span class="num">3</span>
+          <h3 class="h3">Scale</h3>
+          <p>Layer premium tools — online quotes, SEO Command and Google Ads when you are ready.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Industry -->
+  <section class="sec mp-industry" id="industry" aria-labelledby="industry-title">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="h2" id="industry-title">Built for real businesses, not generic websites.</h2>
+      </div>
+      <div class="mp-industry-grid">
+        <article class="mp-industry-card reveal">
+          <img src="/assets/marketing-marketplace/mp-industry-trades.jpg" width="600" height="400" alt="Local tradie at work" loading="lazy" decoding="async">
+          <div class="mp-industry-overlay">
+            <h3 class="h3">Tradies</h3>
+            <ul>
+              <li>Online Quotes</li>
+              <li>Emergency Availability</li>
+              <li>Service Area Map</li>
+              <li>Featured Projects</li>
+            </ul>
+            <a class="btn btn-ghost-w" href="/showcase" data-mp-track="industry_trades">View example</a>
+          </div>
+        </article>
+        <article class="mp-industry-card reveal">
+          <img src="/assets/marketing-marketplace/mp-industry-hosp.jpg" width="600" height="400" alt="Hospitality venue atmosphere" loading="lazy" decoding="async">
+          <div class="mp-industry-overlay">
+            <h3 class="h3">Hospitality</h3>
+            <ul>
+              <li>Bookings</li>
+              <li>Instagram Gallery</li>
+              <li>Special Offers</li>
+              <li>Review Highlights</li>
+            </ul>
+            <a class="btn btn-ghost-w" href="/demos" data-mp-track="industry_hosp">View example</a>
+          </div>
+        </article>
+        <article class="mp-industry-card reveal">
+          <img src="/assets/marketing-marketplace/mp-industry-services.jpg" width="600" height="400" alt="Professional services consultant with client" loading="lazy" decoding="async">
+          <div class="mp-industry-overlay">
+            <h3 class="h3">Professional Services</h3>
+            <ul>
+              <li>Trust Bar</li>
+              <li>Bookings</li>
+              <li>Review Highlights</li>
+              <li>SEO Command</li>
+            </ul>
+            <a class="btn btn-ghost-w" href="#explore" data-mp-track="industry_services">View example</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Explore -->
+  <section class="sec mp-explore" id="explore" aria-labelledby="explore-title">
+    <div class="wrap mp-explore-layout">
+      <aside class="mp-explore-sidebar reveal" aria-label="App categories">
+        <h3 class="h3">Categories</h3>
+        <ul class="mp-cat-list">
+          <li><a href="#explore" data-sidebar-filter="all" class="is-active">All Apps</a></li>
+          <li><a href="#explore" data-sidebar-filter="leads">Leads &amp; Enquiries</a></li>
+          <li><a href="#explore" data-sidebar-filter="bookings">Bookings</a></li>
+          <li><a href="#explore" data-sidebar-filter="galleries">Galleries</a></li>
+          <li><a href="#explore" data-sidebar-filter="reviews">Reviews</a></li>
+          <li><a href="#explore" data-sidebar-filter="marketing">Marketing</a></li>
+          <li><a href="#explore" data-sidebar-filter="trust">Trust</a></li>
+          <li><a href="#explore" data-sidebar-filter="premium">Premium</a></li>
+        </ul>
+      </aside>
+      <div>
+        <h2 class="h2 reveal" id="explore-title">Explore all apps</h2>
+        <div class="mp-tile-grid" id="mp-tile-grid">
+          <a class="mp-tile reveal" href="/marketplace/online-quote" data-app="online-quote" data-cats="leads premium" data-search="online quote quotes enquiries leads premium">
+            <span class="ico" aria-hidden="true">Q</span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Online Quote</span>
+                <span class="badge badge-prem">Premium</span>
+              </div>
+              <p class="desc">Verified quote flow on your site</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/booking-cta" data-app="booking-cta" data-cats="bookings" data-search="booking bookings appointments">
+            <span class="ico" aria-hidden="true">B</span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Booking CTA</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Appointment conversion band</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/premium-gallery" data-app="premium-gallery" data-cats="galleries premium" data-search="gallery galleries photos premium">
+            <span class="ico" aria-hidden="true">G</span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Premium Gallery</span>
+                <span class="badge badge-prem">Premium</span>
+              </div>
+              <p class="desc">Mosaic layouts and albums</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/review-highlights" data-app="review-highlights" data-cats="reviews" data-search="review reviews highlights stars">
+            <span class="ico" aria-hidden="true">★</span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Review Highlights</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Star snippets under the hero</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/trust-bar" data-app="trust-bar" data-cats="trust" data-search="trust bar credentials services">
+            <span class="ico" aria-hidden="true">✓</span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Trust Bar</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Credentials and promises strip</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/special-offer" data-app="special-offer" data-cats="marketing" data-search="special offer promo deal free">
+            <span class="ico" aria-hidden="true">%</span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Special Offer</span>
+                <span class="badge badge-free">Free</span>
+              </div>
+              <p class="desc">Promo strip for ad funnels</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/featured-projects" data-app="featured-projects" data-cats="galleries" data-search="featured projects portfolio showcase work">
+            <span class="ico" aria-hidden="true">P</span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Featured Projects</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Large project portfolio cards</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/service-area-map" data-app="service-area-map" data-cats="leads trust" data-search="service area map coverage suburbs local">
+            <span class="ico" aria-hidden="true">⌖</span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Service Area Map</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Coverage map and intro</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/emergency-availability" data-app="emergency-availability" data-cats="trust" data-search="emergency availability after hours 24/7">
+            <span class="ico" aria-hidden="true">⏱</span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Emergency Availability</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">After-hours status display</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/seo-command" data-app="seo-command" data-cats="marketing premium" data-search="seo command local search rankings">
+            <span class="ico" aria-hidden="true">↗</span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">SEO Command</span>
+                <span class="badge badge-prem">Premium</span>
+              </div>
+              <p class="desc">Local SEO workflows in Manage</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/advertising" data-app="advertising" data-cats="marketing premium" data-search="advertising google ads campaigns paid">
+            <span class="ico" aria-hidden="true">Ad</span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Advertising</span>
+                <span class="badge badge-prem">Premium</span>
+              </div>
+              <p class="desc">Google Ads in Manage</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/insta-gallery" data-app="insta-gallery" data-cats="galleries" data-search="instagram gallery social insta photos">
+            <span class="ico" aria-hidden="true">ig</span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Instagram Gallery</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Instagram grid on your site</p>
+            </div>
+          </a>
+        </div>
+        <p id="mp-empty" hidden style="margin:20px 0;color:var(--muted);font-size:15px">No apps match your search. Try a different filter or clear the search box.</p>
+        <div class="btn-row reveal" style="justify-content:center;margin-top:28px">
+          <a class="btn btn-outline" href="#explore" data-mp-track="explore_view_all">View all apps</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Premium -->
+  <section class="sec sec-navy mp-premium on-dark" id="premium" aria-labelledby="premium-title">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="h2" id="premium-title">Powerful tools when your business is ready for more.</h2>
+      </div>
+      <div class="mp-premium-grid">
+        <a class="mp-premium-block reveal" href="/marketplace/seo-command" data-mp-track="premium_seo">
+          <span class="ico" aria-hidden="true">↗</span>
+          <span class="badge badge-prem">Premium</span>
+          <h3 class="h3">Premium SEO</h3>
+          <p>SEO Command Centre — visibility scores, next actions and local page workflows.</p>
+        </a>
+        <a class="mp-premium-block reveal" href="/marketplace/advertising" data-mp-track="premium_ads">
+          <span class="ico" aria-hidden="true">Ad</span>
+          <span class="badge badge-prem">Premium</span>
+          <h3 class="h3">Google Ads Campaign Builder</h3>
+          <p>Connect Google Ads, monitor campaigns and keep conversion tracking healthy.</p>
+        </a>
+        <a class="mp-premium-block reveal" href="/marketplace/online-quote" data-mp-track="premium_quote">
+          <span class="ico" aria-hidden="true">Q</span>
+          <span class="badge badge-prem">Premium</span>
+          <h3 class="h3">Advanced Quote System</h3>
+          <p>Structured online quotes with email verification before totals are revealed.</p>
+        </a>
+        <a class="mp-premium-block reveal" href="/marketplace/premium-gallery" data-mp-track="premium_gallery">
+          <span class="ico" aria-hidden="true">G</span>
+          <span class="badge badge-prem">Premium</span>
+          <h3 class="h3">Premium Gallery</h3>
+          <p>Photography-first galleries with filters, categories and album navigation.</p>
+        </a>
+      </div>
+      <div class="btn-row reveal" style="justify-content:center;margin-top:32px">
+        <a class="btn btn-orange" href="#explore" data-filter-jump="premium" data-mp-track="premium_explore">Explore premium apps</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Partner -->
+  <section class="sec mp-partner" id="partner" aria-labelledby="partner-title">
+    <div class="wrap mp-partner-layout">
+      <div class="mp-partner-copy reveal">
+        <h2 class="h2" id="partner-title">Build better websites for every client</h2>
+        <p class="lede">Partners use the same app marketplace to launch client sites faster — add the right tools per industry without rebuilding from scratch.</p>
+        <a class="btn btn-orange" href="/partners" data-mp-track="partner_cta">Become a partner</a>
+      </div>
+      <div class="mp-partner-visual reveal">
+        <img src="/assets/marketing-marketplace/mp-partner-console.jpg" width="720" height="520" alt="Partner console showing client website management" loading="lazy" decoding="async">
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. How -->
+  <section class="sec mp-steps" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="h2" id="how-title">One click to add</h2>
+      </div>
+      <div class="mp-steps-row">
+        <article class="mp-step reveal">
+          <span class="num">1</span>
+          <h3 class="h3">Choose</h3>
+          <p>Browse the marketplace by goal — leads, bookings, galleries or premium tools.</p>
+        </article>
+        <article class="mp-step reveal">
+          <span class="num">2</span>
+          <h3 class="h3">Add</h3>
+          <p>Turn the app on from Manage. It slots into your layout in the right zone.</p>
+        </article>
+        <article class="mp-step reveal">
+          <span class="num">3</span>
+          <h3 class="h3">Customize</h3>
+          <p>Edit copy, images and colours with the same editor you already use.</p>
+        </article>
+        <article class="mp-step reveal">
+          <span class="num">4</span>
+          <h3 class="h3">Publish</h3>
+          <p>Preview on mobile and desktop, then publish — no code or plugins required.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. Proof -->
+  <section class="sec mp-proof" id="proof" aria-labelledby="proof-title">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="h2" id="proof-title">Small tools. Meaningful results.</h2>
+      </div>
+      <div class="mp-proof-grid">
+        <article class="mp-proof-card reveal">
+          <div class="stars" aria-label="5 stars">★★★★★</div>
+          <blockquote>“Adding online quotes cut back-and-forth — customers know what to expect before they call.”</blockquote>
+          <div class="mp-proof-who">
+            <img src="/assets/marketing-marketplace/mp-proof-tradie.jpg" width="96" height="96" alt="" loading="lazy" decoding="async">
+            <div>
+              <div class="name">Demo tradie story</div>
+              <div class="meta"><span class="ph">Placeholder</span> · Canberra · <span class="ph">Demo content</span></div>
+            </div>
+          </div>
+        </article>
+        <article class="mp-proof-card reveal">
+          <div class="stars" aria-label="5 stars">★★★★★</div>
+          <blockquote>“Bookings and our Instagram gallery keep the site fresh without weekly uploads.”</blockquote>
+          <div class="mp-proof-who">
+            <img src="/assets/marketing-marketplace/mp-proof-cafe.jpg" width="96" height="96" alt="" loading="lazy" decoding="async">
+            <div>
+              <div class="name">Demo café story</div>
+              <div class="meta"><span class="ph">Placeholder</span> · Melbourne · <span class="ph">Demo content</span></div>
+            </div>
+          </div>
+        </article>
+        <article class="mp-proof-card reveal">
+          <div class="stars" aria-label="5 stars">★★★★★</div>
+          <blockquote>“Review highlights and trust badges made our services page feel credible overnight.”</blockquote>
+          <div class="mp-proof-who">
+            <img src="/assets/marketing-marketplace/mp-proof-consultant.jpg" width="96" height="96" alt="" loading="lazy" decoding="async">
+            <div>
+              <div class="name">Demo consultant story</div>
+              <div class="meta"><span class="ph">Placeholder</span> · Brisbane · <span class="ph">Demo content</span></div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12. FAQ -->
+  <section class="sec mp-faq" id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="h2" id="faq-title">Questions about apps?</h2>
+      </div>
+      <div class="mp-faq-grid reveal">
+        <details class="mp-faq-item">
+          <summary>What’s included vs premium?</summary>
+          <p class="answer">Many core sections — Trust Bar, reviews, bookings and portfolios — are included with your website. Premium apps like Online Quotes, Premium Gallery, SEO Command and Advertising are clearly marked before you add them.</p>
+        </details>
+        <details class="mp-faq-item">
+          <summary>How do I add an app to my site?</summary>
+          <p class="answer">Log in to Manage, open Apps, and turn on the section you want. It appears in the layout zone designed for that app — preview before you publish.</p>
+        </details>
+        <details class="mp-faq-item">
+          <summary>Will apps match my website theme?</summary>
+          <p class="answer">Yes. Apps inherit your theme colours, fonts and button styles so they look native — not like a third-party widget dropped on the page.</p>
+        </details>
+        <details class="mp-faq-item">
+          <summary>Can I try apps before paying for premium?</summary>
+          <p class="answer">You can preview included apps on your site immediately. Premium apps show pricing and access details on their marketplace page before you subscribe or enable them.</p>
+        </details>
+        <details class="mp-faq-item">
+          <summary>Do partners use the same marketplace?</summary>
+          <p class="answer">Yes. Partners browse the same catalog when building client sites — they pick the right apps per industry and hand off a site that already works.</p>
+        </details>
+        <details class="mp-faq-item">
+          <summary>Can I turn an app off later?</summary>
+          <p class="answer">Absolutely. Toggle any section off in Manage without breaking your layout or losing your other content.</p>
+        </details>
+        <details class="mp-faq-item">
+          <summary>Do apps work on mobile?</summary>
+          <p class="answer">Every marketplace app is built mobile-first — layouts reflow, forms stay usable and galleries swipe cleanly on phones.</p>
+        </details>
+        <details class="mp-faq-item">
+          <summary>Where do leads and bookings go?</summary>
+          <p class="answer">Enquiries flow into LeadPages lead capture — email notifications and your Manage inbox. Booking CTAs can link to your scheduler or quote flow.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
 </main>
 
-<section class="band">
-  <h2>Imagine these already built into your website.</h2>
-  <p>LeadPages gives you practical website features, real business examples and an editor designed for people who want to build attractive websites without learning code.</p>
-  <p style="color:var(--theme-text-muted,var(--mut));font-size:14.5px;max-width:52ch;margin:-10px auto 22px">Many apps are included. Premium and usage-based tools are clearly marked before you use them.</p>
-  <a class="btn" href="/partners">Become a LeadPages partner</a>
-</section>
-
-<footer>
-  <div class="wrap">
+<!-- 13. Footer -->
+<footer class="mp-footer">
+  <div class="wrap mp-footer-grid">
     <div>
-      <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span>
-      <div>Smart sites. More leads. Built in Canberra, Australia.</div>
-      <div class="abn">Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div>
+      <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span>
+      <p class="blurb">Apps and websites that help Australian local businesses win more work online.</p>
+      <div class="mp-footer-featured">
+        <img src="/assets/marketing-marketplace/mp-footer-preview.jpg" width="320" height="200" alt="Demo electrician website preview" loading="lazy" decoding="async">
+        <div class="cap">Trusted electricians</div>
+      </div>
     </div>
     <div>
-      <a href="/">Home</a><a href="/partners">Become a partner</a><a href="/domains">Domains</a><a href="/privacy-policy">Privacy</a><a href="/terms-of-use">Terms</a>
+      <h4>Product</h4>
+      <a href="/showcase">Websites</a>
+      <a href="/marketplace">Apps</a>
+      <a href="/demos">Demos</a>
+      <a href="/#pricing">Pricing</a>
     </div>
+    <div>
+      <h4>Partners</h4>
+      <a href="/partners">Become a partner</a>
+      <a href="/find-a-partner">Find a partner</a>
+      <a href="/start-your-business">Start your business</a>
+    </div>
+    <div>
+      <h4>Resources</h4>
+      <a href="/resources">Resource hub</a>
+      <a href="/domains">Domains</a>
+      <a href="/help">Help centre</a>
+    </div>
+    <div>
+      <h4>Company</h4>
+      <a href="/manage">Log in</a>
+      <a href="/privacy-policy">Privacy</a>
+      <a href="/terms-of-use">Terms</a>
+      <p style="margin-top:18px;line-height:1.5">Bean Culture Pty Ltd t/a Web Culture<br>ABN 33 600 754 676</p>
+      <p style="margin-top:12px"><span class="ph">Placeholder</span> f · ig · yt · in</p>
+    </div>
+  </div>
+  <div class="wrap mp-footer-bottom">
+    <div>© <span id="mp-year">2026</span> LeadPages Australia</div>
+    <div>Proudly Australian</div>
   </div>
 </footer>
 
+<script src="/assets/lp-logo.js"></script>
 <script>
-(function(){
-  var CATS=[], FEATS=[], active='all';
-  var pills=document.getElementById('pills'),
-      grid=document.getElementById('grid'),
-      status=document.getElementById('status');
+(function () {
+  var menuBtn = document.getElementById('mp-menu-btn');
+  var drawer = document.getElementById('mp-drawer');
+  var yearEl = document.getElementById('mp-year');
+  var searchInput = document.getElementById('mp-search');
+  var emptyMsg = document.getElementById('mp-empty');
+  var activeFilter = 'all';
 
-  function esc(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML;}
+  if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
-  function renderPills(){
-    var html='<button class="pill'+(active==='all'?' on':'')+'" data-c="all" role="tab" aria-selected="'+(active==='all')+'">All features</button>';
-    CATS.forEach(function(c){
-      html+='<button class="pill'+(active===c.id?' on':'')+'" data-c="'+esc(c.id)+'" role="tab" aria-selected="'+(active===c.id)+'">'+esc(c.name)+'</button>';
+  function track(event, props) {
+    try {
+      fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ site: 'MarketingMarketplace', event: event, props: props || {} })
+      });
+    } catch (e) {}
+  }
+
+  track('page_view', { page: 'marketplace' });
+
+  function setDrawer(open) {
+    if (!drawer || !menuBtn) return;
+    drawer.hidden = !open;
+    drawer.classList.toggle('is-open', open);
+    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+
+  if (menuBtn && drawer) {
+    menuBtn.addEventListener('click', function () {
+      setDrawer(drawer.hidden);
     });
-    pills.innerHTML=html;
+    drawer.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () { setDrawer(false); });
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') setDrawer(false);
+    });
   }
 
-  function catName(id){var c=CATS.find(function(x){return x.id===id;});return c?c.name:'';}
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function renderGrid(){
-    var list=active==='all'?FEATS:FEATS.filter(function(f){return f.category_id===active;});
-    if(!list.length){grid.innerHTML='';status.style.display='block';status.textContent='Nothing in this category yet — check back soon.';return;}
-    status.style.display='none';
-    grid.innerHTML=list.map(function(f){
-      var thumb=f.hero_image_url
-        ? '<div class="fthumb"><img src="'+esc(f.hero_image_url)+'" alt="" loading="lazy">'
-        : '<div class="fthumb">';
-      if(f.badge) thumb+='<span class="fbadge">'+esc(f.badge)+'</span>';
-      thumb+='</div>';
-      var demo='<span class="fdemo">Read more &rarr;</span>';
-      return '<a class="fcard" href="/marketplace/'+esc(f.slug)+'">'+thumb
-        +'<div class="fbody">'
-        +'<span class="fcat">'+esc(catName(f.category_id))+'</span>'
-        +'<h3>'+esc(f.name)+'</h3>'
-        +(f.tagline?'<div class="ftag">'+esc(f.tagline)+'</div>':'')
-        +(f.summary?'<p class="fsum">'+esc(f.summary)+'</p>':'')
-        +demo+'</div></a>';
-    }).join('');
+  if (!reduce && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          en.target.classList.add('is-in');
+          io.unobserve(en.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -4% 0px' });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('is-in'); });
+  }
+  document.body.classList.add('js-ready');
+
+  function norm(s) {
+    return String(s == null ? '' : s).toLowerCase().trim();
   }
 
-  pills.addEventListener('click',function(e){
-    var b=e.target.closest('.pill'); if(!b) return;
-    active=b.getAttribute('data-c'); renderPills(); renderGrid();
+  function syncFilterUi(filter) {
+    activeFilter = filter;
+    document.querySelectorAll('[data-filter]').forEach(function (btn) {
+      var on = btn.getAttribute('data-filter') === filter;
+      btn.classList.toggle('is-on', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-sidebar-filter]').forEach(function (link) {
+      var on = link.getAttribute('data-sidebar-filter') === filter;
+      link.classList.toggle('is-active', on);
+    });
+  }
+
+  function applyFilters() {
+    var q = norm(searchInput && searchInput.value);
+    var items = document.querySelectorAll('[data-app]');
+    var visible = 0;
+    items.forEach(function (el) {
+      var cats = (el.getAttribute('data-cats') || '').split(/\s+/).filter(Boolean);
+      var searchText = norm(el.getAttribute('data-search') || el.textContent);
+      var matchCat = activeFilter === 'all' || cats.indexOf(activeFilter) >= 0;
+      var matchSearch = !q || searchText.indexOf(q) >= 0;
+      var show = matchCat && matchSearch;
+      el.hidden = !show;
+      if (show) visible++;
+    });
+    if (emptyMsg) emptyMsg.hidden = visible > 0;
+  }
+
+  function setFilter(filter, source) {
+    syncFilterUi(filter);
+    applyFilters();
+    track('filter', { filter: filter, source: source || 'pill' });
+    if (filter !== 'all' && (source === 'goal' || source === 'premium_cta')) {
+      var explore = document.getElementById('explore');
+      if (explore) explore.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    }
+  }
+
+  document.querySelectorAll('[data-filter]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      setFilter(btn.getAttribute('data-filter'), 'pill');
+    });
   });
 
-  var __mpV2Home = (window.LPMarketplaceFlags && window.LPMarketplaceFlags.isV2 && window.LPMarketplaceFlags.isV2())
-    || !!(window.__LP_MARKETPLACE_FLAGS__ && window.__LP_MARKETPLACE_FLAGS__.APP_MARKETPLACE_V2);
-  if(__mpV2Home){
-    /* marketplace-v2.js owns catalog rendering when V2 is on */
-  } else {
-  fetch('/api/catalog').then(function(r){return r.json();}).then(function(j){
-    if(j&&j.categories){CATS=j.categories;FEATS=j.features||[];renderPills();renderGrid();}
-    else{status.textContent='The marketplace could not load. Please refresh to try again.';}
-  }).catch(function(){status.textContent='The marketplace could not load. Please refresh to try again.';});
+  document.querySelectorAll('[data-sidebar-filter]').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      setFilter(link.getAttribute('data-sidebar-filter'), 'sidebar');
+    });
+  });
+
+  document.querySelectorAll('.mp-goal[data-filter]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      setFilter(btn.getAttribute('data-filter'), 'goal');
+    });
+  });
+
+  document.querySelectorAll('[data-filter-jump]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      var f = el.getAttribute('data-filter-jump');
+      if (f) {
+        e.preventDefault();
+        setFilter(f, 'premium_cta');
+      }
+    });
+  });
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      applyFilters();
+      var q = norm(searchInput.value);
+      if (q.length > 2) track('search', { query: q.slice(0, 80) });
+    });
   }
+
+  document.querySelectorAll('.mp-theme-swatch').forEach(function (sw) {
+    sw.addEventListener('click', function () {
+      document.querySelectorAll('.mp-theme-swatch').forEach(function (s) { s.classList.remove('is-on'); });
+      sw.classList.add('is-on');
+    });
+  });
+
+  document.querySelectorAll('[data-mp-track]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      track(el.getAttribute('data-mp-track'), {
+        section: (el.closest('section') && el.closest('section').id) || (el.closest('header') && 'header') || (el.closest('footer') && 'footer') || 'page',
+        href: el.getAttribute('href') || '',
+        label: (el.textContent || '').trim().slice(0, 80)
+      });
+    });
+  });
 })();
 </script>
 </body>
