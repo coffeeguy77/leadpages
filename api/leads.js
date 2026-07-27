@@ -26,6 +26,7 @@ const {
   deriveTrafficSource
 } = require('../lib/attribution');
 const { deliverConversion } = require('../lib/google-ads/conversions');
+const { detailLines, buildLeadNotifyEmail } = require('../lib/lead-notify-email');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -51,8 +52,6 @@ function readBody(req) {
 }
 
 const clean = (s, n = 400) => (s == null ? '' : String(s)).trim().slice(0, n);
-const esc = (s) => String(s == null ? '' : s)
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 // Resolve the site row by id → slug → business_name. Returns the full row we
 // need for both storage (owner_user_id) and email (contact address + names).
@@ -83,57 +82,11 @@ function contactEmailFor(siteRow) {
   return clean(cfg.email) || clean(siteRow && siteRow.owner_email) || '';
 }
 
-// Build a tidy human-readable summary of the lead's details.
-function detailLines(details) {
-  if (!details || typeof details !== 'object') return [];
-  const out = [];
-  if (details.businessName) out.push(['Business', details.businessName]);
-  if (details.industry) out.push(['Industry', details.industry]);
-  if (details.suburb) out.push(['Region', details.suburb]);
-  if (details.mainGoal) out.push(['Goal', details.mainGoal]);
-  if (details.budget) out.push(['Budget', details.budget]);
-  if (details.message) out.push(['Message', details.message]);
-  if (details.partnerId) out.push(['Partner ID', details.partnerId]);
-  // include any other fields generically
-  Object.keys(details).forEach((k) => {
-    if (['job', 'suburb', 'detail'].includes(k)) return;
-    if (details[k] == null || details[k] === '') return;
-    out.push([k, details[k]]);
-  });
-  return out;
-}
-
-async function sendEmail({ to, business, lead, dets }) {
+async function sendEmail({ to, business, lead, dets, slug }) {
   const key = process.env.RESEND_API_KEY;
   if (!key || !to) return { sent: false, reason: !key ? 'no_key' : 'no_recipient' };
 
-  const rows = [
-    ['Name', lead.name || '(not given)'],
-    ['Phone', lead.phone || '(not given)'],
-    lead.email ? ['Email', lead.email] : null,
-    ...dets
-  ].filter(Boolean);
-
-  const html =
-    '<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:520px;margin:0 auto;color:#1c2330">' +
-      '<h2 style="margin:0 0 4px;font-size:19px">New enquiry for ' + esc(business || 'your site') + '</h2>' +
-      '<p style="margin:0 0 16px;color:#6b7280;font-size:13px">Someone just submitted the quote form on your website.</p>' +
-      '<table style="border-collapse:collapse;width:100%;font-size:14px">' +
-        rows.map(([k, v]) =>
-          '<tr>' +
-            '<td style="padding:7px 10px;border-bottom:1px solid #eef0f2;color:#6b7280;white-space:nowrap;vertical-align:top">' + esc(k) + '</td>' +
-            '<td style="padding:7px 10px;border-bottom:1px solid #eef0f2;font-weight:500">' + esc(v) + '</td>' +
-          '</tr>'
-        ).join('') +
-      '</table>' +
-      (lead.phone
-        ? '<p style="margin:18px 0 0"><a href="tel:' + esc(lead.phone) + '" style="display:inline-block;background:#1f7a63;color:#fff;text-decoration:none;padding:10px 18px;border-radius:9px;font-weight:600;font-size:14px">Call ' + esc(lead.name || 'them') + ' back</a></p>'
-        : '') +
-      '<p style="margin:20px 0 0;font-size:12px;color:#9ca3af">Sent by leadpages · reply straight to the customer using the details above.</p>' +
-    '</div>';
-
-  const text = 'New enquiry for ' + (business || 'your site') + '\n\n' +
-    rows.map(([k, v]) => k + ': ' + v).join('\n') + '\n';
+  const mail = buildLeadNotifyEmail({ business, lead, dets, slug });
 
   try {
     const r = await fetch('https://api.resend.com/emails', {
@@ -143,9 +96,9 @@ async function sendEmail({ to, business, lead, dets }) {
         from: FROM,
         to: [to],
         reply_to: lead.email || undefined,
-        subject: 'New enquiry' + (lead.name ? ' from ' + lead.name : '') + ' — ' + (business || 'your site'),
-        html,
-        text
+        subject: mail.subject,
+        html: mail.html,
+        text: mail.text
       })
     });
     if (!r.ok) {
@@ -276,7 +229,13 @@ module.exports = async (req, res) => {
     // Email the business — best effort, never blocks the lead being stored.
     const to = contactEmailFor(siteRow);
     const business = (siteRow && siteRow.business_name) || clean(body.site, 160);
-    const mail = await sendEmail({ to, business, lead, dets });
+    const mail = await sendEmail({
+      to,
+      business,
+      lead,
+      dets,
+      slug: (siteRow && siteRow.slug) || clean(body.slug, 80) || ''
+    });
 
     return ok({ stored, emailed: mail.sent, mail: mail.reason, store_error: storeError });
   } catch (e) {
