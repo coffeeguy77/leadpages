@@ -1,78 +1,615 @@
 <!DOCTYPE html>
-<html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico"><title>Resources — LeadPages</title><meta name="description" content="Practical guides for starting and running a web design business from home in Australia.">
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<meta name="theme-color" content="#001529">
+<title>Resources — LeadPages Australia</title>
+<meta name="description" content="Practical help for building a better business online. Simple guides, useful tools and real advice for LeadPages websites, SEO, apps and partners.">
+<link rel="canonical" href="https://www.leadpages.com.au/resources">
+<meta property="og:title" content="Resources — LeadPages Australia">
+<meta property="og:description" content="Simple guides, useful tools and real advice to help you improve your website, win more customers and get more from LeadPages.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://www.leadpages.com.au/resources">
 <meta property="og:image" content="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782899714/leadpages-logo-black.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet"><style>
-:root{--paper:#FAF5F2;--shell:#F1E5DF;--ink:#2E2A2B;--mut:#6E6265;--rose:#A84A5E;--rose-d:#7E3346;--gum:#2F413A;--line:#E4D5CD;--ok:#3E7C52;--bad:#B23B3B;--disp:'Young Serif',Georgia,serif;--body:'Figtree',system-ui,sans-serif}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.65}
-a{color:inherit;text-decoration:none}img{max-width:100%;display:block}
-.wrap{max-width:1440px;margin:0 auto;padding:0 24px}
-h1,h2,h3{font-family:var(--disp);font-weight:400;line-height:1.14}
-.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--rose)}
-.on-dark .eyebrow{color:#D9A0AC}
-.lede{font-size:18px;color:var(--mut);max-width:58ch}
-.btn{display:inline-flex;justify-content:center;font-weight:700;padding:14px 28px;border-radius:999px;background:var(--rose);color:#fff;border:2px solid var(--rose);font-size:16px;cursor:pointer;font-family:var(--body)}
-.btn:hover{background:var(--rose-d);border-color:var(--rose-d)}
-.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
-.btn.ghost:hover{background:var(--ink);color:var(--paper)}
-.sitenav{background:var(--gum);position:sticky;top:0;z-index:50}
-.sitenav .wrap{display:flex;align-items:center;justify-content:space-between;height:116px}
-.sitenav .leadpages-logo{height:var(--lp-logo-height,52px);width:auto;display:block}
-.sitenav .links{display:flex;align-items:center;gap:24px}
-.sitenav .links a{color:#E9EFEA;font-weight:600;font-size:15px}
-.sitenav .links a:hover{color:#D9A0AC}
-.sitenav .links a.cta{background:var(--rose);color:#fff;padding:9px 18px;border-radius:999px}
-.sitenav .links a.cta:hover{background:var(--rose-d)}
-@media(max-width:680px){.sitenav .links a:not(.cta){display:none}}
-.hero{background:var(--gum);color:#F3EFEA;padding:64px 0 72px}
-.hero h1{font-size:clamp(30px,4.8vw,48px);margin:12px 0 14px;max-width:22ch}
-.hero p{color:#C9D2CC;font-size:18px;max-width:58ch}
-.sec{padding:80px 0}
-.sec-shell{background:var(--shell)}
-.sec-gum{background:var(--gum);color:#F3EFEA}
-.sec h2{font-size:clamp(26px,3.8vw,38px);margin:8px 0 14px}
-.center{text-align:center}.center .lede{margin-inline:auto}
-footer{background:var(--gum);color:#C9D2CC;padding:44px 0 36px;font-size:14px}
-footer .wrap{display:flex;justify-content:space-between;gap:26px;flex-wrap:wrap}
-footer .leadpages-logo{height:var(--lp-logo-height,52px);width:auto;margin-bottom:12px;display:block}
-footer a{color:#E9EFEA;font-weight:600;margin-right:22px}
-footer a:hover{color:#D9A0AC}
-.abn{margin-top:14px;color:#8FA096;font-size:12.5px}
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/lp-logo.css">
+<link rel="stylesheet" href="/assets/marketing-resources.css">
+</head>
+<body class="rs">
+<a href="#main" style="position:absolute;left:-999px">Skip to content</a>
 
-.rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:38px}
-@media(max-width:900px){.rgrid{grid-template-columns:1fr}}
-.rcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px 26px;display:flex;flex-direction:column;transition:transform .18s ease,box-shadow .18s ease}
-.rcard:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(46,42,43,.10)}
-.rcard h3{font-size:20px;margin-bottom:10px}
-.rcard p{color:var(--mut);font-size:15px;flex:1}
-.rmore{margin-top:14px;font-weight:700;color:var(--rose-d);font-size:14.5px}
-</style><link rel="stylesheet" href="/assets/lp-logo.css">
-<script src="/assets/lp-logo.js" defer></script>
-</head><body>
-<nav class="sitenav"><div class="wrap">
-<a href="/"><span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span></a>
-<div class="links"><a href="/start-your-business">Start your business</a><a href="/marketplace">Marketplace</a><a href="/resources">Resources</a><a class="cta" href="/partners">Become a partner</a></div>
-</div></nav>
+<header class="header">
+  <div class="inner">
+    <a class="brand" href="/" aria-label="LeadPages Australia home">
+      <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span>
+      <span class="brand-au">Australia</span>
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <a href="/showcase">Websites <span class="chev" aria-hidden="true">▾</span></a>
+      <a href="/marketplace">Apps <span class="chev" aria-hidden="true">▾</span></a>
+      <a href="/partners">Partners <span class="chev" aria-hidden="true">▾</span></a>
+      <a href="/#pricing">Pricing</a>
+      <a class="is-active" href="/resources" aria-current="page">Resources</a>
+    </nav>
+    <div class="actions">
+      <a class="login" href="/manage">Log in</a>
+      <a class="btn btn-orange" href="/find-a-partner">Build my website</a>
+      <button type="button" class="menu-btn" id="rs-menu" aria-expanded="false" aria-controls="rs-drawer" aria-label="Open menu">☰</button>
+    </div>
+  </div>
+</header>
 
-<header class="hero"><div class="wrap">
-<span class="eyebrow">Resources</span>
-<h1>Guides for building your website business</h1>
-<p>Practical, Australian, and written for partners who are doing this for the first time.</p>
-</div></header>
-<main class="sec"><div class="wrap"><div class="rgrid"><a class="rcard" href="/resources/winning-your-first-website-client"><span class="eyebrow">Guide</span><h3 style="margin-top:8px">How to win your first website client</h3><p>A practical, no-fluff guide to landing client number one — locally, without ads, and usually within a few weeks.</p><span class="rmore">Read the guide &rarr;</span></a><a class="rcard" href="/resources/what-to-charge-for-websites-australia"><span class="eyebrow">Guide</span><h3 style="margin-top:8px">What to charge for websites in Australia</h3><p>Setup fees, care plans and the psychology of pricing — how LeadPages partners price with confidence.</p><span class="rmore">Read the guide &rarr;</span></a><a class="rcard" href="/resources/website-business-school-hours"><span class="eyebrow">Guide</span><h3 style="margin-top:8px">Running a website business in school hours</h3><p>How parents structure a LeadPages business around drop-off, pick-up and everything in between.</p><span class="rmore">Read the guide &rarr;</span></a></div></div></main>
-<section class="sec sec-shell center"><div class="wrap">
-<h2>Ready to put them into practice?</h2>
-<p class="lede" style="margin-bottom:26px">The platform, training and support behind every guide above.</p>
-<a class="btn" href="/start-your-business">See the opportunity</a>
-</div></section>
+<div class="drawer" id="rs-drawer" hidden>
+  <nav aria-label="Mobile">
+    <a href="/showcase">Websites</a>
+    <a href="/marketplace">Apps</a>
+    <a href="/partners">Partners</a>
+    <a href="/#pricing">Pricing</a>
+    <a href="/resources">Resources</a>
+    <a href="/manage">Log in</a>
+    <a class="btn btn-orange" href="/find-a-partner">Build my website</a>
+  </nav>
+</div>
 
-<footer><div class="wrap">
-<div><span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse role="img" aria-label="LeadPages"></span><div>Smart sites. More leads. Built in Canberra, Australia.</div>
-<div class="abn">Bean Culture Pty Ltd t/a Web Culture · ABN 33 600 754 676</div></div>
-<div><a href="/">Home</a><a href="/start-your-business">Start your business</a><a href="/marketplace">Marketplace</a><a href="/resources">Resources</a><a href="/privacy-policy">Privacy</a></div>
-</div></footer>
-</body></html>
+<main id="main">
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <img class="hero-bg" src="/assets/marketing-resources/rs-hero-collab.jpg" alt="" aria-hidden="true">
+    <div class="hero-veil" aria-hidden="true"></div>
+    <div class="wrap-wide hero-grid">
+      <div class="reveal">
+        <p class="eyebrow">LeadPages Resources</p>
+        <h1 class="h1" id="hero-title">Practical help for building a better business online.</h1>
+        <p class="lede">Simple guides, useful tools and real advice to help you improve your website, win more customers and get more from LeadPages.</p>
+        <form class="search" role="search" action="#explore" method="get">
+          <label class="visually-hidden" for="rs-q" style="position:absolute;left:-999px">Search</label>
+          <input id="rs-q" name="q" type="search" placeholder="What would you like help with?">
+          <button class="btn btn-orange" type="submit">Search</button>
+        </form>
+        <div class="popular">
+          Popular:
+          <a href="#need">Getting started</a>
+          <a href="#need">Getting found on Google</a>
+          <a href="#need">Adding apps</a>
+          <a href="#need">Managing leads</a>
+          <a href="#partner">Partner resources</a>
+        </div>
+      </div>
+      <div class="feat-stack reveal" aria-label="Featured resources">
+        <a class="feat" href="#popular">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+          <div>
+            <h3 class="h3">Website checklist</h3>
+            <p>Make sure every local site launches complete.</p>
+          </div>
+        </a>
+        <a class="feat" href="#explore">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+          <div>
+            <h3 class="h3">Local SEO guide <span class="ph">Placeholder</span></h3>
+            <p>Get found by customers searching nearby.</p>
+          </div>
+        </a>
+        <a class="feat" href="#tutorials">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3V9z"/></svg></span>
+          <div>
+            <h3 class="h3">App setup video <span class="ph">Placeholder</span></h3>
+            <p>Add bookings, quotes and galleries fast.</p>
+          </div>
+        </a>
+        <a class="feat" href="#tools">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg></span>
+          <div>
+            <h3 class="h3">Lead follow-up template <span class="ph">Placeholder</span></h3>
+            <p>Respond faster and win more enquiries.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Start with what you need -->
+  <section class="sec need" id="need" aria-labelledby="need-title">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="h2" id="need-title">Start with what you need.</h2>
+      </div>
+      <div class="need-grid">
+        <article class="need-card reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 16l5-4 4 3 4-5 5 6"/></svg></div>
+          <h3 class="h3">Websites</h3>
+          <div class="need-thumb"><img src="/assets/marketing-resources/rs-need-website.jpg" alt="" loading="lazy"></div>
+          <p>Launch, polish and publish a site that looks professional.</p>
+          <a class="link-orange" href="#explore">Explore resources →</a>
+        </article>
+        <article class="need-card reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+          <h3 class="h3">Getting found</h3>
+          <div class="need-thumb"><img src="/assets/marketing-resources/rs-need-seo.jpg" alt="" loading="lazy"></div>
+          <p>Local SEO, Google Business Profile and suburb pages that help customers find you.</p>
+          <a class="link-orange" href="#explore">Explore resources →</a>
+        </article>
+        <article class="need-card reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <h3 class="h3">Managing leads</h3>
+          <div class="need-thumb"><img src="/assets/marketing-resources/rs-need-leads.jpg" alt="" loading="lazy"></div>
+          <p>Capture, follow up and convert enquiries — without losing them in your inbox.</p>
+          <a class="link-orange" href="#explore">Explore resources →</a>
+        </article>
+        <article class="need-card reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+          <h3 class="h3">Adding apps</h3>
+          <div class="need-thumb"><img src="/assets/marketing-resources/rs-need-apps.jpg" alt="" loading="lazy"></div>
+          <p>Booking, forms, chat and other tools that make your website work harder.</p>
+          <a class="link-orange" href="/marketplace">Explore resources →</a>
+        </article>
+        <article class="need-card reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div>
+          <h3 class="h3">Using LeadPages</h3>
+          <div class="need-thumb"><img src="/assets/marketing-resources/rs-tutorial-thumb.jpg" alt="" loading="lazy"></div>
+          <p>Editor tips, publishing, domains and everything inside your LeadPages account.</p>
+          <a class="link-orange" href="#tutorials">Explore resources →</a>
+        </article>
+        <article class="need-card reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h3 class="h3">Partner resources</h3>
+          <div class="need-thumb"><img src="/assets/marketing-resources/rs-need-partner.jpg" alt="" loading="lazy"></div>
+          <p>Sell and support client sites with partner playbooks and checklists.</p>
+          <a class="link-orange" href="#partner">Explore resources →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Popular right now -->
+  <section class="sec popular-sec" id="popular" aria-labelledby="popular-title">
+    <div class="wrap">
+      <div class="sec-head left reveal">
+        <h2 class="h2" id="popular-title">Popular right now.</h2>
+      </div>
+      <div class="popular-layout">
+        <article class="feature-card reveal">
+          <div class="media"><img src="/assets/marketing-resources/rs-checklist-sign.jpg" alt="" loading="lazy"></div>
+          <div class="body">
+            <span class="tag">✓ Checklist</span>
+            <h3 class="h2">The local business website checklist</h3>
+            <p class="lede">Everything a tradie, café or consultant site needs before it goes live — from contact details to trust signals.</p>
+            <a class="btn btn-outline" href="#explore">Read the guide <span class="ph">Placeholder</span></a>
+          </div>
+        </article>
+        <div class="pop-grid">
+          <article class="pop-card reveal">
+            <div class="media"><img src="/assets/marketing-resources/rs-tutorial-thumb.jpg" alt="" loading="lazy"></div>
+            <div class="body">
+              <span class="tag orange">Guide</span>
+              <h3 class="h3"><a href="/resources/winning-your-first-website-client">Winning your first website client</a></h3>
+              <div class="meta"><span>7 min read</span><span>→</span></div>
+            </div>
+          </article>
+          <article class="pop-card reveal">
+            <div class="media"><img src="/assets/marketing-resources/rs-need-apps.jpg" alt="" loading="lazy"></div>
+            <div class="body">
+              <span class="tag orange">Video</span>
+              <h3 class="h3">Add a quote form in 5 minutes <span class="ph">Placeholder</span></h3>
+              <div class="meta"><span>4 min watch</span><span>→</span></div>
+            </div>
+          </article>
+          <article class="pop-card reveal">
+            <div class="media"><img src="/assets/marketing-resources/rs-need-partner.jpg" alt="" loading="lazy"></div>
+            <div class="body">
+              <span class="tag orange">Guide</span>
+              <h3 class="h3"><a href="/resources/what-to-charge-for-websites-australia">What to charge for websites in Australia</a></h3>
+              <div class="meta"><span>8 min read</span><span>→</span></div>
+            </div>
+          </article>
+          <article class="pop-card reveal">
+            <div class="media"><img src="/assets/marketing-resources/rs-tool-checklist.jpg" alt="" loading="lazy"></div>
+            <div class="body">
+              <span class="tag orange">Template</span>
+              <h3 class="h3">Lead follow-up message pack <span class="ph">Placeholder</span></h3>
+              <div class="meta"><span>Download</span><span>→</span></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tutorials -->
+  <section class="sec tutorials" id="tutorials" aria-labelledby="tut-title">
+    <img class="leaf" src="/assets/marketing-resources/eucalyptus-leaf.svg" alt="" aria-hidden="true">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="h2" id="tut-title">Learn LeadPages at your own pace.</h2>
+      </div>
+      <div class="tut-grid">
+        <article class="tut reveal">
+          <div class="tut-media"><img src="/assets/marketing-resources/rs-tutorial-thumb.jpg" alt="" loading="lazy"><div class="play"><span>▶</span></div></div>
+          <div class="tut-body"><h3 class="h3">Edit your homepage</h3><div class="lvl">Beginner</div><div class="bar" aria-hidden="true"><i></i></div></div>
+        </article>
+        <article class="tut reveal">
+          <div class="tut-media"><img src="/assets/marketing-resources/rs-need-website.jpg" alt="" loading="lazy"><div class="play"><span>▶</span></div></div>
+          <div class="tut-body"><h3 class="h3">Connect a domain <span class="ph">Placeholder</span></h3><div class="lvl">Beginner</div><div class="bar" aria-hidden="true"><i style="width:18%"></i></div></div>
+        </article>
+        <article class="tut reveal">
+          <div class="tut-media"><img src="/assets/marketing-resources/rs-need-apps.jpg" alt="" loading="lazy"><div class="play"><span>▶</span></div></div>
+          <div class="tut-body"><h3 class="h3">Add a booking app <span class="ph">Placeholder</span></h3><div class="lvl">Intermediate</div><div class="bar" aria-hidden="true"><i style="width:42%"></i></div></div>
+        </article>
+        <article class="tut reveal">
+          <div class="tut-media"><img src="/assets/marketing-resources/rs-need-leads.jpg" alt="" loading="lazy"><div class="play"><span>▶</span></div></div>
+          <div class="tut-body"><h3 class="h3">Set up lead alerts <span class="ph">Placeholder</span></h3><div class="lvl">Beginner</div><div class="bar" aria-hidden="true"><i style="width:10%"></i></div></div>
+        </article>
+        <article class="tut reveal">
+          <div class="tut-media"><img src="/assets/marketing-resources/rs-need-seo.jpg" alt="" loading="lazy"><div class="play"><span>▶</span></div></div>
+          <div class="tut-body"><h3 class="h3">Publish with confidence <span class="ph">Placeholder</span></h3><div class="lvl">Beginner</div><div class="bar" aria-hidden="true"><i style="width:35%"></i></div></div>
+        </article>
+      </div>
+      <div class="tut-cta reveal">
+        <a class="btn btn-ghost-w" href="#explore">View all tutorials <span class="ph">Placeholder</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tools -->
+  <section class="sec tools" id="tools" aria-labelledby="tools-title">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="h2" id="tools-title">Useful tools you can put to work today.</h2>
+      </div>
+      <div class="tool-grid">
+        <article class="tool reveal">
+          <div class="tool-media"><img src="/assets/marketing-resources/rs-tools-workbook.jpg" alt="" loading="lazy"><span class="badge">Free resource</span></div>
+          <div class="tool-body">
+            <h3 class="h3">Website launch workbook</h3>
+            <p>A printable plan for getting a local site live.</p>
+            <a class="link-orange underline" href="#explore">Download <span class="ph">Placeholder</span></a>
+          </div>
+        </article>
+        <article class="tool reveal">
+          <div class="tool-media"><img src="/assets/marketing-resources/rs-tool-seo.jpg" alt="" loading="lazy"><span class="badge">Free resource</span></div>
+          <div class="tool-body">
+            <h3 class="h3">SEO worksheet</h3>
+            <p>Suburb keywords and Google Business checklist.</p>
+            <a class="link-orange underline" href="#explore">Download <span class="ph">Placeholder</span></a>
+          </div>
+        </article>
+        <article class="tool reveal">
+          <div class="tool-media"><img src="/assets/marketing-resources/rs-tool-checklist.jpg" alt="" loading="lazy"><span class="badge">Free resource</span></div>
+          <div class="tool-body">
+            <h3 class="h3">Lead response checklist</h3>
+            <p>What to do in the first 10 minutes after an enquiry.</p>
+            <a class="link-orange underline" href="#explore">Download <span class="ph">Placeholder</span></a>
+          </div>
+        </article>
+        <article class="tool reveal">
+          <div class="tool-media"><img src="/assets/marketing-resources/rs-tool-proposal.jpg" alt="" loading="lazy"><span class="badge">Free resource</span></div>
+          <div class="tool-body">
+            <h3 class="h3">Proposal template</h3>
+            <p>Simple pricing page for partners selling websites.</p>
+            <a class="link-orange underline" href="#explore">Use template <span class="ph">Placeholder</span></a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Industries -->
+  <section class="sec industries" id="industries" aria-labelledby="ind-title">
+    <img class="leaf" src="/assets/marketing-resources/eucalyptus-leaf.svg" alt="" aria-hidden="true">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="h2" id="ind-title">Advice for real local businesses.</h2>
+      </div>
+      <div class="ind-grid">
+        <article class="ind reveal">
+          <img src="/assets/marketing-resources/rs-industry-trades.jpg" alt="" loading="lazy">
+          <div class="veil" aria-hidden="true"></div>
+          <div class="body">
+            <h3>Trades</h3>
+            <p>Call-first sites, emergency CTAs and trust for plumbers, sparkies and builders.</p>
+            <a class="btn btn-ghost-w" href="#explore">View articles <span class="ph">Placeholder</span></a>
+          </div>
+        </article>
+        <article class="ind reveal">
+          <img src="/assets/marketing-resources/rs-industry-hosp.jpg" alt="" loading="lazy">
+          <div class="veil" aria-hidden="true"></div>
+          <div class="body">
+            <h3>Hospitality</h3>
+            <p>Menus, bookings and atmosphere for cafés, bars and venues.</p>
+            <a class="btn btn-ghost-w" href="#explore">View articles <span class="ph">Placeholder</span></a>
+          </div>
+        </article>
+        <article class="ind reveal">
+          <img src="/assets/marketing-resources/rs-industry-services.jpg" alt="" loading="lazy">
+          <div class="veil" aria-hidden="true"></div>
+          <div class="body">
+            <h3>Professional services</h3>
+            <p>Calm, trustworthy sites for consultants and local experts.</p>
+            <a class="btn btn-ghost-w" href="#explore">View articles <span class="ph">Placeholder</span></a>
+          </div>
+        </article>
+      </div>
+      <div class="ind-cta reveal">
+        <a class="btn btn-ghost-w" href="#explore">Browse by industry <span class="ph">Placeholder</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Explore by topic -->
+  <section class="sec explore" id="explore" aria-labelledby="explore-title">
+    <div class="wrap">
+      <div class="sec-head left reveal">
+        <h2 class="h2" id="explore-title">Explore by topic.</h2>
+      </div>
+      <div class="filters reveal">
+        <div class="pills" role="tablist" aria-label="Resource filters">
+          <button type="button" class="pill is-on" data-filter="all">All Resources</button>
+          <button type="button" class="pill" data-filter="guide">Guides</button>
+          <button type="button" class="pill" data-filter="video">Videos</button>
+          <button type="button" class="pill" data-filter="template">Templates</button>
+          <button type="button" class="pill" data-filter="partner">Partner</button>
+        </div>
+        <form class="explore-search" role="search" onsubmit="return false;">
+          <label for="rs-explore-q" style="position:absolute;left:-999px">Search resources</label>
+          <input id="rs-explore-q" type="search" placeholder="Search resources…">
+        </form>
+      </div>
+      <div class="res-grid">
+        <article class="pop-card reveal" data-type="guide">
+          <div class="media"><img src="/assets/marketing-resources/rs-checklist-sign.jpg" alt="" loading="lazy"></div>
+          <div class="body">
+            <span class="tag orange">Guide</span>
+            <h3 class="h3">Local business website checklist <span class="ph">Placeholder</span></h3>
+            <div class="meta"><span>6 min read</span><span>→</span></div>
+          </div>
+        </article>
+        <article class="pop-card reveal" data-type="guide">
+          <div class="media"><img src="/assets/marketing-resources/rs-need-website.jpg" alt="" loading="lazy"></div>
+          <div class="body">
+            <span class="tag orange">Guide</span>
+            <h3 class="h3"><a href="/resources/winning-your-first-website-client">Winning your first website client</a></h3>
+            <div class="meta"><span>7 min read</span><span>→</span></div>
+          </div>
+        </article>
+        <article class="pop-card reveal" data-type="guide">
+          <div class="media"><img src="/assets/marketing-resources/rs-need-partner.jpg" alt="" loading="lazy"></div>
+          <div class="body">
+            <span class="tag orange">Guide</span>
+            <h3 class="h3"><a href="/resources/what-to-charge-for-websites-australia">What to charge for websites in Australia</a></h3>
+            <div class="meta"><span>8 min read</span><span>→</span></div>
+          </div>
+        </article>
+        <article class="pop-card reveal" data-type="video">
+          <div class="media"><img src="/assets/marketing-resources/rs-tutorial-thumb.jpg" alt="" loading="lazy"></div>
+          <div class="body">
+            <span class="tag orange">Video</span>
+            <h3 class="h3">Website editor walkthrough <span class="ph">Placeholder</span></h3>
+            <div class="meta"><span>5 min watch</span><span>→</span></div>
+          </div>
+        </article>
+        <article class="pop-card reveal" data-type="template">
+          <div class="media"><img src="/assets/marketing-resources/rs-tool-proposal.jpg" alt="" loading="lazy"></div>
+          <div class="body">
+            <span class="tag orange">Template</span>
+            <h3 class="h3">Client onboarding checklist <span class="ph">Placeholder</span></h3>
+            <div class="meta"><span>Download</span><span>→</span></div>
+          </div>
+        </article>
+        <article class="pop-card reveal" data-type="partner guide">
+          <div class="media"><img src="/assets/marketing-resources/rs-need-leads.jpg" alt="" loading="lazy"></div>
+          <div class="body">
+            <span class="tag orange">Guide</span>
+            <h3 class="h3"><a href="/resources/website-business-school-hours">Website business around school hours</a></h3>
+            <div class="meta"><span>6 min read</span><span>→</span></div>
+          </div>
+        </article>
+      </div>
+      <div class="explore-cta reveal">
+        <a class="btn btn-outline" href="#explore">View all resources <span class="ph">Placeholder</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Partner resources -->
+  <section class="sec partner" id="partner" aria-labelledby="partner-title">
+    <img class="leaf" src="/assets/marketing-resources/eucalyptus-leaf.svg" alt="" aria-hidden="true">
+    <div class="wrap partner-grid">
+      <div class="reveal">
+        <p class="eyebrow">Building websites for clients?</p>
+        <h2 class="h2" id="partner-title">Partner resources made for the real conversations.</h2>
+        <p class="lede">Proposals, onboarding and audits that help you sound confident when you’re sitting across from a local business owner.</p>
+        <div style="margin-top:22px">
+          <a class="btn btn-orange" href="/partners">Explore partner resources</a>
+        </div>
+      </div>
+      <div class="partner-visual reveal">
+        <img src="/assets/marketing-resources/rs-partner-talk.jpg" alt="Partners discussing client work" loading="lazy">
+        <div class="partner-cards">
+          <div class="partner-card"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span> Proposal template <span class="ph">Placeholder</span></div>
+          <div class="partner-card"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span> Client onboarding checklist <span class="ph">Placeholder</span></div>
+          <div class="partner-card"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span> Website audit checklist <span class="ph">Placeholder</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Support -->
+  <section class="sec support" id="support" aria-labelledby="support-title">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2 class="h2" id="support-title">Need an answer, not another article?</h2>
+        <p class="lede">We’re here to point you in the right direction.</p>
+      </div>
+      <div class="support-grid">
+        <article class="support-card reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+          <h3 class="h3">Search the Help Centre</h3>
+          <p>Quick answers for editing, publishing and apps.</p>
+          <a class="btn btn-outline" href="#explore">Search help <span class="ph">Placeholder</span></a>
+          <img class="avatar" src="/assets/marketing-resources/rs-support-avatar.jpg" alt="" loading="lazy">
+        </article>
+        <article class="support-card reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <h3 class="h3">Ask your LeadPages Partner</h3>
+          <p>Local help from the person who looks after your site.</p>
+          <a class="btn btn-outline" href="/find-a-partner">Find a partner</a>
+          <img class="avatar" src="/assets/marketing-resources/rs-support-avatar-2.jpg" alt="" loading="lazy">
+        </article>
+        <article class="support-card reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.35 1.9.67 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.32 1.85.54 2.81.67A2 2 0 0 1 22 16.92z"/></svg></div>
+          <h3 class="h3">Contact Australian Support</h3>
+          <p>Talk to the team behind the platform.</p>
+          <a class="btn btn-outline" href="mailto:support@leadpages.com.au">Contact support</a>
+          <img class="avatar" src="/assets/marketing-resources/rs-support-avatar-3.jpg" alt="" loading="lazy">
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter -->
+  <section class="news" aria-labelledby="news-title">
+    <img class="leaf" src="/assets/marketing-resources/eucalyptus-leaf.svg" alt="" aria-hidden="true">
+    <div class="wrap news-inner">
+      <p class="news-copy reveal" id="news-title">Useful advice. No marketing waffle. Get practical website and small-business tips delivered occasionally.</p>
+      <div class="reveal">
+        <form class="news-form" id="rs-news" onsubmit="return false;">
+          <label for="rs-email" style="position:absolute;left:-999px">Email</label>
+          <input id="rs-email" type="email" placeholder="Your email" autocomplete="email">
+          <button class="btn btn-orange" type="submit">Send me useful tips</button>
+        </form>
+        <p class="news-note">We respect your inbox. Unsubscribe anytime. <span class="ph">Placeholder signup</span></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-ink="light" role="img" aria-label="LeadPages"></span>
+        <p class="footer-tag">Websites made simple. Businesses made stronger.</p>
+        <span class="seal">Proudly Australian</span>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <a href="/showcase">Websites</a>
+        <a href="/marketplace">Apps</a>
+        <a href="/demos">Demos</a>
+        <a href="/#pricing">Pricing</a>
+      </div>
+      <div>
+        <h4>Partners</h4>
+        <a href="/partners">Become a partner</a>
+        <a href="/find-a-partner">Find a partner</a>
+        <a href="/start-your-business">Start your business</a>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <a href="/resources">Resource hub</a>
+        <a href="/domains">Domains</a>
+        <a href="#tutorials">Tutorials</a>
+        <a href="#tools">Tools</a>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <a href="/manage">Log in</a>
+        <a href="/privacy-policy">Privacy</a>
+        <a href="/terms-of-use">Terms</a>
+        <div class="footer-help">
+          <strong>Need help?</strong>
+          <a href="mailto:support@leadpages.com.au">Contact Australian Support</a>
+          <a href="mailto:support@leadpages.com.au">support@leadpages.com.au</a>
+        </div>
+        <div class="social" aria-label="Social">
+          <a href="#" aria-label="Facebook" title="Placeholder"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 9h3V6h-3c-1.7 0-3 1.3-3 3v2H8v3h3v7h3v-7h3l1-3h-4V9c0-.6.4-1 1-1z"/></svg></a>
+          <a href="#" aria-label="Instagram" title="Placeholder"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+          <a href="#" aria-label="LinkedIn" title="Placeholder"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6.5 9H3v12h3.5V9zM4.8 3.5A2 2 0 1 0 4.8 7.5 2 2 0 0 0 4.8 3.5zM21 13.2c0-2.7-1.4-4.2-3.5-4.2-1.6 0-2.3.9-2.7 1.5V9H11.3c0 .5.1 12 0 12H14.8v-6.7c0-.4 0-.7.1-1 .3-.7.9-1.4 2-1.4 1.4 0 2 1.1 2 2.7V21H22v-7.8z"/></svg></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">© <span id="rs-year">2026</span> LeadPages Australia</div>
+  </div>
+</footer>
+
+<script src="/assets/lp-logo.js"></script>
+<script>
+(function () {
+  document.body.classList.add('js-ready');
+  var year = document.getElementById('rs-year');
+  if (year) year.textContent = String(new Date().getFullYear());
+
+  var menuBtn = document.getElementById('rs-menu');
+  var drawer = document.getElementById('rs-drawer');
+  function setDrawer(open) {
+    if (!drawer || !menuBtn) return;
+    drawer.hidden = !open;
+    drawer.classList.toggle('is-open', open);
+    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+  if (menuBtn && drawer) {
+    menuBtn.addEventListener('click', function () { setDrawer(drawer.hidden); });
+    drawer.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () { setDrawer(false); });
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') setDrawer(false);
+    });
+  }
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+  }
+
+  // Topic filter (UI only — placeholders)
+  var pills = document.querySelectorAll('.pill[data-filter]');
+  var cards = document.querySelectorAll('.res-grid .pop-card');
+  pills.forEach(function (pill) {
+    pill.addEventListener('click', function () {
+      pills.forEach(function (p) { p.classList.remove('is-on'); });
+      pill.classList.add('is-on');
+      var f = pill.getAttribute('data-filter');
+      cards.forEach(function (c) {
+        var t = c.getAttribute('data-type') || '';
+        c.style.display = (f === 'all' || t.indexOf(f) !== -1) ? '' : 'none';
+      });
+    });
+  });
+
+  function track(event, props) {
+    try {
+      fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ site: 'MarketingResources', event: event, props: props || {} })
+      });
+    } catch (e) {}
+  }
+  track('page_view', { page: 'resources' });
+
+  var news = document.getElementById('rs-news');
+  if (news) {
+    news.addEventListener('submit', function (e) {
+      e.preventDefault();
+      track('newsletter_placeholder_submit');
+      alert('Newsletter signup is a placeholder — coming soon.');
+    });
+  }
+})();
+</script>
+</body>
+</html>
