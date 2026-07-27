@@ -278,11 +278,13 @@ body.px .drawer .btn-orange { color: #fff; text-align: center; margin-top: 8px; 
 .save-badge {
   font-size: 12px;
   font-weight: 700;
-  color: rgba(249,247,242,.85);
-  border: 1px dashed rgba(249,247,242,.45);
+  color: var(--orange);
+  border: 1px dashed rgba(227,107,33,.65);
   border-radius: 999px;
   padding: 6px 12px;
 }
+.plan .setup strong { color: var(--ink); }
+.plan[data-plan="partner"] .setup strong { color: var(--green-deep); }
 
 .trust-row {
   display: flex;
@@ -680,6 +682,9 @@ body.px .drawer .btn-orange { color: #fff; text-align: center; margin-top: 8px; 
 .app-box.included .tag { color: var(--green-deep); }
 .app-box.free .tag { color: #b23b3b; }
 .app-box.premium .tag { color: #a67c00; }
+.app-box.included { border-top: 3px solid var(--green); }
+.app-box.free { border-top: 3px solid #b23b3b; }
+.app-box.premium { border-top: 3px solid var(--gold); }
 .app-box ul {
   list-style: none;
   margin: 0;
