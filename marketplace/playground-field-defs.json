@@ -2595,12 +2595,14 @@
     {
       "type": "textarea",
       "key": "sections.textBox.intro",
-      "label": "Intro"
+      "label": "Intro",
+      "rows": 5
     },
     {
       "type": "textarea",
       "key": "sections.textBox.content",
-      "label": "Content"
+      "label": "Content",
+      "rows": 12
     },
     {
       "type": "image",

@@ -1,6 +1,6 @@
 /**
  * Compact marketplace playground editor for all section apps (Trust Bar UX).
- * Items (tabbed) | Style zones — temporary state only; never saves.
+ * Left: Items (tabbed) + Content | Right: Style — temporary state only; never saves.
  * Trust Bar still uses LPTrustBarEditor (manage-parity). This covers the rest.
  */
 (function (global) {
@@ -11,6 +11,33 @@
     'headBadges', 'cards', 'services', 'events', 'stats', 'members', 'options',
     'images', 'albums', 'reels', 'feed', 'points', 'jobOptions'
   ];
+
+  /** Colour / appearance / layout chrome stays in the Style column; copy & form wording go left. */
+  function isStyleField(f) {
+    if (!f) return false;
+    if (f.zone === 'style') return true;
+    if (f.zone === 'content') return false;
+    var key = String(f.key || '');
+    var type = String(f.type || '');
+    var label = String(f.label || '');
+    if (type === 'color') return true;
+    if (/\.appearance\./.test(key)) return true;
+    if (/^theme\./.test(key)) return true;
+    if (type === 'number') {
+      if (/(width|height|opacity|radius|size|cols|columns|count|stroke|gap|pad|scale)/i.test(key + ' ' + label)) {
+        return true;
+      }
+    }
+    if (type === 'select') {
+      if (/(formStyle|cardStyle|imageLayout|strokeSides|transition|align|placement|mode)/i.test(key)) return true;
+      if (/(Style|Colour|Color|Layout|Align|Sides|Transition|Background|Stroke|Columns|Mode)/i.test(label)) return true;
+    }
+    if (type === 'checkbox' || type === 'check') {
+      if (/(Custom section|full.?width|stroke|shadow|glow|transparent|overlay)/i.test(label)) return true;
+      if (/\.appearance\./.test(key)) return true;
+    }
+    return false;
+  }
 
   function esc(s) {
     var d = document.createElement('div');
@@ -93,6 +120,7 @@
 
   function splitDefs(sectionKey, listKey, fieldDefs) {
     var itemFieldsByIndex = {};
+    var contentFields = [];
     var styleFields = [];
     var itemFieldTemplate = [];
     var seenTemplate = {};
@@ -119,10 +147,16 @@
         }
         return;
       }
-      styleFields.push(f);
+      if (isStyleField(f)) styleFields.push(f);
+      else contentFields.push(f);
     });
 
-    return { itemFieldsByIndex: itemFieldsByIndex, styleFields: styleFields, itemFieldTemplate: itemFieldTemplate };
+    return {
+      itemFieldsByIndex: itemFieldsByIndex,
+      contentFields: contentFields,
+      styleFields: styleFields,
+      itemFieldTemplate: itemFieldTemplate
+    };
   }
 
   function hexOk(v) {
@@ -130,6 +164,29 @@
     return /^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)
       ? (v.charAt(0) === '#' ? v : '#' + v)
       : '';
+  }
+
+  function isMainCopyTextarea(f) {
+    var key = String((f && f.key) || (f && f.prop) || '');
+    var label = String((f && f.label) || '');
+    return /\.(content|body|html|copy|mainText)$/i.test(key)
+      || /^(Content|Body|Main text|Copy|Long text)$/i.test(label);
+  }
+
+  function textareaRows(f) {
+    if (f && f.rows != null && f.rows !== '') {
+      var n = parseInt(f.rows, 10);
+      if (!isNaN(n)) return String(Math.max(2, Math.min(24, n)));
+    }
+    if (f && f.join) return '6';
+    var key = String((f && f.key) || '');
+    var label = String((f && f.label) || '');
+    if (isMainCopyTextarea(f)) return '12';
+    if (/\.(intro|sub|description|detailPh|fineText|summary)$/i.test(key)
+      || /^(Intro|Sub-text|Description|Summary)$/i.test(label)) {
+      return '5';
+    }
+    return '3';
   }
 
   function renderField(f, val, attrName) {
@@ -148,7 +205,7 @@
           return '<span class="tb-ed-chip">' + esc(name)
             + '<button type="button" class="tb-ed-chip-x" data-mp-chip-rm="' + i + '" data-pgk="' + esc(f.key) + '" aria-label="Remove ' + esc(name) + '">×</button></span>';
         }).join('');
-        return '<div class="f tb-ed-chiplist" data-mp-chiplist="' + esc(f.key) + '">'
+        return '<div class="f tb-ed-chiplist tb-ed-span-2" data-mp-chiplist="' + esc(f.key) + '">'
           + '<label>' + esc(f.label) + '</label>'
           + '<div class="tb-ed-chips">' + (chipHtml || '<span class="tb-ed-empty" style="margin:0">No suburbs yet</span>') + '</div>'
           + '<div class="tb-ed-chip-add">'
@@ -158,8 +215,11 @@
           + '<textarea ' + keyAttr + ' hidden rows="2">' + esc(String(val || '')) + '</textarea>'
           + '</div>';
       }
-      var rows = f.join ? '6' : '2';
-      return '<div class="f"><label>' + esc(f.label) + '</label><textarea ' + keyAttr + ' rows="' + rows + '">' + esc(String(val || '')) + '</textarea></div>';
+      var rows = textareaRows(f);
+      var mainCopy = isMainCopyTextarea(f);
+      return '<div class="f tb-ed-span-2 tb-ed-textarea-f' + (mainCopy ? ' tb-ed-textarea-main' : '') + '">'
+        + '<label>' + esc(f.label) + '</label>'
+        + '<textarea ' + keyAttr + ' rows="' + rows + '">' + esc(String(val || '')) + '</textarea></div>';
     }
     if (f.type === 'color') {
       var col = hexOk(val) || '#cccccc';
@@ -186,7 +246,7 @@
     }
     var isImage = f.type === 'image' || /\.image$/i.test(f.key || f.prop || '') || /image/i.test(f.label || '');
     if (isImage && global.LPLocalImage) {
-      return '<div class="f"><label>' + esc(f.label) + '</label>'
+      return '<div class="f tb-ed-span-2"><label>' + esc(f.label) + '</label>'
         + global.LPLocalImage.controlHtml(val || '', {
           sample: global.LPLocalImage.isRemote(val) ? val : '',
           inputAttrs: keyAttr
@@ -282,6 +342,10 @@
       var list = getList();
       var split = splitDefs(sectionKey, list.listKey || 'items', fieldDefs);
       var hasItems = !!(list.listKey && (list.items.length || split.itemFieldTemplate.length));
+      var hasContent = !!(split.contentFields && split.contentFields.length);
+      var hasStyle = !!(split.styleFields && split.styleFields.length);
+      /* Quote Form etc: keep copy/labels on the left so Style is not a giant scroll */
+      var showLeft = hasItems || hasContent;
 
       var html = '';
       if (mode === 'marketplace-playground') {
@@ -290,25 +354,47 @@
         html += '<div class="tb-ed-banner">Demo builder — changes can be saved to the selected preset.</div>';
       }
 
-      html += '<div class="tb-ed-zones">';
+      html += '<div class="tb-ed-zones' + (showLeft && hasStyle ? '' : ' tb-ed-zones-single') + '">';
 
-      if (hasItems) {
-        html += '<div class="card tb-ed-card tb-ed-card-items tb-ed-zone-items">'
-          + '<div class="tb-ed-items-head">'
-          + '<h2>Items</h2>'
-          + '<button type="button" class="tb-ed-add" data-mp-add>+ Add</button>'
-          + '</div>'
-          + '<div data-mp-items></div></div>';
+      if (showLeft) {
+        html += '<div class="tb-ed-zone-left">';
+        if (hasItems) {
+          var itemsTitle = sectionKey === 'quote' ? 'Trust points' : 'Items';
+          html += '<div class="card tb-ed-card tb-ed-card-items tb-ed-zone-items">'
+            + '<div class="tb-ed-items-head">'
+            + '<h2>' + itemsTitle + '</h2>'
+            + '<button type="button" class="tb-ed-add" data-mp-add>+ Add</button>'
+            + '</div>'
+            + '<div data-mp-items></div></div>';
+        }
+        if (hasContent) {
+          html += '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-content" aria-label="Content">'
+            + '<div class="tb-ed-zone-label">Content</div>'
+            + '<div class="tb-ed-color-grid" data-mp-content></div>'
+            + '</div>';
+        }
+        html += '</div>';
       }
 
-      html += '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-style" aria-label="Style">'
-        + '<div class="tb-ed-zone-label">' + (hasItems ? 'Style' : 'Content') + '</div>'
-        + '<div class="tb-ed-color-grid" data-mp-style></div>'
-        + '</div></div>';
+      if (hasStyle || !showLeft) {
+        html += '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-style" aria-label="Style">'
+          + '<div class="tb-ed-zone-label">' + (showLeft || hasStyle ? 'Style' : 'Content') + '</div>'
+          + '<div class="tb-ed-color-grid" data-mp-style></div>'
+          + '</div>';
+      }
+
+      html += '</div>';
 
       host.innerHTML = html;
+      host.className = host.className
+        .split(/\s+/)
+        .filter(function (c) { return c && c.indexOf('tb-ed-sec-') !== 0 && c !== 'tb-ed-root' && c !== 'tb-ed-compact'; })
+        .join(' ');
       host.classList.add('tb-ed-root', 'tb-ed-compact');
+      if (sectionKey) host.classList.add('tb-ed-sec-' + sectionKey);
+      if (hasContent && hasStyle && !hasItems) host.classList.add('tb-ed-copyheavy');
       drawItems();
+      drawContent(split.contentFields);
       drawStyle(split.styleFields);
       wire();
     }
@@ -373,29 +459,39 @@
       if (global.LPLocalImage) global.LPLocalImage.refresh(box);
     }
 
-    function drawStyle(styleFields) {
-      var box = host.querySelector('[data-mp-style]');
+    function drawFieldGrid(box, fields, emptyMsg) {
       if (!box) return;
-      if (!styleFields.length) {
-        box.innerHTML = '<p class="tb-ed-empty" style="margin:0">Style controls appear here when available.</p>';
+      if (!fields || !fields.length) {
+        box.innerHTML = '<p class="tb-ed-empty" style="margin:0">' + esc(emptyMsg || 'Nothing here yet.') + '</p>';
         return;
       }
-      box.innerHTML = styleFields.map(function (f) {
+      box.innerHTML = fields.map(function (f) {
         return renderField(f, readVal(f), 'data-pgk');
       }).join('');
       if (global.LPIconPicker) global.LPIconPicker.refresh(box);
       if (global.LPLocalImage) global.LPLocalImage.refresh(box);
     }
 
+    function drawContent(contentFields) {
+      drawFieldGrid(host.querySelector('[data-mp-content]'), contentFields, 'Content controls appear here when available.');
+    }
+
+    function drawStyle(styleFields) {
+      drawFieldGrid(host.querySelector('[data-mp-style]'), styleFields, 'Style controls appear here when available.');
+    }
+
     function wire() {
       if (host.__mpCompactBound) return;
       host.__mpCompactBound = true;
 
-      function refreshStyle() {
+      function refreshPanels() {
         var list = getList();
         var split = splitDefs(sectionKey, list.listKey || 'items', fieldDefs);
+        drawContent(split.contentFields);
         drawStyle(split.styleFields);
       }
+
+      function refreshStyle() { refreshPanels(); }
 
       function chipNames(def) {
         return String(readVal(def) || '')
@@ -602,6 +698,8 @@
   global.LPMarketplaceCompactEditor = {
     mount: mount,
     detectListKey: detectListKey,
+    isStyleField: isStyleField,
+    splitDefs: splitDefs,
     withAppearanceDefs: withAppearanceDefs
   };
 })(typeof window !== 'undefined' ? window : globalThis);

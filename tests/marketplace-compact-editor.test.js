@@ -147,6 +147,50 @@ describe('marketplace compact editor parity', () => {
     assert.ok(defaults.quote.quote.jobOptions.length >= 3);
   });
 
+  it('quote compact editor puts copy on the left and style on the right', () => {
+    const compact = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
+    assert.match(compact, /function isStyleField/);
+    assert.match(compact, /tb-ed-zone-content/);
+    assert.match(compact, /data-mp-content/);
+    assert.match(compact, /Trust points/);
+    assert.match(compact, /contentFields/);
+
+    const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.css'), 'utf8');
+    assert.match(css, /\.tb-ed-zone-left/);
+    assert.match(css, /\.tb-ed-zone-content/);
+
+    /* Load splitter without a browser: evaluate the pure helpers via vm */
+    const vm = require('vm');
+    const sandbox = { window: {}, globalThis: {} };
+    sandbox.window = sandbox;
+    sandbox.globalThis = sandbox;
+    vm.runInNewContext(compact + '\nthis.API = LPMarketplaceCompactEditor;', sandbox);
+    const api = sandbox.API;
+    const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
+    const quoteDefs = api.withAppearanceDefs('quote', defs.quote);
+    const split = api.splitDefs('quote', 'points', quoteDefs);
+
+    const contentKeys = split.contentFields.map((f) => f.key);
+    const styleKeys = split.styleFields.map((f) => f.key);
+
+    assert.ok(contentKeys.includes('sections.quote.eyebrow'));
+    assert.ok(contentKeys.includes('sections.quote.heading'));
+    assert.ok(contentKeys.includes('sections.quote.lblName'));
+    assert.ok(contentKeys.includes('sections.quote.jobOptions.0.text'));
+    assert.ok(contentKeys.includes('sections.quote.fineText'));
+    assert.ok(!contentKeys.includes('sections.quote.btnBg'));
+    assert.ok(!contentKeys.includes('sections.quote.formStyle'));
+
+    assert.ok(styleKeys.includes('sections.quote.btnBg'));
+    assert.ok(styleKeys.includes('sections.quote.formStyle'));
+    assert.ok(styleKeys.includes('theme.pipe'));
+    assert.ok(styleKeys.some((k) => /\.appearance\.custom$/.test(k)));
+
+    assert.ok(split.itemFieldsByIndex[0] && split.itemFieldsByIndex[0].length);
+    assert.equal(api.isStyleField({ type: 'color', key: 'sections.quote.btnBg' }), true);
+    assert.equal(api.isStyleField({ type: 'text', key: 'sections.quote.eyebrow', label: 'Eyebrow' }), false);
+  });
+
   it('heroSlider demo seeds slide images and hero copy', () => {
     const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-heroSlider.html'), 'utf8');
     assert.match(demo, /"slides"\s*:\s*\[/);
@@ -353,7 +397,11 @@ describe('marketplace compact editor parity', () => {
   it('textBox editor covers copy, image, layout and side controls', () => {
     const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
     assert.ok(defs.textBox.some((f) => f.key === 'sections.textBox.eyebrow'));
-    assert.ok(defs.textBox.some((f) => f.key === 'sections.textBox.content' && f.type === 'textarea'));
+    const contentDef = defs.textBox.find((f) => f.key === 'sections.textBox.content');
+    assert.ok(contentDef && contentDef.type === 'textarea');
+    assert.equal(contentDef.rows, 12);
+    const introDef = defs.textBox.find((f) => f.key === 'sections.textBox.intro');
+    assert.ok(introDef && introDef.rows === 5);
     assert.ok(defs.textBox.some((f) => f.key === 'sections.textBox.image' && f.type === 'image'));
     assert.ok(defs.textBox.some((f) => f.key === 'sections.textBox.imageLayout' && f.type === 'select'));
     assert.ok(defs.textBox.some((f) => f.key === 'sections.textBox.imageSide'));
@@ -379,7 +427,36 @@ describe('marketplace compact editor parity', () => {
     assert.match(feat, /local\.length > fieldDefs\.length/);
 
     const js = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
-    assert.match(js, /hasItems \? 'Style' : 'Content'/);
+    assert.match(js, /tb-ed-zone-content/);
+    assert.match(js, /showLeft \|\| hasStyle \? 'Style' : 'Content'/);
+    assert.match(js, /tb-ed-textarea-main/);
+    assert.match(js, /tb-ed-copyheavy/);
+    assert.match(js, /function textareaRows/);
+
+    const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.css'), 'utf8');
+    assert.match(css, /\.tb-ed-textarea-main textarea/);
+    assert.match(css, /\.tb-ed-sec-textBox/);
+    assert.match(css, /min-height:\s*180px/);
+
+    /* Content stays left; layout/colours go right — fills the first empty Style column */
+    const vm = require('vm');
+    const sandbox = { window: {}, globalThis: {} };
+    sandbox.window = sandbox;
+    sandbox.globalThis = sandbox;
+    vm.runInNewContext(js + '\nthis.API = LPMarketplaceCompactEditor;', sandbox);
+    const split = sandbox.API.splitDefs(
+      'textBox',
+      'items',
+      sandbox.API.withAppearanceDefs('textBox', defs.textBox)
+    );
+    const contentKeys = split.contentFields.map((f) => f.key);
+    const styleKeys = split.styleFields.map((f) => f.key);
+    assert.ok(contentKeys.includes('sections.textBox.content'));
+    assert.ok(contentKeys.includes('sections.textBox.intro'));
+    assert.ok(contentKeys.includes('sections.textBox.image'));
+    assert.ok(styleKeys.includes('sections.textBox.imageLayout'));
+    assert.ok(styleKeys.includes('sections.textBox.textAlign'));
+    assert.ok(styleKeys.includes('theme.pipe'));
   });
 
   it('services grid seeds root cards and exposes icon/size/card style editors', () => {
