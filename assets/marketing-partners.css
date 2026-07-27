@@ -253,8 +253,8 @@ body.pp .drawer .btn-orange { color: #fff; text-align: center; margin-top: 8px; 
   position: absolute;
   background: #fff;
   color: var(--ink);
-  border-radius: 12px;
-  padding: 10px 12px;
+  border-radius: 999px;
+  padding: 10px 14px 10px 10px;
   box-shadow: var(--shadow-soft);
   display: flex;
   align-items: center;
@@ -262,7 +262,7 @@ body.pp .drawer .btn-orange { color: #fff; text-align: center; margin-top: 8px; 
   font-size: 13px;
   font-weight: 700;
   z-index: 4;
-  min-width: 160px;
+  min-width: 0;
 }
 .float-card .ico {
   width: 34px; height: 34px; border-radius: 10px;
