@@ -147,6 +147,41 @@ async function ensureGlobalDefault(user) {
   return ins.data && ins.data.id;
 }
 
+async function fetchSiteConfig(siteId) {
+  if (!siteId) return null;
+  const r = await sb.from('sites').select('id,config').eq('id', siteId).maybeSingle();
+  return r.data || null;
+}
+
+async function mirrorStyleToSiteConfig(siteId, presetId, presetName, style) {
+  if (!siteId) return;
+  const site = await fetchSiteConfig(siteId);
+  if (!site) return;
+  const cfg = site.config && typeof site.config === 'object' ? Object.assign({}, site.config) : {};
+  cfg.leadNotifyEmail = {
+    activePresetId: presetId || null,
+    activePresetName: presetName || null,
+    style: normalizeStyle(style || DEFAULT_STYLE),
+    updatedAt: new Date().toISOString()
+  };
+  await sb
+    .from('sites')
+    .update({ config: cfg, updated_at: new Date().toISOString() })
+    .eq('id', siteId);
+}
+
+async function clearSiteConfigMirror(siteId) {
+  if (!siteId) return;
+  const site = await fetchSiteConfig(siteId);
+  if (!site || !site.config || !site.config.leadNotifyEmail) return;
+  const cfg = Object.assign({}, site.config);
+  delete cfg.leadNotifyEmail;
+  await sb
+    .from('sites')
+    .update({ config: cfg, updated_at: new Date().toISOString() })
+    .eq('id', siteId);
+}
+
 async function listPresets(siteId) {
   const global = await sb
     .from('lead_notify_email_styles')
@@ -185,7 +220,12 @@ module.exports = async (req, res) => {
     }
 
     if (action === 'resolve') {
-      const resolved = await resolveLeadNotifyStyle(sb, siteId || null);
+      const site = siteId ? await fetchSiteConfig(siteId) : null;
+      const resolved = await resolveLeadNotifyStyle(
+        sb,
+        siteId || null,
+        site && site.config
+      );
       return json(res, 200, { ok: true, resolved });
     }
 
@@ -278,6 +318,9 @@ module.exports = async (req, res) => {
     if (ins.error) {
       return json(res, 500, { ok: false, error: ins.error.message });
     }
+    if (setActive && ins.data) {
+      await mirrorStyleToSiteConfig(siteId, ins.data.id, name, style);
+    }
     return json(res, 200, { ok: true, preset: ins.data });
   }
 
@@ -316,7 +359,44 @@ module.exports = async (req, res) => {
     }
 
     const fresh = await sb.from('lead_notify_email_styles').select('*').eq('id', id).maybeSingle();
+    if (fresh.data && fresh.data.site_id && fresh.data.is_active) {
+      await mirrorStyleToSiteConfig(
+        fresh.data.site_id,
+        fresh.data.id,
+        fresh.data.name,
+        fresh.data.style
+      );
+    }
     return json(res, 200, { ok: true, preset: fresh.data });
+  }
+
+  if (action === 'mirror_site') {
+    const siteId = String(body.siteId || '').trim();
+    if (!siteId) return json(res, 400, { ok: false, error: 'siteId_required' });
+
+    let style = body.style ? normalizeStyle(body.style) : null;
+    let presetId = null;
+    let presetName = 'Custom';
+
+    const active = await sb
+      .from('lead_notify_email_styles')
+      .select('id,name,style')
+      .eq('site_id', siteId)
+      .eq('is_active', true)
+      .order('updated_at', { ascending: false })
+      .limit(1);
+    if (active.error) {
+      return json(res, 500, { ok: false, error: active.error.message });
+    }
+    const row = active.data && active.data[0];
+    if (row) {
+      presetId = row.id;
+      presetName = row.name;
+      if (!style) style = normalizeStyle(row.style);
+    }
+    if (!style) return json(res, 404, { ok: false, error: 'no_active_site_style' });
+    await mirrorStyleToSiteConfig(siteId, presetId, presetName, style);
+    return json(res, 200, { ok: true });
   }
 
   if (action === 'clear_site') {
@@ -329,6 +409,7 @@ module.exports = async (req, res) => {
       .eq('site_id', siteId)
       .eq('is_active', true);
     if (up.error) return json(res, 500, { ok: false, error: up.error.message });
+    await clearSiteConfigMirror(siteId);
     return json(res, 200, { ok: true });
   }
 
