@@ -141,7 +141,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
 
   <section class="card">
     <h2>4. Per-account styling</h2>
-    <p class="sub">Pick a site, tweak colours above, then save a named version for that account.</p>
+    <p class="sub">Pick a site (name · slug), tweak colours above, then save a named version for that account. Form emails use the site the form posts to — for Bean Culture that is usually <code>beanculture</code>, not a demo slug.</p>
     <div class="field"><label>Site / account</label><select id="site-select"></select></div>
     <div class="field"><label>Version name</label><input id="site-version-name" placeholder="e.g. Bean Culture pink"></div>
     <button class="btn solid" id="btn-save-site" type="button">Save for this site &amp; activate</button>
@@ -352,11 +352,30 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     sites = data || [];
     $('site-select').innerHTML = '<option value="">— select site —</option>'
       + sites.map(function(s){
-        return '<option value="'+esc(s.id)+'">'+esc(s.business_name || s.slug || s.id)+'</option>';
+        var label = (s.business_name || s.slug || s.id) + (s.slug ? '  ·  ' + s.slug : '');
+        return '<option value="'+esc(s.id)+'">'+esc(label)+'</option>';
       }).join('');
     var savedSite = localStorage.getItem(SITE_KEY);
     if(savedSite && sites.some(function(s){ return s.id === savedSite; })){
       $('site-select').value = savedSite;
+    }
+    var names = {};
+    sites.forEach(function(s){
+      var n = (s.business_name || '').toLowerCase();
+      if(!n) return;
+      names[n] = (names[n] || 0) + 1;
+    });
+    var dupes = Object.keys(names).filter(function(n){ return names[n] > 1; });
+    if(dupes.length){
+      var tip = $('site-dupe-tip');
+      if(!tip){
+        tip = document.createElement('p');
+        tip.id = 'site-dupe-tip';
+        tip.className = 'sub';
+        tip.style.marginTop = '6px';
+        $('site-select').parentNode.appendChild(tip);
+      }
+      tip.textContent = 'Tip: several sites share the same business name. Use the slug after · so you style the live site (e.g. beanculture), not a demo.';
     }
   }
 
