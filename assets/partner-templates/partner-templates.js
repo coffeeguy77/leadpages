@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initWebcultureColourLab();
   initWebcultureReviewSlider();
   initWebcultureDemoFaq();
+  initLocalWebsiteCoDemoFilters();
 });
 
 // Avoid bfcache showing a previously visited trade demo when returning to a partner theme page.
@@ -208,6 +209,23 @@ function initCausehouseStagedForm() {
       toggle.textContent = open ? 'Hide extra details' : toggle.getAttribute('data-label-default') || toggle.textContent;
     });
     toggle.setAttribute('data-label-default', toggle.textContent);
+  });
+}
+
+function initLocalWebsiteCoDemoFilters() {
+  var tabs = document.querySelectorAll('[data-lwc-filter]');
+  if (!tabs.length) return;
+  var cards = document.querySelectorAll('[data-lwc-demo-industry]');
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var filter = String(tab.getAttribute('data-lwc-filter') || 'all').toLowerCase();
+      tabs.forEach(function (t) { t.classList.toggle('is-active', t === tab); });
+      cards.forEach(function (card) {
+        var industry = String(card.getAttribute('data-lwc-demo-industry') || '').toLowerCase();
+        var show = filter === 'all' || industry.indexOf(filter) >= 0 || filter.indexOf(industry) >= 0;
+        card.hidden = !show;
+      });
+    });
   });
 }
 

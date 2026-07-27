@@ -329,7 +329,7 @@ html:has(body.lwc-body){background:#f9f7f2}
   color:var(--lwc-navy);
   padding:10px 17px;
   font-weight:850;
-  cursor:default;
+  cursor:pointer;
 }
 .lwc-pill.is-active{
   background:var(--lwc-navy);
