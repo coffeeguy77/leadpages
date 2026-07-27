@@ -96,8 +96,24 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
         <label>Wordmark logo URL (PNG)</label>
         <input id="logo-wordmark" type="url" placeholder="https://…">
       </div>
+      <div class="colors" style="margin-top:6px">
+        <div class="field">
+          <label>Animated mark size (px)</label>
+          <input id="logo-mark-width" type="number" min="16" max="240" step="1">
+        </div>
+        <div class="field">
+          <label>Wordmark height (px)</label>
+          <input id="logo-wordmark-height" type="number" min="16" max="240" step="1">
+        </div>
+      </div>
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600;color:var(--ink-soft);margin-top:4px">
+        <input type="checkbox" id="show-logo" checked style="width:auto"> Show logo row
+      </label>
       <label style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600;color:var(--ink-soft)">
-        <input type="checkbox" id="show-logo" checked style="width:auto"> Show LeadPages logo in header
+        <input type="checkbox" id="show-animated-logo" checked style="width:auto"> Show animated mark
+      </label>
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600;color:var(--ink-soft)">
+        <input type="checkbox" id="show-wordmark-logo" checked style="width:auto"> Show wordmark
       </label>
       <div style="margin-top:14px">
         <button class="btn" id="btn-preview" type="button">Refresh preview</button>
@@ -206,12 +222,21 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     $('logo-animated').value = draft.logoAnimated || '';
     $('logo-wordmark').value = draft.logoWordmark || '';
     $('show-logo').checked = !!draft.showLogo;
+    $('show-animated-logo').checked = draft.showAnimatedLogo !== false;
+    $('show-wordmark-logo').checked = draft.showWordmarkLogo !== false;
+    $('logo-mark-width').value = draft.logoMarkWidth || 56;
+    $('logo-wordmark-height').value = draft.logoWordmarkHeight || 34;
   }
 
   function readLogoFields(){
     draft.logoAnimated = ($('logo-animated').value || '').trim() || defaults.logoAnimated;
     draft.logoWordmark = ($('logo-wordmark').value || '').trim() || defaults.logoWordmark;
     draft.showLogo = $('show-logo').checked;
+    draft.showAnimatedLogo = $('show-animated-logo').checked;
+    draft.showWordmarkLogo = $('show-wordmark-logo').checked;
+    draft.logoMarkWidth = Math.max(16, Math.min(240, parseInt($('logo-mark-width').value || draft.logoMarkWidth || 56, 10) || 56));
+    draft.logoMarkHeight = draft.logoMarkWidth;
+    draft.logoWordmarkHeight = Math.max(16, Math.min(240, parseInt($('logo-wordmark-height').value || draft.logoWordmarkHeight || 34, 10) || 34));
   }
 
   var previewTimer;
@@ -289,8 +314,14 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     var j = await api('/api/lead-notify-style?siteId=' + encodeURIComponent(siteId));
     wireVersionList($('global-versions'), j.global || [], 'global');
     wireVersionList($('site-versions'), j.site || [], 'site');
+    var resolved = await api('/api/lead-notify-style?action=resolve' + (siteId ? '&siteId=' + encodeURIComponent(siteId) : ''));
+    if(resolved && resolved.resolved && resolved.resolved.style){
+      draft = cloneStyle(resolved.resolved.style);
+      paintColorFields();
+      syncLogoFields();
+      runPreview();
+    }
     if(siteId){
-      var resolved = await api('/api/lead-notify-style?action=resolve&siteId=' + encodeURIComponent(siteId));
       $('site-msg').className = 'msg ok';
       $('site-msg').textContent = 'Live email for this site uses: ' + (resolved.resolved && resolved.resolved.presetName || 'built-in');
     }
@@ -341,6 +372,10 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   $('logo-animated').addEventListener('change', debouncedPreview);
   $('logo-wordmark').addEventListener('change', debouncedPreview);
   $('show-logo').addEventListener('change', debouncedPreview);
+  $('show-animated-logo').addEventListener('change', debouncedPreview);
+  $('show-wordmark-logo').addEventListener('change', debouncedPreview);
+  $('logo-mark-width').addEventListener('change', debouncedPreview);
+  $('logo-wordmark-height').addEventListener('change', debouncedPreview);
   $('preview-business').addEventListener('change', debouncedPreview);
 
   $('btn-save-global').onclick = async function(){
@@ -392,12 +427,12 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   async function boot(){
     var j = await api('/api/lead-notify-style?action=defaults');
     defaults = j.defaults;
-    draft = cloneStyle(defaults);
+    var resolved = await api('/api/lead-notify-style?action=resolve');
+    draft = cloneStyle((resolved.resolved && resolved.resolved.style) || defaults);
     paintColorFields();
     syncLogoFields();
     await loadSites();
     await refreshLists();
-    runPreview();
   }
 
   (async function init(){
