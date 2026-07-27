@@ -204,11 +204,13 @@ html:has(body.lwc-body){background:#f9f7f2}
   color:rgba(255,255,255,.9);
 }
 
-/* Hero */
+/* Hero — navy plane matching Option 2 mockup */
 .lwc-hero{
   background:
-    radial-gradient(circle at top left,rgba(240,100,40,.14),transparent 36%),
-    linear-gradient(180deg,#fffaf1 0%,#f9f7f2 100%);
+    radial-gradient(ellipse 70% 55% at 88% -10%, rgba(240,100,40,.22), transparent 58%),
+    radial-gradient(ellipse 45% 40% at 0% 100%, rgba(127,156,141,.16), transparent 52%),
+    linear-gradient(145deg, #1D2B4D 0%, #15233f 55%, #0f1a30 100%);
+  color:#fff;
   padding-top:clamp(58px,8vw,96px);
 }
 .lwc-hero-grid{
@@ -217,10 +219,12 @@ html:has(body.lwc-body){background:#f9f7f2}
   align-items:center;
   gap:clamp(42px,6vw,76px);
 }
+.lwc-hero .lwc-eyebrow{color:var(--lwc-orange)}
+.lwc-hero h1{color:#fff}
 .lwc-hero-lead{
   margin:22px 0 0;
   max-width:620px;
-  color:var(--lwc-muted);
+  color:rgba(249,247,242,.82);
   font-size:clamp(18px,2vw,21px);
   line-height:1.72;
 }
@@ -229,6 +233,16 @@ html:has(body.lwc-body){background:#f9f7f2}
   flex-wrap:wrap;
   gap:14px;
   margin:30px 0;
+}
+.lwc-hero .lwc-btn--outline{
+  color:#fff;
+  border-color:rgba(255,255,255,.45);
+  background:transparent;
+}
+.lwc-hero .lwc-btn--outline:hover{
+  background:rgba(255,255,255,.1);
+  border-color:#fff;
+  color:#fff;
 }
 .lwc-hero-trust{
   display:grid;
@@ -240,19 +254,25 @@ html:has(body.lwc-body){background:#f9f7f2}
   display:flex;
   align-items:center;
   gap:10px;
-  border:1px solid var(--lwc-line);
+  border:1px solid rgba(255,255,255,.14);
   border-radius:16px;
-  background:rgba(255,255,255,.72);
+  background:rgba(255,255,255,.08);
   padding:11px 13px;
   font-weight:800;
-  box-shadow:0 12px 28px rgba(0,21,41,.05);
+  color:#fff;
+  box-shadow:none;
+}
+.lwc-hero-trust-item .lwc-icon-dot{
+  background:rgba(240,100,40,.22);
+  color:var(--lwc-orange);
 }
 .lwc-hero-photo-wrap{
   position:relative;
   border-radius:30px;
   padding:14px;
-  background:#fff;
-  box-shadow:var(--lwc-shadow);
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 28px 64px rgba(0,0,0,.28);
   transform:rotate(1deg);
 }
 .lwc-hero-photo{
@@ -279,16 +299,71 @@ html:has(body.lwc-body){background:#f9f7f2}
   font-weight:900;
   box-shadow:0 14px 32px rgba(0,21,41,.14);
 }
-.lwc-float-chip::before{
-  content:'';
-  width:9px;
-  height:9px;
+.lwc-float-chip::before{display:none}
+.lwc-float-ico{
+  width:18px;
+  height:18px;
   border-radius:50%;
-  background:var(--lwc-orange);
+  background:rgba(240,100,40,.15);
+  position:relative;
+  flex:none;
+}
+.lwc-float-chip.is-success .lwc-float-ico{background:rgba(76,175,80,.18)}
+.lwc-float-chip.is-success .lwc-float-ico::after{
+  content:'';
+  position:absolute;
+  left:5px; top:3px;
+  width:5px; height:9px;
+  border:solid #2e7d32;
+  border-width:0 2px 2px 0;
+  transform:rotate(45deg);
+}
+.lwc-float-chip.is-mail .lwc-float-ico{background:rgba(61,107,138,.18)}
+.lwc-float-chip.is-mail .lwc-float-ico::after{
+  content:'';
+  position:absolute;
+  inset:5px 4px;
+  border:2px solid #3d6b8a;
+  border-radius:2px;
+}
+.lwc-float-chip.is-support .lwc-float-ico{background:rgba(240,100,40,.18)}
+.lwc-float-chip.is-support .lwc-float-ico::after{
+  content:'';
+  position:absolute;
+  left:5px; top:4px;
+  width:8px; height:8px;
+  border:2px solid var(--lwc-orange);
+  border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);
 }
 .lwc-float-chip--1{top:34px;left:-22px}
 .lwc-float-chip--2{right:-18px;top:46%}
 .lwc-float-chip--3{left:28px;bottom:28px}
+
+.lwc-header-phone{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  color:rgba(255,255,255,.92);
+  font-weight:700;
+}
+.lwc-phone-ico{
+  width:14px;
+  height:14px;
+  border:2px solid currentColor;
+  border-radius:4px 4px 6px 6px;
+  position:relative;
+  display:inline-block;
+}
+.lwc-phone-ico::before{
+  content:'';
+  position:absolute;
+  left:3px; top:-3px;
+  width:4px; height:3px;
+  border:2px solid currentColor;
+  border-bottom:0;
+  border-radius:3px 3px 0 0;
+}
 
 /* Industries */
 .lwc-industries{background:#fffdf8}

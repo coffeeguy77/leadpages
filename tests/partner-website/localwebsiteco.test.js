@@ -41,8 +41,11 @@ test('buildPartnerLandingHtml — renders Local Website Co. template', function(
   assert.ok(html.includes('data-pt-template="localwebsiteco"'));
   assert.ok(html.includes('A better website, built by someone who knows your business.'));
   assert.ok(html.includes('Websites powered by LeadPages'));
-  assert.ok(html.includes('From first chat to live website.'));
-  assert.ok(html.includes('Questions before we chat?'));
+  assert.ok(html.includes("Let's build a website your business can grow with."));
+  assert.ok(html.includes('Tell me about your business'));
+  assert.ok(html.includes('Look professional'));
+  assert.ok(html.includes('Local knowledge'));
+  assert.ok(html.includes('Call 0400 000 000'));
   assert.ok(html.includes('Powered by <strong>LeadPages</strong>'));
   assert.ok(!/\sclass="[^"]*\bwc-body\b/.test(html));
   assert.ok(!html.includes('/assets/partner-templates/webculture.css'));
