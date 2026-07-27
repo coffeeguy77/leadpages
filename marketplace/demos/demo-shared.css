@@ -871,8 +871,9 @@ html.layout-social-proof-feed section[data-sec="projectFeed"]{display:block}
 .pf-body{padding:14px 16px 16px;background:var(--pf-bg,#fff);color:var(--pf-tc,#1a2230)}
 .pf-title{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;font-size:21px;line-height:1;margin:0;color:inherit}
 .pf-meta{font-family:"Barlow",sans-serif;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:inherit;opacity:.72;margin:7px 0 0}
-.pf-lb{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px}
-.pf-lb.open{display:flex}
+/* #pf-lightbox must stay hidden until .open — demos without .pf-lb were leaving .pf-lb-backdrop as a full-page dark veil */
+.pf-lb,#pf-lightbox{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px}
+.pf-lb.open,#pf-lightbox.open{display:flex}
 .pf-lb-backdrop{position:absolute;inset:0;background:rgba(10,14,20,.72)}
 .pf-lb-panel{position:relative;z-index:1;width:100%;max-width:880px;max-height:88vh;overflow:hidden;background:#fff;border-radius:18px;display:grid;grid-template-columns:1.15fr 1fr;box-shadow:0 30px 80px rgba(0,0,0,.4)}
 .pf-lb-close{position:absolute;top:12px;right:14px;z-index:2;width:36px;height:36px;border:none;border-radius:50%;background:rgba(10,14,20,.55);color:#fff;font-size:22px;line-height:1;cursor:pointer}

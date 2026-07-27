@@ -31,7 +31,7 @@ const existing = new Set(
 const extras = {
   featuredProjects:
     '<div id="fp-lightbox" class="fp-lb"><div class="fp-lb-back"></div><div class="fp-lb-stage"><button type="button" class="fp-lb-close" aria-label="Close">×</button><button type="button" class="fp-lb-nav fp-lb-prev" aria-label="Previous">‹</button><img class="fp-lb-img" src="" alt="Project photo"><button type="button" class="fp-lb-nav fp-lb-next" aria-label="Next">›</button><div class="fp-lb-count"></div></div></div>',
-  projectFeed: `<div id="pf-lightbox" role="dialog" aria-modal="true" aria-hidden="true">
+  projectFeed: `<div class="pf-lb" id="pf-lightbox" role="dialog" aria-modal="true" aria-hidden="true">
   <div class="pf-lb-backdrop"></div>
   <div class="pf-lb-panel">
     <button type="button" class="pf-lb-close" aria-label="Close">×</button>
