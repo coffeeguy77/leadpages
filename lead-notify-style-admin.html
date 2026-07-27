@@ -75,9 +75,10 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     </div>
   </div>
 
-  <div class="notice">
-    <strong>Logo note:</strong> Button and header colours update instantly in preview. The animated LeadPages mark is a <strong>GIF</strong> — CSS cannot recolour it. To match your palette, paste a different logo URL below (PNG/GIF on Cloudinary works well).
+  <div class="notice" id="logo-notice">
+    <strong>Logo note:</strong> Button and header colours update instantly in preview. The animated LeadPages mark is a <strong>GIF</strong> — CSS cannot recolour it. To match your palette, paste a different logo URL below (PNG/GIF on Cloudinary works well), or hide the animated mark.
   </div>
+  <div class="notice hidden" id="resolve-status"></div>
 
   <div class="layout">
     <section class="card">
@@ -96,8 +97,24 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
         <label>Wordmark logo URL (PNG)</label>
         <input id="logo-wordmark" type="url" placeholder="https://…">
       </div>
+      <div class="colors" style="margin-top:6px">
+        <div class="field">
+          <label>Animated mark size (px)</label>
+          <input id="logo-mark-width" type="number" min="16" max="240" step="1">
+        </div>
+        <div class="field">
+          <label>Wordmark height (px)</label>
+          <input id="logo-wordmark-height" type="number" min="16" max="240" step="1">
+        </div>
+      </div>
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600;color:var(--ink-soft);margin-top:4px">
+        <input type="checkbox" id="show-logo" checked style="width:auto"> Show logo row
+      </label>
       <label style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600;color:var(--ink-soft)">
-        <input type="checkbox" id="show-logo" checked style="width:auto"> Show LeadPages logo in header
+        <input type="checkbox" id="show-animated-logo" checked style="width:auto"> Show animated mark
+      </label>
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600;color:var(--ink-soft)">
+        <input type="checkbox" id="show-wordmark-logo" checked style="width:auto"> Show wordmark
       </label>
       <div style="margin-top:14px">
         <button class="btn" id="btn-preview" type="button">Refresh preview</button>
@@ -129,6 +146,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     <div class="field"><label>Version name</label><input id="site-version-name" placeholder="e.g. Bean Culture pink"></div>
     <button class="btn solid" id="btn-save-site" type="button">Save for this site &amp; activate</button>
     <button class="btn ghost" id="btn-use-global" type="button">Clear site override (use global)</button>
+    <button class="btn ghost" id="btn-push-live" type="button">Push active style to live emails</button>
     <div class="version-list" id="site-versions"></div>
     <p class="msg" id="site-msg"></p>
   </section>
@@ -141,6 +159,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   var draft = null;
   var defaults = null;
   var sites = [];
+  var SITE_KEY = 'lp_lead_notify_style_site';
   var COLOR_FIELDS = [
     ['headerGradientStart','Header start'],['headerGradientMid','Header mid'],['headerGradientEnd','Header end'],
     ['headerText','Header text'],['buttonBackground','Button fill'],['buttonOutline','Button outline / email border'],
@@ -206,12 +225,39 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     $('logo-animated').value = draft.logoAnimated || '';
     $('logo-wordmark').value = draft.logoWordmark || '';
     $('show-logo').checked = !!draft.showLogo;
+    $('show-animated-logo').checked = draft.showAnimatedLogo !== false;
+    $('show-wordmark-logo').checked = draft.showWordmarkLogo !== false;
+    $('logo-mark-width').value = draft.logoMarkWidth || 56;
+    $('logo-wordmark-height').value = draft.logoWordmarkHeight || 34;
   }
 
   function readLogoFields(){
-    draft.logoAnimated = ($('logo-animated').value || '').trim() || defaults.logoAnimated;
-    draft.logoWordmark = ($('logo-wordmark').value || '').trim() || defaults.logoWordmark;
+    draft.logoAnimated = ($('logo-animated').value || '').trim();
+    draft.logoWordmark = ($('logo-wordmark').value || '').trim();
     draft.showLogo = $('show-logo').checked;
+    draft.showAnimatedLogo = $('show-animated-logo').checked;
+    draft.showWordmarkLogo = $('show-wordmark-logo').checked;
+    draft.logoMarkWidth = Math.max(16, Math.min(240, parseInt($('logo-mark-width').value || draft.logoMarkWidth || 56, 10) || 56));
+    draft.logoMarkHeight = draft.logoMarkWidth;
+    draft.logoWordmarkHeight = Math.max(16, Math.min(240, parseInt($('logo-wordmark-height').value || draft.logoWordmarkHeight || 34, 10) || 34));
+  }
+
+  function applyDraftFromStyle(style){
+    draft = cloneStyle(style);
+    paintColorFields();
+    syncLogoFields();
+  }
+
+  function updateResolveStatus(resolved){
+    var el = $('resolve-status');
+    if(!resolved || !resolved.resolved){ el.classList.add('hidden'); return; }
+    var r = resolved.resolved;
+    var st = r.style || {};
+    el.classList.remove('hidden');
+    el.innerHTML = '<strong>Editor loaded:</strong> ' + esc(r.presetName || 'Built-in default')
+      + ' <span class="pill">' + esc(r.source || 'builtin') + '</span>'
+      + ' — header ' + esc(st.headerGradientEnd || '')
+      + ', button ' + esc(st.buttonBackground || '');
   }
 
   var previewTimer;
@@ -230,10 +276,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
         style: draft
       });
       if(j.style) draft = j.style;
-      var doc = $('preview').contentDocument || $('preview').contentWindow.document;
-      doc.open();
-      doc.write(j.html || '');
-      doc.close();
+      $('preview').srcdoc = j.html || '';
     }catch(e){
       $('edit-msg').className = 'msg bad';
       $('edit-msg').textContent = e.message || String(e);
@@ -267,9 +310,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       btn.onclick = function(){
         var p = list.find(function(x){ return x.id === btn.getAttribute('data-load'); });
         if(!p || !p.style) return;
-        draft = cloneStyle(p.style);
-        paintColorFields();
-        syncLogoFields();
+        applyDraftFromStyle(p.style);
         runPreview();
       };
     });
@@ -287,10 +328,19 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
   async function refreshLists(){
     var siteId = $('site-select').value || '';
     var j = await api('/api/lead-notify-style?siteId=' + encodeURIComponent(siteId));
+    if(j.globalError){
+      $('global-msg').className = 'msg bad';
+      $('global-msg').textContent = 'Database error: ' + j.globalError + ' — run db/lead_notify_email_styles.sql in Supabase.';
+    }
     wireVersionList($('global-versions'), j.global || [], 'global');
     wireVersionList($('site-versions'), j.site || [], 'site');
+    var resolved = await api('/api/lead-notify-style?action=resolve' + (siteId ? '&siteId=' + encodeURIComponent(siteId) : ''));
+    if(resolved && resolved.resolved && resolved.resolved.style){
+      applyDraftFromStyle(resolved.resolved.style);
+      runPreview();
+    }
+    updateResolveStatus(resolved);
     if(siteId){
-      var resolved = await api('/api/lead-notify-style?action=resolve&siteId=' + encodeURIComponent(siteId));
       $('site-msg').className = 'msg ok';
       $('site-msg').textContent = 'Live email for this site uses: ' + (resolved.resolved && resolved.resolved.presetName || 'built-in');
     }
@@ -304,6 +354,10 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       + sites.map(function(s){
         return '<option value="'+esc(s.id)+'">'+esc(s.business_name || s.slug || s.id)+'</option>';
       }).join('');
+    var savedSite = localStorage.getItem(SITE_KEY);
+    if(savedSite && sites.some(function(s){ return s.id === savedSite; })){
+      $('site-select').value = savedSite;
+    }
   }
 
   async function ensureSuper(){
@@ -333,14 +387,16 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
 
   $('btn-preview').onclick = runPreview;
   $('btn-reset').onclick = function(){
-    draft = cloneStyle(defaults);
-    paintColorFields();
-    syncLogoFields();
+    applyDraftFromStyle(defaults);
     runPreview();
   };
   $('logo-animated').addEventListener('change', debouncedPreview);
   $('logo-wordmark').addEventListener('change', debouncedPreview);
   $('show-logo').addEventListener('change', debouncedPreview);
+  $('show-animated-logo').addEventListener('change', debouncedPreview);
+  $('show-wordmark-logo').addEventListener('change', debouncedPreview);
+  $('logo-mark-width').addEventListener('change', debouncedPreview);
+  $('logo-wordmark-height').addEventListener('change', debouncedPreview);
   $('preview-business').addEventListener('change', debouncedPreview);
 
   $('btn-save-global').onclick = async function(){
@@ -387,17 +443,32 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
     }catch(e){ alert(e.message); }
   };
 
-  $('site-select').onchange = refreshLists;
+  $('site-select').onchange = function(){
+    var siteId = $('site-select').value || '';
+    if(siteId) localStorage.setItem(SITE_KEY, siteId);
+    refreshLists();
+  };
+
+  $('btn-push-live').onclick = async function(){
+    var siteId = $('site-select').value;
+    if(!siteId){ alert('Select a site first.'); return; }
+    readLogoFields();
+    var msg = $('site-msg'); msg.className = 'msg'; msg.textContent = 'Pushing to live emails…';
+    try{
+      await api('/api/lead-notify-style', { action: 'mirror_site', siteId: siteId, style: draft });
+      msg.className = 'msg ok';
+      msg.textContent = 'Active style copied to site config — new enquiry emails will use these colours.';
+    }catch(e){ msg.className = 'msg bad'; msg.textContent = e.message; }
+  };
 
   async function boot(){
     var j = await api('/api/lead-notify-style?action=defaults');
     defaults = j.defaults;
-    draft = cloneStyle(defaults);
-    paintColorFields();
-    syncLogoFields();
+    var resolved = await api('/api/lead-notify-style?action=resolve');
+    applyDraftFromStyle((resolved.resolved && resolved.resolved.style) || defaults);
+    updateResolveStatus(resolved);
     await loadSites();
     await refreshLists();
-    runPreview();
   }
 
   (async function init(){

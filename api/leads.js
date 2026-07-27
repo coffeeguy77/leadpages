@@ -233,7 +233,7 @@ module.exports = async (req, res) => {
     let notifyStyle = null;
     if (siteRow) {
       try {
-        const resolved = await resolveLeadNotifyStyle(supabase, siteRow.id);
+        const resolved = await resolveLeadNotifyStyle(supabase, siteRow.id, siteRow.config);
         notifyStyle = resolved && resolved.style;
       } catch (e) {
         /* style table optional until migration applied */
