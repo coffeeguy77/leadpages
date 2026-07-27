@@ -52,7 +52,33 @@ assert.ok(mail.html.includes('mailto:sam@example.com'), 'email CTA');
 assert.ok(mail.html.includes('/manage?site=beanculture'), 'manage deep link');
 assert.ok(mail.text.includes('Message: Need two carts please'));
 
+// Style overrides (Bean Culture pink / custom header)
+const pinkMail = buildLeadNotifyEmail({
+  business: 'Bean Culture',
+  slug: 'beanculture',
+  lead: { name: 'Sam', phone: '0400000000', email: 'sam@example.com' },
+  details: { job: 'Event hire', detail: 'Pink buttons test' },
+  style: {
+    buttonBackground: '#e071a2',
+    buttonOutline: '#e071a2',
+    headerGradientStart: '#5c4033',
+    headerGradientMid: '#4a3328',
+    headerGradientEnd: '#36313b',
+    logoWordmark: 'https://example.com/custom-wordmark.png'
+  }
+});
+assert.ok(pinkMail.html.includes('background:#e071a2'), 'custom button fill in HTML');
+assert.ok(pinkMail.html.includes('https://example.com/custom-wordmark.png'), 'custom wordmark URL');
+
+const noLogo = buildLeadNotifyEmail({
+  business: 'Test',
+  lead: { name: 'A' },
+  style: { showLogo: false }
+});
+assert.ok(!noLogo.html.includes(LOGO_ANIMATED), 'logo hidden when showLogo false');
+
 assert.ok(leadsApi.includes("require('../lib/lead-notify-email')"), 'api/leads uses shared builder');
 assert.ok(leadsApi.includes('buildLeadNotifyEmail'), 'api/leads builds branded mail');
+assert.ok(leadsApi.includes('resolveLeadNotifyStyle'), 'api/leads resolves style presets');
 
 console.log('lead-notify-email.test.js: ok');
