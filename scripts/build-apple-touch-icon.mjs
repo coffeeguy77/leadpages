@@ -3,7 +3,8 @@
  * Build static Apple touch icons + optional animated preview GIF
  * from the LeadPages circle + arrow mark.
  */
-import { readFileSync, writeFileSync } from 'fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import { spawnSync } from 'child_process';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import sharp from 'sharp';
@@ -95,11 +96,57 @@ async function main() {
     frameBuffers.push(buf);
   }
 
+  // Build true multi-frame GIFs via ffmpeg. Sharp's array→gif path used to
+  // emit a single tall strip (512×12288), which breaks in email clients.
+  const tmp = join(assets, '.anim-frames-tmp');
+  rmSync(tmp, { recursive: true, force: true });
+  mkdirSync(tmp, { recursive: true });
+  for (let i = 0; i < frameBuffers.length; i++) {
+    const n = String(i).padStart(2, '0');
+    writeFileSync(join(tmp, `f${n}.png`), frameBuffers[i]);
+    await sharp(frameBuffers[i]).resize(128, 128).png().toFile(join(tmp, `e${n}.png`));
+  }
+
+  function makeGif(pattern, outPath, fps = 11) {
+    const pal = outPath + '.palette.png';
+    let r = spawnSync(
+      'ffmpeg',
+      ['-y', '-framerate', String(fps), '-i', pattern, '-vf', 'palettegen=max_colors=128:stats_mode=diff', pal],
+      { encoding: 'utf8' }
+    );
+    if (r.status !== 0) throw new Error(r.stderr || 'palettegen failed');
+    r = spawnSync(
+      'ffmpeg',
+      [
+        '-y',
+        '-framerate',
+        String(fps),
+        '-i',
+        pattern,
+        '-i',
+        pal,
+        '-lavfi',
+        'paletteuse=dither=bayer:bayer_scale=3',
+        '-loop',
+        '0',
+        outPath
+      ],
+      { encoding: 'utf8' }
+    );
+    if (r.status !== 0) throw new Error(r.stderr || 'paletteuse failed');
+    try {
+      rmSync(pal, { force: true });
+    } catch (_) {}
+  }
+
   try {
-    await sharp(frameBuffers, { animated: true }).gif({ delay: 90, loop: 0 }).toFile(join(assets, 'apple-touch-icon-animated.gif'));
-    console.log('Wrote apple-touch-icon-animated.gif (preview only — iOS home screen uses static PNG)');
+    makeGif(join(tmp, 'f%02d.png'), join(assets, 'apple-touch-icon-animated.gif'));
+    makeGif(join(tmp, 'e%02d.png'), join(assets, 'leadpages-mark-email.gif'));
+    console.log('Wrote apple-touch-icon-animated.gif + leadpages-mark-email.gif (true multi-frame)');
   } catch (gifErr) {
     console.warn('Skipped animated GIF:', gifErr.message);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
   }
 
   console.log('Wrote apple-touch-icon.png (1024), 180/192/512 variants');

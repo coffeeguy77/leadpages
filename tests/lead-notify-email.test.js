@@ -41,16 +41,20 @@ const mail = buildLeadNotifyEmail({
 
 assert.ok(mail.subject.includes('Bean Culture'));
 assert.ok(mail.subject.includes('Sam'));
-assert.ok(mail.html.includes(LOGO_ANIMATED), 'uses animated LeadPages logo');
+assert.ok(mail.html.includes(LOGO_ANIMATED), 'uses animated LeadPages mark GIF');
 assert.ok(mail.html.includes(LOGO_WORDMARK), 'uses LeadPages wordmark');
+assert.ok(mail.html.includes('height="84"'), 'LeadPages wordmark ~3× larger');
+assert.ok(!/linear-gradient\(135deg,#0f1f1a/i.test(mail.html), 'no dark green header gradient');
 assert.ok(mail.html.includes('Need two carts please'), 'message body in HTML');
 assert.ok(mail.html.includes('Event hire'), 'problem/job in HTML');
+assert.ok(mail.html.includes('background:#f7f8f7'), 'form fields use soft stacked blocks');
 assert.ok(!/Region|Canberra|ignored/i.test(mail.html.split('Need two')[0] + mail.html.split('carts please')[1] || ''), 'region not featured');
 assert.ok(!mail.html.includes('ignored'), 'suburb value not in email');
 assert.ok(mail.html.includes('Call Sam back'), 'call CTA');
 assert.ok(mail.html.includes('mailto:sam@example.com'), 'email CTA');
 assert.ok(mail.html.includes('/manage?site=beanculture'), 'manage deep link');
 assert.ok(mail.text.includes('Message: Need two carts please'));
+assert.ok(LOGO_ANIMATED.includes('leadpages-mark-email.gif'), 'email uses compact animated mark');
 
 assert.ok(leadsApi.includes("require('../lib/lead-notify-email')"), 'api/leads uses shared builder');
 assert.ok(leadsApi.includes('buildLeadNotifyEmail'), 'api/leads builds branded mail');
