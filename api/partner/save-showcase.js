@@ -9,6 +9,7 @@ const { getCultureColorPreset } = require('../../lib/partner-website/webculture-
 const { websiteProfileFromRow, saveWebsiteProfile } = require('../../lib/partner-website/profile-store');
 const { mergeWebsiteProfilePatch } = require('../../lib/partner-website/validate');
 const { extractLogoValue, normalizeLogoForStorage } = require('../../lib/partner-website/logo');
+const { normalizeTemplateKey } = require('../../lib/partner-templates/registry');
 
 function cleanHex(v) {
   return /^#[0-9a-fA-F]{3,8}$/.test(v || '') ? v : null;
@@ -95,7 +96,7 @@ module.exports = async (req,res) => {
     accent:accent!=null?accent:existingCfg.accent,
     theme:theme||existingCfg.theme,
     themeId:cfgIn.themeId?String(cfgIn.themeId).slice(0,80):(existingCfg.themeId||null),
-    templateKey:'webculture',
+    templateKey: normalizeTemplateKey(('templateKey' in cfgIn ? cfgIn.templateKey : existingCfg.templateKey) || 'webculture'),
     cultureColorPreset:cultureColorPreset
   });
   if(!config.themeId) delete config.themeId;

@@ -8,9 +8,10 @@ const { build } = require('../../lib/partner-templates/webculture');
 const { buildPartnerLandingHtml, normalizeTemplateKey } = require('../../lib/partner-templates');
 const { PARTNER_TEMPLATES } = require('../../lib/partner-templates/registry');
 
-test('registry — Culture is the only partner template', function() {
-  assert.equal(PARTNER_TEMPLATES.length, 1);
+test('registry — Culture remains first and default', function() {
+  assert.ok(PARTNER_TEMPLATES.length >= 2);
   assert.equal(PARTNER_TEMPLATES[0].id, 'webculture');
+  assert.ok(PARTNER_TEMPLATES.some(function(t) { return t.id === 'localwebsiteco'; }));
   assert.equal(normalizeTemplateKey('webculture'), 'webculture');
   assert.equal(normalizeTemplateKey('causehouse'), 'webculture');
   assert.equal(normalizeTemplateKey('converge'), 'webculture');

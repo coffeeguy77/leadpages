@@ -133,7 +133,7 @@ function initLeadForms() {
 
 function initMobileMenu() {
   var btn = document.querySelector('[data-pt-menu]');
-  var nav = document.querySelector('.ch-nav-links, .ch-nav, .wc-nav-links, .wc-nav, .sg-nav, .at-mast-nav, .hz-nav nav, .pl-nav, .vt-nav');
+  var nav = document.querySelector('.ch-nav-links, .ch-nav, .wc-nav-links, .wc-nav, .lwc-nav-links, .lwc-nav, .sg-nav, .at-mast-nav, .hz-nav nav, .pl-nav, .vt-nav');
   if (!btn || !nav) return;
   btn.addEventListener('click', function () {
     var open = nav.classList.toggle('is-open');
@@ -168,7 +168,7 @@ function initGlitch() {
 
 function initScrollReveal() {
   if (!('IntersectionObserver' in window)) return;
-  var els = document.querySelectorAll('.pt-demo-card, .pt-reveal, .ch-demo-card, .ch-card-hard, .sg-demo, .hz-card, .pl-demo, .vt-project, [data-prm-lift]');
+  var els = document.querySelectorAll('.pt-demo-card, .pt-reveal, .ch-demo-card, .ch-card-hard, .lwc-industry-card, .lwc-demo-card, .lwc-process-step, .lwc-price-card, .lwc-quote, .sg-demo, .hz-card, .pl-demo, .vt-project, [data-prm-lift]');
   var obs = new IntersectionObserver(function (entries) {
     entries.forEach(function (en) {
       if (en.isIntersecting) {
