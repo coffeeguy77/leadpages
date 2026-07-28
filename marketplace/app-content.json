@@ -1672,5 +1672,34 @@
       "socialProof",
       "mystery"
     ]
+  },
+  "customHtml": {
+    "name": "Custom HTML",
+    "tagline": "Embed HTML, CSS and JS — not an iframe",
+    "summary": "Drop custom HTML onto any page with optional stylesheet and script URLs. Fully responsive and repositionable.",
+    "pitch": "Use Custom HTML for calculators, tools and one-off widgets that need to live inside your site layout.",
+    "features": [
+      {
+        "title": "Inline embed",
+        "text": "Renders in the page flow — not locked inside an iframe."
+      },
+      {
+        "title": "Attach CSS & JS",
+        "text": "Add stylesheet and script URLs that load with the block."
+      },
+      {
+        "title": "Page positioning",
+        "text": "Reorder like any other app on the homepage or a landing page."
+      }
+    ],
+    "partnerBenefits": [
+      {
+        "title": "Client tools",
+        "text": "Ship specialised widgets without waiting on a platform release."
+      }
+    ],
+    "presets": [
+      "default"
+    ]
   }
 }
