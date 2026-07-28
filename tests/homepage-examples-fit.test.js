@@ -31,6 +31,21 @@ test('example images fit the card without cover-crop', () => {
   assert.match(css, /\.ex-nav\s*\{\s*display:\s*none/);
 });
 
+test('site name and CTA sit on a navy band with outline badges beside the button', () => {
+  assert.match(block, /class="ex-body"/);
+  assert.match(block, /class="ex-actions"/);
+  assert.match(block, /<span class="tag">Landscaping<\/span>/);
+  assert.match(block, /<span class="tag">Rendering<\/span>/);
+  assert.match(block, /<span class="tag">Plumbing<\/span>/);
+  assert.match(block, /View Live Site/);
+  assert.doesNotMatch(block, /<div class="tag">/);
+  assert.match(css, /\.ex-body\s*\{[^}]*background:\s*var\(--navy\)/s);
+  assert.match(css, /\.ex-body \.tag\s*\{[^}]*background:\s*transparent/s);
+  assert.match(css, /\.ex-body \.tag\s*\{[^}]*border:\s*1\.5px solid #fff/s);
+  assert.match(css, /\.ex-body \.tag\s*\{[^}]*color:\s*#fff/s);
+  assert.match(css, /\.ex-actions\s*\{[^}]*display:\s*flex/s);
+});
+
 test('example image assets exist', () => {
   for (const f of [
     'example-yass-valley.jpg',
