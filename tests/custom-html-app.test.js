@@ -206,6 +206,18 @@ test('seed + register scripts exist for ops', function () {
   assert.match(seed, /transfer-matcher/);
 });
 
+test('transfer-matcher Dark button toggles #tm-root theme (not documentElement only)', function () {
+  const js = fs.readFileSync(path.join(root, 'assets/apps/transfer-matcher/app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'assets/apps/transfer-matcher/app.css'), 'utf8');
+  const body = fs.readFileSync(path.join(root, 'assets/apps/transfer-matcher/body.html'), 'utf8');
+  assert.match(body, /id="tm-root"[^>]*data-theme="light"/);
+  assert.match(body, /id="theme">Dark</);
+  assert.match(css, /#tm-root\[data-theme="dark"\]/);
+  assert.match(js, /\$\('#tm-root'\)/);
+  assert.match(js, /root\.dataset\.theme/);
+  assert.doesNotMatch(js, /document\.documentElement\.dataset\.theme\s*=/);
+});
+
 test('hybrid page render stores merged config on __lpLiveCfg', function () {
   const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
   assert.match(demo, /window\.__lpLiveCfg=C;\s*applyCfg\(C\)/);

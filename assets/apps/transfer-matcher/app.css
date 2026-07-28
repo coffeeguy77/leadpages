@@ -201,7 +201,7 @@ table.lines td.desc{color:var(--ink-2);font-size:12.5px}
 /* search overlay */
 .ovl{position:fixed;inset:0;background:rgba(11,11,11,.55);z-index:200;display:flex;
   align-items:flex-start;justify-content:center;padding:8vh 20px 20px}
-:root[data-theme="dark"] .ovl{background:rgba(0,0,0,.7)}
+#tm-root[data-theme="dark"] .ovl{background:rgba(0,0,0,.7)}
 .srch{background:var(--surface);border:1px solid var(--border);border-radius:14px;
   width:min(760px,100%);max-height:80vh;display:flex;flex-direction:column;overflow:hidden;
   box-shadow:0 18px 50px rgba(11,11,11,.28)}
