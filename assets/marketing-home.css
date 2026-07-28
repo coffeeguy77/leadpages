@@ -395,20 +395,32 @@ body.mkt-home .drawer .btn-orange { color: #fff; text-align: center; margin-top:
   align-items: stretch;
 }
 .metric {
-  background: linear-gradient(165deg, #3A2A35 0%, #241820 100%);
+  background: linear-gradient(165deg, color-mix(in srgb, var(--navy) 72%, #3A2A35) 0%, var(--navy-deep) 100%);
   border-radius: 12px;
   padding: 16px 14px 14px;
-  color: #fff;
+  color: var(--on-dark);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
   min-height: 0;
   display: flex;
   flex-direction: column;
-  border: 1.5px solid rgba(239, 122, 182, 0.55);
+  border: 1.5px solid color-mix(in srgb, var(--orange) 45%, transparent);
 }
-.metric-calls { border-color: rgba(61, 184, 122, 0.65); background: linear-gradient(165deg, #1F3A32 0%, #152820 100%); }
-.metric-enq { border-color: rgba(200, 90, 44, 0.7); background: linear-gradient(165deg, #3A2A22 0%, #241812 100%); }
-.metric-reviews { border-color: rgba(201, 154, 44, 0.7); background: linear-gradient(165deg, #3A3220 0%, #241E12 100%); }
-.metric-ads { border-color: rgba(66, 133, 244, 0.7); background: linear-gradient(165deg, #1E2A3A 0%, #121820 100%); }
+.metric-calls {
+  border-color: color-mix(in srgb, var(--green) 72%, transparent);
+  background: linear-gradient(165deg, color-mix(in srgb, var(--green-deep) 58%, var(--navy-deep)) 0%, var(--navy-deep) 100%);
+}
+.metric-enq {
+  border-color: color-mix(in srgb, var(--orange) 72%, transparent);
+  background: linear-gradient(165deg, color-mix(in srgb, var(--orange) 38%, var(--navy-deep)) 0%, var(--navy-deep) 100%);
+}
+.metric-reviews {
+  border-color: color-mix(in srgb, var(--gold) 72%, transparent);
+  background: linear-gradient(165deg, color-mix(in srgb, var(--gold) 32%, var(--navy-deep)) 0%, var(--navy-deep) 100%);
+}
+.metric-ads {
+  border-color: color-mix(in srgb, var(--muted-on-dark) 55%, var(--orange));
+  background: linear-gradient(165deg, color-mix(in srgb, var(--navy) 82%, #1a3f6e) 0%, var(--navy-deep) 100%);
+}
 .metric .top {
   display: flex;
   align-items: center;
@@ -438,33 +450,36 @@ body.mkt-home .drawer .btn-orange { color: #fff; text-align: center; margin-top:
   height: 20px;
   display: block;
 }
-.si-green { color: #3DB87A; }
-.si-orange { color: #EF7A46; }
-.si-gold { color: #F0C14A; }
-.si-blue { color: #4285F4; }
-.si-gads { color: #fff; }
+.si-green { color: var(--green-check); }
+.si-orange { color: var(--orange); }
+.si-gold { color: var(--gold); }
+.si-blue { color: color-mix(in srgb, var(--muted-on-dark) 35%, #4285F4); }
+.si-gads { color: var(--on-dark); }
 .metric .val {
   font-size: clamp(1.7rem, 2.4vw, 2.2rem);
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.04em;
   margin-top: 10px;
-  color: #fff;
+  color: var(--on-dark);
 }
 .metric .stars {
   margin-top: 6px;
   font-size: 14px;
   letter-spacing: 0.08em;
-  color: #F0C14A;
+  color: var(--gold);
   line-height: 1;
 }
 .metric .delta {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.68);
+  color: color-mix(in srgb, var(--on-dark) 68%, transparent);
   margin-top: 8px;
   font-weight: 550;
 }
-.metric .up { color: #6EE7A8; font-weight: 700; }
+.metric .up {
+  color: color-mix(in srgb, var(--green-check) 55%, #fff);
+  font-weight: 700;
+}
 
 /* —— Caps / growth —— */
 .caps {
@@ -1460,7 +1475,28 @@ body.mkt-home .footer .f-links a:hover { color: #fff; }
 }
 @media (max-width: 640px) {
   .wrap, .wrap-wide { width: min(100% - 28px, var(--max)); }
-  .cap-grid, .partner-grid, .reassure, .connected-mobile, .metrics { grid-template-columns: 1fr; }
+  .cap-grid, .partner-grid, .reassure, .connected-mobile { grid-template-columns: 1fr; }
+  .metrics {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .metric {
+    padding: 14px 12px 12px;
+    border-radius: 12px;
+  }
+  .metric .val {
+    font-size: clamp(1.55rem, 7vw, 1.9rem);
+    margin-top: 8px;
+  }
+  .metric .top {
+    font-size: 11px;
+    gap: 6px;
+  }
+  .metric .si,
+  .metric .si svg {
+    width: 18px;
+    height: 18px;
+  }
   .footer {
     padding: 40px 0 28px;
   }
