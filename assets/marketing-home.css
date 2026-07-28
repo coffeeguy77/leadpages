@@ -1399,12 +1399,12 @@ body.mkt-home .footer .f-links a:hover { color: #fff; }
   .connected-stage { display: none; }
   .connected-mobile { display: grid; }
   .ex-grid, .price-grid, .tgrid { grid-template-columns: 1fr; }
-  .ex { min-height: 340px; }
+  .ex { min-height: 0; max-width: 420px; margin-inline: auto; width: 100%; }
   .aud-grid { grid-template-columns: 1fr; min-height: 0; }
   .aud { min-height: 280px; }
   .cap-grid { grid-template-columns: 1fr 1fr; }
   .tcard { min-height: 0; }
-  .ex > .tag { bottom: auto; top: 48px; }
+  .ex > .tag { bottom: auto; top: 16px; }
   .cap-ico { width: 72px; height: 72px; margin-top: -36px; }
   .cap-ico svg { width: 32px; height: 32px; }
 }
