@@ -131,6 +131,13 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .lp-codeed:focus-within{outline:2px solid var(--focus);outline-offset:-1px;border-color:var(--accent);}
 .lp-ch-meta{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;margin-top:6px;}
 .lp-ch-lines{font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums;}
+.lp-ch-vars-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;}
+.lp-ch-var-list{display:flex;flex-direction:column;gap:8px;}
+.lp-ch-var-chip{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--input-bg,var(--panel));cursor:pointer;}
+.lp-ch-var-chip:hover{border-color:var(--line-strong,var(--line));}
+.lp-ch-var-swatch{width:18px;height:18px;border-radius:4px;border:1px solid var(--line);flex:none;}
+.lp-ch-var-chip code{font-size:12.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.lp-ch-var-hex{font-size:12px;color:var(--ink-faint,var(--muted));font-variant-numeric:tabular-nums;}
 .brkg{display:flex;flex-direction:column;gap:12px;margin-top:8px;}
 .brkg-head{display:none;}
 .brkg-row{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:flex-end;padding:11px 12px 13px;border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;background:var(--accent-soft);}
@@ -3205,7 +3212,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     emergencyAvailability:{on:false,heading:'After-hours & emergencies',intro:'We keep the phone on outside business hours for genuine emergencies \u2014 leave your details and we\u2019ll call you straight back.',mode:'schedule',available:true,weekdayOpen:'07:00',weekdayClose:'17:00',satOpen:'08:00',satClose:'14:00',sunOpen:'',sunClose:'',availableLabel:'Available now',responseText:'Fast response — usually within the hour',afterHoursLabel:'After hours',afterHoursText:'Leave your details and we’ll call you first thing.',emergencyText:'Genuine emergency? Call anyway — we run after-hours callouts.',cta:{text:'',action:'call'}},
     serviceAreaMap:{on:false,eyebrow:'Service area',heading:'Suburbs we cover across the ACT',intro:'Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch.'},
     onlineQuote:{on:false,eyebrow:'Online quote',heading:'Get your verified quote',intro:'Answer a few questions — verify your email to see your total, then SMS for the full breakdown.',bg:'',eyebrowColor:'',headingColor:'',introColor:''},
-    customHtml:{on:false,title:'',html:'',cssUrls:[],jsUrls:[],fullBleed:true,bg:''},
+    customHtml:{on:false,title:'',html:'',cssUrls:[],jsUrls:[],cssVars:{},fullBleed:true,bg:''},
     estimateBuilder:{on:false,eyebrow:'Instant estimate',heading:'Get a ballpark price in 30 seconds',intro:'Answer a few quick questions for an indicative range. For an exact price, send the details through and we’ll confirm.',currency:'$',disclaimer:'This is a guide only — your final price is confirmed after a quick on-site inspection.',ctaText:'Get my exact quote'},
     certifications:{eyebrow:'Accredited & insured',heading:'Licensed, insured & accredited',intro:'Fully qualified and backed by recognised industry accreditations — so you know the job is done right.'},
     finance:{eyebrow:'Flexible payments',heading:'Finance options available',amount:'38',period:'week',description:'Spread the cost of larger jobs with approved finance — get the work done now and pay it off over time.',disclaimer:'Finance is subject to approval. Terms and conditions apply.',cta:{text:'Ask about finance',action:'quote'}},
@@ -7594,6 +7601,43 @@ function heroCtaCard(c){
         +'<label class="chk" style="margin:0;align-self:end;padding-bottom:10px"><input type="checkbox" id="ch-bleed"> Full-bleed (edge-to-edge)</label>'
         +'<div class="f"><label for="ch-bg">Background</label><input id="ch-bg" class="tin" type="text" placeholder="#ffffff or leave blank"></div>'
         +'</div>'
+        +'<div class="card" style="margin:0;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft,transparent)">'
+        +'<h3 style="margin:0 0 6px;font-size:14px;">Colour overrides</h3>'
+        +'<p class="hint" style="margin:0 0 12px">Pick a CSS variable from the pack stylesheet, set a colour, and save. Overrides live in this site’s config — the shared <code>app.css</code> file is not rewritten.</p>'
+        +'<div class="lp-ch-vars-row">'
+        +'<div class="f" style="margin:0;flex:1.4;min-width:180px"><label for="ch-var-key">CSS variable</label>'
+        +'<select id="ch-var-key" class="tin">'
+        +'<option value="--accent">Accent (--accent)</option>'
+        +'<option value="--page">Page background (--page)</option>'
+        +'<option value="--surface">Surface (--surface)</option>'
+        +'<option value="--surface-2">Surface 2 (--surface-2)</option>'
+        +'<option value="--ink">Ink / text (--ink)</option>'
+        +'<option value="--ink-2">Secondary text (--ink-2)</option>'
+        +'<option value="--muted">Muted (--muted)</option>'
+        +'<option value="--grid">Grid lines (--grid)</option>'
+        +'<option value="--line">Lines (--line)</option>'
+        +'<option value="--good">Good (--good)</option>'
+        +'<option value="--warn">Warn (--warn)</option>'
+        +'<option value="--serious">Serious (--serious)</option>'
+        +'<option value="--crit">Critical (--crit)</option>'
+        +'<option value="--good-ink">Good ink (--good-ink)</option>'
+        +'<option value="--warn-ink">Warn ink (--warn-ink)</option>'
+        +'<option value="--serious-ink">Serious ink (--serious-ink)</option>'
+        +'<option value="--crit-ink">Critical ink (--crit-ink)</option>'
+        +'<option value="__custom">Custom variable…</option>'
+        +'</select></div>'
+        +'<div class="f" style="margin:0;flex:1;min-width:140px;display:none" id="ch-var-custom-wrap"><label for="ch-var-custom">Custom name</label><input id="ch-var-custom" class="tin" type="text" placeholder="--my-token" spellcheck="false"></div>'
+        +'<div class="f" style="margin:0;flex:1;min-width:160px"><label>Colour</label>'
+        +'<div style="display:flex;gap:8px;align-items:center">'
+        +'<input type="color" id="ch-var-clr" value="#2a78d6" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:none">'
+        +'<input type="text" class="tin" id="ch-var-hex" value="#2a78d6" placeholder="#rrggbb" spellcheck="false" style="flex:1;min-width:0">'
+        +'</div></div>'
+        +'<div style="display:flex;gap:8px;align-items:flex-end;padding-bottom:2px">'
+        +'<button type="button" class="btn" id="ch-var-apply">Apply</button>'
+        +'<button type="button" class="btn ghost" id="ch-var-clear">Clear selected</button>'
+        +'</div></div>'
+        +'<div id="ch-var-list" class="lp-ch-var-list" style="margin-top:12px"></div>'
+        +'</div>'
         +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
         +'<button type="button" class="btn" id="ch-load-matcher">Load Transfer Matcher starter</button>'
         +'</div>'
@@ -7603,6 +7647,86 @@ function heroCtaCard(c){
       (function(){
         var title=$('ch-title'), htmlEl=$('ch-html'), cssEl=$('ch-css'), jsEl=$('ch-js'), bleed=$('ch-bleed'), bg=$('ch-bg');
         var gutter=$('ch-html-gutter'), linesEl=$('ch-html-lines'), lastLineCount=-1;
+        var varKey=$('ch-var-key'), varCustom=$('ch-var-custom'), varCustomWrap=$('ch-var-custom-wrap');
+        var varClr=$('ch-var-clr'), varHex=$('ch-var-hex'), varApply=$('ch-var-apply'), varClear=$('ch-var-clear'), varList=$('ch-var-list');
+        function ensVars(){
+          var o=ensCh();
+          if(!o.cssVars||typeof o.cssVars!=='object'||Array.isArray(o.cssVars)) o.cssVars={};
+          return o.cssVars;
+        }
+        function normVarName(raw){
+          var k=String(raw||'').trim();
+          if(!k) return '';
+          if(k.charAt(0)!=='-') k='--'+k.replace(/^-+/,'');
+          return /^--[a-zA-Z0-9_-]+$/.test(k)?k:'';
+        }
+        function normHex(raw){
+          var v=String(raw||'').trim();
+          if(!v) return '';
+          if(v.charAt(0)!=='#') v='#'+v;
+          if(/^#[0-9a-fA-F]{3}$/.test(v)) v='#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3);
+          return /^#[0-9a-fA-F]{6}$/.test(v)?v.toLowerCase():'';
+        }
+        function selectedVarKey(){
+          if(!varKey) return '';
+          if(varKey.value==='__custom') return normVarName(varCustom&&varCustom.value);
+          return normVarName(varKey.value);
+        }
+        function syncCustomVisibility(){
+          if(!varCustomWrap||!varKey) return;
+          varCustomWrap.style.display=varKey.value==='__custom'?'':'none';
+        }
+        function fillPickerFromVars(){
+          var key=selectedVarKey();
+          var vars=ensVars();
+          var cur=key&&vars[key]?normHex(vars[key]):'';
+          if(cur){
+            if(varHex) varHex.value=cur;
+            if(varClr) varClr.value=cur;
+          }
+        }
+        function renderVarList(){
+          if(!varList) return;
+          var vars=ensVars();
+          var keys=Object.keys(vars).filter(function(k){ return normVarName(k)&&normHex(vars[k]); }).sort();
+          if(!keys.length){
+            varList.innerHTML='<p class="hint" style="margin:0">No colour overrides yet.</p>';
+            return;
+          }
+          varList.innerHTML=keys.map(function(k){
+            var hex=normHex(vars[k]);
+            return '<div class="lp-ch-var-chip" data-var="'+esc(k)+'">'
+              +'<span class="lp-ch-var-swatch" style="background:'+esc(hex)+'"></span>'
+              +'<code>'+esc(k)+'</code>'
+              +'<span class="lp-ch-var-hex">'+esc(hex)+'</span>'
+              +'<button type="button" class="btn ghost sm ch-var-rm" data-var="'+esc(k)+'" title="Remove">Remove</button>'
+              +'</div>';
+          }).join('');
+          varList.querySelectorAll('.ch-var-rm').forEach(function(btn){
+            btn.addEventListener('click',function(){
+              var k=btn.getAttribute('data-var');
+              var map=ensVars();
+              if(k&&map[k]!=null){ delete map[k]; persist(); previewApply(); renderVarList(); fillPickerFromVars(); }
+            });
+          });
+          varList.querySelectorAll('.lp-ch-var-chip').forEach(function(chip){
+            chip.addEventListener('click',function(e){
+              if(e.target&&e.target.classList&&e.target.classList.contains('ch-var-rm')) return;
+              var k=chip.getAttribute('data-var');
+              if(!k||!varKey) return;
+              var found=false;
+              for(var i=0;i<varKey.options.length;i++){
+                if(varKey.options[i].value===k){ varKey.value=k; found=true; break; }
+              }
+              if(!found){
+                varKey.value='__custom';
+                if(varCustom) varCustom.value=k;
+              }
+              syncCustomVisibility();
+              fillPickerFromVars();
+            });
+          });
+        }
         function syncHtmlLines(){
           if(!htmlEl||!gutter) return;
           var text=htmlEl.value||'';
@@ -7636,19 +7760,53 @@ function heroCtaCard(c){
         if(jsEl){ jsEl.value=listUrls(CH.jsUrls); jsEl.addEventListener('input',function(){ ensCh().jsUrls=parseUrls(jsEl.value); persist(); previewApply(); }); }
         if(bleed){ bleed.checked=CH.fullBleed!==false; bleed.addEventListener('change',function(){ ensCh().fullBleed=!!bleed.checked; persist(); previewApply(); }); }
         if(bg){ bg.value=CH.bg||''; bg.addEventListener('input',function(){ ensCh().bg=bg.value; persist(); previewApply(); }); }
+        if(varKey){
+          varKey.addEventListener('change',function(){ syncCustomVisibility(); fillPickerFromVars(); });
+          syncCustomVisibility();
+        }
+        if(varCustom) varCustom.addEventListener('input',function(){ fillPickerFromVars(); });
+        if(varClr) varClr.addEventListener('input',function(){ if(varHex) varHex.value=varClr.value; });
+        if(varHex) varHex.addEventListener('input',function(){
+          var h=normHex(varHex.value);
+          if(h&&varClr) varClr.value=h;
+        });
+        if(varApply) varApply.addEventListener('click',function(){
+          var key=selectedVarKey();
+          var hex=normHex(varHex&&varHex.value)||normHex(varClr&&varClr.value);
+          if(!key){ toast('Enter a valid CSS variable like --accent'); return; }
+          if(!hex){ toast('Enter a #rrggbb colour'); return; }
+          ensVars()[key]=hex;
+          if(varHex) varHex.value=hex;
+          if(varClr) varClr.value=hex;
+          persist(); previewApply(); renderVarList();
+          toast('Saved '+key);
+        });
+        if(varClear) varClear.addEventListener('click',function(){
+          var key=selectedVarKey();
+          if(!key){ toast('Choose a variable to clear'); return; }
+          var map=ensVars();
+          if(map[key]==null){ toast('No override for '+key); return; }
+          delete map[key];
+          persist(); previewApply(); renderVarList(); fillPickerFromVars();
+          toast('Cleared '+key);
+        });
+        renderVarList();
+        fillPickerFromVars();
         var btn=$('ch-load-matcher');
         if(btn){ btn.addEventListener('click',function(){
           fetch('/assets/apps/transfer-matcher/body.html').then(function(r){return r.text();}).then(function(html){
             var o=ensCh();
             o.html=html; o.cssUrls=['/assets/apps/transfer-matcher/app.css']; o.jsUrls=['/assets/apps/transfer-matcher/app.js'];
             o.fullBleed=true; o.bg='#f9f9f7'; o.title=''; o.on=true;
+            if(!o.cssVars||typeof o.cssVars!=='object') o.cssVars={};
             if(htmlEl){ htmlEl.value=html; syncHtmlLines(); }
             if(cssEl) cssEl.value=o.cssUrls.join('\n');
             if(jsEl) jsEl.value=o.jsUrls.join('\n');
             if(bleed) bleed.checked=true;
             if(bg) bg.value=o.bg;
             if(title) title.value='';
-            persist(); previewApply(); toast('Transfer Matcher loaded into Custom HTML');
+            persist(); previewApply(); renderVarList();
+            toast('Transfer Matcher loaded into Custom HTML');
           }).catch(function(){ toast('Could not load starter pack'); });
         }); }
       })();
