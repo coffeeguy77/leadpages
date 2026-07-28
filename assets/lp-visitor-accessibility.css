@@ -55,19 +55,46 @@
   border-radius: 14px;
   box-shadow: 0 20px 50px rgba(27, 36, 48, 0.22);
   padding: 16px;
+  max-height: min(70vh, 560px);
+  overflow: auto;
 }
 #lpa-root[data-pos="bottom-left"] #lpa-panel {
   right: auto;
   left: 0;
 }
-#lpa-root[data-open="true"] #lpa-panel {
+#lpa-root[data-open="true"] #lpa-panel:not([hidden]) {
   display: block;
 }
 
+#lpa-panel .lpa-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
 #lpa-panel h2 {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 16px;
   font-weight: 700;
+  color: #1b2430;
+}
+#lpa-close {
+  appearance: none;
+  border: 1px solid #d8d2c5;
+  background: #fff;
+  color: #1b2430;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font: 600 12.5px/1 inherit;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  flex-shrink: 0;
+}
+#lpa-close:focus-visible {
+  outline: 3px solid var(--lpa-focus, #4338ca);
+  outline-offset: 2px;
 }
 #lpa-panel fieldset {
   border: 0;
@@ -98,6 +125,10 @@
   background: #eef2ff;
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
 }
+#lpa-panel .lpa-scheme:focus-visible {
+  outline: 3px solid var(--lpa-focus, #4338ca);
+  outline-offset: 1px;
+}
 #lpa-panel .lpa-scheme-emoji {
   font-size: 16px;
   line-height: 1;
@@ -119,10 +150,11 @@
   background: #fff;
   color: #1b2430;
   border-radius: 8px;
-  padding: 8px 11px;
+  padding: 10px 12px;
   font: 600 12.5px/1 inherit;
   cursor: pointer;
-  min-height: 40px;
+  min-height: 44px;
+  min-width: 44px;
 }
 #lpa-panel .lpa-opt[aria-pressed="true"] {
   background: var(--lpa-accent-soft, #eef2ff);
@@ -140,14 +172,22 @@
   background: #fbfaf7;
   color: var(--lpa-accent-hover, #4338ca);
   border-radius: 8px;
-  padding: 10px;
+  padding: 12px;
   font: 600 13px inherit;
   cursor: pointer;
   margin-top: 4px;
+  min-height: 44px;
 }
 #lpa-reset:focus-visible {
   outline: 3px solid var(--lpa-focus, #4338ca);
   outline-offset: 2px;
+}
+
+/* Marketing / configured: hide floating accessibility control on mobile */
+@media (max-width: 960px) {
+  #lpa-root[data-hide-mobile="true"] {
+    display: none !important;
+  }
 }
 
 @media (max-width: 480px) {
