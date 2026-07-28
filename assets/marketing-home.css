@@ -1298,16 +1298,26 @@ body.mkt-home .footer a {
   line-height: 1.45;
 }
 .f-support {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px 18px;
+  align-items: center;
   border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 14px;
   padding: 16px 18px 18px;
   background: rgba(255, 255, 255, 0.04);
   box-sizing: border-box;
 }
+.f-support-copy {
+  min-width: 0;
+}
 .f-support h4 {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display: block;
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
 }
 .f-support .f-ico {
   width: 22px;
@@ -1315,15 +1325,26 @@ body.mkt-home .footer a {
   flex-shrink: 0;
   display: block;
 }
+.f-support-map {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  width: clamp(96px, 28%, 132px);
+  pointer-events: none;
+}
 .f-support .f-ico-au {
-  width: 28px;
-  height: 26px;
-  color: #E8EEF2;
+  width: 100%;
+  height: auto;
+  max-width: 124px;
+  aspect-ratio: 675 / 628;
+  color: rgba(232, 238, 242, 0.92);
   overflow: visible;
+  display: block;
 }
 .f-support .f-ico-au path {
   vector-effect: non-scaling-stroke;
   stroke: currentColor;
+  stroke-width: 2.6;
   fill: none;
 }
 .f-support .help {
@@ -1532,15 +1553,20 @@ body.mkt-home .footer .f-links a:hover { color: #fff; }
     border-color: rgba(255, 255, 255, 0.3);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
   }
+  .f-support h4 {
+    font-size: 18px;
+  }
   .f-support .f-ico,
   .f-support .fphone .f-ico,
   .f-support .email .f-ico {
     width: 24px;
     height: 24px;
   }
+  .f-support-map {
+    width: clamp(104px, 34%, 140px);
+  }
   .f-support .f-ico-au {
-    width: 26px;
-    height: 26px;
+    max-width: 132px;
   }
   .support .fphone,
   .f-support .fphone,

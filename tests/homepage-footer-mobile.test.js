@@ -33,7 +33,29 @@ test('support icons are stroke SVGs sized for readability', () => {
   assert.match(home, /class="fphone"[\s\S]*stroke-width="2"/);
   assert.match(home, /class="email"[\s\S]*stroke-width="2"/);
   assert.match(css, /\.f-support\s+\.f-ico[\s\S]*width:\s*22px/);
-  assert.match(css, /\.f-support\s+\.f-ico-au[\s\S]*width:\s*28px/);
+});
+
+test('Australian support heading matches phone number font size', () => {
+  assert.match(css, /\.f-support h4\s*\{[^}]*font-size:\s*17px/);
+  assert.match(css, /\.f-support \.fphone[\s\S]*font-size:\s*17px/);
+  assert.match(
+    css,
+    /@media \(max-width: 640px\)[\s\S]*\.f-support h4\s*\{[\s\S]*font-size:\s*18px/
+  );
+  assert.match(
+    css,
+    /@media \(max-width: 640px\)[\s\S]*\.f-support \.fphone[\s\S]*font-size:\s*18px/
+  );
+});
+
+test('Australia map sits large on the right of the support box', () => {
+  assert.match(home, /f-support-copy/);
+  assert.match(home, /f-support-map/);
+  assert.match(home, /<h4>Australian support<\/h4>/);
+  assert.doesNotMatch(home, /<h4>[\s\S]*f-ico-au[\s\S]*Australian support/);
+  assert.match(css, /\.f-support\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto/);
+  assert.match(css, /\.f-support-map\s*\{/);
+  assert.match(css, /\.f-support\s+\.f-ico-au[\s\S]*max-width:\s*124px/);
 });
 
 test('Australian support sits in a stroked box on desktop and mobile', () => {
