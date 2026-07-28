@@ -1,6 +1,6 @@
 # Marketing homepage images — generate list for Shaun
 
-Replace the SVG placeholders (and temporary JPGs) under `assets/marketing-home/` with final photography / UI crops.
+Aligned to mockup_b904 band system (navy / cream / brick partner). Replace SVG placeholders (and temporary JPGs) under `assets/marketing-home/` with final photography / UI crops.
 
 Suggested size / crop notes assume 2× retina. Prefer WebP + JPEG fallbacks once generated; keep the same basenames so `home.html` does not need path changes.
 
