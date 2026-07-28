@@ -811,7 +811,7 @@ body.mkt-home a.cnode { color: #E4ECF1; }
 }
 .connected-mobile .cnode-label { font-size: 13px; }
 
-/* —— Examples: overlay cards —— */
+/* —— Examples: screenshot + navy caption band —— */
 .examples { background: var(--cream); }
 .examples .sec-head { max-width: none; margin-bottom: 40px; }
 .examples .h2 {
@@ -824,12 +824,19 @@ body.mkt-home a.cnode { color: #E4ECF1; }
   border-radius: 16px;
   overflow: hidden;
   min-height: 0;
-  aspect-ratio: 900 / 1050;
   box-shadow: 0 14px 38px rgba(0, 0, 0, 0.1);
-  display: block;
+  display: flex;
+  flex-direction: column;
+  background: var(--navy, #0B1B2A);
+}
+.ex-frame {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  aspect-ratio: 900 / 920;
+  padding: 0;
   background: #17434C;
 }
-.ex-frame { position: absolute; inset: 0; padding: 0; background: transparent; }
 .ex-chrome { display: none; }
 .ex-media {
   position: absolute;
@@ -844,24 +851,25 @@ body.mkt-home a.cnode { color: #E4ECF1; }
 .ex-media img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: top center;
   display: block;
 }
 .ex-nav { display: none; }
 .ex::after { display: none; }
 .ex-body {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
   z-index: 2;
-  padding: 14px 16px 16px;
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0;
+  padding: 16px 18px 18px;
   color: #fff;
-  background: var(--navy);
+  background: var(--navy, #0B1B2A);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  box-sizing: border-box;
 }
 .ex-body .h3 {
   color: #fff;
