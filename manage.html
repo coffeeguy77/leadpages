@@ -117,6 +117,20 @@ h1{font-family:var(--font-display);font-weight:500;font-size:clamp(26px,4vw,36px
 .f.sfx span.s{position:absolute;right:10px;top:31px;color:var(--ink-faint);}
 .chk{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;}
 .chk input{width:17px;height:17px;accent-color:var(--accent);}
+/* Custom HTML editor */
+.lp-ch-stack{display:flex;flex-direction:column;gap:14px;min-width:0;width:100%;}
+.lp-ch-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;min-width:0;}
+@media(max-width:720px){.lp-ch-grid{grid-template-columns:1fr;}}
+.lp-ch-stack .f,.lp-ch-grid .f{min-width:0;}
+.lp-ch-stack textarea.tin,.lp-ch-grid textarea.tin{width:100%;box-sizing:border-box;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.5;padding:10px 12px;border:1px solid var(--line-strong);border-radius:8px;background:var(--input-bg);color:var(--text);}
+.lp-codeed{display:flex;align-items:stretch;width:100%;min-width:0;max-width:100%;border:1px solid var(--line-strong);border-radius:10px;background:var(--input-bg);overflow:hidden;}
+.lp-codeed-gutter{flex:0 0 auto;margin:0;padding:12px 0;min-width:2.75em;text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.5;color:var(--ink-faint);background:color-mix(in srgb,var(--ink) 6%,var(--input-bg));border-right:1px solid var(--line);user-select:none;overflow:hidden;white-space:pre;tab-size:2;}
+.lp-codeed-gutter span{display:block;padding:0 10px 0 8px;}
+.lp-codeed-ta{flex:1 1 auto;min-width:0;width:100%;margin:0;border:0;border-radius:0;resize:vertical;outline:none;box-shadow:none;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.5;padding:12px 12px 12px 10px;background:transparent;color:var(--text);tab-size:2;white-space:pre;overflow:auto;}
+.lp-codeed-ta:focus{outline:none;box-shadow:none;}
+.lp-codeed:focus-within{outline:2px solid var(--focus);outline-offset:-1px;border-color:var(--accent);}
+.lp-ch-meta{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;margin-top:6px;}
+.lp-ch-lines{font-size:12px;color:var(--ink-faint);font-variant-numeric:tabular-nums;}
 .brkg{display:flex;flex-direction:column;gap:12px;margin-top:8px;}
 .brkg-head{display:none;}
 .brkg-row{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:flex-end;padding:11px 12px 13px;border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;background:var(--accent-soft);}
@@ -7560,22 +7574,61 @@ function heroCtaCard(c){
       body.innerHTML=secCard(c,'customHtml','Custom HTML',true,[])
         +'<div class="card" style="margin-bottom:18px"><h2>Content</h2>'
         +'<p class="lede">HTML is embedded in the page (not an iframe). Optional CSS/JS URLs load with the block.</p>'
-        +'<label class="fld"><span>Optional title</span><input id="ch-title" type="text" value=""></label>'
-        +'<label class="fld"><span>HTML</span><textarea id="ch-html" rows="16" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px"></textarea></label>'
-        +'<label class="fld"><span>CSS URLs (one per line)</span><textarea id="ch-css" rows="3" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px"></textarea></label>'
-        +'<label class="fld"><span>JavaScript URLs (one per line, load order top→bottom)</span><textarea id="ch-js" rows="3" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px"></textarea></label>'
-        +'<label class="fld" style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="ch-bleed"> Full-bleed (edge-to-edge, no content wrap padding)</label>'
-        +'<label class="fld"><span>Background</span><input id="ch-bg" type="text" placeholder="#ffffff or leave blank"></label>'
-        +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">'
+        +'<div class="lp-ch-stack">'
+        +'<div class="f"><label for="ch-title">Optional title</label><input id="ch-title" class="tin" type="text" value=""></div>'
+        +'<div class="f"><label for="ch-html">HTML</label>'
+        +'<div class="lp-codeed" id="ch-html-ed">'
+        +'<pre class="lp-codeed-gutter" id="ch-html-gutter" aria-hidden="true"></pre>'
+        +'<textarea id="ch-html" class="lp-codeed-ta" rows="22" spellcheck="false" wrap="off" autocomplete="off"></textarea>'
+        +'</div>'
+        +'<div class="lp-ch-meta"><span class="lp-ch-lines" id="ch-html-lines">1 line</span><span class="hint" style="margin:0">Line numbers update as you edit</span></div>'
+        +'</div>'
+        +'<div class="lp-ch-grid">'
+        +'<div class="f"><label for="ch-css">CSS URLs <span class="aphint">(one per line)</span></label><textarea id="ch-css" class="tin" rows="4" spellcheck="false"></textarea></div>'
+        +'<div class="f"><label for="ch-js">JavaScript URLs <span class="aphint">(one per line, load order top→bottom)</span></label><textarea id="ch-js" class="tin" rows="4" spellcheck="false"></textarea></div>'
+        +'</div>'
+        +'<div class="lp-ch-grid">'
+        +'<label class="chk" style="margin:0;align-self:end;padding-bottom:10px"><input type="checkbox" id="ch-bleed"> Full-bleed (edge-to-edge)</label>'
+        +'<div class="f"><label for="ch-bg">Background</label><input id="ch-bg" class="tin" type="text" placeholder="#ffffff or leave blank"></div>'
+        +'</div>'
+        +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
         +'<button type="button" class="btn" id="ch-load-matcher">Load Transfer Matcher starter</button>'
         +'</div>'
-        +'<p class="lede" style="margin-top:12px">Starter packs the Inter-Account Transfer Matcher from <code>/assets/apps/transfer-matcher/</code>. Page slug tip: <code>account-transaction-matcher</code>.</p>'
-        +'</div>';
+        +'<p class="hint" style="margin:0">Starter packs the Inter-Account Transfer Matcher from <code>/assets/apps/transfer-matcher/</code>. Page slug tip: <code>account-transaction-matcher</code>.</p>'
+        +'</div></div>';
       wireSec(c,'customHtml',true,[]);
       (function(){
         var title=$('ch-title'), htmlEl=$('ch-html'), cssEl=$('ch-css'), jsEl=$('ch-js'), bleed=$('ch-bleed'), bg=$('ch-bg');
+        var gutter=$('ch-html-gutter'), linesEl=$('ch-html-lines'), lastLineCount=-1;
+        function syncHtmlLines(){
+          if(!htmlEl||!gutter) return;
+          var text=htmlEl.value||'';
+          var n=text.length?text.split('\n').length:1;
+          if(n!==lastLineCount){
+            lastLineCount=n;
+            var parts=new Array(n);
+            for(var i=0;i<n;i++) parts[i]='<span>'+(i+1)+'</span>';
+            gutter.innerHTML=parts.join('');
+            if(linesEl) linesEl.textContent=n+(n===1?' line':' lines');
+          }
+          gutter.scrollTop=htmlEl.scrollTop;
+        }
+        function syncGutterScroll(){ if(gutter&&htmlEl) gutter.scrollTop=htmlEl.scrollTop; }
         if(title){ title.value=CH.title||''; title.addEventListener('input',function(){ ensCh().title=title.value; persist(); previewApply(); }); }
-        if(htmlEl){ htmlEl.value=CH.html||''; htmlEl.addEventListener('input',function(){ ensCh().html=htmlEl.value; persist(); previewApply(); }); }
+        if(htmlEl){
+          htmlEl.value=CH.html||'';
+          syncHtmlLines();
+          htmlEl.addEventListener('input',function(){ ensCh().html=htmlEl.value; syncHtmlLines(); persist(); previewApply(); });
+          htmlEl.addEventListener('scroll',syncGutterScroll);
+          htmlEl.addEventListener('keydown',function(e){
+            if(e.key!=='Tab'||e.metaKey||e.ctrlKey||e.altKey) return;
+            e.preventDefault();
+            var start=htmlEl.selectionStart, end=htmlEl.selectionEnd, val=htmlEl.value;
+            htmlEl.value=val.slice(0,start)+'  '+val.slice(end);
+            htmlEl.selectionStart=htmlEl.selectionEnd=start+2;
+            ensCh().html=htmlEl.value; syncHtmlLines(); persist(); previewApply();
+          });
+        }
         if(cssEl){ cssEl.value=listUrls(CH.cssUrls); cssEl.addEventListener('input',function(){ ensCh().cssUrls=parseUrls(cssEl.value); persist(); previewApply(); }); }
         if(jsEl){ jsEl.value=listUrls(CH.jsUrls); jsEl.addEventListener('input',function(){ ensCh().jsUrls=parseUrls(jsEl.value); persist(); previewApply(); }); }
         if(bleed){ bleed.checked=CH.fullBleed!==false; bleed.addEventListener('change',function(){ ensCh().fullBleed=!!bleed.checked; persist(); previewApply(); }); }
@@ -7586,7 +7639,7 @@ function heroCtaCard(c){
             var o=ensCh();
             o.html=html; o.cssUrls=['/assets/apps/transfer-matcher/app.css']; o.jsUrls=['/assets/apps/transfer-matcher/app.js'];
             o.fullBleed=true; o.bg='#f9f9f7'; o.title=''; o.on=true;
-            if(htmlEl) htmlEl.value=html;
+            if(htmlEl){ htmlEl.value=html; syncHtmlLines(); }
             if(cssEl) cssEl.value=o.cssUrls.join('\n');
             if(jsEl) jsEl.value=o.jsUrls.join('\n');
             if(bleed) bleed.checked=true;

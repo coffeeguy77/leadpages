@@ -179,3 +179,12 @@ test('seed + register scripts exist for ops', function () {
   assert.match(seed, /account-transaction-matcher/);
   assert.match(seed, /transfer-matcher/);
 });
+
+test('Custom HTML editor is responsive with HTML line numbers', function () {
+  assert.match(manage, /lp-ch-stack/);
+  assert.match(manage, /lp-ch-grid/);
+  assert.match(manage, /lp-codeed-gutter/);
+  assert.match(manage, /id="ch-html-gutter"/);
+  assert.match(manage, /function syncHtmlLines/);
+  assert.doesNotMatch(manage, /label class="fld"/);
+});
