@@ -28,7 +28,10 @@ function arg(name, fallback) {
 
 function matcherPack() {
   const root = path.join(__dirname, '../assets/apps/transfer-matcher');
-  const html = fs.readFileSync(path.join(root, 'body.html'), 'utf8');
+  // Markup only — engine lives in app.js. Inline <script> must not be stored in
+  // SITE_CONFIG (innerHTML won't run it, and "$" / "</script>" have bitten render).
+  let html = fs.readFileSync(path.join(root, 'body.html'), 'utf8');
+  html = html.replace(/<script\b[\s\S]*?<\/script>/gi, '').trim() + '\n';
   return {
     on: true,
     title: '',

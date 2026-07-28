@@ -55,6 +55,14 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g,
 // safe JSON for embedding inside a <script> tag (prevents </script> breakout)
 const safeJson = obj => JSON.stringify(obj || {}).replace(/</g, '\\u003c');
 
+// String.prototype.replaceAll interprets $$, $&, $`, $' in the replacement string.
+// Config JSON often contains "$" (prices, fmtMoney, etc.) — use a function replacer
+// so those characters are inserted literally and cannot splice the template.
+function injectLiteral(haystack, token, value) {
+  const lit = String(value ?? '');
+  return String(haystack || '').replaceAll(token, () => lit);
+}
+
 // Send rendered HTML. Live sites are CDN-cached with tags so Publish can
 // invalidate instantly; drafts are never cached or indexed.
 function sendHtml(res, html, isLive, cacheMeta) {
@@ -497,14 +505,14 @@ function buildTradeHtml(site, host) {
   const _trade = (cfg.trade || '').trim();
   const pageTitle = (cfg.seoTitle || '').trim() || (_trade ? (_biz + ' \u2014 ' + _trade + ' in Canberra & the ACT') : (_biz + ' \u2014 Canberra & the ACT'));
   const pageDesc = (cfg.seoDescription || '').trim() || (_biz + ' \u2014 professional websites for local trades across Canberra and the ACT.');
-  let html = tpl.replaceAll('__SITE_CONFIG__', safeJson(cfg));
+  let html = injectLiteral(tpl, '__SITE_CONFIG__', safeJson(cfg));
   const tokens = {
     '{{businessName}}': esc(site.business_name), '{{phoneText}}': esc(cfg.phoneText), '{{email}}': esc(cfg.email),
     '{{phone}}': esc(cfg.phone), '{{domain}}': esc(host), '{{initial}}': esc((site.business_name || 'B').trim().charAt(0).toUpperCase()),
     '{{trade}}': esc(_trade), '{{pageTitle}}': esc(pageTitle), '{{pageDesc}}': esc(pageDesc),
     '{{favicon}}': esc(cfg.favicon || DEFAULT_FAVICON)
   };
-  for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
+  for (const [k, v] of Object.entries(tokens)) html = injectLiteral(html, k, v);
   if (template === 'trade') {
     html = injectTradeThemeVars(html, cfg);
     try {
@@ -1013,8 +1021,8 @@ module.exports = async (req, res) => {
         demoBar = demoBarHtml(themes);
       }
 
-      let html = brokerApp.html.replaceAll('__BROKERAPP_CONFIG__', safeJson(cfg));
-      html = html.replaceAll('<!--DEMO_BAR-->', demoBar);
+      let html = injectLiteral(brokerApp.html, '__BROKERAPP_CONFIG__', safeJson(cfg));
+      html = injectLiteral(html, '<!--DEMO_BAR-->', demoBar);
       html = injectVisitorAccessibility(html, cfg);
       return sendHtml(res, html, isLive, { slug: site.slug, siteId: site.id });
     }
@@ -1075,7 +1083,7 @@ module.exports = async (req, res) => {
     const appleTouchIcon = (cfg.appleTouchIcon || cfg.favicon || '').trim()
       || 'https://app.leadpages.com.au/assets/apple-touch-icon-180.png';
 
-    let html = tpl.replaceAll('__SITE_CONFIG__', safeJson(cfg));
+    let html = injectLiteral(tpl, '__SITE_CONFIG__', safeJson(cfg));
     const tokens = {
       '{{businessName}}': esc(site.business_name),
       '{{phoneText}}':    esc(cfg.phoneText),
@@ -1091,7 +1099,7 @@ module.exports = async (req, res) => {
       '{{favicon}}':      esc(cfg.favicon || DEFAULT_FAVICON),
       '{{appleTouchIcon}}': esc(appleTouchIcon)
     };
-    for (const [k, v] of Object.entries(tokens)) html = html.replaceAll(k, v);
+    for (const [k, v] of Object.entries(tokens)) html = injectLiteral(html, k, v);
 
     const _gsv = (cfg.googleSiteVerification || '').trim();
     const _gsvMethod = (cfg.googleVerificationMethod || 'meta');
