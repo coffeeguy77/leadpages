@@ -35,6 +35,19 @@ test('support icons are stroke SVGs sized for readability', () => {
   assert.match(css, /\.f-support\s+\.f-ico[\s\S]*width:\s*22px/);
 });
 
+test('Australian support heading matches phone number font size', () => {
+  assert.match(css, /\.f-support h4\s*\{[^}]*font-size:\s*17px/);
+  assert.match(css, /\.f-support \.fphone[\s\S]*font-size:\s*17px/);
+  assert.match(
+    css,
+    /@media \(max-width: 640px\)[\s\S]*\.f-support h4\s*\{[\s\S]*font-size:\s*18px/
+  );
+  assert.match(
+    css,
+    /@media \(max-width: 640px\)[\s\S]*\.f-support \.fphone[\s\S]*font-size:\s*18px/
+  );
+});
+
 test('Australia map sits large on the right of the support box', () => {
   assert.match(home, /f-support-copy/);
   assert.match(home, /f-support-map/);

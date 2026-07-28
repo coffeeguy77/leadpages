@@ -1299,6 +1299,10 @@ body.mkt-home .footer a {
 .f-support h4 {
   display: block;
   margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
 }
 .f-support .f-ico {
   width: 22px;
@@ -1512,6 +1516,9 @@ body.mkt-home .footer .f-links a:hover { color: #fff; }
     padding: 18px 18px 20px;
     border-color: rgba(255, 255, 255, 0.3);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  }
+  .f-support h4 {
+    font-size: 18px;
   }
   .f-support .f-ico,
   .f-support .fphone .f-ico,
