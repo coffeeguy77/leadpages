@@ -1277,9 +1277,13 @@ body.mkt-home .ex-body a.btn { color: #fff; }
 }
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.4fr repeat(4, 1fr) 1.25fr;
-  gap: 20px 24px;
+  grid-template-columns: minmax(150px, 1.25fr) repeat(4, minmax(0, 1fr)) minmax(260px, 2fr);
+  column-gap: clamp(28px, 3.2vw, 52px);
+  row-gap: 20px;
   align-items: start;
+}
+.footer-grid > .f-col {
+  min-width: 0;
 }
 body.mkt-home .footer .leadpages-logo.lp-logo-wrap {
   margin-bottom: 10px;
@@ -1312,6 +1316,7 @@ body.mkt-home .footer a {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px 18px;
   align-items: center;
+  width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 14px;
   padding: 16px 18px 18px;
@@ -1339,13 +1344,13 @@ body.mkt-home .footer a {
   display: grid;
   place-items: center;
   align-self: stretch;
-  width: clamp(96px, 28%, 132px);
+  width: clamp(110px, 34%, 168px);
   pointer-events: none;
 }
 .f-support .f-ico-au {
   width: 100%;
   height: auto;
-  max-width: 124px;
+  max-width: 156px;
   aspect-ratio: 675 / 628;
   color: rgba(232, 238, 242, 0.92);
   overflow: visible;
@@ -1491,7 +1496,12 @@ body.mkt-home .footer .f-links a:hover { color: #fff; }
   .partner-photo img { min-height: 280px; }
   .price-layout { grid-template-columns: 1fr; }
   .reassure { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 0; }
-  .footer-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .footer-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: clamp(20px, 2.5vw, 36px);
+  }
+  .footer-grid > .f-brand { grid-column: span 2; }
+  .footer-grid > .f-support { grid-column: span 2; }
   .connected-layout { grid-template-columns: 1fr; }
   .connected-copy { max-width: none; }
   .connected-stage { min-height: 520px; max-width: 780px; margin-inline: auto; }
