@@ -74,3 +74,29 @@ test('mobile footer uses two columns with brand and support full-width', () => {
   assert.match(css, /grid-column:\s*1\s*\/\s*-1/);
   assert.doesNotMatch(css, /\.cap-grid,\s*\.partner-grid,\s*\.footer-grid,\s*\.reassure/);
 });
+
+test('footer bottom is compact with tagline, ABN, and right-aligned legal links', () => {
+  assert.match(home, /class="f-tagline"/);
+  assert.match(home, /The One website\./);
+  assert.match(home, /Everything/);
+  assert.match(home, /connected\./);
+  assert.match(home, /class="f-abn">ABN&nbsp;33&nbsp;600&nbsp;754&nbsp;676/);
+  assert.match(home, /class="f-bottom-meta"/);
+  assert.match(css, /\.f-tagline\s*\{/);
+  assert.match(css, /\.f-bottom-meta\s*\{[\s\S]*justify-content:\s*space-between/);
+  assert.match(css, /\.f-abn\s*\{[\s\S]*white-space:\s*nowrap/);
+  assert.match(css, /\.f-links\s*\{[\s\S]*margin-left:\s*auto/);
+  assert.match(
+    css,
+    /@media \(max-width: 640px\)[\s\S]*\.f-tagline span\s*\{\s*display:\s*block/
+  );
+});
+
+test('connected tools stay two-up and elevated on mobile', () => {
+  assert.match(css, /\.connected-mobile\s*\{[\s\S]*grid-template-columns:\s*1fr 1fr/);
+  assert.doesNotMatch(
+    css,
+    /\.cap-grid,\s*\.partner-grid,\s*\.reassure,\s*\.connected-mobile/
+  );
+  assert.match(css, /\.connected-mobile \.cnode\s*\{[\s\S]*border-radius:\s*16px/);
+});
