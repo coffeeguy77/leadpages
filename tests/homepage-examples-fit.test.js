@@ -25,10 +25,13 @@ test('examples section uses the three live client designs', () => {
   assert.doesNotMatch(block, /example-trades\.jpg|example-hospitality\.jpg|example-services\.jpg/);
 });
 
-test('example images fit the card without cover-crop', () => {
-  assert.match(css, /\.ex-media img\s*\{[^}]*object-fit:\s*contain/s);
-  assert.match(css, /\.ex\s*\{[^}]*aspect-ratio:\s*900\s*\/\s*1050/s);
+test('example images sit above a solid navy caption band', () => {
+  assert.match(css, /\.ex-media img\s*\{[^}]*object-fit:\s*cover/s);
+  assert.match(css, /\.ex-frame\s*\{[^}]*aspect-ratio:\s*900\s*\/\s*920/s);
+  assert.match(css, /\.ex\s*\{[^}]*display:\s*flex/s);
+  assert.match(css, /\.ex\s*\{[^}]*flex-direction:\s*column/s);
   assert.match(css, /\.ex-nav\s*\{\s*display:\s*none/);
+  assert.doesNotMatch(css, /\.ex-body\s*\{[^}]*position:\s*absolute/s);
 });
 
 test('site name and CTA sit on a navy band with outline badges beside the button', () => {
@@ -39,7 +42,8 @@ test('site name and CTA sit on a navy band with outline badges beside the button
   assert.match(block, /<span class="tag">Plumbing<\/span>/);
   assert.match(block, /View Live Site/);
   assert.doesNotMatch(block, /<div class="tag">/);
-  assert.match(css, /\.ex-body\s*\{[^}]*background:\s*var\(--navy\)/s);
+  assert.match(css, /\.ex-body\s*\{[^}]*background:\s*var\(--navy/s);
+  assert.match(css, /\.ex-body\s*\{[^}]*position:\s*relative/s);
   assert.match(css, /\.ex-body \.tag\s*\{[^}]*background:\s*transparent/s);
   assert.match(css, /\.ex-body \.tag\s*\{[^}]*border:\s*1\.5px solid #fff/s);
   assert.match(css, /\.ex-body \.tag\s*\{[^}]*color:\s*#fff/s);
