@@ -3022,6 +3022,52 @@
       }
     ]
   },
+  "customHtml": {
+    "name": "Custom HTML",
+    "tagline": "Embed HTML, CSS and JS — not an iframe",
+    "summary": "Drop custom HTML onto any page with optional stylesheet and script URLs. Fully responsive and repositionable like any other app.",
+    "category": "Platform Tools",
+    "badge": "Included",
+    "hero_image_url": null,
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Your code, in the page flow",
+          "text": "Custom HTML mounts inline (not inside an iframe) so tools stay fully responsive and match your site layout. Attach CSS and JS URLs when you need them — including the Transfer Matcher starter pack."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Highlights",
+          "items": [
+            {
+              "title": "Inline embed",
+              "text": "Renders in the page — not locked in an iframe."
+            },
+            {
+              "title": "Attach CSS & JS",
+              "text": "Load stylesheets and scripts with the block, in order."
+            },
+            {
+              "title": "Any page",
+              "text": "Add from the App Marketplace, Position it, and edit in Page editor."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "customHtml",
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
   "promotions": {
     "name": "Promotions & Offers",
     "tagline": "Seasonal offers, front and centre",

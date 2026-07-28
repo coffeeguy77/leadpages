@@ -4091,6 +4091,31 @@
       "label": "Brand colour"
     }
   ],
+  "customHtml": [
+    {
+      "type": "text",
+      "key": "sections.customHtml.title",
+      "label": "Optional title"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.customHtml.html",
+      "label": "HTML",
+      "rows": 12
+    },
+    {
+      "type": "textarea",
+      "key": "sections.customHtml.cssUrls",
+      "label": "CSS URLs (array)",
+      "rows": 3
+    },
+    {
+      "type": "textarea",
+      "key": "sections.customHtml.jsUrls",
+      "label": "JS URLs (array)",
+      "rows": 3
+    }
+  ],
   "promotions": [
     {
       "type": "select",
