@@ -80,15 +80,20 @@ test('footer bottom is compact with tagline, ABN, and right-aligned legal links'
   assert.match(home, /The One website\./);
   assert.match(home, /Everything/);
   assert.match(home, /connected\./);
-  assert.match(home, /class="f-abn">ABN&nbsp;33&nbsp;600&nbsp;754&nbsp;676/);
+  assert.match(home, /class="f-abn"[^>]*>[\s\S]*class="f-abn-label">ABN<\/span>[\s\S]*class="f-abn-num">33&nbsp;600&nbsp;754&nbsp;676/);
   assert.match(home, /class="f-bottom-meta"/);
   assert.match(css, /\.f-tagline\s*\{/);
   assert.match(css, /\.f-bottom-meta\s*\{[\s\S]*justify-content:\s*space-between/);
-  assert.match(css, /\.f-abn\s*\{[\s\S]*white-space:\s*nowrap/);
+  assert.match(css, /\.f-abn\s*\{[\s\S]*display:\s*inline-flex[\s\S]*flex-wrap:\s*nowrap/);
+  assert.match(css, /\.f-abn-label,\s*\n\.f-abn-num\s*\{[\s\S]*white-space:\s*nowrap/);
   assert.match(css, /\.f-links\s*\{[\s\S]*margin-left:\s*auto/);
   assert.match(
     css,
     /@media \(max-width: 640px\)[\s\S]*\.f-tagline span\s*\{\s*display:\s*block/
+  );
+  assert.match(
+    css,
+    /@media \(max-width: 640px\)[\s\S]*\.f-legal\s*\{[\s\S]*min-width:\s*min-content/
   );
 });
 

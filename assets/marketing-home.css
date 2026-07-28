@@ -1433,8 +1433,17 @@ body.mkt-home .footer .email:hover {
   opacity: 0.55;
 }
 .f-abn {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0.35em;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+.f-abn-label,
+.f-abn-num {
+  display: inline;
+  white-space: nowrap;
 }
 .f-sep { display: none; }
 .f-links {
@@ -1634,21 +1643,35 @@ body.mkt-home .footer .f-links a:hover { color: #fff; }
   .f-tagline span { display: block; }
   .f-bottom-meta {
     width: 100%;
-    align-items: flex-end;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: minmax(min-content, 1fr) auto;
+    align-items: end;
+    column-gap: 12px;
+    row-gap: 8px;
   }
   .f-legal {
     flex-direction: column;
     align-items: flex-start;
     gap: 3px;
-    flex: 1 1 auto;
-    min-width: 0;
+    min-width: min-content;
+    max-width: 100%;
   }
   .f-legal > span:not(:last-child)::after { display: none; content: none; }
-  .f-abn { white-space: nowrap; }
+  .f-abn {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    gap: 0.35em;
+    white-space: nowrap;
+  }
+  .f-abn-label,
+  .f-abn-num {
+    white-space: nowrap;
+  }
   .f-links {
-    margin-left: auto;
-    align-self: flex-end;
+    margin-left: 0;
+    justify-self: end;
+    align-self: end;
     gap: 16px;
   }
   body.mkt-home .footer .f-links a {
