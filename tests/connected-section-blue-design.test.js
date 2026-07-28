@@ -1,5 +1,5 @@
 /**
- * Homepage "One website. Everything connected." must match the navy blue design:
+ * Homepage "One website. Everything connected." must match the navy design:
  * landscape browser mock (not iMac / not portrait), coloured icon nodes + dashed connectors.
  */
 'use strict';
@@ -14,8 +14,8 @@ const home = fs.readFileSync(path.join(root, 'home.html'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'assets/marketing-home.css'), 'utf8');
 const block = home.split('aria-labelledby="connected-title"')[1].split('id="website-examples"')[0];
 
-test('connected section uses navy blue design tokens', function () {
-  assert.match(css, /background:\s*#0e1b26/);
+test('connected section uses navy design tokens from mockup_b904', function () {
+  assert.match(css, /background:\s*#0[Bb]1[Bb]2[Aa]/);
   assert.match(css, /connected-browser/);
   assert.match(css, /aspect-ratio:\s*907\s*\/\s*481/);
 });
