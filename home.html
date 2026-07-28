@@ -730,5 +730,43 @@
   });
 })();
 </script>
+
+<aside class="mkt-colour-lab" data-mkt-colour-lab aria-label="Colour scheme playground">
+  <button type="button" class="mkt-colour-lab__fab" data-mkt-colour-lab-fab aria-expanded="false" aria-controls="mkt-colour-lab-panel">
+    <span class="mkt-colour-lab__fab-orb" aria-hidden="true">
+      <span class="mkt-colour-lab__fab-dot" style="background:#C85A2C"></span>
+      <span class="mkt-colour-lab__fab-dot" style="background:#0B1B2A"></span>
+      <span class="mkt-colour-lab__fab-dot" style="background:#F4EBDE"></span>
+    </span>
+    <span class="mkt-colour-lab__fab-label">Try colours</span>
+  </button>
+  <div class="mkt-colour-lab__scrim" data-mkt-colour-lab-scrim hidden></div>
+  <div class="mkt-colour-lab__panel" id="mkt-colour-lab-panel" data-mkt-colour-lab-panel hidden role="dialog" aria-modal="false" aria-labelledby="mkt-colour-lab-title">
+    <div class="mkt-colour-lab__panel-inner">
+      <header class="mkt-colour-lab__head">
+        <p class="mkt-colour-lab__eyebrow">Live colour studio</p>
+        <h2 id="mkt-colour-lab-title" class="mkt-colour-lab__title">Pick a colour scheme</h2>
+        <p class="mkt-colour-lab__lede">Eight Web Culture themes — the whole homepage updates instantly. Same picker partners use on Culture sites.</p>
+        <button type="button" class="mkt-colour-lab__close" data-mkt-colour-lab-close aria-label="Close colour studio">&times;</button>
+      </header>
+      <div class="mkt-colour-lab__grid" role="radiogroup" aria-label="Colour presets">
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="culture" role="radio" aria-checked="false" aria-label="Culture Lime"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#FDFCF0"></span><span style="background:#C5E13F"></span><span style="background:#0B2114"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Culture Lime</span><span class="mkt-colour-lab__swatch-blurb">The signature forest and lime look.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="basalt" role="radio" aria-checked="false" aria-label="Basalt"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#F7F4EF"></span><span style="background:#D97706"></span><span style="background:#141414"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Basalt</span><span class="mkt-colour-lab__swatch-blurb">Charcoal ground with a copper spark.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="rivet" role="radio" aria-checked="false" aria-label="Rivet"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#F4F7FB"></span><span style="background:#F97316"></span><span style="background:#0B1C33"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Rivet</span><span class="mkt-colour-lab__swatch-blurb">Deep navy with a sharp signal accent.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="tarmac" role="radio" aria-checked="false" aria-label="Tarmac"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#F3F6F7"></span><span style="background:#14B8A6"></span><span style="background:#0A0F14"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Tarmac</span><span class="mkt-colour-lab__swatch-blurb">Near-black with an electric teal edge.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="petal" role="radio" aria-checked="false" aria-label="Petal"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#FFF8F7"></span><span style="background:#E8A0A8"></span><span style="background:#3D2A32"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Petal</span><span class="mkt-colour-lab__swatch-blurb">Soft rose warmth on cream.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="willow" role="radio" aria-checked="false" aria-label="Willow"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#F7F9F3"></span><span style="background:#8FAE6B"></span><span style="background:#243028"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Willow</span><span class="mkt-colour-lab__swatch-blurb">Calm sage and soft daylight green.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="orchid" role="radio" aria-checked="false" aria-label="Orchid"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#FBF7FC"></span><span style="background:#B28BB8"></span><span style="background:#2C2130"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Orchid</span><span class="mkt-colour-lab__swatch-blurb">Quiet mauve with a polished finish.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="dune" role="radio" aria-checked="false" aria-label="Dune"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#FBF6EF"></span><span style="background:#C47A4A"></span><span style="background:#2B2118"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Dune</span><span class="mkt-colour-lab__swatch-blurb">Warm sand and terracotta.</span></span></button>
+      </div>
+      <footer class="mkt-colour-lab__foot">
+        <button type="button" class="mkt-colour-lab__reset" data-mkt-colour-lab-reset>LeadPages default</button>
+        <a class="mkt-colour-lab__cta" href="/find-a-partner" data-mkt-track="colour_lab_cta">Build my website</a>
+      </footer>
+    </div>
+  </div>
+</aside>
+
+<script src="/assets/marketing-home-colour.js" defer></script>
 </body>
 </html>
