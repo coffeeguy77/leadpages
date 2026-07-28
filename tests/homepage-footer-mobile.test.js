@@ -10,27 +10,39 @@ const ROOT = path.join(__dirname, '..');
 const home = fs.readFileSync(path.join(ROOT, 'home.html'), 'utf8');
 const css = fs.readFileSync(path.join(ROOT, 'assets/marketing-home.css'), 'utf8');
 
-test('support block uses stroke Australia + phone + email icons', () => {
+test('support block uses FreeSVG Australia outline + phone + email icons', () => {
   assert.match(home, /f-ico-au/);
+  assert.match(home, /freesvg\.org\/australia-map-outline-vector-illustration/);
   assert.match(home, /class="f-support support"/);
-  assert.match(home, /href="tel:1300532114"/);
+  assert.match(home, /href="tel:\+61262232200"/);
+  assert.match(home, /02 6223 2200/);
   assert.match(home, /href="mailto:hello@leadpages\.com\.au"/);
+  assert.doesNotMatch(home, /1300 532 114/);
   assert.doesNotMatch(home, /📞/);
   assert.doesNotMatch(home, /✉/);
-  assert.match(home, /fill="none"[\s\S]*stroke="currentColor"/);
+  assert.match(home, /viewBox="0 0 674\.71 628\.37"/);
+  assert.equal(
+    fs.existsSync(path.join(ROOT, 'assets/marketing-home/australia-outline.svg')),
+    true
+  );
 });
 
 test('support icons are stroke SVGs sized for readability', () => {
   assert.match(home, /f-ico-au[\s\S]*stroke="currentColor"/);
+  assert.match(home, /vector-effect="non-scaling-stroke"/);
   assert.match(home, /class="fphone"[\s\S]*stroke-width="2"/);
   assert.match(home, /class="email"[\s\S]*stroke-width="2"/);
   assert.match(css, /\.f-support\s+\.f-ico[\s\S]*width:\s*22px/);
-  assert.match(css, /\.f-support\s+\.f-ico-au[\s\S]*width:\s*24px/);
+  assert.match(css, /\.f-support\s+\.f-ico-au[\s\S]*width:\s*28px/);
 });
 
-test('Australian support sits in a stroked box', () => {
+test('Australian support sits in a stroked box on desktop and mobile', () => {
   assert.match(css, /\.f-support\s*\{[^}]*border:\s*1px solid/);
   assert.match(css, /\.f-support\s*\{[^}]*border-radius:\s*14px/);
+  // Desktop rule is not media-query scoped
+  const desktopRule = css.match(/\.f-support\s*\{[^}]+\}/)?.[0] || '';
+  assert.match(desktopRule, /border:\s*1px solid/);
+  assert.doesNotMatch(desktopRule, /@media/);
 });
 
 test('mobile footer uses two columns with brand and support full-width', () => {

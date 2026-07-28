@@ -1283,15 +1283,16 @@ body.mkt-home .footer a {
   line-height: 1.45;
 }
 .f-support {
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 14px;
   padding: 16px 18px 18px;
   background: rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
 }
 .f-support h4 {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 .f-support .f-ico {
   width: 22px;
@@ -1300,9 +1301,15 @@ body.mkt-home .footer a {
   display: block;
 }
 .f-support .f-ico-au {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 26px;
   color: #E8EEF2;
+  overflow: visible;
+}
+.f-support .f-ico-au path {
+  vector-effect: non-scaling-stroke;
+  stroke: currentColor;
+  fill: none;
 }
 .f-support .help {
   margin: 0 0 10px;
