@@ -235,3 +235,111 @@ test('Custom HTML editor is responsive with HTML line numbers', function () {
   assert.match(manage, /function syncHtmlLines/);
   assert.doesNotMatch(manage, /label class="fld"/);
 });
+
+test('Custom HTML editor supports CSS variable colour overrides', function () {
+  assert.match(manage, /cssVars:\{\}/);
+  assert.match(manage, /Colour overrides/);
+  assert.match(manage, /id="ch-var-key"/);
+  assert.match(manage, /id="ch-var-apply"/);
+  assert.match(manage, /ensVars\(\)/);
+  const js = fs.readFileSync(path.join(root, 'assets/lp-custom-html.js'), 'utf8');
+  assert.match(js, /function applyCssVars/);
+  assert.match(js, /cfg\.cssVars/);
+  assert.match(js, /lp-ch-vars-/);
+});
+
+test('lp-custom-html applies cssVars without remounting HTML', function () {
+  const src = fs.readFileSync(path.join(root, 'assets/lp-custom-html.js'), 'utf8');
+  const styles = [];
+  const headKids = [];
+  const fakeHead = {
+    appendChild: function (n) { headKids.push(n); if (n && n.tagName === 'STYLE') styles.push(n); },
+    removeChild: function () {}
+  };
+  const mount = {
+    id: 'lp-ch-test',
+    getAttribute: function (k) { return this._attrs[k] || null; },
+    setAttribute: function (k, v) { this._attrs[k] = String(v); },
+    removeAttribute: function (k) { delete this._attrs[k]; },
+    closest: function () { return null; },
+    _attrs: {},
+    innerHTML: ''
+  };
+  const sandbox = {
+    document: {
+      readyState: 'complete',
+      head: fakeHead,
+      body: { appendChild: function () {} },
+      getElementById: function (id) {
+        for (var i = 0; i < headKids.length; i++) if (headKids[i].id === id) return headKids[i];
+        return null;
+      },
+      querySelectorAll: function (sel) {
+        if (String(sel).indexOf('data-lp-custom-html') >= 0) return [mount];
+        return [];
+      },
+      querySelector: function () { return null; },
+      createElement: function (tag) {
+        var el = {
+          tagName: String(tag).toUpperCase(),
+          id: '',
+          rel: '',
+          href: '',
+          src: '',
+          async: false,
+          textContent: '',
+          style: { setProperty: function () {}, background: '' },
+          classList: { toggle: function () {} },
+          setAttribute: function (k, v) { this._attrs = this._attrs || {}; this._attrs[k] = v; },
+          getAttribute: function (k) { return (this._attrs && this._attrs[k]) || null; },
+          addEventListener: function () {},
+          parentNode: fakeHead,
+          remove: function () {
+            var i = headKids.indexOf(this);
+            if (i >= 0) headKids.splice(i, 1);
+          }
+        };
+        return el;
+      },
+      addEventListener: function () {}
+    },
+    console: { warn: function () {} },
+    Promise: Promise,
+    Array: Array,
+    Object: Object,
+    String: String,
+    Math: Math,
+    setTimeout: setTimeout,
+    clearTimeout: clearTimeout,
+    globalThis: null,
+    window: null
+  };
+  sandbox.globalThis = sandbox;
+  sandbox.window = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(src + '\nthis.lpApplyCustomHtml = lpApplyCustomHtml;', sandbox);
+
+  sandbox.lpApplyCustomHtml({
+    on: true,
+    html: '<div id="tm-root">hi</div>',
+    cssUrls: [],
+    jsUrls: [],
+    cssVars: { '--accent': '#C85A2C', '--page': '#0d0d0d' }
+  });
+  assert.equal(mount.innerHTML, '<div id="tm-root">hi</div>');
+  assert.ok(styles.length >= 1);
+  assert.match(styles[styles.length - 1].textContent, /--accent:#c85a2c/);
+  assert.match(styles[styles.length - 1].textContent, /--page:#0d0d0d/);
+  assert.match(styles[styles.length - 1].textContent, /#lp-ch-test/);
+
+  // Soft re-apply with only colour change must update style without requiring new HTML
+  sandbox.lpApplyCustomHtml({
+    on: true,
+    html: '<div id="tm-root">hi</div>',
+    cssUrls: [],
+    jsUrls: [],
+    cssVars: { '--accent': '#112233' }
+  });
+  assert.match(styles[styles.length - 1].textContent, /--accent:#112233/);
+  assert.doesNotMatch(styles[styles.length - 1].textContent, /--page:/);
+});

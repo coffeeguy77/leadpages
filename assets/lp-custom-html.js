@@ -1,6 +1,6 @@
 /**
  * Custom HTML marketplace app — embedded (not iframe), responsive mount.
- * Config: sections.customHtml = { on, html, cssUrls[], jsUrls[], fullBleed, title, bg }
+ * Config: sections.customHtml = { on, html, cssUrls[], jsUrls[], cssVars{}, fullBleed, title, bg }
  *
  * Uses window.__lpLiveCfg (page-hybrid merge) when present so homepage defaults
  * cannot wipe a landing-page unique Custom HTML pack after boot.
@@ -76,6 +76,52 @@
     return el.id;
   }
 
+  function normVarName(raw) {
+    var k = String(raw || '').trim();
+    if (!k) return '';
+    if (k.charAt(0) !== '-') k = '--' + k.replace(/^-+/, '');
+    return /^--[a-zA-Z0-9_-]+$/.test(k) ? k : '';
+  }
+
+  function normHex(raw) {
+    var v = String(raw || '').trim();
+    if (!v) return '';
+    if (v.charAt(0) !== '#') v = '#' + v;
+    if (/^#[0-9a-fA-F]{3}$/.test(v)) {
+      v = '#' + v.charAt(1) + v.charAt(1) + v.charAt(2) + v.charAt(2) + v.charAt(3) + v.charAt(3);
+    }
+    return /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : '';
+  }
+
+  /**
+   * Apply per-site CSS variable colour overrides without rewriting the shared stylesheet.
+   * Injected after pack CSS so overrides win light + dark pack defaults.
+   */
+  function applyCssVars(vars, el, mid) {
+    var id = 'lp-ch-vars-' + mid;
+    var style = document.getElementById(id);
+    var map = vars && typeof vars === 'object' && !Array.isArray(vars) ? vars : {};
+    var decls = [];
+    Object.keys(map).forEach(function (rawKey) {
+      var key = normVarName(rawKey);
+      var hex = normHex(map[rawKey]);
+      if (key && hex) decls.push(key + ':' + hex + ' !important');
+    });
+    if (!decls.length) {
+      if (style && style.parentNode) style.parentNode.removeChild(style);
+      return;
+    }
+    if (!style) {
+      style = document.createElement('style');
+      style.id = id;
+      style.setAttribute('data-lp-ch-vars', '1');
+      document.head.appendChild(style);
+    }
+    // Scope to this mount (+ nested #tm-root used by Transfer Matcher)
+    var sel = '#' + mid + ', #' + mid + ' #tm-root';
+    style.textContent = sel + '{' + decls.join(';') + '}';
+  }
+
   function applyCustomHtml(cfg, root) {
     cfg = cfg || {};
     root = root || document;
@@ -113,6 +159,7 @@
       }
 
       if (!isOn) {
+        applyCssVars(null, el, mid);
         // Keep mount empty while off so homepage off-state can't leave stale HTML
         if (el.getAttribute('data-lp-ch-has') === '1' && !html) {
           el.innerHTML = '';
@@ -123,6 +170,8 @@
       }
 
       cssUrls.forEach(function (href) { ensureLink(href, mid); });
+      // Colour overrides always refresh (do not require HTML remount)
+      applyCssVars(cfg.cssVars, el, mid);
 
       // Avoid re-injecting identical HTML (keeps in-app state on soft re-apply)
       var sig = html.length + ':' + cssUrls.join('|') + ':' + jsUrls.join('|');
