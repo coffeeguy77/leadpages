@@ -1,6 +1,9 @@
 /**
  * Custom HTML marketplace app — embedded (not iframe), responsive mount.
  * Config: sections.customHtml = { on, html, cssUrls[], jsUrls[], fullBleed, title, bg }
+ *
+ * Uses window.__lpLiveCfg (page-hybrid merge) when present so homepage defaults
+ * cannot wipe a landing-page unique Custom HTML pack after boot.
  */
 (function (global) {
   'use strict';
@@ -15,6 +18,10 @@
     return [];
   }
 
+  function resolveCfg(C) {
+    return C || global.__lpLiveCfg || global.__SITE_CONFIG__ || {};
+  }
+
   function ensureLink(href, mountId) {
     if (!href) return;
     var id = 'lp-ch-css-' + mountId + '-' + href.replace(/[^\w.-]+/g, '_').slice(0, 80);
@@ -26,10 +33,15 @@
     document.head.appendChild(link);
   }
 
-  function loadScript(src) {
+  function loadScript(src, force) {
     return new Promise(function (resolve, reject) {
       if (!src) return resolve();
-      var existing = document.querySelector('script[data-lp-ch-src="' + src.replace(/"/g, '') + '"]');
+      var sel = 'script[data-lp-ch-src="' + src.replace(/"/g, '') + '"]';
+      var existing = document.querySelector(sel);
+      if (existing && force) {
+        try { existing.remove(); } catch (e) {}
+        existing = null;
+      }
       if (existing) {
         if (existing.getAttribute('data-lp-ch-ready') === '1') return resolve();
         existing.addEventListener('load', function () { resolve(); });
@@ -49,12 +61,12 @@
     });
   }
 
-  function chainScripts(urls) {
+  function chainScripts(urls, force) {
     var i = 0;
     function next() {
       if (i >= urls.length) return Promise.resolve();
       var u = urls[i++];
-      return loadScript(u).then(next);
+      return loadScript(u, force).then(next);
     }
     return next();
   }
@@ -79,14 +91,15 @@
       var cssUrls = arr(cfg.cssUrls || cfg.css);
       var jsUrls = arr(cfg.jsUrls || cfg.js);
       var fullBleed = cfg.fullBleed !== false;
+      var isOn = cfg.on === true;
 
       var sec = el.closest ? el.closest('[data-sec="customHtml"]') : null;
       if (sec) {
-        if (cfg.on === true) {
-          sec.style.display = '';
-          sec.style.removeProperty('display');
+        // Templates default customHtml to display:none; beat that + !important toggles.
+        if (isOn) {
+          sec.style.setProperty('display', 'block', 'important');
         } else {
-          sec.style.display = 'none';
+          sec.style.setProperty('display', 'none', 'important');
         }
         if (cfg.bg) sec.style.background = cfg.bg;
         else sec.style.background = '';
@@ -99,6 +112,16 @@
         }
       }
 
+      if (!isOn) {
+        // Keep mount empty while off so homepage off-state can't leave stale HTML
+        if (el.getAttribute('data-lp-ch-has') === '1' && !html) {
+          el.innerHTML = '';
+          el.setAttribute('data-lp-ch-has', '0');
+          el.removeAttribute(LOADED);
+        }
+        return;
+      }
+
       cssUrls.forEach(function (href) { ensureLink(href, mid); });
 
       // Avoid re-injecting identical HTML (keeps in-app state on soft re-apply)
@@ -106,12 +129,13 @@
       if (el.getAttribute(LOADED) === sig && el.getAttribute('data-lp-ch-has') === '1') {
         return;
       }
+      var remount = el.getAttribute('data-lp-ch-has') === '1';
       el.innerHTML = html;
       el.setAttribute('data-lp-ch-has', html ? '1' : '0');
       el.setAttribute(LOADED, sig);
 
-      if (jsUrls.length) {
-        chainScripts(jsUrls).catch(function (err) {
+      if (jsUrls.length && html) {
+        chainScripts(jsUrls, remount).catch(function (err) {
           try { console.warn('[customHtml]', err && err.message ? err.message : err); } catch (e) {}
         });
       }
@@ -119,7 +143,7 @@
   }
 
   function fromSiteConfig(C) {
-    C = C || global.__SITE_CONFIG__ || {};
+    C = resolveCfg(C);
     var sec = (C.sections && C.sections.customHtml) || {};
     applyCustomHtml(sec, document);
   }
@@ -129,7 +153,11 @@
   if (typeof _apply === 'function' && !_apply.__lpCustomHtmlWrapped) {
     global.applyCfg = function (C) {
       var r = _apply.apply(this, arguments);
-      try { fromSiteConfig(C || arguments[0]); } catch (e) {}
+      try {
+        var next = C || arguments[0];
+        if (next) global.__lpLiveCfg = next;
+        fromSiteConfig(next);
+      } catch (e) {}
       return r;
     };
     global.applyCfg.__lpCustomHtmlWrapped = true;
@@ -138,9 +166,13 @@
   global.lpApplyCustomHtml = applyCustomHtml;
   global.lpRefreshCustomHtml = fromSiteConfig;
 
+  // Initial paint: prefer live (hybrid) cfg so a late home SITE_CONFIG cannot wipe the pack.
+  function boot() {
+    fromSiteConfig(global.__lpLiveCfg || global.__SITE_CONFIG__);
+  }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { fromSiteConfig(); });
+    document.addEventListener('DOMContentLoaded', boot);
   } else {
-    fromSiteConfig();
+    boot();
   }
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -8,4 +8,4 @@ Embed via the **Custom HTML** marketplace app:
 
 Or run `node scripts/seed-transfer-matcher-page.js --site=<slug>`.
 
-Page slug: `account-transaction-matcher`
+Page slug: `account-transaction-match` (published)

@@ -1,17 +1,19 @@
 #!/usr/bin/env node
 /**
- * Enable Custom HTML + create landing page /account-transaction-matcher
- * with the Transfer Matcher pack embedded.
+ * Enable Custom HTML + create landing page /account-transaction-match
+ * with the Transfer Matcher pack embedded (published).
  *
  * Usage:
  *   node scripts/seed-transfer-matcher-page.js --site=beanculture
  *   node scripts/seed-transfer-matcher-page.js --site=beanculture --dry-run
+ *   node scripts/seed-transfer-matcher-page.js --site=beanculture --slug=account-transaction-matcher
  */
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
-const PAGE_SLUG = 'account-transaction-matcher';
+const DEFAULT_SLUG = 'account-transaction-match';
+const LEGACY_SLUG = 'account-transaction-matcher';
 const SECTION_KEY = 'customHtml';
 
 function arg(name, fallback) {
@@ -38,9 +40,24 @@ function matcherPack() {
   };
 }
 
+function buildPage(slug, pack) {
+  return {
+    slug: slug,
+    title: 'Inter-Account Transfer Matcher',
+    h1: '',
+    body: '',
+    metaDesc: 'Match inter-account bank transfers from Xero CSV exports or screenshots.',
+    status: 'published',
+    pageApps: [{ key: SECTION_KEY, mode: 'unique' }],
+    pageSections: { customHtml: pack },
+    pageLayoutOrder: [SECTION_KEY]
+  };
+}
+
 async function main() {
   const dryRun = process.argv.includes('--dry-run');
   const siteSlug = arg('site', process.env.SITE_SLUG || '');
+  const pageSlug = arg('slug', DEFAULT_SLUG);
   if (!siteSlug) {
     console.error('Pass --site=<slug>');
     process.exit(1);
@@ -51,19 +68,10 @@ async function main() {
   }
 
   const pack = matcherPack();
-  const page = {
-    slug: PAGE_SLUG,
-    title: 'Inter-Account Transfer Matcher',
-    h1: '',
-    body: '',
-    metaDesc: 'Match inter-account bank transfers from Xero CSV exports or screenshots.',
-    pageApps: [{ key: SECTION_KEY, mode: 'unique' }],
-    pageSections: { customHtml: pack },
-    pageLayoutOrder: [SECTION_KEY]
-  };
+  const page = buildPage(pageSlug, pack);
 
   if (dryRun) {
-    console.log('Would upsert page on site', siteSlug, page.slug);
+    console.log('Would upsert page on site', siteSlug, page.slug, 'status=' + page.status);
     console.log('customHtml html chars', pack.html.length, 'css', pack.cssUrls, 'js', pack.jsUrls);
     return;
   }
@@ -100,13 +108,24 @@ async function main() {
     cfg.sections.customHtml = Object.assign({}, pack, { on: false, html: '' });
   }
 
-  const pages = Array.isArray(cfg.pages) ? cfg.pages.slice() : [];
+  let pages = Array.isArray(cfg.pages) ? cfg.pages.slice() : [];
+
+  // If seeding the short slug, retire the legacy longer slug so only one URL is live.
+  if (pageSlug === DEFAULT_SLUG) {
+    pages = pages.filter(function (p) {
+      return !(p && p.slug === LEGACY_SLUG);
+    });
+  }
+
   const ix = pages.findIndex(function (p) {
-    return p && p.slug === PAGE_SLUG;
+    return p && p.slug === pageSlug;
   });
   if (ix >= 0) {
     pages[ix] = Object.assign({}, pages[ix], page, {
-      pageSections: Object.assign({}, (pages[ix].pageSections || {}), { customHtml: pack })
+      status: 'published',
+      pageSections: Object.assign({}, (pages[ix].pageSections || {}), { customHtml: pack }),
+      pageApps: page.pageApps,
+      pageLayoutOrder: page.pageLayoutOrder
     });
   } else {
     pages.push(page);
@@ -140,8 +159,8 @@ async function main() {
     if (error) throw error;
   }
 
-  console.log('OK —', siteSlug + '/' + PAGE_SLUG);
-  console.log('URL path: /' + siteSlug + '/' + PAGE_SLUG + ' (or custom domain /' + PAGE_SLUG + ')');
+  console.log('OK —', siteSlug + '/' + pageSlug, '(published)');
+  console.log('URL path: /' + siteSlug + '/' + pageSlug + ' (or custom domain /' + pageSlug + ')');
 }
 
 main().catch(function (e) {
