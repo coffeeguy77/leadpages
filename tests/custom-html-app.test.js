@@ -96,10 +96,30 @@ test('lp-custom-html.js injects HTML and loads asset URLs', function () {
   const src = fs.readFileSync(path.join(root, 'assets/lp-custom-html.js'), 'utf8');
   const links = [];
   const scripts = [];
+  const sec = {
+    style: {
+      display: 'none',
+      background: '',
+      removeProperty: function () {},
+      setProperty: function (k, v) { this[k] = v; this['__imp_' + k] = true; }
+    },
+    classList: { toggle: function () {} },
+    querySelector: function () { return null; }
+  };
+  const mount = {
+    id: 'm1',
+    innerHTML: '',
+    _attrs: {},
+    setAttribute: function (k, v) { this._attrs[k] = v; },
+    getAttribute: function (k) { return this._attrs[k] || null; },
+    removeAttribute: function (k) { delete this._attrs[k]; },
+    closest: function () { return sec; }
+  };
   const sandbox = {
     window: {},
     document: {
-      readyState: 'complete',
+      // loading avoids auto-boot during script eval; we call APIs explicitly
+      readyState: 'loading',
       head: {
         appendChild: function (n) { if (n && n.rel === 'stylesheet') links.push(n.href); }
       },
@@ -123,7 +143,7 @@ test('lp-custom-html.js injects HTML and loads asset URLs', function () {
           href: '',
           src: '',
           async: true,
-          style: {},
+          style: { setProperty: function () {}, removeProperty: function () {} },
           classList: { toggle: function () {} },
           setAttribute: function (k, v) { el[k] = v; this._attrs = this._attrs || {}; this._attrs[k] = v; },
           getAttribute: function (k) { return (this._attrs && this._attrs[k]) || el[k] || null; },
@@ -142,22 +162,8 @@ test('lp-custom-html.js injects HTML and loads asset URLs', function () {
   sandbox.globalThis = sandbox;
   sandbox.window = sandbox;
 
-  const sec = {
-    style: { display: 'none', background: '', removeProperty: function () {} },
-    classList: { toggle: function () {} },
-    querySelector: function () { return null; }
-  };
-  const mount = {
-    id: 'm1',
-    innerHTML: '',
-    _attrs: {},
-    setAttribute: function (k, v) { this._attrs[k] = v; },
-    getAttribute: function (k) { return this._attrs[k] || null; },
-    closest: function () { return sec; }
-  };
-
   vm.createContext(sandbox);
-  vm.runInContext(src + '\nthis.lpApplyCustomHtml = lpApplyCustomHtml;', sandbox);
+  vm.runInContext(src + '\nthis.lpApplyCustomHtml = lpApplyCustomHtml; this.lpRefreshCustomHtml = lpRefreshCustomHtml;', sandbox);
 
   sandbox.lpApplyCustomHtml({
     on: true,
@@ -168,16 +174,45 @@ test('lp-custom-html.js injects HTML and loads asset URLs', function () {
   });
 
   assert.equal(mount.innerHTML, '<p id="x">hello</p>');
+  assert.equal(sec.style.display, 'block');
   assert.ok(links.indexOf('/assets/apps/transfer-matcher/app.css') >= 0);
   assert.ok(scripts.indexOf('/assets/apps/transfer-matcher/app.js') >= 0);
+
+  // Homepage off-state must not wipe a live merged page pack when __lpLiveCfg is set
+  sandbox.__lpLiveCfg = {
+    sections: {
+      customHtml: {
+        on: true,
+        html: '<div id="tm-root">pack</div>',
+        cssUrls: [],
+        jsUrls: []
+      }
+    }
+  };
+  sandbox.__SITE_CONFIG__ = {
+    sections: { customHtml: { on: false, html: '' } }
+  };
+  sandbox.lpRefreshCustomHtml();
+  assert.match(mount.innerHTML, /tm-root/);
+  assert.equal(sec.style.display, 'block');
 });
 
 test('seed + register scripts exist for ops', function () {
   assert.ok(fs.existsSync(path.join(root, 'scripts/register-custom-html-app.js')));
   assert.ok(fs.existsSync(path.join(root, 'scripts/seed-transfer-matcher-page.js')));
   const seed = fs.readFileSync(path.join(root, 'scripts/seed-transfer-matcher-page.js'), 'utf8');
-  assert.match(seed, /account-transaction-matcher/);
+  assert.match(seed, /account-transaction-match/);
+  assert.match(seed, /status:\s*'published'/);
   assert.match(seed, /transfer-matcher/);
+});
+
+test('hybrid page render stores merged config on __lpLiveCfg', function () {
+  const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+  assert.match(demo, /window\.__lpLiveCfg=C;\s*applyCfg\(C\)/);
+  ['trade.template.json', 'landing-shell-neutral-v1.template.json'].forEach(function (name) {
+    const html = JSON.parse(fs.readFileSync(path.join(root, name), 'utf8')).html;
+    assert.ok(html.includes('window.__lpLiveCfg=C; applyCfg(C)'), name);
+  });
 });
 
 test('Custom HTML editor is responsive with HTML line numbers', function () {
