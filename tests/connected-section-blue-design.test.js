@@ -1,6 +1,6 @@
 /**
- * Homepage "One website. Everything connected." must match the navy design:
- * landscape browser mock (not iMac / not portrait), coloured icon nodes + dashed connectors.
+ * Homepage "One website. Everything connected." — navy band with Apple-style
+ * landscape laptop mock + coloured icon nodes whose dashed lines touch the circles.
  */
 'use strict';
 
@@ -20,10 +20,11 @@ test('connected section uses navy design tokens from mockup_b904', function () {
   assert.match(css, /aspect-ratio:\s*907\s*\/\s*481/);
 });
 
-test('connected section is landscape browser — not iMac / portrait laptop', function () {
+test('connected section uses landscape Apple-style laptop (not portrait)', function () {
   assert.match(block, /connected-browser/);
+  assert.match(block, /macbook/);
   assert.match(block, /connected-site-browser\.jpg/);
-  assert.doesNotMatch(block, /connected-laptop|imac|orbit o1|class="center"/i);
+  assert.match(css, /\.macbook-lid|\.macbook-base/);
   assert.doesNotMatch(block, /720\s*[x×]\s*1100|portrait/i);
   assert.ok(fs.existsSync(path.join(root, 'assets/marketing-home/connected-site-browser.jpg')));
 });
