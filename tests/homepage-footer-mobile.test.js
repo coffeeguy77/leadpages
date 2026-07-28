@@ -55,7 +55,7 @@ test('Australia map sits large on the right of the support box', () => {
   assert.doesNotMatch(home, /<h4>[\s\S]*f-ico-au[\s\S]*Australian support/);
   assert.match(css, /\.f-support\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto/);
   assert.match(css, /\.f-support-map\s*\{/);
-  assert.match(css, /\.f-support\s+\.f-ico-au[\s\S]*max-width:\s*124px/);
+  assert.match(css, /\.f-support\s+\.f-ico-au[\s\S]*max-width:\s*156px/);
 });
 
 test('Australian support sits in a stroked box on desktop and mobile', () => {
@@ -73,6 +73,19 @@ test('mobile footer uses two columns with brand and support full-width', () => {
   assert.match(css, /\.footer-grid\s*>\s*\.f-support/);
   assert.match(css, /grid-column:\s*1\s*\/\s*-1/);
   assert.doesNotMatch(css, /\.cap-grid,\s*\.partner-grid,\s*\.footer-grid,\s*\.reassure/);
+});
+
+test('desktop footer gives Australian support 2x menu column width', () => {
+  assert.match(
+    css,
+    /\.footer-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(150px,\s*1\.25fr\)\s+repeat\(4,\s*minmax\(0,\s*1fr\)\)\s+minmax\(260px,\s*2fr\)/
+  );
+  assert.match(css, /\.footer-grid\s*\{[\s\S]*column-gap:\s*clamp\(28px/);
+  assert.match(home, /class="f-col"/);
+  assert.match(
+    css,
+    /@media \(max-width: 1100px\)[\s\S]*\.footer-grid\s*>\s*\.f-support\s*\{\s*grid-column:\s*span 2/
+  );
 });
 
 test('footer bottom is compact with tagline, ABN, and right-aligned legal links', () => {
