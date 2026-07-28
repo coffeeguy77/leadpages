@@ -395,8 +395,9 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 $('#theme').onclick=()=>{
-  const dark=document.documentElement.dataset.theme==='dark';
-  document.documentElement.dataset.theme=dark?'light':'dark';
+  const root=$('#tm-root')||document.documentElement;
+  const dark=root.dataset.theme==='dark';
+  root.dataset.theme=dark?'light':'dark';
   $('#theme').textContent=dark?'Dark':'Light';
 };
 
