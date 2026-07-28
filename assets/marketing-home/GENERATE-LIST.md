@@ -18,7 +18,7 @@ Suggested size / crop notes assume 2× retina. Prefer WebP + JPEG fallbacks once
 | 8 | `audience-trades.jpg` | Audience — Trades | 900×700 | Australian tradie at work (already have a temporary JPG stand-in). |
 | 9 | `audience-hospitality.jpg` | Audience — Hospitality | 900×700 | Café / restaurant atmosphere. |
 | 10 | `audience-services.jpg` | Audience — Professional services | 900×700 | Broker / consultant / office — warm, not corporate stock. |
-| 11 | `connected-site-preview.jpg` | Connected platform centre mock | 1000×700 | Desktop website preview that feels “live business site”. |
+| 11 | `connected-site-browser.jpg` | Connected platform centre mock | ~900×480 landscape | Landscape browser content only (no iMac/device chrome). `connected-site-preview.jpg` is legacy full-device source. |
 | 12 | `example-trades.jpg` | Website examples — Trades | 900×700 | Distinct from audience-trades if possible. |
 | 13 | `example-hospitality.jpg` | Website examples — Hospitality | 900×700 | |
 | 14 | `example-services.jpg` | Website examples — Services | 900×700 | |

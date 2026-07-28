@@ -243,50 +243,98 @@
 
   <section class="sec connected" aria-labelledby="connected-title">
     <div class="wrap-wide connected-layout">
-      <div class="reveal">
+      <div class="connected-copy reveal">
         <h2 class="h2" id="connected-title">One website.<br>Everything connected.</h2>
         <p class="lede">All the tools you need to win work and keep your business growing.</p>
-        <svg class="squiggle" viewBox="0 0 80 14" fill="none" aria-hidden="true">
-          <path d="M2 9c8-8 16 8 24 0s16 8 24 0 16 8 24 0" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <svg class="squiggle" viewBox="0 0 72 28" fill="none" aria-hidden="true">
+          <path d="M4 18c6-14 14 10 22-2s12-16 20-4 14 12 22-2" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
         </svg>
       </div>
-      <div>
-        <div class="stage reveal">
-          <svg class="lines" viewBox="0 0 1000 460" preserveAspectRatio="none" aria-hidden="true">
-            <g fill="none" stroke="rgba(252,250,245,0.35)" stroke-width="1.5" stroke-dasharray="4 6">
-              <path d="M500 230 C360 230 280 80 180 70"/>
-              <path d="M500 230 C340 230 220 160 120 180"/>
-              <path d="M500 230 C360 250 240 280 140 300"/>
-              <path d="M500 230 C380 300 300 360 220 390"/>
-              <path d="M500 230 C640 210 720 80 820 70"/>
-              <path d="M500 230 C660 230 780 150 880 170"/>
-              <path d="M500 230 C640 250 760 280 860 310"/>
-              <path d="M500 230 C620 300 700 360 780 390"/>
-            </g>
-          </svg>
-          <a class="orbit o1" href="/marketplace/quote-lead-capture"><span class="ico">Q</span> Quotes</a>
-          <a class="orbit o2" href="/marketplace"><span class="ico">B</span> Bookings</a>
-          <a class="orbit o3" href="/marketplace/reviews-trust"><span class="ico">R</span> Reviews</a>
-          <a class="orbit o4" href="/marketplace/quote-lead-capture"><span class="ico">F</span> Forms</a>
-          <div class="center">
-            <img src="/assets/marketing-home/connected-site-preview.jpg" width="900" height="700" alt="Coastal Landscapes site preview" loading="lazy">
-            <div class="cap">Coastal Landscapes</div>
+
+      <div class="connected-stage reveal">
+        <svg class="connected-lines" viewBox="0 0 920 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <g fill="none" stroke="#c4a574" stroke-width="1.75" stroke-dasharray="4 6" stroke-linecap="round">
+            <path d="M130 88 C210 100 300 175 400 235"/>
+            <path d="M310 48 C355 115 390 175 435 225"/>
+            <path d="M610 48 C565 115 530 175 485 225"/>
+            <path d="M790 88 C710 100 620 175 520 235"/>
+            <path d="M130 432 C210 420 300 345 400 285"/>
+            <path d="M310 472 C355 405 390 345 435 295"/>
+            <path d="M610 472 C565 405 530 345 485 295"/>
+            <path d="M790 432 C710 420 620 345 520 285"/>
+          </g>
+        </svg>
+
+        <a class="cnode n-quotes" href="/marketplace/quote-lead-capture" data-mkt-track="connected_quotes">
+          <span class="cnode-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+          </span>
+          <span class="cnode-label">Quotes</span>
+        </a>
+        <a class="cnode n-bookings" href="/marketplace" data-mkt-track="connected_bookings">
+          <span class="cnode-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+          </span>
+          <span class="cnode-label">Bookings</span>
+        </a>
+        <a class="cnode n-reviews" href="/marketplace/reviews-trust" data-mkt-track="connected_reviews">
+          <span class="cnode-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="m12 3.5 2.47 5.01 5.53.8-4 3.9.94 5.5L12 16.9 7.06 18.7l.94-5.5-4-3.9 5.53-.8L12 3.5z"/></svg>
+          </span>
+          <span class="cnode-label">Reviews</span>
+        </a>
+        <a class="cnode n-forms" href="/marketplace/quote-lead-capture" data-mkt-track="connected_forms">
+          <span class="cnode-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+          </span>
+          <span class="cnode-label">Forms</span>
+        </a>
+
+        <div class="connected-browser">
+          <div class="browser-chrome" aria-hidden="true">
+            <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+            <div class="browser-url">coastallandscapes.com.au</div>
           </div>
-          <a class="orbit o5" href="/marketplace/instagram-gallery"><span class="ico">G</span> Galleries</a>
-          <a class="orbit o6" href="/marketplace"><span class="ico">C</span> CRM</a>
-          <a class="orbit o7" href="/marketplace"><span class="ico">A</span> Analytics</a>
-          <a class="orbit o8" href="/marketplace"><span class="ico">Ad</span> Ads</a>
+          <div class="browser-screen">
+            <img src="/assets/marketing-home/connected-site-browser.jpg" width="907" height="481" alt="Coastal Landscapes website in a browser window" loading="lazy">
+          </div>
         </div>
-        <div class="connected-mobile" aria-label="Connected tools">
-          <a class="orbit" href="/marketplace/quote-lead-capture"><span class="ico">Q</span> Quotes</a>
-          <a class="orbit" href="/marketplace"><span class="ico">B</span> Bookings</a>
-          <a class="orbit" href="/marketplace/reviews-trust"><span class="ico">R</span> Reviews</a>
-          <a class="orbit" href="/marketplace/quote-lead-capture"><span class="ico">F</span> Forms</a>
-          <a class="orbit" href="/marketplace/instagram-gallery"><span class="ico">G</span> Galleries</a>
-          <a class="orbit" href="/marketplace"><span class="ico">C</span> CRM</a>
-          <a class="orbit" href="/marketplace"><span class="ico">A</span> Analytics</a>
-          <a class="orbit" href="/marketplace"><span class="ico">Ad</span> Ads</a>
-        </div>
+
+        <a class="cnode n-galleries" href="/marketplace/instagram-gallery" data-mkt-track="connected_galleries">
+          <span class="cnode-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="9" r="1.6"/><path d="m21 16-5-5-4 4-2-2-5 5"/></svg>
+          </span>
+          <span class="cnode-label">Galleries</span>
+        </a>
+        <a class="cnode n-crm" href="/marketplace" data-mkt-track="connected_crm">
+          <span class="cnode-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a3 3 0 0 1 0 5.74"/></svg>
+          </span>
+          <span class="cnode-label">CRM</span>
+        </a>
+        <a class="cnode n-analytics" href="/marketplace" data-mkt-track="connected_analytics">
+          <span class="cnode-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-5"/><path d="M12 16V8"/><path d="M16 16v-3"/><path d="M20 16v-8"/></svg>
+          </span>
+          <span class="cnode-label">Analytics</span>
+        </a>
+        <a class="cnode n-ads" href="/marketplace" data-mkt-track="connected_ads">
+          <span class="cnode-ico ico-ads" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="8.5" cy="13.5" r="4.2" fill="#4285F4"/><circle cx="14.2" cy="9.2" r="4.2" fill="#EA4335"/><circle cx="16.8" cy="15.2" r="3.4" fill="#FBBC05"/><circle cx="12.2" cy="14.6" r="2.2" fill="#34A853"/></svg>
+          </span>
+          <span class="cnode-label">Ads</span>
+        </a>
+      </div>
+
+      <div class="connected-mobile" aria-label="Connected tools">
+        <a class="cnode" href="/marketplace/quote-lead-capture"><span class="cnode-ico" style="background:#3d8b6e" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span><span class="cnode-label">Quotes</span></a>
+        <a class="cnode" href="/marketplace"><span class="cnode-ico" style="background:#e07a2f" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg></span><span class="cnode-label">Bookings</span></a>
+        <a class="cnode" href="/marketplace/reviews-trust"><span class="cnode-ico" style="background:#d4a017" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="m12 3.5 2.47 5.01 5.53.8-4 3.9.94 5.5L12 16.9 7.06 18.7l.94-5.5-4-3.9 5.53-.8L12 3.5z"/></svg></span><span class="cnode-label">Reviews</span></a>
+        <a class="cnode" href="/marketplace/quote-lead-capture"><span class="cnode-ico" style="background:#2f8f86" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></span><span class="cnode-label">Forms</span></a>
+        <a class="cnode" href="/marketplace/instagram-gallery"><span class="cnode-ico" style="background:#e85a2a" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="9" r="1.6"/><path d="m21 16-5-5-4 4-2-2-5 5"/></svg></span><span class="cnode-label">Galleries</span></a>
+        <a class="cnode" href="/marketplace"><span class="cnode-ico" style="background:#3d8b6e" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/></svg></span><span class="cnode-label">CRM</span></a>
+        <a class="cnode" href="/marketplace"><span class="cnode-ico" style="background:#e07a2f" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="1.8"><path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-3"/></svg></span><span class="cnode-label">Analytics</span></a>
+        <a class="cnode" href="/marketplace"><span class="cnode-ico ico-ads" style="background:#fff" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16"><circle cx="8.5" cy="13.5" r="4.2" fill="#4285F4"/><circle cx="14.2" cy="9.2" r="4.2" fill="#EA4335"/><circle cx="16.8" cy="15.2" r="3.4" fill="#FBBC05"/></svg></span><span class="cnode-label">Ads</span></a>
       </div>
     </div>
   </section>
