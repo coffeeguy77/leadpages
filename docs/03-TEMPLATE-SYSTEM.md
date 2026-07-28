@@ -144,7 +144,7 @@ Templates are **bundled into the serverless function** — no S3 or network fetc
 
 | Constant | Default | Purpose |
 |----------|---------|---------|
-| `PRIMARY_HOSTS` | `leadpages.webculture.au,leadpages.com.au` | Marketing host — `/` redirects to `/index.html` |
+| `PRIMARY_HOSTS` | `app.leadpages.com.au,leadpages.webculture.au,leadpages.com.au,www.leadpages.com.au` | Marketing + editor hosts — `/` is homepage; slug routes for Live Preview. Built-ins always merge even if env omits `app`. |
 | `SHOWCASE_SUFFIXES` | `leadpages.com.au,leadpages.webculture.au` | Partner showcase subdomains |
 | `DEFAULT_FAVICON` | Cloudinary URL | Fallback favicon when `cfg.favicon` empty |
 | `SC_SELECT` | partner profile columns | Showcase page query |
