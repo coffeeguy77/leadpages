@@ -169,7 +169,7 @@ body.mkt-home a.btn-white { color: var(--ink); }
   gap: 0;
   flex: none;
 }
-/* 3× prior 34px mark — feature orange pulse + “More leads” */
+/* 3× prior 34px mark — static logo (no perpetual pulse / loading-spin look) */
 body.mkt-home .header .leadpages-logo.lp-logo-wrap,
 body.mkt-home .brand .leadpages-logo.lp-logo-wrap,
 body.mkt-home footer .leadpages-logo.lp-logo-wrap,

@@ -62,7 +62,7 @@
 <header class="header" id="mkt-header">
   <div class="inner">
     <a class="brand" href="/" aria-label="LeadPages Australia home">
-      <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" data-lp-logo-accent="#C85A2C" role="img" aria-label="LeadPages"></span>
+      <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-ink="light" data-lp-logo-accent="#C85A2C" role="img" aria-label="LeadPages"></span>
       <span class="brand-au">Australia</span>
     </a>
     <nav class="nav" aria-label="Primary">
@@ -525,7 +525,7 @@
   <div class="wrap-wide">
     <div class="footer-grid">
       <div class="f-brand">
-        <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-pulse data-lp-logo-ink="light" data-lp-logo-accent="#C85A2C" role="img" aria-label="LeadPages"></span>
+        <span class="leadpages-logo" data-lp-logo="auto" data-lp-logo-ink="light" data-lp-logo-accent="#C85A2C" role="img" aria-label="LeadPages"></span>
         <p class="blurb">Websites and growth tools for Australian small business.</p>
       </div>
       <div>
@@ -692,18 +692,26 @@
   }
 
   var wireRaf = 0;
+  var lastWireSize = '';
   function scheduleWires() {
     if (wireRaf) cancelAnimationFrame(wireRaf);
     wireRaf = requestAnimationFrame(function () {
       wireRaf = 0;
+      var stage = document.querySelector('.connected-stage');
+      if (stage) {
+        var sr = stage.getBoundingClientRect();
+        var key = Math.round(sr.width) + 'x' + Math.round(sr.height);
+        if (key === lastWireSize) return;
+        lastWireSize = key;
+      }
       syncConnectedWires();
     });
   }
   scheduleWires();
-  window.addEventListener('resize', scheduleWires);
-  window.addEventListener('load', scheduleWires);
+  window.addEventListener('resize', function () { lastWireSize = ''; scheduleWires(); });
+  window.addEventListener('load', function () { lastWireSize = ''; scheduleWires(); });
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(scheduleWires);
+    document.fonts.ready.then(function () { lastWireSize = ''; scheduleWires(); });
   }
   var stageEl = document.querySelector('.connected-stage');
   if (stageEl && typeof ResizeObserver !== 'undefined') {
