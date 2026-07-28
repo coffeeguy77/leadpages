@@ -361,8 +361,11 @@
       global.__LP_VISITOR_A11Y__ = {
         enabled: true,
         position: 'bottom-right',
+        hideOnMobile: true,
+        mobileMaxWidth: 960,
         defaults: {
-          allowColorSchemes: true,
+          allowColorSchemes: false,
+          allowThemeToggle: false,
           colorScheme: 'brand',
           defaultTextSize: 'standard',
           defaultContrast: 'standard',
