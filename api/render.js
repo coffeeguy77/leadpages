@@ -29,6 +29,11 @@ const {
   buildCanonicalUrl,
   landingPageTitle
 } = require('../lib/seo/meta');
+const {
+  resolvePrimaryHosts,
+  isPrimaryHost,
+  showcaseSlugFromHost: showcaseSlugFromHostResolved
+} = require('../lib/render-hosts');
 const brokerTpl   = require('../broker.template.json');     // broker-leads
 const tradeTpl    = require('../trade.template.json');      // trade
 const agencyTpl   = require('../agency.template.json');     // partner web-studio homepage
@@ -39,9 +44,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// The marketing/admin host. "/" on this host is the homepage, never a tenant page.
-const PRIMARY_HOSTS = (process.env.PRIMARY_HOSTS || 'app.leadpages.com.au,leadpages.webculture.au,leadpages.com.au,www.leadpages.com.au')
-  .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+// Marketing + editor hosts. Always includes app.leadpages.com.au (Live Preview
+// loads /{slug} on the same host as manage.html). Env PRIMARY_HOSTS is merged in.
+const PRIMARY_HOSTS = resolvePrimaryHosts(process.env.PRIMARY_HOSTS);
 
 // token templates (server-side identity injection)
 const TOKEN_TEMPLATES = { 'broker-leads': brokerTpl.html, 'trade': tradeTpl.html };
@@ -161,13 +166,11 @@ const SHOWCASE_SUFFIXES = (process.env.SHOWCASE_BASES || 'leadpages.com.au,leadp
   .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
 
 function showcaseSlugFromHost(host) {
-  for (const base of SHOWCASE_SUFFIXES) {
-    if (host.endsWith('.' + base)) {
-      const label = host.slice(0, host.length - ('.' + base).length);
-      if (label && label !== 'www' && label.indexOf('.') < 0) return { slug: label, base };
-    }
-  }
-  return null;
+  // Never treat app.leadpages.com.au (editor host) as partner subdomain "app".
+  return showcaseSlugFromHostResolved(host, {
+    primaryHosts: PRIMARY_HOSTS,
+    showcaseBases: SHOWCASE_SUFFIXES
+  });
 }
 function parseCookies(h) {
   const out = {};
@@ -882,9 +885,12 @@ module.exports = async (req, res) => {
     const host = rawHost.replace(/^www\./, '');
     const slug = (req.query && req.query.slug) || '';
     let page = (req.query && req.query.page) || '';
-    const isCustom = !!host && !PRIMARY_HOSTS.includes(host);
+    // isPrimaryHost always includes app.leadpages.com.au even if env PRIMARY_HOSTS is incomplete.
+    const isCustom = !!host && !isPrimaryHost(host, PRIMARY_HOSTS);
 
     // Partner showcase: <slug>.leadpages.com.au serves the partner's homepage.
+    // Reserved labels (app, www, …) and primary hosts are skipped — otherwise
+    // Live Preview on app.leadpages.com.au/{tenant} 404s as showcase "app".
     const _sc = showcaseSlugFromHost(host);
     if (_sc) return renderShowcase(req, res, _sc.slug, _sc.base);
 
@@ -892,7 +898,7 @@ module.exports = async (req, res) => {
     // not a tenant page. Prefer vercel rewrite → /api/marketing-html. If we still
     // land here, serve home.html from disk — never redirect to /home.html (that
     // permanently redirects back to / and takes the site down).
-    if (!slug && (!host || PRIMARY_HOSTS.includes(host))) {
+    if (!slug && (!host || isPrimaryHost(host, PRIMARY_HOSTS))) {
       const candidates = [
         path.join(process.cwd(), 'home.html'),
         path.join(__dirname, '..', 'home.html')

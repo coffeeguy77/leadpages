@@ -1646,6 +1646,9 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function lpFrame(){ return document.getElementById('lp-prev-frame'); }
   function previewTarget(){ return currentSiteSlug || 'demo'; }
   function previewPageQuery(){
+    // Only append &page= while editing a landing page. Stale lpCur from a prior
+    // Landing Pages session must not 404 homepage Live Preview in Page editor.
+    if(typeof activeView==='string'&&activeView!=='landing') return '';
     if(currentSiteTemplate!=='trade'||!lpCur||!lpCur.slug) return '';
     return '&page='+encodeURIComponent(lpCur.slug);
   }
