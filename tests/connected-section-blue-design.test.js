@@ -17,7 +17,8 @@ const block = home.split('aria-labelledby="connected-title"')[1].split('id="webs
 test('connected section uses navy design tokens from mockup_b904', function () {
   assert.match(css, /background:\s*#0[Bb]1[Bb]2[Aa]/);
   assert.match(css, /connected-browser/);
-  assert.match(css, /aspect-ratio:\s*907\s*\/\s*481/);
+  assert.match(css, /aspect-ratio:\s*16\s*\/\s*9/);
+  assert.match(home, /syncConnectedWires|rayHitBox|connected-lines/);
 });
 
 test('connected section uses landscape Apple-style laptop (not portrait)', function () {
@@ -37,4 +38,10 @@ test('connected section has coloured icon nodes with SVG icons and labels', func
   assert.match(block, /n-quotes/);
   assert.match(block, /connected-lines/);
   assert.doesNotMatch(block, /<span class="ico">Q<\/span>/);
+});
+
+test('connected wires are synced from icon centres to the laptop', function () {
+  assert.match(home, /function syncConnectedWires/);
+  assert.match(home, /:scope > a\.cnode \.cnode-ico/);
+  assert.match(css, /node-pulse/);
 });
