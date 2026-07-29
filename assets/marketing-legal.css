@@ -14,6 +14,8 @@
   --surface: #ffffff;
   --disp: 'Plus Jakarta Sans', system-ui, sans-serif;
   --body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  /* Match homepage / marketing shell */
+  --max: 1440px;
 }
 
 * { box-sizing: border-box; }
@@ -38,8 +40,8 @@ body.mkt-legal .sitenav {
 }
 
 body.mkt-legal .sitenav .wrap {
-  width: min(100% - 48px, 1440px);
-  max-width: 1440px;
+  width: min(100% - 48px, var(--max));
+  max-width: var(--max);
   margin-inline: auto;
   display: flex;
   align-items: center;
@@ -105,19 +107,28 @@ body.mkt-legal .sitenav .links a.cta:hover {
 }
 
 body.mkt-legal .legal-shell {
-  width: min(100% - 48px, 1440px);
-  max-width: 1440px;
-  margin: 0 auto;
+  width: min(100% - 48px, var(--max));
+  max-width: var(--max);
+  margin-inline: auto;
   padding: 48px 0 72px;
 }
 
 body.mkt-legal .legal-card {
+  width: 100%;
+  max-width: none;
+  margin-inline: auto;
   background: var(--surface, #fff);
   border: 1px solid var(--border, #e7e2d8);
   border-radius: 20px;
-  padding: clamp(28px, 4vw, 48px) clamp(24px, 4vw, 56px);
+  padding: clamp(28px, 4vw, 48px) clamp(32px, 5vw, 72px);
   box-shadow: 0 18px 48px rgba(11, 27, 42, 0.08);
-  max-width: 920px;
+}
+
+/* Keep footer content aligned to the same 1440 shell as nav + article */
+body.mkt-legal .mkt-site-footer .wrap-wide {
+  width: min(100% - 48px, var(--max));
+  max-width: var(--max);
+  margin-inline: auto;
 }
 
 body.mkt-legal .eyebrow {
@@ -208,7 +219,7 @@ body.mkt-legal th {
 
 @media (max-width: 720px) {
   body.mkt-legal .sitenav .wrap {
-    width: min(100% - 28px, 1440px);
+    width: min(100% - 28px, var(--max));
     height: 88px;
   }
 
@@ -223,11 +234,15 @@ body.mkt-legal th {
   }
 
   body.mkt-legal .legal-shell {
-    width: min(100% - 28px, 1440px);
+    width: min(100% - 28px, var(--max));
     padding: 28px 0 48px;
   }
 
   body.mkt-legal .legal-card {
     padding: 22px 18px;
+  }
+
+  body.mkt-legal .mkt-site-footer .wrap-wide {
+    width: min(100% - 28px, var(--max));
   }
 }

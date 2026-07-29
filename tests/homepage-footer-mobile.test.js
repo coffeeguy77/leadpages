@@ -168,7 +168,10 @@ test('legal pages use marketing nav, 1440 shell, and themeable legal CSS', () =>
     assert.match(src, /marketing-home-colour\.js/, file);
   });
   const legalCss = fs.readFileSync(path.join(ROOT, 'assets/marketing-legal.css'), 'utf8');
-  assert.match(legalCss, /max-width:\s*1440px/);
+  assert.match(legalCss, /--max:\s*1440px/);
+  assert.match(legalCss, /\.legal-shell\s*\{[\s\S]*margin-inline:\s*auto/);
+  assert.match(legalCss, /\.legal-card\s*\{[\s\S]*width:\s*100%/);
+  assert.match(legalCss, /\.legal-card\s*\{[\s\S]*max-width:\s*none/);
   assert.match(legalCss, /--orange/);
 });
 
