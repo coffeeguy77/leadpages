@@ -1,7 +1,7 @@
 {
  "contract_version": 1,
  "slug": "trustbar-event-hire",
- "label": "Event Hire — Image Tiles",
+ "label": "Event Hire \u2014 Image Tiles",
  "section_key": "trustBar",
  "source": "file",
  "industry": "Event hire",
@@ -14,7 +14,7 @@
  "isFeatured": false,
  "isDefaultPlaygroundPreset": false,
  "site_config": {
-  "business": "Gather Event Hire",
+  "business": "Event Hire Co.",
   "trade": "events",
   "theme": {
    "pipe": "#5a3d6b"

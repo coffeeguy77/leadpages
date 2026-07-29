@@ -1,7 +1,7 @@
 {
  "contract_version": 1,
  "slug": "trustbar-beauty",
- "label": "Beauty Salon — Image Tiles",
+ "label": "Beauty Salon \u2014 Image Tiles",
  "section_key": "trustBar",
  "source": "file",
  "industry": "Beauty",
@@ -14,7 +14,7 @@
  "isFeatured": false,
  "isDefaultPlaygroundPreset": false,
  "site_config": {
-  "business": "Bloom Beauty",
+  "business": "Beauty Studio",
   "trade": "beauty",
   "theme": {
    "pipe": "#9b4d6c"

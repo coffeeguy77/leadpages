@@ -1,10 +1,10 @@
 {
  "contract_version": 1,
  "slug": "trustbar-cafe-badges",
- "label": "Café — Text and Icons",
+ "label": "Caf\u00e9 \u2014 Text and Icons",
  "section_key": "trustBar",
  "source": "file",
- "industry": "Café",
+ "industry": "Caf\u00e9",
  "businessType": "",
  "mode": "badges",
  "pairedPresetId": "trustbar-cafe-images",
@@ -14,7 +14,7 @@
  "isFeatured": false,
  "isDefaultPlaygroundPreset": false,
  "site_config": {
-  "business": "Corner Cup Café",
+  "business": "Local Caf\u00e9",
   "trade": "cafe",
   "theme": {
    "pipe": "#8B5E3C"

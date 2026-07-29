@@ -35,6 +35,8 @@ test('hero metric cards are compact and coloured (content-sized on desktop)', fu
 
 test('phone bottom aligns with metric cards dock', function () {
   assert.match(css, /\.hero-dock[\s\S]*\.phone[\s\S]*bottom:\s*0/);
+  assert.match(css, /\.hero-dock\s*\{[\s\S]*margin-top:\s*-28px/);
+  assert.match(css, /\.metrics\s*\{[\s\S]*justify-content:\s*flex-end/);
   assert.match(home, /class="hero-dock"/);
   const dock = home.split('class="hero-dock"')[1].split('</section>')[0];
   assert.match(dock, /class="metrics"/);

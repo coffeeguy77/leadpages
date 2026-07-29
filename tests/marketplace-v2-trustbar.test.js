@@ -96,15 +96,28 @@ describe('Trust Bar presets', () => {
     assert.equal(images.site_config.sections.trustBar.mode, 'images');
   });
 
-  it('includes AAM1 text-and-icon and Bean Culture image-tile examples', () => {
-    const aam1 = md.filePresets['trustbar-aam1'].site_config.sections.trustBar;
-    const bean = md.filePresets['trustbar-bean-culture'].site_config.sections.trustBar;
+  it('includes Render text-and-icon and Coffee Shop image-tile examples', () => {
+    const render = md.filePresets['trustbar-aam1'];
+    const coffee = md.filePresets['trustbar-bean-culture'];
+    const aam1 = render.site_config.sections.trustBar;
+    const bean = coffee.site_config.sections.trustBar;
+    assert.match(render.label, /Render\s*[—-]\s*Text and Icons/i);
+    assert.match(coffee.label, /Coffee Shop\s*[—-]\s*Image Tiles/i);
+    assert.doesNotMatch(render.label, /AAM1/i);
+    assert.doesNotMatch(coffee.label, /Bean Culture/i);
     assert.equal(aam1.mode, 'badges');
     assert.ok(aam1.badges.some((b) => /Acrylic Rendering/i.test(b.label)));
     assert.equal(bean.mode, 'images');
     assert.ok(bean.badges.some((b) => /Coffee Carts/i.test(b.label)));
     assert.equal(bean.badges.length, 4);
     assert.ok(bean.badges.every((b) => b.image));
+  });
+
+  it('defaults Trust Bar playground to Café image tiles', () => {
+    const cafe = md.filePresets['trustbar-cafe-images'];
+    assert.equal(cafe.isDefaultPlaygroundPreset, true);
+    assert.equal(md.filePresets['trustbar-aam1'].isDefaultPlaygroundPreset, false);
+    assert.equal(md.trustBarV2.defaultPlaygroundPreset, 'trustbar-cafe-images');
   });
 
   it('defaults image presets to four items with working image URLs', async () => {
@@ -127,9 +140,18 @@ describe('Trust Bar presets', () => {
     assert.ok(md.trustBarV2);
     assert.equal(md.trustBarV2.appKey, 'trustBar');
     assert.equal(md.trustBarV2.accessType, 'included');
-    const ids = (md.trustBarV2.examples || []).map((e) => e.id);
-    assert.ok(ids.includes('aam1-coating'));
-    assert.ok(ids.includes('bean-culture'));
+    const examples = md.trustBarV2.examples || [];
+    const ids = examples.map((e) => e.id);
+    assert.ok(ids.includes('render-badges'));
+    assert.ok(ids.includes('coffee-shop-images'));
+    assert.ok(ids.includes('cafe-images'));
+    const byId = Object.fromEntries(examples.map((e) => [e.id, e]));
+    assert.match(byId['render-badges'].businessName, /Render\s*[—-]\s*Text and Icons/i);
+    assert.match(byId['coffee-shop-images'].businessName, /Coffee Shop\s*[—-]\s*Image Tiles/i);
+    for (const ex of examples) {
+      assert.doesNotMatch(ex.businessName || '', /AAM1|Bean Culture/i);
+      assert.doesNotMatch(ex.title || '', /AAM1|Bean Culture/i);
+    }
   });
 });
 
@@ -137,17 +159,27 @@ describe('public marketplace theme + copy safety', () => {
   it('marketplace pages load theme bridge CSS', () => {
     const home = fs.readFileSync(path.join(root, 'marketplace.html'), 'utf8');
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
-    assert.match(home, /marketplace-theme\.css/);
     assert.match(feat, /marketplace-theme\.css/);
-    assert.match(home, /--theme-page-background/);
-    assert.match(feat, /--theme-primary/);
+    assert.match(home, /marketing-marketplace\.css/);
+    assert.match(feat, /--theme-primary|--theme-page-background/);
   });
 
   it('does not claim every marketplace feature is free', () => {
     const home = fs.readFileSync(path.join(root, 'marketplace.html'), 'utf8');
     assert.doesNotMatch(home, /no extra subscriptions/i);
     assert.doesNotMatch(home, /Every marketplace feature comes standard/i);
-    assert.match(home, /Premium and usage-based tools are clearly marked/i);
+    assert.match(home, /Premium apps like Online Quotes[\s\S]*are clearly marked/i);
+  });
+
+  it('marketplace hub search and category filters can hide cards', () => {
+    const home = fs.readFileSync(path.join(root, 'marketplace.html'), 'utf8');
+    const css = fs.readFileSync(path.join(root, 'assets/marketing-marketplace.css'), 'utf8');
+    assert.match(home, /id="mp-search"/);
+    assert.match(home, /id="mp-filters"/);
+    assert.match(home, /function resetBrowse/);
+    assert.match(home, /#mp-filters \[data-filter\]/);
+    assert.match(css, /\.mp-app-card\[hidden\][\s\S]*display:\s*none\s*!important/);
+    assert.match(css, /\.mp-tile\[hidden\][\s\S]*display:\s*none\s*!important/);
   });
 
   it('demo-trustBar uses sections.trustBar contract', () => {

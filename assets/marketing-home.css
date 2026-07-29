@@ -356,16 +356,16 @@ body.mkt-home .drawer .btn-orange { color: #fff; text-align: center; margin-top:
 .browser-site .mock-cap,
 .mock-cap { display: none; }
 
-/* Dock: metrics + phone; phone bottom aligns with card bottoms */
+/* Dock: metrics tucked under hero browser, tight against the phone */
 .hero-dock {
   position: relative;
-  margin-top: 22px;
-  padding-right: clamp(168px, 22vw, 248px);
+  margin-top: -28px;
+  padding-right: clamp(148px, 18vw, 210px);
   z-index: 4;
 }
 .phone {
   position: absolute;
-  right: 4px;
+  right: 8px;
   bottom: 0;
   width: clamp(150px, 17vw, 200px);
   transform: none;
@@ -391,9 +391,10 @@ body.mkt-home .drawer .btn-orange { color: #fff; text-align: center; margin-top:
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
-  justify-content: flex-start;
-  gap: 10px;
+  justify-content: flex-end;
+  gap: 8px;
   margin-top: 0;
+  margin-left: auto;
   width: fit-content;
   max-width: 100%;
   position: relative;
@@ -1299,7 +1300,7 @@ body.mkt-home .mkt-site-footer .lp-logo-wrap {
 @media (max-width: 1100px) {
   .hero-grid { grid-template-columns: 1fr 1.1fr; }
   .browser { margin-right: 90px; }
-  .hero-dock { padding-right: 180px; }
+  .hero-dock { padding-right: 148px; }
   .metrics {
     gap: 8px;
   }

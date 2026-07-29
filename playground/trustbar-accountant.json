@@ -1,7 +1,7 @@
 {
  "contract_version": 1,
  "slug": "trustbar-accountant",
- "label": "Accountant — Text and Icons",
+ "label": "Accountant \u2014 Text and Icons",
  "section_key": "trustBar",
  "source": "file",
  "industry": "Accounting",
@@ -14,7 +14,7 @@
  "isFeatured": false,
  "isDefaultPlaygroundPreset": false,
  "site_config": {
-  "business": "Ledger & Co.",
+  "business": "Local Accountants",
   "trade": "accountant",
   "theme": {
    "pipe": "#1f3a5f"

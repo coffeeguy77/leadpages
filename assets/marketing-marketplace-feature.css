@@ -1053,13 +1053,13 @@ body.mf-app .pg-devicewrap {
   line-height: 0;
   overflow-anchor: none;
   border-radius: var(--mf-radius);
-  background: var(--mf-oat);
+  background: #fff;
   border: 1px solid var(--mf-border);
   padding: 16px;
 }
 
 body.mf-app .pg-devicewrap.framed {
-  background: #e8e4e0;
+  background: #fff;
   border: 1px solid var(--mf-border);
   border-radius: 18px;
   padding: 24px;
@@ -1094,7 +1094,7 @@ body.mf-app .pg-devicewrap.pg-device-fill .pg-iframe {
 body.mf-app .pg-devicewrap.pg-device-phone {
   display: flex;
   justify-content: center;
-  background: var(--mf-oat);
+  background: #fff;
   padding: 18px 12px;
 }
 
@@ -1227,7 +1227,7 @@ body.mf-app .mp-ex-row {
 body.mf-app .mp-ex-chip {
   appearance: none;
   border: 1px solid var(--mf-border);
-  background: var(--mf-oat);
+  background: #fff;
   border-radius: var(--mf-radius-sm);
   padding: 10px 12px;
   text-align: left;

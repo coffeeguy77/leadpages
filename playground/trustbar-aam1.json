@@ -1,7 +1,7 @@
 {
  "contract_version": 1,
  "slug": "trustbar-aam1",
- "label": "AAM1 — Text and Icons",
+ "label": "Render \u2014 Text and Icons",
  "section_key": "trustBar",
  "source": "file",
  "industry": "Rendering",
@@ -10,11 +10,11 @@
  "pairedPresetId": null,
  "relationshipType": null,
  "sellingPoint": "Keep important services visible under the hero.",
- "description": "Real AAM1-style text-and-icon Trust Bar.",
+ "description": "Rendering trade text-and-icon Trust Bar.",
  "isFeatured": true,
- "isDefaultPlaygroundPreset": true,
+ "isDefaultPlaygroundPreset": false,
  "site_config": {
-  "business": "AAM1 Coating Services",
+  "business": "Render Co.",
   "trade": "renderer",
   "theme": {
    "pipe": "#032D15"

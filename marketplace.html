@@ -191,7 +191,7 @@
       <div class="mp-app-grid">
         <a class="mp-app-card reveal" href="/marketplace/online-quote" data-app="online-quote" data-cats="leads premium" data-search="online quote quotes enquiries leads premium">
           <div class="mp-app-media">
-            <img src="/assets/marketing-marketplace/mp-app-quotes.jpg" width="480" height="300" alt="" loading="lazy" decoding="async">
+            <img src="https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&amp;fit=crop&amp;w=960&amp;q=80" width="480" height="300" alt="Online Quotes — pricing and enquiry form" loading="lazy" decoding="async">
           </div>
           <div class="mp-app-body">
             <div class="mp-app-head">
@@ -206,7 +206,7 @@
         </a>
         <a class="mp-app-card reveal" href="/marketplace/booking-cta" data-app="booking-cta" data-cats="bookings" data-search="booking bookings appointments schedule">
           <div class="mp-app-media">
-            <img src="/assets/marketing-marketplace/mp-app-booking.jpg" width="480" height="300" alt="" loading="lazy" decoding="async">
+            <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&amp;fit=crop&amp;w=960&amp;q=80" width="480" height="300" alt="Bookings — calendar appointments" loading="lazy" decoding="async">
           </div>
           <div class="mp-app-body">
             <div class="mp-app-head">
@@ -221,7 +221,7 @@
         </a>
         <a class="mp-app-card reveal" href="/marketplace/premium-gallery" data-app="premium-gallery" data-cats="galleries premium" data-search="gallery galleries photos portfolio premium">
           <div class="mp-app-media">
-            <img src="/assets/marketing-marketplace/mp-app-gallery.jpg" width="480" height="300" alt="" loading="lazy" decoding="async">
+            <img src="https://images.unsplash.com/photo-1618229949478-c195c4a5c1e7?auto=format&amp;fit=crop&amp;w=960&amp;q=80" width="480" height="300" alt="Premium Gallery — design portfolio" loading="lazy" decoding="async">
           </div>
           <div class="mp-app-body">
             <div class="mp-app-head">
@@ -236,7 +236,7 @@
         </a>
         <a class="mp-app-card reveal" href="/marketplace/review-highlights" data-app="review-highlights" data-cats="reviews" data-search="review reviews highlights stars social proof">
           <div class="mp-app-media">
-            <img src="/assets/marketing-marketplace/mp-widget-review.jpg" width="480" height="300" alt="" loading="lazy" decoding="async">
+            <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&amp;fit=crop&amp;w=960&amp;q=80" width="480" height="300" alt="Review Highlights — star ratings" loading="lazy" decoding="async">
           </div>
           <div class="mp-app-body">
             <div class="mp-app-head">
@@ -251,7 +251,7 @@
         </a>
         <a class="mp-app-card reveal" href="/marketplace/trust-bar" data-app="trust-bar" data-cats="trust" data-search="trust bar credentials services promises">
           <div class="mp-app-media">
-            <img src="/assets/marketing-marketplace/mp-widget-call.jpg" width="480" height="300" alt="" loading="lazy" decoding="async">
+            <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&amp;fit=crop&amp;w=960&amp;q=80" width="480" height="300" alt="Trust Bar — service strip" loading="lazy" decoding="async">
           </div>
           <div class="mp-app-body">
             <div class="mp-app-head">
@@ -266,7 +266,7 @@
         </a>
         <a class="mp-app-card reveal" href="/marketplace/special-offer" data-app="special-offer" data-cats="marketing" data-search="special offer promo deal funnel marketing free">
           <div class="mp-app-media">
-            <img src="/assets/marketing-marketplace/mp-app-gallery.jpg" width="480" height="300" alt="" loading="lazy" decoding="async">
+            <img src="https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?auto=format&amp;fit=crop&amp;w=960&amp;q=80" width="480" height="300" alt="Special Offers — promo banner" loading="lazy" decoding="async">
           </div>
           <div class="mp-app-body">
             <div class="mp-app-head">
@@ -808,17 +808,27 @@
     if (emptyMsg) emptyMsg.hidden = visible > 0;
   }
 
+  function scrollExplore() {
+    var explore = document.getElementById('explore');
+    if (explore) explore.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  }
+
   function setFilter(filter, source) {
-    syncFilterUi(filter);
+    syncFilterUi(filter || 'all');
     applyFilters();
-    track('filter', { filter: filter, source: source || 'pill' });
-    if (filter !== 'all' && (source === 'goal' || source === 'premium_cta')) {
-      var explore = document.getElementById('explore');
-      if (explore) explore.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    track('filter', { filter: activeFilter, source: source || 'pill' });
+    if (source === 'goal' || source === 'premium_cta' || source === 'pill' || source === 'sidebar') {
+      scrollExplore();
     }
   }
 
-  document.querySelectorAll('[data-filter]').forEach(function (btn) {
+  function resetBrowse(source) {
+    if (searchInput) searchInput.value = '';
+    setFilter('all', source || 'view_all');
+    scrollExplore();
+  }
+
+  document.querySelectorAll('#mp-filters [data-filter]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       setFilter(btn.getAttribute('data-filter'), 'pill');
     });
@@ -847,11 +857,25 @@
     });
   });
 
+  document.querySelectorAll('[data-mp-track="popular_view_all"], [data-mp-track="explore_view_all"]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      resetBrowse(el.getAttribute('data-mp-track') || 'view_all');
+    });
+  });
+
   if (searchInput) {
     searchInput.addEventListener('input', function () {
       applyFilters();
       var q = norm(searchInput.value);
       if (q.length > 2) track('search', { query: q.slice(0, 80) });
+    });
+    searchInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyFilters();
+        scrollExplore();
+      }
     });
   }
 

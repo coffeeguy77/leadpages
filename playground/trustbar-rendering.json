@@ -1,7 +1,7 @@
 {
  "contract_version": 1,
  "slug": "trustbar-rendering",
- "label": "Rendering Company — Text and Icons",
+ "label": "Rendering Company \u2014 Text and Icons",
  "section_key": "trustBar",
  "source": "file",
  "industry": "Rendering",
@@ -14,7 +14,7 @@
  "isFeatured": false,
  "isDefaultPlaygroundPreset": false,
  "site_config": {
-  "business": "Summit Coatings",
+  "business": "Render Co.",
   "trade": "renderer",
   "theme": {
    "pipe": "#032D15"
