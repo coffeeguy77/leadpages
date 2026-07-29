@@ -1747,12 +1747,22 @@ function applyCfg(C){
     function _lpRich(s){ s=(s==null?'':String(s)); var d=document.createElement('div'); d.textContent=s; return d.innerHTML.replace(/&lt;(\/?)(br|p|b|strong|i|em|u|small|sup|sub|mark)( ?\/?)&gt;/gi,function(m,a,b){ return '<'+a+b.toLowerCase()+'>'; }); }
     function _lpRichWalk(root){ try{ if(!root||!document.createTreeWalker) return; var re=/<\/?(br|p|b|strong|i|em|u|small|sup|sub|mark)\b/i; var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null); var hits=[],n; while((n=w.nextNode())){ var v=n.nodeValue; if(v&&v.indexOf('<')>=0&&re.test(v)){ var pn=n.parentNode, t=pn&&pn.nodeName; if(t&&t!=='SCRIPT'&&t!=='STYLE'&&t!=='TEXTAREA') hits.push(n); } } for(var i=0;i<hits.length;i++){ var tn=hits[i], sp=document.createElement('span'); sp.innerHTML=_lpRich(tn.nodeValue); var fr=document.createDocumentFragment(); while(sp.firstChild) fr.appendChild(sp.firstChild); if(tn.parentNode) tn.parentNode.replaceChild(fr,tn); } }catch(_e){} }
     function _lpSecAppearanceCss(){
-      if(document.getElementById('lp-sec-appearance-css')) return;
-      var st=document.createElement('style'); st.id='lp-sec-appearance-css';
-      /* Edges are absolute overlays (52px). Sections with edges get matching padding so
-         titles / content sit below the wave instead of under it. */
-      st.textContent='[data-sec].lp-sec-has-edge{position:relative;overflow:visible}[data-sec]>.lp-sec-edge{position:absolute;left:0;right:0;height:52px;pointer-events:none;z-index:3;line-height:0}[data-sec]>.lp-sec-edge-top{top:0;margin-top:-1px}[data-sec]>.lp-sec-edge-bottom{bottom:0;margin-bottom:-1px}[data-sec]>.lp-sec-edge svg{width:100%;height:100%;display:block}[data-sec]>.lp-sec-edge-fade.lp-sec-edge-top{background:linear-gradient(to bottom,var(--lp-edge-from),var(--lp-edge-to))}[data-sec]>.lp-sec-edge-fade.lp-sec-edge-bottom{background:linear-gradient(to bottom,var(--lp-edge-from),var(--lp-edge-to))}[data-sec]>.lp-sec-edge-angle.lp-sec-edge-top{background:var(--lp-edge-to);clip-path:polygon(0 100%,100% 0,100% 100%)}[data-sec]>.lp-sec-edge-angle.lp-sec-edge-bottom{background:var(--lp-edge-from);clip-path:polygon(0 0,100% 100%,100% 0)}[data-sec]>.lp-sec-edge-curve.lp-sec-edge-top{background:var(--lp-edge-to);clip-path:ellipse(120% 100% at 50% 100%)}[data-sec]>.lp-sec-edge-curve.lp-sec-edge-bottom{background:var(--lp-edge-from);clip-path:ellipse(120% 100% at 50% 0)}';
-      document.head.appendChild(st);
+      var st=document.getElementById('lp-sec-appearance-css');
+      if(!st){ st=document.createElement('style'); st.id='lp-sec-appearance-css'; document.head.appendChild(st); }
+      /* Edges are absolute overlays (52px). Angle/curve SVG paints the *adjacent*
+         colour into the section (same idea as wave). CSS fallbacks use from=above /
+         to=below — never the section’s own fill alone (that made diagonal/curve invisible). */
+      st.textContent='[data-sec].lp-sec-has-edge{position:relative;overflow:visible}'
+        +'[data-sec]>.lp-sec-edge{position:absolute;left:0;right:0;height:52px;pointer-events:none;z-index:3;line-height:0;overflow:hidden}'
+        +'[data-sec]>.lp-sec-edge-top{top:0;margin-top:-1px}'
+        +'[data-sec]>.lp-sec-edge-bottom{bottom:0;margin-bottom:-1px}'
+        +'[data-sec]>.lp-sec-edge svg{width:100%;height:100%;display:block}'
+        +'[data-sec]>.lp-sec-edge-fade.lp-sec-edge-top{background:linear-gradient(to bottom,var(--lp-edge-from),var(--lp-edge-to))}'
+        +'[data-sec]>.lp-sec-edge-fade.lp-sec-edge-bottom{background:linear-gradient(to bottom,var(--lp-edge-from),var(--lp-edge-to))}'
+        +'[data-sec]>.lp-sec-edge-angle.lp-sec-edge-top{background:var(--lp-edge-from);clip-path:polygon(0 0,100% 0,0 100%)}'
+        +'[data-sec]>.lp-sec-edge-angle.lp-sec-edge-bottom{background:var(--lp-edge-to);clip-path:polygon(100% 0,100% 100%,0 100%)}'
+        +'[data-sec]>.lp-sec-edge-curve.lp-sec-edge-top{background:var(--lp-edge-from);clip-path:ellipse(70% 100% at 50% 0)}'
+        +'[data-sec]>.lp-sec-edge-curve.lp-sec-edge-bottom{background:var(--lp-edge-to);clip-path:ellipse(70% 100% at 50% 100%)}';
     }
     var LP_SEC_EDGE_H=52;
     function _secAppRememberPad(node){
@@ -1786,12 +1796,22 @@ function applyCfg(C){
       el.setAttribute('aria-hidden','true');
       el.style.setProperty('--lp-edge-from',fromCol||'transparent');
       el.style.setProperty('--lp-edge-to',toCol||'transparent');
+      var fc=fromCol||'#eef2f6', tc=toCol||'#eef2f6';
+      /* SVG edges: paint adjacent colour into this section (wave / diagonal / soft curve) */
       if(type==='wave'){
-        var fc=fromCol||'#eef2f6', tc=toCol||'#eef2f6';
-        var d=(pos==='top')
+        el.innerHTML=(pos==='top')
           ?'<svg viewBox="0 0 1200 52" preserveAspectRatio="none" aria-hidden="true"><path fill="'+fc+'" d="M0,0 H1200 V18 C900,52 700,0 500,26 C300,52 120,10 0,30 Z"/><path fill="'+tc+'" d="M0,30 C120,10 300,52 500,26 C700,0 900,52 1200,18 V52 H0 Z"/></svg>'
           :'<svg viewBox="0 0 1200 52" preserveAspectRatio="none" aria-hidden="true"><path fill="'+fc+'" d="M0,0 H1200 V34 C900,0 700,52 500,26 C300,0 120,42 0,22 Z"/><path fill="'+tc+'" d="M0,22 C120,42 300,0 500,26 C700,52 900,0 1200,34 V52 H0 Z"/></svg>';
-        el.innerHTML=d;
+      } else if(type==='angle'){
+        /* Top: previous colour wedges down from the left; bottom: next colour wedges up from the right */
+        el.innerHTML=(pos==='top')
+          ?'<svg viewBox="0 0 1200 52" preserveAspectRatio="none" aria-hidden="true"><path fill="'+fc+'" d="M0,0 H1200 L0,52 Z"/></svg>'
+          :'<svg viewBox="0 0 1200 52" preserveAspectRatio="none" aria-hidden="true"><path fill="'+tc+'" d="M1200,0 V52 H0 Z"/></svg>';
+      } else if(type==='curve'){
+        /* Soft arch of the adjacent colour into this section */
+        el.innerHTML=(pos==='top')
+          ?'<svg viewBox="0 0 1200 52" preserveAspectRatio="none" aria-hidden="true"><path fill="'+fc+'" d="M0,0 H1200 V6 Q600,56 0,6 Z"/></svg>'
+          :'<svg viewBox="0 0 1200 52" preserveAspectRatio="none" aria-hidden="true"><path fill="'+tc+'" d="M0,52 H1200 V46 Q600,-4 0,46 Z"/></svg>';
       }
       if(pos==='top') node.insertBefore(el,node.firstChild); else node.appendChild(el);
       node.classList.add('lp-sec-has-edge');
