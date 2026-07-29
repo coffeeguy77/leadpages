@@ -1,3 +1,5 @@
+@import url('marketing-site-footer.css');
+
 /* MASTER DESIGN SPEC — LeadPages Australia homepage
    Source: mockup_b904 (1440 / 1280 content) — sampled band colours.
    Band 1  Nav + Hero .............. NAVY        #0B1B2A
@@ -1268,203 +1270,12 @@ body.mkt-home .ex-body a.btn { color: #fff; }
 }
 .final .btn-row { margin-top: 32px; }
 
-/* —— Footer —— */
-.footer {
-  background: var(--navy);
-  color: #C3D0DA;
-  padding: 32px 0 16px;
-  font-size: 14px;
+/* —— Footer (shared marketing-site-footer.css) —— */
+body.mkt-home .mkt-site-footer .leadpages-logo.lp-logo-wrap,
+body.mkt-home .mkt-site-footer .lp-logo-wrap {
+  --lp-logo-height: 72px !important;
+  height: 72px !important;
 }
-.footer-grid {
-  display: grid;
-  grid-template-columns: minmax(150px, 1.25fr) repeat(4, minmax(0, 1fr)) minmax(260px, 2fr);
-  column-gap: clamp(28px, 3.2vw, 52px);
-  row-gap: 20px;
-  align-items: start;
-}
-.footer-grid > .f-col {
-  min-width: 0;
-}
-body.mkt-home .footer .leadpages-logo.lp-logo-wrap {
-  margin-bottom: 10px;
-}
-.footer h4 {
-  margin: 0 0 10px;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0;
-  text-transform: none;
-}
-body.mkt-home .footer a {
-  display: block;
-  margin: 0 0 6px;
-  color: #9FB0BD;
-  font-weight: 500;
-  font-size: 13px;
-}
-.footer a:hover { color: #fff; }
-.footer .blurb {
-  max-width: 220px;
-  margin: 8px 0 0;
-  color: #9FB0BD;
-  font-size: 13px;
-  line-height: 1.45;
-}
-.f-support {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px 18px;
-  align-items: center;
-  width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 14px;
-  padding: 16px 18px 18px;
-  background: rgba(255, 255, 255, 0.04);
-  box-sizing: border-box;
-}
-.f-support-copy {
-  min-width: 0;
-}
-.f-support h4 {
-  display: block;
-  margin: 0 0 10px;
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: #fff;
-}
-.f-support .f-ico {
-  width: 22px;
-  height: 22px;
-  flex-shrink: 0;
-  display: block;
-}
-.f-support-map {
-  display: grid;
-  place-items: center;
-  align-self: stretch;
-  width: clamp(110px, 34%, 168px);
-  pointer-events: none;
-}
-.f-support .f-ico-au {
-  width: 100%;
-  height: auto;
-  max-width: 156px;
-  aspect-ratio: 675 / 628;
-  color: rgba(232, 238, 242, 0.92);
-  overflow: visible;
-  display: block;
-}
-.f-support .f-ico-au path {
-  vector-effect: non-scaling-stroke;
-  stroke: currentColor;
-  stroke-width: 2.6;
-  fill: none;
-}
-.f-support .help {
-  margin: 0 0 10px;
-  color: #9FB0BD;
-  font-size: 13px;
-}
-body.mkt-home .footer .fphone,
-body.mkt-home .footer .email,
-.support .fphone,
-.f-support .fphone,
-.support .email,
-.f-support .email {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 8px 0 0;
-  text-decoration: none;
-}
-.support .fphone,
-.f-support .fphone,
-body.mkt-home .footer .fphone {
-  color: #fff;
-  font-weight: 700;
-  font-size: 17px;
-  line-height: 1.2;
-}
-.support .email,
-.f-support .email,
-body.mkt-home .footer .email {
-  color: #C3D0DA;
-  font-size: 14px;
-  font-weight: 500;
-}
-body.mkt-home .footer .fphone:hover,
-body.mkt-home .footer .email:hover {
-  color: #fff;
-}
-.footer-bottom {
-  margin-top: 28px;
-  padding-top: 22px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  display: grid;
-  gap: 16px;
-  color: #8496A2;
-}
-.f-tagline {
-  margin: 0;
-  max-width: 18ch;
-  font-family: var(--disp);
-  font-size: clamp(1.45rem, 2.6vw, 1.9rem);
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.035em;
-  color: var(--on-dark);
-}
-.f-tagline span { display: inline; }
-.f-bottom-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 18px;
-  justify-content: space-between;
-  align-items: center;
-}
-.f-legal {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 0;
-  align-items: center;
-  font-size: 12px;
-  line-height: 1.35;
-}
-.f-legal > span:not(:last-child)::after {
-  content: '·';
-  margin: 0 8px;
-  opacity: 0.55;
-}
-.f-abn {
-  display: inline-flex;
-  flex-wrap: nowrap;
-  align-items: baseline;
-  gap: 0.35em;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-.f-abn-label,
-.f-abn-num {
-  display: inline;
-  white-space: nowrap;
-}
-.f-sep { display: none; }
-.f-links {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  margin-left: auto;
-}
-body.mkt-home .footer .f-links a {
-  display: inline;
-  margin: 0;
-  color: #C3D0DA;
-  font-size: 12.5px;
-  font-weight: 700;
-}
-body.mkt-home .footer .f-links a:hover { color: #fff; }
 
 /* —— Motion —— */
 .reveal { opacity: 0; transform: translateY(16px); transition: opacity .55s, transform .55s; }
@@ -1505,12 +1316,6 @@ body.mkt-home .footer .f-links a:hover { color: #fff; }
   .partner-photo img { min-height: 280px; }
   .price-layout { grid-template-columns: 1fr; }
   .reassure { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 0; }
-  .footer-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    column-gap: clamp(20px, 2.5vw, 36px);
-  }
-  .footer-grid > .f-brand { grid-column: span 2; }
-  .footer-grid > .f-support { grid-column: span 2; }
   .connected-layout { grid-template-columns: 1fr; }
   .connected-copy { max-width: none; }
   .connected-stage { min-height: 520px; max-width: 780px; margin-inline: auto; }
@@ -1524,8 +1329,8 @@ body.mkt-home .footer .f-links a:hover { color: #fff; }
     --lp-logo-height: 52px !important;
     height: 52px !important;
   }
-  body.mkt-home footer .leadpages-logo.lp-logo-wrap,
-  body.mkt-home footer .lp-logo-wrap {
+  body.mkt-home .mkt-site-footer .leadpages-logo.lp-logo-wrap,
+  body.mkt-home .mkt-site-footer .lp-logo-wrap {
     --lp-logo-height: 72px !important;
     height: 72px !important;
   }
@@ -1586,106 +1391,6 @@ body.mkt-home .footer .f-links a:hover { color: #fff; }
   .metric .si svg {
     width: 18px;
     height: 18px;
-  }
-  .footer {
-    padding: 40px 0 28px;
-  }
-  .footer-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 22px 16px;
-  }
-  .footer-grid > .f-brand,
-  .footer-grid > .f-support {
-    grid-column: 1 / -1;
-  }
-  .footer .blurb {
-    max-width: none;
-  }
-  .footer h4 {
-    font-size: 12.5px;
-    margin-bottom: 8px;
-  }
-  body.mkt-home .footer a {
-    margin-bottom: 5px;
-    font-size: 12.5px;
-  }
-  .f-support {
-    margin-top: 2px;
-    padding: 18px 18px 20px;
-    border-color: rgba(255, 255, 255, 0.3);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
-  }
-  .f-support h4 {
-    font-size: 18px;
-  }
-  .f-support .f-ico,
-  .f-support .fphone .f-ico,
-  .f-support .email .f-ico {
-    width: 24px;
-    height: 24px;
-  }
-  .f-support-map {
-    width: clamp(104px, 34%, 140px);
-  }
-  .f-support .f-ico-au {
-    max-width: 132px;
-  }
-  .support .fphone,
-  .f-support .fphone,
-  body.mkt-home .footer .fphone {
-    font-size: 18px;
-  }
-  .support .email,
-  .f-support .email,
-  body.mkt-home .footer .email {
-    font-size: 14.5px;
-  }
-  .footer-bottom {
-    margin-top: 24px;
-    padding-top: 20px;
-    gap: 18px;
-    border-top-color: rgba(255, 255, 255, 0.16);
-  }
-  .f-tagline {
-    max-width: none;
-    font-size: clamp(1.85rem, 8.5vw, 2.35rem);
-  }
-  .f-tagline span { display: block; }
-  .f-bottom-meta {
-    width: 100%;
-    display: grid;
-    grid-template-columns: minmax(min-content, 1fr) auto;
-    align-items: end;
-    column-gap: 12px;
-    row-gap: 8px;
-  }
-  .f-legal {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 3px;
-    min-width: min-content;
-    max-width: 100%;
-  }
-  .f-legal > span:not(:last-child)::after { display: none; content: none; }
-  .f-abn {
-    display: inline-flex;
-    flex-wrap: nowrap;
-    align-items: baseline;
-    gap: 0.35em;
-    white-space: nowrap;
-  }
-  .f-abn-label,
-  .f-abn-num {
-    white-space: nowrap;
-  }
-  .f-links {
-    margin-left: 0;
-    justify-self: end;
-    align-self: end;
-    gap: 16px;
-  }
-  body.mkt-home .footer .f-links a {
-    font-size: 13px;
   }
   .btn-row { flex-direction: column; }
   .btn-row .btn { width: 100%; }

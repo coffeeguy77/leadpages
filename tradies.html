@@ -320,6 +320,7 @@ footer{background:var(--ink);color:#9aa3ad;padding:54px 0 30px;font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto}}
 </style>
+<link rel="stylesheet" href="/assets/marketing-site-footer.css">
 </head>
 <body>
 
@@ -557,25 +558,7 @@ footer{background:var(--ink);color:#9aa3ad;padding:54px 0 30px;font-size:14px}
 </section>
 
 <!-- FOOTER -->
-<footer>
-  <div class="wrap">
-    <div class="foot-top">
-      <div style="max-width:300px">
-        <a href="#top" class="logo" style="margin-bottom:14px"><span class="mk">▰</span><span>Tradie Sites<small>by Web Culture</small></span></a>
-        <p style="color:#9aa3ad;font-size:14px">Done-for-you lead websites for Australian tradies. Built in Canberra. You own everything.</p>
-      </div>
-      <div class="foot-links">
-        <div><h4>Product</h4><a href="#themes">Themes</a><a href="#features">Features</a><a href="#analytics">Dashboard</a><a href="#pricing">Pricing</a></div>
-        <div><h4>Company</h4><a href="#faq">FAQ</a><a href="https://webculture.au" target="_blank">Web Culture</a><a href="#reviews">Reviews</a></div>
-        <div><h4>Clients</h4><a href="/manage.html">Sign in</a><a href="#themes">Start an order</a></div>
-      </div>
-    </div>
-    <div class="foot-bot">
-      <span>© 2026 Tradie Sites · Web Culture · Canberra, ACT</span>
-      <span>Made for tradies who'd rather be on the tools.</span>
-    </div>
-  </div>
-</footer>
+<div data-mkt-site-footer></div>
 
 <!-- CART -->
 <div class="scrim" id="scrim" onclick="closeCart()"></div>
@@ -875,5 +858,7 @@ document.getElementById('coScrim').addEventListener('click',function(e){ if(e.ta
 renderThemeTools(); renderThemes(); renderFaq(); renderCart();
 track('page_view',{page:'home'});
 </script>
+<script src="/assets/lp-logo.js"></script>
+<script src="/assets/marketing-site-footer.js"></script>
 </body>
 </html>
