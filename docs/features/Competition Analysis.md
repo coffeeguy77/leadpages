@@ -20,20 +20,22 @@ Marketplace app: slug `premium-seo`, section key `premiumSeo`, **$49/mo** or **$
 
 Unlocks live DataForSEO research:
 
-| Step | UI action | Backend |
-|------|-----------|---------|
-| 0. Keyword lookup | **Look up keyword** | Live SERP → your position + rivals (organic + local) |
+| Step | UI action | Backend / DataForSEO |
+|------|-----------|----------------------|
+| 0. Keyword lookup | **Look up keyword** | Live SERP — `serp/google/organic/live/advanced` (default) or `/regular` when “Organic-only SERP” is checked |
 | 0b. Rival drill-down | **Keywords: {domain}** | Labs `ranked_keywords` for that rival |
 | 1. Core competitors | **Find organic competitors** | Labs `competitors_domain` for **this** domain |
-| 1b. Seed → list | **Save rivals from SERP** | Live SERP domains saved to competitor list |
-| 2. Keyword gap | **Keyword gap** | Ranked keywords for you + up to 4 saved rivals |
-| 3. Backlinks | **Backlink strategy** | Referring domains + top linked pages |
-| 4. PPC | **Paid ads research** | Paid `ranked_keywords` |
+| 2. SERP competitors | **SERP competitors** | Labs `serp_competitors` for operator keyword seeds |
+| 2b. Seed → list | **Save rivals from SERP** | Live SERP domains saved to competitor list |
+| 3. Keyword gap | **Keyword gap** | Ranked keywords for you + up to 4 saved rivals (local gap math) |
+| 4. You vs rival | **You vs rival** | Labs `domain_intersection` — shared + keywords they rank for that you don’t |
+| 5. Backlinks | **Backlink strategy** | Referring domains + top linked pages |
+| 6. PPC | **Paid ads research** | Paid `ranked_keywords` |
 
 **Hard rules**
 
 1. Discovery uses the **site’s own domain** — never a hard-coded trade list.
-2. Keyword discovery uses **only the seeds the operator types**.
+2. Keyword / SERP competitor discovery uses **only the seeds the operator types**.
 3. Missing DataForSEO credentials → `market_provider_required` (no mock rivals).
 4. Missing Premium SEO subscription → `subscription_required` (HTTP 402), even if DataForSEO is configured.
 5. Demo fixture domains are purged from site config on tab load.
@@ -47,7 +49,7 @@ Unlocks live DataForSEO research:
 | Box | Contents |
 |-----|----------|
 | **Included · free** | Competitor domain textarea, Save, Clear |
-| **Premium SEO** (shaded) | Keyword lookup, live research buttons, SERP rival save. Locked sites see message + **Get Premium SEO** checkout CTA |
+| **Premium SEO** (shaded) | Keyword lookup (advanced/regular), live research buttons, SERP rival save. Locked sites see message + **Get Premium SEO** checkout CTA |
 
 ---
 
@@ -58,7 +60,7 @@ Unlocks live DataForSEO research:
 | Action | Tier |
 |--------|------|
 | `save_competitors` / `clear_competitors` / `purge_fixtures` | Free |
-| `lookup_keyword` / `competitor_keywords` / `discover_competitors` / `discover_from_serp` / `keyword_gap` / `backlink_strategy` / `paid_research` | Premium SEO |
+| `lookup_keyword` / `competitor_keywords` / `discover_competitors` / `discover_from_serp` / `serp_competitors` / `keyword_gap` / `domain_intersection` / `backlink_strategy` / `paid_research` | Premium SEO |
 
 Register the app: `node scripts/register-premium-seo-app.js`
 

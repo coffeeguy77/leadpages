@@ -11007,7 +11007,7 @@ function heroCtaCard(c){
     clusters:{ title:'Clusters', blurb:'Groups related keywords into topic buckets so you can plan pages that cover a whole theme, not one word at a time.' },
     local:{ title:'Local', blurb:'Maps and “near me” visibility — how you show next to nearby competitors. Live map checks run only when you click Check maps.' },
     authority:{ title:'Authority', blurb:'How often trusted sites and AI answer tools mention your brand. Helps you see reputation beyond classic blue-link rankings.' },
-    competition:{ title:'Competition', blurb:'Free: save rival domains manually. Premium SEO unlocks live discovery, keyword gap, backlinks, and paid ads research.' },
+    competition:{ title:'Competition', blurb:'Free: save rival domains manually. Premium SEO unlocks live discovery, SERP competitors, keyword gap, you-vs-rival, backlinks, and paid ads research.' },
     summary:{ title:'Summary', blurb:'Plain-language scorecard for partners and owners — what improved, what to do next, without SEO jargon.' },
     portfolio:{ title:'Portfolio', blurb:'Compare every site you manage in one view. Best for agencies and multi-location operators.' },
     actions:{ title:'Next Best Actions', blurb:'Prioritised to-dos ranked by impact. Optional “Re-check homepage” crawls your live site once; everyday browsing uses the last saved check.' },
@@ -12024,17 +12024,24 @@ function heroCtaCard(c){
         +(entitled?(liveReady?'<p class="hint" style="margin:0 0 10px">Market data ready · Premium SEO active'+(prem.exempt?' (platform access)':'')+'</p>':'<p class="hint" style="margin:0 0 10px;color:#b45309">Premium SEO active — server needs DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD for live runs.</p>'):'')
         +'<div class="row" style="gap:8px;flex-wrap:wrap;margin:0 0 10px">'
         +'<button type="button" class="btn sm" id="si-comp-discover"'+(entitled?'':' disabled')+'>1 · Find organic competitors</button>'
-        +'<button type="button" class="btn sm ghost" id="si-comp-gap"'+(entitled?'':' disabled')+'>2 · Keyword gap</button>'
-        +'<button type="button" class="btn sm ghost" id="si-comp-links"'+(entitled?'':' disabled')+'>3 · Backlink strategy</button>'
-        +'<button type="button" class="btn sm ghost" id="si-comp-paid"'+(entitled?'':' disabled')+'>4 · Paid ads research</button>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-serp-comps"'+(entitled?'':' disabled')+'>2 · SERP competitors</button>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-gap"'+(entitled?'':' disabled')+'>3 · Keyword gap</button>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-vs"'+(entitled?'':' disabled')+'>4 · You vs rival</button>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-links"'+(entitled?'':' disabled')+'>5 · Backlink strategy</button>'
+        +'<button type="button" class="btn sm ghost" id="si-comp-paid"'+(entitled?'':' disabled')+'>6 · Paid ads research</button>'
         +'</div>'
         +'<div style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px">'
-        +'<p class="hint" style="margin:0 0 6px"><strong>Keyword lookup</strong> — your position + rivals for that keyword (organic + local). Click a rival to see keywords they rank for.</p>'
+        +'<p class="hint" style="margin:0 0 6px"><strong>Keyword lookup</strong> — live Google SERP for your keyword (position + rivals). Click a rival to see keywords they rank for.</p>'
         +'<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">'
         +'<input id="si-comp-seeds" class="tin" placeholder="e.g. coffee cart hire canberra" style="flex:1;min-width:220px"'+(entitled?'':' disabled')+'>'
+        +'<label class="hint" style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap">'
+        +'<input type="checkbox" id="si-comp-serp-regular"'+(entitled?'':' disabled')+'> Organic-only SERP'
+        +'</label>'
         +'<button type="button" class="btn sm" id="si-comp-lookup"'+(entitled?'':' disabled')+'>Look up keyword</button>'
         +'<button type="button" class="btn sm ghost" id="si-comp-serp"'+(entitled?'':' disabled')+'>Save rivals from SERP</button>'
-        +'</div></div>';
+        +'</div>'
+        +'<p class="hint" style="margin:8px 0 0">SERP competitors uses Labs visibility for the keywords above. Save rivals scrapes the live SERP. Organic-only uses the regular SERP endpoint (faster); unchecked uses advanced (full features).</p>'
+        +'</div>';
 
       var lockHtml=!entitled
         ?('<div class="si-premium-lock">'
@@ -12098,7 +12105,7 @@ function heroCtaCard(c){
         }
       }
       async function runComp(action, extra){
-        var premiumActs={discover_competitors:1,discover_from_serp:1,lookup_keyword:1,competitor_keywords:1,keyword_gap:1,backlink_strategy:1,paid_research:1};
+        var premiumActs={discover_competitors:1,discover_from_serp:1,serp_competitors:1,lookup_keyword:1,competitor_keywords:1,keyword_gap:1,domain_intersection:1,backlink_strategy:1,paid_research:1};
         if(premiumActs[action]&&!entitled){
           toast('Premium SEO required for live research','warn');
           var buy=document.getElementById('si-comp-buy');
@@ -12150,6 +12157,7 @@ function heroCtaCard(c){
               +'</p>'
               +'<p class="hint" style="margin:0 0 10px">'+esc(res.note||'')
               +' · Provider: '+esc(res.provider||'—')
+              +(res.serpMode?' · Mode: '+esc(res.serpMode):'')
               +(res.locationUsed?' · SERP location: '+esc(res.locationUsed):'')
               +'</p>'
               +(serpRows.length?'':'<p class="hint" style="color:#b45309">No website rows in this SERP response. If Google shows rivals but we don’t, the market-data location/API call failed — check DataForSEO balance and credentials.</p>')
@@ -12177,8 +12185,13 @@ function heroCtaCard(c){
                 kw.type='button'; kw.className='btn sm';
                 kw.textContent='Keywords: '+rv.domain;
                 kw.onclick=function(){ runComp('competitor_keywords',{competitor:rv.domain,domain:rv.domain}); };
+                var vs=document.createElement('button');
+                vs.type='button'; vs.className='btn ghost sm';
+                vs.textContent='You vs '+rv.domain;
+                vs.onclick=function(){ runComp('domain_intersection',{competitor:rv.domain}); };
                 act.appendChild(add);
                 act.appendChild(kw);
+                act.appendChild(vs);
               });
             }
             toast(res.ownPosition!=null?('You rank #'+res.ownPosition):'Keyword SERP loaded');
@@ -12199,7 +12212,7 @@ function heroCtaCard(c){
             return;
           }
 
-          if(action==='save_competitors'||action==='discover_competitors'||action==='discover_from_serp'){
+          if(action==='save_competitors'||action==='discover_competitors'||action==='discover_from_serp'||action==='serp_competitors'){
             if(String(res.provider||'')==='mock'){
               out.innerHTML='<p class="lede" style="color:#b45309">Blocked mock/demo rivals — live market data only for Premium SEO.</p><p class="hint">'+esc(res.note||'')+'</p>';
               toast('Mock competitors blocked','warn');
@@ -12226,6 +12239,21 @@ function heroCtaCard(c){
               else toast('No rival domains found','warn');
               return;
             }
+            if(action==='serp_competitors'){
+              out.innerHTML='<p class="lede">SERP competitors for <strong>'+esc((res.keywords||[]).join(', ')||'—')+'</strong> (Labs visibility).</p>'
+                +kwTable((res.competitors||[]).filter(function(c){ return list.indexOf(c.domain)>=0; }),[
+                  {label:'Domain',get:function(c){return c.domain;}},
+                  {label:'Rating',get:function(c){return c.rating!=null?c.rating:c.competitionLevel;}},
+                  {label:'KW hits',get:function(c){return c.organicKeywords!=null?c.organicKeywords:c.overlapCount;}},
+                  {label:'Est. traffic',get:function(c){return c.organicTraffic!=null?Math.round(c.organicTraffic):null;}},
+                  {label:'Avg pos',get:function(c){return c.avgPosition;}},
+                  {label:'Visibility',get:function(c){return c.visibility!=null?c.visibility:c.visibilityEstimate;}}
+                ])
+                +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+' · Provider: '+esc(res.provider||'—')+'</p>';
+              if(list.length) toast('SERP competitors loaded');
+              else toast('No SERP competitors found','warn');
+              return;
+            }
             out.innerHTML='<p class="lede">Main organic competitors for <strong>'+esc(res.domain||'—')+'</strong> (by keyword overlap).</p>'
               +kwTable((res.competitors||[]).filter(function(c){ return list.indexOf(c.domain)>=0; }),[
                 {label:'Domain',get:function(c){return c.domain;}},
@@ -12236,6 +12264,31 @@ function heroCtaCard(c){
               ])
               +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+' · Provider: '+esc(res.provider||'—')+'</p>';
             toast('Competitors discovered');
+            return;
+          }
+
+          if(action==='domain_intersection'){
+            var countsVs=res.counts||{};
+            out.innerHTML='<p class="lede">You (<strong>'+esc(res.domain||'—')+'</strong>) vs <strong>'+esc(res.competitor||'—')+'</strong></p>'
+              +'<p class="hint">Shared <strong>'+esc(countsVs.shared||0)+'</strong> · They rank / you don’t <strong>'+esc(countsVs.missing||0)+'</strong></p>'
+              +'<h4 style="margin:14px 0 6px">Shared keywords</h4>'
+              +kwTable(res.shared||[],[
+                {label:'Keyword',get:function(r){return r.keyword;}},
+                {label:'Vol',get:function(r){return r.volume;}},
+                {label:'Your pos',get:function(r){return r.ownPosition;}},
+                {label:'Rival pos',get:function(r){return r.rivalPosition;}},
+                {label:'CPC',get:function(r){return r.cpc;}}
+              ])
+              +'<h4 style="margin:14px 0 6px">Keywords they rank for that you don’t</h4>'
+              +kwTable(res.missing||[],[
+                {label:'Keyword',get:function(r){return r.keyword;}},
+                {label:'Vol',get:function(r){return r.volume;}},
+                {label:'Rival pos',get:function(r){return r.rivalPosition;}},
+                {label:'CPC',get:function(r){return r.cpc;}},
+                {label:'Rival URL',get:function(r){return r.rivalUrl;}}
+              ])
+              +'<p class="hint" style="margin-top:8px">'+esc(res.note||'')+' · Provider: '+esc(res.provider||'—')+'</p>';
+            toast('You vs rival ready');
             return;
           }
 
@@ -12323,7 +12376,9 @@ function heroCtaCard(c){
       var bSave=document.getElementById('si-comp-save');
       var bClear=document.getElementById('si-comp-clear');
       var bDisc=document.getElementById('si-comp-discover');
+      var bSerpComps=document.getElementById('si-comp-serp-comps');
       var bGap=document.getElementById('si-comp-gap');
+      var bVs=document.getElementById('si-comp-vs');
       var bLinks=document.getElementById('si-comp-links');
       var bPaid=document.getElementById('si-comp-paid');
       var bSerp=document.getElementById('si-comp-serp');
@@ -12333,10 +12388,24 @@ function heroCtaCard(c){
         var seedsEl=document.getElementById('si-comp-seeds');
         return seedsEl?String(seedsEl.value||'').trim():'';
       }
+      function serpMode(){
+        var el=document.getElementById('si-comp-serp-regular');
+        return el&&el.checked?'regular':'advanced';
+      }
       if(bSave) bSave.onclick=function(){ runComp('save_competitors'); };
       if(bClear) bClear.onclick=function(){ runComp('clear_competitors'); };
       if(bDisc) bDisc.onclick=function(){ runComp('discover_competitors'); };
+      if(bSerpComps) bSerpComps.onclick=function(){
+        var seeds=seedKeyword();
+        if(!seeds){ toast('Enter keyword(s) first for SERP competitors','warn'); return; }
+        runComp('serp_competitors',{seeds:seeds,keywords:seeds});
+      };
       if(bGap) bGap.onclick=function(){ runComp('keyword_gap'); };
+      if(bVs) bVs.onclick=function(){
+        var list=readComps();
+        if(!list.length){ toast('Save or discover a competitor first','warn'); return; }
+        runComp('domain_intersection',{competitor:list[0]});
+      };
       if(bLinks) bLinks.onclick=function(){
         var list=readComps();
         runComp('backlink_strategy',{competitor:list[0]});
@@ -12345,7 +12414,7 @@ function heroCtaCard(c){
       if(bLookup) bLookup.onclick=function(){
         var seeds=seedKeyword();
         if(!seeds){ toast('Enter a keyword first (e.g. coffee cart hire canberra)','warn'); return; }
-        runComp('lookup_keyword',{keyword:seeds});
+        runComp('lookup_keyword',{keyword:seeds,mode:serpMode(),serpMode:serpMode()});
       };
       if(bSerp) bSerp.onclick=function(){
         var seeds=seedKeyword();

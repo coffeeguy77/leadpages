@@ -69,6 +69,7 @@ Every response includes `provider`, `fetchedAt`, `labelClass` (`measured` \| `es
 | `rankCheck` | Position for tracked keywords |
 | `backlinkSummary` | Referring domains / backlinks (DataForSEO Backlinks API) |
 | `competitorsDomain` | Main organic rivals by keyword overlap (Labs) |
+| `serpCompetitors` | Domains ranking for a keyword set — Labs visibility / rating / etv |
 | `rankedKeywords` | Keywords a domain ranks for (organic or paid) |
 | `domainIntersection` | Shared / gap keywords between two domains |
 | `referringDomains` | Referring-domain list for outreach |
@@ -83,7 +84,7 @@ AI visibility probes reuse `serp` features (`ai_overview`) and extract nested ci
 - `dataforseo.js` returns `{ ok: false, error: 'not_configured' }` until login + password are set. Login: `DATAFORSEO_LOGIN` / `DATAFORSEO_EMAIL` / `DFS_LOGIN`. Password: `DATAFORSEO_PASSWORD` / `DATAFORSEO_API_PASSWORD` / `DATAFORSEO_API_KEY` / `DFS_PASSWORD`. DataForSEO uses HTTP Basic Auth (email + API password), not a single bearer token.
 - When credentials exist and `SI_PROVIDER` / `SI_KEYWORD_PROVIDER` are unset, the gateway **auto-prefers** DataForSEO
 - Explicit `SI_PROVIDER=mock` always wins; any `semrush` preference is remapped to DataForSEO/mock
-- Live ops: `keywordIdeas` → Labs `google/keyword_ideas/live`; `serp` / `rankCheck` → `serp/google/organic/live/advanced`; `mapsGrid` → `serp/google/maps/live/advanced`; `domainOverview` → Labs `google/domain_rank_overview/live`; `backlinkSummary` → `backlinks/summary/live`
+- Live ops: `keywordIdeas` → Labs `google/keyword_ideas/live`; `serp` / `rankCheck` → `serp/google/organic/live/advanced` (or `/regular` when `mode: 'regular'`); `mapsGrid` → `serp/google/maps/live/advanced`; `domainOverview` → Labs `google/domain_rank_overview/live`; `backlinkSummary` → `backlinks/summary/live`; `competitorsDomain` → Labs `competitors_domain/live`; `serpCompetitors` → Labs `serp_competitors/live`; `rankedKeywords` → Labs `ranked_keywords/live`; `domainIntersection` → Labs `domain_intersection/live`
 - Default geo: `DATAFORSEO_LOCATION_CODE` (default **2036** Australia)
 - `mock.js` returns deterministic fixtures for unit tests — Competition Analysis **never** uses mock for customer sites (requires DataForSEO; see `competitionGateway` / `docs/features/Competition Analysis.md`). Seed-derived mock rivals must never inject unrelated trades (e.g. plumber domains for a coffee site).
 

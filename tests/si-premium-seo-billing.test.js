@@ -18,11 +18,15 @@ assert.equal(SECTION_KEY, 'premiumSeo');
 assert.equal(APP_SLUG, 'premium-seo');
 assert.ok(PREMIUM_COMPETITION_ACTIONS.indexOf('discover_competitors') >= 0);
 assert.ok(PREMIUM_COMPETITION_ACTIONS.indexOf('discover_from_serp') >= 0);
+assert.ok(PREMIUM_COMPETITION_ACTIONS.indexOf('serp_competitors') >= 0);
 assert.ok(PREMIUM_COMPETITION_ACTIONS.indexOf('lookup_keyword') >= 0);
 assert.ok(PREMIUM_COMPETITION_ACTIONS.indexOf('competitor_keywords') >= 0);
 assert.ok(PREMIUM_COMPETITION_ACTIONS.indexOf('keyword_gap') >= 0);
+assert.ok(PREMIUM_COMPETITION_ACTIONS.indexOf('domain_intersection') >= 0);
 assert.ok(FREE_COMPETITION_ACTIONS.indexOf('save_competitors') >= 0);
 assert.ok(isPremiumCompetitionAction('paid_research'));
+assert.ok(isPremiumCompetitionAction('serp_competitors'));
+assert.ok(isPremiumCompetitionAction('domain_intersection'));
 assert.ok(isFreeCompetitionAction('clear_competitors'));
 assert.ok(!isPremiumCompetitionAction('save_competitors'));
 
