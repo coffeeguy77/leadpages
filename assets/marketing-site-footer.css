@@ -22,13 +22,13 @@ footer.mkt-site-footer {
   margin-inline: auto;
 }
 
-/* Brand + compact menu cluster (no sparse stretched columns) */
+/* Brand + compact menus + support banner on one desktop row */
 .mkt-site-footer .footer-top {
   display: grid;
-  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
-  column-gap: clamp(28px, 4vw, 56px);
-  row-gap: 28px;
-  align-items: start;
+  grid-template-columns: minmax(150px, 200px) minmax(0, 1.05fr) minmax(320px, 2.1fr);
+  column-gap: clamp(22px, 3vw, 40px);
+  row-gap: 24px;
+  align-items: stretch;
 }
 
 .mkt-site-footer .f-brand {
@@ -52,10 +52,11 @@ footer.mkt-site-footer {
 
 .mkt-site-footer .f-nav {
   display: grid;
-  grid-template-columns: repeat(4, minmax(112px, max-content));
+  grid-template-columns: repeat(4, minmax(96px, max-content));
   justify-content: start;
-  column-gap: clamp(28px, 3.5vw, 48px);
-  row-gap: 18px;
+  align-content: start;
+  column-gap: clamp(20px, 2.4vw, 36px);
+  row-gap: 16px;
   min-width: 0;
 }
 
@@ -86,17 +87,18 @@ footer.mkt-site-footer {
   color: #fff;
 }
 
-/* Premium full-width support banner (~2× previous column width) */
+/* Premium support banner — same row as menus, ~2× a menu column */
 .mkt-site-footer .f-support {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 20px 36px;
+  gap: 14px 18px;
   align-items: center;
   width: 100%;
-  margin-top: 28px;
+  min-width: 0;
+  margin: 0;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 18px;
-  padding: 22px 28px;
+  padding: 18px 20px;
   background:
     linear-gradient(120deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.03) 48%, rgba(255, 255, 255, 0.05) 100%);
   box-sizing: border-box;
@@ -105,17 +107,19 @@ footer.mkt-site-footer {
 
 .mkt-site-footer .f-support-copy {
   display: flex;
+  flex-direction: column;
   flex-wrap: nowrap;
-  align-items: center;
-  gap: 18px 36px;
+  align-items: flex-start;
+  gap: 10px;
   min-width: 0;
 }
 
 .mkt-site-footer .f-support-lead {
   display: flex;
+  flex-direction: column;
   flex-wrap: nowrap;
-  align-items: baseline;
-  gap: 12px 18px;
+  align-items: flex-start;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -139,9 +143,10 @@ footer.mkt-site-footer {
 
 .mkt-site-footer .f-support-contacts {
   display: flex;
+  flex-direction: column;
   flex-wrap: nowrap;
-  align-items: center;
-  gap: 14px 28px;
+  align-items: flex-start;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -183,7 +188,7 @@ footer.mkt-site-footer {
 .mkt-site-footer .f-support-map {
   display: grid;
   place-items: center;
-  width: clamp(120px, 14vw, 168px);
+  width: clamp(88px, 28%, 128px);
   pointer-events: none;
   flex-shrink: 0;
 }
@@ -191,7 +196,7 @@ footer.mkt-site-footer {
 .mkt-site-footer .f-support .f-ico-au {
   width: 100%;
   height: auto;
-  max-width: 160px;
+  max-width: 120px;
   aspect-ratio: 675 / 628;
   color: rgba(232, 238, 242, 0.92);
   overflow: visible;
@@ -288,33 +293,42 @@ footer.mkt-site-footer {
 }
 
 @media (max-width: 1100px) {
-  .mkt-site-footer .f-nav {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    width: 100%;
+  .mkt-site-footer .footer-top {
+    grid-template-columns: minmax(140px, 180px) minmax(0, 1fr) minmax(280px, 1.8fr);
     column-gap: 20px;
   }
 
-  .mkt-site-footer .f-support-copy {
-    flex-wrap: wrap;
-    row-gap: 14px;
+  .mkt-site-footer .f-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    column-gap: 16px;
   }
 }
 
 @media (max-width: 900px) {
   .mkt-site-footer .footer-top {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mkt-site-footer .f-brand {
+    grid-column: 1 / -1;
   }
 
   .mkt-site-footer .f-nav {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .mkt-site-footer .f-support {
-    padding: 20px 20px;
+    grid-column: 1 / -1;
+    padding: 18px 18px;
   }
 }
 
 @media (max-width: 720px) {
+  .mkt-site-footer .footer-top {
+    grid-template-columns: 1fr;
+  }
+
   .mkt-site-footer .f-nav {
     grid-template-columns: 1fr 1fr;
     column-gap: 16px;
@@ -326,27 +340,9 @@ footer.mkt-site-footer {
   }
 
   .mkt-site-footer .f-support {
+    grid-column: 1 / -1;
     grid-template-columns: minmax(0, 1fr) auto;
     padding: 18px 16px 18px;
-    margin-top: 22px;
-  }
-
-  .mkt-site-footer .f-support-copy {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .mkt-site-footer .f-support-lead {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  .mkt-site-footer .f-support-contacts {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
   }
 
   .mkt-site-footer .f-support h4,
