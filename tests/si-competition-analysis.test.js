@@ -10,8 +10,10 @@ const {
   competitionGateway,
   discoverCompetitors,
   discoverFromSerpSeeds,
+  discoverSerpCompetitors,
   lookupKeywordSerp,
-  competitorOrganicKeywords
+  competitorOrganicKeywords,
+  runDomainIntersection
 } = require('../lib/search-intelligence/competition-analysis');
 const {
   isForbiddenCompetitorDomain,
@@ -99,6 +101,8 @@ async function runGatewayMock() {
   const gw = createGateway({ provider: 'mock' });
   assert.ok(gw.ops.indexOf('competitorsDomain') >= 0);
   assert.ok(gw.ops.indexOf('rankedKeywords') >= 0);
+  assert.ok(gw.ops.indexOf('serpCompetitors') >= 0);
+  assert.ok(gw.ops.indexOf('domainIntersection') >= 0);
 
   const coffeeDomain = 'coffeeevents.com.au';
   const rivals = await gw.competitorsDomain({ domain: coffeeDomain });
@@ -191,6 +195,37 @@ async function runGatewayMock() {
   assert.equal(rivalKw.ok, true);
   assert.ok(rivalKw.keywords.length >= 1);
 
+  const serpComps = await discoverSerpCompetitors(null, site, {
+    allowMock: true,
+    provider: 'mock',
+    seeds: 'coffee cart hire canberra, barista hire canberra',
+    saveToConfig: false
+  });
+  assert.equal(serpComps.ok, true);
+  assert.equal(serpComps.mode, 'serp_competitors');
+  assert.ok(serpComps.competitors.length >= 1);
+  serpComps.competitors.forEach(function (c) {
+    assert.ok(!/plumb|drain|pipe/i.test(c.domain), 'SERP competitors leaked plumber: ' + c.domain);
+  });
+
+  const vs = await runDomainIntersection(null, site, {
+    allowMock: true,
+    provider: 'mock',
+    competitor: serpComps.competitors[0].domain
+  });
+  assert.equal(vs.ok, true);
+  assert.equal(vs.mode, 'domain_intersection');
+  assert.equal(vs.domain, coffeeDomain);
+  assert.ok(vs.shared.length + vs.missing.length >= 1);
+
+  const intersection = await gw.domainIntersection({
+    target1: coffeeDomain,
+    target2: 'comp-1-coffeeevents.example',
+    intersections: true
+  });
+  assert.equal(intersection.ok, true);
+  assert.ok(intersection.keywords.length >= 1);
+
   // Nested local_pack must yield real websites (not only maps.google.com)
   const mapped = mapSerpItems([
     {
@@ -271,6 +306,11 @@ runGatewayMock().then(function () {
   assert.ok(manage.indexOf('lookup_keyword') >= 0);
   assert.ok(manage.indexOf('si-comp-lookup') >= 0);
   assert.ok(manage.indexOf('competitor_keywords') >= 0);
+  assert.ok(manage.indexOf('serp_competitors') >= 0);
+  assert.ok(manage.indexOf('domain_intersection') >= 0);
+  assert.ok(manage.indexOf('si-comp-serp-comps') >= 0);
+  assert.ok(manage.indexOf('si-comp-vs') >= 0);
+  assert.ok(manage.indexOf('si-comp-serp-regular') >= 0);
   assert.ok(fs.existsSync(path.join(__dirname, '..', 'api/search-intelligence/competition.js')));
   assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/competition-analysis.js')));
   assert.ok(fs.existsSync(path.join(__dirname, '..', 'lib/search-intelligence/competition-fixtures.js')));

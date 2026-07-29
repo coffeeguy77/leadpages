@@ -11,9 +11,11 @@ const {
   loadCompetitionSnapshot,
   discoverCompetitors,
   discoverFromSerpSeeds,
+  discoverSerpCompetitors,
   lookupKeywordSerp,
   competitorOrganicKeywords,
   runKeywordGap,
+  runDomainIntersection,
   runBacklinkStrategy,
   runPaidResearch,
   saveCompetitors,
@@ -121,13 +123,36 @@ module.exports = async (req, res) => {
       return http.json(res, 200, { ok: true, action: action, result: result });
     }
 
+    if (action === 'serp_competitors') {
+      const result = await discoverSerpCompetitors(db, site, {
+        provider: provider,
+        location: location,
+        seeds: body.seeds || body.keywords,
+        keywords: body.keywords || body.seeds,
+        keyword: body.keyword,
+        domain: body.domain,
+        limit: body.limit,
+        saveToConfig: body.saveToConfig !== false
+      });
+      if (!result.ok) {
+        return http.json(res, 400, {
+          error: result.error,
+          message: result.message,
+          result: result
+        });
+      }
+      return http.json(res, 200, { ok: true, action: action, result: result });
+    }
+
     if (action === 'lookup_keyword' || action === 'keyword_lookup') {
       const result = await lookupKeywordSerp(db, site, {
         provider: provider,
         location: location,
         keyword: body.keyword || body.seeds || body.keywords,
         domain: body.domain,
-        device: body.device
+        device: body.device,
+        mode: body.mode || body.serpMode,
+        serpMode: body.serpMode || body.mode
       });
       if (!result.ok) {
         return http.json(res, 400, {
@@ -173,6 +198,25 @@ module.exports = async (req, res) => {
         });
       }
       return http.json(res, 200, { ok: true, action: action, result: result });
+    }
+
+    if (action === 'domain_intersection' || action === 'compare_competitor') {
+      const result = await runDomainIntersection(db, site, {
+        provider: provider,
+        location: location,
+        domain: body.domain,
+        competitor: body.competitor || body.target2,
+        competitors: body.competitors,
+        limit: body.limit
+      });
+      if (!result.ok) {
+        return http.json(res, 400, {
+          error: result.error,
+          message: result.message,
+          result: result
+        });
+      }
+      return http.json(res, 200, { ok: true, action: 'domain_intersection', result: result });
     }
 
     if (action === 'backlink_strategy') {
@@ -238,9 +282,11 @@ module.exports = async (req, res) => {
       actions: [
         'discover_competitors',
         'discover_from_serp',
+        'serp_competitors',
         'lookup_keyword',
         'competitor_keywords',
         'keyword_gap',
+        'domain_intersection',
         'backlink_strategy',
         'paid_research',
         'save_competitors',
