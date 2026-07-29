@@ -33,11 +33,87 @@
   grid-template-columns: 1fr;
 }
 
+/* Marketplace playground: half-width beside preview — never dual-column fields */
+.tb-ed-stack .tb-ed-zones,
+.tb-ed-stack.tb-ed-copyheavy .tb-ed-zones,
+.tb-ed-stack.tb-ed-sec-textBox .tb-ed-zones {
+  grid-template-columns: 1fr;
+}
+
+.tb-ed-stack .tb-ed-zone-content .tb-ed-color-grid,
+.tb-ed-stack .tb-ed-zone-style .tb-ed-color-grid,
+.tb-ed-stack .tb-ed-color-grid {
+  grid-template-columns: 1fr;
+}
+
+.tb-ed-stack .tb-ed-card .tin,
+.tb-ed-stack .tb-ed-card input[type="text"],
+.tb-ed-stack .tb-ed-card input[type="url"],
+.tb-ed-stack .tb-ed-card input[type="number"],
+.tb-ed-stack .tb-ed-card textarea,
+.tb-ed-stack .tb-ed-card select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.tb-ed-stack .tb-ed-textarea-f textarea {
+  min-height: 112px;
+}
+
+.tb-ed-stack .tb-ed-textarea-main textarea {
+  min-height: 168px;
+}
+
 .tb-ed-zone-left {
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+}
+
+/* Custom section style — shaded group; fields only matter when enabled */
+.tb-ed-app-box {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  padding: 12px 12px 10px;
+  border-radius: 10px;
+  background: rgba(0, 21, 41, 0.06);
+  border: 1px solid rgba(0, 21, 41, 0.12);
+}
+
+.tb-ed-app-box.on {
+  background: rgba(0, 21, 41, 0.09);
+  border-color: rgba(0, 21, 41, 0.18);
+}
+
+.tb-ed-app-head .tb-ed-check-f {
+  margin-bottom: 0;
+}
+
+.tb-ed-app-hint {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--theme-text-muted, var(--mut, #5c6778));
+  font-weight: 500;
+}
+
+.tb-ed-app-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 21, 41, 0.1);
+}
+
+.tb-ed-app-fields[hidden] {
+  display: none !important;
+}
+
+.tb-ed-stack .tb-ed-app-fields {
+  grid-template-columns: 1fr;
 }
 
 .tb-ed-zone-items,

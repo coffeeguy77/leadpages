@@ -104,6 +104,12 @@ var SITE_CONFIG = {
     count = isNaN(count) ? 8 : Math.max(3, Math.min(24, count));
     var cols = parseInt(sec.columns, 10);
     cols = isNaN(cols) ? 4 : Math.max(2, Math.min(5, cols));
+    /* Marketplace playground device: tablet=3 / phone=2 full-bleed previews */
+    try {
+      var pgDev = document.documentElement && document.documentElement.getAttribute('data-pg-device');
+      if (pgDev === 'phone') cols = 2;
+      else if (pgDev === 'tablet') cols = 3;
+    } catch (_e) {}
     node.style.setProperty('--ig-cols', String(cols));
     var eb = node.querySelector('.eyebrow');
     if (eb && sec.eyebrow != null) eb.textContent = sec.eyebrow;
