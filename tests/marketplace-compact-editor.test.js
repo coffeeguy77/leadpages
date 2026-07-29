@@ -167,7 +167,8 @@ describe('marketplace compact editor parity', () => {
     assert.match(feat, /device === 'phone'\) cols = 2/);
     assert.match(feat, /device === 'tablet'\) cols = 3/);
     assert.match(feat, /syncEditorLayout/);
-    assert.match(feat, /editorLayout: layout === 'landscape' \? 'split' : 'stack'/);
+    assert.match(feat, /editorLayout: 'stack'/);
+    assert.match(feat, /function fitStage/);
     const ig = fs.readFileSync(path.join(root, 'marketplace/demos/demo-instaGallery.html'), 'utf8');
     assert.match(ig, /data-pg-device/);
     assert.match(ig, /pgDev === 'phone'/);
