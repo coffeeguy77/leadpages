@@ -277,6 +277,7 @@ footer{background:var(--ink);color:#9aa6ae;padding:54px 0 30px;font-size:14px}
 @media(max-width:560px){.row2{grid-template-columns:1fr}.appwin{width:280px}.cgrid{grid-template-columns:1fr}.chip-lead{left:-14px}.chip-pipe{right:-8px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto}}
 </style>
+<link rel="stylesheet" href="/assets/marketing-site-footer.css">
 </head>
 <body>
 
@@ -513,25 +514,7 @@ footer{background:var(--ink);color:#9aa6ae;padding:54px 0 30px;font-size:14px}
   </div>
 </section>
 
-<footer>
-  <div class="wrap">
-    <div class="foot-top">
-      <div style="max-width:300px">
-        <a href="/" class="logo" style="margin-bottom:14px"><span class="mk">◈</span><span>Broker Sites<small>by Web Culture</small></span></a>
-        <p style="color:#9aa6ae;font-size:14px">Calculator-led websites for Australian mortgage brokers. Built in Canberra. You own everything.</p>
-      </div>
-      <div class="foot-links">
-        <div><h4>Product</h4><a href="#suite">Calculators</a><a href="#features">Features</a><a href="#dashboard">Dashboard</a><a href="#pricing">Pricing</a></div>
-        <div><h4>Company</h4><a href="#faq">FAQ</a><a href="https://webculture.au" target="_blank">Web Culture</a><a href="/tradies.html">For tradies</a></div>
-        <div><h4>Clients</h4><a href="/manage.html">Sign in</a><a href="#pricing">Start an order</a></div>
-      </div>
-    </div>
-    <div class="foot-bot">
-      <span>© 2026 Broker Sites · Web Culture · Canberra, ACT</span>
-      <span>Rates and figures are indicative — set your own in the dashboard.</span>
-    </div>
-  </div>
-</footer>
+<div data-mkt-site-footer></div>
 
 <!-- CART -->
 <div class="scrim" id="scrim" onclick="closeCart()"></div>
@@ -657,5 +640,7 @@ document.getElementById('coScrim').addEventListener('click',function(e){ if(e.ta
 
 renderSuite(); renderFaq(); renderCart(); track('page_view',{page:'broker-home'});
 </script>
+<script src="/assets/lp-logo.js"></script>
+<script src="/assets/marketing-site-footer.js"></script>
 </body>
 </html>

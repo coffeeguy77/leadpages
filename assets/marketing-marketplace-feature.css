@@ -1627,86 +1627,7 @@ body.mf-app .ctab p {
   margin: 8px auto 22px;
 }
 
-/* —— Footer —— */
-body.mf-app footer {
-  background: var(--mf-ink);
-  color: rgba(249, 247, 242, 0.68);
-  padding: 52px 0 28px;
-  font-size: 14px;
-}
-
-body.mf-app footer .wrap,
-body.mf-app footer .footer-grid {
-  max-width: var(--mf-wide);
-  display: grid;
-  grid-template-columns: 1.5fr repeat(4, minmax(0, 1fr));
-  gap: 28px 24px;
-  align-items: start;
-}
-
-body.mf-app footer .leadpages-logo {
-  --lp-logo-height: 52px;
-  --lp-logo-ink: var(--mf-on-dark);
-  --lp-logo-accent: var(--mf-orange);
-  height: 52px;
-  width: auto;
-  margin-bottom: 12px;
-  display: block;
-}
-
-body.mf-app footer .footer-help {
-  margin-top: 14px;
-}
-
-body.mf-app footer .footer-help strong {
-  display: block;
-  color: #fff;
-  margin-bottom: 6px;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-body.mf-app footer .blurb,
-body.mf-app footer > .wrap > div:first-child > div:not(.abn) {
-  max-width: 32ch;
-  line-height: 1.5;
-  margin-bottom: 8px;
-  color: rgba(249, 247, 242, 0.72);
-}
-
-body.mf-app footer .abn {
-  font-size: 12.5px;
-  color: rgba(249, 247, 242, 0.5);
-  margin-top: 8px;
-}
-
-body.mf-app footer h4 {
-  margin: 0 0 12px;
-  color: #fff;
-  font-family: var(--mf-body);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-body.mf-app footer a {
-  display: block;
-  margin: 0 0 8px;
-  color: rgba(249, 247, 242, 0.72);
-  font-weight: 550;
-}
-
-body.mf-app footer a:hover {
-  color: #fff;
-}
-
-body.mf-app footer > .wrap > div:last-child a {
-  display: inline-block;
-  margin-right: 22px;
-  margin-bottom: 0;
-}
+/* —— Footer —— shared assets/marketing-site-footer.css (do not restyle .mkt-site-footer here) —— */
 
 body.mf-app section.back {
   display: none;
@@ -1768,17 +1689,7 @@ body.mf-app .sr-only {
   border: 0;
 }
 
-@media (max-width: 800px) {
-  body.mf-app footer .wrap {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
 @media (max-width: 520px) {
-  body.mf-app footer .wrap {
-    grid-template-columns: 1fr;
-  }
-
   body.mf-app .mf-new-lp {
     padding: 48px 20px 56px;
   }
