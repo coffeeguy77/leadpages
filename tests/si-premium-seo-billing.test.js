@@ -76,6 +76,8 @@ async function run() {
   assert.ok(manage.indexOf('si-comp-buy') >= 0);
   assert.ok(manage.indexOf('Get Premium SEO') >= 0);
   assert.ok(manage.indexOf('Included · free') >= 0);
+  assert.ok(manage.indexOf('si-suite-tools') >= 0);
+  assert.ok(manage.indexOf('Research suite') >= 0);
 
   const api = fs.readFileSync(
     path.join(__dirname, '..', 'api/search-intelligence/competition.js'),

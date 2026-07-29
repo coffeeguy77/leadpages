@@ -46,10 +46,25 @@ Unlocks live DataForSEO research:
 
 ## UI
 
-| Box | Contents |
-|-----|----------|
-| **Included · free** | Competitor domain textarea, Save, Clear |
-| **Premium SEO** (shaded) | Keyword lookup (advanced/regular), live research buttons, SERP rival save. Locked sites see message + **Get Premium SEO** checkout CTA |
+| Area | Contents |
+|------|----------|
+| **Competitor list** (left / free) | Textarea + Save / Clear — used by Gap, Backlinks, Paid |
+| **Research suite** (Premium) | Tool tabs. Selecting a tool opens **that tool’s** search field, tip, and **Go** button. Results render in the panel below. |
+| **Locked** | Same layout preview + **Get Premium SEO** CTA |
+
+### Tool → input map
+
+| Tool | What you enter | Go runs |
+|------|----------------|---------|
+| Organic competitors | Optional domain (blank = your site) | `discover_competitors` |
+| SERP competitors | Keywords | `serp_competitors` |
+| Keyword lookup | One keyword (+ organic-only option) | `lookup_keyword` / optional save rivals |
+| Keyword gap | Uses saved list | `keyword_gap` |
+| You vs rival | One competitor domain | `domain_intersection` |
+| Backlinks | One competitor domain | `backlink_strategy` |
+| Paid ads | Uses saved list | `paid_research` |
+
+Errors are tool-specific (e.g. “Enter a competitor domain”) — not generic API credential dumps.
 
 ---
 
