@@ -15,6 +15,20 @@ const css = fs.readFileSync(path.join(ROOT, 'assets/marketing-home.css'), 'utf8'
 const jsSrc = fs.readFileSync(path.join(ROOT, 'assets/marketing-home-colour.js'), 'utf8');
 
 function loadStyler() {
+  function el() {
+    return {
+      style: {},
+      hidden: true,
+      classList: { toggle: function () {}, add: function () {}, contains: function () { return false; } },
+      setAttribute: function () {},
+      getAttribute: function () { return null; },
+      addEventListener: function () {},
+      querySelector: function () { return null; },
+      querySelectorAll: function () { return []; },
+      appendChild: function () {},
+      closest: function () { return null; }
+    };
+  }
   const sandbox = {
     window: {},
     document: {
@@ -22,8 +36,14 @@ function loadStyler() {
       querySelector: function () { return null; },
       querySelectorAll: function () { return []; },
       addEventListener: function () {},
+      createElement: function () { return el(); },
+      head: { appendChild: function () {} },
       documentElement: { style: { setProperty: function () {}, removeProperty: function () {} } },
-      body: { setAttribute: function () {}, classList: { toggle: function () {} } }
+      body: {
+        setAttribute: function () {},
+        classList: { toggle: function () {}, contains: function () { return false; } },
+        appendChild: function () {}
+      }
     },
     sessionStorage: {
       getItem: function () { return null; },
@@ -61,6 +81,19 @@ test('styler exposes the same eight Web Culture presets', () => {
     assert.equal(got.muted, src.muted, src.id + ' muted');
     assert.equal(got.glow, src.glow, src.id + ' glow');
   });
+});
+
+test('styler adds Neon Pink and Electric Blue frontend themes', () => {
+  const api = loadStyler();
+  assert.ok(Array.isArray(api.extraPresets));
+  assert.ok(Array.isArray(api.allPresets));
+  assert.equal(api.allPresets.length, 10);
+  const neon = api.extraPresets.find((p) => p.id === 'neon-pink');
+  const blue = api.extraPresets.find((p) => p.id === 'electric-blue');
+  assert.ok(neon && neon.primary);
+  assert.ok(blue && blue.primary);
+  assert.match(neon.primary, /^#/i);
+  assert.match(blue.primary, /^#/i);
 });
 
 test('palette mapping drives navy/cream/orange homepage tokens', () => {

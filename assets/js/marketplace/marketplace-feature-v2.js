@@ -298,7 +298,7 @@
       + ((meta && meta.featureLabels) || []).map(function (l) {
         return '<span class="mp-label">' + esc(l) + '</span>';
       }).join('')
-      + '<span class="mp-label">' + esc(accessLong) + '</span>'
+      + '<span class="mf-access mf-badge-inc" title="' + esc(accessLong) + '">Included</span>'
       + '</div>'
       + '<div class="mp-info-list" aria-label="App details">' + pointsHtml + '</div>'
       + '<div class="hcta">'
@@ -387,8 +387,10 @@
       '.mp-info-hero .himg img{position:absolute;inset:0;width:100%;height:100%;max-height:none;min-height:0;object-fit:cover;object-position:center;display:block}',
       '.mp-info-hero .himg-placeholder{flex:1 1 auto;width:100%;height:100%;min-height:100%;border-radius:18px;background:linear-gradient(135deg,rgba(168,74,94,.35),rgba(47,65,58,.8));border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);padding:24px;text-align:center}',
       '@media(max-width:900px){.mp-info-hero .feat-hero-grid{grid-template-columns:1fr}.mp-info-hero .feat-hero-media{order:-1;min-height:240px}.mp-info-hero .himg,.mp-info-hero .himg-placeholder{min-height:240px;height:auto;aspect-ratio:16/10}.mp-info-hero .himg img{position:absolute}}',
-      '.mp-labels{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px}',
+      '.mp-labels{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 18px}',
       '.mp-label{display:inline-flex;padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.25);font-size:13px;font-weight:700;color:#F3EFEA}',
+      '.mp-info-hero .mf-access.mf-badge-inc{background:color-mix(in srgb,var(--orange,var(--mf-orange,#C85A2C)) 22%,transparent);color:var(--orange,var(--mf-orange,#FFB089));border:1px solid color-mix(in srgb,var(--orange,var(--mf-orange,#C85A2C)) 55%,transparent)}',
+      '.mp-info-hero .mf-access.mf-badge-inc::before{content:"✓";margin-right:2px}',
       '.mp-info-list{max-width:720px;margin:0 0 22px;display:grid;gap:8px}',
       '.mp-info-point{border:1px solid rgba(255,255,255,.18);border-radius:12px;background:rgba(255,255,255,.06);padding:0;overflow:hidden}',
       '.mp-info-point summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:12px}',

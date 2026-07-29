@@ -42,7 +42,7 @@
   --mf-body: 'Figtree', system-ui, sans-serif;
   --mf-max: 1120px;
   --mf-wide: 1220px;
-  --mf-header-h: 100px;
+  --mf-header-h: 118px;
   --mf-radius: 16px;
   --mf-radius-sm: 12px;
   --mf-shadow: var(--shadow);
@@ -144,19 +144,19 @@ body.mf-app .sitenav > .wrap > a {
 }
 
 body.mf-app .sitenav .leadpages-logo {
-  /* Brand logo height locked at 78px (LeadPages Australia logo rule + tests). */
-  --lp-logo-height: 78px;
-  --lp-logo-ink: var(--mf-on-dark);
-  --lp-logo-accent: var(--mf-orange);
-  height: 78px !important;
+  /* Match homepage header logo size + theme accent */
+  --lp-logo-height: 102px;
+  --lp-logo-ink: var(--mf-on-dark, var(--on-dark, #f9f7f2));
+  --lp-logo-accent: var(--mf-orange, var(--orange, #C85A2C));
+  height: 102px !important;
   width: auto !important;
-  max-height: 78px !important;
+  max-height: 102px !important;
   display: block;
 }
 body.mf-app .sitenav .leadpages-logo svg {
-  height: 78px !important;
+  height: 102px !important;
   width: auto !important;
-  max-height: 78px !important;
+  max-height: 102px !important;
 }
 
 body.mf-app .sitenav .brand-au,
@@ -651,24 +651,25 @@ body.mf-app .mf-access.mf-badge-inc::before,
 body.mf-app .mf-badge-inc::before {
   content: "✓";
   font-size: 11px;
+  color: inherit;
 }
 
 body.mf-app .mf-badge-inc,
 body.mf-app .mf-access.mf-badge-inc,
 body.mf-app .mp-label.mf-badge-inc,
 body.mf-app .hbadge.mf-badge-inc {
-  background: rgba(76, 175, 80, 0.16);
-  color: #2e7d32;
-  border-color: rgba(76, 175, 80, 0.4);
+  background: color-mix(in srgb, var(--mf-orange, var(--orange, #C85A2C)) 16%, transparent);
+  color: var(--mf-orange, var(--orange, #C85A2C));
+  border-color: color-mix(in srgb, var(--mf-orange, var(--orange, #C85A2C)) 42%, transparent);
 }
 
 body.mf-app .mf-badge-prem,
 body.mf-app .mf-access.mf-badge-prem,
 body.mf-app .mp-label.mf-badge-prem,
 body.mf-app .hbadge.mf-badge-prem {
-  background: rgba(227, 107, 33, 0.18);
-  color: #a04e18;
-  border-color: rgba(227, 107, 33, 0.4);
+  background: color-mix(in srgb, var(--mf-orange, var(--orange, #C85A2C)) 18%, transparent);
+  color: var(--orange-hover, var(--partner, #a04e18));
+  border-color: color-mix(in srgb, var(--mf-orange, var(--orange, #C85A2C)) 40%, transparent);
 }
 
 body.mf-app .mf-badge-free,

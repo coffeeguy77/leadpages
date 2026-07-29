@@ -1211,7 +1211,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Instagram Project Feed",
-          "text": "Like Project Feed but sourced from Instagram — the marketplace demo uses Bean Culture’s live connection (beanculture.com.au). Title from caption, tag label, call and quote buttons with custom colours."
+          "text": "Like Project Feed but sourced from Instagram — the marketplace demo uses Bean Culture’s live connection (beanculture.com.au). Title from caption, tag label, call and quote buttons with custom colours. See our Instagram Data Use & Deletion policy (/instagram-data-policy) for how connection data is used and deleted."
         }
       },
       {
@@ -1263,6 +1263,22 @@
         }
       },
       {
+        "block_type": "faq",
+        "payload": {
+          "heading": "Instagram data & privacy",
+          "items": [
+            {
+              "q": "How is my Instagram data used?",
+              "a": "LeadPages only accesses Instagram content you choose to connect, to display it on your website. Read the full Instagram Data Use & Deletion policy for details, retention and deletion requests: /instagram-data-policy"
+            },
+            {
+              "q": "Can I disconnect Instagram?",
+              "a": "Yes. Disconnect anytime in the App Command Centre. You can also request deletion of Instagram-sourced data via the Instagram Data policy page."
+            }
+          ]
+        }
+      },
+      {
         "block_type": "playground",
         "payload": {
           "section_key": "igProjectFeed",
@@ -1283,7 +1299,7 @@
         "block_type": "rich_text",
         "payload": {
           "heading": "Instagram Gallery",
-          "text": "Pulls from a connected Instagram account — the marketplace demo uses Bean Culture’s live connection (beanculture.com.au). Eyebrow, heading, post count and column layout keep the site fresh with social content."
+          "text": "Pulls from a connected Instagram account — the marketplace demo uses Bean Culture’s live connection (beanculture.com.au). Eyebrow, heading, post count and column layout keep the site fresh with social content. See our Instagram Data Use & Deletion policy (/instagram-data-policy) for how connection data is used and deleted."
         }
       },
       {
@@ -1330,6 +1346,22 @@
             {
               "title": "Social proof",
               "text": "Real job photos from their actual account."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "faq",
+        "payload": {
+          "heading": "Instagram data & privacy",
+          "items": [
+            {
+              "q": "How is my Instagram data used?",
+              "a": "LeadPages only accesses Instagram content you choose to connect, to display it on your website. Read the full Instagram Data Use & Deletion policy for details, retention and deletion requests: /instagram-data-policy"
+            },
+            {
+              "q": "Can I disconnect Instagram?",
+              "a": "Yes. Disconnect anytime in the App Command Centre. You can also request deletion of Instagram-sourced data via the Instagram Data policy page."
             }
           ]
         }

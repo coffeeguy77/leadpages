@@ -302,8 +302,16 @@ body.mp a.btn-outline {
 }
 
 .badge-inc {
-  background: #e6f4ea;
-  color: #1e6b3a;
+  background: color-mix(in srgb, var(--orange, #C85A2C) 16%, transparent);
+  color: var(--orange, #C85A2C);
+  border: 1px solid color-mix(in srgb, var(--orange, #C85A2C) 40%, transparent);
+}
+
+.badge-inc::before {
+  content: "✓";
+  margin-right: 5px;
+  font-size: 11px;
+  color: inherit;
 }
 
 .badge-free {
@@ -312,8 +320,9 @@ body.mp a.btn-outline {
 }
 
 .badge-prem {
-  background: #fff4e5;
-  color: #c45a1a;
+  background: color-mix(in srgb, var(--orange, #C85A2C) 14%, transparent);
+  color: var(--orange-hover, #a04e18);
+  border: 1px solid color-mix(in srgb, var(--orange, #C85A2C) 36%, transparent);
 }
 
 /* —— Header —— */

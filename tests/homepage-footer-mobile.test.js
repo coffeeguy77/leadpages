@@ -121,12 +121,16 @@ test('footer bottom keeps tagline, ABN, and legal links', () => {
   assert.match(html, /class="f-tagline-accent">Everything connected\./);
   assert.match(html, /class="f-abn"[^>]*>[\s\S]*class="f-abn-label">ABN<\/span>[\s\S]*class="f-abn-num">33&nbsp;600&nbsp;754&nbsp;676/);
   assert.match(html, /class="f-bottom-meta"/);
+  assert.match(html, /href="\/privacy-policy">Privacy/);
+  assert.match(html, /href="\/terms-of-use">Terms/);
+  assert.match(html, /href="\/instagram-data-policy">Instagram Data/);
   assert.match(footCss, /\.mkt-site-footer\s+\.f-tagline\s*\{[\s\S]*white-space:\s*nowrap/);
   assert.match(footCss, /\.mkt-site-footer\s+\.f-tagline-lead\s*\{[\s\S]*color:\s*#fff/);
   assert.match(footCss, /\.mkt-site-footer\s+\.f-tagline-accent\s*\{[\s\S]*#C85A2C/);
   assert.doesNotMatch(footCss, /\.mkt-site-footer\s+\.f-tagline\s+span\s*\{[\s\S]*display:\s*block/);
   assert.match(footCss, /\.mkt-site-footer\s+\.f-bottom-meta\s*\{[\s\S]*justify-content:\s*space-between/);
   assert.match(footCss, /\.mkt-site-footer\s+\.f-links\s*\{[\s\S]*margin-left:\s*auto/);
+  assert.match(footCss, /--lp-logo-accent:\s*var\(--orange/);
 });
 
 test('key marketing pages mount the shared footer (not partner-website shells)', () => {
@@ -147,10 +151,31 @@ test('key marketing pages mount the shared footer (not partner-website shells)',
     assert.match(src, /data-mkt-site-footer/, file + ' mount');
     assert.match(src, /marketing-site-footer\.js/, file + ' script');
     assert.match(src, /marketing-site-footer\.css/, file + ' css');
+    assert.match(src, /marketing-home-colour\.js/, file + ' try colours');
   });
   const partnerLanding = fs.readFileSync(path.join(ROOT, 'lib/partner-landing.js'), 'utf8');
   assert.doesNotMatch(partnerLanding, /data-mkt-site-footer/);
   assert.doesNotMatch(partnerLanding, /marketing-site-footer/);
+});
+
+test('legal pages use marketing nav, 1440 shell, and themeable legal CSS', () => {
+  ['privacy-policy.html', 'terms-of-use.html', 'instagram-data-policy.html'].forEach(function (file) {
+    const src = fs.readFileSync(path.join(ROOT, file), 'utf8');
+    assert.match(src, /class="mkt-legal"/, file);
+    assert.match(src, /class="sitenav"/, file);
+    assert.match(src, /legal-shell/, file);
+    assert.match(src, /marketing-legal\.css/, file);
+    assert.match(src, /marketing-home-colour\.js/, file);
+  });
+  const legalCss = fs.readFileSync(path.join(ROOT, 'assets/marketing-legal.css'), 'utf8');
+  assert.match(legalCss, /max-width:\s*1440px/);
+  assert.match(legalCss, /--orange/);
+});
+
+test('Instagram apps point customers at the Instagram Data policy', () => {
+  const sell = fs.readFileSync(path.join(ROOT, 'marketplace/sell-templates.json'), 'utf8');
+  assert.match(sell, /"instaGallery"[\s\S]*instagram-data-policy/);
+  assert.match(sell, /"igProjectFeed"[\s\S]*instagram-data-policy/);
 });
 
 test('connected tools stay two-up and elevated on mobile', () => {
