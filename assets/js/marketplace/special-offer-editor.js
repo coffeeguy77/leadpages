@@ -102,6 +102,7 @@
       var custom = A.custom === true;
       var sw = A.strokeWidth != null ? A.strokeWidth : 2;
       var hideAdmin = mode === 'marketplace-playground';
+      var stack = hideAdmin;
 
       var html = '';
       if (!hideAdmin) {
@@ -110,7 +111,7 @@
         html += '<div class="tb-ed-banner tb-ed-banner-safe">Have a play. Nothing here will be saved.</div>';
       }
 
-      html += '<div class="tb-ed-zones">'
+      html += '<div class="tb-ed-zones' + (stack ? ' tb-ed-zones-single' : '') + '">'
         + '<div class="card tb-ed-card tb-ed-card-items tb-ed-zone-items">'
         + '<div class="tb-ed-items-head">'
         + '<h2>Offer points</h2>'
@@ -127,13 +128,18 @@
         + '<div class="f"><label for="so-cta">Button text</label><input type="text" id="so-cta" class="tin" value="' + esc(SO.cta || '') + '" placeholder="Claim this offer"></div>'
         + '</div>'
 
-        + '<details class="so-ed-appearance"' + (custom ? ' open' : '') + '>'
-        + '<summary>Section container style</summary>'
-        + '<p class="hint" style="margin:10px 0 12px;">Full-width background colour, coloured stroke, and transitions — same controls as the App Command Centre.</p>'
-        + '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" id="so-app-custom"' + (custom ? ' checked' : '') + '> Custom section style (otherwise theme default)</label></div>'
-        + '<div id="so-app-fields"' + (custom ? '' : ' style="display:none"') + ' class="tb-ed-color-grid">'
+        + '<div class="tb-ed-app-box' + (custom ? ' on' : '') + '" data-mp-app-box>'
+        + '<div class="tb-ed-app-head">'
+        + '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" id="so-app-custom"'
+        + (custom ? ' checked' : '') + '> Enable custom style</label></div>'
+        + '<p class="tb-ed-app-hint">Background, text colours, stroke and transitions only apply when custom style is enabled.</p>'
+        + '</div>'
+        + '<div class="tb-ed-app-fields"' + (custom ? '' : ' hidden') + ' id="so-app-fields">'
         + colorRow('so-app-bg', 'Full-width background', A.containerBg || '', 'Theme default')
         + colorRow('so-app-stroke', 'Stroke colour', A.strokeColor || '', 'None')
+        + colorRow('so-app-eyebrow', 'Eyebrow colour', A.eyebrowColor || '', '')
+        + colorRow('so-app-title', 'Title colour', A.titleColor || '', '')
+        + colorRow('so-app-intro', 'Intro text colour', A.introColor || '', '')
         + '<div class="f"><label for="so-app-sw">Stroke width <span id="so-app-sw-v">' + esc(sw) + 'px</span></label>'
         + '<input type="range" id="so-app-sw" min="0" max="8" step="1" value="' + esc(sw) + '"></div>'
         + '<div class="f"><label for="so-app-sides">Stroke sides</label><select id="so-app-sides" class="tin">'
@@ -151,11 +157,19 @@
           return '<option value="' + o[0] + '"' + ((A.transitionBottom || 'none') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
         }).join('')
         + '</select></div>'
-        + '</div></details>'
+        + '</div></div>'
         + '</div></div>';
 
       host.innerHTML = html;
+      host.className = host.className
+        .split(/\s+/)
+        .filter(function (c) {
+          return c && c !== 'tb-ed-root' && c !== 'tb-ed-compact' && c !== 'tb-ed-stack' && c !== 'tb-ed-split';
+        })
+        .join(' ');
       host.classList.add('tb-ed-root', 'tb-ed-compact');
+      if (stack) host.classList.add('tb-ed-stack');
+      else host.classList.add('tb-ed-split');
       drawItems();
     }
 
@@ -194,11 +208,14 @@
       return SO.appearance;
     }
 
-    function applyAppColor(id, v) {
+      function applyAppColor(id, v) {
       var h = hexOk(v);
       var A = ensureApp();
       if (id === 'so-app-bg') A.containerBg = h;
       if (id === 'so-app-stroke') A.strokeColor = h;
+      if (id === 'so-app-eyebrow') A.eyebrowColor = h;
+      if (id === 'so-app-title') A.titleColor = h;
+      if (id === 'so-app-intro') A.introColor = h;
       var cp = host.querySelector('#' + id);
       var tx = host.querySelector('#' + id + 't');
       if (tx) tx.value = h || v || '';
@@ -273,6 +290,18 @@
           applyAppColor('so-app-stroke', t.value);
           return;
         }
+        if (t.id === 'so-app-eyebrow' || t.id === 'so-app-eyebrowt') {
+          applyAppColor('so-app-eyebrow', t.value);
+          return;
+        }
+        if (t.id === 'so-app-title' || t.id === 'so-app-titlet') {
+          applyAppColor('so-app-title', t.value);
+          return;
+        }
+        if (t.id === 'so-app-intro' || t.id === 'so-app-introt') {
+          applyAppColor('so-app-intro', t.value);
+          return;
+        }
         if (t.id === 'so-app-sw') {
           ensureApp().strokeWidth = +t.value;
           var swv = host.querySelector('#so-app-sw-v');
@@ -296,8 +325,13 @@
         if (!t) return;
         if (t.id === 'so-app-custom') {
           ensureApp().custom = !!t.checked;
+          var box = host.querySelector('[data-mp-app-box]');
           var fields = host.querySelector('#so-app-fields');
-          if (fields) fields.style.display = t.checked ? '' : 'none';
+          if (box) box.classList.toggle('on', !!t.checked);
+          if (fields) {
+            if (t.checked) fields.removeAttribute('hidden');
+            else fields.setAttribute('hidden', '');
+          }
           emit();
           return;
         }

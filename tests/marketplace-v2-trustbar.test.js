@@ -171,6 +171,11 @@ describe('public marketplace theme + copy safety', () => {
     assert.match(html, /feat-hero-grid/);
     assert.match(html, /feat-hero-media/);
     assert.match(html, /class="himg"/);
+    assert.match(html, /pg-studio-grid/);
+    assert.match(html, /Customise the preview/);
+    assert.match(html, /pg-dual-strip/);
+    assert.match(html, /data-layout="dual"/);
+    assert.doesNotMatch(html, /mp-pg-preview/);
     assert.doesNotMatch(html, /mp-demo-cta|Ready to use this on your website/);
     assert.doesNotMatch(html, /Try it in the editor/);
     assert.doesNotMatch(html, /mk-modes/);
@@ -232,11 +237,16 @@ describe('public marketplace theme + copy safety', () => {
     assert.match(editor, /tb-ed-zones/);
     assert.match(editor, /tb-ed-zone-items/);
     assert.match(editor, /tb-ed-zone-style/);
+    assert.match(editor, /tb-ed-stack/);
+    assert.match(editor, /tb-ed-app-box/);
+    assert.match(editor, /Enable custom style/);
+    assert.match(editor, /appearance\.custom|tb-app-custom/);
     const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.css'), 'utf8');
     assert.match(css, /\.tb-ed-tabs/);
     assert.match(css, /\.tb-ed-hex/);
     assert.match(css, /\.tb-ed-zones/);
     assert.match(css, /\.tb-ed-zone-style/);
+    assert.match(css, /\.tb-ed-app-box/);
     assert.match(css, /color-mix\(in srgb, var\(--theme-primary/);
     assert.match(css, /max-width:\s*640px/);
     assert.doesNotMatch(css, /\.tb-ed-mode-preview/);

@@ -71,6 +71,35 @@
       + '</select></div>';
   }
 
+  function hexOk(v) {
+    v = String(v || '').trim();
+    return /^#?[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)
+      ? (v.charAt(0) === '#' ? v : '#' + v)
+      : '';
+  }
+
+  function colorRow(id, label, value, placeholder) {
+    var v = value || '';
+    var pick = hexOk(v) || '#cccccc';
+    if (pick.length === 4) {
+      pick = '#' + pick[1] + pick[1] + pick[2] + pick[2] + pick[3] + pick[3];
+    }
+    return '<div class="f tb-ed-f tb-ed-color-f"><label for="' + id + 't">' + esc(label) + '</label>'
+      + '<div class="tb-ed-color">'
+      + '<input type="color" id="' + id + '" value="' + esc(pick) + '" aria-label="' + esc(label) + ' colour">'
+      + '<input type="text" id="' + id + 't" class="tin tb-ed-hex" maxlength="7" placeholder="' + esc(placeholder || '#…') + '" value="' + esc(v) + '">'
+      + '<button type="button" class="btn ghost sm tb-ed-clr" data-pr-clr="' + id + '" title="Default">↺</button>'
+      + '</div></div>';
+  }
+
+  var APPEARANCE_TRANSITIONS = [
+    ['none', 'None (flat edge)'],
+    ['fade', 'Fade blend'],
+    ['wave', 'Wave'],
+    ['angle', 'Diagonal'],
+    ['curve', 'Soft curve']
+  ];
+
   function ens(cfg) {
     if (!cfg.sections) cfg.sections = {};
     if (!cfg.sections.promotions || typeof cfg.sections.promotions !== 'object') {
@@ -81,6 +110,7 @@
     if (!Array.isArray(PR.items) || !PR.items.length) {
       PR.items = [Object.assign({}, DEFAULT_ITEM, { cta: Object.assign({}, DEFAULT_ITEM.cta), id: 'p' + Date.now() })];
     }
+    if (!PR.appearance || typeof PR.appearance !== 'object') PR.appearance = {};
     return PR;
   }
 
@@ -168,6 +198,10 @@
     function render() {
       var p = active() || Object.assign({}, DEFAULT_ITEM, { cta: Object.assign({}, DEFAULT_ITEM.cta) });
       if (!p.cta) p.cta = { text: 'Book now', action: 'quote' };
+      var A = ens(cfg).appearance || {};
+      var custom = A.custom === true;
+      var sw = A.strokeWidth != null ? A.strokeWidth : 2;
+      var stack = mode === 'marketplace-playground';
 
       var html = '';
       if (mode === 'marketplace-playground') {
@@ -176,7 +210,7 @@
         html += '<div class="tb-ed-banner">Demo builder — changes can be saved to the selected preset.</div>';
       }
 
-      html += '<div class="tb-ed-zones">'
+      html += '<div class="tb-ed-zones' + (stack ? ' tb-ed-zones-single' : '') + '">'
         + '<div class="card tb-ed-card tb-ed-card-items tb-ed-zone-items">'
         + '<div class="tb-ed-items-head">'
         + '<h2>Promotions</h2>'
@@ -198,10 +232,49 @@
         + '<div class="f"><label for="pr-ctatext">Button text</label>'
         + '<input type="text" id="pr-ctatext" class="tin" value="' + esc((p.cta && p.cta.text) || '') + '"></div>'
         + sel('pr-ctaaction', 'Button action', CTA_ACTIONS, (p.cta && p.cta.action) || 'quote')
-        + '</div></div></div>';
+        + '</div>'
+        + '<div class="tb-ed-app-box' + (custom ? ' on' : '') + '" data-mp-app-box>'
+        + '<div class="tb-ed-app-head">'
+        + '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" id="pr-app-custom"'
+        + (custom ? ' checked' : '') + '> Enable custom style</label></div>'
+        + '<p class="tb-ed-app-hint">Background, text colours, stroke and transitions only apply when custom style is enabled.</p>'
+        + '</div>'
+        + '<div class="tb-ed-app-fields"' + (custom ? '' : ' hidden') + ' id="pr-app-fields">'
+        + colorRow('pr-app-bg', 'Full-width background', A.containerBg || '', 'Theme default')
+        + colorRow('pr-app-stroke', 'Stroke colour', A.strokeColor || '', 'None')
+        + colorRow('pr-app-eyebrow', 'Eyebrow colour', A.eyebrowColor || '', '')
+        + colorRow('pr-app-title', 'Title colour', A.titleColor || '', '')
+        + colorRow('pr-app-intro', 'Intro text colour', A.introColor || '', '')
+        + '<div class="f"><label for="pr-app-sw">Stroke width <span id="pr-app-sw-v">' + esc(sw) + 'px</span></label>'
+        + '<input type="range" id="pr-app-sw" min="0" max="8" step="1" value="' + esc(sw) + '"></div>'
+        + '<div class="f"><label for="pr-app-sides">Stroke sides</label><select id="pr-app-sides" class="tin">'
+        + [['both', 'Top & bottom'], ['top', 'Top only'], ['bottom', 'Bottom only'], ['all', 'All sides']].map(function (o) {
+          return '<option value="' + o[0] + '"' + ((A.strokeSides || 'both') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+        }).join('')
+        + '</select></div>'
+        + '<div class="f"><label for="pr-app-ttop">Transition into section (top)</label><select id="pr-app-ttop" class="tin">'
+        + APPEARANCE_TRANSITIONS.map(function (o) {
+          return '<option value="' + o[0] + '"' + ((A.transitionTop || 'none') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+        }).join('')
+        + '</select></div>'
+        + '<div class="f"><label for="pr-app-tbot">Transition out (bottom)</label><select id="pr-app-tbot" class="tin">'
+        + APPEARANCE_TRANSITIONS.map(function (o) {
+          return '<option value="' + o[0] + '"' + ((A.transitionBottom || 'none') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+        }).join('')
+        + '</select></div>'
+        + '</div></div>'
+        + '</div></div>';
 
       host.innerHTML = html;
+      host.className = host.className
+        .split(/\s+/)
+        .filter(function (c) {
+          return c && c !== 'tb-ed-root' && c !== 'tb-ed-compact' && c !== 'tb-ed-stack' && c !== 'tb-ed-split';
+        })
+        .join(' ');
       host.classList.add('tb-ed-root', 'tb-ed-compact');
+      if (stack) host.classList.add('tb-ed-stack');
+      else host.classList.add('tb-ed-split');
       drawItems();
     }
 
@@ -239,6 +312,16 @@
       host.__prEdBound = true;
 
       host.addEventListener('click', function (e) {
+        var clr = e.target.closest('[data-pr-clr]');
+        if (clr) {
+          var id = clr.getAttribute('data-pr-clr');
+          applyAppColor(id, '');
+          var cp = host.querySelector('#' + id);
+          var tx = host.querySelector('#' + id + 't');
+          if (tx) tx.value = '';
+          if (cp) cp.value = '#cccccc';
+          return;
+        }
         var tab = e.target.closest('[data-tab]');
         if (tab) {
           activeIdx = parseInt(tab.getAttribute('data-tab'), 10) || 0;
@@ -275,10 +358,50 @@
         }
       });
 
+      function ensureApp() {
+        var PR = ens(cfg);
+        if (!PR.appearance) PR.appearance = {};
+        return PR.appearance;
+      }
+      function applyAppColor(id, v) {
+        var h = hexOk(v);
+        var A = ensureApp();
+        if (id === 'pr-app-bg') A.containerBg = h;
+        if (id === 'pr-app-stroke') A.strokeColor = h;
+        if (id === 'pr-app-eyebrow') A.eyebrowColor = h;
+        if (id === 'pr-app-title') A.titleColor = h;
+        if (id === 'pr-app-intro') A.introColor = h;
+        var cp = host.querySelector('#' + id);
+        var tx = host.querySelector('#' + id + 't');
+        if (tx) tx.value = h || v || '';
+        if (cp && h) {
+          cp.value = h.length === 4
+            ? '#' + h[1] + h[1] + h[2] + h[2] + h[3] + h[3]
+            : h;
+        }
+        emit();
+      }
+
       host.addEventListener('change', function (e) {
         var t = e.target;
         var p = active();
-        if (!t || !p) return;
+        if (!t) return;
+        if (t.id === 'pr-app-custom') {
+          ensureApp().custom = !!t.checked;
+          var box = host.querySelector('[data-mp-app-box]');
+          var fields = host.querySelector('#pr-app-fields');
+          if (box) box.classList.toggle('on', !!t.checked);
+          if (fields) {
+            if (t.checked) fields.removeAttribute('hidden');
+            else fields.setAttribute('hidden', '');
+          }
+          emit();
+          return;
+        }
+        if (t.id === 'pr-app-sides') { ensureApp().strokeSides = t.value; emit(); return; }
+        if (t.id === 'pr-app-ttop') { ensureApp().transitionTop = t.value; emit(); return; }
+        if (t.id === 'pr-app-tbot') { ensureApp().transitionBottom = t.value; emit(); return; }
+        if (!p) return;
         if (t.id === 'pr-on') { p.on = !!t.checked; emit(); drawItems(); return; }
         if (t.id === 'pr-type') { p.type = t.value; emit(); render(); return; }
         if (t.id === 'pr-place') { p.placement = t.value; emit(); return; }
@@ -295,7 +418,20 @@
       host.addEventListener('input', function (e) {
         var t = e.target;
         var p = active();
-        if (!t || !p) return;
+        if (!t) return;
+        if (t.id === 'pr-app-bg' || t.id === 'pr-app-bgt') { applyAppColor('pr-app-bg', t.value); return; }
+        if (t.id === 'pr-app-stroke' || t.id === 'pr-app-stroket') { applyAppColor('pr-app-stroke', t.value); return; }
+        if (t.id === 'pr-app-eyebrow' || t.id === 'pr-app-eyebrowt') { applyAppColor('pr-app-eyebrow', t.value); return; }
+        if (t.id === 'pr-app-title' || t.id === 'pr-app-titlet') { applyAppColor('pr-app-title', t.value); return; }
+        if (t.id === 'pr-app-intro' || t.id === 'pr-app-introt') { applyAppColor('pr-app-intro', t.value); return; }
+        if (t.id === 'pr-app-sw') {
+          ensureApp().strokeWidth = +t.value;
+          var swv = host.querySelector('#pr-app-sw-v');
+          if (swv) swv.textContent = t.value + 'px';
+          emit();
+          return;
+        }
+        if (!p) return;
         if (t.id === 'pr-title') { p.title = t.value; emit(); return; }
         if (t.id === 'pr-desc') { p.description = t.value; emit(); return; }
         if (t.id === 'pr-ctatext') { if (!p.cta) p.cta = {}; p.cta.text = t.value; emit(); return; }
