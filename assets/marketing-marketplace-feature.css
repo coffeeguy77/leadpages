@@ -1010,6 +1010,24 @@ body.mf-app .tb-ed-root {
   display: block;
   visibility: visible;
   opacity: 1;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+/* Portrait editor column — fill the left pane, no half-width leftover */
+body.mf-app .pg-studio[data-layout="portrait"] .pg-panel,
+body.mf-app .pg-studio[data-layout="portrait"] .pg-panel-compact,
+body.mf-app .pg-studio[data-layout="dual"] .pg-panel,
+body.mf-app .pg-studio[data-layout="dual"] .pg-panel-compact,
+body.mf-app .pg-studio[data-layout="portrait"] .pg-live-host,
+body.mf-app .pg-studio[data-layout="dual"] .pg-live-host,
+body.mf-app .pg-studio[data-layout="portrait"] .tb-ed-root,
+body.mf-app .pg-studio[data-layout="dual"] .tb-ed-root,
+body.mf-app .pg-studio[data-layout="portrait"] .tb-ed-zones,
+body.mf-app .pg-studio[data-layout="dual"] .tb-ed-zones {
+  width: 100%;
+  max-width: none;
 }
 
 body.mf-app .pg-topbar {
