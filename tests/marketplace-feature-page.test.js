@@ -57,7 +57,7 @@ describe('marketplace feature app demo page', () => {
     assert.match(featureHtml, /mf-xsell-row/);
     assert.match(featureHtml, /Works even better with/);
     assert.match(featureHtml, /Questions about/);
-    assert.match(featureCss, /\.mf-xsell-row\s*\{[^}]*#001529/s);
+    assert.match(featureCss, /\.mf-xsell-row\s*\{[^}]*var\(--mf-ink\)/s);
   });
 
   it('replaces the final dark opportunities banner with a light New to LeadPages sell', () => {
@@ -76,5 +76,28 @@ describe('marketplace feature app demo page', () => {
     const renderSlice = featureHtml.slice(renderIdx, renderIdx + 9000);
     assert.match(renderSlice, /var isOnlineQuote=/);
     assert.match(renderSlice, /\+\(isOnlineQuote/);
+  });
+
+  it('drops Matches your website / Publish when ready status bar', () => {
+    assert.doesNotMatch(featureHtml, /Matches your website theme/);
+    assert.doesNotMatch(featureHtml, /Publish when ready/);
+    assert.doesNotMatch(featureHtml, /pg-status-bar/);
+  });
+
+  it('phone preview uses a narrow handset frame and re-applies config', () => {
+    assert.match(featureHtml, /pg-device-phone/);
+    assert.match(featureHtml, /applyConfigToFrame\(fr\)/);
+    assert.match(featureCss, /\.pg-device-phone/);
+    assert.match(featureCss, /max-width:\s*390px/);
+  });
+
+  it('brings across the homepage colour switcher onto the feature page', () => {
+    assert.match(featureHtml, /data-mkt-colour-lab/);
+    assert.match(featureHtml, /Try colours/);
+    assert.match(featureHtml, /marketing-home-colour\.js/);
+    assert.match(featureHtml, /marketing-colour-lab\.css/);
+    assert.match(featureHtml, /data-mkt-colour-preset="rivet"/);
+    assert.match(featureCss, /--mf-orange:\s*var\(--orange\)/);
+    assert.match(featureCss, /--mf-ink:\s*var\(--navy\)/);
   });
 });
