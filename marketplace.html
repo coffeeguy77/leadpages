@@ -132,14 +132,19 @@
         <label class="sr-only" for="mp-search">Search apps</label>
         <input type="search" id="mp-search" placeholder="Search apps by name or what you want to achieve…" autocomplete="off">
       </div>
-      <div class="mp-pills reveal" id="mp-filters" role="group" aria-label="Filter apps by category">
+            <div class="mp-pills reveal" id="mp-filters" role="group" aria-label="Filter apps by category">
         <button type="button" class="pill is-on" data-filter="all" aria-pressed="true">All Apps</button>
-        <button type="button" class="pill" data-filter="leads" aria-pressed="false">Leads &amp; Enquiries</button>
+        <button type="button" class="pill" data-filter="heroes" aria-pressed="false">Heroes &amp; Layout</button>
+        <button type="button" class="pill" data-filter="content" aria-pressed="false">Core Content</button>
+        <button type="button" class="pill" data-filter="proof" aria-pressed="false">Social Proof</button>
+        <button type="button" class="pill" data-filter="trust" aria-pressed="false">Trust &amp; Conversion</button>
+        <button type="button" class="pill" data-filter="galleries" aria-pressed="false">Galleries &amp; Media</button>
+        <button type="button" class="pill" data-filter="social" aria-pressed="false">Social</button>
+        <button type="button" class="pill" data-filter="leads" aria-pressed="false">Leads</button>
         <button type="button" class="pill" data-filter="bookings" aria-pressed="false">Bookings</button>
-        <button type="button" class="pill" data-filter="galleries" aria-pressed="false">Galleries</button>
         <button type="button" class="pill" data-filter="reviews" aria-pressed="false">Reviews</button>
         <button type="button" class="pill" data-filter="marketing" aria-pressed="false">Marketing</button>
-        <button type="button" class="pill" data-filter="trust" aria-pressed="false">Trust</button>
+        <button type="button" class="pill" data-filter="platform" aria-pressed="false">Platform</button>
         <button type="button" class="pill" data-filter="premium" aria-pressed="false">Premium</button>
       </div>
       <div class="mp-goal-grid reveal" aria-label="Common business goals">
@@ -409,32 +414,387 @@
     <div class="wrap mp-explore-layout">
       <aside class="mp-explore-sidebar reveal" aria-label="App categories">
         <h3 class="h3">Categories</h3>
-        <ul class="mp-cat-list">
+                <ul class="mp-cat-list">
           <li><a href="#explore" data-sidebar-filter="all" class="is-active">All Apps</a></li>
-          <li><a href="#explore" data-sidebar-filter="leads">Leads &amp; Enquiries</a></li>
+          <li><a href="#explore" data-sidebar-filter="heroes">Heroes &amp; Layout</a></li>
+          <li><a href="#explore" data-sidebar-filter="content">Core Content</a></li>
+          <li><a href="#explore" data-sidebar-filter="proof">Social Proof</a></li>
+          <li><a href="#explore" data-sidebar-filter="trust">Trust &amp; Conversion</a></li>
+          <li><a href="#explore" data-sidebar-filter="galleries">Galleries &amp; Media</a></li>
+          <li><a href="#explore" data-sidebar-filter="social">Social</a></li>
+          <li><a href="#explore" data-sidebar-filter="leads">Leads</a></li>
           <li><a href="#explore" data-sidebar-filter="bookings">Bookings</a></li>
-          <li><a href="#explore" data-sidebar-filter="galleries">Galleries</a></li>
           <li><a href="#explore" data-sidebar-filter="reviews">Reviews</a></li>
           <li><a href="#explore" data-sidebar-filter="marketing">Marketing</a></li>
-          <li><a href="#explore" data-sidebar-filter="trust">Trust</a></li>
+          <li><a href="#explore" data-sidebar-filter="platform">Platform</a></li>
           <li><a href="#explore" data-sidebar-filter="premium">Premium</a></li>
         </ul>
       </aside>
       <div>
         <h2 class="h2 reveal" id="explore-title">Explore the marketplace</h2>
         <div class="mp-tile-grid" id="mp-tile-grid">
-          <a class="mp-tile reveal" href="/marketplace/online-quote" data-app="online-quote" data-cats="leads premium" data-search="online quote quotes enquiries leads premium">
-            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4h9a3 3 0 013 3v7a3 3 0 01-3 3H10l-4 3v-3H6a3 3 0 01-3-3V7a3 3 0 013-3z"/><path d="M8 10h6M8 13h4"/></svg></span>
+          <a class="mp-tile reveal" href="/marketplace/emergency-cta" data-app="emerg" data-cats="content trust" data-search="emergency cta 24/7 urgent call-to-action bar a sticky top bar that puts your emergency phone line front and centre — message, colours and call link match the app command centre top bar. emerg emerg content trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3h4l2 5-3 2a12 12 0 006 6l2-3 5 2v4a2 2 0 01-2 2A17 17 0 014 5a2 2 0 012-2z"/></svg></span>
             <div class="mp-tile-body">
               <div class="mp-tile-head">
-                <span class="name">Online Quote</span>
-                <span class="badge badge-prem">Premium</span>
+                <span class="name">Emergency CTA</span>
+                <span class="badge badge-inc">Included</span>
               </div>
-              <p class="desc">Verified quote flow on your site</p>
+              <p class="desc">24/7 urgent call-to-action bar</p>
             </div>
           </a>
-          <a class="mp-tile reveal" href="/marketplace/booking-cta" data-app="booking-cta" data-cats="bookings" data-search="booking bookings appointments">
-            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h3M13 14h3M8 17h3"/></svg></span>
+          <a class="mp-tile reveal" href="/marketplace/faq" data-app="faq" data-cats="content" data-search="faq accordion collapsible questions that cut support calls answer the questions every visitor asks before they call. faq faq content">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 115 0c0 1.5-2.5 2-2.5 4"/><path d="M12 17h.01"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">FAQ Accordion</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Collapsible questions that cut support calls</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/feature-strip" data-app="feature-strip" data-cats="content" data-search="feature strip icon highlights under the hero a compact strip of icon + title + detail cards for what sets the business apart. featurestrip feature-strip content">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 16l9 5 9-5"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Feature Strip</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Icon highlights under the hero</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/online-quote" data-app="online-quote" data-cats="content leads premium" data-search="online quotes turn website visitors into quote-ready customers. a guided quote form that matches your website, captures the right details, and sends structured enquiries to email and your crm. onlinequote online-quote content leads premium">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 4h9a3 3 0 013 3v7a3 3 0 01-3 3H10l-4 3v-3H6a3 3 0 01-3-3V7a3 3 0 013-3z"/><path d="M8 10h6M8 13h4"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Online Quotes</span>
+                <span class="badge badge-prem">Premium</span>
+              </div>
+              <p class="desc">Turn website visitors into quote-ready customers.</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/promotions" data-app="promotions" data-cats="content marketing" data-search="promotions & offers seasonal offers, front and centre urgency offers with types, placements and styles — weekly windows, deadlines, limited spots, finance, suburb specials and more. promotions promotions content marketing">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12l9-9h7a2 2 0 012 2v7l-9 9L3 12z"/><circle cx="16.5" cy="7.5" r="1.2"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Promotions & Offers</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Seasonal offers, front and centre</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/quote" data-app="quote" data-cats="content leads" data-search="quote form lead capture form with configurable fields turn visitors into callbacks — the primary conversion point. quote quote content leads">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 4h9a3 3 0 013 3v7a3 3 0 01-3 3H10l-4 3v-3H6a3 3 0 01-3-3V7a3 3 0 013-3z"/><path d="M8 10h6M8 13h4"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Quote Form</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Lead capture form with configurable fields</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/review-highlights" data-app="review-highlights" data-cats="content reviews" data-search="review highlights star-rated snippets directly under the hero hit social proof before services on reviews first layout. reviewhighlights review-highlights content reviews">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.8 6.7 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5z"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Review Highlights</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Star-rated snippets directly under the hero</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/reviews" data-app="reviews" data-cats="content reviews" data-search="reviews wall full review cards with source attribution show the full wall of customer quotes. reviews reviews content reviews">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.8 6.7 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5z"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Reviews Wall</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Full review cards with source attribution</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/seo-text" data-app="seo-text" data-cats="content marketing" data-search="seo text on-page article copy with h1/h2 structure long-form seo article block with eyebrow, h1, optional h2, supporting copy, image and colours — sits above faq by default. seotext seo-text content marketing">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7V5h16v2M12 5v14M9 19h6"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">SEO Text</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">On-page article copy with H1/H2 structure</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/area" data-app="area" data-cats="content" data-search="service area copy paragraph plus suburb list for local seo tell visitors exactly where you work. area area content">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.4 7-11a7 7 0 10-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Service Area Copy</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Paragraph plus suburb list for local SEO</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/services" data-app="services" data-cats="content" data-search="services grid icon cards for every service you offer list what you fix, install or maintain in scannable cards. services services content">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Services Grid</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Icon cards for every service you offer</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/why" data-app="why" data-cats="content" data-search="why choose us numbered reasons or icon points that build trust answer why you? before the visitor compares competitors. why why content">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l8 3v6c0 5-3.5 8.5-8 9.5C7.5 20.5 4 17 4 12V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Why Choose Us</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Numbered reasons or icon points that build trust</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/hero" data-app="hero" data-cats="heroes" data-search="hero banner first impression above the fold the hero sets tone, urgency and trust before the visitor scrolls. hero hero heroes">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Hero Banner</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">First impression above the fold</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/hero-before-after" data-app="hero-before-after" data-cats="heroes" data-search="hero before/after interactive drag-to-reveal hero transformation let visitors swipe between before and after in the hero itself. herobeforeafter hero-before-after heroes">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 3-2 6 4"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Hero Before/After</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Interactive drag-to-reveal hero transformation</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/hero-slider" data-app="hero-slider" data-cats="heroes" data-search="hero image slider rotating image hero with overlay copy and ctas a full-width slider for visual trades — roofing, landscaping, building. heroslider hero-slider heroes">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 12h8M12 8v8"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Hero Image Slider</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Rotating image hero with overlay copy and CTAs</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/nav-menu" data-app="nav-menu" data-cats="heroes" data-search="navigation menu custom nav links — pills or underline style add a secondary navigation row to any page. navmenu nav-menu heroes">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Navigation Menu</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Custom nav links — pills or underline style</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/split-hero" data-app="split-hero" data-cats="heroes" data-search="split hero two-column hero with live activity feed pair a bold headline with a scrolling feed of recent jobs. splithero split-hero heroes">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 16l9 5 9-5"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Split Hero</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Two-column hero with live activity feed</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/text-box" data-app="text-box" data-cats="heroes" data-search="text box flexible text block with optional side image long-form copy with optional image — about us, story, methodology. textbox text-box heroes">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7V5h16v2M12 5v14M9 19h6"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Text Box</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Flexible text block with optional side image</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/trust-bar" data-app="trust-bar" data-cats="heroes trust" data-search="trust bar give visitors a reason to trust you immediately keep important services, promises or credentials visible without distracting from the rest of your page. trustbar trust-bar heroes trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.2 2.2L17 4.5l.7 2.8L20.5 8l-1.3 2.5.8 2.8-2.7.7L16 16.8l-2.5-1.4L11 17l-.8-2.8-2.7-.7.8-2.8L7 8l2.8-.7L10.5 4.5 12 3z"/><path d="M10 12l1.5 1.5L14.5 10"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Trust Bar</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Give visitors a reason to trust you immediately</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/premium-gallery" data-app="premium-gallery" data-cats="galleries" data-search="premium gallery design-led image galleries for large photo collections showcase mixed portrait and landscape photography with mosaic layouts, filters, categories and albums. premiumgallery premium-gallery galleries">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 3-2 6 4"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Premium Gallery</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Design-led image galleries for large photo collections</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/advertising" data-app="advertising" data-cats="marketing platform premium" data-search="advertising google ads performance in manage connect google ads, sync campaigns, check tracking health and oversee paid traffic for client sites. advertising advertising marketing platform premium">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 11v2a2 2 0 002 2h1l7 4V5L7 9H6a2 2 0 00-2 2z"/><path d="M18 9.5a3.5 3.5 0 010 5"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Advertising</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Google Ads performance in Manage</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/custom-html" data-app="custom-html" data-cats="platform" data-search="custom html embed html, css and js — not an iframe drop custom html onto any page with optional stylesheet and script urls. fully responsive and repositionable like any other app. customhtml custom-html platform">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M8 16l-4-4 4-4M16 8l4 4-4 4M10 20l4-16"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Custom HTML</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Embed HTML, CSS and JS — not an iframe</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/seo-command" data-app="seo-command" data-cats="marketing platform premium" data-search="seo command centre local seo workflows inside manage plan titles, local pages, keywords and next actions from one command centre — not a page section you toggle on. seocommand seo-command marketing platform premium">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">SEO Command Centre</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Local SEO workflows inside Manage</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/insta-gallery" data-app="insta-gallery" data-cats="galleries social" data-search="instagram gallery grid of instagram posts on your site embed your instagram grid without manual image uploads. instagallery insta-gallery galleries social">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 8h3l1.5-2h7L17 8h3a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2v-8a2 2 0 012-2z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Instagram Gallery</span>
+                <span class="badge badge-inc">Connect</span>
+              </div>
+              <p class="desc">Grid of Instagram posts on your site</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/ig-project-feed" data-app="ig-project-feed" data-cats="galleries social" data-search="instagram project feed instagram posts rendered as project cards instagram posts rendered as project cards with ctas. igprojectfeed ig-project-feed galleries social">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 8h3l1.5-2h7L17 8h3a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2v-8a2 2 0 012-2z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Instagram Project Feed</span>
+                <span class="badge badge-inc">Connect</span>
+              </div>
+              <p class="desc">Instagram posts rendered as project cards</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/activity-counter" data-app="activity-counter" data-cats="proof" data-search="activity counter live-style numeric counters 47 jobs this month — animated busy counters. activitycounter activity-counter proof">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19h16"/><path d="M8 16V10M12 16V7M16 16v-4"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Activity Counter</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Live-style numeric counters</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/activity-timeline" data-app="activity-timeline" data-cats="proof" data-search="activity timeline chronological what we are working on feed timeline of current and recent activity. activitytimeline activity-timeline proof">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Activity Timeline</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Chronological "what we are working on" feed</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/before-after" data-app="before-after" data-cats="galleries proof" data-search="before & after gallery side-by-side or stacked transformation gallery static before/after pairs for proof-heavy pages. beforeafter before-after galleries proof">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 3-2 6 4"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Before & After Gallery</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Side-by-side or stacked transformation gallery</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/before-after-feed" data-app="before-after-feed" data-cats="galleries proof" data-search="before/after feed scrolling feed of transformation pairs multiple before/after cards in a social feed format. beforeafterfeed before-after-feed galleries proof">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 3-2 6 4"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Before/After Feed</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Scrolling feed of transformation pairs</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/customer-reactions" data-app="customer-reactions" data-cats="proof reviews" data-search="customer reactions short reaction quotes in a feed format quick customer reactions — lighter than full reviews. customerreactions customer-reactions proof reviews">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.8 6.7 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5z"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Customer Reactions</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Short reaction quotes in a feed format</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/jobs-feed" data-app="jobs-feed" data-cats="proof" data-search="jobs feed compact fresh off the tools job list shorter job cards optimised for the proof stream. jobsfeed jobs-feed proof">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Jobs Feed</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Compact "fresh off the tools" job list</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/crew" data-app="crew" data-cats="proof" data-search="meet the team team member cards with photo and role put faces to the business — owner and crew. crew crew proof">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c1-3.5 3-5 6-5s5 1.5 6 5"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Meet the Team</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Team member cards with photo and role</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/project-feed" data-app="project-feed" data-cats="proof" data-search="project feed card feed of latest completed jobs social-style feed of recent projects with photos. projectfeed project-feed proof">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Project Feed</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Card feed of latest completed jobs</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/featured-projects" data-app="featured-projects" data-cats="galleries proof" data-search="project portfolio large image cards for premium project showcase mini portfolio under the hero for high-end visual trades. featuredprojects featured-projects galleries proof">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="7" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="13" width="8" height="7" rx="1.5"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Project Portfolio</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Large image cards for premium project showcase</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/proof-stream" data-app="proof-stream" data-cats="proof reviews" data-search="proof stream mixed proof cards — jobs, reviews, video, before/after the all-in-one social proof feed. proofstream proof-stream proof reviews">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.8 6.7 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5z"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Proof Stream</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Mixed proof cards — jobs, reviews, video, before/after</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/video-reels" data-app="video-reels" data-cats="galleries proof" data-search="video reels short-form video cards from the job site reel-style video thumbnails with duration tags and optional links. videoreels video-reels galleries proof">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4V8z"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Video Reels</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Short-form video cards from the job site</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/booking-cta" data-app="booking-cta" data-cats="bookings trust" data-search="booking cta appointment conversion band a clear booking call-to-action band that drives visitors to schedule or request a time. bookingcta booking-cta bookings trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
             <div class="mp-tile-body">
               <div class="mp-tile-head">
                 <span class="name">Booking CTA</span>
@@ -443,104 +803,104 @@
               <p class="desc">Appointment conversion band</p>
             </div>
           </a>
-          <a class="mp-tile reveal" href="/marketplace/premium-gallery" data-app="premium-gallery" data-cats="galleries premium" data-search="gallery galleries photos premium">
-            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M3 16l5-4 4 3 3-2 6 4"/></svg></span>
+          <a class="mp-tile reveal" href="/marketplace/certifications" data-app="certifications" data-cats="trust" data-search="certifications license and accreditation cards prove you are licensed, insured and industry-accredited. certifications certifications trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.2 2.2L17 4.5l.7 2.8L20.5 8l-1.3 2.5.8 2.8-2.7.7L16 16.8l-2.5-1.4L11 17l-.8-2.8-2.7-.7.8-2.8L7 8l2.8-.7L10.5 4.5 12 3z"/><path d="M10 12l1.5 1.5L14.5 10"/></svg></span>
             <div class="mp-tile-body">
               <div class="mp-tile-head">
-                <span class="name">Premium Gallery</span>
-                <span class="badge badge-prem">Premium</span>
-              </div>
-              <p class="desc">Mosaic layouts and albums</p>
-            </div>
-          </a>
-          <a class="mp-tile reveal" href="/marketplace/review-highlights" data-app="review-highlights" data-cats="reviews" data-search="review reviews highlights stars">
-            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.8 6.7 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5z"/></svg></span>
-            <div class="mp-tile-body">
-              <div class="mp-tile-head">
-                <span class="name">Review Highlights</span>
+                <span class="name">Certifications</span>
                 <span class="badge badge-inc">Included</span>
               </div>
-              <p class="desc">Star snippets under the hero</p>
+              <p class="desc">License and accreditation cards</p>
             </div>
           </a>
-          <a class="mp-tile reveal" href="/marketplace/trust-bar" data-app="trust-bar" data-cats="trust" data-search="trust bar credentials services">
-            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l2.2 2.2L17 4.5l.7 2.8L20.5 8l-1.3 2.5.8 2.8-2.7.7L16 16.8l-2.5-1.4L11 17l-.8-2.8-2.7-.7.8-2.8L7 8l2.8-.7L10.5 4.5 12 3z"/><path d="M10 12l1.5 1.5L14.5 10"/></svg></span>
-            <div class="mp-tile-body">
-              <div class="mp-tile-head">
-                <span class="name">Trust Bar</span>
-                <span class="badge badge-inc">Included</span>
-              </div>
-              <p class="desc">Credentials and promises strip</p>
-            </div>
-          </a>
-          <a class="mp-tile reveal" href="/marketplace/special-offer" data-app="special-offer" data-cats="marketing" data-search="special offer promo deal free">
-            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12l9-9h7a2 2 0 012 2v7l-9 9L3 12z"/><circle cx="16.5" cy="7.5" r="1.2"/></svg></span>
-            <div class="mp-tile-body">
-              <div class="mp-tile-head">
-                <span class="name">Special Offer</span>
-                <span class="badge badge-free">Free</span>
-              </div>
-              <p class="desc">Promo strip for ad funnels</p>
-            </div>
-          </a>
-          <a class="mp-tile reveal" href="/marketplace/featured-projects" data-app="featured-projects" data-cats="galleries" data-search="featured projects portfolio showcase work">
-            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="7" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="13" width="8" height="7" rx="1.5"/></svg></span>
-            <div class="mp-tile-body">
-              <div class="mp-tile-head">
-                <span class="name">Featured Projects</span>
-                <span class="badge badge-inc">Included</span>
-              </div>
-              <p class="desc">Large project portfolio cards</p>
-            </div>
-          </a>
-          <a class="mp-tile reveal" href="/marketplace/service-area-map" data-app="service-area-map" data-cats="leads trust" data-search="service area map coverage suburbs local">
-            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-5.4 7-11a7 7 0 10-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg></span>
-            <div class="mp-tile-body">
-              <div class="mp-tile-head">
-                <span class="name">Service Area Map</span>
-                <span class="badge badge-inc">Included</span>
-              </div>
-              <p class="desc">Coverage map and intro</p>
-            </div>
-          </a>
-          <a class="mp-tile reveal" href="/marketplace/emergency-availability" data-app="emergency-availability" data-cats="trust" data-search="emergency availability after hours 24/7">
-            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <a class="mp-tile reveal" href="/marketplace/emergency-availability" data-app="emergency-availability" data-cats="trust" data-search="emergency availability after-hours status and schedule display show when you are available for emergencies. emergencyavailability emergency-availability trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
             <div class="mp-tile-body">
               <div class="mp-tile-head">
                 <span class="name">Emergency Availability</span>
                 <span class="badge badge-inc">Included</span>
               </div>
-              <p class="desc">After-hours status display</p>
+              <p class="desc">After-hours status and schedule display</p>
             </div>
           </a>
-          <a class="mp-tile reveal" href="/marketplace/seo-command" data-app="seo-command" data-cats="marketing premium" data-search="seo command local search rankings">
-            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="M7 14l4-4 3 3 6-7"/><path d="M16 6h4v4"/></svg></span>
+          <a class="mp-tile reveal" href="/marketplace/estimate-builder" data-app="estimate-builder" data-cats="leads trust" data-search="estimate builder interactive ballpark pricing wizard visitors self-serve a price range before they call. estimatebuilder estimate-builder leads trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 7c0-2-2-3-5-3s-5 1-5 3 2 3 5 3 5 1 5 3-2 3-5 3-5-1-5-3"/></svg></span>
             <div class="mp-tile-body">
               <div class="mp-tile-head">
-                <span class="name">SEO Command</span>
-                <span class="badge badge-prem">Premium</span>
-              </div>
-              <p class="desc">Local SEO workflows in Manage</p>
-            </div>
-          </a>
-          <a class="mp-tile reveal" href="/marketplace/advertising" data-app="advertising" data-cats="marketing premium" data-search="advertising google ads campaigns paid">
-            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 11v2a2 2 0 002 2h1l7 4V5L7 9H6a2 2 0 00-2 2z"/><path d="M18 9.5a3.5 3.5 0 010 5"/><path d="M7 15v3a2 2 0 002 2h1"/></svg></span>
-            <div class="mp-tile-body">
-              <div class="mp-tile-head">
-                <span class="name">Advertising</span>
-                <span class="badge badge-prem">Premium</span>
-              </div>
-              <p class="desc">Google Ads in Manage</p>
-            </div>
-          </a>
-          <a class="mp-tile reveal" href="/marketplace/insta-gallery" data-app="insta-gallery" data-cats="galleries" data-search="instagram gallery social insta photos">
-            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2v-8a2 2 0 012-2z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
-            <div class="mp-tile-body">
-              <div class="mp-tile-head">
-                <span class="name">Instagram Gallery</span>
+                <span class="name">Estimate Builder</span>
                 <span class="badge badge-inc">Included</span>
               </div>
-              <p class="desc">Instagram grid on your site</p>
+              <p class="desc">Interactive ballpark pricing wizard</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/finance" data-app="finance" data-cats="trust" data-search="finance options weekly payment callout for larger jobs let customers spread the cost of big jobs. finance finance trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 7c0-2-2-3-5-3s-5 1-5 3 2 3 5 3 5 1 5 3-2 3-5 3-5-1-5-3"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Finance Options</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Weekly payment callout for larger jobs</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/service-process" data-app="service-process" data-cats="trust" data-search="how it works step-by-step process timeline show the journey from call to completed job. serviceprocess service-process trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h3M14 12h3"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">How It Works</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Step-by-step process timeline</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/project-stats" data-app="project-stats" data-cats="trust" data-search="project stats big-number credibility bar lead with 2,400+ jobs or 15 years — authority at a glance. projectstats project-stats trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19h16"/><path d="M8 16V10M12 16V7M16 16v-4"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Project Stats</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Big-number credibility bar</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/response-cards" data-app="response-cards" data-cats="trust" data-search="response cards urgency cards for emergency trades six bold trust cards that answer what happens when i call? responsecards response-cards trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 16l9 5 9-5"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Response Cards</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Urgency cards for emergency trades</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/service-area-map" data-app="service-area-map" data-cats="leads trust" data-search="service area map map section with coverage intro visual service area section for geographic trust. serviceareamap service-area-map leads trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.4 7-11a7 7 0 10-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Service Area Map</span>
+                <span class="badge badge-inc">Connect</span>
+              </div>
+              <p class="desc">Map section with coverage intro</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/service-areas" data-app="service-areas" data-cats="trust" data-search="service areas grid suburb grid for geographic dominance large suburb grid under the hero for local seo. serviceareas service-areas trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.4 7-11a7 7 0 10-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Service Areas Grid</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Suburb grid for geographic dominance</p>
+            </div>
+          </a>
+          <a class="mp-tile reveal" href="/marketplace/special-offer" data-app="special-offer" data-cats="marketing trust" data-search="special offer banner limited-time offer strip for ad landing pages bold offer between hero and quote on offer funnel layout. specialoffer special-offer marketing trust">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12l9-9h7a2 2 0 012 2v7l-9 9L3 12z"/><circle cx="16.5" cy="7.5" r="1.2"/></svg></span>
+            <div class="mp-tile-body">
+              <div class="mp-tile-head">
+                <span class="name">Special Offer Banner</span>
+                <span class="badge badge-inc">Included</span>
+              </div>
+              <p class="desc">Limited-time offer strip for ad landing pages</p>
             </div>
           </a>
         </div>
