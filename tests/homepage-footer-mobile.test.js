@@ -115,12 +115,14 @@ test('mobile footer stacks menus two-up and keeps support readable', () => {
 test('footer bottom keeps tagline, ABN, and legal links', () => {
   const html = loadFooterApi().html;
   assert.match(html, /class="f-tagline"/);
-  assert.match(html, /The One website\./);
-  assert.match(html, /Everything/);
-  assert.match(html, /connected\./);
+  assert.match(html, /class="f-tagline-lead">The One website\./);
+  assert.match(html, /class="f-tagline-accent">Everything connected\./);
   assert.match(html, /class="f-abn"[^>]*>[\s\S]*class="f-abn-label">ABN<\/span>[\s\S]*class="f-abn-num">33&nbsp;600&nbsp;754&nbsp;676/);
   assert.match(html, /class="f-bottom-meta"/);
-  assert.match(footCss, /\.mkt-site-footer\s+\.f-tagline\s*\{/);
+  assert.match(footCss, /\.mkt-site-footer\s+\.f-tagline\s*\{[\s\S]*white-space:\s*nowrap/);
+  assert.match(footCss, /\.mkt-site-footer\s+\.f-tagline-lead\s*\{[\s\S]*color:\s*#fff/);
+  assert.match(footCss, /\.mkt-site-footer\s+\.f-tagline-accent\s*\{[\s\S]*#C85A2C/);
+  assert.doesNotMatch(footCss, /\.mkt-site-footer\s+\.f-tagline\s+span\s*\{[\s\S]*display:\s*block/);
   assert.match(footCss, /\.mkt-site-footer\s+\.f-bottom-meta\s*\{[\s\S]*justify-content:\s*space-between/);
   assert.match(footCss, /\.mkt-site-footer\s+\.f-links\s*\{[\s\S]*margin-left:\s*auto/);
 });
