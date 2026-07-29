@@ -926,6 +926,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var catLabel=(f.category_name||f.category||f.badge||'Marketplace app');
     var headline=(f.tagline||f.name||'Marketplace app');
     var sub=(f.summary||'');
+    var isOnlineQuote=/online.?quote/i.test(String(f.section_key||f.slug||'')+' '+String(f.name||''));
     var faqBlock=(demoBlocks||[]).filter(function(b){ return b.block_type==='faq'; })[0];
     var faqHtml=faqBlock?block(faqBlock):'<div class="blk faq"><h2>Questions about '+esc(f.name)+'?</h2>'
       +'<details><summary>Is this included in my plan?</summary><div class="a">Access depends on your LeadPages plan. Labels on this page show Included, Free or Premium — your account confirms any cost before you add the app.</div></details>'
