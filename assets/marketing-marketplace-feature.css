@@ -1074,6 +1074,30 @@ body.mf-app .pg-devicewrap.framed {
   overflow: hidden;
 }
 
+/* Tablet / phone — fill the preview column (no scaled frame crop) */
+body.mf-app .pg-devicewrap.pg-device-fill {
+  background: #fff;
+  border: 1px solid var(--mf-border);
+  border-radius: var(--mf-radius);
+  padding: 10px 8px;
+  overflow: visible;
+}
+
+body.mf-app .pg-devicewrap.pg-device-fill .pg-viewport {
+  width: 100%;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
+}
+
+body.mf-app .pg-devicewrap.pg-device-fill .pg-iframe {
+  width: 100% !important;
+  max-width: 100%;
+  transform: none !important;
+  margin-bottom: 0 !important;
+}
+
 body.mf-app .pg-viewport {
   width: 100%;
   transform-origin: top center;

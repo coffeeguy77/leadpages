@@ -1010,11 +1010,6 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   }
 
 
-  var PG_DEV={
-    desktop:{w:1440,scale:1,cols:4},
-    tablet: {w:768, scale:null,cols:2},
-    phone:  {w:390, scale:null,cols:1}};
-
   function _lpIcon(name){
     name=(name||'').trim();
     if(!name||!window.LP_ICONS||!window.LP_ICONS[name])return '';
@@ -1041,7 +1036,6 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var liveSiteCfg = { sections: {}, theme: {} };
     var pgMetaLoaded = false;
 
-    var PG_W = { desktop: null, tablet: 768, phone: 390 };
     var layout = 'portrait'; /* portrait | landscape | dual */
     var dev = 'tablet';
     var iframe = null;
@@ -1177,41 +1171,48 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       return dev === 'desktop' ? 'tablet' : dev;
     }
 
-    function applyFramedDevice(fr, host, device) {
-      if (!fr || !host) return;
-      var w = PG_W[device];
-      if (!w) {
-        fr.style.width = '100%';
-        fr.style.transform = 'none';
-        fr.style.marginBottom = '';
-        host.style.height = '';
-        host.classList.remove('framed');
-        fitPreviewFrame();
-        return;
-      }
-      host.classList.add('framed');
-      fr.style.width = w + 'px';
-      fr.style.transformOrigin = 'top center';
-      function place() {
-        var pad = 48;
-        var avail = Math.max(160, (host.clientWidth || host.offsetWidth || 320) - pad);
-        var s = Math.min(1, avail / w);
-        if (!(s > 0)) s = 1;
-        fr.style.transform = 'scale(' + s + ')';
-        var h = measurePreviewHeight(fr) || 220;
-        fr.style.height = h + 'px';
-        fr.style.marginBottom = ((h * s) - h) + 'px';
-        host.style.height = Math.ceil(h * s + 24) + 'px';
-      }
-      place();
-      setTimeout(place, 80);
-      setTimeout(place, 220);
+    /** Tablet/phone fill the preview pane (no scaled device frame that crops). */
+    function applyPreviewDeviceHints(fr) {
+      fr = fr || getIframe();
+      if (!fr) return;
+      var device = effectiveDevice();
+      try {
+        var doc = fr.contentDocument;
+        if (!doc) return;
+        if (doc.documentElement) doc.documentElement.setAttribute('data-pg-device', device);
+        var cols = null;
+        if (device === 'phone') cols = 2;
+        else if (device === 'tablet') cols = 3;
+        var ig = doc.querySelector('[data-sec="instaGallery"]');
+        if (ig) {
+          if (cols != null) {
+            ig.style.setProperty('--ig-cols', String(cols));
+          } else {
+            var cfgCols = 4;
+            try {
+              var sec = liveSiteCfg.sections && liveSiteCfg.sections.instaGallery;
+              var n = sec && parseInt(sec.columns, 10);
+              if (!isNaN(n)) cfgCols = Math.max(2, Math.min(5, n));
+            } catch (_e) {}
+            ig.style.setProperty('--ig-cols', String(cfgCols));
+          }
+        }
+      } catch (e) {}
     }
 
     function applyDevice() {
       var fr = getIframe();
       if (!fr || !wrap) return;
-      applyFramedDevice(fr, wrap, effectiveDevice());
+      var device = effectiveDevice();
+      wrap.setAttribute('data-pg-device', device);
+      wrap.classList.remove('framed');
+      wrap.classList.add('pg-device-fill');
+      fr.style.width = '100%';
+      fr.style.transform = 'none';
+      fr.style.marginBottom = '';
+      wrap.style.height = '';
+      fitPreviewFrame();
+      applyPreviewDeviceHints(fr);
       if (layout === 'dual') fitDualFrame();
     }
 
@@ -1328,7 +1329,10 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 
     function applyLiveConfig() {
       ensureSectionOn(liveSiteCfg, secKey);
+      /* Device hint before paint so demos (e.g. Instagram cols) can respond */
+      applyPreviewDeviceHints(getIframe());
       applyConfigToFrame(getIframe());
+      applyPreviewDeviceHints(getIframe());
       if (layout === 'dual') applyConfigToFrame(getDualIframe());
       setTimeout(function() {
         fitPreviewFrame();

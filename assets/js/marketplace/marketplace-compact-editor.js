@@ -1,6 +1,7 @@
 /**
  * Compact marketplace playground editor for all section apps (Trust Bar UX).
- * Left: Items (tabbed) + Content | Right: Style — temporary state only; never saves.
+ * Marketplace playground: single stacked column (half-screen beside preview).
+ * Demo builder may still use a wider two-zone layout.
  * Trust Bar still uses LPTrustBarEditor (manage-parity). This covers the rest.
  */
 (function (global) {
@@ -184,16 +185,28 @@
     if (isMainCopyTextarea(f)) return '12';
     if (/\.(intro|sub|description|detailPh|fineText|summary)$/i.test(key)
       || /^(Intro|Sub-text|Description|Summary)$/i.test(label)) {
-      return '5';
+      return '6';
     }
-    return '3';
+    return '4';
+  }
+
+  function isAppearanceField(f) {
+    return /\.appearance\./.test(String((f && f.key) || ''));
+  }
+
+  function isAppearanceCustomToggle(f) {
+    return /\.appearance\.custom$/.test(String((f && f.key) || ''));
+  }
+
+  function isTruthyCheck(val) {
+    return val === true || val === 'true' || val === 1 || val === '1';
   }
 
   function renderField(f, val, attrName) {
     attrName = attrName || 'data-pgk';
     var keyAttr = attrName + '="' + esc(f.key || f.prop || '') + '"';
     if (f.type === 'checkbox' || f.type === 'check') {
-      var on = val === true || val === 'true' || val === 1 || val === '1';
+      var on = isTruthyCheck(val);
       return '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" ' + keyAttr + (on ? ' checked' : '') + '> '
         + esc(f.label) + '</label></div>';
     }
@@ -354,7 +367,9 @@
         html += '<div class="tb-ed-banner">Demo builder — changes can be saved to the selected preset.</div>';
       }
 
-      html += '<div class="tb-ed-zones' + (showLeft && hasStyle ? '' : ' tb-ed-zones-single') + '">';
+      /* Playground sits in ~half the screen — always stack Content then Style */
+      var stackPlayground = mode === 'marketplace-playground';
+      html += '<div class="tb-ed-zones' + (stackPlayground || !(showLeft && hasStyle) ? ' tb-ed-zones-single' : '') + '">';
 
       if (showLeft) {
         html += '<div class="tb-ed-zone-left">';
@@ -373,12 +388,23 @@
             + '<div class="tb-ed-color-grid" data-mp-content></div>'
             + '</div>';
         }
+        if (stackPlayground && (hasStyle || !showLeft)) {
+          html += '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-style" aria-label="Style">'
+            + '<div class="tb-ed-zone-label">Style</div>'
+            + '<div class="tb-ed-color-grid" data-mp-style></div>'
+            + '</div>';
+        }
         html += '</div>';
       }
 
-      if (hasStyle || !showLeft) {
+      if (!stackPlayground && (hasStyle || !showLeft)) {
         html += '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-style" aria-label="Style">'
           + '<div class="tb-ed-zone-label">' + (showLeft || hasStyle ? 'Style' : 'Content') + '</div>'
+          + '<div class="tb-ed-color-grid" data-mp-style></div>'
+          + '</div>';
+      } else if (stackPlayground && !showLeft && hasStyle) {
+        html += '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-style" aria-label="Style">'
+          + '<div class="tb-ed-zone-label">Style</div>'
           + '<div class="tb-ed-color-grid" data-mp-style></div>'
           + '</div>';
       }
@@ -388,9 +414,16 @@
       host.innerHTML = html;
       host.className = host.className
         .split(/\s+/)
-        .filter(function (c) { return c && c.indexOf('tb-ed-sec-') !== 0 && c !== 'tb-ed-root' && c !== 'tb-ed-compact'; })
+        .filter(function (c) {
+          return c && c.indexOf('tb-ed-sec-') !== 0
+            && c !== 'tb-ed-root'
+            && c !== 'tb-ed-compact'
+            && c !== 'tb-ed-stack'
+            && c !== 'tb-ed-copyheavy';
+        })
         .join(' ');
       host.classList.add('tb-ed-root', 'tb-ed-compact');
+      if (stackPlayground) host.classList.add('tb-ed-stack');
       if (sectionKey) host.classList.add('tb-ed-sec-' + sectionKey);
       if (hasContent && hasStyle && !hasItems) host.classList.add('tb-ed-copyheavy');
       drawItems();
@@ -477,7 +510,42 @@
     }
 
     function drawStyle(styleFields) {
-      drawFieldGrid(host.querySelector('[data-mp-style]'), styleFields, 'Style controls appear here when available.');
+      var box = host.querySelector('[data-mp-style]');
+      if (!box) return;
+      if (!styleFields || !styleFields.length) {
+        box.innerHTML = '<p class="tb-ed-empty" style="margin:0">Style controls appear here when available.</p>';
+        return;
+      }
+      var plain = [];
+      var appearance = [];
+      var customToggle = null;
+      styleFields.forEach(function (f) {
+        if (isAppearanceCustomToggle(f)) customToggle = f;
+        else if (isAppearanceField(f)) appearance.push(f);
+        else plain.push(f);
+      });
+      var html = plain.map(function (f) {
+        return renderField(f, readVal(f), 'data-pgk');
+      }).join('');
+      if (customToggle || appearance.length) {
+        var customOn = customToggle ? isTruthyCheck(readVal(customToggle)) : false;
+        var toggleField = customToggle
+          ? Object.assign({}, customToggle, { label: 'Enable custom style' })
+          : null;
+        html += '<div class="tb-ed-app-box' + (customOn ? ' on' : '') + '" data-mp-app-box>'
+          + '<div class="tb-ed-app-head">'
+          + (toggleField ? renderField(toggleField, readVal(customToggle), 'data-pgk') : '')
+          + '<p class="tb-ed-app-hint">Background, stroke and transitions only apply when custom style is enabled.</p>'
+          + '</div>'
+          + '<div class="tb-ed-app-fields"' + (customOn ? '' : ' hidden') + '>'
+          + appearance.map(function (f) {
+            return renderField(f, readVal(f), 'data-pgk');
+          }).join('')
+          + '</div></div>';
+      }
+      box.innerHTML = html || '<p class="tb-ed-empty" style="margin:0">Style controls appear here when available.</p>';
+      if (global.LPIconPicker) global.LPIconPicker.refresh(box);
+      if (global.LPLocalImage) global.LPLocalImage.refresh(box);
     }
 
     function wire() {
@@ -610,6 +678,7 @@
         if (t.type === 'checkbox') {
           writeVal(def, !!t.checked);
           emit();
+          if (isAppearanceCustomToggle(def)) refreshStyle();
           return;
         }
         writeVal(def, t.value);
@@ -675,7 +744,7 @@
     var prefix = 'sections.' + sectionKey + '.appearance.';
     if (defs.some(function (d) { return String(d.key || '').indexOf(prefix) === 0; })) return defs;
     return defs.concat([
-      { type: 'checkbox', key: prefix + 'custom', label: 'Custom section style' },
+      { type: 'checkbox', key: prefix + 'custom', label: 'Enable custom style' },
       { type: 'color', key: prefix + 'containerBg', label: 'Full-width background' },
       { type: 'color', key: prefix + 'strokeColor', label: 'Stroke colour' },
       { type: 'number', key: prefix + 'strokeWidth', label: 'Stroke width (0–8)' },

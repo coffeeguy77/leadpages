@@ -147,6 +147,26 @@ describe('marketplace compact editor parity', () => {
     assert.ok(defaults.quote.quote.jobOptions.length >= 3);
   });
 
+  it('playground compact editor stacks single column and groups custom style', () => {
+    const compact = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
+    assert.match(compact, /tb-ed-stack/);
+    assert.match(compact, /tb-ed-app-box/);
+    assert.match(compact, /Enable custom style/);
+    assert.match(compact, /isAppearanceCustomToggle/);
+    const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.css'), 'utf8');
+    assert.match(css, /\.tb-ed-stack\b/);
+    assert.match(css, /\.tb-ed-app-box\b/);
+    assert.match(css, /\.tb-ed-app-fields\b/);
+    const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
+    assert.match(feat, /pg-device-fill/);
+    assert.match(feat, /applyPreviewDeviceHints/);
+    assert.match(feat, /device === 'phone'\) cols = 2/);
+    assert.match(feat, /device === 'tablet'\) cols = 3/);
+    const ig = fs.readFileSync(path.join(root, 'marketplace/demos/demo-instaGallery.html'), 'utf8');
+    assert.match(ig, /data-pg-device/);
+    assert.match(ig, /pgDev === 'phone'/);
+  });
+
   it('quote compact editor puts copy on the left and style on the right', () => {
     const compact = fs.readFileSync(path.join(root, 'assets/js/marketplace/marketplace-compact-editor.js'), 'utf8');
     assert.match(compact, /function isStyleField/);
