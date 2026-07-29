@@ -710,7 +710,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           +'<div class="pg-panel pg-panel-compact"><div data-r="ctl"></div></div>'
           +'<div class="pg-preview-col">'
           +'<div class="pg-topbar">'
-          +'<div class="pg-presets" data-r="presets"></div>'
+          +'<div class="pg-preview-label" data-r="preview-label">Tablet preview</div>'
+          +'<div class="pg-presets" data-r="presets" hidden></div>'
           +'<div class="pg-devbtns" role="group" aria-label="Preview size">'
           +'<button type="button" data-d="desktop" class="pg-dev-desktop">Desktop</button>'
           +'<button type="button" data-d="tablet" class="on">Tablet</button>'
@@ -1223,6 +1224,14 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       if (viewportMode !== 'phone') fitDualFrame();
     }
 
+    function syncPreviewLabel() {
+      var el = root.querySelector('[data-r="preview-label"]');
+      if (!el) return;
+      var d = effectiveDevice();
+      el.textContent = d === 'phone' ? 'Mobile preview'
+        : (d === 'desktop' ? 'Desktop preview' : 'Tablet preview');
+    }
+
     function syncDevButtons() {
       var showDesktopBtn = viewportMode === 'phone';
       root.querySelectorAll('.pg-devbtns button').forEach(function(b) {
@@ -1231,6 +1240,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         else b.hidden = false;
         b.classList.toggle('on', d === dev);
       });
+      syncPreviewLabel();
     }
 
     function syncEditorLayout() {
@@ -1645,6 +1655,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     function renderPresets() {
       var box = root.querySelector('[data-r="presets"]');
       if (!box) return;
+      /* Hide single “Default” pill — preview label owns that topbar slot */
+      if (!presets || presets.length <= 1) {
+        box.innerHTML = '';
+        box.hidden = true;
+        return;
+      }
+      box.hidden = false;
       box.innerHTML = presets.map(function(name) {
         var cached = presetCache[name];
         var label = (cached && cached.label) || name;

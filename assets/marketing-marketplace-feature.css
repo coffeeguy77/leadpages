@@ -845,13 +845,21 @@ body.mf-app .pg-dual-strip[hidden] {
   display: none !important;
 }
 
-body.mf-app .pg-dual-label {
+body.mf-app .pg-dual-label,
+body.mf-app .pg-preview-label {
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--mf-orange);
   margin: 0 0 10px;
+}
+
+body.mf-app .pg-preview-label {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: center;
 }
 
 body.mf-app .pg-dual-wrap {

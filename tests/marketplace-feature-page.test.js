@@ -38,6 +38,11 @@ describe('marketplace feature app demo page', () => {
     assert.match(featureCss, /data-viewport="phone"/);
     assert.match(featureCss, /pg-stage-shell/);
     assert.match(featureCss, /pg-dev-desktop/);
+    assert.match(featureHtml, /pg-preview-label/);
+    assert.match(featureHtml, /function syncPreviewLabel/);
+    assert.match(featureHtml, /Tablet preview/);
+    assert.match(featureHtml, /Mobile preview/);
+    assert.match(featureCss, /\.pg-preview-label/);
   });
 
   it('removes How it works and twin Ready / New CTA cards', () => {
