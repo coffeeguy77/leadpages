@@ -1817,14 +1817,25 @@ function applyCfg(C){
         n.removeAttribute('data-lp-sec-bg');
         var edges=n.querySelectorAll(':scope > .lp-sec-edge');
         for(var ei=edges.length-1;ei>=0;ei--) edges[ei].remove();
+        function _secAppPaintText(on){
+          function setEl(el, hex){ if(!el) return; if(on&&hex) el.style.color=hex; else el.style.removeProperty('color'); }
+          var eb=on?_secAppHex(ap.eyebrowColor):'';
+          var ti=on?_secAppHex(ap.titleColor||ap.headingColor):'';
+          var intro=on?_secAppHex(ap.introColor):'';
+          setEl(n.querySelector('.eyebrow'), eb);
+          setEl(n.querySelector('.ig-title')||n.querySelector('.section-head h2')||n.querySelector('h2'), ti);
+          setEl(n.querySelector('.ig-sub')||n.querySelector('.section-head p'), intro);
+        }
         if(!ap.custom){
           _secAppApplyEdgePad(n, false, false);
+          _secAppPaintText(false);
           bgs[id]=_secAppRgb(n);
           return;
         }
         var bg=_secAppHex(ap.containerBg);
         if(bg){ n.style.setProperty('background',bg,'important'); n.setAttribute('data-lp-sec-bg',bg); bgs[id]=bg; }
         else bgs[id]=_secAppRgb(n);
+        _secAppPaintText(true);
         var sc=_secAppHex(ap.strokeColor), sw=(ap.strokeWidth!=null?+ap.strokeWidth:0);
         if(isNaN(sw)) sw=0;
         var sides=ap.strokeSides||'both';

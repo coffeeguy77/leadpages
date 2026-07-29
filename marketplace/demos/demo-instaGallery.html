@@ -117,6 +117,28 @@ var SITE_CONFIG = {
     if (h2 && sec.heading != null) h2.textContent = sec.heading;
     var sub = node.querySelector('.ig-sub') || node.querySelector('.section-head p');
     if (sub && sec.intro != null) sub.textContent = sec.intro;
+    /* Custom style text colours (playground Enable custom style) */
+    (function applyTextCols() {
+      var ap = sec.appearance || {};
+      function hex(v) {
+        v = String(v == null ? '' : v).trim();
+        if (/^#?[0-9a-fA-F]{3}$/.test(v)) {
+          v = v.charAt(0) === '#' ? v : '#' + v;
+          return '#' + v.charAt(1) + v.charAt(1) + v.charAt(2) + v.charAt(2) + v.charAt(3) + v.charAt(3);
+        }
+        if (/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0) === '#' ? v : '#' + v;
+        return '';
+      }
+      function setCol(el, v) {
+        if (!el) return;
+        var c = hex(v);
+        if (ap.custom && c) el.style.color = c;
+        else el.style.removeProperty('color');
+      }
+      setCol(eb, ap.eyebrowColor || sec.eyebrowColor);
+      setCol(h2, ap.titleColor || sec.titleColor || sec.headingColor);
+      setCol(sub, ap.introColor || sec.introColor);
+    })();
     var grid = node.querySelector('.ig-grid');
     var out = '';
     var slice = MEDIA.slice(0, count);

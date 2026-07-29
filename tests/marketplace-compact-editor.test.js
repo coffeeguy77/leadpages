@@ -212,6 +212,16 @@ describe('marketplace compact editor parity', () => {
     assert.ok(styleKeys.includes('sections.quote.formStyle'));
     assert.ok(styleKeys.includes('theme.pipe'));
     assert.ok(styleKeys.some((k) => /\.appearance\.custom$/.test(k)));
+    assert.ok(styleKeys.some((k) => /\.appearance\.eyebrowColor$/.test(k)));
+    assert.ok(styleKeys.some((k) => /\.appearance\.titleColor$/.test(k)));
+    assert.ok(styleKeys.some((k) => /\.appearance\.introColor$/.test(k)));
+    const appKeys = quoteDefs.map((f) => f.key).filter((k) => /\.appearance\./.test(k));
+    const bgI = appKeys.indexOf('sections.quote.appearance.containerBg');
+    const strokeI = appKeys.indexOf('sections.quote.appearance.strokeColor');
+    const ebI = appKeys.indexOf('sections.quote.appearance.eyebrowColor');
+    const titleI = appKeys.indexOf('sections.quote.appearance.titleColor');
+    assert.ok(bgI >= 0 && strokeI === bgI + 1, 'bg|stroke dual pair');
+    assert.ok(ebI === strokeI + 1 && titleI === ebI + 1, 'eyebrow|title dual pair');
 
     assert.ok(split.itemFieldsByIndex[0] && split.itemFieldsByIndex[0].length);
     assert.equal(api.isStyleField({ type: 'color', key: 'sections.quote.btnBg' }), true);

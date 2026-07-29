@@ -85,3 +85,10 @@ test('homepage CSS is themeable via design tokens', () => {
   assert.match(css, /\.mkt-colour-lab__fab/);
   assert.match(css, /\.mkt-colour-lab__swatch/);
 });
+
+test('shared colour-lab CSS is extractable for marketplace feature pages', () => {
+  const labCss = fs.readFileSync(path.join(ROOT, 'assets/marketing-colour-lab.css'), 'utf8');
+  assert.match(labCss, /\.mkt-colour-lab__fab/);
+  assert.match(labCss, /\.mkt-colour-lab__swatch/);
+  assert.match(labCss, /\.mkt-colour-lab__panel/);
+});
