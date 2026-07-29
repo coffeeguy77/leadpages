@@ -3177,5 +3177,56 @@
         }
       }
     ]
+  },
+  "bookingCta": {
+    "name": "Booking CTA",
+    "tagline": "Appointment conversion band",
+    "summary": "A clear booking call-to-action band that drives visitors to schedule or request a time.",
+    "hero_image_url": "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=1400&h=560&fit=crop&q=80",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Booking CTA",
+          "text": "Put booking front and centre with a conversion band that matches your theme."
+        }
+      },
+      {
+        "block_type": "image",
+        "payload": {
+          "url": "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=1200&h=720&fit=crop&q=80",
+          "alt": "Booking calendar",
+          "caption": "Appointment-focused call to action."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "items": [
+            {
+              "title": "Clear next step",
+              "text": "Visitors know how to book without hunting for a contact form."
+            },
+            {
+              "title": "Theme matched",
+              "text": "Uses your colours, fonts and button styles."
+            },
+            {
+              "title": "Flexible CTA",
+              "text": "Link to your scheduler, quote form or phone flow."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "bookingCta",
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
   }
 }

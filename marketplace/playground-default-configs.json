@@ -982,16 +982,40 @@
       "successTitle": "Got it — sit tight. ✓",
       "successSub": "A team member from {{businessName}} will call you on the number you gave us. If it's an emergency, please call {{phoneText}} so we can get moving now.",
       "points": [
-        { "on": true, "text": "Upfront fixed price, no call-out surprises" },
-        { "on": true, "text": "Same-day where we can get to you" },
-        { "on": true, "text": "Licensed, insured, local" }
+        {
+          "on": true,
+          "text": "Upfront fixed price, no call-out surprises"
+        },
+        {
+          "on": true,
+          "text": "Same-day where we can get to you"
+        },
+        {
+          "on": true,
+          "text": "Licensed, insured, local"
+        }
       ],
       "jobOptions": [
-        { "on": true, "text": "Blocked drain" },
-        { "on": true, "text": "Burst or leaking pipe" },
-        { "on": true, "text": "No hot water" },
-        { "on": true, "text": "Hidden leak / high water bill" },
-        { "on": true, "text": "General plumbing / other" }
+        {
+          "on": true,
+          "text": "Blocked drain"
+        },
+        {
+          "on": true,
+          "text": "Burst or leaking pipe"
+        },
+        {
+          "on": true,
+          "text": "No hot water"
+        },
+        {
+          "on": true,
+          "text": "Hidden leak / high water bill"
+        },
+        {
+          "on": true,
+          "text": "General plumbing / other"
+        }
       ]
     }
   },
@@ -2032,6 +2056,34 @@
           }
         }
       ]
+    }
+  },
+  "bookingCta": {
+    "business": "Local Studio",
+    "theme": {
+      "pipe": "#0B1B2A"
+    },
+    "bookingCta": {
+      "on": true,
+      "eyebrow": "Bookings",
+      "heading": "Ready to book your appointment?",
+      "intro": "Pick a time that suits you — we will confirm by email or phone within one business day.",
+      "ctaLabel": "Book now",
+      "ctaHref": "#quote",
+      "finePrint": "No payment required to request a time."
+    }
+  },
+  "customHtml": {
+    "business": "Demo Business",
+    "theme": {
+      "pipe": "#0B1B2A"
+    },
+    "customHtml": {
+      "on": true,
+      "title": "Custom block",
+      "html": "<div class=\"mp-custom\"><strong>Your custom HTML</strong><p>Edit this block in the playground.</p></div>",
+      "cssUrls": [],
+      "jsUrls": []
     }
   }
 }

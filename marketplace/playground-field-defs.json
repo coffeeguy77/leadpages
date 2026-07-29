@@ -184,7 +184,7 @@
     {
       "type": "number",
       "key": "sections.heroSlider.overlayStrength",
-      "label": "Overlay darkness (0\u2013100)"
+      "label": "Overlay darkness (0–100)"
     },
     {
       "type": "color",
@@ -247,6 +247,11 @@
       "type": "textarea",
       "key": "sections.reviews.items.2.text",
       "label": "Reviewer 3 text"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
     }
   ],
   "services": [
@@ -781,6 +786,16 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.faq.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.faq.heading",
+      "label": "Heading"
     }
   ],
   "why": [
@@ -1241,6 +1256,16 @@
       "type": "text",
       "key": "sections.serviceAreas.areas.3.name",
       "label": "Item 4 Name"
+    },
+    {
+      "type": "text",
+      "key": "sections.serviceAreas.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.serviceAreas.intro",
+      "label": "Intro"
     }
   ],
   "beforeAfter": [
@@ -1278,6 +1303,21 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfter.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfter.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "key": "sections.beforeAfter.intro",
+      "label": "Intro"
     }
   ],
   "responseCards": [
@@ -1479,6 +1519,11 @@
       "type": "text",
       "key": "sections.specialOffer.points.2.text",
       "label": "Point"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
     }
   ],
   "serviceProcess": [
@@ -1618,6 +1663,29 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.finance.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.finance.disclaimer",
+      "label": "Disclaimer"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.finance.body",
+      "label": "Body",
+      "rows": 3
+    },
+    {
+      "type": "textarea",
+      "key": "sections.finance.options",
+      "label": "Options (one per line)",
+      "rows": 4,
+      "join": "\n"
     }
   ],
   "activityCounter": [
@@ -1809,6 +1877,11 @@
       "type": "text",
       "key": "sections.featuredProjects.projects.2.image",
       "label": "Project 3 image URL"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
     }
   ],
   "projectFeed": [
@@ -2625,7 +2698,7 @@
         },
         {
           "value": "wrap",
-          "label": "Wrap \u2014 text flows around it"
+          "label": "Wrap — text flows around it"
         }
       ]
     },
@@ -2700,6 +2773,11 @@
       "type": "color",
       "key": "theme.hivis",
       "label": "Theme CTA colour"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
     }
   ],
   "emergencyAvailability": [
@@ -2716,7 +2794,7 @@
     {
       "type": "text",
       "key": "sections.emergencyAvailability.availableLabel",
-      "label": "\u201cAvailable\u201d label"
+      "label": "“Available” label"
     },
     {
       "type": "text",
@@ -2726,7 +2804,7 @@
     {
       "type": "text",
       "key": "sections.emergencyAvailability.afterHoursLabel",
-      "label": "\u201cAfter hours\u201d label"
+      "label": "“After hours” label"
     },
     {
       "type": "textarea",
@@ -2876,7 +2954,7 @@
     {
       "type": "number",
       "key": "sections.instaGallery.columns",
-      "label": "Columns (2\u20135)"
+      "label": "Columns (2–5)"
     },
     {
       "type": "checkbox",
@@ -2913,7 +2991,7 @@
     {
       "type": "number",
       "key": "sections.igProjectFeed.columns",
-      "label": "Columns (2\u20135)"
+      "label": "Columns (2–5)"
     },
     {
       "type": "text",
@@ -4003,6 +4081,11 @@
       "type": "text",
       "key": "sections.premiumGallery.images.3.size",
       "label": "Item 4 size"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
     }
   ],
   "seoText": [
@@ -4035,6 +4118,26 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.seoText.image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "key": "sections.seoText.imageSide",
+      "label": "Image Side"
+    },
+    {
+      "type": "text",
+      "key": "sections.seoText.imageLayout",
+      "label": "Image Layout"
+    },
+    {
+      "type": "text",
+      "key": "sections.seoText.textAlign",
+      "label": "Text Align"
     }
   ],
   "featureStrip": [
@@ -4067,6 +4170,16 @@
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.featureStrip.textAlign",
+      "label": "Text Align"
+    },
+    {
+      "type": "text",
+      "key": "sections.featureStrip.headerAlign",
+      "label": "Header Align"
     }
   ],
   "onlineQuote": [
@@ -4083,12 +4196,43 @@
     {
       "type": "textarea",
       "key": "sections.onlineQuote.intro",
-      "label": "Intro"
+      "label": "Intro",
+      "rows": 3
+    },
+    {
+      "type": "text",
+      "key": "sections.onlineQuote.ctaLabel",
+      "label": "CTA label"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.onlineQuote.requireEmailVerify",
+      "label": "Require email verification"
     },
     {
       "type": "color",
       "key": "theme.pipe",
       "label": "Brand colour"
+    },
+    {
+      "type": "text",
+      "key": "sections.onlineQuote.bg",
+      "label": "Bg"
+    },
+    {
+      "type": "text",
+      "key": "sections.onlineQuote.eyebrowColor",
+      "label": "Eyebrow Color"
+    },
+    {
+      "type": "text",
+      "key": "sections.onlineQuote.headingColor",
+      "label": "Heading Color"
+    },
+    {
+      "type": "text",
+      "key": "sections.onlineQuote.introColor",
+      "label": "Intro Color"
     }
   ],
   "customHtml": [
@@ -4106,14 +4250,31 @@
     {
       "type": "textarea",
       "key": "sections.customHtml.cssUrls",
-      "label": "CSS URLs (array)",
-      "rows": 3
+      "label": "CSS URLs (one per line)",
+      "rows": 3,
+      "join": "\n"
     },
     {
       "type": "textarea",
       "key": "sections.customHtml.jsUrls",
-      "label": "JS URLs (array)",
-      "rows": 3
+      "label": "JS URLs (one per line)",
+      "rows": 3,
+      "join": "\n"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
+    },
+    {
+      "type": "checkbox",
+      "key": "sections.customHtml.fullBleed",
+      "label": "Full Bleed"
+    },
+    {
+      "type": "color",
+      "key": "sections.customHtml.bg",
+      "label": "Bg"
     }
   ],
   "promotions": [
@@ -4220,6 +4381,44 @@
       "type": "text",
       "key": "sections.promotions.items.0.cta.text",
       "label": "Button text"
+    }
+  ],
+  "bookingCta": [
+    {
+      "type": "text",
+      "key": "sections.bookingCta.eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "key": "sections.bookingCta.heading",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "key": "sections.bookingCta.intro",
+      "label": "Intro",
+      "rows": 3
+    },
+    {
+      "type": "text",
+      "key": "sections.bookingCta.ctaLabel",
+      "label": "Button label"
+    },
+    {
+      "type": "text",
+      "key": "sections.bookingCta.ctaHref",
+      "label": "Button link"
+    },
+    {
+      "type": "text",
+      "key": "sections.bookingCta.finePrint",
+      "label": "Fine print"
+    },
+    {
+      "type": "color",
+      "key": "theme.pipe",
+      "label": "Brand colour"
     }
   ]
 }
