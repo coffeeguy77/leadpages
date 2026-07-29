@@ -654,11 +654,12 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       case 'rich_text':
         return '<div class="blk lead-callout">'+(p.heading?'<div class="blk-eyebrow">Overview</div><h2>'+esc(p.heading)+'</h2>':'')+paras(p.text)+'</div>';
       case 'benefits':
-        var items=(p.items||[]).map(function(it,i){
-          return '<div class="bn"><span class="ic ic-'+(i%4)+'" aria-hidden="true"></span><div><b>'+esc(it.title)+'</b>'
-            +(it.text?'<span>'+esc(it.text)+'</span>':'')+'</div></div>';}).join('');
-        var bHead=p.heading||'Better information in. Better conversations out.';
-        return '<div class="blk mf-benefits"><h2>'+esc(bHead)+'</h2><div class="bene">'+items+'</div></div>';
+        var bItems=(p.items||[]).filter(function(it){ return it&&it.title; });
+        var bHead=p.heading||'Key features';
+        return '<section class="mf-key-features" aria-label="Key features"><h2>'+esc(bHead)+'</h2>'
+          +'<div class="mf-kf-row">'+bItems.map(function(it,i){
+            return '<div class="mf-kf-item">'+keyFeatureIconHtml(it.title,i)+'<span>'+esc(it.title)+'</span></div>';
+          }).join('')+'</div></section>';
       case 'image':
         return '';
       case 'gallery':
@@ -694,19 +695,32 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 
       case 'playground':
         setTimeout(function(){initPlayground('live-demo',p,_renderFeature);},0);
-        return '<div class="blk pg pg-full pg-studio" id="live-demo">'
+        return '<div class="blk pg pg-full pg-studio" id="live-demo" data-layout="portrait">'
           +'<div class="pg-band"><div class="blk-eyebrow">Live playground</div>'
           +'<h2>Make it yours. See it live.</h2>'
-          +'<p>Edit the fields on the left — the preview updates instantly. Nothing is saved on this page.</p></div>'
+          +'<p>Edit the fields — the preview updates instantly. Nothing is saved on this page.</p></div>'
+          +'<div class="pg-toolbar">'
+          +'<div class="pg-layoutbtns" role="group" aria-label="Preview layout">'
+          +'<button type="button" data-layout="portrait" class="on">Portrait</button>'
+          +'<button type="button" data-layout="landscape">Landscape</button>'
+          +'<button type="button" data-layout="dual">Dual</button>'
+          +'</div>'
+          +'<p class="pg-layout-hint">Portrait = editor beside preview · Landscape = desktop preview above editor · Dual = both</p>'
+          +'</div>'
+          +'<div class="pg-dual-strip" data-r="dual-strip" hidden>'
+          +'<div class="pg-dual-label">Desktop preview</div>'
+          +'<div class="pg-devicewrap pg-dual-wrap" data-r="dual-wrap">'
+          +'<div class="pg-viewport"><div class="pg-canvas" data-r="dual-canvas"></div></div>'
+          +'</div></div>'
           +'<div class="pg-studio-grid">'
           +'<div class="pg-panel pg-panel-compact"><div data-r="ctl"></div></div>'
           +'<div class="pg-preview-col">'
           +'<div class="pg-topbar">'
           +'<div class="pg-presets" data-r="presets"></div>'
-          +'<div class="pg-devbtns">'
-          +'<button data-d="desktop" class="on">Desktop</button>'
-          +'<button data-d="tablet">Tablet</button>'
-          +'<button data-d="phone">Phone</button>'
+          +'<div class="pg-devbtns" role="group" aria-label="Preview device">'
+          +'<button type="button" data-d="tablet" class="on">Tablet</button>'
+          +'<button type="button" data-d="phone">Phone</button>'
+          +'<button type="button" data-d="desktop">Desktop</button>'
           +'</div></div>'
           +'<div class="pg-devicewrap" data-r="wrap">'
           +'<div class="pg-viewport" data-r="vp">'
@@ -783,40 +797,40 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     return defaultBenefits(f);
   }
 
-  function howStepsHtml(f){
-    var isQuote=/quote/i.test(String((f&&(f.section_key||f.slug||f.name))||''));
-    var step3=isQuote?'Follow up and quote':'Follow up with confidence';
-    var step3Sub='Respond faster with the right information';
-    return '<section class="mf-how" aria-label="How it works">'
-      +'<div class="wrap"><h2>How it works</h2>'
-      +'<div class="mf-how-steps">'
-      +'<article class="mf-how-step"><div class="mf-how-ico" aria-hidden="true">1</div><h3>Customer completes the form</h3><p>Optional verification</p></article>'
-      +'<div class="mf-how-arrow" aria-hidden="true">→</div>'
-      +'<article class="mf-how-step"><div class="mf-how-ico" aria-hidden="true">2</div><h3>You receive a detailed enquiry</h3><p>Sent to email and CRM</p></article>'
-      +'<div class="mf-how-arrow" aria-hidden="true">→</div>'
-      +'<article class="mf-how-step"><div class="mf-how-ico" aria-hidden="true">3</div><h3>'+esc(step3)+'</h3><p>'+esc(step3Sub)+'</p></article>'
-      +'</div></div></section>';
+  function keyFeatureIconHtml(title, i){
+    var fallback=['circle-check','zap','message-circle','layers','shield-check','clock'];
+    var t=String(title||'').toLowerCase();
+    var name=fallback[i%fallback.length];
+    if(/enquir|lead|captur|info|detail/.test(t)) name='clipboard-list';
+    else if(/follow|fast|speed|quick/.test(t)) name='zap';
+    else if(/question|repet|once/.test(t)) name='message-circle';
+    else if(/save|together|crm|place/.test(t)) name='layers';
+    else if(/trust|secure|shield/.test(t)) name='shield-check';
+    else if(/mobile|device|phone/.test(t)) name='smartphone';
+    else if(/review|star|quote/.test(t)) name='star';
+    else if(/time|clock|hour/.test(t)) name='clock';
+    var path=(window.LP_ICONS&&window.LP_ICONS[name])||'';
+    if(!path) return '<span class="mf-kf-ic" aria-hidden="true">✓</span>';
+    return '<span class="mf-kf-ic" aria-hidden="true"><svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+path+'</svg></span>';
   }
 
-  function twinCtaHtml(f, hasPlay){
-    var name=esc((f&&f.name)||'this app');
-    var addHref=hasPlay?'#live-demo':'/find-a-partner';
-    return '<section class="mf-cta-pair" aria-label="Next steps">'
-      +'<div class="wrap mf-cta-grid">'
-      +'<article class="mf-cta-card">'
-      +'<h2>Ready when your website is.</h2>'
-      +accessBadgeHtml(f)
-      +'<p>Add '+name+' to a LeadPages site when you are logged in. Your account will show any cost before you add the app.</p>'
-      +'<a class="btn" href="'+addHref+'">Add to my website →</a>'
-      +'</article>'
-      +'<article class="mf-cta-card">'
-      +'<h2>New to LeadPages?</h2>'
-      +'<p>Build a professional website with '+name+' designed to match your brand from day one.</p>'
-      +'<a class="btn ghost-ink" href="/find-a-partner">Build a website with '+name+' →</a>'
-      +'</article>'
-      +'</div>'
-      +'<p class="mf-cta-note">Your account will show any cost before you add the app.</p>'
-      +'</section>';
+  function keyFeaturesHtml(f, blocks){
+    var items=benefitsFromBlocks(blocks, f);
+    var isOnlineQuote=/online.?quote/i.test(String(f.section_key||f.slug||'')+' '+String(f.name||''));
+    var heading=isOnlineQuote
+      ? 'Better information in. Better conversations out.'
+      : ((blocks||[]).reduce(function(h,b){
+          if(h) return h;
+          if(b&&b.block_type==='benefits'&&b.payload&&b.payload.heading) return b.payload.heading;
+          return '';
+        },'') || ('Why businesses use '+((f&&f.name)||'this app')));
+    return '<section class="mf-key-features" aria-label="Key features"><div class="wrap">'
+      +'<h2>'+esc(heading)+'</h2>'
+      +'<div class="mf-kf-row">'
+      +items.map(function(it,i){
+        return '<div class="mf-kf-item">'+keyFeatureIconHtml(it.title,i)+'<span>'+esc(it.title)+'</span></div>';
+      }).join('')
+      +'</div></div></section>';
   }
 
   function crossSellHtml(){
@@ -835,13 +849,15 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       +'</div></div>';
   }
 
-  function finalBannerHtml(f, hasPlay){
+  function newToLeadPagesHtml(f){
     var name=esc((f&&f.name)||'this app');
-    return '<section class="mf-final"><div class="wrap mf-final-inner">'
-      +'<h2>Turn more website visits into real opportunities.</h2>'
-      +'<div class="mf-final-actions">'
-      +(hasPlay?'<a class="btn" href="#live-demo">Add '+name+'</a>':'')
-      +'<a class="btn ghost" href="/find-a-partner">Build my website</a>'
+    return '<section class="mf-new-lp" aria-label="New to LeadPages">'
+      +'<div class="wrap mf-new-lp-inner">'
+      +'<h2>New to LeadPages?</h2>'
+      +'<p>Build a professional website with '+name+' designed to match your brand from day one — SEO-ready, mobile-first, and easy to update without a developer.</p>'
+      +'<div class="mf-new-lp-actions">'
+      +'<a class="btn" href="/find-a-partner">Build a website with '+name+' →</a>'
+      +'<a class="btn ghost-ink" href="/marketplace">Browse more apps</a>'
       +'</div></div></section>';
   }
 
@@ -910,27 +926,12 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var catLabel=(f.category_name||f.category||f.badge||'Marketplace app');
     var headline=(f.tagline||f.name||'Marketplace app');
     var sub=(f.summary||'');
-    var benefitsItems=benefitsFromBlocks(blocks, f);
-    var isOnlineQuote=/online.?quote/i.test(String(f.section_key||f.slug||'')+' '+String(f.name||''));
-    var benefitsHeading=isOnlineQuote
-      ? 'Better information in. Better conversations out.'
-      : ((blocks||[]).reduce(function(h,b){
-          if(h) return h;
-          if(b&&b.block_type==='benefits'&&b.payload&&b.payload.heading) return b.payload.heading;
-          return '';
-        },'') || ('Why businesses use '+((f&&f.name)||'this app')));
-    var benefitsHtml='<div class="blk mf-benefits"><h2>'+esc(benefitsHeading)+'</h2><div class="bene">'
-      +benefitsItems.map(function(it,i){
-        return '<div class="bn"><span class="ic ic-'+(i%4)+'" aria-hidden="true"></span><div><b>'+esc(it.title)+'</b>'
-          +(it.text?'<span>'+esc(it.text)+'</span>':'')+'</div></div>';
-      }).join('')
-      +'</div></div>';
     var faqBlock=(demoBlocks||[]).filter(function(b){ return b.block_type==='faq'; })[0];
     var faqHtml=faqBlock?block(faqBlock):'<div class="blk faq"><h2>Questions about '+esc(f.name)+'?</h2>'
       +'<details><summary>Is this included in my plan?</summary><div class="a">Access depends on your LeadPages plan. Labels on this page show Included, Free or Premium — your account confirms any cost before you add the app.</div></details>'
       +'<details><summary>Will it match my website?</summary><div class="a">Yes. Apps inherit your theme colours, fonts and spacing so they feel native — not bolted on.</div></details>'
       +'<details><summary>Can I try it here first?</summary><div class="a">Use the live playground on this page. Changes are temporary and nothing is saved.</div></details>'
-      +'<details><summary>Does this work on mobile?</summary><div class="a">Yes. Previews include desktop, tablet and phone so you can check the experience on every device.</div></details>'
+      +'<details><summary>Does this work on mobile?</summary><div class="a">Yes. Use Portrait for tablet and phone, Landscape for full desktop, or Dual to compare desktop and tablet at once.</div></details>'
       +'</div>';
 
     var html='<header class="feat-hero"><div class="feat-hero-inner wrap-wide">'
@@ -968,22 +969,20 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       +'<article class="mp-demo-article">';
 
     if(hasPlay){
-      html+='<div class="wrap">'+benefitsHtml+'</div>';
+      html+=keyFeaturesHtml(f, blocks);
       html+='<div class="wrap">';
       html+=demoBlocks.filter(function(b){ return b.block_type==='playground'||b.block_type==='demo_embed'; }).map(block).join('');
       html+='</div>';
-      html+=howStepsHtml(f);
-      html+=twinCtaHtml(f, true);
       html+='<section class="mf-xsell-row"><div class="wrap mf-xsell-layout">'+crossSellHtml()+faqHtml+'</div></section>';
-      html+=finalBannerHtml(f, true);
+      html+=newToLeadPagesHtml(f);
     } else if(demoBlocks.length){
       html+='<div class="wrap">';
       html+=demoBlocks.map(block).join('');
       html+='</div>';
-      html+=twinCtaHtml(f, false);
-      html+=finalBannerHtml(f, false);
+      html+=newToLeadPagesHtml(f);
     } else {
       html+='<div class="wrap"><div class="blk"><p class="mp-lede">A live demo for this app is coming soon.</p></div></div>';
+      html+=newToLeadPagesHtml(f);
     }
     html+='</article>';
     page.innerHTML=html;
@@ -1042,9 +1041,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var pgMetaLoaded = false;
 
     var PG_W = { desktop: null, tablet: 768, phone: 390 };
-    var dev = 'desktop';
+    var layout = 'portrait'; /* portrait | landscape | dual */
+    var dev = 'tablet';
     var iframe = null;
+    var dualIframe = null;
     var wrap = root.querySelector('[data-r="wrap"]');
+    var dualWrap = root.querySelector('[data-r="dual-wrap"]');
+    var dualStrip = root.querySelector('[data-r="dual-strip"]');
 
     function pgNormKey(key) {
       if (window.LPPlaygroundFieldPaths && window.LPPlaygroundFieldPaths.normalizePlaygroundPath) {
@@ -1112,7 +1115,11 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     }
 
     function getIframe() {
-      return iframe || root.querySelector('iframe.pg-iframe');
+      return iframe || root.querySelector('iframe.pg-iframe:not(.pg-iframe-dual)');
+    }
+
+    function getDualIframe() {
+      return dualIframe || root.querySelector('iframe.pg-iframe-dual');
     }
 
     function measurePreviewHeight(fr) {
@@ -1149,32 +1156,111 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       }
     }
 
-    function applyDevice() {
-      var fr = getIframe();
-      if (!fr || !wrap) return;
-      var w = PG_W[dev];
+    function fitDualFrame() {
+      var fr = getDualIframe();
+      if (!fr || !dualWrap) return;
+      var h = measurePreviewHeight(fr);
+      if (!h) h = 120;
+      fr.style.minHeight = '0';
+      fr.style.height = h + 'px';
+      fr.style.width = '100%';
+      fr.style.transform = 'none';
+      fr.style.marginBottom = '';
+      dualWrap.classList.remove('framed');
+      dualWrap.style.height = '';
+    }
+
+    function effectiveDevice() {
+      /* Landscape always shows a full-width desktop preview */
+      if (layout === 'landscape') return 'desktop';
+      return dev === 'desktop' ? 'tablet' : dev;
+    }
+
+    function applyFramedDevice(fr, host, device) {
+      if (!fr || !host) return;
+      var w = PG_W[device];
       if (!w) {
         fr.style.width = '100%';
         fr.style.transform = 'none';
         fr.style.marginBottom = '';
-        wrap.style.height = '';
-        wrap.classList.remove('framed');
-      } else {
-        wrap.classList.add('framed');
-        fr.style.width = w + 'px';
-        var avail = wrap.clientWidth - 48;
+        host.style.height = '';
+        host.classList.remove('framed');
+        fitPreviewFrame();
+        return;
+      }
+      host.classList.add('framed');
+      fr.style.width = w + 'px';
+      fr.style.transformOrigin = 'top center';
+      function place() {
+        var pad = 48;
+        var avail = Math.max(160, (host.clientWidth || host.offsetWidth || 320) - pad);
         var s = Math.min(1, avail / w);
+        if (!(s > 0)) s = 1;
         fr.style.transform = 'scale(' + s + ')';
-        fr.style.transformOrigin = 'top center';
-        setTimeout(function() {
-          var h = measurePreviewHeight(fr) || 220;
-          fr.style.height = h + 'px';
-          fr.style.marginBottom = ((h * s) - h) + 'px';
-          wrap.style.height = (h * s + 24) + 'px';
-        }, 120);
+        var h = measurePreviewHeight(fr) || 220;
+        fr.style.height = h + 'px';
+        fr.style.marginBottom = ((h * s) - h) + 'px';
+        host.style.height = Math.ceil(h * s + 24) + 'px';
+      }
+      place();
+      setTimeout(place, 80);
+      setTimeout(place, 220);
+    }
+
+    function applyDevice() {
+      var fr = getIframe();
+      if (!fr || !wrap) return;
+      applyFramedDevice(fr, wrap, effectiveDevice());
+      if (layout === 'dual') fitDualFrame();
+    }
+
+    function syncLayoutUi() {
+      root.setAttribute('data-layout', layout);
+      root.querySelectorAll('.pg-layoutbtns button').forEach(function(b) {
+        b.classList.toggle('on', b.getAttribute('data-layout') === layout);
+      });
+      if (dualStrip) dualStrip.hidden = layout !== 'dual';
+      root.querySelectorAll('.pg-devbtns button').forEach(function(b) {
+        var d = b.getAttribute('data-d');
+        b.classList.toggle('on', d === (layout === 'landscape' ? 'desktop' : dev));
+        /* Landscape only needs Desktop; Portrait/Dual use Tablet + Phone (+ Desktop jumps to landscape) */
+        if (layout === 'landscape') b.hidden = d !== 'desktop';
+        else b.hidden = false;
+      });
+    }
+
+    function setLayout(next) {
+      if (next !== 'portrait' && next !== 'landscape' && next !== 'dual') return;
+      layout = next;
+      if (layout === 'landscape') {
+        dev = 'desktop';
+      } else if (dev === 'desktop') {
+        dev = 'tablet';
+      }
+      syncLayoutUi();
+      if (layout === 'dual') ensureDualMounted();
+      applyDevice();
+      if (layout === 'dual') {
+        applyConfigToFrame(getDualIframe());
+        setTimeout(fitDualFrame, 80);
+        setTimeout(fitDualFrame, 320);
       }
     }
-    window.addEventListener('resize', function() { applyDevice(); });
+
+    function applyConfigToFrame(fr) {
+      if (!fr) return;
+      ensureSectionOn(liveSiteCfg, secKey);
+      try {
+        if (fr.contentWindow && fr.contentWindow.__applyTradeConfig) {
+          fr.contentWindow.__applyTradeConfig(liveSiteCfg);
+        }
+      } catch (e) {}
+    }
+
+    window.addEventListener('resize', function() {
+      applyDevice();
+      if (layout === 'dual') fitDualFrame();
+    });
 
     function presetToSiteConfig(preset) {
       if (window.LPPlaygroundPreset) {
@@ -1240,27 +1326,25 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     }
 
     function applyLiveConfig() {
-      var fr = getIframe();
-      if (!fr) return;
       ensureSectionOn(liveSiteCfg, secKey);
-      try {
-        if (fr.contentWindow && fr.contentWindow.__applyTradeConfig) {
-          fr.contentWindow.__applyTradeConfig(liveSiteCfg);
-        }
-      } catch(e) {}
+      applyConfigToFrame(getIframe());
+      if (layout === 'dual') applyConfigToFrame(getDualIframe());
       setTimeout(function() {
         fitPreviewFrame();
         applyDevice();
+        if (layout === 'dual') fitDualFrame();
       }, 80);
       /* Second fit after layout paints — avoids empty-looking 40px frames on first load */
       setTimeout(function() {
         fitPreviewFrame();
         applyDevice();
+        if (layout === 'dual') fitDualFrame();
       }, 320);
       /* Third fit after demo images (reels/thumbnails) finish loading */
       setTimeout(function() {
         fitPreviewFrame();
         applyDevice();
+        if (layout === 'dual') fitDualFrame();
       }, 900);
     }
 
@@ -1426,7 +1510,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       }
     }
 
-    function mountIframe(sk) {
+    function demoSrcFor(sk) {
       var demoFile = sk;
       /* Prefer placement-specific demo shells; always use sections.promotions config */
       if (slug === 'promotions-inline' || sk === 'promotions-inline' || sk === 'promotionsInline') {
@@ -1437,8 +1521,12 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       if (slug === 'emergency-cta' || demoFile === 'emergency-cta' || demoFile === 'emergencyCta' || demoFile === 'emergencyCTA') {
         demoFile = 'emerg';
       }
-      var src = '/marketplace/demos/demo-' + demoFile + '.html';
-      var old = root.querySelector('iframe.pg-iframe');
+      return '/marketplace/demos/demo-' + demoFile + '.html';
+    }
+
+    function mountIframe(sk) {
+      var src = demoSrcFor(sk);
+      var old = root.querySelector('iframe.pg-iframe:not(.pg-iframe-dual)');
       if (old) old.remove();
       var fr = document.createElement('iframe');
       fr.className = 'pg-iframe';
@@ -1462,6 +1550,34 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       canvas.innerHTML = '';
       canvas.appendChild(fr);
       iframe = fr;
+    }
+
+    function ensureDualMounted() {
+      if (!secKey || !dualStrip) return;
+      var canvas = root.querySelector('[data-r="dual-canvas"]');
+      if (!canvas) return;
+      var existing = getDualIframe();
+      if (existing) {
+        applyConfigToFrame(existing);
+        fitDualFrame();
+        return;
+      }
+      var fr = document.createElement('iframe');
+      fr.className = 'pg-iframe pg-iframe-dual';
+      fr.setAttribute('data-r', 'dual-iframe');
+      fr.src = demoSrcFor(secKey);
+      fr.style.cssText = 'width:100%;border:0;display:block;min-height:180px;height:180px;vertical-align:top';
+      fr.setAttribute('scrolling', 'no');
+      fr.setAttribute('title', 'Desktop preview');
+      fr.addEventListener('load', function onDualLoad() {
+        fr.removeEventListener('load', onDualLoad);
+        applyConfigToFrame(fr);
+        fitDualFrame();
+        setTimeout(fitDualFrame, 320);
+      });
+      canvas.innerHTML = '';
+      canvas.appendChild(fr);
+      dualIframe = fr;
     }
 
     function ensureDemoLoaded(sk) {
@@ -1760,14 +1876,27 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         selectPreset(pb.getAttribute('data-preset'));
         return;
       }
-      var t = e.target.closest('[data-d]');
+      var lb = e.target.closest('.pg-layoutbtns [data-layout]');
+      if (lb) {
+        setLayout(lb.getAttribute('data-layout'));
+        return;
+      }
+      var t = e.target.closest('.pg-devbtns [data-d]');
       if (!t) return;
-      dev = t.getAttribute('data-d');
-      root.querySelectorAll('.pg-devbtns button').forEach(function(b) {
-        b.classList.toggle('on', b === t);
-      });
-      applyDevice();
+      var next = t.getAttribute('data-d');
+      if (next === 'desktop') {
+        setLayout('landscape');
+        return;
+      }
+      dev = next;
+      if (layout === 'landscape') setLayout('portrait');
+      else {
+        syncLayoutUi();
+        applyDevice();
+      }
     });
+
+    syncLayoutUi();
 
     loadDefaultConfigs().then(function() {
       return loadPlaygroundMeta();
