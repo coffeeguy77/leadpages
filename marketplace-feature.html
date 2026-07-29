@@ -1231,6 +1231,14 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       });
     }
 
+    function syncEditorLayout() {
+      var host = root.querySelector('[data-r="live"]');
+      var ed = host && host.__mpCompact;
+      if (ed && typeof ed.setEditorLayout === 'function') {
+        ed.setEditorLayout(layout === 'landscape' ? 'split' : 'stack');
+      }
+    }
+
     function setLayout(next) {
       if (next !== 'portrait' && next !== 'landscape' && next !== 'dual') return;
       layout = next;
@@ -1240,6 +1248,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         dev = 'tablet';
       }
       syncLayoutUi();
+      syncEditorLayout();
       if (layout === 'dual') ensureDualMounted();
       applyDevice();
       if (layout === 'dual') {
@@ -1750,6 +1759,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           : fieldDefs;
         host.__mpCompact = window.LPMarketplaceCompactEditor.mount(host, {
           mode: 'marketplace-playground',
+          /* Portrait/dual: full-width stack; landscape: Content | Style */
+          editorLayout: layout === 'landscape' ? 'split' : 'stack',
           sectionKey: secKey,
           fieldDefs: compactDefs,
           value: liveSiteCfg,
