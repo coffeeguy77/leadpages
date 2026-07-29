@@ -19,8 +19,11 @@ test('hero uses Bean Culture mockups without Harbour overlay', function () {
   assert.ok(fs.existsSync(path.join(root, 'assets/marketing-home/hero-bean-culture-mobile.jpg')));
 });
 
-test('hero metric cards are equal, compact, and coloured', function () {
-  assert.match(css, /grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
+test('hero metric cards are compact and coloured (content-sized on desktop)', function () {
+  assert.match(css, /\.metrics\s*\{[\s\S]*display:\s*flex/);
+  assert.match(css, /\.metrics\s*\{[\s\S]*width:\s*fit-content/);
+  assert.match(css, /\.metric\s*\{[\s\S]*width:\s*max-content/);
+  assert.doesNotMatch(css, /grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(css, /\.metric-calls/);
   assert.match(css, /\.metric-ads/);
   assert.match(css, /\.hero-dock/);

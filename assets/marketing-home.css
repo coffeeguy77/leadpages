@@ -386,23 +386,30 @@ body.mkt-home .drawer .btn-orange { color: #fff; text-align: center; margin-top:
 }
 .phone-screen img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 
-/* Equal-width metric cards (~25% smaller), coloured like Bean Culture cards */
+/* Compact metric cards — sized to content (no empty half-card stretch) */
 .metrics {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 10px;
   margin-top: 0;
+  width: fit-content;
+  max-width: 100%;
   position: relative;
   z-index: 3;
-  align-items: stretch;
 }
 .metric {
   background: linear-gradient(165deg, color-mix(in srgb, var(--navy) 72%, #3A2A35) 0%, var(--navy-deep) 100%);
   border-radius: 12px;
-  padding: 16px 14px 14px;
+  padding: 12px 14px 11px;
   color: var(--on-dark);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
   min-height: 0;
+  min-width: 0;
+  width: max-content;
+  max-width: 100%;
+  flex: 0 1 auto;
   display: flex;
   flex-direction: column;
   border: 1.5px solid color-mix(in srgb, var(--orange) 45%, transparent);
@@ -458,11 +465,11 @@ body.mkt-home .drawer .btn-orange { color: #fff; text-align: center; margin-top:
 .si-blue { color: color-mix(in srgb, var(--muted-on-dark) 35%, #4285F4); }
 .si-gads { color: var(--on-dark); }
 .metric .val {
-  font-size: clamp(1.7rem, 2.4vw, 2.2rem);
+  font-size: clamp(1.45rem, 2vw, 1.85rem);
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.04em;
-  margin-top: 10px;
+  margin-top: 8px;
   color: var(--on-dark);
 }
 .metric .stars {
@@ -1294,8 +1301,7 @@ body.mkt-home .mkt-site-footer .lp-logo-wrap {
   .browser { margin-right: 90px; }
   .hero-dock { padding-right: 180px; }
   .metrics {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
+    gap: 8px;
   }
   .examples .h2 { white-space: normal; }
   .cap-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -1342,10 +1348,15 @@ body.mkt-home .mkt-site-footer .lp-logo-wrap {
     margin-top: 18px;
   }
   .metrics {
+    display: grid;
     grid-template-columns: 1fr 1fr;
+    width: 100%;
     margin-left: 0;
     max-width: none;
     gap: 10px;
+  }
+  .metric {
+    width: auto;
   }
   .phone { display: none; }
   .connected-stage { display: none; }
@@ -1370,10 +1381,13 @@ body.mkt-home .mkt-site-footer .lp-logo-wrap {
     gap: 12px;
   }
   .metrics {
+    display: grid;
     grid-template-columns: 1fr 1fr;
+    width: 100%;
     gap: 10px;
   }
   .metric {
+    width: auto;
     padding: 14px 12px 12px;
     border-radius: 12px;
   }
