@@ -63,3 +63,18 @@ test('industry band uses rust and section order matches mockup flow', () => {
     'partner'
   ]);
 });
+
+test('apps proof reviews use homepage testimonial card style', () => {
+  assert.match(html, /Small tools\. Meaningful results\./);
+  assert.match(html, /class="mp-tgrid"/);
+  assert.match(html, /class="mp-tcard reveal"/);
+  assert.match(html, /class="avatar-col"/);
+  assert.match(html, /class="t-metric"/);
+  assert.match(html, /Adding online quotes cut back-and-forth/);
+  assert.match(html, /Bookings and our Instagram gallery/);
+  assert.match(html, /Review highlights and trust badges/);
+  assert.match(css, /\.mp-proof\s*\{[\s\S]*background:\s*var\(--cream-price\)/);
+  assert.match(css, /\.mp-tcard \.tcontent\s*\{[\s\S]*background:\s*#FBF5EA/);
+  assert.match(css, /\.mp-tcard \.avatar-col\s*\{[\s\S]*width:\s*154px/);
+  assert.match(css, /\.mp-tcard \.t-metric\s*\{[\s\S]*background:\s*#E7F0E6/);
+});
