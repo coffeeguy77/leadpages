@@ -153,15 +153,21 @@ describe('marketplace compact editor parity', () => {
     assert.match(compact, /tb-ed-app-box/);
     assert.match(compact, /Enable custom style/);
     assert.match(compact, /isAppearanceCustomToggle/);
+    assert.match(compact, /setEditorLayout/);
+    assert.match(compact, /editorLayout/);
     const css = fs.readFileSync(path.join(root, 'assets/js/marketplace/trust-bar-editor.css'), 'utf8');
     assert.match(css, /\.tb-ed-stack\b/);
     assert.match(css, /\.tb-ed-app-box\b/);
     assert.match(css, /\.tb-ed-app-fields\b/);
+    /* Stack must beat copyheavy two-column leftover empty pane */
+    assert.match(css, /\.tb-ed-stack\.tb-ed-root\.tb-ed-copyheavy \.tb-ed-zones/);
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /pg-device-fill/);
     assert.match(feat, /applyPreviewDeviceHints/);
     assert.match(feat, /device === 'phone'\) cols = 2/);
     assert.match(feat, /device === 'tablet'\) cols = 3/);
+    assert.match(feat, /syncEditorLayout/);
+    assert.match(feat, /editorLayout: layout === 'landscape' \? 'split' : 'stack'/);
     const ig = fs.readFileSync(path.join(root, 'marketplace/demos/demo-instaGallery.html'), 'utf8');
     assert.match(ig, /data-pg-device/);
     assert.match(ig, /pgDev === 'phone'/);

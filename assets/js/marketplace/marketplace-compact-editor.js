@@ -303,6 +303,9 @@
     var onChange = typeof options.onChange === 'function' ? options.onChange : function () {};
     var activeIdx = 0;
     var mode = options.mode || 'marketplace-playground';
+    /* stack = single full-width column (portrait); split = Content | Style (landscape) */
+    var editorLayout = options.editorLayout === 'split' ? 'split'
+      : (options.editorLayout === 'stack' || mode === 'marketplace-playground' ? 'stack' : 'split');
 
     function emit() { onChange(cfg); }
 
@@ -367,9 +370,9 @@
         html += '<div class="tb-ed-banner">Demo builder — changes can be saved to the selected preset.</div>';
       }
 
-      /* Playground sits in ~half the screen — always stack Content then Style */
-      var stackPlayground = mode === 'marketplace-playground';
-      html += '<div class="tb-ed-zones' + (stackPlayground || !(showLeft && hasStyle) ? ' tb-ed-zones-single' : '') + '">';
+      /* Portrait/stack: full-width single column. Landscape/split: Content | Style. */
+      var stackEditor = editorLayout === 'stack';
+      html += '<div class="tb-ed-zones' + (stackEditor || !(showLeft && hasStyle) ? ' tb-ed-zones-single' : '') + '">';
 
       if (showLeft) {
         html += '<div class="tb-ed-zone-left">';
@@ -388,7 +391,7 @@
             + '<div class="tb-ed-color-grid" data-mp-content></div>'
             + '</div>';
         }
-        if (stackPlayground && (hasStyle || !showLeft)) {
+        if (stackEditor && hasStyle) {
           html += '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-style" aria-label="Style">'
             + '<div class="tb-ed-zone-label">Style</div>'
             + '<div class="tb-ed-color-grid" data-mp-style></div>'
@@ -397,12 +400,12 @@
         html += '</div>';
       }
 
-      if (!stackPlayground && (hasStyle || !showLeft)) {
+      if (!stackEditor && (hasStyle || !showLeft)) {
         html += '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-style" aria-label="Style">'
           + '<div class="tb-ed-zone-label">' + (showLeft || hasStyle ? 'Style' : 'Content') + '</div>'
           + '<div class="tb-ed-color-grid" data-mp-style></div>'
           + '</div>';
-      } else if (stackPlayground && !showLeft && hasStyle) {
+      } else if (stackEditor && !showLeft && hasStyle) {
         html += '<div class="card tb-ed-card tb-ed-card-tight tb-ed-zone-style" aria-label="Style">'
           + '<div class="tb-ed-zone-label">Style</div>'
           + '<div class="tb-ed-color-grid" data-mp-style></div>'
@@ -419,11 +422,13 @@
             && c !== 'tb-ed-root'
             && c !== 'tb-ed-compact'
             && c !== 'tb-ed-stack'
+            && c !== 'tb-ed-split'
             && c !== 'tb-ed-copyheavy';
         })
         .join(' ');
       host.classList.add('tb-ed-root', 'tb-ed-compact');
-      if (stackPlayground) host.classList.add('tb-ed-stack');
+      if (stackEditor) host.classList.add('tb-ed-stack');
+      else host.classList.add('tb-ed-split');
       if (sectionKey) host.classList.add('tb-ed-sec-' + sectionKey);
       if (hasContent && hasStyle && !hasItems) host.classList.add('tb-ed-copyheavy');
       drawItems();
@@ -723,6 +728,14 @@
         host.__mpCompactBound = false;
         render();
       },
+      setEditorLayout: function (next) {
+        var want = next === 'split' ? 'split' : 'stack';
+        if (want === editorLayout) return;
+        editorLayout = want;
+        host.__mpCompactBound = false;
+        render();
+      },
+      getEditorLayout: function () { return editorLayout; },
       getValue: function () { return cfg; }
     };
   }
