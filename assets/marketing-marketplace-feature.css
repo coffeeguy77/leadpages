@@ -742,32 +742,21 @@ body.mf-app .mf-kf-item + .mf-kf-item {
 }
 
 body.mf-app .mf-kf-ic {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #fff;
-  background: linear-gradient(135deg, var(--mf-ink), #123a5c);
-}
-
-body.mf-app .mf-kf-item:nth-child(4n + 2) .mf-kf-ic {
-  background: linear-gradient(135deg, var(--mf-orange), var(--mf-orange-hover));
-}
-
-body.mf-app .mf-kf-item:nth-child(4n + 3) .mf-kf-ic {
-  background: linear-gradient(135deg, var(--mf-green), var(--mf-green-deep));
-}
-
-body.mf-app .mf-kf-item:nth-child(4n + 4) .mf-kf-ic {
-  background: linear-gradient(135deg, var(--mf-gold), #a8861e);
+  color: var(--mf-ink);
+  background: none;
+  border-radius: 0;
 }
 
 body.mf-app .mf-kf-ic .lp-ic {
-  width: 18px;
-  height: 18px;
+  width: 36px;
+  height: 36px;
+  stroke-width: 1.35;
 }
 
 @media (max-width: 720px) {
