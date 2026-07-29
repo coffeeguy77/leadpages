@@ -54,4 +54,12 @@ describe('marketplace feature app demo page', () => {
     assert.match(featureHtml, /New to LeadPages\?/);
     assert.match(featureCss, /\.mf-new-lp\s*\{/);
   });
+
+  it('keeps isOnlineQuote defined in render so hero chips do not throw', () => {
+    const renderIdx = featureHtml.indexOf('function render(j)');
+    assert.ok(renderIdx > 0);
+    const renderSlice = featureHtml.slice(renderIdx, renderIdx + 9000);
+    assert.match(renderSlice, /var isOnlineQuote=/);
+    assert.match(renderSlice, /\+\(isOnlineQuote/);
+  });
 });
