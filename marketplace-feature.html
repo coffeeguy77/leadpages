@@ -695,19 +695,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 
       case 'playground':
         setTimeout(function(){initPlayground('live-demo',p,_renderFeature);},0);
-        return '<div class="blk pg pg-full pg-studio" id="live-demo" data-layout="portrait">'
+        return '<div class="blk pg pg-full pg-studio" id="live-demo" data-layout="dual" data-viewport="desktop">'
           +'<div class="pg-band"><div class="blk-eyebrow">Live playground</div>'
           +'<h2>Make it yours. See it live.</h2>'
           +'<p>Edit the fields — the preview updates instantly. Nothing is saved on this page.</p></div>'
-          +'<div class="pg-toolbar">'
-          +'<div class="pg-layoutbtns" role="group" aria-label="Preview layout">'
-          +'<button type="button" data-layout="portrait" class="on">Portrait</button>'
-          +'<button type="button" data-layout="landscape">Landscape</button>'
-          +'<button type="button" data-layout="dual">Dual</button>'
-          +'</div>'
-          +'<p class="pg-layout-hint">Portrait = editor beside preview · Landscape = desktop preview above editor · Dual = both</p>'
-          +'</div>'
-          +'<div class="pg-dual-strip" data-r="dual-strip" hidden>'
+          +'<div class="pg-stage-shell" data-r="stage-shell">'
+          +'<div class="pg-stage" data-r="stage">'
+          +'<div class="pg-dual-strip" data-r="dual-strip">'
           +'<div class="pg-dual-label">Desktop preview</div>'
           +'<div class="pg-devicewrap pg-dual-wrap" data-r="dual-wrap">'
           +'<div class="pg-viewport"><div class="pg-canvas" data-r="dual-canvas"></div></div>'
@@ -716,11 +710,12 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           +'<div class="pg-panel pg-panel-compact"><div data-r="ctl"></div></div>'
           +'<div class="pg-preview-col">'
           +'<div class="pg-topbar">'
-          +'<div class="pg-presets" data-r="presets"></div>'
-          +'<div class="pg-devbtns" role="group" aria-label="Preview device">'
+          +'<div class="pg-preview-label" data-r="preview-label">Tablet preview</div>'
+          +'<div class="pg-presets" data-r="presets" hidden></div>'
+          +'<div class="pg-devbtns" role="group" aria-label="Preview size">'
+          +'<button type="button" data-d="desktop" class="pg-dev-desktop">Desktop</button>'
           +'<button type="button" data-d="tablet" class="on">Tablet</button>'
           +'<button type="button" data-d="phone">Phone</button>'
-          +'<button type="button" data-d="desktop">Desktop</button>'
           +'</div></div>'
           +'<div class="pg-devicewrap" data-r="wrap">'
           +'<div class="pg-viewport" data-r="vp">'
@@ -732,6 +727,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           +'<span class="pg-status-msg">Matches your website theme</span>'
           +'<span class="pg-status-publish">Publish when ready</span>'
           +'</div>'
+          +'</div></div>'
           +'</div>';
       case 'quote':
         return '<div class="blk"><div class="qt"><p>&ldquo;'+esc(p.text)+'&rdquo;</p>'
@@ -932,7 +928,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       +'<details><summary>Is this included in my plan?</summary><div class="a">Access depends on your LeadPages plan. Labels on this page show Included, Free or Premium — your account confirms any cost before you add the app.</div></details>'
       +'<details><summary>Will it match my website?</summary><div class="a">Yes. Apps inherit your theme colours, fonts and spacing so they feel native — not bolted on.</div></details>'
       +'<details><summary>Can I try it here first?</summary><div class="a">Use the live playground on this page. Changes are temporary and nothing is saved.</div></details>'
-      +'<details><summary>Does this work on mobile?</summary><div class="a">Yes. Use Portrait for tablet and phone, Landscape for full desktop, or Dual to compare desktop and tablet at once.</div></details>'
+      +'<details><summary>Does this work on mobile?</summary><div class="a">Yes. On desktop you see a live desktop preview above a tablet/phone preview. On phones, use the Desktop / Tablet / Phone buttons to shrink the same preview — the layout does not reflow into a stacked mobile page.</div></details>'
       +'</div>';
 
     var html='<header class="feat-hero"><div class="feat-hero-inner wrap-wide">'
@@ -1036,13 +1032,18 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var liveSiteCfg = { sections: {}, theme: {} };
     var pgMetaLoaded = false;
 
-    var layout = 'portrait'; /* portrait | landscape | dual */
+    /* Dual layout is always on for desktop/tablet browsers; phone stacks + size buttons */
+    var layout = 'dual';
+    var viewportMode = 'desktop'; /* desktop | tablet | phone — browser width, not preview device */
+    var STAGE_W = 1180;
     var dev = 'tablet';
     var iframe = null;
     var dualIframe = null;
     var wrap = root.querySelector('[data-r="wrap"]');
     var dualWrap = root.querySelector('[data-r="dual-wrap"]');
     var dualStrip = root.querySelector('[data-r="dual-strip"]');
+    var stageShell = root.querySelector('[data-r="stage-shell"]');
+    var stage = root.querySelector('[data-r="stage"]');
 
     function pgNormKey(key) {
       if (window.LPPlaygroundFieldPaths && window.LPPlaygroundFieldPaths.normalizePlaygroundPath) {
@@ -1165,13 +1166,20 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       dualWrap.style.height = '';
     }
 
-    function effectiveDevice() {
-      /* Landscape always shows a full-width desktop preview */
-      if (layout === 'landscape') return 'desktop';
-      return dev === 'desktop' ? 'tablet' : dev;
+    function detectViewportMode() {
+      var w = window.innerWidth || document.documentElement.clientWidth || 1200;
+      if (w <= 720) return 'phone';
+      if (w <= 1100) return 'tablet';
+      return 'desktop';
     }
 
-    /** Tablet/phone fill the preview pane (no scaled device frame that crops). */
+    function effectiveDevice() {
+      /* On dual desktop/tablet browsers, secondary preview is tablet/phone only */
+      if (viewportMode !== 'phone' && dev === 'desktop') return 'tablet';
+      return dev;
+    }
+
+    /** Shrink content density for Tablet/Phone — do not reflow into a stacked mobile page. */
     function applyPreviewDeviceHints(fr) {
       fr = fr || getIframe();
       if (!fr) return;
@@ -1213,49 +1221,83 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       wrap.style.height = '';
       fitPreviewFrame();
       applyPreviewDeviceHints(fr);
-      if (layout === 'dual') fitDualFrame();
+      if (viewportMode !== 'phone') fitDualFrame();
     }
 
-    function syncLayoutUi() {
-      root.setAttribute('data-layout', layout);
-      root.querySelectorAll('.pg-layoutbtns button').forEach(function(b) {
-        b.classList.toggle('on', b.getAttribute('data-layout') === layout);
-      });
-      if (dualStrip) dualStrip.hidden = layout !== 'dual';
+    function syncPreviewLabel() {
+      var el = root.querySelector('[data-r="preview-label"]');
+      if (!el) return;
+      var d = effectiveDevice();
+      el.textContent = d === 'phone' ? 'Mobile preview'
+        : (d === 'desktop' ? 'Desktop preview' : 'Tablet preview');
+    }
+
+    function syncDevButtons() {
+      var showDesktopBtn = viewportMode === 'phone';
       root.querySelectorAll('.pg-devbtns button').forEach(function(b) {
         var d = b.getAttribute('data-d');
-        b.classList.toggle('on', d === (layout === 'landscape' ? 'desktop' : dev));
-        /* Landscape only needs Desktop; Portrait/Dual use Tablet + Phone (+ Desktop jumps to landscape) */
-        if (layout === 'landscape') b.hidden = d !== 'desktop';
+        if (d === 'desktop') b.hidden = !showDesktopBtn;
         else b.hidden = false;
+        b.classList.toggle('on', d === dev);
       });
+      syncPreviewLabel();
     }
 
     function syncEditorLayout() {
       var host = root.querySelector('[data-r="live"]');
       var ed = host && host.__mpCompact;
       if (ed && typeof ed.setEditorLayout === 'function') {
-        ed.setEditorLayout(layout === 'landscape' ? 'split' : 'stack');
+        /* Always stack — dual uses half-width editor; phone is full-width stack */
+        ed.setEditorLayout('stack');
       }
     }
 
-    function setLayout(next) {
-      if (next !== 'portrait' && next !== 'landscape' && next !== 'dual') return;
-      layout = next;
-      if (layout === 'landscape') {
-        dev = 'desktop';
-      } else if (dev === 'desktop') {
-        dev = 'tablet';
+    /** Desktop/tablet: dual stage (scale tablet down). Phone: stacked preview + size buttons. */
+    function fitStage() {
+      viewportMode = detectViewportMode();
+      root.setAttribute('data-layout', 'dual');
+      root.setAttribute('data-viewport', viewportMode);
+      if (viewportMode === 'phone') {
+        if (dualStrip) dualStrip.hidden = true;
+        if (stage) {
+          stage.style.width = '';
+          stage.style.transform = '';
+          stage.style.transformOrigin = '';
+        }
+        if (stageShell) stageShell.style.height = '';
+        if (dev !== 'desktop' && dev !== 'tablet' && dev !== 'phone') dev = 'tablet';
+        syncDevButtons();
+        syncEditorLayout();
+        applyDevice();
+        return;
       }
-      syncLayoutUi();
+      if (dualStrip) dualStrip.hidden = false;
+      if (dev === 'desktop') dev = 'tablet';
+      ensureDualMounted();
+      syncDevButtons();
       syncEditorLayout();
-      if (layout === 'dual') ensureDualMounted();
       applyDevice();
-      if (layout === 'dual') {
-        applyConfigToFrame(getDualIframe());
-        setTimeout(fitDualFrame, 80);
-        setTimeout(fitDualFrame, 320);
+      applyConfigToFrame(getDualIframe());
+      if (!stage || !stageShell) return;
+      if (viewportMode === 'desktop') {
+        stage.style.width = '100%';
+        stage.style.transform = '';
+        stage.style.transformOrigin = '';
+        stageShell.style.height = '';
+        return;
       }
+      /* Tablet browser: scale the full dual desktop layout down so it still reads as desktop */
+      var avail = stageShell.clientWidth || STAGE_W;
+      var s = Math.max(0.55, Math.min(1, avail / STAGE_W));
+      stage.style.width = STAGE_W + 'px';
+      stage.style.transformOrigin = 'top left';
+      stage.style.transform = 'scale(' + s + ')';
+      function pinShell() {
+        stageShell.style.height = Math.ceil(stage.scrollHeight * s) + 'px';
+      }
+      pinShell();
+      setTimeout(pinShell, 120);
+      setTimeout(pinShell, 400);
     }
 
     function applyConfigToFrame(fr) {
@@ -1269,8 +1311,8 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     }
 
     window.addEventListener('resize', function() {
-      applyDevice();
-      if (layout === 'dual') fitDualFrame();
+      fitStage();
+      if (viewportMode !== 'phone') fitDualFrame();
     });
 
     function presetToSiteConfig(preset) {
@@ -1342,23 +1384,32 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       applyPreviewDeviceHints(getIframe());
       applyConfigToFrame(getIframe());
       applyPreviewDeviceHints(getIframe());
-      if (layout === 'dual') applyConfigToFrame(getDualIframe());
+      if (viewportMode !== 'phone') applyConfigToFrame(getDualIframe());
       setTimeout(function() {
         fitPreviewFrame();
         applyDevice();
-        if (layout === 'dual') fitDualFrame();
+        if (viewportMode !== 'phone') {
+          fitDualFrame();
+          fitStage();
+        }
       }, 80);
       /* Second fit after layout paints — avoids empty-looking 40px frames on first load */
       setTimeout(function() {
         fitPreviewFrame();
         applyDevice();
-        if (layout === 'dual') fitDualFrame();
+        if (viewportMode !== 'phone') {
+          fitDualFrame();
+          fitStage();
+        }
       }, 320);
       /* Third fit after demo images (reels/thumbnails) finish loading */
       setTimeout(function() {
         fitPreviewFrame();
         applyDevice();
-        if (layout === 'dual') fitDualFrame();
+        if (viewportMode !== 'phone') {
+          fitDualFrame();
+          fitStage();
+        }
       }, 900);
     }
 
@@ -1604,6 +1655,13 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     function renderPresets() {
       var box = root.querySelector('[data-r="presets"]');
       if (!box) return;
+      /* Hide single “Default” pill — preview label owns that topbar slot */
+      if (!presets || presets.length <= 1) {
+        box.innerHTML = '';
+        box.hidden = true;
+        return;
+      }
+      box.hidden = false;
       box.innerHTML = presets.map(function(name) {
         var cached = presetCache[name];
         var label = (cached && cached.label) || name;
@@ -1759,8 +1817,7 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           : fieldDefs;
         host.__mpCompact = window.LPMarketplaceCompactEditor.mount(host, {
           mode: 'marketplace-playground',
-          /* Portrait/dual: full-width stack; landscape: Content | Style */
-          editorLayout: layout === 'landscape' ? 'split' : 'stack',
+          editorLayout: 'stack',
           sectionKey: secKey,
           fieldDefs: compactDefs,
           value: liveSiteCfg,
@@ -1892,27 +1949,17 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
         selectPreset(pb.getAttribute('data-preset'));
         return;
       }
-      var lb = e.target.closest('.pg-layoutbtns [data-layout]');
-      if (lb) {
-        setLayout(lb.getAttribute('data-layout'));
-        return;
-      }
       var t = e.target.closest('.pg-devbtns [data-d]');
-      if (!t) return;
+      if (!t || t.hidden) return;
       var next = t.getAttribute('data-d');
-      if (next === 'desktop') {
-        setLayout('landscape');
-        return;
-      }
+      /* Desktop button only appears on phone browsers — shrinks content, no layout switch */
+      if (viewportMode !== 'phone' && next === 'desktop') next = 'tablet';
       dev = next;
-      if (layout === 'landscape') setLayout('portrait');
-      else {
-        syncLayoutUi();
-        applyDevice();
-      }
+      syncDevButtons();
+      applyDevice();
     });
 
-    syncLayoutUi();
+    fitStage();
 
     loadDefaultConfigs().then(function() {
       return loadPlaygroundMeta();
