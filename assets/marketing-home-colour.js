@@ -1,8 +1,8 @@
 /**
- * LeadPages homepage colour styler.
- * Eight presets match Web Culture Colour Lab
- * (lib/partner-website/webculture-color-presets.js).
- * Preview only — sessionStorage; Reset restores the charcoal homepage look.
+ * LeadPages marketing colour styler (Try colours).
+ * Eight Web Culture presets + Neon Pink / Electric Blue frontend themes.
+ * Preview only — sessionStorage; Reset restores the charcoal LeadPages look.
+ * Auto-mounts the FAB/panel on any page that loads this script.
  */
 (function () {
   'use strict';
@@ -100,6 +100,32 @@
     }
   ];
 
+  /** Extra frontend-only themes (not partner Culture lab). */
+  var FRONTEND_EXTRA_PRESETS = [
+    {
+      id: 'neon-pink',
+      name: 'Neon Pink',
+      blurb: 'Dark pink neon on deep plum.',
+      primary: '#FF4DA6',
+      ink: '#140F14',
+      bg: '#FFF0F7',
+      surface: '#F8E0ED',
+      muted: '#8F7084',
+      glow: '#FF6BB8'
+    },
+    {
+      id: 'electric-blue',
+      name: 'Electric Blue',
+      blurb: 'Electric blue on midnight navy.',
+      primary: '#3B9EFF',
+      ink: '#0A1524',
+      bg: '#EEF5FF',
+      surface: '#E0ECFA',
+      muted: '#5A6B80',
+      glow: '#5CB0FF'
+    }
+  ];
+
   var SITE_DEFAULT = {
     id: 'site-default',
     name: 'LeadPages',
@@ -111,6 +137,8 @@
     muted: '#6B7680',
     glow: '#C85A2C'
   };
+
+  var ALL_PRESETS = CULTURE_PRESETS.concat(FRONTEND_EXTRA_PRESETS);
 
   var HOMEPAGE_VARS = [
     '--navy',
@@ -134,7 +162,17 @@
     '--on-dark',
     '--border',
     '--shadow',
-    '--shadow-soft'
+    '--shadow-soft',
+    '--mf-ink',
+    '--mf-orange',
+    '--mf-cream',
+    '--mf-on-dark',
+    '--mf-green',
+    '--mf-green-deep',
+    '--theme-primary',
+    '--gum',
+    '--rose',
+    '--rose-d'
   ];
 
   function clampByte(n) {
@@ -194,7 +232,7 @@
     return 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + a + ')';
   }
 
-  /** Map a Culture-shaped palette onto homepage design tokens. */
+  /** Map a Culture-shaped palette onto homepage / marketing design tokens. */
   function homepageVarsFromPalette(p) {
     var primary = p.primary;
     var ink = p.ink;
@@ -202,6 +240,9 @@
     var surface = p.surface;
     var muted = p.muted || shade(ink, 45);
     var glow = p.glow || primary;
+    var orangeHover = shade(primary, -12);
+    var partner = shade(primary, -28);
+    var greenCheck = mix(primary, muted, 0.25);
     return {
       '--navy': ink,
       '--navy-deep': shade(ink, -18),
@@ -212,11 +253,11 @@
       '--cream-price': mix(bg, surface, 0.45),
       '--surface': '#FFFFFF',
       '--orange': primary,
-      '--orange-hover': shade(primary, -12),
-      '--partner': shade(primary, -28),
+      '--orange-hover': orangeHover,
+      '--partner': partner,
       '--green': mix(primary, muted, 0.35),
-      '--green-check': mix(primary, muted, 0.25),
-      '--green-deep': shade(mix(primary, muted, 0.25), -18),
+      '--green-check': greenCheck,
+      '--green-deep': shade(greenCheck, -18),
       '--gold': glow,
       '--star': glow,
       '--muted': muted,
@@ -224,16 +265,35 @@
       '--on-dark': bg,
       '--border': mix(surface, muted, 0.22),
       '--shadow': '0 18px 48px ' + rgba(ink, 0.16),
-      '--shadow-soft': '0 10px 26px ' + rgba(ink, 0.08)
+      '--shadow-soft': '0 10px 26px ' + rgba(ink, 0.08),
+      /* Marketplace / legacy marketing aliases */
+      '--mf-ink': ink,
+      '--mf-orange': primary,
+      '--mf-cream': bg,
+      '--mf-on-dark': bg,
+      '--mf-green': greenCheck,
+      '--mf-green-deep': shade(greenCheck, -18),
+      '--theme-primary': primary,
+      '--gum': ink,
+      '--rose': primary,
+      '--rose-d': orangeHover
     };
   }
 
   function byIdMap() {
     var map = { 'site-default': SITE_DEFAULT };
-    CULTURE_PRESETS.forEach(function (p) {
+    ALL_PRESETS.forEach(function (p) {
       map[p.id] = p;
     });
     return map;
+  }
+
+  function refreshLogos() {
+    try {
+      if (window.LPLogo && typeof window.LPLogo.upgradeAll === 'function') {
+        window.LPLogo.upgradeAll(document);
+      }
+    } catch (_e) {}
   }
 
   function applyPalette(p, id) {
@@ -260,6 +320,14 @@
       btn.classList.toggle('is-active', on);
       btn.setAttribute('aria-checked', on ? 'true' : 'false');
     });
+    /* Keep logo accent in sync with theme */
+    document.querySelectorAll('.leadpages-logo, .lp-logo-wrap').forEach(function (el) {
+      el.style.setProperty('--lp-logo-accent', p.primary);
+      if (el.hasAttribute('data-lp-logo-accent')) {
+        el.setAttribute('data-lp-logo-accent', p.primary);
+      }
+    });
+    refreshLogos();
   }
 
   function selectPreset(id, persist) {
@@ -282,8 +350,95 @@
     document.body.classList.toggle('mkt-colour-lab-open', open);
   }
 
-  function init() {
+  function ensureCss() {
+    if (document.querySelector('link[href*="marketing-colour-lab.css"]')) return;
+    /* Homepage inlines lab CSS in marketing-home.css — skip duplicate when present */
+    if (document.body && document.body.classList.contains('mkt-home')) return;
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/assets/marketing-colour-lab.css';
+    document.head.appendChild(link);
+  }
+
+  function swatchHtml(p) {
+    return (
+      '<button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="' +
+      p.id +
+      '" role="radio" aria-checked="false" aria-label="' +
+      p.name +
+      '"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true">' +
+      '<span style="background:' +
+      p.bg +
+      '"></span><span style="background:' +
+      p.primary +
+      '"></span><span style="background:' +
+      p.ink +
+      '"></span></span>' +
+      '<span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">' +
+      p.name +
+      '</span><span class="mkt-colour-lab__swatch-blurb">' +
+      p.blurb +
+      '</span></span></button>'
+    );
+  }
+
+  function labMarkup() {
+    var swatches = ALL_PRESETS.map(swatchHtml).join('');
+    return (
+      '<aside class="mkt-colour-lab" data-mkt-colour-lab aria-label="Colour scheme playground">' +
+      '<button type="button" class="mkt-colour-lab__fab" data-mkt-colour-lab-fab aria-expanded="false" aria-controls="mkt-colour-lab-panel">' +
+      '<span class="mkt-colour-lab__fab-orb" aria-hidden="true">' +
+      '<span class="mkt-colour-lab__fab-dot" style="background:#C85A2C"></span>' +
+      '<span class="mkt-colour-lab__fab-dot" style="background:#0B1B2A"></span>' +
+      '<span class="mkt-colour-lab__fab-dot" style="background:#F4EBDE"></span>' +
+      '</span>' +
+      '<span class="mkt-colour-lab__fab-label">Try colours</span>' +
+      '</button>' +
+      '<div class="mkt-colour-lab__scrim" data-mkt-colour-lab-scrim hidden></div>' +
+      '<div class="mkt-colour-lab__panel" id="mkt-colour-lab-panel" data-mkt-colour-lab-panel hidden role="dialog" aria-modal="false" aria-labelledby="mkt-colour-lab-title">' +
+      '<div class="mkt-colour-lab__panel-inner">' +
+      '<header class="mkt-colour-lab__head">' +
+      '<p class="mkt-colour-lab__eyebrow">Live colour studio</p>' +
+      '<h2 id="mkt-colour-lab-title" class="mkt-colour-lab__title">Pick a colour scheme</h2>' +
+      '<p class="mkt-colour-lab__lede">Web Culture themes plus Neon Pink and Electric Blue — the whole page updates instantly.</p>' +
+      '<button type="button" class="mkt-colour-lab__close" data-mkt-colour-lab-close aria-label="Close colour studio">&times;</button>' +
+      '</header>' +
+      '<div class="mkt-colour-lab__grid" role="radiogroup" aria-label="Colour presets">' +
+      swatches +
+      '</div>' +
+      '<footer class="mkt-colour-lab__foot">' +
+      '<button type="button" class="mkt-colour-lab__reset" data-mkt-colour-lab-reset>LeadPages default</button>' +
+      '<a class="mkt-colour-lab__cta" href="/find-a-partner" data-mkt-track="colour_lab_cta">Build my website</a>' +
+      '</footer>' +
+      '</div></div></aside>'
+    );
+  }
+
+  function ensureLabRoot() {
     var root = document.querySelector('[data-mkt-colour-lab]');
+    if (root) {
+      /* Refresh swatch grid so new presets appear even on older static markup */
+      var grid = root.querySelector('.mkt-colour-lab__grid');
+      if (grid && grid.querySelectorAll('[data-mkt-colour-preset]').length < ALL_PRESETS.length) {
+        grid.innerHTML = ALL_PRESETS.map(swatchHtml).join('');
+      }
+      var lede = root.querySelector('.mkt-colour-lab__lede');
+      if (lede) {
+        lede.textContent =
+          'Web Culture themes plus Neon Pink and Electric Blue — the whole page updates instantly.';
+      }
+      return root;
+    }
+    var wrap = document.createElement('div');
+    wrap.innerHTML = labMarkup();
+    root = wrap.firstChild;
+    document.body.appendChild(root);
+    return root;
+  }
+
+  function init() {
+    ensureCss();
+    var root = ensureLabRoot();
     if (!root) return;
     var fab = root.querySelector('[data-mkt-colour-lab-fab]');
     var panel = root.querySelector('[data-mkt-colour-lab-panel]');
@@ -310,10 +465,10 @@
         selectPreset('site-default');
       });
     }
-    root.querySelectorAll('[data-mkt-colour-preset]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        selectPreset(btn.getAttribute('data-mkt-colour-preset'));
-      });
+    root.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-mkt-colour-preset]');
+      if (!btn || !root.contains(btn)) return;
+      selectPreset(btn.getAttribute('data-mkt-colour-preset'));
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && root.classList.contains('is-open')) {
@@ -341,6 +496,8 @@
   // Expose for tests
   window.__mktHomeColour = {
     presets: CULTURE_PRESETS,
+    extraPresets: FRONTEND_EXTRA_PRESETS,
+    allPresets: ALL_PRESETS,
     siteDefault: SITE_DEFAULT,
     homepageVarsFromPalette: homepageVarsFromPalette,
     selectPreset: selectPreset,

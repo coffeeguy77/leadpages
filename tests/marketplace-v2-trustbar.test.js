@@ -254,14 +254,17 @@ describe('public marketplace theme + copy safety', () => {
     assert.match(v2, /overflow-anchor:none/);
   });
 
-  it('marketplace header uses white logo at 50% larger size', () => {
+  it('marketplace header logo matches homepage size and theme accent', () => {
     const css = fs.readFileSync(path.join(root, 'assets/lp-logo.css'), 'utf8');
     assert.match(css, /\.sitenav \.lp-logo-wrap/);
-    assert.match(css, /--lp-logo-ink:\s*#ffffff\s*!important/);
-    assert.match(css, /height:\s*78px\s*!important/);
+    assert.match(css, /--lp-logo-accent:\s*var\(--orange/);
+    assert.match(css, /height:\s*102px\s*!important/);
     const feat = fs.readFileSync(path.join(root, 'marketplace-feature.html'), 'utf8');
     assert.match(feat, /data-lp-logo-ink="light"/);
-    assert.match(feat, /\.sitenav \.leadpages-logo\{height:78px/);
+    assert.match(feat, /\.sitenav \.leadpages-logo\{height:102px/);
+    const featCss = fs.readFileSync(path.join(root, 'assets/marketing-marketplace-feature.css'), 'utf8');
+    assert.match(featCss, /--lp-logo-height:\s*102px/);
+    assert.match(featCss, /mf-badge-inc[\s\S]*--mf-orange|--orange/);
     const logoJs = fs.readFileSync(path.join(root, 'assets/lp-logo.js'), 'utf8');
     assert.match(logoJs, /Never stomp explicit light\/dark ink/);
     assert.match(logoJs, /inkAttr === 'light' \|\| inkAttr === 'dark'/);

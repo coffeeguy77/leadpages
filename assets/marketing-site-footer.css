@@ -38,6 +38,8 @@ footer.mkt-site-footer {
 .mkt-site-footer .leadpages-logo.lp-logo-wrap,
 .mkt-site-footer .lp-logo-wrap {
   --lp-logo-height: 72px;
+  --lp-logo-ink: var(--on-dark, var(--mkt-foot-ink, #f9f7f2));
+  --lp-logo-accent: var(--orange, var(--mf-orange, #C85A2C));
   height: 72px;
   margin-bottom: 10px;
 }
