@@ -260,6 +260,11 @@
   .tb-ed-zone-style .tb-ed-color-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .tb-ed-stack .tb-ed-zone-style .tb-ed-color-grid,
+  .tb-ed-stack .tb-ed-zone-content .tb-ed-color-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* Keep side-by-side on iPad / tablet; stack only on narrow phones */
