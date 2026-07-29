@@ -18,7 +18,8 @@
 }
 
 .tb-ed-banner-safe {
-  background: var(--theme-surface-alt, var(--shell, #f1e5df));
+  background: color-mix(in srgb, var(--theme-primary, var(--orange, #C85A2C)) 10%, #fff);
+  border-color: color-mix(in srgb, var(--theme-primary, var(--orange, #C85A2C)) 22%, transparent);
 }
 
 /* Left (Items + Content) | Style — tinted Style zone separates the columns */
@@ -424,8 +425,8 @@
 
 .tb-ed-tab {
   appearance: none;
-  border: 1px solid var(--theme-border, var(--line));
-  background: var(--theme-surface-alt, var(--shell, #fbfaf7));
+  border: 1px solid var(--theme-border, var(--line, #e7e7e7));
+  background: var(--theme-surface, #fff);
   border-radius: 999px;
   padding: 3px 8px 3px 5px;
   font: inherit;
@@ -477,10 +478,10 @@
 .tb-ed-tab.off.on { opacity: 0.85; }
 
 .tb-ed-item {
-  border: 1px solid var(--theme-border, var(--line));
+  border: 1px solid var(--theme-border, var(--line, #e7e7e7));
   border-radius: 8px;
   padding: 8px;
-  background: var(--theme-surface-alt, var(--shell, #fbfaf7));
+  background: var(--theme-surface, #fff);
 }
 
 .tb-ed-item-panel { margin: 0; }

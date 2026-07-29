@@ -1,7 +1,7 @@
 {
  "contract_version": 1,
  "slug": "trustbar-builder",
- "label": "Builder — Image Tiles",
+ "label": "Builder \u2014 Image Tiles",
  "section_key": "trustBar",
  "source": "file",
  "industry": "Building",
@@ -14,7 +14,7 @@
  "isFeatured": false,
  "isDefaultPlaygroundPreset": false,
  "site_config": {
-  "business": "Northside Builders",
+  "business": "Local Builders",
   "trade": "builder",
   "theme": {
    "pipe": "#2F413A"

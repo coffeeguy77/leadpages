@@ -1,7 +1,7 @@
 {
  "contract_version": 1,
  "slug": "trustbar-landscaper-badges",
- "label": "Landscaper — Text and Icons",
+ "label": "Landscaper \u2014 Text and Icons",
  "section_key": "trustBar",
  "source": "file",
  "industry": "Landscaping",
@@ -14,7 +14,7 @@
  "isFeatured": false,
  "isDefaultPlaygroundPreset": false,
  "site_config": {
-  "business": "Greenline Landscapes",
+  "business": "Local Landscapes",
   "trade": "landscaper",
   "theme": {
    "pipe": "#3d6b4f"

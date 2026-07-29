@@ -1,20 +1,20 @@
 {
  "contract_version": 1,
  "slug": "trustbar-bean-culture",
- "label": "Bean Culture — Image Tiles",
+ "label": "Coffee Shop \u2014 Image Tiles",
  "section_key": "trustBar",
  "source": "file",
- "industry": "Coffee events",
+ "industry": "Coffee shop",
  "businessType": "",
  "mode": "images",
  "pairedPresetId": null,
  "relationshipType": null,
  "sellingPoint": "Turn your service range into visual inspiration.",
- "description": "Bean Culture-style image-tile Trust Bar.",
+ "description": "Coffee shop image-tile Trust Bar.",
  "isFeatured": true,
  "isDefaultPlaygroundPreset": false,
  "site_config": {
-  "business": "Bean Culture Coffee Events",
+  "business": "Coffee Shop",
   "trade": "coffee",
   "theme": {
    "pipe": "#6F4E37"

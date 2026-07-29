@@ -1,7 +1,7 @@
 {
  "contract_version": 1,
  "slug": "trustbar-plumber",
- "label": "Plumber — Text and Icons",
+ "label": "Plumber \u2014 Text and Icons",
  "section_key": "trustBar",
  "source": "file",
  "industry": "Plumbing",
@@ -14,7 +14,7 @@
  "isFeatured": false,
  "isDefaultPlaygroundPreset": false,
  "site_config": {
-  "business": "Ace Plumbing Co.",
+  "business": "Local Plumbing",
   "trade": "plumber",
   "theme": {
    "pipe": "#1f7bb8"

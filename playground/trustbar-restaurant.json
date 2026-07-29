@@ -1,7 +1,7 @@
 {
  "contract_version": 1,
  "slug": "trustbar-restaurant",
- "label": "Restaurant — Image Tiles",
+ "label": "Restaurant \u2014 Image Tiles",
  "section_key": "trustBar",
  "source": "file",
  "industry": "Restaurant",
@@ -14,7 +14,7 @@
  "isFeatured": false,
  "isDefaultPlaygroundPreset": false,
  "site_config": {
-  "business": "Harbour Table",
+  "business": "Local Restaurant",
   "trade": "restaurant",
   "theme": {
    "pipe": "#7a2e2e"

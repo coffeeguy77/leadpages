@@ -7,8 +7,8 @@
   "shortDescription": "Keep important services, promises or credentials visible without distracting from the rest of your page.",
   "longDescription": "Show your services, guarantees, credentials or visual options in a clear strip that supports the rest of your page. Start from a real business example, then edit with the same controls you will use inside LeadPages.",
   "heroImage": {
-    "url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&h=560&fit=crop&q=80",
-    "alt": "Trade site hero with Trust Bar under the fold"
+    "url": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1400&h=560&fit=crop&q=80",
+    "alt": "Café service strip style Trust Bar under the fold"
   },
   "accessType": "included",
   "featureLabels": [
@@ -44,8 +44,24 @@
   ],
   "examples": [
     {
-      "id": "aam1-coating",
-      "businessName": "AAM1 Coating Services",
+      "id": "cafe-images",
+      "businessName": "Café — Image Tiles",
+      "industry": "Café",
+      "title": "Turn the menu into visual inspiration",
+      "description": "Image tiles make the offer range immediately understandable and invite visitors to explore what suits them.",
+      "mode": "images",
+      "presetSlug": "trustbar-cafe-images",
+      "isFeatured": true,
+      "visibleItems": [
+        "Breakfast",
+        "Coffee",
+        "Lunch",
+        "Pastries"
+      ]
+    },
+    {
+      "id": "render-badges",
+      "businessName": "Render — Text and Icons",
       "industry": "Rendering",
       "title": "Keep important services visible",
       "description": "A compact icon-and-text strip helps visitors understand the services available without competing with the main hero.",
@@ -61,11 +77,11 @@
       ]
     },
     {
-      "id": "bean-culture",
-      "businessName": "Bean Culture Coffee Events",
-      "industry": "Coffee events",
-      "title": "Turn navigation into visual inspiration",
-      "description": "Image tiles make the service range immediately understandable and invite visitors to explore the option that suits their event.",
+      "id": "coffee-shop-images",
+      "businessName": "Coffee Shop — Image Tiles",
+      "industry": "Coffee shop",
+      "title": "Show your service range at a glance",
+      "description": "Full-width image tiles with captions — ideal when visitors need to recognise options quickly.",
       "mode": "images",
       "presetSlug": "trustbar-bean-culture",
       "isFeatured": true,
@@ -83,8 +99,9 @@
     "Popular with Trades",
     "Easy Wins for Existing Websites"
   ],
-  "defaultPlaygroundPreset": "trustbar-aam1",
+  "defaultPlaygroundPreset": "trustbar-cafe-images",
   "presetOrder": [
+    "trustbar-cafe-images",
     "trustbar-aam1",
     "trustbar-bean-culture",
     "trustbar-carpenter-badges",
@@ -97,7 +114,6 @@
     "trustbar-accountant",
     "trustbar-medical",
     "trustbar-cafe-badges",
-    "trustbar-cafe-images",
     "trustbar-restaurant",
     "trustbar-beauty",
     "trustbar-builder",

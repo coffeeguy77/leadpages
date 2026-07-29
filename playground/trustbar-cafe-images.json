@@ -1,20 +1,20 @@
 {
  "contract_version": 1,
  "slug": "trustbar-cafe-images",
- "label": "Café — Image Tiles",
+ "label": "Caf\u00e9 \u2014 Image Tiles",
  "section_key": "trustBar",
  "source": "file",
- "industry": "Café",
+ "industry": "Caf\u00e9",
  "businessType": "",
  "mode": "images",
  "pairedPresetId": "trustbar-cafe-badges",
  "relationshipType": "alternate-mode",
  "sellingPoint": "",
  "description": "",
- "isFeatured": false,
- "isDefaultPlaygroundPreset": false,
+ "isFeatured": true,
+ "isDefaultPlaygroundPreset": true,
  "site_config": {
-  "business": "Corner Cup Café",
+  "business": "Local Caf\u00e9",
   "trade": "cafe",
   "theme": {
    "pipe": "#8B5E3C"

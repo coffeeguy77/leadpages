@@ -756,6 +756,13 @@ body.mp .drawer .btn-orange {
   gap: 22px;
 }
 
+/* Filtering uses the hidden attribute — beat display:flex/grid on cards */
+.mp-app-card[hidden],
+.mp-tile[hidden],
+[data-app][hidden] {
+  display: none !important;
+}
+
 .mp-app-card {
   background: #fff;
   border: 1px solid rgba(0, 21, 41, 0.06);

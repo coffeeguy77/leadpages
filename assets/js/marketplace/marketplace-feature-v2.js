@@ -525,7 +525,7 @@
       '.mp-demo-head h2{font-family:var(--theme-heading-font,var(--disp));font-size:clamp(24px,3vw,32px);margin:6px 0 8px}',
       '.mp-lede{color:var(--theme-text-muted,var(--mut));max-width:60ch;margin:0}',
       '.mp-ex-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}',
-      '.mp-ex-chip{appearance:none;border:1px solid var(--theme-border,var(--line));background:var(--theme-surface-alt,var(--shell));border-radius:12px;padding:10px 12px;text-align:left;cursor:pointer;font:inherit;display:flex;flex-direction:column;gap:2px;min-width:180px}',
+      '.mp-ex-chip{appearance:none;border:1px solid var(--theme-border,var(--line));background:var(--theme-surface,#fff);border-radius:12px;padding:10px 12px;text-align:left;cursor:pointer;font:inherit;display:flex;flex-direction:column;gap:2px;min-width:180px}',
       '.mp-ex-chip strong{font-size:14px}',
       '.mp-ex-chip span{font-size:12.5px;color:var(--theme-text-muted,var(--mut))}',
       '.mp-ex-chip:hover,.mp-ex-chip:focus-visible{border-color:var(--theme-primary,var(--rose));outline:3px solid var(--theme-focus,var(--rose));outline-offset:2px}',
@@ -566,12 +566,12 @@
           { id: 'images', name: 'Image Tiles', description: 'Full-width image tiles with captions.' }
         ],
         examples: [],
-        presetOrder: ['trustbar-aam1', 'trustbar-bean-culture'],
-        defaultPlaygroundPreset: 'trustbar-aam1'
+        presetOrder: ['trustbar-cafe-images', 'trustbar-aam1', 'trustbar-bean-culture'],
+        defaultPlaygroundPreset: 'trustbar-cafe-images'
       };
       renderExamples(page, feature);
       wirePage();
-      var def = meta.defaultPlaygroundPreset || 'trustbar-aam1';
+      var def = meta.defaultPlaygroundPreset || 'trustbar-cafe-images';
       var order = meta.presetOrder || [def];
       Promise.all(order.map(function (s) { return fetchPreset(s).catch(function () { return null; }); }))
         .then(function () {
