@@ -221,17 +221,22 @@ footer.mkt-site-footer {
 
 .mkt-site-footer .f-tagline {
   margin: 0;
-  max-width: 18ch;
+  max-width: none;
   font-family: var(--mkt-foot-disp);
-  font-size: clamp(1.45rem, 2.6vw, 1.9rem);
+  font-size: clamp(1.2rem, 2.8vw, 1.9rem);
   font-weight: 800;
-  line-height: 1.05;
+  line-height: 1.15;
   letter-spacing: -0.035em;
+  white-space: nowrap;
   color: var(--mkt-foot-ink);
 }
 
-.mkt-site-footer .f-tagline span {
-  display: inline;
+.mkt-site-footer .f-tagline-lead {
+  color: #fff;
+}
+
+.mkt-site-footer .f-tagline-accent {
+  color: var(--orange, var(--mf-orange, #C85A2C));
 }
 
 .mkt-site-footer .f-bottom-meta {
@@ -380,12 +385,7 @@ footer.mkt-site-footer {
   }
 
   .mkt-site-footer .f-tagline {
-    max-width: none;
-    font-size: clamp(1.85rem, 8.5vw, 2.35rem);
-  }
-
-  .mkt-site-footer .f-tagline span {
-    display: block;
+    font-size: clamp(1.05rem, 5.2vw, 1.55rem);
   }
 
   .mkt-site-footer .f-bottom-meta {
