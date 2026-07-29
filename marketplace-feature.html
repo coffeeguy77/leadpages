@@ -1010,11 +1010,6 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   }
 
 
-  var PG_DEV={
-    desktop:{w:1440,scale:1,cols:4},
-    tablet: {w:768, scale:null,cols:2},
-    phone:  {w:390, scale:null,cols:1}};
-
   function _lpIcon(name){
     name=(name||'').trim();
     if(!name||!window.LP_ICONS||!window.LP_ICONS[name])return '';
@@ -1041,7 +1036,6 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
     var liveSiteCfg = { sections: {}, theme: {} };
     var pgMetaLoaded = false;
 
-    var PG_W = { desktop: null, tablet: 768, phone: 390 };
     var layout = 'portrait'; /* portrait | landscape | dual */
     var dev = 'tablet';
     var iframe = null;
