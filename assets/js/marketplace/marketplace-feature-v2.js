@@ -31,7 +31,9 @@
   var meta = null;
   var editorApi = null;
   var iframe = null;
-  var device = 'desktop';
+  var dualIframe = null;
+  var device = 'tablet';
+  var viewportMode = 'desktop';
   var activePreset = '';
   var presetCache = {};
   var announceEl = null;
@@ -78,10 +80,107 @@
     return { sections: {}, theme: {} };
   }
 
-  function measurePreviewHeight() {
-    if (!iframe) return 0;
+  function detectViewportMode() {
+    var w = window.innerWidth || document.documentElement.clientWidth || 1200;
+    if (w <= 720) return 'phone';
+    if (w <= 1100) return 'tablet';
+    return 'desktop';
+  }
+
+  function effectiveDevice() {
+    if (viewportMode !== 'phone' && device === 'desktop') return 'tablet';
+    return device;
+  }
+
+  function syncPreviewLabel() {
+    var el = document.querySelector('#playground [data-r="preview-label"]');
+    if (!el) return;
+    var d = effectiveDevice();
+    el.textContent = d === 'phone' ? 'Mobile preview'
+      : (d === 'desktop' ? 'Desktop preview' : 'Tablet preview');
+  }
+
+  function syncDevButtons() {
+    var root = document.getElementById('playground');
+    if (!root) return;
+    var showDesktopBtn = viewportMode === 'phone';
+    root.querySelectorAll('.pg-devbtns button').forEach(function (b) {
+      var d = b.getAttribute('data-d');
+      if (d === 'desktop') b.hidden = !showDesktopBtn;
+      else b.hidden = false;
+      b.classList.toggle('on', d === device);
+    });
+    syncPreviewLabel();
+  }
+
+  function fitStage() {
+    var root = document.getElementById('playground');
+    if (!root) return;
+    viewportMode = detectViewportMode();
+    root.setAttribute('data-layout', 'dual');
+    root.setAttribute('data-viewport', viewportMode);
+    var dualStrip = root.querySelector('[data-r="dual-strip"]');
+    if (viewportMode === 'phone') {
+      if (dualStrip) dualStrip.hidden = true;
+      if (device !== 'desktop' && device !== 'tablet' && device !== 'phone') device = 'tablet';
+    } else {
+      if (dualStrip) dualStrip.hidden = false;
+      if (device === 'desktop') device = 'tablet';
+    }
+    syncDevButtons();
+    sizeIframe();
+    sizeDualIframe();
+  }
+
+  function sizeIframe() {
+    if (!iframe) return;
+    var wrap = document.querySelector('#playground [data-r="wrap"]');
+    var h = measurePreviewHeight(iframe) || 120;
+    var d = effectiveDevice();
+    iframe.style.minHeight = '0';
+    if (wrap) {
+      wrap.classList.remove('framed');
+      wrap.classList.add('pg-device-fill');
+      if (d === 'phone') {
+        wrap.classList.add('pg-device-phone');
+        iframe.style.width = '100%';
+        iframe.style.maxWidth = '390px';
+        iframe.style.marginLeft = 'auto';
+        iframe.style.marginRight = 'auto';
+      } else {
+        wrap.classList.remove('pg-device-phone');
+        iframe.style.width = '100%';
+        iframe.style.maxWidth = '';
+        iframe.style.marginLeft = '';
+        iframe.style.marginRight = '';
+      }
+    }
+    iframe.style.transform = 'none';
+    iframe.style.marginBottom = '';
+    iframe.style.height = h + 'px';
+    if (wrap) wrap.style.height = '';
+  }
+
+  function sizeDualIframe() {
+    if (!dualIframe) return;
+    var dualWrap = document.querySelector('#playground [data-r="dual-wrap"]');
+    var h = measurePreviewHeight(dualIframe) || 120;
+    dualIframe.style.minHeight = '0';
+    dualIframe.style.height = h + 'px';
+    dualIframe.style.width = '100%';
+    dualIframe.style.transform = 'none';
+    dualIframe.style.marginBottom = '';
+    if (dualWrap) {
+      dualWrap.classList.remove('framed');
+      dualWrap.style.height = '';
+    }
+  }
+
+  function measurePreviewHeight(fr) {
+    fr = fr || iframe;
+    if (!fr) return 0;
     try {
-      var doc = iframe.contentDocument;
+      var doc = fr.contentDocument;
       if (!doc) return 0;
       var sec = doc.querySelector('[data-sec="trustBar"]') || doc.querySelector('main') || doc.body;
       var h = sec ? Math.ceil(sec.getBoundingClientRect().height || sec.scrollHeight || 0) : 0;
@@ -94,40 +193,19 @@
     }
   }
 
-  function sizeIframe() {
-    if (!iframe) return;
-    var wrap = document.querySelector('[data-r="wrap"]');
-    var wmap = { desktop: null, tablet: 768, phone: 390 };
-    var w = wmap[device];
-    var h = measurePreviewHeight() || 120;
-    iframe.style.minHeight = '0';
-    if (!w) {
-      iframe.style.width = '100%';
-      iframe.style.transform = 'none';
-      iframe.style.marginBottom = '';
-      iframe.style.height = h + 'px';
-      if (wrap) { wrap.style.height = ''; wrap.classList.remove('framed'); }
-      return;
-    }
-    if (wrap) wrap.classList.add('framed');
-    iframe.style.width = w + 'px';
-    var avail = (wrap ? wrap.clientWidth : window.innerWidth) - 48;
-    var s = Math.min(1, avail / w);
-    iframe.style.transform = 'scale(' + s + ')';
-    iframe.style.transformOrigin = 'top center';
-    iframe.style.height = h + 'px';
-    iframe.style.marginBottom = ((h * s) - h) + 'px';
-    if (wrap) wrap.style.height = (h * s + 16) + 'px';
-  }
-
   function applyLiveConfig() {
-    if (!iframe) return;
-    try {
-      if (iframe.contentWindow && iframe.contentWindow.__applyTradeConfig) {
-        iframe.contentWindow.__applyTradeConfig(liveSiteCfg);
-      }
-    } catch (_e) {}
+    function paint(fr) {
+      if (!fr) return;
+      try {
+        if (fr.contentWindow && fr.contentWindow.__applyTradeConfig) {
+          fr.contentWindow.__applyTradeConfig(liveSiteCfg);
+        }
+      } catch (_e) {}
+    }
+    paint(iframe);
+    paint(dualIframe);
     sizeIframe();
+    sizeDualIframe();
   }
 
   var __heightRaf = 0;
@@ -148,19 +226,25 @@
 
   /** Lightweight height scrub — set CSS var only, no full demo rebuild. */
   function applyTileHeight(h) {
-    if (!iframe) return;
+    if (!iframe && !dualIframe) return;
     var px = Math.max(120, Math.min(640, +h || 280));
     var restoreScroll = pinScrollToHeightControl();
-    try {
-      var doc = iframe.contentDocument;
-      var tbNode = doc && doc.querySelector('[data-sec="trustBar"]');
-      if (tbNode) tbNode.style.setProperty('--tb-img-h', px + 'px');
-    } catch (_e) {}
+    function paint(fr) {
+      if (!fr) return;
+      try {
+        var doc = fr.contentDocument;
+        var tbNode = doc && doc.querySelector('[data-sec="trustBar"]');
+        if (tbNode) tbNode.style.setProperty('--tb-img-h', px + 'px');
+      } catch (_e) {}
+    }
+    paint(iframe);
+    paint(dualIframe);
     if (__heightRaf) cancelAnimationFrame(__heightRaf);
     __heightRaf = requestAnimationFrame(function () {
       __heightRaf = 0;
       var restore2 = pinScrollToHeightControl();
       sizeIframe();
+      sizeDualIframe();
       restore2();
       restoreScroll();
     });
@@ -191,7 +275,7 @@
       liveSiteCfg = deepClone(presetToSiteConfig(preset));
       baselineCfg = deepClone(liveSiteCfg);
       if (!iframe) {
-        var canvas = document.querySelector('[data-r="canvas"]');
+        var canvas = document.querySelector('#playground [data-r="canvas"]');
         if (canvas) {
           iframe = document.createElement('iframe');
           iframe.className = 'pg-iframe';
@@ -200,17 +284,33 @@
           iframe.setAttribute('title', 'Trust Bar live preview');
           iframe.addEventListener('load', function () {
             applyLiveConfig();
-            setTimeout(sizeIframe, 60);
+            setTimeout(function () { sizeIframe(); sizeDualIframe(); }, 60);
           });
           canvas.innerHTML = '';
           canvas.appendChild(iframe);
         }
-      } else {
-        applyLiveConfig();
       }
+      if (!dualIframe) {
+        var dualCanvas = document.querySelector('#playground [data-r="dual-canvas"]');
+        if (dualCanvas) {
+          dualIframe = document.createElement('iframe');
+          dualIframe.className = 'pg-iframe pg-iframe-dual';
+          dualIframe.src = '/marketplace/demos/demo-trustBar.html';
+          dualIframe.style.cssText = 'width:100%;border:0;display:block;min-height:0;height:auto;vertical-align:top';
+          dualIframe.setAttribute('title', 'Trust Bar desktop preview');
+          dualIframe.addEventListener('load', function () {
+            applyLiveConfig();
+            setTimeout(sizeDualIframe, 60);
+          });
+          dualCanvas.innerHTML = '';
+          dualCanvas.appendChild(dualIframe);
+        }
+      }
+      if (iframe || dualIframe) applyLiveConfig();
       if (editorApi) editorApi.setValue(liveSiteCfg);
       else mountEditor();
       renderPresetButtons();
+      fitStage();
       announce('Loaded example: ' + (preset.label || slug));
       if (opts.scroll) {
         var pg = document.getElementById('playground');
@@ -310,29 +410,45 @@
       + '</div></div></header>'
 
       + '<article class="mp-demo-article"><div class="wrap">'
-      + '<section class="mp-demo-block" id="playground">'
+      + '<section class="mp-demo-block pg pg-full pg-studio" id="playground" data-layout="dual" data-viewport="desktop">'
       + '<div class="mp-demo-head">'
       + '<div class="blk-eyebrow">Live demo</div>'
       + '<h2>Try it with real business examples</h2>'
       + '<p class="mp-lede">Pick an example, edit icons and wording, and watch the preview update. Nothing here is saved.</p>'
       + '</div>'
       + (examplesHtml ? '<div class="mp-ex-row" aria-label="Real examples">' + examplesHtml + '</div>' : '')
-      + '<div class="mp-pg-preview">'
-      + '<div class="pg-devicewrap" data-r="wrap"><div class="pg-viewport" data-r="vp"><div class="pg-canvas" data-r="canvas"></div></div></div>'
+      + '<div class="pg-stage-shell" data-r="stage-shell">'
+      + '<div class="pg-stage" data-r="stage">'
+      + '<div class="pg-dual-strip" data-r="dual-strip">'
+      + '<div class="pg-dual-label">Desktop preview</div>'
+      + '<div class="pg-devicewrap pg-dual-wrap" data-r="dual-wrap">'
+      + '<div class="pg-viewport"><div class="pg-canvas" data-r="dual-canvas"></div></div>'
+      + '</div></div>'
+      + '<div class="pg-studio-grid">'
+      + '<div class="pg-panel pg-panel-compact">'
+      + '<div class="pg-ctl-head"><h4>Customise the preview</h4>'
+      + '<p class="hint">Add, remove or edit items — updates instantly</p></div>'
+      + '<div id="mp-tb-editor" class="tb-ed-root tb-ed-compact"></div>'
       + '</div>'
+      + '<div class="pg-preview-col">'
       + '<div class="pg-topbar">'
+      + '<div class="pg-preview-label" data-r="preview-label">Tablet preview</div>'
       + '<div class="pg-presets" data-r="presets" role="toolbar" aria-label="Industry presets"></div>'
       + '<div class="pg-devbtns" role="group" aria-label="Preview size">'
-      + '<button type="button" data-d="desktop" class="on">Desktop</button>'
-      + '<button type="button" data-d="tablet">Tablet</button>'
+      + '<button type="button" data-d="desktop" class="pg-dev-desktop">Desktop</button>'
+      + '<button type="button" data-d="tablet" class="on">Tablet</button>'
       + '<button type="button" data-d="phone">Phone</button>'
       + '</div>'
       + '<div class="mp-pg-actions">'
       + '<button type="button" class="btn ghost" id="mp-reset">Reset example</button>'
       + '</div></div>'
-      + '<div class="mp-pg-editor mp-pg-editor-compact">'
-      + '<div id="mp-tb-editor" class="tb-ed-root tb-ed-compact"></div>'
+      + '<div class="pg-devicewrap" data-r="wrap">'
+      + '<div class="pg-viewport" data-r="vp">'
+      + '<div class="pg-canvas" data-r="canvas"></div>'
+      + '</div></div>'
       + '</div>'
+      + '</div>'
+      + '</div></div>'
       + '<p class="sr-only" id="mp-live-status" aria-live="polite"></p>'
       + '</section>'
       + '</div></article>';
@@ -352,12 +468,12 @@
       }
       var dev = e.target.closest('[data-d]');
       if (dev && dev.closest('.pg-devbtns')) {
-        device = dev.getAttribute('data-d');
-        document.querySelectorAll('.pg-devbtns button').forEach(function (b) {
-          b.classList.toggle('on', b === dev);
-        });
+        var next = dev.getAttribute('data-d');
+        if (viewportMode !== 'phone' && next === 'desktop') next = 'tablet';
+        device = next;
+        syncDevButtons();
         sizeIframe();
-        announce('Preview size: ' + device);
+        announce('Preview size: ' + effectiveDevice());
       }
     });
 
@@ -371,6 +487,11 @@
         announce('Example reset');
       });
     }
+
+    window.addEventListener('resize', function () {
+      fitStage();
+    });
+    fitStage();
   }
 
   function addStyles() {
@@ -408,13 +529,15 @@
       '.mp-ex-chip strong{font-size:14px}',
       '.mp-ex-chip span{font-size:12.5px;color:var(--theme-text-muted,var(--mut))}',
       '.mp-ex-chip:hover,.mp-ex-chip:focus-visible{border-color:var(--theme-primary,var(--rose));outline:3px solid var(--theme-focus,var(--rose));outline-offset:2px}',
-      '.mp-pg-preview{margin:0 0 8px;line-height:0;overflow-anchor:none}',
-      '.mp-pg-preview .pg-devicewrap,.mp-pg-preview .pg-viewport,.mp-pg-preview .pg-canvas{overflow-anchor:none}',
-      '.mp-pg-preview .pg-iframe,.mp-pg-preview iframe{display:block;min-height:0!important;overflow-anchor:none}',
-      '.mp-pg-editor-compact{margin-top:4px}',
+      '.mp-demo-block.pg-studio{padding:22px 20px 18px}',
+      '.mp-demo-block .pg-ctl-head{margin:0 0 10px}',
+      '.mp-demo-block .pg-ctl-head h4{margin:0 0 4px;font-family:var(--theme-heading-font,var(--disp));font-size:1.25rem;font-weight:800;letter-spacing:-0.02em;color:var(--theme-ink,var(--ink,#0b1b2a))}',
+      '.mp-demo-block .pg-ctl-head .hint{margin:0;font-size:13px;color:var(--theme-text-muted,var(--mut))}',
+      '.mp-demo-block .pg-devicewrap,.mp-demo-block .pg-viewport,.mp-demo-block .pg-canvas{overflow-anchor:none}',
+      '.mp-demo-block .pg-iframe,.mp-demo-block iframe{display:block;min-height:0!important;overflow-anchor:none}',
+      '.mp-pg-actions{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}',
       '#tb-h, .tb-ed-zone-style input[type="range"]{touch-action:none}',
-      '.mp-pg-actions{display:flex;gap:8px;flex-wrap:wrap}',
-      '.mp-pg .pg-topbar,.mp-demo-block .pg-topbar{flex-wrap:wrap;gap:10px;padding:4px 0 10px}',
+      '.mp-demo-block .pg-topbar{flex-wrap:wrap;gap:10px;padding:0 0 10px}',
       '.hcta .btn{display:inline-flex;font-weight:700;padding:12px 22px;border-radius:999px;background:var(--theme-primary,var(--rose));color:#fff;border:2px solid transparent}',
       '.hcta .btn.ghost{background:transparent;border-color:currentColor;color:inherit}',
       '.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}',

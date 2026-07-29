@@ -124,7 +124,8 @@ describe('marketplace compact editor parity', () => {
     assert.match(js, /Offer headline/);
     assert.match(js, /Deadline \/ subline/);
     assert.match(js, /Button text/);
-    assert.match(js, /Section container style/);
+    assert.match(js, /Enable custom style/);
+    assert.match(js, /tb-ed-app-box/);
     assert.match(js, /Offer points/);
     const defs = JSON.parse(fs.readFileSync(path.join(root, 'marketplace/playground-field-defs.json'), 'utf8'));
     assert.ok(defs.specialOffer.some((f) => f.key === 'sections.specialOffer.eyebrow'));
@@ -196,6 +197,17 @@ describe('marketplace compact editor parity', () => {
     const ig = fs.readFileSync(path.join(root, 'marketplace/demos/demo-instaGallery.html'), 'utf8');
     assert.match(ig, /data-pg-device/);
     assert.match(ig, /pgDev === 'phone'/);
+  });
+
+  it('dedicated playground editors stack and ship Enable custom style box', () => {
+    ['trust-bar-editor.js', 'special-offer-editor.js', 'promotions-editor.js'].forEach((file) => {
+      const js = fs.readFileSync(path.join(root, 'assets/js/marketplace', file), 'utf8');
+      assert.match(js, /tb-ed-stack/, file + ' stacks');
+      assert.match(js, /tb-ed-app-box/, file + ' custom style box');
+      assert.match(js, /Enable custom style/, file + ' custom style label');
+    });
+    const so = fs.readFileSync(path.join(root, 'assets/js/marketplace/special-offer-editor.js'), 'utf8');
+    assert.doesNotMatch(so, /so-ed-appearance/);
   });
 
   it('quote compact editor puts copy on the left and style on the right', () => {

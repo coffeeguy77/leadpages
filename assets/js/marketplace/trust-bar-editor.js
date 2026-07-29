@@ -46,6 +46,9 @@
       cfg.sections.trustBar.badges = DEFAULT_FOUR.map(function (b) { return Object.assign({}, b); });
     }
     cfg.sections.trustBar.on = true;
+    if (!cfg.sections.trustBar.appearance || typeof cfg.sections.trustBar.appearance !== 'object') {
+      cfg.sections.trustBar.appearance = {};
+    }
     return cfg.sections.trustBar;
   }
 
@@ -56,6 +59,14 @@
       : '';
   }
 
+  var APPEARANCE_TRANSITIONS = [
+    ['none', 'None (flat edge)'],
+    ['fade', 'Fade blend'],
+    ['wave', 'Wave'],
+    ['angle', 'Diagonal'],
+    ['curve', 'Soft curve']
+  ];
+
   function colorRow(id, label, value, placeholder) {
     var v = value || '';
     var pick = hexOk(v) || '#cccccc';
@@ -64,6 +75,43 @@
       + '<input type="color" id="' + id + '" value="' + esc(pick) + '" aria-label="' + esc(label) + ' colour">'
       + '<input type="text" id="' + id + 't" class="tin tb-ed-hex" maxlength="7" placeholder="' + esc(placeholder || '#…') + '" value="' + esc(v) + '">'
       + '<button type="button" class="btn ghost sm tb-ed-clr" data-tb-clr="' + id + '" title="Default">↺</button>'
+      + '</div></div>';
+  }
+
+  /** Same nested Enable custom style box as Instagram Gallery / compact editor. */
+  function appearanceBoxHtml(A) {
+    A = A || {};
+    var custom = A.custom === true;
+    var sw = A.strokeWidth != null ? A.strokeWidth : 2;
+    return '<div class="tb-ed-app-box' + (custom ? ' on' : '') + '" data-mp-app-box>'
+      + '<div class="tb-ed-app-head">'
+      + '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" id="tb-app-custom"'
+      + (custom ? ' checked' : '') + '> Enable custom style</label></div>'
+      + '<p class="tb-ed-app-hint">Background, text colours, stroke and transitions only apply when custom style is enabled.</p>'
+      + '</div>'
+      + '<div class="tb-ed-app-fields"' + (custom ? '' : ' hidden') + ' id="tb-app-fields">'
+      + colorRow('tb-app-bg', 'Full-width background', A.containerBg || '', 'Theme default')
+      + colorRow('tb-app-stroke', 'Stroke colour', A.strokeColor || '', 'None')
+      + colorRow('tb-app-eyebrow', 'Eyebrow colour', A.eyebrowColor || '', '')
+      + colorRow('tb-app-title', 'Title colour', A.titleColor || '', '')
+      + colorRow('tb-app-intro', 'Intro text colour', A.introColor || '', '')
+      + '<div class="f"><label for="tb-app-sw">Stroke width <span id="tb-app-sw-v">' + esc(sw) + 'px</span></label>'
+      + '<input type="range" id="tb-app-sw" min="0" max="8" step="1" value="' + esc(sw) + '"></div>'
+      + '<div class="f"><label for="tb-app-sides">Stroke sides</label><select id="tb-app-sides" class="tin">'
+      + [['both', 'Top & bottom'], ['top', 'Top only'], ['bottom', 'Bottom only'], ['all', 'All sides']].map(function (o) {
+        return '<option value="' + o[0] + '"' + ((A.strokeSides || 'both') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+      }).join('')
+      + '</select></div>'
+      + '<div class="f"><label for="tb-app-ttop">Transition into section (top)</label><select id="tb-app-ttop" class="tin">'
+      + APPEARANCE_TRANSITIONS.map(function (o) {
+        return '<option value="' + o[0] + '"' + ((A.transitionTop || 'none') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+      }).join('')
+      + '</select></div>'
+      + '<div class="f"><label for="tb-app-tbot">Transition out (bottom)</label><select id="tb-app-tbot" class="tin">'
+      + APPEARANCE_TRANSITIONS.map(function (o) {
+        return '<option value="' + o[0] + '"' + ((A.transitionBottom || 'none') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+      }).join('')
+      + '</select></div>'
       + '</div></div>';
   }
 
@@ -103,6 +151,8 @@
       var tbMode = TB.mode === 'images' ? 'images' : 'badges';
       var h = TB.imageHeight != null ? TB.imageHeight : 280;
       var hideAdmin = mode === 'marketplace-playground';
+      /* Playground dual studio uses a half-width editor — always stack like Instagram Gallery */
+      var stack = hideAdmin;
 
       var html = '';
       if (!hideAdmin) {
@@ -111,8 +161,8 @@
         html += '<div class="tb-ed-banner tb-ed-banner-safe">Have a play. Nothing here will be saved.</div>';
       }
 
-      // Items left, Style right — style sits on a light theme wash to separate the zones.
-      html += '<div class="tb-ed-zones">'
+      // Items then Style — stacked full-width column in playground; side-by-side in demo-builder.
+      html += '<div class="tb-ed-zones' + (stack ? ' tb-ed-zones-single' : '') + '">'
         + '<div class="card tb-ed-card tb-ed-card-items tb-ed-zone-items">'
         + '<div class="tb-ed-items-head">'
         + '<h2 id="tb-list-title">Items</h2>'
@@ -150,10 +200,21 @@
         + '<div class="f tb-ed-check-f"><label class="ck"><input type="checkbox" id="tb-edgeon"' + (TB.edgeOn !== false ? ' checked' : '') + '> Edge stroke</label></div>'
         + colorRow('tb-edge', 'Edge', TB.edgeColour || TB.edge || '#ffffff', '#ffffff')
         + colorRow('tb-img-fg', 'Caption', TB.fg || '#ffffff', '#ffffff')
-        + '</div></div>'
+        + '</div>'
+        + appearanceBoxHtml(TB.appearance)
+        + '</div>'
         + '</div>';
 
       host.innerHTML = html;
+      host.className = host.className
+        .split(/\s+/)
+        .filter(function (c) {
+          return c && c !== 'tb-ed-root' && c !== 'tb-ed-compact' && c !== 'tb-ed-stack' && c !== 'tb-ed-split';
+        })
+        .join(' ');
+      host.classList.add('tb-ed-root', 'tb-ed-compact');
+      if (stack) host.classList.add('tb-ed-stack');
+      else host.classList.add('tb-ed-split');
       wire();
       drawItems();
     }
@@ -309,6 +370,66 @@
       wireColor('tb-stroke', function (v) { tb().strokeColour = v || '#ffffff'; }, '#ffffff');
       wireColor('tb-edge', function (v) { tb().edgeColour = v || '#ffffff'; }, '#ffffff');
       wireColor('tb-img-fg', function (v) { tb().fg = v || '#ffffff'; }, '#ffffff');
+
+      function ensureApp() {
+        var TB = tb();
+        if (!TB.appearance || typeof TB.appearance !== 'object') TB.appearance = {};
+        return TB.appearance;
+      }
+      function syncAppBox() {
+        var custom = !!ensureApp().custom;
+        var box = host.querySelector('[data-mp-app-box]');
+        var fields = host.querySelector('#tb-app-fields');
+        if (box) box.classList.toggle('on', custom);
+        if (fields) {
+          if (custom) fields.removeAttribute('hidden');
+          else fields.setAttribute('hidden', '');
+        }
+      }
+      wireColor('tb-app-bg', function (v) { ensureApp().containerBg = v; }, '');
+      wireColor('tb-app-stroke', function (v) { ensureApp().strokeColor = v; }, '');
+      wireColor('tb-app-eyebrow', function (v) { ensureApp().eyebrowColor = v; }, '');
+      wireColor('tb-app-title', function (v) { ensureApp().titleColor = v; }, '');
+      wireColor('tb-app-intro', function (v) { ensureApp().introColor = v; }, '');
+
+      var appCustom = host.querySelector('#tb-app-custom');
+      if (appCustom) {
+        appCustom.addEventListener('change', function () {
+          ensureApp().custom = !!appCustom.checked;
+          syncAppBox();
+          emit('Preview updated');
+        });
+      }
+      var appSw = host.querySelector('#tb-app-sw');
+      if (appSw) {
+        appSw.addEventListener('input', function () {
+          ensureApp().strokeWidth = +appSw.value;
+          var lab = host.querySelector('#tb-app-sw-v');
+          if (lab) lab.textContent = appSw.value + 'px';
+          emit('Preview updated');
+        });
+      }
+      var appSides = host.querySelector('#tb-app-sides');
+      if (appSides) {
+        appSides.addEventListener('change', function () {
+          ensureApp().strokeSides = appSides.value;
+          emit('Preview updated');
+        });
+      }
+      var appTtop = host.querySelector('#tb-app-ttop');
+      if (appTtop) {
+        appTtop.addEventListener('change', function () {
+          ensureApp().transitionTop = appTtop.value;
+          emit('Preview updated');
+        });
+      }
+      var appTbot = host.querySelector('#tb-app-tbot');
+      if (appTbot) {
+        appTbot.addEventListener('change', function () {
+          ensureApp().transitionBottom = appTbot.value;
+          emit('Preview updated');
+        });
+      }
 
       var lo = host.querySelector('#tb-lineon');
       if (lo) lo.addEventListener('change', function () { tb().lineOn = lo.checked; emit('Preview updated'); });
