@@ -76,7 +76,7 @@ test('desktop support banner keeps heading, help, phone and email on single line
   assert.match(footCss, /\.mkt-site-footer\s+\.f-support\s+\.email[\s\S]*white-space:\s*nowrap/);
 });
 
-test('Australian support sits inline with footer menus in a wide premium column', () => {
+test('Australian support sits inline with menus; text and map stay tight', () => {
   const html = loadFooterApi().html;
   assert.match(html, /footer-top/);
   assert.match(html, /class="f-nav"/);
@@ -89,16 +89,18 @@ test('Australian support sits inline with footer menus in a wide premium column'
   assert.ok(top.indexOf('f-nav') < top.indexOf('f-support'), 'support after menus in the same row');
   assert.match(
     footCss,
-    /\.mkt-site-footer\s+\.footer-top\s*\{[\s\S]*grid-template-columns:\s*minmax\(150px,\s*200px\)\s+minmax\(0,\s*1\.05fr\)\s+minmax\(320px,\s*2\.1fr\)/
+    /\.mkt-site-footer\s+\.footer-top\s*\{[\s\S]*grid-template-columns:\s*minmax\(140px,\s*190px\)\s+minmax\(0,\s*1fr\)\s+max-content/
   );
-  assert.match(footCss, /\.mkt-site-footer\s+\.f-nav\s*\{[\s\S]*grid-template-columns:\s*repeat\(4,\s*minmax\(96px,\s*max-content\)\)/);
-  assert.match(footCss, /\.mkt-site-footer\s+\.f-support\s*\{[\s\S]*border-radius:\s*18px/);
-  assert.doesNotMatch(footCss, /\.mkt-site-footer\s+\.f-support\s*\{[^}]*margin-top:\s*28px/);
+  assert.match(footCss, /\.mkt-site-footer\s+\.f-support\s*\{[\s\S]*grid-template-columns:\s*auto\s+auto/);
+  assert.match(footCss, /\.mkt-site-footer\s+\.f-support\s*\{[\s\S]*width:\s*max-content/);
+  assert.match(footCss, /\.mkt-site-footer\s+\.f-support\s*\{[\s\S]*gap:\s*12px\s+16px/);
+  assert.doesNotMatch(footCss, /\.mkt-site-footer\s+\.f-support\s*\{[^}]*minmax\(0,\s*1fr\)\s+auto/);
+  assert.doesNotMatch(footCss, /minmax\(320px,\s*2\.1fr\)/);
 });
 
 test('support icons and map remain in the banner', () => {
   assert.match(footCss, /\.mkt-site-footer\s+\.f-support-map\s*\{/);
-  assert.match(footCss, /\.mkt-site-footer\s+\.f-support\s+\.f-ico-au[\s\S]*max-width:\s*120px/);
+  assert.match(footCss, /\.mkt-site-footer\s+\.f-support\s+\.f-ico-au[\s\S]*max-width:\s*84px/);
 });
 
 test('mobile footer stacks menus two-up and keeps support readable', () => {

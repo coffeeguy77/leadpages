@@ -22,13 +22,13 @@ footer.mkt-site-footer {
   margin-inline: auto;
 }
 
-/* Brand + compact menus + support banner on one desktop row */
+/* Brand + menus + support on one row — support hugs content (no stretch gap) */
 .mkt-site-footer .footer-top {
   display: grid;
-  grid-template-columns: minmax(150px, 200px) minmax(0, 1.05fr) minmax(320px, 2.1fr);
-  column-gap: clamp(22px, 3vw, 40px);
+  grid-template-columns: minmax(140px, 190px) minmax(0, 1fr) max-content;
+  column-gap: clamp(20px, 2.6vw, 36px);
   row-gap: 24px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .mkt-site-footer .f-brand {
@@ -87,22 +87,24 @@ footer.mkt-site-footer {
   color: #fff;
 }
 
-/* Premium support banner — same row as menus, ~2× a menu column */
+/* Premium support card — text + map tight together */
 .mkt-site-footer .f-support {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px 18px;
+  grid-template-columns: auto auto;
+  gap: 12px 16px;
   align-items: center;
-  width: 100%;
+  justify-content: start;
+  width: max-content;
+  max-width: 100%;
   min-width: 0;
   margin: 0;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 18px;
-  padding: 18px 20px;
+  border-radius: 16px;
+  padding: 16px 18px;
   background:
     linear-gradient(120deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.03) 48%, rgba(255, 255, 255, 0.05) 100%);
   box-sizing: border-box;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
 }
 
 .mkt-site-footer .f-support-copy {
@@ -188,7 +190,7 @@ footer.mkt-site-footer {
 .mkt-site-footer .f-support-map {
   display: grid;
   place-items: center;
-  width: clamp(88px, 28%, 128px);
+  width: 84px;
   pointer-events: none;
   flex-shrink: 0;
 }
@@ -196,7 +198,7 @@ footer.mkt-site-footer {
 .mkt-site-footer .f-support .f-ico-au {
   width: 100%;
   height: auto;
-  max-width: 120px;
+  max-width: 84px;
   aspect-ratio: 675 / 628;
   color: rgba(232, 238, 242, 0.92);
   overflow: visible;
@@ -294,13 +296,13 @@ footer.mkt-site-footer {
 
 @media (max-width: 1100px) {
   .mkt-site-footer .footer-top {
-    grid-template-columns: minmax(140px, 180px) minmax(0, 1fr) minmax(280px, 1.8fr);
-    column-gap: 20px;
+    grid-template-columns: minmax(130px, 170px) minmax(0, 1fr) max-content;
+    column-gap: 18px;
   }
 
   .mkt-site-footer .f-nav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, max-content));
+    width: auto;
     column-gap: 16px;
   }
 }
@@ -320,7 +322,9 @@ footer.mkt-site-footer {
 
   .mkt-site-footer .f-support {
     grid-column: 1 / -1;
-    padding: 18px 18px;
+    width: max-content;
+    max-width: 100%;
+    padding: 16px 16px;
   }
 }
 
@@ -341,8 +345,10 @@ footer.mkt-site-footer {
 
   .mkt-site-footer .f-support {
     grid-column: 1 / -1;
-    grid-template-columns: minmax(0, 1fr) auto;
-    padding: 18px 16px 18px;
+    grid-template-columns: auto auto;
+    width: max-content;
+    max-width: 100%;
+    padding: 16px 14px;
   }
 
   .mkt-site-footer .f-support h4,
@@ -353,11 +359,11 @@ footer.mkt-site-footer {
   }
 
   .mkt-site-footer .f-support-map {
-    width: clamp(96px, 28vw, 128px);
+    width: 72px;
   }
 
   .mkt-site-footer .f-support .f-ico-au {
-    max-width: 120px;
+    max-width: 72px;
   }
 }
 
