@@ -37,9 +37,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/lp-themes.css?v=support-contact-theme-1">
+<link rel="stylesheet" href="/assets/lp-themes.css?v=leads-mobile-inbox-1">
 <link rel="stylesheet" href="/assets/lp-messages-embed.css">
-<link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=seo-ads-wrap-ai-1">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css?v=leads-mobile-inbox-1">
 <link rel="stylesheet" href="/assets/lp-quote-builder.css?v=oq-portal-style-1">
 <style>
 :root{
@@ -14340,10 +14340,12 @@ function heroCtaCard(c){
       var isOpen=!detail.hasAttribute('hidden');
       if(isOpen){
         detail.setAttribute('hidden','');
-        btn.textContent='View message';
+        btn.innerHTML=_dashLeadViewBtnHtml(false);
+        btn.setAttribute('aria-expanded','false');
       } else {
         detail.removeAttribute('hidden');
-        btn.textContent='Hide message';
+        btn.innerHTML=_dashLeadViewBtnHtml(true);
+        btn.setAttribute('aria-expanded','true');
         _dashLeadsMarkSeen();
       }
     });
@@ -14665,6 +14667,11 @@ function heroCtaCard(c){
       +list('Blocked countries','country',inbox.blockedCountries,'Type a country — e.g. Australia')
       +'</div></div>';
   }
+  function _dashLeadViewBtnHtml(open){
+    return open
+      ? '<span class="dash-lead-view-full">Hide message</span><span class="dash-lead-view-short">Hide</span>'
+      : '<span class="dash-lead-view-full">View message</span><span class="dash-lead-view-short">View</span>';
+  }
   function _dashLeadRowHtml(l){
     var name=esc(l.name||l.fname||'Anonymous');
     var isQuote=_dashLeadIsQuote(l);
@@ -14678,16 +14685,19 @@ function heroCtaCard(c){
     var src=_dashLeadSourceLabel(l);
     return '<div class="lp-dash-row dash-lead-row'+(isSpam?' is-spam':'')+'" id="dash-lead-'+esc(l.id)+'">'
       +'<div class="lp-lead-card-inner">'
-      +'<div class="lp-lead-card-meta">'
+      +'<div class="lp-lead-card-main">'
+      +'<div class="lp-lead-card-identity">'
       +'<span class="dash-lead-name">'+name+'</span>'
+      +'<div class="lp-lead-card-tags">'
       +'<span class="dash-lead-src'+(isQuote?' is-quote':'')+'">'+esc(src)+'</span>'
       +(isNew?'<span class="lp-badge-new">NEW</span>':'')
       +(isSpam?'<span class="lp-badge-new dash-lead-spam-badge">SPAM</span>':'')
+      +'</div></div>'
+      +'<button type="button" data-dash-lead="'+esc(l.id)+'" class="ll-view lp-btn-stroke dash-lead-view" aria-expanded="false">'+_dashLeadViewBtnHtml(false)+'</button>'
       +'</div>'
       +'<div class="lp-lead-card-actions">'
       +(phone?'<a class="dash-lead-phone" href="tel:'+phone+'">'+phone+'</a>':'')
       +'<span class="dash-lead-when">'+date+'</span>'
-      +'<button type="button" data-dash-lead="'+esc(l.id)+'" class="ll-view lp-btn-stroke dash-lead-view">View message</button>'
       +'</div></div>'
       +'<div id="dash-lead-detail-'+esc(l.id)+'" class="dash-lead-detail" hidden>'
       +(detail?'<div class="lp-lead-detail-text">'+detail+'</div>':'<p class="dash-leads-empty">No additional message.</p>')

@@ -61,6 +61,9 @@ assert.ok(themes.includes('.dash-leads-head'), 'leads header layout');
 assert.ok(themes.includes('.dash-leads-cog'), 'cog styles');
 assert.ok(themes.includes('.dash-leads-menu'), 'menu styles');
 assert.ok(themes.includes('.lp-lead-card-inner'), 'desktop card flex');
+assert.ok(themes.includes('.lp-lead-card-main'), 'lead main row');
+assert.ok(themes.includes('.lp-lead-card-identity'), 'lead identity block');
+assert.ok(themes.includes('.dash-lead-view-short'), 'short View label for mobile');
 assert.ok(themes.includes('.dash-leads-list.is-scroll'), 'scroll after many items');
 assert.ok(themes.includes('.dash-lead-view'), 'view message spacing');
 assert.ok(themes.includes('gap: 6px 10px') || themes.includes('.lp-lead-card-actions'), 'action gap');
@@ -70,10 +73,17 @@ assert.ok(themes.includes('.lp-quote-kv-row'), 'quote kv row styles');
 const responsive = fs.readFileSync(path.join(root, 'assets/lp-admin-responsive.css'), 'utf8');
 assert.ok(responsive.includes('.dash-leads-menu.is-open'), 'mobile menu open state');
 assert.ok(responsive.includes('.dash-leads-cog'), 'mobile shows cog');
-assert.ok(responsive.includes('padding: 8px 10px') || responsive.includes('.lp-lead-card-inner'), 'mobile compact card padding');
-assert.ok(responsive.includes('flex: 0 0 auto') && responsive.includes('.lp-lead-card-meta'), 'mobile resets desktop flex-basis on meta');
+assert.ok(responsive.includes('grid-template-columns: minmax(0, 1fr) auto'), 'mobile name/View grid');
+assert.ok(responsive.includes('.lp-lead-card-identity'), 'mobile identity stack');
 assert.ok(responsive.includes('flex-direction: column') && responsive.includes('.lp-lead-card-inner'), 'mobile stacks lead cards');
+assert.ok(responsive.includes('.dash-lead-view-short'), 'mobile short View label');
+assert.ok(responsive.includes('min-height: 36px'), 'mobile View touch target');
 assert.ok(responsive.includes('.lp-quote-kv-row'), 'mobile quote kv tweaks');
+
+assert.ok(manage.includes('lp-lead-card-main'), 'row uses main/identity layout');
+assert.ok(manage.includes('_dashLeadViewBtnHtml'), 'view button label helper');
+assert.ok(manage.includes('dash-lead-view-short'), 'short label markup');
+assert.ok(manage.includes('leads-mobile-inbox-1'), 'cache-bust for leads mobile CSS');
 
 // Ingest respects blocklist
 assert.ok(leadsApi.includes('isLeadBlocked'), 'website leads check blocklist');

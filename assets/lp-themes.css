@@ -830,30 +830,46 @@ html[data-lp-site-theme="electric-blue"] #site-label .lp-sitepick-sel{
 }
 .lp-lead-card-inner {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 12px;
+  flex-direction: column;
+  gap: 6px;
   padding: 10px 12px;
 }
-.lp-lead-card-meta {
+.lp-lead-card-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+.lp-lead-card-identity {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 5px 8px;
   min-width: 0;
-  flex: 1 1 220px;
+  flex: 1 1 auto;
+}
+.lp-lead-card-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+.lp-lead-card-meta {
+  display: none;
 }
 .lp-lead-card-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 10px;
-  margin-left: auto;
+  min-width: 0;
 }
 .dash-lead-name {
   font-weight: 700;
   font-size: 13.5px;
   color: var(--ink);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .dash-lead-src {
   font-size: 9.5px;
@@ -865,6 +881,7 @@ html[data-lp-site-theme="electric-blue"] #site-label .lp-sitepick-sel{
   border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
   color: var(--accent-hover);
   background: color-mix(in srgb, var(--accent) 10%, transparent);
+  white-space: nowrap;
 }
 .dash-lead-src.is-quote {
   background: color-mix(in srgb, var(--accent) 18%, transparent);
@@ -883,8 +900,13 @@ html[data-lp-site-theme="electric-blue"] #site-label .lp-sitepick-sel{
 .dash-lead-view {
   margin-left: 0 !important;
   flex: 0 0 auto;
-  padding: 4px 9px !important;
+  padding: 6px 11px !important;
   font-size: 11.5px !important;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+.dash-lead-view-short {
+  display: none;
 }
 .dash-lead-detail[hidden] {
   display: none !important;
