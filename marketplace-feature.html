@@ -262,7 +262,9 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
 <link rel="stylesheet" href="/assets/js/marketplace/lp-local-image.css">
 <link rel="stylesheet" href="/assets/lp-logo.css">
 <link rel="stylesheet" href="/assets/marketing-marketplace-feature.css">
+<link rel="stylesheet" href="/assets/marketing-colour-lab.css">
 <script src="/assets/lp-logo.js" defer></script>
+<script src="/assets/marketing-home-colour.js" defer></script>
 <script src="/lib/marketplace-v2-flags.js"></script>
 <script src="/lib/marketplace-access.js"></script>
 <script src="/lib/playground-preset.js"></script>
@@ -722,10 +724,6 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
           +'<div class="pg-canvas" data-r="canvas"></div>'
           +'</div></div>'
           +'</div>'
-          +'</div>'
-          +'<div class="pg-status-bar" aria-hidden="true">'
-          +'<span class="pg-status-msg">Matches your website theme</span>'
-          +'<span class="pg-status-publish">Publish when ready</span>'
           +'</div>'
           +'</div></div>'
           +'</div>';
@@ -1215,10 +1213,26 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       wrap.setAttribute('data-pg-device', device);
       wrap.classList.remove('framed');
       wrap.classList.add('pg-device-fill');
-      fr.style.width = '100%';
+      /* Phone = narrow handset frame; tablet/desktop fill the preview column */
+      if (device === 'phone') {
+        wrap.classList.add('pg-device-phone');
+        fr.style.width = '100%';
+        fr.style.maxWidth = '390px';
+        fr.style.marginLeft = 'auto';
+        fr.style.marginRight = 'auto';
+      } else {
+        wrap.classList.remove('pg-device-phone');
+        fr.style.width = '100%';
+        fr.style.maxWidth = '';
+        fr.style.marginLeft = '';
+        fr.style.marginRight = '';
+      }
       fr.style.transform = 'none';
       fr.style.marginBottom = '';
       wrap.style.height = '';
+      applyPreviewDeviceHints(fr);
+      /* Re-paint so demos (Instagram cols, etc.) re-read data-pg-device */
+      applyConfigToFrame(fr);
       fitPreviewFrame();
       applyPreviewDeviceHints(fr);
       if (viewportMode !== 'phone') fitDualFrame();
@@ -1957,6 +1971,10 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
       dev = next;
       syncDevButtons();
       applyDevice();
+      setTimeout(function () {
+        applyDevice();
+        fitPreviewFrame();
+      }, 40);
     });
 
     fitStage();
@@ -2006,5 +2024,41 @@ window.LP_ICON_CATS=[["Trust & CTA",["phone","phone-call","circle-check","circle
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){lb.classList.remove('show');lbi.src='';}});
 })();
 </script>
+
+<aside class="mkt-colour-lab" data-mkt-colour-lab aria-label="Colour scheme playground">
+  <button type="button" class="mkt-colour-lab__fab" data-mkt-colour-lab-fab aria-expanded="false" aria-controls="mkt-colour-lab-panel">
+    <span class="mkt-colour-lab__fab-orb" aria-hidden="true">
+      <span class="mkt-colour-lab__fab-dot" style="background:#e36b21"></span>
+      <span class="mkt-colour-lab__fab-dot" style="background:#001529"></span>
+      <span class="mkt-colour-lab__fab-dot" style="background:#f9f7f2"></span>
+    </span>
+    <span class="mkt-colour-lab__fab-label">Try colours</span>
+  </button>
+  <div class="mkt-colour-lab__scrim" data-mkt-colour-lab-scrim hidden></div>
+  <div class="mkt-colour-lab__panel" id="mkt-colour-lab-panel" data-mkt-colour-lab-panel hidden role="dialog" aria-modal="false" aria-labelledby="mkt-colour-lab-title">
+    <div class="mkt-colour-lab__panel-inner">
+      <header class="mkt-colour-lab__head">
+        <p class="mkt-colour-lab__eyebrow">Live colour studio</p>
+        <h2 id="mkt-colour-lab-title" class="mkt-colour-lab__title">Pick a colour scheme</h2>
+        <p class="mkt-colour-lab__lede">Same themes as the homepage — navy, cream and accent colours update this page instantly.</p>
+        <button type="button" class="mkt-colour-lab__close" data-mkt-colour-lab-close aria-label="Close colour studio">&times;</button>
+      </header>
+      <div class="mkt-colour-lab__grid" role="radiogroup" aria-label="Colour presets">
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="culture" role="radio" aria-checked="false" aria-label="Culture Lime"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#FDFCF0"></span><span style="background:#C5E13F"></span><span style="background:#0B2114"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Culture Lime</span><span class="mkt-colour-lab__swatch-blurb">The signature forest and lime look.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="basalt" role="radio" aria-checked="false" aria-label="Basalt"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#F7F4EF"></span><span style="background:#D97706"></span><span style="background:#141414"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Basalt</span><span class="mkt-colour-lab__swatch-blurb">Charcoal ground with a copper spark.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="rivet" role="radio" aria-checked="false" aria-label="Rivet"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#F4F7FB"></span><span style="background:#F97316"></span><span style="background:#0B1C33"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Rivet</span><span class="mkt-colour-lab__swatch-blurb">Deep navy with a sharp signal accent.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="tarmac" role="radio" aria-checked="false" aria-label="Tarmac"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#F3F6F7"></span><span style="background:#14B8A6"></span><span style="background:#0A0F14"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Tarmac</span><span class="mkt-colour-lab__swatch-blurb">Near-black with an electric teal edge.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="petal" role="radio" aria-checked="false" aria-label="Petal"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#FFF8F7"></span><span style="background:#E8A0A8"></span><span style="background:#3D2A32"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Petal</span><span class="mkt-colour-lab__swatch-blurb">Soft rose warmth on cream.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="willow" role="radio" aria-checked="false" aria-label="Willow"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#F7F9F3"></span><span style="background:#8FAE6B"></span><span style="background:#243028"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Willow</span><span class="mkt-colour-lab__swatch-blurb">Calm sage and soft daylight green.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="orchid" role="radio" aria-checked="false" aria-label="Orchid"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#FBF7FC"></span><span style="background:#B28BB8"></span><span style="background:#2C2130"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Orchid</span><span class="mkt-colour-lab__swatch-blurb">Quiet mauve with a polished finish.</span></span></button>
+        <button type="button" class="mkt-colour-lab__swatch" data-mkt-colour-preset="dune" role="radio" aria-checked="false" aria-label="Dune"><span class="mkt-colour-lab__swatch-chips" aria-hidden="true"><span style="background:#FBF6EF"></span><span style="background:#C47A4A"></span><span style="background:#2B2118"></span></span><span class="mkt-colour-lab__swatch-meta"><span class="mkt-colour-lab__swatch-name">Dune</span><span class="mkt-colour-lab__swatch-blurb">Warm sand and terracotta.</span></span></button>
+      </div>
+      <footer class="mkt-colour-lab__foot">
+        <button type="button" class="mkt-colour-lab__reset" data-mkt-colour-lab-reset>LeadPages default</button>
+        <a class="mkt-colour-lab__cta" href="/find-a-partner" data-mkt-track="colour_lab_cta">Build my website</a>
+      </footer>
+    </div>
+  </div>
+</aside>
 </body>
 </html>

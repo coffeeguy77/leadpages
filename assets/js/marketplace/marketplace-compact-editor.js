@@ -540,7 +540,7 @@
         html += '<div class="tb-ed-app-box' + (customOn ? ' on' : '') + '" data-mp-app-box>'
           + '<div class="tb-ed-app-head">'
           + (toggleField ? renderField(toggleField, readVal(customToggle), 'data-pgk') : '')
-          + '<p class="tb-ed-app-hint">Background, stroke and transitions only apply when custom style is enabled.</p>'
+          + '<p class="tb-ed-app-hint">Background, text colours, stroke and transitions only apply when custom style is enabled.</p>'
           + '</div>'
           + '<div class="tb-ed-app-fields"' + (customOn ? '' : ' hidden') + '>'
           + appearance.map(function (f) {
@@ -758,8 +758,12 @@
     if (defs.some(function (d) { return String(d.key || '').indexOf(prefix) === 0; })) return defs;
     return defs.concat([
       { type: 'checkbox', key: prefix + 'custom', label: 'Enable custom style' },
+      /* Dual columns: bg|stroke, eyebrow|title, intro|width, sides|transitions… */
       { type: 'color', key: prefix + 'containerBg', label: 'Full-width background' },
       { type: 'color', key: prefix + 'strokeColor', label: 'Stroke colour' },
+      { type: 'color', key: prefix + 'eyebrowColor', label: 'Eyebrow colour' },
+      { type: 'color', key: prefix + 'titleColor', label: 'Title colour' },
+      { type: 'color', key: prefix + 'introColor', label: 'Intro text colour' },
       { type: 'number', key: prefix + 'strokeWidth', label: 'Stroke width (0–8)' },
       {
         type: 'select',

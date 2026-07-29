@@ -1,18 +1,43 @@
 /* LeadPages — marketing chrome for individual marketplace app pages (marketplace-feature.html) */
 
 :root {
-  --mf-ink: #001529;
-  --mf-cream: #f9f7f2;
-  --mf-oat: #efe9df;
-  --mf-surface: #fffdf9;
-  --mf-orange: #e36b21;
-  --mf-orange-hover: #c45a1a;
-  --mf-green: #879b89;
-  --mf-green-deep: #5b7065;
-  --mf-gold: #c9a227;
-  --mf-muted: #5c6778;
-  --mf-on-dark: #f9f7f2;
-  --mf-border: #e0d8cc;
+  /* Homepage colour-lab tokens — marketing-home-colour.js writes these */
+  --navy: #001529;
+  --navy-deep: #000d1a;
+  --ink: #001529;
+  --ink-soft: #1a2f45;
+  --cream: #f9f7f2;
+  --cream-warm: #efe9df;
+  --cream-price: #f4f0e8;
+  --surface: #fffdf9;
+  --orange: #e36b21;
+  --orange-hover: #c45a1a;
+  --partner: #b45316;
+  --green: #879b89;
+  --green-check: #879b89;
+  --green-deep: #5b7065;
+  --gold: #c9a227;
+  --star: #c9a227;
+  --muted: #5c6778;
+  --muted-on-dark: #c5cdd6;
+  --on-dark: #f9f7f2;
+  --border: #e0d8cc;
+  --shadow: 0 18px 48px rgba(0, 21, 41, 0.1);
+  --shadow-soft: 0 10px 28px rgba(0, 21, 41, 0.07);
+
+  /* Feature page tokens track the shared colour lab */
+  --mf-ink: var(--navy);
+  --mf-cream: var(--cream);
+  --mf-oat: var(--cream-warm);
+  --mf-surface: var(--surface);
+  --mf-orange: var(--orange);
+  --mf-orange-hover: var(--orange-hover);
+  --mf-green: var(--green);
+  --mf-green-deep: var(--green-deep);
+  --mf-gold: var(--gold);
+  --mf-muted: var(--muted);
+  --mf-on-dark: var(--on-dark);
+  --mf-border: var(--border);
   --mf-disp: 'Young Serif', Georgia, serif;
   --mf-body: 'Figtree', system-ui, sans-serif;
   --mf-max: 1120px;
@@ -20,8 +45,8 @@
   --mf-header-h: 100px;
   --mf-radius: 16px;
   --mf-radius-sm: 12px;
-  --mf-shadow: 0 18px 48px rgba(0, 21, 41, 0.1);
-  --mf-shadow-soft: 0 10px 28px rgba(0, 21, 41, 0.07);
+  --mf-shadow: var(--shadow);
+  --mf-shadow-soft: var(--shadow-soft);
   --mf-blue: #3d6b8a;
   --mf-blue-soft: #d8e8f4;
 }
@@ -1064,6 +1089,33 @@ body.mf-app .pg-devicewrap.pg-device-fill .pg-iframe {
   margin-bottom: 0 !important;
 }
 
+/* Phone preview — narrow handset column so Tablet ↔ Phone is obvious */
+body.mf-app .pg-devicewrap.pg-device-phone {
+  display: flex;
+  justify-content: center;
+  background: var(--mf-oat);
+  padding: 18px 12px;
+}
+
+body.mf-app .pg-devicewrap.pg-device-phone .pg-viewport {
+  width: 100%;
+  max-width: 390px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 22px;
+  border: 1.5px solid color-mix(in srgb, var(--mf-ink) 16%, transparent);
+  box-shadow: 0 16px 40px rgba(0, 21, 41, 0.14);
+  overflow: hidden;
+  line-height: 0;
+}
+
+body.mf-app .pg-devicewrap.pg-device-phone .pg-iframe {
+  width: 100% !important;
+  max-width: 390px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
 body.mf-app .pg-viewport {
   width: 100%;
   transform-origin: top center;
@@ -1382,7 +1434,7 @@ body.mf-app .mf-xsell-row {
   background:
     radial-gradient(ellipse 55% 45% at 85% 15%, rgba(227, 107, 33, 0.14), transparent 55%),
     radial-gradient(ellipse 40% 35% at 8% 90%, rgba(135, 155, 137, 0.12), transparent 50%),
-    linear-gradient(160deg, #001529 0%, #0a2540 55%, #123a5c 100%);
+    linear-gradient(160deg, var(--mf-ink) 0%, color-mix(in srgb, var(--mf-ink) 82%, #fff) 55%, color-mix(in srgb, var(--mf-ink) 70%, #3d6b8a) 100%);
   color: var(--mf-on-dark);
 }
 
@@ -1558,7 +1610,7 @@ body.mf-app .mf-new-lp .btn.ghost-ink:hover {
 }
 
 body.mf-app .ctab {
-  background: linear-gradient(135deg, var(--mf-ink) 0%, #0a2540 55%, #123a5c 100%);
+  background: linear-gradient(135deg, var(--mf-ink) 0%, color-mix(in srgb, var(--mf-ink) 82%, #fff) 55%, color-mix(in srgb, var(--mf-ink) 70%, #3d6b8a) 100%);
   color: var(--mf-on-dark);
   border-radius: 20px;
   padding: 48px 40px;
