@@ -93,6 +93,30 @@ describe('marketplace compact editor parity', () => {
     assert.match(js, /data-lp-edge-pad0/);
   });
 
+  it('diagonal and soft-curve transitions paint the adjacent colour (not the section fill)', () => {
+    const js = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
+    const angleIdx = js.indexOf("type==='angle'");
+    const curveIdx = js.indexOf("type==='curve'");
+    assert.ok(angleIdx > 0, 'angle branch');
+    assert.ok(curveIdx > angleIdx, 'curve branch after angle');
+    const angleBlock = js.slice(angleIdx, curveIdx);
+    const curveBlock = js.slice(curveIdx, curveIdx + 700);
+    /* SVG wedges use fromCol (fc) on top / toCol (tc) on bottom */
+    assert.ok(angleBlock.includes("fill=\"'+fc+'\""), 'angle top uses adjacent from colour');
+    assert.ok(angleBlock.includes("fill=\"'+tc+'\""), 'angle bottom uses adjacent to colour');
+    assert.ok(curveBlock.includes("fill=\"'+fc+'\""), 'curve top uses adjacent from colour');
+    assert.ok(curveBlock.includes("fill=\"'+tc+'\""), 'curve bottom uses adjacent to colour');
+    /* CSS fallbacks must not paint --lp-edge-to on top (same as section = invisible) */
+    assert.match(js, /lp-sec-edge-angle\.lp-sec-edge-top\{background:var\(--lp-edge-from\)/);
+    assert.match(js, /lp-sec-edge-angle\.lp-sec-edge-bottom\{background:var\(--lp-edge-to\)/);
+    assert.match(js, /lp-sec-edge-curve\.lp-sec-edge-top\{background:var\(--lp-edge-from\)/);
+    assert.match(js, /lp-sec-edge-curve\.lp-sec-edge-bottom\{background:var\(--lp-edge-to\)/);
+    assert.doesNotMatch(
+      js,
+      /lp-sec-edge-angle\.lp-sec-edge-top\{background:var\(--lp-edge-to\)/
+    );
+  });
+
   it('specialOffer editor mirrors manage copy + appearance controls', () => {
     const js = fs.readFileSync(path.join(root, 'assets/js/marketplace/special-offer-editor.js'), 'utf8');
     assert.match(js, /LPSpecialOfferEditor/);
