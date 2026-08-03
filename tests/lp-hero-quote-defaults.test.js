@@ -44,10 +44,31 @@ describe('Landing page hero + quote defaults', () => {
     assert.equal(/Get a free quote/.test(block), false);
   });
 
-  it('activates landing_draft prompt v5 with hero + quote instructions', () => {
-    assert.match(defaults, /version:\s*5/);
-    assert.match(defaults, /heroSlides/);
-    assert.match(defaults, /jobOptions/);
-    assert.match(defaults, /status:\s*'active'/);
+  it('activates landing_draft prompt v6 with a single hero slide', () => {
+    assert.match(defaults, /version:\s*6/);
+    assert.match(defaults, /EXACTLY ONE object/i);
+    const { DEFAULT_PROMPTS } = require('../lib/brain/prompts/defaults');
+    const landing = DEFAULT_PROMPTS.filter(function (d) {
+      return d && d.promptId === 'content.landing_draft';
+    });
+    const active = landing.filter(function (d) {
+      return d.status === 'active';
+    });
+    assert.ok(active.length >= 1);
+    const latest = active[active.length - 1];
+    assert.equal(latest.version, 6);
+    assert.match(latest.system, /EXACTLY ONE|exactly 1/i);
+    const v5 = landing.find(function (d) {
+      return d.version === 5;
+    });
+    assert.ok(v5);
+    assert.equal(v5.status, 'deprecated');
+  });
+
+  it('applies at most one AI hero slide and defaults wrap-right image placement', () => {
+    assert.match(manage, /lpApplyDraftHeroAndQuote[\s\S]{0,2000}\.slice\(0,1\)/);
+    assert.match(manage, /imgMode:'wrap-right'/);
+    assert.match(manage, /imgMode\|\|'wrap-right'/);
+    assert.match(demoShared, /imgMode\|\|'wrap-right'/);
   });
 });

@@ -1010,7 +1010,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       <div class="apgroup-h">Page image</div>
       <div class="f"><label>Image <span class="seo-tip">A photo or graphic for this page. Upload a file or paste a URL.</span></label><input type="text" id="lp-img" class="tin" placeholder="https://… or upload"><div class="lg-upload"><label class="btn ghost sm" for="lp-img-file">Upload image</label><input type="file" id="lp-img-file" accept="image/*" hidden><button class="btn ghost sm" type="button" id="lp-img-clear">Remove</button></div><div id="lp-img-prev" class="lp-img-prev"></div></div>
       <div class="lp-row">
-        <div class="f"><label>Placement</label><select id="lp-img-mode" class="apsel"><option value="center">Centered — above text</option><option value="left">Left — above text</option><option value="right">Right — above text</option><option value="wrap-left">Wrap — image left, text flows right</option><option value="wrap-right">Wrap — image right, text flows left</option></select></div>
+        <div class="f"><label>Placement</label><select id="lp-img-mode" class="apsel"><option value="wrap-right" selected>Wrap — image right, text flows left</option><option value="wrap-left">Wrap — image left, text flows right</option><option value="center">Centered — above text</option><option value="left">Left — above text</option><option value="right">Right — above text</option></select></div>
         <div class="f"><label>Padding around image (px)</label><input type="number" id="lp-img-pad" class="tin" min="0" max="96" step="2" placeholder="16"></div>
       </div>
 
@@ -2356,12 +2356,14 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         if(row.highlightText!=null) prev.highlightText=String(row.highlightText||'').trim();
         if(row.subText!=null) prev.subText=String(row.subText||'').trim();
         return prev;
-      }).filter(function(s){ return s&&(s.heading||s.subText||s.eyebrow); }).slice(0,4);
+      }).filter(function(s){ return s&&(s.heading||s.subText||s.eyebrow); }).slice(0,1);
       if(slides.length){
         lpCur.pageSections.heroSlider=Object.assign({}, hs, {on:true, slides:slides});
         out.slides=slides.length;
       }
     }
+    // Default article image placement: wrap — image right (text flows left)
+    if(!lpCur.imgMode) lpCur.imgMode='wrap-right';
     var q=lpCur.pageSections.quote||{};
     var qPatch={on:true};
     if(draft.quoteHeading&&String(draft.quoteHeading).trim()) qPatch.heading=String(draft.quoteHeading).trim();
@@ -2549,7 +2551,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if($('lp-ai-mode')){ $('lp-ai-mode').addEventListener('change',function(){ lpAiSetMode(this.value); }); lpAiSetMode($('lp-ai-mode').value||'seo'); }
     try{ lpConsumeSiHandoff({ autoGenerate: false }); }catch(_siH){}
     if(lpWired) return; lpWired=true;
-    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); try{ lpEnsureDefaultLandingApps(p); }catch(e){} persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
+    $('lp-new').addEventListener('click',function(){ const p={id:uid(),title:'',slug:'',meta:'',h1:'',body:'',menu:'top',status:'draft',imgMode:'wrap-right',pageApps:[],pageSections:{},pageLayoutOrder:[]}; data.pages.push(p); try{ lpEnsureDefaultLandingApps(p); }catch(e){} persist(); lpSaveDB(); renderSeoPages(); lpOpen(p.id); });
     list.addEventListener('click',function(e){ const ed=e.target.closest('[data-edit]'); if(ed) lpOpen(ed.getAttribute('data-edit')); });
     $('lp-tips').addEventListener('change',function(){ $('lp-editor').classList.toggle('show-tips', this.checked); });
     $('lp-slug').addEventListener('input',function(){ this.value=this.value.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+/,'').replace(/--+/g,'-'); lpField('slug',this.value); });
@@ -2809,7 +2811,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     $('lp-ed-title').textContent=lpCur.title?('Edit: '+lpCur.title):'New page';
     $('lp-title').value=lpCur.title||''; $('lp-slug').value=lpCur.slug||''; $('lp-meta').value=lpCur.meta||''; $('lp-h1').value=lpCur.h1||''; $('lp-body').value=lpCur.body||'';
     $('lp-status').value=lpCur.status||'draft';
-    $('lp-img').value=lpCur.img||''; $('lp-img-mode').value=lpCur.imgMode||'center'; $('lp-img-pad').value=(lpCur.imgPad!=null?lpCur.imgPad:16); lpImgPrev();
+    $('lp-img').value=lpCur.img||''; $('lp-img-mode').value=lpCur.imgMode||'wrap-right'; $('lp-img-pad').value=(lpCur.imgPad!=null?lpCur.imgPad:16); lpImgPrev();
     lpFillMenuUi();
     if(typeof window.__lpFillTextColors==='function') window.__lpFillTextColors(lpCur);
     $('lp-meta-count').textContent=(lpCur.meta||'').length+' characters';

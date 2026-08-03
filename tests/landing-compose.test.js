@@ -147,7 +147,7 @@ describe('landing-compose', () => {
     assert.equal(validateAgainstSchema(LANDING_DRAFT_SCHEMA, sample).ok, true);
   });
 
-  it('falls back to keyword-matched hero slides and quote job options', () => {
+  it('falls back to a single keyword-matched hero slide and quote job options', () => {
     const draft = normalizeLandingDraft(
       {
         primaryKeyword: 'Blocked drain clearing Canberra',
@@ -162,12 +162,25 @@ describe('landing-compose', () => {
       },
       { businessName: 'Pipe Pros', location: 'Canberra' }
     );
-    assert.ok(draft.heroSlides.length >= 2);
+    assert.equal(draft.heroSlides.length, 1);
     assert.match(draft.heroSlides[0].heading, /Blocked drain/i);
     assert.ok(draft.jobOptions.length >= 3);
     assert.equal(draft.jobOptions[0].text, 'Blocked drain clearing Canberra');
     assert.match(draft.quoteHeading, /Blocked drain/i);
     assert.match(draft.quoteSub, /Canberra/);
+  });
+
+  it('keeps only the first hero slide when the model returns several', () => {
+    const slides = normalizeHeroSlides(
+      [
+        { eyebrow: 'Local', heading: 'Hot water repairs', highlightText: 'same day', subText: 'Book today.' },
+        { eyebrow: 'Trust', heading: 'Second slide', highlightText: 'extra', subText: 'Should be dropped.' },
+        { eyebrow: 'Speed', heading: 'Third slide', highlightText: 'fast', subText: 'Also dropped.' }
+      ],
+      { primaryKeyword: 'Hot water repairs' }
+    );
+    assert.equal(slides.length, 1);
+    assert.equal(slides[0].heading, 'Hot water repairs');
   });
 
   it('normalizes model heroSlides and jobOptions when provided', () => {
