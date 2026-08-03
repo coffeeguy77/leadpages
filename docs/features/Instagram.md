@@ -30,7 +30,8 @@ OAuth uses **Instagram Business Login** (`instagram.com/oauth/authorize`, scope 
 | **OAuth finish** | `callback.js` relay → `POST /api/instagram/exchange` → redirect `?ig=` |
 | **Public media API** | `GET /api/ig-media?slug=` (or `?siteId=`) |
 | **Sync worker** | `lib/ig/igSync.mjs` via `api/cron/sync-instagram.mjs` or `api/instagram/sync.mjs` |
-| **Editor connect UI** | **Instagram Feed** subtab (`igProjectFeed`) only |
+| **Editor connect UI** | **Instagram Gallery** and **Instagram Feed** subtabs (`igConnectCard` / `wireIgConnect`) |
+| **OAuth redirect URI** | Default `https://www.leadpages.com.au/api/instagram/callback` (`lib/instagram-oauth.js`); override with `INSTAGRAM_REDIRECT_URI` — **not** `APP_URL` |
 | **Default visibility** | All three Instagram-related sections are **off by default** (`OFF_BY_DEFAULT_SECTIONS`) |
 | **Legal** | Footer link to `/instagram-data-policy.html` |
 
@@ -131,8 +132,8 @@ sequenceDiagram
 
 | Step | File | Behaviour |
 |------|------|-----------|
-| **1. Start** | `api/instagram/connect.js` | Validates `?slug=`; builds HMAC state `{s:slug,t,n}`; redirects to `https://www.instagram.com/oauth/authorize` with `scope=instagram_business_basic` and fixed redirect `https://www.leadpages.com.au/api/instagram/callback` |
-| **2. Callback relay** | `api/instagram/callback.js` | Returns minimal HTML; JS POSTs `{code,state}` to `/api/instagram/exchange`; on success `location.replace('/manage?ig=connected&site=' + slug)` |
+| **1. Start** | `api/instagram/connect.js` | Validates `?slug=`; builds HMAC state `{s:slug,t,n}`; redirects to `https://www.instagram.com/oauth/authorize` with `scope=instagram_business_basic` and redirect from `instagramRedirectUri()` (default `https://www.leadpages.com.au/api/instagram/callback`) |
+| **2. Callback relay** | `api/instagram/callback.js` | Returns minimal HTML on the **www** callback host; JS POSTs `{code,state}` to **same-origin** `/api/instagram/exchange`; on success `location.replace` to `APP_URL/manage?ig=connected&site=` |
 | **3. Exchange** | `api/instagram/exchange.js` | Verifies state signature + 15‑minute age; exchanges code → short-lived → long-lived token; fetches `graph.instagram.com/me`; upserts `ig_connections` |
 | **4. Editor toast** | `manage.html` (~5617) | IIFE reads `?ig=` on load |
 
@@ -169,7 +170,9 @@ state = base64url(JSON({s: slug, t: timestamp, n: random})) + "." + HMAC-SHA256(
 |----------|---------|
 | `INSTAGRAM_APP_ID` | `connect.js`, `exchange.js` |
 | `INSTAGRAM_APP_SECRET` | `connect.js`, `exchange.js` |
+| `INSTAGRAM_REDIRECT_URI` | Optional override; default www callback (must match Meta app settings) |
 | `IG_STATE_SECRET` | Optional dedicated HMAC secret |
+| `APP_URL` | Editor return after connect (`app.leadpages.com.au`) — **not** used as Instagram redirect_uri |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | `exchange.js`, `save-token.js`, `ig-media.js` |
 
 ---
@@ -196,17 +199,17 @@ All three are listed in `OPTIONAL_COMPONENTS` — toggled via section on/off in 
 ├─────────────────────────────────────────────────────────────────────────┤
 │  igProjectFeed ("Instagram Feed")                                       │
 │  Client fetch /api/ig-media → maps to project cards + shared lightbox   │
-│  Connect OAuth UI lives HERE                                            │
+│  Connect OAuth UI (shared igConnectCard)                                │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  instaGallery ("Instagram Gallery")                                     │
 │  Client fetch /api/ig-media → square tile grid + "View on Instagram"    │
-│  No connect UI — points user to Instagram Feed section                  │
+│  Connect OAuth UI (same shared card — one site connection)              │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### `instaGallery` — Instagram Gallery
 
-**Editor:** `manage.html` when `sub === 'instaGallery'`.
+**Editor:** `manage.html` when `sub === 'instaGallery'` — includes the shared **Instagram connection** card (`igConnectCard` / `wireIgConnect`).
 
 **Defaults** (`SECTION_DEFAULTS.instaGallery`):
 
@@ -234,7 +237,7 @@ All three are listed in `OPTIONAL_COMPONENTS` — toggled via section on/off in 
 
 ### `igProjectFeed` — Instagram Feed (Project-style cards)
 
-**Editor:** `sub === 'igProjectFeed'` — includes **Instagram connection** card.
+**Editor:** `sub === 'igProjectFeed'` — includes the shared **Instagram connection** card (same as Gallery).
 
 **Defaults:**
 
