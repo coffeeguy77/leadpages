@@ -40,4 +40,12 @@ describe('header beside-logo menu styles', () => {
     assert.match(trade, /icons\|\|'both'/);
     assert.match(trade, /--hn-fill/);
   });
+
+  it('adds a compact header menu drawer for mobile/tablet', () => {
+    assert.match(demoJs, /lp-compact-nav/);
+    assert.match(demoJs, /head-menu-btn/);
+    assert.match(demoCss, /html\.lp-compact-nav header\.site \.head-menu-btn/);
+    assert.match(trade, /lp-compact-nav/);
+    assert.match(trade, /head-menu-btn/);
+  });
 });
