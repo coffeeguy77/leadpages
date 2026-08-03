@@ -1514,7 +1514,7 @@ function applyCfg(C){
           }
           if(_btns.length){
             _bar.className='mobile-call lab-'+((MB.labelMode==='beside'||MB.labelMode==='icon')?MB.labelMode:'under');
-            _bar.style.display='';
+            _bar.style.display=''; try{document.documentElement.classList.add('lp-has-mobile-bar');}catch(_e){}
             _bar.innerHTML='<div class="mc-row">'+_btns.map(function(b){ if(b.menu){ var _mi=(b.image?'<img class="mc-img" src="'+esc(b.image)+'" alt="">':lpIcon(b.icon))+(b.label?'<span>'+esc(b.label)+'</span>':''); return '<button type="button" class="mc-btn" data-mc-menu="1">'+_mi+'</button>'; } var _in=lpIcon(b.icon)+(b.label?'<span>'+esc(b.label)+'</span>':''); if(b.scroll){ return '<button type="button" class="mc-btn" data-mc-scroll="1" data-mc-ev="'+b.ev+'">'+_in+'</button>'; } var _t=b.target?(' target="'+b.target+'" rel="noopener"'):''; return '<a class="mc-btn" href="'+esc(b.href)+'"'+_t+' data-mc-ev="'+b.ev+'">'+_in+'</a>'; }).join('')+'</div>';
             if(MB.bg){ _bar.style.background=MB.bg; }
             Array.prototype.forEach.call(_bar.querySelectorAll('[data-mc-ev]'),function(el){ el.addEventListener('click',function(ev){ if(el.getAttribute('data-mc-scroll')){ ev.preventDefault(); var t=document.querySelector('[data-sec="quote"]')||document.getElementById('quoteForm'); if(t&&t.scrollIntoView) t.scrollIntoView({behavior:'smooth',block:'start'}); } _track(el.getAttribute('data-mc-ev')); }); });
@@ -1543,7 +1543,7 @@ function applyCfg(C){
               Array.prototype.forEach.call(_pn.querySelectorAll('[data-lpm]'),function(el){ el.addEventListener('click',function(ev){ var t=el.getAttribute('data-lpm-type'); if(t==='scroll'||t==='quote'){ ev.preventDefault(); var nm=el.getAttribute('data-lpm-target'); var tg=nm?document.querySelector('[data-sec="'+nm+'"]'):null; if(tg&&tg.scrollIntoView) tg.scrollIntoView({behavior:'smooth',block:'start'}); } _close(); _track('menu_click',{type:t,label:el.getAttribute('data-lpm-label')||''}); }); });
               var _mtrig=_bar.querySelector('[data-mc-menu]'); if(_mtrig) _mtrig.addEventListener('click',function(){ (_pn.classList.contains('lpm-open')?_close:_open)(); });
             }catch(_menErr){} }
-          } else { _bar.style.display='none'; _bar.innerHTML=''; }
+          } else { _bar.style.display='none'; _bar.innerHTML=''; try{document.documentElement.classList.remove('lp-has-mobile-bar');}catch(_e){} }
         }
       }catch(_mbErr){}
       }
