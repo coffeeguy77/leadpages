@@ -1,11 +1,11 @@
 // api/instagram/connect.js — Instagram Business Login (multi-tenant)
 const crypto = require('crypto');
-const { appUrl } = require('../../lib/app-url');
+const { instagramRedirectUri } = require('../../lib/instagram-oauth');
 
-const APP_ID    = process.env.INSTAGRAM_APP_ID;
-const APP_SEC   = process.env.INSTAGRAM_APP_SECRET;
-// Prefer explicit env; otherwise APP_URL + path. Never derive from request Host.
-const REDIRECT  = (process.env.INSTAGRAM_REDIRECT_URI || (appUrl() + '/api/instagram/callback')).replace(/\/$/, '');
+const APP_ID = process.env.INSTAGRAM_APP_ID;
+const APP_SEC = process.env.INSTAGRAM_APP_SECRET;
+// Must match a Valid OAuth Redirect URI in the Meta app (www by default — not APP_URL).
+const REDIRECT = instagramRedirectUri();
 const STATE_SEC = process.env.IG_STATE_SECRET || APP_SEC || '';
 
 function sign(p){ return crypto.createHmac('sha256',STATE_SEC).update(p).digest('base64url'); }
@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
     if(!slug) return res.status(400).send('Missing site slug.');
     if(!APP_ID||!APP_SEC) return res.status(500).send('Instagram connection is not configured yet.');
 
-    console.log('[ig-connect] slug='+slug);
+    console.log('[ig-connect] slug='+slug+' redirect='+REDIRECT);
 
     const url = 'https://www.instagram.com/oauth/authorize'
       +'?client_id='+APP_ID

@@ -2,13 +2,17 @@
 // Returns a tiny HTML page whose JS POSTs code+state to /api/instagram/exchange.
 // Link-preview scanners and prefetchers don't execute JS, so they can't burn
 // the one-time code before the real browser does.
-// Post-login redirect uses APP_URL (app.leadpages.com.au in production) — not Host.
+//
+// Callback host is typically www.leadpages.com.au (Meta redirect URI). Exchange
+// must stay same-origin (relative URL). Editor return uses APP_URL (app.*).
 
 const { appPath } = require('../../lib/app-url');
 
 module.exports = async (req, res) => {
   const manageBase = appPath('/manage');
-  const exchangeUrl = appPath('/api/instagram/exchange');
+  // Same host as this callback page — avoids CORS when Meta redirects to www
+  // while the editor lives on app.leadpages.com.au.
+  const exchangeUrl = '/api/instagram/exchange';
   res.setHeader('cache-control','no-store');
   res.setHeader('x-robots-tag','noindex');
   res.setHeader('content-type','text/html; charset=utf-8');
