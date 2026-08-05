@@ -59,9 +59,10 @@ function patchFile(tplPath) {
   }
 
   const cssSnippet =
-    'section[data-sec="customHtml"]{display:none;width:100%}'
+    'section[data-sec="customHtml"]{display:none;width:100%;max-width:100%}'
     + 'section[data-sec="customHtml"].lp-ch-fullbleed .lp-ch-wrap{max-width:none;padding-left:0;padding-right:0}'
-    + 'section[data-sec="customHtml"] .lp-custom-html-mount{width:100%;min-width:0}'
+    + 'section[data-sec="customHtml"] .lp-ch-wrap{min-width:0;max-width:100%}'
+    + 'section[data-sec="customHtml"] .lp-custom-html-mount{width:100%;min-width:0;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}'
     + 'section[data-sec="customHtml"] .lp-ch-title{margin:0 0 18px;font-size:clamp(22px,3vw,32px)}';
 
   if (!html.includes('section[data-sec="customHtml"]')) {
