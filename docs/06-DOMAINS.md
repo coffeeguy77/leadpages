@@ -152,7 +152,8 @@ sequenceDiagram
 ### Step A: Infrastructure
 
 1. Prefer manage-domains **"Point at LeadPages"** (`POST /api/domains/point-at-site`):
-   - Dreamscape DNS: root `A` → `76.76.21.21`, `www` `CNAME` → `cname.vercel-dns.com`
+   - Reconciles Dreamscape DNS via `lib/point-at-site-dns.js`: **deletes** conflicting apex/www `A`/`AAAA`/`CNAME`/`WEBFWD` (including Dreamscape parking IPs), then ensures root `A` → `76.76.21.21` and `www` `CNAME` → `cname.vercel-dns.com`
+   - Leaves MX, TXT, MAILFWD, and other hostnames untouched
    - Attaches apex + `www` to the LeadPages **Vercel project** (`VERCEL_TOKEN` or `VERCEL_ACCESS_TOKEN` + `VERCEL_PROJECT_ID`)
    - Optional `site_id` (domain row, `?site_id=`, or input) also sets `sites.custom_domain`
 2. Manual fallback: add the hostname in **Vercel project → Domains**, then set DNS yourself

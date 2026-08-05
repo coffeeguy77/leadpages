@@ -1,5 +1,5 @@
 // api/domains/point-at-site.js — Point a purchased domain at LeadPages.
-// 1) Ensure Dreamscape DNS A/CNAME for Vercel (unless skip_dns)
+// 1) Reconcile Dreamscape DNS for Vercel (remove parking/conflicts, set A/CNAME)
 // 2) Attach apex + www to the shared Vercel project
 // 3) Optionally set sites.custom_domain when site_id is known
 //
@@ -14,6 +14,7 @@ const {
   normalizeApex,
   attachHostsToProject
 } = require('../../lib/vercel-project-domain');
+const { reconcileVercelDns } = require('../../lib/point-at-site-dns');
 
 const DOMAINS_ENABLED = String(process.env.DOMAINS_FEATURE_ENABLED || 'true') !== 'false';
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -49,15 +50,6 @@ async function canAttachSite(user, site) {
   if (await isSuper(user.id)) return true;
   if (site.owner_user_id && String(site.owner_user_id) === String(user.id)) return true;
   return false;
-}
-
-async function ensureDnsRecord(dsId, record) {
-  const r = await ds.addDomainDns(dsId, record);
-  if (r.ok) return { status: 'ok' };
-  const err = String(r.error || '').toLowerCase();
-  // Dreamscape often rejects duplicates — treat as fine for idempotent clicks.
-  if (/exist|already|duplicate|conflict/i.test(err)) return { status: 'skipped', error: r.error };
-  return { status: 'error', error: r.error || 'dns_failed' };
 }
 
 module.exports = async (req, res) => {
@@ -106,23 +98,31 @@ module.exports = async (req, res) => {
     if (!domainName) return res.status(400).json({ ok: false, error: 'Could not resolve domain name.' });
 
     const skipDns = !!body.skip_dns;
-    const dns = { apex: { status: 'skipped' }, www: { status: 'skipped' } };
+    let dns = {
+      apex: { status: 'skipped' },
+      www: { status: 'skipped' },
+      removed: [],
+      remove_errors: []
+    };
 
     if (!skipDns) {
       if (!dsId) {
         dns.apex = { status: 'error', error: 'no_dreamscape_id' };
         dns.www = { status: 'error', error: 'no_dreamscape_id' };
       } else {
-        dns.apex = await ensureDnsRecord(dsId, {
-          type: 'A',
-          subdomain: '@',
-          content: APEX_A
+        const reconciled = await reconcileVercelDns(ds, dsId, {
+          domainName,
+          apexA: APEX_A,
+          wwwCname: WWW_CNAME
         });
-        dns.www = await ensureDnsRecord(dsId, {
-          type: 'CNAME',
-          subdomain: 'www',
-          content: WWW_CNAME
-        });
+        dns = {
+          apex: reconciled.apex,
+          www: reconciled.www,
+          removed: reconciled.removed || [],
+          remove_errors: reconciled.remove_errors || [],
+          plan: reconciled.plan || null,
+          error: reconciled.error || null
+        };
       }
     }
 

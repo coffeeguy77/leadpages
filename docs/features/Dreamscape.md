@@ -349,12 +349,18 @@ Minimum two hostnames; passed to `ds.patchDomain(dsId, { name_servers: [{ host }
 
 ### Vercel pointing (application routing)
 
-DNS step (Infrastructure):
+DNS step (Infrastructure) — `POST /api/domains/point-at-site` → `lib/point-at-site-dns.js`:
+
+1. List Dreamscape DNS records
+2. Delete conflicting apex/www `A` / `AAAA` / `CNAME` / `WEBFWD` (parking defaults like `27.124.x` / `216.150.x`)
+3. Ensure:
 
 ```text
 A     @    → 76.76.21.21
 CNAME www  → cname.vercel-dns.com
 ```
+
+Without step 2, Vercel stays **Invalid Configuration** when a parking A remains beside the Vercel A.
 
 Application step (separate): super-admin sets **Custom domain** on site in `manage.html`. See [06-DOMAINS](../06-DOMAINS.md) § Custom Domain → Live Site.
 

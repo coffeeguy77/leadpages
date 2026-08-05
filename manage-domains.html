@@ -576,7 +576,7 @@ function renderAddForm(i,mode){
   } else if(mode==='site'){
     var siteParam=(typeof URLSearchParams!=='undefined'?(new URLSearchParams(location.search).get('site_id')||''):'')||'';
     var linked=d.site_id||siteParam;
-    box.innerHTML='<div class="note">Points <b>'+esc(dom)+'</b> at LeadPages: Dreamscape DNS (A @ → 76.76.21.21, CNAME www → cname.vercel-dns.com) and attaches apex + www to the Vercel project. Optionally links site routing (<code>custom_domain</code>).</div>'
+    box.innerHTML='<div class="note">Points <b>'+esc(dom)+'</b> at LeadPages: removes conflicting apex/www parking records, sets Dreamscape DNS (A @ → 76.76.21.21, CNAME www → cname.vercel-dns.com), and attaches apex + www to the Vercel project. Optionally links site routing (<code>custom_domain</code>). MX/TXT and other hostnames are left alone.</div>'
       +(linked
         ? '<div class="note" style="margin-top:6px">Will link site id <code>'+esc(linked)+'</code>.</div>'
         : '<div class="form-grid"><label class="f">Site id (optional)<input id="siteLinkId-'+i+'" placeholder="uuid from Manage" style="width:280px"></label></div>')
@@ -590,7 +590,12 @@ function renderAddForm(i,mode){
       if(btn) btn.disabled=false;
       if(!r.ok){ dnsMsg(i,'err',(r.data&&r.data.error)||'Could not connect domain.'); return; }
       var bits=[];
-      var dns=r.data&&r.data.dns; if(dns){ bits.push('DNS apex '+(dns.apex&&dns.apex.status||'?')+', www '+(dns.www&&dns.www.status||'?')); }
+      var dns=r.data&&r.data.dns;
+      if(dns){
+        bits.push('DNS apex '+(dns.apex&&dns.apex.status||'?')+', www '+(dns.www&&dns.www.status||'?'));
+        if(dns.removed&&dns.removed.length) bits.push('removed '+dns.removed.length+' conflicting record'+(dns.removed.length===1?'':'s'));
+        if(dns.remove_errors&&dns.remove_errors.length) bits.push('could not remove '+dns.remove_errors.length+' old record'+(dns.remove_errors.length===1?'':'s'));
+      }
       var v=r.data&&r.data.vercel;
       if(v&&v.configured){ bits.push('Vercel apex '+(v.apex&&v.apex.status||'?')+', www '+(v.www&&v.www.status||'?')); }
       else if(v&&!v.configured){ bits.push('Vercel skip (token/project not configured)'); }
@@ -599,8 +604,10 @@ function renderAddForm(i,mode){
       else if(cd&&cd.error) bits.push('routing not set ('+cd.error+')');
       else if(r.data&&r.data.hint) bits.push(r.data.hint);
       var vercelBad=v&&v.configured&&v.apex&&!(v.apex.status==='added'||v.apex.status==='pending'||v.apex.status==='already_exists');
-      dnsMsg(i, vercelBad?'err':'ok', bits.join(' · ')||'Connected.');
+      var dnsBad=(dns&&dns.apex&&dns.apex.status==='error')||(dns&&dns.www&&dns.www.status==='error')||(dns&&dns.remove_errors&&dns.remove_errors.length);
+      dnsMsg(i, (vercelBad||dnsBad)?'err':'ok', bits.join(' · ')||'Connected.');
       loadDns(i);
+      loadNs(i);
     };
   } else {
     box.innerHTML='<div class="form-grid">'
