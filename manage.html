@@ -5281,7 +5281,7 @@ function heroCtaCard(c){
 
   /** Super-admin: assign a servicing/commission partner without granting build attribution. */
   async function wireAssignPartnerCard(){
-    var sel=$('ap-partner'), save=$('ap-save'), ok=$('ap-saved'), err=$('ap-err');
+    var sel=$('ap-partner'), save=$('ap-save'), ok=$('ap-saved'), err=$('ap-err'), clearRef=$('ap-clear-ref');
     if(!sel||!save||!currentSiteId) return;
     function say(msg, bad){ if(ok){ ok.style.color=bad?'#b42318':'#0a7d33'; ok.textContent=msg||''; } if(err) err.textContent=''; }
     try{
@@ -5310,7 +5310,12 @@ function heroCtaCard(c){
       if(!siteId || String(siteId).length < 10){ say('No site loaded', true); return; }
       var toSel=sel.value; var toId=(toSel&&toSel!=='__lp__')?toSel:null;
       var fromId=currentServicingPartnerId||null;
-      if(String(fromId||'')===String(toId||'')){ say('Already assigned'); return; }
+      var wantClearRef=!!(clearRef&&clearRef.checked);
+      var hasRef=!!currentReferringPartnerId;
+      if(String(fromId||'')===String(toId||'') && !(wantClearRef&&hasRef&&!toId)){
+        say(hasRef&&!toId?'Still referred — tick “Also clear referring” to remove from partner books':'Already assigned');
+        return;
+      }
       save.disabled=true; var o=save.textContent; save.textContent='Saving\u2026'; say('');
       var patch={
         servicing_partner_id:toId,
@@ -5324,6 +5329,7 @@ function heroCtaCard(c){
       } else {
         patch.commission_partner_id=null;
         patch.recurring_commission_active=false;
+        if(wantClearRef) patch.referring_partner_id=null;
       }
       var r1=await sb.from('sites').update(patch).eq('id', siteId).select('id,servicing_partner_id,commission_partner_id,recurring_commission_active,servicing_status,referring_partner_id');
       if(r1.error||!r1.data||!r1.data.length){
@@ -5346,13 +5352,14 @@ function heroCtaCard(c){
       currentServicingPartnerId=row.servicing_partner_id||null;
       currentCommissionPartnerId=row.commission_partner_id||null;
       currentRecurringCommissionActive=row.recurring_commission_active!==false;
-      currentReferringPartnerId=row.referring_partner_id||currentReferringPartnerId;
+      currentReferringPartnerId=row.referring_partner_id||null;
       var sref=allSites.find(function(x){ return x.id===siteId; });
       if(sref){
         sref.servicing_partner_id=currentServicingPartnerId;
         sref.commission_partner_id=currentCommissionPartnerId;
         sref.recurring_commission_active=currentRecurringCommissionActive;
         sref.servicing_status=row.servicing_status;
+        sref.referring_partner_id=currentReferringPartnerId;
       }
       try{
         var me=(await sb.auth.getSession()).data.session;
@@ -5363,10 +5370,12 @@ function heroCtaCard(c){
           to_partner_id:toId,
           reason:'assign_from_settings',
           effective_date:new Date().toISOString().slice(0,10),
-          keep_commission_trail:true,
+          keep_commission_trail:!wantClearRef,
           continue_recurring:!!toId,
           recurring_earner:toId?'new':'none',
-          notes:'Assigned from site Settings. Hosting 20% only — no build fee attribution.',
+          notes:toId
+            ?'Assigned from site Settings. Hosting 20% only — no build fee attribution.'
+            :('Cleared servicing'+(wantClearRef?' + referring attribution':' (referring left in place)')+' — LeadPages direct.'),
           created_by:uid||null,
           created_by_email:email||null
         });
@@ -5376,12 +5385,74 @@ function heroCtaCard(c){
           action:'assign_partner_settings',
           partner_id:toId,
           site_id:siteId,
-          detail:{ from:fromId, to:toId, hosting_only:true, build_fee:false }
+          detail:{ from:fromId, to:toId, hosting_only:true, build_fee:false, clear_referring:!!wantClearRef&&!toId }
         });
       }catch(_log){}
       save.disabled=false; save.textContent=o;
-      say(toId?'Partner assigned — site is on their dashboard (20% hosting)':'Cleared — LeadPages direct');
-      if(typeof toast==='function') toast(toId?'Partner assigned':'Partner assignment cleared');
+      var leftRef=!!currentReferringPartnerId;
+      say(toId
+        ?'Partner assigned — site is on their dashboard (20% hosting)'
+        :(leftRef?'Servicing cleared — still referred (tick clear referring to finish)':'Cleared — LeadPages direct'));
+      if(typeof toast==='function') toast(toId?'Partner assigned':(leftRef?'Servicing cleared':'Partner assignment cleared'));
+      var note=$('ap-ref-note');
+      if(note){
+        if(currentReferringPartnerId){
+          var rn='';
+          try{ if(LPL&&LPL.partners&&LPL.partners[currentReferringPartnerId]) rn=LPL.partners[currentReferringPartnerId].display_name||''; }catch(_e){}
+          note.style.display='';
+          note.innerHTML='Still on partner books via <strong>referring attribution</strong>'+(rn?(' ('+esc(rn)+')'):'')+'. Clearing servicing alone does not remove it from their dashboard.';
+        } else {
+          note.style.display='none';
+          note.textContent='';
+        }
+      }
+      if(clearRef) clearRef.checked=!!currentReferringPartnerId;
+    };
+  }
+
+  /** Super-admin: convert for-sale mockup / partner demo → manually owned (no Stripe sale). */
+  function wireManualOwnershipCard(){
+    var btn=$('mo-take'), ok=$('mo-saved'), err=$('mo-err');
+    if(!btn||!currentSiteId) return;
+    function say(msg, bad){ if(ok){ ok.style.color=bad?'#b42318':'#0a7d33'; ok.textContent=msg||''; } if(err) err.textContent=''; }
+    btn.onclick=async function(){
+      if(!window.confirm('Mark this site as manually owned (no sale)?\n\nThis turns off the for-sale / mockup buy bar, clears the sale price, and removes partner referring + servicing so it leaves partner dashboards.')) return;
+      btn.disabled=true; var o=btn.textContent; btn.textContent='Saving\u2026'; say('');
+      try{
+        var token=await cwToken();
+        var r=await fetch('/api/billing/take-ownership',{
+          method:'POST',
+          headers:Object.assign({'content-type':'application/json'}, token?{Authorization:'Bearer '+token}:{}),
+          body:JSON.stringify({ siteId:currentSiteId, clearPartners:true, clearSale:true })
+        });
+        var j=await r.json().catch(function(){ return {}; });
+        btn.disabled=false; btn.textContent=o;
+        if(!r.ok||!(j&&j.ok)){ say((j&&j.error)||'Could not update ownership', true); return; }
+        var row=j.site||{};
+        currentServicingPartnerId=row.servicing_partner_id||null;
+        currentCommissionPartnerId=row.commission_partner_id||null;
+        currentReferringPartnerId=row.referring_partner_id||null;
+        currentRecurringCommissionActive=row.recurring_commission_active===true;
+        var sref=allSites.find(function(x){ return x.id===currentSiteId; });
+        if(sref){
+          sref.is_mockup=!!row.is_mockup;
+          sref.sale_price=row.sale_price;
+          sref.show_on_showcase=!!row.show_on_showcase;
+          sref.status=row.status;
+          sref.servicing_partner_id=currentServicingPartnerId;
+          sref.commission_partner_id=currentCommissionPartnerId;
+          sref.referring_partner_id=currentReferringPartnerId;
+          sref.recurring_commission_active=currentRecurringCommissionActive;
+          sref.servicing_status=row.servicing_status||'leadpages_direct';
+        }
+        say(j.hint||'Marked as manually owned');
+        if(typeof toast==='function') toast('Manually owned — no sale');
+        try{ if(typeof refreshSiteSwitcher==='function') refreshSiteSwitcher(); }catch(_e){}
+        try{ if(typeof lplRefresh==='function') lplRefresh(); }catch(_e){}
+      }catch(e){
+        btn.disabled=false; btn.textContent=o;
+        say('Could not update ownership', true);
+      }
     };
   }
 
@@ -5643,20 +5714,39 @@ function heroCtaCard(c){
       +'<div class="row">'+lpFld('Service / business type','d-trade','e.g. Plumber, Café, Airbnb host')+lpFld('Licence','d-licence','')+'</div>'
       +'<div style="margin-top:6px;"><button class="btn" id="d-save">Save details</button><span id="d-saved" style="margin-left:10px;font-size:13px;color:#0a7d33;"></span></div></div>';
     var assignPartnerCard='';
+    var ownershipCard='';
     if(currentRole==='super'){
+      var _sRow=(allSites||[]).find(function(x){ return x.id===currentSiteId; })||{};
+      var _refId=currentReferringPartnerId||_sRow.referring_partner_id||null;
+      var _refName='';
+      try{ if(_refId&&LPL&&LPL.partners&&LPL.partners[_refId]) _refName=LPL.partners[_refId].display_name||''; }catch(_e){}
+      var _isMock=!!_sRow.is_mockup;
+      var _onPartner=!!(_sRow.servicing_partner_id||_sRow.referring_partner_id||_sRow.commission_partner_id||currentServicingPartnerId||currentReferringPartnerId);
       assignPartnerCard='<div class="card" style="margin-bottom:20px;" id="assign-partner-card"><h2 style="margin:0 0 4px;">Assign partner</h2>'
         +'<p class="lede" style="margin:0 0 12px;">Put this site on a partner\u2019s dashboard for ongoing support. They get <strong>20% of hosting fees</strong> while the client stays under their management. They do <strong>not</strong> get a share of the build fee (the sale didn\u2019t go through them).</p>'
+        +(_refId?('<p class="hint" id="ap-ref-note" style="margin:0 0 12px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2,var(--panel-soft,var(--bg)));">Still on partner books via <strong>referring attribution</strong>'+(_refName?(' ('+esc(_refName)+')'):'')+'. Clearing servicing alone does not remove it from their dashboard.</p>'):'<p class="hint" id="ap-ref-note" style="display:none;margin:0 0 12px;"></p>')
         +'<div class="f" style="margin-bottom:10px;"><label for="ap-partner">Partner</label>'
         +'<select id="ap-partner" class="apsel" style="width:100%;"><option value="">Loading partners\u2026</option></select></div>'
+        +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;margin:0 0 12px;"><input type="checkbox" id="ap-clear-ref"'+( _refId?' checked':'')+'> <span>Also clear referring / build attribution <span class="hint" style="font-weight:400;">(required to fully remove from a partner dashboard)</span></span></label>'
         +'<ul class="hint" style="margin:0 0 14px;padding-left:18px;line-height:1.55;">'
         +'<li>Site appears in that partner\u2019s Clients list</li>'
         +'<li>Hosting commission earner is set to this partner (20%)</li>'
-        +'<li>Referring / build attribution is left unchanged</li>'
+        +'<li>Leave the checkbox unchecked to keep original sale attribution</li>'
         +'</ul>'
         +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">'
         +'<button type="button" class="btn" id="ap-save">Save partner assignment</button>'
         +'<span id="ap-saved" style="font-size:13px;color:#0a7d33;"></span></div>'
         +'<p id="ap-err" class="hint" style="margin:10px 0 0;color:#b42318;"></p>'
+        +'</div>';
+      ownershipCard='<div class="card" style="margin-bottom:20px;" id="manual-own-card"><h2 style="margin:0 0 4px;">Ownership</h2>'
+        +'<p class="lede" style="margin:0 0 12px;">Convert a for-sale mockup (or partner-attributed demo) into a <strong>manually owned</strong> LeadPages site \u2014 no Stripe sale. Removes the buy bar, clears sale price, and takes the site off partner dashboards.</p>'
+        +'<p class="hint" style="margin:0 0 12px;">Status now: '+(_isMock?'<strong>For sale / mockup</strong>':'Live site')
+        +(_onPartner?' \u00b7 still linked to a partner':' \u00b7 LeadPages direct')
+        +'.</p>'
+        +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">'
+        +'<button type="button" class="btn" id="mo-take">Mark as manually owned (no sale)</button>'
+        +'<span id="mo-saved" style="font-size:13px;color:#0a7d33;"></span></div>'
+        +'<p id="mo-err" class="hint" style="margin:10px 0 0;color:#b42318;"></p>'
         +'</div>';
     }
     var danger=(currentRole==='super')?('<div class="card danger" style="margin-bottom:0;"><h2>Danger zone</h2><p class="lede" style="margin:0 0 12px;">Unlock, then tap Delete twice to confirm. This permanently removes the site and can\u2019t be undone.</p><div style="display:flex;gap:10px;align-items:center;"><button type="button" id="btn-dellock" class="sp-lock" title="Unlock to allow delete" aria-label="Unlock to allow delete"><svg class="sp-lock-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="sp-lock-closed"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></g><g class="sp-lock-open"><path d="M8 11V7a4 4 0 0 1 7.5-1"/><rect x="5" y="11" width="14" height="10" rx="2"/></g></svg></button><button type="button" id="btn-delsite" class="sp-del" disabled>Delete site</button></div></div>'):'';
@@ -5664,6 +5754,7 @@ function heroCtaCard(c){
       +'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Appearance &amp; Accessibility</h2><p class="lede" style="margin:0 0 12px;">Workspace theme for the command centre, plus published page visitor settings for this site.</p><button type="button" class="btn" id="open-aa-inline">Workspace appearance</button> <button type="button" class="btn ghost" id="open-aa-published">Published page settings</button></div>'
       +detailFields
       +assignPartnerCard
+      +ownershipCard
       +seoGaRow
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Mobile command menu</h2><p class="lede" style="margin:0 0 12px;">Design the phone mega menu for the command centre — section order, layouts, separators, button styles, and which roles see each item (super admin, partner, client).</p><button type="button" class="btn" id="open-mobile-menu">Edit mobile menu</button></div>':'')
       +(currentRole==='super'?'<div class="card" style="margin-bottom:20px;"><h2 style="margin:0 0 4px;">Hosting plans &amp; billing</h2><p class="lede" style="margin:0 0 12px;">Build the subscription plans customers can be placed on \u2014 free, paid, or volume-priced. The suspended page is what the public sees when a site is paused for non-payment.</p><button type="button" class="btn" id="open-plans">Manage hosting plans</button> <button type="button" class="btn ghost" id="open-susp">Edit suspended page</button></div>':'')
@@ -5685,7 +5776,7 @@ function heroCtaCard(c){
     var opb=$('open-plans'); if(opb) opb.addEventListener('click',openPlansPage);
     var osp=$('open-susp'); if(osp) osp.addEventListener('click',openSuspendedEditor);
     var omm=$('open-mobile-menu'); if(omm) omm.addEventListener('click',function(){ closeSettingsPage(); if(typeof openMobileMenuBuilder==='function') openMobileMenuBuilder(); });
-    if(currentRole==='super') wireAssignPartnerCard();
+    if(currentRole==='super'){ wireAssignPartnerCard(); wireManualOwnershipCard(); }
     (function(){
       var cp=$('gsi-copy-prop'); if(cp) cp.addEventListener('click',function(){ lpCopyText(_propUrl,'Property URL'); });
       var cm=$('gsi-copy-map'); if(cm) cm.addEventListener('click',function(){ lpCopyText('sitemap.xml','Sitemap path'); });
@@ -6428,9 +6519,23 @@ function heroCtaCard(c){
   function _d(c){ return ((c||0)/100).toFixed(2); }
   function _c(d){ return Math.round((parseFloat(d)||0)*100); }
   function closePlansPage(){ var p=document.getElementById('plans-page'); if(p) p.remove(); }
+  function _plansCss(){
+    var css = ''
+      + '#plans-page{position:fixed;inset:0;z-index:9999;background:color-mix(in srgb, var(--ink,#0e1726) 55%, transparent);overflow:auto;padding:32px 16px;color:var(--ink,var(--text));font-family:var(--font-ui);}'
+      + '#plans-page .pp-card{max-width:900px;margin:0 auto;background:var(--panel,var(--surface,var(--bg)));color:var(--ink,var(--text));border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow,0 30px 80px color-mix(in srgb, var(--ink,#0e1726) 35%, transparent));padding:24px;}'
+      + '#plans-page .bp-plan{border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;background:var(--surface-2,var(--panel-soft,var(--bg-soft,var(--bg))));color:var(--ink,var(--text));}'
+      + '#plans-page .bp-tier{display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap;color:var(--ink,var(--text));}'
+      + '#plans-page .lede,#plans-page .hint,#plans-page label{color:var(--ink-soft,var(--text-soft,var(--ink,var(--text))));}'
+      + '#plans-page h1{color:var(--ink,var(--text));}'
+      + '#plans-page input[type=text],#plans-page input[type=number],#plans-page textarea,#plans-page select{background:var(--input-bg,var(--panel-soft,var(--bg)));color:var(--ink,var(--text));border:1px solid var(--line);border-radius:8px;}'
+      + '#plans-page input[readonly]{background:var(--panel-soft,var(--surface-2,var(--input-bg,var(--bg))));color:var(--ink-soft,var(--ink));opacity:.95;}';
+    var s=document.getElementById('plans-page-css');
+    if(!s){ s=document.createElement('style'); s.id='plans-page-css'; document.head.appendChild(s); }
+    s.textContent=css;
+  }
   function openPlansPage(){
     closePlansPage();
-    if(!document.getElementById('plans-page-css')){ var s=document.createElement('style'); s.id='plans-page-css'; s.textContent='#plans-page{position:fixed;inset:0;z-index:9999;background:rgba(16,22,32,.55);overflow:auto;padding:32px 16px;}#plans-page .pp-card{max-width:900px;margin:0 auto;background:var(--bg,#faf9f6);border-radius:18px;box-shadow:0 30px 80px rgba(10,15,25,.4);padding:24px;}#plans-page .bp-plan{border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;background:#fff;}#plans-page .bp-tier{display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap;}'; document.head.appendChild(s); }
+    _plansCss();
     var p=document.createElement('div'); p.id='plans-page';
     p.innerHTML='<div class="pp-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;"><h1 style="margin:0;font:700 24px/1.1 var(--font-display,Georgia),serif;">Hosting plans</h1><div><button type="button" class="btn ghost" id="bp-add">+ Add plan</button> <button type="button" class="btn ghost" id="bp-close">Close</button></div></div><p class="lede" style="margin:0 0 14px;">Build the plans customers can be placed on \u2014 free, or any mix of one-off setup and monthly fee, including volume (per-site) pricing. Amounts are in dollars. For paid plans, create the matching Price in Stripe and paste its ID.</p><div id="bp-list"><div class="hint">Loading\u2026</div></div></div>';
     document.body.appendChild(p);
@@ -6448,7 +6553,7 @@ function heroCtaCard(c){
         +'<div class="row"><div class="f"><label>Stripe monthly price ID</label><input type="text" data-k="price" value="'+(p.stripe_price_id||'')+'" placeholder="price_\u2026"></div><div class="f"><label>Stripe setup price ID (optional)</label><input type="text" data-k="setupprice" value="'+(p.stripe_setup_price_id||'')+'" placeholder="price_\u2026"></div></div>'
         +'<div class="f"><label style="display:flex;gap:7px;align-items:center;"><input type="checkbox" data-k="vol"'+(vol?' checked':'')+'> Volume pricing (per-site price by site count)</label></div>'
         +(vol?('<div class="bp-tiers" style="margin:0 0 8px;">'+p.volume_tiers.map(function(t,ti){ return '<div class="bp-tier" data-ti="'+ti+'"><span style="font-size:13px;">From</span><input type="number" min="1" data-tk="min" value="'+(t.min||1)+'" style="width:64px;"><span style="font-size:13px;">site(s): $</span><input type="number" step="0.01" min="0" data-tk="amount" value="'+_d(t.amount)+'" style="width:90px;"><span style="font-size:13px;">/site</span><button type="button" class="btn ghost bp-tier-del" data-ti="'+ti+'" style="padding:3px 8px;">\u2715</button></div>'; }).join('')+'<button type="button" class="btn ghost bp-tier-add" style="padding:3px 9px;">+ Add tier</button></div>'):'');
-      return '<div class="bp-plan" data-i="'+i+'"><div class="row"><div class="f"><label>Plan key</label><input type="text" data-k="key" value="'+(p.key||'')+'" placeholder="basic"'+((p._new&&!p.key)?'':' readonly')+' style="'+((p._new&&!p.key)?'':'background:#f3f3ef;')+'"></div><div class="f"><label>Name</label><input type="text" data-k="name" value="'+(p.name||'')+'" placeholder="Basic"></div><div class="f"><label>Sort</label><input type="number" data-k="sort" value="'+(p.sort||0)+'" style="width:70px;"></div></div>'
+      return '<div class="bp-plan" data-i="'+i+'"><div class="row"><div class="f"><label>Plan key</label><input type="text" data-k="key" value="'+(p.key||'')+'" placeholder="basic"'+((p._new&&!p.key)?'':' readonly')+'></div><div class="f"><label>Name</label><input type="text" data-k="name" value="'+(p.name||'')+'" placeholder="Basic"></div><div class="f"><label>Sort</label><input type="number" data-k="sort" value="'+(p.sort||0)+'" style="width:70px;"></div></div>'
         +'<div class="f"><label style="display:flex;gap:7px;align-items:center;"><input type="checkbox" data-k="free"'+(free?' checked':'')+'> Free plan (no Stripe, never billed or suspended)</label></div>'
         +(free?'':paid)
         +'<div class="f"><label>Features (one per line, shown to customers)</label><textarea data-k="features" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;resize:vertical;">'+(p.features||'')+'</textarea></div>'
