@@ -1701,5 +1701,36 @@
     "presets": [
       "default"
     ]
+  },
+  "searchCanvas": {
+    "name": "SearchCanvas",
+    "tagline": "Visual SEO Content",
+    "summary": "Turn search-focused content into an attractive tabbed section with images, icons and structured service information.",
+    "pitch": "SearchCanvas takes AI or manual SEO copy and lays it onto a designed visual canvas — eyebrow, heading, intro, service tabs, stroke icons and images — instead of one long text block.",
+    "badge": "SEO READY",
+    "bestFor": "Service businesses, local businesses, trades, professional services and location landing pages.",
+    "features": [
+      {
+        "title": "Visual SEO tabs",
+        "text": "Structured service topics with headings, intros, bullets and links."
+      },
+      {
+        "title": "Theme-aware design",
+        "text": "Master accent colour and theme defaults — no hardcoded greens or greys."
+      },
+      {
+        "title": "Mobile accordion",
+        "text": "Desktop tabs become an accessible accordion on small screens."
+      },
+      {
+        "title": "AI Homepage SEO",
+        "text": "SEO Command Centre can write structured JSON straight into SearchCanvas."
+      }
+    ],
+    "platformFeature": false,
+    "presets": [
+      "four-service-tabs",
+      "blank"
+    ]
   }
 }

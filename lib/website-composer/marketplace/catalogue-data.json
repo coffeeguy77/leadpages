@@ -3855,6 +3855,90 @@
         "manage.html"
       ],
       "finalDecisionReason": ""
+    },
+    {
+      "appId": "searchCanvas",
+      "slug": "search-canvas",
+      "name": "SearchCanvas",
+      "category": "content-proof",
+      "sectionKey": "searchCanvas",
+      "rendererIdentifier": "trade.template.json#searchCanvas",
+      "configPath": "sections.searchCanvas",
+      "purpose": "Visual tabbed SEO content section with icons, images and structured service topics",
+      "supportedPagePositions": [
+        "main"
+      ],
+      "suitableBusinessModels": [
+        "service",
+        "professional",
+        "trades",
+        "local"
+      ],
+      "suitableIndustries": [
+        "*"
+      ],
+      "unsuitableIndustries": [],
+      "conversionGoals": [
+        "inform",
+        "enquire"
+      ],
+      "supportedLayouts": [
+        "classic",
+        "premium-showcase",
+        "authority-builder",
+        "quote-first",
+        "reviews-first",
+        "offer-funnel",
+        "photo-proof",
+        "service-area-dominator"
+      ],
+      "supportedVariants": [
+        "default",
+        "vertical-tabs-image-right",
+        "horizontal-tabs",
+        "cards"
+      ],
+      "requiredContentFields": [
+        "heading",
+        "tabs"
+      ],
+      "optionalContentFields": [
+        "eyebrow",
+        "intro",
+        "cta"
+      ],
+      "imageFields": [
+        "tabs[].image"
+      ],
+      "iconFields": [
+        "tabs[].iconKey"
+      ],
+      "ctaFields": [
+        "cta.primaryLabel"
+      ],
+      "itemCountConstraints": {
+        "min": 3,
+        "max": 6,
+        "preferred": 5
+      },
+      "dependencies": [],
+      "incompatibilities": [],
+      "mobileBehaviour": {
+        "stack": true,
+        "accordion": true,
+        "priority": "normal"
+      },
+      "installMethod": "draft.sections[sectionKey].on + draft.__websiteComposer.installedApps",
+      "adapterStatus": "implemented",
+      "websiteStudioSupport": "supported",
+      "sourceFilesInspected": [
+        "marketplace/app-content.json",
+        "lib/search-canvas/",
+        "lib/website-composer/adapters/registry.js",
+        "trade.template.json",
+        "manage.html"
+      ],
+      "finalDecisionReason": "Structured SEO visual section for service-led and local SEO sites"
     }
   ],
   "updatedAt": "2026-07-18T01:43:32.091Z",
