@@ -181,6 +181,13 @@ section[data-sec="searchCanvas"][data-sc-on="1"] {
   font-weight: 800;
   line-height: 1.2;
 }
+.sc-tab-support {
+  margin: 0 0 12px;
+  color: var(--sc-heading, var(--ink, inherit));
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
 .sc-tab-intro {
   margin: 0 0 12px;
   line-height: 1.55;

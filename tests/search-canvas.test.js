@@ -90,13 +90,20 @@ test('ensureSearchCanvasInOrder prefers after serviceProcess', () => {
   assert.strictEqual(again.filter((x) => x === 'searchCanvas').length, 1);
 });
 
-test('ensureSearchCanvasInOrder repairs Hero→SearchCanvas misplacement', () => {
+test('ensureSearchCanvasInOrder keeps manual placement above How It Works', () => {
+  const manual = ['emerg', 'hero', 'searchCanvas', 'services', 'serviceProcess', 'faq'];
+  const kept = ensureSearchCanvasInOrder(manual);
+  assert.strictEqual(kept.indexOf('searchCanvas'), manual.indexOf('searchCanvas'));
+  assert.ok(kept.indexOf('searchCanvas') < kept.indexOf('serviceProcess'));
+  const forced = ensureSearchCanvasInOrder(manual, null, { force: true });
+  assert.strictEqual(forced[forced.indexOf('serviceProcess') + 1], 'searchCanvas');
+});
+
+test('ensureSearchCanvasInOrder force re-pins after How It Works', () => {
   const broken = ['emerg', 'hero', 'searchCanvas', 'faq', 'serviceProcess'];
   const forced = ensureSearchCanvasInOrder(broken, null, { force: true });
   assert.strictEqual(forced[forced.indexOf('serviceProcess') + 1], 'searchCanvas');
   assert.strictEqual(forced.filter((x) => x === 'searchCanvas').length, 1);
-  const repaired = ensureSearchCanvasInOrder(['hero', 'searchCanvas', 'services', 'serviceProcess', 'faq']);
-  assert.strictEqual(repaired[repaired.indexOf('serviceProcess') + 1], 'searchCanvas');
 });
 
 test('applyAiDraft replace writes AI service tabs over Planning placeholders', () => {
@@ -164,6 +171,7 @@ test('render includes all tab text and ARIA roles', () => {
   cfg.tabs = tabsFromServiceTitles(['Landscape Design', 'Retaining Walls', 'Outdoor Living', 'Garden Maintenance']);
   cfg.tabs.forEach((t) => {
     t.intro = 'Detailed intro for ' + t.label;
+    t.content = 'Supporting heading for ' + t.label;
     t.bullets = ['One', 'Two', 'Three'];
   });
   const html = renderSearchCanvasHtml(cfg, { force: true, icons: { check: '<path/>', calendar: '<path/>' } });
@@ -171,9 +179,11 @@ test('render includes all tab text and ARIA roles', () => {
   assert.ok(html.includes('role="tab"'));
   assert.ok(html.includes('role="tabpanel"'));
   assert.ok(html.includes('sc-width-wide') || html.includes('1440') || /sc-width-wide/.test(html) || true);
+  assert.ok(html.includes('sc-tab-support'));
   cfg.tabs.forEach((t) => {
     assert.ok(html.includes(t.heading) || html.includes(t.label));
     assert.ok(html.includes(t.intro));
+    assert.ok(html.includes(t.content));
   });
   assert.ok(html.includes('sc-mobile'));
 });
@@ -225,7 +235,7 @@ test('extractServicesFromExtraInfo picks water tanks from prose', () => {
   assert.ok(draft.tabs.some((t) => /Water Tanks/i.test(t.label)));
 });
 
-test('section-order repairs SearchCanvas parked under Hero', () => {
+test('section-order keeps SearchCanvas above How It Works when positioned there', () => {
   const so = require('../lib/section-order');
   const ord = so.resolveSectionOrder({
     sectionOrder: ['emerg', 'hero', 'searchCanvas', 'faq', 'services', 'serviceProcess'],
@@ -238,7 +248,8 @@ test('section-order repairs SearchCanvas parked under Hero', () => {
     }
   });
   assert.ok(ord.indexOf('serviceProcess') >= 0);
-  assert.strictEqual(ord[ord.indexOf('serviceProcess') + 1], 'searchCanvas');
+  // Manual Position above How It Works is kept; FAQ still pins under SearchCanvas.
+  assert.ok(ord.indexOf('searchCanvas') < ord.indexOf('serviceProcess'));
   assert.strictEqual(ord[ord.indexOf('searchCanvas') + 1], 'faq');
 });
 
