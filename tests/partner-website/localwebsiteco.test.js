@@ -47,6 +47,13 @@ test('buildPartnerLandingHtml — renders Local Website Co. template', function(
   assert.ok(html.includes('Local knowledge'));
   assert.ok(html.includes('Call 0400 000 000'));
   assert.ok(html.includes('Powered by <strong>LeadPages</strong>'));
+  assert.ok(html.includes('lwc-device-stack'));
+  assert.ok(html.includes('lwc-tick'));
+  assert.ok(html.includes('lwc-process-float'));
+  assert.ok(html.includes('New enquiry'));
+  assert.ok(html.includes('Powered by LeadPages Australia'));
+  assert.ok(html.includes('lwc-hero-devices'));
+  assert.ok(html.includes("Let's talk"));
   assert.ok(!/\sclass="[^"]*\bwc-body\b/.test(html));
   assert.ok(!html.includes('/assets/partner-templates/webculture.css'));
 });
