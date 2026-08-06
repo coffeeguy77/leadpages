@@ -1520,6 +1520,10 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   function lpCancelAutosave(){ if(_lpAS){ clearTimeout(_lpAS); _lpAS=null; } }
   function toast(msg, kind){ const t=$('toast'); if(!t) return; t.textContent=msg; t.classList.remove('warn'); if(kind==='warn') t.classList.add('warn'); t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, kind==='warn'?2400:1800); }
   window.toast = toast;
+  /* Marketplace / SearchCanvas editors call these via window.* — keep in sync. */
+  window.persist = persist;
+  window.lpAutosave = lpAutosave;
+  window.esc = esc;
   function jsonOut(){ return JSON.stringify(data,null,2); }
   // What goes onto the public site: everything EXCEPT the demo sign-in accounts
   // (those are cosmetic and hold demo passwords — they never belong in a public file).
@@ -1701,6 +1705,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       lpPreviewApplyChromeHide();
     }catch(e){}
   }
+  window.previewApply = previewApply;
   function previewLoad(){
     var fr=lpFrame(); if(!fr) return;
     lpPrevReady=false; lpPrevSlug=previewTarget();
@@ -2470,11 +2475,13 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var savedSub=landingSub, savedPreview=previewApply;
     landingSub=secKey;
     previewApply=function(){ persist(); lpAutosave(); lpPagePreviewReload(); };
+    window.previewApply = previewApply;
     try{
       renderLandingSub(lpPageEditFullCfg(secKey), {host:body, sub:secKey});
     } finally {
       landingSub=savedSub;
       previewApply=savedPreview;
+      window.previewApply = previewApply;
     }
     try{ ed.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
   }
@@ -4647,6 +4654,7 @@ function heroCtaCard(c){
   function setList(c,sk,arr){ var sc=LIST_SCHEMAS[sk]; if(!c.sections) c.sections={}; if(!c.sections[sc.secId]) c.sections[sc.secId]={}; c.sections[sc.secId][sc.key]=arr; persist(); previewApply(); }
   function listCard(sk,title,lede){ return '<div class="card" style="margin-bottom:22px;"><h2>'+title+'</h2><p class="lede">'+lede+'</p><div id="le-'+sk+'"></div></div>'; }
   function iconBtnInner(v){ if(v&&String(v).trim()){ var n=String(v).trim(); if(/^[a-z0-9-]+$/.test(n)&&window.LP_ICONS&&window.LP_ICONS[n]) return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+window.LP_ICONS[n]+'</svg>'; if(window.LP_ICONS&&window.LP_ICONS['circle-help']) return '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+window.LP_ICONS['circle-help']+'</svg>'; return esc(n); } return '<span style="opacity:.35;">\uFF0B</span>'; }
+  window.iconBtnInner = iconBtnInner;
   var LP_CATS=(window.LP_ICON_CATS||[]);
   var ICON_CATS=LP_CATS.map(function(p){return p[0];});
   var TRADE_ICONS=[]; (function(){ LP_CATS.forEach(function(p){ var cat=p[0]; (p[1]||[]).forEach(function(name){ TRADE_ICONS.push({c:name,l:name.replace(/-/g,' ').replace(/(^|\s)\S/g,function(m){return m.toUpperCase();}),k:name.replace(/-/g,' '),cat:cat}); }); }); })();
@@ -4676,6 +4684,7 @@ function heroCtaCard(c){
   document.addEventListener('click',function(e){ var b=e.target.closest && e.target.closest('.icon-pick'); if(!b) return; e.preventDefault(); var ctl=b.closest('.iconctl'); var inp=ctl&&ctl.querySelector('.icon-input'); if(!inp) return; openIconPicker(function(ch){ inp.value=ch; inp.dispatchEvent(new Event('input',{bubbles:true})); b.innerHTML=iconBtnInner(ch); }); });
   document.addEventListener('input',function(e){ var el=e.target; if(el&&el.classList&&el.classList.contains('icon-input')){ var ctl=el.closest('.iconctl'); var b=ctl&&ctl.querySelector('.icon-pick'); if(b) b.innerHTML=iconBtnInner(el.value); } });
   function refreshIconBtns(scope){ (scope||document).querySelectorAll('.icon-pick').forEach(function(b){ var ctl=b.closest('.iconctl'); var inp=ctl&&ctl.querySelector('.icon-input'); b.innerHTML=iconBtnInner(inp?inp.value:''); }); }
+  window.refreshIconBtns = refreshIconBtns;
     /* ===== Cloudinary uploads: customer asset namespace + lifecycle ===== */
   var CW_CLOUD='dzx6x1hou';
   function cwToken(){ try{ return sb.auth.getSession().then(function(r){ return (r&&r.data&&r.data.session&&r.data.session.access_token)||null; }); }catch(e){ return Promise.resolve(null); } }

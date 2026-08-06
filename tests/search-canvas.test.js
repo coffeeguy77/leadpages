@@ -287,4 +287,38 @@ test('website composer adapter accepts meaningful tabs', () => {
   assert.strictEqual(thin.ok, false);
 });
 
+test('bullet icons use stroke SVG from library (default check, overridable)', () => {
+  const n = normalizeSearchCanvas({
+    on: true,
+    header: { heading: 'Services' },
+    tabs: [
+      {
+        id: 't1',
+        label: 'Garden Design',
+        heading: 'Garden Design',
+        intro: 'We design gardens that suit your site, soil and how you use the outdoor space every day.',
+        bullets: ['Design consult', 'Planting plan']
+      },
+      {
+        id: 't2',
+        label: 'Maintenance',
+        heading: 'Maintenance',
+        intro: 'Ongoing care keeps lawns, beds and edges tidy through the seasons with a clear scope of work.',
+        bullets: ['Seasonal tidy'],
+        bulletIconKey: 'leaf'
+      }
+    ],
+    style: { bulletIconKey: 'check' }
+  });
+  assert.strictEqual(n.style.bulletIconKey, 'check');
+  assert.strictEqual(n.tabs[1].bulletIconKey, 'leaf');
+  const html = renderSearchCanvasHtml(n, {
+    icons: { check: '<path d="M20 6 9 17l-5-5" />', leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />' }
+  });
+  assert.ok(html.includes('class="sc-tick"'), 'tick wrapper present');
+  assert.ok(html.includes('stroke="currentColor"'), 'stroke icon');
+  assert.ok(html.includes('M20 6 9 17l-5-5'), 'default check path');
+  assert.ok(html.includes('sc-ic'), 'svg class for library icon');
+});
+
 console.log('\nAll SearchCanvas tests passed.');

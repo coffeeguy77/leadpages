@@ -6,12 +6,6 @@
 (function () {
   'use strict';
 
-  var ICON_CHOICES = [
-    '', 'check', 'leaf', 'hammer', 'brick-wall', 'house', 'wrench', 'droplet', 'map-pin', 'shield',
-    'star', 'briefcase', 'scan-search', 'chart-bar', 'building', 'coffee', 'scissors', 'heart',
-    'laptop', 'truck', 'calendar', 'users', 'layers', 'toolbox', 'zap'
-  ];
-
   function deepClone(o) {
     return JSON.parse(JSON.stringify(o || {}));
   }
@@ -76,6 +70,7 @@
       S.defaultTabId = S.tabs[0] && S.tabs[0].id;
     }
     if (!S.style) S.style = {};
+    if (!S.style.bulletIconKey) S.style.bulletIconKey = 'check';
     if (!S.layout) S.layout = { preset: 'vertical-tabs-image-right', imageMode: 'per-tab', mobileMode: 'single-accordion', contentWidth: 'wide' };
     if (!S.layout.contentWidth) S.layout.contentWidth = 'wide';
     if (!S.cta) S.cta = { enabled: false, style: 'strip' };
@@ -90,6 +85,7 @@
       id: id,
       label: 'New topic',
       iconKey: 'check',
+      bulletIconKey: null,
       heading: 'New topic heading',
       intro: 'Describe this topic for visitors.',
       content: '',
@@ -125,6 +121,44 @@
     return typeof document !== 'undefined' ? document.getElementById(id) : null;
   }
 
+  function iconBtnInner(key) {
+    if (typeof window.iconBtnInner === 'function') return window.iconBtnInner(key);
+    if (key && window.LP_ICONS && window.LP_ICONS[key]) {
+      return (
+        '<svg class="lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        window.LP_ICONS[key] +
+        '</svg>'
+      );
+    }
+    return '<span style="opacity:.35;">\uFF0B</span>';
+  }
+
+  function iconPickerHtml(inputClass, dataI, cur, clearable) {
+    var v = cur || '';
+    var extra = dataI != null ? ' data-i="' + dataI + '"' : '';
+    return (
+      '<div class="iconctl" style="display:flex;align-items:center;gap:8px;">' +
+      '<button type="button" class="icon-pick" tabindex="-1" title="Choose an icon">' +
+      iconBtnInner(v) +
+      '</button>' +
+      '<input type="hidden" class="icon-input ' +
+      inputClass +
+      '"' +
+      extra +
+      ' value="' +
+      String(v).replace(/"/g, '&quot;') +
+      '">' +
+      (clearable
+        ? '<button type="button" class="btn ghost sm sc-icon-clear" data-for="' +
+          inputClass +
+          '"' +
+          extra +
+          ' title="Use section default">Default</button>'
+        : '') +
+      '</div>'
+    );
+  }
+
   function unwrapDraft(raw) {
     if (typeof window.lpUnwrapSearchCanvasDraft === 'function') {
       return window.lpUnwrapSearchCanvasDraft(raw);
@@ -154,24 +188,11 @@
       if (clr && v && /^#[0-9a-fA-F]{6}$/.test(v)) clr.value = v;
       if (typeof window.persist === 'function') window.persist();
       if (typeof window.previewApply === 'function') window.previewApply();
+      if (typeof window.lpAutosave === 'function') window.lpAutosave();
     }
     if (tx) tx.addEventListener('input', function () { apply(tx.value); });
     if (clr) clr.addEventListener('input', function () { apply(clr.value); });
     if (def) def.addEventListener('click', function () { apply(''); });
-  }
-
-  function iconOptions(sel) {
-    return ICON_CHOICES.map(function (k) {
-      return (
-        '<option value="' +
-        k +
-        '"' +
-        (sel === k ? ' selected' : '') +
-        '>' +
-        (k || '— no icon —') +
-        '</option>'
-      );
-    }).join('');
   }
 
   /**
@@ -218,7 +239,10 @@
       '<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 6px">Master accent colour</h2>' +
       '<p class="lede" style="margin:0 0 10px">Controls active tabs, ticks, links and CTA accents.</p>' +
       colorRow('sc-master', 'Master accent colour', 'Leave blank to use the site theme accent.') +
-      '</div>' +
+      '<div class="f" style="margin-top:12px"><label>Bullet icon</label>' +
+      '<p class="hint" style="margin:2px 0 8px;font-size:12px;">Stroke tick from the icon library (one bullet per line). Override per tab below if needed.</p>' +
+      iconPickerHtml('sc-bullet-icon', null, S.style.bulletIconKey || 'check', false) +
+      '</div></div>' +
       '<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 6px">Layout</h2>' +
       '<div class="row"><div class="f"><label>Layout preset</label><select id="sc-preset" class="tin">' +
       [
@@ -339,6 +363,7 @@
     function save() {
       if (typeof window.persist === 'function') window.persist();
       if (typeof window.previewApply === 'function') window.previewApply();
+      if (typeof window.lpAutosave === 'function') window.lpAutosave();
     }
 
     function bindText(id, fn) {
@@ -369,6 +394,14 @@
       if (arguments.length) ensure(c).style.masterColour = v;
       return ensure(c).style.masterColour;
     });
+
+    var bulletIconInp = body.querySelector('.sc-bullet-icon');
+    if (bulletIconInp) {
+      bulletIconInp.addEventListener('input', function () {
+        ensure(c).style.bulletIconKey = bulletIconInp.value || 'check';
+        save();
+      });
+    }
 
     ['sc-preset', 'sc-image-mode', 'sc-mobile', 'sc-width'].forEach(function (id) {
       var el = $(id);
@@ -472,22 +505,29 @@
             '" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 10px"' +
             (i === 0 ? ' open' : '') +
             '>' +
-            '<summary style="cursor:pointer;font-weight:700">Tab ' +
+            '<summary style="cursor:pointer;font-weight:700;display:flex;align-items:center;gap:8px;list-style:none">' +
+            '<span style="flex:1;min-width:0">Tab ' +
             (i + 1) +
             ': ' +
             esc(t.label || 'Untitled') +
-            '</summary>' +
+            '</span>' +
+            '<span class="sc-tab-sort" style="display:inline-flex;gap:4px;flex:0 0 auto">' +
+            '<button type="button" class="btn ghost sm sc-t-up" data-i="' +
+            i +
+            '" title="Move up" aria-label="Move tab up">↑</button>' +
+            '<button type="button" class="btn ghost sm sc-t-down" data-i="' +
+            i +
+            '" title="Move down" aria-label="Move tab down">↓</button>' +
+            '</span></summary>' +
             '<div style="margin-top:10px;display:grid;gap:8px">' +
-            '<div class="row"><div class="f"><label>Tab label</label><input class="tin sc-t-label" data-i="' +
+            '<div class="row"><div class="f" style="flex:1 1 auto"><label>Tab label</label><input class="tin sc-t-label" data-i="' +
             i +
             '" value="' +
             esc(t.label || '') +
             '"></div>' +
-            '<div class="f"><label>Icon</label><select class="tin sc-t-icon" data-i="' +
-            i +
-            '">' +
-            iconOptions(t.iconKey || '') +
-            '</select></div></div>' +
+            '<div class="f" style="flex:0 0 auto"><label>Icon</label>' +
+            iconPickerHtml('sc-t-icon', i, t.iconKey || '', false) +
+            '</div></div>' +
             '<div class="f"><label>Tab heading</label><input class="tin sc-t-heading" data-i="' +
             i +
             '" value="' +
@@ -508,6 +548,9 @@
             '" rows="4">' +
             esc(bullets) +
             '</textarea></div>' +
+            '<div class="f"><label>Bullet icon override <span class="hint">optional — blank uses section default</span></label>' +
+            iconPickerHtml('sc-t-bullet-icon', i, t.bulletIconKey || '', true) +
+            '</div>' +
             '<div class="f" style="flex:1 1 100%"><label>Tab image (Cloudinary)</label>' +
             (typeof window.cwImgHTML === 'function'
               ? window.cwImgHTML('class="tin sc-t-image" data-i="' + i + '"', 'Upload or paste Cloudinary URL', 'Shown beside this service tab')
@@ -530,12 +573,6 @@
             esc((t.link && t.link.destination && t.link.destination.value) || '') +
             '"></div></div>' +
             '<div class="row" style="gap:8px;flex-wrap:wrap">' +
-            '<button type="button" class="btn ghost sm sc-t-up" data-i="' +
-            i +
-            '">↑</button>' +
-            '<button type="button" class="btn ghost sm sc-t-down" data-i="' +
-            i +
-            '">↓</button>' +
             '<button type="button" class="btn ghost sm sc-t-dup" data-i="' +
             i +
             '">Duplicate</button>' +
@@ -558,6 +595,9 @@
         if (imgEl) imgEl.value = (t.image && t.image.url) || '';
         if (pidEl) pidEl.value = (t.image && t.image.publicId) || '';
       });
+      if (typeof window.refreshIconBtns === 'function') {
+        try { window.refreshIconBtns(host); } catch (_) {}
+      }
     }
 
     drawTabs();
@@ -566,6 +606,7 @@
     if (host) {
       host.addEventListener('input', function (e) {
         var t = e.target;
+        if (t.classList.contains('sc-bullet-icon')) return;
         var i = +t.getAttribute('data-i');
         if (isNaN(i) || !ensure(c).tabs[i]) return;
         var tab = ensure(c).tabs[i];
@@ -579,6 +620,10 @@
             .map(function (x) { return x.trim(); })
             .filter(Boolean)
             .slice(0, 8);
+        } else if (t.classList.contains('sc-t-icon')) {
+          tab.iconKey = t.value || null;
+        } else if (t.classList.contains('sc-t-bullet-icon')) {
+          tab.bulletIconKey = t.value || null;
         } else if (t.classList.contains('sc-t-image')) {
           tab.image = tab.image || {};
           tab.image.url = t.value.trim() || null;
@@ -592,22 +637,37 @@
           tab.link = tab.link || { label: '', destination: null };
           var v = t.value.trim();
           tab.link.destination = v ? { type: v[0] === '#' ? 'section' : 'url', value: v } : null;
+        } else {
+          return;
         }
         save();
       });
       host.addEventListener('change', function (e) {
         var t = e.target;
         var i = +t.getAttribute('data-i');
-        if (t.classList.contains('sc-t-icon') && ensure(c).tabs[i]) {
-          ensure(c).tabs[i].iconKey = t.value || null;
-          save();
-        }
         if (t.classList.contains('sc-t-def') && ensure(c).tabs[i]) {
           ensure(c).defaultTabId = ensure(c).tabs[i].id;
           save();
         }
       });
       host.addEventListener('click', function (e) {
+        var clearBtn = e.target.closest ? e.target.closest('.sc-icon-clear') : null;
+        if (clearBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          var ci = +clearBtn.getAttribute('data-i');
+          var forCls = clearBtn.getAttribute('data-for') || '';
+          if (!isNaN(ci) && ensure(c).tabs[ci] && forCls.indexOf('sc-t-bullet-icon') >= 0) {
+            ensure(c).tabs[ci].bulletIconKey = null;
+            var ctl = clearBtn.closest('.iconctl');
+            var inp = ctl && ctl.querySelector('.icon-input');
+            var pick = ctl && ctl.querySelector('.icon-pick');
+            if (inp) inp.value = '';
+            if (pick) pick.innerHTML = iconBtnInner('');
+            save();
+          }
+          return;
+        }
         var up = e.target.closest ? e.target.closest('.cw-up') : null;
         var clr = e.target.closest ? e.target.closest('.cw-clr') : null;
         if (up || clr) {
@@ -656,9 +716,13 @@
           return;
         }
         var btn = e.target.closest ? e.target.closest('button') : null;
-        if (!btn || btn.classList.contains('cw-up') || btn.classList.contains('cw-clr')) return;
+        if (!btn || btn.classList.contains('cw-up') || btn.classList.contains('cw-clr') || btn.classList.contains('icon-pick')) return;
         var bi = +btn.getAttribute('data-i');
         var tabs = ensure(c).tabs;
+        if (btn.classList.contains('sc-t-up') || btn.classList.contains('sc-t-down')) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
         if (btn.classList.contains('sc-t-up') && bi > 0) {
           tabs.splice(bi - 1, 0, tabs.splice(bi, 1)[0]);
           save();
