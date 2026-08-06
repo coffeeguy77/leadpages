@@ -4420,5 +4420,34 @@
       "key": "theme.pipe",
       "label": "Brand colour"
     }
+  ],
+  "searchCanvas": [
+    {
+      "path": "header.eyebrow",
+      "label": "Eyebrow",
+      "type": "text"
+    },
+    {
+      "path": "header.heading",
+      "label": "Heading",
+      "type": "text"
+    },
+    {
+      "path": "header.intro",
+      "label": "Intro",
+      "type": "textarea"
+    },
+    {
+      "path": "layout.preset",
+      "label": "Layout",
+      "type": "select",
+      "options": [
+        "vertical-tabs-image-right",
+        "vertical-tabs-image-left",
+        "horizontal-tabs",
+        "cards",
+        "editorial-split"
+      ]
+    }
   ]
 }

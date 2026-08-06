@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SearchCanvas demo</title>
+  <link rel="stylesheet" href="/assets/search-canvas.css">
+  <script src="/icons.js"></script>
+  <style>
+    :root { --brand:#1f7bb8; --pipe:#1f7bb8; --ink:#1a2230; --ink-soft:#4b5565; --site-content-width:1100px; }
+    body { margin:0; font-family: "Barlow", system-ui, sans-serif; background:#f3f5f7; color:var(--ink); }
+  </style>
+</head>
+<body>
+  <section data-sec="searchCanvas" id="searchCanvas"></section>
+  <script src="/assets/search-canvas.js" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var cfg = {
+        on: true,
+        header: {
+          eyebrow: 'Our Expertise',
+          heading: 'Solutions Designed Around Your Business',
+          intro: 'Explore the services, experience and practical support our team provides.',
+          colours: {}
+        },
+        tabs: [
+          { id: 't1', label: 'Planning', iconKey: 'calendar', heading: 'Planning & advice', intro: 'Clear scoping and practical recommendations so you know the next step before work begins.', bullets: ['Discovery call', 'Scope outline', 'Timeline options', 'Transparent pricing'], image: { url: '', alt: '', fit: 'cover' }, link: { label: 'View planning', destination: null } },
+          { id: 't2', label: 'Delivery', iconKey: 'truck', heading: 'Delivery & installation', intro: 'Careful delivery with tidy workmanship and clear communication through the job.', bullets: ['Scheduled visits', 'Quality materials', 'Site care', 'Progress updates'], image: { url: '', alt: '', fit: 'cover' }, link: { label: 'View delivery', destination: null } },
+          { id: 't3', label: 'Support', iconKey: 'users', heading: 'Ongoing support', intro: 'Help after the job so systems and spaces keep performing as intended.', bullets: ['Follow-up checks', 'Practical guidance', 'Local response', 'Clear contacts'], image: { url: '', alt: '', fit: 'cover' }, link: { label: 'View support', destination: null } },
+          { id: 't4', label: 'Maintenance', iconKey: 'wrench', heading: 'Care & maintenance', intro: 'Routine care that protects your investment and keeps things running smoothly.', bullets: ['Seasonal care', 'Preventative checks', 'Repair options', 'Priority booking'], image: { url: '', alt: '', fit: 'cover' }, link: { label: 'View maintenance', destination: null } }
+        ],
+        defaultTabId: 't1',
+        style: { masterColour: null, radius: 'medium', shadow: 'soft' },
+        layout: { preset: 'vertical-tabs-image-right', imageMode: 'per-tab', mobileMode: 'single-accordion', contentWidth: 'site' },
+        cta: { enabled: false, style: 'strip' }
+      };
+      if (window.lpPaintSearchCanvas) window.lpPaintSearchCanvas(cfg);
+    });
+  </script>
+</body>
+</html>

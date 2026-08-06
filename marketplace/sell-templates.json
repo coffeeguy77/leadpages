@@ -3228,5 +3228,49 @@
         }
       }
     ]
+  },
+  "searchCanvas": {
+    "name": "SearchCanvas",
+    "tagline": "Visual SEO Content",
+    "summary": "Turn search-focused content into an attractive tabbed section with images, icons and structured service information.",
+    "hero_image_url": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&h=560&fit=crop&q=80",
+    "blocks": [
+      {
+        "block_type": "rich_text",
+        "payload": {
+          "heading": "Visual SEO Content",
+          "text": "SearchCanvas converts long-form homepage SEO into a designed tab-and-image section that still keeps every word crawlable and selectable."
+        }
+      },
+      {
+        "block_type": "benefits",
+        "payload": {
+          "heading": "Why partners sell it",
+          "items": [
+            {
+              "title": "Looks designed",
+              "text": "Tabs, icons and images instead of a wall of text."
+            },
+            {
+              "title": "SEO ready",
+              "text": "Server-rendered headings, intros and bullets for real visitors and crawlers."
+            },
+            {
+              "title": "AI connected",
+              "text": "Homepage SEO can output structured SearchCanvas JSON via Brain/OpenAI."
+            }
+          ]
+        }
+      },
+      {
+        "block_type": "playground",
+        "payload": {
+          "section_key": "searchCanvas",
+          "presets": [
+            "default"
+          ]
+        }
+      }
+    ]
   }
 }

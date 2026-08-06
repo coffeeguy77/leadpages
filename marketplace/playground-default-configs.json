@@ -2085,5 +2085,185 @@
       "cssUrls": [],
       "jsUrls": []
     }
+  },
+  "searchCanvas": {
+    "default": {
+      "on": true,
+      "version": 1,
+      "header": {
+        "eyebrow": "Our expertise",
+        "heading": "Solutions designed around your business",
+        "intro": "Explore the services, experience and practical support our team provides — structured so visitors can find what they need quickly.",
+        "colours": {
+          "eyebrow": null,
+          "heading": null,
+          "intro": null
+        }
+      },
+      "tabs": [
+        {
+          "id": "tab-vhpa9qn",
+          "label": "Planning",
+          "iconKey": "calendar",
+          "heading": "Planning & advice",
+          "intro": "Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.",
+          "content": "",
+          "bullets": [
+            "Clear scope of work",
+            "Practical options",
+            "Transparent next steps",
+            "Local, responsive service"
+          ],
+          "image": {
+            "url": null,
+            "publicId": null,
+            "alt": "",
+            "fit": "cover",
+            "objectPosition": "center"
+          },
+          "link": {
+            "label": "Learn more",
+            "destination": null
+          },
+          "button": {
+            "enabled": false,
+            "label": "",
+            "destination": null
+          },
+          "on": true
+        },
+        {
+          "id": "tab-99xfc75",
+          "label": "Delivery",
+          "iconKey": "truck",
+          "heading": "Delivery & installation",
+          "intro": "Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.",
+          "content": "",
+          "bullets": [
+            "Clear scope of work",
+            "Practical options",
+            "Transparent next steps",
+            "Local, responsive service"
+          ],
+          "image": {
+            "url": null,
+            "publicId": null,
+            "alt": "",
+            "fit": "cover",
+            "objectPosition": "center"
+          },
+          "link": {
+            "label": "Learn more",
+            "destination": null
+          },
+          "button": {
+            "enabled": false,
+            "label": "",
+            "destination": null
+          },
+          "on": true
+        },
+        {
+          "id": "tab-dk871zb",
+          "label": "Support",
+          "iconKey": "users",
+          "heading": "Ongoing support",
+          "intro": "Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.",
+          "content": "",
+          "bullets": [
+            "Clear scope of work",
+            "Practical options",
+            "Transparent next steps",
+            "Local, responsive service"
+          ],
+          "image": {
+            "url": null,
+            "publicId": null,
+            "alt": "",
+            "fit": "cover",
+            "objectPosition": "center"
+          },
+          "link": {
+            "label": "Learn more",
+            "destination": null
+          },
+          "button": {
+            "enabled": false,
+            "label": "",
+            "destination": null
+          },
+          "on": true
+        },
+        {
+          "id": "tab-a4epcgq",
+          "label": "Maintenance",
+          "iconKey": "wrench",
+          "heading": "Care & maintenance",
+          "intro": "Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.",
+          "content": "",
+          "bullets": [
+            "Clear scope of work",
+            "Practical options",
+            "Transparent next steps",
+            "Local, responsive service"
+          ],
+          "image": {
+            "url": null,
+            "publicId": null,
+            "alt": "",
+            "fit": "cover",
+            "objectPosition": "center"
+          },
+          "link": {
+            "label": "Learn more",
+            "destination": null
+          },
+          "button": {
+            "enabled": false,
+            "label": "",
+            "destination": null
+          },
+          "on": true
+        }
+      ],
+      "defaultTabId": "tab-vhpa9qn",
+      "style": {
+        "masterColour": null,
+        "sectionBackground": null,
+        "panelBackground": null,
+        "tabBackground": null,
+        "activeTabBackground": null,
+        "borderColour": null,
+        "headingColour": null,
+        "bodyColour": null,
+        "mutedColour": null,
+        "radius": "medium",
+        "shadow": "soft"
+      },
+      "layout": {
+        "preset": "vertical-tabs-image-right",
+        "imageMode": "per-tab",
+        "mobileMode": "single-accordion",
+        "contentWidth": "site"
+      },
+      "cta": {
+        "enabled": false,
+        "style": "strip",
+        "iconKey": null,
+        "heading": "",
+        "text": "",
+        "primaryLabel": "",
+        "primaryDestination": null,
+        "secondaryLabel": "",
+        "secondaryDestination": null
+      },
+      "ai": {
+        "primaryKeyword": "",
+        "location": "",
+        "source": "manual",
+        "generatedAt": null,
+        "generationId": null
+      }
+    }
   }
 }

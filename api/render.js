@@ -763,6 +763,48 @@ function injectOnlineQuote(html, slug, cfg) {
     : (html + block);
 }
 
+/**
+ * SSR SearchCanvas: all tab text in the document for crawlers + no-JS visitors.
+ */
+function injectSearchCanvas(html, cfg) {
+  const sec = cfg && cfg.sections && cfg.sections.searchCanvas;
+  if (!html || !sec || sec.on !== true) return html;
+  try {
+    const { renderSearchCanvasHtml } = require('../lib/search-canvas/render');
+    let icons = {};
+    try {
+      // icons.js assigns window.LP_ICONS — load paths for SSR via a tiny extract if available
+      const iconsPath = path.join(__dirname, '..', 'icons.js');
+      if (fs.existsSync(iconsPath)) {
+        const src = fs.readFileSync(iconsPath, 'utf8');
+        const m = src.match(/LP_ICONS\s*=\s*(\{[\s\S]*?\});/);
+        if (m) {
+          // eslint-disable-next-line no-new-func
+          icons = Function('return (' + m[1] + ')')() || {};
+        }
+      }
+    } catch (_ic) {
+      icons = {};
+    }
+    const block = renderSearchCanvasHtml(sec, {
+      force: true,
+      instanceId: 'sc-ssr',
+      icons: icons
+    });
+    if (!block) return html;
+    if (/<section[^>]*data-sec="searchCanvas"[^>]*>[\s\S]*?<\/section>/.test(html)) {
+      return html.replace(/<section[^>]*data-sec="searchCanvas"[^>]*>[\s\S]*?<\/section>/, block);
+    }
+    if (html.includes('<section data-sec="seoText"')) {
+      return html.replace('<section data-sec="seoText"', block + '<section data-sec="seoText"');
+    }
+    return html.includes('</body>') ? html.replace('</body>', block + '</body>') : html + block;
+  } catch (e) {
+    console.error('injectSearchCanvas', e && e.message);
+    return html;
+  }
+}
+
 function visitorAppearanceCfg(cfg) {
   const va = (cfg && cfg.visitorAppearance) || {};
   return {
@@ -1152,6 +1194,7 @@ module.exports = async (req, res) => {
         html = prepareTradeLiveHtml(html, cfg);
       } catch (_guardErr) { /* never break live render */ }
       html = injectOnlineQuote(html, site.slug, cfg);
+      html = injectSearchCanvas(html, cfg);
     }
 
     return sendHtml(res, html, isLive, { slug: site.slug, siteId: site.id });
