@@ -538,9 +538,9 @@
             '" rows="3">' +
             esc(t.intro || '') +
             '</textarea></div>' +
-            '<div class="f"><label>Supporting content</label><textarea class="tin sc-t-content" data-i="' +
+            '<div class="f"><label>Supporting heading <span class="hint">bold, like the tab heading</span></label><textarea class="tin sc-t-content" data-i="' +
             i +
-            '" rows="3">' +
+            '" rows="2">' +
             esc(t.content || '') +
             '</textarea></div>' +
             '<div class="f"><label>Bullet points <span class="hint">one per line</span></label><textarea class="tin sc-t-bullets" data-i="' +

@@ -235,6 +235,12 @@
     }).join('\n');
   }
 
+  function supportHeadingHtml(text) {
+    var raw = String(text || '').replace(/\r\n/g, '\n').trim();
+    if (!raw) return '';
+    return '<h4 class="sc-tab-support">' + esc(raw).replace(/\n/g, '<br>\n') + '</h4>';
+  }
+
   function emptyStateHtml(header) {
     return (
       '<div class="wrap sc-wrap">' +
@@ -336,7 +342,7 @@
       return '<article class="sc-panel' + (active ? ' is-active' : '') + '" role="tabpanel" id="' + uid + '-panel-' + esc(tab.id) + '" aria-labelledby="' + uid + '-tab-' + esc(tab.id) + '"' + (active ? '' : ' hidden') + ' data-sc-panel="' + esc(tab.id) + '">' +
         '<h3 class="sc-tab-heading">' + esc(tab.heading || tab.label) + '</h3>' +
         (tab.intro ? '<p class="sc-tab-intro">' + esc(tab.intro) + '</p>' : '') +
-        '<div class="sc-tab-body">' + paragraphsHtml(tab.content) + '</div>' +
+        supportHeadingHtml(tab.content) +
         (bullets ? '<ul class="sc-bullets">' + bullets + '</ul>' : '') +
         (tab.link && tab.link.label ? (href ? '<a class="sc-text-link" href="' + esc(href) + '" data-sc-link="' + esc(tab.id) + '">' + esc(tab.link.label) + ' <span aria-hidden="true">→</span></a>' : '<span class="sc-text-link sc-link-disconnected">' + esc(tab.link.label) + '</span>') : '') +
         '</article>';
@@ -367,7 +373,7 @@
         (img && img.url ? '<figure class="sc-figure sc-acc-figure"><img class="sc-img" src="' + esc(img.url) + '" alt="' + esc(img.alt || tab.heading || '') + '" loading="lazy"></figure>' : '') +
         '<div class="sc-acc-copy"><h3 class="sc-tab-heading">' + esc(tab.heading || tab.label) + '</h3>' +
         (tab.intro ? '<p class="sc-tab-intro">' + esc(tab.intro) + '</p>' : '') +
-        '<div class="sc-tab-body">' + paragraphsHtml(tab.content) + '</div>' +
+        supportHeadingHtml(tab.content) +
         ((tab.bullets || []).length ? '<ul class="sc-bullets">' + tab.bullets.map(function (b) { return '<li>' + bulletTickHtml(tab, style) + '<span>' + esc(b) + '</span></li>'; }).join('') + '</ul>' : '') +
         '</div></div></div>';
     }).join('');
