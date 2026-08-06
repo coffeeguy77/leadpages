@@ -38,6 +38,23 @@ const PREMIUM_GALLERY_APP = {
   updated_at: new Date().toISOString()
 };
 
+const SEARCH_CANVAS_APP = {
+  name: 'SearchCanvas',
+  slug: 'search-canvas',
+  section_key: 'searchCanvas',
+  tier: 'free',
+  tagline: 'Visual SEO Content',
+  description:
+    'Turn search-focused content into an attractive tabbed section with images, icons and structured service information. Preferred output for AI Homepage SEO.',
+  default_position: 'mid',
+  marketplace_status: 'live',
+  builder_visible: true,
+  can_reposition: true,
+  hero_exclusive: false,
+  sort_order: 72,
+  updated_at: new Date().toISOString()
+};
+
 async function ensureLpAccessibilityApp() {
   const { data: existing } = await sb.from('app_registry')
     .select('id')
@@ -62,6 +79,39 @@ async function ensurePremiumGalleryApp() {
     existing.marketplace_status !== 'live' ||
     existing.builder_visible !== true ||
     existing.default_position !== 'upper'
+  ) {
+    await sb.from('app_registry').update({
+      name: row.name,
+      slug: row.slug,
+      tagline: row.tagline,
+      description: row.description,
+      tier: row.tier,
+      default_position: row.default_position,
+      marketplace_status: 'live',
+      builder_visible: true,
+      can_reposition: true,
+      hero_exclusive: false,
+      sort_order: row.sort_order,
+      updated_at: row.updated_at
+    }).eq('id', existing.id);
+  }
+}
+
+async function ensureSearchCanvasApp() {
+  const row = Object.assign({}, SEARCH_CANVAS_APP, { updated_at: new Date().toISOString() });
+  const { data: existing } = await sb.from('app_registry')
+    .select('id,marketplace_status,builder_visible,default_position,name,tagline')
+    .eq('section_key', 'searchCanvas')
+    .maybeSingle();
+  if (!existing) {
+    await sb.from('app_registry').upsert(row, { onConflict: 'slug' });
+    return;
+  }
+  if (
+    existing.marketplace_status !== 'live' ||
+    existing.builder_visible !== true ||
+    existing.default_position !== 'mid' ||
+    existing.name !== row.name
   ) {
     await sb.from('app_registry').update({
       name: row.name,
@@ -121,6 +171,11 @@ module.exports = async (req, res) => {
     if (all) {
       await ensureLpAccessibilityApp();
       await ensurePremiumGalleryApp();
+      await ensureSearchCanvasApp();
+    }
+    // Public marketplace list should also auto-register SearchCanvas once.
+    if (!all && !slug) {
+      try { await ensureSearchCanvasApp(); } catch (_e) { /* non-fatal */ }
     }
     const {data:apps,error:ae} = await q;
     if (ae) return res.status(500).json({error:ae.message});
