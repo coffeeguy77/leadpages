@@ -1183,6 +1183,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
 "use strict";
 (function(){
   const $ = id => document.getElementById(id);
+  try { window.$ = $; } catch (_e) {}
   const fmt = n => '$'+Math.round(n).toLocaleString('en-AU');
   const capOf = x => (x===null||x===undefined)?Infinity:x;
 
