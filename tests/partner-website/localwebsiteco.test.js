@@ -63,10 +63,40 @@ test('buildPartnerLandingHtml — renders Local Website Co. template at partners
   assert.ok(html.includes('Powered by LeadPages Australia'));
   assert.ok(html.includes('lwc-final-photo'));
   assert.ok(html.includes('lwc-about-photo'));
+  assert.ok(html.includes('/assets/partner-templates/localwebsiteco/about-shaun.jpg'));
+  assert.ok(html.includes('/assets/partner-templates/localwebsiteco/tech-strip.jpg'));
+  assert.ok(html.includes('/assets/partner-templates/localwebsiteco/contact-meeting.jpg'));
   assert.ok(html.includes('data-lwc-faq'));
   assert.ok(html.includes('--lwc-max:1240px') || html.includes('calc(100% - 64px)') || html.includes('lwc-shell'));
   assert.ok(!/\sclass="[^"]*\bwc-body\b/.test(html));
   assert.ok(!html.includes('/assets/partner-templates/webculture.css'));
+  assert.ok(!html.includes('headshot-sv8msu50.svg'));
+});
+
+test('buildLocalWebsiteCoCopy — rejects SVG headshot and prefers curated demos', function() {
+  const { buildLocalWebsiteCoCopy } = require('../../lib/partner-website/localwebsiteco-theme');
+  const copy = buildLocalWebsiteCoCopy({
+    partner: {
+      firstName: 'Shaun',
+      agencyName: 'Web Culture',
+      headshotUrl: 'https://res.cloudinary.com/example/image/upload/v1/profile/headshot.svg'
+    },
+    demos: [
+      { name: 'Bean Culture', industry: 'Builder', thumbnail: 'https://example.com/a.jpg', description: 'x' },
+      { name: 'RTT Truck', industry: 'Diesel Mechanic', thumbnail: 'https://example.com/b.jpg', description: 'y' }
+    ],
+    testimonials: [
+      { customerName: 'Jenny', businessName: 'Wholesale', text: 'Great work' }
+    ]
+  });
+  assert.ok(copy.about.image.indexOf('about-shaun.jpg') !== -1);
+  assert.ok(copy.trust.image.indexOf('tech-strip.jpg') !== -1);
+  assert.ok(copy.contact.image.indexOf('contact-meeting.jpg') !== -1);
+  assert.equal(copy.demos.cards[0].name, 'Flow Pro Plumbing');
+  assert.equal(copy.demos.cards.length, 6);
+  assert.equal(copy.testimonials.items.length, 3);
+  assert.equal(copy.testimonials.items[0].customerName, 'Jenny');
+  assert.equal(copy.testimonials.items[1].customerName, 'Megan');
 });
 
 test('buildPartnerLandingHtml — default still renders Web Culture', function() {
