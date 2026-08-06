@@ -125,13 +125,24 @@ async function assertSiteAccess(user, siteId) {
 
 function servicesFromSite(site) {
   const cfg = (site && site.config) || {};
-  const list = Array.isArray(cfg.services) ? cfg.services : [];
-  const fromRoot = list.map((s) => s && (s.title || s.name)).filter(Boolean);
-  const sec = cfg.sections && cfg.sections.services;
-  const fromSec = Array.isArray(sec && sec.items)
-    ? sec.items.map((s) => s && (s.title || s.name)).filter(Boolean)
-    : [];
-  return fromRoot.length ? fromRoot : fromSec;
+  function titlesFrom(list) {
+    if (!Array.isArray(list)) return [];
+    return list
+      .filter(function (s) {
+        return s && s.on !== false;
+      })
+      .map(function (s) {
+        if (typeof s === 'string') return s.trim();
+        return String((s && (s.title || s.name || s.label || s.heading)) || '').trim();
+      })
+      .filter(Boolean);
+  }
+  const fromRoot = titlesFrom(cfg.services);
+  if (fromRoot.length) return fromRoot.slice(0, 8);
+  const sec = (cfg.sections && cfg.sections.services) || {};
+  const fromSec = titlesFrom(sec.items || sec.cards || sec.list || sec.services);
+  if (fromSec.length) return fromSec.slice(0, 8);
+  return [];
 }
 
 function pagesFromSite(site) {
@@ -247,8 +258,12 @@ module.exports = async function searchCanvasDraft(req, res) {
   });
 
   if (!result.ok) {
-    // Soft-fallback to deterministic mock so editor flows still work in CI / missing keys.
-    if (String(process.env.BRAIN_SEARCH_CANVAS_FALLBACK_MOCK || '1') !== '0') {
+    // Only soft-fallback to mock when explicitly enabled — never silently ship
+    // Planning/Delivery placeholders when a real provider fails.
+    const allowMock =
+      String(process.env.BRAIN_SEARCH_CANVAS_FALLBACK_MOCK || '').toLowerCase() === '1' ||
+      String(process.env.BRAIN_SEARCH_CANVAS_FALLBACK_MOCK || '').toLowerCase() === 'true';
+    if (allowMock) {
       const draft = mockSearchCanvasDraft(brief);
       return json(res, 200, {
         ok: true,

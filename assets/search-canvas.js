@@ -220,36 +220,27 @@
     }).join('\n');
   }
 
-  function fallbackTabs() {
-    var labels = [
-      { label: 'Planning', iconKey: 'calendar', heading: 'Planning & advice' },
-      { label: 'Delivery', iconKey: 'truck', heading: 'Delivery & installation' },
-      { label: 'Support', iconKey: 'users', heading: 'Ongoing support' },
-      { label: 'Maintenance', iconKey: 'wrench', heading: 'Care & maintenance' }
-    ];
-    return labels.map(function (L, i) {
-      return {
-        id: 'tab-fallback-' + i,
-        label: L.label,
-        iconKey: L.iconKey,
-        heading: L.heading,
-        intro: 'Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.',
-        content: '',
-        bullets: ['Clear scope of work', 'Practical options', 'Transparent next steps', 'Local, responsive service'],
-        image: { url: null, publicId: null, alt: '', fit: 'cover', objectPosition: 'center' },
-        link: { label: 'Learn more', destination: null },
-        button: { enabled: false, label: '', destination: null },
-        on: true
-      };
-    });
+  function emptyStateHtml(header) {
+    return (
+      '<div class="wrap sc-wrap">' +
+      '<header class="sc-header">' +
+      (header.eyebrow ? '<p class="eyebrow sc-eyebrow">' + esc(header.eyebrow) + '</p>' : '') +
+      (header.heading ? '<h2 class="sc-heading">' + esc(header.heading) + '</h2>' : '') +
+      (header.intro ? '<p class="sc-intro">' + esc(header.intro) + '</p>' : '') +
+      '</header>' +
+      '<div class="sc-empty" role="status"><p class="sc-empty-msg">Generate with AI to create service tabs for this business.</p></div>' +
+      '</div>'
+    );
   }
 
   /**
    * Paint SearchCanvas from site config into the section node (live preview + client boot).
-   * Never leaves an on-section as a blank white shell — seeds defaults when tabs are missing.
+   * Never invents Planning/Delivery placeholders. Empty tabs → header + generate prompt.
+   * Does not mutate the live config object.
    */
   window.lpPaintSearchCanvas = function (cfgOrSection, rootOpt) {
-    var cfg = cfgOrSection && cfgOrSection.tabs ? cfgOrSection : (cfgOrSection && cfgOrSection.sections && cfgOrSection.sections.searchCanvas) || cfgOrSection || {};
+    var src = cfgOrSection && cfgOrSection.tabs ? cfgOrSection : (cfgOrSection && cfgOrSection.sections && cfgOrSection.sections.searchCanvas) || cfgOrSection || {};
+    var cfg = src;
     var root = rootOpt || document.querySelector('[data-sec="searchCanvas"]');
     if (!root) return;
     var on = cfg.on === true;
@@ -260,44 +251,28 @@
       return;
     }
 
-    if (!cfg.header || typeof cfg.header !== 'object') {
-      cfg.header = {
-        eyebrow: 'Our expertise',
-        heading: 'Solutions designed around your business',
-        intro: 'Explore the services, experience and practical support our team provides — structured so visitors can find what they need quickly.',
-        colours: {}
-      };
-    }
-    if (!Array.isArray(cfg.tabs) || !cfg.tabs.length) {
-      cfg.tabs = fallbackTabs();
-      cfg.defaultTabId = cfg.tabs[0] && cfg.tabs[0].id;
-    }
-
-    var tabs = cfg.tabs.filter(function (t) { return t && t.on !== false; }).slice(0, 8);
-    if (!tabs.length) {
-      cfg.tabs = fallbackTabs();
-      tabs = cfg.tabs.slice();
-    }
-    var header = cfg.header || {};
+    var header = (cfg.header && typeof cfg.header === 'object') ? cfg.header : {
+      eyebrow: 'Our expertise',
+      heading: 'Solutions designed around your business',
+      intro: 'Explore the services our team provides — generate with AI to build service tabs.',
+      colours: {}
+    };
     var style = cfg.style || {};
     var layout = cfg.layout || {};
     var cta = cfg.cta || {};
-    var defaultId = cfg.defaultTabId || (tabs[0] && tabs[0].id) || 'tab-0';
-    if (!tabs.some(function (t) { return t.id === defaultId; })) defaultId = tabs[0].id || 'tab-0';
-    tabs.forEach(function (t, i) { if (!t.id) t.id = 'tab-' + i; });
+    var tabs = (Array.isArray(cfg.tabs) ? cfg.tabs : []).filter(function (t) { return t && t.on !== false; }).slice(0, 8);
 
     var uid = root.getAttribute('data-sc-uid') || 'sc';
     root.setAttribute('data-sc-uid', uid);
     root.setAttribute('data-sc-mobile', layout.mobileMode === 'multi-accordion' ? 'multi-accordion' : 'single-accordion');
-    root.setAttribute('data-sc-default', defaultId);
     root.className = 'section sc-section is-on sc-radius-' + (style.radius || 'medium') +
       ' sc-shadow-' + (style.shadow || 'soft') +
-      ' sc-width-' + (layout.contentWidth || 'site') +
+      ' sc-width-' + (layout.contentWidth || 'wide') +
       ' sc-preset-' + (layout.preset || 'vertical-tabs-image-right') +
-      (layout.imageMode === 'none' ? ' sc-no-image' : layout.imageMode === 'shared' ? ' sc-shared-image' : ' sc-per-tab-image');
+      (layout.imageMode === 'none' ? ' sc-no-image' : layout.imageMode === 'shared' ? ' sc-shared-image' : ' sc-per-tab-image') +
+      (tabs.length ? '' : ' sc-empty-tabs');
 
     var accent = deriveAccent(style.masterColour);
-    // Set CSS vars without wiping display / other inline styles.
     function setVar(name, val) {
       if (val) root.style.setProperty(name, val);
       else root.style.removeProperty(name);
@@ -317,6 +292,17 @@
     setVar('--sc-heading-color', hc.heading);
     setVar('--sc-intro-color', hc.intro);
     root.style.display = 'block';
+
+    if (!tabs.length) {
+      root.innerHTML = emptyStateHtml(header);
+      root.__scBound = false;
+      return;
+    }
+
+    var defaultId = cfg.defaultTabId || (tabs[0] && tabs[0].id) || 'tab-0';
+    if (!tabs.some(function (t) { return t.id === defaultId; })) defaultId = tabs[0].id || 'tab-0';
+    tabs.forEach(function (t, i) { if (!t.id) t.id = 'tab-' + i; });
+    root.setAttribute('data-sc-default', defaultId);
 
     var imageMode = layout.imageMode || 'per-tab';
     var shared = imageMode === 'shared' ? tabs.find(function (t) { return t.image && t.image.url; }) : null;
