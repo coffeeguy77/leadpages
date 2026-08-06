@@ -121,13 +121,22 @@
     root.addEventListener('click', function (e) {
       var a = e.target && e.target.closest ? e.target.closest('a[data-sc-link], a[data-sc-btn], a[data-sc-cta]') : null;
       if (!a || !root.contains(a)) return;
+      var href = String(a.getAttribute('href') || '');
+      var action = a.getAttribute('data-sc-cta-action') || '';
+      if (!action) {
+        if (/^tel:/i.test(href)) action = 'call';
+        else if (/#quote/i.test(href)) action = 'quote';
+        else action = a.getAttribute('data-sc-cta') ? 'custom' : 'link';
+      }
       var kind = a.getAttribute('data-sc-cta')
         ? 'searchcanvas_cta_click'
         : 'searchcanvas_internal_link_click';
       track(kind, {
         appInstanceId: root.getAttribute('data-sc-uid') || '',
         tabId: a.getAttribute('data-sc-link') || a.getAttribute('data-sc-btn') || '',
-        source: a.getAttribute('data-sc-cta') || 'link'
+        source: a.getAttribute('data-sc-cta') || 'link',
+        action: action,
+        href: href
       });
     });
   }
@@ -260,7 +269,7 @@
     var style = cfg.style || {};
     var layout = cfg.layout || {};
     var cta = cfg.cta || {};
-    var tabs = (Array.isArray(cfg.tabs) ? cfg.tabs : []).filter(function (t) { return t && t.on !== false; }).slice(0, 8);
+    var tabs = (Array.isArray(cfg.tabs) ? cfg.tabs : []).filter(function (t) { return t && t.on !== false; }).slice(0, 12);
 
     var uid = root.getAttribute('data-sc-uid') || 'sc';
     root.setAttribute('data-sc-uid', uid);
@@ -359,13 +368,19 @@
 
     var ctaHtml = '';
     if (cta.enabled && (cta.heading || cta.text || cta.primaryLabel)) {
-      var pHref = destHref(cta.primaryDestination);
+      var dest = cta.primaryDestination;
+      if (!dest || !destHref(dest)) {
+        dest = { type: 'section', value: '#quote' };
+      }
+      var pHref = destHref(dest);
+      var ctaAction = cta.action || (/^tel:/i.test(pHref) ? 'call' : /#quote/i.test(pHref) ? 'quote' : 'custom');
+      var ctaLabel = cta.primaryLabel || (ctaAction === 'call' ? 'Call Now' : 'Get a Free Quote');
       ctaHtml = '<aside class="sc-cta sc-cta-' + esc(cta.style || 'strip') + '">' +
         '<div class="sc-cta-copy">' +
         (cta.heading ? '<p class="sc-cta-heading">' + esc(cta.heading) + '</p>' : '') +
         (cta.text ? '<p class="sc-cta-text">' + esc(cta.text) + '</p>' : '') +
         '</div><div class="sc-cta-actions">' +
-        (cta.primaryLabel ? (pHref ? '<a class="sc-btn" href="' + esc(pHref) + '" data-sc-cta="primary">' + esc(cta.primaryLabel) + '</a>' : '<span class="sc-btn" data-sc-cta="primary">' + esc(cta.primaryLabel) + '</span>') : '') +
+        (ctaLabel ? '<a class="sc-btn" href="' + esc(pHref || '#quote') + '" data-sc-cta="primary" data-sc-cta-action="' + esc(ctaAction) + '">' + esc(ctaLabel) + '</a>' : '') +
         '</div></aside>';
     }
 

@@ -267,7 +267,7 @@
       '<button type="button" class="btn sm" id="sc-add-tab">+ Add tab</button></div>' +
       '<div id="sc-tabs-host" style="margin-top:12px"></div>' +
       '<p class="hint" id="sc-tab-empty" style="display:none">No service tabs yet — click Generate with AI (or Add tab).</p>' +
-      '<p class="hint" id="sc-tab-warn" style="display:none;color:var(--warning,#b45309)">You have more than 8 tabs — keep the set focused for visitors and SEO.</p></div>' +
+      '<p class="hint" id="sc-tab-warn" style="display:none;color:var(--warning,#b45309)">You have more than 12 tabs — keep the set focused for visitors and SEO.</p></div>' +
       '<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 6px">Closing CTA</h2>' +
       '<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="sc-cta-on"' +
       (S.cta.enabled ? ' checked' : '') +
@@ -279,11 +279,24 @@
       esc(S.cta.text || '') +
       '</textarea></div>' +
       '<div class="row"><div class="f"><label>Primary button</label><input class="tin" id="sc-cta-btn" value="' +
-      esc(S.cta.primaryLabel || '') +
+      esc(S.cta.primaryLabel || 'Get a Free Quote') +
       '"></div>' +
-      '<div class="f"><label>Button destination</label><input class="tin" id="sc-cta-href" placeholder="#quote or https://…" value="' +
-      esc((S.cta.primaryDestination && S.cta.primaryDestination.value) || '') +
-      '"></div></div>' +
+      '<div class="f"><label>Button action</label><select id="sc-cta-action" class="tin">' +
+      [
+        ['quote', 'Quote form (#quote)'],
+        ['call', 'Call phone'],
+        ['custom', 'Custom URL / section']
+      ]
+        .map(function (o) {
+          var curAct = S.cta.action || (/^tel:/i.test((S.cta.primaryDestination && S.cta.primaryDestination.value) || '') ? 'call' : 'quote');
+          return '<option value="' + o[0] + '"' + (curAct === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+        })
+        .join('') +
+      '</select></div></div>' +
+      '<div class="f" id="sc-cta-custom-wrap"><label>Custom destination</label><input class="tin" id="sc-cta-href" placeholder="#quote, tel:… or https://…" value="' +
+      esc((S.cta.primaryDestination && S.cta.primaryDestination.value) || '#quote') +
+      '"></div>' +
+      '<p class="hint" style="margin:6px 0 0">Quote form scrolls to the homepage form. Call uses the site phone. Clicks are tracked as <code>searchcanvas_cta_click</code>.</p>' +
       '<div class="f"><label>CTA style</label><select id="sc-cta-style" class="tin">' +
       [
         ['strip', 'Inline strip'],
@@ -296,17 +309,28 @@
         .join('') +
       '</select></div></div>' +
       '<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 6px">AI regenerate — LeadPages Brain</h2>' +
-      '<p class="lede" style="margin:0 0 10px">Uses OpenAI via Brain to create <strong>service tabs</strong> for this business (not generic Planning/Delivery). Primary keyword required.</p>' +
+      '<p class="lede" style="margin:0 0 10px">Creates <strong>service tabs</strong> from your keyword, site services, and anything you list below. Primary keyword required.</p>' +
       '<div class="row"><div class="f"><label for="sc-ai-kw">Primary keyword <span class="hint">required</span></label><input id="sc-ai-kw" class="tin" value="' +
       esc(S.ai.primaryKeyword || c.primaryKeyword || '') +
       '"></div>' +
       '<div class="f"><label for="sc-ai-loc">Location</label><input id="sc-ai-loc" class="tin" value="' +
       esc(S.ai.location || '') +
       '"></div></div>' +
-      '<div class="f"><label for="sc-ai-extra">Extra information <span class="hint">optional</span></label><textarea id="sc-ai-extra" class="tin" rows="3" placeholder="Important business-specific facts for OpenAI to incorporate…"></textarea></div>' +
-      '<div class="row"><div class="f"><label>Number of tabs</label><select id="sc-ai-tabs" class="tin"><option>4</option><option selected>5</option><option>6</option></select></div>' +
+      '<div class="f"><label for="sc-ai-must">Must-include services <span class="hint">one per line — each becomes a tab</span></label><textarea id="sc-ai-must" class="tin" rows="3" placeholder="Water Tanks&#10;Retaining Walls&#10;Garden Maintenance">' +
+      esc((S.ai.mustIncludeServices || []).join('\n')) +
+      '</textarea></div>' +
+      '<div class="f"><label for="sc-ai-extra">Extra information for AI <span class="hint">optional — AI reads this to create/adjust tabs</span></label><textarea id="sc-ai-extra" class="tin" rows="3" placeholder="e.g. We also do water tanks and rural fencing across the Yass Valley…">' +
+      esc(S.ai.extraInfo || '') +
+      '</textarea></div>' +
+      '<div class="row"><div class="f"><label>Number of tabs</label><select id="sc-ai-tabs" class="tin">' +
+      [4, 5, 6, 7, 8, 9, 10, 11, 12]
+        .map(function (n) {
+          return '<option value="' + n + '"' + (n === 5 ? ' selected' : '') + '>' + n + '</option>';
+        })
+        .join('') +
+      '</select></div>' +
       '<div class="f"><label>Generation mode</label><select id="sc-ai-mode" class="tin"><option value="replace" selected>Replace all tabs with AI services</option><option value="preserve">Preserve edited fields</option><option value="fillEmpty">Fill empty fields only</option></select></div></div>' +
-      '<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="sc-ai-faq"> Also update homepage FAQ</label>' +
+      '<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="sc-ai-faq"> Also update homepage FAQ (placed under SearchCanvas)</label>' +
       '<div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" id="sc-ai-go">Generate with AI</button><span class="hint" id="sc-ai-note"></span></div></div>';
 
     body.innerHTML = h;
@@ -362,11 +386,68 @@
     bindText('sc-cta-heading', function (v) { ensure(c).cta.heading = v; });
     bindText('sc-cta-text', function (v) { ensure(c).cta.text = v; });
     bindText('sc-cta-btn', function (v) { ensure(c).cta.primaryLabel = v; });
+
+    function sitePhone() {
+      return String(c.phoneText || c.phone || c.tel || '').trim();
+    }
+    function applyCtaAction(action, customVal) {
+      var S2 = ensure(c);
+      S2.cta = S2.cta || {};
+      S2.cta.action = action || 'quote';
+      if (action === 'quote') {
+        S2.cta.primaryDestination = { type: 'section', value: '#quote' };
+        if (!S2.cta.primaryLabel) S2.cta.primaryLabel = 'Get a Free Quote';
+      } else if (action === 'call') {
+        var ph = sitePhone();
+        S2.cta.primaryDestination = {
+          type: 'phone',
+          value: ph ? 'tel:' + ph.replace(/\s+/g, '') : 'tel:'
+        };
+        if (!S2.cta.primaryLabel || /quote/i.test(S2.cta.primaryLabel)) S2.cta.primaryLabel = 'Call Now';
+      } else {
+        var v = String(customVal != null ? customVal : (($('sc-cta-href') && $('sc-cta-href').value) || '')).trim();
+        if (!v) v = '#quote';
+        var type = v.indexOf('tel:') === 0 ? 'phone' : v[0] === '#' ? 'section' : 'url';
+        S2.cta.primaryDestination = { type: type, value: v };
+      }
+      var wrap = $('sc-cta-custom-wrap');
+      if (wrap) wrap.style.display = action === 'custom' ? '' : 'none';
+      var href = $('sc-cta-href');
+      if (href && action !== 'custom') {
+        href.value = (S2.cta.primaryDestination && S2.cta.primaryDestination.value) || '';
+      }
+    }
+    var ctaAction = $('sc-cta-action');
+    if (ctaAction) {
+      applyCtaAction(ctaAction.value);
+      ctaAction.addEventListener('change', function () {
+        applyCtaAction(ctaAction.value);
+        save();
+      });
+    }
     bindText('sc-cta-href', function (v) {
-      ensure(c).cta.primaryDestination = v ? { type: v[0] === '#' ? 'section' : 'url', value: v } : null;
+      var act = ($('sc-cta-action') && $('sc-cta-action').value) || 'custom';
+      if (act !== 'custom') {
+        if ($('sc-cta-action')) $('sc-cta-action').value = 'custom';
+        act = 'custom';
+      }
+      applyCtaAction(act, v);
     });
     var ctaOn = $('sc-cta-on');
-    if (ctaOn) ctaOn.addEventListener('change', function () { ensure(c).cta.enabled = !!ctaOn.checked; save(); });
+    if (ctaOn) {
+      ctaOn.addEventListener('change', function () {
+        var S2 = ensure(c);
+        S2.cta.enabled = !!ctaOn.checked;
+        if (S2.cta.enabled) {
+          if (!S2.cta.primaryLabel) S2.cta.primaryLabel = 'Get a Free Quote';
+          if (!S2.cta.action) S2.cta.action = 'quote';
+          if (!S2.cta.primaryDestination || !S2.cta.primaryDestination.value) {
+            S2.cta.primaryDestination = { type: 'section', value: '#quote' };
+          }
+        }
+        save();
+      });
+    }
     var ctaStyle = $('sc-cta-style');
     if (ctaStyle) ctaStyle.addEventListener('change', function () { ensure(c).cta.style = ctaStyle.value; save(); });
 
@@ -376,7 +457,7 @@
       var empty = $('sc-tab-empty');
       if (!host) return;
       var tabs = ensure(c).tabs;
-      if (warn && warn.style) warn.style.display = tabs.length > 8 ? '' : 'none';
+      if (warn && warn.style) warn.style.display = tabs.length > 12 ? '' : 'none';
       if (empty && empty.style) empty.style.display = tabs.length ? 'none' : '';
       if (!tabs.length) {
         host.innerHTML = '';
@@ -427,16 +508,17 @@
             '" rows="4">' +
             esc(bullets) +
             '</textarea></div>' +
-            '<div class="row"><div class="f"><label>Image URL</label><input class="tin sc-t-image" data-i="' +
-            i +
-            '" value="' +
-            esc((t.image && t.image.url) || '') +
-            '"></div>' +
+            '<div class="f" style="flex:1 1 100%"><label>Tab image (Cloudinary)</label>' +
+            (typeof window.cwImgHTML === 'function'
+              ? window.cwImgHTML('class="tin sc-t-image" data-i="' + i + '"', 'Upload or paste Cloudinary URL', 'Shown beside this service tab')
+              : '<input class="tin sc-t-image" data-i="' + i + '" value="' + esc((t.image && t.image.url) || '') + '">') +
+            '<input type="hidden" class="sc-t-pid" data-i="' + i + '" value="' + esc((t.image && t.image.publicId) || '') + '">' +
+            '</div>' +
             '<div class="f"><label>Image alt</label><input class="tin sc-t-alt" data-i="' +
             i +
             '" value="' +
             esc((t.image && t.image.alt) || '') +
-            '"></div></div>' +
+            '"></div>' +
             '<div class="row"><div class="f"><label>Text link label</label><input class="tin sc-t-link" data-i="' +
             i +
             '" value="' +
@@ -469,6 +551,13 @@
           );
         })
         .join('');
+      // Populate Cloudinary image fields after HTML insert
+      tabs.forEach(function (t, i) {
+        var imgEl = host.querySelector('.sc-t-image[data-i="' + i + '"]');
+        var pidEl = host.querySelector('.sc-t-pid[data-i="' + i + '"]');
+        if (imgEl) imgEl.value = (t.image && t.image.url) || '';
+        if (pidEl) pidEl.value = (t.image && t.image.publicId) || '';
+      });
     }
 
     drawTabs();
@@ -519,22 +608,73 @@
         }
       });
       host.addEventListener('click', function (e) {
+        var up = e.target.closest ? e.target.closest('.cw-up') : null;
+        var clr = e.target.closest ? e.target.closest('.cw-clr') : null;
+        if (up || clr) {
+          var row = (up || clr).closest('.f') || (up || clr).parentNode;
+          var imgInp = row && row.querySelector('.sc-t-image');
+          var pidInp = row && row.querySelector('.sc-t-pid');
+          var i = imgInp ? +imgInp.getAttribute('data-i') : NaN;
+          if (isNaN(i) || !ensure(c).tabs[i]) return;
+          var tab = ensure(c).tabs[i];
+          tab.image = tab.image || {};
+          if (clr) {
+            var prevPid = tab.image.publicId || (pidInp && pidInp.value);
+            if (prevPid && typeof window.cwDelete === 'function') window.cwDelete(prevPid);
+            tab.image.url = null;
+            tab.image.publicId = null;
+            if (imgInp) imgInp.value = '';
+            if (pidInp) pidInp.value = '';
+            save();
+            return;
+          }
+          if (up && typeof window.cwPick === 'function' && typeof window.cwUpload === 'function') {
+            window.cwPick(function (file) {
+              if (typeof window.cwBusy === 'function') window.cwBusy(up, true);
+              window
+                .cwUpload(file, ['searchCanvas', 'tab', String(tab.id || i)])
+                .then(function (r) {
+                  var oldPid = tab.image.publicId;
+                  tab.image.url = r.url;
+                  tab.image.publicId = r.publicId;
+                  if (imgInp) imgInp.value = r.url;
+                  if (pidInp) pidInp.value = r.publicId || '';
+                  save();
+                  if (oldPid && oldPid !== r.publicId && typeof window.cwDelete === 'function') {
+                    window.cwDelete(oldPid);
+                  }
+                  if (window.toast) window.toast('Image uploaded');
+                })
+                .catch(function (err) {
+                  if (window.toast) window.toast('Upload failed: ' + ((err && err.message) || err));
+                })
+                .then(function () {
+                  if (typeof window.cwBusy === 'function') window.cwBusy(up, false);
+                });
+            });
+          }
+          return;
+        }
         var btn = e.target.closest ? e.target.closest('button') : null;
-        if (!btn) return;
-        var i = +btn.getAttribute('data-i');
+        if (!btn || btn.classList.contains('cw-up') || btn.classList.contains('cw-clr')) return;
+        var bi = +btn.getAttribute('data-i');
         var tabs = ensure(c).tabs;
-        if (btn.classList.contains('sc-t-up') && i > 0) {
-          tabs.splice(i - 1, 0, tabs.splice(i, 1)[0]);
+        if (btn.classList.contains('sc-t-up') && bi > 0) {
+          tabs.splice(bi - 1, 0, tabs.splice(bi, 1)[0]);
           save();
           drawTabs();
-        } else if (btn.classList.contains('sc-t-down') && i < tabs.length - 1) {
-          tabs.splice(i + 1, 0, tabs.splice(i, 1)[0]);
+        } else if (btn.classList.contains('sc-t-down') && bi < tabs.length - 1) {
+          tabs.splice(bi + 1, 0, tabs.splice(bi, 1)[0]);
           save();
           drawTabs();
-        } else if (btn.classList.contains('sc-t-dup') && tabs[i]) {
-          var copy = deepClone(tabs[i]);
+        } else if (btn.classList.contains('sc-t-dup') && tabs[bi]) {
+          if (tabs.length >= 12) {
+            if (window.toast) window.toast('Maximum 12 tabs');
+            return;
+          }
+          var copy = deepClone(tabs[bi]);
           copy.id = 'tab-' + Math.random().toString(36).slice(2, 9);
-          tabs.splice(i + 1, 0, copy);
+          tabs.splice(bi + 1, 0, copy);
           save();
           drawTabs();
         } else if (btn.classList.contains('sc-t-del')) {
@@ -542,7 +682,7 @@
             if (window.toast) window.toast('Keep at least one tab');
             return;
           }
-          tabs.splice(i, 1);
+          tabs.splice(bi, 1);
           save();
           drawTabs();
         }
@@ -552,6 +692,10 @@
     var addBtn = $('sc-add-tab');
     if (addBtn) {
       addBtn.onclick = function () {
+        if (ensure(c).tabs.length >= 12) {
+          if (window.toast) window.toast('Maximum 12 tabs');
+          return;
+        }
         ensure(c).tabs.push(newTab());
         save();
         drawTabs();
@@ -572,21 +716,48 @@
           return;
         }
         aiBtn.disabled = true;
-        if (note) note.textContent = 'Generating with OpenAI via LeadPages Brain (content.search_canvas_draft)…';
+        if (note) note.textContent = 'Generating service tabs with LeadPages Brain…';
         try {
+          var mustRaw = (($('sc-ai-must') && $('sc-ai-must').value) || '').trim();
+          var mustList = mustRaw
+            ? mustRaw.split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean)
+            : [];
+          var extra = (($('sc-ai-extra') && $('sc-ai-extra').value) || '').trim();
+          ensure(c).ai.mustIncludeServices = mustList.slice();
+          ensure(c).ai.extraInfo = extra;
           var call = window.lpCallSearchCanvasDraft || window._siCallSearchCanvasDraft;
           var raw = await call({
             primaryKeyword: kw,
             location: (($('sc-ai-loc') && $('sc-ai-loc').value) || '').trim(),
-            extraInfo: (($('sc-ai-extra') && $('sc-ai-extra').value) || '').trim(),
+            extraInfo: extra,
+            mustIncludeServices: mustList,
             tabCount: +(($('sc-ai-tabs') && $('sc-ai-tabs').value) || 5),
-            includeFaq: !!( $('sc-ai-faq') && $('sc-ai-faq').checked )
+            includeFaq: !!( $('sc-ai-faq') && $('sc-ai-faq').checked ),
+            includeCta: true
           });
           var draft = unwrapDraft(raw);
           if (!draft || !Array.isArray(draft.tabs) || !draft.tabs.length) {
-            throw new Error('Brain returned no SearchCanvas tabs. Check AI Control Centre route content.search_canvas_draft and Vercel BRAIN_SEARCH_CANVAS=1.');
+            throw new Error('Brain returned no SearchCanvas tabs. Check AI Control Centre route content.search_canvas_draft.');
           }
-          var mode = ($('sc-ai-mode') && $('sc-ai-mode').value) || 'replace';
+          // Ensure must-include services appear even if the model skipped one
+          mustList.forEach(function (svc) {
+            var hit = draft.tabs.some(function (t) {
+              return new RegExp(svc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(String((t && (t.label || t.heading)) || ''));
+            });
+            if (!hit) {
+              draft.tabs.unshift({
+                label: svc.split(/\s+/).slice(0, 4).join(' '),
+                iconSuggestion: 'check',
+                heading: svc,
+                intro: 'We provide ' + svc.toLowerCase() + ' with clear communication and careful workmanship tailored to your property and budget.',
+                bullets: ['Clear scope of work', 'Practical options', 'Quality materials', 'Local follow-through'],
+                linkLabel: 'View ' + svc,
+                imageSearchQuery: svc.toLowerCase(),
+                imageAltText: svc
+              });
+            }
+          });
+          draft.tabs = draft.tabs.slice(0, 12);
           var applied = null;
           if (typeof window.lpApplySearchCanvasDraft === 'function') {
             applied = await window.lpApplySearchCanvasDraft(draft, {
@@ -599,40 +770,37 @@
               source: 'app-editor'
             });
           } else {
-            // Local fallback merge if host helper missing — always replace tab list with AI services
-            var S2 = ensure(c);
-            S2.header = S2.header || {};
-            if (draft.eyebrow) S2.header.eyebrow = draft.eyebrow;
-            if (draft.heading) S2.header.heading = draft.heading;
-            if (draft.intro) S2.header.intro = draft.intro;
-            S2.tabs = draft.tabs.map(function (t) {
-              return {
-                id: 'tab-' + Math.random().toString(36).slice(2, 9),
-                label: String(t.label || t.heading || 'Service').trim(),
-                iconKey: t.iconSuggestion || t.iconKey || 'check',
-                heading: String(t.heading || t.label || '').trim(),
-                intro: String(t.intro || '').trim(),
-                content: Array.isArray(t.supportingParagraphs) ? t.supportingParagraphs.join('\n\n') : String(t.content || ''),
-                bullets: Array.isArray(t.bullets) ? t.bullets.map(String).filter(Boolean).slice(0, 5) : [],
-                image: { url: null, publicId: null, alt: String(t.imageAltText || '').trim(), fit: 'cover', objectPosition: 'center' },
-                link: { label: String(t.linkLabel || '').trim(), destination: null },
-                button: { enabled: false, label: '', destination: null },
-                on: true
-              };
-            });
-            S2.defaultTabId = S2.tabs[0] && S2.tabs[0].id;
-            S2.on = true;
-            if (!S2.layout) S2.layout = {};
-            S2.layout.contentWidth = S2.layout.contentWidth || 'wide';
-            S2.ai = Object.assign({}, S2.ai || {}, { primaryKeyword: kw, generatedAt: new Date().toISOString(), source: 'app-editor' });
-            applied = { tabs: S2.tabs.length };
-            save();
+            throw new Error('Apply helper missing — reload manage.');
+          }
+          if ($('sc-ai-faq') && $('sc-ai-faq').checked && draft.faqQuestions && draft.faqQuestions.length) {
+            try {
+              if (typeof window._siApplyFaqsToHomepageFaq === 'function') {
+                await window._siApplyFaqsToHomepageFaq(
+                  draft.faqQuestions.map(function (f) {
+                    return { q: f.question || f.q, a: f.answer || f.a };
+                  })
+                );
+              }
+            } catch (_faq) {}
           }
           if (!applied || !(applied.tabs > 0 || (c.sections.searchCanvas && c.sections.searchCanvas.tabs && c.sections.searchCanvas.tabs.length))) {
             throw new Error('Draft did not apply into SearchCanvas tabs.');
           }
+          // Default CTA to quote form after AI
+          var S3 = ensure(c);
+          if (!S3.cta) S3.cta = {};
+          if (draft.cta) {
+            S3.cta.enabled = true;
+            if (draft.cta.heading) S3.cta.heading = draft.cta.heading;
+            if (draft.cta.text) S3.cta.text = draft.cta.text;
+            S3.cta.primaryLabel = draft.cta.buttonLabel || S3.cta.primaryLabel || 'Get a Free Quote';
+          }
+          S3.cta.action = S3.cta.action || 'quote';
+          S3.cta.primaryDestination = S3.cta.primaryDestination || { type: 'section', value: '#quote' };
+          if (!S3.cta.primaryDestination.value) S3.cta.primaryDestination = { type: 'section', value: '#quote' };
+          save();
           if (note) {
-            note.textContent = 'Draft applied (' + (applied.tabs || c.sections.searchCanvas.tabs.length) + ' tabs) — review before publishing.';
+            note.textContent = 'Draft applied (' + (applied.tabs || c.sections.searchCanvas.tabs.length) + ' service tabs) — preview updated.';
           }
           if (window.toast) window.toast('SearchCanvas updated');
           window.lpRenderSearchCanvasEditor(c, body, helpers);

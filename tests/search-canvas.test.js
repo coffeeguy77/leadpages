@@ -57,7 +57,7 @@ test('normalize clamps tabs and theme-default colours stay null', () => {
     tabs: new Array(12).fill(0).map((_, i) => ({ label: 'T' + i, heading: 'H' + i, intro: 'Intro ' + i })),
     style: { masterColour: '1f7bb8' }
   });
-  assert.strictEqual(n.tabs.length, 8);
+  assert.strictEqual(n.tabs.length, 12);
   assert.strictEqual(n.header.colours.eyebrow, null);
   assert.strictEqual(n.style.masterColour, '#1f7bb8');
   assert.strictEqual(n.layout.contentWidth, 'wide');
@@ -209,6 +209,22 @@ test('section-order treats searchCanvas as off-by-default and places after How I
   assert.ok(ord.indexOf('searchCanvas') > ord.indexOf('serviceProcess'));
 });
 
+test('extractServicesFromExtraInfo picks water tanks from prose', () => {
+  const { extractServicesFromExtraInfo } = require('../lib/brain/search-canvas-compose');
+  const found = extractServicesFromExtraInfo('We also do water tanks and rural fencing across the valley.');
+  assert.ok(found.some((s) => /water tanks/i.test(s)));
+  const draft = mockSearchCanvasDraft({
+    primaryKeyword: 'Yass Landscaper',
+    location: 'Yass',
+    businessType: 'Landscaper',
+    services: ['Landscape Design'],
+    extraInfo: 'We also do water tanks',
+    mustIncludeServices: ['Water Tanks'],
+    tabCount: 6
+  });
+  assert.ok(draft.tabs.some((t) => /Water Tanks/i.test(t.label)));
+});
+
 test('section-order repairs SearchCanvas parked under Hero', () => {
   const so = require('../lib/section-order');
   const ord = so.resolveSectionOrder({
@@ -223,6 +239,24 @@ test('section-order repairs SearchCanvas parked under Hero', () => {
   });
   assert.ok(ord.indexOf('serviceProcess') >= 0);
   assert.strictEqual(ord[ord.indexOf('serviceProcess') + 1], 'searchCanvas');
+  assert.strictEqual(ord[ord.indexOf('searchCanvas') + 1], 'faq');
+});
+
+test('section-order pins FAQ under SearchCanvas', () => {
+  const so = require('../lib/section-order');
+  const ord = so.resolveSectionOrder({
+    sectionOrder: ['emerg', 'hero', 'services', 'serviceProcess', 'searchCanvas', 'why', 'quote', 'faq', 'footer'],
+    sections: {
+      searchCanvas: { on: true },
+      serviceProcess: {},
+      services: {},
+      hero: {},
+      faq: {},
+      why: {},
+      quote: {}
+    }
+  });
+  assert.strictEqual(ord[ord.indexOf('searchCanvas') + 1], 'faq');
 });
 
 test('website composer adapter accepts meaningful tabs', () => {
