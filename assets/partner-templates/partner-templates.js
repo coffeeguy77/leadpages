@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initWebcultureReviewSlider();
   initWebcultureDemoFaq();
   initLocalWebsiteCoDemoFilters();
+  initLocalWebsiteCoFaq();
 });
 
 // Avoid bfcache showing a previously visited trade demo when returning to a partner theme page.
@@ -219,12 +220,30 @@ function initLocalWebsiteCoDemoFilters() {
   tabs.forEach(function (tab) {
     tab.addEventListener('click', function () {
       var filter = String(tab.getAttribute('data-lwc-filter') || 'all').toLowerCase();
-      tabs.forEach(function (t) { t.classList.toggle('is-active', t === tab); });
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.classList.toggle('is-active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
       cards.forEach(function (card) {
         var industry = String(card.getAttribute('data-lwc-demo-industry') || '').toLowerCase();
         var show = filter === 'all' || industry.indexOf(filter) >= 0 || filter.indexOf(industry) >= 0;
         card.hidden = !show;
       });
+    });
+  });
+}
+
+function initLocalWebsiteCoFaq() {
+  var buttons = document.querySelectorAll('[data-lwc-faq]');
+  if (!buttons.length) return;
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var expanded = btn.getAttribute('aria-expanded') === 'true';
+      var panelId = btn.getAttribute('aria-controls');
+      var panel = panelId ? document.getElementById(panelId) : null;
+      btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+      if (panel) panel.hidden = expanded;
     });
   });
 }
