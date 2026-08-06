@@ -15,12 +15,13 @@ const {
   getLandingDraftProvider,
   ensureBrainSettings
 } = require('../../lib/brain/platform');
-const {
+  const {
   SEARCH_CANVAS_DRAFT_SCHEMA,
   normalizeSearchCanvasDraft,
   buildSearchCanvasSystemPrompt,
   buildSearchCanvasUserPrompt,
-  mockSearchCanvasDraft
+  mockSearchCanvasDraft,
+  extractServicesFromExtraInfo
 } = require('../../lib/brain/search-canvas-compose');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -202,6 +203,35 @@ module.exports = async function searchCanvasDraft(req, res) {
     Array.isArray(body.services) && body.services.length
       ? body.services.map(String)
       : servicesFromSite(site);
+  const mustIncludeRaw = []
+    .concat(Array.isArray(body.mustIncludeServices) ? body.mustIncludeServices : [])
+    .concat(
+      String(body.mustInclude || '')
+        .split(/\n+/)
+        .map(function (s) { return s.trim(); })
+        .filter(Boolean)
+    )
+    .concat(extractServicesFromExtraInfo(body.extraInfo || body.context || ''));
+  const mustSeen = {};
+  const mustIncludeServices = mustIncludeRaw
+    .map(function (s) { return String(s || '').trim(); })
+    .filter(function (s) {
+      if (!s) return false;
+      const k = s.toLowerCase();
+      if (mustSeen[k]) return false;
+      mustSeen[k] = 1;
+      return true;
+    })
+    .slice(0, 12);
+  // Prefer must-include at the front of the services list sent to the model.
+  const servicesMerged = [];
+  const svcSeen = {};
+  mustIncludeServices.concat(services).forEach(function (s) {
+    const k = String(s || '').toLowerCase();
+    if (!k || svcSeen[k]) return;
+    svcSeen[k] = 1;
+    servicesMerged.push(String(s).trim());
+  });
   const location =
     String(body.location || '').trim() ||
     String((cfg.sections && cfg.sections.seoTokens && cfg.sections.seoTokens.location) || cfg.region || '')
@@ -214,10 +244,11 @@ module.exports = async function searchCanvasDraft(req, res) {
     trade: businessType,
     primaryKeyword: primaryKeyword,
     location: location,
-    services: services,
+    services: servicesMerged.slice(0, 12),
+    mustIncludeServices: mustIncludeServices,
     pages: pagesFromSite(site),
     extraInfo: String(body.extraInfo || body.context || '').trim(),
-    tabCount: Math.max(3, Math.min(6, Number(body.tabCount) || 5)),
+    tabCount: Math.max(3, Math.min(12, Number(body.tabCount) || Math.max(5, mustIncludeServices.length || 0))),
     tone: String(body.tone || 'practical and professional').trim(),
     includeCta: body.includeCta !== false,
     includeFaq: !!body.includeFaq
