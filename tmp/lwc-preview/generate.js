@@ -11,7 +11,7 @@ const prof = {
   showcase_slug: 'local-website-co',
   showcase_headline: websiteProfile.positioning.heroHeadline,
   support_email: 'shaun@localwebsiteco.example',
-  support_phone: '0400 000 000',
+  support_phone: '0414 631 463',
   showcase_config: {
     templateKey: 'localwebsiteco',
     intro: websiteProfile.positioning.heroSupporting,
@@ -23,61 +23,11 @@ const partner = {
   id: 'preview-localwebsiteco',
   display_name: 'Shaun Matthews',
   email: 'shaun@localwebsiteco.example',
-  phone: '0400 000 000'
+  phone: '0414 631 463'
 };
 
-const demos = [
-  {
-    id: 'demo-flow-pro',
-    slug: 'flow-pro-plumbing',
-    business_name: 'Flow Pro Plumbing',
-    config: {
-      trade: 'Trades',
-      showcase: {
-        image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=900&q=80'
-      },
-      scope: {
-        description: 'A mobile-first plumbing website built for urgent calls and quote requests.'
-      }
-    },
-    is_mockup: true,
-    show_on_showcase: true
-  },
-  {
-    id: 'demo-brightline',
-    slug: 'brightline-electrical',
-    business_name: 'Brightline Electrical',
-    config: {
-      trade: 'Trades',
-      showcase: {
-        image: 'https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?w=900&q=80'
-      },
-      scope: {
-        description: 'Clear services, fast contact options and local trust signals for electrical work.'
-      }
-    },
-    is_mockup: true,
-    show_on_showcase: true
-  },
-  {
-    id: 'demo-corner-table',
-    slug: 'corner-table-cafe',
-    business_name: 'Corner Table Cafe',
-    config: {
-      trade: 'Hospitality',
-      showcase: {
-        image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=900&q=80'
-      },
-      scope: {
-        description: 'A warm venue website with menus, photos and booking-friendly enquiry paths.'
-      }
-    },
-    is_mockup: true,
-    show_on_showcase: true
-  }
-];
-
-const html = buildPartnerLandingHtml(prof, partner, demos, 'leadpages.com.au', {
+/* Empty demos → theme FALLBACK_DEMOS (partners1 required six). */
+const html = buildPartnerLandingHtml(prof, partner, [], 'leadpages.com.au', {
   templateOverride: 'localwebsiteco',
   showTemplateSwitcher: false
 });

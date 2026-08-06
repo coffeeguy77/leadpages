@@ -11,7 +11,7 @@ function localProfile(templateKey) {
     partner_id: 'p-local',
     showcase_headline: wp.positioning.heroHeadline,
     support_email: 'shaun@example.com',
-    support_phone: '0400 000 000',
+    support_phone: '0414 631 463',
     showcase_config: {
       templateKey: templateKey || 'localwebsiteco',
       websiteProfile: wp,
@@ -24,7 +24,7 @@ const partner = {
   id: 'p-local',
   display_name: 'Shaun Matthews',
   email: 'shaun@example.com',
-  phone: '0400 000 000'
+  phone: '0414 631 463'
 };
 
 test('registry — has Culture first and Local Website Co. second', function() {
@@ -35,25 +35,36 @@ test('registry — has Culture first and Local Website Co. second', function() {
   assert.equal(normalizeTemplateKey('unknown-template'), 'webculture');
 });
 
-test('buildPartnerLandingHtml — renders Local Website Co. template', function() {
+test('buildPartnerLandingHtml — renders Local Website Co. template at partners1 scale', function() {
   const html = buildPartnerLandingHtml(localProfile('localwebsiteco'), partner, [], 'leadpages.com.au', { showTemplateSwitcher: false });
   assert.ok(html.includes('lwc-body'));
   assert.ok(html.includes('data-pt-template="localwebsiteco"'));
-  assert.ok(html.includes('A better website, built by someone who knows your business.'));
+  assert.ok(html.includes('DM+Serif+Display'));
+  assert.ok(html.includes('family=Inter'));
+  assert.ok(html.includes('A better'));
   assert.ok(html.includes('Websites powered by LeadPages'));
-  assert.ok(html.includes("Let's build a website your business can grow with."));
+  assert.ok(html.includes("Let's build a website"));
   assert.ok(html.includes('Tell me about your business'));
   assert.ok(html.includes('Look professional'));
+  assert.ok(html.includes('Always open'));
   assert.ok(html.includes('Local knowledge'));
-  assert.ok(html.includes('Call 0400 000 000'));
-  assert.ok(html.includes('Powered by <strong>LeadPages</strong>'));
-  assert.ok(html.includes('lwc-device-stack'));
-  assert.ok(html.includes('lwc-tick'));
-  assert.ok(html.includes('lwc-process-float'));
-  assert.ok(html.includes('New enquiry'));
+  assert.ok(html.includes('Call 0414 631 463'));
+  assert.ok(html.includes('Flow Pro Plumbing'));
+  assert.ok(html.includes('Brightline Electrical'));
+  assert.ok(html.includes('Green Space Landscapes'));
+  assert.ok(html.includes('Harvest Café') || html.includes('Harvest Caf'));
+  assert.ok(html.includes('Clear Path Consulting'));
+  assert.ok(html.includes('Bloom Beauty Studio'));
+  assert.ok(html.includes('MOST POPULAR'));
+  assert.ok(html.includes('Grow my business'));
+  assert.ok(html.includes('>Luke<'));
+  assert.ok(html.includes('>Megan<'));
+  assert.ok(html.includes('>David<'));
   assert.ok(html.includes('Powered by LeadPages Australia'));
-  assert.ok(html.includes('lwc-hero-devices'));
-  assert.ok(html.includes("Let's talk"));
+  assert.ok(html.includes('lwc-final-photo'));
+  assert.ok(html.includes('lwc-about-photo'));
+  assert.ok(html.includes('data-lwc-faq'));
+  assert.ok(html.includes('--lwc-max:1240px') || html.includes('calc(100% - 64px)') || html.includes('lwc-shell'));
   assert.ok(!/\sclass="[^"]*\bwc-body\b/.test(html));
   assert.ok(!html.includes('/assets/partner-templates/webculture.css'));
 });
