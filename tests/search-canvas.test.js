@@ -131,6 +131,21 @@ test('marketplace category maps searchCanvas', () => {
   assert.strictEqual(categoryForSection('searchCanvas'), 'core-content');
 });
 
+test('section-order treats searchCanvas as off-by-default and places after How It Works', () => {
+  const so = require('../lib/section-order');
+  assert.strictEqual(so.sectionIsOn({ sections: { searchCanvas: {} } }, 'searchCanvas'), false);
+  assert.strictEqual(so.sectionIsOn({ sections: { searchCanvas: { on: true } } }, 'searchCanvas'), true);
+  const ord = so.resolveSectionOrder({
+    sections: {
+      searchCanvas: { on: true },
+      serviceProcess: {},
+      services: {},
+      hero: {}
+    }
+  });
+  assert.ok(ord.indexOf('searchCanvas') > ord.indexOf('serviceProcess'));
+});
+
 test('website composer adapter accepts meaningful tabs', () => {
   assert.ok(hasAdapter('searchCanvas'));
   const ok = adaptApp('searchCanvas', {

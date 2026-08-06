@@ -27,10 +27,19 @@
     if (!S.header) S.header = { eyebrow: '', heading: '', intro: '', colours: {} };
     if (!S.header.colours) S.header.colours = {};
     if (!Array.isArray(S.tabs)) S.tabs = [];
+    if (!S.tabs.length && window.LP_SEARCH_CANVAS_DEFAULT && Array.isArray(window.LP_SEARCH_CANVAS_DEFAULT.tabs)) {
+      S.tabs = deepClone(window.LP_SEARCH_CANVAS_DEFAULT.tabs);
+      S.defaultTabId = S.tabs[0] && S.tabs[0].id;
+      if (!S.header.heading && window.LP_SEARCH_CANVAS_DEFAULT.header) {
+        S.header = deepClone(window.LP_SEARCH_CANVAS_DEFAULT.header);
+      }
+    }
+    if (!S.tabs.length) S.tabs = [newTab(), newTab(), newTab(), newTab()];
     if (!S.style) S.style = {};
     if (!S.layout) S.layout = { preset: 'vertical-tabs-image-right', imageMode: 'per-tab', mobileMode: 'single-accordion', contentWidth: 'site' };
     if (!S.cta) S.cta = { enabled: false, style: 'strip' };
     if (!S.ai) S.ai = {};
+    if (S.on !== true) S.on = true;
     return S;
   }
 
@@ -70,11 +79,15 @@
     );
   }
 
+  function byId(id) {
+    if (typeof window.$ === 'function') return window.$(id);
+    return typeof document !== 'undefined' ? document.getElementById(id) : null;
+  }
+
   function wireColor(prefix, getSet) {
-    var $ = window.$;
-    var tx = $(prefix);
-    var clr = $(prefix + '-clr');
-    var def = $(prefix + '-def');
+    var tx = byId(prefix);
+    var clr = byId(prefix + '-clr');
+    var def = byId(prefix + '-def');
     var cur = getSet() || '';
     if (tx) tx.value = cur;
     if (clr && /^#[0-9a-fA-F]{6}$/.test(cur)) clr.value = cur;
@@ -114,8 +127,16 @@
    * @param {{ secCard?: Function, wireSec?: Function }} helpers
    */
   window.lpRenderSearchCanvasEditor = function (c, body, helpers) {
-    var $ = window.$;
-    var esc = window.esc || function (s) { return String(s == null ? '' : s); };
+    var $ = byId;
+    var esc = typeof window.esc === 'function'
+      ? window.esc
+      : function (s) {
+          return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        };
     var S = ensure(c);
     S.on = S.on === true || S.on !== false ? !!S.on : false;
     if (S.on !== true && helpers && helpers.forceOn) S.on = true;
@@ -299,7 +320,7 @@
       var warn = $('sc-tab-warn');
       if (!host) return;
       var tabs = ensure(c).tabs;
-      if (warn) warn.style.display = tabs.length > 8 ? '' : 'none';
+      if (warn && warn.style) warn.style.display = tabs.length > 8 ? '' : 'none';
       host.innerHTML = tabs
         .map(function (t, i) {
           var bullets = (t.bullets || []).join('\n');
