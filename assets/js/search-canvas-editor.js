@@ -80,8 +80,20 @@
   }
 
   function byId(id) {
-    if (typeof window.$ === 'function') return window.$(id);
+    // Always use getElementById — never assume window.$ is our id helper.
     return typeof document !== 'undefined' ? document.getElementById(id) : null;
+  }
+
+  function unwrapDraft(raw) {
+    if (typeof window.lpUnwrapSearchCanvasDraft === 'function') {
+      return window.lpUnwrapSearchCanvasDraft(raw);
+    }
+    if (!raw || typeof raw !== 'object') return null;
+    if (Array.isArray(raw.tabs)) return raw;
+    if (raw.draft) return unwrapDraft(raw.draft);
+    if (raw.data) return unwrapDraft(raw.data);
+    if (raw.sections && raw.sections.searchCanvas) return unwrapDraft(raw.sections.searchCanvas);
+    return raw.eyebrow || raw.heading || raw.intro ? raw : null;
   }
 
   function wireColor(prefix, getSet) {
@@ -138,8 +150,9 @@
             .replace(/"/g, '&quot;');
         };
     var S = ensure(c);
-    S.on = S.on === true || S.on !== false ? !!S.on : false;
-    if (S.on !== true && helpers && helpers.forceOn) S.on = true;
+    S.on = true;
+    // Persist seeded defaults immediately so preview never paints an empty shell.
+    if (typeof window.persist === 'function') window.persist();
 
     var h =
       (helpers && helpers.secCard
@@ -507,30 +520,74 @@
           return;
         }
         if (!window._siCallSearchCanvasDraft && !window.lpCallSearchCanvasDraft) {
-          if (note) note.textContent = 'AI helper not ready — open SEO Command or reload.';
+          if (note) note.textContent = 'AI helper not ready — reload manage and try again.';
           return;
         }
         aiBtn.disabled = true;
-        if (note) note.textContent = 'Generating with OpenAI via LeadPages Brain…';
+        if (note) note.textContent = 'Generating with OpenAI via LeadPages Brain (content.search_canvas_draft)…';
         try {
           var call = window.lpCallSearchCanvasDraft || window._siCallSearchCanvasDraft;
-          var draft = await call({
+          var raw = await call({
             primaryKeyword: kw,
             location: (($('sc-ai-loc') && $('sc-ai-loc').value) || '').trim(),
             extraInfo: (($('sc-ai-extra') && $('sc-ai-extra').value) || '').trim(),
             tabCount: +(($('sc-ai-tabs') && $('sc-ai-tabs').value) || 5),
             includeFaq: !!( $('sc-ai-faq') && $('sc-ai-faq').checked )
           });
-          if (window.lpApplySearchCanvasDraft) {
-            await window.lpApplySearchCanvasDraft(draft, {
-              mode: ($('sc-ai-mode') && $('sc-ai-mode').value) || 'preserve',
+          var draft = unwrapDraft(raw);
+          if (!draft || !Array.isArray(draft.tabs) || !draft.tabs.length) {
+            throw new Error('Brain returned no SearchCanvas tabs. Check AI Control Centre route content.search_canvas_draft and Vercel BRAIN_SEARCH_CANVAS=1.');
+          }
+          var mode = ($('sc-ai-mode') && $('sc-ai-mode').value) || 'replace';
+          var applied = null;
+          if (typeof window.lpApplySearchCanvasDraft === 'function') {
+            applied = await window.lpApplySearchCanvasDraft(draft, {
+              mode: mode,
+              forceUpdate: true,
+              forcePosition: false,
+              config: c,
               includeFaq: !!( $('sc-ai-faq') && $('sc-ai-faq').checked ),
               source: 'app-editor'
             });
+          } else {
+            // Local fallback merge if host helper missing
+            var S2 = ensure(c);
+            S2.header = S2.header || {};
+            if (mode === 'replace' || !S2.header.heading) {
+              if (draft.eyebrow) S2.header.eyebrow = draft.eyebrow;
+              if (draft.heading) S2.header.heading = draft.heading;
+              if (draft.intro) S2.header.intro = draft.intro;
+            }
+            S2.tabs = draft.tabs.map(function (t, i) {
+              return {
+                id: (S2.tabs[i] && S2.tabs[i].id) || ('tab-' + Math.random().toString(36).slice(2, 9)),
+                label: String(t.label || t.heading || 'Topic').trim(),
+                iconKey: t.iconSuggestion || t.iconKey || 'check',
+                heading: String(t.heading || t.label || '').trim(),
+                intro: String(t.intro || '').trim(),
+                content: Array.isArray(t.supportingParagraphs) ? t.supportingParagraphs.join('\n\n') : String(t.content || ''),
+                bullets: Array.isArray(t.bullets) ? t.bullets.map(String).filter(Boolean).slice(0, 5) : [],
+                image: { url: null, publicId: null, alt: String(t.imageAltText || '').trim(), fit: 'cover', objectPosition: 'center' },
+                link: { label: String(t.linkLabel || '').trim(), destination: null },
+                button: { enabled: false, label: '', destination: null },
+                on: true
+              };
+            });
+            S2.defaultTabId = S2.tabs[0] && S2.tabs[0].id;
+            S2.on = true;
+            S2.ai = Object.assign({}, S2.ai || {}, { primaryKeyword: kw, generatedAt: new Date().toISOString(), source: 'app-editor' });
+            applied = { tabs: S2.tabs.length };
+            save();
           }
-          if (note) note.textContent = 'Draft applied — review tabs before publishing.';
+          if (!applied || !(applied.tabs > 0 || (c.sections.searchCanvas && c.sections.searchCanvas.tabs && c.sections.searchCanvas.tabs.length))) {
+            throw new Error('Draft did not apply into SearchCanvas tabs.');
+          }
+          if (note) {
+            note.textContent = 'Draft applied (' + (applied.tabs || c.sections.searchCanvas.tabs.length) + ' tabs) — review before publishing.';
+          }
           if (window.toast) window.toast('SearchCanvas updated');
           window.lpRenderSearchCanvasEditor(c, body, helpers);
+          if (typeof window.previewApply === 'function') window.previewApply();
         } catch (err) {
           if (note) note.textContent = String((err && err.message) || err);
           if (window.toast) window.toast('SearchCanvas AI failed');

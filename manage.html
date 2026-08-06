@@ -3448,13 +3448,56 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(!c.sections) c.sections={}; if(!c.sections[id]) c.sections[id]={};
     var o=c.sections[id], def=DEFAULT_TRADE_SECTIONS[id]||{};
     if(id==='searchCanvas'){
-      var seeded=JSON.parse(JSON.stringify(def||{}));
-      seeded.on=o.on===true;
+      var seeded=JSON.parse(JSON.stringify(def&&Object.keys(def).length?def:{
+        on:true,version:1,
+        header:{eyebrow:'Our expertise',heading:'Solutions designed around your business',intro:'Explore the services, experience and practical support our team provides — structured so visitors can find what they need quickly.',colours:{}},
+        tabs:[],style:{radius:'medium',shadow:'soft'},layout:{preset:'vertical-tabs-image-right',imageMode:'per-tab',mobileMode:'single-accordion',contentWidth:'site'},cta:{enabled:false,style:'strip'},ai:{}
+      }));
+      seeded.on=true;
+      // Always refill missing tabs / header — never leave an on-section blank.
       if(!Array.isArray(o.tabs)||!o.tabs.length){
-        c.sections[id]=Object.assign(seeded, o.on===true?{on:true}:{});
-        if(c.sections[id].on!==true) c.sections[id].on=true;
+        var keepHeader=o.header&&typeof o.header==='object'?o.header:null;
+        var keepLayout=o.layout&&typeof o.layout==='object'?o.layout:null;
+        var keepStyle=o.style&&typeof o.style==='object'?o.style:null;
+        var keepCta=o.cta&&typeof o.cta==='object'?o.cta:null;
+        var keepAi=o.ai&&typeof o.ai==='object'?o.ai:null;
+        c.sections[id]=seeded;
+        c.sections[id].on=true;
+        if(keepHeader) c.sections[id].header=Object.assign({}, seeded.header||{}, keepHeader);
+        if(keepLayout) c.sections[id].layout=Object.assign({}, seeded.layout||{}, keepLayout);
+        if(keepStyle) c.sections[id].style=Object.assign({}, seeded.style||{}, keepStyle);
+        if(keepCta) c.sections[id].cta=Object.assign({}, seeded.cta||{}, keepCta);
+        if(keepAi) c.sections[id].ai=Object.assign({}, seeded.ai||{}, keepAi);
+        if(!Array.isArray(c.sections[id].tabs)||!c.sections[id].tabs.length){
+          c.sections[id].tabs=[
+            {id:'tab-plan',label:'Planning',iconKey:'calendar',heading:'Planning & advice',intro:'Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.',content:'',bullets:['Clear scope of work','Practical options','Transparent next steps','Local, responsive service'],image:{url:null,publicId:null,alt:'',fit:'cover',objectPosition:'center'},link:{label:'Learn more',destination:null},button:{enabled:false,label:'',destination:null},on:true},
+            {id:'tab-del',label:'Delivery',iconKey:'truck',heading:'Delivery & installation',intro:'Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.',content:'',bullets:['Clear scope of work','Practical options','Transparent next steps','Local, responsive service'],image:{url:null,publicId:null,alt:'',fit:'cover',objectPosition:'center'},link:{label:'Learn more',destination:null},button:{enabled:false,label:'',destination:null},on:true},
+            {id:'tab-sup',label:'Support',iconKey:'users',heading:'Ongoing support',intro:'Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.',content:'',bullets:['Clear scope of work','Practical options','Transparent next steps','Local, responsive service'],image:{url:null,publicId:null,alt:'',fit:'cover',objectPosition:'center'},link:{label:'Learn more',destination:null},button:{enabled:false,label:'',destination:null},on:true},
+            {id:'tab-mnt',label:'Maintenance',iconKey:'wrench',heading:'Care & maintenance',intro:'Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.',content:'',bullets:['Clear scope of work','Practical options','Transparent next steps','Local, responsive service'],image:{url:null,publicId:null,alt:'',fit:'cover',objectPosition:'center'},link:{label:'Learn more',destination:null},button:{enabled:false,label:'',destination:null},on:true}
+          ];
+          c.sections[id].defaultTabId=c.sections[id].tabs[0].id;
+        }
         o=c.sections[id];
+      } else {
+        o.on=true;
       }
+      try{
+        if(!Array.isArray(c.sectionOrder)) c.sectionOrder=[];
+        // Force correct default slot after How It Works on install/seed.
+        var _scOrd=c.sectionOrder.filter(function(x){ return x!=='searchCanvas'; });
+        var _after=['serviceProcess','services','hero','heroSlider','splitHero'];
+        var _placed=false;
+        for(var _ai=0;_ai<_after.length;_ai++){
+          var _ax=_scOrd.indexOf(_after[_ai]);
+          if(_ax>=0){ _scOrd.splice(_ax+1,0,'searchCanvas'); _placed=true; break; }
+        }
+        if(!_placed){
+          var _fi=_scOrd.indexOf('faq');
+          if(_fi>=0) _scOrd.splice(_fi,0,'searchCanvas');
+          else _scOrd.push('searchCanvas');
+        }
+        c.sectionOrder=_scOrd;
+      }catch(_scPos){}
     }
     for(var k in def){ if(k==='on'||k==='cta') continue; if(def[k]&&typeof def[k]==='object') continue; if(o[k]===undefined) o[k]=def[k]; }
     for(var sk in LIST_SCHEMAS){ var sc=LIST_SCHEMAS[sk]; if(sc.secId!==id) continue; var cur=o[sc.key]; if(Array.isArray(cur)&&cur.length) continue; var d=DEFAULT_TRADE_LISTS[sc.secId+'.'+sc.key]; if(Array.isArray(d)&&d.length){ o[sc.key]=d.map(function(it){ var n={}; for(var kk in it){ n[kk]=(typeof it[kk]==='string')?it[kk].replace(/\{\{\s*businessName\s*\}\}/g,currentBusinessName||'us'):it[kk]; } return n; }); } }
@@ -3521,6 +3564,19 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var _heroes=['hero','heroSlider','heroBeforeAfter','splitHero'];
       var _hi=-1; for(var _i=0;_i<out.length;_i++){ if(_heroes.indexOf(out[_i])>=0){ _hi=_i; break; } }
       if(_hi>=0) out.splice(_hi+1,0,'trustBar'); else out.unshift('trustBar');
+    }
+    // Repair SearchCanvas when it was parked under Hero before How It Works / Services.
+    if(out.indexOf('searchCanvas')>=0 && _secOn(c,'searchCanvas')){
+      var _sci=out.indexOf('searchCanvas');
+      var _spi=out.indexOf('serviceProcess');
+      var _ssi=out.indexOf('services');
+      var _tgt=_spi>=0?_spi:_ssi;
+      if(_tgt>=0 && _sci<_tgt){
+        out.splice(_sci,1);
+        var _nt=out.indexOf(_spi>=0?'serviceProcess':'services');
+        if(_nt>=0) out.splice(_nt+1,0,'searchCanvas');
+        else out.push('searchCanvas');
+      }
     }
     return out;
   }
@@ -8176,8 +8232,13 @@ function heroCtaCard(c){
     } else if(sub==='searchCanvas'){
       if(!c.sections) c.sections={};
       if(!c.sections.searchCanvas) c.sections.searchCanvas=JSON.parse(JSON.stringify(DEFAULT_TRADE_SECTIONS.searchCanvas||{}));
+      c.sections.searchCanvas.on=true;
+      try{ lpSeedComponent(c,'searchCanvas'); }catch(_scSeed){}
+      try{ if(typeof _siEnsureSearchCanvasPosition==='function') _siEnsureSearchCanvasPosition(false); }catch(_scPos2){}
+      try{ _syncSectionOrder(c); persist(); }catch(_scSync){}
       if(typeof window.lpRenderSearchCanvasEditor==='function'){
         window.lpRenderSearchCanvasEditor(c, body, { secCard:secCard, wireSec:wireSec });
+        try{ previewApply(); }catch(_scPrev){}
       } else {
         body.innerHTML=secCard(c,'searchCanvas','SearchCanvas',true,[])+'<p class="hint">Editor script failed to load. Refresh and try again.</p>';
         wireSec(c,'searchCanvas',true,[]);
@@ -11651,23 +11712,42 @@ function heroCtaCard(c){
     if(!res.ok || !j.ok){
       throw new Error(j.message||j.error||('SearchCanvas draft failed (HTTP '+res.status+')'));
     }
-    return j.draft||{};
+    var draft=j.draft||(j.data&&j.data.draft)||null;
+    if(!draft||typeof draft!=='object'){
+      throw new Error('SearchCanvas AI returned an empty draft. Confirm BRAIN_SEARCH_CANVAS=1 and route content.search_canvas_draft in AI Control Centre.');
+    }
+    if(!Array.isArray(draft.tabs)||!draft.tabs.length){
+      throw new Error('SearchCanvas AI returned no tabs. Try again or check OpenAI key health in AI Control Centre.');
+    }
+    // Preserve provider/warning for the editor status line.
+    draft._provider=j.provider||null;
+    draft._warning=j.warning||null;
+    draft._correlationId=j.correlationId||null;
+    return draft;
   }
   window._siCallSearchCanvasDraft=_siCallSearchCanvasDraft;
   window.lpCallSearchCanvasDraft=_siCallSearchCanvasDraft;
-  function _siEnsureSearchCanvasPosition(){
+  function _siEnsureSearchCanvasPosition(force){
     if(typeof data!=='object'||!data) return;
     if(!Array.isArray(data.sectionOrder)) data.sectionOrder=[];
-    var ord=data.sectionOrder;
-    if(ord.indexOf('searchCanvas')>=0) return;
+    var ord=data.sectionOrder.filter(function(x){ return x!=='searchCanvas'; });
+    var sci=data.sectionOrder.indexOf('searchCanvas');
+    var spi=data.sectionOrder.indexOf('serviceProcess');
+    var ssi=data.sectionOrder.indexOf('services');
+    var tgt=spi>=0?spi:ssi;
+    // Keep later custom placements unless force, or when parked too early under Hero.
+    if(!force && sci>=0 && (tgt<0 || sci>tgt)){
+      return;
+    }
     var after=['serviceProcess','services','hero','heroSlider','splitHero'];
     for(var i=0;i<after.length;i++){
       var ix=ord.indexOf(after[i]);
-      if(ix>=0){ ord.splice(ix+1,0,'searchCanvas'); return; }
+      if(ix>=0){ ord.splice(ix+1,0,'searchCanvas'); data.sectionOrder=ord; return; }
     }
     var fi=ord.indexOf('faq');
-    if(fi>=0){ ord.splice(fi,0,'searchCanvas'); return; }
+    if(fi>=0){ ord.splice(fi,0,'searchCanvas'); data.sectionOrder=ord; return; }
     ord.push('searchCanvas');
+    data.sectionOrder=ord;
   }
   function _siMergeSearchCanvasDraft(existing, draft, mode){
     mode=mode||'preserve';
@@ -11747,24 +11827,52 @@ function heroCtaCard(c){
     });
     return cur;
   }
+  function _siUnwrapSearchCanvasDraft(raw){
+    if(!raw||typeof raw!=='object') return null;
+    if(Array.isArray(raw.tabs)) return raw;
+    if(raw.draft&&typeof raw.draft==='object') return _siUnwrapSearchCanvasDraft(raw.draft);
+    if(raw.data&&typeof raw.data==='object'){
+      if(Array.isArray(raw.data.tabs)) return raw.data;
+      if(raw.data.draft) return _siUnwrapSearchCanvasDraft(raw.data.draft);
+      if(raw.data.sections&&raw.data.sections.searchCanvas) return _siUnwrapSearchCanvasDraft(raw.data.sections.searchCanvas);
+    }
+    if(raw.sections&&raw.sections.searchCanvas) return _siUnwrapSearchCanvasDraft(raw.sections.searchCanvas);
+    // Flat header+tabs shape without tabs key yet
+    if(raw.eyebrow||raw.heading||raw.intro) return raw;
+    return null;
+  }
   async function _siApplySearchCanvasDraft(draft, opts){
     opts=opts||{};
-    if(!draft||typeof data!=='object'||!data) throw new Error('No site config loaded');
-    if(!data.sections) data.sections={};
-    var existed=!!(data.sections.searchCanvas&&data.sections.searchCanvas.on);
-    if(existed && opts.confirmDuplicate!==false && opts.forceUpdate!==true){
-      // Default: update existing. Caller may pass forceUpdate.
-    }
+    var target=(opts.config&&typeof opts.config==='object')?opts.config:data;
+    if(!draft||typeof target!=='object'||!target) throw new Error('No site config loaded');
+    draft=_siUnwrapSearchCanvasDraft(draft);
+    if(!draft) throw new Error('SearchCanvas AI returned no draft payload');
+    if(!target.sections) target.sections={};
+    var existed=!!(target.sections.searchCanvas&&target.sections.searchCanvas.on);
     var mode=opts.mode||(opts.preserve===false?'replace':'preserve');
-    var next=_siMergeSearchCanvasDraft(data.sections.searchCanvas, draft, mode);
-    data.sections.searchCanvas=next;
-    _siEnsureSearchCanvasPosition();
+    if(mode==='fillEmpty') mode='preserve';
+    var next=_siMergeSearchCanvasDraft(target.sections.searchCanvas, draft, mode);
+    if(!Array.isArray(next.tabs)||!next.tabs.length){
+      throw new Error('SearchCanvas AI draft had no tabs — try Replace mode or check Brain route content.search_canvas_draft');
+    }
+    next.on=true;
+    target.sections.searchCanvas=next;
+    // Keep global editor config in sync when applying into an explicit config object.
+    if(target!==data && data && typeof data==='object'){
+      if(!data.sections) data.sections={};
+      data.sections.searchCanvas=next;
+    }
+    _siEnsureSearchCanvasPosition(!!opts.forcePosition);
+    if(typeof _syncSectionOrder==='function') _syncSectionOrder(target===data?data:target);
     if(typeof persist==='function') persist();
     if(typeof lpSaveDB==='function') await lpSaveDB();
-    try{ if(typeof window.lpTrack==='function') window.lpTrack(existed?'searchcanvas_regenerated':'searchcanvas_generated_from_seo',{siteId:currentSiteId,source:opts.source||'seo-command'}); }catch(_e){}
-    return { existed:existed, tabs:(next.tabs||[]).length };
+    try{ if(typeof previewApply==='function') previewApply(); }catch(_pa){}
+    try{ if(typeof window.lpTrack==='function') window.lpTrack(existed?'searchcanvas_regenerated':'searchcanvas_generated_from_seo',{siteId:currentSiteId,source:opts.source||'seo-command',tabs:(next.tabs||[]).length}); }catch(_e){}
+    return { existed:existed, tabs:(next.tabs||[]).length, searchCanvas:next };
   }
   window.lpApplySearchCanvasDraft=_siApplySearchCanvasDraft;
+  window.lpUnwrapSearchCanvasDraft=_siUnwrapSearchCanvasDraft;
+  try{ window.LP_SEARCH_CANVAS_DEFAULT=JSON.parse(JSON.stringify((DEFAULT_TRADE_SECTIONS&&DEFAULT_TRADE_SECTIONS.searchCanvas)||{})); }catch(_defSc){ window.LP_SEARCH_CANVAS_DEFAULT=null; }
   async function _siConvertSeoTextToSearchCanvas(){
     if(typeof data!=='object'||!data) throw new Error('No site config loaded');
     var seo=(data.sections&&data.sections.seoText)||{};

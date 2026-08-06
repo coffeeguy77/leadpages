@@ -63,6 +63,21 @@ test('ensureSearchCanvasInOrder prefers after serviceProcess', () => {
   assert.strictEqual(again.filter((x) => x === 'searchCanvas').length, 1);
 });
 
+test('ensureSearchCanvasInOrder repairs Hero→SearchCanvas misplacement', () => {
+  const broken = ['emerg', 'hero', 'searchCanvas', 'faq', 'serviceProcess'];
+  const fixed = ensureSearchCanvasInOrder(broken, null, { force: false });
+  // Without force, early placement before serviceProcess is relocated by ensure when absent-only…
+  // force re-pin:
+  const forced = ensureSearchCanvasInOrder(broken, null, { force: true });
+  assert.strictEqual(forced[forced.indexOf('serviceProcess') + 1], 'searchCanvas');
+  assert.strictEqual(forced.filter((x) => x === 'searchCanvas').length, 1);
+  // Misplaced-early repair (sci < serviceProcess):
+  const repaired = ensureSearchCanvasInOrder(['hero', 'searchCanvas', 'services', 'serviceProcess', 'faq']);
+  assert.ok(repaired.indexOf('searchCanvas') > repaired.indexOf('serviceProcess') - 1);
+  assert.strictEqual(repaired[repaired.indexOf('serviceProcess') + 1], 'searchCanvas');
+  assert.ok(fixed);
+});
+
 test('applyAiDraft preserve keeps manual heading and images', () => {
   const base = defaultSearchCanvasConfig();
   base.on = true;
@@ -144,6 +159,34 @@ test('section-order treats searchCanvas as off-by-default and places after How I
     }
   });
   assert.ok(ord.indexOf('searchCanvas') > ord.indexOf('serviceProcess'));
+});
+
+test('section-order repairs SearchCanvas parked under Hero', () => {
+  const so = require('../lib/section-order');
+  const ord = so.resolveSectionOrder({
+    sectionOrder: ['emerg', 'hero', 'searchCanvas', 'faq', 'services', 'serviceProcess'],
+    sections: {
+      searchCanvas: { on: true },
+      serviceProcess: {},
+      services: {},
+      hero: {},
+      faq: {}
+    }
+  });
+  assert.ok(ord.indexOf('serviceProcess') >= 0);
+  assert.strictEqual(ord[ord.indexOf('serviceProcess') + 1], 'searchCanvas');
+});
+
+test('normalize seeds default tabs when config has empty tabs array', () => {
+  const n = normalizeSearchCanvas({
+    on: true,
+    header: { eyebrow: 'Our expertise', heading: 'Solutions designed around your business', intro: 'Hi' },
+    tabs: []
+  });
+  assert.ok(n.tabs.length >= 4);
+  const html = renderSearchCanvasHtml(n, { force: true, icons: { check: '<path/>', calendar: '<path/>', truck: '<path/>', users: '<path/>', wrench: '<path/>' } });
+  assert.ok(html.includes('Solutions designed around your business'));
+  assert.ok(html.includes('role="tablist"'));
 });
 
 test('website composer adapter accepts meaningful tabs', () => {
