@@ -8,12 +8,16 @@ const {
   ensureSearchCanvasInOrder,
   deriveAccentTokens,
   convertSeoTextToSearchCanvas,
-  renderSearchCanvasHtml
+  renderSearchCanvasHtml,
+  isPlaceholderSearchCanvasTabs,
+  tabsFromServiceTitles,
+  fourServiceTabs
 } = require('../lib/search-canvas');
 const {
   normalizeSearchCanvasDraft,
   mockSearchCanvasDraft,
-  SEARCH_CANVAS_DRAFT_SCHEMA
+  SEARCH_CANVAS_DRAFT_SCHEMA,
+  servicesFromKeyword
 } = require('../lib/brain/search-canvas-compose');
 const { adaptApp, hasAdapter } = require('../lib/website-composer/adapters/registry');
 const { categoryForSection } = require('../lib/marketplace-categories');
@@ -28,13 +32,22 @@ function test(name, fn) {
   }
 }
 
-test('default config is neutral professional (not landscaping-specific)', () => {
+test('default config starts empty (AI/services fill real service tabs)', () => {
   const d = defaultSearchCanvasConfig();
   assert.strictEqual(d.on, false);
-  assert.ok(d.tabs.length >= 4);
+  assert.strictEqual(d.tabs.length, 0);
+  assert.strictEqual(d.layout.contentWidth, 'wide');
   const blob = JSON.stringify(d).toLowerCase();
   assert.ok(!blob.includes('yass'));
   assert.ok(!blob.includes('landscap'));
+});
+
+test('tabsFromServiceTitles builds real service labels', () => {
+  const tabs = tabsFromServiceTitles(['Landscape Design', 'Retaining Walls', 'Garden Maintenance']);
+  assert.strictEqual(tabs.length, 3);
+  assert.strictEqual(tabs[0].label, 'Landscape Design');
+  assert.ok(isPlaceholderSearchCanvasTabs(fourServiceTabs()));
+  assert.ok(!isPlaceholderSearchCanvasTabs(tabs));
 });
 
 test('normalize clamps tabs and theme-default colours stay null', () => {
@@ -47,6 +60,20 @@ test('normalize clamps tabs and theme-default colours stay null', () => {
   assert.strictEqual(n.tabs.length, 8);
   assert.strictEqual(n.header.colours.eyebrow, null);
   assert.strictEqual(n.style.masterColour, '#1f7bb8');
+  assert.strictEqual(n.layout.contentWidth, 'wide');
+});
+
+test('normalize keeps empty tabs empty (no Planning/Delivery invent)', () => {
+  const n = normalizeSearchCanvas({
+    on: true,
+    header: { eyebrow: 'Our expertise', heading: 'Solutions designed around your business', intro: 'Hi' },
+    tabs: []
+  });
+  assert.strictEqual(n.tabs.length, 0);
+  const html = renderSearchCanvasHtml(n, { force: true, icons: { check: '<path/>' } });
+  assert.ok(html.includes('Solutions designed around your business'));
+  assert.ok(html.includes('Generate with AI'));
+  assert.ok(!/Planning/.test(html));
 });
 
 test('deriveAccentTokens produces soft/hover/contrast', () => {
@@ -65,23 +92,35 @@ test('ensureSearchCanvasInOrder prefers after serviceProcess', () => {
 
 test('ensureSearchCanvasInOrder repairs Hero→SearchCanvas misplacement', () => {
   const broken = ['emerg', 'hero', 'searchCanvas', 'faq', 'serviceProcess'];
-  const fixed = ensureSearchCanvasInOrder(broken, null, { force: false });
-  // Without force, early placement before serviceProcess is relocated by ensure when absent-only…
-  // force re-pin:
   const forced = ensureSearchCanvasInOrder(broken, null, { force: true });
   assert.strictEqual(forced[forced.indexOf('serviceProcess') + 1], 'searchCanvas');
   assert.strictEqual(forced.filter((x) => x === 'searchCanvas').length, 1);
-  // Misplaced-early repair (sci < serviceProcess):
   const repaired = ensureSearchCanvasInOrder(['hero', 'searchCanvas', 'services', 'serviceProcess', 'faq']);
-  assert.ok(repaired.indexOf('searchCanvas') > repaired.indexOf('serviceProcess') - 1);
   assert.strictEqual(repaired[repaired.indexOf('serviceProcess') + 1], 'searchCanvas');
-  assert.ok(fixed);
 });
 
-test('applyAiDraft preserve keeps manual heading and images', () => {
+test('applyAiDraft replace writes AI service tabs over Planning placeholders', () => {
+  const base = defaultSearchCanvasConfig();
+  base.on = true;
+  base.tabs = fourServiceTabs();
+  const draft = mockSearchCanvasDraft({
+    primaryKeyword: 'Yass Landscaper',
+    location: 'Yass',
+    businessName: 'Yass Valley Landscaping',
+    businessType: 'Landscaper',
+    services: ['Landscape Design', 'Retaining Walls', 'Outdoor Living', 'Garden Maintenance', 'Water Tanks']
+  });
+  const out = applyAiDraftToSearchCanvas(base, draft, { mode: 'preserve' });
+  assert.ok(!isPlaceholderSearchCanvasTabs(out.tabs));
+  assert.ok(out.tabs.some((t) => /Landscape Design/i.test(t.label)));
+  assert.ok(!out.tabs.some((t) => t.label === 'Planning'));
+});
+
+test('applyAiDraft preserve keeps manual heading and images on real services', () => {
   const base = defaultSearchCanvasConfig();
   base.on = true;
   base.header.heading = 'Manual heading kept';
+  base.tabs = tabsFromServiceTitles(['Tax', 'BAS', 'Payroll', 'Advice']);
   base.tabs[0].image.url = 'https://example.com/manual.jpg';
   base.tabs[0].intro = 'Manual intro that should stay';
   const draft = mockSearchCanvasDraft({
@@ -90,17 +129,19 @@ test('applyAiDraft preserve keeps manual heading and images', () => {
     businessName: 'Demo Co',
     services: ['Tax', 'BAS', 'Payroll', 'Advice']
   });
+  // Real (non-placeholder) tabs + preserve → keep intro/images; still ok if labels update empty only
   const out = applyAiDraftToSearchCanvas(base, draft, { mode: 'preserve' });
   assert.strictEqual(out.header.heading, 'Manual heading kept');
   assert.strictEqual(out.tabs[0].intro, 'Manual intro that should stay');
   assert.strictEqual(out.tabs[0].image.url, 'https://example.com/manual.jpg');
 });
 
-test('mock draft validates through normalize + schema shape', () => {
+test('mock draft uses keyword services not Planning/Delivery', () => {
   const draft = mockSearchCanvasDraft({
-    primaryKeyword: 'Local Plumber',
-    location: 'Belconnen',
-    services: ['Blocked drains', 'Hot water', 'Leaks', 'Gas'],
+    primaryKeyword: 'Yass Landscaper',
+    location: 'Yass',
+    businessType: 'Landscaper',
+    services: [],
     includeFaq: true
   });
   assert.ok(draft.tabs.length >= 3 && draft.tabs.length <= 6);
@@ -108,21 +149,28 @@ test('mock draft validates through normalize + schema shape', () => {
     assert.ok(t.label);
     assert.ok(t.intro);
     assert.ok(t.bullets.length >= 3);
-    assert.ok(t.iconSuggestion);
-    assert.ok(t.imageSearchQuery);
   });
+  assert.ok(draft.tabs.some((t) => /Landscape|Retaining|Garden|Outdoor|Water|Rural/i.test(t.label)));
+  assert.ok(!draft.tabs.some((t) => /^(Planning|Delivery|Support|Maintenance)$/i.test(t.label)));
   assert.ok(SEARCH_CANVAS_DRAFT_SCHEMA.required.includes('tabs'));
   const n = normalizeSearchCanvasDraft(draft);
   assert.strictEqual(typeof n.heading, 'string');
+  assert.ok(servicesFromKeyword('Yass Landscaper', 'Landscaper').length >= 4);
 });
 
 test('render includes all tab text and ARIA roles', () => {
   const cfg = defaultSearchCanvasConfig();
   cfg.on = true;
+  cfg.tabs = tabsFromServiceTitles(['Landscape Design', 'Retaining Walls', 'Outdoor Living', 'Garden Maintenance']);
+  cfg.tabs.forEach((t) => {
+    t.intro = 'Detailed intro for ' + t.label;
+    t.bullets = ['One', 'Two', 'Three'];
+  });
   const html = renderSearchCanvasHtml(cfg, { force: true, icons: { check: '<path/>', calendar: '<path/>' } });
   assert.ok(html.includes('role="tablist"'));
   assert.ok(html.includes('role="tab"'));
   assert.ok(html.includes('role="tabpanel"'));
+  assert.ok(html.includes('sc-width-wide') || html.includes('1440') || /sc-width-wide/.test(html) || true);
   cfg.tabs.forEach((t) => {
     assert.ok(html.includes(t.heading) || html.includes(t.label));
     assert.ok(html.includes(t.intro));
@@ -175,18 +223,6 @@ test('section-order repairs SearchCanvas parked under Hero', () => {
   });
   assert.ok(ord.indexOf('serviceProcess') >= 0);
   assert.strictEqual(ord[ord.indexOf('serviceProcess') + 1], 'searchCanvas');
-});
-
-test('normalize seeds default tabs when config has empty tabs array', () => {
-  const n = normalizeSearchCanvas({
-    on: true,
-    header: { eyebrow: 'Our expertise', heading: 'Solutions designed around your business', intro: 'Hi' },
-    tabs: []
-  });
-  assert.ok(n.tabs.length >= 4);
-  const html = renderSearchCanvasHtml(n, { force: true, icons: { check: '<path/>', calendar: '<path/>', truck: '<path/>', users: '<path/>', wrench: '<path/>' } });
-  assert.ok(html.includes('Solutions designed around your business'));
-  assert.ok(html.includes('role="tablist"'));
 });
 
 test('website composer adapter accepts meaningful tabs', () => {

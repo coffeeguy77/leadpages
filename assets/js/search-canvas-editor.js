@@ -16,27 +16,68 @@
     return JSON.parse(JSON.stringify(o || {}));
   }
 
+  function serviceTitlesFromConfig(c) {
+    function titles(list) {
+      if (!Array.isArray(list)) return [];
+      return list
+        .filter(function (s) { return s && s.on !== false; })
+        .map(function (s) {
+          if (typeof s === 'string') return String(s).trim();
+          return String((s && (s.title || s.name || s.label || s.heading)) || '').trim();
+        })
+        .filter(Boolean);
+    }
+    var root = titles(c && c.services);
+    if (root.length) return root.slice(0, 8);
+    var sec = (c && c.sections && c.sections.services) || {};
+    return titles(sec.items || sec.cards || sec.list || sec.services).slice(0, 8);
+  }
+
+  function isPlaceholderTabs(tabs) {
+    if (!Array.isArray(tabs) || !tabs.length) return true;
+    var seed = { planning: 1, delivery: 1, support: 1, maintenance: 1, consultation: 1, service: 1, 'new topic': 1 };
+    var re = /add clear, customer-facing detail|describe this (service|topic) for visitors/i;
+    var hits = 0;
+    for (var i = 0; i < tabs.length; i++) {
+      var t = tabs[i] || {};
+      var label = String(t.label || '').toLowerCase().trim();
+      if (seed[label] || re.test(String(t.intro || ''))) hits++;
+    }
+    return hits >= Math.max(1, Math.ceil(tabs.length * 0.5));
+  }
+
+  function tabsFromServices(titles) {
+    return titles.map(function (title) {
+      var t = newTab();
+      t.label = String(title).split(/\s+/).slice(0, 4).join(' ');
+      t.heading = String(title);
+      t.intro = '';
+      t.bullets = [];
+      t.link = { label: '', destination: null };
+      return t;
+    });
+  }
+
   function ensure(c) {
     if (!c.sections) c.sections = {};
     if (!c.sections.searchCanvas || typeof c.sections.searchCanvas !== 'object') {
       c.sections.searchCanvas = window.LP_SEARCH_CANVAS_DEFAULT
         ? deepClone(window.LP_SEARCH_CANVAS_DEFAULT)
-        : { on: true, version: 1, header: { eyebrow: '', heading: '', intro: '', colours: {} }, tabs: [], style: {}, layout: {}, cta: {}, ai: {} };
+        : { on: true, version: 1, header: { eyebrow: 'Our expertise', heading: 'Solutions designed around your business', intro: 'Generate with AI to create service tabs for this business.', colours: {} }, tabs: [], style: {}, layout: {}, cta: {}, ai: {} };
     }
     var S = c.sections.searchCanvas;
     if (!S.header) S.header = { eyebrow: '', heading: '', intro: '', colours: {} };
     if (!S.header.colours) S.header.colours = {};
     if (!Array.isArray(S.tabs)) S.tabs = [];
-    if (!S.tabs.length && window.LP_SEARCH_CANVAS_DEFAULT && Array.isArray(window.LP_SEARCH_CANVAS_DEFAULT.tabs)) {
-      S.tabs = deepClone(window.LP_SEARCH_CANVAS_DEFAULT.tabs);
+    // Replace empty/placeholder Planning–Delivery with real site services when available.
+    if (isPlaceholderTabs(S.tabs)) {
+      var svc = serviceTitlesFromConfig(c);
+      S.tabs = svc.length ? tabsFromServices(svc) : [];
       S.defaultTabId = S.tabs[0] && S.tabs[0].id;
-      if (!S.header.heading && window.LP_SEARCH_CANVAS_DEFAULT.header) {
-        S.header = deepClone(window.LP_SEARCH_CANVAS_DEFAULT.header);
-      }
     }
-    if (!S.tabs.length) S.tabs = [newTab(), newTab(), newTab(), newTab()];
     if (!S.style) S.style = {};
-    if (!S.layout) S.layout = { preset: 'vertical-tabs-image-right', imageMode: 'per-tab', mobileMode: 'single-accordion', contentWidth: 'site' };
+    if (!S.layout) S.layout = { preset: 'vertical-tabs-image-right', imageMode: 'per-tab', mobileMode: 'single-accordion', contentWidth: 'wide' };
+    if (!S.layout.contentWidth) S.layout.contentWidth = 'wide';
     if (!S.cta) S.cta = { enabled: false, style: 'strip' };
     if (!S.ai) S.ai = {};
     if (S.on !== true) S.on = true;
@@ -212,19 +253,20 @@
       '>Multiple items open</option></select></div>' +
       '<div class="f"><label>Content width</label><select id="sc-width" class="tin">' +
       [
-        ['site', 'Site width'],
+        ['site', 'Site width (1440px)'],
         ['narrow', 'Narrow'],
-        ['wide', 'Wide']
+        ['wide', 'Wide (1440px)']
       ]
         .map(function (o) {
-          return '<option value="' + o[0] + '"' + ((S.layout.contentWidth || 'site') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+          return '<option value="' + o[0] + '"' + ((S.layout.contentWidth || 'wide') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
         })
         .join('') +
       '</select></div></div></div>' +
       '<div class="card" style="margin-bottom:18px"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">' +
-      '<div><h2 style="margin:0 0 4px">SearchCanvas tabs</h2><p class="lede" style="margin:0">Recommended 4–6. Warning after 8.</p></div>' +
+      '<div><h2 style="margin:0 0 4px">SearchCanvas tabs</h2><p class="lede" style="margin:0">Each tab is a service. Generate with AI to build the list from your keyword and site services.</p></div>' +
       '<button type="button" class="btn sm" id="sc-add-tab">+ Add tab</button></div>' +
       '<div id="sc-tabs-host" style="margin-top:12px"></div>' +
+      '<p class="hint" id="sc-tab-empty" style="display:none">No service tabs yet — click Generate with AI (or Add tab).</p>' +
       '<p class="hint" id="sc-tab-warn" style="display:none;color:var(--warning,#b45309)">You have more than 8 tabs — keep the set focused for visitors and SEO.</p></div>' +
       '<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 6px">Closing CTA</h2>' +
       '<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="sc-cta-on"' +
@@ -254,7 +296,7 @@
         .join('') +
       '</select></div></div>' +
       '<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 6px">AI regenerate — LeadPages Brain</h2>' +
-      '<p class="lede" style="margin:0 0 10px">Uses OpenAI as the preferred SearchCanvas engine via Brain. Primary keyword is required.</p>' +
+      '<p class="lede" style="margin:0 0 10px">Uses OpenAI via Brain to create <strong>service tabs</strong> for this business (not generic Planning/Delivery). Primary keyword required.</p>' +
       '<div class="row"><div class="f"><label for="sc-ai-kw">Primary keyword <span class="hint">required</span></label><input id="sc-ai-kw" class="tin" value="' +
       esc(S.ai.primaryKeyword || c.primaryKeyword || '') +
       '"></div>' +
@@ -263,7 +305,7 @@
       '"></div></div>' +
       '<div class="f"><label for="sc-ai-extra">Extra information <span class="hint">optional</span></label><textarea id="sc-ai-extra" class="tin" rows="3" placeholder="Important business-specific facts for OpenAI to incorporate…"></textarea></div>' +
       '<div class="row"><div class="f"><label>Number of tabs</label><select id="sc-ai-tabs" class="tin"><option>4</option><option selected>5</option><option>6</option></select></div>' +
-      '<div class="f"><label>Generation mode</label><select id="sc-ai-mode" class="tin"><option value="preserve" selected>Preserve edited fields</option><option value="fillEmpty">Fill empty fields only</option><option value="replace">Replace all generated text</option></select></div></div>' +
+      '<div class="f"><label>Generation mode</label><select id="sc-ai-mode" class="tin"><option value="replace" selected>Replace all tabs with AI services</option><option value="preserve">Preserve edited fields</option><option value="fillEmpty">Fill empty fields only</option></select></div></div>' +
       '<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="sc-ai-faq"> Also update homepage FAQ</label>' +
       '<div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" id="sc-ai-go">Generate with AI</button><span class="hint" id="sc-ai-note"></span></div></div>';
 
@@ -331,9 +373,15 @@
     function drawTabs() {
       var host = $('sc-tabs-host');
       var warn = $('sc-tab-warn');
+      var empty = $('sc-tab-empty');
       if (!host) return;
       var tabs = ensure(c).tabs;
       if (warn && warn.style) warn.style.display = tabs.length > 8 ? '' : 'none';
+      if (empty && empty.style) empty.style.display = tabs.length ? 'none' : '';
+      if (!tabs.length) {
+        host.innerHTML = '';
+        return;
+      }
       host.innerHTML = tabs
         .map(function (t, i) {
           var bullets = (t.bullets || []).join('\n');
@@ -542,26 +590,25 @@
           var applied = null;
           if (typeof window.lpApplySearchCanvasDraft === 'function') {
             applied = await window.lpApplySearchCanvasDraft(draft, {
-              mode: mode,
+              mode: 'replace',
               forceUpdate: true,
               forcePosition: false,
+              replaceTabs: true,
               config: c,
               includeFaq: !!( $('sc-ai-faq') && $('sc-ai-faq').checked ),
               source: 'app-editor'
             });
           } else {
-            // Local fallback merge if host helper missing
+            // Local fallback merge if host helper missing — always replace tab list with AI services
             var S2 = ensure(c);
             S2.header = S2.header || {};
-            if (mode === 'replace' || !S2.header.heading) {
-              if (draft.eyebrow) S2.header.eyebrow = draft.eyebrow;
-              if (draft.heading) S2.header.heading = draft.heading;
-              if (draft.intro) S2.header.intro = draft.intro;
-            }
-            S2.tabs = draft.tabs.map(function (t, i) {
+            if (draft.eyebrow) S2.header.eyebrow = draft.eyebrow;
+            if (draft.heading) S2.header.heading = draft.heading;
+            if (draft.intro) S2.header.intro = draft.intro;
+            S2.tabs = draft.tabs.map(function (t) {
               return {
-                id: (S2.tabs[i] && S2.tabs[i].id) || ('tab-' + Math.random().toString(36).slice(2, 9)),
-                label: String(t.label || t.heading || 'Topic').trim(),
+                id: 'tab-' + Math.random().toString(36).slice(2, 9),
+                label: String(t.label || t.heading || 'Service').trim(),
                 iconKey: t.iconSuggestion || t.iconKey || 'check',
                 heading: String(t.heading || t.label || '').trim(),
                 intro: String(t.intro || '').trim(),
@@ -575,6 +622,8 @@
             });
             S2.defaultTabId = S2.tabs[0] && S2.tabs[0].id;
             S2.on = true;
+            if (!S2.layout) S2.layout = {};
+            S2.layout.contentWidth = S2.layout.contentWidth || 'wide';
             S2.ai = Object.assign({}, S2.ai || {}, { primaryKeyword: kw, generatedAt: new Date().toISOString(), source: 'app-editor' });
             applied = { tabs: S2.tabs.length };
             save();

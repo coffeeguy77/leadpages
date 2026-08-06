@@ -3450,12 +3450,56 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(id==='searchCanvas'){
       var seeded=JSON.parse(JSON.stringify(def&&Object.keys(def).length?def:{
         on:true,version:1,
-        header:{eyebrow:'Our expertise',heading:'Solutions designed around your business',intro:'Explore the services, experience and practical support our team provides — structured so visitors can find what they need quickly.',colours:{}},
-        tabs:[],style:{radius:'medium',shadow:'soft'},layout:{preset:'vertical-tabs-image-right',imageMode:'per-tab',mobileMode:'single-accordion',contentWidth:'site'},cta:{enabled:false,style:'strip'},ai:{}
+        header:{eyebrow:'Our expertise',heading:'Solutions designed around your business',intro:'Explore the services our team provides — generate with AI to build service tabs from your keyword.',colours:{}},
+        tabs:[],style:{radius:'medium',shadow:'soft'},layout:{preset:'vertical-tabs-image-right',imageMode:'per-tab',mobileMode:'single-accordion',contentWidth:'wide'},cta:{enabled:false,style:'strip'},ai:{}
       }));
       seeded.on=true;
-      // Always refill missing tabs / header — never leave an on-section blank.
-      if(!Array.isArray(o.tabs)||!o.tabs.length){
+      if(!seeded.layout) seeded.layout={};
+      seeded.layout.contentWidth=seeded.layout.contentWidth||'wide';
+      function _scServiceTitles(){
+        function titles(list){
+          if(!Array.isArray(list)) return [];
+          return list.filter(function(s){ return s&&s.on!==false; }).map(function(s){
+            if(typeof s==='string') return String(s).trim();
+            return String((s&&(s.title||s.name||s.label||s.heading))||'').trim();
+          }).filter(Boolean);
+        }
+        var root=titles(c.services);
+        if(root.length) return root.slice(0,8);
+        var sec=(c.sections&&c.sections.services)||{};
+        return titles(sec.items||sec.cards||sec.list||sec.services).slice(0,8);
+      }
+      function _scTabsFromServices(titles){
+        return titles.map(function(title,i){
+          return {
+            id:'tab-svc-'+i+'-'+Math.random().toString(36).slice(2,6),
+            label:String(title).split(/\s+/).slice(0,4).join(' '),
+            iconKey:'check',
+            heading:String(title),
+            intro:'',
+            content:'',
+            bullets:[],
+            image:{url:null,publicId:null,alt:'',fit:'cover',objectPosition:'center'},
+            link:{label:'',destination:null},
+            button:{enabled:false,label:'',destination:null},
+            on:true
+          };
+        });
+      }
+      function _scIsPlaceholder(tabs){
+        if(!Array.isArray(tabs)||!tabs.length) return true;
+        var seed={planning:1,delivery:1,support:1,maintenance:1,consultation:1,service:1,'new topic':1};
+        var re=/add clear, customer-facing detail|describe this (service|topic) for visitors/i;
+        var hits=0;
+        for(var i=0;i<tabs.length;i++){
+          var t=tabs[i]||{};
+          var label=String(t.label||'').toLowerCase().trim();
+          if(seed[label]||re.test(String(t.intro||''))) hits++;
+        }
+        return hits>=Math.max(1,Math.ceil(tabs.length*0.5));
+      }
+      // Always refill missing/placeholder tabs from real site services — never invent Planning/Delivery.
+      if(!Array.isArray(o.tabs)||!o.tabs.length||_scIsPlaceholder(o.tabs)){
         var keepHeader=o.header&&typeof o.header==='object'?o.header:null;
         var keepLayout=o.layout&&typeof o.layout==='object'?o.layout:null;
         var keepStyle=o.style&&typeof o.style==='object'?o.style:null;
@@ -3468,18 +3512,16 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         if(keepStyle) c.sections[id].style=Object.assign({}, seeded.style||{}, keepStyle);
         if(keepCta) c.sections[id].cta=Object.assign({}, seeded.cta||{}, keepCta);
         if(keepAi) c.sections[id].ai=Object.assign({}, seeded.ai||{}, keepAi);
-        if(!Array.isArray(c.sections[id].tabs)||!c.sections[id].tabs.length){
-          c.sections[id].tabs=[
-            {id:'tab-plan',label:'Planning',iconKey:'calendar',heading:'Planning & advice',intro:'Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.',content:'',bullets:['Clear scope of work','Practical options','Transparent next steps','Local, responsive service'],image:{url:null,publicId:null,alt:'',fit:'cover',objectPosition:'center'},link:{label:'Learn more',destination:null},button:{enabled:false,label:'',destination:null},on:true},
-            {id:'tab-del',label:'Delivery',iconKey:'truck',heading:'Delivery & installation',intro:'Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.',content:'',bullets:['Clear scope of work','Practical options','Transparent next steps','Local, responsive service'],image:{url:null,publicId:null,alt:'',fit:'cover',objectPosition:'center'},link:{label:'Learn more',destination:null},button:{enabled:false,label:'',destination:null},on:true},
-            {id:'tab-sup',label:'Support',iconKey:'users',heading:'Ongoing support',intro:'Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.',content:'',bullets:['Clear scope of work','Practical options','Transparent next steps','Local, responsive service'],image:{url:null,publicId:null,alt:'',fit:'cover',objectPosition:'center'},link:{label:'Learn more',destination:null},button:{enabled:false,label:'',destination:null},on:true},
-            {id:'tab-mnt',label:'Maintenance',iconKey:'wrench',heading:'Care & maintenance',intro:'Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.',content:'',bullets:['Clear scope of work','Practical options','Transparent next steps','Local, responsive service'],image:{url:null,publicId:null,alt:'',fit:'cover',objectPosition:'center'},link:{label:'Learn more',destination:null},button:{enabled:false,label:'',destination:null},on:true}
-          ];
-          c.sections[id].defaultTabId=c.sections[id].tabs[0].id;
-        }
+        var svcTitles=_scServiceTitles();
+        c.sections[id].tabs=svcTitles.length?_scTabsFromServices(svcTitles):[];
+        c.sections[id].defaultTabId=(c.sections[id].tabs[0]&&c.sections[id].tabs[0].id)||null;
+        if(!c.sections[id].layout) c.sections[id].layout={};
+        c.sections[id].layout.contentWidth=c.sections[id].layout.contentWidth||'wide';
         o=c.sections[id];
       } else {
         o.on=true;
+        if(!o.layout) o.layout={};
+        if(!o.layout.contentWidth) o.layout.contentWidth='wide';
       }
       try{
         if(!Array.isArray(c.sectionOrder)) c.sectionOrder=[];
@@ -11700,6 +11742,26 @@ function heroCtaCard(c){
       includeFaq:!!opts.includeFaq,
       tone:String(opts.tone||'practical and professional')
     };
+    // Pass live site services so Brain builds service tabs (not Planning/Delivery).
+    try{
+      var svc=[];
+      function _titles(list){
+        if(!Array.isArray(list)) return;
+        list.forEach(function(s){
+          if(!s||s.on===false) return;
+          var t=typeof s==='string'?s:(s.title||s.name||s.label||s.heading||'');
+          t=String(t||'').trim();
+          if(t) svc.push(t);
+        });
+      }
+      if(typeof data==='object'&&data){
+        _titles(data.services);
+        var ss=data.sections&&data.sections.services;
+        if(ss) _titles(ss.items||ss.cards||ss.list||ss.services);
+      }
+      if(Array.isArray(opts.services)&&opts.services.length) svc=opts.services.map(String);
+      if(svc.length) payload.services=svc.slice(0,8);
+    }catch(_svc){}
     var res=await fetch('/api/brain/search-canvas-draft',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
@@ -11749,6 +11811,18 @@ function heroCtaCard(c){
     ord.push('searchCanvas');
     data.sectionOrder=ord;
   }
+  function _siIsPlaceholderScTabs(tabs){
+    if(!Array.isArray(tabs)||!tabs.length) return true;
+    var seed={planning:1,delivery:1,support:1,maintenance:1,consultation:1,service:1,'new topic':1};
+    var re=/add clear, customer-facing detail|describe this (service|topic) for visitors/i;
+    var hits=0;
+    for(var i=0;i<tabs.length;i++){
+      var t=tabs[i]||{};
+      var label=String(t.label||'').toLowerCase().trim();
+      if(seed[label]||re.test(String(t.intro||''))) hits++;
+    }
+    return hits>=Math.max(1,Math.ceil(tabs.length*0.5));
+  }
   function _siMergeSearchCanvasDraft(existing, draft, mode){
     mode=mode||'preserve';
     function take(prev, next){
@@ -11757,58 +11831,60 @@ function heroCtaCard(c){
       if(mode==='replace') return n;
       return String(prev||'').trim()?prev:n;
     }
-    var cur=existing&&typeof existing==='object'?JSON.parse(JSON.stringify(existing)):JSON.parse(JSON.stringify((DEFAULT_TRADE_SECTIONS&&DEFAULT_TRADE_SECTIONS.searchCanvas)||{}));
+    var cur=existing&&typeof existing==='object'?JSON.parse(JSON.stringify(existing)):{on:true,header:{eyebrow:'',heading:'',intro:'',colours:{}},tabs:[],layout:{contentWidth:'wide'},cta:{},ai:{}};
     cur.on=true;
     if(!cur.header) cur.header={eyebrow:'',heading:'',intro:'',colours:{}};
     if(!cur.header.colours) cur.header.colours={};
+    if(!cur.layout) cur.layout={preset:'vertical-tabs-image-right',imageMode:'per-tab',mobileMode:'single-accordion',contentWidth:'wide'};
+    if(!cur.layout.contentWidth) cur.layout.contentWidth='wide';
     cur.header.eyebrow=take(cur.header.eyebrow, draft.eyebrow);
     cur.header.heading=take(cur.header.heading, draft.heading);
     cur.header.intro=take(cur.header.intro, draft.intro);
     var aiTabs=Array.isArray(draft.tabs)?draft.tabs:[];
-    if(aiTabs.length){
-      if(mode==='replace' || !Array.isArray(cur.tabs) || !cur.tabs.length){
-        cur.tabs=aiTabs.map(function(t,i){
-          var prev=(cur.tabs&&cur.tabs[i])||{};
-          return {
-            id:prev.id||('tab-'+Math.random().toString(36).slice(2,9)),
-            label:String(t.label||t.heading||'Topic').trim(),
-            iconKey:prev.iconKey||t.iconSuggestion||'check',
-            heading:String(t.heading||t.label||'').trim(),
-            intro:String(t.intro||'').trim(),
-            content:Array.isArray(t.supportingParagraphs)?t.supportingParagraphs.join('\n\n'):String(t.content||''),
-            bullets:Array.isArray(t.bullets)?t.bullets.map(String).filter(Boolean).slice(0,5):[],
-            image:{
-              url:(prev.image&&prev.image.url)||null,
-              publicId:(prev.image&&prev.image.publicId)||null,
-              alt:String(t.imageAltText||(prev.image&&prev.image.alt)||'').trim(),
-              fit:(prev.image&&prev.image.fit)||'cover',
-              objectPosition:(prev.image&&prev.image.objectPosition)||'center'
-            },
-            link:{ label:String(t.linkLabel||(prev.link&&prev.link.label)||'').trim(), destination:(prev.link&&prev.link.destination)||null },
-            button:prev.button||{enabled:false,label:'',destination:null},
-            on:true,
-            _imageSearchQuery:String(t.imageSearchQuery||'').trim()
-          };
-        }).slice(0,8);
-      } else {
-        aiTabs.slice(0,8).forEach(function(t,i){
-          if(!cur.tabs[i]){
-            cur.tabs[i]=_siMergeSearchCanvasDraft({tabs:[]},{tabs:[t]},'replace').tabs[0];
-            return;
-          }
-          var tab=cur.tabs[i];
-          tab.label=take(tab.label, t.label);
-          tab.heading=take(tab.heading, t.heading||t.label);
-          tab.intro=take(tab.intro, t.intro);
-          var paras=Array.isArray(t.supportingParagraphs)?t.supportingParagraphs.join('\n\n'):t.content;
-          tab.content=take(tab.content, paras);
-          if((!tab.bullets||!tab.bullets.length)&&Array.isArray(t.bullets)) tab.bullets=t.bullets.map(String).filter(Boolean).slice(0,5);
-          if(!tab.iconKey&&t.iconSuggestion) tab.iconKey=t.iconSuggestion;
-          if((!tab.link||!tab.link.label)&&t.linkLabel){ tab.link=tab.link||{label:'',destination:null}; tab.link.label=t.linkLabel; }
-          if(t.imageAltText){ tab.image=tab.image||{}; if(!tab.image.alt) tab.image.alt=t.imageAltText; }
-          tab._imageSearchQuery=t.imageSearchQuery||tab._imageSearchQuery||'';
-        });
-      }
+    // AI service tabs always replace empty/placeholder Planning–Delivery seeds.
+    var replaceTabs=mode==='replace' || !Array.isArray(cur.tabs) || !cur.tabs.length || _siIsPlaceholderScTabs(cur.tabs);
+    if(aiTabs.length && replaceTabs){
+      cur.tabs=aiTabs.map(function(t,i){
+        var prev=(cur.tabs&&cur.tabs[i])||{};
+        return {
+          id:prev.id||('tab-'+Math.random().toString(36).slice(2,9)),
+          label:String(t.label||t.heading||'Service').trim(),
+          iconKey:t.iconSuggestion||t.iconKey||prev.iconKey||'check',
+          heading:String(t.heading||t.label||'').trim(),
+          intro:String(t.intro||'').trim(),
+          content:Array.isArray(t.supportingParagraphs)?t.supportingParagraphs.join('\n\n'):String(t.content||''),
+          bullets:Array.isArray(t.bullets)?t.bullets.map(String).filter(Boolean).slice(0,5):[],
+          image:{
+            url:(prev.image&&prev.image.url)||null,
+            publicId:(prev.image&&prev.image.publicId)||null,
+            alt:String(t.imageAltText||(prev.image&&prev.image.alt)||'').trim(),
+            fit:(prev.image&&prev.image.fit)||'cover',
+            objectPosition:(prev.image&&prev.image.objectPosition)||'center'
+          },
+          link:{ label:String(t.linkLabel||'').trim(), destination:(prev.link&&prev.link.destination)||null },
+          button:prev.button||{enabled:false,label:'',destination:null},
+          on:true,
+          _imageSearchQuery:String(t.imageSearchQuery||'').trim()
+        };
+      }).slice(0,8);
+    } else if(aiTabs.length){
+      aiTabs.slice(0,8).forEach(function(t,i){
+        if(!cur.tabs[i]){
+          cur.tabs[i]=_siMergeSearchCanvasDraft({tabs:[]},{tabs:[t]},'replace').tabs[0];
+          return;
+        }
+        var tab=cur.tabs[i];
+        tab.label=take(tab.label, t.label);
+        tab.heading=take(tab.heading, t.heading||t.label);
+        tab.intro=take(tab.intro, t.intro);
+        var paras=Array.isArray(t.supportingParagraphs)?t.supportingParagraphs.join('\n\n'):t.content;
+        tab.content=take(tab.content, paras);
+        if((!tab.bullets||!tab.bullets.length)&&Array.isArray(t.bullets)) tab.bullets=t.bullets.map(String).filter(Boolean).slice(0,5);
+        if(!tab.iconKey&&t.iconSuggestion) tab.iconKey=t.iconSuggestion;
+        if((!tab.link||!tab.link.label)&&t.linkLabel){ tab.link=tab.link||{label:'',destination:null}; tab.link.label=t.linkLabel; }
+        if(t.imageAltText){ tab.image=tab.image||{}; if(!tab.image.alt) tab.image.alt=t.imageAltText; }
+        tab._imageSearchQuery=t.imageSearchQuery||tab._imageSearchQuery||'';
+      });
     }
     if(draft.cta&&typeof draft.cta==='object'){
       cur.cta=cur.cta||{};
@@ -11851,6 +11927,13 @@ function heroCtaCard(c){
     var existed=!!(target.sections.searchCanvas&&target.sections.searchCanvas.on);
     var mode=opts.mode||(opts.preserve===false?'replace':'preserve');
     if(mode==='fillEmpty') mode='preserve';
+    // App editor / SEO generate: AI service list is authoritative.
+    if(opts.replaceTabs===true || opts.source==='app-editor' || opts.source==='seo-command'){
+      mode='replace';
+    }
+    if(_siIsPlaceholderScTabs(draft.tabs)){
+      throw new Error('AI returned generic placeholder tabs (Planning/Delivery). Check site services and try Generate again.');
+    }
     var next=_siMergeSearchCanvasDraft(target.sections.searchCanvas, draft, mode);
     if(!Array.isArray(next.tabs)||!next.tabs.length){
       throw new Error('SearchCanvas AI draft had no tabs — try Replace mode or check Brain route content.search_canvas_draft');
