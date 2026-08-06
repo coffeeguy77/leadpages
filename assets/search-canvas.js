@@ -221,6 +221,12 @@
     return '<svg class="sc-ic lp-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + window.LP_ICONS[key] + '</svg>';
   }
 
+  function bulletTickHtml(tab, style) {
+    var key = (tab && tab.bulletIconKey) || (style && style.bulletIconKey) || 'check';
+    var svg = iconSvg(key) || iconSvg('check');
+    return '<span class="sc-tick" aria-hidden="true">' + svg + '</span>';
+  }
+
   function paragraphsHtml(text) {
     var raw = String(text || '').replace(/\r\n/g, '\n').trim();
     if (!raw) return '';
@@ -325,7 +331,7 @@
     function panelHtml(tab, active) {
       var href = destHref(tab.link && tab.link.destination);
       var bullets = (tab.bullets || []).map(function (b) {
-        return '<li><span class="sc-tick" aria-hidden="true"></span><span>' + esc(b) + '</span></li>';
+        return '<li>' + bulletTickHtml(tab, style) + '<span>' + esc(b) + '</span></li>';
       }).join('');
       return '<article class="sc-panel' + (active ? ' is-active' : '') + '" role="tabpanel" id="' + uid + '-panel-' + esc(tab.id) + '" aria-labelledby="' + uid + '-tab-' + esc(tab.id) + '"' + (active ? '' : ' hidden') + ' data-sc-panel="' + esc(tab.id) + '">' +
         '<h3 class="sc-tab-heading">' + esc(tab.heading || tab.label) + '</h3>' +
@@ -362,7 +368,7 @@
         '<div class="sc-acc-copy"><h3 class="sc-tab-heading">' + esc(tab.heading || tab.label) + '</h3>' +
         (tab.intro ? '<p class="sc-tab-intro">' + esc(tab.intro) + '</p>' : '') +
         '<div class="sc-tab-body">' + paragraphsHtml(tab.content) + '</div>' +
-        ((tab.bullets || []).length ? '<ul class="sc-bullets">' + tab.bullets.map(function (b) { return '<li><span class="sc-tick" aria-hidden="true"></span><span>' + esc(b) + '</span></li>'; }).join('') + '</ul>' : '') +
+        ((tab.bullets || []).length ? '<ul class="sc-bullets">' + tab.bullets.map(function (b) { return '<li>' + bulletTickHtml(tab, style) + '<span>' + esc(b) + '</span></li>'; }).join('') + '</ul>' : '') +
         '</div></div></div>';
     }).join('');
 

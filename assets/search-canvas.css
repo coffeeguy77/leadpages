@@ -109,7 +109,7 @@ section[data-sec="searchCanvas"][data-sc-on="1"] {
   text-align: left;
   padding: 14px 12px;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: 0;
   background: transparent;
   color: var(--sc-body, var(--ink, inherit));
   font: inherit;
@@ -120,9 +120,16 @@ section[data-sec="searchCanvas"][data-sc-on="1"] {
 .sc-tab + .sc-tab {
   margin-top: 4px;
   border-top: 1px solid color-mix(in srgb, var(--ink, #1a2230) 8%, transparent);
+}
+.sc-tab:first-child {
+  border-radius: 12px 12px 0 0;
+}
+.sc-tab:last-child {
   border-radius: 0 0 12px 12px;
 }
-.sc-tab:first-child { border-radius: 12px 12px 0 0; }
+.sc-tab:only-child {
+  border-radius: 12px;
+}
 .sc-tab:hover {
   background: color-mix(in srgb, var(--sc-accent, var(--brand, var(--pipe, #1f7bb8))) 10%, transparent);
 }
@@ -187,32 +194,38 @@ section[data-sec="searchCanvas"][data-sc-on="1"] {
   padding: 0;
   display: grid;
   gap: 8px;
+  width: 100%;
 }
 .sc-bullets li {
   display: grid;
-  grid-template-columns: 18px 1fr;
+  grid-template-columns: 18px minmax(0, 1fr);
   gap: 8px;
   align-items: start;
   line-height: 1.4;
+  width: 100%;
 }
 .sc-tick {
-  width: 16px;
-  height: 16px;
-  margin-top: 2px;
-  border-radius: 999px;
-  background: var(--sc-accent, var(--brand, var(--pipe, #1f7bb8)));
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sc-accent, var(--brand, var(--pipe, #1f7bb8)));
+  background: transparent;
+  border-radius: 0;
   position: relative;
+  flex: 0 0 auto;
 }
 .sc-tick::after {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 3px;
-  width: 5px;
-  height: 8px;
-  border: solid var(--sc-accent-contrast, #fff);
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+  content: none;
+  display: none;
+}
+.sc-tick .sc-ic,
+.sc-tick .lp-ic {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
 }
 
 .sc-text-link {
