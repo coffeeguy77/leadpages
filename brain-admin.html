@@ -98,6 +98,7 @@ html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-fa
       <button class="btn solid" id="landing-provider-save" type="button">Save provider</button>
       <p class="msg" id="landing-provider-msg"></p>
       <p class="notice" style="margin-top:10px" id="landing-provider-notice">Saved in Supabase via Control Centre — no Vercel env var needed. One-time: run <span class="mono">db/brain_settings.sql</span> in the Supabase SQL editor if you have not already.</p>
+      <p class="notice" style="margin-top:12px"><strong>SearchCanvas</strong> does not use this dropdown. It has its own Brain route <span class="mono">content.search_canvas_draft</span> (OpenAI primary when <span class="mono">OPENAI_API_KEY</span> is set — see Routes table). Enable with <span class="mono">BRAIN_SEARCH_CANVAS=1</span> or <span class="mono">BRAIN_LANDING_DRAFT=1</span>. Successful generates appear in Recent usage as <span class="mono">content.search_canvas_draft</span>.</p>
     </section>
   </div>
 

@@ -220,21 +220,64 @@
     }).join('\n');
   }
 
+  function fallbackTabs() {
+    var labels = [
+      { label: 'Planning', iconKey: 'calendar', heading: 'Planning & advice' },
+      { label: 'Delivery', iconKey: 'truck', heading: 'Delivery & installation' },
+      { label: 'Support', iconKey: 'users', heading: 'Ongoing support' },
+      { label: 'Maintenance', iconKey: 'wrench', heading: 'Care & maintenance' }
+    ];
+    return labels.map(function (L, i) {
+      return {
+        id: 'tab-fallback-' + i,
+        label: L.label,
+        iconKey: L.iconKey,
+        heading: L.heading,
+        intro: 'Add clear, customer-facing detail about this topic. Keep it practical and easy to scan.',
+        content: '',
+        bullets: ['Clear scope of work', 'Practical options', 'Transparent next steps', 'Local, responsive service'],
+        image: { url: null, publicId: null, alt: '', fit: 'cover', objectPosition: 'center' },
+        link: { label: 'Learn more', destination: null },
+        button: { enabled: false, label: '', destination: null },
+        on: true
+      };
+    });
+  }
+
   /**
    * Paint SearchCanvas from site config into the section node (live preview + client boot).
+   * Never leaves an on-section as a blank white shell — seeds defaults when tabs are missing.
    */
   window.lpPaintSearchCanvas = function (cfgOrSection, rootOpt) {
     var cfg = cfgOrSection && cfgOrSection.tabs ? cfgOrSection : (cfgOrSection && cfgOrSection.sections && cfgOrSection.sections.searchCanvas) || cfgOrSection || {};
     var root = rootOpt || document.querySelector('[data-sec="searchCanvas"]');
     if (!root) return;
     var on = cfg.on === true;
-    root.style.display = on ? 'block' : 'none';
     root.classList.toggle('is-on', on);
     root.setAttribute('data-sc-on', on ? '1' : '0');
-    if (!on) return;
+    if (!on) {
+      root.style.display = 'none';
+      return;
+    }
 
-    var tabs = (Array.isArray(cfg.tabs) ? cfg.tabs : []).filter(function (t) { return t && t.on !== false; }).slice(0, 8);
-    if (!tabs.length) return;
+    if (!cfg.header || typeof cfg.header !== 'object') {
+      cfg.header = {
+        eyebrow: 'Our expertise',
+        heading: 'Solutions designed around your business',
+        intro: 'Explore the services, experience and practical support our team provides — structured so visitors can find what they need quickly.',
+        colours: {}
+      };
+    }
+    if (!Array.isArray(cfg.tabs) || !cfg.tabs.length) {
+      cfg.tabs = fallbackTabs();
+      cfg.defaultTabId = cfg.tabs[0] && cfg.tabs[0].id;
+    }
+
+    var tabs = cfg.tabs.filter(function (t) { return t && t.on !== false; }).slice(0, 8);
+    if (!tabs.length) {
+      cfg.tabs = fallbackTabs();
+      tabs = cfg.tabs.slice();
+    }
     var header = cfg.header || {};
     var style = cfg.style || {};
     var layout = cfg.layout || {};
@@ -254,18 +297,26 @@
       (layout.imageMode === 'none' ? ' sc-no-image' : layout.imageMode === 'shared' ? ' sc-shared-image' : ' sc-per-tab-image');
 
     var accent = deriveAccent(style.masterColour);
-    var vars = [];
+    // Set CSS vars without wiping display / other inline styles.
+    function setVar(name, val) {
+      if (val) root.style.setProperty(name, val);
+      else root.style.removeProperty(name);
+    }
     if (accent) {
-      vars.push('--sc-accent:' + accent.accent, '--sc-accent-soft:' + accent.accentSoft, '--sc-accent-hover:' + accent.accentHover, '--sc-accent-contrast:' + accent.accentContrast, '--sc-accent-border:' + accent.accentBorder);
+      setVar('--sc-accent', accent.accent);
+      setVar('--sc-accent-soft', accent.accentSoft);
+      setVar('--sc-accent-hover', accent.accentHover);
+      setVar('--sc-accent-contrast', accent.accentContrast);
+      setVar('--sc-accent-border', accent.accentBorder);
     }
     [['sectionBackground', '--sc-section-bg'], ['panelBackground', '--sc-panel-bg'], ['tabBackground', '--sc-tab-bg'], ['activeTabBackground', '--sc-tab-active-bg'], ['borderColour', '--sc-border'], ['headingColour', '--sc-heading'], ['bodyColour', '--sc-body'], ['mutedColour', '--sc-muted']].forEach(function (p) {
-      if (style[p[0]]) vars.push(p[1] + ':' + style[p[0]]);
+      setVar(p[1], style[p[0]]);
     });
     var hc = header.colours || {};
-    if (hc.eyebrow) vars.push('--sc-eyebrow-color:' + hc.eyebrow);
-    if (hc.heading) vars.push('--sc-heading-color:' + hc.heading);
-    if (hc.intro) vars.push('--sc-intro-color:' + hc.intro);
-    root.setAttribute('style', vars.join(';'));
+    setVar('--sc-eyebrow-color', hc.eyebrow);
+    setVar('--sc-heading-color', hc.heading);
+    setVar('--sc-intro-color', hc.intro);
+    root.style.display = 'block';
 
     var imageMode = layout.imageMode || 'per-tab';
     var shared = imageMode === 'shared' ? tabs.find(function (t) { return t.image && t.image.url; }) : null;
