@@ -3614,19 +3614,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var _hi=-1; for(var _i=0;_i<out.length;_i++){ if(_heroes.indexOf(out[_i])>=0){ _hi=_i; break; } }
       if(_hi>=0) out.splice(_hi+1,0,'trustBar'); else out.unshift('trustBar');
     }
-    // Repair SearchCanvas when it was parked under Hero before How It Works / Services.
-    if(out.indexOf('searchCanvas')>=0 && _secOn(c,'searchCanvas')){
-      var _sci=out.indexOf('searchCanvas');
-      var _spi=out.indexOf('serviceProcess');
-      var _ssi=out.indexOf('services');
-      var _tgt=_spi>=0?_spi:_ssi;
-      if(_tgt>=0 && _sci<_tgt){
-        out.splice(_sci,1);
-        var _nt=out.indexOf(_spi>=0?'serviceProcess':'services');
-        if(_nt>=0) out.splice(_nt+1,0,'searchCanvas');
-        else out.push('searchCanvas');
-      }
-    }
+    // SearchCanvas position is user-controlled via Position (including above How It Works).
     // FAQ sits directly under SearchCanvas when both are on.
     if(out.indexOf('searchCanvas')>=0 && _secOn(c,'searchCanvas') && _secOn(c,'faq')){
       var _fi=out.indexOf('faq');
