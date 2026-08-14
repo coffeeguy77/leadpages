@@ -7970,7 +7970,7 @@ function heroCtaCard(c){
       function parseUrls(s){ return String(s||'').split(/\n+/).map(function(x){return x.trim();}).filter(Boolean); }
       body.innerHTML=secCard(c,'customHtml','Custom HTML',true,[])
         +'<div class="card" style="margin-bottom:18px"><h2>Content</h2>'
-        +'<p class="lede">HTML is embedded in the page (not an iframe). Optional CSS/JS URLs load with the block.</p>'
+        +'<p class="lede">HTML is embedded in the page (not an iframe). Inline <code>&lt;script&gt;</code> and <code>&lt;style&gt;</code> in the HTML run on the live page. Optional CSS/JS URLs also load with the block — prefer URLs for shared packs (Transfer Matcher) so homepage and landing pages stay isolated.</p>'
         +'<div class="lp-ch-stack">'
         +'<div class="f"><label for="ch-title">Optional title</label><input id="ch-title" class="tin" type="text" value=""></div>'
         +'<div class="f"><label for="ch-html">HTML</label>'
