@@ -2524,10 +2524,17 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var apps=lpEnsurePageApps(lpCur), used={};
       apps.forEach(function(a){ used[a.key||a.section_key]=true; });
       var opts='<option value="">Choose an app…</option>', avail=0;
+      var choices=[];
       (_appsList||[]).forEach(function(app){
         var k=app.section_key;
         if(!k||LP_PAGE_APP_SKIP.indexOf(k)>=0||used[k]||app.builder_visible===false) return;
-        opts+='<option value="'+k+'">'+esc(app.name||_secLabel(k))+'</option>';
+        choices.push({k:k, label:String(app.name||_secLabel(k)||k)});
+      });
+      choices.sort(function(a,b){
+        return a.label.localeCompare(b.label, undefined, {sensitivity:'base'});
+      });
+      choices.forEach(function(ch){
+        opts+='<option value="'+ch.k+'">'+esc(ch.label)+'</option>';
         avail++;
       });
       pick.innerHTML=opts;
@@ -6354,20 +6361,53 @@ function heroCtaCard(c){
     if(tab==='marketplace') _aaMarketplaceRender(p);
   }
   function _aaSiteId(){ return currentSiteId||(data&&(data.id||data.siteId))||''; }
+  /** Client fallback so landing Apps picker always includes known platform apps. */
+  function _aaInjectBuiltinApps(){
+    if(!_appsList) _appsList=[];
+    var builtins=[
+      {
+        name:'Custom HTML',
+        slug:'custom-html',
+        section_key:'customHtml',
+        tier:'free',
+        default_position:'mid',
+        marketplace_status:'live',
+        builder_visible:true,
+        can_reposition:true,
+        hero_exclusive:false,
+        sort_order:120
+      }
+    ];
+    builtins.forEach(function(b){
+      var existing=_appsList.find(function(a){ return a.section_key===b.section_key||a.slug===b.slug; });
+      if(!existing){
+        _appsList.push(Object.assign({}, b));
+        return;
+      }
+      // Heal hidden / incomplete registry rows so the picker stays usable pre-deploy.
+      if(existing.builder_visible===false) existing.builder_visible=true;
+      if(!existing.name) existing.name=b.name;
+      if(!existing.section_key) existing.section_key=b.section_key;
+      if(!existing.slug) existing.slug=b.slug;
+    });
+    return _appsList;
+  }
   async function _aaEnsureAppsList(){
-    if(_appsList&&_appsList.length) return _appsList;
-    try{
-      var r=await fetch('/api/api-apps?all=1');
-      var j=await r.json();
-      _appsList=(j&&j.apps)||[];
-      if(j&&j.error) throw new Error(j.error);
-    }catch(e){
+    if(!_appsList||!_appsList.length){
       try{
-        var r2=await fetch('/api/api-apps');
-        var j2=await r2.json();
-        _appsList=(j2&&j2.apps)||[];
-      }catch(e2){ _appsList=_appsList||[]; }
+        var r=await fetch('/api/api-apps?all=1');
+        var j=await r.json();
+        _appsList=(j&&j.apps)||[];
+        if(j&&j.error) throw new Error(j.error);
+      }catch(e){
+        try{
+          var r2=await fetch('/api/api-apps');
+          var j2=await r2.json();
+          _appsList=(j2&&j2.apps)||[];
+        }catch(e2){ _appsList=_appsList||[]; }
+      }
     }
+    _aaInjectBuiltinApps();
     return _appsList;
   }
   function _aaLpAccessibilityApp(){
@@ -10694,6 +10734,7 @@ function heroCtaCard(c){
       var r=await fetch('/api/api-apps?all=1');
       var j=await r.json();
       _appsList=(j.apps||[]);
+      if(typeof _aaInjectBuiltinApps==='function') _aaInjectBuiltinApps();
       // site_apps already reconciled by loadSite — use cache
       // (re-fetch only if cache is empty, e.g. apps tab opened before site loaded)
       if(!_siteApps.length && siteId){

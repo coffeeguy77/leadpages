@@ -233,6 +233,18 @@ test('landing Custom HTML defaults to unique blank (no homepage clash)', functio
   );
 });
 
+test('landing apps picker injects Custom HTML and sorts A–Z', function () {
+  assert.match(manage, /function _aaInjectBuiltinApps/);
+  assert.match(manage, /section_key:'customHtml'/);
+  assert.match(manage, /_aaInjectBuiltinApps\(\)/);
+  const renderIdx = manage.indexOf('async function lpRenderAppsTab');
+  const renderEnd = manage.indexOf('function renderSeoPages', renderIdx);
+  assert.ok(renderIdx > 0 && renderEnd > renderIdx);
+  const renderFn = manage.slice(renderIdx, renderEnd);
+  assert.match(renderFn, /localeCompare/);
+  assert.match(renderFn, /choices\.sort/);
+});
+
 test('transfer-matcher Dark button toggles #tm-root theme (not documentElement only)', function () {
   const js = fs.readFileSync(path.join(root, 'assets/apps/transfer-matcher/app.js'), 'utf8');
   const css = fs.readFileSync(path.join(root, 'assets/apps/transfer-matcher/app.css'), 'utf8');
