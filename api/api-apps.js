@@ -55,6 +55,28 @@ const SEARCH_CANVAS_APP = {
   updated_at: new Date().toISOString()
 };
 
+const CUSTOM_HTML_APP = {
+  name: 'Custom HTML',
+  slug: 'custom-html',
+  section_key: 'customHtml',
+  tier: 'free',
+  price_monthly_aud: 0,
+  price_annual_aud: 0,
+  tagline: 'Embed your own HTML, CSS and JS — fully responsive, not an iframe',
+  description:
+    'Drop custom HTML onto any page. Attach optional CSS and JavaScript URLs. '
+    + 'Renders inline in your site layout so you can reposition it like any other app. '
+    + 'Ideal for tools, calculators, and one-off widgets. Use Unique-to-page mode on '
+    + 'landing pages so each page keeps its own HTML (e.g. transfer matcher vs pay frequency).',
+  default_position: 'mid',
+  marketplace_status: 'live',
+  builder_visible: true,
+  can_reposition: true,
+  hero_exclusive: false,
+  sort_order: 120,
+  updated_at: new Date().toISOString()
+};
+
 async function ensureLpAccessibilityApp() {
   const { data: existing } = await sb.from('app_registry')
     .select('id')
@@ -130,6 +152,43 @@ async function ensureSearchCanvasApp() {
   }
 }
 
+async function ensureCustomHtmlApp() {
+  const row = Object.assign({}, CUSTOM_HTML_APP, { updated_at: new Date().toISOString() });
+  const { data: existing } = await sb.from('app_registry')
+    .select('id,marketplace_status,builder_visible,default_position,name,slug')
+    .eq('section_key', 'customHtml')
+    .maybeSingle();
+  if (!existing) {
+    await sb.from('app_registry').upsert(row, { onConflict: 'slug' });
+    return;
+  }
+  // Heal draft / hidden rows so Custom HTML stays in landing-page + marketplace lists.
+  if (
+    existing.marketplace_status !== 'live' ||
+    existing.builder_visible !== true ||
+    existing.default_position !== 'mid' ||
+    existing.slug !== row.slug ||
+    existing.name !== row.name
+  ) {
+    await sb.from('app_registry').update({
+      name: row.name,
+      slug: row.slug,
+      tagline: row.tagline,
+      description: row.description,
+      tier: row.tier,
+      price_monthly_aud: row.price_monthly_aud,
+      price_annual_aud: row.price_annual_aud,
+      default_position: row.default_position,
+      marketplace_status: 'live',
+      builder_visible: true,
+      can_reposition: true,
+      hero_exclusive: false,
+      sort_order: row.sort_order,
+      updated_at: row.updated_at
+    }).eq('id', existing.id);
+  }
+}
+
 module.exports = async (req, res) => {
   res.setHeader('access-control-allow-origin','*');
   res.setHeader('cache-control','s-maxage=120,stale-while-revalidate=300');
@@ -172,10 +231,12 @@ module.exports = async (req, res) => {
       await ensureLpAccessibilityApp();
       await ensurePremiumGalleryApp();
       await ensureSearchCanvasApp();
+      await ensureCustomHtmlApp();
     }
-    // Public marketplace list should also auto-register SearchCanvas once.
+    // Public marketplace list should also auto-register SearchCanvas / Custom HTML once.
     if (!all && !slug) {
       try { await ensureSearchCanvasApp(); } catch (_e) { /* non-fatal */ }
+      try { await ensureCustomHtmlApp(); } catch (_e) { /* non-fatal */ }
     }
     const {data:apps,error:ae} = await q;
     if (ae) return res.status(500).json({error:ae.message});

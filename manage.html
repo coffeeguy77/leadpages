@@ -2209,7 +2209,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(!sec||!Object.keys(sec).length) return true;
     var home=lpPageHomeSection(secKey);
     if(!home||!Object.keys(home).length) return false;
-    var rich=['slides','items','options','steps','badges','fields','bgImage','image','heroImage','backgroundImage'];
+    var rich=['slides','items','options','steps','badges','fields','bgImage','image','heroImage','backgroundImage','html','cssUrls','jsUrls'];
     for(var i=0;i<rich.length;i++){
       var k=rich[i];
       if(Array.isArray(home[k])&&home[k].length && (!Array.isArray(sec[k])||!sec[k].length)) return true;
@@ -2228,6 +2228,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var pageKeys=Object.keys(sec).filter(function(k){ return k!=='on'; });
     if(homeKeys.length>=4 && pageKeys.length<Math.ceil(homeKeys.length*0.45)) return true;
     return false;
+  }
+  /** Fresh Custom HTML pack — never auto-clone homepage HTML (avoids tool clash). */
+  function lpBlankCustomHtmlSection(opts){
+    opts=opts||{};
+    var blank=JSON.parse(JSON.stringify((typeof DEFAULT_TRADE_SECTIONS!=='undefined'&&DEFAULT_TRADE_SECTIONS.customHtml)||{
+      on:false,title:'',html:'',cssUrls:[],jsUrls:[],cssVars:{},fullBleed:true,bg:''
+    }));
+    if(opts.on===true) blank.on=true;
+    return blank;
   }
   function lpCopyPageAppFromHome(secKey, opts){
     opts=opts||{};
@@ -2268,6 +2277,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       lpPageAppSeed(secKey);
       return false;
     }
+    // Custom HTML: start blank so a landing-page tool (e.g. pay frequency) does not
+    // inherit homepage HTML (e.g. transfer matcher). Users can still copy via button.
+    if(secKey==='customHtml'){
+      if(!lpCur.pageSections) lpCur.pageSections={};
+      lpCur.pageSections[secKey]=lpBlankCustomHtmlSection({on:true});
+      lpPageAppSeed(secKey);
+      app.homeCopied=false;
+      return false;
+    }
     lpCopyPageAppFromHome(secKey, {silent:true, skipRender:true});
     app.homeCopied=true;
     return true;
@@ -2292,11 +2310,21 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(!lpCur||!secKey) return;
     var apps=lpEnsurePageApps(lpCur);
     if(apps.some(function(a){ return (a.key||a.section_key)===secKey; })){ toast('That app is already on this page'); return; }
-    apps.push({key:secKey, mode:'shared'});
+    // Custom HTML defaults to Unique + blank pack so homepage tools (transfer matcher)
+    // do not clash with a different landing-page HTML tool (pay frequency, etc.).
+    if(secKey==='customHtml'){
+      apps.push({key:secKey, mode:'unique', homeCopied:false});
+      if(!lpCur.pageSections) lpCur.pageSections={};
+      lpCur.pageSections[secKey]=lpBlankCustomHtmlSection({on:true});
+      lpPageAppSeed(secKey);
+    } else {
+      apps.push({key:secKey, mode:'shared'});
+    }
     lpEnsurePageLayoutOrder(lpCur);
     var ord=lpCur.pageLayoutOrder;
     if(ord.indexOf(secKey)<0) ord.push(secKey);
     persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
+    if(secKey==='customHtml') toast('Custom HTML added as Unique to this page — paste your HTML here (won\u2019t affect the homepage).');
   }
   function lpPageAppRemove(secKey){
     if(!lpCur) return;
@@ -2315,6 +2343,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(mode==='unique'){
       var copied=lpPageAppEnsureUniqueData(secKey);
       if(copied) toast('Copied homepage content — edit text for this landing page. Use \u201cUse homepage content\u201d anytime to reset from the homepage.');
+      else if(secKey==='customHtml') toast('Unique Custom HTML for this page — paste your HTML here. Homepage Custom HTML stays separate.');
     }
     persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
   }
@@ -2495,10 +2524,17 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       var apps=lpEnsurePageApps(lpCur), used={};
       apps.forEach(function(a){ used[a.key||a.section_key]=true; });
       var opts='<option value="">Choose an app…</option>', avail=0;
+      var choices=[];
       (_appsList||[]).forEach(function(app){
         var k=app.section_key;
         if(!k||LP_PAGE_APP_SKIP.indexOf(k)>=0||used[k]||app.builder_visible===false) return;
-        opts+='<option value="'+k+'">'+esc(app.name||_secLabel(k))+'</option>';
+        choices.push({k:k, label:String(app.name||_secLabel(k)||k)});
+      });
+      choices.sort(function(a,b){
+        return a.label.localeCompare(b.label, undefined, {sensitivity:'base'});
+      });
+      choices.forEach(function(ch){
+        opts+='<option value="'+ch.k+'">'+esc(ch.label)+'</option>';
         avail++;
       });
       pick.innerHTML=opts;
@@ -6325,20 +6361,53 @@ function heroCtaCard(c){
     if(tab==='marketplace') _aaMarketplaceRender(p);
   }
   function _aaSiteId(){ return currentSiteId||(data&&(data.id||data.siteId))||''; }
+  /** Client fallback so landing Apps picker always includes known platform apps. */
+  function _aaInjectBuiltinApps(){
+    if(!_appsList) _appsList=[];
+    var builtins=[
+      {
+        name:'Custom HTML',
+        slug:'custom-html',
+        section_key:'customHtml',
+        tier:'free',
+        default_position:'mid',
+        marketplace_status:'live',
+        builder_visible:true,
+        can_reposition:true,
+        hero_exclusive:false,
+        sort_order:120
+      }
+    ];
+    builtins.forEach(function(b){
+      var existing=_appsList.find(function(a){ return a.section_key===b.section_key||a.slug===b.slug; });
+      if(!existing){
+        _appsList.push(Object.assign({}, b));
+        return;
+      }
+      // Heal hidden / incomplete registry rows so the picker stays usable pre-deploy.
+      if(existing.builder_visible===false) existing.builder_visible=true;
+      if(!existing.name) existing.name=b.name;
+      if(!existing.section_key) existing.section_key=b.section_key;
+      if(!existing.slug) existing.slug=b.slug;
+    });
+    return _appsList;
+  }
   async function _aaEnsureAppsList(){
-    if(_appsList&&_appsList.length) return _appsList;
-    try{
-      var r=await fetch('/api/api-apps?all=1');
-      var j=await r.json();
-      _appsList=(j&&j.apps)||[];
-      if(j&&j.error) throw new Error(j.error);
-    }catch(e){
+    if(!_appsList||!_appsList.length){
       try{
-        var r2=await fetch('/api/api-apps');
-        var j2=await r2.json();
-        _appsList=(j2&&j2.apps)||[];
-      }catch(e2){ _appsList=_appsList||[]; }
+        var r=await fetch('/api/api-apps?all=1');
+        var j=await r.json();
+        _appsList=(j&&j.apps)||[];
+        if(j&&j.error) throw new Error(j.error);
+      }catch(e){
+        try{
+          var r2=await fetch('/api/api-apps');
+          var j2=await r2.json();
+          _appsList=(j2&&j2.apps)||[];
+        }catch(e2){ _appsList=_appsList||[]; }
+      }
     }
+    _aaInjectBuiltinApps();
     return _appsList;
   }
   function _aaLpAccessibilityApp(){
@@ -10665,6 +10734,7 @@ function heroCtaCard(c){
       var r=await fetch('/api/api-apps?all=1');
       var j=await r.json();
       _appsList=(j.apps||[]);
+      if(typeof _aaInjectBuiltinApps==='function') _aaInjectBuiltinApps();
       // site_apps already reconciled by loadSite — use cache
       // (re-fetch only if cache is empty, e.g. apps tab opened before site loaded)
       if(!_siteApps.length && siteId){
