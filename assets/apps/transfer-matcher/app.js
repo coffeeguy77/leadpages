@@ -389,36 +389,41 @@ function draftToLines(draft,account,order,id,flip){
 /* ==================================================================
    4. APP
    ================================================================== */
-const S={src:[]};   // {id,kind,name,account,...}
-let uid=0;
-const $=s=>document.querySelector(s);
+// Persist across soft re-inits (landing hybrid remounts HTML; script stays loaded).
+const S=(typeof window!=='undefined'&&window.__lpTmState)||{src:[]};
+if(typeof window!=='undefined') window.__lpTmState=S;
+let uid=(typeof window!=='undefined'&&window.__lpTmUid)||0;
+function __tmSaveUid(){ if(typeof window!=='undefined') window.__lpTmUid=uid; }
+
+function $(s){
+  const root=document.getElementById('tm-root');
+  if(root){
+    if(s==='#tm-root') return root;
+    try{ const hit=root.querySelector(s); if(hit) return hit; }catch(e){}
+  }
+  return document.querySelector(s);
+}
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-$('#theme').onclick=()=>{
-  const root=$('#tm-root')||document.documentElement;
-  const dark=root.dataset.theme==='dark';
-  root.dataset.theme=dark?'light':'dark';
-  $('#theme').textContent=dark?'Dark':'Light';
-};
-
-/* tabs */
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));
-  $('#pane-csv').classList.toggle('hidden',t.dataset.tab!=='csv');
-  $('#pane-img').classList.toggle('hidden',t.dataset.tab!=='img');
-});
+function bindEl(sel, prop, fn){
+  const el=$(sel);
+  if(!el) return null;
+  el[prop]=fn;
+  return el;
+}
 
 /* dropzones */
 function wireDZ(dzSel,pickSel,handler){
   const dz=$(dzSel),pk=$(pickSel);
+  if(!dz||!pk) return;
   dz.onclick=()=>pk.click();
   pk.onchange=e=>{handler([...e.target.files]); e.target.value='';};
+  if(dz.getAttribute('data-tm-dz')==='1') return;
+  dz.setAttribute('data-tm-dz','1');
   ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('over');}));
   ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('over');}));
   dz.addEventListener('drop',e=>handler([...e.dataTransfer.files]));
 }
-wireDZ('#dz-csv','#pick-csv',addCSV);
-wireDZ('#dz-img','#pick-img',addIMG);
 
 function accountFromName(n){
   return n.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ')
@@ -432,6 +437,7 @@ function addCSV(fs){
     rd.onload=()=>{
       S.src.push({id:'s'+(++uid),kind:'csv',name:f.name,account:accountFromName(f.name),
         rows:parseCSV(rd.result),signMode:'as-is'});
+      __tmSaveUid();
       refresh();
     };
     rd.readAsText(f);
@@ -446,6 +452,7 @@ function addIMG(fs){
     rd.onload=()=>{
       const s={id:'s'+(++uid),kind:'image',name:f.name,account:accountFromName(f.name),
         dataURL:rd.result,state:'queued',prog:0,draft:[],signMode:'as-is'};
+      __tmSaveUid();
       S.src.push(s); refresh(); runOCR(s);
     };
     rd.readAsDataURL(f);
@@ -486,18 +493,21 @@ function refresh(){
       s.lines = s.state==='done' ? draftToLines(s.draft,s.account,order,s.id,s.signMode==='flip') : [];
     }
   });
-  $('#ncsv').textContent=S.src.filter(s=>s.kind==='csv').length;
-  $('#nimg').textContent=S.src.filter(s=>s.kind==='image').length;
+  $('#ncsv')&&($('#ncsv').textContent=S.src.filter(s=>s.kind==='csv').length);
+  $('#nimg')&&($('#nimg').textContent=S.src.filter(s=>s.kind==='image').length);
   renderCards();
   const ready=S.src.some(s=>(s.lines||[]).length);
-  $('#settings').style.display=S.src.length?'':'none';
-  $('#run').disabled=!ready;
+  if($('#settings')) $('#settings').style.display=S.src.length?'':'none';
+  if($('#run')) $('#run').disabled=!ready;
 }
-$('#dorder').onchange=()=>{ refresh(); if(LAST){ runMatch(); applyView(); } };
+function bindDorder(){
+  bindEl('#dorder','onchange',()=>{ refresh(); if(LAST){ runMatch(); applyView(); } });
+}
 
 /* ---------- source cards ---------- */
 function renderCards(){
   const el=$('#cards');
+  if(!el) return;
   if(!S.src.length){el.innerHTML='';return;}
   el.innerHTML=S.src.map(s=>s.kind==='csv'?csvCard(s):imgCard(s)).join('');
   bindCards();
@@ -692,16 +702,18 @@ function runMatch(){
   populateAccountFilters(LAST);
 }
 
-$('#run').onclick=()=>{
-  runMatch(); applyView();
-  $('#results').classList.remove('hidden');
-  $('#results').scrollIntoView({behavior:'smooth',block:'start'});
-};
-
-/* Changing the matching rules after a run re-matches immediately too. */
-['#tol','#minamt'].forEach(sel=>$(sel).addEventListener('change',()=>{
-  if(LAST){ runMatch(); applyView(); }
-}));
+function bindRunControls(){
+  bindEl('#run','onclick',()=>{
+    runMatch(); applyView();
+    const res=$('#results');
+    if(res){ res.classList.remove('hidden'); res.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+  ['#tol','#minamt'].forEach(sel=>{
+    const el=$(sel);
+    if(!el) return;
+    el.onchange=()=>{ if(LAST){ runMatch(); applyView(); } };
+  });
+}
 
 /* ==================================================================
    FILTERS
@@ -818,13 +830,16 @@ function applyView(){
   render(VIEW);
 }
 
-['#fInv','#fFrom','#fTo','#fDate1','#fDate2','#fMin','#fMax','#fSort','#fMerge']
-  .forEach(s=>$(s).onchange=applyView);
-let qTimer; $('#fText').oninput=()=>{clearTimeout(qTimer);qTimer=setTimeout(applyView,180);};
-$('#fClear').onclick=()=>{
-  ['#fInv','#fFrom','#fTo','#fDate1','#fDate2','#fMin','#fMax','#fText'].forEach(s=>$(s).value='');
-  applyView();
-};
+function bindFilters(){
+  ['#fInv','#fFrom','#fTo','#fDate1','#fDate2','#fMin','#fMax','#fSort','#fMerge']
+    .forEach(s=>bindEl(s,'onchange',applyView));
+  let qTimer;
+  bindEl('#fText','oninput',()=>{clearTimeout(qTimer);qTimer=setTimeout(applyView,180);});
+  bindEl('#fClear','onclick',()=>{
+    ['#fInv','#fFrom','#fTo','#fDate1','#fDate2','#fMin','#fMax','#fText'].forEach(s=>{ const el=$(s); if(el) el.value=''; });
+    applyView();
+  });
+}
 
 function tile(k,v,s,dot){
   return `<div class="tile"><div class="k">${dot?`<span class="dot ${dot}"></span>`:''}${k}</div>
@@ -959,13 +974,20 @@ function lineTable(lines,showPair,pairOf){
     </tr>`).join('')}</tbody></table>`;
 }
 function wireGroups(){
-  document.querySelectorAll('.grp > .hd').forEach(h=>h.onclick=()=>h.parentElement.classList.toggle('open'));
+  const root=document.getElementById('tm-root')||document;
+  root.querySelectorAll('.grp > .hd').forEach(h=>h.onclick=()=>h.parentElement.classList.toggle('open'));
 }
-$('#expand').onclick=()=>document.querySelectorAll('.grp').forEach(g=>g.classList.add('open'));
-$('#collapse').onclick=()=>document.querySelectorAll('.grp').forEach(g=>g.classList.remove('open'));
-$('#print').onclick=()=>window.print();
-
-$('#csvout').onclick=()=>{
+function bindResultsChrome(){
+  bindEl('#expand','onclick',()=>{
+    const root=document.getElementById('tm-root')||document;
+    root.querySelectorAll('.grp').forEach(g=>g.classList.add('open'));
+  });
+  bindEl('#collapse','onclick',()=>{
+    const root=document.getElementById('tm-root')||document;
+    root.querySelectorAll('.grp').forEach(g=>g.classList.remove('open'));
+  });
+  bindEl('#print','onclick',()=>window.print());
+  bindEl('#csvout','onclick',()=>{
   const R=VIEW||LAST;
   if(!R) return;
   const q=s=>`"${String(s==null?'':s).replace(/"/g,'""')}"`;
@@ -993,7 +1015,8 @@ $('#csvout').onclick=()=>{
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob); a.download='transfer-matches.csv'; a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-};
+  });
+}
 
 /* ==================================================================
    SEARCH — every line, matched or not, regardless of the filters
@@ -1096,117 +1119,160 @@ function openSearch(){
 }
 function closeSearch(){ $('#searchOvl').classList.add('hidden'); }
 
-$('#openSearch').onclick=()=>{
-  if(!LAST){ alert('Load some statement lines and run a match first.'); return; }
-  openSearch();
-};
-$('#searchOvl').onclick=e=>{ if(e.target.id==='searchOvl') closeSearch(); };
-['#sField','#sStatus','#sDir','#sExact'].forEach(sel=>$(sel).onchange=()=>{sSel=0;renderSearch();});
-$('#sq').oninput=()=>{sSel=0;renderSearch();};
-$('#sq').onkeydown=e=>{
-  const n=searchHits().length;
-  if(e.key==='ArrowDown'){e.preventDefault(); sSel=Math.min(sSel+1,n-1); renderSearch();}
-  else if(e.key==='ArrowUp'){e.preventDefault(); sSel=Math.max(sSel-1,0); renderSearch();}
-  else if(e.key==='Enter'){const h=searchHits()[sSel]; if(h) jumpTo(h);}
-};
-document.addEventListener('keydown',e=>{
-  const typing=/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
-  if(e.key==='Escape'){ closeSearch(); document.querySelectorAll('.zoomed').forEach(z=>z.remove()); }
-  else if(!typing && (e.key==='/'||((e.metaKey||e.ctrlKey)&&e.key==='k')) && LAST){
-    e.preventDefault(); openSearch();
-  }
-});
+function closeSearch(){ const ovl=$('#searchOvl'); if(ovl) ovl.classList.add('hidden'); }
 
-/* ==================================================================
-   SAVE / REOPEN A SESSION
-   ================================================================== */
-$('#saveSession').onclick=()=>{
-  const payload={
-    app:'bean-culture-transfer-matcher', version:1,
-    savedAt:new Date().toISOString(),
-    settings:{tol:$('#tol').value,dorder:$('#dorder').value,minamt:$('#minamt').value},
-    filters:{merge:$('#fMerge').checked,inv:$('#fInv').value,from:$('#fFrom').value,to:$('#fTo').value,d1:$('#fDate1').value,d2:$('#fDate2').value,
-             min:$('#fMin').value,max:$('#fMax').value,q:$('#fText').value,sort:$('#fSort').value},
-    sources:S.src.map(s=>s.kind==='csv'
-      ? {id:s.id,kind:'csv',name:s.name,account:s.account,signMode:s.signMode,rows:s.rows}
-      : {id:s.id,kind:'image',name:s.name,account:s.account,signMode:s.signMode,
-         state:s.state,twoCol:s.twoCol,draft:s.draft,dataURL:s.dataURL})
-  };
-  const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  const d=new Date(), pad=n=>String(n).padStart(2,'0');
-  a.download=`transfer-session-${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}.json`;
-  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-};
-
-$('#openSession').onclick=()=>$('#pick-session').click();
-$('#pick-session').onchange=e=>{
-  const f=e.target.files[0]; e.target.value='';
-  if(!f) return;
-  const rd=new FileReader();
-  rd.onload=()=>{
-    let d; try{ d=JSON.parse(rd.result); }catch(_){ alert('That file is not a saved session.'); return; }
-    if(!d||d.app!=='bean-culture-transfer-matcher'||!Array.isArray(d.sources)){
-      alert('That file is not a saved session.'); return;
-    }
-    S.src=d.sources.map(x=>({...x}));
-    uid=Math.max(uid,...S.src.map(x=>parseInt(String(x.id).replace(/\D/g,''),10)||0));
-    if(d.settings){
-      $('#tol').value=d.settings.tol??'3';
-      $('#dorder').value=d.settings.dorder??'DMY';
-      $('#minamt').value=d.settings.minamt??'0';
-    }
-    refresh();
-    if(S.src.some(x=>(x.lines||[]).length)){
-      runMatch();
-      const F=d.filters||{};
-      $('#fMerge').checked = F.merge!==false;
-      $('#fInv').value =[...$('#fInv').options ].some(o=>o.value===F.inv)?F.inv:'';
-      $('#fFrom').value=[...$('#fFrom').options].some(o=>o.value===F.from)?F.from:'';
-      $('#fTo').value  =[...$('#fTo').options].some(o=>o.value===F.to)?F.to:'';
-      $('#fDate1').value=F.d1||''; $('#fDate2').value=F.d2||'';
-      $('#fMin').value=F.min||'';  $('#fMax').value=F.max||'';
-      $('#fText').value=F.q||'';   $('#fSort').value=F.sort||'conf';
-      applyView();
-      $('#results').classList.remove('hidden');
-    }
-  };
-  rd.readAsText(f);
-};
-
-/* ---------- example ---------- */
-$('#demo').onclick=()=>{
-  // Four weeks of $170 preset auto-transfers from three accounts into the main one —
-  // the recurring case that lands in "balances as a set".
-  const auto={main:[],Super:[],Esp:[],Kiosk:[]};
-  for(let w=0;w<4;w++){
-    const d=`${5+w*7}/06/2022`;
-    ['Super','Esp','Kiosk'].forEach(k=>{
-      auto[k].push(`${d},Auto transfer weekly,-170.00`);
-      auto.main.push(`${d},Auto transfer in,170.00`);
+function bindSearchAndSession(){
+  bindEl('#openSearch','onclick',()=>{
+    if(!LAST){ alert('Load some statement lines and run a match first.'); return; }
+    openSearch();
+  });
+  bindEl('#searchOvl','onclick',e=>{ if(e.target.id==='searchOvl') closeSearch(); });
+  ['#sField','#sStatus','#sDir','#sExact'].forEach(sel=>bindEl(sel,'onchange',()=>{sSel=0;renderSearch();}));
+  bindEl('#sq','oninput',()=>{sSel=0;renderSearch();});
+  bindEl('#sq','onkeydown',e=>{
+    const n=searchHits().length;
+    if(e.key==='ArrowDown'){e.preventDefault(); sSel=Math.min(sSel+1,n-1); renderSearch();}
+    else if(e.key==='ArrowUp'){e.preventDefault(); sSel=Math.max(sSel-1,0); renderSearch();}
+    else if(e.key==='Enter'){const h=searchHits()[sSel]; if(h) jumpTo(h);}
+  });
+  if(!window.__tmKeydownBound){
+    window.__tmKeydownBound=true;
+    document.addEventListener('keydown',e=>{
+      const typing=/^(INPUT|TEXTAREA)$/.test((document.activeElement&&document.activeElement.tagName)||'');
+      if(e.key==='Escape'){ closeSearch(); document.querySelectorAll('.zoomed').forEach(z=>z.remove()); }
+      else if(!typing && (e.key==='/'||((e.metaKey||e.ctrlKey)&&e.key==='k')) && LAST){
+        e.preventDefault(); openSearch();
+      }
     });
   }
-  const mk=(name,rows)=>({id:'s'+(++uid),kind:'csv',name,account:name.replace('.csv',''),
-    rows:parseCSV('Date,Description,Amount\n'+rows.join('\n')),signMode:'as-is'});
-  S.src=[
-    mk('Bean Culture.csv',[
-      '1/01/2020,Transfer from Super,100.00','2/02/2022,Transfer in,100.00',
-      '2/02/2022,Transfer in,100.00','14/03/2022,Square settlement,1284.55',
-      '15/03/2022,Transfer from Espresso Bar,2500.00','2/04/2022,Transfer in,750.00',
-      '18/04/2022,Milk supplier,-412.80','10/05/2022,Transfer to Super,-500.00',
-      ...auto.main]),
-    mk('Super Account.csv',[
-      '1/01/2020,Transfer to Bean Culture,-100.00','2/02/2022,Transfer out,-100.00',
-      '2/04/2022,Transfer out,-750.00','20/04/2022,Bank fee,-15.00',
-      '10/05/2022,Transfer in,500.00','12/05/2022,Dividend received,88.40',
-      ...auto.Super]),
-    mk('Espresso Bar.csv',[
-      '1/01/2020,EFTPOS settlement,250.00','2/02/2022,Transfer out,-100.00',
-      '13/03/2022,Transfer to Bean Culture,-2500.00','2/04/2022,Transfer out,-750.00',
-      '19/04/2022,Coffee roaster invoice,-980.20',...auto.Esp]),
-    mk('Kiosk.csv',['7/06/2022,EFTPOS settlement,308.15',...auto.Kiosk])
-  ];
-  refresh(); $('#run').click();
-};
-refresh();
+
+  bindEl('#saveSession','onclick',()=>{
+    const payload={
+      app:'bean-culture-transfer-matcher', version:1,
+      savedAt:new Date().toISOString(),
+      settings:{tol:$('#tol')&&$('#tol').value,dorder:$('#dorder')&&$('#dorder').value,minamt:$('#minamt')&&$('#minamt').value},
+      filters:{merge:$('#fMerge')&&$('#fMerge').checked,inv:$('#fInv')&&$('#fInv').value,from:$('#fFrom')&&$('#fFrom').value,to:$('#fTo')&&$('#fTo').value,d1:$('#fDate1')&&$('#fDate1').value,d2:$('#fDate2')&&$('#fDate2').value,
+               min:$('#fMin')&&$('#fMin').value,max:$('#fMax')&&$('#fMax').value,q:$('#fText')&&$('#fText').value,sort:$('#fSort')&&$('#fSort').value},
+      sources:S.src.map(s=>s.kind==='csv'
+        ? {id:s.id,kind:'csv',name:s.name,account:s.account,signMode:s.signMode,rows:s.rows}
+        : {id:s.id,kind:'image',name:s.name,account:s.account,signMode:s.signMode,
+           state:s.state,twoCol:s.twoCol,draft:s.draft,dataURL:s.dataURL})
+    };
+    const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    const d=new Date(), pad=n=>String(n).padStart(2,'0');
+    a.download=`transfer-session-${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}.json`;
+    a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  });
+
+  bindEl('#openSession','onclick',()=>{ const pk=$('#pick-session'); if(pk) pk.click(); });
+  bindEl('#pick-session','onchange',e=>{
+    const f=e.target.files[0]; e.target.value='';
+    if(!f) return;
+    const rd=new FileReader();
+    rd.onload=()=>{
+      let d; try{ d=JSON.parse(rd.result); }catch(_){ alert('That file is not a saved session.'); return; }
+      if(!d||d.app!=='bean-culture-transfer-matcher'||!Array.isArray(d.sources)){
+        alert('That file is not a saved session.'); return;
+      }
+      S.src=d.sources.map(x=>({...x}));
+      uid=Math.max(uid,...S.src.map(x=>parseInt(String(x.id).replace(/\D/g,''),10)||0));
+      __tmSaveUid();
+      if(d.settings){
+        if($('#tol')) $('#tol').value=d.settings.tol??'3';
+        if($('#dorder')) $('#dorder').value=d.settings.dorder??'DMY';
+        if($('#minamt')) $('#minamt').value=d.settings.minamt??'0';
+      }
+      refresh();
+      if(S.src.some(x=>(x.lines||[]).length)){
+        runMatch();
+        const F=d.filters||{};
+        if($('#fMerge')) $('#fMerge').checked = F.merge!==false;
+        if($('#fInv')) $('#fInv').value =[...$('#fInv').options ].some(o=>o.value===F.inv)?F.inv:'';
+        if($('#fFrom')) $('#fFrom').value=[...$('#fFrom').options].some(o=>o.value===F.from)?F.from:'';
+        if($('#fTo')) $('#fTo').value  =[...$('#fTo').options].some(o=>o.value===F.to)?F.to:'';
+        if($('#fDate1')) $('#fDate1').value=F.d1||''; if($('#fDate2')) $('#fDate2').value=F.d2||'';
+        if($('#fMin')) $('#fMin').value=F.min||'';  if($('#fMax')) $('#fMax').value=F.max||'';
+        if($('#fText')) $('#fText').value=F.q||'';   if($('#fSort')) $('#fSort').value=F.sort||'conf';
+        applyView();
+        const res=$('#results'); if(res) res.classList.remove('hidden');
+      }
+    };
+    rd.readAsText(f);
+  });
+
+  bindEl('#demo','onclick',()=>{
+    // Four weeks of $170 preset auto-transfers from three accounts into the main one —
+    // the recurring case that lands in "balances as a set".
+    const auto={main:[],Super:[],Esp:[],Kiosk:[]};
+    for(let w=0;w<4;w++){
+      const d=`${5+w*7}/06/2022`;
+      ['Super','Esp','Kiosk'].forEach(k=>{
+        auto[k].push(`${d},Auto transfer weekly,-170.00`);
+        auto.main.push(`${d},Auto transfer in,170.00`);
+      });
+    }
+    const mk=(name,rows)=>({id:'s'+(++uid),kind:'csv',name,account:name.replace('.csv',''),
+      rows:parseCSV('Date,Description,Amount\n'+rows.join('\n')),signMode:'as-is'});
+    __tmSaveUid();
+    S.src=[
+      mk('Bean Culture.csv',[
+        '1/01/2020,Transfer from Super,100.00','2/02/2022,Transfer in,100.00',
+        '2/02/2022,Transfer in,100.00','14/03/2022,Square settlement,1284.55',
+        '15/03/2022,Transfer from Espresso Bar,2500.00','2/04/2022,Transfer in,750.00',
+        '18/04/2022,Milk supplier,-412.80','10/05/2022,Transfer to Super,-500.00',
+        ...auto.main]),
+      mk('Super Account.csv',[
+        '1/01/2020,Transfer to Bean Culture,-100.00','2/02/2022,Transfer out,-100.00',
+        '2/04/2022,Transfer out,-750.00','20/04/2022,Bank fee,-15.00',
+        '10/05/2022,Transfer in,500.00','12/05/2022,Dividend received,88.40',
+        ...auto.Super]),
+      mk('Espresso Bar.csv',[
+        '1/01/2020,EFTPOS settlement,250.00','2/02/2022,Transfer out,-100.00',
+        '13/03/2022,Transfer to Bean Culture,-2500.00','2/04/2022,Transfer out,-750.00',
+        '19/04/2022,Coffee roaster invoice,-980.20',...auto.Esp]),
+      mk('Kiosk.csv',['7/06/2022,EFTPOS settlement,308.15',...auto.Kiosk])
+    ];
+    refresh(); const run=$('#run'); if(run) run.click();
+  });
+}
+
+/**
+ * Re-bind UI after Custom HTML remounts the pack (landing hybrid / preview).
+ * Safe to call multiple times; does not re-evaluate the script.
+ */
+function lpTransferMatcherInit(){
+  const root=document.getElementById('tm-root');
+  if(!root) return false;
+  bindEl('#theme','onclick',()=>{
+    const r=$('#tm-root')||document.documentElement;
+    const dark=r.dataset.theme==='dark';
+    r.dataset.theme=dark?'light':'dark';
+    const btn=$('#theme'); if(btn) btn.textContent=dark?'Dark':'Light';
+  });
+  const tabRoot=root;
+  tabRoot.querySelectorAll('.tab').forEach(t=>{
+    t.onclick=()=>{
+      tabRoot.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));
+      const csv=$('#pane-csv'), img=$('#pane-img');
+      if(csv) csv.classList.toggle('hidden',t.dataset.tab!=='csv');
+      if(img) img.classList.toggle('hidden',t.dataset.tab!=='img');
+    };
+  });
+  wireDZ('#dz-csv','#pick-csv',addCSV);
+  wireDZ('#dz-img','#pick-img',addIMG);
+  bindDorder();
+  bindRunControls();
+  bindFilters();
+  bindResultsChrome();
+  bindSearchAndSession();
+  root.setAttribute('data-tm-bound','1');
+  try{ refresh(); }catch(e){}
+  return true;
+}
+
+if(typeof window!=='undefined'){
+  window.lpTransferMatcherInit=lpTransferMatcherInit;
+}
+lpTransferMatcherInit();

@@ -252,18 +252,34 @@ test('transfer-matcher Dark button toggles #tm-root theme (not documentElement o
   assert.match(body, /id="tm-root"[^>]*data-theme="light"/);
   assert.match(body, /id="theme">Dark</);
   assert.match(css, /#tm-root\[data-theme="dark"\]/);
-  assert.match(js, /\$\('#tm-root'\)/);
-  assert.match(js, /root\.dataset\.theme/);
+  assert.match(js, /function lpTransferMatcherInit/);
+  assert.match(js, /window\.lpTransferMatcherInit\s*=\s*lpTransferMatcherInit/);
+  assert.match(js, /data-tm-bound/);
+  assert.match(js, /\.dataset\.theme/);
   assert.doesNotMatch(js, /document\.documentElement\.dataset\.theme\s*=/);
 });
 
 test('hybrid page render stores merged config on __lpLiveCfg', function () {
   const demo = fs.readFileSync(path.join(root, 'marketplace/demos/demo-shared.js'), 'utf8');
   assert.match(demo, /window\.__lpLiveCfg=C;\s*applyCfg\(C\)/);
+  assert.match(demo, /_lpTopTemplate\(\);\s*applyCfg\(SITE_CONFIG\)/);
+  assert.match(demo, /_lpResetCustomHtmlClone/);
+  assert.match(demo, /k==='customHtml'/);
   ['trade.template.json', 'landing-shell-neutral-v1.template.json'].forEach(function (name) {
     const html = JSON.parse(fs.readFileSync(path.join(root, name), 'utf8')).html;
     assert.ok(html.includes('window.__lpLiveCfg=C; applyCfg(C)'), name);
+    assert.ok(html.includes('_lpResetCustomHtmlClone'), name);
+    assert.ok(html.includes("k==='customHtml'"), name);
   });
+});
+
+test('lp-custom-html re-inits packs after remount without force-reloading scripts', function () {
+  const js = fs.readFileSync(path.join(root, 'assets/lp-custom-html.js'), 'utf8');
+  assert.match(js, /function invokePackInits/);
+  assert.match(js, /lpTransferMatcherInit/);
+  assert.match(js, /needsBind/);
+  assert.match(js, /ensureScriptsAndInit/);
+  assert.doesNotMatch(js, /chainScripts\(jsUrls,\s*remount\)/);
 });
 
 test('Custom HTML editor is responsive with HTML line numbers', function () {
