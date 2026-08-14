@@ -71,6 +71,46 @@
     return next();
   }
 
+  /**
+   * Pack scripts often bind listeners at load time. Landing hybrid remounts #top
+   * after that, so we must re-bind without re-evaluating the script (const clash).
+   */
+  function invokePackInits(el) {
+    try {
+      if (typeof global.lpTransferMatcherInit === 'function') {
+        global.lpTransferMatcherInit(el);
+      }
+    } catch (e) {
+      try { console.warn('[customHtml] transferMatcher init', e && e.message ? e.message : e); } catch (e2) {}
+    }
+    try {
+      if (typeof global.lpCustomHtmlPackInit === 'function') {
+        global.lpCustomHtmlPackInit(el);
+      }
+    } catch (e) {
+      try { console.warn('[customHtml] pack init', e && e.message ? e.message : e); } catch (e2) {}
+    }
+    try {
+      if (typeof CustomEvent === 'function') {
+        el.dispatchEvent(new CustomEvent('lp-custom-html:ready', { bubbles: true, detail: { mount: el } }));
+      }
+    } catch (e) {}
+  }
+
+  function ensureScriptsAndInit(el, jsUrls, forceReload) {
+    if (!jsUrls.length) {
+      invokePackInits(el);
+      return Promise.resolve();
+    }
+    // Never force-remove classic scripts that use top-level const — re-init instead.
+    return chainScripts(jsUrls, false).then(function () {
+      invokePackInits(el);
+    }).catch(function (err) {
+      try { console.warn('[customHtml]', err && err.message ? err.message : err); } catch (e) {}
+      invokePackInits(el);
+    });
+  }
+
   function mountIdFor(el) {
     if (!el.id) el.id = 'lp-ch-' + Math.random().toString(36).slice(2, 9);
     return el.id;
@@ -173,20 +213,25 @@
       // Colour overrides always refresh (do not require HTML remount)
       applyCssVars(cfg.cssVars, el, mid);
 
-      // Avoid re-injecting identical HTML (keeps in-app state on soft re-apply)
+      // Avoid re-injecting identical HTML (keeps in-app state on soft re-apply),
+      // but always re-init pack listeners — hybrid page remount clones "loaded" mounts
+      // into a new DOM tree where old onclick handlers are gone.
       var sig = html.length + ':' + cssUrls.join('|') + ':' + jsUrls.join('|');
-      if (el.getAttribute(LOADED) === sig && el.getAttribute('data-lp-ch-has') === '1') {
+      var samePack = el.getAttribute(LOADED) === sig && el.getAttribute('data-lp-ch-has') === '1';
+      var liveRoot = el.querySelector ? el.querySelector('#tm-root') : null;
+      var needsBind = !liveRoot || liveRoot.getAttribute('data-tm-bound') !== '1';
+      if (samePack && html && !needsBind) {
+        applyCssVars(cfg.cssVars, el, mid);
         return;
       }
-      var remount = el.getAttribute('data-lp-ch-has') === '1';
-      el.innerHTML = html;
-      el.setAttribute('data-lp-ch-has', html ? '1' : '0');
-      el.setAttribute(LOADED, sig);
+      if (!samePack) {
+        el.innerHTML = html;
+        el.setAttribute('data-lp-ch-has', html ? '1' : '0');
+        el.setAttribute(LOADED, sig);
+      }
 
-      if (jsUrls.length && html) {
-        chainScripts(jsUrls, remount).catch(function (err) {
-          try { console.warn('[customHtml]', err && err.message ? err.message : err); } catch (e) {}
-        });
+      if (html) {
+        ensureScriptsAndInit(el, jsUrls, false);
       }
     });
   }
