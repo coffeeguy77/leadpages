@@ -354,7 +354,8 @@
         .join('') +
       '</select></div>' +
       '<div class="f"><label>Generation mode</label><select id="sc-ai-mode" class="tin"><option value="replace" selected>Replace all tabs with AI services</option><option value="preserve">Preserve edited fields</option><option value="fillEmpty">Fill empty fields only</option></select></div></div>' +
-      '<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px"><input type="checkbox" id="sc-ai-faq"> Also update homepage FAQ (placed under SearchCanvas)</label>' +
+      '<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 6px"><input type="checkbox" id="sc-ai-faq"> Also update homepage FAQ (placed under SearchCanvas)</label>' +
+      '<label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:0 0 10px;margin-left:22px"><input type="checkbox" id="sc-ai-faq-keep" checked> Keep existing FAQ items (append new questions)</label>' +
       '<div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" id="sc-ai-go">Generate with AI</button><span class="hint" id="sc-ai-note"></span></div></div>';
 
     body.innerHTML = h;
@@ -500,12 +501,13 @@
         .map(function (t, i) {
           var bullets = (t.bullets || []).join('\n');
           return (
-            '<details class="sc-tab-ed" data-i="' +
+            '<details class="sc-tab-ed" draggable="true" data-i="' +
             i +
-            '" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 10px"' +
+            '" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 10px;background:#fff"' +
             (i === 0 ? ' open' : '') +
             '>' +
             '<summary style="cursor:pointer;font-weight:700;display:flex;align-items:center;gap:8px;list-style:none">' +
+            '<span class="sc-tab-grip" title="Drag to reorder" aria-hidden="true" style="cursor:grab;user-select:none;opacity:.55;padding:0 4px;font-size:14px;letter-spacing:-1px;flex:0 0 auto;">\u22ee\u22ee</span>' +
             '<span style="flex:1;min-width:0">Tab ' +
             (i + 1) +
             ': ' +
@@ -562,6 +564,43 @@
             '" value="' +
             esc((t.image && t.image.alt) || '') +
             '"></div>' +
+            '<div class="row"><div class="f"><label>Image fit</label><select class="tin sc-t-fit" data-i="' +
+            i +
+            '">' +
+            [
+              ['cover', 'Cover (fill frame, crop)'],
+              ['contain', 'Contain (fit inside)'],
+              ['fill', 'Stretch (fill frame)'],
+              ['none', 'None (natural size)'],
+              ['scale-down', 'Scale down']
+            ]
+              .map(function (o) {
+                var cur = String(((t.image && t.image.fit) || 'cover')).toLowerCase();
+                if (cur === 'stretch') cur = 'fill';
+                return '<option value="' + o[0] + '"' + (cur === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+              })
+              .join('') +
+            '</select></div>' +
+            '<div class="f"><label>Image position</label><select class="tin sc-t-pos" data-i="' +
+            i +
+            '">' +
+            [
+              ['center', 'Centre'],
+              ['top', 'Top'],
+              ['bottom', 'Bottom'],
+              ['left', 'Left'],
+              ['right', 'Right'],
+              ['top left', 'Top left'],
+              ['top right', 'Top right'],
+              ['bottom left', 'Bottom left'],
+              ['bottom right', 'Bottom right']
+            ]
+              .map(function (o) {
+                var cur = String(((t.image && t.image.objectPosition) || 'center')).toLowerCase();
+                return '<option value="' + o[0] + '"' + (cur === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+              })
+              .join('') +
+            '</select></div></div>' +
             '<div class="row"><div class="f"><label>Text link label</label><input class="tin sc-t-link" data-i="' +
             i +
             '" value="' +
@@ -630,6 +669,12 @@
         } else if (t.classList.contains('sc-t-alt')) {
           tab.image = tab.image || {};
           tab.image.alt = t.value;
+        } else if (t.classList.contains('sc-t-fit')) {
+          tab.image = tab.image || {};
+          tab.image.fit = t.value || 'cover';
+        } else if (t.classList.contains('sc-t-pos')) {
+          tab.image = tab.image || {};
+          tab.image.objectPosition = t.value || 'center';
         } else if (t.classList.contains('sc-t-link')) {
           tab.link = tab.link || { label: '', destination: null };
           tab.link.label = t.value;
@@ -648,7 +693,60 @@
         if (t.classList.contains('sc-t-def') && ensure(c).tabs[i]) {
           ensure(c).defaultTabId = ensure(c).tabs[i].id;
           save();
+        } else if ((t.classList.contains('sc-t-fit') || t.classList.contains('sc-t-pos')) && ensure(c).tabs[i]) {
+          var tab = ensure(c).tabs[i];
+          tab.image = tab.image || {};
+          if (t.classList.contains('sc-t-fit')) tab.image.fit = t.value || 'cover';
+          if (t.classList.contains('sc-t-pos')) tab.image.objectPosition = t.value || 'center';
+          save();
         }
+      });
+      var dragIdx = null;
+      host.addEventListener('dragstart', function (e) {
+        var row = e.target.closest && e.target.closest('.sc-tab-ed');
+        if (!row || !e.target.closest('.sc-tab-grip') || e.target.closest('input,textarea,select,button,a,label')) {
+          e.preventDefault();
+          return;
+        }
+        dragIdx = +row.getAttribute('data-i');
+        try {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', String(dragIdx));
+        } catch (_e) {}
+        row.classList.add('sc-dragging');
+      });
+      host.addEventListener('dragend', function () {
+        dragIdx = null;
+        host.querySelectorAll('.sc-tab-ed').forEach(function (r) {
+          r.classList.remove('sc-dragging', 'sc-drop-before', 'sc-drop-after');
+        });
+      });
+      host.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        var row = e.target.closest && e.target.closest('.sc-tab-ed');
+        if (!row) return;
+        var rc = row.getBoundingClientRect();
+        var after = e.clientY - rc.top > rc.height / 2;
+        host.querySelectorAll('.sc-tab-ed').forEach(function (r) {
+          r.classList.remove('sc-drop-before', 'sc-drop-after');
+        });
+        row.classList.add(after ? 'sc-drop-after' : 'sc-drop-before');
+      });
+      host.addEventListener('drop', function (e) {
+        e.preventDefault();
+        var row = e.target.closest && e.target.closest('.sc-tab-ed');
+        if (!row || dragIdx == null) return;
+        var to = +row.getAttribute('data-i');
+        var rc = row.getBoundingClientRect();
+        var after = e.clientY - rc.top > rc.height / 2;
+        if (after) to += 1;
+        var from = dragIdx;
+        if (to > from) to -= 1;
+        var tabs = ensure(c).tabs;
+        if (from === to || from < 0 || to < 0 || from >= tabs.length || to > tabs.length) return;
+        tabs.splice(to, 0, tabs.splice(from, 1)[0]);
+        save();
+        drawTabs();
       });
       host.addEventListener('click', function (e) {
         var clearBtn = e.target.closest ? e.target.closest('.sc-icon-clear') : null;
@@ -839,10 +937,12 @@
           if ($('sc-ai-faq') && $('sc-ai-faq').checked && draft.faqQuestions && draft.faqQuestions.length) {
             try {
               if (typeof window._siApplyFaqsToHomepageFaq === 'function') {
+                var keepFaq = !($('sc-ai-faq-keep') && !$('sc-ai-faq-keep').checked);
                 await window._siApplyFaqsToHomepageFaq(
                   draft.faqQuestions.map(function (f) {
                     return { q: f.question || f.q, a: f.answer || f.a };
-                  })
+                  }),
+                  { mode: keepFaq ? 'merge' : 'replace' }
                 );
               }
             } catch (_faq) {}
