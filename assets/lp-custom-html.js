@@ -4,12 +4,16 @@
  *
  * Uses window.__lpLiveCfg (page-hybrid merge) when present so homepage defaults
  * cannot wipe a landing-page unique Custom HTML pack after boot.
+ *
+ * Important: HTML assigned via innerHTML does not run <script> tags. Packs that
+ * embed inline JS (e.g. Payment Run Analyser) must be re-hydrated after inject.
  */
 (function (global) {
   'use strict';
 
   var ATTR = 'data-lp-custom-html';
   var LOADED = 'data-lp-ch-loaded';
+  var activatedMounts = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
 
   function arr(v) {
     if (!v) return [];
@@ -72,12 +76,32 @@
   }
 
   /**
+   * innerHTML does not execute <script> tags. Replace each script node so the
+   * browser runs it (inline IIFEs and src scripts). Used by packs that paste
+   * full HTML+JS into the Custom HTML editor (Payment Run Analyser, etc.).
+   */
+  function runInlineScripts(mount) {
+    if (!mount || !mount.querySelectorAll) return;
+    var list = mount.querySelectorAll('script');
+    Array.prototype.forEach.call(list, function (old) {
+      var s = document.createElement('script');
+      var attrs = old.attributes || [];
+      for (var i = 0; i < attrs.length; i++) {
+        s.setAttribute(attrs[i].name, attrs[i].value);
+      }
+      if (!old.src) s.text = old.textContent || '';
+      s.setAttribute('data-lp-ch-inline', '1');
+      if (old.parentNode) old.parentNode.replaceChild(s, old);
+    });
+  }
+
+  /**
    * Pack scripts often bind listeners at load time. Landing hybrid remounts #top
    * after that, so we must re-bind without re-evaluating the script (const clash).
    */
   function invokePackInits(el) {
     try {
-      if (typeof global.lpTransferMatcherInit === 'function') {
+      if (typeof global.lpTransferMatcherInit === 'function' && el.querySelector && el.querySelector('#tm-root')) {
         global.lpTransferMatcherInit(el);
       }
     } catch (e) {
@@ -97,18 +121,37 @@
     } catch (e) {}
   }
 
-  function ensureScriptsAndInit(el, jsUrls, forceReload) {
-    if (!jsUrls.length) {
+  function ensureScriptsAndInit(el, jsUrls) {
+    var run = function () {
       invokePackInits(el);
+      if (activatedMounts) activatedMounts.add(el);
+    };
+    if (!jsUrls.length) {
+      run();
       return Promise.resolve();
     }
     // Never force-remove classic scripts that use top-level const — re-init instead.
-    return chainScripts(jsUrls, false).then(function () {
-      invokePackInits(el);
-    }).catch(function (err) {
+    return chainScripts(jsUrls, false).then(run).catch(function (err) {
       try { console.warn('[customHtml]', err && err.message ? err.message : err); } catch (e) {}
-      invokePackInits(el);
+      run();
     });
+  }
+
+  function mountIsActivated(el) {
+    if (activatedMounts) return activatedMounts.has(el);
+    return false;
+  }
+
+  function mountNeedsHydrate(el) {
+    if (!mountIsActivated(el)) return true;
+    var tm = el.querySelector && el.querySelector('#tm-root');
+    if (tm && tm.getAttribute('data-tm-bound') !== '1') return true;
+    // Cloned inert <script> nodes still need a fresh execute pass
+    var scripts = el.querySelectorAll ? el.querySelectorAll('script') : [];
+    for (var i = 0; i < scripts.length; i++) {
+      if (scripts[i].getAttribute('data-lp-ch-inline') !== '1') return true;
+    }
+    return false;
   }
 
   function mountIdFor(el) {
@@ -157,8 +200,8 @@
       style.setAttribute('data-lp-ch-vars', '1');
       document.head.appendChild(style);
     }
-    // Scope to this mount (+ nested #tm-root used by Transfer Matcher)
-    var sel = '#' + mid + ', #' + mid + ' #tm-root';
+    // Scope to this mount (+ nested pack roots)
+    var sel = '#' + mid + ', #' + mid + ' #tm-root, #' + mid + ' #pa-root';
     style.textContent = sel + '{' + decls.join(';') + '}';
   }
 
@@ -214,14 +257,12 @@
       applyCssVars(cfg.cssVars, el, mid);
 
       // Avoid re-injecting identical HTML (keeps in-app state on soft re-apply),
-      // but always re-init pack listeners — hybrid page remount clones "loaded" mounts
-      // into a new DOM tree where old onclick handlers are gone.
+      // but always hydrate when this mount node is new (landing hybrid remount)
+      // or when inline <script> tags have not been executed in this document.
       var sig = html.length + ':' + cssUrls.join('|') + ':' + jsUrls.join('|');
       var samePack = el.getAttribute(LOADED) === sig && el.getAttribute('data-lp-ch-has') === '1';
-      var liveRoot = el.querySelector ? el.querySelector('#tm-root') : null;
-      var needsBind = !liveRoot || liveRoot.getAttribute('data-tm-bound') !== '1';
-      if (samePack && html && !needsBind) {
-        applyCssVars(cfg.cssVars, el, mid);
+      var needsHydrate = mountNeedsHydrate(el);
+      if (samePack && html && !needsHydrate) {
         return;
       }
       if (!samePack) {
@@ -231,7 +272,9 @@
       }
 
       if (html) {
-        ensureScriptsAndInit(el, jsUrls, false);
+        // Critical: execute inline <script> from pasted HTML packs
+        runInlineScripts(el);
+        ensureScriptsAndInit(el, jsUrls);
       }
     });
   }
@@ -259,6 +302,7 @@
 
   global.lpApplyCustomHtml = applyCustomHtml;
   global.lpRefreshCustomHtml = fromSiteConfig;
+  global.lpRunCustomHtmlInlineScripts = runInlineScripts;
 
   // Initial paint: prefer live (hybrid) cfg so a late home SITE_CONFIG cannot wipe the pack.
   function boot() {

@@ -277,9 +277,94 @@ test('lp-custom-html re-inits packs after remount without force-reloading script
   const js = fs.readFileSync(path.join(root, 'assets/lp-custom-html.js'), 'utf8');
   assert.match(js, /function invokePackInits/);
   assert.match(js, /lpTransferMatcherInit/);
-  assert.match(js, /needsBind/);
   assert.match(js, /ensureScriptsAndInit/);
+  assert.match(js, /function runInlineScripts/);
+  assert.match(js, /innerHTML does not execute/);
+  assert.match(js, /WeakSet/);
   assert.doesNotMatch(js, /chainScripts\(jsUrls,\s*remount\)/);
+});
+
+test('lp-custom-html executes inline script tags after inject', function () {
+  const src = fs.readFileSync(path.join(root, 'assets/lp-custom-html.js'), 'utf8');
+  const replaced = [];
+  const mount = {
+    id: 'm-inline',
+    innerHTML: '',
+    _attrs: {},
+    setAttribute: function (k, v) { this._attrs[k] = String(v); },
+    getAttribute: function (k) { return this._attrs[k] || null; },
+    removeAttribute: function (k) { delete this._attrs[k]; },
+    closest: function () { return null; },
+    querySelector: function () { return null; },
+    querySelectorAll: function (sel) {
+      if (String(sel) === 'script') return this._scripts || [];
+      return [];
+    }
+  };
+  const sandbox = {
+    document: {
+      readyState: 'loading',
+      head: { appendChild: function () {} },
+      body: { appendChild: function () {} },
+      getElementById: function () { return null; },
+      querySelector: function () { return null; },
+      querySelectorAll: function () { return [mount]; },
+      createElement: function (tag) {
+        const el = {
+          tagName: String(tag).toUpperCase(),
+          text: '',
+          src: '',
+          attributes: [],
+          setAttribute: function (k, v) {
+            this[k] = v;
+            this.attributes = this.attributes || [];
+            this.attributes.push({ name: k, value: v });
+          },
+          getAttribute: function (k) { return this[k] || null; }
+        };
+        return el;
+      },
+      addEventListener: function () {}
+    },
+    WeakSet: WeakSet,
+    Promise: Promise,
+    console: console,
+    CustomEvent: function () {},
+    globalThis: null
+  };
+  sandbox.globalThis = sandbox;
+  sandbox.window = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(src + '\nthis.lpApplyCustomHtml = lpApplyCustomHtml;', sandbox);
+
+  const oldScript = {
+    src: '',
+    textContent: '(function(){ window.__paRan = 1; })();',
+    attributes: [],
+    parentNode: {
+      replaceChild: function (neu, old) {
+        replaced.push({ neu: neu, old: old, text: neu.text });
+        mount._scripts = [neu];
+      }
+    }
+  };
+  mount._scripts = [oldScript];
+
+  sandbox.lpApplyCustomHtml({
+    on: true,
+    html: '<div id="pa-root"></div><script>(function(){ window.__paRan = 1; })();<\/script>',
+    cssUrls: [],
+    jsUrls: []
+  });
+
+  assert.ok(mount.innerHTML.indexOf('pa-root') >= 0 || mount.innerHTML.indexOf('script') >= 0);
+  // Direct API: replace inert <script> nodes so the browser executes them
+  replaced.length = 0;
+  mount._scripts = [oldScript];
+  sandbox.lpRunCustomHtmlInlineScripts(mount);
+  assert.equal(replaced.length, 1);
+  assert.match(replaced[0].text, /__paRan/);
+  assert.equal(replaced[0].neu.getAttribute('data-lp-ch-inline'), '1');
 });
 
 test('Custom HTML editor is responsive with HTML line numbers', function () {
