@@ -354,7 +354,11 @@
         return '<figure class="sc-figure sc-figure-empty' + (active ? ' is-active' : '') + '" data-sc-figure="' + esc(tab.id) + '"' + (active ? '' : ' hidden') + '><div class="sc-figure-ph" aria-hidden="true"></div></figure>';
       }
       return '<figure class="sc-figure' + (active ? ' is-active' : '') + '" data-sc-figure="' + esc(tab.id) + '"' + (active ? '' : ' hidden') + '>' +
-        '<img class="sc-img" src="' + esc(img.url) + '" alt="' + esc(img.alt || tab.heading || tab.label) + '" loading="' + (active ? 'eager' : 'lazy') + '" style="object-fit:' + (img.fit === 'contain' ? 'contain' : 'cover') + ';object-position:' + esc(img.objectPosition || 'center') + '"></figure>';
+        '<img class="sc-img" src="' + esc(img.url) + '" alt="' + esc(img.alt || tab.heading || tab.label) + '" loading="' + (active ? 'eager' : 'lazy') + '" style="object-fit:' + (function () {
+          var f = String((img && img.fit) || '').toLowerCase();
+          if (f === 'stretch') f = 'fill';
+          return f === 'contain' || f === 'fill' || f === 'none' || f === 'scale-down' ? f : 'cover';
+        })() + ';object-position:' + esc(img.objectPosition || 'center') + '"></figure>';
     }
 
     var tabButtons = tabs.map(function (tab) {

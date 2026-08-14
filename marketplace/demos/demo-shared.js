@@ -720,7 +720,66 @@ function applyCfg(C){
         _rvSet('--rv-title', _rvHex(RV.titleColor));
       })();
       if(SEC.faq){ var _fq=SEC.faq; var _fn=document.querySelector('[data-sec="faq"]'); if(_fn){ function _fqHex(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; } function _fqSet(n,v){ if(v) _fn.style.setProperty(n,v); else _fn.style.removeProperty(n); } var _feb=_fn.querySelector('.eyebrow'); if(_feb&&_fq.eyebrow!=null) _feb.textContent=_fq.eyebrow; var _fh=_fn.querySelector('.section-head h2')||_fn.querySelector('h2'); if(_fh&&_fq.heading!=null) _fh.textContent=_fq.heading; _fqSet('--faq-eyebrow',_fqHex(_fq.eyebrowColor)); _fqSet('--faq-title',_fqHex(_fq.titleColor||_fq.headingColor)); _fqSet('--faq-bg',_fqHex(_fq.bg)); _fqSet('--faq-card-bg',_fqHex(_fq.cardBg)); _fqSet('--faq-stroke',_fqHex(_fq.stroke)); _fqSet('--faq-summary',_fqHex(_fq.summaryColor)); _fqSet('--faq-answer',_fqHex(_fq.answerColor)); _fqSet('--faq-accent',_fqHex(_fq.accentColor)); } if(Array.isArray(SEC.faq.items)) rlist('.faq',SEC.faq.items,function(f){return '<details><summary>'+esc(f.q||'')+'</summary><p>'+esc(f.a||'')+'</p></details>';}); }
-      if(SEC.area){ if(Array.isArray(SEC.area.suburbs)){ var sb=document.querySelector('.suburbs'); if(sb) sb.innerHTML=SEC.area.suburbs.filter(function(x){return x&&String(x).trim();}).map(function(x){return '<span>'+esc(String(x).trim())+'</span>';}).join(''); } if(SEC.area.intro!=null){ var an=document.querySelector('[data-sec="area"]'); if(an){ var ap=an.querySelector('p'); if(ap) ap.textContent=SEC.area.intro; } } var _aq=document.querySelector('[data-sec="area"] .qcard'); if(_aq){ var _A=SEC.area||{}; var _ah=_aq.querySelector('h3'); var _as=_aq.querySelector('p'); var _noun=''; try{ _noun=String((SEC.header&&SEC.header.cta)||'').replace(/^speak to an? /i,'').trim(); }catch(_e){} var _art=(/^[aeiou]/i.test(_noun)?'an':'a'); if(_A.ctaTitle!=null){ if(_ah)_ah.textContent=_A.ctaTitle; } else if(_noun&&_ah){ _ah.textContent='Need '+_art+' '+_noun+' now?'; } if(_A.ctaSub!=null){ if(_as)_as.textContent=_A.ctaSub; } else if(_noun&&_as){ _as.textContent='Talk to a real Canberra '+_noun+' — not a call centre.'; } } }
+      if(SEC.area){ if(Array.isArray(SEC.area.suburbs)){ var sb=document.querySelector('.suburbs'); if(sb) sb.innerHTML=SEC.area.suburbs.filter(function(x){return x&&String(x).trim();}).map(function(x){return '<span>'+esc(String(x).trim())+'</span>';}).join(''); } if(SEC.area.intro!=null){ var an=document.querySelector('[data-sec="area"]'); if(an){ var ap=an.querySelector('p'); if(ap) ap.textContent=SEC.area.intro; } } var _aq=document.querySelector('[data-sec="area"] .qcard'); if(_aq){ var _A=SEC.area||{}; var _ah=_aq.querySelector('h3'); var _as=_aq.querySelector('p'); var _noun=''; try{ _noun=String((SEC.header&&SEC.header.cta)||'').replace(/^speak to an? /i,'').trim(); }catch(_e){} var _art=(/^[aeiou]/i.test(_noun)?'an':'a'); if(_A.ctaTitle!=null){ if(_ah)_ah.textContent=_A.ctaTitle; } else if(_noun&&_ah){ _ah.textContent='Need '+_art+' '+_noun+' now?'; } if(_A.ctaSub!=null){ if(_as)_as.textContent=_A.ctaSub; } else if(_noun&&_as){ _as.textContent='Talk to a real local '+_noun+' — not a call centre.'; }
+          var _ac=document.getElementById('areaCall');
+          var _showCta=_A.showCta!==false;
+          _aq.style.display=_showCta?'':'none';
+          if(_ac&&_showCta){
+            var _act=(_A.ctaAction==='form')?'form':'call';
+            var _phoneTxt=(C.phoneText||C.phone||((typeof SITE_CONFIG!=='undefined'&&(SITE_CONFIG.phoneText||SITE_CONFIG.phone))||'')||'');
+            var _btnLabel=(_A.ctaText!=null&&String(_A.ctaText).trim())?String(_A.ctaText).trim():(_act==='form'?'Get a quote':('📞 '+_phoneTxt));
+            // Replace node so we do not stack click listeners across paint/wirePhones.
+            var _fresh=_ac.cloneNode(true);
+            if(_ac.parentNode) _ac.parentNode.replaceChild(_fresh,_ac);
+            _ac=_fresh;
+            _ac.textContent=_btnLabel;
+            if(_act==='form'){
+              _ac.setAttribute('href','#quote');
+            } else {
+              _ac.setAttribute('href','tel:'+String(C.phone||((typeof SITE_CONFIG!=='undefined'&&SITE_CONFIG.phone)||'')||'').replace(/\s+/g,''));
+            }
+            function _aHex(v){ v=String(v||'').trim(); if(/^#?[0-9a-fA-F]{3}$/.test(v)){ v=v.charAt(0)==='#'?v:'#'+v; return '#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); } if(/^#?[0-9a-fA-F]{6}$/.test(v)) return v.charAt(0)==='#'?v:'#'+v; return ''; }
+            var _bg=_aHex(_A.ctaBg), _fg=_aHex(_A.ctaFg), _bd=_aHex(_A.ctaBorder);
+            if(_bg) _ac.style.background=_bg; else _ac.style.removeProperty('background');
+            if(_fg){ _ac.style.color=_fg; } else { _ac.style.removeProperty('color'); }
+            if(_bd) _ac.style.border='2px solid '+_bd; else if(_bg) _ac.style.border='2px solid '+_bg; else _ac.style.removeProperty('border');
+            if(_A.ctaGlowOn===true){ var _gc=_aHex(_A.ctaGlowColor)||_bg||'rgba(255,106,31,.45)'; _ac.style.boxShadow='0 0 0 4px '+_gc+'55, 0 10px 28px '+_gc+'66'; } else { _ac.style.removeProperty('box-shadow'); }
+            _ac.addEventListener('click',function(){
+              try{
+                if(typeof trackEvent==='function'){
+                  if(_act==='form') trackEvent('cta_click',{location:'areaCall',action:'form'});
+                  else trackEvent('call_click',{location:'areaCall'});
+                }
+              }catch(_te){}
+            });
+          }
+        }
+        (function(){
+          var _A=SEC.area||{};
+          var mapEl=document.getElementById('areaMap')||document.querySelector('[data-sec="area"] .area-map');
+          if(!mapEl) return;
+          var showMap=_A.mapOn===true;
+          mapEl.hidden=!showMap;
+          mapEl.style.display=showMap?'':'none';
+          if(!showMap){ mapEl.innerHTML=''; return; }
+          var q=String(_A.mapQuery||_A.mapAddress||'').trim();
+          var lat=String(_A.mapLat||'').trim();
+          var lng=String(_A.mapLng||'').trim();
+          var zoom=parseInt(_A.mapZoom,10); if(isNaN(zoom)||zoom<3||zoom>18) zoom=11;
+          var radius=parseFloat(_A.mapRadiusKm); if(isNaN(radius)||radius<=0) radius=0;
+          var embedSrc='';
+          if(lat&&lng&&/^-?\d+(\.\d+)?$/.test(lat)&&/^-?\d+(\.\d+)?$/.test(lng)){
+            embedSrc='https://maps.google.com/maps?q='+encodeURIComponent(lat+','+lng)+'&z='+zoom+'&output=embed';
+          } else if(q){
+            embedSrc='https://maps.google.com/maps?q='+encodeURIComponent(q)+'&z='+zoom+'&output=embed';
+          } else {
+            embedSrc='https://maps.google.com/maps?q='+encodeURIComponent('Canberra ACT')+'&z='+zoom+'&output=embed';
+          }
+          var radiusNote=radius?('<p class="area-map-radius" style="margin:10px 0 0;font-weight:600;font-size:14px;color:var(--muted,#46535f)">Serving within '+esc(String(radius))+' km'+(q?(' of '+esc(q)):(lat&&lng?' of pin':''))+'</p>'):'';
+          mapEl.innerHTML='<div class="area-map-frame" style="border-radius:14px;overflow:hidden;border:1px solid var(--line,#e7e7e7);aspect-ratio:4/3;background:#eef2f6"><iframe title="Service area map" src="'+esc(embedSrc)+'" style="width:100%;height:100%;border:0;display:block" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>'+radiusNote;
+          mapEl.style.marginTop='16px';
+        })();
+      }
       var BA=SEC.beforeAfter||{}; var baNode=document.querySelector('[data-sec="beforeAfter"]');
       if(baNode){
         var _be=baNode.querySelector('.eyebrow'); if(_be) _be.textContent=(BA.eyebrow!=null?BA.eyebrow:'Before & After');
@@ -1548,7 +1607,8 @@ function applyCfg(C){
         }
       }catch(_mbErr){}
       }
-      var F=S.footer||{}; var ft=document.querySelector('footer.site'); if(ft){
+      var F=S.footer||{}; var ft=document.querySelector('footer.site')||document.querySelector('footer[data-sec="footer"]'); if(ft){
+        try{ if(!ft.classList.contains('site')) ft.classList.add('site'); }catch(_fc){}
         var blurbText=F.blurb!=null?String(tok(F.blurb)).trim():'';
         var legalText=F.legal!=null?String(tok(F.legal)).trim():'';
         var fp=ft.querySelector('.foot-blurb')||ft.querySelector('.foot-grid p');
@@ -1561,9 +1621,12 @@ function applyCfg(C){
         ft.classList.toggle('foot-no-legal',!legalText);
         ft.classList.toggle('foot-meta-empty',!blurbText&&!legalText);
         var cols=ft.querySelectorAll('.foot-grid > div');
+        var brandCol=cols.length?cols[0]:null;
+        if(brandCol) brandCol.style.display=(F.showBrand===false)?'none':'';
         var callCol=ft.querySelector('.foot-call')||(cols.length>1?cols[1]:null);
         if(callCol){
           callCol.classList.add('foot-call');
+          callCol.style.display=(F.showCall===false)?'none':'';
           if(F.callTitle!=null){ var h4c=callCol.querySelector('h4'); if(h4c) h4c.textContent=String(F.callTitle).trim()||'Call us'; }
           if(Array.isArray(F.callItems)){
             var callTitle=(F.callTitle!=null&&String(F.callTitle).trim())?String(F.callTitle).trim():((callCol.querySelector('h4')&&callCol.querySelector('h4').textContent)||'Call us');
@@ -1571,7 +1634,16 @@ function applyCfg(C){
             callCol.innerHTML='<h4>'+esc(callTitle)+'</h4>'+ci.map(function(s){return '<a href="'+esc(s.href||'#')+'">'+esc(s.label)+'</a>';}).join('');
           }
         }
-        if(Array.isArray(F.services)){ var col=cols[cols.length-1]; if(col){ var h4=col.querySelector('h4'); var lk=F.services.filter(function(s){return s&&s.label&&s.on!==false;}); col.innerHTML=(h4?h4.outerHTML:'<h4>Services</h4>')+lk.map(function(s){return '<a href="'+esc(s.href||'#quote')+'">'+esc(s.label)+'</a>';}).join(''); } }
+        var svcCol=ft.querySelector('.foot-services')||(cols.length?cols[cols.length-1]:null);
+        if(svcCol){
+          svcCol.classList.add('foot-services');
+          svcCol.style.display=(F.showServices===false)?'none':'';
+          if(Array.isArray(F.services)||F.servicesTitle!=null){
+            var svcTitle=(F.servicesTitle!=null&&String(F.servicesTitle).trim())?String(F.servicesTitle).trim():'Services';
+            var lk=Array.isArray(F.services)?F.services.filter(function(s){return s&&s.label&&s.on!==false;}):[];
+            svcCol.innerHTML='<h4>'+esc(svcTitle)+'</h4>'+lk.map(function(s){return '<a href="'+esc(s.href||'#quote')+'">'+esc(s.label)+'</a>';}).join('');
+          }
+        }
       }
     })();
     (function(){ var S=C.sections||{};
