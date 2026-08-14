@@ -243,6 +243,41 @@
       '<p class="hint" style="margin:2px 0 8px;font-size:12px;">Stroke tick from the icon library (one bullet per line). Override per tab below if needed.</p>' +
       iconPickerHtml('sc-bullet-icon', null, S.style.bulletIconKey || 'check', false) +
       '</div></div>' +
+      '<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 6px">Colours &amp; surfaces</h2>' +
+      '<p class="lede" style="margin:0 0 10px">Customise the box, stroke, headings and body text. Leave blank for theme defaults.</p>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:12px">' +
+      colorRow('sc-col-section', 'Section background', 'Behind the whole SearchCanvas block.') +
+      colorRow('sc-col-panel', 'Box / panel background', 'Content card and tab panel fill.') +
+      colorRow('sc-col-border', 'Stroke / border', 'Panel edges, dividers and tab rails.') +
+      colorRow('sc-col-tab', 'Tab background', 'Inactive tab chips.') +
+      colorRow('sc-col-tab-active', 'Active tab background', 'Selected tab chip.') +
+      colorRow('sc-col-headings', 'Headings colour', 'Tab titles and panel headings.') +
+      colorRow('sc-col-body', 'Body text colour', 'Main paragraph copy.') +
+      colorRow('sc-col-muted', 'Muted text colour', 'Supporting / secondary text.') +
+      '</div>' +
+      '<div class="row" style="margin-top:12px"><div class="f"><label>Corner radius</label><select id="sc-radius" class="tin">' +
+      [
+        ['none', 'None'],
+        ['small', 'Small'],
+        ['medium', 'Medium'],
+        ['large', 'Large']
+      ]
+        .map(function (o) {
+          return '<option value="' + o[0] + '"' + ((S.style.radius || 'medium') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+        })
+        .join('') +
+      '</select></div>' +
+      '<div class="f"><label>Shadow</label><select id="sc-shadow" class="tin">' +
+      [
+        ['none', 'None'],
+        ['soft', 'Soft'],
+        ['medium', 'Medium']
+      ]
+        .map(function (o) {
+          return '<option value="' + o[0] + '"' + ((S.style.shadow || 'soft') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+        })
+        .join('') +
+      '</select></div></div></div>' +
       '<div class="card" style="margin-bottom:18px"><h2 style="margin:0 0 6px">Layout</h2>' +
       '<div class="row"><div class="f"><label>Layout preset</label><select id="sc-preset" class="tin">' +
       [
@@ -395,6 +430,34 @@
       if (arguments.length) ensure(c).style.masterColour = v;
       return ensure(c).style.masterColour;
     });
+    function styleColour(key) {
+      return function (v) {
+        if (arguments.length) ensure(c).style[key] = v;
+        return ensure(c).style[key];
+      };
+    }
+    wireColor('sc-col-section', styleColour('sectionBackground'));
+    wireColor('sc-col-panel', styleColour('panelBackground'));
+    wireColor('sc-col-border', styleColour('borderColour'));
+    wireColor('sc-col-tab', styleColour('tabBackground'));
+    wireColor('sc-col-tab-active', styleColour('activeTabBackground'));
+    wireColor('sc-col-headings', styleColour('headingColour'));
+    wireColor('sc-col-body', styleColour('bodyColour'));
+    wireColor('sc-col-muted', styleColour('mutedColour'));
+    var radiusEl = $('sc-radius');
+    if (radiusEl) {
+      radiusEl.addEventListener('change', function () {
+        ensure(c).style.radius = radiusEl.value || 'medium';
+        save();
+      });
+    }
+    var shadowEl = $('sc-shadow');
+    if (shadowEl) {
+      shadowEl.addEventListener('change', function () {
+        ensure(c).style.shadow = shadowEl.value || 'soft';
+        save();
+      });
+    }
 
     var bulletIconInp = body.querySelector('.sc-bullet-icon');
     if (bulletIconInp) {

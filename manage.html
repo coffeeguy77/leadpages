@@ -7649,7 +7649,7 @@ function heroCtaCard(c){
         var mlng=$('ar-maplng'); if(mlng) mlng.addEventListener('input',function(){ ens().mapLng=mlng.value.trim(); persist(); previewApply(); });
         var mz=$('ar-mapz'); if(mz) mz.addEventListener('change',function(){ var n=parseInt(mz.value,10); ens().mapZoom=isNaN(n)?11:n; persist(); previewApply(); });
       })();
-    } } else if(sub==='reviews'){
+    } else if(sub==='reviews'){
       body.innerHTML=secCard(c,'reviews','Reviews section',true,[['eyebrow','Eyebrow'],['heading','Heading']])+reviewsStyleCard(c)+listCard('reviews','Reviews','Customer quotes (stars stay at five). Edit, hide or remove each.')+listCard('reviewSources','Review sources','Show which platforms your reviews come from — Google, Facebook, hipages, ProductReview. Add a rating and link; logos are optional (a clean text badge shows otherwise).'); wireSec(c,'reviews',true,[['eyebrow'],['heading']]); wireReviewsStyle(c); listEditor($('le-reviews'),c,'reviews'); listEditor($('le-reviewSources'),c,'reviewSources');
     } else if(sub==='beforeAfter'){
       body.innerHTML=secCard(c,'beforeAfter','Before & After section',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])+listCard('beforeAfterItems','Before / after items','Each card shows a before and an after image with a title and caption. Leave an image URL blank to show a clean placeholder \u2014 no upload needed yet.'); wireSec(c,'beforeAfter',true,[['eyebrow'],['heading'],['intro']]); listEditor($('le-beforeAfterItems'),c,'beforeAfterItems');
@@ -8473,7 +8473,7 @@ function heroCtaCard(c){
         var sc=$('ft-showcall'); if(sc) sc.addEventListener('change',function(){ ens().showCall=sc.checked; persist(); previewApply(); });
         var ss=$('ft-showsvc'); if(ss) ss.addEventListener('change',function(){ ens().showServices=ss.checked; persist(); previewApply(); });
       })();
-    } } else if(sub==='searchCanvas'){
+    } else if(sub==='searchCanvas'){
       if(!c.sections) c.sections={};
       if(!c.sections.searchCanvas) c.sections.searchCanvas=JSON.parse(JSON.stringify(DEFAULT_TRADE_SECTIONS.searchCanvas||{}));
       c.sections.searchCanvas.on=true;
