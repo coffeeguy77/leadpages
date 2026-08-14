@@ -2209,7 +2209,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(!sec||!Object.keys(sec).length) return true;
     var home=lpPageHomeSection(secKey);
     if(!home||!Object.keys(home).length) return false;
-    var rich=['slides','items','options','steps','badges','fields','bgImage','image','heroImage','backgroundImage'];
+    var rich=['slides','items','options','steps','badges','fields','bgImage','image','heroImage','backgroundImage','html','cssUrls','jsUrls'];
     for(var i=0;i<rich.length;i++){
       var k=rich[i];
       if(Array.isArray(home[k])&&home[k].length && (!Array.isArray(sec[k])||!sec[k].length)) return true;
@@ -2228,6 +2228,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var pageKeys=Object.keys(sec).filter(function(k){ return k!=='on'; });
     if(homeKeys.length>=4 && pageKeys.length<Math.ceil(homeKeys.length*0.45)) return true;
     return false;
+  }
+  /** Fresh Custom HTML pack — never auto-clone homepage HTML (avoids tool clash). */
+  function lpBlankCustomHtmlSection(opts){
+    opts=opts||{};
+    var blank=JSON.parse(JSON.stringify((typeof DEFAULT_TRADE_SECTIONS!=='undefined'&&DEFAULT_TRADE_SECTIONS.customHtml)||{
+      on:false,title:'',html:'',cssUrls:[],jsUrls:[],cssVars:{},fullBleed:true,bg:''
+    }));
+    if(opts.on===true) blank.on=true;
+    return blank;
   }
   function lpCopyPageAppFromHome(secKey, opts){
     opts=opts||{};
@@ -2268,6 +2277,15 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       lpPageAppSeed(secKey);
       return false;
     }
+    // Custom HTML: start blank so a landing-page tool (e.g. pay frequency) does not
+    // inherit homepage HTML (e.g. transfer matcher). Users can still copy via button.
+    if(secKey==='customHtml'){
+      if(!lpCur.pageSections) lpCur.pageSections={};
+      lpCur.pageSections[secKey]=lpBlankCustomHtmlSection({on:true});
+      lpPageAppSeed(secKey);
+      app.homeCopied=false;
+      return false;
+    }
     lpCopyPageAppFromHome(secKey, {silent:true, skipRender:true});
     app.homeCopied=true;
     return true;
@@ -2292,11 +2310,21 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(!lpCur||!secKey) return;
     var apps=lpEnsurePageApps(lpCur);
     if(apps.some(function(a){ return (a.key||a.section_key)===secKey; })){ toast('That app is already on this page'); return; }
-    apps.push({key:secKey, mode:'shared'});
+    // Custom HTML defaults to Unique + blank pack so homepage tools (transfer matcher)
+    // do not clash with a different landing-page HTML tool (pay frequency, etc.).
+    if(secKey==='customHtml'){
+      apps.push({key:secKey, mode:'unique', homeCopied:false});
+      if(!lpCur.pageSections) lpCur.pageSections={};
+      lpCur.pageSections[secKey]=lpBlankCustomHtmlSection({on:true});
+      lpPageAppSeed(secKey);
+    } else {
+      apps.push({key:secKey, mode:'shared'});
+    }
     lpEnsurePageLayoutOrder(lpCur);
     var ord=lpCur.pageLayoutOrder;
     if(ord.indexOf(secKey)<0) ord.push(secKey);
     persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
+    if(secKey==='customHtml') toast('Custom HTML added as Unique to this page — paste your HTML here (won\u2019t affect the homepage).');
   }
   function lpPageAppRemove(secKey){
     if(!lpCur) return;
@@ -2315,6 +2343,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     if(mode==='unique'){
       var copied=lpPageAppEnsureUniqueData(secKey);
       if(copied) toast('Copied homepage content — edit text for this landing page. Use \u201cUse homepage content\u201d anytime to reset from the homepage.');
+      else if(secKey==='customHtml') toast('Unique Custom HTML for this page — paste your HTML here. Homepage Custom HTML stays separate.');
     }
     persist(); lpAutosave(); lpRenderAppsTab(); lpPagePreviewReload();
   }

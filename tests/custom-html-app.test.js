@@ -206,6 +206,33 @@ test('seed + register scripts exist for ops', function () {
   assert.match(seed, /transfer-matcher/);
 });
 
+test('api-apps auto-registers Custom HTML for landing apps list', function () {
+  const apiApps = fs.readFileSync(path.join(root, 'api/api-apps.js'), 'utf8');
+  assert.match(apiApps, /ensureCustomHtmlApp/);
+  assert.match(apiApps, /section_key:\s*'customHtml'/);
+  assert.match(apiApps, /slug:\s*'custom-html'/);
+  assert.match(apiApps, /builder_visible:\s*true/);
+  assert.match(apiApps, /await ensureCustomHtmlApp\(\)/);
+});
+
+test('landing Custom HTML defaults to unique blank (no homepage clash)', function () {
+  assert.match(manage, /function lpBlankCustomHtmlSection/);
+  assert.match(manage, /secKey==='customHtml'/);
+  assert.match(manage, /mode:'unique',\s*homeCopied:false/);
+  assert.match(manage, /lpBlankCustomHtmlSection\(\{on:true\}\)/);
+  // Must not auto-copy homepage HTML when ensuring unique customHtml
+  const ensureIdx = manage.indexOf('function lpPageAppEnsureUniqueData');
+  const ensureEnd = manage.indexOf('function lpPageScopedCfg', ensureIdx);
+  assert.ok(ensureIdx > 0 && ensureEnd > ensureIdx);
+  const ensureFn = manage.slice(ensureIdx, ensureEnd);
+  assert.match(ensureFn, /secKey==='customHtml'/);
+  assert.match(ensureFn, /lpBlankCustomHtmlSection/);
+  assert.doesNotMatch(
+    ensureFn.replace(/if\(secKey==='customHtml'\)\{[\s\S]*?return false;\s*\}/, ''),
+    /customHtml[\s\S]{0,80}lpCopyPageAppFromHome/
+  );
+});
+
 test('transfer-matcher Dark button toggles #tm-root theme (not documentElement only)', function () {
   const js = fs.readFileSync(path.join(root, 'assets/apps/transfer-matcher/app.js'), 'utf8');
   const css = fs.readFileSync(path.join(root, 'assets/apps/transfer-matcher/app.css'), 'utf8');
