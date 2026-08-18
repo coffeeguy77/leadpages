@@ -140,6 +140,7 @@ Short summary of every engineering document in `docs/`.
 | [features/Google Ads](features/Google%20Ads.md) | Google Ads (v1) | OAuth connect, session attribution (gclid/UTMs), conversion upload, Advertising dashboard, metrics sync. |
 | [features/Ads Campaign Builder](features/Ads%20Campaign%20Builder.md) | Ads Smart Campaign Builder | Flag-gated plan → paused create, readiness, GTM inspect; extends Ads without replacing sync/conversions. |
 | [features/LeadPages Brain](features/LeadPages%20Brain.md) | LeadPages Brain | AI gateway Phases 1–7; Control Centre; landing-draft migration. Canonical status: [AI/00-STATUS](AI/00-STATUS.md). |
+| [features/Order Engine](features/Order%20Engine.md) | Order Engine | Universal ordering: products, deposits, cutoffs, supply, magic-link portal. Butcher preset first. |
 | [AI/README](AI/README.md) | LeadPages Brain | Provider-agnostic AI gateway — Phases 1–7 in `lib/brain` + Control Centre + landing-draft migration. |
 | [08-SEO](08-SEO.md) | SEO System (publish) | Suburb App Router pages, `lib/seo/*`, landing pages, `seoTokens`, sitemap, routing collision notes. |
 | [search-intelligence/00-VISION](search-intelligence/00-VISION.md) | Search Intelligence | Product OS: SEO Command Centre, connectors, provider gateway, NBA recipes — docs-first; see folder index below. |
@@ -193,6 +194,7 @@ Short summary of every engineering document in `docs/`.
 | **Search Intelligence / SEO Command Centre** | [search-intelligence/00-VISION](search-intelligence/00-VISION.md) | [search-intelligence/01-ARCHITECTURE](search-intelligence/01-ARCHITECTURE.md), [search-intelligence/08-ROADMAP](search-intelligence/08-ROADMAP.md) | `lib/search-intelligence/*`, `db/search_intelligence_schema.sql` (draft) |
 | **Partner features** | [05-PARTNERS](05-PARTNERS.md) | [00-VISION](00-VISION.md) § Partners | `api/partner/*`, `partner.html` |
 | **Billing / Stripe** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | [05-PARTNERS](05-PARTNERS.md) § Commissions | `api/billing/*` |
+| **Order Engine / ordering** | [features/Order Engine](features/Order%20Engine.md) | [02-DATABASE](02-DATABASE.md) | `lib/order/*`, `api/order/*`, `orders.html`, `order-portal.html`, `db/order_engine_*.sql` |
 | **Domains / DNS** | [06-DOMAINS](06-DOMAINS.md) | [01-ARCHITECTURE](01-ARCHITECTURE.md) §12 | `dreamscape.js`, `api/domains/*` |
 | **Marketplace apps** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | [10-EDITOR](10-EDITOR.md) § Marketplace | `api/api-apps.js`, `api-site-apps.js` |
 | **Public marketplace V2** | [features/Marketplace-Public-V2](features/Marketplace-Public-V2.md) | [features/Marketplace](features/Marketplace.md) | `marketplace.html`, `marketplace-feature.html`, `assets/js/marketplace/*`, `playground/trustbar-*.json` |
@@ -293,6 +295,20 @@ Short summary of every engineering document in `docs/`.
 | `GET /api/billing/cron` | `billing/cron.js` | Daily cron (Vercel) |
 | `billing/admin.js`, `contra.js`, `system-pages.js`, … | — | Admin billing ops |
 
+### Order Engine
+
+| Method + path | File | Auth |
+|---------------|------|------|
+| `GET/POST/PATCH /api/order/system` | `order/system.js` | Bearer + site access |
+| `GET/POST/PATCH /api/order/products` | `order/products.js` | Bearer + site access |
+| `GET/POST/PATCH /api/order/orders` | `order/orders.js` | Bearer + site access |
+| `GET /api/order/dashboard` | `order/dashboard.js` | Bearer + site access |
+| `GET /api/order/supply` | `order/supply.js` | Bearer + site access |
+| `GET/POST /api/order/portal` | `order/portal.js` | Magic-link token |
+| `POST /api/order/checkout-deposit` | `order/checkout-deposit.js` | Bearer (staff) or portal token |
+| `POST /api/order/webhook` | `order/webhook.js` | Stripe HMAC |
+| `POST /api/order/message-ai` | `order/message-ai.js` | Bearer + site access |
+
 ### Domains
 
 | Route | File | Auth |
@@ -354,6 +370,7 @@ Full detail: [01-ARCHITECTURE](01-ARCHITECTURE.md) §11, [02-DATABASE](02-DATABA
 | **Billing** | `billing_plans`, `billing_customers`, `site_app_subscriptions`, `contra_accounts`, `contra_ledger` |
 | **Marketplace** | `catalog_categories`, `catalog_features`, `catalog_blocks`, `app_registry`, `app_schemas`, `app_presets`, `site_apps`, `service_packs` |
 | **Domains** | `domains`, `domain_orders`, `domain_pricing`, `domain_registrants`, `domain_customers`, `domain_events` |
+| **Order Engine** | `order_systems`, `order_categories`, `order_products`, `order_customers`, `order_carts`, `order_orders`, `order_items`, `order_payments`, `order_changes`, … (`order_*`) |
 | **SEO & social** | `suburb_intros`, `ig_connections` |
 | **Content** | `demo_themes`, `wiki_articles` |
 
@@ -441,7 +458,7 @@ Rewrites: [vercel.json](../vercel.json) — detail in [01-ARCHITECTURE](01-ARCHI
 |---------|---------|------|-----|
 | **Supabase** | Postgres + Auth | All `api/*`, `manage.html` | [02-DATABASE](02-DATABASE.md), [01-ARCHITECTURE](01-ARCHITECTURE.md) §10 |
 | **Vercel** | Hosting, serverless, rewrites | `vercel.json`, `api/*`, `app/*` | [01-ARCHITECTURE](01-ARCHITECTURE.md) §12–13 |
-| **Stripe** | Billing, domain checkout, buy-site | `api/billing/*`, `api/domains/checkout.js`, `api/partner/buy-site.js` | [05-PARTNERS](05-PARTNERS.md), [06-DOMAINS](06-DOMAINS.md) |
+| **Stripe** | Billing, domain checkout, buy-site, Order Engine deposits | `api/billing/*`, `api/domains/checkout.js`, `api/partner/buy-site.js`, `api/order/checkout-deposit.js`, `api/order/webhook.js` | [05-PARTNERS](05-PARTNERS.md), [06-DOMAINS](06-DOMAINS.md), [features/Order Engine](features/Order%20Engine.md) |
 | **Dreamscape** | Domain registrar API | `dreamscape.js`, `api/domains/*` | [06-DOMAINS](06-DOMAINS.md) |
 | **Cloudinary** | Image CDN + uploads | `api/cloudinary/*`, URLs in config | [10-EDITOR](10-EDITOR.md), [01-ARCHITECTURE](01-ARCHITECTURE.md) |
 | **Resend** | Transactional email | `api/leads.js`, `api/send-campaign.js` | [09-CRM](09-CRM.md) |

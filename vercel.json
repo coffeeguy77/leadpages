@@ -163,6 +163,10 @@
       "destination": "/orders.html"
     },
     {
+      "source": "/order-portal",
+      "destination": "/order-portal.html"
+    },
+    {
       "source": "/lead-notify-style",
       "destination": "/lead-notify-style-admin.html"
     },

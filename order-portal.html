@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your order — LeadPages</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f3ee; --ink:#1a1f1c; --muted:#5c675f; --line:#ddd6cb;
+  --card:#fffdf9; --accent:#1f5c3a; --accent-2:#c45c26; --warn:#8a5a00; --ok:#1f5c3a;
+  --font-display:'Fraunces',Georgia,serif; --font-ui:'DM Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:
+  radial-gradient(1200px 500px at 10% -10%, #e7efe8 0%, transparent 55%),
+  radial-gradient(900px 400px at 100% 0%, #f3e6d8 0%, transparent 50%),
+  var(--bg);
+  color:var(--ink);font-family:var(--font-ui);-webkit-font-smoothing:antialiased;}
+.wrap{width:min(720px,100%);margin:0 auto;padding:28px 18px 64px;}
+.brand{font-family:var(--font-display);font-size:28px;font-weight:600;margin:0 0 4px;}
+.sub{color:var(--muted);margin:0 0 22px;font-size:14.5px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;margin:0 0 14px;box-shadow:0 10px 30px rgba(26,31,28,.04);}
+.hrow{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.02em;}
+.b-open{background:#e7f3ea;color:var(--ok);}
+.b-soon{background:#fff1d6;color:var(--warn);}
+.b-locked{background:#f1e4e0;color:#8a2f1d;}
+.b-tbc{background:#efeaf6;color:#5b3d8a;}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+@media(max-width:560px){.meta{grid-template-columns:1fr;}}
+.meta div{background:#f7f4ef;border-radius:10px;padding:10px 12px;}
+.meta label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 4px;}
+.meta strong{font-size:15px;}
+.item{border-top:1px solid var(--line);padding:12px 0;}
+.item:first-child{border-top:0;padding-top:0;}
+.item h3{margin:0 0 4px;font-size:16px;}
+.item p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.45;}
+.totals{display:grid;gap:8px;margin-top:8px;}
+.totals .row{display:flex;justify-content:space-between;gap:10px;font-size:14.5px;}
+.totals .row.emph{font-weight:700;font-size:16px;padding-top:8px;border-top:1px dashed var(--line);}
+.note{font-size:13.5px;color:var(--muted);line-height:1.5;margin:10px 0 0;}
+.locked{border-left:4px solid #8a2f1d;padding:12px 14px;background:#fbf1ee;border-radius:10px;margin:0 0 14px;font-weight:600;}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+button,.btn{appearance:none;border:1px solid var(--accent);background:var(--accent);color:#fff;font:600 14px/1 var(--font-ui);padding:11px 14px;border-radius:10px;cursor:pointer;}
+button.ghost,.btn.ghost{background:transparent;color:var(--accent);}
+button:disabled{opacity:.55;cursor:not-allowed;}
+input,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;}
+label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--muted);}
+.edit-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+@media(max-width:560px){.edit-row{grid-template-columns:1fr;}}
+.err{color:#8a2f1d;font-size:14px;}
+.gate{max-width:420px;margin:12vh auto;padding:24px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="gate" id="gate"><p class="err">Loading your order…</p></div>
+  <div id="view" style="display:none"></div>
+</div>
+<script>
+(function(){
+  var params = new URLSearchParams(location.search);
+  var token = params.get('t') || '';
+  var wantPay = params.get('pay') === '1';
+  var paid = params.get('paid') === '1';
+  var $ = function(id){ return document.getElementById(id); };
+
+  function money(c){ if(c==null) return 'TBC'; return '$'+(Number(c)/100).toFixed(2); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);}); }
+
+  async function api(path, opts){
+    opts = opts || {};
+    var r = await fetch(path, {
+      method: opts.method || 'GET',
+      headers: opts.body ? {'content-type':'application/json'} : undefined,
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    });
+    var j = null; try{ j = await r.json(); }catch(e){ j = {}; }
+    if(!r.ok) throw new Error((j && j.error) || ('HTTP '+r.status));
+    return j;
+  }
+
+  function badge(state){
+    if(state==='locked') return '<span class="badge b-locked">ORDER LOCKED</span>';
+    if(state==='closing_soon') return '<span class="badge b-soon">CLOSING SOON</span>';
+    return '<span class="badge b-open">CHANGES OPEN</span>';
+  }
+
+  function render(data){
+    $('gate').style.display='none';
+    $('view').style.display='';
+    var o = data.order, d = data.display || {}, items = data.items || [];
+    var biz = (data.business && data.business.business_name) || 'Your order';
+    var html = '';
+    html += '<p class="sub" style="margin:0 0 6px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:11px;color:var(--accent)">'+esc(biz)+'</p>';
+    html += '<h1 class="brand">Order '+esc(o.order_number)+'</h1>';
+    html += '<p class="sub">Status: <strong>'+esc(o.status.replace(/_/g,' '))+'</strong></p>';
+    if(paid) html += '<div class="card" style="border-color:#b7d7c0;background:#f3faf5"><strong>Deposit received.</strong> Thank you — your order is confirmed.</div>';
+    if(o.editing_state==='locked') html += '<div class="locked">'+esc(d.locked_message||'ORDER LOCKED')+'</div>';
+    else html += '<div class="hrow" style="margin:0 0 12px">'+badge(o.editing_state)+'<span class="note" style="margin:0">Changes allowed until <strong>'+esc(o.effective_cutoff_at?new Date(o.effective_cutoff_at).toLocaleString():'—')+'</strong></span></div>';
+    if(o.cutoff_reason) html += '<p class="note">'+esc(o.cutoff_reason)+'</p>';
+
+    html += '<div class="card"><div class="meta">';
+    html += '<div><label>Pickup / delivery</label><strong>'+esc(o.fulfilment_type)+'</strong></div>';
+    html += '<div><label>Date</label><strong>'+esc(o.pickup_date||'—')+(o.pickup_time?(' · '+esc(o.pickup_time)):'')+'</strong></div>';
+    html += '<div><label>Customer</label><strong>'+esc(o.customer_name)+'</strong></div>';
+    html += '<div><label>Price status</label><strong>'+(o.has_unknown_prices?'<span class="badge b-tbc">Final price TBC</span>':esc(o.price_status))+'</strong></div>';
+    html += '</div></div>';
+
+    html += '<div class="card"><h2 style="margin:0 0 10px;font-family:var(--font-display);font-size:20px">Items</h2>';
+    items.forEach(function(it, idx){
+      html += '<div class="item" data-i="'+idx+'"><h3>'+esc(it.product_name)+'</h3>';
+      html += '<p>Qty '+esc(it.quantity)+(it.requested_weight_kg!=null?(' · approx '+esc(it.requested_weight_kg)+' kg'):'')+(it.actual_weight_kg!=null?(' · actual '+esc(it.actual_weight_kg)+' kg'):'')+'</p>';
+      var price = it.line_final_cents!=null?money(it.line_final_cents):(it.price_status==='tbc'||it.price_status==='quote_required'?'Price TBC':(it.line_known_cents!=null?money(it.line_known_cents):'—'));
+      html += '<p style="margin-top:4px"><strong>'+price+'</strong>'+(it.price_status==='estimated'?' <span class="badge b-tbc">Est.</span>':'')+'</p>';
+      if(data.can_edit){
+        html += '<div class="edit-row">';
+        html += '<div><label class="f">Quantity</label><input type="number" min="0" step="0.01" class="ed-qty" data-id="'+esc(it.id)+'" value="'+esc(it.quantity)+'"></div>';
+        html += '<div><label class="f">Approx. weight (kg)</label><input type="number" min="0" step="0.001" class="ed-w" data-id="'+esc(it.id)+'" value="'+(it.requested_weight_kg!=null?esc(it.requested_weight_kg):'')+'"></div>';
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+
+    html += '<div class="card"><h2 style="margin:0 0 10px;font-family:var(--font-display);font-size:20px">Payment</h2><div class="totals">';
+    html += '<div class="row"><span>Known subtotal</span><span>'+esc(d.known_subtotal||money(o.known_subtotal_cents))+'</span></div>';
+    if(o.has_unknown_prices) html += '<div class="row"><span>Other items</span><span>Price TBC after preparation</span></div>';
+    html += '<div class="row"><span>Deposit required</span><span>'+esc(d.deposit_required||money(o.deposit_required_cents))+'</span></div>';
+    html += '<div class="row"><span>Deposit paid</span><span>'+esc(d.deposit_paid||money(o.deposit_paid_cents))+'</span></div>';
+    html += '<div class="row emph"><span>Balance</span><span>'+esc(d.balance||'TBC')+'</span></div>';
+    html += '</div>';
+    html += '<p class="note">Deposit today secures your order. Final order price will be confirmed after your items are prepared/weighed. Balance settlement: <strong>'+esc((o.balance_settlement||'').replace(/_/g,' '))+'</strong>.</p>';
+    html += '<div class="actions">';
+    if((o.deposit_paid_cents||0) < (o.deposit_required_cents||0)){
+      html += '<button type="button" id="payBtn">PAY '+esc(d.deposit_required||money(o.deposit_required_cents))+' DEPOSIT &amp; CONFIRM ORDER</button>';
+    }
+    if(data.can_edit) html += '<button type="button" class="ghost" id="saveBtn">Save changes</button>';
+    html += '</div></div>';
+
+    if(o.customer_notes) html += '<div class="card"><h2 style="margin:0 0 8px;font-size:16px">Notes</h2><p class="note" style="margin:0">'+esc(o.customer_notes)+'</p></div>';
+
+    $('view').innerHTML = html;
+
+    var payBtn = $('payBtn');
+    if(payBtn) payBtn.onclick = async function(){
+      payBtn.disabled = true; payBtn.textContent = 'Opening secure checkout…';
+      try{
+        var out = await api('/api/order/checkout-deposit', { method:'POST', body:{ t: token } });
+        if(out.url) location.href = out.url; else throw new Error('No checkout URL');
+      }catch(e){ payBtn.disabled=false; payBtn.textContent='Try again'; alert(e.message||e); }
+    };
+
+    var saveBtn = $('saveBtn');
+    if(saveBtn) saveBtn.onclick = async function(){
+      saveBtn.disabled = true;
+      var changes = [];
+      document.querySelectorAll('.ed-qty').forEach(function(inp){
+        var id = inp.getAttribute('data-id');
+        var w = document.querySelector('.ed-w[data-id="'+id+'"]');
+        changes.push({ order_item_id:id, quantity: parseFloat(inp.value), requested_weight_kg: w && w.value!=='' ? parseFloat(w.value) : null });
+      });
+      try{
+        await api('/api/order/portal', { method:'POST', body:{ t: token, changes: changes } });
+        location.reload();
+      }catch(e){ saveBtn.disabled=false; alert(e.message||e); }
+    };
+
+    if(wantPay && payBtn) payBtn.click();
+  }
+
+  if(!token){
+    $('gate').innerHTML = '<h1 class="brand">Order link required</h1><p class="sub">Open the secure link from your SMS or email to view this order.</p>';
+    return;
+  }
+  api('/api/order/portal?t='+encodeURIComponent(token)).then(render).catch(function(e){
+    $('gate').innerHTML = '<h1 class="brand">Unable to open order</h1><p class="err">'+esc(e.message||e)+'</p><p class="sub">Links expire for security. Ask the store to resend your order link.</p>';
+  });
+})();
+</script>
+</body>
+</html>

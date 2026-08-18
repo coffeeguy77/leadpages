@@ -1,0 +1,303 @@
+'use strict';
+
+const { readBody, json, methodOk } = require('../../lib/order/http');
+const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/order/auth');
+const { getAdmin } = require('../../lib/order/supabase');
+const {
+  createStaffOrder,
+  lockOrdersForDate,
+  finaliseItemPrice,
+  recalculateOrder
+} = require('../../lib/order/service');
+const { writeAudit } = require('../../lib/order/audit');
+const { createAccessToken } = require('../../lib/order/tokens');
+const { formatAud } = require('../../lib/order/money');
+
+const PUBLIC_BASE = (process.env.PUBLIC_BASE_URL || 'https://leadpages.com.au').replace(/\/+$/, '');
+
+module.exports = async function (req, res) {
+  try {
+    if (!methodOk(req, res, ['GET', 'POST', 'PATCH'])) return;
+    const user = await requireUser(req);
+    if (!user) return json(res, 401, { error: 'auth' });
+    const body = req.method === 'GET' ? {} : await readBody(req);
+    const siteId = (req.query && req.query.site_id) || body.site_id;
+    const access = await assertSiteAccess(user, siteId);
+    if (!access.ok) return json(res, access.code, { error: access.error });
+    const system = await ensureOrderSystem(siteId);
+    const admin = getAdmin();
+    const actor = { user_id: user.id, label: user.email };
+
+    if (req.method === 'GET') {
+      const id = req.query && req.query.id;
+      if (id) {
+        const { data: order, error } = await admin
+          .from('order_orders')
+          .select('*')
+          .eq('id', id)
+          .eq('site_id', siteId)
+          .maybeSingle();
+        if (error) throw error;
+        if (!order) return json(res, 404, { error: 'not_found' });
+        const { data: items } = await admin
+          .from('order_items')
+          .select('*')
+          .eq('order_id', id)
+          .order('sort_order');
+        const { data: payments } = await admin
+          .from('order_payments')
+          .select('*')
+          .eq('order_id', id)
+          .order('created_at', { ascending: false });
+        const { data: changes } = await admin
+          .from('order_changes')
+          .select('*')
+          .eq('order_id', id)
+          .order('created_at', { ascending: false })
+          .limit(100);
+        const { data: messages } = await admin
+          .from('order_messages')
+          .select('*')
+          .eq('order_id', id)
+          .order('created_at', { ascending: false })
+          .limit(50);
+        return json(res, 200, {
+          order: order,
+          items: items || [],
+          payments: payments || [],
+          changes: changes || [],
+          messages: messages || [],
+          display: {
+            known_subtotal: formatAud(order.known_subtotal_cents),
+            deposit_required: formatAud(order.deposit_required_cents),
+            deposit_paid: formatAud(order.deposit_paid_cents),
+            balance: order.balance_cents != null ? formatAud(order.balance_cents) : 'TBC'
+          }
+        });
+      }
+
+      let q = admin
+        .from('order_orders')
+        .select('*')
+        .eq('order_system_id', system.id)
+        .order('created_at', { ascending: false })
+        .limit(Math.min(parseInt((req.query && req.query.limit) || '100', 10) || 100, 300));
+      if (req.query && req.query.status) q = q.eq('status', req.query.status);
+      if (req.query && req.query.pickup_date) q = q.eq('pickup_date', req.query.pickup_date);
+      if (req.query && req.query.price_tbc === '1') q = q.eq('has_unknown_prices', true);
+      if (req.query && req.query.q) {
+        const s = '%' + String(req.query.q).slice(0, 80) + '%';
+        q = q.or(
+          'order_number.ilike.' + s + ',customer_name.ilike.' + s + ',customer_phone.ilike.' + s + ',customer_email.ilike.' + s
+        );
+      }
+      const { data, error } = await q;
+      if (error) throw error;
+      return json(res, 200, { orders: data || [] });
+    }
+
+    if (req.method === 'POST') {
+      const action = body.action || 'create';
+
+      if (action === 'create') {
+        const result = await createStaffOrder({
+          system: system,
+          site: access.site,
+          actor: actor,
+          body: body
+        });
+        return json(res, 200, {
+          order: result.order,
+          items: result.items,
+          portal_url: PUBLIC_BASE + '/order-portal?t=' + encodeURIComponent(result.portal_token),
+          deposit_url: result.deposit_token
+            ? PUBLIC_BASE + '/order-portal?t=' + encodeURIComponent(result.deposit_token) + '&pay=1'
+            : null
+        });
+      }
+
+      if (action === 'lock_date') {
+        if (!body.pickup_date) return json(res, 400, { error: 'pickup_date_required' });
+        if (!body.confirm) return json(res, 400, { error: 'confirm_required' });
+        const out = await lockOrdersForDate(system, access.site, body.pickup_date, actor);
+        return json(res, 200, out);
+      }
+
+      if (action === 'lock_order') {
+        if (!body.order_id) return json(res, 400, { error: 'order_id_required' });
+        const now = new Date().toISOString();
+        const { data, error } = await admin
+          .from('order_orders')
+          .update({
+            editing_state: 'locked',
+            status: 'locked',
+            locked_at: now,
+            locked_by: user.id,
+            lock_source: 'admin',
+            updated_at: now
+          })
+          .eq('id', body.order_id)
+          .eq('site_id', siteId)
+          .select('*')
+          .single();
+        if (error) throw error;
+        await writeAudit({
+          order_system_id: system.id,
+          site_id: siteId,
+          order_id: data.id,
+          event_type: 'order_locked',
+          actor_user_id: user.id,
+          source: 'admin',
+          payload: {}
+        });
+        return json(res, 200, { order: data });
+      }
+
+      if (action === 'set_status') {
+        if (!body.order_id || !body.status) return json(res, 400, { error: 'order_id_and_status_required' });
+        const patch = { status: body.status, updated_at: new Date().toISOString() };
+        if (body.status === 'ready') patch.ready_at = patch.updated_at;
+        if (body.status === 'collected') patch.collected_at = patch.updated_at;
+        if (body.status === 'completed') patch.completed_at = patch.updated_at;
+        if (body.status === 'cancelled') patch.cancelled_at = patch.updated_at;
+        const { data, error } = await admin
+          .from('order_orders')
+          .update(patch)
+          .eq('id', body.order_id)
+          .eq('site_id', siteId)
+          .select('*')
+          .single();
+        if (error) throw error;
+        await writeAudit({
+          order_system_id: system.id,
+          site_id: siteId,
+          order_id: data.id,
+          event_type: 'status_changed',
+          actor_user_id: user.id,
+          source: 'admin',
+          payload: { status: body.status }
+        });
+        return json(res, 200, { order: data });
+      }
+
+      if (action === 'finalise_item') {
+        if (!body.order_item_id) return json(res, 400, { error: 'order_item_id_required' });
+        const out = await finaliseItemPrice(
+          body.order_item_id,
+          body.actual_weight_kg,
+          body.rate_cents != null ? body.rate_cents : body.unit_price_cents,
+          actor
+        );
+        return json(res, 200, out);
+      }
+
+      if (action === 'recalculate') {
+        if (!body.order_id) return json(res, 400, { error: 'order_id_required' });
+        const out = await recalculateOrder(body.order_id);
+        return json(res, 200, out);
+      }
+
+      if (action === 'send_deposit_link') {
+        if (!body.order_id) return json(res, 400, { error: 'order_id_required' });
+        const { data: order } = await admin
+          .from('order_orders')
+          .select('*')
+          .eq('id', body.order_id)
+          .eq('site_id', siteId)
+          .maybeSingle();
+        if (!order) return json(res, 404, { error: 'not_found' });
+        const tok = await createAccessToken(order.id, siteId, 'deposit', 72);
+        const url = PUBLIC_BASE + '/order-portal?t=' + encodeURIComponent(tok.token) + '&pay=1';
+        // Queue message record (actual SMS/email send is adapter-based; email via Resend when configured)
+        const dest = order.customer_email || order.customer_phone;
+        if (dest) {
+          const channel = order.customer_email ? 'email' : 'sms';
+          await admin.from('order_messages').insert({
+            order_system_id: system.id,
+            site_id: siteId,
+            order_id: order.id,
+            customer_id: order.customer_id,
+            channel: channel,
+            event_type: 'deposit_required',
+            destination: dest,
+            subject: 'Deposit for order ' + order.order_number,
+            body:
+              'Hi ' +
+              order.customer_name +
+              ', pay your deposit of ' +
+              formatAud(order.deposit_required_cents) +
+              ' for order ' +
+              order.order_number +
+              ': ' +
+              url,
+            status: 'queued'
+          });
+          if (channel === 'email' && process.env.RESEND_API_KEY) {
+            try {
+              await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  Authorization: 'Bearer ' + process.env.RESEND_API_KEY,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  from: process.env.LEADS_FROM || 'LeadPages <noreply@leadpages.com.au>',
+                  to: [order.customer_email],
+                  subject: 'Deposit for order ' + order.order_number,
+                  text:
+                    'Hi ' +
+                    order.customer_name +
+                    ',\n\nPlease pay your deposit of ' +
+                    formatAud(order.deposit_required_cents) +
+                    ' for order ' +
+                    order.order_number +
+                    '.\n\n' +
+                    url +
+                    '\n'
+                })
+              });
+            } catch (_e) {}
+          }
+        }
+        await writeAudit({
+          order_system_id: system.id,
+          site_id: siteId,
+          order_id: order.id,
+          event_type: 'deposit_link_sent',
+          actor_user_id: user.id,
+          source: 'admin',
+          payload: { url: url }
+        });
+        return json(res, 200, { deposit_url: url });
+      }
+
+      return json(res, 400, { error: 'unknown_action' });
+    }
+
+    if (req.method === 'PATCH') {
+      const id = body.id || body.order_id;
+      if (!id) return json(res, 400, { error: 'id_required' });
+      const patch = { updated_at: new Date().toISOString() };
+      [
+        'customer_name', 'customer_phone', 'customer_email', 'fulfilment_type',
+        'pickup_date', 'pickup_time', 'pickup_window_start', 'pickup_window_end', 'pickup_location',
+        'delivery_address', 'delivery_fee_cents', 'customer_notes', 'internal_notes'
+      ].forEach(function (k) {
+        if (body[k] !== undefined) patch[k] = body[k];
+      });
+      const { data, error } = await admin
+        .from('order_orders')
+        .update(patch)
+        .eq('id', id)
+        .eq('site_id', siteId)
+        .select('*')
+        .single();
+      if (error) throw error;
+      return json(res, 200, { order: data });
+    }
+  } catch (e) {
+    console.error('order/orders', e);
+    const code = e && e.code === 400 ? 400 : e && e.code === 404 ? 404 : 500;
+    return json(res, code, { error: String((e && e.message) || e) });
+  }
+};

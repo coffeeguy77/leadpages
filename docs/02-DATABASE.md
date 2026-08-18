@@ -114,6 +114,8 @@ erDiagram
 |------|-------|-----|-----|
 | [db/suburb_intros.sql](../db/suburb_intros.sql) | `suburb_intros` | `(site, suburb)` composite | Enabled, no policies → service role only |
 | [db/instagram_schema.sql](../db/instagram_schema.sql) | `ig_connections` | `slug` (text) | Enabled, no policies → service role only |
+| [db/order_engine_schema.sql](../db/order_engine_schema.sql) | `order_*` (systems, products, carts, orders, …) | UUID PKs | See `order_engine_rls.sql` |
+| [db/order_engine_rls.sql](../db/order_engine_rls.sql) | Order Engine policies | — | Site-visible SELECT; service-role writes |
 
 ### Not versioned (applied in Supabase console)
 
@@ -790,6 +792,35 @@ Stored in `events` table keyed by `site_id`.
 | `domain_events` | Domain lifecycle audit log |
 
 **API:** `domains/webhook.js` only.
+
+---
+
+## Order Engine Tables
+
+Namespace `order_*` — distinct from `domain_orders` / `partner_quotes` / `quote_systems`.  
+Migrations: `db/order_engine_schema.sql`, `db/order_engine_rls.sql`.  
+Feature manual: [features/Order Engine](features/Order%20Engine.md).
+
+| Table | Purpose |
+|-------|---------|
+| `order_systems` | Per-site Order Engine settings + presets (money in cents; timezone on system) |
+| `order_categories` | Product categories; optional payment-rule overrides |
+| `order_products` | Catalogue: pricing method, stock method, cutoff, lead time, images optional |
+| `order_product_questions` | Per-product configuration questions |
+| `order_product_relationships` | Cross-sell / required add-on / alternatives |
+| `order_customers` | Lightweight ordering CRM |
+| `order_carts` / `order_cart_items` | Persisted carts |
+| `order_orders` / `order_items` | Source of truth; line items snapshot product state |
+| `order_item_answers` | Answers stored on the order item |
+| `order_payments` | Deposits / balance payments (Stripe session ids — no PANs) |
+| `order_changes` / `order_change_requests` | Audit trail + optional approval workflow |
+| `order_access_tokens` | Hashed customer magic links |
+| `order_message_templates` / `order_messages` | Templates + outbound messages |
+| `order_abandoned_cart_events` | Recovery tracking |
+| `order_fulfilment_windows` / `order_date_locks` | Pickup windows + date locks |
+| `order_audit_events` | Important action log |
+
+**API:** `api/order/*` · **HTML:** `orders.html`, `order-portal.html`
 
 ---
 
