@@ -159,6 +159,10 @@
       "destination": "/brain-admin.html"
     },
     {
+      "source": "/orders",
+      "destination": "/orders.html"
+    },
+    {
       "source": "/lead-notify-style",
       "destination": "/lead-notify-style-admin.html"
     },

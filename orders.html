@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orders — LeadPages</title>
+<link rel="icon" type="image/x-icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<link rel="shortcut icon" href="https://res.cloudinary.com/dzx6x1hou/image/upload/v1782912405/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180.png">
+<meta name="theme-color" content="#12151a">
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/lp-themes.css">
+<link rel="stylesheet" href="/assets/lp-admin-responsive.css">
+<link rel="stylesheet" href="/assets/lp-super-admin.css">
+<script src="/assets/lp-workspace-appearance.js"></script>
+<link rel="stylesheet" href="/assets/lp-logo.css">
+<script src="/assets/lp-logo.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+:root{
+  --font-display:'Fraunces',Georgia,serif;
+  --font-ui:'Inter',system-ui,sans-serif;
+  color-scheme:light;
+}
+html[data-theme="command-dark"],
+html[data-theme="neon-pink"],
+html[data-theme="electric-blue"]{color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-ui)}
+body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:antialiased}
+.hide{display:none!important}
+.gate{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:24px}
+.gate-card{
+  width:min(420px,100%);padding:28px 26px;border-radius:16px;
+  background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);
+}
+.gate-card h1{font-family:var(--font-display);font-weight:600;font-size:26px;margin:0 0 6px}
+.gate-card p{margin:0 0 16px;color:var(--ink-soft);font-size:14px;line-height:1.5}
+.gate-card label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+.gate-card input{
+  width:100%;margin:0 0 12px;padding:10px 12px;border-radius:10px;
+  border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit;
+}
+.gate-card .msg{min-height:1.2em;font-size:13px;color:var(--danger,#b91c1c);margin:0 0 10px}
+.hub{display:none;flex:1;min-height:0}
+.hub.on{display:flex}
+.side{
+  width:248px;flex:none;display:flex;flex-direction:column;
+  border-right:1px solid var(--line);background:var(--bg-soft,var(--surface));
+  padding:16px 12px 18px;
+}
+.side-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 14px;border-bottom:1px solid var(--line)}
+.side-brand .mark{
+  width:34px;height:34px;border-radius:10px;overflow:hidden;flex:none;
+  background:color-mix(in srgb,var(--accent) 16%,transparent);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:var(--accent);font-size:14px;
+}
+.side-brand .eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 2px}
+.side-brand h1{font-family:var(--font-display);font-size:18px;font-weight:600;margin:0;line-height:1.15}
+.nav{display:flex;flex-direction:column;gap:4px;padding:14px 0;flex:1;overflow:auto}
+.nav button{
+  appearance:none;width:100%;text-align:left;border:1px solid transparent;
+  background:transparent;color:var(--ink-soft);font:600 13.5px/1.2 var(--font-ui);
+  padding:11px 12px;border-radius:10px;cursor:pointer;
+}
+.nav button:hover{background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--ink);border-color:color-mix(in srgb,var(--accent) 18%,transparent)}
+.nav button.on{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--ink);border-color:color-mix(in srgb,var(--accent) 28%,transparent)}
+.side-foot{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.who{font-size:12px;color:var(--ink-faint);padding:0 8px;word-break:break-all}
+.side-actions{display:flex;flex-wrap:wrap;gap:6px;padding:0 4px}
+.btn{
+  appearance:none;border:1px solid var(--accent);background:transparent;color:var(--accent);
+  font:600 12.5px/1 var(--font-ui);padding:9px 12px;border-radius:9px;cursor:pointer;
+  text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+}
+.btn:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.btn.solid{background:var(--accent);color:var(--accent-text,#fff);border-color:var(--accent)}
+.btn.ghost{border-color:var(--line-strong);color:var(--ink-soft)}
+.btn.ghost:hover{color:var(--ink);border-color:var(--accent)}
+.btn.wide{width:100%;justify-content:center}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.danger{border-color:#b91c1c;color:#b91c1c}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
+.top{
+  flex:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface);
+}
+.top h2{font-family:var(--font-display);font-size:20px;font-weight:600;margin:0;margin-right:auto}
+.top select{
+  min-width:200px;max-width:320px;padding:8px 10px;border-radius:9px;
+  border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit;
+}
+.menu-toggle{display:none}
+.content{flex:1;min-height:0;overflow:auto;padding:18px 16px 40px}
+.view{display:none}
+.view.on{display:block}
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.kpi{
+  flex:1 1 118px;min-width:110px;max-width:200px;padding:12px 14px;border-radius:14px;
+  border:1px solid var(--line);background:var(--surface);
+}
+.kpi .l{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 5px}
+.kpi .v{font-family:var(--font-display);font-size:20px;font-weight:600;margin:0;letter-spacing:-.02em}
+.card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:16px}
+.card h3{margin:0 0 4px;font-family:var(--font-display);font-size:1.15rem}
+.card .sub{margin:0 0 14px;color:var(--ink-soft);font-size:13px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
+.toolbar input,.toolbar select,.field input,.field select,.field textarea{
+  padding:9px 11px;border-radius:10px;border:1px solid var(--line-strong);
+  background:var(--input-bg,transparent);color:var(--ink);font:inherit;
+}
+.toolbar input{min-width:180px;flex:1}
+.field{margin:0 0 12px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+.field input,.field select,.field textarea{width:100%}
+.field textarea{min-height:72px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 16px}
+@media(max-width:800px){.grid2,.grid3{grid-template-columns:1fr}}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+table.oe{width:100%;border-collapse:collapse;font-size:13px}
+table.oe th,table.oe td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.oe th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);background:color-mix(in srgb,var(--ink) 3%,transparent)}
+table.oe tr:last-child td{border-bottom:0}
+table.oe tr.clickable{cursor:pointer}
+table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+.badge{
+  display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;
+  font-size:11px;font-weight:700;white-space:nowrap;
+}
+.badge.muted{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink-soft)}
+.badge.ok{background:color-mix(in srgb,#16a34a 16%,transparent);color:#15803d}
+.badge.warn{background:color-mix(in srgb,#d97706 18%,transparent);color:#b45309}
+.badge.bad{background:color-mix(in srgb,#dc2626 16%,transparent);color:#b91c1c}
+.badge.info{background:color-mix(in srgb,#2563eb 16%,transparent);color:#1d4ed8}
+.badge.purple{background:color-mix(in srgb,#7c3aed 16%,transparent);color:#6d28d9}
+.empty{padding:28px 12px;text-align:center;color:var(--ink-faint);font-size:14px}
+.notice{font-size:12.5px;color:var(--ink-soft);line-height:1.45;margin:0 0 12px}
+.line-row{
+  display:grid;grid-template-columns:2fr 70px 90px 1fr auto;gap:8px;align-items:end;
+  padding:10px 0;border-bottom:1px solid var(--line);
+}
+@media(max-width:700px){.line-row{grid-template-columns:1fr 1fr}}
+.modal-back{
+  position:fixed;inset:0;background:rgba(18,21,26,.48);z-index:80;
+  display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto;
+}
+.modal{
+  width:min(720px,100%);margin:12px auto 40px;border-radius:16px;
+  background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);
+}
+.modal-head{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:14px 16px;border-bottom:1px solid var(--line);
+}
+.modal-head h3{margin:0;font-family:var(--font-display);font-size:1.2rem;margin-right:auto}
+.modal-body{padding:16px;max-height:70vh;overflow:auto}
+.modal-foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.item-block{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.item-block .meta{font-size:12px;color:var(--ink-soft);margin:4px 0 8px}
+.toast-host{position:fixed;right:16px;bottom:16px;z-index:120;display:flex;flex-direction:column;gap:8px;max-width:min(360px,calc(100vw - 32px))}
+.toast{
+  padding:12px 14px;border-radius:12px;border:1px solid var(--line);
+  background:var(--surface);box-shadow:var(--shadow);font-size:13px;line-height:1.4;
+  animation:toastIn .18s ease;
+}
+.toast.ok{border-color:color-mix(in srgb,#16a34a 40%,var(--line))}
+.toast.err{border-color:color-mix(in srgb,#dc2626 40%,var(--line))}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.ai-opt{
+  border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.ai-opt textarea{width:100%;min-height:64px;padding:8px 10px;border-radius:8px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit}
+.actions-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+@media (max-width:900px){
+  .hub{flex-direction:column}
+  .side{width:100%;border-right:0;border-bottom:1px solid var(--line);padding:10px 12px}
+  .side.collapsed .nav,.side.collapsed .side-foot{display:none}
+  .menu-toggle{display:inline-flex}
+  .nav{flex-direction:row;flex-wrap:wrap;padding:10px 0}
+  .nav button{width:auto;flex:1 1 calc(50% - 4px)}
+  .kpi{max-width:none}
+}
+</style>
+</head>
+<body>
+<div id="gate" class="gate">
+  <div class="gate-card" id="gate-login">
+    <h1>Order Engine</h1>
+    <p>Sign in to manage orders for your sites. Super-admins, site owners, and partners can access.</p>
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="username">
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password">
+    <p class="msg" id="gate-msg"></p>
+    <button class="btn solid wide" type="button" id="gate-go">Sign in</button>
+  </div>
+  <div class="gate-card hide" id="gate-denied">
+    <h1>Access denied</h1>
+    <p>This app is for super-admins, site owners, and partners with assigned sites.</p>
+    <button class="btn ghost wide" type="button" id="gate-out">Sign out</button>
+  </div>
+</div>
+
+<div id="hub" class="hub">
+  <aside class="side" id="side">
+    <div class="side-brand">
+      <div class="mark" aria-hidden="true">OE</div>
+      <div>
+        <p class="eyebrow">LeadPages</p>
+        <h1>Orders</h1>
+      </div>
+    </div>
+    <nav class="nav" id="nav" aria-label="Order views"></nav>
+    <div class="side-foot">
+      <div class="who" id="who"></div>
+      <div class="side-actions">
+        <button class="btn ghost" type="button" id="btn-signout">Sign out</button>
+        <a class="btn ghost" href="/command">Ops</a>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="top">
+      <button class="btn ghost menu-toggle" type="button" id="btn-menu" aria-label="Toggle menu">Menu</button>
+      <h2 id="panel-title">Dashboard</h2>
+      <label class="hide" for="site-select">Site</label>
+      <select id="site-select" title="Site"></select>
+      <button class="btn ghost" type="button" id="btn-refresh">Refresh</button>
+    </div>
+    <div class="content">
+      <!-- Dashboard -->
+      <section class="view on" id="view-dashboard" data-view="dashboard">
+        <p class="notice" id="dash-notice">Select a site to load KPIs.</p>
+        <div class="kpis" id="dash-kpis"></div>
+        <div class="card">
+          <h3>Recent orders</h3>
+          <p class="sub">Latest activity for this site.</p>
+          <div class="table-wrap">
+            <table class="oe"><thead><tr>
+              <th>Order</th><th>Customer</th><th>Pickup</th><th>Status</th><th>Known</th><th></th>
+            </tr></thead><tbody id="dash-recent"></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Orders list -->
+      <section class="view" id="view-orders" data-view="orders">
+        <div class="card">
+          <h3>Orders</h3>
+          <p class="sub">Search, filter, and open order details.</p>
+          <div class="toolbar">
+            <input id="orders-q" type="search" placeholder="Search name, phone, order #…">
+            <select id="orders-status">
+              <option value="">All statuses</option>
+              <option value="awaiting_deposit">Awaiting deposit</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="changes_open">Changes open</option>
+              <option value="locked">Locked</option>
+              <option value="in_preparation">In preparation</option>
+              <option value="ready">Ready</option>
+              <option value="collected">Collected</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="draft">Draft</option>
+            </select>
+            <button class="btn solid" type="button" id="orders-search">Search</button>
+          </div>
+          <div class="table-wrap">
+            <table class="oe"><thead><tr>
+              <th>Order #</th><th>Customer</th><th>Phone</th><th>Pickup</th><th>Known</th><th>Deposit</th><th>Status</th><th>Price</th><th></th>
+            </tr></thead><tbody id="orders-tbody"></tbody></table>
+          </div>
+          <p class="empty hide" id="orders-empty">No orders found.</p>
+        </div>
+      </section>
+
+      <!-- New order -->
+      <section class="view" id="view-new" data-view="new">
+        <div class="card">
+          <h3>New order</h3>
+          <p class="sub">Create a staff order for the selected site.</p>
+          <form id="new-order-form">
+            <div class="grid2">
+              <div class="field"><label for="no-name">Customer name *</label><input id="no-name" required></div>
+              <div class="field"><label for="no-phone">Phone</label><input id="no-phone" type="tel"></div>
+              <div class="field"><label for="no-email">Email</label><input id="no-email" type="email"></div>
+              <div class="field"><label for="no-pickup">Pickup date</label><input id="no-pickup" type="date"></div>
+            </div>
+            <div class="field"><label for="no-notes">Notes</label><textarea id="no-notes"></textarea></div>
+            <h3 style="margin:8px 0 10px;font-family:var(--font-display);font-size:1.05rem">Line items</h3>
+            <div id="no-lines"></div>
+            <div class="actions-row">
+              <button class="btn ghost" type="button" id="no-add-line">Add line</button>
+              <button class="btn solid" type="submit" id="no-submit">Create order</button>
+            </div>
+            <p class="notice" id="no-msg"></p>
+          </form>
+        </div>
+      </section>
+
+      <!-- Products -->
+      <section class="view" id="view-products" data-view="products">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+            <div>
+              <h3>Products</h3>
+              <p class="sub" style="margin:0">Catalogue for this order system.</p>
+            </div>
+            <button class="btn solid" type="button" id="prod-new">New product</button>
+          </div>
+          <div class="table-wrap">
+            <table class="oe"><thead><tr>
+              <th>Name</th><th>Pricing</th><th>Stock</th><th>Cutoff</th><th>Active</th><th></th>
+            </tr></thead><tbody id="prod-tbody"></tbody></table>
+          </div>
+          <p class="empty hide" id="prod-empty">No products yet — apply the butcher preset in Settings or create one.</p>
+        </div>
+        <div class="card hide" id="prod-form-card">
+          <h3 id="prod-form-title">Product</h3>
+          <form id="prod-form">
+            <input type="hidden" id="prod-id">
+            <div class="grid2">
+              <div class="field"><label for="prod-name">Name *</label><input id="prod-name" required></div>
+              <div class="field"><label for="prod-image">Image URL</label><input id="prod-image" type="url" placeholder="https://…"></div>
+              <div class="field"><label for="prod-pricing">Pricing method</label>
+                <select id="prod-pricing">
+                  <option value="fixed">Fixed</option>
+                  <option value="per_weight">Per kg</option>
+                  <option value="price_tbc">Price TBC</option>
+                </select>
+              </div>
+              <div class="field"><label for="prod-price">Price (cents)</label><input id="prod-price" type="number" min="0" step="1"></div>
+              <div class="field"><label for="prod-perkg">Price per kg (cents)</label><input id="prod-perkg" type="number" min="0" step="1"></div>
+              <div class="field"><label for="prod-stock">Stock method</label>
+                <select id="prod-stock">
+                  <option value="unlimited">Unlimited</option>
+                  <option value="made_to_order">Made to order</option>
+                  <option value="tracked">Tracked</option>
+                  <option value="allocation">Allocation</option>
+                </select>
+              </div>
+              <div class="field"><label for="prod-cutoff-mode">Cutoff mode</label>
+                <select id="prod-cutoff-mode">
+                  <option value="store_default">Store default</option>
+                  <option value="days_before">Days before</option>
+                  <option value="hours_before">Hours before</option>
+                  <option value="weekday_time">Weekday + time</option>
+                  <option value="none">None</option>
+                </select>
+              </div>
+              <div class="field"><label for="prod-cutoff-value">Cutoff value</label><input id="prod-cutoff-value" type="number" min="0" step="1"></div>
+              <div class="field"><label for="prod-lead-mode">Lead time mode</label>
+                <select id="prod-lead-mode">
+                  <option value="none">None</option>
+                  <option value="hours">Hours</option>
+                  <option value="days">Days</option>
+                </select>
+              </div>
+              <div class="field"><label for="prod-lead-value">Lead time value</label><input id="prod-lead-value" type="number" min="0" step="1" value="0"></div>
+              <div class="field"><label for="prod-active">Active</label>
+                <select id="prod-active"><option value="1">Yes</option><option value="0">No</option></select>
+              </div>
+              <div class="field"><label for="prod-unit">Unit label</label><input id="prod-unit" placeholder="steak, kg, each…"></div>
+            </div>
+            <div class="actions-row">
+              <button class="btn solid" type="submit" id="prod-save">Save product</button>
+              <button class="btn ghost" type="button" id="prod-cancel">Cancel</button>
+            </div>
+            <p class="notice" id="prod-msg"></p>
+          </form>
+        </div>
+      </section>
+
+      <!-- Supply -->
+      <section class="view" id="view-supply" data-view="supply">
+        <div class="card">
+          <h3>Supply</h3>
+          <p class="sub">Aggregated product demand for a pickup date.</p>
+          <div class="toolbar">
+            <input id="supply-date" type="date">
+            <button class="btn solid" type="button" id="supply-load">Load supply</button>
+          </div>
+          <div class="kpis" id="supply-kpis"></div>
+          <div class="table-wrap">
+            <table class="oe"><thead><tr>
+              <th>Product</th><th>Orders</th><th>Qty</th><th>Req. kg</th><th>Actual kg</th>
+            </tr></thead><tbody id="supply-tbody"></tbody></table>
+          </div>
+          <p class="empty hide" id="supply-empty">No supply lines for this date.</p>
+        </div>
+      </section>
+
+      <!-- Messaging -->
+      <section class="view" id="view-messaging" data-view="messaging">
+        <div class="card">
+          <h3>Messaging</h3>
+          <p class="sub">Generate AI draft options. Templates can also be seeded via the butcher preset in Settings. Nothing is sent automatically.</p>
+          <div class="grid2">
+            <div class="field"><label for="msg-category">Category</label>
+              <select id="msg-category">
+                <option value="abandoned_cart">Abandoned cart</option>
+                <option value="deposit_required">Deposit required</option>
+                <option value="order_locked">Order locked</option>
+                <option value="order_ready">Order ready</option>
+                <option value="pickup_reminder">Pickup reminder</option>
+              </select>
+            </div>
+            <div class="field"><label for="msg-channel">Channel</label>
+              <select id="msg-channel"><option value="sms">SMS</option><option value="email">Email</option></select>
+            </div>
+            <div class="field"><label for="msg-topic">Topic</label><input id="msg-topic" value="General"></div>
+            <div class="field"><label for="msg-tone">Tone</label><input id="msg-tone" value="Friendly"></div>
+          </div>
+          <button class="btn solid" type="button" id="msg-generate">Generate with AI</button>
+          <p class="notice" id="msg-note"></p>
+          <div id="msg-options"></div>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section class="view" id="view-settings" data-view="settings">
+        <div class="card">
+          <h3>Settings</h3>
+          <p class="sub">Order system configuration for the selected site.</p>
+          <div class="actions-row" style="margin-bottom:14px">
+            <button class="btn solid" type="button" id="settings-preset">Apply butcher preset</button>
+          </div>
+          <p class="notice">Applying the butcher preset updates defaults and seeds sample products/templates when the catalogue is empty.</p>
+          <form id="settings-form">
+            <div class="grid2">
+              <div class="field"><label for="set-payment">Payment rule</label>
+                <select id="set-payment">
+                  <option value="none">None (pay later)</option>
+                  <option value="fixed_deposit">Fixed deposit</option>
+                  <option value="percent_deposit">Percent deposit</option>
+                  <option value="full_upfront">Full upfront</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-deposit">Deposit amount (dollars)</label>
+                <input id="set-deposit" type="number" min="0" step="0.01" placeholder="50.00">
+              </div>
+              <div class="field"><label for="set-cutoff-mode">Default cutoff mode</label>
+                <select id="set-cutoff-mode">
+                  <option value="days_before">Days before</option>
+                  <option value="hours_before">Hours before</option>
+                  <option value="weekday_time">Weekday + time</option>
+                  <option value="none">None</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-cutoff-value">Default cutoff value</label>
+                <input id="set-cutoff-value" type="number" min="0" step="1">
+              </div>
+              <div class="field"><label for="set-editing">Customer editing</label>
+                <select id="set-editing"><option value="1">Enabled</option><option value="0">Disabled</option></select>
+              </div>
+              <div class="field"><label for="set-enabled">System enabled</label>
+                <select id="set-enabled"><option value="1">Yes</option><option value="0">No</option></select>
+              </div>
+            </div>
+            <button class="btn solid" type="submit" id="settings-save">Save settings</button>
+            <p class="notice" id="settings-msg"></p>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="order-modal" class="modal-back hide" role="dialog" aria-modal="true" aria-labelledby="om-title">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="om-title">Order</h3>
+      <button class="btn ghost" type="button" id="om-close">Close</button>
+    </div>
+    <div class="modal-body" id="om-body"></div>
+    <div class="modal-foot" id="om-foot"></div>
+  </div>
+</div>
+
+<div class="toast-host" id="toasts" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  var LP = window.__LP || {};
+  var sb = window.supabase.createClient(LP.url, LP.anon);
+  var SITE_KEY = 'lp.orders.site_id';
+  var VIEWS = [
+    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'orders', label: 'Orders' },
+    { id: 'new', label: 'New Order' },
+    { id: 'products', label: 'Products' },
+    { id: 'supply', label: 'Supply' },
+    { id: 'messaging', label: 'Messaging' },
+    { id: 'settings', label: 'Settings' }
+  ];
+
+  var state = {
+    session: null,
+    isSuper: false,
+    sites: [],
+    siteId: '',
+    products: [],
+    currentView: 'dashboard',
+    detail: null
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  function esc(s){
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function formatAud(cents){
+    var n = Number(cents) || 0;
+    var neg = n < 0;
+    var abs = Math.abs(n);
+    return (neg ? '-' : '') + '$' + (abs / 100).toFixed(2);
+  }
+
+  function dollarsToCents(v){
+    if (v == null || v === '') return 0;
+    var n = Number(String(v).replace(/[^0-9.-]/g, ''));
+    if (!isFinite(n)) return 0;
+    return Math.round(n * 100);
+  }
+
+  function toast(msg, kind){
+    var host = $('toasts');
+    var el = document.createElement('div');
+    el.className = 'toast' + (kind === 'err' ? ' err' : kind === 'ok' ? ' ok' : '');
+    el.textContent = msg;
+    host.appendChild(el);
+    setTimeout(function(){
+      el.style.opacity = '0';
+      setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 220);
+    }, 3200);
+  }
+
+  function statusBadge(status){
+    var s = String(status || 'unknown');
+    var cls = 'muted';
+    if (s === 'ready' || s === 'completed' || s === 'confirmed') cls = 'ok';
+    else if (s === 'awaiting_deposit' || s === 'changes_open' || s === 'draft') cls = 'warn';
+    else if (s === 'cancelled' || s === 'refunded') cls = 'bad';
+    else if (s === 'locked' || s === 'in_preparation') cls = 'info';
+    else if (s === 'collected') cls = 'purple';
+    return '<span class="badge ' + cls + '">' + esc(s.replace(/_/g, ' ')) + '</span>';
+  }
+
+  function priceBadge(orderOrItem){
+    var st = orderOrItem.price_status;
+    if (!st && orderOrItem.has_unknown_prices) st = 'tbc';
+    if (!st) st = 'known';
+    var cls = st === 'final' || st === 'known' ? 'ok' : (st === 'tbc' || st === 'pending_weight' ? 'warn' : 'muted');
+    var label = st === 'tbc' || orderOrItem.has_unknown_prices ? 'TBC' : String(st).replace(/_/g, ' ');
+    return '<span class="badge ' + cls + '">' + esc(label) + '</span>';
+  }
+
+  function showGate(mode){
+    $('gate').style.display = 'flex';
+    $('hub').classList.remove('on');
+    $('gate-login').classList.toggle('hide', mode !== 'login');
+    $('gate-denied').classList.toggle('hide', mode !== 'denied');
+  }
+
+  function showHub(){
+    $('gate').style.display = 'none';
+    $('hub').classList.add('on');
+  }
+
+  async function api(path, opts){
+    opts = opts || {};
+    var session = (await sb.auth.getSession()).data.session;
+    if (!session) throw new Error('Not signed in');
+    var headers = Object.assign({
+      'Authorization': 'Bearer ' + session.access_token,
+      'Content-Type': 'application/json'
+    }, opts.headers || {});
+    var init = {
+      method: opts.method || 'GET',
+      headers: headers
+    };
+    if (opts.body != null) init.body = typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body);
+    var r = await fetch(path, init);
+    var j = null;
+    try { j = await r.json(); } catch (_e) { j = null; }
+    if (!r.ok) {
+      var err = (j && (j.error || j.message)) || ('HTTP ' + r.status);
+      throw new Error(typeof err === 'string' ? err : JSON.stringify(err));
+    }
+    return j || {};
+  }
+
+  function siteQuery(extra){
+    var q = 'site_id=' + encodeURIComponent(state.siteId);
+    if (extra) q += '&' + extra;
+    return q;
+  }
+
+  function requireSite(){
+    if (!state.siteId) {
+      toast('Select a site first', 'err');
+      return false;
+    }
+    return true;
+  }
+
+  function paintNav(){
+    var nav = $('nav');
+    nav.innerHTML = VIEWS.map(function(v){
+      return '<button type="button" data-view="' + v.id + '"' +
+        (state.currentView === v.id ? ' class="on"' : '') + '>' + esc(v.label) + '</button>';
+    }).join('');
+    nav.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click', function(){
+        openView(b.getAttribute('data-view'));
+      });
+    });
+  }
+
+  function openView(id){
+    var v = VIEWS.find(function(x){ return x.id === id; }) || VIEWS[0];
+    state.currentView = v.id;
+    try { history.replaceState(null, '', '#' + v.id); } catch (_e) {}
+    paintNav();
+    $('panel-title').textContent = v.label;
+    document.querySelectorAll('.view').forEach(function(el){
+      el.classList.toggle('on', el.getAttribute('data-view') === v.id);
+    });
+    loadCurrentView();
+  }
+
+  function paintSites(){
+    var sel = $('site-select');
+    if (!state.sites.length) {
+      sel.innerHTML = '<option value="">No sites available</option>';
+      return;
+    }
+    sel.innerHTML = state.sites.map(function(s){
+      var label = (s.business_name || s.slug || s.id) + (s.slug ? ' · ' + s.slug : '');
+      return '<option value="' + esc(s.id) + '">' + esc(label) + '</option>';
+    }).join('');
+    if (state.siteId && state.sites.some(function(s){ return s.id === state.siteId; })) {
+      sel.value = state.siteId;
+    } else {
+      state.siteId = state.sites[0].id;
+      sel.value = state.siteId;
+      try { localStorage.setItem(SITE_KEY, state.siteId); } catch (_e) {}
+    }
+  }
+
+  async function loadSitesForUser(user){
+    var sites = [];
+    if (state.isSuper) {
+      var all = await sb.from('sites')
+        .select('id,slug,business_name,owner_user_id,servicing_partner_id,referring_partner_id')
+        .order('business_name')
+        .limit(500);
+      if (all.error) throw all.error;
+      sites = all.data || [];
+    } else {
+      var owned = await sb.from('sites')
+        .select('id,slug,business_name,owner_user_id,servicing_partner_id,referring_partner_id')
+        .eq('owner_user_id', user.id)
+        .order('business_name')
+        .limit(200);
+      if (owned.error) throw owned.error;
+      sites = owned.data || [];
+
+      var partner = await sb.from('partners').select('id,status').eq('user_id', user.id).maybeSingle();
+      if (partner.data && partner.data.status === 'active') {
+        var pid = partner.data.id;
+        var svc = await sb.from('sites')
+          .select('id,slug,business_name,owner_user_id,servicing_partner_id,referring_partner_id')
+          .or('servicing_partner_id.eq.' + pid + ',referring_partner_id.eq.' + pid)
+          .order('business_name')
+          .limit(200);
+        if (!svc.error && svc.data) {
+          var seen = {};
+          sites.forEach(function(s){ seen[s.id] = true; });
+          svc.data.forEach(function(s){
+            if (!seen[s.id]) { sites.push(s); seen[s.id] = true; }
+          });
+        }
+      }
+    }
+    sites.sort(function(a, b){
+      return String(a.business_name || a.slug || '').localeCompare(String(b.business_name || b.slug || ''));
+    });
+    state.sites = sites;
+    var saved = null;
+    try { saved = localStorage.getItem(SITE_KEY); } catch (_e) {}
+    if (saved && sites.some(function(s){ return s.id === saved; })) state.siteId = saved;
+    else state.siteId = sites[0] ? sites[0].id : '';
+    paintSites();
+  }
+
+  async function bootSession(){
+    var session = (await sb.auth.getSession()).data.session;
+    if (!session) { showGate('login'); return null; }
+    state.session = session;
+    var prof = await sb.from('profiles').select('is_super_admin,full_name').eq('id', session.user.id).maybeSingle();
+    state.isSuper = !!(prof.data && prof.data.is_super_admin);
+    try {
+      await loadSitesForUser(session.user);
+    } catch (e) {
+      $('gate-msg').textContent = (e && e.message) || 'Could not load sites.';
+      showGate('login');
+      return null;
+    }
+    if (!state.isSuper && !state.sites.length) {
+      showGate('denied');
+      return null;
+    }
+    $('who').textContent = session.user.email || '';
+    showHub();
+    paintNav();
+    var hash = (location.hash || '#dashboard').replace(/^#/, '');
+    openView(hash);
+    return session;
+  }
+
+  /* ---------- Dashboard ---------- */
+  async function loadDashboard(){
+    var notice = $('dash-notice');
+    var kpis = $('dash-kpis');
+    var tbody = $('dash-recent');
+    if (!state.siteId) {
+      notice.textContent = 'Select a site to load KPIs.';
+      kpis.innerHTML = '';
+      tbody.innerHTML = '';
+      return;
+    }
+    notice.textContent = 'Loading…';
+    kpis.innerHTML = '';
+    tbody.innerHTML = '';
+    try {
+      var data = await api('/api/order/dashboard?' + siteQuery());
+      var k = data.kpis || {};
+      notice.textContent = 'Today ' + (data.today || '') + ' · Tomorrow ' + (data.tomorrow || '') +
+        (data.system && data.system.industry_preset ? ' · Preset: ' + data.system.industry_preset : '');
+      var cards = [
+        { l: 'Today pickups', v: k.today_pickups },
+        { l: 'Tomorrow pickups', v: k.tomorrow_pickups },
+        { l: 'Awaiting deposit', v: k.awaiting_deposit },
+        { l: 'Locked', v: k.locked_orders },
+        { l: 'Ready', v: k.ready_for_collection },
+        { l: 'Price TBC', v: k.price_tbc_open },
+        { l: 'Abandoned', v: k.abandoned_carts },
+        { l: 'Deposits', v: k.deposits_received_label || formatAud(k.deposits_received_cents) }
+      ];
+      kpis.innerHTML = cards.map(function(c){
+        return '<div class="kpi"><p class="l">' + esc(c.l) + '</p><p class="v">' + esc(c.v == null ? '—' : c.v) + '</p></div>';
+      }).join('');
+      var recent = data.recent || [];
+      if (!recent.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">No recent orders.</td></tr>';
+      } else {
+        tbody.innerHTML = recent.map(function(o){
+          return '<tr class="clickable" data-id="' + esc(o.id) + '">' +
+            '<td>' + esc(o.order_number) + '</td>' +
+            '<td>' + esc(o.customer_name) + '</td>' +
+            '<td>' + esc(o.pickup_date || '—') + '</td>' +
+            '<td>' + statusBadge(o.status) + '</td>' +
+            '<td>' + esc(formatAud(o.known_subtotal_cents)) + '</td>' +
+            '<td><button class="btn ghost" type="button" data-open="' + esc(o.id) + '">Open</button></td>' +
+          '</tr>';
+        }).join('');
+        wireOrderOpen(tbody);
+      }
+    } catch (e) {
+      notice.textContent = 'Error: ' + ((e && e.message) || e);
+      toast(notice.textContent, 'err');
+    }
+  }
+
+  function wireOrderOpen(root){
+    root.querySelectorAll('[data-open]').forEach(function(btn){
+      btn.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        openOrderDetail(btn.getAttribute('data-open'));
+      });
+    });
+    root.querySelectorAll('tr[data-id]').forEach(function(tr){
+      tr.addEventListener('click', function(){
+        openOrderDetail(tr.getAttribute('data-id'));
+      });
+    });
+  }
+
+  /* ---------- Orders list ---------- */
+  async function loadOrders(){
+    var tbody = $('orders-tbody');
+    var empty = $('orders-empty');
+    if (!requireSite()) return;
+    tbody.innerHTML = '<tr><td colspan="9">Loading…</td></tr>';
+    empty.classList.add('hide');
+    try {
+      var q = $('orders-q').value.trim();
+      var st = $('orders-status').value;
+      var extra = '';
+      if (q) extra += 'q=' + encodeURIComponent(q);
+      if (st) extra += (extra ? '&' : '') + 'status=' + encodeURIComponent(st);
+      var data = await api('/api/order/orders?' + siteQuery(extra));
+      var orders = data.orders || [];
+      if (!orders.length) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hide');
+        return;
+      }
+      tbody.innerHTML = orders.map(function(o){
+        return '<tr class="clickable" data-id="' + esc(o.id) + '">' +
+          '<td>' + esc(o.order_number) + '</td>' +
+          '<td>' + esc(o.customer_name) + '</td>' +
+          '<td>' + esc(o.customer_phone || '—') + '</td>' +
+          '<td>' + esc(o.pickup_date || '—') + '</td>' +
+          '<td>' + esc(formatAud(o.known_subtotal_cents)) + '</td>' +
+          '<td>' + esc(formatAud(o.deposit_paid_cents)) +
+            (o.deposit_required_cents ? ' / ' + esc(formatAud(o.deposit_required_cents)) : '') + '</td>' +
+          '<td>' + statusBadge(o.status) + '</td>' +
+          '<td>' + priceBadge(o) + '</td>' +
+          '<td><button class="btn ghost" type="button" data-open="' + esc(o.id) + '">Open</button></td>' +
+        '</tr>';
+      }).join('');
+      wireOrderOpen(tbody);
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="9">' + esc((e && e.message) || e) + '</td></tr>';
+      toast((e && e.message) || String(e), 'err');
+    }
+  }
+
+  /* ---------- Order detail ---------- */
+  async function openOrderDetail(id){
+    if (!requireSite() || !id) return;
+    var modal = $('order-modal');
+    var body = $('om-body');
+    var foot = $('om-foot');
+    modal.classList.remove('hide');
+    $('om-title').textContent = 'Loading…';
+    body.innerHTML = '<p class="notice">Loading order…</p>';
+    foot.innerHTML = '';
+    try {
+      var data = await api('/api/order/orders?' + siteQuery('id=' + encodeURIComponent(id)));
+      state.detail = data;
+      renderOrderDetail(data);
+    } catch (e) {
+      body.innerHTML = '<p class="notice">' + esc((e && e.message) || e) + '</p>';
+      toast((e && e.message) || String(e), 'err');
+    }
+  }
+
+  function renderOrderDetail(data){
+    var o = data.order || {};
+    var items = data.items || [];
+    var display = data.display || {};
+    $('om-title').textContent = o.order_number || 'Order';
+    var html = '';
+    html += '<div class="grid2">';
+    html += '<div><p class="notice" style="margin:0"><strong>Customer</strong><br>' + esc(o.customer_name) +
+      '<br>' + esc(o.customer_phone || '—') + '<br>' + esc(o.customer_email || '—') + '</p></div>';
+    html += '<div><p class="notice" style="margin:0"><strong>Pickup</strong><br>' + esc(o.pickup_date || '—') +
+      (o.pickup_time ? ' · ' + esc(o.pickup_time) : '') +
+      '<br>Status: ' + statusBadge(o.status) + ' · Edit: ' + esc(o.editing_state || '—') +
+      '<br>Known: ' + esc(display.known_subtotal || formatAud(o.known_subtotal_cents)) +
+      ' · Deposit: ' + esc(display.deposit_paid || formatAud(o.deposit_paid_cents)) +
+      ' / ' + esc(display.deposit_required || formatAud(o.deposit_required_cents)) +
+      '</p></div></div>';
+    if (o.customer_notes || o.internal_notes) {
+      html += '<p class="notice"><strong>Notes</strong><br>' + esc(o.customer_notes || '') +
+        (o.internal_notes ? '<br><em>' + esc(o.internal_notes) + '</em>' : '') + '</p>';
+    }
+    html += '<h3 style="font-family:var(--font-display);font-size:1.05rem;margin:14px 0 8px">Items</h3>';
+    if (!items.length) html += '<p class="empty">No items.</p>';
+    items.forEach(function(it){
+      var needsWeight = it.price_status === 'tbc' || it.price_status === 'pending_weight' ||
+        it.pricing_method === 'per_weight' || it.pricing_method === 'price_tbc';
+      html += '<div class="item-block" data-item="' + esc(it.id) + '">';
+      html += '<strong>' + esc(it.product_name) + '</strong> ' + priceBadge(it);
+      html += '<div class="meta">Qty ' + esc(it.quantity) +
+        (it.requested_weight_kg != null ? ' · Req ' + esc(it.requested_weight_kg) + ' kg' : '') +
+        (it.actual_weight_kg != null ? ' · Actual ' + esc(it.actual_weight_kg) + ' kg' : '') +
+        ' · Line ' + esc(formatAud(it.line_final_cents != null ? it.line_final_cents : it.line_known_cents)) +
+        (it.notes ? '<br>' + esc(it.notes) : '') + '</div>';
+      if (needsWeight && it.price_status !== 'final') {
+        html += '<div class="grid3">';
+        html += '<div class="field"><label>Actual weight (kg)</label><input type="number" min="0" step="0.001" data-weight value="' +
+          esc(it.actual_weight_kg != null ? it.actual_weight_kg : (it.requested_weight_kg || '')) + '"></div>';
+        html += '<div class="field"><label>Rate / unit (cents)</label><input type="number" min="0" step="1" data-rate value="' +
+          esc(it.unit_price_cents != null ? it.unit_price_cents : '') + '"></div>';
+        html += '<div class="field"><label>&nbsp;</label><button class="btn solid" type="button" data-finalise="' +
+          esc(it.id) + '">Finalise</button></div>';
+        html += '</div>';
+      }
+      html += '</div>';
+    });
+    $('om-body').innerHTML = html;
+
+    $('om-body').querySelectorAll('[data-finalise]').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        var block = btn.closest('.item-block');
+        var weightEl = block.querySelector('[data-weight]');
+        var rateEl = block.querySelector('[data-rate]');
+        var weight = weightEl && weightEl.value !== '' ? Number(weightEl.value) : null;
+        var rate = rateEl && rateEl.value !== '' ? Number(rateEl.value) : null;
+        btn.disabled = true;
+        try {
+          await api('/api/order/orders', {
+            method: 'POST',
+            body: {
+              site_id: state.siteId,
+              action: 'finalise_item',
+              order_item_id: btn.getAttribute('data-finalise'),
+              actual_weight_kg: weight,
+              rate_cents: rate
+            }
+          });
+          toast('Item finalised', 'ok');
+          await openOrderDetail(o.id);
+        } catch (e) {
+          toast((e && e.message) || String(e), 'err');
+          btn.disabled = false;
+        }
+      });
+    });
+
+    var foot = '';
+    foot += '<button class="btn ghost" type="button" data-act="deposit-link">Send deposit link</button>';
+    foot += '<button class="btn ghost" type="button" data-act="checkout">Checkout deposit</button>';
+    foot += '<button class="btn ghost" type="button" data-act="lock">Lock</button>';
+    foot += '<button class="btn ghost" type="button" data-act="ready">Mark ready</button>';
+    foot += '<button class="btn ghost" type="button" data-act="collected">Mark collected</button>';
+    foot += '<button class="btn solid" type="button" data-act="completed">Mark completed</button>';
+    $('om-foot').innerHTML = foot;
+
+    $('om-foot').querySelectorAll('[data-act]').forEach(function(btn){
+      btn.addEventListener('click', function(){ runOrderAction(btn.getAttribute('data-act'), o, btn); });
+    });
+  }
+
+  async function runOrderAction(act, order, btn){
+    if (!order || !order.id) return;
+    btn.disabled = true;
+    try {
+      if (act === 'deposit-link') {
+        var r = await api('/api/order/orders', {
+          method: 'POST',
+          body: { site_id: state.siteId, action: 'send_deposit_link', order_id: order.id }
+        });
+        if (r.deposit_url) {
+          try { await navigator.clipboard.writeText(r.deposit_url); } catch (_e) {}
+          toast('Deposit link sent/copied: ' + r.deposit_url, 'ok');
+        } else toast('Deposit link sent', 'ok');
+      } else if (act === 'checkout') {
+        var c = await api('/api/order/checkout-deposit', {
+          method: 'POST',
+          body: { site_id: state.siteId, order_id: order.id }
+        });
+        if (c.url) {
+          try { await navigator.clipboard.writeText(c.url); } catch (_e) {}
+          toast('Checkout URL copied', 'ok');
+          window.open(c.url, '_blank', 'noopener');
+        } else toast('Checkout created', 'ok');
+      } else if (act === 'lock') {
+        await api('/api/order/orders', {
+          method: 'POST',
+          body: { site_id: state.siteId, action: 'lock_order', order_id: order.id }
+        });
+        toast('Order locked', 'ok');
+        await openOrderDetail(order.id);
+      } else if (act === 'ready' || act === 'collected' || act === 'completed') {
+        await api('/api/order/orders', {
+          method: 'POST',
+          body: { site_id: state.siteId, action: 'set_status', order_id: order.id, status: act }
+        });
+        toast('Marked ' + act, 'ok');
+        await openOrderDetail(order.id);
+      }
+    } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
+    btn.disabled = false;
+  }
+
+  function closeOrderModal(){
+    $('order-modal').classList.add('hide');
+    state.detail = null;
+  }
+
+  /* ---------- New order ---------- */
+  function ensureNewLines(){
+    var host = $('no-lines');
+    if (!host.children.length) addNewLine();
+  }
+
+  function productOptionsHtml(selected){
+    var opts = '<option value="">Select product…</option>';
+    (state.products || []).filter(function(p){ return p.active !== false; }).forEach(function(p){
+      opts += '<option value="' + esc(p.id) + '"' + (selected === p.id ? ' selected' : '') + '>' +
+        esc(p.name) + (p.pricing_method === 'per_weight' ? ' (per kg)' : p.pricing_method === 'price_tbc' ? ' (TBC)' : '') +
+        '</option>';
+    });
+    return opts;
+  }
+
+  function addNewLine(){
+    var host = $('no-lines');
+    var row = document.createElement('div');
+    row.className = 'line-row';
+    row.innerHTML =
+      '<div class="field" style="margin:0"><label>Product</label><select data-f="product_id">' + productOptionsHtml() + '</select></div>' +
+      '<div class="field" style="margin:0"><label>Qty</label><input data-f="quantity" type="number" min="1" step="1" value="1"></div>' +
+      '<div class="field" style="margin:0"><label>Weight kg</label><input data-f="requested_weight_kg" type="number" min="0" step="0.001" placeholder="opt"></div>' +
+      '<div class="field" style="margin:0"><label>Notes</label><input data-f="notes" placeholder="optional"></div>' +
+      '<button class="btn ghost" type="button" data-remove>Remove</button>';
+    host.appendChild(row);
+    row.querySelector('[data-remove]').addEventListener('click', function(){
+      if (host.children.length <= 1) { toast('Keep at least one line', 'err'); return; }
+      host.removeChild(row);
+    });
+  }
+
+  function refreshNewLineProductSelects(){
+    $('no-lines').querySelectorAll('select[data-f="product_id"]').forEach(function(sel){
+      var cur = sel.value;
+      sel.innerHTML = productOptionsHtml(cur);
+    });
+  }
+
+  async function loadProductsCache(){
+    if (!state.siteId) { state.products = []; return; }
+    var data = await api('/api/order/products?' + siteQuery());
+    state.products = data.products || [];
+    return data;
+  }
+
+  async function submitNewOrder(ev){
+    ev.preventDefault();
+    if (!requireSite()) return;
+    var btn = $('no-submit');
+    var msg = $('no-msg');
+    msg.textContent = '';
+    var items = [];
+    $('no-lines').querySelectorAll('.line-row').forEach(function(row){
+      var product_id = row.querySelector('[data-f="product_id"]').value;
+      if (!product_id) return;
+      var qty = Number(row.querySelector('[data-f="quantity"]').value) || 1;
+      var wRaw = row.querySelector('[data-f="requested_weight_kg"]').value;
+      var notes = row.querySelector('[data-f="notes"]').value.trim();
+      var line = { product_id: product_id, quantity: qty };
+      if (wRaw !== '') line.requested_weight_kg = Number(wRaw);
+      if (notes) line.notes = notes;
+      items.push(line);
+    });
+    if (!items.length) {
+      msg.textContent = 'Add at least one product line.';
+      toast(msg.textContent, 'err');
+      return;
+    }
+    btn.disabled = true;
+    try {
+      var body = {
+        site_id: state.siteId,
+        action: 'create',
+        customer_name: $('no-name').value.trim(),
+        customer_phone: $('no-phone').value.trim() || null,
+        customer_email: $('no-email').value.trim() || null,
+        pickup_date: $('no-pickup').value || null,
+        customer_notes: $('no-notes').value.trim() || null,
+        items: items
+      };
+      var r = await api('/api/order/orders', { method: 'POST', body: body });
+      var note = 'Created ' + ((r.order && r.order.order_number) || 'order');
+      if (r.portal_url) {
+        try { await navigator.clipboard.writeText(r.portal_url); } catch (_e) {}
+        note += ' — portal URL copied';
+      }
+      msg.textContent = note + (r.portal_url ? ': ' + r.portal_url : '');
+      toast(note, 'ok');
+      $('new-order-form').reset();
+      $('no-lines').innerHTML = '';
+      addNewLine();
+      if (r.order && r.order.id) openOrderDetail(r.order.id);
+    } catch (e) {
+      msg.textContent = (e && e.message) || String(e);
+      toast(msg.textContent, 'err');
+    }
+    btn.disabled = false;
+  }
+
+  /* ---------- Products ---------- */
+  async function loadProductsView(){
+    if (!requireSite()) return;
+    var tbody = $('prod-tbody');
+    var empty = $('prod-empty');
+    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    try {
+      var data = await loadProductsCache();
+      refreshNewLineProductSelects();
+      var products = data.products || [];
+      if (!products.length) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hide');
+        return;
+      }
+      empty.classList.add('hide');
+      tbody.innerHTML = products.map(function(p){
+        var price = p.pricing_method === 'per_weight'
+          ? formatAud(p.price_per_kg_cents) + '/kg'
+          : p.pricing_method === 'price_tbc' ? 'TBC' : formatAud(p.price_cents);
+        return '<tr>' +
+          '<td>' + esc(p.name) + '</td>' +
+          '<td>' + esc(p.pricing_method) + ' · ' + esc(price) + '</td>' +
+          '<td>' + esc(p.stock_method || '—') + '</td>' +
+          '<td>' + esc(p.cutoff_mode || '—') + (p.cutoff_value != null ? ' ' + esc(p.cutoff_value) : '') + '</td>' +
+          '<td>' + (p.active !== false
+            ? '<span class="badge ok">active</span>'
+            : '<span class="badge muted">off</span>') + '</td>' +
+          '<td><button class="btn ghost" type="button" data-edit="' + esc(p.id) + '">Edit</button></td>' +
+        '</tr>';
+      }).join('');
+      // Fix active badge label
+      tbody.querySelectorAll('[data-edit]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var p = products.find(function(x){ return x.id === btn.getAttribute('data-edit'); });
+          if (p) fillProductForm(p);
+        });
+      });
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="6">' + esc((e && e.message) || e) + '</td></tr>';
+      toast((e && e.message) || String(e), 'err');
+    }
+  }
+
+  function fillProductForm(p){
+    $('prod-form-card').classList.remove('hide');
+    $('prod-form-title').textContent = p && p.id ? 'Edit product' : 'New product';
+    $('prod-id').value = (p && p.id) || '';
+    $('prod-name').value = (p && p.name) || '';
+    $('prod-image').value = (p && p.image_url) || '';
+    $('prod-pricing').value = (p && p.pricing_method) || 'fixed';
+    $('prod-price').value = p && p.price_cents != null ? p.price_cents : '';
+    $('prod-perkg').value = p && p.price_per_kg_cents != null ? p.price_per_kg_cents : '';
+    $('prod-stock').value = (p && p.stock_method) || 'made_to_order';
+    $('prod-cutoff-mode').value = (p && p.cutoff_mode) || 'store_default';
+    $('prod-cutoff-value').value = p && p.cutoff_value != null ? p.cutoff_value : '';
+    $('prod-lead-mode').value = (p && p.lead_time_mode) || 'none';
+    $('prod-lead-value').value = p && p.lead_time_value != null ? p.lead_time_value : 0;
+    $('prod-active').value = p && p.active === false ? '0' : '1';
+    $('prod-unit').value = (p && p.unit_label) || '';
+    $('prod-msg').textContent = '';
+    $('prod-form-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function saveProduct(ev){
+    ev.preventDefault();
+    if (!requireSite()) return;
+    var btn = $('prod-save');
+    var msg = $('prod-msg');
+    btn.disabled = true;
+    msg.textContent = '';
+    var id = $('prod-id').value;
+    var body = {
+      site_id: state.siteId,
+      name: $('prod-name').value.trim(),
+      image_url: $('prod-image').value.trim() || null,
+      pricing_method: $('prod-pricing').value,
+      price_cents: $('prod-price').value !== '' ? Number($('prod-price').value) : null,
+      price_per_kg_cents: $('prod-perkg').value !== '' ? Number($('prod-perkg').value) : null,
+      stock_method: $('prod-stock').value,
+      cutoff_mode: $('prod-cutoff-mode').value,
+      cutoff_value: $('prod-cutoff-value').value !== '' ? Number($('prod-cutoff-value').value) : null,
+      lead_time_mode: $('prod-lead-mode').value,
+      lead_time_value: Number($('prod-lead-value').value) || 0,
+      active: $('prod-active').value === '1',
+      unit_label: $('prod-unit').value.trim() || null,
+      weight_required: $('prod-pricing').value === 'per_weight' || $('prod-pricing').value === 'price_tbc'
+    };
+    try {
+      if (id) {
+        body.id = id;
+        await api('/api/order/products', { method: 'PATCH', body: body });
+        toast('Product updated', 'ok');
+      } else {
+        await api('/api/order/products', { method: 'POST', body: body });
+        toast('Product created', 'ok');
+      }
+      $('prod-form-card').classList.add('hide');
+      await loadProductsView();
+    } catch (e) {
+      msg.textContent = (e && e.message) || String(e);
+      toast(msg.textContent, 'err');
+    }
+    btn.disabled = false;
+  }
+
+  /* ---------- Supply ---------- */
+  async function loadSupply(){
+    if (!requireSite()) return;
+    var date = $('supply-date').value;
+    if (!date) { toast('Pick a date', 'err'); return; }
+    var tbody = $('supply-tbody');
+    var empty = $('supply-empty');
+    var kpis = $('supply-kpis');
+    tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+    empty.classList.add('hide');
+    try {
+      var data = await api('/api/order/supply?' + siteQuery('pickup_date=' + encodeURIComponent(date)));
+      kpis.innerHTML = [
+        { l: 'Orders', v: data.order_count },
+        { l: 'Known value', v: data.known_value_label || formatAud(data.known_value_cents) },
+        { l: 'Deposits', v: data.deposits_collected_label || formatAud(data.deposits_collected_cents) },
+        { l: 'Editing', v: data.editing || '—' }
+      ].map(function(c){
+        return '<div class="kpi"><p class="l">' + esc(c.l) + '</p><p class="v">' + esc(c.v == null ? '—' : c.v) + '</p></div>';
+      }).join('');
+      var lines = data.lines || [];
+      if (!lines.length) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hide');
+        return;
+      }
+      tbody.innerHTML = lines.map(function(L){
+        return '<tr>' +
+          '<td>' + esc(L.product_name) + (L.product_sku ? ' <span class="notice">(' + esc(L.product_sku) + ')</span>' : '') + '</td>' +
+          '<td>' + esc(L.order_count) + '</td>' +
+          '<td>' + esc(L.quantity) + (L.unit_label ? ' ' + esc(L.unit_label) : '') + '</td>' +
+          '<td>' + (L.has_weight ? esc(Number(L.requested_weight_kg || 0).toFixed(3)) : '—') + '</td>' +
+          '<td>' + (L.actual_weight_kg ? esc(Number(L.actual_weight_kg).toFixed(3)) : '—') + '</td>' +
+        '</tr>';
+      }).join('');
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="5">' + esc((e && e.message) || e) + '</td></tr>';
+      toast((e && e.message) || String(e), 'err');
+    }
+  }
+
+  /* ---------- Messaging ---------- */
+  async function generateMessages(){
+    if (!requireSite()) return;
+    var btn = $('msg-generate');
+    var host = $('msg-options');
+    var note = $('msg-note');
+    btn.disabled = true;
+    note.textContent = 'Generating…';
+    host.innerHTML = '';
+    try {
+      var r = await api('/api/order/message-ai', {
+        method: 'POST',
+        body: {
+          site_id: state.siteId,
+          category: $('msg-category').value,
+          channel: $('msg-channel').value,
+          topic: $('msg-topic').value.trim() || 'General',
+          tone: $('msg-tone').value.trim() || 'Friendly'
+        }
+      });
+      note.textContent = r.note || 'Review and edit before using. Apply butcher preset in Settings to seed templates.';
+      var options = r.options || [];
+      if (!options.length) {
+        host.innerHTML = '<p class="empty">No options returned.</p>';
+      } else {
+        host.innerHTML = options.map(function(text, i){
+          return '<div class="ai-opt" data-i="' + i + '">' +
+            '<textarea>' + esc(text) + '</textarea>' +
+            '<div><button class="btn ghost" type="button" data-copy>Copy</button></div>' +
+          '</div>';
+        }).join('');
+        host.querySelectorAll('[data-copy]').forEach(function(b){
+          b.addEventListener('click', async function(){
+            var ta = b.closest('.ai-opt').querySelector('textarea');
+            try {
+              await navigator.clipboard.writeText(ta.value);
+              toast('Copied', 'ok');
+            } catch (_e) {
+              ta.select();
+              toast('Select text and copy manually', 'err');
+            }
+          });
+        });
+      }
+    } catch (e) {
+      note.textContent = (e && e.message) || String(e);
+      toast(note.textContent, 'err');
+    }
+    btn.disabled = false;
+  }
+
+  /* ---------- Settings ---------- */
+  async function loadSettings(){
+    if (!requireSite()) return;
+    var msg = $('settings-msg');
+    msg.textContent = 'Loading…';
+    try {
+      var data = await api('/api/order/system?' + siteQuery());
+      var s = data.system || {};
+      $('set-payment').value = s.payment_rule || 'none';
+      $('set-deposit').value = s.deposit_amount_cents != null ? (Number(s.deposit_amount_cents) / 100).toFixed(2) : '';
+      $('set-cutoff-mode').value = s.default_cutoff_mode || 'days_before';
+      $('set-cutoff-value').value = s.default_cutoff_value != null ? s.default_cutoff_value : '';
+      $('set-editing').value = s.customer_editing_enabled === false ? '0' : '1';
+      $('set-enabled').value = s.enabled === false ? '0' : '1';
+      msg.textContent = 'Preset: ' + (s.industry_preset || 'custom') + ' · Role: ' + (data.role || '—');
+    } catch (e) {
+      msg.textContent = (e && e.message) || String(e);
+      toast(msg.textContent, 'err');
+    }
+  }
+
+  async function saveSettings(ev){
+    ev.preventDefault();
+    if (!requireSite()) return;
+    var btn = $('settings-save');
+    var msg = $('settings-msg');
+    btn.disabled = true;
+    try {
+      await api('/api/order/system', {
+        method: 'POST',
+        body: {
+          site_id: state.siteId,
+          payment_rule: $('set-payment').value,
+          deposit_amount_cents: dollarsToCents($('set-deposit').value),
+          default_cutoff_mode: $('set-cutoff-mode').value,
+          default_cutoff_value: $('set-cutoff-value').value !== '' ? Number($('set-cutoff-value').value) : null,
+          customer_editing_enabled: $('set-editing').value === '1',
+          enabled: $('set-enabled').value === '1'
+        }
+      });
+      msg.textContent = 'Settings saved.';
+      toast('Settings saved', 'ok');
+    } catch (e) {
+      msg.textContent = (e && e.message) || String(e);
+      toast(msg.textContent, 'err');
+    }
+    btn.disabled = false;
+  }
+
+  async function applyButcherPreset(){
+    if (!requireSite()) return;
+    var btn = $('settings-preset');
+    btn.disabled = true;
+    try {
+      await api('/api/order/system', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'apply_preset', preset: 'butcher' }
+      });
+      toast('Butcher preset applied', 'ok');
+      await loadSettings();
+      await loadProductsCache();
+      refreshNewLineProductSelects();
+    } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
+    btn.disabled = false;
+  }
+
+  /* ---------- View router ---------- */
+  async function loadCurrentView(){
+    var v = state.currentView;
+    try {
+      if (v === 'dashboard') await loadDashboard();
+      else if (v === 'orders') await loadOrders();
+      else if (v === 'new') {
+        try { await loadProductsCache(); } catch (_e) {}
+        refreshNewLineProductSelects();
+        ensureNewLines();
+      }
+      else if (v === 'products') await loadProductsView();
+      else if (v === 'supply') {
+        if (!$('supply-date').value) {
+          var d = new Date();
+          $('supply-date').value = d.toISOString().slice(0, 10);
+        }
+      }
+      else if (v === 'settings') await loadSettings();
+    } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
+  }
+
+  /* ---------- Wire UI ---------- */
+  $('gate-go').addEventListener('click', async function(){
+    var btn = $('gate-go');
+    var msg = $('gate-msg');
+    btn.disabled = true;
+    msg.textContent = '';
+    try {
+      var r = await sb.auth.signInWithPassword({
+        email: $('email').value.trim(),
+        password: $('password').value
+      });
+      if (r.error) throw r.error;
+      await bootSession();
+    } catch (e) {
+      msg.textContent = (e && e.message) || 'Could not sign in.';
+    }
+    btn.disabled = false;
+  });
+  $('password').addEventListener('keydown', function(e){
+    if (e.key === 'Enter') $('gate-go').click();
+  });
+  $('gate-out').addEventListener('click', async function(){
+    await sb.auth.signOut();
+    showGate('login');
+  });
+  $('btn-signout').addEventListener('click', async function(){
+    await sb.auth.signOut();
+    location.reload();
+  });
+  $('btn-menu').addEventListener('click', function(){
+    $('side').classList.toggle('collapsed');
+  });
+  $('btn-refresh').addEventListener('click', function(){ loadCurrentView(); });
+  $('site-select').addEventListener('change', function(){
+    state.siteId = $('site-select').value || '';
+    try { localStorage.setItem(SITE_KEY, state.siteId); } catch (_e) {}
+    state.products = [];
+    loadCurrentView();
+  });
+  $('orders-search').addEventListener('click', loadOrders);
+  $('orders-q').addEventListener('keydown', function(e){
+    if (e.key === 'Enter') loadOrders();
+  });
+  $('no-add-line').addEventListener('click', addNewLine);
+  $('new-order-form').addEventListener('submit', submitNewOrder);
+  $('prod-new').addEventListener('click', function(){ fillProductForm(null); });
+  $('prod-cancel').addEventListener('click', function(){ $('prod-form-card').classList.add('hide'); });
+  $('prod-form').addEventListener('submit', saveProduct);
+  $('supply-load').addEventListener('click', loadSupply);
+  $('msg-generate').addEventListener('click', generateMessages);
+  $('settings-form').addEventListener('submit', saveSettings);
+  $('settings-preset').addEventListener('click', applyButcherPreset);
+  $('om-close').addEventListener('click', closeOrderModal);
+  $('order-modal').addEventListener('click', function(e){
+    if (e.target === $('order-modal')) closeOrderModal();
+  });
+  window.addEventListener('hashchange', function(){
+    var id = (location.hash || '#dashboard').replace(/^#/, '');
+    if (state.currentView !== id) openView(id);
+  });
+
+  bootSession();
+})();
+</script>
+</body>
+</html>
