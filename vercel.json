@@ -41,6 +41,10 @@
     {
       "path": "/api/cron/search-intelligence-ranks",
       "schedule": "15 8 * * *"
+    },
+    {
+      "path": "/api/cron/order-abandoned",
+      "schedule": "*/15 * * * *"
     }
   ],
   "rewrites": [
@@ -165,6 +169,10 @@
     {
       "source": "/order-portal",
       "destination": "/order-portal.html"
+    },
+    {
+      "source": "/order-shop",
+      "destination": "/order-shop.html"
     },
     {
       "source": "/lead-notify-style",

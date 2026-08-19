@@ -140,11 +140,19 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     if(data.can_edit) html += '<button type="button" class="ghost" id="saveBtn">Save changes</button>';
     html += '</div></div>';
 
-    if(o.customer_notes) html += '<div class="card"><h2 style="margin:0 0 8px;font-size:16px">Notes</h2><p class="note" style="margin:0">'+esc(o.customer_notes)+'</p></div>';
+    if(data.can_edit){
+      html += '<div class="card"><h2 style="margin:0 0 10px;font-size:16px">Edit pickup & notes</h2>';
+      html += '<label class="f">Pickup date</label><input type="date" id="ed-date" value="'+esc(o.pickup_date||'')+'">';
+      html += '<label class="f" style="margin-top:8px">Pickup time</label><input type="time" id="ed-time" value="'+esc(o.pickup_time||'')+'">';
+      html += '<label class="f" style="margin-top:8px">Notes</label><textarea id="ed-notes">'+(o.customer_notes?esc(o.customer_notes):'')+'</textarea>';
+      html += '</div>';
+    }
+
+    if(o.customer_notes && !data.can_edit) html += '<div class="card"><h2 style="margin:0 0 8px;font-size:16px">Notes</h2><p class="note" style="margin:0">'+esc(o.customer_notes)+'</p></div>';
 
     $('view').innerHTML = html;
 
-    var payBtn = $('payBtn');
+    var payBtn = document.getElementById('payBtn');
     if(payBtn) payBtn.onclick = async function(){
       payBtn.disabled = true; payBtn.textContent = 'Opening secure checkout…';
       try{
@@ -153,7 +161,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       }catch(e){ payBtn.disabled=false; payBtn.textContent='Try again'; alert(e.message||e); }
     };
 
-    var saveBtn = $('saveBtn');
+    var saveBtn = document.getElementById('saveBtn');
     if(saveBtn) saveBtn.onclick = async function(){
       saveBtn.disabled = true;
       var changes = [];
@@ -162,8 +170,15 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
         var w = document.querySelector('.ed-w[data-id="'+id+'"]');
         changes.push({ order_item_id:id, quantity: parseFloat(inp.value), requested_weight_kg: w && w.value!=='' ? parseFloat(w.value) : null });
       });
+      var payload = { t: token, changes: changes };
+      var nd = document.getElementById('ed-date');
+      var nt = document.getElementById('ed-time');
+      var nn = document.getElementById('ed-notes');
+      if(nd) payload.pickup_date = nd.value || null;
+      if(nt) payload.pickup_time = nt.value || null;
+      if(nn) payload.customer_notes = nn.value;
       try{
-        await api('/api/order/portal', { method:'POST', body:{ t: token, changes: changes } });
+        await api('/api/order/portal', { method:'POST', body: payload });
         location.reload();
       }catch(e){ saveBtn.disabled=false; alert(e.message||e); }
     };

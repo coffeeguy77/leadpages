@@ -208,57 +208,25 @@ module.exports = async function (req, res) {
         if (!order) return json(res, 404, { error: 'not_found' });
         const tok = await createAccessToken(order.id, siteId, 'deposit', 72);
         const url = PUBLIC_BASE + '/order-portal?t=' + encodeURIComponent(tok.token) + '&pay=1';
-        // Queue message record (actual SMS/email send is adapter-based; email via Resend when configured)
-        const dest = order.customer_email || order.customer_phone;
-        if (dest) {
-          const channel = order.customer_email ? 'email' : 'sms';
-          await admin.from('order_messages').insert({
-            order_system_id: system.id,
-            site_id: siteId,
-            order_id: order.id,
-            customer_id: order.customer_id,
-            channel: channel,
-            event_type: 'deposit_required',
-            destination: dest,
-            subject: 'Deposit for order ' + order.order_number,
-            body:
-              'Hi ' +
-              order.customer_name +
-              ', pay your deposit of ' +
-              formatAud(order.deposit_required_cents) +
-              ' for order ' +
-              order.order_number +
-              ': ' +
-              url,
-            status: 'queued'
-          });
-          if (channel === 'email' && process.env.RESEND_API_KEY) {
-            try {
-              await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                  Authorization: 'Bearer ' + process.env.RESEND_API_KEY,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  from: process.env.LEADS_FROM || 'LeadPages <noreply@leadpages.com.au>',
-                  to: [order.customer_email],
-                  subject: 'Deposit for order ' + order.order_number,
-                  text:
-                    'Hi ' +
-                    order.customer_name +
-                    ',\n\nPlease pay your deposit of ' +
-                    formatAud(order.deposit_required_cents) +
-                    ' for order ' +
-                    order.order_number +
-                    '.\n\n' +
-                    url +
-                    '\n'
-                })
-              });
-            } catch (_e) {}
-          }
-        }
+        const { notifyEvent, portalUrl } = require('../../lib/order/notify');
+        await notifyEvent({
+          event_type: 'deposit_required',
+          system: system,
+          site: access.site,
+          order: order,
+          portal_link: url,
+          channel: 'both',
+          source: 'admin',
+          fallback_body:
+            'Hi ' +
+            order.customer_name +
+            ', pay your deposit of ' +
+            formatAud(order.deposit_required_cents) +
+            ' for order ' +
+            order.order_number +
+            ': ' +
+            url
+        });
         await writeAudit({
           order_system_id: system.id,
           site_id: siteId,

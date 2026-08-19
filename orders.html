@@ -385,6 +385,8 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
           <div class="toolbar">
             <input id="supply-date" type="date">
             <button class="btn solid" type="button" id="supply-load">Load supply</button>
+            <button class="btn ghost" type="button" id="supply-lock">Lock this date</button>
+            <a class="btn ghost" id="supply-export" href="#">Export CSV</a>
           </div>
           <div class="kpis" id="supply-kpis"></div>
           <div class="table-wrap">
@@ -420,10 +422,82 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
           <button class="btn solid" type="button" id="msg-generate">Generate with AI</button>
           <p class="notice" id="msg-note"></p>
           <div id="msg-options"></div>
+          <h3 style="margin:22px 0 8px">Saved templates</h3>
+          <div class="table-wrap"><table class="oe"><thead><tr>
+            <th>Category</th><th>Name</th><th>Channel</th><th>Active</th><th></th>
+          </tr></thead><tbody id="tpl-tbody"></tbody></table></div>
         </div>
       </section>
 
       <!-- Settings -->
+
+      <section class="view" id="view-calendar" data-view="calendar">
+        <div class="card">
+          <div class="toolbar">
+            <h3 style="margin:0;flex:1">Pickup calendar</h3>
+            <button class="btn solid" type="button" id="cal-load">Refresh</button>
+          </div>
+          <p class="sub">Order counts, deposits, known value, capacity and lock status by pickup date.</p>
+          <div class="table-wrap"><table class="oe"><thead><tr>
+            <th>Date</th><th>Orders</th><th>Known value</th><th>Deposits</th><th>Capacity</th><th>Status</th><th></th>
+          </tr></thead><tbody id="cal-tbody"></tbody></table></div>
+          <p class="empty hide" id="cal-empty">No pickup dates with orders yet.</p>
+        </div>
+      </section>
+
+      <section class="view" id="view-changes" data-view="changes">
+        <div class="card">
+          <div class="toolbar">
+            <h3 style="margin:0;flex:1">Change requests</h3>
+            <button class="btn solid" type="button" id="chg-load">Refresh</button>
+          </div>
+          <div class="table-wrap"><table class="oe"><thead><tr>
+            <th>When</th><th>Order</th><th>Note</th><th>Proposed</th><th></th>
+          </tr></thead><tbody id="chg-tbody"></tbody></table></div>
+          <p class="empty hide" id="chg-empty">No pending change requests.</p>
+        </div>
+      </section>
+
+      <section class="view" id="view-customers" data-view="customers">
+        <div class="card">
+          <div class="toolbar">
+            <input id="cust-q" placeholder="Search name, phone, email" style="flex:1;min-width:180px">
+            <button class="btn solid" type="button" id="cust-load">Search</button>
+            <a class="btn ghost" id="cust-export" href="#">Export CSV</a>
+          </div>
+          <div class="table-wrap"><table class="oe"><thead><tr>
+            <th>Name</th><th>Phone</th><th>Email</th><th>Orders</th><th>Lifetime</th><th>Last order</th>
+          </tr></thead><tbody id="cust-tbody"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-payments" data-view="payments">
+        <div class="card">
+          <div class="toolbar">
+            <h3 style="margin:0;flex:1">Payments</h3>
+            <button class="btn solid" type="button" id="pay-load">Refresh</button>
+            <a class="btn ghost" id="pay-export" href="#">Export CSV</a>
+          </div>
+          <div class="kpis" id="pay-kpis"></div>
+          <div class="table-wrap"><table class="oe"><thead><tr>
+            <th>When</th><th>Kind</th><th>Status</th><th>Amount</th><th>Order</th>
+          </tr></thead><tbody id="pay-tbody"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-abandoned" data-view="abandoned">
+        <div class="card">
+          <div class="toolbar">
+            <h3 style="margin:0;flex:1">Abandoned carts</h3>
+            <button class="btn solid" type="button" id="abd-load">Refresh</button>
+          </div>
+          <div class="kpis" id="abd-kpis"></div>
+          <div class="table-wrap"><table class="oe"><thead><tr>
+            <th>Updated</th><th>Status</th><th>Items</th><th>Known</th><th>Contact</th>
+          </tr></thead><tbody id="abd-tbody"></tbody></table></div>
+        </div>
+      </section>
+
       <section class="view" id="view-settings" data-view="settings">
         <div class="card">
           <h3>Settings</h3>
@@ -432,14 +506,17 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
             <button class="btn solid" type="button" id="settings-preset">Apply butcher preset</button>
           </div>
           <p class="notice">Applying the butcher preset updates defaults and seeds sample products/templates when the catalogue is empty.</p>
+          <p class="notice" id="settings-shop-link">Customer shop: enable <strong>Order Storefront</strong> on the site (Page editor → Lead Capture) or open <code>/order-shop?slug=…</code>.</p>
           <form id="settings-form">
             <div class="grid2">
               <div class="field"><label for="set-payment">Payment rule</label>
                 <select id="set-payment">
-                  <option value="none">None (pay later)</option>
+                  <option value="none">None / pay later</option>
                   <option value="fixed_deposit">Fixed deposit</option>
-                  <option value="percent_deposit">Percent deposit</option>
-                  <option value="full_upfront">Full upfront</option>
+                  <option value="percentage_deposit">Percentage deposit</option>
+                  <option value="full_payment">Full payment</option>
+                  <option value="pay_later">Pay later</option>
+                  <option value="quote_first">Quote first</option>
                 </select>
               </div>
               <div class="field"><label for="set-deposit">Deposit amount (dollars)</label>
@@ -492,12 +569,19 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   var LP = window.__LP || {};
   var sb = window.supabase.createClient(LP.url, LP.anon);
   var SITE_KEY = 'lp.orders.site_id';
+  var urlSite = (new URLSearchParams(location.search)).get('site_id') || '';
+  if (urlSite) try { localStorage.setItem(SITE_KEY, urlSite); } catch (e) {}
   var VIEWS = [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'orders', label: 'Orders' },
     { id: 'new', label: 'New Order' },
     { id: 'products', label: 'Products' },
+    { id: 'calendar', label: 'Calendar' },
     { id: 'supply', label: 'Supply' },
+    { id: 'changes', label: 'Changes' },
+    { id: 'customers', label: 'Customers' },
+    { id: 'payments', label: 'Payments' },
+    { id: 'abandoned', label: 'Abandoned Carts' },
     { id: 'messaging', label: 'Messaging' },
     { id: 'settings', label: 'Settings' }
   ];
@@ -1272,7 +1356,10 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
         host.innerHTML = options.map(function(text, i){
           return '<div class="ai-opt" data-i="' + i + '">' +
             '<textarea>' + esc(text) + '</textarea>' +
-            '<div><button class="btn ghost" type="button" data-copy>Copy</button></div>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+            '<button class="btn ghost" type="button" data-copy>Copy</button>' +
+            '<button class="btn solid" type="button" data-save>Save as template</button>' +
+            '</div>' +
           '</div>';
         }).join('');
         host.querySelectorAll('[data-copy]').forEach(function(b){
@@ -1285,6 +1372,28 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
               ta.select();
               toast('Select text and copy manually', 'err');
             }
+          });
+        });
+        host.querySelectorAll('[data-save]').forEach(function(b){
+          b.addEventListener('click', async function(){
+            var ta = b.closest('.ai-opt').querySelector('textarea');
+            try {
+              await api('/api/order/templates', {
+                method: 'POST',
+                body: {
+                  site_id: state.siteId,
+                  category: $('msg-category').value,
+                  channel: $('msg-channel').value,
+                  name: ($('msg-topic').value.trim() || 'AI draft') + ' · ' + ($('msg-tone').value.trim() || 'tone'),
+                  body: ta.value,
+                  tone: $('msg-tone').value.trim() || null,
+                  topic: $('msg-topic').value.trim() || null,
+                  active: true
+                }
+              });
+              toast('Template saved (not sent)', 'ok');
+              loadTemplates();
+            } catch (e) { toast((e && e.message) || String(e), 'err'); }
           });
         });
       }
@@ -1363,6 +1472,190 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
     btn.disabled = false;
   }
 
+  /* ---------- Calendar / Changes / Customers / Payments / Abandoned ---------- */
+  function exportHref(kind, extra){
+    var token = state.session && state.session.access_token;
+    return '/api/order/export?' + siteQuery('kind=' + encodeURIComponent(kind) + (extra ? '&' + extra : '')) +
+      '&access_token=' + encodeURIComponent(token || '');
+  }
+  // Export uses Bearer via download helper
+  async function downloadExport(kind, extra){
+    if (!requireSite()) return;
+    var path = '/api/order/export?' + siteQuery('kind=' + encodeURIComponent(kind) + (extra ? '&' + extra : ''));
+    var r = await fetch(path, { headers: { Authorization: 'Bearer ' + state.session.access_token } });
+    if (!r.ok) { toast('Export failed', 'err'); return; }
+    var blob = await r.blob();
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = kind + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function loadCalendar(){
+    if (!requireSite()) return;
+    var tbody = $('cal-tbody');
+    var empty = $('cal-empty');
+    tbody.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
+    try {
+      var data = await api('/api/order/calendar?' + siteQuery());
+      var days = data.days || [];
+      empty.classList.toggle('hide', !!days.length);
+      tbody.innerHTML = days.map(function(d){
+        var cap = d.capacity && d.capacity.max != null
+          ? ((d.capacity.used||0) + ' / ' + d.capacity.max)
+          : '—';
+        return '<tr>' +
+          '<td>' + esc(d.date) + '</td>' +
+          '<td>' + esc(d.order_count) + '</td>' +
+          '<td>' + esc(d.known_value) + '</td>' +
+          '<td>' + esc(d.deposits) + '</td>' +
+          '<td>' + esc(cap) + '</td>' +
+          '<td>' + (d.locked ? '<span class="badge b-locked">Locked</span>' : '<span class="badge b-open">Open</span>') + '</td>' +
+          '<td><button class="btn ghost" type="button" data-lock-date="' + esc(d.date) + '">Lock date</button> ' +
+          '<button class="btn ghost" type="button" data-goto-supply="' + esc(d.date) + '">Supply</button></td></tr>';
+      }).join('') || '<tr><td colspan="7">No dates</td></tr>';
+      tbody.querySelectorAll('[data-lock-date]').forEach(function(b){
+        b.addEventListener('click', async function(){
+          if (!confirm('Lock all orders for ' + b.getAttribute('data-lock-date') + '? Customers will not be able to edit.')) return;
+          try {
+            await api('/api/order/calendar', {
+              method: 'POST',
+              body: { site_id: state.siteId, action: 'lock_date', pickup_date: b.getAttribute('data-lock-date') }
+            });
+            toast('Date locked', 'ok');
+            loadCalendar();
+          } catch (e) { toast((e && e.message) || String(e), 'err'); }
+        });
+      });
+      tbody.querySelectorAll('[data-goto-supply]').forEach(function(b){
+        b.addEventListener('click', function(){
+          $('supply-date').value = b.getAttribute('data-goto-supply');
+          location.hash = 'supply';
+          setTimeout(loadSupply, 50);
+        });
+      });
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="7">' + esc((e && e.message) || e) + '</td></tr>';
+    }
+  }
+
+  async function loadChanges(){
+    if (!requireSite()) return;
+    var tbody = $('chg-tbody');
+    var empty = $('chg-empty');
+    tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+    try {
+      var data = await api('/api/order/change-requests?' + siteQuery());
+      var rows = data.requests || [];
+      empty.classList.toggle('hide', !!rows.length);
+      tbody.innerHTML = rows.map(function(r){
+        return '<tr>' +
+          '<td>' + esc((r.created_at || '').slice(0, 16).replace('T', ' ')) + '</td>' +
+          '<td>' + esc(r.order_id) + '</td>' +
+          '<td>' + esc(r.customer_note || '—') + '</td>' +
+          '<td><code style="font-size:11px">' + esc(JSON.stringify(r.proposed_changes || []).slice(0, 120)) + '</code></td>' +
+          '<td><button class="btn solid" type="button" data-approve="' + esc(r.id) + '">Approve</button> ' +
+          '<button class="btn ghost" type="button" data-decline="' + esc(r.id) + '">Decline</button></td></tr>';
+      }).join('') || '';
+      async function decide(id, action){
+        try {
+          await api('/api/order/change-requests', {
+            method: 'POST',
+            body: { site_id: state.siteId, id: id, action: action }
+          });
+          toast(action === 'approve' ? 'Approved' : 'Declined', 'ok');
+          loadChanges();
+        } catch (e) { toast((e && e.message) || String(e), 'err'); }
+      }
+      tbody.querySelectorAll('[data-approve]').forEach(function(b){
+        b.addEventListener('click', function(){ decide(b.getAttribute('data-approve'), 'approve'); });
+      });
+      tbody.querySelectorAll('[data-decline]').forEach(function(b){
+        b.addEventListener('click', function(){ decide(b.getAttribute('data-decline'), 'decline'); });
+      });
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="5">' + esc((e && e.message) || e) + '</td></tr>';
+    }
+  }
+
+  async function loadCustomers(){
+    if (!requireSite()) return;
+    var tbody = $('cust-tbody');
+    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    try {
+      var q = ($('cust-q').value || '').trim();
+      var data = await api('/api/order/customers?' + siteQuery(q ? 'q=' + encodeURIComponent(q) : ''));
+      tbody.innerHTML = (data.customers || []).map(function(c){
+        return '<tr><td>' + esc(c.name) + '</td><td>' + esc(c.phone || '—') + '</td><td>' + esc(c.email || '—') +
+          '</td><td>' + esc(c.order_count) + '</td><td>' + formatAud(c.lifetime_spend_cents) +
+          '</td><td>' + esc((c.last_order_at || '').slice(0, 10) || '—') + '</td></tr>';
+      }).join('') || '<tr><td colspan="6">No customers yet</td></tr>';
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="6">' + esc((e && e.message) || e) + '</td></tr>';
+    }
+  }
+
+  async function loadPayments(){
+    if (!requireSite()) return;
+    var tbody = $('pay-tbody');
+    var kpis = $('pay-kpis');
+    tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+    try {
+      var data = await api('/api/order/payments?' + siteQuery());
+      var s = data.summary || {};
+      kpis.innerHTML =
+        '<div class="kpi"><div class="lbl">Payments</div><div class="val">' + esc(s.count) + '</div></div>' +
+        '<div class="kpi"><div class="lbl">Paid</div><div class="val">' + esc(s.paid_count) + '</div></div>' +
+        '<div class="kpi"><div class="lbl">Collected</div><div class="val">' + esc(s.paid_total) + '</div></div>';
+      tbody.innerHTML = (data.payments || []).map(function(p){
+        return '<tr><td>' + esc((p.paid_at || p.created_at || '').slice(0, 16).replace('T', ' ')) +
+          '</td><td>' + esc(p.kind) + '</td><td>' + esc(p.status) +
+          '</td><td>' + formatAud(p.amount_cents) + '</td><td>' + esc(p.order_id || '—') + '</td></tr>';
+      }).join('') || '<tr><td colspan="5">No payments</td></tr>';
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="5">' + esc((e && e.message) || e) + '</td></tr>';
+    }
+  }
+
+  async function loadAbandoned(){
+    if (!requireSite()) return;
+    var tbody = $('abd-tbody');
+    var kpis = $('abd-kpis');
+    tbody.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+    try {
+      var data = await api('/api/order/abandoned?' + siteQuery());
+      var a = data.analytics || {};
+      kpis.innerHTML =
+        '<div class="kpi"><div class="lbl">Created</div><div class="val">' + esc(a.carts_created) + '</div></div>' +
+        '<div class="kpi"><div class="lbl">Converted</div><div class="val">' + esc(a.converted) + '</div></div>' +
+        '<div class="kpi"><div class="lbl">Abandoned</div><div class="val">' + esc(a.abandoned) + '</div></div>' +
+        '<div class="kpi"><div class="lbl">Recovered</div><div class="val">' + esc(a.recovered) + '</div></div>' +
+        '<div class="kpi"><div class="lbl">Recovery rate</div><div class="val">' + esc(a.recovery_rate) + '%</div></div>' +
+        '<div class="kpi"><div class="lbl">Recovered $</div><div class="val">' + esc(a.recovered_revenue) + '</div></div>';
+      tbody.innerHTML = (data.carts || []).map(function(c){
+        return '<tr><td>' + esc((c.updated_at || '').slice(0, 16).replace('T', ' ')) +
+          '</td><td>' + esc(c.status) + '</td><td>' + esc(c.item_count) +
+          '</td><td>' + formatAud(c.known_subtotal_cents) +
+          '</td><td>' + esc(c.guest_name || c.guest_phone || c.guest_email || '—') + '</td></tr>';
+      }).join('') || '<tr><td colspan="5">No carts yet</td></tr>';
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="5">' + esc((e && e.message) || e) + '</td></tr>';
+    }
+  }
+
+  async function loadTemplates(){
+    if (!requireSite() || !$('tpl-tbody')) return;
+    try {
+      var data = await api('/api/order/templates?' + siteQuery());
+      $('tpl-tbody').innerHTML = (data.templates || []).map(function(t){
+        return '<tr><td>' + esc(t.category) + '</td><td>' + esc(t.name) + '</td><td>' + esc(t.channel) +
+          '</td><td>' + (t.active ? 'Yes' : 'No') +
+          '</td><td><button class="btn ghost" type="button" data-tpl-edit="' + esc(t.id) + '">Edit</button></td></tr>';
+      }).join('') || '<tr><td colspan="5">No templates — apply butcher preset or save an AI draft</td></tr>';
+    } catch (e) {}
+  }
+
   /* ---------- View router ---------- */
   async function loadCurrentView(){
     var v = state.currentView;
@@ -1375,12 +1668,18 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
         ensureNewLines();
       }
       else if (v === 'products') await loadProductsView();
+      else if (v === 'calendar') await loadCalendar();
       else if (v === 'supply') {
         if (!$('supply-date').value) {
           var d = new Date();
           $('supply-date').value = d.toISOString().slice(0, 10);
         }
       }
+      else if (v === 'changes') await loadChanges();
+      else if (v === 'customers') await loadCustomers();
+      else if (v === 'payments') await loadPayments();
+      else if (v === 'abandoned') await loadAbandoned();
+      else if (v === 'messaging') { await loadTemplates(); }
       else if (v === 'settings') await loadSettings();
     } catch (e) {
       toast((e && e.message) || String(e), 'err');
@@ -1436,6 +1735,32 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   $('prod-cancel').addEventListener('click', function(){ $('prod-form-card').classList.add('hide'); });
   $('prod-form').addEventListener('submit', saveProduct);
   $('supply-load').addEventListener('click', loadSupply);
+  if ($('supply-lock')) $('supply-lock').addEventListener('click', async function(){
+    if (!requireSite()) return;
+    var date = $('supply-date').value;
+    if (!date) { toast('Pick a date', 'err'); return; }
+    if (!confirm('Lock all orders for ' + date + '?')) return;
+    try {
+      await api('/api/order/orders', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'lock_date', pickup_date: date }
+      });
+      toast('Date locked', 'ok');
+    } catch (e) { toast((e && e.message) || String(e), 'err'); }
+  });
+  if ($('supply-export')) $('supply-export').addEventListener('click', function(e){
+    e.preventDefault();
+    downloadExport('supply', 'pickup_date=' + encodeURIComponent($('supply-date').value || ''));
+  });
+  if ($('orders-export')) $('orders-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('orders'); });
+  if ($('items-export')) $('items-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('order_items'); });
+  if ($('cal-load')) $('cal-load').addEventListener('click', loadCalendar);
+  if ($('chg-load')) $('chg-load').addEventListener('click', loadChanges);
+  if ($('cust-load')) $('cust-load').addEventListener('click', loadCustomers);
+  if ($('cust-export')) $('cust-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('customers'); });
+  if ($('pay-load')) $('pay-load').addEventListener('click', loadPayments);
+  if ($('pay-export')) $('pay-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('payments'); });
+  if ($('abd-load')) $('abd-load').addEventListener('click', loadAbandoned);
   $('msg-generate').addEventListener('click', generateMessages);
   $('settings-form').addEventListener('submit', saveSettings);
   $('settings-preset').addEventListener('click', applyButcherPreset);
