@@ -763,6 +763,50 @@ function injectOnlineQuote(html, slug, cfg) {
     : (html + block);
 }
 
+function injectOrderStorefront(html, slug, cfg) {
+  const sec = cfg && cfg.sections && cfg.sections.orderStorefront;
+  if (!sec || sec.on !== true) return html;
+  const safeSlug = esc(slug || (cfg && cfg.slug) || '');
+  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-1';
+
+  function ensureScript(doc) {
+    if (doc.indexOf('/assets/lp-order-storefront.js') >= 0) return doc;
+    return doc.indexOf('</body>') !== -1
+      ? doc.replace('</body>', '<script src="' + SCRIPT + '" defer></script>\n</body>')
+      : doc + '<script src="' + SCRIPT + '" defer></script>';
+  }
+
+  if (html.includes('data-sec="orderStorefront"') || html.includes('id="lp-order-storefront"')) {
+    html = html.replace(
+      /(<div\s+id="lp-order-storefront")(?:\s+data-slug="[^"]*")?/,
+      '$1 data-slug="' + safeSlug + '"'
+    );
+    return ensureScript(html);
+  }
+
+  const eyebrow = esc(sec.eyebrow || 'Order online');
+  const heading = esc(sec.heading || 'Place your order');
+  const intro = esc(sec.intro || 'Choose products, pick a pickup date, and pay your deposit if required.');
+  const block =
+    '<section data-sec="orderStorefront" class="sec order-storefront" id="orderStorefront">' +
+    '<div class="in">' +
+    '<div class="section-head">' +
+    (eyebrow ? '<p class="eyebrow ey">' + eyebrow + '</p>' : '') +
+    '<h2>' + heading + '</h2>' +
+    (intro ? '<p class="intro">' + intro + '</p>' : '') +
+    '</div>' +
+    '<div id="lp-order-storefront" data-slug="' + safeSlug + '"></div>' +
+    '</div></section>' +
+    '<script src="' + SCRIPT + '" defer></script>';
+
+  if (html.includes('<section data-sec="quote"')) {
+    return html.replace('<section data-sec="quote"', block + '<section data-sec="quote"');
+  }
+  return html.indexOf('</body>') !== -1
+    ? html.replace('</body>', block + '</body>')
+    : (html + block);
+}
+
 /**
  * SSR SearchCanvas: all tab text in the document for crawlers + no-JS visitors.
  */
@@ -1194,6 +1238,7 @@ module.exports = async (req, res) => {
         html = prepareTradeLiveHtml(html, cfg);
       } catch (_guardErr) { /* never break live render */ }
       html = injectOnlineQuote(html, site.slug, cfg);
+      html = injectOrderStorefront(html, site.slug, cfg);
       html = injectSearchCanvas(html, cfg);
     }
 

@@ -175,6 +175,22 @@ module.exports = async function (req, res) {
         .eq('id', order.id);
     }
 
+    if (body.pickup_date != null || body.pickup_time != null) {
+      const patchPick = { updated_at: new Date().toISOString() };
+      if (body.pickup_date != null) patchPick.pickup_date = body.pickup_date;
+      if (body.pickup_time != null) patchPick.pickup_time = body.pickup_time;
+      await writeChange({
+        order_id: order.id,
+        site_id: order.site_id,
+        field_path: 'pickup',
+        previous_value: { pickup_date: order.pickup_date, pickup_time: order.pickup_time },
+        new_value: patchPick,
+        source: 'customer_portal',
+        actor_label: order.customer_name
+      });
+      await admin.from('order_orders').update(patchPick).eq('id', order.id);
+    }
+
     const recalc = await recalculateOrder(order.id);
     await writeAudit({
       order_system_id: order.order_system_id,
