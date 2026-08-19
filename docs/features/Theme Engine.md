@@ -181,18 +181,19 @@ Every section/app colour control in `manage.html` must:
 
 Hardcoded hex is only OK for true non-theme neutrals (e.g. pure white text on a dark bar) that are not meant to follow Branding.
 
-## Colour override (site-wide remap)
+## Colour override / CSS Override (site-wide remap)
 
-Branding → **Colour override** stores `config.colorOverrides = [{ id, from, to }, …]`.
+Branding → **CSS Override** stores `config.colorOverrides = [{ id, from, to }, …]`.
 
 | Step | Behaviour |
 |------|-----------|
-| Editor | Unlimited source → replacement rows; live preview via `__applyTradeConfig` |
-| Preview | `demo-shared.js` remaps hex in a cloned config before hydrate |
-| Public render | `injectTradeThemeVars` remaps theme CSS + HTML hex via `lib/color-overrides.js` |
-| Precedence | Overrides win over theme tokens, presets, and matching per-section hex |
+| Editor | Source → replacement rows; colour chips from colours already on the site; eyedropper on source |
+| Live remap | Preview/public render remaps hex via `lib/color-overrides.js` (reversible) |
+| **Bake into site** | Permanently rewrites matching hex in `theme` + sections/apps, then clears those override rows |
+| After bake | Open any app and set a one-off colour — that app can diverge from the baked palette |
+| Precedence (live) | Overrides win over theme tokens, presets, and matching per-section hex |
 
-Warn operators: a remap replaces that hex **everywhere** it appears on the site.
+Warn operators: a remap replaces that hex **everywhere** it appears on the site. Use **Bake** when you want the new hex written into the config (e.g. Bean Culture pink → butcher green), then customise individual apps.
 
 ---
 

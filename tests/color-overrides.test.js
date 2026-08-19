@@ -51,4 +51,45 @@ describe('color-overrides', () => {
   it('exposes browser helper', () => {
     assert.match(clientSource(), /function __lpApplyColorOverrides/);
   });
+
+  it('collects unique hex colours from config', () => {
+    const {
+      collectHexColorsFromConfig
+    } = require('../lib/color-overrides');
+    const cols = collectHexColorsFromConfig({
+      theme: { pipe: '#1f7bb8', hivis: '#FF6A1F' },
+      sections: { hero: { titleColor: '#ff6a1f', bg: '#eef2f6' } },
+      colorOverrides: [{ from: '#111111', to: '#222222' }]
+    });
+    assert.ok(cols.includes('#1f7bb8'));
+    assert.ok(cols.includes('#ff6a1f'));
+    assert.ok(cols.includes('#eef2f6'));
+    assert.ok(!cols.includes('#111111'));
+  });
+
+  it('bakes overrides permanently into config hex values', () => {
+    const {
+      bakeColorOverridesIntoConfig
+    } = require('../lib/color-overrides');
+    const cfg = {
+      theme: { pipe: '#1f7bb8', hivis: '#e91e8c' },
+      sections: {
+        hero: { titleColor: '#e91e8c', btnBg: '#1f7bb8' },
+        faq: { headingColor: '#e91e8c' }
+      },
+      colorOverrides: [
+        { id: 'a', from: '#e91e8c', to: '#1f5c3a' },
+        { id: 'b', from: '#00ff00', to: '#0000ff' }
+      ]
+    };
+    const out = bakeColorOverridesIntoConfig(cfg);
+    assert.equal(out.config.theme.hivis, '#1f5c3a');
+    assert.equal(out.config.sections.hero.titleColor, '#1f5c3a');
+    assert.equal(out.config.sections.faq.headingColor, '#1f5c3a');
+    assert.equal(out.config.sections.hero.btnBg, '#1f7bb8');
+    assert.equal(out.baked.length, 2);
+    assert.equal(out.config.colorOverrides.length, 0);
+    // original untouched
+    assert.equal(cfg.theme.hivis, '#e91e8c');
+  });
 });
