@@ -194,7 +194,7 @@ Short summary of every engineering document in `docs/`.
 | **Search Intelligence / SEO Command Centre** | [search-intelligence/00-VISION](search-intelligence/00-VISION.md) | [search-intelligence/01-ARCHITECTURE](search-intelligence/01-ARCHITECTURE.md), [search-intelligence/08-ROADMAP](search-intelligence/08-ROADMAP.md) | `lib/search-intelligence/*`, `db/search_intelligence_schema.sql` (draft) |
 | **Partner features** | [05-PARTNERS](05-PARTNERS.md) | [00-VISION](00-VISION.md) § Partners | `api/partner/*`, `partner.html` |
 | **Billing / Stripe** | [01-ARCHITECTURE](01-ARCHITECTURE.md) §14 | [05-PARTNERS](05-PARTNERS.md) § Commissions | `api/billing/*` |
-| **Order Engine / ordering** | [features/Order Engine](features/Order%20Engine.md) | [02-DATABASE](02-DATABASE.md) | `lib/order/*`, `api/order/*`, `orders.html`, `order-portal.html`, `db/order_engine_*.sql` |
+| **Order Engine / ordering** | [features/Order Engine](features/Order%20Engine.md) | [02-DATABASE](02-DATABASE.md) | `lib/order/*`, `api/order/*`, `orders.html`, `order-shop.html`, `order-portal.html`, `assets/lp-order-storefront.js`, `db/order_engine_*.sql` |
 | **Domains / DNS** | [06-DOMAINS](06-DOMAINS.md) | [01-ARCHITECTURE](01-ARCHITECTURE.md) §12 | `dreamscape.js`, `api/domains/*` |
 | **Marketplace apps** | [01-ARCHITECTURE](01-ARCHITECTURE.md) | [10-EDITOR](10-EDITOR.md) § Marketplace | `api/api-apps.js`, `api-site-apps.js` |
 | **Public marketplace V2** | [features/Marketplace-Public-V2](features/Marketplace-Public-V2.md) | [features/Marketplace](features/Marketplace.md) | `marketplace.html`, `marketplace-feature.html`, `assets/js/marketplace/*`, `playground/trustbar-*.json` |
@@ -305,9 +305,19 @@ Short summary of every engineering document in `docs/`.
 | `GET /api/order/dashboard` | `order/dashboard.js` | Bearer + site access |
 | `GET /api/order/supply` | `order/supply.js` | Bearer + site access |
 | `GET/POST /api/order/portal` | `order/portal.js` | Magic-link token |
+| `GET /api/order/storefront` | `order/storefront.js` | Public catalogue |
+| `GET/POST/PATCH/DELETE /api/order/cart` | `order/cart.js` | Public cart + checkout |
+| `GET /api/order/customers` | `order/customers.js` | Bearer + site access |
+| `GET /api/order/payments` | `order/payments.js` | Bearer + site access |
+| `GET/POST /api/order/calendar` | `order/calendar.js` | Bearer + site access |
+| `GET /api/order/abandoned` | `order/abandoned.js` | Bearer + site access |
+| `GET/POST/PATCH/DELETE /api/order/templates` | `order/templates.js` | Bearer + site access |
+| `GET/POST /api/order/change-requests` | `order/change-requests.js` | Bearer + site access |
+| `GET /api/order/export` | `order/export.js` | Bearer + site access (CSV) |
 | `POST /api/order/checkout-deposit` | `order/checkout-deposit.js` | Bearer (staff) or portal token |
 | `POST /api/order/webhook` | `order/webhook.js` | Stripe HMAC |
 | `POST /api/order/message-ai` | `order/message-ai.js` | Bearer + site access |
+| `GET /api/cron/order-abandoned` | `cron/order-abandoned.js` | Cron secret |
 
 ### Domains
 
