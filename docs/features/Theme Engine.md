@@ -187,13 +187,14 @@ Branding → **CSS Override** stores `config.colorOverrides = [{ id, from, to },
 
 | Step | Behaviour |
 |------|-----------|
-| Editor | Source → replacement rows; colour chips from colours already on the site; eyedropper on source |
+| Eyedrop from live preview | Opens preview (if needed) + EyeDropper; creates a new remap row from the picked hex |
+| Multi-select | Toggle on → click chips (or **Select similar**) → one new colour for the lot |
 | Live remap | Preview/public render remaps hex via `lib/color-overrides.js` (reversible) |
-| **Bake into site** | Permanently rewrites matching hex in `theme` + sections/apps, then clears those override rows |
-| After bake | Open any app and set a one-off colour — that app can diverge from the baked palette |
+| **Update CSS to new overrides** | Permanently rewrites matching hex in `theme` + sections/apps, clears those override rows, refreshes “Colours on this site” |
+| After update | In-app custom CSS/colours simply appear as new chips on the simplified list |
 | Precedence (live) | Overrides win over theme tokens, presets, and matching per-section hex |
 
-Warn operators: a remap replaces that hex **everywhere** it appears on the site. Use **Bake** when you want the new hex written into the config (e.g. Bean Culture pink → butcher green), then customise individual apps.
+Warn operators: a remap replaces that hex **everywhere** it appears on the site. Use **Update CSS to new overrides** when you want the new hex written into the config (e.g. Bean Culture pinks → butcher green), then customise individual apps.
 
 ---
 
