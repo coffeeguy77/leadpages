@@ -7587,7 +7587,7 @@ function heroCtaCard(c){
     } else if(sub==='promotions'){
       if(!c.sections) c.sections={}; if(!c.sections.promotions) c.sections.promotions={};
       body.innerHTML=secCard(c,'promotions','Promotions Engine',true,[])
-        +'<div class="card" style="margin-bottom:22px;"><h2>Promotions</h2><p class="lede">Create urgency and offers. Pick a type (countdowns, limited spots, seasonal, suburb, finance, social proof, mystery and more), a placement (below hero, inline, floating bar, sticky strip or popup) and a style. Call / Quote buttons reuse your existing actions \u2014 no new forms. Add, edit, reorder or remove.</p><div id="pr-list"></div><div style="margin-top:14px;"><button type="button" id="pr-add" style="appearance:none;border:1px dashed var(--line);background:#fff;border-radius:9px;padding:10px 15px;font:inherit;font-weight:600;cursor:pointer;">+ Add promotion</button></div></div>';
+        +'<div class="card" style="margin-bottom:22px;"><h2>Promotions</h2><p class="lede">Create urgency and offers. Pick a type (countdowns, limited spots, seasonal, suburb, finance, social proof, mystery and more), a placement (below hero, inline, floating bar, sticky strip or popup) and a style. Call / Quote reuse your site actions, or set <strong>External URL</strong> so Book now opens a booking page in a new tab. Add, edit, reorder or remove.</p><div id="pr-list"></div><div style="margin-top:14px;"><button type="button" id="pr-add" style="appearance:none;border:1px dashed var(--line);background:#fff;border-radius:9px;padding:10px 15px;font:inherit;font-weight:600;cursor:pointer;">+ Add promotion</button></div></div>';
       wireSec(c,'promotions',true,[]);
       var _PRH=$('pr-list');
       var _PRis='width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;';
@@ -7618,7 +7618,8 @@ function heroCtaCard(c){
           +lpFld('Title','pr-'+i+'-title','')
           +'<div class="f"><label>Description</label><textarea id="pr-'+i+'-desc" rows="2" style="'+_PRis+'">'+esc(p.description||'')+'</textarea></div>'
           +_prTypeFields(p,i)
-          +'<div class="row3">'+lpFld('Button text','pr-'+i+'-ctatext','Book now')+lpSel('Button action','pr-'+i+'-ctaaction',[['quote','Quote form'],['call','Call'],['scroll','Scroll to form'],['none','No button']],(p.cta&&p.cta.action)||'quote')+'<div></div></div>'
+          +'<div class="row3">'+lpFld('Button text','pr-'+i+'-ctatext','Book now')+lpSel('Button action','pr-'+i+'-ctaaction',[['quote','Quote form'],['call','Call'],['scroll','Scroll to form'],['url','External URL (new tab)'],['none','No button']],(p.cta&&p.cta.action)||'quote')+(((p.cta&&p.cta.action)==='url')?lpFld('Button URL',('pr-'+i+'-ctaurl'),'https://booking.example.com/\u2026'):'<div></div>')+'</div>'
+          +(((p.cta&&p.cta.action)==='url')?'<p class="hint" style="margin:6px 0 0;">Opens in a new tab (\u201c_blank\u201d). Use for event booking sites, ticket links, or any external page.</p>':'')
           +'</div>';
       }
       function _prDraw(){ var its=_prItems(); _PRH.innerHTML=its.length?its.map(_prCardEd).join(''):'<p class="lede" style="opacity:.7;margin:0;">No promotions yet \u2014 add one to get started.</p>'; _prWire(); }
@@ -7631,7 +7632,8 @@ function heroCtaCard(c){
           var ty=E('type'); if(ty){ ty.addEventListener('change',function(){ p.type=ty.value; persist(); previewApply(); _prDraw(); }); }
           var pl=E('place'); if(pl){ pl.addEventListener('change',function(){ p.placement=pl.value; persist(); previewApply(); }); }
           var sy=E('style'); if(sy){ sy.addEventListener('change',function(){ p.style=sy.value; persist(); previewApply(); }); }
-          var c9=E('ctaaction'); if(c9){ c9.addEventListener('change',function(){ if(!p.cta)p.cta={}; p.cta.action=c9.value; persist(); previewApply(); }); }
+          var c9=E('ctaaction'); if(c9){ c9.addEventListener('change',function(){ if(!p.cta)p.cta={}; p.cta.action=c9.value; persist(); previewApply(); _prDraw(); }); }
+          var cu=E('ctaurl'); if(cu){ cu.value=(p.cta&&p.cta.url)||''; cu.addEventListener('input',function(){ if(!p.cta)p.cta={}; p.cta.url=cu.value; persist(); previewApply(); }); }
           var ob=E('on'); if(ob){ ob.addEventListener('change',function(){ p.on=ob.checked; persist(); previewApply(); }); }
           var dy=E('day'); if(dy){ dy.addEventListener('change',function(){ p.weeklyDay=parseInt(dy.value,10); persist(); previewApply(); }); }
           ['amount','disclaimer','discountText','suburbs','revealText','number','cut'].forEach(function(k){ var el=E(k); if(el) el.addEventListener('input',function(){ if(el.value===''){ delete p[(k==='cut')?'weeklyCutoff':k]; } else { p[(k==='cut')?'weeklyCutoff':k]=el.value; } persist(); previewApply(); }); });

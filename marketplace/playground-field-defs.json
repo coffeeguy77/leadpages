@@ -4381,6 +4381,24 @@
       "type": "text",
       "key": "sections.promotions.items.0.cta.text",
       "label": "Button text"
+    },
+    {
+      "type": "select",
+      "key": "sections.promotions.items.0.cta.action",
+      "label": "Button action",
+      "options": [
+        { "value": "quote", "label": "Quote form" },
+        { "value": "call", "label": "Call" },
+        { "value": "scroll", "label": "Scroll to form" },
+        { "value": "url", "label": "External URL (new tab)" },
+        { "value": "none", "label": "No button" }
+      ]
+    },
+    {
+      "type": "text",
+      "key": "sections.promotions.items.0.cta.url",
+      "label": "Button URL (opens in new tab)",
+      "placeholder": "https://booking.example.com/…"
     }
   ],
   "bookingCta": [

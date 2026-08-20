@@ -36,6 +36,7 @@
     ['quote', 'Quote form'],
     ['call', 'Call'],
     ['scroll', 'Scroll to form'],
+    ['url', 'External URL (new tab)'],
     ['none', 'No button']
   ];
 
@@ -232,6 +233,11 @@
         + '<div class="f"><label for="pr-ctatext">Button text</label>'
         + '<input type="text" id="pr-ctatext" class="tin" value="' + esc((p.cta && p.cta.text) || '') + '"></div>'
         + sel('pr-ctaaction', 'Button action', CTA_ACTIONS, (p.cta && p.cta.action) || 'quote')
+        + (((p.cta && p.cta.action) === 'url')
+          ? ('<div class="f" style="grid-column:1/-1"><label for="pr-ctaurl">Button URL (opens in new tab)</label>'
+            + '<input type="url" id="pr-ctaurl" class="tin" placeholder="https://booking.example.com/…" value="'
+            + esc((p.cta && p.cta.url) || '') + '"></div>')
+          : '')
         + '</div>'
         + '<div class="tb-ed-app-box' + (custom ? ' on' : '') + '" data-mp-app-box>'
         + '<div class="tb-ed-app-head">'
@@ -406,7 +412,7 @@
         if (t.id === 'pr-type') { p.type = t.value; emit(); render(); return; }
         if (t.id === 'pr-place') { p.placement = t.value; emit(); return; }
         if (t.id === 'pr-style') { p.style = t.value; emit(); return; }
-        if (t.id === 'pr-ctaaction') { if (!p.cta) p.cta = {}; p.cta.action = t.value; emit(); return; }
+        if (t.id === 'pr-ctaaction') { if (!p.cta) p.cta = {}; p.cta.action = t.value; emit(); render(); return; }
         if (t.id === 'pr-day') { p.weeklyDay = parseInt(t.value, 10); emit(); return; }
         if (t.id === 'pr-expiry' || t.id === 'pr-startDate' || t.id === 'pr-endDate') {
           var k = t.id.replace('pr-', '');
@@ -435,6 +441,7 @@
         if (t.id === 'pr-title') { p.title = t.value; emit(); return; }
         if (t.id === 'pr-desc') { p.description = t.value; emit(); return; }
         if (t.id === 'pr-ctatext') { if (!p.cta) p.cta = {}; p.cta.text = t.value; emit(); return; }
+        if (t.id === 'pr-ctaurl') { if (!p.cta) p.cta = {}; p.cta.url = t.value; emit(); return; }
         if (t.id === 'pr-cut') { p.weeklyCutoff = t.value; emit(); return; }
         if (t.id === 'pr-spotsTotal' || t.id === 'pr-spotsRemaining') {
           var n = parseInt(t.value, 10);
