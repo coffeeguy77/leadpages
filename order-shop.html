@@ -48,13 +48,23 @@ body{margin:0;min-height:100vh;font-family:var(--font-ui);color:var(--ink);backg
 .lp-oe-fields{display:grid;gap:10px;margin:14px 0;}
 .lp-oe-fields label{display:grid;gap:4px;font-size:12px;font-weight:700;color:var(--muted);}
 .lp-oe-fields input,.lp-oe-fields textarea,.lp-oe-fields select{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);}
-.lp-oe-line{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);}
+.lp-oe-line{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line);}
+.lp-oe-line-main{flex:1;min-width:0}
+.lp-oe-line-meta{margin:4px 0 0;color:var(--muted);font-size:13px}
+.lp-oe-line-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.lp-oe-qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:#fff}
+.lp-oe-qty-btn{appearance:none;border:0;background:transparent;width:34px;height:34px;font:700 16px/1 var(--font-ui);cursor:pointer;color:var(--ink)}
+.lp-oe-qty-btn:hover{background:rgba(0,0,0,.04)}
+.lp-oe-qty-val{min-width:28px;text-align:center;font:700 13px/1 var(--font-ui)}
+.lp-oe-remove{appearance:none;border:1px solid #c45c26;background:transparent;color:#c45c26;font:600 12px/1 var(--font-ui);padding:8px 12px;border-radius:999px;cursor:pointer}
+.lp-oe-remove:hover{background:#c45c26;color:#fff}
 .lp-oe-summary{margin:14px 0;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;}
 .lp-oe-summary .row{display:flex;justify-content:space-between;gap:10px;margin:0 0 8px;font-size:14.5px;}
 .lp-oe-summary .row.emph{font-weight:700;padding-top:8px;border-top:1px dashed var(--line);}
 .lp-oe-detail,.lp-oe-cart{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;}
 .lp-oe-related ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px;}
 .lp-oe-related button{background:transparent;color:var(--accent);}
+.lp-oe-primary:disabled,.lp-oe-cart-btn:disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:560px){.lp-oe-list .lp-oe-card{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -73,6 +83,6 @@ body{margin:0;min-height:100vh;font-family:var(--font-ui);color:var(--ink);backg
   }
 })();
 </script>
-<script src="/assets/lp-order-storefront.js" defer></script>
+<script src="/assets/lp-order-storefront.js?v=oe-4" defer></script>
 </body>
 </html>

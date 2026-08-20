@@ -18,12 +18,19 @@
     if (c == null) return 'TBC';
     return '$' + (Number(c) / 100).toFixed(2);
   }
+  function qtyTotal(items) {
+    var n = 0;
+    (items || []).forEach(function (it) {
+      n += Number(it.quantity) || 0;
+    });
+    return n;
+  }
 
   async function api(path, opts) {
     opts = opts || {};
     var r = await fetch(path, {
       method: opts.method || 'GET',
-      headers: opts.body ? { 'content-type': 'application/json' }: undefined,
+      headers: opts.body ? { 'content-type': 'application/json' } : undefined,
       body: opts.body ? JSON.stringify(opts.body) : undefined
     });
     var j = null;
@@ -52,10 +59,19 @@
       cartId: localStorage.getItem(cartKey(this.slug)) || '',
       cart: null,
       items: [],
+      pickupSlots: [],
       view: 'shop',
       selected: null,
       busy: false,
-      msg: ''
+      msg: '',
+      checkoutDraft: {
+        name: '',
+        phone: '',
+        email: '',
+        date: '',
+        slotId: '',
+        notes: ''
+      }
     };
   }
 
@@ -63,9 +79,38 @@
     return '/order-portal?slug=' + encodeURIComponent(this.slug || '');
   };
 
+  OrderStorefront.prototype.rememberSlug = function () {
+    if (!this.slug) return;
+    try {
+      localStorage.setItem('lp.order.lastSlug', this.slug);
+    } catch (_e) {}
+  };
+
+  OrderStorefront.prototype.applyPacked = function (packed) {
+    if (!packed) return;
+    this.state.cart = packed.cart || this.state.cart;
+    this.state.items = packed.items || [];
+    if (packed.deposit) this.state.deposit = packed.deposit;
+    if (packed.display) this.state.display = packed.display;
+    if (packed.earliest_pickup_date) this.state.earliest = packed.earliest_pickup_date;
+    if (packed.pickup_slots) this.state.pickupSlots = packed.pickup_slots;
+  };
+
   OrderStorefront.prototype.init = async function () {
     try {
+      this.rememberSlug();
       this.state.catalogue = await api('/api/order/storefront?slug=' + encodeURIComponent(this.slug));
+      this.state.pickupSlots = this.state.catalogue.pickup_slots || [];
+      this.state.earliest = this.state.catalogue.earliest_pickup_date;
+      // Recover cart from reorder deep-link
+      try {
+        var params = new URLSearchParams(location.search);
+        var qCart = params.get('cart_id') || params.get('cart');
+        if (qCart) {
+          this.state.cartId = qCart;
+          localStorage.setItem(cartKey(this.slug), qCart);
+        }
+      } catch (_e) {}
       if (this.state.cartId) {
         try {
           var packed = await api(
@@ -74,10 +119,7 @@
               '&cart_id=' +
               encodeURIComponent(this.state.cartId)
           );
-          this.state.cart = packed.cart;
-          this.state.items = packed.items || [];
-          this.state.deposit = packed.deposit;
-          this.state.display = packed.display;
+          this.applyPacked(packed);
         } catch (e) {
           this.state.cartId = '';
           localStorage.removeItem(cartKey(this.slug));
@@ -112,11 +154,23 @@
         '&cart_id=' +
         encodeURIComponent(this.state.cartId)
     );
-    this.state.cart = packed.cart;
-    this.state.items = packed.items || [];
-    this.state.deposit = packed.deposit;
-    this.state.display = packed.display;
-    this.state.earliest = packed.earliest_pickup_date;
+    this.applyPacked(packed);
+  };
+
+  OrderStorefront.prototype.captureCheckoutDraft = function () {
+    var d = this.state.checkoutDraft || (this.state.checkoutDraft = {});
+    var name = $('#oe-name', this.root);
+    var phone = $('#oe-phone', this.root);
+    var email = $('#oe-email', this.root);
+    var date = $('#oe-date', this.root);
+    var slot = $('#oe-slot', this.root);
+    var notes = $('#oe-cnotes', this.root);
+    if (name) d.name = name.value;
+    if (phone) d.phone = phone.value;
+    if (email) d.email = email.value;
+    if (date) d.date = date.value;
+    if (slot) d.slotId = slot.value;
+    if (notes) d.notes = notes.value;
   };
 
   OrderStorefront.prototype.render = function () {
@@ -125,7 +179,8 @@
     var mode = (c && c.system && c.system.storefront_display_mode) || 'compact_cards';
     var html = '';
     html += '<div class="lp-oe">';
-    html += '<header class="lp-oe-head"><div><p class="lp-oe-ey">Order online</p><h2 class="lp-oe-brand">' +
+    html +=
+      '<header class="lp-oe-head"><div><p class="lp-oe-ey">Order online</p><h2 class="lp-oe-brand">' +
       esc(biz) +
       '</h2><p class="lp-oe-sub">Choose products, pick a collection date, pay deposit if required.</p></div>';
     html += '<div class="lp-oe-head-actions">';
@@ -138,8 +193,10 @@
         '</a>';
     }
     html +=
-      '<button type="button" class="lp-oe-cart-btn" data-act="open-cart">Cart (' +
-      (this.state.items.length || 0) +
+      '<button type="button" class="lp-oe-cart-btn" data-act="open-cart"' +
+      (this.state.busy ? ' disabled' : '') +
+      '>Cart (' +
+      qtyTotal(this.state.items) +
       ')</button></div></header>';
 
     if (this.state.msg) html += '<p class="lp-oe-msg">' + esc(this.state.msg) + '</p>';
@@ -236,7 +293,9 @@
     html +=
       '<button type="button" class="lp-oe-primary" data-act="add-product" data-id="' +
       esc(p.id) +
-      '">Add to cart</button>';
+      '"' +
+      (this.state.busy ? ' disabled' : '') +
+      '>Add to cart</button>';
     if ((p.related || []).length && this.state.catalogue) {
       var heading =
         (this.state.catalogue.system && this.state.catalogue.system.cross_sell_heading) ||
@@ -261,7 +320,17 @@
     return html;
   };
 
+  OrderStorefront.prototype.linePriceLabel = function (it) {
+    if (it.price_status === 'tbc' || it.price_status === 'quote_required') return 'Price TBC';
+    if (it.line_known_cents != null) {
+      return money(it.line_known_cents) + (it.price_status === 'estimated' ? ' est.' : '');
+    }
+    return 'Price TBC';
+  };
+
   OrderStorefront.prototype.renderCart = function () {
+    var self = this;
+    var d = this.state.checkoutDraft || {};
     var html = '<div class="lp-oe-cart">';
     html += '<button type="button" class="lp-oe-link" data-act="back-shop">← Keep shopping</button>';
     html += '<h3>Your cart</h3>';
@@ -271,28 +340,50 @@
     }
     this.state.items.forEach(function (it) {
       var snap = it.product_snapshot || {};
-      html += '<div class="lp-oe-line">';
-      html += '<div><strong>' + esc(snap.name || 'Item') + '</strong>';
+      var q = Number(it.quantity) || 1;
+      html += '<div class="lp-oe-line" data-line="' + esc(it.id) + '">';
+      html += '<div class="lp-oe-line-main"><strong>' + esc(snap.name || 'Item') + '</strong>';
+      if (it.requested_weight_kg != null) {
+        html += '<p class="lp-oe-line-meta">~' + esc(it.requested_weight_kg) + 'kg each</p>';
+      }
+      html += '<p class="lp-oe-price">' + esc(self.linePriceLabel(it)) + '</p></div>';
+      html += '<div class="lp-oe-line-actions">';
+      html += '<div class="lp-oe-qty" role="group" aria-label="Quantity">';
       html +=
-        '<p>Qty ' +
-        esc(it.quantity) +
-        (it.requested_weight_kg != null ? ' · ~' + esc(it.requested_weight_kg) + 'kg' : '') +
-        '</p>';
+        '<button type="button" class="lp-oe-qty-btn" data-act="qty-dec" data-id="' +
+        esc(it.id) +
+        '"' +
+        (self.state.busy ? ' disabled' : '') +
+        ' aria-label="Decrease">−</button>';
+      html += '<span class="lp-oe-qty-val">' + esc(q) + '</span>';
       html +=
-        '<p class="lp-oe-price">' +
-        (it.price_status === 'tbc' || it.price_status === 'quote_required'
-          ? 'Price TBC'
-          : money(it.line_known_cents)) +
-        '</p></div>';
+        '<button type="button" class="lp-oe-qty-btn" data-act="qty-inc" data-id="' +
+        esc(it.id) +
+        '"' +
+        (self.state.busy ? ' disabled' : '') +
+        ' aria-label="Increase">+</button>';
+      html += '</div>';
       html +=
-        '<button type="button" data-act="remove" data-id="' + esc(it.id) + '">Remove</button></div>';
+        '<button type="button" class="lp-oe-remove" data-act="remove" data-id="' +
+        esc(it.id) +
+        '"' +
+        (self.state.busy ? ' disabled' : '') +
+        '>Remove</button>';
+      html += '</div></div>';
     });
     html += '<div class="lp-oe-summary">';
-    html +=
-      '<div class="row"><span>Known items</span><strong>' +
-      esc((this.state.display && this.state.display.known_subtotal) || money(this.state.cart.known_subtotal_cents)) +
-      '</strong></div>';
-    if (this.state.cart.has_unknown_prices)
+    var knownLbl =
+      (this.state.display && this.state.display.known_subtotal) ||
+      money(this.state.cart && this.state.cart.known_subtotal_cents);
+    var estLbl = this.state.display && this.state.display.estimated_subtotal;
+    if (estLbl && estLbl !== knownLbl) {
+      html +=
+        '<div class="row"><span>Estimated items</span><strong>' + esc(estLbl) + '</strong></div>';
+    } else {
+      html +=
+        '<div class="row"><span>Known items</span><strong>' + esc(knownLbl) + '</strong></div>';
+    }
+    if (this.state.cart && this.state.cart.has_unknown_prices)
       html += '<div class="row"><span>Other items</span><strong>Price TBC</strong></div>';
     html +=
       '<div class="row emph"><span>Deposit due today</span><strong>' +
@@ -303,23 +394,58 @@
     html += '</div>';
 
     if (this.state.view === 'checkout') {
+      var slots = this.state.pickupSlots || [];
       html += '<div class="lp-oe-fields">';
-      html += '<label>Your name<input id="oe-name" required></label>';
-      html += '<label>Mobile<input id="oe-phone" type="tel"></label>';
-      html += '<label>Email<input id="oe-email" type="email"></label>';
       html +=
-        '<label>Pickup date<input id="oe-date" type="date" min="' +
-        esc(this.state.earliest || (this.state.catalogue && this.state.catalogue.earliest_pickup_date) || '') +
+        '<label>Your name<input id="oe-name" required value="' + esc(d.name || '') + '"></label>';
+      html +=
+        '<label>Mobile<input id="oe-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx" value="' +
+        esc(d.phone || '') +
         '"></label>';
-      html += '<label>Pickup time<input id="oe-time" type="time"></label>';
-      html += '<label>Order notes<textarea id="oe-cnotes"></textarea></label>';
+      html +=
+        '<label>Email<input id="oe-email" type="email" autocomplete="email" value="' +
+        esc(d.email || '') +
+        '"></label>';
+      if (slots.length) {
+        html += '<label>Pickup window<select id="oe-slot" required>';
+        html += '<option value="">Choose a pickup time…</option>';
+        slots.forEach(function (s) {
+          html +=
+            '<option value="' +
+            esc(s.id) +
+            '"' +
+            (d.slotId === s.id ? ' selected' : '') +
+            '>' +
+            esc(s.label) +
+            '</option>';
+        });
+        html += '</select></label>';
+        html +=
+          '<p class="lp-oe-note" style="margin:0">Times shown are collection windows (e.g. 9am–4pm).</p>';
+      } else {
+        html +=
+          '<label>Pickup date<input id="oe-date" type="date" min="' +
+          esc(this.state.earliest || (this.state.catalogue && this.state.catalogue.earliest_pickup_date) || '') +
+          '" value="' +
+          esc(d.date || '') +
+          '"></label>';
+        html +=
+          '<p class="lp-oe-note" style="margin:0">This store has not published pickup windows yet — pick a date and we will confirm the time.</p>';
+      }
+      html +=
+        '<label>Order notes<textarea id="oe-cnotes">' + esc(d.notes || '') + '</textarea></label>';
       html += '</div>';
       html +=
-        '<button type="button" class="lp-oe-primary" data-act="confirm">' +
-        esc((this.state.display && this.state.display.cta) || 'CONFIRM ORDER') +
+        '<button type="button" class="lp-oe-primary" data-act="confirm"' +
+        (this.state.busy ? ' disabled' : '') +
+        '>' +
+        esc((this.state.display && this.state.display.cta) || 'Review order') +
         '</button>';
     } else {
-      html += '<button type="button" class="lp-oe-primary" data-act="to-checkout">Checkout</button>';
+      html +=
+        '<button type="button" class="lp-oe-primary" data-act="to-checkout"' +
+        (this.state.busy ? ' disabled' : '') +
+        '>Checkout</button>';
     }
     html += '</div>';
     return html;
@@ -355,10 +481,62 @@
         self.onAct(el.getAttribute('data-act'), el);
       });
     });
+    // Preserve checkout fields while typing
+    ['oe-name', 'oe-phone', 'oe-email', 'oe-date', 'oe-slot', 'oe-cnotes'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', function () {
+        self.captureCheckoutDraft();
+      });
+      el.addEventListener('change', function () {
+        self.captureCheckoutDraft();
+      });
+    });
+  };
+
+  OrderStorefront.prototype.setQty = async function (itemId, nextQty) {
+    var item = (this.state.items || []).find(function (it) {
+      return it.id === itemId;
+    });
+    if (!item) return;
+    if (nextQty <= 0) {
+      await this.removeLine(itemId);
+      return;
+    }
+    var productId = item.product_id;
+    var out = await api('/api/order/cart', {
+      method: 'POST',
+      body: {
+        action: 'update_item',
+        slug: this.slug,
+        cart_id: this.state.cartId,
+        cart_item_id: itemId,
+        product_id: productId,
+        quantity: nextQty,
+        requested_weight_kg: item.requested_weight_kg,
+        notes: item.notes,
+        answers: item.answers || {}
+      }
+    });
+    this.applyPacked(out);
+  };
+
+  OrderStorefront.prototype.removeLine = async function (itemId) {
+    var out = await api('/api/order/cart', {
+      method: 'POST',
+      body: {
+        action: 'remove_item',
+        slug: this.slug,
+        cart_id: this.state.cartId,
+        cart_item_id: itemId
+      }
+    });
+    this.applyPacked(out);
   };
 
   OrderStorefront.prototype.onAct = async function (act, el) {
     var self = this;
+    if (self.state.busy && act !== 'back-shop' && act !== 'open-cart') return;
     try {
       self.state.msg = '';
       if (act === 'open-cart') {
@@ -368,6 +546,7 @@
         return;
       }
       if (act === 'back-shop') {
+        self.captureCheckoutDraft();
         self.state.view = 'shop';
         self.render();
         return;
@@ -378,90 +557,170 @@
         self.render();
         return;
       }
-      if (act === 'add-product') {
-        await self.ensureCart();
-        var answers = {};
-        self.root.querySelectorAll('[data-q]').forEach(function (inp) {
-          answers[inp.getAttribute('data-q')] = { value: inp.value, label: inp.getAttribute('data-q') };
-        });
-        var kgEl = $('#oe-kg', self.root);
-        await api('/api/order/cart', {
-          method: 'POST',
-          body: {
-            action: 'add_item',
-            slug: self.slug,
-            cart_id: self.state.cartId,
-            product_id: el.getAttribute('data-id'),
-            quantity: Number(($('#oe-qty', self.root) || {}).value || 1),
-            requested_weight_kg: kgEl && kgEl.value ? Number(kgEl.value) : null,
-            notes: (($('#oe-notes', self.root) || {}).value) || null,
-            answers: answers
-          }
-        });
-        await self.refreshCart();
-        self.state.msg = 'Added to cart';
-        self.state.view = 'cart';
+      if (act === 'qty-inc' || act === 'qty-dec') {
+        self.state.busy = true;
+        self.render();
+        try {
+          var id = el.getAttribute('data-id');
+          var item = (self.state.items || []).find(function (it) {
+            return it.id === id;
+          });
+          var q = Number(item && item.quantity) || 1;
+          await self.setQty(id, act === 'qty-inc' ? q + 1 : q - 1);
+        } finally {
+          self.state.busy = false;
+        }
         self.render();
         return;
       }
       if (act === 'remove') {
-        await api('/api/order/cart', {
-          method: 'POST',
-          body: {
-            action: 'remove_item',
-            slug: self.slug,
-            cart_id: self.state.cartId,
-            cart_item_id: el.getAttribute('data-id')
-          }
+        self.state.busy = true;
+        // Optimistic remove for snappy UI
+        var rid = el.getAttribute('data-id');
+        self.state.items = (self.state.items || []).filter(function (it) {
+          return it.id !== rid;
         });
-        await self.refreshCart();
+        self.render();
+        try {
+          await self.removeLine(rid);
+        } finally {
+          self.state.busy = false;
+        }
+        self.render();
+        return;
+      }
+      if (act === 'add-product') {
+        var answers = {};
+        self.root.querySelectorAll('[data-q]').forEach(function (inp) {
+          answers[inp.getAttribute('data-q')] = {
+            value: inp.value,
+            label: inp.getAttribute('data-q')
+          };
+        });
+        var kgEl = $('#oe-kg', self.root);
+        var qtyVal = Number(($('#oe-qty', self.root) || {}).value || 1);
+        var kgVal = kgEl && kgEl.value ? Number(kgEl.value) : null;
+        var notesVal = (($('#oe-notes', self.root) || {}).value) || null;
+        var productId = el.getAttribute('data-id');
+        self.state.busy = true;
+        el.disabled = true;
+        try {
+          await self.ensureCart();
+          var out = await api('/api/order/cart', {
+            method: 'POST',
+            body: {
+              action: 'add_item',
+              slug: self.slug,
+              cart_id: self.state.cartId,
+              product_id: productId,
+              quantity: qtyVal,
+              requested_weight_kg: kgVal,
+              notes: notesVal,
+              answers: answers
+            }
+          });
+          self.applyPacked(out);
+          self.state.msg = 'Added to cart';
+          self.state.view = 'cart';
+        } finally {
+          self.state.busy = false;
+        }
         self.render();
         return;
       }
       if (act === 'confirm') {
-        var name = ($('#oe-name', self.root) || {}).value;
-        var phone = ($('#oe-phone', self.root) || {}).value;
-        var email = ($('#oe-email', self.root) || {}).value;
-        var date = ($('#oe-date', self.root) || {}).value;
-        var time = ($('#oe-time', self.root) || {}).value;
-        var notes = ($('#oe-cnotes', self.root) || {}).value;
-        if (!name || !date) {
+        self.captureCheckoutDraft();
+        var draft = self.state.checkoutDraft || {};
+        var name = draft.name;
+        var phone = draft.phone;
+        var email = draft.email;
+        var notes = draft.notes;
+        var slots = self.state.pickupSlots || [];
+        var pickup_date = draft.date;
+        var pickup_slot_id = draft.slotId || null;
+        var pickup_window_start = null;
+        var pickup_window_end = null;
+        if (slots.length) {
+          var slot = slots.find(function (s) {
+            return s.id === pickup_slot_id;
+          });
+          if (!slot) {
+            self.state.msg = 'Please choose a pickup window.';
+            self.state.view = 'checkout';
+            self.render();
+            return;
+          }
+          pickup_date = slot.date;
+          pickup_window_start = slot.window_start;
+          pickup_window_end = slot.window_end;
+        }
+        if (!name || !pickup_date) {
           self.state.msg = 'Name and pickup date are required.';
+          self.state.view = 'checkout';
           self.render();
           return;
         }
-        var out = await api('/api/order/cart', {
-          method: 'POST',
-          body: {
-            action: 'checkout',
-            slug: self.slug,
-            cart_id: self.state.cartId,
-            customer_name: name,
-            customer_phone: phone,
-            customer_email: email,
-            pickup_date: date,
-            pickup_time: time || null,
-            customer_notes: notes || null,
-            fulfilment_type: 'pickup'
+        self.state.busy = true;
+        self.render();
+        try {
+          var out = await api('/api/order/cart', {
+            method: 'POST',
+            body: {
+              action: 'checkout',
+              slug: self.slug,
+              cart_id: self.state.cartId,
+              customer_name: name,
+              customer_phone: phone,
+              customer_email: email,
+              pickup_date: pickup_date,
+              pickup_slot_id: pickup_slot_id,
+              pickup_window_start: pickup_window_start,
+              pickup_window_end: pickup_window_end,
+              customer_notes: notes || null,
+              fulfilment_type: 'pickup'
+            }
+          });
+          localStorage.removeItem(cartKey(self.slug));
+          self.state.cartId = '';
+          self.state.checkoutDraft = { name: '', phone: '', email: '', date: '', slotId: '', notes: '' };
+          // Always land on order confirmation (portal) — customer presses Pay when ready.
+          if (out.portal_url) {
+            window.location = out.portal_url;
+            return;
           }
-        });
-        localStorage.removeItem(cartKey(self.slug));
-        self.state.cartId = '';
-        if (out.checkout_url) {
-          window.location = out.checkout_url;
+          self.root.innerHTML =
+            '<div class="lp-oe-empty"><h3>Order confirmed</h3><p>' +
+            esc(out.order && out.order.order_number) +
+            '</p></div>';
+        } catch (e) {
+          var msg = (e && e.message) || 'Something went wrong';
+          if (msg === 'pickup_too_soon') {
+            msg =
+              'That pickup date is too soon' +
+              (e.data && e.data.earliest_pickup_date
+                ? ' — earliest is ' + e.data.earliest_pickup_date
+                : '') +
+              '.';
+            if (e.data && e.data.earliest_pickup_date) self.state.earliest = e.data.earliest_pickup_date;
+          } else if (msg === 'pickup_slot_required') {
+            msg = 'Please choose a pickup window from the list.';
+            if (e.data && e.data.pickup_slots) self.state.pickupSlots = e.data.pickup_slots;
+          } else if (msg === 'date_at_capacity') {
+            msg = 'That pickup day is full — please choose another.';
+          }
+          self.state.msg = msg;
+          self.state.view = 'checkout';
+          self.state.busy = false;
+          self.render();
           return;
+        } finally {
+          self.state.busy = false;
         }
-        if (out.portal_url) {
-          window.location = out.portal_url;
-          return;
-        }
-        self.root.innerHTML =
-          '<div class="lp-oe-empty"><h3>Order confirmed</h3><p>' +
-          esc(out.order && out.order.order_number) +
-          '</p></div>';
       }
     } catch (e) {
+      self.state.busy = false;
       self.state.msg = (e && e.message) || 'Something went wrong';
+      if (self.state.view === 'checkout') self.captureCheckoutDraft();
       self.render();
     }
   };
@@ -474,14 +733,24 @@
       '.lp-oe-head{display:flex;flex-wrap:wrap;gap:14px 18px;align-items:flex-start;justify-content:space-between}' +
       '.lp-oe-head-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}' +
       '.lp-oe-portal{display:inline-flex;align-items:center;font:700 13px/1.2 system-ui,sans-serif;color:var(--lp-oe-accent,var(--accent,#1f7a63));text-decoration:underline;text-underline-offset:3px}' +
-      '.lp-oe-portal:hover{opacity:.85}';
+      '.lp-oe-portal:hover{opacity:.85}' +
+      '.lp-oe-line{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--lp-oe-line,var(--line,#e4e0d8))}' +
+      '.lp-oe-line-main{flex:1;min-width:0}' +
+      '.lp-oe-line-meta{margin:4px 0 0;color:var(--lp-oe-muted,var(--muted,#667066));font-size:13px}' +
+      '.lp-oe-line-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:none}' +
+      '.lp-oe-qty{display:inline-flex;align-items:center;gap:0;border:1px solid var(--lp-oe-line,var(--line,#d7d0c4));border-radius:999px;overflow:hidden;background:#fff}' +
+      '.lp-oe-qty-btn{appearance:none;border:0;background:transparent;width:34px;height:34px;font:700 16px/1 system-ui,sans-serif;cursor:pointer;color:var(--lp-oe-ink,var(--ink,#1c241e))}' +
+      '.lp-oe-qty-btn:hover{background:rgba(0,0,0,.04)}' +
+      '.lp-oe-qty-val{min-width:28px;text-align:center;font:700 13px/1 system-ui,sans-serif}' +
+      '.lp-oe-remove{appearance:none;border:1px solid #c45c26;background:transparent;color:#c45c26;font:600 12px/1 system-ui,sans-serif;padding:8px 12px;border-radius:999px;cursor:pointer}' +
+      '.lp-oe-remove:hover{background:#c45c26;color:#fff}' +
+      '.lp-oe-primary:disabled,.lp-oe-cart-btn:disabled,.lp-oe-qty-btn:disabled,.lp-oe-remove:disabled{opacity:.55;cursor:not-allowed}';
     document.head.appendChild(st);
   }
 
   function boot(root) {
     if (!root) return;
     ensureStyles();
-    // Re-read attrs each boot (editor / landing Shared→Unique remounts).
     root.__lpOeBooted = true;
     var app = new OrderStorefront(root);
     app.init();

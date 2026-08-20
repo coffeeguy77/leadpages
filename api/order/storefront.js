@@ -7,6 +7,7 @@ const { formatAud } = require('../../lib/order/money');
 const { earliestPickupDate } = require('../../lib/order/cutoff');
 const { resolvePaymentRule, computeDepositRequired } = require('../../lib/order/deposit');
 const { isDateAvailable } = require('../../lib/order/capacity');
+const { listWindows, buildPickupSlots } = require('../../lib/order/fulfilment-windows');
 
 async function resolveSite(slug, siteId) {
   const admin = getAdmin();
@@ -85,31 +86,32 @@ module.exports = async function (req, res) {
     });
 
     const earliest = earliestPickupDate(system.timezone || 'Australia/Sydney', products || []);
+    const windows = await listWindows(system.id);
+    const pickup_slots = buildPickupSlots(windows, earliest, 28);
+    const paySettings = (system.settings && system.settings.payments) || {};
 
-    const display = {
-      products: (products || []).map(function (p) {
-        return Object.assign({}, p, {
-          display_price:
-            p.pricing_method === 'price_tbc' || p.pricing_method === 'quote_required'
-              ? 'Price TBC'
-              : p.price_label
-                ? p.price_label
-                : p.pricing_method === 'per_weight'
-                  ? formatAud(p.price_per_kg_cents) + '/kg'
-                  : p.pricing_method === 'from_price'
-                    ? 'From ' + formatAud(p.price_cents)
-                    : p.pricing_method === 'estimated'
-                      ? 'Approx. ' + formatAud(p.price_cents)
-                      : formatAud(p.price_cents),
-          questions: questions.filter(function (q) {
-            return q.product_id === p.id;
-          }),
-          related: relationships.filter(function (r) {
-            return r.product_id === p.id;
-          })
-        });
-      })
-    };
+    const displayProducts = (products || []).map(function (p) {
+      return Object.assign({}, p, {
+        display_price:
+          p.pricing_method === 'price_tbc' || p.pricing_method === 'quote_required'
+            ? 'Price TBC'
+            : p.price_label
+              ? p.price_label
+              : p.pricing_method === 'per_weight'
+                ? formatAud(p.price_per_kg_cents) + '/kg'
+                : p.pricing_method === 'from_price'
+                  ? 'From ' + formatAud(p.price_cents)
+                  : p.pricing_method === 'estimated'
+                    ? 'Approx. ' + formatAud(p.price_cents)
+                    : formatAud(p.price_cents),
+        questions: questions.filter(function (q) {
+          return q.product_id === p.id;
+        }),
+        related: relationships.filter(function (r) {
+          return r.product_id === p.id;
+        })
+      });
+    });
 
     return json(res, 200, {
       site: { id: site.id, slug: site.slug, business_name: site.business_name },
@@ -129,20 +131,27 @@ module.exports = async function (req, res) {
         balance_settlement: system.balance_settlement,
         capacity_enabled: system.capacity_enabled,
         capacity_per_day: system.capacity_per_day,
-        customer_editing_enabled: system.customer_editing_enabled
+        customer_editing_enabled: system.customer_editing_enabled,
+        has_pickup_windows: pickup_slots.length > 0,
+        payments: {
+          provider: paySettings.provider || 'stripe',
+          stripe_connected: !!(paySettings.stripe_connect_account_id || '').trim(),
+          paypal_configured: !!(paySettings.paypal_client_id || '').trim()
+        }
       },
       categories: categories || [],
-      products: display.products,
+      products: displayProducts,
       deposit: {
         rule: payRule,
         preview_cents: depositPreview.deposit_required_cents,
         preview_label: formatAud(depositPreview.deposit_required_cents),
         cta:
           depositPreview.deposit_required_cents > 0
-            ? 'PAY ' + formatAud(depositPreview.deposit_required_cents) + ' DEPOSIT & CONFIRM ORDER'
+            ? 'Review & pay deposit'
             : 'CONFIRM ORDER'
       },
       earliest_pickup_date: earliest,
+      pickup_slots: pickup_slots,
       capacity: system.capacity_enabled
         ? await isDateAvailable(system, earliest)
         : { ok: true }
