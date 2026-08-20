@@ -2,7 +2,13 @@
 
 const { json, methodOk } = require('../../lib/order/http');
 const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/order/auth');
-const { previewImport, commitImport, parseCsv, PRESET_BUTCHER_LINE_ITEMS } = require('../../lib/order/import');
+const {
+  previewImport,
+  commitImport,
+  finalizeImportRun,
+  parseCsv,
+  PRESET_BUTCHER_LINE_ITEMS
+} = require('../../lib/order/import');
 
 module.exports = async function (req, res) {
   try {
@@ -16,7 +22,7 @@ module.exports = async function (req, res) {
         kinds: [
           { id: 'customers', label: 'Customers (create or update by phone)' },
           { id: 'products', label: 'Products' },
-          { id: 'order_history', label: 'Order history (line items → customers + orders)' }
+          { id: 'order_history', label: 'Order history (line items → archived orders)' }
         ]
       });
     }
@@ -31,6 +37,19 @@ module.exports = async function (req, res) {
     const kind = body.kind || 'order_history';
     if (['customers', 'products', 'order_history'].indexOf(kind) < 0) {
       return json(res, 400, { error: 'bad_kind' });
+    }
+
+    if (action === 'finalize_run') {
+      await finalizeImportRun({
+        system: system,
+        site: access.site,
+        kind: kind,
+        filename: body.filename || null,
+        mapping: body.mapping || {},
+        stats: body.stats || {},
+        actor_id: user.id
+      });
+      return json(res, 200, { ok: true });
     }
 
     let rows = Array.isArray(body.rows) ? body.rows : null;
@@ -57,7 +76,7 @@ module.exports = async function (req, res) {
       if (!body.mapping || !Object.keys(body.mapping).length) {
         return json(res, 400, { error: 'mapping_required' });
       }
-      const stats = await commitImport({
+      const result = await commitImport({
         kind: kind,
         system: system,
         site: access.site,
@@ -66,9 +85,18 @@ module.exports = async function (req, res) {
         mapping: body.mapping,
         create_missing_products: body.create_missing_products !== false,
         filename: body.filename || null,
-        actor_id: user.id
+        actor_id: user.id,
+        offset: body.offset,
+        limit: body.limit,
+        finalize: body.finalize
       });
-      return json(res, 200, { ok: true, stats: stats });
+      return json(res, 200, {
+        ok: true,
+        stats: result.stats,
+        next_offset: result.next_offset,
+        done: result.done,
+        progress: result.progress
+      });
     }
 
     return json(res, 400, { error: 'bad_action' });

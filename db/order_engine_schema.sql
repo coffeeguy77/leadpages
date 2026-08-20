@@ -290,7 +290,8 @@ create table if not exists order_orders (
   status            text not null default 'draft'
     check (status in (
       'draft', 'awaiting_deposit', 'confirmed', 'changes_open', 'locked',
-      'in_preparation', 'ready', 'collected', 'completed', 'cancelled', 'refunded'
+      'in_preparation', 'ready', 'collected', 'completed', 'archived',
+      'cancelled', 'refunded'
     )),
   source            text not null default 'staff'
     check (source in ('staff', 'phone', 'walk_in', 'online', 'reorder', 'system')),

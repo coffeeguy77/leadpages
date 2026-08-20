@@ -82,7 +82,13 @@ module.exports = async function (req, res) {
         .eq('order_system_id', system.id)
         .order('created_at', { ascending: false })
         .limit(Math.min(parseInt((req.query && req.query.limit) || '100', 10) || 100, 300));
-      if (req.query && req.query.status) q = q.eq('status', req.query.status);
+      if (req.query && req.query.active === '1') {
+        q = q.not('status', 'in', '("cancelled","draft","archived","completed","refunded")');
+      } else if (req.query && req.query.status === 'archived') {
+        q = q.in('status', ['archived', 'completed']);
+      } else if (req.query && req.query.status) {
+        q = q.eq('status', req.query.status);
+      }
       if (req.query && req.query.pickup_date) q = q.eq('pickup_date', req.query.pickup_date);
       if (req.query && req.query.price_tbc === '1') q = q.eq('has_unknown_prices', true);
       if (req.query && req.query.q) {
