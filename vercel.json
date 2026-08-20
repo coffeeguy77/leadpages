@@ -372,6 +372,9 @@
     "api/theme-studio/preview.js": {
       "maxDuration": 30,
       "includeFiles": "landing-shell-neutral-v1.template.json,trade.template.json"
+    },
+    "api/order/import.js": {
+      "maxDuration": 60
     }
   }
 }

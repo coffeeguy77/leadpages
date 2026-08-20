@@ -45,3 +45,27 @@ test('previewImport reports column count', function () {
   assert.equal(preview.column_count, 3);
   assert.equal(preview.sample[0].mapped.name, '1');
 });
+
+test('orders.html uses LeadPages-scale type and nav counts', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
+  assert.match(html, /font-size:14\.5px/);
+  assert.match(html, /nav-count/);
+  assert.match(html, /refreshNavCounts/);
+  assert.match(html, /Active \(hide archived\)/);
+  assert.match(html, /offset:\s*offset/);
+  assert.match(html, /batchSize/);
+});
+
+test('import API supports batched commit + archived history copy', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const api = fs.readFileSync(path.join(__dirname, '..', 'api/order/import.js'), 'utf8');
+  const lib = fs.readFileSync(path.join(__dirname, '..', 'lib/order/import.js'), 'utf8');
+  assert.match(api, /finalize_run/);
+  assert.match(api, /next_offset/);
+  assert.match(lib, /status:\s*'archived'/);
+  assert.match(lib, /next_offset/);
+  assert.match(lib, /limit/);
+});

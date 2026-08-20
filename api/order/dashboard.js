@@ -40,14 +40,18 @@ module.exports = async function (req, res) {
       locked,
       ready,
       unknownPrices,
-      abandonedCarts
+      abandonedCarts,
+      customersCount,
+      ordersActive,
+      ordersNew,
+      ordersArchived
     ] = await Promise.all([
-      countWhere(base().eq('pickup_date', todayStr).not('status', 'in', '("cancelled","draft")')),
-      countWhere(base().eq('pickup_date', tomorrowStr).not('status', 'in', '("cancelled","draft")')),
+      countWhere(base().eq('pickup_date', todayStr).not('status', 'in', '("cancelled","draft","archived","completed")')),
+      countWhere(base().eq('pickup_date', tomorrowStr).not('status', 'in', '("cancelled","draft","archived","completed")')),
       countWhere(base().eq('status', 'awaiting_deposit')),
-      countWhere(base().eq('editing_state', 'locked')),
+      countWhere(base().eq('editing_state', 'locked').not('status', 'in', '("cancelled","draft","archived","completed")')),
       countWhere(base().eq('status', 'ready')),
-      countWhere(base().eq('has_unknown_prices', true).not('status', 'in', '("cancelled","completed","draft")')),
+      countWhere(base().eq('has_unknown_prices', true).not('status', 'in', '("cancelled","completed","archived","draft")')),
       admin
         .from('order_carts')
         .select('id', { count: 'exact', head: true })
@@ -56,7 +60,18 @@ module.exports = async function (req, res) {
         .then(function (r) {
           if (r.error) throw r.error;
           return r.count || 0;
-        })
+        }),
+      admin
+        .from('order_customers')
+        .select('id', { count: 'exact', head: true })
+        .eq('order_system_id', system.id)
+        .then(function (r) {
+          if (r.error) throw r.error;
+          return r.count || 0;
+        }),
+      countWhere(base().not('status', 'in', '("cancelled","draft","archived","completed","refunded")')),
+      countWhere(base().in('status', ['awaiting_deposit', 'confirmed'])),
+      countWhere(base().in('status', ['archived', 'completed']))
     ]);
 
     const { data: recent } = await admin
@@ -94,6 +109,12 @@ module.exports = async function (req, res) {
         abandoned_carts: abandonedCarts,
         deposits_received_cents: depositsReceived,
         deposits_received_label: formatAud(depositsReceived)
+      },
+      nav_counts: {
+        customers: customersCount,
+        orders_active: ordersActive,
+        orders_new: ordersNew,
+        orders_archived: ordersArchived
       },
       recent: recent || [],
       today: todayStr,
