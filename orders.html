@@ -404,8 +404,25 @@ body.embed .hub{min-height:70vh}
       <!-- Messaging -->
       <section class="view" id="view-messaging" data-view="messaging">
         <div class="card">
-          <h3>Messaging</h3>
-          <p class="sub">Generate AI draft options. Templates can also be seeded via the butcher preset in Settings. Nothing is sent automatically.</p>
+          <h3>SMS usage</h3>
+          <p class="sub">Billable SMS segments for this site (OTP, broadcasts, transactional). Use this to invoice website clients for SMS fees.</p>
+          <div class="kpis" id="sms-usage-kpis"></div>
+          <p class="notice" id="sms-usage-note"></p>
+        </div>
+        <div class="card">
+          <h3>SMS broadcast to CRM</h3>
+          <p class="sub">Message customers with a phone on file (sms opt-in). Use placeholders: <code>{{first_name}}</code>, <code>{{phone}}</code>, <code>{{shop_url}}</code>, <code>{{business_name}}</code>.</p>
+          <div class="field"><label for="sms-blast-body">Message</label>
+            <textarea id="sms-blast-body" rows="4" placeholder="Hi {{first_name}} ({{phone}}) — it's time to get your Christmas orders in. Order online: {{shop_url}}"></textarea>
+          </div>
+          <div class="actions-row">
+            <button class="btn solid" type="button" id="sms-blast-send">Send to CRM</button>
+            <span class="notice" id="sms-blast-msg"></span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>AI templates</h3>
+          <p class="sub">Generate AI draft options. Templates can also be seeded via the butcher preset in Settings.</p>
           <div class="grid2">
             <div class="field"><label for="msg-category">Category</label>
               <select id="msg-category">
@@ -429,6 +446,39 @@ body.embed .hub{min-height:70vh}
           <div class="table-wrap"><table class="oe"><thead><tr>
             <th>Category</th><th>Name</th><th>Channel</th><th>Active</th><th></th>
           </tr></thead><tbody id="tpl-tbody"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-import" data-view="import">
+        <div class="card">
+          <h3>Import</h3>
+          <p class="sub">Upload a CSV and map columns. Supports customers, products, and order history (line-item files like Griffith Butchery exports).</p>
+          <div class="grid2">
+            <div class="field"><label for="imp-kind">Import type</label>
+              <select id="imp-kind">
+                <option value="order_history">Order history</option>
+                <option value="customers">Customers</option>
+                <option value="products">Products</option>
+              </select>
+            </div>
+            <div class="field"><label for="imp-preset">Preset</label>
+              <select id="imp-preset">
+                <option value="">Custom mapping</option>
+                <option value="butcher_line_items">Butchery line items (no header)</option>
+              </select>
+            </div>
+            <div class="field"><label for="imp-file">CSV file</label><input id="imp-file" type="file" accept=".csv,text/csv"></div>
+            <div class="field"><label><input type="checkbox" id="imp-header"> First row is a header</label></div>
+            <div class="field"><label><input type="checkbox" id="imp-create-products" checked> Create missing products from order lines</label></div>
+          </div>
+          <div class="actions-row" style="margin:12px 0">
+            <button class="btn solid" type="button" id="imp-preview">Preview mapping</button>
+            <button class="btn ghost" type="button" id="imp-commit" disabled>Commit import</button>
+            <span class="notice" id="imp-msg"></span>
+          </div>
+          <div id="imp-map" class="hide"></div>
+          <div id="imp-sample" class="hide" style="margin-top:14px"></div>
+          <pre id="imp-stats" class="notice" style="white-space:pre-wrap"></pre>
         </div>
       </section>
 
@@ -586,6 +636,7 @@ body.embed .hub{min-height:70vh}
     { id: 'supply', label: 'Supply' },
     { id: 'changes', label: 'Changes' },
     { id: 'customers', label: 'Customers' },
+    { id: 'import', label: 'Import' },
     { id: 'payments', label: 'Payments' },
     { id: 'abandoned', label: 'Abandoned Carts' },
     { id: 'messaging', label: 'Messaging' },
@@ -1334,6 +1385,183 @@ body.embed .hub{min-height:70vh}
     }
   }
 
+  /* ---------- Import + SMS CRM ---------- */
+  var importState = { csv_text: '', mapping: {}, preview: null, filename: '' };
+
+  function resetImportUi(){
+    importState = { csv_text: '', mapping: {}, preview: null, filename: '' };
+    if ($('imp-msg')) $('imp-msg').textContent = '';
+    if ($('imp-stats')) $('imp-stats').textContent = '';
+    if ($('imp-map')) { $('imp-map').classList.add('hide'); $('imp-map').innerHTML = ''; }
+    if ($('imp-sample')) { $('imp-sample').classList.add('hide'); $('imp-sample').innerHTML = ''; }
+    if ($('imp-commit')) $('imp-commit').disabled = true;
+    if ($('imp-file')) $('imp-file').value = '';
+  }
+
+  function renderImportMapping(preview){
+    var host = $('imp-map');
+    if (!host) return;
+    var fields = (preview && preview.fields) || [];
+    var cols = (preview && preview.column_count) || 0;
+    var mapping = Object.assign({}, importState.mapping);
+    var html = '<h3 style="margin:0 0 8px">Column mapping</h3><div class="grid2">';
+    for (var i = 0; i < cols; i++) {
+      var sample = '';
+      if (preview.sample && preview.sample[0] && preview.sample[0].raw) sample = preview.sample[0].raw[i] || '';
+      var cur = mapping[i] || mapping[String(i)] || 'ignore';
+      html += '<div class="field"><label>Column ' + (i + 1) + ' <span class="sub" style="font-weight:400">e.g. ' + esc(String(sample).slice(0, 40)) + '</span></label>';
+      html += '<select data-imp-col="' + i + '">';
+      fields.forEach(function(f){
+        html += '<option value="' + esc(f.id) + '"' + (cur === f.id ? ' selected' : '') + '>' + esc(f.label) + '</option>';
+      });
+      html += '</select></div>';
+    }
+    html += '</div>';
+    host.innerHTML = html;
+    host.classList.remove('hide');
+    host.querySelectorAll('select[data-imp-col]').forEach(function(sel){
+      sel.addEventListener('change', function(){
+        importState.mapping[sel.getAttribute('data-imp-col')] = sel.value;
+      });
+    });
+    var samp = $('imp-sample');
+    if (samp && preview.sample) {
+      samp.classList.remove('hide');
+      samp.innerHTML = '<h3 style="margin:0 0 8px">Sample mapped rows</h3><div class="table-wrap"><table class="oe"><thead><tr><th>Row</th><th>Mapped</th></tr></thead><tbody>' +
+        preview.sample.map(function(s){
+          return '<tr><td>' + s.index + '</td><td><code>' + esc(JSON.stringify(s.mapped)) + '</code></td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }
+  }
+
+  async function runImportPreview(){
+    if (!requireSite()) return;
+    if (!importState.csv_text) { toast('Choose a CSV file first', 'err'); return; }
+    var msg = $('imp-msg');
+    msg.textContent = 'Previewing…';
+    try {
+      if ($('imp-preset').value === 'butcher_line_items') {
+        $('imp-kind').value = 'order_history';
+        $('imp-header').checked = false;
+      }
+      var body = {
+        site_id: state.siteId,
+        action: 'preview',
+        kind: $('imp-kind').value,
+        has_header: $('imp-header').checked,
+        csv_text: importState.csv_text,
+        filename: importState.filename,
+        mapping: importState.mapping,
+        preset: $('imp-preset').value || undefined
+      };
+      var r = await api('/api/order/import', { method: 'POST', body: body });
+      importState.preview = r.preview;
+      if ((!importState.mapping || !Object.keys(importState.mapping).length) && r.preview && r.preview.mapping) {
+        importState.mapping = r.preview.mapping;
+      }
+      if ($('imp-preset').value === 'butcher_line_items' && r.preview) {
+        // apply preset mapping keys as strings
+        var presetMap = {};
+        Object.keys(r.preview.mapping || {}).forEach(function(k){ presetMap[k] = r.preview.mapping[k]; });
+        // If API didn't echo mapping from preset, use known preset
+        if (!Object.keys(presetMap).length) {
+          for (var i = 0; i < 10; i++) presetMap[String(i)] = ['first_name','surname','phone','pickup_date','order_number','product_name','size_weight','quantity','line_notes','ignore'][i];
+        }
+        importState.mapping = presetMap;
+      }
+      renderImportMapping(r.preview);
+      $('imp-commit').disabled = false;
+      msg.textContent = (r.preview.row_count || 0) + ' data rows · ' + (r.preview.column_count || 0) + ' columns';
+    } catch (e) {
+      msg.textContent = (e && e.message) || String(e);
+      toast(msg.textContent, 'err');
+    }
+  }
+
+  async function runImportCommit(){
+    if (!requireSite()) return;
+    if (!importState.csv_text) return;
+    if (!confirm('Commit this import? Customers/products/orders will be created or updated.')) return;
+    var msg = $('imp-msg');
+    msg.textContent = 'Importing…';
+    $('imp-commit').disabled = true;
+    try {
+      // collect mapping from selects
+      var map = {};
+      document.querySelectorAll('select[data-imp-col]').forEach(function(sel){
+        map[sel.getAttribute('data-imp-col')] = sel.value;
+      });
+      importState.mapping = map;
+      var r = await api('/api/order/import', {
+        method: 'POST',
+        body: {
+          site_id: state.siteId,
+          action: 'commit',
+          kind: $('imp-kind').value,
+          has_header: $('imp-header').checked,
+          csv_text: importState.csv_text,
+          filename: importState.filename,
+          mapping: importState.mapping,
+          create_missing_products: $('imp-create-products').checked
+        }
+      });
+      $('imp-stats').textContent = JSON.stringify(r.stats || {}, null, 2);
+      msg.textContent = 'Import complete';
+      toast('Import complete', 'ok');
+    } catch (e) {
+      msg.textContent = (e && e.message) || String(e);
+      toast(msg.textContent, 'err');
+      $('imp-commit').disabled = false;
+    }
+  }
+
+  async function loadSmsUsage(){
+    if (!requireSite()) return;
+    var host = $('sms-usage-kpis');
+    var note = $('sms-usage-note');
+    if (!host) return;
+    host.innerHTML = '<div class="kpi"><span>Loading…</span></div>';
+    try {
+      var r = await api('/api/order/sms?' + siteQuery());
+      var u = r.usage || {};
+      host.innerHTML =
+        '<div class="kpi"><strong>' + (u.billable_segments || 0) + '</strong><span>Billable segments</span></div>' +
+        '<div class="kpi"><strong>' + (u.sent || 0) + '</strong><span>Sent</span></div>' +
+        '<div class="kpi"><strong>' + (u.failed || 0) + '</strong><span>Failed</span></div>' +
+        '<div class="kpi"><strong>' + ((u.by_kind && u.by_kind.broadcast) || 0) + '</strong><span>Broadcast segs</span></div>' +
+        '<div class="kpi"><strong>' + ((u.by_kind && u.by_kind.otp) || 0) + '</strong><span>OTP segs</span></div>';
+      note.textContent = 'Counts update when SMS are sent (Twilio). Skipped/unconfigured SMS are not billable.';
+    } catch (e) {
+      host.innerHTML = '';
+      note.textContent = (e && e.message) || String(e);
+    }
+  }
+
+  async function sendSmsBroadcast(){
+    if (!requireSite()) return;
+    var body = ($('sms-blast-body').value || '').trim();
+    if (!body) { toast('Write a message first', 'err'); return; }
+    if (!confirm('Send this SMS to opted-in customers with a phone number?')) return;
+    var btn = $('sms-blast-send');
+    var msg = $('sms-blast-msg');
+    btn.disabled = true;
+    msg.textContent = 'Sending…';
+    try {
+      var r = await api('/api/order/sms', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'broadcast', body: body }
+      });
+      var res = r.results || {};
+      msg.textContent = 'Sent ' + (res.sent || 0) + ' · failed ' + (res.failed || 0) + ' · skipped ' + (res.skipped || 0) + ' (audience ' + (r.audience || 0) + ')';
+      toast('Broadcast finished', 'ok');
+      await loadSmsUsage();
+    } catch (e) {
+      msg.textContent = (e && e.message) || String(e);
+      toast(msg.textContent, 'err');
+    }
+    btn.disabled = false;
+  }
+
   /* ---------- Messaging ---------- */
   async function generateMessages(){
     if (!requireSite()) return;
@@ -1685,7 +1913,8 @@ body.embed .hub{min-height:70vh}
       else if (v === 'customers') await loadCustomers();
       else if (v === 'payments') await loadPayments();
       else if (v === 'abandoned') await loadAbandoned();
-      else if (v === 'messaging') { await loadTemplates(); }
+      else if (v === 'messaging') { await loadTemplates(); await loadSmsUsage(); }
+      else if (v === 'import') { resetImportUi(); }
       else if (v === 'settings') await loadSettings();
     } catch (e) {
       toast((e && e.message) || String(e), 'err');
@@ -1768,6 +1997,31 @@ body.embed .hub{min-height:70vh}
   if ($('pay-export')) $('pay-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('payments'); });
   if ($('abd-load')) $('abd-load').addEventListener('click', loadAbandoned);
   $('msg-generate').addEventListener('click', generateMessages);
+  if ($('sms-blast-send')) $('sms-blast-send').addEventListener('click', sendSmsBroadcast);
+  if ($('imp-file')) $('imp-file').addEventListener('change', function(){
+    var f = $('imp-file').files && $('imp-file').files[0];
+    if (!f) return;
+    importState.filename = f.name || '';
+    var reader = new FileReader();
+    reader.onload = function(){
+      importState.csv_text = String(reader.result || '');
+      $('imp-msg').textContent = 'Loaded ' + importState.filename + ' (' + importState.csv_text.length + ' chars)';
+      $('imp-commit').disabled = true;
+    };
+    reader.readAsText(f);
+  });
+  if ($('imp-preset')) $('imp-preset').addEventListener('change', function(){
+    if ($('imp-preset').value === 'butcher_line_items') {
+      $('imp-kind').value = 'order_history';
+      $('imp-header').checked = false;
+      importState.mapping = {
+        '0':'first_name','1':'surname','2':'phone','3':'pickup_date','4':'order_number',
+        '5':'product_name','6':'size_weight','7':'quantity','8':'line_notes','9':'ignore'
+      };
+    }
+  });
+  if ($('imp-preview')) $('imp-preview').addEventListener('click', runImportPreview);
+  if ($('imp-commit')) $('imp-commit').addEventListener('click', runImportCommit);
   $('settings-form').addEventListener('submit', saveSettings);
   $('settings-preset').addEventListener('click', applyButcherPreset);
   $('om-close').addEventListener('click', closeOrderModal);
