@@ -187,8 +187,8 @@ Branding → **CSS Override** stores `config.colorOverrides = [{ id, from, to },
 
 | Step | Behaviour |
 |------|-----------|
-| Eyedrop from live preview | Opens preview (if needed) + EyeDropper; creates a new remap row from the picked hex |
-| Multi-select | Toggle on → click chips (or **Select similar**) → one new colour for the lot |
+| Eyedrop from live preview | Opens preview (if needed) + EyeDropper; creates a new remap row from the picked hex (or adds to multi-selection when Multi-select is ON) |
+| Multi-select | Toggle on → mix **+ Add eyedropper colour** (repeat) + swatch chips (+ **Select similar**) → one new colour for the lot |
 | Live remap | Preview/public render remaps hex via `lib/color-overrides.js` (reversible) |
 | **Update CSS to new overrides** | Permanently rewrites matching hex in `theme` + sections/apps, clears those override rows, refreshes “Colours on this site” |
 | After update | In-app custom CSS/colours simply appear as new chips on the simplified list |
