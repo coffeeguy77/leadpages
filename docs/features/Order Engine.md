@@ -20,10 +20,12 @@ Workflow: `Cart → Order → Deposit → Customer Editing → Cutoff → Lock �
 
 | Surface | URL | Who |
 |---------|-----|-----|
+| Site backend → **Orders** tab | manage → Orders (embeds `/orders?embed=1&site_id=…`) | Owner / partner / client |
 | Ops Command → **Orders** | `/orders` | Staff / owner / partner / super |
-| Site editor → **Orders desk** | `/orders?site_id=…` | Site tools button in `manage.html` |
+| Site tools → **Orders** | Opens Orders tab | Same as tab |
+| Dashboard **Orders** widget | Optional KPI + recent orders (toggle on Dashboard) | Trade dashboard |
 | Customer shop (standalone) | `/order-shop?slug=…` | Public |
-| Customer shop (on site) | Section **Order Storefront** | Public (enable in Page editor → Lead Capture) |
+| Customer shop (on site) | Page editor → **Order Storefront** (position + colours) | Public when section on |
 | Customer portal | `/order-portal?t=…` | Magic link |
 
 ---
@@ -31,11 +33,12 @@ Workflow: `Cart → Order → Deposit → Customer Editing → Cutoff → Lock �
 ## Enable a site (ops)
 
 1. Apply SQL: `db/order_engine_schema.sql` then `db/order_engine_rls.sql`
-2. Ops Command → Orders → select site → Settings → **Apply butcher preset** → **System enabled = Yes** → Save
-3. For customer ordering on the live site: Page editor → Lead Capture → **Order Storefront** → on → publish  
+2. Site backend → **Orders** (or Ops Command → Orders) → select site → Settings → **Apply butcher preset** → **System enabled = Yes** → Save
+3. For customer ordering on the live site: Page editor → Lead Capture → **Order Storefront** → on → style/position → publish  
    Or share `/order-shop?slug=<site-slug>`
-4. Stripe webhook: `POST /api/order/webhook` + `STRIPE_ORDER_WEBHOOK_SECRET`
-5. Optional SMS: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`
+4. Optional: Dashboard → tick **Show Orders widget** for a new-orders snapshot
+5. Stripe webhook: `POST /api/order/webhook` + `STRIPE_ORDER_WEBHOOK_SECRET`
+6. Optional SMS: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`
 
 ---
 

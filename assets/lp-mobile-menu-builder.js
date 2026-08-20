@@ -70,6 +70,7 @@
     'nav-ai-team': 'AI Website Team',
     'nav-apps': 'App Marketplace',
     'nav-onlinequotes': 'Quote Builder',
+    'nav-orders': 'Orders',
     'nav-mailer': 'Newsletter',
     'nav-messages': 'Support',
     'nav-appearance': 'Appearance',
@@ -107,6 +108,7 @@
     { id: 'nav-ai-team', roles: ['super', 'partner', 'client'] },
     { id: 'nav-apps', roles: ['super', 'partner', 'client'] },
     { id: 'nav-onlinequotes', roles: ['super', 'partner', 'client'] },
+    { id: 'nav-orders', roles: ['super', 'partner', 'client'] },
     { id: 'nav-mailer', roles: ['super', 'partner', 'client'] },
     { id: 'nav-messages', roles: ['super', 'partner', 'client'] }
   ];
