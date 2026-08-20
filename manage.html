@@ -8704,6 +8704,9 @@ function heroCtaCard(c){
         +'<span class="hint" id="co-multi-hint" style="margin:0;">Tip: open Live preview first, then eyedrop the pink you see.</span>'
         +'</div>'
         +'<div id="co-multi-bar" class="hide" style="display:none;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:12px;margin:0 0 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft,#f7f5f1);">'
+        +'<div style="width:100%;margin:0 0 2px;"><span class="hint" style="margin:0;">Build a batch: eyedrop + eyedrop + swatch chips, then one new colour for the lot.</span></div>'
+        +'<div id="co-multi-selected" style="width:100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:28px;"></div>'
+        +'<button type="button" class="btn ghost sm" id="co-multi-eyedrop" title="Eyedrop another colour into this selection">+ Add eyedropper colour</button>'
         +'<div class="f" style="margin:0;flex:1 1 160px;min-width:140px;"><label>New colour for selection</label><div style="display:flex;gap:8px;align-items:center;">'
         +'<input type="color" id="co-multi-clr" value="#1f7a63" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;">'
         +'<input type="text" id="co-multi-hex" class="tin" value="#1f7a63" placeholder="#1f7a63" style="flex:1;min-width:0;"></div></div>'
@@ -8935,23 +8938,55 @@ function heroCtaCard(c){
     var host=$('co-list'); if(!host) return;
     var palette=$('co-palette');
     var bakeMsg=$('co-bake-msg');
-    var selected={}; // hex -> true for multi-select
+    var selected={}; // hex -> { source: 'eyedrop'|'swatch'|'similar' }
     var multiOn=false;
     function list(){ if(!Array.isArray(c.colorOverrides)) c.colorOverrides=[]; return c.colorOverrides; }
     function hexOk(v){ v=String(v||'').trim(); if(!v) return ''; if(v.charAt(0)!=='#') v='#'+v; if(/^#[0-9a-fA-F]{3}$/.test(v)) v='#'+v.charAt(1)+v.charAt(1)+v.charAt(2)+v.charAt(2)+v.charAt(3)+v.charAt(3); return /^#[0-9a-fA-F]{6}$/i.test(v)?v.toLowerCase():''; }
     function uid(){ return 'co_'+Math.random().toString(36).slice(2,9); }
-    function selCount(){ return Object.keys(selected).filter(function(k){ return selected[k]; }).length; }
+    function selKeys(){ return Object.keys(selected).filter(function(k){ return !!selected[k]; }); }
+    function selCount(){ return selKeys().length; }
+    function addToSelection(hex, source){
+      hex=hexOk(hex); if(!hex) return false;
+      var prev=selected[hex];
+      selected[hex]={ source:(prev&&prev.source)||source||'swatch' };
+      // Prefer eyedrop label if they eyedropped an existing swatch later
+      if(source==='eyedrop') selected[hex].source='eyedrop';
+      return true;
+    }
+    function removeFromSelection(hex){
+      hex=hexOk(hex); if(!hex) return;
+      delete selected[hex];
+    }
     function updateMultiUi(){
       var bar=$('co-multi-bar');
       var tog=$('co-multi-toggle');
       var cnt=$('co-multi-count');
       var hint=$('co-multi-hint');
+      var tray=$('co-multi-selected');
+      var eyeBtn=$('co-eyedrop-preview');
       if(tog){ tog.setAttribute('aria-pressed', multiOn?'true':'false'); tog.textContent=multiOn?'Multi-select: ON':'Multi-select similar colours'; }
       if(bar){ bar.style.display=multiOn?'flex':'none'; bar.classList.toggle('hide', !multiOn); }
       if(cnt) cnt.textContent=selCount()+' selected';
       if(hint) hint.textContent=multiOn
-        ? 'Click colour chips to select similar pinks, then set one new colour for all.'
+        ? 'Multi-eyedrop: pick colours one by one (+ Add eyedropper), and/or click swatch chips.'
         : 'Tip: open Live preview first, then eyedrop the pink you see.';
+      if(eyeBtn) eyeBtn.textContent=multiOn?'Eyedrop into selection':'Eyedrop from live preview';
+      if(tray){
+        var keys=selKeys();
+        if(!keys.length){
+          tray.innerHTML='<span class="hint" style="margin:0;">Selection empty — eyedrop colours and/or click swatches below.</span>';
+        } else {
+          tray.innerHTML=keys.map(function(h, idx){
+            var src=(selected[h]&&selected[h].source)||'swatch';
+            var label=src==='eyedrop'?'Eyedrop':(src==='similar'?'Similar':'Swatch');
+            return (idx?('<span class="hint" style="margin:0;font-weight:700;">+</span>'):'')
+              +'<button type="button" class="co-sel-chip" data-hex="'+h+'" title="Remove '+h+'" style="appearance:none;border:1px solid var(--line);border-radius:8px;padding:4px 8px 4px 4px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:#fff;font:600 11.5px/1 var(--font-ui);color:var(--ink-soft);">'
+              +'<span style="width:16px;height:16px;border-radius:4px;background:'+h+';border:1px solid rgba(0,0,0,.12);flex:none;"></span>'
+              +'<span>'+label+' '+h+'</span>'
+              +'<span aria-hidden="true" style="opacity:.55;font-size:14px;line-height:1;">×</span></button>';
+          }).join('');
+        }
+      }
     }
     function ensurePreviewOpen(){
       if(document.body.classList.contains('lp-prev-open')) return;
@@ -8971,7 +9006,7 @@ function heroCtaCard(c){
       return Math.sqrt(dr*dr+dg*dg+db*db);
     }
     function selectSimilar(){
-      var seeds=Object.keys(selected).filter(function(k){ return selected[k]; }).map(hexToRgb).filter(Boolean);
+      var seeds=selKeys().map(hexToRgb).filter(Boolean);
       if(!seeds.length){ toast('Select one colour first, then Select similar'); return; }
       var cols=collectUsed();
       var n=0;
@@ -8979,7 +9014,7 @@ function heroCtaCard(c){
         if(selected[h]) return;
         var rgb=hexToRgb(h); if(!rgb) return;
         for(var i=0;i<seeds.length;i++){
-          if(rgbDist(rgb, seeds[i])<=72){ selected[h]=true; n++; break; }
+          if(rgbDist(rgb, seeds[i])<=72){ addToSelection(h, 'similar'); n++; break; }
         }
       });
       drawPalette();
@@ -9010,6 +9045,8 @@ function heroCtaCard(c){
         if(o&&typeof o==='object'){ Object.keys(o).forEach(function(k){ walk(o[k],k); }); }
       }
       walk(c);
+      // Include eyedropped selections even if not yet in config hex list
+      selKeys().forEach(add);
       var th=siteThemeColors(c);
       var prefer=[th.pipe, th.hivis, th.steel, th.safety, th.lightBg].map(hexOk).filter(Boolean);
       var ordered=[], used={};
@@ -9020,8 +9057,8 @@ function heroCtaCard(c){
     function drawPalette(){
       if(!palette) return;
       var cols=collectUsed();
-      if(!cols.length){ palette.innerHTML='<span class="hint" style="margin:0;">No colours detected yet — eyedrop from preview or add a remap.</span>'; return; }
-      palette.innerHTML='<span class="hint" style="width:100%;margin:0 0 2px;">Colours on this site'+(multiOn?' — click to multi-select similar colours:':' — click to set as source:')+'</span>'
+      if(!cols.length){ palette.innerHTML='<span class="hint" style="margin:0;">No colours detected yet — eyedrop from preview or add a remap.</span>'; updateMultiUi(); return; }
+      palette.innerHTML='<span class="hint" style="width:100%;margin:0 0 2px;">Colours on this site'+(multiOn?' — click swatches to add/remove from selection:':' — click to set as source:')+'</span>'
         +cols.slice(0,64).map(function(h){
           var on=!!selected[h];
           return '<button type="button" class="co-chip'+(on?' co-chip-on':'')+'" data-hex="'+h+'" title="'+h+'" aria-pressed="'+(on?'true':'false')+'" style="appearance:none;border:2px solid '+(on?'var(--accent)':'var(--line)')+';border-radius:8px;padding:4px 8px 4px 4px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:'+(on?'color-mix(in srgb,var(--accent) 12%,#fff)':'#fff')+';font:600 11.5px/1 var(--font-ui);color:var(--ink-soft);">'
@@ -9054,7 +9091,24 @@ function heroCtaCard(c){
       rows[i].to=hexOk(toEl.value)||String(toEl.value||'').trim();
       persist(); previewApply();
     }
+    function eyedropIntoMulti(){
+      ensurePreviewOpen();
+      if(!window.EyeDropper){ toast('Eyedropper not supported in this browser — use colour chips'); return; }
+      toast('Eyedrop a colour to add to the selection…');
+      try{
+        new EyeDropper().open().then(function(res){
+          if(!res||!res.sRGBHex) return;
+          var h=hexOk(res.sRGBHex);
+          if(!h) return;
+          var was=!!selected[h];
+          addToSelection(h, 'eyedrop');
+          drawPalette();
+          toast(was?('Already in selection: '+h):('Added eyedrop '+h+' — pick another or click swatches'));
+        }).catch(function(){});
+      }catch(_e){ toast('Eyedropper unavailable'); }
+    }
     function eyedropNewOverride(preferRow){
+      if(multiOn && !preferRow){ eyedropIntoMulti(); return; }
       ensurePreviewOpen();
       if(!window.EyeDropper){ toast('Eyedropper not supported in this browser — use colour chips'); return; }
       toast('Click a colour on the live preview…');
@@ -9073,7 +9127,6 @@ function heroCtaCard(c){
             toast('Source set to '+h);
             return;
           }
-          // Create a new override row with this source (or refresh existing)
           var rows=list();
           var hit=null, hitI=-1;
           for(var ri=0;ri<rows.length;ri++){ if(hexOk(rows[ri].from)===h){ hit=rows[ri]; hitI=ri; break; } }
@@ -9099,7 +9152,6 @@ function heroCtaCard(c){
     }
     function bakePermanent(){
       var pairs=list().map(function(r){ return { from:hexOk(r.from), to:hexOk(r.to) }; }).filter(function(p){ return p.from && p.to && p.from!==p.to; });
-      // Dedupe by from (last wins)
       var byFrom={}, uniq=[];
       pairs.forEach(function(p){ byFrom[p.from]=p.to; });
       Object.keys(byFrom).forEach(function(f){ uniq.push({ from:f, to:byFrom[f] }); });
@@ -9151,8 +9203,8 @@ function heroCtaCard(c){
     }
     var multiApply=$('co-multi-apply');
     if(multiApply) multiApply.addEventListener('click', function(){
-      var keys=Object.keys(selected).filter(function(k){ return selected[k]; });
-      if(!keys.length){ toast('Select at least one colour chip'); return; }
+      var keys=selKeys();
+      if(!keys.length){ toast('Add at least one eyedrop or swatch to the selection'); return; }
       var to=hexOk(multiHex&&multiHex.value)||hexOk(multiClr&&multiClr.value)||'#1f7a63';
       var n=0;
       keys.forEach(function(from){ if(addOrUpdateRemap(from, to)) n++; });
@@ -9164,12 +9216,22 @@ function heroCtaCard(c){
     if(multiClear) multiClear.addEventListener('click', function(){ selected={}; drawPalette(); });
     var multiSim=$('co-multi-similar');
     if(multiSim) multiSim.addEventListener('click', selectSimilar);
+    var multiEye=$('co-multi-eyedrop');
+    if(multiEye) multiEye.addEventListener('click', eyedropIntoMulti);
+
+    var multiTray=$('co-multi-selected');
+    if(multiTray) multiTray.addEventListener('click', function(e){
+      var chip=e.target.closest&&e.target.closest('.co-sel-chip'); if(!chip) return;
+      removeFromSelection(chip.getAttribute('data-hex'));
+      drawPalette();
+    });
 
     if(palette) palette.addEventListener('click',function(e){
       var chip=e.target.closest&&e.target.closest('.co-chip'); if(!chip) return;
       var hex=chip.getAttribute('data-hex');
       if(multiOn){
-        selected[hex]=!selected[hex];
+        if(selected[hex]) removeFromSelection(hex);
+        else addToSelection(hex, 'swatch');
         drawPalette();
         return;
       }
