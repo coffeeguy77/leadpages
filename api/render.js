@@ -767,7 +767,9 @@ function injectOrderStorefront(html, slug, cfg) {
   const sec = cfg && cfg.sections && cfg.sections.orderStorefront;
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
-  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-2';
+  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-3';
+  const showPortal = sec.showPortalLink !== false;
+  const portalLabel = esc(sec.portalCtaLabel || 'Sign in to your orders');
 
   function hexOk(v) {
     return typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v);
@@ -776,7 +778,7 @@ function injectOrderStorefront(html, slug, cfg) {
     if (doc.indexOf('/assets/lp-order-storefront.js') >= 0) {
       return doc.replace(
         /\/assets\/lp-order-storefront\.js(?:\?[^"']*)?/g,
-        '/assets/lp-order-storefront.js?v=oe-2'
+        '/assets/lp-order-storefront.js?v=oe-3'
       );
     }
     return doc.indexOf('</body>') !== -1
@@ -817,11 +819,56 @@ function injectOrderStorefront(html, slug, cfg) {
       '</style>'
     );
   }
+  function mountAttrs() {
+    return (
+      ' id="lp-order-storefront" data-slug="' +
+      safeSlug +
+      '" data-mode="embedded" data-show-portal="' +
+      (showPortal ? '1' : '0') +
+      '" data-portal-label="' +
+      portalLabel +
+      '"'
+    );
+  }
+
+  const eyebrow = esc(sec.eyebrow || 'Order online');
+  const heading = esc(sec.heading || 'Place your order');
+  const intro = esc(sec.intro || 'Choose products, pick a pickup date, and pay your deposit if required.');
+  const eyStyle = hexOk(sec.eyebrowColor) ? (' style="color:' + sec.eyebrowColor + '"') : '';
+  const hStyle = hexOk(sec.headingColor) ? (' style="color:' + sec.headingColor + '"') : '';
+  const iStyle = hexOk(sec.introColor) ? (' style="color:' + sec.introColor + '"') : '';
 
   if (html.includes('data-sec="orderStorefront"') || html.includes('id="lp-order-storefront"')) {
+    // Unhide static section and refresh copy + mount attrs when enabled.
     html = html.replace(
-      /(<div\s+id="lp-order-storefront")(?:\s+data-slug="[^"]*")?/,
-      '$1 data-slug="' + safeSlug + '"'
+      /<section([^>]*data-sec="orderStorefront"[^>]*)>/i,
+      function (_m, attrs) {
+        const a = attrs
+          .replace(/\sstyle="[^"]*"/i, '')
+          .replace(/\shidden(="[^"]*")?/i, '');
+        return '<section' + a + (sectionStyleAttr() || ' style="display:block"') + '>';
+      }
+    );
+    html = html.replace(
+      /(<section[^>]*data-sec="orderStorefront"[^>]*>)([\s\S]*?)(<\/section>)/i,
+      function (_m, open, inner, close) {
+        let next = inner;
+        next = next.replace(
+          /(<p[^>]*class="[^"]*(?:eyebrow|ey)[^"]*"[^>]*>)[\s\S]*?(<\/p>)/i,
+          '$1' + eyebrow + '$2'
+        );
+        next = next.replace(/(<h2[^>]*>)[\s\S]*?(<\/h2>)/i, '$1' + heading + '$2');
+        next = next.replace(
+          /(<p[^>]*class="[^"]*intro[^"]*"[^>]*>)[\s\S]*?(<\/p>)/i,
+          '$1' + intro + '$2'
+        );
+        if (/id="lp-order-storefront"/.test(next)) {
+          next = next.replace(/<div\s+id="lp-order-storefront"[^>]*>/, '<div' + mountAttrs() + '>');
+        } else {
+          next += '<div' + mountAttrs() + '></div>';
+        }
+        return open + next + close;
+      }
     );
     if (html.indexOf('id="lp-oe-section-style"') < 0) {
       html = html.replace(
@@ -832,12 +879,6 @@ function injectOrderStorefront(html, slug, cfg) {
     return ensureScript(html);
   }
 
-  const eyebrow = esc(sec.eyebrow || 'Order online');
-  const heading = esc(sec.heading || 'Place your order');
-  const intro = esc(sec.intro || 'Choose products, pick a pickup date, and pay your deposit if required.');
-  const eyStyle = hexOk(sec.eyebrowColor) ? (' style="color:' + sec.eyebrowColor + '"') : '';
-  const hStyle = hexOk(sec.headingColor) ? (' style="color:' + sec.headingColor + '"') : '';
-  const iStyle = hexOk(sec.introColor) ? (' style="color:' + sec.introColor + '"') : '';
   const block =
     '<section data-sec="orderStorefront" class="sec order-storefront" id="orderStorefront"' + sectionStyleAttr() + '>' +
     styleBlock() +
@@ -847,7 +888,7 @@ function injectOrderStorefront(html, slug, cfg) {
     '<h2' + hStyle + '>' + heading + '</h2>' +
     (intro ? '<p class="intro"' + iStyle + '>' + intro + '</p>' : '') +
     '</div>' +
-    '<div id="lp-order-storefront" data-slug="' + safeSlug + '"></div>' +
+    '<div' + mountAttrs() + '></div>' +
     '</div></section>' +
     '<script src="' + SCRIPT + '" defer></script>';
 

@@ -44,6 +44,9 @@
     this.root = root;
     this.slug = root.getAttribute('data-slug') || '';
     this.mode = root.getAttribute('data-mode') || 'embedded';
+    this.showPortal = root.getAttribute('data-show-portal') !== '0';
+    this.portalLabel =
+      root.getAttribute('data-portal-label') || 'Sign in to your orders';
     this.state = {
       catalogue: null,
       cartId: localStorage.getItem(cartKey(this.slug)) || '',
@@ -55,6 +58,10 @@
       msg: ''
     };
   }
+
+  OrderStorefront.prototype.portalUrl = function () {
+    return '/order-portal?slug=' + encodeURIComponent(this.slug || '');
+  };
 
   OrderStorefront.prototype.init = async function () {
     try {
@@ -121,10 +128,19 @@
     html += '<header class="lp-oe-head"><div><p class="lp-oe-ey">Order online</p><h2 class="lp-oe-brand">' +
       esc(biz) +
       '</h2><p class="lp-oe-sub">Choose products, pick a collection date, pay deposit if required.</p></div>';
+    html += '<div class="lp-oe-head-actions">';
+    if (this.showPortal && this.slug) {
+      html +=
+        '<a class="lp-oe-portal" href="' +
+        esc(this.portalUrl()) +
+        '">' +
+        esc(this.portalLabel) +
+        '</a>';
+    }
     html +=
       '<button type="button" class="lp-oe-cart-btn" data-act="open-cart">Cart (' +
       (this.state.items.length || 0) +
-      ')</button></header>';
+      ')</button></div></header>';
 
     if (this.state.msg) html += '<p class="lp-oe-msg">' + esc(this.state.msg) + '</p>';
 
@@ -450,13 +466,32 @@
     }
   };
 
+  function ensureStyles() {
+    if (document.getElementById('lp-oe-storefront-css')) return;
+    var st = document.createElement('style');
+    st.id = 'lp-oe-storefront-css';
+    st.textContent =
+      '.lp-oe-head{display:flex;flex-wrap:wrap;gap:14px 18px;align-items:flex-start;justify-content:space-between}' +
+      '.lp-oe-head-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}' +
+      '.lp-oe-portal{display:inline-flex;align-items:center;font:700 13px/1.2 system-ui,sans-serif;color:var(--lp-oe-accent,var(--accent,#1f7a63));text-decoration:underline;text-underline-offset:3px}' +
+      '.lp-oe-portal:hover{opacity:.85}';
+    document.head.appendChild(st);
+  }
+
   function boot(root) {
+    if (!root) return;
+    ensureStyles();
+    // Re-read attrs each boot (editor / landing Shared→Unique remounts).
+    root.__lpOeBooted = true;
     var app = new OrderStorefront(root);
     app.init();
   }
 
   function scan() {
-    document.querySelectorAll('#lp-order-storefront, [data-lp-order-storefront]').forEach(boot);
+    document.querySelectorAll('#lp-order-storefront, [data-lp-order-storefront]').forEach(function (el) {
+      if (!el.getAttribute('data-slug')) return;
+      boot(el);
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan);

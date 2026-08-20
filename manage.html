@@ -1048,7 +1048,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
       </div>
 
       <div id="lp-panel-apps" hidden>
-        <p class="lede" style="margin-top:0;">Add marketplace apps to this landing page. <strong>Shared</strong> uses live homepage content. <strong>Unique</strong> keeps a per-page copy — choose Unique then click <strong>Use homepage content</strong> to copy styling, images, and text from the homepage before editing for this page.</p>
+        <p class="lede" style="margin-top:0;">Add marketplace apps to this landing page. <strong>Shared</strong> uses live homepage content. <strong>Unique</strong> keeps a per-page copy — choose Unique then click <strong>Use homepage content</strong> to copy styling, images, and text from the homepage before editing for this page. <strong>Order Storefront</strong> works the same way: Shared shows your homepage order catalogue; Unique lets this page carry its own order-section copy while still using the site’s Order Engine products.</p>
         <div class="lp-app-add">
           <div class="f" style="margin:0;flex:1;min-width:220px;"><label>App to add</label><select id="lp-app-pick" class="tin"><option value="">Choose an app…</option></select></div>
           <button type="button" class="btn" id="lp-app-add" style="margin-bottom:2px;">+ Add app</button>
@@ -3299,7 +3299,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     emergencyAvailability:{on:false,heading:'After-hours & emergencies',intro:'We keep the phone on outside business hours for genuine emergencies \u2014 leave your details and we\u2019ll call you straight back.',mode:'schedule',available:true,weekdayOpen:'07:00',weekdayClose:'17:00',satOpen:'08:00',satClose:'14:00',sunOpen:'',sunClose:'',availableLabel:'Available now',responseText:'Fast response — usually within the hour',afterHoursLabel:'After hours',afterHoursText:'Leave your details and we’ll call you first thing.',emergencyText:'Genuine emergency? Call anyway — we run after-hours callouts.',cta:{text:'',action:'call'}},
     serviceAreaMap:{on:false,eyebrow:'Service area',heading:'Suburbs we cover across the ACT',intro:'Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch.'},
     onlineQuote:{on:false,eyebrow:'Online quote',heading:'Get your verified quote',intro:'Answer a few questions — verify your email to see your total, then SMS for the full breakdown.',bg:'',eyebrowColor:'',headingColor:'',introColor:''},
-    orderStorefront:{on:false,eyebrow:'Order online',heading:'Place your order',intro:'Choose products, pick a pickup date, and pay your deposit if required.',bg:'',eyebrowColor:'',headingColor:'',introColor:'',accent:'',cardBg:'',cardBorder:'',text:'',muted:'',btnBg:'',btnText:'',inputBg:'',inputBorder:''},
+    orderStorefront:{on:false,eyebrow:'Order online',heading:'Place your order',intro:'Choose products, pick a pickup date, and pay your deposit if required.',showPortalLink:true,portalCtaLabel:'Sign in to your orders',bg:'',eyebrowColor:'',headingColor:'',introColor:'',accent:'',cardBg:'',cardBorder:'',text:'',muted:'',btnBg:'',btnText:'',inputBg:'',inputBorder:''},
     customHtml:{on:false,title:'',html:'',cssUrls:[],jsUrls:[],cssVars:{},fullBleed:true,bg:''},
     estimateBuilder:{on:false,eyebrow:'Instant estimate',heading:'Get a ballpark price in 30 seconds',intro:'Answer a few quick questions for an indicative range. For an exact price, send the details through and we’ll confirm.',currency:'$',disclaimer:'This is a guide only — your final price is confirmed after a quick on-site inspection.',ctaText:'Get my exact quote'},
     certifications:{eyebrow:'Accredited & insured',heading:'Licensed, insured & accredited',intro:'Fully qualified and backed by recognised industry accreditations — so you know the job is done right.'},
@@ -3632,9 +3632,13 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
         }
         if(id==='searchCanvas'){ _orderEnsure(base,'searchCanvas',['serviceProcess','services','hero','heroSlider','splitHero']); return; }
         if(id==='navMenu'){ base.unshift(id); return; }
-        if(id==='onlineQuote'||id==='customHtml'){
+        if(id==='onlineQuote'||id==='orderStorefront'||id==='customHtml'){
           var qi=base.indexOf('quote');
           if(qi>=0){ base.splice(qi,0,id); return; }
+          if(id==='orderStorefront'){
+            var oqi=base.indexOf('onlineQuote');
+            if(oqi>=0){ base.splice(oqi+1,0,id); return; }
+          }
         }
         // SEO Text sits above the homepage FAQ by default (article → questions).
         if(id==='seoText'){
@@ -3807,7 +3811,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   (function(){ if(document.getElementById('le-hsl-style')) return; var s=document.createElement('style'); s.id='le-hsl-style'; s.textContent='.le-slide-title{font-size:13px;font-weight:600;color:var(--ink-soft);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.le-slide-btns{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;}.le-hsl-btn{display:inline-flex;align-items:center;justify-content:center;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700;line-height:1.2;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.14);}.le-hsl-chip{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.2);flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);}'; document.head.appendChild(s); })();
   const LIST_SCHEMAS={
     mobileExtras:{secId:'mobileBar',key:'extras',addLabel:'+ Add button',item:[{k:'type',label:'Button type',type:'radio',opts:[['link','Custom link'],['social','Social'],['whatsapp','WhatsApp'],['sms','SMS']]},{k:'icon',label:'Icon',type:'icon'},{k:'label',label:'Label (optional)'},{k:'value',label:'URL or phone number',ph:'https://\u2026  or  04xx xxx xxx'},{k:'opens',label:'Link opens',type:'select',opts:[['_self','Same tab'],['_blank','New tab']]},{k:'inMenu',label:'Show this in the menu panel instead of the bottom bar',type:'check'}],defaultItem:{on:true,type:'link',icon:'external-link',label:'',value:'',opens:'_blank',inMenu:false}},
-    mobileMenuItems:{secId:'mobileBar',key:'menuItems',addLabel:'+ Add menu item',item:[{k:'type',label:'Item type',type:'radio',opts:[['link','Link'],['scroll','Scroll to section'],['call','Call'],['quote','Get a quote']]},{k:'icon',label:'Icon',type:'icon'},{k:'label',label:'Label'},{k:'value',label:'URL or section name',ph:'https://…  or  services'},{k:'opens',label:'Link opens',type:'select',opts:[['_self','Same tab'],['_blank','New tab']]}],defaultItem:{on:true,type:'link',icon:'chevron-right',label:'',value:'',opens:'_self'}},
+    mobileMenuItems:{secId:'mobileBar',key:'menuItems',addLabel:'+ Add menu item',item:[{k:'type',label:'Item type',type:'radio',opts:[['link','Link'],['scroll','Scroll to section'],['call','Call'],['quote','Get a quote'],['orderStorefront','Order Storefront'],['orderShop','Order shop'],['orderPortal','Order portal (SMS)']]},{k:'icon',label:'Icon',type:'icon'},{k:'label',label:'Label'},{k:'value',label:'URL or section name',ph:'https://…  or  services'},{k:'opens',label:'Link opens',type:'select',opts:[['_self','Same tab'],['_blank','New tab']]}],defaultItem:{on:true,type:'link',icon:'chevron-right',label:'',value:'',opens:'_self'}},
     badges:{secId:'hero',key:'badges',addLabel:'Add badge',item:[{k:'icon',label:'Icon',type:'icon',ph:'✓'},{k:'text',label:'Text'}],defaultItem:{icon:'✓',text:'New badge'}},
     why:{secId:'why',key:'items',addLabel:'Add reason',item:[{k:'icon',label:'Icon',type:'icon'},{k:'n',label:'Number (if no icon)',w:'120px',ph:'01'},{k:'title',label:'Heading'},{k:'body',label:'Text',type:'ta'}],defaultItem:{icon:'',n:'+',title:'New reason',body:''}},
     reviews:{secId:'reviews',key:'items',addLabel:'Add review',item:[{k:'who',label:'Name & suburb'},{k:'text',label:'Quote',type:'ta'},{k:'source',label:'Source',type:'select',opts:[['','—'],['google','Google'],['facebook','Facebook'],['hipages','hipages'],['productreview','ProductReview'],['word','Word of mouth']],w:'1 1 150px'}],defaultItem:{who:'',text:'',source:''}},
@@ -6483,6 +6487,20 @@ function heroCtaCard(c){
         can_reposition:true,
         hero_exclusive:false,
         sort_order:85
+      },
+      {
+        name:'Order Storefront',
+        slug:'order-storefront',
+        section_key:'orderStorefront',
+        tier:'paid',
+        tagline:'Catalogue, cart and SMS order portal',
+        description:'Show the Order Engine on the homepage (Position) or on landing pages as Shared / Unique — same as other marketplace apps.',
+        default_position:'mid',
+        marketplace_status:'live',
+        builder_visible:true,
+        can_reposition:true,
+        hero_exclusive:false,
+        sort_order:96
       }
     ];
     builtins.forEach(function(b){
@@ -6501,6 +6519,10 @@ function heroCtaCard(c){
         if(existing.section_key!=='promotions') existing.section_key='promotions';
         if(existing.slug!=='promotions') existing.slug='promotions';
         if(existing.marketplace_status!=='live') existing.marketplace_status='live';
+      }
+      if(b.section_key==='orderStorefront'){
+        if(existing.marketplace_status!=='live') existing.marketplace_status='live';
+        if(existing.builder_visible===false) existing.builder_visible=true;
       }
     });
     // Hide stale split promotions apps (promotions-hero / promotions-inline) in the UI.
@@ -8145,14 +8167,22 @@ function heroCtaCard(c){
       body.innerHTML=secCard(c,'orderStorefront','Order Storefront',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])
         +orderStorefrontStyleCard(c)
         +'<div class="card" style="margin-bottom:22px;"><h2>How it works</h2>'
-        +'<p class="lede">Shows the Order Engine catalogue on the live site (cart, pickup date, deposit checkout). Manage products and orders from the <strong>Orders</strong> tab.</p>'
-        +'<p class="hint" style="margin:0 0 12px;">Direct shop URL: <code>/order-shop?slug='+esc(currentSiteSlug||'your-slug')+'</code></p>'
+        +'<p class="lede">Shows the Order Engine catalogue on the live site (cart, pickup date, deposit checkout). Place it with <strong>Position</strong>. On Landing pages, add it under <strong>Apps</strong> as Shared (homepage) or Unique — same as other marketplace apps.</p>'
+        +'<p class="hint" style="margin:0 0 12px;">Direct shop URL: <code>/order-shop?slug='+esc(currentSiteSlug||'your-slug')+'</code> · Customer SMS portal: <code>/order-portal?slug='+esc(currentSiteSlug||'your-slug')+'</code></p>'
+        +'<div class="row" style="margin:0 0 12px;"><div class="f"><label>Customer sign-in (SMS)</label><label class="ck" style="display:flex;gap:8px;align-items:center;font-weight:600;margin:8px 0 0;"><input type="checkbox" id="os-portal-on"'+(((c.sections.orderStorefront||{}).showPortalLink!==false)?' checked':'')+'> Show “Sign in to your orders” on the storefront</label></div>'
+        +'<div class="f"><label>Sign-in button label</label><input type="text" id="os-portal-label" class="tin" placeholder="Sign in to your orders" value="'+esc(((c.sections.orderStorefront||{}).portalCtaLabel)||'')+'"></div></div>'
         +'<p style="margin:0;display:flex;flex-wrap:wrap;gap:8px;">'
         +'<button type="button" class="btn" id="os-goto-orders">Open Orders</button>'
         +'<a class="btn ghost" href="/order-shop?slug='+esc(currentSiteSlug||'')+'" target="_blank" rel="noopener" style="text-decoration:none;">Preview shop ↗</a>'
+        +'<a class="btn ghost" href="/order-portal?slug='+esc(currentSiteSlug||'')+'" target="_blank" rel="noopener" style="text-decoration:none;">Preview SMS portal ↗</a>'
         +'</p></div>';
       wireSec(c,'orderStorefront',true,[['eyebrow'],['heading'],['intro']]);
       wireOrderStorefrontStyle(c);
+      (function(){
+        function ens(){ if(!c.sections)c.sections={}; if(!c.sections.orderStorefront)c.sections.orderStorefront={}; return c.sections.orderStorefront; }
+        var po=$('os-portal-on'); if(po) po.addEventListener('change',function(){ ens().showPortalLink=po.checked; persist(); previewApply(); });
+        var pl=$('os-portal-label'); if(pl){ pl.addEventListener('input',function(){ ens().portalCtaLabel=pl.value; persist(); previewApply(); }); }
+      })();
       var og=$('os-goto-orders'); if(og) og.addEventListener('click',function(){ if(typeof showView==='function') showView('orders'); });
     } else if(sub==='customHtml'){
       if(!c.sections) c.sections={}; if(!c.sections.customHtml) c.sections.customHtml=JSON.parse(JSON.stringify(DEFAULT_TRADE_SECTIONS.customHtml||{}));
@@ -8730,7 +8760,7 @@ function heroCtaCard(c){
       if(!c.sections) c.sections={}; if(!c.sections.navMenu) c.sections.navMenu={};
       var _nm=c.sections.navMenu; if(!Array.isArray(_nm.items)) _nm.items=[];
       body.innerHTML=secCard(c,'navMenu','Navigation Menu',true,[])
-        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Menu items</h2><p class="lede" style="margin:0 0 12px;">A row of links you can drop anywhere on the page with <b>Position</b>. Link to your home page, any Landing page (create them in the <b>Landing pages</b> tab), or an external URL. Drag the handle or use the arrows to reorder.</p>'
+        +'<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Menu items</h2><p class="lede" style="margin:0 0 12px;">A row of links you can drop anywhere on the page with <b>Position</b>. Link to Home, Landing pages, the <b>Order Storefront</b> (on-page), Order shop / SMS portal, or an external URL. Choose whether links open in the <b>same tab</b> or a <b>new tab</b>.</p>'
           +'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Placement</label><select id="nm-place" class="tin"><option value="header">In the header, beside the logo</option><option value="bar">Own bar (below the header)</option></select></div><div class="f"><p class="hint" style="margin:24px 0 0;">Default is beside the logo. In-header position follows your logo alignment (Logo tab). Button styles and colours apply to <strong>both</strong> placements.</p></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Button style</label><select id="nm-style" class="tin"><option value="pills">Pills (filled)</option><option value="solid">Solid buttons</option><option value="outline">Outline buttons</option><option value="shadow">Elevated (shadow)</option><option value="buttons">Bordered buttons</option><option value="tabs">Underline tabs</option><option value="underline">Animated underline</option><option value="links">Plain links</option><option value="ghost">Ghost (subtle)</option></select></div><div class="f"><label>Alignment</label><select id="nm-align" class="tin"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Show items as</label><select id="nm-icons" class="tin"><option value="both">Icon + text</option><option value="text">Text only</option><option value="icon">Icon only</option></select></div><div class="f"><label>Menu background <span class="hint">standalone bar</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-bg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-bgt" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-bg-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Link / text colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-fg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-fgt" class="tin" placeholder="#ffffff" style="flex:1;min-width:0;"><button type="button" id="nm-fg-clr" class="btn ghost sm">Default</button></div></div><div class="f"><label>Hover text colour</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-hfg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-hfgt" class="tin" placeholder="Same as text" style="flex:1;min-width:0;"><button type="button" id="nm-hfg-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Button stroke colour <span class="hint">outline &amp; bordered</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-stroke" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-stroket" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-stroke-clr" class="btn ghost sm">Default</button></div></div><div class="f"><label>Button background <span class="hint">pills &amp; solid / hover chip</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-fill" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-fillt" class="tin" placeholder="Theme default" style="flex:1;min-width:0;"><button type="button" id="nm-fill-clr" class="btn ghost sm">Default</button></div></div></div>'+'<div class="row" style="margin-bottom:14px;"><div class="f"><label>Hover background</label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="nm-hbg" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="nm-hbgt" class="tin" placeholder="Soft white wash" style="flex:1;min-width:0;"><button type="button" id="nm-hbg-clr" class="btn ghost sm">Default</button></div></div><div class="f"></div></div>'
           +'<div id="nm-list"></div>'
           +'<div style="margin-top:12px;"><button type="button" id="nm-add" class="nm-add">+ Add menu item</button></div>'
@@ -8741,13 +8771,31 @@ function heroCtaCard(c){
         var host=$('nm-list'); if(!host) return;
         function pages(){ return (Array.isArray(data.pages)?data.pages:[]).filter(function(p){ return p&&p.slug; }); }
         var _is='padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;'; var NM_ICONS=[['','\u2014 no icon \u2014'],['home','Home'],['phone','Phone'],['phone-call','Phone call'],['mail','Email'],['map-pin','Location'],['calendar','Calendar'],['clock','Clock'],['star','Star'],['heart','Heart'],['info','Info'],['check-circle','Tick'],['shield-check','Shield'],['award','Award'],['wrench','Wrench'],['hammer','Hammer'],['users','Team'],['user','Person'],['message-circle','Chat'],['image','Gallery'],['file-text','Document'],['book-open','Guide'],['sparkles','Sparkle'],['zap','Bolt'],['arrow-right','Arrow'],['external-link','External']]; function iconSel(it,i){ return '<div class="iconctl" style="flex:0 0 auto;"><button type="button" class="icon-pick" tabindex="-1" title="Choose an icon" style="width:42px;height:42px;">'+iconBtnInner(it.icon||'')+'</button><input type="hidden" class="icon-input" data-i="'+i+'" value="'+esc(it.icon||'')+'"></div>'; }
-        function tsel(it,i){ var o='<option value="home"'+((!it.target||it.target==='home')?' selected':'')+'>Home page</option>'; pages().forEach(function(p){ var v='page:'+p.slug; o+='<option value="'+esc(v)+'"'+(it.target===v?' selected':'')+'>'+esc((p.title||p.slug)+(p.status!=='published'?' (draft)':''))+'</option>'; }); o+='<option value="external"'+(it.target==='external'?' selected':'')+'>External URL\u2026</option>'; return '<select class="nm-target tin" data-i="'+i+'" style="'+_is+'flex:1 1 150px;">'+o+'</select>'; }
-        function row(it,i,n){ var ext=(it.target==='external'); return '<div class="nm-row" draggable="true" data-i="'+i+'" style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px;">'
+        function tsel(it,i){
+          var o='<option value="home"'+((!it.target||it.target==='home')?' selected':'')+'>Home page</option>';
+          pages().forEach(function(p){ var v='page:'+p.slug; o+='<option value="'+esc(v)+'"'+(it.target===v?' selected':'')+'>'+esc((p.title||p.slug)+(p.status!=='published'?' (draft)':''))+'</option>'; });
+          o+='<option value="orderStorefront"'+(it.target==='orderStorefront'?' selected':'')+'>Order Storefront (on this page)</option>';
+          o+='<option value="orderShop"'+(it.target==='orderShop'?' selected':'')+'>Order shop (full page)</option>';
+          o+='<option value="orderPortal"'+(it.target==='orderPortal'?' selected':'')+'>Order portal (SMS sign-in)</option>';
+          o+='<option value="external"'+(it.target==='external'?' selected':'')+'>External URL\u2026</option>';
+          return '<select class="nm-target tin" data-i="'+i+'" style="'+_is+'flex:1 1 150px;">'+o+'</select>';
+        }
+        function opensSel(it,i){
+          var op=(it.opens==='_blank')?'_blank':'_self';
+          return '<select class="nm-opens tin" data-i="'+i+'" title="Where the link opens" style="'+_is+'flex:0 1 120px;">'
+            +'<option value="_self"'+(op==='_self'?' selected':'')+'>Same tab</option>'
+            +'<option value="_blank"'+(op==='_blank'?' selected':'')+'>New tab</option>'
+            +'</select>';
+        }
+        function row(it,i,n){
+          var ext=(it.target==='external');
+          var needsUrl=ext;
+          return '<div class="nm-row" draggable="true" data-i="'+i+'" style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px;">'
           +'<span class="nm-grip" style="cursor:grab;color:var(--ink-faint);font-size:15px;letter-spacing:-2px;line-height:1;">\u22ee\u22ee</span>'
           +'<div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
             +'<input type="text" class="nm-label tin" data-i="'+i+'" value="'+esc(it.label||'')+'" placeholder="Label" style="flex:1 1 120px;'+_is+'">'
-            +tsel(it,i)+iconSel(it,i)
-            +'<input type="text" class="nm-url tin" data-i="'+i+'" value="'+esc(it.url||'')+'" placeholder="https://\u2026" style="flex:1 1 150px;'+_is+(ext?'':'display:none;')+'">'
+            +tsel(it,i)+opensSel(it,i)+iconSel(it,i)
+            +'<input type="text" class="nm-url tin" data-i="'+i+'" value="'+esc(it.url||'')+'" placeholder="https://\u2026" style="flex:1 1 150px;'+_is+(needsUrl?'':'display:none;')+'">'
           +'</div>'
           +'<span style="display:flex;gap:4px;">'
             +'<button type="button" class="nm-mv nm-up" data-i="'+i+'" title="Move up"'+(i===0?' disabled':'')+'>\u2191</button>'
@@ -8755,16 +8803,39 @@ function heroCtaCard(c){
             +'<button type="button" class="nm-del" data-i="'+i+'" title="Remove">\u2715</button>'
           +'</span>'
         +'</div>'; }
-        function draw(){ var its=_nm.items; host.innerHTML = its.length ? its.map(function(it,i){ return row(it,i,its.length); }).join('') : '<p class="hint" style="color:#888;margin:0;">No items yet \u2014 add Home, a Landing page, or an external link below.</p>'; }
+        function draw(){ var its=_nm.items; host.innerHTML = its.length ? its.map(function(it,i){ return row(it,i,its.length); }).join('') : '<p class="hint" style="color:#888;margin:0;">No items yet \u2014 add Home, Orders, a Landing page, or an external link below.</p>'; }
         draw();
         host.addEventListener('input',function(e){ var t=e.target, i=+t.getAttribute('data-i'); if(isNaN(i)) return; if(t.classList.contains('nm-label')){ _nm.items[i].label=t.value; persist(); previewApply(); } else if(t.classList.contains('nm-url')){ _nm.items[i].url=t.value; persist(); previewApply(); } else if(t.classList.contains('icon-input')){ if(_nm.items[i]){ _nm.items[i].icon=t.value; persist(); previewApply(); } } });
-        host.addEventListener('change',function(e){ var t=e.target; if(t.classList.contains('nm-icon')){ var ii=+t.getAttribute('data-i'); if(_nm.items[ii]){ _nm.items[ii].icon=t.value; persist(); previewApply(); } return; } if(!t.classList.contains('nm-target')) return; var i=+t.getAttribute('data-i'); var it=_nm.items[i]; var auto=(!it.label||it.label==='Home'||pages().some(function(p){return (p.title||p.slug)===it.label;})); it.target=t.value; if(auto){ if(t.value==='home') it.label='Home'; else if(t.value.indexOf('page:')===0){ var pg=pages().filter(function(p){return 'page:'+p.slug===t.value;})[0]; if(pg) it.label=pg.title||pg.slug; } else it.label=''; } persist(); previewApply(); draw(); });
+        host.addEventListener('change',function(e){
+          var t=e.target;
+          if(t.classList.contains('nm-opens')){
+            var oi=+t.getAttribute('data-i');
+            if(_nm.items[oi]){ _nm.items[oi].opens=t.value; persist(); previewApply(); }
+            return;
+          }
+          if(t.classList.contains('nm-icon')){ var ii=+t.getAttribute('data-i'); if(_nm.items[ii]){ _nm.items[ii].icon=t.value; persist(); previewApply(); } return; }
+          if(!t.classList.contains('nm-target')) return;
+          var i=+t.getAttribute('data-i'); var it=_nm.items[i];
+          var auto=(!it.label||it.label==='Home'||it.label==='Order'||it.label==='Order online'||it.label==='My orders'||pages().some(function(p){return (p.title||p.slug)===it.label;}));
+          it.target=t.value;
+          if(t.value==='external' && !it.opens) it.opens='_blank';
+          if((t.value==='orderStorefront'||t.value==='orderShop'||t.value==='orderPortal'||t.value==='home'||(t.value&&t.value.indexOf('page:')===0)) && !it.opens) it.opens='_self';
+          if(auto){
+            if(t.value==='home') it.label='Home';
+            else if(t.value==='orderStorefront') it.label='Order online';
+            else if(t.value==='orderShop') it.label='Order';
+            else if(t.value==='orderPortal') it.label='My orders';
+            else if(t.value.indexOf('page:')===0){ var pg=pages().filter(function(p){return 'page:'+p.slug===t.value;})[0]; if(pg) it.label=pg.title||pg.slug; }
+            else it.label='';
+          }
+          persist(); previewApply(); draw();
+        });
         host.addEventListener('click',function(e){ var up=e.target.closest&&e.target.closest('.nm-up'); var dn=e.target.closest&&e.target.closest('.nm-down'); var dl=e.target.closest&&e.target.closest('.nm-del'); if(up){ var i=+up.getAttribute('data-i'); if(i>0){ _nm.items.splice(i-1,0,_nm.items.splice(i,1)[0]); persist(); previewApply(); draw(); } } else if(dn){ var i=+dn.getAttribute('data-i'); if(i<_nm.items.length-1){ _nm.items.splice(i+1,0,_nm.items.splice(i,1)[0]); persist(); previewApply(); draw(); } } else if(dl){ var i=+dl.getAttribute('data-i'); _nm.items.splice(i,1); persist(); previewApply(); draw(); } });
         var drag=null;
         host.addEventListener('dragstart',function(e){ var r=e.target.closest&&e.target.closest('.nm-row'); if(!r) return; drag=+r.getAttribute('data-i'); try{e.dataTransfer.effectAllowed='move';}catch(_e){} });
         host.addEventListener('dragover',function(e){ e.preventDefault(); });
         host.addEventListener('drop',function(e){ e.preventDefault(); var r=e.target.closest&&e.target.closest('.nm-row'); if(!r||drag==null) return; var to=+r.getAttribute('data-i'); if(isNaN(to)||to===drag) return; var it=_nm.items.splice(drag,1)[0]; _nm.items.splice(to,0,it); drag=null; persist(); previewApply(); draw(); });
-        var ab=$('nm-add'); if(ab) ab.addEventListener('click',function(){ _nm.items.push({label:'Home',target:'home',url:''}); persist(); previewApply(); draw(); });
+        var ab=$('nm-add'); if(ab) ab.addEventListener('click',function(){ _nm.items.push({label:'Home',target:'home',url:'',opens:'_self'}); persist(); previewApply(); draw(); });
       })();
     } else if(sub==='branding'){
       var rowsC=TRADE_COLOURS.map(function(k){ return '<div class="f"><label>'+k[1]+' <span class="hint">'+k[2]+'</span></label><div style="display:flex;gap:8px;align-items:center;"><input type="color" id="col-'+k[0]+'" style="width:46px;height:38px;padding:2px;border:1px solid var(--line);border-radius:8px;cursor:pointer;"><input type="text" id="colt-'+k[0]+'" class="tin" style="flex:1;"></div></div>'; }).join('');
