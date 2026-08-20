@@ -104,6 +104,7 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 }
 .menu-toggle{display:none}
 .content{flex:1;min-height:0;overflow:auto;padding:18px 16px 40px}
+.content-inner{width:100%;max-width:1440px;margin:0 auto}
 .view{display:none}
 .view.on{display:block}
 .kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
@@ -118,14 +119,27 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 .card .sub{margin:0 0 14px;color:var(--ink-soft);font-size:13.5px}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
 .toolbar input,.toolbar select,.field input,.field select,.field textarea{
-  padding:9px 11px;border-radius:10px;border:1px solid var(--line-strong);
-  background:var(--input-bg,transparent);color:var(--ink);font:inherit;
+  padding:8px 10px;border-radius:9px;border:1px solid var(--line-strong);
+  background:var(--input-bg,transparent);color:var(--ink);
+  font:400 13px/1.35 var(--font-ui);max-width:100%;
 }
 .toolbar input{min-width:180px;flex:1}
 .field{margin:0 0 12px}
-.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
-.field input,.field select,.field textarea{width:100%}
-.field textarea{min-height:72px;resize:vertical}
+.field label{display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+.field input,.field select,.field textarea{width:100%;max-width:520px}
+.field textarea{min-height:72px;resize:vertical;max-width:720px}
+.field.full input,.field.full select,.field.full textarea{max-width:100%}
+.field-hint{display:block;margin-top:4px;font-size:11.5px;color:var(--ink-faint);line-height:1.35;font-weight:500}
+.radio-row{display:flex;flex-wrap:wrap;gap:8px 14px;padding-top:4px}
+.radio-row label{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;margin:0}
+.radio-row input{width:auto;max-width:none;margin:0;accent-color:var(--accent)}
+.money-input{display:flex;align-items:center;gap:6px;max-width:220px}
+.money-input .prefix{font-weight:700;color:var(--ink-soft)}
+.money-input input{flex:1;max-width:none}
+.prod-img-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.prod-img-preview{width:88px;height:88px;border-radius:12px;border:1px solid var(--line);background:#f3efe7 center/cover no-repeat;flex:none}
+.prod-img-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.prod-cat-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;align-items:center}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 16px}
 @media(max-width:800px){.grid2,.grid3{grid-template-columns:1fr}}
@@ -246,6 +260,7 @@ body.embed .hub{min-height:70vh}
       <button class="btn ghost" type="button" id="btn-refresh">Refresh</button>
     </div>
     <div class="content">
+    <div class="content-inner">
       <!-- Dashboard -->
       <section class="view on" id="view-dashboard" data-view="dashboard">
         <p class="notice" id="dash-notice">Select a site to load KPIs.</p>
@@ -328,9 +343,19 @@ body.embed .hub{min-height:70vh}
             </div>
             <button class="btn solid" type="button" id="prod-new">New product</button>
           </div>
+          <div class="prod-cat-bar">
+            <label class="field" style="margin:0;min-width:200px;flex:1">
+              <span style="display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin:0 0 4px">Category filter</span>
+              <select id="prod-cat-filter" style="max-width:280px"><option value="">All categories</option></select>
+            </label>
+            <label class="field" style="margin:0;min-width:180px;flex:1">
+              <span style="display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin:0 0 4px">Search</span>
+              <input id="prod-q" placeholder="Find a product…" style="max-width:280px">
+            </label>
+          </div>
           <div class="table-wrap">
             <table class="oe"><thead><tr>
-              <th>Name</th><th>Pricing</th><th>Stock</th><th>Cutoff</th><th>Active</th><th></th>
+              <th></th><th>Name</th><th>Category</th><th>Pricing</th><th>Stock</th><th>Active</th><th></th>
             </tr></thead><tbody id="prod-tbody"></tbody></table>
           </div>
           <p class="empty hide" id="prod-empty">No products yet — apply the butcher preset in Settings or create one.</p>
@@ -339,18 +364,42 @@ body.embed .hub{min-height:70vh}
           <h3 id="prod-form-title">Product</h3>
           <form id="prod-form">
             <input type="hidden" id="prod-id">
+            <input type="hidden" id="prod-image" value="">
             <div class="grid2">
               <div class="field"><label for="prod-name">Name *</label><input id="prod-name" required></div>
-              <div class="field"><label for="prod-image">Image URL</label><input id="prod-image" type="url" placeholder="https://…"></div>
-              <div class="field"><label for="prod-pricing">Pricing method</label>
-                <select id="prod-pricing">
-                  <option value="fixed">Fixed</option>
-                  <option value="per_weight">Per kg</option>
-                  <option value="price_tbc">Price TBC</option>
-                </select>
+              <div class="field"><label for="prod-category">Category</label>
+                <select id="prod-category"><option value="">Uncategorised</option></select>
+                <span class="field-hint">Filter products by category in the list above. <button type="button" class="btn ghost" id="prod-cat-add" style="padding:4px 8px;margin-left:4px">+ New category</button></span>
               </div>
-              <div class="field"><label for="prod-price">Price (cents)</label><input id="prod-price" type="number" min="0" step="1"></div>
-              <div class="field"><label for="prod-perkg">Price per kg (cents)</label><input id="prod-perkg" type="number" min="0" step="1"></div>
+              <div class="field full" style="grid-column:1/-1"><label>Product image</label>
+                <div class="prod-img-row">
+                  <div class="prod-img-preview" id="prod-image-preview" aria-hidden="true"></div>
+                  <div>
+                    <div class="prod-img-actions">
+                      <button type="button" class="btn solid" id="prod-image-upload">Upload image</button>
+                      <button type="button" class="btn ghost" id="prod-image-clear">Clear</button>
+                      <input type="file" id="prod-image-file" accept="image/jpeg,image/png,image/webp" hidden>
+                    </div>
+                    <span class="field-hint">Recommended <strong>1200×1200 px</strong> (square). Max upload <strong>5&nbsp;MB</strong> — images are resized automatically before upload. Stored in Cloudinary under <code>orders/client/products/</code>.</span>
+                    <p class="notice" id="prod-image-msg" style="margin-top:8px"></p>
+                  </div>
+                </div>
+              </div>
+              <div class="field full" style="grid-column:1/-1"><label>Pricing method</label>
+                <div class="radio-row" id="prod-pricing-radios" role="radiogroup" aria-label="Pricing method">
+                  <label><input type="radio" name="prod-pricing" value="fixed" checked> Fixed price</label>
+                  <label><input type="radio" name="prod-pricing" value="per_weight"> Per kg</label>
+                  <label><input type="radio" name="prod-pricing" value="price_tbc"> Price TBC</label>
+                </div>
+              </div>
+              <div class="field"><label for="prod-price">Price (dollars)</label>
+                <div class="money-input"><span class="prefix">$</span><input id="prod-price" type="number" min="0" step="0.01" placeholder="0.00"></div>
+                <span class="field-hint">Enter dollars and cents, e.g. 65.99</span>
+              </div>
+              <div class="field"><label for="prod-perkg">Price per kg (dollars)</label>
+                <div class="money-input"><span class="prefix">$</span><input id="prod-perkg" type="number" min="0" step="0.01" placeholder="0.00"></div>
+                <span class="field-hint">Used when pricing method is Per kg</span>
+              </div>
               <div class="field"><label for="prod-stock">Stock method</label>
                 <select id="prod-stock">
                   <option value="unlimited">Unlimited</option>
@@ -524,6 +573,8 @@ body.embed .hub{min-height:70vh}
 
       <section class="view" id="view-customers" data-view="customers">
         <div class="card">
+          <h3>Customers</h3>
+          <p class="sub">Click a row to open customer details, order history, and messages.</p>
           <div class="toolbar">
             <input id="cust-q" placeholder="Search name, phone, email" style="flex:1;min-width:180px">
             <button class="btn solid" type="button" id="cust-load">Search</button>
@@ -675,6 +726,7 @@ body.embed .hub{min-height:70vh}
         </div>
       </section>
     </div>
+    </div>
   </div>
 </div>
 
@@ -725,6 +777,7 @@ body.embed .hub{min-height:70vh}
     sites: [],
     siteId: '',
     products: [],
+    categories: [],
     currentView: 'dashboard',
     detail: null,
     navCounts: { customers: null, orders: null, new_orders: null, archived: null }
@@ -1286,11 +1339,136 @@ body.embed .hub{min-height:70vh}
   }
 
   async function loadProductsCache(){
-    if (!state.siteId) { state.products = []; return; }
+    if (!state.siteId) { state.products = []; state.categories = []; return { products: [], categories: [] }; }
     var data = await api('/api/order/products?' + siteQuery());
     state.products = data.products || [];
+    state.categories = data.categories || [];
     return data;
   }
+
+  function categoryName(id){
+    if (!id) return '—';
+    var c = (state.categories || []).find(function(x){ return x.id === id; });
+    return c ? c.name : '—';
+  }
+
+  function fillCategorySelects(){
+    var filter = $('prod-cat-filter');
+    var formSel = $('prod-category');
+    var cats = state.categories || [];
+    var curFilter = filter ? filter.value : '';
+    var curForm = formSel ? formSel.value : '';
+    if (filter) {
+      filter.innerHTML = '<option value="">All categories</option>' + cats.map(function(c){
+        return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>';
+      }).join('');
+      try { filter.value = curFilter; } catch (_e) {}
+    }
+    if (formSel) {
+      formSel.innerHTML = '<option value="">Uncategorised</option>' + cats.map(function(c){
+        return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>';
+      }).join('');
+      try { formSel.value = curForm; } catch (_e) {}
+    }
+  }
+
+  function prodPricingValue(){
+    var el = document.querySelector('input[name="prod-pricing"]:checked');
+    return el ? el.value : 'fixed';
+  }
+  function setProdPricingValue(v){
+    var el = document.querySelector('input[name="prod-pricing"][value="' + String(v || 'fixed') + '"]');
+    if (el) el.checked = true;
+  }
+  function centsToDollarsInput(cents){
+    if (cents == null || cents === '') return '';
+    return (Number(cents) / 100).toFixed(2);
+  }
+  function setProdImagePreview(url){
+    var box = $('prod-image-preview');
+    if (!box) return;
+    if (url) {
+      box.style.backgroundImage = 'url("' + String(url).replace(/"/g, '') + '")';
+    } else {
+      box.style.backgroundImage = '';
+    }
+  }
+
+  var CW_CLOUD = 'dzx6x1hou';
+  var CW_MAX_BYTES = 5 * 1024 * 1024;
+  function cwSeg(s){ return String(s || 'x').toLowerCase().replace(/[^a-z0-9_\-]/g, '') || 'x'; }
+  function cwRand(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  async function cwToken(){
+    var session = (await sb.auth.getSession()).data.session;
+    return session && session.access_token;
+  }
+  function cwPrepImage(file, maxDim, quality){
+    maxDim = maxDim || 1200;
+    quality = quality == null ? 0.82 : quality;
+    return new Promise(function(resolve){
+      try {
+        if (!file || !/^image\//.test(file.type) || /svg|gif/i.test(file.type)) return resolve(file);
+        var url = URL.createObjectURL(file);
+        var img = new Image();
+        img.onload = function(){
+          try {
+            var w = img.naturalWidth, hh = img.naturalHeight;
+            if (!w || !hh) { URL.revokeObjectURL(url); return resolve(file); }
+            var scale = Math.min(1, maxDim / Math.max(w, hh));
+            if (scale >= 1 && file.size <= 800000) { URL.revokeObjectURL(url); return resolve(file); }
+            var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(hh * scale));
+            var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+            var ctx = cv.getContext('2d');
+            var asJpeg = !/^image\/png$/i.test(file.type) || file.size > 800000;
+            if (asJpeg) { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cw, ch); }
+            ctx.drawImage(img, 0, 0, cw, ch);
+            URL.revokeObjectURL(url);
+            var mime = asJpeg ? 'image/jpeg' : 'image/png';
+            cv.toBlob(function(b){
+              if (!b) return resolve(file);
+              if (b.size >= file.size && scale >= 1) return resolve(file);
+              try { b.name = (file.name || 'upload').replace(/\.[^.]+$/, '') + (asJpeg ? '.jpg' : '.png'); } catch (_n) {}
+              resolve(b);
+            }, mime, quality);
+          } catch (_e) { try { URL.revokeObjectURL(url); } catch (_x) {} resolve(file); }
+        };
+        img.onerror = function(){ try { URL.revokeObjectURL(url); } catch (_x) {} resolve(file); };
+        img.src = url;
+      } catch (_e) { resolve(file); }
+    });
+  }
+  async function uploadProductImage(file){
+    if (!file) throw new Error('No file selected');
+    if (file.size > CW_MAX_BYTES) throw new Error('Image is larger than 5 MB — please choose a smaller file');
+    if (!/^image\/(jpeg|png|webp)$/i.test(file.type || '')) throw new Error('Use JPEG, PNG or WebP');
+    var token = await cwToken();
+    if (!token) throw new Error('Please sign in again');
+    file = await cwPrepImage(file, 1200, 0.82);
+    var siteSeg = cwSeg(state.siteId || 'site');
+    var folder = 'leadpages/' + siteSeg + '/orders/client/products';
+    var pid = folder + '/' + cwRand();
+    var sr = await fetch('/api/cloudinary/sign', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ publicId: pid, assetFolder: folder })
+    });
+    if (!sr.ok) throw new Error('Could not authorise upload');
+    var s = await sr.json();
+    var fd = new FormData();
+    fd.append('file', file, file.name || 'product.jpg');
+    fd.append('api_key', s.apiKey);
+    fd.append('timestamp', s.timestamp);
+    fd.append('signature', s.signature);
+    fd.append('public_id', s.publicId || pid);
+    fd.append('asset_folder', s.assetFolder || folder);
+    fd.append('overwrite', 'false');
+    var cloud = (s.cloudName && /^[a-zA-Z0-9_\-]+$/.test(s.cloudName)) ? s.cloudName : CW_CLOUD;
+    var ur = await fetch('https://api.cloudinary.com/v1_1/' + cloud + '/image/upload', { method: 'POST', body: fd });
+    var j = await ur.json();
+    if (!ur.ok) throw new Error((j && j.error && j.error.message) || 'Upload failed');
+    return j.secure_url || j.url;
+  }
+
 
   async function submitNewOrder(ev){
     ev.preventDefault();
@@ -1351,54 +1529,88 @@ body.embed .hub{min-height:70vh}
     if (!requireSite()) return;
     var tbody = $('prod-tbody');
     var empty = $('prod-empty');
-    tbody.innerHTML = '<tr><td colspan="6">Loading…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
     try {
       var data = await loadProductsCache();
+      fillCategorySelects();
       refreshNewLineProductSelects();
-      var products = data.products || [];
-      if (!products.length) {
-        tbody.innerHTML = '';
-        empty.classList.remove('hide');
-        return;
-      }
-      empty.classList.add('hide');
-      tbody.innerHTML = products.map(function(p){
-        var price = p.pricing_method === 'per_weight'
-          ? formatAud(p.price_per_kg_cents) + '/kg'
-          : p.pricing_method === 'price_tbc' ? 'TBC' : formatAud(p.price_cents);
-        return '<tr>' +
-          '<td>' + esc(p.name) + '</td>' +
-          '<td>' + esc(p.pricing_method) + ' · ' + esc(price) + '</td>' +
-          '<td>' + esc(p.stock_method || '—') + '</td>' +
-          '<td>' + esc(p.cutoff_mode || '—') + (p.cutoff_value != null ? ' ' + esc(p.cutoff_value) : '') + '</td>' +
-          '<td>' + (p.active !== false
-            ? '<span class="badge ok">active</span>'
-            : '<span class="badge muted">off</span>') + '</td>' +
-          '<td><button class="btn ghost" type="button" data-edit="' + esc(p.id) + '">Edit</button></td>' +
-        '</tr>';
-      }).join('');
-      // Fix active badge label
-      tbody.querySelectorAll('[data-edit]').forEach(function(btn){
-        btn.addEventListener('click', function(){
-          var p = products.find(function(x){ return x.id === btn.getAttribute('data-edit'); });
-          if (p) fillProductForm(p);
-        });
-      });
+      renderProductsTable();
     } catch (e) {
-      tbody.innerHTML = '<tr><td colspan="6">' + esc((e && e.message) || e) + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7">' + esc((e && e.message) || e) + '</td></tr>';
       toast((e && e.message) || String(e), 'err');
     }
+  }
+
+  function renderProductsTable(){
+    var tbody = $('prod-tbody');
+    var empty = $('prod-empty');
+    var products = state.products || [];
+    var cat = ($('prod-cat-filter') && $('prod-cat-filter').value) || '';
+    var q = (($('prod-q') && $('prod-q').value) || '').trim().toLowerCase();
+    var filtered = products.filter(function(p){
+      if (cat && p.category_id !== cat) return false;
+      if (q && String(p.name || '').toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+    if (!products.length) {
+      tbody.innerHTML = '';
+      if (empty) empty.classList.remove('hide');
+      return;
+    }
+    if (empty) empty.classList.add('hide');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="7">No products match this filter.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filtered.map(function(p){
+      var price = p.pricing_method === 'per_weight'
+        ? formatAud(p.price_per_kg_cents) + '/kg'
+        : p.pricing_method === 'price_tbc' ? 'TBC' : formatAud(p.price_cents);
+      var thumb = p.image_url
+        ? '<div style="width:40px;height:40px;border-radius:8px;background:#eee center/cover no-repeat;background-image:url(\'' + esc(p.image_url) + '\')"></div>'
+        : '<div style="width:40px;height:40px;border-radius:8px;background:#f0ebe3"></div>';
+      return '<tr class="clickable" data-edit="' + esc(p.id) + '">' +
+        '<td>' + thumb + '</td>' +
+        '<td><strong>' + esc(p.name) + '</strong></td>' +
+        '<td>' + esc(categoryName(p.category_id)) + '</td>' +
+        '<td>' + esc(p.pricing_method) + ' · ' + esc(price) + '</td>' +
+        '<td>' + esc(p.stock_method || '—') + '</td>' +
+        '<td>' + (p.active !== false
+          ? '<span class="badge ok">active</span>'
+          : '<span class="badge muted">off</span>') + '</td>' +
+        '<td><button class="btn ghost" type="button" data-edit-btn="' + esc(p.id) + '">Edit</button></td>' +
+      '</tr>';
+    }).join('');
+    function openEdit(id){
+      var p = products.find(function(x){ return x.id === id; });
+      if (p) fillProductForm(p);
+    }
+    tbody.querySelectorAll('tr[data-edit]').forEach(function(tr){
+      tr.addEventListener('click', function(e){
+        if (e.target && e.target.closest && e.target.closest('button')) return;
+        openEdit(tr.getAttribute('data-edit'));
+      });
+    });
+    tbody.querySelectorAll('[data-edit-btn]').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        openEdit(btn.getAttribute('data-edit-btn'));
+      });
+    });
   }
 
   function fillProductForm(p){
     $('prod-form-card').classList.remove('hide');
     $('prod-form-title').textContent = p && p.id ? 'Edit product' : 'New product';
+    fillCategorySelects();
     $('prod-id').value = (p && p.id) || '';
     $('prod-name').value = (p && p.name) || '';
     $('prod-image').value = (p && p.image_url) || '';
-    $('prod-pricing').value = (p && p.pricing_method) || 'fixed';
-    $('prod-price').value = p && p.price_cents != null ? p.price_cents : '';
-    $('prod-perkg').value = p && p.price_per_kg_cents != null ? p.price_per_kg_cents : '';
+    setProdImagePreview((p && p.image_url) || '');
+    if ($('prod-image-msg')) $('prod-image-msg').textContent = '';
+    setProdPricingValue((p && p.pricing_method) || 'fixed');
+    $('prod-price').value = p && p.price_cents != null ? centsToDollarsInput(p.price_cents) : '';
+    $('prod-perkg').value = p && p.price_per_kg_cents != null ? centsToDollarsInput(p.price_per_kg_cents) : '';
     $('prod-stock').value = (p && p.stock_method) || 'made_to_order';
     $('prod-cutoff-mode').value = (p && p.cutoff_mode) || 'store_default';
     $('prod-cutoff-value').value = p && p.cutoff_value != null ? p.cutoff_value : '';
@@ -1406,6 +1618,7 @@ body.embed .hub{min-height:70vh}
     $('prod-lead-value').value = p && p.lead_time_value != null ? p.lead_time_value : 0;
     $('prod-active').value = p && p.active === false ? '0' : '1';
     $('prod-unit').value = (p && p.unit_label) || '';
+    if ($('prod-category')) $('prod-category').value = (p && p.category_id) || '';
     $('prod-msg').textContent = '';
     $('prod-form-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
@@ -1418,13 +1631,15 @@ body.embed .hub{min-height:70vh}
     btn.disabled = true;
     msg.textContent = '';
     var id = $('prod-id').value;
+    var pricing = prodPricingValue();
     var body = {
       site_id: state.siteId,
       name: $('prod-name').value.trim(),
       image_url: $('prod-image').value.trim() || null,
-      pricing_method: $('prod-pricing').value,
-      price_cents: $('prod-price').value !== '' ? Number($('prod-price').value) : null,
-      price_per_kg_cents: $('prod-perkg').value !== '' ? Number($('prod-perkg').value) : null,
+      category_id: ($('prod-category') && $('prod-category').value) || null,
+      pricing_method: pricing,
+      price_cents: $('prod-price').value !== '' ? dollarsToCents($('prod-price').value) : null,
+      price_per_kg_cents: $('prod-perkg').value !== '' ? dollarsToCents($('prod-perkg').value) : null,
       stock_method: $('prod-stock').value,
       cutoff_mode: $('prod-cutoff-mode').value,
       cutoff_value: $('prod-cutoff-value').value !== '' ? Number($('prod-cutoff-value').value) : null,
@@ -1432,7 +1647,7 @@ body.embed .hub{min-height:70vh}
       lead_time_value: Number($('prod-lead-value').value) || 0,
       active: $('prod-active').value === '1',
       unit_label: $('prod-unit').value.trim() || null,
-      weight_required: $('prod-pricing').value === 'per_weight' || $('prod-pricing').value === 'price_tbc'
+      weight_required: pricing === 'per_weight' || pricing === 'price_tbc'
     };
     try {
       if (id) {
@@ -1450,6 +1665,23 @@ body.embed .hub{min-height:70vh}
       toast(msg.textContent, 'err');
     }
     btn.disabled = false;
+  }
+
+  async function addProductCategory(){
+    if (!requireSite()) return;
+    var name = prompt('New category name');
+    if (!name || !String(name).trim()) return;
+    try {
+      await api('/api/order/products', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'upsert_category', name: String(name).trim() }
+      });
+      await loadProductsCache();
+      fillCategorySelects();
+      toast('Category added', 'ok');
+    } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
   }
 
   /* ---------- Supply ---------- */
@@ -2064,15 +2296,83 @@ body.embed .hub{min-height:70vh}
     try {
       var q = ($('cust-q').value || '').trim();
       var data = await api('/api/order/customers?' + siteQuery(q ? 'q=' + encodeURIComponent(q) : ''));
-      tbody.innerHTML = (data.customers || []).map(function(c){
-        return '<tr><td>' + esc(c.name) + '</td><td>' + esc(c.phone || '—') + '</td><td>' + esc(c.email || '—') +
+      var rows = data.customers || [];
+      tbody.innerHTML = rows.map(function(c){
+        return '<tr class="clickable" data-cust="' + esc(c.id) + '"><td><strong>' + esc(c.name) + '</strong></td><td>' + esc(c.phone || '—') + '</td><td>' + esc(c.email || '—') +
           '</td><td>' + esc(c.order_count) + '</td><td>' + formatAud(c.lifetime_spend_cents) +
           '</td><td>' + esc((c.last_order_at || '').slice(0, 10) || '—') + '</td></tr>';
       }).join('') || '<tr><td colspan="6">No customers yet</td></tr>';
+      tbody.querySelectorAll('[data-cust]').forEach(function(tr){
+        tr.addEventListener('click', function(){ openCustomerDetail(tr.getAttribute('data-cust')); });
+      });
     } catch (e) {
       tbody.innerHTML = '<tr><td colspan="6">' + esc((e && e.message) || e) + '</td></tr>';
     }
   }
+
+  async function openCustomerDetail(id){
+    if (!requireSite() || !id) return;
+    var modal = $('order-modal');
+    var body = $('om-body');
+    var foot = $('om-foot');
+    var title = $('om-title');
+    modal.classList.remove('hide');
+    title.textContent = 'Customer';
+    body.innerHTML = '<p class="notice">Loading…</p>';
+    foot.innerHTML = '<button class="btn ghost" type="button" id="om-close-2">Close</button>';
+    $('om-close-2').onclick = function(){ modal.classList.add('hide'); };
+    try {
+      var data = await api('/api/order/customers?' + siteQuery('id=' + encodeURIComponent(id)));
+      var c = data.customer || {};
+      var orders = data.orders || [];
+      var payments = data.payments || [];
+      var messages = data.messages || [];
+      title.textContent = c.name || 'Customer';
+      var html = '';
+      html += '<div class="grid2">';
+      html += '<div><p class="notice" style="margin:0"><strong>Contact</strong><br>' + esc(c.phone || '—') + '<br>' + esc(c.email || '—') + '</p></div>';
+      html += '<div><p class="notice" style="margin:0"><strong>Lifetime</strong><br>' + formatAud(c.lifetime_spend_cents) +
+        '<br>' + esc(c.order_count || 0) + ' orders</p></div>';
+      html += '</div>';
+      html += '<h4 style="margin:16px 0 8px">Orders</h4>';
+      if (!orders.length) html += '<p class="notice">No orders yet.</p>';
+      else {
+        html += '<div class="table-wrap"><table class="oe"><thead><tr><th>Order</th><th>Pickup</th><th>Status</th><th>Total</th></tr></thead><tbody>';
+        orders.forEach(function(o){
+          html += '<tr class="clickable" data-open-order="' + esc(o.id) + '"><td>' + esc(o.order_number) + '</td><td>' + esc(o.pickup_date || '—') +
+            '</td><td>' + statusBadge(o.status) + '</td><td>' + formatAud(o.known_subtotal_cents) + '</td></tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      if (payments.length) {
+        html += '<h4 style="margin:16px 0 8px">Payments</h4><div class="table-wrap"><table class="oe"><thead><tr><th>When</th><th>Status</th><th>Amount</th></tr></thead><tbody>';
+        payments.slice(0, 12).forEach(function(p){
+          html += '<tr><td>' + esc((p.paid_at || p.created_at || '').slice(0, 16).replace('T', ' ')) + '</td><td>' + esc(p.status) +
+            '</td><td>' + formatAud(p.amount_cents) + '</td></tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      if (messages.length) {
+        html += '<h4 style="margin:16px 0 8px">Recent messages</h4>';
+        messages.slice(0, 8).forEach(function(m){
+          html += '<p class="notice" style="margin:0 0 8px"><strong>' + esc(m.channel || 'sms') + '</strong> · ' +
+            esc((m.created_at || '').slice(0, 16).replace('T', ' ')) + '<br>' + esc(m.body || m.preview || '') + '</p>';
+        });
+      }
+      body.innerHTML = html;
+      body.querySelectorAll('[data-open-order]').forEach(function(tr){
+        tr.addEventListener('click', function(){
+          modal.classList.add('hide');
+          openOrderDetail(tr.getAttribute('data-open-order'));
+        });
+      });
+      foot.innerHTML = '<button class="btn ghost" type="button" id="om-close-2">Close</button>';
+      $('om-close-2').onclick = function(){ modal.classList.add('hide'); };
+    } catch (e) {
+      body.innerHTML = '<p class="notice">' + esc((e && e.message) || e) + '</p>';
+    }
+  }
+
 
   async function loadPayments(){
     if (!requireSite()) return;
@@ -2216,6 +2516,32 @@ body.embed .hub{min-height:70vh}
   $('prod-new').addEventListener('click', function(){ fillProductForm(null); });
   $('prod-cancel').addEventListener('click', function(){ $('prod-form-card').classList.add('hide'); });
   $('prod-form').addEventListener('submit', saveProduct);
+  if ($('prod-cat-filter')) $('prod-cat-filter').addEventListener('change', renderProductsTable);
+  if ($('prod-q')) $('prod-q').addEventListener('input', function(){ renderProductsTable(); });
+  if ($('prod-cat-add')) $('prod-cat-add').addEventListener('click', addProductCategory);
+  if ($('prod-image-upload')) $('prod-image-upload').addEventListener('click', function(){ $('prod-image-file').click(); });
+  if ($('prod-image-clear')) $('prod-image-clear').addEventListener('click', function(){
+    $('prod-image').value = '';
+    setProdImagePreview('');
+    if ($('prod-image-msg')) $('prod-image-msg').textContent = '';
+  });
+  if ($('prod-image-file')) $('prod-image-file').addEventListener('change', async function(){
+    var file = this.files && this.files[0];
+    this.value = '';
+    if (!file) return;
+    var msg = $('prod-image-msg');
+    if (msg) msg.textContent = 'Uploading…';
+    try {
+      var url = await uploadProductImage(file);
+      $('prod-image').value = url;
+      setProdImagePreview(url);
+      if (msg) msg.textContent = 'Uploaded.';
+      toast('Image uploaded', 'ok');
+    } catch (e) {
+      if (msg) msg.textContent = (e && e.message) || String(e);
+      toast((e && e.message) || String(e), 'err');
+    }
+  });
   $('supply-load').addEventListener('click', loadSupply);
   if ($('supply-lock')) $('supply-lock').addEventListener('click', async function(){
     if (!requireSite()) return;

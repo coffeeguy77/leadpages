@@ -61,9 +61,11 @@
       items: [],
       pickupSlots: [],
       view: 'shop',
+      listMode: (localStorage.getItem('lp.order.listMode.' + this.slug) === '1'),
       selected: null,
       busy: false,
       msg: '',
+      mobileShowCart: false,
       checkoutDraft: {
         name: '',
         phone: '',
@@ -176,13 +178,12 @@
   OrderStorefront.prototype.render = function () {
     var c = this.state.catalogue;
     var biz = (c && c.site && c.site.business_name) || 'Order';
-    var mode = (c && c.system && c.system.storefront_display_mode) || 'compact_cards';
     var html = '';
     html += '<div class="lp-oe">';
     html +=
       '<header class="lp-oe-head"><div><p class="lp-oe-ey">Order online</p><h2 class="lp-oe-brand">' +
       esc(biz) +
-      '</h2><p class="lp-oe-sub">Choose products, pick a collection date, pay deposit if required.</p></div>';
+      '</h2><p class="lp-oe-sub">Browse the menu, adjust your cart, and checkout on one page.</p></div>';
     html += '<div class="lp-oe-head-actions">';
     if (this.showPortal && this.slug) {
       html +=
@@ -193,35 +194,56 @@
         '</a>';
     }
     html +=
-      '<button type="button" class="lp-oe-cart-btn" data-act="open-cart"' +
-      (this.state.busy ? ' disabled' : '') +
-      '>Cart (' +
+      '<button type="button" class="lp-oe-cart-btn lp-oe-mobile-cart" data-act="toggle-cart">Cart (' +
       qtyTotal(this.state.items) +
-      ')</button></div></header>';
+      ')</button>';
+    html += '</div></header>';
 
     if (this.state.msg) html += '<p class="lp-oe-msg">' + esc(this.state.msg) + '</p>';
 
-    if (this.state.view === 'cart' || this.state.view === 'checkout') {
-      html += this.renderCart();
-    } else if (this.state.view === 'product' && this.state.selected) {
+    html += '<div class="lp-oe-layout">';
+    html += '<div class="lp-oe-main">';
+    if (this.state.view === 'product' && this.state.selected) {
       html += this.renderProduct(this.state.selected);
-    } else {
-      html += this.renderGrid(mode);
     }
+    html += this.renderShopToolbar();
+    html += this.renderGrid(this.state.listMode ? 'product_list' : ((c && c.system && c.system.storefront_display_mode) || 'compact_cards'));
     html += '</div>';
+    html +=
+      '<aside class="lp-oe-aside" id="oe-aside"' +
+      (this.state.mobileShowCart ? '' : '') +
+      '>' +
+      this.renderLiveCart() +
+      '</aside>';
+    html += '</div></div>';
     this.root.innerHTML = html;
     this.bind();
   };
 
-  OrderStorefront.prototype.renderGrid = function (mode) {
-    var products = (this.state.catalogue && this.state.catalogue.products) || [];
-    var cats = (this.state.catalogue && this.state.catalogue.categories) || [];
-    var html = '<div class="lp-oe-filters">';
+  OrderStorefront.prototype.renderShopToolbar = function () {
+    var html = '<div class="lp-oe-toolbar">';
+    html += '<div class="lp-oe-filters" style="margin:0">';
     html += '<button type="button" class="on" data-cat="">All</button>';
-    cats.forEach(function (cat) {
+    ((this.state.catalogue && this.state.catalogue.categories) || []).forEach(function (cat) {
       html += '<button type="button" data-cat="' + esc(cat.id) + '">' + esc(cat.name) + '</button>';
     });
     html += '</div>';
+    html += '<div style="display:flex;gap:8px">';
+    html +=
+      '<button type="button" class="lp-oe-view-btn' +
+      (!this.state.listMode ? ' on' : '') +
+      '" data-act="view-grid">Cards</button>';
+    html +=
+      '<button type="button" class="lp-oe-view-btn' +
+      (this.state.listMode ? ' on' : '') +
+      '" data-act="view-list">List</button>';
+    html += '</div></div>';
+    return html;
+  };
+
+  OrderStorefront.prototype.renderGrid = function (mode) {
+    var products = (this.state.catalogue && this.state.catalogue.products) || [];
+    var html = '';
     var cls =
       mode === 'product_list'
         ? 'lp-oe-list'
@@ -329,13 +351,27 @@
   };
 
   OrderStorefront.prototype.renderCart = function () {
+    return this.renderLiveCart();
+  };
+
+  OrderStorefront.prototype.renderLiveCart = function () {
     var self = this;
     var d = this.state.checkoutDraft || {};
-    var html = '<div class="lp-oe-cart">';
-    html += '<button type="button" class="lp-oe-link" data-act="back-shop">← Keep shopping</button>';
+    var html = '';
     html += '<h3>Your cart</h3>';
+
+    html += '<div class="lp-oe-login">';
+    html += '<h4>Already ordered?</h4>';
+    html +=
+      '<p>Sign in with your mobile to view past orders.</p><a class="lp-oe-portal" href="' +
+      esc(this.portalUrl()) +
+      '">' +
+      esc(this.portalLabel) +
+      '</a>';
+    html += '</div>';
+
     if (!this.state.items.length) {
-      html += '<p class="lp-oe-empty">Cart is empty.</p></div>';
+      html += '<p class="lp-oe-empty" style="padding:12px 0">Cart is empty — add items from the menu.</p>';
       return html;
     }
     this.state.items.forEach(function (it) {
@@ -390,64 +426,52 @@
       esc((this.state.display && this.state.display.deposit) || '—') +
       '</strong></div>';
     html +=
-      '<p class="lp-oe-note">Final balance TBC after preparation where products are weighed or quoted.</p>';
+      '<p class="lp-oe-note" style="margin:8px 0 0">Final balance TBC after preparation where products are weighed or quoted.</p>';
     html += '</div>';
 
-    if (this.state.view === 'checkout') {
-      var slots = this.state.pickupSlots || [];
-      html += '<div class="lp-oe-fields">';
-      html +=
-        '<label>Your name<input id="oe-name" required value="' + esc(d.name || '') + '"></label>';
-      html +=
-        '<label>Mobile<input id="oe-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx" value="' +
-        esc(d.phone || '') +
-        '"></label>';
-      html +=
-        '<label>Email<input id="oe-email" type="email" autocomplete="email" value="' +
-        esc(d.email || '') +
-        '"></label>';
-      if (slots.length) {
-        html += '<label>Pickup window<select id="oe-slot" required>';
-        html += '<option value="">Choose a pickup time…</option>';
-        slots.forEach(function (s) {
-          html +=
-            '<option value="' +
-            esc(s.id) +
-            '"' +
-            (d.slotId === s.id ? ' selected' : '') +
-            '>' +
-            esc(s.label) +
-            '</option>';
-        });
-        html += '</select></label>';
+    var slots = this.state.pickupSlots || [];
+    html += '<div class="lp-oe-fields">';
+    html +=
+      '<label>Your name<input id="oe-name" required value="' + esc(d.name || '') + '"></label>';
+    html +=
+      '<label>Mobile<input id="oe-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx" value="' +
+      esc(d.phone || '') +
+      '"></label>';
+    html +=
+      '<label>Email<input id="oe-email" type="email" autocomplete="email" value="' +
+      esc(d.email || '') +
+      '"></label>';
+    if (slots.length) {
+      html += '<label>Pickup window<select id="oe-slot" required>';
+      html += '<option value="">Choose a pickup time…</option>';
+      slots.forEach(function (s) {
         html +=
-          '<p class="lp-oe-note" style="margin:0">Times shown are collection windows (e.g. 9am–4pm).</p>';
-      } else {
-        html +=
-          '<label>Pickup date<input id="oe-date" type="date" min="' +
-          esc(this.state.earliest || (this.state.catalogue && this.state.catalogue.earliest_pickup_date) || '') +
-          '" value="' +
-          esc(d.date || '') +
-          '"></label>';
-        html +=
-          '<p class="lp-oe-note" style="margin:0">This store has not published pickup windows yet — pick a date and we will confirm the time.</p>';
-      }
-      html +=
-        '<label>Order notes<textarea id="oe-cnotes">' + esc(d.notes || '') + '</textarea></label>';
-      html += '</div>';
-      html +=
-        '<button type="button" class="lp-oe-primary" data-act="confirm"' +
-        (this.state.busy ? ' disabled' : '') +
-        '>' +
-        esc((this.state.display && this.state.display.cta) || 'Review order') +
-        '</button>';
+          '<option value="' +
+          esc(s.id) +
+          '"' +
+          (d.slotId === s.id ? ' selected' : '') +
+          '>' +
+          esc(s.label) +
+          '</option>';
+      });
+      html += '</select></label>';
     } else {
       html +=
-        '<button type="button" class="lp-oe-primary" data-act="to-checkout"' +
-        (this.state.busy ? ' disabled' : '') +
-        '>Checkout</button>';
+        '<label>Pickup date<input id="oe-date" type="date" min="' +
+        esc(this.state.earliest || (this.state.catalogue && this.state.catalogue.earliest_pickup_date) || '') +
+        '" value="' +
+        esc(d.date || '') +
+        '"></label>';
     }
+    html +=
+      '<label>Order notes<textarea id="oe-cnotes">' + esc(d.notes || '') + '</textarea></label>';
     html += '</div>';
+    html +=
+      '<button type="button" class="lp-oe-primary" data-act="confirm"' +
+      (this.state.busy ? ' disabled' : '') +
+      '>' +
+      esc((this.state.display && this.state.display.cta) || 'Place order') +
+      '</button>';
     return html;
   };
 
@@ -539,21 +563,45 @@
     if (self.state.busy && act !== 'back-shop' && act !== 'open-cart') return;
     try {
       self.state.msg = '';
-      if (act === 'open-cart') {
+      if (act === 'open-cart' || act === 'toggle-cart') {
+        self.captureCheckoutDraft();
         await self.refreshCart();
-        self.state.view = 'cart';
+        self.state.mobileShowCart = !self.state.mobileShowCart;
+        try {
+          var aside = document.getElementById('oe-aside');
+          if (aside) aside.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (_e) {}
+        self.render();
+        return;
+      }
+      if (act === 'view-list') {
+        self.captureCheckoutDraft();
+        self.state.listMode = true;
+        try { localStorage.setItem('lp.order.listMode.' + self.slug, '1'); } catch (_e) {}
+        self.render();
+        return;
+      }
+      if (act === 'view-grid') {
+        self.captureCheckoutDraft();
+        self.state.listMode = false;
+        try { localStorage.setItem('lp.order.listMode.' + self.slug, '0'); } catch (_e) {}
         self.render();
         return;
       }
       if (act === 'back-shop') {
         self.captureCheckoutDraft();
         self.state.view = 'shop';
+        self.state.selected = null;
         self.render();
         return;
       }
       if (act === 'to-checkout') {
+        self.captureCheckoutDraft();
         await self.refreshCart();
-        self.state.view = 'checkout';
+        try {
+          var aside2 = document.getElementById('oe-aside');
+          if (aside2) aside2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (_e) {}
         self.render();
         return;
       }
@@ -621,7 +669,7 @@
           });
           self.applyPacked(out);
           self.state.msg = 'Added to cart';
-          self.state.view = 'cart';
+          self.state.view = 'shop';
         } finally {
           self.state.busy = false;
         }
@@ -646,7 +694,6 @@
           });
           if (!slot) {
             self.state.msg = 'Please choose a pickup window.';
-            self.state.view = 'checkout';
             self.render();
             return;
           }
@@ -656,7 +703,6 @@
         }
         if (!name || !pickup_date) {
           self.state.msg = 'Name and pickup date are required.';
-          self.state.view = 'checkout';
           self.render();
           return;
         }
@@ -709,7 +755,6 @@
             msg = 'That pickup day is full — please choose another.';
           }
           self.state.msg = msg;
-          self.state.view = 'checkout';
           self.state.busy = false;
           self.render();
           return;
