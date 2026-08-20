@@ -789,6 +789,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     <button class="anav-btn" id="nav-ai-team" aria-selected="false" style="display:none" aria-label="AI Website Team"><span class="anav-l1">AI Website</span><span class="anav-gap"> </span><span class="anav-l2">Team</span></button>
     <button class="anav-btn" id="nav-apps" aria-selected="false" aria-label="App Marketplace"><span class="anav-l1">App</span><span class="anav-gap"> </span><span class="anav-l2">Marketplace</span></button>
     <button class="anav-btn" id="nav-onlinequotes" aria-selected="false" style="display:none" aria-label="Quote Builder"><span class="anav-l1">Quote</span><span class="anav-gap"> </span><span class="anav-l2">Builder</span></button>
+    <button class="anav-btn" id="nav-orders" aria-selected="false" style="display:none" aria-label="Orders"><span class="anav-l1">Orders</span></button>
     <button class="anav-btn" id="nav-mailer" aria-selected="false">Newsletter</button>
     <button class="anav-btn" id="nav-messages" aria-selected="false">Support</button>
     <button class="anav-btn" id="nav-appearance" aria-selected="false">Appearance</button>
@@ -811,6 +812,8 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
   <div id="av-apps" hidden></div>
 
   <div id="av-onlinequotes" hidden></div>
+
+  <div id="av-orders" hidden></div>
 
   <div id="av-mailer" hidden></div>
 
@@ -3296,7 +3299,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     emergencyAvailability:{on:false,heading:'After-hours & emergencies',intro:'We keep the phone on outside business hours for genuine emergencies \u2014 leave your details and we\u2019ll call you straight back.',mode:'schedule',available:true,weekdayOpen:'07:00',weekdayClose:'17:00',satOpen:'08:00',satClose:'14:00',sunOpen:'',sunClose:'',availableLabel:'Available now',responseText:'Fast response — usually within the hour',afterHoursLabel:'After hours',afterHoursText:'Leave your details and we’ll call you first thing.',emergencyText:'Genuine emergency? Call anyway — we run after-hours callouts.',cta:{text:'',action:'call'}},
     serviceAreaMap:{on:false,eyebrow:'Service area',heading:'Suburbs we cover across the ACT',intro:'Local, Canberra-wide coverage. Here’s where we work — if you’re nearby, get in touch.'},
     onlineQuote:{on:false,eyebrow:'Online quote',heading:'Get your verified quote',intro:'Answer a few questions — verify your email to see your total, then SMS for the full breakdown.',bg:'',eyebrowColor:'',headingColor:'',introColor:''},
-    orderStorefront:{on:false,eyebrow:'Order online',heading:'Place your order',intro:'Choose products, pick a pickup date, and pay your deposit if required.'},
+    orderStorefront:{on:false,eyebrow:'Order online',heading:'Place your order',intro:'Choose products, pick a pickup date, and pay your deposit if required.',bg:'',eyebrowColor:'',headingColor:'',introColor:'',accent:'',cardBg:'',cardBorder:'',text:'',muted:'',btnBg:'',btnText:'',inputBg:'',inputBorder:''},
     customHtml:{on:false,title:'',html:'',cssUrls:[],jsUrls:[],cssVars:{},fullBleed:true,bg:''},
     estimateBuilder:{on:false,eyebrow:'Instant estimate',heading:'Get a ballpark price in 30 seconds',intro:'Answer a few quick questions for an indicative range. For an exact price, send the details through and we’ll confirm.',currency:'$',disclaimer:'This is a guide only — your final price is confirmed after a quick on-site inspection.',ctaText:'Get my exact quote'},
     certifications:{eyebrow:'Accredited & insured',heading:'Licensed, insured & accredited',intro:'Fully qualified and backed by recognised industry accreditations — so you know the job is done right.'},
@@ -3699,7 +3702,7 @@ body.lp-landing-on #lp-partneradmin-top,body.lp-landing-on #lp-signout-top{displ
     var rb=$('ord-reset'); if(rb) rb.onclick=function(){ var prev=rects(); delete c.sectionOrder; persist(); previewApply(); draw(false); flip(prev); };
   }
   function presetKeyForSite(c){ var t=(c&&c.trade)||'Plumber'; if(TRADE_COLOUR_PRESETS[t]) return t; for(var k in TRADE_PACKS){ if(TRADE_PACKS[k].tradeType===t && TRADE_COLOUR_PRESETS[TRADE_PACKS[k].label]) return TRADE_PACKS[k].label; } return 'Plumber'; }
-  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['trustBar','Trust Bar'],['services','Services'],['serviceProcess','How It Works Steps'],['featureStrip','Feature Strip'],['why','Why us'],['area','Where'],['reviews','Reviews'],['promotions','Promotions'],['certifications','Certifications'],['finance','Finance Options'],['estimateBuilder','Estimate Builder'],['serviceAreaMap','Service Area Map'],['emergencyAvailability','Emergency Availability'],['seoTokens','Local tokens'],['beforeAfter','Before & After'],['responseCards','Response Cards'],['projectStats','Project Stats'],['serviceAreas','Service Areas'],['reviewHighlights','Review Highlights'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['specialOffer','Special Offer'],['heroBeforeAfter','Hero B/A Slider'],['heroSlider','Hero Slider'],['splitHero','Split Hero'],['activityCounter','Activity Counter'],['proofStream','Proof Stream'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed'],['beforeAfterFeed','Before/After Feed'],['videoReels','Video Reels'],['activityTimeline','Activity Timeline'],['customerReactions','Customer Reactions'],['searchCanvas','SearchCanvas'],['seoText','SEO Text'],['textBox','Text Box'],['crew','Team Members'],['onlineQuote','Online Quote'],['customHtml','Custom HTML'],['quote','Quote'],['faq','FAQ'],['mobileBar','Mobile'],['footer','Footer'],['branding','Branding'],['logo','Logo'],['navMenu','Menu'],['sectionOrder','Position'],['instaGallery','Instagram Gallery'],['igProjectFeed','Instagram Feed'],['lpFooter','LeadPages footer']];
+  const TRADE_SUBTABS=[['details','Details'],['emerg','Top bar'],['hero','Hero'],['trustBar','Trust Bar'],['services','Services'],['serviceProcess','How It Works Steps'],['featureStrip','Feature Strip'],['why','Why us'],['area','Where'],['reviews','Reviews'],['promotions','Promotions'],['certifications','Certifications'],['finance','Finance Options'],['estimateBuilder','Estimate Builder'],['serviceAreaMap','Service Area Map'],['emergencyAvailability','Emergency Availability'],['seoTokens','Local tokens'],['beforeAfter','Before & After'],['responseCards','Response Cards'],['projectStats','Project Stats'],['serviceAreas','Service Areas'],['reviewHighlights','Review Highlights'],['featuredProjects','Project Portfolio'],['premiumGallery','Premium Gallery'],['specialOffer','Special Offer'],['heroBeforeAfter','Hero B/A Slider'],['heroSlider','Hero Slider'],['splitHero','Split Hero'],['activityCounter','Activity Counter'],['proofStream','Proof Stream'],['projectFeed','Project Feed'],['jobsFeed','Jobs Feed'],['beforeAfterFeed','Before/After Feed'],['videoReels','Video Reels'],['activityTimeline','Activity Timeline'],['customerReactions','Customer Reactions'],['searchCanvas','SearchCanvas'],['seoText','SEO Text'],['textBox','Text Box'],['crew','Team Members'],['onlineQuote','Online Quote'],['orderStorefront','Order Storefront'],['customHtml','Custom HTML'],['quote','Quote'],['faq','FAQ'],['mobileBar','Mobile'],['footer','Footer'],['branding','Branding'],['logo','Logo'],['navMenu','Menu'],['sectionOrder','Position'],['instaGallery','Instagram Gallery'],['igProjectFeed','Instagram Feed'],['lpFooter','LeadPages footer']];
   let landingSub='hero';
   const DEFAULT_TRADE_LISTS={'estimateBuilder.options':[
     {on:true,step:'What do you need?',label:'Tap or mixer repair',min:'150',max:'300'},
@@ -4338,6 +4341,37 @@ function onlineQuoteStyleCard(c){
     function OQ(){ if(!c.sections)c.sections={}; if(!c.sections.onlineQuote)c.sections.onlineQuote={}; return c.sections.onlineQuote; }
     function colWire(id,key){ var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def'); if(clr) clr.addEventListener('input',function(){ OQ()[key]=clr.value; if(tx)tx.value=clr.value; persist(); previewApply(); }); if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ OQ()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ OQ()[key]=v; if(clr)clr.value=v; } } persist(); previewApply(); }); if(df) df.addEventListener('click',function(){ OQ()[key]=''; if(tx)tx.value=''; persist(); previewApply(); }); }
     colWire('oq-bg','bg'); colWire('oq-eyebrow','eyebrowColor'); colWire('oq-heading','headingColor'); colWire('oq-intro','introColor');
+  }
+
+  function orderStorefrontStyleCard(c){
+    var OS=(c.sections&&c.sections.orderStorefront)||{}; var th=c.theme||{};
+    var DEF={ bg:'#ffffff', eyebrowColor:(th.pipe||'#1f7bb8'), headingColor:'#1a2230', introColor:'#46535f', accent:(th.pipe||'#1f7bb8'), cardBg:'#ffffff', cardBorder:'#e4e0d8', text:'#1c241e', muted:'#667066', btnBg:(th.hivis||'#ff6a1f'), btnText:'#ffffff', inputBg:'#ffffff', inputBorder:'#dde4ec' };
+    var col=function(id,key,label,help){ var dv=DEF[key]||'#1a2230'; var v=(OS[key]&&/^#[0-9a-fA-F]{6}$/.test(OS[key]))?OS[key]:''; return '<div class="f" style="margin:0;flex:1 1 calc(50% - 7px);min-width:230px;"><label style="font-weight:600;">'+label+'</label><p class="hint" style="margin:2px 0 6px;font-size:12px;">'+help+'</p><div style="display:flex;align-items:center;gap:8px;"><input type="color" id="'+id+'-clr" value="'+(v||dv)+'" style="width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;cursor:pointer;flex:0 0 auto;"><input type="text" id="'+id+'-tx" value="'+v+'" placeholder="'+dv+' (default)" style="flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;"><button type="button" class="btn ghost" id="'+id+'-def" style="padding:6px 10px;">Default</button></div></div>'; };
+    var h='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Section colours</h2><p class="lede" style="margin:0 0 12px;">Background and fonts for the Order Storefront band on the live page.</p><div style="display:flex;flex-wrap:wrap;gap:14px;">';
+    h+=col('os-bg','bg','Section background','Band behind the eyebrow, heading and catalogue.');
+    h+=col('os-eyebrow','eyebrowColor','Eyebrow colour','Small label above the heading.');
+    h+=col('os-heading','headingColor','Heading colour','Main section title.');
+    h+=col('os-intro','introColor','Intro text colour','Supporting sentence under the heading.');
+    h+='</div></div>';
+    h+='<div class="card" style="margin-bottom:22px;"><h2 style="margin:0 0 4px;">Catalogue &amp; cart styling</h2><p class="lede" style="margin:0 0 12px;">Colours for product cards, buttons, filters and form fields inside the order catalogue.</p><div style="display:flex;flex-wrap:wrap;gap:14px;">';
+    h+=col('os-accent','accent','Accent colour','Filters, prices, highlights.');
+    h+=col('os-card','cardBg','Card background','Product and summary cards.');
+    h+=col('os-border','cardBorder','Card / line colour','Borders and dividers.');
+    h+=col('os-text','text','Main text colour','Product titles and body text.');
+    h+=col('os-muted','muted','Muted text colour','Descriptions and hints.');
+    h+=col('os-btnbg','btnBg','Button background','Cart and Add buttons.');
+    h+=col('os-btntx','btnText','Button text colour','Text on primary buttons.');
+    h+=col('os-ibg','inputBg','Input background','Checkout fields.');
+    h+=col('os-ibd','inputBorder','Input border','Field outlines.');
+    h+='</div></div>';
+    return h;
+  }
+  function wireOrderStorefrontStyle(c){
+    function OS(){ if(!c.sections)c.sections={}; if(!c.sections.orderStorefront)c.sections.orderStorefront={}; return c.sections.orderStorefront; }
+    function colWire(id,key){ var clr=$(id+'-clr'),tx=$(id+'-tx'),df=$(id+'-def'); if(clr) clr.addEventListener('input',function(){ OS()[key]=clr.value; if(tx)tx.value=clr.value; persist(); previewApply(); }); if(tx) tx.addEventListener('input',function(){ var v=tx.value.trim(); if(v===''){ OS()[key]=''; } else { if(v[0]!=='#')v='#'+v; if(/^#[0-9a-fA-F]{6}$/.test(v)){ OS()[key]=v; if(clr)clr.value=v; } } persist(); previewApply(); }); if(df) df.addEventListener('click',function(){ OS()[key]=''; if(tx)tx.value=''; persist(); previewApply(); }); }
+    colWire('os-bg','bg'); colWire('os-eyebrow','eyebrowColor'); colWire('os-heading','headingColor'); colWire('os-intro','introColor');
+    colWire('os-accent','accent'); colWire('os-card','cardBg'); colWire('os-border','cardBorder'); colWire('os-text','text'); colWire('os-muted','muted');
+    colWire('os-btnbg','btnBg'); colWire('os-btntx','btnText'); colWire('os-ibg','inputBg'); colWire('os-ibd','inputBorder');
   }
 
 function quoteStyleCard(c){
@@ -8080,11 +8114,17 @@ function heroCtaCard(c){
       wireOnlineQuoteStyle(c);
     } else if(sub==='orderStorefront'){
       body.innerHTML=secCard(c,'orderStorefront','Order Storefront',true,[['eyebrow','Eyebrow'],['heading','Heading'],['intro','Intro','ta']])
+        +orderStorefrontStyleCard(c)
         +'<div class="card" style="margin-bottom:22px;"><h2>How it works</h2>'
-        +'<p class="lede">Shows the Order Engine catalogue on the live site (cart, pickup date, deposit checkout). Enable ordering for this site in <strong>Orders desk</strong> first (Ops Command → Orders, or the Orders desk button in Site tools).</p>'
+        +'<p class="lede">Shows the Order Engine catalogue on the live site (cart, pickup date, deposit checkout). Manage products and orders from the <strong>Orders</strong> tab.</p>'
         +'<p class="hint" style="margin:0 0 12px;">Direct shop URL: <code>/order-shop?slug='+esc(currentSiteSlug||'your-slug')+'</code></p>'
-        +'<p style="margin:0;"><a class="btn" href="/orders'+(currentSiteId?('?site_id='+encodeURIComponent(currentSiteId)):'')+'" style="text-decoration:none;">Open Orders desk</a></p></div>';
+        +'<p style="margin:0;display:flex;flex-wrap:wrap;gap:8px;">'
+        +'<button type="button" class="btn" id="os-goto-orders">Open Orders</button>'
+        +'<a class="btn ghost" href="/order-shop?slug='+esc(currentSiteSlug||'')+'" target="_blank" rel="noopener" style="text-decoration:none;">Preview shop ↗</a>'
+        +'</p></div>';
       wireSec(c,'orderStorefront',true,[['eyebrow'],['heading'],['intro']]);
+      wireOrderStorefrontStyle(c);
+      var og=$('os-goto-orders'); if(og) og.addEventListener('click',function(){ if(typeof showView==='function') showView('orders'); });
     } else if(sub==='customHtml'){
       if(!c.sections) c.sections={}; if(!c.sections.customHtml) c.sections.customHtml=JSON.parse(JSON.stringify(DEFAULT_TRADE_SECTIONS.customHtml||{}));
       var CH=c.sections.customHtml;
@@ -9564,24 +9604,16 @@ function heroCtaCard(c){
     mv('btn-fav', tools);
     mv('btn-newsite', tools);
     if(!$('lpc-order-desk')){
-      var od=document.createElement('a');
+      var od=document.createElement('button');
       od.id='lpc-order-desk';
       od.className='btn';
-      od.style.textDecoration='none';
-      od.textContent='Orders desk';
+      od.type='button';
+      od.textContent='Orders';
       od.title='Order Engine — staff orders, products, supply';
+      od.addEventListener('click', function(){ if(typeof showView==='function') showView('orders'); });
       tools.appendChild(od);
     }
-    (function(){
-      var od=$('lpc-order-desk');
-      if(!od) return;
-      function syncOrdersDeskHref(){
-        var sid=currentSiteId||'';
-        od.href='/orders'+(sid?('?site_id='+encodeURIComponent(sid)):'');
-      }
-      syncOrdersDeskHref();
-      od.addEventListener('click', function(){ syncOrdersDeskHref(); });
-    })();
+    mv('lpc-order-desk', tools);
     if(currentRole==='super'){
       if(!$('lpc-ops-command')){ var oc=document.createElement('a'); oc.id='lpc-ops-command'; oc.className='btn'; oc.href='/command'; oc.style.textDecoration='none'; oc.textContent='Ops Command'; tools.appendChild(oc); }
       else mv('lpc-ops-command', tools);
@@ -10223,8 +10255,8 @@ function heroCtaCard(c){
     toast('Removed “'+name+'”'); renderSharedThemes();
   }
   /* ===== end leadpages integration ===== */
-  const ALLOWED={ super:['rates','landing','ai-team','appearance','themes','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','dashboard','advertising','seo'], broker:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising','seo'], client:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','dashboard','advertising','seo'], leads:['rates'] };
-  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','themes','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','seo','details','landing','ai-team','apps','themes','onlinequotes','mailer','messages'] };
+  const ALLOWED={ super:['rates','landing','ai-team','appearance','themes','contact','logo','users','demothemes','details','mailer','messages','apps','onlinequotes','orders','dashboard','advertising','seo'], broker:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','orders','dashboard','advertising','seo'], client:['appearance','themes','contact','logo','landing','ai-team','details','mailer','messages','apps','onlinequotes','orders','dashboard','advertising','seo'], leads:['rates'] };
+  const TEMPLATE_NAV={ 'broker-app':['rates','landing','appearance','themes','contact','logo','users','demothemes','mailer','messages'], 'broker-leads':['details','mailer','messages'], 'trade':['dashboard','advertising','seo','details','landing','ai-team','apps','themes','onlinequotes','orders','mailer','messages'] };
   function tplNav(){ return TEMPLATE_NAV[currentSiteTemplate]||TEMPLATE_NAV['broker-app']; }
   function buildLogin(){
     if($('login-mask')) return;
@@ -10625,7 +10657,7 @@ function heroCtaCard(c){
       toast('Opened Landing pages');
     }
   };
-  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['seo','av-seo',renderSeoCommandCentre],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['ai-team','av-ai-team',renderAiTeamPanel],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['themes','av-themes',renderPositioningThemes],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin]];
+  const NAV=[['dashboard','av-dashboard',renderDashboard],['advertising','av-advertising',renderAdvertising],['seo','av-seo',renderSeoCommandCentre],['details','av-details',renderDetails],['rates','av-rates',null],['landing','av-landing',renderSeoPages],['ai-team','av-ai-team',renderAiTeamPanel],['appearance','av-appearance',function(){ renderAppearance(); renderSavedThemes(); }],['themes','av-themes',renderPositioningThemes],['contact','av-contact',renderContact],['logo','av-logo',renderLogo],['users','av-users',renderUsers],['demothemes','av-demothemes',function(){ renderDemoThemes(); renderSharedThemes(); }],['mailer','av-mailer',renderMailer],['messages','av-messages',renderMessages],['apps','av-apps',renderAppsMarketplace],['onlinequotes','av-onlinequotes',renderOnlineQuoteAdmin],['orders','av-orders',renderOrdersAdmin]];
   let activeView=null;
   function showView(which){
     activeView=which;
@@ -10680,6 +10712,35 @@ function heroCtaCard(c){
   function _oqMoney(cents){
     if(cents==null||isNaN(cents)) return '—';
     return '$'+(Math.round(cents)/100).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+  function renderOrdersAdmin(){
+    var box=$('av-orders'); if(!box) return;
+    if(currentSiteTemplate!=='trade'){
+      box.innerHTML='<div class="card"><p class="lede">Orders are available on trade sites only.</p></div>';
+      return;
+    }
+    if(!currentSiteId){
+      box.innerHTML='<div class="card"><p class="lede">Select a site first.</p></div>';
+      return;
+    }
+    var src='/orders?embed=1&site_id='+encodeURIComponent(currentSiteId);
+    box.innerHTML=
+      '<div class="card" style="margin-bottom:14px;padding:14px 16px;">'
+      +'<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;">'
+      +'<div><h2 style="margin:0 0 4px;font-size:18px;">Orders</h2>'
+      +'<p class="lede" style="margin:0;">Products, staff orders, deposits, supply and settings for this site. Turn on the <strong>Order Storefront</strong> section in Page editor to show the catalogue on the live site.</p></div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:8px;">'
+      +'<button type="button" class="btn ghost" id="ord-goto-storefront">Page section</button>'
+      +'<a class="btn ghost" href="'+src.replace('embed=1&','')+'" target="_blank" rel="noopener" style="text-decoration:none;">Open full screen ↗</a>'
+      +'</div></div></div>'
+      +'<div class="card" style="padding:0;overflow:hidden;min-height:72vh;">'
+      +'<iframe id="ord-embed" title="Orders" src="'+esc(src)+'" style="display:block;width:100%;min-height:72vh;height:calc(100vh - 220px);border:0;background:var(--panel,#fff);"></iframe>'
+      +'</div>';
+    var g=$('ord-goto-storefront');
+    if(g) g.addEventListener('click',function(){
+      landingSub='orderStorefront';
+      if(typeof showView==='function') showView('details');
+    });
   }
   async function renderOnlineQuoteAdmin(){
     var box=$('av-onlinequotes'); if(!box) return;
@@ -15320,6 +15381,8 @@ function heroCtaCard(c){
     var domainHost=lpHostOnly(currentCustomDomain||''); var domain=esc(domainHost); var liveUrl=lpLiveUrl({ publicOnly:true })||(domainHost?lpHttpsUrl(domainHost):'');
     var isActive=true;
     var isDomainConn=!!(currentCustomDomain);
+    if(!cfg.dashboard||typeof cfg.dashboard!=='object') cfg.dashboard={};
+    var dashOrdersOn=cfg.dashboard.ordersWidget!==false;
 
     box.innerHTML=
       '<div class="lp-instrument-panel">'
@@ -15371,6 +15434,24 @@ function heroCtaCard(c){
 
       +'</div>' // end instrument panel
 
+      // ── Orders widget (optional) ──
+      +'<div class="lp-dash-card" style="margin-bottom:18px;padding:14px 16px;">'
+      +'<label style="display:flex;align-items:center;gap:10px;margin:0;cursor:pointer;font-weight:600;">'
+      +'<input type="checkbox" id="dash-orders-toggle"'+(dashOrdersOn?' checked':'')+'> Show Orders widget on dashboard'
+      +'</label>'
+      +'<p class="hint" style="margin:6px 0 0;">A snapshot of new / recent orders from the Orders app. Turn off anytime.</p>'
+      +'</div>'
+      +'<div id="dash-orders-card" class="lp-dash-card" style="margin-bottom:20px;'+(dashOrdersOn?'':'display:none;')+'">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">'
+      +'<h3 style="margin:0;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)">Orders</h3>'
+      +'<span style="flex:1"></span>'
+      +'<button type="button" class="btn ghost" id="dash-orders-open" style="font-size:12px;padding:4px 12px">Open Orders</button>'
+      +'<button type="button" class="btn ghost" id="dash-orders-refresh" style="font-size:12px;padding:4px 12px">Refresh</button>'
+      +'</div>'
+      +'<div id="dash-orders-kpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:14px;"></div>'
+      +'<div id="dash-orders-body"><p style="color:var(--ink-soft);font-size:13px;margin:0;">Loading\u2026</p></div>'
+      +'</div>'
+
       // ── Captured Leads — full width ──
       +'<div id="dash-leads-card" class="lp-dash-card dash-leads-card" style="margin-bottom:20px">'
       +'<div class="dash-leads-head">'
@@ -15418,6 +15499,29 @@ function heroCtaCard(c){
 
       +'</div>' // end backups+scope grid
     ; // end box.innerHTML
+
+    // Orders dashboard widget
+    (function wireDashOrders(){
+      var tog=$('dash-orders-toggle');
+      var card=$('dash-orders-card');
+      function setVisible(on){
+        if(card) card.style.display=on?'':'none';
+      }
+      if(tog) tog.addEventListener('change', function(){
+        if(!data.config) data.config={};
+        if(!data.config.dashboard||typeof data.config.dashboard!=='object') data.config.dashboard={};
+        data.config.dashboard.ordersWidget=!!tog.checked;
+        setVisible(!!tog.checked);
+        persist();
+        if(tog.checked) _dashLoadOrders(siteId);
+        toast(tog.checked?'Orders widget on':'Orders widget off');
+      });
+      var openBtn=$('dash-orders-open');
+      if(openBtn) openBtn.addEventListener('click', function(){ if(typeof showView==='function') showView('orders'); });
+      var refBtn=$('dash-orders-refresh');
+      if(refBtn) refBtn.addEventListener('click', function(){ _dashLoadOrders(siteId, true); });
+      if(dashOrdersOn) _dashLoadOrders(siteId);
+    })();
 
     // Wire period buttons
     function _dashSetPeriodActive(activeBtn){
@@ -15592,6 +15696,62 @@ function heroCtaCard(c){
   }
 
   /* ── Dashboard data loaders ───────────────────────────── */
+
+  async function _dashLoadOrders(siteId, force){
+    var kpis=$('dash-orders-kpis');
+    var body=$('dash-orders-body');
+    if(!kpis||!body) return;
+    if(!siteId){
+      kpis.innerHTML='';
+      body.innerHTML='<p style="color:var(--ink-soft);font-size:13px;margin:0;">Select a site to see orders.</p>';
+      return;
+    }
+    if(!force) body.innerHTML='<p style="color:var(--ink-soft);font-size:13px;margin:0;">Loading\u2026</p>';
+    try{
+      var se=await sb.auth.getSession();
+      var tok=se&&se.data&&se.data.session&&se.data.session.access_token;
+      if(!tok) throw new Error('Not signed in');
+      var r=await fetch('/api/order/dashboard?site_id='+encodeURIComponent(siteId),{headers:{Authorization:'Bearer '+tok}});
+      var j=await r.json().catch(function(){ return {}; });
+      if(!r.ok) throw new Error((j&&j.error)||('HTTP '+r.status));
+      var k=j.kpis||{};
+      var tiles=[
+        {l:'Today pickups',v:k.today_pickups},
+        {l:'Tomorrow',v:k.tomorrow_pickups},
+        {l:'Awaiting deposit',v:k.awaiting_deposit},
+        {l:'Ready',v:k.ready_for_collection},
+        {l:'Price TBC',v:k.price_tbc_open},
+        {l:'Abandoned',v:k.abandoned_carts}
+      ];
+      kpis.innerHTML=tiles.map(function(t){
+        return '<div style="padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-soft,#f7f5f1);">'
+          +'<div style="font-size:20px;font-weight:800;color:var(--accent-hover);line-height:1;">'+(t.v==null?'0':t.v)+'</div>'
+          +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);margin-top:4px;">'+t.l+'</div></div>';
+      }).join('');
+      var recent=Array.isArray(j.recent)?j.recent:[];
+      if(!recent.length){
+        body.innerHTML='<p style="color:var(--ink-soft);font-size:13px;margin:0;">No orders yet. Open <strong>Orders</strong> to create one or wait for storefront checkouts.</p>';
+        return;
+      }
+      body.innerHTML='<div style="overflow:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">'
+        +'<thead><tr style="text-align:left;color:var(--ink-soft);font-size:11px;text-transform:uppercase;letter-spacing:.04em;">'
+        +'<th style="padding:6px 8px;">Order</th><th style="padding:6px 8px;">Customer</th><th style="padding:6px 8px;">Status</th><th style="padding:6px 8px;">Pickup</th><th style="padding:6px 8px;">Created</th>'
+        +'</tr></thead><tbody>'
+        +recent.slice(0,8).map(function(o){
+          var when=o.created_at?new Date(o.created_at).toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
+          return '<tr style="border-top:1px solid var(--line);">'
+            +'<td style="padding:8px;font-weight:700;">'+esc(o.order_number||o.id||'—')+'</td>'
+            +'<td style="padding:8px;">'+esc(o.customer_name||'—')+'</td>'
+            +'<td style="padding:8px;">'+esc(o.status||'—')+'</td>'
+            +'<td style="padding:8px;">'+esc(o.pickup_date||'—')+'</td>'
+            +'<td style="padding:8px;color:var(--ink-soft);">'+esc(when)+'</td></tr>';
+        }).join('')
+        +'</tbody></table></div>';
+    }catch(e){
+      kpis.innerHTML='';
+      body.innerHTML='<p style="color:var(--ink-soft);font-size:13px;margin:0;">Orders unavailable'+(e&&e.message?(' — '+esc(e.message)):'')+'. Enable the Order Engine for this site in the <strong>Orders</strong> tab (Settings → butcher preset).</p>';
+    }
+  }
 
   function _dashLoadStats(period){
     var vis=document.getElementById('dash-s-vis');

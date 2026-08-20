@@ -767,13 +767,55 @@ function injectOrderStorefront(html, slug, cfg) {
   const sec = cfg && cfg.sections && cfg.sections.orderStorefront;
   if (!sec || sec.on !== true) return html;
   const safeSlug = esc(slug || (cfg && cfg.slug) || '');
-  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-1';
+  const SCRIPT = '/assets/lp-order-storefront.js?v=oe-2';
 
+  function hexOk(v) {
+    return typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v);
+  }
   function ensureScript(doc) {
-    if (doc.indexOf('/assets/lp-order-storefront.js') >= 0) return doc;
+    if (doc.indexOf('/assets/lp-order-storefront.js') >= 0) {
+      return doc.replace(
+        /\/assets\/lp-order-storefront\.js(?:\?[^"']*)?/g,
+        '/assets/lp-order-storefront.js?v=oe-2'
+      );
+    }
     return doc.indexOf('</body>') !== -1
       ? doc.replace('</body>', '<script src="' + SCRIPT + '" defer></script>\n</body>')
       : doc + '<script src="' + SCRIPT + '" defer></script>';
+  }
+  function sectionStyleAttr() {
+    const parts = [];
+    if (hexOk(sec.bg)) parts.push('background:' + sec.bg);
+    if (hexOk(sec.eyebrowColor)) parts.push('--os-eyebrow:' + sec.eyebrowColor);
+    if (hexOk(sec.headingColor)) parts.push('--os-heading:' + sec.headingColor);
+    if (hexOk(sec.introColor)) parts.push('--os-intro:' + sec.introColor);
+    if (hexOk(sec.accent)) parts.push('--lp-oe-accent:' + sec.accent);
+    if (hexOk(sec.cardBg)) parts.push('--lp-oe-card:' + sec.cardBg);
+    if (hexOk(sec.cardBorder)) parts.push('--lp-oe-line:' + sec.cardBorder);
+    if (hexOk(sec.text)) parts.push('--lp-oe-ink:' + sec.text);
+    if (hexOk(sec.muted)) parts.push('--lp-oe-muted:' + sec.muted);
+    if (hexOk(sec.btnBg)) parts.push('--lp-oe-btn-bg:' + sec.btnBg);
+    if (hexOk(sec.btnText)) parts.push('--lp-oe-btn-text:' + sec.btnText);
+    if (hexOk(sec.inputBg)) parts.push('--lp-oe-input-bg:' + sec.inputBg);
+    if (hexOk(sec.inputBorder)) parts.push('--lp-oe-input-border:' + sec.inputBorder);
+    return parts.length ? (' style="' + parts.join(';') + '"') : '';
+  }
+  function styleBlock() {
+    return (
+      '<style id="lp-oe-section-style">' +
+      '.order-storefront .section-head .eyebrow{color:var(--os-eyebrow,inherit)}' +
+      '.order-storefront .section-head h2{color:var(--os-heading,inherit)}' +
+      '.order-storefront .section-head .intro{color:var(--os-intro,inherit)}' +
+      '.order-storefront .lp-oe{--accent:var(--lp-oe-accent,var(--accent,#1f7a63));--card:var(--lp-oe-card,#fff);--line:var(--lp-oe-line,#e4e0d8);--ink:var(--lp-oe-ink,#1c241e);--muted:var(--lp-oe-muted,#667066);color:var(--ink)}' +
+      '.order-storefront .lp-oe-cart-btn,.order-storefront .lp-oe-primary,.order-storefront .lp-oe-card button{background:var(--lp-oe-btn-bg,var(--accent));color:var(--lp-oe-btn-text,#fff);border:0;border-radius:999px;padding:10px 16px;font:700 13px/1 var(--font-ui,system-ui);cursor:pointer}' +
+      '.order-storefront .lp-oe-card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}' +
+      '.order-storefront .lp-oe-body h3{color:var(--ink)}' +
+      '.order-storefront .lp-oe-body p,.order-storefront .lp-oe-sub,.order-storefront .lp-oe-note{color:var(--muted)}' +
+      '.order-storefront .lp-oe-price,.order-storefront .lp-oe-ey{color:var(--accent)}' +
+      '.order-storefront .lp-oe-filters button.on{border-color:var(--accent);color:var(--accent)}' +
+      '.order-storefront .lp-oe-fields input,.order-storefront .lp-oe-fields textarea,.order-storefront .lp-oe-fields select{background:var(--lp-oe-input-bg,#fff);border:1px solid var(--lp-oe-input-border,var(--line));color:var(--ink);border-radius:10px;padding:10px 12px;font:inherit}' +
+      '</style>'
+    );
   }
 
   if (html.includes('data-sec="orderStorefront"') || html.includes('id="lp-order-storefront"')) {
@@ -781,19 +823,29 @@ function injectOrderStorefront(html, slug, cfg) {
       /(<div\s+id="lp-order-storefront")(?:\s+data-slug="[^"]*")?/,
       '$1 data-slug="' + safeSlug + '"'
     );
+    if (html.indexOf('id="lp-oe-section-style"') < 0) {
+      html = html.replace(
+        /(<section[^>]*data-sec="orderStorefront"[^>]*>)/,
+        '$1' + styleBlock()
+      );
+    }
     return ensureScript(html);
   }
 
   const eyebrow = esc(sec.eyebrow || 'Order online');
   const heading = esc(sec.heading || 'Place your order');
   const intro = esc(sec.intro || 'Choose products, pick a pickup date, and pay your deposit if required.');
+  const eyStyle = hexOk(sec.eyebrowColor) ? (' style="color:' + sec.eyebrowColor + '"') : '';
+  const hStyle = hexOk(sec.headingColor) ? (' style="color:' + sec.headingColor + '"') : '';
+  const iStyle = hexOk(sec.introColor) ? (' style="color:' + sec.introColor + '"') : '';
   const block =
-    '<section data-sec="orderStorefront" class="sec order-storefront" id="orderStorefront">' +
+    '<section data-sec="orderStorefront" class="sec order-storefront" id="orderStorefront"' + sectionStyleAttr() + '>' +
+    styleBlock() +
     '<div class="in">' +
     '<div class="section-head">' +
-    (eyebrow ? '<p class="eyebrow ey">' + eyebrow + '</p>' : '') +
-    '<h2>' + heading + '</h2>' +
-    (intro ? '<p class="intro">' + intro + '</p>' : '') +
+    (eyebrow ? '<p class="eyebrow ey"' + eyStyle + '>' + eyebrow + '</p>' : '') +
+    '<h2' + hStyle + '>' + heading + '</h2>' +
+    (intro ? '<p class="intro"' + iStyle + '>' + intro + '</p>' : '') +
     '</div>' +
     '<div id="lp-order-storefront" data-slug="' + safeSlug + '"></div>' +
     '</div></section>' +

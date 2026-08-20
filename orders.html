@@ -185,6 +185,9 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   .nav button{width:auto;flex:1 1 calc(50% - 4px)}
   .kpi{max-width:none}
 }
+body.embed .side-actions a[href="/command"]{display:none}
+body.embed .gate{min-height:60vh}
+body.embed .hub{min-height:70vh}
 </style>
 </head>
 <body>
@@ -569,7 +572,10 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   var LP = window.__LP || {};
   var sb = window.supabase.createClient(LP.url, LP.anon);
   var SITE_KEY = 'lp.orders.site_id';
-  var urlSite = (new URLSearchParams(location.search)).get('site_id') || '';
+  var urlParams = new URLSearchParams(location.search);
+  var urlSite = urlParams.get('site_id') || '';
+  var isEmbed = urlParams.get('embed') === '1';
+  if (isEmbed) try { document.body.classList.add('embed'); } catch (e) {}
   if (urlSite) try { localStorage.setItem(SITE_KEY, urlSite); } catch (e) {}
   var VIEWS = [
     { id: 'dashboard', label: 'Dashboard' },
