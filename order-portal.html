@@ -186,8 +186,114 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     if(wantPay && payBtn) payBtn.click();
   }
 
+  function renderHistory(data, sessionToken, slug){
+    $('gate').style.display='none';
+    $('view').style.display='';
+    var customer = data.customer || {};
+    var orders = data.orders || [];
+    var html = '';
+    html += '<h1 class="brand">Welcome'+(customer.name?(', '+esc(String(customer.name).split(/\s+/)[0])):'')+'</h1>';
+    html += '<p class="sub">Your order history. Reorder available products into a new cart (current prices apply; unavailable items are skipped).</p>';
+    if(!orders.length){
+      html += '<div class="card"><p class="note" style="margin:0">No past orders found for this mobile number yet.</p></div>';
+    } else {
+      orders.forEach(function(o){
+        html += '<div class="card">';
+        html += '<div class="hrow"><div><strong>Order '+esc(o.order_number)+'</strong><p class="note" style="margin:4px 0 0">Pickup '+esc(o.pickup_date||'—')+' · '+esc((o.status||'').replace(/_/g,' '))+'</p></div>';
+        html += '<button type="button" class="ghost" data-reorder="'+esc(o.id)+'">Order again</button></div>';
+        html += '<div style="margin-top:10px">';
+        (o.items||[]).forEach(function(it){
+          html += '<p class="note" style="margin:0 0 4px">'+esc(it.quantity)+' × '+esc(it.product_name)+(it.notes?(' — '+esc(it.notes)):'')+'</p>';
+        });
+        html += '</div></div>';
+      });
+    }
+    html += '<p class="note"><button type="button" class="ghost" id="hist-out">Sign out</button></p>';
+    $('view').innerHTML = html;
+    document.getElementById('hist-out').onclick = function(){
+      try{ localStorage.removeItem('lp.order.portal.'+slug); }catch(e){}
+      location.search = '?slug='+encodeURIComponent(slug);
+    };
+    document.querySelectorAll('[data-reorder]').forEach(function(btn){
+      btn.onclick = async function(){
+        btn.disabled = true;
+        btn.textContent = 'Creating cart…';
+        try{
+          var out = await api('/api/order/portal-auth', {
+            method:'POST',
+            body:{ action:'reorder', slug:slug, token:sessionToken, order_id: btn.getAttribute('data-reorder') }
+          });
+          var msg = 'Added '+(out.added||[]).length+' item(s)';
+          if((out.skipped||[]).length) msg += ', skipped '+(out.skipped||[]).length+' unavailable';
+          if(out.shop_url){
+            alert(msg);
+            location.href = out.shop_url;
+          } else alert(msg);
+        }catch(e){
+          btn.disabled=false; btn.textContent='Order again'; alert(e.message||e);
+        }
+      };
+    });
+  }
+
+  function showPhoneLogin(){
+    var slug = params.get('slug') || '';
+    $('gate').innerHTML =
+      '<h1 class="brand">Your orders</h1>'+
+      '<p class="sub">Enter the mobile number used on your orders. We’ll text a one-time code.</p>'+
+      (slug?'':'<p class="err">Add ?slug=your-site to this page URL (or open the link from the butcher).</p>')+
+      '<label class="f">Mobile</label><input id="otp-phone" type="tel" placeholder="04xx xxx xxx" '+(slug?'':'disabled')+'>'+
+      '<div id="otp-step2" style="display:none;margin-top:12px">'+
+      '<label class="f">SMS code</label><input id="otp-code" type="text" inputmode="numeric" placeholder="6-digit code">'+
+      '</div>'+
+      '<div class="actions" style="justify-content:center;margin-top:14px">'+
+      '<button type="button" id="otp-send"'+(slug?'':' disabled')+'>Send code</button>'+
+      '<button type="button" class="ghost" id="otp-verify" style="display:none">Verify &amp; view history</button>'+
+      '</div>'+
+      '<p class="err" id="otp-err"></p>';
+    var send = document.getElementById('otp-send');
+    var verify = document.getElementById('otp-verify');
+    var err = document.getElementById('otp-err');
+    send.onclick = async function(){
+      err.textContent='';
+      send.disabled=true;
+      try{
+        await api('/api/order/portal-auth', { method:'POST', body:{ action:'send_code', slug:slug, phone: document.getElementById('otp-phone').value } });
+        document.getElementById('otp-step2').style.display='';
+        verify.style.display='inline-flex';
+        send.textContent='Resend code';
+      }catch(e){ err.textContent=e.message||e; }
+      send.disabled=false;
+    };
+    verify.onclick = async function(){
+      err.textContent='';
+      verify.disabled=true;
+      try{
+        var out = await api('/api/order/portal-auth', {
+          method:'POST',
+          body:{ action:'verify_code', slug:slug, phone: document.getElementById('otp-phone').value, code: document.getElementById('otp-code').value }
+        });
+        try{ localStorage.setItem('lp.order.portal.'+slug, out.token); }catch(e){}
+        var hist = await api('/api/order/portal-auth?token='+encodeURIComponent(out.token));
+        renderHistory(hist, out.token, slug);
+      }catch(e){ err.textContent=e.message||e; verify.disabled=false; }
+    };
+  }
+
   if(!token){
-    $('gate').innerHTML = '<h1 class="brand">Order link required</h1><p class="sub">Open the secure link from your SMS or email to view this order.</p>';
+    var slug = params.get('slug') || '';
+    var saved = '';
+    try{ saved = localStorage.getItem('lp.order.portal.'+slug) || ''; }catch(e){}
+    if(saved && slug){
+      api('/api/order/portal-auth?token='+encodeURIComponent(saved)).then(function(data){
+        renderHistory(data, saved, slug);
+      }).catch(function(){
+        try{ localStorage.removeItem('lp.order.portal.'+slug); }catch(e){}
+        showPhoneLogin();
+      });
+    } else {
+      showPhoneLogin();
+    }
     return;
   }
   api('/api/order/portal?t='+encodeURIComponent(token)).then(render).catch(function(e){
