@@ -6470,6 +6470,19 @@ function heroCtaCard(c){
         can_reposition:true,
         hero_exclusive:false,
         sort_order:120
+      },
+      {
+        name:'Promotions & Offers',
+        slug:'promotions',
+        section_key:'promotions',
+        tier:'free',
+        tagline:'Seasonal offers, front and centre',
+        default_position:'mid',
+        marketplace_status:'live',
+        builder_visible:true,
+        can_reposition:true,
+        hero_exclusive:false,
+        sort_order:85
       }
     ];
     builtins.forEach(function(b){
@@ -6483,6 +6496,20 @@ function heroCtaCard(c){
       if(!existing.name) existing.name=b.name;
       if(!existing.section_key) existing.section_key=b.section_key;
       if(!existing.slug) existing.slug=b.slug;
+      if(b.section_key==='promotions'){
+        if(existing.name!==b.name) existing.name=b.name;
+        if(existing.section_key!=='promotions') existing.section_key='promotions';
+        if(existing.slug!=='promotions') existing.slug='promotions';
+        if(existing.marketplace_status!=='live') existing.marketplace_status='live';
+      }
+    });
+    // Hide stale split promotions apps (promotions-hero / promotions-inline) in the UI.
+    _appsList.forEach(function(a){
+      if(a.section_key==='promotions-hero'||a.section_key==='promotions-inline'
+        ||a.slug==='promotions-hero'||a.slug==='promotions-inline'){
+        a.builder_visible=false;
+        a.marketplace_status='draft';
+      }
     });
     return _appsList;
   }
@@ -11313,7 +11340,7 @@ function heroCtaCard(c){
       'projectFeed':'layers','projectStats':'bar-chart-2','activityCounter':'trending-up',
       'activityTimeline':'clock','videoReels':'play-circle','jobsFeed':'rss',
       'customerReactions':'smile','responseCards':'zap','specialOffer':'tag',
-      'promotions-hero':'megaphone','promotions-inline':'percent','finance':'credit-card',
+      'promotions':'megaphone','promotions-hero':'megaphone','promotions-inline':'percent','finance':'credit-card',
       'onlineQuote':'calculator','orderStorefront':'shopping-bag','estimateBuilder':'calculator','emergencyAvailability':'alert-circle',
       'emerg':'phone-call','instaGallery':'instagram','igProjectFeed':'instagram',
       'navMenu':'menu','footer':'minus-square','lpAccessibility':'palette',
@@ -11353,9 +11380,16 @@ function heroCtaCard(c){
     }
     html+='<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px">Layout track — drag to reorder within each slot</div>';
 
+    function _ampAppVisible(a){
+      if(!a) return false;
+      if(a.builder_visible===false) return false;
+      if(a.marketplace_status && a.marketplace_status!=='live') return false;
+      return true;
+    }
+
     SLOTS.forEach(function(slot){
       var slotApps=_appsList.filter(function(a){
-        return a.default_position===slot.key||a.default_position===slot.key;
+        return _ampAppVisible(a) && (a.default_position===slot.key||a.default_position===slot.key);
       });
       if(!slotApps.length) return;
       html+='<div style="margin-bottom:18px"><div style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;padding:6px 0;border-bottom:2px solid var(--accent-soft)">'+slot.label+' zone</div>';
@@ -11364,7 +11398,7 @@ function heroCtaCard(c){
     });
 
     // Footer apps (always on)
-    var footerApps=_appsList.filter(function(a){return a.default_position==='footer';});
+    var footerApps=_appsList.filter(function(a){return _ampAppVisible(a) && a.default_position==='footer';});
     if(footerApps.length){
       html+='<div style="margin-bottom:18px"><div style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;padding:6px 0;border-bottom:2px solid var(--accent-soft)">Footer (always on)</div>';
       html+='<div class="amp-tile-grid">'+footerApps.map(appTile).join('')+'</div>';

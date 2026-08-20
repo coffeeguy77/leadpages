@@ -77,6 +77,29 @@ const CUSTOM_HTML_APP = {
   updated_at: new Date().toISOString()
 };
 
+/** Unified Promotions Engine — public hub is /marketplace/promotions (sections.promotions). */
+const PROMOTIONS_APP = {
+  name: 'Promotions & Offers',
+  slug: 'promotions',
+  section_key: 'promotions',
+  tier: 'free',
+  price_monthly_aud: 0,
+  price_annual_aud: 0,
+  tagline: 'Seasonal offers, front and centre',
+  description:
+    'Urgency offers with types, placements and styles — weekly windows, deadlines, '
+    + 'limited spots, finance, suburb specials and more. Same Promotions Engine as the Page editor.',
+  default_position: 'mid',
+  marketplace_status: 'live',
+  builder_visible: true,
+  can_reposition: true,
+  hero_exclusive: false,
+  sort_order: 85,
+  updated_at: new Date().toISOString()
+};
+
+const STALE_PROMOTIONS_SECTION_KEYS = ['promotions-hero', 'promotions-inline'];
+
 async function ensureLpAccessibilityApp() {
   const { data: existing } = await sb.from('app_registry')
     .select('id')
@@ -189,6 +212,70 @@ async function ensureCustomHtmlApp() {
   }
 }
 
+/**
+ * Register / heal Promotions & Offers (sections.promotions).
+ * Production historically had split promotions-hero / promotions-inline rows that
+ * do not match the real config key — remap the primary row and retire leftovers.
+ */
+async function ensurePromotionsApp() {
+  const row = Object.assign({}, PROMOTIONS_APP, { updated_at: new Date().toISOString() });
+  const { data: related } = await sb.from('app_registry')
+    .select('id,slug,section_key,marketplace_status,builder_visible,default_position,name')
+    .in('section_key', ['promotions'].concat(STALE_PROMOTIONS_SECTION_KEYS));
+
+  const list = related || [];
+  const byKey = {};
+  list.forEach(function(a) { byKey[a.section_key] = a; });
+
+  let primary = byKey.promotions || byKey['promotions-hero'] || null;
+
+  if (!primary) {
+    await sb.from('app_registry').upsert(row, { onConflict: 'slug' });
+  } else {
+    const needsHeal =
+      primary.section_key !== row.section_key ||
+      primary.slug !== row.slug ||
+      primary.name !== row.name ||
+      primary.marketplace_status !== 'live' ||
+      primary.builder_visible !== true ||
+      primary.default_position !== row.default_position;
+    if (needsHeal) {
+      // Remap in-place so existing site_apps FKs keep working.
+      const { error } = await sb.from('app_registry').update({
+        name: row.name,
+        slug: row.slug,
+        section_key: row.section_key,
+        tagline: row.tagline,
+        description: row.description,
+        tier: row.tier,
+        price_monthly_aud: row.price_monthly_aud,
+        price_annual_aud: row.price_annual_aud,
+        default_position: row.default_position,
+        marketplace_status: 'live',
+        builder_visible: true,
+        can_reposition: true,
+        hero_exclusive: false,
+        sort_order: row.sort_order,
+        updated_at: row.updated_at
+      }).eq('id', primary.id);
+      if (error) throw error;
+    }
+  }
+
+  // Hide stale split apps so App Marketplace shows one tile matching /marketplace/promotions.
+  const stale = list.filter(function(a) {
+    return a.id !== (primary && primary.id) && STALE_PROMOTIONS_SECTION_KEYS.indexOf(a.section_key) >= 0;
+  });
+  for (const s of stale) {
+    if (s.builder_visible === false && s.marketplace_status === 'draft') continue;
+    await sb.from('app_registry').update({
+      marketplace_status: 'draft',
+      builder_visible: false,
+      updated_at: row.updated_at
+    }).eq('id', s.id);
+  }
+}
+
 module.exports = async (req, res) => {
   res.setHeader('access-control-allow-origin','*');
   res.setHeader('cache-control','s-maxage=120,stale-while-revalidate=300');
@@ -232,11 +319,13 @@ module.exports = async (req, res) => {
       await ensurePremiumGalleryApp();
       await ensureSearchCanvasApp();
       await ensureCustomHtmlApp();
+      await ensurePromotionsApp();
     }
-    // Public marketplace list should also auto-register SearchCanvas / Custom HTML once.
+    // Public marketplace list should also auto-register SearchCanvas / Custom HTML / Promotions once.
     if (!all && !slug) {
       try { await ensureSearchCanvasApp(); } catch (_e) { /* non-fatal */ }
       try { await ensureCustomHtmlApp(); } catch (_e) { /* non-fatal */ }
+      try { await ensurePromotionsApp(); } catch (_e) { /* non-fatal */ }
     }
     const {data:apps,error:ae} = await q;
     if (ae) return res.status(500).json({error:ae.message});
