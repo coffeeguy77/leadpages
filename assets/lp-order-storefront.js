@@ -295,7 +295,7 @@
       '<label>Quantity<input type="number" min="1" step="1" value="1" id="oe-qty"></label>';
     if (p.weight_required || p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc') {
       html +=
-        '<label>Approx. weight (kg)<input type="number" min="0.01" step="0.01" id="oe-kg" placeholder="e.g. 1.2"></label>';
+        '<label>Approx. weight (kg)<input type="number" min="0.01" step="0.01" inputmode="decimal" id="oe-kg" placeholder="e.g. 1.25" title="Enter any weight in kg (spinner moves 10g)"></label>';
     }
     (p.questions || []).forEach(function (q) {
       html += '<label>' + esc(q.label);
@@ -464,7 +464,9 @@
         '"></label>';
     }
     html +=
-      '<label>Order notes<textarea id="oe-cnotes">' + esc(d.notes || '') + '</textarea></label>';
+      '<label>Order notes<textarea id="oe-cnotes" class="lp-oe-notes-grow" rows="1" placeholder="Optional notes">' +
+      esc(d.notes || '') +
+      '</textarea></label>';
     html += '</div>';
     html +=
       '<button type="button" class="lp-oe-primary" data-act="confirm"' +
@@ -504,6 +506,15 @@
       el.addEventListener('click', function () {
         self.onAct(el.getAttribute('data-act'), el);
       });
+    });
+    this.root.querySelectorAll('textarea.lp-oe-notes-grow').forEach(function (ta) {
+      function grow() {
+        ta.style.height = 'auto';
+        ta.style.height = Math.min(Math.max(ta.scrollHeight, 38), 200) + 'px';
+      }
+      ta.setAttribute('rows', '1');
+      grow();
+      ta.addEventListener('input', grow);
     });
     // Preserve checkout fields while typing
     ['oe-name', 'oe-phone', 'oe-email', 'oe-date', 'oe-slot', 'oe-cnotes'].forEach(function (id) {
@@ -789,7 +800,8 @@
       '.lp-oe-qty-val{min-width:28px;text-align:center;font:700 13px/1 system-ui,sans-serif}' +
       '.lp-oe-remove{appearance:none;border:1px solid #c45c26;background:transparent;color:#c45c26;font:600 12px/1 system-ui,sans-serif;padding:8px 12px;border-radius:999px;cursor:pointer}' +
       '.lp-oe-remove:hover{background:#c45c26;color:#fff}' +
-      '.lp-oe-primary:disabled,.lp-oe-cart-btn:disabled,.lp-oe-qty-btn:disabled,.lp-oe-remove:disabled{opacity:.55;cursor:not-allowed}';
+      '.lp-oe-primary:disabled,.lp-oe-cart-btn:disabled,.lp-oe-qty-btn:disabled,.lp-oe-remove:disabled{opacity:.55;cursor:not-allowed}' +
+      '.lp-oe-notes-grow{min-height:38px;max-height:200px;resize:none;overflow-y:hidden;line-height:1.4;width:100%;box-sizing:border-box}';
     document.head.appendChild(st);
   }
 
