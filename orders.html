@@ -149,6 +149,13 @@ input,select,textarea{
 .field textarea.notes-grow{field-sizing:content}
 .field.full input,.field.full select,.field.full textarea{max-width:100%}
 .field-hint{display:block;margin-top:4px;font-size:var(--fs-xs);color:var(--ink-faint);line-height:1.35;font-weight:500}
+.prod-options-list{display:grid;gap:12px;margin:0 0 10px}
+.prod-opt-card{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel,#fff)}
+.prod-opt-card .prod-opt-head{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:10px}
+.prod-opt-card .prod-opt-choices{display:grid;gap:8px}
+.prod-opt-choice{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:8px;align-items:end}
+@media(max-width:720px){.prod-opt-choice{grid-template-columns:1fr}}
+.prod-pack-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:var(--accent-soft,#e8f3ef);color:var(--accent);font-size:10.5px;font-weight:700}
 .radio-row{display:flex;flex-wrap:wrap;gap:8px 14px;padding-top:4px}
 .radio-row label{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-base);font-weight:500;color:var(--ink);cursor:pointer;margin:0}
 .radio-row input{width:auto;max-width:none;margin:0;accent-color:var(--accent)}
@@ -486,7 +493,33 @@ body.embed .hub{min-height:70vh}
                 <select id="prod-active"><option value="1">Yes</option><option value="0">No</option></select>
               </div>
               <div class="field"><label for="prod-unit">Unit label</label><input id="prod-unit" placeholder="steak, kg, each…"></div>
+              <div class="field"><label for="prod-short">Short description</label>
+                <input id="prod-short" placeholder="Shown under the name on the shop">
+              </div>
+              <div class="field"><label for="prod-size-mode">Sold as</label>
+                <select id="prod-size-mode">
+                  <option value="variable">Variable weight (customer enters kg)</option>
+                  <option value="pack">Fixed pack size (qty only)</option>
+                </select>
+                <span class="field-hint">Use fixed pack for items like “Stuffing 800g” so customers only change quantity.</span>
+              </div>
+              <div class="field" id="prod-pack-fields">
+                <label for="prod-pack-kg">Pack weight (kg)</label>
+                <input id="prod-pack-kg" type="number" min="0.05" step="0.05" placeholder="0.8">
+                <span class="field-hint">e.g. 0.8 for an 800g pack</span>
+              </div>
+              <div class="field"><label for="prod-pack-label">Pack label</label>
+                <input id="prod-pack-label" placeholder="800g">
+              </div>
             </div>
+
+            <h4 class="section-title">Extras / options</h4>
+            <p class="notice">Optional add-ons for this product (e.g. stuffing on a turkey). Choose one-only or multi-select; each choice can be free or paid.</p>
+            <div id="prod-options-list" class="prod-options-list"></div>
+            <div class="actions-row" style="margin-bottom:14px">
+              <button class="btn ghost" type="button" id="prod-option-add">+ Add option group</button>
+            </div>
+
             <div class="actions-row">
               <button class="btn solid" type="submit" id="prod-save">Save product</button>
               <button class="btn ghost" type="button" id="prod-cancel">Cancel</button>
@@ -740,7 +773,7 @@ body.embed .hub{min-height:70vh}
             <p class="notice">Live on the customer shop after save (also use Page editor → Order Storefront for section colours on the homepage band).</p>
             <div class="grid2">
               <div class="field"><label for="set-sf-maxw">Catalogue max width (px)</label>
-                <input id="set-sf-maxw" type="number" min="480" max="1600" step="10" placeholder="1100">
+                <input id="set-sf-maxw" type="number" min="480" max="1600" step="10" placeholder="1440">
               </div>
               <div class="field"><label for="set-sf-pad">Inner padding (px)</label>
                 <input id="set-sf-pad" type="number" min="0" max="64" step="1" placeholder="16">
@@ -1844,7 +1877,10 @@ body.embed .hub{min-height:70vh}
     var q = (($('prod-q') && $('prod-q').value) || '').trim().toLowerCase();
     var filtered = products.filter(function(p){
       if (cat && p.category_id !== cat) return false;
-      if (q && String(p.name || '').toLowerCase().indexOf(q) < 0) return false;
+      if (q) {
+        var hay = (String(p.name || '') + ' ' + String(p.short_description || '') + ' ' + String((p.options && p.options.pack_label) || '')).toLowerCase();
+        if (hay.indexOf(q) < 0) return false;
+      }
       return true;
     });
     if (!products.length) {
@@ -1861,12 +1897,18 @@ body.embed .hub{min-height:70vh}
       var price = p.pricing_method === 'per_weight'
         ? formatAud(p.price_per_kg_cents) + '/kg'
         : p.pricing_method === 'price_tbc' ? 'TBC' : formatAud(p.price_cents);
+      var pack = (p.options && (p.options.pack_label || (p.options.size_mode === 'pack' && p.options.pack_weight_kg)))
+        ? (p.options.pack_label || (Math.round(Number(p.options.pack_weight_kg) * 1000) + 'g'))
+        : '';
       var thumb = p.image_url
         ? '<div style="width:40px;height:40px;border-radius:8px;background:#eee center/cover no-repeat;background-image:url(\'' + esc(p.image_url) + '\')"></div>'
         : '<div style="width:40px;height:40px;border-radius:8px;background:#f0ebe3"></div>';
       return '<tr class="clickable" data-edit="' + esc(p.id) + '">' +
         '<td>' + thumb + '</td>' +
-        '<td><strong>' + esc(p.name) + '</strong></td>' +
+        '<td><strong>' + esc(p.name) + '</strong>' +
+          (pack ? '<span class="prod-pack-badge">' + esc(pack) + '</span>' : '') +
+          (p.short_description ? '<div class="muted" style="font-size:12px;margin-top:2px">' + esc(p.short_description) + '</div>' : '') +
+        '</td>' +
         '<td>' + esc(categoryName(p.category_id)) + '</td>' +
         '<td>' + esc(p.pricing_method) + ' · ' + esc(price) + '</td>' +
         '<td>' + esc(p.stock_method || '—') + '</td>' +
@@ -1877,8 +1919,7 @@ body.embed .hub{min-height:70vh}
       '</tr>';
     }).join('');
     function openEdit(id){
-      var p = products.find(function(x){ return x.id === id; });
-      if (p) fillProductForm(p);
+      openProductEditor(id);
     }
     tbody.querySelectorAll('tr[data-edit]').forEach(function(tr){
       tr.addEventListener('click', function(e){
@@ -1894,12 +1935,129 @@ body.embed .hub{min-height:70vh}
     });
   }
 
+  function syncPackFieldsVisibility(){
+    var mode = $('prod-size-mode') ? $('prod-size-mode').value : 'variable';
+    var pack = mode === 'pack';
+    ['prod-pack-kg', 'prod-pack-label'].forEach(function(id){
+      var el = $(id); if (!el) return;
+      var field = el.closest('.field');
+      if (field) field.style.display = pack ? '' : 'none';
+    });
+  }
+
+  function renderProductOptionsEditor(questions){
+    var host = $('prod-options-list');
+    if (!host) return;
+    host.innerHTML = '';
+    (questions || []).forEach(function(q){ appendProductOptionGroup(q); });
+  }
+
+  function appendProductOptionGroup(q){
+    var host = $('prod-options-list');
+    if (!host) return;
+    q = q || { label: '', field_type: 'radio', required: false, options: [{ label: '', price_cents: 0 }] };
+    var card = document.createElement('div');
+    card.className = 'prod-opt-card';
+    card.innerHTML =
+      '<div class="prod-opt-head">' +
+        '<div class="field" style="margin:0;flex:1;min-width:160px"><label>Title</label><input data-oq="label" value="' + esc(q.label || '') + '" placeholder="e.g. Stuffing"></div>' +
+        '<div class="field" style="margin:0;min-width:150px"><label>Selection</label>' +
+          '<select data-oq="field_type">' +
+            '<option value="radio"' + (q.field_type !== 'checkboxes' && q.field_type !== 'dropdown' ? ' selected' : '') + '>Select 1 only</option>' +
+            '<option value="checkboxes"' + (q.field_type === 'checkboxes' ? ' selected' : '') + '>Select multiple</option>' +
+            '<option value="dropdown"' + (q.field_type === 'dropdown' ? ' selected' : '') + '>Dropdown</option>' +
+          '</select></div>' +
+        '<div class="field" style="margin:0;min-width:110px"><label>Required</label>' +
+          '<select data-oq="required"><option value="0"' + (!q.required ? ' selected' : '') + '>No</option><option value="1"' + (q.required ? ' selected' : '') + '>Yes</option></select></div>' +
+        '<button type="button" class="btn ghost" data-oq-remove>Remove</button>' +
+      '</div>' +
+      '<div class="prod-opt-choices" data-oq-choices></div>' +
+      '<button type="button" class="btn ghost" data-oq-add-choice style="margin-top:8px">+ Choice</button>';
+    host.appendChild(card);
+    var choicesHost = card.querySelector('[data-oq-choices]');
+    var opts = Array.isArray(q.options) && q.options.length ? q.options : [{ label: '', price_cents: 0 }];
+    opts.forEach(function(o){ appendProductOptionChoice(choicesHost, o); });
+    card.querySelector('[data-oq-remove]').addEventListener('click', function(){ card.remove(); });
+    card.querySelector('[data-oq-add-choice]').addEventListener('click', function(){
+      appendProductOptionChoice(choicesHost, { label: '', price_cents: 0 });
+    });
+  }
+
+  function appendProductOptionChoice(host, o){
+    o = o || {};
+    var row = document.createElement('div');
+    row.className = 'prod-opt-choice';
+    var label = typeof o === 'string' ? o : (o.label || o.value || '');
+    var price = typeof o === 'object' && o.price_cents != null ? centsToDollarsInput(o.price_cents) : '';
+    row.innerHTML =
+      '<div class="field" style="margin:0"><label>Choice</label><input data-oc="label" value="' + esc(label) + '" placeholder="Apricot"></div>' +
+      '<div class="field" style="margin:0"><label>Extra $</label><input data-oc="price" type="number" min="0" step="0.01" value="' + esc(price) + '" placeholder="0.00"></div>' +
+      '<button type="button" class="btn ghost" data-oc-remove>✕</button>';
+    host.appendChild(row);
+    row.querySelector('[data-oc-remove]').addEventListener('click', function(){ row.remove(); });
+  }
+
+  function readProductOptionsFromForm(){
+    var host = $('prod-options-list');
+    if (!host) return [];
+    var out = [];
+    host.querySelectorAll('.prod-opt-card').forEach(function(card, idx){
+      var label = (card.querySelector('[data-oq="label"]') || {}).value || '';
+      label = String(label).trim();
+      if (!label) return;
+      var fieldType = (card.querySelector('[data-oq="field_type"]') || {}).value || 'radio';
+      var required = (card.querySelector('[data-oq="required"]') || {}).value === '1';
+      var options = [];
+      card.querySelectorAll('.prod-opt-choice').forEach(function(row){
+        var cl = String(((row.querySelector('[data-oc="label"]') || {}).value) || '').trim();
+        if (!cl) return;
+        var dollars = (row.querySelector('[data-oc="price"]') || {}).value;
+        options.push({
+          label: cl,
+          value: cl,
+          price_cents: dollars !== '' ? dollarsToCents(dollars) : 0
+        });
+      });
+      out.push({
+        key: label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40) || ('opt_' + (idx + 1)),
+        label: label,
+        field_type: fieldType,
+        required: required,
+        options: options,
+        sort_order: idx
+      });
+    });
+    return out;
+  }
+
+  async function openProductEditor(id){
+    if (!id) {
+      fillProductForm(null);
+      renderProductOptionsEditor([]);
+      syncPackFieldsVisibility();
+      return;
+    }
+    try {
+      var data = await api('/api/order/products?site_id=' + encodeURIComponent(state.siteId) + '&id=' + encodeURIComponent(id));
+      fillProductForm(data.product || null);
+      renderProductOptionsEditor(data.questions || []);
+      syncPackFieldsVisibility();
+    } catch (e) {
+      var p = (state.products || []).find(function(x){ return x.id === id; });
+      fillProductForm(p || null);
+      renderProductOptionsEditor([]);
+      syncPackFieldsVisibility();
+      toast((e && e.message) || String(e), 'err');
+    }
+  }
+
   function fillProductForm(p){
     $('prod-form-card').classList.remove('hide');
     $('prod-form-title').textContent = p && p.id ? 'Edit product' : 'New product';
     fillCategorySelects();
     $('prod-id').value = (p && p.id) || '';
     $('prod-name').value = (p && p.name) || '';
+    if ($('prod-short')) $('prod-short').value = (p && p.short_description) || '';
     $('prod-image').value = (p && p.image_url) || '';
     setProdImagePreview((p && p.image_url) || '');
     if ($('prod-image-msg')) $('prod-image-msg').textContent = '';
@@ -1914,7 +2072,12 @@ body.embed .hub{min-height:70vh}
     $('prod-active').value = p && p.active === false ? '0' : '1';
     $('prod-unit').value = (p && p.unit_label) || '';
     if ($('prod-category')) $('prod-category').value = (p && p.category_id) || '';
+    var opts = (p && p.options) || {};
+    if ($('prod-size-mode')) $('prod-size-mode').value = opts.size_mode === 'pack' || opts.size_mode === 'fixed' ? 'pack' : 'variable';
+    if ($('prod-pack-kg')) $('prod-pack-kg').value = opts.pack_weight_kg != null ? opts.pack_weight_kg : '';
+    if ($('prod-pack-label')) $('prod-pack-label').value = opts.pack_label || '';
     $('prod-msg').textContent = '';
+    syncPackFieldsVisibility();
     $('prod-form-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
@@ -1927,9 +2090,11 @@ body.embed .hub{min-height:70vh}
     msg.textContent = '';
     var id = $('prod-id').value;
     var pricing = prodPricingValue();
+    var sizeMode = $('prod-size-mode') ? $('prod-size-mode').value : 'variable';
     var body = {
       site_id: state.siteId,
       name: $('prod-name').value.trim(),
+      short_description: $('prod-short') ? ($('prod-short').value.trim() || null) : null,
       image_url: $('prod-image').value.trim() || null,
       category_id: ($('prod-category') && $('prod-category').value) || null,
       pricing_method: pricing,
@@ -1942,7 +2107,11 @@ body.embed .hub{min-height:70vh}
       lead_time_value: Number($('prod-lead-value').value) || 0,
       active: $('prod-active').value === '1',
       unit_label: $('prod-unit').value.trim() || null,
-      weight_required: pricing === 'per_weight' || pricing === 'price_tbc'
+      weight_required: sizeMode === 'pack' ? false : (pricing === 'per_weight' || pricing === 'price_tbc'),
+      size_mode: sizeMode,
+      pack_weight_kg: $('prod-pack-kg') && $('prod-pack-kg').value !== '' ? Number($('prod-pack-kg').value) : null,
+      pack_label: $('prod-pack-label') ? ($('prod-pack-label').value.trim() || null) : null,
+      questions: readProductOptionsFromForm()
     };
     try {
       if (id) {
@@ -2943,7 +3112,9 @@ body.embed .hub{min-height:70vh}
   });
   $('no-add-line').addEventListener('click', addNewLine);
   $('new-order-form').addEventListener('submit', submitNewOrder);
-  $('prod-new').addEventListener('click', function(){ fillProductForm(null); });
+  $('prod-new').addEventListener('click', function(){ openProductEditor(null); });
+  if ($('prod-option-add')) $('prod-option-add').addEventListener('click', function(){ appendProductOptionGroup(null); });
+  if ($('prod-size-mode')) $('prod-size-mode').addEventListener('change', syncPackFieldsVisibility);
   $('prod-cancel').addEventListener('click', function(){ $('prod-form-card').classList.add('hide'); });
   $('prod-form').addEventListener('submit', saveProduct);
   if ($('prod-cat-filter')) $('prod-cat-filter').addEventListener('change', renderProductsTable);

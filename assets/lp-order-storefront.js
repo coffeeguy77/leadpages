@@ -86,7 +86,53 @@
 
   OrderStorefront.prototype.needsWeight = function (p) {
     if (!p) return false;
+    if (this.isPackSize(p)) return false;
     return !!(p.weight_required || p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc');
+  };
+
+  OrderStorefront.prototype.isPackSize = function (p) {
+    var o = (p && p.options) || {};
+    return o.size_mode === 'pack' || o.size_mode === 'fixed' || !!p.is_pack_size;
+  };
+
+  OrderStorefront.prototype.packLabel = function (p) {
+    if (p && p.pack_label) return String(p.pack_label);
+    var o = (p && p.options) || {};
+    if (o.pack_label) return String(o.pack_label);
+    var w = Number(o.pack_weight_kg);
+    if (!Number.isFinite(w) || w <= 0) return '';
+    if (w >= 1) return w + ' kg';
+    return Math.round(w * 1000) + 'g';
+  };
+
+  OrderStorefront.prototype.stepperHtml = function (opts) {
+    opts = opts || {};
+    var step = opts.step != null ? opts.step : 1;
+    var min = opts.min != null ? opts.min : 1;
+    var val = opts.value != null ? opts.value : min;
+    var idAttr = opts.id ? ' id="' + esc(opts.id) + '"' : '';
+    var dataAttr = opts.dataAttr || '';
+    return (
+      '<div class="lp-oe-stepper" data-step="' +
+      esc(step) +
+      '" data-min="' +
+      esc(min) +
+      '">' +
+      '<button type="button" class="lp-oe-stepper-btn" data-stepper-dir="-1" aria-label="Decrease">−</button>' +
+      '<input type="number" min="' +
+      esc(min) +
+      '" step="' +
+      esc(step) +
+      '" inputmode="decimal" value="' +
+      esc(val) +
+      '"' +
+      idAttr +
+      ' ' +
+      dataAttr +
+      '>' +
+      '<button type="button" class="lp-oe-stepper-btn" data-stepper-dir="1" aria-label="Increase">+</button>' +
+      '</div>'
+    );
   };
 
   OrderStorefront.prototype.captureFastDrafts = function () {
@@ -102,9 +148,10 @@
       if (qty) draft.qty = qty.value;
       if (kg) draft.kg = kg.value;
       if (notes) draft.notes = notes.value;
-      row.querySelectorAll('[data-q]').forEach(function (inp) {
-        if (!draft.answers) draft.answers = {};
-        draft.answers[inp.getAttribute('data-q')] = inp.value;
+      var collected = self.collectAnswers(row);
+      draft.answers = {};
+      Object.keys(collected).forEach(function (k) {
+        draft.answers[k] = collected[k].value;
       });
     });
   };
@@ -409,49 +456,155 @@
     return html;
   };
 
+  OrderStorefront.prototype.choiceLabel = function (o) {
+    if (typeof o === 'string') return o;
+    var label = o.label || o.value || '';
+    var price = Number(o.price_cents) || 0;
+    if (price > 0) return label + ' (+' + money(price) + ')';
+    if (price === 0 && (o.price_cents === 0 || o.price_cents === '0')) return label;
+    return label;
+  };
+
+  OrderStorefront.prototype.renderQuestionFields = function (questions, answers) {
+    var self = this;
+    var html = '';
+    answers = answers || {};
+    (questions || []).forEach(function (q) {
+      if (q.staff_only) return;
+      var qv = answers[q.key] != null ? answers[q.key] : '';
+      var selected = Array.isArray(qv)
+        ? qv
+        : String(qv || '')
+            .split(',')
+            .map(function (x) {
+              return x.trim();
+            })
+            .filter(Boolean);
+      html += '<div class="lp-oe-option-group">';
+      html += '<p class="lp-oe-option-title">' + esc(q.label) + (q.required ? ' *' : '') + '</p>';
+      if (q.field_type === 'checkboxes') {
+        html += '<div class="lp-oe-option-list" data-q-multi="' + esc(q.key) + '">';
+        (q.options || []).forEach(function (o) {
+          var v = typeof o === 'string' ? o : o.value || o.label;
+          var on = selected.indexOf(String(v)) >= 0;
+          html +=
+            '<label class="lp-oe-option-chip' +
+            (on ? ' on' : '') +
+            '"><input type="checkbox" data-q-check="' +
+            esc(q.key) +
+            '" value="' +
+            esc(v) +
+            '"' +
+            (on ? ' checked' : '') +
+            '> <span>' +
+            esc(self.choiceLabel(o)) +
+            '</span></label>';
+        });
+        html += '</div>';
+      } else if (q.field_type === 'dropdown' || q.field_type === 'radio') {
+        html += '<div class="lp-oe-option-list">';
+        (q.options || []).forEach(function (o) {
+          var v = typeof o === 'string' ? o : o.value || o.label;
+          var on = String(qv) === String(v);
+          html +=
+            '<label class="lp-oe-option-chip' +
+            (on ? ' on' : '') +
+            '"><input type="radio" name="q-' +
+            esc(q.key) +
+            '" data-q="' +
+            esc(q.key) +
+            '" value="' +
+            esc(v) +
+            '"' +
+            (on ? ' checked' : '') +
+            '> <span>' +
+            esc(self.choiceLabel(o)) +
+            '</span></label>';
+        });
+        html += '</div>';
+      } else if (q.field_type === 'long_text') {
+        html +=
+          '<textarea data-q="' +
+          esc(q.key) +
+          '" rows="1" class="lp-oe-notes-grow">' +
+          esc(qv) +
+          '</textarea>';
+      } else {
+        html += '<input data-q="' + esc(q.key) + '" value="' + esc(qv) + '">';
+      }
+      html += '</div>';
+    });
+    return html;
+  };
+
+  OrderStorefront.prototype.collectAnswers = function (scope) {
+    var answers = {};
+    var root = scope || this.root;
+    root.querySelectorAll('[data-q]').forEach(function (inp) {
+      if (inp.type === 'radio' && !inp.checked) return;
+      answers[inp.getAttribute('data-q')] = {
+        value: inp.value,
+        label: inp.getAttribute('data-q')
+      };
+    });
+    var multiKeys = {};
+    root.querySelectorAll('[data-q-check]').forEach(function (inp) {
+      var key = inp.getAttribute('data-q-check');
+      if (!multiKeys[key]) multiKeys[key] = [];
+      if (inp.checked) multiKeys[key].push(inp.value);
+    });
+    Object.keys(multiKeys).forEach(function (key) {
+      answers[key] = { value: multiKeys[key], label: key };
+    });
+    return answers;
+  };
+
   OrderStorefront.prototype.renderFastRow = function (p) {
     var id = p.id;
     var draft = this.state.fastDrafts[id] || {};
     var notesOpen = !!this.state.notesOpen[id];
     var needsW = this.needsWeight(p);
+    var pack = this.packLabel(p);
     var hasQs = (p.questions || []).length > 0;
     var qtyVal = draft.qty != null && draft.qty !== '' ? draft.qty : '1';
     var kgVal = draft.kg != null ? draft.kg : '';
     var notesVal = draft.notes || '';
+    var hasImg = !!p.image_url;
     var html = '';
     html +=
       '<article class="lp-oe-fast-row' +
       (notesOpen ? ' is-notes-open' : '') +
+      (hasImg ? '' : ' no-img') +
       '" data-fast-row="' +
       esc(id) +
       '" role="listitem">';
-    html += '<div class="lp-oe-fast-main">';
-    if (p.image_url) {
+    html += '<div class="lp-oe-fast-main' + (hasImg ? '' : ' no-img') + '">';
+    if (hasImg) {
       html +=
         '<div class="lp-oe-fast-img" style="background-image:url(\'' +
         esc(p.image_url) +
         '\')"></div>';
-    } else {
-      html +=
-        '<div class="lp-oe-fast-img text"><span>' +
-        esc((p.name || '?').slice(0, 1)) +
-        '</span></div>';
     }
     html += '<div class="lp-oe-fast-info">';
     html += '<h3>' + esc(p.name) + '</h3>';
+    if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
     if (p.short_description) html += '<p class="lp-oe-fast-desc">' + esc(p.short_description) + '</p>';
     html += '<div class="lp-oe-price">' + esc(p.display_price) + '</div>';
     html += '</div>';
     html += '<div class="lp-oe-fast-controls">';
-    html +=
-      '<label class="lp-oe-fast-field">Qty<input type="number" min="1" step="1" inputmode="numeric" data-fast-qty value="' +
-      esc(qtyVal) +
-      '"></label>';
+    html += '<label class="lp-oe-fast-field">Qty' + this.stepperHtml({ min: 1, step: 1, value: qtyVal, dataAttr: 'data-fast-qty' }) + '</label>';
     if (needsW) {
       html +=
-        '<label class="lp-oe-fast-field">kg<input type="number" min="0.1" step="0.1" inputmode="decimal" data-fast-kg placeholder="1.2" title="100g increments" value="' +
-        esc(kgVal) +
-        '"></label>';
+        '<label class="lp-oe-fast-field">kg' +
+        this.stepperHtml({
+          min: 0.1,
+          step: 0.1,
+          value: kgVal || '0.1',
+          dataAttr: 'data-fast-kg'
+        }) +
+        '</label>';
+    } else if (pack) {
+      html += '<span class="lp-oe-fast-packchip" title="Fixed pack size">' + esc(pack) + '</span>';
     }
     html +=
       '<button type="button" class="lp-oe-fast-notes-btn' +
@@ -461,8 +614,7 @@
       '" aria-expanded="' +
       (notesOpen ? 'true' : 'false') +
       '">' +
-      (notesOpen ? 'Hide notes' : 'Notes') +
-      (hasQs && !notesOpen ? ' +' : '') +
+      (notesOpen ? 'Hide extras' : hasQs ? 'Options' : 'Notes') +
       '</button>';
     html +=
       '<button type="button" class="lp-oe-fast-add" data-act="add-inline" data-id="' +
@@ -473,41 +625,11 @@
     html += '</div></div>';
     if (notesOpen) {
       html += '<div class="lp-oe-fast-extra">';
+      if (hasQs) html += this.renderQuestionFields(p.questions, draft.answers || {});
       html +=
-        '<label class="lp-oe-field">Notes<textarea class="lp-oe-notes-grow" rows="1" data-fast-notes placeholder="Optional notes (cut, timing, etc.)">' +
+        '<label class="lp-oe-field">Notes<textarea class="lp-oe-notes-grow" rows="1" data-fast-notes placeholder="Optional notes">' +
         esc(notesVal) +
         '</textarea></label>';
-      var answers = draft.answers || {};
-      (p.questions || []).forEach(function (q) {
-        html += '<label class="lp-oe-field">' + esc(q.label);
-        var qv = answers[q.key] != null ? answers[q.key] : '';
-        if (q.field_type === 'long_text') {
-          html +=
-            '<textarea data-q="' +
-            esc(q.key) +
-            '" rows="1" class="lp-oe-notes-grow">' +
-            esc(qv) +
-            '</textarea>';
-        } else if (q.field_type === 'dropdown' || q.field_type === 'radio') {
-          html += '<select data-q="' + esc(q.key) + '"><option value="">Select…</option>';
-          (q.options || []).forEach(function (o) {
-            var v = typeof o === 'string' ? o : o.value || o.label;
-            html +=
-              '<option value="' +
-              esc(v) +
-              '"' +
-              (qv === v ? ' selected' : '') +
-              '>' +
-              esc(v) +
-              '</option>';
-          });
-          html += '</select>';
-        } else {
-          html +=
-            '<input data-q="' + esc(q.key) + '" value="' + esc(qv) + '">';
-        }
-        html += '</label>';
-      });
       html += '</div>';
     }
     html += '</article>';
@@ -515,6 +637,7 @@
   };
 
   OrderStorefront.prototype.renderGrid = function (mode) {
+    var self = this;
     var products = (this.state.catalogue && this.state.catalogue.products) || [];
     var active = this.state.activeCategoryId;
     if (active) {
@@ -532,6 +655,7 @@
     html += '<div class="' + cls + '">';
     products.forEach(function (p) {
       var hasImg = !!p.image_url;
+      var pack = self.packLabel(p);
       html +=
         '<article class="lp-oe-card' +
         (hasImg ? '' : ' no-img') +
@@ -542,10 +666,9 @@
         '">';
       if (hasImg) {
         html += '<div class="lp-oe-img" style="background-image:url(\'' + esc(p.image_url) + '\')"></div>';
-      } else {
-        html += '<div class="lp-oe-img text"><span>' + esc((p.name || '?').slice(0, 1)) + '</span></div>';
       }
       html += '<div class="lp-oe-body"><h3>' + esc(p.name) + '</h3>';
+      if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
       if (p.short_description) html += '<p>' + esc(p.short_description) + '</p>';
       html += '<div class="lp-oe-price">' + esc(p.display_price) + '</div>';
       html += '<button type="button" data-open="' + esc(p.id) + '">Add</button></div></article>';
@@ -563,36 +686,30 @@
   };
 
   OrderStorefront.prototype.renderProduct = function (p) {
+    var pack = this.packLabel(p);
+    var needsW = this.needsWeight(p);
     var html = '<div class="lp-oe-detail">';
     html += '<button type="button" class="lp-oe-link" data-act="back-shop">← Back</button>';
     html += '<h3>' + esc(p.name) + '</h3>';
+    if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
     html += '<p class="lp-oe-price">' + esc(p.display_price) + '</p>';
     if (p.description || p.short_description)
       html += '<p class="lp-oe-desc">' + esc(p.description || p.short_description) + '</p>';
     html += '<div class="lp-oe-fields lp-oe-fields-app">';
     html += '<div class="lp-oe-field-row">';
-    html +=
-      '<label class="lp-oe-field">Quantity<input type="number" min="1" step="1" value="1" id="oe-qty" inputmode="numeric"></label>';
-    if (p.weight_required || p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc') {
+    html += '<label class="lp-oe-field">Quantity' + this.stepperHtml({ min: 1, step: 1, value: 1, id: 'oe-qty' }) + '</label>';
+    if (needsW) {
       html +=
-        '<label class="lp-oe-field">Approx. weight (kg)<input type="number" min="0.1" step="0.1" inputmode="decimal" id="oe-kg" placeholder="e.g. 1.2" title="100g increments"></label>';
+        '<label class="lp-oe-field">Approx. weight (kg)' +
+        this.stepperHtml({ min: 0.1, step: 0.1, value: '1.0', id: 'oe-kg' }) +
+        '</label>';
+    } else if (pack) {
+      html += '<p class="lp-oe-pack-note">Sold as ' + esc(pack) + ' packs — choose quantity only.</p>';
     }
     html +=
       '<label class="lp-oe-field">Notes<textarea id="oe-notes" class="lp-oe-notes-grow" rows="1" placeholder="Optional"></textarea></label>';
     html += '</div>';
-    (p.questions || []).forEach(function (q) {
-      html += '<label class="lp-oe-field">' + esc(q.label);
-      if (q.field_type === 'long_text') html += '<textarea data-q="' + esc(q.key) + '" rows="1" class="lp-oe-notes-grow"></textarea>';
-      else if (q.field_type === 'dropdown' || q.field_type === 'radio') {
-        html += '<select data-q="' + esc(q.key) + '"><option value="">Select…</option>';
-        (q.options || []).forEach(function (o) {
-          var v = typeof o === 'string' ? o : o.value || o.label;
-          html += '<option value="' + esc(v) + '">' + esc(v) + '</option>';
-        });
-        html += '</select>';
-      } else html += '<input data-q="' + esc(q.key) + '">';
-      html += '</label>';
-    });
+    html += this.renderQuestionFields(p.questions || {}, {});
     html += '</div>';
     html +=
       '<button type="button" class="lp-oe-primary" data-act="add-product" data-id="' +
@@ -792,6 +909,41 @@
       grow();
       ta.addEventListener('input', grow);
     });
+    this.root.querySelectorAll('.lp-oe-stepper').forEach(function (wrap) {
+      var input = wrap.querySelector('input');
+      if (!input) return;
+      var step = Number(wrap.getAttribute('data-step') || input.step || 1) || 1;
+      var min = Number(wrap.getAttribute('data-min') || input.min || 0);
+      wrap.querySelectorAll('[data-stepper-dir]').forEach(function (btn) {
+        btn.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          var dir = Number(btn.getAttribute('data-stepper-dir')) || 0;
+          var cur = Number(input.value);
+          if (!Number.isFinite(cur)) cur = min;
+          var next = Math.round((cur + dir * step) * 1000) / 1000;
+          if (next < min) next = min;
+          input.value = step < 1 ? next.toFixed(1) : String(next);
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      });
+    });
+    this.root.querySelectorAll('.lp-oe-option-chip input').forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        var chip = inp.closest('.lp-oe-option-chip');
+        if (!chip) return;
+        if (inp.type === 'radio') {
+          var name = inp.name;
+          self.root.querySelectorAll('input[name="' + name + '"]').forEach(function (r) {
+            var c = r.closest('.lp-oe-option-chip');
+            if (c) c.classList.toggle('on', r.checked);
+          });
+        } else {
+          chip.classList.toggle('on', inp.checked);
+        }
+        self.captureFastDrafts();
+      });
+    });
     this.root.querySelectorAll('[data-fast-row] input, [data-fast-row] textarea, [data-fast-row] select').forEach(function (inp) {
       inp.addEventListener('input', function () {
         self.captureFastDrafts();
@@ -970,21 +1122,12 @@
         var kgVal = kgEl && kgEl.value !== '' ? Number(kgEl.value) : (draft.kg !== '' && draft.kg != null ? Number(draft.kg) : null);
         if (product && self.needsWeight(product) && (kgVal == null || !isFinite(kgVal) || kgVal <= 0)) {
           self.state.msg = 'Enter an approximate weight in kg for ' + (product.name || 'this item') + '.';
-          self.state.notesOpen[productId] = !!self.state.notesOpen[productId];
           self.render();
           return;
         }
         var notesEl = row && row.querySelector('[data-fast-notes]');
         var notesVal = (notesEl && notesEl.value) || draft.notes || null;
-        var answers = {};
-        if (row) {
-          row.querySelectorAll('[data-q]').forEach(function (inp) {
-            answers[inp.getAttribute('data-q')] = {
-              value: inp.value,
-              label: inp.getAttribute('data-q')
-            };
-          });
-        }
+        var answers = self.collectAnswers(row || self.root);
         self.state.busy = true;
         el.disabled = true;
         try {
@@ -1013,18 +1156,20 @@
         return;
       }
       if (act === 'add-product') {
-        var answers = {};
-        self.root.querySelectorAll('[data-q]').forEach(function (inp) {
-          answers[inp.getAttribute('data-q')] = {
-            value: inp.value,
-            label: inp.getAttribute('data-q')
-          };
-        });
+        var answers = self.collectAnswers(self.root);
         var kgEl = $('#oe-kg', self.root);
         var qtyVal = Number(($('#oe-qty', self.root) || {}).value || 1);
         var kgVal = kgEl && kgEl.value ? Number(kgEl.value) : null;
         var notesVal = (($('#oe-notes', self.root) || {}).value) || null;
         var productId = el.getAttribute('data-id');
+        var product = (self.state.catalogue.products || []).find(function (p) {
+          return p.id === productId;
+        });
+        if (product && self.needsWeight(product) && (kgVal == null || !isFinite(kgVal) || kgVal <= 0)) {
+          self.state.msg = 'Enter an approximate weight in kg.';
+          self.render();
+          return;
+        }
         self.state.busy = true;
         el.disabled = true;
         try {
@@ -1150,7 +1295,7 @@
     var st = document.createElement('style');
     st.id = 'lp-oe-storefront-css';
     st.textContent = [
-      '.lp-oe{--oe-accent:var(--lp-oe-accent,var(--accent,#1f7a63));--oe-card:var(--lp-oe-card,#fffcf7);--oe-line:var(--lp-oe-line,#e4e0d8);--oe-ink:var(--lp-oe-ink,#1c241e);--oe-muted:var(--lp-oe-muted,#667066);--oe-btn:var(--lp-oe-btn-bg,var(--oe-accent));--oe-btn-text:var(--lp-oe-btn-text,#fff);--oe-radius:var(--lp-oe-radius,14px);--oe-pad:var(--lp-oe-pad,16px);--oe-maxw:var(--lp-oe-maxw,1100px);color:var(--oe-ink);font:400 14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;max-width:var(--oe-maxw);margin:0 auto;padding:var(--oe-pad);box-sizing:border-box;background:var(--lp-oe-page-bg,transparent)}',
+      '.lp-oe{--oe-accent:var(--lp-oe-accent,var(--accent,#1f7a63));--oe-card:var(--lp-oe-card,#fffcf7);--oe-line:var(--lp-oe-line,#e4e0d8);--oe-ink:var(--lp-oe-ink,#1c241e);--oe-muted:var(--lp-oe-muted,#667066);--oe-btn:var(--lp-oe-btn-bg,var(--oe-accent));--oe-btn-text:var(--lp-oe-btn-text,#fff);--oe-radius:var(--lp-oe-radius,14px);--oe-pad:var(--lp-oe-pad,16px);--oe-maxw:var(--lp-oe-maxw,1440px);color:var(--oe-ink);font:400 14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;max-width:var(--oe-maxw);margin:0 auto;padding:var(--oe-pad);box-sizing:border-box;background:var(--lp-oe-page-bg,transparent)}',
       '.lp-oe *,.lp-oe *::before,.lp-oe *::after{box-sizing:border-box}',
       '.lp-oe-ey{margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--oe-accent)}',
       '.lp-oe-brand{font-size:clamp(24px,3.6vw,34px);margin:0 0 6px;font-weight:650;letter-spacing:-.02em;line-height:1.15}',
@@ -1177,6 +1322,23 @@
       '.lp-oe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}',
       '.lp-oe-list{display:flex;flex-direction:column;gap:12px;padding:8px 4px 16px;margin:0}',
       '.lp-oe-list .lp-oe-card{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 16px}',
+      '.lp-oe-list .lp-oe-card.no-img{grid-template-columns:minmax(0,1fr) auto}',
+      '.lp-oe-card.no-img .lp-oe-body{padding-top:16px}',
+      '.lp-oe-pack{margin:0 0 4px;font-size:12px;font-weight:700;color:var(--oe-accent);letter-spacing:.02em}',
+      '.lp-oe-pack-note{margin:0;color:var(--oe-muted);font-size:13px;align-self:center}',
+      '.lp-oe input[type=number]{-moz-appearance:textfield;appearance:textfield}',
+      '.lp-oe input[type=number]::-webkit-outer-spin-button,.lp-oe input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}',
+      '.lp-oe-stepper{display:inline-flex;align-items:stretch;border:1px solid var(--oe-line);border-radius:12px;overflow:hidden;background:var(--lp-oe-input-bg,#fff);min-height:44px}',
+      '.lp-oe-stepper-btn{appearance:none;border:0;background:color-mix(in srgb,var(--oe-accent) 8%,#fff);color:var(--oe-ink);width:44px;min-width:44px;font:700 22px/1 system-ui,sans-serif;cursor:pointer;padding:0}',
+      '.lp-oe-stepper-btn:hover{background:color-mix(in srgb,var(--oe-accent) 16%,#fff)}',
+      '.lp-oe-stepper-btn:active{background:color-mix(in srgb,var(--oe-accent) 22%,#fff)}',
+      '.lp-oe-stepper input{width:64px;border:0;border-left:1px solid var(--oe-line);border-right:1px solid var(--oe-line);border-radius:0;text-align:center;font:700 15px/1.2 system-ui,sans-serif;min-height:44px;padding:0 6px;background:transparent;color:var(--oe-ink)}',
+      '.lp-oe-option-group{display:grid;gap:8px;margin:0 0 4px}',
+      '.lp-oe-option-title{margin:0;font-size:12px;font-weight:700;color:var(--oe-muted);letter-spacing:.03em;text-transform:uppercase}',
+      '.lp-oe-option-list{display:flex;flex-wrap:wrap;gap:8px}',
+      '.lp-oe-option-chip{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--oe-line);border-radius:12px;cursor:pointer;font:600 13px/1.2 system-ui,sans-serif;color:var(--oe-ink);background:#fff;user-select:none}',
+      '.lp-oe-option-chip input{accent-color:var(--oe-accent);width:16px;height:16px;margin:0}',
+      '.lp-oe-option-chip.on{border-color:var(--oe-accent);background:color-mix(in srgb,var(--oe-accent) 10%,#fff);color:var(--oe-accent)}',
       '.lp-oe-list .lp-oe-img{aspect-ratio:1;width:72px;border-radius:10px;margin:0;flex:none}',
       '.lp-oe-list .lp-oe-body{padding:0;min-width:0}',
       '.lp-oe-list .lp-oe-body h3{font-size:15px;margin:0 0 2px}',
@@ -1207,9 +1369,10 @@
       '.lp-oe-line-main{flex:1;min-width:0}',
       '.lp-oe-line-meta{margin:4px 0 0;color:var(--oe-muted);font-size:13px}',
       '.lp-oe-line-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:none}',
-      '.lp-oe-qty{display:inline-flex;align-items:center;border:1px solid var(--oe-line);border-radius:999px;overflow:hidden;background:#fff}',
-      '.lp-oe-qty-btn{appearance:none;border:0;background:transparent;width:34px;height:34px;font:700 16px/1 system-ui,sans-serif;cursor:pointer;color:var(--oe-ink)}',
-      '.lp-oe-qty-val{min-width:28px;text-align:center;font:700 13px/1 system-ui,sans-serif}',
+      '.lp-oe-qty{display:inline-flex;align-items:center;border:1px solid var(--oe-line);border-radius:12px;overflow:hidden;background:#fff;min-height:44px}',
+      '.lp-oe-qty-btn{appearance:none;border:0;background:color-mix(in srgb,var(--oe-accent) 8%,#fff);width:44px;height:44px;font:700 22px/1 system-ui,sans-serif;cursor:pointer;color:var(--oe-ink)}',
+      '.lp-oe-qty-btn:hover{background:color-mix(in srgb,var(--oe-accent) 16%,#fff)}',
+      '.lp-oe-qty-val{min-width:36px;text-align:center;font:700 16px/1 system-ui,sans-serif;padding:0 6px}',
       '.lp-oe-remove{appearance:none;border:1px solid #c45c26;background:transparent;color:#c45c26;font:600 12px/1 system-ui,sans-serif;padding:8px 12px;border-radius:999px;cursor:pointer}',
       '.lp-oe-summary{margin:14px 0;padding:14px;background:color-mix(in srgb,var(--oe-accent) 6%,#f7f3ec);border:1px solid var(--oe-line);border-radius:12px}',
       '.lp-oe-summary .row{display:flex;justify-content:space-between;gap:10px;margin:0 0 8px;font-size:14px}',
@@ -1225,18 +1388,19 @@
       '.lp-oe-fast-row{background:var(--oe-card);border:1px solid var(--oe-line);border-radius:var(--oe-radius);padding:12px 14px;box-shadow:0 8px 20px rgba(28,36,30,.04);transition:border-color .15s ease,box-shadow .15s ease}',
       '.lp-oe-fast-row.is-notes-open{border-color:color-mix(in srgb,var(--oe-accent) 35%,var(--oe-line));box-shadow:0 10px 24px rgba(28,36,30,.07)}',
       '.lp-oe-fast-main{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px 14px;align-items:center}',
-      '@media(max-width:720px){.lp-oe-fast-main{grid-template-columns:56px minmax(0,1fr);}.lp-oe-fast-controls{grid-column:1/-1;justify-content:flex-start}}',
+      '.lp-oe-fast-main.no-img{grid-template-columns:minmax(0,1fr) auto}',
+      '@media(max-width:720px){.lp-oe-fast-main{grid-template-columns:56px minmax(0,1fr);}.lp-oe-fast-main.no-img{grid-template-columns:1fr}.lp-oe-fast-controls{grid-column:1/-1;justify-content:flex-start}}',
       '.lp-oe-fast-img{width:64px;height:64px;border-radius:12px;background:#e8e2d6 center/cover no-repeat;flex:none}',
-      '.lp-oe-fast-img.text{display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#e8efe9,#f3ebe1)}',
-      '.lp-oe-fast-img.text span{font-size:22px;color:var(--oe-accent);opacity:.75}',
       '.lp-oe-fast-info{min-width:0}',
       '.lp-oe-fast-info h3{margin:0 0 2px;font-size:15.5px;line-height:1.25;letter-spacing:-.01em}',
       '.lp-oe-fast-desc{margin:0;color:var(--oe-muted);font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}',
       '.lp-oe-fast-info .lp-oe-price{margin-top:4px;font-size:13.5px}',
+      '.lp-oe-fast-packchip{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:12px;border:1px dashed var(--oe-line);color:var(--oe-accent);font:700 12px/1 system-ui,sans-serif;letter-spacing:.02em}',
+      '.lp-oe-fast-field .lp-oe-stepper{width:100%}',
+      '.lp-oe-fast-field .lp-oe-stepper input{width:52px}',
       '.lp-oe-fast-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;justify-content:flex-end}',
       '.lp-oe-fast-field{display:grid;gap:3px;font-size:10.5px;font-weight:700;color:var(--oe-muted);letter-spacing:.03em;text-transform:uppercase}',
-      '.lp-oe-fast-field input{width:72px;min-height:40px;padding:8px 10px;border-radius:10px;border:1px solid var(--lp-oe-input-border,var(--oe-line));background:var(--lp-oe-input-bg,#fff);color:var(--oe-ink);font:600 14px/1.2 system-ui,sans-serif}',
-      '.lp-oe-fast-notes-btn,.lp-oe-fast-add{appearance:none;min-height:40px;padding:0 14px;border-radius:10px;font:600 13px/1 system-ui,sans-serif;cursor:pointer}',
+      '.lp-oe-fast-notes-btn,.lp-oe-fast-add{appearance:none;min-height:44px;padding:0 16px;border-radius:12px;font:600 13px/1 system-ui,sans-serif;cursor:pointer}',
       '.lp-oe-fast-notes-btn{border:1px solid var(--oe-line);background:transparent;color:var(--oe-muted)}',
       '.lp-oe-fast-notes-btn.on{border-color:var(--oe-accent);color:var(--oe-accent);background:color-mix(in srgb,var(--oe-accent) 10%,transparent)}',
       '.lp-oe-fast-add{border:1px solid var(--oe-btn);background:var(--oe-btn);color:var(--oe-btn-text)}',
