@@ -712,6 +712,67 @@ body.embed .hub{min-height:70vh}
               </div>
             </div>
 
+            <h4 class="section-title">Customer shop (menu)</h4>
+            <p class="notice">Controls how the homepage / order shop catalogue behaves. Empty categories and categories with no enabled products are always hidden.</p>
+            <div class="grid2">
+              <div class="field"><label for="set-sf-show-all">Category chips</label>
+                <select id="set-sf-show-all">
+                  <option value="0">Category view only (recommended)</option>
+                  <option value="1">Show “All” + every category</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-sf-default-cat">Default starting category</label>
+                <select id="set-sf-default-cat">
+                  <option value="">First category with products</option>
+                </select>
+                <span class="field-hint">e.g. Turkey or Ham at Christmas — customers land here first.</span>
+              </div>
+            </div>
+
+            <h4 class="section-title">Shop look &amp; feel</h4>
+            <p class="notice">Live on the customer shop after save (also use Page editor → Order Storefront for section colours on the homepage band).</p>
+            <div class="grid2">
+              <div class="field"><label for="set-sf-maxw">Catalogue max width (px)</label>
+                <input id="set-sf-maxw" type="number" min="480" max="1600" step="10" placeholder="1100">
+              </div>
+              <div class="field"><label for="set-sf-pad">Inner padding (px)</label>
+                <input id="set-sf-pad" type="number" min="0" max="64" step="1" placeholder="16">
+              </div>
+              <div class="field"><label for="set-sf-radius">Card radius (px)</label>
+                <input id="set-sf-radius" type="number" min="0" max="32" step="1" placeholder="14">
+              </div>
+              <div class="field"><label for="set-sf-accent">Accent</label>
+                <input id="set-sf-accent" type="color" value="#1f7a63">
+              </div>
+              <div class="field"><label for="set-sf-card">Card background</label>
+                <input id="set-sf-card" type="color" value="#fffcf7">
+              </div>
+              <div class="field"><label for="set-sf-line">Border / line</label>
+                <input id="set-sf-line" type="color" value="#e4e0d8">
+              </div>
+              <div class="field"><label for="set-sf-text">Text</label>
+                <input id="set-sf-text" type="color" value="#1c241e">
+              </div>
+              <div class="field"><label for="set-sf-muted">Muted text</label>
+                <input id="set-sf-muted" type="color" value="#667066">
+              </div>
+              <div class="field"><label for="set-sf-btn">Button background</label>
+                <input id="set-sf-btn" type="color" value="#1f7a63">
+              </div>
+              <div class="field"><label for="set-sf-btnt">Button text</label>
+                <input id="set-sf-btnt" type="color" value="#ffffff">
+              </div>
+              <div class="field"><label for="set-sf-ibg">Input background</label>
+                <input id="set-sf-ibg" type="color" value="#ffffff">
+              </div>
+              <div class="field"><label for="set-sf-ibd">Input border</label>
+                <input id="set-sf-ibd" type="color" value="#e4e0d8">
+              </div>
+              <div class="field"><label for="set-sf-page">Shop page background</label>
+                <input id="set-sf-page" type="color" value="#ffffff">
+              </div>
+            </div>
+
             <h4 class="section-title">Customer payments (your account)</h4>
             <p class="notice">Connect the business Stripe account so deposit money goes to them — not the LeadPages platform account. PayPal checkout is prepared here but not live yet.</p>
             <div class="grid2">
@@ -1341,7 +1402,7 @@ body.embed .hub{min-height:70vh}
         (it.notes ? '<br>' + esc(it.notes) : '') + '</div>';
       if (needsWeight && it.price_status !== 'final') {
         html += '<div class="grid3">';
-        html += '<div class="field"><label>Actual weight (kg)</label><input type="number" min="0" step="0.01" inputmode="decimal" data-weight value="' +
+        html += '<div class="field"><label>Actual weight (kg)</label><input type="number" min="0" step="0.1" inputmode="decimal" data-weight value="' +
           esc(it.actual_weight_kg != null ? it.actual_weight_kg : (it.requested_weight_kg || '')) + '"></div>';
         html += '<div class="field"><label>Rate / unit (cents)</label><input type="number" min="0" step="1" data-rate value="' +
           esc(it.unit_price_cents != null ? it.unit_price_cents : '') + '"></div>';
@@ -1540,7 +1601,7 @@ body.embed .hub{min-height:70vh}
         '<ul class="prod-combo-list hide" data-combo-list></ul>' +
       '</div>' +
       '<div class="field" style="margin:0"><label>Qty</label><input data-f="quantity" type="number" min="1" step="1" value="1"></div>' +
-      '<div class="field" style="margin:0"><label>Weight kg</label><input data-f="requested_weight_kg" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 1.25" title="Any kg amount (10g steps on spinner)"></div>' +
+      '<div class="field" style="margin:0"><label>Weight kg</label><input data-f="requested_weight_kg" type="number" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 1.2" title="100g increments"></div>' +
       '<div class="field" style="margin:0"><label>Notes</label><input data-f="notes" placeholder="optional"></div>' +
       '<button class="btn ghost" type="button" data-remove>Remove</button>';
     host.appendChild(row);
@@ -2291,6 +2352,25 @@ body.embed .hub{min-height:70vh}
   }
 
   /* ---------- Settings ---------- */
+  function fillDefaultCategorySelect(selectedId){
+    var sel = $('set-sf-default-cat');
+    if (!sel) return;
+    var cats = state.categories || [];
+    var products = state.products || [];
+    var withEnabled = {};
+    products.forEach(function(p){
+      if (p.active === false) return;
+      if (p.category_id) withEnabled[p.category_id] = true;
+    });
+    var html = '<option value="">First category with products</option>';
+    cats.forEach(function(c){
+      if (c.active === false) return;
+      if (!withEnabled[c.id]) return;
+      html += '<option value="' + esc(c.id) + '"' + (selectedId && selectedId === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>';
+    });
+    sel.innerHTML = html;
+  }
+
   async function loadSettings(){
     if (!requireSite()) return;
     var msg = $('settings-msg');
@@ -2311,6 +2391,29 @@ body.embed .hub{min-height:70vh}
       if ($('set-stmt')) $('set-stmt').value = pay.statement_suffix || '';
       if ($('set-paypal-client')) $('set-paypal-client').value = pay.paypal_client_id || '';
       if ($('set-paypal-email')) $('set-paypal-email').value = pay.paypal_merchant_email || '';
+      var sf = (s.settings && s.settings.storefront) || {};
+      if ($('set-sf-show-all')) $('set-sf-show-all').value = sf.show_all_categories ? '1' : '0';
+      try { await loadProductsCache(); } catch (_e) {}
+      fillDefaultCategorySelect(sf.default_category_id || '');
+      var ap = sf.appearance || {};
+      function setClr(id, val, fallback){
+        var el = $(id); if (!el) return;
+        var v = (val && /^#[0-9a-fA-F]{6}$/.test(val)) ? val : fallback;
+        el.value = v;
+      }
+      if ($('set-sf-maxw')) $('set-sf-maxw').value = ap.max_width != null && ap.max_width !== '' ? ap.max_width : '';
+      if ($('set-sf-pad')) $('set-sf-pad').value = ap.padding != null && ap.padding !== '' ? ap.padding : '';
+      if ($('set-sf-radius')) $('set-sf-radius').value = ap.radius != null && ap.radius !== '' ? ap.radius : '';
+      setClr('set-sf-accent', ap.accent, '#1f7a63');
+      setClr('set-sf-card', ap.card_bg, '#fffcf7');
+      setClr('set-sf-line', ap.card_border, '#e4e0d8');
+      setClr('set-sf-text', ap.text, '#1c241e');
+      setClr('set-sf-muted', ap.muted, '#667066');
+      setClr('set-sf-btn', ap.btn_bg, '#1f7a63');
+      setClr('set-sf-btnt', ap.btn_text, '#ffffff');
+      setClr('set-sf-ibg', ap.input_bg, '#ffffff');
+      setClr('set-sf-ibd', ap.input_border, '#e4e0d8');
+      setClr('set-sf-page', ap.page_bg, '#ffffff');
       msg.textContent = 'Preset: ' + (s.industry_preset || 'custom') + ' · Role: ' + (data.role || '—');
       await loadPickupWindows();
     } catch (e) {
@@ -2339,6 +2442,37 @@ body.embed .hub{min-height:70vh}
         paypal_client_id: $('set-paypal-client') ? String($('set-paypal-client').value || '').trim() : '',
         paypal_merchant_email: $('set-paypal-email') ? String($('set-paypal-email').value || '').trim() : ''
       });
+      var defCatId = $('set-sf-default-cat') ? String($('set-sf-default-cat').value || '').trim() : '';
+      var defCat = (state.categories || []).find(function(c){ return c.id === defCatId; });
+      function numOrNull(id){
+        var el = $(id); if (!el || el.value === '') return null;
+        var n = Number(el.value); return isFinite(n) ? n : null;
+      }
+      function clr(id){
+        var el = $(id); if (!el) return '';
+        var v = String(el.value || '').trim();
+        return /^#[0-9a-fA-F]{6}$/.test(v) ? v : '';
+      }
+      var storefront = Object.assign({}, existing.storefront || {}, {
+        show_all_categories: $('set-sf-show-all') ? $('set-sf-show-all').value === '1' : false,
+        default_category_id: defCatId || null,
+        default_category_slug: defCat ? (defCat.slug || null) : null,
+        appearance: {
+          max_width: numOrNull('set-sf-maxw'),
+          padding: numOrNull('set-sf-pad'),
+          radius: numOrNull('set-sf-radius'),
+          accent: clr('set-sf-accent'),
+          card_bg: clr('set-sf-card'),
+          card_border: clr('set-sf-line'),
+          text: clr('set-sf-text'),
+          muted: clr('set-sf-muted'),
+          btn_bg: clr('set-sf-btn'),
+          btn_text: clr('set-sf-btnt'),
+          input_bg: clr('set-sf-ibg'),
+          input_border: clr('set-sf-ibd'),
+          page_bg: clr('set-sf-page')
+        }
+      });
       await api('/api/order/system', {
         method: 'POST',
         body: {
@@ -2349,7 +2483,7 @@ body.embed .hub{min-height:70vh}
           default_cutoff_value: $('set-cutoff-value').value !== '' ? Number($('set-cutoff-value').value) : null,
           customer_editing_enabled: $('set-editing').value === '1',
           enabled: $('set-enabled').value === '1',
-          settings: Object.assign({}, existing, { payments: payments })
+          settings: Object.assign({}, existing, { payments: payments, storefront: storefront })
         }
       });
       msg.textContent = 'Settings saved.';

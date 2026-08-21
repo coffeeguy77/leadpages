@@ -89,6 +89,15 @@ module.exports = async function (req, res) {
     const windows = await listWindows(system.id);
     const pickup_slots = buildPickupSlots(windows, earliest, 28);
     const paySettings = (system.settings && system.settings.payments) || {};
+    const storefrontSettings = Object.assign(
+      {
+        show_all_categories: false,
+        default_category_id: null,
+        default_category_slug: null,
+        appearance: {}
+      },
+      (system.settings && system.settings.storefront) || {}
+    );
 
     const displayProducts = (products || []).map(function (p) {
       return Object.assign({}, p, {
@@ -113,6 +122,15 @@ module.exports = async function (req, res) {
       });
     });
 
+    // Only expose categories that have at least one active product.
+    const productCatIds = {};
+    displayProducts.forEach(function (p) {
+      if (p.category_id) productCatIds[p.category_id] = true;
+    });
+    const visibleCategories = (categories || []).filter(function (c) {
+      return productCatIds[c.id];
+    });
+
     return json(res, 200, {
       site: { id: site.id, slug: site.slug, business_name: site.business_name },
       system: {
@@ -133,13 +151,14 @@ module.exports = async function (req, res) {
         capacity_per_day: system.capacity_per_day,
         customer_editing_enabled: system.customer_editing_enabled,
         has_pickup_windows: pickup_slots.length > 0,
+        storefront: storefrontSettings,
         payments: {
           provider: paySettings.provider || 'stripe',
           stripe_connected: !!(paySettings.stripe_connect_account_id || '').trim(),
           paypal_configured: !!(paySettings.paypal_client_id || '').trim()
         }
       },
-      categories: categories || [],
+      categories: visibleCategories,
       products: displayProducts,
       deposit: {
         rule: payRule,

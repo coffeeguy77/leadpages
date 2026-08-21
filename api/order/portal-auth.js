@@ -5,7 +5,7 @@
  * Public endpoints (no staff bearer); gated by slug + phone OTP / session token.
  */
 
-const { json, methodOk } = require('../../lib/order/http');
+const { json, methodOk, readBody } = require('../../lib/order/http');
 const { getAdmin } = require('../../lib/order/supabase');
 const { normaliseAuPhone } = require('../../lib/order/phone');
 const {
@@ -15,7 +15,7 @@ const {
   resolveAccessToken
 } = require('../../lib/order/tokens');
 const { queueAndSend } = require('../../lib/order/messaging');
-const { createCart, addOrUpdateItem, getCart } = require('../../lib/order/cart');
+const { createCart, addOrUpdateItem } = require('../../lib/order/cart');
 
 function sixDigitCode() {
   return String(100000 + Math.floor(Math.random() * 900000));
@@ -75,7 +75,9 @@ module.exports = async function (req, res) {
         .order('created_at', { ascending: false })
         .limit(50);
 
-      const orderIds = (orders || []).map(function (o) { return o.id; });
+      const orderIds = (orders || []).map(function (o) {
+        return o.id;
+      });
       let itemsByOrder = {};
       if (orderIds.length) {
         const { data: items } = await admin
@@ -100,7 +102,7 @@ module.exports = async function (req, res) {
       });
     }
 
-    const body = req.body || {};
+    const body = await readBody(req);
     const action = body.action || 'send_code';
     const slug = String(body.slug || '').trim();
     if (!slug) return json(res, 400, { error: 'slug_required' });
@@ -114,8 +116,12 @@ module.exports = async function (req, res) {
       if (!phone || phone.length < 11) return json(res, 400, { error: 'bad_phone' });
       const customer = await findCustomer(system.id, phone);
       if (!customer) {
-        // Do not reveal whether phone exists — still return ok after delay shape
-        return json(res, 200, { ok: true, sent: true });
+        // Privacy: do not reveal whether the phone exists.
+        return json(res, 200, {
+          ok: true,
+          sent: true,
+          message: 'If we have orders for that number, a code is on its way.'
+        });
       }
       const code = sixDigitCode();
       await storeSmsOtp({
@@ -125,7 +131,7 @@ module.exports = async function (req, res) {
         phone_e164: phone,
         code: code
       });
-      await queueAndSend({
+      const sent = await queueAndSend({
         order_system_id: system.id,
         site_id: site.id,
         customer_id: customer.id,
@@ -140,6 +146,18 @@ module.exports = async function (req, res) {
           code +
           '. It expires in 10 minutes.'
       });
+      if (sent && sent.send && sent.send.skipped) {
+        return json(res, 503, {
+          error: 'sms_not_configured',
+          message: 'SMS is not configured for this site yet. Ask the shop to enable Twilio, or use the link from your order SMS.'
+        });
+      }
+      if (sent && sent.send && sent.send.ok === false) {
+        return json(res, 502, {
+          error: 'sms_failed',
+          message: 'Could not send the SMS code. Please try again in a moment.'
+        });
+      }
       return json(res, 200, { ok: true, sent: true });
     }
 

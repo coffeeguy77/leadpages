@@ -92,7 +92,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       body: opts.body ? JSON.stringify(opts.body) : undefined
     });
     var j = null; try{ j = await r.json(); }catch(e){ j = {}; }
-    if(!r.ok) throw new Error((j && j.error) || ('HTTP '+r.status));
+    if(!r.ok) throw new Error((j && (j.message || j.error)) || ('HTTP '+r.status));
     return j;
   }
 
@@ -144,7 +144,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       if(data.can_edit){
         html += '<div class="edit-row">';
         html += '<div><label class="f">Quantity</label><input type="number" min="0" step="0.01" class="ed-qty" data-id="'+esc(it.id)+'" value="'+esc(it.quantity)+'"></div>';
-        html += '<div><label class="f">Approx. weight (kg)</label><input type="number" min="0" step="0.001" class="ed-w" data-id="'+esc(it.id)+'" value="'+(it.requested_weight_kg!=null?esc(it.requested_weight_kg):'')+'"></div>';
+        html += '<div><label class="f">Approx. weight (kg)</label><input type="number" min="0.1" step="0.1" class="ed-w" data-id="'+esc(it.id)+'" value="'+(it.requested_weight_kg!=null?esc(it.requested_weight_kg):'')+'"></div>';
         html += '</div>';
       }
       html += '</div>';
@@ -296,8 +296,16 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
         document.getElementById('otp-step2').style.display='';
         verify.style.display='inline-flex';
         send.textContent='Resend code';
+        err.textContent='';
         try{ document.getElementById('otp-code').focus(); }catch(e){}
-      }catch(e){ err.textContent=e.message||e; }
+      }catch(e){
+        var msg = (e && e.message) || String(e);
+        if(msg === 'bad_phone') msg = 'Enter a valid Australian mobile number.';
+        else if(msg === 'sms_not_configured') msg = 'SMS is not set up for this shop yet. Use the link from your order confirmation SMS, or ask the shop for help.';
+        else if(msg === 'sms_failed') msg = 'Could not send the SMS code. Please try again in a moment.';
+        else if(msg === 'slug_required') msg = 'Open this page from the shop’s “Sign in to your orders” link.';
+        err.textContent = msg;
+      }
       send.disabled=false;
     };
     verify.onclick = async function(){
@@ -311,7 +319,13 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
         try{ localStorage.setItem('lp.order.portal.'+slug, out.token); }catch(e){}
         var hist = await api('/api/order/portal-auth?token='+encodeURIComponent(out.token));
         renderHistory(hist, out.token, slug);
-      }catch(e){ err.textContent=e.message||e; verify.disabled=false; }
+      }catch(e){
+        var msg = (e && e.message) || String(e);
+        if(msg === 'invalid_code') msg = 'That code is incorrect or expired. Request a new one.';
+        else if(msg === 'bad_input') msg = 'Enter your mobile and the 6-digit code.';
+        err.textContent = msg;
+        verify.disabled=false;
+      }
     };
   }
 
