@@ -50,7 +50,7 @@ test('orders.html uses LeadPages-scale type and nav counts', function () {
   const fs = require('fs');
   const path = require('path');
   const html = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
-  assert.match(html, /font-size:14\.5px/);
+  assert.match(html, /--fs-base/);
   assert.match(html, /nav-count/);
   assert.match(html, /refreshNavCounts/);
   assert.match(html, /Active \(hide archived\)/);
@@ -58,6 +58,10 @@ test('orders.html uses LeadPages-scale type and nav counts', function () {
   assert.match(html, /batchSize/);
   assert.match(html, /order_history.*\? 12/);
   assert.match(html, /HTTP 504/);
+  assert.match(html, /prod-combo/);
+  assert.match(html, /no-pickup-select/);
+  assert.match(html, /notes-grow/);
+  assert.match(html, /kpi \.l,\s*\.kpi \.lbl/);
 });
 
 test('import API supports batched commit + archived history copy', function () {

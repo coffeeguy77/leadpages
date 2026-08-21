@@ -22,29 +22,37 @@
 :root{
   --font-display:'Fraunces',Georgia,serif;
   --font-ui:'Inter',system-ui,sans-serif;
+  --fs-xs:11px;
+  --fs-sm:12px;
+  --fs-base:13.5px;
+  --fs-md:14px;
+  --fs-lg:16px;
+  --fs-xl:18px;
+  --fs-kpi:20px;
   color-scheme:light;
 }
 html[data-theme="command-dark"],
 html[data-theme="neon-pink"],
 html[data-theme="electric-blue"]{color-scheme:dark}
 *{box-sizing:border-box}
-html{font-size:14.5px}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-ui);line-height:1.5}
-body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:antialiased;font-size:14.5px}
+html{font-size:15px}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--font-ui);line-height:1.45}
+body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:antialiased;font-size:var(--fs-base)}
 .hide{display:none!important}
 .gate{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:24px}
 .gate-card{
   width:min(420px,100%);padding:28px 26px;border-radius:16px;
   background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);
 }
-.gate-card h1{font-family:var(--font-display);font-weight:600;font-size:26px;margin:0 0 6px}
-.gate-card p{margin:0 0 16px;color:var(--ink-soft);font-size:14px;line-height:1.5}
-.gate-card label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+.gate-card h1{font-family:var(--font-display);font-weight:600;font-size:var(--fs-xl);margin:0 0 6px}
+.gate-card p{margin:0 0 16px;color:var(--ink-soft);font-size:var(--fs-base);line-height:1.5}
+.gate-card label{display:block;font-size:var(--fs-xs);font-weight:600;color:var(--ink-soft);margin:0 0 4px}
 .gate-card input{
-  width:100%;margin:0 0 12px;padding:10px 12px;border-radius:10px;
-  border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit;
+  width:100%;margin:0 0 12px;padding:9px 11px;border-radius:10px;
+  border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);
+  font:400 var(--fs-base)/1.35 var(--font-ui);
 }
-.gate-card .msg{min-height:1.2em;font-size:13px;color:var(--danger,#b91c1c);margin:0 0 10px}
+.gate-card .msg{min-height:1.2em;font-size:var(--fs-sm);color:var(--danger,#b91c1c);margin:0 0 10px}
 .hub{display:none;flex:1;min-height:0}
 .hub.on{display:flex}
 .side{
@@ -57,32 +65,32 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
   width:34px;height:34px;border-radius:10px;overflow:hidden;flex:none;
   background:color-mix(in srgb,var(--accent) 16%,transparent);
   display:flex;align-items:center;justify-content:center;
-  font-weight:700;color:var(--accent);font-size:14px;
+  font-weight:700;color:var(--accent);font-size:var(--fs-sm);
 }
-.side-brand .eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 2px}
-.side-brand h1{font-family:var(--font-display);font-size:17px;font-weight:600;margin:0;line-height:1.15}
+.side-brand .eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 2px}
+.side-brand h1{font-family:var(--font-display);font-size:var(--fs-md);font-weight:600;margin:0;line-height:1.15}
 .nav{display:flex;flex-direction:column;gap:3px;padding:14px 0;flex:1;overflow:auto}
 .nav button{
   appearance:none;width:100%;text-align:left;border:1px solid transparent;
-  background:transparent;color:var(--ink-soft);font:600 14.5px/1.25 var(--font-ui);
-  padding:10px 12px;border-radius:10px;cursor:pointer;
+  background:transparent;color:var(--ink-soft);font:600 var(--fs-base)/1.25 var(--font-ui);
+  padding:9px 12px;border-radius:10px;cursor:pointer;
   display:flex;align-items:center;justify-content:space-between;gap:8px;
 }
 .nav button .nav-label{min-width:0}
 .nav button .nav-count{
   flex:none;min-width:1.5em;padding:2px 7px;border-radius:999px;
-  font:700 11px/1.2 var(--font-ui);letter-spacing:.02em;
+  font:700 10.5px/1.2 var(--font-ui);letter-spacing:.02em;
   background:color-mix(in srgb,var(--ink) 10%,transparent);color:var(--ink-soft);
 }
 .nav button.on .nav-count{background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--ink)}
 .nav button:hover{background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--ink);border-color:color-mix(in srgb,var(--accent) 18%,transparent)}
 .nav button.on{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--ink);border-color:color-mix(in srgb,var(--accent) 28%,transparent)}
 .side-foot{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
-.who{font-size:12px;color:var(--ink-faint);padding:0 8px;word-break:break-all}
+.who{font-size:var(--fs-xs);color:var(--ink-faint);padding:0 8px;word-break:break-all}
 .side-actions{display:flex;flex-wrap:wrap;gap:6px;padding:0 4px}
 .btn{
   appearance:none;border:1px solid var(--accent);background:transparent;color:var(--accent);
-  font:600 12.5px/1 var(--font-ui);padding:9px 12px;border-radius:9px;cursor:pointer;
+  font:600 var(--fs-sm)/1 var(--font-ui);padding:8px 12px;border-radius:9px;cursor:pointer;
   text-decoration:none;display:inline-flex;align-items:center;gap:6px;
 }
 .btn:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)}
@@ -95,64 +103,77 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 .main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
 .top{
   flex:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface);
+  padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface);
 }
-.top h2{font-family:var(--font-display);font-size:19px;font-weight:520;margin:0;margin-right:auto;letter-spacing:-.015em}
-.top select{
-  min-width:200px;max-width:320px;padding:8px 10px;border-radius:9px;
-  border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit;
+.top h2{font-family:var(--font-display);font-size:var(--fs-lg);font-weight:600;margin:0;margin-right:auto;letter-spacing:-.015em}
+#site-select,
+.top select#site-select{
+  min-width:160px;max-width:min(280px,52vw);padding:6px 10px;border-radius:9px;
+  border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);
+  font:500 var(--fs-sm)/1.3 var(--font-ui) !important;
+  font-size:var(--fs-sm) !important;
+  line-height:1.3 !important;
 }
 .menu-toggle{display:none}
-.content{flex:1;min-height:0;overflow:auto;padding:18px 16px 40px}
+.content{flex:1;min-height:0;overflow:auto;padding:16px 16px 40px}
 .content-inner{width:100%;max-width:1440px;margin:0 auto}
 .view{display:none}
 .view.on{display:block}
-.kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
 .kpi{
   flex:1 1 118px;min-width:110px;max-width:200px;padding:12px 14px;border-radius:14px;
   border:1px solid var(--line);background:var(--surface);
 }
-.kpi .l{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 5px}
-.kpi .v{font-family:var(--font-display);font-size:18px;font-weight:600;margin:0;letter-spacing:-.02em}
-.card{padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:16px}
-.card h3{margin:0 0 4px;font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-.01em}
-.card .sub{margin:0 0 14px;color:var(--ink-soft);font-size:13.5px}
+.kpi .l,.kpi .lbl{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 5px}
+.kpi .v,.kpi .val{font-family:var(--font-display);font-size:var(--fs-kpi);font-weight:600;margin:0;letter-spacing:-.02em;line-height:1.15}
+.card{padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:14px}
+.card h3,.card-section-title{margin:0 0 4px;font-family:var(--font-display);font-size:var(--fs-lg);font-weight:600;letter-spacing:-.01em}
+.card h4,.section-title{margin:18px 0 8px;font-family:var(--font-display);font-size:var(--fs-md);font-weight:600;letter-spacing:-.01em;color:var(--ink)}
+.card .sub{margin:0 0 12px;color:var(--ink-soft);font-size:var(--fs-sm);line-height:1.45}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
+.toolbar input,.toolbar select,.field input,.field select,.field textarea,
+input,select,textarea{
+  font-family:var(--font-ui);
+  font-size:var(--fs-base);
+}
 .toolbar input,.toolbar select,.field input,.field select,.field textarea{
   padding:8px 10px;border-radius:9px;border:1px solid var(--line-strong);
   background:var(--input-bg,transparent);color:var(--ink);
-  font:400 13px/1.35 var(--font-ui);max-width:100%;
+  font:400 var(--fs-base)/1.35 var(--font-ui);max-width:100%;
 }
-.toolbar input{min-width:180px;flex:1}
+.toolbar input{min-width:160px;flex:1}
 .field{margin:0 0 12px}
-.field label{display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+.field label{display:block;font-size:var(--fs-xs);font-weight:600;color:var(--ink-soft);margin:0 0 4px}
 .field input,.field select,.field textarea{width:100%;max-width:520px}
-.field textarea{min-height:72px;resize:vertical;max-width:720px}
+.field textarea{min-height:38px;max-height:220px;resize:none;max-width:720px;overflow-y:hidden;line-height:1.4}
+.field textarea.notes-grow{field-sizing:content}
 .field.full input,.field.full select,.field.full textarea{max-width:100%}
-.field-hint{display:block;margin-top:4px;font-size:11.5px;color:var(--ink-faint);line-height:1.35;font-weight:500}
+.field-hint{display:block;margin-top:4px;font-size:var(--fs-xs);color:var(--ink-faint);line-height:1.35;font-weight:500}
 .radio-row{display:flex;flex-wrap:wrap;gap:8px 14px;padding-top:4px}
-.radio-row label{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;margin:0}
+.radio-row label{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-base);font-weight:500;color:var(--ink);cursor:pointer;margin:0}
 .radio-row input{width:auto;max-width:none;margin:0;accent-color:var(--accent)}
 .money-input{display:flex;align-items:center;gap:6px;max-width:220px}
-.money-input .prefix{font-weight:700;color:var(--ink-soft)}
+.money-input .prefix{font-weight:700;color:var(--ink-soft);font-size:var(--fs-base)}
 .money-input input{flex:1;max-width:none}
 .prod-img-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
 .prod-img-preview{width:88px;height:88px;border-radius:12px;border:1px solid var(--line);background:#f3efe7 center/cover no-repeat;flex:none}
 .prod-img-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .prod-cat-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;align-items:center}
+.card-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;margin-bottom:8px}
+.card-head .sub{margin:4px 0 0}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 16px}
 @media(max-width:800px){.grid2,.grid3{grid-template-columns:1fr}}
-.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
-table.oe{width:100%;border-collapse:collapse;font-size:13px}
-table.oe th,table.oe td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-table.oe th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);background:color-mix(in srgb,var(--ink) 3%,transparent)}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;-webkit-overflow-scrolling:touch}
+table.oe{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+table.oe th,table.oe td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.oe th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);background:color-mix(in srgb,var(--ink) 3%,transparent)}
 table.oe tr:last-child td{border-bottom:0}
 table.oe tr.clickable{cursor:pointer}
 table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
 .badge{
   display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;
-  font-size:11px;font-weight:700;white-space:nowrap;
+  font-size:10.5px;font-weight:700;white-space:nowrap;
 }
 .badge.muted{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink-soft)}
 .badge.ok{background:color-mix(in srgb,#16a34a 16%,transparent);color:#15803d}
@@ -160,13 +181,28 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .badge.bad{background:color-mix(in srgb,#dc2626 16%,transparent);color:#b91c1c}
 .badge.info{background:color-mix(in srgb,#2563eb 16%,transparent);color:#1d4ed8}
 .badge.purple{background:color-mix(in srgb,#7c3aed 16%,transparent);color:#6d28d9}
-.empty{padding:28px 12px;text-align:center;color:var(--ink-faint);font-size:14px}
-.notice{font-size:12.5px;color:var(--ink-soft);line-height:1.45;margin:0 0 12px}
+.empty{padding:28px 12px;text-align:center;color:var(--ink-faint);font-size:var(--fs-base)}
+.notice{font-size:var(--fs-sm);color:var(--ink-soft);line-height:1.45;margin:0 0 12px}
 .line-row{
-  display:grid;grid-template-columns:2fr 70px 90px 1fr auto;gap:8px;align-items:end;
+  display:grid;grid-template-columns:minmax(180px,2.2fr) 70px 90px 1fr auto;gap:8px;align-items:end;
   padding:10px 0;border-bottom:1px solid var(--line);
 }
-@media(max-width:700px){.line-row{grid-template-columns:1fr 1fr}}
+.prod-combo{position:relative;width:100%;max-width:100%}
+.prod-combo input[data-f="product_search"]{width:100%;max-width:none}
+.prod-combo select[data-f="product_id"]{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none}
+.prod-combo-list{
+  position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;
+  max-height:220px;overflow:auto;margin:0;padding:4px;list-style:none;
+  background:var(--surface);border:1px solid var(--line-strong);border-radius:10px;box-shadow:var(--shadow);
+}
+.prod-combo-list li{padding:8px 10px;border-radius:8px;cursor:pointer;font-size:var(--fs-sm);line-height:1.3}
+.prod-combo-list li:hover,.prod-combo-list li.on{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.prod-combo-list li.muted{color:var(--ink-faint);cursor:default}
+.prod-combo-list li.muted:hover{background:transparent}
+@media(max-width:700px){
+  .line-row{grid-template-columns:1fr 1fr}
+  .line-row .prod-combo{grid-column:1/-1}
+}
 .modal-back{
   position:fixed;inset:0;background:rgba(18,21,26,.48);z-index:80;
   display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto;
@@ -179,15 +215,15 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;
   padding:14px 16px;border-bottom:1px solid var(--line);
 }
-.modal-head h3{margin:0;font-family:var(--font-display);font-size:17px;font-weight:600;margin-right:auto}
-.modal-body{padding:16px;max-height:70vh;overflow:auto}
+.modal-head h3{margin:0;font-family:var(--font-display);font-size:var(--fs-lg);font-weight:600;margin-right:auto}
+.modal-body{padding:16px;max-height:70vh;overflow:auto;font-size:var(--fs-base)}
 .modal-foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 .item-block{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
-.item-block .meta{font-size:12px;color:var(--ink-soft);margin:4px 0 8px}
+.item-block .meta{font-size:var(--fs-sm);color:var(--ink-soft);margin:4px 0 8px}
 .toast-host{position:fixed;right:16px;bottom:16px;z-index:120;display:flex;flex-direction:column;gap:8px;max-width:min(360px,calc(100vw - 32px))}
 .toast{
   padding:12px 14px;border-radius:12px;border:1px solid var(--line);
-  background:var(--surface);box-shadow:var(--shadow);font-size:13px;line-height:1.4;
+  background:var(--surface);box-shadow:var(--shadow);font-size:var(--fs-sm);line-height:1.4;
   animation:toastIn .18s ease;
 }
 .toast.ok{border-color:color-mix(in srgb,#16a34a 40%,var(--line))}
@@ -199,14 +235,24 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 }
 .ai-opt textarea{width:100%;min-height:64px;padding:8px 10px;border-radius:8px;border:1px solid var(--line-strong);background:var(--input-bg,transparent);color:var(--ink);font:inherit}
 .actions-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+code{font-size:0.92em}
 @media (max-width:900px){
   .hub{flex-direction:column}
   .side{width:100%;border-right:0;border-bottom:1px solid var(--line);padding:10px 12px}
   .side.collapsed .nav,.side.collapsed .side-foot{display:none}
   .menu-toggle{display:inline-flex}
   .nav{flex-direction:row;flex-wrap:wrap;padding:10px 0}
-  .nav button{width:auto;flex:1 1 calc(50% - 4px)}
+  .nav button{width:auto;flex:1 1 calc(50% - 4px);font-size:var(--fs-sm);padding:8px 10px}
   .kpi{max-width:none}
+  .top h2{font-size:var(--fs-md)}
+  #site-select,.top select#site-select{max-width:min(220px,48vw);font-size:var(--fs-xs)!important}
+  .content{padding:12px 12px 32px}
+  .card{padding:14px}
+}
+@media (max-width:520px){
+  .nav button{flex:1 1 100%}
+  .toolbar input{min-width:0;width:100%}
+  table.oe th,table.oe td{padding:8px 6px}
 }
 body.embed .side-actions a[href="/command"]{display:none}
 body.embed .gate{min-height:60vh}
@@ -313,16 +359,23 @@ body.embed .hub{min-height:70vh}
       <section class="view" id="view-new" data-view="new">
         <div class="card">
           <h3>New order</h3>
-          <p class="sub">Create a staff order for the selected site.</p>
+          <p class="sub">Create a staff order for the selected site. Search products by name, or pick from the list.</p>
           <form id="new-order-form">
             <div class="grid2">
               <div class="field"><label for="no-name">Customer name *</label><input id="no-name" required></div>
               <div class="field"><label for="no-phone">Phone</label><input id="no-phone" type="tel"></div>
               <div class="field"><label for="no-email">Email</label><input id="no-email" type="email"></div>
-              <div class="field"><label for="no-pickup">Pickup date</label><input id="no-pickup" type="date"></div>
+              <div class="field" id="no-pickup-wrap">
+                <label for="no-pickup">Pickup date</label>
+                <select id="no-pickup-select" class="hide"></select>
+                <input id="no-pickup" type="date">
+                <span class="field-hint" id="no-pickup-hint">Uses a free date picker when no pickup windows are set.</span>
+              </div>
             </div>
-            <div class="field"><label for="no-notes">Notes</label><textarea id="no-notes"></textarea></div>
-            <h3 style="margin:8px 0 10px;font-family:var(--font-display);font-size:1.05rem">Line items</h3>
+            <div class="field full"><label for="no-notes">Notes</label>
+              <textarea id="no-notes" class="notes-grow" rows="1" placeholder="Optional order notes"></textarea>
+            </div>
+            <h4 class="section-title">Line items</h4>
             <div id="no-lines"></div>
             <div class="actions-row">
               <button class="btn ghost" type="button" id="no-add-line">Add line</button>
@@ -336,23 +389,23 @@ body.embed .hub{min-height:70vh}
       <!-- Products -->
       <section class="view" id="view-products" data-view="products">
         <div class="card">
-          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+          <div class="card-head">
             <div>
               <h3>Products</h3>
-              <p class="sub" style="margin:0">Catalogue for this order system. Butcher names like <code>BEEF - Brisket</code> can be matched to categories automatically.</p>
+              <p class="sub">Catalogue for this order system. Butcher names like <code>BEEF - Brisket</code> can be matched to categories automatically.</p>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div class="actions-row" style="margin:0">
               <button class="btn ghost" type="button" id="prod-auto-cat" title="Create Beef/Chicken/Ham… categories and assign from product names">Match categories</button>
               <button class="btn solid" type="button" id="prod-new">New product</button>
             </div>
           </div>
           <div class="prod-cat-bar">
             <label class="field" style="margin:0;min-width:200px;flex:1">
-              <span style="display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin:0 0 4px">Category filter</span>
+              <span class="field-hint" style="margin:0 0 4px">Category filter</span>
               <select id="prod-cat-filter" style="max-width:280px"><option value="">All categories</option></select>
             </label>
             <label class="field" style="margin:0;min-width:180px;flex:1">
-              <span style="display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin:0 0 4px">Search</span>
+              <span class="field-hint" style="margin:0 0 4px">Search</span>
               <input id="prod-q" placeholder="Find a product…" style="max-width:280px">
             </label>
           </div>
@@ -659,7 +712,7 @@ body.embed .hub{min-height:70vh}
               </div>
             </div>
 
-            <h4 style="margin:22px 0 8px">Customer payments (your account)</h4>
+            <h4 class="section-title">Customer payments (your account)</h4>
             <p class="notice">Connect the business Stripe account so deposit money goes to them — not the LeadPages platform account. PayPal checkout is prepared here but not live yet.</p>
             <div class="grid2">
               <div class="field"><label for="set-pay-provider">Payment provider</label>
@@ -781,6 +834,7 @@ body.embed .hub{min-height:70vh}
     siteId: '',
     products: [],
     categories: [],
+    pickupWindows: [],
     currentView: 'dashboard',
     detail: null,
     navCounts: { customers: null, orders: null, new_orders: null, archived: null }
@@ -792,6 +846,95 @@ body.embed .hub{min-height:70vh}
     return String(s == null ? '' : s)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
       .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function autoGrowNotes(el){
+    if (!el) return;
+    el.style.height = 'auto';
+    var next = Math.min(Math.max(el.scrollHeight, 38), 220);
+    el.style.height = next + 'px';
+  }
+
+  function wireNotesGrow(root){
+    (root || document).querySelectorAll('textarea.notes-grow').forEach(function(ta){
+      if (ta._notesGrowWired) return;
+      ta._notesGrowWired = true;
+      ta.setAttribute('rows', '1');
+      autoGrowNotes(ta);
+      ta.addEventListener('input', function(){ autoGrowNotes(ta); });
+    });
+  }
+
+  function isoDate(d){
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
+  function parseIsoDate(s){
+    var p = String(s || '').slice(0, 10).split('-');
+    if (p.length !== 3) return null;
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  /** Build upcoming pickup date options from configured windows (or empty → use calendar). */
+  function upcomingPickupOptions(windows, daysAhead){
+    var active = (windows || []).filter(function(w){ return w && w.active !== false; });
+    if (!active.length) return [];
+    var today = new Date(); today.setHours(0,0,0,0);
+    var horizon = daysAhead || 60;
+    var map = {};
+    active.forEach(function(w){
+      var start = String(w.window_start || '').slice(0, 5);
+      var end = String(w.window_end || '').slice(0, 5);
+      var timeBit = (start && end) ? (' · ' + start + '–' + end) : '';
+      if (w.specific_date) {
+        var sd = String(w.specific_date).slice(0, 10);
+        var d0 = parseIsoDate(sd);
+        if (!d0 || d0 < today) return;
+        if (!map[sd]) map[sd] = sd + timeBit;
+        return;
+      }
+      if (w.weekday == null || w.weekday === '') return;
+      var want = Number(w.weekday);
+      for (var i = 0; i <= horizon; i++) {
+        var d = new Date(today); d.setDate(today.getDate() + i);
+        if (d.getDay() !== want) continue;
+        var key = isoDate(d);
+        if (!map[key]) map[key] = key + timeBit;
+      }
+    });
+    return Object.keys(map).sort().map(function(k){ return { value: k, label: map[k] }; });
+  }
+
+  async function refreshPickupDateControl(){
+    var sel = $('no-pickup-select');
+    var input = $('no-pickup');
+    var hint = $('no-pickup-hint');
+    if (!sel || !input) return;
+    var opts = upcomingPickupOptions(state.pickupWindows, 60);
+    if (opts.length) {
+      var cur = input.value || sel.value || '';
+      sel.innerHTML = '<option value="">Choose pickup date…</option>' + opts.map(function(o){
+        return '<option value="' + esc(o.value) + '"' + (o.value === cur ? ' selected' : '') + '>' + esc(o.label) + '</option>';
+      }).join('');
+      sel.classList.remove('hide');
+      input.classList.add('hide');
+      if (hint) hint.textContent = 'Pickup windows are set — choose an allowed date.';
+      sel.onchange = function(){ input.value = sel.value || ''; };
+      if (cur && opts.some(function(o){ return o.value === cur; })) {
+        sel.value = cur; input.value = cur;
+      } else {
+        input.value = '';
+      }
+    } else {
+      sel.classList.add('hide');
+      input.classList.remove('hide');
+      if (hint) hint.textContent = 'No pickup windows set — use the calendar date picker.';
+      sel.onchange = null;
+    }
   }
 
   function formatAud(cents){
@@ -1198,7 +1341,7 @@ body.embed .hub{min-height:70vh}
         (it.notes ? '<br>' + esc(it.notes) : '') + '</div>';
       if (needsWeight && it.price_status !== 'final') {
         html += '<div class="grid3">';
-        html += '<div class="field"><label>Actual weight (kg)</label><input type="number" min="0" step="0.001" data-weight value="' +
+        html += '<div class="field"><label>Actual weight (kg)</label><input type="number" min="0" step="0.01" inputmode="decimal" data-weight value="' +
           esc(it.actual_weight_kg != null ? it.actual_weight_kg : (it.requested_weight_kg || '')) + '"></div>';
         html += '<div class="field"><label>Rate / unit (cents)</label><input type="number" min="0" step="1" data-rate value="' +
           esc(it.unit_price_cents != null ? it.unit_price_cents : '') + '"></div>';
@@ -1307,14 +1450,82 @@ body.embed .hub{min-height:70vh}
     if (!host.children.length) addNewLine();
   }
 
+  function productLabel(p){
+    return (p.name || '') + (p.pricing_method === 'per_weight' ? ' (per kg)' : p.pricing_method === 'price_tbc' ? ' (TBC)' : '');
+  }
+
   function productOptionsHtml(selected){
     var opts = '<option value="">Select product…</option>';
     (state.products || []).filter(function(p){ return p.active !== false; }).forEach(function(p){
       opts += '<option value="' + esc(p.id) + '"' + (selected === p.id ? ' selected' : '') + '>' +
-        esc(p.name) + (p.pricing_method === 'per_weight' ? ' (per kg)' : p.pricing_method === 'price_tbc' ? ' (TBC)' : '') +
-        '</option>';
+        esc(productLabel(p)) + '</option>';
     });
     return opts;
+  }
+
+  function filterProducts(q){
+    var needle = String(q || '').trim().toLowerCase();
+    return (state.products || []).filter(function(p){
+      if (p.active === false) return false;
+      if (!needle) return true;
+      return String(p.name || '').toLowerCase().indexOf(needle) >= 0 ||
+        String(p.sku || '').toLowerCase().indexOf(needle) >= 0 ||
+        String(categoryName(p.category_id) || '').toLowerCase().indexOf(needle) >= 0;
+    }).slice(0, 40);
+  }
+
+  function wireProductCombo(row){
+    var wrap = row.querySelector('.prod-combo');
+    if (!wrap) return;
+    var search = wrap.querySelector('[data-f="product_search"]');
+    var sel = wrap.querySelector('[data-f="product_id"]');
+    var list = wrap.querySelector('[data-combo-list]');
+    if (!search || !sel || !list) return;
+
+    function closeList(){ list.classList.add('hide'); list.innerHTML = ''; }
+
+    function choose(p){
+      sel.value = p.id;
+      search.value = productLabel(p);
+      closeList();
+    }
+
+    function renderList(q){
+      var items = filterProducts(q);
+      if (!items.length) {
+        list.innerHTML = '<li class="muted">No matching products</li>';
+        list.classList.remove('hide');
+        return;
+      }
+      list.innerHTML = items.map(function(p){
+        return '<li data-id="' + esc(p.id) + '">' + esc(productLabel(p)) + '</li>';
+      }).join('');
+      list.classList.remove('hide');
+      list.querySelectorAll('li[data-id]').forEach(function(li){
+        li.addEventListener('mousedown', function(ev){
+          ev.preventDefault();
+          var p = (state.products || []).find(function(x){ return x.id === li.getAttribute('data-id'); });
+          if (p) choose(p);
+        });
+      });
+    }
+
+    search.addEventListener('focus', function(){ renderList(search.value); });
+    search.addEventListener('input', function(){
+      sel.value = '';
+      renderList(search.value);
+    });
+    search.addEventListener('keydown', function(ev){
+      if (ev.key === 'Escape') { closeList(); return; }
+      if (ev.key === 'Enter') {
+        var first = list.querySelector('li[data-id]');
+        if (first && !list.classList.contains('hide')) {
+          ev.preventDefault();
+          first.dispatchEvent(new Event('mousedown'));
+        }
+      }
+    });
+    search.addEventListener('blur', function(){ setTimeout(closeList, 150); });
   }
 
   function addNewLine(){
@@ -1322,12 +1533,18 @@ body.embed .hub{min-height:70vh}
     var row = document.createElement('div');
     row.className = 'line-row';
     row.innerHTML =
-      '<div class="field" style="margin:0"><label>Product</label><select data-f="product_id">' + productOptionsHtml() + '</select></div>' +
+      '<div class="field prod-combo" style="margin:0">' +
+        '<label>Product</label>' +
+        '<input data-f="product_search" type="search" autocomplete="off" placeholder="Search or pick a product…" aria-autocomplete="list">' +
+        '<select data-f="product_id" tabindex="-1" aria-hidden="true">' + productOptionsHtml() + '</select>' +
+        '<ul class="prod-combo-list hide" data-combo-list></ul>' +
+      '</div>' +
       '<div class="field" style="margin:0"><label>Qty</label><input data-f="quantity" type="number" min="1" step="1" value="1"></div>' +
-      '<div class="field" style="margin:0"><label>Weight kg</label><input data-f="requested_weight_kg" type="number" min="0" step="0.001" placeholder="opt"></div>' +
+      '<div class="field" style="margin:0"><label>Weight kg</label><input data-f="requested_weight_kg" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 1.25" title="Any kg amount (10g steps on spinner)"></div>' +
       '<div class="field" style="margin:0"><label>Notes</label><input data-f="notes" placeholder="optional"></div>' +
       '<button class="btn ghost" type="button" data-remove>Remove</button>';
     host.appendChild(row);
+    wireProductCombo(row);
     row.querySelector('[data-remove]').addEventListener('click', function(){
       if (host.children.length <= 1) { toast('Keep at least one line', 'err'); return; }
       host.removeChild(row);
@@ -1335,9 +1552,16 @@ body.embed .hub{min-height:70vh}
   }
 
   function refreshNewLineProductSelects(){
-    $('no-lines').querySelectorAll('select[data-f="product_id"]').forEach(function(sel){
+    $('no-lines').querySelectorAll('.line-row').forEach(function(row){
+      var sel = row.querySelector('select[data-f="product_id"]');
+      var search = row.querySelector('[data-f="product_search"]');
+      if (!sel) return;
       var cur = sel.value;
       sel.innerHTML = productOptionsHtml(cur);
+      if (cur) {
+        var p = (state.products || []).find(function(x){ return x.id === cur; });
+        if (search && p) search.value = productLabel(p);
+      }
     });
   }
 
@@ -2160,11 +2384,14 @@ body.embed .hub{min-height:70vh}
   var PW_DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   async function loadPickupWindows(){
     var tb = $('pw-tbody');
-    if (!tb || !state.siteId) return;
-    tb.innerHTML = '<tr><td colspan="4">Loading…</td></tr>';
+    if (!state.siteId) return;
+    if (tb) tb.innerHTML = '<tr><td colspan="4">Loading…</td></tr>';
     try {
       var data = await api('/api/order/fulfilment-windows?' + siteQuery());
       var rows = data.windows || [];
+      state.pickupWindows = rows;
+      await refreshPickupDateControl();
+      if (!tb) return;
       if (!rows.length) {
         tb.innerHTML = '<tr><td colspan="4" class="empty">No pickup windows yet — add weekday hours so customers can choose a slot.</td></tr>';
         return;
@@ -2194,7 +2421,9 @@ body.embed .hub{min-height:70vh}
         });
       });
     } catch (e) {
-      tb.innerHTML = '<tr><td colspan="4" class="empty">' + esc((e && e.message) || String(e)) + '</td></tr>';
+      state.pickupWindows = [];
+      await refreshPickupDateControl();
+      if (tb) tb.innerHTML = '<tr><td colspan="4" class="empty">' + esc((e && e.message) || String(e)) + '</td></tr>';
     }
   }
   async function addPickupWindow(){
@@ -2254,8 +2483,18 @@ body.embed .hub{min-height:70vh}
     tbody.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
     try {
       var data = await api('/api/order/calendar?' + siteQuery());
-      var days = data.days || [];
+      var cutoff = new Date();
+      cutoff.setHours(0,0,0,0);
+      cutoff.setDate(cutoff.getDate() - 30);
+      var days = (data.days || []).filter(function(d){
+        var dt = parseIsoDate(d.date);
+        return !dt || dt >= cutoff;
+      });
       empty.classList.toggle('hide', !!days.length);
+      if (!days.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty">No pickup dates in the last 30 days or upcoming.</td></tr>';
+        return;
+      }
       tbody.innerHTML = days.map(function(d){
         var cap = d.capacity && d.capacity.max != null
           ? ((d.capacity.used||0) + ' / ' + d.capacity.max)
@@ -2266,10 +2505,10 @@ body.embed .hub{min-height:70vh}
           '<td>' + esc(d.known_value) + '</td>' +
           '<td>' + esc(d.deposits) + '</td>' +
           '<td>' + esc(cap) + '</td>' +
-          '<td>' + (d.locked ? '<span class="badge b-locked">Locked</span>' : '<span class="badge b-open">Open</span>') + '</td>' +
+          '<td>' + (d.locked ? '<span class="badge warn">Locked</span>' : '<span class="badge ok">Open</span>') + '</td>' +
           '<td><button class="btn ghost" type="button" data-lock-date="' + esc(d.date) + '">Lock date</button> ' +
           '<button class="btn ghost" type="button" data-goto-supply="' + esc(d.date) + '">Supply</button></td></tr>';
-      }).join('') || '<tr><td colspan="7">No dates</td></tr>';
+      }).join('');
       tbody.querySelectorAll('[data-lock-date]').forEach(function(b){
         b.addEventListener('click', async function(){
           if (!confirm('Lock all orders for ' + b.getAttribute('data-lock-date') + '? Customers will not be able to edit.')) return;
@@ -2428,14 +2667,14 @@ body.embed .hub{min-height:70vh}
       var data = await api('/api/order/payments?' + siteQuery());
       var s = data.summary || {};
       kpis.innerHTML =
-        '<div class="kpi"><div class="lbl">Payments</div><div class="val">' + esc(s.count) + '</div></div>' +
-        '<div class="kpi"><div class="lbl">Paid</div><div class="val">' + esc(s.paid_count) + '</div></div>' +
-        '<div class="kpi"><div class="lbl">Collected</div><div class="val">' + esc(s.paid_total) + '</div></div>';
+        '<div class="kpi"><p class="l">Payments</p><p class="v">' + esc(s.count) + '</p></div>' +
+        '<div class="kpi"><p class="l">Paid</p><p class="v">' + esc(s.paid_count) + '</p></div>' +
+        '<div class="kpi"><p class="l">Collected</p><p class="v">' + esc(s.paid_total) + '</p></div>';
       tbody.innerHTML = (data.payments || []).map(function(p){
         return '<tr><td>' + esc((p.paid_at || p.created_at || '').slice(0, 16).replace('T', ' ')) +
           '</td><td>' + esc(p.kind) + '</td><td>' + esc(p.status) +
           '</td><td>' + formatAud(p.amount_cents) + '</td><td>' + esc(p.order_id || '—') + '</td></tr>';
-      }).join('') || '<tr><td colspan="5">No payments</td></tr>';
+      }).join('') || '<tr><td colspan="5" class="empty">No payments</td></tr>';
     } catch (e) {
       tbody.innerHTML = '<tr><td colspan="5">' + esc((e && e.message) || e) + '</td></tr>';
     }
@@ -2450,18 +2689,18 @@ body.embed .hub{min-height:70vh}
       var data = await api('/api/order/abandoned?' + siteQuery());
       var a = data.analytics || {};
       kpis.innerHTML =
-        '<div class="kpi"><div class="lbl">Created</div><div class="val">' + esc(a.carts_created) + '</div></div>' +
-        '<div class="kpi"><div class="lbl">Converted</div><div class="val">' + esc(a.converted) + '</div></div>' +
-        '<div class="kpi"><div class="lbl">Abandoned</div><div class="val">' + esc(a.abandoned) + '</div></div>' +
-        '<div class="kpi"><div class="lbl">Recovered</div><div class="val">' + esc(a.recovered) + '</div></div>' +
-        '<div class="kpi"><div class="lbl">Recovery rate</div><div class="val">' + esc(a.recovery_rate) + '%</div></div>' +
-        '<div class="kpi"><div class="lbl">Recovered $</div><div class="val">' + esc(a.recovered_revenue) + '</div></div>';
+        '<div class="kpi"><p class="l">Created</p><p class="v">' + esc(a.carts_created) + '</p></div>' +
+        '<div class="kpi"><p class="l">Converted</p><p class="v">' + esc(a.converted) + '</p></div>' +
+        '<div class="kpi"><p class="l">Abandoned</p><p class="v">' + esc(a.abandoned) + '</p></div>' +
+        '<div class="kpi"><p class="l">Recovered</p><p class="v">' + esc(a.recovered) + '</p></div>' +
+        '<div class="kpi"><p class="l">Recovery rate</p><p class="v">' + esc(a.recovery_rate) + '%</p></div>' +
+        '<div class="kpi"><p class="l">Recovered $</p><p class="v">' + esc(a.recovered_revenue) + '</p></div>';
       tbody.innerHTML = (data.carts || []).map(function(c){
         return '<tr><td>' + esc((c.updated_at || '').slice(0, 16).replace('T', ' ')) +
           '</td><td>' + esc(c.status) + '</td><td>' + esc(c.item_count) +
           '</td><td>' + formatAud(c.known_subtotal_cents) +
           '</td><td>' + esc(c.guest_name || c.guest_phone || c.guest_email || '—') + '</td></tr>';
-      }).join('') || '<tr><td colspan="5">No carts yet</td></tr>';
+      }).join('') || '<tr><td colspan="5" class="empty">No carts yet</td></tr>';
     } catch (e) {
       tbody.innerHTML = '<tr><td colspan="5">' + esc((e && e.message) || e) + '</td></tr>';
     }
@@ -2487,8 +2726,11 @@ body.embed .hub{min-height:70vh}
       else if (v === 'orders') await loadOrders();
       else if (v === 'new') {
         try { await loadProductsCache(); } catch (_e) {}
+        try { await loadPickupWindows(); } catch (_e2) {}
         refreshNewLineProductSelects();
         ensureNewLines();
+        wireNotesGrow($('view-new'));
+        await refreshPickupDateControl();
       }
       else if (v === 'products') await loadProductsView();
       else if (v === 'calendar') await loadCalendar();
@@ -2654,6 +2896,7 @@ body.embed .hub{min-height:70vh}
   });
 
   bootSession();
+  wireNotesGrow(document);
 })();
 </script>
 </body>
