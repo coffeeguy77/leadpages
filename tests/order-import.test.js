@@ -56,6 +56,8 @@ test('orders.html uses LeadPages-scale type and nav counts', function () {
   assert.match(html, /Active \(hide archived\)/);
   assert.match(html, /offset:\s*offset/);
   assert.match(html, /batchSize/);
+  assert.match(html, /order_history.*\? 12/);
+  assert.match(html, /HTTP 504/);
 });
 
 test('import API supports batched commit + archived history copy', function () {
@@ -65,7 +67,25 @@ test('import API supports batched commit + archived history copy', function () {
   const lib = fs.readFileSync(path.join(__dirname, '..', 'lib/order/import.js'), 'utf8');
   assert.match(api, /finalize_run/);
   assert.match(api, /next_offset/);
+  assert.match(api, /readBody/);
   assert.match(lib, /status:\s*'archived'/);
   assert.match(lib, /next_offset/);
   assert.match(lib, /limit/);
+  assert.match(lib, /importBudgetMs/);
+  assert.match(lib, /loadImportCaches/);
+  assert.match(lib, /groupOrderHistoryRows/);
+});
+
+test('groupOrderHistoryRows groups butcher lines by order + phone', function () {
+  const { groupOrderHistoryRows, PRESET_BUTCHER_LINE_ITEMS } = require('../lib/order/import-parse');
+  const { normaliseAuPhone } = require('../lib/order/phone');
+  const rows = [
+    ['Jenny', 'WELLS', '0432 807 378', '22/12/2025', '8958', 'BEEF - Brisket', '3.5 kg', '1', '', ''],
+    ['Jenny', 'WELLS', '0432 807 378', '22/12/2025', '8958', 'HAM - Half', '2 kg', '1', '', ''],
+    ['Angela', 'ADAMS', '0406 346 819', '22/12/2025', '8605', 'BEEF - Scotch', '2 kg', '1', '', '']
+  ];
+  const grouped = groupOrderHistoryRows(rows, PRESET_BUTCHER_LINE_ITEMS.mapping, false, normaliseAuPhone);
+  assert.equal(grouped.keys.length, 2);
+  assert.equal(grouped.groups[grouped.keys[0]].lines.length, 2);
+  assert.equal(grouped.groups[grouped.keys[1]].lines.length, 1);
 });

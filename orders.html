@@ -512,7 +512,7 @@ body.embed .hub{min-height:70vh}
       <section class="view" id="view-import" data-view="import">
         <div class="card">
           <h3>Import</h3>
-          <p class="sub">Upload a CSV and map columns. For past Griffith-style exports use <strong>Order history</strong> + <strong>Butchery line items</strong> — historical orders are saved as <strong>archived</strong> (reorderable, not in the active queue). Large files import in batches to avoid timeouts.</p>
+          <p class="sub">Upload a CSV and map columns. For past Griffith-style exports use <strong>Order history</strong> + <strong>Butchery line items</strong> — historical orders are saved as <strong>archived</strong> (reorderable, not in the active queue). Large files import in small batches (~12 orders) and auto-retry if a batch times out.</p>
           <div class="grid2">
             <div class="field"><label for="imp-kind">Import type</label>
               <select id="imp-kind">
@@ -1838,28 +1838,44 @@ body.embed .hub{min-height:70vh}
       importState.mapping = map;
       var kind = $('imp-kind').value;
       var offset = 0;
-      var batchSize = 80;
+      // Order history: small batches — each order is many DB writes; server also returns early before gateway 504.
+      var batchSize = kind === 'order_history' ? 12 : 80;
       var totals = {};
       var batch = 0;
+      var stalled = 0;
       while (true) {
         batch += 1;
-        msg.textContent = 'Importing batch ' + batch + ' (from row ' + (offset + 1) + ')…';
-        var r = await api('/api/order/import', {
-          method: 'POST',
-          body: {
-            site_id: state.siteId,
-            action: 'commit',
-            kind: kind,
-            has_header: $('imp-header').checked,
-            csv_text: importState.csv_text,
-            filename: importState.filename,
-            mapping: importState.mapping,
-            create_missing_products: $('imp-create-products').checked,
-            offset: offset,
-            limit: batchSize,
-            finalize: false
+        var progLabel = kind === 'order_history' ? 'order groups' : 'rows';
+        msg.textContent = 'Importing batch ' + batch + ' (from ' + progLabel + ' ' + (offset + 1) + ', size ' + batchSize + ')…';
+        var r;
+        try {
+          r = await api('/api/order/import', {
+            method: 'POST',
+            body: {
+              site_id: state.siteId,
+              action: 'commit',
+              kind: kind,
+              has_header: $('imp-header').checked,
+              csv_text: importState.csv_text,
+              filename: importState.filename,
+              mapping: importState.mapping,
+              create_missing_products: $('imp-create-products').checked,
+              offset: offset,
+              limit: batchSize,
+              finalize: false
+            }
+          });
+        } catch (batchErr) {
+          var em = String((batchErr && batchErr.message) || batchErr);
+          // Gateway timeout — shrink batch and retry same offset (safe: skips already-imported external order numbers).
+          if (/HTTP 504|504|timeout|Gateway/i.test(em) && batchSize > 3) {
+            batchSize = Math.max(3, Math.floor(batchSize / 2));
+            msg.textContent = 'Timed out — retrying with smaller batches (' + batchSize + ')…';
+            await new Promise(function(resolve){ setTimeout(resolve, 800); });
+            continue;
           }
-        });
+          throw batchErr;
+        }
         var st = r.stats || {};
         Object.keys(st).forEach(function(k){
           if (k === 'errors' && Array.isArray(st[k])) {
@@ -1870,8 +1886,15 @@ body.embed .hub{min-height:70vh}
         });
         $('imp-stats').textContent = JSON.stringify({ batch: batch, progress: r.progress || null, totals: totals }, null, 2);
         if (r.done) break;
-        offset = r.next_offset != null ? r.next_offset : (offset + batchSize);
-        if (batch > 500) throw new Error('Import stopped after too many batches — try a smaller file');
+        var next = r.next_offset != null ? r.next_offset : (offset + batchSize);
+        if (next <= offset) {
+          stalled += 1;
+          if (stalled >= 3) throw new Error('Import made no progress — try again or split the CSV');
+        } else {
+          stalled = 0;
+        }
+        offset = next;
+        if (batch > 2000) throw new Error('Import stopped after too many batches — try a smaller file');
       }
       // Write import run summary
       try {

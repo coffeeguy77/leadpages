@@ -1,6 +1,6 @@
 'use strict';
 
-const { json, methodOk } = require('../../lib/order/http');
+const { json, methodOk, readBody } = require('../../lib/order/http');
 const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/order/auth');
 const {
   previewImport,
@@ -27,7 +27,7 @@ module.exports = async function (req, res) {
       });
     }
 
-    const body = req.body || {};
+    const body = await readBody(req);
     const siteId = body.site_id || (req.query && req.query.site_id);
     const access = await assertSiteAccess(user, siteId);
     if (!access.ok) return json(res, access.code, { error: access.error });
@@ -76,6 +76,9 @@ module.exports = async function (req, res) {
       if (!body.mapping || !Object.keys(body.mapping).length) {
         return json(res, 400, { error: 'mapping_required' });
       }
+      // Default small batches for order history (many DB round-trips per order).
+      var limit = body.limit;
+      if (kind === 'order_history' && (limit == null || limit === '')) limit = 12;
       const result = await commitImport({
         kind: kind,
         system: system,
@@ -87,7 +90,7 @@ module.exports = async function (req, res) {
         filename: body.filename || null,
         actor_id: user.id,
         offset: body.offset,
-        limit: body.limit,
+        limit: limit,
         finalize: body.finalize
       });
       return json(res, 200, {
@@ -105,3 +108,5 @@ module.exports = async function (req, res) {
     return json(res, 500, { error: String((e && e.message) || e) });
   }
 };
+
+module.exports.config = { maxDuration: 60 };
