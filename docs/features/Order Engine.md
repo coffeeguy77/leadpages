@@ -42,7 +42,9 @@ Workflow: `Cart → Order → Deposit → Customer Editing → Cutoff → Lock �
 4. Optional: Dashboard → tick **Show Orders widget** for a new-orders snapshot
 5. Optional: Orders → **Import** → Butchery line items preset → map/preview → commit history
 6. Stripe webhook: `POST /api/order/webhook` + `STRIPE_ORDER_WEBHOOK_SECRET`
-6. Optional SMS: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`
+6. Optional SMS (portal OTP + order texts):
+   - Prefer Quote Builder setup: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID`
+   - Or Messages API: same SID/token plus `TWILIO_FROM_NUMBER` (E.164)
 
 ---
 

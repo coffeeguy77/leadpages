@@ -14,7 +14,7 @@ const {
   createCustomerSessionToken,
   resolveAccessToken
 } = require('../../lib/order/tokens');
-const { queueAndSend } = require('../../lib/order/messaging');
+const { queueAndSend, twilioOtpConfigured, sendPortalOtpSms, checkPortalOtpSms } = require('../../lib/order/messaging');
 const { createCart, addOrUpdateItem } = require('../../lib/order/cart');
 
 function sixDigitCode() {
@@ -114,6 +114,13 @@ module.exports = async function (req, res) {
     if (action === 'send_code') {
       const phone = normaliseAuPhone(body.phone);
       if (!phone || phone.length < 11) return json(res, 400, { error: 'bad_phone' });
+      if (!twilioOtpConfigured()) {
+        return json(res, 503, {
+          error: 'sms_not_configured',
+          message:
+            'SMS is not configured yet. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and either TWILIO_VERIFY_SERVICE_SID (same as Quote Builder) or TWILIO_FROM_NUMBER.'
+        });
+      }
       const customer = await findCustomer(system.id, phone);
       if (!customer) {
         // Privacy: do not reveal whether the phone exists.
@@ -123,14 +130,43 @@ module.exports = async function (req, res) {
           message: 'If we have orders for that number, a code is on its way.'
         });
       }
+
+      const useVerify = !!process.env.TWILIO_VERIFY_SERVICE_SID;
       const code = sixDigitCode();
+      // Always store a local OTP row for audit / fallback Messages path.
       await storeSmsOtp({
         site_id: site.id,
         order_system_id: system.id,
         customer_id: customer.id,
         phone_e164: phone,
-        code: code
+        code: useVerify ? 'VERIFY' : code
       });
+
+      const otpBody =
+        'Your ' +
+        (site.business_name || 'order') +
+        ' login code is ' +
+        code +
+        '. It expires in 10 minutes.';
+
+      if (useVerify) {
+        const sent = await sendPortalOtpSms({ to: phone, body: otpBody });
+        if (sent && sent.skipped) {
+          return json(res, 503, {
+            error: 'sms_not_configured',
+            message:
+              'SMS is not configured yet. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_VERIFY_SERVICE_SID (same as Quote Builder).'
+          });
+        }
+        if (!sent || sent.ok === false) {
+          return json(res, 502, {
+            error: 'sms_failed',
+            message: 'Could not send the SMS code. Please try again in a moment.'
+          });
+        }
+        return json(res, 200, { ok: true, sent: true, provider: 'twilio_verify' });
+      }
+
       const sent = await queueAndSend({
         order_system_id: system.id,
         site_id: site.id,
@@ -139,17 +175,13 @@ module.exports = async function (req, res) {
         event_type: 'otp',
         sms_kind: 'otp',
         destination: phone,
-        body:
-          'Your ' +
-          (site.business_name || 'order') +
-          ' login code is ' +
-          code +
-          '. It expires in 10 minutes.'
+        body: otpBody
       });
       if (sent && sent.send && sent.send.skipped) {
         return json(res, 503, {
           error: 'sms_not_configured',
-          message: 'SMS is not configured for this site yet. Ask the shop to enable Twilio, or use the link from your order SMS.'
+          message:
+            'SMS is not configured yet. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_FROM_NUMBER — or TWILIO_VERIFY_SERVICE_SID like Quote Builder.'
         });
       }
       if (sent && sent.send && sent.send.ok === false) {
@@ -158,21 +190,32 @@ module.exports = async function (req, res) {
           message: 'Could not send the SMS code. Please try again in a moment.'
         });
       }
-      return json(res, 200, { ok: true, sent: true });
+      return json(res, 200, { ok: true, sent: true, provider: 'twilio_messages' });
     }
 
     if (action === 'verify_code') {
       const phone = normaliseAuPhone(body.phone);
       const code = String(body.code || '').trim();
       if (!phone || !code) return json(res, 400, { error: 'bad_input' });
-      const otp = await verifySmsOtp({ site_id: site.id, phone_e164: phone, code: code });
-      if (!otp) return json(res, 401, { error: 'invalid_code' });
-      let customerId = otp.customer_id;
-      if (!customerId) {
+
+      let customerId = null;
+      if (process.env.TWILIO_VERIFY_SERVICE_SID) {
+        const check = await checkPortalOtpSms({ to: phone, code: code });
+        if (!check || !check.ok) return json(res, 401, { error: 'invalid_code' });
         const customer = await findCustomer(system.id, phone);
         if (!customer) return json(res, 404, { error: 'customer_not_found' });
         customerId = customer.id;
+      } else {
+        const otp = await verifySmsOtp({ site_id: site.id, phone_e164: phone, code: code });
+        if (!otp) return json(res, 401, { error: 'invalid_code' });
+        customerId = otp.customer_id;
+        if (!customerId) {
+          const customer = await findCustomer(system.id, phone);
+          if (!customer) return json(res, 404, { error: 'customer_not_found' });
+          customerId = customer.id;
+        }
       }
+
       const session = await createCustomerSessionToken({
         site_id: site.id,
         order_system_id: system.id,

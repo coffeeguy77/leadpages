@@ -90,6 +90,11 @@
     return !!(p.weight_required || p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc');
   };
 
+  /** Sold by weight → customer enters kg only (qty fixed at 1). Pack/units → qty only. */
+  OrderStorefront.prototype.showsQuantity = function (p) {
+    return !this.needsWeight(p);
+  };
+
   OrderStorefront.prototype.isPackSize = function (p) {
     var o = (p && p.options) || {};
     return o.size_mode === 'pack' || o.size_mode === 'fixed' || !!p.is_pack_size;
@@ -564,6 +569,7 @@
     var draft = this.state.fastDrafts[id] || {};
     var notesOpen = !!this.state.notesOpen[id];
     var needsW = this.needsWeight(p);
+    var showQty = this.showsQuantity(p);
     var pack = this.packLabel(p);
     var hasQs = (p.questions || []).length > 0;
     var qtyVal = draft.qty != null && draft.qty !== '' ? draft.qty : '1';
@@ -592,19 +598,25 @@
     html += '<div class="lp-oe-price">' + esc(p.display_price) + '</div>';
     html += '</div>';
     html += '<div class="lp-oe-fast-controls">';
-    html += '<label class="lp-oe-fast-field">Qty' + this.stepperHtml({ min: 1, step: 1, value: qtyVal, dataAttr: 'data-fast-qty' }) + '</label>';
+    if (showQty) {
+      html +=
+        '<label class="lp-oe-fast-field">Qty' +
+        this.stepperHtml({ min: 1, step: 1, value: qtyVal, dataAttr: 'data-fast-qty' }) +
+        '</label>';
+      if (pack) {
+        html += '<span class="lp-oe-fast-packchip" title="Fixed pack size">' + esc(pack) + '</span>';
+      }
+    }
     if (needsW) {
       html +=
         '<label class="lp-oe-fast-field">kg' +
         this.stepperHtml({
           min: 0.1,
           step: 0.1,
-          value: kgVal || '0.1',
+          value: kgVal || '1.0',
           dataAttr: 'data-fast-kg'
         }) +
         '</label>';
-    } else if (pack) {
-      html += '<span class="lp-oe-fast-packchip" title="Fixed pack size">' + esc(pack) + '</span>';
     }
     html +=
       '<button type="button" class="lp-oe-fast-notes-btn' +
@@ -688,6 +700,7 @@
   OrderStorefront.prototype.renderProduct = function (p) {
     var pack = this.packLabel(p);
     var needsW = this.needsWeight(p);
+    var showQty = this.showsQuantity(p);
     var html = '<div class="lp-oe-detail">';
     html += '<button type="button" class="lp-oe-link" data-act="back-shop">← Back</button>';
     html += '<h3>' + esc(p.name) + '</h3>';
@@ -697,14 +710,21 @@
       html += '<p class="lp-oe-desc">' + esc(p.description || p.short_description) + '</p>';
     html += '<div class="lp-oe-fields lp-oe-fields-app">';
     html += '<div class="lp-oe-field-row">';
-    html += '<label class="lp-oe-field">Quantity' + this.stepperHtml({ min: 1, step: 1, value: 1, id: 'oe-qty' }) + '</label>';
+    if (showQty) {
+      html +=
+        '<label class="lp-oe-field">Quantity' +
+        this.stepperHtml({ min: 1, step: 1, value: 1, id: 'oe-qty' }) +
+        '</label>';
+      if (pack) {
+        html += '<p class="lp-oe-pack-note">Sold as ' + esc(pack) + ' packs — choose quantity only.</p>';
+      }
+    }
     if (needsW) {
       html +=
         '<label class="lp-oe-field">Approx. weight (kg)' +
         this.stepperHtml({ min: 0.1, step: 0.1, value: '1.0', id: 'oe-kg' }) +
         '</label>';
-    } else if (pack) {
-      html += '<p class="lp-oe-pack-note">Sold as ' + esc(pack) + ' packs — choose quantity only.</p>';
+      html += '<p class="lp-oe-pack-note">Sold by weight — enter how much you want.</p>';
     }
     html +=
       '<label class="lp-oe-field">Notes<textarea id="oe-notes" class="lp-oe-notes-grow" rows="1" placeholder="Optional"></textarea></label>';
@@ -1131,7 +1151,9 @@
           return p.id === productId;
         });
         var draft = self.state.fastDrafts[productId] || {};
-        var qtyVal = Number((row && row.querySelector('[data-fast-qty]') || {}).value || draft.qty || 1);
+        var qtyVal = self.needsWeight(product)
+          ? 1
+          : Number((row && row.querySelector('[data-fast-qty]') || {}).value || draft.qty || 1);
         var kgEl = row && row.querySelector('[data-fast-kg]');
         var kgVal = kgEl && kgEl.value !== '' ? Number(kgEl.value) : (draft.kg !== '' && draft.kg != null ? Number(draft.kg) : null);
         if (product && self.needsWeight(product) && (kgVal == null || !isFinite(kgVal) || kgVal <= 0)) {
@@ -1172,13 +1194,14 @@
       if (act === 'add-product') {
         var answers = self.collectAnswers(self.root);
         var kgEl = $('#oe-kg', self.root);
-        var qtyVal = Number(($('#oe-qty', self.root) || {}).value || 1);
-        var kgVal = kgEl && kgEl.value ? Number(kgEl.value) : null;
-        var notesVal = (($('#oe-notes', self.root) || {}).value) || null;
+        var qtyEl = $('#oe-qty', self.root);
         var productId = el.getAttribute('data-id');
         var product = (self.state.catalogue.products || []).find(function (p) {
           return p.id === productId;
         });
+        var qtyVal = product && self.needsWeight(product) ? 1 : Number((qtyEl || {}).value || 1);
+        var kgVal = kgEl && kgEl.value ? Number(kgEl.value) : null;
+        var notesVal = (($('#oe-notes', self.root) || {}).value) || null;
         if (product && self.needsWeight(product) && (kgVal == null || !isFinite(kgVal) || kgVal <= 0)) {
           self.state.msg = 'Enter an approximate weight in kg.';
           self.render();
