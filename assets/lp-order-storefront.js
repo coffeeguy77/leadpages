@@ -778,8 +778,22 @@
       var q = Number(it.quantity) || 1;
       html += '<div class="lp-oe-line" data-line="' + esc(it.id) + '">';
       html += '<div class="lp-oe-line-main"><strong>' + esc(snap.name || 'Item') + '</strong>';
-      if (it.requested_weight_kg != null) {
-        html += '<p class="lp-oe-line-meta">~' + esc(it.requested_weight_kg) + 'kg each</p>';
+      if (snap.pack_label) {
+        html += '<p class="lp-oe-line-meta">' + esc(snap.pack_label) + ' pack</p>';
+      } else if (it.requested_weight_kg != null) {
+        html += '<p class="lp-oe-line-meta">~' + esc(it.requested_weight_kg) + 'kg</p>';
+      }
+      if (snap.selected_options && snap.selected_options.length) {
+        html +=
+          '<p class="lp-oe-line-meta">' +
+          esc(
+            snap.selected_options
+              .map(function (o) {
+                return o.label + (o.price_cents ? ' (+' + money(o.price_cents) + ')' : '');
+              })
+              .join(', ')
+          ) +
+          '</p>';
       }
       html += '<p class="lp-oe-price">' + esc(self.linePriceLabel(it)) + '</p></div>';
       html += '<div class="lp-oe-line-actions">';
