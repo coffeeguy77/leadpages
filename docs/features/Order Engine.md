@@ -44,7 +44,7 @@ Workflow: `Cart → Order → Deposit → Customer Editing → Cutoff → Lock �
 6. Stripe webhook: `POST /api/order/webhook` + `STRIPE_ORDER_WEBHOOK_SECRET`
 6. Optional SMS (portal OTP + order texts):
    - Prefer Quote Builder setup: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_VERIFY_SERVICE_SID`
-   - Or Messages API: same SID/token plus `TWILIO_FROM_NUMBER` (E.164)
+   - Or Messages API: same SID/token plus `TWILIO_FROM_NUMBER` / `TWILIO_FROM` / `TWILIO_SMS_FROM` (E.164)
 
 ---
 
