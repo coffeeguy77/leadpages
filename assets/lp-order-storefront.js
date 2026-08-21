@@ -67,6 +67,8 @@
       busy: false,
       msg: '',
       mobileShowCart: false,
+      notesOpen: {},
+      fastDrafts: {},
       checkoutDraft: {
         name: '',
         phone: '',
@@ -77,6 +79,35 @@
       }
     };
   }
+
+  OrderStorefront.prototype.isFastMode = function () {
+    return this.storefrontCfg().shop_mode === 'fast';
+  };
+
+  OrderStorefront.prototype.needsWeight = function (p) {
+    if (!p) return false;
+    return !!(p.weight_required || p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc');
+  };
+
+  OrderStorefront.prototype.captureFastDrafts = function () {
+    var self = this;
+    if (!this.root) return;
+    this.root.querySelectorAll('[data-fast-row]').forEach(function (row) {
+      var id = row.getAttribute('data-fast-row');
+      if (!id) return;
+      var qty = row.querySelector('[data-fast-qty]');
+      var kg = row.querySelector('[data-fast-kg]');
+      var notes = row.querySelector('[data-fast-notes]');
+      var draft = self.state.fastDrafts[id] || (self.state.fastDrafts[id] = {});
+      if (qty) draft.qty = qty.value;
+      if (kg) draft.kg = kg.value;
+      if (notes) draft.notes = notes.value;
+      row.querySelectorAll('[data-q]').forEach(function (inp) {
+        if (!draft.answers) draft.answers = {};
+        draft.answers[inp.getAttribute('data-q')] = inp.value;
+      });
+    });
+  };
 
   OrderStorefront.prototype.portalUrl = function () {
     return '/order-portal?slug=' + encodeURIComponent(this.slug || '');
@@ -280,18 +311,22 @@
 
     html += '<div class="lp-oe-layout">';
     html += '<div class="lp-oe-main">';
-    if (this.state.view === 'product' && this.state.selected) {
+    if (!this.isFastMode() && this.state.view === 'product' && this.state.selected) {
       html += this.renderProduct(this.state.selected);
     } else {
       html += this.renderShopToolbar();
-      var sysMode = (c && c.system && c.system.storefront_display_mode) || 'compact_cards';
-      // Cards toggle must never fall back to product_list (that mode is List only).
-      var gridMode = this.state.listMode
-        ? 'product_list'
-        : sysMode === 'product_list'
-          ? 'compact_cards'
-          : sysMode;
-      html += this.renderGrid(gridMode);
+      if (this.isFastMode()) {
+        html += this.renderFastMenu();
+      } else {
+        var sysMode = (c && c.system && c.system.storefront_display_mode) || 'compact_cards';
+        // Cards toggle must never fall back to product_list (that mode is List only).
+        var gridMode = this.state.listMode
+          ? 'product_list'
+          : sysMode === 'product_list'
+            ? 'compact_cards'
+            : sysMode;
+        html += this.renderGrid(gridMode);
+      }
     }
     html += '</div>';
     html +=
@@ -330,16 +365,152 @@
         '</button>';
     });
     html += '</div>';
-    html += '<div class="lp-oe-view-toggle" role="group" aria-label="Layout">';
+    if (!this.isFastMode()) {
+      html += '<div class="lp-oe-view-toggle" role="group" aria-label="Layout">';
+      html +=
+        '<button type="button" class="lp-oe-view-btn' +
+        (!this.state.listMode ? ' on' : '') +
+        '" data-act="view-grid">Cards</button>';
+      html +=
+        '<button type="button" class="lp-oe-view-btn' +
+        (this.state.listMode ? ' on' : '') +
+        '" data-act="view-list">List</button>';
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  };
+
+  OrderStorefront.prototype.renderFastMenu = function () {
+    var self = this;
+    var products = (this.state.catalogue && this.state.catalogue.products) || [];
+    var active = this.state.activeCategoryId;
+    if (active) {
+      products = products.filter(function (p) {
+        return p.category_id === active;
+      });
+    }
+    var html = '<div class="lp-oe-fast" role="list">';
+    if (!products.length) {
+      html += '<p class="lp-oe-empty">No products in this category yet.</p>';
+    } else {
+      products.forEach(function (p) {
+        html += self.renderFastRow(p);
+      });
+    }
+    html += '</div>';
+    var dep = this.state.catalogue && this.state.catalogue.deposit;
+    if (dep && dep.preview_cents > 0) {
+      html +=
+        '<p class="lp-oe-note">Deposit today: <strong>' +
+        esc(dep.preview_label) +
+        '</strong>. Final order price will be confirmed after items are prepared/weighed where needed.</p>';
+    }
+    return html;
+  };
+
+  OrderStorefront.prototype.renderFastRow = function (p) {
+    var id = p.id;
+    var draft = this.state.fastDrafts[id] || {};
+    var notesOpen = !!this.state.notesOpen[id];
+    var needsW = this.needsWeight(p);
+    var hasQs = (p.questions || []).length > 0;
+    var qtyVal = draft.qty != null && draft.qty !== '' ? draft.qty : '1';
+    var kgVal = draft.kg != null ? draft.kg : '';
+    var notesVal = draft.notes || '';
+    var html = '';
     html +=
-      '<button type="button" class="lp-oe-view-btn' +
-      (!this.state.listMode ? ' on' : '') +
-      '" data-act="view-grid">Cards</button>';
+      '<article class="lp-oe-fast-row' +
+      (notesOpen ? ' is-notes-open' : '') +
+      '" data-fast-row="' +
+      esc(id) +
+      '" role="listitem">';
+    html += '<div class="lp-oe-fast-main">';
+    if (p.image_url) {
+      html +=
+        '<div class="lp-oe-fast-img" style="background-image:url(\'' +
+        esc(p.image_url) +
+        '\')"></div>';
+    } else {
+      html +=
+        '<div class="lp-oe-fast-img text"><span>' +
+        esc((p.name || '?').slice(0, 1)) +
+        '</span></div>';
+    }
+    html += '<div class="lp-oe-fast-info">';
+    html += '<h3>' + esc(p.name) + '</h3>';
+    if (p.short_description) html += '<p class="lp-oe-fast-desc">' + esc(p.short_description) + '</p>';
+    html += '<div class="lp-oe-price">' + esc(p.display_price) + '</div>';
+    html += '</div>';
+    html += '<div class="lp-oe-fast-controls">';
     html +=
-      '<button type="button" class="lp-oe-view-btn' +
-      (this.state.listMode ? ' on' : '') +
-      '" data-act="view-list">List</button>';
+      '<label class="lp-oe-fast-field">Qty<input type="number" min="1" step="1" inputmode="numeric" data-fast-qty value="' +
+      esc(qtyVal) +
+      '"></label>';
+    if (needsW) {
+      html +=
+        '<label class="lp-oe-fast-field">kg<input type="number" min="0.1" step="0.1" inputmode="decimal" data-fast-kg placeholder="1.2" title="100g increments" value="' +
+        esc(kgVal) +
+        '"></label>';
+    }
+    html +=
+      '<button type="button" class="lp-oe-fast-notes-btn' +
+      (notesOpen ? ' on' : '') +
+      '" data-act="toggle-notes" data-id="' +
+      esc(id) +
+      '" aria-expanded="' +
+      (notesOpen ? 'true' : 'false') +
+      '">' +
+      (notesOpen ? 'Hide notes' : 'Notes') +
+      (hasQs && !notesOpen ? ' +' : '') +
+      '</button>';
+    html +=
+      '<button type="button" class="lp-oe-fast-add" data-act="add-inline" data-id="' +
+      esc(id) +
+      '"' +
+      (this.state.busy ? ' disabled' : '') +
+      '>Add</button>';
     html += '</div></div>';
+    if (notesOpen) {
+      html += '<div class="lp-oe-fast-extra">';
+      html +=
+        '<label class="lp-oe-field">Notes<textarea class="lp-oe-notes-grow" rows="1" data-fast-notes placeholder="Optional notes (cut, timing, etc.)">' +
+        esc(notesVal) +
+        '</textarea></label>';
+      var answers = draft.answers || {};
+      (p.questions || []).forEach(function (q) {
+        html += '<label class="lp-oe-field">' + esc(q.label);
+        var qv = answers[q.key] != null ? answers[q.key] : '';
+        if (q.field_type === 'long_text') {
+          html +=
+            '<textarea data-q="' +
+            esc(q.key) +
+            '" rows="1" class="lp-oe-notes-grow">' +
+            esc(qv) +
+            '</textarea>';
+        } else if (q.field_type === 'dropdown' || q.field_type === 'radio') {
+          html += '<select data-q="' + esc(q.key) + '"><option value="">Select…</option>';
+          (q.options || []).forEach(function (o) {
+            var v = typeof o === 'string' ? o : o.value || o.label;
+            html +=
+              '<option value="' +
+              esc(v) +
+              '"' +
+              (qv === v ? ' selected' : '') +
+              '>' +
+              esc(v) +
+              '</option>';
+          });
+          html += '</select>';
+        } else {
+          html +=
+            '<input data-q="' + esc(q.key) + '" value="' + esc(qv) + '">';
+        }
+        html += '</label>';
+      });
+      html += '</div>';
+    }
+    html += '</article>';
     return html;
   };
 
@@ -590,18 +761,20 @@
 
   OrderStorefront.prototype.bind = function () {
     var self = this;
-    this.root.querySelectorAll('[data-open]').forEach(function (el) {
-      el.addEventListener('click', function (ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        var id = el.getAttribute('data-open');
-        self.state.selected = (self.state.catalogue.products || []).find(function (p) {
-          return p.id === id;
+    if (!this.isFastMode()) {
+      this.root.querySelectorAll('[data-open]').forEach(function (el) {
+        el.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          var id = el.getAttribute('data-open');
+          self.state.selected = (self.state.catalogue.products || []).find(function (p) {
+            return p.id === id;
+          });
+          self.state.view = 'product';
+          self.render();
         });
-        self.state.view = 'product';
-        self.render();
       });
-    });
+    }
     this.root.querySelectorAll('[data-act]').forEach(function (el) {
       el.addEventListener('click', function (ev) {
         ev.preventDefault();
@@ -618,6 +791,14 @@
       ta.setAttribute('rows', '1');
       grow();
       ta.addEventListener('input', grow);
+    });
+    this.root.querySelectorAll('[data-fast-row] input, [data-fast-row] textarea, [data-fast-row] select').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        self.captureFastDrafts();
+      });
+      inp.addEventListener('change', function () {
+        self.captureFastDrafts();
+      });
     });
     // Preserve checkout fields while typing
     ['oe-name', 'oe-phone', 'oe-email', 'oe-date', 'oe-slot', 'oe-cnotes'].forEach(function (id) {
@@ -680,13 +861,22 @@
       'toggle-cart': 1,
       'view-grid': 1,
       'view-list': 1,
+      'toggle-notes': 1,
       cat: 1
     };
     if (self.state.busy && !freeActs[act]) return;
     try {
       self.state.msg = '';
+      if (act === 'toggle-notes') {
+        self.captureFastDrafts();
+        var nid = el.getAttribute('data-id');
+        self.state.notesOpen[nid] = !self.state.notesOpen[nid];
+        self.render();
+        return;
+      }
       if (act === 'cat') {
         self.captureCheckoutDraft();
+        self.captureFastDrafts();
         self.state.activeCategoryId = el.getAttribute('data-cat') || '';
         self.state.view = 'shop';
         self.state.selected = null;
@@ -761,6 +951,61 @@
         self.render();
         try {
           await self.removeLine(rid);
+        } finally {
+          self.state.busy = false;
+        }
+        self.render();
+        return;
+      }
+      if (act === 'add-inline') {
+        self.captureFastDrafts();
+        var row = el.closest('[data-fast-row]');
+        var productId = el.getAttribute('data-id');
+        var product = (self.state.catalogue.products || []).find(function (p) {
+          return p.id === productId;
+        });
+        var draft = self.state.fastDrafts[productId] || {};
+        var qtyVal = Number((row && row.querySelector('[data-fast-qty]') || {}).value || draft.qty || 1);
+        var kgEl = row && row.querySelector('[data-fast-kg]');
+        var kgVal = kgEl && kgEl.value !== '' ? Number(kgEl.value) : (draft.kg !== '' && draft.kg != null ? Number(draft.kg) : null);
+        if (product && self.needsWeight(product) && (kgVal == null || !isFinite(kgVal) || kgVal <= 0)) {
+          self.state.msg = 'Enter an approximate weight in kg for ' + (product.name || 'this item') + '.';
+          self.state.notesOpen[productId] = !!self.state.notesOpen[productId];
+          self.render();
+          return;
+        }
+        var notesEl = row && row.querySelector('[data-fast-notes]');
+        var notesVal = (notesEl && notesEl.value) || draft.notes || null;
+        var answers = {};
+        if (row) {
+          row.querySelectorAll('[data-q]').forEach(function (inp) {
+            answers[inp.getAttribute('data-q')] = {
+              value: inp.value,
+              label: inp.getAttribute('data-q')
+            };
+          });
+        }
+        self.state.busy = true;
+        el.disabled = true;
+        try {
+          await self.ensureCart();
+          var outInline = await api('/api/order/cart', {
+            method: 'POST',
+            body: {
+              action: 'add_item',
+              slug: self.slug,
+              cart_id: self.state.cartId,
+              product_id: productId,
+              quantity: qtyVal,
+              requested_weight_kg: kgVal,
+              notes: notesVal || null,
+              answers: answers
+            }
+          });
+          self.applyPacked(outInline);
+          self.state.msg = 'Added to cart';
+          self.state.fastDrafts[productId] = { qty: '1', kg: '', notes: '', answers: {} };
+          self.state.notesOpen[productId] = false;
         } finally {
           self.state.busy = false;
         }
@@ -975,7 +1220,29 @@
       '.lp-oe-mobile-cart{display:none}',
       '.lp-oe-primary:disabled,.lp-oe-cart-btn:disabled,.lp-oe-qty-btn:disabled,.lp-oe-remove:disabled{opacity:.55;cursor:not-allowed}',
       '.lp-oe-related ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}',
-      '.lp-oe-related button{background:transparent;color:var(--oe-accent);border-color:var(--oe-line)}'
+      '.lp-oe-related button{background:transparent;color:var(--oe-accent);border-color:var(--oe-line)}',
+      '.lp-oe-fast{display:flex;flex-direction:column;gap:12px;padding:4px 0 12px}',
+      '.lp-oe-fast-row{background:var(--oe-card);border:1px solid var(--oe-line);border-radius:var(--oe-radius);padding:12px 14px;box-shadow:0 8px 20px rgba(28,36,30,.04);transition:border-color .15s ease,box-shadow .15s ease}',
+      '.lp-oe-fast-row.is-notes-open{border-color:color-mix(in srgb,var(--oe-accent) 35%,var(--oe-line));box-shadow:0 10px 24px rgba(28,36,30,.07)}',
+      '.lp-oe-fast-main{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px 14px;align-items:center}',
+      '@media(max-width:720px){.lp-oe-fast-main{grid-template-columns:56px minmax(0,1fr);}.lp-oe-fast-controls{grid-column:1/-1;justify-content:flex-start}}',
+      '.lp-oe-fast-img{width:64px;height:64px;border-radius:12px;background:#e8e2d6 center/cover no-repeat;flex:none}',
+      '.lp-oe-fast-img.text{display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#e8efe9,#f3ebe1)}',
+      '.lp-oe-fast-img.text span{font-size:22px;color:var(--oe-accent);opacity:.75}',
+      '.lp-oe-fast-info{min-width:0}',
+      '.lp-oe-fast-info h3{margin:0 0 2px;font-size:15.5px;line-height:1.25;letter-spacing:-.01em}',
+      '.lp-oe-fast-desc{margin:0;color:var(--oe-muted);font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}',
+      '.lp-oe-fast-info .lp-oe-price{margin-top:4px;font-size:13.5px}',
+      '.lp-oe-fast-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;justify-content:flex-end}',
+      '.lp-oe-fast-field{display:grid;gap:3px;font-size:10.5px;font-weight:700;color:var(--oe-muted);letter-spacing:.03em;text-transform:uppercase}',
+      '.lp-oe-fast-field input{width:72px;min-height:40px;padding:8px 10px;border-radius:10px;border:1px solid var(--lp-oe-input-border,var(--oe-line));background:var(--lp-oe-input-bg,#fff);color:var(--oe-ink);font:600 14px/1.2 system-ui,sans-serif}',
+      '.lp-oe-fast-notes-btn,.lp-oe-fast-add{appearance:none;min-height:40px;padding:0 14px;border-radius:10px;font:600 13px/1 system-ui,sans-serif;cursor:pointer}',
+      '.lp-oe-fast-notes-btn{border:1px solid var(--oe-line);background:transparent;color:var(--oe-muted)}',
+      '.lp-oe-fast-notes-btn.on{border-color:var(--oe-accent);color:var(--oe-accent);background:color-mix(in srgb,var(--oe-accent) 10%,transparent)}',
+      '.lp-oe-fast-add{border:1px solid var(--oe-btn);background:var(--oe-btn);color:var(--oe-btn-text)}',
+      '.lp-oe-fast-add:disabled{opacity:.55;cursor:not-allowed}',
+      '.lp-oe-fast-extra{margin-top:12px;padding-top:12px;border-top:1px dashed var(--oe-line);display:grid;gap:10px;animation:lpOeNotesIn .18s ease}',
+      '@keyframes lpOeNotesIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}'
     ].join('');
     document.head.appendChild(st);
   }

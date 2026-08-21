@@ -94,10 +94,12 @@ module.exports = async function (req, res) {
         show_all_categories: false,
         default_category_id: null,
         default_category_slug: null,
+        shop_mode: 'traditional',
         appearance: {}
       },
       (system.settings && system.settings.storefront) || {}
     );
+    if (storefrontSettings.shop_mode !== 'fast') storefrontSettings.shop_mode = 'traditional';
 
     const displayProducts = (products || []).map(function (p) {
       return Object.assign({}, p, {

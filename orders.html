@@ -715,6 +715,13 @@ body.embed .hub{min-height:70vh}
             <h4 class="section-title">Customer shop (menu)</h4>
             <p class="notice">Controls how the homepage / order shop catalogue behaves. Empty categories and categories with no enabled products are always hidden.</p>
             <div class="grid2">
+              <div class="field"><label for="set-sf-shop-mode">Ordering layout</label>
+                <select id="set-sf-shop-mode">
+                  <option value="traditional">Traditional shop — tap a product to set qty / weight</option>
+                  <option value="fast">Fast order — qty &amp; weight on one page</option>
+                </select>
+                <span class="field-hint">Fast mode lets customers add items without opening each product. Notes expand on demand.</span>
+              </div>
               <div class="field"><label for="set-sf-show-all">Category chips</label>
                 <select id="set-sf-show-all">
                   <option value="0">Category view only (recommended)</option>
@@ -2392,6 +2399,7 @@ body.embed .hub{min-height:70vh}
       if ($('set-paypal-client')) $('set-paypal-client').value = pay.paypal_client_id || '';
       if ($('set-paypal-email')) $('set-paypal-email').value = pay.paypal_merchant_email || '';
       var sf = (s.settings && s.settings.storefront) || {};
+      if ($('set-sf-shop-mode')) $('set-sf-shop-mode').value = sf.shop_mode === 'fast' ? 'fast' : 'traditional';
       if ($('set-sf-show-all')) $('set-sf-show-all').value = sf.show_all_categories ? '1' : '0';
       try { await loadProductsCache(); } catch (_e) {}
       fillDefaultCategorySelect(sf.default_category_id || '');
@@ -2454,6 +2462,7 @@ body.embed .hub{min-height:70vh}
         return /^#[0-9a-fA-F]{6}$/.test(v) ? v : '';
       }
       var storefront = Object.assign({}, existing.storefront || {}, {
+        shop_mode: $('set-sf-shop-mode') && $('set-sf-shop-mode').value === 'fast' ? 'fast' : 'traditional',
         show_all_categories: $('set-sf-show-all') ? $('set-sf-show-all').value === '1' : false,
         default_category_id: defCatId || null,
         default_category_slug: defCat ? (defCat.slug || null) : null,
