@@ -339,9 +339,12 @@ body.embed .hub{min-height:70vh}
           <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
             <div>
               <h3>Products</h3>
-              <p class="sub" style="margin:0">Catalogue for this order system.</p>
+              <p class="sub" style="margin:0">Catalogue for this order system. Butcher names like <code>BEEF - Brisket</code> can be matched to categories automatically.</p>
             </div>
-            <button class="btn solid" type="button" id="prod-new">New product</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn ghost" type="button" id="prod-auto-cat" title="Create Beef/Chicken/Ham… categories and assign from product names">Match categories</button>
+              <button class="btn solid" type="button" id="prod-new">New product</button>
+            </div>
           </div>
           <div class="prod-cat-bar">
             <label class="field" style="margin:0;min-width:200px;flex:1">
@@ -1684,6 +1687,25 @@ body.embed .hub{min-height:70vh}
     }
   }
 
+  async function autoCategoriseProducts(){
+    if (!requireSite()) return;
+    if (!confirm('Create standard butcher categories (Beef, Chicken, Ham, Duck…) and assign uncategorised products from their names (e.g. “BEEF - Brisket” → Beef)?')) return;
+    var btn = $('prod-auto-cat');
+    if (btn) btn.disabled = true;
+    try {
+      var r = await api('/api/order/products', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'auto_categorise', only_uncategorised: true }
+      });
+      var st = r.stats || {};
+      toast('Matched ' + (st.updated || 0) + ' products · ' + (st.unmatched || 0) + ' unmatched · ' + (st.skipped || 0) + ' skipped', 'ok');
+      await loadProductsView();
+    } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
+    if (btn) btn.disabled = false;
+  }
+
   /* ---------- Supply ---------- */
   async function loadSupply(){
     if (!requireSite()) return;
@@ -2542,6 +2564,7 @@ body.embed .hub{min-height:70vh}
   if ($('prod-cat-filter')) $('prod-cat-filter').addEventListener('change', renderProductsTable);
   if ($('prod-q')) $('prod-q').addEventListener('input', function(){ renderProductsTable(); });
   if ($('prod-cat-add')) $('prod-cat-add').addEventListener('click', addProductCategory);
+  if ($('prod-auto-cat')) $('prod-auto-cat').addEventListener('click', autoCategoriseProducts);
   if ($('prod-image-upload')) $('prod-image-upload').addEventListener('click', function(){ $('prod-image-file').click(); });
   if ($('prod-image-clear')) $('prod-image-clear').addEventListener('click', function(){
     $('prod-image').value = '';
