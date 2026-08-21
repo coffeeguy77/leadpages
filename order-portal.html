@@ -46,12 +46,15 @@ body{margin:0;min-height:100vh;background:
 button,.btn{appearance:none;border:1px solid var(--accent);background:var(--accent);color:#fff;font:600 14px/1 var(--font-ui);padding:11px 14px;border-radius:10px;cursor:pointer;}
 button.ghost,.btn.ghost{background:transparent;color:var(--accent);}
 button:disabled{opacity:.55;cursor:not-allowed;}
-input,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;}
+input,textarea,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;}
 label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--muted);}
 .edit-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
 @media(max-width:560px){.edit-row{grid-template-columns:1fr;}}
 .err{color:#8a2f1d;font-size:14px;}
 .gate{max-width:420px;margin:12vh auto;padding:24px;text-align:center;}
+.banner{border-radius:12px;padding:12px 14px;margin:0 0 14px;font-size:14px;line-height:1.45;}
+.banner.warn{background:#fff1d6;border:1px solid #efd7a2;color:#7a5600;}
+.banner.ok{background:#f3faf5;border:1px solid #b7d7c0;color:var(--ok);}
 </style>
 </head>
 <body>
@@ -65,10 +68,21 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
   var token = params.get('t') || '';
   var wantPay = params.get('pay') === '1';
   var paid = params.get('paid') === '1';
+  var cancelled = params.get('cancelled') === '1';
   var $ = function(id){ return document.getElementById(id); };
 
   function money(c){ if(c==null) return 'TBC'; return '$'+(Number(c)/100).toFixed(2); }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);}); }
+
+  function rememberSlug(slug){
+    if(!slug) return;
+    try{ localStorage.setItem('lp.order.lastSlug', slug); }catch(e){}
+  }
+  function resolveSlug(){
+    var slug = params.get('slug') || '';
+    if(slug){ rememberSlug(slug); return slug; }
+    try{ return localStorage.getItem('lp.order.lastSlug') || ''; }catch(e){ return ''; }
+  }
 
   async function api(path, opts){
     opts = opts || {};
@@ -88,23 +102,35 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     return '<span class="badge b-open">CHANGES OPEN</span>';
   }
 
+  function pickupLabel(o){
+    var t = '';
+    if(o.pickup_window_start && o.pickup_window_end){
+      t = String(o.pickup_window_start).slice(0,5) + '–' + String(o.pickup_window_end).slice(0,5);
+    } else if(o.pickup_time){
+      t = String(o.pickup_time).slice(0,5);
+    }
+    return esc(o.pickup_date||'—') + (t ? (' · '+esc(t)) : '');
+  }
+
   function render(data){
     $('gate').style.display='none';
     $('view').style.display='';
     var o = data.order, d = data.display || {}, items = data.items || [];
     var biz = (data.business && data.business.business_name) || 'Your order';
+    if(data.business && data.business.slug) rememberSlug(data.business.slug);
     var html = '';
     html += '<p class="sub" style="margin:0 0 6px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:11px;color:var(--accent)">'+esc(biz)+'</p>';
     html += '<h1 class="brand">Order '+esc(o.order_number)+'</h1>';
-    html += '<p class="sub">Status: <strong>'+esc(o.status.replace(/_/g,' '))+'</strong></p>';
-    if(paid) html += '<div class="card" style="border-color:#b7d7c0;background:#f3faf5"><strong>Deposit received.</strong> Thank you — your order is confirmed.</div>';
+    html += '<p class="sub">Review your order'+( (o.deposit_required_cents||0)>(o.deposit_paid_cents||0) ? ', then proceed to payment when ready.' : '.' )+'</p>';
+    if(paid) html += '<div class="banner ok"><strong>Deposit received.</strong> Thank you — your order is confirmed.</div>';
+    if(cancelled) html += '<div class="banner warn"><strong>Payment cancelled.</strong> Your order is still saved — you can pay the deposit below when you are ready.</div>';
     if(o.editing_state==='locked') html += '<div class="locked">'+esc(d.locked_message||'ORDER LOCKED')+'</div>';
     else html += '<div class="hrow" style="margin:0 0 12px">'+badge(o.editing_state)+'<span class="note" style="margin:0">Changes allowed until <strong>'+esc(o.effective_cutoff_at?new Date(o.effective_cutoff_at).toLocaleString():'—')+'</strong></span></div>';
     if(o.cutoff_reason) html += '<p class="note">'+esc(o.cutoff_reason)+'</p>';
 
     html += '<div class="card"><div class="meta">';
     html += '<div><label>Pickup / delivery</label><strong>'+esc(o.fulfilment_type)+'</strong></div>';
-    html += '<div><label>Date</label><strong>'+esc(o.pickup_date||'—')+(o.pickup_time?(' · '+esc(o.pickup_time)):'')+'</strong></div>';
+    html += '<div><label>Date & window</label><strong>'+pickupLabel(o)+'</strong></div>';
     html += '<div><label>Customer</label><strong>'+esc(o.customer_name)+'</strong></div>';
     html += '<div><label>Price status</label><strong>'+(o.has_unknown_prices?'<span class="badge b-tbc">Final price TBC</span>':esc(o.price_status))+'</strong></div>';
     html += '</div></div>';
@@ -135,7 +161,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     html += '<p class="note">Deposit today secures your order. Final order price will be confirmed after your items are prepared/weighed. Balance settlement: <strong>'+esc((o.balance_settlement||'').replace(/_/g,' '))+'</strong>.</p>';
     html += '<div class="actions">';
     if((o.deposit_paid_cents||0) < (o.deposit_required_cents||0)){
-      html += '<button type="button" id="payBtn">PAY '+esc(d.deposit_required||money(o.deposit_required_cents))+' DEPOSIT &amp; CONFIRM ORDER</button>';
+      html += '<button type="button" id="payBtn">Pay '+esc(d.deposit_required||money(o.deposit_required_cents))+' deposit &amp; confirm</button>';
     }
     if(data.can_edit) html += '<button type="button" class="ghost" id="saveBtn">Save changes</button>';
     html += '</div></div>';
@@ -183,7 +209,9 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
       }catch(e){ saveBtn.disabled=false; alert(e.message||e); }
     };
 
-    if(wantPay && payBtn) payBtn.click();
+    // Only auto-open Stripe when an explicit pay=1 link was used (staff SMS),
+    // and never after a cancel return.
+    if(wantPay && !cancelled && !paid && payBtn) payBtn.click();
   }
 
   function renderHistory(data, sessionToken, slug){
@@ -237,23 +265,29 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
   }
 
   function showPhoneLogin(){
-    var slug = params.get('slug') || '';
+    var slug = resolveSlug();
     $('gate').innerHTML =
       '<h1 class="brand">Your orders</h1>'+
       '<p class="sub">Enter the mobile number used on your orders. We’ll text a one-time code.</p>'+
-      (slug?'':'<p class="err">Add ?slug=your-site to this page URL (or open the link from the butcher).</p>')+
-      '<label class="f">Mobile</label><input id="otp-phone" type="tel" placeholder="04xx xxx xxx" '+(slug?'':'disabled')+'>'+
+      (cancelled?'<div class="banner warn" style="text-align:left"><strong>Payment was cancelled.</strong> Sign in below to find your order, or use the link from your confirmation SMS.</div>':'')+
+      (slug?'':'<p class="note" style="text-align:left">Open this page from the <strong>Sign in to your orders</strong> link on the shop, or from the order confirmation SMS we sent you.</p>')+
+      '<label class="f">Mobile</label><input id="otp-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx" '+(slug?'':'disabled')+'>'+
       '<div id="otp-step2" style="display:none;margin-top:12px">'+
-      '<label class="f">SMS code</label><input id="otp-code" type="text" inputmode="numeric" placeholder="6-digit code">'+
+      '<label class="f">SMS code</label><input id="otp-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code">'+
       '</div>'+
       '<div class="actions" style="justify-content:center;margin-top:14px">'+
       '<button type="button" id="otp-send"'+(slug?'':' disabled')+'>Send code</button>'+
       '<button type="button" class="ghost" id="otp-verify" style="display:none">Verify &amp; view history</button>'+
       '</div>'+
+      (slug?'':'<p class="actions" style="justify-content:center"><a class="btn ghost" href="/order-shop">Find a shop</a></p>')+
       '<p class="err" id="otp-err"></p>';
     var send = document.getElementById('otp-send');
     var verify = document.getElementById('otp-verify');
     var err = document.getElementById('otp-err');
+    var phoneEl = document.getElementById('otp-phone');
+    if(phoneEl && slug){
+      try{ phoneEl.focus(); }catch(e){}
+    }
     send.onclick = async function(){
       err.textContent='';
       send.disabled=true;
@@ -262,6 +296,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
         document.getElementById('otp-step2').style.display='';
         verify.style.display='inline-flex';
         send.textContent='Resend code';
+        try{ document.getElementById('otp-code').focus(); }catch(e){}
       }catch(e){ err.textContent=e.message||e; }
       send.disabled=false;
     };
@@ -281,9 +316,9 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
   }
 
   if(!token){
-    var slug = params.get('slug') || '';
+    var slug = resolveSlug();
     var saved = '';
-    try{ saved = localStorage.getItem('lp.order.portal.'+slug) || ''; }catch(e){}
+    try{ saved = slug ? (localStorage.getItem('lp.order.portal.'+slug) || '') : ''; }catch(e){}
     if(saved && slug){
       api('/api/order/portal-auth?token='+encodeURIComponent(saved)).then(function(data){
         renderHistory(data, saved, slug);
@@ -297,7 +332,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     return;
   }
   api('/api/order/portal?t='+encodeURIComponent(token)).then(render).catch(function(e){
-    $('gate').innerHTML = '<h1 class="brand">Unable to open order</h1><p class="err">'+esc(e.message||e)+'</p><p class="sub">Links expire for security. Ask the store to resend your order link.</p>';
+    $('gate').innerHTML = '<h1 class="brand">Unable to open order</h1><p class="err">'+esc(e.message||e)+'</p><p class="sub">Links expire for security. Ask the store to resend your order link, or sign in with your mobile from the shop.</p>';
   });
 })();
 </script>

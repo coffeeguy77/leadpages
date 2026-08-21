@@ -604,9 +604,74 @@ body.embed .hub{min-height:70vh}
                 <select id="set-enabled"><option value="1">Yes</option><option value="0">No</option></select>
               </div>
             </div>
+
+            <h4 style="margin:22px 0 8px">Customer payments (your account)</h4>
+            <p class="notice">Connect the business Stripe account so deposit money goes to them — not the LeadPages platform account. PayPal checkout is prepared here but not live yet.</p>
+            <div class="grid2">
+              <div class="field"><label for="set-pay-provider">Payment provider</label>
+                <select id="set-pay-provider">
+                  <option value="stripe">Stripe</option>
+                  <option value="paypal">PayPal (coming soon)</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-stripe-mode">Stripe charge mode</label>
+                <select id="set-stripe-mode">
+                  <option value="destination">Destination (platform Checkout → transfer to business)</option>
+                  <option value="direct">Direct (Checkout on connected account branding)</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-stripe-acct">Stripe Connect account ID</label>
+                <input id="set-stripe-acct" type="text" placeholder="acct_…" autocomplete="off">
+              </div>
+              <div class="field"><label for="set-stmt">Statement suffix (optional)</label>
+                <input id="set-stmt" type="text" maxlength="22" placeholder="BUTCHER">
+              </div>
+              <div class="field"><label for="set-paypal-client">PayPal Client ID</label>
+                <input id="set-paypal-client" type="text" placeholder="(optional / future)">
+              </div>
+              <div class="field"><label for="set-paypal-email">PayPal merchant email</label>
+                <input id="set-paypal-email" type="email" placeholder="orders@business.com.au">
+              </div>
+            </div>
+
             <button class="btn solid" type="submit" id="settings-save">Save settings</button>
             <p class="notice" id="settings-msg"></p>
           </form>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h3>Pickup windows</h3>
+          <p class="sub">Customers choose from these windows at checkout (date + time range, e.g. Sat 9am–4pm). Add weekday hours and/or one-off dates.</p>
+          <div class="grid2" style="margin-bottom:12px">
+            <div class="field"><label for="pw-weekday">Weekday</label>
+              <select id="pw-weekday">
+                <option value="">— Specific date instead —</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="0">Sunday</option>
+              </select>
+            </div>
+            <div class="field"><label for="pw-date">Or specific date</label>
+              <input id="pw-date" type="date">
+            </div>
+            <div class="field"><label for="pw-start">Window start</label>
+              <input id="pw-start" type="time" value="09:00">
+            </div>
+            <div class="field"><label for="pw-end">Window end</label>
+              <input id="pw-end" type="time" value="16:00">
+            </div>
+          </div>
+          <div class="actions-row" style="margin-bottom:12px">
+            <button class="btn solid" type="button" id="pw-add">Add pickup window</button>
+          </div>
+          <div class="table-wrap"><table class="data"><thead><tr>
+            <th>When</th><th>Window</th><th>Status</th><th></th>
+          </tr></thead><tbody id="pw-tbody"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table></div>
+          <p class="notice" id="pw-msg"></p>
         </div>
       </section>
     </div>
@@ -1738,7 +1803,15 @@ body.embed .hub{min-height:70vh}
       $('set-cutoff-value').value = s.default_cutoff_value != null ? s.default_cutoff_value : '';
       $('set-editing').value = s.customer_editing_enabled === false ? '0' : '1';
       $('set-enabled').value = s.enabled === false ? '0' : '1';
+      var pay = (s.settings && s.settings.payments) || {};
+      if ($('set-pay-provider')) $('set-pay-provider').value = pay.provider || 'stripe';
+      if ($('set-stripe-mode')) $('set-stripe-mode').value = pay.stripe_charge_mode === 'direct' ? 'direct' : 'destination';
+      if ($('set-stripe-acct')) $('set-stripe-acct').value = pay.stripe_connect_account_id || '';
+      if ($('set-stmt')) $('set-stmt').value = pay.statement_suffix || '';
+      if ($('set-paypal-client')) $('set-paypal-client').value = pay.paypal_client_id || '';
+      if ($('set-paypal-email')) $('set-paypal-email').value = pay.paypal_merchant_email || '';
       msg.textContent = 'Preset: ' + (s.industry_preset || 'custom') + ' · Role: ' + (data.role || '—');
+      await loadPickupWindows();
     } catch (e) {
       msg.textContent = (e && e.message) || String(e);
       toast(msg.textContent, 'err');
@@ -1752,6 +1825,19 @@ body.embed .hub{min-height:70vh}
     var msg = $('settings-msg');
     btn.disabled = true;
     try {
+      var existing = {};
+      try {
+        var cur = await api('/api/order/system?' + siteQuery());
+        existing = (cur.system && cur.system.settings) || {};
+      } catch (_e) { existing = {}; }
+      var payments = Object.assign({}, existing.payments || {}, {
+        provider: $('set-pay-provider') ? $('set-pay-provider').value : 'stripe',
+        stripe_charge_mode: $('set-stripe-mode') ? $('set-stripe-mode').value : 'destination',
+        stripe_connect_account_id: $('set-stripe-acct') ? String($('set-stripe-acct').value || '').trim() : '',
+        statement_suffix: $('set-stmt') ? String($('set-stmt').value || '').trim() : '',
+        paypal_client_id: $('set-paypal-client') ? String($('set-paypal-client').value || '').trim() : '',
+        paypal_merchant_email: $('set-paypal-email') ? String($('set-paypal-email').value || '').trim() : ''
+      });
       await api('/api/order/system', {
         method: 'POST',
         body: {
@@ -1761,7 +1847,8 @@ body.embed .hub{min-height:70vh}
           default_cutoff_mode: $('set-cutoff-mode').value,
           default_cutoff_value: $('set-cutoff-value').value !== '' ? Number($('set-cutoff-value').value) : null,
           customer_editing_enabled: $('set-editing').value === '1',
-          enabled: $('set-enabled').value === '1'
+          enabled: $('set-enabled').value === '1',
+          settings: Object.assign({}, existing, { payments: payments })
         }
       });
       msg.textContent = 'Settings saved.';
@@ -1787,6 +1874,77 @@ body.embed .hub{min-height:70vh}
       await loadProductsCache();
       refreshNewLineProductSelects();
     } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
+    btn.disabled = false;
+  }
+
+  /* ---------- Pickup windows ---------- */
+  var PW_DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  async function loadPickupWindows(){
+    var tb = $('pw-tbody');
+    if (!tb || !state.siteId) return;
+    tb.innerHTML = '<tr><td colspan="4">Loading…</td></tr>';
+    try {
+      var data = await api('/api/order/fulfilment-windows?' + siteQuery());
+      var rows = data.windows || [];
+      if (!rows.length) {
+        tb.innerHTML = '<tr><td colspan="4" class="empty">No pickup windows yet — add weekday hours so customers can choose a slot.</td></tr>';
+        return;
+      }
+      tb.innerHTML = rows.map(function(w){
+        var when = w.specific_date
+          ? esc(String(w.specific_date).slice(0,10))
+          : (PW_DAYS[Number(w.weekday)] || ('Day '+w.weekday)) + 's';
+        var win = esc(String(w.window_start||'').slice(0,5)) + '–' + esc(String(w.window_end||'').slice(0,5));
+        return '<tr>' +
+          '<td>' + when + '</td>' +
+          '<td>' + win + '</td>' +
+          '<td>' + (w.active === false ? 'Off' : 'Active') + '</td>' +
+          '<td><button type="button" class="btn ghost" data-pw-del="' + esc(w.id) + '">Remove</button></td>' +
+          '</tr>';
+      }).join('');
+      tb.querySelectorAll('[data-pw-del]').forEach(function(btn){
+        btn.addEventListener('click', async function(){
+          if (!confirm('Remove this pickup window?')) return;
+          try {
+            await api('/api/order/fulfilment-windows?' + siteQuery('id=' + encodeURIComponent(btn.getAttribute('data-pw-del'))), { method: 'DELETE' });
+            toast('Pickup window removed', 'ok');
+            await loadPickupWindows();
+          } catch (e) {
+            toast((e && e.message) || String(e), 'err');
+          }
+        });
+      });
+    } catch (e) {
+      tb.innerHTML = '<tr><td colspan="4" class="empty">' + esc((e && e.message) || String(e)) + '</td></tr>';
+    }
+  }
+  async function addPickupWindow(){
+    if (!requireSite()) return;
+    var msg = $('pw-msg');
+    var btn = $('pw-add');
+    btn.disabled = true;
+    try {
+      var weekday = $('pw-weekday').value;
+      var date = $('pw-date').value;
+      await api('/api/order/fulfilment-windows', {
+        method: 'POST',
+        body: {
+          site_id: state.siteId,
+          weekday: date ? null : (weekday === '' ? null : Number(weekday)),
+          specific_date: date || null,
+          window_start: $('pw-start').value,
+          window_end: $('pw-end').value,
+          active: true
+        }
+      });
+      if (msg) msg.textContent = 'Window added.';
+      toast('Pickup window added', 'ok');
+      $('pw-date').value = '';
+      await loadPickupWindows();
+    } catch (e) {
+      if (msg) msg.textContent = (e && e.message) || String(e);
       toast((e && e.message) || String(e), 'err');
     }
     btn.disabled = false;
@@ -2112,6 +2270,7 @@ body.embed .hub{min-height:70vh}
   if ($('imp-preview')) $('imp-preview').addEventListener('click', runImportPreview);
   if ($('imp-commit')) $('imp-commit').addEventListener('click', runImportCommit);
   $('settings-form').addEventListener('submit', saveSettings);
+  if ($('pw-add')) $('pw-add').addEventListener('click', addPickupWindow);
   $('settings-preset').addEventListener('click', applyButcherPreset);
   $('om-close').addEventListener('click', closeOrderModal);
   $('order-modal').addEventListener('click', function(e){

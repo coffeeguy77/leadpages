@@ -18,6 +18,38 @@ const { isDateAvailable } = require('../../lib/order/capacity');
 const { formatAud } = require('../../lib/order/money');
 const { createAccessToken } = require('../../lib/order/tokens');
 const { notifyEvent, portalUrl, PUBLIC_BASE } = require('../../lib/order/notify');
+const {
+  listWindows,
+  buildPickupSlots,
+  findMatchingSlot
+} = require('../../lib/order/fulfilment-windows');
+const { computeOrderTotals } = require('../../lib/order/pricing');
+
+async function packCartResponse(system, packed) {
+  const payRule = resolvePaymentRule({ system: system });
+  const deposit = computeDepositRequired(payRule, {
+    known_subtotal_cents: packed.cart.known_subtotal_cents,
+    has_unknown_prices: packed.cart.has_unknown_prices
+  });
+  const windows = await listWindows(system.id);
+  const earliest = earliestPickupForCart(system, packed.items);
+  const pickup_slots = buildPickupSlots(windows, earliest, 28);
+  const agg = computeOrderTotals(packed.items || []);
+  return {
+    cart: packed.cart,
+    items: packed.items,
+    earliest_pickup_date: earliest,
+    pickup_slots: pickup_slots,
+    deposit: deposit,
+    display: {
+      known_subtotal: formatAud(agg.known_subtotal_cents),
+      estimated_subtotal:
+        agg.estimated_subtotal_cents != null ? formatAud(agg.estimated_subtotal_cents) : null,
+      deposit: formatAud(deposit.deposit_required_cents),
+      cta: deposit.deposit_required_cents > 0 ? 'Review order' : 'CONFIRM ORDER'
+    }
+  };
+}
 
 async function siteBySlugOrId(slug, siteId) {
   const admin = getAdmin();
@@ -45,26 +77,7 @@ module.exports = async function (req, res) {
       if (!cartId) return json(res, 400, { error: 'cart_id_required' });
       const packed = await getCart(cartId);
       if (!packed || packed.cart.site_id !== site.id) return json(res, 404, { error: 'cart_not_found' });
-      const payRule = resolvePaymentRule({ system: system });
-      const totals = {
-        known_subtotal_cents: packed.cart.known_subtotal_cents,
-        has_unknown_prices: packed.cart.has_unknown_prices
-      };
-      const deposit = computeDepositRequired(payRule, totals);
-      return json(res, 200, {
-        cart: packed.cart,
-        items: packed.items,
-        earliest_pickup_date: earliestPickupForCart(system, packed.items),
-        deposit: deposit,
-        display: {
-          known_subtotal: formatAud(packed.cart.known_subtotal_cents),
-          deposit: formatAud(deposit.deposit_required_cents),
-          cta:
-            deposit.deposit_required_cents > 0
-              ? 'PAY ' + formatAud(deposit.deposit_required_cents) + ' DEPOSIT & CONFIRM ORDER'
-              : 'CONFIRM ORDER'
-        }
-      });
+      return json(res, 200, await packCartResponse(system, packed));
     }
 
     if (req.method === 'POST') {
@@ -107,7 +120,7 @@ module.exports = async function (req, res) {
           });
         }
         const out = await getCart(packed.cart.id);
-        return json(res, 200, out);
+        return json(res, 200, await packCartResponse(system, out));
       }
 
       if (action === 'remove_item') {
@@ -115,7 +128,7 @@ module.exports = async function (req, res) {
         const packed = await getCart(body.cart_id);
         if (!packed || packed.cart.site_id !== site.id) return json(res, 404, { error: 'cart_not_found' });
         await removeItem(body.cart_id, body.cart_item_id);
-        return json(res, 200, await getCart(body.cart_id));
+        return json(res, 200, await packCartResponse(system, await getCart(body.cart_id)));
       }
 
       if (action === 'checkout') {
@@ -138,6 +151,27 @@ module.exports = async function (req, res) {
         const cap = await isDateAvailable(system, body.pickup_date);
         if (!cap.ok) return json(res, 400, { error: 'date_at_capacity', capacity: cap });
 
+        const windows = await listWindows(system.id);
+        const slots = buildPickupSlots(windows, earliest, 28);
+        let pickup_window_start = body.pickup_window_start || null;
+        let pickup_window_end = body.pickup_window_end || null;
+        let pickup_time = body.pickup_time || null;
+        if (slots.length) {
+          const slot =
+            (body.pickup_slot_id &&
+              slots.find(function (s) {
+                return s.id === body.pickup_slot_id;
+              })) ||
+            findMatchingSlot(slots, body.pickup_date, pickup_window_start, pickup_window_end);
+          if (!slot) {
+            return json(res, 400, { error: 'pickup_slot_required', pickup_slots: slots });
+          }
+          pickup_window_start = slot.window_start;
+          pickup_window_end = slot.window_end;
+          pickup_time = String(slot.window_start).slice(0, 5);
+          body.pickup_date = slot.date;
+        }
+
         const created = await convertCartToOrder({
           cartId: body.cart_id,
           system: system,
@@ -147,7 +181,9 @@ module.exports = async function (req, res) {
           customer_email: body.customer_email,
           fulfilment_type: body.fulfilment_type,
           pickup_date: body.pickup_date,
-          pickup_time: body.pickup_time,
+          pickup_time: pickup_time,
+          pickup_window_start: pickup_window_start,
+          pickup_window_end: pickup_window_end,
           customer_notes: body.customer_notes,
           actor: { label: 'customer_storefront' }
         });
@@ -179,30 +215,33 @@ module.exports = async function (req, res) {
         const portal = created.portal_token
           ? portalUrl(created.portal_token)
           : PUBLIC_BASE + '/order-portal';
+        // Keep slug on portal URL so SMS sign-in still works if the token is lost.
+        var portalWithSlug = portal;
+        if (site.slug && portalWithSlug.indexOf('slug=') < 0) {
+          portalWithSlug += (portalWithSlug.indexOf('?') >= 0 ? '&' : '?') + 'slug=' + encodeURIComponent(site.slug);
+        }
         await notifyEvent({
           event_type:
             created.order.status === 'awaiting_deposit' ? 'deposit_required' : 'order_confirmed',
           system: system,
           site: site,
           order: created.order,
-          portal_link: portal,
+          portal_link: portalWithSlug,
           channel: 'both',
           source: 'system'
         });
 
-        let checkout_url = null;
-        if (created.order.status === 'awaiting_deposit' && created.order.deposit_required_cents > 0) {
-          // Client should call checkout-deposit with portal token
-          checkout_url = portal + (portal.indexOf('?') >= 0 ? '&' : '?') + 'pay=1';
-        }
-
+        // Do NOT auto-append pay=1 — customer reviews the order confirmation first.
         return json(res, 200, {
           order: created.order,
           items: created.items,
           portal_token: created.portal_token,
-          portal_url: portal,
-          checkout_url: checkout_url,
-          deposit_token: created.deposit_token
+          portal_url: portalWithSlug,
+          checkout_url: null,
+          deposit_token: created.deposit_token,
+          needs_deposit:
+            created.order.status === 'awaiting_deposit' &&
+            Number(created.order.deposit_required_cents) > 0
         });
       }
 
