@@ -78,6 +78,22 @@ module.exports = async function (req, res) {
       return json(res, 200, { category: data });
     }
 
+    if (req.method === 'POST' && body.action === 'auto_categorise') {
+      const { autoCategoriseProducts } = require('../../lib/order/butcher-categories');
+      const result = await autoCategoriseProducts(admin, system, access.site, {
+        onlyUncategorised: body.only_uncategorised !== false
+      });
+      await writeAudit({
+        order_system_id: system.id,
+        site_id: siteId,
+        event_type: 'products_auto_categorised',
+        actor_user_id: user.id,
+        source: 'admin',
+        payload: result.stats
+      });
+      return json(res, 200, { ok: true, stats: result.stats });
+    }
+
     if (req.method === 'POST') {
       const name = clean(body.name, 200);
       if (!name) return json(res, 400, { error: 'name_required' });
