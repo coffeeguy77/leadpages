@@ -5,6 +5,62 @@ const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/
 const { getAdmin } = require('../../lib/order/supabase');
 const { slugify } = require('../../lib/order/service');
 const { writeAudit } = require('../../lib/order/audit');
+const { buildProductOptionsPatch, slugKey, normaliseChoice } = require('../../lib/order/product-options');
+
+async function syncProductQuestions(admin, siteId, productId, questionsIn) {
+  if (!Array.isArray(questionsIn)) return [];
+  const { data: existing } = await admin
+    .from('order_product_questions')
+    .select('id,key')
+    .eq('product_id', productId);
+  const keepKeys = {};
+  const saved = [];
+  for (var i = 0; i < questionsIn.length; i++) {
+    var q = questionsIn[i] || {};
+    var label = clean(q.label, 120);
+    if (!label) continue;
+    var fieldType = q.field_type === 'checkboxes' ? 'checkboxes' : q.field_type === 'dropdown' ? 'dropdown' : 'radio';
+    var key = clean(q.key, 60) || slugKey(label, 'opt_' + (i + 1));
+    keepKeys[key] = true;
+    var choices = (Array.isArray(q.options) ? q.options : [])
+      .map(normaliseChoice)
+      .filter(Boolean);
+    var row = {
+      product_id: productId,
+      site_id: siteId,
+      key: key,
+      label: label,
+      field_type: fieldType,
+      required: !!q.required,
+      options: choices,
+      sort_order: q.sort_order != null ? Number(q.sort_order) : i,
+      staff_only: !!q.staff_only
+    };
+    var prior = (existing || []).find(function (e) {
+      return e.key === key;
+    });
+    if (prior) {
+      var u = await admin
+        .from('order_product_questions')
+        .update(row)
+        .eq('id', prior.id)
+        .select('*')
+        .single();
+      if (u.error) throw u.error;
+      saved.push(u.data);
+    } else {
+      var ins = await admin.from('order_product_questions').insert(row).select('*').single();
+      if (ins.error) throw ins.error;
+      saved.push(ins.data);
+    }
+  }
+  for (var j = 0; j < (existing || []).length; j++) {
+    if (!keepKeys[existing[j].key]) {
+      await admin.from('order_product_questions').delete().eq('id', existing[j].id);
+    }
+  }
+  return saved;
+}
 
 module.exports = async function (req, res) {
   try {
@@ -97,6 +153,8 @@ module.exports = async function (req, res) {
     if (req.method === 'POST') {
       const name = clean(body.name, 200);
       if (!name) return json(res, 400, { error: 'name_required' });
+      const options = buildProductOptionsPatch(body);
+      const sizePack = options.size_mode === 'pack';
       const row = {
         order_system_id: system.id,
         site_id: siteId,
@@ -131,11 +189,15 @@ module.exports = async function (req, res) {
         deposit_amount_cents: body.deposit_amount_cents != null ? body.deposit_amount_cents : null,
         deposit_percent_bps: body.deposit_percent_bps != null ? body.deposit_percent_bps : null,
         unit_label: body.unit_label || null,
-        weight_required: !!body.weight_required,
-        options: body.options || {}
+        weight_required: sizePack ? false : !!body.weight_required,
+        options: options
       };
       const { data, error } = await admin.from('order_products').insert(row).select('*').single();
       if (error) throw error;
+      let questions = [];
+      if (Array.isArray(body.questions)) {
+        questions = await syncProductQuestions(admin, siteId, data.id, body.questions);
+      }
       await writeAudit({
         order_system_id: system.id,
         site_id: siteId,
@@ -144,7 +206,7 @@ module.exports = async function (req, res) {
         source: 'admin',
         payload: { product_id: data.id, name: data.name }
       });
-      return json(res, 200, { product: data });
+      return json(res, 200, { product: data, questions: questions });
     }
 
     if (req.method === 'PATCH') {
@@ -160,6 +222,25 @@ module.exports = async function (req, res) {
       ].forEach(function (k) {
         if (body[k] !== undefined) patch[k] = body[k];
       });
+      if (
+        body.size_mode !== undefined ||
+        body.pack_weight_kg !== undefined ||
+        body.pack_label !== undefined ||
+        body.options !== undefined
+      ) {
+        const { data: cur } = await admin
+          .from('order_products')
+          .select('options')
+          .eq('id', id)
+          .eq('site_id', siteId)
+          .maybeSingle();
+        patch.options = buildProductOptionsPatch(
+          Object.assign({}, cur && cur.options, body, {
+            options: body.options || (cur && cur.options) || {}
+          })
+        );
+        if (patch.options.size_mode === 'pack') patch.weight_required = false;
+      }
       const { data, error } = await admin
         .from('order_products')
         .update(patch)
@@ -168,7 +249,11 @@ module.exports = async function (req, res) {
         .select('*')
         .single();
       if (error) throw error;
-      return json(res, 200, { product: data });
+      let questions;
+      if (Array.isArray(body.questions)) {
+        questions = await syncProductQuestions(admin, siteId, data.id, body.questions);
+      }
+      return json(res, 200, { product: data, questions: questions });
     }
 
     if (req.method === 'DELETE') {

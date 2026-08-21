@@ -52,7 +52,7 @@ module.exports = async function (req, res) {
     const { data: products } = await admin
       .from('order_products')
       .select(
-        'id,category_id,name,slug,short_description,description,image_url,gallery,sku,pricing_method,price_cents,price_per_kg_cents,price_label,weight_required,unit_label,stock_method,cutoff_mode,cutoff_value,lead_time_mode,lead_time_value,featured,tags,active'
+        'id,category_id,name,slug,short_description,description,image_url,gallery,sku,pricing_method,price_cents,price_per_kg_cents,price_label,weight_required,unit_label,stock_method,cutoff_mode,cutoff_value,lead_time_mode,lead_time_value,featured,tags,active,options'
       )
       .eq('order_system_id', system.id)
       .eq('active', true)
@@ -68,7 +68,7 @@ module.exports = async function (req, res) {
         .from('order_product_questions')
         .select('*')
         .in('product_id', productIds)
-        .eq('active', true)
+        .eq('staff_only', false)
         .order('sort_order');
       questions = q.data || [];
       const r = await admin
@@ -101,8 +101,11 @@ module.exports = async function (req, res) {
     );
     if (storefrontSettings.shop_mode !== 'fast') storefrontSettings.shop_mode = 'traditional';
 
+    const { packLabel, isPackSize } = require('../../lib/order/product-options');
     const displayProducts = (products || []).map(function (p) {
       return Object.assign({}, p, {
+        pack_label: packLabel(p) || null,
+        is_pack_size: isPackSize(p),
         display_price:
           p.pricing_method === 'price_tbc' || p.pricing_method === 'quote_required'
             ? 'Price TBC'
