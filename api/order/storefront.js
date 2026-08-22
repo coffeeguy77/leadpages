@@ -102,10 +102,13 @@ module.exports = async function (req, res) {
     if (storefrontSettings.shop_mode !== 'fast') storefrontSettings.shop_mode = 'traditional';
 
     const { packLabel, isPackSize } = require('../../lib/order/product-options');
+    const { productCategoryIds, additionalCategoryIds } = require('../../lib/order/product-categories');
     const displayProducts = (products || []).map(function (p) {
       return Object.assign({}, p, {
         pack_label: packLabel(p) || null,
         is_pack_size: isPackSize(p),
+        category_ids: productCategoryIds(p),
+        additional_category_ids: additionalCategoryIds(p),
         display_price:
           p.pricing_method === 'price_tbc' || p.pricing_method === 'quote_required'
             ? 'Price TBC'
@@ -127,10 +130,12 @@ module.exports = async function (req, res) {
       });
     });
 
-    // Only expose categories that have at least one active product.
+    // Only expose categories that have at least one active product (primary or additional).
     const productCatIds = {};
     displayProducts.forEach(function (p) {
-      if (p.category_id) productCatIds[p.category_id] = true;
+      (p.category_ids || []).forEach(function (id) {
+        if (id) productCatIds[id] = true;
+      });
     });
     const visibleCategories = (categories || []).filter(function (c) {
       return productCatIds[c.id];

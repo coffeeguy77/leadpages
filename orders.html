@@ -156,6 +156,9 @@ input,select,textarea{
 .prod-opt-choice{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:8px;align-items:end}
 @media(max-width:720px){.prod-opt-choice{grid-template-columns:1fr}}
 .prod-pack-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:var(--accent-soft,#e8f3ef);color:var(--accent);font-size:10.5px;font-weight:700}
+.prod-extra-cats{display:flex;flex-wrap:wrap;gap:8px 14px;padding:10px 12px;border:1px solid var(--line,#e6e2da);border-radius:10px;background:#faf9f7;max-height:160px;overflow:auto}
+.prod-extra-cats label{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;margin:0;cursor:pointer}
+.prod-extra-cats .muted{font-size:12.5px;color:var(--muted,#7a746c)}
 .radio-row{display:flex;flex-wrap:wrap;gap:8px 14px;padding-top:4px}
 .radio-row label{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-base);font-weight:500;color:var(--ink);cursor:pointer;margin:0}
 .radio-row input{width:auto;max-width:none;margin:0;accent-color:var(--accent)}
@@ -403,6 +406,7 @@ body.embed .hub{min-height:70vh}
             </div>
             <div class="actions-row" style="margin:0">
               <button class="btn ghost" type="button" id="prod-auto-cat" title="Create Beef/Chicken/Ham… categories and assign from product names">Match categories</button>
+              <button class="btn ghost" type="button" id="prod-pies-extra" title="Create Pies category and also list every product with Pie/Pies in the name there (keeps current category)">Add Pies from titles</button>
               <button class="btn solid" type="button" id="prod-new">New product</button>
             </div>
           </div>
@@ -430,9 +434,14 @@ body.embed .hub{min-height:70vh}
             <input type="hidden" id="prod-image" value="">
             <div class="grid2">
               <div class="field"><label for="prod-name">Name *</label><input id="prod-name" required></div>
-              <div class="field"><label for="prod-category">Category</label>
+              <div class="field"><label for="prod-category">Primary category</label>
                 <select id="prod-category"><option value="">Uncategorised</option></select>
-                <span class="field-hint">Filter products by category in the list above. <button type="button" class="btn ghost" id="prod-cat-add" style="padding:4px 8px;margin-left:4px">+ New category</button></span>
+                <span class="field-hint">Main category for this product. <button type="button" class="btn ghost" id="prod-cat-add" style="padding:4px 8px;margin-left:4px">+ New category</button></span>
+              </div>
+              <div class="field full" style="grid-column:1/-1">
+                <label>Also show in</label>
+                <div id="prod-extra-cats" class="prod-extra-cats"></div>
+                <span class="field-hint">Optional extra categories (e.g. Lamb pie also listed under Pies). Primary is excluded automatically.</span>
               </div>
               <div class="field full" style="grid-column:1/-1"><label>Product image</label>
                 <div class="prod-img-row">
@@ -1698,6 +1707,60 @@ body.embed .hub{min-height:70vh}
       }).join('');
       try { formSel.value = curForm; } catch (_e) {}
     }
+    renderExtraCategoryChecks(readExtraCategoryIds());
+  }
+
+  function productCategoryIdsLocal(p){
+    var ids = [];
+    var seen = Object.create(null);
+    function add(id){
+      var s = String(id || '');
+      if (!s || seen[s]) return;
+      seen[s] = true;
+      ids.push(s);
+    }
+    if (p && p.category_id) add(p.category_id);
+    var extra = (p && p.options && p.options.additional_category_ids) || (p && p.additional_category_ids) || [];
+    if (Array.isArray(extra)) extra.forEach(add);
+    return ids;
+  }
+
+  function productInCategoryLocal(p, catId){
+    if (!catId) return true;
+    return productCategoryIdsLocal(p).indexOf(String(catId)) >= 0;
+  }
+
+  function readExtraCategoryIds(){
+    var host = $('prod-extra-cats');
+    if (!host) return [];
+    var out = [];
+    host.querySelectorAll('input[type="checkbox"][data-extra-cat]:checked').forEach(function(cb){
+      out.push(cb.getAttribute('data-extra-cat'));
+    });
+    return out;
+  }
+
+  function renderExtraCategoryChecks(selectedIds){
+    var host = $('prod-extra-cats');
+    if (!host) return;
+    var cats = state.categories || [];
+    var primary = ($('prod-category') && $('prod-category').value) || '';
+    var selected = Object.create(null);
+    (selectedIds || []).forEach(function(id){ selected[String(id)] = true; });
+    var html = '';
+    cats.forEach(function(c){
+      if (!c || c.active === false) return;
+      if (String(c.id) === String(primary)) return;
+      html +=
+        '<label><input type="checkbox" data-extra-cat="' +
+        esc(c.id) +
+        '"' +
+        (selected[c.id] ? ' checked' : '') +
+        '> ' +
+        esc(c.name) +
+        '</label>';
+    });
+    host.innerHTML = html || '<span class="muted">No other categories yet — add one with + New category.</span>';
   }
 
   function prodPricingValue(){
@@ -1876,7 +1939,7 @@ body.embed .hub{min-height:70vh}
     var cat = ($('prod-cat-filter') && $('prod-cat-filter').value) || '';
     var q = (($('prod-q') && $('prod-q').value) || '').trim().toLowerCase();
     var filtered = products.filter(function(p){
-      if (cat && p.category_id !== cat) return false;
+      if (cat && !productInCategoryLocal(p, cat)) return false;
       if (q) {
         var hay = (String(p.name || '') + ' ' + String(p.short_description || '') + ' ' + String((p.options && p.options.pack_label) || '')).toLowerCase();
         if (hay.indexOf(q) < 0) return false;
@@ -1900,6 +1963,16 @@ body.embed .hub{min-height:70vh}
       var pack = (p.options && (p.options.pack_label || (p.options.size_mode === 'pack' && p.options.pack_weight_kg)))
         ? (p.options.pack_label || (Math.round(Number(p.options.pack_weight_kg) * 1000) + 'g'))
         : '';
+      var extraIds = productCategoryIdsLocal(p).filter(function(id){ return id !== String(p.category_id || ''); });
+      var catLabel = categoryName(p.category_id);
+      if (extraIds.length) {
+        catLabel +=
+          ' + ' +
+          extraIds
+            .map(function(id){ return categoryName(id); })
+            .filter(function(n){ return n && n !== '—'; })
+            .join(', ');
+      }
       var thumb = p.image_url
         ? '<div style="width:40px;height:40px;border-radius:8px;background:#eee center/cover no-repeat;background-image:url(\'' + esc(p.image_url) + '\')"></div>'
         : '<div style="width:40px;height:40px;border-radius:8px;background:#f0ebe3"></div>';
@@ -1909,7 +1982,7 @@ body.embed .hub{min-height:70vh}
           (pack ? '<span class="prod-pack-badge">' + esc(pack) + '</span>' : '') +
           (p.short_description ? '<div class="muted" style="font-size:12px;margin-top:2px">' + esc(p.short_description) + '</div>' : '') +
         '</td>' +
-        '<td>' + esc(categoryName(p.category_id)) + '</td>' +
+        '<td>' + esc(catLabel) + '</td>' +
         '<td>' + esc(p.pricing_method) + ' · ' + esc(price) + '</td>' +
         '<td>' + esc(p.stock_method || '—') + '</td>' +
         '<td>' + (p.active !== false
@@ -2076,6 +2149,7 @@ body.embed .hub{min-height:70vh}
     if ($('prod-size-mode')) $('prod-size-mode').value = opts.size_mode === 'pack' || opts.size_mode === 'fixed' ? 'pack' : 'variable';
     if ($('prod-pack-kg')) $('prod-pack-kg').value = opts.pack_weight_kg != null ? opts.pack_weight_kg : '';
     if ($('prod-pack-label')) $('prod-pack-label').value = opts.pack_label || '';
+    renderExtraCategoryChecks(opts.additional_category_ids || []);
     $('prod-msg').textContent = '';
     syncPackFieldsVisibility();
     $('prod-form-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -2097,6 +2171,7 @@ body.embed .hub{min-height:70vh}
       short_description: $('prod-short') ? ($('prod-short').value.trim() || null) : null,
       image_url: $('prod-image').value.trim() || null,
       category_id: ($('prod-category') && $('prod-category').value) || null,
+      additional_category_ids: readExtraCategoryIds(),
       pricing_method: pricing,
       price_cents: $('prod-price').value !== '' ? dollarsToCents($('prod-price').value) : null,
       price_per_kg_cents: $('prod-perkg').value !== '' ? dollarsToCents($('prod-perkg').value) : null,
@@ -2160,6 +2235,41 @@ body.embed .hub{min-height:70vh}
       });
       var st = r.stats || {};
       toast('Matched ' + (st.updated || 0) + ' products · ' + (st.unmatched || 0) + ' unmatched · ' + (st.skipped || 0) + ' skipped', 'ok');
+      await loadProductsView();
+    } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
+    if (btn) btn.disabled = false;
+  }
+
+  async function assignPiesFromTitles(){
+    if (!requireSite()) return;
+    if (!confirm('Create a “Pies” category (if needed) and also list every product with “pie” in the name under Pies — without removing their current category?')) return;
+    var btn = $('prod-pies-extra');
+    if (btn) btn.disabled = true;
+    try {
+      var r = await api('/api/order/products', {
+        method: 'POST',
+        body: {
+          site_id: state.siteId,
+          action: 'assign_additional_by_match',
+          category_name: 'Pies',
+          name_contains: 'pie',
+          slug: 'pies'
+        }
+      });
+      var st = r.stats || {};
+      toast(
+        'Pies: ' +
+          (st.updated || 0) +
+          ' added · ' +
+          (st.already || 0) +
+          ' already · ' +
+          (st.matched || 0) +
+          ' matched' +
+          (st.category_created ? ' (category created)' : ''),
+        'ok'
+      );
       await loadProductsView();
     } catch (e) {
       toast((e && e.message) || String(e), 'err');
@@ -2536,7 +2646,7 @@ body.embed .hub{min-height:70vh}
     var withEnabled = {};
     products.forEach(function(p){
       if (p.active === false) return;
-      if (p.category_id) withEnabled[p.category_id] = true;
+      productCategoryIdsLocal(p).forEach(function(id){ withEnabled[id] = true; });
     });
     var html = '<option value="">First category with products</option>';
     cats.forEach(function(c){
@@ -3121,6 +3231,10 @@ body.embed .hub{min-height:70vh}
   if ($('prod-q')) $('prod-q').addEventListener('input', function(){ renderProductsTable(); });
   if ($('prod-cat-add')) $('prod-cat-add').addEventListener('click', addProductCategory);
   if ($('prod-auto-cat')) $('prod-auto-cat').addEventListener('click', autoCategoriseProducts);
+  if ($('prod-pies-extra')) $('prod-pies-extra').addEventListener('click', assignPiesFromTitles);
+  if ($('prod-category')) $('prod-category').addEventListener('change', function(){
+    renderExtraCategoryChecks(readExtraCategoryIds());
+  });
   if ($('prod-image-upload')) $('prod-image-upload').addEventListener('click', function(){ $('prod-image-file').click(); });
   if ($('prod-image-clear')) $('prod-image-clear').addEventListener('click', function(){
     $('prod-image').value = '';

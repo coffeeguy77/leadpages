@@ -616,13 +616,25 @@
     return html;
   };
 
+  OrderStorefront.prototype.productInCategory = function (p, categoryId) {
+    if (!categoryId) return true;
+    var want = String(categoryId);
+    if (Array.isArray(p.category_ids) && p.category_ids.length) {
+      return p.category_ids.indexOf(want) >= 0;
+    }
+    if (Array.isArray(p.additional_category_ids) && p.additional_category_ids.indexOf(want) >= 0) {
+      return true;
+    }
+    return String(p.category_id || '') === want;
+  };
+
   OrderStorefront.prototype.renderFastMenu = function () {
     var self = this;
     var products = (this.state.catalogue && this.state.catalogue.products) || [];
     var active = this.state.activeCategoryId;
     if (active) {
       products = products.filter(function (p) {
-        return p.category_id === active;
+        return self.productInCategory(p, active);
       });
     }
     var html = '<div class="lp-oe-fast" role="list">';
@@ -837,7 +849,7 @@
     var active = this.state.activeCategoryId;
     if (active) {
       products = products.filter(function (p) {
-        return p.category_id === active;
+        return self.productInCategory(p, active);
       });
     }
     var html = '';
