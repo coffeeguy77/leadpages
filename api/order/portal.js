@@ -4,6 +4,7 @@ const { readBody, json, methodOk } = require('../../lib/order/http');
 const { getAdmin } = require('../../lib/order/supabase');
 const { resolveAccessToken } = require('../../lib/order/tokens');
 const { formatAud } = require('../../lib/order/money');
+const { orderGstSummary } = require('../../lib/order/gst');
 const { editingStateFor } = require('../../lib/order/cutoff');
 const { writeChange, writeAudit } = require('../../lib/order/audit');
 const { recalculateOrder } = require('../../lib/order/service');
@@ -37,6 +38,7 @@ module.exports = async function (req, res) {
       order.editing_state === 'locked' || liveEdit === 'locked' ? 'locked' : liveEdit;
 
     if (req.method === 'GET') {
+      const gstSummary = orderGstSummary(items || []);
       return json(res, 200, {
         order: {
           id: order.id,
@@ -73,7 +75,8 @@ module.exports = async function (req, res) {
             price_status: it.price_status,
             line_known_cents: it.line_known_cents,
             line_final_cents: it.line_final_cents,
-            notes: it.notes
+            notes: it.notes,
+            includes_gst: !!(it.product_snapshot && it.product_snapshot.includes_gst)
           };
         }),
         business: site,
@@ -81,6 +84,8 @@ module.exports = async function (req, res) {
           known_subtotal: formatAud(order.known_subtotal_cents),
           deposit_required: formatAud(order.deposit_required_cents),
           deposit_paid: formatAud(order.deposit_paid_cents),
+          gst_included:
+            gstSummary.gst_included_cents > 0 ? formatAud(gstSummary.gst_included_cents) : null,
           balance:
             order.balance_cents != null
               ? formatAud(order.balance_cents)

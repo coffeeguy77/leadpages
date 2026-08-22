@@ -188,6 +188,34 @@ module.exports = async function (req, res) {
       return json(res, 200, { ok: true, stats: stats });
     }
 
+    if (req.method === 'POST' && body.action === 'delete_products') {
+      const ids = Array.isArray(body.product_ids) ? body.product_ids : [];
+      const unique = [];
+      const seen = Object.create(null);
+      ids.forEach(function (id) {
+        var s = String(id || '').trim();
+        if (!s || seen[s]) return;
+        seen[s] = true;
+        unique.push(s);
+      });
+      if (!unique.length) return json(res, 400, { error: 'product_ids_required' });
+      const { error } = await admin
+        .from('order_products')
+        .update({ active: false, updated_at: new Date().toISOString() })
+        .eq('site_id', siteId)
+        .in('id', unique);
+      if (error) throw error;
+      await writeAudit({
+        order_system_id: system.id,
+        site_id: siteId,
+        event_type: 'products_deleted',
+        actor_user_id: user.id,
+        source: 'admin',
+        payload: { product_ids: unique, count: unique.length }
+      });
+      return json(res, 200, { ok: true, deleted: unique.length });
+    }
+
     if (req.method === 'POST' && body.action === 'deactivate_unsized_hams') {
       const { deactivateUnsizedHamProducts } = require('../../lib/order/deactivate-unsized-hams');
       const stats = await deactivateUnsizedHamProducts({

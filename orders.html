@@ -156,9 +156,15 @@ input,select,textarea{
 .prod-opt-choice{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:8px;align-items:end}
 @media(max-width:720px){.prod-opt-choice{grid-template-columns:1fr}}
 .prod-pack-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:var(--accent-soft,#e8f3ef);color:var(--accent);font-size:10.5px;font-weight:700}
-.prod-extra-cats{display:flex;flex-wrap:wrap;gap:8px 14px;padding:10px 12px;border:1px solid var(--line,#e6e2da);border-radius:10px;background:#faf9f7;max-height:160px;overflow:auto}
-.prod-extra-cats label{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;margin:0;cursor:pointer}
-.prod-extra-cats .muted{font-size:12.5px;color:var(--muted,#7a746c)}
+.prod-extra-cats{display:flex;flex-wrap:wrap;gap:8px 14px;padding:10px 12px;border:1px solid var(--line,#e6e2da);border-radius:10px;background:var(--panel-soft,var(--panel,#fff));color:var(--ink);max-height:160px;overflow:auto}
+.prod-extra-cats label{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;margin:0;cursor:pointer;color:var(--ink)}
+.prod-extra-cats .muted{font-size:12.5px;color:var(--muted,var(--ink-soft))}
+.prod-delete-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px;padding:10px 12px;border-radius:10px;border:1px dashed var(--line);background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.prod-delete-bar.locked{opacity:.85}
+.settings-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.settings-tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.prod-thumb{width:40px;height:40px;border-radius:8px;background:transparent center/contain no-repeat;flex:none}
+.prod-thumb:empty{display:none}
 .radio-row{display:flex;flex-wrap:wrap;gap:8px 14px;padding-top:4px}
 .radio-row label{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-base);font-weight:500;color:var(--ink);cursor:pointer;margin:0}
 .radio-row input{width:auto;max-width:none;margin:0;accent-color:var(--accent)}
@@ -166,7 +172,8 @@ input,select,textarea{
 .money-input .prefix{font-weight:700;color:var(--ink-soft);font-size:var(--fs-base)}
 .money-input input{flex:1;max-width:none}
 .prod-img-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
-.prod-img-preview{width:88px;height:88px;border-radius:12px;border:1px solid var(--line);background:#f3efe7 center/cover no-repeat;flex:none}
+.prod-img-preview{width:88px;height:88px;border-radius:12px;border:1px solid var(--line);background:transparent center/contain no-repeat;flex:none}
+.prod-img-preview.hide{display:none}
 .prod-img-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .prod-cat-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;align-items:center}
 .card-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;margin-bottom:8px}
@@ -409,6 +416,8 @@ body.embed .hub{min-height:70vh}
               <button class="btn ghost" type="button" id="prod-pies-extra" title="Create Pies category and also list every product with Pie/Pies in the name there (keeps current category)">Add Pies from titles</button>
               <button class="btn ghost" type="button" id="prod-migrate-weight" title="Move kg from short descriptions to minimum kg; set whole turkeys/chickens to quantity with size guide">Apply weight &amp; turkey rules</button>
               <button class="btn ghost" type="button" id="prod-deactivate-unsized-hams" title="Deactivate ham products without a size/weight (keeps e.g. HAM - HALF 3.5-4). Past orders and reorders are safe — inactive items are skipped.">Deactivate unsized hams</button>
+              <button class="btn ghost" type="button" id="prod-delete-unlock">Unlock delete</button>
+              <button class="btn ghost hide" type="button" id="prod-delete-selected">Delete selected</button>
               <button class="btn solid" type="button" id="prod-new">New product</button>
             </div>
           </div>
@@ -422,9 +431,12 @@ body.embed .hub{min-height:70vh}
               <input id="prod-q" placeholder="Find a product…" style="max-width:280px">
             </label>
           </div>
+          <div class="prod-delete-bar locked hide" id="prod-delete-bar">
+            <span class="notice" style="margin:0" id="prod-delete-hint">Unlock delete to select products. Deactivates products (past orders stay safe).</span>
+          </div>
           <div class="table-wrap">
             <table class="oe"><thead><tr>
-              <th></th><th>Name</th><th>Category</th><th>Pricing</th><th>Stock</th><th>Active</th><th></th>
+              <th class="prod-del-col hide" style="width:36px"></th><th></th><th>Name</th><th>Category</th><th>Pricing</th><th>Stock</th><th>Active</th><th></th>
             </tr></thead><tbody id="prod-tbody"></tbody></table>
           </div>
           <p class="empty hide" id="prod-empty">No products yet — apply the butcher preset in Settings or create one.</p>
@@ -759,6 +771,11 @@ body.embed .hub{min-height:70vh}
           <p class="notice">Applying the butcher preset updates defaults and seeds sample products/templates when the catalogue is empty.</p>
           <p class="notice" id="settings-shop-link">Customer shop: enable <strong>Order Storefront</strong> on the site (Page editor → Lead Capture) or open <code>/order-shop?slug=…</code>.</p>
           <form id="settings-form">
+            <div class="settings-tabs" role="tablist">
+              <button type="button" class="btn ghost settings-tab on" data-set-tab="general">General</button>
+              <button type="button" class="btn ghost settings-tab" data-set-tab="gst">GST</button>
+            </div>
+            <div id="settings-panel-general">
             <div class="grid2">
               <div class="field"><label for="set-payment">Payment rule</label>
                 <select id="set-payment">
@@ -936,6 +953,17 @@ body.embed .hub{min-height:70vh}
 
             <button class="btn solid" type="submit" id="settings-save">Save settings</button>
             <p class="notice" id="settings-msg"></p>
+            </div>
+
+            <div id="settings-panel-gst" class="hide">
+              <h4 class="section-title">GST (Australia)</h4>
+              <p class="notice">Fresh meat is usually GST-free. Processed items (pies, ready meals, etc.) are typically sold with <strong>GST included</strong> in the shelf price. Tick categories below — every product in those categories (primary or “Also show in”) will show <em>inc. GST</em> on receipts and the shop.</p>
+              <div class="field"><label>GST applies to products in these categories</label>
+                <div id="set-gst-cats" class="prod-extra-cats"></div>
+                <span class="field-hint">Prices you enter are treated as GST-inclusive for ticked categories. Receipts show how much GST is included.</span>
+              </div>
+              <button class="btn solid" type="submit">Save GST settings</button>
+            </div>
           </form>
         </div>
 
@@ -1061,7 +1089,9 @@ body.embed .hub{min-height:70vh}
     pickupSlotPreview: [],
     currentView: 'dashboard',
     detail: null,
-    navCounts: { customers: null, orders: null, new_orders: null, archived: null }
+    navCounts: { customers: null, orders: null, new_orders: null, archived: null },
+    prodDeleteUnlocked: false,
+    prodDeleteSelected: {}
   };
 
   var $ = function(id){ return document.getElementById(id); };
@@ -1917,9 +1947,103 @@ body.embed .hub{min-height:70vh}
     if (!box) return;
     if (url) {
       box.style.backgroundImage = 'url("' + String(url).replace(/"/g, '') + '")';
+      box.classList.remove('hide');
+      box.setAttribute('aria-hidden', 'false');
     } else {
       box.style.backgroundImage = '';
+      box.classList.add('hide');
+      box.setAttribute('aria-hidden', 'true');
     }
+  }
+
+  function setProdDeleteMode(unlocked){
+    state.prodDeleteUnlocked = !!unlocked;
+    if (!unlocked) state.prodDeleteSelected = {};
+    var bar = $('prod-delete-bar');
+    var unlockBtn = $('prod-delete-unlock');
+    var delBtn = $('prod-delete-selected');
+    if (bar) {
+      bar.classList.toggle('hide', !unlocked);
+      bar.classList.toggle('locked', !unlocked);
+    }
+    if (unlockBtn) {
+      unlockBtn.textContent = unlocked ? 'Lock delete' : 'Unlock delete';
+      unlockBtn.classList.toggle('solid', unlocked);
+      unlockBtn.classList.toggle('ghost', !unlocked);
+    }
+    if (delBtn) delBtn.classList.toggle('hide', !unlocked);
+    document.querySelectorAll('.prod-del-col').forEach(function(el){
+      el.classList.toggle('hide', !unlocked);
+    });
+    var hint = $('prod-delete-hint');
+    if (hint) {
+      hint.textContent = unlocked
+        ? 'Select products to deactivate, then Delete selected — or Lock delete when finished.'
+        : 'Unlock delete to select products. Deactivates products (past orders stay safe).';
+    }
+    renderProductsTable();
+  }
+
+  function toggleProdDeleteSelect(id, on){
+    if (!state.prodDeleteUnlocked) return;
+    if (on) state.prodDeleteSelected[id] = true;
+    else delete state.prodDeleteSelected[id];
+    var delBtn = $('prod-delete-selected');
+    var n = Object.keys(state.prodDeleteSelected).length;
+    if (delBtn) delBtn.textContent = n ? ('Delete selected (' + n + ')') : 'Delete selected';
+  }
+
+  async function deleteSelectedProducts(){
+    if (!requireSite() || !state.prodDeleteUnlocked) return;
+    var ids = Object.keys(state.prodDeleteSelected);
+    if (!ids.length) { toast('Select products first', 'err'); return; }
+    if (!confirm('Deactivate ' + ids.length + ' product(s)? Past orders are not affected.')) return;
+    try {
+      await api('/api/order/products', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'delete_products', product_ids: ids }
+      });
+      toast('Deleted ' + ids.length + ' product(s)', 'ok');
+      state.prodDeleteSelected = {};
+      setProdDeleteMode(false);
+      await loadProductsView();
+    } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
+  }
+
+  function renderGstCategorySettings(selectedIds){
+    var host = $('set-gst-cats');
+    if (!host) return;
+    var selected = Object.create(null);
+    (selectedIds || []).forEach(function(id){ selected[String(id)] = true; });
+    var cats = (state.categories || []).filter(function(c){ return c.active !== false; });
+    if (!cats.length) {
+      host.innerHTML = '<span class="muted">No categories yet — create products or run Match categories first.</span>';
+      return;
+    }
+    host.innerHTML = cats.map(function(c){
+      return '<label><input type="checkbox" data-gst-cat="' + esc(c.id) + '"' +
+        (selected[c.id] ? ' checked' : '') + '> ' + esc(c.name) + '</label>';
+    }).join('');
+  }
+
+  function collectGstCategoryIds(){
+    var host = $('set-gst-cats');
+    if (!host) return [];
+    return Array.prototype.slice.call(host.querySelectorAll('[data-gst-cat]:checked')).map(function(el){
+      return el.getAttribute('data-gst-cat');
+    });
+  }
+
+  function switchSettingsTab(tab){
+    var general = $('settings-panel-general');
+    var gst = $('settings-panel-gst');
+    document.querySelectorAll('.settings-tab').forEach(function(btn){
+      btn.classList.toggle('on', btn.getAttribute('data-set-tab') === tab);
+    });
+    if (general) general.classList.toggle('hide', tab !== 'general');
+    if (gst) gst.classList.toggle('hide', tab !== 'gst');
   }
 
   var CW_CLOUD = 'dzx6x1hou';
@@ -2057,7 +2181,7 @@ body.embed .hub{min-height:70vh}
     if (!requireSite()) return;
     var tbody = $('prod-tbody');
     var empty = $('prod-empty');
-    tbody.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8">Loading…</td></tr>';
     try {
       var data = await loadProductsCache();
       fillCategorySelects();
@@ -2090,9 +2214,10 @@ body.embed .hub{min-height:70vh}
     }
     if (empty) empty.classList.add('hide');
     if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="7">No products match this filter.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="' + (state.prodDeleteUnlocked ? 8 : 7) + '">No products match this filter.</td></tr>';
       return;
     }
+    var delOn = state.prodDeleteUnlocked;
     tbody.innerHTML = filtered.map(function(p){
       var price = p.pricing_method === 'per_weight'
         ? formatAud(p.price_per_kg_cents) + '/kg'
@@ -2111,9 +2236,11 @@ body.embed .hub{min-height:70vh}
             .join(', ');
       }
       var thumb = p.image_url
-        ? '<div style="width:40px;height:40px;border-radius:8px;background:#eee center/cover no-repeat;background-image:url(\'' + esc(p.image_url) + '\')"></div>'
-        : '<div style="width:40px;height:40px;border-radius:8px;background:#f0ebe3"></div>';
+        ? '<div class="prod-thumb" style="background-image:url(\'' + esc(p.image_url) + '\')"></div>'
+        : '';
       return '<tr class="clickable" data-edit="' + esc(p.id) + '">' +
+        (delOn ? '<td class="prod-del-col" onclick="event.stopPropagation()"><input type="checkbox" data-prod-del="' + esc(p.id) + '"' +
+          (state.prodDeleteSelected[p.id] ? ' checked' : '') + ' aria-label="Select for delete"></td>' : '') +
         '<td>' + thumb + '</td>' +
         '<td><strong>' + esc(p.name) + '</strong>' +
           (pack ? '<span class="prod-pack-badge">' + esc(pack) + '</span>' : '') +
@@ -2135,6 +2262,12 @@ body.embed .hub{min-height:70vh}
       tr.addEventListener('click', function(e){
         if (e.target && e.target.closest && e.target.closest('button')) return;
         openEdit(tr.getAttribute('data-edit'));
+      });
+    });
+    tbody.querySelectorAll('[data-prod-del]').forEach(function(cb){
+      cb.addEventListener('change', function(e){
+        e.stopPropagation();
+        toggleProdDeleteSelect(cb.getAttribute('data-prod-del'), cb.checked);
       });
     });
     tbody.querySelectorAll('[data-edit-btn]').forEach(function(btn){
@@ -2984,6 +3117,8 @@ body.embed .hub{min-height:70vh}
       setClr('set-sf-ibg', ap.input_bg, '#ffffff');
       setClr('set-sf-ibd', ap.input_border, '#e4e0d8');
       setClr('set-sf-page', ap.page_bg, '#ffffff');
+      var gst = (s.settings && s.settings.gst) || {};
+      renderGstCategorySettings(gst.category_ids || []);
       msg.textContent = 'Preset: ' + (s.industry_preset || 'custom') + ' · Role: ' + (data.role || '—');
       await loadPickupWindows();
     } catch (e) {
@@ -3067,6 +3202,10 @@ body.embed .hub{min-height:70vh}
           settings: Object.assign({}, existing, {
             payments: payments,
             storefront: storefront,
+            gst: {
+              enabled: true,
+              category_ids: collectGstCategoryIds()
+            },
             abandoned_cart: {
               max_per_customer: $('set-abd-max-customer') && $('set-abd-max-customer').value !== ''
                 ? Math.max(0, Number($('set-abd-max-customer').value) || 1)
@@ -3659,6 +3798,15 @@ body.embed .hub{min-height:70vh}
   if ($('prod-deactivate-unsized-hams')) $('prod-deactivate-unsized-hams').addEventListener('click', deactivateUnsizedHams);
   if ($('prod-category')) $('prod-category').addEventListener('change', function(){
     renderExtraCategoryChecks(readExtraCategoryIds());
+  });
+  if ($('prod-delete-unlock')) $('prod-delete-unlock').addEventListener('click', function(){
+    setProdDeleteMode(!state.prodDeleteUnlocked);
+  });
+  if ($('prod-delete-selected')) $('prod-delete-selected').addEventListener('click', deleteSelectedProducts);
+  document.querySelectorAll('.settings-tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      switchSettingsTab(btn.getAttribute('data-set-tab') || 'general');
+    });
   });
   if ($('prod-image-upload')) $('prod-image-upload').addEventListener('click', function(){ $('prod-image-file').click(); });
   if ($('prod-image-clear')) $('prod-image-clear').addEventListener('click', function(){
