@@ -127,3 +127,14 @@ test('portal re-links orders by normalised phone', function () {
   assert.match(api, /phonesMatch/);
   assert.match(api, /requested_weight_kg/);
 });
+
+test('storeSmsOtp hard-deletes prior OTPs and unique-hashes Verify rows', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const tokens = fs.readFileSync(path.join(__dirname, '..', 'lib/order/tokens.js'), 'utf8');
+  assert.match(tokens, /deletePriorSmsOtps/);
+  assert.match(tokens, /\.delete\(\)/);
+  assert.match(tokens, /meta->>phone_e164/);
+  assert.match(tokens, /VERIFY:/);
+  assert.doesNotMatch(tokens, /revoked_at: new Date\(\)\.toISOString\(\)\s*\n\s*\.eq\('purpose', 'sms_otp'\)/);
+});
