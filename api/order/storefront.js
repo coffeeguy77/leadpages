@@ -101,12 +101,19 @@ module.exports = async function (req, res) {
     );
     if (storefrontSettings.shop_mode !== 'fast') storefrontSettings.shop_mode = 'traditional';
 
-    const { packLabel, isPackSize } = require('../../lib/order/product-options');
+    const { packLabel, isPackSize, isEachSize, minimumKgOption } = require('../../lib/order/product-options');
+    const { minimumKg, defaultWeightKg } = require('../../lib/order/product-weight');
     const { productCategoryIds, additionalCategoryIds } = require('../../lib/order/product-categories');
     const displayProducts = (products || []).map(function (p) {
+      var qp =
+        p.options && p.options.quantity_prompt ? String(p.options.quantity_prompt).trim() : '';
       return Object.assign({}, p, {
         pack_label: packLabel(p) || null,
         is_pack_size: isPackSize(p),
+        is_each_size: isEachSize(p),
+        minimum_kg: minimumKg(p) || minimumKgOption(p) || null,
+        default_weight_kg: defaultWeightKg(p),
+        quantity_prompt: qp || null,
         category_ids: productCategoryIds(p),
         additional_category_ids: additionalCategoryIds(p),
         display_price:

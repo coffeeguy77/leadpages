@@ -140,7 +140,7 @@
 
   OrderStorefront.prototype.needsWeight = function (p) {
     if (!p) return false;
-    if (this.isPackSize(p)) return false;
+    if (this.isPackSize(p) || this.isEachSize(p)) return false;
     return !!(p.weight_required || p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc');
   };
 
@@ -152,6 +152,39 @@
   OrderStorefront.prototype.isPackSize = function (p) {
     var o = (p && p.options) || {};
     return o.size_mode === 'pack' || o.size_mode === 'fixed' || !!p.is_pack_size;
+  };
+
+  OrderStorefront.prototype.isEachSize = function (p) {
+    var o = (p && p.options) || {};
+    return o.size_mode === 'each' || o.size_mode === 'unit' || o.size_mode === 'individual' || !!p.is_each_size;
+  };
+
+  OrderStorefront.prototype.minimumWeightKg = function (p) {
+    if (p && p.minimum_kg != null) {
+      var n = Number(p.minimum_kg);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+    var o = (p && p.options) || {};
+    if (o.minimum_kg != null) {
+      var m = Number(o.minimum_kg);
+      if (Number.isFinite(m) && m > 0) return m;
+    }
+    return null;
+  };
+
+  OrderStorefront.prototype.defaultWeightKg = function (p) {
+    if (p && p.default_weight_kg != null) {
+      var d = Number(p.default_weight_kg);
+      if (Number.isFinite(d) && d > 0) return d;
+    }
+    var min = this.minimumWeightKg(p);
+    return min != null ? min : 1;
+  };
+
+  OrderStorefront.prototype.quantityPrompt = function (p) {
+    if (p && p.quantity_prompt) return String(p.quantity_prompt).trim();
+    var o = (p && p.options) || {};
+    return o.quantity_prompt ? String(o.quantity_prompt).trim() : '';
   };
 
   OrderStorefront.prototype.packLabel = function (p) {
@@ -766,9 +799,12 @@
     var needsW = this.needsWeight(p);
     var showQty = this.showsQuantity(p);
     var pack = this.packLabel(p);
+    var qtyPrompt = this.quantityPrompt(p);
     var hasQs = (p.questions || []).length > 0;
     var qtyVal = draft.qty != null && draft.qty !== '' ? draft.qty : '1';
-    var kgVal = draft.kg != null ? draft.kg : '';
+    var minKg = this.minimumWeightKg(p);
+    var defaultKg = this.defaultWeightKg(p);
+    var kgVal = draft.kg != null && draft.kg !== '' ? draft.kg : '';
     var notesVal = draft.notes || '';
     var hasImg = !!p.image_url;
     var html = '';
@@ -789,6 +825,7 @@
     html += '<div class="lp-oe-fast-info">';
     html += '<h3>' + esc(p.name) + '</h3>';
     if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
+    if (qtyPrompt) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
     if (p.short_description) html += '<p class="lp-oe-fast-desc">' + esc(p.short_description) + '</p>';
     html += '<div class="lp-oe-price">' + esc(p.display_price) + '</div>';
     html += '</div>';
@@ -805,10 +842,13 @@
     if (needsW) {
       html +=
         '<label class="lp-oe-fast-field">kg' +
+        (minKg != null
+          ? '<span class="lp-oe-field-hint">min ' + esc(String(minKg)) + ' kg</span>'
+          : '') +
         this.stepperHtml({
-          min: 0.1,
+          min: minKg != null ? minKg : 0.1,
           step: 0.1,
-          value: kgVal || '1.0',
+          value: kgVal || String(defaultKg),
           dataAttr: 'data-fast-kg'
         }) +
         '</label>';
@@ -894,12 +934,16 @@
 
   OrderStorefront.prototype.renderProduct = function (p) {
     var pack = this.packLabel(p);
+    var qtyPrompt = this.quantityPrompt(p);
     var needsW = this.needsWeight(p);
     var showQty = this.showsQuantity(p);
+    var minKg = this.minimumWeightKg(p);
+    var defaultKg = this.defaultWeightKg(p);
     var html = '<div class="lp-oe-detail">';
     html += '<button type="button" class="lp-oe-link" data-act="back-shop">← Back</button>';
     html += '<h3>' + esc(p.name) + '</h3>';
     if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
+    if (qtyPrompt) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
     html += '<p class="lp-oe-price">' + esc(p.display_price) + '</p>';
     if (p.description || p.short_description)
       html += '<p class="lp-oe-desc">' + esc(p.description || p.short_description) + '</p>';
@@ -917,9 +961,23 @@
     if (needsW) {
       html +=
         '<label class="lp-oe-field">Approx. weight (kg)' +
-        this.stepperHtml({ min: 0.1, step: 0.1, value: '1.0', id: 'oe-kg' }) +
+        this.stepperHtml({
+          min: minKg != null ? minKg : 0.1,
+          step: 0.1,
+          value: String(defaultKg),
+          id: 'oe-kg'
+        }) +
         '</label>';
-      html += '<p class="lp-oe-pack-note">Sold by weight — enter how much you want.</p>';
+      if (minKg != null) {
+        html +=
+          '<p class="lp-oe-pack-note">Minimum order ' +
+          esc(String(minKg)) +
+          ' kg — enter how much you need (e.g. ' +
+          esc(String(defaultKg)) +
+          ' kg).</p>';
+      } else {
+        html += '<p class="lp-oe-pack-note">Sold by weight — enter how much you want (e.g. 1 kg).</p>';
+      }
     }
     html +=
       '<label class="lp-oe-field">Notes<textarea id="oe-notes" class="lp-oe-notes-grow" rows="1" placeholder="Optional"></textarea></label>';
@@ -1692,6 +1750,17 @@
           self.render();
           return;
         }
+        var minKgInline = product && self.minimumWeightKg(product);
+        if (product && self.needsWeight(product) && minKgInline != null && kgVal + 0.0001 < minKgInline) {
+          self.state.msg =
+            'Minimum weight for ' +
+            (product.name || 'this item') +
+            ' is ' +
+            minKgInline +
+            ' kg.';
+          self.render();
+          return;
+        }
         var notesEl = row && row.querySelector('[data-fast-notes]');
         var notesVal = (notesEl && notesEl.value) || draft.notes || null;
         var answers = self.collectAnswers(row || self.root);
@@ -1735,6 +1804,12 @@
         var notesVal = (($('#oe-notes', self.root) || {}).value) || null;
         if (product && self.needsWeight(product) && (kgVal == null || !isFinite(kgVal) || kgVal <= 0)) {
           self.state.msg = 'Enter an approximate weight in kg.';
+          self.render();
+          return;
+        }
+        var minKgDetail = product && self.minimumWeightKg(product);
+        if (product && self.needsWeight(product) && minKgDetail != null && kgVal + 0.0001 < minKgDetail) {
+          self.state.msg = 'Minimum weight is ' + minKgDetail + ' kg for this item.';
           self.render();
           return;
         }
@@ -1899,6 +1974,8 @@
       '.lp-oe-list .lp-oe-card.no-img{grid-template-columns:minmax(0,1fr) auto}',
       '.lp-oe-card.no-img .lp-oe-body{padding-top:16px}',
       '.lp-oe-pack{margin:0 0 4px;font-size:12px;font-weight:700;color:var(--oe-accent);letter-spacing:.02em}',
+      '.lp-oe-qty-prompt{margin:0 0 6px;color:var(--oe-muted);font-size:15px;font-weight:500;line-height:1.35}',
+      '.lp-oe-field-hint{display:block;font-size:11px;font-weight:600;color:var(--oe-muted);margin:0 0 4px}',
       '.lp-oe-pack-note{margin:0;color:var(--oe-muted);font-size:13px;align-self:center}',
       '.lp-oe input[type=number]{-moz-appearance:textfield;appearance:textfield}',
       '.lp-oe input[type=number]::-webkit-outer-spin-button,.lp-oe input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}',
