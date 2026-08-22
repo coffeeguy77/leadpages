@@ -5,10 +5,12 @@ const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/
 const { getAdmin } = require('../../lib/order/supabase');
 const { formatAud } = require('../../lib/order/money');
 const { normaliseAuPhone } = require('../../lib/order/phone');
+const { displayFullName } = require('../../lib/order/customer-name');
+const { backfillCustomerNames } = require('../../lib/order/backfill-customer-names');
 
 module.exports = async function (req, res) {
   try {
-    if (!methodOk(req, res, ['GET', 'PATCH'])) return;
+    if (!methodOk(req, res, ['GET', 'PATCH', 'POST'])) return;
     const user = await requireUser(req);
     if (!user) return json(res, 401, { error: 'auth' });
     const body = req.method === 'GET' ? {} : await readBody(req);
@@ -17,6 +19,15 @@ module.exports = async function (req, res) {
     if (!access.ok) return json(res, access.code, { error: access.error });
     await ensureOrderSystem(siteId);
     const admin = getAdmin();
+
+    if (req.method === 'POST') {
+      const action = body.action || 'normalize_names';
+      if (action === 'normalize_names') {
+        const result = await backfillCustomerNames({ site_id: siteId, limit: body.limit || 5000 });
+        return json(res, 200, { ok: true, result: result });
+      }
+      return json(res, 400, { error: 'bad_action' });
+    }
 
     if (req.method === 'GET') {
       const id = req.query && req.query.id;
@@ -55,6 +66,11 @@ module.exports = async function (req, res) {
         });
       }
 
+      // Opportunistic backfill so existing CRM rows become "Shaun Matthews".
+      try {
+        await backfillCustomerNames({ site_id: siteId, limit: 400 });
+      } catch (_e) {}
+
       const q = (req.query && req.query.q) || '';
       let query = admin
         .from('order_customers')
@@ -81,6 +97,9 @@ module.exports = async function (req, res) {
           if (body[k] !== undefined) patch[k] = body[k];
         }
       );
+      if (body.name !== undefined) {
+        patch.name = displayFullName(body.name) || body.name;
+      }
       if (body.phone !== undefined) {
         patch.phone_e164 = normaliseAuPhone(body.phone) || null;
       }

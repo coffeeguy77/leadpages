@@ -27,7 +27,7 @@ test('parseCsv handles quoted commas and butcher rows', function () {
 test('butcher preset maps line items', function () {
   const row = ['Geoff', 'ABSOLOM', '0404 817 077', '23/12/2025', '8773', 'HAM - Rolled Half', '2 - 3 kg', '1', '', ''];
   const mapped = mapRow(row, PRESET_BUTCHER_LINE_ITEMS.mapping);
-  assert.equal(fullName(mapped), 'Geoff ABSOLOM');
+  assert.equal(fullName(mapped), 'Geoff Absolom');
   assert.equal(mapped.phone, '0404 817 077');
   assert.equal(mapped.product_name, 'HAM - Rolled Half');
   assert.equal(parseAuDate(mapped.pickup_date), '2025-12-23');
@@ -156,12 +156,30 @@ test('storefront has SMS auth modal and in-page My orders', function () {
 });
 
 test('displayGivenName prefers first name with title case', function () {
-  const { displayGivenName } = require('../lib/order/customer-name');
+  const { displayGivenName, displayFullName } = require('../lib/order/customer-name');
   assert.equal(displayGivenName('Shaun MATTHEWS'), 'Shaun');
   assert.equal(displayGivenName('SHAUN MATTHEWS'), 'Shaun');
   assert.equal(displayGivenName('MATTHEWS Shaun'), 'Shaun');
   assert.equal(displayGivenName('MATTHEWS, Shaun'), 'Shaun');
   assert.equal(displayGivenName('jenny wells'), 'Jenny');
+  assert.equal(displayFullName('MATTHEWS Shaun'), 'Shaun Matthews');
+  assert.equal(displayFullName('Shaun MATTHEWS'), 'Shaun Matthews');
+  assert.equal(displayFullName('SHAUN MATTHEWS'), 'Shaun Matthews');
+  assert.equal(displayFullName('MATTHEWS, Shaun'), 'Shaun Matthews');
+});
+
+test('storefront layout is 2/3 menu and larger product titles', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const js = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-order-storefront.js'), 'utf8');
+  const cron = fs.readFileSync(path.join(__dirname, '..', 'api/cron/order-abandoned.js'), 'utf8');
+  const orders = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
+  assert.match(js, /grid-template-columns:minmax\(0,2fr\) minmax\(0,1fr\)/);
+  assert.match(js, /\.lp-oe-body h3\{[^}]*font-size:32px/);
+  assert.match(cron, /reminder_sent/);
+  assert.match(cron, /already_reminded/);
+  assert.match(orders, /set-abd-enabled/);
+  assert.match(orders, /cust-normalize/);
 });
 
 test('reorder uses bulk cart lines and returns packed cart', function () {
