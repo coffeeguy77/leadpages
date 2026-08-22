@@ -408,6 +408,7 @@ body.embed .hub{min-height:70vh}
               <button class="btn ghost" type="button" id="prod-auto-cat" title="Create Beef/Chicken/Ham… categories and assign from product names">Match categories</button>
               <button class="btn ghost" type="button" id="prod-pies-extra" title="Create Pies category and also list every product with Pie/Pies in the name there (keeps current category)">Add Pies from titles</button>
               <button class="btn ghost" type="button" id="prod-migrate-weight" title="Move kg from short descriptions to minimum kg; set whole turkeys/chickens to quantity with size guide">Apply weight &amp; turkey rules</button>
+              <button class="btn ghost" type="button" id="prod-deactivate-unsized-hams" title="Deactivate ham products without a size/weight (keeps e.g. HAM - HALF 3.5-4). Past orders and reorders are safe — inactive items are skipped.">Deactivate unsized hams</button>
               <button class="btn solid" type="button" id="prod-new">New product</button>
             </div>
           </div>
@@ -2363,6 +2364,47 @@ body.embed .hub{min-height:70vh}
     if (btn) btn.disabled = false;
   }
 
+  async function deactivateUnsizedHams() {
+    if (!requireSite()) return;
+    if (
+      !confirm(
+        'Deactivate unsized ham products?\n\n' +
+          'Removes from the shop: generic hams with no size/weight (e.g. Ham Whole, Ham Half, HAM (no charge)).\n' +
+          'Keeps sized hams like HAM - HALF 3.5-4.\n\n' +
+          'Past orders are unchanged. Reorders skip unavailable items but still show the original name on the order history.'
+      )
+    )
+      return;
+    var btn = $('prod-deactivate-unsized-hams');
+    if (btn) btn.disabled = true;
+    try {
+      var r = await api('/api/order/products', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'deactivate_unsized_hams' }
+      });
+      var st = r.stats || {};
+      var names = (st.samples || [])
+        .map(function (s) {
+          return s.name;
+        })
+        .slice(0, 8)
+        .join(', ');
+      toast(
+        'Unsized hams: ' +
+          (st.deactivated || 0) +
+          ' deactivated · ' +
+          (st.kept_sized || 0) +
+          ' sized kept' +
+          (names ? ' — ' + names : ''),
+        'ok'
+      );
+      await loadProductsView();
+    } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
+    if (btn) btn.disabled = false;
+  }
+
   /* ---------- Supply ---------- */
   async function loadSupply(){
     if (!requireSite()) return;
@@ -3336,6 +3378,7 @@ body.embed .hub{min-height:70vh}
   if ($('prod-auto-cat')) $('prod-auto-cat').addEventListener('click', autoCategoriseProducts);
   if ($('prod-pies-extra')) $('prod-pies-extra').addEventListener('click', assignPiesFromTitles);
   if ($('prod-migrate-weight')) $('prod-migrate-weight').addEventListener('click', migrateWeightSettings);
+  if ($('prod-deactivate-unsized-hams')) $('prod-deactivate-unsized-hams').addEventListener('click', deactivateUnsizedHams);
   if ($('prod-category')) $('prod-category').addEventListener('change', function(){
     renderExtraCategoryChecks(readExtraCategoryIds());
   });

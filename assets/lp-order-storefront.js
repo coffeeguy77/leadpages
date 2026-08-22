@@ -186,6 +186,15 @@
     return null;
   };
 
+  OrderStorefront.prototype.kgFieldLabel = function (p) {
+    var minKg = this.minimumWeightKg(p);
+    if (minKg != null) {
+      var s = String(minKg).replace(/\.0$/, '');
+      return 'KG (MIN ' + s + 'KG)';
+    }
+    return 'KG';
+  };
+
   OrderStorefront.prototype.defaultWeightKg = function (p) {
     if (p && p.default_weight_kg != null) {
       var d = Number(p.default_weight_kg);
@@ -873,10 +882,8 @@
     }
     if (needsW) {
       html +=
-        '<label class="lp-oe-fast-field">kg' +
-        (minKg != null
-          ? '<span class="lp-oe-field-hint">min ' + esc(String(minKg)) + ' kg</span>'
-          : '') +
+        '<label class="lp-oe-fast-field">' +
+        esc(this.kgFieldLabel(p)) +
         this.stepperHtml({
           min: minKg != null ? minKg : 0.1,
           step: 0.1,
@@ -992,7 +999,8 @@
     }
     if (needsW) {
       html +=
-        '<label class="lp-oe-field">Approx. weight (kg)' +
+        '<label class="lp-oe-field">' +
+        esc(this.kgFieldLabel(p)) +
         this.stepperHtml({
           min: minKg != null ? minKg : 0.1,
           step: 0.1,
@@ -1000,14 +1008,7 @@
           id: 'oe-kg'
         }) +
         '</label>';
-      if (minKg != null) {
-        html +=
-          '<p class="lp-oe-pack-note">Minimum order ' +
-          esc(String(minKg)) +
-          ' kg — enter how much you need (e.g. ' +
-          esc(String(defaultKg)) +
-          ' kg).</p>';
-      } else {
+      if (minKg == null) {
         html += '<p class="lp-oe-pack-note">Sold by weight — enter how much you want (e.g. 1 kg).</p>';
       }
     }

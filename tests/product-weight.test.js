@@ -34,7 +34,8 @@ test('whole turkey is qty-based with plain size copy', function () {
   var copy = buildPoultryWholeBirdCopy(p);
   assert.match(copy.short_description, /Size 60–68/);
   assert.match(copy.short_description, /6–7 kg/);
-  assert.match(copy.quantity_prompt, /turkey/i);
+  assert.equal(copy.quantity_prompt, null);
+  assert.doesNotMatch(copy.short_description, /choose quantity/i);
 });
 
 test('turkey breast is not whole bird qty mode', function () {
@@ -76,5 +77,6 @@ test('orders UI has migrate weight button and minimum kg field', function () {
   assert.match(html, /migrate_weight_settings/);
   assert.match(api, /migrate_weight_settings/);
   assert.match(shop, /minimumWeightKg/);
-  assert.match(shop, /defaultWeightKg/);
+  assert.match(shop, /kgFieldLabel/);
+  assert.match(shop, /KG \(MIN/);
 });
