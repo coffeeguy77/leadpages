@@ -499,7 +499,7 @@ body.embed .hub{min-height:70vh}
                   <option value="store_default">Store default</option>
                   <option value="days_before">Days before</option>
                   <option value="hours_before">Hours before</option>
-                  <option value="weekday_time">Weekday + time</option>
+                  <option value="weekday_rule">Weekday + time</option>
                   <option value="none">None</option>
                 </select>
               </div>
@@ -794,7 +794,7 @@ body.embed .hub{min-height:70vh}
                 <select id="set-cutoff-mode">
                   <option value="days_before">Days before</option>
                   <option value="hours_before">Hours before</option>
-                  <option value="weekday_time">Weekday + time</option>
+                  <option value="weekday_rule">Weekday + time</option>
                   <option value="none">None</option>
                 </select>
               </div>
@@ -880,6 +880,10 @@ body.embed .hub{min-height:70vh}
 
             <h4 class="section-title">Shop look &amp; feel</h4>
             <p class="notice">Live on the customer shop after save (also use Page editor → Order Storefront for section colours on the homepage band).</p>
+            <div class="actions-row" style="margin-bottom:10px">
+              <button class="btn solid" type="button" id="settings-save-theme">Save shop theme only</button>
+              <span class="notice" id="settings-theme-msg" style="margin:0"></span>
+            </div>
             <div class="grid2">
               <div class="field"><label for="set-sf-maxw">Catalogue max width (px)</label>
                 <input id="set-sf-maxw" type="number" min="480" max="1600" step="10" placeholder="1440">
@@ -3069,7 +3073,7 @@ body.embed .hub{min-height:70vh}
       var s = data.system || {};
       $('set-payment').value = s.payment_rule || 'none';
       $('set-deposit').value = s.deposit_amount_cents != null ? (Number(s.deposit_amount_cents) / 100).toFixed(2) : '';
-      $('set-cutoff-mode').value = s.default_cutoff_mode || 'days_before';
+      $('set-cutoff-mode').value = s.default_cutoff_mode === 'weekday_rule' ? 'weekday_rule' : (s.default_cutoff_mode || 'days_before');
       $('set-cutoff-value').value = s.default_cutoff_value != null ? s.default_cutoff_value : '';
       $('set-editing').value = s.customer_editing_enabled === false ? '0' : '1';
       $('set-enabled').value = s.enabled === false ? '0' : '1';
@@ -3127,12 +3131,73 @@ body.embed .hub{min-height:70vh}
     }
   }
 
+  function buildStorefrontAppearancePatch(existingAppearance){
+    var prev = existingAppearance || {};
+    function numOrNull(id){
+      var el = $(id); if (!el || el.value === '') return prev[numKey(id)] != null ? prev[numKey(id)] : null;
+      var n = Number(el.value); return isFinite(n) ? n : (prev[numKey(id)] != null ? prev[numKey(id)] : null);
+    }
+    function numKey(id){
+      return id === 'set-sf-maxw' ? 'max_width' : id === 'set-sf-pad' ? 'padding' : id === 'set-sf-radius' ? 'radius' : '';
+    }
+    function clr(id, key){
+      var el = $(id); if (!el) return prev[key] || null;
+      var v = String(el.value || '').trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(v)) return v;
+      return prev[key] || null;
+    }
+    return {
+      max_width: numOrNull('set-sf-maxw'),
+      padding: numOrNull('set-sf-pad'),
+      radius: numOrNull('set-sf-radius'),
+      accent: clr('set-sf-accent', 'accent'),
+      card_bg: clr('set-sf-card', 'card_bg'),
+      card_border: clr('set-sf-line', 'card_border'),
+      text: clr('set-sf-text', 'text'),
+      muted: clr('set-sf-muted', 'muted'),
+      btn_bg: clr('set-sf-btn', 'btn_bg'),
+      btn_text: clr('set-sf-btnt', 'btn_text'),
+      input_bg: clr('set-sf-ibg', 'input_bg'),
+      input_border: clr('set-sf-ibd', 'input_border'),
+      page_bg: clr('set-sf-page', 'page_bg')
+    };
+  }
+
+  async function saveStorefrontTheme(){
+    if (!requireSite()) return;
+    var msg = $('settings-theme-msg');
+    var btn = $('settings-save-theme');
+    if (btn) btn.disabled = true;
+    if (msg) msg.textContent = 'Saving…';
+    try {
+      var cur = await api('/api/order/system?' + siteQuery());
+      var existing = (cur.system && cur.system.settings) || {};
+      var prevAp = (existing.storefront && existing.storefront.appearance) || {};
+      var appearance = buildStorefrontAppearancePatch(prevAp);
+      await api('/api/order/system', {
+        method: 'POST',
+        body: {
+          site_id: state.siteId,
+          action: 'save_storefront',
+          storefront: { appearance: appearance }
+        }
+      });
+      if (msg) msg.textContent = 'Shop theme saved.';
+      toast('Shop theme saved', 'ok');
+    } catch (e) {
+      var err = (e && e.message) || String(e);
+      if (msg) msg.textContent = err;
+      toast(err, 'err');
+    }
+    if (btn) btn.disabled = false;
+  }
+
   async function saveSettings(ev){
     ev.preventDefault();
     if (!requireSite()) return;
     var btn = $('settings-save');
     var msg = $('settings-msg');
-    btn.disabled = true;
+    if (btn) btn.disabled = true;
     try {
       var existing = {};
       try {
@@ -3158,34 +3223,23 @@ body.embed .hub{min-height:70vh}
         var v = String(el.value || '').trim();
         return /^#[0-9a-fA-F]{6}$/.test(v) ? v : '';
       }
+      var prevAp = (existing.storefront && existing.storefront.appearance) || {};
       var storefront = Object.assign({}, existing.storefront || {}, {
         shop_mode: $('set-sf-shop-mode') && $('set-sf-shop-mode').value === 'fast' ? 'fast' : 'traditional',
         show_all_categories: $('set-sf-show-all') ? $('set-sf-show-all').value === '1' : false,
         default_category_id: defCatId || null,
         default_category_slug: defCat ? (defCat.slug || null) : null,
-        appearance: {
-          max_width: numOrNull('set-sf-maxw'),
-          padding: numOrNull('set-sf-pad'),
-          radius: numOrNull('set-sf-radius'),
-          accent: clr('set-sf-accent'),
-          card_bg: clr('set-sf-card'),
-          card_border: clr('set-sf-line'),
-          text: clr('set-sf-text'),
-          muted: clr('set-sf-muted'),
-          btn_bg: clr('set-sf-btn'),
-          btn_text: clr('set-sf-btnt'),
-          input_bg: clr('set-sf-ibg'),
-          input_border: clr('set-sf-ibd'),
-          page_bg: clr('set-sf-page')
-        }
+        appearance: buildStorefrontAppearancePatch(prevAp)
       });
+      var cutoffMode = $('set-cutoff-mode') ? $('set-cutoff-mode').value : 'days_before';
+      if (cutoffMode === 'weekday_time') cutoffMode = 'weekday_rule';
       await api('/api/order/system', {
         method: 'POST',
         body: {
           site_id: state.siteId,
           payment_rule: $('set-payment').value,
           deposit_amount_cents: dollarsToCents($('set-deposit').value),
-          default_cutoff_mode: $('set-cutoff-mode').value,
+          default_cutoff_mode: cutoffMode,
           default_cutoff_value: $('set-cutoff-value').value !== '' ? Number($('set-cutoff-value').value) : null,
           customer_editing_enabled: $('set-editing').value === '1',
           enabled: $('set-enabled').value === '1',
@@ -3228,7 +3282,7 @@ body.embed .hub{min-height:70vh}
       msg.textContent = (e && e.message) || String(e);
       toast(msg.textContent, 'err');
     }
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
   }
 
   async function applyButcherPreset(){
@@ -3912,6 +3966,7 @@ body.embed .hub{min-height:70vh}
   if ($('imp-preview')) $('imp-preview').addEventListener('click', runImportPreview);
   if ($('imp-commit')) $('imp-commit').addEventListener('click', runImportCommit);
   $('settings-form').addEventListener('submit', saveSettings);
+  if ($('settings-save-theme')) $('settings-save-theme').addEventListener('click', saveStorefrontTheme);
   if ($('pw-add')) $('pw-add').addEventListener('click', addPickupWindow);
   if ($('pw-save-schedule')) $('pw-save-schedule').addEventListener('click', savePickupSchedule);
   $('settings-preset').addEventListener('click', applyButcherPreset);

@@ -6,6 +6,7 @@ const { getAdmin } = require('../../lib/order/supabase');
 const { listPresets, getPreset } = require('../../lib/order/presets');
 const { writeAudit } = require('../../lib/order/audit');
 const { slugify } = require('../../lib/order/service');
+const { mergeStorefront, normalizeCutoffMode } = require('../../lib/order/storefront-appearance');
 
 module.exports = async function (req, res) {
   try {
@@ -113,6 +114,25 @@ module.exports = async function (req, res) {
       return json(res, 200, { system: system, preset: preset.industry_preset });
     }
 
+    if (req.method === 'POST' && body.action === 'save_storefront') {
+      let system = await getOrderSystemForSite(siteId);
+      if (!system) system = await ensureOrderSystem(siteId, { preset: 'custom' });
+      const existing = (system.settings && typeof system.settings === 'object') ? system.settings : {};
+      const patchStorefront = body.storefront && typeof body.storefront === 'object' ? body.storefront : {};
+      const settings = Object.assign({}, existing, {
+        storefront: mergeStorefront(existing.storefront, patchStorefront)
+      });
+      const admin = getAdmin();
+      const { data, error } = await admin
+        .from('order_systems')
+        .update({ settings: settings, updated_at: new Date().toISOString() })
+        .eq('id', system.id)
+        .select('*')
+        .single();
+      if (error) throw error;
+      return json(res, 200, { system: data });
+    }
+
     // PATCH / update settings
     const system = await getOrderSystemForSite(siteId);
     if (!system) return json(res, 404, { error: 'no_system' });
@@ -131,6 +151,17 @@ module.exports = async function (req, res) {
     allowed.forEach(function (k) {
       if (body[k] !== undefined) patch[k] = body[k];
     });
+    if (patch.default_cutoff_mode !== undefined) {
+      patch.default_cutoff_mode = normalizeCutoffMode(patch.default_cutoff_mode);
+    }
+    if (body.settings && typeof body.settings === 'object') {
+      const prev = (system.settings && typeof system.settings === 'object') ? system.settings : {};
+      const next = Object.assign({}, prev, body.settings);
+      if (body.settings.storefront && typeof body.settings.storefront === 'object') {
+        next.storefront = mergeStorefront(prev.storefront, body.settings.storefront);
+      }
+      patch.settings = next;
+    }
     const admin = getAdmin();
     const { data, error } = await admin
       .from('order_systems')
