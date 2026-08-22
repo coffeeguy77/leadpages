@@ -663,10 +663,11 @@ body.embed .hub{min-height:70vh}
       <section class="view" id="view-customers" data-view="customers">
         <div class="card">
           <h3>Customers</h3>
-          <p class="sub">Click a row to open customer details, order history, and messages.</p>
+          <p class="sub">Click a row to open customer details, order history, and messages. Names use Given Surname title case (e.g. Shaun Matthews).</p>
           <div class="toolbar">
             <input id="cust-q" placeholder="Search name, phone, email" style="flex:1;min-width:180px">
             <button class="btn solid" type="button" id="cust-load">Search</button>
+            <button class="btn ghost" type="button" id="cust-normalize">Fix name casing</button>
             <a class="btn ghost" id="cust-export" href="#">Export CSV</a>
           </div>
           <div class="table-wrap"><table class="oe"><thead><tr>
@@ -695,6 +696,7 @@ body.embed .hub{min-height:70vh}
             <h3 style="margin:0;flex:1">Abandoned carts</h3>
             <button class="btn solid" type="button" id="abd-load">Refresh</button>
           </div>
+          <p class="notice">At most <strong>one reminder per cart</strong>. Turn messaging off under Settings → Abandoned cart reminders.</p>
           <div class="kpis" id="abd-kpis"></div>
           <div class="table-wrap"><table class="oe"><thead><tr>
             <th>Updated</th><th>Status</th><th>Items</th><th>Known</th><th>Contact</th>
@@ -742,6 +744,28 @@ body.embed .hub{min-height:70vh}
               </div>
               <div class="field"><label for="set-enabled">System enabled</label>
                 <select id="set-enabled"><option value="1">Yes</option><option value="0">No</option></select>
+              </div>
+            </div>
+
+            <h4 class="section-title">Abandoned cart reminders</h4>
+            <p class="notice">At most <strong>one</strong> reminder is sent per cart. Turn this off to stop SMS/email recovery messages entirely.</p>
+            <div class="grid2">
+              <div class="field"><label for="set-abd-enabled">Abandoned cart messages</label>
+                <select id="set-abd-enabled">
+                  <option value="0">Off</option>
+                  <option value="1">On</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-abd-delay">Idle minutes before reminder</label>
+                <input id="set-abd-delay" type="number" min="5" step="5" placeholder="60">
+                <span class="field-hint">Default 60. Cron checks about every 15 minutes.</span>
+              </div>
+              <div class="field"><label for="set-abd-channels">Channels</label>
+                <select id="set-abd-channels">
+                  <option value="email">Email only</option>
+                  <option value="sms">SMS only</option>
+                  <option value="email,sms">Email + SMS</option>
+                </select>
               </div>
             </div>
 
@@ -2560,6 +2584,13 @@ body.embed .hub{min-height:70vh}
       $('set-cutoff-value').value = s.default_cutoff_value != null ? s.default_cutoff_value : '';
       $('set-editing').value = s.customer_editing_enabled === false ? '0' : '1';
       $('set-enabled').value = s.enabled === false ? '0' : '1';
+      if ($('set-abd-enabled')) $('set-abd-enabled').value = s.abandoned_cart_enabled === true ? '1' : '0';
+      if ($('set-abd-delay')) $('set-abd-delay').value = s.abandoned_cart_delay_minutes != null ? s.abandoned_cart_delay_minutes : 60;
+      if ($('set-abd-channels')) {
+        var ch = Array.isArray(s.abandoned_cart_channels) ? s.abandoned_cart_channels.slice().sort().join(',') : 'email';
+        if (ch === 'sms,email') ch = 'email,sms';
+        $('set-abd-channels').value = ch === 'sms' || ch === 'email,sms' ? ch : 'email';
+      }
       var pay = (s.settings && s.settings.payments) || {};
       if ($('set-pay-provider')) $('set-pay-provider').value = pay.provider || 'stripe';
       if ($('set-stripe-mode')) $('set-stripe-mode').value = pay.stripe_charge_mode === 'direct' ? 'direct' : 'destination';
@@ -2661,6 +2692,16 @@ body.embed .hub{min-height:70vh}
           default_cutoff_value: $('set-cutoff-value').value !== '' ? Number($('set-cutoff-value').value) : null,
           customer_editing_enabled: $('set-editing').value === '1',
           enabled: $('set-enabled').value === '1',
+          abandoned_cart_enabled: $('set-abd-enabled') ? $('set-abd-enabled').value === '1' : false,
+          abandoned_cart_delay_minutes: $('set-abd-delay') && $('set-abd-delay').value !== ''
+            ? Math.max(5, Number($('set-abd-delay').value) || 60)
+            : 60,
+          abandoned_cart_channels: (function(){
+            var v = $('set-abd-channels') ? $('set-abd-channels').value : 'email';
+            if (v === 'sms') return ['sms'];
+            if (v === 'email,sms') return ['email', 'sms'];
+            return ['email'];
+          })(),
           settings: Object.assign({}, existing, { payments: payments, storefront: storefront })
         }
       });
@@ -3167,6 +3208,23 @@ body.embed .hub{min-height:70vh}
   if ($('cal-load')) $('cal-load').addEventListener('click', loadCalendar);
   if ($('chg-load')) $('chg-load').addEventListener('click', loadChanges);
   if ($('cust-load')) $('cust-load').addEventListener('click', loadCustomers);
+  if ($('cust-normalize')) $('cust-normalize').addEventListener('click', async function(){
+    if (!requireSite()) return;
+    var btn = $('cust-normalize');
+    btn.disabled = true;
+    try {
+      var out = await api('/api/order/customers', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'normalize_names' }
+      });
+      var r = (out && out.result) || {};
+      toast('Updated ' + (r.customers_updated || 0) + ' customer name(s)', 'ok');
+      await loadCustomers();
+    } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
+    btn.disabled = false;
+  });
   if ($('cust-export')) $('cust-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('customers'); });
   if ($('pay-load')) $('pay-load').addEventListener('click', loadPayments);
   if ($('pay-export')) $('pay-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('payments'); });

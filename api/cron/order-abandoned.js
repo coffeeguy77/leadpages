@@ -3,6 +3,10 @@
 /**
  * Abandoned cart recovery cron.
  * Auth: Authorization: Bearer <CRON_SECRET> when CRON_SECRET is set.
+ *
+ * Rules:
+ * - Only systems with abandoned_cart_enabled = true
+ * - At most ONE reminder message per cart (ever), even if the cart is reactivated
  */
 
 const { createClient } = require('@supabase/supabase-js');
@@ -33,6 +37,7 @@ module.exports = async function (req, res) {
     if (error) throw error;
 
     const results = [];
+    const skipped = [];
     const now = Date.now();
 
     for (const system of systems || []) {
@@ -56,13 +61,41 @@ module.exports = async function (req, res) {
       if (!site) continue;
 
       for (const cart of carts || []) {
+        // Mark abandoned even if we will not message again.
         await admin
           .from('order_carts')
           .update({ status: 'abandoned', updated_at: new Date().toISOString() })
           .eq('id', cart.id)
           .eq('status', 'active');
 
-        const stage = ((cart.recovery_state && cart.recovery_state.stage) || 0) + 1;
+        const alreadyReminded =
+          !!(cart.recovery_state && (cart.recovery_state.reminder_sent || cart.recovery_state.stage >= 1));
+
+        var priorCount = 0;
+        if (!alreadyReminded) {
+          var { count } = await admin
+            .from('order_abandoned_events')
+            .select('id', { count: 'exact', head: true })
+            .eq('cart_id', cart.id);
+          priorCount = count || 0;
+        }
+
+        if (alreadyReminded || priorCount > 0) {
+          skipped.push({ cart_id: cart.id, reason: 'already_reminded' });
+          await admin
+            .from('order_carts')
+            .update({
+              recovery_state: Object.assign({}, cart.recovery_state || {}, {
+                reminder_sent: true,
+                stage: Math.max(1, (cart.recovery_state && cart.recovery_state.stage) || 1)
+              }),
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', cart.id);
+          continue;
+        }
+
+        const stage = 1;
         const channels = system.abandoned_cart_channels || ['email'];
         const checkout = shopUrl(site.slug, cart.id);
         const channelStr = Array.isArray(channels) ? channels.join(',') : String(channels);
@@ -98,12 +131,7 @@ module.exports = async function (req, res) {
         });
 
         const messageId =
-          sent &&
-          sent.sent &&
-          sent.sent[0] &&
-          sent.sent[0].id
-            ? sent.sent[0].id
-            : null;
+          sent && sent.sent && sent.sent[0] && sent.sent[0].id ? sent.sent[0].id : null;
 
         if (evt) {
           await admin
@@ -121,6 +149,7 @@ module.exports = async function (req, res) {
           .update({
             recovery_state: Object.assign({}, cart.recovery_state || {}, {
               stage: stage,
+              reminder_sent: true,
               last_message_at: new Date().toISOString(),
               checkout_link: checkout
             }),
@@ -132,7 +161,13 @@ module.exports = async function (req, res) {
       }
     }
 
-    return json(200, { ok: true, processed: results.length, results: results });
+    return json(200, {
+      ok: true,
+      processed: results.length,
+      skipped: skipped.length,
+      results: results,
+      skipped_detail: skipped.slice(0, 40)
+    });
   } catch (e) {
     console.error('cron/order-abandoned', e);
     return json(500, { ok: false, error: String((e && e.message) || e) });
