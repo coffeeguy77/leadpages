@@ -67,7 +67,7 @@ Money: **integer cents**. Weight: **numeric kg** (requested ≠ actual).
 
 **Staff:** products, new order, deposit link, lock date, supply, finalise weight, calendar, customers, payments, change approvals, CSV export, **CSV import (mapped)**, messaging AI, **SMS broadcast**, **SMS usage meter**.
 
-**Customer:** storefront cart → checkout → deposit Stripe → portal view/edit before cutoff; **SMS OTP login** → history → **reorder** (live prices; skip unavailable products). Phone spaces are normalised (`0414 631 463` ≡ `0414631463`); portal re-links orders that share the same number.
+**Customer:** storefront cart → checkout → deposit Stripe → portal view/edit before cutoff; **SMS OTP login modal on the shop** → in-page **My orders** (weights + reorder into cart). Phone spaces are normalised (`0414 631 463` ≡ `0414631463`); portal re-links orders that share the same number.
 
 **Import re-run:** rows with the same **order number** are one order (multi product lines + parsed `requested_weight_kg`). Re-import **skips** orders that already exist by `external_order_number` or `order_number` (no duplicates, no append). Blank order numbers cannot be skipped safely and will create new orders.
 

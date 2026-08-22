@@ -47,6 +47,22 @@
     return 'lp.order.cart.' + slug;
   }
 
+  function portalSessionKey(slug) {
+    return 'lp.order.portal.' + slug;
+  }
+
+  function firstName(name) {
+    var s = String(name || '').trim();
+    if (!s) return '';
+    return s.split(/\s+/)[0];
+  }
+
+  function statusLabel(status) {
+    var s = String(status || '').replace(/_/g, ' ');
+    if (!s) return 'Order';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
   function OrderStorefront(root) {
     this.root = root;
     this.slug = root.getAttribute('data-slug') || '';
@@ -69,6 +85,18 @@
       mobileShowCart: false,
       notesOpen: {},
       fastDrafts: {},
+      customerToken: '',
+      customer: null,
+      orders: [],
+      authModal: {
+        open: false,
+        step: 'phone',
+        phone: '',
+        code: '',
+        err: '',
+        busy: false,
+        info: ''
+      },
       checkoutDraft: {
         name: '',
         phone: '',
@@ -163,6 +191,95 @@
 
   OrderStorefront.prototype.portalUrl = function () {
     return '/order-portal?slug=' + encodeURIComponent(this.slug || '');
+  };
+
+  OrderStorefront.prototype.isLoggedIn = function () {
+    return !!(this.state.customerToken && this.state.customer);
+  };
+
+  OrderStorefront.prototype.captureAuthDraft = function () {
+    var m = this.state.authModal;
+    if (!m || !m.open) return;
+    var phone = $('#oe-auth-phone', this.root);
+    var code = $('#oe-auth-code', this.root);
+    if (phone) m.phone = phone.value;
+    if (code) m.code = code.value;
+  };
+
+  OrderStorefront.prototype.restoreCustomerSession = async function () {
+    if (!this.slug) return;
+    var token = '';
+    try {
+      token = localStorage.getItem(portalSessionKey(this.slug)) || '';
+    } catch (_e) {}
+    if (!token) return;
+    try {
+      var data = await api('/api/order/portal-auth?token=' + encodeURIComponent(token));
+      this.state.customerToken = token;
+      this.state.customer = data.customer || null;
+      this.state.orders = data.orders || [];
+      this.prefillCheckoutFromCustomer();
+    } catch (_e) {
+      this.state.customerToken = '';
+      this.state.customer = null;
+      this.state.orders = [];
+      try {
+        localStorage.removeItem(portalSessionKey(this.slug));
+      } catch (_e2) {}
+    }
+  };
+
+  OrderStorefront.prototype.prefillCheckoutFromCustomer = function () {
+    var c = this.state.customer;
+    if (!c) return;
+    var d = this.state.checkoutDraft || (this.state.checkoutDraft = {});
+    if (!d.name && c.name) d.name = c.name;
+    if (!d.phone && (c.phone || c.phone_e164)) d.phone = c.phone || c.phone_e164;
+    if (!d.email && c.email) d.email = c.email;
+  };
+
+  OrderStorefront.prototype.refreshOrders = async function () {
+    if (!this.state.customerToken) return;
+    var data = await api(
+      '/api/order/portal-auth?token=' + encodeURIComponent(this.state.customerToken)
+    );
+    this.state.customer = data.customer || this.state.customer;
+    this.state.orders = data.orders || [];
+  };
+
+  OrderStorefront.prototype.openAuthModal = function () {
+    this.state.authModal = {
+      open: true,
+      step: 'phone',
+      phone: (this.state.checkoutDraft && this.state.checkoutDraft.phone) || '',
+      code: '',
+      err: '',
+      busy: false,
+      info: ''
+    };
+    this.render();
+  };
+
+  OrderStorefront.prototype.closeAuthModal = function () {
+    this.captureAuthDraft();
+    this.state.authModal.open = false;
+    this.state.authModal.err = '';
+    this.state.authModal.info = '';
+    this.state.authModal.busy = false;
+    this.render();
+  };
+
+  OrderStorefront.prototype.friendlyAuthError = function (msg) {
+    var m = String(msg || '');
+    if (m === 'bad_phone') return 'Enter a valid Australian mobile number.';
+    if (m === 'sms_not_configured')
+      return 'SMS is not set up for this shop yet. Ask the shop for help, or use the link from your confirmation SMS.';
+    if (m === 'sms_failed') return 'Could not send the SMS code. Please try again in a moment.';
+    if (m === 'invalid_code') return 'That code is incorrect or expired. Request a new one.';
+    if (m === 'bad_input') return 'Enter your mobile and the 6-digit code.';
+    if (m === 'customer_not_found') return 'We could not find orders for that number.';
+    if (/duplicate key|token_hash/i.test(m)) return 'Please try sending the code again.';
+    return m || 'Something went wrong. Please try again.';
   };
 
   OrderStorefront.prototype.rememberSlug = function () {
@@ -269,6 +386,13 @@
           localStorage.removeItem(cartKey(this.slug));
         }
       }
+      await this.restoreCustomerSession();
+      try {
+        var params2 = new URLSearchParams(location.search);
+        if (params2.get('account') === '1' && this.isLoggedIn()) {
+          this.state.view = 'account';
+        }
+      } catch (_e2) {}
       this.render();
     } catch (e) {
       this.root.innerHTML =
@@ -325,14 +449,7 @@
     if (this.mode === 'embedded') {
       html += '<div class="lp-oe-head lp-oe-head-compact">';
       html += '<div class="lp-oe-head-actions">';
-      if (this.showPortal && this.slug) {
-        html +=
-          '<a class="lp-oe-portal" href="' +
-          esc(this.portalUrl()) +
-          '">' +
-          esc(this.portalLabel) +
-          '</a>';
-      }
+      html += this.renderAccountHeaderBtn();
       html +=
         '<button type="button" class="lp-oe-cart-btn lp-oe-mobile-cart" data-act="toggle-cart">Cart (' +
         qtyTotal(this.state.items) +
@@ -344,14 +461,7 @@
         esc(biz) +
         '</h2><p class="lp-oe-sub">Browse the menu, adjust your cart, and checkout on one page.</p></div>';
       html += '<div class="lp-oe-head-actions">';
-      if (this.showPortal && this.slug) {
-        html +=
-          '<a class="lp-oe-portal" href="' +
-          esc(this.portalUrl()) +
-          '">' +
-          esc(this.portalLabel) +
-          '</a>';
-      }
+      html += this.renderAccountHeaderBtn();
       html +=
         '<button type="button" class="lp-oe-cart-btn lp-oe-mobile-cart" data-act="toggle-cart">Cart (' +
         qtyTotal(this.state.items) +
@@ -363,7 +473,9 @@
 
     html += '<div class="lp-oe-layout">';
     html += '<div class="lp-oe-main">';
-    if (!this.isFastMode() && this.state.view === 'product' && this.state.selected) {
+    if (this.state.view === 'account') {
+      html += this.renderAccountOrders();
+    } else if (!this.isFastMode() && this.state.view === 'product' && this.state.selected) {
       html += this.renderProduct(this.state.selected);
     } else {
       html += this.renderShopToolbar();
@@ -382,15 +494,37 @@
     }
     html += '</div>';
     html +=
-      '<aside class="lp-oe-aside" id="oe-aside"' +
-      (this.state.mobileShowCart ? '' : '') +
-      '>' +
+      '<aside class="lp-oe-aside" id="oe-aside">' +
       this.renderLiveCart() +
       '</aside>';
-    html += '</div></div>';
+    html += '</div>';
+    if (this.state.authModal && this.state.authModal.open) {
+      html += this.renderAuthModal();
+    }
+    html += '</div>';
     this.root.innerHTML = html;
     this.applyAppearance();
     this.bind();
+  };
+
+  OrderStorefront.prototype.renderAccountHeaderBtn = function () {
+    if (!this.showPortal || !this.slug) return '';
+    if (this.isLoggedIn()) {
+      var label = firstName(this.state.customer && this.state.customer.name) || 'Account';
+      return (
+        '<button type="button" class="lp-oe-account-chip' +
+        (this.state.view === 'account' ? ' on' : '') +
+        '" data-act="view-orders" aria-label="Your orders">' +
+        '<span class="lp-oe-account-chip-dot" aria-hidden="true"></span>' +
+        esc(label) +
+        '</button>'
+      );
+    }
+    return (
+      '<button type="button" class="lp-oe-portal-btn" data-act="open-auth">' +
+      esc(this.portalLabel) +
+      '</button>'
+    );
   };
 
   OrderStorefront.prototype.renderShopToolbar = function () {
@@ -773,21 +907,175 @@
     return this.renderLiveCart();
   };
 
+  OrderStorefront.prototype.renderAccountBox = function () {
+    if (!this.showPortal || !this.slug) return '';
+    var html = '<div class="lp-oe-account" role="navigation" aria-label="Your account">';
+    html += '<p class="lp-oe-account-ey">Your account</p>';
+    if (this.isLoggedIn()) {
+      var c = this.state.customer || {};
+      var greet = firstName(c.name);
+      html +=
+        '<p class="lp-oe-account-name">' +
+        (greet ? 'Hi, ' + esc(greet) : 'Signed in') +
+        '</p>';
+      html +=
+        '<p class="lp-oe-account-meta">' +
+        esc((this.state.orders || []).length) +
+        ' past order' +
+        ((this.state.orders || []).length === 1 ? '' : 's') +
+        '</p>';
+      html += '<div class="lp-oe-account-actions">';
+      html +=
+        '<button type="button" class="lp-oe-account-btn' +
+        (this.state.view === 'account' ? ' on' : '') +
+        '" data-act="view-orders">My orders</button>';
+      if (this.state.view === 'account') {
+        html +=
+          '<button type="button" class="lp-oe-account-btn ghost" data-act="back-shop">Shop</button>';
+      }
+      html +=
+        '<button type="button" class="lp-oe-account-btn ghost" data-act="sign-out">Sign out</button>';
+      html += '</div>';
+    } else {
+      html += '<p class="lp-oe-account-name">Already ordered?</p>';
+      html +=
+        '<p class="lp-oe-account-meta">Sign in with your mobile to see last year’s order and reorder in a tap.</p>';
+      html += '<div class="lp-oe-account-actions">';
+      html +=
+        '<button type="button" class="lp-oe-account-btn" data-act="open-auth">Sign in with SMS</button>';
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  };
+
+  OrderStorefront.prototype.renderAccountOrders = function () {
+    var self = this;
+    var html = '';
+    html += '<div class="lp-oe-orders">';
+    html += '<div class="lp-oe-orders-head">';
+    html +=
+      '<button type="button" class="lp-oe-link" data-act="back-shop">← Continue shopping</button>';
+    html +=
+      '<h2 class="lp-oe-orders-title">Your orders</h2>';
+    html +=
+      '<p class="lp-oe-orders-sub">Review what you ordered before — weights included — then order again with today’s menu.</p>';
+    html += '</div>';
+
+    if (!this.isLoggedIn()) {
+      html +=
+        '<div class="lp-oe-orders-empty"><p>Sign in with your mobile to view your order history.</p>';
+      html +=
+        '<button type="button" class="lp-oe-primary" data-act="open-auth">Sign in with SMS</button></div>';
+      html += '</div>';
+      return html;
+    }
+
+    var orders = this.state.orders || [];
+    if (!orders.length) {
+      html +=
+        '<div class="lp-oe-orders-empty"><p>No past orders found for this mobile yet.</p>';
+      html +=
+        '<button type="button" class="lp-oe-primary" data-act="back-shop">Browse the menu</button></div>';
+      html += '</div>';
+      return html;
+    }
+
+    orders.forEach(function (o) {
+      html += '<article class="lp-oe-order-card">';
+      html += '<div class="lp-oe-order-top">';
+      html += '<div>';
+      html += '<h3>Order ' + esc(o.order_number || '') + '</h3>';
+      html +=
+        '<p class="lp-oe-order-meta">Pickup ' +
+        esc(o.pickup_date || '—') +
+        ' · ' +
+        esc(statusLabel(o.status)) +
+        '</p>';
+      html += '</div>';
+      html +=
+        '<button type="button" class="lp-oe-primary lp-oe-reorder" data-act="reorder" data-order-id="' +
+        esc(o.id) +
+        '"' +
+        (self.state.busy ? ' disabled' : '') +
+        '>Order again</button>';
+      html += '</div>';
+      html += '<ul class="lp-oe-order-lines">';
+      (o.items || []).forEach(function (it) {
+        html += '<li>';
+        html += '<span class="lp-oe-order-line-name">' + esc(it.product_name || 'Item') + '</span>';
+        var bits = [];
+        if (it.quantity != null && Number(it.quantity) !== 1) bits.push('Qty ' + it.quantity);
+        else if (it.quantity != null && it.requested_weight_kg == null) bits.push('Qty ' + it.quantity);
+        if (it.requested_weight_kg != null) bits.push('~' + it.requested_weight_kg + ' kg');
+        if (it.notes) bits.push(it.notes);
+        if (bits.length) {
+          html += '<span class="lp-oe-order-line-meta">' + esc(bits.join(' · ')) + '</span>';
+        }
+        html += '</li>';
+      });
+      html += '</ul>';
+      html += '</article>';
+    });
+    html += '</div>';
+    return html;
+  };
+
+  OrderStorefront.prototype.renderAuthModal = function () {
+    var m = this.state.authModal || {};
+    var html = '';
+    html +=
+      '<div class="lp-oe-modal-backdrop" data-act="close-auth" role="presentation">';
+    html +=
+      '<div class="lp-oe-modal" role="dialog" aria-modal="true" aria-labelledby="oe-auth-title" data-stop="1">';
+    html +=
+      '<button type="button" class="lp-oe-modal-close" data-act="close-auth" aria-label="Close">×</button>';
+    html += '<p class="lp-oe-account-ey">Secure sign-in</p>';
+    html += '<h2 id="oe-auth-title" class="lp-oe-modal-title">Your orders</h2>';
+    html +=
+      '<p class="lp-oe-modal-sub">Enter the mobile used on your orders. We’ll text a one-time code — you stay on this page.</p>';
+    html += '<div class="lp-oe-fields lp-oe-fields-app">';
+    html +=
+      '<label class="lp-oe-field">Mobile<input id="oe-auth-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx" value="' +
+      esc(m.phone || '') +
+      '"' +
+      (m.busy ? ' disabled' : '') +
+      '></label>';
+    if (m.step === 'code') {
+      html +=
+        '<label class="lp-oe-field">SMS code<input id="oe-auth-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code" value="' +
+        esc(m.code || '') +
+        '"' +
+        (m.busy ? ' disabled' : '') +
+        '></label>';
+    }
+    html += '</div>';
+    if (m.info) html += '<p class="lp-oe-auth-info">' + esc(m.info) + '</p>';
+    if (m.err) html += '<p class="lp-oe-auth-err">' + esc(m.err) + '</p>';
+    html += '<div class="lp-oe-modal-actions">';
+    html +=
+      '<button type="button" class="lp-oe-primary" data-act="auth-send"' +
+      (m.busy ? ' disabled' : '') +
+      '>' +
+      (m.step === 'code' ? 'Resend code' : 'Send code') +
+      '</button>';
+    if (m.step === 'code') {
+      html +=
+        '<button type="button" class="lp-oe-primary" data-act="auth-verify"' +
+        (m.busy ? ' disabled' : '') +
+        '>Verify &amp; view orders</button>';
+    }
+    html += '</div>';
+    html += '</div></div>';
+    return html;
+  };
+
   OrderStorefront.prototype.renderLiveCart = function () {
     var self = this;
     var d = this.state.checkoutDraft || {};
     var html = '';
+    html += this.renderAccountBox();
     html += '<h3>Your cart</h3>';
-
-    html += '<div class="lp-oe-login">';
-    html += '<h4>Already ordered?</h4>';
-    html +=
-      '<p>Sign in with your mobile to view past orders.</p><a class="lp-oe-portal" href="' +
-      esc(this.portalUrl()) +
-      '">' +
-      esc(this.portalLabel) +
-      '</a>';
-    html += '</div>';
 
     if (!this.state.items.length) {
       html += '<p class="lp-oe-empty" style="padding:12px 0">Cart is empty — add items from the menu.</p>';
@@ -933,6 +1221,25 @@
         self.onAct(el.getAttribute('data-act'), el);
       });
     });
+    var modal = this.root.querySelector('.lp-oe-modal');
+    if (modal) {
+      modal.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+      });
+    }
+    ['oe-auth-phone', 'oe-auth-code'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', function () {
+        self.captureAuthDraft();
+      });
+      el.addEventListener('keydown', function (ev) {
+        if (ev.key !== 'Enter') return;
+        ev.preventDefault();
+        if (id === 'oe-auth-phone') self.onAct('auth-send', el);
+        else self.onAct('auth-verify', el);
+      });
+    });
     this.root.querySelectorAll('textarea.lp-oe-notes-grow').forEach(function (ta) {
       function grow() {
         ta.style.height = 'auto';
@@ -997,6 +1304,22 @@
         self.captureCheckoutDraft();
       });
     });
+    if (this.state.authModal && this.state.authModal.open) {
+      try {
+        var focusId = this.state.authModal.step === 'code' ? 'oe-auth-code' : 'oe-auth-phone';
+        var focusEl = document.getElementById(focusId);
+        if (focusEl) focusEl.focus();
+      } catch (_e) {}
+      if (!this._escBound) {
+        this._escBound = true;
+        var escSelf = this;
+        document.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Escape' && escSelf.state.authModal && escSelf.state.authModal.open) {
+            escSelf.closeAuthModal();
+          }
+        });
+      }
+    }
   };
 
   OrderStorefront.prototype.setQty = async function (itemId, nextQty) {
@@ -1048,11 +1371,170 @@
       'view-grid': 1,
       'view-list': 1,
       'toggle-notes': 1,
-      cat: 1
+      cat: 1,
+      'open-auth': 1,
+      'close-auth': 1,
+      'view-orders': 1,
+      'sign-out': 1
     };
     if (self.state.busy && !freeActs[act]) return;
     try {
       self.state.msg = '';
+      if (act === 'open-auth') {
+        self.captureCheckoutDraft();
+        self.openAuthModal();
+        return;
+      }
+      if (act === 'close-auth') {
+        self.closeAuthModal();
+        return;
+      }
+      if (act === 'view-orders') {
+        self.captureCheckoutDraft();
+        if (!self.isLoggedIn()) {
+          self.openAuthModal();
+          return;
+        }
+        self.state.busy = true;
+        self.render();
+        try {
+          await self.refreshOrders();
+        } catch (_e) {
+          self.state.msg = 'Could not refresh your orders. Please sign in again.';
+          self.state.customerToken = '';
+          self.state.customer = null;
+          self.state.orders = [];
+        } finally {
+          self.state.busy = false;
+        }
+        self.state.view = 'account';
+        self.state.selected = null;
+        self.render();
+        return;
+      }
+      if (act === 'sign-out') {
+        try {
+          localStorage.removeItem(portalSessionKey(self.slug));
+        } catch (_e) {}
+        self.state.customerToken = '';
+        self.state.customer = null;
+        self.state.orders = [];
+        if (self.state.view === 'account') self.state.view = 'shop';
+        self.state.msg = 'Signed out.';
+        self.render();
+        return;
+      }
+      if (act === 'auth-send') {
+        if (self.state.authModal && self.state.authModal.busy) return;
+        self.captureAuthDraft();
+        var am = self.state.authModal;
+        am.err = '';
+        am.info = '';
+        am.busy = true;
+        self.render();
+        try {
+          await api('/api/order/portal-auth', {
+            method: 'POST',
+            body: { action: 'send_code', slug: self.slug, phone: am.phone }
+          });
+          am.step = 'code';
+          am.info = 'Code sent. Check your texts.';
+        } catch (e) {
+          am.err = self.friendlyAuthError((e && e.message) || e);
+        } finally {
+          am.busy = false;
+        }
+        self.render();
+        return;
+      }
+      if (act === 'auth-verify') {
+        if (self.state.authModal && self.state.authModal.busy) return;
+        self.captureAuthDraft();
+        var am2 = self.state.authModal;
+        am2.err = '';
+        am2.info = '';
+        am2.busy = true;
+        self.render();
+        try {
+          var out = await api('/api/order/portal-auth', {
+            method: 'POST',
+            body: {
+              action: 'verify_code',
+              slug: self.slug,
+              phone: am2.phone,
+              code: am2.code
+            }
+          });
+          try {
+            localStorage.setItem(portalSessionKey(self.slug), out.token);
+          } catch (_e) {}
+          self.state.customerToken = out.token;
+          await self.refreshOrders();
+          self.prefillCheckoutFromCustomer();
+          am2.open = false;
+          am2.busy = false;
+          self.state.view = 'account';
+          self.state.selected = null;
+          self.state.msg =
+            'Welcome back' +
+            (firstName(self.state.customer && self.state.customer.name)
+              ? ', ' + firstName(self.state.customer.name)
+              : '') +
+            '.';
+        } catch (e) {
+          am2.err = self.friendlyAuthError((e && e.message) || e);
+          am2.busy = false;
+        }
+        self.render();
+        return;
+      }
+      if (act === 'reorder') {
+        if (!self.isLoggedIn()) {
+          self.openAuthModal();
+          return;
+        }
+        var orderId = el.getAttribute('data-order-id');
+        self.state.busy = true;
+        self.render();
+        try {
+          var re = await api('/api/order/portal-auth', {
+            method: 'POST',
+            body: {
+              action: 'reorder',
+              slug: self.slug,
+              token: self.state.customerToken,
+              order_id: orderId
+            }
+          });
+          if (re.cart_id) {
+            self.state.cartId = re.cart_id;
+            localStorage.setItem(cartKey(self.slug), re.cart_id);
+            await self.refreshCart();
+          }
+          var added = (re.added || []).length;
+          var skipped = (re.skipped || []).length;
+          self.state.msg =
+            'Added ' +
+            added +
+            ' item' +
+            (added === 1 ? '' : 's') +
+            ' to your cart' +
+            (skipped ? ' (' + skipped + ' unavailable skipped)' : '') +
+            '. Review weights, then checkout.';
+          self.state.view = 'shop';
+          self.state.mobileShowCart = true;
+        } catch (e) {
+          self.state.msg = self.friendlyAuthError((e && e.message) || e);
+        } finally {
+          self.state.busy = false;
+        }
+        self.render();
+        try {
+          var asideR = document.getElementById('oe-aside');
+          if (asideR) asideR.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (_e) {}
+        return;
+      }
       if (act === 'toggle-notes') {
         self.captureFastDrafts();
         var nid = el.getAttribute('data-id');
@@ -1342,6 +1824,9 @@
       '.lp-oe-embedded{padding-top:4px}',
       '.lp-oe-head-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}',
       '.lp-oe-portal{display:inline-flex;align-items:center;font:700 13px/1.2 system-ui,sans-serif;color:var(--oe-accent);text-decoration:underline;text-underline-offset:3px}',
+      '.lp-oe-portal-btn,.lp-oe-account-chip{appearance:none;border:1px solid color-mix(in srgb,var(--oe-accent) 35%,var(--oe-line));background:color-mix(in srgb,var(--oe-accent) 8%,var(--oe-card));color:var(--oe-accent);font:700 13px/1 system-ui,sans-serif;padding:10px 14px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}',
+      '.lp-oe-portal-btn:hover,.lp-oe-account-chip:hover,.lp-oe-account-chip.on{border-color:var(--oe-accent);background:color-mix(in srgb,var(--oe-accent) 14%,var(--oe-card))}',
+      '.lp-oe-account-chip-dot{width:8px;height:8px;border-radius:50%;background:var(--oe-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--oe-accent) 20%,transparent)}',
       '.lp-oe-cart-btn,.lp-oe-primary,.lp-oe-card button,.lp-oe-link,.lp-oe-view-btn{appearance:none;border:1px solid var(--oe-btn);background:var(--oe-btn);color:var(--oe-btn-text);font:600 13px/1 system-ui,sans-serif;padding:10px 14px;border-radius:10px;cursor:pointer}',
       '.lp-oe-view-toggle{display:inline-flex;gap:6px;flex:none;position:relative;z-index:3}',
       '.lp-oe-view-btn{background:transparent;color:var(--oe-accent);border-color:var(--oe-line);padding:8px 12px;pointer-events:auto}',
@@ -1414,9 +1899,39 @@
       '.lp-oe-summary{margin:14px 0;padding:14px;background:color-mix(in srgb,var(--oe-accent) 6%,#f7f3ec);border:1px solid var(--oe-line);border-radius:12px}',
       '.lp-oe-summary .row{display:flex;justify-content:space-between;gap:10px;margin:0 0 8px;font-size:14px}',
       '.lp-oe-summary .row.emph{font-weight:700;padding-top:8px;border-top:1px dashed var(--oe-line)}',
-      '.lp-oe-login{margin:0 0 14px;padding:12px;border:1px dashed var(--oe-line);border-radius:12px;background:color-mix(in srgb,var(--oe-card) 80%,#faf7f1)}',
-      '.lp-oe-login h4{margin:0 0 6px;font-size:14px}',
-      '.lp-oe-login p{margin:0 0 8px;font-size:12.5px;color:var(--oe-muted);line-height:1.4}',
+      '.lp-oe-account{margin:0 0 16px;padding:14px;border:1px solid var(--oe-line);border-radius:14px;background:linear-gradient(165deg,color-mix(in srgb,var(--oe-accent) 10%,var(--oe-card)),var(--oe-card));box-shadow:0 8px 20px rgba(28,36,30,.04)}',
+      '.lp-oe-account-ey{margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--oe-accent)}',
+      '.lp-oe-account-name{margin:0 0 4px;font-size:15px;font-weight:700;letter-spacing:-.01em;color:var(--oe-ink)}',
+      '.lp-oe-account-meta{margin:0 0 10px;font-size:12.5px;line-height:1.4;color:var(--oe-muted)}',
+      '.lp-oe-account-actions{display:flex;flex-wrap:wrap;gap:8px}',
+      '.lp-oe-account-btn{appearance:none;border:1px solid var(--oe-accent);background:var(--oe-accent);color:#fff;font:600 12.5px/1 system-ui,sans-serif;padding:9px 12px;border-radius:10px;cursor:pointer}',
+      '.lp-oe-account-btn.ghost{background:transparent;color:var(--oe-accent)}',
+      '.lp-oe-account-btn.on,.lp-oe-account-btn:hover{filter:brightness(1.05)}',
+      '.lp-oe-orders{display:flex;flex-direction:column;gap:14px}',
+      '.lp-oe-orders-head{margin:0 0 4px}',
+      '.lp-oe-orders-title{margin:8px 0 6px;font-size:clamp(22px,3vw,28px);font-weight:650;letter-spacing:-.02em}',
+      '.lp-oe-orders-sub{margin:0;color:var(--oe-muted);font-size:13.5px;line-height:1.45;max-width:52ch}',
+      '.lp-oe-orders-empty{padding:28px 16px;text-align:center;border:1px dashed var(--oe-line);border-radius:14px;background:var(--oe-card);color:var(--oe-muted)}',
+      '.lp-oe-orders-empty .lp-oe-primary{margin-top:14px}',
+      '.lp-oe-order-card{background:var(--oe-card);border:1px solid var(--oe-line);border-radius:14px;padding:16px;box-shadow:0 8px 22px rgba(28,36,30,.04);animation:lpOeNotesIn .22s ease}',
+      '.lp-oe-order-top{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-start;margin:0 0 12px}',
+      '.lp-oe-order-top h3{margin:0 0 4px;font-size:17px;letter-spacing:-.01em}',
+      '.lp-oe-order-meta{margin:0;color:var(--oe-muted);font-size:13px}',
+      '.lp-oe-reorder{width:auto!important;margin:0!important;padding:10px 14px!important}',
+      '.lp-oe-order-lines{list-style:none;margin:0;padding:0;display:grid;gap:8px}',
+      '.lp-oe-order-lines li{display:grid;gap:2px;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--oe-accent) 5%,#f7f3ec)}',
+      '.lp-oe-order-line-name{font-weight:650;font-size:14px}',
+      '.lp-oe-order-line-meta{font-size:12.5px;color:var(--oe-muted);line-height:1.35}',
+      '.lp-oe-modal-backdrop{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(18,24,20,.48);backdrop-filter:blur(2px);animation:lpOeFadeIn .18s ease}',
+      '.lp-oe-modal{position:relative;width:min(420px,100%);background:var(--oe-card);border:1px solid var(--oe-line);border-radius:18px;padding:22px 20px 18px;box-shadow:0 24px 60px rgba(18,24,20,.22);animation:lpOeModalIn .22s ease}',
+      '.lp-oe-modal-close{position:absolute;top:10px;right:12px;appearance:none;border:0;background:transparent;font:700 22px/1 system-ui,sans-serif;color:var(--oe-muted);cursor:pointer;padding:6px}',
+      '.lp-oe-modal-title{margin:0 0 6px;font-size:24px;font-weight:650;letter-spacing:-.02em}',
+      '.lp-oe-modal-sub{margin:0 0 14px;color:var(--oe-muted);font-size:13.5px;line-height:1.45}',
+      '.lp-oe-modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}',
+      '.lp-oe-auth-info{margin:8px 0 0;font-size:13px;color:var(--oe-accent);font-weight:600}',
+      '.lp-oe-auth-err{margin:8px 0 0;font-size:13px;color:#8a2f1d;font-weight:600}',
+      '@keyframes lpOeFadeIn{from{opacity:0}to{opacity:1}}',
+      '@keyframes lpOeModalIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}',
       '.lp-oe-mobile-cart{display:none}',
       '.lp-oe-primary:disabled,.lp-oe-cart-btn:disabled,.lp-oe-qty-btn:disabled,.lp-oe-remove:disabled{opacity:.55;cursor:not-allowed}',
       '.lp-oe-related ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}',
