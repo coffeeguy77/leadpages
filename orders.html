@@ -934,7 +934,40 @@ body.embed .hub{min-height:70vh}
 
         <div class="card" style="margin-top:16px">
           <h3>Pickup windows</h3>
-          <p class="sub">Customers choose from these windows at checkout (date + time range, e.g. Sat 9am–4pm). Add weekday hours and/or one-off dates.</p>
+          <p class="sub">Set a <strong>booking date range</strong>, <strong>closed days</strong> (e.g. every Sunday), weekday hours, and <strong>specific-date overrides</strong> (e.g. early close on the last day).</p>
+
+          <h4 class="section-title" style="margin-top:12px">Booking period &amp; closures</h4>
+          <div class="grid2" style="margin-bottom:12px">
+            <div class="field"><label for="pw-range-start">Range start</label>
+              <input id="pw-range-start" type="date">
+              <span class="field-hint">First day customers can pick a slot (optional).</span>
+            </div>
+            <div class="field"><label for="pw-range-end">Range end</label>
+              <input id="pw-range-end" type="date">
+              <span class="field-hint">Last day in the season (optional).</span>
+            </div>
+            <div class="field" style="grid-column:1/-1"><label>Closed weekdays (within range)</label>
+              <div class="pw-closed-days" id="pw-closed-days">
+                <label><input type="checkbox" value="0" data-pw-closed> Sun</label>
+                <label><input type="checkbox" value="1" data-pw-closed> Mon</label>
+                <label><input type="checkbox" value="2" data-pw-closed> Tue</label>
+                <label><input type="checkbox" value="3" data-pw-closed> Wed</label>
+                <label><input type="checkbox" value="4" data-pw-closed> Thu</label>
+                <label><input type="checkbox" value="5" data-pw-closed> Fri</label>
+                <label><input type="checkbox" value="6" data-pw-closed> Sat</label>
+              </div>
+              <span class="field-hint">e.g. tick Sun so every Sunday in the range is closed.</span>
+            </div>
+            <div class="field" style="grid-column:1/-1"><label for="pw-closed-dates">Extra closed dates</label>
+              <input id="pw-closed-dates" type="text" placeholder="2025-12-25, 2025-12-26">
+              <span class="field-hint">Comma-separated YYYY-MM-DD for one-off closures (public holidays).</span>
+            </div>
+          </div>
+          <div class="actions-row" style="margin-bottom:16px">
+            <button class="btn solid" type="button" id="pw-save-schedule">Save booking period</button>
+          </div>
+
+          <h4 class="section-title">Hours &amp; overrides</h4>
           <div class="grid2" style="margin-bottom:12px">
             <div class="field"><label for="pw-weekday">Weekday</label>
               <select id="pw-weekday">
@@ -948,8 +981,9 @@ body.embed .hub{min-height:70vh}
                 <option value="0">Sunday</option>
               </select>
             </div>
-            <div class="field"><label for="pw-date">Or specific date</label>
+            <div class="field"><label for="pw-date">Or specific date (custom hours)</label>
               <input id="pw-date" type="date">
+              <span class="field-hint">Overrides weekday hours that day — e.g. early close on Christmas Eve.</span>
             </div>
             <div class="field"><label for="pw-start">Window start</label>
               <input id="pw-start" type="time" value="09:00">
@@ -1021,6 +1055,8 @@ body.embed .hub{min-height:70vh}
     products: [],
     categories: [],
     pickupWindows: [],
+    pickupSchedule: null,
+    pickupSlotPreview: [],
     currentView: 'dashboard',
     detail: null,
     navCounts: { customers: null, orders: null, new_orders: null, archived: null }
@@ -1065,8 +1101,20 @@ body.embed .hub{min-height:70vh}
     return isNaN(d.getTime()) ? null : d;
   }
 
-  /** Build upcoming pickup date options from configured windows (or empty → use calendar). */
-  function upcomingPickupOptions(windows, daysAhead){
+  /** Build upcoming pickup date options from server slot preview or windows fallback. */
+  function upcomingPickupOptions(windows, daysAhead, slotPreview){
+    if (slotPreview && slotPreview.length) {
+      var byDate = Object.create(null);
+      slotPreview.forEach(function(s){
+        if (!s || !s.date) return;
+        var start = String(s.window_start || '').slice(0, 5);
+        var end = String(s.window_end || '').slice(0, 5);
+        var bit = (start && end) ? (' · ' + start + '–' + end) : '';
+        if (!byDate[s.date]) byDate[s.date] = s.date + bit;
+        else if (bit && byDate[s.date].indexOf(bit) < 0) byDate[s.date] += bit;
+      });
+      return Object.keys(byDate).sort().map(function(k){ return { value: k, label: byDate[k] }; });
+    }
     var active = (windows || []).filter(function(w){ return w && w.active !== false; });
     if (!active.length) return [];
     var today = new Date(); today.setHours(0,0,0,0);
@@ -1100,7 +1148,7 @@ body.embed .hub{min-height:70vh}
     var input = $('no-pickup');
     var hint = $('no-pickup-hint');
     if (!sel || !input) return;
-    var opts = upcomingPickupOptions(state.pickupWindows, 60);
+    var opts = upcomingPickupOptions(state.pickupWindows, 60, state.pickupSlotPreview);
     if (opts.length) {
       var cur = input.value || sel.value || '';
       sel.innerHTML = '<option value="">Choose pickup date…</option>' + opts.map(function(o){
@@ -3050,6 +3098,59 @@ body.embed .hub{min-height:70vh}
     btn.disabled = false;
   }
 
+  function readClosedWeekdaysFromForm(){
+    var out = [];
+    document.querySelectorAll('[data-pw-closed]').forEach(function(cb){
+      if (cb.checked) out.push(Number(cb.value));
+    });
+    return out.sort();
+  }
+
+  function fillPickupScheduleForm(schedule){
+    schedule = schedule || {};
+    if ($('pw-range-start')) $('pw-range-start').value = schedule.range_start || '';
+    if ($('pw-range-end')) $('pw-range-end').value = schedule.range_end || '';
+    if ($('pw-closed-dates')) {
+      $('pw-closed-dates').value = Array.isArray(schedule.closed_dates)
+        ? schedule.closed_dates.join(', ')
+        : '';
+    }
+    var closed = Array.isArray(schedule.closed_weekdays) ? schedule.closed_weekdays : [];
+    document.querySelectorAll('[data-pw-closed]').forEach(function(cb){
+      cb.checked = closed.indexOf(Number(cb.value)) >= 0;
+    });
+  }
+
+  async function savePickupSchedule(){
+    if (!requireSite()) return;
+    var btn = $('pw-save-schedule');
+    var msg = $('pw-msg');
+    if (btn) btn.disabled = true;
+    try {
+      var closedDatesRaw = $('pw-closed-dates') ? String($('pw-closed-dates').value || '') : '';
+      var r = await api('/api/order/fulfilment-windows', {
+        method: 'POST',
+        body: {
+          site_id: state.siteId,
+          action: 'save_schedule',
+          range_start: $('pw-range-start') ? $('pw-range-start').value || null : null,
+          range_end: $('pw-range-end') ? $('pw-range-end').value || null : null,
+          closed_weekdays: readClosedWeekdaysFromForm(),
+          closed_dates: closedDatesRaw.split(/[\s,;]+/).filter(Boolean)
+        }
+      });
+      state.pickupSchedule = r.schedule || null;
+      state.pickupSlotPreview = r.slot_preview || [];
+      if (msg) msg.textContent = 'Booking period saved.';
+      toast('Pickup schedule saved', 'ok');
+      await refreshPickupDateControl();
+    } catch (e) {
+      if (msg) msg.textContent = (e && e.message) || String(e);
+      toast((e && e.message) || String(e), 'err');
+    }
+    if (btn) btn.disabled = false;
+  }
+
   /* ---------- Pickup windows ---------- */
   var PW_DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   async function loadPickupWindows(){
@@ -3057,9 +3158,12 @@ body.embed .hub{min-height:70vh}
     if (!state.siteId) return;
     if (tb) tb.innerHTML = '<tr><td colspan="4">Loading…</td></tr>';
     try {
-      var data = await api('/api/order/fulfilment-windows?' + siteQuery());
+      var data = await api('/api/order/fulfilment-windows?' + siteQuery('preview=1'));
       var rows = data.windows || [];
       state.pickupWindows = rows;
+      state.pickupSchedule = data.schedule || null;
+      state.pickupSlotPreview = data.slot_preview || [];
+      fillPickupScheduleForm(state.pickupSchedule);
       await refreshPickupDateControl();
       if (!tb) return;
       if (!rows.length) {
@@ -3068,7 +3172,7 @@ body.embed .hub{min-height:70vh}
       }
       tb.innerHTML = rows.map(function(w){
         var when = w.specific_date
-          ? esc(String(w.specific_date).slice(0,10))
+          ? esc(String(w.specific_date).slice(0,10)) + ' (custom)'
           : (PW_DAYS[Number(w.weekday)] || ('Day '+w.weekday)) + 's';
         var win = esc(String(w.window_start||'').slice(0,5)) + '–' + esc(String(w.window_end||'').slice(0,5));
         return '<tr>' +
@@ -3581,6 +3685,7 @@ body.embed .hub{min-height:70vh}
   if ($('imp-commit')) $('imp-commit').addEventListener('click', runImportCommit);
   $('settings-form').addEventListener('submit', saveSettings);
   if ($('pw-add')) $('pw-add').addEventListener('click', addPickupWindow);
+  if ($('pw-save-schedule')) $('pw-save-schedule').addEventListener('click', savePickupSchedule);
   $('settings-preset').addEventListener('click', applyButcherPreset);
   $('om-close').addEventListener('click', closeOrderModal);
   $('order-modal').addEventListener('click', function(e){

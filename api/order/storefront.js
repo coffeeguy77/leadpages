@@ -7,7 +7,7 @@ const { formatAud } = require('../../lib/order/money');
 const { earliestPickupDate } = require('../../lib/order/cutoff');
 const { resolvePaymentRule, computeDepositRequired } = require('../../lib/order/deposit');
 const { isDateAvailable } = require('../../lib/order/capacity');
-const { listWindows, buildPickupSlots } = require('../../lib/order/fulfilment-windows');
+const { listWindows, buildPickupSlots, parsePickupSchedule } = require('../../lib/order/fulfilment-windows');
 
 async function resolveSite(slug, siteId) {
   const admin = getAdmin();
@@ -87,7 +87,8 @@ module.exports = async function (req, res) {
 
     const earliest = earliestPickupDate(system.timezone || 'Australia/Sydney', products || []);
     const windows = await listWindows(system.id);
-    const pickup_slots = buildPickupSlots(windows, earliest, 28);
+    const schedule = parsePickupSchedule(system);
+    const pickup_slots = buildPickupSlots(windows, earliest, 28, schedule);
     const paySettings = (system.settings && system.settings.payments) || {};
     const storefrontSettings = Object.assign(
       {

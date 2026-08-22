@@ -4,10 +4,15 @@ const { readBody, json, methodOk } = require('../../lib/order/http');
 const { requireUser, assertSiteAccess, getOrderSystemForSite } = require('../../lib/order/auth');
 const {
   listAllWindowsAdmin,
+  listWindows,
   createWindow,
   updateWindow,
-  deleteWindow
+  deleteWindow,
+  savePickupSchedule,
+  parsePickupSchedule,
+  buildPickupSlots
 } = require('../../lib/order/fulfilment-windows');
+const { toDateStr } = require('../../lib/order/pickup-schedule');
 
 module.exports = async function (req, res) {
   try {
@@ -21,12 +26,37 @@ module.exports = async function (req, res) {
     const access = await assertSiteAccess(user, siteId);
     if (!access.ok) return json(res, access.code, { error: access.error });
 
-    const system = await getOrderSystemForSite(siteId);
+    let system = await getOrderSystemForSite(siteId);
     if (!system) return json(res, 404, { error: 'no_system' });
 
     if (req.method === 'GET') {
       const windows = await listAllWindowsAdmin(system.id);
-      return json(res, 200, { windows: windows });
+      const schedule = parsePickupSchedule(system);
+      var payload = { windows: windows, schedule: schedule };
+      if (q.preview === '1') {
+        const active = await listWindows(system.id);
+        const today = toDateStr(new Date());
+        payload.slot_preview = buildPickupSlots(active, today, 60, schedule);
+      }
+      return json(res, 200, payload);
+    }
+
+    if (req.method === 'POST' && body.action === 'save_schedule') {
+      const result = await savePickupSchedule(system, {
+        range_start: body.range_start,
+        range_end: body.range_end,
+        closed_weekdays: body.closed_weekdays,
+        closed_dates: body.closed_dates
+      });
+      system = result.system;
+      const schedule = result.schedule;
+      const active = await listWindows(system.id);
+      const today = toDateStr(new Date());
+      return json(res, 200, {
+        ok: true,
+        schedule: schedule,
+        slot_preview: buildPickupSlots(active, today, 60, schedule)
+      });
     }
 
     if (req.method === 'POST') {
