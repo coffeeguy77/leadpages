@@ -62,7 +62,9 @@ body{margin:0;min-height:100vh;font-family:var(--font-ui);color:var(--ink);backg
 .lp-oe-price{margin-top:8px;font-weight:700;color:var(--accent);}
 .lp-oe-note{color:var(--muted);font-size:13.5px;line-height:1.45;margin:16px 0 0;}
 .lp-oe-empty{padding:28px;text-align:center;color:var(--muted);}
-.lp-oe-msg{background:#fff1d6;border:1px solid #efd7a2;color:#7a5600;padding:10px 12px;border-radius:10px;margin:0 0 12px;}
+.lp-oe-msg{background:color-mix(in srgb,var(--accent) 10%,var(--card));border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));color:var(--ink);padding:10px 12px;border-radius:10px;margin:0 0 12px;}
+.lp-oe-msg.is-ok{background:color-mix(in srgb,var(--accent) 12%,var(--card));border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.lp-oe-msg.is-error{background:#f8ebe7;border-color:#e2b5a8;color:#6e2416}
 .lp-oe-fields{display:grid;gap:10px;margin:14px 0;}
 .lp-oe-fields label{display:grid;gap:4px;font-size:12px;font-weight:700;color:var(--muted);}
 .lp-oe-fields input,.lp-oe-fields textarea,.lp-oe-fields select{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);}
@@ -120,6 +122,6 @@ body{margin:0;min-height:100vh;font-family:var(--font-ui);color:var(--ink);backg
   }
 })();
 </script>
-<script src="/assets/lp-order-storefront.js?v=oe-11" defer></script>
+<script src="/assets/lp-order-storefront.js?v=oe-12" defer></script>
 </body>
 </html>

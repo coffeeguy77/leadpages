@@ -152,7 +152,7 @@ test('storefront has SMS auth modal and in-page My orders', function () {
   assert.match(js, /lp-oe-modal-backdrop/);
   assert.match(js, /lp-oe-client-nav/);
   assert.match(js, /action:\s*'reorder'/);
-  assert.match(shop, /lp-order-storefront\.js\?v=oe-11/);
+  assert.match(shop, /lp-order-storefront\.js\?v=oe-12/);
 });
 
 test('displayGivenName prefers first name with title case', function () {
@@ -162,4 +162,17 @@ test('displayGivenName prefers first name with title case', function () {
   assert.equal(displayGivenName('MATTHEWS Shaun'), 'Shaun');
   assert.equal(displayGivenName('MATTHEWS, Shaun'), 'Shaun');
   assert.equal(displayGivenName('jenny wells'), 'Jenny');
+});
+
+test('reorder uses bulk cart lines and returns packed cart', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const cart = fs.readFileSync(path.join(__dirname, '..', 'lib/order/cart.js'), 'utf8');
+  const portal = fs.readFileSync(path.join(__dirname, '..', 'api/order/portal-auth.js'), 'utf8');
+  const sf = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-order-storefront.js'), 'utf8');
+  assert.match(cart, /addReorderLines/);
+  assert.match(portal, /addReorderLines/);
+  assert.match(portal, /packCartResponse/);
+  assert.match(sf, /applyPacked\(re\)/);
+  assert.match(sf, /lp-oe-msg\.is-ok/);
 });

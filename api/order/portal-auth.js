@@ -15,7 +15,8 @@ const {
   resolveAccessToken
 } = require('../../lib/order/tokens');
 const { queueAndSend, twilioOtpConfigured, sendPortalOtpSms, checkPortalOtpSms } = require('../../lib/order/messaging');
-const { createCart, addOrUpdateItem } = require('../../lib/order/cart');
+const { createCart, addReorderLines } = require('../../lib/order/cart');
+const { packCartResponse } = require('../../lib/order/cart-pack');
 
 function sixDigitCode() {
   return String(100000 + Math.floor(Math.random() * 900000));
@@ -352,43 +353,66 @@ module.exports = async function (req, res) {
         .update({ customer_id: session.customer_id })
         .eq('id', cart.id);
 
+      const productIds = [];
+      const seen = Object.create(null);
+      (items || []).forEach(function (it) {
+        if (it.product_id && !seen[it.product_id]) {
+          seen[it.product_id] = true;
+          productIds.push(it.product_id);
+        }
+      });
+
+      var productsById = Object.create(null);
+      if (productIds.length) {
+        var { data: products } = await admin
+          .from('order_products')
+          .select('*')
+          .in('id', productIds)
+          .eq('active', true);
+        (products || []).forEach(function (p) {
+          productsById[p.id] = p;
+        });
+      }
+
       const added = [];
       const skipped = [];
+      const lines = [];
       for (var i = 0; i < (items || []).length; i++) {
         var it = items[i];
         if (!it.product_id) {
           skipped.push({ name: it.product_name, reason: 'no_product_link' });
           continue;
         }
-        var { data: product } = await admin
-          .from('order_products')
-          .select('*')
-          .eq('id', it.product_id)
-          .eq('active', true)
-          .maybeSingle();
+        var product = productsById[it.product_id];
         if (!product) {
           skipped.push({ name: it.product_name, reason: 'unavailable' });
           continue;
         }
-        try {
-          await addOrUpdateItem(cart, product, {
-            quantity: it.quantity,
-            requested_weight_kg: it.requested_weight_kg,
-            notes: it.notes || null
-          });
-          added.push({ name: product.name, product_id: product.id });
-        } catch (e) {
-          skipped.push({ name: it.product_name, reason: String((e && e.message) || e) });
-        }
+        lines.push({
+          product: product,
+          quantity: it.quantity,
+          requested_weight_kg: it.requested_weight_kg,
+          notes: it.notes || null,
+          sort_order: i
+        });
+        added.push({ name: product.name, product_id: product.id });
       }
 
-      return json(res, 200, {
+      var packed;
+      try {
+        packed = await addReorderLines(cart, lines);
+      } catch (e) {
+        return json(res, 500, { error: String((e && e.message) || e) });
+      }
+
+      var clientCart = await packCartResponse(system, packed);
+      return json(res, 200, Object.assign({
         ok: true,
         cart_id: cart.id,
         added: added,
         skipped: skipped,
         shop_url: '/order-shop?slug=' + encodeURIComponent(site.slug) + '&cart_id=' + encodeURIComponent(cart.id)
-      });
+      }, clientCart));
     }
 
     return json(res, 400, { error: 'bad_action' });

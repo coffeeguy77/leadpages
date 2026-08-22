@@ -108,6 +108,7 @@
       selected: null,
       busy: false,
       msg: '',
+      msgKind: '',
       mobileShowCart: false,
       notesOpen: {},
       fastDrafts: {},
@@ -514,7 +515,14 @@
       html += '</div></header>';
     }
 
-    if (this.state.msg) html += '<p class="lp-oe-msg">' + esc(this.state.msg) + '</p>';
+    if (this.state.msg) {
+      html +=
+        '<p class="lp-oe-msg' +
+        (this.state.msgKind === 'error' ? ' is-error' : this.state.msgKind === 'ok' ? ' is-ok' : '') +
+        '">' +
+        esc(this.state.msg) +
+        '</p>';
+    }
 
     html += '<div class="lp-oe-layout">';
     html += '<div class="lp-oe-main">';
@@ -1421,6 +1429,7 @@
     if (self.state.busy && !freeActs[act]) return;
     try {
       self.state.msg = '';
+      self.state.msgKind = '';
       if (act === 'open-auth') {
         self.captureCheckoutDraft();
         self.openAuthModal();
@@ -1531,7 +1540,12 @@
           return;
         }
         var orderId = el.getAttribute('data-order-id');
+        // Switch to shop immediately so the cart column is visible while we fill it.
+        self.state.view = 'shop';
+        self.state.selected = null;
+        self.state.mobileShowCart = true;
         self.state.busy = true;
+        self.state.msg = 'Adding previous order to your cart…';
         self.render();
         try {
           var re = await api('/api/order/portal-auth', {
@@ -1546,6 +1560,10 @@
           if (re.cart_id) {
             self.state.cartId = re.cart_id;
             localStorage.setItem(cartKey(self.slug), re.cart_id);
+          }
+          if (re.cart && re.items) {
+            self.applyPacked(re);
+          } else if (re.cart_id) {
             await self.refreshCart();
           }
           var added = (re.added || []).length;
@@ -1558,12 +1576,12 @@
             ' to your cart' +
             (skipped ? ' (' + skipped + ' unavailable skipped)' : '') +
             '. Review weights, then checkout.';
-          self.state.view = 'shop';
-          self.state.mobileShowCart = true;
         } catch (e) {
           self.state.msg = self.friendlyAuthError((e && e.message) || e);
+          self.state.msgKind = 'error';
         } finally {
           self.state.busy = false;
+          if (!self.state.msgKind) self.state.msgKind = 'ok';
         }
         self.render();
         try {
@@ -1918,7 +1936,9 @@
       '.lp-oe-card button{width:100%;margin-top:10px}',
       '.lp-oe-note{color:var(--oe-muted);font-size:13px;line-height:1.45;margin:14px 0 0}',
       '.lp-oe-empty{padding:28px 12px;text-align:center;color:var(--oe-muted)}',
-      '.lp-oe-msg{background:#fff1d6;border:1px solid #efd7a2;color:#7a5600;padding:10px 12px;border-radius:10px;margin:0 0 12px;font-size:13.5px}',
+      '.lp-oe-msg{background:color-mix(in srgb,var(--oe-accent) 10%,var(--oe-card));border:1px solid color-mix(in srgb,var(--oe-accent) 28%,var(--oe-line));color:var(--oe-ink);padding:10px 12px;border-radius:10px;margin:0 0 12px;font-size:13.5px;line-height:1.4}',
+      '.lp-oe-msg.is-ok{background:color-mix(in srgb,var(--oe-accent) 12%,var(--oe-card));border-color:color-mix(in srgb,var(--oe-accent) 35%,var(--oe-line));color:var(--oe-ink)}',
+      '.lp-oe-msg.is-error{background:color-mix(in srgb,#8a2f1d 8%,var(--oe-card));border-color:color-mix(in srgb,#8a2f1d 28%,var(--oe-line));color:#6e2416}',
       '.lp-oe-detail{background:var(--oe-card);border:1px solid var(--oe-line);border-radius:var(--oe-radius);padding:16px;margin:0 0 14px}',
       '.lp-oe-fields{display:grid;gap:10px;margin:14px 0}',
       '.lp-oe-fields-app{gap:12px}',
