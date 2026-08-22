@@ -9,9 +9,10 @@ const {
   PRESET_BUTCHER_LINE_ITEMS,
   mapRow,
   cleanOrderNumber,
+  parseSizeWeightKg,
   fullName
 } = require('../lib/order/import-parse');
-const { normaliseAuPhone } = require('../lib/order/phone');
+const { normaliseAuPhone, phonesMatch } = require('../lib/order/phone');
 
 test('parseCsv handles quoted commas and butcher rows', function () {
   const text =
@@ -80,16 +81,60 @@ test('import API supports batched commit + archived history copy', function () {
   assert.match(lib, /groupOrderHistoryRows/);
 });
 
-test('groupOrderHistoryRows groups butcher lines by order + phone', function () {
+test('groupOrderHistoryRows groups butcher lines by order number only', function () {
   const { groupOrderHistoryRows, PRESET_BUTCHER_LINE_ITEMS } = require('../lib/order/import-parse');
   const { normaliseAuPhone } = require('../lib/order/phone');
   const rows = [
     ['Jenny', 'WELLS', '0432 807 378', '22/12/2025', '8958', 'BEEF - Brisket', '3.5 kg', '1', '', ''],
-    ['Jenny', 'WELLS', '0432 807 378', '22/12/2025', '8958', 'HAM - Half', '2 kg', '1', '', ''],
+    ['Jenny', 'WELLS', '0432807378', '22/12/2025', '8958', 'HAM - Half', '2 kg', '1', '', ''],
     ['Angela', 'ADAMS', '0406 346 819', '22/12/2025', '8605', 'BEEF - Scotch', '2 kg', '1', '', '']
   ];
   const grouped = groupOrderHistoryRows(rows, PRESET_BUTCHER_LINE_ITEMS.mapping, false, normaliseAuPhone);
   assert.equal(grouped.keys.length, 2);
   assert.equal(grouped.groups[grouped.keys[0]].lines.length, 2);
   assert.equal(grouped.groups[grouped.keys[1]].lines.length, 1);
+  assert.ok(grouped.keys[0].startsWith('ord:'));
+});
+
+test('parseSizeWeightKg reads butcher weight notes', function () {
+  assert.equal(parseSizeWeightKg('3.5 kg'), 3.5);
+  assert.equal(parseSizeWeightKg('800g'), 0.8);
+  assert.equal(parseSizeWeightKg('2 - 3 kg'), 2.5);
+  assert.equal(parseSizeWeightKg(''), null);
+});
+
+test('phonesMatch ignores spaces in AU mobiles', function () {
+  assert.equal(phonesMatch('0414 631 463', '0414631463'), true);
+  assert.equal(normaliseAuPhone('0414 631 463'), '+61414631463');
+  assert.equal(normaliseAuPhone('0414631463'), '+61414631463');
+});
+
+test('import skips existing order_number and sets requested_weight_kg', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const lib = fs.readFileSync(path.join(__dirname, '..', 'lib/order/import.js'), 'utf8');
+  assert.match(lib, /eq\('order_number',\s*externalNumber\)/);
+  assert.match(lib, /parseSizeWeightKg/);
+  assert.match(lib, /requested_weight_kg:\s*weightKg/);
+  assert.match(lib, /phone_e164/);
+});
+
+test('portal re-links orders by normalised phone', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const api = fs.readFileSync(path.join(__dirname, '..', 'api/order/portal-auth.js'), 'utf8');
+  assert.match(api, /relinkOrdersForCustomer/);
+  assert.match(api, /phonesMatch/);
+  assert.match(api, /requested_weight_kg/);
+});
+
+test('storeSmsOtp hard-deletes prior OTPs and unique-hashes Verify rows', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const tokens = fs.readFileSync(path.join(__dirname, '..', 'lib/order/tokens.js'), 'utf8');
+  assert.match(tokens, /deletePriorSmsOtps/);
+  assert.match(tokens, /\.delete\(\)/);
+  assert.match(tokens, /meta->>phone_e164/);
+  assert.match(tokens, /VERIFY:/);
+  assert.doesNotMatch(tokens, /revoked_at: new Date\(\)\.toISOString\(\)\s*\n\s*\.eq\('purpose', 'sms_otp'\)/);
 });

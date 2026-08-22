@@ -4,6 +4,7 @@ const { readBody, json, methodOk } = require('../../lib/order/http');
 const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/order/auth');
 const { getAdmin } = require('../../lib/order/supabase');
 const { formatAud } = require('../../lib/order/money');
+const { normaliseAuPhone } = require('../../lib/order/phone');
 
 module.exports = async function (req, res) {
   try {
@@ -80,6 +81,9 @@ module.exports = async function (req, res) {
           if (body[k] !== undefined) patch[k] = body[k];
         }
       );
+      if (body.phone !== undefined) {
+        patch.phone_e164 = normaliseAuPhone(body.phone) || null;
+      }
       const { data, error } = await admin
         .from('order_customers')
         .update(patch)

@@ -7,7 +7,7 @@
 
 const { json, methodOk, readBody } = require('../../lib/order/http');
 const { getAdmin } = require('../../lib/order/supabase');
-const { normaliseAuPhone } = require('../../lib/order/phone');
+const { normaliseAuPhone, phonesMatch, customerPhoneE164 } = require('../../lib/order/phone');
 const {
   storeSmsOtp,
   verifySmsOtp,
@@ -37,6 +37,9 @@ async function systemForSite(siteId) {
   return data;
 }
 
+/**
+ * Find customer by e164 — also matches spaced display phones when phone_e164 was never set.
+ */
 async function findCustomer(systemId, phoneE164) {
   const admin = getAdmin();
   const { data } = await admin
@@ -45,7 +48,90 @@ async function findCustomer(systemId, phoneE164) {
     .eq('order_system_id', systemId)
     .eq('phone_e164', phoneE164)
     .maybeSingle();
-  return data;
+  if (data) return data;
+
+  const { data: rows } = await admin
+    .from('order_customers')
+    .select('*')
+    .eq('order_system_id', systemId)
+    .limit(20000);
+  const match = (rows || []).find(function (c) {
+    return phonesMatch(c.phone_e164 || c.phone, phoneE164);
+  });
+  if (match && !match.phone_e164) {
+    await admin
+      .from('order_customers')
+      .update({ phone_e164: phoneE164, updated_at: new Date().toISOString() })
+      .eq('id', match.id);
+    match.phone_e164 = phoneE164;
+  }
+  return match || null;
+}
+
+/**
+ * Re-link historical orders that share this phone but sit on another customer_id / null.
+ * Import / manual edits can leave display phones with spaces while OTP uses digits-only.
+ */
+async function relinkOrdersForCustomer(admin, siteId, customer) {
+  const e164 = customerPhoneE164(customer);
+  if (!e164) return;
+
+  if (customer.phone_e164 !== e164) {
+    await admin
+      .from('order_customers')
+      .update({ phone_e164: e164, updated_at: new Date().toISOString() })
+      .eq('id', customer.id);
+    customer.phone_e164 = e164;
+  }
+
+  const { data: siteCustomers } = await admin
+    .from('order_customers')
+    .select('id, phone, phone_e164')
+    .eq('site_id', siteId)
+    .limit(20000);
+  const twinIds = (siteCustomers || [])
+    .filter(function (c) {
+      return phonesMatch(c.phone_e164 || c.phone, e164);
+    })
+    .map(function (c) {
+      return c.id;
+    });
+  if (twinIds.indexOf(customer.id) < 0) twinIds.push(customer.id);
+
+  const otherTwins = twinIds.filter(function (id) {
+    return id !== customer.id;
+  });
+  if (otherTwins.length) {
+    await admin
+      .from('order_orders')
+      .update({ customer_id: customer.id, updated_at: new Date().toISOString() })
+      .eq('site_id', siteId)
+      .in('customer_id', otherTwins);
+  }
+
+  const { data: orphans } = await admin
+    .from('order_orders')
+    .select('id, customer_phone')
+    .eq('site_id', siteId)
+    .is('customer_id', null)
+    .limit(5000);
+  const orphanIds = (orphans || [])
+    .filter(function (o) {
+      return phonesMatch(o.customer_phone, e164);
+    })
+    .map(function (o) {
+      return o.id;
+    });
+  if (orphanIds.length) {
+    // Chunk updates to stay within PostgREST URL limits.
+    for (var i = 0; i < orphanIds.length; i += 200) {
+      var chunk = orphanIds.slice(i, i + 200);
+      await admin
+        .from('order_orders')
+        .update({ customer_id: customer.id, updated_at: new Date().toISOString() })
+        .in('id', chunk);
+    }
+  }
 }
 
 module.exports = async function (req, res) {
@@ -66,6 +152,8 @@ module.exports = async function (req, res) {
         .maybeSingle();
       if (!customer) return json(res, 404, { error: 'customer_not_found' });
 
+      await relinkOrdersForCustomer(admin, session.site_id, customer);
+
       const { data: orders } = await admin
         .from('order_orders')
         .select(
@@ -82,7 +170,9 @@ module.exports = async function (req, res) {
       if (orderIds.length) {
         const { data: items } = await admin
           .from('order_items')
-          .select('id, order_id, product_id, product_name, quantity, notes, price_status, unit_price_cents, line_known_cents')
+          .select(
+            'id, order_id, product_id, product_name, quantity, requested_weight_kg, notes, price_status, unit_price_cents, line_known_cents'
+          )
           .in('order_id', orderIds);
         (items || []).forEach(function (it) {
           if (!itemsByOrder[it.order_id]) itemsByOrder[it.order_id] = [];
