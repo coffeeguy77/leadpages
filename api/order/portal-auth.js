@@ -208,7 +208,7 @@ module.exports = async function (req, res) {
         return json(res, 503, {
           error: 'sms_not_configured',
           message:
-            'SMS is not configured yet. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and either TWILIO_VERIFY_SERVICE_SID (same as Quote Builder) or TWILIO_FROM_NUMBER.'
+            'SMS is not configured yet. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and either TWILIO_VERIFY_SERVICE_SID (same as Quote Builder) or TWILIO_FROM / TWILIO_FROM_NUMBER.'
         });
       }
       const customer = await findCustomer(system.id, phone);
@@ -271,7 +271,7 @@ module.exports = async function (req, res) {
         return json(res, 503, {
           error: 'sms_not_configured',
           message:
-            'SMS is not configured yet. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_FROM_NUMBER — or TWILIO_VERIFY_SERVICE_SID like Quote Builder.'
+            'SMS is not configured yet. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_FROM / TWILIO_FROM_NUMBER — or TWILIO_VERIFY_SERVICE_SID like Quote Builder.'
         });
       }
       if (sent && sent.send && sent.send.ok === false) {
