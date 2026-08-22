@@ -181,3 +181,16 @@ test('storefront layout is 2/3 menu and larger product titles', function () {
   assert.match(orders, /set-abd-enabled/);
   assert.match(orders, /cust-normalize/);
 });
+
+test('reorder uses bulk cart lines and returns packed cart', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const cart = fs.readFileSync(path.join(__dirname, '..', 'lib/order/cart.js'), 'utf8');
+  const portal = fs.readFileSync(path.join(__dirname, '..', 'api/order/portal-auth.js'), 'utf8');
+  const sf = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-order-storefront.js'), 'utf8');
+  assert.match(cart, /addReorderLines/);
+  assert.match(portal, /addReorderLines/);
+  assert.match(portal, /packCartResponse/);
+  assert.match(sf, /applyPacked\(re\)/);
+  assert.match(sf, /lp-oe-msg\.is-ok/);
+});

@@ -121,6 +121,7 @@
       selected: null,
       busy: false,
       msg: '',
+      msgKind: '',
       mobileShowCart: false,
       notesOpen: {},
       fastDrafts: {},
@@ -153,7 +154,7 @@
 
   OrderStorefront.prototype.needsWeight = function (p) {
     if (!p) return false;
-    if (this.isPackSize(p)) return false;
+    if (this.isPackSize(p) || this.isEachSize(p)) return false;
     return !!(p.weight_required || p.pricing_method === 'per_weight' || p.pricing_method === 'price_tbc');
   };
 
@@ -165,6 +166,39 @@
   OrderStorefront.prototype.isPackSize = function (p) {
     var o = (p && p.options) || {};
     return o.size_mode === 'pack' || o.size_mode === 'fixed' || !!p.is_pack_size;
+  };
+
+  OrderStorefront.prototype.isEachSize = function (p) {
+    var o = (p && p.options) || {};
+    return o.size_mode === 'each' || o.size_mode === 'unit' || o.size_mode === 'individual' || !!p.is_each_size;
+  };
+
+  OrderStorefront.prototype.minimumWeightKg = function (p) {
+    if (p && p.minimum_kg != null) {
+      var n = Number(p.minimum_kg);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+    var o = (p && p.options) || {};
+    if (o.minimum_kg != null) {
+      var m = Number(o.minimum_kg);
+      if (Number.isFinite(m) && m > 0) return m;
+    }
+    return null;
+  };
+
+  OrderStorefront.prototype.defaultWeightKg = function (p) {
+    if (p && p.default_weight_kg != null) {
+      var d = Number(p.default_weight_kg);
+      if (Number.isFinite(d) && d > 0) return d;
+    }
+    var min = this.minimumWeightKg(p);
+    return min != null ? min : 1;
+  };
+
+  OrderStorefront.prototype.quantityPrompt = function (p) {
+    if (p && p.quantity_prompt) return String(p.quantity_prompt).trim();
+    var o = (p && p.options) || {};
+    return o.quantity_prompt ? String(o.quantity_prompt).trim() : '';
   };
 
   OrderStorefront.prototype.packLabel = function (p) {
@@ -537,7 +571,14 @@
       html += '</div></header>';
     }
 
-    if (this.state.msg) html += '<p class="lp-oe-msg">' + esc(this.state.msg) + '</p>';
+    if (this.state.msg) {
+      html +=
+        '<p class="lp-oe-msg' +
+        (this.state.msgKind === 'error' ? ' is-error' : this.state.msgKind === 'ok' ? ' is-ok' : '') +
+        '">' +
+        esc(this.state.msg) +
+        '</p>';
+    }
 
     html += '<div class="lp-oe-layout">';
     html += '<div class="lp-oe-main">';
@@ -639,13 +680,25 @@
     return html;
   };
 
+  OrderStorefront.prototype.productInCategory = function (p, categoryId) {
+    if (!categoryId) return true;
+    var want = String(categoryId);
+    if (Array.isArray(p.category_ids) && p.category_ids.length) {
+      return p.category_ids.indexOf(want) >= 0;
+    }
+    if (Array.isArray(p.additional_category_ids) && p.additional_category_ids.indexOf(want) >= 0) {
+      return true;
+    }
+    return String(p.category_id || '') === want;
+  };
+
   OrderStorefront.prototype.renderFastMenu = function () {
     var self = this;
     var products = (this.state.catalogue && this.state.catalogue.products) || [];
     var active = this.state.activeCategoryId;
     if (active) {
       products = products.filter(function (p) {
-        return p.category_id === active;
+        return self.productInCategory(p, active);
       });
     }
     var html = '<div class="lp-oe-fast" role="list">';
@@ -777,9 +830,12 @@
     var needsW = this.needsWeight(p);
     var showQty = this.showsQuantity(p);
     var pack = this.packLabel(p);
+    var qtyPrompt = this.quantityPrompt(p);
     var hasQs = (p.questions || []).length > 0;
     var qtyVal = draft.qty != null && draft.qty !== '' ? draft.qty : '1';
-    var kgVal = draft.kg != null ? draft.kg : '';
+    var minKg = this.minimumWeightKg(p);
+    var defaultKg = this.defaultWeightKg(p);
+    var kgVal = draft.kg != null && draft.kg !== '' ? draft.kg : '';
     var notesVal = draft.notes || '';
     var hasImg = !!p.image_url;
     var html = '';
@@ -800,6 +856,7 @@
     html += '<div class="lp-oe-fast-info">';
     html += '<h3>' + esc(p.name) + '</h3>';
     if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
+    if (qtyPrompt) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
     if (p.short_description) html += '<p class="lp-oe-fast-desc">' + esc(p.short_description) + '</p>';
     html += '<div class="lp-oe-price">' + esc(p.display_price) + '</div>';
     html += '</div>';
@@ -816,10 +873,13 @@
     if (needsW) {
       html +=
         '<label class="lp-oe-fast-field">kg' +
+        (minKg != null
+          ? '<span class="lp-oe-field-hint">min ' + esc(String(minKg)) + ' kg</span>'
+          : '') +
         this.stepperHtml({
-          min: 0.1,
+          min: minKg != null ? minKg : 0.1,
           step: 0.1,
-          value: kgVal || '1.0',
+          value: kgVal || String(defaultKg),
           dataAttr: 'data-fast-kg'
         }) +
         '</label>';
@@ -860,7 +920,7 @@
     var active = this.state.activeCategoryId;
     if (active) {
       products = products.filter(function (p) {
-        return p.category_id === active;
+        return self.productInCategory(p, active);
       });
     }
     var html = '';
@@ -905,12 +965,16 @@
 
   OrderStorefront.prototype.renderProduct = function (p) {
     var pack = this.packLabel(p);
+    var qtyPrompt = this.quantityPrompt(p);
     var needsW = this.needsWeight(p);
     var showQty = this.showsQuantity(p);
+    var minKg = this.minimumWeightKg(p);
+    var defaultKg = this.defaultWeightKg(p);
     var html = '<div class="lp-oe-detail">';
     html += '<button type="button" class="lp-oe-link" data-act="back-shop">← Back</button>';
     html += '<h3>' + esc(p.name) + '</h3>';
     if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
+    if (qtyPrompt) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
     html += '<p class="lp-oe-price">' + esc(p.display_price) + '</p>';
     if (p.description || p.short_description)
       html += '<p class="lp-oe-desc">' + esc(p.description || p.short_description) + '</p>';
@@ -928,9 +992,23 @@
     if (needsW) {
       html +=
         '<label class="lp-oe-field">Approx. weight (kg)' +
-        this.stepperHtml({ min: 0.1, step: 0.1, value: '1.0', id: 'oe-kg' }) +
+        this.stepperHtml({
+          min: minKg != null ? minKg : 0.1,
+          step: 0.1,
+          value: String(defaultKg),
+          id: 'oe-kg'
+        }) +
         '</label>';
-      html += '<p class="lp-oe-pack-note">Sold by weight — enter how much you want.</p>';
+      if (minKg != null) {
+        html +=
+          '<p class="lp-oe-pack-note">Minimum order ' +
+          esc(String(minKg)) +
+          ' kg — enter how much you need (e.g. ' +
+          esc(String(defaultKg)) +
+          ' kg).</p>';
+      } else {
+        html += '<p class="lp-oe-pack-note">Sold by weight — enter how much you want (e.g. 1 kg).</p>';
+      }
     }
     html +=
       '<label class="lp-oe-field">Notes<textarea id="oe-notes" class="lp-oe-notes-grow" rows="1" placeholder="Optional"></textarea></label>';
@@ -1446,6 +1524,7 @@
     if (self.state.busy && !freeActs[act]) return;
     try {
       self.state.msg = '';
+      self.state.msgKind = '';
       if (act === 'open-auth') {
         self.captureCheckoutDraft();
         self.openAuthModal();
@@ -1556,7 +1635,12 @@
           return;
         }
         var orderId = el.getAttribute('data-order-id');
+        // Switch to shop immediately so the cart column is visible while we fill it.
+        self.state.view = 'shop';
+        self.state.selected = null;
+        self.state.mobileShowCart = true;
         self.state.busy = true;
+        self.state.msg = 'Adding previous order to your cart…';
         self.render();
         try {
           var re = await api('/api/order/portal-auth', {
@@ -1571,6 +1655,10 @@
           if (re.cart_id) {
             self.state.cartId = re.cart_id;
             localStorage.setItem(cartKey(self.slug), re.cart_id);
+          }
+          if (re.cart && re.items) {
+            self.applyPacked(re);
+          } else if (re.cart_id) {
             await self.refreshCart();
           }
           var added = (re.added || []).length;
@@ -1583,12 +1671,12 @@
             ' to your cart' +
             (skipped ? ' (' + skipped + ' unavailable skipped)' : '') +
             '. Review weights, then checkout.';
-          self.state.view = 'shop';
-          self.state.mobileShowCart = true;
         } catch (e) {
           self.state.msg = self.friendlyAuthError((e && e.message) || e);
+          self.state.msgKind = 'error';
         } finally {
           self.state.busy = false;
+          if (!self.state.msgKind) self.state.msgKind = 'ok';
         }
         self.render();
         try {
@@ -1705,6 +1793,17 @@
           self.render();
           return;
         }
+        var minKgInline = product && self.minimumWeightKg(product);
+        if (product && self.needsWeight(product) && minKgInline != null && kgVal + 0.0001 < minKgInline) {
+          self.state.msg =
+            'Minimum weight for ' +
+            (product.name || 'this item') +
+            ' is ' +
+            minKgInline +
+            ' kg.';
+          self.render();
+          return;
+        }
         var notesEl = row && row.querySelector('[data-fast-notes]');
         var notesVal = (notesEl && notesEl.value) || draft.notes || null;
         var answers = self.collectAnswers(row || self.root);
@@ -1748,6 +1847,12 @@
         var notesVal = (($('#oe-notes', self.root) || {}).value) || null;
         if (product && self.needsWeight(product) && (kgVal == null || !isFinite(kgVal) || kgVal <= 0)) {
           self.state.msg = 'Enter an approximate weight in kg.';
+          self.render();
+          return;
+        }
+        var minKgDetail = product && self.minimumWeightKg(product);
+        if (product && self.needsWeight(product) && minKgDetail != null && kgVal + 0.0001 < minKgDetail) {
+          self.state.msg = 'Minimum weight is ' + minKgDetail + ' kg for this item.';
           self.render();
           return;
         }
@@ -1913,6 +2018,8 @@
       '.lp-oe-list .lp-oe-card.no-img{grid-template-columns:minmax(0,1fr) auto}',
       '.lp-oe-card.no-img .lp-oe-body{padding-top:18px}',
       '.lp-oe-pack{margin:0 0 4px;font-size:13px;font-weight:700;color:var(--oe-accent);letter-spacing:.02em}',
+      '.lp-oe-qty-prompt{margin:0 0 6px;color:var(--oe-muted);font-size:15px;font-weight:500;line-height:1.35}',
+      '.lp-oe-field-hint{display:block;font-size:11px;font-weight:600;color:var(--oe-muted);margin:0 0 4px}',
       '.lp-oe-pack-note{margin:0;color:var(--oe-muted);font-size:14px;align-self:center}',
       '.lp-oe input[type=number]{-moz-appearance:textfield;appearance:textfield}',
       '.lp-oe input[type=number]::-webkit-outer-spin-button,.lp-oe input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}',
@@ -1944,7 +2051,9 @@
       '.lp-oe-card button{width:100%;margin-top:10px}',
       '.lp-oe-note{color:var(--oe-muted);font-size:13px;line-height:1.45;margin:14px 0 0}',
       '.lp-oe-empty{padding:28px 12px;text-align:center;color:var(--oe-muted)}',
-      '.lp-oe-msg{background:#fff1d6;border:1px solid #efd7a2;color:#7a5600;padding:10px 12px;border-radius:10px;margin:0 0 12px;font-size:13.5px}',
+      '.lp-oe-msg{background:color-mix(in srgb,var(--oe-accent) 10%,var(--oe-card));border:1px solid color-mix(in srgb,var(--oe-accent) 28%,var(--oe-line));color:var(--oe-ink);padding:10px 12px;border-radius:10px;margin:0 0 12px;font-size:13.5px;line-height:1.4}',
+      '.lp-oe-msg.is-ok{background:color-mix(in srgb,var(--oe-accent) 12%,var(--oe-card));border-color:color-mix(in srgb,var(--oe-accent) 35%,var(--oe-line));color:var(--oe-ink)}',
+      '.lp-oe-msg.is-error{background:color-mix(in srgb,#8a2f1d 8%,var(--oe-card));border-color:color-mix(in srgb,#8a2f1d 28%,var(--oe-line));color:#6e2416}',
       '.lp-oe-detail{background:var(--oe-card);border:1px solid var(--oe-line);border-radius:var(--oe-radius);padding:16px;margin:0 0 14px}',
       '.lp-oe-fields{display:grid;gap:10px;margin:14px 0}',
       '.lp-oe-fields-app{gap:12px}',
