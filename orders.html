@@ -560,6 +560,13 @@ body.embed .hub{min-height:70vh}
             <button class="btn ghost" type="button" id="supply-lock">Lock this date</button>
             <a class="btn ghost" id="supply-export" href="#">Export CSV</a>
           </div>
+          <div class="toolbar" style="margin-top:8px;flex-wrap:wrap">
+            <span class="notice" style="margin:0;padding:6px 0;font-weight:600">Print for this date:</span>
+            <button class="btn ghost" type="button" id="supply-print-run">All orders (packing slips)</button>
+            <button class="btn ghost" type="button" id="supply-print-pick">Pick list (one page)</button>
+            <button class="btn ghost" type="button" id="supply-print-prep">Prep summary</button>
+            <button class="btn ghost" type="button" id="supply-print-air" title="Opens print dialog — great on iPad AirPrint">AirPrint day run</button>
+          </div>
           <div class="kpis" id="supply-kpis"></div>
           <div class="table-wrap">
             <table class="oe"><thead><tr>
@@ -1611,6 +1618,9 @@ body.embed .hub{min-height:70vh}
     });
 
     var foot = '';
+    foot += '<button class="btn ghost" type="button" data-print="slip">Print packing slip</button>';
+    foot += '<button class="btn ghost" type="button" data-print="receipt">Print receipt</button>';
+    foot += '<button class="btn ghost" type="button" data-print="slip" data-airprint="1" title="Opens print dialog for AirPrint / Save as PDF">AirPrint slip</button>';
     foot += '<button class="btn ghost" type="button" data-act="deposit-link">Send deposit link</button>';
     foot += '<button class="btn ghost" type="button" data-act="checkout">Checkout deposit</button>';
     foot += '<button class="btn ghost" type="button" data-act="lock">Lock</button>';
@@ -1621,6 +1631,14 @@ body.embed .hub{min-height:70vh}
 
     $('om-foot').querySelectorAll('[data-act]').forEach(function(btn){
       btn.addEventListener('click', function(){ runOrderAction(btn.getAttribute('data-act'), o, btn); });
+    });
+    $('om-foot').querySelectorAll('[data-print]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        openPrint(
+          'order_id=' + encodeURIComponent(o.id) + '&format=' + encodeURIComponent(btn.getAttribute('data-print')),
+          btn.getAttribute('data-airprint') === '1'
+        );
+      });
     });
   }
 
@@ -3277,6 +3295,18 @@ body.embed .hub{min-height:70vh}
     return '/api/order/export?' + siteQuery('kind=' + encodeURIComponent(kind) + (extra ? '&' + extra : '')) +
       '&access_token=' + encodeURIComponent(token || '');
   }
+
+  function printUrl(extra, autoprint){
+    var q = siteQuery(extra || '');
+    if (autoprint) q += '&autoprint=1';
+    return '/order-print?' + q;
+  }
+
+  function openPrint(extra, autoprint){
+    if (!requireSite()) return;
+    window.open(printUrl(extra, autoprint), '_blank', 'noopener');
+  }
+
   // Export uses Bearer via download helper
   async function downloadExport(kind, extra){
     if (!requireSite()) return;
@@ -3671,6 +3701,15 @@ body.embed .hub{min-height:70vh}
     e.preventDefault();
     downloadExport('supply', 'pickup_date=' + encodeURIComponent($('supply-date').value || ''));
   });
+  function supplyPrint(format, autoprint){
+    var date = $('supply-date').value;
+    if (!date) { toast('Pick a date', 'err'); return; }
+    openPrint('pickup_date=' + encodeURIComponent(date) + '&format=' + encodeURIComponent(format), autoprint);
+  }
+  if ($('supply-print-run')) $('supply-print-run').addEventListener('click', function(){ supplyPrint('day_run'); });
+  if ($('supply-print-pick')) $('supply-print-pick').addEventListener('click', function(){ supplyPrint('pick_list'); });
+  if ($('supply-print-prep')) $('supply-print-prep').addEventListener('click', function(){ supplyPrint('prep'); });
+  if ($('supply-print-air')) $('supply-print-air').addEventListener('click', function(){ supplyPrint('day_run', true); });
   if ($('orders-export')) $('orders-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('orders'); });
   if ($('items-export')) $('items-export').addEventListener('click', function(e){ e.preventDefault(); downloadExport('order_items'); });
   if ($('cal-load')) $('cal-load').addEventListener('click', loadCalendar);

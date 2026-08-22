@@ -175,6 +175,10 @@
       "destination": "/order-shop.html"
     },
     {
+      "source": "/order-print",
+      "destination": "/order-print.html"
+    },
+    {
       "source": "/lead-notify-style",
       "destination": "/lead-notify-style-admin.html"
     },

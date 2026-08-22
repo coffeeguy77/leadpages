@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Print order — LeadPages</title>
+<meta name="robots" content="noindex">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>window.__LP={url:'https://jhkjaihkrbvkwayhwgqj.supabase.co',anon:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoa2phaWhrcmJ2a3dheWh3Z3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTAzMTIsImV4cCI6MjA5NzQyNjMxMn0.jp51l6Hrx-XGeXHRMuERn7GVbH4jf5YR0eSF41Q_DY8'};</script>
+<style>
+body{margin:0;font-family:system-ui,sans-serif;background:#f6f3ee;color:#1a1f1c}
+.wrap{max-width:480px;margin:18vh auto;padding:24px;text-align:center}
+.err{color:#8a2f1d}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><p>Loading print view…</p></div>
+<script>
+(function(){
+  var params = new URLSearchParams(location.search);
+  var portalToken = params.get('t') || '';
+  var autoprint = params.get('autoprint') === '1';
+
+  function qs(){
+    var parts = [];
+    params.forEach(function(v, k){
+      if (k !== 'access_token') parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(v));
+    });
+    return parts.join('&');
+  }
+
+  function showErr(msg){
+    document.getElementById('app').innerHTML = '<p class="err">' + msg + '</p>';
+  }
+
+  async function loadWithAuth(headers){
+    var url = '/api/order/print?' + qs();
+    var r = await fetch(url, { headers: headers || {}, credentials: 'same-origin' });
+    var html = await r.text();
+    if (!r.ok) {
+      showErr('Could not load print view (HTTP ' + r.status + ').');
+      return;
+    }
+    document.open();
+    document.write(html);
+    document.close();
+  }
+
+  async function boot(){
+    if (portalToken) {
+      await loadWithAuth();
+      return;
+    }
+    var LP = window.__LP || {};
+    if (!window.supabase || !LP.url || !LP.anon) {
+      showErr('Sign in required. Open this from Orders admin or your order confirmation link.');
+      return;
+    }
+    var sb = window.supabase.createClient(LP.url, LP.anon);
+    var session = (await sb.auth.getSession()).data.session;
+    if (!session) {
+      showErr('Please sign in to Orders, then try Print again.');
+      return;
+    }
+    await loadWithAuth({ Authorization: 'Bearer ' + session.access_token });
+  }
+
+  boot().catch(function(e){ showErr((e && e.message) || String(e)); });
+})();
+</script>
+</body>
+</html>

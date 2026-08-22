@@ -160,6 +160,7 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     html += '</div>';
     html += '<p class="note">Deposit today secures your order. Final order price will be confirmed after your items are prepared/weighed. Balance settlement: <strong>'+esc((o.balance_settlement||'').replace(/_/g,' '))+'</strong>.</p>';
     html += '<div class="actions">';
+    html += '<button type="button" class="ghost" id="printBtn">Print / Save PDF</button>';
     if((o.deposit_paid_cents||0) < (o.deposit_required_cents||0)){
       html += '<button type="button" id="payBtn">Pay '+esc(d.deposit_required||money(o.deposit_required_cents))+' deposit &amp; confirm</button>';
     }
@@ -177,6 +178,12 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     if(o.customer_notes && !data.can_edit) html += '<div class="card"><h2 style="margin:0 0 8px;font-size:16px">Notes</h2><p class="note" style="margin:0">'+esc(o.customer_notes)+'</p></div>';
 
     $('view').innerHTML = html;
+
+    var printBtn = document.getElementById('printBtn');
+    if(printBtn) printBtn.onclick = function(){
+      var url = '/order-print?t=' + encodeURIComponent(token) + '&format=receipt';
+      window.open(url, '_blank', 'noopener');
+    };
 
     var payBtn = document.getElementById('payBtn');
     if(payBtn) payBtn.onclick = async function(){
