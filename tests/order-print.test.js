@@ -88,6 +88,7 @@ test('buildPrintDocument — packing slip includes order and TBC highlight', fun
     items: sampleItems
   });
   assert.match(html, /ORD-2026-00042/);
+  assert.match(html, /order-num-big/);
   assert.match(html, /Christmas ham/);
   assert.match(html, /Turkey/);
   assert.match(html, /TBC/);
@@ -96,14 +97,20 @@ test('buildPrintDocument — packing slip includes order and TBC highlight', fun
   assert.match(html, /Packing slip/);
 });
 
-test('buildPrintDocument — receipt shows totals', function () {
+test('buildPrintDocument — receipt shows totals and GST', function () {
+  var itemsWithGst = sampleItems.slice();
+  itemsWithGst[0] = Object.assign({}, itemsWithGst[0], {
+    line_known_cents: 1100,
+    product_snapshot: { includes_gst: true, selected_options: [] }
+  });
   var html = buildPrintDocument({
     format: 'receipt',
     business: { business_name: 'Test Butcher' },
     order: sampleOrder,
-    items: sampleItems
+    items: itemsWithGst
   });
   assert.match(html, /\$120\.00/);
+  assert.match(html, /GST included/);
   assert.match(html, /Balance/);
 });
 

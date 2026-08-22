@@ -23,6 +23,7 @@ const {
   parsePickupSchedule,
   findMatchingSlot
 } = require('../../lib/order/fulfilment-windows');
+const { parseGstSettings } = require('../../lib/order/gst');
 
 async function siteBySlugOrId(slug, siteId) {
   const admin = getAdmin();
@@ -83,7 +84,9 @@ module.exports = async function (req, res) {
           quantity: body.quantity,
           requested_weight_kg: body.requested_weight_kg,
           answers: body.answers,
-          notes: body.notes
+          notes: body.notes,
+          system: system,
+          gst_settings: parseGstSettings(system)
         });
         if (body.guest_name || body.guest_phone || body.guest_email) {
           await touchCart(packed.cart.id, {

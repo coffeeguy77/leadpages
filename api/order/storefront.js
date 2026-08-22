@@ -105,9 +105,13 @@ module.exports = async function (req, res) {
     const { packLabel, isPackSize, isEachSize, minimumKgOption } = require('../../lib/order/product-options');
     const { minimumKg, defaultWeightKg } = require('../../lib/order/product-weight');
     const { productCategoryIds, additionalCategoryIds } = require('../../lib/order/product-categories');
+    const { parseGstSettings, productHasGst, gstPriceSuffix } = require('../../lib/order/gst');
+    const gstSettings = parseGstSettings(system);
     const displayProducts = (products || []).map(function (p) {
       var qp =
         p.options && p.options.quantity_prompt ? String(p.options.quantity_prompt).trim() : '';
+      var hasGst = productHasGst(p, gstSettings);
+      var gstSuffix = gstPriceSuffix(hasGst);
       return Object.assign({}, p, {
         pack_label: packLabel(p) || null,
         is_pack_size: isPackSize(p),
@@ -121,14 +125,15 @@ module.exports = async function (req, res) {
           p.pricing_method === 'price_tbc' || p.pricing_method === 'quote_required'
             ? 'Price TBC'
             : p.price_label
-              ? p.price_label
+              ? p.price_label + gstSuffix
               : p.pricing_method === 'per_weight'
-                ? formatAud(p.price_per_kg_cents) + '/kg'
+                ? formatAud(p.price_per_kg_cents) + '/kg' + gstSuffix
                 : p.pricing_method === 'from_price'
-                  ? 'From ' + formatAud(p.price_cents)
+                  ? 'From ' + formatAud(p.price_cents) + gstSuffix
                   : p.pricing_method === 'estimated'
-                    ? 'Approx. ' + formatAud(p.price_cents)
-                    : formatAud(p.price_cents),
+                    ? 'Approx. ' + formatAud(p.price_cents) + gstSuffix
+                    : formatAud(p.price_cents) + gstSuffix,
+        includes_gst: hasGst,
         questions: questions.filter(function (q) {
           return q.product_id === p.id;
         }),

@@ -16,6 +16,7 @@ const {
 } = require('../../lib/order/tokens');
 const { queueAndSend, twilioOtpConfigured, sendPortalOtpSms, checkPortalOtpSms } = require('../../lib/order/messaging');
 const { createCart, addReorderLines } = require('../../lib/order/cart');
+const { parseGstSettings } = require('../../lib/order/gst');
 const { packCartResponse } = require('../../lib/order/cart-pack');
 
 function sixDigitCode() {
@@ -400,7 +401,7 @@ module.exports = async function (req, res) {
 
       var packed;
       try {
-        packed = await addReorderLines(cart, lines);
+        packed = await addReorderLines(cart, lines, parseGstSettings(system));
       } catch (e) {
         return json(res, 500, { error: String((e && e.message) || e) });
       }
