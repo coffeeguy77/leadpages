@@ -407,6 +407,7 @@ body.embed .hub{min-height:70vh}
             <div class="actions-row" style="margin:0">
               <button class="btn ghost" type="button" id="prod-auto-cat" title="Create Beef/Chicken/Ham… categories and assign from product names">Match categories</button>
               <button class="btn ghost" type="button" id="prod-pies-extra" title="Create Pies category and also list every product with Pie/Pies in the name there (keeps current category)">Add Pies from titles</button>
+              <button class="btn ghost" type="button" id="prod-migrate-weight" title="Move kg from short descriptions to minimum kg; set whole turkeys/chickens to quantity with size guide">Apply weight &amp; turkey rules</button>
               <button class="btn solid" type="button" id="prod-new">New product</button>
             </div>
           </div>
@@ -503,14 +504,23 @@ body.embed .hub{min-height:70vh}
               </div>
               <div class="field"><label for="prod-unit">Unit label</label><input id="prod-unit" placeholder="steak, kg, each…"></div>
               <div class="field"><label for="prod-short">Short description</label>
-                <input id="prod-short" placeholder="Shown under the name on the shop">
+                <input id="prod-short" placeholder="Shown under the name on the shop (not for kg — use Minimum kg below)">
+              </div>
+              <div class="field" id="prod-min-kg-field"><label for="prod-min-kg">Minimum kg</label>
+                <input id="prod-min-kg" type="number" min="0.1" step="0.1" placeholder="e.g. 1.3">
+                <span class="field-hint">For variable-weight items. Shop starts at this kg (or 1 kg if blank). Example: seasoned lamb leg 1.3 kg minimum.</span>
+              </div>
+              <div class="field"><label for="prod-qty-prompt">Quantity prompt</label>
+                <input id="prod-qty-prompt" placeholder="How many turkeys would you like?">
+                <span class="field-hint">For individual / whole-bird items sold by quantity.</span>
               </div>
               <div class="field"><label for="prod-size-mode">Sold as</label>
                 <select id="prod-size-mode">
+                  <option value="each">Individual item (quantity only — whole turkeys, chickens)</option>
                   <option value="variable">Variable weight (customer enters kg)</option>
                   <option value="pack">Fixed pack size (qty only)</option>
                 </select>
-                <span class="field-hint">Use fixed pack for items like “Stuffing 800g” so customers only change quantity.</span>
+                <span class="field-hint">Whole turkeys with size 60–68 use Individual. Variable weight uses Minimum kg.</span>
               </div>
               <div class="field" id="prod-pack-fields">
                 <label for="prod-pack-kg">Pack weight (kg)</label>
@@ -2011,11 +2021,16 @@ body.embed .hub{min-height:70vh}
   function syncPackFieldsVisibility(){
     var mode = $('prod-size-mode') ? $('prod-size-mode').value : 'variable';
     var pack = mode === 'pack';
+    var each = mode === 'each';
     ['prod-pack-kg', 'prod-pack-label'].forEach(function(id){
       var el = $(id); if (!el) return;
       var field = el.closest('.field');
       if (field) field.style.display = pack ? '' : 'none';
     });
+    var minField = $('prod-min-kg-field');
+    if (minField) minField.style.display = !pack && !each ? '' : 'none';
+    var qtyPromptField = $('prod-qty-prompt') && $('prod-qty-prompt').closest('.field');
+    if (qtyPromptField) qtyPromptField.style.display = each || pack ? '' : 'none';
   }
 
   function renderProductOptionsEditor(questions){
@@ -2146,9 +2161,18 @@ body.embed .hub{min-height:70vh}
     $('prod-unit').value = (p && p.unit_label) || '';
     if ($('prod-category')) $('prod-category').value = (p && p.category_id) || '';
     var opts = (p && p.options) || {};
-    if ($('prod-size-mode')) $('prod-size-mode').value = opts.size_mode === 'pack' || opts.size_mode === 'fixed' ? 'pack' : 'variable';
+    if ($('prod-size-mode')) {
+      $('prod-size-mode').value =
+        opts.size_mode === 'pack' || opts.size_mode === 'fixed'
+          ? 'pack'
+          : opts.size_mode === 'each' || opts.size_mode === 'unit' || opts.size_mode === 'individual'
+            ? 'each'
+            : 'variable';
+    }
     if ($('prod-pack-kg')) $('prod-pack-kg').value = opts.pack_weight_kg != null ? opts.pack_weight_kg : '';
     if ($('prod-pack-label')) $('prod-pack-label').value = opts.pack_label || '';
+    if ($('prod-min-kg')) $('prod-min-kg').value = opts.minimum_kg != null ? opts.minimum_kg : '';
+    if ($('prod-qty-prompt')) $('prod-qty-prompt').value = opts.quantity_prompt || '';
     renderExtraCategoryChecks(opts.additional_category_ids || []);
     $('prod-msg').textContent = '';
     syncPackFieldsVisibility();
@@ -2182,10 +2206,15 @@ body.embed .hub{min-height:70vh}
       lead_time_value: Number($('prod-lead-value').value) || 0,
       active: $('prod-active').value === '1',
       unit_label: $('prod-unit').value.trim() || null,
-      weight_required: sizeMode === 'pack' ? false : (pricing === 'per_weight' || pricing === 'price_tbc'),
+      weight_required:
+        sizeMode === 'pack' || sizeMode === 'each'
+          ? false
+          : pricing === 'per_weight' || pricing === 'price_tbc',
       size_mode: sizeMode,
       pack_weight_kg: $('prod-pack-kg') && $('prod-pack-kg').value !== '' ? Number($('prod-pack-kg').value) : null,
       pack_label: $('prod-pack-label') ? ($('prod-pack-label').value.trim() || null) : null,
+      minimum_kg: $('prod-min-kg') && $('prod-min-kg').value !== '' ? Number($('prod-min-kg').value) : null,
+      quantity_prompt: $('prod-qty-prompt') ? ($('prod-qty-prompt').value.trim() || null) : null,
       questions: readProductOptionsFromForm()
     };
     try {
@@ -2268,6 +2297,39 @@ body.embed .hub{min-height:70vh}
           (st.matched || 0) +
           ' matched' +
           (st.category_created ? ' (category created)' : ''),
+        'ok'
+      );
+      await loadProductsView();
+    } catch (e) {
+      toast((e && e.message) || String(e), 'err');
+    }
+    if (btn) btn.disabled = false;
+  }
+
+  async function migrateWeightSettings(){
+    if (!requireSite()) return;
+    if (!confirm(
+      'Apply weight rules to all products?\n\n' +
+        '• Short descriptions with kg (e.g. 1.3 kg) → Minimum kg\n' +
+        '• Whole turkeys/chickens with size codes → quantity ordering + plain-English size guide\n\n' +
+        'This updates your live catalogue.'
+    )) return;
+    var btn = $('prod-migrate-weight');
+    if (btn) btn.disabled = true;
+    try {
+      var r = await api('/api/order/products', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'migrate_weight_settings' }
+      });
+      var st = r.stats || {};
+      toast(
+        'Weight rules: ' +
+          (st.min_kg_set || 0) +
+          ' min kg · ' +
+          (st.poultry_each || 0) +
+          ' whole birds · ' +
+          (st.short_cleared || 0) +
+          ' short desc cleaned',
         'ok'
       );
       await loadProductsView();
@@ -3232,6 +3294,7 @@ body.embed .hub{min-height:70vh}
   if ($('prod-cat-add')) $('prod-cat-add').addEventListener('click', addProductCategory);
   if ($('prod-auto-cat')) $('prod-auto-cat').addEventListener('click', autoCategoriseProducts);
   if ($('prod-pies-extra')) $('prod-pies-extra').addEventListener('click', assignPiesFromTitles);
+  if ($('prod-migrate-weight')) $('prod-migrate-weight').addEventListener('click', migrateWeightSettings);
   if ($('prod-category')) $('prod-category').addEventListener('change', function(){
     renderExtraCategoryChecks(readExtraCategoryIds());
   });
