@@ -155,6 +155,7 @@ module.exports = async function (req, res) {
       if (!name) return json(res, 400, { error: 'name_required' });
       const options = buildProductOptionsPatch(body);
       const sizePack = options.size_mode === 'pack';
+      const sizeEach = options.size_mode === 'each';
       const row = {
         order_system_id: system.id,
         site_id: siteId,
@@ -189,7 +190,7 @@ module.exports = async function (req, res) {
         deposit_amount_cents: body.deposit_amount_cents != null ? body.deposit_amount_cents : null,
         deposit_percent_bps: body.deposit_percent_bps != null ? body.deposit_percent_bps : null,
         unit_label: body.unit_label || null,
-        weight_required: sizePack ? false : !!body.weight_required,
+        weight_required: sizePack || sizeEach ? false : !!body.weight_required,
         options: options
       };
       const { data, error } = await admin.from('order_products').insert(row).select('*').single();
@@ -226,6 +227,7 @@ module.exports = async function (req, res) {
         body.size_mode !== undefined ||
         body.pack_weight_kg !== undefined ||
         body.pack_label !== undefined ||
+        body.quantity_prompt !== undefined ||
         body.options !== undefined
       ) {
         const { data: cur } = await admin
@@ -239,7 +241,9 @@ module.exports = async function (req, res) {
             options: body.options || (cur && cur.options) || {}
           })
         );
-        if (patch.options.size_mode === 'pack') patch.weight_required = false;
+        if (patch.options.size_mode === 'pack' || patch.options.size_mode === 'each') {
+          patch.weight_required = false;
+        }
       }
       const { data, error } = await admin
         .from('order_products')

@@ -101,11 +101,12 @@ module.exports = async function (req, res) {
     );
     if (storefrontSettings.shop_mode !== 'fast') storefrontSettings.shop_mode = 'traditional';
 
-    const { packLabel, isPackSize } = require('../../lib/order/product-options');
+    const { packLabel, isPackSize, quantityPrompt } = require('../../lib/order/product-options');
     const displayProducts = (products || []).map(function (p) {
       return Object.assign({}, p, {
         pack_label: packLabel(p) || null,
         is_pack_size: isPackSize(p),
+        quantity_prompt: quantityPrompt(p) || null,
         display_price:
           p.pricing_method === 'price_tbc' || p.pricing_method === 'quote_required'
             ? 'Price TBC'

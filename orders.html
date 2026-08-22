@@ -496,12 +496,17 @@ body.embed .hub{min-height:70vh}
               <div class="field"><label for="prod-short">Short description</label>
                 <input id="prod-short" placeholder="Shown under the name on the shop">
               </div>
+              <div class="field"><label for="prod-qty-prompt">Quantity prompt</label>
+                <input id="prod-qty-prompt" placeholder="How many would you like?">
+                <span class="field-hint">Optional helper under the product name (e.g. “How many would you like?”). Not a pack label.</span>
+              </div>
               <div class="field"><label for="prod-size-mode">Sold as</label>
                 <select id="prod-size-mode">
+                  <option value="each">Individual item (quantity only)</option>
                   <option value="variable">Variable weight (customer enters kg)</option>
                   <option value="pack">Fixed pack size (qty only)</option>
                 </select>
-                <span class="field-hint">Use fixed pack for items like “Stuffing 800g” so customers only change quantity.</span>
+                <span class="field-hint">Use individual for steaks / each items. Use fixed pack only for labelled packs like “Stuffing 800g”.</span>
               </div>
               <div class="field" id="prod-pack-fields">
                 <label for="prod-pack-kg">Pack weight (kg)</label>
@@ -510,6 +515,7 @@ body.embed .hub{min-height:70vh}
               </div>
               <div class="field"><label for="prod-pack-label">Pack label</label>
                 <input id="prod-pack-label" placeholder="800g">
+                <span class="field-hint">Only for fixed packs (shows as “800g pack”). Do not put “How many…” prompts here.</span>
               </div>
             </div>
 
@@ -1897,9 +1903,10 @@ body.embed .hub{min-height:70vh}
       var price = p.pricing_method === 'per_weight'
         ? formatAud(p.price_per_kg_cents) + '/kg'
         : p.pricing_method === 'price_tbc' ? 'TBC' : formatAud(p.price_cents);
-      var pack = (p.options && (p.options.pack_label || (p.options.size_mode === 'pack' && p.options.pack_weight_kg)))
+      var pack = (p.options && p.options.size_mode === 'pack' && (p.options.pack_label || p.options.pack_weight_kg))
         ? (p.options.pack_label || (Math.round(Number(p.options.pack_weight_kg) * 1000) + 'g'))
         : '';
+      var qtyPrompt = (p.options && p.options.quantity_prompt) || '';
       var thumb = p.image_url
         ? '<div style="width:40px;height:40px;border-radius:8px;background:#eee center/cover no-repeat;background-image:url(\'' + esc(p.image_url) + '\')"></div>'
         : '<div style="width:40px;height:40px;border-radius:8px;background:#f0ebe3"></div>';
@@ -1907,6 +1914,7 @@ body.embed .hub{min-height:70vh}
         '<td>' + thumb + '</td>' +
         '<td><strong>' + esc(p.name) + '</strong>' +
           (pack ? '<span class="prod-pack-badge">' + esc(pack) + '</span>' : '') +
+          (qtyPrompt ? '<div class="muted" style="font-size:12px;margin-top:2px">' + esc(qtyPrompt) + '</div>' : '') +
           (p.short_description ? '<div class="muted" style="font-size:12px;margin-top:2px">' + esc(p.short_description) + '</div>' : '') +
         '</td>' +
         '<td>' + esc(categoryName(p.category_id)) + '</td>' +
@@ -1936,7 +1944,7 @@ body.embed .hub{min-height:70vh}
   }
 
   function syncPackFieldsVisibility(){
-    var mode = $('prod-size-mode') ? $('prod-size-mode').value : 'variable';
+    var mode = $('prod-size-mode') ? $('prod-size-mode').value : 'each';
     var pack = mode === 'pack';
     ['prod-pack-kg', 'prod-pack-label'].forEach(function(id){
       var el = $(id); if (!el) return;
@@ -2073,9 +2081,17 @@ body.embed .hub{min-height:70vh}
     $('prod-unit').value = (p && p.unit_label) || '';
     if ($('prod-category')) $('prod-category').value = (p && p.category_id) || '';
     var opts = (p && p.options) || {};
-    if ($('prod-size-mode')) $('prod-size-mode').value = opts.size_mode === 'pack' || opts.size_mode === 'fixed' ? 'pack' : 'variable';
+    if ($('prod-size-mode')) {
+      $('prod-size-mode').value =
+        opts.size_mode === 'pack' || opts.size_mode === 'fixed'
+          ? 'pack'
+          : opts.size_mode === 'variable'
+            ? 'variable'
+            : 'each';
+    }
     if ($('prod-pack-kg')) $('prod-pack-kg').value = opts.pack_weight_kg != null ? opts.pack_weight_kg : '';
     if ($('prod-pack-label')) $('prod-pack-label').value = opts.pack_label || '';
+    if ($('prod-qty-prompt')) $('prod-qty-prompt').value = opts.quantity_prompt || '';
     $('prod-msg').textContent = '';
     syncPackFieldsVisibility();
     $('prod-form-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -2090,7 +2106,7 @@ body.embed .hub{min-height:70vh}
     msg.textContent = '';
     var id = $('prod-id').value;
     var pricing = prodPricingValue();
-    var sizeMode = $('prod-size-mode') ? $('prod-size-mode').value : 'variable';
+    var sizeMode = $('prod-size-mode') ? $('prod-size-mode').value : 'each';
     var body = {
       site_id: state.siteId,
       name: $('prod-name').value.trim(),
@@ -2107,10 +2123,14 @@ body.embed .hub{min-height:70vh}
       lead_time_value: Number($('prod-lead-value').value) || 0,
       active: $('prod-active').value === '1',
       unit_label: $('prod-unit').value.trim() || null,
-      weight_required: sizeMode === 'pack' ? false : (pricing === 'per_weight' || pricing === 'price_tbc'),
+      weight_required:
+        sizeMode === 'pack' || sizeMode === 'each'
+          ? false
+          : pricing === 'per_weight' || pricing === 'price_tbc',
       size_mode: sizeMode,
       pack_weight_kg: $('prod-pack-kg') && $('prod-pack-kg').value !== '' ? Number($('prod-pack-kg').value) : null,
       pack_label: $('prod-pack-label') ? ($('prod-pack-label').value.trim() || null) : null,
+      quantity_prompt: $('prod-qty-prompt') ? ($('prod-qty-prompt').value.trim() || null) : null,
       questions: readProductOptionsFromForm()
     };
     try {

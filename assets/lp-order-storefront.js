@@ -155,6 +155,7 @@
   };
 
   OrderStorefront.prototype.packLabel = function (p) {
+    if (!this.isPackSize(p)) return '';
     if (p && p.pack_label) return String(p.pack_label);
     var o = (p && p.options) || {};
     if (o.pack_label) return String(o.pack_label);
@@ -162,6 +163,13 @@
     if (!Number.isFinite(w) || w <= 0) return '';
     if (w >= 1) return w + ' kg';
     return Math.round(w * 1000) + 'g';
+  };
+
+  /** Custom helper under the product name (e.g. How many would you like?). */
+  OrderStorefront.prototype.quantityPrompt = function (p) {
+    if (p && p.quantity_prompt) return String(p.quantity_prompt).trim();
+    var o = (p && p.options) || {};
+    return o.quantity_prompt ? String(o.quantity_prompt).trim() : '';
   };
 
   OrderStorefront.prototype.stepperHtml = function (opts) {
@@ -754,6 +762,7 @@
     var needsW = this.needsWeight(p);
     var showQty = this.showsQuantity(p);
     var pack = this.packLabel(p);
+    var qtyPrompt = this.quantityPrompt(p);
     var hasQs = (p.questions || []).length > 0;
     var qtyVal = draft.qty != null && draft.qty !== '' ? draft.qty : '1';
     var kgVal = draft.kg != null ? draft.kg : '';
@@ -777,6 +786,7 @@
     html += '<div class="lp-oe-fast-info">';
     html += '<h3>' + esc(p.name) + '</h3>';
     if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
+    if (qtyPrompt) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
     if (p.short_description) html += '<p class="lp-oe-fast-desc">' + esc(p.short_description) + '</p>';
     html += '<div class="lp-oe-price">' + esc(p.display_price) + '</div>';
     html += '</div>';
@@ -851,6 +861,7 @@
     products.forEach(function (p) {
       var hasImg = !!p.image_url;
       var pack = self.packLabel(p);
+      var qtyPrompt = self.quantityPrompt(p);
       html +=
         '<article class="lp-oe-card' +
         (hasImg ? '' : ' no-img') +
@@ -864,6 +875,7 @@
       }
       html += '<div class="lp-oe-body"><h3>' + esc(p.name) + '</h3>';
       if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
+      if (qtyPrompt) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
       if (p.short_description) html += '<p>' + esc(p.short_description) + '</p>';
       html += '<div class="lp-oe-price">' + esc(p.display_price) + '</div>';
       html += '<button type="button" data-open="' + esc(p.id) + '">Add</button></div></article>';
@@ -882,12 +894,14 @@
 
   OrderStorefront.prototype.renderProduct = function (p) {
     var pack = this.packLabel(p);
+    var qtyPrompt = this.quantityPrompt(p);
     var needsW = this.needsWeight(p);
     var showQty = this.showsQuantity(p);
     var html = '<div class="lp-oe-detail">';
     html += '<button type="button" class="lp-oe-link" data-act="back-shop">← Back</button>';
     html += '<h3>' + esc(p.name) + '</h3>';
     if (pack) html += '<p class="lp-oe-pack">' + esc(pack) + ' pack</p>';
+    if (qtyPrompt) html += '<p class="lp-oe-qty-prompt">' + esc(qtyPrompt) + '</p>';
     html += '<p class="lp-oe-price">' + esc(p.display_price) + '</p>';
     if (p.description || p.short_description)
       html += '<p class="lp-oe-desc">' + esc(p.description || p.short_description) + '</p>';
@@ -898,16 +912,12 @@
         '<label class="lp-oe-field">Quantity' +
         this.stepperHtml({ min: 1, step: 1, value: 1, id: 'oe-qty' }) +
         '</label>';
-      if (pack) {
-        html += '<p class="lp-oe-pack-note">Sold as ' + esc(pack) + ' packs — choose quantity only.</p>';
-      }
     }
     if (needsW) {
       html +=
         '<label class="lp-oe-field">Approx. weight (kg)' +
         this.stepperHtml({ min: 0.1, step: 0.1, value: '1.0', id: 'oe-kg' }) +
         '</label>';
-      html += '<p class="lp-oe-pack-note">Sold by weight — enter how much you want.</p>';
     }
     html +=
       '<label class="lp-oe-field">Notes<textarea id="oe-notes" class="lp-oe-notes-grow" rows="1" placeholder="Optional"></textarea></label>';
@@ -1127,7 +1137,7 @@
       var q = Number(it.quantity) || 1;
       html += '<div class="lp-oe-line" data-line="' + esc(it.id) + '">';
       html += '<div class="lp-oe-line-main"><strong>' + esc(snap.name || 'Item') + '</strong>';
-      if (snap.pack_label) {
+      if (snap.is_pack_size && snap.pack_label) {
         html += '<p class="lp-oe-line-meta">' + esc(snap.pack_label) + ' pack</p>';
       } else if (it.requested_weight_kg != null) {
         html += '<p class="lp-oe-line-meta">~' + esc(it.requested_weight_kg) + 'kg</p>';
@@ -1887,6 +1897,7 @@
       '.lp-oe-list .lp-oe-card.no-img{grid-template-columns:minmax(0,1fr) auto}',
       '.lp-oe-card.no-img .lp-oe-body{padding-top:16px}',
       '.lp-oe-pack{margin:0 0 4px;font-size:12px;font-weight:700;color:var(--oe-accent);letter-spacing:.02em}',
+      '.lp-oe-qty-prompt{margin:0 0 6px;color:var(--oe-muted);font-size:15px;font-weight:500;line-height:1.35}',
       '.lp-oe-pack-note{margin:0;color:var(--oe-muted);font-size:13px;align-self:center}',
       '.lp-oe input[type=number]{-moz-appearance:textfield;appearance:textfield}',
       '.lp-oe input[type=number]::-webkit-outer-spin-button,.lp-oe input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}',
