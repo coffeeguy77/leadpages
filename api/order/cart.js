@@ -12,10 +12,9 @@ const {
   convertCartToOrder,
   earliestPickupForCart
 } = require('../../lib/order/cart');
-const { resolvePaymentRule, computeDepositRequired } = require('../../lib/order/deposit');
+const { packCartResponse } = require('../../lib/order/cart-pack');
 const { effectiveOrderCutoff } = require('../../lib/order/cutoff');
 const { isDateAvailable } = require('../../lib/order/capacity');
-const { formatAud } = require('../../lib/order/money');
 const { createAccessToken } = require('../../lib/order/tokens');
 const { notifyEvent, portalUrl, PUBLIC_BASE } = require('../../lib/order/notify');
 const {
@@ -23,33 +22,6 @@ const {
   buildPickupSlots,
   findMatchingSlot
 } = require('../../lib/order/fulfilment-windows');
-const { computeOrderTotals } = require('../../lib/order/pricing');
-
-async function packCartResponse(system, packed) {
-  const payRule = resolvePaymentRule({ system: system });
-  const deposit = computeDepositRequired(payRule, {
-    known_subtotal_cents: packed.cart.known_subtotal_cents,
-    has_unknown_prices: packed.cart.has_unknown_prices
-  });
-  const windows = await listWindows(system.id);
-  const earliest = earliestPickupForCart(system, packed.items);
-  const pickup_slots = buildPickupSlots(windows, earliest, 28);
-  const agg = computeOrderTotals(packed.items || []);
-  return {
-    cart: packed.cart,
-    items: packed.items,
-    earliest_pickup_date: earliest,
-    pickup_slots: pickup_slots,
-    deposit: deposit,
-    display: {
-      known_subtotal: formatAud(agg.known_subtotal_cents),
-      estimated_subtotal:
-        agg.estimated_subtotal_cents != null ? formatAud(agg.estimated_subtotal_cents) : null,
-      deposit: formatAud(deposit.deposit_required_cents),
-      cta: deposit.deposit_required_cents > 0 ? 'Review order' : 'CONFIRM ORDER'
-    }
-  };
-}
 
 async function siteBySlugOrId(slug, siteId) {
   const admin = getAdmin();
