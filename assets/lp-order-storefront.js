@@ -189,6 +189,7 @@
   };
 
   OrderStorefront.prototype.packLabel = function (p) {
+    if (!this.isPackSize(p)) return '';
     if (p && p.pack_label) return String(p.pack_label);
     var o = (p && p.options) || {};
     if (o.pack_label) return String(o.pack_label);
