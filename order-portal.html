@@ -219,9 +219,10 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     $('view').style.display='';
     var customer = data.customer || {};
     var orders = data.orders || [];
+    var shopUrl = slug ? ('/order-shop?slug='+encodeURIComponent(slug)+'&account=1') : '/order-shop';
     var html = '';
     html += '<h1 class="brand">Welcome'+(customer.name?(', '+esc(String(customer.name).split(/\s+/)[0])):'')+'</h1>';
-    html += '<p class="sub">Your order history. Reorder available products into a new cart (current prices apply; unavailable items are skipped).</p>';
+    html += '<p class="sub">Your order history. Prefer the shop? <a href="'+esc(shopUrl)+'">Open your account in the storefront</a> — sign-in stays on that page.</p>';
     if(!orders.length){
       html += '<div class="card"><p class="note" style="margin:0">No past orders found for this mobile number yet.</p></div>';
     } else {
@@ -231,12 +232,12 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
         html += '<button type="button" class="ghost" data-reorder="'+esc(o.id)+'">Order again</button></div>';
         html += '<div style="margin-top:10px">';
         (o.items||[]).forEach(function(it){
-          html += '<p class="note" style="margin:0 0 4px">'+esc(it.quantity)+' × '+esc(it.product_name)+(it.notes?(' — '+esc(it.notes)):'')+'</p>';
+          html += '<p class="note" style="margin:0 0 4px">'+esc(it.quantity)+' × '+esc(it.product_name)+(it.requested_weight_kg!=null?(' · ~'+esc(it.requested_weight_kg)+' kg'):'')+(it.notes?(' — '+esc(it.notes)):'')+'</p>';
         });
         html += '</div></div>';
       });
     }
-    html += '<p class="note"><button type="button" class="ghost" id="hist-out">Sign out</button></p>';
+    html += '<p class="note"><a class="btn ghost" href="'+esc(shopUrl)+'">Back to shop</a> <button type="button" class="ghost" id="hist-out">Sign out</button></p>';
     $('view').innerHTML = html;
     document.getElementById('hist-out').onclick = function(){
       try{ localStorage.removeItem('lp.order.portal.'+slug); }catch(e){}
@@ -317,8 +318,9 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
           body:{ action:'verify_code', slug:slug, phone: document.getElementById('otp-phone').value, code: document.getElementById('otp-code').value }
         });
         try{ localStorage.setItem('lp.order.portal.'+slug, out.token); }catch(e){}
-        var hist = await api('/api/order/portal-auth?token='+encodeURIComponent(out.token));
-        renderHistory(hist, out.token, slug);
+        // Prefer the shop account experience (SMS modal lives there too).
+        location.href = '/order-shop?slug='+encodeURIComponent(slug)+'&account=1';
+        return;
       }catch(e){
         var msg = (e && e.message) || String(e);
         if(msg === 'invalid_code') msg = 'That code is incorrect or expired. Request a new one.';
@@ -334,12 +336,9 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
     var saved = '';
     try{ saved = slug ? (localStorage.getItem('lp.order.portal.'+slug) || '') : ''; }catch(e){}
     if(saved && slug){
-      api('/api/order/portal-auth?token='+encodeURIComponent(saved)).then(function(data){
-        renderHistory(data, saved, slug);
-      }).catch(function(){
-        try{ localStorage.removeItem('lp.order.portal.'+slug); }catch(e){}
-        showPhoneLogin();
-      });
+      // Session already on this device — land in the storefront account view.
+      location.replace('/order-shop?slug='+encodeURIComponent(slug)+'&account=1');
+      return;
     } else {
       showPhoneLogin();
     }

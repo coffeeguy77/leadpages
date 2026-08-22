@@ -138,3 +138,17 @@ test('storeSmsOtp hard-deletes prior OTPs and unique-hashes Verify rows', functi
   assert.match(tokens, /VERIFY:/);
   assert.doesNotMatch(tokens, /revoked_at: new Date\(\)\.toISOString\(\)\s*\n\s*\.eq\('purpose', 'sms_otp'\)/);
 });
+
+test('storefront has SMS auth modal and in-page My orders', function () {
+  const fs = require('fs');
+  const path = require('path');
+  const js = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-order-storefront.js'), 'utf8');
+  const shop = fs.readFileSync(path.join(__dirname, '..', 'order-shop.html'), 'utf8');
+  assert.match(js, /renderAuthModal/);
+  assert.match(js, /renderAccountBox/);
+  assert.match(js, /renderAccountOrders/);
+  assert.match(js, /data-act="open-auth"/);
+  assert.match(js, /lp-oe-modal-backdrop/);
+  assert.match(js, /action:\s*'reorder'/);
+  assert.match(shop, /lp-order-storefront\.js\?v=oe-10/);
+});
