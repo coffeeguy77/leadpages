@@ -52,9 +52,35 @@
   }
 
   function firstName(name) {
-    var s = String(name || '').trim();
-    if (!s) return '';
-    return s.split(/\s+/)[0];
+    // Title-cased given name: "Shaun MATTHEWS" / "MATTHEWS Shaun" → "Shaun"
+    // Keep in sync with lib/order/customer-name.js displayGivenName.
+    var raw = String(name || '').trim();
+    if (!raw) return '';
+    function titleCaseWord(word) {
+      var w = String(word || '').trim();
+      if (!w) return '';
+      return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    }
+    function isAllCapsWord(word) {
+      var w = String(word || '');
+      return w.length > 1 && w === w.toUpperCase() && /[A-Z]/.test(w);
+    }
+    if (raw.indexOf(',') >= 0) {
+      var commaBits = raw.split(',').map(function (p) { return p.trim(); }).filter(Boolean);
+      if (commaBits.length >= 2) {
+        if (isAllCapsWord(commaBits[0]) && !isAllCapsWord(commaBits[1])) {
+          return titleCaseWord(commaBits[1].split(/\s+/)[0]);
+        }
+        return titleCaseWord(commaBits[0].split(/\s+/)[0]);
+      }
+    }
+    var parts = raw.split(/\s+/).filter(Boolean);
+    if (!parts.length) return '';
+    if (parts.length === 1) return titleCaseWord(parts[0]);
+    if (isAllCapsWord(parts[0]) && !isAllCapsWord(parts[parts.length - 1])) {
+      return titleCaseWord(parts[parts.length - 1]);
+    }
+    return titleCaseWord(parts[0]);
   }
 
   function statusLabel(status) {
@@ -195,6 +221,27 @@
 
   OrderStorefront.prototype.isLoggedIn = function () {
     return !!(this.state.customerToken && this.state.customer);
+  };
+
+  OrderStorefront.prototype.customerDisplayName = function () {
+    var c = this.state.customer;
+    var fromCustomer = (c && c.name) || '';
+    var orders = this.state.orders || [];
+    var fromOrder = '';
+    for (var i = 0; i < orders.length; i++) {
+      if (orders[i] && orders[i].customer_name) {
+        fromOrder = orders[i].customer_name;
+        break;
+      }
+    }
+    // Prefer the fuller label (e.g. order snapshot "Shaun MATTHEWS" over CRM "MATTHEWS").
+    var a = String(fromCustomer).trim();
+    var b = String(fromOrder).trim();
+    if (!a) return b;
+    if (!b) return a;
+    if (b.split(/\s+/).length > a.split(/\s+/).length) return b;
+    if (/[a-z]/.test(b) && !/[a-z]/.test(a)) return b;
+    return a;
   };
 
   OrderStorefront.prototype.captureAuthDraft = function () {
@@ -449,7 +496,6 @@
     if (this.mode === 'embedded') {
       html += '<div class="lp-oe-head lp-oe-head-compact">';
       html += '<div class="lp-oe-head-actions">';
-      html += this.renderAccountHeaderBtn();
       html +=
         '<button type="button" class="lp-oe-cart-btn lp-oe-mobile-cart" data-act="toggle-cart">Cart (' +
         qtyTotal(this.state.items) +
@@ -461,7 +507,6 @@
         esc(biz) +
         '</h2><p class="lp-oe-sub">Browse the menu, adjust your cart, and checkout on one page.</p></div>';
       html += '<div class="lp-oe-head-actions">';
-      html += this.renderAccountHeaderBtn();
       html +=
         '<button type="button" class="lp-oe-cart-btn lp-oe-mobile-cart" data-act="toggle-cart">Cart (' +
         qtyTotal(this.state.items) +
@@ -473,6 +518,7 @@
 
     html += '<div class="lp-oe-layout">';
     html += '<div class="lp-oe-main">';
+    html += this.renderClientNav();
     if (this.state.view === 'account') {
       html += this.renderAccountOrders();
     } else if (!this.isFastMode() && this.state.view === 'product' && this.state.selected) {
@@ -507,24 +553,27 @@
     this.bind();
   };
 
-  OrderStorefront.prototype.renderAccountHeaderBtn = function () {
+  OrderStorefront.prototype.renderClientNav = function () {
     if (!this.showPortal || !this.slug) return '';
+    var onOrders = this.state.view === 'account';
+    var onShop = !onOrders;
+    var html = '<nav class="lp-oe-client-nav" aria-label="Shop and orders">';
+    html +=
+      '<button type="button" class="lp-oe-client-tab' +
+      (onShop ? ' on' : '') +
+      '" data-act="back-shop">Browse menu</button>';
+    html +=
+      '<button type="button" class="lp-oe-client-tab' +
+      (onOrders ? ' on' : '') +
+      '" data-act="view-orders">My orders</button>';
     if (this.isLoggedIn()) {
-      var label = firstName(this.state.customer && this.state.customer.name) || 'Account';
-      return (
-        '<button type="button" class="lp-oe-account-chip' +
-        (this.state.view === 'account' ? ' on' : '') +
-        '" data-act="view-orders" aria-label="Your orders">' +
-        '<span class="lp-oe-account-chip-dot" aria-hidden="true"></span>' +
-        esc(label) +
-        '</button>'
-      );
+      var greet = firstName(this.customerDisplayName());
+      if (greet) {
+        html += '<span class="lp-oe-client-greet">Welcome, ' + esc(greet) + '</span>';
+      }
     }
-    return (
-      '<button type="button" class="lp-oe-portal-btn" data-act="open-auth">' +
-      esc(this.portalLabel) +
-      '</button>'
-    );
+    html += '</nav>';
+    return html;
   };
 
   OrderStorefront.prototype.renderShopToolbar = function () {
@@ -909,14 +958,13 @@
 
   OrderStorefront.prototype.renderAccountBox = function () {
     if (!this.showPortal || !this.slug) return '';
-    var html = '<div class="lp-oe-account" role="navigation" aria-label="Your account">';
+    var html = '<div class="lp-oe-account" role="complementary" aria-label="Your account">';
     html += '<p class="lp-oe-account-ey">Your account</p>';
     if (this.isLoggedIn()) {
-      var c = this.state.customer || {};
-      var greet = firstName(c.name);
+      var greet = firstName(this.customerDisplayName());
       html +=
         '<p class="lp-oe-account-name">' +
-        (greet ? 'Hi, ' + esc(greet) : 'Signed in') +
+        (greet ? 'Welcome, ' + esc(greet) : 'Signed in') +
         '</p>';
       html +=
         '<p class="lp-oe-account-meta">' +
@@ -925,14 +973,6 @@
         ((this.state.orders || []).length === 1 ? '' : 's') +
         '</p>';
       html += '<div class="lp-oe-account-actions">';
-      html +=
-        '<button type="button" class="lp-oe-account-btn' +
-        (this.state.view === 'account' ? ' on' : '') +
-        '" data-act="view-orders">My orders</button>';
-      if (this.state.view === 'account') {
-        html +=
-          '<button type="button" class="lp-oe-account-btn ghost" data-act="back-shop">Shop</button>';
-      }
       html +=
         '<button type="button" class="lp-oe-account-btn ghost" data-act="sign-out">Sign out</button>';
       html += '</div>';
@@ -954,12 +994,13 @@
     var html = '';
     html += '<div class="lp-oe-orders">';
     html += '<div class="lp-oe-orders-head">';
+    var greet = firstName(this.customerDisplayName());
     html +=
-      '<button type="button" class="lp-oe-link" data-act="back-shop">← Continue shopping</button>';
+      '<h2 class="lp-oe-orders-title">' +
+      (greet ? 'Welcome, ' + esc(greet) : 'Your orders') +
+      '</h2>';
     html +=
-      '<h2 class="lp-oe-orders-title">Your orders</h2>';
-    html +=
-      '<p class="lp-oe-orders-sub">Review what you ordered before — weights included — then order again with today’s menu.</p>';
+      '<p class="lp-oe-orders-sub">Review what you ordered before — weights included — then order again. Switch to <button type="button" class="lp-oe-text-link" data-act="back-shop">Browse menu</button> anytime.</p>';
     html += '</div>';
 
     if (!this.isLoggedIn()) {
@@ -1475,12 +1516,8 @@
           am2.busy = false;
           self.state.view = 'account';
           self.state.selected = null;
-          self.state.msg =
-            'Welcome back' +
-            (firstName(self.state.customer && self.state.customer.name)
-              ? ', ' + firstName(self.state.customer.name)
-              : '') +
-            '.';
+          var greetMsg = firstName(self.customerDisplayName());
+          self.state.msg = greetMsg ? 'Welcome, ' + greetMsg + '.' : 'Signed in.';
         } catch (e) {
           am2.err = self.friendlyAuthError((e && e.message) || e);
           am2.busy = false;
@@ -1823,10 +1860,13 @@
       '.lp-oe-head-compact{justify-content:flex-end;margin:0 0 12px}',
       '.lp-oe-embedded{padding-top:4px}',
       '.lp-oe-head-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}',
+      '.lp-oe-client-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px;padding:8px;border:1px solid var(--oe-line);border-radius:14px;background:color-mix(in srgb,var(--oe-accent) 6%,var(--oe-card))}',
+      '.lp-oe-client-tab{appearance:none;border:1px solid transparent;background:transparent;color:var(--oe-muted);font:650 13px/1 system-ui,sans-serif;padding:10px 14px;border-radius:10px;cursor:pointer}',
+      '.lp-oe-client-tab:hover{color:var(--oe-accent);background:color-mix(in srgb,var(--oe-accent) 8%,transparent)}',
+      '.lp-oe-client-tab.on{color:var(--oe-accent);border-color:color-mix(in srgb,var(--oe-accent) 30%,var(--oe-line));background:#fff;box-shadow:0 4px 12px rgba(28,36,30,.05)}',
+      '.lp-oe-client-greet{margin-left:auto;font:650 13px/1.2 system-ui,sans-serif;color:var(--oe-ink);padding:0 6px}',
+      '.lp-oe-text-link{appearance:none;border:0;background:none;padding:0;margin:0;font:inherit;font-weight:700;color:var(--oe-accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer}',
       '.lp-oe-portal{display:inline-flex;align-items:center;font:700 13px/1.2 system-ui,sans-serif;color:var(--oe-accent);text-decoration:underline;text-underline-offset:3px}',
-      '.lp-oe-portal-btn,.lp-oe-account-chip{appearance:none;border:1px solid color-mix(in srgb,var(--oe-accent) 35%,var(--oe-line));background:color-mix(in srgb,var(--oe-accent) 8%,var(--oe-card));color:var(--oe-accent);font:700 13px/1 system-ui,sans-serif;padding:10px 14px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}',
-      '.lp-oe-portal-btn:hover,.lp-oe-account-chip:hover,.lp-oe-account-chip.on{border-color:var(--oe-accent);background:color-mix(in srgb,var(--oe-accent) 14%,var(--oe-card))}',
-      '.lp-oe-account-chip-dot{width:8px;height:8px;border-radius:50%;background:var(--oe-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--oe-accent) 20%,transparent)}',
       '.lp-oe-cart-btn,.lp-oe-primary,.lp-oe-card button,.lp-oe-link,.lp-oe-view-btn{appearance:none;border:1px solid var(--oe-btn);background:var(--oe-btn);color:var(--oe-btn-text);font:600 13px/1 system-ui,sans-serif;padding:10px 14px;border-radius:10px;cursor:pointer}',
       '.lp-oe-view-toggle{display:inline-flex;gap:6px;flex:none;position:relative;z-index:3}',
       '.lp-oe-view-btn{background:transparent;color:var(--oe-accent);border-color:var(--oe-line);padding:8px 12px;pointer-events:auto}',

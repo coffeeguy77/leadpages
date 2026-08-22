@@ -147,8 +147,19 @@ test('storefront has SMS auth modal and in-page My orders', function () {
   assert.match(js, /renderAuthModal/);
   assert.match(js, /renderAccountBox/);
   assert.match(js, /renderAccountOrders/);
+  assert.match(js, /renderClientNav/);
   assert.match(js, /data-act="open-auth"/);
   assert.match(js, /lp-oe-modal-backdrop/);
+  assert.match(js, /lp-oe-client-nav/);
   assert.match(js, /action:\s*'reorder'/);
-  assert.match(shop, /lp-order-storefront\.js\?v=oe-10/);
+  assert.match(shop, /lp-order-storefront\.js\?v=oe-11/);
+});
+
+test('displayGivenName prefers first name with title case', function () {
+  const { displayGivenName } = require('../lib/order/customer-name');
+  assert.equal(displayGivenName('Shaun MATTHEWS'), 'Shaun');
+  assert.equal(displayGivenName('SHAUN MATTHEWS'), 'Shaun');
+  assert.equal(displayGivenName('MATTHEWS Shaun'), 'Shaun');
+  assert.equal(displayGivenName('MATTHEWS, Shaun'), 'Shaun');
+  assert.equal(displayGivenName('jenny wells'), 'Jenny');
 });
