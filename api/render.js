@@ -377,7 +377,9 @@ function shadeHex(hex, pct) {
  * Build :root CSS for trade theme tokens so first paint matches brand colours
  * instead of the template defaults (--hivis orange / --pipe blue).
  */
-function tradeThemeRootCss(theme) {
+const { resolveMaxSiteWidth } = require('../lib/site-max-width');
+
+function tradeThemeRootCss(theme, cfg) {
   const th = theme || {};
   const vars = [];
   const pipe = themeHex(th.pipe);
@@ -401,15 +403,40 @@ function tradeThemeRootCss(theme) {
   if (safety) vars.push('--safety:' + safety);
   const lightBg = themeHex(th.lightBg);
   if (lightBg) vars.push('--light:' + lightBg);
+  const sw = resolveMaxSiteWidth(cfg);
+  if (sw.mode === 'capped' && sw.px) {
+    vars.push('--site-maxw:' + sw.px + 'px');
+    vars.push('--maxw:' + sw.px + 'px');
+  }
   if (!vars.length) return '';
   return ':root{' + vars.join(';') + '}';
 }
 
 /** Inject brand theme CSS vars into <head> before body paints (trade FOUC fix). */
+function injectSiteWidthClass(html, cfg) {
+  if (!html || !cfg) return html;
+  const sw = resolveMaxSiteWidth(cfg);
+  const cls = sw.cssClass || '';
+  if (!cls) return html;
+  return html.replace(/<html([^>]*)>/i, function (_m, attrs) {
+    if (/\bclass\s*=/.test(attrs)) {
+      return '<html' + attrs.replace(/\bclass\s*=\s*"([^"]*)"/i, function (_cm, existing) {
+        const cleaned = existing.split(/\s+/).filter(function (x) {
+          return x && x.indexOf('site-width-') !== 0 && x.indexOf('site-max-') !== 0;
+        });
+        cls.split(/\s+/).forEach(function (c) { if (c && cleaned.indexOf(c) < 0) cleaned.push(c); });
+        return 'class="' + cleaned.join(' ') + '"';
+      }) + '>';
+    }
+    return '<html' + attrs + ' class="' + cls + '">';
+  });
+}
+
 function injectTradeThemeVars(html, cfg) {
   if (!html || !cfg) return html;
-  let css = tradeThemeRootCss(cfg.theme);
-  if (!css) return html;
+  html = injectSiteWidthClass(html, cfg);
+  let css = tradeThemeRootCss(cfg.theme, cfg);
+  if (!css && resolveMaxSiteWidth(cfg).mode === 'full') return html;
   try {
     const { applyColorOverridesToCssText, applyColorOverridesToHtml } = require('../lib/color-overrides');
     css = applyColorOverridesToCssText(css, cfg.colorOverrides);
