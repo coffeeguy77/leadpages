@@ -152,7 +152,7 @@ test('storefront has SMS auth modal and in-page My orders', function () {
   assert.match(js, /lp-oe-modal-backdrop/);
   assert.match(js, /lp-oe-client-nav/);
   assert.match(js, /action:\s*'reorder'/);
-  assert.match(shop, /lp-order-storefront\.js\?v=oe-12/);
+  assert.match(shop, /lp-order-storefront\.js\?v=oe-13/);
 });
 
 test('displayGivenName prefers first name with title case', function () {
@@ -164,45 +164,15 @@ test('displayGivenName prefers first name with title case', function () {
   assert.equal(displayGivenName('jenny wells'), 'Jenny');
 });
 
-test('packLabel only applies to pack size mode', function () {
-  const { packLabel, quantityPrompt, buildProductOptionsPatch, isPackSize, isEachSize } = require('../lib/order/product-options');
-  const mistyped = {
-    options: { size_mode: 'each', pack_label: 'How many would you like?' }
-  };
-  assert.equal(packLabel(mistyped), '');
-  assert.equal(quantityPrompt(mistyped), 'How many would you like?');
-  assert.equal(isPackSize(mistyped), false);
-  assert.equal(isEachSize(mistyped), true);
-
-  const pack = {
-    options: { size_mode: 'pack', pack_label: '800g', pack_weight_kg: 0.8 }
-  };
-  assert.equal(packLabel(pack), '800g');
-  assert.equal(isPackSize(pack), true);
-
-  const patched = buildProductOptionsPatch({
-    size_mode: 'each',
-    quantity_prompt: 'How many would you like?',
-    pack_label: 'should not stick',
-    pack_weight_kg: 0.8
-  });
-  assert.equal(patched.size_mode, 'each');
-  assert.equal(patched.quantity_prompt, 'How many would you like?');
-  assert.equal(patched.pack_label, undefined);
-  assert.equal(patched.pack_weight_kg, undefined);
-});
-
-test('storefront shows quantity prompt without pack suffix', function () {
+test('reorder uses bulk cart lines and returns packed cart', function () {
   const fs = require('fs');
   const path = require('path');
-  const shop = fs.readFileSync(path.join(__dirname, '../assets/lp-order-storefront.js'), 'utf8');
-  const orders = fs.readFileSync(path.join(__dirname, '../orders.html'), 'utf8');
-  assert.match(shop, /quantityPrompt/);
-  assert.match(shop, /lp-oe-qty-prompt/);
-  assert.match(shop, /if \(!this\.isPackSize\(p\)\) return ''/);
-  assert.doesNotMatch(shop, /Sold as ' \+ esc\(pack\) \+ ' packs/);
-  assert.doesNotMatch(shop, /Sold by weight — enter how much you want/);
-  assert.match(orders, /prod-qty-prompt/);
-  assert.match(orders, /Individual item \(quantity only\)/);
-  assert.match(orders, /quantity_prompt/);
+  const cart = fs.readFileSync(path.join(__dirname, '..', 'lib/order/cart.js'), 'utf8');
+  const portal = fs.readFileSync(path.join(__dirname, '..', 'api/order/portal-auth.js'), 'utf8');
+  const sf = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-order-storefront.js'), 'utf8');
+  assert.match(cart, /addReorderLines/);
+  assert.match(portal, /addReorderLines/);
+  assert.match(portal, /packCartResponse/);
+  assert.match(sf, /applyPacked\(re\)/);
+  assert.match(sf, /lp-oe-msg\.is-ok/);
 });
