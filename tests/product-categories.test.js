@@ -54,7 +54,8 @@ test('orders UI exposes also-show-in and pies bulk action', function () {
   const api = fs.readFileSync(path.join(__dirname, '..', 'api/order/products.js'), 'utf8');
   const shop = fs.readFileSync(path.join(__dirname, '..', 'assets/lp-order-storefront.js'), 'utf8');
   assert.match(html, /prod-extra-cats/);
-  assert.match(html, /Also show in/);
+  assert.match(html, /prod-extra-cats/);
+  assert.match(html, /panel-soft,var\(--surface\)/);
   assert.match(html, /prod-pies-extra/);
   assert.match(html, /assign_additional_by_match/);
   assert.match(api, /assign_additional_by_match/);
