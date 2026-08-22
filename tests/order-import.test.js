@@ -176,9 +176,9 @@ test('storefront layout is 2/3 menu and larger product titles', function () {
   const orders = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
   assert.match(js, /grid-template-columns:minmax\(0,2fr\) minmax\(0,1fr\)/);
   assert.match(js, /\.lp-oe-body h3\{[^}]*font-size:32px/);
-  assert.match(cron, /reminder_sent/);
-  assert.match(cron, /already_reminded/);
-  assert.match(orders, /set-abd-enabled/);
+  assert.match(cron, /customerUnderMessageCap/);
+  assert.match(cron, /messages_per_cart/);
+  assert.match(orders, /set-abd-max-customer/);
   assert.match(orders, /cust-normalize/);
 });
 

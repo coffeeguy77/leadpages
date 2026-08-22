@@ -590,12 +590,30 @@ body.embed .hub{min-height:70vh}
           </div>
         </div>
         <div class="card">
+          <h3>Remind open carts (manual)</h3>
+          <p class="sub">Optional one-off SMS to shoppers who have items in a cart but have not checked out. One text per phone (most recent cart). Placeholders: <code>{{first_name}}</code>, <code>{{checkout_link}}</code>, <code>{{cart_total}}</code>, <code>{{business_name}}</code>.</p>
+          <div class="grid2">
+            <div class="field"><label for="sms-open-idle">Only if idle at least (hours)</label>
+              <input id="sms-open-idle" type="number" min="0" step="1" value="0" placeholder="0 = all open carts">
+              <span class="field-hint">Use e.g. 24 in the final days to nudge stale carts only.</span>
+            </div>
+          </div>
+          <div class="field"><label for="sms-open-body">Message</label>
+            <textarea id="sms-open-body" rows="4" placeholder="Hi {{first_name}} — your Christmas order is still in your cart (~{{cart_total}}). Finish checkout: {{checkout_link}}"></textarea>
+          </div>
+          <div class="actions-row">
+            <button class="btn solid" type="button" id="sms-open-send">Send to open carts</button>
+            <span class="notice" id="sms-open-msg"></span>
+          </div>
+        </div>
+        <div class="card">
           <h3>AI templates</h3>
           <p class="sub">Generate AI draft options. Templates can also be seeded via the butcher preset in Settings.</p>
           <div class="grid2">
             <div class="field"><label for="msg-category">Category</label>
               <select id="msg-category">
-                <option value="abandoned_cart">Abandoned cart</option>
+                <option value="abandoned_cart">Abandoned cart (1st reminder)</option>
+                <option value="abandoned_cart_2">Abandoned cart (2nd / follow-up)</option>
                 <option value="deposit_required">Deposit required</option>
                 <option value="order_locked">Order locked</option>
                 <option value="order_ready">Order ready</option>
@@ -716,7 +734,7 @@ body.embed .hub{min-height:70vh}
             <h3 style="margin:0;flex:1">Abandoned carts</h3>
             <button class="btn solid" type="button" id="abd-load">Refresh</button>
           </div>
-          <p class="notice">At most <strong>one reminder per cart</strong>. Turn messaging off under Settings → Abandoned cart reminders.</p>
+          <p class="notice">At most <strong>one reminder per cart</strong> (or two if enabled in Settings). Turn automatic messaging off under Settings → Abandoned cart reminders. Use Messaging → Open carts for a one-off manual nudge.</p>
           <div class="kpis" id="abd-kpis"></div>
           <div class="table-wrap"><table class="oe"><thead><tr>
             <th>Updated</th><th>Status</th><th>Items</th><th>Known</th><th>Contact</th>
@@ -768,17 +786,40 @@ body.embed .hub{min-height:70vh}
             </div>
 
             <h4 class="section-title">Abandoned cart reminders</h4>
-            <p class="notice">At most <strong>one</strong> reminder is sent per cart. Turn this off to stop SMS/email recovery messages entirely.</p>
+            <p class="notice">Turn <strong>Off</strong> to stop all automatic recovery SMS/email. Set a <strong>max per customer</strong> so repeat visits do not trigger duplicate texts (e.g. steaks hanging). Customise message text under <strong>Messaging → Saved templates</strong> (<code>abandoned_cart</code> and <code>abandoned_cart_2</code>).</p>
             <div class="grid2">
-              <div class="field"><label for="set-abd-enabled">Abandoned cart messages</label>
+              <div class="field"><label for="set-abd-enabled">Automatic reminders</label>
                 <select id="set-abd-enabled">
                   <option value="0">Off</option>
                   <option value="1">On</option>
                 </select>
               </div>
-              <div class="field"><label for="set-abd-delay">Idle minutes before reminder</label>
+              <div class="field"><label for="set-abd-delay">First reminder after (minutes idle)</label>
                 <input id="set-abd-delay" type="number" min="5" step="5" placeholder="60">
                 <span class="field-hint">Default 60. Cron checks about every 15 minutes.</span>
+              </div>
+              <div class="field"><label for="set-abd-max-customer">Max messages per customer</label>
+                <input id="set-abd-max-customer" type="number" min="0" max="20" step="1" placeholder="1">
+                <span class="field-hint">Across all carts in the lookback window (0 = unlimited).</span>
+              </div>
+              <div class="field"><label for="set-abd-lookback">Customer lookback (days)</label>
+                <input id="set-abd-lookback" type="number" min="1" max="365" step="1" placeholder="90">
+              </div>
+              <div class="field"><label for="set-abd-stages">Reminders per cart</label>
+                <select id="set-abd-stages">
+                  <option value="1">1 — first reminder only</option>
+                  <option value="2">2 — first + follow-up</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-abd-second-val">Follow-up after</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input id="set-abd-second-val" type="number" min="1" max="365" step="1" placeholder="48" style="max-width:100px">
+                  <select id="set-abd-second-unit" style="max-width:120px">
+                    <option value="hours">hours</option>
+                    <option value="days">days</option>
+                  </select>
+                </div>
+                <span class="field-hint">Only when reminders per cart = 2. Uses the <code>abandoned_cart_2</code> template.</span>
               </div>
               <div class="field"><label for="set-abd-channels">Channels</label>
                 <select id="set-abd-channels">
@@ -2689,6 +2730,46 @@ body.embed .hub{min-height:70vh}
     btn.disabled = false;
   }
 
+  async function sendOpenCartSms(){
+    if (!requireSite()) return;
+    var body = ($('sms-open-body').value || '').trim();
+    if (!body) { toast('Write a message first', 'err'); return; }
+    var idle = $('sms-open-idle') && $('sms-open-idle').value !== '' ? Number($('sms-open-idle').value) : 0;
+    if (!confirm('Send this SMS to open carts' + (idle > 0 ? ' idle ' + idle + '+ hours' : '') + '? One per phone number.')) return;
+    var btn = $('sms-open-send');
+    var msg = $('sms-open-msg');
+    btn.disabled = true;
+    msg.textContent = 'Sending…';
+    try {
+      var r = await api('/api/order/sms', {
+        method: 'POST',
+        body: {
+          site_id: state.siteId,
+          action: 'broadcast_open_carts',
+          body: body,
+          min_idle_hours: idle
+        }
+      });
+      var res = r.results || {};
+      msg.textContent =
+        'Sent ' +
+        (res.sent || 0) +
+        ' · failed ' +
+        (res.failed || 0) +
+        ' · skipped ' +
+        (res.skipped || 0) +
+        ' (phones ' +
+        (res.audience || 0) +
+        ')';
+      toast('Open-cart SMS finished', 'ok');
+      await loadSmsUsage();
+    } catch (e) {
+      msg.textContent = (e && e.message) || String(e);
+      toast(msg.textContent, 'err');
+    }
+    btn.disabled = false;
+  }
+
   /* ---------- Messaging ---------- */
   async function generateMessages(){
     if (!requireSite()) return;
@@ -2805,6 +2886,12 @@ body.embed .hub{min-height:70vh}
         if (ch === 'sms,email') ch = 'email,sms';
         $('set-abd-channels').value = ch === 'sms' || ch === 'email,sms' ? ch : 'email';
       }
+      var abd = (s.settings && s.settings.abandoned_cart) || {};
+      if ($('set-abd-max-customer')) $('set-abd-max-customer').value = abd.max_per_customer != null ? abd.max_per_customer : 1;
+      if ($('set-abd-lookback')) $('set-abd-lookback').value = abd.customer_lookback_days != null ? abd.customer_lookback_days : 90;
+      if ($('set-abd-stages')) $('set-abd-stages').value = String(abd.messages_per_cart != null ? abd.messages_per_cart : 1);
+      if ($('set-abd-second-val')) $('set-abd-second-val').value = abd.second_delay_value != null ? abd.second_delay_value : 48;
+      if ($('set-abd-second-unit')) $('set-abd-second-unit').value = abd.second_delay_unit === 'days' ? 'days' : 'hours';
       var pay = (s.settings && s.settings.payments) || {};
       if ($('set-pay-provider')) $('set-pay-provider').value = pay.provider || 'stripe';
       if ($('set-stripe-mode')) $('set-stripe-mode').value = pay.stripe_charge_mode === 'direct' ? 'direct' : 'destination';
@@ -2916,7 +3003,23 @@ body.embed .hub{min-height:70vh}
             if (v === 'email,sms') return ['email', 'sms'];
             return ['email'];
           })(),
-          settings: Object.assign({}, existing, { payments: payments, storefront: storefront })
+          settings: Object.assign({}, existing, {
+            payments: payments,
+            storefront: storefront,
+            abandoned_cart: {
+              max_per_customer: $('set-abd-max-customer') && $('set-abd-max-customer').value !== ''
+                ? Math.max(0, Number($('set-abd-max-customer').value) || 1)
+                : 1,
+              messages_per_cart: $('set-abd-stages') ? Math.min(2, Math.max(1, Number($('set-abd-stages').value) || 1)) : 1,
+              second_delay_value: $('set-abd-second-val') && $('set-abd-second-val').value !== ''
+                ? Math.max(1, Number($('set-abd-second-val').value) || 48)
+                : 48,
+              second_delay_unit: $('set-abd-second-unit') && $('set-abd-second-unit').value === 'days' ? 'days' : 'hours',
+              customer_lookback_days: $('set-abd-lookback') && $('set-abd-lookback').value !== ''
+                ? Math.max(1, Number($('set-abd-lookback').value) || 90)
+                : 90
+            }
+          })
         }
       });
       msg.textContent = 'Settings saved.';
@@ -3451,6 +3554,7 @@ body.embed .hub{min-height:70vh}
   if ($('abd-load')) $('abd-load').addEventListener('click', loadAbandoned);
   $('msg-generate').addEventListener('click', generateMessages);
   if ($('sms-blast-send')) $('sms-blast-send').addEventListener('click', sendSmsBroadcast);
+  if ($('sms-open-send')) $('sms-open-send').addEventListener('click', sendOpenCartSms);
   if ($('imp-file')) $('imp-file').addEventListener('change', function(){
     var f = $('imp-file').files && $('imp-file').files[0];
     if (!f) return;

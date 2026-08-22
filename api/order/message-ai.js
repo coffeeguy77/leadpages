@@ -16,6 +16,10 @@ const FALLBACK = {
       'Santa checked his list. Apparently your ham is still sitting in your cart: {{checkout_link}}',
       '{{first_name}}, your cuts are reserved in spirit only — finish checkout: {{checkout_link}}'
     ],
+    abandoned_cart_2: [
+      'Hi {{first_name}}, friendly reminder — your cart at {{business_name}} is still waiting: {{checkout_link}}',
+      '{{first_name}}, last call before we release your cart. Finish here: {{checkout_link}}'
+    ],
     deposit_required: [
       'Hi {{first_name}}, pay your ${{deposit_amount}} deposit for order {{order_number}}: {{deposit_link}}'
     ],

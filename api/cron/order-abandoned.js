@@ -5,14 +5,112 @@
  * Auth: Authorization: Bearer <CRON_SECRET> when CRON_SECRET is set.
  *
  * Rules:
- * - Only systems with abandoned_cart_enabled = true
- * - At most ONE reminder message per cart (ever), even if the cart is reactivated
+ * - Only systems with abandoned_cart_enabled = true (re-checked before each send)
+ * - Per-customer cap (settings.abandoned_cart.max_per_customer) in lookback window
+ * - Up to 2 stages per cart when messages_per_cart = 2 (separate templates)
  */
 
 const { createClient } = require('@supabase/supabase-js');
 const { notifyEvent, shopUrl } = require('../../lib/order/notify');
+const { parseAbandonedCartSettings, secondDelayMs, templateCategoryForStage } = require('../../lib/order/abandoned-cart-settings');
+const {
+  cartContactPhone,
+  cartStage,
+  lastMessageAt,
+  customerUnderMessageCap
+} = require('../../lib/order/abandoned-cart-recovery');
 
 const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+async function countPriorEvents(cartId) {
+  var { count } = await admin
+    .from('order_abandoned_events')
+    .select('id', { count: 'exact', head: true })
+    .eq('cart_id', cartId)
+    .eq('status', 'sent');
+  return count || 0;
+}
+
+async function processCartReminder(opts) {
+  var system = opts.system;
+  var site = opts.site;
+  var cart = opts.cart;
+  var stage = opts.stage;
+  var settings = opts.settings;
+
+  if (!settings.enabled) {
+    return { cart_id: cart.id, skipped: true, reason: 'disabled' };
+  }
+
+  var cap = await customerUnderMessageCap(admin, system.id, cart, settings);
+  if (!cap.ok) {
+    return { cart_id: cart.id, skipped: true, reason: cap.reason, phone: cap.phone };
+  }
+
+  var channels = settings.channels.length ? settings.channels : ['email'];
+  var checkout = shopUrl(site.slug, cart.id);
+  var channelStr = Array.isArray(channels) ? channels.join(',') : String(channels);
+  var channelPref =
+    channels.indexOf('sms') >= 0 && channels.indexOf('email') >= 0
+      ? 'both'
+      : channels.indexOf('sms') >= 0
+        ? 'sms'
+        : 'email';
+
+  var { data: evt } = await admin
+    .from('order_abandoned_events')
+    .insert({
+      cart_id: cart.id,
+      site_id: site.id,
+      stage: stage,
+      channel: channelStr,
+      scheduled_for: new Date().toISOString(),
+      status: 'scheduled'
+    })
+    .select('*')
+    .single();
+
+  var sent = await notifyEvent({
+    event_type: 'abandoned_cart',
+    template_category: templateCategoryForStage(stage),
+    system: system,
+    site: site,
+    cart: cart,
+    checkout_link: checkout,
+    channel: channelPref,
+    source: 'system'
+  });
+
+  var messageId = sent && sent.sent && sent.sent[0] && sent.sent[0].id ? sent.sent[0].id : null;
+
+  if (evt) {
+    await admin
+      .from('order_abandoned_events')
+      .update({
+        status: 'sent',
+        sent_at: new Date().toISOString(),
+        message_id: messageId
+      })
+      .eq('id', evt.id);
+  }
+
+  var nowIso = new Date().toISOString();
+  await admin
+    .from('order_carts')
+    .update({
+      status: 'abandoned',
+      recovery_state: Object.assign({}, cart.recovery_state || {}, {
+        stage: stage,
+        reminder_sent: true,
+        last_message_at: nowIso,
+        checkout_link: checkout
+      }),
+      updated_at: nowIso
+    })
+    .eq('id', cart.id);
+
+  return { cart_id: cart.id, site_id: site.id, stage: stage, sent: true };
+}
 
 module.exports = async function (req, res) {
   const json = function (code, obj) {
@@ -41,17 +139,8 @@ module.exports = async function (req, res) {
     const now = Date.now();
 
     for (const system of systems || []) {
-      const delayMs = Math.max(5, Number(system.abandoned_cart_delay_minutes) || 60) * 60 * 1000;
-      const cutoffIso = new Date(now - delayMs).toISOString();
-
-      const { data: carts } = await admin
-        .from('order_carts')
-        .select('*')
-        .eq('order_system_id', system.id)
-        .eq('status', 'active')
-        .gt('item_count', 0)
-        .lt('last_activity_at', cutoffIso)
-        .limit(40);
+      const settings = parseAbandonedCartSettings(system);
+      if (!settings.enabled) continue;
 
       const { data: site } = await admin
         .from('sites')
@@ -60,34 +149,33 @@ module.exports = async function (req, res) {
         .maybeSingle();
       if (!site) continue;
 
-      for (const cart of carts || []) {
-        // Mark abandoned even if we will not message again.
-        await admin
-          .from('order_carts')
-          .update({ status: 'abandoned', updated_at: new Date().toISOString() })
-          .eq('id', cart.id)
-          .eq('status', 'active');
+      const firstDelayMs = Math.max(5, settings.delay_minutes) * 60 * 1000;
+      const firstCutoffIso = new Date(now - firstDelayMs).toISOString();
 
-        const alreadyReminded =
-          !!(cart.recovery_state && (cart.recovery_state.reminder_sent || cart.recovery_state.stage >= 1));
+      // Stage 1 — idle active carts
+      const { data: stage1Carts } = await admin
+        .from('order_carts')
+        .select('*')
+        .eq('order_system_id', system.id)
+        .eq('status', 'active')
+        .gt('item_count', 0)
+        .lt('last_activity_at', firstCutoffIso)
+        .limit(40);
 
-        var priorCount = 0;
-        if (!alreadyReminded) {
-          var { count } = await admin
-            .from('order_abandoned_events')
-            .select('id', { count: 'exact', head: true })
-            .eq('cart_id', cart.id);
-          priorCount = count || 0;
+      for (const cart of stage1Carts || []) {
+        if (cartStage(cart) >= 1) {
+          skipped.push({ cart_id: cart.id, reason: 'already_stage_1' });
+          continue;
         }
-
-        if (alreadyReminded || priorCount > 0) {
+        var prior = await countPriorEvents(cart.id);
+        if (prior > 0) {
           skipped.push({ cart_id: cart.id, reason: 'already_reminded' });
           await admin
             .from('order_carts')
             .update({
               recovery_state: Object.assign({}, cart.recovery_state || {}, {
                 reminder_sent: true,
-                stage: Math.max(1, (cart.recovery_state && cart.recovery_state.stage) || 1)
+                stage: Math.max(1, cartStage(cart))
               }),
               updated_at: new Date().toISOString()
             })
@@ -95,69 +183,42 @@ module.exports = async function (req, res) {
           continue;
         }
 
-        const stage = 1;
-        const channels = system.abandoned_cart_channels || ['email'];
-        const checkout = shopUrl(site.slug, cart.id);
-        const channelStr = Array.isArray(channels) ? channels.join(',') : String(channels);
+        var r1 = await processCartReminder({ system: system, site: site, cart: cart, stage: 1, settings: settings });
+        if (r1.skipped) skipped.push(r1);
+        else results.push(r1);
+      }
 
-        const { data: evt } = await admin
+      if (settings.messages_per_cart < 2) continue;
+
+      const secondMs = secondDelayMs(settings);
+      const { data: stage2Carts } = await admin
+        .from('order_carts')
+        .select('*')
+        .eq('order_system_id', system.id)
+        .in('status', ['active', 'abandoned'])
+        .gt('item_count', 0)
+        .limit(60);
+
+      for (const cart of stage2Carts || []) {
+        if (cartStage(cart) !== 1) continue;
+        var sentAt = lastMessageAt(cart);
+        if (!sentAt) continue;
+        if (now - new Date(sentAt).getTime() < secondMs) continue;
+
+        var { count: stage2Count } = await admin
           .from('order_abandoned_events')
-          .insert({
-            cart_id: cart.id,
-            site_id: site.id,
-            stage: stage,
-            channel: channelStr,
-            scheduled_for: new Date().toISOString(),
-            status: 'scheduled'
-          })
-          .select('*')
-          .single();
-
-        const channelPref =
-          Array.isArray(channels) && channels.indexOf('sms') >= 0 && channels.indexOf('email') >= 0
-            ? 'both'
-            : Array.isArray(channels) && channels.indexOf('sms') >= 0
-              ? 'sms'
-              : 'email';
-
-        const sent = await notifyEvent({
-          event_type: 'abandoned_cart',
-          system: system,
-          site: site,
-          cart: cart,
-          checkout_link: checkout,
-          channel: channelPref,
-          source: 'system'
-        });
-
-        const messageId =
-          sent && sent.sent && sent.sent[0] && sent.sent[0].id ? sent.sent[0].id : null;
-
-        if (evt) {
-          await admin
-            .from('order_abandoned_events')
-            .update({
-              status: 'sent',
-              sent_at: new Date().toISOString(),
-              message_id: messageId
-            })
-            .eq('id', evt.id);
+          .select('id', { count: 'exact', head: true })
+          .eq('cart_id', cart.id)
+          .eq('stage', 2)
+          .eq('status', 'sent');
+        if ((stage2Count || 0) > 0) {
+          skipped.push({ cart_id: cart.id, reason: 'already_stage_2' });
+          continue;
         }
 
-        await admin
-          .from('order_carts')
-          .update({
-            recovery_state: Object.assign({}, cart.recovery_state || {}, {
-              stage: stage,
-              reminder_sent: true,
-              last_message_at: new Date().toISOString(),
-              checkout_link: checkout
-            }),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', cart.id);
-
-        results.push({ cart_id: cart.id, site_id: site.id, stage: stage });
+        var r2 = await processCartReminder({ system: system, site: site, cart: cart, stage: 2, settings: settings });
+        if (r2.skipped) skipped.push(r2);
+        else results.push(r2);
       }
     }
 
