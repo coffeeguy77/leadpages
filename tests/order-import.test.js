@@ -152,7 +152,7 @@ test('storefront has SMS auth modal and in-page My orders', function () {
   assert.match(js, /lp-oe-modal-backdrop/);
   assert.match(js, /lp-oe-client-nav/);
   assert.match(js, /action:\s*'reorder'/);
-  assert.match(shop, /lp-order-storefront\.js\?v=oe-13/);
+  assert.match(shop, /lp-order-storefront\.js\?v=oe-14/);
 });
 
 test('displayGivenName prefers first name with title case', function () {
@@ -176,9 +176,9 @@ test('storefront layout is 2/3 menu and larger product titles', function () {
   const orders = fs.readFileSync(path.join(__dirname, '..', 'orders.html'), 'utf8');
   assert.match(js, /grid-template-columns:minmax\(0,2fr\) minmax\(0,1fr\)/);
   assert.match(js, /\.lp-oe-body h3\{[^}]*font-size:32px/);
-  assert.match(cron, /reminder_sent/);
-  assert.match(cron, /already_reminded/);
-  assert.match(orders, /set-abd-enabled/);
+  assert.match(cron, /customerUnderMessageCap/);
+  assert.match(cron, /messages_per_cart/);
+  assert.match(orders, /set-abd-max-customer/);
   assert.match(orders, /cust-normalize/);
 });
 

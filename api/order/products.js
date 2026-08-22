@@ -188,6 +188,26 @@ module.exports = async function (req, res) {
       return json(res, 200, { ok: true, stats: stats });
     }
 
+    if (req.method === 'POST' && body.action === 'deactivate_unsized_hams') {
+      const { deactivateUnsizedHamProducts } = require('../../lib/order/deactivate-unsized-hams');
+      const stats = await deactivateUnsizedHamProducts({
+        site_id: siteId,
+        order_system_id: system.id,
+        dry_run: !!body.dry_run
+      });
+      if (!body.dry_run) {
+        await writeAudit({
+          order_system_id: system.id,
+          site_id: siteId,
+          event_type: 'products_unsized_hams_deactivated',
+          actor_user_id: user.id,
+          source: 'admin',
+          payload: stats
+        });
+      }
+      return json(res, 200, { ok: true, stats: stats });
+    }
+
     if (req.method === 'POST') {
       const name = clean(body.name, 200);
       if (!name) return json(res, 400, { error: 'name_required' });

@@ -20,6 +20,7 @@ const { notifyEvent, portalUrl, PUBLIC_BASE } = require('../../lib/order/notify'
 const {
   listWindows,
   buildPickupSlots,
+  parsePickupSchedule,
   findMatchingSlot
 } = require('../../lib/order/fulfilment-windows');
 
@@ -124,7 +125,8 @@ module.exports = async function (req, res) {
         if (!cap.ok) return json(res, 400, { error: 'date_at_capacity', capacity: cap });
 
         const windows = await listWindows(system.id);
-        const slots = buildPickupSlots(windows, earliest, 28);
+        const schedule = parsePickupSchedule(system);
+        const slots = buildPickupSlots(windows, earliest, 28, schedule);
         let pickup_window_start = body.pickup_window_start || null;
         let pickup_window_end = body.pickup_window_end || null;
         let pickup_time = body.pickup_time || null;
