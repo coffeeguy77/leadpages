@@ -45,6 +45,8 @@ module.exports = async function (req, res) {
       const result = await savePickupSchedule(system, {
         range_start: body.range_start,
         range_end: body.range_end,
+        default_window_start: body.default_window_start,
+        default_window_end: body.default_window_end,
         closed_weekdays: body.closed_weekdays,
         closed_dates: body.closed_dates
       });

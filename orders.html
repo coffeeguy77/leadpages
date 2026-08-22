@@ -934,9 +934,9 @@ body.embed .hub{min-height:70vh}
 
         <div class="card" style="margin-top:16px">
           <h3>Pickup windows</h3>
-          <p class="sub">Set a <strong>booking date range</strong>, <strong>closed days</strong> (e.g. every Sunday), weekday hours, and <strong>specific-date overrides</strong> (e.g. early close on the last day).</p>
+          <p class="sub">Set a <strong>booking date range</strong>, <strong>default opening hours</strong> (applied to every open day), <strong>closed days</strong>, and optional <strong>date overrides</strong> (e.g. early close).</p>
 
-          <h4 class="section-title" style="margin-top:12px">Booking period &amp; closures</h4>
+          <h4 class="section-title" style="margin-top:12px">Booking period, hours &amp; closures</h4>
           <div class="grid2" style="margin-bottom:12px">
             <div class="field"><label for="pw-range-start">Range start</label>
               <input id="pw-range-start" type="date">
@@ -945,6 +945,13 @@ body.embed .hub{min-height:70vh}
             <div class="field"><label for="pw-range-end">Range end</label>
               <input id="pw-range-end" type="date">
               <span class="field-hint">Last day in the season (optional).</span>
+            </div>
+            <div class="field"><label for="pw-default-start">Default opening hours</label>
+              <input id="pw-default-start" type="time" value="09:00">
+              <span class="field-hint">Used on every day in range unless that date has an override below.</span>
+            </div>
+            <div class="field"><label for="pw-default-end">Default closing time</label>
+              <input id="pw-default-end" type="time" value="16:00">
             </div>
             <div class="field" style="grid-column:1/-1"><label>Closed weekdays (within range)</label>
               <div class="pw-closed-days" id="pw-closed-days">
@@ -964,39 +971,27 @@ body.embed .hub{min-height:70vh}
             </div>
           </div>
           <div class="actions-row" style="margin-bottom:16px">
-            <button class="btn solid" type="button" id="pw-save-schedule">Save booking period</button>
+            <button class="btn solid" type="button" id="pw-save-schedule">Save schedule</button>
           </div>
 
-          <h4 class="section-title">Hours &amp; overrides</h4>
+          <h4 class="section-title">Date overrides (optional)</h4>
+          <p class="notice" style="margin:0 0 12px">Add a row only when a specific date needs different hours — e.g. early close on Christmas Eve. All other days use the default hours above.</p>
           <div class="grid2" style="margin-bottom:12px">
-            <div class="field"><label for="pw-weekday">Weekday</label>
-              <select id="pw-weekday">
-                <option value="">— Specific date instead —</option>
-                <option value="1">Monday</option>
-                <option value="2">Tuesday</option>
-                <option value="3">Wednesday</option>
-                <option value="4">Thursday</option>
-                <option value="5">Friday</option>
-                <option value="6">Saturday</option>
-                <option value="0">Sunday</option>
-              </select>
-            </div>
-            <div class="field"><label for="pw-date">Or specific date (custom hours)</label>
+            <div class="field"><label for="pw-date">Date</label>
               <input id="pw-date" type="date">
-              <span class="field-hint">Overrides weekday hours that day — e.g. early close on Christmas Eve.</span>
             </div>
-            <div class="field"><label for="pw-start">Window start</label>
+            <div class="field"><label for="pw-start">Open</label>
               <input id="pw-start" type="time" value="09:00">
             </div>
-            <div class="field"><label for="pw-end">Window end</label>
-              <input id="pw-end" type="time" value="16:00">
+            <div class="field"><label for="pw-end">Close</label>
+              <input id="pw-end" type="time" value="12:00">
             </div>
           </div>
           <div class="actions-row" style="margin-bottom:12px">
-            <button class="btn solid" type="button" id="pw-add">Add pickup window</button>
+            <button class="btn solid" type="button" id="pw-add">Add date override</button>
           </div>
           <div class="table-wrap"><table class="data"><thead><tr>
-            <th>When</th><th>Window</th><th>Status</th><th></th>
+            <th>Date / rule</th><th>Hours</th><th>Status</th><th></th>
           </tr></thead><tbody id="pw-tbody"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody></table></div>
           <p class="notice" id="pw-msg"></p>
         </div>
@@ -3115,6 +3110,16 @@ body.embed .hub{min-height:70vh}
         ? schedule.closed_dates.join(', ')
         : '';
     }
+    if ($('pw-default-start')) {
+      $('pw-default-start').value = schedule.default_window_start
+        ? String(schedule.default_window_start).slice(0, 5)
+        : '09:00';
+    }
+    if ($('pw-default-end')) {
+      $('pw-default-end').value = schedule.default_window_end
+        ? String(schedule.default_window_end).slice(0, 5)
+        : '16:00';
+    }
     var closed = Array.isArray(schedule.closed_weekdays) ? schedule.closed_weekdays : [];
     document.querySelectorAll('[data-pw-closed]').forEach(function(cb){
       cb.checked = closed.indexOf(Number(cb.value)) >= 0;
@@ -3135,6 +3140,8 @@ body.embed .hub{min-height:70vh}
           action: 'save_schedule',
           range_start: $('pw-range-start') ? $('pw-range-start').value || null : null,
           range_end: $('pw-range-end') ? $('pw-range-end').value || null : null,
+          default_window_start: $('pw-default-start') ? $('pw-default-start').value || null : null,
+          default_window_end: $('pw-default-end') ? $('pw-default-end').value || null : null,
           closed_weekdays: readClosedWeekdaysFromForm(),
           closed_dates: closedDatesRaw.split(/[\s,;]+/).filter(Boolean)
         }
@@ -3166,22 +3173,53 @@ body.embed .hub{min-height:70vh}
       fillPickupScheduleForm(state.pickupSchedule);
       await refreshPickupDateControl();
       if (!tb) return;
-      if (!rows.length) {
-        tb.innerHTML = '<tr><td colspan="4" class="empty">No pickup windows yet — add weekday hours so customers can choose a slot.</td></tr>';
+      var sched = state.pickupSchedule || {};
+      var defaultLine =
+        sched.default_window_start && sched.default_window_end
+          ? '<tr><td><em>Default (all open days)</em></td><td>' +
+            esc(String(sched.default_window_start).slice(0, 5)) +
+            '–' +
+            esc(String(sched.default_window_end).slice(0, 5)) +
+            '</td><td>From schedule</td><td></td></tr>'
+          : '';
+      if (!rows.length && !defaultLine) {
+        tb.innerHTML =
+          '<tr><td colspan="4" class="empty">Set default opening hours and save schedule — add date overrides only when a day needs different hours.</td></tr>';
         return;
       }
-      tb.innerHTML = rows.map(function(w){
-        var when = w.specific_date
-          ? esc(String(w.specific_date).slice(0,10)) + ' (custom)'
-          : (PW_DAYS[Number(w.weekday)] || ('Day '+w.weekday)) + 's';
-        var win = esc(String(w.window_start||'').slice(0,5)) + '–' + esc(String(w.window_end||'').slice(0,5));
-        return '<tr>' +
-          '<td>' + when + '</td>' +
-          '<td>' + win + '</td>' +
-          '<td>' + (w.active === false ? 'Off' : 'Active') + '</td>' +
-          '<td><button type="button" class="btn ghost" data-pw-del="' + esc(w.id) + '">Remove</button></td>' +
-          '</tr>';
-      }).join('');
+      if (!rows.length) {
+        tb.innerHTML = defaultLine;
+        return;
+      }
+      tb.innerHTML =
+        defaultLine +
+        rows
+          .map(function (w) {
+            var when = w.specific_date
+              ? esc(String(w.specific_date).slice(0, 10)) + ' (override)'
+              : (PW_DAYS[Number(w.weekday)] || 'Day ' + w.weekday) + 's (legacy)';
+            var win =
+              esc(String(w.window_start || '').slice(0, 5)) +
+              '–' +
+              esc(String(w.window_end || '').slice(0, 5));
+            return (
+              '<tr>' +
+              '<td>' +
+              when +
+              '</td>' +
+              '<td>' +
+              win +
+              '</td>' +
+              '<td>' +
+              (w.active === false ? 'Off' : 'Active') +
+              '</td>' +
+              '<td><button type="button" class="btn ghost" data-pw-del="' +
+              esc(w.id) +
+              '">Remove</button></td>' +
+              '</tr>'
+            );
+          })
+          .join('');
       tb.querySelectorAll('[data-pw-del]').forEach(function(btn){
         btn.addEventListener('click', async function(){
           if (!confirm('Remove this pickup window?')) return;
@@ -3204,23 +3242,26 @@ body.embed .hub{min-height:70vh}
     if (!requireSite()) return;
     var msg = $('pw-msg');
     var btn = $('pw-add');
+    var date = $('pw-date').value;
+    if (!date) {
+      toast('Pick a date for the override', 'err');
+      return;
+    }
     btn.disabled = true;
     try {
-      var weekday = $('pw-weekday').value;
-      var date = $('pw-date').value;
       await api('/api/order/fulfilment-windows', {
         method: 'POST',
         body: {
           site_id: state.siteId,
-          weekday: date ? null : (weekday === '' ? null : Number(weekday)),
-          specific_date: date || null,
+          weekday: null,
+          specific_date: date,
           window_start: $('pw-start').value,
           window_end: $('pw-end').value,
           active: true
         }
       });
-      if (msg) msg.textContent = 'Window added.';
-      toast('Pickup window added', 'ok');
+      if (msg) msg.textContent = 'Date override added.';
+      toast('Date override added', 'ok');
       $('pw-date').value = '';
       await loadPickupWindows();
     } catch (e) {

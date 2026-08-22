@@ -28,13 +28,34 @@ test('parsePickupSchedule reads range and closed Sundays', function () {
         range_start: '2025-12-01',
         range_end: '2025-12-24',
         closed_weekdays: [0],
-        closed_dates: ['2025-12-25']
+        closed_dates: ['2025-12-25'],
+        default_window_start: '09:00',
+        default_window_end: '16:00'
       }
     }
   });
   assert.equal(s.range_start, '2025-12-01');
   assert.equal(s.closed_weekdays[0], 0);
   assert.equal(s.closed_dates[0], '2025-12-25');
+  assert.equal(s.default_window_start, '09:00:00');
+  assert.equal(s.default_window_end, '16:00:00');
+});
+
+test('default opening hours apply to all open days without weekday rows', function () {
+  var schedule = {
+    range_start: '2025-12-01',
+    range_end: '2025-12-07',
+    closed_weekdays: [0],
+    closed_dates: [],
+    default_window_start: '09:00:00',
+    default_window_end: '16:00:00'
+  };
+  var slots = buildPickupSlots([], '2025-12-01', 60, schedule);
+  var dates = slots.map(function (s) { return s.date; });
+  assert.ok(dates.indexOf('2025-12-01') >= 0, 'Monday uses default hours');
+  assert.ok(dates.indexOf('2025-12-06') >= 0, 'Saturday uses default hours');
+  assert.equal(dates.indexOf('2025-12-07'), -1, 'Sunday closed');
+  assert.equal(slots[0].is_default_hours, true);
 });
 
 test('buildPickupSlots respects range and closed weekdays', function () {
@@ -50,7 +71,7 @@ test('buildPickupSlots respects range and closed weekdays', function () {
   assert.equal(dates.indexOf('2025-12-07'), -1, 'Sunday closed');
 });
 
-test('specific date overrides weekday hours for early close', function () {
+test('specific date overrides default hours for early close', function () {
   var eve = {
     id: 'w-eve',
     specific_date: '2025-12-24',
@@ -62,13 +83,18 @@ test('specific date overrides weekday hours for early close', function () {
     range_start: '2025-12-01',
     range_end: '2025-12-24',
     closed_weekdays: [],
-    closed_dates: []
+    closed_dates: [],
+    default_window_start: '09:00:00',
+    default_window_end: '16:00:00'
   };
-  var slots = buildPickupSlots([satWindow, eve], '2025-12-01', 60, schedule);
+  var slots = buildPickupSlots([eve], '2025-12-01', 60, schedule);
   var eveSlots = slots.filter(function (s) { return s.date === '2025-12-24'; });
   assert.equal(eveSlots.length, 1);
   assert.equal(String(eveSlots[0].window_end).slice(0, 5), '12:00');
   assert.equal(eveSlots[0].is_date_override, true);
+  var monSlots = slots.filter(function (s) { return s.date === '2025-12-01'; });
+  assert.equal(String(monSlots[0].window_end).slice(0, 5), '16:00');
+  assert.equal(monSlots[0].is_default_hours, true);
 });
 
 test('bookingDateBounds clamps to range end', function () {
@@ -96,6 +122,7 @@ test('orders UI has pickup schedule controls', function () {
   const api = fs.readFileSync(path.join(__dirname, '..', 'api/order/fulfilment-windows.js'), 'utf8');
   assert.match(html, /pw-range-start/);
   assert.match(html, /pw-closed-days/);
-  assert.match(html, /pw-save-schedule/);
+  assert.match(html, /pw-default-start/);
+  assert.match(html, /pw-default-end/);
   assert.match(api, /save_schedule/);
 });
