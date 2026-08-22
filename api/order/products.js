@@ -150,6 +150,24 @@ module.exports = async function (req, res) {
       return json(res, 200, { ok: true, stats: result.stats });
     }
 
+    if (req.method === 'POST' && body.action === 'assign_additional_by_match') {
+      const { assignAdditionalCategoryByNameMatch } = require('../../lib/order/product-categories');
+      const result = await assignAdditionalCategoryByNameMatch(admin, system, access.site, {
+        category_name: body.category_name || 'Pies',
+        name_contains: body.name_contains || 'pie',
+        slug: body.slug || 'pies'
+      });
+      await writeAudit({
+        order_system_id: system.id,
+        site_id: siteId,
+        event_type: 'products_additional_category_assigned',
+        actor_user_id: user.id,
+        source: 'admin',
+        payload: result.stats
+      });
+      return json(res, 200, { ok: true, category: result.category, stats: result.stats });
+    }
+
     if (req.method === 'POST') {
       const name = clean(body.name, 200);
       if (!name) return json(res, 400, { error: 'name_required' });
@@ -226,6 +244,7 @@ module.exports = async function (req, res) {
         body.size_mode !== undefined ||
         body.pack_weight_kg !== undefined ||
         body.pack_label !== undefined ||
+        body.additional_category_ids !== undefined ||
         body.options !== undefined
       ) {
         const { data: cur } = await admin
@@ -236,10 +255,26 @@ module.exports = async function (req, res) {
           .maybeSingle();
         patch.options = buildProductOptionsPatch(
           Object.assign({}, cur && cur.options, body, {
-            options: body.options || (cur && cur.options) || {}
+            options: body.options || (cur && cur.options) || {},
+            category_id: body.category_id !== undefined ? body.category_id : patch.category_id
           })
         );
         if (patch.options.size_mode === 'pack') patch.weight_required = false;
+      } else if (body.category_id !== undefined && body.additional_category_ids === undefined) {
+        // Primary category changed alone — drop it from additional list if present
+        const { data: cur } = await admin
+          .from('order_products')
+          .select('options')
+          .eq('id', id)
+          .eq('site_id', siteId)
+          .maybeSingle();
+        if (cur && cur.options) {
+          const { applyAdditionalCategoriesToOptions } = require('../../lib/order/product-categories');
+          patch.options = applyAdditionalCategoriesToOptions(cur.options, {
+            category_id: body.category_id,
+            additional_category_ids: (cur.options.additional_category_ids || []).slice()
+          });
+        }
       }
       const { data, error } = await admin
         .from('order_products')
