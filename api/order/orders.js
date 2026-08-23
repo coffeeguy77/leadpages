@@ -61,12 +61,29 @@ module.exports = async function (req, res) {
           .eq('order_id', id)
           .order('created_at', { ascending: false })
           .limit(50);
+        const { data: auditEvents } = await admin
+          .from('order_audit_events')
+          .select('*')
+          .eq('order_id', id)
+          .order('created_at', { ascending: false })
+          .limit(100);
+        const itemIds = (items || []).map(function (it) { return it.id; });
+        let itemAnswers = [];
+        if (itemIds.length) {
+          const ans = await admin
+            .from('order_item_answers')
+            .select('*')
+            .in('order_item_id', itemIds);
+          itemAnswers = ans.data || [];
+        }
         return json(res, 200, {
           order: order,
           items: items || [],
           payments: payments || [],
           changes: changes || [],
           messages: messages || [],
+          audit_events: auditEvents || [],
+          item_answers: itemAnswers,
           display: {
             known_subtotal: formatAud(order.known_subtotal_cents),
             deposit_required: formatAud(order.deposit_required_cents),
@@ -118,7 +135,8 @@ module.exports = async function (req, res) {
           portal_url: PUBLIC_BASE + '/order-portal?t=' + encodeURIComponent(result.portal_token),
           deposit_url: result.deposit_token
             ? PUBLIC_BASE + '/order-portal?t=' + encodeURIComponent(result.deposit_token) + '&pay=1'
-            : null
+            : null,
+          after_create: result.after_create || {}
         });
       }
 
@@ -205,6 +223,47 @@ module.exports = async function (req, res) {
 
       if (action === 'send_deposit_link') {
         if (!body.order_id) return json(res, 400, { error: 'order_id_required' });
+        const { sendDepositLink } = require('../../lib/order/staff-order-actions');
+        const out = await sendDepositLink({
+          order_id: body.order_id,
+          site_id: siteId,
+          system: system,
+          site: access.site,
+          actor: actor,
+          phone: body.phone,
+          email: body.email,
+          channel: body.channel || 'both'
+        });
+        return json(res, 200, out);
+      }
+
+      if (action === 'void_order') {
+        if (!body.order_id) return json(res, 400, { error: 'order_id_required' });
+        const { voidOrder } = require('../../lib/order/staff-order-actions');
+        const out = await voidOrder({
+          order_id: body.order_id,
+          site_id: siteId,
+          system: system,
+          actor: actor,
+          reason: body.reason
+        });
+        return json(res, 200, out);
+      }
+
+      if (action === 'restore_order') {
+        if (!body.order_id) return json(res, 400, { error: 'order_id_required' });
+        const { restoreOrder } = require('../../lib/order/staff-order-actions');
+        const out = await restoreOrder({
+          order_id: body.order_id,
+          site_id: siteId,
+          system: system,
+          actor: actor
+        });
+        return json(res, 200, out);
+      }
+
+      if (action === 'record_inhouse_payment') {
+        if (!body.order_id) return json(res, 400, { error: 'order_id_required' });
         const { data: order } = await admin
           .from('order_orders')
           .select('*')
@@ -212,37 +271,31 @@ module.exports = async function (req, res) {
           .eq('site_id', siteId)
           .maybeSingle();
         if (!order) return json(res, 404, { error: 'not_found' });
-        const tok = await createAccessToken(order.id, siteId, 'deposit', 72);
-        const url = PUBLIC_BASE + '/order-portal?t=' + encodeURIComponent(tok.token) + '&pay=1';
-        const { notifyEvent, portalUrl } = require('../../lib/order/notify');
-        await notifyEvent({
-          event_type: 'deposit_required',
+        const { recordInhousePayment } = require('../../lib/order/manual-payment');
+        const out = await recordInhousePayment({
+          order: order,
           system: system,
           site: access.site,
-          order: order,
-          portal_link: url,
-          channel: 'both',
-          source: 'admin',
-          fallback_body:
-            'Hi ' +
-            order.customer_name +
-            ', pay your deposit of ' +
-            formatAud(order.deposit_required_cents) +
-            ' for order ' +
-            order.order_number +
-            ': ' +
-            url
+          actor: actor,
+          method: body.method,
+          amount_cents: body.amount_cents,
+          notes: body.notes
         });
-        await writeAudit({
-          order_system_id: system.id,
+        return json(res, 200, out);
+      }
+
+      if (action === 'send_receipt') {
+        if (!body.order_id) return json(res, 400, { error: 'order_id_required' });
+        const { sendOrderReceipt } = require('../../lib/order/staff-order-actions');
+        const out = await sendOrderReceipt({
+          order_id: body.order_id,
           site_id: siteId,
-          order_id: order.id,
-          event_type: 'deposit_link_sent',
-          actor_user_id: user.id,
-          source: 'admin',
-          payload: { url: url }
+          system: system,
+          site: access.site,
+          actor: actor,
+          channel: body.channel || 'both'
         });
-        return json(res, 200, { deposit_url: url });
+        return json(res, 200, out);
       }
 
       return json(res, 400, { error: 'unknown_action' });
@@ -251,23 +304,15 @@ module.exports = async function (req, res) {
     if (req.method === 'PATCH') {
       const id = body.id || body.order_id;
       if (!id) return json(res, 400, { error: 'id_required' });
-      const patch = { updated_at: new Date().toISOString() };
-      [
-        'customer_name', 'customer_phone', 'customer_email', 'fulfilment_type',
-        'pickup_date', 'pickup_time', 'pickup_window_start', 'pickup_window_end', 'pickup_location',
-        'delivery_address', 'delivery_fee_cents', 'customer_notes', 'internal_notes'
-      ].forEach(function (k) {
-        if (body[k] !== undefined) patch[k] = body[k];
+      const { patchOrderWithAudit } = require('../../lib/order/staff-order-actions');
+      const out = await patchOrderWithAudit({
+        order_id: id,
+        site_id: siteId,
+        system: system,
+        actor: actor,
+        body: body
       });
-      const { data, error } = await admin
-        .from('order_orders')
-        .update(patch)
-        .eq('id', id)
-        .eq('site_id', siteId)
-        .select('*')
-        .single();
-      if (error) throw error;
-      return json(res, 200, { order: data });
+      return json(res, 200, out);
     }
   } catch (e) {
     console.error('order/orders', e);

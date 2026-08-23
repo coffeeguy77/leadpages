@@ -45,12 +45,17 @@ module.exports = async function (req, res) {
           .eq('customer_id', id)
           .order('created_at', { ascending: false })
           .limit(50);
-        const { data: payments } = await admin
-          .from('order_payments')
-          .select('*')
-          .eq('customer_id', id)
-          .order('created_at', { ascending: false })
-          .limit(50);
+        var orderIds = (orders || []).map(function (o) { return o.id; });
+        var payments = [];
+        if (orderIds.length) {
+          const payRes = await admin
+            .from('order_payments')
+            .select('*')
+            .in('order_id', orderIds)
+            .order('created_at', { ascending: false })
+            .limit(50);
+          payments = payRes.data || [];
+        }
         const { data: messages } = await admin
           .from('order_messages')
           .select('*')
@@ -111,6 +116,13 @@ module.exports = async function (req, res) {
         .select('*')
         .single();
       if (error) throw error;
+      if (body.phone !== undefined || body.email !== undefined || body.name !== undefined) {
+        const orderPatch = { updated_at: new Date().toISOString() };
+        if (body.name !== undefined) orderPatch.customer_name = data.name;
+        if (body.phone !== undefined) orderPatch.customer_phone = data.phone;
+        if (body.email !== undefined) orderPatch.customer_email = data.email;
+        await admin.from('order_orders').update(orderPatch).eq('customer_id', id).eq('site_id', siteId);
+      }
       return json(res, 200, { customer: data });
     }
   } catch (e) {

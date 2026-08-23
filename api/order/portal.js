@@ -39,6 +39,27 @@ module.exports = async function (req, res) {
 
     if (req.method === 'GET') {
       const gstSummary = orderGstSummary(items || []);
+      const viewEvent = tokenRow.purpose === 'deposit' ? 'invoice_viewed' : 'portal_viewed';
+      const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+      const { data: recentView } = await admin
+        .from('order_audit_events')
+        .select('id')
+        .eq('order_id', order.id)
+        .eq('event_type', viewEvent)
+        .gte('created_at', since)
+        .limit(1)
+        .maybeSingle();
+      if (!recentView) {
+        await writeAudit({
+          order_system_id: order.order_system_id,
+          site_id: order.site_id,
+          order_id: order.id,
+          event_type: viewEvent,
+          source: 'customer_portal',
+          actor_label: order.customer_name,
+          payload: { purpose: tokenRow.purpose }
+        });
+      }
       return json(res, 200, {
         order: {
           id: order.id,
