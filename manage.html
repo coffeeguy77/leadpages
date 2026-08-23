@@ -4122,7 +4122,9 @@ featuredProjects:{secId:'featuredProjects',key:'projects',addLabel:'Add project'
     function setv(id,v){ var el=$(id); if(el) el.value=(v==null?'':v); }
     function on(id,fn){ var el=$(id); if(el) el.addEventListener('input',function(){ fn(el.value); persist(); previewApply(); }); }
     setv('d-biz',currentBusinessName); setv('d-domain',currentCustomDomain); setv('d-owner',currentOwnerEmail); setv('d-phoneText',c.phoneText); setv('d-phone',c.phone); setv('d-email',c.email); setv('d-region',c.region);
+    var _mswEl=$('d-max-site-width'); if(_mswEl){ var _mswRaw=c.maxSiteWidth; _mswEl.value=(_mswRaw==='full'||_mswRaw==='1440'||_mswRaw==='1920')?_mswRaw:'1920'; }
     on('d-biz',function(v){ currentBusinessName=v; }); on('d-domain',function(v){ currentCustomDomain=v; }); on('d-owner',function(v){ currentOwnerEmail=v; }); var __dsv=$('d-save'); if(__dsv){ __dsv.addEventListener('click',async function(){ var st=$('d-saved'); __dsv.disabled=true; var o=__dsv.textContent; __dsv.textContent='Saving\u2026'; if(st){ st.style.color='#0a7d33'; st.textContent=''; } try{ await publishToDB(); __dsv.textContent='Saved \u2713'; if(st) st.textContent='Saved and live.'; }catch(e){ __dsv.textContent='Save failed'; if(st){ st.style.color='#b42318'; st.textContent='Could not save \u2014 try again.'; } } setTimeout(function(){ __dsv.disabled=false; __dsv.textContent=o; },1800); }); } on('d-phoneText',function(v){ c.phoneText=v; }); on('d-phone',function(v){ c.phone=v; }); on('d-email',function(v){ c.email=v; }); on('d-region',function(v){ c.region=v; });
+    if(_mswEl){ _mswEl.addEventListener('change',function(){ c.maxSiteWidth=_mswEl.value||'1920'; persist(); previewApply(); }); }
     if(t==='trade'){ setv('d-trade',c.trade); setv('d-licence',c.licence); on('d-trade',function(v){ c.trade=v; }); on('d-licence',function(v){ c.licence=v; }); }
     if(t==='broker-leads'){ var r=c.rates||{}; setv('d-suburb',c.suburb); setv('d-var',r.variableRate); setv('d-comp',r.comparisonRate); setv('d-rupd',r.updatedAt);
       on('d-suburb',function(v){ c.suburb=v; });
@@ -5983,6 +5985,13 @@ function heroCtaCard(c){
       +'<div class="row">'+lpFld('Phone (shown to visitors)','d-phoneText','(02) 1234 5678')+lpFld('Phone (for the call button)','d-phone','+61...')+'</div>'
       +'<div class="row">'+lpFld('Email','d-email','')+lpFld('Region','d-region','')+'</div>'
       +'<div class="row">'+lpFld('Service / business type','d-trade','e.g. Plumber, Café, Airbnb host')+lpFld('Licence','d-licence','')+'</div>'
+      +'<div class="f" style="margin-top:14px;"><label for="d-max-site-width">Maximum site width</label>'
+      +'<select id="d-max-site-width" class="tin" style="max-width:420px;">'
+      +'<option value="1920">Capped at 1920px (recommended — hero slider &amp; trust bar)</option>'
+      +'<option value="1440">Standard 1440px</option>'
+      +'<option value="full">Full width (edge to edge)</option>'
+      +'</select>'
+      +'<p class="hint" style="margin:8px 0 0;">Limits overall content width and keeps hero slider images at a 16:9 aspect ratio so wide screens do not stretch photos. Trust bar image tiles follow the same cap.</p></div>'
       +'<div style="margin-top:6px;"><button class="btn" id="d-save">Save details</button><span id="d-saved" style="margin-left:10px;font-size:13px;color:#0a7d33;"></span></div></div>';
     var assignPartnerCard='';
     var ownershipCard='';
