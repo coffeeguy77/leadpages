@@ -66,7 +66,6 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
 (function(){
   var params = new URLSearchParams(location.search);
   var token = params.get('t') || '';
-  var wantPay = params.get('pay') === '1';
   var paid = params.get('paid') === '1';
   var cancelled = params.get('cancelled') === '1';
   var $ = function(id){ return document.getElementById(id); };
@@ -216,10 +215,6 @@ label.f{display:block;font-size:12px;font-weight:700;margin:0 0 4px;color:var(--
         location.reload();
       }catch(e){ saveBtn.disabled=false; alert(e.message||e); }
     };
-
-    // Only auto-open Stripe when an explicit pay=1 link was used (staff SMS),
-    // and never after a cancel return.
-    if(wantPay && !cancelled && !paid && payBtn) payBtn.click();
   }
 
   function renderHistory(data, sessionToken, slug){
