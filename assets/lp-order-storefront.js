@@ -461,6 +461,8 @@
       this.state.catalogue = await api('/api/order/storefront?slug=' + encodeURIComponent(this.slug));
       this.state.pickupSlots = this.state.catalogue.pickup_slots || [];
       this.state.earliest = this.state.catalogue.earliest_pickup_date;
+      this.state.cutoffRule =
+        (this.state.catalogue.cutoff && this.state.catalogue.cutoff.rule_label) || '';
       var cfg = this.storefrontCfg();
       // Default: category view only (no "All") — start on default / first category.
       if (cfg.show_all_categories) {
@@ -544,6 +546,72 @@
     if (date) d.date = date.value;
     if (slot) d.slotId = slot.value;
     if (notes) d.notes = notes.value;
+  };
+
+  OrderStorefront.prototype.formatCountdown = function (ms) {
+    if (ms == null || !isFinite(ms) || ms <= 0) return 'Locked';
+    var days = Math.floor(ms / 86400000);
+    var hours = Math.floor((ms % 86400000) / 3600000);
+    var mins = Math.floor((ms % 3600000) / 60000);
+    var parts = [];
+    if (days) parts.push(days + 'd');
+    if (hours || days) parts.push(hours + 'h');
+    parts.push(mins + 'm');
+    return parts.join(' ');
+  };
+
+  OrderStorefront.prototype.refreshCutoffPreview = async function (dateStr) {
+    if (!dateStr || !this.slug) {
+      this.state.cutoffPreview = null;
+      return;
+    }
+    try {
+      var data = await api(
+        '/api/order/storefront?slug=' +
+          encodeURIComponent(this.slug) +
+          '&pickup_date=' +
+          encodeURIComponent(dateStr)
+      );
+      if (data.cutoff && data.cutoff.rule_label) this.state.cutoffRule = data.cutoff.rule_label;
+      this.state.cutoffPreview = data.cutoff && data.cutoff.preview;
+    } catch (_e) {
+      this.state.cutoffPreview = null;
+    }
+  };
+
+  OrderStorefront.prototype.renderCutoffBanner = function () {
+    var rule =
+      this.state.cutoffRule ||
+      (this.state.catalogue && this.state.catalogue.cutoff && this.state.catalogue.cutoff.rule_label) ||
+      '';
+    if (!rule && !this.state.cutoffPreview) return '';
+    var prev = this.state.cutoffPreview;
+    var html = '<div class="lp-oe-cutoff" id="oe-cutoff-banner">';
+    if (rule) {
+      html +=
+        '<p class="lp-oe-cutoff-rule"><strong>Order changes lock</strong> — ' + esc(rule) + '</p>';
+    }
+    if (prev && prev.effective_cutoff_at) {
+      var ms = new Date(prev.effective_cutoff_at).getTime() - Date.now();
+      html +=
+        '<p class="lp-oe-cutoff-timer' +
+        (ms <= 0 ? ' is-locked' : ms <= 8 * 3600000 ? ' is-soon' : '') +
+        '">';
+      if (ms <= 0) html += 'Changes are closed for this pickup date.';
+      else {
+        html +=
+          'Time left to pay deposit or change your order: <strong id="oe-cutoff-val">' +
+          esc(this.formatCountdown(ms)) +
+          '</strong>';
+        if (prev.display_at) html += ' (locks ' + esc(prev.display_at) + ')';
+      }
+      html += '</p>';
+    } else if (rule) {
+      html +=
+        '<p class="lp-oe-cutoff-timer">Choose a pickup date to see your personal lock countdown.</p>';
+    }
+    html += '</div>';
+    return html;
   };
 
   OrderStorefront.prototype.render = function () {
@@ -1294,6 +1362,8 @@
       '<p class="lp-oe-note" style="margin:8px 0 0">Final balance TBC after preparation where products are weighed or quoted.</p>';
     html += '</div>';
 
+    html += this.renderCutoffBanner();
+
     var slots = this.state.pickupSlots || [];
     html += '<div class="lp-oe-fields">';
     html +=
@@ -1448,8 +1518,30 @@
       });
       el.addEventListener('change', function () {
         self.captureCheckoutDraft();
+        if (id === 'oe-date' || id === 'oe-slot') {
+          var dateStr = '';
+          if (id === 'oe-date') dateStr = el.value;
+          else {
+            var slot = (self.state.pickupSlots || []).find(function (s) {
+              return s.id === el.value;
+            });
+            dateStr = slot && slot.date;
+          }
+          self.refreshCutoffPreview(dateStr).then(function () {
+            self.render();
+          });
+        }
       });
     });
+    if (!this._cutoffTick) {
+      var tickSelf = this;
+      this._cutoffTick = setInterval(function () {
+        var el = document.getElementById('oe-cutoff-val');
+        if (!el || !tickSelf.state.cutoffPreview || !tickSelf.state.cutoffPreview.effective_cutoff_at) return;
+        var ms = new Date(tickSelf.state.cutoffPreview.effective_cutoff_at).getTime() - Date.now();
+        el.textContent = tickSelf.formatCountdown(ms);
+      }, 30000);
+    }
     if (this.state.authModal && this.state.authModal.open) {
       try {
         var focusId = this.state.authModal.step === 'code' ? 'oe-auth-code' : 'oe-auth-phone';
@@ -2056,6 +2148,11 @@
       '.lp-oe-msg{background:color-mix(in srgb,var(--oe-accent) 10%,var(--oe-card));border:1px solid color-mix(in srgb,var(--oe-accent) 28%,var(--oe-line));color:var(--oe-ink);padding:10px 12px;border-radius:10px;margin:0 0 12px;font-size:13.5px;line-height:1.4}',
       '.lp-oe-msg.is-ok{background:color-mix(in srgb,var(--oe-accent) 12%,var(--oe-card));border-color:color-mix(in srgb,var(--oe-accent) 35%,var(--oe-line));color:var(--oe-ink)}',
       '.lp-oe-msg.is-error{background:color-mix(in srgb,#8a2f1d 8%,var(--oe-card));border-color:color-mix(in srgb,#8a2f1d 28%,var(--oe-line));color:#6e2416}',
+      '.lp-oe-cutoff{margin:0 0 12px;padding:10px 12px;border-radius:10px;border:1px solid color-mix(in srgb,var(--oe-accent) 25%,var(--oe-line));background:color-mix(in srgb,var(--oe-accent) 7%,var(--oe-card));font-size:13px;line-height:1.45}',
+      '.lp-oe-cutoff-rule{margin:0 0 6px;color:var(--oe-ink)}',
+      '.lp-oe-cutoff-timer{margin:0;color:var(--oe-muted)}',
+      '.lp-oe-cutoff-timer.is-soon{color:#b45309;border-top:1px dashed color-mix(in srgb,#d97706 35%,var(--oe-line));padding-top:8px;margin-top:8px}',
+      '.lp-oe-cutoff-timer.is-locked{color:#b91c1c}',
       '.lp-oe-detail{background:var(--oe-card);border:1px solid var(--oe-line);border-radius:var(--oe-radius);padding:16px;margin:0 0 14px}',
       '.lp-oe-fields{display:grid;gap:10px;margin:14px 0}',
       '.lp-oe-fields-app{gap:12px}',

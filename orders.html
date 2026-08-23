@@ -147,6 +147,21 @@ body{display:flex;flex-direction:column;min-height:100%;-webkit-font-smoothing:a
 }
 .kpi .l,.kpi .lbl{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 5px}
 .kpi .v,.kpi .val{font-family:var(--font-display);font-size:var(--fs-kpi);font-weight:600;margin:0;letter-spacing:-.02em;line-height:1.15}
+.kpi.clickable{cursor:pointer;transition:border-color .15s,background .15s,transform .1s}
+.kpi.clickable:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface));transform:translateY(-1px)}
+.kpi.clickable.has-data{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.kpi.clickable.muted-count{opacity:.72;cursor:default;transform:none}
+.cutoff-banner{
+  display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;
+  padding:14px 16px;margin:0 0 14px;border-radius:14px;border:1px solid var(--line);
+  background:color-mix(in srgb,var(--accent) 6%,var(--surface));
+}
+.cutoff-banner.soon{border-color:color-mix(in srgb,#d97706 45%,var(--line));background:color-mix(in srgb,#d97706 8%,var(--surface))}
+.cutoff-banner.locked{border-color:color-mix(in srgb,#dc2626 40%,var(--line));background:color-mix(in srgb,#dc2626 6%,var(--surface))}
+.cutoff-clock{text-align:right}
+.cutoff-clock .lbl{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 2px}
+.cutoff-clock .val{font-family:var(--font-display);font-size:1.35rem;font-weight:600;margin:0;line-height:1.1}
+.cutoff-clock .meta{display:block;font-size:var(--fs-xs);color:var(--ink-soft);margin-top:4px}
 .card{padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:14px}
 .card h3,.card-section-title{margin:0 0 4px;font-family:var(--font-display);font-size:var(--fs-lg);font-weight:600;letter-spacing:-.01em}
 .card h4,.section-title{margin:18px 0 8px;font-family:var(--font-display);font-size:var(--fs-md);font-weight:600;letter-spacing:-.01em;color:var(--ink)}
@@ -374,6 +389,7 @@ body.embed .hub{min-height:70vh}
       <!-- Dashboard -->
       <section class="view on" id="view-dashboard" data-view="dashboard">
         <p class="notice" id="dash-notice">Select a site to load KPIs.</p>
+        <div id="dash-cutoff" class="cutoff-banner hide" aria-live="polite"></div>
         <div class="kpis" id="dash-kpis"></div>
         <div class="card">
           <h3>Recent orders</h3>
@@ -410,6 +426,7 @@ body.embed .hub{min-height:70vh}
               <option value="draft">Draft</option>
             </select>
             <button class="btn solid" type="button" id="orders-search">Search</button>
+            <button class="btn ghost hide" type="button" id="orders-remind-all">Send deposit reminders</button>
           </div>
           <div class="table-wrap">
             <table class="oe"><thead><tr>
@@ -706,6 +723,8 @@ body.embed .hub{min-height:70vh}
                 <option value="abandoned_cart">Abandoned cart (1st reminder)</option>
                 <option value="abandoned_cart_2">Abandoned cart (2nd / follow-up)</option>
                 <option value="deposit_required">Deposit required</option>
+                <option value="deposit_reminder">Deposit reminder</option>
+                <option value="deposit_reminder_day_before">Deposit reminder (day before lock)</option>
                 <option value="order_locked">Order locked</option>
                 <option value="order_ready">Order ready</option>
                 <option value="pickup_reminder">Pickup reminder</option>
@@ -919,6 +938,34 @@ body.embed .hub{min-height:70vh}
               </div>
               <div class="field"><label for="set-abd-channels">Channels</label>
                 <select id="set-abd-channels">
+                  <option value="email">Email only</option>
+                  <option value="sms">SMS only</option>
+                  <option value="email,sms">Email + SMS</option>
+                </select>
+              </div>
+            </div>
+
+            <h4 class="section-title">Deposit reminders</h4>
+            <p class="notice">Automatic reminders for <strong>awaiting deposit</strong> orders. Never sent after the order lock date. Customise message text under <strong>Messaging → Saved templates</strong> (<code>deposit_reminder</code> and <code>deposit_reminder_day_before</code>).</p>
+            <div class="grid2">
+              <div class="field"><label for="set-dep-rem-enabled">Automatic reminders</label>
+                <select id="set-dep-rem-enabled">
+                  <option value="1">On</option>
+                  <option value="0">Off</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-dep-rem-days">First reminder after (days)</label>
+                <input id="set-dep-rem-days" type="number" min="1" max="14" step="1" placeholder="3">
+                <span class="field-hint">Or sooner if the lock date is closer. Cron runs hourly.</span>
+              </div>
+              <div class="field"><label for="set-dep-rem-day-before">Day-before lock reminder</label>
+                <select id="set-dep-rem-day-before">
+                  <option value="1">On</option>
+                  <option value="0">Off</option>
+                </select>
+              </div>
+              <div class="field"><label for="set-dep-rem-channels">Channels</label>
+                <select id="set-dep-rem-channels">
                   <option value="email">Email only</option>
                   <option value="sms">SMS only</option>
                   <option value="email,sms">Email + SMS</option>
@@ -1229,7 +1276,10 @@ body.embed .hub{min-height:70vh}
     noSelectedCat: '',
     voidOrderId: null,
     depositLinkOrderId: null,
-    inhousePaymentOrderId: null
+    inhousePaymentOrderId: null,
+    ordersExtraFilter: {},
+    dashCutoffAt: null,
+    dashDashboardData: null
   };
 
   var $ = function(id){ return document.getElementById(id); };
@@ -1582,6 +1632,84 @@ body.embed .hub{min-height:70vh}
   }
 
   /* ---------- Dashboard ---------- */
+  function formatCountdownMs(ms){
+    if (ms == null || !isFinite(ms) || ms <= 0) return 'Locked';
+    var days = Math.floor(ms / 86400000);
+    var hours = Math.floor((ms % 86400000) / 3600000);
+    var mins = Math.floor((ms % 3600000) / 60000);
+    var parts = [];
+    if (days) parts.push(days + 'd');
+    if (hours || days) parts.push(hours + 'h');
+    parts.push(mins + 'm');
+    return parts.join(' ');
+  }
+
+  function paintCutoffBanner(data){
+    var el = $('dash-cutoff');
+    if (!el) return;
+    var c = (data && data.cutoff) || {};
+    var nearest = c.nearest;
+    state.dashCutoffAt = nearest && nearest.at ? nearest.at : null;
+    state.dashDashboardData = data;
+    var cls = 'cutoff-banner';
+    if (nearest && nearest.state === 'locked') cls += ' locked';
+    else if (nearest && nearest.state === 'closing_soon') cls += ' soon';
+    var html = '<div><strong>Order lock</strong><p class="sub" style="margin:4px 0 0">' + esc(c.rule_label || 'See Settings for cutoff rules') + '</p></div>';
+    html += '<div class="cutoff-clock">';
+    if (nearest && nearest.at && nearest.state !== 'locked') {
+      html += '<span class="lbl">Next lock in</span><span class="val" id="dash-cutoff-val">' + esc(nearest.label || '—') + '</span>';
+      html += '<span class="meta">Awaiting deposit · ' + esc(nearest.order_number || '') + '</span>';
+    } else if (nearest && nearest.state === 'locked') {
+      html += '<span class="lbl">Status</span><span class="val" id="dash-cutoff-val">Locked</span>';
+    } else {
+      html += '<span class="lbl">Status</span><span class="val" id="dash-cutoff-val">Open</span>';
+      html += '<span class="meta">No upcoming unpaid deposit locks</span>';
+    }
+    html += '</div>';
+    el.className = cls;
+    el.innerHTML = html;
+    el.classList.remove('hide');
+  }
+
+  function tickDashCutoff(){
+    if (!state.dashCutoffAt) return;
+    var el = $('dash-cutoff-val');
+    if (!el) return;
+    var ms = new Date(state.dashCutoffAt).getTime() - Date.now();
+    el.textContent = formatCountdownMs(ms);
+    var banner = $('dash-cutoff');
+    if (banner) {
+      banner.classList.toggle('soon', ms > 0 && ms <= 8 * 3600000);
+      banner.classList.toggle('locked', ms <= 0);
+    }
+  }
+
+  function applyDashboardFilter(filter, data){
+    state.ordersExtraFilter = {};
+    if (filter === 'today_pickups') {
+      state.ordersExtraFilter.pickup_date = data.today;
+      $('orders-status').value = 'active';
+    } else if (filter === 'tomorrow_pickups') {
+      state.ordersExtraFilter.pickup_date = data.tomorrow;
+      $('orders-status').value = 'active';
+    } else if (filter === 'awaiting_deposit') {
+      $('orders-status').value = 'awaiting_deposit';
+    } else if (filter === 'locked') {
+      $('orders-status').value = 'active';
+      state.ordersExtraFilter.editing_state = 'locked';
+    } else if (filter === 'ready') {
+      $('orders-status').value = 'ready';
+    } else if (filter === 'price_tbc') {
+      $('orders-status').value = 'active';
+      state.ordersExtraFilter.price_tbc = '1';
+    } else if (filter === 'abandoned') {
+      openView('abandoned');
+      return;
+    } else return;
+    openView('orders');
+    loadOrders();
+  }
+
   async function loadDashboard(){
     var notice = $('dash-notice');
     var kpis = $('dash-kpis');
@@ -1601,18 +1729,34 @@ body.embed .hub{min-height:70vh}
       notice.textContent = 'Today ' + (data.today || '') + ' · Tomorrow ' + (data.tomorrow || '') +
         (data.system && data.system.industry_preset ? ' · Preset: ' + data.system.industry_preset : '');
       var cards = [
-        { l: 'Today pickups', v: k.today_pickups },
-        { l: 'Tomorrow pickups', v: k.tomorrow_pickups },
-        { l: 'Awaiting deposit', v: k.awaiting_deposit },
-        { l: 'Locked', v: k.locked_orders },
-        { l: 'Ready', v: k.ready_for_collection },
-        { l: 'Price TBC', v: k.price_tbc_open },
-        { l: 'Abandoned', v: k.abandoned_carts },
+        { l: 'Today pickups', v: k.today_pickups, filter: 'today_pickups' },
+        { l: 'Tomorrow pickups', v: k.tomorrow_pickups, filter: 'tomorrow_pickups' },
+        { l: 'Awaiting deposit', v: k.awaiting_deposit, filter: 'awaiting_deposit' },
+        { l: 'Locked', v: k.locked_orders, filter: 'locked' },
+        { l: 'Ready', v: k.ready_for_collection, filter: 'ready' },
+        { l: 'Price TBC', v: k.price_tbc_open, filter: 'price_tbc' },
+        { l: 'Abandoned', v: k.abandoned_carts, filter: 'abandoned' },
         { l: 'Deposits', v: k.deposits_received_label || formatAud(k.deposits_received_cents) }
       ];
       kpis.innerHTML = cards.map(function(c){
-        return '<div class="kpi"><p class="l">' + esc(c.l) + '</p><p class="v">' + esc(c.v == null ? '—' : c.v) + '</p></div>';
+        var n = Number(c.v);
+        var clickable = !!c.filter;
+        var hasData = clickable && (isFinite(n) ? n > 0 : false);
+        var cls = 'kpi' + (clickable ? ' clickable' + (hasData ? ' has-data' : ' muted-count') : '');
+        return '<div class="' + cls + '"' + (c.filter ? ' data-dash-filter="' + esc(c.filter) + '"' : '') + ' role="' + (clickable ? 'button' : 'presentation') + '" tabindex="' + (hasData ? '0' : '-1') + '"><p class="l">' + esc(c.l) + '</p><p class="v">' + esc(c.v == null ? '—' : c.v) + '</p></div>';
       }).join('');
+      kpis.querySelectorAll('[data-dash-filter]').forEach(function(card){
+        card.addEventListener('click', function(){
+          var n = Number(card.querySelector('.v') && card.querySelector('.v').textContent);
+          if (card.classList.contains('muted-count')) return;
+          applyDashboardFilter(card.getAttribute('data-dash-filter'), data);
+        });
+        card.addEventListener('keydown', function(ev){
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); card.click(); }
+        });
+      });
+      paintCutoffBanner(data);
+      tickDashCutoff();
       var recent = data.recent || [];
       if (!recent.length) {
         tbody.innerHTML = '<tr><td colspan="6" class="empty">No recent orders.</td></tr>';
@@ -1665,6 +1809,15 @@ body.embed .hub{min-height:70vh}
       else if (st === 'archived') extra += (extra ? '&' : '') + 'status=archived';
       else if (st === 'voided' || st === 'cancelled') extra += (extra ? '&' : '') + 'status=cancelled';
       else if (st) extra += (extra ? '&' : '') + 'status=' + encodeURIComponent(st);
+      var xf = state.ordersExtraFilter || {};
+      if (xf.pickup_date) extra += (extra ? '&' : '') + 'pickup_date=' + encodeURIComponent(xf.pickup_date);
+      if (xf.editing_state) extra += (extra ? '&' : '') + 'editing_state=' + encodeURIComponent(xf.editing_state);
+      if (xf.price_tbc) extra += (extra ? '&' : '') + 'price_tbc=' + encodeURIComponent(xf.price_tbc);
+      var remindBtn = $('orders-remind-all');
+      if (remindBtn) {
+        var showRemind = st === 'awaiting_deposit';
+        remindBtn.classList.toggle('hide', !showRemind);
+      }
       var data = await api('/api/order/orders?' + siteQuery(extra));
       var orders = data.orders || [];
       if (!orders.length) {
@@ -1720,6 +1873,8 @@ body.embed .hub{min-height:70vh}
       invoice_created: 'Invoice created',
       invoice_sent: 'Invoice sent',
       deposit_link_sent: 'Deposit link sent',
+      deposit_reminder_sent: 'Deposit reminder sent',
+      deposit_reminder_day_before: 'Day-before lock reminder sent',
       receipt_sent: 'Receipt sent',
       portal_viewed: 'Customer viewed portal',
       invoice_viewed: 'Customer viewed invoice',
@@ -1777,6 +1932,12 @@ body.embed .hub{min-height:70vh}
       ' · Known: ' + esc(display.known_subtotal || formatAud(o.known_subtotal_cents)) +
       ' · Deposit: ' + esc(display.deposit_paid || formatAud(o.deposit_paid_cents)) +
       ' / ' + esc(display.deposit_required || formatAud(o.deposit_required_cents)) + '</p>';
+    if (o.effective_cutoff_at) {
+      var cutMs = new Date(o.effective_cutoff_at).getTime() - Date.now();
+      html += '<p class="notice" style="margin:8px 0"><strong>Lock countdown:</strong> ' +
+        esc(formatCountdownMs(cutMs)) + ' · locks ' + esc((o.effective_cutoff_at || '').slice(0, 16).replace('T', ' ')) +
+        (o.cutoff_reason ? ' · ' + esc(o.cutoff_reason) : '') + '</p>';
+    }
     html += '<h3 style="font-family:var(--font-display);font-size:1.05rem;margin:14px 0 8px">Items</h3>';
     if (!items.length) html += '<p class="empty">No items.</p>';
     items.forEach(function(it){
@@ -3538,6 +3699,15 @@ body.embed .hub{min-height:70vh}
       if ($('set-abd-stages')) $('set-abd-stages').value = String(abd.messages_per_cart != null ? abd.messages_per_cart : 1);
       if ($('set-abd-second-val')) $('set-abd-second-val').value = abd.second_delay_value != null ? abd.second_delay_value : 48;
       if ($('set-abd-second-unit')) $('set-abd-second-unit').value = abd.second_delay_unit === 'days' ? 'days' : 'hours';
+      var depRem = (s.settings && s.settings.deposit_reminder) || {};
+      if ($('set-dep-rem-enabled')) $('set-dep-rem-enabled').value = depRem.enabled === false ? '0' : '1';
+      if ($('set-dep-rem-days')) $('set-dep-rem-days').value = depRem.first_delay_days != null ? depRem.first_delay_days : 3;
+      if ($('set-dep-rem-day-before')) $('set-dep-rem-day-before').value = depRem.day_before_lock === false ? '0' : '1';
+      if ($('set-dep-rem-channels')) {
+        var dch = Array.isArray(depRem.channels) ? depRem.channels.slice().sort().join(',') : 'email,sms';
+        if (dch === 'sms,email') dch = 'email,sms';
+        $('set-dep-rem-channels').value = dch === 'sms' || dch === 'email,sms' ? dch : 'email';
+      }
       var pay = (s.settings && s.settings.payments) || {};
       if ($('set-pay-provider')) $('set-pay-provider').value = pay.provider || 'stripe';
       if ($('set-stripe-mode')) $('set-stripe-mode').value = pay.stripe_charge_mode === 'direct' ? 'direct' : 'destination';
@@ -3720,6 +3890,19 @@ body.embed .hub{min-height:70vh}
               customer_lookback_days: $('set-abd-lookback') && $('set-abd-lookback').value !== ''
                 ? Math.max(1, Number($('set-abd-lookback').value) || 90)
                 : 90
+            },
+            deposit_reminder: {
+              enabled: $('set-dep-rem-enabled') ? $('set-dep-rem-enabled').value === '1' : true,
+              first_delay_days: $('set-dep-rem-days') && $('set-dep-rem-days').value !== ''
+                ? Math.max(1, Number($('set-dep-rem-days').value) || 3)
+                : 3,
+              day_before_lock: $('set-dep-rem-day-before') ? $('set-dep-rem-day-before').value === '1' : true,
+              channels: (function(){
+                var v = $('set-dep-rem-channels') ? $('set-dep-rem-channels').value : 'email,sms';
+                if (v === 'sms') return ['sms'];
+                if (v === 'email,sms') return ['email', 'sms'];
+                return ['email'];
+              })()
             }
           })
         }
@@ -4307,6 +4490,23 @@ body.embed .hub{min-height:70vh}
     refreshNavCounts();
   });
   $('orders-search').addEventListener('click', loadOrders);
+  if ($('orders-remind-all')) $('orders-remind-all').addEventListener('click', async function(){
+    if (!requireSite()) return;
+    if (!confirm('Send deposit payment links to all awaiting-deposit orders that are not yet locked?')) return;
+    var btn = $('orders-remind-all');
+    btn.disabled = true;
+    try {
+      var r = await api('/api/order/orders', {
+        method: 'POST',
+        body: { site_id: state.siteId, action: 'send_deposit_reminders', manual: true }
+      });
+      var n = (r.sent && r.sent.length) || 0;
+      toast('Sent ' + n + ' reminder(s)', 'ok');
+      loadOrders();
+    } catch (e) { toast((e && e.message) || String(e), 'err'); }
+    btn.disabled = false;
+  });
+  setInterval(tickDashCutoff, 30000);
   $('orders-q').addEventListener('keydown', function(e){
     if (e.key === 'Enter') loadOrders();
   });

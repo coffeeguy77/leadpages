@@ -4,6 +4,8 @@ const { json, methodOk } = require('../../lib/order/http');
 const { requireUser, assertSiteAccess, ensureOrderSystem } = require('../../lib/order/auth');
 const { getAdmin } = require('../../lib/order/supabase');
 const { formatAud } = require('../../lib/order/money');
+const { storeCutoffRuleLabel, nearestFutureCutoff, cutoffSummary } = require('../../lib/order/cutoff-display');
+const { parseDepositReminderSettings } = require('../../lib/order/deposit-reminder-settings');
 
 module.exports = async function (req, res) {
   try {
@@ -91,13 +93,29 @@ module.exports = async function (req, res) {
       return s + (Number(r.amount_cents) || 0);
     }, 0);
 
+    const { data: depositAwaiting } = await admin
+      .from('order_orders')
+      .select('id,order_number,effective_cutoff_at,status,deposit_required_cents,deposit_paid_cents')
+      .eq('order_system_id', system.id)
+      .eq('status', 'awaiting_deposit')
+      .not('effective_cutoff_at', 'is', null)
+      .order('effective_cutoff_at', { ascending: true })
+      .limit(80);
+
+    const nearestCutoff = nearestFutureCutoff(depositAwaiting || [], new Date());
+    const reminderSettings = parseDepositReminderSettings(system);
+
     return json(res, 200, {
       system: {
         id: system.id,
         enabled: system.enabled,
         industry_preset: system.industry_preset,
         payment_rule: system.payment_rule,
-        deposit_amount_cents: system.deposit_amount_cents
+        deposit_amount_cents: system.deposit_amount_cents,
+        default_cutoff_mode: system.default_cutoff_mode,
+        default_cutoff_value: system.default_cutoff_value,
+        default_cutoff_time: system.default_cutoff_time,
+        timezone: system.timezone
       },
       kpis: {
         today_pickups: todayPickups,
@@ -118,7 +136,13 @@ module.exports = async function (req, res) {
       },
       recent: recent || [],
       today: todayStr,
-      tomorrow: tomorrowStr
+      tomorrow: tomorrowStr,
+      cutoff: {
+        rule_label: storeCutoffRuleLabel(system),
+        nearest: nearestCutoff,
+        awaiting_deposit_unpaid: awaitingDeposit
+      },
+      deposit_reminder: reminderSettings
     });
   } catch (e) {
     console.error('order/dashboard', e);

@@ -4,7 +4,8 @@ const { readBody, json, methodOk } = require('../../lib/order/http');
 const { getAdmin } = require('../../lib/order/supabase');
 const { getOrderSystemForSite } = require('../../lib/order/auth');
 const { formatAud } = require('../../lib/order/money');
-const { earliestPickupDate } = require('../../lib/order/cutoff');
+const { earliestPickupDate, effectiveOrderCutoff } = require('../../lib/order/cutoff');
+const { storeCutoffRuleLabel, cutoffSummary, formatCutoffDateTime } = require('../../lib/order/cutoff-display');
 const { resolvePaymentRule, computeDepositRequired } = require('../../lib/order/deposit');
 const { isDateAvailable } = require('../../lib/order/capacity');
 const { listWindows, buildPickupSlots, parsePickupSchedule } = require('../../lib/order/fulfilment-windows');
@@ -154,6 +155,24 @@ module.exports = async function (req, res) {
       return productCatIds[c.id];
     });
 
+    const pickupDatePreview = (req.query && req.query.pickup_date) || '';
+    var cutoffPreview = null;
+    if (pickupDatePreview) {
+      var cutoffCalc = effectiveOrderCutoff(products || [], system, pickupDatePreview);
+      if (cutoffCalc.effective_cutoff_at) {
+        var sum = cutoffSummary(cutoffCalc.effective_cutoff_at);
+        cutoffPreview = {
+          pickup_date: pickupDatePreview,
+          effective_cutoff_at: cutoffCalc.effective_cutoff_at,
+          cutoff_reason: cutoffCalc.cutoff_reason,
+          state: sum.state,
+          countdown_label: sum.label,
+          locked: sum.locked,
+          display_at: formatCutoffDateTime(cutoffCalc.effective_cutoff_at, system.timezone)
+        };
+      }
+    }
+
     return json(res, 200, {
       site: { id: site.id, slug: site.slug, business_name: site.business_name },
       system: {
@@ -196,7 +215,11 @@ module.exports = async function (req, res) {
       pickup_slots: pickup_slots,
       capacity: system.capacity_enabled
         ? await isDateAvailable(system, earliest)
-        : { ok: true }
+        : { ok: true },
+      cutoff: {
+        rule_label: storeCutoffRuleLabel(system),
+        preview: cutoffPreview
+      }
     });
   } catch (e) {
     console.error('order/storefront', e);
