@@ -272,6 +272,40 @@ table.oe tr.clickable:hover td{background:color-mix(in srgb,var(--accent) 6%,tra
 .no-prod-card:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
 .no-prod-card strong{display:block;font-size:var(--fs-sm);line-height:1.3;margin:0 0 4px}
 .no-prod-card .meta{font-size:var(--fs-xs);color:var(--ink-soft)}
+.no-layout-toggle{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+.no-layout-toggle .lbl{font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);margin-right:4px}
+.no-layout-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.no-fast-list{display:flex;flex-direction:column;gap:10px;margin:0 0 18px}
+.no-fast-row{
+  border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);
+  transition:border-color .15s ease,box-shadow .15s ease;
+}
+.no-fast-row.is-notes-open{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.no-fast-main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 14px;align-items:center}
+.no-fast-info{min-width:0}
+.no-fast-info strong{display:block;font-size:var(--fs-md);line-height:1.25;margin:0 0 4px}
+.no-fast-info .meta{font-size:var(--fs-xs);color:var(--ink-soft);line-height:1.35}
+.no-fast-info .prompt{margin:4px 0 0;font-size:var(--fs-xs);color:var(--accent);font-weight:600}
+.no-fast-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;justify-content:flex-end}
+.no-fast-field{display:grid;gap:3px;font-size:10px;font-weight:700;color:var(--ink-faint);letter-spacing:.03em;text-transform:uppercase}
+.no-fast-field input{width:72px;min-height:40px;padding:8px 10px;text-align:center}
+.no-fast-packchip{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border-radius:10px;border:1px dashed var(--line);color:var(--accent);font:700 11px/1 var(--font-ui)}
+.no-fast-notes-btn,.no-fast-extra{margin-top:10px}
+.no-fast-extra{padding-top:10px;border-top:1px dashed var(--line);display:grid;gap:8px}
+.no-stepper{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:10px;overflow:hidden;background:var(--input-bg,transparent)}
+.no-stepper button{
+  appearance:none;border:0;background:transparent;color:var(--ink);width:36px;height:40px;
+  font-size:18px;line-height:1;cursor:pointer;padding:0;
+}
+.no-stepper button:hover{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.no-stepper input{
+  width:52px;border:0;border-left:1px solid var(--line);border-right:1px solid var(--line);
+  border-radius:0;text-align:center;padding:8px 4px;min-height:40px;background:transparent;
+}
+@media(max-width:720px){
+  .no-fast-main{grid-template-columns:1fr}
+  .no-fast-controls{justify-content:flex-start}
+}
 .line-opt{margin:8px 0 0;padding:8px 0 0;border-top:1px dashed var(--line)}
 .line-opt .field{margin:0 0 8px}
 .om-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
@@ -441,7 +475,7 @@ body.embed .hub{min-height:70vh}
       <section class="view" id="view-new" data-view="new">
         <div class="card">
           <h3>New order</h3>
-          <p class="sub">Create a staff order for the selected site. Search products by name, or pick from the list.</p>
+          <p class="sub">Create a staff order for the selected site. Use <strong>Fast order</strong> to enter qty and weight on one page, or <strong>Traditional</strong> to tap products into order lines.</p>
           <form id="new-order-form">
             <div class="grid2">
               <div class="field"><label for="no-name">Customer name *</label><input id="no-name" required></div>
@@ -458,12 +492,23 @@ body.embed .hub{min-height:70vh}
               <textarea id="no-notes" class="notes-grow" rows="1" placeholder="Optional order notes"></textarea>
             </div>
             <h4 class="section-title">Products</h4>
+            <div class="no-layout-toggle" id="no-layout-toggle">
+              <span class="lbl">Ordering layout</span>
+              <button type="button" class="btn ghost no-layout-btn" data-no-mode="fast">Fast order</button>
+              <button type="button" class="btn ghost no-layout-btn" data-no-mode="traditional">Traditional</button>
+            </div>
             <div id="no-cat-pills" class="no-cat-pills"></div>
-            <div id="no-product-grid" class="no-product-grid"></div>
-            <h4 class="section-title">Order lines</h4>
-            <div id="no-lines"></div>
-            <div class="actions-row">
-              <button class="btn ghost" type="button" id="no-add-line">Add product</button>
+            <div id="no-traditional-wrap">
+              <div id="no-product-grid" class="no-product-grid"></div>
+              <h4 class="section-title">Order lines</h4>
+              <div id="no-lines"></div>
+              <div class="actions-row">
+                <button class="btn ghost" type="button" id="no-add-line">Add product</button>
+              </div>
+            </div>
+            <div id="no-fast-wrap" class="hide">
+              <p class="sub" style="margin-top:0">Enter qty or weight for each product — only rows with values are added to the order.</p>
+              <div id="no-fast-list" class="no-fast-list"></div>
             </div>
             <div class="pay-on-create">
               <p class="notice" style="margin-top:0"><strong>Payment on create</strong> — choose one option before creating the order.</p>
@@ -976,12 +1021,19 @@ body.embed .hub{min-height:70vh}
             <h4 class="section-title">Customer shop (menu)</h4>
             <p class="notice">Controls how the homepage / order shop catalogue behaves. Empty categories and categories with no enabled products are always hidden.</p>
             <div class="grid2">
-              <div class="field"><label for="set-sf-shop-mode">Ordering layout</label>
+              <div class="field"><label for="set-sf-shop-mode">Customer shop layout</label>
                 <select id="set-sf-shop-mode">
                   <option value="traditional">Traditional shop — tap a product to set qty / weight</option>
                   <option value="fast">Fast order — qty &amp; weight on one page</option>
                 </select>
                 <span class="field-hint">Fast mode lets customers add items without opening each product. Notes expand on demand.</span>
+              </div>
+              <div class="field"><label for="set-staff-order-mode">Staff new order layout</label>
+                <select id="set-staff-order-mode">
+                  <option value="fast">Fast order — qty &amp; weight on one page</option>
+                  <option value="traditional">Traditional — tap a product to add lines</option>
+                </select>
+                <span class="field-hint">Default layout for New Order in this admin. Staff can switch per session on that page.</span>
               </div>
               <div class="field"><label for="set-sf-show-all">Category chips</label>
                 <select id="set-sf-show-all">
@@ -1274,6 +1326,8 @@ body.embed .hub{min-height:70vh}
     prodDeleteSelected: {},
     productQuestions: [],
     noSelectedCat: '',
+    noOrderMode: 'fast',
+    noFastNotesOpen: {},
     voidOrderId: null,
     depositLinkOrderId: null,
     inhousePaymentOrderId: null,
@@ -2187,11 +2241,136 @@ body.embed .hub{min-height:70vh}
     return isFinite(n) && n > 0 ? n : null;
   }
 
+  function isPackSizeProduct(p){
+    var o = (p && p.options) || {};
+    return o.size_mode === 'pack' || o.size_mode === 'fixed' || !!p.is_pack_size;
+  }
+
+  function isEachSizeProduct(p){
+    var o = (p && p.options) || {};
+    return o.size_mode === 'each' || o.size_mode === 'unit' || o.size_mode === 'individual' || !!p.is_each_size;
+  }
+
   function productNeedsWeight(p){
     if (!p) return false;
+    if (isPackSizeProduct(p) || isEachSizeProduct(p)) return false;
     if (p.pricing_method === 'per_weight') return true;
     var o = p.options || {};
-    return o.size_mode === 'variable' || o.size_mode === 'pack';
+    if (o.weight_required === true) return true;
+    if (p.pricing_method === 'price_tbc') return true;
+    return o.size_mode === 'variable';
+  }
+
+  function productShowsQuantity(p){
+    return !productNeedsWeight(p);
+  }
+
+  function packLabelForProduct(p){
+    if (!isPackSizeProduct(p)) return '';
+    var o = (p && p.options) || {};
+    if (o.pack_label) return String(o.pack_label);
+    if (p.pack_label) return String(p.pack_label);
+    var w = Number(o.pack_weight_kg);
+    if (!isFinite(w) || w <= 0) return '';
+    if (w >= 1) return w + ' kg';
+    return Math.round(w * 1000) + 'g';
+  }
+
+  function quantityPromptForProduct(p){
+    if (p && p.quantity_prompt) return String(p.quantity_prompt).trim();
+    var o = (p && p.options) || {};
+    return o.quantity_prompt ? String(o.quantity_prompt).trim() : '';
+  }
+
+  function defaultWeightForProduct(p){
+    if (p && p.default_weight_kg != null) {
+      var d = Number(p.default_weight_kg);
+      if (isFinite(d) && d > 0) return d;
+    }
+    var minK = minimumKgForProduct(p);
+    return minK != null ? minK : 1;
+  }
+
+  function kgFieldLabelForProduct(p){
+    var minK = minimumKgForProduct(p);
+    if (minK != null) return 'Weight kg (min ' + String(minK).replace(/\.0$/, '') + ')';
+    return 'Weight kg';
+  }
+
+  function isNoFastMode(){
+    return state.noOrderMode === 'fast';
+  }
+
+  function noStepperHtml(opts){
+    opts = opts || {};
+    var step = opts.step != null ? opts.step : 1;
+    var min = opts.min != null ? opts.min : 0;
+    var val = opts.value != null ? opts.value : '';
+    var dataAttr = opts.dataAttr || '';
+    return '<div class="no-stepper" data-step="' + esc(step) + '" data-min="' + esc(min) + '">' +
+      '<button type="button" data-stepper-dir="-1" aria-label="Decrease">−</button>' +
+      '<input type="number" min="' + esc(min) + '" step="' + esc(step) + '" inputmode="decimal" value="' + esc(val) + '" ' + dataAttr + '>' +
+      '<button type="button" data-stepper-dir="1" aria-label="Increase">+</button>' +
+      '</div>';
+  }
+
+  function wireNoSteppers(root){
+    (root || document).querySelectorAll('.no-stepper').forEach(function(wrap){
+      var input = wrap.querySelector('input');
+      var step = Number(wrap.getAttribute('data-step')) || 1;
+      var min = Number(wrap.getAttribute('data-min'));
+      if (!isFinite(min)) min = 0;
+      wrap.querySelectorAll('[data-stepper-dir]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          if (!input) return;
+          var cur = input.value === '' ? min : Number(input.value);
+          if (!isFinite(cur)) cur = min;
+          var dir = Number(btn.getAttribute('data-stepper-dir')) || 0;
+          var next = Math.max(min, Math.round((cur + dir * step) * 1000) / 1000);
+          input.value = String(next);
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      });
+    });
+  }
+
+  function applyNoOrderLayout(){
+    var fast = isNoFastMode();
+    var trad = $('no-traditional-wrap');
+    var fastWrap = $('no-fast-wrap');
+    if (trad) trad.classList.toggle('hide', fast);
+    if (fastWrap) fastWrap.classList.toggle('hide', !fast);
+    document.querySelectorAll('.no-layout-btn').forEach(function(btn){
+      var on = btn.getAttribute('data-no-mode') === state.noOrderMode;
+      btn.classList.toggle('on', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    if (fast) renderNoFastList();
+    else renderNoProductGrid();
+  }
+
+  function wireNoLayoutToggle(){
+    var host = $('no-layout-toggle');
+    if (!host || host.getAttribute('data-wired') === '1') return;
+    host.setAttribute('data-wired', '1');
+    host.addEventListener('click', function(ev){
+      var btn = ev.target.closest('.no-layout-btn');
+      if (!btn) return;
+      state.noOrderMode = btn.getAttribute('data-no-mode') === 'traditional' ? 'traditional' : 'fast';
+      try { localStorage.setItem('lp_orders_staff_layout_' + (state.siteId || ''), state.noOrderMode); } catch (_e) {}
+      applyNoOrderLayout();
+      updateNoSubmitEnabled();
+    });
+  }
+
+  function resolveNoOrderModeFromSettings(settings){
+    var sf = (settings && settings.storefront) || {};
+    var mode = sf.staff_order_mode === 'traditional' ? 'traditional' : 'fast';
+    try {
+      var saved = localStorage.getItem('lp_orders_staff_layout_' + (state.siteId || ''));
+      if (saved === 'traditional' || saved === 'fast') mode = saved;
+    } catch (_e) {}
+    state.noOrderMode = mode;
   }
 
   function updateNoSubmitEnabled(){
@@ -2204,7 +2383,12 @@ body.embed .hub{min-height:70vh}
       var m = $('no-inhouse-method');
       okPay = !!(m && m.value);
     }
-    var hasLines = $('no-lines') && $('no-lines').querySelectorAll('.line-row').length > 0;
+    var hasLines = false;
+    if (isNoFastMode()) {
+      hasLines = collectFastOrderItems({ partialOk: true }).length > 0;
+    } else {
+      hasLines = $('no-lines') && $('no-lines').querySelectorAll('.line-row').length > 0;
+    }
     var hasName = $('no-name') && $('no-name').value.trim();
     btn.disabled = !(okPay && hasLines && hasName);
   }
@@ -2235,7 +2419,8 @@ body.embed .hub{min-height:70vh}
       btn.addEventListener('click', function(){
         state.noSelectedCat = btn.getAttribute('data-cat') || '';
         renderNoCatPills();
-        renderNoProductGrid();
+        if (isNoFastMode()) renderNoFastList();
+        else renderNoProductGrid();
       });
     });
   }
@@ -2272,6 +2457,142 @@ body.embed .hub{min-height:70vh}
         if (p) addProductLine(p);
       });
     });
+  }
+
+  function renderNoFastList(){
+    var host = $('no-fast-list');
+    if (!host) return;
+    var list = productsForNoGrid();
+    if (!list.length) {
+      host.innerHTML = '<p class="notice">No products in this category.</p>';
+      return;
+    }
+    host.innerHTML = list.map(function(p){
+      var needsW = productNeedsWeight(p);
+      var showQty = productShowsQuantity(p);
+      var pack = packLabelForProduct(p);
+      var prompt = quantityPromptForProduct(p);
+      var minK = minimumKgForProduct(p);
+      var defaultKg = defaultWeightForProduct(p);
+      var price = p.pricing_method === 'per_weight'
+        ? formatAud(p.price_per_kg_cents) + '/kg'
+        : p.pricing_method === 'price_tbc' ? 'TBC' : formatAud(p.price_cents);
+      var meta = price + (minK && !needsW ? ' · min ' + minK + ' kg' : '');
+      var notesOpen = !!state.noFastNotesOpen[p.id];
+      var hasQs = questionsForProduct(p.id).length > 0;
+      var html = '<article class="no-fast-row' + (notesOpen ? ' is-notes-open' : '') + '" data-fast-row="' + esc(p.id) + '">';
+      html += '<div class="no-fast-main">';
+      html += '<div class="no-fast-info"><strong>' + esc(p.name) + '</strong>';
+      if (pack) html += '<span class="meta"> · ' + esc(pack) + ' pack</span>';
+      html += '<div class="meta">' + esc(meta) + '</div>';
+      if (prompt) html += '<p class="prompt">' + esc(prompt) + '</p>';
+      html += '</div>';
+      html += '<div class="no-fast-controls">';
+      if (showQty) {
+        html += '<label class="no-fast-field">Qty' + noStepperHtml({ min: 0, step: 1, value: '', dataAttr: 'data-fast-qty' }) + '</label>';
+        if (pack) html += '<span class="no-fast-packchip" title="Fixed pack size">' + esc(pack) + '</span>';
+      }
+      if (needsW) {
+        html += '<label class="no-fast-field">' + esc(kgFieldLabelForProduct(p)) +
+          noStepperHtml({ min: minK || 0.1, step: 0.1, value: '', dataAttr: 'data-fast-kg' }) + '</label>';
+      }
+      if (hasQs) {
+        html += '<button type="button" class="btn ghost no-fast-notes-btn' + (notesOpen ? ' on' : '') + '" data-fast-notes-toggle>Options</button>';
+      } else {
+        html += '<button type="button" class="btn ghost no-fast-notes-btn' + (notesOpen ? ' on' : '') + '" data-fast-notes-toggle>Notes</button>';
+      }
+      html += '</div></div>';
+      if (notesOpen) {
+        html += '<div class="no-fast-extra">';
+        html += '<div class="field" style="margin:0"><label>Line notes</label><input data-fast-notes placeholder="Optional"></div>';
+        html += '<div class="line-opt" data-fast-opt></div>';
+        html += '</div>';
+      }
+      html += '</article>';
+      return html;
+    }).join('');
+    host.querySelectorAll('[data-fast-row]').forEach(function(row){
+      var pid = row.getAttribute('data-fast-row');
+      var product = (state.products || []).find(function(x){ return x.id === pid; });
+      var optHost = row.querySelector('[data-fast-opt]');
+      if (product && optHost) renderLineOptions(row, product);
+      row.querySelectorAll('input,select,textarea').forEach(function(el){
+        el.addEventListener('input', updateNoSubmitEnabled);
+        el.addEventListener('change', updateNoSubmitEnabled);
+      });
+      var notesBtn = row.querySelector('[data-fast-notes-toggle]');
+      if (notesBtn) {
+        notesBtn.addEventListener('click', function(){
+          state.noFastNotesOpen[pid] = !state.noFastNotesOpen[pid];
+          renderNoFastList();
+        });
+      }
+    });
+    wireNoSteppers(host);
+  }
+
+  function collectFastOrderItems(opts){
+    opts = opts || {};
+    var items = [];
+    var host = $('no-fast-list');
+    if (!host) return items;
+    host.querySelectorAll('[data-fast-row]').forEach(function(row){
+      var product_id = row.getAttribute('data-fast-row');
+      if (!product_id) return;
+      var product = (state.products || []).find(function(x){ return x.id === product_id; });
+      if (!product) return;
+      var needsW = productNeedsWeight(product);
+      var showQty = productShowsQuantity(product);
+      var qtyEl = row.querySelector('[data-fast-qty]');
+      var kgEl = row.querySelector('[data-fast-kg]');
+      var notesEl = row.querySelector('[data-fast-notes]');
+      var qty = showQty ? (Number(qtyEl && qtyEl.value) || 0) : 1;
+      var wRaw = kgEl && kgEl.value;
+      var hasQty = showQty && qty > 0;
+      var hasKg = needsW && wRaw !== '' && isFinite(Number(wRaw)) && Number(wRaw) > 0;
+      if (!hasQty && !hasKg) return;
+      if (needsW && !hasKg && !opts.partialOk) return;
+      if (showQty && !hasQty && !opts.partialOk) return;
+      var line = { product_id: product_id, quantity: needsW ? 1 : qty, answers: collectLineAnswers(row) };
+      if (hasKg) line.requested_weight_kg = Number(wRaw);
+      var notes = notesEl && notesEl.value.trim();
+      if (notes) line.notes = notes;
+      items.push(line);
+    });
+    return items;
+  }
+
+  function validateFastOrderItems(){
+    var host = $('no-fast-list');
+    if (!host) return null;
+    var err = null;
+    host.querySelectorAll('[data-fast-row]').forEach(function(row){
+      if (err) return;
+      var product_id = row.getAttribute('data-fast-row');
+      var product = (state.products || []).find(function(x){ return x.id === product_id; });
+      if (!product) return;
+      var needsW = productNeedsWeight(product);
+      var showQty = productShowsQuantity(product);
+      var qtyEl = row.querySelector('[data-fast-qty]');
+      var kgEl = row.querySelector('[data-fast-kg]');
+      var qty = showQty ? (Number(qtyEl && qtyEl.value) || 0) : 0;
+      var wRaw = kgEl && kgEl.value;
+      var hasQty = showQty && qty > 0;
+      var hasKg = needsW && wRaw !== '';
+      if (!hasQty && !hasKg) return;
+      if (needsW) {
+        var kg = wRaw !== '' ? Number(wRaw) : null;
+        if (kg == null || !isFinite(kg) || kg <= 0) {
+          err = 'Enter weight (kg) for ' + (product.name || 'a product') + '.';
+          return;
+        }
+        var minK = minimumKgForProduct(product);
+        if (minK != null && kg + 0.0001 < minK) {
+          err = 'Minimum weight for ' + (product.name || 'product') + ' is ' + minK + ' kg.';
+        }
+      }
+    });
+    return err;
   }
 
   function renderLineOptions(row, product){
@@ -2734,17 +3055,27 @@ body.embed .hub{min-height:70vh}
       return;
     }
     var items = [];
-    $('no-lines').querySelectorAll('.line-row').forEach(function(row){
-      var product_id = row.querySelector('[data-f="product_id"]').value;
-      if (!product_id) return;
-      var qty = Number(row.querySelector('[data-f="quantity"]').value) || 1;
-      var wRaw = row.querySelector('[data-f="requested_weight_kg"]').value;
-      var notes = row.querySelector('[data-f="notes"]').value.trim();
-      var line = { product_id: product_id, quantity: qty, answers: collectLineAnswers(row) };
-      if (wRaw !== '') line.requested_weight_kg = Number(wRaw);
-      if (notes) line.notes = notes;
-      items.push(line);
-    });
+    if (isNoFastMode()) {
+      var fastErr = validateFastOrderItems();
+      if (fastErr) {
+        msg.textContent = fastErr;
+        toast(msg.textContent, 'err');
+        return;
+      }
+      items = collectFastOrderItems();
+    } else {
+      $('no-lines').querySelectorAll('.line-row').forEach(function(row){
+        var product_id = row.querySelector('[data-f="product_id"]').value;
+        if (!product_id) return;
+        var qty = Number(row.querySelector('[data-f="quantity"]').value) || 1;
+        var wRaw = row.querySelector('[data-f="requested_weight_kg"]').value;
+        var notes = row.querySelector('[data-f="notes"]').value.trim();
+        var line = { product_id: product_id, quantity: qty, answers: collectLineAnswers(row) };
+        if (wRaw !== '') line.requested_weight_kg = Number(wRaw);
+        if (notes) line.notes = notes;
+        items.push(line);
+      });
+    }
     if (!items.length) {
       msg.textContent = 'Add at least one product.';
       toast(msg.textContent, 'err');
@@ -2776,11 +3107,12 @@ body.embed .hub{min-height:70vh}
       toast(note, 'ok');
       $('new-order-form').reset();
       $('no-lines').innerHTML = '';
+      state.noFastNotesOpen = {};
       document.querySelectorAll('input[name="no-pay-action"]').forEach(function(r){ r.checked = false; });
       if ($('no-inhouse-panel')) $('no-inhouse-panel').classList.add('hide');
       updateNoSubmitEnabled();
       renderNoCatPills();
-      renderNoProductGrid();
+      applyNoOrderLayout();
       if (r.order && r.order.id) openOrderDetail(r.order.id);
     } catch (e) {
       msg.textContent = (e && e.message) || String(e);
@@ -3717,6 +4049,9 @@ body.embed .hub{min-height:70vh}
       if ($('set-paypal-email')) $('set-paypal-email').value = pay.paypal_merchant_email || '';
       var sf = (s.settings && s.settings.storefront) || {};
       if ($('set-sf-shop-mode')) $('set-sf-shop-mode').value = sf.shop_mode === 'fast' ? 'fast' : 'traditional';
+      if ($('set-staff-order-mode')) {
+        $('set-staff-order-mode').value = sf.staff_order_mode === 'traditional' ? 'traditional' : 'fast';
+      }
       if ($('set-sf-show-all')) $('set-sf-show-all').value = sf.show_all_categories ? '1' : '0';
       try { await loadProductsCache(); } catch (_e) {}
       fillDefaultCategorySelect(sf.default_category_id || '');
@@ -3844,6 +4179,7 @@ body.embed .hub{min-height:70vh}
       var prevAp = (existing.storefront && existing.storefront.appearance) || {};
       var storefront = Object.assign({}, existing.storefront || {}, {
         shop_mode: $('set-sf-shop-mode') && $('set-sf-shop-mode').value === 'fast' ? 'fast' : 'traditional',
+        staff_order_mode: $('set-staff-order-mode') && $('set-staff-order-mode').value === 'traditional' ? 'traditional' : 'fast',
         show_all_categories: $('set-sf-show-all') ? $('set-sf-show-all').value === '1' : false,
         default_category_id: defCatId || null,
         default_category_slug: defCat ? (defCat.slug || null) : null,
@@ -4417,11 +4753,17 @@ body.embed .hub{min-height:70vh}
       if (v === 'dashboard') await loadDashboard();
       else if (v === 'orders') await loadOrders();
       else if (v === 'new') {
+        try {
+          var sysData = await api('/api/order/system?' + siteQuery());
+          resolveNoOrderModeFromSettings((sysData.system && sysData.system.settings) || {});
+        } catch (_e0) { state.noOrderMode = 'fast'; }
         try { await loadProductsCache({ includeQuestions: true }); } catch (_e) {}
         try { await loadPickupWindows(); } catch (_e2) {}
         state.noSelectedCat = '';
+        state.noFastNotesOpen = {};
         renderNoCatPills();
-        renderNoProductGrid();
+        wireNoLayoutToggle();
+        applyNoOrderLayout();
         wireNoPayCreate();
         updateNoSubmitEnabled();
         wireNotesGrow($('view-new'));
